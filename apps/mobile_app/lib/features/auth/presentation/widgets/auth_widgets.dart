@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import '../../../../design_system/tokens/app_colors.dart';
 import '../../../../design_system/tokens/app_spacing.dart';
 
+const _kAuthContentMaxWidth = 920.0;
+
 enum AuthBannerStatus {
   info,
   loading,
@@ -48,35 +50,49 @@ class AuthScreenScaffold extends StatelessWidget {
           ),
         ),
         child: SafeArea(
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.fromLTRB(
-              AppSpacing.xxl,
-              AppSpacing.lg,
-              AppSpacing.xxl,
-              AppSpacing.xxl,
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                _BrandRow(
-                  eyebrow: eyebrow,
-                  onBack: Navigator.of(context).canPop()
-                      ? () => Navigator.of(context).pop()
-                      : null,
+          child: LayoutBuilder(
+            builder: (context, constraints) {
+              final horizontalPadding =
+                  constraints.maxWidth < 640 ? AppSpacing.lg : AppSpacing.xxl;
+
+              return SingleChildScrollView(
+                padding: EdgeInsets.fromLTRB(
+                  horizontalPadding,
+                  AppSpacing.lg,
+                  horizontalPadding,
+                  AppSpacing.xxl,
                 ),
-                const SizedBox(height: AppSpacing.xl),
-                _HeroPanel(
-                  title: title,
-                  subtitle: subtitle,
-                  primaryActionLabel: primaryActionLabel,
-                  secondaryActionLabel: secondaryActionLabel,
-                  onPrimaryAction: onPrimaryAction,
-                  onSecondaryAction: onSecondaryAction,
+                child: Center(
+                  child: ConstrainedBox(
+                    constraints: const BoxConstraints(
+                      maxWidth: _kAuthContentMaxWidth,
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        _BrandRow(
+                          eyebrow: eyebrow,
+                          onBack: Navigator.of(context).canPop()
+                              ? () => Navigator.of(context).pop()
+                              : null,
+                        ),
+                        const SizedBox(height: AppSpacing.xl),
+                        _HeroPanel(
+                          title: title,
+                          subtitle: subtitle,
+                          primaryActionLabel: primaryActionLabel,
+                          secondaryActionLabel: secondaryActionLabel,
+                          onPrimaryAction: onPrimaryAction,
+                          onSecondaryAction: onSecondaryAction,
+                        ),
+                        const SizedBox(height: AppSpacing.xl),
+                        footer,
+                      ],
+                    ),
+                  ),
                 ),
-                const SizedBox(height: AppSpacing.xl),
-                footer,
-              ],
-            ),
+              );
+            },
           ),
         ),
       ),

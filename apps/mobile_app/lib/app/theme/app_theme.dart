@@ -65,7 +65,7 @@ class AppTheme {
         selectionColor: AppColors.accentSoft,
         selectionHandleColor: AppColors.primary,
       ),
-      textTheme: TextTheme(
+      textTheme: const TextTheme(
         displayLarge: AppTextStyles.display,
         displayMedium: AppTextStyles.heading,
         displaySmall: AppTextStyles.title,
@@ -138,8 +138,10 @@ class AppTheme {
           vertical: AppSpacing.md,
         ),
         hintStyle: AppTextStyles.body.copyWith(color: AppColors.mutedText),
-        labelStyle: AppTextStyles.bodySmall.copyWith(color: AppColors.secondaryText),
-        floatingLabelStyle: AppTextStyles.caption.copyWith(color: AppColors.primary),
+        labelStyle:
+            AppTextStyles.bodySmall.copyWith(color: AppColors.secondaryText),
+        floatingLabelStyle:
+            AppTextStyles.caption.copyWith(color: AppColors.primary),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(AppRadii.medium),
           borderSide: const BorderSide(color: AppColors.border),

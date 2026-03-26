@@ -6,6 +6,8 @@ import '../../../../design_system/tokens/app_spacing.dart';
 import '../../../../design_system/tokens/app_text_styles.dart';
 import '../onboarding_routes.dart';
 
+const _kWelcomeContentMaxWidth = 920.0;
+
 class OnboardingWelcomePage extends StatelessWidget {
   const OnboardingWelcomePage({super.key});
 
@@ -25,31 +27,45 @@ class OnboardingWelcomePage extends StatelessWidget {
           ),
         ),
         child: SafeArea(
-          child: Padding(
-            padding: const EdgeInsets.fromLTRB(
-              AppSpacing.xxl,
-              AppSpacing.lg,
-              AppSpacing.xxl,
-              AppSpacing.lg,
-            ),
-            child: Column(
-              children: [
-                _TopBar(),
-                SizedBox(height: AppSpacing.xxl),
-                Expanded(
-                  child: SingleChildScrollView(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
+          child: LayoutBuilder(
+            builder: (context, constraints) {
+              final horizontalPadding =
+                  constraints.maxWidth < 640 ? AppSpacing.lg : AppSpacing.xxl;
+
+              return Padding(
+                padding: EdgeInsets.fromLTRB(
+                  horizontalPadding,
+                  AppSpacing.lg,
+                  horizontalPadding,
+                  AppSpacing.lg,
+                ),
+                child: Center(
+                  child: ConstrainedBox(
+                    constraints: const BoxConstraints(
+                      maxWidth: _kWelcomeContentMaxWidth,
+                    ),
+                    child: const Column(
                       children: [
-                        _HeroCard(),
-                        SizedBox(height: AppSpacing.xl),
-                        _BottomPanel(),
+                        _TopBar(),
+                        SizedBox(height: AppSpacing.xxl),
+                        Expanded(
+                          child: SingleChildScrollView(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                _HeroCard(),
+                                SizedBox(height: AppSpacing.xl),
+                                _BottomPanel(),
+                              ],
+                            ),
+                          ),
+                        ),
                       ],
                     ),
                   ),
                 ),
-              ],
-            ),
+              );
+            },
           ),
         ),
       ),
@@ -123,7 +139,7 @@ class _HeroCard extends StatelessWidget {
       ),
       child: const Column(
         crossAxisAlignment: CrossAxisAlignment.start,
-        children: const [
+        children: [
           _Badge(),
           SizedBox(height: AppSpacing.xl),
           Text(
@@ -253,7 +269,7 @@ class _IllustrationPanel extends StatelessWidget {
       ),
       child: Stack(
         children: [
-          Positioned(
+          const Positioned(
             left: -8,
             top: 34,
             child: _BlurBubble(
@@ -261,7 +277,7 @@ class _IllustrationPanel extends StatelessWidget {
               color: Color(0x66F0BFA0),
             ),
           ),
-          Positioned(
+          const Positioned(
             right: -18,
             top: 10,
             child: _BlurBubble(
@@ -269,7 +285,7 @@ class _IllustrationPanel extends StatelessWidget {
               color: Color(0x6693C3B3),
             ),
           ),
-          Positioned(
+          const Positioned(
             left: 24,
             top: 24,
             child: _MiniCard(
@@ -278,7 +294,7 @@ class _IllustrationPanel extends StatelessWidget {
               textColor: Color(0xFF315E55),
             ),
           ),
-          Positioned(
+          const Positioned(
             left: 34,
             bottom: 22,
             child: _MiniCard(
@@ -479,7 +495,8 @@ class _BottomPanel extends StatelessWidget {
             width: double.infinity,
             child: OutlinedButton(
               onPressed: () {
-                Navigator.of(context).pushReplacement(OnboardingRoutes.authHub());
+                Navigator.of(context)
+                    .pushReplacement(OnboardingRoutes.authHub());
               },
               child: const Text('Ho gia un account'),
             ),

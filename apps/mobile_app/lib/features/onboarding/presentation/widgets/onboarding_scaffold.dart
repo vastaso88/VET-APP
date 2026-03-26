@@ -5,6 +5,8 @@ import '../../../../../design_system/tokens/app_radii.dart';
 import '../../../../../design_system/tokens/app_spacing.dart';
 import '../../../../../design_system/tokens/app_text_styles.dart';
 
+const _kOnboardingContentMaxWidth = 920.0;
+
 class OnboardingScaffold extends StatelessWidget {
   const OnboardingScaffold({
     super.key,
@@ -45,42 +47,56 @@ class OnboardingScaffold extends StatelessWidget {
           ),
         ),
         child: SafeArea(
-          child: Padding(
-            padding: const EdgeInsets.fromLTRB(
-              AppSpacing.xxl,
-              AppSpacing.lg,
-              AppSpacing.xxl,
-              AppSpacing.lg,
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                _TopBar(step: currentStep),
-                const SizedBox(height: AppSpacing.lg),
-                Expanded(
-                  child: SingleChildScrollView(
+          child: LayoutBuilder(
+            builder: (context, constraints) {
+              final horizontalPadding =
+                  constraints.maxWidth < 640 ? AppSpacing.lg : AppSpacing.xxl;
+
+              return Padding(
+                padding: EdgeInsets.fromLTRB(
+                  horizontalPadding,
+                  AppSpacing.lg,
+                  horizontalPadding,
+                  AppSpacing.lg,
+                ),
+                child: Center(
+                  child: ConstrainedBox(
+                    constraints: const BoxConstraints(
+                      maxWidth: _kOnboardingContentMaxWidth,
+                    ),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(title, style: AppTextStyles.display),
-                        const SizedBox(height: AppSpacing.md),
-                        Text(subtitle, style: AppTextStyles.body),
-                        const SizedBox(height: AppSpacing.xl),
-                        ...content,
-                        const SizedBox(height: AppSpacing.xl),
-                        _ActionPanel(
-                          primaryActionLabel: primaryActionLabel,
-                          onPrimaryAction: onPrimaryAction,
-                          secondaryActionLabel: secondaryActionLabel,
-                          onSecondaryAction: onSecondaryAction,
-                          footerNote: footerNote,
+                        _TopBar(step: currentStep),
+                        const SizedBox(height: AppSpacing.lg),
+                        Expanded(
+                          child: SingleChildScrollView(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(title, style: AppTextStyles.display),
+                                const SizedBox(height: AppSpacing.md),
+                                Text(subtitle, style: AppTextStyles.body),
+                                const SizedBox(height: AppSpacing.xl),
+                                ...content,
+                                const SizedBox(height: AppSpacing.xl),
+                                _ActionPanel(
+                                  primaryActionLabel: primaryActionLabel,
+                                  onPrimaryAction: onPrimaryAction,
+                                  secondaryActionLabel: secondaryActionLabel,
+                                  onSecondaryAction: onSecondaryAction,
+                                  footerNote: footerNote,
+                                ),
+                              ],
+                            ),
+                          ),
                         ),
                       ],
                     ),
                   ),
                 ),
-              ],
-            ),
+              );
+            },
           ),
         ),
       ),
