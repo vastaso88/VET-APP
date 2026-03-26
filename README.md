@@ -47,6 +47,8 @@ For the trusted-sources rubric in Supabase:
 
 For terminals without administrator rights, prefer `make run-web-server` and open the printed URL manually in your browser. This avoids Flutter-managed Chrome profiles and keeps the demo flow inside the current user session.
 
+For `flutter analyze` in the same no-admin environment, use the documented workaround in `docs/runbooks/flutter_analyze_no_admin.md`.
+
 ## Vercel deploy
 The repository supports two Vercel projects:
 
@@ -110,3 +112,7 @@ Product and strategy documents now live under `docs/`:
 - `docs/architecture/repo_bootstrap_instructions.md`
 - `docs/decisions/*`
 - `docs/runbooks/`
+
+Recent implementation notes:
+- `docs/runbooks/flutter_analyze_no_admin.md`
+- `docs/frontend/10-ux-review-2026-03-26.md`

@@ -19,6 +19,8 @@ Definire una base semplice, modulare e pronta per:
 - `06-state-management-and-data-flow.md`
 - `07-mcp-workflow.md`
 - `08-codex-bootstrap-prompt.md`
+- `09-mobile-preview-state.md`
+- `10-ux-review-2026-03-26.md`
 
 ## Principi guida
 1. **Web-first**: tutte le decisioni UI e architetturali partono dal browser, con mobile-ready configuration per release successive.
@@ -42,3 +44,8 @@ Definire una base semplice, modulare e pronta per:
 - supporto multilingua
 - network veterinari
 - marketplace e servizi B2B
+
+## Stato demo attuale
+Per la situazione concreta della preview Flutter web, della route pubblica demo e dei flussi attualmente navigabili, vedi:
+- [09-mobile-preview-state.md](/C:/Users/vasta/OneDrive%20-%20Techbau%20SpA/Documenti/PERS/VET%20APP/GIT/docs/frontend/09-mobile-preview-state.md)
+- [10-ux-review-2026-03-26.md](/C:/Users/vasta/OneDrive%20-%20Techbau%20SpA/Documenti/PERS/VET%20APP/GIT/docs/frontend/10-ux-review-2026-03-26.md)
