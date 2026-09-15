@@ -412,6 +412,7 @@ class _NewConversationBanner extends StatelessWidget {
           ),
           const SizedBox(width: AppSpacing.md),
           ElevatedButton(
+            style: ElevatedButton.styleFrom(minimumSize: Size.zero),
             onPressed: onCreateConversation,
             child: const Text('Nuova'),
           ),

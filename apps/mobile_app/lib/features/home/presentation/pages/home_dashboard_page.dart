@@ -435,7 +435,7 @@ class _PetPortrait extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      constraints: const BoxConstraints(minHeight: 240),
+      constraints: const BoxConstraints.tightFor(height: 240),
       decoration: BoxDecoration(
         gradient: const LinearGradient(
           begin: Alignment.topLeft,

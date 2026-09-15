@@ -484,7 +484,11 @@ class _Header extends StatelessWidget {
           ),
         ),
         const SizedBox(width: AppSpacing.md),
-        FilledButton(onPressed: onAction, child: Text(actionLabel)),
+        FilledButton(
+          style: FilledButton.styleFrom(minimumSize: Size.zero),
+          onPressed: onAction,
+          child: Text(actionLabel),
+        ),
       ],
     );
   }
