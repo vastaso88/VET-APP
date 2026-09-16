@@ -35,7 +35,8 @@ class Settings(BaseSettings):
     enable_telemetry: bool = Field(default=False, alias="ENABLE_TELEMETRY")
     enable_interview_loop: bool = Field(default=False, alias="ENABLE_INTERVIEW_LOOP")
     situation_coverage_target: float = Field(default=0.85, alias="SITUATION_COVERAGE_TARGET")
-    interview_max_questions: int = Field(default=1, alias="INTERVIEW_MAX_QUESTIONS")
+    interview_max_questions: int = Field(default=3, alias="INTERVIEW_MAX_QUESTIONS")
+    pii_anonymizer_backend: str = Field(default="noop", alias="PII_ANONYMIZER_BACKEND")
 
     @model_validator(mode="after")
     def validate_backend_configuration(self) -> "Settings":

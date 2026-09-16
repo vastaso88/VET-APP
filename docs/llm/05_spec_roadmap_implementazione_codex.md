@@ -1,5 +1,8 @@
 # SPEC — Roadmap di Implementazione per Codex
 
+> **Superseded**: dove questo documento (v1) è in contrasto con la VetGPT CORE ENGINE — MASTER
+> DIRECTIONAL SPECIFICATION v3, vale la v3. Tenuto come riferimento storico.
+
 ## Obiettivo
 Guidare Codex nell'implementazione incrementale del sistema, riducendo il rischio e massimizzando la velocità di consegna del prototipo.
 

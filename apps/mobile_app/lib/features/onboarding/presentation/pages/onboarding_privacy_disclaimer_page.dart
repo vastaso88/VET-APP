@@ -41,6 +41,12 @@ class OnboardingPrivacyDisclaimerPage extends StatelessWidget {
         ),
         SizedBox(height: AppSpacing.md),
         _PolicyCard(
+          title: 'Trasparenza IA',
+          body:
+              'Quando una risposta, un report o un immagine sono generati automaticamente, te lo segnaliamo sempre, come previsto dal Regolamento UE sull intelligenza artificiale (AI Act).',
+        ),
+        SizedBox(height: AppSpacing.md),
+        _PolicyCard(
           title: 'Responsabilita',
           body:
               'In caso di sintomi urgenti o dubbi clinici importanti, contatta sempre un professionista.',

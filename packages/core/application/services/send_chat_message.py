@@ -24,6 +24,7 @@ class SendChatMessageOutput(BaseModel):
     reply: ChatMessage
     mode: str
     confidence: str
+    ai_generated: bool
     sources: list[EvidenceSource]
     limitations: list[str]
     safety_flags: list[str]
@@ -79,6 +80,7 @@ class SendChatMessageService:
             reply=reply,
             mode=orchestrator_result.mode,
             confidence=orchestrator_result.confidence,
+            ai_generated=orchestrator_result.ai_generated,
             sources=orchestrator_result.sources,
             limitations=orchestrator_result.limitations,
             safety_flags=orchestrator_result.safety_flags,

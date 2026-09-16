@@ -1,6 +1,7 @@
 from functools import lru_cache
 
 from packages.core.application.ports.auth_provider import AuthProvider
+from packages.core.application.ports.pii_anonymizer import PiiAnonymizer
 from packages.core.application.services.chat_orchestrator import ChatOrchestrator
 from packages.core.application.services.create_pet_profile import CreatePetProfileService
 from packages.core.application.services.create_reminder import CreateReminderService
@@ -24,6 +25,7 @@ from packages.infrastructure.persistence.in_memory_repositories import (
     InMemoryPetProfileRepository,
     InMemoryReminderRepository,
 )
+from packages.infrastructure.privacy.noop_pii_anonymizer import NoopPiiAnonymizer
 from packages.shared.config.settings import Settings, get_settings
 
 
@@ -38,9 +40,11 @@ class ApplicationContainer:
         ) = self._build_repositories()
         self.llm_client = self._build_llm_client()
         self.evidence_retriever = self._build_evidence_retriever()
+        self.pii_anonymizer = self._build_pii_anonymizer()
         self.chat_orchestrator = ChatOrchestrator(
             self.llm_client,
             self.evidence_retriever,
+            self.pii_anonymizer,
             safety_gate=SafetyGate(),
             situation_model_builder=SituationModelBuilder(self.llm_client),
             interview_planner=InterviewPlanner(),
@@ -136,6 +140,20 @@ class ApplicationContainer:
         if self.settings.llm_provider == "groq":
             return GroqLLMClient(self.settings)
         return EchoLLMClient(self.settings)
+
+    def _build_pii_anonymizer(self) -> PiiAnonymizer:
+        if self.settings.pii_anonymizer_backend == "presidio":
+            try:
+                from packages.infrastructure.privacy.presidio_pii_anonymizer import (
+                    PresidioPiiAnonymizer,
+                )
+
+                return PresidioPiiAnonymizer()
+            except ModuleNotFoundError:
+                if self.settings.environment != "production":
+                    return NoopPiiAnonymizer()
+                raise
+        return NoopPiiAnonymizer()
 
     def _build_evidence_retriever(self) -> InMemoryEvidenceRetriever | object:
         if self.settings.evidence_backend == "supabase":

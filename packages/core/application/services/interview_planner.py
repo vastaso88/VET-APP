@@ -28,6 +28,20 @@ class InterviewPlanner:
         ),
     }
 
+    # Priority order for the still-missing fields (safety_critical_unknowns is
+    # handled separately below, since it flips the "missing = ask" logic: a
+    # NON-empty list there means an unresolved safety concern to chase down).
+    # This is a deterministic stand-in for the full utility formula in §13 —
+    # revisit the ordering once real usage data shows which questions actually
+    # change the final answer the most.
+    _MISSING_FIELD_PRIORITY: tuple[str, ...] = (
+        "presenting_problem",
+        "onset",
+        "observed_behaviours",
+        "known_medical_context",
+        "contexts",
+    )
+
     def next_question(self, situation: SituationModel) -> str | None:
         """Return the next clarifying question to ask, or None if nothing
         meaningful is left to ask given what is already known.
@@ -40,9 +54,9 @@ class InterviewPlanner:
         - return exactly one question, phrased naturally in Italian, using
           QUESTION_TEMPLATES (or a case-adapted variant of them).
         """
-        # TODO(human): implement the next-best-question selection heuristic
-        # described above. `situation` fields available: presenting_problem,
-        # onset, contexts, observed_behaviours, associated_signs,
-        # known_medical_context, environmental_changes, working_domains,
-        # safety_critical_unknowns — see packages/core/domain/situation/models.py.
-        raise NotImplementedError("InterviewPlanner.next_question is not implemented yet")
+        if situation.safety_critical_unknowns:
+            return self.QUESTION_TEMPLATES["safety_critical_unknowns"]
+        for field in self._MISSING_FIELD_PRIORITY:
+            if not getattr(situation, field):
+                return self.QUESTION_TEMPLATES[field]
+        return None

@@ -1,5 +1,8 @@
 # SPEC — Pipeline RAG, Ranking e Prompting
 
+> **Superseded**: dove questo documento (v1) è in contrasto con la VetGPT CORE ENGINE — MASTER
+> DIRECTIONAL SPECIFICATION v3, vale la v3. Tenuto come riferimento storico.
+
 ## Obiettivo
 Definire il comportamento end-to-end della pipeline che trasforma una domanda utente in una risposta basata su evidenze.
 

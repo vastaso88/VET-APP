@@ -7,6 +7,7 @@ from packages.core.application.ports.evidence_retriever import (
     EvidenceRetriever,
 )
 from packages.core.application.ports.llm_client import LLMClient, LLMGenerationRequest
+from packages.core.application.ports.pii_anonymizer import PiiAnonymizationRequest, PiiAnonymizer
 from packages.core.application.services.interview_planner import InterviewPlanner
 from packages.core.application.services.safety_gate import SafetyGate
 from packages.core.application.services.situation_model_builder import SituationModelBuilder
@@ -51,6 +52,7 @@ class ChatOrchestratorResult(BaseModel):
     answer: str
     mode: str
     confidence: str
+    ai_generated: bool
     sources: list[EvidenceSource] = Field(default_factory=list)
     limitations: list[str] = Field(default_factory=list)
     safety_flags: list[str] = Field(default_factory=list)
@@ -68,6 +70,7 @@ class ChatOrchestrator:
         self,
         llm_client: LLMClient,
         evidence_retriever: EvidenceRetriever,
+        pii_anonymizer: PiiAnonymizer,
         *,
         safety_gate: SafetyGate | None = None,
         situation_model_builder: SituationModelBuilder | None = None,
@@ -75,10 +78,11 @@ class ChatOrchestrator:
         enable_interview_loop: bool = False,
         coverage_weights: CoverageWeights = DEFAULT_COVERAGE_WEIGHTS,
         coverage_target: float = 0.85,
-        max_interview_questions: int = 1,
+        max_interview_questions: int = 3,
     ) -> None:
         self._llm_client = llm_client
         self._evidence_retriever = evidence_retriever
+        self._pii_anonymizer = pii_anonymizer
         self._safety_gate = safety_gate or SafetyGate()
         self._situation_model_builder = situation_model_builder or SituationModelBuilder(llm_client)
         self._interview_planner = interview_planner or InterviewPlanner()
@@ -94,12 +98,17 @@ class ChatOrchestrator:
         if safety_flags:
             return ChatOrchestratorResult(
                 answer=(
-                    "I sintomi descritti possono indicare una situazione urgente. "
-                    "Contatta subito il veterinario o un pronto soccorso veterinario e, "
-                    "nel frattempo, mantieni il pet al caldo, tranquillo e in sicurezza."
+                    f"Hai fatto bene a scrivermi subito. Quello che mi racconti di "
+                    f"{data.pet_name} è un segnale che merita una valutazione veterinaria "
+                    "immediata. Ecco cosa fare adesso:\n"
+                    "1) contatta subito il tuo veterinario o un pronto soccorso veterinario;\n"
+                    f"2) nel frattempo tieni {data.pet_name} calmo, al caldo e al sicuro;\n"
+                    "3) evita di dargli cibo, acqua in eccesso o farmaci senza indicazione "
+                    "del veterinario."
                 ),
                 mode="triage",
                 confidence="high",
+                ai_generated=False,
                 safety_flags=safety_flags,
                 limitations=["Triage prudenziale generato senza approfondimento diagnostico."],
                 recommended_action="Valutazione veterinaria immediata.",
@@ -114,27 +123,54 @@ class ChatOrchestrator:
 
         situation = data.situation_model or SituationModel()
         turns_used = data.interview_turns_used
+        coverage: float | None = None
+
         if self._enable_interview_loop:
             situation = self._situation_model_builder.update(
                 situation, message, data.conversation_history
             )
             coverage = coverage_score(situation, self._coverage_weights)
-            if coverage < self._coverage_target and turns_used < self._max_interview_questions:
-                question = self._interview_planner.next_question(situation)
-                if question is not None:
+            if coverage < self._coverage_target:
+                if turns_used < self._max_interview_questions:
+                    question = self._interview_planner.next_question(situation)
+                    if question is not None:
+                        return ChatOrchestratorResult(
+                            answer=question,
+                            mode="interview",
+                            confidence="low",
+                            ai_generated=False,
+                            provider="rule-based",
+                            model="interview-planner",
+                            state=ConversationState.NEED_MORE_INFORMATION,
+                            situation_model=situation,
+                            coverage_score=coverage,
+                            interview_turns_used=turns_used + 1,
+                        )
+                elif not situation.presenting_problem:
+                    # Question budget exhausted and we still don't even know
+                    # what the problem is: don't guess, and don't spend an
+                    # evidence-retrieval call on a case we can't describe yet.
                     return ChatOrchestratorResult(
-                        answer=question,
+                        answer=(
+                            "Non sono riuscito a capire bene la situazione con le domande "
+                            "fatte finora, e non voglio darti un'indicazione basata su "
+                            "informazioni incomplete. Puoi provare a raccontarmi di nuovo "
+                            "cosa sta succedendo, magari con altre parole, oppure "
+                            "ricominciare la conversazione da capo."
+                        ),
                         mode="interview",
                         confidence="low",
+                        ai_generated=False,
                         provider="rule-based",
                         model="interview-planner",
-                        state=ConversationState.NEED_MORE_INFORMATION,
+                        state=ConversationState.INSUFFICIENT_EVIDENCE,
                         situation_model=situation,
                         coverage_score=coverage,
-                        interview_turns_used=turns_used + 1,
+                        interview_turns_used=turns_used,
                     )
-        else:
-            coverage = None
+                # Otherwise: budget exhausted but we at least know the
+                # presenting problem — fall through to the evidence step
+                # below, which already refuses to answer without sources.
 
         result = self._generate_evidence_answer(data, message, intent)
         result.situation_model = situation
@@ -147,6 +183,8 @@ class ChatOrchestrator:
         data: ChatOrchestratorInput,
         message: str,
     ) -> ChatOrchestratorResult:
+        anonymized_message = self._anonymize_for_provider(message)
+        anonymized_pet_name = self._anonymize_for_provider(data.pet_name)
         response = self._llm_client.generate(
             LLMGenerationRequest(
                 system_prompt=(
@@ -154,9 +192,9 @@ class ChatOrchestrator:
                     "and encourage professional care when symptoms worsen."
                 ),
                 user_prompt=(
-                    f"Pet name: {data.pet_name}\n"
+                    f"Pet name: {anonymized_pet_name}\n"
                     f"Species: {data.species}\n"
-                    f"User request: {message}"
+                    f"User request: {anonymized_message}"
                 ),
             )
         )
@@ -164,6 +202,7 @@ class ChatOrchestrator:
             answer=response.content,
             mode="general",
             confidence="medium",
+            ai_generated=True,
             limitations=["General guidance without evidence retrieval."],
             provider=response.provider,
             model=response.model,
@@ -187,6 +226,7 @@ class ChatOrchestrator:
                 ),
                 mode="evidence",
                 confidence="low",
+                ai_generated=False,
                 limitations=[
                     "No source, no answer: il retrieval del prototipo non ha prodotto fonti ammissibili."
                 ],
@@ -200,6 +240,8 @@ class ChatOrchestrator:
             )
 
         evidence_block = self._format_sources_for_prompt(sources)
+        anonymized_message = self._anonymize_for_provider(message)
+        anonymized_pet_name = self._anonymize_for_provider(data.pet_name)
         response = self._llm_client.generate(
             LLMGenerationRequest(
                 system_prompt=(
@@ -207,9 +249,9 @@ class ChatOrchestrator:
                     "sources, be explicit about uncertainty, and do not invent citations."
                 ),
                 user_prompt=(
-                    f"Pet name: {data.pet_name}\n"
+                    f"Pet name: {anonymized_pet_name}\n"
                     f"Species: {data.species}\n"
-                    f"Question: {message}\n"
+                    f"Question: {anonymized_message}\n"
                     f"Evidence:\n{evidence_block}\n"
                     "Write a concise answer in the user's language, mention limits, and avoid diagnosis."
                 ),
@@ -219,12 +261,20 @@ class ChatOrchestrator:
             answer=response.content,
             mode="evidence",
             confidence=self._confidence_from_sources(sources),
+            ai_generated=True,
             sources=sources,
             limitations=self._build_limitations(sources),
             recommended_action="Consulta il veterinario per una valutazione personalizzata se i sintomi persistono.",
             provider=response.provider,
             model=response.model,
         )
+
+    def _anonymize_for_provider(self, text: str) -> str:
+        """Strip PII before text leaves the system to the external LLM
+        provider. Only applied to the outbound prompt — evidence retrieval
+        (local) and the stored conversation/reply keep the original text,
+        per the documented anonymization boundary (docs/compliance/02_pii_anonymization.md)."""
+        return self._pii_anonymizer.anonymize(PiiAnonymizationRequest(text=text)).anonymized_text
 
     @staticmethod
     def _classify_intent(message: str) -> str:

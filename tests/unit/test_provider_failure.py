@@ -10,11 +10,14 @@ from packages.core.application.services.send_chat_message import (
     SendChatMessageInput,
     SendChatMessageService,
 )
-from packages.infrastructure.llm.retrieval.in_memory_evidence_retriever import InMemoryEvidenceRetriever
+from packages.infrastructure.llm.retrieval.in_memory_evidence_retriever import (
+    InMemoryEvidenceRetriever,
+)
 from packages.infrastructure.persistence.in_memory_repositories import (
     InMemoryConversationRepository,
     InMemoryPetProfileRepository,
 )
+from packages.infrastructure.privacy.noop_pii_anonymizer import NoopPiiAnonymizer
 from packages.shared.errors.base import ProviderError
 
 
@@ -29,7 +32,9 @@ def test_send_chat_message_raises_provider_error() -> None:
         CreatePetProfileInput(owner_id="user-1", name="Milo", species="dog")
     ).pet_profile
 
-    orchestrator = ChatOrchestrator(FailingLLMClient(), InMemoryEvidenceRetriever())
+    orchestrator = ChatOrchestrator(
+        FailingLLMClient(), InMemoryEvidenceRetriever(), NoopPiiAnonymizer()
+    )
     service = SendChatMessageService(InMemoryConversationRepository(), orchestrator, pet_repository)
 
     with pytest.raises(ProviderError):

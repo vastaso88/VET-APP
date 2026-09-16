@@ -39,6 +39,7 @@ class ChatMessage {
     required this.text,
     required this.timeLabel,
     this.isRead = true,
+    this.aiGenerated = false,
   });
 
   final String id;
@@ -46,6 +47,11 @@ class ChatMessage {
   final String text;
   final String timeLabel;
   final bool isRead;
+
+  /// Whether this message's content was produced by the AI assistant, as
+  /// opposed to a rule-based/templated reply (e.g. safety triage). Drives
+  /// the AI Act transparency disclosure badge in the message bubble.
+  final bool aiGenerated;
 }
 
 class ChatConversationDetail {

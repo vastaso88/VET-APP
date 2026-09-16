@@ -8,6 +8,7 @@ from packages.core.domain.situation.models import SituationModel
 from packages.infrastructure.llm.retrieval.in_memory_evidence_retriever import (
     InMemoryEvidenceRetriever,
 )
+from packages.infrastructure.privacy.noop_pii_anonymizer import NoopPiiAnonymizer
 
 
 class ExtractionAwareLLMClient:
@@ -42,6 +43,7 @@ def test_interview_loop_asks_a_question_when_coverage_is_low() -> None:
     orchestrator = ChatOrchestrator(
         client,
         InMemoryEvidenceRetriever(),
+        NoopPiiAnonymizer(),
         interview_planner=FixedInterviewPlanner("Da quanto tempo?"),
         enable_interview_loop=True,
     )
@@ -66,6 +68,7 @@ def test_interview_loop_proceeds_to_evidence_once_coverage_target_is_met() -> No
     orchestrator = ChatOrchestrator(
         client,
         InMemoryEvidenceRetriever(),
+        NoopPiiAnonymizer(),
         interview_planner=FixedInterviewPlanner("Non dovrebbe essere chiesto"),
         enable_interview_loop=True,
     )
@@ -81,11 +84,38 @@ def test_interview_loop_proceeds_to_evidence_once_coverage_target_is_met() -> No
     assert result.coverage_score == 1.0
 
 
-def test_interview_loop_stops_after_max_questions_even_with_low_coverage() -> None:
+def test_interview_loop_suggests_restart_when_budget_exhausted_and_problem_still_unknown() -> None:
     client = ExtractionAwareLLMClient(extraction_json="{}")
     orchestrator = ChatOrchestrator(
         client,
         InMemoryEvidenceRetriever(),
+        NoopPiiAnonymizer(),
+        interview_planner=FixedInterviewPlanner("Domanda che non deve più essere fatta"),
+        enable_interview_loop=True,
+        max_interview_questions=1,
+    )
+
+    result = orchestrator.answer(
+        ChatOrchestratorInput(
+            user_message="Il mio cane tossisce",
+            species="dog",
+            pet_name="Milo",
+            interview_turns_used=1,
+        )
+    )
+
+    assert result.mode == "interview"
+    assert result.state == ConversationState.INSUFFICIENT_EVIDENCE
+    assert "ricominciare" in result.answer
+
+
+def test_interview_loop_proceeds_to_evidence_when_budget_exhausted_but_problem_is_known() -> None:
+    extraction_json = '{"presenting_problem": "tosse"}'
+    client = ExtractionAwareLLMClient(extraction_json=extraction_json)
+    orchestrator = ChatOrchestrator(
+        client,
+        InMemoryEvidenceRetriever(),
+        NoopPiiAnonymizer(),
         interview_planner=FixedInterviewPlanner("Domanda che non deve più essere fatta"),
         enable_interview_loop=True,
         max_interview_questions=1,
@@ -108,6 +138,7 @@ def test_interview_loop_is_disabled_by_default() -> None:
     orchestrator = ChatOrchestrator(
         client,
         InMemoryEvidenceRetriever(),
+        NoopPiiAnonymizer(),
         interview_planner=FixedInterviewPlanner("Non deve mai essere chiamato"),
     )
 
@@ -119,3 +150,17 @@ def test_interview_loop_is_disabled_by_default() -> None:
 
     assert result.mode == "evidence"
     assert result.coverage_score is None
+
+
+def test_interview_loop_with_the_real_planner_asks_presenting_problem_first() -> None:
+    client = ExtractionAwareLLMClient(extraction_json="{}")
+    orchestrator = ChatOrchestrator(
+        client, InMemoryEvidenceRetriever(), NoopPiiAnonymizer(), enable_interview_loop=True
+    )
+
+    result = orchestrator.answer(
+        ChatOrchestratorInput(user_message="Il mio cane tossisce", species="dog", pet_name="Milo")
+    )
+
+    assert result.mode == "interview"
+    assert "Cosa hai notato di preciso" in result.answer

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../../../design_system/atoms/ai_disclosure_badge.dart';
 import '../../../../design_system/tokens/app_colors.dart';
 import '../../../../design_system/tokens/app_radii.dart';
 import '../../../../design_system/tokens/app_spacing.dart';
@@ -19,6 +20,7 @@ class ChatMessageBubble extends StatelessWidget {
     final isUser = message.author == ChatMessageAuthor.user;
     final backgroundColor = isUser ? AppColors.primary : AppColors.surface;
     final foregroundColor = isUser ? AppColors.onPrimary : AppColors.text;
+    final showAiDisclosure = !isUser && message.aiGenerated;
 
     return Row(
       mainAxisAlignment:
@@ -41,6 +43,10 @@ class ChatMessageBubble extends StatelessWidget {
                     color: foregroundColor,
                   ),
                 ),
+                if (showAiDisclosure) ...[
+                  const SizedBox(height: AppSpacing.xs),
+                  const AiDisclosureBadge(),
+                ],
                 const SizedBox(height: AppSpacing.sm),
                 Row(
                   mainAxisSize: MainAxisSize.min,
