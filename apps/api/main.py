@@ -1,6 +1,7 @@
 from collections.abc import Callable
 
 from fastapi import FastAPI, Request, Response
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
 from apps.api.routes.auth import router as auth_router
@@ -20,6 +21,17 @@ configure_logging(settings)
 setup_telemetry(settings.enable_telemetry)
 
 app = FastAPI(title=settings.app_name)
+
+if settings.environment != "production":
+    # The Flutter web client runs on its own dev-server origin (e.g.
+    # localhost:8080) and calls this API cross-origin; browsers block that
+    # without CORS. Wide open is fine for local/dev/staging, never for prod.
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origins=["*"],
+        allow_methods=["*"],
+        allow_headers=["*"],
+    )
 
 
 @app.middleware("http")
