@@ -35,6 +35,8 @@ class SendChatMessageOutput(BaseModel):
     coverage_score: float | None = None
     medical_record_consent: bool | None = None
     awaiting_medical_record_consent: bool = False
+    awaiting_safety_clarification: bool = False
+    safety_clarification_category: str | None = None
 
 
 class SendChatMessageService:
@@ -70,6 +72,8 @@ class SendChatMessageService:
                 interview_turns_used=conversation.interview_turns_used,
                 medical_record_consent=conversation.medical_record_consent,
                 awaiting_medical_record_consent=conversation.awaiting_medical_record_consent,
+                awaiting_safety_clarification=conversation.awaiting_safety_clarification,
+                safety_clarification_category=conversation.safety_clarification_category,
             )
         )
         reply = ChatMessage(role="assistant", content=orchestrator_result.answer)
@@ -81,6 +85,12 @@ class SendChatMessageService:
         conversation.medical_record_consent = orchestrator_result.medical_record_consent
         conversation.awaiting_medical_record_consent = (
             orchestrator_result.awaiting_medical_record_consent
+        )
+        conversation.awaiting_safety_clarification = (
+            orchestrator_result.awaiting_safety_clarification
+        )
+        conversation.safety_clarification_category = (
+            orchestrator_result.safety_clarification_category
         )
 
         stored_conversation = self._repository.save(conversation)
@@ -100,6 +110,8 @@ class SendChatMessageService:
             coverage_score=orchestrator_result.coverage_score,
             medical_record_consent=orchestrator_result.medical_record_consent,
             awaiting_medical_record_consent=orchestrator_result.awaiting_medical_record_consent,
+            awaiting_safety_clarification=orchestrator_result.awaiting_safety_clarification,
+            safety_clarification_category=orchestrator_result.safety_clarification_category,
         )
 
     def _load_or_create_conversation(self, data: SendChatMessageInput) -> Conversation:
@@ -108,4 +120,6 @@ class SendChatMessageService:
             if stored:
                 return stored
             raise ValidationError("conversation not found")
-        return Conversation(owner_id=data.owner_id, pet_id=data.pet_id, title=f"Chat for {data.pet_id}")
+        return Conversation(
+            owner_id=data.owner_id, pet_id=data.pet_id, title=f"Chat for {data.pet_id}"
+        )

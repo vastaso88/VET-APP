@@ -21,7 +21,11 @@ create table if not exists public.conversations (
     interview_turns_used integer not null default 0,
     -- VetGPT Milestone 2 (medical record access consent) — additive, nullable.
     medical_record_consent boolean,
-    awaiting_medical_record_consent boolean not null default false
+    awaiting_medical_record_consent boolean not null default false,
+    -- Safety triage clarification (brief, category-specific follow-up before
+    -- escalating a red-flag message) — additive, nullable.
+    awaiting_safety_clarification boolean not null default false,
+    safety_clarification_category text
 );
 
 -- VetGPT Milestone 2: summaries of a pet's clinical documents, consulted by

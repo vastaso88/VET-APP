@@ -20,6 +20,16 @@ from packages.core.domain.conversation.models import ChatMessage
 from packages.core.domain.conversation.states import ConversationState
 from packages.core.domain.knowledge.answer_validation import validate_answer
 from packages.core.domain.knowledge.models import EvidenceSource
+from packages.core.domain.safety.triage_clarification import (
+    CLARIFYING_QUESTIONS,
+    requires_immediate_escalation,
+)
+from packages.core.domain.safety.triage_clarification import (
+    categorize as categorize_safety_flags,
+)
+from packages.core.domain.safety.triage_clarification import (
+    classify_severity as classify_safety_severity,
+)
 from packages.core.domain.situation.coverage import (
     DEFAULT_COVERAGE_WEIGHTS,
     CoverageWeights,
@@ -62,6 +72,8 @@ class ChatOrchestratorInput(BaseModel):
     interview_turns_used: int = 0
     medical_record_consent: bool | None = None
     awaiting_medical_record_consent: bool = False
+    awaiting_safety_clarification: bool = False
+    safety_clarification_category: str | None = None
 
 
 class ChatOrchestratorResult(BaseModel):
@@ -81,6 +93,8 @@ class ChatOrchestratorResult(BaseModel):
     interview_turns_used: int = 0
     medical_record_consent: bool | None = None
     awaiting_medical_record_consent: bool = False
+    awaiting_safety_clarification: bool = False
+    safety_clarification_category: str | None = None
 
 
 class ChatOrchestrator:
@@ -120,28 +134,39 @@ class ChatOrchestrator:
     def answer(self, data: ChatOrchestratorInput) -> ChatOrchestratorResult:
         message = data.user_message.strip()
         lowered = message.lower()
+
+        if data.awaiting_safety_clarification and data.safety_clarification_category:
+            return self._resolve_safety_clarification(
+                data.pet_name, data.safety_clarification_category, message
+            )
+
         safety_flags = self._safety_gate.evaluate(lowered)
         if safety_flags:
-            return ChatOrchestratorResult(
-                answer=(
-                    f"Hai fatto bene a scrivermi subito. Quello che mi racconti di "
-                    f"{data.pet_name} è un segnale che merita una valutazione veterinaria "
-                    "immediata. Ecco cosa fare adesso:\n"
-                    "1) contatta subito il tuo veterinario o un pronto soccorso veterinario;\n"
-                    f"2) nel frattempo tieni {data.pet_name} calmo, al caldo e al sicuro;\n"
-                    "3) evita di dargli cibo, acqua in eccesso o farmaci senza indicazione "
-                    "del veterinario."
-                ),
-                mode="triage",
-                confidence="high",
-                ai_generated=False,
-                safety_flags=safety_flags,
-                limitations=["Triage prudenziale generato senza approfondimento diagnostico."],
-                recommended_action="Valutazione veterinaria immediata.",
-                provider="rule-based",
-                model="safety-triage-guard",
-                state=ConversationState.POSSIBLE_URGENT_CASE,
-            )
+            if requires_immediate_escalation(message):
+                # Already unambiguous and severe — asking a clarifying
+                # question here would only delay real emergency care.
+                return self._urgent_triage_result(data.pet_name, safety_flags)
+
+            category = categorize_safety_flags(safety_flags)
+            question = CLARIFYING_QUESTIONS.get(category) if category else None
+            if question is not None:
+                return ChatOrchestratorResult(
+                    answer=question,
+                    mode="safety_clarification",
+                    confidence="low",
+                    ai_generated=False,
+                    safety_flags=safety_flags,
+                    provider="rule-based",
+                    model="safety-clarification-gate",
+                    state=ConversationState.NEED_MORE_INFORMATION,
+                    awaiting_safety_clarification=True,
+                    safety_clarification_category=category,
+                )
+            # No mapped category for these keywords (shouldn't happen given
+            # RED_FLAG_CATEGORIES covers every SafetyGate keyword) — fail
+            # safe by escalating directly rather than asking a question we
+            # don't have.
+            return self._urgent_triage_result(data.pet_name, safety_flags)
 
         situation = data.situation_model or SituationModel()
         turns_used = data.interview_turns_used
@@ -249,6 +274,66 @@ class ChatOrchestrator:
         result.interview_turns_used = turns_used
         result.medical_record_consent = medical_record_consent
         return result
+
+    @staticmethod
+    def _urgent_triage_result(pet_name: str, safety_flags: list[str]) -> ChatOrchestratorResult:
+        return ChatOrchestratorResult(
+            answer=(
+                f"Hai fatto bene a scrivermi subito. Quello che mi racconti di "
+                f"{pet_name} è un segnale che merita una valutazione veterinaria "
+                "immediata. Ecco cosa fare adesso:\n"
+                "1) contatta subito il tuo veterinario o un pronto soccorso veterinario;\n"
+                f"2) nel frattempo tieni {pet_name} calmo, al caldo e al sicuro;\n"
+                "3) evita di dargli cibo, acqua in eccesso o farmaci senza indicazione "
+                "del veterinario."
+            ),
+            mode="triage",
+            confidence="high",
+            ai_generated=False,
+            safety_flags=safety_flags,
+            limitations=["Triage prudenziale generato senza approfondimento diagnostico."],
+            recommended_action="Valutazione veterinaria immediata.",
+            provider="rule-based",
+            model="safety-triage-guard",
+            state=ConversationState.POSSIBLE_URGENT_CASE,
+        )
+
+    def _resolve_safety_clarification(
+        self, pet_name: str, category: str, reply: str
+    ) -> ChatOrchestratorResult:
+        """Handle the reply to a pending safety clarification (spec v3 §9).
+
+        Fail closed: anything other than a clear, specific, benign
+        explanation for THIS category — including an unclear or
+        off-topic reply — escalates exactly as if no clarification had
+        been asked. A "moderate" outcome never says "nothing to worry
+        about": it still asks the owner to watch closely and call the vet
+        if anything changes, per the app's prudential line.
+        """
+        severity = classify_safety_severity(category, reply)
+        if severity == "high":
+            return self._urgent_triage_result(pet_name, [category])
+
+        return ChatOrchestratorResult(
+            answer=(
+                f"Grazie per il dettaglio. Quello che descrivi per {pet_name} sembra "
+                "spesso legato a uno sforzo, al caldo o all'emozione del momento, e di "
+                "solito si risolve da solo in poco tempo. Nel frattempo: tienilo "
+                "tranquillo, offrigli acqua fresca e osservalo per 15-20 minuti. "
+                "Se non migliora, se peggiora anche di poco, o se hai anche solo un "
+                "dubbio, contatta subito il veterinario — meglio una chiamata in più "
+                "che rischiare."
+            ),
+            mode="safety_clarification_resolved",
+            confidence="medium",
+            ai_generated=False,
+            provider="rule-based",
+            model="safety-clarification-gate",
+            recommended_action=(
+                "Osservazione ravvicinata; contattare il veterinario se non migliora "
+                "o in caso di dubbio."
+            ),
+        )
 
     def _retrieve_medical_record_summary(self, pet_id: str) -> str | None:
         if self._medical_record_context_retriever is None or not pet_id:
@@ -377,7 +462,8 @@ class ChatOrchestrator:
                 confidence="low",
                 ai_generated=False,
                 limitations=[
-                    "No source, no answer: il retrieval del prototipo non ha prodotto fonti ammissibili."
+                    "No source, no answer: il retrieval del prototipo non ha prodotto fonti "
+                    "ammissibili."
                 ],
                 recommended_action=(
                     "Se il sintomo persiste, peggiora o coinvolge dolore, appetito o energia, "
@@ -406,7 +492,8 @@ class ChatOrchestrator:
                     f"Species: {data.species}\n"
                     f"Question: {anonymized_message}\n"
                     f"Evidence:\n{evidence_block}\n"
-                    "Write a concise answer in the user's language, mention limits, and avoid diagnosis."
+                    "Write a concise answer in the user's language, mention limits, and avoid "
+                    "diagnosis."
                 ),
             )
         )
@@ -441,7 +528,10 @@ class ChatOrchestrator:
             ai_generated=True,
             sources=sources,
             limitations=limitations,
-            recommended_action="Consulta il veterinario per una valutazione personalizzata se i sintomi persistono.",
+            recommended_action=(
+                "Consulta il veterinario per una valutazione personalizzata se i sintomi "
+                "persistono."
+            ),
             provider=response.provider,
             model=response.model,
         )
@@ -496,11 +586,9 @@ class ChatOrchestrator:
         lines: list[str] = []
         for index, source in enumerate(sources, start=1):
             lines.append(
-                (
-                    f"[{index}] {source.title} | {source.journal or 'Unknown journal'} | "
-                    f"{source.year or 'n.d.'} | Tier {source.tier}\n"
-                    f"Snippet: {source.snippet or 'No snippet available.'}"
-                )
+                f"[{index}] {source.title} | {source.journal or 'Unknown journal'} | "
+                f"{source.year or 'n.d.'} | Tier {source.tier}\n"
+                f"Snippet: {source.snippet or 'No snippet available.'}"
             )
         return "\n".join(lines)
 
@@ -520,7 +608,9 @@ class ChatOrchestrator:
     def _build_limitations(sources: list[EvidenceSource]) -> list[str]:
         limitations: list[str] = []
         if not any(source.tier == "A" for source in sources):
-            limitations.append("Le fonti recuperate non includono guideline o systematic review Tier A.")
+            limitations.append(
+                "Le fonti recuperate non includono guideline o systematic review Tier A."
+            )
         if any(source.species == "other" for source in sources):
             limitations.append("Alcune fonti non sono specie-specifiche.")
         if all(source.access_depth == "C" for source in sources):
@@ -528,5 +618,7 @@ class ChatOrchestrator:
                 "Per queste fonti abbiamo solo titolo e abstract, non il testo completo."
             )
         if not limitations:
-            limitations.append("Le evidenze restano informative e non sostituiscono una visita veterinaria.")
+            limitations.append(
+                "Le evidenze restano informative e non sostituiscono una visita veterinaria."
+            )
         return limitations

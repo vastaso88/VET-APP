@@ -39,7 +39,12 @@ class EvaluationRunner:
             scenario_id=scenario.id,
             category=scenario.category,
             is_true_emergency=scenario.is_true_emergency,
-            predicted_emergency=result.mode == "triage",
+            # "safety_clarification" counts as detection too: the gate
+            # correctly flagged a possible red flag and chose to verify
+            # with one quick question rather than escalate blindly (spec
+            # v3 §9) — recall measures whether we caught it, not whether
+            # we skipped straight to the scariest message.
+            predicted_emergency=result.mode in ("triage", "safety_clarification"),
             mode=result.mode,
             state=result.state,
             coverage_score=result.coverage_score,

@@ -26,3 +26,5 @@ class Conversation(BaseModel):
     interview_turns_used: int = 0
     medical_record_consent: bool | None = None
     awaiting_medical_record_consent: bool = False
+    awaiting_safety_clarification: bool = False
+    safety_clarification_category: str | None = None
