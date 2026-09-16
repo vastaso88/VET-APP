@@ -33,6 +33,9 @@ class Settings(BaseSettings):
     llm_timeout_seconds: int = Field(default=30, alias="LLM_TIMEOUT_SECONDS")
     log_level: str = Field(default="INFO", alias="LOG_LEVEL")
     enable_telemetry: bool = Field(default=False, alias="ENABLE_TELEMETRY")
+    enable_interview_loop: bool = Field(default=False, alias="ENABLE_INTERVIEW_LOOP")
+    situation_coverage_target: float = Field(default=0.85, alias="SITUATION_COVERAGE_TARGET")
+    interview_max_questions: int = Field(default=1, alias="INTERVIEW_MAX_QUESTIONS")
 
     @model_validator(mode="after")
     def validate_backend_configuration(self) -> "Settings":

@@ -13,7 +13,12 @@ create table if not exists public.conversations (
     owner_id text not null,
     pet_id text not null references public.pet_profiles(id) on delete cascade,
     title text not null,
-    messages jsonb not null default '[]'::jsonb
+    messages jsonb not null default '[]'::jsonb,
+    -- VetGPT Milestone 1 (Situation Model / Interview / Coverage) — additive, nullable.
+    situation_model jsonb,
+    coverage_score double precision,
+    state text not null default 'NEED_MORE_INFORMATION',
+    interview_turns_used integer not null default 0
 );
 
 create table if not exists public.reminders (

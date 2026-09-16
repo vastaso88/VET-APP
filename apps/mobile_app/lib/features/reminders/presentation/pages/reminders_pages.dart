@@ -283,6 +283,7 @@ class _ReminderEditPageState extends State<ReminderEditPage> {
       badge: widget.reminder?.badge ?? 'Aggiornato',
       note: _noteController.text.trim(),
       schedule: _scheduleController.text.trim(),
+      dueAt: widget.reminder?.dueAt,
     );
 
     unawaited(_repository.saveReminder(reminder));

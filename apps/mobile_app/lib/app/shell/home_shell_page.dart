@@ -17,10 +17,15 @@ class HomeShellPage extends StatefulWidget {
 class _HomeShellPageState extends State<HomeShellPage> {
   late int _currentIndex = widget.initialIndex;
 
-  late final List<_ShellTabNavigator> _pages = const [
-    _ShellTabNavigator(rootPage: HomeDashboardPage()),
-    _ShellTabNavigator(rootPage: PetsListPage()),
-    _ShellTabNavigator(rootPage: SettingsPage()),
+  final List<GlobalKey<NavigatorState>> _navigatorKeys = List.generate(
+    3,
+    (_) => GlobalKey<NavigatorState>(),
+  );
+
+  late final List<_ShellTabNavigator> _pages = [
+    _ShellTabNavigator(navigatorKey: _navigatorKeys[0], rootPage: const HomeDashboardPage()),
+    _ShellTabNavigator(navigatorKey: _navigatorKeys[1], rootPage: const PetsListPage()),
+    _ShellTabNavigator(navigatorKey: _navigatorKeys[2], rootPage: const SettingsPage()),
   ];
 
   @override
@@ -121,6 +126,11 @@ class _HomeShellPageState extends State<HomeShellPage> {
   }
 
   void _handleDestinationSelected(int value) {
+    // Always reset the tapped tab's own navigation stack to its root page,
+    // whether it's already selected (re-tap resets it) or we're switching
+    // into it from elsewhere (so stale nested navigation, e.g. a pet detail
+    // page left open, never lingers behind the bottom nav / rail button).
+    _navigatorKeys[value].currentState?.popUntil((route) => route.isFirst);
     setState(() {
       _currentIndex = value;
     });
@@ -163,27 +173,22 @@ class _HomeShellPageState extends State<HomeShellPage> {
       ];
 }
 
-class _ShellTabNavigator extends StatefulWidget {
+class _ShellTabNavigator extends StatelessWidget {
   const _ShellTabNavigator({
+    required this.navigatorKey,
     required this.rootPage,
   });
 
+  final GlobalKey<NavigatorState> navigatorKey;
   final Widget rootPage;
-
-  @override
-  State<_ShellTabNavigator> createState() => _ShellTabNavigatorState();
-}
-
-class _ShellTabNavigatorState extends State<_ShellTabNavigator> {
-  final GlobalKey<NavigatorState> _navigatorKey = GlobalKey<NavigatorState>();
 
   @override
   Widget build(BuildContext context) {
     return Navigator(
-      key: _navigatorKey,
+      key: navigatorKey,
       onGenerateRoute: (_) {
         return MaterialPageRoute<void>(
-          builder: (_) => widget.rootPage,
+          builder: (_) => rootPage,
         );
       },
     );
@@ -247,7 +252,7 @@ class _RailFooter extends StatelessWidget {
     return Align(
       alignment: Alignment.centerLeft,
       child: Text(
-        'Warm clinical workspace',
+        'Spazio clinico caldo',
         style: Theme.of(context).textTheme.bodySmall?.copyWith(
               color: const Color(0xFFCEE0D8),
             ),

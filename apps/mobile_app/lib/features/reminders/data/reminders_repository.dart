@@ -12,6 +12,7 @@ class ReminderEntry {
     required this.badge,
     required this.note,
     required this.schedule,
+    this.dueAt,
   });
 
   final String id;
@@ -22,6 +23,10 @@ class ReminderEntry {
   final String badge;
   final String note;
   final String schedule;
+
+  /// Real due date, used for date-based views (e.g. the Home agenda).
+  /// Nullable because remote reminders may not have a `due_at` column yet.
+  final DateTime? dueAt;
 }
 
 class RemindersRepository {
@@ -62,6 +67,7 @@ class RemindersRepository {
       'badge': reminder.badge,
       'note': reminder.note,
       'schedule': reminder.schedule,
+      'due_at': reminder.dueAt?.toIso8601String(),
     });
   }
 
@@ -85,6 +91,7 @@ class RemindersRepository {
               badge: (row['badge'] ?? 'Sincronizzato').toString(),
               note: (row['note'] ?? 'Fonte Supabase').toString(),
               schedule: (row['schedule'] ?? 'Una volta').toString(),
+              dueAt: DateTime.tryParse((row['due_at'] ?? '').toString()),
             ),
           )
           .toList(growable: false);
@@ -110,7 +117,7 @@ class RemindersRepository {
     }
   }
 
-  static const List<ReminderEntry> _previewReminders = [
+  static final List<ReminderEntry> _previewReminders = [
     ReminderEntry(
       id: 'moka-antiparassitario',
       petName: 'Moka',
@@ -120,6 +127,7 @@ class RemindersRepository {
       badge: 'Prioritario',
       note: 'Notifica gia pronta per Francesco e collegata al profilo di Moka.',
       schedule: 'Ricorrente ogni 30 giorni',
+      dueAt: DateTime.now().add(const Duration(days: 3)),
     ),
     ReminderEntry(
       id: 'moka-richiamo-vaccinale',
@@ -130,6 +138,7 @@ class RemindersRepository {
       badge: 'Programmato',
       note: 'Documento gia caricato in cartella per la prossima visita.',
       schedule: 'Ricorrente ogni 12 mesi',
+      dueAt: DateTime.now().add(const Duration(days: 12)),
     ),
     ReminderEntry(
       id: 'moka-controllo-peso',
@@ -140,6 +149,7 @@ class RemindersRepository {
       badge: 'Vicino',
       note: 'Rivedi andamento, peso e note cliniche prima della chiamata.',
       schedule: 'Promemoria una tantum',
+      dueAt: DateTime.now().add(const Duration(days: 1)),
     ),
     ReminderEntry(
       id: 'oliver-controllo-dentale',
@@ -150,6 +160,7 @@ class RemindersRepository {
       badge: 'Programmato',
       note: 'Porta il libretto sanitario e conferma la disponibilita con la clinica.',
       schedule: 'Promemoria una tantum',
+      dueAt: DateTime.now().add(const Duration(days: 7)),
     ),
     ReminderEntry(
       id: 'rex-controllo-uvb',
@@ -160,6 +171,7 @@ class RemindersRepository {
       badge: 'Prioritario',
       note: 'Verifica intensita della lampada UVB e temperatura del terrario.',
       schedule: 'Ricorrente ogni 6 mesi',
+      dueAt: DateTime.now().add(const Duration(days: 3)),
     ),
     ReminderEntry(
       id: 'pico-becco-unghie',
@@ -170,6 +182,7 @@ class RemindersRepository {
       badge: 'Programmato',
       note: 'Controllo di routine su becco, unghie e piumaggio.',
       schedule: 'Promemoria una tantum',
+      dueAt: DateTime.now().add(const Duration(days: 30)),
     ),
   ];
 }

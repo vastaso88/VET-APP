@@ -7,24 +7,18 @@ from packages.core.application.ports.evidence_retriever import (
     EvidenceRetriever,
 )
 from packages.core.application.ports.llm_client import LLMClient, LLMGenerationRequest
+from packages.core.application.services.interview_planner import InterviewPlanner
+from packages.core.application.services.safety_gate import SafetyGate
+from packages.core.application.services.situation_model_builder import SituationModelBuilder
 from packages.core.domain.conversation.models import ChatMessage
+from packages.core.domain.conversation.states import ConversationState
 from packages.core.domain.knowledge.models import EvidenceSource
-
-URGENT_RED_FLAG_KEYWORDS = {
-    "convuls",
-    "seizure",
-    "non respira",
-    "respira male",
-    "dispnea",
-    "emorrag",
-    "sanguina",
-    "trauma",
-    "collasso",
-    "collapse",
-    "anuria",
-    "non urina",
-    "incidente",
-}
+from packages.core.domain.situation.coverage import (
+    DEFAULT_COVERAGE_WEIGHTS,
+    CoverageWeights,
+    coverage_score,
+)
+from packages.core.domain.situation.models import SituationModel
 
 EVIDENCE_KEYWORDS: dict[str, tuple[str, ...]] = {
     "clinical_question": (
@@ -49,6 +43,8 @@ class ChatOrchestratorInput(BaseModel):
     species: str
     pet_name: str
     conversation_history: list[ChatMessage] = Field(default_factory=list)
+    situation_model: SituationModel | None = None
+    interview_turns_used: int = 0
 
 
 class ChatOrchestratorResult(BaseModel):
@@ -61,17 +57,40 @@ class ChatOrchestratorResult(BaseModel):
     recommended_action: str | None = None
     provider: str
     model: str
+    state: ConversationState = ConversationState.ADEQUATE_EVIDENCE_FOUND
+    situation_model: SituationModel | None = None
+    coverage_score: float | None = None
+    interview_turns_used: int = 0
 
 
 class ChatOrchestrator:
-    def __init__(self, llm_client: LLMClient, evidence_retriever: EvidenceRetriever) -> None:
+    def __init__(
+        self,
+        llm_client: LLMClient,
+        evidence_retriever: EvidenceRetriever,
+        *,
+        safety_gate: SafetyGate | None = None,
+        situation_model_builder: SituationModelBuilder | None = None,
+        interview_planner: InterviewPlanner | None = None,
+        enable_interview_loop: bool = False,
+        coverage_weights: CoverageWeights = DEFAULT_COVERAGE_WEIGHTS,
+        coverage_target: float = 0.85,
+        max_interview_questions: int = 1,
+    ) -> None:
         self._llm_client = llm_client
         self._evidence_retriever = evidence_retriever
+        self._safety_gate = safety_gate or SafetyGate()
+        self._situation_model_builder = situation_model_builder or SituationModelBuilder(llm_client)
+        self._interview_planner = interview_planner or InterviewPlanner()
+        self._enable_interview_loop = enable_interview_loop
+        self._coverage_weights = coverage_weights
+        self._coverage_target = coverage_target
+        self._max_interview_questions = max_interview_questions
 
     def answer(self, data: ChatOrchestratorInput) -> ChatOrchestratorResult:
         message = data.user_message.strip()
         lowered = message.lower()
-        safety_flags = self._detect_urgent_red_flags(lowered)
+        safety_flags = self._safety_gate.evaluate(lowered)
         if safety_flags:
             return ChatOrchestratorResult(
                 answer=(
@@ -86,12 +105,42 @@ class ChatOrchestrator:
                 recommended_action="Valutazione veterinaria immediata.",
                 provider="rule-based",
                 model="safety-triage-guard",
+                state=ConversationState.POSSIBLE_URGENT_CASE,
             )
 
         intent = self._classify_intent(lowered)
         if intent == "general_info":
             return self._generate_general_answer(data, message)
-        return self._generate_evidence_answer(data, message, intent)
+
+        situation = data.situation_model or SituationModel()
+        turns_used = data.interview_turns_used
+        if self._enable_interview_loop:
+            situation = self._situation_model_builder.update(
+                situation, message, data.conversation_history
+            )
+            coverage = coverage_score(situation, self._coverage_weights)
+            if coverage < self._coverage_target and turns_used < self._max_interview_questions:
+                question = self._interview_planner.next_question(situation)
+                if question is not None:
+                    return ChatOrchestratorResult(
+                        answer=question,
+                        mode="interview",
+                        confidence="low",
+                        provider="rule-based",
+                        model="interview-planner",
+                        state=ConversationState.NEED_MORE_INFORMATION,
+                        situation_model=situation,
+                        coverage_score=coverage,
+                        interview_turns_used=turns_used + 1,
+                    )
+        else:
+            coverage = None
+
+        result = self._generate_evidence_answer(data, message, intent)
+        result.situation_model = situation
+        result.coverage_score = coverage
+        result.interview_turns_used = turns_used
+        return result
 
     def _generate_general_answer(
         self,
@@ -147,6 +196,7 @@ class ChatOrchestrator:
                 ),
                 provider="rule-based",
                 model="evidence-guard",
+                state=ConversationState.INSUFFICIENT_EVIDENCE,
             )
 
         evidence_block = self._format_sources_for_prompt(sources)
@@ -175,10 +225,6 @@ class ChatOrchestrator:
             provider=response.provider,
             model=response.model,
         )
-
-    @staticmethod
-    def _detect_urgent_red_flags(message: str) -> list[str]:
-        return [keyword for keyword in URGENT_RED_FLAG_KEYWORDS if keyword in message]
 
     @staticmethod
     def _classify_intent(message: str) -> str:

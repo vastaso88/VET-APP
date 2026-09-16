@@ -7,6 +7,7 @@ from packages.core.application.services.chat_orchestrator import (
     ChatOrchestratorInput,
 )
 from packages.core.domain.conversation.models import ChatMessage, Conversation
+from packages.core.domain.conversation.states import ConversationState
 from packages.core.domain.knowledge.models import EvidenceSource
 from packages.shared.errors.base import ValidationError
 
@@ -29,6 +30,8 @@ class SendChatMessageOutput(BaseModel):
     recommended_action: str | None = None
     provider: str
     model: str
+    state: ConversationState
+    coverage_score: float | None = None
 
 
 class SendChatMessageService:
@@ -59,10 +62,16 @@ class SendChatMessageService:
                 species=pet_profile.species,
                 pet_name=pet_profile.name,
                 conversation_history=conversation.messages[:-1],
+                situation_model=conversation.situation_model,
+                interview_turns_used=conversation.interview_turns_used,
             )
         )
         reply = ChatMessage(role="assistant", content=orchestrator_result.answer)
         conversation.messages.append(reply)
+        conversation.situation_model = orchestrator_result.situation_model
+        conversation.coverage_score = orchestrator_result.coverage_score
+        conversation.state = orchestrator_result.state
+        conversation.interview_turns_used = orchestrator_result.interview_turns_used
 
         stored_conversation = self._repository.save(conversation)
         return SendChatMessageOutput(
@@ -76,6 +85,8 @@ class SendChatMessageService:
             recommended_action=orchestrator_result.recommended_action,
             provider=orchestrator_result.provider,
             model=orchestrator_result.model,
+            state=orchestrator_result.state,
+            coverage_score=orchestrator_result.coverage_score,
         )
 
     def _load_or_create_conversation(self, data: SendChatMessageInput) -> Conversation:

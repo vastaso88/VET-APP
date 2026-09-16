@@ -5,10 +5,13 @@ from packages.core.application.services.chat_orchestrator import ChatOrchestrato
 from packages.core.application.services.create_pet_profile import CreatePetProfileService
 from packages.core.application.services.create_reminder import CreateReminderService
 from packages.core.application.services.get_pet_profile import GetPetProfileService
+from packages.core.application.services.interview_planner import InterviewPlanner
 from packages.core.application.services.list_conversations import ListConversationsService
 from packages.core.application.services.list_pet_profiles import ListPetProfilesService
 from packages.core.application.services.list_reminders import ListRemindersService
+from packages.core.application.services.safety_gate import SafetyGate
 from packages.core.application.services.send_chat_message import SendChatMessageService
+from packages.core.application.services.situation_model_builder import SituationModelBuilder
 from packages.core.application.services.update_pet_profile import UpdatePetProfileService
 from packages.infrastructure.auth.bootstrap_auth_provider import BootstrapAuthProvider
 from packages.infrastructure.llm.providers.echo_llm_client import EchoLLMClient
@@ -35,7 +38,16 @@ class ApplicationContainer:
         ) = self._build_repositories()
         self.llm_client = self._build_llm_client()
         self.evidence_retriever = self._build_evidence_retriever()
-        self.chat_orchestrator = ChatOrchestrator(self.llm_client, self.evidence_retriever)
+        self.chat_orchestrator = ChatOrchestrator(
+            self.llm_client,
+            self.evidence_retriever,
+            safety_gate=SafetyGate(),
+            situation_model_builder=SituationModelBuilder(self.llm_client),
+            interview_planner=InterviewPlanner(),
+            enable_interview_loop=settings.enable_interview_loop,
+            coverage_target=settings.situation_coverage_target,
+            max_interview_questions=settings.interview_max_questions,
+        )
 
     def create_pet_profile_service(self) -> CreatePetProfileService:
         return CreatePetProfileService(self.pet_profile_repository)
