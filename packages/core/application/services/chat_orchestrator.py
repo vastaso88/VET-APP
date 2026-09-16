@@ -9,6 +9,7 @@ from packages.core.application.ports.evidence_retriever import (
 from packages.core.application.ports.llm_client import LLMClient, LLMGenerationRequest
 from packages.core.application.ports.pii_anonymizer import PiiAnonymizationRequest, PiiAnonymizer
 from packages.core.application.services.consent_interpreter import ConsentInterpreter
+from packages.core.application.services.evidence_quality_engine import EvidenceQualityEngine
 from packages.core.application.services.interview_planner import InterviewPlanner
 from packages.core.application.services.medical_record_context_retriever import (
     MedicalRecordContextRetriever,
@@ -24,6 +25,13 @@ from packages.core.domain.situation.coverage import (
     coverage_score,
 )
 from packages.core.domain.situation.models import SituationModel
+
+# Fetch a wider candidate pool than we'll actually show, so the quality
+# engine has real diversity to rank and select from (spec v3 §3-5) instead
+# of just re-sorting whatever the retriever's own default cap happened to
+# return.
+EVIDENCE_POOL_MULTIPLIER = 3
+EVIDENCE_MIN_POOL_SIZE = 8
 
 EVIDENCE_KEYWORDS: dict[str, tuple[str, ...]] = {
     "clinical_question": (
@@ -86,6 +94,7 @@ class ChatOrchestrator:
         interview_planner: InterviewPlanner | None = None,
         medical_record_context_retriever: MedicalRecordContextRetriever | None = None,
         consent_interpreter: ConsentInterpreter | None = None,
+        evidence_quality_engine: EvidenceQualityEngine | None = None,
         enable_interview_loop: bool = False,
         coverage_weights: CoverageWeights = DEFAULT_COVERAGE_WEIGHTS,
         coverage_target: float = 0.85,
@@ -101,6 +110,7 @@ class ChatOrchestrator:
         # None simply means this deployment never offers record access.
         self._medical_record_context_retriever = medical_record_context_retriever
         self._consent_interpreter = consent_interpreter or ConsentInterpreter()
+        self._evidence_quality_engine = evidence_quality_engine or EvidenceQualityEngine()
         self._enable_interview_loop = enable_interview_loop
         self._coverage_weights = coverage_weights
         self._coverage_target = coverage_target
@@ -333,9 +343,19 @@ class ChatOrchestrator:
         message: str,
         intent: str,
     ) -> ChatOrchestratorResult:
-        sources = self._evidence_retriever.retrieve(
-            EvidenceRetrievalRequest(query=message, species=data.species, intent=intent)
+        final_request = EvidenceRetrievalRequest(query=message, species=data.species, intent=intent)
+        pool_size = max(
+            final_request.max_results * EVIDENCE_POOL_MULTIPLIER, EVIDENCE_MIN_POOL_SIZE
         )
+        pool_request = final_request.model_copy(update={"max_results": pool_size})
+        raw_sources = self._evidence_retriever.retrieve(pool_request)
+        ranked = self._evidence_quality_engine.rank_and_select(
+            raw_sources,
+            species=data.species,
+            intent=intent,
+            max_results=final_request.max_results,
+        )
+        sources = ranked.sources
         if not sources:
             return ChatOrchestratorResult(
                 answer=(
@@ -379,7 +399,7 @@ class ChatOrchestrator:
         return ChatOrchestratorResult(
             answer=response.content,
             mode="evidence",
-            confidence=self._confidence_from_sources(sources),
+            confidence=self._confidence_from_score(ranked.top_score),
             ai_generated=True,
             sources=sources,
             limitations=self._build_limitations(sources),
@@ -416,10 +436,14 @@ class ChatOrchestrator:
         return "\n".join(lines)
 
     @staticmethod
-    def _confidence_from_sources(sources: list[EvidenceSource]) -> str:
-        if any(source.tier == "A" for source in sources):
+    def _confidence_from_score(top_score: float) -> str:
+        """Confidence now reflects the EvidenceQualityEngine's composite
+        score of the best-ranked source (methodology + relevance + species
+        match + recency + access depth) rather than just "is there a Tier A
+        source and are there at least two of them" (spec v3 §24-25)."""
+        if top_score >= 0.75:
             return "high"
-        if len(sources) >= 2:
+        if top_score >= 0.5:
             return "medium"
         return "low"
 
@@ -430,6 +454,10 @@ class ChatOrchestrator:
             limitations.append("Le fonti recuperate non includono guideline o systematic review Tier A.")
         if any(source.species == "other" for source in sources):
             limitations.append("Alcune fonti non sono specie-specifiche.")
+        if all(source.access_depth == "C" for source in sources):
+            limitations.append(
+                "Per queste fonti abbiamo solo titolo e abstract, non il testo completo."
+            )
         if not limitations:
             limitations.append("Le evidenze restano informative e non sostituiscono una visita veterinaria.")
         return limitations

@@ -84,6 +84,16 @@ def _tier_from_pub_types(pub_types: list[str]) -> str:
     return "C"
 
 
+def _access_depth_from_item(item: dict, tier: str) -> str:
+    """Spec v3 §21: a distinct axis from `tier` — how much of the source we
+    can actually see, not how methodologically strong it is."""
+    if tier in ("A", "B"):
+        return "B"  # guideline/consensus/systematic-review-grade document
+    if item.get("isOpenAccess") == "Y" or item.get("inEPMC") == "Y":
+        return "A"  # full text legally accessible
+    return "C"  # metadata/abstract only — the common case for paywalled work
+
+
 def _domain_from_intent(intent: str) -> str:
     return {
         "clinical_question": "clinical",
@@ -175,6 +185,7 @@ class EuropePmcEvidenceRetriever(EvidenceRetriever):
         journal_title = (
             (item.get("journalInfo") or {}).get("journal") or {}
         ).get("title")
+        access_depth = _access_depth_from_item(item, tier)
         return EvidenceSource(
             title=title,
             journal=journal_title,
@@ -182,6 +193,7 @@ class EuropePmcEvidenceRetriever(EvidenceRetriever):
             doi=item.get("doi"),
             pmid=item.get("pmid"),
             tier=tier,
+            access_depth=access_depth,
             clinical_domain=_domain_from_intent(request_data.intent),
             species=request_data.species,
             snippet=(item.get("abstractText") or "")[:400] or None,
