@@ -61,6 +61,7 @@ class ChatConversationDetail {
     required this.petName,
     required this.statusLabel,
     required this.messages,
+    this.backendConversationId,
   });
 
   final String id;
@@ -69,12 +70,18 @@ class ChatConversationDetail {
   final String statusLabel;
   final List<ChatMessage> messages;
 
+  /// Id of the matching conversation on the real backend, once the first
+  /// message of this (locally-created) thread has actually been sent there.
+  /// Null means this thread has never talked to the backend yet.
+  final String? backendConversationId;
+
   ChatConversationDetail copyWith({
     String? id,
     String? title,
     String? petName,
     String? statusLabel,
     List<ChatMessage>? messages,
+    String? backendConversationId,
   }) {
     return ChatConversationDetail(
       id: id ?? this.id,
@@ -82,6 +89,7 @@ class ChatConversationDetail {
       petName: petName ?? this.petName,
       statusLabel: statusLabel ?? this.statusLabel,
       messages: messages ?? this.messages,
+      backendConversationId: backendConversationId ?? this.backendConversationId,
     );
   }
 }

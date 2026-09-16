@@ -38,7 +38,7 @@ class PresidioPiiAnonymizer:
         EMAIL_ADDRESS, generic PHONE_NUMBER, ...) already work for Italian
         text through the spaCy IT model, and are registered automatically —
         the adapter is functional without anything added here.
-
+        """
         # TODO(human): add PatternRecognizer(s) for Italian-specific PII
         # formats that the generic recognizers miss or under-match, most
         # notably the codice fiscale (16 fixed-structure alphanumeric

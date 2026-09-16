@@ -136,16 +136,28 @@ class _ChatConversationDetailPageState extends State<ChatConversationDetailPage>
       _isSending = true;
     });
 
-    try {
-      await _store.sendMessage(widget.conversationId, cleanMessage);
-    } finally {
-      if (mounted) {
-        setState(() {
-          _isSending = false;
-        });
-        _scrollToBottom();
-      }
-    }
+    final result = await _store.sendMessage(widget.conversationId, cleanMessage);
+
+    if (!mounted) return;
+    setState(() {
+      _isSending = false;
+    });
+    _scrollToBottom();
+
+    result.fold(
+      onSuccess: (_) {},
+      onFailure: (error) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(error.message),
+            action: SnackBarAction(
+              label: 'Riprova',
+              onPressed: () => _sendMessage(cleanMessage),
+            ),
+          ),
+        );
+      },
+    );
   }
 
   void _scrollToBottom() {

@@ -2,15 +2,26 @@ import 'dart:collection';
 
 import 'package:flutter/foundation.dart';
 
+import '../../../shared/config/app_runtime_config_loader.dart';
+import '../../../shared/types/result.dart';
 import '../domain/chat_models.dart';
+import 'chat_remote_data_source.dart';
 import 'chat_seed_data.dart';
 
 class ChatDemoStore extends ChangeNotifier {
-  ChatDemoStore._() {
+  ChatDemoStore._({
+    ChatRemoteDataSource? remoteDataSource,
+    AppRuntimeConfigLoader? configLoader,
+  })  : _remote = remoteDataSource ?? HttpChatRemoteDataSource(),
+        _configLoader = configLoader ?? const AppRuntimeConfigLoader() {
     reset();
   }
 
   static final ChatDemoStore instance = ChatDemoStore._();
+
+  final ChatRemoteDataSource _remote;
+  final AppRuntimeConfigLoader _configLoader;
+  String? _defaultPetId;
 
   final List<ChatConversationDetail> _threads = <ChatConversationDetail>[];
   final Set<String> _openedConversationIds = <String>{};
@@ -63,13 +74,13 @@ class ChatDemoStore extends ChangeNotifier {
     return conversation;
   }
 
-  Future<ChatConversationDetail> sendMessage(
+  Future<Result<ChatConversationDetail>> sendMessage(
     String conversationId,
     String message,
   ) async {
     final cleanMessage = message.trim();
     if (cleanMessage.isEmpty) {
-      return conversationById(conversationId) ?? _threads.first;
+      return Result.success(conversationById(conversationId) ?? _threads.first);
     }
 
     final thread = conversationById(conversationId) ?? _threads.first;
@@ -92,9 +103,19 @@ class ChatDemoStore extends ChangeNotifier {
     _openedConversationIds.add(conversationId);
     notifyListeners();
 
+    if (!_configLoader.load().hasApiBaseUrl) {
+      return Result.success(await _sendDemoReply(conversationId, cleanMessage));
+    }
+    return _sendRealMessage(conversationId, cleanMessage);
+  }
+
+  Future<ChatConversationDetail> _sendDemoReply(
+    String conversationId,
+    String cleanMessage,
+  ) async {
     await Future<void>.delayed(const Duration(milliseconds: 650));
 
-    final updatedThread = conversationById(conversationId) ?? thread;
+    final updatedThread = conversationById(conversationId) ?? _threads.first;
     final assistantMessage = ChatMessage(
       id: _messageId('assistant'),
       author: ChatMessageAuthor.assistant,
@@ -113,6 +134,68 @@ class ChatDemoStore extends ChangeNotifier {
     notifyListeners();
 
     return conversationById(conversationId) ?? updatedThread;
+  }
+
+  Future<Result<ChatConversationDetail>> _sendRealMessage(
+    String conversationId,
+    String cleanMessage,
+  ) async {
+    final thread = conversationById(conversationId) ?? _threads.first;
+
+    final petIdResult = await _resolveDefaultPetId(thread.petName);
+    return petIdResult.fold(
+      onFailure: (error) async => Result.failure(error),
+      onSuccess: (petId) async {
+        final sendResult = await _remote.sendMessage(
+          petId: petId,
+          conversationId: thread.backendConversationId,
+          userMessage: cleanMessage,
+        );
+        return sendResult.fold(
+          onFailure: (error) => Result.failure(error),
+          onSuccess: (reply) {
+            final updatedThread = conversationById(conversationId) ?? thread;
+            final assistantMessage = ChatMessage(
+              id: _messageId('assistant'),
+              author: ChatMessageAuthor.assistant,
+              text: reply.content,
+              timeLabel: _clockLabel(),
+              aiGenerated: reply.aiGenerated,
+            );
+
+            final resultThread = updatedThread.copyWith(
+              statusLabel: 'Risposta pronta',
+              messages: [...updatedThread.messages, assistantMessage],
+              backendConversationId: reply.backendConversationId,
+            );
+            _replaceThread(conversationId, resultThread);
+            _openedConversationIds.add(conversationId);
+            notifyListeners();
+
+            return Result.success(resultThread);
+          },
+        );
+      },
+    );
+  }
+
+  Future<Result<String>> _resolveDefaultPetId(String petName) async {
+    final cachedPetId = _defaultPetId;
+    if (cachedPetId != null) {
+      return Result.success(cachedPetId);
+    }
+
+    final result = await _remote.ensureDefaultPetId(
+      fallbackName: petName,
+      fallbackSpecies: 'dog',
+    );
+    return result.fold(
+      onFailure: (error) => Result.failure<String>(error),
+      onSuccess: (petId) {
+        _defaultPetId = petId;
+        return Result.success(petId);
+      },
+    );
   }
 
   void reset() {
