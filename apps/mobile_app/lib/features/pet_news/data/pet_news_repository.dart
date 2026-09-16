@@ -18,16 +18,57 @@ class GoogleNewsPetNewsRepository implements PetNewsRepository {
 
   final http.Client _client;
 
+  // Every query excludes recipe/cooking terms: several of these species are
+  // also common food ingredients (coniglio, pesce...), and unfiltered
+  // searches surface "coniglio alla cacciatora"-style recipes alongside
+  // real animal news — a bad look for a pet-care app with an
+  // animal-loving audience. This is a best-effort keyword exclusion at the
+  // query level; `_isBlocked` below is a second, client-side pass over the
+  // actual results as a safety net for whatever slips through.
+  static const _recipeExclusions =
+      '-ricetta -ricette -cucina -cucinare -sagra -caccia -cacciatore -cacciatori -oroscopo';
+
   static const _queryBySpecies = {
-    'Cane': 'cane',
-    'Gatto': 'gatto',
-    'Coniglio': 'coniglio',
-    'Uccello': 'uccello',
-    'Rettile': 'rettile',
-    'Pesce': 'pesce',
-    'Altro': 'animali domestici',
-    'Generale': 'animali domestici (fiera OR legge OR normativa)',
+    'Cane': 'cane $_recipeExclusions',
+    'Gatto': 'gatto $_recipeExclusions',
+    'Coniglio': 'coniglio $_recipeExclusions',
+    'Uccello': 'uccello $_recipeExclusions',
+    'Rettile': 'rettile $_recipeExclusions',
+    'Pesce': 'pesce $_recipeExclusions',
+    'Altro': 'animali domestici $_recipeExclusions',
+    'Generale': 'animali domestici (fiera OR legge OR normativa) $_recipeExclusions',
   };
+
+  // Client-side safety net: titles/sources containing any of these are
+  // dropped even if they slipped past the query-level exclusion above —
+  // food/recipe content (animals as ingredients) and known off-topic
+  // sources (e.g. a virtual-pet game, not real animals).
+  static const _blockedKeywords = [
+    'ricetta',
+    'ricette',
+    'cucina',
+    'cucinare',
+    'cotto',
+    'cottura',
+    'arrosto',
+    'spezzatino',
+    'stufato',
+    'brasato',
+    'padella',
+    'in forno',
+    'ingredienti',
+    'gustoso',
+    'sagra',
+    'porchetta',
+    'grigliata',
+    'grigliato',
+    'caccia',
+    'cacciatore',
+    'cacciatori',
+    'cacciatora',
+    'oroscopo',
+    'tamagotchi',
+  ];
 
   @override
   Future<List<PetNewsItem>> fetchForSpecies(String species, {int limit = 2}) async {
@@ -61,9 +102,9 @@ class GoogleNewsPetNewsRepository implements PetNewsRepository {
       }
 
       final items = (json['items'] as List<dynamic>? ?? const [])
-          .take(limit)
           .map((raw) => _toNewsItem(species, raw as Map<String, dynamic>))
           .whereType<PetNewsItem>()
+          .take(limit)
           .toList(growable: false);
       return items;
     } catch (_) {
@@ -75,6 +116,11 @@ class GoogleNewsPetNewsRepository implements PetNewsRepository {
     final rawTitle = (item['title'] ?? '').toString().trim();
     final link = (item['link'] ?? '').toString();
     if (rawTitle.isEmpty || link.isEmpty) {
+      return null;
+    }
+
+    final normalizedTitle = rawTitle.toLowerCase();
+    if (_blockedKeywords.any(normalizedTitle.contains)) {
       return null;
     }
 

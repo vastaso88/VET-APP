@@ -18,6 +18,7 @@ from packages.core.application.services.safety_gate import SafetyGate
 from packages.core.application.services.situation_model_builder import SituationModelBuilder
 from packages.core.domain.conversation.models import ChatMessage
 from packages.core.domain.conversation.states import ConversationState
+from packages.core.domain.knowledge.answer_validation import validate_answer
 from packages.core.domain.knowledge.models import EvidenceSource
 from packages.core.domain.situation.coverage import (
     DEFAULT_COVERAGE_WEIGHTS,
@@ -242,7 +243,7 @@ class ChatOrchestrator:
                 # presenting problem — fall through to the evidence step
                 # below, which already refuses to answer without sources.
 
-        result = self._generate_evidence_answer(data, message, intent)
+        result = self._generate_evidence_answer(data, message, intent, situation)
         result.situation_model = situation
         result.coverage_score = coverage
         result.interview_turns_used = turns_used
@@ -318,7 +319,8 @@ class ChatOrchestrator:
             LLMGenerationRequest(
                 system_prompt=(
                     "You are a veterinary app assistant. Answer clearly, avoid diagnosis, "
-                    "and encourage professional care when symptoms worsen."
+                    "and encourage professional care when symptoms worsen. There is no "
+                    "retrieved evidence for this turn, so never include a [n] citation."
                 ),
                 user_prompt=(
                     f"Pet name: {anonymized_pet_name}\n"
@@ -327,6 +329,13 @@ class ChatOrchestrator:
                 ),
             )
         )
+        # No sources exist in this path, so ANY [n] citation the model
+        # produces is by definition invented (spec v3 §28).
+        validation = validate_answer(response.content, sources_count=0)
+        if not validation.is_valid:
+            return self._validation_failure_result(
+                sources=[], violations=validation.violations, mode="general"
+            )
         return ChatOrchestratorResult(
             answer=response.content,
             mode="general",
@@ -342,6 +351,7 @@ class ChatOrchestrator:
         data: ChatOrchestratorInput,
         message: str,
         intent: str,
+        situation: SituationModel,
     ) -> ChatOrchestratorResult:
         final_request = EvidenceRetrievalRequest(query=message, species=data.species, intent=intent)
         pool_size = max(
@@ -385,7 +395,11 @@ class ChatOrchestrator:
             LLMGenerationRequest(
                 system_prompt=(
                     "You are an evidence-first veterinary assistant. Use only the provided "
-                    "sources, be explicit about uncertainty, and do not invent citations."
+                    "sources, be explicit about uncertainty, and do not invent citations — "
+                    "only cite [n] markers that appear in the Evidence list below. Where it "
+                    "reads naturally, structure the answer as: what we understand, what the "
+                    "evidence supports, what to watch for, and when to contact a vet — but "
+                    "prefer a short, direct answer over forcing every section in."
                 ),
                 user_prompt=(
                     f"Pet name: {anonymized_pet_name}\n"
@@ -396,16 +410,71 @@ class ChatOrchestrator:
                 ),
             )
         )
+
+        validation = validate_answer(response.content, sources_count=len(sources))
+        if not validation.is_valid:
+            return self._validation_failure_result(
+                sources=sources, violations=validation.violations, mode="evidence"
+            )
+
+        answer = response.content
+        limitations = self._build_limitations(sources)
+        if situation.safety_critical_unknowns:
+            # Final safety review (spec v3 §29): the case still has an
+            # unresolved safety-critical question even though we reached
+            # an evidence answer — surface that rather than answering as
+            # if everything is fine. Safety overrides completeness.
+            answer = (
+                "Prima di tutto: per alcuni aspetti che mi hai descritto non ho ancora "
+                "abbastanza chiarezza per escludere una situazione seria, quindi se "
+                f"peggiora non aspettare e contatta il veterinario. Detto questo:\n\n{answer}"
+            )
+            limitations = [
+                *limitations,
+                "Nel caso restano aspetti di sicurezza non del tutto chiariti dall'intervista.",
+            ]
+
         return ChatOrchestratorResult(
-            answer=response.content,
+            answer=answer,
             mode="evidence",
             confidence=self._confidence_from_score(ranked.top_score),
             ai_generated=True,
             sources=sources,
-            limitations=self._build_limitations(sources),
+            limitations=limitations,
             recommended_action="Consulta il veterinario per una valutazione personalizzata se i sintomi persistono.",
             provider=response.provider,
             model=response.model,
+        )
+
+    @staticmethod
+    def _validation_failure_result(
+        *, sources: list[EvidenceSource], violations: list[str], mode: str
+    ) -> ChatOrchestratorResult:
+        source_note = (
+            "Ti lascio comunque le fonti che avevo trovato, puoi consultarle direttamente. "
+            if sources
+            else ""
+        )
+        return ChatOrchestratorResult(
+            answer=(
+                "Quello che stavo per dirti non ha superato i nostri controlli di sicurezza "
+                "(ad esempio un riferimento non verificabile o un'affermazione troppo assoluta), "
+                "quindi preferisco non mostrartelo così com'è. "
+                f"{source_note}"
+                "Prova a riformulare la domanda, oppure consulta il veterinario per una "
+                "valutazione diretta."
+            ),
+            mode=mode,
+            confidence="low",
+            ai_generated=False,
+            sources=sources,
+            limitations=[
+                f"Risposta scartata dal controllo di validazione: {v}" for v in violations
+            ],
+            recommended_action="Consulta il veterinario per una valutazione personalizzata.",
+            provider="rule-based",
+            model="answer-validator",
+            state=ConversationState.SOURCE_VALIDATION_FAILURE,
         )
 
     def _anonymize_for_provider(self, text: str) -> str:
