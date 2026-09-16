@@ -55,7 +55,8 @@ def build_demo_seed(owner_id: str, *, today: date | None = None) -> DemoSeedBund
                 ),
                 _message(
                     "assistant",
-                    "Monitora appetito e idratazione per 24 ore e contatta il veterinario se peggiora.",
+                    "Monitora appetito e idratazione per 24 ore e contatta il veterinario se "
+                    "peggiora.",
                     seed_day,
                     hour=8,
                     minute=46,
@@ -77,7 +78,8 @@ def build_demo_seed(owner_id: str, *, today: date | None = None) -> DemoSeedBund
                 ),
                 _message(
                     "assistant",
-                    "Programma un controllo dentale e tieni traccia dell'appetito nei prossimi giorni.",
+                    "Programma un controllo dentale e tieni traccia dell'appetito nei "
+                    "prossimi giorni.",
                     seed_day - timedelta(days=1),
                     hour=18,
                     minute=12,

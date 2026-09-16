@@ -12,7 +12,10 @@ CATALOG = [
         tier="A",
         clinical_domain="preventive",
         species="dog",
-        snippet="Preventive care plans should be adapted to age, lifestyle, vaccination status, and risk exposure.",
+        snippet=(
+            "Preventive care plans should be adapted to age, lifestyle, vaccination "
+            "status, and risk exposure."
+        ),
     ),
     EvidenceSource(
         title="2024 Feline Chronic Kidney Disease Review",
@@ -21,7 +24,10 @@ CATALOG = [
         tier="A",
         clinical_domain="nutrition",
         species="cat",
-        snippet="Nutritional support and hydration monitoring remain central in feline CKD management.",
+        snippet=(
+            "Nutritional support and hydration monitoring remain central in feline "
+            "CKD management."
+        ),
     ),
     EvidenceSource(
         title="Small Animal Coughing: Diagnostic Approach Review",
@@ -30,7 +36,10 @@ CATALOG = [
         tier="B",
         clinical_domain="clinical",
         species="dog",
-        snippet="Persistent coughing requires assessment of duration, respiratory effort, and associated systemic signs.",
+        snippet=(
+            "Persistent coughing requires assessment of duration, respiratory "
+            "effort, and associated systemic signs."
+        ),
     ),
     EvidenceSource(
         title="Nutritional Assessment Guidelines for Dogs and Cats",
@@ -39,7 +48,10 @@ CATALOG = [
         tier="A",
         clinical_domain="nutrition",
         species="other",
-        snippet="Reduced appetite should be evaluated together with hydration, body condition, and concurrent disease.",
+        snippet=(
+            "Reduced appetite should be evaluated together with hydration, body "
+            "condition, and concurrent disease."
+        ),
     ),
     EvidenceSource(
         title="Behavior Problems in Companion Animals",
@@ -48,7 +60,10 @@ CATALOG = [
         tier="B",
         clinical_domain="behavior",
         species="other",
-        snippet="Behavior complaints should be assessed with environment, triggers, and reinforcement history.",
+        snippet=(
+            "Behavior complaints should be assessed with environment, triggers, "
+            "and reinforcement history."
+        ),
     ),
 ]
 

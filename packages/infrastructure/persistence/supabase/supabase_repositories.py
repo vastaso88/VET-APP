@@ -56,7 +56,13 @@ class SupabaseConversationRepository(ConversationRepository):
         return conversation
 
     def get(self, conversation_id: str) -> Conversation | None:
-        response = self._client.table(self._table).select("*").eq("id", conversation_id).limit(1).execute()
+        response = (
+            self._client.table(self._table)
+            .select("*")
+            .eq("id", conversation_id)
+            .limit(1)
+            .execute()
+        )
         if not response.data:
             return None
         return Conversation.model_validate(response.data[0])

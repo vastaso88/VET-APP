@@ -1,6 +1,10 @@
-from typing import Any, TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
-from packages.core.application.ports.auth_provider import AuthProvider, AuthSession, AuthenticatedUser
+from packages.core.application.ports.auth_provider import (
+    AuthenticatedUser,
+    AuthProvider,
+    AuthSession,
+)
 from packages.shared.auth_context import get_access_token
 from packages.shared.errors.base import AuthenticationError
 
@@ -10,7 +14,7 @@ else:
     SupabaseClient = Any
 
 try:
-    from supabase import Client as _SupabaseClient
+    from supabase import Client as _SupabaseClient  # noqa: F401
 except ModuleNotFoundError as exc:  # pragma: no cover - exercised by local runtime environments
     _SUPABASE_IMPORT_ERROR = exc
 else:
@@ -39,7 +43,9 @@ class SupabaseAuthProvider(AuthProvider):
         return AuthenticatedUser(id=user.id, email=user.email or "")
 
     def sign_in_with_password(self, email: str, password: str) -> AuthSession:
-        response = self._public_client.auth.sign_in_with_password({"email": email, "password": password})
+        response = self._public_client.auth.sign_in_with_password(
+            {"email": email, "password": password}
+        )
         return self._map_auth_session(response)
 
     def sign_up(self, email: str, password: str) -> AuthSession | None:

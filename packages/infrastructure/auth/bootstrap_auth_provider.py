@@ -1,4 +1,8 @@
-from packages.core.application.ports.auth_provider import AuthProvider, AuthSession, AuthenticatedUser
+from packages.core.application.ports.auth_provider import (
+    AuthenticatedUser,
+    AuthProvider,
+    AuthSession,
+)
 from packages.shared.config.settings import Settings
 
 

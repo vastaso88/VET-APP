@@ -13,8 +13,8 @@ ROOT_DIR = Path(__file__).resolve().parents[2]
 if str(ROOT_DIR) not in sys.path:
     sys.path.insert(0, str(ROOT_DIR))
 
-from packages.infrastructure.persistence.demo_seed import build_demo_seed
-from packages.shared.config.settings import get_settings
+from packages.infrastructure.persistence.demo_seed import build_demo_seed  # noqa: E402
+from packages.shared.config.settings import get_settings  # noqa: E402
 
 
 def main() -> int:
@@ -24,7 +24,8 @@ def main() -> int:
 
     if not settings.supabase_url.strip() or not settings.supabase_service_role_key.strip():
         raise SystemExit(
-            "Missing Supabase settings. Expected SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY in .env."
+            "Missing Supabase settings. Expected SUPABASE_URL and "
+            "SUPABASE_SERVICE_ROLE_KEY in .env."
         )
 
     seed = build_demo_seed(owner_id)

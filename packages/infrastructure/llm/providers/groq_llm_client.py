@@ -37,7 +37,9 @@ class GroqLLMClient(LLMClient):
         )
 
         try:
-            with request.urlopen(http_request, timeout=self._settings.llm_timeout_seconds) as response:
+            with request.urlopen(
+                http_request, timeout=self._settings.llm_timeout_seconds
+            ) as response:
                 body = json.loads(response.read().decode("utf-8"))
         except error.HTTPError as exc:
             detail = exc.read().decode("utf-8", errors="ignore")

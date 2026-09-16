@@ -1,4 +1,4 @@
-from packages.core.application.ports.auth_provider import AuthProvider, AuthenticatedUser
+from packages.core.application.ports.auth_provider import AuthenticatedUser, AuthProvider
 
 
 class FakeAuthProvider(AuthProvider):

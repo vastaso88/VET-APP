@@ -10,5 +10,7 @@ router = APIRouter(prefix="/conversations", tags=["conversations"])
 def list_conversations() -> dict[str, object]:
     container = get_container()
     user = container.auth_provider.get_current_user()
-    result = container.list_conversations_service().execute(ListConversationsInput(owner_id=user.id))
+    result = container.list_conversations_service().execute(
+        ListConversationsInput(owner_id=user.id)
+    )
     return result.model_dump()

@@ -15,7 +15,9 @@ def test_auth_me_endpoint() -> None:
 def test_pet_create_list_and_update_flow() -> None:
     client = TestClient(app)
 
-    create_response = client.post("/pets", json={"name": "Milo", "species": "dog", "breed": "Beagle"})
+    create_response = client.post(
+        "/pets", json={"name": "Milo", "species": "dog", "breed": "Beagle"}
+    )
     assert create_response.status_code == 200
     pet_id = create_response.json()["pet_profile"]["id"]
 

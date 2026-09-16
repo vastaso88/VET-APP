@@ -35,7 +35,9 @@ if settings.environment != "production":
 
 
 @app.middleware("http")
-async def inject_access_token(request: Request, call_next: Callable[[Request], Response]) -> Response:
+async def inject_access_token(
+    request: Request, call_next: Callable[[Request], Response]
+) -> Response:
     auth_header = request.headers.get("Authorization", "")
     token: str | None = None
     if auth_header.lower().startswith("bearer "):
