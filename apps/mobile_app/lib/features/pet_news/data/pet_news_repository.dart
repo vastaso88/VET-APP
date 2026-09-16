@@ -68,6 +68,7 @@ class GoogleNewsPetNewsRepository implements PetNewsRepository {
     'cacciatora',
     'oroscopo',
     'tamagotchi',
+    'tamaverse',
   ];
 
   @override
