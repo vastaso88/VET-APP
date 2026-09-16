@@ -1,7 +1,9 @@
+from packages.core.application.ports.clinical_event_repository import ClinicalEventRepository
 from packages.core.application.ports.conversation_repository import ConversationRepository
 from packages.core.application.ports.pet_profile_repository import PetProfileRepository
 from packages.core.application.ports.reminder_repository import ReminderRepository
 from packages.core.domain.conversation.models import Conversation
+from packages.core.domain.medical_record.models import ClinicalEvent
 from packages.core.domain.pet_profile.models import PetProfile
 from packages.core.domain.reminders.models import Reminder
 
@@ -46,3 +48,15 @@ class InMemoryReminderRepository(ReminderRepository):
 
     def list_by_owner(self, owner_id: str) -> list[Reminder]:
         return [item for item in self._items if item.owner_id == owner_id]
+
+
+class InMemoryClinicalEventRepository(ClinicalEventRepository):
+    def __init__(self, seed: list[ClinicalEvent] | None = None) -> None:
+        self._items: list[ClinicalEvent] = list(seed or [])
+
+    def save(self, event: ClinicalEvent) -> ClinicalEvent:
+        self._items.append(event)
+        return event
+
+    def list_by_pet(self, pet_id: str) -> list[ClinicalEvent]:
+        return [item for item in self._items if item.pet_id == pet_id]

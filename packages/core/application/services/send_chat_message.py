@@ -33,6 +33,8 @@ class SendChatMessageOutput(BaseModel):
     model: str
     state: ConversationState
     coverage_score: float | None = None
+    medical_record_consent: bool | None = None
+    awaiting_medical_record_consent: bool = False
 
 
 class SendChatMessageService:
@@ -62,9 +64,12 @@ class SendChatMessageService:
                 user_message=data.user_message.strip(),
                 species=pet_profile.species,
                 pet_name=pet_profile.name,
+                pet_id=pet_profile.id,
                 conversation_history=conversation.messages[:-1],
                 situation_model=conversation.situation_model,
                 interview_turns_used=conversation.interview_turns_used,
+                medical_record_consent=conversation.medical_record_consent,
+                awaiting_medical_record_consent=conversation.awaiting_medical_record_consent,
             )
         )
         reply = ChatMessage(role="assistant", content=orchestrator_result.answer)
@@ -73,6 +78,10 @@ class SendChatMessageService:
         conversation.coverage_score = orchestrator_result.coverage_score
         conversation.state = orchestrator_result.state
         conversation.interview_turns_used = orchestrator_result.interview_turns_used
+        conversation.medical_record_consent = orchestrator_result.medical_record_consent
+        conversation.awaiting_medical_record_consent = (
+            orchestrator_result.awaiting_medical_record_consent
+        )
 
         stored_conversation = self._repository.save(conversation)
         return SendChatMessageOutput(
@@ -89,6 +98,8 @@ class SendChatMessageService:
             model=orchestrator_result.model,
             state=orchestrator_result.state,
             coverage_score=orchestrator_result.coverage_score,
+            medical_record_consent=orchestrator_result.medical_record_consent,
+            awaiting_medical_record_consent=orchestrator_result.awaiting_medical_record_consent,
         )
 
     def _load_or_create_conversation(self, data: SendChatMessageInput) -> Conversation:

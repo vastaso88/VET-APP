@@ -152,6 +152,35 @@ def test_interview_loop_is_disabled_by_default() -> None:
     assert result.coverage_score is None
 
 
+def test_interview_loop_stays_on_topic_when_follow_up_reply_lacks_keywords() -> None:
+    client = ExtractionAwareLLMClient(extraction_json="{}")
+    orchestrator = ChatOrchestrator(
+        client,
+        InMemoryEvidenceRetriever(),
+        NoopPiiAnonymizer(),
+        interview_planner=FixedInterviewPlanner("Prossima domanda"),
+        enable_interview_loop=True,
+    )
+    first_turn = orchestrator.answer(
+        ChatOrchestratorInput(user_message="Il mio cane tossisce", species="dog", pet_name="Milo")
+    )
+    assert first_turn.mode == "interview"
+
+    second_turn = orchestrator.answer(
+        ChatOrchestratorInput(
+            user_message="Da due giorni, solo in casa",
+            species="dog",
+            pet_name="Milo",
+            situation_model=first_turn.situation_model,
+            interview_turns_used=first_turn.interview_turns_used,
+        )
+    )
+
+    # A follow-up with no clinical keywords must not be re-routed to a
+    # generic, un-grounded answer — it should continue the same case.
+    assert second_turn.mode != "general"
+
+
 def test_interview_loop_with_the_real_planner_asks_presenting_problem_first() -> None:
     client = ExtractionAwareLLMClient(extraction_json="{}")
     orchestrator = ChatOrchestrator(

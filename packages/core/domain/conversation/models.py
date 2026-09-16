@@ -24,3 +24,5 @@ class Conversation(BaseModel):
     coverage_score: float | None = None
     state: ConversationState = ConversationState.NEED_MORE_INFORMATION
     interview_turns_used: int = 0
+    medical_record_consent: bool | None = None
+    awaiting_medical_record_consent: bool = False

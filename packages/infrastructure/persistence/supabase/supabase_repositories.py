@@ -1,10 +1,12 @@
 from datetime import date, datetime
 from typing import TYPE_CHECKING, Any
 
+from packages.core.application.ports.clinical_event_repository import ClinicalEventRepository
 from packages.core.application.ports.conversation_repository import ConversationRepository
 from packages.core.application.ports.pet_profile_repository import PetProfileRepository
 from packages.core.application.ports.reminder_repository import ReminderRepository
 from packages.core.domain.conversation.models import Conversation
+from packages.core.domain.medical_record.models import ClinicalEvent
 from packages.core.domain.pet_profile.models import PetProfile
 from packages.core.domain.reminders.models import Reminder
 
@@ -77,3 +79,13 @@ class SupabaseReminderRepository(ReminderRepository):
     def list_by_owner(self, owner_id: str) -> list[Reminder]:
         response = self._client.table(self._table).select("*").eq("owner_id", owner_id).execute()
         return [Reminder.model_validate(item) for item in response.data or []]
+
+
+class SupabaseClinicalEventRepository(ClinicalEventRepository):
+    def __init__(self, client: Client) -> None:
+        self._client = client
+        self._table = "clinical_events"
+
+    def list_by_pet(self, pet_id: str) -> list[ClinicalEvent]:
+        response = self._client.table(self._table).select("*").eq("pet_id", pet_id).execute()
+        return [ClinicalEvent.model_validate(item) for item in response.data or []]

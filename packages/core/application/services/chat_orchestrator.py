@@ -8,7 +8,11 @@ from packages.core.application.ports.evidence_retriever import (
 )
 from packages.core.application.ports.llm_client import LLMClient, LLMGenerationRequest
 from packages.core.application.ports.pii_anonymizer import PiiAnonymizationRequest, PiiAnonymizer
+from packages.core.application.services.consent_interpreter import ConsentInterpreter
 from packages.core.application.services.interview_planner import InterviewPlanner
+from packages.core.application.services.medical_record_context_retriever import (
+    MedicalRecordContextRetriever,
+)
 from packages.core.application.services.safety_gate import SafetyGate
 from packages.core.application.services.situation_model_builder import SituationModelBuilder
 from packages.core.domain.conversation.models import ChatMessage
@@ -43,9 +47,12 @@ class ChatOrchestratorInput(BaseModel):
     user_message: str
     species: str
     pet_name: str
+    pet_id: str = ""
     conversation_history: list[ChatMessage] = Field(default_factory=list)
     situation_model: SituationModel | None = None
     interview_turns_used: int = 0
+    medical_record_consent: bool | None = None
+    awaiting_medical_record_consent: bool = False
 
 
 class ChatOrchestratorResult(BaseModel):
@@ -63,6 +70,8 @@ class ChatOrchestratorResult(BaseModel):
     situation_model: SituationModel | None = None
     coverage_score: float | None = None
     interview_turns_used: int = 0
+    medical_record_consent: bool | None = None
+    awaiting_medical_record_consent: bool = False
 
 
 class ChatOrchestrator:
@@ -75,6 +84,8 @@ class ChatOrchestrator:
         safety_gate: SafetyGate | None = None,
         situation_model_builder: SituationModelBuilder | None = None,
         interview_planner: InterviewPlanner | None = None,
+        medical_record_context_retriever: MedicalRecordContextRetriever | None = None,
+        consent_interpreter: ConsentInterpreter | None = None,
         enable_interview_loop: bool = False,
         coverage_weights: CoverageWeights = DEFAULT_COVERAGE_WEIGHTS,
         coverage_target: float = 0.85,
@@ -86,6 +97,10 @@ class ChatOrchestrator:
         self._safety_gate = safety_gate or SafetyGate()
         self._situation_model_builder = situation_model_builder or SituationModelBuilder(llm_client)
         self._interview_planner = interview_planner or InterviewPlanner()
+        # No infra-free default is possible here (it needs a repository) —
+        # None simply means this deployment never offers record access.
+        self._medical_record_context_retriever = medical_record_context_retriever
+        self._consent_interpreter = consent_interpreter or ConsentInterpreter()
         self._enable_interview_loop = enable_interview_loop
         self._coverage_weights = coverage_weights
         self._coverage_target = coverage_target
@@ -117,20 +132,63 @@ class ChatOrchestrator:
                 state=ConversationState.POSSIBLE_URGENT_CASE,
             )
 
+        situation = data.situation_model or SituationModel()
+        turns_used = data.interview_turns_used
+        medical_record_consent = data.medical_record_consent
+
+        resolving_consent = (
+            self._enable_interview_loop
+            and data.awaiting_medical_record_consent
+            and medical_record_consent is None
+        )
+        if resolving_consent:
+            return self._resolve_medical_record_consent(data, message, situation, turns_used)
+
         intent = self._classify_intent(lowered)
+        if intent == "general_info" and self._enable_interview_loop and situation.working_domains:
+            # We're mid-interview on an already-established clinical topic —
+            # a short follow-up reply ("da due giorni", "solo in casa") won't
+            # repeat the original keywords, but reclassifying it fresh would
+            # silently drop the case into a generic, un-grounded answer.
+            # Stay on the established topic instead.
+            intent = situation.working_domains[0]
         if intent == "general_info":
             return self._generate_general_answer(data, message)
 
-        situation = data.situation_model or SituationModel()
-        turns_used = data.interview_turns_used
         coverage: float | None = None
 
         if self._enable_interview_loop:
             situation = self._situation_model_builder.update(
                 situation, message, data.conversation_history
             )
+            if intent not in situation.working_domains:
+                situation = situation.merge(SituationModel(working_domains=[intent]))
+
             coverage = coverage_score(situation, self._coverage_weights)
             if coverage < self._coverage_target:
+                if (
+                    medical_record_consent is None
+                    and not situation.known_medical_context
+                    and self._retrieve_medical_record_summary(data.pet_id) is not None
+                ):
+                    return ChatOrchestratorResult(
+                        answer=(
+                            f"Vuoi che consulti la cartella clinica di {data.pet_name} "
+                            "per darti un consiglio più preciso? Guarderò solo le informazioni "
+                            "rilevanti per questo caso."
+                        ),
+                        mode="consent_request",
+                        confidence="low",
+                        ai_generated=False,
+                        provider="rule-based",
+                        model="medical-record-consent-gate",
+                        state=ConversationState.NEED_MORE_INFORMATION,
+                        situation_model=situation,
+                        coverage_score=coverage,
+                        interview_turns_used=turns_used,
+                        medical_record_consent=None,
+                        awaiting_medical_record_consent=True,
+                    )
                 if turns_used < self._max_interview_questions:
                     question = self._interview_planner.next_question(situation)
                     if question is not None:
@@ -145,6 +203,7 @@ class ChatOrchestrator:
                             situation_model=situation,
                             coverage_score=coverage,
                             interview_turns_used=turns_used + 1,
+                            medical_record_consent=medical_record_consent,
                         )
                 elif not situation.presenting_problem:
                     # Question budget exhausted and we still don't even know
@@ -167,6 +226,7 @@ class ChatOrchestrator:
                         situation_model=situation,
                         coverage_score=coverage,
                         interview_turns_used=turns_used,
+                        medical_record_consent=medical_record_consent,
                     )
                 # Otherwise: budget exhausted but we at least know the
                 # presenting problem — fall through to the evidence step
@@ -176,7 +236,66 @@ class ChatOrchestrator:
         result.situation_model = situation
         result.coverage_score = coverage
         result.interview_turns_used = turns_used
+        result.medical_record_consent = medical_record_consent
         return result
+
+    def _retrieve_medical_record_summary(self, pet_id: str) -> str | None:
+        if self._medical_record_context_retriever is None or not pet_id:
+            return None
+        return self._medical_record_context_retriever.summarize_for_pet(pet_id)
+
+    def _resolve_medical_record_consent(
+        self,
+        data: ChatOrchestratorInput,
+        message: str,
+        situation: SituationModel,
+        turns_used: int,
+    ) -> ChatOrchestratorResult:
+        """Handle the reply to a pending consent question (spec v3 §18).
+
+        This always returns directly: the reply itself ("sì"/"no") isn't
+        clinical content, so it must never be forwarded to evidence
+        retrieval or the general-answer LLM call as if it were the
+        question — that turn just resolves consent and, if there's
+        already enough to ask about, asks the next real question.
+        """
+        interpreted = self._consent_interpreter.interpret(message)
+        # Fail closed: an unclear reply is treated as "not granted", never
+        # as implicit permission.
+        consent = interpreted if interpreted is not None else False
+        if consent:
+            record_summary = self._retrieve_medical_record_summary(data.pet_id)
+            if record_summary:
+                situation = situation.merge(SituationModel(known_medical_context=record_summary))
+                acknowledgement = "Grazie, ho dato un'occhiata alla cartella clinica. "
+            else:
+                acknowledgement = "Va bene. "
+        else:
+            acknowledgement = "Va bene, procediamo senza consultarla. "
+
+        coverage = coverage_score(situation, self._coverage_weights)
+        question = None
+        if coverage < self._coverage_target and turns_used < self._max_interview_questions:
+            question = self._interview_planner.next_question(situation)
+
+        answer = (
+            f"{acknowledgement}{question}"
+            if question is not None
+            else f"{acknowledgement}Raccontami pure di nuovo cosa hai osservato, così ti rispondo."
+        )
+        return ChatOrchestratorResult(
+            answer=answer,
+            mode="interview",
+            confidence="low",
+            ai_generated=False,
+            provider="rule-based",
+            model="medical-record-consent-gate",
+            state=ConversationState.NEED_MORE_INFORMATION,
+            situation_model=situation,
+            coverage_score=coverage,
+            interview_turns_used=turns_used + (1 if question is not None else 0),
+            medical_record_consent=consent,
+        )
 
     def _generate_general_answer(
         self,

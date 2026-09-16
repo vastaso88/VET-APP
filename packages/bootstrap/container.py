@@ -1,8 +1,10 @@
 from functools import lru_cache
 
 from packages.core.application.ports.auth_provider import AuthProvider
+from packages.core.application.ports.clinical_event_repository import ClinicalEventRepository
 from packages.core.application.ports.pii_anonymizer import PiiAnonymizer
 from packages.core.application.services.chat_orchestrator import ChatOrchestrator
+from packages.core.application.services.consent_interpreter import ConsentInterpreter
 from packages.core.application.services.create_pet_profile import CreatePetProfileService
 from packages.core.application.services.create_reminder import CreateReminderService
 from packages.core.application.services.get_pet_profile import GetPetProfileService
@@ -10,6 +12,9 @@ from packages.core.application.services.interview_planner import InterviewPlanne
 from packages.core.application.services.list_conversations import ListConversationsService
 from packages.core.application.services.list_pet_profiles import ListPetProfilesService
 from packages.core.application.services.list_reminders import ListRemindersService
+from packages.core.application.services.medical_record_context_retriever import (
+    MedicalRecordContextRetriever,
+)
 from packages.core.application.services.safety_gate import SafetyGate
 from packages.core.application.services.send_chat_message import SendChatMessageService
 from packages.core.application.services.situation_model_builder import SituationModelBuilder
@@ -21,6 +26,7 @@ from packages.infrastructure.llm.retrieval.in_memory_evidence_retriever import (
     InMemoryEvidenceRetriever,
 )
 from packages.infrastructure.persistence.in_memory_repositories import (
+    InMemoryClinicalEventRepository,
     InMemoryConversationRepository,
     InMemoryPetProfileRepository,
     InMemoryReminderRepository,
@@ -41,6 +47,7 @@ class ApplicationContainer:
         self.llm_client = self._build_llm_client()
         self.evidence_retriever = self._build_evidence_retriever()
         self.pii_anonymizer = self._build_pii_anonymizer()
+        self.clinical_event_repository = self._build_clinical_event_repository()
         self.chat_orchestrator = ChatOrchestrator(
             self.llm_client,
             self.evidence_retriever,
@@ -48,6 +55,10 @@ class ApplicationContainer:
             safety_gate=SafetyGate(),
             situation_model_builder=SituationModelBuilder(self.llm_client),
             interview_planner=InterviewPlanner(),
+            medical_record_context_retriever=MedicalRecordContextRetriever(
+                self.clinical_event_repository
+            ),
+            consent_interpreter=ConsentInterpreter(),
             enable_interview_loop=settings.enable_interview_loop,
             coverage_target=settings.situation_coverage_target,
             max_interview_questions=settings.interview_max_questions,
@@ -154,6 +165,23 @@ class ApplicationContainer:
                     return NoopPiiAnonymizer()
                 raise
         return NoopPiiAnonymizer()
+
+    def _build_clinical_event_repository(self) -> ClinicalEventRepository:
+        if self.settings.persistence_backend == "supabase":
+            try:
+                from packages.infrastructure.persistence.supabase.client import (
+                    build_supabase_client,
+                )
+                from packages.infrastructure.persistence.supabase.supabase_repositories import (
+                    SupabaseClinicalEventRepository,
+                )
+
+                return SupabaseClinicalEventRepository(build_supabase_client(self.settings))
+            except ModuleNotFoundError:
+                if self.settings.environment != "production":
+                    return InMemoryClinicalEventRepository()
+                raise
+        return InMemoryClinicalEventRepository()
 
     def _build_evidence_retriever(self) -> InMemoryEvidenceRetriever | object:
         if self.settings.evidence_backend == "supabase":
