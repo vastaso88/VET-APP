@@ -74,7 +74,7 @@ def _recency_score(year: int | None, *, now_year: int, half_life_years: int = 12
     if year is None:
         return 0.4  # undated evidence isn't worthless, just not freshness-scored
     age = max(0, now_year - year)
-    return 0.5 ** (age / half_life_years)
+    return float(0.5 ** (age / half_life_years))
 
 
 def _evidence_depth_score(access_depth: str) -> float:

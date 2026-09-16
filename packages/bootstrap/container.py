@@ -2,7 +2,11 @@ from functools import lru_cache
 
 from packages.core.application.ports.auth_provider import AuthProvider
 from packages.core.application.ports.clinical_event_repository import ClinicalEventRepository
+from packages.core.application.ports.conversation_repository import ConversationRepository
+from packages.core.application.ports.evidence_retriever import EvidenceRetriever
+from packages.core.application.ports.pet_profile_repository import PetProfileRepository
 from packages.core.application.ports.pii_anonymizer import PiiAnonymizer
+from packages.core.application.ports.reminder_repository import ReminderRepository
 from packages.core.application.services.chat_orchestrator import ChatOrchestrator
 from packages.core.application.services.consent_interpreter import ConsentInterpreter
 from packages.core.application.services.create_pet_profile import CreatePetProfileService
@@ -118,7 +122,7 @@ class ApplicationContainer:
 
     def _build_repositories(
         self,
-    ) -> tuple[object, object, object]:
+    ) -> tuple[PetProfileRepository, ConversationRepository, ReminderRepository]:
         if self.settings.persistence_backend == "supabase":
             try:
                 from packages.infrastructure.persistence.supabase.client import (
@@ -186,7 +190,7 @@ class ApplicationContainer:
                 raise
         return InMemoryClinicalEventRepository()
 
-    def _build_evidence_retriever(self) -> InMemoryEvidenceRetriever | object:
+    def _build_evidence_retriever(self) -> EvidenceRetriever:
         if self.settings.evidence_backend == "europe_pmc":
             return EuropePmcEvidenceRetriever()
         if self.settings.evidence_backend == "supabase":

@@ -4,8 +4,8 @@ from packages.core.domain.conversation.states import ConversationState
 from packages.core.domain.evaluation.metrics import EvaluationCaseOutcome, build_report
 
 
-def _outcome(**overrides) -> EvaluationCaseOutcome:
-    base = dict(
+def _outcome(**overrides: object) -> EvaluationCaseOutcome:
+    base: dict[str, object] = dict(
         scenario_id="s1",
         category="clinical",
         is_true_emergency=False,
@@ -17,7 +17,7 @@ def _outcome(**overrides) -> EvaluationCaseOutcome:
         source_count=2,
     )
     base.update(overrides)
-    return EvaluationCaseOutcome(**base)
+    return EvaluationCaseOutcome.model_validate(base)
 
 
 def test_safety_escalation_recall_counts_only_true_emergencies() -> None:

@@ -1,4 +1,5 @@
 import json
+from collections.abc import Callable
 
 from packages.core.application.ports.evidence_retriever import EvidenceRetrievalRequest
 from packages.infrastructure.llm.retrieval.europe_pmc_evidence_retriever import (
@@ -6,7 +7,9 @@ from packages.infrastructure.llm.retrieval.europe_pmc_evidence_retriever import 
 )
 
 
-def _fetcher_for(payload: dict, *, captured_urls: list[str] | None = None):
+def _fetcher_for(
+    payload: object, *, captured_urls: list[str] | None = None
+) -> Callable[[str], bytes]:
     def fetch(url: str) -> bytes:
         if captured_urls is not None:
             captured_urls.append(url)
@@ -15,8 +18,8 @@ def _fetcher_for(payload: dict, *, captured_urls: list[str] | None = None):
     return fetch
 
 
-def _result(**overrides) -> dict:
-    base = {
+def _result(**overrides: object) -> dict[str, object]:
+    base: dict[str, object] = {
         "id": "12345",
         "source": "MED",
         "pmid": "12345",
@@ -167,7 +170,7 @@ def test_malformed_response_returns_empty_list_instead_of_raising() -> None:
 
 def test_query_translates_known_italian_terms_to_english() -> None:
     captured_urls: list[str] = []
-    payload = {"resultList": {"result": []}}
+    payload: dict[str, object] = {"resultList": {"result": []}}
     retriever = EuropePmcEvidenceRetriever(
         fetcher=_fetcher_for(payload, captured_urls=captured_urls)
     )
@@ -185,7 +188,7 @@ def test_query_translates_known_italian_terms_to_english() -> None:
 
 def test_query_falls_back_to_intent_terms_when_no_keyword_matches() -> None:
     captured_urls: list[str] = []
-    payload = {"resultList": {"result": []}}
+    payload: dict[str, object] = {"resultList": {"result": []}}
     retriever = EuropePmcEvidenceRetriever(
         fetcher=_fetcher_for(payload, captured_urls=captured_urls)
     )

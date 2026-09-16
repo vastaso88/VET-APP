@@ -39,7 +39,7 @@ def coverage_score(
         "known_medical_context": bool(situation.known_medical_context),
         "working_domains": bool(situation.working_domains),
     }
-    weight_values = weights.model_dump()
+    weight_values: dict[str, float] = weights.model_dump()
     total_weight = sum(weight_values.values())
     if total_weight <= 0:
         return 0.0

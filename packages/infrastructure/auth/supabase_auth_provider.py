@@ -13,6 +13,7 @@ if TYPE_CHECKING:
 else:
     SupabaseClient = Any
 
+_SUPABASE_IMPORT_ERROR: ModuleNotFoundError | None
 try:
     from supabase import Client as _SupabaseClient  # noqa: F401
 except ModuleNotFoundError as exc:  # pragma: no cover - exercised by local runtime environments

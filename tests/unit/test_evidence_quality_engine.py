@@ -2,8 +2,8 @@ from packages.core.application.services.evidence_quality_engine import EvidenceQ
 from packages.core.domain.knowledge.models import EvidenceSource
 
 
-def _source(**overrides) -> EvidenceSource:
-    base = dict(
+def _source(**overrides: object) -> EvidenceSource:
+    base: dict[str, object] = dict(
         title="Example",
         tier="C",
         access_depth="C",
@@ -12,7 +12,7 @@ def _source(**overrides) -> EvidenceSource:
         year=2024,
     )
     base.update(overrides)
-    return EvidenceSource(**base)
+    return EvidenceSource.model_validate(base)
 
 
 def test_ranks_higher_quality_sources_first() -> None:

@@ -2,8 +2,8 @@ from packages.core.domain.knowledge.models import EvidenceSource
 from packages.core.domain.knowledge.quality import QualityWeights, score_source
 
 
-def _source(**overrides) -> EvidenceSource:
-    base = dict(
+def _source(**overrides: object) -> EvidenceSource:
+    base: dict[str, object] = dict(
         title="Example",
         tier="C",
         access_depth="C",
@@ -12,7 +12,7 @@ def _source(**overrides) -> EvidenceSource:
         year=2024,
     )
     base.update(overrides)
-    return EvidenceSource(**base)
+    return EvidenceSource.model_validate(base)
 
 
 def test_higher_tier_scores_higher_methodological_quality() -> None:

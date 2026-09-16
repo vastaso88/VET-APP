@@ -31,7 +31,7 @@ class ScriptedLLMClient:
         return LLMResponse(content=content, provider="fake", model="fake-model", token_count=10)
 
 
-def _orchestrator(**client_kwargs) -> tuple[ChatOrchestrator, ScriptedLLMClient]:
+def _orchestrator(**client_kwargs: str) -> tuple[ChatOrchestrator, ScriptedLLMClient]:
     client = ScriptedLLMClient(**client_kwargs)
     orchestrator = ChatOrchestrator(client, InMemoryEvidenceRetriever(), NoopPiiAnonymizer())
     return orchestrator, client

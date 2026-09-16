@@ -3,6 +3,7 @@ from packages.core.application.services.chat_orchestrator import (
     ChatOrchestrator,
     ChatOrchestratorInput,
 )
+from packages.core.application.services.interview_planner import InterviewPlanner
 from packages.core.domain.conversation.states import ConversationState
 from packages.core.domain.situation.models import SituationModel
 from packages.infrastructure.llm.retrieval.in_memory_evidence_retriever import (
@@ -30,7 +31,7 @@ class ExtractionAwareLLMClient:
         return LLMResponse(content=content, provider="fake", model="fake-model", token_count=10)
 
 
-class FixedInterviewPlanner:
+class FixedInterviewPlanner(InterviewPlanner):
     def __init__(self, question: str | None) -> None:
         self.question = question
 

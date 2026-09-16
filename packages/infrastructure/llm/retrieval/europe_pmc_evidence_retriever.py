@@ -106,7 +106,8 @@ def _domain_from_intent(intent: str) -> str:
 def _default_fetcher(url: str, *, timeout_seconds: int) -> bytes:
     http_request = request.Request(url, headers={"Accept": "application/json"})
     with request.urlopen(http_request, timeout=timeout_seconds) as response:
-        return response.read()
+        body: bytes = response.read()
+        return body
 
 
 class EuropePmcEvidenceRetriever(EvidenceRetriever):

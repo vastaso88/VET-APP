@@ -77,7 +77,8 @@ class ChangeReport:
 def fetch_source(url: str, *, timeout: int = 30) -> str:
     req = request.Request(url, headers={"User-Agent": "VetApp-LegislativeWatch/1.0"})
     with request.urlopen(req, timeout=timeout) as response:  # noqa: S310 - fixed https sources
-        return response.read().decode("utf-8", errors="replace")
+        body: bytes = response.read()
+        return body.decode("utf-8", errors="replace")
 
 
 def compute_hash(content: str) -> str:

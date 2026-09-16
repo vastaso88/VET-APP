@@ -1,4 +1,4 @@
-from collections.abc import Callable
+from collections.abc import Awaitable, Callable
 
 from fastapi import FastAPI, Request, Response
 from fastapi.middleware.cors import CORSMiddleware
@@ -36,7 +36,7 @@ if settings.environment != "production":
 
 @app.middleware("http")
 async def inject_access_token(
-    request: Request, call_next: Callable[[Request], Response]
+    request: Request, call_next: Callable[[Request], Awaitable[Response]]
 ) -> Response:
     auth_header = request.headers.get("Authorization", "")
     token: str | None = None
