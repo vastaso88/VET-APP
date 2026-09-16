@@ -8,8 +8,6 @@ import '../../../../../design_system/tokens/app_spacing.dart';
 import '../../../../../design_system/tokens/app_text_styles.dart';
 import '../../data/reminders_repository.dart';
 
-enum _ViewState { empty, loading, error, success }
-
 class RemindersListPage extends StatefulWidget {
   const RemindersListPage({super.key});
 
@@ -21,7 +19,6 @@ class _RemindersListPageState extends State<RemindersListPage> {
   final RemindersRepository _repository = RemindersRepository();
 
   late Future<List<ReminderEntry>> _remindersFuture;
-  _ViewState _state = _ViewState.success;
 
   @override
   void initState() {
@@ -63,30 +60,7 @@ class _RemindersListPageState extends State<RemindersListPage> {
       subtitle: 'Vaccini, trattamenti e visite da tenere sotto controllo.',
       actionLabel: 'Crea',
       onAction: _openCreate,
-      state: _state,
-      onStateChanged: (value) => setState(() => _state = value),
-      child: switch (_state) {
-        _ViewState.empty => _StatePanel(
-            label: 'Nessun promemoria',
-            title: 'La lista dei promemoria e vuota.',
-            body: 'Crea il primo promemoria per vaccino o trattamento e resta in carreggiata.',
-            icon: Icons.event_note_outlined,
-            actionLabel: 'Crea promemoria',
-            onAction: _openCreate,
-          ),
-        _ViewState.loading => const _LoadingPanel(
-            title: 'Caricamento promemoria',
-            body: 'Sto leggendo date, ricorrenze e note del proprietario.',
-          ),
-        _ViewState.error => _StatePanel(
-            label: 'Errore sync',
-            title: 'Sincronizzazione promemoria fallita.',
-            body: 'La sorgente demo e ancora disponibile. Riprova quando la rete torna su.',
-            icon: Icons.wifi_off_outlined,
-            actionLabel: 'Riprova',
-            onAction: () {},
-          ),
-        _ViewState.success => FutureBuilder<List<ReminderEntry>>(
+      child: FutureBuilder<List<ReminderEntry>>(
             future: _remindersFuture,
             builder: (context, snapshot) {
               if (snapshot.connectionState == ConnectionState.waiting) {
@@ -122,8 +96,8 @@ class _RemindersListPageState extends State<RemindersListPage> {
               return Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const _SummaryCard(
-                    title: '3 promemoria attivi',
+                  _SummaryCard(
+                    title: '${reminders.length} promemoria attivi',
                     body: 'Il prossimo scade tra 3 giorni e il controllo peso e gia fissato per domani.',
                     icon: Icons.schedule_outlined,
                   ),
@@ -155,107 +129,165 @@ class _RemindersListPageState extends State<RemindersListPage> {
               );
             },
           ),
-      },
     );
   }
 }
 
 class ReminderCreatePage extends StatefulWidget {
-  const ReminderCreatePage({super.key});
+  const ReminderCreatePage({super.key, this.petName = ''});
+
+  final String petName;
 
   @override
   State<ReminderCreatePage> createState() => _ReminderCreatePageState();
 }
 
 class _ReminderCreatePageState extends State<ReminderCreatePage> {
-  _ViewState _state = _ViewState.success;
   final RemindersRepository _repository = RemindersRepository();
+  final _formKey = GlobalKey<FormState>();
+  final _titleController = TextEditingController();
+  final _dueController = TextEditingController();
+  final _scheduleController = TextEditingController(text: 'Una tantum');
+  final _noteController = TextEditingController();
+
+  @override
+  void dispose() {
+    _titleController.dispose();
+    _dueController.dispose();
+    _scheduleController.dispose();
+    _noteController.dispose();
+    super.dispose();
+  }
+
+  void _review() {
+    if (!(_formKey.currentState?.validate() ?? false)) {
+      return;
+    }
+
+    final reminder = ReminderEntry(
+      id: 'promemoria-${DateTime.now().microsecondsSinceEpoch}',
+      petName: widget.petName,
+      title: _titleController.text.trim(),
+      subtitle: _scheduleController.text.trim(),
+      due: _dueController.text.trim(),
+      badge: 'Bozza',
+      note: _noteController.text.trim(),
+      schedule: _scheduleController.text.trim(),
+    );
+
+    unawaited(_repository.saveReminder(reminder));
+    Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder: (_) => ReminderDetailPage(reminder: reminder),
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
     return _Shell(
-      title: 'Crea promemoria',
+      title: widget.petName.isEmpty ? 'Crea promemoria' : 'Nuovo promemoria per ${widget.petName}',
       subtitle: 'Aggiungi una nuova scadenza, la ricorrenza e una nota.',
       actionLabel: 'Rivedi',
-      onAction: () => Navigator.of(context).push(
-        MaterialPageRoute<void>(
-          builder: (_) => const ReminderDetailPage(
-            reminder: ReminderEntry(
-              id: 'promemoria-bozza-vaccino',
-              title: 'Richiamo vaccinale di Moka',
-              subtitle: 'Ogni 12 mesi',
-              due: '25 Apr 2026',
-              badge: 'Bozza',
-              note: 'Porta il libretto sanitario e conferma la disponibilita con Francesco.',
-              schedule: 'Ricorrente ogni 12 mesi',
+      onAction: _review,
+      child: Form(
+        key: _formKey,
+        child: _EditableFormPanel(
+          title: 'Nuovo promemoria',
+          body: 'Compila titolo e scadenza, poi rivedi prima di salvare.',
+          fields: [
+            _EditableField(
+              label: 'Titolo',
+              controller: _titleController,
+              hintText: widget.petName.isEmpty
+                  ? 'Es. Richiamo vaccinale'
+                  : 'Es. Richiamo vaccinale di ${widget.petName}',
+              validator: (value) =>
+                  (value ?? '').trim().isEmpty ? 'Inserisci un titolo.' : null,
             ),
-          ),
+            _EditableField(
+              label: 'Scadenza',
+              controller: _dueController,
+              hintText: 'Es. 25 Apr 2026',
+              validator: (value) =>
+                  (value ?? '').trim().isEmpty ? 'Inserisci una data.' : null,
+            ),
+            _EditableField(
+              label: 'Ricorrenza',
+              controller: _scheduleController,
+              hintText: 'Es. Ogni 12 mesi',
+            ),
+            _EditableField(
+              label: 'Nota',
+              controller: _noteController,
+              hintText: 'Es. Porta il libretto sanitario',
+              maxLines: 2,
+            ),
+          ],
+          onSave: _review,
+          saveLabel: 'Rivedi',
+          onCancel: () => Navigator.of(context).pop(),
         ),
       ),
-      state: _state,
-      onStateChanged: (value) => setState(() => _state = value),
-      child: switch (_state) {
-        _ViewState.empty => _StatePanel(
-            label: 'Bozza',
-            title: 'Parti da una bozza rapida.',
-            body: 'Raccogliamo titolo, data, ricorrenza e una nota breve.',
-            icon: Icons.edit_calendar_outlined,
-            actionLabel: 'Continua',
-            onAction: () {},
-          ),
-        _ViewState.loading => const _LoadingPanel(
-            title: 'Preparazione form',
-            body: 'Sto caricando le opzioni di ricorrenza e i valori predefiniti.',
-          ),
-        _ViewState.error => _StatePanel(
-            label: 'Errore validazione',
-            title: 'Mancano alcuni campi.',
-            body: 'Compila titolo e scadenza prima di salvare il promemoria.',
-            icon: Icons.rule_outlined,
-            actionLabel: 'Correggi campi',
-            onAction: () {},
-          ),
-        _ViewState.success => _FormPanel(
-            title: 'Nuovo promemoria',
-            body: 'Titolo, data e ricorrenza sono pronti per il salvataggio.',
-            items: const [
-              _FormItem(label: 'Titolo', value: 'Richiamo vaccinale di Moka'),
-              _FormItem(label: 'Scadenza', value: '25 Apr 2026'),
-              _FormItem(label: 'Ricorrenza', value: 'Ogni 12 mesi'),
-              _FormItem(label: 'Nota', value: 'Porta il libretto sanitario'),
-            ],
-            onSave: () {
-              unawaited(
-                _repository.saveReminder(
-                  const ReminderEntry(
-                    id: 'promemoria-bozza-vaccino',
-                    title: 'Richiamo vaccinale di Moka',
-                    subtitle: 'Ogni 12 mesi',
-                    due: '25 Apr 2026',
-                    badge: 'Bozza',
-                    note: 'Porta il libretto sanitario',
-                    schedule: 'Ricorrente ogni 12 mesi',
-                  ),
-                ),
-              );
-            },
-            onCancel: () => Navigator.of(context).pop(),
-          ),
-      },
     );
   }
 }
 
 class ReminderEditPage extends StatefulWidget {
-  const ReminderEditPage({super.key});
+  const ReminderEditPage({super.key, this.reminder});
+
+  final ReminderEntry? reminder;
 
   @override
   State<ReminderEditPage> createState() => _ReminderEditPageState();
 }
 
 class _ReminderEditPageState extends State<ReminderEditPage> {
-  _ViewState _state = _ViewState.success;
   final RemindersRepository _repository = RemindersRepository();
+  final _formKey = GlobalKey<FormState>();
+  late final TextEditingController _titleController;
+  late final TextEditingController _dueController;
+  late final TextEditingController _scheduleController;
+  late final TextEditingController _noteController;
+
+  @override
+  void initState() {
+    super.initState();
+    final reminder = widget.reminder;
+    _titleController = TextEditingController(text: reminder?.title ?? '');
+    _dueController = TextEditingController(text: reminder?.due ?? '');
+    _scheduleController = TextEditingController(text: reminder?.schedule ?? 'Una tantum');
+    _noteController = TextEditingController(text: reminder?.note ?? '');
+  }
+
+  @override
+  void dispose() {
+    _titleController.dispose();
+    _dueController.dispose();
+    _scheduleController.dispose();
+    _noteController.dispose();
+    super.dispose();
+  }
+
+  void _save() {
+    if (!(_formKey.currentState?.validate() ?? false)) {
+      return;
+    }
+
+    final reminder = ReminderEntry(
+      id: widget.reminder?.id ?? 'promemoria-${DateTime.now().microsecondsSinceEpoch}',
+      petName: widget.reminder?.petName ?? '',
+      title: _titleController.text.trim(),
+      subtitle: _scheduleController.text.trim(),
+      due: _dueController.text.trim(),
+      badge: widget.reminder?.badge ?? 'Aggiornato',
+      note: _noteController.text.trim(),
+      schedule: _scheduleController.text.trim(),
+    );
+
+    unawaited(_repository.saveReminder(reminder));
+    Navigator.of(context).pop(reminder);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -264,56 +296,43 @@ class _ReminderEditPageState extends State<ReminderEditPage> {
       subtitle: 'Aggiorna ricorrenza, nota e scadenza.',
       actionLabel: 'Indietro',
       onAction: () => Navigator.of(context).pop(),
-      state: _state,
-      onStateChanged: (value) => setState(() => _state = value),
-      child: switch (_state) {
-        _ViewState.empty => _StatePanel(
-            label: 'Modalita modifica',
-            title: 'Nessun elemento selezionato.',
-            body: 'Scegli un promemoria dalla lista per aggiornarne data o nota.',
-            icon: Icons.tune_outlined,
-            actionLabel: 'Indietro',
-            onAction: () => Navigator.of(context).pop(),
-          ),
-        _ViewState.loading => const _LoadingPanel(
-            title: 'Caricamento promemoria',
-            body: 'Sto leggendo regole di ricorrenza, note locali e avvisi.',
-          ),
-        _ViewState.error => _StatePanel(
-            label: 'Salvataggio fallito',
-            title: 'L aggiornamento non e stato salvato.',
-            body: 'Riprova dopo aver controllato data e ricorrenza.',
-            icon: Icons.save_outlined,
-            actionLabel: 'Riprova salvataggio',
-            onAction: () {},
-          ),
-        _ViewState.success => _FormPanel(
-            title: 'Modifica promemoria',
-            body: 'Tutti i campi sono gia compilati e pronti per il salvataggio.',
-            items: const [
-              _FormItem(label: 'Titolo', value: 'Antiparassitario di Moka'),
-              _FormItem(label: 'Scadenza', value: '28 Mar 2026'),
-              _FormItem(label: 'Ricorrenza', value: 'Ogni 30 giorni'),
-              _FormItem(label: 'Avviso', value: 'Notifica push'),
-            ],
-            onSave: () {
-              unawaited(
-                _repository.saveReminder(
-                  const ReminderEntry(
-                    id: 'moka-antiparassitario',
-                    title: 'Antiparassitario di Moka',
-                    subtitle: 'Ogni 30 giorni',
-                    due: '28 Mar 2026',
-                    badge: 'Prioritario',
-                    note: 'Notifica push attiva',
-                    schedule: 'Ricorrente ogni 30 giorni',
-                  ),
-                ),
-              );
-            },
-            onCancel: () => Navigator.of(context).pop(),
-          ),
-      },
+      child: Form(
+        key: _formKey,
+        child: _EditableFormPanel(
+          title: 'Modifica promemoria',
+          body: 'Aggiorna i campi e salva per confermare le modifiche.',
+          fields: [
+            _EditableField(
+              label: 'Titolo',
+              controller: _titleController,
+              hintText: 'Es. Antiparassitario di Moka',
+              validator: (value) =>
+                  (value ?? '').trim().isEmpty ? 'Inserisci un titolo.' : null,
+            ),
+            _EditableField(
+              label: 'Scadenza',
+              controller: _dueController,
+              hintText: 'Es. 28 Mar 2026',
+              validator: (value) =>
+                  (value ?? '').trim().isEmpty ? 'Inserisci una data.' : null,
+            ),
+            _EditableField(
+              label: 'Ricorrenza',
+              controller: _scheduleController,
+              hintText: 'Es. Ogni 30 giorni',
+            ),
+            _EditableField(
+              label: 'Nota',
+              controller: _noteController,
+              hintText: 'Es. Notifica push attiva',
+              maxLines: 2,
+            ),
+          ],
+          onSave: _save,
+          saveLabel: 'Salva',
+          onCancel: () => Navigator.of(context).pop(),
+        ),
+      ),
     );
   }
 }
@@ -328,68 +347,51 @@ class ReminderDetailPage extends StatefulWidget {
 }
 
 class _ReminderDetailPageState extends State<ReminderDetailPage> {
-  _ViewState _state = _ViewState.success;
+  late ReminderEntry? _reminder = widget.reminder;
+
+  Future<void> _openEdit() async {
+    final updated = await Navigator.of(context).push<ReminderEntry>(
+      MaterialPageRoute<ReminderEntry>(
+        builder: (_) => ReminderEditPage(reminder: _reminder),
+      ),
+    );
+    if (updated != null && mounted) {
+      setState(() => _reminder = updated);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
-    final reminder = widget.reminder;
+    final reminder = _reminder;
 
     return _Shell(
       title: 'Dettaglio promemoria',
       subtitle: 'Data, ricorrenza e nota del promemoria.',
       actionLabel: 'Modifica',
-      onAction: () => Navigator.of(context).push(
-        MaterialPageRoute<void>(builder: (_) => const ReminderEditPage()),
-      ),
-      state: _state,
-      onStateChanged: (value) => setState(() => _state = value),
-      child: switch (_state) {
-        _ViewState.empty => _StatePanel(
-            label: 'Nessun promemoria',
-            title: 'Nessun elemento da ispezionare.',
-            body: 'Apri un promemoria dalla lista oppure crea una bozza nuova.',
-            icon: Icons.event_available_outlined,
-            actionLabel: 'Torna alla lista',
-            onAction: () => Navigator.of(context).pop(),
+      onAction: _openEdit,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _SummaryCard(
+            title: reminder?.title ?? 'Antiparassitario di Moka',
+            body: reminder?.note ?? 'Promemoria ricorrente collegato al profilo attivo di Moka.',
+            icon: Icons.verified_outlined,
           ),
-        _ViewState.loading => const _LoadingPanel(
-            title: 'Caricamento promemoria',
-            body: 'Sto leggendo ricorrenza, scadenza e note.',
-          ),
-        _ViewState.error => _StatePanel(
-            label: 'Errore anteprima',
-            title: 'Anteprima del promemoria non disponibile.',
-            body: 'Riprova oppure torna alla lista per aprire un altro elemento.',
-            icon: Icons.broken_image_outlined,
-            actionLabel: 'Riprova',
-            onAction: () {},
-          ),
-        _ViewState.success => Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              _SummaryCard(
-                title: reminder?.title ?? 'Antiparassitario di Moka',
-                body: reminder?.note ?? 'Promemoria ricorrente collegato al profilo attivo di Moka.',
-                icon: Icons.verified_outlined,
-              ),
-              const SizedBox(height: AppSpacing.lg),
-              _FormPanel(
-                title: 'Riepilogo promemoria',
-                body: 'La vista dettaglio mantiene tutti i valori chiave in un solo posto.',
-                items: [
-                  _FormItem(label: 'Titolo', value: reminder?.title ?? 'Antiparassitario di Moka'),
-                  _FormItem(label: 'Scadenza', value: reminder?.due ?? '28 Mar 2026'),
-                  _FormItem(label: 'Ricorrenza', value: reminder?.schedule ?? 'Ricorrente ogni 30 giorni'),
-                  _FormItem(label: 'Stato', value: reminder?.badge ?? 'Prioritario'),
-                ],
-                onSave: () => Navigator.of(context).push(
-                  MaterialPageRoute<void>(builder: (_) => const ReminderEditPage()),
-                ),
-                onCancel: () => Navigator.of(context).pop(),
-              ),
+          const SizedBox(height: AppSpacing.lg),
+          _FormPanel(
+            title: 'Riepilogo promemoria',
+            body: 'La vista dettaglio mantiene tutti i valori chiave in un solo posto.',
+            items: [
+              _FormItem(label: 'Titolo', value: reminder?.title ?? 'Antiparassitario di Moka'),
+              _FormItem(label: 'Scadenza', value: reminder?.due ?? '28 Mar 2026'),
+              _FormItem(label: 'Ricorrenza', value: reminder?.schedule ?? 'Ricorrente ogni 30 giorni'),
+              _FormItem(label: 'Stato', value: reminder?.badge ?? 'Prioritario'),
             ],
+            onSave: _openEdit,
+            onCancel: () => Navigator.of(context).pop(),
           ),
-      },
+        ],
+      ),
     );
   }
 }
@@ -400,8 +402,6 @@ class _Shell extends StatelessWidget {
     required this.subtitle,
     required this.actionLabel,
     required this.onAction,
-    required this.state,
-    required this.onStateChanged,
     required this.child,
   });
 
@@ -409,8 +409,6 @@ class _Shell extends StatelessWidget {
   final String subtitle;
   final String actionLabel;
   final VoidCallback onAction;
-  final _ViewState state;
-  final ValueChanged<_ViewState> onStateChanged;
   final Widget child;
 
   @override
@@ -440,8 +438,6 @@ class _Shell extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 _Header(title: title, subtitle: subtitle, actionLabel: actionLabel, onAction: onAction),
-                const SizedBox(height: AppSpacing.lg),
-                _StateChips(value: state, onChanged: onStateChanged),
                 const SizedBox(height: AppSpacing.lg),
                 child,
               ],
@@ -516,59 +512,6 @@ class _BrandPill extends StatelessWidget {
           ),
         ],
       ),
-    );
-  }
-}
-
-class _StateChips extends StatelessWidget {
-  const _StateChips({
-    required this.value,
-    required this.onChanged,
-  });
-
-  final _ViewState value;
-  final ValueChanged<_ViewState> onChanged;
-
-  @override
-  Widget build(BuildContext context) {
-    return Wrap(
-      spacing: AppSpacing.sm,
-      runSpacing: AppSpacing.sm,
-      children: [
-        _StateChip(label: 'Vuoto', selected: value == _ViewState.empty, onTap: () => onChanged(_ViewState.empty)),
-        _StateChip(label: 'Caricamento', selected: value == _ViewState.loading, onTap: () => onChanged(_ViewState.loading)),
-        _StateChip(label: 'Errore', selected: value == _ViewState.error, onTap: () => onChanged(_ViewState.error)),
-        _StateChip(label: 'OK', selected: value == _ViewState.success, onTap: () => onChanged(_ViewState.success)),
-      ],
-    );
-  }
-}
-
-class _StateChip extends StatelessWidget {
-  const _StateChip({
-    required this.label,
-    required this.selected,
-    required this.onTap,
-  });
-
-  final String label;
-  final bool selected;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    return ChoiceChip(
-      label: Text(label),
-      selected: selected,
-      onSelected: (_) => onTap(),
-      labelStyle: TextStyle(
-        color: selected ? AppColors.onPrimary : AppColors.secondaryText,
-        fontWeight: FontWeight.w700,
-      ),
-      selectedColor: AppColors.primary,
-      backgroundColor: AppColors.surface,
-      side: const BorderSide(color: AppColors.border),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadii.pill)),
     );
   }
 }
@@ -868,6 +811,112 @@ class _Badge extends StatelessWidget {
           color: Color(0xFF8B5B3E),
         ),
       ),
+    );
+  }
+}
+
+class _EditableFormPanel extends StatelessWidget {
+  const _EditableFormPanel({
+    required this.title,
+    required this.body,
+    required this.fields,
+    required this.onSave,
+    required this.onCancel,
+    this.saveLabel = 'Salva',
+  });
+
+  final String title;
+  final String body;
+  final List<_EditableField> fields;
+  final VoidCallback onSave;
+  final VoidCallback onCancel;
+  final String saveLabel;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(AppSpacing.xl),
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(AppRadii.xl),
+        border: Border.all(color: AppColors.border),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(title, style: AppTextStyles.title),
+          const SizedBox(height: AppSpacing.sm),
+          Text(body, style: AppTextStyles.bodySmall),
+          const SizedBox(height: AppSpacing.xl),
+          ...fields.map(
+            (field) => Padding(
+              padding: const EdgeInsets.only(bottom: AppSpacing.md),
+              child: field,
+            ),
+          ),
+          const SizedBox(height: AppSpacing.md),
+          Row(
+            children: [
+              Expanded(
+                child: FilledButton(onPressed: onSave, child: Text(saveLabel)),
+              ),
+              const SizedBox(width: AppSpacing.sm),
+              Expanded(child: OutlinedButton(onPressed: onCancel, child: const Text('Annulla'))),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _EditableField extends StatelessWidget {
+  const _EditableField({
+    required this.label,
+    required this.controller,
+    this.hintText,
+    this.validator,
+    this.maxLines = 1,
+  });
+
+  final String label;
+  final TextEditingController controller;
+  final String? hintText;
+  final FormFieldValidator<String>? validator;
+  final int maxLines;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(label, style: AppTextStyles.caption),
+        const SizedBox(height: AppSpacing.xs),
+        TextFormField(
+          controller: controller,
+          maxLines: maxLines,
+          validator: validator,
+          style: AppTextStyles.bodySmall.copyWith(color: AppColors.text),
+          decoration: InputDecoration(
+            hintText: hintText,
+            filled: true,
+            fillColor: AppColors.background,
+            contentPadding: const EdgeInsets.symmetric(
+              horizontal: AppSpacing.lg,
+              vertical: AppSpacing.md,
+            ),
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(AppRadii.medium),
+              borderSide: const BorderSide(color: AppColors.border),
+            ),
+            enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(AppRadii.medium),
+              borderSide: const BorderSide(color: AppColors.border),
+            ),
+          ),
+        ),
+      ],
     );
   }
 }

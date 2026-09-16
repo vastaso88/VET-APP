@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 
-import '../../../../app/router/app_router.dart';
 import '../../../../../design_system/tokens/app_colors.dart';
 import '../../../../../design_system/tokens/app_radii.dart';
 import '../../../../../design_system/tokens/app_spacing.dart';
 import '../../../../../design_system/tokens/app_text_styles.dart';
+import '../../../auth/presentation/pages/auth_placeholder_page.dart';
 import '../widgets/onboarding_scaffold.dart';
 
 class OnboardingPrivacyDisclaimerPage extends StatelessWidget {
@@ -19,7 +19,9 @@ class OnboardingPrivacyDisclaimerPage extends StatelessWidget {
           'Prima di entrare, chiarimo come usiamo i dati e cosa non puo sostituire l app.',
       primaryActionLabel: 'Accetto e continua',
       onPrimaryAction: () {
-        Navigator.of(context).pushReplacementNamed(AppRouter.auth);
+        Navigator.of(context).push(
+          MaterialPageRoute<void>(builder: (_) => const AuthPlaceholderPage()),
+        );
       },
       secondaryActionLabel: 'Torna al valore',
       onSecondaryAction: () {

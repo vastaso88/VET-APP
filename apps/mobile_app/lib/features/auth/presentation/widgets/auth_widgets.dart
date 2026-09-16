@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 
 import '../../../../design_system/tokens/app_colors.dart';
+import '../../../../design_system/tokens/app_radii.dart';
 import '../../../../design_system/tokens/app_spacing.dart';
+import '../../../../design_system/tokens/app_text_styles.dart';
 
-const _kAuthContentMaxWidth = 920.0;
+const _kAuthContentMaxWidth = 520.0;
 
 enum AuthBannerStatus {
   info,
@@ -12,27 +14,20 @@ enum AuthBannerStatus {
   error,
 }
 
+/// A single warm card holding title, subtitle and page-specific content.
+/// Every auth screen (hub, login, register, reset) shares this shell so the
+/// primary action is always the first and only button the user sees.
 class AuthScreenScaffold extends StatelessWidget {
   const AuthScreenScaffold({
     super.key,
-    required this.eyebrow,
     required this.title,
     required this.subtitle,
-    required this.primaryActionLabel,
-    required this.secondaryActionLabel,
-    required this.onPrimaryAction,
-    required this.onSecondaryAction,
-    required this.footer,
+    required this.child,
   });
 
-  final String eyebrow;
   final String title;
   final String subtitle;
-  final String primaryActionLabel;
-  final String secondaryActionLabel;
-  final VoidCallback onPrimaryAction;
-  final VoidCallback onSecondaryAction;
-  final Widget footer;
+  final Widget child;
 
   @override
   Widget build(BuildContext context) {
@@ -50,49 +45,55 @@ class AuthScreenScaffold extends StatelessWidget {
           ),
         ),
         child: SafeArea(
-          child: LayoutBuilder(
-            builder: (context, constraints) {
-              final horizontalPadding =
-                  constraints.maxWidth < 640 ? AppSpacing.lg : AppSpacing.xxl;
-
-              return SingleChildScrollView(
-                padding: EdgeInsets.fromLTRB(
-                  horizontalPadding,
-                  AppSpacing.lg,
-                  horizontalPadding,
-                  AppSpacing.xxl,
-                ),
-                child: Center(
-                  child: ConstrainedBox(
-                    constraints: const BoxConstraints(
-                      maxWidth: _kAuthContentMaxWidth,
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.fromLTRB(
+              AppSpacing.lg,
+              AppSpacing.lg,
+              AppSpacing.lg,
+              AppSpacing.xxl,
+            ),
+            child: Center(
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: _kAuthContentMaxWidth),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _BrandRow(
+                      onBack: Navigator.of(context).canPop()
+                          ? () => Navigator.of(context).pop()
+                          : null,
                     ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        _BrandRow(
-                          eyebrow: eyebrow,
-                          onBack: Navigator.of(context).canPop()
-                              ? () => Navigator.of(context).pop()
-                              : null,
-                        ),
-                        const SizedBox(height: AppSpacing.xl),
-                        _HeroPanel(
-                          title: title,
-                          subtitle: subtitle,
-                          primaryActionLabel: primaryActionLabel,
-                          secondaryActionLabel: secondaryActionLabel,
-                          onPrimaryAction: onPrimaryAction,
-                          onSecondaryAction: onSecondaryAction,
-                        ),
-                        const SizedBox(height: AppSpacing.xl),
-                        footer,
-                      ],
+                    const SizedBox(height: AppSpacing.xl),
+                    Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.all(AppSpacing.xl),
+                      decoration: BoxDecoration(
+                        color: AppColors.surface,
+                        borderRadius: BorderRadius.circular(AppRadii.xl),
+                        border: Border.all(color: AppColors.border),
+                        boxShadow: const [
+                          BoxShadow(
+                            color: Color(0x1A163A35),
+                            blurRadius: 28,
+                            offset: Offset(0, 16),
+                          ),
+                        ],
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(title, style: AppTextStyles.display.copyWith(fontSize: 28)),
+                          const SizedBox(height: AppSpacing.sm),
+                          Text(subtitle, style: AppTextStyles.body),
+                          const SizedBox(height: AppSpacing.xl),
+                          child,
+                        ],
+                      ),
                     ),
-                  ),
+                  ],
                 ),
-              );
-            },
+              ),
+            ),
           ),
         ),
       ),
@@ -139,79 +140,39 @@ class AuthStateBanner extends StatelessWidget {
 
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(AppSpacing.md),
+      margin: const EdgeInsets.only(bottom: AppSpacing.lg),
       decoration: BoxDecoration(
         color: colors.background,
-        borderRadius: BorderRadius.circular(22),
+        borderRadius: BorderRadius.circular(AppRadii.large),
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(colors.icon, color: colors.foreground),
-          const SizedBox(width: 12),
+          Icon(colors.icon, color: colors.foreground, size: 20),
+          const SizedBox(width: AppSpacing.sm),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
                   title,
-                  style: TextStyle(
+                  style: AppTextStyles.bodySmall.copyWith(
                     color: colors.foreground,
-                    fontSize: 14,
                     fontWeight: FontWeight.w800,
                   ),
                 ),
-                const SizedBox(height: 4),
+                const SizedBox(height: 2),
                 Text(
                   message,
-                  style: TextStyle(
-                    color: colors.foreground.withValues(alpha: 0.88),
-                    fontSize: 13,
-                    height: 1.4,
+                  style: AppTextStyles.caption.copyWith(
+                    color: colors.foreground.withValues(alpha: 0.9),
+                    fontWeight: FontWeight.w500,
                   ),
                 ),
               ],
             ),
           ),
-        ],
-      ),
-    );
-  }
-}
-
-class AuthSurfaceCard extends StatelessWidget {
-  const AuthSurfaceCard({
-    super.key,
-    required this.title,
-    required this.child,
-  });
-
-  final String title;
-  final Widget child;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: AppColors.surface.withValues(alpha: 0.92),
-        borderRadius: BorderRadius.circular(28),
-        border: Border.all(color: AppColors.border),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            title,
-            style: const TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.w800,
-              color: AppColors.text,
-            ),
-          ),
-          const SizedBox(height: 16),
-          child,
         ],
       ),
     );
@@ -250,22 +211,22 @@ class AuthInputField extends StatelessWidget {
         labelText: label,
         hintText: hintText,
         filled: true,
-        fillColor: const Color(0xFFF8F6F1),
+        fillColor: AppColors.background,
         border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(18),
+          borderRadius: BorderRadius.circular(AppRadii.medium),
           borderSide: const BorderSide(color: AppColors.border),
         ),
         enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(18),
+          borderRadius: BorderRadius.circular(AppRadii.medium),
           borderSide: const BorderSide(color: AppColors.border),
         ),
         focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(18),
+          borderRadius: BorderRadius.circular(AppRadii.medium),
           borderSide: const BorderSide(color: AppColors.primary, width: 1.5),
         ),
         contentPadding: const EdgeInsets.symmetric(
-          horizontal: 16,
-          vertical: 16,
+          horizontal: AppSpacing.lg,
+          vertical: AppSpacing.md,
         ),
       ),
     );
@@ -284,13 +245,15 @@ class AuthFooterLink extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Center(
+    return Align(
+      alignment: Alignment.centerLeft,
       child: TextButton(
+        style: TextButton.styleFrom(padding: EdgeInsets.zero, minimumSize: Size.zero),
         onPressed: onTap,
         child: Text(
           label,
-          style: const TextStyle(
-            color: AppColors.secondaryText,
+          style: AppTextStyles.bodySmall.copyWith(
+            color: AppColors.primary,
             fontWeight: FontWeight.w700,
           ),
         ),
@@ -300,12 +263,8 @@ class AuthFooterLink extends StatelessWidget {
 }
 
 class _BrandRow extends StatelessWidget {
-  const _BrandRow({
-    required this.eyebrow,
-    required this.onBack,
-  });
+  const _BrandRow({required this.onBack});
 
-  final String eyebrow;
   final VoidCallback? onBack;
 
   @override
@@ -313,24 +272,19 @@ class _BrandRow extends StatelessWidget {
     return Row(
       children: [
         Container(
-          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md, vertical: AppSpacing.sm),
           decoration: BoxDecoration(
             color: AppColors.primary,
-            borderRadius: BorderRadius.circular(16),
+            borderRadius: BorderRadius.circular(AppRadii.medium),
           ),
-          child: const Row(
+          child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(Icons.circle, size: 8, color: AppColors.accent),
-              SizedBox(width: 8),
+              const Icon(Icons.circle, size: 8, color: AppColors.accent),
+              const SizedBox(width: AppSpacing.sm),
               Text(
                 'VET APP',
-                style: TextStyle(
-                  color: AppColors.onPrimary,
-                  fontSize: 12,
-                  fontWeight: FontWeight.w800,
-                  letterSpacing: 0.4,
-                ),
+                style: AppTextStyles.caption.copyWith(color: AppColors.onPrimary, letterSpacing: 0.4),
               ),
             ],
           ),
@@ -339,96 +293,10 @@ class _BrandRow extends StatelessWidget {
         if (onBack != null)
           TextButton.icon(
             onPressed: onBack,
-            icon: const Icon(Icons.arrow_back_rounded),
+            icon: const Icon(Icons.arrow_back_rounded, size: 18),
             label: const Text('Indietro'),
-          )
-        else
-          Text(
-            eyebrow,
-            style: const TextStyle(
-              color: AppColors.secondaryText,
-              fontSize: 13,
-              fontWeight: FontWeight.w700,
-            ),
           ),
       ],
-    );
-  }
-}
-
-class _HeroPanel extends StatelessWidget {
-  const _HeroPanel({
-    required this.title,
-    required this.subtitle,
-    required this.primaryActionLabel,
-    required this.secondaryActionLabel,
-    required this.onPrimaryAction,
-    required this.onSecondaryAction,
-  });
-
-  final String title;
-  final String subtitle;
-  final String primaryActionLabel;
-  final String secondaryActionLabel;
-  final VoidCallback onPrimaryAction;
-  final VoidCallback onSecondaryAction;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(24),
-      decoration: BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.circular(32),
-        border: Border.all(color: AppColors.border),
-        boxShadow: const [
-          BoxShadow(
-            color: Color(0x1A163A35),
-            blurRadius: 28,
-            offset: Offset(0, 16),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            title,
-            style: const TextStyle(
-              fontSize: 32,
-              height: 1.15,
-              fontWeight: FontWeight.w800,
-              color: AppColors.text,
-            ),
-          ),
-          const SizedBox(height: 14),
-          Text(
-            subtitle,
-            style: const TextStyle(
-              fontSize: 15,
-              height: 1.5,
-              color: AppColors.secondaryText,
-            ),
-          ),
-          const SizedBox(height: 22),
-          SizedBox(
-            width: double.infinity,
-            child: ElevatedButton(
-              onPressed: onPrimaryAction,
-              child: Text(primaryActionLabel),
-            ),
-          ),
-          const SizedBox(height: 12),
-          SizedBox(
-            width: double.infinity,
-            child: OutlinedButton(
-              onPressed: onSecondaryAction,
-              child: Text(secondaryActionLabel),
-            ),
-          ),
-        ],
-      ),
     );
   }
 }

@@ -58,12 +58,33 @@ class PetDemoStore {
     ),
     PetSpeciesOption(
       label: 'Uccello',
-      avatarEmoji: '🐦',
-      accentColor: Color(0xFFE0EEF4),
+      avatarEmoji: '🦜',
+      accentColor: Color(0xFFE3EBF0),
       breeds: [
         'Pappagallo',
         'Canarino',
         'Cocorita',
+      ],
+    ),
+    PetSpeciesOption(
+      label: 'Rettile',
+      avatarEmoji: '🦎',
+      accentColor: Color(0xFFEDF0DF),
+      breeds: [
+        'Drago barbuto',
+        'Gecko leopardino',
+        'Testuggine',
+        'Serpente del mais',
+      ],
+    ),
+    PetSpeciesOption(
+      label: 'Pesce',
+      avatarEmoji: '🐠',
+      accentColor: Color(0xFFE1EEEE),
+      breeds: [
+        'Pesce rosso',
+        'Betta',
+        'Ciclide',
       ],
     ),
     PetSpeciesOption(
@@ -83,13 +104,15 @@ class PetDemoStore {
   late List<PetProfile> _pets;
 
   List<PetProfile> list({String? species}) {
-    final normalizedSpecies = species?.trim() ?? '';
-    if (normalizedSpecies.isEmpty || normalizedSpecies == 'Tutti') {
+    final normalizedSpecies = species?.trim().toLowerCase() ?? '';
+    if (normalizedSpecies.isEmpty || normalizedSpecies == 'tutti') {
       return List<PetProfile>.unmodifiable(_pets);
     }
 
     return List<PetProfile>.unmodifiable(
-      _pets.where((pet) => pet.species == normalizedSpecies),
+      _pets.where(
+        (pet) => pet.species.trim().toLowerCase() == normalizedSpecies,
+      ),
     );
   }
 
@@ -148,8 +171,9 @@ class PetDemoStore {
   }
 
   static PetSpeciesOption optionForSpecies(String species) {
+    final normalized = species.trim().toLowerCase();
     return speciesOptions.firstWhere(
-      (option) => option.label == species,
+      (option) => option.label.toLowerCase() == normalized,
       orElse: () => speciesOptions.last,
     );
   }

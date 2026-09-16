@@ -5,6 +5,7 @@ import '../../../../shared/config/app_runtime_config_loader.dart';
 class ReminderEntry {
   const ReminderEntry({
     required this.id,
+    required this.petName,
     required this.title,
     required this.subtitle,
     required this.due,
@@ -14,6 +15,7 @@ class ReminderEntry {
   });
 
   final String id;
+  final String petName;
   final String title;
   final String subtitle;
   final String due;
@@ -53,6 +55,7 @@ class RemindersRepository {
 
     await client.from('reminders').upsert({
       'id': reminder.id,
+      'pet_name': reminder.petName,
       'title': reminder.title,
       'subtitle': reminder.subtitle,
       'due': reminder.due,
@@ -69,12 +72,13 @@ class RemindersRepository {
     }
 
     try {
-      final response = await client.from('reminders').select('id,title,subtitle,due,badge,note,schedule');
+      final response = await client.from('reminders').select('*');
       final rows = response as List<dynamic>;
       return rows
           .map(
             (row) => ReminderEntry(
               id: (row['id'] ?? '').toString(),
+              petName: (row['pet_name'] ?? '').toString(),
               title: (row['title'] ?? 'Promemoria').toString(),
               subtitle: (row['subtitle'] ?? 'Promemoria sincronizzato').toString(),
               due: (row['due'] ?? 'A breve').toString(),
@@ -109,6 +113,7 @@ class RemindersRepository {
   static const List<ReminderEntry> _previewReminders = [
     ReminderEntry(
       id: 'moka-antiparassitario',
+      petName: 'Moka',
       title: 'Antiparassitario di Moka',
       subtitle: 'Ogni 30 giorni',
       due: 'Scade tra 3 giorni',
@@ -118,20 +123,52 @@ class RemindersRepository {
     ),
     ReminderEntry(
       id: 'moka-richiamo-vaccinale',
+      petName: 'Moka',
       title: 'Richiamo vaccinale di Moka',
       subtitle: 'Ogni 12 mesi',
-      due: 'Scade tra 21 giorni',
+      due: 'Scade tra 12 giorni',
       badge: 'Programmato',
       note: 'Documento gia caricato in cartella per la prossima visita.',
       schedule: 'Ricorrente ogni 12 mesi',
     ),
     ReminderEntry(
       id: 'moka-controllo-peso',
+      petName: 'Moka',
       title: 'Controllo peso di Moka',
       subtitle: 'Promemoria manuale',
       due: 'Domani alle 11:30',
       badge: 'Vicino',
       note: 'Rivedi andamento, peso e note cliniche prima della chiamata.',
+      schedule: 'Promemoria una tantum',
+    ),
+    ReminderEntry(
+      id: 'oliver-controllo-dentale',
+      petName: 'Oliver',
+      title: 'Controllo dentale di Oliver',
+      subtitle: 'Promemoria manuale',
+      due: 'La prossima settimana',
+      badge: 'Programmato',
+      note: 'Porta il libretto sanitario e conferma la disponibilita con la clinica.',
+      schedule: 'Promemoria una tantum',
+    ),
+    ReminderEntry(
+      id: 'rex-controllo-uvb',
+      petName: 'Rex',
+      title: 'Controllo UVB terrario di Rex',
+      subtitle: 'Ogni 6 mesi',
+      due: 'Scade tra 3 giorni',
+      badge: 'Prioritario',
+      note: 'Verifica intensita della lampada UVB e temperatura del terrario.',
+      schedule: 'Ricorrente ogni 6 mesi',
+    ),
+    ReminderEntry(
+      id: 'pico-becco-unghie',
+      petName: 'Pico',
+      title: 'Controllo becco e unghie di Pico',
+      subtitle: 'Promemoria manuale',
+      due: 'Tra un mese',
+      badge: 'Programmato',
+      note: 'Controllo di routine su becco, unghie e piumaggio.',
       schedule: 'Promemoria una tantum',
     ),
   ];

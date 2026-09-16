@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../design_system/tokens/app_colors.dart';
-import '../../features/chat/chat.dart';
 import '../../features/home/presentation/pages/home_dashboard_page.dart';
-import '../../features/medical_records/presentation/pages/medical_records_pages.dart';
 import '../../features/pets/pets.dart';
 import '../../features/settings/presentation/pages/settings_page.dart';
 
@@ -22,8 +20,6 @@ class _HomeShellPageState extends State<HomeShellPage> {
   late final List<_ShellTabNavigator> _pages = const [
     _ShellTabNavigator(rootPage: HomeDashboardPage()),
     _ShellTabNavigator(rootPage: PetsListPage()),
-    _ShellTabNavigator(rootPage: ChatConversationsPage()),
-    _ShellTabNavigator(rootPage: MedicalRecordsListPage()),
     _ShellTabNavigator(rootPage: SettingsPage()),
   ];
 
@@ -139,22 +135,12 @@ class _HomeShellPageState extends State<HomeShellPage> {
         NavigationRailDestination(
           icon: Icon(Icons.pets_outlined),
           selectedIcon: Icon(Icons.pets_rounded),
-          label: Text('Pets'),
-        ),
-        NavigationRailDestination(
-          icon: Icon(Icons.chat_bubble_outline_rounded),
-          selectedIcon: Icon(Icons.chat_bubble_rounded),
-          label: Text('Chat'),
-        ),
-        NavigationRailDestination(
-          icon: Icon(Icons.description_outlined),
-          selectedIcon: Icon(Icons.description_rounded),
-          label: Text('Records'),
+          label: Text('Animali'),
         ),
         NavigationRailDestination(
           icon: Icon(Icons.settings_outlined),
           selectedIcon: Icon(Icons.settings_rounded),
-          label: Text('Settings'),
+          label: Text('Impostazioni'),
         ),
       ];
 
@@ -167,22 +153,12 @@ class _HomeShellPageState extends State<HomeShellPage> {
         NavigationDestination(
           icon: Icon(Icons.pets_outlined),
           selectedIcon: Icon(Icons.pets_rounded),
-          label: 'Pets',
-        ),
-        NavigationDestination(
-          icon: Icon(Icons.chat_bubble_outline_rounded),
-          selectedIcon: Icon(Icons.chat_bubble_rounded),
-          label: 'Chat',
-        ),
-        NavigationDestination(
-          icon: Icon(Icons.description_outlined),
-          selectedIcon: Icon(Icons.description_rounded),
-          label: 'Records',
+          label: 'Animali',
         ),
         NavigationDestination(
           icon: Icon(Icons.settings_outlined),
           selectedIcon: Icon(Icons.settings_rounded),
-          label: 'Settings',
+          label: 'Impostazioni',
         ),
       ];
 }

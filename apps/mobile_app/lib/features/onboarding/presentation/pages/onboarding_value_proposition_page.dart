@@ -123,7 +123,7 @@ class _StateCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(AppRadii.xl),
         border: Border.all(color: AppColors.border),
       ),
-      child: const Column(
+      child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text('Cosa puoi mostrare subito', style: AppTextStyles.title),

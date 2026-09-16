@@ -40,7 +40,14 @@ class _ChatConversationDetailPageState extends State<ChatConversationDetailPage>
   @override
   void initState() {
     super.initState();
-    _store.openConversation(widget.conversationId);
+    // Deferred to after this frame: marking the conversation as opened
+    // notifies ChatDemoStore listeners, which must not happen while this
+    // page itself is still being built during a route transition.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        _store.openConversation(widget.conversationId);
+      }
+    });
   }
 
   @override

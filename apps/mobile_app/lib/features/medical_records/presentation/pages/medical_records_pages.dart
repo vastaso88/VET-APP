@@ -8,8 +8,6 @@ import '../../../../../design_system/tokens/app_spacing.dart';
 import '../../../../../design_system/tokens/app_text_styles.dart';
 import '../../data/medical_records_repository.dart';
 
-enum _ViewState { empty, loading, error, success }
-
 class MedicalRecordsListPage extends StatefulWidget {
   const MedicalRecordsListPage({super.key});
 
@@ -21,7 +19,6 @@ class _MedicalRecordsListPageState extends State<MedicalRecordsListPage> {
   final MedicalRecordsRepository _repository = MedicalRecordsRepository();
 
   late Future<List<MedicalRecordEntry>> _recordsFuture;
-  _ViewState _state = _ViewState.success;
   String? _selectedPetName;
 
   @override
@@ -70,28 +67,7 @@ class _MedicalRecordsListPageState extends State<MedicalRecordsListPage> {
       subtitle: 'Referti, note e allegati di Moka in un archivio chiaro.',
       actionLabel: 'Carica',
       onAction: _openUpload,
-      state: _state,
-      onStateChanged: (value) => setState(() => _state = value),
-      child: switch (_state) {
-        _ViewState.empty => _EmptyState(
-            title: 'Nessun documento ancora',
-            body: 'Carica il primo referto per costruire la cartella clinica.',
-            icon: Icons.folder_open_outlined,
-            actionLabel: 'Carica il primo file',
-            onAction: _openUpload,
-          ),
-        _ViewState.loading => const _LoadingState(
-            title: 'Sincronizzazione referti',
-            body: 'Sto recuperando documenti e metadati dalla sorgente demo.',
-          ),
-        _ViewState.error => _EmptyState(
-            title: 'Impossibile caricare l archivio',
-            body: 'Riprova dopo aver controllato la connessione o continua con il fallback demo.',
-            icon: Icons.cloud_off_outlined,
-            actionLabel: 'Riprova',
-            onAction: () {},
-          ),
-        _ViewState.success => FutureBuilder<List<MedicalRecordEntry>>(
+      child: FutureBuilder<List<MedicalRecordEntry>>(
             future: _recordsFuture,
             builder: (context, snapshot) {
               if (snapshot.connectionState == ConnectionState.waiting) {
@@ -201,7 +177,6 @@ class _MedicalRecordsListPageState extends State<MedicalRecordsListPage> {
               );
             },
           ),
-      },
     );
   }
 }
@@ -216,7 +191,6 @@ class MedicalRecordsUploadPage extends StatefulWidget {
 
 class _MedicalRecordsUploadPageState extends State<MedicalRecordsUploadPage> {
   final MedicalRecordsRepository _repository = MedicalRecordsRepository();
-  _ViewState _state = _ViewState.success;
   final MedicalRecordEntry _draftRecord = const MedicalRecordEntry(
     id: 'moka-richiamo-vaccinale-draft',
     petName: 'Moka',
@@ -247,43 +221,27 @@ class _MedicalRecordsUploadPageState extends State<MedicalRecordsUploadPage> {
           ),
         );
       },
-      state: _state,
-      onStateChanged: (value) => setState(() => _state = value),
-      child: switch (_state) {
-        _ViewState.empty => const _EmptyUploadState(),
-        _ViewState.loading => const _LoadingState(
-            title: 'Caricamento documento',
-            body: 'Sto elaborando il file ed estraggo i metadati.',
+      child: const Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _SummaryCard(
+            title: 'richiamo_vaccinale_moka.pdf',
+            body: 'Caricato con successo e pronto per la revisione dei metadati.',
+            icon: Icons.check_circle_outline,
           ),
-        _ViewState.error => _EmptyState(
-            title: 'Caricamento fallito',
-            body: 'Controlla il formato del file e riprova.',
-            icon: Icons.error_outline,
-            actionLabel: 'Riprova il caricamento',
-            onAction: () {},
-          ),
-        _ViewState.success => const Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              _SummaryCard(
-                title: 'richiamo_vaccinale_moka.pdf',
-                body: 'Caricato con successo e pronto per la revisione dei metadati.',
-                icon: Icons.check_circle_outline,
-              ),
-              SizedBox(height: AppSpacing.lg),
-              _MetaGrid(
-                items: [
-                  _MetaItem('Tipo', 'Vaccinazione'),
-                  _MetaItem('Data', '25 Mar 2026'),
-                  _MetaItem('Fonte', 'Clinica Vet Roma'),
-                  _MetaItem('Formato', 'PDF'),
-                ],
-              ),
-              SizedBox(height: AppSpacing.lg),
-              _Checklist(),
+          SizedBox(height: AppSpacing.lg),
+          _MetaGrid(
+            items: [
+              _MetaItem('Tipo', 'Vaccinazione'),
+              _MetaItem('Data', '25 Mar 2026'),
+              _MetaItem('Fonte', 'Clinica Vet Roma'),
+              _MetaItem('Formato', 'PDF'),
             ],
           ),
-      },
+          SizedBox(height: AppSpacing.lg),
+          _Checklist(),
+        ],
+      ),
     );
   }
 }
@@ -298,8 +256,6 @@ class MedicalRecordDetailPage extends StatefulWidget {
 }
 
 class _MedicalRecordDetailPageState extends State<MedicalRecordDetailPage> {
-  _ViewState _state = _ViewState.success;
-
   @override
   Widget build(BuildContext context) {
     return _FeatureScaffold(
@@ -307,28 +263,7 @@ class _MedicalRecordDetailPageState extends State<MedicalRecordDetailPage> {
       subtitle: 'Fonte, formato, data e prossima nota operativa.',
       actionLabel: 'Indietro',
       onAction: () => Navigator.of(context).pop(),
-      state: _state,
-      onStateChanged: (value) => setState(() => _state = value),
-      child: switch (_state) {
-        _ViewState.empty => const _EmptyState(
-            title: 'Nessun documento selezionato',
-            body: 'Scegli un file dall archivio per ispezionare i metadati.',
-            icon: Icons.pageview_outlined,
-            actionLabel: 'Torna alla lista',
-            onAction: null,
-          ),
-        _ViewState.loading => const _LoadingState(
-            title: 'Caricamento dettagli',
-            body: 'Sto leggendo anteprima, fonte e note.',
-          ),
-        _ViewState.error => _EmptyState(
-            title: 'Anteprima non disponibile',
-            body: 'I metadati sono al sicuro. Riprova oppure ricarica il file.',
-            icon: Icons.broken_image_outlined,
-            actionLabel: 'Ricarica',
-            onAction: () {},
-          ),
-        _ViewState.success => Column(
+      child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               _SummaryCard(
@@ -357,7 +292,6 @@ class _MedicalRecordDetailPageState extends State<MedicalRecordDetailPage> {
               _TimelineCard(timeline: widget.record?.timeline),
             ],
           ),
-      },
     );
   }
 }
@@ -368,8 +302,6 @@ class _FeatureScaffold extends StatelessWidget {
     required this.subtitle,
     required this.actionLabel,
     required this.onAction,
-    required this.state,
-    required this.onStateChanged,
     required this.child,
   });
 
@@ -377,8 +309,6 @@ class _FeatureScaffold extends StatelessWidget {
   final String subtitle;
   final String actionLabel;
   final VoidCallback onAction;
-  final _ViewState state;
-  final ValueChanged<_ViewState> onStateChanged;
   final Widget child;
 
   @override
@@ -418,8 +348,6 @@ class _FeatureScaffold extends StatelessWidget {
                       onAction: onAction,
                       compact: isCompact,
                     ),
-                    const SizedBox(height: AppSpacing.lg),
-                    _StateChips(value: state, onChanged: onStateChanged),
                     const SizedBox(height: AppSpacing.lg),
                     child,
                   ],
@@ -516,59 +444,6 @@ class _BrandPill extends StatelessWidget {
           ),
         ],
       ),
-    );
-  }
-}
-
-class _StateChips extends StatelessWidget {
-  const _StateChips({
-    required this.value,
-    required this.onChanged,
-  });
-
-  final _ViewState value;
-  final ValueChanged<_ViewState> onChanged;
-
-  @override
-  Widget build(BuildContext context) {
-    return Wrap(
-      spacing: AppSpacing.sm,
-      runSpacing: AppSpacing.sm,
-      children: [
-        _StateChip(label: 'Vuoto', selected: value == _ViewState.empty, onTap: () => onChanged(_ViewState.empty)),
-        _StateChip(label: 'Caricamento', selected: value == _ViewState.loading, onTap: () => onChanged(_ViewState.loading)),
-        _StateChip(label: 'Errore', selected: value == _ViewState.error, onTap: () => onChanged(_ViewState.error)),
-        _StateChip(label: 'OK', selected: value == _ViewState.success, onTap: () => onChanged(_ViewState.success)),
-      ],
-    );
-  }
-}
-
-class _StateChip extends StatelessWidget {
-  const _StateChip({
-    required this.label,
-    required this.selected,
-    required this.onTap,
-  });
-
-  final String label;
-  final bool selected;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    return ChoiceChip(
-      label: Text(label),
-      selected: selected,
-      onSelected: (_) => onTap(),
-      labelStyle: TextStyle(
-        color: selected ? AppColors.onPrimary : AppColors.secondaryText,
-        fontWeight: FontWeight.w700,
-      ),
-      selectedColor: AppColors.primary,
-      backgroundColor: AppColors.surface,
-      side: const BorderSide(color: AppColors.border),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadii.pill)),
     );
   }
 }
@@ -1063,7 +938,7 @@ class _TimelineCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text('Cronologia documento', style: AppTextStyles.title),
+          Text('Cronologia documento', style: AppTextStyles.title),
           const SizedBox(height: AppSpacing.lg),
           ...rows.map(
             (row) => _TimelineRow(label: row.label, value: row.value),
@@ -1181,21 +1056,6 @@ class _PetFilterBar extends StatelessWidget {
           ),
         ],
       ),
-    );
-  }
-}
-
-class _EmptyUploadState extends StatelessWidget {
-  const _EmptyUploadState();
-
-  @override
-  Widget build(BuildContext context) {
-    return _EmptyState(
-      title: 'Trascina un file o esplora il dispositivo',
-      body: 'Raccoglieremo tipo, data e fonte subito dopo il caricamento.',
-      icon: Icons.cloud_upload_outlined,
-      actionLabel: 'Esplora file',
-      onAction: () {},
     );
   }
 }

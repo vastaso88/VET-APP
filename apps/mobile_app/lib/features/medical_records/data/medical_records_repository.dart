@@ -67,7 +67,7 @@ class MedicalRecordsRepository {
     }
 
     try {
-      await client.from('medical_records').upsert({
+      await client.from('clinical_events').upsert({
         'id': record.id,
         'pet_name': record.petName,
         'title': record.title,
@@ -78,7 +78,7 @@ class MedicalRecordsRepository {
         'created_at': record.createdAt,
       });
     } catch (_) {
-      return;
+      _upsertPreviewRecord(record);
     }
   }
 
@@ -101,8 +101,7 @@ class MedicalRecordsRepository {
     }
 
     try {
-      final response = await client.from('medical_records').select(
-          'id,pet_name,title,subtitle,meta,badge,detail_source,created_at');
+      final response = await client.from('clinical_events').select('*');
       final rows = response as List<dynamic>;
       return rows
           .map(
