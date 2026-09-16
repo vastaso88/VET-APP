@@ -1,18 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:table_calendar/table_calendar.dart';
-import 'package:url_launcher/url_launcher.dart';
 
 import '../../../../design_system/tokens/app_colors.dart';
 import '../../../../design_system/tokens/app_radii.dart';
 import '../../../../design_system/tokens/app_spacing.dart';
 import '../../../../design_system/tokens/app_text_styles.dart';
 import '../../../../shared/auth/current_user.dart';
+import '../../../local_events/presentation/pages/local_events_page.dart';
 import '../../../pet_news/data/pet_news_repository.dart';
 import '../../../pet_news/domain/pet_news_item.dart';
+import '../../../pet_news/presentation/pages/news_feed_page.dart';
+import '../../../pet_news/presentation/widgets/pet_news_card.dart';
 import '../../../pets/data/pet_demo_store.dart';
 import '../../../pets/domain/pet_models.dart';
-import '../../../pets/presentation/pages/pet_detail_page.dart';
-import '../../../pets/presentation/widgets/pet_avatar.dart';
 import '../../../reminders/data/reminders_repository.dart';
 import '../../../reminders/domain/relative_date.dart';
 import '../../../reminders/presentation/pages/reminders_pages.dart';
@@ -39,11 +39,25 @@ class _HomeDashboardPageState extends State<HomeDashboardPage> {
     _petNewsFuture = _loadPetNews();
   }
 
+  /// Exactly 4 curiosità categories: the 3rd (index 2) is always the
+  /// cross-species "Generale" category (regulatory/informational), the
+  /// other 3 slots are filled with the owned species, in order.
   Future<List<PetNewsItem>> _loadPetNews() async {
-    final species = PetDemoStore.instance.list().map((pet) => pet.species).toSet();
-    final categories = {...species, 'Generale'};
+    final owned = PetDemoStore.instance.list().map((pet) => pet.species).toSet().toList();
+    final categories = <String>[];
+    var ownedIndex = 0;
+    for (var i = 0; i < 4; i++) {
+      if (i == 2) {
+        categories.add('Generale');
+      } else if (ownedIndex < owned.length) {
+        categories.add(owned[ownedIndex++]);
+      } else {
+        categories.add('Generale');
+      }
+    }
+
     final results = await Future.wait(
-      categories.map((s) => _petNewsRepository.fetchForSpecies(s)),
+      categories.map((c) => _petNewsRepository.fetchForSpecies(c, limit: 1)),
     );
     return results.expand((items) => items).toList(growable: false);
   }
@@ -92,11 +106,6 @@ class _HomeDashboardPageState extends State<HomeDashboardPage> {
                     const SizedBox(height: AppSpacing.xs),
                     Text(ownerName, style: AppTextStyles.display),
                     const SizedBox(height: AppSpacing.xxl),
-                    if (pets.isEmpty)
-                      const _EmptyPets()
-                    else
-                      _PetStrip(pets: pets),
-                    const SizedBox(height: AppSpacing.xxl),
                     _CalendarSection(
                       remindersFuture: _remindersFuture,
                       pets: pets,
@@ -105,7 +114,7 @@ class _HomeDashboardPageState extends State<HomeDashboardPage> {
                     const SizedBox(height: AppSpacing.xxl),
                     _PetNewsSection(petNewsFuture: _petNewsFuture),
                     const SizedBox(height: AppSpacing.xxl),
-                    const _LocalEventsWipSection(),
+                    const _LocalEventsNotice(),
                     const SizedBox(height: AppSpacing.xxl),
                     const _SponsorBanner(),
                   ],
@@ -120,7 +129,7 @@ class _HomeDashboardPageState extends State<HomeDashboardPage> {
 }
 
 /// Maps a pet's free-text [healthBadge] to a [DashboardTone] for the status
-/// dot on the Home pet strip.
+/// dot on the pet detail calendar markers.
 DashboardTone toneForHealthBadge(String badge) {
   final normalized = badge.toLowerCase();
   if (normalized.contains('monitorare')) return DashboardTone.warning;
@@ -135,77 +144,6 @@ DashboardTone toneForHealthBadge(String badge) {
 Color strongMarkerColor(Color base) {
   final hsl = HSLColor.fromColor(base);
   return hsl.withSaturation(0.5).withLightness(0.42).toColor();
-}
-
-class _PetStrip extends StatelessWidget {
-  const _PetStrip({required this.pets});
-
-  final List<PetProfile> pets;
-
-  @override
-  Widget build(BuildContext context) {
-    return SizedBox(
-      height: 84,
-      child: ListView.separated(
-        scrollDirection: Axis.horizontal,
-        itemCount: pets.length,
-        separatorBuilder: (_, __) => const SizedBox(width: AppSpacing.lg),
-        itemBuilder: (context, index) => _PetStripChip(pet: pets[index]),
-      ),
-    );
-  }
-}
-
-class _PetStripChip extends StatelessWidget {
-  const _PetStripChip({required this.pet});
-
-  final PetProfile pet;
-
-  @override
-  Widget build(BuildContext context) {
-    final tone = toneForHealthBadge(pet.healthBadge);
-    final dotColor = DashboardPrimitivePalette.colorsFor(tone).foreground;
-
-    return InkWell(
-      borderRadius: BorderRadius.circular(AppRadii.large),
-      onTap: () => Navigator.of(context).push(
-        MaterialPageRoute<void>(builder: (_) => PetDetailPage(pet: pet)),
-      ),
-      child: SizedBox(
-        width: 68,
-        child: Column(
-          children: [
-            Stack(
-              clipBehavior: Clip.none,
-              children: [
-                PetAvatar(label: pet.avatarEmoji, backgroundColor: pet.accentColor, size: 56),
-                Positioned(
-                  right: -2,
-                  bottom: -2,
-                  child: Container(
-                    width: 14,
-                    height: 14,
-                    decoration: BoxDecoration(
-                      color: dotColor,
-                      shape: BoxShape.circle,
-                      border: Border.all(color: AppColors.surfaceElevated, width: 2),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: AppSpacing.xs),
-            Text(
-              pet.name,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: AppTextStyles.bodySmall.copyWith(fontWeight: FontWeight.w600),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
 }
 
 class _CalendarSection extends StatelessWidget {
@@ -461,9 +399,14 @@ class _PetNewsSection extends StatelessWidget {
             return Column(
               children: [
                 for (final item in items) ...[
-                  _PetNewsCard(item: item),
-                  if (item != items.last) const SizedBox(height: AppSpacing.md),
+                  PetNewsCard(item: item),
+                  const SizedBox(height: AppSpacing.md),
                 ],
+                _MoreNewsButton(
+                  onTap: () => Navigator.of(context).push(
+                    MaterialPageRoute<void>(builder: (_) => const NewsFeedPage()),
+                  ),
+                ),
               ],
             );
           },
@@ -473,105 +416,57 @@ class _PetNewsSection extends StatelessWidget {
   }
 }
 
-class _PetNewsCard extends StatelessWidget {
-  const _PetNewsCard({required this.item});
+class _MoreNewsButton extends StatelessWidget {
+  const _MoreNewsButton({required this.onTap});
 
-  final PetNewsItem item;
+  final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
-    return DashboardSurfaceCard(
-      tone: DashboardTone.warm,
-      onTap: () => launchUrl(Uri.parse(item.sourceUrl), webOnlyWindowName: '_blank'),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          if (item.imageUrl != null) ...[
-            ClipRRect(
-              borderRadius: BorderRadius.circular(AppRadii.medium),
-              child: Image.network(
-                item.imageUrl!,
-                width: 56,
-                height: 56,
-                fit: BoxFit.cover,
-                errorBuilder: (_, __, ___) => const SizedBox(width: 56, height: 56),
-              ),
-            ),
-            const SizedBox(width: AppSpacing.md),
-          ],
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  PetDemoStore.optionForSpecies(item.species).avatarEmoji,
-                  style: const TextStyle(fontSize: 18),
-                ),
-                const SizedBox(height: AppSpacing.xs),
-                Text(
-                  item.title,
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                  style: AppTextStyles.title.copyWith(fontSize: 16),
-                ),
-                const SizedBox(height: AppSpacing.xs),
-                Row(
-                  children: [
-                    const Icon(Icons.newspaper_outlined, size: 14, color: AppColors.mutedText),
-                    const SizedBox(width: AppSpacing.xs),
-                    Text(item.extract, style: AppTextStyles.caption),
-                  ],
-                ),
-              ],
-            ),
-          ),
-        ],
+    return SizedBox(
+      width: double.infinity,
+      child: OutlinedButton.icon(
+        onPressed: onTap,
+        icon: const Icon(Icons.newspaper_outlined, size: 18),
+        label: const Text('Scopri altre notizie'),
       ),
     );
   }
 }
 
-class _LocalEventsWipSection extends StatelessWidget {
-  const _LocalEventsWipSection();
+class _LocalEventsNotice extends StatelessWidget {
+  const _LocalEventsNotice();
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const DashboardSectionHeader(title: 'Eventi nei dintorni'),
-        const SizedBox(height: AppSpacing.lg),
-        DashboardSurfaceCard(
-          tone: DashboardTone.info,
-          child: Row(
-            children: [
-              Container(
-                width: 40,
-                height: 40,
-                decoration: BoxDecoration(
-                  color: AppColors.info.withValues(alpha: 0.14),
-                  borderRadius: BorderRadius.circular(AppRadii.medium),
-                ),
-                child: const Icon(Icons.construction_outlined, size: 20, color: AppColors.info),
-              ),
-              const SizedBox(width: AppSpacing.md),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text('In arrivo', style: AppTextStyles.title.copyWith(fontSize: 16)),
-                    const SizedBox(height: AppSpacing.xs),
-                    Text(
-                      'Promozioni di eventi vicino a te, in base alla tua zona. Ancora in lavorazione.',
-                      style: AppTextStyles.bodySmall,
-                    ),
-                  ],
-                ),
-              ),
-            ],
+    return DashboardSurfaceCard(
+      tone: DashboardTone.info,
+      padding: const EdgeInsets.all(AppSpacing.md),
+      onTap: () => Navigator.of(context).push(
+        MaterialPageRoute<void>(builder: (_) => const LocalEventsPage()),
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 34,
+            height: 34,
+            alignment: Alignment.center,
+            decoration: BoxDecoration(
+              color: AppColors.info.withValues(alpha: 0.14),
+              borderRadius: BorderRadius.circular(AppRadii.medium),
+            ),
+            child: const Icon(Icons.map_outlined, size: 18, color: AppColors.info),
           ),
-        ),
-      ],
+          const SizedBox(width: AppSpacing.md),
+          Expanded(
+            child: Text(
+              'Eventi nei dintorni · in arrivo',
+              style: AppTextStyles.bodySmall.copyWith(fontWeight: FontWeight.w600, color: AppColors.text),
+            ),
+          ),
+          const Icon(Icons.chevron_right_rounded, color: AppColors.mutedText),
+        ],
+      ),
     );
   }
 }
@@ -623,34 +518,6 @@ class _SectionSkeleton extends StatelessWidget {
           ),
           const SizedBox(width: AppSpacing.md),
           Text('Caricamento...', style: AppTextStyles.bodySmall),
-        ],
-      ),
-    );
-  }
-}
-
-class _EmptyPets extends StatelessWidget {
-  const _EmptyPets();
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(AppSpacing.xl),
-      decoration: BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.circular(AppRadii.xl),
-        border: Border.all(color: AppColors.border),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text('Nessun animale ancora', style: AppTextStyles.title),
-          const SizedBox(height: AppSpacing.sm),
-          Text(
-            'Aggiungi il primo profilo dalla scheda Animali per iniziare.',
-            style: AppTextStyles.body,
-          ),
         ],
       ),
     );

@@ -1,4 +1,4 @@
-from presidio_analyzer import AnalyzerEngine, PatternRecognizer
+from presidio_analyzer import AnalyzerEngine, Pattern, PatternRecognizer
 from presidio_analyzer.nlp_engine import NlpEngineProvider
 from presidio_anonymizer import AnonymizerEngine
 
@@ -36,21 +36,51 @@ class PresidioPiiAnonymizer:
     def _build_italian_recognizers(self) -> list[PatternRecognizer]:
         """Presidio's built-in recognizers (PERSON via spaCy NER,
         EMAIL_ADDRESS, generic PHONE_NUMBER, ...) already work for Italian
-        text through the spaCy IT model, and are registered automatically —
-        the adapter is functional without anything added here.
+        text through the spaCy IT model, and are registered automatically.
+        These two patterns cover Italian-specific formats the generic
+        recognizers miss or under-match.
         """
-        # TODO(human): add PatternRecognizer(s) for Italian-specific PII
-        # formats that the generic recognizers miss or under-match, most
-        # notably the codice fiscale (16 fixed-structure alphanumeric
-        # chars, e.g. RSSMRA85M01H501Z). Return them from this method —
-        # they'll be registered automatically in __init__.
-        #
-        # Trade-off to weigh: a stricter regex catches fewer real codici
-        # fiscali but also fewer false positives (e.g. an unrelated 16-char
-        # alphanumeric token); a looser one is more forgiving of odd
-        # formatting/casing but risks redacting things that aren't PII.
-        # supported_language must be "it" to match this adapter's locale.
-        return []
+        # Codice fiscale: 6 letters + 2 digits + 1 month letter (only
+        # A/B/C/D/E/H/L/M/P/R/S/T are valid month codes) + 2 digits +
+        # 1 letter + 3 digits + 1 checksum letter — a fixed, distinctive
+        # 16-char structure, so a fairly strict regex still has good
+        # recall while keeping false positives low (a looser "any 16
+        # alphanumeric chars" pattern would flag order/tracking numbers,
+        # API keys, etc. as PII).
+        codice_fiscale = PatternRecognizer(
+            supported_entity="IT_CODICE_FISCALE",
+            supported_language="it",
+            patterns=[
+                Pattern(
+                    name="codice_fiscale_pattern",
+                    regex=(
+                        r"\b[A-Za-z]{6}[0-9]{2}[ABCDEHLMPRSTabcdehlmprst]"
+                        r"[0-9]{2}[A-Za-z][0-9]{3}[A-Za-z]\b"
+                    ),
+                    score=0.85,
+                )
+            ],
+            context=["codice fiscale", "cf", "c.f."],
+        )
+        # Italian mobile numbers (the common case in vet-owner chat: "richiamami
+        # al ..."), optionally with a +39 prefix. Kept separate from Presidio's
+        # generic PHONE_NUMBER recognizer, which is tuned for other locales and
+        # under-matches this shape; scored lower than the codice fiscale
+        # pattern since a bare 9-10 digit run starting with 3 is a weaker,
+        # more ambiguous signal.
+        it_mobile_phone = PatternRecognizer(
+            supported_entity="IT_PHONE_NUMBER",
+            supported_language="it",
+            patterns=[
+                Pattern(
+                    name="it_mobile_phone_pattern",
+                    regex=r"\b(?:\+39\s?)?3\d{2}[\s./-]?\d{6,7}\b",
+                    score=0.6,
+                )
+            ],
+            context=["telefono", "cellulare", "numero", "chiamami", "richiamami"],
+        )
+        return [codice_fiscale, it_mobile_phone]
 
     def anonymize(self, request: PiiAnonymizationRequest) -> PiiAnonymizationResult:
         results = self._analyzer.analyze(text=request.text, language=request.language)

@@ -22,6 +22,9 @@ from packages.core.application.services.update_pet_profile import UpdatePetProfi
 from packages.infrastructure.auth.bootstrap_auth_provider import BootstrapAuthProvider
 from packages.infrastructure.llm.providers.echo_llm_client import EchoLLMClient
 from packages.infrastructure.llm.providers.groq_llm_client import GroqLLMClient
+from packages.infrastructure.llm.retrieval.europe_pmc_evidence_retriever import (
+    EuropePmcEvidenceRetriever,
+)
 from packages.infrastructure.llm.retrieval.in_memory_evidence_retriever import (
     InMemoryEvidenceRetriever,
 )
@@ -184,6 +187,8 @@ class ApplicationContainer:
         return InMemoryClinicalEventRepository()
 
     def _build_evidence_retriever(self) -> InMemoryEvidenceRetriever | object:
+        if self.settings.evidence_backend == "europe_pmc":
+            return EuropePmcEvidenceRetriever()
         if self.settings.evidence_backend == "supabase":
             try:
                 from packages.infrastructure.llm.retrieval.supabase_evidence_retriever import (

@@ -5,7 +5,7 @@ import 'package:http/http.dart' as http;
 import '../domain/pet_news_item.dart';
 
 abstract class PetNewsRepository {
-  Future<List<PetNewsItem>> fetchForSpecies(String species);
+  Future<List<PetNewsItem>> fetchForSpecies(String species, {int limit});
 }
 
 /// Free, keyless "curiosita" source: real headlines from real newspapers,
@@ -29,10 +29,8 @@ class GoogleNewsPetNewsRepository implements PetNewsRepository {
     'Generale': 'animali domestici (fiera OR legge OR normativa)',
   };
 
-  static const _maxItemsPerSpecies = 2;
-
   @override
-  Future<List<PetNewsItem>> fetchForSpecies(String species) async {
+  Future<List<PetNewsItem>> fetchForSpecies(String species, {int limit = 2}) async {
     final query = _queryBySpecies[species] ?? _queryBySpecies['Altro']!;
 
     try {
@@ -63,7 +61,7 @@ class GoogleNewsPetNewsRepository implements PetNewsRepository {
       }
 
       final items = (json['items'] as List<dynamic>? ?? const [])
-          .take(_maxItemsPerSpecies)
+          .take(limit)
           .map((raw) => _toNewsItem(species, raw as Map<String, dynamic>))
           .whereType<PetNewsItem>()
           .toList(growable: false);

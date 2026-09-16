@@ -91,6 +91,11 @@ For the LLM path, the recommended flow is:
 Recommended backend toggle:
 - `EVIDENCE_BACKEND=in_memory` for preview mode
 - `EVIDENCE_BACKEND=supabase` when the RPC-backed evidence retriever is enabled
+- `EVIDENCE_BACKEND=europe_pmc` for real scientific literature via the Europe
+  PMC REST API (no API key needed) — see
+  `packages/infrastructure/llm/retrieval/europe_pmc_evidence_retriever.py`.
+  Query translation is a minimal Italian→English keyword stand-in for now,
+  not the full EvidenceQueryPlanner from the spec.
 
 Initial registry seed workflow:
 - run the schema SQL first

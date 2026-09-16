@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../design_system/tokens/app_colors.dart';
+import '../../features/activities/presentation/pages/activities_page.dart';
 import '../../features/home/presentation/pages/home_dashboard_page.dart';
 import '../../features/pets/pets.dart';
 import '../../features/settings/presentation/pages/settings_page.dart';
@@ -18,14 +19,15 @@ class _HomeShellPageState extends State<HomeShellPage> {
   late int _currentIndex = widget.initialIndex;
 
   final List<GlobalKey<NavigatorState>> _navigatorKeys = List.generate(
-    3,
+    4,
     (_) => GlobalKey<NavigatorState>(),
   );
 
   late final List<_ShellTabNavigator> _pages = [
     _ShellTabNavigator(navigatorKey: _navigatorKeys[0], rootPage: const HomeDashboardPage()),
     _ShellTabNavigator(navigatorKey: _navigatorKeys[1], rootPage: const PetsListPage()),
-    _ShellTabNavigator(navigatorKey: _navigatorKeys[2], rootPage: const SettingsPage()),
+    _ShellTabNavigator(navigatorKey: _navigatorKeys[2], rootPage: const ActivitiesPage()),
+    _ShellTabNavigator(navigatorKey: _navigatorKeys[3], rootPage: const SettingsPage()),
   ];
 
   @override
@@ -148,6 +150,11 @@ class _HomeShellPageState extends State<HomeShellPage> {
           label: Text('Animali'),
         ),
         NavigationRailDestination(
+          icon: Icon(Icons.explore_outlined),
+          selectedIcon: Icon(Icons.explore_rounded),
+          label: Text('Attività'),
+        ),
+        NavigationRailDestination(
           icon: Icon(Icons.settings_outlined),
           selectedIcon: Icon(Icons.settings_rounded),
           label: Text('Impostazioni'),
@@ -164,6 +171,11 @@ class _HomeShellPageState extends State<HomeShellPage> {
           icon: Icon(Icons.pets_outlined),
           selectedIcon: Icon(Icons.pets_rounded),
           label: 'Animali',
+        ),
+        NavigationDestination(
+          icon: Icon(Icons.explore_outlined),
+          selectedIcon: Icon(Icons.explore_rounded),
+          label: 'Attività',
         ),
         NavigationDestination(
           icon: Icon(Icons.settings_outlined),
