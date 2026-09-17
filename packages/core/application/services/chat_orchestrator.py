@@ -123,6 +123,7 @@ class ChatOrchestrator:
         evidence_quality_engine: EvidenceQualityEngine | None = None,
         evidence_synthesizer: EvidenceSynthesizer | None = None,
         response_generator: ResponseGenerator | None = None,
+        response_language: str = "it",
         enable_interview_loop: bool = False,
         coverage_weights: CoverageWeights = DEFAULT_COVERAGE_WEIGHTS,
         coverage_target: float = 0.85,
@@ -139,7 +140,9 @@ class ChatOrchestrator:
         self._medical_record_context_retriever = medical_record_context_retriever
         self._consent_interpreter = consent_interpreter or ConsentInterpreter()
         self._evidence_quality_engine = evidence_quality_engine or EvidenceQualityEngine()
-        self._evidence_synthesizer = evidence_synthesizer or EvidenceSynthesizer(llm_client)
+        self._evidence_synthesizer = evidence_synthesizer or EvidenceSynthesizer(
+            llm_client, response_language=response_language
+        )
         self._response_generator = response_generator or ResponseGenerator()
         self._enable_interview_loop = enable_interview_loop
         self._coverage_weights = coverage_weights

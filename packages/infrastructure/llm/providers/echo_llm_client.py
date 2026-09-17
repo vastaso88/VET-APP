@@ -5,11 +5,11 @@ from packages.core.application.ports.llm_client import (
 )
 from packages.shared.config.settings import Settings
 
-# Matches EvidenceSynthesizer.SYNTHESIS_SYSTEM_PROMPT — the zero-cost
-# demo/test provider still needs to return something that caller can
-# actually parse as JSON, not the generic echoed-prompt text every other
-# caller gets (SituationModelBuilder's extraction already tolerates
-# unparseable content by falling back to an empty SituationModel).
+# Matches EvidenceSynthesizer.SYNTHESIS_MARKER — the zero-cost demo/test
+# provider still needs to return something that caller can actually parse
+# as JSON, not the generic echoed-prompt text every other caller gets
+# (SituationModelBuilder's extraction already tolerates unparseable
+# content by falling back to an empty SituationModel).
 _SYNTHESIS_MARKER = "performing evidence synthesis"
 
 _DEMO_SYNTHESIS_JSON = (

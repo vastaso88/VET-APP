@@ -90,6 +90,7 @@ class ApplicationContainer:
             enable_interview_loop=settings.enable_interview_loop,
             coverage_target=settings.situation_coverage_target,
             max_interview_questions=settings.interview_max_questions,
+            response_language=settings.response_language,
         )
 
     def create_pet_profile_service(self) -> CreatePetProfileService:
