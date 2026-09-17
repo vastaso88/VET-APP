@@ -23,17 +23,18 @@ def test_parses_a_valid_synthesis() -> None:
     )
     synthesizer = EvidenceSynthesizer(ScriptedClient(content))
 
-    synthesis = synthesizer.synthesize("Evidence:\n[1] Example source")
+    synthesis, response = synthesizer.synthesize("Evidence:\n[1] Example source")
 
     assert synthesis.supported_claims == ["La febbre nei cani richiede osservazione [1]."]
     assert synthesis.safe_owner_actions == ["Offri acqua fresca"]
     assert synthesis.referral_conditions == ["se la febbre persiste oltre 24 ore"]
+    assert response.provider == "fake"
 
 
 def test_returns_empty_synthesis_on_invalid_json() -> None:
     synthesizer = EvidenceSynthesizer(ScriptedClient("not json at all"))
 
-    synthesis = synthesizer.synthesize("Evidence:\n[1] Example source")
+    synthesis, _ = synthesizer.synthesize("Evidence:\n[1] Example source")
 
     assert synthesis.is_empty()
 
@@ -41,7 +42,7 @@ def test_returns_empty_synthesis_on_invalid_json() -> None:
 def test_returns_empty_synthesis_when_payload_is_not_an_object() -> None:
     synthesizer = EvidenceSynthesizer(ScriptedClient("[1, 2, 3]"))
 
-    synthesis = synthesizer.synthesize("Evidence:\n[1] Example source")
+    synthesis, _ = synthesizer.synthesize("Evidence:\n[1] Example source")
 
     assert synthesis.is_empty()
 
@@ -54,6 +55,6 @@ def test_all_claim_text_joins_every_field() -> None:
     )
     synthesizer = EvidenceSynthesizer(ScriptedClient(content))
 
-    synthesis = synthesizer.synthesize("Evidence:\n[1] Example source")
+    synthesis, _ = synthesizer.synthesize("Evidence:\n[1] Example source")
 
     assert synthesis.all_claim_text() == "A [1]\nB\nC"

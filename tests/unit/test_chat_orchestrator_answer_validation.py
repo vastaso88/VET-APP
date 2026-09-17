@@ -1,3 +1,5 @@
+import json
+
 from packages.core.application.ports.llm_client import LLMGenerationRequest, LLMResponse
 from packages.core.application.services.chat_orchestrator import (
     ChatOrchestrator,
@@ -9,6 +11,7 @@ from packages.infrastructure.llm.retrieval.in_memory_evidence_retriever import (
     InMemoryEvidenceRetriever,
 )
 from packages.infrastructure.privacy.noop_pii_anonymizer import NoopPiiAnonymizer
+from packages.shared.errors.base import ProviderError
 
 
 class ScriptedLLMClient:
@@ -25,7 +28,7 @@ class ScriptedLLMClient:
         if "extract structured case information" in request.system_prompt:
             content = "{}"
         elif "evidence-first veterinary assistant" in request.system_prompt:
-            content = self._evidence_answer
+            content = json.dumps({"supported_claims": [self._evidence_answer]})
         else:
             content = "Risposta generica."
         return LLMResponse(content=content, provider="fake", model="fake-model", token_count=10)
@@ -102,6 +105,60 @@ def test_unresolved_safety_critical_unknown_prepends_caution_to_evidence_answer(
 
     assert "contatta il veterinario" in result.answer.lower()
     assert any("sicurezza" in limitation.lower() for limitation in result.limitations)
+
+
+def test_evidence_answer_carries_the_structured_synthesis() -> None:
+    orchestrator, _ = _orchestrator(evidence_answer="Le fonti [1] indicano di monitorare.")
+
+    result = orchestrator.answer(
+        ChatOrchestratorInput(
+            user_message="Il mio cane tossisce da due giorni", species="dog", pet_name="Milo"
+        )
+    )
+
+    assert result.evidence_synthesis is not None
+    assert result.evidence_synthesis.supported_claims == ["Le fonti [1] indicano di monitorare."]
+
+
+def test_empty_synthesis_is_treated_as_validation_failure() -> None:
+    class EmptySynthesisClient:
+        def generate(self, request: LLMGenerationRequest) -> LLMResponse:
+            return LLMResponse(content="{}", provider="fake", model="fake-model", token_count=5)
+
+    orchestrator = ChatOrchestrator(
+        EmptySynthesisClient(), InMemoryEvidenceRetriever(), NoopPiiAnonymizer()
+    )
+
+    result = orchestrator.answer(
+        ChatOrchestratorInput(
+            user_message="Il mio cane tossisce da due giorni", species="dog", pet_name="Milo"
+        )
+    )
+
+    assert result.state == ConversationState.SOURCE_VALIDATION_FAILURE
+    assert any("evidence_synthesis_empty" in v for v in result.limitations)
+
+
+def test_llm_provider_failure_during_synthesis_degrades_gracefully() -> None:
+    class FailingClient:
+        def generate(self, request: LLMGenerationRequest) -> LLMResponse:
+            if "extract structured case information" in request.system_prompt:
+                return LLMResponse(content="{}", provider="fake", model="fake-model", token_count=5)
+            raise ProviderError("rate limited")
+
+    orchestrator = ChatOrchestrator(
+        FailingClient(), InMemoryEvidenceRetriever(), NoopPiiAnonymizer()
+    )
+
+    result = orchestrator.answer(
+        ChatOrchestratorInput(
+            user_message="Il mio cane tossisce da due giorni", species="dog", pet_name="Milo"
+        )
+    )
+
+    assert result.mode == "evidence"
+    assert result.state == ConversationState.RETRIEVAL_FAILURE
+    assert result.sources  # still surfaced even though the synthesis itself failed
 
 
 def test_general_answer_with_hallucinated_citation_is_rejected() -> None:

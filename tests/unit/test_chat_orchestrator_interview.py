@@ -17,7 +17,11 @@ class ExtractionAwareLLMClient:
     a plain answer — mirrors how the real orchestrator uses the same LLMClient
     for two different roles."""
 
-    def __init__(self, extraction_json: str, answer_text: str = "Risposta con fonti.") -> None:
+    def __init__(
+        self,
+        extraction_json: str,
+        answer_text: str = '{"supported_claims": ["Risposta con fonti [1]."]}',
+    ) -> None:
         self._extraction_json = extraction_json
         self._answer_text = answer_text
         self.requests: list[LLMGenerationRequest] = []

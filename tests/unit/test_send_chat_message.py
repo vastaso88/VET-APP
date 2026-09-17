@@ -41,8 +41,9 @@ def test_send_chat_message_persists_conversation() -> None:
     )
 
     assert len(result.conversation.messages) == 2
-    assert result.reply.content.startswith("Demo reply for:")
+    assert result.reply.content  # Echo's demo evidence synthesis, rendered to text
     assert result.mode == "evidence"
+    assert result.ai_generated is True
     assert result.sources
 
 

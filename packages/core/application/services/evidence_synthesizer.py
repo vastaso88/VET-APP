@@ -1,6 +1,6 @@
 import json
 
-from packages.core.application.ports.llm_client import LLMClient, LLMGenerationRequest
+from packages.core.application.ports.llm_client import LLMClient, LLMGenerationRequest, LLMResponse
 from packages.core.domain.knowledge.evidence_synthesis import EvidenceSynthesis
 
 # The distinctive phrase EchoLLMClient (and any other test double) can key
@@ -33,11 +33,22 @@ class EvidenceSynthesizer:
     def __init__(self, llm_client: LLMClient) -> None:
         self._llm_client = llm_client
 
-    def synthesize(self, user_prompt: str) -> EvidenceSynthesis:
+    def synthesize(self, user_prompt: str) -> tuple[EvidenceSynthesis, LLMResponse]:
+        """Returns the parsed synthesis alongside the raw LLMResponse, so
+        the caller can still report which provider/model produced it."""
         response = self._llm_client.generate(
-            LLMGenerationRequest(system_prompt=SYNTHESIS_SYSTEM_PROMPT, user_prompt=user_prompt)
+            LLMGenerationRequest(
+                system_prompt=SYNTHESIS_SYSTEM_PROMPT,
+                user_prompt=user_prompt,
+                # The structured JSON (up to 7 populated lists) needs more
+                # room than the single free-text paragraph this replaced —
+                # the previous 600-token default silently truncated it into
+                # invalid JSON, which parsed as an empty (thus rejected)
+                # synthesis every time.
+                max_tokens=1200,
+            )
         )
-        return self._parse(response.content)
+        return self._parse(response.content), response
 
     @staticmethod
     def _parse(content: str) -> EvidenceSynthesis:

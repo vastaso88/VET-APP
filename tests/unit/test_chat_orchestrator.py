@@ -21,7 +21,7 @@ class FakeLLMClient:
     def generate(self, request: LLMGenerationRequest) -> LLMResponse:
         self.requests.append(request)
         return LLMResponse(
-            content="Risposta sintetica con fonti.",
+            content='{"supported_claims": ["Risposta sintetica con fonti [1]."]}',
             provider="fake",
             model="fake-model",
             token_count=12,

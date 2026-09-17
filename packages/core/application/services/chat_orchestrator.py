@@ -11,15 +11,18 @@ from packages.core.application.ports.llm_client import LLMClient, LLMGenerationR
 from packages.core.application.ports.pii_anonymizer import PiiAnonymizationRequest, PiiAnonymizer
 from packages.core.application.services.consent_interpreter import ConsentInterpreter
 from packages.core.application.services.evidence_quality_engine import EvidenceQualityEngine
+from packages.core.application.services.evidence_synthesizer import EvidenceSynthesizer
 from packages.core.application.services.interview_planner import InterviewPlanner
 from packages.core.application.services.medical_record_context_retriever import (
     MedicalRecordContextRetriever,
 )
+from packages.core.application.services.response_generator import ResponseGenerator
 from packages.core.application.services.safety_gate import SafetyGate
 from packages.core.application.services.situation_model_builder import SituationModelBuilder
 from packages.core.domain.conversation.models import ChatMessage
 from packages.core.domain.conversation.states import ConversationState
 from packages.core.domain.knowledge.answer_validation import validate_answer
+from packages.core.domain.knowledge.evidence_synthesis import EvidenceSynthesis
 from packages.core.domain.knowledge.models import EvidenceSource
 from packages.core.domain.safety.triage_clarification import (
     CLARIFYING_QUESTIONS,
@@ -37,6 +40,7 @@ from packages.core.domain.situation.coverage import (
     coverage_score,
 )
 from packages.core.domain.situation.models import SituationModel
+from packages.shared.errors.base import ProviderError
 
 logger = logging.getLogger("vetgpt.chat")
 
@@ -98,6 +102,10 @@ class ChatOrchestratorResult(BaseModel):
     awaiting_medical_record_consent: bool = False
     awaiting_safety_clarification: bool = False
     safety_clarification_category: str | None = None
+    evidence_synthesis: EvidenceSynthesis | None = None
+    """Structured synthesis behind `answer` for mode="evidence" (spec v3
+    §27) — supported/uncertain/conflicting claims kept distinguishable
+    rather than blurred into one paragraph. None for every other mode."""
 
 
 class ChatOrchestrator:
@@ -113,6 +121,8 @@ class ChatOrchestrator:
         medical_record_context_retriever: MedicalRecordContextRetriever | None = None,
         consent_interpreter: ConsentInterpreter | None = None,
         evidence_quality_engine: EvidenceQualityEngine | None = None,
+        evidence_synthesizer: EvidenceSynthesizer | None = None,
+        response_generator: ResponseGenerator | None = None,
         enable_interview_loop: bool = False,
         coverage_weights: CoverageWeights = DEFAULT_COVERAGE_WEIGHTS,
         coverage_target: float = 0.85,
@@ -129,6 +139,8 @@ class ChatOrchestrator:
         self._medical_record_context_retriever = medical_record_context_retriever
         self._consent_interpreter = consent_interpreter or ConsentInterpreter()
         self._evidence_quality_engine = evidence_quality_engine or EvidenceQualityEngine()
+        self._evidence_synthesizer = evidence_synthesizer or EvidenceSynthesizer(llm_client)
+        self._response_generator = response_generator or ResponseGenerator()
         self._enable_interview_loop = enable_interview_loop
         self._coverage_weights = coverage_weights
         self._coverage_target = coverage_target
@@ -527,35 +539,52 @@ class ChatOrchestrator:
         evidence_block = self._format_sources_for_prompt(sources)
         anonymized_message = self._anonymize_for_provider(message)
         anonymized_pet_name = self._anonymize_for_provider(data.pet_name)
-        response = self._llm_client.generate(
-            LLMGenerationRequest(
-                system_prompt=(
-                    "You are an evidence-first veterinary assistant. Use only the provided "
-                    "sources, be explicit about uncertainty, and do not invent citations — "
-                    "only cite [n] markers that appear in the Evidence list below. Where it "
-                    "reads naturally, structure the answer as: what we understand, what the "
-                    "evidence supports, what to watch for, and when to contact a vet — but "
-                    "prefer a short, direct answer over forcing every section in."
-                ),
-                user_prompt=(
-                    f"Pet name: {anonymized_pet_name}\n"
-                    f"Species: {data.species}\n"
-                    f"Question: {anonymized_message}\n"
-                    f"Evidence:\n{evidence_block}\n"
-                    "Write a concise answer in the user's language, mention limits, and avoid "
-                    "diagnosis."
-                ),
+        try:
+            synthesis, response = self._evidence_synthesizer.synthesize(
+                f"Pet name: {anonymized_pet_name}\n"
+                f"Species: {data.species}\n"
+                f"Question: {anonymized_message}\n"
+                f"Evidence:\n{evidence_block}"
             )
-        )
+        except ProviderError:
+            # The retrieval-side adapters all degrade to "no results" on a
+            # network/provider failure rather than raising (spec v3 §20) —
+            # the LLM call deserves the same fail-safe treatment: a
+            # rate-limited or down provider shouldn't crash the whole turn.
+            return ChatOrchestratorResult(
+                answer=(
+                    "In questo momento non riesco a elaborare una risposta basata sulle "
+                    "fonti scientifiche (il servizio è temporaneamente non disponibile). "
+                    "Riprova tra poco, oppure consulta il veterinario se la situazione "
+                    "richiede attenzione ora."
+                ),
+                mode="evidence",
+                confidence="low",
+                ai_generated=False,
+                sources=sources,
+                limitations=[
+                    "Sintesi delle evidenze non disponibile: provider LLM non raggiungibile."
+                ],
+                provider="rule-based",
+                model="evidence-guard",
+                state=ConversationState.RETRIEVAL_FAILURE,
+            )
 
-        validation = validate_answer(response.content, sources_count=len(sources))
+        if synthesis.is_empty():
+            return self._validation_failure_result(
+                sources=sources,
+                violations=["evidence_synthesis_empty: nessuna claim supportata prodotta"],
+                mode="evidence",
+            )
+
+        validation = validate_answer(synthesis.all_claim_text(), sources_count=len(sources))
         if not validation.is_valid:
             return self._validation_failure_result(
                 sources=sources, violations=validation.violations, mode="evidence"
             )
 
-        answer = response.content
-        limitations = self._build_limitations(sources)
+        answer = self._response_generator.render(synthesis)
+        limitations = [*self._build_limitations(sources), *synthesis.evidence_gaps]
         if situation.safety_critical_unknowns:
             # Final safety review (spec v3 §29): the case still has an
             # unresolved safety-critical question even though we reached
@@ -584,6 +613,7 @@ class ChatOrchestrator:
             ),
             provider=response.provider,
             model=response.model,
+            evidence_synthesis=synthesis,
         )
 
     @staticmethod
