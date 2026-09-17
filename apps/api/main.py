@@ -4,6 +4,7 @@ from fastapi import FastAPI, Request, Response
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
+from apps.api.routes.account_consents import router as account_consents_router
 from apps.api.routes.auth import router as auth_router
 from apps.api.routes.chat import router as chat_router
 from apps.api.routes.conversations import router as conversations_router
@@ -72,3 +73,4 @@ app.include_router(pets_router)
 app.include_router(conversations_router)
 app.include_router(chat_router)
 app.include_router(reminders_router)
+app.include_router(account_consents_router)

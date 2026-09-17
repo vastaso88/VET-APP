@@ -1,5 +1,6 @@
 from functools import lru_cache
 
+from packages.core.application.ports.account_consents_repository import AccountConsentsRepository
 from packages.core.application.ports.auth_provider import AuthProvider
 from packages.core.application.ports.clinical_event_repository import ClinicalEventRepository
 from packages.core.application.ports.conversation_repository import ConversationRepository
@@ -12,6 +13,7 @@ from packages.core.application.services.consent_interpreter import ConsentInterp
 from packages.core.application.services.create_pet_profile import CreatePetProfileService
 from packages.core.application.services.create_reminder import CreateReminderService
 from packages.core.application.services.delete_conversation import DeleteConversationService
+from packages.core.application.services.get_account_consents import GetAccountConsentsService
 from packages.core.application.services.get_pet_profile import GetPetProfileService
 from packages.core.application.services.interview_planner import InterviewPlanner
 from packages.core.application.services.list_conversations import ListConversationsService
@@ -22,6 +24,7 @@ from packages.core.application.services.medical_record_context_retriever import 
 )
 from packages.core.application.services.safety_gate import SafetyGate
 from packages.core.application.services.send_chat_message import SendChatMessageService
+from packages.core.application.services.set_account_consent import SetAccountConsentService
 from packages.core.application.services.set_medical_record_consent import (
     SetMedicalRecordConsentService,
 )
@@ -49,6 +52,7 @@ from packages.infrastructure.llm.retrieval.pubmed_evidence_retriever import (
     PubMedEvidenceRetriever,
 )
 from packages.infrastructure.persistence.in_memory_repositories import (
+    InMemoryAccountConsentsRepository,
     InMemoryClinicalEventRepository,
     InMemoryConversationRepository,
     InMemoryPetProfileRepository,
@@ -71,6 +75,7 @@ class ApplicationContainer:
         self.evidence_retriever = self._build_evidence_retriever()
         self.pii_anonymizer = self._build_pii_anonymizer()
         self.clinical_event_repository = self._build_clinical_event_repository()
+        self.account_consents_repository = self._build_account_consents_repository()
         self.chat_orchestrator = ChatOrchestrator(
             self.llm_client,
             self.evidence_retriever,
@@ -101,6 +106,12 @@ class ApplicationContainer:
 
     def set_medical_record_consent_service(self) -> SetMedicalRecordConsentService:
         return SetMedicalRecordConsentService(self.pet_profile_repository)
+
+    def get_account_consents_service(self) -> GetAccountConsentsService:
+        return GetAccountConsentsService(self.account_consents_repository)
+
+    def set_account_consent_service(self) -> SetAccountConsentService:
+        return SetAccountConsentService(self.account_consents_repository)
 
     def send_chat_message_service(self) -> SendChatMessageService:
         return SendChatMessageService(
@@ -212,6 +223,23 @@ class ApplicationContainer:
                     return InMemoryClinicalEventRepository()
                 raise
         return InMemoryClinicalEventRepository()
+
+    def _build_account_consents_repository(self) -> AccountConsentsRepository:
+        if self.settings.persistence_backend == "supabase":
+            try:
+                from packages.infrastructure.persistence.supabase.client import (
+                    build_supabase_client,
+                )
+                from packages.infrastructure.persistence.supabase.supabase_repositories import (
+                    SupabaseAccountConsentsRepository,
+                )
+
+                return SupabaseAccountConsentsRepository(build_supabase_client(self.settings))
+            except ModuleNotFoundError:
+                if self.settings.environment != "production":
+                    return InMemoryAccountConsentsRepository()
+                raise
+        return InMemoryAccountConsentsRepository()
 
     def _build_evidence_retriever(self) -> EvidenceRetriever:
         if self.settings.evidence_backend == "europe_pmc":

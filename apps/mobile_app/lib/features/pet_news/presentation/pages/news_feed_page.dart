@@ -50,8 +50,8 @@ class _NewsFeedPageState extends State<NewsFeedPage> {
 
   Future<void> _loadPool() async {
     setState(() => _loading = true);
-    final results = await Future.wait(
-      _categories.map((c) => _repository.fetchForSpecies(c, limit: _poolLimitPerCategory)),
+    final results = await fetchManyWithLimit(
+      _categories.map((c) => () => _repository.fetchForSpecies(c, limit: _poolLimitPerCategory)).toList(),
     );
     if (!mounted) return;
     _pool = results.expand((items) => items).toList();

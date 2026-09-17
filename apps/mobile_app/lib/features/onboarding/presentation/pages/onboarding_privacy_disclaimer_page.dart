@@ -102,7 +102,7 @@ class _DisclaimerStateRow extends StatelessWidget {
         _StatusPill(label: 'Privacy chiara', color: Color(0xFFDDEDE8)),
         _StatusPill(label: 'Uso responsabile IA', color: Color(0xFFFFF5EC)),
         _StatusPill(label: 'Supporto, non diagnosi', color: Color(0xFFF5D9D0)),
-        _StatusPill(label: 'Consenso esplicito', color: Color(0xFFD8E8DD)),
+        _StatusPill(label: 'Richiede la tua conferma', color: Color(0xFFD8E8DD)),
       ],
     );
   }

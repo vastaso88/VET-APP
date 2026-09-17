@@ -56,8 +56,8 @@ class _HomeDashboardPageState extends State<HomeDashboardPage> {
       }
     }
 
-    final results = await Future.wait(
-      categories.map((c) => _petNewsRepository.fetchForSpecies(c, limit: 1)),
+    final results = await fetchManyWithLimit(
+      categories.map((c) => () => _petNewsRepository.fetchForSpecies(c, limit: 1)).toList(),
     );
     return results.expand((items) => items).toList(growable: false);
   }

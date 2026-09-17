@@ -59,6 +59,14 @@ create table if not exists public.reminders (
     notes text
 );
 
+-- Account-level consents (docs/compliance/04_termini_e_consensi.md): ToS,
+-- privacy policy, marketing email, analytics. One row per owner; each key
+-- maps to {granted: bool, version: text, decided_at: timestamptz}.
+create table if not exists public.account_consents (
+    owner_id text primary key,
+    consents jsonb not null default '{}'::jsonb
+);
+
 create index if not exists idx_pet_profiles_owner_id on public.pet_profiles(owner_id);
 create index if not exists idx_conversations_owner_id on public.conversations(owner_id);
 create index if not exists idx_conversations_pet_id on public.conversations(pet_id);
@@ -70,6 +78,7 @@ alter table public.pet_profiles enable row level security;
 alter table public.conversations enable row level security;
 alter table public.clinical_events enable row level security;
 alter table public.reminders enable row level security;
+alter table public.account_consents enable row level security;
 
 drop policy if exists pet_profiles_select_own on public.pet_profiles;
 create policy pet_profiles_select_own
@@ -205,3 +214,22 @@ create policy reminders_delete_own
 on public.reminders
 for delete
 using (owner_id = auth.uid()::text);
+
+drop policy if exists account_consents_select_own on public.account_consents;
+create policy account_consents_select_own
+on public.account_consents
+for select
+using (owner_id = auth.uid()::text);
+
+drop policy if exists account_consents_insert_own on public.account_consents;
+create policy account_consents_insert_own
+on public.account_consents
+for insert
+with check (owner_id = auth.uid()::text);
+
+drop policy if exists account_consents_update_own on public.account_consents;
+create policy account_consents_update_own
+on public.account_consents
+for update
+using (owner_id = auth.uid()::text)
+with check (owner_id = auth.uid()::text);

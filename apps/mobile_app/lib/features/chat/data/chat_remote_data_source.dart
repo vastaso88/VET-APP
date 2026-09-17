@@ -40,6 +40,8 @@ abstract class ChatRemoteDataSource {
     required String fallbackName,
     required String fallbackSpecies,
   });
+
+  Future<Result<void>> deleteConversation(String conversationId);
 }
 
 class HttpChatRemoteDataSource implements ChatRemoteDataSource {
@@ -87,6 +89,21 @@ class HttpChatRemoteDataSource implements ChatRemoteDataSource {
           .timeout(_timeout);
 
       if (response.statusCode < 200 || response.statusCode >= 300) {
+        // The backend enforces a max-active-conversations-per-pet limit and
+        // reports it as a 400 with a `conversation_limit_reached: <msg>`
+        // detail — a normal, expected outcome (not a real failure), so it's
+        // surfaced with its own code and the backend's own user-facing
+        // message instead of the generic network-error copy below.
+        final detail = _extractDetail(response.body);
+        if (detail != null && detail.startsWith('conversation_limit_reached')) {
+          final colonIndex = detail.indexOf(':');
+          return Result.failure(
+            AppNetworkError(
+              code: 'chat_conversation_limit_reached',
+              message: colonIndex == -1 ? detail : detail.substring(colonIndex + 1).trim(),
+            ),
+          );
+        }
         return Result.failure(
           AppNetworkError(
             code: 'chat_http_${response.statusCode}',
@@ -172,5 +189,52 @@ class HttpChatRemoteDataSource implements ChatRemoteDataSource {
         ),
       );
     }
+  }
+
+  @override
+  Future<Result<void>> deleteConversation(String conversationId) async {
+    try {
+      final response = await _client
+          .delete(Uri.parse('$_baseUrl/conversations/$conversationId'), headers: _headers)
+          .timeout(_timeout);
+
+      if (response.statusCode < 200 || response.statusCode >= 300) {
+        return Result.failure(
+          AppNetworkError(
+            code: 'conversation_delete_http_${response.statusCode}',
+            message: 'Non sono riuscito a eliminare la chat sul server.',
+          ),
+        );
+      }
+      return Result.success<void>(null);
+    } on TimeoutException {
+      return Result.failure<void>(
+        const AppNetworkError(
+          code: 'conversation_delete_timeout',
+          message: 'Richiesta scaduta. Riprova.',
+        ),
+      );
+    } catch (e) {
+      return Result.failure<void>(
+        AppNetworkError(
+          code: 'conversation_delete_unexpected_error',
+          message: "Qualcosa e' andato storto. Riprova.",
+          details: e,
+        ),
+      );
+    }
+  }
+
+  String? _extractDetail(String body) {
+    try {
+      final decoded = jsonDecode(body);
+      if (decoded is Map<String, dynamic>) {
+        return decoded['detail'] as String?;
+      }
+    } catch (_) {
+      // Non-JSON body (e.g. a plain-text 502 from an upstream proxy):
+      // fall through to the generic error below.
+    }
+    return null;
   }
 }

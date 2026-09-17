@@ -1,10 +1,12 @@
 from datetime import date, datetime
 from typing import TYPE_CHECKING, Any
 
+from packages.core.application.ports.account_consents_repository import AccountConsentsRepository
 from packages.core.application.ports.clinical_event_repository import ClinicalEventRepository
 from packages.core.application.ports.conversation_repository import ConversationRepository
 from packages.core.application.ports.pet_profile_repository import PetProfileRepository
 from packages.core.application.ports.reminder_repository import ReminderRepository
+from packages.core.domain.consent.models import AccountConsents
 from packages.core.domain.conversation.models import Conversation
 from packages.core.domain.medical_record.models import ClinicalEvent
 from packages.core.domain.pet_profile.models import PetProfile
@@ -102,3 +104,22 @@ class SupabaseClinicalEventRepository(ClinicalEventRepository):
     def list_by_pet(self, pet_id: str) -> list[ClinicalEvent]:
         response = self._client.table(self._table).select("*").eq("pet_id", pet_id).execute()
         return [ClinicalEvent.model_validate(item) for item in response.data or []]
+
+
+class SupabaseAccountConsentsRepository(AccountConsentsRepository):
+    def __init__(self, client: Client) -> None:
+        self._client = client
+        self._table = "account_consents"
+
+    def get(self, owner_id: str) -> AccountConsents | None:
+        response = (
+            self._client.table(self._table).select("*").eq("owner_id", owner_id).limit(1).execute()
+        )
+        if not response.data:
+            return None
+        return AccountConsents.model_validate(response.data[0])
+
+    def save(self, account_consents: AccountConsents) -> AccountConsents:
+        payload = _serialize_payload(account_consents.model_dump(mode="json"))
+        self._client.table(self._table).upsert(payload).execute()
+        return account_consents

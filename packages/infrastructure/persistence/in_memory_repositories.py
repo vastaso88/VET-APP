@@ -1,7 +1,9 @@
+from packages.core.application.ports.account_consents_repository import AccountConsentsRepository
 from packages.core.application.ports.clinical_event_repository import ClinicalEventRepository
 from packages.core.application.ports.conversation_repository import ConversationRepository
 from packages.core.application.ports.pet_profile_repository import PetProfileRepository
 from packages.core.application.ports.reminder_repository import ReminderRepository
+from packages.core.domain.consent.models import AccountConsents
 from packages.core.domain.conversation.models import Conversation
 from packages.core.domain.medical_record.models import ClinicalEvent
 from packages.core.domain.pet_profile.models import PetProfile
@@ -66,3 +68,15 @@ class InMemoryClinicalEventRepository(ClinicalEventRepository):
 
     def list_by_pet(self, pet_id: str) -> list[ClinicalEvent]:
         return [item for item in self._items if item.pet_id == pet_id]
+
+
+class InMemoryAccountConsentsRepository(AccountConsentsRepository):
+    def __init__(self) -> None:
+        self._items: dict[str, AccountConsents] = {}
+
+    def get(self, owner_id: str) -> AccountConsents | None:
+        return self._items.get(owner_id)
+
+    def save(self, account_consents: AccountConsents) -> AccountConsents:
+        self._items[account_consents.owner_id] = account_consents
+        return account_consents

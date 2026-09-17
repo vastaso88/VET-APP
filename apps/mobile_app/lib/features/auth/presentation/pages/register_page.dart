@@ -5,6 +5,8 @@ import 'package:flutter/material.dart';
 import '../../../../app/router/app_router.dart';
 import '../../../../design_system/tokens/app_spacing.dart';
 import '../../../../shared/auth/auth.dart';
+import '../../../account_consents/data/account_consents_remote_data_source.dart';
+import '../../../account_consents/domain/account_consent_models.dart';
 import '../../data/auth_repository_factory.dart';
 import '../widgets/auth_widgets.dart';
 import 'login_page.dart';
@@ -88,6 +90,25 @@ class _RegisterPageState extends State<RegisterPage> {
     );
 
     if (success) {
+      // Best-effort: the account is already created at this point, so a
+      // failure here must not block the user from reaching the app — the
+      // Settings "Permessi e consensi" section shows a "Da confermare"
+      // fallback for exactly this case (and for accounts that predate this
+      // feature entirely).
+      final consentsDataSource = HttpAccountConsentsRemoteDataSource();
+      unawaited(
+        Future.wait([
+          consentsDataSource.setConsent(
+            consentKey: AccountConsentKeys.termsOfService,
+            granted: true,
+          ),
+          consentsDataSource.setConsent(
+            consentKey: AccountConsentKeys.privacyPolicy,
+            granted: true,
+          ),
+        ]),
+      );
+
       await Future<void>.delayed(const Duration(milliseconds: 350));
       if (!mounted) return;
       Navigator.of(context).pushNamedAndRemoveUntil(
@@ -156,7 +177,7 @@ class _RegisterPageState extends State<RegisterPage> {
                 value: _acceptTerms,
                 onChanged: (value) => setState(() => _acceptTerms = value),
                 title: const Text(
-                  'Accetto privacy e disclaimer medico',
+                  "Accetto i Termini di Servizio e l'Informativa Privacy",
                   style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700),
                 ),
               ),

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 
 import '../../../../design_system/tokens/app_colors.dart';
 import '../../../../design_system/tokens/app_radii.dart';
@@ -6,6 +7,8 @@ import '../../../../design_system/tokens/app_spacing.dart';
 import '../../../../design_system/tokens/app_text_styles.dart';
 import '../../../../shared/auth/current_user.dart';
 import '../../../../shared/widgets/coming_soon_page.dart';
+import '../../../account_consents/data/account_consents_remote_data_source.dart';
+import '../../../account_consents/domain/account_consent_models.dart';
 import '../../../profile/presentation/pages/profile_page.dart';
 
 class SettingsPage extends StatefulWidget {
@@ -18,8 +21,62 @@ class SettingsPage extends StatefulWidget {
 class _SettingsPageState extends State<SettingsPage> {
   bool _notifications = true;
   bool _activityReminders = true;
-  bool _analytics = false;
   String _weightUnit = 'kg';
+
+  final _consentsDataSource = HttpAccountConsentsRemoteDataSource();
+  AccountConsentsSnapshot? _consents;
+  bool _loadingConsents = true;
+  String? _consentsError;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadConsents();
+  }
+
+  Future<void> _loadConsents() async {
+    setState(() {
+      _loadingConsents = true;
+      _consentsError = null;
+    });
+    final result = await _consentsDataSource.fetch();
+    if (!mounted) return;
+    result.fold(
+      onSuccess: (snapshot) => setState(() {
+        _consents = snapshot;
+        _loadingConsents = false;
+      }),
+      onFailure: (error) => setState(() {
+        _consentsError = error.message;
+        _loadingConsents = false;
+      }),
+    );
+  }
+
+  Future<void> _setConsent(String key, bool granted) async {
+    final previous = _consents;
+    // Optimistic flip so the toggle feels immediate; reverted below on failure.
+    if (previous != null) {
+      setState(() {
+        _consents = AccountConsentsSnapshot(
+          decisions: {
+            ...previous.decisions,
+            key: ConsentDecision(granted: granted, version: '', decidedAt: DateTime.now()),
+          },
+          catalog: previous.catalog,
+        );
+      });
+    }
+    final result = await _consentsDataSource.setConsent(consentKey: key, granted: granted);
+    if (!mounted) return;
+    result.fold(
+      onSuccess: (snapshot) => setState(() => _consents = snapshot),
+      onFailure: (error) {
+        setState(() => _consents = previous);
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(error.message)));
+      },
+    );
+  }
 
   void _openProfile() {
     Navigator.of(context).push(
@@ -39,7 +96,7 @@ class _SettingsPageState extends State<SettingsPage> {
     );
   }
 
-  void _showInfoDialog(String title, String body) {
+  void _showInfoDialog(String title, String body, {VoidCallback? onConfirm}) {
     showDialog<void>(
       context: context,
       builder: (dialogContext) => AlertDialog(
@@ -52,6 +109,14 @@ class _SettingsPageState extends State<SettingsPage> {
             onPressed: () => Navigator.of(dialogContext).pop(),
             child: const Text('Chiudi'),
           ),
+          if (onConfirm != null)
+            TextButton(
+              onPressed: () {
+                Navigator.of(dialogContext).pop();
+                onConfirm();
+              },
+              child: const Text('Conferma'),
+            ),
         ],
       ),
     );
@@ -66,6 +131,82 @@ class _SettingsPageState extends State<SettingsPage> {
   void _logout() {
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text('Logout non ancora collegato al flusso account.')),
+    );
+  }
+
+  List<Widget> _buildConsentRows() {
+    if (_loadingConsents) {
+      return const [
+        _Row(
+          icon: Icons.hourglass_empty_rounded,
+          iconColor: AppColors.mutedText,
+          title: 'Caricamento…',
+        ),
+      ];
+    }
+    if (_consentsError != null) {
+      return [
+        _Row(
+          icon: Icons.error_outline_rounded,
+          iconColor: AppColors.danger,
+          title: 'Non disponibili al momento',
+          subtitle: 'Tocca per riprovare',
+          onTap: _loadConsents,
+        ),
+      ];
+    }
+
+    final consents = _consents!;
+    return [
+      _buildMandatoryConsentRow(
+        key: AccountConsentKeys.termsOfService,
+        title: 'Termini di servizio',
+        icon: Icons.description_outlined,
+      ),
+      _buildMandatoryConsentRow(
+        key: AccountConsentKeys.privacyPolicy,
+        title: 'Informativa privacy',
+        icon: Icons.shield_outlined,
+      ),
+      _ToggleRow(
+        icon: Icons.mail_outline_rounded,
+        iconColor: AppColors.accent,
+        title: 'Email di marketing',
+        value: consents.decisions[AccountConsentKeys.marketingEmail]?.granted ?? false,
+        onChanged: (value) => _setConsent(AccountConsentKeys.marketingEmail, value),
+      ),
+      _ToggleRow(
+        icon: Icons.insights_outlined,
+        iconColor: AppColors.info,
+        title: "Analisi d'uso",
+        value: consents.decisions[AccountConsentKeys.analytics]?.granted ?? false,
+        onChanged: (value) => _setConsent(AccountConsentKeys.analytics, value),
+      ),
+    ];
+  }
+
+  Widget _buildMandatoryConsentRow({
+    required String key,
+    required String title,
+    required IconData icon,
+  }) {
+    final consents = _consents!;
+    final decision = consents.decisions[key];
+    final entry = consents.catalog[key];
+    final text = entry?.text ?? '';
+
+    return _Row(
+      icon: icon,
+      iconColor: AppColors.mutedText,
+      title: title,
+      subtitle: decision != null
+          ? 'Accettati v${decision.version} il ${DateFormat('dd/MM/yyyy').format(decision.decidedAt)}'
+          : 'Da confermare',
+      onTap: () => _showInfoDialog(
+        title,
+        text,
+        onConfirm: decision == null ? () => _setConsent(key, true) : null,
+      ),
     );
   }
 
@@ -111,23 +252,8 @@ class _SettingsPageState extends State<SettingsPage> {
               value: _weightUnit,
               onChanged: (value) => setState(() => _weightUnit = value),
             ),
-            const _SectionLabel('Privacy'),
-            _ToggleRow(
-              icon: Icons.insights_outlined,
-              iconColor: AppColors.info,
-              title: "Analisi d'uso",
-              value: _analytics,
-              onChanged: (value) => setState(() => _analytics = value),
-            ),
-            _Row(
-              icon: Icons.lock_outline_rounded,
-              iconColor: AppColors.secondary,
-              title: 'Gestisci dati personali',
-              onTap: () => _showInfoDialog(
-                'Dati personali',
-                'Puoi richiedere una copia o la cancellazione dei tuoi dati in qualsiasi momento scrivendo al supporto.',
-              ),
-            ),
+            const _SectionLabel('Permessi e consensi'),
+            ..._buildConsentRows(),
             const _SectionLabel('Assistenza'),
             _Row(
               icon: Icons.help_outline_rounded,
@@ -157,24 +283,6 @@ class _SettingsPageState extends State<SettingsPage> {
               iconColor: AppColors.mutedText,
               title: 'Versione app',
               trailingText: '1.0.0',
-            ),
-            _Row(
-              icon: Icons.description_outlined,
-              iconColor: AppColors.mutedText,
-              title: 'Termini di servizio',
-              onTap: () => _showInfoDialog(
-                'Termini di servizio',
-                'I termini completi saranno disponibili qui prima del lancio pubblico dell\'app.',
-              ),
-            ),
-            _Row(
-              icon: Icons.shield_outlined,
-              iconColor: AppColors.mutedText,
-              title: 'Privacy policy',
-              onTap: () => _showInfoDialog(
-                'Privacy policy',
-                'L\'informativa completa sulla privacy sarà disponibile qui prima del lancio pubblico dell\'app.',
-              ),
             ),
             const _SectionLabel('Account'),
             _Row(

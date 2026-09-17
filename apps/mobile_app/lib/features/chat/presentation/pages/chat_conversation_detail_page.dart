@@ -147,13 +147,18 @@ class _ChatConversationDetailPageState extends State<ChatConversationDetailPage>
     result.fold(
       onSuccess: (_) {},
       onFailure: (error) {
+        // A reached conversation limit is expected, not a failure to
+        // retry — retrying would just hit the same 400 again.
+        final isLimitReached = error.code == 'chat_conversation_limit_reached';
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(error.message),
-            action: SnackBarAction(
-              label: 'Riprova',
-              onPressed: () => _sendMessage(cleanMessage),
-            ),
+            action: isLimitReached
+                ? null
+                : SnackBarAction(
+                    label: 'Riprova',
+                    onPressed: () => _sendMessage(cleanMessage),
+                  ),
           ),
         );
       },

@@ -19,6 +19,10 @@ class ChatDemoStore extends ChangeNotifier {
 
   static final ChatDemoStore instance = ChatDemoStore._();
 
+  /// Max concurrent chat threads per pet. Keeps the per-pet chat list short
+  /// and scannable on a phone screen instead of growing without bound.
+  static const maxConversationsPerPet = 4;
+
   final ChatRemoteDataSource _remote;
   final AppRuntimeConfigLoader _configLoader;
   String? _defaultPetId;
@@ -29,6 +33,33 @@ class ChatDemoStore extends ChangeNotifier {
   UnmodifiableListView<ChatConversationSummary> get conversations {
     final summaries = _threads.map(_summaryFor).toList(growable: false);
     return UnmodifiableListView<ChatConversationSummary>(summaries);
+  }
+
+  int countForPet(String petName) =>
+      _threads.where((thread) => thread.petName == petName).length;
+
+  bool canStartConversation(String petName) =>
+      countForPet(petName) < maxConversationsPerPet;
+
+  /// Removes the conversation locally right away — required by
+  /// [Dismissible], which expects the backing list to shrink synchronously
+  /// once `onDismissed` fires — then, if it was ever actually sent to the
+  /// backend, deletes it there too so the backend's own max-conversations
+  /// count (packages/core/application/services/send_chat_message.py) stays
+  /// in sync and a freed slot is really free. A backend failure here can't
+  /// undo the now-animated-away local removal, so it's surfaced to the
+  /// caller only as an informational Result, not by restoring the item.
+  Future<Result<void>> deleteConversation(String id) async {
+    final thread = conversationById(id);
+    _threads.removeWhere((thread) => thread.id == id);
+    _openedConversationIds.remove(id);
+    notifyListeners();
+
+    final backendConversationId = thread?.backendConversationId;
+    if (backendConversationId == null) {
+      return Result.success<void>(null);
+    }
+    return _remote.deleteConversation(backendConversationId);
   }
 
   ChatConversationDetail? conversationById(String id) {

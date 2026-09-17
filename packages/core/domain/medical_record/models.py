@@ -3,6 +3,7 @@ from datetime import datetime
 from pydantic import BaseModel, Field
 
 from packages.core.domain.common.entity import new_id, utc_now
+from packages.core.domain.consent.models import ConsentRecord
 
 
 class ClinicalEvent(BaseModel):
@@ -25,18 +26,16 @@ class ClinicalEvent(BaseModel):
     created_at: datetime = Field(default_factory=utc_now)
 
 
-class MedicalRecordConsentRecord(BaseModel):
+class MedicalRecordConsentRecord(ConsentRecord):
     """The owner's decision on whether the chat may consult a pet's
     clinical record (spec v3 §18, §36) — persisted per pet, not per
     conversation, so it is asked once and revocable at any time (e.g.
     from account settings) rather than re-asked on every new chat.
 
-    `version` pins the exact consent text the owner agreed to (or
-    declined), so a future change to that text doesn't silently reinterpret
-    a decision made under different wording — see
-    packages/core/domain/medical_record/consent_text.py.
+    A `ConsentRecord` (packages/core/domain/consent/models.py) — the shared
+    {granted, version, decided_at} shape also used for account-level
+    consents (ToS, privacy, marketing, analytics). `version` pins the exact
+    consent text the owner agreed to (or declined), so a future change to
+    that text doesn't silently reinterpret a decision made under different
+    wording — see packages/core/domain/medical_record/consent_text.py.
     """
-
-    granted: bool
-    version: str
-    decided_at: datetime = Field(default_factory=utc_now)
