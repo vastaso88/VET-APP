@@ -26,7 +26,9 @@ Web-first pet-tech product with a Flutter client and a Python backend bootstrap.
    - `EVIDENCE_BACKEND=in_memory` for preview mode
    - `EVIDENCE_BACKEND=supabase` for the RPC-backed trusted-sources retriever
    - `EVIDENCE_BACKEND=europe_pmc` for real scientific literature via the
-     Europe PMC REST API (no key needed)
+     Europe PMC REST API only (no key needed)
+   - `EVIDENCE_BACKEND=scientific_multi` for Europe PMC + PubMed + Crossref +
+     OpenAlex combined (no key needed for any of them)
 5. Keep `LLM_PROVIDER=echo` for browser demo runs. Switch to `LLM_PROVIDER=groq` only when you want to exercise the hosted LLM path and have set `LLM_API_KEY`.
 6. Install dependencies with `make setup`.
 7. Start the API with `make run-api`.

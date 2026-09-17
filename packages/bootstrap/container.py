@@ -30,11 +30,23 @@ from packages.core.application.services.update_pet_profile import UpdatePetProfi
 from packages.infrastructure.auth.bootstrap_auth_provider import BootstrapAuthProvider
 from packages.infrastructure.llm.providers.echo_llm_client import EchoLLMClient
 from packages.infrastructure.llm.providers.groq_llm_client import GroqLLMClient
+from packages.infrastructure.llm.retrieval.crossref_evidence_retriever import (
+    CrossrefEvidenceRetriever,
+)
 from packages.infrastructure.llm.retrieval.europe_pmc_evidence_retriever import (
     EuropePmcEvidenceRetriever,
 )
 from packages.infrastructure.llm.retrieval.in_memory_evidence_retriever import (
     InMemoryEvidenceRetriever,
+)
+from packages.infrastructure.llm.retrieval.multi_source_evidence_retriever import (
+    MultiSourceEvidenceRetriever,
+)
+from packages.infrastructure.llm.retrieval.openalex_evidence_retriever import (
+    OpenAlexEvidenceRetriever,
+)
+from packages.infrastructure.llm.retrieval.pubmed_evidence_retriever import (
+    PubMedEvidenceRetriever,
 )
 from packages.infrastructure.persistence.in_memory_repositories import (
     InMemoryClinicalEventRepository,
@@ -204,6 +216,17 @@ class ApplicationContainer:
     def _build_evidence_retriever(self) -> EvidenceRetriever:
         if self.settings.evidence_backend == "europe_pmc":
             return EuropePmcEvidenceRetriever()
+        if self.settings.evidence_backend == "scientific_multi":
+            # Spec v3 §20: PubMed, Europe PMC, Crossref and OpenAlex are
+            # complementary sources, not alternatives to pick one of.
+            return MultiSourceEvidenceRetriever(
+                [
+                    EuropePmcEvidenceRetriever(),
+                    PubMedEvidenceRetriever(),
+                    CrossrefEvidenceRetriever(),
+                    OpenAlexEvidenceRetriever(),
+                ]
+            )
         if self.settings.evidence_backend == "supabase":
             try:
                 from packages.infrastructure.llm.retrieval.supabase_evidence_retriever import (

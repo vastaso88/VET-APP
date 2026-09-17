@@ -92,10 +92,16 @@ Recommended backend toggle:
 - `EVIDENCE_BACKEND=in_memory` for preview mode
 - `EVIDENCE_BACKEND=supabase` when the RPC-backed evidence retriever is enabled
 - `EVIDENCE_BACKEND=europe_pmc` for real scientific literature via the Europe
-  PMC REST API (no API key needed) — see
+  PMC REST API only (no API key needed) — see
   `packages/infrastructure/llm/retrieval/europe_pmc_evidence_retriever.py`.
-  Query translation is a minimal Italian→English keyword stand-in for now,
-  not the full EvidenceQueryPlanner from the spec.
+- `EVIDENCE_BACKEND=scientific_multi` to query Europe PMC, PubMed, Crossref
+  and OpenAlex together (spec v3 §20 — none of the four needs an API key
+  for this call volume), deduplicated by DOI/PMID/title via
+  `packages/infrastructure/llm/retrieval/multi_source_evidence_retriever.py`.
+  All four share the same Italian→English keyword query translation
+  (`packages/core/application/services/evidence_query_planner.py`) — a
+  deliberate MVP stand-in, not the full multi-concept query expansion the
+  spec describes.
 
 Initial registry seed workflow:
 - run the schema SQL first
