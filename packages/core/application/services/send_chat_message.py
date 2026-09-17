@@ -14,6 +14,11 @@ from packages.core.domain.medical_record.models import MedicalRecordConsentRecor
 from packages.core.domain.pet_profile.models import PetProfile
 from packages.shared.errors.base import ValidationError
 
+# How many recent messages cross into the orchestrator (spec v3 §38: never
+# resend the entire history). SituationModelBuilder itself only looks at
+# the last 6, so this is a generous ceiling, not the real working window.
+MAX_HISTORY_MESSAGES = 12
+
 
 class SendChatMessageInput(BaseModel):
     owner_id: str
@@ -82,7 +87,11 @@ class SendChatMessageService:
                 species=pet_profile.species,
                 pet_name=pet_profile.name,
                 pet_id=pet_profile.id,
-                conversation_history=conversation.messages[:-1],
+                # Data minimization (spec v3 §38): only recent turns cross
+                # the service boundary — the full history never needs to,
+                # since SituationModel already carries the compact,
+                # structured summary of everything older forward.
+                conversation_history=conversation.messages[:-1][-MAX_HISTORY_MESSAGES:],
                 situation_model=conversation.situation_model,
                 interview_turns_used=conversation.interview_turns_used,
                 medical_record_consent=medical_record_consent,
