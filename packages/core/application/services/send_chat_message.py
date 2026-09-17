@@ -9,6 +9,9 @@ from packages.core.application.services.chat_orchestrator import (
 from packages.core.domain.conversation.models import ChatMessage, Conversation
 from packages.core.domain.conversation.states import ConversationState
 from packages.core.domain.knowledge.models import EvidenceSource
+from packages.core.domain.medical_record.consent_text import CURRENT_VERSION
+from packages.core.domain.medical_record.models import MedicalRecordConsentRecord
+from packages.core.domain.pet_profile.models import PetProfile
 from packages.shared.errors.base import ValidationError
 
 
@@ -45,10 +48,13 @@ class SendChatMessageService:
         repository: ConversationRepository,
         orchestrator: ChatOrchestrator,
         pet_profile_repository: PetProfileRepository,
+        *,
+        max_active_conversations_per_pet: int = 4,
     ) -> None:
         self._repository = repository
         self._orchestrator = orchestrator
         self._pet_profile_repository = pet_profile_repository
+        self._max_active_conversations_per_pet = max_active_conversations_per_pet
 
     def execute(self, data: SendChatMessageInput) -> SendChatMessageOutput:
         if not data.user_message.strip():
@@ -61,6 +67,15 @@ class SendChatMessageService:
         user_message = ChatMessage(role="user", content=data.user_message.strip())
         conversation.messages.append(user_message)
 
+        # A pet-level consent decision (settings, or a previous conversation)
+        # always wins over per-conversation state, so a revocation takes
+        # effect immediately and a grant is never asked twice (spec v3 §18).
+        medical_record_consent = conversation.medical_record_consent
+        awaiting_medical_record_consent = conversation.awaiting_medical_record_consent
+        if pet_profile.medical_record_consent is not None:
+            medical_record_consent = pet_profile.medical_record_consent.granted
+            awaiting_medical_record_consent = False
+
         orchestrator_result = self._orchestrator.answer(
             ChatOrchestratorInput(
                 user_message=data.user_message.strip(),
@@ -70,8 +85,8 @@ class SendChatMessageService:
                 conversation_history=conversation.messages[:-1],
                 situation_model=conversation.situation_model,
                 interview_turns_used=conversation.interview_turns_used,
-                medical_record_consent=conversation.medical_record_consent,
-                awaiting_medical_record_consent=conversation.awaiting_medical_record_consent,
+                medical_record_consent=medical_record_consent,
+                awaiting_medical_record_consent=awaiting_medical_record_consent,
                 awaiting_safety_clarification=conversation.awaiting_safety_clarification,
                 safety_clarification_category=conversation.safety_clarification_category,
             )
@@ -92,6 +107,7 @@ class SendChatMessageService:
         conversation.safety_clarification_category = (
             orchestrator_result.safety_clarification_category
         )
+        self._persist_pet_level_consent(pet_profile, orchestrator_result.medical_record_consent)
 
         stored_conversation = self._repository.save(conversation)
         return SendChatMessageOutput(
@@ -120,6 +136,29 @@ class SendChatMessageService:
             if stored:
                 return stored
             raise ValidationError("conversation not found")
+
+        existing_for_pet = self._repository.list_by_pet(data.pet_id)
+        if len(existing_for_pet) >= self._max_active_conversations_per_pet:
+            raise ValidationError(
+                "conversation_limit_reached: hai raggiunto il numero massimo di "
+                f"conversazioni ({self._max_active_conversations_per_pet}) per questo "
+                "animale. Chiudine una per crearne una nuova."
+            )
         return Conversation(
             owner_id=data.owner_id, pet_id=data.pet_id, title=f"Chat for {data.pet_id}"
         )
+
+    def _persist_pet_level_consent(self, pet_profile: PetProfile, granted: bool | None) -> None:
+        if granted is None:
+            return
+        current = pet_profile.medical_record_consent
+        if current is not None and current.granted == granted:
+            return
+        updated = pet_profile.model_copy(
+            update={
+                "medical_record_consent": MedicalRecordConsentRecord(
+                    granted=granted, version=CURRENT_VERSION
+                )
+            }
+        )
+        self._pet_profile_repository.save(updated)

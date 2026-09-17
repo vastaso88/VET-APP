@@ -71,6 +71,13 @@ class SupabaseConversationRepository(ConversationRepository):
         response = self._client.table(self._table).select("*").eq("owner_id", owner_id).execute()
         return [Conversation.model_validate(item) for item in response.data or []]
 
+    def list_by_pet(self, pet_id: str) -> list[Conversation]:
+        response = self._client.table(self._table).select("*").eq("pet_id", pet_id).execute()
+        return [Conversation.model_validate(item) for item in response.data or []]
+
+    def delete(self, conversation_id: str) -> None:
+        self._client.table(self._table).delete().eq("id", conversation_id).execute()
+
 
 class SupabaseReminderRepository(ReminderRepository):
     def __init__(self, client: Client) -> None:

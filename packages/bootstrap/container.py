@@ -11,6 +11,7 @@ from packages.core.application.services.chat_orchestrator import ChatOrchestrato
 from packages.core.application.services.consent_interpreter import ConsentInterpreter
 from packages.core.application.services.create_pet_profile import CreatePetProfileService
 from packages.core.application.services.create_reminder import CreateReminderService
+from packages.core.application.services.delete_conversation import DeleteConversationService
 from packages.core.application.services.get_pet_profile import GetPetProfileService
 from packages.core.application.services.interview_planner import InterviewPlanner
 from packages.core.application.services.list_conversations import ListConversationsService
@@ -21,6 +22,9 @@ from packages.core.application.services.medical_record_context_retriever import 
 )
 from packages.core.application.services.safety_gate import SafetyGate
 from packages.core.application.services.send_chat_message import SendChatMessageService
+from packages.core.application.services.set_medical_record_consent import (
+    SetMedicalRecordConsentService,
+)
 from packages.core.application.services.situation_model_builder import SituationModelBuilder
 from packages.core.application.services.update_pet_profile import UpdatePetProfileService
 from packages.infrastructure.auth.bootstrap_auth_provider import BootstrapAuthProvider
@@ -83,15 +87,22 @@ class ApplicationContainer:
     def list_pet_profiles_service(self) -> ListPetProfilesService:
         return ListPetProfilesService(self.pet_profile_repository)
 
+    def set_medical_record_consent_service(self) -> SetMedicalRecordConsentService:
+        return SetMedicalRecordConsentService(self.pet_profile_repository)
+
     def send_chat_message_service(self) -> SendChatMessageService:
         return SendChatMessageService(
             self.conversation_repository,
             self.chat_orchestrator,
             self.pet_profile_repository,
+            max_active_conversations_per_pet=self.settings.max_active_conversations_per_pet,
         )
 
     def list_conversations_service(self) -> ListConversationsService:
         return ListConversationsService(self.conversation_repository)
+
+    def delete_conversation_service(self) -> DeleteConversationService:
+        return DeleteConversationService(self.conversation_repository)
 
     def create_reminder_service(self) -> CreateReminderService:
         return CreateReminderService(self.reminder_repository, self.pet_profile_repository)

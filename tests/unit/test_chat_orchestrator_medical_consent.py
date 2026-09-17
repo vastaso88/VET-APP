@@ -129,6 +129,29 @@ def test_consent_is_never_asked_again_once_resolved() -> None:
     assert result.mode != "consent_request"
 
 
+def test_previously_granted_consent_is_used_without_asking_again() -> None:
+    # Simulates a standing per-pet consent decision from an earlier
+    # conversation (SendChatMessageService seeds this field from
+    # PetProfile.medical_record_consent) — the record should be pulled in
+    # on the very first turn of a brand new conversation, not just when
+    # consent is granted mid-conversation.
+    orchestrator = _orchestrator_with_records()
+
+    result = orchestrator.answer(
+        ChatOrchestratorInput(
+            user_message="Il mio cane tossisce",
+            species="dog",
+            pet_name="Milo",
+            pet_id="pet-1",
+            medical_record_consent=True,
+        )
+    )
+
+    assert result.mode != "consent_request"
+    assert result.situation_model is not None
+    assert "Richiamo vaccinale" in (result.situation_model.known_medical_context or "")
+
+
 def test_no_consent_request_when_pet_has_no_records() -> None:
     orchestrator = ChatOrchestrator(
         ExtractionAwareLLMClient(),

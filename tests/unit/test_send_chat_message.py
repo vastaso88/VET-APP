@@ -1,16 +1,21 @@
 import pytest
 
 from packages.core.application.services.chat_orchestrator import ChatOrchestrator
+from packages.core.application.services.medical_record_context_retriever import (
+    MedicalRecordContextRetriever,
+)
 from packages.core.application.services.send_chat_message import (
     SendChatMessageInput,
     SendChatMessageService,
 )
+from packages.core.domain.medical_record.models import ClinicalEvent
 from packages.core.domain.pet_profile.models import PetProfile
 from packages.infrastructure.llm.providers.echo_llm_client import EchoLLMClient
 from packages.infrastructure.llm.retrieval.in_memory_evidence_retriever import (
     InMemoryEvidenceRetriever,
 )
 from packages.infrastructure.persistence.in_memory_repositories import (
+    InMemoryClinicalEventRepository,
     InMemoryConversationRepository,
     InMemoryPetProfileRepository,
 )
@@ -113,3 +118,67 @@ def test_send_chat_message_rejects_empty_input() -> None:
 
     with pytest.raises(ValidationError):
         service.execute(SendChatMessageInput(owner_id="user-1", pet_id="pet-1", user_message="  "))
+
+
+def test_send_chat_message_enforces_the_per_pet_conversation_limit() -> None:
+    pet_repository = InMemoryPetProfileRepository()
+    pet_repository.save(PetProfile(id="pet-1", owner_id="user-1", name="Milo", species="dog"))
+    orchestrator = ChatOrchestrator(
+        EchoLLMClient(Settings()), InMemoryEvidenceRetriever(), NoopPiiAnonymizer()
+    )
+    service = SendChatMessageService(
+        InMemoryConversationRepository(),
+        orchestrator,
+        pet_repository,
+        max_active_conversations_per_pet=2,
+    )
+
+    service.execute(SendChatMessageInput(owner_id="user-1", pet_id="pet-1", user_message="Ciao"))
+    service.execute(SendChatMessageInput(owner_id="user-1", pet_id="pet-1", user_message="Ciao"))
+
+    with pytest.raises(ValidationError):
+        service.execute(
+            SendChatMessageInput(owner_id="user-1", pet_id="pet-1", user_message="Ciao")
+        )
+
+
+def test_send_chat_message_persists_medical_record_consent_at_pet_level_and_reuses_it() -> None:
+    pet_repository = InMemoryPetProfileRepository()
+    pet_repository.save(PetProfile(id="pet-1", owner_id="user-1", name="Milo", species="dog"))
+    clinical_events = InMemoryClinicalEventRepository(
+        seed=[ClinicalEvent(pet_id="pet-1", title="Richiamo vaccinale", subtitle="al completo")]
+    )
+    orchestrator = ChatOrchestrator(
+        EchoLLMClient(Settings()),
+        InMemoryEvidenceRetriever(),
+        NoopPiiAnonymizer(),
+        medical_record_context_retriever=MedicalRecordContextRetriever(clinical_events),
+        enable_interview_loop=True,
+    )
+    service = SendChatMessageService(InMemoryConversationRepository(), orchestrator, pet_repository)
+
+    first = service.execute(
+        SendChatMessageInput(owner_id="user-1", pet_id="pet-1", user_message="Il mio cane tossisce")
+    )
+    assert first.mode == "consent_request"
+
+    granted = service.execute(
+        SendChatMessageInput(
+            owner_id="user-1",
+            pet_id="pet-1",
+            conversation_id=first.conversation.id,
+            user_message="Sì, consultala pure",
+        )
+    )
+    assert granted.medical_record_consent is True
+
+    stored_pet = pet_repository.get("pet-1")
+    assert stored_pet is not None
+    assert stored_pet.medical_record_consent is not None
+    assert stored_pet.medical_record_consent.granted is True
+
+    # A brand new conversation for the same pet must not ask again.
+    second_conversation = service.execute(
+        SendChatMessageInput(owner_id="user-1", pet_id="pet-1", user_message="Ora ha anche vomito")
+    )
+    assert second_conversation.mode != "consent_request"

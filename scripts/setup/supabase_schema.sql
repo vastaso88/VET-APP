@@ -5,7 +5,11 @@ create table if not exists public.pet_profiles (
     species text not null,
     breed text,
     age_years integer,
-    notes text
+    notes text,
+    -- Medical-record access consent (spec v3 §18) — persisted per pet, not
+    -- per conversation, so it's asked once and revocable later. Additive,
+    -- nullable: {granted: bool, version: text, decided_at: timestamptz}.
+    medical_record_consent jsonb
 );
 
 create table if not exists public.conversations (

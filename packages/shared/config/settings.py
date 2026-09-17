@@ -36,6 +36,9 @@ class Settings(BaseSettings):
     situation_coverage_target: float = Field(default=0.85, alias="SITUATION_COVERAGE_TARGET")
     interview_max_questions: int = Field(default=3, alias="INTERVIEW_MAX_QUESTIONS")
     pii_anonymizer_backend: str = Field(default="noop", alias="PII_ANONYMIZER_BACKEND")
+    max_active_conversations_per_pet: int = Field(
+        default=4, alias="MAX_ACTIVE_CONVERSATIONS_PER_PET"
+    )
 
     @model_validator(mode="after")
     def validate_backend_configuration(self) -> "Settings":

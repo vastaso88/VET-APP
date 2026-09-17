@@ -200,6 +200,16 @@ class ChatOrchestrator:
             if intent not in situation.working_domains:
                 situation = situation.merge(SituationModel(working_domains=[intent]))
 
+            if medical_record_consent and not situation.known_medical_context:
+                # Consent was already granted (this turn's answer, or a
+                # standing per-pet decision from a previous conversation) —
+                # use it rather than re-asking or silently ignoring it.
+                record_summary = self._retrieve_medical_record_summary(data.pet_id)
+                if record_summary:
+                    situation = situation.merge(
+                        SituationModel(known_medical_context=record_summary)
+                    )
+
             coverage = coverage_score(situation, self._coverage_weights)
             if coverage < self._coverage_target:
                 if (

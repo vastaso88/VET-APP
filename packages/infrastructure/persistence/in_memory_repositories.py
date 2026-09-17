@@ -37,6 +37,12 @@ class InMemoryConversationRepository(ConversationRepository):
     def list_by_owner(self, owner_id: str) -> list[Conversation]:
         return [item for item in self._items.values() if item.owner_id == owner_id]
 
+    def list_by_pet(self, pet_id: str) -> list[Conversation]:
+        return [item for item in self._items.values() if item.pet_id == pet_id]
+
+    def delete(self, conversation_id: str) -> None:
+        self._items.pop(conversation_id, None)
+
 
 class InMemoryReminderRepository(ReminderRepository):
     def __init__(self) -> None:
