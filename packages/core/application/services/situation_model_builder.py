@@ -3,6 +3,7 @@ import json
 from packages.core.application.ports.llm_client import LLMClient, LLMGenerationRequest
 from packages.core.domain.conversation.models import ChatMessage
 from packages.core.domain.situation.models import SituationModel
+from packages.shared.errors.base import ProviderError
 
 SITUATION_EXTRACTION_SYSTEM_PROMPT = (
     "You extract structured case information from a veterinary chat message. "
@@ -12,7 +13,11 @@ SITUATION_EXTRACTION_SYSTEM_PROMPT = (
     '"known_medical_context": string|null, "environmental_changes": [string], '
     '"working_domains": [string], "known_facts": [string], "relevant_unknowns": [string], '
     '"safety_critical_unknowns": [string]}. '
-    "Use null or [] for anything not actually mentioned. Never invent information."
+    "Use null or [] for anything not actually mentioned. Never invent information. "
+    "working_domains entries MUST each be exactly one of: clinical_question, "
+    "nutrition_question, behavior_question, preventive_care — never a free-text label "
+    "like 'gastroenterology' or 'dermatology', even if more descriptive; the caller "
+    "matches these values against a fixed set and an unrecognized one is ignored."
 )
 
 
@@ -34,16 +39,31 @@ class SituationModelBuilder:
         history_block = "\n".join(
             f"{entry.role}: {entry.content}" for entry in conversation_history[-6:]
         )
-        response = self._llm_client.generate(
-            LLMGenerationRequest(
-                system_prompt=SITUATION_EXTRACTION_SYSTEM_PROMPT,
-                user_prompt=(
-                    f"Situation known so far: {current.model_dump_json()}\n"
-                    f"Recent conversation:\n{history_block}\n"
-                    f"New message: {user_message}"
-                ),
+        try:
+            response = self._llm_client.generate(
+                LLMGenerationRequest(
+                    system_prompt=SITUATION_EXTRACTION_SYSTEM_PROMPT,
+                    user_prompt=(
+                        f"Situation known so far: {current.model_dump_json()}\n"
+                        f"Recent conversation:\n{history_block}\n"
+                        f"New message: {user_message}"
+                    ),
+                    # A reasoning model can spend its entire token budget on
+                    # internal reasoning before writing any output when the
+                    # case has a lot to extract (long history, detailed
+                    # message) — the previous 600-token default then
+                    # returned a completely empty completion (finish_reason
+                    # "length"), which silently discarded every field,
+                    # including presenting_problem, turn after turn.
+                    max_tokens=1500,
+                )
             )
-        )
+        except ProviderError:
+            # Degrade to "nothing new extracted this turn" rather than
+            # crashing the whole chat turn — the interview loop simply
+            # asks again next time, same fail-safe posture as every other
+            # LLM call site in the pipeline.
+            return current
         extracted = self._parse(response.content)
         return current.merge(extracted)
 

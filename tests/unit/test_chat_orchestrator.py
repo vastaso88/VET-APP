@@ -224,3 +224,12 @@ def test_chat_orchestrator_sends_anonymized_text_to_llm_not_raw_pii() -> None:
     sent_prompt = client.requests[0].user_prompt
     assert "0491234567" not in sent_prompt
     assert "<TELEFONO>" in sent_prompt
+
+
+def test_classify_intent_recognizes_dermatological_and_parasitic_terms() -> None:
+    # Real-world finding: a real forum question about ringworm ("tigna")
+    # matched none of the clinical keywords and silently fell through to
+    # general_info, skipping evidence retrieval entirely for a genuinely
+    # evidence-backed clinical topic.
+    for message in ("il gatto ha la tigna", "il cane si gratta e ha prurito", "ha le zecche"):
+        assert ChatOrchestrator._classify_intent(message) == "clinical_question", message

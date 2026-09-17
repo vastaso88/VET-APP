@@ -114,6 +114,46 @@ def test_interview_loop_suggests_restart_when_budget_exhausted_and_problem_still
     assert "ricominciare" in result.answer
 
 
+def test_interview_loop_does_not_repeat_the_give_up_message_forever() -> None:
+    # Real-world finding: extraction repeatedly failing (e.g. every reply
+    # is too vague to parse) used to trap the conversation permanently —
+    # every subsequent turn returned the identical "please rephrase"
+    # message with no way out. The second time this dead end is hit, the
+    # orchestrator must force progress instead of repeating itself.
+    client = ExtractionAwareLLMClient(extraction_json="{}")
+    orchestrator = ChatOrchestrator(
+        client,
+        InMemoryEvidenceRetriever(),
+        NoopPiiAnonymizer(),
+        interview_planner=FixedInterviewPlanner("Domanda che non deve più essere fatta"),
+        enable_interview_loop=True,
+        max_interview_questions=1,
+    )
+
+    first = orchestrator.answer(
+        ChatOrchestratorInput(
+            user_message="Il mio cane tossisce",
+            species="dog",
+            pet_name="Milo",
+            interview_turns_used=1,
+        )
+    )
+    assert first.state == ConversationState.INSUFFICIENT_EVIDENCE
+
+    second = orchestrator.answer(
+        ChatOrchestratorInput(
+            user_message="Non saprei cos'altro dirti",
+            species="dog",
+            pet_name="Milo",
+            situation_model=first.situation_model,
+            interview_turns_used=first.interview_turns_used,
+        )
+    )
+
+    assert second.mode != "interview" or second.state != ConversationState.INSUFFICIENT_EVIDENCE
+    assert second.answer != first.answer
+
+
 def test_interview_loop_proceeds_to_evidence_when_budget_exhausted_but_problem_is_known() -> None:
     extraction_json = '{"presenting_problem": "tosse"}'
     client = ExtractionAwareLLMClient(extraction_json=extraction_json)
@@ -184,6 +224,38 @@ def test_interview_loop_stays_on_topic_when_follow_up_reply_lacks_keywords() -> 
     # A follow-up with no clinical keywords must not be re-routed to a
     # generic, un-grounded answer — it should continue the same case.
     assert second_turn.mode != "general"
+
+
+def test_working_domains_with_an_unrecognized_label_does_not_break_intent_routing() -> None:
+    # Real-world finding: extraction can invent a plausible but
+    # non-canonical domain label (e.g. "gastroenterology" instead of
+    # "clinical_question") despite the prompt asking for exactly the
+    # fixed set — a follow-up reply must not be routed using that
+    # unrecognized value, which would silently misroute evidence
+    # retrieval on that turn.
+    client = ExtractionAwareLLMClient(extraction_json="{}")
+    orchestrator = ChatOrchestrator(
+        client,
+        InMemoryEvidenceRetriever(),
+        NoopPiiAnonymizer(),
+        interview_planner=FixedInterviewPlanner("Prossima domanda"),
+        enable_interview_loop=True,
+    )
+    situation = SituationModel(
+        presenting_problem="tosse", working_domains=["gastroenterology", "clinical_question"]
+    )
+
+    result = orchestrator.answer(
+        ChatOrchestratorInput(
+            user_message="Da due giorni",
+            species="dog",
+            pet_name="Milo",
+            situation_model=situation,
+            interview_turns_used=1,
+        )
+    )
+
+    assert result.mode != "general"
 
 
 def test_interview_loop_never_repeats_the_same_question_when_a_field_never_fills() -> None:

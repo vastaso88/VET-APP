@@ -62,6 +62,22 @@ EVIDENCE_KEYWORDS: dict[str, tuple[str, ...]] = {
         "dolore",
         "sintomo",
         "terapia",
+        "tigna",
+        "dermatofit",
+        "prurito",
+        "gratta",
+        "pelle rossa",
+        "crosta",
+        "ferita",
+        "gonfiore",
+        "zoppica",
+        "letargia",
+        "letargic",
+        "respira",
+        "convulsion",
+        "parassit",
+        "pulci",
+        "zecch",
     ),
     "nutrition_question": ("cibo", "mangia", "aliment", "dieta", "nutriz"),
     "behavior_question": ("comport", "ansia", "abbaia", "graffia", "aggress"),
@@ -230,8 +246,18 @@ class ChatOrchestrator:
             # a short follow-up reply ("da due giorni", "solo in casa") won't
             # repeat the original keywords, but reclassifying it fresh would
             # silently drop the case into a generic, un-grounded answer.
-            # Stay on the established topic instead.
-            intent = situation.working_domains[0]
+            # Stay on the established topic instead — but only trust a
+            # working_domains entry that's actually one of our known
+            # intents: extraction is an LLM call, and despite the prompt
+            # asking for exactly these values, it can still invent a
+            # free-text label (e.g. "gastroenterology") that would
+            # otherwise silently break evidence retrieval on this turn.
+            known_domain = next(
+                (domain for domain in situation.working_domains if domain in EVIDENCE_KEYWORDS),
+                None,
+            )
+            if known_domain is not None:
+                intent = known_domain
         if intent == "general_info":
             return self._generate_general_answer(data, message)
 
@@ -300,10 +326,21 @@ class ChatOrchestrator:
                             interview_turns_used=turns_used + 1,
                             medical_record_consent=medical_record_consent,
                         )
-                elif not situation.presenting_problem:
+                elif (
+                    not situation.presenting_problem
+                    and "__gave_up_once__" not in situation.asked_interview_fields
+                ):
                     # Question budget exhausted and we still don't even know
                     # what the problem is: don't guess, and don't spend an
-                    # evidence-retrieval call on a case we can't describe yet.
+                    # evidence-retrieval call on a case we can't describe
+                    # yet. Marked so this can only happen ONCE per
+                    # conversation (see below) — repeating this exact
+                    # message forever if the next reply also fails to
+                    # extract anything would trap the owner with no way
+                    # forward.
+                    situation = situation.merge(
+                        SituationModel(asked_interview_fields=["__gave_up_once__"])
+                    )
                     return ChatOrchestratorResult(
                         answer=(
                             "Non sono riuscito a capire bene la situazione con le domande "
@@ -323,6 +360,13 @@ class ChatOrchestrator:
                         interview_turns_used=turns_used,
                         medical_record_consent=medical_record_consent,
                     )
+                elif not situation.presenting_problem:
+                    # Second time in a row extraction produced nothing
+                    # usable: asking again would just repeat the same dead
+                    # end. Force progress with the owner's own words as a
+                    # last-resort presenting_problem rather than trap them
+                    # here indefinitely.
+                    situation = situation.merge(SituationModel(presenting_problem=message))
                 # Otherwise: budget exhausted but we at least know the
                 # presenting problem — fall through to the evidence step
                 # below, which already refuses to answer without sources.
@@ -465,20 +509,43 @@ class ChatOrchestrator:
     ) -> ChatOrchestratorResult:
         anonymized_message = self._anonymize_for_provider(message)
         anonymized_pet_name = self._anonymize_for_provider(data.pet_name)
-        response = self._llm_client.generate(
-            LLMGenerationRequest(
-                system_prompt=(
-                    "You are a veterinary app assistant. Answer clearly, avoid diagnosis, "
-                    "and encourage professional care when symptoms worsen. There is no "
-                    "retrieved evidence for this turn, so never include a [n] citation."
-                ),
-                user_prompt=(
-                    f"Pet name: {anonymized_pet_name}\n"
-                    f"Species: {data.species}\n"
-                    f"User request: {anonymized_message}"
-                ),
+        try:
+            response = self._llm_client.generate(
+                LLMGenerationRequest(
+                    system_prompt=(
+                        "You are a veterinary app assistant. Answer clearly, avoid diagnosis, "
+                        "and encourage professional care when symptoms worsen. There is no "
+                        "retrieved evidence for this turn, so never include a [n] citation."
+                    ),
+                    user_prompt=(
+                        f"Pet name: {anonymized_pet_name}\n"
+                        f"Species: {data.species}\n"
+                        f"User request: {anonymized_message}"
+                    ),
+                    # See EvidenceSynthesizer/SituationModelBuilder for why:
+                    # a reasoning model can burn the whole 600-token default
+                    # on internal reasoning and return nothing, or (as
+                    # observed live) a genuinely detailed, appropriate
+                    # answer (e.g. a decontamination protocol) gets cut off
+                    # mid-sentence instead.
+                    max_tokens=1200,
+                )
             )
-        )
+        except ProviderError:
+            return ChatOrchestratorResult(
+                answer=(
+                    "In questo momento non riesco a elaborare una risposta (il servizio è "
+                    "temporaneamente non disponibile). Riprova tra poco, oppure consulta il "
+                    "veterinario se la situazione richiede attenzione ora."
+                ),
+                mode="general",
+                confidence="low",
+                ai_generated=False,
+                limitations=["Risposta non disponibile: provider LLM non raggiungibile."],
+                provider="rule-based",
+                model="general-answer-guard",
+                state=ConversationState.RETRIEVAL_FAILURE,
+            )
         # No sources exist in this path, so ANY [n] citation the model
         # produces is by definition invented (spec v3 §28).
         validation = validate_answer(response.content, sources_count=0)

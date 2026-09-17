@@ -38,6 +38,18 @@ IT_EN_TERMS: dict[str, str] = {
     "checkup": "wellness exam",
     "preven": "preventive care",
     "profilassi": "prophylaxis",
+    "tigna": "ringworm dermatophytosis",
+    "dermatofit": "dermatophytosis",
+    "prurito": "pruritus",
+    "gratta": "scratching pruritus",
+    "crosta": "skin crusting lesions",
+    "zoppica": "lameness",
+    "letargia": "lethargy",
+    "letargic": "lethargy",
+    "convulsion": "seizure",
+    "parassit": "parasite",
+    "pulci": "fleas",
+    "zecch": "ticks",
 }
 
 INTENT_FALLBACK_TERMS: dict[str, str] = {
