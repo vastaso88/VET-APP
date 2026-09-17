@@ -1,3 +1,4 @@
+import logging
 from collections.abc import Iterable
 
 from pydantic import BaseModel, Field
@@ -36,6 +37,8 @@ from packages.core.domain.situation.coverage import (
     coverage_score,
 )
 from packages.core.domain.situation.models import SituationModel
+
+logger = logging.getLogger("vetgpt.chat")
 
 # Fetch a wider candidate pool than we'll actually show, so the quality
 # engine has real diversity to rank and select from (spec v3 §3-5) instead
@@ -132,6 +135,32 @@ class ChatOrchestrator:
         self._max_interview_questions = max_interview_questions
 
     def answer(self, data: ChatOrchestratorInput) -> ChatOrchestratorResult:
+        result = self._answer(data)
+        self._log_outcome(data, result)
+        return result
+
+    @staticmethod
+    def _log_outcome(data: ChatOrchestratorInput, result: ChatOrchestratorResult) -> None:
+        """Structured, PII-free observability for Beta metrics (spec v3
+        §42, §49) — decision outcomes and provider/coverage/turn counters
+        only, never the raw message content."""
+        logger.info(
+            "chat_turn mode=%s state=%s confidence=%s coverage=%s "
+            "interview_turns=%s provider=%s model=%s sources=%s "
+            "safety_flags=%s species=%s",
+            result.mode,
+            result.state.value,
+            result.confidence,
+            result.coverage_score,
+            result.interview_turns_used,
+            result.provider,
+            result.model,
+            len(result.sources),
+            ",".join(result.safety_flags) or "-",
+            data.species,
+        )
+
+    def _answer(self, data: ChatOrchestratorInput) -> ChatOrchestratorResult:
         message = data.user_message.strip()
         lowered = message.lower()
 
@@ -238,6 +267,11 @@ class ChatOrchestrator:
                 if turns_used < self._max_interview_questions:
                     question = self._interview_planner.next_question(situation)
                     if question is not None:
+                        asked_field = self._interview_planner.field_for_question(question)
+                        if asked_field is not None:
+                            situation = situation.merge(
+                                SituationModel(asked_interview_fields=[asked_field])
+                            )
                         return ChatOrchestratorResult(
                             answer=question,
                             mode="interview",
@@ -383,6 +417,12 @@ class ChatOrchestrator:
         question = None
         if coverage < self._coverage_target and turns_used < self._max_interview_questions:
             question = self._interview_planner.next_question(situation)
+            if question is not None:
+                asked_field = self._interview_planner.field_for_question(question)
+                if asked_field is not None:
+                    situation = situation.merge(
+                        SituationModel(asked_interview_fields=[asked_field])
+                    )
 
         answer = (
             f"{acknowledgement}{question}"

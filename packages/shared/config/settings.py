@@ -39,6 +39,12 @@ class Settings(BaseSettings):
     max_active_conversations_per_pet: int = Field(
         default=4, alias="MAX_ACTIVE_CONVERSATIONS_PER_PET"
     )
+    # Multilingual architecture (spec v3 §31) — Beta ships Italian-only, but
+    # the core engine reads these instead of hardcoding "it"/"Italian", so
+    # adding a locale later is a config change, not a core-engine rewrite.
+    locale: str = Field(default="it-IT", alias="LOCALE")
+    response_language: str = Field(default="it", alias="RESPONSE_LANGUAGE")
+    retrieval_languages: list[str] = Field(default=["en", "it"], alias="RETRIEVAL_LANGUAGES")
 
     @model_validator(mode="after")
     def validate_backend_configuration(self) -> "Settings":

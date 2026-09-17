@@ -182,6 +182,57 @@ def test_interview_loop_stays_on_topic_when_follow_up_reply_lacks_keywords() -> 
     assert second_turn.mode != "general"
 
 
+def test_interview_loop_never_repeats_the_same_question_when_a_field_never_fills() -> None:
+    # Regression: extraction can legitimately fail to populate a field even
+    # from a valid answer (e.g. a plain "no"), which must not make the real
+    # InterviewPlanner ask the identical question every remaining turn.
+    class NeverFillsAfterFirstTurn:
+        def __init__(self) -> None:
+            self.calls = 0
+
+        def generate(self, request: LLMGenerationRequest) -> LLMResponse:
+            if "extract structured case information" in request.system_prompt:
+                self.calls += 1
+                if self.calls == 1:
+                    content = (
+                        '{"presenting_problem": "non mangia", "onset": "due giorni", '
+                        '"observed_behaviours": ["abbattuto"], '
+                        '"working_domains": ["nutrition_question"]}'
+                    )
+                else:
+                    content = "{}"
+            else:
+                content = "Risposta finale con [1]."
+            return LLMResponse(content=content, provider="fake", model="fake-model", token_count=10)
+
+    orchestrator = ChatOrchestrator(
+        NeverFillsAfterFirstTurn(),
+        InMemoryEvidenceRetriever(),
+        NoopPiiAnonymizer(),
+        enable_interview_loop=True,
+    )
+
+    situation = None
+    turns = 0
+    questions_asked = []
+    for message in ["Il mio cane non mangia da due giorni", "No, niente di che", "Boh non so"]:
+        result = orchestrator.answer(
+            ChatOrchestratorInput(
+                user_message=message,
+                species="dog",
+                pet_name="Moka",
+                situation_model=situation,
+                interview_turns_used=turns,
+            )
+        )
+        if result.mode == "interview":
+            questions_asked.append(result.answer)
+        situation = result.situation_model
+        turns = result.interview_turns_used
+
+    assert len(questions_asked) == len(set(questions_asked)), "a question was repeated"
+
+
 def test_interview_loop_with_the_real_planner_asks_presenting_problem_first() -> None:
     client = ExtractionAwareLLMClient(extraction_json="{}")
     orchestrator = ChatOrchestrator(

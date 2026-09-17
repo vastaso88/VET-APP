@@ -21,6 +21,14 @@ class SituationModel(BaseModel):
     known_facts: list[str] = Field(default_factory=list)
     relevant_unknowns: list[str] = Field(default_factory=list)
     safety_critical_unknowns: list[str] = Field(default_factory=list)
+    # Fields InterviewPlanner has already asked about in this conversation,
+    # regardless of whether the answer actually filled them — extraction is
+    # an LLM call and isn't guaranteed to populate a field just because the
+    # owner answered (e.g. "no known conditions" often extracts to null
+    # rather than a descriptive string). Without this, a field that never
+    # gets filled would have the interview loop ask the identical question
+    # every remaining turn instead of moving on or giving up gracefully.
+    asked_interview_fields: list[str] = Field(default_factory=list)
 
     def merge(self, update: "SituationModel") -> "SituationModel":
         """Fold newly extracted fields into this model.

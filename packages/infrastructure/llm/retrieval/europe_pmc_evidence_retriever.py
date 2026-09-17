@@ -7,47 +7,10 @@ from packages.core.application.ports.evidence_retriever import (
     EvidenceRetrievalRequest,
     EvidenceRetriever,
 )
+from packages.core.application.services.evidence_query_planner import EvidenceQueryPlanner
 from packages.core.domain.knowledge.models import EvidenceSource
 
 BASE_URL = "https://www.ebi.ac.uk/europepmc/webservices/rest/search"
-
-# MVP query builder. Spec v3 §23 calls for a full EvidenceQueryPlanner that
-# translates a case into structured scientific queries — this is a
-# deterministic keyword-substitution stand-in, not that: PubMed/Europe PMC
-# content is overwhelmingly in English, so searching with the untranslated
-# Italian message would barely match anything. Revisit once real query
-# planning (translation/embeddings) exists.
-IT_EN_TERMS: dict[str, str] = {
-    "tosse": "cough",
-    "tossisce": "cough",
-    "vomit": "vomiting",
-    "vomita": "vomiting",
-    "diarrea": "diarrhea",
-    "febbre": "fever",
-    "dolore": "pain",
-    "cibo": "food",
-    "mangia": "appetite",
-    "aliment": "nutrition",
-    "dieta": "diet",
-    "nutriz": "nutrition",
-    "ansia": "anxiety",
-    "abbaia": "barking",
-    "graffia": "scratching",
-    "aggress": "aggression",
-    "comport": "behavior",
-    "vaccin": "vaccination",
-    "antiparass": "parasite prevention",
-    "checkup": "wellness exam",
-    "preven": "preventive care",
-    "profilassi": "prophylaxis",
-}
-
-INTENT_FALLBACK_TERMS: dict[str, str] = {
-    "clinical_question": "clinical signs diagnosis",
-    "nutrition_question": "nutrition diet",
-    "behavior_question": "behavior welfare",
-    "preventive_care": "preventive care wellness",
-}
 
 SPECIES_TERMS: dict[str, str] = {
     "dog": "(canine OR dog)",
@@ -57,16 +20,6 @@ SPECIES_TERMS: dict[str, str] = {
 }
 
 FetchFn = Callable[[str], bytes]
-
-
-def _translate_query(message: str, intent: str) -> str:
-    lowered = message.lower()
-    matched = {english for it_term, english in IT_EN_TERMS.items() if it_term in lowered}
-    if not matched:
-        fallback = INTENT_FALLBACK_TERMS.get(intent)
-        if fallback:
-            matched.add(fallback)
-    return " ".join(sorted(matched)) or "veterinary medicine"
 
 
 def _tier_from_pub_types(pub_types: list[str]) -> str:
@@ -120,11 +73,18 @@ class EuropePmcEvidenceRetriever(EvidenceRetriever):
     "no source, no answer" behaviour instead of breaking the chat.
     """
 
-    def __init__(self, *, timeout_seconds: int = 10, fetcher: FetchFn | None = None) -> None:
+    def __init__(
+        self,
+        *,
+        timeout_seconds: int = 10,
+        fetcher: FetchFn | None = None,
+        query_planner: EvidenceQueryPlanner | None = None,
+    ) -> None:
         self._timeout_seconds = timeout_seconds
         self._fetcher = fetcher or (
             lambda url: _default_fetcher(url, timeout_seconds=timeout_seconds)
         )
+        self._query_planner = query_planner or EvidenceQueryPlanner()
 
     def retrieve(self, request_data: EvidenceRetrievalRequest) -> list[EvidenceSource]:
         url = self._build_url(request_data)
@@ -151,7 +111,7 @@ class EuropePmcEvidenceRetriever(EvidenceRetriever):
         return sources
 
     def _build_url(self, request_data: EvidenceRetrievalRequest) -> str:
-        terms = _translate_query(request_data.query, request_data.intent)
+        terms = self._query_planner.build_query(request_data.query, request_data.intent)
         species_term = SPECIES_TERMS.get(request_data.species, "")
         query = " AND ".join(part for part in (terms, species_term, "SRC:MED") if part)
         params = {

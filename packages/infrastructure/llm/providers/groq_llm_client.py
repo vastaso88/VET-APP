@@ -32,6 +32,10 @@ class GroqLLMClient(LLMClient):
             headers={
                 "Content-Type": "application/json",
                 "Authorization": f"Bearer {self._settings.llm_api_key}",
+                # Cloudflare (in front of Groq's API) blocks urllib's default
+                # "Python-urllib/x.y" user agent outright (HTTP 403, error
+                # code 1010) — any identifiable client string satisfies it.
+                "User-Agent": "VetApp/1.0",
             },
             method="POST",
         )
