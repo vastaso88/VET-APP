@@ -47,13 +47,18 @@ class PetDemoStore {
       ],
     ),
     PetSpeciesOption(
-      label: 'Coniglio',
-      avatarEmoji: '🐰',
+      label: 'Piccoli mammiferi',
+      avatarEmoji: '🐹',
       accentColor: Color(0xFFF5F0D8),
       breeds: [
-        'Olandese',
-        'Nana',
-        'Ariete',
+        'Coniglio olandese',
+        'Coniglio nano',
+        'Coniglio ariete',
+        'Criceto',
+        'Cavia',
+        'Cincillà',
+        'Gerbillo',
+        'Furetto',
       ],
     ),
     PetSpeciesOption(
@@ -67,7 +72,7 @@ class PetDemoStore {
       ],
     ),
     PetSpeciesOption(
-      label: 'Rettile',
+      label: 'Rettili e anfibi',
       avatarEmoji: '🦎',
       accentColor: Color(0xFFEDF0DF),
       breeds: [
@@ -75,6 +80,9 @@ class PetDemoStore {
         'Gecko leopardino',
         'Testuggine',
         'Serpente del mais',
+        'Rana',
+        'Salamandra',
+        'Axolotl',
       ],
     ),
     PetSpeciesOption(

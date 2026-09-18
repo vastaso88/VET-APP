@@ -31,12 +31,22 @@ class GoogleNewsPetNewsRepository implements PetNewsRepository {
   static const _queryBySpecies = {
     'Cane': 'cane $_recipeExclusions',
     'Gatto': 'gatto $_recipeExclusions',
-    // Plain "coniglio" collides constantly with the common Italian surname
-    // and with unrelated uses of the word (theatre shows, economics papers).
-    // Biasing toward pet-specific companion terms cuts most of that noise.
-    'Coniglio': 'coniglio (domestico OR nano OR appartamento OR veterinario) $_recipeExclusions',
+    // "Piccoli mammiferi" groups rabbit (a lagomorph, not technically a
+    // rodent, but grouped here for the same "pocket pet" audience) with
+    // hamster/guinea pig/chinchilla/gerbil/ferret. "Coniglio" collides with
+    // the common Italian surname; "cavia" also means "human guinea pig"
+    // (clinical trials/experiments) in everyday Italian — both need the
+    // same positive-bias + exclusion treatment as before, just widened.
+    'Piccoli mammiferi':
+        '(coniglio OR cavia OR criceto OR furetto) (domestico OR animale OR veterinario OR appartamento) $_recipeExclusions -esperimento -esperimenti -sperimentazione',
     'Uccello': 'uccello $_recipeExclusions',
-    'Rettile': 'rettile $_recipeExclusions',
+    // "Rettili e anfibi" adds amphibians to the old "Rettile" category.
+    // "Rana" collides constantly with "rana pescatrice" (monkfish — a very
+    // common Italian fish dish with nothing to do with frogs) and with
+    // actual frog-leg recipes, so it gets its own exclusion on top of the
+    // generic recipe terms.
+    'Rettili e anfibi':
+        '(rettile OR anfibio OR rana OR salamandra OR tartaruga) (domestico OR terrario OR veterinario) $_recipeExclusions -pescatrice',
     // Same issue as coniglio: "pesce" alone also means the zodiac sign, a
     // surname, and any number of unrelated place/route names.
     'Pesce': 'pesce (acquario OR acquariofilia OR veterinario OR domestico) $_recipeExclusions',
@@ -74,6 +84,13 @@ class GoogleNewsPetNewsRepository implements PetNewsRepository {
     'oroscopo',
     'tamagotchi',
     'tamaverse',
+    // "Piccoli mammiferi" / "Rettili e anfibi" additions.
+    'pescatrice',
+    'cosce di rana',
+    'rane fritte',
+    'esperimento',
+    'esperimenti',
+    'sperimentazione',
   ];
 
   // rss2json's free/keyless tier has a low, shared burst-rate limit (it

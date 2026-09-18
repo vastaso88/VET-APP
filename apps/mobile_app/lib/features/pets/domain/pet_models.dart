@@ -105,7 +105,7 @@ const samplePets = <PetProfile>[
   PetProfile(
     id: 'pet-rex',
     name: 'Rex',
-    species: 'Rettile',
+    species: 'Rettili e anfibi',
     breed: 'Drago barbuto',
     birthDateLabel: 'Lug 2023',
     sex: 'Maschio',

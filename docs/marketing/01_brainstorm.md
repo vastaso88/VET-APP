@@ -24,6 +24,19 @@ La feature `pet_news` (già presente nel repo: [apps/mobile_app/lib/features/pet
 
 Questo punto va portato a un legale prima di costruire la UI di `pet_news`, non solo notato come idea di marketing — ha impatto diretto su come la feature deve essere implementata (quanto contenuto mostrare nella card).
 
+## Specie supportate — nomenclatura da usare nel copy (2026-09-18)
+
+Segnalato dalla sessione "UI/UX e funzionalità base": decisione del proprietario sulle categorie di specie, già implementata lato Flutter ([pet_demo_store.dart](../../apps/mobile_app/lib/features/pets/data/pet_demo_store.dart)). Da usare questi nomi esatti in qualunque copy futuro che elenchi le specie supportate (sito, store listing, onboarding, email):
+
+- Cane
+- Gatto
+- **Piccoli mammiferi** (non più solo "Coniglio"): coniglio, criceto, cavia, cincillà, gerbillo, furetto
+- Uccello
+- **Rettili e anfibi** (non più solo "Rettile"): drago barbuto, gecko leopardino, testuggine, serpente del mais, rana, salamandra, axolotl
+- Pesce
+
+Nessun materiale marketing esistente in questo file menzionava ancora le specie (verificato), quindi nessuna correzione necessaria ora — solo da tenere a mente per copy futuro.
+
 ---
 
 **Promemoria**: quando il materiale in questo file sarà sufficiente, l'utente chiederà un riassunto delle potenziali strategie di marketing da validare, sintetizzando le idee raccolte qui.

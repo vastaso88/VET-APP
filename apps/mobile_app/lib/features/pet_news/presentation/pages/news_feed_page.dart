@@ -22,9 +22,9 @@ class _NewsFeedPageState extends State<NewsFeedPage> {
   static const _categories = [
     'Cane',
     'Gatto',
-    'Coniglio',
+    'Piccoli mammiferi',
     'Uccello',
-    'Rettile',
+    'Rettili e anfibi',
     'Pesce',
     'Altro',
     'Generale',
