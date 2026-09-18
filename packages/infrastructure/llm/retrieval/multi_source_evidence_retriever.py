@@ -1,3 +1,5 @@
+from concurrent.futures import ThreadPoolExecutor
+
 from packages.core.application.ports.evidence_retriever import (
     EvidenceRetrievalRequest,
     EvidenceRetriever,
@@ -10,24 +12,37 @@ class MultiSourceEvidenceRetriever(EvidenceRetriever):
     PubMed, Europe PMC, Crossref, OpenAlex as complementary sources, not
     alternatives to choose between).
 
-    Each source is queried for the full requested count so a source
-    returning few or no results doesn't starve the pool; results are then
-    deduplicated across sources by DOI/PMID/title (the same paper is
-    commonly indexed by more than one of these) and trimmed to the
-    caller's max_results. A single source failing (network error, bad
-    response) degrades gracefully — each retriever already swallows its
-    own errors into an empty list — rather than failing retrieval
-    altogether.
+    Every source is always queried, in parallel (they are independent
+    network calls, so this keeps overall latency close to the slowest
+    single source instead of the sum of all four). Real-world finding:
+    stopping early as soon as one source filled max_results let a source
+    that happened to return a few weakly-relevant (tier C) matches crowd
+    out a genuinely relevant, higher-tier match from a source queried
+    later — so results are pooled first, deduplicated by DOI/PMID/title
+    (the same paper is commonly indexed by more than one of these),
+    ranked by tier (A best), and only then trimmed to max_results. A
+    single source failing (network error, bad response) degrades
+    gracefully — each retriever already swallows its own errors into an
+    empty list — rather than failing retrieval altogether.
     """
 
     def __init__(self, sources: list[EvidenceRetriever]) -> None:
         self._sources = sources
 
     def retrieve(self, request_data: EvidenceRetrievalRequest) -> list[EvidenceSource]:
+        with ThreadPoolExecutor(max_workers=len(self._sources) or 1) as pool:
+            futures = [pool.submit(source.retrieve, request_data) for source in self._sources]
+            results_per_source: list[list[EvidenceSource]] = []
+            for future in futures:
+                try:
+                    results_per_source.append(future.result())
+                except Exception:
+                    results_per_source.append([])
+
         merged: list[EvidenceSource] = []
         seen: set[str] = set()
-        for source_retriever in self._sources:
-            for candidate in source_retriever.retrieve(request_data):
+        for results in results_per_source:
+            for candidate in results:
                 dedup_key = (
                     candidate.doi
                     or candidate.pmid
@@ -37,6 +52,5 @@ class MultiSourceEvidenceRetriever(EvidenceRetriever):
                     continue
                 seen.add(dedup_key)
                 merged.append(candidate)
-                if len(merged) >= request_data.max_results:
-                    return merged
-        return merged
+        merged.sort(key=lambda source: source.tier)
+        return merged[: request_data.max_results]

@@ -63,7 +63,7 @@ def test_a_failing_source_does_not_block_the_others() -> None:
     assert len(sources) == 1
 
 
-def test_stops_once_max_results_is_reached() -> None:
+def test_trims_to_max_results_but_still_queries_every_source() -> None:
     first = _FakeSource(
         [_source(title="A1", doi="10.1/a1"), _source(title="A2", doi="10.1/a2")]
     )
@@ -77,4 +77,27 @@ def test_stops_once_max_results_is_reached() -> None:
     )
 
     assert len(sources) == 2
-    assert second.calls == 0
+    # Real-world finding: a source queried first used to be able to
+    # "starve" the others just by returning enough matches to fill
+    # max_results, even when its matches were weaker than what a later
+    # source would have found — every source must be queried regardless.
+    assert second.calls == 1
+
+
+def test_a_stronger_match_from_a_later_source_is_not_crowded_out_by_a_weaker_one() -> None:
+    weak_first = _FakeSource(
+        [
+            _source(title="Weak C1", tier="C", doi="10.1/c1"),
+            _source(title="Weak C2", tier="C", doi="10.1/c2"),
+        ]
+    )
+    strong_second = _FakeSource([_source(title="Strong A1", tier="A", doi="10.1/a1")])
+    retriever = MultiSourceEvidenceRetriever([weak_first, strong_second])
+
+    sources = retriever.retrieve(
+        EvidenceRetrievalRequest(
+            query="cough", species="dog", intent="clinical_question", max_results=2
+        )
+    )
+
+    assert "Strong A1" in {source.title for source in sources}

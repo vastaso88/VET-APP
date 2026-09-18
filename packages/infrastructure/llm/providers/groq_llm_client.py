@@ -24,6 +24,19 @@ class GroqLLMClient(LLMClient):
                 ],
                 "temperature": req.temperature,
                 "max_tokens": req.max_tokens,
+                # openai/gpt-oss-* models on Groq are reasoning models with no
+                # cap on how much of max_tokens they spend on internal
+                # chain-of-thought before writing the visible answer.
+                # Confirmed live: at the default effort, a moderately
+                # complex case consumed 1198 of a 1200-token budget on
+                # reasoning alone, leaving nothing to write — empty content,
+                # finish_reason "length", regardless of how high max_tokens
+                # was raised. "low" keeps reasoning short enough that a
+                # normal-length answer reliably still fits in the budget.
+                # Verified against openai/gpt-oss-120b, the only model this
+                # deployment configures — revisit if LLM_MODEL ever changes
+                # to something that might reject an unrecognized field.
+                "reasoning_effort": "low",
             }
         ).encode("utf-8")
         http_request = request.Request(

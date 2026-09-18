@@ -1,3 +1,7 @@
+from packages.core.application.ports.evidence_retriever import (
+    EvidenceRetrievalRequest,
+    EvidenceRetriever,
+)
 from packages.core.application.ports.llm_client import LLMGenerationRequest, LLMResponse
 from packages.core.application.services.chat_orchestrator import (
     ChatOrchestrator,
@@ -5,11 +9,25 @@ from packages.core.application.services.chat_orchestrator import (
 )
 from packages.core.application.services.interview_planner import InterviewPlanner
 from packages.core.domain.conversation.states import ConversationState
+from packages.core.domain.knowledge.models import EvidenceSource
 from packages.core.domain.situation.models import SituationModel
 from packages.infrastructure.llm.retrieval.in_memory_evidence_retriever import (
     InMemoryEvidenceRetriever,
 )
 from packages.infrastructure.privacy.noop_pii_anonymizer import NoopPiiAnonymizer
+
+
+class RecordingEvidenceRetriever(EvidenceRetriever):
+    """Wraps a real retriever but records the query it was asked for, so a
+    test can assert on what text retrieval actually saw."""
+
+    def __init__(self, wrapped: EvidenceRetriever) -> None:
+        self._wrapped = wrapped
+        self.queries: list[str] = []
+
+    def retrieve(self, request_data: EvidenceRetrievalRequest) -> list[EvidenceSource]:
+        self.queries.append(request_data.query)
+        return self._wrapped.retrieve(request_data)
 
 
 class ExtractionAwareLLMClient:
@@ -321,3 +339,39 @@ def test_interview_loop_with_the_real_planner_asks_presenting_problem_first() ->
 
     assert result.mode == "interview"
     assert "Cosa hai notato di preciso" in result.answer
+
+
+def test_evidence_query_uses_accumulated_symptoms_not_just_the_final_reply() -> None:
+    # Real-world finding: by the time the interview loop reaches evidence
+    # mode, the triggering message is often a context-only reply ("succede
+    # sempre in casa") with no symptom words at all — the symptoms the
+    # owner actually reported live in the accumulated SituationModel from
+    # earlier turns. Using only the raw current message starved retrieval
+    # (and the synthesizer) of the real case.
+    client = ExtractionAwareLLMClient(extraction_json="{}")
+    wrapped_retriever = RecordingEvidenceRetriever(InMemoryEvidenceRetriever())
+    orchestrator = ChatOrchestrator(
+        client,
+        wrapped_retriever,
+        NoopPiiAnonymizer(),
+        enable_interview_loop=True,
+        max_interview_questions=1,
+    )
+    situation = SituationModel(
+        presenting_problem="vomito e diarrea da due giorni",
+        working_domains=["clinical_question"],
+    )
+
+    result = orchestrator.answer(
+        ChatOrchestratorInput(
+            user_message="Succede sempre in casa, niente di strano nell'ambiente",
+            species="dog",
+            pet_name="Milo",
+            situation_model=situation,
+            interview_turns_used=1,
+        )
+    )
+
+    assert result.mode == "evidence"
+    assert wrapped_retriever.queries
+    assert "vomito" in wrapped_retriever.queries[-1]

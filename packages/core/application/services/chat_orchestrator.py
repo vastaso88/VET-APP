@@ -570,7 +570,10 @@ class ChatOrchestrator:
         intent: str,
         situation: SituationModel,
     ) -> ChatOrchestratorResult:
-        final_request = EvidenceRetrievalRequest(query=message, species=data.species, intent=intent)
+        case_text = self._case_context_text(situation, message)
+        final_request = EvidenceRetrievalRequest(
+            query=case_text, species=data.species, intent=intent
+        )
         pool_size = max(
             final_request.max_results * EVIDENCE_POOL_MULTIPLIER, EVIDENCE_MIN_POOL_SIZE
         )
@@ -607,7 +610,7 @@ class ChatOrchestrator:
             )
 
         evidence_block = self._format_sources_for_prompt(sources)
-        anonymized_message = self._anonymize_for_provider(message)
+        anonymized_message = self._anonymize_for_provider(case_text)
         anonymized_pet_name = self._anonymize_for_provider(data.pet_name)
         try:
             synthesis, response = self._evidence_synthesizer.synthesize(
@@ -716,6 +719,36 @@ class ChatOrchestrator:
             model="answer-validator",
             state=ConversationState.SOURCE_VALIDATION_FAILURE,
         )
+
+    @staticmethod
+    def _case_context_text(situation: SituationModel, latest_message: str) -> str:
+        """Builds the text handed to evidence retrieval and synthesis.
+
+        Real-world finding: using only the current turn's raw message broke
+        down badly once the interview loop had already run for a few turns
+        — by the time coverage was reached, the triggering message was
+        often a context-only reply (e.g. "succede sempre in casa"), with
+        every symptom keyword the owner had actually reported sitting in
+        earlier turns and in the accumulated SituationModel instead. That
+        starved both the retrieval query (falling back to a generic,
+        low-precision search) and the synthesizer (given no real case to
+        reason about). Folding in the accumulated fields keeps the
+        symptom vocabulary available regardless of which turn happens to
+        cross the coverage threshold.
+        """
+        parts: list[str] = []
+        if situation.presenting_problem:
+            parts.append(situation.presenting_problem)
+        if situation.onset:
+            parts.append(f"Onset: {situation.onset}")
+        if situation.observed_behaviours:
+            parts.append("Observed: " + ", ".join(situation.observed_behaviours))
+        if situation.associated_signs:
+            parts.append("Associated signs: " + ", ".join(situation.associated_signs))
+        if situation.known_medical_context:
+            parts.append(f"Medical context: {situation.known_medical_context}")
+        parts.append(latest_message)
+        return " ".join(parts)
 
     def _anonymize_for_provider(self, text: str) -> str:
         """Strip PII before text leaves the system to the external LLM
