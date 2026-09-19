@@ -357,6 +357,33 @@ def test_chat_orchestrator_does_not_flag_consolare_as_a_husbandry_sole_match() -
     assert not any(source.clinical_domain == "husbandry" for source in result.sources)
 
 
+def test_chat_orchestrator_answers_bird_enrichment_questions_from_curated_catalog() -> None:
+    # Real-world finding (stress test round 3): "come posso arricchire la
+    # gabbia del mio pappagallo per non farlo annoiare?" matched none of
+    # the husbandry keywords (all reptile/aquarium-specific at the time)
+    # and fell through to a symptom-interview question ("da quanto tempo
+    # lo stai notando?") — a wrong fit for a question with no symptom at
+    # all. Also the curated catalog had zero bird entries.
+    client = FakeLLMClient()
+    orchestrator = ChatOrchestrator(client, InMemoryEvidenceRetriever(), NoopPiiAnonymizer())
+
+    result = orchestrator.answer(
+        ChatOrchestratorInput(
+            user_message=(
+                "Come posso arricchire la gabbia del mio pappagallo per non farlo annoiare?"
+            ),
+            species="Uccello",
+            pet_name="Pio",
+        )
+    )
+
+    assert result.mode == "evidence"
+    assert result.ai_generated is True
+    assert result.sources
+    assert all(source.clinical_domain == "husbandry" for source in result.sources)
+    assert all(source.species == "bird" for source in result.sources)
+
+
 def test_chat_orchestrator_answers_aquarium_husbandry_questions_from_curated_catalog() -> None:
     client = FakeLLMClient()
     orchestrator = ChatOrchestrator(client, InMemoryEvidenceRetriever(), NoopPiiAnonymizer())

@@ -37,6 +37,11 @@ def _build_system_prompt(response_language: str) -> str:
         "supported_claims only when the cited evidence directly backs it; if evidence is "
         "thin, contradictory, or merely suggestive, it belongs in uncertain_claims or "
         "conflicting_evidence instead. Leave any list empty ([]) rather than padding it. "
+        "Never state a specific number (a frequency such as 'once a week', a duration, a "
+        "quantity) in supported_claims or uncertain_claims unless that exact number "
+        "appears in the Evidence list — if the evidence only supports a general "
+        "recommendation without a specific figure, say so in general terms instead of "
+        "inventing one, or note the missing figure in evidence_gaps. "
         f"Reminder: EVERY string must be in {language}, translated, never quoted "
         "verbatim from English evidence."
     )

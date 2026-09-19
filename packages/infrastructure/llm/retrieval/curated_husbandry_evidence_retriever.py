@@ -127,6 +127,34 @@ HUSBANDRY_CATALOG: list[EvidenceSource] = [
             "or introducing new fish."
         ),
     ),
+    # Real-world finding (stress test round 3): a bird-owner enrichment
+    # question ("how do I enrich my parrot's cage so it doesn't get
+    # bored?") had zero matching content — this catalog previously had no
+    # bird entries at all.
+    EvidenceSource(
+        title=(
+            "Curated husbandry note (pending vet review): cage size and enrichment "
+            "for companion parrots"
+        ),
+        tier="D",
+        access_depth="D",
+        clinical_domain="husbandry",
+        species="bird",
+        snippet=(
+            "Companion parrots are highly intelligent and prone to boredom-driven "
+            "behavior problems (feather-damaging behavior, excessive screaming, "
+            "aggression, stereotypic pacing) when housed without adequate space or "
+            "mental stimulation. The cage should allow wing-stretching and short "
+            "movement, sized to the species rather than a single fixed number; daily "
+            "time outside the cage in a supervised, bird-safe space is commonly "
+            "recommended in addition. Foraging-based feeding (making the bird work "
+            "to access food, e.g. foraging toys, rather than an open bowl) and "
+            "regular rotation of toys/perches are associated with reduced "
+            "boredom-related behavior problems. Social interaction needs vary "
+            "strongly by species and are commonly substantial for flock-oriented "
+            "species."
+        ),
+    ),
 ]
 
 

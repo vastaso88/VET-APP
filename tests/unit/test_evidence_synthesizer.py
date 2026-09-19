@@ -1,5 +1,8 @@
 from packages.core.application.ports.llm_client import LLMGenerationRequest, LLMResponse
-from packages.core.application.services.evidence_synthesizer import EvidenceSynthesizer
+from packages.core.application.services.evidence_synthesizer import (
+    EvidenceSynthesizer,
+    _build_system_prompt,
+)
 
 
 class ScriptedClient:
@@ -58,3 +61,17 @@ def test_all_claim_text_joins_every_field() -> None:
     synthesis, _ = synthesizer.synthesize("Evidence:\n[1] Example source")
 
     assert synthesis.all_claim_text() == "A [1]\nB\nC"
+
+
+def test_system_prompt_forbids_inventing_specific_numbers_not_in_the_evidence() -> None:
+    # Real-world finding (stress test round 3): a synthesis stated "at
+    # least once a week" for aquarium water-parameter checks, cited to a
+    # source that only said "periodically" — a specific-sounding figure
+    # the evidence never actually gave. validate_answer() only checks
+    # citation-index mechanics, not whether the cited text really supports
+    # the number, so the fix has to be in the instruction the model
+    # follows, not a new mechanical check.
+    prompt = _build_system_prompt("it")
+
+    assert "specific number" in prompt
+    assert "inventing one" in prompt

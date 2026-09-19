@@ -121,6 +121,16 @@ def test_translates_husbandry_terms_for_terrarium_and_aquarium_questions() -> No
     )
 
 
+def test_translates_bird_cage_and_enrichment_terms() -> None:
+    planner = EvidenceQueryPlanner()
+
+    query = planner.build_query(
+        "Come posso arricchire la gabbia del mio pappagallo?", "husbandry_question"
+    )
+
+    assert "enrichment" in query
+
+
 def test_falls_back_to_husbandry_intent_terms_when_no_keyword_matches() -> None:
     planner = EvidenceQueryPlanner()
 

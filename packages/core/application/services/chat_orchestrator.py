@@ -151,6 +151,17 @@ EVIDENCE_KEYWORDS: dict[str, tuple[str, ...]] = {
         "raggi diretti del sole",
         "prendere il sole",
         "esposizione al sole",
+        # Real-world finding (stress test round 3): "come posso arricchire
+        # la gabbia del mio pappagallo per non farlo annoiare?" matched
+        # none of the reptile/aquarium-specific terms above and fell
+        # through to a symptom-oriented interview question ("da quanto
+        # tempo lo stai notando?") — a wrong fit for an enrichment
+        # question with no symptom onset at all.
+        "gabbia",
+        "arricchimento",
+        "arricchire",
+        "si annoia",
+        "annoiarsi",
     ),
 }
 

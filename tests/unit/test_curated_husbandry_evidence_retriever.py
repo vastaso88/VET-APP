@@ -28,6 +28,19 @@ def test_does_not_return_sources_for_an_unrelated_species() -> None:
     assert results == []
 
 
+def test_returns_bird_enrichment_sources_for_bird_species() -> None:
+    retriever = CuratedHusbandryEvidenceRetriever()
+
+    results = retriever.retrieve(
+        EvidenceRetrievalRequest(
+            query="gabbia pappagallo", species="bird", intent="husbandry_question"
+        )
+    )
+
+    assert results
+    assert all(source.species == "bird" for source in results)
+
+
 def test_respects_max_results() -> None:
     retriever = CuratedHusbandryEvidenceRetriever()
 

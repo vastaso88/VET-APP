@@ -101,6 +101,9 @@ QUERY_HINTS: dict[str, tuple[str, ...]] = {
         "raggi diretti del sole",
         "prendere il sole",
         "esposizione al sole",
+        "gabbia",
+        "arricchimento",
+        "arricchire",
     ),
 }
 
