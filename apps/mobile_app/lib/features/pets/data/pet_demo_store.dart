@@ -1,5 +1,8 @@
+import 'dart:typed_data';
+
 import 'package:flutter/material.dart';
 
+import '../domain/pet_identity_colors.dart';
 import '../domain/pet_models.dart';
 
 class PetSpeciesOption {
@@ -47,23 +50,52 @@ class PetDemoStore {
       ],
     ),
     PetSpeciesOption(
-      label: 'Coniglio',
-      avatarEmoji: '🐰',
+      label: 'Piccoli mammiferi',
+      avatarEmoji: '🐹',
       accentColor: Color(0xFFF5F0D8),
       breeds: [
-        'Olandese',
-        'Nana',
-        'Ariete',
+        'Coniglio olandese',
+        'Coniglio nano',
+        'Coniglio ariete',
+        'Criceto',
+        'Cavia',
+        'Cincillà',
+        'Gerbillo',
+        'Furetto',
       ],
     ),
     PetSpeciesOption(
       label: 'Uccello',
-      avatarEmoji: '🐦',
-      accentColor: Color(0xFFE0EEF4),
+      avatarEmoji: '🦜',
+      accentColor: Color(0xFFE3EBF0),
       breeds: [
         'Pappagallo',
         'Canarino',
         'Cocorita',
+      ],
+    ),
+    PetSpeciesOption(
+      label: 'Rettili e anfibi',
+      avatarEmoji: '🦎',
+      accentColor: Color(0xFFEDF0DF),
+      breeds: [
+        'Drago barbuto',
+        'Gecko leopardino',
+        'Testuggine',
+        'Serpente del mais',
+        'Rana',
+        'Salamandra',
+        'Axolotl',
+      ],
+    ),
+    PetSpeciesOption(
+      label: 'Pesce',
+      avatarEmoji: '🐠',
+      accentColor: Color(0xFFE1EEEE),
+      breeds: [
+        'Pesce rosso',
+        'Betta',
+        'Ciclide',
       ],
     ),
     PetSpeciesOption(
@@ -83,13 +115,15 @@ class PetDemoStore {
   late List<PetProfile> _pets;
 
   List<PetProfile> list({String? species}) {
-    final normalizedSpecies = species?.trim() ?? '';
-    if (normalizedSpecies.isEmpty || normalizedSpecies == 'Tutti') {
+    final normalizedSpecies = species?.trim().toLowerCase() ?? '';
+    if (normalizedSpecies.isEmpty || normalizedSpecies == 'tutti') {
       return List<PetProfile>.unmodifiable(_pets);
     }
 
     return List<PetProfile>.unmodifiable(
-      _pets.where((pet) => pet.species == normalizedSpecies),
+      _pets.where(
+        (pet) => pet.species.trim().toLowerCase() == normalizedSpecies,
+      ),
     );
   }
 
@@ -124,7 +158,9 @@ class PetDemoStore {
     required DateTime birthDate,
     required String sex,
     required double weightKg,
+    required Color identityColor,
     String medicalNote = '',
+    Uint8List? photoBytes,
   }) {
     final option = optionForSpecies(species);
     final pet = PetProfile(
@@ -142,14 +178,21 @@ class PetDemoStore {
       nextVisitLabel: 'Da pianificare',
       avatarEmoji: name.trim().isEmpty ? option.avatarEmoji : name.trim()[0].toUpperCase(),
       accentColor: option.accentColor,
+      identityColor: identityColor,
+      photoBytes: photoBytes,
     );
 
     return upsert(pet);
   }
 
+  /// A default identity color for a new pet, distinct from as many
+  /// existing pets' colors as the palette allows.
+  Color nextDefaultIdentityColor() => defaultIdentityColorForIndex(_pets.length);
+
   static PetSpeciesOption optionForSpecies(String species) {
+    final normalized = species.trim().toLowerCase();
     return speciesOptions.firstWhere(
-      (option) => option.label == species,
+      (option) => option.label.toLowerCase() == normalized,
       orElse: () => speciesOptions.last,
     );
   }

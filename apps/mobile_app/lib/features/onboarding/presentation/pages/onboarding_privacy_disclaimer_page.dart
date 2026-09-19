@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 
-import '../../../../app/router/app_router.dart';
 import '../../../../../design_system/tokens/app_colors.dart';
 import '../../../../../design_system/tokens/app_radii.dart';
 import '../../../../../design_system/tokens/app_spacing.dart';
 import '../../../../../design_system/tokens/app_text_styles.dart';
+import '../../../auth/presentation/pages/auth_placeholder_page.dart';
 import '../widgets/onboarding_scaffold.dart';
 
 class OnboardingPrivacyDisclaimerPage extends StatelessWidget {
@@ -19,7 +19,9 @@ class OnboardingPrivacyDisclaimerPage extends StatelessWidget {
           'Prima di entrare, chiarimo come usiamo i dati e cosa non puo sostituire l app.',
       primaryActionLabel: 'Accetto e continua',
       onPrimaryAction: () {
-        Navigator.of(context).pushReplacementNamed(AppRouter.auth);
+        Navigator.of(context).push(
+          MaterialPageRoute<void>(builder: (_) => const AuthPlaceholderPage()),
+        );
       },
       secondaryActionLabel: 'Torna al valore',
       onSecondaryAction: () {
@@ -36,6 +38,12 @@ class OnboardingPrivacyDisclaimerPage extends StatelessWidget {
           title: 'Suggerimenti IA',
           body:
               'I suggerimenti aiutano a orientarti, ma non sostituiscono il parere di un veterinario.',
+        ),
+        SizedBox(height: AppSpacing.md),
+        _PolicyCard(
+          title: 'Trasparenza IA',
+          body:
+              'Quando una risposta, un report o un immagine sono generati automaticamente, te lo segnaliamo sempre, come previsto dal Regolamento UE sull intelligenza artificiale (AI Act).',
         ),
         SizedBox(height: AppSpacing.md),
         _PolicyCard(
@@ -94,7 +102,7 @@ class _DisclaimerStateRow extends StatelessWidget {
         _StatusPill(label: 'Privacy chiara', color: Color(0xFFDDEDE8)),
         _StatusPill(label: 'Uso responsabile IA', color: Color(0xFFFFF5EC)),
         _StatusPill(label: 'Supporto, non diagnosi', color: Color(0xFFF5D9D0)),
-        _StatusPill(label: 'Consenso esplicito', color: Color(0xFFD8E8DD)),
+        _StatusPill(label: 'Richiede la tua conferma', color: Color(0xFFD8E8DD)),
       ],
     );
   }

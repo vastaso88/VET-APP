@@ -1,8 +1,10 @@
-from collections.abc import Callable
+from collections.abc import Awaitable, Callable
 
 from fastapi import FastAPI, Request, Response
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
+from apps.api.routes.account_consents import router as account_consents_router
 from apps.api.routes.auth import router as auth_router
 from apps.api.routes.chat import router as chat_router
 from apps.api.routes.conversations import router as conversations_router
@@ -21,9 +23,22 @@ setup_telemetry(settings.enable_telemetry)
 
 app = FastAPI(title=settings.app_name)
 
+if settings.environment != "production":
+    # The Flutter web client runs on its own dev-server origin (e.g.
+    # localhost:8080) and calls this API cross-origin; browsers block that
+    # without CORS. Wide open is fine for local/dev/staging, never for prod.
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origins=["*"],
+        allow_methods=["*"],
+        allow_headers=["*"],
+    )
+
 
 @app.middleware("http")
-async def inject_access_token(request: Request, call_next: Callable[[Request], Response]) -> Response:
+async def inject_access_token(
+    request: Request, call_next: Callable[[Request], Awaitable[Response]]
+) -> Response:
     auth_header = request.headers.get("Authorization", "")
     token: str | None = None
     if auth_header.lower().startswith("bearer "):
@@ -58,3 +73,4 @@ app.include_router(pets_router)
 app.include_router(conversations_router)
 app.include_router(chat_router)
 app.include_router(reminders_router)
+app.include_router(account_consents_router)

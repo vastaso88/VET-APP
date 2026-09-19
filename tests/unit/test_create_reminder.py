@@ -1,11 +1,14 @@
 from datetime import date
 
-from packages.core.application.services.create_reminder import CreateReminderInput, CreateReminderService
+from packages.core.application.services.create_reminder import (
+    CreateReminderInput,
+    CreateReminderService,
+)
+from packages.core.domain.pet_profile.models import PetProfile
 from packages.infrastructure.persistence.in_memory_repositories import (
     InMemoryPetProfileRepository,
     InMemoryReminderRepository,
 )
-from packages.core.domain.pet_profile.models import PetProfile
 
 
 def test_create_reminder() -> None:

@@ -16,6 +16,9 @@ typecheck:
 test:
 	$(UV) run pytest
 
+eval:
+	$(UV) run python scripts/eval/run_evaluation.py
+
 run-api:
 	$(UV) run uvicorn apps.api.main:app --reload
 

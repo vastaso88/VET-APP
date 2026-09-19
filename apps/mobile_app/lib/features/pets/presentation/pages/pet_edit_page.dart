@@ -76,6 +76,9 @@ class _EditForm extends StatelessWidget {
           sex: draft.sex,
           weightLabel: _formatWeight(draft.weightKg),
           medicalNote: draft.medicalNote,
+          identityColor: draft.identityColor,
+          photoBytes: draft.photoBytes,
+          clearPhoto: draft.photoBytes == null,
         );
         PetDemoStore.instance.upsert(updated);
         Navigator.of(context).pop(updated);

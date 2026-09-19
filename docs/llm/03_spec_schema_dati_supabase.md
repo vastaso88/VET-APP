@@ -1,5 +1,8 @@
 # SPEC — Schema Dati Supabase per LLM + Fonti
 
+> **Superseded**: dove questo documento (v1) è in contrasto con la VetGPT CORE ENGINE — MASTER
+> DIRECTIONAL SPECIFICATION v3, vale la v3. Tenuto come riferimento storico.
+
 ## Obiettivo
 Definire uno schema dati iniziale in Supabase/Postgres che supporti:
 - autenticazione e dati utente/pet;

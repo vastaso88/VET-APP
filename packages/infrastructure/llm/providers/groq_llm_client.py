@@ -24,6 +24,19 @@ class GroqLLMClient(LLMClient):
                 ],
                 "temperature": req.temperature,
                 "max_tokens": req.max_tokens,
+                # openai/gpt-oss-* models on Groq are reasoning models with no
+                # cap on how much of max_tokens they spend on internal
+                # chain-of-thought before writing the visible answer.
+                # Confirmed live: at the default effort, a moderately
+                # complex case consumed 1198 of a 1200-token budget on
+                # reasoning alone, leaving nothing to write — empty content,
+                # finish_reason "length", regardless of how high max_tokens
+                # was raised. "low" keeps reasoning short enough that a
+                # normal-length answer reliably still fits in the budget.
+                # Verified against openai/gpt-oss-120b, the only model this
+                # deployment configures — revisit if LLM_MODEL ever changes
+                # to something that might reject an unrecognized field.
+                "reasoning_effort": "low",
             }
         ).encode("utf-8")
         http_request = request.Request(
@@ -32,12 +45,18 @@ class GroqLLMClient(LLMClient):
             headers={
                 "Content-Type": "application/json",
                 "Authorization": f"Bearer {self._settings.llm_api_key}",
+                # Cloudflare (in front of Groq's API) blocks urllib's default
+                # "Python-urllib/x.y" user agent outright (HTTP 403, error
+                # code 1010) — any identifiable client string satisfies it.
+                "User-Agent": "VetApp/1.0",
             },
             method="POST",
         )
 
         try:
-            with request.urlopen(http_request, timeout=self._settings.llm_timeout_seconds) as response:
+            with request.urlopen(
+                http_request, timeout=self._settings.llm_timeout_seconds
+            ) as response:
                 body = json.loads(response.read().decode("utf-8"))
         except error.HTTPError as exc:
             detail = exc.read().decode("utf-8", errors="ignore")

@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
 
 import '../../design_system/tokens/app_colors.dart';
-import '../../features/chat/chat.dart';
+import '../../features/activities/presentation/pages/activities_page.dart';
 import '../../features/home/presentation/pages/home_dashboard_page.dart';
-import '../../features/medical_records/presentation/pages/medical_records_pages.dart';
 import '../../features/pets/pets.dart';
 import '../../features/settings/presentation/pages/settings_page.dart';
 
@@ -19,12 +18,16 @@ class HomeShellPage extends StatefulWidget {
 class _HomeShellPageState extends State<HomeShellPage> {
   late int _currentIndex = widget.initialIndex;
 
-  late final List<_ShellTabNavigator> _pages = const [
-    _ShellTabNavigator(rootPage: HomeDashboardPage()),
-    _ShellTabNavigator(rootPage: PetsListPage()),
-    _ShellTabNavigator(rootPage: ChatConversationsPage()),
-    _ShellTabNavigator(rootPage: MedicalRecordsListPage()),
-    _ShellTabNavigator(rootPage: SettingsPage()),
+  final List<GlobalKey<NavigatorState>> _navigatorKeys = List.generate(
+    4,
+    (_) => GlobalKey<NavigatorState>(),
+  );
+
+  late final List<_ShellTabNavigator> _pages = [
+    _ShellTabNavigator(navigatorKey: _navigatorKeys[0], rootPage: const HomeDashboardPage()),
+    _ShellTabNavigator(navigatorKey: _navigatorKeys[1], rootPage: const PetsListPage()),
+    _ShellTabNavigator(navigatorKey: _navigatorKeys[2], rootPage: const ActivitiesPage()),
+    _ShellTabNavigator(navigatorKey: _navigatorKeys[3], rootPage: const SettingsPage()),
   ];
 
   @override
@@ -125,6 +128,11 @@ class _HomeShellPageState extends State<HomeShellPage> {
   }
 
   void _handleDestinationSelected(int value) {
+    // Always reset the tapped tab's own navigation stack to its root page,
+    // whether it's already selected (re-tap resets it) or we're switching
+    // into it from elsewhere (so stale nested navigation, e.g. a pet detail
+    // page left open, never lingers behind the bottom nav / rail button).
+    _navigatorKeys[value].currentState?.popUntil((route) => route.isFirst);
     setState(() {
       _currentIndex = value;
     });
@@ -139,22 +147,17 @@ class _HomeShellPageState extends State<HomeShellPage> {
         NavigationRailDestination(
           icon: Icon(Icons.pets_outlined),
           selectedIcon: Icon(Icons.pets_rounded),
-          label: Text('Pets'),
+          label: Text('Animali'),
         ),
         NavigationRailDestination(
-          icon: Icon(Icons.chat_bubble_outline_rounded),
-          selectedIcon: Icon(Icons.chat_bubble_rounded),
-          label: Text('Chat'),
-        ),
-        NavigationRailDestination(
-          icon: Icon(Icons.description_outlined),
-          selectedIcon: Icon(Icons.description_rounded),
-          label: Text('Records'),
+          icon: Icon(Icons.explore_outlined),
+          selectedIcon: Icon(Icons.explore_rounded),
+          label: Text('Attività'),
         ),
         NavigationRailDestination(
           icon: Icon(Icons.settings_outlined),
           selectedIcon: Icon(Icons.settings_rounded),
-          label: Text('Settings'),
+          label: Text('Impostazioni'),
         ),
       ];
 
@@ -167,47 +170,37 @@ class _HomeShellPageState extends State<HomeShellPage> {
         NavigationDestination(
           icon: Icon(Icons.pets_outlined),
           selectedIcon: Icon(Icons.pets_rounded),
-          label: 'Pets',
+          label: 'Animali',
         ),
         NavigationDestination(
-          icon: Icon(Icons.chat_bubble_outline_rounded),
-          selectedIcon: Icon(Icons.chat_bubble_rounded),
-          label: 'Chat',
-        ),
-        NavigationDestination(
-          icon: Icon(Icons.description_outlined),
-          selectedIcon: Icon(Icons.description_rounded),
-          label: 'Records',
+          icon: Icon(Icons.explore_outlined),
+          selectedIcon: Icon(Icons.explore_rounded),
+          label: 'Attività',
         ),
         NavigationDestination(
           icon: Icon(Icons.settings_outlined),
           selectedIcon: Icon(Icons.settings_rounded),
-          label: 'Settings',
+          label: 'Impostazioni',
         ),
       ];
 }
 
-class _ShellTabNavigator extends StatefulWidget {
+class _ShellTabNavigator extends StatelessWidget {
   const _ShellTabNavigator({
+    required this.navigatorKey,
     required this.rootPage,
   });
 
+  final GlobalKey<NavigatorState> navigatorKey;
   final Widget rootPage;
-
-  @override
-  State<_ShellTabNavigator> createState() => _ShellTabNavigatorState();
-}
-
-class _ShellTabNavigatorState extends State<_ShellTabNavigator> {
-  final GlobalKey<NavigatorState> _navigatorKey = GlobalKey<NavigatorState>();
 
   @override
   Widget build(BuildContext context) {
     return Navigator(
-      key: _navigatorKey,
+      key: navigatorKey,
       onGenerateRoute: (_) {
         return MaterialPageRoute<void>(
-          builder: (_) => widget.rootPage,
+          builder: (_) => rootPage,
         );
       },
     );
@@ -271,7 +264,7 @@ class _RailFooter extends StatelessWidget {
     return Align(
       alignment: Alignment.centerLeft,
       child: Text(
-        'Warm clinical workspace',
+        'Spazio clinico caldo',
         style: Theme.of(context).textTheme.bodySmall?.copyWith(
               color: const Color(0xFFCEE0D8),
             ),

@@ -40,7 +40,14 @@ class _ChatConversationDetailPageState extends State<ChatConversationDetailPage>
   @override
   void initState() {
     super.initState();
-    _store.openConversation(widget.conversationId);
+    // Deferred to after this frame: marking the conversation as opened
+    // notifies ChatDemoStore listeners, which must not happen while this
+    // page itself is still being built during a route transition.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        _store.openConversation(widget.conversationId);
+      }
+    });
   }
 
   @override
@@ -129,16 +136,33 @@ class _ChatConversationDetailPageState extends State<ChatConversationDetailPage>
       _isSending = true;
     });
 
-    try {
-      await _store.sendMessage(widget.conversationId, cleanMessage);
-    } finally {
-      if (mounted) {
-        setState(() {
-          _isSending = false;
-        });
-        _scrollToBottom();
-      }
-    }
+    final result = await _store.sendMessage(widget.conversationId, cleanMessage);
+
+    if (!mounted) return;
+    setState(() {
+      _isSending = false;
+    });
+    _scrollToBottom();
+
+    result.fold(
+      onSuccess: (_) {},
+      onFailure: (error) {
+        // A reached conversation limit is expected, not a failure to
+        // retry — retrying would just hit the same 400 again.
+        final isLimitReached = error.code == 'chat_conversation_limit_reached';
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(error.message),
+            action: isLimitReached
+                ? null
+                : SnackBarAction(
+                    label: 'Riprova',
+                    onPressed: () => _sendMessage(cleanMessage),
+                  ),
+          ),
+        );
+      },
+    );
   }
 
   void _scrollToBottom() {
@@ -221,7 +245,6 @@ class _Header extends StatelessWidget {
               ],
             ),
           ),
-          const Icon(Icons.more_horiz, color: AppColors.secondaryText),
         ],
       ),
     );

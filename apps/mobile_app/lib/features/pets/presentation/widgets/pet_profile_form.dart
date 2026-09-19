@@ -1,11 +1,14 @@
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import '../../data/pet_demo_store.dart';
+import '../../domain/pet_identity_colors.dart';
 import '../../domain/pet_models.dart';
 import '../../../../design_system/tokens/app_colors.dart';
 import '../../../../design_system/tokens/app_spacing.dart';
 import '../../../../design_system/tokens/app_text_styles.dart';
+import 'pet_avatar.dart';
 import 'pet_sections.dart';
 
 class PetProfileDraft {
@@ -17,6 +20,8 @@ class PetProfileDraft {
     required this.sex,
     required this.weightKg,
     required this.medicalNote,
+    required this.identityColor,
+    this.photoBytes,
   });
 
   final String name;
@@ -26,6 +31,8 @@ class PetProfileDraft {
   final String sex;
   final double weightKg;
   final String medicalNote;
+  final Color identityColor;
+  final Uint8List? photoBytes;
 }
 
 class PetProfileForm extends StatefulWidget {
@@ -57,6 +64,8 @@ class _PetProfileFormState extends State<PetProfileForm> {
   late String? _breed;
   late String? _sex;
   DateTime? _birthDate;
+  Uint8List? _photoBytes;
+  late Color _identityColor;
 
   @override
   void initState() {
@@ -71,6 +80,28 @@ class _PetProfileFormState extends State<PetProfileForm> {
     _breed = _normalizeBreed(pet?.breed);
     _sex = pet?.sex;
     _birthDate = _parseBirthDate(pet?.birthDateLabel);
+    _photoBytes = pet?.photoBytes;
+    _identityColor = pet?.identityColor ?? PetDemoStore.instance.nextDefaultIdentityColor();
+  }
+
+  Future<void> _pickPhoto() async {
+    final result = await FilePicker.platform.pickFiles(
+      type: FileType.image,
+      withData: true,
+    );
+    final bytes = result?.files.single.bytes;
+    if (bytes == null) return;
+    setState(() => _photoBytes = bytes);
+  }
+
+  void _removePhoto() => setState(() => _photoBytes = null);
+
+  Color _speciesAccentColor() {
+    final species = _species;
+    if (species == null || species.trim().isEmpty) {
+      return widget.initialPet?.accentColor ?? AppColors.accentSoft;
+    }
+    return PetDemoStore.optionForSpecies(species).accentColor;
   }
 
   @override
@@ -95,6 +126,31 @@ class _PetProfileFormState extends State<PetProfileForm> {
               title: widget.title,
               subtitle: widget.helperText,
               children: [
+                ValueListenableBuilder<TextEditingValue>(
+                  valueListenable: _nameController,
+                  builder: (context, value, _) {
+                    final trimmed = value.text.trim();
+                    final label = trimmed.isNotEmpty
+                        ? trimmed[0].toUpperCase()
+                        : (widget.initialPet?.avatarEmoji ?? '?');
+                    return _PhotoPicker(
+                      photoBytes: _photoBytes,
+                      identityColor: _identityColor,
+                      backgroundColor: _speciesAccentColor(),
+                      label: label,
+                      onPick: _pickPhoto,
+                      onRemove: _photoBytes == null ? null : _removePhoto,
+                    );
+                  },
+                ),
+                const SizedBox(height: AppSpacing.md),
+                Text('Colore identificativo', style: AppTextStyles.caption),
+                const SizedBox(height: AppSpacing.xs),
+                _IdentityColorPicker(
+                  value: _identityColor,
+                  onChanged: (color) => setState(() => _identityColor = color),
+                ),
+                const SizedBox(height: AppSpacing.lg),
                 TextFormField(
                   controller: _nameController,
                   textInputAction: TextInputAction.next,
@@ -316,6 +372,8 @@ class _PetProfileFormState extends State<PetProfileForm> {
       sex: _sex!.trim(),
       weightKg: _parseWeight(_weightController.text)!,
       medicalNote: _notesController.text.trim(),
+      identityColor: _identityColor,
+      photoBytes: _photoBytes,
     );
 
     await widget.onSubmit(draft);
@@ -408,5 +466,97 @@ class _PetProfileFormState extends State<PetProfileForm> {
     ];
 
     return '${date.day.toString().padLeft(2, '0')} ${months[date.month - 1]} ${date.year}';
+  }
+}
+
+class _PhotoPicker extends StatelessWidget {
+  const _PhotoPicker({
+    required this.photoBytes,
+    required this.identityColor,
+    required this.backgroundColor,
+    required this.label,
+    required this.onPick,
+    this.onRemove,
+  });
+
+  final Uint8List? photoBytes;
+  final Color identityColor;
+  final Color backgroundColor;
+  final String label;
+  final VoidCallback onPick;
+  final VoidCallback? onRemove;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        PetAvatar(
+          label: label,
+          backgroundColor: backgroundColor,
+          photoBytes: photoBytes,
+          identityColor: identityColor,
+          size: 64,
+        ),
+        const SizedBox(width: AppSpacing.md),
+        Expanded(
+          child: Wrap(
+            spacing: AppSpacing.sm,
+            runSpacing: AppSpacing.sm,
+            children: [
+              OutlinedButton.icon(
+                onPressed: onPick,
+                icon: const Icon(Icons.add_a_photo_outlined, size: 16),
+                label: Text(photoBytes == null ? 'Aggiungi foto' : 'Cambia foto'),
+              ),
+              if (onRemove != null)
+                TextButton.icon(
+                  onPressed: onRemove,
+                  icon: const Icon(Icons.delete_outline, size: 16),
+                  label: const Text('Rimuovi'),
+                ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _IdentityColorPicker extends StatelessWidget {
+  const _IdentityColorPicker({required this.value, required this.onChanged});
+
+  final Color value;
+  final ValueChanged<Color> onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    return Wrap(
+      spacing: AppSpacing.sm,
+      runSpacing: AppSpacing.sm,
+      children: [
+        for (final color in petIdentityColors)
+          InkWell(
+            onTap: () => onChanged(color),
+            customBorder: const CircleBorder(),
+            child: Container(
+              width: 30,
+              height: 30,
+              alignment: Alignment.center,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: color,
+                border: Border.all(
+                  color: color == value ? AppColors.text : Colors.transparent,
+                  width: 2,
+                ),
+              ),
+              child: color == value
+                  ? const Icon(Icons.check_rounded, color: Colors.white, size: 16)
+                  : null,
+            ),
+          ),
+      ],
+    );
   }
 }

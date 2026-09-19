@@ -1,7 +1,6 @@
 from functools import lru_cache
 
-from pydantic import Field
-from pydantic import model_validator
+from pydantic import Field, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -33,6 +32,19 @@ class Settings(BaseSettings):
     llm_timeout_seconds: int = Field(default=30, alias="LLM_TIMEOUT_SECONDS")
     log_level: str = Field(default="INFO", alias="LOG_LEVEL")
     enable_telemetry: bool = Field(default=False, alias="ENABLE_TELEMETRY")
+    enable_interview_loop: bool = Field(default=True, alias="ENABLE_INTERVIEW_LOOP")
+    situation_coverage_target: float = Field(default=0.85, alias="SITUATION_COVERAGE_TARGET")
+    interview_max_questions: int = Field(default=3, alias="INTERVIEW_MAX_QUESTIONS")
+    pii_anonymizer_backend: str = Field(default="noop", alias="PII_ANONYMIZER_BACKEND")
+    max_active_conversations_per_pet: int = Field(
+        default=4, alias="MAX_ACTIVE_CONVERSATIONS_PER_PET"
+    )
+    # Multilingual architecture (spec v3 §31) — Beta ships Italian-only, but
+    # the core engine reads these instead of hardcoding "it"/"Italian", so
+    # adding a locale later is a config change, not a core-engine rewrite.
+    locale: str = Field(default="it-IT", alias="LOCALE")
+    response_language: str = Field(default="it", alias="RESPONSE_LANGUAGE")
+    retrieval_languages: list[str] = Field(default=["en", "it"], alias="RETRIEVAL_LANGUAGES")
 
     @model_validator(mode="after")
     def validate_backend_configuration(self) -> "Settings":

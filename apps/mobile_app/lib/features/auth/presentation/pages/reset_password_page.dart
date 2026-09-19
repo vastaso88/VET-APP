@@ -2,10 +2,10 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 
+import '../../../../design_system/tokens/app_spacing.dart';
 import '../../data/auth_repository_factory.dart';
 import '../widgets/auth_widgets.dart';
 import 'login_page.dart';
-import 'register_page.dart';
 
 class ResetPasswordPage extends StatefulWidget {
   const ResetPasswordPage({super.key});
@@ -20,9 +20,9 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
   final _emailController = TextEditingController();
 
   bool _isLoading = false;
-  AuthBannerStatus _status = AuthBannerStatus.info;
-  String _title = 'Recupera il tuo accesso.';
-  String _message = 'Simuliamo l invio della mail di reset.';
+  AuthBannerStatus? _status;
+  String _title = '';
+  String _message = '';
 
   @override
   void dispose() {
@@ -48,8 +48,7 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
       _message = 'Sto preparando la richiesta di recupero password.';
     });
 
-    final result =
-        await _authRepository.resetPasswordForEmail(_emailController.text);
+    final result = await _authRepository.resetPasswordForEmail(_emailController.text);
 
     if (!mounted) return;
     result.fold(
@@ -57,16 +56,15 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
         setState(() {
           _isLoading = false;
           _status = AuthBannerStatus.success;
-          _title = 'Mail pronta';
-          _message =
-              'Se l account esiste, riceverai il link per il recupero accesso.';
+          _title = 'Email inviata';
+          _message = 'Se l account esiste, riceverai il link per il recupero accesso.';
         });
       },
       onFailure: (error) {
         setState(() {
           _isLoading = false;
           _status = AuthBannerStatus.error;
-          _title = 'Invio fallito';
+          _title = 'Invio non riuscito';
           _message = error.message;
         });
       },
@@ -76,78 +74,51 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
   @override
   Widget build(BuildContext context) {
     return AuthScreenScaffold(
-      eyebrow: 'Recupero password',
-      title: 'Nessun problema, ricominciamo.',
-      subtitle:
-          'Inserisci la tua email e simula l invio del link di recupero accesso.',
-      primaryActionLabel: 'Invia link',
-      secondaryActionLabel: 'Torna all accesso',
-      onPrimaryAction: _submit,
-      onSecondaryAction: () {
-        Navigator.of(context).pushReplacement(
-          MaterialPageRoute<void>(
-            builder: (_) => const LoginPage(),
-          ),
-        );
-      },
-      footer: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          AuthStateBanner(
-            status: _status,
-            title: _title,
-            message: _message,
-          ),
-          const SizedBox(height: 16),
-          AuthSurfaceCard(
-            title: 'Recupero accesso',
-            child: Form(
-              key: _formKey,
-              child: Column(
-                children: [
-                  AuthInputField(
-                    controller: _emailController,
-                    label: 'Email',
-                    hintText: 'nome@dominio.it',
-                    keyboardType: TextInputType.emailAddress,
-                    autofillHints: const [AutofillHints.email],
-                    validator: (value) {
-                      final text = value?.trim() ?? '';
-                      if (text.isEmpty) return 'Inserisci la tua email.';
-                      if (!text.contains('@')) return 'Email non valida.';
-                      return null;
-                    },
-                  ),
-                  const SizedBox(height: 16),
-                  SizedBox(
-                    width: double.infinity,
-                    child: ElevatedButton(
-                      onPressed: _isLoading ? null : _submit,
-                      child: _isLoading
-                          ? const SizedBox(
-                              width: 20,
-                              height: 20,
-                              child: CircularProgressIndicator(strokeWidth: 2),
-                            )
-                          : const Text('Invia link'),
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  AuthFooterLink(
-                    label: 'Torna alla registrazione',
-                    onTap: () {
-                      Navigator.of(context).pushReplacement(
-                        MaterialPageRoute<void>(
-                          builder: (_) => const RegisterPage(),
-                        ),
-                      );
-                    },
-                  ),
-                ],
+      title: 'Recupera l accesso.',
+      subtitle: 'Inserisci la tua email: ti mandiamo un link per reimpostare la password.',
+      child: Form(
+        key: _formKey,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            if (_status != null)
+              AuthStateBanner(status: _status!, title: _title, message: _message),
+            AuthInputField(
+              controller: _emailController,
+              label: 'Email',
+              hintText: 'nome@dominio.it',
+              keyboardType: TextInputType.emailAddress,
+              autofillHints: const [AutofillHints.email],
+              validator: (value) {
+                final text = value?.trim() ?? '';
+                if (text.isEmpty) return 'Inserisci la tua email.';
+                if (!text.contains('@')) return 'Email non valida.';
+                return null;
+              },
+            ),
+            const SizedBox(height: AppSpacing.lg),
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                onPressed: _isLoading ? null : _submit,
+                child: _isLoading
+                    ? const SizedBox(
+                        width: 20,
+                        height: 20,
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      )
+                    : const Text('Invia link'),
               ),
             ),
-          ),
-        ],
+            const SizedBox(height: AppSpacing.md),
+            AuthFooterLink(
+              label: 'Torna all accesso',
+              onTap: () => Navigator.of(context).push(
+                MaterialPageRoute<void>(builder: (_) => const LoginPage()),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

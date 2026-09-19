@@ -1,5 +1,8 @@
 # SPEC — Architettura Engine LLM
 
+> **Superseded**: dove questo documento (v1) è in contrasto con la VetGPT CORE ENGINE — MASTER
+> DIRECTIONAL SPECIFICATION v3, vale la v3. Tenuto come riferimento storico.
+
 ## Obiettivo
 Implementare un motore LLM modulare, inizialmente appoggiato a Groq, capace di funzionare come chatbot ma con un comportamento controllato da retrieval, ranking delle fonti e policy di affidabilità.
 

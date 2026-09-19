@@ -31,7 +31,9 @@ blocked_prefixes = (
 real_import = builtins.__import__
 
 def guarded_import(name, globals=None, locals=None, fromlist=(), level=0):
-    if name == blocked_prefixes[0] or any(name.startswith(prefix) for prefix in blocked_prefixes[1:]):
+    if name == blocked_prefixes[0] or any(
+        name.startswith(prefix) for prefix in blocked_prefixes[1:]
+    ):
         raise RuntimeError(f"blocked import: {name}")
     return real_import(name, globals, locals, fromlist, level)
 
@@ -82,7 +84,9 @@ blocked_prefixes = (
 real_import = builtins.__import__
 
 def guarded_import(name, globals=None, locals=None, fromlist=(), level=0):
-    if name == blocked_prefixes[0] or any(name.startswith(prefix) for prefix in blocked_prefixes[1:]):
+    if name == blocked_prefixes[0] or any(
+        name.startswith(prefix) for prefix in blocked_prefixes[1:]
+    ):
         raise RuntimeError(f"blocked import: {name}")
     return real_import(name, globals, locals, fromlist, level)
 

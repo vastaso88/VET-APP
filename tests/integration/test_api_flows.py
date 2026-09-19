@@ -15,7 +15,9 @@ def test_auth_me_endpoint() -> None:
 def test_pet_create_list_and_update_flow() -> None:
     client = TestClient(app)
 
-    create_response = client.post("/pets", json={"name": "Milo", "species": "dog", "breed": "Beagle"})
+    create_response = client.post(
+        "/pets", json={"name": "Milo", "species": "dog", "breed": "Beagle"}
+    )
     assert create_response.status_code == 200
     pet_id = create_response.json()["pet_profile"]["id"]
 
@@ -54,8 +56,13 @@ def test_chat_and_reminder_flow() -> None:
     chat_response = client.post("/chat", json={"pet_id": pet_id, "user_message": "Mangia poco"})
     assert chat_response.status_code == 200
     assert chat_response.json()["reply"]["role"] == "assistant"
-    assert chat_response.json()["mode"] == "evidence"
+    # With the interview loop on (default) and the default echo LLM provider
+    # (which can't produce the structured extraction JSON), the first
+    # message on a non-general intent asks a clarifying question rather
+    # than answering immediately — see ChatOrchestrator/InterviewPlanner.
+    assert chat_response.json()["mode"] in {"interview", "evidence"}
     assert "confidence" in chat_response.json()
+    assert "ai_generated" in chat_response.json()
 
     reminder_create = client.post(
         "/reminders",
@@ -66,3 +73,29 @@ def test_chat_and_reminder_flow() -> None:
     reminder_list = client.get("/reminders")
     assert reminder_list.status_code == 200
     assert len(reminder_list.json()["reminders"]) >= 1
+
+
+def test_account_consents_flow() -> None:
+    client = TestClient(app)
+
+    initial = client.get("/account/consents")
+    assert initial.status_code == 200
+    assert initial.json()["account_consents"]["consents"] == {}
+    assert "terms_of_service" in initial.json()["catalog"]
+
+    accept_terms = client.post(
+        "/account/consents", json={"consent_key": "terms_of_service", "granted": True}
+    )
+    assert accept_terms.status_code == 200
+    accepted_consents = accept_terms.json()["account_consents"]["consents"]
+    assert accepted_consents["terms_of_service"]["granted"] is True
+
+    reject_marketing = client.post(
+        "/account/consents", json={"consent_key": "marketing_email", "granted": False}
+    )
+    assert reject_marketing.status_code == 200
+
+    revoke_terms = client.post(
+        "/account/consents", json={"consent_key": "terms_of_service", "granted": False}
+    )
+    assert revoke_terms.status_code == 400

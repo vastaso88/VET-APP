@@ -2,6 +2,8 @@ import '../../../shared/auth/auth.dart';
 import '../../../shared/types/result.dart';
 
 abstract interface class AuthRepository {
+  AuthContext get currentContext;
+
   Stream<AuthContext> watchContext();
 
   Future<Result<AuthContext>> restoreSession();

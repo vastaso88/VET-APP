@@ -25,6 +25,10 @@ Web-first pet-tech product with a Flutter client and a Python backend bootstrap.
 4. Choose the evidence backend:
    - `EVIDENCE_BACKEND=in_memory` for preview mode
    - `EVIDENCE_BACKEND=supabase` for the RPC-backed trusted-sources retriever
+   - `EVIDENCE_BACKEND=europe_pmc` for real scientific literature via the
+     Europe PMC REST API only (no key needed)
+   - `EVIDENCE_BACKEND=scientific_multi` for Europe PMC + PubMed + Crossref +
+     OpenAlex combined (no key needed for any of them)
 5. Keep `LLM_PROVIDER=echo` for browser demo runs. Switch to `LLM_PROVIDER=groq` only when you want to exercise the hosted LLM path and have set `LLM_API_KEY`.
 6. Install dependencies with `make setup`.
 7. Start the API with `make run-api`.
@@ -40,6 +44,11 @@ For the trusted-sources rubric in Supabase:
 - `make lint`
 - `make typecheck`
 - `make test`
+- `make eval` — runs the labeled scenario set through the chat orchestrator
+  and prints the Beta metrics (safety escalation recall, evidence coverage
+  rate, citation validation failure rate, ...); costs nothing by default
+  (echo + in_memory), point `LLM_PROVIDER`/`EVIDENCE_BACKEND` at real
+  backends to evaluate those
 - `make run-api`
 - `make run-web`
 - `make run-web-server`

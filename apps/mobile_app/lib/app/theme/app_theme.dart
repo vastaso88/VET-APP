@@ -39,13 +39,13 @@ class AppTheme {
     );
 
     return base.copyWith(
-      appBarTheme: const AppBarTheme(
+      appBarTheme: AppBarTheme(
         backgroundColor: Colors.transparent,
         surfaceTintColor: Colors.transparent,
         elevation: 0,
         centerTitle: false,
-        iconTheme: IconThemeData(color: AppColors.secondaryText),
-        actionsIconTheme: IconThemeData(color: AppColors.secondaryText),
+        iconTheme: const IconThemeData(color: AppColors.secondaryText),
+        actionsIconTheme: const IconThemeData(color: AppColors.secondaryText),
         titleTextStyle: AppTextStyles.title,
       ),
       navigationBarTheme: const NavigationBarThemeData(
@@ -65,7 +65,7 @@ class AppTheme {
         selectionColor: AppColors.accentSoft,
         selectionHandleColor: AppColors.primary,
       ),
-      textTheme: const TextTheme(
+      textTheme: TextTheme(
         displayLarge: AppTextStyles.display,
         displayMedium: AppTextStyles.heading,
         displaySmall: AppTextStyles.title,

@@ -70,6 +70,8 @@ class _CreateForm extends StatelessWidget {
           sex: draft.sex,
           weightKg: draft.weightKg,
           medicalNote: draft.medicalNote,
+          identityColor: draft.identityColor,
+          photoBytes: draft.photoBytes,
         );
         Navigator.of(context).pop(pet);
       },

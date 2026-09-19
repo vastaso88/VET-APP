@@ -1,12 +1,15 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 
 import '../../../../design_system/tokens/app_colors.dart';
 import '../../../../design_system/tokens/app_radii.dart';
 import '../../../../design_system/tokens/app_spacing.dart';
 import '../../../../design_system/tokens/app_text_styles.dart';
+import '../../../../shared/auth/current_user.dart';
+import '../../../../shared/widgets/coming_soon_page.dart';
+import '../../../account_consents/data/account_consents_remote_data_source.dart';
+import '../../../account_consents/domain/account_consent_models.dart';
 import '../../../profile/presentation/pages/profile_page.dart';
-
-enum _ViewState { empty, loading, error, success }
 
 class SettingsPage extends StatefulWidget {
   const SettingsPage({super.key});
@@ -16,9 +19,64 @@ class SettingsPage extends StatefulWidget {
 }
 
 class _SettingsPageState extends State<SettingsPage> {
-  _ViewState _state = _ViewState.success;
   bool _notifications = true;
-  bool _analytics = false;
+  bool _activityReminders = true;
+  String _weightUnit = 'kg';
+
+  final _consentsDataSource = HttpAccountConsentsRemoteDataSource();
+  AccountConsentsSnapshot? _consents;
+  bool _loadingConsents = true;
+  String? _consentsError;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadConsents();
+  }
+
+  Future<void> _loadConsents() async {
+    setState(() {
+      _loadingConsents = true;
+      _consentsError = null;
+    });
+    final result = await _consentsDataSource.fetch();
+    if (!mounted) return;
+    result.fold(
+      onSuccess: (snapshot) => setState(() {
+        _consents = snapshot;
+        _loadingConsents = false;
+      }),
+      onFailure: (error) => setState(() {
+        _consentsError = error.message;
+        _loadingConsents = false;
+      }),
+    );
+  }
+
+  Future<void> _setConsent(String key, bool granted) async {
+    final previous = _consents;
+    // Optimistic flip so the toggle feels immediate; reverted below on failure.
+    if (previous != null) {
+      setState(() {
+        _consents = AccountConsentsSnapshot(
+          decisions: {
+            ...previous.decisions,
+            key: ConsentDecision(granted: granted, version: '', decidedAt: DateTime.now()),
+          },
+          catalog: previous.catalog,
+        );
+      });
+    }
+    final result = await _consentsDataSource.setConsent(consentKey: key, granted: granted);
+    if (!mounted) return;
+    result.fold(
+      onSuccess: (snapshot) => setState(() => _consents = snapshot),
+      onFailure: (error) {
+        setState(() => _consents = previous);
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(error.message)));
+      },
+    );
+  }
 
   void _openProfile() {
     Navigator.of(context).push(
@@ -26,405 +84,356 @@ class _SettingsPageState extends State<SettingsPage> {
     );
   }
 
-  void _showLogoutPreview() {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Logout pronto per essere collegato al flusso account reale.')),
-    );
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      body: Container(
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [Color(0xFFF8FBF8), Color(0xFFF4F7F1), Color(0xFFE8EFE5)],
-          ),
-        ),
-        child: SafeArea(
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.fromLTRB(
-              AppSpacing.xxl,
-              AppSpacing.lg,
-              AppSpacing.xxl,
-              AppSpacing.xxl,
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                _Header(
-                  onBack: () => Navigator.of(context).maybePop(),
-                  onOpenProfile: _openProfile,
-                  onLogoutPreview: _showLogoutPreview,
-                ),
-                const SizedBox(height: AppSpacing.lg),
-                _StateChips(value: _state, onChanged: (value) => setState(() => _state = value)),
-                const SizedBox(height: AppSpacing.lg),
-                switch (_state) {
-                  _ViewState.empty => _StateCard(
-                      label: 'Preferenze',
-                      title: 'Nessuna preferenza configurata.',
-                      body: 'Parti da profilo, notifiche e consenso dati per completare l esperienza web.',
-                      icon: Icons.tune_outlined,
-                      actionLabel: 'Apri profilo',
-                      onAction: () => Navigator.of(context).push(
-                        MaterialPageRoute<void>(builder: (_) => const ProfilePage()),
-                      ),
-                      footer: const _LogoutPreview(),
-                    ),
-                  _ViewState.loading => const _LoadingCard(
-                      title: 'Caricamento preferenze',
-                      body: 'Sto recuperando lingua, notifiche e impostazioni account.',
-                    ),
-                  _ViewState.error => _StateCard(
-                      label: 'Errore impostazioni',
-                      title: 'Le preferenze non sono disponibili.',
-                      body: 'Riprova oppure continua con la configurazione demo web.',
-                      icon: Icons.sync_problem_outlined,
-                      actionLabel: 'Riprova',
-                      onAction: () => setState(() => _state = _ViewState.success),
-                      footer: const _LogoutPreview(),
-                    ),
-                  _ViewState.success => Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        _StateCard(
-                          label: 'Account',
-                          title: 'Profilo e preferenze',
-                          body: 'Gestisci owner, notifiche e comportamenti principali della web app.',
-                          icon: Icons.person_outline,
-                          actionLabel: 'Apri profilo',
-                          onAction: () => Navigator.of(context).push(
-                            MaterialPageRoute<void>(builder: (_) => const ProfilePage()),
-                          ),
-                          footer: const _LogoutPreview(),
-                        ),
-                        const SizedBox(height: AppSpacing.lg),
-                        _ToggleCard(
-                          title: 'Notifiche push',
-                          body: 'Ricevi promemoria per visite, vaccini e trattamenti.',
-                          value: _notifications,
-                          onChanged: (value) => setState(() => _notifications = value),
-                        ),
-                        const SizedBox(height: AppSpacing.sm),
-                        _ToggleCard(
-                          title: 'Analisi d uso',
-                          body: 'Condividi dati anonimi per migliorare l esperienza prodotto.',
-                          value: _analytics,
-                          onChanged: (value) => setState(() => _analytics = value),
-                        ),
-                        const SizedBox(height: AppSpacing.lg),
-                        const _DebugCard(),
-                      ],
-                    ),
-                },
-              ],
-            ),
-          ),
+  void _openHelpCenter() {
+    Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder: (_) => const ComingSoonPage(
+          title: 'Centro assistenza',
+          icon: Icons.help_outline_rounded,
+          description: 'Domande frequenti e guide rapide, presto disponibili direttamente qui.',
         ),
       ),
     );
   }
-}
 
-class _Header extends StatelessWidget {
-  const _Header({
-    required this.onBack,
-    required this.onOpenProfile,
-    required this.onLogoutPreview,
-  });
+  void _showInfoDialog(String title, String body, {VoidCallback? onConfirm}) {
+    showDialog<void>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        backgroundColor: AppColors.surface,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadii.large)),
+        title: Text(title, style: AppTextStyles.title.copyWith(fontSize: 17)),
+        content: Text(body, style: AppTextStyles.bodySmall),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(),
+            child: const Text('Chiudi'),
+          ),
+          if (onConfirm != null)
+            TextButton(
+              onPressed: () {
+                Navigator.of(dialogContext).pop();
+                onConfirm();
+              },
+              child: const Text('Conferma'),
+            ),
+        ],
+      ),
+    );
+  }
 
-  final VoidCallback onBack;
-  final VoidCallback onOpenProfile;
-  final VoidCallback onLogoutPreview;
+  void _rateApp() {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Grazie per il supporto! ⭐')),
+    );
+  }
+
+  void _logout() {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Logout non ancora collegato al flusso account.')),
+    );
+  }
+
+  List<Widget> _buildConsentRows() {
+    if (_loadingConsents) {
+      return const [
+        _Row(
+          icon: Icons.hourglass_empty_rounded,
+          iconColor: AppColors.mutedText,
+          title: 'Caricamento…',
+        ),
+      ];
+    }
+    if (_consentsError != null) {
+      return [
+        _Row(
+          icon: Icons.error_outline_rounded,
+          iconColor: AppColors.danger,
+          title: 'Non disponibili al momento',
+          subtitle: 'Tocca per riprovare',
+          onTap: _loadConsents,
+        ),
+      ];
+    }
+
+    final consents = _consents!;
+    return [
+      _buildMandatoryConsentRow(
+        key: AccountConsentKeys.termsOfService,
+        title: 'Termini di servizio',
+        icon: Icons.description_outlined,
+      ),
+      _buildMandatoryConsentRow(
+        key: AccountConsentKeys.privacyPolicy,
+        title: 'Informativa privacy',
+        icon: Icons.shield_outlined,
+      ),
+      _ToggleRow(
+        icon: Icons.mail_outline_rounded,
+        iconColor: AppColors.accent,
+        title: 'Email di marketing',
+        value: consents.decisions[AccountConsentKeys.marketingEmail]?.granted ?? false,
+        onChanged: (value) => _setConsent(AccountConsentKeys.marketingEmail, value),
+      ),
+      _ToggleRow(
+        icon: Icons.insights_outlined,
+        iconColor: AppColors.info,
+        title: "Analisi d'uso",
+        value: consents.decisions[AccountConsentKeys.analytics]?.granted ?? false,
+        onChanged: (value) => _setConsent(AccountConsentKeys.analytics, value),
+      ),
+    ];
+  }
+
+  Widget _buildMandatoryConsentRow({
+    required String key,
+    required String title,
+    required IconData icon,
+  }) {
+    final consents = _consents!;
+    final decision = consents.decisions[key];
+    final entry = consents.catalog[key];
+    final text = entry?.text ?? '';
+
+    return _Row(
+      icon: icon,
+      iconColor: AppColors.mutedText,
+      title: title,
+      subtitle: decision != null
+          ? 'Accettati v${decision.version} il ${DateFormat('dd/MM/yyyy').format(decision.decidedAt)}'
+          : 'Da confermare',
+      onTap: () => _showInfoDialog(
+        title,
+        text,
+        onConfirm: decision == null ? () => _setConsent(key, true) : null,
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Wrap(
-          spacing: AppSpacing.sm,
-          runSpacing: AppSpacing.sm,
-          alignment: WrapAlignment.spaceBetween,
-          crossAxisAlignment: WrapCrossAlignment.start,
+    final user = CurrentUser.get();
+
+    return Scaffold(
+      backgroundColor: AppColors.background,
+      body: SafeArea(
+        child: ListView(
+          padding: const EdgeInsets.fromLTRB(
+            AppSpacing.xl,
+            AppSpacing.lg,
+            AppSpacing.xl,
+            AppSpacing.xxxl,
+          ),
           children: [
-            TextButton.icon(
-              onPressed: onBack,
-              icon: const Icon(Icons.arrow_back_rounded, size: 18),
-              label: const Text('Indietro'),
+            Text('Impostazioni', style: AppTextStyles.display.copyWith(fontSize: 28)),
+            const SizedBox(height: AppSpacing.xl),
+            _Row(
+              leading: _Avatar(letter: CurrentUser.firstName(fallback: 'O').substring(0, 1).toUpperCase()),
+              title: CurrentUser.fullName(fallback: 'Ospite'),
+              subtitle: user?.email ?? 'Nessuna sessione attiva',
+              onTap: _openProfile,
             ),
-            OutlinedButton.icon(
-              onPressed: onOpenProfile,
-              icon: const Icon(Icons.person_outline_rounded, size: 18),
-              label: const Text('Profilo'),
+            const _SectionLabel('Preferenze'),
+            _ToggleRow(
+              icon: Icons.notifications_active_outlined,
+              iconColor: AppColors.primary,
+              title: 'Notifiche push',
+              value: _notifications,
+              onChanged: (value) => setState(() => _notifications = value),
             ),
-            FilledButton.tonalIcon(
-              onPressed: onLogoutPreview,
-              icon: const Icon(Icons.logout_rounded, size: 18),
-              label: const Text('Logout'),
+            _ToggleRow(
+              icon: Icons.event_available_outlined,
+              iconColor: AppColors.success,
+              title: 'Promemoria attività',
+              value: _activityReminders,
+              onChanged: (value) => setState(() => _activityReminders = value),
+            ),
+            _UnitRow(
+              value: _weightUnit,
+              onChanged: (value) => setState(() => _weightUnit = value),
+            ),
+            const _SectionLabel('Permessi e consensi'),
+            ..._buildConsentRows(),
+            const _SectionLabel('Assistenza'),
+            _Row(
+              icon: Icons.help_outline_rounded,
+              iconColor: AppColors.primary,
+              title: 'Centro assistenza',
+              onTap: _openHelpCenter,
+            ),
+            _Row(
+              icon: Icons.mail_outline_rounded,
+              iconColor: AppColors.accent,
+              title: 'Contattaci',
+              subtitle: 'supporto@vetapp.it',
+              onTap: () => _showInfoDialog(
+                'Contattaci',
+                'Scrivi a supporto@vetapp.it per qualsiasi domanda: rispondiamo di solito entro un giorno lavorativo.',
+              ),
+            ),
+            _Row(
+              icon: Icons.star_outline_rounded,
+              iconColor: AppColors.warning,
+              title: "Valuta l'app",
+              onTap: _rateApp,
+            ),
+            const _SectionLabel('Info'),
+            const _Row(
+              icon: Icons.info_outline_rounded,
+              iconColor: AppColors.mutedText,
+              title: 'Versione app',
+              trailingText: '1.0.0',
+            ),
+            const _SectionLabel('Account'),
+            _Row(
+              icon: Icons.logout_rounded,
+              iconColor: AppColors.danger,
+              title: 'Esci',
+              titleColor: AppColors.danger,
+              onTap: _logout,
             ),
           ],
         ),
-        const SizedBox(height: AppSpacing.lg),
-        const _BrandPill(),
-        const SizedBox(height: AppSpacing.lg),
-        const Text('Impostazioni', style: AppTextStyles.heading),
-        const SizedBox(height: AppSpacing.sm),
-        const Text('Preferenze, account e controlli principali in una schermata unica della web app.', style: AppTextStyles.body),
-      ],
-    );
-  }
-}
-
-class _BrandPill extends StatelessWidget {
-  const _BrandPill();
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-      decoration: BoxDecoration(
-        color: AppColors.primary,
-        borderRadius: BorderRadius.circular(AppRadii.pill),
-      ),
-      child: const Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(Icons.settings_outlined, size: 14, color: AppColors.accent),
-          SizedBox(width: AppSpacing.sm),
-          Text(
-            'VET APP',
-            style: TextStyle(color: AppColors.onPrimary, fontSize: 12, fontWeight: FontWeight.w800),
-          ),
-        ],
       ),
     );
   }
 }
 
-class _StateChips extends StatelessWidget {
-  const _StateChips({
-    required this.value,
-    required this.onChanged,
-  });
-
-  final _ViewState value;
-  final ValueChanged<_ViewState> onChanged;
-
-  @override
-  Widget build(BuildContext context) {
-    return Wrap(
-      spacing: AppSpacing.sm,
-      runSpacing: AppSpacing.sm,
-      children: [
-        _Chip(label: 'Vuoto', selected: value == _ViewState.empty, onTap: () => onChanged(_ViewState.empty)),
-        _Chip(label: 'Caricamento', selected: value == _ViewState.loading, onTap: () => onChanged(_ViewState.loading)),
-        _Chip(label: 'Errore', selected: value == _ViewState.error, onTap: () => onChanged(_ViewState.error)),
-        _Chip(label: 'Pronto', selected: value == _ViewState.success, onTap: () => onChanged(_ViewState.success)),
-      ],
-    );
-  }
-}
-
-class _Chip extends StatelessWidget {
-  const _Chip({
-    required this.label,
-    required this.selected,
-    required this.onTap,
-  });
-
-  final String label;
-  final bool selected;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    return ChoiceChip(
-      label: Text(label),
-      selected: selected,
-      onSelected: (_) => onTap(),
-      labelStyle: TextStyle(color: selected ? AppColors.onPrimary : AppColors.secondaryText, fontWeight: FontWeight.w700),
-      selectedColor: AppColors.primary,
-      backgroundColor: AppColors.surface,
-      side: const BorderSide(color: AppColors.border),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadii.pill)),
-    );
-  }
-}
-
-class _StateCard extends StatelessWidget {
-  const _StateCard({
-    required this.label,
-    required this.title,
-    required this.body,
-    required this.icon,
-    required this.actionLabel,
-    required this.onAction,
-    required this.footer,
-  });
-
-  final String label;
-  final String title;
-  final String body;
-  final IconData icon;
-  final String actionLabel;
-  final VoidCallback? onAction;
-  final Widget footer;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(AppSpacing.xl),
-      decoration: BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.circular(30),
-        border: Border.all(color: AppColors.border),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          _AccentPill(label: label),
-          const SizedBox(height: AppSpacing.lg),
-          Container(
-            padding: const EdgeInsets.all(14),
-            decoration: BoxDecoration(
-              color: AppColors.accentSoft,
-              borderRadius: BorderRadius.circular(18),
-            ),
-            child: Icon(icon, size: 28, color: AppColors.primary),
-          ),
-          const SizedBox(height: AppSpacing.lg),
-          Text(title, style: AppTextStyles.title),
-          const SizedBox(height: AppSpacing.sm),
-          Text(body, style: AppTextStyles.bodySmall),
-          const SizedBox(height: AppSpacing.xl),
-          SizedBox(
-            width: double.infinity,
-            child: FilledButton(onPressed: onAction, child: Text(actionLabel)),
-          ),
-          const SizedBox(height: AppSpacing.lg),
-          footer,
-        ],
-      ),
-    );
-  }
-}
-
-class _LoadingCard extends StatelessWidget {
-  const _LoadingCard({
-    required this.title,
-    required this.body,
-  });
-
-  final String title;
-  final String body;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(AppSpacing.xl),
-      decoration: BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.circular(30),
-        border: Border.all(color: AppColors.border),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const _AccentPill(label: 'Caricamento'),
-          const SizedBox(height: AppSpacing.lg),
-          Text(title, style: AppTextStyles.title),
-          const SizedBox(height: AppSpacing.sm),
-          Text(body, style: AppTextStyles.bodySmall),
-          const SizedBox(height: AppSpacing.xl),
-          const _Skeleton(width: double.infinity),
-          const SizedBox(height: AppSpacing.sm),
-          const _Skeleton(width: double.infinity),
-          const SizedBox(height: AppSpacing.sm),
-          const _Skeleton(width: 180),
-        ],
-      ),
-    );
-  }
-}
-
-class _Skeleton extends StatelessWidget {
-  const _Skeleton({required this.width});
-
-  final double width;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: width,
-      height: 16,
-      decoration: BoxDecoration(
-        color: AppColors.accentSoft,
-        borderRadius: BorderRadius.circular(999),
-      ),
-    );
-  }
-}
-
-class _AccentPill extends StatelessWidget {
-  const _AccentPill({required this.label});
+class _SectionLabel extends StatelessWidget {
+  const _SectionLabel(this.label);
 
   final String label;
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-      decoration: BoxDecoration(
-        color: AppColors.accentSoft,
-        borderRadius: BorderRadius.circular(AppRadii.pill),
-      ),
+    return Padding(
+      padding: const EdgeInsets.only(top: AppSpacing.xl, bottom: AppSpacing.xs),
       child: Text(
-        label,
-        style: const TextStyle(color: Color(0xFF315E55), fontSize: 12, fontWeight: FontWeight.w700),
+        label.toUpperCase(),
+        style: AppTextStyles.caption.copyWith(letterSpacing: 0.8),
       ),
     );
   }
 }
 
-class _ToggleCard extends StatelessWidget {
-  const _ToggleCard({
+class _IconBadge extends StatelessWidget {
+  const _IconBadge({required this.icon, required this.color});
+
+  final IconData icon;
+  final Color color;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: 36,
+      height: 36,
+      alignment: Alignment.center,
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.12),
+        borderRadius: BorderRadius.circular(AppRadii.medium),
+      ),
+      child: Icon(icon, size: 18, color: color),
+    );
+  }
+}
+
+class _Row extends StatelessWidget {
+  const _Row({
+    this.leading,
+    this.icon,
+    this.iconColor,
     required this.title,
-    required this.body,
+    this.subtitle,
+    this.titleColor,
+    this.trailingText,
+    this.onTap,
+  });
+
+  final Widget? leading;
+  final IconData? icon;
+  final Color? iconColor;
+  final String title;
+  final String? subtitle;
+  final Color? titleColor;
+  final String? trailingText;
+  final VoidCallback? onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final effectiveLeading = leading ?? (icon != null ? _IconBadge(icon: icon!, color: iconColor ?? AppColors.primary) : null);
+
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        child: Container(
+          padding: const EdgeInsets.symmetric(vertical: AppSpacing.md),
+          decoration: const BoxDecoration(
+            border: Border(bottom: BorderSide(color: AppColors.border)),
+          ),
+          child: Row(
+            children: [
+              if (effectiveLeading != null) ...[effectiveLeading, const SizedBox(width: AppSpacing.md)],
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      title,
+                      style: AppTextStyles.body.copyWith(
+                        color: titleColor ?? AppColors.text,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    if (subtitle != null) ...[
+                      const SizedBox(height: 2),
+                      Text(subtitle!, style: AppTextStyles.bodySmall),
+                    ],
+                  ],
+                ),
+              ),
+              if (trailingText != null)
+                Text(trailingText!, style: AppTextStyles.bodySmall)
+              else if (onTap != null)
+                const Icon(Icons.chevron_right_rounded, color: AppColors.mutedText),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _ToggleRow extends StatelessWidget {
+  const _ToggleRow({
+    required this.icon,
+    required this.iconColor,
+    required this.title,
     required this.value,
     required this.onChanged,
   });
 
+  final IconData icon;
+  final Color iconColor;
   final String title;
-  final String body;
   final bool value;
   final ValueChanged<bool> onChanged;
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(AppSpacing.lg),
-      decoration: BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: AppColors.border),
+      padding: const EdgeInsets.symmetric(vertical: AppSpacing.sm),
+      decoration: const BoxDecoration(
+        border: Border(bottom: BorderSide(color: AppColors.border)),
       ),
       child: Row(
         children: [
+          _IconBadge(icon: icon, color: iconColor),
+          const SizedBox(width: AppSpacing.md),
           Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(title, style: AppTextStyles.title.copyWith(fontSize: 17)),
-                const SizedBox(height: AppSpacing.xs),
-                Text(body, style: AppTextStyles.bodySmall),
-              ],
+            child: Text(
+              title,
+              style: AppTextStyles.body.copyWith(color: AppColors.text, fontWeight: FontWeight.w600),
             ),
           ),
           Switch(value: value, onChanged: onChanged),
@@ -434,55 +443,93 @@ class _ToggleCard extends StatelessWidget {
   }
 }
 
-class _DebugCard extends StatelessWidget {
-  const _DebugCard();
+class _UnitRow extends StatelessWidget {
+  const _UnitRow({required this.value, required this.onChanged});
+
+  final String value;
+  final ValueChanged<String> onChanged;
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(AppSpacing.xl),
-      decoration: BoxDecoration(
-        color: AppColors.primary,
-        borderRadius: BorderRadius.circular(28),
+      padding: const EdgeInsets.symmetric(vertical: AppSpacing.sm),
+      decoration: const BoxDecoration(
+        border: Border(bottom: BorderSide(color: AppColors.border)),
       ),
-      child: const Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+      child: Row(
         children: [
-          Text(
-            'Roadmap breve',
-            style: TextStyle(color: AppColors.onPrimary, fontSize: 20, fontWeight: FontWeight.w700),
+          const _IconBadge(icon: Icons.scale_outlined, color: AppColors.accent),
+          const SizedBox(width: AppSpacing.md),
+          Expanded(
+            child: Text(
+              'Unità di misura',
+              style: AppTextStyles.body.copyWith(color: AppColors.text, fontWeight: FontWeight.w600),
+            ),
           ),
-          SizedBox(height: AppSpacing.sm),
-          Text(
-            'Da qui possiamo estendere preferenze, privacy e automazioni senza toccare il cuore della web app.',
-            style: TextStyle(color: AppColors.onPrimary, fontSize: 14, height: 1.45),
-          ),
+          _UnitToggleButton(label: 'kg', selected: value == 'kg', onTap: () => onChanged('kg')),
+          const SizedBox(width: AppSpacing.xs),
+          _UnitToggleButton(label: 'lb', selected: value == 'lb', onTap: () => onChanged('lb')),
         ],
       ),
     );
   }
 }
 
-class _LogoutPreview extends StatelessWidget {
-  const _LogoutPreview();
+class _UnitToggleButton extends StatelessWidget {
+  const _UnitToggleButton({required this.label, required this.selected, required this.onTap});
+
+  final String label;
+  final bool selected;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: selected ? AppColors.primary : AppColors.surface,
+      borderRadius: BorderRadius.circular(AppRadii.pill),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(AppRadii.pill),
+        onTap: onTap,
+        child: Container(
+          width: 40,
+          padding: const EdgeInsets.symmetric(vertical: 6),
+          alignment: Alignment.center,
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(AppRadii.pill),
+            border: Border.all(color: selected ? AppColors.primary : AppColors.border),
+          ),
+          child: Text(
+            label,
+            style: AppTextStyles.caption.copyWith(
+              color: selected ? AppColors.onPrimary : AppColors.text,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _Avatar extends StatelessWidget {
+  const _Avatar({required this.letter});
+
+  final String letter;
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(AppSpacing.lg),
-      decoration: BoxDecoration(
-        color: AppColors.background,
-        borderRadius: BorderRadius.circular(22),
-        border: Border.all(color: AppColors.border),
+      width: 40,
+      height: 40,
+      decoration: const BoxDecoration(
+        color: AppColors.primaryStrong,
+        shape: BoxShape.circle,
       ),
-      child: Row(
-        children: [
-          const Icon(Icons.logout_outlined, color: AppColors.secondaryText),
-          const SizedBox(width: AppSpacing.sm),
-          Text('Logout pronto per il collegamento finale', style: AppTextStyles.bodySmall.copyWith(color: AppColors.text)),
-        ],
+      child: Center(
+        child: Text(
+          letter,
+          style: AppTextStyles.title.copyWith(color: AppColors.onPrimary, fontSize: 16),
+        ),
       ),
     );
   }

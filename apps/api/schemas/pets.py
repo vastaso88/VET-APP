@@ -7,3 +7,7 @@ class CreatePetProfileRequest(BaseModel):
     breed: str | None = None
     age_years: int | None = None
     notes: str | None = None
+
+
+class SetMedicalRecordConsentRequest(BaseModel):
+    granted: bool
