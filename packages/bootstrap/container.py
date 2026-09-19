@@ -4,31 +4,39 @@ from packages.core.application.ports.account_consents_repository import AccountC
 from packages.core.application.ports.auth_provider import AuthProvider
 from packages.core.application.ports.clinical_event_repository import ClinicalEventRepository
 from packages.core.application.ports.conversation_repository import ConversationRepository
+from packages.core.application.ports.dog_walk_repository import DogWalkRepository
 from packages.core.application.ports.evidence_retriever import EvidenceRetriever
 from packages.core.application.ports.pet_profile_repository import PetProfileRepository
 from packages.core.application.ports.pii_anonymizer import PiiAnonymizer
 from packages.core.application.ports.reminder_repository import ReminderRepository
+from packages.core.application.ports.user_location_repository import UserLocationRepository
 from packages.core.application.services.chat_orchestrator import ChatOrchestrator
 from packages.core.application.services.consent_interpreter import ConsentInterpreter
 from packages.core.application.services.create_pet_profile import CreatePetProfileService
 from packages.core.application.services.create_reminder import CreateReminderService
 from packages.core.application.services.delete_conversation import DeleteConversationService
+from packages.core.application.services.end_walk import EndWalkService
 from packages.core.application.services.get_account_consents import GetAccountConsentsService
 from packages.core.application.services.get_pet_profile import GetPetProfileService
+from packages.core.application.services.get_user_location import GetUserLocationService
 from packages.core.application.services.interview_planner import InterviewPlanner
 from packages.core.application.services.list_conversations import ListConversationsService
 from packages.core.application.services.list_pet_profiles import ListPetProfilesService
 from packages.core.application.services.list_reminders import ListRemindersService
+from packages.core.application.services.list_walks import ListWalksService
 from packages.core.application.services.medical_record_context_retriever import (
     MedicalRecordContextRetriever,
 )
+from packages.core.application.services.record_route_point import RecordRoutePointService
 from packages.core.application.services.safety_gate import SafetyGate
 from packages.core.application.services.send_chat_message import SendChatMessageService
 from packages.core.application.services.set_account_consent import SetAccountConsentService
 from packages.core.application.services.set_medical_record_consent import (
     SetMedicalRecordConsentService,
 )
+from packages.core.application.services.set_user_location import SetUserLocationService
 from packages.core.application.services.situation_model_builder import SituationModelBuilder
+from packages.core.application.services.start_walk import StartWalkService
 from packages.core.application.services.update_pet_profile import UpdatePetProfileService
 from packages.infrastructure.auth.bootstrap_auth_provider import BootstrapAuthProvider
 from packages.infrastructure.llm.providers.echo_llm_client import EchoLLMClient
@@ -55,8 +63,10 @@ from packages.infrastructure.persistence.in_memory_repositories import (
     InMemoryAccountConsentsRepository,
     InMemoryClinicalEventRepository,
     InMemoryConversationRepository,
+    InMemoryDogWalkRepository,
     InMemoryPetProfileRepository,
     InMemoryReminderRepository,
+    InMemoryUserLocationRepository,
 )
 from packages.infrastructure.privacy.noop_pii_anonymizer import NoopPiiAnonymizer
 from packages.shared.config.settings import Settings, get_settings
@@ -76,6 +86,8 @@ class ApplicationContainer:
         self.pii_anonymizer = self._build_pii_anonymizer()
         self.clinical_event_repository = self._build_clinical_event_repository()
         self.account_consents_repository = self._build_account_consents_repository()
+        self.user_location_repository = self._build_user_location_repository()
+        self.dog_walk_repository = self._build_dog_walk_repository()
         self.chat_orchestrator = ChatOrchestrator(
             self.llm_client,
             self.evidence_retriever,
@@ -113,6 +125,24 @@ class ApplicationContainer:
 
     def set_account_consent_service(self) -> SetAccountConsentService:
         return SetAccountConsentService(self.account_consents_repository)
+
+    def get_user_location_service(self) -> GetUserLocationService:
+        return GetUserLocationService(self.user_location_repository)
+
+    def set_user_location_service(self) -> SetUserLocationService:
+        return SetUserLocationService(self.user_location_repository)
+
+    def start_walk_service(self) -> StartWalkService:
+        return StartWalkService(self.dog_walk_repository, self.pet_profile_repository)
+
+    def record_route_point_service(self) -> RecordRoutePointService:
+        return RecordRoutePointService(self.dog_walk_repository)
+
+    def end_walk_service(self) -> EndWalkService:
+        return EndWalkService(self.dog_walk_repository)
+
+    def list_walks_service(self) -> ListWalksService:
+        return ListWalksService(self.dog_walk_repository)
 
     def send_chat_message_service(self) -> SendChatMessageService:
         return SendChatMessageService(
@@ -241,6 +271,40 @@ class ApplicationContainer:
                     return InMemoryAccountConsentsRepository()
                 raise
         return InMemoryAccountConsentsRepository()
+
+    def _build_user_location_repository(self) -> UserLocationRepository:
+        if self.settings.persistence_backend == "supabase":
+            try:
+                from packages.infrastructure.persistence.supabase.client import (
+                    build_supabase_client,
+                )
+                from packages.infrastructure.persistence.supabase.supabase_repositories import (
+                    SupabaseUserLocationRepository,
+                )
+
+                return SupabaseUserLocationRepository(build_supabase_client(self.settings))
+            except ModuleNotFoundError:
+                if self.settings.environment != "production":
+                    return InMemoryUserLocationRepository()
+                raise
+        return InMemoryUserLocationRepository()
+
+    def _build_dog_walk_repository(self) -> DogWalkRepository:
+        if self.settings.persistence_backend == "supabase":
+            try:
+                from packages.infrastructure.persistence.supabase.client import (
+                    build_supabase_client,
+                )
+                from packages.infrastructure.persistence.supabase.supabase_repositories import (
+                    SupabaseDogWalkRepository,
+                )
+
+                return SupabaseDogWalkRepository(build_supabase_client(self.settings))
+            except ModuleNotFoundError:
+                if self.settings.environment != "production":
+                    return InMemoryDogWalkRepository()
+                raise
+        return InMemoryDogWalkRepository()
 
     def _build_evidence_retriever(self) -> EvidenceRetriever:
         if self.settings.evidence_backend == "europe_pmc":
