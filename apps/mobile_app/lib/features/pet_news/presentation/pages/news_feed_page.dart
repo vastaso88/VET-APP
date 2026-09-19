@@ -106,6 +106,13 @@ class _NewsFeedPageState extends State<NewsFeedPage> {
               ),
               child: Row(
                 children: [
+                  IconButton(
+                    onPressed: () => Navigator.of(context).maybePop(),
+                    icon: const Icon(Icons.arrow_back_rounded),
+                    color: Colors.white,
+                    style: IconButton.styleFrom(backgroundColor: const Color(0xFF163A35)),
+                  ),
+                  const SizedBox(width: AppSpacing.sm),
                   Expanded(
                     child: Text('Notizie', style: AppTextStyles.display.copyWith(fontSize: 26)),
                   ),

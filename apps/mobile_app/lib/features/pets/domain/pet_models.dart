@@ -1,3 +1,5 @@
+import 'dart:typed_data';
+
 import 'package:flutter/material.dart';
 
 enum PetsScreenStatus {
@@ -21,6 +23,8 @@ class PetProfile {
     required this.nextVisitLabel,
     required this.avatarEmoji,
     required this.accentColor,
+    required this.identityColor,
+    this.photoBytes,
   });
 
   final String id;
@@ -35,6 +39,16 @@ class PetProfile {
   final String nextVisitLabel;
   final String avatarEmoji;
   final Color accentColor;
+
+  /// The pet's identity color: picked by the owner, shown on the avatar
+  /// badge, the Home calendar markers and its legend — always the same
+  /// color for the same pet, unlike [accentColor] which is a pale,
+  /// species-shared tone used for card backgrounds.
+  final Color identityColor;
+
+  /// Owner-picked photo, session-lifetime only (no backend storage in this
+  /// demo). Null falls back to the plain letter avatar.
+  final Uint8List? photoBytes;
 
   String get title => '$name - $species';
   String get breedLabel =>
@@ -53,6 +67,9 @@ class PetProfile {
     String? nextVisitLabel,
     String? avatarEmoji,
     Color? accentColor,
+    Color? identityColor,
+    Uint8List? photoBytes,
+    bool clearPhoto = false,
   }) {
     return PetProfile(
       id: id ?? this.id,
@@ -67,6 +84,8 @@ class PetProfile {
       nextVisitLabel: nextVisitLabel ?? this.nextVisitLabel,
       avatarEmoji: avatarEmoji ?? this.avatarEmoji,
       accentColor: accentColor ?? this.accentColor,
+      identityColor: identityColor ?? this.identityColor,
+      photoBytes: clearPhoto ? null : (photoBytes ?? this.photoBytes),
     );
   }
 }
@@ -86,6 +105,7 @@ const samplePets = <PetProfile>[
     nextVisitLabel: 'Vaccino di richiamo tra 12 giorni',
     avatarEmoji: 'M',
     accentColor: Color(0xFFE7F2EE),
+    identityColor: Color(0xFF2F9E68),
   ),
   PetProfile(
     id: 'pet-oliver',
@@ -101,6 +121,7 @@ const samplePets = <PetProfile>[
     nextVisitLabel: 'Controllo dentale la prossima settimana',
     avatarEmoji: 'O',
     accentColor: Color(0xFFF6EADF),
+    identityColor: Color(0xFFD98C3D),
   ),
   PetProfile(
     id: 'pet-rex',
@@ -116,6 +137,7 @@ const samplePets = <PetProfile>[
     nextVisitLabel: 'Controllo UVB terrario tra 3 giorni',
     avatarEmoji: 'R',
     accentColor: Color(0xFFEDF0DF),
+    identityColor: Color(0xFF7A8C3D),
   ),
   PetProfile(
     id: 'pet-pico',
@@ -130,5 +152,6 @@ const samplePets = <PetProfile>[
     nextVisitLabel: 'Controllo becco e unghie tra un mese',
     avatarEmoji: 'P',
     accentColor: Color(0xFFE3EBF0),
+    identityColor: Color(0xFF5B7FD6),
   ),
 ];

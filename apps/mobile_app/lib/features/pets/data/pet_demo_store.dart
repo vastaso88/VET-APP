@@ -1,5 +1,8 @@
+import 'dart:typed_data';
+
 import 'package:flutter/material.dart';
 
+import '../domain/pet_identity_colors.dart';
 import '../domain/pet_models.dart';
 
 class PetSpeciesOption {
@@ -155,7 +158,9 @@ class PetDemoStore {
     required DateTime birthDate,
     required String sex,
     required double weightKg,
+    required Color identityColor,
     String medicalNote = '',
+    Uint8List? photoBytes,
   }) {
     final option = optionForSpecies(species);
     final pet = PetProfile(
@@ -173,10 +178,16 @@ class PetDemoStore {
       nextVisitLabel: 'Da pianificare',
       avatarEmoji: name.trim().isEmpty ? option.avatarEmoji : name.trim()[0].toUpperCase(),
       accentColor: option.accentColor,
+      identityColor: identityColor,
+      photoBytes: photoBytes,
     );
 
     return upsert(pet);
   }
+
+  /// A default identity color for a new pet, distinct from as many
+  /// existing pets' colors as the palette allows.
+  Color nextDefaultIdentityColor() => defaultIdentityColorForIndex(_pets.length);
 
   static PetSpeciesOption optionForSpecies(String species) {
     final normalized = species.trim().toLowerCase();

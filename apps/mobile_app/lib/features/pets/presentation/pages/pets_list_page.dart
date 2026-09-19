@@ -187,6 +187,8 @@ class _PetRow extends StatelessWidget {
               PetAvatar(
                 label: pet.avatarEmoji,
                 backgroundColor: pet.accentColor,
+                photoBytes: pet.photoBytes,
+                identityColor: pet.identityColor,
                 size: 52,
               ),
               const SizedBox(width: AppSpacing.md),

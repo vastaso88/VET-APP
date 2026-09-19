@@ -37,6 +37,26 @@ Segnalato dalla sessione "UI/UX e funzionalità base": decisione del proprietari
 
 Nessun materiale marketing esistente in questo file menzionava ancora le specie (verificato), quindi nessuna correzione necessaria ora — solo da tenere a mente per copy futuro.
 
+## Professionisti come promoter e clienti (2026-09-19)
+
+Principio di posizionamento: l'app **supporta** il lavoro di veterinari, educatori/addestratori e altri professionisti, non si sostituisce a loro. Domanda posta: come trasformare i professionisti in promoter (che pubblicizzano l'app) e non solo in clienti? Vale la pena sviluppare funzionalità dedicate a stimolare queste categorie a farlo?
+
+**Il posizionamento non è solo copy: è già nell'architettura del prodotto.** Il safety gate rimanda sempre al veterinario per i casi seri, ogni risposta mostra fonti/limiti ed è etichettata come generata da IA ([01_ai_disclosure.md](../compliance/01_ai_disclosure.md)), e l'accesso alla cartella clinica richiede consenso esplicito ([03_consenso_cartella_clinica.md](../compliance/03_consenso_cartella_clinica.md)). Questo è rilevante per il go-to-market: la paura tipica di un professionista verso un'"app IA veterinaria" è che scavalchi la visita o dia consigli rischiosi ai suoi clienti. VetApp può onestamente dire che non lo fa — è un argomento di vendita concreto verso i professionisti, non solo una tutela legale.
+
+**Perché un professionista dovrebbe pubblicizzare l'app (non solo tollerarla):**
+- Se l'app gli fa perdere clienti/valore percepito → la ignora o la scoraggia.
+- Se l'app gli fa risparmiare tempo, gli porta clienti, o gli dà visibilità → diventa un canale di acquisizione gratuito per VetApp (i professionisti hanno già la fiducia dei loro clienti, un referral da un veterinario vale più di qualunque pubblicità).
+
+**Leve concrete da valutare (non prioritizzate, da discutere):**
+1. **Referral/co-marketing**: link o codice univoco per clinica/professionista; chi si iscrive tramite quel codice regala visibilità/credito al professionista (e magari uno sconto al cliente). Ricalca i classici loop B2B2C (es. Calendly "powered by").
+2. **Portale professionista / riepilogo pre-visita**: con il consenso del proprietario, il veterinario vede un riepilogo di cosa il cliente ha chiesto all'assistente prima dell'appuntamento — il professionista arriva preparato. È la leva più forte perché aiuta concretamente il suo lavoro invece di limitarsi a non danneggiarlo, ed è coerente al 100% con "supporto, non sostituzione".
+3. **Widget co-brandizzato**: il professionista incorpora un widget "Chiedi al nostro assistente" sul proprio sito/social con il proprio brand; VetApp acquisisce il cliente, il professionista appare tecnologicamente avanzato.
+4. **Account professionale gratuito/scontato** in cambio di un numero di clienti referenziati — classico scambio freemium-per-advocacy.
+5. **Comitato consultivo di veterinari** che rivede i contenuti di sicurezza/evidenza: dà loro credibilità professionale (visibilità in conferenze, associazioni) e a VetApp un motivo di fiducia in più — un canale di passaparola naturale nella loro rete professionale.
+6. **Contenuti di formazione continua (ECM/CE)**: la pipeline di evidenze/citazioni già costruita per la chat potrebbe alimentare contenuti formativi sponsorizzati, in cambio di visibilità e di una lista di contatti professionali.
+
+Punti aperti: quale professione aggredire per prima (veterinari vs. educatori cinofili hanno dinamiche commerciali diverse), se il portale pre-visita richiede troppo lavoro di integrazione per un primo test, e come misurare se un professionista sta davvero portando clienti (serve un meccanismo di attribuzione, collegato al punto referral).
+
 ---
 
 **Promemoria**: quando il materiale in questo file sarà sufficiente, l'utente chiederà un riassunto delle potenziali strategie di marketing da validare, sintetizzando le idee raccolte qui.

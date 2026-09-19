@@ -13,6 +13,7 @@ import '../../../medical_records/data/medical_records_repository.dart';
 import '../../../medical_records/presentation/pages/medical_record_upload_page.dart';
 import '../../../medical_records/presentation/pages/medical_records_pages.dart';
 import '../../../reminders/data/reminders_repository.dart';
+import '../../../reminders/domain/reminder_presentation.dart';
 import '../../../reminders/presentation/pages/reminders_pages.dart';
 import '../../data/pet_demo_store.dart';
 import '../../domain/pet_models.dart';
@@ -182,7 +183,13 @@ class _CompactHero extends StatelessWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          PetAvatar(label: pet.avatarEmoji, backgroundColor: pet.accentColor, size: 52),
+          PetAvatar(
+            label: pet.avatarEmoji,
+            backgroundColor: pet.accentColor,
+            photoBytes: pet.photoBytes,
+            identityColor: pet.identityColor,
+            size: 52,
+          ),
           const SizedBox(width: AppSpacing.md),
           Expanded(
             child: Column(
@@ -337,11 +344,13 @@ class _ReminderRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final presentation = ReminderPresentation.of(reminder);
     return _CompactRow(
       onTap: onTap,
-      leading: const _RowIcon(icon: Icons.notifications_none_rounded),
+      leading: _RowIcon(icon: presentation.icon),
       title: reminder.title,
-      subtitle: reminder.due,
+      subtitle: presentation.kindLabel,
+      trailingText: presentation.dateLabel,
     );
   }
 }
