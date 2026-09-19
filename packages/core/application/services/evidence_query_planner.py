@@ -68,9 +68,50 @@ IT_EN_TERMS: dict[str, str] = {
     # most, rather than trusting the general LLM path's latent knowledge.
     "paracetamol": "acetaminophen paracetamol toxicity",
     "tachipirina": "acetaminophen paracetamol toxicity",
+    "acetaminofene": "acetaminophen paracetamol toxicity",
     "ibuprofen": "ibuprofen toxicity",
+    "ibuprofene": "ibuprofen toxicity",
+    # Common Italian OTC brand names for the same substances — see
+    # safety_gate.py's SPECIES_SPECIFIC_RED_FLAGS for why "moment" (also
+    # an ibuprofen brand) is deliberately excluded everywhere: as a bare
+    # substring it collides with "momento"/"al momento".
+    "brufen": "ibuprofen toxicity",
+    "nurofen": "ibuprofen toxicity",
+    "oki": "ketoprofen toxicity",
+    "artrosilene": "ketoprofen toxicity",
+    "ketoprofene": "ketoprofen toxicity",
+    "aspirina": "aspirin salicylate toxicity",
+    "acido acetilsalicilico": "aspirin salicylate toxicity",
+    "voltaren": "diclofenac toxicity",
+    "dicloreum": "diclofenac toxicity",
+    "diclofenac": "diclofenac toxicity",
     "advantix": "permethrin toxicity",
+    "vectra": "permethrin toxicity",
+    "exspot": "permethrin toxicity",
     "permetrina": "permethrin toxicity",
+    # Rabbits/guinea pigs/chinchillas/hamsters specifically: several oral
+    # antibiotics disrupt hindgut fermentation and can be fatal even at a
+    # normal dose — a distinct mechanism from cat/dog NSAID toxicity.
+    "amoxicillina": "antibiotic associated enterotoxemia rabbit guinea pig",
+    "penicillina": "antibiotic associated enterotoxemia rabbit guinea pig",
+    "clindamicina": "antibiotic associated enterotoxemia rabbit guinea pig",
+    "lincomicina": "antibiotic associated enterotoxemia rabbit guinea pig",
+    "eritromicina": "antibiotic associated enterotoxemia rabbit guinea pig",
+    # Husbandry/equipment terms (terrarium/aquarium setup) — see
+    # in_memory_evidence_retriever.py's curated "husbandry" catalog for
+    # why this is a separate content layer from clinical literature.
+    "uvb": "UVB lighting reptile captive husbandry",
+    "terrario": "reptile terrarium husbandry",
+    "riscaldamento": "reptile thermal gradient husbandry",
+    "basking": "reptile basking thermal gradient",
+    "acquario": "freshwater aquarium water quality",
+    "ciclo dell'azoto": "aquarium nitrogen cycle",
+    "ciclaggio": "aquarium nitrogen cycle",
+    "ciclare": "aquarium nitrogen cycle",
+    "sole diretto": "UVB lighting reptile captive husbandry",
+    "luce diretta del sole": "UVB lighting reptile captive husbandry",
+    "raggi diretti del sole": "UVB lighting reptile captive husbandry",
+    "esposizione al sole": "UVB lighting reptile captive husbandry",
     "cioccolat": "chocolate toxicosis theobromine",
     "uva": "grape raisin toxicity",
     "uvetta": "grape raisin toxicity",
@@ -85,6 +126,7 @@ INTENT_FALLBACK_TERMS: dict[str, str] = {
     "nutrition_question": "nutrition diet",
     "behavior_question": "behavior welfare",
     "preventive_care": "preventive care wellness",
+    "husbandry_question": "captive husbandry environmental parameters",
 }
 
 

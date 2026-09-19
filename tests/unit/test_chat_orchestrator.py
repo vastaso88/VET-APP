@@ -290,6 +290,91 @@ def test_chat_orchestrator_uses_llm_when_sources_are_available() -> None:
     assert client.requests
 
 
+def test_chat_orchestrator_answers_reptile_husbandry_questions_from_curated_catalog() -> None:
+    # Real-world finding (stress test): "che lampada UVB per il mio geco?"
+    # hit "no source, no answer" because PubMed/Europe PMC/Crossref/
+    # OpenAlex only index peer-reviewed biomedical literature, which
+    # essentially never covers terrarium setup. Husbandry/equipment
+    # questions now get their own intent and a curated evidence catalog
+    # instead of being silently unanswerable.
+    client = FakeLLMClient()
+    orchestrator = ChatOrchestrator(client, InMemoryEvidenceRetriever(), NoopPiiAnonymizer())
+
+    result = orchestrator.answer(
+        ChatOrchestratorInput(
+            user_message="Che lampada UVB devo usare per il mio geco leopardino?",
+            species="Rettili e anfibi",
+            pet_name="Spike",
+        )
+    )
+
+    assert result.mode == "evidence"
+    assert result.ai_generated is True
+    assert result.sources
+    assert all(source.clinical_domain == "husbandry" for source in result.sources)
+    assert any("divulgativi curati" in limitation for limitation in result.limitations)
+
+
+def test_chat_orchestrator_recognizes_husbandry_questions_phrased_without_uvb_jargon() -> None:
+    # Real-world finding (live verification): the same underlying question
+    # ("should I let my chameleon get direct sun by the window") is very
+    # commonly phrased without any UVB/equipment jargon at all.
+    client = FakeLLMClient()
+    orchestrator = ChatOrchestrator(client, InMemoryEvidenceRetriever(), NoopPiiAnonymizer())
+
+    result = orchestrator.answer(
+        ChatOrchestratorInput(
+            user_message=(
+                "Il mio camaleonte ha bisogno di stare al sole diretto vicino alla finestra?"
+            ),
+            species="Rettili e anfibi",
+            pet_name="Iggy",
+        )
+    )
+
+    assert result.mode == "evidence"
+    assert result.sources
+    assert all(source.clinical_domain == "husbandry" for source in result.sources)
+
+
+def test_chat_orchestrator_does_not_flag_consolare_as_a_husbandry_sole_match() -> None:
+    # Guards the "moment"/"momento" collision discipline applied to this
+    # husbandry keyword set too: the bare word "sole" is deliberately NOT a
+    # keyword (only multi-word phrases like "sole diretto") because it
+    # would otherwise match "consolare"/"consolerò" ("comfort my dog"), a
+    # plausible behavior-question phrase with nothing to do with lighting.
+    client = FakeLLMClient()
+    orchestrator = ChatOrchestrator(client, InMemoryEvidenceRetriever(), NoopPiiAnonymizer())
+
+    result = orchestrator.answer(
+        ChatOrchestratorInput(
+            user_message="Non so come consolare il mio cane, sembra triste da ieri",
+            species="dog",
+            pet_name="Rex",
+        )
+    )
+
+    assert not any(source.clinical_domain == "husbandry" for source in result.sources)
+
+
+def test_chat_orchestrator_answers_aquarium_husbandry_questions_from_curated_catalog() -> None:
+    client = FakeLLMClient()
+    orchestrator = ChatOrchestrator(client, InMemoryEvidenceRetriever(), NoopPiiAnonymizer())
+
+    result = orchestrator.answer(
+        ChatOrchestratorInput(
+            user_message="Come ciclo un acquario nuovo prima di mettere i pesci?",
+            species="Pesce",
+            pet_name="Bolla",
+        )
+    )
+
+    assert result.mode == "evidence"
+    assert result.ai_generated is True
+    assert result.sources
+    assert all(source.clinical_domain == "husbandry" for source in result.sources)
+
+
 def test_chat_orchestrator_normalizes_the_mobile_apps_italian_species_label() -> None:
     # Real-world finding: the real Flutter app stores the Italian UI label
     # ("Cane", "Gatto"...) directly as PetProfile.species, but every

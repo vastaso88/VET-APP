@@ -56,11 +56,17 @@ from packages.infrastructure.llm.providers.groq_llm_client import GroqLLMClient
 from packages.infrastructure.llm.retrieval.crossref_evidence_retriever import (
     CrossrefEvidenceRetriever,
 )
+from packages.infrastructure.llm.retrieval.curated_husbandry_evidence_retriever import (
+    CuratedHusbandryEvidenceRetriever,
+)
 from packages.infrastructure.llm.retrieval.europe_pmc_evidence_retriever import (
     EuropePmcEvidenceRetriever,
 )
 from packages.infrastructure.llm.retrieval.in_memory_evidence_retriever import (
     InMemoryEvidenceRetriever,
+)
+from packages.infrastructure.llm.retrieval.intent_routed_evidence_retriever import (
+    IntentRoutedEvidenceRetriever,
 )
 from packages.infrastructure.llm.retrieval.multi_source_evidence_retriever import (
     MultiSourceEvidenceRetriever,
@@ -394,17 +400,28 @@ class ApplicationContainer:
 
     def _build_evidence_retriever(self) -> EvidenceRetriever:
         if self.settings.evidence_backend == "europe_pmc":
-            return EuropePmcEvidenceRetriever()
+            # husbandry_question is routed to the curated catalog instead
+            # of Europe PMC — see IntentRoutedEvidenceRetriever's docstring
+            # for the live-verified reason why pooling them doesn't work.
+            return IntentRoutedEvidenceRetriever(
+                default=EuropePmcEvidenceRetriever(),
+                overrides={"husbandry_question": CuratedHusbandryEvidenceRetriever()},
+            )
         if self.settings.evidence_backend == "scientific_multi":
             # Spec v3 §20: PubMed, Europe PMC, Crossref and OpenAlex are
-            # complementary sources, not alternatives to pick one of.
-            return MultiSourceEvidenceRetriever(
-                [
-                    EuropePmcEvidenceRetriever(),
-                    PubMedEvidenceRetriever(),
-                    CrossrefEvidenceRetriever(),
-                    OpenAlexEvidenceRetriever(),
-                ]
+            # complementary sources, not alternatives to pick one of — but
+            # husbandry_question is routed to the curated catalog instead
+            # of this pipeline (see IntentRoutedEvidenceRetriever).
+            return IntentRoutedEvidenceRetriever(
+                default=MultiSourceEvidenceRetriever(
+                    [
+                        EuropePmcEvidenceRetriever(),
+                        PubMedEvidenceRetriever(),
+                        CrossrefEvidenceRetriever(),
+                        OpenAlexEvidenceRetriever(),
+                    ]
+                ),
+                overrides={"husbandry_question": CuratedHusbandryEvidenceRetriever()},
             )
         if self.settings.evidence_backend == "supabase":
             try:

@@ -58,6 +58,7 @@ INTENT_TO_DOMAIN: dict[str, str] = {
     "nutrition_question": "nutrition",
     "behavior_question": "behavior",
     "preventive_care": "preventive",
+    "husbandry_question": "husbandry",
 }
 
 

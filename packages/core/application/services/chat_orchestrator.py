@@ -104,6 +104,54 @@ EVIDENCE_KEYWORDS: dict[str, tuple[str, ...]] = {
     "nutrition_question": ("cibo", "mangia", "aliment", "dieta", "nutriz"),
     "behavior_question": ("comport", "ansia", "abbaia", "graffia", "aggress"),
     "preventive_care": ("vaccin", "antiparass", "checkup", "preven", "profilassi"),
+    # Real-world finding: husbandry/equipment questions for exotic species
+    # ("che lampada UVB per il geco?", "come ciclo l'acquario nuovo?") were
+    # falling into clinical_question by default and then, correctly but
+    # unhelpfully, hitting "no source, no answer" — PubMed/Europe PMC/
+    # Crossref/OpenAlex only index peer-reviewed biomedical literature,
+    # which essentially never covers terrarium/aquarium setup. This isn't
+    # a symptom being investigated, it's an environmental-parameter
+    # question, so it gets its own intent: a distinct evidence domain
+    # (see in_memory_evidence_retriever.py's curated "husbandry" catalog)
+    # and, below, a skip of the symptom-interview loop that doesn't apply
+    # to it.
+    "husbandry_question": (
+        "uvb",
+        "terrario",
+        "teca",
+        "riscaldamento",
+        "tappetino riscaldante",
+        "lampada",
+        "termostato",
+        "wattaggio",
+        "watt",
+        "fotoperiodo",
+        "basking",
+        "punto caldo",
+        "substrato",
+        "umidità",
+        "acquario",
+        "vasca",
+        "ciclo dell'azoto",
+        "ciclaggio",
+        "ciclare",
+        "filtro",
+        "parametri dell'acqua",
+        "cambio d'acqua",
+        "gorgogliatore",
+        # Real-world finding (live verification): "il mio camaleonte ha
+        # bisogno di stare al sole diretto vicino alla finestra?" used none
+        # of the UVB/equipment jargon above — a very plausible real
+        # phrasing for the same underlying question. Kept to multi-word
+        # phrases rather than the bare word "sole": as a substring it
+        # would collide with "consolare"/"consolerò" (comforting a
+        # distressed pet is a plausible behavior-question phrase).
+        "sole diretto",
+        "luce diretta del sole",
+        "raggi diretti del sole",
+        "prendere il sole",
+        "esposizione al sole",
+    ),
 }
 
 # Real-world finding: defaulting to "general_info" for anything that
@@ -415,7 +463,14 @@ class ChatOrchestrator:
 
         coverage: float | None = None
 
-        if self._enable_interview_loop:
+        # Husbandry/equipment questions skip the symptom-interview loop
+        # entirely: it exists to build up a clinical picture (onset,
+        # associated signs...) before answering a health concern, which
+        # doesn't apply to "what wattage UVB bulb" — that's answerable
+        # from the question alone, and coverage would never legitimately
+        # reach the target anyway (a "husbandry_question" doesn't set
+        # presenting_problem/onset the way a symptom report does).
+        if self._enable_interview_loop and intent != "husbandry_question":
             situation = self._situation_model_builder.update(
                 situation, message, data.conversation_history
             )
@@ -1022,6 +1077,18 @@ class ChatOrchestrator:
         if all(source.access_depth == "C" for source in sources):
             limitations.append(
                 "Per queste fonti abbiamo solo titolo e abstract, non il testo completo."
+            )
+        if any(source.clinical_domain == "husbandry" for source in sources):
+            # These are curated husbandry reference notes (access_depth "D"),
+            # not peer-reviewed veterinary literature, and are tagged at
+            # species-family level (e.g. "reptile_amphibian"), not the exact
+            # species/morph — needs must be verified against a caresheet
+            # for that specific animal.
+            limitations.append(
+                "Le indicazioni di allestimento/allevamento provengono da riferimenti "
+                "divulgativi curati, non da letteratura scientifica peer-reviewed: "
+                "verifica sempre i parametri per la tua specie e sottospecie esatta "
+                "con un veterinario esperto in esotici o un allevatore specializzato."
             )
         if not limitations:
             limitations.append(

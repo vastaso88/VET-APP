@@ -78,6 +78,27 @@ def test_matching_clinical_domain_scores_higher_than_unrelated() -> None:
     assert matching.case_relevance > unrelated.case_relevance
 
 
+def test_husbandry_domain_scores_higher_for_husbandry_intent_than_generic_fallback() -> None:
+    # Regression guard: INTENT_TO_DOMAIN must map "husbandry_question" to
+    # the "husbandry" domain explicitly. Without that entry, .get() falls
+    # back to "general", which still scores 0.5 (the "either side is
+    # general" case) instead of the full 1.0 exact match — silently
+    # under-ranking every curated husbandry source relative to clinical
+    # ones that DO have an explicit mapping.
+    weights = QualityWeights(
+        methodological_quality=0, case_relevance=1.0, species_match=0, recency=0, evidence_depth=0
+    )
+    matching = score_source(
+        _source(clinical_domain="husbandry"),
+        requested_species="reptile_amphibian",
+        requested_intent="husbandry_question",
+        now_year=2024,
+        weights=weights,
+    )
+
+    assert matching.case_relevance == 1.0
+
+
 def test_recent_evidence_scores_higher_than_old_evidence() -> None:
     weights = QualityWeights(
         methodological_quality=0, case_relevance=0, species_match=0, recency=1.0, evidence_depth=0

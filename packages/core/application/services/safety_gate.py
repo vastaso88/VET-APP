@@ -68,6 +68,31 @@ SPECIES_SPECIFIC_RED_FLAGS: dict[str, tuple[str, ...]] = {
         "non produce feci",
         "non fa feci",
         "niente cacca",
+        # Real-world finding: the medication-safety coverage below stopped
+        # at cat/dog, so "posso dare l'aspirina al mio coniglio?" raised no
+        # flag at all. Rabbits, guinea pigs, chinchillas and hamsters
+        # (hindgut fermenters) have their OWN distinct, well-documented
+        # medication danger that doesn't exist for cats/dogs: several
+        # common oral antibiotics kill the gut bacteria they depend on to
+        # digest fiber, causing fatal enterotoxemia/dysbiosis within days
+        # — a real risk even at an otherwise-normal dose, not just an
+        # overdose. NSAIDs carry the same general risk as for cats/dogs.
+        "amoxicillina",
+        "penicillina",
+        "clindamicina",
+        "lincomicina",
+        "eritromicina",
+        "ibuprofene",
+        "brufen",
+        "nurofen",
+        "oki",
+        "artrosilene",
+        "ketoprofene",
+        "aspirina",
+        "acido acetilsalicilico",
+        "voltaren",
+        "dicloreum",
+        "diclofenac",
     ),
     "reptile_amphibian": (
         "prolasso",
@@ -78,6 +103,12 @@ SPECIES_SPECIFIC_RED_FLAGS: dict[str, tuple[str, ...]] = {
         "non riesce a stare sul trespolo",
         "trovato sul fondo della gabbia",
         "caduto dal trespolo",
+        # Permethrin-based spot-ons are dangerous to birds too, not just
+        # cats — same products as in the "cat" list below.
+        "advantix",
+        "vectra",
+        "exspot",
+        "permetrina",
     ),
     # Real-world finding: "ho messo una goccia di advantix al mio gatto"
     # (a dog-only permethrin spot-on, genuinely lethal to cats even in
@@ -91,11 +122,46 @@ SPECIES_SPECIFIC_RED_FLAGS: dict[str, tuple[str, ...]] = {
     # given (the generic triage message's "avoid unauthorized food,
     # water or medication" advice already fits a poisoning scenario) or
     # only proposed.
+    # Real-world finding (round 2): in Italy, owners overwhelmingly reach
+    # for the medicine-cabinet BRAND name, not the active ingredient —
+    # "tachipirina"/"advantix" were the first two found, but the same gap
+    # exists for every common human NSAID/analgesic brand, which is
+    # genuinely dangerous to both cats and dogs (GI ulceration, kidney/
+    # liver injury) regardless of which brand it came in. Grouped by
+    # substance class for maintainability as this list keeps growing —
+    # add new brand names to the class they belong to, not as one-offs.
     "cat": (
+        # analgesics/NSAIDs — dangerous for cats, no benign explanation.
+        # "Moment" (a very common ibuprofen brand) is deliberately NOT
+        # included: as a bare substring it matches "momento"/"al momento"
+        # ("al momento sta bene", "non ha altri sintomi al momento") —
+        # extremely common phrasing in exactly these messages — which
+        # would manufacture a false poisoning alarm. No substring here
+        # can safely distinguish the two without word-boundary matching,
+        # which SafetyGate doesn't support today; "brufen"/"nurofen"/
+        # "ibuprofene" still catch the same substance under its other
+        # common names.
         "tachipirina",
         "paracetamolo",
+        "acetaminofene",
+        "brufen",
+        "nurofen",
+        "ibuprofene",
+        "oki",
+        "artrosilene",
+        "ketoprofene",
+        "aspirina",
+        "acido acetilsalicilico",
+        "voltaren",
+        "dicloreum",
+        "diclofenac",
+        # permethrin-based spot-ons formulated for dogs — lethal to cats,
+        # never dangerous for the dogs they're actually made for
         "advantix",
+        "vectra",
+        "exspot",
         "permetrina",
+        # classic food toxins
         "cipolla",
         "aglio",
     ),
@@ -106,8 +172,24 @@ SPECIES_SPECIFIC_RED_FLAGS: dict[str, tuple[str, ...]] = {
         "xilitolo",
         "cipolla",
         "aglio",
+        # analgesics/NSAIDs — dogs are less acutely sensitive than cats to
+        # some of these but still genuinely at risk from human OTC dosing.
+        # "moment" deliberately excluded here too — see the "cat" list's
+        # comment (collides with "momento"/"al momento").
         "tachipirina",
         "paracetamolo",
+        "acetaminofene",
+        "brufen",
+        "nurofen",
+        "ibuprofene",
+        "oki",
+        "artrosilene",
+        "ketoprofene",
+        "aspirina",
+        "acido acetilsalicilico",
+        "voltaren",
+        "dicloreum",
+        "diclofenac",
     ),
 }
 

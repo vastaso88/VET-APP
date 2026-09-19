@@ -81,6 +81,35 @@ def test_interview_loop_asks_a_question_when_coverage_is_low() -> None:
     assert result.interview_turns_used == 1
 
 
+def test_interview_loop_is_skipped_entirely_for_husbandry_questions() -> None:
+    # A husbandry/equipment question ("che lampada UVB comprare") isn't a
+    # symptom being investigated, so it must never be routed through the
+    # coverage/interview loop even when it's enabled for the conversation
+    # — if it were, this test's FixedInterviewPlanner would return its
+    # question instead of an evidence answer.
+    client = ExtractionAwareLLMClient(extraction_json="{}")
+    orchestrator = ChatOrchestrator(
+        client,
+        InMemoryEvidenceRetriever(),
+        NoopPiiAnonymizer(),
+        interview_planner=FixedInterviewPlanner("Non dovrebbe essere chiesto"),
+        enable_interview_loop=True,
+    )
+
+    result = orchestrator.answer(
+        ChatOrchestratorInput(
+            user_message="Che lampada UVB devo usare per il mio geco leopardino?",
+            species="Rettili e anfibi",
+            pet_name="Spike",
+        )
+    )
+
+    assert result.mode == "evidence"
+    assert result.answer != "Non dovrebbe essere chiesto"
+    assert result.coverage_score is None
+    assert result.sources
+
+
 def test_interview_loop_proceeds_to_evidence_once_coverage_target_is_met() -> None:
     extraction_json = (
         '{"presenting_problem": "tosse", "onset": "due giorni", '

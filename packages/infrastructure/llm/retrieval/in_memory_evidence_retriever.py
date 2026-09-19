@@ -3,8 +3,11 @@ from packages.core.application.ports.evidence_retriever import (
     EvidenceRetriever,
 )
 from packages.core.domain.knowledge.models import EvidenceSource
+from packages.infrastructure.llm.retrieval.curated_husbandry_evidence_retriever import (
+    HUSBANDRY_CATALOG,
+)
 
-CATALOG = [
+_GENERIC_CATALOG = [
     EvidenceSource(
         title="AAHA Canine Life Stage Guidelines",
         journal="Journal of the American Animal Hospital Association",
@@ -67,11 +70,38 @@ CATALOG = [
     ),
 ]
 
+# The curated husbandry catalog lives in its own module (shared with the
+# scientific_multi/europe_pmc container wiring — see
+# curated_husbandry_evidence_retriever.py) rather than being duplicated
+# here; concatenated in so the plain in-memory backend used by tests keeps
+# covering husbandry questions in one retriever.
+CATALOG = _GENERIC_CATALOG + HUSBANDRY_CATALOG
+
 QUERY_HINTS: dict[str, tuple[str, ...]] = {
     "clinical_question": ("tosse", "tossisce", "cough", "vomita", "vomit", "diarrea"),
     "nutrition_question": ("mangia", "aliment", "dieta", "nutrition"),
     "behavior_question": ("ansia", "abbaia", "graffia", "aggress", "comport"),
     "preventive_care": ("vaccin", "preven", "checkup", "profilassi"),
+    "husbandry_question": (
+        "uvb",
+        "terrario",
+        "teca",
+        "riscaldamento",
+        "lampada",
+        "termostato",
+        "basking",
+        "substrato",
+        "acquario",
+        "vasca",
+        "ciclo dell'azoto",
+        "ciclaggio",
+        "filtro",
+        "sole diretto",
+        "luce diretta del sole",
+        "raggi diretti del sole",
+        "prendere il sole",
+        "esposizione al sole",
+    ),
 }
 
 
@@ -96,5 +126,6 @@ class InMemoryEvidenceRetriever(EvidenceRetriever):
                     "nutrition_question": "nutrition",
                     "behavior_question": "behavior",
                     "preventive_care": "preventive",
+                    "husbandry_question": "husbandry",
                 }[intent]
         return "general"

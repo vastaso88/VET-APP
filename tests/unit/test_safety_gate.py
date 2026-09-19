@@ -109,3 +109,77 @@ def test_flags_paracetamol_brand_name_for_cats() -> None:
     assert gate.evaluate(
         "Vorrei dare la tachipirina al mio gatto che ha la febbre", species="Gatto"
     )
+
+
+def test_flags_common_italian_nsaid_brand_names_for_both_cats_and_dogs() -> None:
+    # Real-world finding (round 2): Italian owners reach for the brand
+    # name on whatever is in the medicine cabinet, not just paracetamol —
+    # the same gap exists for every common human NSAID/analgesic brand.
+    gate = SafetyGate()
+
+    for species in ("Gatto", "Cane"):
+        assert gate.evaluate("Posso dare del brufen al mio animale?", species=species)
+        assert gate.evaluate("Gli ho dato una bustina di oki ieri sera", species=species)
+        assert gate.evaluate("Ha preso dell'aspirina per errore", species=species)
+        assert gate.evaluate(
+            "Gli ho messo un po' di voltaren sulla zampa che zoppica", species=species
+        )
+
+
+def test_flags_other_permethrin_dog_spot_ons_given_to_cats() -> None:
+    # Advantix isn't the only dog-only permethrin product on the Italian
+    # market — Vectra 3D and Exspot are others an owner might have on hand.
+    gate = SafetyGate()
+
+    assert gate.evaluate("Ho usato il vectra sul mio gatto per sbaglio", species="Gatto")
+    assert gate.evaluate("Posso usare l'exspot del cane anche sul gatto?", species="cat")
+
+
+def test_flags_nsaids_and_dangerous_antibiotics_for_small_mammals() -> None:
+    # Real-world finding (round 3, stress test): medication-safety
+    # coverage stopped at cat/dog, so "posso dare l'aspirina al mio
+    # coniglio?" raised no flag at all. Rabbits/guinea pigs/chinchillas
+    # also have a distinct, more severe risk from certain oral
+    # antibiotics (fatal enterotoxemia) that cats/dogs don't share.
+    gate = SafetyGate()
+
+    assert gate.evaluate(
+        "Posso dare un po' di aspirina al mio coniglio?", species="Piccoli mammiferi"
+    )
+    assert gate.evaluate(
+        "Gli ho dato dell'amoxicillina che avevo in casa", species="small_mammal"
+    )
+
+
+def test_flags_permethrin_spot_ons_for_birds_too() -> None:
+    gate = SafetyGate()
+
+    assert gate.evaluate("Ho messo dell'advantix del cane anche sul canarino", species="Uccello")
+
+
+def test_does_not_flag_a_legitimate_vet_prescribed_medication() -> None:
+    # Real-world finding (round 3): a genuinely vet-prescribed, properly
+    # dosed medication (Rimadyl/carprofen, a real canine NSAID) must not
+    # trigger a false alarm — the danger is specifically unsupervised
+    # human OTC medication, not veterinary medicine itself.
+    gate = SafetyGate()
+
+    flags = gate.evaluate(
+        "Il veterinario mi ha prescritto del Rimadyl dopo l'operazione", species="Cane"
+    )
+
+    assert flags == []
+
+
+def test_does_not_flag_moment_due_to_common_word_collision() -> None:
+    # "Moment" (a very common ibuprofen brand) is deliberately NOT in the
+    # keyword list: as a bare substring it collides with "momento"/"al
+    # momento", extremely common phrasing that must never trigger a false
+    # poisoning alarm. This test guards against it being re-added later.
+    gate = SafetyGate()
+
+    flags = gate.evaluate(
+        "Al momento non ha altri sintomi, sta tranquillo", species="Gatto"
+    )
+
+    assert flags == []

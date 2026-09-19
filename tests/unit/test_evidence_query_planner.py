@@ -78,6 +78,22 @@ def test_translates_common_drug_brand_names() -> None:
     )
 
 
+def test_translates_additional_common_nsaid_brand_names() -> None:
+    # Round 2: the same brand-name gap exists beyond paracetamol/advantix
+    # for every common Italian OTC NSAID brand.
+    planner = EvidenceQueryPlanner()
+
+    assert "toxicity" in planner.build_query("Posso dare del brufen al gatto?", "clinical_question")
+    assert "toxicity" in planner.build_query("Gli ho dato una bustina di oki", "clinical_question")
+    assert "toxicity" in planner.build_query(
+        "Ha preso dell'aspirina per errore", "clinical_question"
+    )
+    assert "toxicity" in planner.build_query(
+        "Gli ho messo un po' di voltaren sulla zampa", "clinical_question"
+    )
+    assert "toxicity" in planner.build_query("Ho usato il vectra sul gatto", "clinical_question")
+
+
 def test_matches_the_plural_form_of_an_italian_term() -> None:
     # Real-world finding: an owner wrote "croste nere sui gomiti" (plural)
     # but the keyword was the singular "crosta", which is not a substring
@@ -88,3 +104,26 @@ def test_matches_the_plural_form_of_an_italian_term() -> None:
     query = planner.build_query("Il cane ha delle croste nere sui gomiti", "clinical_question")
 
     assert "skin crusting lesions" in query
+
+
+def test_translates_husbandry_terms_for_terrarium_and_aquarium_questions() -> None:
+    # Husbandry/equipment questions get their own vocabulary so that, if
+    # the scientific_multi backend is ever used, the query is still well
+    # formed — even though this content mostly lives in the curated
+    # in-memory catalog rather than peer-reviewed literature.
+    planner = EvidenceQueryPlanner()
+
+    assert "UVB" in planner.build_query(
+        "Che lampada UVB devo usare per il mio geco?", "husbandry_question"
+    )
+    assert "nitrogen cycle" in planner.build_query(
+        "Come faccio il ciclaggio di un acquario nuovo?", "husbandry_question"
+    )
+
+
+def test_falls_back_to_husbandry_intent_terms_when_no_keyword_matches() -> None:
+    planner = EvidenceQueryPlanner()
+
+    query = planner.build_query("Qualcosa di completamente diverso", "husbandry_question")
+
+    assert query == "captive husbandry environmental parameters"
