@@ -47,6 +47,33 @@ def accumulate_distance(route: list[RoutePoint], new_point: RoutePoint) -> float
     return haversine_distance_km(route[-1].coordinates, new_point.coordinates) * 1000
 
 
-# TODO(human): implement evaluate_badges.
+FIRST_WALK_BADGE_PREFIX = "first_walk_pet_"
+DISTANCE_BADGE_THRESHOLDS_KM = (10, 50, 100)
+WALK_COUNT_BADGE_THRESHOLDS = (10, 30, 100)
+
+
 def evaluate_badges(sessions: list[WalkSession]) -> list[str]:
-    pass
+    """Badge catalog (owner's design, 2026-09-19): every badge is tracked
+    per pet, not pooled across the owner's pets - two dogs each build up
+    their own distance/walk-count progress independently. Only
+    `completed` sessions count."""
+    completed = [session for session in sessions if session.status == "completed"]
+
+    sessions_by_pet: dict[str, list[WalkSession]] = {}
+    for session in completed:
+        sessions_by_pet.setdefault(session.pet_id, []).append(session)
+
+    badges: list[str] = []
+    for pet_id, pet_sessions in sessions_by_pet.items():
+        badges.append(f"{FIRST_WALK_BADGE_PREFIX}{pet_id}")
+
+        total_distance_km = sum(session.distance_meters for session in pet_sessions) / 1000
+        total_walks = len(pet_sessions)
+
+        # TODO(human): for this pet, append a badge id to `badges` for every
+        # threshold in DISTANCE_BADGE_THRESHOLDS_KM that total_distance_km
+        # has reached (e.g. f"distance_{threshold}km_pet_{pet_id}"), and one
+        # for every threshold in WALK_COUNT_BADGE_THRESHOLDS that
+        # total_walks has reached (e.g. f"walks_{threshold}_pet_{pet_id}").
+
+    return badges

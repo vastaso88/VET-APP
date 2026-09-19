@@ -1,5 +1,5 @@
 from datetime import date, datetime
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, cast
 
 from packages.core.application.ports.account_consents_repository import AccountConsentsRepository
 from packages.core.application.ports.clinical_event_repository import ClinicalEventRepository
@@ -165,7 +165,7 @@ class SupabaseUserLocationRepository(UserLocationRepository):
         )
         if not response.data:
             return None
-        return _row_to_user_location(response.data[0])
+        return _row_to_user_location(cast(dict[str, Any], response.data[0]))
 
     def save(self, user_location: UserLocation) -> UserLocation:
         self._client.table(self._table).upsert(_user_location_to_row(user_location)).execute()
