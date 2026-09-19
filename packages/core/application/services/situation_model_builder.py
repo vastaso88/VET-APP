@@ -17,7 +17,15 @@ SITUATION_EXTRACTION_SYSTEM_PROMPT = (
     "working_domains entries MUST each be exactly one of: clinical_question, "
     "nutrition_question, behavior_question, preventive_care — never a free-text label "
     "like 'gastroenterology' or 'dermatology', even if more descriptive; the caller "
-    "matches these values against a fixed set and an unrecognized one is ignored."
+    "matches these values against a fixed set and an unrecognized one is ignored. "
+    "Keep observed_behaviours and associated_signs distinct: observed_behaviours is "
+    "what the animal does that IS the presenting complaint itself (e.g. 'si gratta "
+    "l'orecchio', 'tossisce dopo aver bevuto'); associated_signs is a review of "
+    "OTHER systems not already covered by the complaint — appetite, thirst, energy "
+    "level, urination/defecation — whether normal or changed, only if the owner "
+    "actually addressed it. environmental_changes is anything recent that could be "
+    "a trigger: a diet change, a move, a new animal or person in the household, "
+    "travel, a change in routine."
 )
 
 

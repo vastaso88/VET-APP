@@ -15,8 +15,12 @@ BASE_URL = "https://www.ebi.ac.uk/europepmc/webservices/rest/search"
 SPECIES_TERMS: dict[str, str] = {
     "dog": "(canine OR dog)",
     "cat": "(feline OR cat)",
-    "rabbit": "(rabbit OR lagomorph)",
+    "small_mammal": (
+        "(rabbit OR lagomorph OR guinea pig OR hamster OR chinchilla OR ferret OR rodent)"
+    ),
     "bird": "(avian OR bird)",
+    "reptile_amphibian": "(reptile OR amphibian OR lizard OR frog OR salamander OR axolotl)",
+    "fish": "(fish OR pisces)",
 }
 
 FetchFn = Callable[[str], bytes]

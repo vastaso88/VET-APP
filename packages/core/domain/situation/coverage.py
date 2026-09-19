@@ -12,12 +12,23 @@ class CoverageWeights(BaseModel):
     rather than scattered as hardcoded literals through the codebase.
     """
 
-    presenting_problem: float = 0.30
-    onset: float = 0.15
-    observed_behaviours: float = 0.20
-    contexts: float = 0.10
-    known_medical_context: float = 0.15
-    working_domains: float = 0.10
+    presenting_problem: float = 0.25
+    onset: float = 0.10
+    observed_behaviours: float = 0.15
+    # Real-world finding: a proper anamnesis (history-taking) always
+    # includes a review of systems ("anything else changed — appetite,
+    # thirst, energy, toileting?") and a check for recent triggers (diet
+    # change, a house move, a new animal, travel) — these two
+    # SituationModel fields already existed but were never weighted here
+    # nor ever asked about by InterviewPlanner, so they never got
+    # populated by the interview at all. Weighted close to
+    # observed_behaviours: in real history-taking, "what else changed"
+    # routinely surfaces the detail that reframes the whole case.
+    associated_signs: float = 0.20
+    environmental_changes: float = 0.10
+    contexts: float = 0.05
+    known_medical_context: float = 0.10
+    working_domains: float = 0.05
 
 
 DEFAULT_COVERAGE_WEIGHTS = CoverageWeights()
@@ -35,6 +46,8 @@ def coverage_score(
         "presenting_problem": bool(situation.presenting_problem),
         "onset": bool(situation.onset),
         "observed_behaviours": bool(situation.observed_behaviours),
+        "associated_signs": bool(situation.associated_signs),
+        "environmental_changes": bool(situation.environmental_changes),
         "contexts": bool(situation.contexts),
         "known_medical_context": bool(situation.known_medical_context),
         "working_domains": bool(situation.working_domains),

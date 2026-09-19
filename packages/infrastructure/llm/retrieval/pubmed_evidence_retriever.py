@@ -16,8 +16,12 @@ ESUMMARY_URL = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esummary.fcgi"
 SPECIES_TERMS: dict[str, str] = {
     "dog": "(canine OR dog OR canis)",
     "cat": "(feline OR cat OR felis)",
-    "rabbit": "(rabbit OR lagomorph)",
+    "small_mammal": (
+        "(rabbit OR lagomorph OR guinea pig OR hamster OR chinchilla OR ferret OR rodent)"
+    ),
     "bird": "(avian OR bird)",
+    "reptile_amphibian": "(reptile OR amphibian OR lizard OR frog OR salamander OR axolotl)",
+    "fish": "(fish OR pisces)",
 }
 
 FetchFn = Callable[[str], bytes]

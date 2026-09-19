@@ -51,6 +51,33 @@ IT_EN_TERMS: dict[str, str] = {
     "parassit": "parasite",
     "pulci": "fleas",
     "zecch": "ticks",
+    # Real-world finding: a rabbit's owner-reported "non fa la cacca"
+    # (not passing stool) had no stool/defecation term at all in this
+    # dictionary — the query fell back to a generic clinical term and
+    # retrieved unrelated real papers instead of anything about GI
+    # stasis. Not species-specific: relevant for any species' clinician
+    # question involving stool.
+    "cacca": "defecation stool",
+    "feci": "stool feces",
+    "defeca": "defecation",
+    # Real-world finding: an owner asking whether a specific human
+    # medication or food is safe to give their pet (e.g. paracetamol to a
+    # cat, genuinely lethal even in small amounts) matched nothing here,
+    # so the question never reached real evidence — exactly the case
+    # where grounding in actual veterinary toxicology literature matters
+    # most, rather than trusting the general LLM path's latent knowledge.
+    "paracetamol": "acetaminophen paracetamol toxicity",
+    "tachipirina": "acetaminophen paracetamol toxicity",
+    "ibuprofen": "ibuprofen toxicity",
+    "advantix": "permethrin toxicity",
+    "permetrina": "permethrin toxicity",
+    "cioccolat": "chocolate toxicosis theobromine",
+    "uva": "grape raisin toxicity",
+    "uvetta": "grape raisin toxicity",
+    "cipoll": "onion toxicity",
+    "aglio": "garlic toxicity",
+    "xilitolo": "xylitol toxicity",
+    "avocado": "avocado toxicity",
 }
 
 INTENT_FALLBACK_TERMS: dict[str, str] = {

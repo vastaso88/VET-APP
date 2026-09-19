@@ -15,8 +15,10 @@ BASE_URL = "https://api.crossref.org/works"
 SPECIES_TERMS: dict[str, str] = {
     "dog": "canine dog",
     "cat": "feline cat",
-    "rabbit": "rabbit lagomorph",
+    "small_mammal": "rabbit guinea pig hamster chinchilla ferret rodent",
     "bird": "avian bird",
+    "reptile_amphibian": "reptile amphibian lizard frog",
+    "fish": "fish",
 }
 
 # Crossref's metadata doesn't classify study type the way PubMed/Europe

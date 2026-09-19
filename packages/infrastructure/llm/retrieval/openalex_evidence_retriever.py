@@ -15,8 +15,10 @@ BASE_URL = "https://api.openalex.org/works"
 SPECIES_TERMS: dict[str, str] = {
     "dog": "canine dog",
     "cat": "feline cat",
-    "rabbit": "rabbit lagomorph",
+    "small_mammal": "rabbit guinea pig hamster chinchilla ferret rodent",
     "bird": "avian bird",
+    "reptile_amphibian": "reptile amphibian lizard frog",
+    "fish": "fish",
 }
 
 # OpenAlex's `type` field is coarse (article/review/...); like Crossref,

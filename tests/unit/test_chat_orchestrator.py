@@ -71,6 +71,69 @@ def test_chat_orchestrator_asks_a_safety_clarification_before_escalating() -> No
     assert not client.requests
 
 
+def test_chat_orchestrator_flags_gi_stasis_for_small_mammals_not_dogs() -> None:
+    # Real-world finding: a rabbit not eating/defecating for a day is a
+    # true emergency (GI stasis), but the exact same phrase for a dog is
+    # ordinarily just something to monitor — species must change the
+    # outcome here, not just the wording of the answer.
+    client = FakeLLMClient()
+    orchestrator = ChatOrchestrator(client, InMemoryEvidenceRetriever(), NoopPiiAnonymizer())
+    message = "Il mio coniglio non mangia da un giorno e non fa la cacca"
+
+    rabbit_result = orchestrator.answer(
+        ChatOrchestratorInput(user_message=message, species="Piccoli mammiferi", pet_name="Pallina")
+    )
+    dog_result = orchestrator.answer(
+        ChatOrchestratorInput(user_message=message, species="dog", pet_name="Rex")
+    )
+
+    assert rabbit_result.mode == "safety_clarification"
+    assert rabbit_result.safety_clarification_category == "gi_stasis"
+    assert dog_result.mode != "safety_clarification"
+    assert dog_result.mode != "triage"
+
+
+def test_chat_orchestrator_escalates_dog_only_flea_treatment_given_to_a_cat() -> None:
+    # Real-world finding: reporting that a dog-only permethrin spot-on
+    # (Advantix) was already applied to a cat — a genuinely lethal
+    # combination — was treated as an ordinary question with no
+    # escalation at all, whether asked beforehand or already done.
+    client = FakeLLMClient()
+    orchestrator = ChatOrchestrator(client, InMemoryEvidenceRetriever(), NoopPiiAnonymizer())
+
+    result = orchestrator.answer(
+        ChatOrchestratorInput(
+            user_message="Ho messo una goccia di advantix al mio gatto, ne devo mettere altre?",
+            species="Gatto",
+            pet_name="Micio",
+        )
+    )
+
+    assert result.mode == "triage"
+    assert result.state == ConversationState.POSSIBLE_URGENT_CASE
+
+
+def test_chat_orchestrator_escalates_paracetamol_brand_name_for_cats() -> None:
+    # Owners commonly say the brand name ("Tachipirina") rather than the
+    # generic name — this must be caught the same way as "paracetamolo".
+    client = FakeLLMClient()
+    orchestrator = ChatOrchestrator(client, InMemoryEvidenceRetriever(), NoopPiiAnonymizer())
+
+    result = orchestrator.answer(
+        ChatOrchestratorInput(
+            user_message=(
+                "Vorrei dare la tachipirina al mio gatto che ha la febbre, "
+                "che dosaggio uso?"
+            ),
+            species="Gatto",
+            pet_name="Micio",
+        )
+    )
+
+    assert result.mode == "triage"
+    assert result.state == ConversationState.POSSIBLE_URGENT_CASE
+
+
 def test_chat_orchestrator_escalates_immediately_for_unambiguous_severe_messages() -> None:
     # No clarification question when the first message already leaves no
     # doubt — asking here would only delay real emergency care.
@@ -102,6 +165,27 @@ def test_chat_orchestrator_escalates_when_clarification_reply_is_unclear() -> No
             pet_name="Luna",
             awaiting_safety_clarification=True,
             safety_clarification_category="collapse",
+        )
+    )
+
+    assert result.mode == "triage"
+    assert result.state == ConversationState.POSSIBLE_URGENT_CASE
+
+
+def test_chat_orchestrator_never_downgrades_gi_stasis_even_on_a_reassuring_sounding_reply() -> None:
+    # Unlike "collapse"/"respiratory", GI stasis in a small mammal has no
+    # reply that makes it genuinely safe to relax — it can progress to
+    # fatal within hours regardless of how mild it currently sounds.
+    client = FakeLLMClient()
+    orchestrator = ChatOrchestrator(client, InMemoryEvidenceRetriever(), NoopPiiAnonymizer())
+
+    result = orchestrator.answer(
+        ChatOrchestratorInput(
+            user_message="Solo poche ore, e ha provato ad avvicinarsi al cibo",
+            species="Piccoli mammiferi",
+            pet_name="Pallina",
+            awaiting_safety_clarification=True,
+            safety_clarification_category="gi_stasis",
         )
     )
 
@@ -206,6 +290,29 @@ def test_chat_orchestrator_uses_llm_when_sources_are_available() -> None:
     assert client.requests
 
 
+def test_chat_orchestrator_normalizes_the_mobile_apps_italian_species_label() -> None:
+    # Real-world finding: the real Flutter app stores the Italian UI label
+    # ("Cane", "Gatto"...) directly as PetProfile.species, but every
+    # species-keyed lookup in the backend (here, the demo catalog's
+    # `species == "dog"` filter) was written against English species
+    # codes — so with the real app, species-specific evidence never
+    # matched anything at all. This must normalize "Cane" to "dog" before
+    # it reaches evidence retrieval.
+    client = FakeLLMClient()
+    orchestrator = ChatOrchestrator(client, InMemoryEvidenceRetriever(), NoopPiiAnonymizer())
+
+    result = orchestrator.answer(
+        ChatOrchestratorInput(
+            user_message="Il mio cane tossisce da due giorni",
+            species="Cane",
+            pet_name="Milo",
+        )
+    )
+
+    assert result.mode == "evidence"
+    assert result.sources
+
+
 def test_chat_orchestrator_sends_anonymized_text_to_llm_not_raw_pii() -> None:
     client = FakeLLMClient()
     anonymizer = FakePiiAnonymizer(redact="0491234567", replacement="<TELEFONO>")
@@ -233,3 +340,109 @@ def test_classify_intent_recognizes_dermatological_and_parasitic_terms() -> None
     # evidence-backed clinical topic.
     for message in ("il gatto ha la tigna", "il cane si gratta e ha prurito", "ha le zecche"):
         assert ChatOrchestrator._classify_intent(message) == "clinical_question", message
+
+
+def test_classify_intent_recognizes_generic_concern_phrases_for_exotic_species() -> None:
+    # Real-world finding: real questions about exotic species describe a
+    # worrying observation with vocabulary the symptom keyword list never
+    # anticipated (a chicken's blackened toe, a turtle's sticky shell,
+    # glass-like stool, a rabbit's testicular lumps) — none matched any
+    # clinical keyword, so all four silently fell through to
+    # "general_info" and skipped evidence retrieval, breaking "no
+    # source, no answer" for a genuine clinical concern. These are the
+    # exact real messages (paraphrased length aside) that failed live.
+    messages = [
+        "la mia gallina ha una delle dita con una zona nera, non so cosa possa "
+        "essere e sono preoccupata",
+        "vorrei sapere se le mie tartarughe sono malate, hanno una sostanza "
+        "appiccicosa sul carapace",
+        "ho visto qualcosa di simile a un vetro al posto delle feci della "
+        "tartaruga, è possibile? cosa devo fare?",
+        "il mio coniglio ha delle palline sotto la pelle vicino ai testicoli, "
+        "sapete cosa potrebbe essere?",
+    ]
+    for message in messages:
+        assert ChatOrchestrator._classify_intent(message) == "clinical_question", message
+
+
+def test_classify_intent_defaults_to_clinical_for_unrecognized_vocabulary() -> None:
+    # Real-world finding: the previous default was "general_info" for
+    # anything unmatched, which skipped evidence retrieval for genuine
+    # (if vaguely or unusually worded) health questions — including a
+    # bare medication-safety question with no symptom vocabulary at all.
+    for message in ("il mio cane sta male", "posso dare un antidolorifico al gatto"):
+        assert ChatOrchestrator._classify_intent(message) == "clinical_question", message
+
+
+def test_classify_intent_still_recognizes_short_small_talk() -> None:
+    # Only a genuinely short greeting/thanks/meta-question should still
+    # get the free-form "general_info" treatment — not narrowed away by
+    # the new clinical-by-default fallback.
+    for message in ("ciao", "grazie mille", "ciao, come va oggi?", "cosa sai fare?"):
+        assert ChatOrchestrator._classify_intent(message) == "general_info", message
+
+
+def test_dosage_request_never_computes_a_number() -> None:
+    # Real-world finding: asked for an exact drug dose, the general LLM
+    # path computed and handed over a specific mg figure with only a
+    # disclaimer at the end. This must be a fixed, rule-based refusal —
+    # never an LLM call that could drift.
+    client = FakeLLMClient()
+    orchestrator = ChatOrchestrator(client, InMemoryEvidenceRetriever(), NoopPiiAnonymizer())
+
+    result = orchestrator.answer(
+        ChatOrchestratorInput(
+            user_message=(
+                "Puoi dirmi esattamente quanti mg di amoxicillina posso dare "
+                "al mio gatto che pesa 4 kg?"
+            ),
+            species="cat",
+            pet_name="Luna",
+        )
+    )
+
+    assert result.ai_generated is False
+    assert result.provider == "rule-based"
+    assert "veterinario" in result.answer.lower()
+    assert not client.requests
+
+
+def test_independent_multi_pet_complaint_is_redirected() -> None:
+    # Real-world finding: "Ho un cane e anche un gatto, entrambi non
+    # mangiano" was answered as an ordinary single-pet case — the second
+    # animal's independent complaint was silently dropped.
+    client = FakeLLMClient()
+    orchestrator = ChatOrchestrator(client, InMemoryEvidenceRetriever(), NoopPiiAnonymizer())
+
+    result = orchestrator.answer(
+        ChatOrchestratorInput(
+            user_message=(
+                "Ho un cane e anche un gatto, entrambi non mangiano da "
+                "stamattina, cosa può essere?"
+            ),
+            species="dog",
+            pet_name="Rex",
+        )
+    )
+
+    assert result.mode == "multi_pet_redirect"
+    assert result.ai_generated is False
+    assert not client.requests
+
+
+def test_multi_pet_interaction_is_not_redirected() -> None:
+    # A second animal mentioned as CONTEXT for a real interaction (not an
+    # independent, unrelated complaint) must stay in the same
+    # conversation — the case is still about the registered pet.
+    client = FakeLLMClient()
+    orchestrator = ChatOrchestrator(client, InMemoryEvidenceRetriever(), NoopPiiAnonymizer())
+
+    result = orchestrator.answer(
+        ChatOrchestratorInput(
+            user_message="Il mio criceto è andato in blocco dopo aver visto il cane di casa",
+            species="dog",
+            pet_name="Rex",
+        )
+    )
+
+    assert result.mode != "multi_pet_redirect"

@@ -24,6 +24,7 @@ from packages.core.domain.conversation.states import ConversationState
 from packages.core.domain.knowledge.answer_validation import validate_answer
 from packages.core.domain.knowledge.evidence_synthesis import EvidenceSynthesis
 from packages.core.domain.knowledge.models import EvidenceSource
+from packages.core.domain.pet_profile.species import normalize_species
 from packages.core.domain.safety.triage_clarification import (
     CLARIFYING_QUESTIONS,
     requires_immediate_escalation,
@@ -78,11 +79,145 @@ EVIDENCE_KEYWORDS: dict[str, tuple[str, ...]] = {
         "parassit",
         "pulci",
         "zecch",
+        # Real-world finding: several genuinely clinical questions about
+        # exotic species (a chicken's blackened toe, a turtle's sticky
+        # shell, glass-like stool, a rabbit's testicular lumps) matched
+        # none of the symptom words above — all written with dog/cat
+        # vocabulary in mind — so the message fell through to
+        # "general_info" and skipped evidence retrieval entirely,
+        # breaking "no source, no answer" for a real clinical concern.
+        # Generic phrases an owner uses to voice a health worry,
+        # regardless of species or specific symptom, generalize far
+        # better than enumerating every possible ailment description per
+        # species/body part.
+        "sono preoccupat",
+        "molto preoccupat",
+        "cosa può essere",
+        "cosa potrebbe essere",
+        "sapete cosa",
+        "cosa devo fare",
+        "è normale che",
+        "malat",
+        "sostanza appiccicosa",
+        "zona nera",
     ),
     "nutrition_question": ("cibo", "mangia", "aliment", "dieta", "nutriz"),
     "behavior_question": ("comport", "ansia", "abbaia", "graffia", "aggress"),
     "preventive_care": ("vaccin", "antiparass", "checkup", "preven", "profilassi"),
 }
+
+# Real-world finding: defaulting to "general_info" for anything that
+# matched none of the keywords above meant most substantive pet questions
+# — a vague symptom report, a medication/dosage question, a symptom
+# described in unfamiliar vocabulary — skipped the interview and
+# evidence-grounding pipeline entirely and got an ungrounded free-text
+# answer instead, exactly what this app exists to avoid. "general_info"
+# is now reserved for messages that ARE this narrow list (greeting,
+# thanks, a meta-question about the assistant itself) — everything else
+# defaults to clinical_question instead (see _classify_intent). Matched
+# as a substring but only within a short message (see the length gate in
+# _classify_intent) — a real question that happens to contain one of
+# these words ("va bene dargli il farmaco?") is long enough to never be
+# misclassified.
+SMALL_TALK_MESSAGES: frozenset[str] = frozenset(
+    {
+        "ciao",
+        "buongiorno",
+        "buonasera",
+        "buondì",
+        "salve",
+        "hey",
+        "grazie",
+        "grazie mille",
+        "ok",
+        "va bene",
+        "perfetto",
+        "capito",
+        "chi sei",
+        "cosa sei",
+        "cosa sai fare",
+        "come funzioni",
+        "cosa puoi fare",
+    }
+)
+
+# Real-world finding: asked for an exact drug dose, the general LLM path
+# confidently computed and handed over a specific mg figure with only a
+# disclaimer at the end — owners tend to act on the number, not the small
+# print after it. Caught deterministically, ahead of any LLM call, so no
+# amount of prompt drift can let a number slip through (see
+# _dosage_guard_result). Deliberately narrow phrasing (asking HOW MUCH,
+# not just mentioning a drug) to avoid intercepting a real clinical
+# question that happens to name a medication.
+DOSAGE_REQUEST_MARKERS: tuple[str, ...] = (
+    "quanti mg",
+    "quanti ml",
+    "che dose",
+    "quale dose",
+    "dose esatta",
+    "dose precisa",
+    "dosaggio esatto",
+    "dosaggio preciso",
+    "quanto dosaggio",
+)
+
+# Real-world finding: "Ho un cane e anche un gatto, entrambi non mangiano"
+# was answered as if it were one ordinary case — the second animal was
+# silently dropped rather than flagged. Two distinct animals with their
+# own independent complaints need their own conversations (each has its
+# own history/situation model); a second animal mentioned only as
+# CONTEXT for the registered pet's own case (a conflict, a competition
+# over food, a fright) should stay in the same conversation instead —
+# that distinction is exactly what MULTI_PET_INTERACTION_MARKERS is for.
+# Deliberately conservative: only the clear "both independently" phrasing
+# triggers the redirect; anything else (including no marker at all)
+# leaves the case alone rather than risk interrupting a real one.
+SPECIES_WORD_TO_FAMILY: dict[str, str] = {
+    "cane": "dog",
+    "cani": "dog",
+    "gatto": "cat",
+    "gatti": "cat",
+    "gatta": "cat",
+    "gatte": "cat",
+    "coniglio": "small_mammal",
+    "conigli": "small_mammal",
+    "criceto": "small_mammal",
+    "cavia": "small_mammal",
+    "furetto": "small_mammal",
+    "uccello": "bird",
+    "uccelli": "bird",
+    "pappagallo": "bird",
+    "canarino": "bird",
+    "tartaruga": "reptile_amphibian",
+    "rettile": "reptile_amphibian",
+    "pesce": "fish",
+    "pesci": "fish",
+}
+MULTI_PET_INDEPENDENT_MARKERS: tuple[str, ...] = (
+    "entrambi",
+    "entrambe",
+    "tutti e due",
+    "tutti e 2",
+    "tutte e due",
+    "tutte e 2",
+)
+MULTI_PET_INTERACTION_MARKERS: tuple[str, ...] = (
+    "litiga",
+    "litigano",
+    "aggredisce",
+    "aggrediscono",
+    "attacca",
+    "attaccano",
+    "si azzuffano",
+    "dopo aver visto",
+    "quando vede",
+    "quando vedono",
+    "in presenza di",
+    "insieme a",
+    "insieme al",
+    "convivenza",
+    "conflitto",
+)
 
 
 class ChatOrchestratorInput(BaseModel):
@@ -200,7 +335,7 @@ class ChatOrchestrator:
                 data.pet_name, data.safety_clarification_category, message
             )
 
-        safety_flags = self._safety_gate.evaluate(lowered)
+        safety_flags = self._safety_gate.evaluate(lowered, species=data.species)
         if safety_flags:
             if requires_immediate_escalation(message):
                 # Already unambiguous and severe — asking a clarifying
@@ -228,6 +363,19 @@ class ChatOrchestrator:
             # don't have.
             return self._urgent_triage_result(data.pet_name, safety_flags)
 
+        if self._is_dosage_request(lowered):
+            # Real-world finding: asked for an exact drug dose, the general
+            # LLM path confidently computed and handed over a specific mg
+            # figure (with a disclaimer only at the end, which owners tend
+            # not to act on). This app must support the vet, never replace
+            # their clinical judgement — a rule-based, non-negotiable
+            # refusal here, ahead of any LLM call, guarantees that no
+            # amount of prompt drift can slip a number through.
+            return self._dosage_guard_result()
+
+        if self._describes_independent_multi_pet_complaint(lowered):
+            return self._multi_pet_redirect_result(data.pet_name)
+
         situation = data.situation_model or SituationModel()
         turns_used = data.interview_turns_used
         medical_record_consent = data.medical_record_consent
@@ -241,7 +389,11 @@ class ChatOrchestrator:
             return self._resolve_medical_record_consent(data, message, situation, turns_used)
 
         intent = self._classify_intent(lowered)
-        if intent == "general_info" and self._enable_interview_loop and situation.working_domains:
+        if (
+            intent in ("general_info", "clinical_question")
+            and self._enable_interview_loop
+            and situation.working_domains
+        ):
             # We're mid-interview on an already-established clinical topic —
             # a short follow-up reply ("da due giorni", "solo in casa") won't
             # repeat the original keywords, but reclassifying it fresh would
@@ -399,6 +551,68 @@ class ChatOrchestrator:
             provider="rule-based",
             model="safety-triage-guard",
             state=ConversationState.POSSIBLE_URGENT_CASE,
+        )
+
+    @staticmethod
+    def _is_dosage_request(message: str) -> bool:
+        return any(marker in message for marker in DOSAGE_REQUEST_MARKERS)
+
+    @staticmethod
+    def _describes_independent_multi_pet_complaint(message: str) -> bool:
+        if any(marker in message for marker in MULTI_PET_INTERACTION_MARKERS):
+            return False
+        if not any(marker in message for marker in MULTI_PET_INDEPENDENT_MARKERS):
+            return False
+        mentioned_families = {
+            family for word, family in SPECIES_WORD_TO_FAMILY.items() if word in message
+        }
+        return len(mentioned_families) >= 2
+
+    @staticmethod
+    def _multi_pet_redirect_result(pet_name: str) -> ChatOrchestratorResult:
+        return ChatOrchestratorResult(
+            answer=(
+                "Ho notato che mi parli di più di un animale con problemi che "
+                f"sembrano indipendenti tra loro. Per seguire bene ciascun caso "
+                f"ti conviene aprire una conversazione separata per {pet_name} "
+                "e una per l'altro animale — così ognuno ha la propria storia "
+                "e i propri dettagli, senza mescolare le informazioni. Se "
+                "invece il problema riguarda proprio un'interazione tra i due "
+                "(ad esempio si aggrediscono, competono per il cibo, uno si è "
+                "spaventato per l'altro), dimmelo pure qui: in quel caso il "
+                f"contesto dell'altro animale mi serve per capire cosa "
+                f"succede a {pet_name}."
+            ),
+            mode="multi_pet_redirect",
+            confidence="high",
+            ai_generated=False,
+            provider="rule-based",
+            model="multi-pet-guard",
+        )
+
+    @staticmethod
+    def _dosage_guard_result() -> ChatOrchestratorResult:
+        return ChatOrchestratorResult(
+            answer=(
+                "Non ti do una cifra precisa: il dosaggio corretto di un farmaco "
+                "dipende dal peso esatto, dalla condizione clinica e dalla "
+                "formulazione specifica del prodotto — è una valutazione che spetta "
+                "solo al veterinario, l'unico che può stabilire o modificare una "
+                "terapia. Puoi trovare indicazioni generali sui dosaggi su fonti "
+                "veterinarie ufficiali, ma per il tuo animale conferma sempre la "
+                "dose esatta con il veterinario prima di somministrare qualsiasi "
+                "farmaco."
+            ),
+            mode="general",
+            confidence="high",
+            ai_generated=False,
+            limitations=[
+                "Questa app supporta il lavoro del veterinario, non lo sostituisce: "
+                "non fornisce mai dosaggi farmacologici precisi."
+            ],
+            recommended_action="Conferma il dosaggio esatto con il veterinario.",
+            provider="rule-based",
+            model="dosage-guard",
         )
 
     def _resolve_safety_clarification(
@@ -571,8 +785,9 @@ class ChatOrchestrator:
         situation: SituationModel,
     ) -> ChatOrchestratorResult:
         case_text = self._case_context_text(situation, message)
+        canonical_species = normalize_species(data.species)
         final_request = EvidenceRetrievalRequest(
-            query=case_text, species=data.species, intent=intent
+            query=case_text, species=canonical_species, intent=intent
         )
         pool_size = max(
             final_request.max_results * EVIDENCE_POOL_MULTIPLIER, EVIDENCE_MIN_POOL_SIZE
@@ -581,7 +796,7 @@ class ChatOrchestrator:
         raw_sources = self._evidence_retriever.retrieve(pool_request)
         ranked = self._evidence_quality_engine.rank_and_select(
             raw_sources,
-            species=data.species,
+            species=canonical_species,
             intent=intent,
             max_results=final_request.max_results,
         )
@@ -762,7 +977,15 @@ class ChatOrchestrator:
         for intent, keywords in EVIDENCE_KEYWORDS.items():
             if any(keyword in message for keyword in keywords):
                 return intent
-        return "general_info"
+        normalized = message.strip().rstrip("!.?").strip()
+        # A short-length gate, not just a marker match: "va bene" alone
+        # would otherwise misclassify a real question like "va bene
+        # dargli il farmaco?" as small talk. Genuine greetings/thanks are
+        # short; a message long enough to describe an actual case never
+        # is, regardless of which words it happens to contain.
+        if len(normalized) <= 30 and any(marker in normalized for marker in SMALL_TALK_MESSAGES):
+            return "general_info"
+        return "clinical_question"
 
     @staticmethod
     def _format_sources_for_prompt(sources: Iterable[EvidenceSource]) -> str:

@@ -17,6 +17,21 @@ RED_FLAG_CATEGORIES: dict[str, tuple[str, ...]] = {
     "seizure": ("convuls", "seizure"),
     "bleeding_trauma": ("emorrag", "sanguina", "trauma", "incidente"),
     "urinary": ("anuria", "non urina"),
+    # Small-mammal-specific (spec: species safety calibration) — unlike
+    # the categories above, duration genuinely changes the picture here
+    # (a couple of hours vs. a full day), so it's worth one clarifying
+    # question rather than treating every mention as equally urgent.
+    "gi_stasis": (
+        "non mangia da un giorno",
+        "non mangia da ieri",
+        "non mangia da 24 ore",
+        "non fa la cacca",
+        "non fa cacca",
+        "non defeca",
+        "non produce feci",
+        "non fa feci",
+        "niente cacca",
+    ),
 }
 
 # If the very first message already describes an unambiguous, ongoing
@@ -61,6 +76,12 @@ CLARIFYING_QUESTIONS: dict[str, str] = {
         "vedi urinare? E lo vedi provarci senza risultato o lamentarsi, oppure "
         "sembra solo che non ne abbia avuto occasione?"
     ),
+    "gi_stasis": (
+        "Prima di darti indicazioni, un paio di cose veloci: da quante ore esattamente "
+        "non mangia e non fa la cacca? E in queste ore ha comunque provato ad "
+        "avvicinarsi al cibo o prodotto anche solo poche piccole feci, oppure "
+        "niente del tutto?"
+    ),
 }
 
 # Category-specific phrases that, if present, point to the kind of benign
@@ -103,6 +124,11 @@ REASSURING_MARKERS: dict[str, tuple[str, ...]] = {
         "solo un paio d'ore",
         "poche ore",
     ),
+    # Deliberately empty, like "seizure": GI stasis in a small mammal can
+    # progress to fatal within hours, and there's no reply that makes it
+    # genuinely safe to relax — the clarifying question is still useful to
+    # gather duration/detail, but it must not be able to downgrade severity.
+    "gi_stasis": (),
 }
 
 # Category-independent: any of these in the reply means "still bad or

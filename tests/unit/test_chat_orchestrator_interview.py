@@ -84,7 +84,10 @@ def test_interview_loop_asks_a_question_when_coverage_is_low() -> None:
 def test_interview_loop_proceeds_to_evidence_once_coverage_target_is_met() -> None:
     extraction_json = (
         '{"presenting_problem": "tosse", "onset": "due giorni", '
-        '"observed_behaviours": ["tossisce dopo aver bevuto"], "contexts": ["in casa"], '
+        '"observed_behaviours": ["tossisce dopo aver bevuto"], '
+        '"associated_signs": ["appetito invariato"], '
+        '"environmental_changes": ["nessun cambiamento recente"], '
+        '"contexts": ["in casa"], '
         '"known_medical_context": "nessuna", "working_domains": ["respiratory"]}'
     )
     client = ExtractionAwareLLMClient(extraction_json=extraction_json)

@@ -22,6 +22,19 @@ class InterviewPlanner:
         ),
         "onset": "Da quanto tempo lo stai notando?",
         "observed_behaviours": "Puoi descrivere nel dettaglio cosa fa in quei momenti?",
+        # Real-world finding: these two SituationModel fields already
+        # existed but InterviewPlanner never asked about either, so a
+        # proper anamnesis review-of-systems and recent-triggers check
+        # never happened — the interview could reach "adequate coverage"
+        # without ever touching either dimension.
+        "associated_signs": (
+            "Oltre a questo, hai notato altri cambiamenti — nell'appetito, "
+            "nella sete, nell'energia, o in come fa i bisogni?"
+        ),
+        "environmental_changes": (
+            "C'è stato qualche cambiamento nell'ultimo periodo — nuovo cibo, "
+            "un trasloco, un nuovo animale in casa, un viaggio?"
+        ),
         "contexts": "In quali situazioni succede di più (in casa, fuori, con altri animali)?",
         "known_medical_context": (
             "Ci sono condizioni di salute note o terapie in corso di cui dovrei sapere?"
@@ -38,6 +51,8 @@ class InterviewPlanner:
         "presenting_problem",
         "onset",
         "observed_behaviours",
+        "associated_signs",
+        "environmental_changes",
         "known_medical_context",
         "contexts",
     )
