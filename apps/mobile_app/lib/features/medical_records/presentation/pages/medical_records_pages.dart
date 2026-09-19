@@ -382,7 +382,7 @@ class _Header extends StatelessWidget {
       return Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const _BrandPill(),
+          const _BackRow(),
           const SizedBox(height: AppSpacing.lg),
           Text(title, style: AppTextStyles.heading),
           const SizedBox(height: AppSpacing.sm),
@@ -403,7 +403,7 @@ class _Header extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const _BrandPill(),
+              const _BackRow(),
               const SizedBox(height: AppSpacing.lg),
               Text(title, style: AppTextStyles.heading),
               const SizedBox(height: AppSpacing.sm),
@@ -444,6 +444,27 @@ class _BrandPill extends StatelessWidget {
           ),
         ],
       ),
+    );
+  }
+}
+
+class _BackRow extends StatelessWidget {
+  const _BackRow();
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        IconButton(
+          onPressed: () => Navigator.of(context).maybePop(),
+          icon: const Icon(Icons.arrow_back_rounded),
+          color: Colors.white,
+          style: IconButton.styleFrom(backgroundColor: const Color(0xFF163A35)),
+        ),
+        const SizedBox(width: AppSpacing.sm),
+        const _BrandPill(),
+      ],
     );
   }
 }
