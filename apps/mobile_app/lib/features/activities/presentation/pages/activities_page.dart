@@ -170,11 +170,15 @@ class _ActivityRow extends StatelessWidget {
                   children: [
                     Row(
                       children: [
-                        Text(
-                          title,
-                          style: AppTextStyles.body.copyWith(
-                            color: AppColors.text,
-                            fontWeight: FontWeight.w600,
+                        Flexible(
+                          child: Text(
+                            title,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: AppTextStyles.body.copyWith(
+                              color: AppColors.text,
+                              fontWeight: FontWeight.w600,
+                            ),
                           ),
                         ),
                         if (badge != null) ...[

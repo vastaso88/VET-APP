@@ -292,6 +292,7 @@ class _BrandRow extends StatelessWidget {
         const Spacer(),
         if (onBack != null)
           TextButton.icon(
+            style: TextButton.styleFrom(minimumSize: const Size(0, 44)),
             onPressed: onBack,
             icon: const Icon(Icons.arrow_back_rounded, size: 18),
             label: const Text('Indietro'),

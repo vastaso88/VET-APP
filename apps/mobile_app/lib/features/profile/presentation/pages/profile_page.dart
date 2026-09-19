@@ -122,28 +122,55 @@ class _Header extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Wrap(
-          spacing: AppSpacing.sm,
-          runSpacing: AppSpacing.sm,
-          alignment: WrapAlignment.spaceBetween,
-          crossAxisAlignment: WrapCrossAlignment.start,
+        Row(
           children: [
             TextButton.icon(
+              style: TextButton.styleFrom(minimumSize: const Size(0, 44)),
               onPressed: onBack,
               icon: const Icon(Icons.arrow_back_rounded, size: 18),
               label: const Text('Indietro'),
             ),
+            const Spacer(),
+            // OutlinedButton's app-wide theme sets minimumSize to
+            // Size.fromHeight(52), i.e. infinite width — every other use of
+            // it in this app sits inside an Expanded pair for exactly that
+            // reason. Override it back to a natural width here since this
+            // one is a standalone pill next to Indietro, not a full-width
+            // CTA.
             OutlinedButton.icon(
+              style: OutlinedButton.styleFrom(
+                minimumSize: Size.zero,
+                padding: const EdgeInsets.symmetric(
+                  horizontal: AppSpacing.lg,
+                  vertical: AppSpacing.sm,
+                ),
+              ),
               onPressed: onOpenSettings,
               icon: const Icon(Icons.settings_outlined, size: 18),
               label: const Text('Impostazioni'),
             ),
-            FilledButton.tonalIcon(
-              onPressed: onLogoutPreview,
-              icon: const Icon(Icons.logout_rounded, size: 18),
-              label: const Text('Logout'),
-            ),
           ],
+        ),
+        const SizedBox(height: AppSpacing.lg),
+        // Kept apart from Indietro/Impostazioni above (its own row, danger
+        // tone) so it can't be fat-fingered right after tapping a nearby
+        // nav pill — it's a consequential action.
+        Align(
+          alignment: Alignment.centerRight,
+          child: OutlinedButton.icon(
+            onPressed: onLogoutPreview,
+            style: OutlinedButton.styleFrom(
+              minimumSize: Size.zero,
+              padding: const EdgeInsets.symmetric(
+                horizontal: AppSpacing.lg,
+                vertical: AppSpacing.sm,
+              ),
+              foregroundColor: AppColors.danger,
+              side: const BorderSide(color: AppColors.danger),
+            ),
+            icon: const Icon(Icons.logout_rounded, size: 18),
+            label: const Text('Logout'),
+          ),
         ),
         const SizedBox(height: AppSpacing.lg),
         const _BrandPill(),
@@ -263,7 +290,16 @@ class _InfoCard extends StatelessWidget {
               child: Row(
                 children: [
                   Expanded(child: Text(row.label, style: AppTextStyles.caption)),
-                  Text(row.value, style: AppTextStyles.bodySmall.copyWith(color: AppColors.text)),
+                  const SizedBox(width: AppSpacing.md),
+                  Flexible(
+                    child: Text(
+                      row.value,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      textAlign: TextAlign.end,
+                      style: AppTextStyles.bodySmall.copyWith(color: AppColors.text),
+                    ),
+                  ),
                 ],
               ),
             ),

@@ -2,14 +2,35 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 
+import '../../../../../design_system/responsive.dart';
 import '../../../../../design_system/tokens/app_colors.dart';
 import '../../../../../design_system/tokens/app_radii.dart';
 import '../../../../../design_system/tokens/app_spacing.dart';
 import '../../../../../design_system/tokens/app_text_styles.dart';
 import '../../../home/presentation/widgets/home_dashboard_primitives.dart';
+import '../../../pets/data/pet_demo_store.dart';
+import '../../../pets/domain/pet_models.dart';
 import '../../../settings/data/layout_settings_store.dart';
 import '../../data/reminders_repository.dart';
+import '../../domain/reminder_calendar.dart';
 import '../../domain/reminder_presentation.dart';
+
+enum _ViewMode { list, calendar }
+
+/// Collapses spot+recurring into one "Eventi" filter, alongside Cicli —
+/// simpler than the underlying 3-way [EventKind] split, which read as too
+/// granular for a filter strip.
+enum _KindFilterOption {
+  all,
+  events,
+  courses;
+
+  bool matches(EventKind kind) => switch (this) {
+        _KindFilterOption.all => true,
+        _KindFilterOption.events => kind == EventKind.spot || kind == EventKind.recurring,
+        _KindFilterOption.courses => kind == EventKind.course,
+      };
+}
 
 class RemindersListPage extends StatefulWidget {
   const RemindersListPage({super.key});
@@ -22,7 +43,9 @@ class _RemindersListPageState extends State<RemindersListPage> {
   final RemindersRepository _repository = RemindersRepository();
 
   late Future<List<ReminderEntry>> _remindersFuture;
-  EventKind? _kindFilter;
+  _KindFilterOption _kindFilter = _KindFilterOption.all;
+  String? _petFilter;
+  _ViewMode _viewMode = _ViewMode.list;
 
   @override
   void initState() {
@@ -115,24 +138,42 @@ class _RemindersListPageState extends State<RemindersListPage> {
             );
           }
 
-          final filtered = (_kindFilter == null
-              ? all
-              : all.where((r) => r.kind == _kindFilter).toList())
+          final pets = PetDemoStore.instance.list();
+          final filtered = all
+              .where((r) => _kindFilter.matches(r.kind) && (_petFilter == null || r.petName == _petFilter))
+              .toList()
             ..sort((a, b) => a.dueAt.compareTo(b.dueAt));
 
           return Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              _ViewModeToggle(
+                value: _viewMode,
+                onChanged: (mode) => setState(() => _viewMode = mode),
+              ),
+              const SizedBox(height: AppSpacing.lg),
               _KindFilterBar(
                 selected: _kindFilter,
                 onSelect: (kind) => setState(() => _kindFilter = kind),
               ),
+              const SizedBox(height: AppSpacing.sm),
+              _PetFilterBar(
+                pets: pets,
+                selected: _petFilter,
+                onSelect: (petName) => setState(() => _petFilter = petName),
+              ),
               const SizedBox(height: AppSpacing.lg),
-              if (filtered.isEmpty)
+              if (_viewMode == _ViewMode.calendar)
+                _MonthCalendarView(
+                  reminders: filtered,
+                  onOpenReminder: _openDetail,
+                  onMarkDone: _markDone,
+                )
+              else if (filtered.isEmpty)
                 Padding(
                   padding: const EdgeInsets.symmetric(vertical: AppSpacing.xl),
                   child: Text(
-                    'Nessun promemoria in questa categoria.',
+                    'Nessun promemoria per questi filtri.',
                     style: AppTextStyles.bodySmall,
                   ),
                 )
@@ -167,8 +208,47 @@ class _RemindersListPageState extends State<RemindersListPage> {
 class _KindFilterBar extends StatelessWidget {
   const _KindFilterBar({required this.selected, required this.onSelect});
 
-  final EventKind? selected;
-  final ValueChanged<EventKind?> onSelect;
+  final _KindFilterOption selected;
+  final ValueChanged<_KindFilterOption> onSelect;
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      height: 40,
+      child: ListView(
+        scrollDirection: Axis.horizontal,
+        children: [
+          _KindChip(
+            label: 'Tutti',
+            selected: selected == _KindFilterOption.all,
+            onTap: () => onSelect(_KindFilterOption.all),
+          ),
+          const SizedBox(width: AppSpacing.sm),
+          _KindChip(
+            label: 'Eventi',
+            icon: Icons.event_outlined,
+            selected: selected == _KindFilterOption.events,
+            onTap: () => onSelect(_KindFilterOption.events),
+          ),
+          const SizedBox(width: AppSpacing.sm),
+          _KindChip(
+            label: 'Cicli',
+            icon: Icons.medication_outlined,
+            selected: selected == _KindFilterOption.courses,
+            onTap: () => onSelect(_KindFilterOption.courses),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _PetFilterBar extends StatelessWidget {
+  const _PetFilterBar({required this.pets, required this.selected, required this.onSelect});
+
+  final List<PetProfile> pets;
+  final String? selected;
+  final ValueChanged<String?> onSelect;
 
   @override
   Widget build(BuildContext context) {
@@ -178,28 +258,56 @@ class _KindFilterBar extends StatelessWidget {
         scrollDirection: Axis.horizontal,
         children: [
           _KindChip(label: 'Tutti', selected: selected == null, onTap: () => onSelect(null)),
-          const SizedBox(width: AppSpacing.sm),
-          _KindChip(
-            label: 'Spot',
-            icon: Icons.event_outlined,
-            selected: selected == EventKind.spot,
-            onTap: () => onSelect(EventKind.spot),
-          ),
-          const SizedBox(width: AppSpacing.sm),
-          _KindChip(
-            label: 'Ricorrenti',
-            icon: Icons.autorenew_rounded,
-            selected: selected == EventKind.recurring,
-            onTap: () => onSelect(EventKind.recurring),
-          ),
-          const SizedBox(width: AppSpacing.sm),
-          _KindChip(
-            label: 'Cicli',
-            icon: Icons.medication_outlined,
-            selected: selected == EventKind.course,
-            onTap: () => onSelect(EventKind.course),
-          ),
+          for (final pet in pets) ...[
+            const SizedBox(width: AppSpacing.sm),
+            _PetChip(pet: pet, selected: selected == pet.name, onTap: () => onSelect(pet.name)),
+          ],
         ],
+      ),
+    );
+  }
+}
+
+class _PetChip extends StatelessWidget {
+  const _PetChip({required this.pet, required this.selected, required this.onTap});
+
+  final PetProfile pet;
+  final bool selected;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: selected ? AppColors.primary : AppColors.surface,
+      borderRadius: BorderRadius.circular(AppRadii.pill),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(AppRadii.pill),
+        onTap: onTap,
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md, vertical: AppSpacing.xs),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(AppRadii.pill),
+            border: Border.all(color: selected ? AppColors.primary : AppColors.border),
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: 10,
+                height: 10,
+                decoration: BoxDecoration(shape: BoxShape.circle, color: pet.identityColor),
+              ),
+              const SizedBox(width: 6),
+              Text(
+                pet.name,
+                style: AppTextStyles.caption.copyWith(
+                  color: selected ? AppColors.onPrimary : AppColors.text,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }
@@ -240,6 +348,291 @@ class _KindChip extends StatelessWidget {
                   color: selected ? AppColors.onPrimary : AppColors.text,
                   fontWeight: FontWeight.w700,
                 ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _ViewModeToggle extends StatelessWidget {
+  const _ViewModeToggle({required this.value, required this.onChanged});
+
+  final _ViewMode value;
+  final ValueChanged<_ViewMode> onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    return SegmentedButton<_ViewMode>(
+      segments: const [
+        ButtonSegment(
+          value: _ViewMode.list,
+          icon: Icon(Icons.view_list_rounded, size: 16),
+          label: Text('Lista'),
+        ),
+        ButtonSegment(
+          value: _ViewMode.calendar,
+          icon: Icon(Icons.calendar_month_rounded, size: 16),
+          label: Text('Calendario'),
+        ),
+      ],
+      selected: {value},
+      showSelectedIcon: false,
+      onSelectionChanged: (selection) => onChanged(selection.first),
+      style: ButtonStyle(
+        visualDensity: VisualDensity.compact,
+        textStyle: WidgetStatePropertyAll(AppTextStyles.caption.copyWith(fontWeight: FontWeight.w700)),
+      ),
+    );
+  }
+}
+
+/// Classic monthly calendar, reached from "Vedi tutti": bigger and more
+/// detailed than the Home week-strip, with a day's reminders listed below
+/// the grid — tapping one reuses the same detail page (edit/delete/mark
+/// done) as the list view.
+class _MonthCalendarView extends StatefulWidget {
+  const _MonthCalendarView({
+    required this.reminders,
+    required this.onOpenReminder,
+    required this.onMarkDone,
+  });
+
+  final List<ReminderEntry> reminders;
+  final ValueChanged<ReminderEntry> onOpenReminder;
+  final ValueChanged<ReminderEntry> onMarkDone;
+
+  @override
+  State<_MonthCalendarView> createState() => _MonthCalendarViewState();
+}
+
+class _MonthCalendarViewState extends State<_MonthCalendarView> {
+  late DateTime _visibleMonth = DateTime(DateTime.now().year, DateTime.now().month);
+  DateTime? _selectedDay = DateTime.now();
+
+  static const _monthNames = [
+    'Gennaio', 'Febbraio', 'Marzo', 'Aprile', 'Maggio', 'Giugno',
+    'Luglio', 'Agosto', 'Settembre', 'Ottobre', 'Novembre', 'Dicembre',
+  ];
+  static const _weekdayNames = [
+    'Lunedì', 'Martedì', 'Mercoledì', 'Giovedì', 'Venerdì', 'Sabato', 'Domenica',
+  ];
+  static const _mondayFirstLabels = ['L', 'M', 'M', 'G', 'V', 'S', 'D'];
+  static const _sundayFirstLabels = ['D', 'L', 'M', 'M', 'G', 'V', 'S'];
+
+  void _changeMonth(int delta) {
+    setState(() {
+      _visibleMonth = DateTime(_visibleMonth.year, _visibleMonth.month + delta);
+    });
+  }
+
+  void _selectDay(DateTime day) {
+    setState(() {
+      _selectedDay = _selectedDay != null && isSameDay(_selectedDay!, day) ? null : day;
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final weekStartDay = LayoutSettingsStore.instance.settings.weekStartDay;
+    final pets = PetDemoStore.instance.list();
+    final labels = weekStartDay == WeekStartDay.monday ? _mondayFirstLabels : _sundayFirstLabels;
+
+    final firstOfMonth = DateTime(_visibleMonth.year, _visibleMonth.month);
+    final firstOffset = weekStartDay == WeekStartDay.monday
+        ? firstOfMonth.weekday - 1
+        : firstOfMonth.weekday % 7;
+    final gridStart = firstOfMonth.subtract(Duration(days: firstOffset));
+    final daysInMonth = DateUtils.getDaysInMonth(_visibleMonth.year, _visibleMonth.month);
+    final totalWeeks = ((firstOffset + daysInMonth) / 7).ceil();
+
+    final today = DateTime.now();
+    final startOfToday = DateTime(today.year, today.month, today.day);
+    final selectedDay = _selectedDay;
+
+    final selectedReminders = selectedDay == null
+        ? const <ReminderEntry>[]
+        : (widget.reminders.where((r) => reminderActiveOnDay(r, selectedDay)).toList()
+          ..sort((a, b) => a.dueAt.compareTo(b.dueAt)));
+
+    return DashboardSurfaceCard(
+      backgroundColor: AppColors.surfaceElevated,
+      padding: const EdgeInsets.all(AppSpacing.lg),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              IconButton(
+                onPressed: () => _changeMonth(-1),
+                icon: const Icon(Icons.chevron_left_rounded),
+                color: AppColors.primary,
+              ),
+              Expanded(
+                child: Text(
+                  '${_monthNames[_visibleMonth.month - 1]} ${_visibleMonth.year}',
+                  textAlign: TextAlign.center,
+                  style: AppTextStyles.title.copyWith(fontSize: 18),
+                ),
+              ),
+              IconButton(
+                onPressed: () => _changeMonth(1),
+                icon: const Icon(Icons.chevron_right_rounded),
+                color: AppColors.primary,
+              ),
+            ],
+          ),
+          const SizedBox(height: AppSpacing.sm),
+          Row(
+            children: [
+              for (final label in labels)
+                Expanded(
+                  child: Center(
+                    child: Text(
+                      label,
+                      style: AppTextStyles.caption.copyWith(color: AppColors.mutedText),
+                    ),
+                  ),
+                ),
+            ],
+          ),
+          const SizedBox(height: AppSpacing.xs),
+          for (var week = 0; week < totalWeeks; week++) ...[
+            if (week != 0) const SizedBox(height: 2),
+            Row(
+              children: [
+                for (var i = 0; i < 7; i++) ...[
+                  Builder(
+                    builder: (context) {
+                      final day = gridStart.add(Duration(days: week * 7 + i));
+                      return Expanded(
+                        child: _MonthDayCell(
+                          day: day,
+                          inMonth: day.month == _visibleMonth.month,
+                          isToday: isSameDay(day, startOfToday),
+                          isSelected: selectedDay != null && isSameDay(day, selectedDay),
+                          markers: markersForDay(widget.reminders, pets, day),
+                          onTap: () => _selectDay(day),
+                        ),
+                      );
+                    },
+                  ),
+                  if (i != 6) const SizedBox(width: 2),
+                ],
+              ],
+            ),
+          ],
+          const SizedBox(height: AppSpacing.lg),
+          if (selectedDay != null) ...[
+            Text(
+              _selectedDayLabel(selectedDay),
+              style: AppTextStyles.caption.copyWith(
+                fontWeight: FontWeight.w700,
+                color: AppColors.secondaryText,
+              ),
+            ),
+            const SizedBox(height: AppSpacing.sm),
+            if (selectedReminders.isEmpty)
+              Text('Nessuna attività in questo giorno.', style: AppTextStyles.bodySmall)
+            else
+              ...selectedReminders.asMap().entries.expand((entry) {
+                final index = entry.key;
+                final reminder = entry.value;
+                return <Widget>[
+                  _ReminderTile(
+                    reminder: reminder,
+                    compact: true,
+                    onTap: () => widget.onOpenReminder(reminder),
+                    onMarkDone: reminder.kind == EventKind.spot
+                        ? () => widget.onMarkDone(reminder)
+                        : null,
+                  ),
+                  if (index != selectedReminders.length - 1) const SizedBox(height: AppSpacing.sm),
+                ];
+              }),
+          ],
+        ],
+      ),
+    );
+  }
+
+  String _selectedDayLabel(DateTime day) {
+    if (isSameDay(day, DateTime.now())) return 'Oggi';
+    return '${_weekdayNames[day.weekday - 1]} ${day.day} ${_monthNames[day.month - 1]}';
+  }
+}
+
+class _MonthDayCell extends StatelessWidget {
+  const _MonthDayCell({
+    required this.day,
+    required this.inMonth,
+    required this.isToday,
+    required this.isSelected,
+    required this.markers,
+    required this.onTap,
+  });
+
+  final DateTime day;
+  final bool inMonth;
+  final bool isToday;
+  final bool isSelected;
+  final List<DayMarker> markers;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final background = isSelected
+        ? AppColors.primary
+        : (isToday ? AppColors.accentSoft : Colors.transparent);
+    final foreground = isSelected
+        ? AppColors.onPrimary
+        : (inMonth ? AppColors.text : AppColors.mutedText.withValues(alpha: 0.5));
+    final shown = markers.take(3).toList();
+    final extra = markers.length - shown.length;
+
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        borderRadius: BorderRadius.circular(AppRadii.medium),
+        onTap: onTap,
+        child: Container(
+          padding: const EdgeInsets.symmetric(vertical: AppSpacing.xs),
+          decoration: BoxDecoration(
+            color: background,
+            borderRadius: BorderRadius.circular(AppRadii.medium),
+            border: isToday && !isSelected
+                ? Border.all(color: AppColors.primary.withValues(alpha: 0.4))
+                : null,
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                '${day.day}',
+                style: AppTextStyles.bodySmall.copyWith(
+                  color: foreground,
+                  fontWeight: FontWeight.w700,
+                  fontSize: 16,
+                ),
+              ),
+              const SizedBox(height: 3),
+              SizedBox(
+                height: 12,
+                child: markers.isEmpty
+                    ? null
+                    : Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          for (final marker in shown) MarkerGlyph(marker: marker, size: 9),
+                          if (extra > 0)
+                            Text(
+                              '+$extra',
+                              style: TextStyle(fontSize: 8, fontWeight: FontWeight.w800, color: foreground),
+                            ),
+                        ],
+                      ),
               ),
             ],
           ),
@@ -848,6 +1241,7 @@ class ReminderDetailPage extends StatefulWidget {
 }
 
 class _ReminderDetailPageState extends State<ReminderDetailPage> {
+  final _repository = RemindersRepository();
   late ReminderEntry? _reminder = widget.reminder;
 
   Future<void> _openEdit() async {
@@ -859,6 +1253,37 @@ class _ReminderDetailPageState extends State<ReminderDetailPage> {
     if (updated != null && mounted) {
       setState(() => _reminder = updated);
     }
+  }
+
+  Future<void> _delete() async {
+    final reminder = _reminder;
+    if (reminder == null) return;
+
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        backgroundColor: AppColors.surface,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadii.large)),
+        title: const Text('Eliminare questo promemoria?'),
+        content: Text('"${reminder.title}" verrà eliminato definitivamente.'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(false),
+            child: const Text('Annulla'),
+          ),
+          FilledButton(
+            style: FilledButton.styleFrom(backgroundColor: AppColors.danger),
+            onPressed: () => Navigator.of(dialogContext).pop(true),
+            child: const Text('Elimina'),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true) return;
+
+    await _repository.deleteReminder(reminder.id);
+    if (!mounted) return;
+    Navigator.of(context).pop();
   }
 
   @override
@@ -907,6 +1332,15 @@ class _ReminderDetailPageState extends State<ReminderDetailPage> {
             ],
             onSave: _openEdit,
             onCancel: () => Navigator.of(context).pop(),
+          ),
+          const SizedBox(height: AppSpacing.md),
+          SizedBox(
+            width: double.infinity,
+            child: TextButton.icon(
+              onPressed: _delete,
+              icon: const Icon(Icons.delete_outline_rounded, size: 18, color: AppColors.danger),
+              label: const Text('Elimina promemoria', style: TextStyle(color: AppColors.danger)),
+            ),
           ),
         ],
       ),
@@ -1245,9 +1679,9 @@ class _SummaryCard extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(title, style: AppTextStyles.title),
+                Text(title, maxLines: 2, overflow: TextOverflow.ellipsis, style: AppTextStyles.title),
                 const SizedBox(height: AppSpacing.sm),
-                Text(body, style: AppTextStyles.bodySmall),
+                Text(body, maxLines: 3, overflow: TextOverflow.ellipsis, style: AppTextStyles.bodySmall),
               ],
             ),
           ),
@@ -1274,7 +1708,7 @@ class _ReminderTile extends StatelessWidget {
   Widget build(BuildContext context) {
     final presentation = ReminderPresentation.of(reminder);
     final palette = DashboardPrimitivePalette.colorsFor(presentation.tone);
-    final iconSize = compact ? 40.0 : 52.0;
+    final iconSize = (compact ? 40.0 : 52.0) * appScaleOf(context);
 
     return Material(
       color: AppColors.surface,
@@ -1307,6 +1741,8 @@ class _ReminderTile extends StatelessWidget {
                   children: [
                     Text(
                       reminder.title,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
                       style: AppTextStyles.title.copyWith(fontSize: compact ? 15 : 17),
                     ),
                     if (!compact) ...[
@@ -1315,6 +1751,8 @@ class _ReminderTile extends StatelessWidget {
                         reminder.petName.isEmpty
                             ? presentation.kindLabel
                             : '${reminder.petName} · ${presentation.kindLabel}',
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                         style: AppTextStyles.bodySmall,
                       ),
                     ],
@@ -1431,7 +1869,12 @@ class _InputLike extends StatelessWidget {
         children: [
           Text(label, style: AppTextStyles.caption),
           const SizedBox(height: AppSpacing.xs),
-          Text(value, style: AppTextStyles.bodySmall.copyWith(color: AppColors.text)),
+          Text(
+            value,
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
+            style: AppTextStyles.bodySmall.copyWith(color: AppColors.text),
+          ),
         ],
       ),
     );

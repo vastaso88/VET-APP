@@ -132,6 +132,22 @@ class RemindersRepository {
     });
   }
 
+  Future<void> deleteReminder(String id) async {
+    _localReminders.removeWhere((r) => r.id == id);
+
+    final client = _resolveClient();
+    if (client == null) {
+      return;
+    }
+
+    try {
+      await client.from('reminders').delete().eq('id', id);
+    } catch (_) {
+      // Removed locally regardless — same best-effort-remote pattern as
+      // the rest of this demo repository.
+    }
+  }
+
   Future<List<ReminderEntry>> _tryLoadRemoteReminders() async {
     final client = _resolveClient();
     if (client == null) {

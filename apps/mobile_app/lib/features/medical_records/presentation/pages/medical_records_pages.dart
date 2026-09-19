@@ -67,6 +67,9 @@ class _MedicalRecordsListPageState extends State<MedicalRecordsListPage> {
       subtitle: 'Referti, note e allegati di Moka in un archivio chiaro.',
       actionLabel: 'Carica',
       onAction: _openUpload,
+      // A FAB instead of a header button: this list can grow long, and a
+      // header action would scroll out of thumb reach once it does.
+      useFab: true,
       child: FutureBuilder<List<MedicalRecordEntry>>(
             future: _recordsFuture,
             builder: (context, snapshot) {
@@ -303,6 +306,7 @@ class _FeatureScaffold extends StatelessWidget {
     required this.actionLabel,
     required this.onAction,
     required this.child,
+    this.useFab = false,
   });
 
   final String title;
@@ -310,10 +314,18 @@ class _FeatureScaffold extends StatelessWidget {
   final String actionLabel;
   final VoidCallback onAction;
   final Widget child;
+  final bool useFab;
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      floatingActionButton: useFab
+          ? FloatingActionButton.extended(
+              onPressed: onAction,
+              icon: const Icon(Icons.upload_file_outlined),
+              label: Text(actionLabel),
+            )
+          : null,
       body: Container(
         decoration: const BoxDecoration(
           gradient: LinearGradient(
@@ -347,6 +359,7 @@ class _FeatureScaffold extends StatelessWidget {
                       actionLabel: actionLabel,
                       onAction: onAction,
                       compact: isCompact,
+                      showAction: !useFab,
                     ),
                     const SizedBox(height: AppSpacing.lg),
                     child,
@@ -368,6 +381,7 @@ class _Header extends StatelessWidget {
     required this.actionLabel,
     required this.onAction,
     required this.compact,
+    this.showAction = true,
   });
 
   final String title;
@@ -375,6 +389,7 @@ class _Header extends StatelessWidget {
   final String actionLabel;
   final VoidCallback onAction;
   final bool compact;
+  final bool showAction;
 
   @override
   Widget build(BuildContext context) {
@@ -387,11 +402,13 @@ class _Header extends StatelessWidget {
           Text(title, style: AppTextStyles.heading),
           const SizedBox(height: AppSpacing.sm),
           Text(subtitle, style: AppTextStyles.body),
-          const SizedBox(height: AppSpacing.md),
-          SizedBox(
-            width: double.infinity,
-            child: FilledButton(onPressed: onAction, child: Text(actionLabel)),
-          ),
+          if (showAction) ...[
+            const SizedBox(height: AppSpacing.md),
+            SizedBox(
+              width: double.infinity,
+              child: FilledButton(onPressed: onAction, child: Text(actionLabel)),
+            ),
+          ],
         ],
       );
     }
@@ -411,12 +428,14 @@ class _Header extends StatelessWidget {
             ],
           ),
         ),
-        const SizedBox(width: AppSpacing.md),
-        FilledButton(
-          style: FilledButton.styleFrom(minimumSize: Size.zero),
-          onPressed: onAction,
-          child: Text(actionLabel),
-        ),
+        if (showAction) ...[
+          const SizedBox(width: AppSpacing.md),
+          FilledButton(
+            style: FilledButton.styleFrom(minimumSize: const Size(0, 44)),
+            onPressed: onAction,
+            child: Text(actionLabel),
+          ),
+        ],
       ],
     );
   }

@@ -16,6 +16,7 @@ import '../../../pets/data/pet_demo_store.dart';
 import '../../../pets/domain/pet_models.dart';
 import '../../../pets/presentation/widgets/pet_avatar.dart';
 import '../../../reminders/data/reminders_repository.dart';
+import '../../../reminders/domain/reminder_calendar.dart';
 import '../../../reminders/presentation/pages/reminders_pages.dart';
 import '../../../settings/data/layout_settings_store.dart';
 import '../widgets/home_dashboard_primitives.dart';
@@ -121,8 +122,6 @@ class _HomeDashboardPageState extends State<HomeDashboardPage> {
   }
 }
 
-bool _isSameDay(DateTime a, DateTime b) => a.year == b.year && a.month == b.month && a.day == b.day;
-
 DateTime _startOfWeek(DateTime day, WeekStartDay weekStartDay) {
   final startOfDay = DateTime(day.year, day.month, day.day);
   final offset = weekStartDay == WeekStartDay.monday
@@ -147,19 +146,15 @@ class _AgendaSection extends StatelessWidget {
           future: remindersFuture,
           builder: (context, snapshot) {
             if (snapshot.connectionState == ConnectionState.waiting) {
-              return Column(
+              return const Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   DashboardSectionHeader(
                     title: 'Prossime attività',
                     subtitle: 'Spot e cicli, per tutti gli animali.',
-                    actionLabel: 'Vedi tutti',
-                    onActionPressed: () => Navigator.of(context).push(
-                      MaterialPageRoute<void>(builder: (_) => const RemindersListPage()),
-                    ),
                   ),
-                  const SizedBox(height: AppSpacing.lg),
-                  const _SectionSkeleton(),
+                  SizedBox(height: AppSpacing.lg),
+                  _SectionSkeleton(),
                 ],
               );
             }
@@ -175,30 +170,40 @@ class _AgendaSection extends StatelessWidget {
                 DashboardSectionHeader(
                   title: 'Prossime attività',
                   subtitle: _summaryLine(reminders),
-                  actionLabel: 'Vedi tutti',
-                  onActionPressed: () => Navigator.of(context).push(
-                    MaterialPageRoute<void>(builder: (_) => const RemindersListPage()),
-                  ),
                 ),
                 const SizedBox(height: AppSpacing.lg),
-                _WeekStrip(
-                  reminders: reminders,
-                  pets: PetDemoStore.instance.list(),
-                  weeksShown: layout.weeksShown,
-                  weekStartDay: layout.weekStartDay,
-                ),
                 Builder(
                   builder: (context) {
+                    final pets = PetDemoStore.instance.list();
                     final legendPets = _petsWithVisibleActivity(
                       reminders,
-                      PetDemoStore.instance.list(),
+                      pets,
                       layout.weeksShown,
                       layout.weekStartDay,
                     );
-                    if (legendPets.isEmpty) return const SizedBox.shrink();
-                    return Padding(
-                      padding: const EdgeInsets.only(top: AppSpacing.md),
-                      child: _PetLegend(pets: legendPets),
+                    return DashboardSurfaceCard(
+                      backgroundColor: AppColors.surfaceElevated,
+                      padding: const EdgeInsets.all(AppSpacing.lg),
+                      // The whole calendar is the entry point into the full
+                      // reminders view now — no separate "Vedi tutti" link.
+                      onTap: () => Navigator.of(context).push(
+                        MaterialPageRoute<void>(builder: (_) => const RemindersListPage()),
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          _WeekStrip(
+                            reminders: reminders,
+                            pets: pets,
+                            weeksShown: layout.weeksShown,
+                            weekStartDay: layout.weekStartDay,
+                          ),
+                          if (legendPets.isNotEmpty) ...[
+                            const SizedBox(height: AppSpacing.md),
+                            _PetLegend(pets: legendPets),
+                          ],
+                        ],
+                      ),
                     );
                   },
                 ),
@@ -229,26 +234,6 @@ class _AgendaSection extends StatelessWidget {
   }
 }
 
-PetProfile? _petByName(List<PetProfile> pets, String name) {
-  for (final pet in pets) {
-    if (pet.name == name) return pet;
-  }
-  return null;
-}
-
-/// True when [reminder] should show a calendar marker on [day]: the exact
-/// due date for spot/recurring events, or any day within the course's
-/// start..start+duration-1 span for courses (so an ongoing treatment shows
-/// as a visible band rather than a single day).
-bool _reminderActiveOnDay(ReminderEntry reminder, DateTime day) {
-  if (reminder.kind == EventKind.course) {
-    final start = DateTime(reminder.dueAt.year, reminder.dueAt.month, reminder.dueAt.day);
-    final end = start.add(Duration(days: (reminder.courseDurationDays ?? 1) - 1));
-    return !day.isBefore(start) && !day.isAfter(end);
-  }
-  return _isSameDay(reminder.dueAt, day);
-}
-
 /// Distinct pets with at least one calendar marker somewhere in the
 /// currently visible weeks — used to build the calendar's color legend.
 List<PetProfile> _petsWithVisibleActivity(
@@ -263,20 +248,12 @@ List<PetProfile> _petsWithVisibleActivity(
   for (var i = 0; i < weeksShown * 7; i++) {
     final day = weekStart.add(Duration(days: i));
     for (final reminder in reminders) {
-      if (!_reminderActiveOnDay(reminder, day)) continue;
-      final pet = _petByName(pets, reminder.petName);
+      if (!reminderActiveOnDay(reminder, day)) continue;
+      final pet = petByName(pets, reminder.petName);
       if (pet != null) activeIds.add(pet.id);
     }
   }
   return pets.where((pet) => activeIds.contains(pet.id)).toList(growable: false);
-}
-
-enum _MarkerShape { dot, capsule }
-
-class _DayMarker {
-  const _DayMarker({required this.color, required this.shape});
-  final Color color;
-  final _MarkerShape shape;
 }
 
 class _WeekStrip extends StatelessWidget {
@@ -295,27 +272,6 @@ class _WeekStrip extends StatelessWidget {
   static const _mondayFirstLabels = ['L', 'M', 'M', 'G', 'V', 'S', 'D'];
   static const _sundayFirstLabels = ['D', 'L', 'M', 'M', 'G', 'V', 'S'];
 
-  List<_DayMarker> _markersForDay(DateTime day) {
-    final markers = <_DayMarker>[];
-    final seenDots = <String>{};
-    final seenCapsules = <String>{};
-    for (final reminder in reminders) {
-      if (!_reminderActiveOnDay(reminder, day)) continue;
-      final pet = _petByName(pets, reminder.petName);
-      if (pet == null) continue;
-
-      final isCourse = reminder.kind == EventKind.course;
-      final seen = isCourse ? seenCapsules : seenDots;
-      if (!seen.add(pet.id)) continue;
-
-      markers.add(_DayMarker(
-        color: pet.identityColor,
-        shape: isCourse ? _MarkerShape.capsule : _MarkerShape.dot,
-      ));
-    }
-    return markers;
-  }
-
   @override
   Widget build(BuildContext context) {
     final today = DateTime.now();
@@ -328,7 +284,7 @@ class _WeekStrip extends StatelessWidget {
     return Column(
       children: [
         for (var week = 0; week < weeksShown; week++) ...[
-          if (week != 0) const SizedBox(height: AppSpacing.sm),
+          if (week != 0) const SizedBox(height: AppSpacing.xs),
           Row(
             children: [
               for (var i = 0; i < 7; i++) ...[
@@ -339,57 +295,18 @@ class _WeekStrip extends StatelessWidget {
                       child: _DayChip(
                         day: day,
                         label: labels[i],
-                        isToday: _isSameDay(day, startOfToday),
-                        markers: _markersForDay(day),
+                        isToday: isSameDay(day, startOfToday),
+                        markers: markersForDay(reminders, pets, day),
                       ),
                     );
                   },
                 ),
-                if (i != 6) const SizedBox(width: 4),
+                if (i != 6) const SizedBox(width: 3),
               ],
             ],
           ),
         ],
       ],
-    );
-  }
-}
-
-class _MarkerGlyph extends StatelessWidget {
-  const _MarkerGlyph({required this.marker});
-
-  final _DayMarker marker;
-
-  @override
-  Widget build(BuildContext context) {
-    if (marker.shape == _MarkerShape.dot) {
-      return Container(
-        width: 7,
-        height: 7,
-        margin: const EdgeInsets.symmetric(horizontal: 1),
-        decoration: BoxDecoration(
-          shape: BoxShape.circle,
-          color: marker.color,
-          border: Border.all(color: AppColors.surfaceElevated, width: 0.5),
-        ),
-      );
-    }
-
-    return Container(
-      width: 10,
-      height: 6,
-      margin: const EdgeInsets.symmetric(horizontal: 1),
-      clipBehavior: Clip.antiAlias,
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(3),
-        border: Border.all(color: AppColors.surfaceElevated, width: 0.5),
-      ),
-      child: Row(
-        children: [
-          Expanded(child: Container(color: Colors.white)),
-          Expanded(child: Container(color: marker.color)),
-        ],
-      ),
     );
   }
 }
@@ -405,7 +322,7 @@ class _DayChip extends StatelessWidget {
   final DateTime day;
   final String label;
   final bool isToday;
-  final List<_DayMarker> markers;
+  final List<DayMarker> markers;
 
   @override
   Widget build(BuildContext context) {
@@ -415,7 +332,7 @@ class _DayChip extends StatelessWidget {
     final extra = markers.length - shown.length;
 
     return Container(
-      padding: const EdgeInsets.symmetric(vertical: AppSpacing.sm),
+      padding: const EdgeInsets.symmetric(vertical: AppSpacing.xs),
       decoration: BoxDecoration(
         color: background,
         borderRadius: BorderRadius.circular(AppRadii.large),
@@ -428,28 +345,32 @@ class _DayChip extends StatelessWidget {
             label,
             style: AppTextStyles.caption.copyWith(
               color: foreground.withValues(alpha: 0.7),
-              fontSize: 10,
+              fontSize: 12,
+            ),
+          ),
+          const SizedBox(height: 1),
+          Text(
+            '${day.day}',
+            style: AppTextStyles.bodySmall.copyWith(
+              color: foreground,
+              fontWeight: FontWeight.w700,
+              fontSize: 17,
             ),
           ),
           const SizedBox(height: 2),
-          Text(
-            '${day.day}',
-            style: AppTextStyles.bodySmall.copyWith(color: foreground, fontWeight: FontWeight.w700),
-          ),
-          const SizedBox(height: 3),
           SizedBox(
-            height: 8,
+            height: 11,
             child: markers.isEmpty
                 ? null
                 : Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      for (final marker in shown) _MarkerGlyph(marker: marker),
+                      for (final marker in shown) MarkerGlyph(marker: marker, size: 9),
                       if (extra > 0)
                         Text(
                           '+$extra',
                           style: const TextStyle(
-                            fontSize: 7,
+                            fontSize: 8,
                             fontWeight: FontWeight.w800,
                             color: foreground,
                           ),
@@ -483,12 +404,12 @@ class _PetLegend extends StatelessWidget {
                 backgroundColor: pet.accentColor,
                 photoBytes: pet.photoBytes,
                 identityColor: pet.identityColor,
-                size: 26,
+                size: 30,
               ),
-              const SizedBox(width: 6),
+              const SizedBox(width: AppSpacing.xs),
               Text(
                 pet.name,
-                style: AppTextStyles.caption.copyWith(fontWeight: FontWeight.w600),
+                style: AppTextStyles.bodySmall.copyWith(fontWeight: FontWeight.w600, color: AppColors.text),
               ),
             ],
           ),

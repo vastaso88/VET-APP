@@ -245,7 +245,6 @@ class _Header extends StatelessWidget {
               ],
             ),
           ),
-          const Icon(Icons.more_horiz, color: AppColors.secondaryText),
         ],
       ),
     );
