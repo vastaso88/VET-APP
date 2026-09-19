@@ -10,6 +10,7 @@ class DemoSeedBundle:
     pet_profiles: tuple[dict[str, Any], ...]
     conversations: tuple[dict[str, Any], ...]
     reminders: tuple[dict[str, Any], ...]
+    local_activities: tuple[dict[str, Any], ...]
 
 
 def build_demo_seed(owner_id: str, *, today: date | None = None) -> DemoSeedBundle:
@@ -107,10 +108,47 @@ def build_demo_seed(owner_id: str, *, today: date | None = None) -> DemoSeedBund
         },
     )
 
+    # "Attività attorno a te" (docs/maps/): no external events source exists
+    # yet, so the MVP seeds a handful of fixed, always-there activities
+    # around Milano rather than leaving the map empty for a fresh demo.
+    local_activities = (
+        {
+            "id": "demo-activity-fiera-cinofila",
+            "kind": "event",
+            "title": "Fiera cinofila regionale",
+            "category": "fiera",
+            "latitude": 45.4718,
+            "longitude": 9.1875,
+            "address_label": "Parco Sempione, Milano",
+            "source": "seeded",
+        },
+        {
+            "id": "demo-activity-vaccinazioni",
+            "kind": "event",
+            "title": "Giornata vaccinazioni gratuite",
+            "category": "vaccinazioni",
+            "latitude": 45.4595,
+            "longitude": 9.1910,
+            "address_label": "Ambulatorio comunale, Milano",
+            "source": "seeded",
+        },
+        {
+            "id": "demo-activity-ambulatorio",
+            "kind": "service",
+            "title": "Ambulatorio veterinario Navigli",
+            "category": "ambulatorio",
+            "latitude": 45.4508,
+            "longitude": 9.1739,
+            "address_label": "Navigli, Milano",
+            "source": "seeded",
+        },
+    )
+
     return DemoSeedBundle(
         pet_profiles=pet_profiles,
         conversations=conversations,
         reminders=reminders,
+        local_activities=local_activities,
     )
 
 

@@ -6,12 +6,19 @@ from packages.core.application.ports.clinical_event_repository import ClinicalEv
 from packages.core.application.ports.conversation_repository import ConversationRepository
 from packages.core.application.ports.dog_walk_repository import DogWalkRepository
 from packages.core.application.ports.evidence_retriever import EvidenceRetriever
+from packages.core.application.ports.listing_report_repository import ListingReportRepository
+from packages.core.application.ports.local_activity_repository import LocalActivityRepository
+from packages.core.application.ports.marketplace_listing_repository import (
+    MarketplaceListingRepository,
+)
 from packages.core.application.ports.pet_profile_repository import PetProfileRepository
 from packages.core.application.ports.pii_anonymizer import PiiAnonymizer
 from packages.core.application.ports.reminder_repository import ReminderRepository
 from packages.core.application.ports.user_location_repository import UserLocationRepository
 from packages.core.application.services.chat_orchestrator import ChatOrchestrator
 from packages.core.application.services.consent_interpreter import ConsentInterpreter
+from packages.core.application.services.create_listing import CreateListingService
+from packages.core.application.services.create_local_activity import CreateLocalActivityService
 from packages.core.application.services.create_pet_profile import CreatePetProfileService
 from packages.core.application.services.create_reminder import CreateReminderService
 from packages.core.application.services.delete_conversation import DeleteConversationService
@@ -21,6 +28,10 @@ from packages.core.application.services.get_pet_profile import GetPetProfileServ
 from packages.core.application.services.get_user_location import GetUserLocationService
 from packages.core.application.services.interview_planner import InterviewPlanner
 from packages.core.application.services.list_conversations import ListConversationsService
+from packages.core.application.services.list_nearby_activities import (
+    ListNearbyActivitiesService,
+)
+from packages.core.application.services.list_nearby_listings import ListNearbyListingsService
 from packages.core.application.services.list_pet_profiles import ListPetProfilesService
 from packages.core.application.services.list_reminders import ListRemindersService
 from packages.core.application.services.list_walks import ListWalksService
@@ -28,6 +39,7 @@ from packages.core.application.services.medical_record_context_retriever import 
     MedicalRecordContextRetriever,
 )
 from packages.core.application.services.record_route_point import RecordRoutePointService
+from packages.core.application.services.report_listing import ReportListingService
 from packages.core.application.services.safety_gate import SafetyGate
 from packages.core.application.services.send_chat_message import SendChatMessageService
 from packages.core.application.services.set_account_consent import SetAccountConsentService
@@ -64,6 +76,9 @@ from packages.infrastructure.persistence.in_memory_repositories import (
     InMemoryClinicalEventRepository,
     InMemoryConversationRepository,
     InMemoryDogWalkRepository,
+    InMemoryListingReportRepository,
+    InMemoryLocalActivityRepository,
+    InMemoryMarketplaceListingRepository,
     InMemoryPetProfileRepository,
     InMemoryReminderRepository,
     InMemoryUserLocationRepository,
@@ -88,6 +103,9 @@ class ApplicationContainer:
         self.account_consents_repository = self._build_account_consents_repository()
         self.user_location_repository = self._build_user_location_repository()
         self.dog_walk_repository = self._build_dog_walk_repository()
+        self.marketplace_listing_repository = self._build_marketplace_listing_repository()
+        self.listing_report_repository = self._build_listing_report_repository()
+        self.local_activity_repository = self._build_local_activity_repository()
         self.chat_orchestrator = ChatOrchestrator(
             self.llm_client,
             self.evidence_retriever,
@@ -143,6 +161,23 @@ class ApplicationContainer:
 
     def list_walks_service(self) -> ListWalksService:
         return ListWalksService(self.dog_walk_repository)
+
+    def create_listing_service(self) -> CreateListingService:
+        return CreateListingService(self.marketplace_listing_repository)
+
+    def list_nearby_listings_service(self) -> ListNearbyListingsService:
+        return ListNearbyListingsService(self.marketplace_listing_repository)
+
+    def report_listing_service(self) -> ReportListingService:
+        return ReportListingService(
+            self.marketplace_listing_repository, self.listing_report_repository
+        )
+
+    def create_local_activity_service(self) -> CreateLocalActivityService:
+        return CreateLocalActivityService(self.local_activity_repository)
+
+    def list_nearby_activities_service(self) -> ListNearbyActivitiesService:
+        return ListNearbyActivitiesService(self.local_activity_repository)
 
     def send_chat_message_service(self) -> SendChatMessageService:
         return SendChatMessageService(
@@ -305,6 +340,57 @@ class ApplicationContainer:
                     return InMemoryDogWalkRepository()
                 raise
         return InMemoryDogWalkRepository()
+
+    def _build_marketplace_listing_repository(self) -> MarketplaceListingRepository:
+        if self.settings.persistence_backend == "supabase":
+            try:
+                from packages.infrastructure.persistence.supabase.client import (
+                    build_supabase_client,
+                )
+                from packages.infrastructure.persistence.supabase.supabase_repositories import (
+                    SupabaseMarketplaceListingRepository,
+                )
+
+                return SupabaseMarketplaceListingRepository(build_supabase_client(self.settings))
+            except ModuleNotFoundError:
+                if self.settings.environment != "production":
+                    return InMemoryMarketplaceListingRepository()
+                raise
+        return InMemoryMarketplaceListingRepository()
+
+    def _build_listing_report_repository(self) -> ListingReportRepository:
+        if self.settings.persistence_backend == "supabase":
+            try:
+                from packages.infrastructure.persistence.supabase.client import (
+                    build_supabase_client,
+                )
+                from packages.infrastructure.persistence.supabase.supabase_repositories import (
+                    SupabaseListingReportRepository,
+                )
+
+                return SupabaseListingReportRepository(build_supabase_client(self.settings))
+            except ModuleNotFoundError:
+                if self.settings.environment != "production":
+                    return InMemoryListingReportRepository()
+                raise
+        return InMemoryListingReportRepository()
+
+    def _build_local_activity_repository(self) -> LocalActivityRepository:
+        if self.settings.persistence_backend == "supabase":
+            try:
+                from packages.infrastructure.persistence.supabase.client import (
+                    build_supabase_client,
+                )
+                from packages.infrastructure.persistence.supabase.supabase_repositories import (
+                    SupabaseLocalActivityRepository,
+                )
+
+                return SupabaseLocalActivityRepository(build_supabase_client(self.settings))
+            except ModuleNotFoundError:
+                if self.settings.environment != "production":
+                    return InMemoryLocalActivityRepository()
+                raise
+        return InMemoryLocalActivityRepository()
 
     def _build_evidence_retriever(self) -> EvidenceRetriever:
         if self.settings.evidence_backend == "europe_pmc":

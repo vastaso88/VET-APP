@@ -67,13 +67,15 @@ def evaluate_badges(sessions: list[WalkSession]) -> list[str]:
     for pet_id, pet_sessions in sessions_by_pet.items():
         badges.append(f"{FIRST_WALK_BADGE_PREFIX}{pet_id}")
 
-        total_distance_km = sum(session.distance_meters for session in pet_sessions) / 1000  # noqa: F841
-        total_walks = len(pet_sessions)  # noqa: F841
+        total_distance_km = sum(session.distance_meters for session in pet_sessions) / 1000
+        total_walks = len(pet_sessions)
 
-        # TODO(human): for this pet, append a badge id to `badges` for every
-        # threshold in DISTANCE_BADGE_THRESHOLDS_KM that total_distance_km
-        # has reached (e.g. f"distance_{threshold}km_pet_{pet_id}"), and one
-        # for every threshold in WALK_COUNT_BADGE_THRESHOLDS that
-        # total_walks has reached (e.g. f"walks_{threshold}_pet_{pet_id}").
+        for threshold in DISTANCE_BADGE_THRESHOLDS_KM:
+            if total_distance_km >= threshold:
+                badges.append(f"distance_{threshold}km_pet_{pet_id}")
+
+        for threshold in WALK_COUNT_BADGE_THRESHOLDS:
+            if total_walks >= threshold:
+                badges.append(f"walks_{threshold}_pet_{pet_id}")
 
     return badges

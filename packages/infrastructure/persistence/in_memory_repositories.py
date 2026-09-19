@@ -2,6 +2,11 @@ from packages.core.application.ports.account_consents_repository import AccountC
 from packages.core.application.ports.clinical_event_repository import ClinicalEventRepository
 from packages.core.application.ports.conversation_repository import ConversationRepository
 from packages.core.application.ports.dog_walk_repository import DogWalkRepository
+from packages.core.application.ports.listing_report_repository import ListingReportRepository
+from packages.core.application.ports.local_activity_repository import LocalActivityRepository
+from packages.core.application.ports.marketplace_listing_repository import (
+    MarketplaceListingRepository,
+)
 from packages.core.application.ports.pet_profile_repository import PetProfileRepository
 from packages.core.application.ports.reminder_repository import ReminderRepository
 from packages.core.application.ports.user_location_repository import UserLocationRepository
@@ -9,6 +14,8 @@ from packages.core.domain.consent.models import AccountConsents
 from packages.core.domain.conversation.models import Conversation
 from packages.core.domain.dog_walk.models import WalkSession
 from packages.core.domain.geo.models import UserLocation
+from packages.core.domain.local_activity.models import LocalActivity
+from packages.core.domain.marketplace.models import ListingReport, MarketplaceListing
 from packages.core.domain.medical_record.models import ClinicalEvent
 from packages.core.domain.pet_profile.models import PetProfile
 from packages.core.domain.reminders.models import Reminder
@@ -111,3 +118,42 @@ class InMemoryDogWalkRepository(DogWalkRepository):
 
     def list_by_owner(self, owner_id: str) -> list[WalkSession]:
         return [item for item in self._items.values() if item.owner_id == owner_id]
+
+
+class InMemoryMarketplaceListingRepository(MarketplaceListingRepository):
+    def __init__(self) -> None:
+        self._items: dict[str, MarketplaceListing] = {}
+
+    def save(self, listing: MarketplaceListing) -> MarketplaceListing:
+        self._items[listing.id] = listing
+        return listing
+
+    def get(self, listing_id: str) -> MarketplaceListing | None:
+        return self._items.get(listing_id)
+
+    def list_active(self) -> list[MarketplaceListing]:
+        return [item for item in self._items.values() if item.status == "active"]
+
+
+class InMemoryListingReportRepository(ListingReportRepository):
+    def __init__(self) -> None:
+        self._items: list[ListingReport] = []
+
+    def save(self, report: ListingReport) -> ListingReport:
+        self._items.append(report)
+        return report
+
+    def list_by_listing(self, listing_id: str) -> list[ListingReport]:
+        return [item for item in self._items if item.listing_id == listing_id]
+
+
+class InMemoryLocalActivityRepository(LocalActivityRepository):
+    def __init__(self, seed: list[LocalActivity] | None = None) -> None:
+        self._items: list[LocalActivity] = list(seed or [])
+
+    def save(self, activity: LocalActivity) -> LocalActivity:
+        self._items.append(activity)
+        return activity
+
+    def list_active(self) -> list[LocalActivity]:
+        return [item for item in self._items if item.status == "active"]

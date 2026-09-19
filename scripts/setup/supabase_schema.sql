@@ -233,3 +233,213 @@ on public.account_consents
 for update
 using (owner_id = auth.uid()::text)
 with check (owner_id = auth.uid()::text);
+
+-- Maps management (docs/maps/): shared location primitive, one row per
+-- owner, same shape as account_consents. Plain lat/lng columns rather than
+-- PostGIS - sufficient at this scale and avoids managing an extension in a
+-- schema file with no migrations (docs/maps/01_localita_fondamenta_condivise.md).
+create table if not exists public.user_locations (
+    owner_id text primary key,
+    mode text not null default 'current_position',
+    home_latitude double precision,
+    home_longitude double precision,
+    home_label text,
+    current_latitude double precision,
+    current_longitude double precision,
+    current_label text,
+    current_source text,
+    current_captured_at timestamptz,
+    updated_at timestamptz not null default now()
+);
+
+-- Passeggiate con il cane. route is a JSONB array of
+-- {coordinates: {latitude, longitude}, recorded_at, accuracy_meters}.
+create table if not exists public.dog_walks (
+    id text primary key,
+    owner_id text not null,
+    pet_id text not null references public.pet_profiles(id) on delete cascade,
+    status text not null default 'in_progress',
+    started_at timestamptz not null,
+    ended_at timestamptz,
+    distance_meters double precision not null default 0,
+    duration_seconds integer,
+    step_count_estimate integer,
+    route jsonb not null default '[]'::jsonb,
+    created_at timestamptz not null default now()
+);
+
+-- Mercatino dell'usato. latitude/longitude are ALREADY fuzzed before
+-- insert (packages/core/application/services/create_listing.py) - the
+-- application service, not this table, is the privacy boundary.
+create table if not exists public.marketplace_listings (
+    id text primary key,
+    owner_id text not null,
+    title text not null,
+    description text,
+    category text not null,
+    condition text not null,
+    price_cents integer,
+    photo_urls jsonb not null default '[]'::jsonb,
+    latitude double precision not null,
+    longitude double precision not null,
+    city_label text,
+    status text not null default 'active',
+    report_count integer not null default 0,
+    created_at timestamptz not null default now(),
+    updated_at timestamptz not null default now()
+);
+
+create table if not exists public.marketplace_listing_reports (
+    id text primary key,
+    listing_id text not null references public.marketplace_listings(id) on delete cascade,
+    reporter_owner_id text not null,
+    reason text not null,
+    created_at timestamptz not null default now()
+);
+
+-- Attività attorno a te / Eventi nei dintorni. location is never fuzzed -
+-- public venues/events that already advertise their own address.
+create table if not exists public.local_activities (
+    id text primary key,
+    kind text not null,
+    title text not null,
+    description text,
+    category text,
+    latitude double precision not null,
+    longitude double precision not null,
+    address_label text,
+    starts_at timestamptz,
+    ends_at timestamptz,
+    source text not null default 'user_submitted',
+    submitted_by_owner_id text,
+    status text not null default 'active',
+    report_count integer not null default 0,
+    created_at timestamptz not null default now()
+);
+
+create index if not exists idx_dog_walks_owner_id on public.dog_walks(owner_id);
+create index if not exists idx_dog_walks_pet_id on public.dog_walks(pet_id);
+create index if not exists idx_marketplace_listings_status on public.marketplace_listings(status);
+create index if not exists idx_marketplace_listings_category
+    on public.marketplace_listings(category);
+create index if not exists idx_marketplace_listing_reports_listing_id
+    on public.marketplace_listing_reports(listing_id);
+create index if not exists idx_local_activities_status on public.local_activities(status);
+create index if not exists idx_local_activities_kind on public.local_activities(kind);
+
+alter table public.user_locations enable row level security;
+alter table public.dog_walks enable row level security;
+alter table public.marketplace_listings enable row level security;
+alter table public.marketplace_listing_reports enable row level security;
+alter table public.local_activities enable row level security;
+
+-- user_locations: single-row-per-owner, same shape as account_consents.
+drop policy if exists user_locations_select_own on public.user_locations;
+create policy user_locations_select_own
+on public.user_locations
+for select
+using (owner_id = auth.uid()::text);
+
+drop policy if exists user_locations_insert_own on public.user_locations;
+create policy user_locations_insert_own
+on public.user_locations
+for insert
+with check (owner_id = auth.uid()::text);
+
+drop policy if exists user_locations_update_own on public.user_locations;
+create policy user_locations_update_own
+on public.user_locations
+for update
+using (owner_id = auth.uid()::text)
+with check (owner_id = auth.uid()::text);
+
+-- dog_walks: owner-scoped + pet-ownership check, same shape as reminders.
+drop policy if exists dog_walks_select_own on public.dog_walks;
+create policy dog_walks_select_own
+on public.dog_walks
+for select
+using (owner_id = auth.uid()::text);
+
+drop policy if exists dog_walks_insert_own on public.dog_walks;
+create policy dog_walks_insert_own
+on public.dog_walks
+for insert
+with check (
+    owner_id = auth.uid()::text
+    and exists (
+        select 1
+        from public.pet_profiles
+        where public.pet_profiles.id = public.dog_walks.pet_id
+          and public.pet_profiles.owner_id = auth.uid()::text
+    )
+);
+
+drop policy if exists dog_walks_update_own on public.dog_walks;
+create policy dog_walks_update_own
+on public.dog_walks
+for update
+using (owner_id = auth.uid()::text)
+with check (owner_id = auth.uid()::text);
+
+drop policy if exists dog_walks_delete_own on public.dog_walks;
+create policy dog_walks_delete_own
+on public.dog_walks
+for delete
+using (owner_id = auth.uid()::text);
+
+-- marketplace_listings: FIRST table in this schema with intentionally open
+-- read access - everyone needs to browse everyone's listings. Safe only
+-- because latitude/longitude are pre-fuzzed at write time by the service
+-- layer, never the exact address (see create_listing.py).
+drop policy if exists marketplace_listings_select_all on public.marketplace_listings;
+create policy marketplace_listings_select_all
+on public.marketplace_listings
+for select
+using (true);
+
+drop policy if exists marketplace_listings_insert_own on public.marketplace_listings;
+create policy marketplace_listings_insert_own
+on public.marketplace_listings
+for insert
+with check (owner_id = auth.uid()::text);
+
+drop policy if exists marketplace_listings_update_own on public.marketplace_listings;
+create policy marketplace_listings_update_own
+on public.marketplace_listings
+for update
+using (owner_id = auth.uid()::text)
+with check (owner_id = auth.uid()::text);
+
+drop policy if exists marketplace_listings_delete_own on public.marketplace_listings;
+create policy marketplace_listings_delete_own
+on public.marketplace_listings
+for delete
+using (owner_id = auth.uid()::text);
+
+-- marketplace_listing_reports: insert-only for regular users. No select
+-- policy at all -> default deny, reviewable only via the service role.
+drop policy if exists marketplace_listing_reports_insert_own on public.marketplace_listing_reports;
+create policy marketplace_listing_reports_insert_own
+on public.marketplace_listing_reports
+for insert
+with check (reporter_owner_id = auth.uid()::text);
+
+-- local_activities: open read (public venues/events), submitter-scoped write.
+drop policy if exists local_activities_select_all on public.local_activities;
+create policy local_activities_select_all
+on public.local_activities
+for select
+using (true);
+
+drop policy if exists local_activities_insert_own on public.local_activities;
+create policy local_activities_insert_own
+on public.local_activities
+for insert
+with check (submitted_by_owner_id = auth.uid()::text);
+
+drop policy if exists local_activities_update_own on public.local_activities;
+create policy local_activities_update_own
+on public.local_activities
+for update
+using (submitted_by_owner_id = auth.uid()::text)
+with check (submitted_by_owner_id = auth.uid()::text);
