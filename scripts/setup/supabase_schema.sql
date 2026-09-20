@@ -9,7 +9,18 @@ create table if not exists public.pet_profiles (
     -- Medical-record access consent (spec v3 §18) — persisted per pet, not
     -- per conversation, so it's asked once and revocable later. Additive,
     -- nullable: {granted: bool, version: text, decided_at: timestamptz}.
-    medical_record_consent jsonb
+    medical_record_consent jsonb,
+    -- Enclosure characteristics for aquarium/terrarium/aviary species —
+    -- field shape agreed with the "UI/UX e funzionalità base" session's
+    -- mobile-local model (2026-09-20): {dimensions, volume_liters,
+    -- temperature_label, substrate, notes}, all optional. Additive,
+    -- nullable — the mobile pets feature that would populate this is
+    -- still local-only, not yet sending real data.
+    habitat jsonb,
+    -- Multi-species aquarium composition: [{species, male_count,
+    -- female_count}, ...]. A non-empty array means this profile
+    -- represents a whole aquarium rather than a single fish.
+    aquarium_stock jsonb not null default '[]'::jsonb
 );
 
 create table if not exists public.conversations (

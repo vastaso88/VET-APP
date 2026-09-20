@@ -9,7 +9,7 @@ from packages.core.application.services.send_chat_message import (
     SendChatMessageService,
 )
 from packages.core.domain.medical_record.models import ClinicalEvent
-from packages.core.domain.pet_profile.models import PetProfile
+from packages.core.domain.pet_profile.models import FishStock, HabitatDetails, PetProfile
 from packages.infrastructure.llm.providers.echo_llm_client import EchoLLMClient
 from packages.infrastructure.llm.retrieval.in_memory_evidence_retriever import (
     InMemoryEvidenceRetriever,
@@ -133,6 +133,31 @@ def test_send_chat_message_forwards_breed_and_age_to_the_orchestrator() -> None:
 
     assert "Breed: Labrador" in result.reply.content
     assert "Age: 9 years" in result.reply.content
+
+
+def test_send_chat_message_forwards_habitat_and_aquarium_stock_to_the_orchestrator() -> None:
+    pet_repository = InMemoryPetProfileRepository()
+    pet_repository.save(
+        PetProfile(
+            id="pet-1",
+            owner_id="user-1",
+            name="Acquario del salotto",
+            species="Pesce",
+            habitat=HabitatDetails(dimensions="60x30x36 cm", volume_liters=54),
+            aquarium_stock=[FishStock(species="Guppy", male_count=2, female_count=4)],
+        )
+    )
+    orchestrator = ChatOrchestrator(
+        EchoLLMClient(Settings()), InMemoryEvidenceRetriever(), NoopPiiAnonymizer()
+    )
+    service = SendChatMessageService(InMemoryConversationRepository(), orchestrator, pet_repository)
+
+    result = service.execute(
+        SendChatMessageInput(owner_id="user-1", pet_id="pet-1", user_message="ciao")
+    )
+
+    assert "54 liters" in result.reply.content
+    assert "Guppy (2M/4F)" in result.reply.content
 
 
 def test_send_chat_message_rejects_empty_input() -> None:

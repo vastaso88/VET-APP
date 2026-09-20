@@ -24,6 +24,7 @@ from packages.core.domain.conversation.states import ConversationState
 from packages.core.domain.knowledge.answer_validation import validate_answer
 from packages.core.domain.knowledge.evidence_synthesis import EvidenceSynthesis
 from packages.core.domain.knowledge.models import EvidenceSource
+from packages.core.domain.pet_profile.models import FishStock, HabitatDetails
 from packages.core.domain.pet_profile.species import normalize_species
 from packages.core.domain.safety.triage_clarification import (
     CLARIFYING_QUESTIONS,
@@ -298,17 +299,18 @@ class ChatOrchestratorInput(BaseModel):
     species: str
     pet_name: str
     pet_id: str = ""
-    # Real-world finding: the pet profile already carries breed/age/notes
-    # today, but the LLM prompt only ever included name and species -
-    # context the owner already entered was silently dropped every turn.
-    # Still no habitat/enclosure fields (aquarium volume, terrarium size,
-    # substrate...) for species that need them - that data doesn't exist
-    # anywhere on PetProfile yet, mobile-side or backend-side, as of this
-    # finding; adding it is a larger, cross-team schema change, not done
-    # here.
+    # Real-world finding: the pet profile already carries breed/age/notes,
+    # but the LLM prompt only ever included name and species - context the
+    # owner already entered was silently dropped every turn.
     breed: str | None = None
     age_years: int | None = None
     notes: str | None = None
+    # Habitat/enclosure characteristics (aquarium/terrarium/aviary) and
+    # multi-species aquarium stock - mirrors PetProfile's fields of the
+    # same name; forward-looking, since the mobile pets feature that would
+    # populate these is still local-only as of this finding (2026-09-20).
+    habitat: HabitatDetails | None = None
+    aquarium_stock: list[FishStock] = Field(default_factory=list)
     conversation_history: list[ChatMessage] = Field(default_factory=list)
     situation_model: SituationModel | None = None
     interview_turns_used: int = 0
@@ -1104,10 +1106,16 @@ class ChatOrchestrator:
 
     def _pet_context_block(self, data: ChatOrchestratorInput) -> str:
         """Every field PetProfile actually has today, not just name/species
-        — breed/age/notes existed on the profile already but were never
+        — several of these existed on the profile already but were never
         forwarded into a prompt before this. Optional fields are omitted
-        entirely rather than printed as "None", so the model isn't invited
-        to comment on an absence the owner never provided.
+        entirely rather than printed as "None"/empty, so the model isn't
+        invited to comment on an absence the owner never provided.
+
+        Real-world finding: an aquarium registered as a pet got advice
+        about cleaning a food bowl — nothing about the profile told the
+        model this was a tank, not a cat or dog. Habitat/aquarium-stock
+        context closes exactly that gap once the mobile pets feature
+        starts sending it (still local-only as of this finding).
         """
         lines = [
             f"Pet name: {self._anonymize_for_provider(data.pet_name)}",
@@ -1119,6 +1127,31 @@ class ChatOrchestrator:
             lines.append(f"Age: {data.age_years} years")
         if data.notes:
             lines.append(f"Owner notes: {self._anonymize_for_provider(data.notes)}")
+        if data.habitat is not None and not data.habitat.is_empty():
+            habitat_facts = [
+                fact
+                for fact in (
+                    f"dimensions {data.habitat.dimensions}" if data.habitat.dimensions else "",
+                    f"{data.habitat.volume_liters} liters"
+                    if data.habitat.volume_liters
+                    else "",
+                    f"temperature {data.habitat.temperature_label}"
+                    if data.habitat.temperature_label
+                    else "",
+                    f"substrate {data.habitat.substrate}" if data.habitat.substrate else "",
+                )
+                if fact
+            ]
+            if habitat_facts:
+                lines.append(f"Habitat: {', '.join(habitat_facts)}")
+            if data.habitat.notes:
+                lines.append(f"Habitat notes: {self._anonymize_for_provider(data.habitat.notes)}")
+        if data.aquarium_stock:
+            stock_text = "; ".join(
+                f"{fish.species} ({fish.male_count}M/{fish.female_count}F)"
+                for fish in data.aquarium_stock
+            )
+            lines.append(f"Aquarium stock: {stock_text}")
         return "\n".join(lines)
 
     @staticmethod

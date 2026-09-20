@@ -8,6 +8,7 @@ from packages.core.application.services.chat_orchestrator import (
     ChatOrchestratorInput,
 )
 from packages.core.domain.conversation.states import ConversationState
+from packages.core.domain.pet_profile.models import FishStock, HabitatDetails
 from packages.infrastructure.llm.retrieval.in_memory_evidence_retriever import (
     InMemoryEvidenceRetriever,
 )
@@ -570,6 +571,60 @@ def test_chat_orchestrator_omits_absent_breed_age_and_notes_from_the_prompt() ->
     assert "Breed:" not in sent_prompt
     assert "Age:" not in sent_prompt
     assert "Owner notes:" not in sent_prompt
+
+
+def test_chat_orchestrator_forwards_habitat_and_aquarium_stock_to_the_llm_prompt() -> None:
+    # Real-world finding: an aquarium registered as a pet got advice about
+    # cleaning a food bowl — nothing in the prompt told the model this was
+    # a tank, not a cat or dog.
+    client = FakeLLMClient()
+    orchestrator = ChatOrchestrator(client, InMemoryEvidenceRetriever(), NoopPiiAnonymizer())
+
+    orchestrator.answer(
+        ChatOrchestratorInput(
+            user_message=(
+                "L'acqua dell'acquario è molto torbida anche se ho fatto il "
+                "cambio d'acqua una settimana fa"
+            ),
+            species="Pesce",
+            pet_name="Acquario del salotto",
+            habitat=HabitatDetails(
+                dimensions="60x30x36 cm", volume_liters=54, substrate="ghiaia fine"
+            ),
+            aquarium_stock=[
+                FishStock(species="Guppy", male_count=2, female_count=4),
+                FishStock(species="Neon Tetra", male_count=3, female_count=3),
+            ],
+        )
+    )
+
+    sent_prompt = client.requests[0].user_prompt
+    assert "Habitat:" in sent_prompt
+    assert "54 liters" in sent_prompt
+    assert "ghiaia fine" in sent_prompt
+    assert "Aquarium stock:" in sent_prompt
+    assert "Guppy (2M/4F)" in sent_prompt
+    assert "Neon Tetra (3M/3F)" in sent_prompt
+
+
+def test_chat_orchestrator_omits_an_empty_habitat_from_the_prompt() -> None:
+    # A HabitatDetails object with every field blank (the mobile app's own
+    # "empty" convention) must not print a bare "Habitat:" line.
+    client = FakeLLMClient()
+    orchestrator = ChatOrchestrator(client, InMemoryEvidenceRetriever(), NoopPiiAnonymizer())
+
+    orchestrator.answer(
+        ChatOrchestratorInput(
+            user_message="Il mio cane tossisce da due giorni",
+            species="dog",
+            pet_name="Milo",
+            habitat=HabitatDetails(),
+        )
+    )
+
+    sent_prompt = client.requests[0].user_prompt
+    assert "Habitat" not in sent_prompt
+    assert "Aquarium stock:" not in sent_prompt
 
 
 def test_classify_intent_recognizes_dermatological_and_parasitic_terms() -> None:

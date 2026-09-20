@@ -1,7 +1,7 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 from packages.core.application.ports.pet_profile_repository import PetProfileRepository
-from packages.core.domain.pet_profile.models import PetProfile
+from packages.core.domain.pet_profile.models import FishStock, HabitatDetails, PetProfile
 
 
 class CreatePetProfileInput(BaseModel):
@@ -11,6 +11,8 @@ class CreatePetProfileInput(BaseModel):
     breed: str | None = None
     age_years: int | None = None
     notes: str | None = None
+    habitat: HabitatDetails | None = None
+    aquarium_stock: list[FishStock] = Field(default_factory=list)
 
 
 class CreatePetProfileOutput(BaseModel):
