@@ -87,6 +87,9 @@ class SendChatMessageService:
                 species=pet_profile.species,
                 pet_name=pet_profile.name,
                 pet_id=pet_profile.id,
+                breed=pet_profile.breed,
+                age_years=pet_profile.age_years,
+                notes=pet_profile.notes,
                 # Data minimization (spec v3 §38): only recent turns cross
                 # the service boundary — the full history never needs to,
                 # since SituationModel already carries the compact,

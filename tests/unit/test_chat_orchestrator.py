@@ -531,6 +531,47 @@ def test_chat_orchestrator_sends_anonymized_text_to_llm_not_raw_pii() -> None:
     assert "<TELEFONO>" in sent_prompt
 
 
+def test_chat_orchestrator_forwards_breed_age_and_notes_to_the_llm_prompt() -> None:
+    # Real-world finding: PetProfile already carries breed/age_years/notes,
+    # but the prompt only ever included name and species — context the
+    # owner already entered was silently dropped every turn.
+    client = FakeLLMClient()
+    orchestrator = ChatOrchestrator(client, InMemoryEvidenceRetriever(), NoopPiiAnonymizer())
+
+    orchestrator.answer(
+        ChatOrchestratorInput(
+            user_message="Il mio cane tossisce da due giorni",
+            species="dog",
+            pet_name="Milo",
+            breed="Labrador",
+            age_years=9,
+            notes="Cardiopatico, segue una dieta iposodica",
+        )
+    )
+
+    sent_prompt = client.requests[0].user_prompt
+    assert "Breed: Labrador" in sent_prompt
+    assert "Age: 9 years" in sent_prompt
+    assert "Cardiopatico" in sent_prompt
+
+
+def test_chat_orchestrator_omits_absent_breed_age_and_notes_from_the_prompt() -> None:
+    # No "Breed: None" noise when the owner never filled those fields in.
+    client = FakeLLMClient()
+    orchestrator = ChatOrchestrator(client, InMemoryEvidenceRetriever(), NoopPiiAnonymizer())
+
+    orchestrator.answer(
+        ChatOrchestratorInput(
+            user_message="Il mio cane tossisce da due giorni", species="dog", pet_name="Milo"
+        )
+    )
+
+    sent_prompt = client.requests[0].user_prompt
+    assert "Breed:" not in sent_prompt
+    assert "Age:" not in sent_prompt
+    assert "Owner notes:" not in sent_prompt
+
+
 def test_classify_intent_recognizes_dermatological_and_parasitic_terms() -> None:
     # Real-world finding: a real forum question about ringworm ("tigna")
     # matched none of the clinical keywords and silently fell through to

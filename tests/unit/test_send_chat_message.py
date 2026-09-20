@@ -105,6 +105,36 @@ def test_send_chat_message_resolves_safety_clarification_on_next_turn() -> None:
     assert second.conversation.awaiting_safety_clarification is False
 
 
+def test_send_chat_message_forwards_breed_and_age_to_the_orchestrator() -> None:
+    # Real-world finding: PetProfile already carries breed/age_years/notes,
+    # but SendChatMessageService never passed them into
+    # ChatOrchestratorInput — EchoLLMClient's demo reply echoes the prompt
+    # verbatim for the general-answer path, so it doubles as a cheap probe
+    # for what actually reached the LLM.
+    pet_repository = InMemoryPetProfileRepository()
+    pet_repository.save(
+        PetProfile(
+            id="pet-1",
+            owner_id="user-1",
+            name="Milo",
+            species="dog",
+            breed="Labrador",
+            age_years=9,
+        )
+    )
+    orchestrator = ChatOrchestrator(
+        EchoLLMClient(Settings()), InMemoryEvidenceRetriever(), NoopPiiAnonymizer()
+    )
+    service = SendChatMessageService(InMemoryConversationRepository(), orchestrator, pet_repository)
+
+    result = service.execute(
+        SendChatMessageInput(owner_id="user-1", pet_id="pet-1", user_message="ciao")
+    )
+
+    assert "Breed: Labrador" in result.reply.content
+    assert "Age: 9 years" in result.reply.content
+
+
 def test_send_chat_message_rejects_empty_input() -> None:
     pet_repository = InMemoryPetProfileRepository()
     pet_repository.save(PetProfile(id="pet-1", owner_id="user-1", name="Milo", species="dog"))

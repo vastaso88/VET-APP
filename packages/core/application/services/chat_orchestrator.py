@@ -298,6 +298,17 @@ class ChatOrchestratorInput(BaseModel):
     species: str
     pet_name: str
     pet_id: str = ""
+    # Real-world finding: the pet profile already carries breed/age/notes
+    # today, but the LLM prompt only ever included name and species -
+    # context the owner already entered was silently dropped every turn.
+    # Still no habitat/enclosure fields (aquarium volume, terrarium size,
+    # substrate...) for species that need them - that data doesn't exist
+    # anywhere on PetProfile yet, mobile-side or backend-side, as of this
+    # finding; adding it is a larger, cross-team schema change, not done
+    # here.
+    breed: str | None = None
+    age_years: int | None = None
+    notes: str | None = None
     conversation_history: list[ChatMessage] = Field(default_factory=list)
     situation_model: SituationModel | None = None
     interview_turns_used: int = 0
@@ -839,7 +850,6 @@ class ChatOrchestrator:
         message: str,
     ) -> ChatOrchestratorResult:
         anonymized_message = self._anonymize_for_provider(message)
-        anonymized_pet_name = self._anonymize_for_provider(data.pet_name)
         try:
             response = self._llm_client.generate(
                 LLMGenerationRequest(
@@ -849,8 +859,7 @@ class ChatOrchestrator:
                         "retrieved evidence for this turn, so never include a [n] citation."
                     ),
                     user_prompt=(
-                        f"Pet name: {anonymized_pet_name}\n"
-                        f"Species: {data.species}\n"
+                        f"{self._pet_context_block(data)}\n"
                         f"User request: {anonymized_message}"
                     ),
                     # See EvidenceSynthesizer/SituationModelBuilder for why:
@@ -949,11 +958,9 @@ class ChatOrchestrator:
 
         evidence_block = self._format_sources_for_prompt(sources)
         anonymized_message = self._anonymize_for_provider(case_text)
-        anonymized_pet_name = self._anonymize_for_provider(data.pet_name)
         try:
             synthesis, response = self._evidence_synthesizer.synthesize(
-                f"Pet name: {anonymized_pet_name}\n"
-                f"Species: {data.species}\n"
+                f"{self._pet_context_block(data)}\n"
                 f"Question: {anonymized_message}\n"
                 f"Evidence:\n{evidence_block}"
             )
@@ -1094,6 +1101,25 @@ class ChatOrchestrator:
         (local) and the stored conversation/reply keep the original text,
         per the documented anonymization boundary (docs/compliance/02_pii_anonymization.md)."""
         return self._pii_anonymizer.anonymize(PiiAnonymizationRequest(text=text)).anonymized_text
+
+    def _pet_context_block(self, data: ChatOrchestratorInput) -> str:
+        """Every field PetProfile actually has today, not just name/species
+        — breed/age/notes existed on the profile already but were never
+        forwarded into a prompt before this. Optional fields are omitted
+        entirely rather than printed as "None", so the model isn't invited
+        to comment on an absence the owner never provided.
+        """
+        lines = [
+            f"Pet name: {self._anonymize_for_provider(data.pet_name)}",
+            f"Species: {data.species}",
+        ]
+        if data.breed:
+            lines.append(f"Breed: {data.breed}")
+        if data.age_years is not None:
+            lines.append(f"Age: {data.age_years} years")
+        if data.notes:
+            lines.append(f"Owner notes: {self._anonymize_for_provider(data.notes)}")
+        return "\n".join(lines)
 
     @staticmethod
     def _classify_intent(message: str) -> str:
