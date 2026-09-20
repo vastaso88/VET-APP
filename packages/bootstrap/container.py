@@ -2,6 +2,7 @@ from functools import lru_cache
 
 from packages.core.application.ports.account_consents_repository import AccountConsentsRepository
 from packages.core.application.ports.auth_provider import AuthProvider
+from packages.core.application.ports.chat_attachment_repository import ChatAttachmentRepository
 from packages.core.application.ports.chat_response_report_repository import (
     ChatResponseReportRepository,
 )
@@ -9,11 +10,13 @@ from packages.core.application.ports.clinical_event_repository import ClinicalEv
 from packages.core.application.ports.conversation_repository import ConversationRepository
 from packages.core.application.ports.dog_walk_repository import DogWalkRepository
 from packages.core.application.ports.evidence_retriever import EvidenceRetriever
+from packages.core.application.ports.image_analyzer import ImageAnalyzer
 from packages.core.application.ports.listing_report_repository import ListingReportRepository
 from packages.core.application.ports.local_activity_repository import LocalActivityRepository
 from packages.core.application.ports.marketplace_listing_repository import (
     MarketplaceListingRepository,
 )
+from packages.core.application.ports.media_storage import MediaStorage
 from packages.core.application.ports.pet_profile_repository import PetProfileRepository
 from packages.core.application.ports.pii_anonymizer import PiiAnonymizer
 from packages.core.application.ports.reminder_repository import ReminderRepository
@@ -62,6 +65,7 @@ from packages.core.application.services.situation_model_builder import Situation
 from packages.core.application.services.start_walk import StartWalkService
 from packages.core.application.services.transcribe_audio import TranscribeAudioService
 from packages.core.application.services.update_pet_profile import UpdatePetProfileService
+from packages.core.application.services.upload_chat_attachment import UploadChatAttachmentService
 from packages.infrastructure.auth.bootstrap_auth_provider import BootstrapAuthProvider
 from packages.infrastructure.llm.providers.echo_llm_client import EchoLLMClient
 from packages.infrastructure.llm.providers.groq_llm_client import GroqLLMClient
@@ -91,6 +95,7 @@ from packages.infrastructure.llm.retrieval.pubmed_evidence_retriever import (
 )
 from packages.infrastructure.persistence.in_memory_repositories import (
     InMemoryAccountConsentsRepository,
+    InMemoryChatAttachmentRepository,
     InMemoryChatResponseReportRepository,
     InMemoryClinicalEventRepository,
     InMemoryConversationRepository,
@@ -109,6 +114,9 @@ from packages.infrastructure.speech.echo_speech_to_text_provider import (
 from packages.infrastructure.speech.groq_speech_to_text_provider import (
     GroqSpeechToTextProvider,
 )
+from packages.infrastructure.storage.local_file_storage import LocalFileStorage
+from packages.infrastructure.vision.echo_image_analyzer import EchoImageAnalyzer
+from packages.infrastructure.vision.groq_image_analyzer import GroqImageAnalyzer
 from packages.shared.config.settings import Settings, get_settings
 
 
@@ -133,6 +141,9 @@ class ApplicationContainer:
         self.listing_report_repository = self._build_listing_report_repository()
         self.local_activity_repository = self._build_local_activity_repository()
         self.chat_response_report_repository = self._build_chat_response_report_repository()
+        self.chat_attachment_repository = self._build_chat_attachment_repository()
+        self.media_storage: MediaStorage = LocalFileStorage(settings)
+        self.image_analyzer = self._build_image_analyzer()
         self.chat_orchestrator = ChatOrchestrator(
             self.llm_client,
             self.evidence_retriever,
@@ -211,6 +222,7 @@ class ApplicationContainer:
             self.conversation_repository,
             self.chat_orchestrator,
             self.pet_profile_repository,
+            attachment_repository=self.chat_attachment_repository,
             max_active_conversations_per_pet=self.settings.max_active_conversations_per_pet,
         )
 
@@ -239,6 +251,14 @@ class ApplicationContainer:
 
     def transcribe_audio_service(self) -> TranscribeAudioService:
         return TranscribeAudioService(self.speech_to_text_provider)
+
+    def upload_chat_attachment_service(self) -> UploadChatAttachmentService:
+        return UploadChatAttachmentService(
+            self.pet_profile_repository,
+            self.chat_attachment_repository,
+            self.media_storage,
+            self.image_analyzer,
+        )
 
     def _build_auth_provider(self) -> AuthProvider:
         if self.settings.auth_backend == "supabase":
@@ -304,6 +324,11 @@ class ApplicationContainer:
         if self.settings.stt_provider == "groq":
             return GroqSpeechToTextProvider(self.settings)
         return EchoSpeechToTextProvider()
+
+    def _build_image_analyzer(self) -> ImageAnalyzer:
+        if self.settings.vision_provider == "groq":
+            return GroqImageAnalyzer(self.settings)
+        return EchoImageAnalyzer()
 
     def _build_pii_anonymizer(self) -> PiiAnonymizer:
         if self.settings.pii_anonymizer_backend == "presidio":
@@ -437,6 +462,23 @@ class ApplicationContainer:
                     return InMemoryChatResponseReportRepository()
                 raise
         return InMemoryChatResponseReportRepository()
+
+    def _build_chat_attachment_repository(self) -> ChatAttachmentRepository:
+        if self.settings.persistence_backend == "supabase":
+            try:
+                from packages.infrastructure.persistence.supabase.client import (
+                    build_supabase_client,
+                )
+                from packages.infrastructure.persistence.supabase.supabase_repositories import (
+                    SupabaseChatAttachmentRepository,
+                )
+
+                return SupabaseChatAttachmentRepository(build_supabase_client(self.settings))
+            except ModuleNotFoundError:
+                if self.settings.environment != "production":
+                    return InMemoryChatAttachmentRepository()
+                raise
+        return InMemoryChatAttachmentRepository()
 
     def _build_local_activity_repository(self) -> LocalActivityRepository:
         if self.settings.persistence_backend == "supabase":

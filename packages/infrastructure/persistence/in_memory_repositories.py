@@ -1,4 +1,5 @@
 from packages.core.application.ports.account_consents_repository import AccountConsentsRepository
+from packages.core.application.ports.chat_attachment_repository import ChatAttachmentRepository
 from packages.core.application.ports.chat_response_report_repository import (
     ChatResponseReportRepository,
 )
@@ -14,6 +15,7 @@ from packages.core.application.ports.pet_profile_repository import PetProfileRep
 from packages.core.application.ports.reminder_repository import ReminderRepository
 from packages.core.application.ports.user_location_repository import UserLocationRepository
 from packages.core.domain.consent.models import AccountConsents
+from packages.core.domain.conversation.attachment import ChatAttachment
 from packages.core.domain.conversation.models import Conversation
 from packages.core.domain.dog_walk.models import WalkSession
 from packages.core.domain.feedback.models import ChatResponseReport
@@ -167,6 +169,18 @@ class InMemoryChatResponseReportRepository(ChatResponseReportRepository):
 
     def list_all(self) -> list[ChatResponseReport]:
         return list(self._items.values())
+
+
+class InMemoryChatAttachmentRepository(ChatAttachmentRepository):
+    def __init__(self) -> None:
+        self._items: dict[str, ChatAttachment] = {}
+
+    def save(self, attachment: ChatAttachment) -> ChatAttachment:
+        self._items[attachment.id] = attachment
+        return attachment
+
+    def get(self, attachment_id: str) -> ChatAttachment | None:
+        return self._items.get(attachment_id)
 
 
 class InMemoryLocalActivityRepository(LocalActivityRepository):

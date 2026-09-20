@@ -36,6 +36,14 @@ class Settings(BaseSettings):
     # needs no new vendor relationship.
     stt_provider: str = Field(default="echo", alias="STT_PROVIDER")
     stt_model: str = Field(default="whisper-large-v3-turbo", alias="STT_MODEL")
+    # Photo attachments: visual analysis reuses the same Groq account
+    # (LLM_API_KEY/LLM_BASE_URL) as chat and voice dictation. The actual
+    # image bytes are kept on local disk (product decision: avoid taking
+    # on a cloud storage dependency for the MVP), independent of
+    # PERSISTENCE_BACKEND, which only covers the lightweight metadata row.
+    vision_provider: str = Field(default="echo", alias="VISION_PROVIDER")
+    vision_model: str = Field(default="qwen/qwen3.8-27b", alias="VISION_MODEL")
+    media_storage_dir: str = Field(default="./data/chat_attachments", alias="MEDIA_STORAGE_DIR")
     log_level: str = Field(default="INFO", alias="LOG_LEVEL")
     enable_telemetry: bool = Field(default=False, alias="ENABLE_TELEMETRY")
     enable_interview_loop: bool = Field(default=True, alias="ENABLE_INTERVIEW_LOOP")
@@ -98,6 +106,16 @@ class Settings(BaseSettings):
                 "STT_PROVIDER=groq",
                 {
                     "STT_MODEL": self.stt_model,
+                    "LLM_API_KEY": self.llm_api_key,
+                    "LLM_BASE_URL": self.llm_base_url,
+                },
+            )
+
+        if self.vision_provider == "groq":
+            self._require_fields(
+                "VISION_PROVIDER=groq",
+                {
+                    "VISION_MODEL": self.vision_model,
                     "LLM_API_KEY": self.llm_api_key,
                     "LLM_BASE_URL": self.llm_base_url,
                 },

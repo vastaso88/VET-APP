@@ -311,6 +311,13 @@ class ChatOrchestratorInput(BaseModel):
     # populate these is still local-only as of this finding (2026-09-20).
     habitat: HabitatDetails | None = None
     aquarium_stock: list[FishStock] = Field(default_factory=list)
+    # Plain-text visual description of a photo the owner attached to this
+    # turn (see ImageAnalyzer/UploadChatAttachmentService) — folded into
+    # the working message text in `_answer` so it participates in safety
+    # checks, intent classification and evidence retrieval exactly like
+    # anything the owner typed, without every one of those needing to
+    # become vision-aware itself.
+    photo_context: str | None = None
     conversation_history: list[ChatMessage] = Field(default_factory=list)
     situation_model: SituationModel | None = None
     interview_turns_used: int = 0
@@ -414,6 +421,14 @@ class ChatOrchestrator:
 
     def _answer(self, data: ChatOrchestratorInput) -> ChatOrchestratorResult:
         message = data.user_message.strip()
+        if data.photo_context:
+            # Folded into the working text (not into data.user_message,
+            # which is what gets persisted as the conversation's stored
+            # message — the owner's own words stay clean in the
+            # transcript) so it flows through safety checks, intent
+            # classification, species detection and evidence retrieval
+            # exactly like anything the owner typed.
+            message = f"{message}\n\nContesto dalla foto allegata: {data.photo_context}".strip()
         lowered = message.lower()
 
         if data.awaiting_safety_clarification and data.safety_clarification_category:

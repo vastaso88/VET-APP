@@ -1,5 +1,6 @@
 from pydantic import BaseModel
 
+from packages.core.application.ports.chat_attachment_repository import ChatAttachmentRepository
 from packages.core.application.ports.conversation_repository import ConversationRepository
 from packages.core.application.ports.pet_profile_repository import PetProfileRepository
 from packages.core.application.services.chat_orchestrator import (
@@ -25,6 +26,7 @@ class SendChatMessageInput(BaseModel):
     pet_id: str
     conversation_id: str | None = None
     user_message: str
+    attachment_id: str | None = None
 
 
 class SendChatMessageOutput(BaseModel):
@@ -54,11 +56,16 @@ class SendChatMessageService:
         orchestrator: ChatOrchestrator,
         pet_profile_repository: PetProfileRepository,
         *,
+        attachment_repository: ChatAttachmentRepository | None = None,
         max_active_conversations_per_pet: int = 4,
     ) -> None:
         self._repository = repository
         self._orchestrator = orchestrator
         self._pet_profile_repository = pet_profile_repository
+        # None simply means this deployment never offers photo attachments,
+        # same convention as ChatOrchestrator's optional
+        # medical_record_context_retriever.
+        self._attachment_repository = attachment_repository
         self._max_active_conversations_per_pet = max_active_conversations_per_pet
 
     def execute(self, data: SendChatMessageInput) -> SendChatMessageOutput:
@@ -69,7 +76,10 @@ class SendChatMessageService:
             raise ValidationError("pet_profile not found")
 
         conversation = self._load_or_create_conversation(data)
-        user_message = ChatMessage(role="user", content=data.user_message.strip())
+        photo_context = self._resolve_attachment(data, conversation, pet_profile)
+        user_message = ChatMessage(
+            role="user", content=data.user_message.strip(), attachment_id=data.attachment_id
+        )
         conversation.messages.append(user_message)
 
         # A pet-level consent decision (settings, or a previous conversation)
@@ -92,6 +102,7 @@ class SendChatMessageService:
                 notes=pet_profile.notes,
                 habitat=pet_profile.habitat,
                 aquarium_stock=pet_profile.aquarium_stock,
+                photo_context=photo_context,
                 # Data minimization (spec v3 §38): only recent turns cross
                 # the service boundary — the full history never needs to,
                 # since SituationModel already carries the compact,
@@ -143,6 +154,33 @@ class SendChatMessageService:
             awaiting_safety_clarification=orchestrator_result.awaiting_safety_clarification,
             safety_clarification_category=orchestrator_result.safety_clarification_category,
         )
+
+    def _resolve_attachment(
+        self,
+        data: SendChatMessageInput,
+        conversation: Conversation,
+        pet_profile: PetProfile,
+    ) -> str | None:
+        """Returns the attachment's cached visual analysis (or None if
+        there's no attachment), and links it to this conversation on
+        first use — an attachment can be uploaded before a conversation
+        officially exists yet (a brand new chat), so it starts scoped
+        only by pet_id (see UploadChatAttachmentService).
+        """
+        if not data.attachment_id:
+            return None
+        if self._attachment_repository is None:
+            raise ValidationError("attachments are not enabled for this deployment")
+        attachment = self._attachment_repository.get(data.attachment_id)
+        if attachment is None:
+            raise ValidationError("attachment not found")
+        if attachment.owner_id != data.owner_id or attachment.pet_id != pet_profile.id:
+            raise ValidationError("attachment does not belong to this pet")
+        if attachment.conversation_id is None:
+            self._attachment_repository.save(
+                attachment.model_copy(update={"conversation_id": conversation.id})
+            )
+        return attachment.analysis
 
     def _load_or_create_conversation(self, data: SendChatMessageInput) -> Conversation:
         if data.conversation_id:

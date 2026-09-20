@@ -320,6 +320,26 @@ create table if not exists public.marketplace_listing_reports (
 -- yet (only a local Flutter demo store exists today), so this field is
 -- the hook for whenever that billing exists, rather than a future schema
 -- change (docs/marketing/01_brainstorm.md).
+-- Photo attachments: metadata only, the image bytes themselves stay on
+-- local disk (product decision: avoid a cloud storage dependency for the
+-- MVP), independent of this table. conversation_id starts null — an
+-- attachment can be uploaded before a conversation officially exists yet
+-- (a brand new chat), scoped by pet_id until it's actually referenced in
+-- a sent message. Deliberately unrelated to any pet gallery/memorial
+-- feature: nothing links this table to pet_profiles beyond pet_id itself.
+create table if not exists public.chat_attachments (
+    id text primary key,
+    owner_id text not null,
+    pet_id text not null references public.pet_profiles(id) on delete cascade,
+    conversation_id text references public.conversations(id) on delete set null,
+    storage_key text not null,
+    content_type text not null,
+    original_filename text not null,
+    analysis text,
+    analysis_failed boolean not null default false,
+    created_at timestamptz not null default now()
+);
+
 create table if not exists public.chat_response_reports (
     id text primary key,
     conversation_id text not null references public.conversations(id) on delete cascade,
@@ -369,6 +389,9 @@ create index if not exists idx_chat_response_reports_conversation_id
     on public.chat_response_reports(conversation_id);
 create index if not exists idx_chat_response_reports_status
     on public.chat_response_reports(status);
+create index if not exists idx_chat_attachments_pet_id on public.chat_attachments(pet_id);
+create index if not exists idx_chat_attachments_conversation_id
+    on public.chat_attachments(conversation_id);
 
 alter table public.user_locations enable row level security;
 alter table public.dog_walks enable row level security;
@@ -376,6 +399,7 @@ alter table public.marketplace_listings enable row level security;
 alter table public.marketplace_listing_reports enable row level security;
 alter table public.local_activities enable row level security;
 alter table public.chat_response_reports enable row level security;
+alter table public.chat_attachments enable row level security;
 
 -- user_locations: single-row-per-owner, same shape as account_consents.
 drop policy if exists user_locations_select_own on public.user_locations;
@@ -507,5 +531,25 @@ with check (
         from public.conversations
         where public.conversations.id = public.chat_response_reports.conversation_id
           and public.conversations.owner_id = auth.uid()::text
+    )
+);
+
+-- chat_attachments: insert-only for regular users, same posture as
+-- chat_response_reports. No select/update policy -> default deny; the
+-- Python backend's service-role client is the only reader (see
+-- GET /chat-attachments/{id}/file, which does its own ownership check).
+-- pet_id-scoped rather than conversation_id-scoped in the check because
+-- an attachment can be uploaded before a conversation exists yet.
+drop policy if exists chat_attachments_insert_own on public.chat_attachments;
+create policy chat_attachments_insert_own
+on public.chat_attachments
+for insert
+with check (
+    owner_id = auth.uid()::text
+    and exists (
+        select 1
+        from public.pet_profiles
+        where public.pet_profiles.id = public.chat_attachments.pet_id
+          and public.pet_profiles.owner_id = auth.uid()::text
     )
 );

@@ -87,6 +87,27 @@ def test_chat_orchestrator_asks_a_safety_clarification_before_escalating() -> No
     assert not client.requests
 
 
+def test_chat_orchestrator_evaluates_safety_on_the_photos_visual_analysis_too() -> None:
+    # A photo's visual findings are folded into the working text (see
+    # `_answer`) precisely so a red flag visible in the photo, but not
+    # mentioned in the owner's typed words, still triggers the safety
+    # gate — not just cosmetic context for a nicer-sounding reply.
+    client = FakeLLMClient()
+    orchestrator = ChatOrchestrator(client, InMemoryEvidenceRetriever(), NoopPiiAnonymizer())
+
+    result = orchestrator.answer(
+        ChatOrchestratorInput(
+            user_message="Ecco la foto che mi hai chiesto",
+            species="dog",
+            pet_name="Milo",
+            photo_context="Si osserva una vistosa emorragia sulla zampa anteriore.",
+        )
+    )
+
+    assert result.mode in ("safety_clarification", "triage")
+    assert result.safety_flags
+
+
 def test_chat_orchestrator_flags_gi_stasis_for_small_mammals_not_dogs() -> None:
     # Real-world finding: a rabbit not eating/defecating for a day is a
     # true emergency (GI stasis), but the exact same phrase for a dog is

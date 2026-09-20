@@ -2,6 +2,7 @@ from datetime import date, datetime
 from typing import TYPE_CHECKING, Any, cast
 
 from packages.core.application.ports.account_consents_repository import AccountConsentsRepository
+from packages.core.application.ports.chat_attachment_repository import ChatAttachmentRepository
 from packages.core.application.ports.chat_response_report_repository import (
     ChatResponseReportRepository,
 )
@@ -17,6 +18,7 @@ from packages.core.application.ports.pet_profile_repository import PetProfileRep
 from packages.core.application.ports.reminder_repository import ReminderRepository
 from packages.core.application.ports.user_location_repository import UserLocationRepository
 from packages.core.domain.consent.models import AccountConsents
+from packages.core.domain.conversation.attachment import ChatAttachment
 from packages.core.domain.conversation.models import Conversation
 from packages.core.domain.dog_walk.models import WalkSession
 from packages.core.domain.feedback.models import ChatResponseReport
@@ -289,6 +291,33 @@ class SupabaseChatResponseReportRepository(ChatResponseReportRepository):
     def list_all(self) -> list[ChatResponseReport]:
         response = self._client.table(self._table).select("*").execute()
         return [ChatResponseReport.model_validate(item) for item in response.data or []]
+
+
+class SupabaseChatAttachmentRepository(ChatAttachmentRepository):
+    """Metadata only — the image bytes themselves stay on local disk
+    (see LocalFileStorage), independent of PERSISTENCE_BACKEND.
+    """
+
+    def __init__(self, client: Client) -> None:
+        self._client = client
+        self._table = "chat_attachments"
+
+    def save(self, attachment: ChatAttachment) -> ChatAttachment:
+        payload = _serialize_payload(attachment.model_dump(mode="json"))
+        self._client.table(self._table).upsert(payload).execute()
+        return attachment
+
+    def get(self, attachment_id: str) -> ChatAttachment | None:
+        response = (
+            self._client.table(self._table)
+            .select("*")
+            .eq("id", attachment_id)
+            .limit(1)
+            .execute()
+        )
+        if not response.data:
+            return None
+        return ChatAttachment.model_validate(response.data[0])
 
 
 def _activity_to_row(activity: LocalActivity) -> dict[str, Any]:

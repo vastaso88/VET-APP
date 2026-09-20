@@ -12,6 +12,10 @@ class ChatMessage(BaseModel):
     role: str
     content: str
     created_at: datetime = Field(default_factory=utc_now)
+    # Set when the owner attached a photo to this turn (see
+    # packages/core/domain/conversation/attachment.py) — lets the client
+    # render the photo inline without a separate lookup call.
+    attachment_id: str | None = None
 
 
 class Conversation(BaseModel):

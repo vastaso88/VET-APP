@@ -8,6 +8,7 @@ from packages.core.application.services.send_chat_message import (
     SendChatMessageInput,
     SendChatMessageService,
 )
+from packages.core.domain.conversation.attachment import ChatAttachment
 from packages.core.domain.medical_record.models import ClinicalEvent
 from packages.core.domain.pet_profile.models import FishStock, HabitatDetails, PetProfile
 from packages.infrastructure.llm.providers.echo_llm_client import EchoLLMClient
@@ -15,6 +16,7 @@ from packages.infrastructure.llm.retrieval.in_memory_evidence_retriever import (
     InMemoryEvidenceRetriever,
 )
 from packages.infrastructure.persistence.in_memory_repositories import (
+    InMemoryChatAttachmentRepository,
     InMemoryClinicalEventRepository,
     InMemoryConversationRepository,
     InMemoryPetProfileRepository,
@@ -158,6 +160,89 @@ def test_send_chat_message_forwards_habitat_and_aquarium_stock_to_the_orchestrat
 
     assert "54 liters" in result.reply.content
     assert "Guppy (2M/4F)" in result.reply.content
+
+
+def test_send_chat_message_folds_the_attachments_analysis_into_the_prompt() -> None:
+    # The photo's visual analysis is a genuine red flag (emorragia) that
+    # the owner's own typed words don't mention at all — reaching
+    # safety_clarification here is only possible if send_chat_message
+    # actually resolved the attachment and forwarded its analysis into
+    # the orchestrator (chat_orchestrator's own tests cover exactly how
+    # that text is used once it arrives; this test is about the wiring
+    # up to that point).
+    pet_repository = InMemoryPetProfileRepository()
+    pet_repository.save(PetProfile(id="pet-1", owner_id="user-1", name="Milo", species="dog"))
+    attachment_repository = InMemoryChatAttachmentRepository()
+    attachment_repository.save(
+        ChatAttachment(
+            id="att-1",
+            owner_id="user-1",
+            pet_id="pet-1",
+            storage_key="att-1",
+            content_type="image/jpeg",
+            original_filename="zampa.jpg",
+            analysis="Si osserva una vistosa emorragia sulla zampa anteriore.",
+        )
+    )
+    orchestrator = ChatOrchestrator(
+        EchoLLMClient(Settings()), InMemoryEvidenceRetriever(), NoopPiiAnonymizer()
+    )
+    service = SendChatMessageService(
+        InMemoryConversationRepository(),
+        orchestrator,
+        pet_repository,
+        attachment_repository=attachment_repository,
+    )
+
+    result = service.execute(
+        SendChatMessageInput(
+            owner_id="user-1", pet_id="pet-1", user_message="ciao", attachment_id="att-1"
+        )
+    )
+
+    assert result.mode in ("safety_clarification", "triage")
+    assert result.safety_flags
+    # The owner's own message stays clean in the stored transcript — the
+    # photo analysis is folded in for the LLM only, not persisted as if
+    # the owner had typed it.
+    assert result.conversation.messages[0].content == "ciao"
+    assert result.conversation.messages[0].attachment_id == "att-1"
+
+    linked = attachment_repository.get("att-1")
+    assert linked is not None
+    assert linked.conversation_id == result.conversation.id
+
+
+def test_send_chat_message_rejects_an_attachment_belonging_to_a_different_pet() -> None:
+    pet_repository = InMemoryPetProfileRepository()
+    pet_repository.save(PetProfile(id="pet-1", owner_id="user-1", name="Milo", species="dog"))
+    attachment_repository = InMemoryChatAttachmentRepository()
+    attachment_repository.save(
+        ChatAttachment(
+            id="att-1",
+            owner_id="user-1",
+            pet_id="a-different-pet",
+            storage_key="att-1",
+            content_type="image/jpeg",
+            original_filename="zampa.jpg",
+        )
+    )
+    orchestrator = ChatOrchestrator(
+        EchoLLMClient(Settings()), InMemoryEvidenceRetriever(), NoopPiiAnonymizer()
+    )
+    service = SendChatMessageService(
+        InMemoryConversationRepository(),
+        orchestrator,
+        pet_repository,
+        attachment_repository=attachment_repository,
+    )
+
+    with pytest.raises(ValidationError):
+        service.execute(
+            SendChatMessageInput(
+                owner_id="user-1", pet_id="pet-1", user_message="ciao", attachment_id="att-1"
+            )
+        )
 
 
 def test_send_chat_message_rejects_empty_input() -> None:
