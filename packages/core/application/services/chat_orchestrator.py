@@ -408,7 +408,19 @@ class ChatOrchestrator:
                 data.pet_name, data.safety_clarification_category, message
             )
 
-        safety_flags = self._safety_gate.evaluate(lowered, species=data.species)
+        # Real-world finding (stress test): a pet profile registered as
+        # "Gatto" with a message body describing "il mio furetto..." used
+        # the CAT's safety rules and evidence for an animal that is
+        # actually a ferret — generic across any species pair, not
+        # specific to this one: a stale/mis-set profile shouldn't override
+        # what the owner is actually describing right now. Only overrides
+        # when exactly one species family is unambiguously named and it
+        # disagrees with the profile; two different species words present
+        # (a real multi-pet mention, or a figurative comparison) is
+        # deliberately left ambiguous and falls back to the profile.
+        effective_species = self._effective_species(lowered, data.species)
+
+        safety_flags = self._safety_gate.evaluate(lowered, species=effective_species)
         if safety_flags:
             if requires_immediate_escalation(message):
                 # Already unambiguous and severe — asking a clarifying
@@ -603,7 +615,9 @@ class ChatOrchestrator:
                 # presenting problem — fall through to the evidence step
                 # below, which already refuses to answer without sources.
 
-        result = self._generate_evidence_answer(data, message, intent, situation)
+        result = self._generate_evidence_answer(
+            data, message, intent, situation, effective_species
+        )
         result.situation_model = situation
         result.coverage_score = coverage
         result.interview_turns_used = turns_used
@@ -647,6 +661,29 @@ class ChatOrchestrator:
             family for word, family in SPECIES_WORD_TO_FAMILY.items() if word in message
         }
         return len(mentioned_families) >= 2
+
+    @staticmethod
+    def _effective_species(message: str, profile_species: str) -> str:
+        """Prefers a species named explicitly in the message body over the
+        pet profile's on-file species when they disagree — see the
+        real-world finding in `_answer`. Reuses SPECIES_WORD_TO_FAMILY
+        (already generic across species, built for the multi-pet check
+        above) rather than hardcoding a specific mismatch pair. Only
+        overrides when exactly one family is unambiguously named: two
+        different families mentioned together is either a genuine
+        multi-pet case (handled separately above) or a figurative
+        comparison, and guessing wrong there is worse than just trusting
+        the profile.
+        """
+        profile_family = normalize_species(profile_species)
+        mentioned_families = {
+            family for word, family in SPECIES_WORD_TO_FAMILY.items() if word in message
+        }
+        if len(mentioned_families) == 1:
+            (mentioned_family,) = mentioned_families
+            if mentioned_family != profile_family:
+                return mentioned_family
+        return profile_species
 
     @staticmethod
     def _multi_pet_redirect_result(pet_name: str) -> ChatOrchestratorResult:
@@ -863,9 +900,10 @@ class ChatOrchestrator:
         message: str,
         intent: str,
         situation: SituationModel,
+        effective_species: str,
     ) -> ChatOrchestratorResult:
         case_text = self._case_context_text(situation, message)
-        canonical_species = normalize_species(data.species)
+        canonical_species = normalize_species(effective_species)
         max_results = (
             HUSBANDRY_MAX_RESULTS
             if intent == "husbandry_question"

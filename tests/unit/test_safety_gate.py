@@ -183,3 +183,46 @@ def test_does_not_flag_moment_due_to_common_word_collision() -> None:
     )
 
     assert flags == []
+
+
+def test_flags_a_misspelled_brand_name_via_fuzzy_matching() -> None:
+    # Real-world finding: "tachipirna" (missing one letter) matched
+    # nothing under plain substring matching, silently losing a genuine
+    # poisoning-risk signal over a single typo.
+    gate = SafetyGate()
+
+    flags = gate.evaluate(
+        "Posso dare la tachipirna al mio gatto che ha la febbre?", species="Gatto"
+    )
+
+    assert flags
+
+
+def test_does_not_fuzzy_flag_an_unrelated_word_of_similar_length() -> None:
+    # Guards against the fuzzy-matching upgrade becoming over-eager: a
+    # completely unrelated word of similar length to a medication name
+    # must not trigger a false alarm.
+    gate = SafetyGate()
+
+    flags = gate.evaluate(
+        "Il gatto ha mangiato una banana per sbaglio ieri", species="Gatto"
+    )
+
+    assert flags == []
+
+
+def test_does_not_flag_aglio_embedded_in_per_sbaglio() -> None:
+    # Real-world finding, caught while adding the fuzzy-matching tests
+    # above: "aglio" (garlic) as a raw substring anywhere also matched
+    # "per sbaglio" ("by mistake") — one of the most common phrasings for
+    # exactly the accidental-poisoning reports this app needs to
+    # recognize correctly, so a false alarm here is a real, likely-to-recur
+    # problem, not a hypothetical edge case.
+    gate = SafetyGate()
+
+    flags = gate.evaluate(
+        "Gli ho dato la tachipirina per sbaglio ieri sera", species="Gatto"
+    )
+
+    assert "aglio" not in flags
+    assert "tachipirina" in flags

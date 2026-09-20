@@ -131,6 +131,29 @@ def test_translates_bird_cage_and_enrichment_terms() -> None:
     assert "enrichment" in query
 
 
+def test_translates_a_misspelled_brand_name_via_fuzzy_matching() -> None:
+    # Real-world finding: "tachipirna" (missing one letter) fell back to a
+    # generic clinical query instead of veterinary toxicology literature.
+    planner = EvidenceQueryPlanner()
+
+    query = planner.build_query(
+        "Posso dare la tachipirna al mio gatto?", "clinical_question"
+    )
+
+    assert "toxicity" in query
+
+
+def test_does_not_match_garlic_toxicity_embedded_in_per_sbaglio() -> None:
+    # Real-world finding: "aglio" (garlic) as a raw substring anywhere
+    # also matched "per sbaglio" ("by mistake"), polluting the retrieval
+    # query with an unrelated toxicity term on an extremely common phrase.
+    planner = EvidenceQueryPlanner()
+
+    query = planner.build_query("Gliel'ho dato per sbaglio ieri sera", "clinical_question")
+
+    assert "garlic" not in query
+
+
 def test_falls_back_to_husbandry_intent_terms_when_no_keyword_matches() -> None:
     planner = EvidenceQueryPlanner()
 

@@ -2,6 +2,9 @@ from functools import lru_cache
 
 from packages.core.application.ports.account_consents_repository import AccountConsentsRepository
 from packages.core.application.ports.auth_provider import AuthProvider
+from packages.core.application.ports.chat_response_report_repository import (
+    ChatResponseReportRepository,
+)
 from packages.core.application.ports.clinical_event_repository import ClinicalEventRepository
 from packages.core.application.ports.conversation_repository import ConversationRepository
 from packages.core.application.ports.dog_walk_repository import DogWalkRepository
@@ -27,6 +30,9 @@ from packages.core.application.services.get_account_consents import GetAccountCo
 from packages.core.application.services.get_pet_profile import GetPetProfileService
 from packages.core.application.services.get_user_location import GetUserLocationService
 from packages.core.application.services.interview_planner import InterviewPlanner
+from packages.core.application.services.list_chat_response_reports import (
+    ListChatResponseReportsService,
+)
 from packages.core.application.services.list_conversations import ListConversationsService
 from packages.core.application.services.list_nearby_activities import (
     ListNearbyActivitiesService,
@@ -39,7 +45,11 @@ from packages.core.application.services.medical_record_context_retriever import 
     MedicalRecordContextRetriever,
 )
 from packages.core.application.services.record_route_point import RecordRoutePointService
+from packages.core.application.services.report_chat_response import ReportChatResponseService
 from packages.core.application.services.report_listing import ReportListingService
+from packages.core.application.services.resolve_chat_response_report import (
+    ResolveChatResponseReportService,
+)
 from packages.core.application.services.safety_gate import SafetyGate
 from packages.core.application.services.send_chat_message import SendChatMessageService
 from packages.core.application.services.set_account_consent import SetAccountConsentService
@@ -79,6 +89,7 @@ from packages.infrastructure.llm.retrieval.pubmed_evidence_retriever import (
 )
 from packages.infrastructure.persistence.in_memory_repositories import (
     InMemoryAccountConsentsRepository,
+    InMemoryChatResponseReportRepository,
     InMemoryClinicalEventRepository,
     InMemoryConversationRepository,
     InMemoryDogWalkRepository,
@@ -112,6 +123,7 @@ class ApplicationContainer:
         self.marketplace_listing_repository = self._build_marketplace_listing_repository()
         self.listing_report_repository = self._build_listing_report_repository()
         self.local_activity_repository = self._build_local_activity_repository()
+        self.chat_response_report_repository = self._build_chat_response_report_repository()
         self.chat_orchestrator = ChatOrchestrator(
             self.llm_client,
             self.evidence_retriever,
@@ -204,6 +216,17 @@ class ApplicationContainer:
 
     def list_reminders_service(self) -> ListRemindersService:
         return ListRemindersService(self.reminder_repository)
+
+    def report_chat_response_service(self) -> ReportChatResponseService:
+        return ReportChatResponseService(
+            self.conversation_repository, self.chat_response_report_repository
+        )
+
+    def list_chat_response_reports_service(self) -> ListChatResponseReportsService:
+        return ListChatResponseReportsService(self.chat_response_report_repository)
+
+    def resolve_chat_response_report_service(self) -> ResolveChatResponseReportService:
+        return ResolveChatResponseReportService(self.chat_response_report_repository)
 
     def _build_auth_provider(self) -> AuthProvider:
         if self.settings.auth_backend == "supabase":
@@ -380,6 +403,23 @@ class ApplicationContainer:
                     return InMemoryListingReportRepository()
                 raise
         return InMemoryListingReportRepository()
+
+    def _build_chat_response_report_repository(self) -> ChatResponseReportRepository:
+        if self.settings.persistence_backend == "supabase":
+            try:
+                from packages.infrastructure.persistence.supabase.client import (
+                    build_supabase_client,
+                )
+                from packages.infrastructure.persistence.supabase.supabase_repositories import (
+                    SupabaseChatResponseReportRepository,
+                )
+
+                return SupabaseChatResponseReportRepository(build_supabase_client(self.settings))
+            except ModuleNotFoundError:
+                if self.settings.environment != "production":
+                    return InMemoryChatResponseReportRepository()
+                raise
+        return InMemoryChatResponseReportRepository()
 
     def _build_local_activity_repository(self) -> LocalActivityRepository:
         if self.settings.persistence_backend == "supabase":

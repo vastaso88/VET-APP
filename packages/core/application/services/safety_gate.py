@@ -1,3 +1,7 @@
+from packages.core.domain.knowledge.fuzzy_match import (
+    contains_keyword,
+    find_fuzzy_keyword_matches,
+)
 from packages.core.domain.pet_profile.species import normalize_species
 
 URGENT_RED_FLAG_KEYWORDS = {
@@ -202,10 +206,24 @@ class SafetyGate:
     def evaluate(self, message: str, species: str = "other") -> list[str]:
         lowered = message.lower()
         family = normalize_species(species)
-        matches = [keyword for keyword in URGENT_RED_FLAG_KEYWORDS if keyword in lowered]
-        matches += [
-            keyword
-            for keyword in SPECIES_SPECIFIC_RED_FLAGS.get(family, ())
-            if keyword in lowered
+        # contains_keyword (prefix-of-a-word, not substring-anywhere)
+        # rather than a raw `in` check: several of these are deliberate
+        # stems ("convuls", "emorrag") that must keep matching every
+        # inflection, but a stem embedded mid-word in something unrelated
+        # must not — see contains_keyword's docstring for the concrete
+        # collision ("aglio" in "per sbaglio") this generically prevents.
+        matches = [
+            keyword for keyword in URGENT_RED_FLAG_KEYWORDS if contains_keyword(lowered, keyword)
         ]
+        # Real-world finding: a misspelled medication/toxin name
+        # ("tachipirna" for "tachipirina") silently lost the safety flag
+        # with plain substring matching. Fuzzy matching is applied here,
+        # not to URGENT_RED_FLAG_KEYWORDS above, because that list is
+        # mostly deliberate short stems/phrases ("convuls", "non respira")
+        # already tolerant of inflection via substring — a different,
+        # already-solved problem with its own collision-risk profile (see
+        # fuzzy_match.py's module docstring).
+        matches += list(
+            find_fuzzy_keyword_matches(lowered, SPECIES_SPECIFIC_RED_FLAGS.get(family, ()))
+        )
         return matches

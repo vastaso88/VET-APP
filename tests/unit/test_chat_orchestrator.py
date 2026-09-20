@@ -75,22 +75,82 @@ def test_chat_orchestrator_flags_gi_stasis_for_small_mammals_not_dogs() -> None:
     # Real-world finding: a rabbit not eating/defecating for a day is a
     # true emergency (GI stasis), but the exact same phrase for a dog is
     # ordinarily just something to monitor — species must change the
-    # outcome here, not just the wording of the answer.
+    # outcome here, not just the wording of the answer. Each message
+    # names its own species explicitly (rather than reusing one message
+    # for both species) so this doesn't collide with the species-mismatch
+    # override (see test_prefers_the_species_named_in_the_message...
+    # below): that's a different, deliberate behavior, not a bug here.
     client = FakeLLMClient()
     orchestrator = ChatOrchestrator(client, InMemoryEvidenceRetriever(), NoopPiiAnonymizer())
-    message = "Il mio coniglio non mangia da un giorno e non fa la cacca"
 
     rabbit_result = orchestrator.answer(
-        ChatOrchestratorInput(user_message=message, species="Piccoli mammiferi", pet_name="Pallina")
+        ChatOrchestratorInput(
+            user_message="Il mio coniglio non mangia da un giorno e non fa la cacca",
+            species="Piccoli mammiferi",
+            pet_name="Pallina",
+        )
     )
     dog_result = orchestrator.answer(
-        ChatOrchestratorInput(user_message=message, species="dog", pet_name="Rex")
+        ChatOrchestratorInput(
+            user_message="Il mio cane non mangia da un giorno e non fa la cacca",
+            species="dog",
+            pet_name="Rex",
+        )
     )
 
     assert rabbit_result.mode == "safety_clarification"
     assert rabbit_result.safety_clarification_category == "gi_stasis"
     assert dog_result.mode != "safety_clarification"
     assert dog_result.mode != "triage"
+
+
+def test_chat_orchestrator_prefers_the_species_named_in_the_message_over_a_mismatched_profile() -> (
+    None
+):
+    # Real-world finding (stress test): a pet profile registered as
+    # "Gatto" with a message body describing "il mio furetto..." used the
+    # CAT's safety rules for an animal that is actually a ferret (a small
+    # mammal) — the profile may be stale or mis-set, and what the owner is
+    # describing right now is the more direct signal. Generic across any
+    # species pair: not a special case for cat/ferret specifically (see
+    # ChatOrchestrator._effective_species).
+    client = FakeLLMClient()
+    orchestrator = ChatOrchestrator(client, InMemoryEvidenceRetriever(), NoopPiiAnonymizer())
+
+    result = orchestrator.answer(
+        ChatOrchestratorInput(
+            user_message="Il mio furetto non mangia da ieri e non fa la cacca",
+            species="Gatto",
+            pet_name="Micio",
+        )
+    )
+
+    # GI stasis is a small-mammal-specific emergency, not flagged for
+    # cats — reaching it here proves the ferret's family was used, not
+    # the profile's "cat".
+    assert result.mode == "safety_clarification"
+    assert result.safety_clarification_category == "gi_stasis"
+
+
+def test_chat_orchestrator_does_not_override_species_when_two_are_named_ambiguously() -> None:
+    # Two different species words present is left ambiguous on purpose —
+    # a real multi-pet mention (handled separately) or a figurative
+    # comparison, either way not a confident enough signal to override
+    # the registered profile.
+    client = FakeLLMClient()
+    orchestrator = ChatOrchestrator(client, InMemoryEvidenceRetriever(), NoopPiiAnonymizer())
+
+    result = orchestrator.answer(
+        ChatOrchestratorInput(
+            user_message="Il mio gatto è agile come un furetto, non mangia da ieri",
+            species="Gatto",
+            pet_name="Micio",
+        )
+    )
+
+    # Falls back to the cat profile: GI-stasis (small-mammal-only) must
+    # NOT fire here.
+    assert result.safety_clarification_category != "gi_stasis"
 
 
 def test_chat_orchestrator_escalates_dog_only_flea_treatment_given_to_a_cat() -> None:

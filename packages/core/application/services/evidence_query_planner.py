@@ -15,6 +15,11 @@ OpenAlex later) shares one query-building policy instead of duplicating
 or drifting from it.
 """
 
+from packages.core.domain.knowledge.fuzzy_match import (
+    contains_keyword,
+    find_fuzzy_keyword_matches,
+)
+
 IT_EN_TERMS: dict[str, str] = {
     "tosse": "cough",
     "tossisce": "cough",
@@ -132,11 +137,58 @@ INTENT_FALLBACK_TERMS: dict[str, str] = {
     "husbandry_question": "captive husbandry environmental parameters",
 }
 
+# Real-world finding: a misspelled brand name ("tachipirna" for
+# "tachipirina") must still translate correctly, or the evidence search
+# silently falls back to a generic query instead of veterinary toxicology
+# literature. Scoped to complete medication/toxin words only — most other
+# IT_EN_TERMS keys are deliberately short stems (e.g. "aliment",
+# "aggress") to match several inflections by substring, and fuzzy-matching
+# a stem against arbitrary words is a different, unvetted collision risk
+# (see fuzzy_match.py's module docstring). Every entry here is a real,
+# complete word of at least fuzzy_match.MIN_FUZZY_KEYWORD_LENGTH letters.
+FUZZY_ELIGIBLE_TERMS: tuple[str, ...] = (
+    "paracetamol",
+    "tachipirina",
+    "acetaminofene",
+    "ibuprofen",
+    "ibuprofene",
+    "brufen",
+    "nurofen",
+    "artrosilene",
+    "ketoprofene",
+    "aspirina",
+    "voltaren",
+    "dicloreum",
+    "diclofenac",
+    "advantix",
+    "vectra",
+    "exspot",
+    "permetrina",
+    "amoxicillina",
+    "penicillina",
+    "clindamicina",
+    "lincomicina",
+    "eritromicina",
+    "cioccolat",
+    "uvetta",
+    "xilitolo",
+    "avocado",
+)
+
 
 class EvidenceQueryPlanner:
     def build_query(self, message: str, intent: str) -> str:
         lowered = message.lower()
-        matched = {english for it_term, english in IT_EN_TERMS.items() if it_term in lowered}
+        # contains_keyword (prefix-of-a-word), not a raw `in` check: same
+        # "aglio"/"per sbaglio" collision risk as safety_gate.py — see its
+        # docstring for why this generically fixes it while preserving
+        # every deliberate stem in IT_EN_TERMS (e.g. "aliment", "aggress").
+        matched = {
+            english for it_term, english in IT_EN_TERMS.items()
+            if contains_keyword(lowered, it_term)
+        }
+        fuzzy_terms = find_fuzzy_keyword_matches(lowered, FUZZY_ELIGIBLE_TERMS)
+        matched |= {IT_EN_TERMS[term] for term in fuzzy_terms}
         if not matched:
             fallback = INTENT_FALLBACK_TERMS.get(intent)
             if fallback:

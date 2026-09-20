@@ -2,6 +2,9 @@ from datetime import date, datetime
 from typing import TYPE_CHECKING, Any, cast
 
 from packages.core.application.ports.account_consents_repository import AccountConsentsRepository
+from packages.core.application.ports.chat_response_report_repository import (
+    ChatResponseReportRepository,
+)
 from packages.core.application.ports.clinical_event_repository import ClinicalEventRepository
 from packages.core.application.ports.conversation_repository import ConversationRepository
 from packages.core.application.ports.dog_walk_repository import DogWalkRepository
@@ -16,6 +19,7 @@ from packages.core.application.ports.user_location_repository import UserLocatio
 from packages.core.domain.consent.models import AccountConsents
 from packages.core.domain.conversation.models import Conversation
 from packages.core.domain.dog_walk.models import WalkSession
+from packages.core.domain.feedback.models import ChatResponseReport
 from packages.core.domain.geo.models import Coordinates, UserLocation
 from packages.core.domain.local_activity.models import LocalActivity
 from packages.core.domain.marketplace.models import ListingReport, MarketplaceListing
@@ -253,6 +257,38 @@ class SupabaseListingReportRepository(ListingReportRepository):
             self._client.table(self._table).select("*").eq("listing_id", listing_id).execute()
         )
         return [ListingReport.model_validate(item) for item in response.data or []]
+
+
+class SupabaseChatResponseReportRepository(ChatResponseReportRepository):
+    def __init__(self, client: Client) -> None:
+        self._client = client
+        self._table = "chat_response_reports"
+
+    def save(self, report: ChatResponseReport) -> ChatResponseReport:
+        payload = _serialize_payload(report.model_dump(mode="json"))
+        self._client.table(self._table).upsert(payload).execute()
+        return report
+
+    def get(self, report_id: str) -> ChatResponseReport | None:
+        response = (
+            self._client.table(self._table).select("*").eq("id", report_id).limit(1).execute()
+        )
+        if not response.data:
+            return None
+        return ChatResponseReport.model_validate(response.data[0])
+
+    def list_by_owner(self, owner_id: str) -> list[ChatResponseReport]:
+        response = (
+            self._client.table(self._table)
+            .select("*")
+            .eq("reporter_owner_id", owner_id)
+            .execute()
+        )
+        return [ChatResponseReport.model_validate(item) for item in response.data or []]
+
+    def list_all(self) -> list[ChatResponseReport]:
+        response = self._client.table(self._table).select("*").execute()
+        return [ChatResponseReport.model_validate(item) for item in response.data or []]
 
 
 def _activity_to_row(activity: LocalActivity) -> dict[str, Any]:

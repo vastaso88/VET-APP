@@ -71,7 +71,7 @@ def test_aquarium_size_note_warns_against_linear_stocking_multiplication() -> No
     )
 
     size_note = next(source for source in results if "goldfish" in (source.snippet or ""))
-    assert "does not scale by simply multiplying" in size_note.snippet
+    assert "does not scale by simply multiplying" in (size_note.snippet or "")
 
 
 def test_returns_bird_enrichment_sources_for_bird_species() -> None:

@@ -7,6 +7,7 @@ from fastapi.responses import JSONResponse
 from apps.api.routes.account_consents import router as account_consents_router
 from apps.api.routes.auth import router as auth_router
 from apps.api.routes.chat import router as chat_router
+from apps.api.routes.chat_response_reports import router as chat_response_reports_router
 from apps.api.routes.conversations import router as conversations_router
 from apps.api.routes.health import router as health_router
 from apps.api.routes.pets import router as pets_router
@@ -74,3 +75,4 @@ app.include_router(conversations_router)
 app.include_router(chat_router)
 app.include_router(reminders_router)
 app.include_router(account_consents_router)
+app.include_router(chat_response_reports_router)

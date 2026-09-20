@@ -297,6 +297,34 @@ create table if not exists public.marketplace_listing_reports (
     created_at timestamptz not null default now()
 );
 
+-- "Segnala questa risposta": an owner flags a specific chat reply as
+-- missing, limited, or wrong. Feeds the same real-usage bug pipeline the
+-- app's own engineering already uses for stress testing, just sourced
+-- from real users. reported_answer snapshots the message content at
+-- report time rather than only storing message_id, so a report stays
+-- self-contained for review. credited_bug_ref stays null until a human
+-- confirms (at fix time, not automatically) that this report corresponds
+-- to an actual shipped fix — the reward mechanics (a free week per
+-- resolved bug, capped monthly per user) can't be wired to real billing
+-- yet (only a local Flutter demo store exists today), so this field is
+-- the hook for whenever that billing exists, rather than a future schema
+-- change (docs/marketing/01_brainstorm.md).
+create table if not exists public.chat_response_reports (
+    id text primary key,
+    conversation_id text not null references public.conversations(id) on delete cascade,
+    message_id text not null,
+    pet_id text not null references public.pet_profiles(id) on delete cascade,
+    reporter_owner_id text not null,
+    reason text not null default 'other',
+    details text,
+    reported_answer text not null,
+    status text not null default 'reported',
+    created_at timestamptz not null default now(),
+    resolved_at timestamptz,
+    resolution_note text,
+    credited_bug_ref text
+);
+
 -- Attività attorno a te / Eventi nei dintorni. location is never fuzzed -
 -- public venues/events that already advertise their own address.
 create table if not exists public.local_activities (
@@ -326,12 +354,17 @@ create index if not exists idx_marketplace_listing_reports_listing_id
     on public.marketplace_listing_reports(listing_id);
 create index if not exists idx_local_activities_status on public.local_activities(status);
 create index if not exists idx_local_activities_kind on public.local_activities(kind);
+create index if not exists idx_chat_response_reports_conversation_id
+    on public.chat_response_reports(conversation_id);
+create index if not exists idx_chat_response_reports_status
+    on public.chat_response_reports(status);
 
 alter table public.user_locations enable row level security;
 alter table public.dog_walks enable row level security;
 alter table public.marketplace_listings enable row level security;
 alter table public.marketplace_listing_reports enable row level security;
 alter table public.local_activities enable row level security;
+alter table public.chat_response_reports enable row level security;
 
 -- user_locations: single-row-per-owner, same shape as account_consents.
 drop policy if exists user_locations_select_own on public.user_locations;
@@ -443,3 +476,25 @@ on public.local_activities
 for update
 using (submitted_by_owner_id = auth.uid()::text)
 with check (submitted_by_owner_id = auth.uid()::text);
+
+-- chat_response_reports: insert-only for regular users, same posture as
+-- marketplace_listing_reports. No select/update policy -> default deny;
+-- the review/resolve workflow (list all, mark resolved, credit a bug
+-- ref) goes through the Python backend's service-role client only. No
+-- staff/admin role concept exists yet anywhere in this schema, so those
+-- endpoints have no additional authorization gate today - same MVP
+-- maturity level as the rest of this app, flagged here rather than
+-- silently assumed safe.
+drop policy if exists chat_response_reports_insert_own on public.chat_response_reports;
+create policy chat_response_reports_insert_own
+on public.chat_response_reports
+for insert
+with check (
+    reporter_owner_id = auth.uid()::text
+    and exists (
+        select 1
+        from public.conversations
+        where public.conversations.id = public.chat_response_reports.conversation_id
+          and public.conversations.owner_id = auth.uid()::text
+    )
+);
