@@ -30,6 +30,12 @@ class Settings(BaseSettings):
     llm_api_key: str = Field(default="", alias="LLM_API_KEY")
     llm_base_url: str = Field(default="https://api.groq.com/openai/v1", alias="LLM_BASE_URL")
     llm_timeout_seconds: int = Field(default=30, alias="LLM_TIMEOUT_SECONDS")
+    # Voice dictation (speech-to-text): reuses LLM_API_KEY/LLM_BASE_URL
+    # rather than a separate key — Groq's Whisper transcription endpoint
+    # is the same account/base URL family as chat completions, so this
+    # needs no new vendor relationship.
+    stt_provider: str = Field(default="echo", alias="STT_PROVIDER")
+    stt_model: str = Field(default="whisper-large-v3-turbo", alias="STT_MODEL")
     log_level: str = Field(default="INFO", alias="LOG_LEVEL")
     enable_telemetry: bool = Field(default=False, alias="ENABLE_TELEMETRY")
     enable_interview_loop: bool = Field(default=True, alias="ENABLE_INTERVIEW_LOOP")
@@ -82,6 +88,16 @@ class Settings(BaseSettings):
                 "LLM_PROVIDER=groq",
                 {
                     "LLM_MODEL": self.llm_model,
+                    "LLM_API_KEY": self.llm_api_key,
+                    "LLM_BASE_URL": self.llm_base_url,
+                },
+            )
+
+        if self.stt_provider == "groq":
+            self._require_fields(
+                "STT_PROVIDER=groq",
+                {
+                    "STT_MODEL": self.stt_model,
                     "LLM_API_KEY": self.llm_api_key,
                     "LLM_BASE_URL": self.llm_base_url,
                 },

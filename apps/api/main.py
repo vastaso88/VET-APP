@@ -12,6 +12,7 @@ from apps.api.routes.conversations import router as conversations_router
 from apps.api.routes.health import router as health_router
 from apps.api.routes.pets import router as pets_router
 from apps.api.routes.reminders import router as reminders_router
+from apps.api.routes.speech_to_text import router as speech_to_text_router
 from packages.infrastructure.logging.logger import configure_logging
 from packages.infrastructure.telemetry.noop import setup_telemetry
 from packages.shared.auth_context import reset_access_token, set_access_token
@@ -76,3 +77,4 @@ app.include_router(chat_router)
 app.include_router(reminders_router)
 app.include_router(account_consents_router)
 app.include_router(chat_response_reports_router)
+app.include_router(speech_to_text_router)

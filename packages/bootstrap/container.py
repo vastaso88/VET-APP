@@ -17,6 +17,7 @@ from packages.core.application.ports.marketplace_listing_repository import (
 from packages.core.application.ports.pet_profile_repository import PetProfileRepository
 from packages.core.application.ports.pii_anonymizer import PiiAnonymizer
 from packages.core.application.ports.reminder_repository import ReminderRepository
+from packages.core.application.ports.speech_to_text_provider import SpeechToTextProvider
 from packages.core.application.ports.user_location_repository import UserLocationRepository
 from packages.core.application.services.chat_orchestrator import ChatOrchestrator
 from packages.core.application.services.consent_interpreter import ConsentInterpreter
@@ -59,6 +60,7 @@ from packages.core.application.services.set_medical_record_consent import (
 from packages.core.application.services.set_user_location import SetUserLocationService
 from packages.core.application.services.situation_model_builder import SituationModelBuilder
 from packages.core.application.services.start_walk import StartWalkService
+from packages.core.application.services.transcribe_audio import TranscribeAudioService
 from packages.core.application.services.update_pet_profile import UpdatePetProfileService
 from packages.infrastructure.auth.bootstrap_auth_provider import BootstrapAuthProvider
 from packages.infrastructure.llm.providers.echo_llm_client import EchoLLMClient
@@ -101,6 +103,12 @@ from packages.infrastructure.persistence.in_memory_repositories import (
     InMemoryUserLocationRepository,
 )
 from packages.infrastructure.privacy.noop_pii_anonymizer import NoopPiiAnonymizer
+from packages.infrastructure.speech.echo_speech_to_text_provider import (
+    EchoSpeechToTextProvider,
+)
+from packages.infrastructure.speech.groq_speech_to_text_provider import (
+    GroqSpeechToTextProvider,
+)
 from packages.shared.config.settings import Settings, get_settings
 
 
@@ -114,6 +122,7 @@ class ApplicationContainer:
             self.reminder_repository,
         ) = self._build_repositories()
         self.llm_client = self._build_llm_client()
+        self.speech_to_text_provider = self._build_speech_to_text_provider()
         self.evidence_retriever = self._build_evidence_retriever()
         self.pii_anonymizer = self._build_pii_anonymizer()
         self.clinical_event_repository = self._build_clinical_event_repository()
@@ -228,6 +237,9 @@ class ApplicationContainer:
     def resolve_chat_response_report_service(self) -> ResolveChatResponseReportService:
         return ResolveChatResponseReportService(self.chat_response_report_repository)
 
+    def transcribe_audio_service(self) -> TranscribeAudioService:
+        return TranscribeAudioService(self.speech_to_text_provider)
+
     def _build_auth_provider(self) -> AuthProvider:
         if self.settings.auth_backend == "supabase":
             try:
@@ -287,6 +299,11 @@ class ApplicationContainer:
         if self.settings.llm_provider == "groq":
             return GroqLLMClient(self.settings)
         return EchoLLMClient(self.settings)
+
+    def _build_speech_to_text_provider(self) -> SpeechToTextProvider:
+        if self.settings.stt_provider == "groq":
+            return GroqSpeechToTextProvider(self.settings)
+        return EchoSpeechToTextProvider()
 
     def _build_pii_anonymizer(self) -> PiiAnonymizer:
         if self.settings.pii_anonymizer_backend == "presidio":

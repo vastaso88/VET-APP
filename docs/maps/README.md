@@ -5,6 +5,7 @@ Documentazione della "gestione mappe": tre feature basate su geolocalizzazione (
 ## Documenti
 - `01_localita_fondamenta_condivise.md` — design della fondazione condivisa "Località" (permessi, precisione, storage) e delle tre feature che la usano.
 - `02_confronto_difficolta_mvp.md` — confronto sforzo/rischio/costo tra le tre feature, per sequenziare il lavoro.
+- `03_handoff_ui_ux.md` — come integrare le tre feature nelle schermate reali (dove va ciascuna, cosa è già pronto, cosa resta aperto: notifiche push, eventuale aggregazione marketplace esterna).
 
 ## Stato implementazione (2026-09-19)
-Costruite in questa sessione (dominio Python, servizi applicativi, schema Supabase, data/domain layer Flutter, demo harness `/demo/maps`): fondamenta Località, passeggiate con il cane (incluso `evaluate_badges`), mercatino dell'usato, attività/eventi nei dintorni. Non ancora costruite: le schermate di produzione e la navigazione reale — restano di competenza della sessione "UI/UX e funzionalità base", da coordinare quando richiesto.
+Costruite in questa sessione (dominio Python, servizi applicativi, schema Supabase, data/domain layer Flutter, demo harness `/demo/maps`): fondamenta Località, passeggiate con il cane (incluso `evaluate_badges`), mercatino dell'usato, attività/eventi nei dintorni. Non ancora costruite: le schermate di produzione e la navigazione reale — handoff avviato con la sessione "UI/UX e funzionalità base" (vedi `03_handoff_ui_ux.md`).
