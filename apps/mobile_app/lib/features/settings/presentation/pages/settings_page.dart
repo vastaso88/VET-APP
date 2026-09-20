@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
@@ -9,7 +11,10 @@ import '../../../../shared/auth/current_user.dart';
 import '../../../../shared/widgets/coming_soon_page.dart';
 import '../../../account_consents/data/account_consents_remote_data_source.dart';
 import '../../../account_consents/domain/account_consent_models.dart';
+import '../../../billing/data/billing_demo_store.dart';
+import '../../../billing/presentation/pages/billing_page.dart';
 import '../../../profile/presentation/pages/profile_page.dart';
+import '../../data/layout_settings_store.dart';
 
 class SettingsPage extends StatefulWidget {
   const SettingsPage({super.key});
@@ -32,6 +37,11 @@ class _SettingsPageState extends State<SettingsPage> {
   void initState() {
     super.initState();
     _loadConsents();
+    unawaited(LayoutSettingsStore.instance.ensureLoaded());
+  }
+
+  void _updateLayout(LayoutSettings settings) {
+    unawaited(LayoutSettingsStore.instance.update(settings));
   }
 
   Future<void> _loadConsents() async {
@@ -81,6 +91,12 @@ class _SettingsPageState extends State<SettingsPage> {
   void _openProfile() {
     Navigator.of(context).push(
       MaterialPageRoute<void>(builder: (_) => const ProfilePage()),
+    );
+  }
+
+  void _openBilling() {
+    Navigator.of(context).push(
+      MaterialPageRoute<void>(builder: (_) => const BillingPage()),
     );
   }
 
@@ -217,7 +233,12 @@ class _SettingsPageState extends State<SettingsPage> {
     return Scaffold(
       backgroundColor: AppColors.background,
       body: SafeArea(
-        child: ListView(
+        child: ListenableBuilder(
+          listenable: LayoutSettingsStore.instance,
+          builder: (context, _) {
+            final layout = LayoutSettingsStore.instance.settings;
+
+            return ListView(
           padding: const EdgeInsets.fromLTRB(
             AppSpacing.xl,
             AppSpacing.lg,
@@ -232,6 +253,17 @@ class _SettingsPageState extends State<SettingsPage> {
               title: CurrentUser.fullName(fallback: 'Ospite'),
               subtitle: user?.email ?? 'Nessuna sessione attiva',
               onTap: _openProfile,
+            ),
+            const _SectionLabel('Abbonamento'),
+            ListenableBuilder(
+              listenable: BillingDemoStore.instance,
+              builder: (context, _) => _Row(
+                icon: Icons.workspace_premium_outlined,
+                iconColor: AppColors.accent,
+                title: 'Abbonamento e pagamenti',
+                trailingText: BillingDemoStore.instance.currentPlan.displayName,
+                onTap: _openBilling,
+              ),
             ),
             const _SectionLabel('Preferenze'),
             _ToggleRow(
@@ -251,6 +283,37 @@ class _SettingsPageState extends State<SettingsPage> {
             _UnitRow(
               value: _weightUnit,
               onChanged: (value) => setState(() => _weightUnit = value),
+            ),
+            const _SectionLabel('Layout'),
+            _StepperRow(
+              icon: Icons.view_week_outlined,
+              iconColor: AppColors.primary,
+              title: 'Settimane visualizzate in Home',
+              subtitle: 'Quante settimane mostrare nel calendario della Home.',
+              value: layout.weeksShown,
+              minValue: 1,
+              maxValue: 4,
+              onChanged: (value) => _updateLayout(layout.copyWith(weeksShown: value)),
+            ),
+            _ChoiceRow(
+              icon: Icons.calendar_view_week_outlined,
+              iconColor: AppColors.info,
+              title: 'Inizio settimana',
+              leftLabel: 'Lunedì',
+              rightLabel: 'Domenica',
+              isLeftSelected: layout.weekStartDay == WeekStartDay.monday,
+              onSelectLeft: () => _updateLayout(layout.copyWith(weekStartDay: WeekStartDay.monday)),
+              onSelectRight: () => _updateLayout(layout.copyWith(weekStartDay: WeekStartDay.sunday)),
+            ),
+            _ChoiceRow(
+              icon: Icons.density_medium_outlined,
+              iconColor: AppColors.accent,
+              title: 'Densità liste',
+              leftLabel: 'Comoda',
+              rightLabel: 'Compatta',
+              isLeftSelected: layout.listDensity == ListDensity.comfortable,
+              onSelectLeft: () => _updateLayout(layout.copyWith(listDensity: ListDensity.comfortable)),
+              onSelectRight: () => _updateLayout(layout.copyWith(listDensity: ListDensity.compact)),
             ),
             const _SectionLabel('Permessi e consensi'),
             ..._buildConsentRows(),
@@ -293,6 +356,8 @@ class _SettingsPageState extends State<SettingsPage> {
               onTap: _logout,
             ),
           ],
+            );
+          },
         ),
       ),
     );
@@ -392,9 +457,11 @@ class _Row extends StatelessWidget {
                   ],
                 ),
               ),
-              if (trailingText != null)
-                Text(trailingText!, style: AppTextStyles.bodySmall)
-              else if (onTap != null)
+              if (trailingText != null) ...[
+                Text(trailingText!, style: AppTextStyles.bodySmall),
+                if (onTap != null) const SizedBox(width: AppSpacing.xs),
+              ],
+              if (onTap != null)
                 const Icon(Icons.chevron_right_rounded, color: AppColors.mutedText),
             ],
           ),
@@ -493,6 +560,159 @@ class _UnitToggleButton extends StatelessWidget {
         child: Container(
           width: 40,
           padding: const EdgeInsets.symmetric(vertical: 6),
+          alignment: Alignment.center,
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(AppRadii.pill),
+            border: Border.all(color: selected ? AppColors.primary : AppColors.border),
+          ),
+          child: Text(
+            label,
+            style: AppTextStyles.caption.copyWith(
+              color: selected ? AppColors.onPrimary : AppColors.text,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _StepperRow extends StatelessWidget {
+  const _StepperRow({
+    required this.icon,
+    required this.iconColor,
+    required this.title,
+    required this.subtitle,
+    required this.value,
+    required this.minValue,
+    required this.maxValue,
+    required this.onChanged,
+  });
+
+  final IconData icon;
+  final Color iconColor;
+  final String title;
+  final String subtitle;
+  final int value;
+  final int minValue;
+  final int maxValue;
+  final ValueChanged<int> onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(vertical: AppSpacing.sm),
+      decoration: const BoxDecoration(
+        border: Border(bottom: BorderSide(color: AppColors.border)),
+      ),
+      child: Row(
+        children: [
+          _IconBadge(icon: icon, color: iconColor),
+          const SizedBox(width: AppSpacing.md),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: AppTextStyles.body.copyWith(color: AppColors.text, fontWeight: FontWeight.w600),
+                ),
+                const SizedBox(height: 2),
+                Text(subtitle, maxLines: 2, overflow: TextOverflow.ellipsis, style: AppTextStyles.bodySmall),
+              ],
+            ),
+          ),
+          IconButton(
+            onPressed: value > minValue ? () => onChanged(value - 1) : null,
+            icon: const Icon(Icons.remove_circle_outline),
+            color: AppColors.primary,
+            visualDensity: VisualDensity.compact,
+          ),
+          Text(
+            '$value',
+            style: AppTextStyles.body.copyWith(color: AppColors.text, fontWeight: FontWeight.w700),
+          ),
+          IconButton(
+            onPressed: value < maxValue ? () => onChanged(value + 1) : null,
+            icon: const Icon(Icons.add_circle_outline),
+            color: AppColors.primary,
+            visualDensity: VisualDensity.compact,
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _ChoiceRow extends StatelessWidget {
+  const _ChoiceRow({
+    required this.icon,
+    required this.iconColor,
+    required this.title,
+    required this.leftLabel,
+    required this.rightLabel,
+    required this.isLeftSelected,
+    required this.onSelectLeft,
+    required this.onSelectRight,
+  });
+
+  final IconData icon;
+  final Color iconColor;
+  final String title;
+  final String leftLabel;
+  final String rightLabel;
+  final bool isLeftSelected;
+  final VoidCallback onSelectLeft;
+  final VoidCallback onSelectRight;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(vertical: AppSpacing.sm),
+      decoration: const BoxDecoration(
+        border: Border(bottom: BorderSide(color: AppColors.border)),
+      ),
+      child: Row(
+        children: [
+          _IconBadge(icon: icon, color: iconColor),
+          const SizedBox(width: AppSpacing.md),
+          Expanded(
+            child: Text(
+              title,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+              style: AppTextStyles.body.copyWith(color: AppColors.text, fontWeight: FontWeight.w600),
+            ),
+          ),
+          _ChoicePill(label: leftLabel, selected: isLeftSelected, onTap: onSelectLeft),
+          const SizedBox(width: AppSpacing.xs),
+          _ChoicePill(label: rightLabel, selected: !isLeftSelected, onTap: onSelectRight),
+        ],
+      ),
+    );
+  }
+}
+
+class _ChoicePill extends StatelessWidget {
+  const _ChoicePill({required this.label, required this.selected, required this.onTap});
+
+  final String label;
+  final bool selected;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: selected ? AppColors.primary : AppColors.surface,
+      borderRadius: BorderRadius.circular(AppRadii.pill),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(AppRadii.pill),
+        onTap: onTap,
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md, vertical: 6),
           alignment: Alignment.center,
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(AppRadii.pill),
