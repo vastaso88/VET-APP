@@ -509,7 +509,7 @@ class ChatOrchestrator:
             if known_domain is not None:
                 intent = known_domain
         if intent == "general_info":
-            return self._generate_general_answer(data, message)
+            return self._generate_general_answer(data, message, effective_species)
 
         coverage: float | None = None
 
@@ -699,6 +699,28 @@ class ChatOrchestrator:
         return profile_species
 
     @staticmethod
+    def _mentions_wrong_species(text: str, effective_species: str) -> bool:
+        """Real-world finding: an aquarium (species="Pesce") got an
+        AI-generated reply opening with "Nota per il tuo cane" ("Note for
+        your dog") — a genuine LLM error, not anything this codebase
+        inserted (ResponseGenerator only concatenates the model's own
+        synthesis strings). Reuses SPECIES_WORD_TO_FAMILY generically
+        rather than special-casing "cane": flags a possessive reference
+        ("tuo"/"tua {word}") to any species family other than the pet's
+        own, wherever that word falls in the vocabulary. Deliberately
+        narrow to the possessive construction — a legitimate comparison
+        ("a differenza del cane, i pesci non hanno...") mentions another
+        species without claiming it's THIS pet, and must not be flagged.
+        """
+        family = normalize_species(effective_species)
+        lowered = text.lower()
+        return any(
+            f"tuo {word}" in lowered or f"tua {word}" in lowered
+            for word, mentioned_family in SPECIES_WORD_TO_FAMILY.items()
+            if mentioned_family != family
+        )
+
+    @staticmethod
     def _multi_pet_redirect_result(pet_name: str) -> ChatOrchestratorResult:
         return ChatOrchestratorResult(
             answer=(
@@ -850,6 +872,7 @@ class ChatOrchestrator:
         self,
         data: ChatOrchestratorInput,
         message: str,
+        effective_species: str,
     ) -> ChatOrchestratorResult:
         anonymized_message = self._anonymize_for_provider(message)
         try:
@@ -858,7 +881,11 @@ class ChatOrchestrator:
                     system_prompt=(
                         "You are a veterinary app assistant. Answer clearly, avoid diagnosis, "
                         "and encourage professional care when symptoms worsen. There is no "
-                        "retrieved evidence for this turn, so never include a [n] citation."
+                        "retrieved evidence for this turn, so never include a [n] citation. "
+                        "Always refer to the animal consistent with the Species given below — "
+                        "never assume or default to a different species (e.g. never call it a "
+                        "dog/cane unless Species really is a dog), even if the pet's name is "
+                        "unusual or describes an object or place rather than a typical name."
                     ),
                     user_prompt=(
                         f"{self._pet_context_block(data)}\n"
@@ -894,6 +921,12 @@ class ChatOrchestrator:
         if not validation.is_valid:
             return self._validation_failure_result(
                 sources=[], violations=validation.violations, mode="general"
+            )
+        if self._mentions_wrong_species(response.content, effective_species):
+            return self._validation_failure_result(
+                sources=[],
+                violations=["wrong_species_reference"],
+                mode="general",
             )
         return ChatOrchestratorResult(
             answer=response.content,
@@ -1001,6 +1034,19 @@ class ChatOrchestrator:
         if not validation.is_valid:
             return self._validation_failure_result(
                 sources=sources, violations=validation.violations, mode="evidence"
+            )
+        # Real-world finding: an aquarium (species="Pesce") got an
+        # AI-generated reply opening with "Nota per il tuo cane" — the
+        # LLM's own error (ResponseGenerator only concatenates the
+        # synthesis's own strings, nothing in this codebase inserts a
+        # species word). A deterministic check here is a safety net for
+        # the same reason validate_answer checks citations/absolute claims
+        # mechanically rather than only trusting the prompt.
+        if self._mentions_wrong_species(synthesis.all_claim_text(), effective_species):
+            return self._validation_failure_result(
+                sources=sources,
+                violations=["wrong_species_reference"],
+                mode="evidence",
             )
 
         answer = self._response_generator.render(synthesis)

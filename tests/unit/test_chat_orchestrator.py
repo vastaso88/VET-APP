@@ -30,6 +30,21 @@ class FakeLLMClient:
         )
 
 
+class ScriptedContentLLMClient:
+    """Returns a fixed content string regardless of the prompt — used to
+    simulate a specific (mis)behaved LLM response deterministically."""
+
+    def __init__(self, content: str) -> None:
+        self._content = content
+        self.requests: list[LLMGenerationRequest] = []
+
+    def generate(self, request: LLMGenerationRequest) -> LLMResponse:
+        self.requests.append(request)
+        return LLMResponse(
+            content=self._content, provider="fake", model="fake-model", token_count=12
+        )
+
+
 class FakePiiAnonymizer:
     """Records every text it was asked to anonymize and replaces a fixed
     substring with a placeholder, so a test can assert the LLM never sees it."""
@@ -152,6 +167,68 @@ def test_chat_orchestrator_does_not_override_species_when_two_are_named_ambiguou
     # Falls back to the cat profile: GI-stasis (small-mammal-only) must
     # NOT fire here.
     assert result.safety_clarification_category != "gi_stasis"
+
+
+def test_chat_orchestrator_rejects_an_evidence_answer_that_calls_the_pet_the_wrong_species() -> (
+    None
+):
+    # Real-world finding: an aquarium (species="Pesce") got an
+    # AI-generated reply opening with "Nota per il tuo cane" — a genuine
+    # LLM error caught deterministically here, the same way validate_answer
+    # mechanically checks citations rather than only trusting the prompt.
+    client = ScriptedContentLLMClient(
+        '{"supported_claims": ["Nota per il tuo cane, controlla i litri [1]."]}'
+    )
+    orchestrator = ChatOrchestrator(client, InMemoryEvidenceRetriever(), NoopPiiAnonymizer())
+
+    result = orchestrator.answer(
+        ChatOrchestratorInput(
+            user_message="Quanti litri ha il mio acquario?",
+            species="Pesce",
+            pet_name="Acquario del salotto",
+        )
+    )
+
+    assert result.mode == "evidence"
+    assert result.ai_generated is False
+    assert any("wrong_species_reference" in violation for violation in result.limitations)
+
+
+def test_chat_orchestrator_rejects_a_general_answer_that_calls_the_pet_the_wrong_species() -> None:
+    client = ScriptedContentLLMClient("Ciao! Come sta il tuo cane oggi?")
+    orchestrator = ChatOrchestrator(client, InMemoryEvidenceRetriever(), NoopPiiAnonymizer())
+
+    result = orchestrator.answer(
+        ChatOrchestratorInput(
+            user_message="ciao", species="Pesce", pet_name="Acquario del salotto"
+        )
+    )
+
+    assert result.mode == "general"
+    assert result.ai_generated is False
+    assert any("wrong_species_reference" in violation for violation in result.limitations)
+
+
+def test_chat_orchestrator_allows_a_legitimate_comparison_mentioning_another_species() -> None:
+    # Mentioning another species without claiming it's THIS pet (no
+    # possessive "tuo"/"tua") must not be flagged.
+    client = ScriptedContentLLMClient(
+        '{"supported_claims": ['
+        '"A differenza del cane, i pesci non hanno una vescica simile [1]."'
+        ']}'
+    )
+    orchestrator = ChatOrchestrator(client, InMemoryEvidenceRetriever(), NoopPiiAnonymizer())
+
+    result = orchestrator.answer(
+        ChatOrchestratorInput(
+            user_message="Quanti litri ha il mio acquario?",
+            species="Pesce",
+            pet_name="Acquario del salotto",
+        )
+    )
+
+    assert result.mode == "evidence"
+    assert result.ai_generated is True
 
 
 def test_chat_orchestrator_escalates_dog_only_flea_treatment_given_to_a_cat() -> None:

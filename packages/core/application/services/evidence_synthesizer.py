@@ -47,7 +47,10 @@ def _build_system_prompt(response_language: str) -> str:
         "requirements for groups (e.g. housing/stocking multiple animals) are usually "
         "not linear in individual count, so an unsupported multiplication looks "
         "precise but can be badly wrong; say the group figure isn't covered by this "
-        "evidence instead. "
+        "evidence instead. Always refer to the animal consistent with the Species given "
+        "in the case description — never assume or default to a different species (e.g. "
+        "never call it a dog/cane unless Species really is a dog), even if the pet's name "
+        "is unusual or describes an object or place rather than a typical name. "
         f"Reminder: EVERY string must be in {language}, translated, never quoted "
         "verbatim from English evidence."
     )
