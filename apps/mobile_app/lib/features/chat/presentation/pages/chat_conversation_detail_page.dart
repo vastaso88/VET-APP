@@ -45,7 +45,7 @@ class _ChatConversationDetailPageState extends State<ChatConversationDetailPage>
     // page itself is still being built during a route transition.
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) {
-        _store.openConversation(widget.conversationId);
+        _store.openConversation(widget.conversationId, fallback: widget.initialConversation);
       }
     });
   }
@@ -72,10 +72,10 @@ class _ChatConversationDetailPageState extends State<ChatConversationDetailPage>
               children: [
                 Padding(
                   padding: const EdgeInsets.fromLTRB(
-                    AppSpacing.xxl,
                     AppSpacing.lg,
-                    AppSpacing.xxl,
-                    AppSpacing.md,
+                    AppSpacing.sm,
+                    AppSpacing.lg,
+                    AppSpacing.sm,
                   ),
                   child: _Header(conversation: conversation),
                 ),
@@ -193,60 +193,47 @@ class _Header extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(AppSpacing.lg),
-      decoration: BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.circular(28),
-        border: Border.all(color: AppColors.border),
-      ),
-      child: Row(
-        children: [
-          IconButton(
-            onPressed: () => Navigator.of(context).maybePop(),
-            icon: const Icon(Icons.arrow_back_rounded),
-          ),
-          Container(
-            width: 48,
-            height: 48,
-            decoration: BoxDecoration(
-              color: AppColors.primary,
-              borderRadius: BorderRadius.circular(18),
-            ),
-            child: const Icon(
-              Icons.chat_bubble_outline,
-              color: AppColors.onPrimary,
-            ),
-          ),
-          const SizedBox(width: AppSpacing.md),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  conversation.title,
-                  style: const TextStyle(
-                    color: AppColors.text,
-                    fontSize: 16,
-                    height: 1.2,
-                    fontWeight: FontWeight.w700,
-                  ),
+    // Capped at 2 lines total (title + pet name) — this header doesn't
+    // scroll away, so every extra line here is a line the message list
+    // below permanently loses.
+    return Row(
+      children: [
+        IconButton(
+          onPressed: () => Navigator.of(context).maybePop(),
+          icon: const Icon(Icons.arrow_back_rounded),
+          visualDensity: VisualDensity.compact,
+        ),
+        const SizedBox(width: AppSpacing.xs),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                conversation.title,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: const TextStyle(
+                  color: AppColors.text,
+                  fontSize: 15,
+                  height: 1.2,
+                  fontWeight: FontWeight.w700,
                 ),
-                const SizedBox(height: 2),
-                Text(
-                  '${conversation.petName} - ${conversation.statusLabel}',
-                  style: const TextStyle(
-                    color: AppColors.secondaryText,
-                    fontSize: 12,
-                    height: 1.3,
-                    fontWeight: FontWeight.w400,
-                  ),
+              ),
+              Text(
+                conversation.petName,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: const TextStyle(
+                  color: AppColors.secondaryText,
+                  fontSize: 12,
+                  height: 1.3,
+                  fontWeight: FontWeight.w400,
                 ),
-              ],
-            ),
+              ),
+            ],
           ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 }
@@ -276,11 +263,6 @@ class _SuccessConversationView extends StatelessWidget {
 
         return Column(
           children: [
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xxl),
-              child: _ContextBanner(conversation: conversation),
-            ),
-            const SizedBox(height: AppSpacing.md),
             Expanded(
               child: ListView.separated(
                 controller: scrollController,
@@ -317,66 +299,6 @@ class _SuccessConversationView extends StatelessWidget {
           ],
         );
       },
-    );
-  }
-}
-
-class _ContextBanner extends StatelessWidget {
-  const _ContextBanner({
-    required this.conversation,
-  });
-
-  final ChatConversationDetail conversation;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(AppSpacing.lg),
-      decoration: BoxDecoration(
-        color: AppColors.accentSoft,
-        borderRadius: BorderRadius.circular(24),
-      ),
-      child: Row(
-        children: [
-          Container(
-            width: 40,
-            height: 40,
-            decoration: BoxDecoration(
-              color: AppColors.primary,
-              borderRadius: BorderRadius.circular(14),
-            ),
-            child: const Icon(Icons.pets, color: AppColors.onPrimary, size: 20),
-          ),
-          const SizedBox(width: AppSpacing.md),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  '${conversation.petName} attivo',
-                  style: const TextStyle(
-                    color: AppColors.text,
-                    fontSize: 16,
-                    height: 1.2,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-                const SizedBox(height: 2),
-                const Text(
-                  'Il contesto del pet e gia pronto per questa chat.',
-                  style: TextStyle(
-                    color: AppColors.secondaryText,
-                    fontSize: 12,
-                    height: 1.3,
-                    fontWeight: FontWeight.w400,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
     );
   }
 }

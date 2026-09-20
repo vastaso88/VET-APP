@@ -19,9 +19,7 @@ class PetCreatePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return PetsScaffold(
-      title: 'Crea un profilo pet.',
-      subtitle:
-          'Nome, specie, razza opzionale, data di nascita e peso validato per evitare inserimenti errati.',
+      title: 'Crea un profilo pet',
       onBack: () => Navigator.of(context).maybePop(),
       actions: [
         TextButton(
@@ -39,9 +37,7 @@ class PetCreatePage extends StatelessWidget {
             actionLabel: 'Chiudi',
             onRetry: () => Navigator.of(context).maybePop(),
           ),
-        PetsScreenStatus.empty => const _CreateForm(
-            helperText: 'Parti da zero e salva quando il profilo e pronto.',
-          ),
+        PetsScreenStatus.empty => const _CreateForm(),
         PetsScreenStatus.success => const _CreateForm(),
       },
     );
@@ -49,17 +45,12 @@ class PetCreatePage extends StatelessWidget {
 }
 
 class _CreateForm extends StatelessWidget {
-  const _CreateForm({
-    this.helperText = 'Compila i campi richiesti per iniziare.',
-  });
-
-  final String helperText;
+  const _CreateForm();
 
   @override
   Widget build(BuildContext context) {
     return PetProfileForm(
       title: 'Nuovo profilo',
-      helperText: helperText,
       submitLabel: 'Salva profilo pet',
       onSubmit: (draft) async {
         final pet = PetDemoStore.instance.create(
@@ -72,6 +63,8 @@ class _CreateForm extends StatelessWidget {
           medicalNote: draft.medicalNote,
           identityColor: draft.identityColor,
           photoBytes: draft.photoBytes,
+          aquariumStock: draft.aquariumStock,
+          habitat: draft.habitat,
         );
         Navigator.of(context).pop(pet);
       },

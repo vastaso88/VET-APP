@@ -32,10 +32,15 @@ abstract class ChatRemoteDataSource {
   });
 
   /// Resolves a real, backend-known pet id to attach chat messages to.
-  /// Pets isn't wired to the backend yet (still demo-only), so this uses the
-  /// first pet already on the account, or creates one from the given
-  /// fallback name/species on the fly — just enough to unblock a real chat
-  /// end-to-end without waiting on the full Pets integration.
+  /// Pets isn't wired to the backend yet (still demo-only), so this matches
+  /// [fallbackName] against the account's existing backend pets by name, or
+  /// creates one on the fly if none matches — just enough to unblock a real
+  /// chat end-to-end without waiting on the full Pets integration. Matching
+  /// by name (not just grabbing the first pet on the account) matters: a
+  /// single account can have several local demo pets each chatting
+  /// independently, and picking `.first` regardless of which pet the
+  /// conversation is actually about silently attributed every message to
+  /// whichever pet resolved first.
   Future<Result<String>> ensureDefaultPetId({
     required String fallbackName,
     required String fallbackSpecies,
@@ -152,10 +157,16 @@ class HttpChatRemoteDataSource implements ChatRemoteDataSource {
       if (listResponse.statusCode >= 200 && listResponse.statusCode < 300) {
         final json = jsonDecode(listResponse.body) as Map<String, dynamic>;
         final pets = json['pet_profiles'] as List<dynamic>? ?? const [];
-        if (pets.isNotEmpty) {
-          final first = pets.first as Map<String, dynamic>;
-          return Result.success(first['id'] as String);
+        final normalizedFallback = fallbackName.trim().toLowerCase();
+        for (final entry in pets) {
+          final pet = entry as Map<String, dynamic>;
+          final name = (pet['name'] as String?)?.trim().toLowerCase() ?? '';
+          if (name == normalizedFallback) {
+            return Result.success(pet['id'] as String);
+          }
         }
+        // No backend pet with this name yet — fall through to create one,
+        // rather than reusing an unrelated pet's id.
       }
 
       final createResponse = await _client

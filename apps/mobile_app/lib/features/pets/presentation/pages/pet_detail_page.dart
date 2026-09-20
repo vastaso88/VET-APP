@@ -57,6 +57,15 @@ class _PetDetailPageState extends State<PetDetailPage> {
       title: pet?.name ?? 'Dettaglio pet',
       subtitle: pet == null ? null : pet.species,
       onBack: () => Navigator.of(context).maybePop(),
+      badge: pet == null
+          ? null
+          : PetAvatar(
+              label: pet.avatarEmoji,
+              backgroundColor: pet.accentColor,
+              photoBytes: pet.photoBytes,
+              identityColor: pet.identityColor,
+              size: 36,
+            ),
       actions: [
         IconButton(
           onPressed: pet == null ? null : () => _openEdit(context, pet),
@@ -128,10 +137,17 @@ class _PetDetailContentState extends State<_PetDetailContent>
 
   @override
   Widget build(BuildContext context) {
+    final habitat = widget.pet.habitat;
     return Column(
       children: [
-        _CompactHero(pet: widget.pet),
-        const SizedBox(height: AppSpacing.lg),
+        if (habitat != null && !habitat.isEmpty) ...[
+          _HabitatSummaryRow(pet: widget.pet, habitat: habitat),
+          const SizedBox(height: AppSpacing.sm),
+        ],
+        if (widget.pet.isAquarium) ...[
+          _AquariumStockCard(stock: widget.pet.aquariumStock),
+          const SizedBox(height: AppSpacing.md),
+        ],
         TabBar(
           controller: _tabController,
           labelColor: AppColors.primary,
@@ -161,10 +177,121 @@ class _PetDetailContentState extends State<_PetDetailContent>
   }
 }
 
-class _CompactHero extends StatelessWidget {
-  const _CompactHero({required this.pet});
+String _habitatLabel(String species) => switch (species) {
+      'Pesce' => 'Acquario',
+      'Rettili e anfibi' => 'Terrario',
+      'Uccello' => 'Voliera',
+      _ => 'Habitat',
+    };
+
+/// A single-line summary, tap to see the full habitat details — kept to
+/// one line so it doesn't eat into the space the tabs below need.
+class _HabitatSummaryRow extends StatelessWidget {
+  const _HabitatSummaryRow({required this.pet, required this.habitat});
 
   final PetProfile pet;
+  final HabitatDetails habitat;
+
+  String _summary() {
+    final parts = <String>[
+      if (habitat.dimensions.isNotEmpty) habitat.dimensions,
+      if (habitat.volumeLiters != null) '${habitat.volumeLiters} L',
+      if (habitat.temperatureLabel.isNotEmpty) habitat.temperatureLabel,
+    ];
+    return parts.isEmpty ? 'Tocca per i dettagli' : parts.join(' · ');
+  }
+
+  void _openDetails(BuildContext context) {
+    showModalBottomSheet<void>(
+      context: context,
+      backgroundColor: AppColors.surface,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(AppRadii.xl)),
+      ),
+      builder: (sheetContext) => SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.all(AppSpacing.lg),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(_habitatLabel(pet.species), style: AppTextStyles.title),
+              const SizedBox(height: AppSpacing.md),
+              if (habitat.dimensions.isNotEmpty) _HabitatDetailRow('Dimensioni', habitat.dimensions),
+              if (habitat.volumeLiters != null) _HabitatDetailRow('Volume', '${habitat.volumeLiters} litri'),
+              if (habitat.temperatureLabel.isNotEmpty)
+                _HabitatDetailRow('Temperatura', habitat.temperatureLabel),
+              if (habitat.substrate.isNotEmpty) _HabitatDetailRow('Substrato', habitat.substrate),
+              if (habitat.notes.isNotEmpty) _HabitatDetailRow('Attrezzatura', habitat.notes),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: AppColors.surface,
+      borderRadius: BorderRadius.circular(AppRadii.large),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(AppRadii.large),
+        onTap: () => _openDetails(context),
+        child: Container(
+          width: double.infinity,
+          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md, vertical: AppSpacing.sm),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(AppRadii.large),
+            border: Border.all(color: AppColors.border),
+          ),
+          child: Row(
+            children: [
+              const Icon(Icons.water_outlined, size: 16, color: AppColors.primary),
+              const SizedBox(width: AppSpacing.sm),
+              Expanded(
+                child: Text(
+                  '${_habitatLabel(pet.species)} · ${_summary()}',
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: AppTextStyles.caption.copyWith(color: AppColors.text, fontWeight: FontWeight.w600),
+                ),
+              ),
+              const Icon(Icons.chevron_right_rounded, size: 16, color: AppColors.mutedText),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _HabitatDetailRow extends StatelessWidget {
+  const _HabitatDetailRow(this.label, this.value);
+
+  final String label;
+  final String value;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: AppSpacing.md),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(label, style: AppTextStyles.caption),
+          const SizedBox(height: 2),
+          Text(value, style: AppTextStyles.bodySmall.copyWith(color: AppColors.text)),
+        ],
+      ),
+    );
+  }
+}
+
+class _AquariumStockCard extends StatelessWidget {
+  const _AquariumStockCard({required this.stock});
+
+  final List<FishStock> stock;
 
   @override
   Widget build(BuildContext context) {
@@ -172,76 +299,46 @@ class _CompactHero extends StatelessWidget {
       width: double.infinity,
       padding: const EdgeInsets.all(AppSpacing.md),
       decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [pet.accentColor.withValues(alpha: 0.55), AppColors.surface],
-        ),
-        borderRadius: BorderRadius.circular(AppRadii.xl),
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(AppRadii.large),
         border: Border.all(color: AppColors.border),
       ),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.center,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
         children: [
-          PetAvatar(
-            label: pet.avatarEmoji,
-            backgroundColor: pet.accentColor,
-            photoBytes: pet.photoBytes,
-            identityColor: pet.identityColor,
-            size: 52,
-          ),
-          const SizedBox(width: AppSpacing.md),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  crossAxisAlignment: CrossAxisAlignment.center,
+          Text('Popolazione', style: AppTextStyles.caption),
+          const SizedBox(height: AppSpacing.sm),
+          // Capped so a big population can't push the tabs below off
+          // screen — scrolls internally instead once there are more than
+          // ~3 species.
+          ConstrainedBox(
+            constraints: const BoxConstraints(maxHeight: 108),
+            child: ListView.separated(
+              shrinkWrap: true,
+              physics: stock.length > 3 ? const ClampingScrollPhysics() : const NeverScrollableScrollPhysics(),
+              itemCount: stock.length,
+              separatorBuilder: (_, __) => const SizedBox(height: AppSpacing.xs),
+              itemBuilder: (context, index) {
+                final item = stock[index];
+                return Row(
                   children: [
-                    Flexible(
+                    Expanded(
                       child: Text(
-                        pet.name,
+                        item.species,
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
-                        style: AppTextStyles.title.copyWith(fontSize: 18),
+                        style: AppTextStyles.bodySmall.copyWith(color: AppColors.text, fontWeight: FontWeight.w600),
                       ),
                     ),
                     const SizedBox(width: AppSpacing.sm),
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.sm, vertical: 3),
-                      decoration: BoxDecoration(
-                        color: AppColors.surfaceElevated,
-                        borderRadius: BorderRadius.circular(AppRadii.pill),
-                        border: Border.all(color: AppColors.border),
-                      ),
-                      child: Text(
-                        pet.healthBadge,
-                        style: AppTextStyles.caption.copyWith(color: AppColors.primaryStrong),
-                      ),
+                    Text(
+                      '× ${item.count}',
+                      style: AppTextStyles.bodySmall.copyWith(color: AppColors.text, fontWeight: FontWeight.w700),
                     ),
                   ],
-                ),
-                const SizedBox(height: 2),
-                Text(pet.title, style: AppTextStyles.bodySmall),
-                const SizedBox(height: 4),
-                Row(
-                  children: [
-                    const Icon(Icons.event_available_outlined, size: 13, color: AppColors.primaryStrong),
-                    const SizedBox(width: 4),
-                    Expanded(
-                      child: Text(
-                        pet.nextVisitLabel,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: AppTextStyles.caption.copyWith(
-                          color: AppColors.text,
-                          fontWeight: FontWeight.w700,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ],
+                );
+              },
             ),
           ),
         ],

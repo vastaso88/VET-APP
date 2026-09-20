@@ -2,6 +2,7 @@ import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 
+import '../domain/fish_species.dart';
 import '../domain/pet_identity_colors.dart';
 import '../domain/pet_models.dart';
 
@@ -32,10 +33,43 @@ class PetDemoStore {
       avatarEmoji: '🐶',
       accentColor: Color(0xFFE7F2EE),
       breeds: [
-        'Labrador Retriever',
-        'Golden Retriever',
+        'Akita',
+        'Alano',
+        'Barboncino',
+        'Basset Hound',
+        'Bassotto',
+        'Beagle',
         'Border Collie',
+        'Boxer',
+        'Bulldog francese',
+        'Bulldog inglese',
+        'Cane Corso',
+        'Carlino',
+        'Chihuahua',
+        'Cocker Spaniel',
+        'Dalmata',
+        'Dobermann',
+        'Golden Retriever',
+        'Jack Russell Terrier',
+        'Labrador Retriever',
+        'Maltese',
         'Meticcio',
+        'Pastore Australiano',
+        'Pastore Belga Malinois',
+        'Pastore Tedesco',
+        'Pinscher',
+        'Rottweiler',
+        'San Bernardo',
+        'Schnauzer',
+        'Segugio Italiano',
+        'Setter Inglese',
+        'Shiba Inu',
+        'Shih Tzu',
+        'Siberian Husky',
+        'Spitz',
+        'Terranova',
+        'Volpino Italiano',
+        'Yorkshire Terrier',
       ],
     ),
     PetSpeciesOption(
@@ -43,10 +77,31 @@ class PetDemoStore {
       avatarEmoji: '🐱',
       accentColor: Color(0xFFF6EADF),
       breeds: [
+        'Abissino',
+        'American Shorthair',
+        'Angora Turco',
+        'Bengala',
+        'Birmano',
+        'Blu di Russia',
+        'Bombay',
+        'British Shorthair',
+        'Certosino',
+        'Devon Rex',
         'Europeo',
         'Europeo a pelo corto',
-        'Siamese',
+        'Exotic Shorthair',
+        'Maine Coon',
+        'Manx',
+        'Meticcio',
         'Norvegese delle foreste',
+        'Orientale',
+        'Persiano',
+        'Ragdoll',
+        'Sacro di Birmania',
+        'Savannah',
+        'Scottish Fold',
+        'Siamese',
+        'Sphynx',
       ],
     ),
     PetSpeciesOption(
@@ -54,14 +109,22 @@ class PetDemoStore {
       avatarEmoji: '🐹',
       accentColor: Color(0xFFF5F0D8),
       breeds: [
-        'Coniglio olandese',
-        'Coniglio nano',
-        'Coniglio ariete',
-        'Criceto',
         'Cavia',
-        'Cincillà',
-        'Gerbillo',
+        'Chinchilla',
+        'Coniglio ariete',
+        'Coniglio nano',
+        'Coniglio olandese',
+        'Coniglio Rex',
+        'Criceto Roborovski',
+        'Criceto Siberiano',
+        'Criceto Siriano',
+        'Degu',
         'Furetto',
+        'Gerbillo',
+        'Istrice africano',
+        'Ratto domestico',
+        'Riccio africano',
+        'Topo domestico',
       ],
     ),
     PetSpeciesOption(
@@ -69,9 +132,20 @@ class PetDemoStore {
       avatarEmoji: '🦜',
       accentColor: Color(0xFFE3EBF0),
       breeds: [
-        'Pappagallo',
+        'Agapornis (inseparabile)',
+        'Amazzone',
+        'Ara',
+        'Cacatua',
+        'Calopsite',
         'Canarino',
         'Cocorita',
+        'Diamante mandarino',
+        'Fringuello',
+        'Lorichetto arcobaleno',
+        'Pappagallo cenerino',
+        'Pappagallo del Senegal',
+        'Parrocchetto dal collare',
+        'Passero del Giappone',
       ],
     ),
     PetSpeciesOption(
@@ -79,24 +153,29 @@ class PetDemoStore {
       avatarEmoji: '🦎',
       accentColor: Color(0xFFEDF0DF),
       breeds: [
-        'Drago barbuto',
-        'Gecko leopardino',
-        'Testuggine',
-        'Serpente del mais',
-        'Rana',
-        'Salamandra',
         'Axolotl',
+        'Boa constrictor',
+        'Camaleonte del velo',
+        'Drago barbuto',
+        'Gecko crestato',
+        'Gecko leopardino',
+        'Iguana verde',
+        'Pitone reale',
+        'Rana artigliata africana',
+        'Rana toro',
+        'Salamandra tigrata',
+        'Serpente del latte',
+        'Serpente del mais',
+        'Testuggine di terra',
+        'Testuggine palustre',
+        'Tritone',
       ],
     ),
     PetSpeciesOption(
       label: 'Pesce',
       avatarEmoji: '🐠',
       accentColor: Color(0xFFE1EEEE),
-      breeds: [
-        'Pesce rosso',
-        'Betta',
-        'Ciclide',
-      ],
+      breeds: aquariumFishSpecies,
     ),
     PetSpeciesOption(
       label: 'Altro',
@@ -114,18 +193,25 @@ class PetDemoStore {
 
   late List<PetProfile> _pets;
 
-  List<PetProfile> list({String? species}) {
+  /// Active pets only by default — pets moved to Ricordi ([PetProfile.isMemorial])
+  /// are excluded so they don't clutter the main Animali list; pass
+  /// [includeMemorial] to get them (used by the Ricordi page).
+  List<PetProfile> list({String? species, bool includeMemorial = false}) {
     final normalizedSpecies = species?.trim().toLowerCase() ?? '';
+    final base = includeMemorial ? _pets : _pets.where((pet) => !pet.isMemorial);
     if (normalizedSpecies.isEmpty || normalizedSpecies == 'tutti') {
-      return List<PetProfile>.unmodifiable(_pets);
+      return List<PetProfile>.unmodifiable(base);
     }
 
     return List<PetProfile>.unmodifiable(
-      _pets.where(
+      base.where(
         (pet) => pet.species.trim().toLowerCase() == normalizedSpecies,
       ),
     );
   }
+
+  List<PetProfile> memorialPets() =>
+      List<PetProfile>.unmodifiable(_pets.where((pet) => pet.isMemorial));
 
   PetProfile? byId(String id) {
     for (final pet in _pets) {
@@ -151,6 +237,10 @@ class PetDemoStore {
     return pet;
   }
 
+  void delete(String id) {
+    _pets = _pets.where((pet) => pet.id != id).toList();
+  }
+
   PetProfile create({
     required String name,
     required String species,
@@ -161,6 +251,8 @@ class PetDemoStore {
     required Color identityColor,
     String medicalNote = '',
     Uint8List? photoBytes,
+    List<FishStock> aquariumStock = const [],
+    HabitatDetails? habitat,
   }) {
     final option = optionForSpecies(species);
     final pet = PetProfile(
@@ -180,6 +272,8 @@ class PetDemoStore {
       accentColor: option.accentColor,
       identityColor: identityColor,
       photoBytes: photoBytes,
+      aquariumStock: aquariumStock,
+      habitat: habitat,
     );
 
     return upsert(pet);

@@ -407,9 +407,14 @@ class _PetLegend extends StatelessWidget {
                 size: 30,
               ),
               const SizedBox(width: AppSpacing.xs),
-              Text(
-                pet.name,
-                style: AppTextStyles.bodySmall.copyWith(fontWeight: FontWeight.w600, color: AppColors.text),
+              ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 110),
+                child: Text(
+                  pet.name,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: AppTextStyles.bodySmall.copyWith(fontWeight: FontWeight.w600, color: AppColors.text),
+                ),
               ),
             ],
           ),

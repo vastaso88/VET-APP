@@ -11,6 +11,7 @@ import '../widgets/pets_scaffold.dart';
 import '../widgets/pets_state_views.dart';
 import 'pet_create_page.dart';
 import 'pet_detail_page.dart';
+import 'pet_memories_page.dart';
 
 class PetsListPage extends StatefulWidget {
   const PetsListPage({
@@ -50,6 +51,14 @@ class _PetsListPageState extends State<PetsListPage> {
       title: 'Animali',
       subtitle: '${PetDemoStore.instance.list().length} profili',
       actions: [
+        if (PetDemoStore.instance.memorialPets().isNotEmpty)
+          IconButton(
+            onPressed: () => _openMemories(context),
+            icon: const Icon(Icons.auto_awesome_outlined),
+            color: Colors.white,
+            style: IconButton.styleFrom(backgroundColor: AppColors.secondary),
+            tooltip: 'Ricordi',
+          ),
         IconButton(
           onPressed: () => _openCreate(context),
           icon: const Icon(Icons.add_rounded),
@@ -101,6 +110,14 @@ class _PetsListPageState extends State<PetsListPage> {
     );
     if (!mounted) return;
     _reload();
+  }
+
+  Future<void> _openMemories(BuildContext context) async {
+    await Navigator.of(context).push(
+      MaterialPageRoute<void>(builder: (_) => const PetMemoriesPage()),
+    );
+    if (!mounted) return;
+    setState(() {});
   }
 }
 
@@ -196,14 +213,33 @@ class _PetRow extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(pet.name, style: AppTextStyles.title.copyWith(fontSize: 17)),
+                    Text(
+                      pet.name,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: AppTextStyles.title.copyWith(fontSize: 17),
+                    ),
                     const SizedBox(height: 2),
-                    Text('${pet.species} · ${pet.breedLabel}', style: AppTextStyles.bodySmall),
+                    Text(
+                      '${pet.species} · ${pet.breedLabel}',
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: AppTextStyles.bodySmall,
+                    ),
                   ],
                 ),
               ),
               const SizedBox(width: AppSpacing.sm),
-              Text(pet.healthBadge, style: AppTextStyles.caption),
+              ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 90),
+                child: Text(
+                  pet.healthBadge,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  textAlign: TextAlign.end,
+                  style: AppTextStyles.caption,
+                ),
+              ),
               const SizedBox(width: AppSpacing.xs),
               const Icon(Icons.chevron_right_rounded, color: AppColors.mutedText),
             ],

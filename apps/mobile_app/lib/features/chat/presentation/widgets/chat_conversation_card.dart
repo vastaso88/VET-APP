@@ -102,10 +102,14 @@ class ChatConversationCard extends StatelessWidget {
                 children: [
                   Row(
                     children: [
-                      Text(
-                        conversation.lastSender,
-                        style: AppTextStyles.caption.copyWith(
-                          color: AppColors.primary,
+                      Flexible(
+                        child: Text(
+                          conversation.lastSender,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: AppTextStyles.caption.copyWith(
+                            color: AppColors.primary,
+                          ),
                         ),
                       ),
                       const SizedBox(width: AppSpacing.sm),

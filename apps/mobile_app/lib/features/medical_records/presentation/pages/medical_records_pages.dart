@@ -795,11 +795,16 @@ class _RecordTile extends StatelessWidget {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(title, style: AppTextStyles.title.copyWith(fontSize: 17)),
+                        Text(
+                          title,
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                          style: AppTextStyles.title.copyWith(fontSize: 17),
+                        ),
                         const SizedBox(height: AppSpacing.xs),
-                        Text(subtitle, style: AppTextStyles.bodySmall),
+                        Text(subtitle, maxLines: 1, overflow: TextOverflow.ellipsis, style: AppTextStyles.bodySmall),
                         const SizedBox(height: AppSpacing.sm),
-                        Text(meta, style: AppTextStyles.caption),
+                        Text(meta, maxLines: 1, overflow: TextOverflow.ellipsis, style: AppTextStyles.caption),
                       ],
                     ),
                   ),

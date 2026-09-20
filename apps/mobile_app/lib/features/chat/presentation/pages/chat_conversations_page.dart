@@ -72,7 +72,7 @@ class ChatConversationsPage extends StatelessWidget {
                       totalCount: visibleConversations.length,
                       totalUnread: totalUnread,
                       activePetName: activePetName,
-                      onStartConversation: () => _startConversation(context),
+                      onStartConversation: () => _startConversation(context, activePetName),
                     ),
                   ),
                   Expanded(
@@ -92,7 +92,7 @@ class ChatConversationsPage extends StatelessWidget {
                                 'Avvia una chat vera per vedere il flusso completo dell assistente veterinario.',
                             actionLabel: 'Apri la prima chat',
                             onAction: visibleConversations.isEmpty
-                                ? () => _startConversation(context)
+                                ? () => _startConversation(context, activePetName)
                                 : () => _openConversation(
                                       context,
                                       visibleConversations.first,
@@ -114,7 +114,7 @@ class ChatConversationsPage extends StatelessWidget {
                                 (conversation) =>
                                     _openConversation(context, conversation),
                             onCreateConversation: () =>
-                                _startConversation(context),
+                                _startConversation(context, activePetName),
                           ),
                       },
                     ),
@@ -143,8 +143,8 @@ class ChatConversationsPage extends StatelessWidget {
     );
   }
 
-  void _startConversation(BuildContext context) {
-    final conversation = ChatDemoStore.instance.startConversation();
+  void _startConversation(BuildContext context, String petName) {
+    final conversation = ChatDemoStore.instance.startConversation(petName: petName);
     Navigator.of(context).push(
       MaterialPageRoute<void>(
         builder: (_) => ChatConversationDetailPage(
@@ -171,76 +171,32 @@ class _Header extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Kept short on purpose: an eyebrow label, a "ready" chip and a fluff
+    // sentence used to fill this card before the list of conversations
+    // even started — all chrome, no information the rest of the page
+    // doesn't already carry.
     return Container(
-      padding: const EdgeInsets.all(AppSpacing.xl),
+      padding: const EdgeInsets.all(AppSpacing.lg),
       decoration: BoxDecoration(
         color: AppColors.surface,
-        borderRadius: BorderRadius.circular(30),
+        borderRadius: BorderRadius.circular(24),
         border: Border.all(color: AppColors.border),
-        boxShadow: const [
-          BoxShadow(
-            color: Color(0x14163A35),
-            blurRadius: 20,
-            offset: Offset(0, 10),
-          ),
-        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
-            children: [
-              Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 12,
-                  vertical: 10,
-                ),
-                decoration: BoxDecoration(
-                  color: AppColors.primary,
-                  borderRadius: BorderRadius.circular(999),
-                ),
-                child: const Text(
-                  'CHAT',
-                  style: TextStyle(
-                    color: AppColors.onPrimary,
-                    fontSize: 12,
-                    fontWeight: FontWeight.w800,
-                    letterSpacing: 0.8,
-                  ),
-                ),
-              ),
-              const Spacer(),
-              Text(
-                '$totalCount conversazion${totalCount == 1 ? 'e' : 'i'}',
-                style: const TextStyle(
-                  color: AppColors.mutedText,
-                  fontSize: 12,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: AppSpacing.lg),
           Text(
             '$activePetName e le sue conversazioni',
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
             style: const TextStyle(
               color: AppColors.text,
-              fontSize: 20,
+              fontSize: 17,
               height: 1.3,
               fontWeight: FontWeight.w700,
             ),
           ),
           const SizedBox(height: AppSpacing.sm),
-          const Text(
-            'Domande, risposte e prossimi passi nello stesso flusso, senza perdere il contesto del pet.',
-            style: TextStyle(
-              color: AppColors.secondaryText,
-              fontSize: 14,
-              height: 1.45,
-              fontWeight: FontWeight.w400,
-            ),
-          ),
-          const SizedBox(height: AppSpacing.md),
           Wrap(
             spacing: AppSpacing.sm,
             runSpacing: AppSpacing.sm,
@@ -255,19 +211,14 @@ class _Header extends StatelessWidget {
                 backgroundColor: AppColors.warmSurface,
                 foregroundColor: const Color(0xFF8B5B3E),
               ),
-              const _HeaderChip(
-                label: 'Demo pronta',
-                backgroundColor: AppColors.primary,
-                foregroundColor: AppColors.onPrimary,
-              ),
             ],
           ),
-          const SizedBox(height: AppSpacing.md),
+          const SizedBox(height: AppSpacing.sm),
           Align(
             alignment: Alignment.centerLeft,
             child: TextButton.icon(
               onPressed: onStartConversation,
-              icon: const Icon(Icons.add_comment_outlined),
+              icon: const Icon(Icons.add_comment_outlined, size: 18),
               label: const Text('Nuova chat demo'),
             ),
           ),

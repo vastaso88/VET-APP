@@ -25,7 +25,11 @@ class ChatDemoStore extends ChangeNotifier {
 
   final ChatRemoteDataSource _remote;
   final AppRuntimeConfigLoader _configLoader;
-  String? _defaultPetId;
+
+  /// Backend pet id resolved for each local pet name — keyed by name so
+  /// resolving one pet's id doesn't get reused for every other pet's chat
+  /// (see [_resolveDefaultPetId]).
+  final Map<String, String> _petIdByName = {};
 
   final List<ChatConversationDetail> _threads = <ChatConversationDetail>[];
   final Set<String> _openedConversationIds = <String>{};
@@ -71,7 +75,11 @@ class ChatDemoStore extends ChangeNotifier {
     return null;
   }
 
-  ChatConversationDetail openConversation(String id) {
+  /// [fallback] lets a caller that already has the right conversation (the
+  /// normal case — every navigation path creates the thread before opening
+  /// it) supply it directly if the store doesn't have it for some reason,
+  /// instead of guessing which pet it was about.
+  ChatConversationDetail openConversation(String id, {ChatConversationDetail? fallback}) {
     _openedConversationIds.add(id);
     final conversation = conversationById(id);
     if (conversation != null) {
@@ -79,11 +87,12 @@ class ChatDemoStore extends ChangeNotifier {
       return conversation;
     }
 
-    final created = _createConversation(
-      petName: 'Moka',
-      title: 'Moka - nuova conversazione',
-      seedPrompt: 'Ciao, ho una domanda su Moka.',
-    );
+    final created = fallback ??
+        _createConversation(
+          petName: 'il tuo pet',
+          title: 'Nuova conversazione',
+          seedPrompt: 'Ciao, ho una domanda.',
+        );
     _threads.insert(0, created);
     _openedConversationIds.add(created.id);
     notifyListeners();
@@ -91,13 +100,13 @@ class ChatDemoStore extends ChangeNotifier {
   }
 
   ChatConversationDetail startConversation({
-    String petName = 'Moka',
-    String seedPrompt = 'Ciao, ho una domanda su Moka.',
+    required String petName,
+    String? seedPrompt,
   }) {
     final conversation = _createConversation(
       petName: petName,
       title: '$petName - nuova conversazione',
-      seedPrompt: seedPrompt,
+      seedPrompt: seedPrompt ?? 'Ciao, ho una domanda su $petName.',
     );
     _threads.insert(0, conversation);
     _openedConversationIds.add(conversation.id);
@@ -211,7 +220,7 @@ class ChatDemoStore extends ChangeNotifier {
   }
 
   Future<Result<String>> _resolveDefaultPetId(String petName) async {
-    final cachedPetId = _defaultPetId;
+    final cachedPetId = _petIdByName[petName];
     if (cachedPetId != null) {
       return Result.success(cachedPetId);
     }
@@ -223,7 +232,7 @@ class ChatDemoStore extends ChangeNotifier {
     return result.fold(
       onFailure: (error) => Result.failure<String>(error),
       onSuccess: (petId) {
-        _defaultPetId = petId;
+        _petIdByName[petName] = petId;
         return Result.success(petId);
       },
     );
