@@ -75,3 +75,14 @@ def test_system_prompt_forbids_inventing_specific_numbers_not_in_the_evidence() 
 
     assert "specific number" in prompt
     assert "inventing one" in prompt
+
+
+def test_system_prompt_forbids_multiplying_a_per_individual_figure_by_a_group_count() -> None:
+    # Real-world finding: asked for tank size for TWO goldfish, the model
+    # doubled a single-fish minimum (75-115L -> "150L for two") — hedged as
+    # uncertain, but real group housing/stocking requirements are not
+    # generally linear in individual count, so an unsupported
+    # multiplication can look precise while being a poor estimate.
+    prompt = _build_system_prompt("it")
+
+    assert "multiplying a per-individual figure" in prompt

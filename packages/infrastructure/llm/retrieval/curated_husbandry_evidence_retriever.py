@@ -90,6 +90,83 @@ HUSBANDRY_CATALOG: list[EvidenceSource] = [
             "symptomatic response."
         ),
     ),
+    # Real-world finding (stress test round 3): "che dimensioni deve avere
+    # il terrario per il mio primo geco?" and "cosa mi serve prima di
+    # comprare i pesci?" both retrieved genuinely relevant UVB/cycling
+    # content but the system honestly flagged that it had no grounded
+    # answer on enclosure/tank SIZE specifically — a real, common,
+    # setup-stage question with nothing to answer it. Deliberately kept as
+    # general ranges/principles with explicit hedging (never a single
+    # precise number presented as definitive) — enclosure sizing is
+    # genuinely species- and life-stage-dependent, and the goal here is to
+    # correct the most common, well-documented sizing mistakes, not to
+    # replace a species-specific care sheet.
+    EvidenceSource(
+        title=(
+            "Curated husbandry note (pending vet review): minimum enclosure size "
+            "for common pet reptiles"
+        ),
+        tier="D",
+        access_depth="D",
+        clinical_domain="husbandry",
+        species="reptile_amphibian",
+        snippet=(
+            "Enclosure size recommendations are species- and life-stage-dependent, "
+            "but common reference points: a single adult leopard gecko is commonly "
+            "kept in an enclosure with a floor area on the order of a 20-US-gallon "
+            "long tank (roughly 75-90 liters, about 75x30cm floor) as a minimum, with "
+            "many current care guides recommending larger. Chameleons are arboreal "
+            "and need HEIGHT more than floor space, plus airflow — a well-ventilated "
+            "screen/mesh enclosure (commonly on the order of 60x60x90cm or larger for "
+            "an adult veiled or panther chameleon) is generally preferred over a "
+            "glass tank for this reason, not only for UVB penetration. As a general "
+            "principle for terrestrial/semi-arboreal reptiles, the enclosure should "
+            "allow the animal to move enough to establish the thermal gradient "
+            "(a distinct warm and cool area) described in the UVB/thermal-gradient "
+            "note above — a too-small enclosure can make a proper gradient "
+            "physically impossible regardless of equipment used. A hatchling/juvenile "
+            "is often started smaller than the adult minimum and moved up as it "
+            "grows, rather than housed in the full adult enclosure from day one."
+        ),
+    ),
+    EvidenceSource(
+        title=(
+            "Curated husbandry note (pending vet review): aquarium size relative to "
+            "fish species and growth"
+        ),
+        tier="D",
+        access_depth="D",
+        clinical_domain="husbandry",
+        species="fish",
+        snippet=(
+            "A very common and well-documented sizing mistake is underestimating "
+            "goldfish: despite frequently being sold for small bowls or tanks, "
+            "goldfish produce a large bioload and grow substantially — common "
+            "guidance is a minimum on the order of 75-115 liters (about 20-30 US "
+            "gallons) for a single fancy (rounder-bodied) goldfish, with common or "
+            "comet goldfish (which grow considerably larger and are strong swimmers) "
+            "often considered better suited to a pond than a typical indoor aquarium "
+            "long-term. A bowl or small unfiltered container is not considered "
+            "appropriate housing for goldfish. For a small community of ordinary "
+            "tropical freshwater fish, a commonly cited general starting point is "
+            "an aquarium on the order of 40 liters (about 10 US gallons) or more, "
+            "scaled up with stocking level and adult fish size — many popular "
+            "species sold small (e.g. certain catfish, barbs) grow considerably "
+            "larger than their juvenile size suggests. In all cases, tank size "
+            "should account for the adult size and eventual stocking level, not "
+            "just the size of the fish at time of purchase; see the nitrogen-cycle "
+            "and water-quality notes above for why an appropriately sized, properly "
+            "cycled and filtered tank matters beyond just giving the fish room to "
+            "swim. Stocking for a GROUP of smaller fish does not scale by simply "
+            "multiplying a single fish's minimum tank size by the number of fish — "
+            "actual capacity depends on bioload, adult size, filtration and "
+            "species-specific behavior (e.g. schooling species kept in too few "
+            "numbers, or territorial species crowded together, cause welfare "
+            "problems independent of raw water volume); a real stocking "
+            "calculation for a specific mixed community is beyond what this general "
+            "note can responsibly give."
+        ),
+    ),
     EvidenceSource(
         title=(
             "Curated husbandry note (pending vet review): nitrogen cycle in a new "

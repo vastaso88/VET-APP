@@ -384,6 +384,32 @@ def test_chat_orchestrator_answers_bird_enrichment_questions_from_curated_catalo
     assert all(source.species == "bird" for source in result.sources)
 
 
+def test_chat_orchestrator_answers_enclosure_size_questions_from_curated_catalog() -> None:
+    # Real-world finding (stress test round 3): "che dimensioni deve avere
+    # il terrario per il mio primo geco?" retrieved genuinely relevant
+    # UVB/thermal content but the system honestly had no grounded answer
+    # on enclosure SIZE — a real gap now filled by a dedicated entry.
+    client = FakeLLMClient()
+    orchestrator = ChatOrchestrator(client, InMemoryEvidenceRetriever(), NoopPiiAnonymizer())
+
+    result = orchestrator.answer(
+        ChatOrchestratorInput(
+            user_message=(
+                "Sto per prendere il mio primo geco leopardino, "
+                "che dimensioni deve avere il terrario?"
+            ),
+            species="Rettili e anfibi",
+            pet_name="Spike",
+        )
+    )
+
+    assert result.mode == "evidence"
+    assert result.ai_generated is True
+    assert any(
+        "enclosure size" in (source.title or "") for source in result.sources
+    )
+
+
 def test_chat_orchestrator_answers_aquarium_husbandry_questions_from_curated_catalog() -> None:
     client = FakeLLMClient()
     orchestrator = ChatOrchestrator(client, InMemoryEvidenceRetriever(), NoopPiiAnonymizer())

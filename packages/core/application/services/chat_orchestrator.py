@@ -52,6 +52,20 @@ logger = logging.getLogger("vetgpt.chat")
 EVIDENCE_POOL_MULTIPLIER = 3
 EVIDENCE_MIN_POOL_SIZE = 8
 
+# Real-world finding: the curated husbandry catalog groups every
+# sub-topic (UVB/thermal, metabolic bone disease, enclosure size...) under
+# one "husbandry" domain per species family — fine while there were only
+# 1-3 entries per species, but EvidenceQualityEngine scores same-tier,
+# same-domain, same-species, undated curated notes IDENTICALLY, so once a
+# 4th entry was added for reptile_amphibian, a stable sort's tie-breaking
+# silently dropped the newest one at the default max_results=3 cutoff —
+# not because it was less relevant, only because it was last in the list.
+# A bigger cap for this intent specifically comfortably fits today's
+# catalog; a real fix (sub-topic tagging + query-aware ranking within the
+# catalog) would scale further but is a bigger change than this warrants
+# right now.
+HUSBANDRY_MAX_RESULTS = 6
+
 EVIDENCE_KEYWORDS: dict[str, tuple[str, ...]] = {
     "clinical_question": (
         "vomit",
@@ -852,8 +866,13 @@ class ChatOrchestrator:
     ) -> ChatOrchestratorResult:
         case_text = self._case_context_text(situation, message)
         canonical_species = normalize_species(data.species)
+        max_results = (
+            HUSBANDRY_MAX_RESULTS
+            if intent == "husbandry_question"
+            else EvidenceRetrievalRequest.model_fields["max_results"].default
+        )
         final_request = EvidenceRetrievalRequest(
-            query=case_text, species=canonical_species, intent=intent
+            query=case_text, species=canonical_species, intent=intent, max_results=max_results
         )
         pool_size = max(
             final_request.max_results * EVIDENCE_POOL_MULTIPLIER, EVIDENCE_MIN_POOL_SIZE
