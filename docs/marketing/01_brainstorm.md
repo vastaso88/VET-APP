@@ -57,6 +57,21 @@ Principio di posizionamento: l'app **supporta** il lavoro di veterinari, educato
 
 Punti aperti: quale professione aggredire per prima (veterinari vs. educatori cinofili hanno dinamiche commerciali diverse), se il portale pre-visita richiede troppo lavoro di integrazione per un primo test, e come misurare se un professionista sta davvero portando clienti (serve un meccanismo di attribuzione, collegato al punto referral).
 
+## Regalo per segnalazione di bug nella chat (2026-09-20)
+
+Proposta (arrivata tramite la sessione "Chat LLM interna VETAPP", che gestisce l'orchestratore chat): se un cliente segnala rapidamente dalla chat una risposta mancante/limitata/errata, e la segnalazione porta a un miglioramento reale della chat, gli si regala una settimana di abbonamento gratis per ogni bug risolto. È la stessa famiglia di meccanismo di "Incentivi per le recensioni" sopra, ma innescato dalla qualità del prodotto invece che dallo store rating — e con un vantaggio in più: chi lo risolve produce già un commit + un test di regressione, quindi esiste una prova verificabile che il bug è stato davvero corretto (non un'autocertificazione).
+
+**Decisioni prese (con l'utente):**
+- **Accredito**: revisione umana al momento del fix, non automatico. Chi risolve un bug segnalato marca esplicitamente quali segnalazioni corrispondono a quel fix — solo quelle vengono premiate.
+- **Unità del premio**: per bug risolto, non per segnalazione — se più persone segnalano lo stesso problema, tutte quelle collegate al fix ricevono la settimana, ma un utente non accumula premi ripetendo la stessa segnalazione.
+- **Tetto**: mensile per utente (valore esatto da fissare, indicativamente 4 settimane/mese) per evitare che diventi un modo sistematico per azzerare il costo dell'abbonamento.
+
+**Blocco tecnico scoperto verificando il codice**: non esiste ancora nessuna infrastruttura di abbonamento/pagamento reale. C'è una feature `apps/mobile_app/lib/features/billing/` con i piani Free/Plus/Pro, ma è dichiaratamente solo un demo store locale (`BillingDemoStore`, "no billing backend exists yet") — persino i prezzi di Plus e Pro sono un placeholder in attesa di input umano. Il meccanismo "regala una settimana" non ha quindi ancora nulla di reale a cui agganciarsi: la policy va fissata ora (sopra), ma l'implementazione del pulsante "segnala questa risposta" può procedere lato chat (tracciamento) indipendentemente, mentre l'accredito vero e proprio resta bloccato finché non esiste un abbonamento reale da estendere.
+
+Coincidenza utile: il piano Pro nel demo store include già "Riepilogo pre-visita per il veterinario" — la stessa idea del "portale professionista" proposta sopra in "Professionisti come promoter e clienti". I due filoni convergono: vale la pena tenerli allineati quando si passerà dalla fase demo a quella reale.
+
+**Nota legale (da formalizzare quando esisterà un vero sistema di abbonamento)**: il regalo va descritto esplicitamente come privo di valore in denaro, non trasferibile, non cumulabile oltre il tetto fissato, e revocabile in caso di abuso — poche righe da aggiungere alla sezione abbonamenti dei Termini di Servizio ([04_termini_e_consensi.md](../compliance/04_termini_e_consensi.md)) quando quella sezione verrà scritta.
+
 ---
 
 **Promemoria**: quando il materiale in questo file sarà sufficiente, l'utente chiederà un riassunto delle potenziali strategie di marketing da validare, sintetizzando le idee raccolte qui.

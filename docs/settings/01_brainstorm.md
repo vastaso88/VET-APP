@@ -13,6 +13,8 @@ Contesto tecnico attuale (per il futuro sviluppo): la pagina Impostazioni esiste
 
 Punti aperti da definire in futuro: nome definitivo del toggle "posizione attuale vs residenza"; quale package di geolocalizzazione adottare; dove salvare la posizione (solo locale sul device, o anche lato backend legata all'utente); fonte dati per gli eventi e per le news regionali/locali.
 
+**Aggiornamento (2026-09-19)**: le domande tecniche sopra sono state risolte in `docs/maps/01_localita_fondamenta_condivise.md`, nel contesto di un lavoro più ampio ("gestione mappe": passeggiate con il cane, mercatino dell'usato, attività/eventi nei dintorni) che condivide questa stessa fondazione "Località". Package = `geolocator`; salvataggio sia locale (`shared_preferences`, cache) sia backend (tabella `user_locations`, sorgente di verità cross-device); il nome del toggle resta aperto (scelta di copy UI). La fonte dati per news regionali/locali resta invece non affrontata — riguarda `pet_news_repository.dart`, fuori dallo scope di questo lavoro sulle mappe.
+
 ---
 
 Altre idee sulla pagina Impostazioni verranno aggiunte in questo file mano a mano.
