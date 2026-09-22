@@ -1,26 +1,11 @@
 import 'dart:async';
-import 'dart:math' as math;
 
 import 'package:flutter/foundation.dart';
 
 import '../../location/domain/coordinates.dart';
+import '../../location/domain/geo_math.dart';
 import '../domain/walk_session.dart';
 import 'dog_walks_repository.dart';
-
-const double _earthRadiusMeters = 6371008.8;
-
-/// Mirrors packages/core/domain/geo/models.py:haversine_distance_km so the
-/// notion of "distance walked" matches between client and backend.
-double _haversineMeters(Coordinates a, Coordinates b) {
-  final lat1 = a.latitude * math.pi / 180;
-  final lat2 = b.latitude * math.pi / 180;
-  final deltaLat = (b.latitude - a.latitude) * math.pi / 180;
-  final deltaLon = (b.longitude - a.longitude) * math.pi / 180;
-
-  final h = math.pow(math.sin(deltaLat / 2), 2) +
-      math.cos(lat1) * math.cos(lat2) * math.pow(math.sin(deltaLon / 2), 2);
-  return 2 * _earthRadiusMeters * math.asin(math.sqrt(h));
-}
 
 /// Mirrors packages/core/domain/dog_walk/models.py:estimate_steps.
 int estimateSteps(double distanceMeters, {double strideMeters = 0.75}) {
@@ -71,7 +56,7 @@ class ActiveWalkController extends ChangeNotifier {
 
     final point = RoutePoint(coordinates: coordinates, recordedAt: DateTime.now());
     final addedDistance =
-        current.route.isEmpty ? 0.0 : _haversineMeters(current.route.last.coordinates, coordinates);
+        current.route.isEmpty ? 0.0 : haversineMeters(current.route.last.coordinates, coordinates);
 
     final updated = current.copyWith(
       route: [...current.route, point],

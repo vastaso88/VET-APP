@@ -111,6 +111,9 @@ def build_demo_seed(owner_id: str, *, today: date | None = None) -> DemoSeedBund
     # "Attività attorno a te" (docs/maps/): no external events source exists
     # yet, so the MVP seeds a handful of fixed, always-there activities
     # around Milano rather than leaving the map empty for a fresh demo.
+    # "event" entries need starts_at relative to seed_day, not a fixed
+    # date, or they'd stop showing up under "in programma" once the date
+    # passes (a "service" entry has no date - it's a standing venue).
     local_activities = (
         {
             "id": "demo-activity-fiera-cinofila",
@@ -120,6 +123,9 @@ def build_demo_seed(owner_id: str, *, today: date | None = None) -> DemoSeedBund
             "latitude": 45.4718,
             "longitude": 9.1875,
             "address_label": "Parco Sempione, Milano",
+            "starts_at": datetime.combine(
+                seed_day + timedelta(days=12), time(hour=10), tzinfo=UTC
+            ).isoformat(),
             "source": "seeded",
         },
         {
@@ -130,6 +136,9 @@ def build_demo_seed(owner_id: str, *, today: date | None = None) -> DemoSeedBund
             "latitude": 45.4595,
             "longitude": 9.1910,
             "address_label": "Ambulatorio comunale, Milano",
+            "starts_at": datetime.combine(
+                seed_day + timedelta(days=4), time(hour=9), tzinfo=UTC
+            ).isoformat(),
             "source": "seeded",
         },
         {

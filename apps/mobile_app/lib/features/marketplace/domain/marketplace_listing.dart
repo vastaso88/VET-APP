@@ -24,8 +24,10 @@ class MarketplaceListing {
     required this.condition,
     this.priceCents,
     this.photoUrls = const [],
-    // Already fuzzed server-side before this ever reaches the client -
-    // see packages/core/application/services/create_listing.py.
+    // Must already be fuzzed by the caller before construction - see
+    // location/domain/geo_math.dart:fuzzCoordinates. The app writes
+    // straight to Supabase (no backend API in between), so this is a
+    // caller contract, not something this class enforces itself.
     required this.location,
     this.cityLabel,
     this.status = ListingStatus.active,
@@ -48,4 +50,27 @@ class MarketplaceListing {
   final int reportCount;
   final DateTime createdAt;
   final DateTime updatedAt;
+
+  MarketplaceListing copyWith({
+    ListingStatus? status,
+    int? reportCount,
+    DateTime? updatedAt,
+  }) {
+    return MarketplaceListing(
+      id: id,
+      ownerId: ownerId,
+      title: title,
+      description: description,
+      category: category,
+      condition: condition,
+      priceCents: priceCents,
+      photoUrls: photoUrls,
+      location: location,
+      cityLabel: cityLabel,
+      status: status ?? this.status,
+      reportCount: reportCount ?? this.reportCount,
+      createdAt: createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
+    );
+  }
 }

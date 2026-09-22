@@ -127,23 +127,30 @@ class LocalActivitiesRepository {
     }
   }
 
+  // "event" entries need a startsAt - without one they're indistinguishable
+  // from a standing "service" and never show up under "In programma"
+  // (apps/mobile_app/lib/features/local_events/presentation/pages/local_events_page.dart
+  // splits on startsAt == null). Computed relative to now, not a fixed
+  // date, so the demo data stays "upcoming" whenever this runs.
   static final List<LocalActivity> _seedActivities = [
-    const LocalActivity(
+    LocalActivity(
       id: 'demo-activity-fiera-cinofila',
       kind: LocalActivityKind.event,
       title: 'Fiera cinofila regionale',
       category: 'fiera',
-      location: Coordinates(latitude: 45.4718, longitude: 9.1875),
+      location: const Coordinates(latitude: 45.4718, longitude: 9.1875),
       addressLabel: 'Parco Sempione, Milano',
+      startsAt: DateTime.now().add(const Duration(days: 12)),
       source: LocalActivitySource.seeded,
     ),
-    const LocalActivity(
+    LocalActivity(
       id: 'demo-activity-vaccinazioni',
       kind: LocalActivityKind.event,
       title: 'Giornata vaccinazioni gratuite',
       category: 'vaccinazioni',
-      location: Coordinates(latitude: 45.4595, longitude: 9.1910),
+      location: const Coordinates(latitude: 45.4595, longitude: 9.1910),
       addressLabel: 'Ambulatorio comunale, Milano',
+      startsAt: DateTime.now().add(const Duration(days: 4)),
       source: LocalActivitySource.seeded,
     ),
     const LocalActivity(

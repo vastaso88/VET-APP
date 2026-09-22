@@ -6,6 +6,7 @@ import '../../../../design_system/tokens/app_spacing.dart';
 import '../../../../design_system/tokens/app_text_styles.dart';
 import '../../../../shared/widgets/coming_soon_page.dart';
 import '../../../local_events/presentation/pages/local_events_page.dart';
+import '../../../marketplace/presentation/pages/marketplace_page.dart';
 import '../../../pet_news/presentation/pages/news_feed_page.dart';
 
 class ActivitiesPage extends StatelessWidget {
@@ -71,16 +72,8 @@ class ActivitiesPage extends StatelessWidget {
               iconTone: AppColors.warning,
               title: 'Mercatino dell\'usato',
               subtitle: 'Compra, vendi e scambia articoli per animali.',
-              badge: 'In arrivo',
               onTap: () => Navigator.of(context).push(
-                MaterialPageRoute<void>(
-                  builder: (_) => const ComingSoonPage(
-                    title: 'Mercatino dell\'usato',
-                    icon: Icons.storefront_outlined,
-                    description:
-                        'Uno spazio per comprare, vendere e scambiare articoli per animali con altri proprietari.',
-                  ),
-                ),
+                MaterialPageRoute<void>(builder: (_) => const MarketplacePage()),
               ),
             ),
             _ActivityRow(
