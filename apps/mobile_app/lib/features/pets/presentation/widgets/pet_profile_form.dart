@@ -18,7 +18,7 @@ class PetProfileDraft {
     required this.name,
     required this.species,
     required this.breed,
-    required this.birthDate,
+    this.birthDate,
     required this.sex,
     required this.weightKg,
     required this.medicalNote,
@@ -26,12 +26,16 @@ class PetProfileDraft {
     this.photoBytes,
     this.aquariumStock = const [],
     this.habitat,
+    this.dogSizeCategory,
   });
 
   final String name;
   final String species;
   final String? breed;
-  final DateTime birthDate;
+
+  /// Null for a multi-fish aquarium — there's no single "birth date" for a
+  /// whole tank. Still asked for a single pet (including a lone fish).
+  final DateTime? birthDate;
   final String sex;
   final double weightKg;
   final String medicalNote;
@@ -39,6 +43,7 @@ class PetProfileDraft {
   final Uint8List? photoBytes;
   final List<FishStock> aquariumStock;
   final HabitatDetails? habitat;
+  final String? dogSizeCategory;
 }
 
 /// Species that live in an enclosure worth describing (dimensions, water/
@@ -84,17 +89,25 @@ class _PetProfileFormState extends State<PetProfileForm> {
   late final TextEditingController _notesController;
   late String? _species;
   late String? _breed;
+  late String? _dogSizeCategory;
   late String? _sex;
   DateTime? _birthDate;
   Uint8List? _photoBytes;
   late Color _identityColor;
   late bool _isAquarium;
   late List<FishStock> _aquariumStock;
-  late final TextEditingController _dimensionsController;
+  late final TextEditingController _lengthController;
+  late final TextEditingController _widthController;
+  late final TextEditingController _heightController;
   late final TextEditingController _volumeController;
   late final TextEditingController _temperatureController;
   late final TextEditingController _substrateController;
   late final TextEditingController _habitatNotesController;
+
+  /// True once the owner has typed into the Litri field themselves — after
+  /// that, changing a dimension no longer overwrites their value.
+  bool _volumeManuallyEdited = false;
+  bool _isAutoUpdatingVolume = false;
 
   @override
   void initState() {
@@ -108,17 +121,37 @@ class _PetProfileFormState extends State<PetProfileForm> {
     _notesController = TextEditingController(text: pet?.medicalNote ?? '');
     _species = pet?.species;
     _breed = _normalizeBreed(pet?.breed);
+    _dogSizeCategory = pet?.dogSizeCategory;
     _sex = pet?.sex;
     _birthDate = _parseBirthDate(pet?.birthDateLabel);
     _photoBytes = pet?.photoBytes;
     _identityColor = pet?.identityColor ?? PetDemoStore.instance.nextDefaultIdentityColor();
     _isAquarium = pet?.isAquarium ?? false;
     _aquariumStock = List.of(pet?.aquariumStock ?? const []);
-    _dimensionsController = TextEditingController(text: habitat?.dimensions ?? '');
+    _lengthController = TextEditingController(text: habitat?.lengthCm?.toString() ?? '');
+    _widthController = TextEditingController(text: habitat?.widthCm?.toString() ?? '');
+    _heightController = TextEditingController(text: habitat?.heightCm?.toString() ?? '');
     _volumeController = TextEditingController(text: habitat?.volumeLiters?.toString() ?? '');
+    _volumeController.addListener(() {
+      if (_isAutoUpdatingVolume) return;
+      _volumeManuallyEdited = true;
+    });
     _temperatureController = TextEditingController(text: habitat?.temperatureLabel ?? '');
     _substrateController = TextEditingController(text: habitat?.substrate ?? '');
     _habitatNotesController = TextEditingController(text: habitat?.notes ?? '');
+  }
+
+  void _recalculateVolume() {
+    if (_volumeManuallyEdited) return;
+    final length = int.tryParse(_lengthController.text.trim());
+    final width = int.tryParse(_widthController.text.trim());
+    final height = int.tryParse(_heightController.text.trim());
+    if (length == null || width == null || height == null) return;
+
+    final liters = (length * width * height / 1000).round();
+    _isAutoUpdatingVolume = true;
+    _volumeController.text = liters.toString();
+    _isAutoUpdatingVolume = false;
   }
 
   Future<void> _pickPhoto() async {
@@ -221,7 +254,9 @@ class _PetProfileFormState extends State<PetProfileForm> {
     _nameController.dispose();
     _weightController.dispose();
     _notesController.dispose();
-    _dimensionsController.dispose();
+    _lengthController.dispose();
+    _widthController.dispose();
+    _heightController.dispose();
     _volumeController.dispose();
     _temperatureController.dispose();
     _substrateController.dispose();
@@ -232,6 +267,7 @@ class _PetProfileFormState extends State<PetProfileForm> {
   @override
   Widget build(BuildContext context) {
     final breedOptions = _breedOptionsForSelectedSpecies();
+    final isAquariumProfile = _species == 'Pesce' && _isAquarium;
 
     return SingleChildScrollView(
       child: Form(
@@ -294,6 +330,7 @@ class _PetProfileFormState extends State<PetProfileForm> {
                     setState(() {
                       _species = value;
                       _breed = null;
+                      _dogSizeCategory = null;
                       if (value != 'Pesce') {
                         _isAquarium = false;
                         _aquariumStock = [];
@@ -354,55 +391,78 @@ class _PetProfileFormState extends State<PetProfileForm> {
                         : (value) {
                             setState(() {
                               _breed = value;
+                              if (value != 'Altro') {
+                                _dogSizeCategory = null;
+                              }
                             });
                           },
                   ),
+                if (_species == 'Cane' && _breed == 'Altro') ...[
+                  const SizedBox(height: AppSpacing.md),
+                  DropdownButtonFormField<String>(
+                    initialValue: _dogSizeCategory,
+                    decoration: _inputDecoration('Taglia', 'Seleziona una taglia'),
+                    items: PetDemoStore.dogSizeCategories
+                        .map(
+                          (size) => DropdownMenuItem<String>(value: size, child: Text(size)),
+                        )
+                        .toList(growable: false),
+                    onChanged: (value) => setState(() => _dogSizeCategory = value),
+                  ),
+                ],
                 if (_speciesHasHabitat(_species)) ...[
                   const SizedBox(height: AppSpacing.lg),
                   Text(_habitatLabel(_species), style: AppTextStyles.caption),
                   const SizedBox(height: AppSpacing.xs),
                   _HabitatFields(
                     showVolume: _species == 'Pesce',
-                    dimensionsController: _dimensionsController,
+                    lengthController: _lengthController,
+                    widthController: _widthController,
+                    heightController: _heightController,
                     volumeController: _volumeController,
                     temperatureController: _temperatureController,
                     substrateController: _substrateController,
                     notesController: _habitatNotesController,
                     inputDecoration: _inputDecoration,
+                    onDimensionChanged: _recalculateVolume,
                   ),
                 ],
-                const SizedBox(height: AppSpacing.md),
-                InkWell(
-                  onTap: _pickBirthDate,
-                  borderRadius: BorderRadius.circular(18),
-                  child: InputDecorator(
-                    decoration:
-                        _inputDecoration('Data di nascita', 'Seleziona una data'),
-                    child: Row(
-                      children: [
-                        Expanded(
-                          child: Text(
-                            _birthDate == null
-                                ? 'Seleziona una data'
-                                : _formatDate(_birthDate!),
-                            style: AppTextStyles.bodySmall.copyWith(
-                              color: _birthDate == null
-                                  ? AppColors.mutedText
-                                  : AppColors.text,
+                // A multi-fish aquarium has no single "birth date" — asked
+                // only for a single pet (a lone fish included).
+                if (!isAquariumProfile) ...[
+                  const SizedBox(height: AppSpacing.md),
+                  InkWell(
+                    onTap: _pickBirthDate,
+                    borderRadius: BorderRadius.circular(18),
+                    child: InputDecorator(
+                      decoration:
+                          _inputDecoration('Data di nascita', 'Seleziona una data'),
+                      child: Row(
+                        children: [
+                          Expanded(
+                            child: Text(
+                              _birthDate == null
+                                  ? 'Seleziona una data'
+                                  : _formatDate(_birthDate!),
+                              style: AppTextStyles.bodySmall.copyWith(
+                                color: _birthDate == null
+                                    ? AppColors.mutedText
+                                    : AppColors.text,
+                              ),
                             ),
                           ),
-                        ),
-                        const Icon(Icons.calendar_month_rounded, color: AppColors.primary),
-                      ],
+                          const Icon(Icons.calendar_month_rounded, color: AppColors.primary),
+                        ],
+                      ),
                     ),
                   ),
-                ),
-                if (_birthDate == null) ...[
-                  const SizedBox(height: 6),
-                  Text(
-                    'Seleziona la data di nascita.',
-                    style: AppTextStyles.caption.copyWith(color: Colors.red.shade700),
-                  ),
+                  if (_birthDate == null) ...[
+                    const SizedBox(height: 6),
+                    Text(
+                      'Seleziona la data di nascita.',
+                      style: AppTextStyles.caption.copyWith(color: Colors.red.shade700),
+                    ),
+                  ],
                 ],
                 // Fish don't get a standalone Sesso field: for an aquarium,
                 // one sex value for the whole tank doesn't make sense — it's
@@ -519,13 +579,13 @@ class _PetProfileFormState extends State<PetProfileForm> {
   }
 
   void _submit() async {
+    final isAquariumProfile = _species == 'Pesce' && _isAquarium;
     final isValid = _formKey.currentState?.validate() ?? false;
-    if (!isValid || _birthDate == null) {
+    if (!isValid || (!isAquariumProfile && _birthDate == null)) {
       setState(() {});
       return;
     }
 
-    final isAquariumProfile = _species == 'Pesce' && _isAquarium;
     if (isAquariumProfile && _aquariumStock.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Aggiungi almeno una specie all\'acquario.')),
@@ -537,7 +597,7 @@ class _PetProfileFormState extends State<PetProfileForm> {
       name: _nameController.text.trim(),
       species: _species!.trim(),
       breed: isAquariumProfile ? null : _normalizeBreed(_breed),
-      birthDate: _birthDate!,
+      birthDate: isAquariumProfile ? null : _birthDate,
       sex: _sex!.trim(),
       weightKg: _parseWeight(_weightController.text)!,
       medicalNote: _notesController.text.trim(),
@@ -545,6 +605,7 @@ class _PetProfileFormState extends State<PetProfileForm> {
       photoBytes: _photoBytes,
       aquariumStock: isAquariumProfile ? _aquariumStock : const [],
       habitat: _buildHabitat(),
+      dogSizeCategory: _species == 'Cane' && _breed == 'Altro' ? _dogSizeCategory : null,
     );
 
     await widget.onSubmit(draft);
@@ -554,7 +615,9 @@ class _PetProfileFormState extends State<PetProfileForm> {
     if (!_speciesHasHabitat(_species)) return null;
 
     final habitat = HabitatDetails(
-      dimensions: _dimensionsController.text.trim(),
+      lengthCm: int.tryParse(_lengthController.text.trim()),
+      widthCm: int.tryParse(_widthController.text.trim()),
+      heightCm: int.tryParse(_heightController.text.trim()),
       volumeLiters: _species == 'Pesce' ? int.tryParse(_volumeController.text.trim()) : null,
       temperatureLabel: _temperatureController.text.trim(),
       substrate: _substrateController.text.trim(),
@@ -931,50 +994,76 @@ class _CompactIconButton extends StatelessWidget {
 class _HabitatFields extends StatelessWidget {
   const _HabitatFields({
     required this.showVolume,
-    required this.dimensionsController,
+    required this.lengthController,
+    required this.widthController,
+    required this.heightController,
     required this.volumeController,
     required this.temperatureController,
     required this.substrateController,
     required this.notesController,
     required this.inputDecoration,
+    required this.onDimensionChanged,
   });
 
   final bool showVolume;
-  final TextEditingController dimensionsController;
+  final TextEditingController lengthController;
+  final TextEditingController widthController;
+  final TextEditingController heightController;
   final TextEditingController volumeController;
   final TextEditingController temperatureController;
   final TextEditingController substrateController;
   final TextEditingController notesController;
   final InputDecoration Function(String label, String hint) inputDecoration;
+  final VoidCallback onDimensionChanged;
 
   @override
   Widget build(BuildContext context) {
+    final dimensionFormatters = [FilteringTextInputFormatter.digitsOnly];
+
     return Column(
       children: [
         Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Expanded(
-              flex: showVolume ? 3 : 1,
               child: TextFormField(
-                controller: dimensionsController,
-                decoration: inputDecoration('Dimensioni', 'Es. 60×30×36 cm'),
+                controller: lengthController,
+                keyboardType: TextInputType.number,
+                inputFormatters: dimensionFormatters,
+                decoration: inputDecoration('Lunghezza', 'cm'),
+                onChanged: (_) => onDimensionChanged(),
               ),
             ),
-            if (showVolume) ...[
-              const SizedBox(width: AppSpacing.sm),
-              Expanded(
-                flex: 2,
-                child: TextFormField(
-                  controller: volumeController,
-                  keyboardType: TextInputType.number,
-                  inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-                  decoration: inputDecoration('Litri', 'Es. 100'),
-                ),
+            const SizedBox(width: AppSpacing.xs),
+            Expanded(
+              child: TextFormField(
+                controller: widthController,
+                keyboardType: TextInputType.number,
+                inputFormatters: dimensionFormatters,
+                decoration: inputDecoration('Larghezza', 'cm'),
+                onChanged: (_) => onDimensionChanged(),
               ),
-            ],
+            ),
+            const SizedBox(width: AppSpacing.xs),
+            Expanded(
+              child: TextFormField(
+                controller: heightController,
+                keyboardType: TextInputType.number,
+                inputFormatters: dimensionFormatters,
+                decoration: inputDecoration('Altezza', 'cm'),
+                onChanged: (_) => onDimensionChanged(),
+              ),
+            ),
           ],
         ),
+        if (showVolume) ...[
+          const SizedBox(height: AppSpacing.md),
+          TextFormField(
+            controller: volumeController,
+            keyboardType: TextInputType.number,
+            inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+            decoration: inputDecoration('Litri', 'Calcolati dalle dimensioni, modificabili'),
+          ),
+        ],
         const SizedBox(height: AppSpacing.md),
         TextFormField(
           controller: temperatureController,

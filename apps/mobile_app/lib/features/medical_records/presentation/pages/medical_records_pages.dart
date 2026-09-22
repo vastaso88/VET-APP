@@ -63,7 +63,7 @@ class _MedicalRecordsListPageState extends State<MedicalRecordsListPage> {
   @override
   Widget build(BuildContext context) {
     return _FeatureScaffold(
-      title: 'Cartella clinica',
+      title: 'Referti',
       subtitle: 'Referti, note e allegati di Moka in un archivio chiaro.',
       actionLabel: 'Carica',
       onAction: _openUpload,
@@ -108,7 +108,7 @@ class _MedicalRecordsListPageState extends State<MedicalRecordsListPage> {
               if (records.isEmpty) {
                 return _EmptyState(
                   title: 'Nessun documento ancora',
-                  body: 'Carica il primo referto per costruire la cartella clinica.',
+                  body: 'Carica il primo referto per costruire l archivio documenti.',
                   icon: Icons.folder_open_outlined,
                   actionLabel: 'Carica il primo file',
                   onAction: _openUpload,
@@ -166,7 +166,7 @@ class _MedicalRecordsListPageState extends State<MedicalRecordsListPage> {
                           ? 'Nessun documento ancora'
                           : 'Nessun documento per $selectedPetName',
                       body: selectedPetName == null
-                          ? 'Carica il primo referto per costruire la cartella clinica.'
+                          ? 'Carica il primo referto per costruire l archivio documenti.'
                           : 'Cambia filtro oppure carica un nuovo documento per questo pet.',
                       icon: Icons.folder_open_outlined,
                       actionLabel: selectedPetName == null

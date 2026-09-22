@@ -82,6 +82,20 @@ class MedicalRecordsRepository {
     }
   }
 
+  Future<void> deleteRecord(String id) async {
+    final client = _resolveClient();
+    if (client == null) {
+      _previewRecords.removeWhere((record) => record.id == id);
+      return;
+    }
+
+    try {
+      await client.from('clinical_events').delete().eq('id', id);
+    } catch (_) {
+      _previewRecords.removeWhere((record) => record.id == id);
+    }
+  }
+
   static List<MedicalRecordEntry> get previewRecords =>
       List<MedicalRecordEntry>.unmodifiable(_previewRecords);
 
@@ -215,6 +229,23 @@ class MedicalRecordsRepository {
             label: 'Revisionato', value: '18 Mar 2026, 12:05'),
         MedicalRecordTimelineEntry(
             label: "Pronto per l'invio", value: 'Da controllare'),
+      ],
+    ),
+    const MedicalRecordEntry(
+      id: 'oliver-esami-sangue',
+      petName: 'Oliver',
+      title: 'Esami del sangue di Oliver',
+      subtitle: 'PDF - 2 pagine - profilo completo annuale',
+      meta: 'Valori nella norma, archiviato come riferimento',
+      badge: 'Archivio',
+      detailSource: 'Laboratorio Vet',
+      createdAt: '02 Mar 2026, 10:15',
+      timeline: [
+        MedicalRecordTimelineEntry(label: 'Importato', value: '02 Mar 2026'),
+        MedicalRecordTimelineEntry(
+            label: 'Revisionato', value: '02 Mar 2026, 16:40'),
+        MedicalRecordTimelineEntry(
+            label: "Pronto per l'invio", value: 'Archiviato'),
       ],
     ),
   ];

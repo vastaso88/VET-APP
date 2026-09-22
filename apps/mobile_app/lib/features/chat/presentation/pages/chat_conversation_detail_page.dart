@@ -1,3 +1,5 @@
+import 'dart:typed_data';
+
 import 'package:flutter/material.dart';
 
 import '../../../../design_system/tokens/app_colors.dart';
@@ -126,7 +128,11 @@ class _ChatConversationDetailPageState extends State<ChatConversationDetailPage>
     );
   }
 
-  Future<void> _sendMessage(String message) async {
+  Future<void> _sendMessage(
+    String message, {
+    String? attachmentId,
+    Uint8List? attachmentImageBytes,
+  }) async {
     if (_isSending) return;
 
     final cleanMessage = message.trim();
@@ -136,7 +142,12 @@ class _ChatConversationDetailPageState extends State<ChatConversationDetailPage>
       _isSending = true;
     });
 
-    final result = await _store.sendMessage(widget.conversationId, cleanMessage);
+    final result = await _store.sendMessage(
+      widget.conversationId,
+      cleanMessage,
+      attachmentId: attachmentId,
+      attachmentImageBytes: attachmentImageBytes,
+    );
 
     if (!mounted) return;
     setState(() {
@@ -249,7 +260,8 @@ class _SuccessConversationView extends StatelessWidget {
 
   final ChatConversationDetail conversation;
   final bool isSending;
-  final ValueChanged<String> onSendMessage;
+  final void Function(String text, {String? attachmentId, Uint8List? attachmentImageBytes})
+      onSendMessage;
   final ScrollController scrollController;
 
   @override
@@ -264,41 +276,97 @@ class _SuccessConversationView extends StatelessWidget {
         return Column(
           children: [
             Expanded(
-              child: ListView.separated(
-                controller: scrollController,
-                padding: const EdgeInsets.fromLTRB(
-                  AppSpacing.xxl,
-                  0,
-                  AppSpacing.xxl,
-                  AppSpacing.md,
-                ),
-                itemBuilder: (context, index) {
-                  if (index < conversation.messages.length) {
-                    final message = conversation.messages[index];
-                    return ChatMessageBubble(message: message);
-                  }
+              child: totalItems == 0
+                  ? _NewConversationPlaceholder(petName: conversation.petName)
+                  : ListView.separated(
+                      controller: scrollController,
+                      padding: const EdgeInsets.fromLTRB(
+                        AppSpacing.lg,
+                        0,
+                        AppSpacing.lg,
+                        AppSpacing.md,
+                      ),
+                      itemBuilder: (context, index) {
+                        if (index < conversation.messages.length) {
+                          final message = conversation.messages[index];
+                          return ChatMessageBubble(message: message);
+                        }
 
-                  return const _TypingBubble();
-                },
-                separatorBuilder: (_, __) => const SizedBox(height: AppSpacing.sm),
-                itemCount: totalItems,
-              ),
+                        return const _TypingBubble();
+                      },
+                      separatorBuilder: (_, __) => const SizedBox(height: AppSpacing.sm),
+                      itemCount: totalItems,
+                    ),
             ),
             Padding(
               padding: const EdgeInsets.fromLTRB(
-                AppSpacing.xxl,
+                AppSpacing.lg,
                 0,
-                AppSpacing.xxl,
-                AppSpacing.xxl,
+                AppSpacing.lg,
+                AppSpacing.lg,
               ),
               child: ChatComposer(
                 hintText: 'Scrivi una domanda su ${conversation.petName}',
+                petName: conversation.petName,
                 onSend: onSendMessage,
               ),
             ),
           ],
         );
       },
+    );
+  }
+}
+
+class _NewConversationPlaceholder extends StatelessWidget {
+  const _NewConversationPlaceholder({required this.petName});
+
+  final String petName;
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xxl),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: 56,
+              height: 56,
+              decoration: BoxDecoration(
+                color: AppColors.accentSoft,
+                borderRadius: BorderRadius.circular(18),
+              ),
+              child: const Icon(
+                Icons.chat_bubble_outline_rounded,
+                color: AppColors.primary,
+                size: 26,
+              ),
+            ),
+            const SizedBox(height: AppSpacing.md),
+            Text(
+              'Nuova conversazione su $petName',
+              textAlign: TextAlign.center,
+              style: const TextStyle(
+                color: AppColors.text,
+                fontSize: 15,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+            const SizedBox(height: AppSpacing.xs),
+            const Text(
+              'Scrivi qui sotto cosa stai osservando: ti rispondo subito.',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                color: AppColors.secondaryText,
+                fontSize: 13,
+                height: 1.4,
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }

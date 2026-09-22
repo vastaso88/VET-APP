@@ -74,7 +74,7 @@ class _EditForm extends StatelessWidget {
           name: draft.name,
           species: draft.species,
           breed: draft.breed ?? '',
-          birthDateLabel: _formatDate(draft.birthDate),
+          birthDateLabel: draft.birthDate == null ? '' : _formatDate(draft.birthDate!),
           sex: draft.sex,
           weightLabel: _formatWeight(draft.weightKg),
           medicalNote: draft.medicalNote,
@@ -83,6 +83,8 @@ class _EditForm extends StatelessWidget {
           clearPhoto: draft.photoBytes == null,
           aquariumStock: draft.aquariumStock,
           habitat: draft.habitat,
+          dogSizeCategory: draft.dogSizeCategory,
+          clearDogSizeCategory: draft.dogSizeCategory == null,
         );
         PetDemoStore.instance.upsert(updated);
         Navigator.of(context).pop(updated);

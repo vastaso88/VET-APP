@@ -35,17 +35,26 @@ class FishStock {
 /// nothing was filled in.
 class HabitatDetails {
   const HabitatDetails({
-    this.dimensions = '',
+    this.lengthCm,
+    this.widthCm,
+    this.heightCm,
     this.volumeLiters,
     this.temperatureLabel = '',
     this.substrate = '',
     this.notes = '',
   });
 
-  /// e.g. "60×30×36 cm".
-  final String dimensions;
+  /// Enclosure dimensions in cm — three separate numbers (rather than one
+  /// free-text "60×30×36 cm" field) so the × doesn't have to be typed, and
+  /// so a tank's liters can be computed from them.
+  final int? lengthCm;
+  final int? widthCm;
+  final int? heightCm;
 
-  /// Tank volume — meaningful for an aquarium only.
+  /// Tank volume — meaningful for an aquarium only. Defaults to
+  /// length×width×height / 1000 but stays independently editable, since an
+  /// owner may know the real volume better than the box dimensions imply
+  /// (filter/decor displacement, a non-rectangular tank, etc).
   final int? volumeLiters;
 
   /// e.g. "24-26°C" — water temperature, or ambient/UVB-basking temperature.
@@ -58,29 +67,21 @@ class HabitatDetails {
   /// UVB lamp, humidity, plants, perches, decor.
   final String notes;
 
+  bool get hasDimensions => lengthCm != null || widthCm != null || heightCm != null;
+
+  /// e.g. "80×35×40 cm" — "?" fills in any dimension the owner left blank.
+  String get dimensionsLabel {
+    if (!hasDimensions) return '';
+    String part(int? value) => value?.toString() ?? '?';
+    return '${part(lengthCm)}×${part(widthCm)}×${part(heightCm)} cm';
+  }
+
   bool get isEmpty =>
-      dimensions.trim().isEmpty &&
+      !hasDimensions &&
       volumeLiters == null &&
       temperatureLabel.trim().isEmpty &&
       substrate.trim().isEmpty &&
       notes.trim().isEmpty;
-
-  HabitatDetails copyWith({
-    String? dimensions,
-    int? volumeLiters,
-    bool clearVolume = false,
-    String? temperatureLabel,
-    String? substrate,
-    String? notes,
-  }) {
-    return HabitatDetails(
-      dimensions: dimensions ?? this.dimensions,
-      volumeLiters: clearVolume ? null : (volumeLiters ?? this.volumeLiters),
-      temperatureLabel: temperatureLabel ?? this.temperatureLabel,
-      substrate: substrate ?? this.substrate,
-      notes: notes ?? this.notes,
-    );
-  }
 }
 
 class PetProfile {
@@ -103,6 +104,7 @@ class PetProfile {
     this.isMemorial = false,
     this.memorialDate,
     this.habitat,
+    this.dogSizeCategory,
   });
 
   final String id;
@@ -146,6 +148,11 @@ class PetProfile {
   /// an enclosure (Pesce, Rettili e anfibi, Uccello).
   final HabitatDetails? habitat;
 
+  /// Size class (Toy/Piccola/Media/Grande/Gigante) — only meaningful when
+  /// [species] is "Cane" and [breed] is "Altro", where there's no specific
+  /// breed to infer a size range from.
+  final String? dogSizeCategory;
+
   String get title => '$name - $species';
 
   String get breedLabel {
@@ -156,7 +163,14 @@ class PetProfile {
       final fishLabel = totalFish == 1 ? '1 pesce' : '$totalFish pesci';
       return '$speciesLabel · $fishLabel';
     }
-    return breed.trim().isEmpty ? 'Razza non specificata' : breed.trim();
+    if (breed.trim().isEmpty) {
+      return 'Razza non specificata';
+    }
+    final size = dogSizeCategory;
+    if (breed.trim() == 'Altro' && size != null && size.isNotEmpty) {
+      return 'Altro · Taglia $size';
+    }
+    return breed.trim();
   }
 
   PetProfile copyWith({
@@ -179,6 +193,8 @@ class PetProfile {
     bool? isMemorial,
     DateTime? memorialDate,
     HabitatDetails? habitat,
+    String? dogSizeCategory,
+    bool clearDogSizeCategory = false,
   }) {
     return PetProfile(
       id: id ?? this.id,
@@ -199,6 +215,8 @@ class PetProfile {
       isMemorial: isMemorial ?? this.isMemorial,
       memorialDate: memorialDate ?? this.memorialDate,
       habitat: habitat ?? this.habitat,
+      dogSizeCategory:
+          clearDogSizeCategory ? null : (dogSizeCategory ?? this.dogSizeCategory),
     );
   }
 }
@@ -252,7 +270,9 @@ const samplePets = <PetProfile>[
     accentColor: Color(0xFFEDF0DF),
     identityColor: Color(0xFF7A8C3D),
     habitat: HabitatDetails(
-      dimensions: '100×50×50 cm',
+      lengthCm: 100,
+      widthCm: 50,
+      heightCm: 50,
       temperatureLabel: '28-35°C giorno, 22°C notte',
       substrate: 'Substrato per rettili, sabbia fine',
       notes: 'Lampada UVB e punto luce basking, ciotola per bagno.',
@@ -273,7 +293,9 @@ const samplePets = <PetProfile>[
     accentColor: Color(0xFFE3EBF0),
     identityColor: Color(0xFF5B7FD6),
     habitat: HabitatDetails(
-      dimensions: '60×40×60 cm',
+      lengthCm: 60,
+      widthCm: 40,
+      heightCm: 60,
       substrate: 'Carta o pellet vegetale',
       notes: 'Posatoi di diverso diametro, giochi da rosicchiare, mangiatoia e abbeveratoio.',
     ),
@@ -283,7 +305,7 @@ const samplePets = <PetProfile>[
     name: 'Acquario del salotto',
     species: 'Pesce',
     breed: '',
-    birthDateLabel: 'Giu 2024',
+    birthDateLabel: '',
     sex: 'Sconosciuto',
     weightLabel: '0,4 kg',
     medicalNote:
@@ -294,7 +316,9 @@ const samplePets = <PetProfile>[
     accentColor: Color(0xFFE1EEEE),
     identityColor: Color(0xFF3D9E9E),
     habitat: HabitatDetails(
-      dimensions: '80×35×40 cm',
+      lengthCm: 80,
+      widthCm: 35,
+      heightCm: 40,
       volumeLiters: 112,
       temperatureLabel: '24-26°C',
       substrate: 'Ghiaia fine scura',

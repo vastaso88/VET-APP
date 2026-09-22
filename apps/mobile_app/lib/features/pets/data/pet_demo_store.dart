@@ -191,6 +191,17 @@ class PetDemoStore {
     'Sconosciuto',
   ];
 
+  /// Size classes for a dog whose breed isn't in the list ("Altro") — there's
+  /// no specific breed to infer a size range from, so the owner picks one
+  /// directly.
+  static const List<String> dogSizeCategories = [
+    'Toy',
+    'Piccola',
+    'Media',
+    'Grande',
+    'Gigante',
+  ];
+
   late List<PetProfile> _pets;
 
   /// Active pets only by default — pets moved to Ricordi ([PetProfile.isMemorial])
@@ -222,6 +233,16 @@ class PetDemoStore {
     return null;
   }
 
+  PetProfile? byName(String name) {
+    final normalized = name.trim().toLowerCase();
+    for (final pet in _pets) {
+      if (pet.name.trim().toLowerCase() == normalized) {
+        return pet;
+      }
+    }
+    return null;
+  }
+
   PetProfile upsert(PetProfile pet) {
     final index = _pets.indexWhere((item) => item.id == pet.id);
     if (index == -1) {
@@ -245,7 +266,7 @@ class PetDemoStore {
     required String name,
     required String species,
     required String? breed,
-    required DateTime birthDate,
+    required DateTime? birthDate,
     required String sex,
     required double weightKg,
     required Color identityColor,
@@ -253,6 +274,7 @@ class PetDemoStore {
     Uint8List? photoBytes,
     List<FishStock> aquariumStock = const [],
     HabitatDetails? habitat,
+    String? dogSizeCategory,
   }) {
     final option = optionForSpecies(species);
     final pet = PetProfile(
@@ -260,7 +282,8 @@ class PetDemoStore {
       name: name.trim(),
       species: species,
       breed: breed?.trim() ?? '',
-      birthDateLabel: _formatDate(birthDate),
+      dogSizeCategory: dogSizeCategory,
+      birthDateLabel: birthDate == null ? '' : _formatDate(birthDate),
       sex: sex,
       weightLabel: _formatWeight(weightKg),
       medicalNote: medicalNote.trim().isEmpty
@@ -293,6 +316,12 @@ class PetDemoStore {
 
   static List<String> breedsForSpecies(String species) {
     final option = optionForSpecies(species);
+    // Dogs get "Altro" as the top default instead of an "unspecified"
+    // placeholder — picking it unlocks the size-category field below, so an
+    // owner whose dog's breed isn't listed can still describe it.
+    if (species.trim().toLowerCase() == 'cane') {
+      return ['Altro', ...option.breeds];
+    }
     return [
       'Razza non specificata',
       ...option.breeds,

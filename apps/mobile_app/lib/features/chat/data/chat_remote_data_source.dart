@@ -29,6 +29,7 @@ abstract class ChatRemoteDataSource {
     required String petId,
     String? conversationId,
     required String userMessage,
+    String? attachmentId,
   });
 
   /// Resolves a real, backend-known pet id to attach chat messages to.
@@ -79,6 +80,7 @@ class HttpChatRemoteDataSource implements ChatRemoteDataSource {
     required String petId,
     String? conversationId,
     required String userMessage,
+    String? attachmentId,
   }) async {
     try {
       final response = await _client
@@ -89,6 +91,7 @@ class HttpChatRemoteDataSource implements ChatRemoteDataSource {
               'pet_id': petId,
               if (conversationId != null) 'conversation_id': conversationId,
               'user_message': userMessage,
+              if (attachmentId != null) 'attachment_id': attachmentId,
             }),
           )
           .timeout(_timeout);

@@ -10,6 +10,7 @@ import '../../../../../design_system/tokens/app_text_styles.dart';
 import '../../../home/presentation/widgets/home_dashboard_primitives.dart';
 import '../../../pets/data/pet_demo_store.dart';
 import '../../../pets/domain/pet_models.dart';
+import '../../../pets/presentation/widgets/pet_avatar.dart';
 import '../../../settings/data/layout_settings_store.dart';
 import '../../data/reminders_repository.dart';
 import '../../domain/reminder_calendar.dart';
@@ -664,6 +665,7 @@ class _ReminderCreatePageState extends State<ReminderCreatePage> {
     return _Shell(
       title: widget.petName.isEmpty ? 'Crea promemoria' : 'Nuovo promemoria per ${widget.petName}',
       subtitle: 'Scegli il tipo, la data e i dettagli.',
+      petName: widget.petName,
       child: _ReminderForm(
         petName: widget.petName,
         initial: null,
@@ -696,6 +698,7 @@ class _ReminderEditPageState extends State<ReminderEditPage> {
     return _Shell(
       title: 'Modifica promemoria',
       subtitle: 'Aggiorna tipo, data e note.',
+      petName: widget.reminder?.petName,
       child: _ReminderForm(
         petName: widget.reminder?.petName ?? '',
         initial: widget.reminder,
@@ -817,10 +820,10 @@ class _ReminderFormState extends State<_ReminderForm> {
       key: _formKey,
       child: Container(
         width: double.infinity,
-        padding: const EdgeInsets.all(AppSpacing.xl),
+        padding: const EdgeInsets.all(AppSpacing.lg),
         decoration: BoxDecoration(
           color: AppColors.surface,
-          borderRadius: BorderRadius.circular(AppRadii.xl),
+          borderRadius: BorderRadius.circular(AppRadii.large),
           border: Border.all(color: AppColors.border),
         ),
         child: Column(
@@ -964,38 +967,84 @@ class _FieldLabel extends StatelessWidget {
   Widget build(BuildContext context) => Text(label, style: AppTextStyles.caption);
 }
 
+/// A `SegmentedButton` here used to force all three options into equal
+/// thirds regardless of label length — at narrow widths "Ricorrente" had no
+/// room and wrapped one character per line. This lays out icon-over-label
+/// instead, each option sized by [Expanded] with the label capped to one
+/// line, so it never wraps no matter how tight the screen is.
 class _KindSelector extends StatelessWidget {
   const _KindSelector({required this.value, required this.onChanged});
 
   final EventKind value;
   final ValueChanged<EventKind> onChanged;
 
+  static const _options = <(EventKind, IconData, String)>[
+    (EventKind.spot, Icons.event_outlined, 'Evento'),
+    (EventKind.recurring, Icons.autorenew_rounded, 'Ricorrente'),
+    (EventKind.course, Icons.medication_outlined, 'Ciclo'),
+  ];
+
   @override
   Widget build(BuildContext context) {
-    return SegmentedButton<EventKind>(
-      segments: const [
-        ButtonSegment(
-          value: EventKind.spot,
-          icon: Icon(Icons.event_outlined, size: 16),
-          label: Text('Evento'),
-        ),
-        ButtonSegment(
-          value: EventKind.recurring,
-          icon: Icon(Icons.autorenew_rounded, size: 16),
-          label: Text('Ricorrente'),
-        ),
-        ButtonSegment(
-          value: EventKind.course,
-          icon: Icon(Icons.medication_outlined, size: 16),
-          label: Text('Ciclo'),
-        ),
+    return Row(
+      children: [
+        for (var i = 0; i < _options.length; i++) ...[
+          if (i > 0) const SizedBox(width: AppSpacing.xs),
+          Expanded(
+            child: _KindOption(
+              icon: _options[i].$2,
+              label: _options[i].$3,
+              selected: value == _options[i].$1,
+              onTap: () => onChanged(_options[i].$1),
+            ),
+          ),
+        ],
       ],
-      selected: {value},
-      showSelectedIcon: false,
-      onSelectionChanged: (selection) => onChanged(selection.first),
-      style: ButtonStyle(
-        visualDensity: VisualDensity.compact,
-        textStyle: WidgetStatePropertyAll(AppTextStyles.caption.copyWith(fontWeight: FontWeight.w700)),
+    );
+  }
+}
+
+class _KindOption extends StatelessWidget {
+  const _KindOption({
+    required this.icon,
+    required this.label,
+    required this.selected,
+    required this.onTap,
+  });
+
+  final IconData icon;
+  final String label;
+  final bool selected;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(AppRadii.medium),
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: AppSpacing.sm, horizontal: AppSpacing.xs),
+        decoration: BoxDecoration(
+          color: selected ? AppColors.primary : AppColors.background,
+          borderRadius: BorderRadius.circular(AppRadii.medium),
+          border: Border.all(color: selected ? AppColors.primary : AppColors.border),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(icon, size: 18, color: selected ? AppColors.onPrimary : AppColors.secondaryText),
+            const SizedBox(height: 4),
+            Text(
+              label,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: AppTextStyles.caption.copyWith(
+                color: selected ? AppColors.onPrimary : AppColors.secondaryText,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -1314,6 +1363,7 @@ class _ReminderDetailPageState extends State<ReminderDetailPage> {
       subtitle: 'Tipo, data e nota del promemoria.',
       actionLabel: 'Modifica',
       onAction: _openEdit,
+      petName: reminder.petName,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -1355,6 +1405,7 @@ class _Shell extends StatelessWidget {
     required this.child,
     this.actionLabel,
     this.onAction,
+    this.petName,
   });
 
   final String title;
@@ -1362,6 +1413,10 @@ class _Shell extends StatelessWidget {
   final String? actionLabel;
   final VoidCallback? onAction;
   final Widget child;
+
+  /// When set (and a matching pet exists), the header shows that pet's own
+  /// avatar in place of the generic "VET APP" brand pill.
+  final String? petName;
 
   @override
   Widget build(BuildContext context) {
@@ -1381,15 +1436,21 @@ class _Shell extends StatelessWidget {
         child: SafeArea(
           child: SingleChildScrollView(
             padding: const EdgeInsets.fromLTRB(
-              AppSpacing.xxl,
               AppSpacing.lg,
-              AppSpacing.xxl,
-              AppSpacing.xxl,
+              AppSpacing.lg,
+              AppSpacing.lg,
+              AppSpacing.xl,
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                _Header(title: title, subtitle: subtitle, actionLabel: actionLabel, onAction: onAction),
+                _Header(
+                  title: title,
+                  subtitle: subtitle,
+                  actionLabel: actionLabel,
+                  onAction: onAction,
+                  petName: petName,
+                ),
                 const SizedBox(height: AppSpacing.lg),
                 child,
               ],
@@ -1407,15 +1468,21 @@ class _Header extends StatelessWidget {
     required this.subtitle,
     this.actionLabel,
     this.onAction,
+    this.petName,
   });
 
   final String title;
   final String subtitle;
   final String? actionLabel;
   final VoidCallback? onAction;
+  final String? petName;
 
   @override
   Widget build(BuildContext context) {
+    final pet = petName == null || petName!.isEmpty
+        ? null
+        : PetDemoStore.instance.byName(petName!);
+
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -1432,7 +1499,16 @@ class _Header extends StatelessWidget {
                     style: IconButton.styleFrom(backgroundColor: const Color(0xFF163A35)),
                   ),
                   const SizedBox(width: AppSpacing.sm),
-                  const _BrandPill(),
+                  if (pet != null)
+                    PetAvatar(
+                      label: pet.avatarEmoji,
+                      backgroundColor: pet.accentColor,
+                      identityColor: pet.identityColor,
+                      photoBytes: pet.photoBytes,
+                      size: 36,
+                    )
+                  else
+                    const _BrandPill(),
                 ],
               ),
               const SizedBox(height: AppSpacing.lg),

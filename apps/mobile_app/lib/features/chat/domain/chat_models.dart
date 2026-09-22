@@ -1,3 +1,5 @@
+import 'dart:typed_data';
+
 enum ChatScreenState {
   loading,
   empty,
@@ -40,6 +42,7 @@ class ChatMessage {
     required this.timeLabel,
     this.isRead = true,
     this.aiGenerated = false,
+    this.attachmentImageBytes,
   });
 
   final String id;
@@ -52,6 +55,11 @@ class ChatMessage {
   /// opposed to a rule-based/templated reply (e.g. safety triage). Drives
   /// the AI Act transparency disclosure badge in the message bubble.
   final bool aiGenerated;
+
+  /// The photo the user attached to this message, kept client-side for
+  /// display in the thread (the backend gets it via a separate upload, not
+  /// re-sent here).
+  final Uint8List? attachmentImageBytes;
 }
 
 class ChatConversationDetail {

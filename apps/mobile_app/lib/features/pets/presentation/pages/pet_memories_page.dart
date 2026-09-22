@@ -89,7 +89,9 @@ class _MemoryRow extends StatelessWidget {
       'gen', 'feb', 'mar', 'apr', 'mag', 'giu', 'lug', 'ago', 'set', 'ott', 'nov', 'dic',
     ];
     final formatted = '${memorialDate.day} ${months[memorialDate.month - 1]} ${memorialDate.year}';
-    return 'Con noi dal ${pet.birthDateLabel} al $formatted';
+    return pet.birthDateLabel.isEmpty
+        ? 'Con noi fino al $formatted'
+        : 'Con noi dal ${pet.birthDateLabel} al $formatted';
   }
 
   @override

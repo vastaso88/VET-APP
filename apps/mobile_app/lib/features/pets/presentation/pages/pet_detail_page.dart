@@ -8,6 +8,12 @@ import '../../../../design_system/tokens/app_text_styles.dart';
 import '../../../chat/data/chat_demo_store.dart';
 import '../../../chat/domain/chat_models.dart';
 import '../../../chat/presentation/pages/chat_conversation_detail_page.dart';
+import '../../../dog_walks/data/dog_walks_repository.dart';
+import '../../../dog_walks/domain/badges.dart';
+import '../../../dog_walks/domain/walk_session.dart';
+import '../../../dog_walks/presentation/pages/active_walk_page.dart';
+import '../../../dog_walks/presentation/walk_labels.dart';
+import '../../../../shared/auth/current_owner.dart';
 import '../../../medical_records/data/medical_record_file_cache.dart';
 import '../../../medical_records/data/medical_records_repository.dart';
 import '../../../medical_records/presentation/pages/medical_record_upload_page.dart';
@@ -42,6 +48,7 @@ class _PetDetailPageState extends State<PetDetailPage> {
   PetProfile? _pet;
   final MedicalRecordsRepository _recordsRepository = MedicalRecordsRepository();
   final RemindersRepository _remindersRepository = RemindersRepository();
+  final DogWalksRepository _walksRepository = DogWalksRepository();
 
   @override
   void initState() {
@@ -85,7 +92,7 @@ class _PetDetailPageState extends State<PetDetailPage> {
           ),
         PetsScreenStatus.empty => PetsEmptyView(
             title: 'Nessun pet selezionato',
-            subtitle: 'Scegli un profilo dalla lista per vedere dettagli, chat e cartella clinica.',
+            subtitle: 'Scegli un profilo dalla lista per vedere dettagli, chat e referti.',
             actionLabel: 'Torna alla lista',
             onAction: () => Navigator.of(context).maybePop(),
           ),
@@ -93,6 +100,7 @@ class _PetDetailPageState extends State<PetDetailPage> {
             pet: pet ?? PetDemoStore.instance.list().first,
             recordsRepository: _recordsRepository,
             remindersRepository: _remindersRepository,
+            walksRepository: _walksRepository,
           ),
       },
     );
@@ -115,11 +123,13 @@ class _PetDetailContent extends StatefulWidget {
     required this.pet,
     required this.recordsRepository,
     required this.remindersRepository,
+    required this.walksRepository,
   });
 
   final PetProfile pet;
   final MedicalRecordsRepository recordsRepository;
   final RemindersRepository remindersRepository;
+  final DogWalksRepository walksRepository;
 
   @override
   State<_PetDetailContent> createState() => _PetDetailContentState();
@@ -127,7 +137,7 @@ class _PetDetailContent extends StatefulWidget {
 
 class _PetDetailContentState extends State<_PetDetailContent>
     with SingleTickerProviderStateMixin {
-  late final TabController _tabController = TabController(length: 3, vsync: this);
+  late final TabController _tabController = TabController(length: 4, vsync: this);
 
   @override
   void dispose() {
@@ -155,10 +165,13 @@ class _PetDetailContentState extends State<_PetDetailContent>
           indicatorColor: AppColors.primary,
           labelStyle: AppTextStyles.bodySmall.copyWith(fontWeight: FontWeight.w700),
           unselectedLabelStyle: AppTextStyles.bodySmall,
+          isScrollable: true,
+          tabAlignment: TabAlignment.start,
           tabs: const [
             Tab(text: 'Promemoria'),
             Tab(text: 'Chat'),
-            Tab(text: 'Cartella clinica'),
+            Tab(text: 'Referti'),
+            Tab(text: 'Passeggiate'),
           ],
         ),
         const SizedBox(height: AppSpacing.md),
@@ -169,12 +182,44 @@ class _PetDetailContentState extends State<_PetDetailContent>
               _RemindersTab(pet: widget.pet, repository: widget.remindersRepository),
               _ChatTab(pet: widget.pet),
               _RecordsTab(pet: widget.pet, repository: widget.recordsRepository),
+              _WalksTab(pet: widget.pet, repository: widget.walksRepository),
             ],
           ),
         ),
       ],
     );
   }
+}
+
+/// Shared "sure you want to delete this?" prompt — reused by the
+/// Promemoria, Chat and Referti tabs so the confirmation reads the same
+/// everywhere.
+Future<bool> _confirmDelete(
+  BuildContext context, {
+  required String title,
+  required String message,
+}) async {
+  final confirmed = await showDialog<bool>(
+    context: context,
+    builder: (dialogContext) => AlertDialog(
+      backgroundColor: AppColors.surface,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadii.large)),
+      title: Text(title),
+      content: Text(message),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.of(dialogContext).pop(false),
+          child: const Text('Annulla'),
+        ),
+        FilledButton(
+          style: FilledButton.styleFrom(backgroundColor: AppColors.danger),
+          onPressed: () => Navigator.of(dialogContext).pop(true),
+          child: const Text('Elimina'),
+        ),
+      ],
+    ),
+  );
+  return confirmed ?? false;
 }
 
 String _habitatLabel(String species) => switch (species) {
@@ -194,7 +239,7 @@ class _HabitatSummaryRow extends StatelessWidget {
 
   String _summary() {
     final parts = <String>[
-      if (habitat.dimensions.isNotEmpty) habitat.dimensions,
+      if (habitat.hasDimensions) habitat.dimensionsLabel,
       if (habitat.volumeLiters != null) '${habitat.volumeLiters} L',
       if (habitat.temperatureLabel.isNotEmpty) habitat.temperatureLabel,
     ];
@@ -217,7 +262,7 @@ class _HabitatSummaryRow extends StatelessWidget {
             children: [
               Text(_habitatLabel(pet.species), style: AppTextStyles.title),
               const SizedBox(height: AppSpacing.md),
-              if (habitat.dimensions.isNotEmpty) _HabitatDetailRow('Dimensioni', habitat.dimensions),
+              if (habitat.hasDimensions) _HabitatDetailRow('Dimensioni', habitat.dimensionsLabel),
               if (habitat.volumeLiters != null) _HabitatDetailRow('Volume', '${habitat.volumeLiters} litri'),
               if (habitat.temperatureLabel.isNotEmpty)
                 _HabitatDetailRow('Temperatura', habitat.temperatureLabel),
@@ -385,6 +430,19 @@ class _RemindersTabState extends State<_RemindersTab> {
     await _reload();
   }
 
+  Future<void> _deleteReminder(ReminderEntry reminder) async {
+    final confirmed = await _confirmDelete(
+      context,
+      title: 'Eliminare questo promemoria?',
+      message: '"${reminder.title}" verrà eliminato definitivamente.',
+    );
+    if (!confirmed) return;
+
+    await widget.repository.deleteReminder(reminder.id);
+    if (!mounted) return;
+    await _reload();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Column(
@@ -423,6 +481,7 @@ class _RemindersTabState extends State<_RemindersTab> {
                 itemBuilder: (_, index) => _ReminderRow(
                   reminder: reminders[index],
                   onTap: () => _openDetail(reminders[index]),
+                  onDelete: () => _deleteReminder(reminders[index]),
                 ),
               );
             },
@@ -434,16 +493,18 @@ class _RemindersTabState extends State<_RemindersTab> {
 }
 
 class _ReminderRow extends StatelessWidget {
-  const _ReminderRow({required this.reminder, required this.onTap});
+  const _ReminderRow({required this.reminder, required this.onTap, required this.onDelete});
 
   final ReminderEntry reminder;
   final VoidCallback onTap;
+  final VoidCallback onDelete;
 
   @override
   Widget build(BuildContext context) {
     final presentation = ReminderPresentation.of(reminder);
     return _CompactRow(
       onTap: onTap,
+      onDelete: onDelete,
       leading: _RowIcon(icon: presentation.icon),
       title: reminder.title,
       subtitle: presentation.kindLabel,
@@ -503,11 +564,16 @@ class _ChatTabState extends State<_ChatTab> {
                           key: ValueKey(conversation.id),
                           direction: DismissDirection.endToStart,
                           background: const _DeleteSwipeBackground(),
-                          confirmDismiss: (_) => _confirmDelete(context, conversation),
+                          confirmDismiss: (_) => _confirmDeleteChat(context, conversation),
                           onDismissed: (_) => _deleteConversation(conversation.id),
                           child: _ChatRow(
                             conversation: conversation,
                             onTap: () => _openConversation(context, conversation),
+                            onDelete: () async {
+                              if (await _confirmDeleteChat(context, conversation)) {
+                                await _deleteConversation(conversation.id);
+                              }
+                            },
                           ),
                         );
                       },
@@ -532,28 +598,12 @@ class _ChatTabState extends State<_ChatTab> {
     );
   }
 
-  Future<bool> _confirmDelete(BuildContext context, ChatConversationSummary conversation) async {
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (dialogContext) => AlertDialog(
-        backgroundColor: AppColors.surface,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadii.large)),
-        title: const Text('Eliminare questa chat?'),
-        content: Text('"${conversation.title}" verrà eliminata definitivamente.'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(dialogContext).pop(false),
-            child: const Text('Annulla'),
-          ),
-          FilledButton(
-            style: FilledButton.styleFrom(backgroundColor: AppColors.danger),
-            onPressed: () => Navigator.of(dialogContext).pop(true),
-            child: const Text('Elimina'),
-          ),
-        ],
-      ),
+  Future<bool> _confirmDeleteChat(BuildContext context, ChatConversationSummary conversation) {
+    return _confirmDelete(
+      context,
+      title: 'Eliminare questa chat?',
+      message: '"${conversation.title}" verrà eliminata definitivamente.',
     );
-    return confirmed ?? false;
   }
 
   void _openConversation(BuildContext context, ChatConversationSummary conversation) {
@@ -574,10 +624,7 @@ class _ChatTabState extends State<_ChatTab> {
       return;
     }
 
-    final conversation = _store.startConversation(
-      petName: widget.pet.name,
-      seedPrompt: 'Ciao, ho una domanda su ${widget.pet.name}.',
-    );
+    final conversation = _store.startConversation(petName: widget.pet.name);
     Navigator.of(context).push(
       MaterialPageRoute<void>(
         builder: (_) => ChatConversationDetailPage(
@@ -611,15 +658,17 @@ class _ChatTabState extends State<_ChatTab> {
 }
 
 class _ChatRow extends StatelessWidget {
-  const _ChatRow({required this.conversation, required this.onTap});
+  const _ChatRow({required this.conversation, required this.onTap, required this.onDelete});
 
   final ChatConversationSummary conversation;
   final VoidCallback onTap;
+  final VoidCallback onDelete;
 
   @override
   Widget build(BuildContext context) {
     return _CompactRow(
       onTap: onTap,
+      onDelete: onDelete,
       leading: const _RowIcon(icon: Icons.chat_bubble_outline_rounded),
       title: conversation.title,
       subtitle: conversation.previewMessage,
@@ -647,7 +696,7 @@ class _DeleteSwipeBackground extends StatelessWidget {
 }
 
 // ---------------------------------------------------------------------------
-// Cartella clinica tab
+// Referti tab
 // ---------------------------------------------------------------------------
 
 class _RecordsTab extends StatefulWidget {
@@ -682,6 +731,19 @@ class _RecordsTabState extends State<_RecordsTab> {
     Navigator.of(context).push(
       MaterialPageRoute<void>(builder: (_) => MedicalRecordDetailPage(record: record)),
     );
+  }
+
+  Future<void> _deleteRecord(MedicalRecordEntry record) async {
+    final confirmed = await _confirmDelete(
+      context,
+      title: 'Eliminare questo documento?',
+      message: '"${record.title}" verrà eliminato definitivamente.',
+    );
+    if (!confirmed) return;
+
+    await widget.repository.deleteRecord(record.id);
+    if (!mounted) return;
+    await _reload();
   }
 
   Future<void> _openSendSheet(List<MedicalRecordEntry> records) async {
@@ -798,6 +860,7 @@ class _RecordsTabState extends State<_RecordsTab> {
                       itemBuilder: (_, index) => _RecordRow(
                         record: records[index],
                         onTap: () => _openDetail(records[index]),
+                        onDelete: () => _deleteRecord(records[index]),
                       ),
                     ),
             ),
@@ -809,18 +872,158 @@ class _RecordsTabState extends State<_RecordsTab> {
 }
 
 class _RecordRow extends StatelessWidget {
-  const _RecordRow({required this.record, required this.onTap});
+  const _RecordRow({required this.record, required this.onTap, required this.onDelete});
 
   final MedicalRecordEntry record;
   final VoidCallback onTap;
+  final VoidCallback onDelete;
 
   @override
   Widget build(BuildContext context) {
     return _CompactRow(
       onTap: onTap,
+      onDelete: onDelete,
       leading: const _RowIcon(icon: Icons.description_outlined),
       title: record.title,
       subtitle: record.subtitle,
+    );
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Passeggiate tab
+// ---------------------------------------------------------------------------
+
+class _WalksTab extends StatefulWidget {
+  const _WalksTab({required this.pet, required this.repository});
+
+  final PetProfile pet;
+  final DogWalksRepository repository;
+
+  @override
+  State<_WalksTab> createState() => _WalksTabState();
+}
+
+class _WalksTabState extends State<_WalksTab> {
+  late Future<List<WalkSession>> _future = _load();
+
+  Future<List<WalkSession>> _load() async {
+    final walks = await widget.repository.loadWalks(resolveCurrentOwnerId());
+    final completed = walks
+        .where((walk) => walk.petId == widget.pet.id && walk.status == WalkStatus.completed)
+        .toList()
+      ..sort((a, b) => b.startedAt.compareTo(a.startedAt));
+    return completed;
+  }
+
+  Future<void> _reload() async {
+    setState(() => _future = _load());
+    await _future;
+  }
+
+  Future<void> _startWalk() async {
+    await Navigator.of(context).push(
+      MaterialPageRoute<bool>(builder: (_) => ActiveWalkPage(pet: widget.pet)),
+    );
+    if (!mounted) return;
+    await _reload();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        SizedBox(
+          width: double.infinity,
+          child: FilledButton.icon(
+            onPressed: _startWalk,
+            icon: const Icon(Icons.directions_walk_rounded, size: 18),
+            label: const Text('Nuova passeggiata'),
+          ),
+        ),
+        const SizedBox(height: AppSpacing.md),
+        Expanded(
+          child: FutureBuilder<List<WalkSession>>(
+            future: _future,
+            builder: (context, snapshot) {
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return const Center(child: CircularProgressIndicator(strokeWidth: 2));
+              }
+
+              final walks = snapshot.data ?? const <WalkSession>[];
+              if (walks.isEmpty) {
+                return _EmptyTabState(
+                  icon: Icons.directions_walk_outlined,
+                  text: 'Nessuna passeggiata ancora per ${widget.pet.name}.',
+                );
+              }
+
+              final badges = evaluateBadges(walks);
+              return ListView(
+                children: [
+                  if (badges.isNotEmpty) ...[
+                    _BadgesRow(badges: badges),
+                    const SizedBox(height: AppSpacing.md),
+                  ],
+                  for (final walk in walks) ...[
+                    _WalkRow(walk: walk),
+                    if (walk != walks.last) const SizedBox(height: AppSpacing.sm),
+                  ],
+                ],
+              );
+            },
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _BadgesRow extends StatelessWidget {
+  const _BadgesRow({required this.badges});
+
+  final List<String> badges;
+
+  @override
+  Widget build(BuildContext context) {
+    return Wrap(
+      spacing: AppSpacing.xs,
+      runSpacing: AppSpacing.xs,
+      children: badges
+          .map(
+            (badge) => Container(
+              padding: const EdgeInsets.symmetric(horizontal: AppSpacing.sm, vertical: AppSpacing.xs),
+              decoration: BoxDecoration(
+                color: AppColors.accentSoft,
+                borderRadius: BorderRadius.circular(AppRadii.pill),
+              ),
+              child: Text(
+                badgeLabel(badge),
+                style: AppTextStyles.caption.copyWith(color: AppColors.primaryStrong, fontWeight: FontWeight.w700),
+              ),
+            ),
+          )
+          .toList(),
+    );
+  }
+}
+
+class _WalkRow extends StatelessWidget {
+  const _WalkRow({required this.walk});
+
+  final WalkSession walk;
+
+  @override
+  Widget build(BuildContext context) {
+    final subtitleParts = [
+      walkDistanceLabel(walk.distanceMeters),
+      if (walk.durationSeconds != null) walkDurationLabel(walk.durationSeconds),
+      if (walk.stepCountEstimate != null) '~${walk.stepCountEstimate} passi',
+    ];
+    return _CompactRow(
+      leading: const _RowIcon(icon: Icons.directions_walk_rounded),
+      title: walkDateLabel(walk.startedAt),
+      subtitle: subtitleParts.join(' · '),
     );
   }
 }
@@ -855,6 +1058,7 @@ class _CompactRow extends StatelessWidget {
     required this.title,
     required this.subtitle,
     this.onTap,
+    this.onDelete,
     this.trailingText,
     this.badgeCount = 0,
   });
@@ -863,6 +1067,7 @@ class _CompactRow extends StatelessWidget {
   final String title;
   final String subtitle;
   final VoidCallback? onTap;
+  final VoidCallback? onDelete;
   final String? trailingText;
   final int badgeCount;
 
@@ -928,6 +1133,16 @@ class _CompactRow extends StatelessWidget {
               if (trailingText != null) ...[
                 const SizedBox(width: AppSpacing.sm),
                 Text(trailingText!, style: AppTextStyles.caption),
+              ],
+              if (onDelete != null) ...[
+                const SizedBox(width: 2),
+                IconButton(
+                  onPressed: onDelete,
+                  icon: const Icon(Icons.delete_outline_rounded, size: 18, color: AppColors.danger),
+                  tooltip: 'Elimina',
+                  visualDensity: VisualDensity.compact,
+                  constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
+                ),
               ],
               if (onTap != null) ...[
                 const SizedBox(width: AppSpacing.xs),

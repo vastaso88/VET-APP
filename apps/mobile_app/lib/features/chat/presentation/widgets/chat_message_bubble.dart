@@ -37,6 +37,18 @@ class ChatMessageBubble extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                if (message.attachmentImageBytes != null) ...[
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(AppRadii.medium),
+                    child: Image.memory(
+                      message.attachmentImageBytes!,
+                      width: 160,
+                      height: 160,
+                      fit: BoxFit.cover,
+                    ),
+                  ),
+                  const SizedBox(height: AppSpacing.sm),
+                ],
                 isUser
                     ? Text(
                         message.text,

@@ -65,6 +65,7 @@ class _CreateForm extends StatelessWidget {
           photoBytes: draft.photoBytes,
           aquariumStock: draft.aquariumStock,
           habitat: draft.habitat,
+          dogSizeCategory: draft.dogSizeCategory,
         );
         Navigator.of(context).pop(pet);
       },
