@@ -46,7 +46,10 @@ class Settings(BaseSettings):
     media_storage_dir: str = Field(default="./data/chat_attachments", alias="MEDIA_STORAGE_DIR")
     log_level: str = Field(default="INFO", alias="LOG_LEVEL")
     enable_telemetry: bool = Field(default=False, alias="ENABLE_TELEMETRY")
-    enable_interview_loop: bool = Field(default=True, alias="ENABLE_INTERVIEW_LOOP")
+    # 2026-09-21: default flipped to False — see chat_orchestrator.py's
+    # ChatOrchestrator._strict_evidence_intents for why the mandatory
+    # interview loop is no longer the default for ordinary questions.
+    enable_interview_loop: bool = Field(default=False, alias="ENABLE_INTERVIEW_LOOP")
     situation_coverage_target: float = Field(default=0.85, alias="SITUATION_COVERAGE_TARGET")
     interview_max_questions: int = Field(default=3, alias="INTERVIEW_MAX_QUESTIONS")
     pii_anonymizer_backend: str = Field(default="noop", alias="PII_ANONYMIZER_BACKEND")

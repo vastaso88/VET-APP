@@ -372,13 +372,14 @@ class ChatOrchestrator:
         coverage_weights: CoverageWeights = DEFAULT_COVERAGE_WEIGHTS,
         coverage_target: float = 0.85,
         max_interview_questions: int = 3,
+        strict_evidence_intents: frozenset[str] = frozenset({"husbandry_question"}),
     ) -> None:
         self._llm_client = llm_client
         self._evidence_retriever = evidence_retriever
         self._pii_anonymizer = pii_anonymizer
         self._safety_gate = safety_gate or SafetyGate()
         self._situation_model_builder = situation_model_builder or SituationModelBuilder(llm_client)
-        self._interview_planner = interview_planner or InterviewPlanner()
+        self._interview_planner = interview_planner or InterviewPlanner(llm_client)
         # No infra-free default is possible here (it needs a repository) —
         # None simply means this deployment never offers record access.
         self._medical_record_context_retriever = medical_record_context_retriever
@@ -392,6 +393,25 @@ class ChatOrchestrator:
         self._coverage_weights = coverage_weights
         self._coverage_target = coverage_target
         self._max_interview_questions = max_interview_questions
+        # 2026-09-21 product realignment: a live side-by-side against a
+        # plain, unstructured LLM answer showed the mandatory-interview +
+        # "no source, no answer" + fixed-schema pipeline (still available
+        # below as _generate_evidence_answer, unchanged) produces worse
+        # answers than a single well-prompted call for ordinary care
+        # questions — it can't reason fluidly (rank causes by likelihood,
+        # use given numbers quantitatively) the way a good model already
+        # does unprompted. The genuinely dangerous cases (exact drug
+        # dosages, true emergencies) are already caught upstream by cheap,
+        # deterministic, non-LLM guards (_is_dosage_request, SafetyGate)
+        # that never depended on this pipeline for safety. husbandry_
+        # question is kept in the strict set: unlike clinical/behavioral
+        # literature, the curated husbandry catalog is genuinely relevant
+        # and on-topic, and its numeric facts (tank size, UVB wattage)
+        # are worth checking against a real reference rather than trusting
+        # the model's own recall. Empty by default otherwise — add an
+        # intent here only for a claim narrow and high-risk enough that
+        # citation-checking earns back its cost in fluency.
+        self._strict_evidence_intents = strict_evidence_intents
 
     def answer(self, data: ChatOrchestratorInput) -> ChatOrchestratorResult:
         result = self._answer(data)
@@ -643,9 +663,14 @@ class ChatOrchestrator:
                 # presenting problem — fall through to the evidence step
                 # below, which already refuses to answer without sources.
 
-        result = self._generate_evidence_answer(
-            data, message, intent, situation, effective_species
-        )
+        if intent in self._strict_evidence_intents:
+            result = self._generate_evidence_answer(
+                data, message, intent, situation, effective_species
+            )
+        else:
+            result = self._generate_natural_answer(
+                data, message, intent, situation, effective_species
+            )
         result.situation_model = situation
         result.coverage_score = coverage
         result.interview_turns_used = turns_used
@@ -1039,10 +1064,20 @@ class ChatOrchestrator:
             )
 
         if synthesis.is_empty():
-            return self._validation_failure_result(
-                sources=sources,
-                violations=["evidence_synthesis_empty: nessuna claim supportata prodotta"],
-                mode="evidence",
+            if intent == "husbandry_question":
+                # Husbandry answers are factual/quantitative (dimensions,
+                # UVB wattage...) — a curated-catalog miss means we
+                # genuinely have nothing to ground an answer in, and a
+                # general "reassurance" fallback would risk sounding
+                # authoritative about numbers we don't actually know.
+                # Keep the hard refusal here.
+                return self._validation_failure_result(
+                    sources=sources,
+                    violations=["evidence_synthesis_empty: nessuna claim supportata prodotta"],
+                    mode="evidence",
+                )
+            return self._generate_natural_answer(
+                data, message, intent, situation, effective_species, sources=sources
             )
 
         validation = validate_answer(synthesis.all_claim_text(), sources_count=len(sources))
@@ -1064,7 +1099,9 @@ class ChatOrchestrator:
                 mode="evidence",
             )
 
-        answer = self._response_generator.render(synthesis)
+        answer = self._response_generator.render(
+            synthesis, include_citation_markers=(intent == "husbandry_question")
+        )
         limitations = [*self._build_limitations(sources), *synthesis.evidence_gaps]
         if situation.safety_critical_unknowns:
             # Final safety review (spec v3 §29): the case still has an
@@ -1096,6 +1133,204 @@ class ChatOrchestrator:
             model=response.model,
             evidence_synthesis=synthesis,
         )
+
+    def _generate_natural_answer(
+        self,
+        data: ChatOrchestratorInput,
+        message: str,
+        intent: str,
+        situation: SituationModel,
+        effective_species: str,
+        *,
+        sources: list[EvidenceSource] | None = None,
+    ) -> ChatOrchestratorResult:
+        """Default answer path (2026-09-21 product realignment) for every
+        non-emergency, non-dosage, non-small-talk question whose intent
+        isn't in `_strict_evidence_intents`.
+
+        Real-world finding: a live side-by-side against a plain,
+        unstructured LLM answer to the same question ("acqua torbida
+        dopo un cambio") showed the mandatory-interview + "no source, no
+        answer" + fixed-schema pipeline (`_generate_evidence_answer`,
+        kept intact for `_strict_evidence_intents`) produces worse
+        answers for ordinary care questions — it can't rank causes by
+        likelihood or reason quantitatively about numbers the owner gave
+        (e.g. stocking density) the way a good model already does
+        unprompted. The genuinely dangerous cases — exact drug dosages,
+        true emergencies — are already caught upstream by cheap,
+        deterministic, non-LLM guards (_is_dosage_request, SafetyGate)
+        that never depended on this pipeline for safety, so this doesn't
+        weaken those guarantees.
+
+        Evidence retrieval still runs (best-effort, via `sources` when
+        already fetched by a caller, otherwise attempted here) but only
+        as optional supporting context handed to the model — never a
+        gate. If nothing relevant comes back, the model still answers
+        from its own substantial veterinary/animal-care knowledge, the
+        same way it already does for any species/topic with no
+        literature coverage at all.
+        """
+        if sources is None:
+            # Real-world finding (kept from the earlier interview-loop
+            # work): the raw current message can be a context-only reply
+            # ("succede sempre in casa") with no symptom words at all
+            # once a few turns have accumulated a SituationModel — the
+            # retrieval query needs that accumulated text, not just this
+            # turn's. Degrades to plain `message` when situation is empty
+            # (the default now that the interview loop itself is opt-in).
+            query = self._case_context_text(situation, message)
+            sources = self._retrieve_optional_evidence(query, intent, effective_species)
+        evidence_block = self._format_sources_for_prompt(sources) if sources else ""
+        anonymized_message = self._anonymize_for_provider(message)
+
+        # Real-world finding (2026-09-22 live test, "Acquario del
+        # salotto"): a short follow-up ("dimmelo comunque") got a
+        # coherent-SOUNDING but ungrounded answer, because this call
+        # never told the model what the earlier turns of THIS
+        # conversation actually said — it was improvising a plausible
+        # continuation rather than answering the real follow-up. Every
+        # other answer path here (situation model, interview planner)
+        # already had conversation context; this one didn't.
+        history_block = self._format_conversation_history(data.conversation_history)
+
+        # Same live test: recent clinical history changes the answer
+        # (e.g. an ongoing antibiotic course) but was never fetched here
+        # — only the interview-loop's consent branch used it, and that
+        # loop is opt-in now (see _strict_evidence_intents). Only surface
+        # it when consent is already a settled "yes" (a standing per-pet
+        # decision, or granted earlier this conversation) — this does
+        # NOT yet ask for consent on its own when it's still unknown;
+        # that's a separate, still-open piece of work.
+        medical_context = ""
+        if data.medical_record_consent:
+            summary = self._retrieve_medical_record_summary(data.pet_id)
+            if summary:
+                medical_context = f"\n\nRecent medical record summary: {summary}"
+
+        # 2026-09-21: this is the primary answer-writing voice for most of
+        # the product's real traffic now (used to be a narrow fallback for
+        # one edge case; the architecture change above promoted it to the
+        # default path for ordinary questions). validate_answer below
+        # still enforces the citation rule mechanically if `sources` is
+        # non-empty — everything else about tone/structure lives here.
+        system_prompt = (
+            "You are a warm, knowledgeable veterinary assistant chatting with a pet "
+            "owner in Italian. Default to flowing natural prose, like a "
+            "knowledgeable friend would text back, for the ordinary case — most of "
+            "your replies should have NO markdown structure at all. Two cases that "
+            "must ALWAYS stay prose, even though it's tempting to number or bullet "
+            "them: a list of possible causes (weave them into a sentence or two "
+            "ranked by likelihood, most likely first, the way you'd explain it out "
+            "loud — don't give every cause equal weight in its own numbered line), "
+            "and a short sequence of care steps (write them as one flowing "
+            "paragraph: 'prima X, poi Y, e se Z...'). Reserve an actual markdown "
+            "table/heading/list for the rare case where the structure itself is the "
+            "point — e.g. genuinely comparing multiple named options side by side "
+            "across multiple attributes (two medications, two diets) — not for "
+            "organizing your own explanation. Use any concrete numbers or details "
+            "the owner gave (tank size, duration, how many animals...) to actually "
+            "reason about the case, not just restate them.\n\n"
+            "Keep the whole reply around 1200 characters — tight enough to read in "
+            "one breath, but always finish your last sentence properly; never let "
+            "the reply cut off mid-thought.\n\n"
+            "You may use the reference material below if it's genuinely relevant to "
+            "this specific case, but never claim something is backed by it when it "
+            "isn't, and answer just as well from your own knowledge when there's "
+            "nothing relevant there — it's optional context, not a requirement. "
+            "Never invent a citation marker like [1] unless you are directly quoting "
+            "that numbered reference. Never state a specific diagnosis as certain, "
+            "and never give a specific drug dosage. Close with one concrete, "
+            "case-specific sign that means it's time to call the vet — not a generic "
+            "disclaimer — and feel free to invite more detail if that would sharpen "
+            "your answer, the way a good vet nurse would on the phone."
+        )
+
+        try:
+            response = self._llm_client.generate(
+                LLMGenerationRequest(
+                    system_prompt=system_prompt,
+                    user_prompt=(
+                        f"{self._pet_context_block(data)}\n"
+                        f"{history_block}"
+                        f"User message: {anonymized_message}"
+                        f"{medical_context}"
+                        + (f"\n\nReference material (optional, use only if genuinely "
+                           f"relevant):\n{evidence_block}" if evidence_block else "")
+                    ),
+                    # Real-world finding (2026-09-21 live test): an
+                    # unconstrained free-form answer (headings, tables,
+                    # bold) burns through a token budget far faster than
+                    # plain prose and was getting cut off mid-response —
+                    # matches the same failure mode already seen in
+                    # evidence_synthesizer.py, same fix (more headroom).
+                    max_tokens=2000,
+                )
+            )
+        except ProviderError:
+            return ChatOrchestratorResult(
+                answer=(
+                    "In questo momento non riesco a elaborare una risposta (il servizio è "
+                    "temporaneamente non disponibile). Riprova tra poco, oppure consulta il "
+                    "veterinario se la situazione richiede attenzione ora."
+                ),
+                mode="natural",
+                confidence="low",
+                ai_generated=False,
+                sources=sources,
+                limitations=["Risposta non disponibile: provider LLM non raggiungibile."],
+                provider="rule-based",
+                model="natural-answer-guard",
+                state=ConversationState.RETRIEVAL_FAILURE,
+            )
+
+        validation = validate_answer(response.content, sources_count=len(sources))
+        if not validation.is_valid:
+            return self._validation_failure_result(
+                sources=sources, violations=validation.violations, mode="natural"
+            )
+        if self._mentions_wrong_species(response.content, effective_species):
+            return self._validation_failure_result(
+                sources=sources, violations=["wrong_species_reference"], mode="natural"
+            )
+        return ChatOrchestratorResult(
+            answer=response.content,
+            mode="natural",
+            confidence="medium",
+            ai_generated=True,
+            sources=sources,
+            limitations=[
+                "Risposta generata liberamente dal modello, non vincolata a fonti "
+                "verificate — utile per orientarsi, non sostituisce una visita veterinaria."
+            ],
+            recommended_action=(
+                "Consulta il veterinario per una valutazione personalizzata se i sintomi "
+                "persistono o peggiorano."
+            ),
+            provider=response.provider,
+            model=response.model,
+        )
+
+    def _retrieve_optional_evidence(
+        self, message: str, intent: str, effective_species: str
+    ) -> list[EvidenceSource]:
+        """Best-effort evidence lookup for `_generate_natural_answer` —
+        never blocks the answer, so any failure here just means no
+        supporting context gets attached, not a refusal."""
+        canonical_species = normalize_species(effective_species)
+        try:
+            request = EvidenceRetrievalRequest(
+                query=message, species=canonical_species, intent=intent
+            )
+            raw_sources = self._evidence_retriever.retrieve(request)
+            ranked = self._evidence_quality_engine.rank_and_select(
+                raw_sources,
+                species=canonical_species,
+                intent=intent,
+                max_results=request.max_results,
+            )
+            return ranked.sources
+        except ProviderError:
+            return []
 
     @staticmethod
     def _validation_failure_result(
@@ -1229,6 +1464,18 @@ class ChatOrchestrator:
         if len(normalized) <= 30 and any(marker in normalized for marker in SMALL_TALK_MESSAGES):
             return "general_info"
         return "clinical_question"
+
+    @staticmethod
+    def _format_conversation_history(history: list[ChatMessage]) -> str:
+        """Recent prior turns of THIS conversation, for `_generate_natural_answer`
+        — without this, a short follow-up ("dimmelo comunque", "e se fosse più
+        grande?") has nothing to attach to and the model can only improvise a
+        plausible-sounding but ungrounded continuation. Empty for a first
+        message, which is the common case and needs no such block."""
+        if not history:
+            return ""
+        lines = [f"{m.role}: {m.content}" for m in history]
+        return "Earlier in this conversation:\n" + "\n".join(lines) + "\n\n"
 
     @staticmethod
     def _format_sources_for_prompt(sources: Iterable[EvidenceSource]) -> str:

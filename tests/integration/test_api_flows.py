@@ -56,11 +56,11 @@ def test_chat_and_reminder_flow() -> None:
     chat_response = client.post("/chat", json={"pet_id": pet_id, "user_message": "Mangia poco"})
     assert chat_response.status_code == 200
     assert chat_response.json()["reply"]["role"] == "assistant"
-    # With the interview loop on (default) and the default echo LLM provider
-    # (which can't produce the structured extraction JSON), the first
-    # message on a non-general intent asks a clarifying question rather
-    # than answering immediately — see ChatOrchestrator/InterviewPlanner.
-    assert chat_response.json()["mode"] in {"interview", "evidence"}
+    # 2026-09-21: the interview loop is opt-in (off by default) and most
+    # intents (nutrition_question here) answer via the natural-answer
+    # path rather than the strict evidence pipeline — see
+    # ChatOrchestrator._strict_evidence_intents.
+    assert chat_response.json()["mode"] == "natural"
     assert "confidence" in chat_response.json()
     assert "ai_generated" in chat_response.json()
 

@@ -36,11 +36,27 @@ class ScriptedLLMClient:
 
 def _orchestrator(**client_kwargs: str) -> tuple[ChatOrchestrator, ScriptedLLMClient]:
     client = ScriptedLLMClient(**client_kwargs)
-    orchestrator = ChatOrchestrator(client, InMemoryEvidenceRetriever(), NoopPiiAnonymizer())
+    # 2026-09-21: this file tests _generate_evidence_answer's citation/
+    # synthesis validation mechanics directly, so it opts clinical_question
+    # into the strict evidence path explicitly — that mechanism is no
+    # longer the default route for it (see chat_orchestrator.py's
+    # ChatOrchestrator._strict_evidence_intents), but it's still real,
+    # tested code available for a caller who wants it.
+    orchestrator = ChatOrchestrator(
+        client,
+        InMemoryEvidenceRetriever(),
+        NoopPiiAnonymizer(),
+        strict_evidence_intents=frozenset({"clinical_question", "husbandry_question"}),
+    )
     return orchestrator, client
 
 
-def test_valid_evidence_answer_passes_through_unchanged() -> None:
+def test_valid_evidence_answer_strips_citation_markers_for_non_husbandry_intents() -> None:
+    # 2026-09-20 product realignment: evidence still validates the answer
+    # internally (see result.evidence_synthesis, unaffected by this),
+    # but an everyday concern question shouldn't read like a citation
+    # list — only husbandry_question keeps markers visible (see
+    # test_husbandry_answers_keep_citation_markers_visible below).
     orchestrator, _ = _orchestrator(evidence_answer="Le fonti [1] indicano di monitorare.")
 
     result = orchestrator.answer(
@@ -51,7 +67,24 @@ def test_valid_evidence_answer_passes_through_unchanged() -> None:
 
     assert result.mode == "evidence"
     assert result.state != ConversationState.SOURCE_VALIDATION_FAILURE
-    assert result.answer == "Le fonti [1] indicano di monitorare."
+    assert result.answer == "Le fonti indicano di monitorare."
+    assert result.evidence_synthesis is not None
+    assert result.evidence_synthesis.supported_claims == ["Le fonti [1] indicano di monitorare."]
+
+
+def test_husbandry_answers_keep_citation_markers_visible() -> None:
+    orchestrator, _ = _orchestrator(evidence_answer="Serve un terrario di almeno 120L [1].")
+
+    result = orchestrator.answer(
+        ChatOrchestratorInput(
+            user_message="Che dimensioni minime deve avere il terrario per un geco?",
+            species="Rettili e anfibi",
+            pet_name="Spike",
+        )
+    )
+
+    assert result.mode == "evidence"
+    assert "[1]" in result.answer
 
 
 def test_out_of_range_citation_triggers_validation_failure() -> None:
@@ -120,7 +153,46 @@ def test_evidence_answer_carries_the_structured_synthesis() -> None:
     assert result.evidence_synthesis.supported_claims == ["Le fonti [1] indicano di monitorare."]
 
 
-def test_empty_synthesis_is_treated_as_validation_failure() -> None:
+def test_empty_synthesis_falls_back_to_a_natural_answer_for_non_husbandry_strict_intents() -> None:
+    # 2026-09-20 real-world finding: evidence retrieval can return real
+    # literature that just isn't about the case — EvidenceSynthesizer
+    # correctly refuses to fabricate a claim from it. For any strict-
+    # evidence intent other than husbandry_question, that no longer
+    # dead-ends in a cold validation-failure message; it falls through to
+    # the natural-answer path instead (see _generate_natural_answer).
+    # husbandry_question is the deliberate exception — see the test
+    # below. clinical_question is opted into the strict path here only to
+    # exercise this fallback mechanism directly: see
+    # ChatOrchestrator._strict_evidence_intents for why it isn't strict
+    # by default any more (2026-09-21 realignment).
+    class EmptySynthesisThenPlainAnswerClient:
+        def generate(self, request: LLMGenerationRequest) -> LLMResponse:
+            if "evidence-first veterinary assistant" in request.system_prompt:
+                content = "{}"
+            else:
+                content = "Osserva l'appetito e l'energia nelle prossime ore."
+            return LLMResponse(content=content, provider="fake", model="fake-model", token_count=5)
+
+    orchestrator = ChatOrchestrator(
+        EmptySynthesisThenPlainAnswerClient(),
+        InMemoryEvidenceRetriever(),
+        NoopPiiAnonymizer(),
+        strict_evidence_intents=frozenset({"clinical_question"}),
+    )
+
+    result = orchestrator.answer(
+        ChatOrchestratorInput(
+            user_message="Il mio cane tossisce da due giorni", species="dog", pet_name="Milo"
+        )
+    )
+
+    assert result.mode == "natural"
+    assert result.ai_generated is True
+    assert result.answer == "Osserva l'appetito e l'energia nelle prossime ore."
+    assert result.sources
+
+
+def test_empty_synthesis_still_refuses_for_husbandry_questions() -> None:
     class EmptySynthesisClient:
         def generate(self, request: LLMGenerationRequest) -> LLMResponse:
             return LLMResponse(content="{}", provider="fake", model="fake-model", token_count=5)
@@ -131,7 +203,9 @@ def test_empty_synthesis_is_treated_as_validation_failure() -> None:
 
     result = orchestrator.answer(
         ChatOrchestratorInput(
-            user_message="Il mio cane tossisce da due giorni", species="dog", pet_name="Milo"
+            user_message="Che dimensioni minime deve avere il terrario per un geco?",
+            species="Rettili e anfibi",
+            pet_name="Spike",
         )
     )
 
@@ -156,9 +230,9 @@ def test_llm_provider_failure_during_synthesis_degrades_gracefully() -> None:
         )
     )
 
-    assert result.mode == "evidence"
+    assert result.mode == "natural"
     assert result.state == ConversationState.RETRIEVAL_FAILURE
-    assert result.sources  # still surfaced even though the synthesis itself failed
+    assert result.sources  # still surfaced even though the answer call itself failed
 
 
 def test_general_answer_with_hallucinated_citation_is_rejected() -> None:

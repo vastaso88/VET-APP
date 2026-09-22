@@ -150,7 +150,7 @@ class ApplicationContainer:
             self.pii_anonymizer,
             safety_gate=SafetyGate(),
             situation_model_builder=SituationModelBuilder(self.llm_client),
-            interview_planner=InterviewPlanner(),
+            interview_planner=InterviewPlanner(self.llm_client),
             medical_record_context_retriever=MedicalRecordContextRetriever(
                 self.clinical_event_repository
             ),

@@ -36,4 +36,4 @@ def test_pet_creation_then_chat_flow() -> None:
 
     assert chat.conversation.pet_id == pet.id
     assert chat.reply.role == "assistant"
-    assert chat.mode == "evidence"
+    assert chat.mode == "natural"

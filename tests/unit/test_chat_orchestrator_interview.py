@@ -48,6 +48,13 @@ class ExtractionAwareLLMClient:
         self.requests.append(request)
         if "extract structured case information" in request.system_prompt:
             content = self._extraction_json
+        elif "phrasing one anamnesis follow-up question" in request.system_prompt:
+            # Echo the generic question back unchanged — this fake isn't
+            # testing phrasing quality, just that the real InterviewPlanner
+            # picks the right field and doesn't repeat itself.
+            marker = "adapt freely, do not just copy it): "
+            index = request.user_prompt.find(marker)
+            content = request.user_prompt[index + len(marker) :] if index != -1 else "?"
         else:
             content = self._answer_text
         return LLMResponse(content=content, provider="fake", model="fake-model", token_count=10)
@@ -55,6 +62,7 @@ class ExtractionAwareLLMClient:
 
 class FixedInterviewPlanner(InterviewPlanner):
     def __init__(self, question: str | None) -> None:
+        super().__init__(None)
         self.question = question
 
     def next_question(self, situation: SituationModel) -> str | None:
@@ -134,7 +142,7 @@ def test_interview_loop_proceeds_to_evidence_once_coverage_target_is_met() -> No
         )
     )
 
-    assert result.mode == "evidence"
+    assert result.mode == "natural"
     assert result.state == ConversationState.ADEQUATE_EVIDENCE_FOUND
     assert result.coverage_score == 1.0
 
@@ -225,7 +233,7 @@ def test_interview_loop_proceeds_to_evidence_when_budget_exhausted_but_problem_i
         )
     )
 
-    assert result.mode == "evidence"
+    assert result.mode == "natural"
 
 
 def test_interview_loop_is_disabled_by_default() -> None:
@@ -243,7 +251,7 @@ def test_interview_loop_is_disabled_by_default() -> None:
         )
     )
 
-    assert result.mode == "evidence"
+    assert result.mode == "natural"
     assert result.coverage_score is None
 
 
@@ -327,6 +335,15 @@ def test_interview_loop_never_repeats_the_same_question_when_a_field_never_fills
                     )
                 else:
                     content = "{}"
+            elif "phrasing one anamnesis follow-up question" in request.system_prompt:
+                # This fake doesn't need to actually adapt the wording —
+                # only to keep each field's question text distinct, which
+                # echoing the generic template back unchanged already does
+                # (the real field-tracking under test here, not phrasing
+                # quality, is what must not repeat).
+                marker = "adapt freely, do not just copy it): "
+                index = request.user_prompt.find(marker)
+                content = request.user_prompt[index + len(marker) :] if index != -1 else "?"
             else:
                 content = "Risposta finale con [1]."
             return LLMResponse(content=content, provider="fake", model="fake-model", token_count=10)
@@ -404,6 +421,6 @@ def test_evidence_query_uses_accumulated_symptoms_not_just_the_final_reply() -> 
         )
     )
 
-    assert result.mode == "evidence"
+    assert result.mode == "natural"
     assert wrapped_retriever.queries
     assert "vomito" in wrapped_retriever.queries[-1]

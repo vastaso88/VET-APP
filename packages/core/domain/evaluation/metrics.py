@@ -53,16 +53,25 @@ def build_report(outcomes: list[EvaluationCaseOutcome]) -> EvaluationReport:
     false_safety_escalation_rate = _mean(
         [1.0 if o.predicted_emergency else 0.0 for o in non_emergencies]
     )
-    # Require mode == "evidence" too, not just the state: a case whose
-    # intent got misclassified as small talk (e.g. no keyword matched) ends
-    # up with the same default ADEQUATE_EVIDENCE_FOUND state but never
-    # actually attempted retrieval — that must count as a coverage gap,
-    # not a success, or this metric would hide exactly the failure mode
-    # it exists to catch.
+    # 2026-09-21: "properly answered" now usually means mode == "natural"
+    # rather than "evidence" — the mandatory-interview + strict-evidence
+    # pipeline is opt-in per intent now (ChatOrchestrator.
+    # _strict_evidence_intents), not the default for most evidence-
+    # relevant categories, so requiring mode == "evidence" specifically
+    # would flag the new INTENDED behavior as a coverage gap. Still
+    # requires mode in {"evidence", "natural"} (not just the state): a
+    # case whose intent got misclassified as small talk (e.g. no keyword
+    # matched) ends up with the same default ADEQUATE_EVIDENCE_FOUND
+    # state but never actually produced a real answer — that must still
+    # count as a coverage gap, or this metric would hide exactly the
+    # failure mode it exists to catch.
     evidence_coverage_rate = _mean(
         [
             1.0
-            if (o.mode == "evidence" and o.state == ConversationState.ADEQUATE_EVIDENCE_FOUND)
+            if (
+                o.mode in ("evidence", "natural")
+                and o.state == ConversationState.ADEQUATE_EVIDENCE_FOUND
+            )
             else 0.0
             for o in evidence_relevant
         ]
@@ -75,7 +84,11 @@ def build_report(outcomes: list[EvaluationCaseOutcome]) -> EvaluationReport:
         [o.coverage_score for o in outcomes if o.coverage_score is not None]
     )
     average_sources_per_evidence_answer = _mean(
-        [float(o.source_count) for o in outcomes if o.mode == "evidence" and o.source_count > 0]
+        [
+            float(o.source_count)
+            for o in outcomes
+            if o.mode in ("evidence", "natural") and o.source_count > 0
+        ]
     )
 
     return EvaluationReport(

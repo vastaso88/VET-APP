@@ -7,10 +7,18 @@ from packages.core.application.services.chat_orchestrator import (
     ChatOrchestrator,
     ChatOrchestratorInput,
 )
+from packages.core.application.services.medical_record_context_retriever import (
+    MedicalRecordContextRetriever,
+)
+from packages.core.domain.conversation.models import ChatMessage
 from packages.core.domain.conversation.states import ConversationState
+from packages.core.domain.medical_record.models import ClinicalEvent
 from packages.core.domain.pet_profile.models import FishStock, HabitatDetails
 from packages.infrastructure.llm.retrieval.in_memory_evidence_retriever import (
     InMemoryEvidenceRetriever,
+)
+from packages.infrastructure.persistence.in_memory_repositories import (
+    InMemoryClinicalEventRepository,
 )
 from packages.infrastructure.privacy.noop_pii_anonymizer import NoopPiiAnonymizer
 
@@ -411,8 +419,58 @@ def test_chat_orchestrator_never_downgrades_seizures() -> None:
     assert result.mode == "triage"
 
 
-def test_chat_orchestrator_requires_sources_for_evidence_mode() -> None:
+def test_chat_orchestrator_requires_sources_for_husbandry_evidence_mode() -> None:
+    # 2026-09-21 product realignment: "no source, no answer" is now
+    # scoped to `_strict_evidence_intents` (husbandry_question by
+    # default) rather than every substantive question — see
+    # test_chat_orchestrator_answers_ordinary_questions_without_requiring_sources
+    # below for why an ordinary clinical question no longer hard-refuses.
     client = FakeLLMClient()
+    orchestrator = ChatOrchestrator(client, InMemoryEvidenceRetriever(), NoopPiiAnonymizer())
+
+    result = orchestrator.answer(
+        ChatOrchestratorInput(
+            user_message="Che dimensioni minime servono per il terrario?",
+            species="Altro",
+            pet_name="Ignoto",
+        )
+    )
+
+    assert result.mode == "evidence"
+    assert result.provider == "rule-based"
+    assert result.ai_generated is False
+    assert not result.sources
+    assert not client.requests
+
+
+def test_chat_orchestrator_uses_llm_when_sources_are_available_for_husbandry() -> None:
+    client = FakeLLMClient()
+    orchestrator = ChatOrchestrator(client, InMemoryEvidenceRetriever(), NoopPiiAnonymizer())
+
+    result = orchestrator.answer(
+        ChatOrchestratorInput(
+            user_message="Che dimensioni minime servono per il terrario del mio geco?",
+            species="Rettili e anfibi",
+            pet_name="Spike",
+        )
+    )
+
+    assert result.mode == "evidence"
+    assert result.provider == "fake"
+    assert result.ai_generated is True
+    assert result.sources
+    assert client.requests
+
+
+def test_chat_orchestrator_answers_ordinary_questions_without_requiring_sources() -> None:
+    # Real-world finding (2026-09-21): the mandatory "no source, no
+    # answer" gate + rigid synthesis schema produced worse answers than
+    # a single well-prompted call for ordinary care questions — see
+    # ChatOrchestrator._strict_evidence_intents. An empty evidence
+    # retriever must no longer block the answer for a clinical_question.
+    # A plain (uncited) reply, deliberately, since this test is about
+    # the answer going through at all, not citation validation.
+    client = ScriptedContentLLMClient("Osserva l'appetito e l'idratazione nelle prossime ore.")
     orchestrator = ChatOrchestrator(client, InMemoryEvidenceRetriever(), NoopPiiAnonymizer())
 
     result = orchestrator.answer(
@@ -423,11 +481,85 @@ def test_chat_orchestrator_requires_sources_for_evidence_mode() -> None:
         )
     )
 
-    assert result.mode == "evidence"
-    assert result.provider == "rule-based"
-    assert result.ai_generated is False
+    assert result.mode == "natural"
+    assert result.ai_generated is True
     assert not result.sources
-    assert not client.requests
+    assert client.requests
+
+
+def test_natural_answer_includes_earlier_turns_of_the_conversation() -> None:
+    # Real-world finding (2026-09-22, "Acquario del salotto"): a short
+    # follow-up ("dimmelo comunque") got a coherent-sounding but
+    # ungrounded answer because the natural-answer call never saw what
+    # the earlier turns of the conversation actually said.
+    client = FakeLLMClient()
+    orchestrator = ChatOrchestrator(client, InMemoryEvidenceRetriever(), NoopPiiAnonymizer())
+
+    orchestrator.answer(
+        ChatOrchestratorInput(
+            user_message="dimmelo comunque",
+            species="cat",
+            pet_name="Luna",
+            conversation_history=[
+                ChatMessage(role="user", content="Il gatto vomita, cosa può essere?"),
+                ChatMessage(role="assistant", content="Prova a osservare l'appetito."),
+            ],
+        )
+    )
+
+    natural_answer_request = client.requests[-1]
+    assert "Il gatto vomita" in natural_answer_request.user_prompt
+
+
+def test_natural_answer_includes_the_medical_record_summary_when_consent_is_granted() -> None:
+    client = FakeLLMClient()
+    clinical_events = InMemoryClinicalEventRepository(
+        seed=[ClinicalEvent(pet_id="pet-1", title="Ciclo di antibiotico in corso")]
+    )
+    orchestrator = ChatOrchestrator(
+        client,
+        InMemoryEvidenceRetriever(),
+        NoopPiiAnonymizer(),
+        medical_record_context_retriever=MedicalRecordContextRetriever(clinical_events),
+    )
+
+    orchestrator.answer(
+        ChatOrchestratorInput(
+            user_message="Il cane ha ancora la diarrea",
+            species="dog",
+            pet_name="Rex",
+            pet_id="pet-1",
+            medical_record_consent=True,
+        )
+    )
+
+    natural_answer_request = client.requests[-1]
+    assert "Ciclo di antibiotico in corso" in natural_answer_request.user_prompt
+
+
+def test_natural_answer_skips_medical_records_without_consent() -> None:
+    client = FakeLLMClient()
+    clinical_events = InMemoryClinicalEventRepository(
+        seed=[ClinicalEvent(pet_id="pet-1", title="Ciclo di antibiotico in corso")]
+    )
+    orchestrator = ChatOrchestrator(
+        client,
+        InMemoryEvidenceRetriever(),
+        NoopPiiAnonymizer(),
+        medical_record_context_retriever=MedicalRecordContextRetriever(clinical_events),
+    )
+
+    orchestrator.answer(
+        ChatOrchestratorInput(
+            user_message="Il cane ha ancora la diarrea",
+            species="dog",
+            pet_name="Rex",
+            pet_id="pet-1",
+        )
+    )
+
+    natural_answer_request = client.requests[-1]
+    assert "Ciclo di antibiotico in corso" not in natural_answer_request.user_prompt
 
 
 def test_chat_orchestrator_uses_llm_when_sources_are_available() -> None:
@@ -442,7 +574,7 @@ def test_chat_orchestrator_uses_llm_when_sources_are_available() -> None:
         )
     )
 
-    assert result.mode == "evidence"
+    assert result.mode == "natural"
     assert result.provider == "fake"
     assert result.ai_generated is True
     assert result.sources
@@ -606,7 +738,7 @@ def test_chat_orchestrator_normalizes_the_mobile_apps_italian_species_label() ->
         )
     )
 
-    assert result.mode == "evidence"
+    assert result.mode == "natural"
     assert result.sources
 
 

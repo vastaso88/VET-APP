@@ -52,3 +52,35 @@ def test_renders_empty_string_for_an_empty_synthesis() -> None:
     text = generator.render(EvidenceSynthesis())
 
     assert text == ""
+
+
+def test_strips_citation_markers_when_asked() -> None:
+    generator = ResponseGenerator()
+    synthesis = EvidenceSynthesis(
+        supported_claims=["Il riposo aiuta il recupero [1]."],
+        uncertain_claims=["il digiuno di un giorno possa aiutare [2]"],
+    )
+
+    text = generator.render(synthesis, include_citation_markers=False)
+
+    assert "[1]" not in text
+    assert "[2]" not in text
+    assert text.startswith("Il riposo aiuta il recupero.")
+
+
+def test_keeps_citation_markers_by_default() -> None:
+    generator = ResponseGenerator()
+    synthesis = EvidenceSynthesis(supported_claims=["Il riposo aiuta il recupero [1]."])
+
+    text = generator.render(synthesis)
+
+    assert "[1]" in text
+
+
+def test_strips_consecutive_citation_markers_cleanly() -> None:
+    generator = ResponseGenerator()
+    synthesis = EvidenceSynthesis(supported_claims=["Doppia fonte per lo stesso claim [1][2]."])
+
+    text = generator.render(synthesis, include_citation_markers=False)
+
+    assert text == "Doppia fonte per lo stesso claim."
