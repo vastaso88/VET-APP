@@ -62,3 +62,20 @@ def test_updating_current_position_does_not_erase_an_existing_home() -> None:
     assert result.user_location.current_label == "Roma"
     assert result.user_location.current_source == "device_gps"
     assert result.user_location.current_captured_at is not None
+
+
+def test_explicitly_clearing_home_erases_it() -> None:
+    repository = InMemoryUserLocationRepository()
+    service = SetUserLocationService(repository)
+    service.execute(
+        SetUserLocationInput(
+            owner_id="user-1",
+            home=Coordinates(latitude=45.4642, longitude=9.1900),
+            home_label="Milano",
+        )
+    )
+
+    result = service.execute(SetUserLocationInput(owner_id="user-1", home=None, home_label=None))
+
+    assert result.user_location.home is None
+    assert result.user_location.home_label is None

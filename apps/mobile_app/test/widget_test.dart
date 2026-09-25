@@ -26,9 +26,8 @@ void main() {
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 50));
 
-    expect(find.text('Preview Dashboard'), findsOneWidget);
-    expect(find.text('Scadenze vicine'), findsOneWidget);
-    expect(find.text('Assistente Vet AI'), findsOneWidget);
+    expect(find.text('Prossime attività'), findsOneWidget);
+    expect(find.text('Curiosità per i tuoi animali'), findsOneWidget);
     expect(find.textContaining('Verifica sessione'), findsNothing);
     expect(find.textContaining('Bentornato.'), findsNothing);
   });

@@ -68,4 +68,31 @@ void main() {
     // Still on the create page - no pop happened.
     expect(find.text('Nuovo annuncio'), findsOneWidget);
   });
+
+  testWidgets('a negative price blocks submission with a validation error', (tester) async {
+    await _useTallSurface(tester);
+    const exact = Coordinates(latitude: 45.4642, longitude: 9.1900);
+    await tester.pumpWidget(
+      const MaterialApp(
+        home: CreateListingPage(
+          locationSampler: _FakeLocationSampler(DeviceLocationResult.success(exact)),
+        ),
+      ),
+    );
+
+    await tester.enterText(find.widgetWithText(TextFormField, 'Titolo'), 'Ciotola test');
+    await tester.enterText(
+      find.widgetWithText(TextFormField, 'Prezzo in € (vuoto = gratis)'),
+      '-5',
+    );
+    await tester.tap(find.text('Pubblica annuncio'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Il prezzo non può essere negativo'), findsOneWidget);
+    expect(find.text('Nuovo annuncio'), findsOneWidget);
+
+    final repository = MarketplaceRepository();
+    final listings = await repository.loadActiveListings();
+    expect(listings.where((listing) => listing.title == 'Ciotola test'), isEmpty);
+  });
 }

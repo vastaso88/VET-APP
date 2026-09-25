@@ -55,7 +55,12 @@ class ReportListingService:
         report_count = len({r.reporter_owner_id for r in reports})
 
         updates: dict[str, object] = {"report_count": report_count}
-        if report_count >= REPORT_COUNT_AUTO_REMOVE_THRESHOLD:
+        # A sale already concluded (or a prior removal) is a final state -
+        # a flood of reports afterward shouldn't relabel it as "removed".
+        if report_count >= REPORT_COUNT_AUTO_REMOVE_THRESHOLD and listing.status not in (
+            "sold",
+            "removed",
+        ):
             updates["status"] = "removed"
         listing = self._listing_repository.save(listing.model_copy(update=updates))
 

@@ -10,7 +10,10 @@ from packages.core.application.ports.evidence_retriever import (
 from packages.core.application.ports.llm_client import LLMClient, LLMGenerationRequest
 from packages.core.application.ports.pii_anonymizer import PiiAnonymizationRequest, PiiAnonymizer
 from packages.core.application.services.consent_interpreter import ConsentInterpreter
-from packages.core.application.services.evidence_quality_engine import EvidenceQualityEngine
+from packages.core.application.services.evidence_quality_engine import (
+    EvidenceQualityEngine,
+    RankedEvidence,
+)
 from packages.core.application.services.evidence_synthesizer import EvidenceSynthesizer
 from packages.core.application.services.interview_planner import InterviewPlanner
 from packages.core.application.services.medical_record_context_retriever import (
@@ -490,11 +493,12 @@ class ChatOrchestrator:
                     awaiting_safety_clarification=True,
                     safety_clarification_category=category,
                 )
-            # No mapped category for these keywords (shouldn't happen given
-            # RED_FLAG_CATEGORIES covers every SafetyGate keyword) — fail
-            # safe by escalating directly rather than asking a question we
-            # don't have.
-            return self._urgent_triage_result(data.pet_name, safety_flags)
+            # Either no mapped category at all (shouldn't happen given
+            # RED_FLAG_CATEGORIES covers every SafetyGate keyword — fail
+            # safe by escalating directly), or a mapped category with no
+            # clarifying question by design (toxin_medication: no benign
+            # explanation a question could surface, see triage_clarification.py).
+            return self._urgent_triage_result(data.pet_name, safety_flags, category)
 
         if self._is_dosage_request(lowered):
             # Real-world finding: asked for an exact drug dose, the general
@@ -678,12 +682,28 @@ class ChatOrchestrator:
         return result
 
     @staticmethod
-    def _urgent_triage_result(pet_name: str, safety_flags: list[str]) -> ChatOrchestratorResult:
-        return ChatOrchestratorResult(
-            answer=(
+    def _urgent_triage_result(
+        pet_name: str, safety_flags: list[str], category: str | None = None
+    ) -> ChatOrchestratorResult:
+        # Real-world finding (2026-09-25): "quello che mi racconti di
+        # {pet_name} è un segnale..." presumes the trigger was a narrated
+        # symptom — nonsense when it was actually a question about a
+        # medication/toxin's safety or dosage (nothing was "raccontato",
+        # nothing was observed). Same escalation, different opening line.
+        if category == "toxin_medication":
+            opening = (
+                f"Meglio non rischiare: quello di cui mi parli può essere pericoloso per "
+                f"{pet_name}. Ecco cosa fare adesso:\n"
+            )
+        else:
+            opening = (
                 f"Hai fatto bene a scrivermi subito. Quello che mi racconti di "
                 f"{pet_name} è un segnale che merita una valutazione veterinaria "
                 "immediata. Ecco cosa fare adesso:\n"
+            )
+        return ChatOrchestratorResult(
+            answer=(
+                f"{opening}"
                 "1) contatta subito il tuo veterinario o un pronto soccorso veterinario;\n"
                 f"2) nel frattempo tieni {pet_name} calmo, al caldo e al sicuro;\n"
                 "3) evita di dargli cibo, acqua in eccesso o farmaci senza indicazione "
@@ -821,7 +841,7 @@ class ChatOrchestrator:
         """
         severity = classify_safety_severity(category, reply)
         if severity == "high":
-            return self._urgent_triage_result(pet_name, [category])
+            return self._urgent_triage_result(pet_name, [category], category)
 
         return ChatOrchestratorResult(
             answer=(
@@ -987,26 +1007,12 @@ class ChatOrchestrator:
         effective_species: str,
     ) -> ChatOrchestratorResult:
         case_text = self._case_context_text(situation, message)
-        canonical_species = normalize_species(effective_species)
         max_results = (
             HUSBANDRY_MAX_RESULTS
             if intent == "husbandry_question"
             else EvidenceRetrievalRequest.model_fields["max_results"].default
         )
-        final_request = EvidenceRetrievalRequest(
-            query=case_text, species=canonical_species, intent=intent, max_results=max_results
-        )
-        pool_size = max(
-            final_request.max_results * EVIDENCE_POOL_MULTIPLIER, EVIDENCE_MIN_POOL_SIZE
-        )
-        pool_request = final_request.model_copy(update={"max_results": pool_size})
-        raw_sources = self._evidence_retriever.retrieve(pool_request)
-        ranked = self._evidence_quality_engine.rank_and_select(
-            raw_sources,
-            species=canonical_species,
-            intent=intent,
-            max_results=final_request.max_results,
-        )
+        ranked = self._rank_evidence(case_text, effective_species, intent, max_results)
         sources = ranked.sources
         if not sources:
             return ChatOrchestratorResult(
@@ -1316,21 +1322,38 @@ class ChatOrchestrator:
         """Best-effort evidence lookup for `_generate_natural_answer` —
         never blocks the answer, so any failure here just means no
         supporting context gets attached, not a refusal."""
-        canonical_species = normalize_species(effective_species)
         try:
-            request = EvidenceRetrievalRequest(
-                query=message, species=canonical_species, intent=intent
-            )
-            raw_sources = self._evidence_retriever.retrieve(request)
-            ranked = self._evidence_quality_engine.rank_and_select(
-                raw_sources,
-                species=canonical_species,
-                intent=intent,
-                max_results=request.max_results,
-            )
-            return ranked.sources
+            default_max_results: int = EvidenceRetrievalRequest.model_fields[
+                "max_results"
+            ].default
+            return self._rank_evidence(
+                message, effective_species, intent, default_max_results
+            ).sources
         except ProviderError:
             return []
+
+    def _rank_evidence(
+        self, query: str, species: str, intent: str, max_results: int
+    ) -> RankedEvidence:
+        """Retrieve and rank evidence for `query` — shared by the strict
+        evidence path and the natural-answer path's optional lookup, so
+        both get the same pool-widening (fetch more than `max_results` so
+        the quality engine has real diversity to select from — spec v3
+        §3-5 — instead of just re-sorting whatever the retriever's own
+        default cap happened to return)."""
+        canonical_species = normalize_species(species)
+        request = EvidenceRetrievalRequest(
+            query=query, species=canonical_species, intent=intent, max_results=max_results
+        )
+        pool_size = max(request.max_results * EVIDENCE_POOL_MULTIPLIER, EVIDENCE_MIN_POOL_SIZE)
+        pool_request = request.model_copy(update={"max_results": pool_size})
+        raw_sources = self._evidence_retriever.retrieve(pool_request)
+        return self._evidence_quality_engine.rank_and_select(
+            raw_sources,
+            species=canonical_species,
+            intent=intent,
+            max_results=request.max_results,
+        )
 
     @staticmethod
     def _validation_failure_result(

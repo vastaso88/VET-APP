@@ -32,6 +32,50 @@ RED_FLAG_CATEGORIES: dict[str, tuple[str, ...]] = {
         "non fa feci",
         "niente cacca",
     ),
+    # Real-world finding (2026-09-25, reported via gestore git): a
+    # medication/toxin mention (e.g. "che dosaggio di ibuprofene posso
+    # darle?") had no category here, so it fell through to the generic
+    # "no mapped category" fail-safe — which still escalates correctly,
+    # but with wording written for a NARRATED SYMPTOM ("quello che mi
+    # racconti di Moka è un segnale...") that reads as nonsense when the
+    # actual trigger was a question about a substance/dose, not something
+    # observed. Deliberately has NO entry in CLARIFYING_QUESTIONS below
+    # (see there): the original real-world finding for these substances
+    # was "always escalate, whether given or only proposed" — zero delay,
+    # unlike seizure/gi_stasis where one quick question is worth asking
+    # first. ChatOrchestrator._urgent_triage_result uses this category
+    # only to pick substance-appropriate phrasing, not to gate on a reply.
+    "toxin_medication": (
+        "amoxicillina",
+        "penicillina",
+        "clindamicina",
+        "lincomicina",
+        "eritromicina",
+        "ibuprofene",
+        "brufen",
+        "nurofen",
+        "oki",
+        "artrosilene",
+        "ketoprofene",
+        "aspirina",
+        "acido acetilsalicilico",
+        "voltaren",
+        "dicloreum",
+        "diclofenac",
+        "tachipirina",
+        "paracetamolo",
+        "acetaminofene",
+        "advantix",
+        "vectra",
+        "exspot",
+        "permetrina",
+        "cioccolat",
+        "uva",
+        "uvetta",
+        "xilitolo",
+        "cipolla",
+        "aglio",
+    ),
 }
 
 # If the very first message already describes an unambiguous, ongoing
@@ -82,6 +126,14 @@ CLARIFYING_QUESTIONS: dict[str, str] = {
         "avvicinarsi al cibo o prodotto anche solo poche piccole feci, oppure "
         "niente del tutto?"
     ),
+    # No entry for "toxin_medication" — see its comment in
+    # RED_FLAG_CATEGORIES: unlike seizure/gi_stasis, product decision here
+    # is to escalate immediately with zero delay (spec v3 §9 predates this
+    # category, but the original SPECIES_SPECIFIC_RED_FLAGS finding was
+    # explicit: "always escalate, whether the substance was already given
+    # or only proposed" — asking a question first would work against
+    # that). See test_triage_clarification.py's completeness test for the
+    # documented exception.
 }
 
 # Category-specific phrases that, if present, point to the kind of benign

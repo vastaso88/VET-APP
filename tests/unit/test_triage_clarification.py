@@ -16,8 +16,16 @@ def test_categorize_returns_none_when_no_flag_maps_to_a_category() -> None:
     assert categorize(["something-unmapped"]) is None
 
 
-def test_every_category_has_a_clarifying_question() -> None:
-    assert set(CLARIFYING_QUESTIONS) == set(RED_FLAG_CATEGORIES)
+def test_every_category_has_a_clarifying_question_except_documented_exceptions() -> None:
+    # "toxin_medication" is the one deliberate exception — see its comment
+    # in RED_FLAG_CATEGORIES: the original real-world finding for these
+    # substances was "always escalate, whether given or only proposed",
+    # so it skips straight to _urgent_triage_result with zero delay
+    # instead of spending a turn on a question first, unlike seizure/
+    # gi_stasis. This test still catches an ACCIDENTAL omission for any
+    # other category.
+    categories_without_a_question = {"toxin_medication"}
+    assert set(CLARIFYING_QUESTIONS) == set(RED_FLAG_CATEGORIES) - categories_without_a_question
 
 
 def test_requires_immediate_escalation_detects_unambiguous_severity_markers() -> None:

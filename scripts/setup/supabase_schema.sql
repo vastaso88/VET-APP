@@ -492,6 +492,46 @@ on public.marketplace_listing_reports
 for insert
 with check (reporter_owner_id = auth.uid()::text);
 
+-- The deny-by-default posture above is intentional (a reporter shouldn't
+-- see who else reported a listing) but it also means an ordinary client
+-- can never count distinct reporters or flip someone else's listing to
+-- "removed" - both are blocked by RLS regardless of who is asking. This
+-- function runs with the privileges of its owner (not the caller), so it
+-- can do both safely; the trigger below is what actually makes
+-- REPORT_COUNT_AUTO_REMOVE_THRESHOLD (packages/core/domain/marketplace/models.py)
+-- take effect for reports written directly from the mobile app.
+create or replace function public.handle_marketplace_listing_report()
+returns trigger
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+    distinct_reporters integer;
+begin
+    select count(distinct reporter_owner_id)
+    into distinct_reporters
+    from public.marketplace_listing_reports
+    where listing_id = new.listing_id;
+
+    update public.marketplace_listings
+    set report_count = distinct_reporters,
+        status = case
+            when distinct_reporters >= 3 and status not in ('sold', 'removed') then 'removed'
+            else status
+        end,
+        updated_at = now()
+    where id = new.listing_id;
+
+    return new;
+end;
+$$;
+
+drop trigger if exists on_marketplace_listing_report_insert on public.marketplace_listing_reports;
+create trigger on_marketplace_listing_report_insert
+after insert on public.marketplace_listing_reports
+for each row execute function public.handle_marketplace_listing_report();
+
 -- local_activities: open read (public venues/events), submitter-scoped write.
 drop policy if exists local_activities_select_all on public.local_activities;
 create policy local_activities_select_all

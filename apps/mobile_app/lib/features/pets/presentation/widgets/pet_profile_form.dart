@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 
 import '../../data/pet_demo_store.dart';
 import '../../domain/fish_species.dart';
+import '../../domain/pet_format.dart';
 import '../../domain/pet_identity_colors.dart';
 import '../../domain/pet_models.dart';
 import '../../../../design_system/tokens/app_colors.dart';
@@ -443,7 +444,7 @@ class _PetProfileFormState extends State<PetProfileForm> {
                             child: Text(
                               _birthDate == null
                                   ? 'Seleziona una data'
-                                  : _formatDate(_birthDate!),
+                                  : formatPetBirthDate(_birthDate!),
                               style: AppTextStyles.bodySmall.copyWith(
                                 color: _birthDate == null
                                     ? AppColors.mutedText
@@ -696,24 +697,6 @@ class _PetProfileFormState extends State<PetProfileForm> {
     return months[label];
   }
 
-  String _formatDate(DateTime date) {
-    const months = [
-      'Gen',
-      'Feb',
-      'Mar',
-      'Apr',
-      'Mag',
-      'Giu',
-      'Lug',
-      'Ago',
-      'Set',
-      'Ott',
-      'Nov',
-      'Dic',
-    ];
-
-    return '${date.day.toString().padLeft(2, '0')} ${months[date.month - 1]} ${date.year}';
-  }
 }
 
 class _PhotoPicker extends StatelessWidget {

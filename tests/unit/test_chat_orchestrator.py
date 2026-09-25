@@ -301,6 +301,28 @@ def test_chat_orchestrator_escalates_paracetamol_brand_name_for_cats() -> None:
     assert result.state == ConversationState.POSSIBLE_URGENT_CASE
 
 
+def test_toxin_medication_escalation_uses_substance_phrasing_not_symptom_phrasing() -> None:
+    # Real-world finding (2026-09-25, reported via gestore git): asking
+    # about a medication's dosage/safety triggered the generic triage
+    # template ("quello che mi racconti di Moka è un segnale...") — wrong,
+    # since nothing was actually narrated/observed, the trigger was a
+    # question about a substance.
+    client = FakeLLMClient()
+    orchestrator = ChatOrchestrator(client, InMemoryEvidenceRetriever(), NoopPiiAnonymizer())
+
+    result = orchestrator.answer(
+        ChatOrchestratorInput(
+            user_message="Che dosaggio di ibuprofene posso dare a Moka?",
+            species="dog",
+            pet_name="Moka",
+        )
+    )
+
+    assert result.mode == "triage"
+    assert "quello che mi racconti" not in result.answer.lower()
+    assert "pericoloso per Moka" in result.answer
+
+
 def test_chat_orchestrator_escalates_immediately_for_unambiguous_severe_messages() -> None:
     # No clarification question when the first message already leaves no
     # doubt — asking here would only delay real emergency care.

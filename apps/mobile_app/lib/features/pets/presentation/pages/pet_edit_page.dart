@@ -4,6 +4,7 @@ import '../../../../design_system/tokens/app_colors.dart';
 import '../../../../design_system/tokens/app_radii.dart';
 import '../../../../design_system/tokens/app_spacing.dart';
 import '../../data/pet_demo_store.dart';
+import '../../domain/pet_format.dart';
 import '../../domain/pet_models.dart';
 import '../widgets/pet_avatar.dart';
 import '../widgets/pet_profile_form.dart';
@@ -74,9 +75,9 @@ class _EditForm extends StatelessWidget {
           name: draft.name,
           species: draft.species,
           breed: draft.breed ?? '',
-          birthDateLabel: draft.birthDate == null ? '' : _formatDate(draft.birthDate!),
+          birthDateLabel: draft.birthDate == null ? '' : formatPetBirthDate(draft.birthDate!),
           sex: draft.sex,
-          weightLabel: _formatWeight(draft.weightKg),
+          weightLabel: formatPetWeight(draft.weightKg),
           medicalNote: draft.medicalNote,
           identityColor: draft.identityColor,
           photoBytes: draft.photoBytes,
@@ -92,30 +93,6 @@ class _EditForm extends StatelessWidget {
     );
   }
 
-  String _formatWeight(double weightKg) {
-    final normalized =
-        weightKg.toStringAsFixed(weightKg.truncateToDouble() == weightKg ? 0 : 1);
-    return '${normalized.replaceAll('.', ',')} kg';
-  }
-
-  String _formatDate(DateTime date) {
-    const months = [
-      'Gen',
-      'Feb',
-      'Mar',
-      'Apr',
-      'Mag',
-      'Giu',
-      'Lug',
-      'Ago',
-      'Set',
-      'Ott',
-      'Nov',
-      'Dic',
-    ];
-
-    return '${date.day.toString().padLeft(2, '0')} ${months[date.month - 1]} ${date.year}';
-  }
 }
 
 /// Delete and "move to Ricordi" — kept out of [PetProfileForm] itself since

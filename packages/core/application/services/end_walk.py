@@ -8,6 +8,7 @@ from packages.shared.errors.base import ValidationError
 
 class EndWalkInput(BaseModel):
     walk_id: str
+    owner_id: str
 
 
 class EndWalkOutput(BaseModel):
@@ -22,6 +23,8 @@ class EndWalkService:
         walk = self._repository.get(data.walk_id)
         if walk is None:
             raise ValidationError("walk not found")
+        if walk.owner_id != data.owner_id:
+            raise ValidationError("walk does not belong to owner")
         if walk.status != "in_progress":
             raise ValidationError("walk is already finished")
 

@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import '../../features/auth/presentation/pages/auth_placeholder_page.dart';
 import '../../features/onboarding/presentation/pages/onboarding_welcome_page.dart';
 import '../preview/maps_demo_page.dart';
-import '../preview/preview_dashboard_page.dart';
 import '../shell/home_shell_page.dart';
 import '../splash/splash_page.dart';
 
@@ -37,13 +36,9 @@ class AppRouter {
         );
       case home:
       case homeShell:
-        return MaterialPageRoute<void>(
-          builder: (_) => const HomeShellPage(),
-          settings: settings,
-        );
       case previewDashboard:
         return MaterialPageRoute<void>(
-          builder: (_) => const PreviewDashboardPage(),
+          builder: (_) => const HomeShellPage(),
           settings: settings,
         );
       case mapsDemo:

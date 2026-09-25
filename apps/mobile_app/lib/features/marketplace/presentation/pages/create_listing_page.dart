@@ -60,6 +60,7 @@ class _CreateListingPageState extends State<CreateListingPage> {
 
     final locationResult = await widget.locationSampler.requestCurrentPosition();
     if (!locationResult.isSuccess) {
+      if (!mounted) return;
       setState(() {
         _submitting = false;
         _locationError =
@@ -72,7 +73,9 @@ class _CreateListingPageState extends State<CreateListingPage> {
     final id = 'listing-${now.microsecondsSinceEpoch}';
     final fuzzedLocation = fuzzCoordinates(locationResult.coordinates!, id);
     final priceText = _priceController.text.trim();
-    final priceCents = priceText.isEmpty ? null : (double.tryParse(priceText.replaceAll(',', '.')) ?? 0) * 100;
+    // The form's own validator already rejects non-numeric/negative text, so
+    // a successful parse is guaranteed here.
+    final priceCents = priceText.isEmpty ? null : double.parse(priceText.replaceAll(',', '.')) * 100;
 
     final listing = MarketplaceListing(
       id: id,
@@ -160,6 +163,20 @@ class _CreateListingPageState extends State<CreateListingPage> {
                 controller: _priceController,
                 decoration: const InputDecoration(labelText: 'Prezzo in € (vuoto = gratis)'),
                 keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                validator: (value) {
+                  final text = value?.trim() ?? '';
+                  if (text.isEmpty) {
+                    return null;
+                  }
+                  final parsed = double.tryParse(text.replaceAll(',', '.'));
+                  if (parsed == null) {
+                    return 'Inserisci un prezzo valido';
+                  }
+                  if (parsed < 0) {
+                    return 'Il prezzo non può essere negativo';
+                  }
+                  return null;
+                },
               ),
               const SizedBox(height: AppSpacing.lg),
               TextFormField(

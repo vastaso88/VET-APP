@@ -3,6 +3,7 @@ import 'dart:typed_data';
 import 'package:flutter/material.dart';
 
 import '../domain/fish_species.dart';
+import '../domain/pet_format.dart';
 import '../domain/pet_identity_colors.dart';
 import '../domain/pet_models.dart';
 
@@ -283,9 +284,9 @@ class PetDemoStore {
       species: species,
       breed: breed?.trim() ?? '',
       dogSizeCategory: dogSizeCategory,
-      birthDateLabel: birthDate == null ? '' : _formatDate(birthDate),
+      birthDateLabel: birthDate == null ? '' : formatPetBirthDate(birthDate),
       sex: sex,
-      weightLabel: _formatWeight(weightKg),
+      weightLabel: formatPetWeight(weightKg),
       medicalNote: medicalNote.trim().isEmpty
           ? 'Profilo creato da poco, pronto per la prossima visita.'
           : medicalNote.trim(),
@@ -328,27 +329,4 @@ class PetDemoStore {
     ];
   }
 
-  static String _formatWeight(double weightKg) {
-    final normalized = weightKg.toStringAsFixed(weightKg.truncateToDouble() == weightKg ? 0 : 1);
-    return '${normalized.replaceAll('.', ',')} kg';
-  }
-
-  static String _formatDate(DateTime date) {
-    const months = [
-      'Gen',
-      'Feb',
-      'Mar',
-      'Apr',
-      'Mag',
-      'Giu',
-      'Lug',
-      'Ago',
-      'Set',
-      'Ott',
-      'Nov',
-      'Dic',
-    ];
-
-    return '${date.day.toString().padLeft(2, '0')} ${months[date.month - 1]} ${date.year}';
-  }
 }

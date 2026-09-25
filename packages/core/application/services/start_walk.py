@@ -25,7 +25,10 @@ class StartWalkService:
         self._pet_profile_repository = pet_profile_repository
 
     def execute(self, data: StartWalkInput) -> StartWalkOutput:
-        if self._pet_profile_repository.get(data.pet_id) is None:
+        pet_profile = self._pet_profile_repository.get(data.pet_id)
+        if pet_profile is None:
             raise ValidationError("pet_profile not found")
+        if pet_profile.owner_id != data.owner_id:
+            raise ValidationError("pet_profile does not belong to owner")
         walk = WalkSession(owner_id=data.owner_id, pet_id=data.pet_id)
         return StartWalkOutput(walk=self._repository.save(walk))

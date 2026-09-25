@@ -22,11 +22,17 @@ class LocationPreferenceStore extends ChangeNotifier {
   UserLocationPreference get preference => _preference;
 
   bool _loaded = false;
+  Future<void>? _loadingFuture;
 
-  Future<void> ensureLoaded() async {
-    if (_loaded) return;
-    _loaded = true;
+  /// Safe to call concurrently from multiple screens: callers that arrive
+  /// while a load is already in flight await that same future instead of
+  /// each racing SharedPreferences and seeing `_loaded` flip early.
+  Future<void> ensureLoaded() {
+    if (_loaded) return Future.value();
+    return _loadingFuture ??= _load();
+  }
 
+  Future<void> _load() async {
     try {
       final preferences = await SharedPreferences.getInstance();
       final raw = preferences.getString(_storageKey);
@@ -53,6 +59,8 @@ class LocationPreferenceStore extends ChangeNotifier {
       notifyListeners();
     } catch (_) {
       // Keep defaults — a corrupt or missing preference isn't fatal.
+    } finally {
+      _loaded = true;
     }
   }
 

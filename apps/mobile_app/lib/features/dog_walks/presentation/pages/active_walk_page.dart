@@ -74,6 +74,7 @@ class _ActiveWalkPageState extends State<ActiveWalkPage> {
 
     final result = await widget.locationSampler.requestCurrentPosition();
     if (!result.isSuccess) {
+      if (!mounted) return;
       setState(() {
         _starting = false;
         _locationError =
