@@ -21,6 +21,7 @@ from packages.core.application.ports.pet_profile_repository import PetProfileRep
 from packages.core.application.ports.pii_anonymizer import PiiAnonymizer
 from packages.core.application.ports.reminder_repository import ReminderRepository
 from packages.core.application.ports.speech_to_text_provider import SpeechToTextProvider
+from packages.core.application.ports.subscription_repository import SubscriptionRepository
 from packages.core.application.ports.user_location_repository import UserLocationRepository
 from packages.core.application.services.chat_orchestrator import ChatOrchestrator
 from packages.core.application.services.consent_interpreter import ConsentInterpreter
@@ -31,6 +32,9 @@ from packages.core.application.services.create_reminder import CreateReminderSer
 from packages.core.application.services.delete_conversation import DeleteConversationService
 from packages.core.application.services.end_walk import EndWalkService
 from packages.core.application.services.get_account_consents import GetAccountConsentsService
+from packages.core.application.services.get_or_create_subscription import (
+    GetOrCreateSubscriptionService,
+)
 from packages.core.application.services.get_pet_profile import GetPetProfileService
 from packages.core.application.services.get_user_location import GetUserLocationService
 from packages.core.application.services.interview_planner import InterviewPlanner
@@ -55,6 +59,7 @@ from packages.core.application.services.resolve_chat_response_report import (
     ResolveChatResponseReportService,
 )
 from packages.core.application.services.safety_gate import SafetyGate
+from packages.core.application.services.select_plan import SelectPlanService
 from packages.core.application.services.send_chat_message import SendChatMessageService
 from packages.core.application.services.set_account_consent import SetAccountConsentService
 from packages.core.application.services.set_medical_record_consent import (
@@ -105,6 +110,7 @@ from packages.infrastructure.persistence.in_memory_repositories import (
     InMemoryMarketplaceListingRepository,
     InMemoryPetProfileRepository,
     InMemoryReminderRepository,
+    InMemorySubscriptionRepository,
     InMemoryUserLocationRepository,
 )
 from packages.infrastructure.privacy.noop_pii_anonymizer import NoopPiiAnonymizer
@@ -135,6 +141,10 @@ class ApplicationContainer:
         self.pii_anonymizer = self._build_pii_anonymizer()
         self.clinical_event_repository = self._build_clinical_event_repository()
         self.account_consents_repository = self._build_account_consents_repository()
+        self.subscription_repository = self._build_subscription_repository()
+        self.developer_emails = frozenset(
+            email.strip().lower() for email in settings.developer_emails
+        )
         self.user_location_repository = self._build_user_location_repository()
         self.dog_walk_repository = self._build_dog_walk_repository()
         self.marketplace_listing_repository = self._build_marketplace_listing_repository()
@@ -181,6 +191,12 @@ class ApplicationContainer:
 
     def set_account_consent_service(self) -> SetAccountConsentService:
         return SetAccountConsentService(self.account_consents_repository)
+
+    def get_or_create_subscription_service(self) -> GetOrCreateSubscriptionService:
+        return GetOrCreateSubscriptionService(self.subscription_repository, self.developer_emails)
+
+    def select_plan_service(self) -> SelectPlanService:
+        return SelectPlanService(self.subscription_repository)
 
     def get_user_location_service(self) -> GetUserLocationService:
         return GetUserLocationService(self.user_location_repository)
@@ -377,6 +393,23 @@ class ApplicationContainer:
                     return InMemoryAccountConsentsRepository()
                 raise
         return InMemoryAccountConsentsRepository()
+
+    def _build_subscription_repository(self) -> SubscriptionRepository:
+        if self.settings.persistence_backend == "supabase":
+            try:
+                from packages.infrastructure.persistence.supabase.client import (
+                    build_supabase_client,
+                )
+                from packages.infrastructure.persistence.supabase.supabase_repositories import (
+                    SupabaseSubscriptionRepository,
+                )
+
+                return SupabaseSubscriptionRepository(build_supabase_client(self.settings))
+            except ModuleNotFoundError:
+                if self.settings.environment != "production":
+                    return InMemorySubscriptionRepository()
+                raise
+        return InMemorySubscriptionRepository()
 
     def _build_user_location_repository(self) -> UserLocationRepository:
         if self.settings.persistence_backend == "supabase":

@@ -32,19 +32,8 @@ class AuthScreenScaffold extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Container(
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [
-              Color(0xFFF5F9F7),
-              Color(0xFFE7F2EE),
-              Color(0xFFD7EAE2),
-            ],
-          ),
-        ),
-        child: SafeArea(
+      backgroundColor: AppColors.background,
+      body: SafeArea(
           child: SingleChildScrollView(
             padding: const EdgeInsets.fromLTRB(
               AppSpacing.lg,
@@ -95,7 +84,6 @@ class AuthScreenScaffold extends StatelessWidget {
               ),
             ),
           ),
-        ),
       ),
     );
   }
@@ -117,23 +105,19 @@ class AuthStateBanner extends StatelessWidget {
   Widget build(BuildContext context) {
     final colors = switch (status) {
       AuthBannerStatus.info => (
-          background: const Color(0xFFE1F0EA),
-          foreground: const Color(0xFF315E55),
+          foreground: AppColors.info,
           icon: Icons.info_rounded,
         ),
       AuthBannerStatus.loading => (
-          background: const Color(0xFFF6E9D9),
-          foreground: const Color(0xFF8B5B3E),
+          foreground: AppColors.warning,
           icon: Icons.hourglass_top_rounded,
         ),
       AuthBannerStatus.success => (
-          background: const Color(0xFFDDEDE8),
-          foreground: const Color(0xFF2D6B60),
+          foreground: AppColors.success,
           icon: Icons.check_circle_rounded,
         ),
       AuthBannerStatus.error => (
-          background: const Color(0xFFF6DDE0),
-          foreground: const Color(0xFF8A3F4A),
+          foreground: AppColors.danger,
           icon: Icons.error_rounded,
         ),
     };
@@ -143,7 +127,7 @@ class AuthStateBanner extends StatelessWidget {
       padding: const EdgeInsets.all(AppSpacing.md),
       margin: const EdgeInsets.only(bottom: AppSpacing.lg),
       decoration: BoxDecoration(
-        color: colors.background,
+        color: colors.foreground.withValues(alpha: 0.12),
         borderRadius: BorderRadius.circular(AppRadii.large),
       ),
       child: Row(
@@ -269,35 +253,15 @@ class _BrandRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      children: [
-        Container(
-          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md, vertical: AppSpacing.sm),
-          decoration: BoxDecoration(
-            color: AppColors.primary,
-            borderRadius: BorderRadius.circular(AppRadii.medium),
-          ),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const Icon(Icons.circle, size: 8, color: AppColors.accent),
-              const SizedBox(width: AppSpacing.sm),
-              Text(
-                'VET APP',
-                style: AppTextStyles.caption.copyWith(color: AppColors.onPrimary, letterSpacing: 0.4),
-              ),
-            ],
-          ),
-        ),
-        const Spacer(),
-        if (onBack != null)
-          TextButton.icon(
-            style: TextButton.styleFrom(minimumSize: const Size(0, 44)),
-            onPressed: onBack,
-            icon: const Icon(Icons.arrow_back_rounded, size: 18),
-            label: const Text('Indietro'),
-          ),
-      ],
+    if (onBack == null) return const SizedBox.shrink();
+    return Align(
+      alignment: Alignment.centerLeft,
+      child: TextButton.icon(
+        style: TextButton.styleFrom(minimumSize: const Size(0, 44)),
+        onPressed: onBack,
+        icon: const Icon(Icons.arrow_back_rounded, size: 18),
+        label: const Text('Indietro'),
+      ),
     );
   }
 }

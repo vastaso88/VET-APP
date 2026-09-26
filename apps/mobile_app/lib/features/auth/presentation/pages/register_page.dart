@@ -7,6 +7,11 @@ import '../../../../design_system/tokens/app_spacing.dart';
 import '../../../../shared/auth/auth.dart';
 import '../../../account_consents/data/account_consents_remote_data_source.dart';
 import '../../../account_consents/domain/account_consent_models.dart';
+import '../../../billing/data/subscription_remote_data_source.dart';
+import '../../../first_run/presentation/pages/add_first_pet_prompt_page.dart';
+import '../../../first_run/presentation/pages/notification_permission_page.dart';
+import '../../../first_run/presentation/pages/plan_intro_page.dart';
+import '../../../first_run/presentation/pages/tutorial_page.dart';
 import '../../data/auth_repository_factory.dart';
 import '../widgets/auth_widgets.dart';
 import 'login_page.dart';
@@ -109,13 +114,41 @@ class _RegisterPageState extends State<RegisterPage> {
         ]),
       );
 
+      // Starts the 10-day free trial server-side (first status lookup for
+      // this owner_id creates it — see GetOrCreateSubscriptionService).
+      await HttpSubscriptionRemoteDataSource().fetchStatus();
+
       await Future<void>.delayed(const Duration(milliseconds: 350));
+      if (!mounted) return;
+      await _runFirstRunFlow();
       if (!mounted) return;
       Navigator.of(context).pushNamedAndRemoveUntil(
         AppRouter.homeShell,
         (route) => false,
       );
     }
+  }
+
+  /// Plan proposal (trial or immediate pick) → short feature tutorial →
+  /// notification permission → optional guided first-pet creation. Each
+  /// page pops itself when done, so this just runs them in sequence before
+  /// landing on the real home.
+  Future<void> _runFirstRunFlow() async {
+    await Navigator.of(context).push(
+      MaterialPageRoute<void>(builder: (_) => const PlanIntroPage()),
+    );
+    if (!mounted) return;
+    await Navigator.of(context).push(
+      MaterialPageRoute<void>(builder: (_) => const TutorialPage()),
+    );
+    if (!mounted) return;
+    await Navigator.of(context).push(
+      MaterialPageRoute<void>(builder: (_) => const NotificationPermissionPage()),
+    );
+    if (!mounted) return;
+    await Navigator.of(context).push(
+      MaterialPageRoute<void>(builder: (_) => const AddFirstPetPromptPage()),
+    );
   }
 
   @override

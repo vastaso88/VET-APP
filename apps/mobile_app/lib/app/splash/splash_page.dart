@@ -1,11 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/foundation.dart';
 
 import '../../design_system/tokens/app_colors.dart';
 import '../../design_system/tokens/app_spacing.dart';
 import '../../design_system/tokens/app_text_styles.dart';
 import '../../features/auth/data/auth_repository_factory.dart';
-import '../../shared/config/app_runtime_config_loader.dart';
+import '../../features/billing/data/subscription_gate.dart';
 import '../router/app_router.dart';
 
 class SplashPage extends StatefulWidget {
@@ -17,7 +16,6 @@ class SplashPage extends StatefulWidget {
 
 class _SplashPageState extends State<SplashPage> {
   final _authRepository = const AuthRepositoryFactory().create();
-  final _runtimeConfig = const AppRuntimeConfigLoader().load();
 
   @override
   void initState() {
@@ -30,23 +28,21 @@ class _SplashPageState extends State<SplashPage> {
   }
 
   Future<void> _restoreSessionAndRoute() async {
-    if (kIsWeb && !_runtimeConfig.hasSupabaseCredentials) {
-      Navigator.of(context).pushReplacementNamed(AppRouter.previewDashboard);
-      return;
-    }
-
     await Future<void>.delayed(const Duration(milliseconds: 1200));
     if (!mounted) return;
 
     final result = await _authRepository.restoreSession();
     if (!mounted) return;
 
-    final destination = result.fold(
-      onSuccess: (context) => context.isSignedIn && context.onboardingCompleted
-          ? AppRouter.homeShell
-          : AppRouter.onboardingWelcome,
-      onFailure: (_) => AppRouter.onboardingWelcome,
+    final signedIn = result.fold(
+      onSuccess: (context) => context.isSignedIn,
+      onFailure: (_) => false,
     );
+
+    final destination = signedIn
+        ? await const SubscriptionGate().resolveDestination()
+        : AppRouter.auth;
+    if (!mounted) return;
 
     Navigator.of(context).pushReplacementNamed(destination);
   }
@@ -54,19 +50,8 @@ class _SplashPageState extends State<SplashPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Container(
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [
-              Color(0xFFF4F9F6),
-              Color(0xFFE7F1EC),
-              Color(0xFFD8E9E1),
-            ],
-          ),
-        ),
-        child: Center(
+      backgroundColor: AppColors.background,
+      body: Center(
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
@@ -90,7 +75,6 @@ class _SplashPageState extends State<SplashPage> {
               ),
             ],
           ),
-        ),
       ),
     );
   }

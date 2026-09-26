@@ -16,15 +16,11 @@ class VetApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final initialRoute = !bootstrapState.supabaseEnabled && kIsWeb
-        ? AppRouter.previewDashboard
-        : AppRouter.splash;
-
     return MaterialApp(
       title: 'VET APP',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.light(),
-      initialRoute: initialRoute,
+      initialRoute: AppRouter.splash,
       onGenerateRoute: AppRouter.onGenerateRoute,
       builder: (context, child) {
         final rawBody = child ?? const SizedBox.shrink();

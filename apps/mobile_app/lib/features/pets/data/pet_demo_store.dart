@@ -1,7 +1,11 @@
+import 'dart:async';
 import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
+import '../../../shared/auth/current_user.dart';
+import '../../../shared/config/app_runtime_config_loader.dart';
 import '../domain/fish_species.dart';
 import '../domain/pet_format.dart';
 import '../domain/pet_identity_colors.dart';
@@ -22,8 +26,12 @@ class PetSpeciesOption {
 }
 
 class PetDemoStore {
+  // Starts empty: real per-account contents are loaded lazily via
+  // [ensureHydrated] once the signed-in owner id is known (see
+  // docs/auth/01_brainstorm.md, 2026-09-26), rather than seeding every
+  // account with the same fixed cast of simulation pets.
   PetDemoStore._() {
-    _pets = List<PetProfile>.of(samplePets);
+    _pets = [];
   }
 
   static final PetDemoStore instance = PetDemoStore._();
@@ -205,6 +213,181 @@ class PetDemoStore {
 
   late List<PetProfile> _pets;
 
+  /// Owner id this store's current in-memory contents were hydrated for, so
+  /// [ensureHydrated] is a no-op on repeated calls (e.g. every page's
+  /// initState) and correctly re-hydrates if a different account signs in
+  /// within the same app session.
+  String? _hydratedOwnerId;
+
+  /// Loads this owner's pets from Supabase into the in-memory store, once
+  /// per owner id. No-ops (and leaves the store as-is) when Supabase isn't
+  /// configured or the request fails — same best-effort-remote pattern as
+  /// RemindersRepository.
+  Future<void> ensureHydrated() async {
+    final ownerId = CurrentUser.get()?.id;
+    if (ownerId == null || ownerId == _hydratedOwnerId) {
+      return;
+    }
+
+    final client = _resolveClient();
+    if (client == null) {
+      return;
+    }
+
+    try {
+      final response = await client.from('pet_profiles').select('*').eq('owner_id', ownerId);
+      final rows = response as List<dynamic>;
+      final loaded = <PetProfile>[];
+      for (final row in rows) {
+        final pet = _petFromRow(row as Map<String, dynamic>);
+        if (pet != null) {
+          loaded.add(pet);
+        }
+      }
+      _pets = loaded;
+      _hydratedOwnerId = ownerId;
+    } catch (_) {
+      // Leave the local/demo contents in place; retried next call since
+      // _hydratedOwnerId wasn't set.
+    }
+  }
+
+  Future<void> _persistRemote(PetProfile pet) async {
+    final ownerId = CurrentUser.get()?.id;
+    final client = _resolveClient();
+    if (ownerId == null || client == null) {
+      return;
+    }
+
+    try {
+      await client.from('pet_profiles').upsert(_petToRow(pet, ownerId));
+    } catch (_) {
+      // Best-effort: kept locally regardless.
+    }
+  }
+
+  Future<void> _deleteRemote(String id) async {
+    final client = _resolveClient();
+    if (client == null) {
+      return;
+    }
+
+    try {
+      await client.from('pet_profiles').delete().eq('id', id);
+    } catch (_) {
+      // Removed locally regardless.
+    }
+  }
+
+  SupabaseClient? _resolveClient() {
+    final config = const AppRuntimeConfigLoader().load();
+    if (!config.hasSupabaseCredentials) {
+      return null;
+    }
+
+    try {
+      return Supabase.instance.client;
+    } catch (_) {
+      return null;
+    }
+  }
+
+  Map<String, dynamic> _petToRow(PetProfile pet, String ownerId) => {
+        'id': pet.id,
+        'owner_id': ownerId,
+        'name': pet.name,
+        'species': pet.species,
+        'breed': pet.breed,
+        'notes': pet.medicalNote,
+        'birth_date_label': pet.birthDateLabel,
+        'sex': pet.sex,
+        'weight_label': pet.weightLabel,
+        'health_badge': pet.healthBadge,
+        'next_visit_label': pet.nextVisitLabel,
+        'avatar_emoji': pet.avatarEmoji,
+        'accent_color_value': pet.accentColor.toARGB32(),
+        'identity_color_value': pet.identityColor.toARGB32(),
+        'dog_size_category': pet.dogSizeCategory,
+        'is_memorial': pet.isMemorial,
+        'memorial_date_label':
+            pet.memorialDate == null ? null : formatPetBirthDate(pet.memorialDate!),
+        'habitat': pet.habitat == null ? null : _habitatToJson(pet.habitat!),
+        'aquarium_stock': pet.aquariumStock.map(_fishStockToJson).toList(),
+      };
+
+  PetProfile? _petFromRow(Map<String, dynamic> row) {
+    final id = (row['id'] ?? '').toString();
+    final name = (row['name'] ?? '').toString();
+    final species = (row['species'] ?? '').toString();
+    if (id.isEmpty || name.isEmpty || species.isEmpty) {
+      return null;
+    }
+
+    final option = optionForSpecies(species);
+    return PetProfile(
+      id: id,
+      name: name,
+      species: species,
+      breed: (row['breed'] ?? '').toString(),
+      birthDateLabel: (row['birth_date_label'] ?? '').toString(),
+      sex: (row['sex'] ?? '').toString(),
+      weightLabel: (row['weight_label'] ?? '').toString(),
+      medicalNote: (row['notes'] ?? '').toString(),
+      healthBadge: (row['health_badge'] ?? '').toString(),
+      nextVisitLabel: (row['next_visit_label'] ?? '').toString(),
+      avatarEmoji: (row['avatar_emoji'] ?? (name.isEmpty ? '' : name[0].toUpperCase())).toString(),
+      accentColor: _colorFromValue(row['accent_color_value']) ?? option.accentColor,
+      identityColor: _colorFromValue(row['identity_color_value']) ?? option.accentColor,
+      dogSizeCategory: row['dog_size_category'] as String?,
+      isMemorial: row['is_memorial'] as bool? ?? false,
+      habitat: _habitatFromJson(row['habitat'] as Map<String, dynamic>?),
+      aquariumStock: ((row['aquarium_stock'] as List<dynamic>?) ?? const [])
+          .map((item) => _fishStockFromJson(item as Map<String, dynamic>))
+          .toList(),
+    );
+  }
+
+  static Color? _colorFromValue(dynamic value) {
+    if (value is int) return Color(value);
+    if (value is num) return Color(value.toInt());
+    return null;
+  }
+
+  static Map<String, dynamic> _habitatToJson(HabitatDetails habitat) => {
+        'length_cm': habitat.lengthCm,
+        'width_cm': habitat.widthCm,
+        'height_cm': habitat.heightCm,
+        'volume_liters': habitat.volumeLiters,
+        'temperature_label': habitat.temperatureLabel,
+        'substrate': habitat.substrate,
+        'notes': habitat.notes,
+      };
+
+  static HabitatDetails? _habitatFromJson(Map<String, dynamic>? json) {
+    if (json == null) return null;
+    return HabitatDetails(
+      lengthCm: json['length_cm'] as int?,
+      widthCm: json['width_cm'] as int?,
+      heightCm: json['height_cm'] as int?,
+      volumeLiters: json['volume_liters'] as int?,
+      temperatureLabel: (json['temperature_label'] ?? '').toString(),
+      substrate: (json['substrate'] ?? '').toString(),
+      notes: (json['notes'] ?? '').toString(),
+    );
+  }
+
+  static Map<String, dynamic> _fishStockToJson(FishStock stock) => {
+        'species': stock.species,
+        'male_count': stock.maleCount,
+        'female_count': stock.femaleCount,
+      };
+
+  static FishStock _fishStockFromJson(Map<String, dynamic> json) => FishStock(
+        species: (json['species'] ?? '').toString(),
+        maleCount: json['male_count'] as int? ?? 0,
+        femaleCount: json['female_count'] as int? ?? 0,
+      );
+
   /// Active pets only by default — pets moved to Ricordi ([PetProfile.isMemorial])
   /// are excluded so they don't clutter the main Animali list; pass
   /// [includeMemorial] to get them (used by the Ricordi page).
@@ -248,19 +431,21 @@ class PetDemoStore {
     final index = _pets.indexWhere((item) => item.id == pet.id);
     if (index == -1) {
       _pets = [pet, ..._pets];
-      return pet;
+    } else {
+      _pets = [
+        ..._pets.take(index),
+        pet,
+        ..._pets.skip(index + 1),
+      ];
     }
 
-    _pets = [
-      ..._pets.take(index),
-      pet,
-      ..._pets.skip(index + 1),
-    ];
+    unawaited(_persistRemote(pet));
     return pet;
   }
 
   void delete(String id) {
     _pets = _pets.where((pet) => pet.id != id).toList();
+    unawaited(_deleteRemote(id));
   }
 
   PetProfile create({

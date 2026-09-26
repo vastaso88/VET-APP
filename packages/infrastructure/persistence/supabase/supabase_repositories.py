@@ -16,6 +16,7 @@ from packages.core.application.ports.marketplace_listing_repository import (
 )
 from packages.core.application.ports.pet_profile_repository import PetProfileRepository
 from packages.core.application.ports.reminder_repository import ReminderRepository
+from packages.core.application.ports.subscription_repository import SubscriptionRepository
 from packages.core.application.ports.user_location_repository import UserLocationRepository
 from packages.core.domain.consent.models import AccountConsents
 from packages.core.domain.conversation.attachment import ChatAttachment
@@ -28,6 +29,7 @@ from packages.core.domain.marketplace.models import ListingReport, MarketplaceLi
 from packages.core.domain.medical_record.models import ClinicalEvent
 from packages.core.domain.pet_profile.models import PetProfile
 from packages.core.domain.reminders.models import Reminder
+from packages.core.domain.subscription.models import Subscription
 
 if TYPE_CHECKING:
     from supabase import Client
@@ -140,6 +142,25 @@ class SupabaseAccountConsentsRepository(AccountConsentsRepository):
         payload = _serialize_payload(account_consents.model_dump(mode="json"))
         self._client.table(self._table).upsert(payload).execute()
         return account_consents
+
+
+class SupabaseSubscriptionRepository(SubscriptionRepository):
+    def __init__(self, client: Client) -> None:
+        self._client = client
+        self._table = "subscriptions"
+
+    def get(self, owner_id: str) -> Subscription | None:
+        response = (
+            self._client.table(self._table).select("*").eq("owner_id", owner_id).limit(1).execute()
+        )
+        if not response.data:
+            return None
+        return Subscription.model_validate(response.data[0])
+
+    def save(self, subscription: Subscription) -> Subscription:
+        payload = _serialize_payload(subscription.model_dump(mode="json"))
+        self._client.table(self._table).upsert(payload).execute()
+        return subscription
 
 
 def _user_location_to_row(user_location: UserLocation) -> dict[str, Any]:

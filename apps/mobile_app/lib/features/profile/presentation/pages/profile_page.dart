@@ -1,10 +1,14 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 
+import '../../../../../app/router/app_router.dart';
 import '../../../../../design_system/tokens/app_colors.dart';
 import '../../../../../design_system/tokens/app_radii.dart';
 import '../../../../../design_system/tokens/app_spacing.dart';
 import '../../../../../design_system/tokens/app_text_styles.dart';
 import '../../../../../shared/auth/current_user.dart';
+import '../../../auth/data/auth_repository_factory.dart';
 import '../../../settings/presentation/pages/settings_page.dart';
 
 class ProfilePage extends StatefulWidget {
@@ -23,10 +27,42 @@ class _ProfilePageState extends State<ProfilePage> {
     );
   }
 
-  void _showLogoutPreview() {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Logout pronto per essere collegato al flusso account reale.'),
+  void _confirmLogout() {
+    showDialog<void>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        backgroundColor: AppColors.surface,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadii.large)),
+        title: Text('Esci', style: AppTextStyles.title.copyWith(fontSize: 17)),
+        content: Text(
+          'Vuoi disconnetterti da questo account?',
+          style: AppTextStyles.bodySmall,
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(),
+            child: const Text('Chiudi'),
+          ),
+          TextButton(
+            onPressed: () {
+              Navigator.of(dialogContext).pop();
+              unawaited(_performLogout());
+            },
+            child: const Text('Conferma'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _performLogout() async {
+    final result = await const AuthRepositoryFactory().create().signOut();
+    if (!mounted) return;
+    result.fold(
+      onSuccess: (_) => Navigator.of(context, rootNavigator: true)
+          .pushNamedAndRemoveUntil(AppRouter.auth, (route) => false),
+      onFailure: (error) => ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(error.message)),
       ),
     );
   }
@@ -60,7 +96,7 @@ class _ProfilePageState extends State<ProfilePage> {
                 _Header(
                   onBack: () => Navigator.of(context).maybePop(),
                   onOpenSettings: _openSettings,
-                  onLogoutPreview: _showLogoutPreview,
+                  onLogout: _confirmLogout,
                 ),
                 const SizedBox(height: AppSpacing.lg),
                 _SummaryCard(
@@ -110,12 +146,12 @@ class _Header extends StatelessWidget {
   const _Header({
     required this.onBack,
     required this.onOpenSettings,
-    required this.onLogoutPreview,
+    required this.onLogout,
   });
 
   final VoidCallback onBack;
   final VoidCallback onOpenSettings;
-  final VoidCallback onLogoutPreview;
+  final VoidCallback onLogout;
 
   @override
   Widget build(BuildContext context) {
@@ -158,7 +194,7 @@ class _Header extends StatelessWidget {
         Align(
           alignment: Alignment.centerRight,
           child: OutlinedButton.icon(
-            onPressed: onLogoutPreview,
+            onPressed: onLogout,
             style: OutlinedButton.styleFrom(
               minimumSize: Size.zero,
               padding: const EdgeInsets.symmetric(

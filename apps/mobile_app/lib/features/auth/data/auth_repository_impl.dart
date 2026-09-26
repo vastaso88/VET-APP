@@ -37,8 +37,9 @@ class AuthRepositoryImpl implements AuthRepository {
 
   @override
   Future<Result<AuthContext>> signInWithPassword(
-    AuthEmailPasswordCredentials credentials,
-  ) async {
+    AuthEmailPasswordCredentials credentials, {
+    bool rememberMe = true,
+  }) async {
     final result = await _remoteDataSource.signInWithPassword(credentials);
     return await result.fold(
       onSuccess: (session) async {
@@ -46,6 +47,7 @@ class AuthRepositoryImpl implements AuthRepository {
           user: session.user,
           session: session,
           onboardingCompleted: session.user.onboardingCompleted,
+          rememberMe: rememberMe,
         );
         await _sessionStore.write(context);
         return Result.success(context);
@@ -61,8 +63,6 @@ class AuthRepositoryImpl implements AuthRepository {
     final result = await _remoteDataSource.signUpWithPassword(request);
     return await result.fold(
       onSuccess: (session) async {
-        // Reaching the register form means the user already stepped through
-        // the onboarding welcome/value-proposition/privacy screens.
         final user = session.user.copyWith(onboardingCompleted: true);
         final updatedSession = session.copyWith(user: user);
         final context = AuthContext(

@@ -7,7 +7,10 @@ class SignInWithPasswordUseCase {
 
   final AuthRepository _repository;
 
-  Future<Result<AuthContext>> call(AuthEmailPasswordCredentials credentials) {
-    return _repository.signInWithPassword(credentials);
+  Future<Result<AuthContext>> call(
+    AuthEmailPasswordCredentials credentials, {
+    bool rememberMe = true,
+  }) {
+    return _repository.signInWithPassword(credentials, rememberMe: rememberMe);
   }
 }

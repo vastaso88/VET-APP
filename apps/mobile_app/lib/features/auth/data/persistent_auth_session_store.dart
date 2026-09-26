@@ -56,11 +56,26 @@ class PersistentAuthSessionStore implements AuthSessionStore {
         return _context;
       }
 
-      _context = AuthContext(
+      final restored = AuthContext(
         user: AppUser.fromMap(Map<String, dynamic>.from(userMap)),
         session: AppSession.fromMap(Map<String, dynamic>.from(sessionMap)),
         onboardingCompleted: payload['onboarding_completed'] as bool? ?? false,
+        rememberMe: payload['remember_me'] as bool? ?? true,
       );
+
+      if (!restored.rememberMe) {
+        // "Resta connesso" was off at login: `restore()` is the app's cold-
+        // start entry point, so a non-remembered session must not survive
+        // it. We only drop the local copy here (no remote sign-out call) —
+        // this store has no dependency on the remote auth client, and the
+        // Supabase-backed path already keeps its own token store separate
+        // from this one.
+        await preferences.remove(_storageKey);
+        _context = const AuthContext();
+        return _context;
+      }
+
+      _context = restored;
     } catch (_) {
       _context = const AuthContext();
     }
@@ -82,6 +97,7 @@ class PersistentAuthSessionStore implements AuthSessionStore {
       'user': context.user!.toMap(),
       'session': context.session!.toMap(),
       'onboarding_completed': context.onboardingCompleted,
+      'remember_me': context.rememberMe,
     };
     await preferences.setString(_storageKey, jsonEncode(payload));
   }

@@ -25,6 +25,12 @@ class Settings(BaseSettings):
     supabase_db_password: str = Field(default="", alias="SUPABASE_DB_PASSWORD")
     bootstrap_user_id: str = Field(default="demo-user", alias="BOOTSTRAP_USER_ID")
     bootstrap_user_email: str = Field(default="demo@vetapp.local", alias="BOOTSTRAP_USER_EMAIL")
+    # Accounts with unlimited access, bypassing the trial/plan gate entirely
+    # (packages/core/application/services/get_or_create_subscription.py).
+    developer_emails: list[str] = Field(
+        default=["russo88fra@gmail.com", "vastaso88@gmail.com", "roberto.vasta@gmail.com"],
+        alias="DEVELOPER_EMAILS",
+    )
     llm_provider: str = Field(default="echo", alias="LLM_PROVIDER")
     llm_model: str = Field(default="demo-model", alias="LLM_MODEL")
     llm_api_key: str = Field(default="", alias="LLM_API_KEY")

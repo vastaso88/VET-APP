@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
+import '../../../../app/router/app_router.dart';
 import '../../../../design_system/tokens/app_colors.dart';
 import '../../../../design_system/tokens/app_radii.dart';
 import '../../../../design_system/tokens/app_spacing.dart';
@@ -12,6 +13,7 @@ import '../../../../shared/auth/current_user.dart';
 import '../../../../shared/widgets/coming_soon_page.dart';
 import '../../../account_consents/data/account_consents_remote_data_source.dart';
 import '../../../account_consents/domain/account_consent_models.dart';
+import '../../../auth/data/auth_repository_factory.dart';
 import '../../../billing/data/billing_demo_store.dart';
 import '../../../billing/presentation/pages/billing_page.dart';
 import '../../../location/data/address_geocoder.dart';
@@ -221,8 +223,22 @@ class _SettingsPageState extends State<SettingsPage> {
   }
 
   void _logout() {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Logout non ancora collegato al flusso account.')),
+    _showInfoDialog(
+      'Esci',
+      'Vuoi disconnetterti da questo account?',
+      onConfirm: () => unawaited(_performLogout()),
+    );
+  }
+
+  Future<void> _performLogout() async {
+    final result = await const AuthRepositoryFactory().create().signOut();
+    if (!mounted) return;
+    result.fold(
+      onSuccess: (_) => Navigator.of(context, rootNavigator: true)
+          .pushNamedAndRemoveUntil(AppRouter.auth, (route) => false),
+      onFailure: (error) => ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(error.message)),
+      ),
     );
   }
 

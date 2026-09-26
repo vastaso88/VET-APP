@@ -14,14 +14,28 @@ create table if not exists public.pet_profiles (
     -- field shape agreed with the "UI/UX e funzionalità base" session's
     -- mobile-local model (2026-09-20): {dimensions, volume_liters,
     -- temperature_label, substrate, notes}, all optional. Additive,
-    -- nullable — the mobile pets feature that would populate this is
-    -- still local-only, not yet sending real data.
+    -- nullable.
     habitat jsonb,
     -- Multi-species aquarium composition: [{species, male_count,
     -- female_count}, ...]. A non-empty array means this profile
     -- represents a whole aquarium rather than a single fish.
     aquarium_stock jsonb not null default '[]'::jsonb
 );
+
+-- Additive columns for the rest of the mobile PetProfile model, wired up
+-- 2026-09-26 (pets feature had no Supabase backing at all until then, see
+-- docs/auth/01_brainstorm.md). `notes` above already covers medicalNote.
+alter table public.pet_profiles add column if not exists birth_date_label text;
+alter table public.pet_profiles add column if not exists sex text;
+alter table public.pet_profiles add column if not exists weight_label text;
+alter table public.pet_profiles add column if not exists health_badge text;
+alter table public.pet_profiles add column if not exists next_visit_label text;
+alter table public.pet_profiles add column if not exists avatar_emoji text;
+alter table public.pet_profiles add column if not exists accent_color_value bigint;
+alter table public.pet_profiles add column if not exists identity_color_value bigint;
+alter table public.pet_profiles add column if not exists dog_size_category text;
+alter table public.pet_profiles add column if not exists is_memorial boolean not null default false;
+alter table public.pet_profiles add column if not exists memorial_date_label text;
 
 create table if not exists public.conversations (
     id text primary key,
@@ -78,6 +92,16 @@ create table if not exists public.account_consents (
     consents jsonb not null default '{}'::jsonb
 );
 
+-- Subscriptions: single-row-per-owner, same shape as account_consents.
+-- Starts the 10-day free trial (no card) on first lookup; `plan` stays
+-- null while on trial, then holds the chosen plan key permanently.
+create table if not exists public.subscriptions (
+    owner_id text primary key,
+    trial_ends_at timestamptz not null,
+    plan text,
+    created_at timestamptz not null default now()
+);
+
 create index if not exists idx_pet_profiles_owner_id on public.pet_profiles(owner_id);
 create index if not exists idx_conversations_owner_id on public.conversations(owner_id);
 create index if not exists idx_conversations_pet_id on public.conversations(pet_id);
@@ -90,6 +114,7 @@ alter table public.conversations enable row level security;
 alter table public.clinical_events enable row level security;
 alter table public.reminders enable row level security;
 alter table public.account_consents enable row level security;
+alter table public.subscriptions enable row level security;
 
 drop policy if exists pet_profiles_select_own on public.pet_profiles;
 create policy pet_profiles_select_own
@@ -241,6 +266,25 @@ with check (owner_id = auth.uid()::text);
 drop policy if exists account_consents_update_own on public.account_consents;
 create policy account_consents_update_own
 on public.account_consents
+for update
+using (owner_id = auth.uid()::text)
+with check (owner_id = auth.uid()::text);
+
+drop policy if exists subscriptions_select_own on public.subscriptions;
+create policy subscriptions_select_own
+on public.subscriptions
+for select
+using (owner_id = auth.uid()::text);
+
+drop policy if exists subscriptions_insert_own on public.subscriptions;
+create policy subscriptions_insert_own
+on public.subscriptions
+for insert
+with check (owner_id = auth.uid()::text);
+
+drop policy if exists subscriptions_update_own on public.subscriptions;
+create policy subscriptions_update_own
+on public.subscriptions
 for update
 using (owner_id = auth.uid()::text)
 with check (owner_id = auth.uid()::text);

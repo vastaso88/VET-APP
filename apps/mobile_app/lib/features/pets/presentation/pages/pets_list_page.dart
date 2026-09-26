@@ -37,7 +37,9 @@ class _PetsListPageState extends State<PetsListPage> {
     _reload();
   }
 
-  void _reload() {
+  Future<void> _reload() async {
+    await PetDemoStore.instance.ensureHydrated();
+    if (!mounted) return;
     setState(() {
       _pets = PetDemoStore.instance.list(species: _selectedSpecies);
     });

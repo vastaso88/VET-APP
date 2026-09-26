@@ -145,7 +145,11 @@ class FakeAuthRemoteDataSource implements AuthRemoteDataSource {
   }
 
   AppSession _sessionFor(AppUser user) {
-    final seed = Random().nextInt(1 << 32).toRadixString(16);
+    // 0xFFFFFFF (not 1 << 32): on web, dart2js/DDC compile `<<` using
+    // JS's 32-bit-truncating shift, so `1 << 32` evaluates to 0 there and
+    // Random().nextInt(0) throws — this stays a plain literal to sidestep
+    // that entirely, cross-platform.
+    final seed = Random().nextInt(0xFFFFFFF).toRadixString(16);
     return AppSession(
       user: user,
       accessToken: 'fake_access_$seed',

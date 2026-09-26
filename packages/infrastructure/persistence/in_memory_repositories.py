@@ -13,6 +13,7 @@ from packages.core.application.ports.marketplace_listing_repository import (
 )
 from packages.core.application.ports.pet_profile_repository import PetProfileRepository
 from packages.core.application.ports.reminder_repository import ReminderRepository
+from packages.core.application.ports.subscription_repository import SubscriptionRepository
 from packages.core.application.ports.user_location_repository import UserLocationRepository
 from packages.core.domain.consent.models import AccountConsents
 from packages.core.domain.conversation.attachment import ChatAttachment
@@ -25,6 +26,7 @@ from packages.core.domain.marketplace.models import ListingReport, MarketplaceLi
 from packages.core.domain.medical_record.models import ClinicalEvent
 from packages.core.domain.pet_profile.models import PetProfile
 from packages.core.domain.reminders.models import Reminder
+from packages.core.domain.subscription.models import Subscription
 
 
 class InMemoryPetProfileRepository(PetProfileRepository):
@@ -97,6 +99,18 @@ class InMemoryAccountConsentsRepository(AccountConsentsRepository):
     def save(self, account_consents: AccountConsents) -> AccountConsents:
         self._items[account_consents.owner_id] = account_consents
         return account_consents
+
+
+class InMemorySubscriptionRepository(SubscriptionRepository):
+    def __init__(self) -> None:
+        self._items: dict[str, Subscription] = {}
+
+    def get(self, owner_id: str) -> Subscription | None:
+        return self._items.get(owner_id)
+
+    def save(self, subscription: Subscription) -> Subscription:
+        self._items[subscription.owner_id] = subscription
+        return subscription
 
 
 class InMemoryUserLocationRepository(UserLocationRepository):

@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
@@ -8,6 +10,7 @@ import '../../../../design_system/tokens/app_spacing.dart';
 import '../../../../design_system/tokens/app_text_styles.dart';
 import '../../../../shared/widgets/coming_soon_page.dart';
 import '../../data/billing_demo_store.dart';
+import '../../data/subscription_remote_data_source.dart';
 import '../../domain/billing_models.dart';
 
 /// "Abbonamento e metodi di pagamento" — reached from Impostazioni.
@@ -22,11 +25,31 @@ class BillingPage extends StatefulWidget {
 
 class _BillingPageState extends State<BillingPage> {
   final _store = BillingDemoStore.instance;
+  final _subscriptionDataSource = HttpSubscriptionRemoteDataSource();
+  bool _switchingPlan = false;
 
-  void _switchToPlan(PlanTier tier) {
-    _store.switchToPlan(tier);
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('Ora sei sul piano ${_store.currentPlan.displayName}.')),
+  @override
+  void initState() {
+    super.initState();
+    unawaited(_store.syncFromBackend(dataSource: _subscriptionDataSource));
+  }
+
+  Future<void> _switchToPlan(PlanTier tier) async {
+    if (_switchingPlan) return;
+    setState(() => _switchingPlan = true);
+    final result = await _subscriptionDataSource.selectPlan(tier);
+    if (!mounted) return;
+    setState(() => _switchingPlan = false);
+    result.fold(
+      onSuccess: (status) {
+        _store.switchToPlan(tier);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Ora sei sul piano ${_store.currentPlan.displayName}.')),
+        );
+      },
+      onFailure: (error) => ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(error.message)),
+      ),
     );
   }
 
@@ -74,6 +97,14 @@ class _BillingPageState extends State<BillingPage> {
                 AppSpacing.xxxl,
               ),
               children: [
+                if (_store.isOnTrial) ...[
+                  _TrialBanner(daysLeft: _store.trialDaysLeft),
+                  const SizedBox(height: AppSpacing.md),
+                ],
+                if (_store.isDeveloperAccount) ...[
+                  const _DeveloperBanner(),
+                  const SizedBox(height: AppSpacing.md),
+                ],
                 _CurrentPlanCard(store: _store),
                 const SizedBox(height: AppSpacing.xl),
                 const _SectionLabel('Confronta i piani'),
@@ -117,6 +148,83 @@ String _priceLabel(SubscriptionPlan plan, BillingCycle cycle) {
   if (price == 0) return 'Gratis';
   final amount = NumberFormat.currency(locale: 'it_IT', symbol: '€').format(price);
   return cycle == BillingCycle.yearly ? '$amount/mese, fatturato annualmente' : '$amount/mese';
+}
+
+class _TrialBanner extends StatelessWidget {
+  const _TrialBanner({required this.daysLeft});
+
+  final int daysLeft;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(AppSpacing.md),
+      decoration: BoxDecoration(
+        color: AppColors.info.withValues(alpha: 0.12),
+        borderRadius: BorderRadius.circular(AppRadii.large),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Icon(Icons.celebration_outlined, color: AppColors.info, size: 20),
+          const SizedBox(width: AppSpacing.sm),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Prova gratuita in corso',
+                  style: AppTextStyles.bodySmall.copyWith(
+                    color: AppColors.info,
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  daysLeft > 0
+                      ? 'Ti restano $daysLeft giorni gratis, nessuna carta richiesta. Scegli un piano quando vuoi, o alla scadenza.'
+                      : 'La prova gratuita sta per terminare: scegli un piano per continuare a usare VetApp.',
+                  style: AppTextStyles.caption.copyWith(color: AppColors.info),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _DeveloperBanner extends StatelessWidget {
+  const _DeveloperBanner();
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(AppSpacing.md),
+      decoration: BoxDecoration(
+        color: AppColors.success.withValues(alpha: 0.12),
+        borderRadius: BorderRadius.circular(AppRadii.large),
+      ),
+      child: Row(
+        children: [
+          const Icon(Icons.verified_user_outlined, color: AppColors.success, size: 20),
+          const SizedBox(width: AppSpacing.sm),
+          Expanded(
+            child: Text(
+              'Account sviluppatore: accesso illimitato, nessun piano richiesto.',
+              style: AppTextStyles.bodySmall.copyWith(
+                color: AppColors.success,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 }
 
 class _CurrentPlanCard extends StatelessWidget {

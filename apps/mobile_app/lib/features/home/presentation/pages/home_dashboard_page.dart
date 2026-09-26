@@ -55,6 +55,7 @@ class _HomeDashboardPageState extends State<HomeDashboardPage> {
   /// cross-species "Generale" category (regulatory/informational), the
   /// other 3 slots are filled with the owned species, in order.
   Future<List<PetNewsItem>> _loadPetNews() async {
+    await PetDemoStore.instance.ensureHydrated();
     final owned = PetDemoStore.instance.list().map((pet) => pet.species).toSet().toList();
     final categories = <String>[];
     var ownedIndex = 0;

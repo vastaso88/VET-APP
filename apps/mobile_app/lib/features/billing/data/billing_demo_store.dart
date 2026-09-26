@@ -1,6 +1,8 @@
 import 'package:flutter/foundation.dart';
 
 import '../domain/billing_models.dart';
+import '../domain/subscription_status.dart';
+import 'subscription_remote_data_source.dart';
 
 /// In-memory demo data for the pricing/payment-methods settings section —
 /// same pattern as PetDemoStore/ChatDemoStore: no billing backend exists
@@ -56,7 +58,11 @@ class BillingDemoStore extends ChangeNotifier {
         'Riepilogo pre-visita per il veterinario',
         'Supporto prioritario',
       ],
-      badge: 'Più scelto',
+      // "Più scelto" would claim a real popularity ranking we don't have
+      // data for yet (no paying users exist). "Consigliato" makes the same
+      // visual point without asserting an unverified fact — see legal
+      // review note in docs/auth/01_brainstorm.md (2026-09-26).
+      badge: 'Consigliato',
     ),
   ];
 
@@ -76,6 +82,10 @@ class BillingDemoStore extends ChangeNotifier {
   DateTime? _renewalDate;
   late List<PaymentMethod> _paymentMethods;
 
+  // Real trial/plan state from the backend (packages/core/domain/subscription).
+  // Null until the first successful syncFromBackend() call.
+  SubscriptionStatus? _subscriptionStatus;
+
   PlanTier get currentTier => _currentTier;
 
   BillingCycle get billingCycle => _billingCycle;
@@ -86,6 +96,36 @@ class BillingDemoStore extends ChangeNotifier {
       plans.firstWhere((plan) => plan.tier == _currentTier);
 
   List<PaymentMethod> get paymentMethods => List.unmodifiable(_paymentMethods);
+
+  /// True while the account has no chosen plan yet and the 10-day free
+  /// trial (no card required) is still running.
+  bool get isOnTrial => _subscriptionStatus != null &&
+      _subscriptionStatus!.plan == null &&
+      _subscriptionStatus!.isTrialActive;
+
+  int get trialDaysLeft => _subscriptionStatus?.trialDaysLeft ?? 0;
+
+  bool get isDeveloperAccount => _subscriptionStatus?.isDeveloper ?? false;
+
+  /// False once the trial has expired and no plan has been chosen (and the
+  /// account isn't on the developer allowlist) — the paywall gate reads this.
+  bool get hasAccess => _subscriptionStatus?.hasAccess ?? true;
+
+  Future<void> syncFromBackend({SubscriptionRemoteDataSource? dataSource}) async {
+    final source = dataSource ?? HttpSubscriptionRemoteDataSource();
+    final result = await source.fetchStatus();
+    result.fold(
+      onSuccess: (status) {
+        _subscriptionStatus = status;
+        _currentTier = status.plan ?? PlanTier.free;
+        notifyListeners();
+      },
+      onFailure: (_) {
+        // Keep the previous (or default) local state — the billing page
+        // still works from cached/demo data if the backend is unreachable.
+      },
+    );
+  }
 
   void setBillingCycle(BillingCycle cycle) {
     if (_billingCycle == cycle) return;

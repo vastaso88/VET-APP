@@ -9,8 +9,9 @@ abstract interface class AuthRepository {
   Future<Result<AuthContext>> restoreSession();
 
   Future<Result<AuthContext>> signInWithPassword(
-    AuthEmailPasswordCredentials credentials,
-  );
+    AuthEmailPasswordCredentials credentials, {
+    bool rememberMe = true,
+  });
 
   Future<Result<AuthContext>> signUpWithPassword(
     AuthSignUpRequest request,

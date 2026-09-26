@@ -2,8 +2,8 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 
-import '../../../../app/router/app_router.dart';
 import '../../../../design_system/tokens/app_spacing.dart';
+import '../../../../features/billing/data/subscription_gate.dart';
 import '../../../../shared/auth/auth.dart';
 import '../../data/auth_repository_factory.dart';
 import '../widgets/auth_widgets.dart';
@@ -27,6 +27,7 @@ class _LoginPageState extends State<LoginPage> {
   String _title = '';
   String _message = '';
   bool _isLoading = false;
+  bool _rememberMe = true;
 
   @override
   void dispose() {
@@ -58,6 +59,7 @@ class _LoginPageState extends State<LoginPage> {
         email: _emailController.text.trim(),
         password: _passwordController.text,
       ),
+      rememberMe: _rememberMe,
     );
 
     if (!mounted) return;
@@ -85,8 +87,10 @@ class _LoginPageState extends State<LoginPage> {
     if (success) {
       await Future<void>.delayed(const Duration(milliseconds: 350));
       if (!mounted) return;
+      final destination = await const SubscriptionGate().resolveDestination();
+      if (!mounted) return;
       Navigator.of(context).pushNamedAndRemoveUntil(
-        AppRouter.homeShell,
+        destination,
         (route) => false,
       );
     }
@@ -130,6 +134,20 @@ class _LoginPageState extends State<LoginPage> {
                 if (text.length < 6) return 'Minimo 6 caratteri.';
                 return null;
               },
+            ),
+            const SizedBox(height: AppSpacing.xs),
+            Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Checkbox(
+                  value: _rememberMe,
+                  onChanged: (value) => setState(() => _rememberMe = value ?? true),
+                ),
+                GestureDetector(
+                  onTap: () => setState(() => _rememberMe = !_rememberMe),
+                  child: const Text('Resta connesso'),
+                ),
+              ],
             ),
             const SizedBox(height: AppSpacing.sm),
             AuthFooterLink(
