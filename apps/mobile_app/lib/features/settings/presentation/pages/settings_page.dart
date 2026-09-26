@@ -7,12 +7,18 @@ import '../../../../design_system/tokens/app_colors.dart';
 import '../../../../design_system/tokens/app_radii.dart';
 import '../../../../design_system/tokens/app_spacing.dart';
 import '../../../../design_system/tokens/app_text_styles.dart';
+import '../../../../shared/auth/current_owner.dart';
 import '../../../../shared/auth/current_user.dart';
 import '../../../../shared/widgets/coming_soon_page.dart';
 import '../../../account_consents/data/account_consents_remote_data_source.dart';
 import '../../../account_consents/domain/account_consent_models.dart';
 import '../../../billing/data/billing_demo_store.dart';
 import '../../../billing/presentation/pages/billing_page.dart';
+import '../../../location/data/address_geocoder.dart';
+import '../../../location/data/device_location_service.dart';
+import '../../../location/data/location_preference_store.dart';
+import '../../../location/data/location_repository.dart';
+import '../../../location/domain/coordinates.dart';
 import '../../../profile/presentation/pages/profile_page.dart';
 import '../../data/layout_settings_store.dart';
 
@@ -33,15 +39,85 @@ class _SettingsPageState extends State<SettingsPage> {
   bool _loadingConsents = true;
   String? _consentsError;
 
+  bool _capturingLocation = false;
+  String? _locationError;
+
   @override
   void initState() {
     super.initState();
     _loadConsents();
     unawaited(LayoutSettingsStore.instance.ensureLoaded());
+    unawaited(_loadLocation());
   }
 
   void _updateLayout(LayoutSettings settings) {
     unawaited(LayoutSettingsStore.instance.update(settings));
+  }
+
+  /// LocationPreferenceStore (shared_preferences) is the fast local cache;
+  /// the `user_locations` table is the cross-device source of truth, so on
+  /// open we let a successful remote fetch overwrite the local copy.
+  Future<void> _loadLocation() async {
+    await LocationPreferenceStore.instance.ensureLoaded();
+    final remote = await LocationRepository().loadRemote(resolveCurrentOwnerId());
+    if (remote != null) {
+      await LocationPreferenceStore.instance.update(remote);
+    }
+  }
+
+  void _updateLocation(UserLocationPreference preference) {
+    unawaited(LocationPreferenceStore.instance.update(preference));
+    unawaited(LocationRepository().saveRemote(resolveCurrentOwnerId(), preference));
+  }
+
+  Future<void> _captureCurrentPosition() async {
+    if (_capturingLocation) return;
+    setState(() {
+      _capturingLocation = true;
+      _locationError = null;
+    });
+    final result = await const GeolocatorLocationSampler().requestCurrentPosition();
+    if (!mounted) return;
+    setState(() => _capturingLocation = false);
+    if (!result.isSuccess) {
+      setState(() => _locationError = _locationErrorMessage(result.failure!));
+      return;
+    }
+    final preference = LocationPreferenceStore.instance.preference;
+    _updateLocation(
+      preference.copyWith(
+        current: result.coordinates,
+        currentLabel: 'Posizione GPS',
+        currentSource: LocationSource.deviceGps,
+        currentCapturedAt: DateTime.now(),
+      ),
+    );
+  }
+
+  String _locationErrorMessage(LocationRequestFailure failure) {
+    switch (failure) {
+      case LocationRequestFailure.permissionDenied:
+      case LocationRequestFailure.permissionDeniedForever:
+        return 'Permesso di localizzazione negato: abilitalo dalle impostazioni del dispositivo per usare la posizione attuale.';
+      case LocationRequestFailure.serviceDisabled:
+        return 'La localizzazione è disattivata sul dispositivo.';
+      case LocationRequestFailure.timeout:
+        return 'Non sono riuscito a rilevare la posizione in tempo, riprova.';
+      case LocationRequestFailure.unsupported:
+        return 'Localizzazione non disponibile su questo dispositivo/browser.';
+    }
+  }
+
+  String _formatCoordinates(Coordinates coordinates) =>
+      '${coordinates.latitude.toStringAsFixed(3)}, ${coordinates.longitude.toStringAsFixed(3)}';
+
+  Future<void> _showSetHomeLocationDialog(UserLocationPreference preference) async {
+    final result = await showDialog<GeocodedAddress>(
+      context: context,
+      builder: (_) => const _HomeAddressDialog(),
+    );
+    if (result == null) return;
+    _updateLocation(preference.copyWith(home: result.coordinates, homeLabel: result.displayLabel));
   }
 
   Future<void> _loadConsents() async {
@@ -234,9 +310,10 @@ class _SettingsPageState extends State<SettingsPage> {
       backgroundColor: AppColors.background,
       body: SafeArea(
         child: ListenableBuilder(
-          listenable: LayoutSettingsStore.instance,
+          listenable: Listenable.merge([LayoutSettingsStore.instance, LocationPreferenceStore.instance]),
           builder: (context, _) {
             final layout = LayoutSettingsStore.instance.settings;
+            final location = LocationPreferenceStore.instance.preference;
 
             return ListView(
           padding: const EdgeInsets.fromLTRB(
@@ -315,6 +392,48 @@ class _SettingsPageState extends State<SettingsPage> {
               onSelectLeft: () => _updateLayout(layout.copyWith(listDensity: ListDensity.comfortable)),
               onSelectRight: () => _updateLayout(layout.copyWith(listDensity: ListDensity.compact)),
             ),
+            const _SectionLabel('Località'),
+            Text(
+              'Usata per personalizzare eventi e news in base alla zona.',
+              style: AppTextStyles.bodySmall,
+            ),
+            const SizedBox(height: AppSpacing.sm),
+            _ChoiceRow(
+              icon: Icons.my_location_outlined,
+              iconColor: AppColors.info,
+              title: 'Posizione di riferimento',
+              leftLabel: 'Attuale',
+              rightLabel: 'Residenza',
+              isLeftSelected: location.mode == LocationMode.currentPosition,
+              onSelectLeft: () => _updateLocation(location.copyWith(mode: LocationMode.currentPosition)),
+              onSelectRight: () => _updateLocation(location.copyWith(mode: LocationMode.homeResidence)),
+            ),
+            _Row(
+              icon: Icons.gps_fixed_rounded,
+              iconColor: AppColors.primary,
+              title: 'Posizione attuale',
+              subtitle: _capturingLocation
+                  ? 'Rilevamento in corso…'
+                  : location.current != null
+                      ? _formatCoordinates(location.current!)
+                      : 'Non ancora impostata',
+              trailingText: _capturingLocation ? null : 'Aggiorna',
+              onTap: _captureCurrentPosition,
+            ),
+            _Row(
+              icon: Icons.home_outlined,
+              iconColor: AppColors.accent,
+              title: 'Residenza abituale',
+              subtitle: location.home != null
+                  ? (location.homeLabel ?? _formatCoordinates(location.home!))
+                  : 'Non impostata',
+              trailingText: 'Imposta',
+              onTap: () => _showSetHomeLocationDialog(location),
+            ),
+            if (_locationError != null) ...[
+              const SizedBox(height: AppSpacing.sm),
+              Text(_locationError!, style: AppTextStyles.bodySmall.copyWith(color: AppColors.danger)),
+            ],
             const _SectionLabel('Permessi e consensi'),
             ..._buildConsentRows(),
             const _SectionLabel('Assistenza'),
@@ -727,6 +846,124 @@ class _ChoicePill extends StatelessWidget {
           ),
         ),
       ),
+    );
+  }
+}
+
+class _HomeAddressDialog extends StatefulWidget {
+  // ignore: unused_element_parameter
+  const _HomeAddressDialog({this.geocoder});
+
+  /// Injectable for widget tests (not yet exercised); defaults to the real
+  /// Nominatim lookup, same pattern as CreateListingPage's locationSampler.
+  final AddressGeocoder? geocoder;
+
+  @override
+  State<_HomeAddressDialog> createState() => _HomeAddressDialogState();
+}
+
+class _HomeAddressDialogState extends State<_HomeAddressDialog> {
+  late final AddressGeocoder _geocoder = widget.geocoder ?? NominatimAddressGeocoder();
+  final _formKey = GlobalKey<FormState>();
+  final _streetController = TextEditingController();
+  final _postalCodeController = TextEditingController();
+  final _cityController = TextEditingController();
+  final _countryController = TextEditingController(text: 'Italia');
+
+  bool _submitting = false;
+  String? _error;
+
+  @override
+  void dispose() {
+    _streetController.dispose();
+    _postalCodeController.dispose();
+    _cityController.dispose();
+    _countryController.dispose();
+    super.dispose();
+  }
+
+  String? _required(String? value, String message) =>
+      (value == null || value.trim().isEmpty) ? message : null;
+
+  Future<void> _submit() async {
+    if (!_formKey.currentState!.validate()) return;
+    setState(() {
+      _submitting = true;
+      _error = null;
+    });
+
+    final result = await _geocoder.geocode(
+      street: _streetController.text.trim(),
+      postalCode: _postalCodeController.text.trim(),
+      city: _cityController.text.trim(),
+      country: _countryController.text.trim(),
+    );
+    if (!mounted) return;
+
+    if (result == null) {
+      setState(() {
+        _submitting = false;
+        _error = 'Non trovo questo indirizzo. Controlla i dati e riprova.';
+      });
+      return;
+    }
+    Navigator.of(context).pop(result);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      backgroundColor: AppColors.surface,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadii.large)),
+      title: Text('Residenza abituale', style: AppTextStyles.title.copyWith(fontSize: 17)),
+      content: Form(
+        key: _formKey,
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              TextFormField(
+                controller: _streetController,
+                decoration: const InputDecoration(labelText: 'Indirizzo'),
+                validator: (value) => _required(value, "Inserisci l'indirizzo"),
+              ),
+              const SizedBox(height: AppSpacing.md),
+              TextFormField(
+                controller: _postalCodeController,
+                decoration: const InputDecoration(labelText: 'CAP'),
+                validator: (value) => _required(value, 'Inserisci il CAP'),
+              ),
+              const SizedBox(height: AppSpacing.md),
+              TextFormField(
+                controller: _cityController,
+                decoration: const InputDecoration(labelText: 'Città'),
+                validator: (value) => _required(value, 'Inserisci la città'),
+              ),
+              const SizedBox(height: AppSpacing.md),
+              TextFormField(
+                controller: _countryController,
+                decoration: const InputDecoration(labelText: 'Nazione'),
+                validator: (value) => _required(value, 'Inserisci la nazione'),
+              ),
+              if (_error != null) ...[
+                const SizedBox(height: AppSpacing.md),
+                Text(_error!, style: AppTextStyles.bodySmall.copyWith(color: AppColors.danger)),
+              ],
+            ],
+          ),
+        ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: _submitting ? null : () => Navigator.of(context).pop(),
+          child: const Text('Annulla'),
+        ),
+        TextButton(
+          onPressed: _submitting ? null : _submit,
+          child: Text(_submitting ? 'Ricerca…' : 'Salva'),
+        ),
+      ],
     );
   }
 }
