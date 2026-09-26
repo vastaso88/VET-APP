@@ -1,13 +1,17 @@
 import 'package:flutter/material.dart';
 
+import '../../../../design_system/tokens/app_colors.dart';
+import '../../../../design_system/tokens/app_radii.dart';
+import '../../../../design_system/tokens/app_spacing.dart';
+import '../../../../design_system/tokens/app_text_styles.dart';
 import '../../data/pet_demo_store.dart';
 import '../../domain/pet_models.dart';
 import '../widgets/pet_avatar.dart';
-import '../widgets/pet_sections.dart';
 import '../widgets/pets_scaffold.dart';
 import '../widgets/pets_state_views.dart';
 import 'pet_create_page.dart';
 import 'pet_detail_page.dart';
+import 'pet_memories_page.dart';
 
 class PetsListPage extends StatefulWidget {
   const PetsListPage({
@@ -44,15 +48,22 @@ class _PetsListPageState extends State<PetsListPage> {
     final state = widget.state;
 
     return PetsScaffold(
-      title: "I tuoi pet, in un colpo d'occhio.",
-      subtitle:
-          'Qui trovi il pet principale, le prossime scadenze e il secondo profilo pronto da aprire.',
+      title: 'Animali',
+      subtitle: '${PetDemoStore.instance.list().length} profili',
       actions: [
+        if (PetDemoStore.instance.memorialPets().isNotEmpty)
+          IconButton(
+            onPressed: () => _openMemories(context),
+            icon: const Icon(Icons.auto_awesome_outlined),
+            color: Colors.white,
+            style: IconButton.styleFrom(backgroundColor: AppColors.secondary),
+            tooltip: 'Ricordi',
+          ),
         IconButton(
           onPressed: () => _openCreate(context),
-          icon: const Icon(Icons.add_circle_outline_rounded),
+          icon: const Icon(Icons.add_rounded),
           color: Colors.white,
-          style: IconButton.styleFrom(backgroundColor: const Color(0xFF163A35)),
+          style: IconButton.styleFrom(backgroundColor: AppColors.primaryStrong),
         ),
       ],
       body: switch (state) {
@@ -66,8 +77,7 @@ class _PetsListPageState extends State<PetsListPage> {
           ),
         PetsScreenStatus.empty => PetsEmptyView(
             title: 'Nessun pet ancora',
-            subtitle:
-                'Crea il primo profilo per tenere sotto controllo salute, note e scadenze.',
+            subtitle: 'Crea il primo profilo per tenere sotto controllo salute, note e scadenze.',
             actionLabel: 'Crea pet',
             onAction: () => _openCreate(context),
           ),
@@ -80,7 +90,6 @@ class _PetsListPageState extends State<PetsListPage> {
                 _pets = PetDemoStore.instance.list(species: _selectedSpecies);
               });
             },
-            onAddPet: () => _openCreate(context),
             onOpenPet: (pet) => _openDetail(context, pet),
           ),
       },
@@ -102,6 +111,14 @@ class _PetsListPageState extends State<PetsListPage> {
     if (!mounted) return;
     _reload();
   }
+
+  Future<void> _openMemories(BuildContext context) async {
+    await Navigator.of(context).push(
+      MaterialPageRoute<void>(builder: (_) => const PetMemoriesPage()),
+    );
+    if (!mounted) return;
+    setState(() {});
+  }
 }
 
 class _PetsListContent extends StatelessWidget {
@@ -109,276 +126,67 @@ class _PetsListContent extends StatelessWidget {
     required this.pets,
     required this.selectedSpecies,
     required this.onSpeciesChanged,
-    required this.onAddPet,
     required this.onOpenPet,
   });
 
   final List<PetProfile> pets;
   final String selectedSpecies;
   final ValueChanged<String> onSpeciesChanged;
-  final VoidCallback onAddPet;
   final ValueChanged<PetProfile> onOpenPet;
 
   @override
   Widget build(BuildContext context) {
-    final visiblePets = pets;
-
-    return SingleChildScrollView(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          PetSection(
-            title: 'Filtro rapido',
-            subtitle: 'Scegli la specie che vuoi vedere per prima.',
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        SingleChildScrollView(
+          scrollDirection: Axis.horizontal,
+          child: Row(
             children: [
-              Wrap(
-                spacing: 10,
-                runSpacing: 10,
-                children: [
-                  _SpeciesFilterChip(
-                    label: 'Tutti',
-                    selected: selectedSpecies == 'Tutti',
-                    onTap: () => onSpeciesChanged('Tutti'),
-                  ),
-                  ...PetDemoStore.speciesOptions.map(
-                    (option) => _SpeciesFilterChip(
-                      label: option.label,
-                      selected: selectedSpecies == option.label,
-                      onTap: () => onSpeciesChanged(option.label),
-                    ),
-                  ),
-                ],
+              _SpeciesChip(
+                label: 'Tutti',
+                selected: selectedSpecies == 'Tutti',
+                onTap: () => onSpeciesChanged('Tutti'),
               ),
-            ],
-          ),
-          const SizedBox(height: 16),
-          const PetSection(
-            title: 'Panoramica demo',
-            subtitle:
-                'Mostriamo subito il pet principale, una scadenza vicina e il profilo di supporto.',
-            children: [
-              Wrap(
-                spacing: 12,
-                runSpacing: 12,
-                children: [
-                  PetMetricChip(
-                    label: 'Pet registrati',
-                    value: '2',
-                    backgroundColor: Color(0xFFE1F0EA),
+              const SizedBox(width: AppSpacing.sm),
+              ...PetDemoStore.speciesOptions.map(
+                (option) => Padding(
+                  padding: const EdgeInsets.only(right: AppSpacing.sm),
+                  child: _SpeciesChip(
+                    label: option.label,
+                    selected: selectedSpecies == option.label,
+                    onTap: () => onSpeciesChanged(option.label),
                   ),
-                  PetMetricChip(
-                    label: 'Scadenze vicine',
-                    value: '1',
-                    backgroundColor: Color(0xFFF6EADF),
-                  ),
-                  PetMetricChip(
-                    label: 'Note cliniche',
-                    value: '1',
-                    backgroundColor: Color(0xFFF5F0D8),
-                  ),
-                ],
-              ),
-            ],
-          ),
-          const SizedBox(height: 16),
-          PetSection(
-            title: 'Profili visibili',
-            subtitle: selectedSpecies == 'Tutti'
-                ? 'Tutti i profili disponibili nella demo.'
-                : 'Stai guardando solo i profili ${selectedSpecies.toLowerCase()}.',
-            children: [
-              PetMetricChip(
-                label: 'Profili filtrati',
-                value: '${visiblePets.length}',
-                backgroundColor: const Color(0xFFE1F0EA),
-              ),
-            ],
-          ),
-          const SizedBox(height: 16),
-          PetSection(
-            title: 'Profilo principale',
-            subtitle:
-                'Questo e il volto della demo: una card forte, leggibile e coerente con home, chat e reminder.',
-            children: [
-              if (visiblePets.isNotEmpty)
-                _FeaturedPetCard(
-                  pet: visiblePets.first,
-                  onTap: () => onOpenPet(visiblePets.first),
-                )
-              else
-                const Text(
-                  'Nessun pet disponibile per questo filtro.',
-                  style: TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w600,
-                    color: Color(0xFF5C726D),
-                  ),
-                ),
-              if (visiblePets.length > 1) ...[
-                const SizedBox(height: 14),
-                const Text(
-                  'Profilo secondario',
-                  style: TextStyle(
-                    fontSize: 13,
-                    fontWeight: FontWeight.w700,
-                    color: Color(0xFF7C8F89),
-                  ),
-                ),
-                const SizedBox(height: 10),
-                ...visiblePets.skip(1).map(
-                  (pet) => Padding(
-                    padding: const EdgeInsets.only(bottom: 12),
-                    child: _PetListCard(
-                      pet: pet,
-                      onTap: () => onOpenPet(pet),
-                    ),
-                  ),
-                ),
-              ],
-              const SizedBox(height: 8),
-              PetActionButton(
-                label: 'Aggiungi un altro pet',
-                icon: Icons.add_rounded,
-                primary: true,
-                onPressed: onAddPet,
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _FeaturedPetCard extends StatelessWidget {
-  const _FeaturedPetCard({
-    required this.pet,
-    required this.onTap,
-  });
-
-  final PetProfile pet;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        borderRadius: BorderRadius.circular(28),
-        onTap: onTap,
-        child: Container(
-          padding: const EdgeInsets.all(18),
-          decoration: BoxDecoration(
-            color: const Color(0xFFF9FBF8),
-            borderRadius: BorderRadius.circular(28),
-            border: Border.all(color: const Color(0xFFE4DDD2)),
-            boxShadow: const [
-              BoxShadow(
-                color: Color(0x10163A35),
-                blurRadius: 18,
-                offset: Offset(0, 10),
-              ),
-            ],
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                children: [
-                  PetAvatar(
-                    label: pet.avatarEmoji,
-                    backgroundColor: pet.accentColor,
-                    size: 72,
-                  ),
-                  const SizedBox(width: 16),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const _DemoPill(label: 'Pet attivo'),
-                        const SizedBox(height: 8),
-                        Text(
-                          pet.name,
-                          style: const TextStyle(
-                            fontSize: 22,
-                            fontWeight: FontWeight.w900,
-                            color: Color(0xFF173A35),
-                          ),
-                        ),
-                        const SizedBox(height: 4),
-                        Text(
-                          pet.title,
-                          style: const TextStyle(
-                            fontSize: 14,
-                            fontWeight: FontWeight.w600,
-                            color: Color(0xFF5C726D),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  const Icon(Icons.chevron_right_rounded, color: Color(0xFF7C8F89)),
-                ],
-              ),
-              const SizedBox(height: 16),
-              Wrap(
-                spacing: 10,
-                runSpacing: 10,
-                children: [
-                  _InfoChip(label: pet.healthBadge, backgroundColor: const Color(0xFFE1F0EA)),
-                  _InfoChip(label: pet.weightLabel, backgroundColor: const Color(0xFFF6EADF)),
-                  _InfoChip(label: pet.birthDateLabel, backgroundColor: const Color(0xFFF5F0D8)),
-                ],
-              ),
-              const SizedBox(height: 16),
-              Text(
-                pet.medicalNote,
-                style: const TextStyle(
-                  fontSize: 14,
-                  height: 1.45,
-                  fontWeight: FontWeight.w500,
-                  color: Color(0xFF5C726D),
-                ),
-              ),
-              const SizedBox(height: 14),
-              Container(
-                width: double.infinity,
-                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(20),
-                  border: Border.all(color: const Color(0xFFE4DDD2)),
-                ),
-                child: Row(
-                  children: [
-                    const Icon(Icons.event_available_outlined, size: 18, color: Color(0xFF2D6B60)),
-                    const SizedBox(width: 10),
-                    Expanded(
-                      child: Text(
-                        pet.nextVisitLabel,
-                        style: const TextStyle(
-                          fontSize: 13,
-                          fontWeight: FontWeight.w700,
-                          color: Color(0xFF173A35),
-                        ),
-                      ),
-                    ),
-                  ],
                 ),
               ),
             ],
           ),
         ),
-      ),
+        const SizedBox(height: AppSpacing.lg),
+        Expanded(
+          child: pets.isEmpty
+              ? Center(
+                  child: Text(
+                    'Nessun pet per questo filtro.',
+                    style: AppTextStyles.body,
+                  ),
+                )
+              : ListView.separated(
+                  itemCount: pets.length,
+                  separatorBuilder: (_, __) => const Divider(height: 1, color: AppColors.border),
+                  itemBuilder: (context, index) {
+                    final pet = pets[index];
+                    return _PetRow(pet: pet, onTap: () => onOpenPet(pet));
+                  },
+                ),
+        ),
+      ],
     );
   }
 }
 
-class _PetListCard extends StatelessWidget {
-  const _PetListCard({
-    required this.pet,
-    required this.onTap,
-  });
+class _PetRow extends StatelessWidget {
+  const _PetRow({required this.pet, required this.onTap});
 
   final PetProfile pet;
   final VoidCallback onTap;
@@ -388,69 +196,52 @@ class _PetListCard extends StatelessWidget {
     return Material(
       color: Colors.transparent,
       child: InkWell(
-        borderRadius: BorderRadius.circular(24),
         onTap: onTap,
-        child: Container(
-          padding: const EdgeInsets.all(16),
-          decoration: BoxDecoration(
-            color: const Color(0xFFFCFDFC),
-            borderRadius: BorderRadius.circular(24),
-            border: Border.all(color: const Color(0xFFE4DDD2)),
-          ),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: AppSpacing.md),
           child: Row(
             children: [
               PetAvatar(
                 label: pet.avatarEmoji,
                 backgroundColor: pet.accentColor,
-                size: 64,
+                photoBytes: pet.photoBytes,
+                identityColor: pet.identityColor,
+                size: 52,
               ),
-              const SizedBox(width: 14),
+              const SizedBox(width: AppSpacing.md),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
                       pet.name,
-                      style: const TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.w800,
-                        color: Color(0xFF173A35),
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      pet.title,
-                      style: const TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w600,
-                        color: Color(0xFF5C726D),
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      pet.medicalNote,
-                      maxLines: 2,
+                      maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
-                        fontSize: 12,
-                        height: 1.35,
-                        fontWeight: FontWeight.w500,
-                        color: Color(0xFF7C8F89),
-                      ),
+                      style: AppTextStyles.title.copyWith(fontSize: 17),
                     ),
-                    const SizedBox(height: 8),
+                    const SizedBox(height: 2),
                     Text(
-                      pet.nextVisitLabel,
-                      style: const TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w600,
-                        color: Color(0xFF7C8F89),
-                      ),
+                      '${pet.species} · ${pet.breedLabel}',
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: AppTextStyles.bodySmall,
                     ),
                   ],
                 ),
               ),
-              const Icon(Icons.chevron_right_rounded, color: Color(0xFF7C8F89)),
+              const SizedBox(width: AppSpacing.sm),
+              ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 90),
+                child: Text(
+                  pet.healthBadge,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  textAlign: TextAlign.end,
+                  style: AppTextStyles.caption,
+                ),
+              ),
+              const SizedBox(width: AppSpacing.xs),
+              const Icon(Icons.chevron_right_rounded, color: AppColors.mutedText),
             ],
           ),
         ),
@@ -459,63 +250,8 @@ class _PetListCard extends StatelessWidget {
   }
 }
 
-class _InfoChip extends StatelessWidget {
-  const _InfoChip({
-    required this.label,
-    required this.backgroundColor,
-  });
-
-  final String label;
-  final Color backgroundColor;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-      decoration: BoxDecoration(
-        color: backgroundColor,
-        borderRadius: BorderRadius.circular(999),
-      ),
-      child: Text(
-        label,
-        style: const TextStyle(
-          fontSize: 12,
-          fontWeight: FontWeight.w700,
-          color: Color(0xFF173A35),
-        ),
-      ),
-    );
-  }
-}
-
-class _DemoPill extends StatelessWidget {
-  const _DemoPill({required this.label});
-
-  final String label;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-      decoration: BoxDecoration(
-        color: const Color(0xFF163A35),
-        borderRadius: BorderRadius.circular(999),
-      ),
-      child: Text(
-        label,
-        style: const TextStyle(
-          fontSize: 11,
-          fontWeight: FontWeight.w800,
-          letterSpacing: 0.2,
-          color: Colors.white,
-        ),
-      ),
-    );
-  }
-}
-
-class _SpeciesFilterChip extends StatelessWidget {
-  const _SpeciesFilterChip({
+class _SpeciesChip extends StatelessWidget {
+  const _SpeciesChip({
     required this.label,
     required this.selected,
     required this.onTap,
@@ -527,20 +263,24 @@ class _SpeciesFilterChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return FilterChip(
-      selected: selected,
-      onSelected: (_) => onTap(),
-      label: Text(label),
-      selectedColor: const Color(0xFF163A35),
-      checkmarkColor: Colors.white,
-      labelStyle: TextStyle(
-        color: selected ? Colors.white : const Color(0xFF173A35),
-        fontWeight: FontWeight.w700,
-      ),
-      backgroundColor: const Color(0xFFF4EFE7),
-      shape: StadiumBorder(
-        side: BorderSide(
-          color: selected ? const Color(0xFF163A35) : const Color(0xFFE4DDD2),
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        borderRadius: BorderRadius.circular(AppRadii.pill),
+        onTap: onTap,
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md, vertical: AppSpacing.sm),
+          decoration: BoxDecoration(
+            color: selected ? AppColors.primaryStrong : AppColors.surface,
+            borderRadius: BorderRadius.circular(AppRadii.pill),
+            border: Border.all(color: selected ? AppColors.primaryStrong : AppColors.border),
+          ),
+          child: Text(
+            label,
+            style: AppTextStyles.caption.copyWith(
+              color: selected ? AppColors.onPrimary : AppColors.secondaryText,
+            ),
+          ),
         ),
       ),
     );

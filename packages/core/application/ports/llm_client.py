@@ -2,6 +2,7 @@ from typing import Protocol
 
 from pydantic import BaseModel
 
+
 class LLMGenerationRequest(BaseModel):
     system_prompt: str
     user_prompt: str

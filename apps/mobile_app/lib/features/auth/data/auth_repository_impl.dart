@@ -24,6 +24,9 @@ class AuthRepositoryImpl implements AuthRepository {
   late final StreamSubscription<AuthContext> _storeSubscription;
 
   @override
+  AuthContext get currentContext => _sessionStore.read();
+
+  @override
   Stream<AuthContext> watchContext() => _contextController.stream;
 
   @override
@@ -58,12 +61,14 @@ class AuthRepositoryImpl implements AuthRepository {
     final result = await _remoteDataSource.signUpWithPassword(request);
     return await result.fold(
       onSuccess: (session) async {
-        final user = session.user.copyWith(onboardingCompleted: false);
+        // Reaching the register form means the user already stepped through
+        // the onboarding welcome/value-proposition/privacy screens.
+        final user = session.user.copyWith(onboardingCompleted: true);
         final updatedSession = session.copyWith(user: user);
         final context = AuthContext(
           user: user,
           session: updatedSession,
-          onboardingCompleted: false,
+          onboardingCompleted: true,
         );
         await _sessionStore.write(context);
         return Result.success(context);

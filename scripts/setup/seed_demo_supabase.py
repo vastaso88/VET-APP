@@ -13,8 +13,8 @@ ROOT_DIR = Path(__file__).resolve().parents[2]
 if str(ROOT_DIR) not in sys.path:
     sys.path.insert(0, str(ROOT_DIR))
 
-from packages.infrastructure.persistence.demo_seed import build_demo_seed
-from packages.shared.config.settings import get_settings
+from packages.infrastructure.persistence.demo_seed import build_demo_seed  # noqa: E402
+from packages.shared.config.settings import get_settings  # noqa: E402
 
 
 def main() -> int:
@@ -24,7 +24,8 @@ def main() -> int:
 
     if not settings.supabase_url.strip() or not settings.supabase_service_role_key.strip():
         raise SystemExit(
-            "Missing Supabase settings. Expected SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY in .env."
+            "Missing Supabase settings. Expected SUPABASE_URL and "
+            "SUPABASE_SERVICE_ROLE_KEY in .env."
         )
 
     seed = build_demo_seed(owner_id)
@@ -39,6 +40,9 @@ def main() -> int:
     client.upsert("pet_profiles", list(seed.pet_profiles))
     client.upsert("conversations", list(seed.conversations))
     client.upsert("reminders", list(seed.reminders))
+    # Not owner-scoped (submitted_by_owner_id is null for seeded rows) -
+    # upserted unconditionally rather than per-owner like the tables above.
+    client.upsert("local_activities", list(seed.local_activities))
 
     pets = client.select_by_owner("pet_profiles", owner_id)
     conversations = client.select_by_owner("conversations", owner_id)
@@ -51,6 +55,7 @@ def main() -> int:
                 "pet_profiles": len(pets),
                 "conversations": len(conversations),
                 "reminders": len(reminders),
+                "local_activities": len(seed.local_activities),
                 "pet_names": [row["name"] for row in pets],
             },
             indent=2,

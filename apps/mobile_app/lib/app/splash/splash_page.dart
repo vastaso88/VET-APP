@@ -22,7 +22,11 @@ class _SplashPageState extends State<SplashPage> {
   @override
   void initState() {
     super.initState();
-    _restoreSessionAndRoute();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        _restoreSessionAndRoute();
+      }
+    });
   }
 
   Future<void> _restoreSessionAndRoute() async {
@@ -38,8 +42,9 @@ class _SplashPageState extends State<SplashPage> {
     if (!mounted) return;
 
     final destination = result.fold(
-      onSuccess: (context) =>
-          context.isSignedIn ? AppRouter.homeShell : AppRouter.onboardingWelcome,
+      onSuccess: (context) => context.isSignedIn && context.onboardingCompleted
+          ? AppRouter.homeShell
+          : AppRouter.onboardingWelcome,
       onFailure: (_) => AppRouter.onboardingWelcome,
     );
 
@@ -61,21 +66,21 @@ class _SplashPageState extends State<SplashPage> {
             ],
           ),
         ),
-        child: const Center(
+        child: Center(
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              _SplashLogo(),
-              SizedBox(height: AppSpacing.xl),
+              const _SplashLogo(),
+              const SizedBox(height: AppSpacing.xl),
               Text('VET APP', style: AppTextStyles.heading),
-              SizedBox(height: AppSpacing.sm),
+              const SizedBox(height: AppSpacing.sm),
               Text(
                 'Verifica sessione e preparo il tuo spazio pet.',
                 style: AppTextStyles.body,
                 textAlign: TextAlign.center,
               ),
-              SizedBox(height: AppSpacing.xl),
-              SizedBox(
+              const SizedBox(height: AppSpacing.xl),
+              const SizedBox(
                 width: 32,
                 height: 32,
                 child: CircularProgressIndicator(

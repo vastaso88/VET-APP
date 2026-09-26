@@ -16,3 +16,7 @@ Thumbs.db
 .vercel/
 uv.lock
 *.egg-info/
+
+# Locally stored chat attachment photos (MEDIA_STORAGE_DIR) — runtime
+# user-uploaded content, never source, never committed.
+/data/

@@ -1,7 +1,6 @@
 from functools import lru_cache
 
-from pydantic import Field
-from pydantic import model_validator
+from pydantic import Field, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -31,8 +30,38 @@ class Settings(BaseSettings):
     llm_api_key: str = Field(default="", alias="LLM_API_KEY")
     llm_base_url: str = Field(default="https://api.groq.com/openai/v1", alias="LLM_BASE_URL")
     llm_timeout_seconds: int = Field(default=30, alias="LLM_TIMEOUT_SECONDS")
+    # Voice dictation (speech-to-text): reuses LLM_API_KEY/LLM_BASE_URL
+    # rather than a separate key — Groq's Whisper transcription endpoint
+    # is the same account/base URL family as chat completions, so this
+    # needs no new vendor relationship.
+    stt_provider: str = Field(default="echo", alias="STT_PROVIDER")
+    stt_model: str = Field(default="whisper-large-v3-turbo", alias="STT_MODEL")
+    # Photo attachments: visual analysis reuses the same Groq account
+    # (LLM_API_KEY/LLM_BASE_URL) as chat and voice dictation. The actual
+    # image bytes are kept on local disk (product decision: avoid taking
+    # on a cloud storage dependency for the MVP), independent of
+    # PERSISTENCE_BACKEND, which only covers the lightweight metadata row.
+    vision_provider: str = Field(default="echo", alias="VISION_PROVIDER")
+    vision_model: str = Field(default="qwen/qwen3.8-27b", alias="VISION_MODEL")
+    media_storage_dir: str = Field(default="./data/chat_attachments", alias="MEDIA_STORAGE_DIR")
     log_level: str = Field(default="INFO", alias="LOG_LEVEL")
     enable_telemetry: bool = Field(default=False, alias="ENABLE_TELEMETRY")
+    # 2026-09-21: default flipped to False — see chat_orchestrator.py's
+    # ChatOrchestrator._strict_evidence_intents for why the mandatory
+    # interview loop is no longer the default for ordinary questions.
+    enable_interview_loop: bool = Field(default=False, alias="ENABLE_INTERVIEW_LOOP")
+    situation_coverage_target: float = Field(default=0.85, alias="SITUATION_COVERAGE_TARGET")
+    interview_max_questions: int = Field(default=3, alias="INTERVIEW_MAX_QUESTIONS")
+    pii_anonymizer_backend: str = Field(default="noop", alias="PII_ANONYMIZER_BACKEND")
+    max_active_conversations_per_pet: int = Field(
+        default=4, alias="MAX_ACTIVE_CONVERSATIONS_PER_PET"
+    )
+    # Multilingual architecture (spec v3 §31) — Beta ships Italian-only, but
+    # the core engine reads these instead of hardcoding "it"/"Italian", so
+    # adding a locale later is a config change, not a core-engine rewrite.
+    locale: str = Field(default="it-IT", alias="LOCALE")
+    response_language: str = Field(default="it", alias="RESPONSE_LANGUAGE")
+    retrieval_languages: list[str] = Field(default=["en", "it"], alias="RETRIEVAL_LANGUAGES")
 
     @model_validator(mode="after")
     def validate_backend_configuration(self) -> "Settings":
@@ -70,6 +99,26 @@ class Settings(BaseSettings):
                 "LLM_PROVIDER=groq",
                 {
                     "LLM_MODEL": self.llm_model,
+                    "LLM_API_KEY": self.llm_api_key,
+                    "LLM_BASE_URL": self.llm_base_url,
+                },
+            )
+
+        if self.stt_provider == "groq":
+            self._require_fields(
+                "STT_PROVIDER=groq",
+                {
+                    "STT_MODEL": self.stt_model,
+                    "LLM_API_KEY": self.llm_api_key,
+                    "LLM_BASE_URL": self.llm_base_url,
+                },
+            )
+
+        if self.vision_provider == "groq":
+            self._require_fields(
+                "VISION_PROVIDER=groq",
+                {
+                    "VISION_MODEL": self.vision_model,
                     "LLM_API_KEY": self.llm_api_key,
                     "LLM_BASE_URL": self.llm_base_url,
                 },

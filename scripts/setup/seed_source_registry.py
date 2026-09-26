@@ -2,9 +2,9 @@ from __future__ import annotations
 
 import argparse
 import json
+from typing import Any
 from urllib import parse, request
 from urllib.error import HTTPError
-from typing import Any
 
 from packages.infrastructure.llm.sources.registry_seed import (
     build_initial_seed_catalog,
@@ -18,7 +18,7 @@ def _chunked(rows: list[dict[str, Any]], size: int = 200) -> list[list[dict[str,
 
 
 def _fetch_id_map(
-    client: "_SeedClient",
+    client: _SeedClient,
     table_name: str,
     key_field: str,
     values: list[str],

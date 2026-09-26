@@ -2,15 +2,39 @@ import 'dart:collection';
 
 import 'package:flutter/foundation.dart';
 
+import '../../../shared/config/app_runtime_config_loader.dart';
+import '../../../shared/types/result.dart';
+import '../../pets/data/pet_demo_store.dart';
 import '../domain/chat_models.dart';
+import 'chat_attachment_remote_data_source.dart';
+import 'chat_remote_data_source.dart';
 import 'chat_seed_data.dart';
 
 class ChatDemoStore extends ChangeNotifier {
-  ChatDemoStore._() {
+  ChatDemoStore._({
+    ChatRemoteDataSource? remoteDataSource,
+    ChatAttachmentRemoteDataSource? attachmentRemoteDataSource,
+    AppRuntimeConfigLoader? configLoader,
+  })  : _remote = remoteDataSource ?? HttpChatRemoteDataSource(),
+        _attachments = attachmentRemoteDataSource ?? HttpChatAttachmentRemoteDataSource(),
+        _configLoader = configLoader ?? const AppRuntimeConfigLoader() {
     reset();
   }
 
   static final ChatDemoStore instance = ChatDemoStore._();
+
+  /// Max concurrent chat threads per pet. Keeps the per-pet chat list short
+  /// and scannable on a phone screen instead of growing without bound.
+  static const maxConversationsPerPet = 4;
+
+  final ChatRemoteDataSource _remote;
+  final ChatAttachmentRemoteDataSource _attachments;
+  final AppRuntimeConfigLoader _configLoader;
+
+  /// Backend pet id resolved for each local pet name — keyed by name so
+  /// resolving one pet's id doesn't get reused for every other pet's chat
+  /// (see [_resolveDefaultPetId]).
+  final Map<String, String> _petIdByName = {};
 
   final List<ChatConversationDetail> _threads = <ChatConversationDetail>[];
   final Set<String> _openedConversationIds = <String>{};
@@ -18,6 +42,33 @@ class ChatDemoStore extends ChangeNotifier {
   UnmodifiableListView<ChatConversationSummary> get conversations {
     final summaries = _threads.map(_summaryFor).toList(growable: false);
     return UnmodifiableListView<ChatConversationSummary>(summaries);
+  }
+
+  int countForPet(String petName) =>
+      _threads.where((thread) => thread.petName == petName).length;
+
+  bool canStartConversation(String petName) =>
+      countForPet(petName) < maxConversationsPerPet;
+
+  /// Removes the conversation locally right away — required by
+  /// [Dismissible], which expects the backing list to shrink synchronously
+  /// once `onDismissed` fires — then, if it was ever actually sent to the
+  /// backend, deletes it there too so the backend's own max-conversations
+  /// count (packages/core/application/services/send_chat_message.py) stays
+  /// in sync and a freed slot is really free. A backend failure here can't
+  /// undo the now-animated-away local removal, so it's surfaced to the
+  /// caller only as an informational Result, not by restoring the item.
+  Future<Result<void>> deleteConversation(String id) async {
+    final thread = conversationById(id);
+    _threads.removeWhere((thread) => thread.id == id);
+    _openedConversationIds.remove(id);
+    notifyListeners();
+
+    final backendConversationId = thread?.backendConversationId;
+    if (backendConversationId == null) {
+      return Result.success<void>(null);
+    }
+    return _remote.deleteConversation(backendConversationId);
   }
 
   ChatConversationDetail? conversationById(String id) {
@@ -29,7 +80,11 @@ class ChatDemoStore extends ChangeNotifier {
     return null;
   }
 
-  ChatConversationDetail openConversation(String id) {
+  /// [fallback] lets a caller that already has the right conversation (the
+  /// normal case — every navigation path creates the thread before opening
+  /// it) supply it directly if the store doesn't have it for some reason,
+  /// instead of guessing which pet it was about.
+  ChatConversationDetail openConversation(String id, {ChatConversationDetail? fallback}) {
     _openedConversationIds.add(id);
     final conversation = conversationById(id);
     if (conversation != null) {
@@ -37,25 +92,18 @@ class ChatDemoStore extends ChangeNotifier {
       return conversation;
     }
 
-    final created = _createConversation(
-      petName: 'Moka',
-      title: 'Moka - nuova conversazione',
-      seedPrompt: 'Ciao, ho una domanda su Moka.',
-    );
+    final created = fallback ??
+        _createConversation(petName: 'il tuo pet', title: 'Nuova conversazione');
     _threads.insert(0, created);
     _openedConversationIds.add(created.id);
     notifyListeners();
     return created;
   }
 
-  ChatConversationDetail startConversation({
-    String petName = 'Moka',
-    String seedPrompt = 'Ciao, ho una domanda su Moka.',
-  }) {
+  ChatConversationDetail startConversation({required String petName}) {
     final conversation = _createConversation(
       petName: petName,
       title: '$petName - nuova conversazione',
-      seedPrompt: seedPrompt,
     );
     _threads.insert(0, conversation);
     _openedConversationIds.add(conversation.id);
@@ -63,13 +111,15 @@ class ChatDemoStore extends ChangeNotifier {
     return conversation;
   }
 
-  Future<ChatConversationDetail> sendMessage(
+  Future<Result<ChatConversationDetail>> sendMessage(
     String conversationId,
-    String message,
-  ) async {
+    String message, {
+    String? attachmentId,
+    Uint8List? attachmentImageBytes,
+  }) async {
     final cleanMessage = message.trim();
     if (cleanMessage.isEmpty) {
-      return conversationById(conversationId) ?? _threads.first;
+      return Result.success(conversationById(conversationId) ?? _threads.first);
     }
 
     final thread = conversationById(conversationId) ?? _threads.first;
@@ -79,6 +129,7 @@ class ChatDemoStore extends ChangeNotifier {
       text: cleanMessage,
       timeLabel: _clockLabel(),
       isRead: true,
+      attachmentImageBytes: attachmentImageBytes,
     );
 
     _replaceThread(
@@ -92,9 +143,39 @@ class ChatDemoStore extends ChangeNotifier {
     _openedConversationIds.add(conversationId);
     notifyListeners();
 
+    if (!_configLoader.load().hasApiBaseUrl) {
+      return Result.success(await _sendDemoReply(conversationId, cleanMessage));
+    }
+    return _sendRealMessage(conversationId, cleanMessage, attachmentId: attachmentId);
+  }
+
+  /// Uploads a photo for [petName] and returns its backend attachment id —
+  /// pass that id to [sendMessage] to link the photo to the message the
+  /// user is about to send. See `POST /chat-attachments` (contract from
+  /// "Chat LLM interna VETAPP").
+  Future<Result<ChatAttachmentUploadResult>> uploadAttachment({
+    required String petName,
+    required Uint8List imageBytes,
+    required String fileName,
+  }) async {
+    final petIdResult = await _resolveDefaultPetId(petName);
+    return petIdResult.fold(
+      onFailure: (error) async => Result.failure(error),
+      onSuccess: (petId) => _attachments.upload(
+        petId: petId,
+        imageBytes: imageBytes,
+        fileName: fileName,
+      ),
+    );
+  }
+
+  Future<ChatConversationDetail> _sendDemoReply(
+    String conversationId,
+    String cleanMessage,
+  ) async {
     await Future<void>.delayed(const Duration(milliseconds: 650));
 
-    final updatedThread = conversationById(conversationId) ?? thread;
+    final updatedThread = conversationById(conversationId) ?? _threads.first;
     final assistantMessage = ChatMessage(
       id: _messageId('assistant'),
       author: ChatMessageAuthor.assistant,
@@ -113,6 +194,75 @@ class ChatDemoStore extends ChangeNotifier {
     notifyListeners();
 
     return conversationById(conversationId) ?? updatedThread;
+  }
+
+  Future<Result<ChatConversationDetail>> _sendRealMessage(
+    String conversationId,
+    String cleanMessage, {
+    String? attachmentId,
+  }) async {
+    final thread = conversationById(conversationId) ?? _threads.first;
+
+    final petIdResult = await _resolveDefaultPetId(thread.petName);
+    return petIdResult.fold(
+      onFailure: (error) async => Result.failure(error),
+      onSuccess: (petId) async {
+        final sendResult = await _remote.sendMessage(
+          petId: petId,
+          conversationId: thread.backendConversationId,
+          userMessage: cleanMessage,
+          attachmentId: attachmentId,
+        );
+        return sendResult.fold(
+          onFailure: (error) => Result.failure(error),
+          onSuccess: (reply) {
+            final updatedThread = conversationById(conversationId) ?? thread;
+            final assistantMessage = ChatMessage(
+              id: _messageId('assistant'),
+              author: ChatMessageAuthor.assistant,
+              text: reply.content,
+              timeLabel: _clockLabel(),
+              aiGenerated: reply.aiGenerated,
+            );
+
+            final resultThread = updatedThread.copyWith(
+              statusLabel: 'Risposta pronta',
+              messages: [...updatedThread.messages, assistantMessage],
+              backendConversationId: reply.backendConversationId,
+            );
+            _replaceThread(conversationId, resultThread);
+            _openedConversationIds.add(conversationId);
+            notifyListeners();
+
+            return Result.success(resultThread);
+          },
+        );
+      },
+    );
+  }
+
+  Future<Result<String>> _resolveDefaultPetId(String petName) async {
+    final cachedPetId = _petIdByName[petName];
+    if (cachedPetId != null) {
+      return Result.success(cachedPetId);
+    }
+
+    // The pet's real species (Italian label, e.g. "Uccello") — the backend's
+    // normalize_species() already maps these labels to canonical families.
+    // A hardcoded 'dog' here used to bootstrap every never-before-chatted
+    // pet on the backend as a dog, regardless of its real species.
+    final fallbackSpecies = PetDemoStore.instance.byName(petName)?.species ?? 'Altro';
+    final result = await _remote.ensureDefaultPetId(
+      fallbackName: petName,
+      fallbackSpecies: fallbackSpecies,
+    );
+    return result.fold(
+      onFailure: (error) => Result.failure<String>(error),
+      onSuccess: (petId) {
+        _petIdByName[petName] = petId;
+        return Result.success(petId);
+      },
+    );
   }
 
   void reset() {
@@ -153,38 +303,19 @@ class ChatDemoStore extends ChangeNotifier {
     );
   }
 
+  // Starts genuinely empty — no pre-scripted assistant/user exchange. A
+  // canned "conversation starter" here used to show the same two fake
+  // messages on every new chat regardless of what the user actually asked.
   ChatConversationDetail _createConversation({
     required String petName,
     required String title,
-    required String seedPrompt,
   }) {
-    final createdAt = _clockLabel();
     return ChatConversationDetail(
       id: _conversationId(petName),
       title: title,
       petName: petName,
-      statusLabel: 'Contesto attivo del pet',
-      messages: [
-        ChatMessage(
-          id: _messageId('assistant'),
-          author: ChatMessageAuthor.assistant,
-          text:
-              'Ti seguo su $petName. Dimmi pure cosa stai osservando e ti preparo una risposta concreta.',
-          timeLabel: createdAt,
-        ),
-        ChatMessage(
-          id: _messageId('user'),
-          author: ChatMessageAuthor.user,
-          text: seedPrompt,
-          timeLabel: createdAt,
-        ),
-        ChatMessage(
-          id: _messageId('assistant'),
-          author: ChatMessageAuthor.assistant,
-          text: _generateReply(seedPrompt, petName),
-          timeLabel: createdAt,
-        ),
-      ],
+      statusLabel: 'Nuova conversazione',
+      messages: const [],
     );
   }
 

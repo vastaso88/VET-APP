@@ -67,7 +67,7 @@ class MedicalRecordsRepository {
     }
 
     try {
-      await client.from('medical_records').upsert({
+      await client.from('clinical_events').upsert({
         'id': record.id,
         'pet_name': record.petName,
         'title': record.title,
@@ -78,7 +78,21 @@ class MedicalRecordsRepository {
         'created_at': record.createdAt,
       });
     } catch (_) {
+      _upsertPreviewRecord(record);
+    }
+  }
+
+  Future<void> deleteRecord(String id) async {
+    final client = _resolveClient();
+    if (client == null) {
+      _previewRecords.removeWhere((record) => record.id == id);
       return;
+    }
+
+    try {
+      await client.from('clinical_events').delete().eq('id', id);
+    } catch (_) {
+      _previewRecords.removeWhere((record) => record.id == id);
     }
   }
 
@@ -101,8 +115,7 @@ class MedicalRecordsRepository {
     }
 
     try {
-      final response = await client.from('medical_records').select(
-          'id,pet_name,title,subtitle,meta,badge,detail_source,created_at');
+      final response = await client.from('clinical_events').select('*');
       final rows = response as List<dynamic>;
       return rows
           .map(
@@ -216,6 +229,23 @@ class MedicalRecordsRepository {
             label: 'Revisionato', value: '18 Mar 2026, 12:05'),
         MedicalRecordTimelineEntry(
             label: "Pronto per l'invio", value: 'Da controllare'),
+      ],
+    ),
+    const MedicalRecordEntry(
+      id: 'oliver-esami-sangue',
+      petName: 'Oliver',
+      title: 'Esami del sangue di Oliver',
+      subtitle: 'PDF - 2 pagine - profilo completo annuale',
+      meta: 'Valori nella norma, archiviato come riferimento',
+      badge: 'Archivio',
+      detailSource: 'Laboratorio Vet',
+      createdAt: '02 Mar 2026, 10:15',
+      timeline: [
+        MedicalRecordTimelineEntry(label: 'Importato', value: '02 Mar 2026'),
+        MedicalRecordTimelineEntry(
+            label: 'Revisionato', value: '02 Mar 2026, 16:40'),
+        MedicalRecordTimelineEntry(
+            label: "Pronto per l'invio", value: 'Archiviato'),
       ],
     ),
   ];

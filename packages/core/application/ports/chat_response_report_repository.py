@@ -1,0 +1,13 @@
+from typing import Protocol
+
+from packages.core.domain.feedback.models import ChatResponseReport
+
+
+class ChatResponseReportRepository(Protocol):
+    def save(self, report: ChatResponseReport) -> ChatResponseReport: ...
+
+    def get(self, report_id: str) -> ChatResponseReport | None: ...
+
+    def list_by_owner(self, owner_id: str) -> list[ChatResponseReport]: ...
+
+    def list_all(self) -> list[ChatResponseReport]: ...

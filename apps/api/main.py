@@ -1,14 +1,19 @@
-from collections.abc import Callable
+from collections.abc import Awaitable, Callable
 
 from fastapi import FastAPI, Request, Response
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
+from apps.api.routes.account_consents import router as account_consents_router
 from apps.api.routes.auth import router as auth_router
 from apps.api.routes.chat import router as chat_router
+from apps.api.routes.chat_attachments import router as chat_attachments_router
+from apps.api.routes.chat_response_reports import router as chat_response_reports_router
 from apps.api.routes.conversations import router as conversations_router
 from apps.api.routes.health import router as health_router
 from apps.api.routes.pets import router as pets_router
 from apps.api.routes.reminders import router as reminders_router
+from apps.api.routes.speech_to_text import router as speech_to_text_router
 from packages.infrastructure.logging.logger import configure_logging
 from packages.infrastructure.telemetry.noop import setup_telemetry
 from packages.shared.auth_context import reset_access_token, set_access_token
@@ -21,9 +26,22 @@ setup_telemetry(settings.enable_telemetry)
 
 app = FastAPI(title=settings.app_name)
 
+if settings.environment != "production":
+    # The Flutter web client runs on its own dev-server origin (e.g.
+    # localhost:8080) and calls this API cross-origin; browsers block that
+    # without CORS. Wide open is fine for local/dev/staging, never for prod.
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origins=["*"],
+        allow_methods=["*"],
+        allow_headers=["*"],
+    )
+
 
 @app.middleware("http")
-async def inject_access_token(request: Request, call_next: Callable[[Request], Response]) -> Response:
+async def inject_access_token(
+    request: Request, call_next: Callable[[Request], Awaitable[Response]]
+) -> Response:
     auth_header = request.headers.get("Authorization", "")
     token: str | None = None
     if auth_header.lower().startswith("bearer "):
@@ -58,3 +76,7 @@ app.include_router(pets_router)
 app.include_router(conversations_router)
 app.include_router(chat_router)
 app.include_router(reminders_router)
+app.include_router(account_consents_router)
+app.include_router(chat_response_reports_router)
+app.include_router(speech_to_text_router)
+app.include_router(chat_attachments_router)

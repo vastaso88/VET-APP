@@ -1,6 +1,6 @@
+from collections.abc import Iterator
 from contextlib import contextmanager
-from contextvars import Token, ContextVar
-from typing import Iterator
+from contextvars import ContextVar, Token
 
 _access_token: ContextVar[str | None] = ContextVar("access_token", default=None)
 

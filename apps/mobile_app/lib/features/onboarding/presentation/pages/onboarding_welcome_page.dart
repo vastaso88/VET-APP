@@ -137,16 +137,16 @@ class _HeroCard extends StatelessWidget {
           ),
         ],
       ),
-      child: const Column(
+      child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _Badge(),
-          SizedBox(height: AppSpacing.xl),
+          const _Badge(),
+          const SizedBox(height: AppSpacing.xl),
           Text(
             'La salute del tuo pet, con un po di calma.',
             style: AppTextStyles.display,
           ),
-          SizedBox(height: AppSpacing.lg),
+          const SizedBox(height: AppSpacing.lg),
           Text(
             'Promemoria, documenti clinici e chat guidata in un\'unica app pensata per accompagnarti tra visite, dubbi e routine.',
             style: AppTextStyles.body,
@@ -471,12 +471,12 @@ class _BottomPanel extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
+          Text(
             'Inizia con il tuo primo profilo pet',
             style: AppTextStyles.title,
           ),
           const SizedBox(height: AppSpacing.md),
-          const Text(
+          Text(
             'Ti bastano pochi passaggi per salvare dati, documenti e promemoria importanti.',
             style: AppTextStyles.bodySmall,
           ),
@@ -502,7 +502,7 @@ class _BottomPanel extends StatelessWidget {
             ),
           ),
           const SizedBox(height: AppSpacing.lg),
-          const Text(
+          Text(
             'Continuando accetti privacy, disclaimer medico e utilizzo responsabile dei suggerimenti IA.',
             style: AppTextStyles.caption,
           ),

@@ -13,6 +13,7 @@ class PetsScaffold extends StatelessWidget {
     this.subtitle,
     this.actions,
     this.onBack,
+    this.badge,
   });
 
   final String title;
@@ -20,6 +21,11 @@ class PetsScaffold extends StatelessWidget {
   final List<Widget>? actions;
   final VoidCallback? onBack;
   final Widget body;
+
+  /// Replaces the default paw+"Pet" pill — pass a [PetAvatar] on pages tied
+  /// to one real pet (detail/edit) so the header shows its actual photo or
+  /// initial instead of a generic icon.
+  final Widget? badge;
 
   @override
   Widget build(BuildContext context) {
@@ -39,10 +45,10 @@ class PetsScaffold extends StatelessWidget {
         child: SafeArea(
           child: Padding(
             padding: const EdgeInsets.fromLTRB(
-              AppSpacing.xxl,
-              AppSpacing.lg,
-              AppSpacing.xxl,
-              AppSpacing.lg,
+              AppSpacing.xl,
+              AppSpacing.md,
+              AppSpacing.xl,
+              AppSpacing.md,
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -60,48 +66,49 @@ class PetsScaffold extends StatelessWidget {
                       ),
                       const SizedBox(width: AppSpacing.sm),
                     ],
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 14,
-                        vertical: 8,
-                      ),
-                      decoration: BoxDecoration(
-                        color: AppColors.primary,
-                        borderRadius: BorderRadius.circular(16),
-                      ),
-                      child: const Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Icon(Icons.pets, size: 14, color: AppColors.accent),
-                          SizedBox(width: AppSpacing.sm),
-                          Text(
-                            'Pet',
-                            style: TextStyle(
-                              color: AppColors.onPrimary,
-                              fontSize: 12,
-                              fontWeight: FontWeight.w800,
-                              letterSpacing: 0.4,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
+                    badge ?? _defaultBadge(),
                     const Spacer(),
                     if (actions != null) ...actions!,
                   ],
                 ),
-                const SizedBox(height: AppSpacing.xxl),
-                Text(title, style: AppTextStyles.display),
+                const SizedBox(height: AppSpacing.lg),
+                Text(title, style: AppTextStyles.heading, maxLines: 2, overflow: TextOverflow.ellipsis),
                 if (subtitle != null) ...[
-                  const SizedBox(height: AppSpacing.md),
-                  Text(subtitle!, style: AppTextStyles.body),
+                  const SizedBox(height: AppSpacing.xs),
+                  Text(subtitle!, style: AppTextStyles.bodySmall, maxLines: 2, overflow: TextOverflow.ellipsis),
                 ],
-                const SizedBox(height: AppSpacing.xxl),
+                const SizedBox(height: AppSpacing.lg),
                 Expanded(child: body),
               ],
             ),
           ),
         ),
+      ),
+    );
+  }
+
+  Widget _defaultBadge() {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+      decoration: BoxDecoration(
+        color: AppColors.primary,
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: const Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(Icons.pets, size: 14, color: AppColors.accent),
+          SizedBox(width: AppSpacing.sm),
+          Text(
+            'Pet',
+            style: TextStyle(
+              color: AppColors.onPrimary,
+              fontSize: 12,
+              fontWeight: FontWeight.w800,
+              letterSpacing: 0.4,
+            ),
+          ),
+        ],
       ),
     );
   }
