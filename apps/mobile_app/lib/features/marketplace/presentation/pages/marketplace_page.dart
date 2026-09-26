@@ -8,6 +8,7 @@ import '../../../home/presentation/widgets/home_dashboard_primitives.dart';
 import '../../../location/data/location_preference_store.dart';
 import '../../../location/domain/coordinates.dart';
 import '../../../location/domain/geo_math.dart';
+import '../../../location/presentation/reference_location.dart';
 import '../../data/marketplace_repository.dart';
 import '../../domain/marketplace_listing.dart';
 import '../marketplace_labels.dart';
@@ -40,7 +41,7 @@ class _MarketplacePageState extends State<MarketplacePage> {
   Future<_MarketplaceViewData> _loadData() async {
     await LocationPreferenceStore.instance.ensureLoaded();
     final preference = LocationPreferenceStore.instance.preference;
-    final referenceLocation = preference.current ?? preference.home ?? _fallbackLocation;
+    final referenceLocation = resolveReferenceLocation(preference, _fallbackLocation);
 
     final listings = await _repository.loadActiveListings();
     return _MarketplaceViewData(referenceLocation: referenceLocation, listings: listings);

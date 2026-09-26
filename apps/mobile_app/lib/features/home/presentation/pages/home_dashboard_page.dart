@@ -12,6 +12,7 @@ import '../../../local_events/presentation/pages/local_events_page.dart';
 import '../../../location/data/location_preference_store.dart';
 import '../../../location/domain/coordinates.dart';
 import '../../../location/domain/geo_math.dart';
+import '../../../location/presentation/reference_location.dart';
 import '../../../pet_news/data/pet_news_repository.dart';
 import '../../../pet_news/domain/pet_news_item.dart';
 import '../../../pet_news/presentation/pages/news_feed_page.dart';
@@ -515,7 +516,7 @@ class _LocalEventsNoticeState extends State<_LocalEventsNotice> {
   Future<String> _loadSummary() async {
     await LocationPreferenceStore.instance.ensureLoaded();
     final preference = LocationPreferenceStore.instance.preference;
-    final referenceLocation = preference.current ?? preference.home ?? _fallbackLocation;
+    final referenceLocation = resolveReferenceLocation(preference, _fallbackLocation);
 
     final activities = await LocalActivitiesRepository().loadActiveActivities();
     final nearby = activities.where(

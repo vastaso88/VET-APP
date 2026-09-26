@@ -15,6 +15,7 @@ import '../../../location/data/location_preference_store.dart';
 import '../../../location/domain/coordinates.dart';
 import '../../../location/domain/geo_math.dart';
 import '../../../location/presentation/distance_label.dart';
+import '../../../location/presentation/reference_location.dart';
 
 /// "Attività attorno a te" / "Eventi nei dintorni": browses
 /// packages/core/domain/local_activity (via LocalActivitiesRepository),
@@ -43,7 +44,7 @@ class _LocalEventsPageState extends State<LocalEventsPage> {
   Future<_LocalEventsViewData> _loadData() async {
     await LocationPreferenceStore.instance.ensureLoaded();
     final preference = LocationPreferenceStore.instance.preference;
-    final referenceLocation = preference.current ?? preference.home ?? _fallbackLocation;
+    final referenceLocation = resolveReferenceLocation(preference, _fallbackLocation);
 
     final activities = await LocalActivitiesRepository().loadActiveActivities();
     return _LocalEventsViewData(referenceLocation: referenceLocation, activities: activities);
