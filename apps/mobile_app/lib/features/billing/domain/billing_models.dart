@@ -4,6 +4,19 @@ enum BillingCycle { monthly, yearly }
 
 enum CardBrand { visa, mastercard, amex }
 
+extension CardBrandLabel on CardBrand {
+  String get label {
+    switch (this) {
+      case CardBrand.visa:
+        return 'Visa';
+      case CardBrand.mastercard:
+        return 'Mastercard';
+      case CardBrand.amex:
+        return 'American Express';
+    }
+  }
+}
+
 /// A subscription tier as shown in the plan comparison — mirrors the
 /// "Free / Plus / Pro" ladder common apps use for their pricing screen.
 class SubscriptionPlan {
@@ -65,14 +78,5 @@ class PaymentMethod {
   String get expiryLabel =>
       '${expiryMonth.toString().padLeft(2, '0')}/${expiryYear.toString().substring(2)}';
 
-  String get brandLabel {
-    switch (brand) {
-      case CardBrand.visa:
-        return 'Visa';
-      case CardBrand.mastercard:
-        return 'Mastercard';
-      case CardBrand.amex:
-        return 'American Express';
-    }
-  }
+  String get brandLabel => brand.label;
 }

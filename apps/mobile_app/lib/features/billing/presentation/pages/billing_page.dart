@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
 
 import '../../../../design_system/tokens/app_colors.dart';
@@ -23,10 +24,9 @@ class _BillingPageState extends State<BillingPage> {
   final _store = BillingDemoStore.instance;
 
   void _switchToPlan(PlanTier tier) {
-    final plan = BillingDemoStore.plans.firstWhere((p) => p.tier == tier);
     _store.switchToPlan(tier);
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('Ora sei sul piano ${plan.displayName}.')),
+      SnackBar(content: Text('Ora sei sul piano ${_store.currentPlan.displayName}.')),
     );
   }
 
@@ -448,16 +448,7 @@ class _AddPaymentMethodDialogState extends State<_AddPaymentMethodDialog> {
               initialValue: _brand,
               decoration: const InputDecoration(labelText: 'Circuito'),
               items: CardBrand.values
-                  .map((brand) => DropdownMenuItem(
-                        value: brand,
-                        child: Text(PaymentMethod(
-                          id: '',
-                          brand: brand,
-                          last4: '',
-                          expiryMonth: 1,
-                          expiryYear: 2000,
-                        ).brandLabel),
-                      ))
+                  .map((brand) => DropdownMenuItem(value: brand, child: Text(brand.label)))
                   .toList(),
               onChanged: (value) => setState(() => _brand = value ?? _brand),
             ),
@@ -467,8 +458,9 @@ class _AddPaymentMethodDialogState extends State<_AddPaymentMethodDialog> {
               decoration: const InputDecoration(labelText: 'Ultime 4 cifre'),
               keyboardType: TextInputType.number,
               maxLength: 4,
+              inputFormatters: [FilteringTextInputFormatter.digitsOnly],
               validator: (value) =>
-                  (value == null || value.length != 4) ? 'Inserisci 4 cifre' : null,
+                  (value == null || !RegExp(r'^\d{4}$').hasMatch(value)) ? 'Inserisci 4 cifre' : null,
             ),
             Row(
               children: [
