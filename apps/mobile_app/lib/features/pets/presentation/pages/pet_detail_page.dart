@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_map/flutter_map.dart';
+import 'package:latlong2/latlong.dart' as latlong;
 import 'package:share_plus/share_plus.dart';
 
 import '../../../../design_system/tokens/app_colors.dart';
@@ -10,9 +12,11 @@ import '../../../chat/domain/chat_models.dart';
 import '../../../chat/presentation/pages/chat_conversation_detail_page.dart';
 import '../../../dog_walks/data/dog_walks_repository.dart';
 import '../../../dog_walks/domain/badges.dart';
+import '../../../dog_walks/domain/walk_retention.dart';
 import '../../../dog_walks/domain/walk_session.dart';
 import '../../../dog_walks/presentation/pages/active_walk_page.dart';
 import '../../../dog_walks/presentation/walk_labels.dart';
+import '../../../dog_walks/presentation/widgets/walk_map_style.dart';
 import '../../../../shared/auth/current_owner.dart';
 import '../../../medical_records/data/medical_record_file_cache.dart';
 import '../../../medical_records/data/medical_records_repository.dart';
@@ -959,15 +963,32 @@ class _WalksTabState extends State<_WalksTab> {
               }
 
               final badges = evaluateBadges(walks);
+              final history = buildWalkHistoryView(walks);
               return ListView(
                 children: [
                   if (badges.isNotEmpty) ...[
                     _BadgesRow(badges: badges),
                     const SizedBox(height: AppSpacing.md),
                   ],
-                  for (final walk in walks) ...[
-                    _WalkRow(walk: walk),
-                    if (walk != walks.last) const SizedBox(height: AppSpacing.sm),
+                  if (history.record != null) ...[
+                    const _WalksSectionLabel('Record 🏆'),
+                    _WalkCard(walk: history.record!, repository: widget.repository, onChanged: _reload),
+                    const SizedBox(height: AppSpacing.md),
+                  ],
+                  if (history.favorites.isNotEmpty) ...[
+                    const _WalksSectionLabel('Preferite ⭐'),
+                    for (final walk in history.favorites) ...[
+                      _WalkCard(walk: walk, repository: widget.repository, onChanged: _reload),
+                      const SizedBox(height: AppSpacing.sm),
+                    ],
+                    const SizedBox(height: AppSpacing.sm),
+                  ],
+                  if (history.recent.isNotEmpty) ...[
+                    const _WalksSectionLabel('Recenti'),
+                    for (final walk in history.recent) ...[
+                      _WalkCard(walk: walk, repository: widget.repository, onChanged: _reload),
+                      const SizedBox(height: AppSpacing.sm),
+                    ],
                   ],
                 ],
               );
@@ -1008,10 +1029,39 @@ class _BadgesRow extends StatelessWidget {
   }
 }
 
-class _WalkRow extends StatelessWidget {
-  const _WalkRow({required this.walk});
+class _WalksSectionLabel extends StatelessWidget {
+  const _WalksSectionLabel(this.text);
+
+  final String text;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: AppSpacing.xs),
+      child: Text(
+        text,
+        style: AppTextStyles.caption.copyWith(color: AppColors.secondaryText),
+      ),
+    );
+  }
+}
+
+/// A retained walk (record / favorite / recent - see walk_retention.dart),
+/// shown with its map so "in evidenza" actually means something visual, not
+/// just a number. Walks pruned outside retention have an empty route and
+/// never reach this widget (buildWalkHistoryView only surfaces retained
+/// ones).
+class _WalkCard extends StatelessWidget {
+  const _WalkCard({required this.walk, required this.repository, required this.onChanged});
 
   final WalkSession walk;
+  final DogWalksRepository repository;
+  final VoidCallback onChanged;
+
+  Future<void> _toggleFavorite() async {
+    await repository.saveWalk(walk.copyWith(isFavorite: !walk.isFavorite));
+    onChanged();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -1020,10 +1070,81 @@ class _WalkRow extends StatelessWidget {
       if (walk.durationSeconds != null) walkDurationLabel(walk.durationSeconds),
       if (walk.stepCountEstimate != null) '~${walk.stepCountEstimate} passi',
     ];
-    return _CompactRow(
-      leading: const _RowIcon(icon: Icons.directions_walk_rounded),
-      title: walkDateLabel(walk.startedAt),
-      subtitle: subtitleParts.join(' · '),
+    return Container(
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(AppRadii.large),
+      ),
+      clipBehavior: Clip.antiAlias,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          if (walk.route.isNotEmpty)
+            SizedBox(height: 120, child: _WalkMiniMap(route: walk.route)),
+          Padding(
+            padding: const EdgeInsets.all(AppSpacing.md),
+            child: Row(
+              children: [
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        walkDateLabel(walk.startedAt),
+                        style: AppTextStyles.body.copyWith(
+                          fontWeight: FontWeight.w700,
+                          color: AppColors.text,
+                        ),
+                      ),
+                      const SizedBox(height: 2),
+                      Text(subtitleParts.join(' · '), style: AppTextStyles.caption),
+                    ],
+                  ),
+                ),
+                IconButton(
+                  onPressed: _toggleFavorite,
+                  icon: Icon(
+                    walk.isFavorite ? Icons.star_rounded : Icons.star_outline_rounded,
+                    color: walk.isFavorite ? AppColors.warning : AppColors.mutedText,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Static (no pan/zoom) preview of one walk's route - the history cards
+/// only need a glance, not an interactive map.
+class _WalkMiniMap extends StatelessWidget {
+  const _WalkMiniMap({required this.route});
+
+  final List<RoutePoint> route;
+
+  @override
+  Widget build(BuildContext context) {
+    final points = route
+        .map((point) => latlong.LatLng(point.coordinates.latitude, point.coordinates.longitude))
+        .toList();
+    final bounds = LatLngBounds.fromPoints(points);
+
+    return IgnorePointer(
+      child: FlutterMap(
+        options: MapOptions(
+          initialCameraFit: CameraFit.bounds(bounds: bounds, padding: const EdgeInsets.all(24)),
+          interactionOptions: const InteractionOptions(flags: InteractiveFlag.none),
+        ),
+        children: [
+          buildWalkTileLayer(),
+          if (points.length >= 2)
+            PolylineLayer(
+              polylines: [Polyline(points: points, color: AppColors.primary, strokeWidth: 3)],
+            ),
+        ],
+      ),
     );
   }
 }

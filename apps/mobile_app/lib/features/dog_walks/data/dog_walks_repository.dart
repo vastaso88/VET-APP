@@ -2,6 +2,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../../../shared/config/app_runtime_config_loader.dart';
 import '../../location/domain/coordinates.dart';
+import '../domain/walk_retention.dart';
 import '../domain/walk_session.dart';
 
 /// Same shape as RemindersRepository: an optional Supabase client, a
@@ -44,6 +45,23 @@ class DogWalksRepository {
     }
   }
 
+  /// Strips the `route` from any completed walk for this pet that falls
+  /// outside the retention set (see walk_retention.dart) - called once a
+  /// walk finishes, since that's the only time the retained set can change.
+  Future<void> pruneRoutesOutsideRetention(String ownerId, String petId) async {
+    final walks = (await loadWalks(ownerId))
+        .where((walk) => walk.petId == petId && walk.status == WalkStatus.completed)
+        .toList()
+      ..sort((a, b) => b.startedAt.compareTo(a.startedAt));
+
+    final retainedIds = retainedRouteWalkIds(walks);
+    for (final walk in walks) {
+      if (walk.route.isNotEmpty && !retainedIds.contains(walk.id)) {
+        await saveWalk(walk.copyWith(route: const []));
+      }
+    }
+  }
+
   Future<List<WalkSession>> _tryLoadRemoteWalks(String ownerId) async {
     final client = _resolveClient();
     if (client == null) {
@@ -77,6 +95,7 @@ class DogWalksRepository {
       'distance_meters': walk.distanceMeters,
       'duration_seconds': walk.durationSeconds,
       'step_count_estimate': walk.stepCountEstimate,
+      'is_favorite': walk.isFavorite,
       'route': walk.route
           .map(
             (point) => {
@@ -118,6 +137,7 @@ class DogWalksRepository {
       distanceMeters: (row['distance_meters'] as num?)?.toDouble() ?? 0,
       durationSeconds: (row['duration_seconds'] as num?)?.toInt(),
       stepCountEstimate: (row['step_count_estimate'] as num?)?.toInt(),
+      isFavorite: row['is_favorite'] as bool? ?? false,
       route: route,
     );
   }

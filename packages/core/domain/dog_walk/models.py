@@ -26,6 +26,9 @@ class WalkSession(BaseModel):
     duration_seconds: int | None = None
     step_count_estimate: int | None = None
     route: list[RoutePoint] = Field(default_factory=list)
+    # Starred by the owner, max 5 per pet (enforced client-side, mirrors
+    # apps/mobile_app/lib/features/dog_walks/domain/walk_retention.dart).
+    is_favorite: bool = False
 
 
 def estimate_steps(distance_meters: float, stride_meters: float = 0.75) -> int:

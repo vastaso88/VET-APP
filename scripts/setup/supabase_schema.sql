@@ -320,6 +320,9 @@ create table if not exists public.dog_walks (
     duration_seconds integer,
     step_count_estimate integer,
     route jsonb not null default '[]'::jsonb,
+    -- Starred by the owner, max 5 per pet (enforced client-side, see
+    -- walk_retention.dart) - independent of is this the longest walk ever.
+    is_favorite boolean not null default false,
     created_at timestamptz not null default now()
 );
 

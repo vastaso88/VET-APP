@@ -22,6 +22,7 @@ class WalkSession {
     this.durationSeconds,
     this.stepCountEstimate,
     this.route = const [],
+    this.isFavorite = false,
   });
 
   final String id;
@@ -35,6 +36,11 @@ class WalkSession {
   final int? stepCountEstimate;
   final List<RoutePoint> route;
 
+  /// Starred by the owner at the end of a walk (max 5 per pet - see
+  /// dog_walks_repository.dart's retention logic). Independent of whether
+  /// this is also the all-time longest walk.
+  final bool isFavorite;
+
   WalkSession copyWith({
     WalkStatus? status,
     DateTime? endedAt,
@@ -42,6 +48,7 @@ class WalkSession {
     int? durationSeconds,
     int? stepCountEstimate,
     List<RoutePoint>? route,
+    bool? isFavorite,
   }) {
     return WalkSession(
       id: id,
@@ -54,6 +61,7 @@ class WalkSession {
       durationSeconds: durationSeconds ?? this.durationSeconds,
       stepCountEstimate: stepCountEstimate ?? this.stepCountEstimate,
       route: route ?? this.route,
+      isFavorite: isFavorite ?? this.isFavorite,
     );
   }
 }
