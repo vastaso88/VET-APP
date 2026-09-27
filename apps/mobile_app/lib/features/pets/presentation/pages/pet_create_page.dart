@@ -53,7 +53,7 @@ class _CreateForm extends StatelessWidget {
       title: 'Nuovo profilo',
       submitLabel: 'Salva profilo pet',
       onSubmit: (draft) async {
-        final pet = PetDemoStore.instance.create(
+        final pet = await PetDemoStore.instance.create(
           name: draft.name,
           species: draft.species,
           breed: draft.breed,
@@ -67,6 +67,7 @@ class _CreateForm extends StatelessWidget {
           habitat: draft.habitat,
           dogSizeCategory: draft.dogSizeCategory,
         );
+        if (!context.mounted) return;
         Navigator.of(context).pop(pet);
       },
     );

@@ -87,7 +87,8 @@ class _EditForm extends StatelessWidget {
           dogSizeCategory: draft.dogSizeCategory,
           clearDogSizeCategory: draft.dogSizeCategory == null,
         );
-        PetDemoStore.instance.upsert(updated);
+        await PetDemoStore.instance.upsert(updated);
+        if (!context.mounted) return;
         Navigator.of(context).pop(updated);
       },
     );
@@ -122,7 +123,7 @@ class _PetLifecycleActions extends StatelessWidget {
     );
     if (confirmed != true) return;
 
-    PetDemoStore.instance.delete(pet.id);
+    await PetDemoStore.instance.delete(pet.id);
     if (!context.mounted) return;
     Navigator.of(context)
       ..pop()
@@ -152,7 +153,7 @@ class _PetLifecycleActions extends StatelessWidget {
     if (confirmed != true) return;
 
     final updated = pet.copyWith(isMemorial: true, memorialDate: DateTime.now());
-    PetDemoStore.instance.upsert(updated);
+    await PetDemoStore.instance.upsert(updated);
     if (!context.mounted) return;
     Navigator.of(context)
       ..pop()

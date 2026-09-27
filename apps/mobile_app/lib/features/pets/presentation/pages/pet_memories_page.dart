@@ -46,7 +46,7 @@ class _PetMemoriesPageState extends State<PetMemoriesPage> {
     );
     if (confirmed != true) return;
 
-    PetDemoStore.instance.delete(pet.id);
+    await PetDemoStore.instance.delete(pet.id);
     if (!mounted) return;
     _reload();
   }

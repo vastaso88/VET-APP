@@ -1,4 +1,3 @@
-import 'dart:async';
 import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
@@ -427,7 +426,11 @@ class PetDemoStore {
     return null;
   }
 
-  PetProfile upsert(PetProfile pet) {
+  /// Awaits the remote write before returning — a fire-and-forget write
+  /// here previously let the caller navigate away (or the tab close/reload)
+  /// before the Supabase upsert actually landed, so a just-created pet
+  /// could silently vanish on the next load even though it looked saved.
+  Future<PetProfile> upsert(PetProfile pet) async {
     final index = _pets.indexWhere((item) => item.id == pet.id);
     if (index == -1) {
       _pets = [pet, ..._pets];
@@ -439,16 +442,16 @@ class PetDemoStore {
       ];
     }
 
-    unawaited(_persistRemote(pet));
+    await _persistRemote(pet);
     return pet;
   }
 
-  void delete(String id) {
+  Future<void> delete(String id) async {
     _pets = _pets.where((pet) => pet.id != id).toList();
-    unawaited(_deleteRemote(id));
+    await _deleteRemote(id);
   }
 
-  PetProfile create({
+  Future<PetProfile> create({
     required String name,
     required String species,
     required String? breed,
