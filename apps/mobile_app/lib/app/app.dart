@@ -20,6 +20,7 @@ class VetApp extends StatelessWidget {
       title: 'VET APP',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.light(),
+      navigatorKey: AppRouter.navigatorKey,
       initialRoute: AppRouter.splash,
       onGenerateRoute: AppRouter.onGenerateRoute,
       builder: (context, child) {

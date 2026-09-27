@@ -1,17 +1,21 @@
 import 'package:flutter/material.dart';
 
 import '../../features/auth/presentation/pages/auth_placeholder_page.dart';
+import '../../features/auth/presentation/pages/set_new_password_page.dart';
 import '../../features/billing/presentation/pages/paywall_page.dart';
 import '../preview/maps_demo_page.dart';
 import '../shell/home_shell_page.dart';
 import '../splash/splash_page.dart';
 
 class AppRouter {
+  static final navigatorKey = GlobalKey<NavigatorState>();
+
   static const splash = '/';
   static const auth = '/auth';
   static const home = '/home';
   static const homeShell = '/home-shell';
   static const paywall = '/paywall';
+  static const setNewPassword = '/set-new-password';
   // Isolated demo harness for the maps foundations (docs/maps/) - not
   // linked from any real nav button, see maps_demo_page.dart.
   static const mapsDemo = '/demo/maps';
@@ -37,6 +41,11 @@ class AppRouter {
       case paywall:
         return MaterialPageRoute<void>(
           builder: (_) => const PaywallPage(),
+          settings: settings,
+        );
+      case setNewPassword:
+        return MaterialPageRoute<void>(
+          builder: (_) => const SetNewPasswordPage(),
           settings: settings,
         );
       case mapsDemo:

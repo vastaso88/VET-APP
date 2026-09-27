@@ -29,6 +29,7 @@ class _RegisterPageState extends State<RegisterPage> {
   final _nameController = TextEditingController();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
+  final _confirmPasswordController = TextEditingController();
 
   bool _acceptTerms = false;
   bool _isLoading = false;
@@ -41,6 +42,7 @@ class _RegisterPageState extends State<RegisterPage> {
     _nameController.dispose();
     _emailController.dispose();
     _passwordController.dispose();
+    _confirmPasswordController.dispose();
     super.dispose();
   }
 
@@ -199,6 +201,18 @@ class _RegisterPageState extends State<RegisterPage> {
                 final text = value ?? '';
                 if (text.isEmpty) return 'Inserisci una password.';
                 if (text.length < 6) return 'Minimo 6 caratteri.';
+                return null;
+              },
+            ),
+            const SizedBox(height: AppSpacing.md),
+            AuthInputField(
+              controller: _confirmPasswordController,
+              label: 'Conferma password',
+              hintText: 'Ripeti la password',
+              obscureText: true,
+              autofillHints: const [AutofillHints.newPassword],
+              validator: (value) {
+                if (value != _passwordController.text) return 'Le password non coincidono.';
                 return null;
               },
             ),

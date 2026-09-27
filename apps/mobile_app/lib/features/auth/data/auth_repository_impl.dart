@@ -83,6 +83,14 @@ class AuthRepositoryImpl implements AuthRepository {
   }
 
   @override
+  Future<Result<void>> updatePassword({String? email, required String newPassword}) {
+    return _remoteDataSource.updatePassword(
+      email: email ?? currentContext.user?.email,
+      newPassword: newPassword,
+    );
+  }
+
+  @override
   Future<Result<AuthContext>> signOut() async {
     final result = await _remoteDataSource.signOut();
     return await result.fold(

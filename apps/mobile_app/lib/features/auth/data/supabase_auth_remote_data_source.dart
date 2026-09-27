@@ -137,6 +137,33 @@ class SupabaseAuthRemoteDataSource implements AuthRemoteDataSource {
   }
 
   @override
+  Future<Result<void>> updatePassword({String? email, required String newPassword}) async {
+    if (!isConfigured) {
+      return Result.failure(_missingConfigError());
+    }
+
+    try {
+      await _client.updateUser(UserAttributes(password: newPassword));
+      return Result.success(null);
+    } on AuthException catch (error) {
+      return Result.failure(
+        AppAuthError(
+          code: error.statusCode ?? 'auth_error',
+          message: error.message,
+        ),
+      );
+    } catch (error) {
+      return Result.failure(
+        AppAuthError(
+          code: 'unexpected_update_password_error',
+          message: 'Unable to update the password right now',
+          details: error,
+        ),
+      );
+    }
+  }
+
+  @override
   Future<Result<void>> signOut() async {
     if (!isConfigured) {
       return Result.success(null);

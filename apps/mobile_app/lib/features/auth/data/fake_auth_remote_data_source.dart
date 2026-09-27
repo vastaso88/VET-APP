@@ -109,6 +109,32 @@ class FakeAuthRemoteDataSource implements AuthRemoteDataSource {
   }
 
   @override
+  Future<Result<void>> updatePassword({String? email, required String newPassword}) async {
+    await _restorePersistedUsers();
+    final normalizedEmail = email?.trim().toLowerCase();
+    final user = normalizedEmail == null ? null : _users[normalizedEmail];
+    if (user == null) {
+      return Result.failure(
+        const AppAuthError(
+          code: 'no_active_session',
+          message: 'No account to update the password for',
+        ),
+      );
+    }
+
+    _users[normalizedEmail!] = FakeUserRecord(
+      id: user.id,
+      email: user.email,
+      password: newPassword,
+      displayName: user.displayName,
+      createdAt: user.createdAt,
+      onboardingCompleted: user.onboardingCompleted,
+    );
+    await _persistUsers();
+    return Result.success(null);
+  }
+
+  @override
   Future<Result<void>> signOut() async {
     return Result.success(null);
   }

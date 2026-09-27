@@ -3,9 +3,11 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 
 import '../../../../design_system/tokens/app_spacing.dart';
+import '../../../../shared/config/app_runtime_config_loader.dart';
 import '../../data/auth_repository_factory.dart';
 import '../widgets/auth_widgets.dart';
 import 'login_page.dart';
+import 'set_new_password_page.dart';
 
 class ResetPasswordPage extends StatefulWidget {
   const ResetPasswordPage({super.key});
@@ -48,11 +50,22 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
       _message = 'Sto preparando la richiesta di recupero password.';
     });
 
-    final result = await _authRepository.resetPasswordForEmail(_emailController.text);
+    final email = _emailController.text.trim();
+    final result = await _authRepository.resetPasswordForEmail(email);
 
     if (!mounted) return;
     result.fold(
       onSuccess: (_) {
+        // The fake/offline path never sends a real email, so there is no
+        // link to click — jump straight to the "set new password" step
+        // (what clicking the email link would do on the real Supabase
+        // path) so the flow stays fully testable without email infra.
+        if (!const AppRuntimeConfigLoader().load().hasSupabaseCredentials) {
+          Navigator.of(context).pushReplacement(
+            MaterialPageRoute<void>(builder: (_) => SetNewPasswordPage(email: email)),
+          );
+          return;
+        }
         setState(() {
           _isLoading = false;
           _status = AuthBannerStatus.success;
