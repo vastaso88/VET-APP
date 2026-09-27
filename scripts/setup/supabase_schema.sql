@@ -367,9 +367,11 @@ create table if not exists public.marketplace_listing_reports (
 -- yet (only a local Flutter demo store exists today), so this field is
 -- the hook for whenever that billing exists, rather than a future schema
 -- change (docs/marketing/01_brainstorm.md).
--- Photo attachments: metadata only, the image bytes themselves stay on
--- local disk (product decision: avoid a cloud storage dependency for the
--- MVP), independent of this table. conversation_id starts null — an
+-- Photo attachments: metadata only, the image bytes themselves go through
+-- media_storage (local disk in dev, a Supabase Storage bucket named by
+-- MEDIA_STORAGE_BUCKET when PERSISTENCE_BACKEND=supabase — required on
+-- serverless deploys, whose filesystem is read-only), independent of this
+-- table. conversation_id starts null — an
 -- attachment can be uploaded before a conversation officially exists yet
 -- (a brand new chat), scoped by pet_id until it's actually referenced in
 -- a sent message. Deliberately unrelated to any pet gallery/memorial
@@ -640,3 +642,11 @@ with check (
           and public.pet_profiles.owner_id = auth.uid()::text
     )
 );
+
+-- Storage bucket for chat/medical-record attachment bytes (see
+-- SupabaseMediaStorage). Private: only the Python backend's service-role
+-- client reads/writes it, same posture as the chat_attachments table
+-- above, so no storage.objects policy is needed for regular users.
+insert into storage.buckets (id, name, public)
+values ('chat-attachments', 'chat-attachments', false)
+on conflict (id) do nothing;

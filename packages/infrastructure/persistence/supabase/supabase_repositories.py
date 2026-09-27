@@ -315,8 +315,9 @@ class SupabaseChatResponseReportRepository(ChatResponseReportRepository):
 
 
 class SupabaseChatAttachmentRepository(ChatAttachmentRepository):
-    """Metadata only — the image bytes themselves stay on local disk
-    (see LocalFileStorage), independent of PERSISTENCE_BACKEND.
+    """Metadata only — the image bytes themselves go through `media_storage`
+    (LocalFileStorage or SupabaseMediaStorage, chosen the same way as this
+    repository, see ApplicationContainer._build_media_storage).
     """
 
     def __init__(self, client: Client) -> None:

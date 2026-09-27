@@ -42,13 +42,16 @@ class Settings(BaseSettings):
     stt_provider: str = Field(default="echo", alias="STT_PROVIDER")
     stt_model: str = Field(default="whisper-large-v3-turbo", alias="STT_MODEL")
     # Photo attachments: visual analysis reuses the same Groq account
-    # (LLM_API_KEY/LLM_BASE_URL) as chat and voice dictation. The actual
-    # image bytes are kept on local disk (product decision: avoid taking
-    # on a cloud storage dependency for the MVP), independent of
-    # PERSISTENCE_BACKEND, which only covers the lightweight metadata row.
+    # (LLM_API_KEY/LLM_BASE_URL) as chat and voice dictation.
     vision_provider: str = Field(default="echo", alias="VISION_PROVIDER")
     vision_model: str = Field(default="qwen/qwen3.8-27b", alias="VISION_MODEL")
+    # Attachment bytes: local disk outside of PERSISTENCE_BACKEND=supabase
+    # (fine for local dev), a Supabase Storage bucket when it is (required
+    # on serverless deploys like Vercel, whose filesystem is read-only).
     media_storage_dir: str = Field(default="./data/chat_attachments", alias="MEDIA_STORAGE_DIR")
+    media_storage_bucket: str = Field(
+        default="chat-attachments", alias="MEDIA_STORAGE_BUCKET"
+    )
     log_level: str = Field(default="INFO", alias="LOG_LEVEL")
     enable_telemetry: bool = Field(default=False, alias="ENABLE_TELEMETRY")
     # 2026-09-21: default flipped to False — see chat_orchestrator.py's
@@ -74,7 +77,6 @@ class Settings(BaseSettings):
             self._require_fields(
                 "PERSISTENCE_BACKEND=supabase",
                 {
-                    "DATABASE_URL": self.database_url,
                     "SUPABASE_URL": self.supabase_url,
                     "SUPABASE_SERVICE_ROLE_KEY": self.supabase_service_role_key,
                 },

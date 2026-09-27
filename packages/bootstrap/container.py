@@ -152,7 +152,7 @@ class ApplicationContainer:
         self.local_activity_repository = self._build_local_activity_repository()
         self.chat_response_report_repository = self._build_chat_response_report_repository()
         self.chat_attachment_repository = self._build_chat_attachment_repository()
-        self.media_storage: MediaStorage = LocalFileStorage(settings)
+        self.media_storage: MediaStorage = self._build_media_storage()
         self.image_analyzer = self._build_image_analyzer()
         self.chat_orchestrator = ChatOrchestrator(
             self.llm_client,
@@ -512,6 +512,25 @@ class ApplicationContainer:
                     return InMemoryChatAttachmentRepository()
                 raise
         return InMemoryChatAttachmentRepository()
+
+    def _build_media_storage(self) -> MediaStorage:
+        if self.settings.persistence_backend == "supabase":
+            try:
+                from packages.infrastructure.persistence.supabase.client import (
+                    build_supabase_client,
+                )
+                from packages.infrastructure.storage.supabase_media_storage import (
+                    SupabaseMediaStorage,
+                )
+
+                return SupabaseMediaStorage(
+                    build_supabase_client(self.settings), self.settings.media_storage_bucket
+                )
+            except ModuleNotFoundError:
+                if self.settings.environment != "production":
+                    return LocalFileStorage(self.settings)
+                raise
+        return LocalFileStorage(self.settings)
 
     def _build_local_activity_repository(self) -> LocalActivityRepository:
         if self.settings.persistence_backend == "supabase":

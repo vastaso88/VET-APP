@@ -20,3 +20,5 @@ uv.lock
 # Locally stored chat attachment photos (MEDIA_STORAGE_DIR) — runtime
 # user-uploaded content, never source, never committed.
 /data/
+.vercel
+.env*
