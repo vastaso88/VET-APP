@@ -95,9 +95,9 @@ class _HomeDashboardPageState extends State<HomeDashboardPage> {
         child: SafeArea(
           child: SingleChildScrollView(
             padding: const EdgeInsets.fromLTRB(
+              AppSpacing.lg,
               AppSpacing.xl,
-              AppSpacing.xl,
-              AppSpacing.xl,
+              AppSpacing.lg,
               AppSpacing.xxxl,
             ),
             child: Center(

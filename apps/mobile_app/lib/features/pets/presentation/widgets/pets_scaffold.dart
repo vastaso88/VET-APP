@@ -45,9 +45,9 @@ class PetsScaffold extends StatelessWidget {
         child: SafeArea(
           child: Padding(
             padding: const EdgeInsets.fromLTRB(
-              AppSpacing.xl,
+              AppSpacing.lg,
               AppSpacing.md,
-              AppSpacing.xl,
+              AppSpacing.lg,
               AppSpacing.md,
             ),
             child: Column(

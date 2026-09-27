@@ -1,5 +1,6 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+import '../../../../shared/auth/current_user.dart';
 import '../../../../shared/config/app_runtime_config_loader.dart';
 
 enum EventKind { spot, recurring, course }
@@ -78,17 +79,48 @@ class RemindersRepository {
 
   final SupabaseClient? _client;
 
-  /// Session-lifetime local store for demo/no-backend mode — same pattern as
-  /// ChatDemoStore/PetDemoStore: a mutable static list so create/edit/mark-
-  /// done actually stick across navigation within the app session instead of
-  /// silently vanishing once Supabase isn't configured.
-  static final List<ReminderEntry> _localReminders = List<ReminderEntry>.of(_seedReminders);
+  /// Session-lifetime local store: `_seedReminders` only while nobody is
+  /// signed in (offline/demo preview); once a real owner is known,
+  /// [ensureHydrated] replaces this with that owner's real (possibly empty)
+  /// reminders, so a brand-new account never inherits Moka/Oliver/Rex's
+  /// demo activities — same pattern as PetDemoStore.ensureHydrated.
+  static List<ReminderEntry> _localReminders = List<ReminderEntry>.of(_seedReminders);
+
+  /// Owner id this store's contents were hydrated for — see
+  /// PetDemoStore.ensureHydrated for the same no-op-on-repeat rationale.
+  static String? _hydratedOwnerId;
+
+  Future<void> ensureHydrated() async {
+    final ownerId = CurrentUser.get()?.id;
+    if (ownerId == null || ownerId == _hydratedOwnerId) {
+      return;
+    }
+
+    final client = _resolveClient();
+    if (client == null) {
+      return;
+    }
+
+    try {
+      final response = await client.from('reminders').select('*').eq('owner_id', ownerId);
+      final rows = response as List<dynamic>;
+      final loaded = <ReminderEntry>[];
+      for (final row in rows) {
+        final entry = _parseRow(row as Map<String, dynamic>);
+        if (entry != null) {
+          loaded.add(entry);
+        }
+      }
+      _localReminders = loaded;
+      _hydratedOwnerId = ownerId;
+    } catch (_) {
+      // Leave current contents in place; retried next call since
+      // _hydratedOwnerId wasn't set.
+    }
+  }
 
   Future<List<ReminderEntry>> loadReminders() async {
-    final remote = await _tryLoadRemoteReminders();
-    if (remote.isNotEmpty) {
-      return remote;
-    }
+    await ensureHydrated();
     return List<ReminderEntry>.unmodifiable(_localReminders);
   }
 
@@ -115,8 +147,14 @@ class RemindersRepository {
       return;
     }
 
+    final ownerId = CurrentUser.get()?.id;
+    if (ownerId == null) {
+      return;
+    }
+
     await client.from('reminders').upsert({
       'id': reminder.id,
+      'owner_id': ownerId,
       'pet_name': reminder.petName,
       'title': reminder.title,
       'kind': reminder.kind.name,
@@ -145,28 +183,6 @@ class RemindersRepository {
     } catch (_) {
       // Removed locally regardless — same best-effort-remote pattern as
       // the rest of this demo repository.
-    }
-  }
-
-  Future<List<ReminderEntry>> _tryLoadRemoteReminders() async {
-    final client = _resolveClient();
-    if (client == null) {
-      return const [];
-    }
-
-    try {
-      final response = await client.from('reminders').select('*');
-      final rows = response as List<dynamic>;
-      final entries = <ReminderEntry>[];
-      for (final row in rows) {
-        final entry = _parseRow(row as Map<String, dynamic>);
-        if (entry != null) {
-          entries.add(entry);
-        }
-      }
-      return entries;
-    } catch (_) {
-      return const [];
     }
   }
 

@@ -87,9 +87,9 @@ class _MedicalRecordUploadPageState extends State<MedicalRecordUploadPage> {
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.fromLTRB(
-            AppSpacing.xl,
+            AppSpacing.lg,
             AppSpacing.md,
-            AppSpacing.xl,
+            AppSpacing.lg,
             AppSpacing.xl,
           ),
           child: Column(

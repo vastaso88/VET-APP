@@ -99,9 +99,9 @@ class _NewsFeedPageState extends State<NewsFeedPage> {
           children: [
             Padding(
               padding: const EdgeInsets.fromLTRB(
-                AppSpacing.xl,
                 AppSpacing.lg,
-                AppSpacing.xl,
+                AppSpacing.lg,
+                AppSpacing.lg,
                 AppSpacing.md,
               ),
               child: Row(
@@ -145,9 +145,9 @@ class _NewsFeedPageState extends State<NewsFeedPage> {
                             )
                           : ListView.separated(
                               padding: const EdgeInsets.fromLTRB(
-                                AppSpacing.xl,
+                                AppSpacing.lg,
                                 0,
-                                AppSpacing.xl,
+                                AppSpacing.lg,
                                 AppSpacing.xxxl,
                               ),
                               itemCount: _shown.length,

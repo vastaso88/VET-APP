@@ -341,9 +341,9 @@ class _FeatureScaffold extends StatelessWidget {
         child: SafeArea(
           child: SingleChildScrollView(
             padding: const EdgeInsets.fromLTRB(
-              AppSpacing.xxl,
               AppSpacing.lg,
-              AppSpacing.xxl,
+              AppSpacing.lg,
+              AppSpacing.lg,
               AppSpacing.xxl,
             ),
             child: LayoutBuilder(

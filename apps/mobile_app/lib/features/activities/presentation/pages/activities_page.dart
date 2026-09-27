@@ -19,9 +19,9 @@ class ActivitiesPage extends StatelessWidget {
       body: SafeArea(
         child: ListView(
           padding: const EdgeInsets.fromLTRB(
-            AppSpacing.xl,
             AppSpacing.lg,
-            AppSpacing.xl,
+            AppSpacing.lg,
+            AppSpacing.lg,
             AppSpacing.xxxl,
           ),
           children: [
