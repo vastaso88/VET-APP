@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from typing import TYPE_CHECKING, Any
 
 from packages.core.application.ports.evidence_retriever import (
@@ -21,7 +23,7 @@ QUERY_DOMAIN_MAP: dict[str, str] = {
 class SupabaseEvidenceRetriever(EvidenceRetriever):
     def __init__(
         self,
-        client: "Client",
+        client: Client,
         function_name: str = "ai.match_source_chunks",
     ) -> None:
         self._client = client

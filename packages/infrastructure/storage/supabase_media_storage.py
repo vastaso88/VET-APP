@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from typing import TYPE_CHECKING
 
 from packages.core.application.ports.media_storage import MediaStorage
@@ -14,7 +16,7 @@ class SupabaseMediaStorage(MediaStorage):
     (ChatAttachment.id, from new_id()), never raw user input.
     """
 
-    def __init__(self, client: "Client", bucket: str) -> None:
+    def __init__(self, client: Client, bucket: str) -> None:
         self._client = client
         self._bucket = bucket
 
