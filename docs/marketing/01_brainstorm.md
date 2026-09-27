@@ -72,6 +72,16 @@ Coincidenza utile: il piano Pro nel demo store include già "Riepilogo pre-visit
 
 **Nota legale (da formalizzare quando esisterà un vero sistema di abbonamento)**: il regalo va descritto esplicitamente come privo di valore in denaro, non trasferibile, non cumulabile oltre il tetto fissato, e revocabile in caso di abuso — poche righe da aggiungere alla sezione abbonamenti dei Termini di Servizio ([04_termini_e_consensi.md](../compliance/04_termini_e_consensi.md)) quando quella sezione verrà scritta.
 
+**Aggiornamento (2026-09-26)**: il blocco tecnico sopra è ora parzialmente risolto — esiste un vero `Subscription` lato backend (`packages/core/domain/subscription/models.py`: prova gratuita di 10 giorni, poi scelta obbligatoria di un piano) implementato dalla sessione "Registrazione, log-in e recupero credenziali". Resta comunque vero che **non esiste ancora alcun addebito reale** (nessun processore di pagamento collegato) — quindi "regalare una settimana" oggi potrebbe tecnicamente estendere `trial_ends_at` o rimandare la scelta del piano, ma non ha ancora un vero costo economico da compensare. Da rivalutare quando i pagamenti reali saranno collegati.
+
+## Prova gratuita 10 giorni, nessuna carta richiesta (2026-09-26)
+
+Policy commerciale reale, già implementata (non più un'idea): al signup parte una prova gratuita di 10 giorni senza richiedere una carta di pagamento. Alla scadenza, se non è stato scelto un piano, l'app mostra una schermata che obbliga a scegliere un piano — **incluso Free**, quindi non è un vero blocco dell'accesso (vedi nota di compliance in [04_termini_e_consensi.md](../compliance/04_termini_e_consensi.md)). Nessun addebito reale è ancora collegato: scegliere Plus o Pro oggi non comporta alcun pagamento.
+
+**Materiale utilizzabile subito nel copy marketing**: "10 giorni gratis, nessuna carta richiesta" è un hook forte per landing page/store listing/onboarding — rimuove l'obiezione più comune all'iscrizione (paura di dimenticare di disdire ed essere addebitati). Va tenuto aggiornato se in futuro cambia la durata o si aggiunge la richiesta di carta.
+
+Eccezione tecnica (non da menzionare pubblicamente): 3 account sviluppatore in allowlist hanno accesso illimitato senza trial/piano — solo per test interni.
+
 ---
 
 **Promemoria**: quando il materiale in questo file sarà sufficiente, l'utente chiederà un riassunto delle potenziali strategie di marketing da validare, sintetizzando le idee raccolte qui.

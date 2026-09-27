@@ -34,6 +34,16 @@ Dettaglio in [05_permessi_dispositivo_os.md](05_permessi_dispositivo_os.md).
 2. **Negare accesso vs. limitare funzioni al rifiuto**: limitare, quasi sempre. Il blocco totale dell'accesso è legittimo solo per il rifiuto dei Termini di Servizio (è un contratto, senza il quale non c'è servizio). Non è mai legittimo per un consenso opt-in rifiutato o un permesso OS negato.
 3. **Pagina di accettazione T&C all'accesso**: sì, ma tenuta separata da qualunque consenso opt-in — un solo step obbligatorio per contratto + informativa (in pratica: registrazione, dove la checkbox ora scrive davvero sul backend), mai bundlato con marketing/analytics, che vivono solo in Impostazioni, disattivati di default.
 
+## Un quarto caso: scelta obbligatoria del piano dopo la prova gratuita
+
+Non è nella tripartizione sopra perché non è consenso al trattamento dati né un permesso OS: è una **condizione commerciale/contrattuale**, come i Termini di Servizio. Implementato (2026-09-26) dalla sessione "Registrazione, log-in e recupero credenziali": prova gratuita di 10 giorni senza carta (`packages/core/domain/subscription/models.py: Subscription`), poi una schermata bloccante ([paywall_page.dart](../../apps/mobile_app/lib/features/billing/presentation/pages/paywall_page.dart)) che obbliga a scegliere un piano — **Free incluso** — per continuare.
+
+**Verificato, è legittimo così com'è**: il blocco totale sarebbe illegittimo solo se l'unica via d'uscita fosse pagare. Qui Free è un'opzione reale, mostrata con lo stesso stile/dimensione/bottone delle altre (`_PaywallPlanCard`, un solo `for` su tutti i piani — nessuna gerarchia visiva che penalizzi Free), quindi è "scegli come vuoi continuare", non "paga o esci". Coerente con la stessa logica del punto 1 sopra (ToS): è la formazione/conferma di un accordo commerciale, non un consenso GDPR, quindi il divieto di *tying* dell'art. 7(4) non si applica.
+
+**Due punti da tenere d'occhio, non urgenti oggi**:
+- Il badge "Più scelto" sul piano Pro (`billing_demo_store.dart`) è testo statico, non basato su dati reali d'uso (non esistono ancora utenti paganti). Non è un problema finché resta in fase demo, ma se pubblicato con utenti reali senza dati a supporto sarebbe un'affermazione fattuale non verificata — o toglierlo, o sostituirlo con un'etichetta neutra ("Consigliato") finché non c'è un vero tasso di scelta da mostrare.
+- **Nessun pagamento reale è ancora collegato**: scegliere Plus/Pro oggi non addebita nulla. Quando verrà collegato un vero processore di pagamento, un piano scelto *prima* di quel momento non deve tradursi in un addebito automatico e retroattivo — serve un passaggio dedicato di autorizzazione al pagamento (inserimento carta, conferma dell'importo) contestuale al momento in cui l'addebito diventa reale, non un addebito silenzioso basato su una scelta fatta mesi prima. Stesso principio già applicato al versionamento dei consensi in questo documento: una decisione presa in un contesto non va reinterpretata silenziosamente in un contesto diverso.
+
 ## Implementazione
 
 - `packages/core/domain/consent/models.py`: `ConsentRecord` (forma condivisa, già usata anche da `MedicalRecordConsentRecord`), `AccountConsentType` (chiavi + insiemi `MANDATORY`/`OPTIONAL`), `AccountConsents`.

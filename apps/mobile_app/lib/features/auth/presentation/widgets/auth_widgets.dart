@@ -163,7 +163,7 @@ class AuthStateBanner extends StatelessWidget {
   }
 }
 
-class AuthInputField extends StatelessWidget {
+class AuthInputField extends StatefulWidget {
   const AuthInputField({
     super.key,
     required this.controller,
@@ -184,16 +184,23 @@ class AuthInputField extends StatelessWidget {
   final FormFieldValidator<String>? validator;
 
   @override
+  State<AuthInputField> createState() => _AuthInputFieldState();
+}
+
+class _AuthInputFieldState extends State<AuthInputField> {
+  late bool _obscured = widget.obscureText;
+
+  @override
   Widget build(BuildContext context) {
     return TextFormField(
-      controller: controller,
-      keyboardType: keyboardType,
-      obscureText: obscureText,
-      autofillHints: autofillHints,
-      validator: validator,
+      controller: widget.controller,
+      keyboardType: widget.keyboardType,
+      obscureText: _obscured,
+      autofillHints: widget.autofillHints,
+      validator: widget.validator,
       decoration: InputDecoration(
-        labelText: label,
-        hintText: hintText,
+        labelText: widget.label,
+        hintText: widget.hintText,
         filled: true,
         fillColor: AppColors.background,
         border: OutlineInputBorder(
@@ -212,6 +219,13 @@ class AuthInputField extends StatelessWidget {
           horizontal: AppSpacing.lg,
           vertical: AppSpacing.md,
         ),
+        suffixIcon: widget.obscureText
+            ? IconButton(
+                icon: Icon(_obscured ? Icons.visibility_off : Icons.visibility),
+                tooltip: _obscured ? 'Mostra password' : 'Nascondi password',
+                onPressed: () => setState(() => _obscured = !_obscured),
+              )
+            : null,
       ),
     );
   }
