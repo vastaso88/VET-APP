@@ -18,8 +18,14 @@ else:
 _SUPABASE_IMPORT_ERROR: ModuleNotFoundError | None
 try:
     from supabase import Client as _SupabaseClient  # noqa: F401
+    from supabase_auth.errors import AuthApiError
 except ModuleNotFoundError as exc:  # pragma: no cover - exercised by local runtime environments
     _SUPABASE_IMPORT_ERROR = exc
+
+    class AuthApiError(Exception):  # type: ignore[no-redef]
+        """Placeholder so get_current_user's except clause still resolves
+        when the optional 'supabase' dependency isn't installed — that
+        codepath already raises before reaching this class."""
 else:
     _SUPABASE_IMPORT_ERROR = None
 
@@ -38,7 +44,15 @@ class SupabaseAuthProvider(AuthProvider):
         if not access_token:
             raise AuthenticationError("Missing access token")
 
-        response = self._admin_client.auth.get_user(access_token)
+        try:
+            response = self._admin_client.auth.get_user(access_token)
+        except AuthApiError as exc:
+            # Expired/malformed/revoked token — a routine client-side
+            # condition (the mobile app should refresh and retry), not a
+            # server error. Without this, gotrue's own exception propagates
+            # unhandled and turns every expired session into a 500.
+            raise AuthenticationError(str(exc)) from exc
+
         user = getattr(response, "user", None)
         if user is None:
             raise AuthenticationError("Invalid access token")

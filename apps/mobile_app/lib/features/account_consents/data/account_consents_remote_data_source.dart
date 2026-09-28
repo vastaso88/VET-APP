@@ -3,10 +3,10 @@ import 'dart:convert';
 
 import 'package:http/http.dart' as http;
 
+import '../../../shared/auth/current_user.dart';
 import '../../../shared/config/app_runtime_config_loader.dart';
 import '../../../shared/errors/app_network_error.dart';
 import '../../../shared/types/result.dart';
-import '../../auth/data/auth_repository_factory.dart';
 import '../domain/account_consent_models.dart';
 
 abstract class AccountConsentsRemoteDataSource {
@@ -22,21 +22,18 @@ class HttpAccountConsentsRemoteDataSource implements AccountConsentsRemoteDataSo
   HttpAccountConsentsRemoteDataSource({
     http.Client? client,
     AppRuntimeConfigLoader? configLoader,
-    AuthRepositoryFactory? authRepositoryFactory,
   })  : _client = client ?? http.Client(),
-        _configLoader = configLoader ?? const AppRuntimeConfigLoader(),
-        _authRepositoryFactory = authRepositoryFactory ?? const AuthRepositoryFactory();
+        _configLoader = configLoader ?? const AppRuntimeConfigLoader();
 
   final http.Client _client;
   final AppRuntimeConfigLoader _configLoader;
-  final AuthRepositoryFactory _authRepositoryFactory;
 
   static const _timeout = Duration(seconds: 15);
 
   String get _baseUrl => _configLoader.load().apiBaseUrl;
 
   Map<String, String> get _headers {
-    final token = _authRepositoryFactory.create().currentContext.session?.accessToken;
+    final token = CurrentUser.accessToken();
     return {
       'Content-Type': 'application/json',
       if (token != null && token.isNotEmpty) 'Authorization': 'Bearer $token',
