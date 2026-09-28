@@ -5,26 +5,22 @@ create table if not exists public.pet_profiles (
     species text not null,
     breed text,
     age_years integer,
-    notes text,
-    -- Medical-record access consent (spec v3 §18) — persisted per pet, not
-    -- per conversation, so it's asked once and revocable later. Additive,
-    -- nullable: {granted: bool, version: text, decided_at: timestamptz}.
-    medical_record_consent jsonb,
-    -- Enclosure characteristics for aquarium/terrarium/aviary species —
-    -- field shape agreed with the "UI/UX e funzionalità base" session's
-    -- mobile-local model (2026-09-20): {dimensions, volume_liters,
-    -- temperature_label, substrate, notes}, all optional. Additive,
-    -- nullable.
-    habitat jsonb,
-    -- Multi-species aquarium composition: [{species, male_count,
-    -- female_count}, ...]. A non-empty array means this profile
-    -- represents a whole aquarium rather than a single fish.
-    aquarium_stock jsonb not null default '[]'::jsonb
+    notes text
 );
 
 -- Additive columns for the rest of the mobile PetProfile model, wired up
 -- 2026-09-26 (pets feature had no Supabase backing at all until then, see
 -- docs/auth/01_brainstorm.md). `notes` above already covers medicalNote.
+--
+-- These MUST be `alter table add column if not exists`, never fields inside
+-- the `create table if not exists` above: on an already-existing table (as
+-- pet_profiles was here) `create table if not exists` is a no-op, so a
+-- column declared only there silently never gets added — exactly what
+-- happened to medical_record_consent/habitat/aquarium_stock below on
+-- 2026-09-27 (every pet creation failed with postgrest's PGRST204 "column
+-- ... not found in schema cache" until this was caught and fixed
+-- 2026-09-28). If you add a new PetProfile field, add it as its own `alter
+-- table` line here, not inside the `create table` block above.
 alter table public.pet_profiles add column if not exists birth_date_label text;
 alter table public.pet_profiles add column if not exists sex text;
 alter table public.pet_profiles add column if not exists weight_label text;
@@ -36,26 +32,48 @@ alter table public.pet_profiles add column if not exists identity_color_value bi
 alter table public.pet_profiles add column if not exists dog_size_category text;
 alter table public.pet_profiles add column if not exists is_memorial boolean not null default false;
 alter table public.pet_profiles add column if not exists memorial_date_label text;
+-- Medical-record access consent (spec v3 §18) — persisted per pet, not per
+-- conversation, so it's asked once and revocable later. Nullable:
+-- {granted: bool, version: text, decided_at: timestamptz}.
+alter table public.pet_profiles add column if not exists medical_record_consent jsonb;
+-- Enclosure characteristics for aquarium/terrarium/aviary species — field
+-- shape agreed with the "UI/UX e funzionalità base" session's mobile-local
+-- model (2026-09-20): {dimensions, volume_liters, temperature_label,
+-- substrate, notes}, all optional.
+alter table public.pet_profiles add column if not exists habitat jsonb;
+-- Multi-species aquarium composition: [{species, male_count, female_count},
+-- ...]. A non-empty array means this profile represents a whole aquarium
+-- rather than a single fish.
+alter table public.pet_profiles
+    add column if not exists aquarium_stock jsonb not null default '[]'::jsonb;
 
 create table if not exists public.conversations (
     id text primary key,
     owner_id text not null,
     pet_id text not null references public.pet_profiles(id) on delete cascade,
     title text not null,
-    messages jsonb not null default '[]'::jsonb,
-    -- VetGPT Milestone 1 (Situation Model / Interview / Coverage) — additive, nullable.
-    situation_model jsonb,
-    coverage_score double precision,
-    state text not null default 'NEED_MORE_INFORMATION',
-    interview_turns_used integer not null default 0,
-    -- VetGPT Milestone 2 (medical record access consent) — additive, nullable.
-    medical_record_consent boolean,
-    awaiting_medical_record_consent boolean not null default false,
-    -- Safety triage clarification (brief, category-specific follow-up before
-    -- escalating a red-flag message) — additive, nullable.
-    awaiting_safety_clarification boolean not null default false,
-    safety_clarification_category text
+    messages jsonb not null default '[]'::jsonb
 );
+
+-- Additive columns — see the pet_profiles comment above for why these must
+-- stay as their own `alter table` lines (conversations pre-existed too, so
+-- these were caught missing by the same 2026-09-28 fix).
+-- VetGPT Milestone 1 (Situation Model / Interview / Coverage) — nullable.
+alter table public.conversations add column if not exists situation_model jsonb;
+alter table public.conversations add column if not exists coverage_score double precision;
+alter table public.conversations
+    add column if not exists state text not null default 'NEED_MORE_INFORMATION';
+alter table public.conversations
+    add column if not exists interview_turns_used integer not null default 0;
+-- VetGPT Milestone 2 (medical record access consent) — nullable.
+alter table public.conversations add column if not exists medical_record_consent boolean;
+alter table public.conversations
+    add column if not exists awaiting_medical_record_consent boolean not null default false;
+-- Safety triage clarification (brief, category-specific follow-up before
+-- escalating a red-flag message) — nullable.
+alter table public.conversations
+    add column if not exists awaiting_safety_clarification boolean not null default false;
+alter table public.conversations add column if not exists safety_clarification_category text;
 
 -- VetGPT Milestone 2: summaries of a pet's clinical documents, consulted by
 -- the chat only after explicit owner consent (see ChatOrchestrator). This
