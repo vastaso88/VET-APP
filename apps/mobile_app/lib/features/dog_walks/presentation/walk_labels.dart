@@ -20,6 +20,25 @@ String walkDurationLabel(int? durationSeconds) {
   return '${hours}h ${remainingMinutes}min';
 }
 
+/// Ticking mm:ss (or h:mm:ss past an hour) for the live walk in progress.
+/// Distinct from [walkDurationLabel]: that one rounds to whole minutes,
+/// which is fine for a finished walk's summary but froze the on-screen
+/// timer at "0 min" for the whole first minute of every walk (owner report,
+/// 2026-09-29) since it never surfaced the seconds the per-second Timer in
+/// active_walk_page.dart was already ticking.
+String walkElapsedLabel(int elapsedSeconds) {
+  final seconds = elapsedSeconds % 60;
+  final totalMinutes = elapsedSeconds ~/ 60;
+  final minutes = totalMinutes % 60;
+  final secondsLabel = seconds.toString().padLeft(2, '0');
+  if (totalMinutes < 60) {
+    return '$minutes:$secondsLabel';
+  }
+  final hours = totalMinutes ~/ 60;
+  final minutesLabel = minutes.toString().padLeft(2, '0');
+  return '$hours:$minutesLabel:$secondsLabel';
+}
+
 /// Turns a raw badge id (e.g. "distance_50km_pet_<id>") into a short
 /// Italian label. The caller already scopes badges to one pet, so the
 /// trailing pet id is never shown.
