@@ -2,13 +2,21 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:vet_app_mobile/features/dog_walks/domain/badges.dart';
 import 'package:vet_app_mobile/features/dog_walks/domain/walk_session.dart';
 
+// Fixed at a mid-afternoon hour, not DateTime.now() - these tests don't
+// care about time-of-day, but the dawn/night badges do (badges.dart), so a
+// real "now" made this suite flaky depending on when it happened to run
+// (2026-10-01: failed overnight because DateTime.now() fell in the night
+// badge's hour range).
+final _fixedMiddayMoment = DateTime(2026, 1, 1, 13);
+var _walkCounter = 0;
+
 WalkSession _completedWalk(String petId, {double distanceMeters = 500}) {
   return WalkSession(
-    id: 'walk-${DateTime.now().microsecondsSinceEpoch}-${distanceMeters.toStringAsFixed(0)}',
+    id: 'walk-${_walkCounter++}',
     ownerId: 'user-1',
     petId: petId,
     status: WalkStatus.completed,
-    startedAt: DateTime.now(),
+    startedAt: _fixedMiddayMoment,
     distanceMeters: distanceMeters,
   );
 }

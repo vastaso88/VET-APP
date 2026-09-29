@@ -12,6 +12,7 @@ import '../../../../shared/auth/current_owner.dart';
 import '../../../pets/domain/pet_models.dart';
 import '../../data/active_walk_controller.dart';
 import '../../domain/gps_fix.dart';
+import '../../domain/walk_route_markers.dart';
 import '../../domain/walk_route_segments.dart';
 import '../../domain/walk_session.dart';
 import '../../../location/data/device_location_service.dart';
@@ -19,6 +20,7 @@ import '../../../location/domain/coordinates.dart';
 import '../walk_completion_flow.dart';
 import '../walk_labels.dart';
 import '../widgets/walk_map_style.dart';
+import '../widgets/walk_route_markers_layer.dart';
 
 /// Live start/stop/pause tracking for one pet's walk. The tracking itself
 /// lives in ActiveWalkController.instance, an app-lifetime singleton - not
@@ -404,6 +406,9 @@ class _WalkMap extends StatelessWidget {
                 ),
           ],
         ),
+        // isFinished: false - a walk still in progress has no finish marker
+        // yet, only start + wherever it's been paused so far.
+        buildWalkRouteMarkersLayer(computeWalkRouteMarkers(route, isFinished: false)),
         MarkerLayer(
           markers: [
             Marker(

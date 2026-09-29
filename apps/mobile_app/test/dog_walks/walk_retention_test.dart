@@ -7,6 +7,7 @@ WalkSession _walk(
   required int daysAgo,
   double distanceMeters = 500,
   bool isFavorite = false,
+  int? durationSeconds,
 }) {
   return WalkSession(
     id: id,
@@ -16,6 +17,7 @@ WalkSession _walk(
     startedAt: DateTime(2026, 1, 20).subtract(Duration(days: daysAgo)),
     distanceMeters: distanceMeters,
     isFavorite: isFavorite,
+    durationSeconds: durationSeconds,
     route: const [],
   );
 }
@@ -41,6 +43,18 @@ void main() {
       expect(retained, isNot(contains('old-not-favorite')));
     });
 
+    test('also keeps the longest-duration walk, even if it is a different one', () {
+      final walks = [
+        _walk('recent-1', daysAgo: 0),
+        _walk('old-longest-distance', daysAgo: 10, distanceMeters: 50000),
+        _walk('old-longest-duration', daysAgo: 20, durationSeconds: 9000),
+      ];
+
+      final retained = retainedRouteWalkIds(walks);
+
+      expect(retained, contains('old-longest-duration'));
+    });
+
     test('is empty for no walks', () {
       expect(retainedRouteWalkIds(const []), isEmpty);
     });
@@ -49,7 +63,7 @@ void main() {
   group('buildWalkHistoryView', () {
     test('shows each walk once, in its highest-priority section', () {
       final walks = [
-        _walk('recent-1', daysAgo: 0, distanceMeters: 90000), // also the record
+        _walk('recent-1', daysAgo: 0, distanceMeters: 90000, durationSeconds: 100), // also both records
         _walk('recent-2', daysAgo: 1, isFavorite: true), // also a favorite
         _walk('recent-3', daysAgo: 2),
         _walk('old-favorite', daysAgo: 20, isFavorite: true),
@@ -57,17 +71,31 @@ void main() {
 
       final view = buildWalkHistoryView(walks);
 
-      expect(view.record!.id, 'recent-1');
+      expect(view.longestDistance!.id, 'recent-1');
+      expect(view.longestDuration!.id, 'recent-1');
       expect(view.favorites.map((w) => w.id), ['recent-2', 'old-favorite']);
       // recent-1 and recent-2 are already shown above, so "recent" only
       // needs to fill in what's left of the last-3 window.
       expect(view.recent.map((w) => w.id), ['recent-3']);
     });
 
+    test('distance and duration records can be different walks', () {
+      final walks = [
+        _walk('longest-distance', daysAgo: 0, distanceMeters: 90000, durationSeconds: 100),
+        _walk('longest-duration', daysAgo: 1, distanceMeters: 100, durationSeconds: 9000),
+      ];
+
+      final view = buildWalkHistoryView(walks);
+
+      expect(view.longestDistance!.id, 'longest-distance');
+      expect(view.longestDuration!.id, 'longest-duration');
+    });
+
     test('is empty for no walks', () {
       final view = buildWalkHistoryView(const []);
 
-      expect(view.record, isNull);
+      expect(view.longestDistance, isNull);
+      expect(view.longestDuration, isNull);
       expect(view.favorites, isEmpty);
       expect(view.recent, isEmpty);
     });
