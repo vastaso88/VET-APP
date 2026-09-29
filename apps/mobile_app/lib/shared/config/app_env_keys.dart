@@ -8,4 +8,5 @@ class AppEnvKeys {
   static const logLevel = 'LOG_LEVEL';
   static const enableTelemetry = 'ENABLE_TELEMETRY';
   static const cartoApiKey = 'CARTO_API_KEY';
+  static const walkMapStyle = 'WALK_MAP_STYLE';
 }

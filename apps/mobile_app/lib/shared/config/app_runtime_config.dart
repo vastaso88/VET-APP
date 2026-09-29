@@ -14,6 +14,7 @@ class AppRuntimeConfig {
     required this.logLevel,
     required this.enableTelemetry,
     this.cartoApiKey = '',
+    this.walkMapStyle = 'osm',
   });
 
   final AppEnvironment environment;
@@ -30,6 +31,11 @@ class AppRuntimeConfig {
   final String cartoApiKey;
 
   bool get hasCartoApiKey => cartoApiKey.trim().isNotEmpty;
+
+  /// "osm" (default, owner's preferred look, 2026-09-29) or "carto" - see
+  /// walk_map_style.dart. Kept as a plain string rather than an enum here
+  /// so an unrecognized value just falls back to osm instead of throwing.
+  final String walkMapStyle;
 
   bool get hasApiBaseUrl => apiBaseUrl.trim().isNotEmpty;
   bool get hasSupabaseCredentials =>
