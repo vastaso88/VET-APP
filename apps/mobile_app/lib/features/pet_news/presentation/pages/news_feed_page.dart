@@ -64,20 +64,44 @@ class _NewsFeedPageState extends State<NewsFeedPage> {
           revealed = true;
           _pickNext();
           setState(() => _loading = false);
+        } else {
+          // The "Tutti" view landed its first batch before "Generale"'s —
+          // once that batch shows up, splice a generic card into what's
+          // already on screen instead of waiting for the next refresh (see
+          // pickNewsCards' requireGeneric — this mirrors that guarantee for
+          // a card set that's already shown).
+          _insertLateGenericIfNeeded(batchResults.expand((items) => items));
         }
       },
     );
   }
 
-  void _pickNext() {
-    final candidates = (_selectedCategory == null
-        ? _pool
-        : _pool.where((item) => item.species == _selectedCategory).toList())
-      ..shuffle(_random);
+  void _insertLateGenericIfNeeded(Iterable<PetNewsItem> newItems) {
+    if (_selectedCategory != null) return;
+    if (_shown.any((item) => item.species == 'Generale')) return;
+    for (final item in newItems) {
+      if (item.species == 'Generale') {
+        setState(() {
+          _shown = [..._shown.take(_cardsPerRefresh - 1), item];
+          _lastShownLinks = _shown.map((i) => i.sourceUrl).toSet();
+        });
+        return;
+      }
+    }
+  }
 
-    final fresh = candidates.where((item) => !_lastShownLinks.contains(item.sourceUrl)).toList();
-    final source = fresh.length >= min(_cardsPerRefresh, candidates.length) ? fresh : candidates;
-    final picked = source.take(_cardsPerRefresh).toList();
+  void _pickNext() {
+    final candidates = _selectedCategory == null
+        ? _pool
+        : _pool.where((item) => item.species == _selectedCategory).toList();
+
+    final picked = pickNewsCards(
+      candidates: candidates,
+      count: _cardsPerRefresh,
+      random: _random,
+      avoidLinks: _lastShownLinks,
+      requireGeneric: _selectedCategory == null,
+    );
 
     setState(() {
       _shown = picked;
@@ -286,4 +310,37 @@ class _CategoryChip extends StatelessWidget {
       ),
     );
   }
+}
+
+/// Picks [count] cards out of [candidates] for the shuffled feed, preferring
+/// ones not in [avoidLinks] (so a refresh doesn't just re-show the same set)
+/// — and, when [requireGeneric] is true, guaranteeing at least one
+/// "Generale" card is included whenever [candidates] has one at all. Mirrors
+/// Home's always-a-generic-story rule (selectHomeNewsSlots in
+/// home_dashboard_page.dart) for this page's shuffled-6-cards layout instead
+/// of fixed slots; [requireGeneric] should be false whenever the caller has
+/// already filtered [candidates] to a single non-generic species, since
+/// showing a "Generale" card there would fight the filter itself.
+List<PetNewsItem> pickNewsCards({
+  required List<PetNewsItem> candidates,
+  required int count,
+  required Random random,
+  Set<String> avoidLinks = const {},
+  bool requireGeneric = true,
+}) {
+  final shuffled = List<PetNewsItem>.of(candidates)..shuffle(random);
+  final fresh = shuffled.where((item) => !avoidLinks.contains(item.sourceUrl)).toList();
+  final source = fresh.length >= min(count, shuffled.length) ? fresh : shuffled;
+  final picked = source.take(count).toList();
+
+  if (requireGeneric && picked.isNotEmpty && !picked.any((item) => item.species == 'Generale')) {
+    for (final item in shuffled) {
+      if (item.species == 'Generale') {
+        picked[picked.length - 1] = item;
+        break;
+      }
+    }
+  }
+
+  return picked;
 }

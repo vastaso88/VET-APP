@@ -19,10 +19,10 @@ int estimateSteps(double distanceMeters, {double strideMeters = 0.75}) {
   return (distanceMeters / strideMeters).round();
 }
 
-/// Owns the start/stop lifecycle of one dog walk. Lives for the app's whole
-/// lifetime as [instance] - previously a page-scoped object disposed (and
-/// so silently stopped tracking) whenever the owner navigated away from
-/// ActiveWalkPage mid-walk (owner report, 2026-09-29). Tests construct
+/// Owns the start/stop/pause lifecycle of one dog walk. Lives for the app's
+/// whole lifetime as [instance] - previously a page-scoped object disposed
+/// (and so silently stopped tracking) whenever the owner navigated away
+/// from ActiveWalkPage mid-walk (owner report, 2026-09-29). Tests construct
 /// their own throwaway instance and feed it a synthetic [GpsFix] stream
 /// instead of touching `geolocator`.
 class ActiveWalkController extends ChangeNotifier {
@@ -38,6 +38,18 @@ class ActiveWalkController extends ChangeNotifier {
   final DogWalksRepository _repository;
   final ActiveWalkRecoveryStore _recoveryStore;
   StreamSubscription<GpsFix>? _subscription;
+
+  /// Whether the current subscription came from [_defaultPositionStream] -
+  /// only that one can be usefully restarted to change the Android
+  /// notification's text when pausing/resuming (a test's injected stream
+  /// has no such notification, and re-listening to it would likely throw
+  /// anyway since most test streams are single-subscription).
+  bool _usingDefaultStream = false;
+
+  /// Set on [resume] so the very next accepted fix starts a new route
+  /// segment (walk_route_segments.dart) instead of being compared/joined
+  /// to the point recorded right before the pause.
+  bool _pendingSegmentBreak = false;
 
   WalkSession? _walk;
   WalkSession? get walk => _walk;
@@ -71,19 +83,98 @@ class ActiveWalkController extends ChangeNotifier {
     await _repository.saveWalk(walk);
     await _recoveryStore.save(walk);
 
-    await _attachStream(positionStream ?? _defaultPositionStream());
+    _usingDefaultStream = positionStream == null;
+    await _attachStream(
+      positionStream ?? _defaultPositionStream(paused: false),
+    );
   }
 
   /// Reattaches a live stream to a walk recovered from disk after the app
   /// process was killed mid-walk (ActiveWalkRecoveryStore) - the
   /// accumulated route/distance carries over, only the GPS subscription is
-  /// new, and it's already past the "wait for an accurate first fix" gate.
-  Future<void> resume(WalkSession recoveredWalk,
-      {Stream<GpsFix>? positionStream}) async {
+  /// new. Skips the "wait for an accurate first fix" gate (there's already
+  /// at least one accepted point), but still starts a new route segment,
+  /// same as any other resume - the app being closed and reopened is itself
+  /// a gap worth not drawing a line across.
+  Future<void> recoverInterrupted(
+    WalkSession recoveredWalk, {
+    Stream<GpsFix>? positionStream,
+  }) async {
     _walk = recoveredWalk;
     _awaitingAccurateStart = false;
+    _pendingSegmentBreak = recoveredWalk.route.isNotEmpty;
     notifyListeners();
-    await _attachStream(positionStream ?? _defaultPositionStream());
+
+    _usingDefaultStream = positionStream == null;
+    await _attachStream(
+      positionStream ?? _defaultPositionStream(paused: recoveredWalk.isPaused),
+    );
+  }
+
+  /// Freezes the live timer and stops recording route points (owner
+  /// request, 2026-09-30) - GPS fixes keep arriving but _onFix ignores them
+  /// until [resume]. The Android foreground notification (real device
+  /// stream only) is restarted with "in pausa" text.
+  Future<void> pause() async {
+    final current = _walk;
+    if (current == null ||
+        current.status != WalkStatus.inProgress ||
+        current.isPaused) {
+      return;
+    }
+
+    _walk = current.copyWith(isPaused: true, pausedAt: DateTime.now());
+    notifyListeners();
+    await _repository.saveWalk(_walk!);
+    await _recoveryStore.save(_walk!);
+
+    if (_usingDefaultStream) {
+      await _attachStream(_defaultPositionStream(paused: true));
+    }
+  }
+
+  /// Undoes [pause]: folds the just-finished pause interval into
+  /// [WalkSession.pausedSeconds] and marks the next accepted fix as the
+  /// start of a new route segment, so the map doesn't draw a line across
+  /// whatever ground was covered while paused.
+  Future<void> resume() async {
+    final current = _walk;
+    if (current == null ||
+        current.status != WalkStatus.inProgress ||
+        !current.isPaused) {
+      return;
+    }
+
+    final now = DateTime.now();
+    final justPaused =
+        current.pausedAt == null ? 0 : now.difference(current.pausedAt!).inSeconds;
+    // copyWith can't clear pausedAt back to null (its `??` pattern only
+    // ever keeps-or-replaces with a non-null value), so this one field is
+    // constructed directly rather than stretching that helper for one case.
+    _walk = WalkSession(
+      id: current.id,
+      ownerId: current.ownerId,
+      petId: current.petId,
+      status: current.status,
+      startedAt: current.startedAt,
+      endedAt: current.endedAt,
+      distanceMeters: current.distanceMeters,
+      durationSeconds: current.durationSeconds,
+      stepCountEstimate: current.stepCountEstimate,
+      route: current.route,
+      isFavorite: current.isFavorite,
+      isPaused: false,
+      pausedAt: null,
+      pausedSeconds: current.pausedSeconds + justPaused,
+    );
+    _pendingSegmentBreak = true;
+    notifyListeners();
+    await _repository.saveWalk(_walk!);
+    await _recoveryStore.save(_walk!);
+
+    if (_usingDefaultStream) {
+      await _attachStream(_defaultPositionStream(paused: false));
+    }
   }
 
   Future<void> _attachStream(Stream<GpsFix> stream) async {
@@ -91,10 +182,10 @@ class ActiveWalkController extends ChangeNotifier {
     _subscription = stream.listen(_onFix);
   }
 
-  Stream<GpsFix> _defaultPositionStream() {
+  Stream<GpsFix> _defaultPositionStream({required bool paused}) {
     return geolocator.Geolocator.getPositionStream(
-            locationSettings: _androidAwareSettings())
-        .map(_toGpsFix);
+      locationSettings: _androidAwareSettings(paused: paused),
+    ).map(_toGpsFix);
   }
 
   /// On Android, runs GPS updates as a foreground service with a persistent
@@ -104,19 +195,23 @@ class ActiveWalkController extends ChangeNotifier {
   /// ACCESS_BACKGROUND_LOCATION ("Allow all the time"), which
   /// docs/compliance/05_permessi_dispositivo_os.md explicitly defers.
   /// bestForNavigation + a short interval trade extra battery for the
-  /// tighter accuracy the owner asked for (2026-09-29); other platforms
-  /// keep plain settings, web ignores AndroidSettings entirely.
-  geolocator.LocationSettings _androidAwareSettings() {
+  /// tighter accuracy the owner asked for (2026-09-29). Pausing/resuming
+  /// restarts this stream purely to swap the notification's text - the
+  /// Android plugin has no API to edit it in place, and this is the only
+  /// way it reliably shows "in pausa" (owner request, 2026-09-30). Other
+  /// platforms keep plain settings, web ignores AndroidSettings entirely.
+  geolocator.LocationSettings _androidAwareSettings({required bool paused}) {
     if (!kIsWeb && defaultTargetPlatform == TargetPlatform.android) {
       return geolocator.AndroidSettings(
         accuracy: geolocator.LocationAccuracy.bestForNavigation,
         distanceFilter: 5,
         intervalDuration: const Duration(seconds: 3),
-        foregroundNotificationConfig:
-            const geolocator.ForegroundNotificationConfig(
-          notificationTitle: 'Passeggiata in corso',
-          notificationText:
-              'VetApp sta tracciando il percorso della passeggiata.',
+        foregroundNotificationConfig: geolocator.ForegroundNotificationConfig(
+          notificationTitle:
+              paused ? 'Passeggiata in pausa' : 'Passeggiata in corso',
+          notificationText: paused
+              ? 'Il tracciamento è in pausa. Riprendi dall\'app quando vuoi.'
+              : 'VetApp sta tracciando il percorso della passeggiata.',
           notificationChannelName: 'Tracciamento passeggiata',
           setOngoing: true,
         ),
@@ -150,6 +245,11 @@ class ActiveWalkController extends ChangeNotifier {
       _headingDegrees = heading;
     }
 
+    if (current.isPaused) {
+      notifyListeners();
+      return;
+    }
+
     if (_awaitingAccurateStart) {
       if (!isFixAccurateEnoughToStart(fix)) {
         notifyListeners();
@@ -158,11 +258,29 @@ class ActiveWalkController extends ChangeNotifier {
       _awaitingAccurateStart = false;
     }
 
-    final lastPoint = current.route.isEmpty ? null : current.route.last;
-    final point = filterAndSmoothFix(fix, lastPoint);
-    if (point == null) {
+    final startingNewSegment = _pendingSegmentBreak;
+    // A segment start is compared against nothing, same as the walk's very
+    // first point - the gap it may be crossing (however long the pause
+    // lasted) isn't a GPS glitch, so it shouldn't fail the speed check or
+    // get smoothed toward the pre-pause point, and shouldn't add distance.
+    final lastPoint =
+        startingNewSegment ? null : (current.route.isEmpty ? null : current.route.last);
+
+    final rawPoint = filterAndSmoothFix(fix, lastPoint);
+    if (rawPoint == null) {
       notifyListeners();
       return;
+    }
+    final point = startingNewSegment
+        ? RoutePoint(
+            coordinates: rawPoint.coordinates,
+            recordedAt: rawPoint.recordedAt,
+            accuracyMeters: rawPoint.accuracyMeters,
+            startsNewSegment: true,
+          )
+        : rawPoint;
+    if (startingNewSegment) {
+      _pendingSegmentBreak = false;
     }
 
     final addedDistance = lastPoint == null
@@ -191,8 +309,9 @@ class ActiveWalkController extends ChangeNotifier {
     final updated = current.copyWith(
       status: WalkStatus.completed,
       endedAt: endedAt,
-      durationSeconds: endedAt.difference(current.startedAt).inSeconds,
+      durationSeconds: walkActiveDurationSeconds(current, now: endedAt),
       stepCountEstimate: estimateSteps(current.distanceMeters),
+      isPaused: false,
     );
     _walk = updated;
     _headingDegrees = null;

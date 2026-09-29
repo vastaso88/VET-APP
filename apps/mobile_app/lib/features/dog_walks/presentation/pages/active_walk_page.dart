@@ -11,23 +11,20 @@ import '../../../../design_system/tokens/app_text_styles.dart';
 import '../../../../shared/auth/current_owner.dart';
 import '../../../pets/domain/pet_models.dart';
 import '../../data/active_walk_controller.dart';
-import '../../data/dog_walks_repository.dart';
-import '../../domain/badges.dart';
 import '../../domain/gps_fix.dart';
-import '../../domain/walk_retention.dart';
+import '../../domain/walk_route_segments.dart';
 import '../../domain/walk_session.dart';
 import '../../../location/data/device_location_service.dart';
 import '../../../location/domain/coordinates.dart';
+import '../walk_completion_flow.dart';
 import '../walk_labels.dart';
-import '../widgets/badge_earned_dialog.dart';
-import '../widgets/favorite_eviction_dialog.dart';
 import '../widgets/walk_map_style.dart';
 
-/// Live start/stop tracking for one pet's walk. The tracking itself lives
-/// in ActiveWalkController.instance, an app-lifetime singleton - not in
-/// this page's State - so navigating away no longer stops it (owner
+/// Live start/stop/pause tracking for one pet's walk. The tracking itself
+/// lives in ActiveWalkController.instance, an app-lifetime singleton - not
+/// in this page's State - so navigating away no longer stops it (owner
 /// report, 2026-09-29). This page is just that singleton's UI: a map, the
-/// live stats, and the start/stop button.
+/// live stats, and the start/pause/stop controls.
 class ActiveWalkPage extends StatefulWidget {
   const ActiveWalkPage({
     super.key,
@@ -70,8 +67,7 @@ class _ActiveWalkPageState extends State<ActiveWalkPage> {
   @override
   void initState() {
     super.initState();
-    final resuming =
-        _controller.isActive && _controller.walk?.petId == widget.pet.id;
+    final resuming = _controller.isActive && _controller.walk?.petId == widget.pet.id;
     if (resuming) {
       _elapsedTimer = Timer.periodic(const Duration(seconds: 1), (_) {
         if (mounted) setState(() {});
@@ -116,8 +112,7 @@ class _ActiveWalkPageState extends State<ActiveWalkPage> {
   void _centerOnMe() {
     final position = _currentPosition;
     if (position == null) return;
-    _mapController.move(
-        latlong.LatLng(position.latitude, position.longitude), 16);
+    _mapController.move(latlong.LatLng(position.latitude, position.longitude), 16);
   }
 
   Future<void> _start() async {
@@ -157,84 +152,21 @@ class _ActiveWalkPageState extends State<ActiveWalkPage> {
     });
   }
 
-  Future<void> _stop() async {
-    final repository = DogWalksRepository();
-    final ownerId = resolveCurrentOwnerId();
-    final beforeWalks = (await repository.loadWalks(ownerId))
-        .where((walk) => walk.petId == widget.pet.id)
-        .toList();
-    final beforeBadges = evaluateBadges(beforeWalks).toSet();
-
-    _elapsedTimer?.cancel();
-    await _controller.stop();
-    if (!mounted) return;
-
-    final afterWalks = (await repository.loadWalks(ownerId))
-        .where((walk) => walk.petId == widget.pet.id)
-        .toList();
-    final afterBadges = evaluateBadges(afterWalks);
-    final newlyEarned =
-        afterBadges.where((badge) => !beforeBadges.contains(badge)).toList();
-
-    if (!mounted) return;
-    if (newlyEarned.isNotEmpty) {
-      await showBadgeEarnedDialog(context, newlyEarned);
+  Future<void> _togglePause() async {
+    final walk = _controller.walk;
+    if (walk == null) return;
+    if (walk.isPaused) {
+      await _controller.resume();
+    } else {
+      await _controller.pause();
     }
-
-    final finishedWalk = _controller.walk;
-    if (finishedWalk != null) {
-      if (!mounted) return;
-      await _promptSaveAsFavorite(repository, ownerId, finishedWalk);
-    }
-    await repository.pruneRoutesOutsideRetention(ownerId, widget.pet.id);
-
-    if (!mounted) return;
-    Navigator.of(context).pop(true);
   }
 
-  Future<void> _promptSaveAsFavorite(
-    DogWalksRepository repository,
-    String ownerId,
-    WalkSession walk,
-  ) async {
-    final wantsFavorite = await showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Salva tra le preferite?'),
-        content: Text(
-          'Vuoi aggiungere questa passeggiata (${walkDistanceLabel(walk.distanceMeters)}) '
-          'alle tue preferite ⭐?',
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(false),
-            child: const Text('No, grazie'),
-          ),
-          FilledButton(
-            onPressed: () => Navigator.of(context).pop(true),
-            child: const Text('Salva ⭐'),
-          ),
-        ],
-      ),
-    );
-    if (wantsFavorite != true) return;
+  Future<void> _stop() async {
+    _elapsedTimer?.cancel();
+    await finishActiveWalk(context, widget.pet);
     if (!mounted) return;
-
-    final existingFavorites = (await repository.loadWalks(ownerId))
-        .where((item) => item.petId == widget.pet.id && item.isFavorite)
-        .toList();
-
-    if (existingFavorites.length >= maxFavoriteWalks) {
-      if (!mounted) return;
-      final walkIdToEvict =
-          await pickFavoriteToEvict(context, existingFavorites);
-      if (walkIdToEvict == null) return;
-      final toEvict =
-          existingFavorites.firstWhere((item) => item.id == walkIdToEvict);
-      await repository.saveWalk(toEvict.copyWith(isFavorite: false));
-    }
-
-    await repository.saveWalk(walk.copyWith(isFavorite: true));
+    Navigator.of(context).pop(true);
   }
 
   @override
@@ -245,19 +177,15 @@ class _ActiveWalkPageState extends State<ActiveWalkPage> {
         backgroundColor: AppColors.background,
         elevation: 0,
         foregroundColor: AppColors.text,
-        title: Text('Passeggiata di ${widget.pet.name}',
-            style: AppTextStyles.title),
+        title: Text('Passeggiata di ${widget.pet.name}', style: AppTextStyles.title),
       ),
       body: SafeArea(
         child: AnimatedBuilder(
           animation: _controller,
           builder: (context, _) {
             final walk = _controller.walk;
-            final elapsedSeconds = walk != null
-                ? DateTime.now().difference(walk.startedAt).inSeconds
-                : null;
-            final showSpinner =
-                _loadingInitialPosition && (walk == null || walk.route.isEmpty);
+            final activeSeconds = walk != null ? walkActiveDurationSeconds(walk) : null;
+            final showSpinner = _loadingInitialPosition && (walk == null || walk.route.isEmpty);
             return Column(
               children: [
                 Expanded(
@@ -274,26 +202,26 @@ class _ActiveWalkPageState extends State<ActiveWalkPage> {
                               Positioned(
                                 top: AppSpacing.md,
                                 right: AppSpacing.md,
-                                child: _HeadingIndicator(
-                                    headingDegrees:
-                                        _controller.headingDegrees!),
+                                child: _HeadingIndicator(headingDegrees: _controller.headingDegrees!),
                               ),
                             if (_controller.isAwaitingAccurateFix)
                               const Positioned(
                                 top: AppSpacing.md,
                                 left: AppSpacing.md,
-                                child: _InfoPill(
-                                    text:
-                                        'In attesa di un segnale GPS preciso…'),
+                                child: _InfoPill(text: 'In attesa di un segnale GPS preciso…'),
+                              )
+                            else if (walk?.isPaused ?? false)
+                              const Positioned(
+                                top: AppSpacing.md,
+                                left: AppSpacing.md,
+                                child: _InfoPill(text: 'Passeggiata in pausa'),
                               ),
                             Positioned(
                               bottom: AppSpacing.md,
                               right: AppSpacing.md,
                               child: FloatingActionButton.small(
                                 heroTag: 'center-on-me',
-                                onPressed: _currentPosition == null
-                                    ? null
-                                    : _centerOnMe,
+                                onPressed: _currentPosition == null ? null : _centerOnMe,
                                 backgroundColor: AppColors.surface,
                                 foregroundColor: AppColors.primary,
                                 child: const Icon(Icons.my_location_rounded),
@@ -310,47 +238,51 @@ class _ActiveWalkPageState extends State<ActiveWalkPage> {
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceAround,
                           children: [
-                            _StatColumn(
-                                label: 'Distanza',
-                                value: walkDistanceLabel(walk.distanceMeters)),
-                            _StatColumn(
-                                label: 'Durata',
-                                value: walkElapsedLabel(elapsedSeconds!)),
+                            _StatColumn(label: 'Distanza', value: walkDistanceLabel(walk.distanceMeters)),
+                            _StatColumn(label: 'Durata', value: walkElapsedLabel(activeSeconds!)),
                           ],
                         ),
                       if (_locationError != null) ...[
                         const SizedBox(height: AppSpacing.md),
                         Text(
                           _locationError!,
-                          style: AppTextStyles.bodySmall
-                              .copyWith(color: AppColors.danger),
+                          style: AppTextStyles.bodySmall.copyWith(color: AppColors.danger),
                           textAlign: TextAlign.center,
                         ),
                       ],
                       const SizedBox(height: AppSpacing.lg),
-                      SizedBox(
-                        width: double.infinity,
-                        child: FilledButton.icon(
-                          onPressed: _starting
-                              ? null
-                              : (_controller.isActive ? _stop : _start),
-                          style: FilledButton.styleFrom(
-                            backgroundColor: _controller.isActive
-                                ? AppColors.danger
-                                : AppColors.primary,
-                          ),
-                          icon: Icon(_controller.isActive
-                              ? Icons.stop_rounded
-                              : Icons.play_arrow_rounded),
-                          label: Text(
-                            _starting
-                                ? 'Avvio...'
-                                : (_controller.isActive
-                                    ? 'Ferma passeggiata'
-                                    : 'Avvia passeggiata'),
+                      if (_controller.isActive)
+                        Row(
+                          children: [
+                            Expanded(
+                              child: OutlinedButton.icon(
+                                onPressed: _togglePause,
+                                icon: Icon(
+                                  walk!.isPaused ? Icons.play_arrow_rounded : Icons.pause_rounded,
+                                ),
+                                label: Text(walk.isPaused ? 'Riavvia' : 'Pausa'),
+                              ),
+                            ),
+                            const SizedBox(width: AppSpacing.sm),
+                            Expanded(
+                              child: FilledButton.icon(
+                                onPressed: _stop,
+                                style: FilledButton.styleFrom(backgroundColor: AppColors.danger),
+                                icon: const Icon(Icons.stop_rounded),
+                                label: const Text('Termina'),
+                              ),
+                            ),
+                          ],
+                        )
+                      else
+                        SizedBox(
+                          width: double.infinity,
+                          child: FilledButton.icon(
+                            onPressed: _starting ? null : _start,
+                            icon: const Icon(Icons.play_arrow_rounded),
+                            label: Text(_starting ? 'Avvio...' : 'Avvia passeggiata'),
                           ),
                         ),
-                      ),
                     ],
                   ),
                 ),
@@ -389,14 +321,11 @@ class _InfoPill extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(
-          horizontal: AppSpacing.md, vertical: AppSpacing.sm),
+      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md, vertical: AppSpacing.sm),
       decoration: BoxDecoration(
         color: AppColors.surface,
         borderRadius: BorderRadius.circular(999),
-        boxShadow: [
-          BoxShadow(color: Colors.black.withValues(alpha: 0.15), blurRadius: 6)
-        ],
+        boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.15), blurRadius: 6)],
       ),
       child: Text(text, style: AppTextStyles.caption),
     );
@@ -419,9 +348,7 @@ class _HeadingIndicator extends StatelessWidget {
       decoration: BoxDecoration(
         color: AppColors.surface,
         shape: BoxShape.circle,
-        boxShadow: [
-          BoxShadow(color: Colors.black.withValues(alpha: 0.15), blurRadius: 6)
-        ],
+        boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.15), blurRadius: 6)],
       ),
       child: Transform.rotate(
         angle: headingDegrees * (math.pi / 180),
@@ -432,8 +359,7 @@ class _HeadingIndicator extends StatelessWidget {
 }
 
 class _WalkMap extends StatelessWidget {
-  const _WalkMap(
-      {required this.walk, required this.mapController, this.fallbackCenter});
+  const _WalkMap({required this.walk, required this.mapController, this.fallbackCenter});
 
   final WalkSession? walk;
   final MapController mapController;
@@ -443,19 +369,16 @@ class _WalkMap extends StatelessWidget {
   /// still loading).
   final Coordinates? fallbackCenter;
 
-  static const latlong.LatLng _defaultFallbackCenter =
-      latlong.LatLng(45.4642, 9.1900);
+  static const latlong.LatLng _defaultFallbackCenter = latlong.LatLng(45.4642, 9.1900);
 
   @override
   Widget build(BuildContext context) {
     final route = walk?.route ?? const [];
     final latlong.LatLng center;
     if (route.isNotEmpty) {
-      center = latlong.LatLng(
-          route.last.coordinates.latitude, route.last.coordinates.longitude);
+      center = latlong.LatLng(route.last.coordinates.latitude, route.last.coordinates.longitude);
     } else if (fallbackCenter != null) {
-      center =
-          latlong.LatLng(fallbackCenter!.latitude, fallbackCenter!.longitude);
+      center = latlong.LatLng(fallbackCenter!.latitude, fallbackCenter!.longitude);
     } else {
       center = _defaultFallbackCenter;
     }
@@ -465,19 +388,22 @@ class _WalkMap extends StatelessWidget {
       options: MapOptions(initialCenter: center, initialZoom: 16),
       children: [
         buildWalkTileLayer(),
-        if (route.length >= 2)
-          PolylineLayer(
-            polylines: [
-              Polyline(
-                points: route
-                    .map((point) => latlong.LatLng(point.coordinates.latitude,
-                        point.coordinates.longitude))
-                    .toList(),
-                color: AppColors.primary,
-                strokeWidth: 4,
-              ),
-            ],
-          ),
+        PolylineLayer(
+          // Split at Pausa/Riavvia boundaries (walk_route_segments.dart) so
+          // resuming after a pause never draws a line across whatever
+          // ground was covered while paused.
+          polylines: [
+            for (final segment in splitRouteIntoSegments(route))
+              if (segment.length >= 2)
+                Polyline(
+                  points: segment
+                      .map((point) => latlong.LatLng(point.coordinates.latitude, point.coordinates.longitude))
+                      .toList(),
+                  color: AppColors.primary,
+                  strokeWidth: 4,
+                ),
+          ],
+        ),
         MarkerLayer(
           markers: [
             Marker(
