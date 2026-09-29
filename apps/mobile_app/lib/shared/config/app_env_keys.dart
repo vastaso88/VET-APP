@@ -7,4 +7,5 @@ class AppEnvKeys {
   static const supabaseServiceRoleKey = 'SUPABASE_SERVICE_ROLE_KEY';
   static const logLevel = 'LOG_LEVEL';
   static const enableTelemetry = 'ENABLE_TELEMETRY';
+  static const cartoApiKey = 'CARTO_API_KEY';
 }

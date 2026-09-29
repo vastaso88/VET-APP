@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:math' as math;
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:geolocator/geolocator.dart' as geolocator;
@@ -33,6 +34,7 @@ class ActiveWalkPage extends StatefulWidget {
     required this.pet,
     this.locationSampler = const GeolocatorLocationSampler(),
     this.positionStreamProvider,
+    this.autoStart = false,
   });
 
   final PetProfile pet;
@@ -46,6 +48,12 @@ class ActiveWalkPage extends StatefulWidget {
   /// the heading indicator too (it only reads from the real device stream)
   /// - fine for tests, which don't assert on it.
   final Stream<Coordinates> Function()? positionStreamProvider;
+
+  /// Starts tracking as soon as this page opens instead of waiting for the
+  /// "Avvia passeggiata" tap - set when launched by tapping a pet on the
+  /// "Passeggiate" home-screen widget (see walk_home_widget.dart), which is
+  /// meant to jump straight into a walk for that pet.
+  final bool autoStart;
 
   @override
   State<ActiveWalkPage> createState() => _ActiveWalkPageState();
@@ -64,6 +72,14 @@ class _ActiveWalkPageState extends State<ActiveWalkPage> {
   double? _headingDegrees;
 
   @override
+  void initState() {
+    super.initState();
+    if (widget.autoStart) {
+      WidgetsBinding.instance.addPostFrameCallback((_) => _start());
+    }
+  }
+
+  @override
   void dispose() {
     _elapsedTimer?.cancel();
     _headingSubscription?.cancel();
@@ -71,13 +87,35 @@ class _ActiveWalkPageState extends State<ActiveWalkPage> {
     super.dispose();
   }
 
-  Stream<geolocator.Position> _defaultRawPositionStream() {
-    return geolocator.Geolocator.getPositionStream(
-      locationSettings: const geolocator.LocationSettings(
+  /// On Android, runs GPS updates as a foreground service with a persistent
+  /// notification so tracking survives the owner switching to another app
+  /// mid-walk (owner report, 2026-09-29). This only needs the foreground
+  /// location permission the app already requests - it's not
+  /// ACCESS_BACKGROUND_LOCATION ("Allow all the time"), which
+  /// docs/compliance/05_permessi_dispositivo_os.md explicitly defers. Other
+  /// platforms keep the plain settings; iOS has no equivalent knob here and
+  /// web ignores AndroidSettings.
+  geolocator.LocationSettings _positionStreamSettings() {
+    if (!kIsWeb && defaultTargetPlatform == TargetPlatform.android) {
+      return geolocator.AndroidSettings(
         accuracy: geolocator.LocationAccuracy.high,
         distanceFilter: 5,
-      ),
+        foregroundNotificationConfig: const geolocator.ForegroundNotificationConfig(
+          notificationTitle: 'Passeggiata in corso',
+          notificationText: 'VetApp sta tracciando il percorso della passeggiata.',
+          notificationChannelName: 'Tracciamento passeggiata',
+          setOngoing: true,
+        ),
+      );
+    }
+    return const geolocator.LocationSettings(
+      accuracy: geolocator.LocationAccuracy.high,
+      distanceFilter: 5,
     );
+  }
+
+  Stream<geolocator.Position> _defaultRawPositionStream() {
+    return geolocator.Geolocator.getPositionStream(locationSettings: _positionStreamSettings());
   }
 
   void _onRawPosition(geolocator.Position position) {
@@ -271,7 +309,7 @@ class _ActiveWalkPageState extends State<ActiveWalkPage> {
                           mainAxisAlignment: MainAxisAlignment.spaceAround,
                           children: [
                             _StatColumn(label: 'Distanza', value: walkDistanceLabel(walk.distanceMeters)),
-                            _StatColumn(label: 'Durata', value: walkDurationLabel(elapsedSeconds)),
+                            _StatColumn(label: 'Durata', value: walkElapsedLabel(elapsedSeconds!)),
                           ],
                         ),
                       if (_locationError != null) ...[

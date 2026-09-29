@@ -13,6 +13,7 @@ class AppRuntimeConfig {
     required this.supabaseAnonKey,
     required this.logLevel,
     required this.enableTelemetry,
+    this.cartoApiKey = '',
   });
 
   final AppEnvironment environment;
@@ -22,6 +23,13 @@ class AppRuntimeConfig {
   final String supabaseAnonKey;
   final String logLevel;
   final bool enableTelemetry;
+
+  /// CARTO now watermarks its free raster basemaps ("API KEY REQUIRED")
+  /// without one - see walk_map_style.dart. Free tier is plenty for this
+  /// app's volume (carto.com/basemaps/apikey), just needs registering.
+  final String cartoApiKey;
+
+  bool get hasCartoApiKey => cartoApiKey.trim().isNotEmpty;
 
   bool get hasApiBaseUrl => apiBaseUrl.trim().isNotEmpty;
   bool get hasSupabaseCredentials =>

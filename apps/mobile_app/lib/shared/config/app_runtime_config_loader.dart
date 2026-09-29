@@ -36,6 +36,10 @@ class AppRuntimeConfigLoader {
         AppEnvKeys.enableTelemetry,
         defaultValue: false,
       ),
+      cartoApiKey: const String.fromEnvironment(
+        AppEnvKeys.cartoApiKey,
+        defaultValue: '',
+      ),
     );
   }
 

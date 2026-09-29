@@ -7,6 +7,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'app.dart';
 import 'config/app_bootstrap_state.dart';
 import 'router/app_router.dart';
+import '../features/dog_walks/data/walk_home_widget.dart';
 import '../shared/config/app_runtime_config_loader.dart';
 
 Future<void> bootstrap() async {
@@ -54,4 +55,6 @@ Future<void> bootstrap() async {
       ),
     ),
   );
+
+  initWalkHomeWidgetLaunchHandling();
 }
