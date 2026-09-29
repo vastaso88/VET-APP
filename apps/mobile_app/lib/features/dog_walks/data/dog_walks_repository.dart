@@ -28,16 +28,20 @@ List<WalkSession> mergeRemoteAndLocalWalks({
   required Map<String, WalkSession> localById,
   required Set<String> unsyncedIds,
   required Set<String> pendingDeleteIds,
+  required Set<String> deletedIds,
 }) {
   final merged = <String, WalkSession>{};
   for (final walk in remote) {
-    if (pendingDeleteIds.contains(walk.id)) {
+    if (pendingDeleteIds.contains(walk.id) || deletedIds.contains(walk.id)) {
       continue;
     }
     final pendingLocal = unsyncedIds.contains(walk.id) ? localById[walk.id] : null;
     merged[walk.id] = pendingLocal ?? walk;
   }
   for (final walk in local) {
+    if (deletedIds.contains(walk.id)) {
+      continue;
+    }
     merged.putIfAbsent(walk.id, () => walk);
   }
   return merged.values.toList();
@@ -61,6 +65,32 @@ class DogWalksRepository {
   /// Ids deleted locally whose Supabase delete failed - until it succeeds,
   /// [loadWalks] must not let the still-present remote row resurrect them.
   static final Set<String> _pendingDeleteIds = {};
+
+  /// Every (ownerId, walkId) [deleteWalk] has ever been called for,
+  /// regardless of whether the remote delete itself succeeded - keyed by
+  /// owner too so a delete can never tombstone a different owner's walk
+  /// that happens to share an id. A walk id is never reused for a
+  /// different walk, so this never needs to be cleared. Confirmed
+  /// 2026-10-01 from Supabase edge logs: a DELETE (204, genuinely
+  /// succeeded) was consistently followed seconds later by a POST that
+  /// re-created the same row - some other in-flight operation
+  /// (pruneRoutesOutsideRetention's own read-then-conditionally-write loop
+  /// is the prime suspect: it can read a walk in the gap between another
+  /// concurrent action's delete and that delete actually being reflected
+  /// in its own `loadWalks` call, then dutifully write it back while
+  /// stripping its route) had already read a pre-delete snapshot and later
+  /// wrote it straight back. [saveWalk] refusing outright for a
+  /// once-deleted id closes that off at the one place all such writes have
+  /// to pass through, rather than chasing every possible stale-read path
+  /// that could produce one.
+  static final Set<(String ownerId, String walkId)> _deletedKeys = {};
+
+  static Set<String> _deletedIdsFor(String ownerId) {
+    return {
+      for (final key in _deletedKeys)
+        if (key.$1 == ownerId) key.$2,
+    };
+  }
 
   /// Remote is the source of truth when configured, but a write can fail
   /// silently (network blip, stale auth token, or - as found 2026-10-01 - a
@@ -87,11 +117,18 @@ class DogWalksRepository {
       localById: localById,
       unsyncedIds: _unsyncedIds,
       pendingDeleteIds: _pendingDeleteIds,
+      deletedIds: _deletedIdsFor(ownerId),
     );
     return List<WalkSession>.unmodifiable(merged);
   }
 
   Future<void> saveWalk(WalkSession walk) async {
+    if (_deletedKeys.contains((walk.ownerId, walk.id))) {
+      // Refuse to resurrect a walk this repository was explicitly told to
+      // delete - see _deletedKeys' doc comment for why this exists.
+      return;
+    }
+
     final index = _localWalks.indexWhere((item) => item.id == walk.id);
     if (index == -1) {
       _localWalks.insert(0, walk);
@@ -124,6 +161,7 @@ class DogWalksRepository {
   /// request, 2026-09-30), and the one-time cleanup of already-saved
   /// zero-distance walks (_WalksTabState._load() in pet_detail_page.dart).
   Future<void> deleteWalk(String ownerId, String walkId) async {
+    _deletedKeys.add((ownerId, walkId));
     _localWalks.removeWhere((walk) => walk.id == walkId && walk.ownerId == ownerId);
     _unsyncedIds.remove(walkId);
 
@@ -157,8 +195,44 @@ class DogWalksRepository {
     final retainedIds = retainedRouteWalkIds(walks);
     for (final walk in walks) {
       if (walk.route.isNotEmpty && !retainedIds.contains(walk.id)) {
-        await saveWalk(walk.copyWith(route: const []));
+        await clearRoute(ownerId, walk.id);
       }
+    }
+  }
+
+  /// Strips just the `route` column for one walk - a narrow, single-column
+  /// write rather than `saveWalk`'s whole-row upsert, specifically so a
+  /// background maintenance pass (pruneRoutesOutsideRetention above) can
+  /// never carry forward some OTHER field's value from the snapshot it
+  /// read. Owner report, 2026-10-01: un-favoriting a walk, then a
+  /// concurrent prune pass that had read a pre-toggle snapshot, silently
+  /// reverted the favorite - `saveWalk(staleSnapshot.copyWith(route: []))`
+  /// wrote is_favorite back to whatever the stale snapshot still had. This
+  /// re-reads the CURRENT local copy at write time (not whatever snapshot
+  /// the caller has) and sends Supabase an UPDATE naming only `route`, so
+  /// neither side can regress a field this method has no business touching.
+  Future<void> clearRoute(String ownerId, String walkId) async {
+    if (_deletedKeys.contains((ownerId, walkId))) {
+      return;
+    }
+
+    final index = _localWalks.indexWhere((item) => item.id == walkId && item.ownerId == ownerId);
+    if (index != -1) {
+      _localWalks[index] = _localWalks[index].copyWith(route: const []);
+    }
+
+    final client = _resolveClient();
+    if (client == null) {
+      return;
+    }
+
+    try {
+      await client.from('dog_walks').update({'route': []}).eq('id', walkId).eq('owner_id', ownerId);
+    } catch (error) {
+      // Idempotent and retried naturally next time retention math says this
+      // walk's route should be gone - doesn't need saveWalk's
+      // must-win-over-stale-remote bookkeeping.
+      _notifySyncFailure('clearing route for walk $walkId', error);
     }
   }
 
