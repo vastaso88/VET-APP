@@ -19,7 +19,8 @@ Future<String?> pickFavoriteToEvict(
   BuildContext context,
   List<WalkSession> currentFavorites,
 ) {
-  final sorted = [...currentFavorites]..sort((a, b) => b.startedAt.compareTo(a.startedAt));
+  final sorted = [...currentFavorites]
+    ..sort((a, b) => b.startedAt.compareTo(a.startedAt));
 
   return showDialog<String>(
     context: context,
@@ -78,20 +79,24 @@ class _FavoriteChoiceRow extends StatelessWidget {
         borderRadius: BorderRadius.circular(AppRadii.medium),
         onTap: () => Navigator.of(context).pop(walk.id),
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md, vertical: AppSpacing.sm),
+          padding: const EdgeInsets.symmetric(
+              horizontal: AppSpacing.md, vertical: AppSpacing.sm),
           child: Row(
             children: [
-              const Icon(Icons.star_rounded, color: AppColors.warning, size: 18),
+              const Icon(Icons.star_rounded,
+                  color: AppColors.warning, size: 18),
               const SizedBox(width: AppSpacing.sm),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(walkDateLabel(walk.startedAt), style: AppTextStyles.bodySmall),
+                    Text(walkDateLabel(walk.startedAt),
+                        style: AppTextStyles.bodySmall),
                     Text(
                       [
                         walkDistanceLabel(walk.distanceMeters),
-                        if (walk.durationSeconds != null) walkDurationLabel(walk.durationSeconds),
+                        if (walk.durationSeconds != null)
+                          walkDurationLabel(walk.durationSeconds),
                       ].join(' · '),
                       style: AppTextStyles.caption,
                     ),

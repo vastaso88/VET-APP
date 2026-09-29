@@ -68,7 +68,7 @@ void main() {
     );
 
     // Well past the minimum display time, but preload still pending.
-    await tester.pump(const Duration(seconds: 3));
+    await tester.pump(splashMinDisplay + const Duration(seconds: 1));
     expect(preloadStarted, isTrue);
     expect(find.text('ROUTE:${AppRouter.homeShell}'), findsNothing);
 
@@ -89,7 +89,7 @@ void main() {
       ),
     );
 
-    await tester.pump(const Duration(seconds: 2));
+    await tester.pump(splashMinDisplay);
     await tester.pumpAndSettle(const Duration(milliseconds: 100));
     expect(find.text('ROUTE:${AppRouter.paywall}'), findsOneWidget);
   });
@@ -106,10 +106,10 @@ void main() {
       ),
     );
 
-    await tester.pump(const Duration(milliseconds: 600));
+    await tester.pump(splashMinDisplay - const Duration(milliseconds: 500));
     expect(find.text('ROUTE:${AppRouter.auth}'), findsNothing);
 
-    await tester.pump(const Duration(milliseconds: 700));
+    await tester.pump(const Duration(milliseconds: 600));
     await tester.pumpAndSettle(const Duration(milliseconds: 100));
     expect(find.text('ROUTE:${AppRouter.auth}'), findsOneWidget);
     expect(preloadCalls, 0);

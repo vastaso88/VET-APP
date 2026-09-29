@@ -51,7 +51,7 @@ class DogWalksRepository {
     }
 
     try {
-      await client.from('dog_walks').upsert(_toRow(walk));
+      await client.from('dog_walks').upsert(toRow(walk));
     } catch (_) {
       // Best-effort: the local list above already applied for this session.
     }
@@ -62,7 +62,8 @@ class DogWalksRepository {
   /// walk finishes, since that's the only time the retained set can change.
   Future<void> pruneRoutesOutsideRetention(String ownerId, String petId) async {
     final walks = (await loadWalks(ownerId))
-        .where((walk) => walk.petId == petId && walk.status == WalkStatus.completed)
+        .where((walk) =>
+            walk.petId == petId && walk.status == WalkStatus.completed)
         .toList()
       ..sort((a, b) => b.startedAt.compareTo(a.startedAt));
 
@@ -81,11 +82,12 @@ class DogWalksRepository {
     }
 
     try {
-      final response = await client.from('dog_walks').select('*').eq('owner_id', ownerId);
+      final response =
+          await client.from('dog_walks').select('*').eq('owner_id', ownerId);
       final rows = response as List<dynamic>;
       final walks = <WalkSession>[];
       for (final row in rows) {
-        final walk = _parseRow(row as Map<String, dynamic>);
+        final walk = fromRow(row as Map<String, dynamic>);
         if (walk != null) {
           walks.add(walk);
         }
@@ -96,7 +98,10 @@ class DogWalksRepository {
     }
   }
 
-  Map<String, dynamic> _toRow(WalkSession walk) {
+  /// Public (and static - neither reads instance state) so
+  /// active_walk_recovery_store.dart can persist/restore the same shape to
+  /// shared_preferences without duplicating this mapping.
+  static Map<String, dynamic> toRow(WalkSession walk) {
     return {
       'id': walk.id,
       'owner_id': walk.ownerId,
@@ -123,7 +128,7 @@ class DogWalksRepository {
     };
   }
 
-  WalkSession? _parseRow(Map<String, dynamic> row) {
+  static WalkSession? fromRow(Map<String, dynamic> row) {
     final startedAt = DateTime.tryParse((row['started_at'] ?? '').toString());
     final status = _statusFromString(row['status'] as String?);
     if (startedAt == null || status == null) {
@@ -154,7 +159,7 @@ class DogWalksRepository {
     );
   }
 
-  RoutePoint? _parseRoutePoint(Map<String, dynamic> raw) {
+  static RoutePoint? _parseRoutePoint(Map<String, dynamic> raw) {
     final coordinatesJson = raw['coordinates'] as Map<String, dynamic>?;
     final recordedAt = DateTime.tryParse((raw['recorded_at'] ?? '').toString());
     final latitude = (coordinatesJson?['latitude'] as num?)?.toDouble();
@@ -227,15 +232,18 @@ class DogWalksRepository {
       route: [
         RoutePoint(
           coordinates: const Coordinates(latitude: 45.4707, longitude: 9.1791),
-          recordedAt: DateTime.now().subtract(const Duration(days: 1, hours: 1)),
+          recordedAt:
+              DateTime.now().subtract(const Duration(days: 1, hours: 1)),
         ),
         RoutePoint(
           coordinates: const Coordinates(latitude: 45.4718, longitude: 9.1820),
-          recordedAt: DateTime.now().subtract(const Duration(days: 1, minutes: 45)),
+          recordedAt:
+              DateTime.now().subtract(const Duration(days: 1, minutes: 45)),
         ),
         RoutePoint(
           coordinates: const Coordinates(latitude: 45.4730, longitude: 9.1860),
-          recordedAt: DateTime.now().subtract(const Duration(days: 1, minutes: 30)),
+          recordedAt:
+              DateTime.now().subtract(const Duration(days: 1, minutes: 30)),
         ),
         RoutePoint(
           coordinates: const Coordinates(latitude: 45.4718, longitude: 9.1875),

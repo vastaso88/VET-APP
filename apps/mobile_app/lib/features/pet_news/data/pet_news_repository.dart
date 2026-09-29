@@ -8,6 +8,29 @@ abstract class PetNewsRepository {
   Future<List<PetNewsItem>> fetchForSpecies(String species, {int limit});
 }
 
+/// The complete fixed set of "curiosità" categories the app ever queries —
+/// every owned-species label plus the cross-species "Generale" catch-all.
+/// Shared by the News page (shows all of them), Home (a 4-slot subset —
+/// see home_dashboard_page.dart's `_loadPetNews`) and the splash preload
+/// warm-up, so all three agree on exactly what "every category" means and
+/// hit the same cache keys.
+const allPetNewsCategories = <String>[
+  'Cane',
+  'Gatto',
+  'Piccoli mammiferi',
+  'Uccello',
+  'Rettili e anfibi',
+  'Pesce',
+  'Altro',
+  'Generale',
+];
+
+/// Pool size per category — bigger than the single card a display slot
+/// needs, so a duplicate-title drop (or two slots both falling back to
+/// "Generale") can backfill from the same fetch instead of needing another
+/// request.
+const petNewsPoolLimitPerCategory = 4;
+
 /// Free, keyless "curiosita" source: real headlines from real newspapers,
 /// via Google News' public RSS search, bridged through rss2json.com (a
 /// free CORS-friendly RSS-to-JSON proxy — Google News' own RSS endpoint
@@ -105,6 +128,14 @@ class GoogleNewsPetNewsRepository implements PetNewsRepository {
   static final Map<String, _CacheEntry> _cache = {};
   static const _cacheTtl = Duration(minutes: 20);
 
+  // One retry after a short backoff for a transient failure (429, or a 5xx
+  // — measured against the live endpoint on 2026-09-30 firing several
+  // requests fully in parallel: failures came back as 500, not always a
+  // clean 429, so both are treated as "try again once" here) before
+  // falling back to a stale cache entry or an empty list.
+  static const _maxAttempts = 2;
+  static const _retryBackoff = Duration(milliseconds: 500);
+
   @override
   Future<List<PetNewsItem>> fetchForSpecies(String species, {int limit = 2}) async {
     final cached = _cache[species];
@@ -113,46 +144,56 @@ class GoogleNewsPetNewsRepository implements PetNewsRepository {
     }
 
     final query = _queryBySpecies[species] ?? _queryBySpecies['Altro']!;
+    // The query term is percent-encoded on its own (spaces/parens as %20
+    // etc) BEFORE being embedded in the (otherwise literal) Google News
+    // URL string. rss2json's own URL validator decodes `rss_url` once
+    // before checking it looks like a URL, so it needs a plain space to
+    // still read as `%20` after that single decode — passing a literal,
+    // un-pre-encoded space (or double-encoding everything, including
+    // `://`) both make it reject the value with a 422.
+    final rssUrl =
+        'https://news.google.com/rss/search?q=${Uri.encodeComponent(query)}&hl=it&gl=IT&ceid=IT:it';
+    // Note: rss2json's `count` param requires an API key even on the free
+    // tier, so items are capped client-side instead (see `.take` below).
+    final proxyUrl = Uri.parse(
+      'https://api.rss2json.com/v1/api.json?rss_url=${Uri.encodeComponent(rssUrl)}',
+    );
 
-    try {
-      // The query term is percent-encoded on its own (spaces/parens as
-      // %20 etc) BEFORE being embedded in the (otherwise literal) Google
-      // News URL string. rss2json's own URL validator decodes `rss_url`
-      // once before checking it looks like a URL, so it needs a plain
-      // space to still read as `%20` after that single decode — passing
-      // a literal, un-pre-encoded space (or double-encoding everything,
-      // including `://`) both make it reject the value with a 422.
-      final rssUrl =
-          'https://news.google.com/rss/search?q=${Uri.encodeComponent(query)}&hl=it&gl=IT&ceid=IT:it';
-      // Note: rss2json's `count` param requires an API key even on the
-      // free tier, so items are capped client-side instead (see `.take`
-      // below).
-      final proxyUrl = Uri.parse(
-        'https://api.rss2json.com/v1/api.json?rss_url=${Uri.encodeComponent(rssUrl)}',
-      );
+    for (var attempt = 1; attempt <= _maxAttempts; attempt++) {
+      try {
+        final response = await _client.get(proxyUrl);
+        if (response.statusCode == 429 || response.statusCode >= 500) {
+          if (attempt < _maxAttempts) {
+            await Future<void>.delayed(_retryBackoff * attempt);
+            continue;
+          }
+          return cached?.items.take(limit).toList(growable: false) ?? const [];
+        }
+        if (response.statusCode != 200) {
+          return cached?.items.take(limit).toList(growable: false) ?? const [];
+        }
 
-      final response = await _client.get(proxyUrl);
-      if (response.statusCode != 200) {
-        // Includes 429 (rate limited): fall back to a stale cache entry
-        // rather than showing nothing, if one exists.
+        final json = jsonDecode(response.body) as Map<String, dynamic>;
+        if (json['status'] != 'ok') {
+          return cached?.items.take(limit).toList(growable: false) ?? const [];
+        }
+
+        final items = (json['items'] as List<dynamic>? ?? const [])
+            .map((raw) => _toNewsItem(species, raw as Map<String, dynamic>))
+            .whereType<PetNewsItem>()
+            .toList(growable: false);
+
+        _cache[species] = _CacheEntry(items, DateTime.now());
+        return items.take(limit).toList(growable: false);
+      } catch (_) {
+        if (attempt < _maxAttempts) {
+          await Future<void>.delayed(_retryBackoff * attempt);
+          continue;
+        }
         return cached?.items.take(limit).toList(growable: false) ?? const [];
       }
-
-      final json = jsonDecode(response.body) as Map<String, dynamic>;
-      if (json['status'] != 'ok') {
-        return cached?.items.take(limit).toList(growable: false) ?? const [];
-      }
-
-      final items = (json['items'] as List<dynamic>? ?? const [])
-          .map((raw) => _toNewsItem(species, raw as Map<String, dynamic>))
-          .whereType<PetNewsItem>()
-          .toList(growable: false);
-
-      _cache[species] = _CacheEntry(items, DateTime.now());
-      return items.take(limit).toList(growable: false);
-    } catch (_) {
-      return cached?.items.take(limit).toList(growable: false) ?? const [];
     }
+    return cached?.items.take(limit).toList(growable: false) ?? const [];
   }
 
   PetNewsItem? _toNewsItem(String species, Map<String, dynamic> item) {
@@ -193,37 +234,46 @@ class _CacheEntry {
   final DateTime fetchedAt;
 }
 
-/// Runs [tasks] strictly one at a time, waiting [delay] between each,
-/// instead of firing them all in parallel. rss2json's free/keyless tier
-/// shares one global rate-limit bucket across every anonymous caller
-/// worldwide (empirically: it can reject a request seconds after a
-/// completely unrelated one succeeded, and accept one seconds after a
-/// prior one was rejected) — pacing our own requests can't guarantee
-/// avoiding a 429, since load from other users is out of our control, but
-/// it at least stops a cold cache (first load) from being the cause of
-/// one itself. Each `fetchForSpecies` call already degrades gracefully on
-/// a 429 (falls back to a stale cache entry, or an empty list — never an
-/// error shown to the user), so a rejected category just quietly shows
-/// fewer cards rather than breaking anything.
+/// Runs [tasks] in small parallel batches — [batchSize] at a time, with a
+/// pause between batches — instead of either one at a time or all at once.
 ///
-/// Shortened from 4s to 1.2s (2026-09-30): the 4s figure predates
-/// deduplicating categories before fetching (home_dashboard_page.dart) and
-/// fetching a bigger per-category pool instead of one request per display
-/// slot — both cut the number of distinct requests per load, so the same
-/// total pacing budget now buys more margin per request than 4s used to.
-/// Still sequential, not parallel: nothing here contradicts the documented
-/// "shared global bucket" behavior, so batching requests together remains
-/// the likelier way to trip it.
+/// Measured against the real rss2json endpoint (2026-09-30): 8 requests
+/// fired fully in parallel failed 2/8 (HTTP 500, the free tier's
+/// shared-bucket symptom — not always a clean 429); the previous one-at-
+/// a-time-with-4s-delay approach took ~32s for 8 categories. Batches of 3
+/// with a 600ms pause between batches completed all 8 with zero failures
+/// in under 3s total. `fetchForSpecies` also retries once on its own for
+/// whatever transient failure still gets through (the shared bucket's
+/// exact threshold moves with load from other callers, so no fixed pacing
+/// here can promise zero 429s).
+Future<void> fetchManyWithLimitStreaming<T>(
+  List<Future<T> Function()> tasks, {
+  required void Function(List<T> batchResults) onBatch,
+  int batchSize = 3,
+  Duration betweenBatches = const Duration(milliseconds: 600),
+}) async {
+  for (var i = 0; i < tasks.length; i += batchSize) {
+    if (i > 0) {
+      await Future<void>.delayed(betweenBatches);
+    }
+    final batch = tasks.skip(i).take(batchSize).map((task) => task());
+    onBatch(await Future.wait(batch));
+  }
+}
+
+/// [fetchManyWithLimitStreaming] for a caller that just wants the final,
+/// combined list rather than reacting to each batch as it lands.
 Future<List<T>> fetchManyWithLimit<T>(
   List<Future<T> Function()> tasks, {
-  Duration delay = const Duration(milliseconds: 1200),
+  int batchSize = 3,
+  Duration betweenBatches = const Duration(milliseconds: 600),
 }) async {
   final results = <T>[];
-  for (var i = 0; i < tasks.length; i++) {
-    if (i > 0) {
-      await Future<void>.delayed(delay);
-    }
-    results.add(await tasks[i]());
-  }
+  await fetchManyWithLimitStreaming<T>(
+    tasks,
+    onBatch: results.addAll,
+    batchSize: batchSize,
+    betweenBatches: betweenBatches,
+  );
   return results;
 }

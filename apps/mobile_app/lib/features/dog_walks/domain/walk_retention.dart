@@ -23,14 +23,16 @@ Set<String> retainedRouteWalkIds(List<WalkSession> completedWalksByDateDesc) {
 /// pinned on its own, then favorites, then recent walks - each card shown
 /// only once, in the highest-priority section it qualifies for.
 class WalkHistoryView {
-  const WalkHistoryView({this.record, this.favorites = const [], this.recent = const []});
+  const WalkHistoryView(
+      {this.record, this.favorites = const [], this.recent = const []});
 
   final WalkSession? record;
   final List<WalkSession> favorites;
   final List<WalkSession> recent;
 }
 
-WalkHistoryView buildWalkHistoryView(List<WalkSession> completedWalksByDateDesc) {
+WalkHistoryView buildWalkHistoryView(
+    List<WalkSession> completedWalksByDateDesc) {
   if (completedWalksByDateDesc.isEmpty) {
     return const WalkHistoryView();
   }

@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="widget_bg">#1B2426</color>
+    <color name="widget_border">#2E3B3D</color>
+    <color name="widget_row_bg">#243033</color>
+    <color name="widget_text">#EAF0EE</color>
+    <color name="widget_text_secondary">#A3B3B0</color>
+    <color name="widget_primary">#7CC0C1</color>
+    <color name="widget_on_primary">#F9F6F0</color>
+    <color name="widget_pill_walk_bg">#2E686A</color>
+    <color name="widget_pill_walk_icon">#F9F6F0</color>
+    <color name="widget_pill_reminder_bg">#3B302C</color>
+    <color name="widget_pill_reminder_icon">#F0A08C</color>
+</resources>

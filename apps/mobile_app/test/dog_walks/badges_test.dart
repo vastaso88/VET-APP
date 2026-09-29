@@ -33,13 +33,17 @@ void main() {
   });
 
   test('badges are tracked separately per pet', () {
-    final badges = evaluateBadges([_completedWalk('pet-1'), _completedWalk('pet-2')]);
+    final badges =
+        evaluateBadges([_completedWalk('pet-1'), _completedWalk('pet-2')]);
 
-    expect(badges, containsAll(['first_walk_pet_pet-1', 'first_walk_pet_pet-2']));
+    expect(
+        badges, containsAll(['first_walk_pet_pet-1', 'first_walk_pet_pet-2']));
   });
 
-  test('crossing a distance threshold unlocks that badge but not a higher one', () {
-    final walks = List.generate(2, (_) => _completedWalk('pet-1', distanceMeters: 6000));
+  test('crossing a distance threshold unlocks that badge but not a higher one',
+      () {
+    final walks =
+        List.generate(2, (_) => _completedWalk('pet-1', distanceMeters: 6000));
 
     final badges = evaluateBadges(walks);
 
@@ -52,12 +56,14 @@ void main() {
 
     final badges = evaluateBadges(walks);
 
-    expect(badges, containsAll(['distance_10km_pet_pet-1', 'distance_50km_pet_pet-1']));
+    expect(badges,
+        containsAll(['distance_10km_pet_pet-1', 'distance_50km_pet_pet-1']));
     expect(badges, isNot(contains('distance_100km_pet_pet-1')));
   });
 
   test('crossing a walk-count threshold unlocks that badge', () {
-    final walks = List.generate(10, (_) => _completedWalk('pet-1', distanceMeters: 100));
+    final walks =
+        List.generate(10, (_) => _completedWalk('pet-1', distanceMeters: 100));
 
     final badges = evaluateBadges(walks);
 
@@ -90,5 +96,161 @@ void main() {
 
     expect(badges, ['first_walk_pet_pet-1']);
     expect(badges, isNot(contains('distance_10km_pet_pet-1')));
+  });
+
+  test('a single walk of at least 30 minutes unlocks the 30-minute badge', () {
+    final walk = WalkSession(
+      id: 'walk-30min',
+      ownerId: 'user-1',
+      petId: 'pet-1',
+      status: WalkStatus.completed,
+      startedAt: DateTime(2026, 1, 1, 10),
+      durationSeconds: 30 * 60,
+    );
+
+    final badges = evaluateBadges([walk]);
+
+    expect(badges, contains('duration_30min_pet_pet-1'));
+    expect(badges, isNot(contains('duration_1h_pet_pet-1')));
+  });
+
+  test('a single walk of at least an hour unlocks both duration badges', () {
+    final walk = WalkSession(
+      id: 'walk-1h',
+      ownerId: 'user-1',
+      petId: 'pet-1',
+      status: WalkStatus.completed,
+      startedAt: DateTime(2026, 1, 1, 10),
+      durationSeconds: 60 * 60,
+    );
+
+    final badges = evaluateBadges([walk]);
+
+    expect(badges,
+        containsAll(['duration_30min_pet_pet-1', 'duration_1h_pet_pet-1']));
+  });
+
+  test('a walk starting at dawn unlocks the dawn badge, not the night one', () {
+    final walk = WalkSession(
+      id: 'walk-dawn',
+      ownerId: 'user-1',
+      petId: 'pet-1',
+      status: WalkStatus.completed,
+      startedAt: DateTime(2026, 1, 1, 6, 30),
+    );
+
+    final badges = evaluateBadges([walk]);
+
+    expect(badges, contains('dawn_walk_pet_pet-1'));
+    expect(badges, isNot(contains('night_walk_pet_pet-1')));
+  });
+
+  test('a walk starting late at night unlocks the night badge', () {
+    final walk = WalkSession(
+      id: 'walk-night',
+      ownerId: 'user-1',
+      petId: 'pet-1',
+      status: WalkStatus.completed,
+      startedAt: DateTime(2026, 1, 1, 22),
+    );
+
+    final badges = evaluateBadges([walk]);
+
+    expect(badges, contains('night_walk_pet_pet-1'));
+    expect(badges, isNot(contains('dawn_walk_pet_pet-1')));
+  });
+
+  test('a walk just after midnight also counts as a night walk', () {
+    final walk = WalkSession(
+      id: 'walk-after-midnight',
+      ownerId: 'user-1',
+      petId: 'pet-1',
+      status: WalkStatus.completed,
+      startedAt: DateTime(2026, 1, 1, 2),
+    );
+
+    final badges = evaluateBadges([walk]);
+
+    expect(badges, contains('night_walk_pet_pet-1'));
+  });
+
+  test('a walk in the middle of the day unlocks neither time-of-day badge', () {
+    final walk = WalkSession(
+      id: 'walk-midday',
+      ownerId: 'user-1',
+      petId: 'pet-1',
+      status: WalkStatus.completed,
+      startedAt: DateTime(2026, 1, 1, 13),
+    );
+
+    final badges = evaluateBadges([walk]);
+
+    expect(badges, isNot(contains('dawn_walk_pet_pet-1')));
+    expect(badges, isNot(contains('night_walk_pet_pet-1')));
+  });
+
+  test('seven walks on seven consecutive days unlock the streak badge', () {
+    final walks = List.generate(
+      7,
+      (index) => WalkSession(
+        id: 'walk-streak-$index',
+        ownerId: 'user-1',
+        petId: 'pet-1',
+        status: WalkStatus.completed,
+        startedAt: DateTime(2026, 1, 1 + index, 8),
+      ),
+    );
+
+    final badges = evaluateBadges(walks);
+
+    expect(badges, contains('streak_7days_pet_pet-1'));
+  });
+
+  test('a gap in the days breaks the streak', () {
+    final walks = [
+      for (var day = 1; day <= 6; day++)
+        WalkSession(
+          id: 'walk-streak-$day',
+          ownerId: 'user-1',
+          petId: 'pet-1',
+          status: WalkStatus.completed,
+          startedAt: DateTime(2026, 1, day, 8),
+        ),
+      WalkSession(
+        id: 'walk-after-gap',
+        ownerId: 'user-1',
+        petId: 'pet-1',
+        status: WalkStatus.completed,
+        startedAt: DateTime(2026, 1, 8, 8),
+      ),
+    ];
+
+    final badges = evaluateBadges(walks);
+
+    expect(badges, isNot(contains('streak_7days_pet_pet-1')));
+  });
+
+  test('two walks on the same day only count once toward the streak', () {
+    final walks = [
+      for (var day = 1; day <= 6; day++)
+        WalkSession(
+          id: 'walk-streak-$day',
+          ownerId: 'user-1',
+          petId: 'pet-1',
+          status: WalkStatus.completed,
+          startedAt: DateTime(2026, 1, day, 8),
+        ),
+      WalkSession(
+        id: 'walk-day-6-again',
+        ownerId: 'user-1',
+        petId: 'pet-1',
+        status: WalkStatus.completed,
+        startedAt: DateTime(2026, 1, 6, 18),
+      ),
+    ];
+
+    final badges = evaluateBadges(walks);
+
+    expect(badges, isNot(contains('streak_7days_pet_pet-1')));
   });
 }

@@ -3,7 +3,10 @@ import '../../location/domain/coordinates.dart';
 enum WalkStatus { inProgress, completed, discarded }
 
 class RoutePoint {
-  const RoutePoint({required this.coordinates, required this.recordedAt, this.accuracyMeters});
+  const RoutePoint(
+      {required this.coordinates,
+      required this.recordedAt,
+      this.accuracyMeters});
 
   final Coordinates coordinates;
   final DateTime recordedAt;

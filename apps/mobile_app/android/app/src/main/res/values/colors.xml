@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Home-screen widget palette. Light values mirror AppColors in
+     lib/design_system/tokens/app_colors.dart; values-night/colors.xml holds
+     the dark variants (the Flutter app itself has no dark theme yet). -->
+<resources>
+    <color name="widget_bg">#FCFAF7</color>
+    <color name="widget_border">#E6DDD2</color>
+    <color name="widget_row_bg">#F6F1EA</color>
+    <color name="widget_text">#213134</color>
+    <color name="widget_text_secondary">#5E706E</color>
+    <color name="widget_primary">#2E686A</color>
+    <color name="widget_on_primary">#F9F6F0</color>
+    <color name="widget_pill_walk_bg">#2E686A</color>
+    <color name="widget_pill_walk_icon">#F9F6F0</color>
+    <color name="widget_pill_reminder_bg">#F0E5DB</color>
+    <color name="widget_pill_reminder_icon">#C9614B</color>
+</resources>

@@ -70,10 +70,9 @@ class _HomeDashboardPageState extends State<HomeDashboardPage> {
     ];
 
     final categoriesToFetch = {...nonGenericCategories, 'Generale'}.toList(growable: false);
-    const poolLimitPerCategory = 4;
     final results = await fetchManyWithLimit(
       categoriesToFetch
-          .map((c) => () => _petNewsRepository.fetchForSpecies(c, limit: poolLimitPerCategory))
+          .map((c) => () => _petNewsRepository.fetchForSpecies(c, limit: petNewsPoolLimitPerCategory))
           .toList(),
     );
     final poolByCategory = <String, List<PetNewsItem>>{

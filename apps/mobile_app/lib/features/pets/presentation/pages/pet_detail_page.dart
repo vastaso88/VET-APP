@@ -11,12 +11,14 @@ import '../../../chat/data/chat_attachment_remote_data_source.dart';
 import '../../../chat/data/chat_demo_store.dart';
 import '../../../chat/domain/chat_models.dart';
 import '../../../chat/presentation/pages/chat_conversation_detail_page.dart';
+import '../../../dog_walks/data/active_walk_controller.dart';
 import '../../../dog_walks/data/dog_walks_repository.dart';
 import '../../../dog_walks/domain/badges.dart';
 import '../../../dog_walks/domain/walk_retention.dart';
 import '../../../dog_walks/domain/walk_session.dart';
 import '../../../dog_walks/presentation/pages/active_walk_page.dart';
 import '../../../dog_walks/presentation/walk_labels.dart';
+import '../../../dog_walks/presentation/widgets/badge_gallery_dialog.dart';
 import '../../../dog_walks/presentation/widgets/walk_map_style.dart';
 import '../../../../shared/auth/current_owner.dart';
 import '../../../medical_records/data/medical_record_file_cache.dart';
@@ -854,7 +856,8 @@ class _RecordsTabState extends State<_RecordsTab> {
         // text summary.
         final result = await HttpChatAttachmentRemoteDataSource()
             .download(record.attachmentId!);
-        final bytes = result.fold(onSuccess: (bytes) => bytes, onFailure: (_) => null);
+        final bytes =
+            result.fold(onSuccess: (bytes) => bytes, onFailure: (_) => null);
         if (bytes != null) {
           cached = (bytes: bytes, fileName: record.title, mimeType: null);
         }
@@ -1009,16 +1012,40 @@ class _WalksTabState extends State<_WalksTab> {
     await _reload();
   }
 
+  Future<void> _showBadges() async {
+    final walks = await _future;
+    if (!mounted) return;
+    await showBadgeGalleryDialog(context,
+        petId: widget.pet.id, walksForPet: walks);
+  }
+
   @override
   Widget build(BuildContext context) {
+    final resumingThisPet = ActiveWalkController.instance.isActive &&
+        ActiveWalkController.instance.walk?.petId == widget.pet.id;
     return Column(
       children: [
         SizedBox(
           width: double.infinity,
           child: FilledButton.icon(
             onPressed: _startWalk,
-            icon: const Icon(Icons.directions_walk_rounded, size: 18),
-            label: const Text('Nuova passeggiata'),
+            icon: Icon(
+              resumingThisPet
+                  ? Icons.play_circle_fill_rounded
+                  : Icons.directions_walk_rounded,
+              size: 18,
+            ),
+            label: Text(
+                resumingThisPet ? 'Riprendi passeggiata' : 'Nuova passeggiata'),
+          ),
+        ),
+        const SizedBox(height: AppSpacing.sm),
+        SizedBox(
+          width: double.infinity,
+          child: OutlinedButton.icon(
+            onPressed: _showBadges,
+            icon: const Icon(Icons.emoji_events_outlined, size: 18),
+            label: const Text('Badge'),
           ),
         ),
         const SizedBox(height: AppSpacing.md),

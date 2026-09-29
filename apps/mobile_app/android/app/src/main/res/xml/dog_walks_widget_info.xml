@@ -1,10 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- 4x3 home-screen cell footprint, per the owner's request - the 70dp*n-30dp
      rule of thumb gives minWidth/minHeight; targetCellWidth/Height are the
-     modern (API 31+) equivalent, ignored below that. -->
+     modern (API 31+) equivalent, ignored below that. Four pet rows plus the
+     header fit in 3 cells; taller placements just give the rows more room. -->
 <appwidget-provider xmlns:android="http://schemas.android.com/apk/res/android"
     android:minWidth="250dp"
     android:minHeight="180dp"
+    android:minResizeWidth="250dp"
+    android:minResizeHeight="180dp"
     android:targetCellWidth="4"
     android:targetCellHeight="3"
     android:updatePeriodMillis="21600000"
