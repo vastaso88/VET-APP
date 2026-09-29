@@ -15,6 +15,25 @@ void main() {
       expect(reminder?.petId, 'abc 1');
     });
 
+    test('parses the active-walk URIs', () {
+      expect(
+        HomeWidgetAction.tryParse(Uri.parse('homewidget://open_walk?petId=p9'))
+            ?.kind,
+        HomeWidgetActionKind.openWalk,
+      );
+      expect(
+        HomeWidgetAction.tryParse(Uri.parse('homewidget://pause_walk?petId=p9'))
+            ?.kind,
+        HomeWidgetActionKind.pauseWalk,
+      );
+      final resume = HomeWidgetAction.tryParse(
+          Uri.parse('homewidget://resume_walk?petId=p9'));
+      expect(resume?.kind, HomeWidgetActionKind.resumeWalk);
+      expect(resume?.petId, 'p9');
+      expect(HomeWidgetAction.tryParse(Uri.parse('homewidget://open_walk')),
+          isNull);
+    });
+
     test('ignores unknown hosts, missing petId and null', () {
       expect(HomeWidgetAction.tryParse(null), isNull);
       expect(HomeWidgetAction.tryParse(Uri.parse('homewidget://other?petId=1')),
@@ -98,5 +117,22 @@ void main() {
       expect(calls, 1);
       expect(store.hasPending, isFalse);
     });
+  });
+
+  test('an open_walk tap waits for the shell like the other actions', () async {
+    final store = HomeWidgetActionStore();
+    final delivered = <HomeWidgetAction>[];
+    store.attachHandler((a) async => delivered.add(a));
+    const open = HomeWidgetAction(HomeWidgetActionKind.openWalk, 'p1');
+
+    store.submit(open);
+    store.submit(const HomeWidgetAction(HomeWidgetActionKind.pauseWalk, 'p1'));
+    await Future<void>.delayed(Duration.zero);
+    expect(delivered, isEmpty);
+
+    store.shellReady();
+    await Future<void>.delayed(Duration.zero);
+    // Latest tap wins.
+    expect(delivered.single.kind, HomeWidgetActionKind.pauseWalk);
   });
 }

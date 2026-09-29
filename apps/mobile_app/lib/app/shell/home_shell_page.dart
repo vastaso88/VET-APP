@@ -10,8 +10,8 @@ import '../../features/dog_walks/data/active_walk_recovery_store.dart';
 import '../../features/dog_walks/data/dog_walks_repository.dart';
 import '../../features/dog_walks/data/home_widget_action_store.dart';
 import '../../features/dog_walks/domain/walk_session.dart';
-import '../../features/dog_walks/presentation/pages/active_walk_page.dart';
 import '../../features/dog_walks/presentation/walk_labels.dart';
+import '../../features/dog_walks/presentation/widgets/walk_control_sheet.dart';
 import '../../features/home/presentation/pages/home_dashboard_page.dart';
 import '../../features/pets/data/pet_demo_store.dart';
 import '../../features/pets/pets.dart';
@@ -420,7 +420,7 @@ class _ActiveWalkBannerState extends State<_ActiveWalkBanner> {
     super.dispose();
   }
 
-  Future<void> _openActiveWalk(WalkSession walk) async {
+  Future<void> _openWalkControls(WalkSession walk) async {
     await PetDemoStore.instance.ensureHydrated();
     PetProfile? pet;
     for (final candidate in PetDemoStore.instance.list()) {
@@ -430,10 +430,7 @@ class _ActiveWalkBannerState extends State<_ActiveWalkBanner> {
       }
     }
     if (pet == null || !mounted) return;
-    final matchedPet = pet;
-    await Navigator.of(context, rootNavigator: true).push(
-      MaterialPageRoute<bool>(builder: (_) => ActiveWalkPage(pet: matchedPet)),
-    );
+    await showWalkControlSheet(context, pet: pet);
   }
 
   @override
@@ -454,7 +451,7 @@ class _ActiveWalkBannerState extends State<_ActiveWalkBanner> {
         return Material(
           color: AppColors.primary,
           child: InkWell(
-            onTap: () => _openActiveWalk(walk),
+            onTap: () => _openWalkControls(walk),
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
               child: Row(

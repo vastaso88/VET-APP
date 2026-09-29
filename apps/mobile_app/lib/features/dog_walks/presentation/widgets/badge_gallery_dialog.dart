@@ -179,15 +179,16 @@ class _BadgeTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final iconColor = earned ? AppColors.primaryStrong : AppColors.mutedText;
-    final circleColor = earned ? AppColors.accentSoft : AppColors.background;
-    final textColor = earned ? AppColors.text : AppColors.mutedText;
-
-    return Container(
+    // Earned: full-color gold circle + white icon + a matching border, so
+    // it reads as "won" at a glance. Not earned: desaturated grey and
+    // dimmed further with Opacity - the previous version only changed a
+    // couple of mid-tone colors, which didn't read as a clear on/off state
+    // (owner report, 2026-09-30: "non si capisce bene").
+    final tile = Container(
       padding: const EdgeInsets.all(AppSpacing.md),
       decoration: BoxDecoration(
         color: earned ? AppColors.surfaceElevated : AppColors.surface,
-        border: Border.all(color: AppColors.border),
+        border: Border.all(color: earned ? AppColors.warning : AppColors.border, width: earned ? 2 : 1),
         borderRadius: BorderRadius.circular(AppRadii.large),
       ),
       child: Column(
@@ -197,16 +198,24 @@ class _BadgeTile extends StatelessWidget {
             width: 48,
             height: 48,
             alignment: Alignment.center,
-            decoration:
-                BoxDecoration(color: circleColor, shape: BoxShape.circle),
-            child: Icon(entry.icon, color: iconColor, size: 24),
+            decoration: BoxDecoration(
+              color: earned ? AppColors.warning : AppColors.border,
+              shape: BoxShape.circle,
+            ),
+            child: Icon(
+              entry.icon,
+              color: earned ? AppColors.onPrimary : AppColors.mutedText,
+              size: 24,
+            ),
           ),
           const SizedBox(height: AppSpacing.sm),
           Text(
             entry.name,
             textAlign: TextAlign.center,
-            style: AppTextStyles.bodySmall
-                .copyWith(color: textColor, fontWeight: FontWeight.w700),
+            style: AppTextStyles.bodySmall.copyWith(
+              color: earned ? AppColors.text : AppColors.mutedText,
+              fontWeight: FontWeight.w700,
+            ),
           ),
           const SizedBox(height: 2),
           Expanded(
@@ -214,11 +223,14 @@ class _BadgeTile extends StatelessWidget {
               entry.description,
               textAlign: TextAlign.center,
               overflow: TextOverflow.fade,
-              style: AppTextStyles.caption.copyWith(color: textColor),
+              style: AppTextStyles.caption
+                  .copyWith(color: earned ? AppColors.secondaryText : AppColors.mutedText),
             ),
           ),
         ],
       ),
     );
+
+    return earned ? tile : Opacity(opacity: 0.45, child: tile);
   }
 }
