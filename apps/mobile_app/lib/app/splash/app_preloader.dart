@@ -6,6 +6,7 @@ import '../../features/chat/data/chat_demo_store.dart';
 import '../../features/location/data/location_preference_store.dart';
 import '../../features/location/data/location_repository.dart';
 import '../../features/medical_records/data/medical_records_repository.dart';
+import '../../features/pet_news/data/pet_news_repository.dart';
 import '../../features/pets/data/pet_demo_store.dart';
 import '../../features/reminders/data/reminders_repository.dart';
 import '../../shared/auth/current_owner.dart';
@@ -60,7 +61,25 @@ class AppPreloader {
         RemindersRepository().ensureHydrated,
         () => MedicalRecordsRepository().loadRecords(),
         _loadLocation,
+        _warmPetNewsCache,
       ];
+
+  /// Fetches every "curiosità" category ahead of time so its 20-minute
+  /// cache (GoogleNewsPetNewsRepository) is already warm by the time the
+  /// user opens Home or the News page — best-effort like every other task
+  /// here, but worth calling out: unlike the others, this one can keep
+  /// running in the background past the preload's own timeout (see
+  /// AppPreloader.run/_guard) since `fetchManyWithLimitStreaming` has no
+  /// way to be cancelled mid-batch. That's fine — it only ever *adds*
+  /// cache entries, never blocks anything downstream from proceeding.
+  static Future<void> _warmPetNewsCache() async {
+    final repository = GoogleNewsPetNewsRepository();
+    await fetchManyWithLimit(
+      allPetNewsCategories
+          .map((c) => () => repository.fetchForSpecies(c, limit: petNewsPoolLimitPerCategory))
+          .toList(),
+    );
+  }
 
   /// GET /health on the FastAPI backend: absorbs the Vercel cold start
   /// (~2 s) so the first real call (subscription status, chat) is warm.

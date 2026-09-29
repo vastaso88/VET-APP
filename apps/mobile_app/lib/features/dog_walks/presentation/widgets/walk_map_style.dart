@@ -26,7 +26,8 @@ TileLayer buildWalkTileLayer() {
     final config = loader.load();
     final keySuffix = config.hasCartoApiKey ? '?key=${config.cartoApiKey}' : '';
     return TileLayer(
-      urlTemplate: 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png$keySuffix',
+      urlTemplate:
+          'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png$keySuffix',
       subdomains: const ['a', 'b', 'c', 'd'],
       userAgentPackageName: 'com.vetapp.mobile_app',
     );
@@ -45,7 +46,8 @@ Widget buildWalkMapAttribution() {
   return RichAttributionWidget(
     attributions: [
       const TextSourceAttribution('OpenStreetMap contributors'),
-      if (_resolveStyle(loader) == WalkMapStyle.carto) const TextSourceAttribution('CARTO'),
+      if (_resolveStyle(loader) == WalkMapStyle.carto)
+        const TextSourceAttribution('CARTO'),
     ],
   );
 }

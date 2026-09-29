@@ -2,6 +2,7 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 
+import '../../../../app/splash/loading_animation.dart';
 import '../../../../design_system/tokens/app_colors.dart';
 import '../../../../design_system/tokens/app_radii.dart';
 import '../../../../design_system/tokens/app_spacing.dart';
@@ -19,18 +20,8 @@ class NewsFeedPage extends StatefulWidget {
 }
 
 class _NewsFeedPageState extends State<NewsFeedPage> {
-  static const _categories = [
-    'Cane',
-    'Gatto',
-    'Piccoli mammiferi',
-    'Uccello',
-    'Rettili e anfibi',
-    'Pesce',
-    'Altro',
-    'Generale',
-  ];
+  static const _categories = allPetNewsCategories;
   static const _cardsPerRefresh = 6;
-  static const _poolLimitPerCategory = 4;
 
   final _repository = GoogleNewsPetNewsRepository();
   final _random = Random();
@@ -48,15 +39,34 @@ class _NewsFeedPageState extends State<NewsFeedPage> {
     _loadPool();
   }
 
+  // Reveals cards as soon as the FIRST batch of categories lands (see
+  // fetchManyWithLimitStreaming — batches of 3, well under a second each in
+  // practice) instead of blocking on every one of the 8 fixed categories,
+  // which is what made this page feel slow even after speeding up the
+  // batching itself. Later batches keep enriching `_pool` silently in the
+  // background — visible on the next refresh or category switch, without
+  // reshuffling cards the user is already looking at.
   Future<void> _loadPool() async {
-    setState(() => _loading = true);
-    final results = await fetchManyWithLimit(
-      _categories.map((c) => () => _repository.fetchForSpecies(c, limit: _poolLimitPerCategory)).toList(),
+    setState(() {
+      _loading = true;
+      _pool = [];
+    });
+
+    var revealed = false;
+    await fetchManyWithLimitStreaming<List<PetNewsItem>>(
+      _categories
+          .map((c) => () => _repository.fetchForSpecies(c, limit: petNewsPoolLimitPerCategory))
+          .toList(),
+      onBatch: (batchResults) {
+        if (!mounted) return;
+        _pool = [..._pool, ...batchResults.expand((items) => items)];
+        if (!revealed) {
+          revealed = true;
+          _pickNext();
+          setState(() => _loading = false);
+        }
+      },
     );
-    if (!mounted) return;
-    _pool = results.expand((items) => items).toList();
-    _pickNext();
-    setState(() => _loading = false);
   }
 
   void _pickNext() {
@@ -128,7 +138,7 @@ class _NewsFeedPageState extends State<NewsFeedPage> {
             const SizedBox(height: AppSpacing.md),
             Expanded(
               child: _loading
-                  ? const Center(child: CircularProgressIndicator())
+                  ? const Center(child: LoadingAnimation(label: 'Carico le News...'))
                   : RefreshIndicator(
                       onRefresh: _refresh,
                       child: _shown.isEmpty

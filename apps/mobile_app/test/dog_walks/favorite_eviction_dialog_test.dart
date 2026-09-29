@@ -4,7 +4,8 @@ import 'package:intl/date_symbol_data_local.dart';
 import 'package:vet_app_mobile/features/dog_walks/domain/walk_session.dart';
 import 'package:vet_app_mobile/features/dog_walks/presentation/widgets/favorite_eviction_dialog.dart';
 
-WalkSession _favorite(String id, {required int daysAgo, double distanceMeters = 1000}) {
+WalkSession _favorite(String id,
+    {required int daysAgo, double distanceMeters = 1000}) {
   return WalkSession(
     id: id,
     ownerId: 'user-1',

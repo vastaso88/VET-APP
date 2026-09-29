@@ -54,5 +54,20 @@ String badgeLabel(String badgeId) {
   if (walksMatch != null) {
     return '${walksMatch.group(1)} uscite 🎖️';
   }
+  if (badgeId.startsWith('duration_30min_pet_')) {
+    return '30 minuti in una passeggiata ⏱️';
+  }
+  if (badgeId.startsWith('duration_1h_pet_')) {
+    return '1 ora in una passeggiata ⏱️';
+  }
+  if (badgeId.startsWith('streak_7days_pet_')) {
+    return '7 giorni di fila 🔥';
+  }
+  if (badgeId.startsWith('dawn_walk_pet_')) {
+    return 'Passeggiata all\'alba 🌅';
+  }
+  if (badgeId.startsWith('night_walk_pet_')) {
+    return 'Passeggiata notturna 🌙';
+  }
   return badgeId;
 }
