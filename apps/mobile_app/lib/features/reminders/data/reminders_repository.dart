@@ -104,20 +104,30 @@ class RemindersRepository {
   /// elsewhere.
   static final ValueNotifier<int> changes = ValueNotifier<int>(0);
 
-  Future<void> ensureHydrated() async {
+  static Future<void>? _hydrating;
+
+  Future<void> ensureHydrated() {
     final ownerId = CurrentUser.get()?.id;
     if (ownerId == null || ownerId == _hydratedOwnerId) {
-      return;
+      return Future<void>.value();
     }
+    // Concurrent callers (splash preload, Home calendar, list page...) share
+    // one in-flight query instead of each issuing their own.
+    return _hydrating ??= _hydrate(ownerId).whenComplete(() => _hydrating = null);
+  }
 
+  Future<void> _hydrate(String ownerId) async {
     final client = _resolveClient();
     if (client == null) {
       return;
     }
 
     try {
-      final response =
-          await client.from('reminders').select('*').eq('owner_id', ownerId);
+      final response = await client
+          .from('reminders')
+          .select('*')
+          .eq('owner_id', ownerId)
+          .timeout(const Duration(seconds: 12));
       final rows = response as List<dynamic>;
       final loaded = <ReminderEntry>[];
       for (final row in rows) {

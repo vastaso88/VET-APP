@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 import '../../design_system/tokens/app_colors.dart';
 import '../../features/activities/presentation/pages/activities_page.dart';
@@ -24,107 +25,143 @@ class _HomeShellPageState extends State<HomeShellPage> {
   );
 
   late final List<_ShellTabNavigator> _pages = [
-    _ShellTabNavigator(navigatorKey: _navigatorKeys[0], rootPage: const HomeDashboardPage()),
-    _ShellTabNavigator(navigatorKey: _navigatorKeys[1], rootPage: const PetsListPage()),
-    _ShellTabNavigator(navigatorKey: _navigatorKeys[2], rootPage: const ActivitiesPage()),
-    _ShellTabNavigator(navigatorKey: _navigatorKeys[3], rootPage: const SettingsPage()),
+    _ShellTabNavigator(
+        navigatorKey: _navigatorKeys[0], rootPage: const HomeDashboardPage()),
+    _ShellTabNavigator(
+        navigatorKey: _navigatorKeys[1], rootPage: const PetsListPage()),
+    _ShellTabNavigator(
+        navigatorKey: _navigatorKeys[2], rootPage: const ActivitiesPage()),
+    _ShellTabNavigator(
+        navigatorKey: _navigatorKeys[3], rootPage: const SettingsPage()),
   ];
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppColors.background,
-      body: SafeArea(
-        child: LayoutBuilder(
-          builder: (context, constraints) {
-            final isCompact = constraints.maxWidth < 900;
-            final isExtendedRail = constraints.maxWidth >= 1240;
+    // Each tab keeps its own nested Navigator (see _ShellTabNavigator), so
+    // the system back gesture — which only ever reaches the ROOT
+    // Navigator — used to find nothing to pop and closed the app straight
+    // from a pushed page like a pet's detail view. This intercepts it and
+    // routes it to whichever navigation actually applies: the active tab's
+    // own stack first, then back to the Home tab from any other tab, and
+    // only lets the app close once already on Home with nothing pushed.
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, result) {
+        if (didPop) return;
+        _handleSystemBack();
+      },
+      child: Scaffold(
+        backgroundColor: AppColors.background,
+        body: SafeArea(
+          child: LayoutBuilder(
+            builder: (context, constraints) {
+              final isCompact = constraints.maxWidth < 900;
+              final isExtendedRail = constraints.maxWidth >= 1240;
 
-            if (isCompact) {
-              return IndexedStack(
-                index: _currentIndex,
-                children: _pages,
-              );
-            }
+              if (isCompact) {
+                return IndexedStack(
+                  index: _currentIndex,
+                  children: _pages,
+                );
+              }
 
-            return Padding(
-              padding: const EdgeInsets.all(16),
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(28),
-                child: DecoratedBox(
-                  decoration: BoxDecoration(
-                    color: AppColors.surface,
-                    border: Border.all(color: AppColors.border),
-                    boxShadow: const [
-                      BoxShadow(
-                        color: Color(0x14000000),
-                        blurRadius: 28,
-                        offset: Offset(0, 12),
-                      ),
-                    ],
-                  ),
-                  child: Row(
-                    children: [
-                      NavigationRail(
-                        extended: isExtendedRail,
-                        minExtendedWidth: 228,
-                        backgroundColor: AppColors.primary,
-                        indicatorColor: AppColors.accentSoft,
-                        selectedIndex: _currentIndex,
-                        onDestinationSelected: _handleDestinationSelected,
-                        labelType: isExtendedRail
-                            ? NavigationRailLabelType.none
-                            : NavigationRailLabelType.selected,
-                        selectedLabelTextStyle: const TextStyle(
-                          color: AppColors.onPrimary,
-                          fontWeight: FontWeight.w600,
+              return Padding(
+                padding: const EdgeInsets.all(16),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(28),
+                  child: DecoratedBox(
+                    decoration: BoxDecoration(
+                      color: AppColors.surface,
+                      border: Border.all(color: AppColors.border),
+                      boxShadow: const [
+                        BoxShadow(
+                          color: Color(0x14000000),
+                          blurRadius: 28,
+                          offset: Offset(0, 12),
                         ),
-                        unselectedLabelTextStyle: const TextStyle(
-                          color: Color(0xFFE7EEE9),
+                      ],
+                    ),
+                    child: Row(
+                      children: [
+                        NavigationRail(
+                          extended: isExtendedRail,
+                          minExtendedWidth: 228,
+                          backgroundColor: AppColors.primary,
+                          indicatorColor: AppColors.accentSoft,
+                          selectedIndex: _currentIndex,
+                          onDestinationSelected: _handleDestinationSelected,
+                          labelType: isExtendedRail
+                              ? NavigationRailLabelType.none
+                              : NavigationRailLabelType.selected,
+                          selectedLabelTextStyle: const TextStyle(
+                            color: AppColors.onPrimary,
+                            fontWeight: FontWeight.w600,
+                          ),
+                          unselectedLabelTextStyle: const TextStyle(
+                            color: Color(0xFFE7EEE9),
+                          ),
+                          leading: Padding(
+                            padding: const EdgeInsets.fromLTRB(18, 20, 18, 12),
+                            child: _ShellBrand(extended: isExtendedRail),
+                          ),
+                          trailing: Padding(
+                            padding: const EdgeInsets.fromLTRB(18, 12, 18, 20),
+                            child: _RailFooter(extended: isExtendedRail),
+                          ),
+                          destinations: _destinations,
                         ),
-                        leading: Padding(
-                          padding: const EdgeInsets.fromLTRB(18, 20, 18, 12),
-                          child: _ShellBrand(extended: isExtendedRail),
-                        ),
-                        trailing: Padding(
-                          padding: const EdgeInsets.fromLTRB(18, 12, 18, 20),
-                          child: _RailFooter(extended: isExtendedRail),
-                        ),
-                        destinations: _destinations,
-                      ),
-                      Expanded(
-                        child: ClipRect(
-                          child: IndexedStack(
-                            index: _currentIndex,
-                            children: _pages,
+                        Expanded(
+                          child: ClipRect(
+                            child: IndexedStack(
+                              index: _currentIndex,
+                              children: _pages,
+                            ),
                           ),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
                 ),
-              ),
+              );
+            },
+          ),
+        ),
+        bottomNavigationBar: LayoutBuilder(
+          builder: (context, constraints) {
+            if (constraints.maxWidth >= 900) {
+              return const SizedBox.shrink();
+            }
+
+            return NavigationBar(
+              height: 76,
+              backgroundColor: Colors.white,
+              indicatorColor: AppColors.accentSoft,
+              selectedIndex: _currentIndex,
+              onDestinationSelected: _handleDestinationSelected,
+              destinations: _bottomDestinations,
             );
           },
         ),
       ),
-      bottomNavigationBar: LayoutBuilder(
-        builder: (context, constraints) {
-          if (constraints.maxWidth >= 900) {
-            return const SizedBox.shrink();
-          }
-
-          return NavigationBar(
-            height: 76,
-            backgroundColor: Colors.white,
-            indicatorColor: AppColors.accentSoft,
-            selectedIndex: _currentIndex,
-            onDestinationSelected: _handleDestinationSelected,
-            destinations: _bottomDestinations,
-          );
-        },
-      ),
     );
+  }
+
+  Future<void> _handleSystemBack() async {
+    final activeNavigator = _navigatorKeys[_currentIndex].currentState;
+    if (activeNavigator != null && activeNavigator.canPop()) {
+      activeNavigator.pop();
+      return;
+    }
+
+    if (_currentIndex != 0) {
+      _handleDestinationSelected(0);
+      return;
+    }
+
+    // Already on the Home tab with nothing pushed above it: this is the
+    // true root, so let the system close the app rather than trapping the
+    // back button here.
+    SystemNavigator.pop();
   }
 
   void _handleDestinationSelected(int value) {

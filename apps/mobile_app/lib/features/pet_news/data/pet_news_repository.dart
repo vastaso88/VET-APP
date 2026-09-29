@@ -179,6 +179,9 @@ class GoogleNewsPetNewsRepository implements PetNewsRepository {
       imageUrl: (item['thumbnail'] as String?)?.isNotEmpty == true
           ? item['thumbnail'] as String
           : null,
+      // rss2json normalizes pubDate to "yyyy-MM-dd HH:mm:ss", which
+      // DateTime.tryParse accepts directly (space instead of the ISO "T").
+      publishedAt: DateTime.tryParse((item['pubDate'] ?? '').toString()),
     );
   }
 }
@@ -202,9 +205,18 @@ class _CacheEntry {
 /// a 429 (falls back to a stale cache entry, or an empty list — never an
 /// error shown to the user), so a rejected category just quietly shows
 /// fewer cards rather than breaking anything.
+///
+/// Shortened from 4s to 1.2s (2026-09-30): the 4s figure predates
+/// deduplicating categories before fetching (home_dashboard_page.dart) and
+/// fetching a bigger per-category pool instead of one request per display
+/// slot — both cut the number of distinct requests per load, so the same
+/// total pacing budget now buys more margin per request than 4s used to.
+/// Still sequential, not parallel: nothing here contradicts the documented
+/// "shared global bucket" behavior, so batching requests together remains
+/// the likelier way to trip it.
 Future<List<T>> fetchManyWithLimit<T>(
   List<Future<T> Function()> tasks, {
-  Duration delay = const Duration(seconds: 4),
+  Duration delay = const Duration(milliseconds: 1200),
 }) async {
   final results = <T>[];
   for (var i = 0; i < tasks.length; i++) {

@@ -49,45 +49,73 @@ class _HomeDashboardPageState extends State<HomeDashboardPage> {
     unawaited(LayoutSettingsStore.instance.ensureLoaded());
   }
 
-  /// Exactly 4 curiosità categories: the 3rd (index 2) is always the
-  /// cross-species "Generale" category (regulatory/informational), the
-  /// other 3 slots are filled with the owned species, in order.
+  /// Always exactly 4 cards when the fetched data allows it: the 3rd slot
+  /// is always the cross-species "Generale" story (a fixed, recognizable
+  /// "regulatory story" position — not part of the recency ordering), the
+  /// other 3 come from up to 3 owned species, falling back to "Generale"
+  /// for any slot beyond how many species the owner actually has. The 3
+  /// non-generic slots are sorted newest-first by the feed's own pubDate.
+  ///
+  /// Each distinct category is fetched once with a pool bigger than the
+  /// single card it needs, so a duplicate-title drop — or two slots both
+  /// needing "Generale" — backfills from that same pool instead of the
+  /// card count silently shrinking (the previous title-based dedup alone
+  /// did that: fewer cards instead of different ones).
   Future<List<PetNewsItem>> _loadPetNews() async {
     await PetDemoStore.instance.ensureHydrated();
-    final owned =
-        PetDemoStore.instance.list().map((pet) => pet.species).toSet().toList();
-    final categories = <String>[];
-    var ownedIndex = 0;
-    for (var i = 0; i < 4; i++) {
-      if (i == 2) {
-        categories.add('Generale');
-      } else if (ownedIndex < owned.length) {
-        categories.add(owned[ownedIndex++]);
-      } else {
-        categories.add('Generale');
-      }
-    }
+    final owned = PetDemoStore.instance.list().map((pet) => pet.species).toSet().toList();
 
-    // Dedup categories: with fewer than 3 owned species, the loop above
-    // queues the same query (almost always "Generale") two or three times.
-    // Each `fetchForSpecies` call caches by category, so those repeats
-    // fetched and showed the exact same top headline that many times —
-    // e.g. one dog owner saw one dog card, then the same generic story
-    // three times over.
-    final uniqueCategories = categories.toSet().toList(growable: false);
+    final nonGenericCategories = <String>[
+      for (var i = 0; i < 3; i++) i < owned.length ? owned[i] : 'Generale',
+    ];
 
+    final categoriesToFetch = {...nonGenericCategories, 'Generale'}.toList(growable: false);
+    const poolLimitPerCategory = 4;
     final results = await fetchManyWithLimit(
-      uniqueCategories
-          .map((c) => () => _petNewsRepository.fetchForSpecies(c, limit: 1))
+      categoriesToFetch
+          .map((c) => () => _petNewsRepository.fetchForSpecies(c, limit: poolLimitPerCategory))
           .toList(),
     );
-    final items = results.expand((items) => items).toList(growable: false);
+    final poolByCategory = <String, List<PetNewsItem>>{
+      for (var i = 0; i < categoriesToFetch.length; i++)
+        categoriesToFetch[i]: List<PetNewsItem>.of(results[i])
+          ..sort(_compareNewsByRecency),
+    };
+    final allItemsNewestFirst = results.expand((items) => items).toList(growable: false)
+      ..sort(_compareNewsByRecency);
 
-    // Safety net: even distinct categories can legitimately surface the
-    // same breaking headline (e.g. a cross-species regulatory story), so
-    // de-dupe by title too rather than relying on the category dedup alone.
-    final seenTitles = <String>{};
-    return items.where((item) => seenTitles.add(item.title)).toList(growable: false);
+    final usedTitles = <String>{};
+    PetNewsItem? takeFromCategory(String category) {
+      for (final item in poolByCategory[category] ?? const <PetNewsItem>[]) {
+        if (usedTitles.add(item.title)) return item;
+      }
+      return null;
+    }
+
+    PetNewsItem? takeFromAnyCategory() {
+      for (final item in allItemsNewestFirst) {
+        if (usedTitles.add(item.title)) return item;
+      }
+      return null;
+    }
+
+    // Claim the generic slot first so a "Generale" fallback slot below (an
+    // owner with fewer than 3 species) backfills from what's left of the
+    // same pool, rather than the two competing over the same top item.
+    final generic = takeFromCategory('Generale') ?? takeFromAnyCategory();
+
+    final nonGeneric = <PetNewsItem>[];
+    for (final category in nonGenericCategories) {
+      final item = takeFromCategory(category) ?? takeFromAnyCategory();
+      if (item != null) nonGeneric.add(item);
+    }
+    nonGeneric.sort(_compareNewsByRecency);
+
+    final result = List<PetNewsItem>.of(nonGeneric);
+    if (generic != null) {
+      result.insert(result.length >= 2 ? 2 : result.length, generic);
+    }
+    return result;
   }
 
   @override
@@ -141,6 +169,17 @@ class _HomeDashboardPageState extends State<HomeDashboardPage> {
       ),
     );
   }
+}
+
+/// Newest first; an item with no parsed `pubDate` sorts as oldest rather
+/// than guessing a date for it.
+int _compareNewsByRecency(PetNewsItem a, PetNewsItem b) {
+  final aDate = a.publishedAt;
+  final bDate = b.publishedAt;
+  if (aDate == null && bDate == null) return 0;
+  if (aDate == null) return 1;
+  if (bDate == null) return -1;
+  return bDate.compareTo(aDate);
 }
 
 DateTime _startOfWeek(DateTime day, WeekStartDay weekStartDay) {
