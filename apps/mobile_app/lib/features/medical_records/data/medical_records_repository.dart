@@ -42,11 +42,41 @@ class MedicalRecordsRepository {
   final SupabaseClient? _client;
 
   Future<List<MedicalRecordEntry>> loadRecords() async {
-    final remote = await _tryLoadRemoteRecords();
-    if (remote.isNotEmpty) {
-      return remote;
+    final client = _resolveClient();
+    if (client == null) {
+      return _previewRecords;
     }
-    return _previewRecords;
+
+    try {
+      final response = await client.from('medical_records').select(
+          'id,pet_name,title,subtitle,meta,badge,detail_source,created_at');
+      final rows = response as List<dynamic>;
+      return rows
+          .map(
+            (row) => MedicalRecordEntry(
+              id: (row['id'] ?? '').toString(),
+              petName: (row['pet_name'] ?? 'Moka').toString(),
+              title: (row['title'] ?? 'Referto clinico').toString(),
+              subtitle:
+                  (row['subtitle'] ?? 'Documento sincronizzato').toString(),
+              meta: (row['meta'] ?? 'Sincronizzato da Supabase').toString(),
+              badge: (row['badge'] ?? 'Sincronizzato').toString(),
+              detailSource: (row['detail_source'] ?? 'Supabase').toString(),
+              createdAt: (row['created_at'] ?? 'Adesso').toString(),
+              timeline: const [
+                MedicalRecordTimelineEntry(
+                    label: 'Importato', value: 'Sincronizzato'),
+                MedicalRecordTimelineEntry(
+                    label: 'Revisionato', value: 'In attesa'),
+                MedicalRecordTimelineEntry(
+                    label: "Pronto per l'invio", value: 'Disponibile'),
+              ],
+            ),
+          )
+          .toList(growable: false);
+    } catch (_) {
+      return const [];
+    }
   }
 
   Future<MedicalRecordEntry?> loadRecordById(String id) async {
@@ -106,43 +136,6 @@ class MedicalRecordsRepository {
       }
     }
     return _previewRecords.isEmpty ? null : _previewRecords.first;
-  }
-
-  Future<List<MedicalRecordEntry>> _tryLoadRemoteRecords() async {
-    final client = _resolveClient();
-    if (client == null) {
-      return const [];
-    }
-
-    try {
-      final response = await client.from('clinical_events').select('*');
-      final rows = response as List<dynamic>;
-      return rows
-          .map(
-            (row) => MedicalRecordEntry(
-              id: (row['id'] ?? '').toString(),
-              petName: (row['pet_name'] ?? 'Moka').toString(),
-              title: (row['title'] ?? 'Referto clinico').toString(),
-              subtitle:
-                  (row['subtitle'] ?? 'Documento sincronizzato').toString(),
-              meta: (row['meta'] ?? 'Sincronizzato da Supabase').toString(),
-              badge: (row['badge'] ?? 'Sincronizzato').toString(),
-              detailSource: (row['detail_source'] ?? 'Supabase').toString(),
-              createdAt: (row['created_at'] ?? 'Adesso').toString(),
-              timeline: const [
-                MedicalRecordTimelineEntry(
-                    label: 'Importato', value: 'Sincronizzato'),
-                MedicalRecordTimelineEntry(
-                    label: 'Revisionato', value: 'In attesa'),
-                MedicalRecordTimelineEntry(
-                    label: "Pronto per l'invio", value: 'Disponibile'),
-              ],
-            ),
-          )
-          .toList(growable: false);
-    } catch (_) {
-      return const [];
-    }
   }
 
   SupabaseClient? _resolveClient() {
