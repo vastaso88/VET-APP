@@ -156,4 +156,154 @@ void main() {
 
     expect(controller.walk!.route, hasLength(1));
   });
+
+  group('pause/resume', () {
+    test('pause ignores GPS fixes until resume', () async {
+      final controller = ActiveWalkController(repository: DogWalksRepository());
+      final positionController = StreamController<GpsFix>();
+      addTearDown(() async {
+        await positionController.close();
+        controller.dispose();
+      });
+
+      await controller.start(
+        ownerId: 'user-1',
+        petId: 'pet-1',
+        positionStream: positionController.stream,
+      );
+      positionController.add(_fix(45.4642, 9.1900));
+      await Future<void>.delayed(Duration.zero);
+      expect(controller.walk!.route, hasLength(1));
+
+      await controller.pause();
+      expect(controller.walk!.isPaused, isTrue);
+
+      positionController.add(_fix(45.4650, 9.1910));
+      await Future<void>.delayed(Duration.zero);
+      expect(controller.walk!.route, hasLength(1),
+          reason: 'fixes while paused must not grow the route');
+      expect(controller.walk!.distanceMeters, 0);
+    });
+
+    test('pause is a no-op when not tracking or already paused', () async {
+      final controller = ActiveWalkController(repository: DogWalksRepository());
+      await controller.pause();
+      expect(controller.walk, isNull);
+      addTearDown(controller.dispose);
+    });
+
+    test('resuming accepts the next fix as a new segment without a distance jump or '
+        'speed-glitch rejection', () async {
+      final controller = ActiveWalkController(repository: DogWalksRepository());
+      final positionController = StreamController<GpsFix>();
+      addTearDown(() async {
+        await positionController.close();
+        controller.dispose();
+      });
+
+      await controller.start(
+        ownerId: 'user-1',
+        petId: 'pet-1',
+        positionStream: positionController.stream,
+      );
+      final start = DateTime.now();
+      positionController.add(_fix(45.4642, 9.1900, recordedAt: start));
+      await Future<void>.delayed(Duration.zero);
+
+      await controller.pause();
+      await controller.resume();
+      expect(controller.walk!.isPaused, isFalse);
+
+      // Miles away, a second after the pre-pause point by wall clock - would
+      // fail the speed-jump check as a live fix, but resuming should treat
+      // it as a fresh segment start instead.
+      positionController.add(
+        _fix(46.0, 10.0, recordedAt: start.add(const Duration(seconds: 1))),
+      );
+      await Future<void>.delayed(Duration.zero);
+
+      expect(controller.walk!.route, hasLength(2));
+      expect(controller.walk!.route.last.startsNewSegment, isTrue);
+      expect(controller.walk!.route.first.startsNewSegment, isFalse);
+      expect(controller.walk!.distanceMeters, 0,
+          reason: 'the segment-start point adds no distance from the pre-pause point');
+    });
+
+    test('resume is a no-op when not paused', () async {
+      final controller = ActiveWalkController(repository: DogWalksRepository());
+      final positionController = StreamController<GpsFix>();
+      addTearDown(() async {
+        await positionController.close();
+        controller.dispose();
+      });
+
+      await controller.start(
+        ownerId: 'user-1',
+        petId: 'pet-1',
+        positionStream: positionController.stream,
+      );
+      await controller.resume();
+      expect(controller.walk!.isPaused, isFalse);
+      expect(controller.walk!.pausedSeconds, 0);
+    });
+
+    test('stop while paused folds the ongoing pause into the saved duration', () async {
+      final controller = ActiveWalkController(repository: DogWalksRepository());
+      final positionController = StreamController<GpsFix>();
+      addTearDown(() async {
+        await positionController.close();
+        controller.dispose();
+      });
+
+      await controller.start(
+        ownerId: 'user-1',
+        petId: 'pet-1',
+        positionStream: positionController.stream,
+      );
+      await controller.pause();
+
+      await controller.stop();
+
+      expect(controller.walk!.status, WalkStatus.completed);
+      expect(controller.walk!.isPaused, isFalse);
+      expect(controller.walk!.durationSeconds, isNotNull);
+      expect(controller.walk!.durationSeconds, lessThanOrEqualTo(1));
+    });
+  });
+
+  group('walkActiveDurationSeconds', () {
+    test('excludes a completed pause interval', () {
+      final start = DateTime(2026, 1, 1, 10);
+      final walk = WalkSession(
+        id: 'walk-1',
+        ownerId: 'user-1',
+        petId: 'pet-1',
+        startedAt: start,
+        pausedSeconds: 120,
+      );
+
+      final active =
+          walkActiveDurationSeconds(walk, now: start.add(const Duration(minutes: 10)));
+
+      expect(active, 10 * 60 - 120);
+    });
+
+    test('also excludes the pause currently in progress', () {
+      final start = DateTime(2026, 1, 1, 10);
+      final walk = WalkSession(
+        id: 'walk-1',
+        ownerId: 'user-1',
+        petId: 'pet-1',
+        startedAt: start,
+        isPaused: true,
+        pausedAt: start.add(const Duration(minutes: 8)),
+      );
+
+      final active =
+          walkActiveDurationSeconds(walk, now: start.add(const Duration(minutes: 10)));
+
+      // 10 minutes elapsed, but the last 2 were spent paused.
+      expect(active, 8 * 60);
+    });
+  });
 }

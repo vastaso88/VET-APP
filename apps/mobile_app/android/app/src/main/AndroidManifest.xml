@@ -31,6 +31,7 @@
             android:launchMode="singleTop"
             android:taskAffinity=""
             android:theme="@style/LaunchTheme"
+            android:screenOrientation="portrait"
             android:configChanges="orientation|keyboardHidden|keyboard|screenSize|smallestScreenSize|locale|layoutDirection|fontScale|screenLayout|density|uiMode"
             android:hardwareAccelerated="true"
             android:windowSoftInputMode="adjustResize">
@@ -41,6 +42,21 @@
             <meta-data
               android:name="io.flutter.embedding.android.NormalTheme"
               android:resource="@style/NormalTheme"
+              />
+            <!-- The home-screen widget's buttons start this Activity with a
+                 `homewidget://new_reminder|start_walk?petId=...` data URI.
+                 By default Flutter (3.27+) treats any intent data as a
+                 deep-link ROUTE: cold start makes it the initial route and a
+                 running app gets a pushRouteInformation, which
+                 AppRouter.onGenerateRoute answers with a SplashPage - and the
+                 splash's pushReplacement then lands on the plain home,
+                 swallowing the widget action (owner report, 2026-09-30).
+                 The app has no other deep links, and the widget URI is read
+                 by the home_widget plugin instead (walk_home_widget.dart),
+                 so route handling is switched off. -->
+            <meta-data
+              android:name="flutter_deeplinking_enabled"
+              android:value="false"
               />
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>

@@ -8,6 +8,7 @@ import '../../features/activities/presentation/pages/activities_page.dart';
 import '../../features/dog_walks/data/active_walk_controller.dart';
 import '../../features/dog_walks/data/active_walk_recovery_store.dart';
 import '../../features/dog_walks/data/dog_walks_repository.dart';
+import '../../features/dog_walks/data/home_widget_action_store.dart';
 import '../../features/dog_walks/domain/walk_session.dart';
 import '../../features/dog_walks/presentation/pages/active_walk_page.dart';
 import '../../features/dog_walks/presentation/walk_labels.dart';
@@ -47,8 +48,20 @@ class _HomeShellPageState extends State<HomeShellPage> {
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance
-        .addPostFrameCallback((_) => _checkForInterruptedWalk());
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      // The shell being up means signed in and past splash/paywall: only now
+      // may a tapped home-screen widget shortcut (reminder / walk) be opened,
+      // and after the interrupted-walk prompt, so the two never stack.
+      _checkForInterruptedWalk().whenComplete(() {
+        if (mounted) HomeWidgetActionStore.instance.shellReady();
+      });
+    });
+  }
+
+  @override
+  void dispose() {
+    HomeWidgetActionStore.instance.shellGone();
+    super.dispose();
   }
 
   /// Offers to resume a walk that was still "in_progress" on disk when the
@@ -85,7 +98,7 @@ class _HomeShellPageState extends State<HomeShellPage> {
     );
 
     if (shouldResume == true) {
-      await ActiveWalkController.instance.resume(recovered);
+      await ActiveWalkController.instance.recoverInterrupted(recovered);
     } else {
       await DogWalksRepository()
           .saveWalk(recovered.copyWith(status: WalkStatus.discarded));
@@ -433,8 +446,11 @@ class _ActiveWalkBannerState extends State<_ActiveWalkBanner> {
           return const SizedBox.shrink();
         }
 
-        final elapsedSeconds =
-            DateTime.now().difference(walk.startedAt).inSeconds;
+        final activeSeconds = walkActiveDurationSeconds(walk);
+        final label = walk.isPaused
+            ? 'Passeggiata in pausa · ${walkDistanceLabel(walk.distanceMeters)}'
+            : 'Passeggiata in corso · ${walkElapsedLabel(activeSeconds)} · '
+                '${walkDistanceLabel(walk.distanceMeters)}';
         return Material(
           color: AppColors.primary,
           child: InkWell(
@@ -443,13 +459,15 @@ class _ActiveWalkBannerState extends State<_ActiveWalkBanner> {
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
               child: Row(
                 children: [
-                  const Icon(Icons.directions_walk_rounded,
-                      color: AppColors.onPrimary, size: 18),
+                  Icon(
+                    walk.isPaused ? Icons.pause_circle_outline : Icons.directions_walk_rounded,
+                    color: AppColors.onPrimary,
+                    size: 18,
+                  ),
                   const SizedBox(width: 8),
                   Expanded(
                     child: Text(
-                      'Passeggiata in corso · ${walkElapsedLabel(elapsedSeconds)} · '
-                      '${walkDistanceLabel(walk.distanceMeters)}',
+                      label,
                       style: const TextStyle(
                           color: AppColors.onPrimary,
                           fontWeight: FontWeight.w600),

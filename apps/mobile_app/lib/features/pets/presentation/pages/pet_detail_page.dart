@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart' as latlong;
@@ -17,6 +19,7 @@ import '../../../dog_walks/domain/badges.dart';
 import '../../../dog_walks/domain/walk_retention.dart';
 import '../../../dog_walks/domain/walk_session.dart';
 import '../../../dog_walks/presentation/pages/active_walk_page.dart';
+import '../../../dog_walks/presentation/walk_completion_flow.dart';
 import '../../../dog_walks/presentation/walk_labels.dart';
 import '../../../dog_walks/presentation/widgets/badge_gallery_dialog.dart';
 import '../../../dog_walks/presentation/widgets/walk_map_style.dart';
@@ -1005,11 +1008,77 @@ class _WalksTabState extends State<_WalksTab> {
   }
 
   Future<void> _startWalk() async {
+    final controller = ActiveWalkController.instance;
+    if (controller.isActive && controller.walk?.petId == widget.pet.id) {
+      final confirmed = await showDialog<bool>(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: const Text('Passeggiata già in corso'),
+          content: const Text(
+            'C\'è già una passeggiata in corso: terminarla e iniziarne una nuova?',
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(false),
+              child: const Text('Annulla'),
+            ),
+            FilledButton(
+              onPressed: () => Navigator.of(context).pop(true),
+              child: const Text('Termina e ricomincia'),
+            ),
+          ],
+        ),
+      );
+      if (confirmed != true) return;
+      if (!mounted) return;
+      await finishActiveWalk(context, widget.pet);
+      if (!mounted) return;
+    }
+
     await Navigator.of(context).push(
       MaterialPageRoute<bool>(builder: (_) => ActiveWalkPage(pet: widget.pet)),
     );
     if (!mounted) return;
     await _reload();
+  }
+
+  Future<void> _openWalkStatusSheet() async {
+    final walk = ActiveWalkController.instance.walk;
+    if (walk == null) return;
+    final action = await showModalBottomSheet<String>(
+      context: context,
+      builder: (context) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ListTile(
+              leading: const Icon(Icons.stop_circle_outlined),
+              title: const Text('Fine passeggiata'),
+              onTap: () => Navigator.of(context).pop('finish'),
+            ),
+            ListTile(
+              leading: Icon(
+                walk.isPaused ? Icons.play_circle_outline : Icons.pause_circle_outline,
+              ),
+              title: Text(walk.isPaused ? 'Riavvia' : 'Pausa'),
+              onTap: () => Navigator.of(context).pop(walk.isPaused ? 'resume' : 'pause'),
+            ),
+          ],
+        ),
+      ),
+    );
+    if (!mounted) return;
+
+    switch (action) {
+      case 'finish':
+        await finishActiveWalk(context, widget.pet);
+        if (!mounted) return;
+        await _reload();
+      case 'pause':
+        await ActiveWalkController.instance.pause();
+      case 'resume':
+        await ActiveWalkController.instance.resume();
+    }
   }
 
   Future<void> _showBadges() async {
@@ -1021,23 +1090,35 @@ class _WalksTabState extends State<_WalksTab> {
 
   @override
   Widget build(BuildContext context) {
-    final resumingThisPet = ActiveWalkController.instance.isActive &&
-        ActiveWalkController.instance.walk?.petId == widget.pet.id;
     return Column(
       children: [
-        SizedBox(
-          width: double.infinity,
-          child: FilledButton.icon(
-            onPressed: _startWalk,
-            icon: Icon(
-              resumingThisPet
-                  ? Icons.play_circle_fill_rounded
-                  : Icons.directions_walk_rounded,
-              size: 18,
-            ),
-            label: Text(
-                resumingThisPet ? 'Riprendi passeggiata' : 'Nuova passeggiata'),
-          ),
+        AnimatedBuilder(
+          animation: ActiveWalkController.instance,
+          builder: (context, _) {
+            final controller = ActiveWalkController.instance;
+            final activeForThisPet =
+                controller.isActive && controller.walk?.petId == widget.pet.id;
+            return Row(
+              children: [
+                Expanded(
+                  child: FilledButton.icon(
+                    onPressed: _startWalk,
+                    icon: const Icon(Icons.directions_walk_rounded, size: 18),
+                    label: const Text('Avvia passeggiata'),
+                  ),
+                ),
+                if (activeForThisPet) ...[
+                  const SizedBox(width: AppSpacing.sm),
+                  Expanded(
+                    child: OutlinedButton(
+                      onPressed: _openWalkStatusSheet,
+                      child: _WalkStatusLabel(walk: controller.walk!),
+                    ),
+                  ),
+                ],
+              ],
+            );
+          },
         ),
         const SizedBox(height: AppSpacing.sm),
         SizedBox(
@@ -1141,6 +1222,65 @@ class _BadgesRow extends StatelessWidget {
             ),
           )
           .toList(),
+    );
+  }
+}
+
+/// The status button's content next to "Avvia passeggiata": live
+/// "distanza · mm:ss" while tracking, or "Riprendi passeggiata" while
+/// paused. Owns its own ticker (rather than relying on the parent's
+/// AnimatedBuilder, which only fires on an accepted GPS point) so the time
+/// actually counts up once a second, and stops ticking while paused since
+/// walkActiveDurationSeconds freezes anyway (owner request, 2026-09-30).
+class _WalkStatusLabel extends StatefulWidget {
+  const _WalkStatusLabel({required this.walk});
+
+  final WalkSession walk;
+
+  @override
+  State<_WalkStatusLabel> createState() => _WalkStatusLabelState();
+}
+
+class _WalkStatusLabelState extends State<_WalkStatusLabel> {
+  Timer? _ticker;
+
+  @override
+  void initState() {
+    super.initState();
+    _syncTicker();
+  }
+
+  @override
+  void didUpdateWidget(covariant _WalkStatusLabel oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    _syncTicker();
+  }
+
+  void _syncTicker() {
+    if (widget.walk.isPaused) {
+      _ticker?.cancel();
+      _ticker = null;
+      return;
+    }
+    _ticker ??= Timer.periodic(const Duration(seconds: 1), (_) {
+      if (mounted) setState(() {});
+    });
+  }
+
+  @override
+  void dispose() {
+    _ticker?.cancel();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (widget.walk.isPaused) {
+      return const Text('Riprendi passeggiata');
+    }
+    final activeSeconds = walkActiveDurationSeconds(widget.walk);
+    return Text(
+      '${walkDistanceLabel(widget.walk.distanceMeters)} · ${walkElapsedLabel(activeSeconds)}',
     );
   }
 }

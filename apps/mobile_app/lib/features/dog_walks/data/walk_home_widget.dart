@@ -10,6 +10,7 @@ import '../../pets/data/pet_demo_store.dart';
 import '../../pets/domain/pet_models.dart';
 import '../../reminders/presentation/pages/reminders_pages.dart';
 import '../presentation/pages/active_walk_page.dart';
+import 'home_widget_action_store.dart';
 
 const _petsDataKey = 'dog_walks_widget_pets';
 const _petsTotalKey = 'dog_walks_widget_total';
@@ -21,11 +22,6 @@ const _androidProviderName = 'DogWalksWidgetProvider';
 /// row count is the pragmatic tradeoff for a home-screen glance widget. The
 /// real total is saved too, so the widget can say "+N altri".
 const _maxWidgetPets = 4;
-
-/// Deep-link hosts of the widget's `homewidget://<host>?petId=...` clicks -
-/// keep in sync with DogWalksWidgetProvider.kt.
-const _startWalkHost = 'start_walk';
-const _newReminderHost = 'new_reminder';
 
 /// Species are stored as the Italian label from PetDemoStore.speciesOptions.
 @visibleForTesting
@@ -66,32 +62,38 @@ Future<void> syncPetsToHomeWidget(List<PetProfile> pets) async {
   }
 }
 
-/// Wires up navigation for the widget's per-pet buttons ("Passeggiata" ->
-/// new walk, "Nuovo promemoria" -> reminder form): checks whether this
-/// launch of the app came from the widget (cold start), then keeps
-/// listening for the same click while already running (warm start -
-/// MainActivity is singleTop, so it's a click delivered to the existing
-/// instance, not a new one). Call once from bootstrap.dart after `runApp`.
+
+/// Wires up the widget's per-pet buttons ("Passeggiata" -> new walk, "Nuovo
+/// promemoria" -> reminder form). Taps are only *recorded* here, in
+/// [HomeWidgetActionStore]; the home shell consumes them once it's mounted
+/// (see home_shell_page.dart), so a tap during the 4s+ splash / session
+/// restore / preload is neither lost nor swallowed by the splash's
+/// pushReplacement.
+///
+/// Two entry points, one each per way the app can be started by a tap:
+/// - cold start: `initiallyLaunchedFromHomeWidget` is read exactly once here;
+/// - app already running (MainActivity is singleTop, so the click arrives as
+///   onNewIntent): the `widgetClicked` stream.
+/// Call once from bootstrap.dart after `runApp`.
 void initWalkHomeWidgetLaunchHandling() {
   if (!_isAndroid) return;
 
-  unawaited(
-    HomeWidget.initiallyLaunchedFromHomeWidget().then(_handleHomeWidgetUri),
-  );
-  HomeWidget.widgetClicked.listen(_handleHomeWidgetUri);
+  final store = HomeWidgetActionStore.instance..attachHandler(_openWidgetAction);
+  void record(Uri? uri) {
+    final action = HomeWidgetAction.tryParse(uri);
+    if (action != null) store.submit(action);
+  }
+
+  unawaited(HomeWidget.initiallyLaunchedFromHomeWidget().then(record));
+  HomeWidget.widgetClicked.listen(record);
 }
 
-Future<void> _handleHomeWidgetUri(Uri? uri) async {
-  if (uri == null) return;
-  final host = uri.host;
-  if (host != _startWalkHost && host != _newReminderHost) return;
-  final petId = uri.queryParameters['petId'];
-  if (petId == null) return;
-
+/// Opens the page for [action] on the root navigator (above the home shell).
+Future<void> _openWidgetAction(HomeWidgetAction action) async {
   await PetDemoStore.instance.ensureHydrated();
   PetProfile? pet;
   for (final candidate in PetDemoStore.instance.list()) {
-    if (candidate.id == petId) {
+    if (candidate.id == action.petId) {
       pet = candidate;
       break;
     }
@@ -99,56 +101,27 @@ Future<void> _handleHomeWidgetUri(Uri? uri) async {
   if (pet == null) return;
   final matchedPet = pet;
 
-  // Cold start: the splash is still routing (session restore, preload) and
-  // will pushReplacement whatever is on top with the home shell, which would
-  // swallow a page pushed now. Wait for it to hand over.
-  if (!await _waitForHome()) return;
-
   final navigator = AppRouter.navigatorKey.currentState;
   if (navigator == null) return;
-  if (host == _startWalkHost) {
-    // Walks are for dogs only, whatever a stale widget still shows.
-    if (!isDogSpecies(matchedPet.species)) return;
-    unawaited(
-      navigator.push(
-        MaterialPageRoute<bool>(
-          builder: (_) => ActiveWalkPage(pet: matchedPet, autoStart: true),
-        ),
-      ),
-    );
-  } else {
-    unawaited(
-      navigator.push(
-        MaterialPageRoute<void>(
-          builder: (_) => ReminderCreatePage(petName: matchedPet.name),
-        ),
-      ),
-    );
-  }
-}
 
-/// Resolves true once it's safe to push the widget's target page: at once on
-/// a warm start (any in-app route on top), after the splash hands over on a
-/// cold start. False if the owner ends up signed out / on the paywall /
-/// password reset (nothing to open), or the splash never finishes (~20s).
-Future<bool> _waitForHome() async {
-  const blockedRoutes = {
-    AppRouter.auth,
-    AppRouter.paywall,
-    AppRouter.setNewPassword,
-  };
-  for (var attempt = 0; attempt < 80; attempt++) {
-    final navigator = AppRouter.navigatorKey.currentState;
-    if (navigator != null) {
-      String? topName;
-      navigator.popUntil((route) {
-        topName = route.settings.name;
-        return true;
-      });
-      if (blockedRoutes.contains(topName)) return false;
-      if (topName != null && topName != AppRouter.splash) return true;
-    }
-    await Future<void>.delayed(const Duration(milliseconds: 250));
+  switch (action.kind) {
+    case HomeWidgetActionKind.startWalk:
+      // Walks are for dogs only, whatever a stale widget still shows.
+      if (!isDogSpecies(matchedPet.species)) return;
+      unawaited(
+        navigator.push(
+          MaterialPageRoute<bool>(
+            builder: (_) => ActiveWalkPage(pet: matchedPet, autoStart: true),
+          ),
+        ),
+      );
+    case HomeWidgetActionKind.newReminder:
+      unawaited(
+        navigator.push(
+          MaterialPageRoute<void>(
+            builder: (_) => ReminderCreatePage(petName: matchedPet.name),
+          ),
+        ),
+      );
   }
-  return false;
 }

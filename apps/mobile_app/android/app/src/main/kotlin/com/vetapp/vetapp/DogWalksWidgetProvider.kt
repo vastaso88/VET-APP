@@ -1,21 +1,30 @@
 package com.vetapp.vetapp
 
+import android.app.ActivityOptions
 import android.app.PendingIntent
 import android.appwidget.AppWidgetManager
 import android.content.Context
+import android.content.Intent
 import android.content.SharedPreferences
 import android.graphics.Color
 import android.net.Uri
+import android.os.Build
+import android.os.Bundle
 import android.view.View
 import android.widget.RemoteViews
 import es.antonborri.home_widget.HomeWidgetLaunchIntent
+import es.antonborri.home_widget.HomeWidgetPlugin
 import es.antonborri.home_widget.HomeWidgetProvider
 import org.json.JSONArray
 
 /**
- * VetApp home-screen widget (owner request 2026-09-29, restyled same day):
- * one row per pet (up to [SLOT_IDS.size]) with the pet's avatar and name, a
- * "Nuovo promemoria" pill and - dogs only - a "Passeggiata" pill.
+ * VetApp home-screen widget (owner request 2026-09-29, restyled and shrunk to
+ * 4x1 on 2026-09-30): per pet an avatar and name, a "Nuovo promemoria" pill
+ * and - dogs only - a "Passeggiata" pill.
+ *
+ * Two layouts, picked from the widget's current height ([TALL_MIN_HEIGHT_DP]):
+ * a compact one-line strip (default, up to 2 pets + "+N altri") and the
+ * original 4-row layout once the owner resizes the widget taller.
  *
  * Both pills deep-link into the app through home_widget's launch intent
  * (`homewidget://<action>?petId=...`), handled in walk_home_widget.dart:
@@ -34,6 +43,23 @@ class DogWalksWidgetProvider : HomeWidgetProvider() {
       val color: Int,
   )
 
+  private class RowIds(
+      val slot: Int,
+      val avatar: Int,
+      val emoji: Int,
+      val name: Int,
+      val reminder: Int,
+      val walk: Int,
+  )
+
+  private class LayoutSpec(
+      val layout: Int,
+      val root: Int,
+      val empty: Int,
+      val more: Int,
+      val rows: List<RowIds>,
+  )
+
   companion object {
     private const val KEY_PETS = "dog_walks_widget_pets"
     private const val KEY_TOTAL = "dog_walks_widget_total"
@@ -41,41 +67,56 @@ class DogWalksWidgetProvider : HomeWidgetProvider() {
     // AppColors.primary, used when the pet has no identity colour yet.
     private const val DEFAULT_COLOR = 0xFF2E686A.toInt()
 
-    private val SLOT_IDS = intArrayOf(
-        R.id.dog_walks_widget_slot_0,
-        R.id.dog_walks_widget_slot_1,
-        R.id.dog_walks_widget_slot_2,
-        R.id.dog_walks_widget_slot_3,
+    // ~3 home-screen cells (70dp*3-30dp = 180dp): from here up the 4-row
+    // layout fits; below it the compact strip is used.
+    private const val TALL_MIN_HEIGHT_DP = 170
+
+    private val TALL = LayoutSpec(
+        layout = R.layout.dog_walks_widget,
+        root = R.id.dog_walks_widget_root,
+        empty = R.id.dog_walks_widget_empty,
+        more = R.id.dog_walks_widget_more,
+        rows = listOf(
+            RowIds(
+                R.id.dog_walks_widget_slot_0, R.id.dog_walks_widget_avatar_0,
+                R.id.dog_walks_widget_emoji_0, R.id.dog_walks_widget_name_0,
+                R.id.dog_walks_widget_reminder_0, R.id.dog_walks_widget_walk_0,
+            ),
+            RowIds(
+                R.id.dog_walks_widget_slot_1, R.id.dog_walks_widget_avatar_1,
+                R.id.dog_walks_widget_emoji_1, R.id.dog_walks_widget_name_1,
+                R.id.dog_walks_widget_reminder_1, R.id.dog_walks_widget_walk_1,
+            ),
+            RowIds(
+                R.id.dog_walks_widget_slot_2, R.id.dog_walks_widget_avatar_2,
+                R.id.dog_walks_widget_emoji_2, R.id.dog_walks_widget_name_2,
+                R.id.dog_walks_widget_reminder_2, R.id.dog_walks_widget_walk_2,
+            ),
+            RowIds(
+                R.id.dog_walks_widget_slot_3, R.id.dog_walks_widget_avatar_3,
+                R.id.dog_walks_widget_emoji_3, R.id.dog_walks_widget_name_3,
+                R.id.dog_walks_widget_reminder_3, R.id.dog_walks_widget_walk_3,
+            ),
+        ),
     )
-    private val AVATAR_IDS = intArrayOf(
-        R.id.dog_walks_widget_avatar_0,
-        R.id.dog_walks_widget_avatar_1,
-        R.id.dog_walks_widget_avatar_2,
-        R.id.dog_walks_widget_avatar_3,
-    )
-    private val EMOJI_IDS = intArrayOf(
-        R.id.dog_walks_widget_emoji_0,
-        R.id.dog_walks_widget_emoji_1,
-        R.id.dog_walks_widget_emoji_2,
-        R.id.dog_walks_widget_emoji_3,
-    )
-    private val NAME_IDS = intArrayOf(
-        R.id.dog_walks_widget_name_0,
-        R.id.dog_walks_widget_name_1,
-        R.id.dog_walks_widget_name_2,
-        R.id.dog_walks_widget_name_3,
-    )
-    private val REMINDER_IDS = intArrayOf(
-        R.id.dog_walks_widget_reminder_0,
-        R.id.dog_walks_widget_reminder_1,
-        R.id.dog_walks_widget_reminder_2,
-        R.id.dog_walks_widget_reminder_3,
-    )
-    private val WALK_IDS = intArrayOf(
-        R.id.dog_walks_widget_walk_0,
-        R.id.dog_walks_widget_walk_1,
-        R.id.dog_walks_widget_walk_2,
-        R.id.dog_walks_widget_walk_3,
+
+    private val COMPACT = LayoutSpec(
+        layout = R.layout.dog_walks_widget_compact,
+        root = R.id.dog_walks_widget_c_root,
+        empty = R.id.dog_walks_widget_c_empty,
+        more = R.id.dog_walks_widget_c_more,
+        rows = listOf(
+            RowIds(
+                R.id.dog_walks_widget_c_slot_0, R.id.dog_walks_widget_c_avatar_0,
+                R.id.dog_walks_widget_c_emoji_0, R.id.dog_walks_widget_c_name_0,
+                R.id.dog_walks_widget_c_reminder_0, R.id.dog_walks_widget_c_walk_0,
+            ),
+            RowIds(
+                R.id.dog_walks_widget_c_slot_1, R.id.dog_walks_widget_c_avatar_1,
+                R.id.dog_walks_widget_c_emoji_1, R.id.dog_walks_widget_c_name_1,
+                R.id.dog_walks_widget_c_reminder_1, R.id.dog_walks_widget_c_walk_1,
+            ),
+        ),
     )
   }
 
@@ -85,78 +126,112 @@ class DogWalksWidgetProvider : HomeWidgetProvider() {
       appWidgetIds: IntArray,
       widgetData: SharedPreferences,
   ) {
-    val pets = parsePets(widgetData.getString(KEY_PETS, null)).take(SLOT_IDS.size)
+    appWidgetIds.forEach { render(context, appWidgetManager, it, widgetData) }
+  }
+
+  /** Resizing across the height threshold swaps the compact/tall layout. */
+  override fun onAppWidgetOptionsChanged(
+      context: Context,
+      appWidgetManager: AppWidgetManager,
+      appWidgetId: Int,
+      newOptions: Bundle,
+  ) {
+    super.onAppWidgetOptionsChanged(context, appWidgetManager, appWidgetId, newOptions)
+    render(context, appWidgetManager, appWidgetId, HomeWidgetPlugin.getData(context))
+  }
+
+  private fun render(
+      context: Context,
+      appWidgetManager: AppWidgetManager,
+      widgetId: Int,
+      widgetData: SharedPreferences,
+  ) {
+    val heightDp = appWidgetManager
+        .getAppWidgetOptions(widgetId)
+        .getInt(AppWidgetManager.OPTION_APPWIDGET_MIN_HEIGHT, 0)
+    val spec = if (heightDp >= TALL_MIN_HEIGHT_DP) TALL else COMPACT
+
+    val allPets = parsePets(widgetData.getString(KEY_PETS, null))
+    val pets = allPets.take(spec.rows.size)
     val total = maxOf(
-        pets.size,
+        allPets.size,
         widgetData.getString(KEY_TOTAL, null)?.toIntOrNull() ?: 0,
     )
     val hidden = total - pets.size
-    val openApp = openAppIntent(context)
 
-    appWidgetIds.forEach { widgetId ->
-      val views = RemoteViews(context.packageName, R.layout.dog_walks_widget)
+    val views = RemoteViews(context.packageName, spec.layout)
 
-      // Tapping anywhere that isn't a button (background, header, empty
-      // state, a row's name/avatar) just opens the app.
-      views.setOnClickPendingIntent(R.id.dog_walks_widget_root, openApp)
+    // Tapping anywhere that isn't a button (background, empty state, a
+    // row's name/avatar, "+N altri") just opens the app.
+    views.setOnClickPendingIntent(spec.root, openAppIntent(context))
 
-      views.setViewVisibility(
-          R.id.dog_walks_widget_empty,
-          if (pets.isEmpty()) View.VISIBLE else View.GONE,
-      )
-      if (hidden > 0) {
-        views.setTextViewText(
-            R.id.dog_walks_widget_more,
-            context.getString(R.string.dog_walks_widget_more, hidden),
-        )
-        views.setViewVisibility(R.id.dog_walks_widget_more, View.VISIBLE)
-      } else {
-        views.setViewVisibility(R.id.dog_walks_widget_more, View.GONE)
-      }
-
-      SLOT_IDS.forEachIndexed { index, slotId ->
-        val pet = pets.getOrNull(index)
-        if (pet == null) {
-          views.setViewVisibility(slotId, View.GONE)
-          return@forEachIndexed
-        }
-
-        views.setViewVisibility(slotId, View.VISIBLE)
-        views.setInt(AVATAR_IDS[index], "setColorFilter", pet.color)
-        views.setTextViewText(EMOJI_IDS[index], pet.emoji)
-        views.setTextViewText(NAME_IDS[index], pet.name)
-
-        views.setOnClickPendingIntent(
-            REMINDER_IDS[index],
-            actionIntent(context, "new_reminder", pet.id),
-        )
-
-        // The walk shortcut only makes sense for dogs.
-        if (pet.isDog) {
-          views.setViewVisibility(WALK_IDS[index], View.VISIBLE)
-          views.setOnClickPendingIntent(
-              WALK_IDS[index],
-              actionIntent(context, "start_walk", pet.id),
-          )
-        } else {
-          views.setViewVisibility(WALK_IDS[index], View.GONE)
-        }
-      }
-
-      appWidgetManager.updateAppWidget(widgetId, views)
+    views.setViewVisibility(spec.empty, if (pets.isEmpty()) View.VISIBLE else View.GONE)
+    if (hidden > 0) {
+      views.setTextViewText(spec.more, context.getString(R.string.dog_walks_widget_more, hidden))
+      views.setViewVisibility(spec.more, View.VISIBLE)
+    } else {
+      views.setViewVisibility(spec.more, View.GONE)
     }
+
+    spec.rows.forEachIndexed { index, row ->
+      val pet = pets.getOrNull(index)
+      if (pet == null) {
+        views.setViewVisibility(row.slot, View.GONE)
+        return@forEachIndexed
+      }
+
+      views.setViewVisibility(row.slot, View.VISIBLE)
+      views.setInt(row.avatar, "setColorFilter", pet.color)
+      views.setTextViewText(row.emoji, pet.emoji)
+      views.setTextViewText(row.name, pet.name)
+
+      views.setOnClickPendingIntent(row.reminder, actionIntent(context, "new_reminder", pet.id))
+
+      // The walk shortcut only makes sense for dogs.
+      if (pet.isDog) {
+        views.setViewVisibility(row.walk, View.VISIBLE)
+        views.setOnClickPendingIntent(row.walk, actionIntent(context, "start_walk", pet.id))
+      } else {
+        views.setViewVisibility(row.walk, View.GONE)
+      }
+    }
+
+    appWidgetManager.updateAppWidget(widgetId, views)
   }
 
-  private fun actionIntent(context: Context, action: String, petId: String): PendingIntent =
-      HomeWidgetLaunchIntent.getActivity(
-          context,
-          MainActivity::class.java,
-          Uri.parse("homewidget://$action?petId=${Uri.encode(petId)}"),
+  /**
+   * Same intent as home_widget's HomeWidgetLaunchIntent (LAUNCH action + data
+   * URI, delivered to MainActivity and surfaced to Dart by the plugin), but
+   * with a request code unique per (action, pet) instead of a constant 0, so
+   * no two pills can ever share (and FLAG_UPDATE_CURRENT overwrite) one
+   * PendingIntent.
+   */
+  private fun actionIntent(context: Context, action: String, petId: String): PendingIntent {
+    val intent = Intent(context, MainActivity::class.java).apply {
+      this.action = HomeWidgetLaunchIntent.HOME_WIDGET_LAUNCH_ACTION
+      data = Uri.parse("homewidget://$action?petId=${Uri.encode(petId)}")
+    }
+    val flags = PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+    val requestCode = "$action:$petId".hashCode()
+
+    if (Build.VERSION.SDK_INT < 34) {
+      return PendingIntent.getActivity(context, requestCode, intent, flags)
+    }
+    val options = ActivityOptions.makeBasic()
+    if (Build.VERSION.SDK_INT >= 35) {
+      options.setPendingIntentCreatorBackgroundActivityStartMode(
+          ActivityOptions.MODE_BACKGROUND_ACTIVITY_START_ALLOWED
       )
+    } else {
+      options.pendingIntentBackgroundActivityStartMode =
+          ActivityOptions.MODE_BACKGROUND_ACTIVITY_START_ALLOWED
+    }
+    return PendingIntent.getActivity(context, requestCode, intent, flags, options.toBundle())
+  }
 
   private fun openAppIntent(context: Context): PendingIntent {
     val intent = context.packageManager.getLaunchIntentForPackage(context.packageName)
-        ?: android.content.Intent(context, MainActivity::class.java)
+        ?: Intent(context, MainActivity::class.java)
     return PendingIntent.getActivity(
         context,
         0,

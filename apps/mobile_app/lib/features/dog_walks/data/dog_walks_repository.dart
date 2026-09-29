@@ -113,6 +113,9 @@ class DogWalksRepository {
       'duration_seconds': walk.durationSeconds,
       'step_count_estimate': walk.stepCountEstimate,
       'is_favorite': walk.isFavorite,
+      'is_paused': walk.isPaused,
+      'paused_at': walk.pausedAt?.toIso8601String(),
+      'paused_seconds': walk.pausedSeconds,
       'route': walk.route
           .map(
             (point) => {
@@ -122,6 +125,7 @@ class DogWalksRepository {
               },
               'recorded_at': point.recordedAt.toIso8601String(),
               'accuracy_meters': point.accuracyMeters,
+              'starts_new_segment': point.startsNewSegment,
             },
           )
           .toList(),
@@ -155,6 +159,9 @@ class DogWalksRepository {
       durationSeconds: (row['duration_seconds'] as num?)?.toInt(),
       stepCountEstimate: (row['step_count_estimate'] as num?)?.toInt(),
       isFavorite: row['is_favorite'] as bool? ?? false,
+      isPaused: row['is_paused'] as bool? ?? false,
+      pausedAt: DateTime.tryParse((row['paused_at'] ?? '').toString()),
+      pausedSeconds: (row['paused_seconds'] as num?)?.toInt() ?? 0,
       route: route,
     );
   }
@@ -171,6 +178,7 @@ class DogWalksRepository {
       coordinates: Coordinates(latitude: latitude, longitude: longitude),
       recordedAt: recordedAt,
       accuracyMeters: (raw['accuracy_meters'] as num?)?.toDouble(),
+      startsNewSegment: raw['starts_new_segment'] as bool? ?? false,
     );
   }
 
