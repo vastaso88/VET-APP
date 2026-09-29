@@ -1,7 +1,9 @@
 import 'dart:async';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
+import '../../../../app/router/app_router.dart';
 import '../../../../design_system/tokens/app_spacing.dart';
 import '../../../../features/billing/data/subscription_gate.dart';
 import '../../../../shared/auth/auth.dart';
@@ -18,6 +20,19 @@ class LoginPage extends StatefulWidget {
 }
 
 class _LoginPageState extends State<LoginPage> {
+  static const bool _uiPreviewEnabled = bool.fromEnvironment(
+    'ENABLE_UI_PREVIEW',
+    defaultValue: false,
+  );
+  static const String _demoFounderEmail = String.fromEnvironment(
+    'DEMO_FOUNDER_EMAIL',
+    defaultValue: 'demo-founder-01@vetapp.ai',
+  );
+  static const String _demoFounderPassword = String.fromEnvironment(
+    'DEMO_FOUNDER_PASSWORD',
+    defaultValue: 'VetAppDemo2026!',
+  );
+
   final _authRepository = const AuthRepositoryFactory().create();
   final _formKey = GlobalKey<FormState>();
   final _emailController = TextEditingController();
@@ -28,6 +43,8 @@ class _LoginPageState extends State<LoginPage> {
   String _message = '';
   bool _isLoading = false;
   bool _rememberMe = true;
+
+  bool get _showUiPreview => kDebugMode || _uiPreviewEnabled;
 
   @override
   void dispose() {
@@ -94,6 +111,53 @@ class _LoginPageState extends State<LoginPage> {
         (route) => false,
       );
     }
+  }
+
+  Future<void> _openDevelopmentPreview() async {
+    setState(() {
+      _isLoading = true;
+      _status = AuthBannerStatus.loading;
+      _title = 'Apro anteprima sviluppo';
+      _message = 'Creo una sessione demo per rendere disponibili anche le API protette.';
+    });
+
+    final result = await _authRepository.signInWithPassword(
+      const AuthEmailPasswordCredentials(
+        email: _demoFounderEmail,
+        password: _demoFounderPassword,
+      ),
+      rememberMe: true,
+    );
+
+    if (!mounted) return;
+
+    final success = result.fold(
+      onSuccess: (_) {
+        setState(() {
+          _isLoading = false;
+          _status = AuthBannerStatus.success;
+          _title = 'Anteprima pronta';
+          _message = 'Sessione demo attiva. Apro l’app.';
+        });
+        return true;
+      },
+      onFailure: (error) {
+        setState(() {
+          _isLoading = false;
+          _status = AuthBannerStatus.error;
+          _title = 'Anteprima non disponibile';
+          _message = error.message;
+        });
+        return false;
+      },
+    );
+
+    if (!success || !mounted) return;
+
+    Navigator.of(context).pushNamedAndRemoveUntil(
+      AppRouter.homeShell,
+      (route) => false,
+    );
   }
 
   @override
@@ -170,6 +234,17 @@ class _LoginPageState extends State<LoginPage> {
                     : const Text('Accedi'),
               ),
             ),
+            if (_showUiPreview) ...[
+              const SizedBox(height: AppSpacing.sm),
+              SizedBox(
+                width: double.infinity,
+                child: OutlinedButton.icon(
+                  onPressed: _isLoading ? null : _openDevelopmentPreview,
+                  icon: const Icon(Icons.developer_mode_rounded),
+                  label: const Text('Apri anteprima sviluppo'),
+                ),
+              ),
+            ],
             const SizedBox(height: AppSpacing.md),
             AuthFooterLink(
               label: 'Non hai un account? Registrati',
