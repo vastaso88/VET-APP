@@ -83,8 +83,14 @@ class ChatDemoStore extends ChangeNotifier {
   }
 
   Future<void> _hydrate(String ownerId) async {
-    final petsResult = await _remote.fetchPetNamesById();
-    final conversationsResult = await _remote.fetchConversations();
+    // Independent backend calls: run them together (was sequential, which
+    // doubled the wait and stacked on top of a Vercel cold start).
+    final results = await Future.wait<Object>([
+      _remote.fetchPetNamesById(),
+      _remote.fetchConversations(),
+    ]);
+    final petsResult = results[0] as Result<Map<String, String>>;
+    final conversationsResult = results[1] as Result<List<RemoteConversation>>;
     final petNames = petsResult.fold<Map<String, String>?>(
       onSuccess: (value) => value,
       onFailure: (_) => null,

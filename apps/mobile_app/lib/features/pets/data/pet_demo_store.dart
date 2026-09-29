@@ -222,19 +222,30 @@ class PetDemoStore {
   /// per owner id. No-ops (and leaves the store as-is) when Supabase isn't
   /// configured or the request fails — same best-effort-remote pattern as
   /// RemindersRepository.
-  Future<void> ensureHydrated() async {
+  Future<void> ensureHydrated() {
     final ownerId = CurrentUser.get()?.id;
     if (ownerId == null || ownerId == _hydratedOwnerId) {
-      return;
+      return Future<void>.value();
     }
+    // Concurrent callers (splash preload, Home, Pets, walk widget...) share
+    // one in-flight query instead of each issuing their own.
+    return _hydrating ??= _hydrate(ownerId).whenComplete(() => _hydrating = null);
+  }
 
+  Future<void>? _hydrating;
+
+  Future<void> _hydrate(String ownerId) async {
     final client = _resolveClient();
     if (client == null) {
       return;
     }
 
     try {
-      final response = await client.from('pet_profiles').select('*').eq('owner_id', ownerId);
+      final response = await client
+          .from('pet_profiles')
+          .select('*')
+          .eq('owner_id', ownerId)
+          .timeout(const Duration(seconds: 12));
       final rows = response as List<dynamic>;
       final loaded = <PetProfile>[];
       for (final row in rows) {
