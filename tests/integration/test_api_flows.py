@@ -75,6 +75,23 @@ def test_chat_and_reminder_flow() -> None:
     assert len(reminder_list.json()["reminders"]) >= 1
 
 
+def test_conversation_history_includes_messages_after_chat() -> None:
+    client = TestClient(app)
+    pet_id = client.post("/pets", json={"name": "Bea", "species": "cat"}).json()["pet_profile"][
+        "id"
+    ]
+    chat = client.post("/chat", json={"pet_id": pet_id, "user_message": "Mangia poco"}).json()
+    conversation_id = chat["conversation"]["id"]
+
+    response = client.get("/conversations")
+
+    assert response.status_code == 200
+    stored = next(c for c in response.json()["conversations"] if c["id"] == conversation_id)
+    assert stored["pet_id"] == pet_id
+    assert [m["role"] for m in stored["messages"]][:2] == ["user", "assistant"]
+    assert stored["messages"][0]["content"] == "Mangia poco"
+
+
 def test_account_consents_flow() -> None:
     client = TestClient(app)
 

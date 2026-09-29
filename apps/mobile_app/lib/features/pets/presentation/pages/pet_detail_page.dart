@@ -7,6 +7,7 @@ import '../../../../design_system/tokens/app_colors.dart';
 import '../../../../design_system/tokens/app_radii.dart';
 import '../../../../design_system/tokens/app_spacing.dart';
 import '../../../../design_system/tokens/app_text_styles.dart';
+import '../../../chat/data/chat_attachment_remote_data_source.dart';
 import '../../../chat/data/chat_demo_store.dart';
 import '../../../chat/domain/chat_models.dart';
 import '../../../chat/presentation/pages/chat_conversation_detail_page.dart';
@@ -50,7 +51,8 @@ class PetDetailPage extends StatefulWidget {
 
 class _PetDetailPageState extends State<PetDetailPage> {
   PetProfile? _pet;
-  final MedicalRecordsRepository _recordsRepository = MedicalRecordsRepository();
+  final MedicalRecordsRepository _recordsRepository =
+      MedicalRecordsRepository();
   final RemindersRepository _remindersRepository = RemindersRepository();
   final DogWalksRepository _walksRepository = DogWalksRepository();
 
@@ -96,7 +98,8 @@ class _PetDetailPageState extends State<PetDetailPage> {
           ),
         PetsScreenStatus.empty => PetsEmptyView(
             title: 'Nessun pet selezionato',
-            subtitle: 'Scegli un profilo dalla lista per vedere dettagli, chat e referti.',
+            subtitle:
+                'Scegli un profilo dalla lista per vedere dettagli, chat e referti.',
             actionLabel: 'Torna alla lista',
             onAction: () => Navigator.of(context).maybePop(),
           ),
@@ -141,7 +144,8 @@ class _PetDetailContent extends StatefulWidget {
 
 class _PetDetailContentState extends State<_PetDetailContent>
     with SingleTickerProviderStateMixin {
-  late final TabController _tabController = TabController(length: 4, vsync: this);
+  late final TabController _tabController =
+      TabController(length: 4, vsync: this);
 
   @override
   void dispose() {
@@ -167,7 +171,8 @@ class _PetDetailContentState extends State<_PetDetailContent>
           labelColor: AppColors.primary,
           unselectedLabelColor: AppColors.mutedText,
           indicatorColor: AppColors.primary,
-          labelStyle: AppTextStyles.bodySmall.copyWith(fontWeight: FontWeight.w700),
+          labelStyle:
+              AppTextStyles.bodySmall.copyWith(fontWeight: FontWeight.w700),
           unselectedLabelStyle: AppTextStyles.bodySmall,
           isScrollable: true,
           tabAlignment: TabAlignment.start,
@@ -183,9 +188,11 @@ class _PetDetailContentState extends State<_PetDetailContent>
           child: TabBarView(
             controller: _tabController,
             children: [
-              _RemindersTab(pet: widget.pet, repository: widget.remindersRepository),
+              _RemindersTab(
+                  pet: widget.pet, repository: widget.remindersRepository),
               _ChatTab(pet: widget.pet),
-              _RecordsTab(pet: widget.pet, repository: widget.recordsRepository),
+              _RecordsTab(
+                  pet: widget.pet, repository: widget.recordsRepository),
               _WalksTab(pet: widget.pet, repository: widget.walksRepository),
             ],
           ),
@@ -207,7 +214,8 @@ Future<bool> _confirmDelete(
     context: context,
     builder: (dialogContext) => AlertDialog(
       backgroundColor: AppColors.surface,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadii.large)),
+      shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(AppRadii.large)),
       title: Text(title),
       content: Text(message),
       actions: [
@@ -266,12 +274,16 @@ class _HabitatSummaryRow extends StatelessWidget {
             children: [
               Text(_habitatLabel(pet.species), style: AppTextStyles.title),
               const SizedBox(height: AppSpacing.md),
-              if (habitat.hasDimensions) _HabitatDetailRow('Dimensioni', habitat.dimensionsLabel),
-              if (habitat.volumeLiters != null) _HabitatDetailRow('Volume', '${habitat.volumeLiters} litri'),
+              if (habitat.hasDimensions)
+                _HabitatDetailRow('Dimensioni', habitat.dimensionsLabel),
+              if (habitat.volumeLiters != null)
+                _HabitatDetailRow('Volume', '${habitat.volumeLiters} litri'),
               if (habitat.temperatureLabel.isNotEmpty)
                 _HabitatDetailRow('Temperatura', habitat.temperatureLabel),
-              if (habitat.substrate.isNotEmpty) _HabitatDetailRow('Substrato', habitat.substrate),
-              if (habitat.notes.isNotEmpty) _HabitatDetailRow('Attrezzatura', habitat.notes),
+              if (habitat.substrate.isNotEmpty)
+                _HabitatDetailRow('Substrato', habitat.substrate),
+              if (habitat.notes.isNotEmpty)
+                _HabitatDetailRow('Attrezzatura', habitat.notes),
             ],
           ),
         ),
@@ -289,24 +301,28 @@ class _HabitatSummaryRow extends StatelessWidget {
         onTap: () => _openDetails(context),
         child: Container(
           width: double.infinity,
-          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md, vertical: AppSpacing.sm),
+          padding: const EdgeInsets.symmetric(
+              horizontal: AppSpacing.md, vertical: AppSpacing.sm),
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(AppRadii.large),
             border: Border.all(color: AppColors.border),
           ),
           child: Row(
             children: [
-              const Icon(Icons.water_outlined, size: 16, color: AppColors.primary),
+              const Icon(Icons.water_outlined,
+                  size: 16, color: AppColors.primary),
               const SizedBox(width: AppSpacing.sm),
               Expanded(
                 child: Text(
                   '${_habitatLabel(pet.species)} · ${_summary()}',
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: AppTextStyles.caption.copyWith(color: AppColors.text, fontWeight: FontWeight.w600),
+                  style: AppTextStyles.caption.copyWith(
+                      color: AppColors.text, fontWeight: FontWeight.w600),
                 ),
               ),
-              const Icon(Icons.chevron_right_rounded, size: 16, color: AppColors.mutedText),
+              const Icon(Icons.chevron_right_rounded,
+                  size: 16, color: AppColors.mutedText),
             ],
           ),
         ),
@@ -330,7 +346,8 @@ class _HabitatDetailRow extends StatelessWidget {
         children: [
           Text(label, style: AppTextStyles.caption),
           const SizedBox(height: 2),
-          Text(value, style: AppTextStyles.bodySmall.copyWith(color: AppColors.text)),
+          Text(value,
+              style: AppTextStyles.bodySmall.copyWith(color: AppColors.text)),
         ],
       ),
     );
@@ -365,9 +382,12 @@ class _AquariumStockCard extends StatelessWidget {
             constraints: const BoxConstraints(maxHeight: 108),
             child: ListView.separated(
               shrinkWrap: true,
-              physics: stock.length > 3 ? const ClampingScrollPhysics() : const NeverScrollableScrollPhysics(),
+              physics: stock.length > 3
+                  ? const ClampingScrollPhysics()
+                  : const NeverScrollableScrollPhysics(),
               itemCount: stock.length,
-              separatorBuilder: (_, __) => const SizedBox(height: AppSpacing.xs),
+              separatorBuilder: (_, __) =>
+                  const SizedBox(height: AppSpacing.xs),
               itemBuilder: (context, index) {
                 final item = stock[index];
                 return Row(
@@ -377,13 +397,15 @@ class _AquariumStockCard extends StatelessWidget {
                         item.species,
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
-                        style: AppTextStyles.bodySmall.copyWith(color: AppColors.text, fontWeight: FontWeight.w600),
+                        style: AppTextStyles.bodySmall.copyWith(
+                            color: AppColors.text, fontWeight: FontWeight.w600),
                       ),
                     ),
                     const SizedBox(width: AppSpacing.sm),
                     Text(
                       '× ${item.count}',
-                      style: AppTextStyles.bodySmall.copyWith(color: AppColors.text, fontWeight: FontWeight.w700),
+                      style: AppTextStyles.bodySmall.copyWith(
+                          color: AppColors.text, fontWeight: FontWeight.w700),
                     ),
                   ],
                 );
@@ -411,16 +433,17 @@ class _RemindersTab extends StatefulWidget {
 }
 
 class _RemindersTabState extends State<_RemindersTab> {
-  late Future<List<ReminderEntry>> _future = widget.repository.loadReminders();
-
   Future<void> _reload() async {
-    setState(() => _future = widget.repository.loadReminders());
-    await _future;
+    // The list already rebuilds on its own via RemindersRepository.changes
+    // (see the ValueListenableBuilder in build()) — kept for the explicit
+    // reload-after-navigation-return calls below.
+    await widget.repository.loadReminders();
   }
 
   Future<void> _openCreate() async {
     await Navigator.of(context).push(
-      MaterialPageRoute<void>(builder: (_) => ReminderCreatePage(petName: widget.pet.name)),
+      MaterialPageRoute<void>(
+          builder: (_) => ReminderCreatePage(petName: widget.pet.name)),
     );
     if (!mounted) return;
     await _reload();
@@ -428,7 +451,8 @@ class _RemindersTabState extends State<_RemindersTab> {
 
   Future<void> _openDetail(ReminderEntry reminder) async {
     await Navigator.of(context).push(
-      MaterialPageRoute<void>(builder: (_) => ReminderDetailPage(reminder: reminder)),
+      MaterialPageRoute<void>(
+          builder: (_) => ReminderDetailPage(reminder: reminder)),
     );
     if (!mounted) return;
     await _reload();
@@ -461,34 +485,39 @@ class _RemindersTabState extends State<_RemindersTab> {
         ),
         const SizedBox(height: AppSpacing.md),
         Expanded(
-          child: FutureBuilder<List<ReminderEntry>>(
-            future: _future,
-            builder: (context, snapshot) {
-              if (snapshot.connectionState == ConnectionState.waiting) {
-                return const Center(child: CircularProgressIndicator(strokeWidth: 2));
-              }
+          child: ValueListenableBuilder<int>(
+            valueListenable: RemindersRepository.changes,
+            builder: (context, _, __) => FutureBuilder<List<ReminderEntry>>(
+              future: widget.repository.loadReminders(),
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return const Center(
+                      child: CircularProgressIndicator(strokeWidth: 2));
+                }
 
-              final reminders = (snapshot.data ?? const <ReminderEntry>[])
-                  .where((reminder) => reminder.petName == widget.pet.name)
-                  .toList(growable: false);
+                final reminders = (snapshot.data ?? const <ReminderEntry>[])
+                    .where((reminder) => reminder.petName == widget.pet.name)
+                    .toList(growable: false);
 
-              if (reminders.isEmpty) {
-                return _EmptyTabState(
-                  icon: Icons.notifications_none_rounded,
-                  text: 'Nessun promemoria ancora per ${widget.pet.name}.',
+                if (reminders.isEmpty) {
+                  return _EmptyTabState(
+                    icon: Icons.notifications_none_rounded,
+                    text: 'Nessun promemoria ancora per ${widget.pet.name}.',
+                  );
+                }
+
+                return ListView.separated(
+                  itemCount: reminders.length,
+                  separatorBuilder: (_, __) =>
+                      const SizedBox(height: AppSpacing.sm),
+                  itemBuilder: (_, index) => _ReminderRow(
+                    reminder: reminders[index],
+                    onTap: () => _openDetail(reminders[index]),
+                    onDelete: () => _deleteReminder(reminders[index]),
+                  ),
                 );
-              }
-
-              return ListView.separated(
-                itemCount: reminders.length,
-                separatorBuilder: (_, __) => const SizedBox(height: AppSpacing.sm),
-                itemBuilder: (_, index) => _ReminderRow(
-                  reminder: reminders[index],
-                  onTap: () => _openDetail(reminders[index]),
-                  onDelete: () => _deleteReminder(reminders[index]),
-                ),
-              );
-            },
+              },
+            ),
           ),
         ),
       ],
@@ -497,7 +526,8 @@ class _RemindersTabState extends State<_RemindersTab> {
 }
 
 class _ReminderRow extends StatelessWidget {
-  const _ReminderRow({required this.reminder, required this.onTap, required this.onDelete});
+  const _ReminderRow(
+      {required this.reminder, required this.onTap, required this.onDelete});
 
   final ReminderEntry reminder;
   final VoidCallback onTap;
@@ -534,6 +564,14 @@ class _ChatTabState extends State<_ChatTab> {
   final ChatDemoStore _store = ChatDemoStore.instance;
 
   @override
+  void initState() {
+    super.initState();
+    // Restores the owner's stored conversations from the backend (no-op
+    // once loaded, or without a backend).
+    _store.ensureHydrated();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return AnimatedBuilder(
       animation: _store,
@@ -557,24 +595,30 @@ class _ChatTabState extends State<_ChatTab> {
               child: conversations.isEmpty
                   ? _EmptyTabState(
                       icon: Icons.chat_bubble_outline_rounded,
-                      text: 'Nessuna conversazione ancora per ${widget.pet.name}.',
+                      text:
+                          'Nessuna conversazione ancora per ${widget.pet.name}.',
                     )
                   : ListView.separated(
                       itemCount: conversations.length,
-                      separatorBuilder: (_, __) => const SizedBox(height: AppSpacing.sm),
+                      separatorBuilder: (_, __) =>
+                          const SizedBox(height: AppSpacing.sm),
                       itemBuilder: (_, index) {
                         final conversation = conversations[index];
                         return Dismissible(
                           key: ValueKey(conversation.id),
                           direction: DismissDirection.endToStart,
                           background: const _DeleteSwipeBackground(),
-                          confirmDismiss: (_) => _confirmDeleteChat(context, conversation),
-                          onDismissed: (_) => _deleteConversation(conversation.id),
+                          confirmDismiss: (_) =>
+                              _confirmDeleteChat(context, conversation),
+                          onDismissed: (_) =>
+                              _deleteConversation(conversation.id),
                           child: _ChatRow(
                             conversation: conversation,
-                            onTap: () => _openConversation(context, conversation),
+                            onTap: () =>
+                                _openConversation(context, conversation),
                             onDelete: () async {
-                              if (await _confirmDeleteChat(context, conversation)) {
+                              if (await _confirmDeleteChat(
+                                  context, conversation)) {
                                 await _deleteConversation(conversation.id);
                               }
                             },
@@ -596,13 +640,16 @@ class _ChatTabState extends State<_ChatTab> {
       onFailure: (error) {
         if (!mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Chat rimossa qui, ma non sul server: ${error.message}')),
+          SnackBar(
+              content: Text(
+                  'Chat rimossa qui, ma non sul server: ${error.message}')),
         );
       },
     );
   }
 
-  Future<bool> _confirmDeleteChat(BuildContext context, ChatConversationSummary conversation) {
+  Future<bool> _confirmDeleteChat(
+      BuildContext context, ChatConversationSummary conversation) {
     return _confirmDelete(
       context,
       title: 'Eliminare questa chat?',
@@ -610,7 +657,8 @@ class _ChatTabState extends State<_ChatTab> {
     );
   }
 
-  void _openConversation(BuildContext context, ChatConversationSummary conversation) {
+  void _openConversation(
+      BuildContext context, ChatConversationSummary conversation) {
     final detail = _store.conversationById(conversation.id);
     Navigator.of(context).push(
       MaterialPageRoute<void>(
@@ -644,7 +692,8 @@ class _ChatTabState extends State<_ChatTab> {
       context: context,
       builder: (dialogContext) => AlertDialog(
         backgroundColor: AppColors.surface,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadii.large)),
+        shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(AppRadii.large)),
         title: const Text('Limite chat raggiunto'),
         content: Text(
           'Puoi avere al massimo ${ChatDemoStore.maxConversationsPerPet} conversazioni attive per '
@@ -662,7 +711,10 @@ class _ChatTabState extends State<_ChatTab> {
 }
 
 class _ChatRow extends StatelessWidget {
-  const _ChatRow({required this.conversation, required this.onTap, required this.onDelete});
+  const _ChatRow(
+      {required this.conversation,
+      required this.onTap,
+      required this.onDelete});
 
   final ChatConversationSummary conversation;
   final VoidCallback onTap;
@@ -714,7 +766,8 @@ class _RecordsTab extends StatefulWidget {
 }
 
 class _RecordsTabState extends State<_RecordsTab> {
-  late Future<List<MedicalRecordEntry>> _future = widget.repository.loadRecords();
+  late Future<List<MedicalRecordEntry>> _future =
+      widget.repository.loadRecords();
 
   Future<void> _reload() async {
     setState(() => _future = widget.repository.loadRecords());
@@ -733,7 +786,8 @@ class _RecordsTabState extends State<_RecordsTab> {
 
   void _openDetail(MedicalRecordEntry record) {
     Navigator.of(context).push(
-      MaterialPageRoute<void>(builder: (_) => MedicalRecordDetailPage(record: record)),
+      MaterialPageRoute<void>(
+          builder: (_) => MedicalRecordDetailPage(record: record)),
     );
   }
 
@@ -781,7 +835,8 @@ class _RecordsTabState extends State<_RecordsTab> {
                     _shareRecord(record);
                   },
                 ),
-                if (record != records.last) const SizedBox(height: AppSpacing.sm),
+                if (record != records.last)
+                  const SizedBox(height: AppSpacing.sm),
               ],
             ],
           ),
@@ -792,10 +847,25 @@ class _RecordsTabState extends State<_RecordsTab> {
 
   Future<void> _shareRecord(MedicalRecordEntry record) async {
     try {
-      final cached = MedicalRecordFileCache.instance.get(record.id);
+      var cached = MedicalRecordFileCache.instance.get(record.id);
+      if (cached == null && record.attachmentId != null) {
+        // Not in this session's cache (e.g. app was reopened) but a real
+        // upload exists remotely — fetch it instead of falling back to a
+        // text summary.
+        final result = await HttpChatAttachmentRemoteDataSource()
+            .download(record.attachmentId!);
+        final bytes = result.fold(onSuccess: (bytes) => bytes, onFailure: (_) => null);
+        if (bytes != null) {
+          cached = (bytes: bytes, fileName: record.title, mimeType: null);
+        }
+      }
+
       if (cached != null) {
         await Share.shareXFiles(
-          [XFile.fromData(cached.bytes, name: cached.fileName, mimeType: cached.mimeType)],
+          [
+            XFile.fromData(cached.bytes,
+                name: cached.fileName, mimeType: cached.mimeType)
+          ],
           text: record.title,
         );
       } else {
@@ -812,7 +882,9 @@ class _RecordsTabState extends State<_RecordsTab> {
       // than letting the exception surface as a broken interaction.
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Condivisione non disponibile su questo dispositivo.')),
+        const SnackBar(
+            content:
+                Text('Condivisione non disponibile su questo dispositivo.')),
       );
     }
   }
@@ -844,7 +916,8 @@ class _RecordsTabState extends State<_RecordsTab> {
                 const SizedBox(width: AppSpacing.sm),
                 Expanded(
                   child: FilledButton.icon(
-                    onPressed: records.isEmpty ? null : () => _openSendSheet(records),
+                    onPressed:
+                        records.isEmpty ? null : () => _openSendSheet(records),
                     icon: const Icon(Icons.ios_share_rounded, size: 18),
                     label: const Text('Invia file'),
                   ),
@@ -860,7 +933,8 @@ class _RecordsTabState extends State<_RecordsTab> {
                     )
                   : ListView.separated(
                       itemCount: records.length,
-                      separatorBuilder: (_, __) => const SizedBox(height: AppSpacing.sm),
+                      separatorBuilder: (_, __) =>
+                          const SizedBox(height: AppSpacing.sm),
                       itemBuilder: (_, index) => _RecordRow(
                         record: records[index],
                         onTap: () => _openDetail(records[index]),
@@ -876,7 +950,8 @@ class _RecordsTabState extends State<_RecordsTab> {
 }
 
 class _RecordRow extends StatelessWidget {
-  const _RecordRow({required this.record, required this.onTap, required this.onDelete});
+  const _RecordRow(
+      {required this.record, required this.onTap, required this.onDelete});
 
   final MedicalRecordEntry record;
   final VoidCallback onTap;
@@ -914,7 +989,8 @@ class _WalksTabState extends State<_WalksTab> {
   Future<List<WalkSession>> _load() async {
     final walks = await widget.repository.loadWalks(resolveCurrentOwnerId());
     final completed = walks
-        .where((walk) => walk.petId == widget.pet.id && walk.status == WalkStatus.completed)
+        .where((walk) =>
+            walk.petId == widget.pet.id && walk.status == WalkStatus.completed)
         .toList()
       ..sort((a, b) => b.startedAt.compareTo(a.startedAt));
     return completed;
@@ -951,7 +1027,8 @@ class _WalksTabState extends State<_WalksTab> {
             future: _future,
             builder: (context, snapshot) {
               if (snapshot.connectionState == ConnectionState.waiting) {
-                return const Center(child: CircularProgressIndicator(strokeWidth: 2));
+                return const Center(
+                    child: CircularProgressIndicator(strokeWidth: 2));
               }
 
               final walks = snapshot.data ?? const <WalkSession>[];
@@ -972,13 +1049,19 @@ class _WalksTabState extends State<_WalksTab> {
                   ],
                   if (history.record != null) ...[
                     const _WalksSectionLabel('Record 🏆'),
-                    _WalkCard(walk: history.record!, repository: widget.repository, onChanged: _reload),
+                    _WalkCard(
+                        walk: history.record!,
+                        repository: widget.repository,
+                        onChanged: _reload),
                     const SizedBox(height: AppSpacing.md),
                   ],
                   if (history.favorites.isNotEmpty) ...[
                     const _WalksSectionLabel('Preferite ⭐'),
                     for (final walk in history.favorites) ...[
-                      _WalkCard(walk: walk, repository: widget.repository, onChanged: _reload),
+                      _WalkCard(
+                          walk: walk,
+                          repository: widget.repository,
+                          onChanged: _reload),
                       const SizedBox(height: AppSpacing.sm),
                     ],
                     const SizedBox(height: AppSpacing.sm),
@@ -986,7 +1069,10 @@ class _WalksTabState extends State<_WalksTab> {
                   if (history.recent.isNotEmpty) ...[
                     const _WalksSectionLabel('Recenti'),
                     for (final walk in history.recent) ...[
-                      _WalkCard(walk: walk, repository: widget.repository, onChanged: _reload),
+                      _WalkCard(
+                          walk: walk,
+                          repository: widget.repository,
+                          onChanged: _reload),
                       const SizedBox(height: AppSpacing.sm),
                     ],
                   ],
@@ -1013,14 +1099,17 @@ class _BadgesRow extends StatelessWidget {
       children: badges
           .map(
             (badge) => Container(
-              padding: const EdgeInsets.symmetric(horizontal: AppSpacing.sm, vertical: AppSpacing.xs),
+              padding: const EdgeInsets.symmetric(
+                  horizontal: AppSpacing.sm, vertical: AppSpacing.xs),
               decoration: BoxDecoration(
                 color: AppColors.accentSoft,
                 borderRadius: BorderRadius.circular(AppRadii.pill),
               ),
               child: Text(
                 badgeLabel(badge),
-                style: AppTextStyles.caption.copyWith(color: AppColors.primaryStrong, fontWeight: FontWeight.w700),
+                style: AppTextStyles.caption.copyWith(
+                    color: AppColors.primaryStrong,
+                    fontWeight: FontWeight.w700),
               ),
             ),
           )
@@ -1052,7 +1141,8 @@ class _WalksSectionLabel extends StatelessWidget {
 /// never reach this widget (buildWalkHistoryView only surfaces retained
 /// ones).
 class _WalkCard extends StatelessWidget {
-  const _WalkCard({required this.walk, required this.repository, required this.onChanged});
+  const _WalkCard(
+      {required this.walk, required this.repository, required this.onChanged});
 
   final WalkSession walk;
   final DogWalksRepository repository;
@@ -1097,15 +1187,20 @@ class _WalkCard extends StatelessWidget {
                         ),
                       ),
                       const SizedBox(height: 2),
-                      Text(subtitleParts.join(' · '), style: AppTextStyles.caption),
+                      Text(subtitleParts.join(' · '),
+                          style: AppTextStyles.caption),
                     ],
                   ),
                 ),
                 IconButton(
                   onPressed: _toggleFavorite,
                   icon: Icon(
-                    walk.isFavorite ? Icons.star_rounded : Icons.star_outline_rounded,
-                    color: walk.isFavorite ? AppColors.warning : AppColors.mutedText,
+                    walk.isFavorite
+                        ? Icons.star_rounded
+                        : Icons.star_outline_rounded,
+                    color: walk.isFavorite
+                        ? AppColors.warning
+                        : AppColors.mutedText,
                   ),
                 ),
               ],
@@ -1127,21 +1222,27 @@ class _WalkMiniMap extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final points = route
-        .map((point) => latlong.LatLng(point.coordinates.latitude, point.coordinates.longitude))
+        .map((point) => latlong.LatLng(
+            point.coordinates.latitude, point.coordinates.longitude))
         .toList();
     final bounds = LatLngBounds.fromPoints(points);
 
     return IgnorePointer(
       child: FlutterMap(
         options: MapOptions(
-          initialCameraFit: CameraFit.bounds(bounds: bounds, padding: const EdgeInsets.all(24)),
-          interactionOptions: const InteractionOptions(flags: InteractiveFlag.none),
+          initialCameraFit: CameraFit.bounds(
+              bounds: bounds, padding: const EdgeInsets.all(24)),
+          interactionOptions:
+              const InteractionOptions(flags: InteractiveFlag.none),
         ),
         children: [
           buildWalkTileLayer(),
           if (points.length >= 2)
             PolylineLayer(
-              polylines: [Polyline(points: points, color: AppColors.primary, strokeWidth: 3)],
+              polylines: [
+                Polyline(
+                    points: points, color: AppColors.primary, strokeWidth: 3)
+              ],
             ),
         ],
       ),
@@ -1201,7 +1302,8 @@ class _CompactRow extends StatelessWidget {
         borderRadius: BorderRadius.circular(AppRadii.large),
         onTap: onTap,
         child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md, vertical: AppSpacing.sm),
+          padding: const EdgeInsets.symmetric(
+              horizontal: AppSpacing.md, vertical: AppSpacing.sm),
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(AppRadii.large),
             border: Border.all(color: AppColors.border),
@@ -1236,7 +1338,8 @@ class _CompactRow extends StatelessWidget {
               if (badgeCount > 0) ...[
                 const SizedBox(width: AppSpacing.sm),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
                   decoration: BoxDecoration(
                     color: AppColors.primary,
                     borderRadius: BorderRadius.circular(AppRadii.pill),
@@ -1259,15 +1362,18 @@ class _CompactRow extends StatelessWidget {
                 const SizedBox(width: 2),
                 IconButton(
                   onPressed: onDelete,
-                  icon: const Icon(Icons.delete_outline_rounded, size: 18, color: AppColors.danger),
+                  icon: const Icon(Icons.delete_outline_rounded,
+                      size: 18, color: AppColors.danger),
                   tooltip: 'Elimina',
                   visualDensity: VisualDensity.compact,
-                  constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
+                  constraints:
+                      const BoxConstraints(minWidth: 32, minHeight: 32),
                 ),
               ],
               if (onTap != null) ...[
                 const SizedBox(width: AppSpacing.xs),
-                const Icon(Icons.chevron_right_rounded, size: 18, color: AppColors.mutedText),
+                const Icon(Icons.chevron_right_rounded,
+                    size: 18, color: AppColors.mutedText),
               ],
             ],
           ),
@@ -1293,7 +1399,8 @@ class _EmptyTabState extends StatelessWidget {
           children: [
             Icon(icon, size: 28, color: AppColors.mutedText),
             const SizedBox(height: AppSpacing.md),
-            Text(text, textAlign: TextAlign.center, style: AppTextStyles.bodySmall),
+            Text(text,
+                textAlign: TextAlign.center, style: AppTextStyles.bodySmall),
           ],
         ),
       ),

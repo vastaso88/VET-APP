@@ -2,6 +2,7 @@ import 'dart:collection';
 
 import 'package:flutter/foundation.dart';
 
+import '../../../shared/auth/current_user.dart';
 import '../../../shared/config/app_runtime_config_loader.dart';
 import '../../../shared/types/result.dart';
 import '../../pets/data/pet_demo_store.dart';
@@ -15,13 +16,31 @@ class ChatDemoStore extends ChangeNotifier {
     ChatRemoteDataSource? remoteDataSource,
     ChatAttachmentRemoteDataSource? attachmentRemoteDataSource,
     AppRuntimeConfigLoader? configLoader,
+    String? Function()? ownerIdProvider,
   })  : _remote = remoteDataSource ?? HttpChatRemoteDataSource(),
         _attachments = attachmentRemoteDataSource ?? HttpChatAttachmentRemoteDataSource(),
-        _configLoader = configLoader ?? const AppRuntimeConfigLoader() {
+        _configLoader = configLoader ?? const AppRuntimeConfigLoader(),
+        _ownerIdProvider = ownerIdProvider ?? _currentOwnerId {
     reset();
   }
 
   static final ChatDemoStore instance = ChatDemoStore._();
+
+  @visibleForTesting
+  factory ChatDemoStore.forTesting({
+    required ChatRemoteDataSource remoteDataSource,
+    required AppRuntimeConfigLoader configLoader,
+    required String? Function() ownerIdProvider,
+    ChatAttachmentRemoteDataSource? attachmentRemoteDataSource,
+  }) =>
+      ChatDemoStore._(
+        remoteDataSource: remoteDataSource,
+        attachmentRemoteDataSource: attachmentRemoteDataSource,
+        configLoader: configLoader,
+        ownerIdProvider: ownerIdProvider,
+      );
+
+  static String? _currentOwnerId() => CurrentUser.get()?.id;
 
   /// Max concurrent chat threads per pet. Keeps the per-pet chat list short
   /// and scannable on a phone screen instead of growing without bound.
@@ -30,6 +49,7 @@ class ChatDemoStore extends ChangeNotifier {
   final ChatRemoteDataSource _remote;
   final ChatAttachmentRemoteDataSource _attachments;
   final AppRuntimeConfigLoader _configLoader;
+  final String? Function() _ownerIdProvider;
 
   /// Backend pet id resolved for each local pet name — keyed by name so
   /// resolving one pet's id doesn't get reused for every other pet's chat
@@ -38,6 +58,120 @@ class ChatDemoStore extends ChangeNotifier {
 
   final List<ChatConversationDetail> _threads = <ChatConversationDetail>[];
   final Set<String> _openedConversationIds = <String>{};
+
+  /// Owner id whose backend conversations were last loaded into [_threads],
+  /// so [ensureHydrated] is a no-op on repeat calls and re-loads if another
+  /// account signs in within the same app session (same pattern as
+  /// PetDemoStore.ensureHydrated).
+  String? _hydratedOwnerId;
+  Future<void>? _hydrating;
+
+  /// Loads the signed-in owner's stored conversations (with messages) from
+  /// the backend into the store, once per owner id, so chat history survives
+  /// closing and reopening the app. No-ops when the backend isn't configured
+  /// (the demo seed stays) or nobody is signed in; on failure the current
+  /// contents stay and the next call retries.
+  Future<void> ensureHydrated() {
+    if (!_configLoader.load().hasApiBaseUrl) {
+      return Future<void>.value();
+    }
+    final ownerId = _ownerIdProvider();
+    if (ownerId == null || ownerId == _hydratedOwnerId) {
+      return Future<void>.value();
+    }
+    return _hydrating ??= _hydrate(ownerId).whenComplete(() => _hydrating = null);
+  }
+
+  Future<void> _hydrate(String ownerId) async {
+    final petsResult = await _remote.fetchPetNamesById();
+    final conversationsResult = await _remote.fetchConversations();
+    final petNames = petsResult.fold<Map<String, String>?>(
+      onSuccess: (value) => value,
+      onFailure: (_) => null,
+    );
+    final conversations = conversationsResult.fold<List<RemoteConversation>?>(
+      onSuccess: (value) => value,
+      onFailure: (_) => null,
+    );
+    if (petNames == null || conversations == null) {
+      return;
+    }
+
+    if (_hydratedOwnerId != null && _hydratedOwnerId != ownerId) {
+      // A different account signed in: drop the previous owner's threads.
+      _threads.clear();
+      _openedConversationIds.clear();
+      _petIdByName.clear();
+    }
+
+    petNames.forEach((petId, name) {
+      if (name.isNotEmpty) {
+        _petIdByName[name] = petId;
+      }
+    });
+
+    final known = {
+      for (final thread in _threads)
+        if (thread.backendConversationId != null) thread.backendConversationId!,
+    };
+    final restored = <MapEntry<DateTime, ChatConversationDetail>>[];
+    for (final conversation in conversations) {
+      final petName = petNames[conversation.petId];
+      if (petName == null || petName.isEmpty || known.contains(conversation.id)) {
+        continue;
+      }
+      restored.add(
+        MapEntry(
+          conversation.messages.lastOrNull?.createdAt ??
+              DateTime.fromMillisecondsSinceEpoch(0),
+          ChatConversationDetail(
+            id: conversation.id,
+            title: conversation.title.isEmpty ? '$petName - conversazione' : conversation.title,
+            petName: petName,
+            statusLabel: 'Conversazione salvata',
+            messages: [
+              for (final message in conversation.messages)
+                ChatMessage(
+                  id: message.id.isEmpty ? _messageId('remote') : message.id,
+                  author: message.role == 'user'
+                      ? ChatMessageAuthor.user
+                      : ChatMessageAuthor.assistant,
+                  text: message.content,
+                  timeLabel: _timeLabelFor(message.createdAt),
+                ),
+            ],
+            backendConversationId: conversation.id,
+          ),
+        ),
+      );
+    }
+    // Most recently active first, matching how new threads are inserted.
+    restored.sort((a, b) => b.key.compareTo(a.key));
+    _threads.addAll(restored.map((entry) => entry.value));
+    // Already-seen history shouldn't show up as unread after every restart.
+    _openedConversationIds.addAll(restored.map((entry) => entry.value.id));
+
+    _hydratedOwnerId = ownerId;
+    notifyListeners();
+  }
+
+  String _timeLabelFor(DateTime? value) {
+    if (value == null) {
+      return '';
+    }
+    final local = value.toLocal();
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    final day = DateTime(local.year, local.month, local.day);
+    final daysAgo = today.difference(day).inDays;
+    if (daysAgo <= 0) {
+      return '${local.hour.toString().padLeft(2, '0')}:${local.minute.toString().padLeft(2, '0')}';
+    }
+    if (daysAgo == 1) {
+      return 'ieri';
+    }
+    return '${local.day.toString().padLeft(2, '0')}/${local.month.toString().padLeft(2, '0')}';
+  }
 
   UnmodifiableListView<ChatConversationSummary> get conversations {
     final summaries = _threads.map(_summaryFor).toList(growable: false);
@@ -266,12 +400,15 @@ class ChatDemoStore extends ChangeNotifier {
   }
 
   void reset() {
-    _threads
-      ..clear()
-      ..addAll(
-        ChatSeedData.conversations.map(ChatSeedData.detailForSummary),
-      );
+    _threads.clear();
+    // The fake demo conversations only make sense without a backend; with
+    // one configured the store starts empty and [ensureHydrated] fills it
+    // with the signed-in owner's real history.
+    if (!_configLoader.load().hasApiBaseUrl) {
+      _threads.addAll(ChatSeedData.conversations.map(ChatSeedData.detailForSummary));
+    }
     _openedConversationIds.clear();
+    _hydratedOwnerId = null;
     notifyListeners();
   }
 
