@@ -15,14 +15,26 @@ class DogWalksRepository {
 
   static final List<WalkSession> _localWalks = List<WalkSession>.of(_seedWalks);
 
+  /// Remote is the source of truth when configured, but `saveWalk` swallows
+  /// upsert failures as best-effort (network blip, momentarily stale auth
+  /// token) - so a walk that just finished (or was just starred) can be
+  /// missing from `remote` while still sitting correctly in `_localWalks`.
+  /// Returning `remote` verbatim in that case silently dropped it from
+  /// every list in the app (owner report, 2026-09-29: confirmed "save as
+  /// favorite" then the walk vanished). Any local walk remote doesn't know
+  /// about yet is added back in; walks present in both use the remote copy.
   Future<List<WalkSession>> loadWalks(String ownerId) async {
     final remote = await _tryLoadRemoteWalks(ownerId);
-    if (remote.isNotEmpty) {
-      return remote;
+    final local = _localWalks.where((walk) => walk.ownerId == ownerId);
+    if (remote.isEmpty) {
+      return List<WalkSession>.unmodifiable(local);
     }
-    return List<WalkSession>.unmodifiable(
-      _localWalks.where((walk) => walk.ownerId == ownerId),
-    );
+
+    final remoteIds = remote.map((walk) => walk.id).toSet();
+    return List<WalkSession>.unmodifiable([
+      ...remote,
+      ...local.where((walk) => !remoteIds.contains(walk.id)),
+    ]);
   }
 
   Future<void> saveWalk(WalkSession walk) async {

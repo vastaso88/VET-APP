@@ -1,9 +1,12 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 
 import '../../../../design_system/tokens/app_colors.dart';
 import '../../../../design_system/tokens/app_radii.dart';
 import '../../../../design_system/tokens/app_spacing.dart';
 import '../../../../design_system/tokens/app_text_styles.dart';
+import '../../../dog_walks/data/walk_home_widget.dart';
 import '../../data/pet_demo_store.dart';
 import '../../domain/pet_models.dart';
 import '../widgets/pet_avatar.dart';
@@ -43,6 +46,7 @@ class _PetsListPageState extends State<PetsListPage> {
     setState(() {
       _pets = PetDemoStore.instance.list(species: _selectedSpecies);
     });
+    unawaited(syncPetsToHomeWidget(PetDemoStore.instance.list()));
   }
 
   @override
