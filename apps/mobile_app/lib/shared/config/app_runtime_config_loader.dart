@@ -40,6 +40,10 @@ class AppRuntimeConfigLoader {
         AppEnvKeys.cartoApiKey,
         defaultValue: '',
       ),
+      walkMapStyle: const String.fromEnvironment(
+        AppEnvKeys.walkMapStyle,
+        defaultValue: 'osm',
+      ),
     );
   }
 
