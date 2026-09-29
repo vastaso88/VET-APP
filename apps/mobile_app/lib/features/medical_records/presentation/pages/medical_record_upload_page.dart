@@ -5,15 +5,20 @@ import '../../../../design_system/tokens/app_colors.dart';
 import '../../../../design_system/tokens/app_radii.dart';
 import '../../../../design_system/tokens/app_spacing.dart';
 import '../../../../design_system/tokens/app_text_styles.dart';
+import '../../../chat/data/chat_attachment_remote_data_source.dart';
+import '../../../pets/data/pet_demo_store.dart';
 import '../../data/medical_record_file_cache.dart';
 import '../../data/medical_records_repository.dart';
 
 /// Real file-picker upload flow for a pet's cartella clinica: the user
 /// picks an actual file from their device, we show its real name/size,
-/// and save it as a new record. There's no backend file storage behind
-/// this demo, so the raw bytes only live in [MedicalRecordFileCache] for
-/// the rest of this session (enough for "Invia file" to share the real
-/// file right after uploading it).
+/// and save it as a new record. Images (jpg/jpeg/png) are uploaded for
+/// real via the existing chat-attachments pipeline (same Supabase Storage
+/// bucket/backend route as chat photos — see
+/// HttpChatAttachmentRemoteDataSource), so they survive a reload. PDFs
+/// have no matching backend endpoint yet, so those still only live in
+/// [MedicalRecordFileCache] for this session (enough for "Invia file" to
+/// share the real file right after uploading it, same as before).
 class MedicalRecordUploadPage extends StatefulWidget {
   const MedicalRecordUploadPage({super.key, required this.petName});
 
@@ -25,8 +30,11 @@ class MedicalRecordUploadPage extends StatefulWidget {
 
 class _MedicalRecordUploadPageState extends State<MedicalRecordUploadPage> {
   final _repository = MedicalRecordsRepository();
+  final _attachmentDataSource = HttpChatAttachmentRemoteDataSource();
   PlatformFile? _picked;
   bool _saving = false;
+
+  static const _imageExtensions = {'jpg', 'jpeg', 'png'};
 
   Future<void> _pickFile() async {
     final result = await FilePicker.platform.pickFiles(
@@ -46,6 +54,28 @@ class _MedicalRecordUploadPageState extends State<MedicalRecordUploadPage> {
 
     final now = DateTime.now();
     final id = 'upload-${now.microsecondsSinceEpoch}';
+    final bytes = picked.bytes;
+
+    String? attachmentId;
+    final isImage = _imageExtensions.contains((picked.extension ?? '').toLowerCase());
+    if (isImage && bytes != null) {
+      await PetDemoStore.instance.ensureHydrated();
+      final petId = PetDemoStore.instance.byName(widget.petName)?.id;
+      if (petId != null) {
+        final result = await _attachmentDataSource.upload(
+          petId: petId,
+          imageBytes: bytes,
+          fileName: picked.name,
+        );
+        attachmentId = result.fold(
+          onSuccess: (uploaded) => uploaded.id,
+          // Upload failed (offline, backend down, ...): still save the
+          // record with the local-session cache below, same as before.
+          onFailure: (_) => null,
+        );
+      }
+    }
+
     final record = MedicalRecordEntry(
       id: id,
       petName: widget.petName,
@@ -55,6 +85,7 @@ class _MedicalRecordUploadPageState extends State<MedicalRecordUploadPage> {
       badge: 'Nuovo',
       detailSource: 'Caricato da te',
       createdAt: _formatDate(now),
+      attachmentId: attachmentId,
       timeline: [
         MedicalRecordTimelineEntry(label: 'Importato', value: _formatDate(now)),
         const MedicalRecordTimelineEntry(label: 'Revisionato', value: 'In attesa'),
@@ -63,7 +94,6 @@ class _MedicalRecordUploadPageState extends State<MedicalRecordUploadPage> {
     );
 
     await _repository.saveRecord(record);
-    final bytes = picked.bytes;
     if (bytes != null) {
       MedicalRecordFileCache.instance.put(id, bytes, picked.name);
     }

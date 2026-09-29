@@ -37,13 +37,11 @@ class _HomeDashboardPageState extends State<HomeDashboardPage> {
   final _remindersRepository = RemindersRepository();
   final _petNewsRepository = GoogleNewsPetNewsRepository();
 
-  late Future<List<ReminderEntry>> _remindersFuture;
   late Future<List<PetNewsItem>> _petNewsFuture;
 
   @override
   void initState() {
     super.initState();
-    _remindersFuture = _remindersRepository.loadReminders();
     _petNewsFuture = _loadPetNews();
     // Fire-and-forget: LayoutSettingsStore is a ChangeNotifier, so once the
     // persisted preference finishes loading it notifies _AgendaSection's
@@ -56,7 +54,8 @@ class _HomeDashboardPageState extends State<HomeDashboardPage> {
   /// other 3 slots are filled with the owned species, in order.
   Future<List<PetNewsItem>> _loadPetNews() async {
     await PetDemoStore.instance.ensureHydrated();
-    final owned = PetDemoStore.instance.list().map((pet) => pet.species).toSet().toList();
+    final owned =
+        PetDemoStore.instance.list().map((pet) => pet.species).toSet().toList();
     final categories = <String>[];
     var ownedIndex = 0;
     for (var i = 0; i < 4; i++) {
@@ -69,10 +68,26 @@ class _HomeDashboardPageState extends State<HomeDashboardPage> {
       }
     }
 
+    // Dedup categories: with fewer than 3 owned species, the loop above
+    // queues the same query (almost always "Generale") two or three times.
+    // Each `fetchForSpecies` call caches by category, so those repeats
+    // fetched and showed the exact same top headline that many times —
+    // e.g. one dog owner saw one dog card, then the same generic story
+    // three times over.
+    final uniqueCategories = categories.toSet().toList(growable: false);
+
     final results = await fetchManyWithLimit(
-      categories.map((c) => () => _petNewsRepository.fetchForSpecies(c, limit: 1)).toList(),
+      uniqueCategories
+          .map((c) => () => _petNewsRepository.fetchForSpecies(c, limit: 1))
+          .toList(),
     );
-    return results.expand((items) => items).toList(growable: false);
+    final items = results.expand((items) => items).toList(growable: false);
+
+    // Safety net: even distinct categories can legitimately surface the
+    // same breaking headline (e.g. a cross-species regulatory story), so
+    // de-dupe by title too rather than relying on the category dedup alone.
+    final seenTitles = <String>{};
+    return items.where((item) => seenTitles.add(item.title)).toList(growable: false);
   }
 
   @override
@@ -110,7 +125,7 @@ class _HomeDashboardPageState extends State<HomeDashboardPage> {
                     const SizedBox(height: AppSpacing.xs),
                     Text(ownerName, style: AppTextStyles.display),
                     const SizedBox(height: AppSpacing.xxl),
-                    _AgendaSection(remindersFuture: _remindersFuture),
+                    _AgendaSection(repository: _remindersRepository),
                     const SizedBox(height: AppSpacing.xxl),
                     _PetNewsSection(petNewsFuture: _petNewsFuture),
                     const SizedBox(height: AppSpacing.xxl),
@@ -137,9 +152,9 @@ DateTime _startOfWeek(DateTime day, WeekStartDay weekStartDay) {
 }
 
 class _AgendaSection extends StatelessWidget {
-  const _AgendaSection({required this.remindersFuture});
+  const _AgendaSection({required this.repository});
 
-  final Future<List<ReminderEntry>> remindersFuture;
+  final RemindersRepository repository;
 
   @override
   Widget build(BuildContext context) {
@@ -148,72 +163,83 @@ class _AgendaSection extends StatelessWidget {
       builder: (context, _) {
         final layout = LayoutSettingsStore.instance.settings;
 
-        return FutureBuilder<List<ReminderEntry>>(
-          future: remindersFuture,
-          builder: (context, snapshot) {
-            if (snapshot.connectionState == ConnectionState.waiting) {
-              return const Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  DashboardSectionHeader(
-                    title: 'Prossime attività',
-                    subtitle: 'Spot e cicli, per tutti gli animali.',
-                  ),
-                  SizedBox(height: AppSpacing.lg),
-                  _SectionSkeleton(),
-                ],
-              );
-            }
-
-            final reminders = (snapshot.data ?? const <ReminderEntry>[])
-                .where((r) => !r.isDone)
-                .toList(growable: false)
-              ..sort((a, b) => a.dueAt.compareTo(b.dueAt));
-
-            return Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                DashboardSectionHeader(
-                  title: 'Prossime attività',
-                  subtitle: _summaryLine(reminders),
-                ),
-                const SizedBox(height: AppSpacing.lg),
-                Builder(
-                  builder: (context) {
-                    final pets = PetDemoStore.instance.list();
-                    final legendPets = _petsWithVisibleActivity(
-                      reminders,
-                      pets,
-                      layout.weeksShown,
-                      layout.weekStartDay,
-                    );
-                    return DashboardSurfaceCard(
-                      backgroundColor: AppColors.surfaceElevated,
-                      padding: const EdgeInsets.all(AppSpacing.lg),
-                      // The whole calendar is the entry point into the full
-                      // reminders view now — no separate "Vedi tutti" link.
-                      onTap: () => Navigator.of(context).push(
-                        MaterialPageRoute<void>(builder: (_) => const RemindersListPage()),
+        // Home stays alive under the bottom-nav IndexedStack (never
+        // disposed/rebuilt on tab switch), so a one-shot Future loaded in
+        // initState never saw a reminder created elsewhere. Listening to
+        // RemindersRepository.changes and re-fetching on every tick keeps
+        // the calendar in sync no matter where the reminder was added.
+        return ValueListenableBuilder<int>(
+          valueListenable: RemindersRepository.changes,
+          builder: (context, _, __) {
+            return FutureBuilder<List<ReminderEntry>>(
+              future: repository.loadReminders(),
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return const Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      DashboardSectionHeader(
+                        title: 'Prossime attività',
+                        subtitle: 'Spot e cicli, per tutti gli animali.',
                       ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          _WeekStrip(
-                            reminders: reminders,
-                            pets: pets,
-                            weeksShown: layout.weeksShown,
-                            weekStartDay: layout.weekStartDay,
+                      SizedBox(height: AppSpacing.lg),
+                      _SectionSkeleton(),
+                    ],
+                  );
+                }
+
+                final reminders = (snapshot.data ?? const <ReminderEntry>[])
+                    .where((r) => !r.isDone)
+                    .toList(growable: false)
+                  ..sort((a, b) => a.dueAt.compareTo(b.dueAt));
+
+                return Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    DashboardSectionHeader(
+                      title: 'Prossime attività',
+                      subtitle: _summaryLine(reminders),
+                    ),
+                    const SizedBox(height: AppSpacing.lg),
+                    Builder(
+                      builder: (context) {
+                        final pets = PetDemoStore.instance.list();
+                        final legendPets = _petsWithVisibleActivity(
+                          reminders,
+                          pets,
+                          layout.weeksShown,
+                          layout.weekStartDay,
+                        );
+                        return DashboardSurfaceCard(
+                          backgroundColor: AppColors.surfaceElevated,
+                          padding: const EdgeInsets.all(AppSpacing.lg),
+                          // The whole calendar is the entry point into the full
+                          // reminders view now — no separate "Vedi tutti" link.
+                          onTap: () => Navigator.of(context).push(
+                            MaterialPageRoute<void>(
+                                builder: (_) => const RemindersListPage()),
                           ),
-                          if (legendPets.isNotEmpty) ...[
-                            const SizedBox(height: AppSpacing.md),
-                            _PetLegend(pets: legendPets),
-                          ],
-                        ],
-                      ),
-                    );
-                  },
-                ),
-              ],
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              _WeekStrip(
+                                reminders: reminders,
+                                pets: pets,
+                                weeksShown: layout.weeksShown,
+                                weekStartDay: layout.weekStartDay,
+                              ),
+                              if (legendPets.isNotEmpty) ...[
+                                const SizedBox(height: AppSpacing.md),
+                                _PetLegend(pets: legendPets),
+                              ],
+                            ],
+                          ),
+                        );
+                      },
+                    ),
+                  ],
+                );
+              },
             );
           },
         );
@@ -249,7 +275,8 @@ List<PetProfile> _petsWithVisibleActivity(
   WeekStartDay weekStartDay,
 ) {
   final today = DateTime.now();
-  final weekStart = _startOfWeek(DateTime(today.year, today.month, today.day), weekStartDay);
+  final weekStart =
+      _startOfWeek(DateTime(today.year, today.month, today.day), weekStartDay);
   final activeIds = <String>{};
   for (var i = 0; i < weeksShown * 7; i++) {
     final day = weekStart.add(Duration(days: i));
@@ -259,7 +286,9 @@ List<PetProfile> _petsWithVisibleActivity(
       if (pet != null) activeIds.add(pet.id);
     }
   }
-  return pets.where((pet) => activeIds.contains(pet.id)).toList(growable: false);
+  return pets
+      .where((pet) => activeIds.contains(pet.id))
+      .toList(growable: false);
 }
 
 class _WeekStrip extends StatelessWidget {
@@ -283,9 +312,12 @@ class _WeekStrip extends StatelessWidget {
     final today = DateTime.now();
     final startOfToday = DateTime(today.year, today.month, today.day);
     final weekStart = _startOfWeek(startOfToday, weekStartDay);
-    final labels = weekStartDay == WeekStartDay.monday ? _mondayFirstLabels : _sundayFirstLabels;
+    final labels = weekStartDay == WeekStartDay.monday
+        ? _mondayFirstLabels
+        : _sundayFirstLabels;
     final totalDays = weeksShown * 7;
-    final days = List.generate(totalDays, (i) => weekStart.add(Duration(days: i)));
+    final days =
+        List.generate(totalDays, (i) => weekStart.add(Duration(days: i)));
 
     return Column(
       children: [
@@ -342,7 +374,9 @@ class _DayChip extends StatelessWidget {
       decoration: BoxDecoration(
         color: background,
         borderRadius: BorderRadius.circular(AppRadii.large),
-        border: isToday ? Border.all(color: AppColors.primary.withValues(alpha: 0.4)) : null,
+        border: isToday
+            ? Border.all(color: AppColors.primary.withValues(alpha: 0.4))
+            : null,
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -371,7 +405,8 @@ class _DayChip extends StatelessWidget {
                 : Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      for (final marker in shown) MarkerGlyph(marker: marker, size: 9),
+                      for (final marker in shown)
+                        MarkerGlyph(marker: marker, size: 9),
                       if (extra > 0)
                         Text(
                           '+$extra',
@@ -419,7 +454,8 @@ class _PetLegend extends StatelessWidget {
                   pet.name,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: AppTextStyles.bodySmall.copyWith(fontWeight: FontWeight.w600, color: AppColors.text),
+                  style: AppTextStyles.bodySmall.copyWith(
+                      fontWeight: FontWeight.w600, color: AppColors.text),
                 ),
               ),
             ],
@@ -469,7 +505,8 @@ class _PetNewsSection extends StatelessWidget {
                 ],
                 _MoreNewsButton(
                   onTap: () => Navigator.of(context).push(
-                    MaterialPageRoute<void>(builder: (_) => const NewsFeedPage()),
+                    MaterialPageRoute<void>(
+                        builder: (_) => const NewsFeedPage()),
                   ),
                 ),
               ],
@@ -509,7 +546,8 @@ class _LocalEventsNotice extends StatefulWidget {
 class _LocalEventsNoticeState extends State<_LocalEventsNotice> {
   // Same Milano fallback used by the maps demo route and the marketplace
   // page while the user hasn't set a Località preference.
-  static const _fallbackLocation = Coordinates(latitude: 45.4642, longitude: 9.1900);
+  static const _fallbackLocation =
+      Coordinates(latitude: 45.4642, longitude: 9.1900);
   static const _nearbyRadiusKm = 25.0;
 
   late final Future<String> _summaryFuture = _loadSummary();
@@ -517,11 +555,14 @@ class _LocalEventsNoticeState extends State<_LocalEventsNotice> {
   Future<String> _loadSummary() async {
     await LocationPreferenceStore.instance.ensureLoaded();
     final preference = LocationPreferenceStore.instance.preference;
-    final referenceLocation = resolveReferenceLocation(preference, _fallbackLocation);
+    final referenceLocation =
+        resolveReferenceLocation(preference, _fallbackLocation);
 
     final activities = await LocalActivitiesRepository().loadActiveActivities();
     final nearby = activities.where(
-      (activity) => haversineMeters(referenceLocation, activity.location) <= _nearbyRadiusKm * 1000,
+      (activity) =>
+          haversineMeters(referenceLocation, activity.location) <=
+          _nearbyRadiusKm * 1000,
     );
 
     if (nearby.isEmpty) {
@@ -529,7 +570,8 @@ class _LocalEventsNoticeState extends State<_LocalEventsNotice> {
     }
     final count = nearby.length;
     final nearest = nearby.reduce(
-      (a, b) => haversineMeters(referenceLocation, a.location) <= haversineMeters(referenceLocation, b.location)
+      (a, b) => haversineMeters(referenceLocation, a.location) <=
+              haversineMeters(referenceLocation, b.location)
           ? a
           : b,
     );
@@ -556,7 +598,8 @@ class _LocalEventsNoticeState extends State<_LocalEventsNotice> {
               color: AppColors.info.withValues(alpha: 0.14),
               borderRadius: BorderRadius.circular(AppRadii.medium),
             ),
-            child: const Icon(Icons.map_outlined, size: 18, color: AppColors.info),
+            child:
+                const Icon(Icons.map_outlined, size: 18, color: AppColors.info),
           ),
           const SizedBox(width: AppSpacing.md),
           Expanded(
@@ -567,7 +610,8 @@ class _LocalEventsNoticeState extends State<_LocalEventsNotice> {
                   snapshot.data ?? 'Eventi nei dintorni',
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: AppTextStyles.bodySmall.copyWith(fontWeight: FontWeight.w600, color: AppColors.text),
+                  style: AppTextStyles.bodySmall.copyWith(
+                      fontWeight: FontWeight.w600, color: AppColors.text),
                 );
               },
             ),
@@ -595,13 +639,15 @@ class _SponsorBanner extends StatelessWidget {
               color: AppColors.accentSoft,
               borderRadius: BorderRadius.circular(AppRadii.medium),
             ),
-            child: const Icon(Icons.storefront_outlined, size: 20, color: AppColors.primary),
+            child: const Icon(Icons.storefront_outlined,
+                size: 20, color: AppColors.primary),
           ),
           const SizedBox(width: AppSpacing.md),
           Expanded(
             child: Text(
               'Spazio riservato ai nostri partner.',
-              style: AppTextStyles.bodySmall.copyWith(color: AppColors.secondaryText),
+              style: AppTextStyles.bodySmall
+                  .copyWith(color: AppColors.secondaryText),
             ),
           ),
         ],

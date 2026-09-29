@@ -28,7 +28,8 @@ enum _KindFilterOption {
 
   bool matches(EventKind kind) => switch (this) {
         _KindFilterOption.all => true,
-        _KindFilterOption.events => kind == EventKind.spot || kind == EventKind.recurring,
+        _KindFilterOption.events =>
+          kind == EventKind.spot || kind == EventKind.recurring,
         _KindFilterOption.courses => kind == EventKind.course,
       };
 }
@@ -43,29 +44,27 @@ class RemindersListPage extends StatefulWidget {
 class _RemindersListPageState extends State<RemindersListPage> {
   final RemindersRepository _repository = RemindersRepository();
 
-  late Future<List<ReminderEntry>> _remindersFuture;
   _KindFilterOption _kindFilter = _KindFilterOption.all;
   String? _petFilter;
   _ViewMode _viewMode = _ViewMode.list;
 
-  @override
-  void initState() {
-    super.initState();
-    _remindersFuture = _repository.loadReminders();
-  }
-
   Future<void> _reload() async {
-    setState(() {
-      _remindersFuture = _repository.loadReminders();
-    });
-    await _remindersFuture;
+    // The list already rebuilds on its own via RemindersRepository.changes
+    // (see the ValueListenableBuilder in build()) — this just forces one
+    // more rebuild for the "Riprova" retry button, which also re-attempts
+    // ensureHydrated() since a failed hydration leaves _hydratedOwnerId
+    // unset.
+    setState(() {});
+    await _repository.loadReminders();
   }
 
   void _openCreate() {
     unawaited(
-      Navigator.of(context).push(
+      Navigator.of(context)
+          .push(
         MaterialPageRoute<void>(builder: (_) => const ReminderCreatePage()),
-      ).then((_) {
+      )
+          .then((_) {
         if (mounted) {
           _reload();
         }
@@ -75,9 +74,12 @@ class _RemindersListPageState extends State<RemindersListPage> {
 
   void _openDetail(ReminderEntry reminder) {
     unawaited(
-      Navigator.of(context).push(
-        MaterialPageRoute<void>(builder: (_) => ReminderDetailPage(reminder: reminder)),
-      ).then((_) {
+      Navigator.of(context)
+          .push(
+        MaterialPageRoute<void>(
+            builder: (_) => ReminderDetailPage(reminder: reminder)),
+      )
+          .then((_) {
         if (mounted) {
           _reload();
         }
@@ -96,110 +98,122 @@ class _RemindersListPageState extends State<RemindersListPage> {
     return ListenableBuilder(
       listenable: LayoutSettingsStore.instance,
       builder: (context, _) {
-        final compact = LayoutSettingsStore.instance.settings.listDensity == ListDensity.compact;
+        final compact = LayoutSettingsStore.instance.settings.listDensity ==
+            ListDensity.compact;
 
         return _Shell(
-      title: 'Promemoria',
-      subtitle: 'Vaccini, trattamenti e visite da tenere sotto controllo.',
-      actionLabel: 'Crea',
-      onAction: _openCreate,
-      child: FutureBuilder<List<ReminderEntry>>(
-        future: _remindersFuture,
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const _LoadingPanel(
-              title: 'Caricamento promemoria',
-              body: 'Sto leggendo date, ricorrenze e note del proprietario.',
-            );
-          }
+          title: 'Promemoria',
+          subtitle: 'Vaccini, trattamenti e visite da tenere sotto controllo.',
+          actionLabel: 'Crea',
+          onAction: _openCreate,
+          child: ValueListenableBuilder<int>(
+            valueListenable: RemindersRepository.changes,
+            builder: (context, _, __) => FutureBuilder<List<ReminderEntry>>(
+              future: _repository.loadReminders(),
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return const _LoadingPanel(
+                    title: 'Caricamento promemoria',
+                    body:
+                        'Sto leggendo date, ricorrenze e note del proprietario.',
+                  );
+                }
 
-          if (snapshot.hasError) {
-            return _StatePanel(
-              label: 'Errore sync',
-              title: 'Sincronizzazione promemoria fallita.',
-              body: 'La sorgente demo e ancora disponibile. Riprova quando la rete torna su.',
-              icon: Icons.wifi_off_outlined,
-              actionLabel: 'Riprova',
-              onAction: () => unawaited(_reload()),
-            );
-          }
+                if (snapshot.hasError) {
+                  return _StatePanel(
+                    label: 'Errore sync',
+                    title: 'Sincronizzazione promemoria fallita.',
+                    body:
+                        'La sorgente demo e ancora disponibile. Riprova quando la rete torna su.',
+                    icon: Icons.wifi_off_outlined,
+                    actionLabel: 'Riprova',
+                    onAction: () => unawaited(_reload()),
+                  );
+                }
 
-          final all = (snapshot.data ?? const <ReminderEntry>[])
-              .where((reminder) => !reminder.isDone)
-              .toList(growable: false);
+                final all = (snapshot.data ?? const <ReminderEntry>[])
+                    .where((reminder) => !reminder.isDone)
+                    .toList(growable: false);
 
-          if (all.isEmpty) {
-            return _StatePanel(
-              label: 'Nessun promemoria',
-              title: 'La lista dei promemoria e vuota.',
-              body: 'Crea il primo promemoria per vaccino o trattamento e resta in carreggiata.',
-              icon: Icons.event_note_outlined,
-              actionLabel: 'Crea promemoria',
-              onAction: _openCreate,
-            );
-          }
+                if (all.isEmpty) {
+                  return _StatePanel(
+                    label: 'Nessun promemoria',
+                    title: 'La lista dei promemoria e vuota.',
+                    body:
+                        'Crea il primo promemoria per vaccino o trattamento e resta in carreggiata.',
+                    icon: Icons.event_note_outlined,
+                    actionLabel: 'Crea promemoria',
+                    onAction: _openCreate,
+                  );
+                }
 
-          final pets = PetDemoStore.instance.list();
-          final filtered = all
-              .where((r) => _kindFilter.matches(r.kind) && (_petFilter == null || r.petName == _petFilter))
-              .toList()
-            ..sort((a, b) => a.dueAt.compareTo(b.dueAt));
+                final pets = PetDemoStore.instance.list();
+                final filtered = all
+                    .where((r) =>
+                        _kindFilter.matches(r.kind) &&
+                        (_petFilter == null || r.petName == _petFilter))
+                    .toList()
+                  ..sort((a, b) => a.dueAt.compareTo(b.dueAt));
 
-          return Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              _ViewModeToggle(
-                value: _viewMode,
-                onChanged: (mode) => setState(() => _viewMode = mode),
-              ),
-              const SizedBox(height: AppSpacing.lg),
-              _KindFilterBar(
-                selected: _kindFilter,
-                onSelect: (kind) => setState(() => _kindFilter = kind),
-              ),
-              const SizedBox(height: AppSpacing.sm),
-              _PetFilterBar(
-                pets: pets,
-                selected: _petFilter,
-                onSelect: (petName) => setState(() => _petFilter = petName),
-              ),
-              const SizedBox(height: AppSpacing.lg),
-              if (_viewMode == _ViewMode.calendar)
-                _MonthCalendarView(
-                  reminders: filtered,
-                  onOpenReminder: _openDetail,
-                  onMarkDone: _markDone,
-                )
-              else if (filtered.isEmpty)
-                Padding(
-                  padding: const EdgeInsets.symmetric(vertical: AppSpacing.xl),
-                  child: Text(
-                    'Nessun promemoria per questi filtri.',
-                    style: AppTextStyles.bodySmall,
-                  ),
-                )
-              else
-                ...filtered.asMap().entries.expand(
-                  (entry) {
-                    final index = entry.key;
-                    final reminder = entry.value;
-                    return <Widget>[
-                      _ReminderTile(
-                        reminder: reminder,
-                        compact: compact,
-                        onTap: () => _openDetail(reminder),
-                        onMarkDone: reminder.kind == EventKind.spot
-                            ? () => _markDone(reminder)
-                            : null,
+                return Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _ViewModeToggle(
+                      value: _viewMode,
+                      onChanged: (mode) => setState(() => _viewMode = mode),
+                    ),
+                    const SizedBox(height: AppSpacing.lg),
+                    _KindFilterBar(
+                      selected: _kindFilter,
+                      onSelect: (kind) => setState(() => _kindFilter = kind),
+                    ),
+                    const SizedBox(height: AppSpacing.sm),
+                    _PetFilterBar(
+                      pets: pets,
+                      selected: _petFilter,
+                      onSelect: (petName) =>
+                          setState(() => _petFilter = petName),
+                    ),
+                    const SizedBox(height: AppSpacing.lg),
+                    if (_viewMode == _ViewMode.calendar)
+                      _MonthCalendarView(
+                        reminders: filtered,
+                        onOpenReminder: _openDetail,
+                        onMarkDone: _markDone,
+                      )
+                    else if (filtered.isEmpty)
+                      Padding(
+                        padding:
+                            const EdgeInsets.symmetric(vertical: AppSpacing.xl),
+                        child: Text(
+                          'Nessun promemoria per questi filtri.',
+                          style: AppTextStyles.bodySmall,
+                        ),
+                      )
+                    else
+                      ...filtered.asMap().entries.expand(
+                        (entry) {
+                          final index = entry.key;
+                          final reminder = entry.value;
+                          return <Widget>[
+                            _ReminderTile(
+                              reminder: reminder,
+                              compact: compact,
+                              onTap: () => _openDetail(reminder),
+                              onMarkDone: reminder.kind == EventKind.spot
+                                  ? () => _markDone(reminder)
+                                  : null,
+                            ),
+                            if (index != filtered.length - 1)
+                              const SizedBox(height: AppSpacing.sm),
+                          ];
+                        },
                       ),
-                      if (index != filtered.length - 1) const SizedBox(height: AppSpacing.sm),
-                    ];
-                  },
-                ),
-            ],
-          );
-        },
-      ),
+                  ],
+                );
+              },
+            ),
+          ),
         );
       },
     );
@@ -245,7 +259,8 @@ class _KindFilterBar extends StatelessWidget {
 }
 
 class _PetFilterBar extends StatelessWidget {
-  const _PetFilterBar({required this.pets, required this.selected, required this.onSelect});
+  const _PetFilterBar(
+      {required this.pets, required this.selected, required this.onSelect});
 
   final List<PetProfile> pets;
   final String? selected;
@@ -258,10 +273,16 @@ class _PetFilterBar extends StatelessWidget {
       child: ListView(
         scrollDirection: Axis.horizontal,
         children: [
-          _KindChip(label: 'Tutti', selected: selected == null, onTap: () => onSelect(null)),
+          _KindChip(
+              label: 'Tutti',
+              selected: selected == null,
+              onTap: () => onSelect(null)),
           for (final pet in pets) ...[
             const SizedBox(width: AppSpacing.sm),
-            _PetChip(pet: pet, selected: selected == pet.name, onTap: () => onSelect(pet.name)),
+            _PetChip(
+                pet: pet,
+                selected: selected == pet.name,
+                onTap: () => onSelect(pet.name)),
           ],
         ],
       ),
@@ -270,7 +291,8 @@ class _PetFilterBar extends StatelessWidget {
 }
 
 class _PetChip extends StatelessWidget {
-  const _PetChip({required this.pet, required this.selected, required this.onTap});
+  const _PetChip(
+      {required this.pet, required this.selected, required this.onTap});
 
   final PetProfile pet;
   final bool selected;
@@ -285,10 +307,12 @@ class _PetChip extends StatelessWidget {
         borderRadius: BorderRadius.circular(AppRadii.pill),
         onTap: onTap,
         child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md, vertical: AppSpacing.xs),
+          padding: const EdgeInsets.symmetric(
+              horizontal: AppSpacing.md, vertical: AppSpacing.xs),
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(AppRadii.pill),
-            border: Border.all(color: selected ? AppColors.primary : AppColors.border),
+            border: Border.all(
+                color: selected ? AppColors.primary : AppColors.border),
           ),
           child: Row(
             mainAxisSize: MainAxisSize.min,
@@ -296,7 +320,8 @@ class _PetChip extends StatelessWidget {
               Container(
                 width: 10,
                 height: 10,
-                decoration: BoxDecoration(shape: BoxShape.circle, color: pet.identityColor),
+                decoration: BoxDecoration(
+                    shape: BoxShape.circle, color: pet.identityColor),
               ),
               const SizedBox(width: 6),
               Text(
@@ -315,7 +340,11 @@ class _PetChip extends StatelessWidget {
 }
 
 class _KindChip extends StatelessWidget {
-  const _KindChip({required this.label, required this.selected, required this.onTap, this.icon});
+  const _KindChip(
+      {required this.label,
+      required this.selected,
+      required this.onTap,
+      this.icon});
 
   final String label;
   final bool selected;
@@ -331,16 +360,20 @@ class _KindChip extends StatelessWidget {
         borderRadius: BorderRadius.circular(AppRadii.pill),
         onTap: onTap,
         child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md, vertical: AppSpacing.xs),
+          padding: const EdgeInsets.symmetric(
+              horizontal: AppSpacing.md, vertical: AppSpacing.xs),
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(AppRadii.pill),
-            border: Border.all(color: selected ? AppColors.primary : AppColors.border),
+            border: Border.all(
+                color: selected ? AppColors.primary : AppColors.border),
           ),
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
               if (icon != null) ...[
-                Icon(icon, size: 15, color: selected ? AppColors.onPrimary : AppColors.text),
+                Icon(icon,
+                    size: 15,
+                    color: selected ? AppColors.onPrimary : AppColors.text),
                 const SizedBox(width: 6),
               ],
               Text(
@@ -384,7 +417,8 @@ class _ViewModeToggle extends StatelessWidget {
       onSelectionChanged: (selection) => onChanged(selection.first),
       style: ButtonStyle(
         visualDensity: VisualDensity.compact,
-        textStyle: WidgetStatePropertyAll(AppTextStyles.caption.copyWith(fontWeight: FontWeight.w700)),
+        textStyle: WidgetStatePropertyAll(
+            AppTextStyles.caption.copyWith(fontWeight: FontWeight.w700)),
       ),
     );
   }
@@ -410,15 +444,32 @@ class _MonthCalendarView extends StatefulWidget {
 }
 
 class _MonthCalendarViewState extends State<_MonthCalendarView> {
-  late DateTime _visibleMonth = DateTime(DateTime.now().year, DateTime.now().month);
+  late DateTime _visibleMonth =
+      DateTime(DateTime.now().year, DateTime.now().month);
   DateTime? _selectedDay = DateTime.now();
 
   static const _monthNames = [
-    'Gennaio', 'Febbraio', 'Marzo', 'Aprile', 'Maggio', 'Giugno',
-    'Luglio', 'Agosto', 'Settembre', 'Ottobre', 'Novembre', 'Dicembre',
+    'Gennaio',
+    'Febbraio',
+    'Marzo',
+    'Aprile',
+    'Maggio',
+    'Giugno',
+    'Luglio',
+    'Agosto',
+    'Settembre',
+    'Ottobre',
+    'Novembre',
+    'Dicembre',
   ];
   static const _weekdayNames = [
-    'Lunedì', 'Martedì', 'Mercoledì', 'Giovedì', 'Venerdì', 'Sabato', 'Domenica',
+    'Lunedì',
+    'Martedì',
+    'Mercoledì',
+    'Giovedì',
+    'Venerdì',
+    'Sabato',
+    'Domenica',
   ];
   static const _mondayFirstLabels = ['L', 'M', 'M', 'G', 'V', 'S', 'D'];
   static const _sundayFirstLabels = ['D', 'L', 'M', 'M', 'G', 'V', 'S'];
@@ -431,7 +482,8 @@ class _MonthCalendarViewState extends State<_MonthCalendarView> {
 
   void _selectDay(DateTime day) {
     setState(() {
-      _selectedDay = _selectedDay != null && isSameDay(_selectedDay!, day) ? null : day;
+      _selectedDay =
+          _selectedDay != null && isSameDay(_selectedDay!, day) ? null : day;
     });
   }
 
@@ -439,14 +491,17 @@ class _MonthCalendarViewState extends State<_MonthCalendarView> {
   Widget build(BuildContext context) {
     final weekStartDay = LayoutSettingsStore.instance.settings.weekStartDay;
     final pets = PetDemoStore.instance.list();
-    final labels = weekStartDay == WeekStartDay.monday ? _mondayFirstLabels : _sundayFirstLabels;
+    final labels = weekStartDay == WeekStartDay.monday
+        ? _mondayFirstLabels
+        : _sundayFirstLabels;
 
     final firstOfMonth = DateTime(_visibleMonth.year, _visibleMonth.month);
     final firstOffset = weekStartDay == WeekStartDay.monday
         ? firstOfMonth.weekday - 1
         : firstOfMonth.weekday % 7;
     final gridStart = firstOfMonth.subtract(Duration(days: firstOffset));
-    final daysInMonth = DateUtils.getDaysInMonth(_visibleMonth.year, _visibleMonth.month);
+    final daysInMonth =
+        DateUtils.getDaysInMonth(_visibleMonth.year, _visibleMonth.month);
     final totalWeeks = ((firstOffset + daysInMonth) / 7).ceil();
 
     final today = DateTime.now();
@@ -455,7 +510,9 @@ class _MonthCalendarViewState extends State<_MonthCalendarView> {
 
     final selectedReminders = selectedDay == null
         ? const <ReminderEntry>[]
-        : (widget.reminders.where((r) => reminderActiveOnDay(r, selectedDay)).toList()
+        : (widget.reminders
+            .where((r) => reminderActiveOnDay(r, selectedDay))
+            .toList()
           ..sort((a, b) => a.dueAt.compareTo(b.dueAt)));
 
     return DashboardSurfaceCard(
@@ -493,7 +550,8 @@ class _MonthCalendarViewState extends State<_MonthCalendarView> {
                   child: Center(
                     child: Text(
                       label,
-                      style: AppTextStyles.caption.copyWith(color: AppColors.mutedText),
+                      style: AppTextStyles.caption
+                          .copyWith(color: AppColors.mutedText),
                     ),
                   ),
                 ),
@@ -513,7 +571,8 @@ class _MonthCalendarViewState extends State<_MonthCalendarView> {
                           day: day,
                           inMonth: day.month == _visibleMonth.month,
                           isToday: isSameDay(day, startOfToday),
-                          isSelected: selectedDay != null && isSameDay(day, selectedDay),
+                          isSelected: selectedDay != null &&
+                              isSameDay(day, selectedDay),
                           markers: markersForDay(widget.reminders, pets, day),
                           onTap: () => _selectDay(day),
                         ),
@@ -536,7 +595,8 @@ class _MonthCalendarViewState extends State<_MonthCalendarView> {
             ),
             const SizedBox(height: AppSpacing.sm),
             if (selectedReminders.isEmpty)
-              Text('Nessuna attività in questo giorno.', style: AppTextStyles.bodySmall)
+              Text('Nessuna attività in questo giorno.',
+                  style: AppTextStyles.bodySmall)
             else
               ...selectedReminders.asMap().entries.expand((entry) {
                 final index = entry.key;
@@ -550,7 +610,8 @@ class _MonthCalendarViewState extends State<_MonthCalendarView> {
                         ? () => widget.onMarkDone(reminder)
                         : null,
                   ),
-                  if (index != selectedReminders.length - 1) const SizedBox(height: AppSpacing.sm),
+                  if (index != selectedReminders.length - 1)
+                    const SizedBox(height: AppSpacing.sm),
                 ];
               }),
           ],
@@ -589,7 +650,9 @@ class _MonthDayCell extends StatelessWidget {
         : (isToday ? AppColors.accentSoft : Colors.transparent);
     final foreground = isSelected
         ? AppColors.onPrimary
-        : (inMonth ? AppColors.text : AppColors.mutedText.withValues(alpha: 0.5));
+        : (inMonth
+            ? AppColors.text
+            : AppColors.mutedText.withValues(alpha: 0.5));
     final shown = markers.take(3).toList();
     final extra = markers.length - shown.length;
 
@@ -626,11 +689,15 @@ class _MonthDayCell extends StatelessWidget {
                     : Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          for (final marker in shown) MarkerGlyph(marker: marker, size: 9),
+                          for (final marker in shown)
+                            MarkerGlyph(marker: marker, size: 9),
                           if (extra > 0)
                             Text(
                               '+$extra',
-                              style: TextStyle(fontSize: 8, fontWeight: FontWeight.w800, color: foreground),
+                              style: TextStyle(
+                                  fontSize: 8,
+                                  fontWeight: FontWeight.w800,
+                                  color: foreground),
                             ),
                         ],
                       ),
@@ -663,7 +730,9 @@ class _ReminderCreatePageState extends State<ReminderCreatePage> {
   @override
   Widget build(BuildContext context) {
     return _Shell(
-      title: widget.petName.isEmpty ? 'Crea promemoria' : 'Nuovo promemoria per ${widget.petName}',
+      title: widget.petName.isEmpty
+          ? 'Crea promemoria'
+          : 'Nuovo promemoria per ${widget.petName}',
       subtitle: 'Scegli il tipo, la data e i dettagli.',
       petName: widget.petName,
       child: _ReminderForm(
@@ -732,24 +801,29 @@ class _ReminderForm extends StatefulWidget {
 
 class _ReminderFormState extends State<_ReminderForm> {
   final _formKey = GlobalKey<FormState>();
-  late final _titleController = TextEditingController(text: widget.initial?.title ?? '');
-  late final _noteController = TextEditingController(text: widget.initial?.note ?? '');
+  late final _titleController =
+      TextEditingController(text: widget.initial?.title ?? '');
+  late final _noteController =
+      TextEditingController(text: widget.initial?.note ?? '');
 
   late EventKind _kind = widget.initial?.kind ?? EventKind.spot;
-  late DateTime _date = widget.initial?.dueAt ?? DateTime.now().add(const Duration(days: 1));
-  late IntervalUnit _intervalUnit = widget.initial?.intervalUnit ?? IntervalUnit.days;
+  late DateTime _date =
+      widget.initial?.dueAt ?? DateTime.now().add(const Duration(days: 1));
+  late IntervalUnit _intervalUnit =
+      widget.initial?.intervalUnit ?? IntervalUnit.days;
   late int _intervalValue = widget.initial?.intervalValue ?? 30;
   bool _customInterval = false;
-  late final _customIntervalController =
-      TextEditingController(text: (widget.initial?.intervalValue ?? 30).toString());
+  late final _customIntervalController = TextEditingController(
+      text: (widget.initial?.intervalValue ?? 30).toString());
   late int _courseDuration = widget.initial?.courseDurationDays ?? 5;
 
-  late RecurrenceEnd _recurrenceEnd = widget.initial?.recurrenceEnd ?? RecurrenceEnd.never;
+  late RecurrenceEnd _recurrenceEnd =
+      widget.initial?.recurrenceEnd ?? RecurrenceEnd.never;
   late int _occurrenceCount = widget.initial?.occurrenceCount ?? 6;
-  late DateTime _recurrenceEndDate =
-      widget.initial?.recurrenceEndDate ?? DateTime.now().add(const Duration(days: 365));
-  late final _occurrenceCountController =
-      TextEditingController(text: (widget.initial?.occurrenceCount ?? 6).toString());
+  late DateTime _recurrenceEndDate = widget.initial?.recurrenceEndDate ??
+      DateTime.now().add(const Duration(days: 365));
+  late final _occurrenceCountController = TextEditingController(
+      text: (widget.initial?.occurrenceCount ?? 6).toString());
 
   @override
   void dispose() {
@@ -790,7 +864,8 @@ class _ReminderFormState extends State<_ReminderForm> {
     }
 
     final reminder = ReminderEntry(
-      id: widget.initial?.id ?? 'promemoria-${DateTime.now().microsecondsSinceEpoch}',
+      id: widget.initial?.id ??
+          'promemoria-${DateTime.now().microsecondsSinceEpoch}',
       petName: widget.initial?.petName ?? widget.petName,
       title: _titleController.text.trim(),
       kind: _kind,
@@ -799,10 +874,10 @@ class _ReminderFormState extends State<_ReminderForm> {
       intervalUnit: _kind == EventKind.recurring ? _intervalUnit : null,
       intervalValue: _kind == EventKind.recurring ? _intervalValue : null,
       recurrenceEnd: _kind == EventKind.recurring ? _recurrenceEnd : null,
-      occurrenceCount:
-          _kind == EventKind.recurring && _recurrenceEnd == RecurrenceEnd.afterOccurrences
-              ? _occurrenceCount
-              : null,
+      occurrenceCount: _kind == EventKind.recurring &&
+              _recurrenceEnd == RecurrenceEnd.afterOccurrences
+          ? _occurrenceCount
+          : null,
       recurrenceEndDate:
           _kind == EventKind.recurring && _recurrenceEnd == RecurrenceEnd.onDate
               ? _recurrenceEndDate
@@ -831,7 +906,9 @@ class _ReminderFormState extends State<_ReminderForm> {
           children: [
             Text('Tipo', style: AppTextStyles.caption),
             const SizedBox(height: AppSpacing.sm),
-            _KindSelector(value: _kind, onChanged: (kind) => setState(() => _kind = kind)),
+            _KindSelector(
+                value: _kind,
+                onChanged: (kind) => setState(() => _kind = kind)),
             const SizedBox(height: AppSpacing.lg),
             const _FieldLabel('Titolo'),
             const SizedBox(height: AppSpacing.xs),
@@ -840,7 +917,8 @@ class _ReminderFormState extends State<_ReminderForm> {
               hintText: widget.petName.isEmpty
                   ? 'Es. Richiamo vaccinale'
                   : 'Es. Richiamo vaccinale di ${widget.petName}',
-              validator: (value) => (value ?? '').trim().isEmpty ? 'Inserisci un titolo.' : null,
+              validator: (value) =>
+                  (value ?? '').trim().isEmpty ? 'Inserisci un titolo.' : null,
             ),
             const SizedBox(height: AppSpacing.lg),
             _DatePickerField(
@@ -888,7 +966,8 @@ class _ReminderFormState extends State<_ReminderForm> {
                     Expanded(
                       child: _UnitToggle(
                         value: _intervalUnit,
-                        onChanged: (unit) => setState(() => _intervalUnit = unit),
+                        onChanged: (unit) =>
+                            setState(() => _intervalUnit = unit),
                       ),
                     ),
                   ],
@@ -944,10 +1023,13 @@ class _ReminderFormState extends State<_ReminderForm> {
             const SizedBox(height: AppSpacing.xl),
             Row(
               children: [
-                Expanded(child: FilledButton(onPressed: _save, child: const Text('Salva'))),
+                Expanded(
+                    child: FilledButton(
+                        onPressed: _save, child: const Text('Salva'))),
                 const SizedBox(width: AppSpacing.sm),
                 Expanded(
-                  child: OutlinedButton(onPressed: widget.onCancel, child: const Text('Annulla')),
+                  child: OutlinedButton(
+                      onPressed: widget.onCancel, child: const Text('Annulla')),
                 ),
               ],
             ),
@@ -964,7 +1046,8 @@ class _FieldLabel extends StatelessWidget {
   final String label;
 
   @override
-  Widget build(BuildContext context) => Text(label, style: AppTextStyles.caption);
+  Widget build(BuildContext context) =>
+      Text(label, style: AppTextStyles.caption);
 }
 
 /// A `SegmentedButton` here used to force all three options into equal
@@ -1023,16 +1106,21 @@ class _KindOption extends StatelessWidget {
       onTap: onTap,
       borderRadius: BorderRadius.circular(AppRadii.medium),
       child: Container(
-        padding: const EdgeInsets.symmetric(vertical: AppSpacing.sm, horizontal: AppSpacing.xs),
+        padding: const EdgeInsets.symmetric(
+            vertical: AppSpacing.sm, horizontal: AppSpacing.xs),
         decoration: BoxDecoration(
           color: selected ? AppColors.primary : AppColors.background,
           borderRadius: BorderRadius.circular(AppRadii.medium),
-          border: Border.all(color: selected ? AppColors.primary : AppColors.border),
+          border: Border.all(
+              color: selected ? AppColors.primary : AppColors.border),
         ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(icon, size: 18, color: selected ? AppColors.onPrimary : AppColors.secondaryText),
+            Icon(icon,
+                size: 18,
+                color:
+                    selected ? AppColors.onPrimary : AppColors.secondaryText),
             const SizedBox(height: 4),
             Text(
               label,
@@ -1051,14 +1139,26 @@ class _KindOption extends StatelessWidget {
 }
 
 class _DatePickerField extends StatelessWidget {
-  const _DatePickerField({required this.label, required this.date, required this.onTap});
+  const _DatePickerField(
+      {required this.label, required this.date, required this.onTap});
 
   final String label;
   final DateTime date;
   final VoidCallback onTap;
 
   static const _months = [
-    'Gen', 'Feb', 'Mar', 'Apr', 'Mag', 'Giu', 'Lug', 'Ago', 'Set', 'Ott', 'Nov', 'Dic',
+    'Gen',
+    'Feb',
+    'Mar',
+    'Apr',
+    'Mag',
+    'Giu',
+    'Lug',
+    'Ago',
+    'Set',
+    'Ott',
+    'Nov',
+    'Dic',
   ];
 
   @override
@@ -1075,21 +1175,25 @@ class _DatePickerField extends StatelessWidget {
             borderRadius: BorderRadius.circular(AppRadii.medium),
             onTap: onTap,
             child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg, vertical: AppSpacing.md),
+              padding: const EdgeInsets.symmetric(
+                  horizontal: AppSpacing.lg, vertical: AppSpacing.md),
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(AppRadii.medium),
                 border: Border.all(color: AppColors.border),
               ),
               child: Row(
                 children: [
-                  const Icon(Icons.calendar_today_outlined, size: 16, color: AppColors.primary),
+                  const Icon(Icons.calendar_today_outlined,
+                      size: 16, color: AppColors.primary),
                   const SizedBox(width: AppSpacing.sm),
                   Text(
                     '${date.day.toString().padLeft(2, '0')} ${_months[date.month - 1]} ${date.year}',
-                    style: AppTextStyles.bodySmall.copyWith(color: AppColors.text),
+                    style:
+                        AppTextStyles.bodySmall.copyWith(color: AppColors.text),
                   ),
                   const Spacer(),
-                  const Icon(Icons.chevron_right_rounded, color: AppColors.mutedText),
+                  const Icon(Icons.chevron_right_rounded,
+                      color: AppColors.mutedText),
                 ],
               ),
             ),
@@ -1124,12 +1228,14 @@ class _IntervalPresetChips extends StatelessWidget {
       spacing: AppSpacing.sm,
       runSpacing: AppSpacing.sm,
       children: [
-        _presetChip('7 gg', _isSelected(IntervalUnit.days, 7), () => onPreset(IntervalUnit.days, 7)),
-        _presetChip('30 gg', _isSelected(IntervalUnit.days, 30), () => onPreset(IntervalUnit.days, 30)),
-        _presetChip(
-            '6 mesi', _isSelected(IntervalUnit.months, 6), () => onPreset(IntervalUnit.months, 6)),
-        _presetChip(
-            '12 mesi', _isSelected(IntervalUnit.months, 12), () => onPreset(IntervalUnit.months, 12)),
+        _presetChip('7 gg', _isSelected(IntervalUnit.days, 7),
+            () => onPreset(IntervalUnit.days, 7)),
+        _presetChip('30 gg', _isSelected(IntervalUnit.days, 30),
+            () => onPreset(IntervalUnit.days, 30)),
+        _presetChip('6 mesi', _isSelected(IntervalUnit.months, 6),
+            () => onPreset(IntervalUnit.months, 6)),
+        _presetChip('12 mesi', _isSelected(IntervalUnit.months, 12),
+            () => onPreset(IntervalUnit.months, 12)),
         _presetChip('Personalizzato', isCustom, onCustom),
       ],
     );
@@ -1202,7 +1308,8 @@ class _DurationStepper extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md, vertical: AppSpacing.xs),
+      padding: const EdgeInsets.symmetric(
+          horizontal: AppSpacing.md, vertical: AppSpacing.xs),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(AppRadii.medium),
         border: Border.all(color: AppColors.border),
@@ -1219,7 +1326,8 @@ class _DurationStepper extends StatelessWidget {
             child: Text(
               days == 1 ? '1 giorno' : '$days giorni',
               textAlign: TextAlign.center,
-              style: AppTextStyles.bodySmall.copyWith(color: AppColors.text, fontWeight: FontWeight.w700),
+              style: AppTextStyles.bodySmall
+                  .copyWith(color: AppColors.text, fontWeight: FontWeight.w700),
             ),
           ),
           IconButton(
@@ -1312,7 +1420,8 @@ class _ReminderDetailPageState extends State<ReminderDetailPage> {
       context: context,
       builder: (dialogContext) => AlertDialog(
         backgroundColor: AppColors.surface,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadii.large)),
+        shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(AppRadii.large)),
         title: const Text('Eliminare questo promemoria?'),
         content: Text('"${reminder.title}" verrà eliminato definitivamente.'),
         actions: [
@@ -1348,7 +1457,8 @@ class _ReminderDetailPageState extends State<ReminderDetailPage> {
         child: _StatePanel(
           label: 'Non trovato',
           title: 'Nessun promemoria da mostrare.',
-          body: 'Potrebbe essere stato eliminato o non essere ancora sincronizzato.',
+          body:
+              'Potrebbe essere stato eliminato o non essere ancora sincronizzato.',
           icon: Icons.search_off_rounded,
           actionLabel: 'Torna alla lista',
           onAction: () => Navigator.of(context).pop(),
@@ -1369,14 +1479,18 @@ class _ReminderDetailPageState extends State<ReminderDetailPage> {
         children: [
           _SummaryCard(
             title: reminder.title,
-            body: reminder.note.isEmpty ? 'Nessuna nota aggiunta.' : reminder.note,
+            body: reminder.note.isEmpty
+                ? 'Nessuna nota aggiunta.'
+                : reminder.note,
             icon: presentation.icon,
           ),
           const SizedBox(height: AppSpacing.lg),
           _FormPanel(
             title: 'Riepilogo promemoria',
             items: [
-              _FormItem(label: 'Animale', value: reminder.petName.isEmpty ? '—' : reminder.petName),
+              _FormItem(
+                  label: 'Animale',
+                  value: reminder.petName.isEmpty ? '—' : reminder.petName),
               _FormItem(label: 'Tipo', value: presentation.kindLabel),
               _FormItem(label: 'Stato', value: presentation.dateLabel),
             ],
@@ -1388,8 +1502,10 @@ class _ReminderDetailPageState extends State<ReminderDetailPage> {
             width: double.infinity,
             child: TextButton.icon(
               onPressed: _delete,
-              icon: const Icon(Icons.delete_outline_rounded, size: 18, color: AppColors.danger),
-              label: const Text('Elimina promemoria', style: TextStyle(color: AppColors.danger)),
+              icon: const Icon(Icons.delete_outline_rounded,
+                  size: 18, color: AppColors.danger),
+              label: const Text('Elimina promemoria',
+                  style: TextStyle(color: AppColors.danger)),
             ),
           ),
         ],
@@ -1496,7 +1612,8 @@ class _Header extends StatelessWidget {
                     onPressed: () => Navigator.of(context).maybePop(),
                     icon: const Icon(Icons.arrow_back_rounded),
                     color: Colors.white,
-                    style: IconButton.styleFrom(backgroundColor: const Color(0xFF163A35)),
+                    style: IconButton.styleFrom(
+                        backgroundColor: const Color(0xFF163A35)),
                   ),
                   const SizedBox(width: AppSpacing.sm),
                   if (pet != null)
@@ -1545,11 +1662,15 @@ class _BrandPill extends StatelessWidget {
       child: const Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(Icons.notifications_active_outlined, size: 14, color: AppColors.accent),
+          Icon(Icons.notifications_active_outlined,
+              size: 14, color: AppColors.accent),
           SizedBox(width: AppSpacing.sm),
           Text(
             'VET APP',
-            style: TextStyle(color: AppColors.onPrimary, fontSize: 12, fontWeight: FontWeight.w800),
+            style: TextStyle(
+                color: AppColors.onPrimary,
+                fontSize: 12,
+                fontWeight: FontWeight.w800),
           ),
         ],
       ),
@@ -1755,9 +1876,15 @@ class _SummaryCard extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(title, maxLines: 2, overflow: TextOverflow.ellipsis, style: AppTextStyles.title),
+                Text(title,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: AppTextStyles.title),
                 const SizedBox(height: AppSpacing.sm),
-                Text(body, maxLines: 3, overflow: TextOverflow.ellipsis, style: AppTextStyles.bodySmall),
+                Text(body,
+                    maxLines: 3,
+                    overflow: TextOverflow.ellipsis,
+                    style: AppTextStyles.bodySmall),
               ],
             ),
           ),
@@ -1808,7 +1935,8 @@ class _ReminderTile extends StatelessWidget {
                   color: palette.background,
                   borderRadius: BorderRadius.circular(18),
                 ),
-                child: Icon(presentation.icon, color: palette.foreground, size: compact ? 18 : 24),
+                child: Icon(presentation.icon,
+                    color: palette.foreground, size: compact ? 18 : 24),
               ),
               const SizedBox(width: AppSpacing.md),
               Expanded(
@@ -1819,7 +1947,8 @@ class _ReminderTile extends StatelessWidget {
                       reminder.title,
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
-                      style: AppTextStyles.title.copyWith(fontSize: compact ? 15 : 17),
+                      style: AppTextStyles.title
+                          .copyWith(fontSize: compact ? 15 : 17),
                     ),
                     if (!compact) ...[
                       const SizedBox(height: AppSpacing.xs),
@@ -1839,7 +1968,10 @@ class _ReminderTile extends StatelessWidget {
               Column(
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
-                  DashboardBadge(label: presentation.dateLabel, tone: presentation.tone, compact: true),
+                  DashboardBadge(
+                      label: presentation.dateLabel,
+                      tone: presentation.tone,
+                      compact: true),
                   if (onMarkDone != null) ...[
                     const SizedBox(height: AppSpacing.xs),
                     InkWell(
@@ -1847,7 +1979,8 @@ class _ReminderTile extends StatelessWidget {
                       borderRadius: BorderRadius.circular(AppRadii.pill),
                       child: const Padding(
                         padding: EdgeInsets.all(4),
-                        child: Icon(Icons.check_circle_outline, size: 18, color: AppColors.success),
+                        child: Icon(Icons.check_circle_outline,
+                            size: 18, color: AppColors.success),
                       ),
                     ),
                   ],
@@ -1899,10 +2032,13 @@ class _FormPanel extends StatelessWidget {
           Row(
             children: [
               Expanded(
-                child: FilledButton(onPressed: onSave, child: const Text('Modifica')),
+                child: FilledButton(
+                    onPressed: onSave, child: const Text('Modifica')),
               ),
               const SizedBox(width: AppSpacing.sm),
-              Expanded(child: OutlinedButton(onPressed: onCancel, child: const Text('Indietro'))),
+              Expanded(
+                  child: OutlinedButton(
+                      onPressed: onCancel, child: const Text('Indietro'))),
             ],
           ),
         ],

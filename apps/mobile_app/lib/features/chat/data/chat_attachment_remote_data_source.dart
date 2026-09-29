@@ -30,6 +30,11 @@ abstract class ChatAttachmentRemoteDataSource {
     required Uint8List imageBytes,
     required String fileName,
   });
+
+  /// Raw bytes for a previously uploaded attachment — see
+  /// `GET /chat-attachments/{id}/file`. Used to re-fetch a file that isn't
+  /// (or no longer is) in this session's local cache.
+  Future<Result<Uint8List>> download(String attachmentId);
 }
 
 class HttpChatAttachmentRemoteDataSource implements ChatAttachmentRemoteDataSource {
@@ -93,6 +98,45 @@ class HttpChatAttachmentRemoteDataSource implements ChatAttachmentRemoteDataSour
       return Result.failure<ChatAttachmentUploadResult>(
         AppNetworkError(
           code: 'chat_attachment_unexpected_error',
+          message: "Qualcosa e' andato storto. Riprova.",
+          details: e,
+        ),
+      );
+    }
+  }
+
+  @override
+  Future<Result<Uint8List>> download(String attachmentId) async {
+    try {
+      final token = CurrentUser.accessToken();
+      final response = await _client.get(
+        Uri.parse('$_baseUrl/chat-attachments/$attachmentId/file'),
+        headers: {
+          if (token != null && token.isNotEmpty) 'Authorization': 'Bearer $token',
+        },
+      ).timeout(_timeout);
+
+      if (response.statusCode < 200 || response.statusCode >= 300) {
+        return Result.failure(
+          AppNetworkError(
+            code: 'chat_attachment_download_http_${response.statusCode}',
+            message: 'Non sono riuscito a scaricare il file.',
+          ),
+        );
+      }
+
+      return Result.success(response.bodyBytes);
+    } on TimeoutException {
+      return Result.failure<Uint8List>(
+        const AppNetworkError(
+          code: 'chat_attachment_download_timeout',
+          message: 'Richiesta scaduta. Riprova.',
+        ),
+      );
+    } catch (e) {
+      return Result.failure<Uint8List>(
+        AppNetworkError(
+          code: 'chat_attachment_download_unexpected_error',
           message: "Qualcosa e' andato storto. Riprova.",
           details: e,
         ),

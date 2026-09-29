@@ -24,6 +24,39 @@ class ChatSendResult {
   final String backendConversationId;
 }
 
+/// One message of a stored backend conversation — see `ChatMessage` in
+/// packages/core/domain/conversation/models.py. `role` is "user" or
+/// "assistant"; whether a reply was AI-generated isn't persisted.
+class RemoteChatMessage {
+  const RemoteChatMessage({
+    required this.id,
+    required this.role,
+    required this.content,
+    required this.createdAt,
+  });
+
+  final String id;
+  final String role;
+  final String content;
+  final DateTime? createdAt;
+}
+
+/// A stored backend conversation as returned by `GET /conversations` (which
+/// includes the full message history, not just metadata).
+class RemoteConversation {
+  const RemoteConversation({
+    required this.id,
+    required this.petId,
+    required this.title,
+    required this.messages,
+  });
+
+  final String id;
+  final String petId;
+  final String title;
+  final List<RemoteChatMessage> messages;
+}
+
 abstract class ChatRemoteDataSource {
   Future<Result<ChatSendResult>> sendMessage({
     required String petId,
@@ -48,6 +81,14 @@ abstract class ChatRemoteDataSource {
   });
 
   Future<Result<void>> deleteConversation(String conversationId);
+
+  /// The signed-in owner's stored conversations with their messages
+  /// (`GET /conversations`), so chat history survives an app restart.
+  Future<Result<List<RemoteConversation>>> fetchConversations();
+
+  /// Backend pet id -> pet name for the signed-in owner (`GET /pets`), used
+  /// to attach restored conversations to the right local pet.
+  Future<Result<Map<String, String>>> fetchPetNamesById();
 }
 
 class HttpChatRemoteDataSource implements ChatRemoteDataSource {
@@ -229,6 +270,98 @@ class HttpChatRemoteDataSource implements ChatRemoteDataSource {
       return Result.failure<void>(
         AppNetworkError(
           code: 'conversation_delete_unexpected_error',
+          message: "Qualcosa e' andato storto. Riprova.",
+          details: e,
+        ),
+      );
+    }
+  }
+
+  @override
+  Future<Result<List<RemoteConversation>>> fetchConversations() async {
+    try {
+      final response = await _client
+          .get(Uri.parse('$_baseUrl/conversations'), headers: _headers)
+          .timeout(_timeout);
+      if (response.statusCode < 200 || response.statusCode >= 300) {
+        return Result.failure(
+          AppNetworkError(
+            code: 'conversation_list_http_${response.statusCode}',
+            message: 'Non sono riuscito a caricare le tue chat.',
+          ),
+        );
+      }
+
+      final json = jsonDecode(response.body) as Map<String, dynamic>;
+      final items = json['conversations'] as List<dynamic>? ?? const [];
+      final conversations = <RemoteConversation>[];
+      for (final entry in items) {
+        final item = entry as Map<String, dynamic>;
+        final rawMessages = item['messages'] as List<dynamic>? ?? const [];
+        conversations.add(
+          RemoteConversation(
+            id: item['id'] as String,
+            petId: item['pet_id'] as String? ?? '',
+            title: item['title'] as String? ?? '',
+            messages: [
+              for (final raw in rawMessages)
+                RemoteChatMessage(
+                  id: (raw as Map<String, dynamic>)['id'] as String? ?? '',
+                  role: raw['role'] as String? ?? 'assistant',
+                  content: raw['content'] as String? ?? '',
+                  createdAt: DateTime.tryParse(raw['created_at'] as String? ?? ''),
+                ),
+            ],
+          ),
+        );
+      }
+      return Result.success(conversations);
+    } on TimeoutException {
+      return Result.failure<List<RemoteConversation>>(
+        const AppNetworkError(
+          code: 'conversation_list_timeout',
+          message: 'Richiesta scaduta. Riprova.',
+        ),
+      );
+    } catch (e) {
+      return Result.failure<List<RemoteConversation>>(
+        AppNetworkError(
+          code: 'conversation_list_unexpected_error',
+          message: "Qualcosa e' andato storto. Riprova.",
+          details: e,
+        ),
+      );
+    }
+  }
+
+  @override
+  Future<Result<Map<String, String>>> fetchPetNamesById() async {
+    try {
+      final response = await _client
+          .get(Uri.parse('$_baseUrl/pets'), headers: _headers)
+          .timeout(_timeout);
+      if (response.statusCode < 200 || response.statusCode >= 300) {
+        return Result.failure(
+          AppNetworkError(
+            code: 'pet_list_http_${response.statusCode}',
+            message: 'Non sono riuscito a caricare i tuoi pet.',
+          ),
+        );
+      }
+      final json = jsonDecode(response.body) as Map<String, dynamic>;
+      final pets = json['pet_profiles'] as List<dynamic>? ?? const [];
+      return Result.success({
+        for (final entry in pets)
+          (entry as Map<String, dynamic>)['id'] as String: (entry['name'] as String?) ?? '',
+      });
+    } on TimeoutException {
+      return Result.failure<Map<String, String>>(
+        const AppNetworkError(code: 'pet_list_timeout', message: 'Richiesta scaduta. Riprova.'),
+      );
+    } catch (e) {
+      return Result.failure<Map<String, String>>(
+        AppNetworkError(
+          code: 'pet_list_unexpected_error',
           message: "Qualcosa e' andato storto. Riprova.",
           details: e,
         ),

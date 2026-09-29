@@ -93,6 +93,18 @@ create table if not exists public.clinical_events (
     created_at text not null default now()::text
 );
 
+-- Links an uploaded referto (medical_records feature) to its real file,
+-- stored via the existing chat-attachments pipeline (same bucket/service-
+-- role posture, see chat_attachments below) rather than a new bucket. Not
+-- a real FK: chat_attachments is declared later in this script, and
+-- clinical_events (like pet_profiles/conversations, see the 2026-09-28
+-- fix above) may already exist live, so this stays a plain nullable
+-- column rather than depending on statement order. Additive — found
+-- missing 2026-09-29 alongside the medical_records_repository table-name
+-- bug (it was reading from a nonexistent `medical_records` table instead
+-- of this one).
+alter table public.clinical_events add column if not exists attachment_id text;
+
 create table if not exists public.reminders (
     id text primary key,
     owner_id text not null,
@@ -101,6 +113,21 @@ create table if not exists public.reminders (
     due_date date not null,
     notes text
 );
+
+-- Additive columns for the rest of the mobile ReminderEntry model (spot/
+-- recurring/course kinds, recurrence rules) — same "existing table, add
+-- column if not exists" pattern as 9d6522f, found missing 2026-09-29 when
+-- saveReminder's upsert was failing silently against this table.
+alter table public.reminders add column if not exists pet_name text;
+alter table public.reminders add column if not exists kind text;
+alter table public.reminders add column if not exists due_at timestamptz;
+alter table public.reminders add column if not exists interval_unit text;
+alter table public.reminders add column if not exists interval_value integer;
+alter table public.reminders add column if not exists recurrence_end text;
+alter table public.reminders add column if not exists occurrence_count integer;
+alter table public.reminders add column if not exists recurrence_end_date timestamptz;
+alter table public.reminders add column if not exists course_duration_days integer;
+alter table public.reminders add column if not exists is_done boolean not null default false;
 
 -- Account-level consents (docs/compliance/04_termini_e_consensi.md): ToS,
 -- privacy policy, marketing email, analytics. One row per owner; each key

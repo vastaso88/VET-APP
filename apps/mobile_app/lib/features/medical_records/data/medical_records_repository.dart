@@ -1,6 +1,7 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../../../shared/config/app_runtime_config_loader.dart';
+import '../../pets/data/pet_demo_store.dart';
 
 class MedicalRecordEntry {
   const MedicalRecordEntry({
@@ -13,6 +14,7 @@ class MedicalRecordEntry {
     required this.detailSource,
     required this.createdAt,
     required this.timeline,
+    this.attachmentId,
   });
 
   final String id;
@@ -24,6 +26,12 @@ class MedicalRecordEntry {
   final String detailSource;
   final String createdAt;
   final List<MedicalRecordTimelineEntry> timeline;
+
+  /// Id of the real file behind this record in the chat-attachments
+  /// storage pipeline (see HttpChatAttachmentRemoteDataSource) — null for
+  /// records with no uploaded file (seed/demo entries, or a PDF, which
+  /// that pipeline doesn't support yet).
+  final String? attachmentId;
 }
 
 class MedicalRecordTimelineEntry {
@@ -48,8 +56,8 @@ class MedicalRecordsRepository {
     }
 
     try {
-      final response = await client.from('medical_records').select(
-          'id,pet_name,title,subtitle,meta,badge,detail_source,created_at');
+      final response = await client.from('clinical_events').select(
+          'id,pet_id,pet_name,title,subtitle,meta,badge,detail_source,created_at,attachment_id');
       final rows = response as List<dynamic>;
       return rows
           .map(
@@ -63,6 +71,7 @@ class MedicalRecordsRepository {
               badge: (row['badge'] ?? 'Sincronizzato').toString(),
               detailSource: (row['detail_source'] ?? 'Supabase').toString(),
               createdAt: (row['created_at'] ?? 'Adesso').toString(),
+              attachmentId: row['attachment_id'] as String?,
               timeline: const [
                 MedicalRecordTimelineEntry(
                     label: 'Importato', value: 'Sincronizzato'),
@@ -75,7 +84,9 @@ class MedicalRecordsRepository {
           )
           .toList(growable: false);
     } catch (_) {
-      return const [];
+      // Same best-effort-remote fallback as the other repositories: don't
+      // show an empty list just because the query failed transiently.
+      return _previewRecords;
     }
   }
 
@@ -97,8 +108,11 @@ class MedicalRecordsRepository {
     }
 
     try {
+      await PetDemoStore.instance.ensureHydrated();
+      final petId = PetDemoStore.instance.byName(record.petName)?.id;
       await client.from('clinical_events').upsert({
         'id': record.id,
+        if (petId != null) 'pet_id': petId,
         'pet_name': record.petName,
         'title': record.title,
         'subtitle': record.subtitle,
@@ -106,6 +120,7 @@ class MedicalRecordsRepository {
         'badge': record.badge,
         'detail_source': record.detailSource,
         'created_at': record.createdAt,
+        'attachment_id': record.attachmentId,
       });
     } catch (_) {
       _upsertPreviewRecord(record);

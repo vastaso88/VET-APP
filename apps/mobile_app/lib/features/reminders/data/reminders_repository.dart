@@ -1,7 +1,9 @@
+import 'package:flutter/foundation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../../../shared/auth/current_user.dart';
 import '../../../../shared/config/app_runtime_config_loader.dart';
+import '../../pets/data/pet_demo_store.dart';
 
 enum EventKind { spot, recurring, course }
 
@@ -84,11 +86,23 @@ class RemindersRepository {
   /// [ensureHydrated] replaces this with that owner's real (possibly empty)
   /// reminders, so a brand-new account never inherits Moka/Oliver/Rex's
   /// demo activities — same pattern as PetDemoStore.ensureHydrated.
-  static List<ReminderEntry> _localReminders = List<ReminderEntry>.of(_seedReminders);
+  static List<ReminderEntry> _localReminders =
+      List<ReminderEntry>.of(_seedReminders);
 
   /// Owner id this store's contents were hydrated for — see
   /// PetDemoStore.ensureHydrated for the same no-op-on-repeat rationale.
   static String? _hydratedOwnerId;
+
+  /// Ticks on every mutation (save/delete) and every completed hydration,
+  /// so any screen showing reminders — the list, a pet's tab, Home's
+  /// calendar — can rebuild itself the moment the shared data changes,
+  /// instead of each keeping its own one-shot Future that only a manual
+  /// "did you just come back from that screen?" reload ever refreshes.
+  /// Screens that stay alive under the bottom-nav IndexedStack (Home,
+  /// Attività) never get that manual-reload trigger on their own, which is
+  /// why Home's calendar previously never picked up a reminder created
+  /// elsewhere.
+  static final ValueNotifier<int> changes = ValueNotifier<int>(0);
 
   Future<void> ensureHydrated() async {
     final ownerId = CurrentUser.get()?.id;
@@ -102,7 +116,8 @@ class RemindersRepository {
     }
 
     try {
-      final response = await client.from('reminders').select('*').eq('owner_id', ownerId);
+      final response =
+          await client.from('reminders').select('*').eq('owner_id', ownerId);
       final rows = response as List<dynamic>;
       final loaded = <ReminderEntry>[];
       for (final row in rows) {
@@ -113,6 +128,7 @@ class RemindersRepository {
       }
       _localReminders = loaded;
       _hydratedOwnerId = ownerId;
+      changes.value++;
     } catch (_) {
       // Leave current contents in place; retried next call since
       // _hydratedOwnerId wasn't set.
@@ -141,6 +157,7 @@ class RemindersRepository {
     } else {
       _localReminders[index] = reminder;
     }
+    changes.value++;
 
     final client = _resolveClient();
     if (client == null) {
@@ -152,26 +169,47 @@ class RemindersRepository {
       return;
     }
 
-    await client.from('reminders').upsert({
-      'id': reminder.id,
-      'owner_id': ownerId,
-      'pet_name': reminder.petName,
-      'title': reminder.title,
-      'kind': reminder.kind.name,
-      'due_at': reminder.dueAt.toIso8601String(),
-      'note': reminder.note,
-      'interval_unit': reminder.intervalUnit?.name,
-      'interval_value': reminder.intervalValue,
-      'recurrence_end': reminder.recurrenceEnd?.name,
-      'occurrence_count': reminder.occurrenceCount,
-      'recurrence_end_date': reminder.recurrenceEndDate?.toIso8601String(),
-      'course_duration_days': reminder.courseDurationDays,
-      'is_done': reminder.isDone,
-    });
+    // reminders.pet_id is a required FK to pet_profiles (and RLS checks the
+    // referenced pet's owner_id) — a reminder whose pet name doesn't
+    // resolve to a real pet can't be written remotely at all, so it stays
+    // local-only rather than sending a row that would fail the FK/RLS.
+    await PetDemoStore.instance.ensureHydrated();
+    final petId = PetDemoStore.instance.byName(reminder.petName)?.id;
+    if (petId == null) {
+      return;
+    }
+
+    try {
+      await client.from('reminders').upsert({
+        'id': reminder.id,
+        'owner_id': ownerId,
+        'pet_id': petId,
+        'pet_name': reminder.petName,
+        'title': reminder.title,
+        'due_date': _dateOnly(reminder.dueAt),
+        'notes': reminder.note,
+        'kind': reminder.kind.name,
+        'due_at': reminder.dueAt.toIso8601String(),
+        'interval_unit': reminder.intervalUnit?.name,
+        'interval_value': reminder.intervalValue,
+        'recurrence_end': reminder.recurrenceEnd?.name,
+        'occurrence_count': reminder.occurrenceCount,
+        'recurrence_end_date': reminder.recurrenceEndDate?.toIso8601String(),
+        'course_duration_days': reminder.courseDurationDays,
+        'is_done': reminder.isDone,
+      });
+    } catch (_) {
+      // Kept locally regardless — same best-effort-remote pattern as
+      // deleteReminder below.
+    }
   }
+
+  static String _dateOnly(DateTime date) =>
+      '${date.year.toString().padLeft(4, '0')}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}';
 
   Future<void> deleteReminder(String id) async {
     _localReminders.removeWhere((r) => r.id == id);
+    changes.value++;
 
     final client = _resolveClient();
     if (client == null) {
@@ -202,12 +240,13 @@ class RemindersRepository {
       title: (row['title'] ?? 'Promemoria').toString(),
       kind: kind,
       dueAt: dueAt,
-      note: (row['note'] ?? '').toString(),
+      note: (row['notes'] ?? '').toString(),
       intervalUnit: _unitFromName(row['interval_unit'] as String?),
       intervalValue: row['interval_value'] as int?,
       recurrenceEnd: _recurrenceEndFromName(row['recurrence_end'] as String?),
       occurrenceCount: row['occurrence_count'] as int?,
-      recurrenceEndDate: DateTime.tryParse((row['recurrence_end_date'] ?? '').toString()),
+      recurrenceEndDate:
+          DateTime.tryParse((row['recurrence_end_date'] ?? '').toString()),
       courseDurationDays: row['course_duration_days'] as int?,
       isDone: row['is_done'] as bool? ?? false,
     );
@@ -299,7 +338,8 @@ class RemindersRepository {
       title: 'Controllo dentale di Oliver',
       kind: EventKind.spot,
       dueAt: DateTime.now().add(const Duration(days: 7)),
-      note: 'Porta il libretto sanitario e conferma la disponibilità con la clinica.',
+      note:
+          'Porta il libretto sanitario e conferma la disponibilità con la clinica.',
     ),
     ReminderEntry(
       id: 'rex-controllo-uvb',
