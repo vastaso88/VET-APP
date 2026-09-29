@@ -28,6 +28,31 @@ Future<void> finishActiveWalk(BuildContext context, PetProfile pet) async {
   await ActiveWalkController.instance.stop();
   if (!context.mounted) return;
 
+  final justStopped = ActiveWalkController.instance.walk;
+  if (justStopped != null && justStopped.petId == pet.id && justStopped.distanceMeters <= 0) {
+    // No point tracked far enough apart to register any distance - not a
+    // real walk to keep (owner request, 2026-09-30). stop() already saved
+    // it, so this is a delete, not a "never save" - same visible result.
+    await repository.deleteWalk(ownerId, justStopped.id);
+    if (!context.mounted) return;
+    await showDialog<void>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Passeggiata senza spostamento'),
+        content: const Text(
+          'Non è stato registrato alcuno spostamento: la passeggiata non è stata salvata.',
+        ),
+        actions: [
+          FilledButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('Ho capito'),
+          ),
+        ],
+      ),
+    );
+    return;
+  }
+
   final afterWalks =
       (await repository.loadWalks(ownerId)).where((walk) => walk.petId == pet.id).toList();
   final afterBadges = evaluateBadges(afterWalks);

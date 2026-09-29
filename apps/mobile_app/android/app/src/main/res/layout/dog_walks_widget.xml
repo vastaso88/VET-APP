@@ -138,6 +138,44 @@
                 android:src="@drawable/dog_walks_widget_ic_paw"
                 android:importantForAccessibility="no" />
         </FrameLayout>
+
+        <!-- Active walk (hidden unless this pet is walking): live
+             "In corso/In pausa - km - mm:ss" pill (a Chronometer so the
+             clock ticks without widget updates) + pause/resume pill. -->
+        <Chronometer
+            android:id="@+id/dog_walks_widget_status_0"
+            android:layout_width="wrap_content"
+            android:layout_height="28dp"
+            android:layout_marginStart="6dp"
+            android:paddingStart="8dp"
+            android:paddingEnd="9dp"
+            android:gravity="center_vertical"
+            android:background="@drawable/dog_walks_widget_pill_active"
+            android:drawableStart="@drawable/dog_walks_widget_ic_walk_status"
+            android:drawablePadding="4dp"
+            android:textColor="@color/widget_pill_walk_icon"
+            android:textSize="11sp"
+            android:textStyle="bold"
+            android:maxLines="1"
+            android:visibility="gone" />
+
+        <FrameLayout
+            android:id="@+id/dog_walks_widget_pause_0"
+            android:layout_width="40dp"
+            android:layout_height="28dp"
+            android:layout_marginStart="6dp"
+            android:background="@drawable/dog_walks_widget_pill_walk"
+            android:contentDescription="@string/dog_walks_widget_pause_cd"
+            android:visibility="gone">
+
+            <ImageView
+                android:id="@+id/dog_walks_widget_pause_icon_0"
+                android:layout_width="20dp"
+                android:layout_height="20dp"
+                android:layout_gravity="center"
+                android:src="@drawable/dog_walks_widget_ic_pause"
+                android:importantForAccessibility="no" />
+        </FrameLayout>
     </LinearLayout>
 
     <LinearLayout
@@ -214,6 +252,44 @@
                 android:layout_height="20dp"
                 android:layout_gravity="center"
                 android:src="@drawable/dog_walks_widget_ic_paw"
+                android:importantForAccessibility="no" />
+        </FrameLayout>
+
+        <!-- Active walk (hidden unless this pet is walking): live
+             "In corso/In pausa - km - mm:ss" pill (a Chronometer so the
+             clock ticks without widget updates) + pause/resume pill. -->
+        <Chronometer
+            android:id="@+id/dog_walks_widget_status_1"
+            android:layout_width="wrap_content"
+            android:layout_height="28dp"
+            android:layout_marginStart="6dp"
+            android:paddingStart="8dp"
+            android:paddingEnd="9dp"
+            android:gravity="center_vertical"
+            android:background="@drawable/dog_walks_widget_pill_active"
+            android:drawableStart="@drawable/dog_walks_widget_ic_walk_status"
+            android:drawablePadding="4dp"
+            android:textColor="@color/widget_pill_walk_icon"
+            android:textSize="11sp"
+            android:textStyle="bold"
+            android:maxLines="1"
+            android:visibility="gone" />
+
+        <FrameLayout
+            android:id="@+id/dog_walks_widget_pause_1"
+            android:layout_width="40dp"
+            android:layout_height="28dp"
+            android:layout_marginStart="6dp"
+            android:background="@drawable/dog_walks_widget_pill_walk"
+            android:contentDescription="@string/dog_walks_widget_pause_cd"
+            android:visibility="gone">
+
+            <ImageView
+                android:id="@+id/dog_walks_widget_pause_icon_1"
+                android:layout_width="20dp"
+                android:layout_height="20dp"
+                android:layout_gravity="center"
+                android:src="@drawable/dog_walks_widget_ic_pause"
                 android:importantForAccessibility="no" />
         </FrameLayout>
     </LinearLayout>
@@ -294,6 +370,44 @@
                 android:src="@drawable/dog_walks_widget_ic_paw"
                 android:importantForAccessibility="no" />
         </FrameLayout>
+
+        <!-- Active walk (hidden unless this pet is walking): live
+             "In corso/In pausa - km - mm:ss" pill (a Chronometer so the
+             clock ticks without widget updates) + pause/resume pill. -->
+        <Chronometer
+            android:id="@+id/dog_walks_widget_status_2"
+            android:layout_width="wrap_content"
+            android:layout_height="28dp"
+            android:layout_marginStart="6dp"
+            android:paddingStart="8dp"
+            android:paddingEnd="9dp"
+            android:gravity="center_vertical"
+            android:background="@drawable/dog_walks_widget_pill_active"
+            android:drawableStart="@drawable/dog_walks_widget_ic_walk_status"
+            android:drawablePadding="4dp"
+            android:textColor="@color/widget_pill_walk_icon"
+            android:textSize="11sp"
+            android:textStyle="bold"
+            android:maxLines="1"
+            android:visibility="gone" />
+
+        <FrameLayout
+            android:id="@+id/dog_walks_widget_pause_2"
+            android:layout_width="40dp"
+            android:layout_height="28dp"
+            android:layout_marginStart="6dp"
+            android:background="@drawable/dog_walks_widget_pill_walk"
+            android:contentDescription="@string/dog_walks_widget_pause_cd"
+            android:visibility="gone">
+
+            <ImageView
+                android:id="@+id/dog_walks_widget_pause_icon_2"
+                android:layout_width="20dp"
+                android:layout_height="20dp"
+                android:layout_gravity="center"
+                android:src="@drawable/dog_walks_widget_ic_pause"
+                android:importantForAccessibility="no" />
+        </FrameLayout>
     </LinearLayout>
 
     <LinearLayout
@@ -370,6 +484,44 @@
                 android:layout_height="20dp"
                 android:layout_gravity="center"
                 android:src="@drawable/dog_walks_widget_ic_paw"
+                android:importantForAccessibility="no" />
+        </FrameLayout>
+
+        <!-- Active walk (hidden unless this pet is walking): live
+             "In corso/In pausa - km - mm:ss" pill (a Chronometer so the
+             clock ticks without widget updates) + pause/resume pill. -->
+        <Chronometer
+            android:id="@+id/dog_walks_widget_status_3"
+            android:layout_width="wrap_content"
+            android:layout_height="28dp"
+            android:layout_marginStart="6dp"
+            android:paddingStart="8dp"
+            android:paddingEnd="9dp"
+            android:gravity="center_vertical"
+            android:background="@drawable/dog_walks_widget_pill_active"
+            android:drawableStart="@drawable/dog_walks_widget_ic_walk_status"
+            android:drawablePadding="4dp"
+            android:textColor="@color/widget_pill_walk_icon"
+            android:textSize="11sp"
+            android:textStyle="bold"
+            android:maxLines="1"
+            android:visibility="gone" />
+
+        <FrameLayout
+            android:id="@+id/dog_walks_widget_pause_3"
+            android:layout_width="40dp"
+            android:layout_height="28dp"
+            android:layout_marginStart="6dp"
+            android:background="@drawable/dog_walks_widget_pill_walk"
+            android:contentDescription="@string/dog_walks_widget_pause_cd"
+            android:visibility="gone">
+
+            <ImageView
+                android:id="@+id/dog_walks_widget_pause_icon_3"
+                android:layout_width="20dp"
+                android:layout_height="20dp"
+                android:layout_gravity="center"
+                android:src="@drawable/dog_walks_widget_ic_pause"
                 android:importantForAccessibility="no" />
         </FrameLayout>
     </LinearLayout>

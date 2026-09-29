@@ -57,6 +57,24 @@ class DogWalksRepository {
     }
   }
 
+  /// Removes a walk entirely - the trash button on a history card (owner
+  /// request, 2026-09-30), and the one-time cleanup of already-saved
+  /// zero-distance walks (_WalksTabState._load() in pet_detail_page.dart).
+  Future<void> deleteWalk(String ownerId, String walkId) async {
+    _localWalks.removeWhere((walk) => walk.id == walkId && walk.ownerId == ownerId);
+
+    final client = _resolveClient();
+    if (client == null) {
+      return;
+    }
+
+    try {
+      await client.from('dog_walks').delete().eq('id', walkId).eq('owner_id', ownerId);
+    } catch (_) {
+      // Best-effort, same posture as saveWalk.
+    }
+  }
+
   /// Strips the `route` from any completed walk for this pet that falls
   /// outside the retention set (see walk_retention.dart) - called once a
   /// walk finishes, since that's the only time the retained set can change.

@@ -15,11 +15,10 @@ import '../../../chat/domain/chat_models.dart';
 import '../../../chat/presentation/pages/chat_conversation_detail_page.dart';
 import '../../../dog_walks/data/active_walk_controller.dart';
 import '../../../dog_walks/data/dog_walks_repository.dart';
-import '../../../dog_walks/domain/badges.dart';
 import '../../../dog_walks/domain/walk_retention.dart';
 import '../../../dog_walks/domain/walk_session.dart';
 import '../../../dog_walks/presentation/pages/active_walk_page.dart';
-import '../../../dog_walks/presentation/walk_completion_flow.dart';
+import '../../../dog_walks/presentation/pages/walk_detail_page.dart';
 import '../../../dog_walks/presentation/walk_labels.dart';
 import '../../../dog_walks/presentation/widgets/badge_gallery_dialog.dart';
 import '../../../dog_walks/presentation/widgets/walk_map_style.dart';
@@ -993,13 +992,22 @@ class _WalksTabState extends State<_WalksTab> {
   late Future<List<WalkSession>> _future = _load();
 
   Future<List<WalkSession>> _load() async {
-    final walks = await widget.repository.loadWalks(resolveCurrentOwnerId());
+    final ownerId = resolveCurrentOwnerId();
+    final walks = await widget.repository.loadWalks(ownerId);
     final completed = walks
-        .where((walk) =>
-            walk.petId == widget.pet.id && walk.status == WalkStatus.completed)
-        .toList()
+        .where((walk) => walk.petId == widget.pet.id && walk.status == WalkStatus.completed)
+        .toList();
+
+    // One-time cleanup (owner request, 2026-09-30) for zero-distance walks
+    // saved before the fix that stops them being saved at all
+    // (walk_completion_flow.dart) - a no-op once none are left.
+    final zeroDistance = completed.where((walk) => walk.distanceMeters <= 0).toList();
+    for (final walk in zeroDistance) {
+      await widget.repository.deleteWalk(ownerId, walk.id);
+    }
+
+    return completed.where((walk) => walk.distanceMeters > 0).toList()
       ..sort((a, b) => b.startedAt.compareTo(a.startedAt));
-    return completed;
   }
 
   Future<void> _reload() async {
@@ -1007,78 +1015,19 @@ class _WalksTabState extends State<_WalksTab> {
     await _future;
   }
 
-  Future<void> _startWalk() async {
-    final controller = ActiveWalkController.instance;
-    if (controller.isActive && controller.walk?.petId == widget.pet.id) {
-      final confirmed = await showDialog<bool>(
-        context: context,
-        builder: (context) => AlertDialog(
-          title: const Text('Passeggiata già in corso'),
-          content: const Text(
-            'C\'è già una passeggiata in corso: terminarla e iniziarne una nuova?',
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(false),
-              child: const Text('Annulla'),
-            ),
-            FilledButton(
-              onPressed: () => Navigator.of(context).pop(true),
-              child: const Text('Termina e ricomincia'),
-            ),
-          ],
-        ),
-      );
-      if (confirmed != true) return;
-      if (!mounted) return;
-      await finishActiveWalk(context, widget.pet);
-      if (!mounted) return;
-    }
-
+  /// Pushes the live/paused/fresh-start page - ActiveWalkPage itself already
+  /// knows whether to resume the singleton's in-progress walk or start a
+  /// new one, so this is the only navigation this tab needs regardless of
+  /// which button triggered it (owner request, 2026-09-30: "Avvia
+  /// passeggiata" no longer shows at all once a walk is active for this
+  /// pet, so there's nothing left for a separate "already active" branch
+  /// here to guard against).
+  Future<void> _openWalkPage() async {
     await Navigator.of(context).push(
       MaterialPageRoute<bool>(builder: (_) => ActiveWalkPage(pet: widget.pet)),
     );
     if (!mounted) return;
     await _reload();
-  }
-
-  Future<void> _openWalkStatusSheet() async {
-    final walk = ActiveWalkController.instance.walk;
-    if (walk == null) return;
-    final action = await showModalBottomSheet<String>(
-      context: context,
-      builder: (context) => SafeArea(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            ListTile(
-              leading: const Icon(Icons.stop_circle_outlined),
-              title: const Text('Fine passeggiata'),
-              onTap: () => Navigator.of(context).pop('finish'),
-            ),
-            ListTile(
-              leading: Icon(
-                walk.isPaused ? Icons.play_circle_outline : Icons.pause_circle_outline,
-              ),
-              title: Text(walk.isPaused ? 'Riavvia' : 'Pausa'),
-              onTap: () => Navigator.of(context).pop(walk.isPaused ? 'resume' : 'pause'),
-            ),
-          ],
-        ),
-      ),
-    );
-    if (!mounted) return;
-
-    switch (action) {
-      case 'finish':
-        await finishActiveWalk(context, widget.pet);
-        if (!mounted) return;
-        await _reload();
-      case 'pause':
-        await ActiveWalkController.instance.pause();
-      case 'resume':
-        await ActiveWalkController.instance.resume();
-    }
   }
 
   Future<void> _showBadges() async {
@@ -1098,25 +1047,24 @@ class _WalksTabState extends State<_WalksTab> {
             final controller = ActiveWalkController.instance;
             final activeForThisPet =
                 controller.isActive && controller.walk?.petId == widget.pet.id;
-            return Row(
-              children: [
-                Expanded(
-                  child: FilledButton.icon(
-                    onPressed: _startWalk,
-                    icon: const Icon(Icons.directions_walk_rounded, size: 18),
-                    label: const Text('Avvia passeggiata'),
-                  ),
+            // While active for this pet, the button IS the live status - no
+            // separate "Avvia" alongside it (owner request, 2026-09-30):
+            // tapping it always opens the page, never the Fine/Pausa sheet
+            // (that moved to the shell banner - walk_control_sheet.dart).
+            return SizedBox(
+              width: double.infinity,
+              child: FilledButton.icon(
+                onPressed: _openWalkPage,
+                icon: Icon(
+                  activeForThisPet && controller.walk!.isPaused
+                      ? Icons.pause_circle_filled_rounded
+                      : Icons.directions_walk_rounded,
+                  size: 18,
                 ),
-                if (activeForThisPet) ...[
-                  const SizedBox(width: AppSpacing.sm),
-                  Expanded(
-                    child: OutlinedButton(
-                      onPressed: _openWalkStatusSheet,
-                      child: _WalkStatusLabel(walk: controller.walk!),
-                    ),
-                  ),
-                ],
-              ],
+                label: activeForThisPet
+                    ? _WalkStatusLabel(walk: controller.walk!)
+                    : const Text('Avvia passeggiata'),
+              ),
             );
           },
         ),
@@ -1147,18 +1095,14 @@ class _WalksTabState extends State<_WalksTab> {
                 );
               }
 
-              final badges = evaluateBadges(walks);
               final history = buildWalkHistoryView(walks);
               return ListView(
                 children: [
-                  if (badges.isNotEmpty) ...[
-                    _BadgesRow(badges: badges),
-                    const SizedBox(height: AppSpacing.md),
-                  ],
                   if (history.record != null) ...[
                     const _WalksSectionLabel('Record 🏆'),
                     _WalkCard(
                         walk: history.record!,
+                        petName: widget.pet.name,
                         repository: widget.repository,
                         onChanged: _reload),
                     const SizedBox(height: AppSpacing.md),
@@ -1168,6 +1112,7 @@ class _WalksTabState extends State<_WalksTab> {
                     for (final walk in history.favorites) ...[
                       _WalkCard(
                           walk: walk,
+                          petName: widget.pet.name,
                           repository: widget.repository,
                           onChanged: _reload),
                       const SizedBox(height: AppSpacing.sm),
@@ -1179,6 +1124,7 @@ class _WalksTabState extends State<_WalksTab> {
                     for (final walk in history.recent) ...[
                       _WalkCard(
                           walk: walk,
+                          petName: widget.pet.name,
                           repository: widget.repository,
                           onChanged: _reload),
                       const SizedBox(height: AppSpacing.sm),
@@ -1194,40 +1140,12 @@ class _WalksTabState extends State<_WalksTab> {
   }
 }
 
-class _BadgesRow extends StatelessWidget {
-  const _BadgesRow({required this.badges});
+// Deleted the inline "always-visible earned badges" row here (owner
+// request, 2026-09-30: badges should only be visible on demand, via the
+// "Badge" button's gallery - see badge_gallery_dialog.dart).
 
-  final List<String> badges;
-
-  @override
-  Widget build(BuildContext context) {
-    return Wrap(
-      spacing: AppSpacing.xs,
-      runSpacing: AppSpacing.xs,
-      children: badges
-          .map(
-            (badge) => Container(
-              padding: const EdgeInsets.symmetric(
-                  horizontal: AppSpacing.sm, vertical: AppSpacing.xs),
-              decoration: BoxDecoration(
-                color: AppColors.accentSoft,
-                borderRadius: BorderRadius.circular(AppRadii.pill),
-              ),
-              child: Text(
-                badgeLabel(badge),
-                style: AppTextStyles.caption.copyWith(
-                    color: AppColors.primaryStrong,
-                    fontWeight: FontWeight.w700),
-              ),
-            ),
-          )
-          .toList(),
-    );
-  }
-}
-
-/// The status button's content next to "Avvia passeggiata": live
-/// "distanza · mm:ss" while tracking, or "Riprendi passeggiata" while
+/// The status button's content next to the walk-tracking button: live
+/// "Passeggiata in corso · distanza · mm:ss" or "In pausa · ..." while
 /// paused. Owns its own ticker (rather than relying on the parent's
 /// AnimatedBuilder, which only fires on an accepted GPS point) so the time
 /// actually counts up once a second, and stops ticking while paused since
@@ -1275,12 +1193,11 @@ class _WalkStatusLabelState extends State<_WalkStatusLabel> {
 
   @override
   Widget build(BuildContext context) {
-    if (widget.walk.isPaused) {
-      return const Text('Riprendi passeggiata');
-    }
     final activeSeconds = walkActiveDurationSeconds(widget.walk);
+    final prefix = widget.walk.isPaused ? 'In pausa' : 'Passeggiata in corso';
     return Text(
-      '${walkDistanceLabel(widget.walk.distanceMeters)} · ${walkElapsedLabel(activeSeconds)}',
+      '$prefix · ${walkDistanceLabel(widget.walk.distanceMeters)} · ${walkElapsedLabel(activeSeconds)}',
+      overflow: TextOverflow.ellipsis,
     );
   }
 }
@@ -1308,16 +1225,85 @@ class _WalksSectionLabel extends StatelessWidget {
 /// never reach this widget (buildWalkHistoryView only surfaces retained
 /// ones).
 class _WalkCard extends StatelessWidget {
-  const _WalkCard(
-      {required this.walk, required this.repository, required this.onChanged});
+  const _WalkCard({
+    required this.walk,
+    required this.petName,
+    required this.repository,
+    required this.onChanged,
+  });
 
   final WalkSession walk;
+  final String petName;
   final DogWalksRepository repository;
   final VoidCallback onChanged;
 
-  Future<void> _toggleFavorite() async {
+  Future<void> _toggleFavorite(BuildContext context) async {
+    if (walk.isFavorite) {
+      // Un-starring can hand the walk back to the "outside retention" pool,
+      // where it may lose its route on the next prune if it's no longer the
+      // record or among the last 3 (walk_retention.dart) - the owner should
+      // know that before it happens (owner request, 2026-09-30).
+      final confirmed = await showDialog<bool>(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: const Text('Togliere dai preferiti?'),
+          content: const Text(
+            'Se non è anche il record o tra le ultime 3 passeggiate, potrà perdere la mappa '
+            'alla prossima pulizia automatica.',
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(false),
+              child: const Text('Annulla'),
+            ),
+            FilledButton(
+              onPressed: () => Navigator.of(context).pop(true),
+              child: const Text('Togli dai preferiti'),
+            ),
+          ],
+        ),
+      );
+      if (confirmed != true) return;
+    }
+
     await repository.saveWalk(walk.copyWith(isFavorite: !walk.isFavorite));
     onChanged();
+  }
+
+  Future<void> _delete(BuildContext context) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Eliminare questa passeggiata?'),
+        content: Text(
+          'La passeggiata del ${walkDateLabel(walk.startedAt)} '
+          '(${walkDistanceLabel(walk.distanceMeters)}) verrà eliminata definitivamente.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: const Text('Annulla'),
+          ),
+          FilledButton(
+            style: FilledButton.styleFrom(backgroundColor: AppColors.danger),
+            onPressed: () => Navigator.of(context).pop(true),
+            child: const Text('Elimina'),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true) return;
+
+    await repository.deleteWalk(resolveCurrentOwnerId(), walk.id);
+    onChanged();
+  }
+
+  Future<void> _openDetail(BuildContext context) async {
+    await Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder: (_) => WalkDetailPage(walk: walk, petName: petName),
+      ),
+    );
   }
 
   @override
@@ -1327,53 +1313,53 @@ class _WalkCard extends StatelessWidget {
       if (walk.durationSeconds != null) walkDurationLabel(walk.durationSeconds),
       if (walk.stepCountEstimate != null) '~${walk.stepCountEstimate} passi',
     ];
-    return Container(
-      decoration: BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.circular(AppRadii.large),
-      ),
+    return Material(
+      color: AppColors.surface,
+      borderRadius: BorderRadius.circular(AppRadii.large),
       clipBehavior: Clip.antiAlias,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          if (walk.route.isNotEmpty)
-            SizedBox(height: 120, child: _WalkMiniMap(route: walk.route)),
-          Padding(
-            padding: const EdgeInsets.all(AppSpacing.md),
-            child: Row(
-              children: [
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        walkDateLabel(walk.startedAt),
-                        style: AppTextStyles.body.copyWith(
-                          fontWeight: FontWeight.w700,
-                          color: AppColors.text,
+      child: InkWell(
+        onTap: walk.route.isEmpty ? null : () => _openDetail(context),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            if (walk.route.isNotEmpty)
+              SizedBox(height: 120, child: _WalkMiniMap(route: walk.route)),
+            Padding(
+              padding: const EdgeInsets.all(AppSpacing.md),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          walkDateLabel(walk.startedAt),
+                          style: AppTextStyles.body.copyWith(
+                            fontWeight: FontWeight.w700,
+                            color: AppColors.text,
+                          ),
                         ),
-                      ),
-                      const SizedBox(height: 2),
-                      Text(subtitleParts.join(' · '),
-                          style: AppTextStyles.caption),
-                    ],
+                        const SizedBox(height: 2),
+                        Text(subtitleParts.join(' · '), style: AppTextStyles.caption),
+                      ],
+                    ),
                   ),
-                ),
-                IconButton(
-                  onPressed: _toggleFavorite,
-                  icon: Icon(
-                    walk.isFavorite
-                        ? Icons.star_rounded
-                        : Icons.star_outline_rounded,
-                    color: walk.isFavorite
-                        ? AppColors.warning
-                        : AppColors.mutedText,
+                  IconButton(
+                    onPressed: () => _toggleFavorite(context),
+                    icon: Icon(
+                      walk.isFavorite ? Icons.star_rounded : Icons.star_outline_rounded,
+                      color: walk.isFavorite ? AppColors.warning : AppColors.mutedText,
+                    ),
                   ),
-                ),
-              ],
+                  IconButton(
+                    onPressed: () => _delete(context),
+                    icon: const Icon(Icons.delete_outline_rounded, color: AppColors.mutedText),
+                  ),
+                ],
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

@@ -56,6 +56,30 @@ class ActiveWalkController extends ChangeNotifier {
 
   bool get isActive => _walk?.status == WalkStatus.inProgress;
 
+  // --- Read-only surface for other UI that isn't the walk pages themselves
+  // (the home-screen widget, the shell banner) - listen via this
+  // ChangeNotifier (AnimatedBuilder/addListener), there is no separate
+  // ValueListenable. Never call into the widget from here - this class only
+  // exposes state, it doesn't know the widget exists (2026-09-30).
+
+  /// Whether a walk is currently tracking or paused (i.e. [walk] is
+  /// in-progress, in either sense).
+  bool get hasActiveWalk => isActive;
+
+  /// The pet the active walk belongs to, or null if none. This class has no
+  /// notion of a pet's *name* - resolve that from PetDemoStore given this
+  /// id, same as home_shell_page.dart's banner and walk_home_widget.dart
+  /// already do.
+  String? get activePetId => _walk?.petId;
+
+  double get activeDistanceMeters => _walk?.distanceMeters ?? 0;
+
+  /// "Moving time" so far, excluding any pause (walk_session.dart's
+  /// walkActiveDurationSeconds) - 0 when there's no active walk.
+  int get activeSeconds => _walk == null ? 0 : walkActiveDurationSeconds(_walk!);
+
+  bool get isPaused => _walk?.isPaused ?? false;
+
   double? _headingDegrees;
   double? get headingDegrees => _headingDegrees;
 

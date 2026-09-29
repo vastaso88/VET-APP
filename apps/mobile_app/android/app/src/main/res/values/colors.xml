@@ -12,6 +12,7 @@
     <color name="widget_on_primary">#F9F6F0</color>
     <color name="widget_pill_walk_bg">#2E686A</color>
     <color name="widget_pill_walk_icon">#F9F6F0</color>
+    <color name="widget_pill_active_bg">#1F5557</color>
     <color name="widget_pill_reminder_bg">#F0E5DB</color>
     <color name="widget_pill_reminder_icon">#C9614B</color>
 </resources>

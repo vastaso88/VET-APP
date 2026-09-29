@@ -306,4 +306,41 @@ void main() {
       expect(active, 8 * 60);
     });
   });
+
+  group('public surface for other UI (widget/banner)', () {
+    test('reflects no active walk', () {
+      final controller = ActiveWalkController(repository: DogWalksRepository());
+      addTearDown(controller.dispose);
+
+      expect(controller.hasActiveWalk, isFalse);
+      expect(controller.activePetId, isNull);
+      expect(controller.activeDistanceMeters, 0);
+      expect(controller.activeSeconds, 0);
+      expect(controller.isPaused, isFalse);
+    });
+
+    test('reflects an in-progress walk', () async {
+      final controller = ActiveWalkController(repository: DogWalksRepository());
+      final positionController = StreamController<GpsFix>();
+      addTearDown(() async {
+        await positionController.close();
+        controller.dispose();
+      });
+
+      await controller.start(
+        ownerId: 'user-1',
+        petId: 'pet-7',
+        positionStream: positionController.stream,
+      );
+      positionController.add(_fix(45.4642, 9.1900));
+      await Future<void>.delayed(Duration.zero);
+
+      expect(controller.hasActiveWalk, isTrue);
+      expect(controller.activePetId, 'pet-7');
+      expect(controller.isPaused, isFalse);
+
+      await controller.pause();
+      expect(controller.isPaused, isTrue);
+    });
+  });
 }

@@ -1,7 +1,18 @@
 import 'dart:async';
 
 /// What a tap on one of the home-screen widget's pills asks the app to open.
-enum HomeWidgetActionKind { startWalk, newReminder }
+enum HomeWidgetActionKind {
+  startWalk,
+  newReminder,
+
+  /// Open the page of the walk already in progress for the pet.
+  openWalk,
+
+  /// Fallbacks for the pause/resume pill when the app had to be opened
+  /// (normally the pill talks to the live isolate without any navigation).
+  pauseWalk,
+  resumeWalk,
+}
 
 class HomeWidgetAction {
   const HomeWidgetAction(this.kind, this.petId);
@@ -9,7 +20,7 @@ class HomeWidgetAction {
   final HomeWidgetActionKind kind;
   final String petId;
 
-  /// Parses `homewidget://start_walk?petId=...` / `homewidget://new_reminder?petId=...`
+  /// Parses `homewidget://<start_walk|new_reminder|open_walk|pause_walk|resume_walk>?petId=...`
   /// (built in DogWalksWidgetProvider.kt). Null for anything else.
   static HomeWidgetAction? tryParse(Uri? uri) {
     if (uri == null) return null;
@@ -20,6 +31,12 @@ class HomeWidgetAction {
         return HomeWidgetAction(HomeWidgetActionKind.startWalk, petId);
       case 'new_reminder':
         return HomeWidgetAction(HomeWidgetActionKind.newReminder, petId);
+      case 'open_walk':
+        return HomeWidgetAction(HomeWidgetActionKind.openWalk, petId);
+      case 'pause_walk':
+        return HomeWidgetAction(HomeWidgetActionKind.pauseWalk, petId);
+      case 'resume_walk':
+        return HomeWidgetAction(HomeWidgetActionKind.resumeWalk, petId);
     }
     return null;
   }
