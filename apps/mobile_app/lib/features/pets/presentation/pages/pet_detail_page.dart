@@ -16,12 +16,15 @@ import '../../../chat/presentation/pages/chat_conversation_detail_page.dart';
 import '../../../dog_walks/data/active_walk_controller.dart';
 import '../../../dog_walks/data/dog_walks_repository.dart';
 import '../../../dog_walks/domain/walk_retention.dart';
+import '../../../dog_walks/domain/walk_route_markers.dart';
+import '../../../dog_walks/domain/walk_route_segments.dart';
 import '../../../dog_walks/domain/walk_session.dart';
 import '../../../dog_walks/presentation/pages/active_walk_page.dart';
 import '../../../dog_walks/presentation/pages/walk_detail_page.dart';
 import '../../../dog_walks/presentation/walk_labels.dart';
 import '../../../dog_walks/presentation/widgets/badge_gallery_dialog.dart';
 import '../../../dog_walks/presentation/widgets/walk_map_style.dart';
+import '../../../dog_walks/presentation/widgets/walk_route_markers_layer.dart';
 import '../../../../shared/auth/current_owner.dart';
 import '../../../medical_records/data/medical_record_file_cache.dart';
 import '../../../medical_records/data/medical_records_repository.dart';
@@ -1098,13 +1101,29 @@ class _WalksTabState extends State<_WalksTab> {
               final history = buildWalkHistoryView(walks);
               return ListView(
                 children: [
-                  if (history.record != null) ...[
+                  if (history.longestDistance != null || history.longestDuration != null) ...[
                     const _WalksSectionLabel('Record 🏆'),
-                    _WalkCard(
-                        walk: history.record!,
+                    if (history.longestDistance != null)
+                      _WalkCard(
+                        walk: history.longestDistance!,
                         petName: widget.pet.name,
                         repository: widget.repository,
-                        onChanged: _reload),
+                        onChanged: _reload,
+                        recordLabel: history.longestDuration?.id == history.longestDistance!.id
+                            ? 'Più lunga · Più duratura'
+                            : 'Più lunga',
+                      ),
+                    if (history.longestDuration != null &&
+                        history.longestDuration!.id != history.longestDistance?.id) ...[
+                      const SizedBox(height: AppSpacing.sm),
+                      _WalkCard(
+                        walk: history.longestDuration!,
+                        petName: widget.pet.name,
+                        repository: widget.repository,
+                        onChanged: _reload,
+                        recordLabel: 'Più duratura',
+                      ),
+                    ],
                     const SizedBox(height: AppSpacing.md),
                   ],
                   if (history.favorites.isNotEmpty) ...[
@@ -1202,6 +1221,12 @@ class _WalkStatusLabelState extends State<_WalkStatusLabel> {
   }
 }
 
+/// Bumped up from AppTextStyles.caption (owner report, 2026-09-30: section
+/// titles were too small to notice) - body-sized and bold instead. No
+/// explicit appScaleOf multiplication here: unlike icon/avatar sizes, text
+/// is already scaled once for screen width by the ambient TextScaler set
+/// up in app.dart's MaterialApp.builder - multiplying the fontSize by
+/// appScaleOf too would scale it a second time.
 class _WalksSectionLabel extends StatelessWidget {
   const _WalksSectionLabel(this.text);
 
@@ -1210,10 +1235,13 @@ class _WalksSectionLabel extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: AppSpacing.xs),
+      padding: const EdgeInsets.only(bottom: AppSpacing.sm),
       child: Text(
         text,
-        style: AppTextStyles.caption.copyWith(color: AppColors.secondaryText),
+        style: AppTextStyles.body.copyWith(
+          fontWeight: FontWeight.w700,
+          color: AppColors.text,
+        ),
       ),
     );
   }
@@ -1230,12 +1258,19 @@ class _WalkCard extends StatelessWidget {
     required this.petName,
     required this.repository,
     required this.onChanged,
+    this.recordLabel,
   });
 
   final WalkSession walk;
   final String petName;
   final DogWalksRepository repository;
   final VoidCallback onChanged;
+
+  /// "Più lunga" / "Più duratura" / both, when this card is shown under the
+  /// Record section (owner request, 2026-09-30: distance and duration are
+  /// tracked as separate records, possibly the same walk or two different
+  /// ones - walk_retention.dart). Null everywhere else.
+  final String? recordLabel;
 
   Future<void> _toggleFavorite(BuildContext context) async {
     if (walk.isFavorite) {
@@ -1318,12 +1353,16 @@ class _WalkCard extends StatelessWidget {
       borderRadius: BorderRadius.circular(AppRadii.large),
       clipBehavior: Clip.antiAlias,
       child: InkWell(
-        onTap: walk.route.isEmpty ? null : () => _openDetail(context),
+        onTap: () => _openDetail(context),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            if (walk.route.isNotEmpty)
-              SizedBox(height: 120, child: _WalkMiniMap(route: walk.route)),
+            SizedBox(
+              height: 120,
+              child: walk.route.isEmpty
+                  ? const _WalkMissingRoutePlaceholder()
+                  : _WalkMiniMap(route: walk.route),
+            ),
             Padding(
               padding: const EdgeInsets.all(AppSpacing.md),
               child: Row(
@@ -1332,6 +1371,21 @@ class _WalkCard extends StatelessWidget {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
+                        if (recordLabel != null) ...[
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                            decoration: BoxDecoration(
+                              color: AppColors.accentSoft,
+                              borderRadius: BorderRadius.circular(AppRadii.pill),
+                            ),
+                            child: Text(
+                              recordLabel!,
+                              style: AppTextStyles.caption
+                                  .copyWith(color: AppColors.primaryStrong, fontWeight: FontWeight.w700),
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                        ],
                         Text(
                           walkDateLabel(walk.startedAt),
                           style: AppTextStyles.body.copyWith(
@@ -1379,6 +1433,7 @@ class _WalkMiniMap extends StatelessWidget {
             point.coordinates.latitude, point.coordinates.longitude))
         .toList();
     final bounds = LatLngBounds.fromPoints(points);
+    final segments = splitRouteIntoSegments(route);
 
     return IgnorePointer(
       child: FlutterMap(
@@ -1390,13 +1445,45 @@ class _WalkMiniMap extends StatelessWidget {
         ),
         children: [
           buildWalkTileLayer(),
-          if (points.length >= 2)
-            PolylineLayer(
-              polylines: [
-                Polyline(
-                    points: points, color: AppColors.primary, strokeWidth: 3)
-              ],
-            ),
+          PolylineLayer(
+            polylines: [
+              for (final segment in segments)
+                if (segment.length >= 2)
+                  Polyline(
+                    points: segment
+                        .map((point) =>
+                            latlong.LatLng(point.coordinates.latitude, point.coordinates.longitude))
+                        .toList(),
+                    color: AppColors.primary,
+                    strokeWidth: 3,
+                  ),
+            ],
+          ),
+          buildWalkRouteMarkersLayer(computeWalkRouteMarkers(route, isFinished: true)),
+        ],
+      ),
+    );
+  }
+}
+
+/// Shown instead of _WalkMiniMap for a walk whose route is empty - either
+/// pruned by retention (walk_retention.dart, expected) or saved by a
+/// release from before GPS tracking existed (owner report, 2026-09-30: a
+/// blank thumbnail with no explanation looked like a bug either way).
+class _WalkMissingRoutePlaceholder extends StatelessWidget {
+  const _WalkMissingRoutePlaceholder();
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      color: AppColors.background,
+      alignment: Alignment.center,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const Icon(Icons.map_outlined, color: AppColors.mutedText, size: 28),
+          const SizedBox(height: 4),
+          Text('Percorso non disponibile', style: AppTextStyles.caption),
         ],
       ),
     );

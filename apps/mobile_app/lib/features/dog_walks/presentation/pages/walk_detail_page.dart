@@ -5,10 +5,12 @@ import 'package:latlong2/latlong.dart' as latlong;
 import '../../../../design_system/tokens/app_colors.dart';
 import '../../../../design_system/tokens/app_spacing.dart';
 import '../../../../design_system/tokens/app_text_styles.dart';
+import '../../domain/walk_route_markers.dart';
 import '../../domain/walk_route_segments.dart';
 import '../../domain/walk_session.dart';
 import '../walk_labels.dart';
 import '../widgets/walk_map_style.dart';
+import '../widgets/walk_route_markers_layer.dart';
 
 /// Full-screen view of one completed walk from the history (owner request,
 /// 2026-09-30: tapping a history card's map thumbnail used to do nothing).
@@ -26,6 +28,7 @@ class WalkDetailPage extends StatelessWidget {
   Widget build(BuildContext context) {
     final segments = splitRouteIntoSegments(walk.route);
     final pauseCount = segments.isEmpty ? 0 : segments.length - 1;
+    final markers = computeWalkRouteMarkers(walk.route, isFinished: true);
 
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -38,7 +41,7 @@ class WalkDetailPage extends StatelessWidget {
       body: SafeArea(
         child: Column(
           children: [
-            Expanded(child: _WalkDetailMap(segments: segments)),
+            Expanded(child: _WalkDetailMap(segments: segments, markers: markers)),
             Padding(
               padding: const EdgeInsets.all(AppSpacing.xl),
               child: Column(
@@ -86,9 +89,10 @@ class _StatColumn extends StatelessWidget {
 }
 
 class _WalkDetailMap extends StatelessWidget {
-  const _WalkDetailMap({required this.segments});
+  const _WalkDetailMap({required this.segments, required this.markers});
 
   final List<List<RoutePoint>> segments;
+  final WalkRouteMarkers markers;
 
   static const latlong.LatLng _fallbackCenter = latlong.LatLng(45.4642, 9.1900);
 
@@ -123,6 +127,7 @@ class _WalkDetailMap extends StatelessWidget {
                 ),
           ],
         ),
+        buildWalkRouteMarkersLayer(markers),
         buildWalkMapAttribution(),
       ],
     );

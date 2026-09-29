@@ -1,9 +1,47 @@
+import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+import '../../../app/router/app_router.dart';
 import '../../../../shared/config/app_runtime_config_loader.dart';
 import '../../location/domain/coordinates.dart';
 import '../domain/walk_retention.dart';
 import '../domain/walk_session.dart';
+
+/// Surfaces a failed Supabase write instead of only swallowing it (owner
+/// report, 2026-10-01: a silently-failed upsert/delete looked like the app
+/// just not responding to the tap). Uses AppRouter's global
+/// scaffoldMessengerKey rather than threading a BuildContext through every
+/// repository method - same idea as its navigatorKey.
+void _notifySyncFailure(String action, Object error) {
+  debugPrint('DogWalksRepository: $action failed against Supabase: $error');
+  AppRouter.scaffoldMessengerKey.currentState?.showSnackBar(
+    const SnackBar(content: Text('Sincronizzazione non riuscita: modifica salvata solo sul telefono')),
+  );
+}
+
+/// Pure merge logic behind `DogWalksRepository.loadWalks` - pulled out so
+/// the "a pending local write/delete must win over stale remote" behavior
+/// is testable without a real or fake Supabase client (2026-10-01).
+List<WalkSession> mergeRemoteAndLocalWalks({
+  required List<WalkSession> remote,
+  required List<WalkSession> local,
+  required Map<String, WalkSession> localById,
+  required Set<String> unsyncedIds,
+  required Set<String> pendingDeleteIds,
+}) {
+  final merged = <String, WalkSession>{};
+  for (final walk in remote) {
+    if (pendingDeleteIds.contains(walk.id)) {
+      continue;
+    }
+    final pendingLocal = unsyncedIds.contains(walk.id) ? localById[walk.id] : null;
+    merged[walk.id] = pendingLocal ?? walk;
+  }
+  for (final walk in local) {
+    merged.putIfAbsent(walk.id, () => walk);
+  }
+  return merged.values.toList();
+}
 
 /// Same shape as RemindersRepository: an optional Supabase client, a
 /// session-lifetime local list as demo/no-backend fallback, defensive
@@ -15,26 +53,42 @@ class DogWalksRepository {
 
   static final List<WalkSession> _localWalks = List<WalkSession>.of(_seedWalks);
 
-  /// Remote is the source of truth when configured, but `saveWalk` swallows
-  /// upsert failures as best-effort (network blip, momentarily stale auth
-  /// token) - so a walk that just finished (or was just starred) can be
-  /// missing from `remote` while still sitting correctly in `_localWalks`.
-  /// Returning `remote` verbatim in that case silently dropped it from
-  /// every list in the app (owner report, 2026-09-29: confirmed "save as
-  /// favorite" then the walk vanished). Any local walk remote doesn't know
-  /// about yet is added back in; walks present in both use the remote copy.
+  /// Ids whose most recent `saveWalk` upsert failed against Supabase -
+  /// until it succeeds, [loadWalks] must trust the local copy over remote
+  /// for that id, even though remote already has *a* row there.
+  static final Set<String> _unsyncedIds = {};
+
+  /// Ids deleted locally whose Supabase delete failed - until it succeeds,
+  /// [loadWalks] must not let the still-present remote row resurrect them.
+  static final Set<String> _pendingDeleteIds = {};
+
+  /// Remote is the source of truth when configured, but a write can fail
+  /// silently (network blip, stale auth token, or - as found 2026-10-01 - a
+  /// column the live table doesn't have yet because a migration hadn't run)
+  /// and `saveWalk`/`deleteWalk` apply best-effort rather than surfacing
+  /// that to the owner. Blindly trusting whatever remote last returned for
+  /// an id both features had already touched turned every such failure into
+  /// a silent revert: a "removed favorite" or a "deleted walk" would come
+  /// straight back on the next reload because remote still had the old row
+  /// (owner report, 2026-10-01). [_unsyncedIds]/[_pendingDeleteIds] are what
+  /// actually fix that - a local write/delete stays authoritative for its
+  /// id until it's confirmed synced, no matter what remote says in the
+  /// meantime. A walk local has never heard of stays exactly as remote
+  /// reports it; a local-only walk remote hasn't seen yet (offline, or
+  /// remote not configured) is added back in (owner report, 2026-09-29).
   Future<List<WalkSession>> loadWalks(String ownerId) async {
     final remote = await _tryLoadRemoteWalks(ownerId);
-    final local = _localWalks.where((walk) => walk.ownerId == ownerId);
-    if (remote.isEmpty) {
-      return List<WalkSession>.unmodifiable(local);
-    }
+    final local = _localWalks.where((walk) => walk.ownerId == ownerId).toList();
+    final localById = {for (final walk in local) walk.id: walk};
 
-    final remoteIds = remote.map((walk) => walk.id).toSet();
-    return List<WalkSession>.unmodifiable([
-      ...remote,
-      ...local.where((walk) => !remoteIds.contains(walk.id)),
-    ]);
+    final merged = mergeRemoteAndLocalWalks(
+      remote: remote,
+      local: local,
+      localById: localById,
+      unsyncedIds: _unsyncedIds,
+      pendingDeleteIds: _pendingDeleteIds,
+    );
+    return List<WalkSession>.unmodifiable(merged);
   }
 
   Future<void> saveWalk(WalkSession walk) async {
@@ -44,16 +98,25 @@ class DogWalksRepository {
     } else {
       _localWalks[index] = walk;
     }
+    _pendingDeleteIds.remove(walk.id);
 
     final client = _resolveClient();
     if (client == null) {
+      // No remote configured at all - the local copy above is the only
+      // copy that will ever exist, so there's nothing to be "unsynced"
+      // relative to.
+      _unsyncedIds.remove(walk.id);
       return;
     }
 
     try {
       await client.from('dog_walks').upsert(toRow(walk));
-    } catch (_) {
-      // Best-effort: the local list above already applied for this session.
+      _unsyncedIds.remove(walk.id);
+    } catch (error) {
+      // The local list above already applied for this session; loadWalks
+      // won't let a stale remote row overwrite it until this succeeds.
+      _unsyncedIds.add(walk.id);
+      _notifySyncFailure('saving walk ${walk.id}', error);
     }
   }
 
@@ -62,16 +125,22 @@ class DogWalksRepository {
   /// zero-distance walks (_WalksTabState._load() in pet_detail_page.dart).
   Future<void> deleteWalk(String ownerId, String walkId) async {
     _localWalks.removeWhere((walk) => walk.id == walkId && walk.ownerId == ownerId);
+    _unsyncedIds.remove(walkId);
 
     final client = _resolveClient();
     if (client == null) {
+      _pendingDeleteIds.remove(walkId);
       return;
     }
 
     try {
       await client.from('dog_walks').delete().eq('id', walkId).eq('owner_id', ownerId);
-    } catch (_) {
-      // Best-effort, same posture as saveWalk.
+      _pendingDeleteIds.remove(walkId);
+    } catch (error) {
+      // Same posture as saveWalk: loadWalks hides this id out of remote
+      // until the delete actually goes through.
+      _pendingDeleteIds.add(walkId);
+      _notifySyncFailure('deleting walk $walkId', error);
     }
   }
 
