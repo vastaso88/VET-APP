@@ -1,4 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="dog_walks_widget_description">Tocca un animale per avviare subito una passeggiata</string>
+    <string name="dog_walks_widget_description">Nuovo promemoria e passeggiata in un tocco per i tuoi animali</string>
+    <string name="dog_walks_widget_title">VetApp</string>
+    <string name="dog_walks_widget_subtitle">I tuoi animali</string>
+    <string name="dog_walks_widget_empty">Aggiungi il tuo primo animale nell\'app per iniziare</string>
+    <string name="dog_walks_widget_more">+%1$d altri</string>
+    <string name="dog_walks_widget_reminder_cd">Nuovo promemoria</string>
+    <string name="dog_walks_widget_walk_cd">Passeggiata</string>
+    <string name="dog_walks_widget_pause_cd">Metti in pausa la passeggiata</string>
+    <string name="dog_walks_widget_resume_cd">Riprendi la passeggiata</string>
+    <string name="dog_walks_widget_open_walk_cd">Apri la passeggiata in corso</string>
+    <!-- Chronometer format: %%s becomes %s, replaced by the live mm:ss. -->
+    <string name="dog_walks_widget_walk_running">In corso · %1$s · %%s</string>
+    <string name="dog_walks_widget_walk_paused">In pausa · %1$s · %%s</string>
 </resources>

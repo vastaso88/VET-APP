@@ -1,10 +1,8 @@
 import 'dart:async';
 import 'dart:math' as math;
 
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
-import 'package:geolocator/geolocator.dart' as geolocator;
 import 'package:latlong2/latlong.dart' as latlong;
 
 import '../../../../design_system/tokens/app_colors.dart';
@@ -13,21 +11,22 @@ import '../../../../design_system/tokens/app_text_styles.dart';
 import '../../../../shared/auth/current_owner.dart';
 import '../../../pets/domain/pet_models.dart';
 import '../../data/active_walk_controller.dart';
-import '../../data/dog_walks_repository.dart';
-import '../../domain/badges.dart';
-import '../../domain/walk_retention.dart';
+import '../../domain/gps_fix.dart';
+import '../../domain/walk_route_markers.dart';
+import '../../domain/walk_route_segments.dart';
 import '../../domain/walk_session.dart';
 import '../../../location/data/device_location_service.dart';
 import '../../../location/domain/coordinates.dart';
+import '../walk_completion_flow.dart';
 import '../walk_labels.dart';
-import '../widgets/badge_earned_dialog.dart';
-import '../widgets/favorite_eviction_dialog.dart';
 import '../widgets/walk_map_style.dart';
+import '../widgets/walk_route_markers_layer.dart';
 
-/// Live start/stop tracking for one pet's walk. Kept as its own page
-/// (rather than inline in pet_detail_page.dart, unlike the simpler tabs)
-/// because it owns a live GPS stream and a map, not just a repository
-/// FutureBuilder.
+/// Live start/stop/pause tracking for one pet's walk. The tracking itself
+/// lives in ActiveWalkController.instance, an app-lifetime singleton - not
+/// in this page's State - so navigating away no longer stops it (owner
+/// report, 2026-09-29). This page is just that singleton's UI: a map, the
+/// live stats, and the start/pause/stop controls.
 class ActiveWalkPage extends StatefulWidget {
   const ActiveWalkPage({
     super.key,
@@ -44,10 +43,8 @@ class ActiveWalkPage extends StatefulWidget {
   final LocationSampler locationSampler;
 
   /// Injectable so widget tests can feed a synthetic stream instead of a
-  /// real continuous `Geolocator.getPositionStream()`. Note this bypasses
-  /// the heading indicator too (it only reads from the real device stream)
-  /// - fine for tests, which don't assert on it.
-  final Stream<Coordinates> Function()? positionStreamProvider;
+  /// real continuous `Geolocator.getPositionStream()`.
+  final Stream<GpsFix> Function()? positionStreamProvider;
 
   /// Starts tracking as soon as this page opens instead of waiting for the
   /// "Avvia passeggiata" tap - set when launched by tapping a pet on the
@@ -60,77 +57,57 @@ class ActiveWalkPage extends StatefulWidget {
 }
 
 class _ActiveWalkPageState extends State<ActiveWalkPage> {
-  late final ActiveWalkController _controller = ActiveWalkController(
-    repository: DogWalksRepository(),
-  );
+  final ActiveWalkController _controller = ActiveWalkController.instance;
   final MapController _mapController = MapController();
 
   bool _starting = false;
   String? _locationError;
   Timer? _elapsedTimer;
-  StreamSubscription<geolocator.Position>? _headingSubscription;
-  double? _headingDegrees;
+  Coordinates? _initialMapCenter;
+  bool _loadingInitialPosition = false;
 
   @override
   void initState() {
     super.initState();
-    if (widget.autoStart) {
+    final resuming = _controller.isActive && _controller.walk?.petId == widget.pet.id;
+    if (resuming) {
+      _elapsedTimer = Timer.periodic(const Duration(seconds: 1), (_) {
+        if (mounted) setState(() {});
+      });
+    } else if (widget.autoStart && !_controller.isActive) {
       WidgetsBinding.instance.addPostFrameCallback((_) => _start());
+    } else if (_controller.walk == null || _controller.walk!.route.isEmpty) {
+      // No route to center on yet (a fresh page, or a just-started walk
+      // still waiting for an accurate first fix) - get the device's real
+      // position so the map doesn't default to piazza Duomo (owner report,
+      // 2026-09-29). Runs even if a different pet's walk is active, purely
+      // to center the idle map - _start() below is what actually blocks
+      // starting a second walk.
+      _loadInitialPosition();
     }
   }
 
   @override
   void dispose() {
     _elapsedTimer?.cancel();
-    _headingSubscription?.cancel();
-    _controller.dispose();
+    // ActiveWalkController.instance outlives this page on purpose - it is
+    // NOT disposed here, unlike a page-owned controller would be.
     super.dispose();
   }
 
-  /// On Android, runs GPS updates as a foreground service with a persistent
-  /// notification so tracking survives the owner switching to another app
-  /// mid-walk (owner report, 2026-09-29). This only needs the foreground
-  /// location permission the app already requests - it's not
-  /// ACCESS_BACKGROUND_LOCATION ("Allow all the time"), which
-  /// docs/compliance/05_permessi_dispositivo_os.md explicitly defers. Other
-  /// platforms keep the plain settings; iOS has no equivalent knob here and
-  /// web ignores AndroidSettings.
-  geolocator.LocationSettings _positionStreamSettings() {
-    if (!kIsWeb && defaultTargetPlatform == TargetPlatform.android) {
-      return geolocator.AndroidSettings(
-        accuracy: geolocator.LocationAccuracy.high,
-        distanceFilter: 5,
-        foregroundNotificationConfig: const geolocator.ForegroundNotificationConfig(
-          notificationTitle: 'Passeggiata in corso',
-          notificationText: 'VetApp sta tracciando il percorso della passeggiata.',
-          notificationChannelName: 'Tracciamento passeggiata',
-          setOngoing: true,
-        ),
-      );
-    }
-    return const geolocator.LocationSettings(
-      accuracy: geolocator.LocationAccuracy.high,
-      distanceFilter: 5,
-    );
-  }
-
-  Stream<geolocator.Position> _defaultRawPositionStream() {
-    return geolocator.Geolocator.getPositionStream(locationSettings: _positionStreamSettings());
-  }
-
-  void _onRawPosition(geolocator.Position position) {
-    // Course-over-ground, not a magnetometer compass: only meaningful while
-    // actually moving, which fits a walk tracker. Not reliably available on
-    // every platform (notably web), so the indicator just stays hidden.
-    if (position.heading.isNaN || position.heading < 0 || position.heading > 360) {
-      return;
-    }
-    setState(() => _headingDegrees = position.heading);
+  Future<void> _loadInitialPosition() async {
+    setState(() => _loadingInitialPosition = true);
+    final result = await widget.locationSampler.requestCurrentPosition();
+    if (!mounted) return;
+    setState(() {
+      _initialMapCenter = result.coordinates;
+      _loadingInitialPosition = false;
+    });
   }
 
   Coordinates? get _currentPosition {
     final route = _controller.walk?.route;
-    if (route == null || route.isEmpty) return null;
+    if (route == null || route.isEmpty) return _initialMapCenter;
     return route.last.coordinates;
   }
 
@@ -141,6 +118,14 @@ class _ActiveWalkPageState extends State<ActiveWalkPage> {
   }
 
   Future<void> _start() async {
+    if (_controller.isActive && _controller.walk?.petId != widget.pet.id) {
+      setState(() {
+        _locationError =
+            'C\'è già una passeggiata in corso con un altro pet: terminala prima di iniziarne una nuova.';
+      });
+      return;
+    }
+
     setState(() {
       _starting = true;
       _locationError = null;
@@ -157,21 +142,10 @@ class _ActiveWalkPageState extends State<ActiveWalkPage> {
       return;
     }
 
-    final Stream<Coordinates> stream;
-    if (widget.positionStreamProvider != null) {
-      stream = widget.positionStreamProvider!();
-    } else {
-      final raw = _defaultRawPositionStream().asBroadcastStream();
-      _headingSubscription = raw.listen(_onRawPosition);
-      stream = raw.map(
-        (position) => Coordinates(latitude: position.latitude, longitude: position.longitude),
-      );
-    }
-
     await _controller.start(
       ownerId: resolveCurrentOwnerId(),
       petId: widget.pet.id,
-      positionStream: stream,
+      positionStream: widget.positionStreamProvider?.call(),
     );
     if (!mounted) return;
     setState(() => _starting = false);
@@ -180,81 +154,21 @@ class _ActiveWalkPageState extends State<ActiveWalkPage> {
     });
   }
 
-  Future<void> _stop() async {
-    final repository = DogWalksRepository();
-    final ownerId = resolveCurrentOwnerId();
-    final beforeWalks = (await repository.loadWalks(ownerId))
-        .where((walk) => walk.petId == widget.pet.id)
-        .toList();
-    final beforeBadges = evaluateBadges(beforeWalks).toSet();
-
-    _elapsedTimer?.cancel();
-    await _controller.stop();
-    if (!mounted) return;
-
-    final afterWalks = (await repository.loadWalks(ownerId))
-        .where((walk) => walk.petId == widget.pet.id)
-        .toList();
-    final afterBadges = evaluateBadges(afterWalks);
-    final newlyEarned = afterBadges.where((badge) => !beforeBadges.contains(badge)).toList();
-
-    if (!mounted) return;
-    if (newlyEarned.isNotEmpty) {
-      await showBadgeEarnedDialog(context, newlyEarned);
+  Future<void> _togglePause() async {
+    final walk = _controller.walk;
+    if (walk == null) return;
+    if (walk.isPaused) {
+      await _controller.resume();
+    } else {
+      await _controller.pause();
     }
-
-    final finishedWalk = _controller.walk;
-    if (finishedWalk != null) {
-      if (!mounted) return;
-      await _promptSaveAsFavorite(repository, ownerId, finishedWalk);
-    }
-    await repository.pruneRoutesOutsideRetention(ownerId, widget.pet.id);
-
-    if (!mounted) return;
-    Navigator.of(context).pop(true);
   }
 
-  Future<void> _promptSaveAsFavorite(
-    DogWalksRepository repository,
-    String ownerId,
-    WalkSession walk,
-  ) async {
-    final wantsFavorite = await showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Salva tra le preferite?'),
-        content: Text(
-          'Vuoi aggiungere questa passeggiata (${walkDistanceLabel(walk.distanceMeters)}) '
-          'alle tue preferite ⭐?',
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(false),
-            child: const Text('No, grazie'),
-          ),
-          FilledButton(
-            onPressed: () => Navigator.of(context).pop(true),
-            child: const Text('Salva ⭐'),
-          ),
-        ],
-      ),
-    );
-    if (wantsFavorite != true) return;
+  Future<void> _stop() async {
+    _elapsedTimer?.cancel();
+    await finishActiveWalk(context, widget.pet);
     if (!mounted) return;
-
-    final existingFavorites = (await repository.loadWalks(ownerId))
-        .where((item) => item.petId == widget.pet.id && item.isFavorite)
-        .toList();
-
-    if (existingFavorites.length >= maxFavoriteWalks) {
-      if (!mounted) return;
-      final walkIdToEvict = await pickFavoriteToEvict(context, existingFavorites);
-      if (walkIdToEvict == null) return;
-      final toEvict = existingFavorites.firstWhere((item) => item.id == walkIdToEvict);
-      await repository.saveWalk(toEvict.copyWith(isFavorite: false));
-    }
-
-    await repository.saveWalk(walk.copyWith(isFavorite: true));
+    Navigator.of(context).pop(true);
   }
 
   @override
@@ -272,33 +186,51 @@ class _ActiveWalkPageState extends State<ActiveWalkPage> {
           animation: _controller,
           builder: (context, _) {
             final walk = _controller.walk;
-            final elapsedSeconds =
-                walk != null ? DateTime.now().difference(walk.startedAt).inSeconds : null;
+            final activeSeconds = walk != null ? walkActiveDurationSeconds(walk) : null;
+            final showSpinner = _loadingInitialPosition && (walk == null || walk.route.isEmpty);
             return Column(
               children: [
                 Expanded(
-                  child: Stack(
-                    children: [
-                      _WalkMap(walk: walk, mapController: _mapController),
-                      if (_headingDegrees != null)
-                        Positioned(
-                          top: AppSpacing.md,
-                          right: AppSpacing.md,
-                          child: _HeadingIndicator(headingDegrees: _headingDegrees!),
+                  child: showSpinner
+                      ? const Center(child: CircularProgressIndicator())
+                      : Stack(
+                          children: [
+                            _WalkMap(
+                              walk: walk,
+                              mapController: _mapController,
+                              fallbackCenter: _initialMapCenter,
+                            ),
+                            if (_controller.headingDegrees != null)
+                              Positioned(
+                                top: AppSpacing.md,
+                                right: AppSpacing.md,
+                                child: _HeadingIndicator(headingDegrees: _controller.headingDegrees!),
+                              ),
+                            if (_controller.isAwaitingAccurateFix)
+                              const Positioned(
+                                top: AppSpacing.md,
+                                left: AppSpacing.md,
+                                child: _InfoPill(text: 'In attesa di un segnale GPS preciso…'),
+                              )
+                            else if (walk?.isPaused ?? false)
+                              const Positioned(
+                                top: AppSpacing.md,
+                                left: AppSpacing.md,
+                                child: _InfoPill(text: 'Passeggiata in pausa'),
+                              ),
+                            Positioned(
+                              bottom: AppSpacing.md,
+                              right: AppSpacing.md,
+                              child: FloatingActionButton.small(
+                                heroTag: 'center-on-me',
+                                onPressed: _currentPosition == null ? null : _centerOnMe,
+                                backgroundColor: AppColors.surface,
+                                foregroundColor: AppColors.primary,
+                                child: const Icon(Icons.my_location_rounded),
+                              ),
+                            ),
+                          ],
                         ),
-                      Positioned(
-                        bottom: AppSpacing.md,
-                        right: AppSpacing.md,
-                        child: FloatingActionButton.small(
-                          heroTag: 'center-on-me',
-                          onPressed: _currentPosition == null ? null : _centerOnMe,
-                          backgroundColor: AppColors.surface,
-                          foregroundColor: AppColors.primary,
-                          child: const Icon(Icons.my_location_rounded),
-                        ),
-                      ),
-                    ],
-                  ),
                 ),
                 Padding(
                   padding: const EdgeInsets.all(AppSpacing.xl),
@@ -309,7 +241,7 @@ class _ActiveWalkPageState extends State<ActiveWalkPage> {
                           mainAxisAlignment: MainAxisAlignment.spaceAround,
                           children: [
                             _StatColumn(label: 'Distanza', value: walkDistanceLabel(walk.distanceMeters)),
-                            _StatColumn(label: 'Durata', value: walkElapsedLabel(elapsedSeconds!)),
+                            _StatColumn(label: 'Durata', value: walkElapsedLabel(activeSeconds!)),
                           ],
                         ),
                       if (_locationError != null) ...[
@@ -321,23 +253,38 @@ class _ActiveWalkPageState extends State<ActiveWalkPage> {
                         ),
                       ],
                       const SizedBox(height: AppSpacing.lg),
-                      SizedBox(
-                        width: double.infinity,
-                        child: FilledButton.icon(
-                          onPressed: _starting
-                              ? null
-                              : (_controller.isActive ? _stop : _start),
-                          style: FilledButton.styleFrom(
-                            backgroundColor: _controller.isActive ? AppColors.danger : AppColors.primary,
-                          ),
-                          icon: Icon(_controller.isActive ? Icons.stop_rounded : Icons.play_arrow_rounded),
-                          label: Text(
-                            _starting
-                                ? 'Avvio...'
-                                : (_controller.isActive ? 'Ferma passeggiata' : 'Avvia passeggiata'),
+                      if (_controller.isActive)
+                        Row(
+                          children: [
+                            Expanded(
+                              child: OutlinedButton.icon(
+                                onPressed: _togglePause,
+                                icon: Icon(
+                                  walk!.isPaused ? Icons.play_arrow_rounded : Icons.pause_rounded,
+                                ),
+                                label: Text(walk.isPaused ? 'Riavvia' : 'Pausa'),
+                              ),
+                            ),
+                            const SizedBox(width: AppSpacing.sm),
+                            Expanded(
+                              child: FilledButton.icon(
+                                onPressed: _stop,
+                                style: FilledButton.styleFrom(backgroundColor: AppColors.danger),
+                                icon: const Icon(Icons.stop_rounded),
+                                label: const Text('Termina'),
+                              ),
+                            ),
+                          ],
+                        )
+                      else
+                        SizedBox(
+                          width: double.infinity,
+                          child: FilledButton.icon(
+                            onPressed: _starting ? null : _start,
+                            icon: const Icon(Icons.play_arrow_rounded),
+                            label: Text(_starting ? 'Avvio...' : 'Avvia passeggiata'),
                           ),
                         ),
-                      ),
                     ],
                   ),
                 ),
@@ -364,6 +311,25 @@ class _StatColumn extends StatelessWidget {
         const SizedBox(height: 2),
         Text(label, style: AppTextStyles.caption),
       ],
+    );
+  }
+}
+
+class _InfoPill extends StatelessWidget {
+  const _InfoPill({required this.text});
+
+  final String text;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md, vertical: AppSpacing.sm),
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(999),
+        boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.15), blurRadius: 6)],
+      ),
+      child: Text(text, style: AppTextStyles.caption),
     );
   }
 }
@@ -395,48 +361,64 @@ class _HeadingIndicator extends StatelessWidget {
 }
 
 class _WalkMap extends StatelessWidget {
-  const _WalkMap({required this.walk, required this.mapController});
+  const _WalkMap({required this.walk, required this.mapController, this.fallbackCenter});
 
   final WalkSession? walk;
   final MapController mapController;
 
-  static const latlong.LatLng _fallbackCenter = latlong.LatLng(45.4642, 9.1900);
+  /// The device's real position, used only while there's no route yet -
+  /// null falls back to [_defaultFallbackCenter] (permission denied, or
+  /// still loading).
+  final Coordinates? fallbackCenter;
+
+  static const latlong.LatLng _defaultFallbackCenter = latlong.LatLng(45.4642, 9.1900);
 
   @override
   Widget build(BuildContext context) {
     final route = walk?.route ?? const [];
-    final center = route.isEmpty
-        ? _fallbackCenter
-        : latlong.LatLng(route.last.coordinates.latitude, route.last.coordinates.longitude);
+    final latlong.LatLng center;
+    if (route.isNotEmpty) {
+      center = latlong.LatLng(route.last.coordinates.latitude, route.last.coordinates.longitude);
+    } else if (fallbackCenter != null) {
+      center = latlong.LatLng(fallbackCenter!.latitude, fallbackCenter!.longitude);
+    } else {
+      center = _defaultFallbackCenter;
+    }
 
     return FlutterMap(
       mapController: mapController,
       options: MapOptions(initialCenter: center, initialZoom: 16),
       children: [
         buildWalkTileLayer(),
-        if (route.length >= 2)
-          PolylineLayer(
-            polylines: [
-              Polyline(
-                points: route
-                    .map((point) => latlong.LatLng(point.coordinates.latitude, point.coordinates.longitude))
-                    .toList(),
-                color: AppColors.primary,
-                strokeWidth: 4,
-              ),
-            ],
-          ),
-        if (route.isNotEmpty)
-          MarkerLayer(
-            markers: [
-              Marker(
-                point: center,
-                width: 28,
-                height: 28,
-                child: const Icon(Icons.pets, color: AppColors.primaryStrong),
-              ),
-            ],
-          ),
+        PolylineLayer(
+          // Split at Pausa/Riavvia boundaries (walk_route_segments.dart) so
+          // resuming after a pause never draws a line across whatever
+          // ground was covered while paused.
+          polylines: [
+            for (final segment in splitRouteIntoSegments(route))
+              if (segment.length >= 2)
+                Polyline(
+                  points: segment
+                      .map((point) => latlong.LatLng(point.coordinates.latitude, point.coordinates.longitude))
+                      .toList(),
+                  color: AppColors.primary,
+                  strokeWidth: 4,
+                ),
+          ],
+        ),
+        // isFinished: false - a walk still in progress has no finish marker
+        // yet, only start + wherever it's been paused so far.
+        buildWalkRouteMarkersLayer(computeWalkRouteMarkers(route, isFinished: false)),
+        MarkerLayer(
+          markers: [
+            Marker(
+              point: center,
+              width: 28,
+              height: 28,
+              child: const Icon(Icons.pets, color: AppColors.primaryStrong),
+            ),
+          ],
+        ),
         buildWalkMapAttribution(),
       ],
     );

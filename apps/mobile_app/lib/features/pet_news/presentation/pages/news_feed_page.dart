@@ -2,6 +2,7 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 
+import '../../../../app/splash/loading_animation.dart';
 import '../../../../design_system/tokens/app_colors.dart';
 import '../../../../design_system/tokens/app_radii.dart';
 import '../../../../design_system/tokens/app_spacing.dart';
@@ -19,18 +20,8 @@ class NewsFeedPage extends StatefulWidget {
 }
 
 class _NewsFeedPageState extends State<NewsFeedPage> {
-  static const _categories = [
-    'Cane',
-    'Gatto',
-    'Piccoli mammiferi',
-    'Uccello',
-    'Rettili e anfibi',
-    'Pesce',
-    'Altro',
-    'Generale',
-  ];
+  static const _categories = allPetNewsCategories;
   static const _cardsPerRefresh = 6;
-  static const _poolLimitPerCategory = 4;
 
   final _repository = GoogleNewsPetNewsRepository();
   final _random = Random();
@@ -48,26 +39,69 @@ class _NewsFeedPageState extends State<NewsFeedPage> {
     _loadPool();
   }
 
+  // Reveals cards as soon as the FIRST batch of categories lands (see
+  // fetchManyWithLimitStreaming — batches of 3, well under a second each in
+  // practice) instead of blocking on every one of the 8 fixed categories,
+  // which is what made this page feel slow even after speeding up the
+  // batching itself. Later batches keep enriching `_pool` silently in the
+  // background — visible on the next refresh or category switch, without
+  // reshuffling cards the user is already looking at.
   Future<void> _loadPool() async {
-    setState(() => _loading = true);
-    final results = await fetchManyWithLimit(
-      _categories.map((c) => () => _repository.fetchForSpecies(c, limit: _poolLimitPerCategory)).toList(),
+    setState(() {
+      _loading = true;
+      _pool = [];
+    });
+
+    var revealed = false;
+    await fetchManyWithLimitStreaming<List<PetNewsItem>>(
+      _categories
+          .map((c) => () => _repository.fetchForSpecies(c, limit: petNewsPoolLimitPerCategory))
+          .toList(),
+      onBatch: (batchResults) {
+        if (!mounted) return;
+        _pool = [..._pool, ...batchResults.expand((items) => items)];
+        if (!revealed) {
+          revealed = true;
+          _pickNext();
+          setState(() => _loading = false);
+        } else {
+          // The "Tutti" view landed its first batch before "Generale"'s —
+          // once that batch shows up, splice a generic card into what's
+          // already on screen instead of waiting for the next refresh (see
+          // pickNewsCards' requireGeneric — this mirrors that guarantee for
+          // a card set that's already shown).
+          _insertLateGenericIfNeeded(batchResults.expand((items) => items));
+        }
+      },
     );
-    if (!mounted) return;
-    _pool = results.expand((items) => items).toList();
-    _pickNext();
-    setState(() => _loading = false);
+  }
+
+  void _insertLateGenericIfNeeded(Iterable<PetNewsItem> newItems) {
+    if (_selectedCategory != null) return;
+    if (_shown.any((item) => item.species == 'Generale')) return;
+    for (final item in newItems) {
+      if (item.species == 'Generale') {
+        setState(() {
+          _shown = [..._shown.take(_cardsPerRefresh - 1), item];
+          _lastShownLinks = _shown.map((i) => i.sourceUrl).toSet();
+        });
+        return;
+      }
+    }
   }
 
   void _pickNext() {
-    final candidates = (_selectedCategory == null
+    final candidates = _selectedCategory == null
         ? _pool
-        : _pool.where((item) => item.species == _selectedCategory).toList())
-      ..shuffle(_random);
+        : _pool.where((item) => item.species == _selectedCategory).toList();
 
-    final fresh = candidates.where((item) => !_lastShownLinks.contains(item.sourceUrl)).toList();
-    final source = fresh.length >= min(_cardsPerRefresh, candidates.length) ? fresh : candidates;
-    final picked = source.take(_cardsPerRefresh).toList();
+    final picked = pickNewsCards(
+      candidates: candidates,
+      count: _cardsPerRefresh,
+      random: _random,
+      avoidLinks: _lastShownLinks,
+      requireGeneric: _selectedCategory == null,
+    );
 
     setState(() {
       _shown = picked;
@@ -128,7 +162,7 @@ class _NewsFeedPageState extends State<NewsFeedPage> {
             const SizedBox(height: AppSpacing.md),
             Expanded(
               child: _loading
-                  ? const Center(child: CircularProgressIndicator())
+                  ? const Center(child: LoadingAnimation(label: 'Carico le News...'))
                   : RefreshIndicator(
                       onRefresh: _refresh,
                       child: _shown.isEmpty
@@ -276,4 +310,37 @@ class _CategoryChip extends StatelessWidget {
       ),
     );
   }
+}
+
+/// Picks [count] cards out of [candidates] for the shuffled feed, preferring
+/// ones not in [avoidLinks] (so a refresh doesn't just re-show the same set)
+/// — and, when [requireGeneric] is true, guaranteeing at least one
+/// "Generale" card is included whenever [candidates] has one at all. Mirrors
+/// Home's always-a-generic-story rule (selectHomeNewsSlots in
+/// home_dashboard_page.dart) for this page's shuffled-6-cards layout instead
+/// of fixed slots; [requireGeneric] should be false whenever the caller has
+/// already filtered [candidates] to a single non-generic species, since
+/// showing a "Generale" card there would fight the filter itself.
+List<PetNewsItem> pickNewsCards({
+  required List<PetNewsItem> candidates,
+  required int count,
+  required Random random,
+  Set<String> avoidLinks = const {},
+  bool requireGeneric = true,
+}) {
+  final shuffled = List<PetNewsItem>.of(candidates)..shuffle(random);
+  final fresh = shuffled.where((item) => !avoidLinks.contains(item.sourceUrl)).toList();
+  final source = fresh.length >= min(count, shuffled.length) ? fresh : shuffled;
+  final picked = source.take(count).toList();
+
+  if (requireGeneric && picked.isNotEmpty && !picked.any((item) => item.species == 'Generale')) {
+    for (final item in shuffled) {
+      if (item.species == 'Generale') {
+        picked[picked.length - 1] = item;
+        break;
+      }
+    }
+  }
+
+  return picked;
 }

@@ -1,14 +1,19 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- 4x3 home-screen cell footprint, per the owner's request - the 70dp*n-30dp
-     rule of thumb gives minWidth/minHeight; targetCellWidth/Height are the
-     modern (API 31+) equivalent, ignored below that. -->
+<!-- 4x1 home-screen footprint (owner request 2026-09-30) - the 70dp*n-30dp
+     rule of thumb gives minWidth/minHeight (40dp for one cell);
+     targetCellWidth/Height are the API 31+ equivalent. Resizable: once the
+     widget is dragged taller than ~3 cells the provider switches to the
+     4-row layout (dog_walks_widget.xml), below that it uses the compact
+     strip (dog_walks_widget_compact.xml). -->
 <appwidget-provider xmlns:android="http://schemas.android.com/apk/res/android"
     android:minWidth="250dp"
-    android:minHeight="180dp"
+    android:minHeight="40dp"
+    android:minResizeWidth="250dp"
+    android:minResizeHeight="40dp"
     android:targetCellWidth="4"
-    android:targetCellHeight="3"
+    android:targetCellHeight="1"
     android:updatePeriodMillis="21600000"
-    android:initialLayout="@layout/dog_walks_widget"
+    android:initialLayout="@layout/dog_walks_widget_compact"
     android:resizeMode="horizontal|vertical"
     android:widgetCategory="home_screen"
     android:description="@string/dog_walks_widget_description">

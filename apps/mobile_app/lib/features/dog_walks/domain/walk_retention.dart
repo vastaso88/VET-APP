@@ -14,29 +14,40 @@ Set<String> retainedRouteWalkIds(List<WalkSession> completedWalksByDateDesc) {
     for (final walk in completedWalksByDateDesc.take(3)) walk.id,
     for (final walk in completedWalksByDateDesc)
       if (walk.isFavorite) walk.id,
-    _longestOf(completedWalksByDateDesc).id,
+    _longestDistanceOf(completedWalksByDateDesc).id,
+    _longestDurationOf(completedWalksByDateDesc).id,
   };
   return ids;
 }
 
-/// What the "Passeggiate" tab actually renders: the all-time longest walk
-/// pinned on its own, then favorites, then recent walks - each card shown
-/// only once, in the highest-priority section it qualifies for.
+/// What the "Passeggiate" tab actually renders: the two records pinned on
+/// their own (owner request, 2026-09-30: distance and duration are tracked
+/// as separate records - "Più lunga" and "Più duratura" can be different
+/// walks), then favorites, then recent walks - each card shown only once,
+/// in the highest-priority section it qualifies for.
 class WalkHistoryView {
-  const WalkHistoryView({this.record, this.favorites = const [], this.recent = const []});
+  const WalkHistoryView({
+    this.longestDistance,
+    this.longestDuration,
+    this.favorites = const [],
+    this.recent = const [],
+  });
 
-  final WalkSession? record;
+  final WalkSession? longestDistance;
+  final WalkSession? longestDuration;
   final List<WalkSession> favorites;
   final List<WalkSession> recent;
 }
 
-WalkHistoryView buildWalkHistoryView(List<WalkSession> completedWalksByDateDesc) {
+WalkHistoryView buildWalkHistoryView(
+    List<WalkSession> completedWalksByDateDesc) {
   if (completedWalksByDateDesc.isEmpty) {
     return const WalkHistoryView();
   }
 
-  final record = _longestOf(completedWalksByDateDesc);
-  final shown = <String>{record.id};
+  final longestDistance = _longestDistanceOf(completedWalksByDateDesc);
+  final longestDuration = _longestDurationOf(completedWalksByDateDesc);
+  final shown = <String>{longestDistance.id, longestDuration.id};
 
   final favorites = <WalkSession>[];
   for (final walk in completedWalksByDateDesc) {
@@ -53,9 +64,20 @@ WalkHistoryView buildWalkHistoryView(List<WalkSession> completedWalksByDateDesc)
     }
   }
 
-  return WalkHistoryView(record: record, favorites: favorites, recent: recent);
+  return WalkHistoryView(
+    longestDistance: longestDistance,
+    longestDuration: longestDuration,
+    favorites: favorites,
+    recent: recent,
+  );
 }
 
-WalkSession _longestOf(List<WalkSession> walks) {
+WalkSession _longestDistanceOf(List<WalkSession> walks) {
   return walks.reduce((a, b) => a.distanceMeters >= b.distanceMeters ? a : b);
+}
+
+WalkSession _longestDurationOf(List<WalkSession> walks) {
+  return walks.reduce(
+    (a, b) => (a.durationSeconds ?? 0) >= (b.durationSeconds ?? 0) ? a : b,
+  );
 }

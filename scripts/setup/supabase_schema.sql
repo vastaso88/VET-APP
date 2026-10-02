@@ -368,8 +368,26 @@ create table if not exists public.dog_walks (
     -- Starred by the owner, max 5 per pet (enforced client-side, see
     -- walk_retention.dart) - independent of is this the longest walk ever.
     is_favorite boolean not null default false,
+    -- Pausa/Riavvia (client-side, active_walk_controller.dart): paused_at is
+    -- when the current pause began (null if not paused), paused_seconds is
+    -- the running total of every *completed* pause interval so far.
+    is_paused boolean not null default false,
+    paused_at timestamptz,
+    paused_seconds integer not null default 0,
     created_at timestamptz not null default now()
 );
+
+-- dog_walks already existed on the live DB before is_favorite/is_paused/
+-- paused_at/paused_seconds were added above - same "existing table, add
+-- column if not exists" pattern as 9d6522f, needed or the first upsert
+-- referencing these columns fails against the real schema even though a
+-- fresh `create table if not exists` never runs on it again. `route` is
+-- jsonb (starts_new_segment lives inside each point's JSON, not its own
+-- column), so no alter is needed for the pause route-segment marker.
+alter table public.dog_walks add column if not exists is_favorite boolean not null default false;
+alter table public.dog_walks add column if not exists is_paused boolean not null default false;
+alter table public.dog_walks add column if not exists paused_at timestamptz;
+alter table public.dog_walks add column if not exists paused_seconds integer not null default 0;
 
 -- Mercatino dell'usato. latitude/longitude are ALREADY fuzzed before
 -- insert (packages/core/application/services/create_listing.py) - the

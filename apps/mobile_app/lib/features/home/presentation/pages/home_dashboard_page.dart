@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 
+import '../../../../design_system/responsive.dart';
 import '../../../../design_system/tokens/app_colors.dart';
 import '../../../../design_system/tokens/app_radii.dart';
 import '../../../../design_system/tokens/app_spacing.dart';
@@ -70,52 +71,20 @@ class _HomeDashboardPageState extends State<HomeDashboardPage> {
     ];
 
     final categoriesToFetch = {...nonGenericCategories, 'Generale'}.toList(growable: false);
-    const poolLimitPerCategory = 4;
     final results = await fetchManyWithLimit(
       categoriesToFetch
-          .map((c) => () => _petNewsRepository.fetchForSpecies(c, limit: poolLimitPerCategory))
+          .map((c) => () => _petNewsRepository.fetchForSpecies(c, limit: petNewsPoolLimitPerCategory))
           .toList(),
     );
     final poolByCategory = <String, List<PetNewsItem>>{
       for (var i = 0; i < categoriesToFetch.length; i++)
-        categoriesToFetch[i]: List<PetNewsItem>.of(results[i])
-          ..sort(_compareNewsByRecency),
+        categoriesToFetch[i]: List<PetNewsItem>.of(results[i]),
     };
-    final allItemsNewestFirst = results.expand((items) => items).toList(growable: false)
-      ..sort(_compareNewsByRecency);
 
-    final usedTitles = <String>{};
-    PetNewsItem? takeFromCategory(String category) {
-      for (final item in poolByCategory[category] ?? const <PetNewsItem>[]) {
-        if (usedTitles.add(item.title)) return item;
-      }
-      return null;
-    }
-
-    PetNewsItem? takeFromAnyCategory() {
-      for (final item in allItemsNewestFirst) {
-        if (usedTitles.add(item.title)) return item;
-      }
-      return null;
-    }
-
-    // Claim the generic slot first so a "Generale" fallback slot below (an
-    // owner with fewer than 3 species) backfills from what's left of the
-    // same pool, rather than the two competing over the same top item.
-    final generic = takeFromCategory('Generale') ?? takeFromAnyCategory();
-
-    final nonGeneric = <PetNewsItem>[];
-    for (final category in nonGenericCategories) {
-      final item = takeFromCategory(category) ?? takeFromAnyCategory();
-      if (item != null) nonGeneric.add(item);
-    }
-    nonGeneric.sort(_compareNewsByRecency);
-
-    final result = List<PetNewsItem>.of(nonGeneric);
-    if (generic != null) {
-      result.insert(result.length >= 2 ? 2 : result.length, generic);
-    }
-    return result;
+    return selectHomeNewsSlots(
+      nonGenericCategories: nonGenericCategories,
+      poolByCategory: poolByCategory,
+    );
   }
 
   @override
@@ -180,6 +149,68 @@ int _compareNewsByRecency(PetNewsItem a, PetNewsItem b) {
   if (aDate == null) return 1;
   if (bDate == null) return -1;
   return bDate.compareTo(aDate);
+}
+
+/// Picks Home's fixed 4-card news selection from already-fetched pools: 3
+/// species slots plus a "Generale" slot ALWAYS at position 2 (the 3rd card)
+/// whenever at least one generic item was fetched at all — this must hold
+/// regardless of which category's batch happened to land first, so it's a
+/// pure function over the already-completed [poolByCategory] rather than
+/// something built incrementally as batches stream in (Home deliberately
+/// doesn't reveal partial results — see `_loadPetNews` — precisely so this
+/// invariant never has to race a slow "Generale" fetch).
+///
+/// [nonGenericCategories] is the 3-entry list (owned species, padded with
+/// "Generale" if the owner has fewer than 3) that decides which pools feed
+/// the non-generic slots; [poolByCategory] must contain an entry for every
+/// value in it plus `'Generale'`. Pools don't need to be pre-sorted.
+List<PetNewsItem> selectHomeNewsSlots({
+  required List<String> nonGenericCategories,
+  required Map<String, List<PetNewsItem>> poolByCategory,
+}) {
+  final sortedPoolByCategory = <String, List<PetNewsItem>>{
+    for (final entry in poolByCategory.entries)
+      entry.key: List<PetNewsItem>.of(entry.value)..sort(_compareNewsByRecency),
+  };
+  final allItemsNewestFirst = poolByCategory.values.expand((items) => items).toList(growable: false)
+    ..sort(_compareNewsByRecency);
+
+  final usedTitles = <String>{};
+  PetNewsItem? takeFromCategory(String category) {
+    for (final item in sortedPoolByCategory[category] ?? const <PetNewsItem>[]) {
+      if (usedTitles.add(item.title)) return item;
+    }
+    return null;
+  }
+
+  PetNewsItem? takeFromAnyCategory() {
+    for (final item in allItemsNewestFirst) {
+      if (usedTitles.add(item.title)) return item;
+    }
+    return null;
+  }
+
+  // Claim the generic slot first so a "Generale" fallback slot below (an
+  // owner with fewer than 3 species) backfills from what's left of the
+  // same pool, rather than the two competing over the same top item.
+  final generic = takeFromCategory('Generale') ?? takeFromAnyCategory();
+
+  final nonGeneric = <PetNewsItem>[];
+  for (final category in nonGenericCategories) {
+    final item = takeFromCategory(category) ?? takeFromAnyCategory();
+    if (item != null) nonGeneric.add(item);
+  }
+  nonGeneric.sort(_compareNewsByRecency);
+
+  final result = List<PetNewsItem>.of(nonGeneric);
+  if (generic != null) {
+    // Always index 2 (the 3rd card) once there are at least 2 other cards
+    // to sit around it — never appended at the end, which would silently
+    // drop the "always position 3" guarantee whenever a batch reordering
+    // changed how many non-generic slots resolved first.
+    result.insert(result.length >= 2 ? 2 : result.length, generic);
+  }
+  return result;
 }
 
 DateTime _startOfWeek(DateTime day, WeekStartDay weekStartDay) {
@@ -408,6 +439,14 @@ class _DayChip extends StatelessWidget {
     final shown = markers.take(2).toList();
     final extra = markers.length - shown.length;
 
+    // Scaled with the same appScaleOf() rule as MarkerGlyph and PetAvatar
+    // (see design_system/responsive.dart) — this chip packs a label, a day
+    // number and a row of markers into a tight column, so on a screen wider
+    // than the reference width the markers (which already scale up inside
+    // MarkerGlyph) were previously clipped by this chip's own fixed-size
+    // text and marker-row height staying pinned to the reference size.
+    final scale = appScaleOf(context);
+
     return Container(
       padding: const EdgeInsets.symmetric(vertical: AppSpacing.xs),
       decoration: BoxDecoration(
@@ -424,7 +463,7 @@ class _DayChip extends StatelessWidget {
             label,
             style: AppTextStyles.caption.copyWith(
               color: foreground.withValues(alpha: 0.7),
-              fontSize: 12,
+              fontSize: 12 * scale,
             ),
           ),
           const SizedBox(height: 1),
@@ -433,12 +472,12 @@ class _DayChip extends StatelessWidget {
             style: AppTextStyles.bodySmall.copyWith(
               color: foreground,
               fontWeight: FontWeight.w700,
-              fontSize: 17,
+              fontSize: 17 * scale,
             ),
           ),
           const SizedBox(height: 2),
           SizedBox(
-            height: 11,
+            height: 11 * scale,
             child: markers.isEmpty
                 ? null
                 : Row(
@@ -449,8 +488,8 @@ class _DayChip extends StatelessWidget {
                       if (extra > 0)
                         Text(
                           '+$extra',
-                          style: const TextStyle(
-                            fontSize: 8,
+                          style: TextStyle(
+                            fontSize: 8 * scale,
                             fontWeight: FontWeight.w800,
                             color: foreground,
                           ),

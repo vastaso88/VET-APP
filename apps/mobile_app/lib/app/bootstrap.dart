@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_web_plugins/url_strategy.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -13,6 +14,17 @@ import '../shared/config/app_runtime_config_loader.dart';
 Future<void> bootstrap() async {
   WidgetsFlutterBinding.ensureInitialized();
   await initializeDateFormatting('it_IT');
+
+  // The app has no landscape layouts anywhere; rotating breaks several
+  // pages (Home's week-strip, the walk map). The Android manifest also
+  // locks the activity to portrait, but this covers iOS/web too, and any
+  // future full-screen viewer (e.g. photos) that wants to allow rotation
+  // is expected to call setPreferredOrientations again on entry and
+  // restore this call on exit.
+  await SystemChrome.setPreferredOrientations([
+    DeviceOrientation.portraitUp,
+    DeviceOrientation.portraitDown,
+  ]);
 
   if (kIsWeb) {
     usePathUrlStrategy();

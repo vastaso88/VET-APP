@@ -1,0 +1,274 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 4x1 variant (the default footprint): one horizontal strip with up to two
+     pets, each "avatar name [bell] [paw]", plus "+N altri". The 4-row
+     dog_walks_widget.xml is used once the widget is resized taller
+     (see DogWalksWidgetProvider.TALL_MIN_HEIGHT_DP). -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/dog_walks_widget_c_root"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="horizontal"
+    android:gravity="center_vertical"
+    android:background="@drawable/dog_walks_widget_background_compact"
+    android:paddingStart="6dp"
+    android:paddingEnd="6dp"
+    android:paddingTop="4dp"
+    android:paddingBottom="4dp">
+
+    <TextView
+        android:id="@+id/dog_walks_widget_c_empty"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:paddingStart="8dp"
+        android:paddingEnd="8dp"
+        android:text="@string/dog_walks_widget_empty"
+        android:textColor="@color/widget_text_secondary"
+        android:textSize="12sp"
+        android:maxLines="2"
+        android:ellipsize="end"
+        android:visibility="gone" />
+
+    <LinearLayout
+        android:id="@+id/dog_walks_widget_c_slot_0"
+        android:layout_width="0dp"
+        android:layout_height="match_parent"
+        android:layout_weight="1"
+        android:layout_marginStart="0dp"
+        android:paddingStart="4dp"
+        android:paddingEnd="3dp"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:background="@drawable/dog_walks_widget_slot_background">
+
+        <FrameLayout
+            android:layout_width="24dp"
+            android:layout_height="24dp">
+
+            <ImageView
+                android:id="@+id/dog_walks_widget_c_avatar_0"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:src="@drawable/dog_walks_widget_avatar"
+                android:importantForAccessibility="no" />
+
+            <TextView
+                android:id="@+id/dog_walks_widget_c_emoji_0"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:gravity="center"
+                android:textColor="@color/widget_on_primary"
+                android:textSize="13sp"
+                android:textStyle="bold" />
+        </FrameLayout>
+
+        <TextView
+            android:id="@+id/dog_walks_widget_c_name_0"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:layout_marginStart="6dp"
+            android:layout_marginEnd="4dp"
+            android:textColor="@color/widget_text"
+            android:textSize="13sp"
+            android:textStyle="bold"
+            android:maxLines="1"
+            android:ellipsize="end" />
+
+        <FrameLayout
+            android:id="@+id/dog_walks_widget_c_reminder_0"
+            android:layout_width="32dp"
+            android:layout_height="26dp"
+            android:background="@drawable/dog_walks_widget_pill_reminder"
+            android:contentDescription="@string/dog_walks_widget_reminder_cd">
+
+            <ImageView
+                android:layout_width="18dp"
+                android:layout_height="18dp"
+                android:layout_gravity="center"
+                android:src="@drawable/dog_walks_widget_ic_bell_add"
+                android:importantForAccessibility="no" />
+        </FrameLayout>
+
+        <FrameLayout
+            android:id="@+id/dog_walks_widget_c_walk_0"
+            android:layout_width="32dp"
+            android:layout_height="26dp"
+            android:layout_marginStart="3dp"
+            android:background="@drawable/dog_walks_widget_pill_walk"
+            android:contentDescription="@string/dog_walks_widget_walk_cd">
+
+            <ImageView
+                android:layout_width="18dp"
+                android:layout_height="18dp"
+                android:layout_gravity="center"
+                android:src="@drawable/dog_walks_widget_ic_paw"
+                android:importantForAccessibility="no" />
+        </FrameLayout>
+
+        <!-- Active walk (hidden unless this pet is walking): live
+             "In corso/In pausa - km - mm:ss" pill (a Chronometer so the
+             clock ticks without widget updates) + pause/resume pill. -->
+        <Chronometer
+            android:id="@+id/dog_walks_widget_c_status_0"
+            android:layout_width="wrap_content"
+            android:layout_height="26dp"
+            android:layout_marginStart="3dp"
+            android:paddingStart="8dp"
+            android:paddingEnd="9dp"
+            android:gravity="center_vertical"
+            android:background="@drawable/dog_walks_widget_pill_active"
+            android:drawableStart="@drawable/dog_walks_widget_ic_walk_status"
+            android:drawablePadding="4dp"
+            android:textColor="@color/widget_pill_walk_icon"
+            android:textSize="10sp"
+            android:textStyle="bold"
+            android:maxLines="1"
+            android:visibility="gone" />
+
+        <FrameLayout
+            android:id="@+id/dog_walks_widget_c_pause_0"
+            android:layout_width="32dp"
+            android:layout_height="26dp"
+            android:layout_marginStart="3dp"
+            android:background="@drawable/dog_walks_widget_pill_walk"
+            android:contentDescription="@string/dog_walks_widget_pause_cd"
+            android:visibility="gone">
+
+            <ImageView
+                android:id="@+id/dog_walks_widget_c_pause_icon_0"
+                android:layout_width="18dp"
+                android:layout_height="18dp"
+                android:layout_gravity="center"
+                android:src="@drawable/dog_walks_widget_ic_pause"
+                android:importantForAccessibility="no" />
+        </FrameLayout>
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/dog_walks_widget_c_slot_1"
+        android:layout_width="0dp"
+        android:layout_height="match_parent"
+        android:layout_weight="1"
+        android:layout_marginStart="4dp"
+        android:paddingStart="4dp"
+        android:paddingEnd="3dp"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:background="@drawable/dog_walks_widget_slot_background">
+
+        <FrameLayout
+            android:layout_width="24dp"
+            android:layout_height="24dp">
+
+            <ImageView
+                android:id="@+id/dog_walks_widget_c_avatar_1"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:src="@drawable/dog_walks_widget_avatar"
+                android:importantForAccessibility="no" />
+
+            <TextView
+                android:id="@+id/dog_walks_widget_c_emoji_1"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:gravity="center"
+                android:textColor="@color/widget_on_primary"
+                android:textSize="13sp"
+                android:textStyle="bold" />
+        </FrameLayout>
+
+        <TextView
+            android:id="@+id/dog_walks_widget_c_name_1"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:layout_marginStart="6dp"
+            android:layout_marginEnd="4dp"
+            android:textColor="@color/widget_text"
+            android:textSize="13sp"
+            android:textStyle="bold"
+            android:maxLines="1"
+            android:ellipsize="end" />
+
+        <FrameLayout
+            android:id="@+id/dog_walks_widget_c_reminder_1"
+            android:layout_width="32dp"
+            android:layout_height="26dp"
+            android:background="@drawable/dog_walks_widget_pill_reminder"
+            android:contentDescription="@string/dog_walks_widget_reminder_cd">
+
+            <ImageView
+                android:layout_width="18dp"
+                android:layout_height="18dp"
+                android:layout_gravity="center"
+                android:src="@drawable/dog_walks_widget_ic_bell_add"
+                android:importantForAccessibility="no" />
+        </FrameLayout>
+
+        <FrameLayout
+            android:id="@+id/dog_walks_widget_c_walk_1"
+            android:layout_width="32dp"
+            android:layout_height="26dp"
+            android:layout_marginStart="3dp"
+            android:background="@drawable/dog_walks_widget_pill_walk"
+            android:contentDescription="@string/dog_walks_widget_walk_cd">
+
+            <ImageView
+                android:layout_width="18dp"
+                android:layout_height="18dp"
+                android:layout_gravity="center"
+                android:src="@drawable/dog_walks_widget_ic_paw"
+                android:importantForAccessibility="no" />
+        </FrameLayout>
+
+        <!-- Active walk (hidden unless this pet is walking): live
+             "In corso/In pausa - km - mm:ss" pill (a Chronometer so the
+             clock ticks without widget updates) + pause/resume pill. -->
+        <Chronometer
+            android:id="@+id/dog_walks_widget_c_status_1"
+            android:layout_width="wrap_content"
+            android:layout_height="26dp"
+            android:layout_marginStart="3dp"
+            android:paddingStart="8dp"
+            android:paddingEnd="9dp"
+            android:gravity="center_vertical"
+            android:background="@drawable/dog_walks_widget_pill_active"
+            android:drawableStart="@drawable/dog_walks_widget_ic_walk_status"
+            android:drawablePadding="4dp"
+            android:textColor="@color/widget_pill_walk_icon"
+            android:textSize="10sp"
+            android:textStyle="bold"
+            android:maxLines="1"
+            android:visibility="gone" />
+
+        <FrameLayout
+            android:id="@+id/dog_walks_widget_c_pause_1"
+            android:layout_width="32dp"
+            android:layout_height="26dp"
+            android:layout_marginStart="3dp"
+            android:background="@drawable/dog_walks_widget_pill_walk"
+            android:contentDescription="@string/dog_walks_widget_pause_cd"
+            android:visibility="gone">
+
+            <ImageView
+                android:id="@+id/dog_walks_widget_c_pause_icon_1"
+                android:layout_width="18dp"
+                android:layout_height="18dp"
+                android:layout_gravity="center"
+                android:src="@drawable/dog_walks_widget_ic_pause"
+                android:importantForAccessibility="no" />
+        </FrameLayout>
+    </LinearLayout>
+
+    <TextView
+        android:id="@+id/dog_walks_widget_c_more"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="6dp"
+        android:layout_marginEnd="2dp"
+        android:textColor="@color/widget_text_secondary"
+        android:textSize="11sp"
+        android:textStyle="bold"
+        android:visibility="gone" />
+</LinearLayout>
