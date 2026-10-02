@@ -10,6 +10,17 @@ class AppRuntimeConfigLoader {
       'sb_publishable_t5vFAehg91FYPh_rFLOiUQ_Wv9tFh5m';
 
   AppRuntimeConfig load() {
+    const configuredSupabaseUrl = String.fromEnvironment(
+      AppEnvKeys.supabaseUrl,
+      defaultValue: _defaultSupabaseUrl,
+    );
+    const configuredSupabaseKey = String.fromEnvironment(
+      AppEnvKeys.supabaseAnonKey,
+      defaultValue: _defaultSupabasePublishableKey,
+    );
+
+    final useCanonicalSupabase = _isDeprecatedSupabaseUrl(configuredSupabaseUrl);
+
     return AppRuntimeConfig(
       environment: _parseEnvironment(
         const String.fromEnvironment(
@@ -25,16 +36,16 @@ class AppRuntimeConfigLoader {
         AppEnvKeys.apiBaseUrl,
         defaultValue: '',
       ),
-      supabaseUrl: const String.fromEnvironment(
-        AppEnvKeys.supabaseUrl,
-        defaultValue: _defaultSupabaseUrl,
-      ),
+      supabaseUrl:
+          useCanonicalSupabase ? _defaultSupabaseUrl : configuredSupabaseUrl,
       // Supabase's Flutter client still names this parameter `anonKey`, but
       // the current recommended client credential is the publishable key.
-      supabaseAnonKey: const String.fromEnvironment(
-        AppEnvKeys.supabaseAnonKey,
-        defaultValue: _defaultSupabasePublishableKey,
-      ),
+      // During the 2026 project consolidation, two temporary Supabase
+      // projects were used. A stale build-time define for either one must not
+      // send authentication traffic back to those retired environments.
+      supabaseAnonKey: useCanonicalSupabase
+          ? _defaultSupabasePublishableKey
+          : configuredSupabaseKey,
       logLevel: const String.fromEnvironment(
         AppEnvKeys.logLevel,
         defaultValue: 'INFO',
@@ -52,6 +63,12 @@ class AppRuntimeConfigLoader {
         defaultValue: 'osm',
       ),
     );
+  }
+
+  bool _isDeprecatedSupabaseUrl(String value) {
+    final normalized = value.trim().toLowerCase();
+    return normalized.contains('dkzzcoastheciitvkiuo.supabase.co') ||
+        normalized.contains('noulpaaonqjvprfddipn.supabase.co');
   }
 
   AppEnvironment _parseEnvironment(String value) {
