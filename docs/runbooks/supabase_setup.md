@@ -1,5 +1,12 @@
 # Supabase Setup
 
+## Canonical hosted project
+- project ref: `ywbuzgwbkrmkukkpysbz`
+- API URL: `https://ywbuzgwbkrmkukkpysbz.supabase.co`
+- organization: `vastaso88's Org`
+- this is the single source of truth for Auth, Postgres, Storage and the `ai` schema
+- do not point app or backend environments at the temporary projects `noulpaaonqjvprfddipn` or `dkzzcoastheciitvkiuo`
+
 ## Database connection
 The repository is prepared to read Supabase Postgres details from `.env`.
 
@@ -24,11 +31,15 @@ Secret handling rules:
 - `SUPABASE_ANON_KEY` is client-safe, but still keep it out of the repo-local `.env.example`
 - when `AUTH_BACKEND=supabase`, `BOOTSTRAP_USER_ID` and `BOOTSTRAP_USER_EMAIL` are ignored
 
-Current project values already prepared in `.env.example`:
-- host: `aws-1-eu-west-1.pooler.supabase.com`
+Canonical connection identifiers:
+- project ref: `ywbuzgwbkrmkukkpysbz`
+- URL: `https://ywbuzgwbkrmkukkpysbz.supabase.co`
+- pooler host: `aws-1-eu-west-1.pooler.supabase.com`
 - port: `5432`
 - database: `postgres`
 - user: `postgres.ywbuzgwbkrmkukkpysbz`
+
+Keep the publishable/anon key in deployment configuration and keep the service-role key server-side only.
 
 ## Current bootstrap mode
 - `PERSISTENCE_BACKEND=supabase` enables Supabase repositories
@@ -48,6 +59,8 @@ The script now includes:
 - owner-scoped policies for `pet_profiles`, `conversations`, and `reminders`
 
 For the LLM evidence layer, also run `scripts/setup/supabase_llm_sources_schema.sql`.
+
+After schema/bootstrap changes, apply `scripts/setup/supabase_security_hardening.sql` and run the Supabase security advisor before deployment.
 
 That schema adds:
 - a curated registry of trusted domains and base URLs
