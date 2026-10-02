@@ -4,6 +4,11 @@ import 'app_runtime_config.dart';
 class AppRuntimeConfigLoader {
   const AppRuntimeConfigLoader();
 
+  static const _defaultSupabaseUrl =
+      'https://ywbuzgwbkrmkukkpysbz.supabase.co';
+  static const _defaultSupabasePublishableKey =
+      'sb_publishable_t5vFAehg91FYPh_rFLOiUQ_Wv9tFh5m';
+
   AppRuntimeConfig load() {
     return AppRuntimeConfig(
       environment: _parseEnvironment(
@@ -22,11 +27,13 @@ class AppRuntimeConfigLoader {
       ),
       supabaseUrl: const String.fromEnvironment(
         AppEnvKeys.supabaseUrl,
-        defaultValue: '',
+        defaultValue: _defaultSupabaseUrl,
       ),
+      // Supabase's Flutter client still names this parameter `anonKey`, but
+      // the current recommended client credential is the publishable key.
       supabaseAnonKey: const String.fromEnvironment(
         AppEnvKeys.supabaseAnonKey,
-        defaultValue: '',
+        defaultValue: _defaultSupabasePublishableKey,
       ),
       logLevel: const String.fromEnvironment(
         AppEnvKeys.logLevel,
