@@ -65,3 +65,8 @@ flutter run -d chrome
 3. rifinire onboarding
 4. implementare `auth`
 5. collegare API e Supabase
+
+
+## Supabase canonico
+
+Per build e test collegati al backend reale, usare il progetto `ywbuzgwbkrmkukkpysbz`. Le build che puntano a `dkzzcoastheciitvkiuo` o `noulpaaonqjvprfddipn` sono obsolete e vanno ricompilate.
