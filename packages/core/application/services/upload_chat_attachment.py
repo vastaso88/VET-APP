@@ -72,8 +72,10 @@ class UploadChatAttachmentService:
                 data.file_bytes,
                 data.content_type,
                 context=(
-                    f"Specie: {pet_profile.species}. Descrivi eventuali segni "
-                    "clinicamente rilevanti visibili nella foto."
+                    f"Specie: {pet_profile.species}. Se è una foto dell'animale o "
+                    "del suo ambiente, descrivi eventuali segni clinicamente "
+                    "rilevanti visibili. Se è un documento (referto, esame, "
+                    "ricetta, libretto), trascrivine il contenuto rilevante."
                 ),
             )
             attachment = attachment.model_copy(update={"analysis": analysis})

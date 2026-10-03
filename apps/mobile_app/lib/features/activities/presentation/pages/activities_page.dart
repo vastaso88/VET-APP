@@ -44,8 +44,8 @@ class ActivitiesPage extends StatelessWidget {
             _ActivityRow(
               icon: Icons.map_outlined,
               iconTone: AppColors.info,
-              title: 'Eventi nei dintorni',
-              subtitle: 'Fiere, raduni e iniziative vicino a te.',
+              title: 'Radar nei dintorni',
+              subtitle: 'Veterinari, negozi, aree cani ed eventi vicino a te.',
               onTap: () => Navigator.of(context).push(
                 MaterialPageRoute<void>(builder: (_) => const LocalEventsPage()),
               ),

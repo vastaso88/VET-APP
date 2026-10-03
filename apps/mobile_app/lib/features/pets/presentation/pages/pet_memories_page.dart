@@ -111,6 +111,7 @@ class _MemoryRow extends StatelessWidget {
             label: pet.avatarEmoji,
             backgroundColor: pet.accentColor,
             photoBytes: pet.photoBytes,
+            photoPath: pet.photoPath,
             identityColor: pet.identityColor,
             size: 48,
           ),

@@ -92,7 +92,8 @@ class _SplashPageState extends State<SplashPage> {
 
   void _goTo(String destination) {
     if (!mounted) return;
-    Navigator.of(context).pushReplacementNamed(destination);
+    final target = AppRouter.passwordRecoveryPending ? AppRouter.setNewPassword : destination;
+    Navigator.of(context).pushReplacementNamed(target);
   }
 
   @override

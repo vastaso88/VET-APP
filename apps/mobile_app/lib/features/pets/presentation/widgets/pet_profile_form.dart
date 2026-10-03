@@ -21,10 +21,11 @@ class PetProfileDraft {
     required this.breed,
     this.birthDate,
     required this.sex,
-    required this.weightKg,
+    this.weightKg,
     required this.medicalNote,
     required this.identityColor,
     this.photoBytes,
+    this.photoTouched = false,
     this.aquariumStock = const [],
     this.habitat,
     this.dogSizeCategory,
@@ -38,10 +39,14 @@ class PetProfileDraft {
   /// whole tank. Still asked for a single pet (including a lone fish).
   final DateTime? birthDate;
   final String sex;
-  final double weightKg;
+  final double? weightKg;
   final String medicalNote;
   final Color identityColor;
   final Uint8List? photoBytes;
+
+  /// True only when the owner picked or removed a photo in this form. A
+  /// persisted photo the owner never touched must not be cleared on save.
+  final bool photoTouched;
   final List<FishStock> aquariumStock;
   final HabitatDetails? habitat;
   final String? dogSizeCategory;
@@ -94,6 +99,7 @@ class _PetProfileFormState extends State<PetProfileForm> {
   late String? _sex;
   DateTime? _birthDate;
   Uint8List? _photoBytes;
+  bool _photoTouched = false;
   late Color _identityColor;
   late bool _isAquarium;
   late List<FishStock> _aquariumStock;
@@ -162,10 +168,16 @@ class _PetProfileFormState extends State<PetProfileForm> {
     );
     final bytes = result?.files.single.bytes;
     if (bytes == null) return;
-    setState(() => _photoBytes = bytes);
+    setState(() {
+      _photoBytes = bytes;
+      _photoTouched = true;
+    });
   }
 
-  void _removePhoto() => setState(() => _photoBytes = null);
+  void _removePhoto() => setState(() {
+        _photoBytes = null;
+        _photoTouched = true;
+      });
 
   Future<void> _openAddSpeciesSheet() async {
     final existing = _aquariumStock.map((stock) => stock.species).toSet();
@@ -288,11 +300,15 @@ class _PetProfileFormState extends State<PetProfileForm> {
                         : (widget.initialPet?.avatarEmoji ?? '?');
                     return _PhotoPicker(
                       photoBytes: _photoBytes,
+                      photoPath: _photoTouched ? null : widget.initialPet?.photoPath,
                       identityColor: _identityColor,
                       backgroundColor: _speciesAccentColor(),
                       label: label,
                       onPick: _pickPhoto,
-                      onRemove: _photoBytes == null ? null : _removePhoto,
+                      onRemove: _photoBytes == null &&
+                              (_photoTouched || widget.initialPet?.photoPath == null)
+                          ? null
+                          : _removePhoto,
                     );
                   },
                 ),
@@ -503,8 +519,11 @@ class _PetProfileFormState extends State<PetProfileForm> {
                   inputFormatters: [
                     FilteringTextInputFormatter.allow(RegExp(r'[0-9,.\s]')),
                   ],
-                  decoration: _inputDecoration('Peso', 'Es. 18,4'),
+                  decoration: _inputDecoration('Peso (facoltativo)', 'Es. 18,4'),
                   validator: (value) {
+                    if ((value ?? '').trim().isEmpty) {
+                      return null;
+                    }
                     final parsed = _parseWeight(value);
                     if (parsed == null) {
                       return 'Inserisci un peso valido.';
@@ -600,10 +619,11 @@ class _PetProfileFormState extends State<PetProfileForm> {
       breed: isAquariumProfile ? null : _normalizeBreed(_breed),
       birthDate: isAquariumProfile ? null : _birthDate,
       sex: _sex!.trim(),
-      weightKg: _parseWeight(_weightController.text)!,
+      weightKg: _parseWeight(_weightController.text),
       medicalNote: _notesController.text.trim(),
       identityColor: _identityColor,
       photoBytes: _photoBytes,
+      photoTouched: _photoTouched,
       aquariumStock: isAquariumProfile ? _aquariumStock : const [],
       habitat: _buildHabitat(),
       dogSizeCategory: _species == 'Cane' && _breed == 'Altro' ? _dogSizeCategory : null,
@@ -706,10 +726,12 @@ class _PhotoPicker extends StatelessWidget {
     required this.backgroundColor,
     required this.label,
     required this.onPick,
+    this.photoPath,
     this.onRemove,
   });
 
   final Uint8List? photoBytes;
+  final String? photoPath;
   final Color identityColor;
   final Color backgroundColor;
   final String label;
@@ -725,6 +747,7 @@ class _PhotoPicker extends StatelessWidget {
           label: label,
           backgroundColor: backgroundColor,
           photoBytes: photoBytes,
+          photoPath: photoPath,
           identityColor: identityColor,
           size: 64,
         ),
@@ -737,7 +760,9 @@ class _PhotoPicker extends StatelessWidget {
               OutlinedButton.icon(
                 onPressed: onPick,
                 icon: const Icon(Icons.add_a_photo_outlined, size: 16),
-                label: Text(photoBytes == null ? 'Aggiungi foto' : 'Cambia foto'),
+                label: Text(
+                  photoBytes == null && photoPath == null ? 'Aggiungi foto' : 'Cambia foto',
+                ),
               ),
               if (onRemove != null)
                 TextButton.icon(

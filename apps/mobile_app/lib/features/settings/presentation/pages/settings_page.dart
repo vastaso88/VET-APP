@@ -21,6 +21,9 @@ import '../../../location/data/device_location_service.dart';
 import '../../../location/data/location_preference_store.dart';
 import '../../../location/data/location_repository.dart';
 import '../../../location/domain/coordinates.dart';
+import '../../../pets/data/pet_demo_store.dart';
+import '../../../pets/domain/pet_models.dart';
+import '../../../pets/presentation/widgets/medical_record_consent_card.dart';
 import '../../../profile/presentation/pages/profile_page.dart';
 import '../../data/layout_settings_store.dart';
 
@@ -290,6 +293,12 @@ class _SettingsPageState extends State<SettingsPage> {
         value: consents.decisions[AccountConsentKeys.analytics]?.granted ?? false,
         onChanged: (value) => _setConsent(AccountConsentKeys.analytics, value),
       ),
+      ValueListenableBuilder<int>(
+        valueListenable: PetDemoStore.changes,
+        builder: (context, _, __) => _PetClinicalConsentSection(
+          pets: PetDemoStore.instance.list().where((pet) => !pet.isMemorial).toList(),
+        ),
+      ),
     ];
   }
 
@@ -495,6 +504,34 @@ class _SettingsPageState extends State<SettingsPage> {
           },
         ),
       ),
+    );
+  }
+}
+
+/// One switch per active pet: whether the chat may read that pet's clinical
+/// records. Same decision and PUT as the switch in the pet's Referti tab.
+class _PetClinicalConsentSection extends StatelessWidget {
+  const _PetClinicalConsentSection({required this.pets});
+
+  final List<PetProfile> pets;
+
+  @override
+  Widget build(BuildContext context) {
+    if (pets.isEmpty) return const SizedBox.shrink();
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        const _SectionLabel('Cartella clinica e assistente'),
+        for (final pet in pets)
+          Padding(
+            padding: const EdgeInsets.fromLTRB(AppSpacing.lg, 0, AppSpacing.lg, AppSpacing.sm),
+            child: MedicalRecordConsentCard(
+              key: ValueKey('settings-consent-${pet.id}'),
+              pet: pet,
+              compact: true,
+            ),
+          ),
+      ],
     );
   }
 }

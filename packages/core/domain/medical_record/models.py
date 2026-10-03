@@ -23,6 +23,10 @@ class ClinicalEvent(BaseModel):
     meta: str | None = None
     badge: str | None = None
     detail_source: str | None = None
+    # Id of the uploaded file in the chat-attachments pipeline, when the
+    # record has one — its cached text summary (ChatAttachment.analysis)
+    # is what lets the chat know what the document actually says.
+    attachment_id: str | None = None
     created_at: datetime = Field(default_factory=utc_now)
 
 

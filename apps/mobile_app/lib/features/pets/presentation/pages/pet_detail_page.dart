@@ -15,6 +15,7 @@ import '../../../chat/domain/chat_models.dart';
 import '../../../chat/presentation/pages/chat_conversation_detail_page.dart';
 import '../../../dog_walks/data/active_walk_controller.dart';
 import '../../../dog_walks/data/dog_walks_repository.dart';
+import '../../../dog_walks/domain/walk_eligibility.dart';
 import '../../../dog_walks/domain/walk_retention.dart';
 import '../../../dog_walks/domain/walk_route_markers.dart';
 import '../../../dog_walks/domain/walk_route_segments.dart';
@@ -35,10 +36,12 @@ import '../../../reminders/domain/reminder_presentation.dart';
 import '../../../reminders/presentation/pages/reminders_pages.dart';
 import '../../data/pet_demo_store.dart';
 import '../../domain/pet_models.dart';
+import '../widgets/medical_record_consent_card.dart';
 import '../widgets/pet_avatar.dart';
 import '../widgets/pets_scaffold.dart';
 import '../widgets/pets_state_views.dart';
 import 'pet_edit_page.dart';
+import 'pet_gallery_page.dart';
 
 class PetDetailPage extends StatefulWidget {
   const PetDetailPage({
@@ -83,10 +86,24 @@ class _PetDetailPageState extends State<PetDetailPage> {
               label: pet.avatarEmoji,
               backgroundColor: pet.accentColor,
               photoBytes: pet.photoBytes,
+              photoPath: pet.photoPath,
               identityColor: pet.identityColor,
               size: 36,
             ),
       actions: [
+        IconButton(
+          tooltip: 'Galleria foto',
+          onPressed: pet == null
+              ? null
+              : () => Navigator.of(context).push(
+                    MaterialPageRoute<void>(
+                      builder: (_) => PetGalleryPage(pet: pet),
+                    ),
+                  ),
+          icon: const Icon(Icons.photo_library_outlined),
+          color: Colors.white,
+          style: IconButton.styleFrom(backgroundColor: AppColors.primaryStrong),
+        ),
         IconButton(
           onPressed: pet == null ? null : () => _openEdit(context, pet),
           icon: const Icon(Icons.edit_outlined),
@@ -151,8 +168,31 @@ class _PetDetailContent extends StatefulWidget {
 
 class _PetDetailContentState extends State<_PetDetailContent>
     with SingleTickerProviderStateMixin {
-  late final TabController _tabController =
-      TabController(length: 4, vsync: this);
+  /// "Passeggiate" is offered for dogs only (owner request, 2026-10-03) -
+  /// for any other species the tab (and so the start button, badges and
+  /// history) simply isn't there. A non-dog that still has historic walks
+  /// stored just never loads them.
+  bool get _showsWalks => isDogSpecies(widget.pet.species);
+
+  late TabController _tabController =
+      TabController(length: _showsWalks ? 4 : 3, vsync: this);
+
+  @override
+  void didUpdateWidget(covariant _PetDetailContent oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    // Editing the species while this page is open can add/remove the tab;
+    // a TabController's length is fixed, so it has to be rebuilt.
+    final expectedLength = _showsWalks ? 4 : 3;
+    if (_tabController.length != expectedLength) {
+      final previousIndex = _tabController.index;
+      _tabController.dispose();
+      _tabController = TabController(
+        length: expectedLength,
+        vsync: this,
+        initialIndex: previousIndex < expectedLength ? previousIndex : 0,
+      );
+    }
+  }
 
   @override
   void dispose() {
@@ -183,11 +223,11 @@ class _PetDetailContentState extends State<_PetDetailContent>
           unselectedLabelStyle: AppTextStyles.bodySmall,
           isScrollable: true,
           tabAlignment: TabAlignment.start,
-          tabs: const [
-            Tab(text: 'Promemoria'),
-            Tab(text: 'Chat'),
-            Tab(text: 'Referti'),
-            Tab(text: 'Passeggiate'),
+          tabs: [
+            const Tab(text: 'Promemoria'),
+            const Tab(text: 'Chat'),
+            const Tab(text: 'Referti'),
+            if (_showsWalks) const Tab(text: 'Passeggiate'),
           ],
         ),
         const SizedBox(height: AppSpacing.md),
@@ -200,7 +240,8 @@ class _PetDetailContentState extends State<_PetDetailContent>
               _ChatTab(pet: widget.pet),
               _RecordsTab(
                   pet: widget.pet, repository: widget.recordsRepository),
-              _WalksTab(pet: widget.pet, repository: widget.walksRepository),
+              if (_showsWalks)
+                _WalksTab(pet: widget.pet, repository: widget.walksRepository),
             ],
           ),
         ),
@@ -776,6 +817,23 @@ class _RecordsTabState extends State<_RecordsTab> {
   late Future<List<MedicalRecordEntry>> _future =
       widget.repository.loadRecords();
 
+  @override
+  void initState() {
+    super.initState();
+    MedicalRecordsRepository.changes.addListener(_onRecordsChanged);
+  }
+
+  @override
+  void dispose() {
+    MedicalRecordsRepository.changes.removeListener(_onRecordsChanged);
+    super.dispose();
+  }
+
+  void _onRecordsChanged() {
+    if (!mounted) return;
+    setState(() => _future = widget.repository.loadRecords());
+  }
+
   Future<void> _reload() async {
     setState(() => _future = widget.repository.loadRecords());
     await _future;
@@ -912,6 +970,8 @@ class _RecordsTabState extends State<_RecordsTab> {
 
         return Column(
           children: [
+            MedicalRecordConsentCard(pet: widget.pet),
+            const SizedBox(height: AppSpacing.md),
             Row(
               children: [
                 Expanded(
@@ -993,6 +1053,27 @@ class _WalksTab extends StatefulWidget {
 
 class _WalksTabState extends State<_WalksTab> {
   late Future<List<WalkSession>> _future = _load();
+
+  @override
+  void initState() {
+    super.initState();
+    // History, records, favorites and recents all hang off _future, so a
+    // change anywhere (walk just finished, favorite toggled, a walk deleted)
+    // has to produce a new one - otherwise they only refreshed after the
+    // owner left this tab and came back (owner report, 2026-10-03).
+    DogWalksRepository.changes.addListener(_onWalksChanged);
+  }
+
+  @override
+  void dispose() {
+    DogWalksRepository.changes.removeListener(_onWalksChanged);
+    super.dispose();
+  }
+
+  void _onWalksChanged() {
+    if (!mounted) return;
+    setState(() => _future = _load());
+  }
 
   Future<List<WalkSession>> _load() async {
     final ownerId = resolveCurrentOwnerId();

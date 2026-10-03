@@ -45,7 +45,16 @@ class GroqImageAnalyzer(ImageAnalyzer):
                             "details). Never name or suggest a diagnosis — describe "
                             "observations only, in Italian, in 2-4 short sentences. If "
                             "the image is unclear, blurry, or shows nothing clinically "
-                            "relevant, say so plainly rather than guessing."
+                            "relevant, say so plainly rather than guessing. EXCEPTION — "
+                            "if the image is a document (lab report, referto, "
+                            "prescription, vaccination booklet): instead transcribe "
+                            "its relevant content faithfully in Italian — document "
+                            "type, date, the values/findings with their units and "
+                            "reference ranges, and the written conclusions — as "
+                            "compact text, up to about 10 lines. Copy what is written; "
+                            "never interpret it, never add a value that is not "
+                            "legible, and omit names of people, addresses and phone "
+                            "numbers."
                         ),
                     },
                     {
@@ -57,7 +66,7 @@ class GroqImageAnalyzer(ImageAnalyzer):
                     },
                 ],
                 "temperature": 0.2,
-                "max_tokens": 400,
+                "max_tokens": 700,
             }
         ).encode("utf-8")
 

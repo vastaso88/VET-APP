@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../data/pet_demo_store.dart';
+import '../../data/pet_photo_repository.dart';
 import '../../domain/pet_models.dart';
 import '../widgets/pet_profile_form.dart';
 import '../widgets/pets_scaffold.dart';
@@ -67,8 +68,13 @@ class _CreateForm extends StatelessWidget {
           habitat: draft.habitat,
           dogSizeCategory: draft.dogSizeCategory,
         );
+        final raw = draft.photoBytes;
+        final photoPath = raw == null ? null : await saveProfilePhoto(petId: pet.id, raw: raw);
+        final saved = photoPath == null
+            ? pet
+            : await PetDemoStore.instance.upsert(pet.copyWith(photoPath: photoPath));
         if (!context.mounted) return;
-        Navigator.of(context).pop(pet);
+        Navigator.of(context).pop(saved);
       },
     );
   }

@@ -8,13 +8,36 @@ from urllib import error, parse, request
 from packages.core.application.services.request_radar_places_ingestion import (
     RequestRadarPlacesIngestionInput,
 )
-from packages.core.domain.coverage.models import RadarCoverageWindow
 from packages.core.domain.radar_places.models import RadarPlace
 from packages.shared.config.settings import Settings
 from packages.shared.errors.base import ProviderError
 
-_TOTAL_TIME_BUDGET_SECONDS = 40.0
+_DEFAULT_NAMES = {"dog_park": "Area cani"}
+
+_OSM_SPECIES = {
+    "dog": "dog",
+    "dogs": "dog",
+    "cat": "cat",
+    "cats": "cat",
+    "bird": "bird",
+    "birds": "bird",
+    "fish": "fish",
+    "reptile": "reptile_amphibian",
+    "reptiles": "reptile_amphibian",
+    "rabbit": "small_mammal",
+    "rodent": "small_mammal",
+    "rodents": "small_mammal",
+    "horse": "other",
+    "horses": "other",
+}
+
+_TOTAL_TIME_BUDGET_SECONDS = 60.0
 _MIN_ATTEMPT_SECONDS = 8.0
+_RATE_LIMIT_WAITS_SECONDS = (6.0, 14.0, 22.0)
+
+
+class _RateLimitedError(ProviderError):
+    """HTTP 429: the server is fine, this client just has to wait."""
 
 
 class OverpassRadarPlacesSource:
@@ -43,13 +66,7 @@ class OverpassRadarPlacesSource:
         body = parse.urlencode({"data": query}).encode("utf-8")
         elements = self._fetch_elements(body)
 
-        window = RadarCoverageWindow(
-            owner_id=request_data.owner_id,
-            center_latitude=request_data.center_latitude,
-            center_longitude=request_data.center_longitude,
-            radius_km=request_data.radius_km,
-            freshness_ttl_hours=request_data.freshness_ttl_hours,
-        )
+        window = request_data.coverage_window()
         fetched_at = datetime.now(UTC)
         return [
             place
@@ -75,17 +92,25 @@ class OverpassRadarPlacesSource:
         deadline = time.monotonic() + _TOTAL_TIME_BUDGET_SECONDS
         last_error: ProviderError | None = None
         for url in (self._settings.overpass_base_url, *self._settings.overpass_fallback_urls):
-            remaining = deadline - time.monotonic()
-            if last_error is not None and remaining < _MIN_ATTEMPT_SECONDS:
-                break
-            try:
-                return self._request_elements(
-                    url,
-                    body,
-                    timeout=min(self._settings.overpass_timeout_seconds + 5, remaining),
-                )
-            except ProviderError as exc:
-                last_error = exc
+            for wait_seconds in (0.0, *_RATE_LIMIT_WAITS_SECONDS):
+                # 429 means "your slot frees up in a few seconds": waiting
+                # on the same server beats moving to a slower mirror.
+                if wait_seconds and deadline - time.monotonic() > wait_seconds:
+                    time.sleep(wait_seconds)
+                remaining = deadline - time.monotonic()
+                if last_error is not None and remaining < _MIN_ATTEMPT_SECONDS:
+                    raise last_error
+                try:
+                    return self._request_elements(
+                        url,
+                        body,
+                        timeout=min(self._settings.overpass_timeout_seconds + 5, remaining),
+                    )
+                except _RateLimitedError as exc:
+                    last_error = exc
+                except ProviderError as exc:
+                    last_error = exc
+                    break
         assert last_error is not None
         raise last_error
 
@@ -106,9 +131,8 @@ class OverpassRadarPlacesSource:
                 payload = json.loads(response.read().decode("utf-8"))
         except error.HTTPError as exc:
             detail = exc.read().decode("utf-8", errors="ignore")[:500]
-            raise ProviderError(
-                f"Overpass request failed with status {exc.code}: {detail}"
-            ) from exc
+            error_type = _RateLimitedError if exc.code == 429 else ProviderError
+            raise error_type(f"Overpass request failed with status {exc.code}: {detail}") from exc
         except error.URLError as exc:
             raise ProviderError(f"Unable to reach Overpass API: {exc.reason}") from exc
         except TimeoutError as exc:
@@ -152,7 +176,9 @@ class OverpassRadarPlacesSource:
         if latitude is None or longitude is None:
             return None
 
-        name = _first_tag(tags, "name", "brand", "operator")
+        # Dog parks are almost never named in OSM, yet they are exactly
+        # what the user is looking for: a generic label beats dropping them.
+        name = _first_tag(tags, "name", "brand", "operator") or _DEFAULT_NAMES.get(place_type)
         if not name:
             return None
 
@@ -162,7 +188,8 @@ class OverpassRadarPlacesSource:
         city = _first_tag(tags, "addr:city", "addr:town", "addr:village")
         phone = _first_tag(tags, "contact:phone", "phone")
         website_url = _first_tag(tags, "contact:website", "website")
-        summary = _first_tag(tags, "description", "opening_hours")
+        opening_hours = _first_tag(tags, "opening_hours")
+        summary = _first_tag(tags, "description")
 
         return RadarPlace(
             owner_id=request_data.owner_id,
@@ -171,6 +198,8 @@ class OverpassRadarPlacesSource:
             subtype=subtype,
             name=name,
             summary=summary,
+            opening_hours=opening_hours,
+            species=_read_species(tags, place_type=place_type, subtype=subtype),
             city=city,
             address_label=address_label,
             latitude=latitude,
@@ -207,6 +236,7 @@ def _build_overpass_query(
         '["amenity"="animal_breeding"]',
         '["office"="pet_sitting"]',
         '["craft"="dog_walker"]',
+        '["leisure"="dog_park"]',
     )
     statements = "\n".join(f"  nwr({around}){selector};" for selector in selectors)
     return f"[out:json][timeout:{timeout_seconds}];\n(\n{statements}\n);\nout center tags qt;"
@@ -233,6 +263,7 @@ def _classify_tags(tags: dict[str, str]) -> tuple[str, str] | None:
     shop = tags.get("shop", "").strip().lower()
     office = tags.get("office", "").strip().lower()
     craft = tags.get("craft", "").strip().lower()
+    leisure = tags.get("leisure", "").strip().lower()
 
     if amenity == "veterinary":
         return "veterinary", "amenity:veterinary"
@@ -250,7 +281,24 @@ def _classify_tags(tags: dict[str, str]) -> tuple[str, str] | None:
         return "pet_sitting", "office:pet_sitting"
     if craft == "dog_walker":
         return "pet_sitting", "craft:dog_walker"
+    if leisure == "dog_park":
+        return "dog_park", "leisure:dog_park"
     return None
+
+
+def _read_species(tags: dict[str, str], *, place_type: str, subtype: str) -> list[str]:
+    """Species a place is specifically for, in the app's canonical species
+    keys (packages/core/domain/pet_profile/species.py). Empty means "not
+    stated", which callers treat as relevant to every species."""
+    if place_type == "dog_park" or subtype == "craft:dog_walker":
+        return ["dog"]
+    found: list[str] = []
+    for key in ("animal_boarding", "animal_breeding", "animal_training", "pets"):
+        for raw in tags.get(key, "").lower().replace(",", ";").split(";"):
+            species = _OSM_SPECIES.get(raw.strip())
+            if species and species not in found:
+                found.append(species)
+    return found
 
 
 def _build_address_label(tags: dict[str, str]) -> str | None:

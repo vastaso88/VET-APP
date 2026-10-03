@@ -9,6 +9,10 @@ class CreatePetProfileRequest(BaseModel):
     breed: str | None = None
     age_years: int | None = None
     notes: str | None = None
+    birth_date_label: str | None = None
+    sex: str | None = None
+    weight_label: str | None = None
+    dog_size_category: str | None = None
     habitat: HabitatDetails | None = None
     aquarium_stock: list[FishStock] = Field(default_factory=list)
 

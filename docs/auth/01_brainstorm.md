@@ -70,3 +70,39 @@ Implementato in questa sessione, ora che l'estetica delle pagine auth è stata p
 Altre idee su questa area verranno aggiunte in questo file mano a mano.
 
 **Promemoria**: quando il materiale in questo file sarà sufficiente, l'utente chiederà un riassunto delle potenziali feature da validare e pianificare, sintetizzando le idee raccolte qui.
+
+## Giro 2026-10-03 (richiesta Orchestratore progetto)
+
+### Errori di registrazione in italiano
+- `lib/features/auth/domain/auth_error_messages.dart` mappa gli errori Supabase/rete in messaggi italiani, con il campo a cui riferirli: email già registrata (`user_already_exists`), password debole, email non valida, link scaduto, rate limit, nessuna connessione, credenziali errate, fallback generico.
+- Il messaggio appare sotto il campo interessato (`AuthInputField.serverError`), il resto nel banner. Password non coincidenti: validatore sotto "Conferma password".
+
+### Recupero password
+- `resetPasswordForEmail` passa `redirectTo`: su web `Uri.base.origin`, su Android `vetapp://auth-callback` (`kPasswordRecoveryRedirect`).
+- Flusso: "Password dimenticata?" → email → link → `passwordRecovery` (listener in `bootstrap.dart`) → `SetNewPasswordPage` (nuova password + conferma) → home. Link scaduto: messaggio dedicato.
+
+**Da fare nella dashboard Supabase (progetto `ywbuzgwbkrmkukkpysbz`, serve login umano):**
+1. Authentication → URL Configuration → **Site URL**: `https://vet-app-psi-nine.vercel.app` (il deploy web di main; deve essere attivo, non in pausa).
+2. Authentication → URL Configuration → **Redirect URLs** (aggiungere tutte e tre):
+   - `https://vet-app-psi-nine.vercel.app/**`
+   - `http://localhost:8090/**`
+   - `vetapp://auth-callback`
+3. Authentication → Email Templates → **Reset Password** (oggetto: `Reimposta la tua password VetApp`; corpo: "Ciao, hai chiesto di reimpostare la password di VetApp. Tocca il pulsante per sceglierne una nuova: {{ .ConfirmationURL }} — se non sei stato tu, ignora questa email.").
+4. Authentication → Email Templates → **Confirm signup** (oggetto: `Conferma il tuo account VetApp`; corpo analogo, con `{{ .ConfirmationURL }}`).
+
+**Da fare in `AndroidManifest.xml` (da coordinare: `flutter_deeplinking_enabled=false` è impostato per il widget home):** dentro `<activity>` di `MainActivity` aggiungere
+```xml
+<intent-filter>
+  <action android:name="android.intent.action.VIEW"/>
+  <category android:name="android.intent.category.DEFAULT"/>
+  <category android:name="android.intent.category.BROWSABLE"/>
+  <data android:scheme="vetapp" android:host="auth-callback"/>
+</intent-filter>
+```
+Senza questo filtro il link su Android non riporta all'app.
+
+### Piano più accattivante + countdown prova
+- `PaywallPage`: intestazione con tre benefici, piano consigliato evidenziato (bordo primario), CTA chiara; prezzi ancora segnaposto.
+- Countdown per chi ha scelto **Free durante la prova**: avviso nei giorni 5, 7, 9 e 10 (`TrialReminderRule`), una volta per giorno e utente (persistito in shared_preferences), dialog "Ti restano N giorni" con invito a "Vedi i piani". Esclusi sviluppatori e piani a pagamento.
+- Scatta al login e nei nuovi accessi via login. **Non ancora collegato allo splash** (file di un'altra sessione): va aggiunto lì con `showTrialCountdownIfDue(context, status)` usando `SubscriptionGate.resolve()`.
+- **Incoerenza da decidere**: se si sceglie Free durante la prova, il piano diventa non-null e `has_access` resta vero per sempre, quindi il conto alla rovescia non scade mai. Va deciso se Free è scelta valida solo a fine prova oppure se durante la prova deve mantenere l'orologio del trial.

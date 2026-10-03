@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 
+import '../../../../app/router/app_router.dart';
 import '../../../../design_system/tokens/app_spacing.dart';
 import '../../../billing/data/subscription_gate.dart';
 import '../../data/auth_repository_factory.dart';
+import '../../domain/auth_error_messages.dart';
 import '../widgets/auth_widgets.dart';
 import 'login_page.dart';
 
@@ -58,6 +60,7 @@ class _SetNewPasswordPageState extends State<SetNewPasswordPage> {
     if (!mounted) return;
     result.fold(
       onSuccess: (_) async {
+        AppRouter.passwordRecoveryPending = false;
         if (_authRepository.currentContext.isSignedIn) {
           final destination = await const SubscriptionGate().resolveDestination();
           if (!mounted) return;
@@ -70,11 +73,12 @@ class _SetNewPasswordPageState extends State<SetNewPasswordPage> {
         );
       },
       onFailure: (error) {
+        final presented = presentAuthError(error);
         setState(() {
           _isLoading = false;
           _status = AuthBannerStatus.error;
           _title = 'Aggiornamento non riuscito';
-          _message = error.message;
+          _message = presented.message;
         });
       },
     );

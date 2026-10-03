@@ -50,8 +50,8 @@ Future<void> bootstrap() async {
       // for a new password.
       Supabase.instance.client.auth.onAuthStateChange.listen((state) {
         if (state.event == AuthChangeEvent.passwordRecovery) {
-          AppRouter.navigatorKey.currentState
-              ?.pushNamedAndRemoveUntil(AppRouter.setNewPassword, (route) => false);
+          AppRouter.passwordRecoveryPending = true;
+          _openSetNewPasswordWhenReady();
         }
       });
     } catch (_) {
@@ -69,4 +69,20 @@ Future<void> bootstrap() async {
   );
 
   initWalkHomeWidgetLaunchHandling();
+}
+
+/// On a cold start the recovery link can arrive before the first frame, when
+/// there is no navigator yet: retry briefly instead of dropping it.
+void _openSetNewPasswordWhenReady({int attempt = 0}) {
+  final navigator = AppRouter.navigatorKey.currentState;
+  if (navigator != null) {
+    navigator.pushNamedAndRemoveUntil(AppRouter.setNewPassword, (route) => false);
+    return;
+  }
+  if (attempt < 50) {
+    Future<void>.delayed(
+      const Duration(milliseconds: 100),
+      () => _openSetNewPasswordWhenReady(attempt: attempt + 1),
+    );
+  }
 }

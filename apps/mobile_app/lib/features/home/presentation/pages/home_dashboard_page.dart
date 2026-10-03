@@ -271,8 +271,9 @@ class _AgendaSection extends StatelessWidget {
                       subtitle: _summaryLine(reminders),
                     ),
                     const SizedBox(height: AppSpacing.lg),
-                    Builder(
-                      builder: (context) {
+                    ValueListenableBuilder<int>(
+                      valueListenable: PetDemoStore.changes,
+                      builder: (context, _, __) {
                         final pets = PetDemoStore.instance.list();
                         final legendPets = _petsWithVisibleActivity(
                           reminders,
@@ -522,6 +523,7 @@ class _PetLegend extends StatelessWidget {
                 label: pet.avatarEmoji,
                 backgroundColor: pet.accentColor,
                 photoBytes: pet.photoBytes,
+                photoPath: pet.photoPath,
                 identityColor: pet.identityColor,
                 size: 30,
               ),
@@ -644,7 +646,7 @@ class _LocalEventsNoticeState extends State<_LocalEventsNotice> {
     );
 
     if (nearby.isEmpty) {
-      return 'Eventi nei dintorni · nessuno nel raggio di ${_nearbyRadiusKm.round()} km';
+      return 'Radar nei dintorni · nessuno nel raggio di ${_nearbyRadiusKm.round()} km';
     }
     final count = nearby.length;
     final nearest = nearby.reduce(
@@ -654,8 +656,8 @@ class _LocalEventsNoticeState extends State<_LocalEventsNotice> {
           : b,
     );
     return count == 1
-        ? 'Eventi nei dintorni · ${nearest.title}'
-        : 'Eventi nei dintorni · $count nella tua zona, tra cui ${nearest.title}';
+        ? 'Radar nei dintorni · ${nearest.title}'
+        : 'Radar nei dintorni · $count nella tua zona, tra cui ${nearest.title}';
   }
 
   @override
@@ -685,7 +687,7 @@ class _LocalEventsNoticeState extends State<_LocalEventsNotice> {
               future: _summaryFuture,
               builder: (context, snapshot) {
                 return Text(
-                  snapshot.data ?? 'Eventi nei dintorni',
+                  snapshot.data ?? 'Radar nei dintorni',
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: AppTextStyles.bodySmall.copyWith(

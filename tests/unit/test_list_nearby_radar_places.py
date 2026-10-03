@@ -11,6 +11,11 @@ from packages.core.application.services.request_radar_places_ingestion import (
     RequestRadarPlacesIngestionService,
 )
 from packages.core.domain.common.entity import utc_now
+from packages.core.domain.coverage.models import (
+    RADAR_COVERAGE_TIERS,
+    ingestion_radius_km,
+    tier_for_radius,
+)
 from packages.core.domain.radar_places.models import RadarPlace
 from packages.infrastructure.persistence.in_memory_repositories import (
     InMemoryRadarPlacesRepository,
@@ -35,7 +40,10 @@ class _FakeSource:
         return [
             _place(key, "node/1", "Veterinario vicino", "veterinary", 45.4650, 9.1910),
             _place(key, "node/2", "Toelettatura media", "grooming", 45.5000, 9.2300),
-            _place(key, "node/3", "Negozio lontano", "shop", 45.5800, 9.1900),
+            _place(key, "node/3", "Negozio a 13 km", "shop", 45.5800, 9.1900),
+            _place(key, "node/4", "Area cani A", "dog_park", 45.4660, 9.1900),
+            _place(key, "node/5", "Area cani B", "dog_park", 45.4680, 9.1900),
+            _place(key, "node/6", "Area cani C", "dog_park", 45.4700, 9.1900),
         ]
 
 
@@ -56,29 +64,36 @@ def _place(
 
 
 def _service(
-    repository: InMemoryRadarPlacesRepository, source: _FakeSource
+    repository: InMemoryRadarPlacesRepository,
+    source: _FakeSource,
+    *,
+    max_search_radius_km: float = 50,
 ) -> ListNearbyRadarPlacesService:
     return ListNearbyRadarPlacesService(
         repository,
         RequestRadarPlacesIngestionService(repository, source),
-        max_search_radius_km=10,
-        ingestion_radius_km=15,
+        max_search_radius_km=max_search_radius_km,
         freshness_ttl_hours=168,
     )
 
 
-def test_first_request_imports_the_cell_and_sorts_by_distance() -> None:
-    source = _FakeSource()
-    service = _service(InMemoryRadarPlacesRepository(), source)
+def _names(service: ListNearbyRadarPlacesService, **kwargs: object) -> list[str]:
+    result = service.execute(
+        ListNearbyRadarPlacesInput(latitude=MILAN_LAT, longitude=MILAN_LON, **kwargs)  # type: ignore[arg-type]
+    )
+    return [item.place.name for item in result.places]
+
+
+def test_default_radius_imports_the_cell_and_sorts_by_distance() -> None:
+    service = _service(InMemoryRadarPlacesRepository(), _FakeSource())
 
     result = service.execute(ListNearbyRadarPlacesInput(latitude=MILAN_LAT, longitude=MILAN_LON))
 
     assert result.coverage_status == "refreshed"
-    assert [item.place.name for item in result.places] == [
-        "Veterinario vicino",
-        "Toelettatura media",
-    ]
-    assert result.places[0].distance_km < result.places[1].distance_km <= 10
+    assert result.search_radius_km == 10
+    distances = [item.distance_km for item in result.places]
+    assert distances == sorted(distances)
+    assert "Negozio a 13 km" not in [item.place.name for item in result.places]
 
 
 def test_ingestion_is_centered_on_the_cell_not_on_the_user() -> None:
@@ -89,8 +104,9 @@ def test_ingestion_is_centered_on_the_cell_not_on_the_user() -> None:
 
     request = source.requests[0]
     assert (request.center_latitude, request.center_longitude) == (45.45, 9.2)
-    assert request.radius_km == 15
     assert request.owner_id == "shared"
+    # 10 km search + ~3.4 km worst-case offset inside a 0.05 deg cell.
+    assert request.radius_km == 14
 
 
 def test_second_user_in_the_same_cell_reuses_the_cache() -> None:
@@ -105,29 +121,50 @@ def test_second_user_in_the_same_cell_reuses_the_cache() -> None:
     assert result.places
 
 
-def test_requested_radius_is_capped_and_filters_results() -> None:
+def test_wider_radius_uses_a_wider_tier_with_its_own_import() -> None:
     source = _FakeSource()
     service = _service(InMemoryRadarPlacesRepository(), source)
 
-    capped = service.execute(
-        ListNearbyRadarPlacesInput(latitude=MILAN_LAT, longitude=MILAN_LON, radius_km=50)
-    )
-    narrow = service.execute(
-        ListNearbyRadarPlacesInput(latitude=MILAN_LAT, longitude=MILAN_LON, radius_km=1)
-    )
+    assert "Negozio a 13 km" not in _names(service, radius_km=10)
+    assert "Negozio a 13 km" in _names(service, radius_km=25)
 
-    assert capped.search_radius_km == 10
-    assert [item.place.name for item in narrow.places] == ["Veterinario vicino"]
+    narrow, wide = source.requests
+    assert wide.cell_size_degrees > narrow.cell_size_degrees
+    assert wide.radius_km > 25
+    assert wide.coverage_window().coverage_key != narrow.coverage_window().coverage_key
 
 
-def test_place_type_filter() -> None:
-    service = _service(InMemoryRadarPlacesRepository(), _FakeSource())
+def test_radius_is_capped_by_the_configured_maximum() -> None:
+    service = _service(InMemoryRadarPlacesRepository(), _FakeSource(), max_search_radius_km=10)
 
     result = service.execute(
-        ListNearbyRadarPlacesInput(latitude=MILAN_LAT, longitude=MILAN_LON, place_type="grooming")
+        ListNearbyRadarPlacesInput(latitude=MILAN_LAT, longitude=MILAN_LON, radius_km=50)
     )
 
-    assert [item.place.place_type for item in result.places] == ["grooming"]
+    assert result.search_radius_km == 10
+
+
+def test_narrow_radius_filters_inside_the_smallest_tier() -> None:
+    service = _service(InMemoryRadarPlacesRepository(), _FakeSource())
+
+    assert _names(service, radius_km=0.15) == ["Veterinario vicino"]
+
+
+def test_place_type_filter_accepts_several_types() -> None:
+    service = _service(InMemoryRadarPlacesRepository(), _FakeSource())
+
+    names = _names(service, place_types=["grooming", "veterinary"])
+
+    assert names == ["Veterinario vicino", "Toelettatura media"]
+
+
+def test_per_type_limit_keeps_scarce_categories_visible() -> None:
+    service = _service(InMemoryRadarPlacesRepository(), _FakeSource())
+
+    names = _names(service, per_type_limit=1)
+
+    # Nearest of each category, not just the three nearest dog parks.
+    assert names == ["Veterinario vicino", "Area cani A", "Toelettatura media"]
 
 
 def test_expired_cell_serves_stale_data_when_the_provider_fails() -> None:
@@ -143,7 +180,7 @@ def test_expired_cell_serves_stale_data_when_the_provider_fails() -> None:
     result = service.execute(ListNearbyRadarPlacesInput(latitude=MILAN_LAT, longitude=MILAN_LON))
 
     assert result.coverage_status == "stale"
-    assert len(result.places) == 2
+    assert len(result.places) == len(first.places)
 
 
 def test_provider_failure_without_any_cache_propagates() -> None:
@@ -153,3 +190,16 @@ def test_provider_failure_without_any_cache_propagates() -> None:
 
     with pytest.raises(ProviderError):
         service.execute(ListNearbyRadarPlacesInput(latitude=MILAN_LAT, longitude=MILAN_LON))
+
+
+def test_every_tier_import_covers_its_search_radius_across_italy() -> None:
+    for latitude in (36.7, 41.9, 45.5, 46.9):
+        for tier in RADAR_COVERAGE_TIERS:
+            radius = ingestion_radius_km(tier, latitude=latitude, longitude=12.5)
+            half = tier.cell_size_degrees / 2 * 111.32
+            assert radius >= tier.search_radius_km + half
+            assert radius <= 70
+
+    assert tier_for_radius(5, max_search_radius_km=50).search_radius_km == 10
+    assert tier_for_radius(25, max_search_radius_km=50).search_radius_km == 25
+    assert tier_for_radius(200, max_search_radius_km=50).search_radius_km == 50

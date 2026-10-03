@@ -86,3 +86,71 @@ def test_raises_the_last_error_when_every_server_fails(
 
     with pytest.raises(ProviderError, match="504"):
         OverpassRadarPlacesSource(_settings()).fetch_places(_REQUEST)
+
+
+def test_dog_parks_are_kept_without_a_name_and_species_are_read_from_tags(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    elements = [
+        {
+            "type": "way",
+            "id": 1,
+            "center": {"lat": 45.46, "lon": 9.19},
+            "tags": {"leisure": "dog_park"},
+        },
+        {
+            "type": "node",
+            "id": 2,
+            "lat": 45.47,
+            "lon": 9.2,
+            "tags": {
+                "amenity": "animal_boarding",
+                "name": "Pensione Fido",
+                "animal_boarding": "dog;cat",
+                "opening_hours": "Mo-Sa 08:00-19:00",
+            },
+        },
+    ]
+
+    class _Response(_OkResponse):
+        def read(self) -> bytes:
+            return json.dumps({"elements": elements}).encode("utf-8")
+
+    monkeypatch.setattr(
+        overpass_places_source.request, "urlopen", lambda http_request, timeout: _Response()
+    )
+
+    park, boarding = OverpassRadarPlacesSource(_settings()).fetch_places(_REQUEST)
+
+    assert (park.place_type, park.name, park.species) == ("dog_park", "Area cani", ["dog"])
+    assert boarding.species == ["dog", "cat"]
+    assert boarding.opening_hours == "Mo-Sa 08:00-19:00"
+    assert boarding.summary is None
+
+
+def test_waits_and_retries_the_same_server_when_rate_limited(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    called: list[str] = []
+    waits: list[float] = []
+
+    def fake_urlopen(http_request: Any, timeout: float) -> _OkResponse:
+        called.append(http_request.full_url)
+        if len(called) == 1:
+            raise error.HTTPError(
+                http_request.full_url,
+                429,
+                "Too Many Requests",
+                None,  # type: ignore[arg-type]
+                io.BytesIO(b"slow down"),
+            )
+        return _OkResponse()
+
+    monkeypatch.setattr(overpass_places_source.request, "urlopen", fake_urlopen)
+    monkeypatch.setattr(overpass_places_source.time, "sleep", waits.append)
+
+    places = OverpassRadarPlacesSource(_settings()).fetch_places(_REQUEST)
+
+    assert called == ["https://main.example/api/interpreter"] * 2
+    assert waits == [6.0]
+    assert len(places) == 1

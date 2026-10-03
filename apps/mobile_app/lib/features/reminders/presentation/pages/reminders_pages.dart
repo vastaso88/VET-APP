@@ -1622,6 +1622,7 @@ class _Header extends StatelessWidget {
                       backgroundColor: pet.accentColor,
                       identityColor: pet.identityColor,
                       photoBytes: pet.photoBytes,
+                      photoPath: pet.photoPath,
                       size: 36,
                     )
                   else

@@ -100,6 +100,8 @@ class PetProfile {
     required this.accentColor,
     required this.identityColor,
     this.photoBytes,
+    this.photoPath,
+    this.medicalRecordConsentGranted,
     this.aquariumStock = const [],
     this.isMemorial = false,
     this.memorialDate,
@@ -136,6 +138,14 @@ class PetProfile {
   /// Owner-picked photo, session-lifetime only (no backend storage in this
   /// demo). Null falls back to the plain letter avatar.
   final Uint8List? photoBytes;
+
+  /// Storage path of the persisted profile photo (`pet-photos` bucket), used
+  /// to load the image on a fresh session when [photoBytes] isn't in memory.
+  final String? photoPath;
+
+  /// Owner's per-pet decision on the chat reading this pet's clinical
+  /// records (spec v3 §18). Null = never decided, which the chat treats as no.
+  final bool? medicalRecordConsentGranted;
 
   /// True once the owner has moved this pet to Ricordi (memories) — it
   /// drops out of the active Animali list but its profile is kept.
@@ -188,6 +198,8 @@ class PetProfile {
     Color? accentColor,
     Color? identityColor,
     Uint8List? photoBytes,
+    String? photoPath,
+    bool? medicalRecordConsentGranted,
     bool clearPhoto = false,
     List<FishStock>? aquariumStock,
     bool? isMemorial,
@@ -211,6 +223,8 @@ class PetProfile {
       accentColor: accentColor ?? this.accentColor,
       identityColor: identityColor ?? this.identityColor,
       photoBytes: clearPhoto ? null : (photoBytes ?? this.photoBytes),
+      photoPath: clearPhoto ? null : (photoPath ?? this.photoPath),
+      medicalRecordConsentGranted: medicalRecordConsentGranted ?? this.medicalRecordConsentGranted,
       aquariumStock: aquariumStock ?? this.aquariumStock,
       isMemorial: isMemorial ?? this.isMemorial,
       memorialDate: memorialDate ?? this.memorialDate,
