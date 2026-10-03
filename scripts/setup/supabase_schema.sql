@@ -713,3 +713,47 @@ with check (
 insert into storage.buckets (id, name, public)
 values ('chat-attachments', 'chat-attachments', false)
 on conflict (id) do nothing;
+
+-- Nearby pet-services radar ("cosa c'e' attorno"): places imported from
+-- OpenStreetMap/Overpass, cached per geographic cell and shared by every
+-- user in that cell (see packages/core/domain/coverage/models.py). RLS on
+-- with no policies: only the Python backend's service-role client
+-- reads/writes them, same posture as chat_attachments.
+create table if not exists public.radar_coverage_cells (
+    coverage_key text primary key,
+    center_latitude double precision not null,
+    center_longitude double precision not null,
+    radius_km double precision not null,
+    source_name text not null,
+    place_count integer not null default 0,
+    refreshed_at timestamptz not null default now(),
+    expires_at timestamptz not null
+);
+
+create table if not exists public.radar_places_cache (
+    id text primary key,
+    coverage_key text not null,
+    place_type text not null,
+    subtype text,
+    name text not null,
+    summary text,
+    city text,
+    address_label text,
+    latitude double precision not null,
+    longitude double precision not null,
+    source_name text not null,
+    source_external_id text not null,
+    source_url text,
+    phone text,
+    website_url text,
+    is_pet_friendly boolean not null default true,
+    tags jsonb not null default '[]'::jsonb,
+    source_fetched_at timestamptz,
+    status text not null default 'active'
+);
+
+create index if not exists radar_places_cache_coverage_key_idx
+    on public.radar_places_cache (coverage_key);
+
+alter table public.radar_coverage_cells enable row level security;
+alter table public.radar_places_cache enable row level security;

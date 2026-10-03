@@ -19,6 +19,8 @@ from packages.core.application.ports.marketplace_listing_repository import (
 from packages.core.application.ports.media_storage import MediaStorage
 from packages.core.application.ports.pet_profile_repository import PetProfileRepository
 from packages.core.application.ports.pii_anonymizer import PiiAnonymizer
+from packages.core.application.ports.radar_places_repository import RadarPlacesRepository
+from packages.core.application.ports.radar_places_source import RadarPlacesSource
 from packages.core.application.ports.reminder_repository import ReminderRepository
 from packages.core.application.ports.speech_to_text_provider import SpeechToTextProvider
 from packages.core.application.ports.subscription_repository import SubscriptionRepository
@@ -46,6 +48,9 @@ from packages.core.application.services.list_nearby_activities import (
     ListNearbyActivitiesService,
 )
 from packages.core.application.services.list_nearby_listings import ListNearbyListingsService
+from packages.core.application.services.list_nearby_radar_places import (
+    ListNearbyRadarPlacesService,
+)
 from packages.core.application.services.list_pet_profiles import ListPetProfilesService
 from packages.core.application.services.list_reminders import ListRemindersService
 from packages.core.application.services.list_walks import ListWalksService
@@ -55,6 +60,9 @@ from packages.core.application.services.medical_record_context_retriever import 
 from packages.core.application.services.record_route_point import RecordRoutePointService
 from packages.core.application.services.report_chat_response import ReportChatResponseService
 from packages.core.application.services.report_listing import ReportListingService
+from packages.core.application.services.request_radar_places_ingestion import (
+    RequestRadarPlacesIngestionService,
+)
 from packages.core.application.services.resolve_chat_response_report import (
     ResolveChatResponseReportService,
 )
@@ -109,11 +117,15 @@ from packages.infrastructure.persistence.in_memory_repositories import (
     InMemoryLocalActivityRepository,
     InMemoryMarketplaceListingRepository,
     InMemoryPetProfileRepository,
+    InMemoryRadarPlacesRepository,
     InMemoryReminderRepository,
     InMemorySubscriptionRepository,
     InMemoryUserLocationRepository,
 )
 from packages.infrastructure.privacy.noop_pii_anonymizer import NoopPiiAnonymizer
+from packages.infrastructure.radar_places.overpass_places_source import (
+    OverpassRadarPlacesSource,
+)
 from packages.infrastructure.speech.echo_speech_to_text_provider import (
     EchoSpeechToTextProvider,
 )
@@ -147,6 +159,8 @@ class ApplicationContainer:
         )
         self.user_location_repository = self._build_user_location_repository()
         self.dog_walk_repository = self._build_dog_walk_repository()
+        self.radar_places_repository = self._build_radar_places_repository()
+        self.radar_places_source: RadarPlacesSource = OverpassRadarPlacesSource(settings)
         self.marketplace_listing_repository = self._build_marketplace_listing_repository()
         self.listing_report_repository = self._build_listing_report_repository()
         self.local_activity_repository = self._build_local_activity_repository()
@@ -197,6 +211,17 @@ class ApplicationContainer:
 
     def select_plan_service(self) -> SelectPlanService:
         return SelectPlanService(self.subscription_repository)
+
+    def list_nearby_radar_places_service(self) -> ListNearbyRadarPlacesService:
+        return ListNearbyRadarPlacesService(
+            self.radar_places_repository,
+            RequestRadarPlacesIngestionService(
+                self.radar_places_repository, self.radar_places_source
+            ),
+            max_search_radius_km=self.settings.radar_search_radius_km,
+            ingestion_radius_km=self.settings.radar_ingestion_radius_km,
+            freshness_ttl_hours=self.settings.radar_freshness_ttl_hours,
+        )
 
     def get_user_location_service(self) -> GetUserLocationService:
         return GetUserLocationService(self.user_location_repository)
@@ -427,6 +452,23 @@ class ApplicationContainer:
                     return InMemoryUserLocationRepository()
                 raise
         return InMemoryUserLocationRepository()
+
+    def _build_radar_places_repository(self) -> RadarPlacesRepository:
+        if self.settings.persistence_backend == "supabase":
+            try:
+                from packages.infrastructure.persistence.supabase.client import (
+                    build_supabase_client,
+                )
+                from packages.infrastructure.persistence.supabase.supabase_repositories import (
+                    SupabaseRadarPlacesRepository,
+                )
+
+                return SupabaseRadarPlacesRepository(build_supabase_client(self.settings))
+            except ModuleNotFoundError:
+                if self.settings.environment != "production":
+                    return InMemoryRadarPlacesRepository()
+                raise
+        return InMemoryRadarPlacesRepository()
 
     def _build_dog_walk_repository(self) -> DogWalkRepository:
         if self.settings.persistence_backend == "supabase":

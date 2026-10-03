@@ -1,0 +1,55 @@
+from typing import Annotated
+
+from fastapi import APIRouter, Query
+
+from apps.api.dependencies.container import get_container
+from packages.core.application.services.list_nearby_radar_places import (
+    ListNearbyRadarPlacesInput,
+)
+from packages.core.domain.radar_places.models import (
+    RADAR_PLACE_TRANSIENT_FIELDS,
+    RadarPlaceType,
+)
+
+router = APIRouter(prefix="/local-services", tags=["local-services"])
+
+
+@router.get("/places")
+def list_nearby_places(
+    latitude: Annotated[float, Query(ge=-90, le=90)],
+    longitude: Annotated[float, Query(ge=-180, le=180)],
+    radius_km: Annotated[float | None, Query(gt=0)] = None,
+    limit: Annotated[int, Query(ge=1, le=200)] = 50,
+    place_type: RadarPlaceType | None = None,
+) -> dict[str, object]:
+    container = get_container()
+    container.auth_provider.get_current_user()
+    result = container.list_nearby_radar_places_service().execute(
+        ListNearbyRadarPlacesInput(
+            latitude=latitude,
+            longitude=longitude,
+            radius_km=radius_km,
+            limit=limit,
+            place_type=place_type,
+        )
+    )
+    return {
+        "places": [
+            {
+                **item.place.model_dump(mode="json", exclude=set(RADAR_PLACE_TRANSIENT_FIELDS)),
+                "distance_km": round(item.distance_km, 3),
+            }
+            for item in result.places
+        ],
+        "coverage": {
+            "coverage_key": result.coverage.coverage_key,
+            "status": result.coverage_status,
+            "source_name": result.coverage.source_name,
+            "refreshed_at": result.coverage.refreshed_at.isoformat(),
+        },
+        "context": {
+            "latitude": latitude,
+            "longitude": longitude,
+            "search_radius_km": result.search_radius_km,
+        },
+    }

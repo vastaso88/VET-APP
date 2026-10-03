@@ -16,13 +16,22 @@ import '../../../location/domain/coordinates.dart';
 import '../../../location/domain/geo_math.dart';
 import '../../../location/presentation/distance_label.dart';
 import '../../../location/presentation/reference_location.dart';
+import '../../../nearby_places/data/radar_places_repository.dart';
+import '../../../nearby_places/domain/radar_place.dart';
+import '../../../nearby_places/presentation/radar_place_sheet.dart';
+import '../../../../shared/types/result.dart';
 
 /// "Attività attorno a te" / "Eventi nei dintorni": browses
 /// packages/core/domain/local_activity (via LocalActivitiesRepository),
 /// filtered by a user-chosen radius around their Località preference (or
-/// the same Milano fallback used elsewhere while none is set).
+/// the same Milano fallback used elsewhere while none is set). The
+/// "Servizi per animali" section adds businesses from OpenStreetMap served
+/// by the backend radar (features/nearby_places).
 class LocalEventsPage extends StatefulWidget {
-  const LocalEventsPage({super.key});
+  const LocalEventsPage({super.key, this.radarPlacesRepository});
+
+  /// Injectable for tests; defaults to the real HTTP repository.
+  final RadarPlacesRepository? radarPlacesRepository;
 
   @override
   State<LocalEventsPage> createState() => _LocalEventsPageState();
@@ -34,11 +43,23 @@ class _LocalEventsPageState extends State<LocalEventsPage> {
 
   double _radiusKm = 25.0;
   late Future<_LocalEventsViewData> _dataFuture;
+  late Future<Result<RadarPlacesResult>> _radarFuture;
 
   @override
   void initState() {
     super.initState();
     _dataFuture = _loadData();
+    _radarFuture = _loadRadarPlaces();
+  }
+
+  /// Loaded on its own future: the first request for an area can take
+  /// tens of seconds (backend import), and must not hold back the events.
+  /// Always asks for the widest radius option - the backend caps it - so
+  /// switching radius chips only re-filters, without another request.
+  Future<Result<RadarPlacesResult>> _loadRadarPlaces() async {
+    final data = await _dataFuture;
+    final repository = widget.radarPlacesRepository ?? RadarPlacesRepository();
+    return repository.loadNearby(center: data.referenceLocation, radiusKm: _radiusOptionsKm.last);
   }
 
   Future<_LocalEventsViewData> _loadData() async {
@@ -51,8 +72,24 @@ class _LocalEventsPageState extends State<LocalEventsPage> {
   }
 
   Future<void> _reload() async {
-    setState(() => _dataFuture = _loadData());
+    setState(() {
+      _dataFuture = _loadData();
+      _radarFuture = _loadRadarPlaces();
+    });
     await _dataFuture;
+  }
+
+  void _retryRadarPlaces() {
+    setState(() => _radarFuture = _loadRadarPlaces());
+  }
+
+  List<RadarPlace> _placesWithinRadius(Result<RadarPlacesResult>? result) {
+    if (result is! Success<RadarPlacesResult>) {
+      return const [];
+    }
+    return result.value.places
+        .where((place) => place.distanceMeters <= _radiusKm * 1000)
+        .toList(growable: false);
   }
 
   Future<void> _openDetail(LocalActivity activity, double distanceMeters) async {
@@ -119,9 +156,14 @@ class _LocalEventsPageState extends State<LocalEventsPage> {
                     onSelected: (value) => setState(() => _radiusKm = value),
                   ),
                   const SizedBox(height: AppSpacing.lg),
-                  _ActivitiesMapPreview(
-                    center: data.referenceLocation,
-                    activities: withDistance.map((entry) => entry.activity).toList(),
+                  FutureBuilder<Result<RadarPlacesResult>>(
+                    future: _radarFuture,
+                    builder: (context, radarSnapshot) => _ActivitiesMapPreview(
+                      center: data.referenceLocation,
+                      activities: withDistance.map((entry) => entry.activity).toList(),
+                      places: _placesWithinRadius(radarSnapshot.data),
+                      onPlaceTap: (place) => showRadarPlaceSheet(context, place),
+                    ),
                   ),
                   const SizedBox(height: AppSpacing.xxl),
                   const DashboardSectionHeader(
@@ -165,6 +207,21 @@ class _LocalEventsPageState extends State<LocalEventsPage> {
                         child: _ActivityRow(entry: entry, onTap: _openDetail),
                       ),
                     ),
+                  const SizedBox(height: AppSpacing.xxl),
+                  const DashboardSectionHeader(
+                    title: 'Servizi per animali',
+                    subtitle: 'Veterinari, toelettature, negozi e pensioni da OpenStreetMap.',
+                  ),
+                  const SizedBox(height: AppSpacing.lg),
+                  FutureBuilder<Result<RadarPlacesResult>>(
+                    future: _radarFuture,
+                    builder: (context, radarSnapshot) => _RadarPlacesSection(
+                      result: radarSnapshot.data,
+                      places: _placesWithinRadius(radarSnapshot.data),
+                      selectedRadiusKm: _radiusKm,
+                      onRetry: _retryRadarPlaces,
+                    ),
+                  ),
                 ],
               ),
             );
@@ -247,11 +304,103 @@ class _ActivityRow extends StatelessWidget {
   }
 }
 
+class _RadarPlacesSection extends StatelessWidget {
+  const _RadarPlacesSection({
+    required this.result,
+    required this.places,
+    required this.selectedRadiusKm,
+    required this.onRetry,
+  });
+
+  /// Null while the request is still running.
+  final Result<RadarPlacesResult>? result;
+  final List<RadarPlace> places;
+  final double selectedRadiusKm;
+  final VoidCallback onRetry;
+
+  @override
+  Widget build(BuildContext context) {
+    final result = this.result;
+    if (result == null) {
+      return Row(
+        children: [
+          const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2)),
+          const SizedBox(width: AppSpacing.md),
+          Expanded(
+            child: Text(
+              'Cerco i servizi nella tua zona. La prima volta puo\' richiedere qualche secondo.',
+              style: AppTextStyles.bodySmall,
+            ),
+          ),
+        ],
+      );
+    }
+
+    return result.fold(
+      onFailure: (error) => Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(error.message, style: AppTextStyles.bodySmall),
+          TextButton(onPressed: onRetry, child: const Text('Riprova')),
+        ],
+      ),
+      onSuccess: (value) => Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          if (places.isEmpty)
+            Text('Nessun servizio trovato in questo raggio per ora.', style: AppTextStyles.bodySmall)
+          else
+            ...places.map(
+              (place) => Padding(
+                padding: const EdgeInsets.only(bottom: AppSpacing.sm),
+                child: DashboardListRow(
+                  title: place.name,
+                  subtitle: [
+                    radarPlaceTypeLabel(place.type),
+                    if (place.addressLabel != null) place.addressLabel!,
+                    formatDistance(place.distanceMeters),
+                  ].join(' · '),
+                  leading: Container(
+                    width: 40,
+                    height: 40,
+                    alignment: Alignment.center,
+                    decoration: BoxDecoration(
+                      color: AppColors.primary.withValues(alpha: 0.12),
+                      borderRadius: BorderRadius.circular(AppRadii.medium),
+                    ),
+                    child: Icon(radarPlaceTypeIcon(place.type), color: AppColors.primary, size: 20),
+                  ),
+                  trailing: const Icon(Icons.chevron_right_rounded, color: AppColors.mutedText),
+                  onTap: () => showRadarPlaceSheet(context, place),
+                ),
+              ),
+            ),
+          if (selectedRadiusKm > value.searchRadiusKm)
+            Padding(
+              padding: const EdgeInsets.only(top: AppSpacing.sm),
+              child: Text(
+                'I servizi per animali sono disponibili entro ${value.searchRadiusKm.round()} km.',
+                style: AppTextStyles.caption,
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+}
+
 class _ActivitiesMapPreview extends StatelessWidget {
-  const _ActivitiesMapPreview({required this.center, required this.activities});
+  const _ActivitiesMapPreview({
+    required this.center,
+    required this.activities,
+    this.places = const [],
+    this.onPlaceTap,
+  });
 
   final Coordinates center;
   final List<LocalActivity> activities;
+  final List<RadarPlace> places;
+  final ValueChanged<RadarPlace>? onPlaceTap;
 
   @override
   Widget build(BuildContext context) {
@@ -282,6 +431,21 @@ class _ActivitiesMapPreview extends StatelessWidget {
                             ? Icons.event
                             : Icons.medical_services,
                         color: AppColors.info,
+                      ),
+                    ),
+                  )
+                  .toList(),
+            ),
+            MarkerLayer(
+              markers: places
+                  .map(
+                    (place) => Marker(
+                      point: latlong.LatLng(place.location.latitude, place.location.longitude),
+                      width: 32,
+                      height: 32,
+                      child: GestureDetector(
+                        onTap: onPlaceTap == null ? null : () => onPlaceTap!(place),
+                        child: const Icon(Icons.pets, color: AppColors.primary, size: 22),
                       ),
                     ),
                   )

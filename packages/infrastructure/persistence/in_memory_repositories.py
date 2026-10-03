@@ -12,12 +12,14 @@ from packages.core.application.ports.marketplace_listing_repository import (
     MarketplaceListingRepository,
 )
 from packages.core.application.ports.pet_profile_repository import PetProfileRepository
+from packages.core.application.ports.radar_places_repository import RadarPlacesRepository
 from packages.core.application.ports.reminder_repository import ReminderRepository
 from packages.core.application.ports.subscription_repository import SubscriptionRepository
 from packages.core.application.ports.user_location_repository import UserLocationRepository
 from packages.core.domain.consent.models import AccountConsents
 from packages.core.domain.conversation.attachment import ChatAttachment
 from packages.core.domain.conversation.models import Conversation
+from packages.core.domain.coverage.models import RadarCoverage
 from packages.core.domain.dog_walk.models import WalkSession
 from packages.core.domain.feedback.models import ChatResponseReport
 from packages.core.domain.geo.models import UserLocation
@@ -25,6 +27,7 @@ from packages.core.domain.local_activity.models import LocalActivity
 from packages.core.domain.marketplace.models import ListingReport, MarketplaceListing
 from packages.core.domain.medical_record.models import ClinicalEvent
 from packages.core.domain.pet_profile.models import PetProfile
+from packages.core.domain.radar_places.models import RadarPlace
 from packages.core.domain.reminders.models import Reminder
 from packages.core.domain.subscription.models import Subscription
 
@@ -123,6 +126,22 @@ class InMemoryUserLocationRepository(UserLocationRepository):
     def save(self, user_location: UserLocation) -> UserLocation:
         self._items[user_location.owner_id] = user_location
         return user_location
+
+
+class InMemoryRadarPlacesRepository(RadarPlacesRepository):
+    def __init__(self) -> None:
+        self._coverage: dict[str, RadarCoverage] = {}
+        self._places: dict[str, list[RadarPlace]] = {}
+
+    def get_coverage(self, coverage_key: str) -> RadarCoverage | None:
+        return self._coverage.get(coverage_key)
+
+    def list_places(self, coverage_key: str) -> list[RadarPlace]:
+        return list(self._places.get(coverage_key, []))
+
+    def replace_coverage(self, coverage: RadarCoverage, places: list[RadarPlace]) -> None:
+        self._coverage[coverage.coverage_key] = coverage
+        self._places[coverage.coverage_key] = list(places)
 
 
 class InMemoryDogWalkRepository(DogWalkRepository):
