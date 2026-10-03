@@ -17,12 +17,14 @@ from packages.core.application.ports.marketplace_listing_repository import (
     MarketplaceListingRepository,
 )
 from packages.core.application.ports.pet_profile_repository import PetProfileRepository
+from packages.core.application.ports.radar_places_repository import RadarPlacesRepository
 from packages.core.application.ports.reminder_repository import ReminderRepository
 from packages.core.application.ports.subscription_repository import SubscriptionRepository
 from packages.core.application.ports.user_location_repository import UserLocationRepository
 from packages.core.domain.consent.models import AccountConsents
 from packages.core.domain.conversation.attachment import ChatAttachment
 from packages.core.domain.conversation.models import Conversation
+from packages.core.domain.coverage.models import RadarCoverage
 from packages.core.domain.dog_walk.models import WalkSession
 from packages.core.domain.feedback.models import ChatResponseReport
 from packages.core.domain.geo.models import Coordinates, UserLocation
@@ -30,6 +32,7 @@ from packages.core.domain.local_activity.models import LocalActivity
 from packages.core.domain.marketplace.models import ListingReport, MarketplaceListing
 from packages.core.domain.medical_record.models import ClinicalEvent
 from packages.core.domain.pet_profile.models import PetProfile
+from packages.core.domain.radar_places.models import RADAR_PLACE_TRANSIENT_FIELDS, RadarPlace
 from packages.core.domain.reminders.models import Reminder
 from packages.core.domain.subscription.models import Subscription
 
@@ -206,6 +209,60 @@ class SupabaseUserLocationRepository(UserLocationRepository):
     def save(self, user_location: UserLocation) -> UserLocation:
         self._client.table(self._table).upsert(_user_location_to_row(user_location)).execute()
         return user_location
+
+
+class SupabaseRadarPlacesRepository(RadarPlacesRepository):
+    """Shared per-cell cache of imported places. Both tables have RLS on
+    and no policies (see scripts/setup/supabase_schema.sql): only this
+    service-role client reads/writes them."""
+
+    def __init__(self, client: Client) -> None:
+        self._client = client
+        self._coverage_table = "radar_coverage_cells"
+        self._places_table = "radar_places_cache"
+
+    def get_coverage(self, coverage_key: str) -> RadarCoverage | None:
+        response = (
+            self._client.table(self._coverage_table)
+            .select("*")
+            .eq("coverage_key", coverage_key)
+            .limit(1)
+            .execute()
+        )
+        if not response.data:
+            return None
+        return RadarCoverage.model_validate(response.data[0])
+
+    def list_places(self, coverage_key: str) -> list[RadarPlace]:
+        response = (
+            self._client.table(self._places_table)
+            .select("*")
+            .eq("coverage_key", coverage_key)
+            .execute()
+        )
+        return [RadarPlace.model_validate(item) for item in response.data or []]
+
+    def replace_coverage(self, coverage: RadarCoverage, places: list[RadarPlace]) -> None:
+        # Upsert first, then drop rows the provider no longer returns: a
+        # failure halfway leaves the previous import readable instead of
+        # an empty cell.
+        rows = [
+            place.model_dump(mode="json", exclude=set(RADAR_PLACE_TRANSIENT_FIELDS))
+            for place in places
+        ]
+        if rows:
+            self._client.table(self._places_table).upsert(rows).execute()
+        stale = (
+            self._client.table(self._places_table)
+            .delete()
+            .eq("coverage_key", coverage.coverage_key)
+        )
+        if rows:
+            # Rows just upserted carry this import's timestamp; anything
+            # older in the cell was not returned this time.
+            stale = stale.lt("source_fetched_at", coverage.refreshed_at.isoformat())
+        stale.execute()
+        self._client.table(self._coverage_table).upsert(coverage.model_dump(mode="json")).execute()
 
 
 class SupabaseDogWalkRepository(DogWalkRepository):

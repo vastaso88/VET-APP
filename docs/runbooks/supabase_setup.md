@@ -1,5 +1,13 @@
 # Supabase Setup
 
+## Canonical hosted project
+- project ref: `ywbuzgwbkrmkukkpysbz`
+- API URL: `https://ywbuzgwbkrmkukkpysbz.supabase.co`
+- organization: `vastaso88's Org`
+- this is the single source of truth for Auth, Postgres and Storage
+- do not point app or backend environments at the retired projects `noulpaaonqjvprfddipn` or `dkzzcoastheciitvkiuo`
+- Vercel production (`vet-app`) reads `SUPABASE_URL`, `SUPABASE_ANON_KEY` (publishable key) and `SUPABASE_SERVICE_ROLE_KEY` (secret key) for this project; changing them needs a redeploy
+
 ## Database connection
 The repository is prepared to read Supabase Postgres details from `.env`.
 

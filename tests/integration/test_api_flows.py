@@ -116,3 +116,47 @@ def test_account_consents_flow() -> None:
         "/account/consents", json={"consent_key": "terms_of_service", "granted": False}
     )
     assert revoke_terms.status_code == 400
+
+
+def test_local_services_places_flow() -> None:
+    from apps.api.dependencies.container import get_container
+    from packages.core.application.services.request_radar_places_ingestion import (
+        RequestRadarPlacesIngestionInput,
+    )
+    from packages.core.domain.radar_places.models import RadarPlace
+
+    class _FakeSource:
+        name = "fake_source"
+
+        def fetch_places(self, request_data: RequestRadarPlacesIngestionInput) -> list[RadarPlace]:
+            return [
+                RadarPlace(
+                    coverage_key=request_data.coverage_window().coverage_key,
+                    place_type="veterinary",
+                    name="Veterinario Milano",
+                    latitude=45.4650,
+                    longitude=9.1910,
+                    source_name=self.name,
+                    source_external_id="node/1",
+                    source_payload={"raw": True},
+                )
+            ]
+
+    get_container().radar_places_source = _FakeSource()
+    client = TestClient(app)
+
+    response = client.get(
+        "/local-services/places", params={"latitude": 45.4642, "longitude": 9.19}
+    )
+
+    assert response.status_code == 200
+    body = response.json()
+    assert body["coverage"]["status"] == "refreshed"
+    assert body["context"]["search_radius_km"] == 10
+    place = body["places"][0]
+    assert place["name"] == "Veterinario Milano"
+    assert place["distance_km"] < 1
+    assert "source_payload" not in place
+    assert "owner_id" not in place
+
+    assert client.get("/local-services/places").status_code == 422

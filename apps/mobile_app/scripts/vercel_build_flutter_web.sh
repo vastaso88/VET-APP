@@ -21,4 +21,15 @@ cd "$APP_DIR"
 
 echo "Running Flutter web build..."
 flutter pub get
-flutter build web --release
+
+# Forward the runtime configuration the app reads at compile time
+# (lib/shared/config/app_env_keys.dart). Unset variables are skipped so
+# the app's own defaults apply.
+FLUTTER_DART_DEFINES=()
+for name in ENVIRONMENT APP_NAME API_BASE_URL SUPABASE_URL SUPABASE_ANON_KEY; do
+  if [ -n "${!name:-}" ]; then
+    FLUTTER_DART_DEFINES+=("--dart-define=${name}=${!name}")
+  fi
+done
+
+flutter build web --release ${FLUTTER_DART_DEFINES[@]+"${FLUTTER_DART_DEFINES[@]}"}

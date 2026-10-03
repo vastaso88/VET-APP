@@ -11,6 +11,7 @@ from apps.api.routes.chat_attachments import router as chat_attachments_router
 from apps.api.routes.chat_response_reports import router as chat_response_reports_router
 from apps.api.routes.conversations import router as conversations_router
 from apps.api.routes.health import router as health_router
+from apps.api.routes.local_services import router as local_services_router
 from apps.api.routes.pets import router as pets_router
 from apps.api.routes.reminders import router as reminders_router
 from apps.api.routes.speech_to_text import router as speech_to_text_router
@@ -82,3 +83,4 @@ app.include_router(chat_response_reports_router)
 app.include_router(speech_to_text_router)
 app.include_router(chat_attachments_router)
 app.include_router(subscription_router)
+app.include_router(local_services_router)
