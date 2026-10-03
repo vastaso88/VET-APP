@@ -11,8 +11,9 @@ import '../../location/domain/coordinates.dart';
 import '../domain/radar_place.dart';
 
 /// Pet services around a point, from the backend's `/local-services/places`.
-/// The backend caps the radius it can serve (see RADAR_SEARCH_RADIUS_KM),
-/// so [RadarPlacesResult.searchRadiusKm] may be smaller than requested.
+/// The radius is honored by the backend up to its configured maximum
+/// (RADAR_SEARCH_RADIUS_KM); [RadarPlacesResult.searchRadiusKm] reports the
+/// radius actually served.
 class RadarPlacesRepository {
   RadarPlacesRepository({http.Client? client, AppRuntimeConfigLoader? configLoader})
       : _client = client ?? http.Client(),
@@ -22,13 +23,18 @@ class RadarPlacesRepository {
   final AppRuntimeConfigLoader _configLoader;
 
   // The first request for an area makes the backend import it from
-  // OpenStreetMap, which can take tens of seconds; later ones hit the cache.
-  static const _timeout = Duration(seconds: 45);
+  // OpenStreetMap (up to ~60 s for the widest radius); later ones hit the
+  // cache and answer immediately.
+  static const _timeout = Duration(seconds: 75);
+
+  /// The backend returns up to this many places per category, nearest
+  /// first, so abundant categories (dog parks) cannot crowd out scarce
+  /// ones (clinics).
+  static const perTypeLimit = 40;
 
   Future<Result<RadarPlacesResult>> loadNearby({
     required Coordinates center,
     required double radiusKm,
-    int limit = 60,
   }) async {
     final baseUrl = _configLoader.load().apiBaseUrl;
     final token = CurrentUser.accessToken();
@@ -46,7 +52,7 @@ class RadarPlacesRepository {
         'latitude': center.latitude.toString(),
         'longitude': center.longitude.toString(),
         'radius_km': radiusKm.toString(),
-        'limit': limit.toString(),
+        'per_type_limit': perTypeLimit.toString(),
       },
     );
 
@@ -65,6 +71,7 @@ class RadarPlacesRepository {
 
       final json = jsonDecode(utf8.decode(response.bodyBytes)) as Map<String, dynamic>;
       final context = json['context'] as Map<String, dynamic>? ?? const {};
+      final coverage = json['coverage'] as Map<String, dynamic>? ?? const {};
       final places = (json['places'] as List<dynamic>? ?? const [])
           .whereType<Map<String, dynamic>>()
           .map(RadarPlace.tryFromJson)
@@ -74,6 +81,8 @@ class RadarPlacesRepository {
         RadarPlacesResult(
           places: places,
           searchRadiusKm: (context['search_radius_km'] as num?)?.toDouble() ?? radiusKm,
+          isStale: coverage['status'] == 'stale',
+          refreshedAt: DateTime.tryParse(coverage['refreshed_at'] as String? ?? ''),
         ),
       );
     } on TimeoutException {
@@ -96,8 +105,18 @@ class RadarPlacesRepository {
 }
 
 class RadarPlacesResult {
-  const RadarPlacesResult({required this.places, required this.searchRadiusKm});
+  const RadarPlacesResult({
+    required this.places,
+    required this.searchRadiusKm,
+    this.isStale = false,
+    this.refreshedAt,
+  });
 
   final List<RadarPlace> places;
   final double searchRadiusKm;
+
+  /// True when the backend could not refresh an expired area and is
+  /// serving its previous import.
+  final bool isStale;
+  final DateTime? refreshedAt;
 }

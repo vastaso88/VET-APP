@@ -755,5 +755,58 @@ create table if not exists public.radar_places_cache (
 create index if not exists radar_places_cache_coverage_key_idx
     on public.radar_places_cache (coverage_key);
 
+alter table public.radar_places_cache add column if not exists opening_hours text;
+alter table public.radar_places_cache
+    add column if not exists species jsonb not null default '[]'::jsonb;
+
 alter table public.radar_coverage_cells enable row level security;
 alter table public.radar_places_cache enable row level security;
+
+-- Pet photos: profile picture (pet_profiles.photo_path points at the current
+-- one) plus a gallery. Files live in the private 'pet-photos' bucket under
+-- <owner_id>/<pet_id>/<photo_id>.jpg; the owner-folder policies below key on that.
+alter table public.pet_profiles add column if not exists photo_path text;
+
+create table if not exists public.pet_photos (
+    id text primary key,
+    owner_id text not null,
+    pet_id text not null references public.pet_profiles(id) on delete cascade,
+    storage_path text not null,
+    created_at timestamptz not null default now(),
+    is_profile boolean not null default false
+);
+create index if not exists pet_photos_pet_created_idx on public.pet_photos (pet_id, created_at desc);
+
+alter table public.pet_photos enable row level security;
+
+drop policy if exists pet_photos_select_own on public.pet_photos;
+create policy pet_photos_select_own on public.pet_photos
+for select using (owner_id = auth.uid()::text);
+
+drop policy if exists pet_photos_insert_own on public.pet_photos;
+create policy pet_photos_insert_own on public.pet_photos
+for insert with check (owner_id = auth.uid()::text);
+
+drop policy if exists pet_photos_update_own on public.pet_photos;
+create policy pet_photos_update_own on public.pet_photos
+for update using (owner_id = auth.uid()::text) with check (owner_id = auth.uid()::text);
+
+drop policy if exists pet_photos_delete_own on public.pet_photos;
+create policy pet_photos_delete_own on public.pet_photos
+for delete using (owner_id = auth.uid()::text);
+
+insert into storage.buckets (id, name, public)
+values ('pet-photos', 'pet-photos', false)
+on conflict (id) do nothing;
+
+drop policy if exists pet_photos_objects_select_own on storage.objects;
+create policy pet_photos_objects_select_own on storage.objects
+for select using (bucket_id = 'pet-photos' and (storage.foldername(name))[1] = auth.uid()::text);
+
+drop policy if exists pet_photos_objects_insert_own on storage.objects;
+create policy pet_photos_objects_insert_own on storage.objects
+for insert with check (bucket_id = 'pet-photos' and (storage.foldername(name))[1] = auth.uid()::text);
+
+drop policy if exists pet_photos_objects_delete_own on storage.objects;
+create policy pet_photos_objects_delete_own on storage.objects
+for delete using (bucket_id = 'pet-photos' and (storage.foldername(name))[1] = auth.uid()::text);

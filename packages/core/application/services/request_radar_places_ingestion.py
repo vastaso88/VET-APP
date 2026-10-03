@@ -3,7 +3,11 @@ from pydantic import BaseModel
 from packages.core.application.ports.radar_places_repository import RadarPlacesRepository
 from packages.core.application.ports.radar_places_source import RadarPlacesSource
 from packages.core.domain.common.entity import utc_now
-from packages.core.domain.coverage.models import RadarCoverage, RadarCoverageWindow
+from packages.core.domain.coverage.models import (
+    RADAR_COVERAGE_TIERS,
+    RadarCoverage,
+    RadarCoverageWindow,
+)
 from packages.core.domain.radar_places.models import RadarPlace
 
 
@@ -13,6 +17,7 @@ class RequestRadarPlacesIngestionInput(BaseModel):
     center_longitude: float
     radius_km: float
     freshness_ttl_hours: int
+    cell_size_degrees: float = RADAR_COVERAGE_TIERS[0].cell_size_degrees
 
     def coverage_window(self) -> RadarCoverageWindow:
         return RadarCoverageWindow(
@@ -21,6 +26,7 @@ class RequestRadarPlacesIngestionInput(BaseModel):
             center_longitude=self.center_longitude,
             radius_km=self.radius_km,
             freshness_ttl_hours=self.freshness_ttl_hours,
+            cell_size_degrees=self.cell_size_degrees,
         )
 
 

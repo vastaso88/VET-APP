@@ -10,10 +10,13 @@ import '../../../app/router/app_router.dart';
 import '../../pets/data/pet_demo_store.dart';
 import '../../pets/domain/pet_models.dart';
 import '../../reminders/presentation/pages/reminders_pages.dart';
+import '../domain/walk_eligibility.dart';
 import '../domain/walk_session.dart';
 import '../presentation/pages/active_walk_page.dart';
 import 'active_walk_controller.dart';
 import 'home_widget_action_store.dart';
+
+export '../domain/walk_eligibility.dart' show isDogSpecies;
 
 const _petsDataKey = 'dog_walks_widget_pets';
 const _petsTotalKey = 'dog_walks_widget_total';
@@ -39,9 +42,9 @@ const activeWalkWidgetThrottle = Duration(seconds: 7);
 /// real total is saved too, so the widget can say "+N altri".
 const _maxWidgetPets = 4;
 
-/// Species are stored as the Italian label from PetDemoStore.speciesOptions.
-@visibleForTesting
-bool isDogSpecies(String species) => species.trim().toLowerCase() == 'cane';
+// isDogSpecies lives in walk_eligibility.dart now (shared with the pet detail
+// page's Passeggiate tab); re-exported so existing imports of it from here
+// keep working.
 
 bool get _isAndroid =>
     !kIsWeb && defaultTargetPlatform == TargetPlatform.android;

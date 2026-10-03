@@ -75,7 +75,6 @@ def test_overpass_source_posts_query_and_maps_osm_elements(
         ENVIRONMENT="test",
         RADAR_PLACES_PROVIDER="openstreetmap_overpass",
         RADAR_SEARCH_RADIUS_KM=10,
-        RADAR_INGESTION_RADIUS_KM=10,
         OVERPASS_BASE_URL="https://overpass.example/api/interpreter",
         OVERPASS_TIMEOUT_SECONDS=25,
         OVERPASS_MAX_RADIUS_KM=10,

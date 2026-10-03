@@ -173,6 +173,7 @@ class AuthInputField extends StatefulWidget {
     this.obscureText = false,
     this.autofillHints,
     this.validator,
+    this.serverError,
   });
 
   final TextEditingController controller;
@@ -182,6 +183,9 @@ class AuthInputField extends StatefulWidget {
   final bool obscureText;
   final List<String>? autofillHints;
   final FormFieldValidator<String>? validator;
+  /// Error coming from the server (e.g. email already registered), shown
+  /// under this field until the owner edits it.
+  final String? serverError;
 
   @override
   State<AuthInputField> createState() => _AuthInputFieldState();
@@ -200,6 +204,7 @@ class _AuthInputFieldState extends State<AuthInputField> {
       validator: widget.validator,
       decoration: InputDecoration(
         labelText: widget.label,
+        errorText: widget.serverError,
         hintText: widget.hintText,
         filled: true,
         fillColor: AppColors.background,

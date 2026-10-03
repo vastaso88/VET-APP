@@ -4,56 +4,29 @@ import 'package:url_launcher/url_launcher.dart';
 import '../../../design_system/tokens/app_colors.dart';
 import '../../../design_system/tokens/app_spacing.dart';
 import '../../../design_system/tokens/app_text_styles.dart';
+import '../../location/domain/coordinates.dart';
 import '../../location/presentation/distance_label.dart';
 import '../domain/radar_place.dart';
+import 'radar_category.dart';
 
-String radarPlaceTypeLabel(RadarPlaceType type) {
-  switch (type) {
-    case RadarPlaceType.veterinary:
-      return 'Veterinario';
-    case RadarPlaceType.grooming:
-      return 'Toelettatura';
-    case RadarPlaceType.shop:
-      return 'Negozio per animali';
-    case RadarPlaceType.school:
-      return 'Addestramento';
-    case RadarPlaceType.petSitting:
-      return 'Pet sitter';
-    case RadarPlaceType.breeder:
-      return 'Allevamento';
-    case RadarPlaceType.hotel:
-      return 'Pensione per animali';
-    case RadarPlaceType.other:
-      return 'Servizio per animali';
-  }
-}
+Future<void> callRadarPlace(RadarPlace place) =>
+    launchUrl(Uri(scheme: 'tel', path: place.phone));
 
-IconData radarPlaceTypeIcon(RadarPlaceType type) {
-  switch (type) {
-    case RadarPlaceType.veterinary:
-      return Icons.local_hospital_outlined;
-    case RadarPlaceType.grooming:
-      return Icons.content_cut_outlined;
-    case RadarPlaceType.shop:
-      return Icons.storefront_outlined;
-    case RadarPlaceType.school:
-      return Icons.school_outlined;
-    case RadarPlaceType.petSitting:
-      return Icons.volunteer_activism_outlined;
-    case RadarPlaceType.breeder:
-      return Icons.pets_outlined;
-    case RadarPlaceType.hotel:
-      return Icons.night_shelter_outlined;
-    case RadarPlaceType.other:
-      return Icons.place_outlined;
-  }
-}
+/// Opens the device's maps app with directions to [destination].
+Future<void> openDirections(Coordinates destination) => launchUrl(
+      Uri.parse(
+        'https://www.google.com/maps/dir/?api=1'
+        '&destination=${destination.latitude},${destination.longitude}',
+      ),
+      mode: LaunchMode.externalApplication,
+    );
 
 Future<void> showRadarPlaceSheet(BuildContext context, RadarPlace place) {
   return showModalBottomSheet<void>(
     context: context,
     backgroundColor: AppColors.surface,
     showDragHandle: true,
+    isScrollControlled: true,
     builder: (_) => _RadarPlaceSheet(place: place),
   );
 }
@@ -65,15 +38,9 @@ class _RadarPlaceSheet extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final details = [
-      radarPlaceTypeLabel(place.type),
-      formatDistance(place.distanceMeters),
-    ].join(' · ');
+    final category = radarCategoryForPlace(place.type);
     final address = place.addressLabel ?? place.city;
-    final mapUri = Uri.parse(
-      'https://www.openstreetmap.org/?mlat=${place.location.latitude}'
-      '&mlon=${place.location.longitude}#map=17/${place.location.latitude}/${place.location.longitude}',
-    );
+    final isClinic = place.type == RadarPlaceType.veterinary;
 
     return SafeArea(
       child: Padding(
@@ -82,12 +49,34 @@ class _RadarPlaceSheet extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(place.name, style: AppTextStyles.title),
-            const SizedBox(height: AppSpacing.xs),
-            Text(details, style: AppTextStyles.bodySmall),
+            Row(
+              children: [
+                RadarCategoryBadge(category: category),
+                const SizedBox(width: AppSpacing.md),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(place.name, style: AppTextStyles.title),
+                      Text(
+                        '${radarPlaceTypeLabel(place.type)} · ${formatDistance(place.distanceMeters)}',
+                        style: AppTextStyles.bodySmall,
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
             if (address != null) ...[
               const SizedBox(height: AppSpacing.md),
               Text(address, style: AppTextStyles.body),
+            ],
+            if (place.openingHours != null) ...[
+              const SizedBox(height: AppSpacing.sm),
+              Text(
+                'Orari indicati: ${formatOpeningHours(place.openingHours!)}',
+                style: AppTextStyles.bodySmall,
+              ),
             ],
             if (place.summary != null) ...[
               const SizedBox(height: AppSpacing.sm),
@@ -99,11 +88,16 @@ class _RadarPlaceSheet extends StatelessWidget {
               runSpacing: AppSpacing.sm,
               children: [
                 if (place.phone != null)
-                  OutlinedButton.icon(
-                    onPressed: () => launchUrl(Uri(scheme: 'tel', path: place.phone)),
-                    icon: const Icon(Icons.call_outlined),
+                  FilledButton.icon(
+                    onPressed: () => callRadarPlace(place),
+                    icon: const Icon(Icons.call),
                     label: const Text('Chiama'),
                   ),
+                OutlinedButton.icon(
+                  onPressed: () => openDirections(place.location),
+                  icon: const Icon(Icons.directions_outlined),
+                  label: const Text('Indicazioni'),
+                ),
                 if (place.websiteUrl != null)
                   OutlinedButton.icon(
                     onPressed: () =>
@@ -111,18 +105,18 @@ class _RadarPlaceSheet extends StatelessWidget {
                     icon: const Icon(Icons.public),
                     label: const Text('Sito web'),
                   ),
-                OutlinedButton.icon(
-                  onPressed: () => launchUrl(mapUri, webOnlyWindowName: '_blank'),
-                  icon: const Icon(Icons.map_outlined),
-                  label: const Text('Apri in mappa'),
-                ),
               ],
             ),
             const SizedBox(height: AppSpacing.md),
             Text(
-              'Dati © OpenStreetMap contributors. Orari e contatti possono non essere aggiornati.',
+              isClinic
+                  ? 'In caso di urgenza telefona prima di partire: orari e recapiti '
+                      'arrivano da OpenStreetMap e non sono verificati da VetApp.'
+                  : 'Orari e recapiti arrivano da OpenStreetMap e non sono verificati da VetApp.',
               style: AppTextStyles.caption,
             ),
+            const SizedBox(height: AppSpacing.xs),
+            Text('Dati © OpenStreetMap contributors', style: AppTextStyles.caption),
           ],
         ),
       ),

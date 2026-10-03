@@ -25,12 +25,22 @@ class _MedicalRecordsListPageState extends State<MedicalRecordsListPage> {
   void initState() {
     super.initState();
     _recordsFuture = _repository.loadRecords();
+    MedicalRecordsRepository.changes.addListener(_onRecordsChanged);
+  }
+
+  @override
+  void dispose() {
+    MedicalRecordsRepository.changes.removeListener(_onRecordsChanged);
+    super.dispose();
+  }
+
+  void _onRecordsChanged() {
+    if (!mounted) return;
+    setState(() => _recordsFuture = _repository.loadRecords());
   }
 
   Future<void> _reload() async {
-    setState(() {
-      _recordsFuture = _repository.loadRecords();
-    });
+    setState(() => _recordsFuture = _repository.loadRecords());
     await _recordsFuture;
   }
 

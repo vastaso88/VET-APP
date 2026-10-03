@@ -10,6 +10,11 @@ import '../splash/splash_page.dart';
 class AppRouter {
   static final navigatorKey = GlobalKey<NavigatorState>();
 
+  /// Set by the Supabase passwordRecovery listener in bootstrap.dart. Read by
+  /// the splash so a cold-start recovery link isn't overwritten by the normal
+  /// route to home; cleared once the new password is saved.
+  static bool passwordRecoveryPending = false;
+
   /// Lets a data-layer class (DogWalksRepository's failed-Supabase-sync
   /// notice, 2026-10-01) show a SnackBar without threading a BuildContext
   /// through every call site - same idea as [navigatorKey].

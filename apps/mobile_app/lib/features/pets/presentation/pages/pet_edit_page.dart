@@ -4,6 +4,7 @@ import '../../../../design_system/tokens/app_colors.dart';
 import '../../../../design_system/tokens/app_radii.dart';
 import '../../../../design_system/tokens/app_spacing.dart';
 import '../../data/pet_demo_store.dart';
+import '../../data/pet_photo_repository.dart';
 import '../../domain/pet_format.dart';
 import '../../domain/pet_models.dart';
 import '../widgets/pet_avatar.dart';
@@ -32,6 +33,7 @@ class PetEditPage extends StatelessWidget {
         label: pet.avatarEmoji,
         backgroundColor: pet.accentColor,
         photoBytes: pet.photoBytes,
+        photoPath: pet.photoPath,
         identityColor: pet.identityColor,
         size: 36,
       ),
@@ -71,17 +73,28 @@ class _EditForm extends StatelessWidget {
       submitLabel: 'Salva modifiche',
       footerActions: _PetLifecycleActions(pet: pet),
       onSubmit: (draft) async {
+        final raw = draft.photoBytes;
+        final String? newPhotoPath;
+        if (!draft.photoTouched) {
+          newPhotoPath = pet.photoPath;
+        } else if (raw == null) {
+          newPhotoPath = null;
+        } else {
+          newPhotoPath = await saveProfilePhoto(petId: pet.id, raw: raw);
+        }
+
         final updated = pet.copyWith(
           name: draft.name,
           species: draft.species,
           breed: draft.breed ?? '',
           birthDateLabel: draft.birthDate == null ? '' : formatPetBirthDate(draft.birthDate!),
           sex: draft.sex,
-          weightLabel: formatPetWeight(draft.weightKg),
+          weightLabel: draft.weightKg == null ? '' : formatPetWeight(draft.weightKg!),
           medicalNote: draft.medicalNote,
           identityColor: draft.identityColor,
-          photoBytes: draft.photoBytes,
-          clearPhoto: draft.photoBytes == null,
+          photoBytes: draft.photoTouched ? raw : pet.photoBytes,
+          photoPath: newPhotoPath,
+          clearPhoto: draft.photoTouched && raw == null,
           aquariumStock: draft.aquariumStock,
           habitat: draft.habitat,
           dogSizeCategory: draft.dogSizeCategory,

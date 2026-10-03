@@ -12,3 +12,8 @@ class Reminder(BaseModel):
     title: str
     due_date: date
     notes: str | None = None
+    # Written by the mobile app (reminders_repository.dart): "spot",
+    # "recurring" or "course" (a therapy lasting course_duration_days).
+    kind: str | None = None
+    course_duration_days: int | None = None
+    is_done: bool = False

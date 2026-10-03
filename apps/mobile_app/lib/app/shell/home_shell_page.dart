@@ -5,6 +5,8 @@ import 'package:flutter/services.dart';
 
 import '../../design_system/tokens/app_colors.dart';
 import '../../features/activities/presentation/pages/activities_page.dart';
+import '../../features/billing/data/subscription_remote_data_source.dart';
+import '../../features/billing/presentation/trial_countdown_dialog.dart';
 import '../../features/dog_walks/data/active_walk_controller.dart';
 import '../../features/dog_walks/data/active_walk_recovery_store.dart';
 import '../../features/dog_walks/data/dog_walks_repository.dart';
@@ -53,7 +55,9 @@ class _HomeShellPageState extends State<HomeShellPage> {
       // may a tapped home-screen widget shortcut (reminder / walk) be opened,
       // and after the interrupted-walk prompt, so the two never stack.
       _checkForInterruptedWalk().whenComplete(() {
-        if (mounted) HomeWidgetActionStore.instance.shellReady();
+        if (!mounted) return;
+        HomeWidgetActionStore.instance.shellReady();
+        unawaited(_maybeShowTrialCountdown());
       });
     });
   }
@@ -62,6 +66,15 @@ class _HomeShellPageState extends State<HomeShellPage> {
   void dispose() {
     HomeWidgetActionStore.instance.shellGone();
     super.dispose();
+  }
+
+  Future<void> _maybeShowTrialCountdown() async {
+    final result = await HttpSubscriptionRemoteDataSource().fetchStatus();
+    if (!mounted) return;
+    result.fold(
+      onSuccess: (status) => showTrialCountdownIfDue(context, status),
+      onFailure: (_) {},
+    );
   }
 
   /// Offers to resume a walk that was still "in_progress" on disk when the

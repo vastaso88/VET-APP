@@ -14,13 +14,17 @@ from packages.core.domain.radar_places.models import (
 router = APIRouter(prefix="/local-services", tags=["local-services"])
 
 
+# Deliberately no bulk/export variant of this route: the cache holds
+# OpenStreetMap data (ODbL), and serving it only as bounded, distance-
+# filtered results keeps the app a "produced work" rather than a
+# redistributed derivative database (docs/features/radar_places_overpass.md).
 @router.get("/places")
 def list_nearby_places(
     latitude: Annotated[float, Query(ge=-90, le=90)],
     longitude: Annotated[float, Query(ge=-180, le=180)],
     radius_km: Annotated[float | None, Query(gt=0)] = None,
-    limit: Annotated[int, Query(ge=1, le=200)] = 50,
-    place_type: RadarPlaceType | None = None,
+    place_type: Annotated[list[RadarPlaceType] | None, Query()] = None,
+    per_type_limit: Annotated[int, Query(ge=1, le=60)] = 40,
 ) -> dict[str, object]:
     container = get_container()
     container.auth_provider.get_current_user()
@@ -29,8 +33,8 @@ def list_nearby_places(
             latitude=latitude,
             longitude=longitude,
             radius_km=radius_km,
-            limit=limit,
-            place_type=place_type,
+            place_types=list(place_type or []),
+            per_type_limit=per_type_limit,
         )
     )
     return {
@@ -48,8 +52,6 @@ def list_nearby_places(
             "refreshed_at": result.coverage.refreshed_at.isoformat(),
         },
         "context": {
-            "latitude": latitude,
-            "longitude": longitude,
             "search_radius_km": result.search_radius_km,
         },
     }

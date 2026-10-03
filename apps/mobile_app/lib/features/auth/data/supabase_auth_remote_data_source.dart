@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../../shared/auth/auth.dart';
@@ -5,6 +6,8 @@ import '../../../shared/config/app_runtime_config.dart';
 import '../../../shared/errors/app_auth_error.dart';
 import '../../../shared/types/result.dart';
 import 'auth_remote_data_source.dart';
+
+const kPasswordRecoveryRedirect = 'vetapp://auth-callback';
 
 class SupabaseAuthRemoteDataSource implements AuthRemoteDataSource {
   const SupabaseAuthRemoteDataSource({
@@ -116,7 +119,13 @@ class SupabaseAuthRemoteDataSource implements AuthRemoteDataSource {
     }
 
     try {
-      await _client.resetPasswordForEmail(email.trim());
+      // On web the link must come back to this app's own origin; on mobile
+      // it returns via the app's custom scheme (needs the matching intent
+      // filter in AndroidManifest.xml — see docs/auth/01_brainstorm.md).
+      await _client.resetPasswordForEmail(
+        email.trim(),
+        redirectTo: kIsWeb ? Uri.base.origin : kPasswordRecoveryRedirect,
+      );
       return Result.success(null);
     } on AuthException catch (error) {
       return Result.failure(

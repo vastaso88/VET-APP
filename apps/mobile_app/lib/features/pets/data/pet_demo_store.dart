@@ -7,6 +7,7 @@ import '../../../shared/auth/current_user.dart';
 import '../../../shared/config/app_runtime_config_loader.dart';
 import '../domain/fish_species.dart';
 import '../domain/pet_format.dart';
+import 'pet_photo_repository.dart';
 import '../domain/pet_identity_colors.dart';
 import '../domain/pet_models.dart';
 
@@ -218,6 +219,10 @@ class PetDemoStore {
   /// within the same app session.
   String? _hydratedOwnerId;
 
+  /// Bumped whenever the pet list changes (hydration, upsert, delete), so a
+  /// list page kept alive under the bottom-nav IndexedStack re-reads it.
+  static final ValueNotifier<int> changes = ValueNotifier<int>(0);
+
   /// Loads this owner's pets from Supabase into the in-memory store, once
   /// per owner id. No-ops (and leaves the store as-is) when Supabase isn't
   /// configured or the request fails — same best-effort-remote pattern as
@@ -256,6 +261,7 @@ class PetDemoStore {
       }
       _pets = loaded;
       _hydratedOwnerId = ownerId;
+      changes.value++;
     } catch (_) {
       // Leave the local/demo contents in place; retried next call since
       // _hydratedOwnerId wasn't set.
@@ -312,6 +318,7 @@ class PetDemoStore {
         'birth_date_label': pet.birthDateLabel,
         'sex': pet.sex,
         'weight_label': pet.weightLabel,
+        'photo_path': pet.photoPath,
         'health_badge': pet.healthBadge,
         'next_visit_label': pet.nextVisitLabel,
         'avatar_emoji': pet.avatarEmoji,
@@ -342,6 +349,8 @@ class PetDemoStore {
       birthDateLabel: (row['birth_date_label'] ?? '').toString(),
       sex: (row['sex'] ?? '').toString(),
       weightLabel: (row['weight_label'] ?? '').toString(),
+      photoPath: (row['photo_path'] as String?)?.isNotEmpty == true ? row['photo_path'] as String : null,
+      medicalRecordConsentGranted: _grantedFromConsentJson(row['medical_record_consent']),
       medicalNote: (row['notes'] ?? '').toString(),
       healthBadge: (row['health_badge'] ?? '').toString(),
       nextVisitLabel: (row['next_visit_label'] ?? '').toString(),
@@ -453,13 +462,48 @@ class PetDemoStore {
       ];
     }
 
+    changes.value++;
     await _persistRemote(pet);
     return pet;
   }
 
+  /// Applies a consent decision to the in-memory pet and notifies listeners,
+  /// so the records tab and anything else showing the pet update at once.
+  void setMedicalRecordConsentLocal(String petId, bool granted) {
+    _pets = [
+      for (final pet in _pets)
+        if (pet.id == petId) pet.copyWith(medicalRecordConsentGranted: granted) else pet,
+    ];
+    changes.value++;
+  }
+
+  /// Reads this pet's consent from its Supabase row (the same data the backend
+  /// stores in `pet_profiles.medical_record_consent`). Null when unavailable.
+  Future<bool?> fetchMedicalRecordConsent(String petId) async {
+    final client = _resolveClient();
+    if (client == null) return null;
+    try {
+      final row = await client
+          .from('pet_profiles')
+          .select('medical_record_consent')
+          .eq('id', petId)
+          .maybeSingle();
+      return _grantedFromConsentJson(row?['medical_record_consent']);
+    } catch (_) {
+      return null;
+    }
+  }
+
+  static bool? _grantedFromConsentJson(Object? json) {
+    if (json is Map && json['granted'] is bool) return json['granted'] as bool;
+    return null;
+  }
+
   Future<void> delete(String id) async {
     _pets = _pets.where((pet) => pet.id != id).toList();
+    changes.value++;
     await _deleteRemote(id);
+    await PetPhotoRepository().deleteAllForPet(id);
   }
 
   Future<PetProfile> create({
@@ -468,7 +512,7 @@ class PetDemoStore {
     required String? breed,
     required DateTime? birthDate,
     required String sex,
-    required double weightKg,
+    double? weightKg,
     required Color identityColor,
     String medicalNote = '',
     Uint8List? photoBytes,
@@ -485,7 +529,7 @@ class PetDemoStore {
       dogSizeCategory: dogSizeCategory,
       birthDateLabel: birthDate == null ? '' : formatPetBirthDate(birthDate),
       sex: sex,
-      weightLabel: formatPetWeight(weightKg),
+      weightLabel: weightKg == null ? '' : formatPetWeight(weightKg),
       medicalNote: medicalNote.trim().isEmpty
           ? 'Profilo creato da poco, pronto per la prossima visita.'
           : medicalNote.trim(),

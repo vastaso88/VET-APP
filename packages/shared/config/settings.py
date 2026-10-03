@@ -48,14 +48,14 @@ class Settings(BaseSettings):
     # Nearby pet-services radar ("cosa c'e' attorno"). OpenStreetMap via
     # Overpass is the only provider; results are cached per geographic cell
     # in Supabase (radar_coverage_cells / radar_places_cache), so Overpass
-    # is called at most once per cell per RADAR_FRESHNESS_TTL_HOURS.
-    # RADAR_INGESTION_RADIUS_KM must exceed RADAR_SEARCH_RADIUS_KM by the
-    # cell's max offset (~3.5 km) for the search radius to be fully covered.
+    # is called at most once per cell per RADAR_FRESHNESS_TTL_HOURS. The
+    # radius ladder (10/25/50 km) and its cell sizes live in
+    # packages/core/domain/coverage/models.py; RADAR_SEARCH_RADIUS_KM only
+    # caps how far up that ladder the app may go.
     radar_places_provider: str = Field(
         default="openstreetmap_overpass", alias="RADAR_PLACES_PROVIDER"
     )
-    radar_search_radius_km: float = Field(default=10.0, gt=0, alias="RADAR_SEARCH_RADIUS_KM")
-    radar_ingestion_radius_km: float = Field(default=15.0, gt=0, alias="RADAR_INGESTION_RADIUS_KM")
+    radar_search_radius_km: float = Field(default=50.0, gt=0, alias="RADAR_SEARCH_RADIUS_KM")
     radar_freshness_ttl_hours: int = Field(default=168, gt=0, alias="RADAR_FRESHNESS_TTL_HOURS")
     overpass_base_url: str = Field(
         default="https://overpass-api.de/api/interpreter", alias="OVERPASS_BASE_URL"
@@ -64,15 +64,23 @@ class Settings(BaseSettings):
     overpass_fallback_urls: list[str] = Field(
         default=[
             "https://overpass.private.coffee/api/interpreter",
-            "https://maps.mail.ru/osm/tools/overpass/api/interpreter",
+            "https://overpass.kumi.systems/api/interpreter",
         ],
         alias="OVERPASS_FALLBACK_URLS",
     )
     overpass_timeout_seconds: int = Field(
-        default=25, ge=5, le=180, alias="OVERPASS_TIMEOUT_SECONDS"
+        default=40, ge=5, le=180, alias="OVERPASS_TIMEOUT_SECONDS"
     )
-    overpass_max_radius_km: float = Field(default=15.0, gt=0, le=25, alias="OVERPASS_MAX_RADIUS_KM")
-    overpass_user_agent: str = Field(default="VET-APP/1.0", alias="OVERPASS_USER_AGENT")
+    # Must cover the widest tier's import radius (50 km search + cell offset).
+    overpass_max_radius_km: float = Field(
+        default=70.0, gt=0, le=100, alias="OVERPASS_MAX_RADIUS_KM"
+    )
+    # Overpass usage policy asks for an identifying User-Agent with a way
+    # to reach the operator: set OVERPASS_USER_AGENT in production to
+    # include a real technical contact.
+    overpass_user_agent: str = Field(
+        default="VET-APP/1.0 (+https://vet-app-psi-nine.vercel.app)", alias="OVERPASS_USER_AGENT"
+    )
     # Attachment bytes: local disk outside of PERSISTENCE_BACKEND=supabase
     # (fine for local dev), a Supabase Storage bucket when it is (required
     # on serverless deploys like Vercel, whose filesystem is read-only).
@@ -159,14 +167,8 @@ class Settings(BaseSettings):
 
         if self.radar_places_provider != "openstreetmap_overpass":
             raise ValueError("RADAR_PLACES_PROVIDER must be openstreetmap_overpass")
-        if (
-            self.radar_search_radius_km > self.overpass_max_radius_km
-            or self.radar_ingestion_radius_km > self.overpass_max_radius_km
-        ):
-            raise ValueError(
-                "RADAR_SEARCH_RADIUS_KM and RADAR_INGESTION_RADIUS_KM must not "
-                "exceed OVERPASS_MAX_RADIUS_KM"
-            )
+        if self.radar_search_radius_km > self.overpass_max_radius_km:
+            raise ValueError("RADAR_SEARCH_RADIUS_KM must not exceed OVERPASS_MAX_RADIUS_KM")
 
         return self
 

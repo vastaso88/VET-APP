@@ -37,7 +37,21 @@ class _PetsListPageState extends State<PetsListPage> {
   @override
   void initState() {
     super.initState();
+    PetDemoStore.changes.addListener(_onPetsChanged);
     _reload();
+  }
+
+  @override
+  void dispose() {
+    PetDemoStore.changes.removeListener(_onPetsChanged);
+    super.dispose();
+  }
+
+  void _onPetsChanged() {
+    if (!mounted) return;
+    setState(() {
+      _pets = PetDemoStore.instance.list(species: _selectedSpecies);
+    });
   }
 
   Future<void> _reload() async {
@@ -211,6 +225,7 @@ class _PetRow extends StatelessWidget {
                 label: pet.avatarEmoji,
                 backgroundColor: pet.accentColor,
                 photoBytes: pet.photoBytes,
+                photoPath: pet.photoPath,
                 identityColor: pet.identityColor,
                 size: 52,
               ),

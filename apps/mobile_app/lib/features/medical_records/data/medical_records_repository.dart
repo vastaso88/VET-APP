@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../../../shared/config/app_runtime_config_loader.dart';
@@ -46,6 +47,11 @@ class MedicalRecordTimelineEntry {
 
 class MedicalRecordsRepository {
   MedicalRecordsRepository({SupabaseClient? client}) : _client = client;
+
+  /// Bumped after every save/delete so any list showing records (under the
+  /// bottom-nav IndexedStack, or a pushed page that stays mounted) re-fetches
+  /// instead of keeping the snapshot it loaded once in initState.
+  static final ValueNotifier<int> changes = ValueNotifier<int>(0);
 
   final SupabaseClient? _client;
 
@@ -104,6 +110,7 @@ class MedicalRecordsRepository {
     final client = _resolveClient();
     if (client == null) {
       _upsertPreviewRecord(record);
+      changes.value++;
       return;
     }
 
@@ -125,12 +132,14 @@ class MedicalRecordsRepository {
     } catch (_) {
       _upsertPreviewRecord(record);
     }
+    changes.value++;
   }
 
   Future<void> deleteRecord(String id) async {
     final client = _resolveClient();
     if (client == null) {
       _previewRecords.removeWhere((record) => record.id == id);
+      changes.value++;
       return;
     }
 
@@ -139,6 +148,7 @@ class MedicalRecordsRepository {
     } catch (_) {
       _previewRecords.removeWhere((record) => record.id == id);
     }
+    changes.value++;
   }
 
   static List<MedicalRecordEntry> get previewRecords =>

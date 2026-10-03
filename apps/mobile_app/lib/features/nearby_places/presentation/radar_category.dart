@@ -1,0 +1,152 @@
+import 'package:flutter/material.dart';
+
+import '../../local_activities/domain/local_activity.dart';
+import '../domain/radar_place.dart';
+
+/// The single category vocabulary of the radar page: every list row, map
+/// marker, quick filter and legend entry reads its label, icon and color
+/// from here, so a category always looks the same wherever it appears.
+enum RadarCategory {
+  veterinary('Veterinari', Icons.local_hospital, Color(0xFFB3261E)),
+  shop('Negozi', Icons.storefront, Color(0xFF8A5A00)),
+  dogPark('Aree cani', Icons.park, Color(0xFF2E7D32)),
+  events('Eventi', Icons.event, Color(0xFF3949AB)),
+  grooming('Toelettature', Icons.content_cut, Color(0xFF7B4FA3)),
+  hotel('Pensioni', Icons.night_shelter, Color(0xFF1F6FA5)),
+  school('Addestramento', Icons.school, Color(0xFF00796B)),
+  petSitting('Pet sitter', Icons.volunteer_activism, Color(0xFFAD1457)),
+  breeder('Allevamenti', Icons.pets, Color(0xFF6D4C41)),
+  other('Altri servizi', Icons.place, Color(0xFF546E7A));
+
+  const RadarCategory(this.label, this.icon, this.color);
+
+  /// Plural label, used for filters and the legend.
+  final String label;
+  final IconData icon;
+
+  /// Dark enough for a white icon on top (map markers) and for the icon
+  /// itself on the app's light surfaces.
+  final Color color;
+}
+
+RadarCategory radarCategoryForPlace(RadarPlaceType type) {
+  switch (type) {
+    case RadarPlaceType.veterinary:
+      return RadarCategory.veterinary;
+    case RadarPlaceType.grooming:
+      return RadarCategory.grooming;
+    case RadarPlaceType.shop:
+      return RadarCategory.shop;
+    case RadarPlaceType.school:
+      return RadarCategory.school;
+    case RadarPlaceType.petSitting:
+      return RadarCategory.petSitting;
+    case RadarPlaceType.breeder:
+      return RadarCategory.breeder;
+    case RadarPlaceType.hotel:
+      return RadarCategory.hotel;
+    case RadarPlaceType.dogPark:
+      return RadarCategory.dogPark;
+    case RadarPlaceType.other:
+      return RadarCategory.other;
+  }
+}
+
+/// Dated activities are events; standing ones are services, sorted into
+/// the clinic category when their free-text category says so.
+RadarCategory radarCategoryForActivity(LocalActivity activity) {
+  if (activity.startsAt != null) {
+    return RadarCategory.events;
+  }
+  final category = activity.category?.toLowerCase() ?? '';
+  const clinicHints = ['ambulator', 'veterin', 'clinic'];
+  return clinicHints.any(category.contains) ? RadarCategory.veterinary : RadarCategory.other;
+}
+
+/// "Fiera nazionale"-style events are shown whatever the selected radius.
+/// Encoded in the existing free-text `category` rather than a new column,
+/// so it needs no schema change: any category containing "nazionale".
+bool isNationalActivity(LocalActivity activity) =>
+    (activity.category?.toLowerCase() ?? '').contains('nazionale');
+
+/// Singular label for one place ("Veterinario", not "Veterinari").
+String radarPlaceTypeLabel(RadarPlaceType type) {
+  switch (type) {
+    case RadarPlaceType.veterinary:
+      return 'Veterinario';
+    case RadarPlaceType.grooming:
+      return 'Toelettatura';
+    case RadarPlaceType.shop:
+      return 'Negozio per animali';
+    case RadarPlaceType.school:
+      return 'Addestramento';
+    case RadarPlaceType.petSitting:
+      return 'Pet sitter';
+    case RadarPlaceType.breeder:
+      return 'Allevamento';
+    case RadarPlaceType.hotel:
+      return 'Pensione per animali';
+    case RadarPlaceType.dogPark:
+      return 'Area cani';
+    case RadarPlaceType.other:
+      return 'Servizio per animali';
+  }
+}
+
+/// Species the "Filtri" sheet offers, keyed by the backend's canonical
+/// species keys (packages/core/domain/pet_profile/species.py).
+const radarSpeciesOptions = <String, String>{
+  'dog': 'Cane',
+  'cat': 'Gatto',
+  'small_mammal': 'Piccoli mammiferi',
+  'bird': 'Uccelli',
+  'reptile_amphibian': 'Rettili e anfibi',
+  'fish': 'Pesci',
+  'other': 'Altro',
+};
+
+/// Turns OpenStreetMap's `opening_hours` shorthand into readable Italian
+/// without interpreting it: day and keyword abbreviations only.
+String formatOpeningHours(String raw) {
+  if (raw.trim() == '24/7') {
+    return 'Indicato come aperto 24 ore su 24';
+  }
+  const words = {
+    'Mo': 'Lun',
+    'Tu': 'Mar',
+    'We': 'Mer',
+    'Th': 'Gio',
+    'Fr': 'Ven',
+    'Sa': 'Sab',
+    'Su': 'Dom',
+    'PH': 'Festivi',
+    'off': 'chiuso',
+    'closed': 'chiuso',
+  };
+  return raw.replaceAllMapped(
+    RegExp(r'\b(Mo|Tu|We|Th|Fr|Sa|Su|PH|off|closed)\b'),
+    (match) => words[match.group(1)]!,
+  );
+}
+
+/// Colored disc with the category icon: the leading of list rows.
+class RadarCategoryBadge extends StatelessWidget {
+  const RadarCategoryBadge({super.key, required this.category, this.size = 40});
+
+  final RadarCategory category;
+  final double size;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: size,
+      height: size,
+      alignment: Alignment.center,
+      decoration: BoxDecoration(
+        color: category.color.withValues(alpha: 0.14),
+        borderRadius: BorderRadius.circular(size * 0.4),
+      ),
+      child: Icon(category.icon, color: category.color, size: size * 0.5),
+    );
+  }
+}

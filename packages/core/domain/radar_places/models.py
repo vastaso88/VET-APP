@@ -13,6 +13,7 @@ RadarPlaceType = Literal[
     "pet_sitting",
     "breeder",
     "hotel",
+    "dog_park",
 ]
 
 # Fields that only matter while importing (raw provider element, the
@@ -33,6 +34,11 @@ class RadarPlace(BaseModel):
     subtype: str | None = None
     name: str
     summary: str | None = None
+    # Raw OSM `opening_hours` syntax, shown as stated: never used to decide
+    # "open now" (unverified data must not drive urgency decisions).
+    opening_hours: str | None = None
+    # Canonical species keys the place is specifically for; empty = any.
+    species: list[str] = Field(default_factory=list)
     city: str | None = None
     address_label: str | None = None
     latitude: float

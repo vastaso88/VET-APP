@@ -69,6 +69,15 @@
             <intent-filter>
                 <action android:name="es.antonborri.home_widget.action.LAUNCH" />
             </intent-filter>
+            <!-- Password-recovery link from the Supabase email (redirectTo in
+                 supabase_auth_remote_data_source.dart). supabase_flutter reads it
+                 via app_links; it's not routed by Flutter (see the meta-data above). -->
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="vetapp" android:host="auth-callback" />
+            </intent-filter>
         </activity>
         <!-- "Passeggiate" home-screen widget: shows the owner's pets, tapping
              one opens the app straight into a new walk for that pet (owner

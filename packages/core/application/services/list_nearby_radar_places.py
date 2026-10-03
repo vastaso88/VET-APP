@@ -1,13 +1,19 @@
+from collections import Counter
 from typing import Literal
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 from packages.core.application.ports.radar_places_repository import RadarPlacesRepository
 from packages.core.application.services.request_radar_places_ingestion import (
     RequestRadarPlacesIngestionInput,
     RequestRadarPlacesIngestionService,
 )
-from packages.core.domain.coverage.models import RadarCoverage
+from packages.core.domain.coverage.models import (
+    RADAR_COVERAGE_TIERS,
+    RadarCoverage,
+    ingestion_radius_km,
+    tier_for_radius,
+)
 from packages.core.domain.geo.models import Coordinates, haversine_distance_km
 from packages.core.domain.radar_places.models import RadarPlace
 from packages.shared.errors.base import ProviderError
@@ -23,8 +29,11 @@ class ListNearbyRadarPlacesInput(BaseModel):
     latitude: float
     longitude: float
     radius_km: float | None = None
-    limit: int = 50
-    place_type: str | None = None
+    place_types: list[str] = Field(default_factory=list)
+    # Cap per category rather than overall: in a city a plain "nearest N"
+    # is all dog parks and pet shops, and the few clinics the user may
+    # urgently need fall off the end.
+    per_type_limit: int = 40
 
 
 class NearbyRadarPlace(BaseModel):
@@ -51,20 +60,18 @@ class ListNearbyRadarPlacesService:
         ingestion_service: RequestRadarPlacesIngestionService,
         *,
         max_search_radius_km: float,
-        ingestion_radius_km: float,
         freshness_ttl_hours: int,
     ) -> None:
         self._repository = repository
         self._ingestion_service = ingestion_service
         self._max_search_radius_km = max_search_radius_km
-        self._ingestion_radius_km = ingestion_radius_km
         self._freshness_ttl_hours = freshness_ttl_hours
 
     def execute(self, data: ListNearbyRadarPlacesInput) -> ListNearbyRadarPlacesOutput:
         origin = Coordinates(latitude=data.latitude, longitude=data.longitude)
-        search_radius_km = min(
-            data.radius_km or self._max_search_radius_km, self._max_search_radius_km
-        )
+        requested_radius_km = data.radius_km or RADAR_COVERAGE_TIERS[0].search_radius_km
+        tier = tier_for_radius(requested_radius_km, max_search_radius_km=self._max_search_radius_km)
+        search_radius_km = min(requested_radius_km, tier.search_radius_km)
 
         # Ingest around the cell center, never the user's exact position:
         # that is what makes the cache shareable, and it also means the
@@ -73,8 +80,9 @@ class ListNearbyRadarPlacesService:
             owner_id=SHARED_RADAR_OWNER_ID,
             center_latitude=data.latitude,
             center_longitude=data.longitude,
-            radius_km=self._ingestion_radius_km,
+            radius_km=ingestion_radius_km(tier, latitude=data.latitude, longitude=data.longitude),
             freshness_ttl_hours=self._freshness_ttl_hours,
+            cell_size_degrees=tier.cell_size_degrees,
         ).coverage_window()
         cell_center = window.cell_center
 
@@ -89,8 +97,9 @@ class ListNearbyRadarPlacesService:
                         owner_id=SHARED_RADAR_OWNER_ID,
                         center_latitude=cell_center.latitude,
                         center_longitude=cell_center.longitude,
-                        radius_km=self._ingestion_radius_km,
+                        radius_km=window.radius_km,
                         freshness_ttl_hours=self._freshness_ttl_hours,
+                        cell_size_degrees=tier.cell_size_degrees,
                     )
                 )
             except ProviderError:
@@ -101,18 +110,30 @@ class ListNearbyRadarPlacesService:
             else:
                 coverage, places, status = result.coverage, result.places, "refreshed"
 
-        nearby = [
-            NearbyRadarPlace(place=place, distance_km=haversine_distance_km(origin, place.location))
-            for place in places
-            if place.status == "active"
-            and (data.place_type is None or place.place_type == data.place_type)
-        ]
-        nearby = sorted(
-            (item for item in nearby if item.distance_km <= search_radius_km),
+        wanted_types = set(data.place_types)
+        in_range = sorted(
+            (
+                NearbyRadarPlace(
+                    place=place, distance_km=haversine_distance_km(origin, place.location)
+                )
+                for place in places
+                if place.status == "active"
+                and (not wanted_types or place.place_type in wanted_types)
+            ),
             key=lambda item: item.distance_km,
         )
+        taken: Counter[str] = Counter()
+        nearby: list[NearbyRadarPlace] = []
+        for item in in_range:
+            if item.distance_km > search_radius_km:
+                break
+            if taken[item.place.place_type] >= data.per_type_limit:
+                continue
+            taken[item.place.place_type] += 1
+            nearby.append(item)
+
         return ListNearbyRadarPlacesOutput(
-            places=nearby[: data.limit],
+            places=nearby,
             coverage=coverage,
             coverage_status=status,
             search_radius_km=search_radius_km,

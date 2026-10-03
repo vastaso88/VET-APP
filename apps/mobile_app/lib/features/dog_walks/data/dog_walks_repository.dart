@@ -57,6 +57,15 @@ class DogWalksRepository {
 
   static final List<WalkSession> _localWalks = List<WalkSession>.of(_seedWalks);
 
+  /// Ticks whenever a finished walk is saved (end of walk, favorite
+  /// toggle), deleted, or has its route stripped - so the history, records,
+  /// favorites, recents and the pet page's status button can rebuild the
+  /// moment shared data changes instead of only after the owner navigates
+  /// away and back (owner report, 2026-10-03). Same idea as
+  /// RemindersRepository.changes. Static because the walk list itself is:
+  /// every DogWalksRepository instance shares it.
+  static final ValueNotifier<int> changes = ValueNotifier<int>(0);
+
   /// Ids whose most recent `saveWalk` upsert failed against Supabase -
   /// until it succeeds, [loadWalks] must trust the local copy over remote
   /// for that id, even though remote already has *a* row there.
@@ -143,8 +152,16 @@ class DogWalksRepository {
       // copy that will ever exist, so there's nothing to be "unsynced"
       // relative to.
       _unsyncedIds.remove(walk.id);
+      _announceChange(walk);
       return;
     }
+
+    // Unsynced from the moment the write starts, not just once it fails:
+    // announcing the change below makes the history reload immediately, and
+    // that read can reach Supabase before this upsert has landed - without
+    // this it would see (and display) the previous value.
+    _unsyncedIds.add(walk.id);
+    _announceChange(walk);
 
     try {
       await client.from('dog_walks').upsert(toRow(walk));
@@ -152,9 +169,20 @@ class DogWalksRepository {
     } catch (error) {
       // The local list above already applied for this session; loadWalks
       // won't let a stale remote row overwrite it until this succeeds.
-      _unsyncedIds.add(walk.id);
       _notifySyncFailure('saving walk ${walk.id}', error);
     }
+  }
+
+  /// Ticks [changes] for a save - except while a walk is still being
+  /// tracked: ActiveWalkController saves on every accepted GPS fix, and the
+  /// history screens (which only show finished walks) must not reload and
+  /// re-query Supabase once per fix. The live state reaches the UI through
+  /// ActiveWalkController's own ChangeNotifier instead.
+  static void _announceChange(WalkSession walk) {
+    if (walk.status == WalkStatus.inProgress) {
+      return;
+    }
+    changes.value++;
   }
 
   /// Removes a walk entirely - the trash button on a history card (owner
@@ -164,6 +192,7 @@ class DogWalksRepository {
     _deletedKeys.add((ownerId, walkId));
     _localWalks.removeWhere((walk) => walk.id == walkId && walk.ownerId == ownerId);
     _unsyncedIds.remove(walkId);
+    changes.value++;
 
     final client = _resolveClient();
     if (client == null) {
@@ -171,13 +200,15 @@ class DogWalksRepository {
       return;
     }
 
+    // Hidden from remote reads from the moment the delete starts (the
+    // reload the change above triggers can beat the DELETE to Supabase).
+    _pendingDeleteIds.add(walkId);
     try {
       await client.from('dog_walks').delete().eq('id', walkId).eq('owner_id', ownerId);
       _pendingDeleteIds.remove(walkId);
     } catch (error) {
       // Same posture as saveWalk: loadWalks hides this id out of remote
       // until the delete actually goes through.
-      _pendingDeleteIds.add(walkId);
       _notifySyncFailure('deleting walk $walkId', error);
     }
   }
@@ -219,6 +250,7 @@ class DogWalksRepository {
     final index = _localWalks.indexWhere((item) => item.id == walkId && item.ownerId == ownerId);
     if (index != -1) {
       _localWalks[index] = _localWalks[index].copyWith(route: const []);
+      changes.value++;
     }
 
     final client = _resolveClient();
@@ -226,8 +258,14 @@ class DogWalksRepository {
       return;
     }
 
+    // Same in-flight protection as saveWalk: until the UPDATE lands, a
+    // remote read must not bring the route back into the history.
+    if (index != -1) {
+      _unsyncedIds.add(walkId);
+    }
     try {
       await client.from('dog_walks').update({'route': []}).eq('id', walkId).eq('owner_id', ownerId);
+      _unsyncedIds.remove(walkId);
     } catch (error) {
       // Idempotent and retried naturally next time retention math says this
       // walk's route should be gone - doesn't need saveWalk's

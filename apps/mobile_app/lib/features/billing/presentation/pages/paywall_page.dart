@@ -60,9 +60,13 @@ class _PaywallPageState extends State<PaywallPage> {
               Text('La tua prova gratuita è terminata.', style: AppTextStyles.display.copyWith(fontSize: 26)),
               const SizedBox(height: AppSpacing.sm),
               Text(
-                'Scegli un piano per continuare a usare VetApp. Puoi cambiare piano in qualsiasi momento da Impostazioni.',
+                'Scegli come continuare con VetApp. Puoi cambiare piano quando vuoi da Impostazioni.',
                 style: AppTextStyles.body,
               ),
+              const SizedBox(height: AppSpacing.lg),
+              const _BenefitRow(icon: Icons.pets_outlined, text: 'Tutti i tuoi animali in un unico posto'),
+              const _BenefitRow(icon: Icons.chat_bubble_outline_rounded, text: 'Assistente per dubbi e routine'),
+              const _BenefitRow(icon: Icons.event_available_outlined, text: 'Promemoria che non ti fanno dimenticare nulla'),
               const SizedBox(height: AppSpacing.xl),
               for (final plan in BillingDemoStore.plans) ...[
                 _PaywallPlanCard(
@@ -75,6 +79,36 @@ class _PaywallPageState extends State<PaywallPage> {
             ],
           ),
         ),
+      ),
+    );
+  }
+}
+
+class _BenefitRow extends StatelessWidget {
+  const _BenefitRow({required this.icon, required this.text});
+
+  final IconData icon;
+  final String text;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: AppSpacing.sm),
+      child: Row(
+        children: [
+          Container(
+            width: 36,
+            height: 36,
+            alignment: Alignment.center,
+            decoration: BoxDecoration(
+              color: AppColors.primary.withValues(alpha: 0.12),
+              borderRadius: BorderRadius.circular(AppRadii.medium),
+            ),
+            child: Icon(icon, size: 18, color: AppColors.primary),
+          ),
+          const SizedBox(width: AppSpacing.md),
+          Expanded(child: Text(text, style: AppTextStyles.body)),
+        ],
       ),
     );
   }
@@ -103,7 +137,10 @@ class _PaywallPlanCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: AppColors.surface,
         borderRadius: BorderRadius.circular(AppRadii.large),
-        border: Border.all(color: AppColors.border),
+        border: Border.all(
+          color: plan.badge != null ? AppColors.primary : AppColors.border,
+          width: plan.badge != null ? 2 : 1,
+        ),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,

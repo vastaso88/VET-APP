@@ -58,6 +58,9 @@ from packages.core.application.services.medical_record_context_retriever import 
     MedicalRecordContextRetriever,
 )
 from packages.core.application.services.record_route_point import RecordRoutePointService
+from packages.core.application.services.reminder_context_retriever import (
+    ReminderContextRetriever,
+)
 from packages.core.application.services.report_chat_response import ReportChatResponseService
 from packages.core.application.services.report_listing import ReportListingService
 from packages.core.application.services.request_radar_places_ingestion import (
@@ -176,7 +179,8 @@ class ApplicationContainer:
             situation_model_builder=SituationModelBuilder(self.llm_client),
             interview_planner=InterviewPlanner(self.llm_client),
             medical_record_context_retriever=MedicalRecordContextRetriever(
-                self.clinical_event_repository
+                self.clinical_event_repository,
+                attachment_repository=self.chat_attachment_repository,
             ),
             consent_interpreter=ConsentInterpreter(),
             enable_interview_loop=settings.enable_interview_loop,
@@ -219,7 +223,6 @@ class ApplicationContainer:
                 self.radar_places_repository, self.radar_places_source
             ),
             max_search_radius_km=self.settings.radar_search_radius_km,
-            ingestion_radius_km=self.settings.radar_ingestion_radius_km,
             freshness_ttl_hours=self.settings.radar_freshness_ttl_hours,
         )
 
@@ -264,6 +267,7 @@ class ApplicationContainer:
             self.chat_orchestrator,
             self.pet_profile_repository,
             attachment_repository=self.chat_attachment_repository,
+            reminder_context_retriever=ReminderContextRetriever(self.reminder_repository),
             max_active_conversations_per_pet=self.settings.max_active_conversations_per_pet,
         )
 

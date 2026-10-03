@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 
 import '../design_system/responsive.dart';
 import 'router/app_router.dart';
@@ -22,6 +23,13 @@ class VetApp extends StatelessWidget {
       theme: AppTheme.light(),
       navigatorKey: AppRouter.navigatorKey,
       scaffoldMessengerKey: AppRouter.scaffoldMessengerKey,
+      locale: const Locale('it', 'IT'),
+      supportedLocales: const [Locale('it', 'IT'), Locale('en', 'US')],
+      localizationsDelegates: const [
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+      ],
       initialRoute: AppRouter.splash,
       onGenerateRoute: AppRouter.onGenerateRoute,
       builder: (context, child) {

@@ -1,3 +1,5 @@
+from datetime import UTC, datetime
+
 from pydantic import BaseModel
 
 from packages.core.application.ports.chat_attachment_repository import ChatAttachmentRepository
@@ -6,6 +8,9 @@ from packages.core.application.ports.pet_profile_repository import PetProfileRep
 from packages.core.application.services.chat_orchestrator import (
     ChatOrchestrator,
     ChatOrchestratorInput,
+)
+from packages.core.application.services.reminder_context_retriever import (
+    ReminderContextRetriever,
 )
 from packages.core.domain.conversation.models import ChatMessage, Conversation
 from packages.core.domain.conversation.states import ConversationState
@@ -57,6 +62,7 @@ class SendChatMessageService:
         pet_profile_repository: PetProfileRepository,
         *,
         attachment_repository: ChatAttachmentRepository | None = None,
+        reminder_context_retriever: ReminderContextRetriever | None = None,
         max_active_conversations_per_pet: int = 4,
     ) -> None:
         self._repository = repository
@@ -66,6 +72,9 @@ class SendChatMessageService:
         # same convention as ChatOrchestrator's optional
         # medical_record_context_retriever.
         self._attachment_repository = attachment_repository
+        # None: this deployment's chat doesn't see reminders (same
+        # optional-collaborator convention as above).
+        self._reminder_context_retriever = reminder_context_retriever
         self._max_active_conversations_per_pet = max_active_conversations_per_pet
 
     def execute(self, data: SendChatMessageInput) -> SendChatMessageOutput:
@@ -91,6 +100,15 @@ class SendChatMessageService:
             medical_record_consent = pet_profile.medical_record_consent.granted
             awaiting_medical_record_consent = False
 
+        today = datetime.now(UTC).date()
+        reminders_context = (
+            self._reminder_context_retriever.summarize_for_pet(
+                data.owner_id, pet_profile.id, today
+            )
+            if self._reminder_context_retriever is not None
+            else None
+        )
+
         orchestrator_result = self._orchestrator.answer(
             ChatOrchestratorInput(
                 user_message=data.user_message.strip(),
@@ -100,6 +118,12 @@ class SendChatMessageService:
                 breed=pet_profile.breed,
                 age_years=pet_profile.age_years,
                 notes=pet_profile.notes,
+                birth_date_label=pet_profile.birth_date_label,
+                sex=pet_profile.sex,
+                weight_label=pet_profile.weight_label,
+                dog_size_category=pet_profile.dog_size_category,
+                reminders_context=reminders_context,
+                today=today,
                 habitat=pet_profile.habitat,
                 aquarium_stock=pet_profile.aquarium_stock,
                 photo_context=photo_context,

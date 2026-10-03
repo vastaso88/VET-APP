@@ -49,7 +49,7 @@ class GoogleNewsPetNewsRepository implements PetNewsRepository {
   // query level; `_isBlocked` below is a second, client-side pass over the
   // actual results as a safety net for whatever slips through.
   static const _recipeExclusions =
-      '-ricetta -ricette -cucina -cucinare -sagra -caccia -cacciatore -cacciatori -oroscopo';
+      '-ricetta -ricette -cucina -cucinare -forno -sagra -caccia -cacciatore -cacciatori -oroscopo';
 
   static const _queryBySpecies = {
     'Cane': 'cane $_recipeExclusions',
@@ -62,7 +62,10 @@ class GoogleNewsPetNewsRepository implements PetNewsRepository {
     // same positive-bias + exclusion treatment as before, just widened.
     'Piccoli mammiferi':
         '(coniglio OR cavia OR criceto OR furetto) (domestico OR animale OR veterinario OR appartamento) $_recipeExclusions -esperimento -esperimenti -sperimentazione',
-    'Uccello': 'uccello $_recipeExclusions',
+    // "Uccello" alone pulls hunting/cooking pieces ("uccellagione", game birds
+    // on a menu); anchoring on pet-bird vocabulary keeps it on companion birds.
+    'Uccello':
+        '(uccello OR pappagallo OR canarino OR cocorita) (domestico OR gabbia OR veterinario) $_recipeExclusions',
     // "Rettili e anfibi" adds amphibians to the old "Rettile" category.
     // "Rana" collides constantly with "rana pescatrice" (monkfish — a very
     // common Italian fish dish with nothing to do with frogs) and with
@@ -70,9 +73,10 @@ class GoogleNewsPetNewsRepository implements PetNewsRepository {
     // generic recipe terms.
     'Rettili e anfibi':
         '(rettile OR anfibio OR rana OR salamandra OR tartaruga) (domestico OR terrario OR veterinario) $_recipeExclusions -pescatrice',
-    // Same issue as coniglio: "pesce" alone also means the zodiac sign, a
-    // surname, and any number of unrelated place/route names.
-    'Pesce': 'pesce (acquario OR acquariofilia OR veterinario OR domestico) $_recipeExclusions',
+    // Bare "pesce" is almost all food/fishing content in Italian news, so the
+    // fish query is anchored on aquarium vocabulary only — no "pesce" term.
+    'Pesce':
+        '(acquario OR acquariofilia OR "pesci d\'acquario" OR "pesce rosso") $_recipeExclusions',
     'Altro': 'animali domestici $_recipeExclusions',
     'Generale': 'animali domestici (fiera OR legge OR normativa) $_recipeExclusions',
   };
@@ -94,6 +98,17 @@ class GoogleNewsPetNewsRepository implements PetNewsRepository {
     'brasato',
     'padella',
     'in forno',
+    'al forno',
+    'fritto',
+    'fritti',
+    'frittura',
+    'bollit',
+    'filetti',
+    'selvaggina',
+    'uccellagione',
+    'chef',
+    'piatto',
+    'ricettar',
     'ingredienti',
     'gustoso',
     'sagra',

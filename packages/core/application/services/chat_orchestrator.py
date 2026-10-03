@@ -1,5 +1,6 @@
 import logging
 from collections.abc import Iterable
+from datetime import UTC, date, datetime
 
 from pydantic import BaseModel, Field
 
@@ -29,6 +30,11 @@ from packages.core.domain.knowledge.evidence_synthesis import EvidenceSynthesis
 from packages.core.domain.knowledge.models import EvidenceSource
 from packages.core.domain.pet_profile.models import FishStock, HabitatDetails
 from packages.core.domain.pet_profile.species import normalize_species
+from packages.core.domain.pet_profile.weight import (
+    WEIGHT_SUGGESTION_MARKER,
+    is_weight_relevant,
+    weight_suggestion,
+)
 from packages.core.domain.safety.triage_clarification import (
     CLARIFYING_QUESTIONS,
     requires_immediate_escalation,
@@ -48,6 +54,10 @@ from packages.core.domain.situation.models import SituationModel
 from packages.shared.errors.base import ProviderError
 
 logger = logging.getLogger("vetgpt.chat")
+
+# Distinctive phrase of the no-consent notice — also how an earlier notice
+# is recognised in the conversation history, so it is shown once.
+MEDICAL_RECORD_NOTICE_MARKER = "non posso consultare la cartella clinica"
 
 # Fetch a wider candidate pool than we'll actually show, so the quality
 # engine has real diversity to rank and select from (spec v3 §3-5) instead
@@ -308,6 +318,19 @@ class ChatOrchestratorInput(BaseModel):
     breed: str | None = None
     age_years: int | None = None
     notes: str | None = None
+    # Display labels the mobile app stores on the profile ("Feb 2022",
+    # "Femmina", "17,8 kg", "Media"). All optional — weight in particular
+    # is not mandatory, see `_with_weight_suggestion`.
+    birth_date_label: str | None = None
+    sex: str | None = None
+    weight_label: str | None = None
+    dog_size_category: str | None = None
+    # The pet's active, relevant reminders as plain text (see
+    # ReminderContextRetriever) — e.g. an ongoing therapy course.
+    reminders_context: str | None = None
+    # Injectable "today" so age/reminder reasoning is testable; defaults
+    # to the real current date.
+    today: date | None = None
     # Habitat/enclosure characteristics (aquarium/terrarium/aviary) and
     # multi-species aquarium stock - mirrors PetProfile's fields of the
     # same name; forward-looking, since the mobile pets feature that would
@@ -417,9 +440,52 @@ class ChatOrchestrator:
         self._strict_evidence_intents = strict_evidence_intents
 
     def answer(self, data: ChatOrchestratorInput) -> ChatOrchestratorResult:
-        result = self._answer(data)
+        result = self._with_weight_suggestion(data, self._answer(data))
         self._log_outcome(data, result)
         return result
+
+    # Answers a missing-weight hint may be appended to: a real reply, not
+    # an emergency escalation, a clarifying question or a failure notice.
+    _WEIGHT_SUGGESTION_MODES = frozenset({"natural", "general", "evidence"})
+    _WEIGHT_SUGGESTION_BLOCKING_STATES = frozenset(
+        {
+            ConversationState.RETRIEVAL_FAILURE,
+            ConversationState.SOURCE_VALIDATION_FAILURE,
+            ConversationState.INSUFFICIENT_EVIDENCE,
+        }
+    )
+
+    @classmethod
+    def _with_weight_suggestion(
+        cls, data: ChatOrchestratorInput, result: ChatOrchestratorResult
+    ) -> ChatOrchestratorResult:
+        """Weight is optional in the profile (2026-10-03). When it is
+        missing and the conversation turns to something that depends on
+        it (dosing, feeding, body condition, anaesthesia, parasite
+        control), suggest adding it — deterministically rather than via
+        the prompt, so it happens exactly once per conversation and can
+        never turn into nagging. Not for aquariums/fish, where a body
+        weight on the profile is meaningless.
+        """
+        if (data.weight_label or "").strip():
+            return result
+        if data.aquarium_stock or normalize_species(data.species) == "fish":
+            return result
+        if result.mode not in cls._WEIGHT_SUGGESTION_MODES:
+            return result
+        if result.state in cls._WEIGHT_SUGGESTION_BLOCKING_STATES:
+            return result
+        if not is_weight_relevant(data.user_message):
+            return result
+        already_suggested = any(
+            message.role == "assistant" and WEIGHT_SUGGESTION_MARKER in message.content
+            for message in data.conversation_history
+        )
+        if already_suggested:
+            return result
+        return result.model_copy(
+            update={"answer": f"{result.answer}\n\n{weight_suggestion(data.pet_name)}"}
+        )
 
     @staticmethod
     def _log_outcome(data: ChatOrchestratorInput, result: ChatOrchestratorResult) -> None:
@@ -864,6 +930,69 @@ class ChatOrchestrator:
             ),
         )
 
+    def _medical_context_for_prompt(self, data: ChatOrchestratorInput) -> str:
+        """The medical-record part of the natural-answer prompt, gated by
+        the per-pet, revocable consent (spec v3 §18).
+
+        With consent: a short, anonymized summary of the most recent
+        records. Without it (never asked, or revoked): no record content
+        at all — only the fact that documents exist, with an instruction
+        to say so transparently instead of guessing or silently ignoring
+        them.
+        """
+        if self._medical_record_context_retriever is None or not data.pet_id:
+            return ""
+        if data.medical_record_consent:
+            summary = self._retrieve_medical_record_summary(data.pet_id)
+            if not summary:
+                return ""
+            return (
+                "\n\nMedical records the owner allowed you to consult (most recent "
+                "first; an old exam may no longer reflect the current situation):\n"
+                f"{self._anonymize_for_provider(summary)}"
+            )
+        count = self._medical_record_context_retriever.count_for_pet(data.pet_id)
+        if count == 0:
+            return ""
+        return (
+            f"\n\nMedical records: this pet has {count} document(s) in its cartella "
+            "clinica, but the owner has NOT given you permission to read them, so "
+            "you know nothing about their content — never guess or imply what they "
+            "say. The owner is told about this separately (a short notice is added "
+            "to the reply automatically), so do not bring it up yourself: just "
+            "answer as well as you can without them."
+        )
+
+    # Intents where the pet's clinical documents could plausibly matter —
+    # the no-consent notice is not shown for e.g. a behaviour or enclosure
+    # question, where it would only be noise.
+    _RECORD_RELEVANT_INTENTS = frozenset(
+        {"clinical_question", "nutrition_question", "preventive_care"}
+    )
+
+    def _medical_record_notice(self, data: ChatOrchestratorInput, intent: str) -> str:
+        """Transparency without consent (spec v3 §18): when the pet has
+        documents the chat is not allowed to read, say so — in fixed
+        wording appended to the reply rather than left to the model, so it
+        is always accurate, and only once per conversation.
+        """
+        if self._medical_record_context_retriever is None or not data.pet_id:
+            return ""
+        if data.medical_record_consent or intent not in self._RECORD_RELEVANT_INTENTS:
+            return ""
+        if any(
+            message.role == "assistant" and MEDICAL_RECORD_NOTICE_MARKER in message.content
+            for message in data.conversation_history
+        ):
+            return ""
+        if self._medical_record_context_retriever.count_for_pet(data.pet_id) == 0:
+            return ""
+        return (
+            f"\n\nNota: {MEDICAL_RECORD_NOTICE_MARKER} di {data.pet_name} perché il "
+            "consenso non è attivo, quindi rispondo senza i suoi referti. Se vuoi che "
+            "ne tenga conto, puoi attivarlo dalla cartella clinica."
+        )
+
     def _retrieve_medical_record_summary(self, pet_id: str) -> str | None:
         if self._medical_record_context_retriever is None or not pet_id:
             return None
@@ -1207,11 +1336,15 @@ class ChatOrchestrator:
         # decision, or granted earlier this conversation) — this does
         # NOT yet ask for consent on its own when it's still unknown;
         # that's a separate, still-open piece of work.
-        medical_context = ""
-        if data.medical_record_consent:
-            summary = self._retrieve_medical_record_summary(data.pet_id)
-            if summary:
-                medical_context = f"\n\nRecent medical record summary: {summary}"
+        medical_context = self._medical_context_for_prompt(data)
+        reminders_context = ""
+        if data.reminders_context:
+            reminders_context = (
+                "\n\nActive reminders the owner set for this pet (take them into "
+                "account when relevant, e.g. an ongoing therapy):\n"
+                f"{self._anonymize_for_provider(data.reminders_context)}"
+            )
+        today = data.today or datetime.now(UTC).date()
 
         # 2026-09-21: this is the primary answer-writing voice for most of
         # the product's real traffic now (used to be a narrow fallback for
@@ -1283,6 +1416,8 @@ class ChatOrchestrator:
                         f"{history_block}"
                         f"User message: {anonymized_message}"
                         f"{medical_context}"
+                        f"{reminders_context}"
+                        f"\n\nToday's date: {today.isoformat()}"
                         + (f"\n\nReference material (optional, use only if genuinely "
                            f"relevant):\n{evidence_block}" if evidence_block else "")
                     ),
@@ -1322,7 +1457,7 @@ class ChatOrchestrator:
                 sources=sources, violations=["wrong_species_reference"], mode="natural"
             )
         return ChatOrchestratorResult(
-            answer=response.content,
+            answer=response.content + self._medical_record_notice(data, intent),
             mode="natural",
             confidence="medium",
             ai_generated=True,
@@ -1467,13 +1602,23 @@ class ChatOrchestrator:
             lines.append(f"Breed: {data.breed}")
         if data.age_years is not None:
             lines.append(f"Age: {data.age_years} years")
+        if data.birth_date_label:
+            lines.append(f"Born: {data.birth_date_label}")
+        if data.sex:
+            lines.append(f"Sex: {data.sex}")
+        if data.weight_label:
+            lines.append(f"Weight: {data.weight_label}")
+        if data.dog_size_category:
+            lines.append(f"Size category: {data.dog_size_category}")
         if data.notes:
             lines.append(f"Owner notes: {self._anonymize_for_provider(data.notes)}")
         if data.habitat is not None and not data.habitat.is_empty():
             habitat_facts = [
                 fact
                 for fact in (
-                    f"dimensions {data.habitat.dimensions}" if data.habitat.dimensions else "",
+                    f"dimensions {data.habitat.dimensions_label()}"
+                    if data.habitat.dimensions_label()
+                    else "",
                     f"{data.habitat.volume_liters} liters"
                     if data.habitat.volume_liters
                     else "",

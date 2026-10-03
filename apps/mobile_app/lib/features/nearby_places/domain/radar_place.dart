@@ -3,7 +3,17 @@ import '../../location/domain/coordinates.dart';
 /// Mirrors packages/core/domain/radar_places `place_type` values. Unknown
 /// values coming from a newer backend fall back to [other] instead of
 /// dropping the place.
-enum RadarPlaceType { veterinary, grooming, shop, school, petSitting, breeder, hotel, other }
+enum RadarPlaceType {
+  veterinary,
+  grooming,
+  shop,
+  school,
+  petSitting,
+  breeder,
+  hotel,
+  dogPark,
+  other,
+}
 
 RadarPlaceType radarPlaceTypeFromApi(String? value) {
   switch (value) {
@@ -21,6 +31,8 @@ RadarPlaceType radarPlaceTypeFromApi(String? value) {
       return RadarPlaceType.breeder;
     case 'hotel':
       return RadarPlaceType.hotel;
+    case 'dog_park':
+      return RadarPlaceType.dogPark;
     default:
       return RadarPlaceType.other;
   }
@@ -41,6 +53,8 @@ class RadarPlace {
     this.websiteUrl,
     this.sourceUrl,
     this.summary,
+    this.openingHours,
+    this.species = const [],
   });
 
   final String id;
@@ -54,6 +68,17 @@ class RadarPlace {
   final String? websiteUrl;
   final String? sourceUrl;
   final String? summary;
+
+  /// Raw OpenStreetMap `opening_hours` value. Shown as stated, never
+  /// interpreted as "open now": the data is unverified.
+  final String? openingHours;
+
+  /// Canonical species keys (dog, cat, ...) the place is specifically for.
+  /// Empty means "not stated", i.e. relevant to every species.
+  final List<String> species;
+
+  bool matchesSpecies(Set<String> wanted) =>
+      wanted.isEmpty || species.isEmpty || species.any(wanted.contains);
 
   /// Returns null for rows without a usable name/position rather than
   /// throwing: one malformed place must not hide the whole list.
@@ -80,6 +105,10 @@ class RadarPlace {
       websiteUrl: websiteUrl == sourceUrl ? null : websiteUrl,
       sourceUrl: sourceUrl,
       summary: _text(json['summary']),
+      openingHours: _text(json['opening_hours']),
+      species: (json['species'] as List<dynamic>? ?? const [])
+          .whereType<String>()
+          .toList(growable: false),
     );
   }
 

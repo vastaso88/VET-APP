@@ -13,6 +13,7 @@ import '../../../first_run/presentation/pages/notification_permission_page.dart'
 import '../../../first_run/presentation/pages/plan_intro_page.dart';
 import '../../../first_run/presentation/pages/tutorial_page.dart';
 import '../../data/auth_repository_factory.dart';
+import '../../domain/auth_error_messages.dart';
 import '../widgets/auth_widgets.dart';
 import 'login_page.dart';
 
@@ -36,6 +37,8 @@ class _RegisterPageState extends State<RegisterPage> {
   AuthBannerStatus? _status;
   String _title = '';
   String _message = '';
+  String? _emailServerError;
+  String? _passwordServerError;
 
   @override
   void dispose() {
@@ -61,6 +64,8 @@ class _RegisterPageState extends State<RegisterPage> {
 
     setState(() {
       _isLoading = true;
+      _emailServerError = null;
+      _passwordServerError = null;
       _status = AuthBannerStatus.loading;
       _title = 'Creazione account';
       _message = 'Sto creando l account e preparando la sessione iniziale.';
@@ -86,11 +91,14 @@ class _RegisterPageState extends State<RegisterPage> {
         return true;
       },
       onFailure: (error) {
+        final presented = presentAuthError(error);
         setState(() {
           _isLoading = false;
           _status = AuthBannerStatus.error;
           _title = 'Account non creato';
-          _message = error.message;
+          _message = presented.message;
+          if (presented.field == AuthErrorField.email) _emailServerError = presented.message;
+          if (presented.field == AuthErrorField.password) _passwordServerError = presented.message;
         });
         return false;
       },
@@ -183,6 +191,7 @@ class _RegisterPageState extends State<RegisterPage> {
               hintText: 'nome@dominio.it',
               keyboardType: TextInputType.emailAddress,
               autofillHints: const [AutofillHints.email],
+              serverError: _emailServerError,
               validator: (value) {
                 final text = value?.trim() ?? '';
                 if (text.isEmpty) return 'Inserisci la tua email.';
@@ -194,6 +203,7 @@ class _RegisterPageState extends State<RegisterPage> {
             AuthInputField(
               controller: _passwordController,
               label: 'Password',
+              serverError: _passwordServerError,
               hintText: 'Almeno 6 caratteri',
               obscureText: true,
               autofillHints: const [AutofillHints.newPassword],
