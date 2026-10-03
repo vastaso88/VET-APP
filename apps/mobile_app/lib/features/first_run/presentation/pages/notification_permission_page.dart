@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+
+import '../../../../shared/widgets/pet_loader.dart';
+
 import 'package:permission_handler/permission_handler.dart';
 
 import '../../../../design_system/tokens/app_colors.dart';
@@ -79,7 +82,7 @@ class _NotificationPermissionPageState extends State<NotificationPermissionPage>
                       ? const SizedBox(
                           width: 20,
                           height: 20,
-                          child: CircularProgressIndicator(strokeWidth: 2),
+                          child: PetLoader.small(),
                         )
                       : const Text('Attiva notifiche'),
                 ),

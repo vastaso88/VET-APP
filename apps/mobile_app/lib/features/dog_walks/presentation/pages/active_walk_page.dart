@@ -2,6 +2,9 @@ import 'dart:async';
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
+
+import '../../../../shared/widgets/pet_loader.dart';
+
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart' as latlong;
 
@@ -192,7 +195,7 @@ class _ActiveWalkPageState extends State<ActiveWalkPage> {
               children: [
                 Expanded(
                   child: showSpinner
-                      ? const Center(child: CircularProgressIndicator())
+                      ? const Center(child: PetLoader())
                       : Stack(
                           children: [
                             _WalkMap(

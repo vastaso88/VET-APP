@@ -2,6 +2,9 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 
+import '../../../../shared/widgets/pet_loader.dart';
+
+
 import '../../../../design_system/tokens/app_spacing.dart';
 import '../../../../shared/config/app_runtime_config_loader.dart';
 import '../../data/auth_repository_factory.dart';
@@ -118,7 +121,7 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
                     ? const SizedBox(
                         width: 20,
                         height: 20,
-                        child: CircularProgressIndicator(strokeWidth: 2),
+                        child: PetLoader.small(),
                       )
                     : const Text('Invia link'),
               ),

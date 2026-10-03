@@ -2,6 +2,9 @@ import 'dart:typed_data';
 
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
+
+import '../../../../shared/widgets/pet_loader.dart';
+
 import 'package:http/http.dart' as http;
 import 'package:record/record.dart';
 
@@ -134,7 +137,7 @@ class _ChatComposerState extends State<ChatComposer> {
                   child: SizedBox(
                     width: 22,
                     height: 22,
-                    child: CircularProgressIndicator(strokeWidth: 2),
+                    child: PetLoader.small(),
                   ),
                 )
               else
@@ -324,7 +327,7 @@ class _PendingAttachmentChip extends StatelessWidget {
                   child: SizedBox(
                     width: 18,
                     height: 18,
-                    child: CircularProgressIndicator(strokeWidth: 2),
+                    child: PetLoader.small(),
                   ),
                 ),
               ),

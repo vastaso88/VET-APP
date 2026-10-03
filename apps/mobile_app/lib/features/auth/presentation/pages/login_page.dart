@@ -2,6 +2,9 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 
+import '../../../../shared/widgets/pet_loader.dart';
+
+
 import '../../../../design_system/tokens/app_spacing.dart';
 import '../../../../features/billing/data/subscription_gate.dart';
 import '../../../../shared/auth/auth.dart';
@@ -165,7 +168,7 @@ class _LoginPageState extends State<LoginPage> {
                     ? const SizedBox(
                         width: 20,
                         height: 20,
-                        child: CircularProgressIndicator(strokeWidth: 2),
+                        child: PetLoader.small(),
                       )
                     : const Text('Accedi'),
               ),

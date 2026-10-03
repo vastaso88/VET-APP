@@ -2,6 +2,9 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 
+import '../../../../shared/widgets/pet_loader.dart';
+
+
 import '../../../../app/router/app_router.dart';
 import '../../../../design_system/tokens/app_spacing.dart';
 import '../../../../shared/auth/auth.dart';
@@ -248,7 +251,7 @@ class _RegisterPageState extends State<RegisterPage> {
                     ? const SizedBox(
                         width: 20,
                         height: 20,
-                        child: CircularProgressIndicator(strokeWidth: 2),
+                        child: PetLoader.small(),
                       )
                     : const Text('Crea account'),
               ),

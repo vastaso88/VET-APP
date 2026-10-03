@@ -23,14 +23,22 @@ class RadarPlacesRepository {
   final AppRuntimeConfigLoader _configLoader;
 
   // The first request for an area makes the backend import it from
-  // OpenStreetMap (up to ~60 s for the widest radius); later ones hit the
+  // OpenStreetMap (the backend gives up after ~40 s); later ones hit the
   // cache and answer immediately.
-  static const _timeout = Duration(seconds: 75);
+  static const _timeout = Duration(seconds: 55);
 
-  /// The backend returns up to this many places per category, nearest
-  /// first, so abundant categories (dog parks) cannot crowd out scarce
-  /// ones (clinics).
-  static const perTypeLimit = 40;
+  /// How many places per category to ask for. Generous close by, where the
+  /// user expects to see everything; tighter on wide searches, where the
+  /// full set would be thousands of rows. Clinics are never capped by the
+  /// backend whatever this value.
+  static int perTypeLimitFor(double radiusKm) {
+    if (radiusKm <= 10) return 400;
+    if (radiusKm <= 25) return 150;
+    return 80;
+  }
+
+  /// Error code of a failure worth retrying automatically after a pause.
+  static const preparingErrorCode = 'radar_places_preparing';
 
   Future<Result<RadarPlacesResult>> loadNearby({
     required Coordinates center,
@@ -52,7 +60,7 @@ class RadarPlacesRepository {
         'latitude': center.latitude.toString(),
         'longitude': center.longitude.toString(),
         'radius_km': radiusKm.toString(),
-        'per_type_limit': perTypeLimit.toString(),
+        'per_type_limit': perTypeLimitFor(radiusKm).toString(),
       },
     );
 
@@ -60,6 +68,16 @@ class RadarPlacesRepository {
       final response = await _client
           .get(uri, headers: {'Authorization': 'Bearer $token'}).timeout(_timeout);
 
+      if (const {502, 503, 504}.contains(response.statusCode)) {
+        // The backend could not import this area from OpenStreetMap right
+        // now (busy or rate-limited provider). Usually clears on its own.
+        return Result.failure(
+          const AppNetworkError(
+            code: preparingErrorCode,
+            message: 'Sto ancora preparando i servizi di questa zona. Riprova tra poco.',
+          ),
+        );
+      }
       if (response.statusCode < 200 || response.statusCode >= 300) {
         return Result.failure(
           AppNetworkError(
@@ -88,8 +106,8 @@ class RadarPlacesRepository {
     } on TimeoutException {
       return Result.failure<RadarPlacesResult>(
         const AppNetworkError(
-          code: 'radar_places_timeout',
-          message: 'La ricerca dei servizi vicini sta impiegando troppo. Riprova tra poco.',
+          code: preparingErrorCode,
+          message: 'Sto ancora preparando i servizi di questa zona. Riprova tra poco.',
         ),
       );
     } catch (e) {

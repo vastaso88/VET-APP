@@ -24,7 +24,7 @@ def list_nearby_places(
     longitude: Annotated[float, Query(ge=-180, le=180)],
     radius_km: Annotated[float | None, Query(gt=0)] = None,
     place_type: Annotated[list[RadarPlaceType] | None, Query()] = None,
-    per_type_limit: Annotated[int, Query(ge=1, le=60)] = 40,
+    per_type_limit: Annotated[int, Query(ge=1, le=400)] = 60,
 ) -> dict[str, object]:
     container = get_container()
     container.auth_provider.get_current_user()

@@ -4,24 +4,28 @@ import '../../../../design_system/tokens/app_colors.dart';
 import '../../../../design_system/tokens/app_radii.dart';
 import '../../../../design_system/tokens/app_spacing.dart';
 import '../../../../design_system/tokens/app_text_styles.dart';
+import '../../../../shared/errors/app_network_error.dart';
 import '../../../../shared/types/result.dart';
+import '../../../../shared/widgets/pet_loader.dart';
 import '../../../home/presentation/widgets/home_dashboard_primitives.dart';
 import '../../../local_activities/data/local_activities_repository.dart';
 import '../../../local_activities/domain/local_activity.dart';
 import '../../../local_activities/presentation/local_activity_labels.dart';
 import '../../../local_activities/presentation/pages/local_activity_detail_page.dart';
+import '../../../location/data/device_location_service.dart';
 import '../../../location/data/location_preference_store.dart';
 import '../../../location/domain/coordinates.dart';
 import '../../../location/domain/geo_math.dart';
 import '../../../location/presentation/distance_label.dart';
-import '../../../location/presentation/reference_location.dart';
 import '../../../nearby_places/data/radar_places_repository.dart';
 import '../../../nearby_places/domain/radar_place.dart';
 import '../../../nearby_places/presentation/pages/radar_map_page.dart';
 import '../../../nearby_places/presentation/radar_category.dart';
 import '../../../nearby_places/presentation/radar_place_sheet.dart';
+import '../../../nearby_places/presentation/widgets/radar_chip.dart';
 import '../../../nearby_places/presentation/widgets/radar_filters_sheet.dart';
 import '../../../nearby_places/presentation/widgets/radar_map.dart';
+import '../../../settings/presentation/pages/settings_page.dart';
 
 /// The radar: everything pet-related around the user's Località in one
 /// page. Events and user-submitted services come from
@@ -30,20 +34,35 @@ import '../../../nearby_places/presentation/widgets/radar_map.dart';
 /// OpenStreetMap through the backend (features/nearby_places). One radius
 /// and one set of category/species filters drive the map and all three
 /// sections.
+///
+/// The page is always centered on the Località chosen in Impostazioni
+/// (current position or home). There is no default city: until a position
+/// is known the page shows a loader, and without one it asks for it.
 class LocalEventsPage extends StatefulWidget {
-  const LocalEventsPage({super.key, this.radarPlacesRepository});
+  const LocalEventsPage({
+    super.key,
+    this.radarPlacesRepository,
+    this.locationSampler = const GeolocatorLocationSampler(),
+  });
 
   /// Injectable for tests; defaults to the real HTTP repository.
   final RadarPlacesRepository? radarPlacesRepository;
+
+  /// Injectable for tests; defaults to the device GPS.
+  final LocationSampler locationSampler;
 
   @override
   State<LocalEventsPage> createState() => _LocalEventsPageState();
 }
 
 class _LocalEventsPageState extends State<LocalEventsPage> {
-  static const _fallbackLocation = Coordinates(latitude: 45.4642, longitude: 9.1900);
   static const _radiusOptionsKm = [5.0, 10.0, 25.0, 50.0];
   static const _collapsedRows = 6;
+  static const _collapsedRowsPerCategory = 3;
+
+  /// Pauses before asking again when the backend is still importing the
+  /// area: the import usually succeeds on a later attempt.
+  static const _preparingRetryDelays = [Duration(seconds: 8), Duration(seconds: 15)];
 
   /// Categories offered as one-tap shortcuts above the map, most used
   /// first; the full set lives in the "Filtri" sheet.
@@ -57,9 +76,18 @@ class _LocalEventsPageState extends State<LocalEventsPage> {
   ];
 
   RadarFilters _filters = const RadarFilters(radiusKm: 10);
-  bool _showAllServices = false;
+  /// Service categories whose list is expanded past the first rows.
+  final Set<RadarCategory> _expandedCategories = {};
   bool _showAllClinics = false;
-  late Future<_LocalEventsViewData> _dataFuture;
+  late Future<_LocalEventsViewData?> _dataFuture;
+
+  /// False until the first radar answer (success or failure) arrived:
+  /// while false the whole page is a loader instead of an empty map.
+  bool _firstRadarAnswerReady = false;
+
+  /// The explanation before the system location prompt is shown at most
+  /// once per visit to the page.
+  bool _locationConsentAsked = false;
 
   /// One backend request per radius, kept for the page's lifetime so going
   /// back to a radius already seen is instant. Category and species
@@ -72,29 +100,142 @@ class _LocalEventsPageState extends State<LocalEventsPage> {
     _dataFuture = _loadData();
   }
 
-  Future<_LocalEventsViewData> _loadData() async {
-    await LocationPreferenceStore.instance.ensureLoaded();
-    final preference = LocationPreferenceStore.instance.preference;
-    final referenceLocation = resolveReferenceLocation(preference, _fallbackLocation);
-
+  /// Null when no position is available (see [_resolveLocation]).
+  Future<_LocalEventsViewData?> _loadData() async {
+    final referenceLocation = await _resolveLocation();
+    if (referenceLocation == null) {
+      return null;
+    }
     final activities = await LocalActivitiesRepository().loadActiveActivities();
     return _LocalEventsViewData(referenceLocation: referenceLocation, activities: activities);
   }
 
+  /// The Località the user chose in Impostazioni. "Posizione attuale"
+  /// takes a fresh GPS reading (asking for the permission only now, when
+  /// it is needed) and falls back to the last saved one; "Residenza" uses
+  /// the saved home. Null when neither exists - never a default city.
+  Future<Coordinates?> _resolveLocation() async {
+    final store = LocationPreferenceStore.instance;
+    await store.ensureLoaded();
+    final preference = store.preference;
+    if (preference.mode == LocationMode.homeResidence && preference.home != null) {
+      return preference.home;
+    }
+
+    // No position was ever known: explain why before the system prompt
+    // appears (just-in-time, foreground only - see
+    // docs/compliance/05_permessi_dispositivo_os.md). A user who already
+    // has a saved position has been through this and is not asked again.
+    final hasKnownPosition = preference.current != null || preference.home != null;
+    if (!hasKnownPosition) {
+      if (_locationConsentAsked) {
+        return null;
+      }
+      _locationConsentAsked = true;
+      final choice = await _askLocationConsent();
+      if (choice == _LocationChoice.address) {
+        // Opens Impostazioni; on return the page reloads with the address.
+        WidgetsBinding.instance.addPostFrameCallback((_) => _openSettings());
+        return null;
+      }
+      if (choice != _LocationChoice.allow) {
+        return null;
+      }
+    }
+
+    final reading = await widget.locationSampler.requestCurrentPosition();
+    final coordinates = reading.coordinates;
+    if (coordinates != null) {
+      await store.update(
+        preference.copyWith(
+          mode: LocationMode.currentPosition,
+          current: coordinates,
+          currentSource: LocationSource.deviceGps,
+          currentCapturedAt: DateTime.now(),
+        ),
+      );
+      return coordinates;
+    }
+    return preference.current ?? preference.home;
+  }
+
+  Future<_LocationChoice?> _askLocationConsent() async {
+    // The first load starts in initState, before there is a frame to
+    // attach a dialog to.
+    await WidgetsBinding.instance.endOfFrame;
+    if (!mounted) {
+      return null;
+    }
+    return showDialog<_LocationChoice>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: const Text('Usare la tua posizione?'),
+        content: const Text(
+          'Per mostrarti cosa c’è vicino a te VetApp usa la posizione del telefono '
+          'solo mentre usi l’app. In alternativa puoi indicare un indirizzo.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(_LocationChoice.address),
+            child: const Text('Scegli un indirizzo'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.of(dialogContext).pop(_LocationChoice.allow),
+            child: const Text('Consenti'),
+          ),
+        ],
+      ),
+    );
+  }
+
   Future<Result<RadarPlacesResult>> _radarFor(double radiusKm) {
-    return _radarFutures.putIfAbsent(radiusKm, () async {
-      final data = await _dataFuture;
-      final repository = widget.radarPlacesRepository ?? RadarPlacesRepository();
-      return repository.loadNearby(center: data.referenceLocation, radiusKm: radiusKm);
-    });
+    return _radarFutures.putIfAbsent(radiusKm, () => _loadRadar(radiusKm));
+  }
+
+  Future<Result<RadarPlacesResult>> _loadRadar(double radiusKm) async {
+    final data = await _dataFuture;
+    if (data == null) {
+      return Result.failure(const AppNetworkError(code: 'radar_places_no_location'));
+    }
+    final repository = widget.radarPlacesRepository ?? RadarPlacesRepository();
+    var result = await repository.loadNearby(center: data.referenceLocation, radiusKm: radiusKm);
+    for (final delay in _preparingRetryDelays) {
+      final stillPreparing = result.fold(
+        onSuccess: (_) => false,
+        onFailure: (error) => error.code == RadarPlacesRepository.preparingErrorCode,
+      );
+      if (!stillPreparing || !mounted) {
+        break;
+      }
+      await Future<void>.delayed(delay);
+      result = await repository.loadNearby(center: data.referenceLocation, radiusKm: radiusKm);
+    }
+    _firstRadarAnswerReady = true;
+    return result;
   }
 
   Future<void> _reload() async {
     setState(() {
+      // An explicit "Riprova" may ask for the position again.
+      _locationConsentAsked = false;
       _dataFuture = _loadData();
       _radarFutures.clear();
     });
     await _dataFuture;
+  }
+
+  Future<void> _openSettings() async {
+    await Navigator.of(context).push(
+      MaterialPageRoute<void>(builder: (_) => const SettingsPage()),
+    );
+    if (mounted) {
+      setState(() {
+        _firstRadarAnswerReady = false;
+        _locationConsentAsked = true;
+        _dataFuture = _loadData();
+        _radarFutures.clear();
+      });
+    }
   }
 
   void _retryRadarPlaces() {
@@ -104,7 +245,7 @@ class _LocalEventsPageState extends State<LocalEventsPage> {
   void _setFilters(RadarFilters filters) {
     setState(() {
       _filters = filters;
-      _showAllServices = false;
+      _expandedCategories.clear();
       _showAllClinics = false;
     });
   }
@@ -162,22 +303,33 @@ class _LocalEventsPageState extends State<LocalEventsPage> {
         title: Text('Radar nei dintorni', style: AppTextStyles.title),
       ),
       body: SafeArea(
-        child: FutureBuilder<_LocalEventsViewData>(
+        child: FutureBuilder<_LocalEventsViewData?>(
           future: _dataFuture,
           builder: (context, snapshot) {
-            if (!snapshot.hasData) {
-              return const Center(child: CircularProgressIndicator());
+            if (snapshot.connectionState != ConnectionState.done) {
+              return const _PageLoader(label: 'Cerco la tua posizione…');
             }
-            final data = snapshot.data!;
+            final data = snapshot.data;
+            if (data == null) {
+              return _NoLocationState(onOpenSettings: _openSettings, onRetry: _reload);
+            }
             return FutureBuilder<Result<RadarPlacesResult>>(
               future: _radarFor(_filters.radiusKm),
-              builder: (context, radarSnapshot) => _buildContent(
-                data,
+              builder: (context, radarSnapshot) {
                 // While a newly selected radius loads, FutureBuilder still
                 // holds the previous radius' data: do not show it as if it
                 // were the answer for the new one.
-                radarSnapshot.connectionState == ConnectionState.done ? radarSnapshot.data : null,
-              ),
+                final radarResult = radarSnapshot.connectionState == ConnectionState.done
+                    ? radarSnapshot.data
+                    : null;
+                if (radarResult == null && !_firstRadarAnswerReady) {
+                  return const _PageLoader(
+                    label: 'Cerco cosa c’è attorno a te. La prima volta in una zona '
+                        'può richiedere fino a un minuto.',
+                  );
+                }
+                return _buildContent(data, radarResult);
+              },
             );
           },
         ),
@@ -301,13 +453,16 @@ class _LocalEventsPageState extends State<LocalEventsPage> {
             subtitle: 'Negozi, aree cani, toelettature, pensioni e altri servizi.',
           ),
           const SizedBox(height: AppSpacing.lg),
-          _EntryList(
+          _ServicesByCategory(
             entries: services,
-            expanded: _showAllServices,
-            collapsedRows: _collapsedRows,
-            emptyLabel: 'Nessun servizio trovato con questi filtri.',
-            onToggleExpanded: () => setState(() => _showAllServices = !_showAllServices),
-            rowBuilder: (entry) => _ServiceRow(entry: entry, onTap: () => _openEntry(entry)),
+            expanded: _expandedCategories,
+            collapsedRows: _collapsedRowsPerCategory,
+            onToggleExpanded: (category) => setState(
+              () => _expandedCategories.contains(category)
+                  ? _expandedCategories.remove(category)
+                  : _expandedCategories.add(category),
+            ),
+            onOpen: _openEntry,
           ),
           const SizedBox(height: AppSpacing.xxl),
           const DashboardSectionHeader(
@@ -334,6 +489,8 @@ class _LocalEventsPageState extends State<LocalEventsPage> {
     );
   }
 }
+
+enum _LocationChoice { allow, address }
 
 typedef _ActivityWithDistance = ({LocalActivity activity, double distanceMeters});
 
@@ -390,10 +547,10 @@ class _RadiusSelector extends StatelessWidget {
       spacing: AppSpacing.sm,
       children: options
           .map(
-            (option) => ChoiceChip(
-              label: Text('${option.round()} km'),
+            (option) => RadarChip(
+              label: '${option.round()} km',
               selected: selected == option,
-              onSelected: (_) => onSelected(option),
+              onTap: () => onSelected(option),
             ),
           )
           .toList(),
@@ -428,28 +585,26 @@ class _QuickCategoryBar extends StatelessWidget {
           // scrolling the shortcuts.
           Padding(
             padding: const EdgeInsets.only(right: AppSpacing.sm),
-            child: ActionChip(
-              avatar: const Icon(Icons.tune, size: 18),
-              label: Text(activeFilterCount == 0 ? 'Filtri' : 'Filtri ($activeFilterCount)'),
-              onPressed: onOpenFilters,
+            child: RadarChip(
+              label: activeFilterCount == 0 ? 'Filtri' : 'Filtri ($activeFilterCount)',
+              icon: Icons.tune,
+              selected: activeFilterCount > 0,
+              onTap: onOpenFilters,
             ),
           ),
           Padding(
             padding: const EdgeInsets.only(right: AppSpacing.sm),
-            child: FilterChip(
-              label: const Text('Tutti'),
-              selected: selected.isEmpty,
-              onSelected: (_) => onClear(),
-            ),
+            child: RadarChip(label: 'Tutti', selected: selected.isEmpty, onTap: onClear),
           ),
           ...categories.map(
             (category) => Padding(
               padding: const EdgeInsets.only(right: AppSpacing.sm),
-              child: FilterChip(
-                avatar: Icon(category.icon, color: category.color, size: 18),
-                label: Text(category.label),
+              child: RadarChip(
+                label: category.label,
+                icon: category.icon,
+                iconColor: category.color,
                 selected: selected.contains(category),
-                onSelected: (_) => onToggle(category),
+                onTap: () => onToggle(category),
               ),
             ),
           ),
@@ -502,6 +657,62 @@ class _MapPreview extends StatelessWidget {
   }
 }
 
+class _PageLoader extends StatelessWidget {
+  const _PageLoader({required this.label});
+
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(AppSpacing.xxl),
+        child: PetLoader(label: label),
+      ),
+    );
+  }
+}
+
+/// Shown instead of a map on some default city when the app has no
+/// position to center on: GPS unavailable or denied, and no home saved.
+class _NoLocationState extends StatelessWidget {
+  const _NoLocationState({required this.onOpenSettings, required this.onRetry});
+
+  final VoidCallback onOpenSettings;
+  final VoidCallback onRetry;
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(AppSpacing.xxl),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Icon(Icons.location_off_outlined, size: 48, color: AppColors.mutedText),
+            const SizedBox(height: AppSpacing.lg),
+            Text('Imposta una località', style: AppTextStyles.title, textAlign: TextAlign.center),
+            const SizedBox(height: AppSpacing.sm),
+            Text(
+              'Per mostrarti cosa c’è attorno a te serve la tua posizione. Consenti '
+              'l’accesso alla posizione oppure indica la tua residenza in Impostazioni → Località.',
+              style: AppTextStyles.bodySmall,
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: AppSpacing.xl),
+            FilledButton.icon(
+              onPressed: onOpenSettings,
+              icon: const Icon(Icons.settings_outlined),
+              label: const Text('Apri Impostazioni'),
+            ),
+            TextButton(onPressed: onRetry, child: const Text('Riprova')),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
 /// Loading, error and "served from an old import" states of the
 /// OpenStreetMap part of the page. Events are unaffected by any of them.
 class _RadarStatus extends StatelessWidget {
@@ -518,7 +729,7 @@ class _RadarStatus extends StatelessWidget {
     if (result == null) {
       return Row(
         children: [
-          const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2)),
+          const PetLoader.small(),
           const SizedBox(width: AppSpacing.md),
           Expanded(
             child: Text(
@@ -548,8 +759,8 @@ class _RadarStatus extends StatelessWidget {
           value.isStale
               ? 'Non sono riuscito ad aggiornare i servizi di questa zona: vedi gli ultimi '
                   'dati disponibili, che potrebbero non essere recenti.'
-              : 'I servizi da OpenStreetMap sono disponibili entro '
-                  '${value.searchRadiusKm.round()} km.',
+              : 'Per ora i servizi sono disponibili entro ${value.searchRadiusKm.round()} km: '
+                  'riprova tra poco per il raggio completo.',
           style: AppTextStyles.caption,
         );
       },
@@ -596,6 +807,79 @@ class _EntryList extends StatelessWidget {
           ),
       ],
     );
+  }
+}
+
+/// "Servizi nella zona" split by category, each with its count and its
+/// nearest few. One list sorted by distance buried the scarce categories
+/// (a handful of groomers) under the abundant ones (hundreds of dog
+/// parks), to the point of looking like there were none.
+class _ServicesByCategory extends StatelessWidget {
+  const _ServicesByCategory({
+    required this.entries,
+    required this.expanded,
+    required this.collapsedRows,
+    required this.onToggleExpanded,
+    required this.onOpen,
+  });
+
+  /// Sorted by distance.
+  final List<_RadarEntry> entries;
+  final Set<RadarCategory> expanded;
+  final int collapsedRows;
+  final ValueChanged<RadarCategory> onToggleExpanded;
+  final ValueChanged<_RadarEntry> onOpen;
+
+  @override
+  Widget build(BuildContext context) {
+    if (entries.isEmpty) {
+      return Text('Nessun servizio trovato con questi filtri.', style: AppTextStyles.bodySmall);
+    }
+    final groups = <Widget>[];
+    for (final category in RadarCategory.values) {
+      final group = entries.where((entry) => entry.category == category).toList();
+      if (group.isEmpty) {
+        continue;
+      }
+      final isExpanded = expanded.contains(category);
+      groups.add(
+        Padding(
+          padding: const EdgeInsets.only(bottom: AppSpacing.lg),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Icon(category.icon, color: category.color, size: 18),
+                  const SizedBox(width: AppSpacing.sm),
+                  Text(
+                    '${category.label} (${group.length})',
+                    style: AppTextStyles.body.copyWith(fontWeight: FontWeight.w700),
+                  ),
+                ],
+              ),
+              const SizedBox(height: AppSpacing.sm),
+              ...(isExpanded ? group : group.take(collapsedRows)).map(
+                (entry) => Padding(
+                  padding: const EdgeInsets.only(bottom: AppSpacing.sm),
+                  child: _ServiceRow(entry: entry, onTap: () => onOpen(entry)),
+                ),
+              ),
+              if (group.length > collapsedRows)
+                TextButton(
+                  onPressed: () => onToggleExpanded(category),
+                  child: Text(
+                    isExpanded
+                        ? 'Mostra meno'
+                        : 'Mostra tutti: ${category.label.toLowerCase()} (${group.length})',
+                  ),
+                ),
+            ],
+          ),
+        ),
+      );
+    }
+    return Column(crossAxisAlignment: CrossAxisAlignment.start, children: groups);
   }
 }
 

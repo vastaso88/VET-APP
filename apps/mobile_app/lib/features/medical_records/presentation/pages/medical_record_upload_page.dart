@@ -1,6 +1,9 @@
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 
+import '../../../../shared/widgets/pet_loader.dart';
+
+
 import '../../../../design_system/tokens/app_colors.dart';
 import '../../../../design_system/tokens/app_radii.dart';
 import '../../../../design_system/tokens/app_spacing.dart';
@@ -143,7 +146,7 @@ class _MedicalRecordUploadPageState extends State<MedicalRecordUploadPage> {
                       ? const SizedBox(
                           width: 20,
                           height: 20,
-                          child: CircularProgressIndicator(strokeWidth: 2, color: AppColors.onPrimary),
+                          child: PetLoader.small(color: AppColors.onPrimary),
                         )
                       : const Text('Carica'),
                 ),

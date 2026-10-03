@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+
+import '../../../../shared/widgets/pet_loader.dart';
+
 import 'package:intl/intl.dart';
 
 import '../../../../app/router/app_router.dart';
@@ -189,7 +192,7 @@ class _PaywallPlanCard extends StatelessWidget {
                   ? const SizedBox(
                       width: 18,
                       height: 18,
-                      child: CircularProgressIndicator(strokeWidth: 2),
+                      child: PetLoader.small(),
                     )
                   : Text('Scegli ${plan.displayName}'),
             ),

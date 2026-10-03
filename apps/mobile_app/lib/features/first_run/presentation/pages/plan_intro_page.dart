@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+
+import '../../../../shared/widgets/pet_loader.dart';
+
 import 'package:intl/intl.dart';
 
 import '../../../../design_system/tokens/app_colors.dart';
@@ -190,7 +193,7 @@ class _CompactPlanCard extends StatelessWidget {
                 ? const SizedBox(
                     width: 16,
                     height: 16,
-                    child: CircularProgressIndicator(strokeWidth: 2),
+                    child: PetLoader.small(),
                   )
                 : const Text('Scegli'),
           ),
