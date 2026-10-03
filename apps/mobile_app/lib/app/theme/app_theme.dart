@@ -187,6 +187,13 @@ class AppTheme {
         labelStyle: AppTextStyles.caption.copyWith(
           color: AppColors.primaryStrong,
         ),
+        // Selected chips fill with `selectedColor` (dark primary), so their
+        // label and checkmark must be the light on-primary tone.
+        secondaryLabelStyle: AppTextStyles.caption.copyWith(
+          color: AppColors.onPrimary,
+          fontWeight: FontWeight.w700,
+        ),
+        checkmarkColor: AppColors.onPrimary,
         side: const BorderSide(color: AppColors.border),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(AppRadii.pill),

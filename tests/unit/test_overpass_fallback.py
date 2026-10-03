@@ -1,7 +1,7 @@
 import io
 import json
 from typing import Any
-from urllib import error
+from urllib import error, parse
 
 import pytest
 
@@ -152,5 +152,43 @@ def test_waits_and_retries_the_same_server_when_rate_limited(
     places = OverpassRadarPlacesSource(_settings()).fetch_places(_REQUEST)
 
     assert called == ["https://main.example/api/interpreter"] * 2
-    assert waits == [6.0]
+    assert waits == [5.0]
     assert len(places) == 1
+
+
+def test_declared_query_timeout_grows_with_the_radius(monkeypatch: pytest.MonkeyPatch) -> None:
+    bodies: list[str] = []
+
+    def fake_urlopen(http_request: Any, timeout: float) -> _OkResponse:
+        bodies.append(parse.unquote_plus(http_request.data.decode("utf-8")))
+        return _OkResponse()
+
+    monkeypatch.setattr(overpass_places_source.request, "urlopen", fake_urlopen)
+    source = OverpassRadarPlacesSource(_settings())
+
+    source.fetch_places(_REQUEST.model_copy(update={"radius_km": 14}))
+    source.fetch_places(_REQUEST.model_copy(update={"radius_km": 64}))
+
+    assert "[timeout:15]" in bodies[0]
+    assert "[timeout:39]" in bodies[1]
+
+
+def test_unnamed_places_get_a_generic_name_instead_of_being_dropped(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    elements = [
+        {"type": "node", "id": 1, "lat": 45.46, "lon": 9.19, "tags": {"amenity": "veterinary"}},
+        {"type": "node", "id": 2, "lat": 45.46, "lon": 9.19, "tags": {"shop": "pet_grooming"}},
+    ]
+
+    class _Response(_OkResponse):
+        def read(self) -> bytes:
+            return json.dumps({"elements": elements}).encode("utf-8")
+
+    monkeypatch.setattr(
+        overpass_places_source.request, "urlopen", lambda http_request, timeout: _Response()
+    )
+
+    places = OverpassRadarPlacesSource(_settings()).fetch_places(_REQUEST)
+
+    assert [place.name for place in places] == ["Veterinario", "Toelettatura"]

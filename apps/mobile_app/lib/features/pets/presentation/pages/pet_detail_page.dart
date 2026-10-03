@@ -1,6 +1,9 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+
+import '../../../../shared/widgets/pet_loader.dart';
+
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart' as latlong;
 import 'package:share_plus/share_plus.dart';
@@ -540,7 +543,7 @@ class _RemindersTabState extends State<_RemindersTab> {
               builder: (context, snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting) {
                   return const Center(
-                      child: CircularProgressIndicator(strokeWidth: 2));
+                      child: PetLoader());
                 }
 
                 final reminders = (snapshot.data ?? const <ReminderEntry>[])
@@ -961,7 +964,7 @@ class _RecordsTabState extends State<_RecordsTab> {
       future: _future,
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
-          return const Center(child: CircularProgressIndicator(strokeWidth: 2));
+          return const Center(child: PetLoader());
         }
 
         final records = (snapshot.data ?? const <MedicalRecordEntry>[])
@@ -1168,7 +1171,7 @@ class _WalksTabState extends State<_WalksTab> {
             builder: (context, snapshot) {
               if (snapshot.connectionState == ConnectionState.waiting) {
                 return const Center(
-                    child: CircularProgressIndicator(strokeWidth: 2));
+                    child: PetLoader());
               }
 
               final walks = snapshot.data ?? const <WalkSession>[];

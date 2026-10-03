@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 import json
+import logging
+import math
 import time
 from datetime import UTC, datetime
 from urllib import error, parse, request
@@ -12,7 +14,19 @@ from packages.core.domain.radar_places.models import RadarPlace
 from packages.shared.config.settings import Settings
 from packages.shared.errors.base import ProviderError
 
-_DEFAULT_NAMES = {"dog_park": "Area cani"}
+# A place tagged with its category but no name is still a real place:
+# measured within 10 km of Milan, 22 of 108 veterinarians and 347 of 364
+# dog parks have no name in OSM. A generic label beats dropping them.
+_DEFAULT_NAMES = {
+    "veterinary": "Veterinario",
+    "grooming": "Toelettatura",
+    "shop": "Negozio per animali",
+    "school": "Addestramento",
+    "pet_sitting": "Pet sitter",
+    "breeder": "Allevamento",
+    "hotel": "Pensione per animali",
+    "dog_park": "Area cani",
+}
 
 _OSM_SPECIES = {
     "dog": "dog",
@@ -31,9 +45,14 @@ _OSM_SPECIES = {
     "horses": "other",
 }
 
-_TOTAL_TIME_BUDGET_SECONDS = 60.0
+_logger = logging.getLogger(__name__)
+
+# Whole import, retries included. Kept well under a minute: the caller is
+# an HTTP request with a person waiting, and the app retries on its own.
+_TOTAL_TIME_BUDGET_SECONDS = 40.0
 _MIN_ATTEMPT_SECONDS = 8.0
-_RATE_LIMIT_WAITS_SECONDS = (6.0, 14.0, 22.0)
+_RATE_LIMIT_WAITS_SECONDS = (5.0, 10.0)
+_MIN_QUERY_TIMEOUT_SECONDS = 15
 
 
 class _RateLimitedError(ProviderError):
@@ -57,14 +76,22 @@ class OverpassRadarPlacesSource:
             self._settings.overpass_max_radius_km,
         )
         radius_meters = max(1, int(round(radius_km * 1000)))
+        # Overpass admits a query only if the time it declares fits the
+        # server's current load, so asking for the configured maximum on a
+        # small area gets it rejected (429/504) when a modest request
+        # would pass. Declare what the radius actually needs.
+        query_timeout = min(
+            self._settings.overpass_timeout_seconds,
+            max(_MIN_QUERY_TIMEOUT_SECONDS, math.ceil(radius_km * 0.6)),
+        )
         query = _build_overpass_query(
             latitude=request_data.center_latitude,
             longitude=request_data.center_longitude,
             radius_meters=radius_meters,
-            timeout_seconds=self._settings.overpass_timeout_seconds,
+            timeout_seconds=query_timeout,
         )
         body = parse.urlencode({"data": query}).encode("utf-8")
-        elements = self._fetch_elements(body)
+        elements = self._fetch_elements(body, query_timeout=query_timeout)
 
         window = request_data.coverage_window()
         fetched_at = datetime.now(UTC)
@@ -83,7 +110,7 @@ class OverpassRadarPlacesSource:
             if place is not None
         ]
 
-    def _fetch_elements(self, body: bytes) -> list[object]:
+    def _fetch_elements(self, body: bytes, *, query_timeout: int) -> list[object]:
         """Tries the main interpreter, then each fallback mirror. The
         public Overpass servers are a shared free resource and routinely
         answer 429/504 under load, so one busy server must not make the
@@ -104,12 +131,18 @@ class OverpassRadarPlacesSource:
                     return self._request_elements(
                         url,
                         body,
-                        timeout=min(self._settings.overpass_timeout_seconds + 5, remaining),
+                        timeout=min(query_timeout + 5, remaining),
                     )
                 except _RateLimitedError as exc:
                     last_error = exc
+                    _logger.warning("Overpass rate limited by %s", parse.urlsplit(url).netloc)
                 except ProviderError as exc:
                     last_error = exc
+                    _logger.warning(
+                        "Overpass attempt failed on %s: %s",
+                        parse.urlsplit(url).netloc,
+                        str(exc)[:200],
+                    )
                     break
         assert last_error is not None
         raise last_error
@@ -176,8 +209,6 @@ class OverpassRadarPlacesSource:
         if latitude is None or longitude is None:
             return None
 
-        # Dog parks are almost never named in OSM, yet they are exactly
-        # what the user is looking for: a generic label beats dropping them.
         name = _first_tag(tags, "name", "brand", "operator") or _DEFAULT_NAMES.get(place_type)
         if not name:
             return None

@@ -203,3 +203,56 @@ def test_every_tier_import_covers_its_search_radius_across_italy() -> None:
     assert tier_for_radius(5, max_search_radius_km=50).search_radius_km == 10
     assert tier_for_radius(25, max_search_radius_km=50).search_radius_km == 25
     assert tier_for_radius(200, max_search_radius_km=50).search_radius_km == 50
+
+
+def test_narrower_search_is_served_from_a_wider_cached_import() -> None:
+    source = _FakeSource()
+    service = _service(InMemoryRadarPlacesRepository(), source)
+
+    _names(service, radius_km=25)
+    result = service.execute(
+        ListNearbyRadarPlacesInput(latitude=MILAN_LAT, longitude=MILAN_LON, radius_km=10)
+    )
+
+    assert len(source.requests) == 1
+    assert result.coverage_status == "fresh"
+    assert result.search_radius_km == 10
+    assert "Negozio a 13 km" not in [item.place.name for item in result.places]
+
+
+def test_failed_wider_import_serves_the_narrower_cache_as_partial() -> None:
+    source = _FakeSource()
+    service = _service(InMemoryRadarPlacesRepository(), source)
+    _names(service, radius_km=10)
+    source.fail = True
+
+    result = service.execute(
+        ListNearbyRadarPlacesInput(latitude=MILAN_LAT, longitude=MILAN_LON, radius_km=50)
+    )
+
+    assert result.coverage_status == "partial"
+    assert result.search_radius_km == 10
+    assert result.places
+
+
+def test_clinics_are_never_truncated_by_the_per_type_limit() -> None:
+    class _ManyClinics(_FakeSource):
+        def fetch_places(self, request_data: RequestRadarPlacesIngestionInput) -> list[RadarPlace]:
+            key = request_data.coverage_window().coverage_key
+            return [
+                _place(key, f"node/{i}", f"Clinica {i}", "veterinary", 45.4642 + i * 0.0005, 9.19)
+                for i in range(80)
+            ] + [
+                _place(key, f"way/{i}", f"Area cani {i}", "dog_park", 45.4642, 9.19 + i * 0.0005)
+                for i in range(80)
+            ]
+
+    service = _service(InMemoryRadarPlacesRepository(), _ManyClinics())
+
+    result = service.execute(
+        ListNearbyRadarPlacesInput(latitude=MILAN_LAT, longitude=MILAN_LON, per_type_limit=10)
+    )
+
+    types = [item.place.place_type for item in result.places]
+    assert types.count("veterinary") == 80
+    assert types.count("dog_park") == 10

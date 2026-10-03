@@ -140,3 +140,34 @@ Principi generali (da confermare con legale e con l'Ordine provinciale competent
 - Configurazione finale del database: conferma che non vi sia distribuzione di database derivato da OSM.
 - Termini correnti dei provider di tile scelti.
 - Contratto tipo con le strutture che espongono schede a pagamento.
+
+## Addendum 2026-10-03 — fonti aperte Overture Maps e Foursquare
+
+Richiesto da "Mappe interattive" per integrare dati oltre OSM nel radar (copertura OSM scarsa). Uso previsto: import periodico offline in tabella dedicata (`radar_places_open`, con `source` e `source_id`), separata dalla cache OSM; unione solo in lettura; scheda con attribuzione; nessun export. Parere tecnico-normativo, non legale: le licenze indicate sono quelle dichiarate, da verificare sui metadati della release scaricata.
+
+**a. Attribuzione.**
+- Overture Maps Places (CDLA-Permissive 2.0): "© Overture Maps Foundation — dati Places, licenza CDLA-Permissive 2.0" nel footer della scheda e nella pagina "Fonti dati". Obbligatoria solo se il testo della licenza lo richiede per questo uso ⚖️; comunque consigliata.
+- Foursquare Open Source Places (Apache 2.0): "Dati Foursquare Open Source Places, Apache License 2.0" nella scheda e nella pagina "Fonti dati". Conservare NOTICE e testo della licenza se presenti nella release, in ogni redistribuzione.
+- OSM invariato: "© OpenStreetMap contributors (ODbL)".
+- Ogni record mostra la sua fonte e la data dello snapshot.
+
+**b. Uso commerciale e conservazione.** Ammessi per entrambe senza obbligo di rilasciare il nostro database: nessuna delle due ha share-alike. Condizione: conservare avvisi e licenza se si ridistribuiscono i dati. Un export o un endpoint bulk resta da evitare.
+
+**c. Convivenza con ODbL.**
+- Tabelle separate e unione in lettura sono il pattern giusto, ma la separazione fisica da sola non basta. Conta che non esista un database combinato memorizzato che contenga sostanzialmente contenuto OSM e sia reso pubblico. Quindi: nessuna tabella materializzata "merged".
+- Il share-alike è asimmetrico: ODbL è l'unica delle tre licenze con share-alike. CDLA-Permissive 2.0 e Apache 2.0 non estendono i loro obblighi a dati OSM. Il rischio "viceversa" è in pratica assente; quello verso OSM resta.
+- Le schede mostrate all'utente sono un *produced work* (singoli luoghi): richiedono attribuzione, non share-alike.
+- Deduplica: decidere al momento della richiesta non crea un database derivato. Persistere solo una mappa di identificatori (`osm_id` ↔ `source_id`, con confidenza) non copia contenuto: rischio basso, da confermare ⚖️. Se una scheda fonde attributi (nome da OSM, telefono da Overture), deve attribuire entrambe le fonti.
+
+**d. Altri vincoli.**
+- **Dati personali.** Ditte individuali con nome e cellulare personali sono dati personali. Base giuridica: legittimo interesse (art. 6(1)(f)) con valutazione documentata. Informativa a terzi (art. 14) nell'informativa privacy. Diritto di opposizione e cancellazione (artt. 21 e 17): serve un processo di rimozione e una lista di soppressione che l'import rispetti. Vale già per OSM.
+- **Marchi.** Nomi come testo sì; loghi e colori di brand no. Nessuna implicazione di partnership: un badge "sponsorizzato" su un marchio farebbe pensare a un accordo che non esiste.
+- **Aggiornamento e rimozione.** Sono snapshot, senza obbligo contrattuale di aggiornamento, ma vale il principio di esattezza (art. 5(1)(d)): mostrare la data dello snapshot, rimuovere i luoghi chiusi o segnalati, rispettare le rimozioni.
+- **Fonti aggregate.** I record possono avere metadati `sources` con termini propri, anche restrittivi su caching o ridistribuzione. Verificare per record ⚖️.
+- **Foursquare.** Distinguere il dataset open (Apache 2.0) dall'API Places, che ha termini restrittivi su archiviazione e caching. Non usare l'API per completare dati senza un contratto specifico.
+- **Accuratezza nella deduplica.** Il match per nome e distanza può fondere due strutture diverse e vicine. Nel contesto urgenze non si fondono telefono e orari senza una soglia di confidenza alta: in dubbio, schede separate.
+- **Provenienza auditabile.** Tabella `data_sources` (fonte, licenza, URL, testo di attribuzione, versione della release, data di import) e campi `license` e `attribution` per record: gli obblighi viaggiano con i dati.
+
+**Da verificare con legale ⚖️:** formulazione dell'obbligo di attribuzione in CDLA-Permissive 2.0; licenza per record nei metadati Overture; applicabilità di Apache 2.0 ai dati, considerando il diritto sui generis sulle banche dati UE; valutazione di legittimo interesse per i dati di ditte individuali; conferma che la deduplica in lettura non crei un database derivato.
+
+Prima di qualsiasi import: salvare in repo i testi di licenza della release scaricata e la data, come traccia di audit.

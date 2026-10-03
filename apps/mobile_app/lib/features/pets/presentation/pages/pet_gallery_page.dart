@@ -1,6 +1,9 @@
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+
+import '../../../../shared/widgets/pet_loader.dart';
+
 import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
 
@@ -203,7 +206,7 @@ class _PetGalleryPageState extends State<PetGalleryPage> {
         future: _photosFuture,
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator());
+            return const Center(child: PetLoader());
           }
           final photos = snapshot.data ?? const <PetPhotoEntry>[];
           if (photos.isEmpty) {
@@ -339,7 +342,7 @@ class _PhotoViewerPageState extends State<_PhotoViewerPage> {
           final bytes = snapshot.data;
           if (bytes == null) {
             return const Center(
-              child: CircularProgressIndicator(color: Colors.white),
+              child: PetLoader(color: Colors.white),
             );
           }
           return InteractiveViewer(

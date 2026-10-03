@@ -4,6 +4,7 @@ import '../../../../design_system/tokens/app_colors.dart';
 import '../../../../design_system/tokens/app_spacing.dart';
 import '../../../../design_system/tokens/app_text_styles.dart';
 import '../radar_category.dart';
+import 'radar_chip.dart';
 
 /// Everything the radar page can be narrowed by. Empty sets mean "no
 /// restriction" (all categories / all species).
@@ -89,10 +90,10 @@ class _RadarFiltersSheetState extends State<_RadarFiltersSheet> {
               spacing: AppSpacing.sm,
               children: widget.radiusOptionsKm
                   .map(
-                    (option) => ChoiceChip(
-                      label: Text('${option.round()} km'),
+                    (option) => RadarChip(
+                      label: '${option.round()} km',
                       selected: _radiusKm == option,
-                      onSelected: (_) => setState(() => _radiusKm = option),
+                      onTap: () => setState(() => _radiusKm = option),
                     ),
                   )
                   .toList(),
@@ -102,13 +103,15 @@ class _RadarFiltersSheetState extends State<_RadarFiltersSheet> {
             const SizedBox(height: AppSpacing.sm),
             Wrap(
               spacing: AppSpacing.sm,
+              runSpacing: AppSpacing.xs,
               children: RadarCategory.values
                   .map(
-                    (category) => FilterChip(
-                      avatar: Icon(category.icon, color: category.color, size: 18),
-                      label: Text(category.label),
+                    (category) => RadarChip(
+                      label: category.label,
+                      icon: category.icon,
+                      iconColor: category.color,
                       selected: _categories.contains(category),
-                      onSelected: (_) => _toggle(_categories, category),
+                      onTap: () => _toggle(_categories, category),
                     ),
                   )
                   .toList(),
@@ -124,12 +127,13 @@ class _RadarFiltersSheetState extends State<_RadarFiltersSheet> {
             const SizedBox(height: AppSpacing.sm),
             Wrap(
               spacing: AppSpacing.sm,
+              runSpacing: AppSpacing.xs,
               children: radarSpeciesOptions.entries
                   .map(
-                    (entry) => FilterChip(
-                      label: Text(entry.value),
+                    (entry) => RadarChip(
+                      label: entry.value,
                       selected: _species.contains(entry.key),
-                      onSelected: (_) => _toggle(_species, entry.key),
+                      onTap: () => _toggle(_species, entry.key),
                     ),
                   )
                   .toList(),

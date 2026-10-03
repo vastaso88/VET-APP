@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+
+import '../../shared/widgets/pet_loader.dart';
+
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart' as latlong;
 
@@ -52,7 +55,7 @@ class _MapsDemoPageState extends State<MapsDemoPage> {
         future: _dataFuture,
         builder: (context, snapshot) {
           if (!snapshot.hasData) {
-            return const Center(child: CircularProgressIndicator());
+            return const Center(child: PetLoader());
           }
           final data = snapshot.data!;
           return Column(

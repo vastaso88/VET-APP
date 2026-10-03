@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 
+import '../../../../shared/widgets/pet_loader.dart';
+
+
 import '../../../../app/router/app_router.dart';
 import '../../../../design_system/tokens/app_spacing.dart';
 import '../../../billing/data/subscription_gate.dart';
@@ -130,7 +133,7 @@ class _SetNewPasswordPageState extends State<SetNewPasswordPage> {
                     ? const SizedBox(
                         width: 20,
                         height: 20,
-                        child: CircularProgressIndicator(strokeWidth: 2),
+                        child: PetLoader.small(),
                       )
                     : const Text('Salva nuova password'),
               ),

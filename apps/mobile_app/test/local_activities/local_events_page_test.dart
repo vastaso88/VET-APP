@@ -3,6 +3,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:vet_app_mobile/features/local_events/presentation/pages/local_events_page.dart';
+import 'package:vet_app_mobile/features/location/data/location_preference_store.dart';
+import 'package:vet_app_mobile/features/location/domain/coordinates.dart';
 
 /// The page has a map preview plus two list sections, taller than the
 /// default 800x600 test surface - same fix as chat_feature_test.dart's
@@ -25,6 +27,14 @@ void main() {
     // DateFormat('d MMM', 'it_IT') would otherwise throw the first time an
     // activity actually has a startsAt to format.
     await initializeDateFormatting('it_IT');
+    // The page has no default city any more: it needs a Località. A saved
+    // home near the seeded demo activities stands in for the user's.
+    await LocationPreferenceStore.instance.update(
+      const UserLocationPreference(
+        mode: LocationMode.homeResidence,
+        home: Coordinates(latitude: 45.4642, longitude: 9.1900),
+      ),
+    );
   });
 
   testWidgets('shows the seeded service in "Servizi nella zona" (no date)', (tester) async {
@@ -32,6 +42,7 @@ void main() {
     await tester.pumpWidget(const MaterialApp(home: LocalEventsPage()));
 
     await tester.pump();
+    await tester.pump(const Duration(milliseconds: 50));
     await tester.pump(const Duration(milliseconds: 50));
 
     expect(find.text('Ambulatorio veterinario Navigli'), findsOneWidget);
@@ -44,6 +55,7 @@ void main() {
 
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 50));
+    await tester.pump(const Duration(milliseconds: 50));
 
     expect(find.text('In programma'), findsOneWidget);
     expect(find.text('Fiera cinofila regionale'), findsOneWidget);
@@ -54,6 +66,7 @@ void main() {
     await _useTallSurface(tester);
     await tester.pumpWidget(const MaterialApp(home: LocalEventsPage()));
     await tester.pump();
+    await tester.pump(const Duration(milliseconds: 50));
     await tester.pump(const Duration(milliseconds: 50));
 
     await tester.tap(find.text('Ambulatorio veterinario Navigli'));

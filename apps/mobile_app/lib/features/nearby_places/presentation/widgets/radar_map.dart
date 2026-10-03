@@ -78,6 +78,7 @@ class RadarMap extends StatelessWidget {
             ),
           ],
         ),
+        _ClusteredMarkers(items: items, interactive: interactive),
         MarkerLayer(
           markers: [
             Marker(
@@ -92,34 +93,103 @@ class RadarMap extends StatelessWidget {
                 ),
               ),
             ),
-            ...items.map(
-              (item) => Marker(
-                point: latlong.LatLng(item.location.latitude, item.location.longitude),
-                width: 30,
-                height: 30,
-                child: Semantics(
-                  label: '${item.category.label}: ${item.label}',
-                  button: true,
-                  child: GestureDetector(
-                    onTap: interactive ? item.onTap : null,
-                    child: Container(
-                      decoration: BoxDecoration(
-                        color: item.category.color,
-                        shape: BoxShape.circle,
-                        border: Border.all(color: Colors.white, width: 2),
-                      ),
-                      child: Icon(item.category.icon, color: Colors.white, size: 16),
-                    ),
-                  ),
-                ),
-              ),
-            ),
           ],
         ),
         const RichAttributionWidget(
           attributions: [TextSourceAttribution('OpenStreetMap contributors')],
         ),
       ],
+    );
+  }
+}
+
+/// Every item of the radius is on the map; items that would overlap at
+/// the current zoom are merged into one numbered marker instead of being
+/// left out. Tapping a cluster zooms into it. Recomputed on every camera
+/// change (MapCamera.of registers the dependency).
+class _ClusteredMarkers extends StatelessWidget {
+  const _ClusteredMarkers({required this.items, required this.interactive});
+
+  final List<RadarMapItem> items;
+  final bool interactive;
+
+  /// Side, in screen pixels, of the grid cell items are merged within.
+  static const _cellPixels = 44.0;
+
+  @override
+  Widget build(BuildContext context) {
+    final camera = MapCamera.of(context);
+    final controller = MapController.of(context);
+
+    final cells = <(int, int), List<RadarMapItem>>{};
+    for (final item in items) {
+      final point = camera.projectAtZoom(
+        latlong.LatLng(item.location.latitude, item.location.longitude),
+      );
+      final key = ((point.dx / _cellPixels).floor(), (point.dy / _cellPixels).floor());
+      cells.putIfAbsent(key, () => []).add(item);
+    }
+
+    return MarkerLayer(
+      markers: cells.values.map((group) {
+        if (group.length == 1) {
+          return _itemMarker(group.single);
+        }
+        final center = latlong.LatLng(
+          group.map((item) => item.location.latitude).reduce((a, b) => a + b) / group.length,
+          group.map((item) => item.location.longitude).reduce((a, b) => a + b) / group.length,
+        );
+        return Marker(
+          point: center,
+          width: 36,
+          height: 36,
+          child: Semantics(
+            label: '${group.length} luoghi vicini tra loro',
+            button: true,
+            child: GestureDetector(
+              onTap: interactive ? () => controller.move(center, camera.zoom + 2) : null,
+              child: Container(
+                alignment: Alignment.center,
+                decoration: BoxDecoration(
+                  color: AppColors.text,
+                  shape: BoxShape.circle,
+                  border: Border.all(color: Colors.white, width: 2),
+                ),
+                child: Text(
+                  '${group.length}',
+                  style: AppTextStyles.caption.copyWith(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ),
+            ),
+          ),
+        );
+      }).toList(),
+    );
+  }
+
+  Marker _itemMarker(RadarMapItem item) {
+    return Marker(
+      point: latlong.LatLng(item.location.latitude, item.location.longitude),
+      width: 30,
+      height: 30,
+      child: Semantics(
+        label: '${item.category.label}: ${item.label}',
+        button: true,
+        child: GestureDetector(
+          onTap: interactive ? item.onTap : null,
+          child: Container(
+            decoration: BoxDecoration(
+              color: item.category.color,
+              shape: BoxShape.circle,
+              border: Border.all(color: Colors.white, width: 2),
+            ),
+            child: Icon(item.category.icon, color: Colors.white, size: 16),
+          ),
+        ),
+      ),
     );
   }
 }
