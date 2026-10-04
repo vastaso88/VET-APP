@@ -20,7 +20,9 @@ import '../../../location/presentation/distance_label.dart';
 import '../../../nearby_places/data/radar_places_repository.dart';
 import '../../../nearby_places/domain/radar_place.dart';
 import '../../../nearby_places/presentation/pages/radar_map_page.dart';
+import '../../../nearby_places/presentation/pages/report_missing_place_page.dart';
 import '../../../nearby_places/presentation/radar_category.dart';
+import '../../../nearby_places/presentation/radar_contributions.dart';
 import '../../../nearby_places/presentation/radar_place_sheet.dart';
 import '../../../nearby_places/presentation/widgets/radar_chip.dart';
 import '../../../nearby_places/presentation/widgets/radar_filters_sheet.dart';
@@ -30,8 +32,9 @@ import '../../../settings/presentation/pages/settings_page.dart';
 /// The radar: everything pet-related around the user's Località in one
 /// page. Events and user-submitted services come from
 /// packages/core/domain/local_activity (LocalActivitiesRepository);
-/// clinics, shops, dog parks and the other businesses come from
-/// OpenStreetMap through the backend (features/nearby_places). One radius
+/// clinics, shops, dog parks and the other businesses come from open
+/// datasets (OpenStreetMap, Overture) through the backend
+/// (features/nearby_places). One radius
 /// and one set of category/species filters drive the map and all three
 /// sections.
 ///
@@ -43,6 +46,7 @@ class LocalEventsPage extends StatefulWidget {
     super.key,
     this.radarPlacesRepository,
     this.locationSampler = const GeolocatorLocationSampler(),
+    this.contributions,
   });
 
   /// Injectable for tests; defaults to the real HTTP repository.
@@ -50,6 +54,10 @@ class LocalEventsPage extends StatefulWidget {
 
   /// Injectable for tests; defaults to the device GPS.
   final LocationSampler locationSampler;
+
+  /// Injectable for tests; defaults to the real "Segnala!" backend. Its
+  /// `onChanged` is replaced: the page reloads itself after a contribution.
+  final RadarContributions? contributions;
 
   @override
   State<LocalEventsPage> createState() => _LocalEventsPageState();
@@ -93,6 +101,28 @@ class _LocalEventsPageState extends State<LocalEventsPage> {
   /// back to a radius already seen is instant. Category and species
   /// filters never trigger a request: they only re-filter what is loaded.
   final Map<double, Future<Result<RadarPlacesResult>>> _radarFutures = {};
+
+  /// Reports, votes and ratings, reloading the radar when one goes through
+  /// (a new pending place, a changed count) without the full-page loader.
+  late final RadarContributions _contributions =
+      (widget.contributions ?? RadarContributions(onChanged: () {})).reloading(_reloadRadar);
+
+  void _reloadRadar() {
+    if (mounted) {
+      setState(_radarFutures.clear);
+    }
+  }
+
+  void _openReportMissing(Coordinates center) {
+    Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder: (_) => ReportMissingPlacePage(
+          contributions: _contributions,
+          initialPosition: center,
+        ),
+      ),
+    );
+  }
 
   @override
   void initState() {
@@ -286,7 +316,7 @@ class _LocalEventsPageState extends State<LocalEventsPage> {
   void _openEntry(_RadarEntry entry) {
     final place = entry.place;
     if (place != null) {
-      showRadarPlaceSheet(context, place);
+      showRadarPlaceSheet(context, place, contributions: _contributions);
     } else {
       _openActivity(entry.activity!, entry.distanceMeters);
     }
@@ -388,6 +418,7 @@ class _LocalEventsPageState extends State<LocalEventsPage> {
           location: entry.location,
           label: entry.title,
           onTap: () => _openEntry(entry),
+          pending: entry.place?.isPendingReport ?? false,
         ),
       ),
     ];
@@ -427,6 +458,15 @@ class _LocalEventsPageState extends State<LocalEventsPage> {
           RadarLegend(categories: mapItems.map((item) => item.category).toSet()),
           const SizedBox(height: AppSpacing.md),
           _RadarStatus(result: radarResult, radiusKm: _filters.radiusKm, onRetry: _retryRadarPlaces),
+          const SizedBox(height: AppSpacing.md),
+          Align(
+            alignment: Alignment.centerLeft,
+            child: OutlinedButton.icon(
+              onPressed: () => _openReportMissing(data.referenceLocation),
+              icon: const Icon(Icons.add_location_alt_outlined),
+              label: const Text('Segnala! Manca un luogo'),
+            ),
+          ),
           if (_filters.showsCategory(RadarCategory.events)) ...[
             const SizedBox(height: AppSpacing.xl),
             const DashboardSectionHeader(
@@ -472,7 +512,7 @@ class _LocalEventsPageState extends State<LocalEventsPage> {
           const SizedBox(height: AppSpacing.sm),
           Text(
             'In caso di urgenza telefona prima di partire: orari e recapiti arrivano da '
-            'OpenStreetMap e non sono verificati da VetApp.',
+            'archivi aperti e non sono verificati da VetApp.',
             style: AppTextStyles.caption,
           ),
           const SizedBox(height: AppSpacing.md),
@@ -918,14 +958,17 @@ class _ServiceRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final report = entry.place?.community;
+    final pending = report != null && report.isPending;
     return DashboardListRow(
       title: entry.title,
       subtitle: [
-        if (entry.typeLabel != null) entry.typeLabel!,
+        if (pending) pendingReportLabel(report),
+        if (!pending && entry.typeLabel != null) entry.typeLabel!,
         if (entry.addressLabel != null) entry.addressLabel!,
         formatDistance(entry.distanceMeters),
       ].join(' · '),
-      leading: RadarCategoryBadge(category: entry.category),
+      leading: RadarCategoryBadge(category: entry.category, pending: pending),
       trailing: const Icon(Icons.chevron_right_rounded, color: AppColors.mutedText),
       onTap: onTap,
     );
@@ -944,14 +987,17 @@ class _ClinicRow extends StatelessWidget {
   Widget build(BuildContext context) {
     final place = entry.place;
     final hours = place?.openingHours;
+    final report = place?.community;
+    final pending = report != null && report.isPending;
     return DashboardListRow(
       title: entry.title,
       subtitle: [
+        if (pending) pendingReportLabel(report),
         formatDistance(entry.distanceMeters),
         if (entry.addressLabel != null) entry.addressLabel!,
         if (hours != null) formatOpeningHours(hours),
       ].join(' · '),
-      leading: RadarCategoryBadge(category: entry.category),
+      leading: RadarCategoryBadge(category: entry.category, pending: pending),
       trailing: Row(
         mainAxisSize: MainAxisSize.min,
         children: [

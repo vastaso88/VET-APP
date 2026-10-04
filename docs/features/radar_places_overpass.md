@@ -4,6 +4,102 @@ Pagina unica (`LocalEventsPage`, titolo "Radar nei dintorni") che riunisce tutto
 
 Origine: il motore di ricerca su OpenStreetMap (`overpass_places_source.py`) è stato scritto da Roberto sul branch `roberto`. Cache per zona, API e schermata sono stati costruiti su `Francesco` il 2026-10-03. Parere legale: `docs/compliance/06_radar_mappe_sponsorizzazioni.md`.
 
+## Da dove arrivano i dati (dal 2026-10-04)
+
+Il radar risponde dal nostro database. Due archivi aperti vengono importati periodicamente, fuori da Vercel, e uniti solo al momento della richiesta:
+
+| Fonte | Tabella | Cosa porta | Import |
+| --- | --- | --- | --- |
+| Overture Maps Places | `radar_places_open` | veterinari, toelettature, negozi, pensioni, pet sitter, addestratori, allevamenti | `scripts/radar/import_overture_places.py` |
+| OpenStreetMap | `radar_places_osm` | aree cani (con i dettagli) e le stesse categorie viste dai volontari | `scripts/radar/import_osm_places.py` |
+
+`data_sources` registra per ogni fonte versione, licenza, attribuzione, data dell'import e area coperta. Dove l'import OSM copre la posizione dell'utente (tutta Italia dopo un import completo) Overpass non viene più chiamato mentre l'utente aspetta. Fuori da quell'area resta il vecchio percorso: cache per cella e, come ultima risorsa, Overpass in diretta.
+
+Le due tabelle non vengono mai unite nel database: OpenStreetMap ha una licenza con obbligo di condivisione (ODbL), Overture no. L'unione avviene in memoria, per singola richiesta, con le regole di `packages/core/domain/radar_places/dedup.py` (campione di taratura: `docs/features/radar_dedup_sample.md`). Quando due fonti hanno lo stesso luogo resta una scheda con i dati di una sola fonte e l'indicazione "Presente anche in".
+
+### Numeri dell'import (prova del 2026-10-04, senza scrittura)
+
+- Overture, Italia: 30.549 righe delle categorie pet, 15.831 luoghi dopo soglia di confidenza 0,7, esclusione dei chiusi e doppioni interni. Veterinari 4.842, toelettature 3.182, negozi 5.251, allevamenti 1.198, addestratori 1.117, pensioni 158, pet sitter 83. Tempo: 3 minuti e 11 secondi.
+- OpenStreetMap: una richiesta per regione. Lombardia 1.944 luoghi in 34 secondi, Molise 17 in 3 secondi. Italia intera stimata in 10-15 minuti, pause comprese.
+- Spazio: circa 9 MB per Overture e una cifra simile per OSM, su 500 MB del piano gratuito Supabase.
+
+### Come si esegue
+
+Servono `SUPABASE_URL` e `SUPABASE_SERVICE_ROLE_KEY` nel file `.env` locale (mai nel repository).
+
+```bash
+uv run --with duckdb python scripts/radar/import_overture_places.py
+```
+
+```bash
+uv run python scripts/radar/import_osm_places.py
+```
+
+Con `--dry-run` gli script contano senza scrivere. `.github/workflows/radar-places-import.yml` li esegue il 2 di ogni mese, una volta impostati i segreti `RADAR_SUPABASE_URL` e `RADAR_SUPABASE_SERVICE_ROLE_KEY` nel repository.
+
+Ogni import sostituisce il contenuto della propria tabella, rispetta le esclusioni manuali di `radar_place_overrides` e, per Overture, aggiorna `docs/licenses/overture_places_release.md`. L'import OSM dichiara l'Italia coperta solo se tutte e venti le regioni sono andate a buon fine.
+
+### Nell'app
+
+Ogni scheda indica la fonte ("Fonte: © Overture Maps Foundation — Places") e, se c'è, l'altra fonte che la conferma. Impostazioni → Info → **Fonti dati** elenca le fonti con licenza, versione e data dell'import. Le aree cani mostrano ciò che OpenStreetMap dichiara (recintata, illuminata, fondo, accesso, acqua, accessibilità): un dato assente non viene mostrato come "no".
+
+## Segnala! e stelle delle aree cani
+
+Parere e condizioni: `docs/compliance/07_contributi_utenti.md`. Niente foto, niente testo libero, niente conferme sì/no sui dettagli, nessuna valutazione di veterinari, negozi o altre attività.
+
+### Cosa si può fare
+
+- **Segnalare un luogo mancante**: categoria da elenco chiuso, nome dell'insegna (facoltativo solo per le aree cani), posizione scelta sulla mappa, indirizzo ricavato dalla posizione. Nessun campo note e nessun campo di contatto.
+- **Segnalare un problema su un luogo esistente**: ha chiuso, è un doppione, la posizione è sbagliata.
+- **Confermare o smentire** una segnalazione in attesa ("Confermo" / "Non è così").
+- **Dare da 1 a 5 stelle a un'area cani pubblica**. Un voto per persona e area, modificabile. La media compare da 3 voti. Sono escluse le aree a pagamento o riservate ai clienti (`fee=yes`, `access=customers|private`).
+
+Prima del primo contributo l'app mostra le regole d'uso e chiede di accettarle (consenso `contribution_rules`, versionato, revocabile dalle impostazioni dei consensi; non blocca l'uso dell'app).
+
+### Come appare
+
+- Un luogo segnalato e non ancora confermato è visibile a tutti, ma distinto: marker vuoto con un "?", riga con "Segnalato dagli utenti · in attesa di conferma (2/5)", scheda con l'avviso e i due pulsanti.
+- Una volta confermato compare come gli altri, con fonte "Segnalato dagli utenti VetApp".
+- Un luogo confermato chiuso o doppione sparisce: entra in `radar_place_overrides`, che gli import e la lettura rispettano. La lettura toglie anche lo stesso luogo presente in un'altra fonte (stessa categoria entro 30 m).
+- "Posizione sbagliata", una volta confermata, non ha effetti automatici: resta nella tabella per una correzione manuale.
+
+### Regole di conferma
+
+- Soglia: `RADAR_REPORT_CONFIRMATIONS` (5) conferme di persone diverse; `RADAR_REPORT_CLOSED_CONFIRMATIONS` (5) per "ha chiuso". Modificabili senza nuova build.
+- Chi ha segnalato non conta e non può votare la propria segnalazione.
+- Un voto per persona per segnalazione; si può cambiare finché la segnalazione è in attesa.
+- Le smentite si sottraggono alle conferme. Quando le smentite superano le conferme di 3, la segnalazione decade.
+- Segnalare di nuovo la stessa cosa (stesso luogo, oppure un mancante della stessa categoria entro 50 m) vale come conferma della segnalazione esistente.
+- Limite: `RADAR_REPORT_DAILY_LIMIT` (5) segnalazioni al giorno per persona.
+- Il nome viene rifiutato se contiene numeri di telefono, email, siti o insulti evidenti, o se supera 60 caratteri.
+- Per le categorie che possono coincidere con un'abitazione (pensioni, pet sitter, addestratori) la posizione viene arrotondata a circa 500 m.
+
+### Due comportamenti lasciati alla decisione del proprietario
+
+Sono impostazioni lato server, quindi la scelta non richiede una nuova build. Decisione del proprietario al 2026-10-04: le segnalazioni di chiusura restano non visibili fino alla soglia (default confermato); le aree cani come luogo mancante sono ancora da decidere.
+
+| Impostazione | Default | Effetto |
+| --- | --- | --- |
+| `RADAR_REPORT_SHOW_PENDING_CLOSURES` | `false` | Se `true`, un luogo segnalato come chiuso mostra a tutti "Segnalato come chiuso (2/5)" con i pulsanti. Se `false`, le segnalazioni di chiusura non sono visibili: ogni nuova segnalazione indipendente vale come conferma. |
+| `RADAR_REPORT_PLACE_TYPES` | veterinari, toelettature, negozi, pensioni | Categorie segnalabili come mancanti. Per includere le aree cani: aggiungere `dog_park` alla lista. |
+
+I default seguono le condizioni del parere legale; la richiesta iniziale dell'utente era il contrario su entrambi i punti.
+
+### Dati e identità
+
+- Tabelle nostre: `radar_user_reports`, `radar_report_votes`, `radar_place_ratings`, `radar_place_overrides`. Nulla viene scritto verso OpenStreetMap né nelle tabelle delle fonti aperte.
+- Chi segnala o vota è registrato solo come pseudonimo: HMAC-SHA256 dell'id utente con la chiave `RADAR_PSEUDONYM_KEY`, che sta solo nelle variabili d'ambiente del backend. Nel database non c'è l'id utente e non esiste una tabella di corrispondenza. Per trovare i contributi di un account (ad esempio alla sua cancellazione) si ricalcola lo pseudonimo.
+- Se `RADAR_PSEUDONYM_KEY` non è impostata, la chiave viene derivata da `SUPABASE_SERVICE_ROLE_KEY` (HMAC con etichetta fissa `radar-contributions-v1`): i contributi funzionano senza una variabile in più. Limite: se la service key viene ruotata, gli pseudonimi cambiano e i voti già dati non sono più riconducibili alla stessa persona. Impostare la variabile dedicata resta la scelta consigliata. Senza nessuna delle due in produzione i contributi sono disattivati (risposta 503) e il radar funziona in sola lettura.
+- RLS attiva senza policy: tutto passa dal backend. L'API non restituisce mai lo pseudonimo; a chi guarda dice solo il proprio voto e se la segnalazione è sua.
+- Conservazione (`scripts/radar/cleanup_reports.py`, eseguito anche dal flusso mensile): segnalazioni non confermate eliminate dopo 90 giorni; 12 mesi dopo l'esito vengono cancellati i voti e lo pseudonimo di chi ha segnalato, restano i contatori.
+
+### Cosa non è implementato
+
+- Rilevazione automatica di gruppi di account nuovi che confermano insieme, ed età minima dell'account per segnalare una chiusura: l'API di autenticazione usata oggi non espone la data di creazione dell'account al servizio.
+- Canale di contestazione per i titolari con verifica di partita IVA: oggi è l'indirizzo email dell'impostazione `SUPPORT_CONTACT_EMAIL`, mostrato in "Fonti dati" (se l'impostazione è vuota l'app non mostra alcun indirizzo); l'esito si applica a mano (riga in `radar_place_overrides` o cambio di stato della segnalazione).
+- Filtro sui nomi di persona nel nome del luogo: c'è solo il filtro su contatti e insulti.
+- Cancellazione dei contributi alla chiusura dell'account: la logica è possibile (pseudonimo ricalcolabile) ma non è collegata, perché l'app non ha ancora una funzione di cancellazione dell'account.
+
 ## Posizione
 
 Al primo ingresso senza nessuna posizione nota, la pagina mostra una spiegazione ("VetApp usa la posizione del telefono solo mentre usi l'app") con due scelte: **Consenti**, che fa comparire la richiesta di sistema, salva la modalità "posizione attuale" e centra subito; **Scegli un indirizzo**, che apre le Impostazioni. Chi ha già una posizione salvata non rivede la spiegazione.
@@ -127,7 +223,7 @@ Le toelettature non erano zero nei dati: erano 20, ma in fondo a un elenco ordin
 
 Cercare per nome (`name ~ "toelett"`, `name ~ "veterinar"`) non è praticabile su Overpass: le query vanno in timeout dopo 76-88 secondi anche limitate a negozi e servizi. Tra i 90 negozi già importati, uno solo ha "toelett" o "grooming" nel nome: il guadagno sarebbe trascurabile.
 
-## Fonti aperte aggiuntive: valutazione (non implementato)
+## Fonti aperte aggiuntive: la valutazione che ha portato all'import
 
 ### Prova su Overture Maps Places
 
@@ -138,6 +234,8 @@ Release `2026-09-23.1`, letta con DuckDB da `s3://overturemaps-us-west-2`, stess
 | Veterinari | 108 | 314 | 142 | 51 | 91 | 199 |
 | Toelettature | 21 | 125 | 64 | 10 | 54 | 75 |
 | Negozi | 90 | 383 | 209 | 65 | 144 | 234 |
+
+Nota: i numeri dei negozi in questa tabella sono gonfiati. La prima estrazione cercava "pet_store" come parte del nome della categoria e includeva 86 negozi di tappeti (`carpet_store`). L'import usa il confronto esatto.
 
 "Affidabili": `confidence >= 0.7`, non `permanently_closed`, dopo deduplica interna. "Già in OSM": un luogo OSM entro 120 m con una parola del nome in comune (o entro 30 m).
 
@@ -177,6 +275,25 @@ Stima: 2-3 giorni di lavoro (script, tabelle, unione con deduplica, attribuzione
 - I risultati vanno mostrati su una mappa Google, non su quella attuale basata su OpenStreetMap.
 - Non possono essere uniti in un nostro archivio con altre fonti.
 - Il progetto resterebbe dipendente da prezzi e condizioni decisi da un solo fornitore.
+
+### Aree cani dei Comuni: verifica (2026-10-04)
+
+Controllo fatto interrogando i portali open data dei Comuni. Regola del parere legale: si importa solo con licenza IODL 2.0, CC BY 4.0 o CC0 accertata sulla pagina di chi pubblica.
+
+| Comune | Dataset | Aree | Licenza dichiarata | Formato | Aggiornato | Esito |
+| --- | --- | --- | --- | --- | --- | --- |
+| Bologna | `sgambatura_cani` (opendata.comune.bologna.it) | 33 | CC BY 4.0, con link alla licenza | JSON, GeoJSON (punto e perimetro) | 2026-09-14 | **Importato** |
+| Torino | `aree-cani` (aperto.comune.torino.it) | 52 | CC BY 4.0 (link al testo 4.0 nella pagina) | CSV con coordinate, SHP | 2019-06-05 | **Importato**, dati vecchi |
+| Milano | `ds52_infogeo_aree_cani_localizzazione` (dati.comune.milano.it) | 423 | "Creative Commons Attribution": la pagina cita sia CC BY 4.0 sia CC BY 3.0 Italia | GeoJSON (perimetri), CSV | 2026-05-08 | **Non importato**: versione della licenza da accertare |
+| Roma | "Aree ludiche per cani" (dati.comune.roma.it) | non contate | "Creative Commons Attribution", versione non indicata | ODS | 2020-03-24 | Non importato |
+| Napoli | nessun dataset trovato | | | | | |
+| Firenze, Genova | il portale non ha risposto alla ricerca | | | | | Da riprovare |
+
+Milano è il caso che conta di più: 423 aree ufficiali contro 364 in OpenStreetMap nello stesso territorio, e 166 delle 423 non hanno un'area OSM entro 60 m. Appena accertata la versione della licenza (basta la pagina del dataset o una risposta del Comune), l'import è una funzione di una ventina di righe in `municipal_mapping.py`.
+
+Qualità: Bologna e Milano pubblicano i perimetri, Torino solo un punto. Nessuno dei dataset contiene recinzione, acqua o illuminazione: quei dettagli restano quelli di OpenStreetMap. Quando la stessa area è in OSM e nell'elenco del Comune (stessa area entro 60 m) resta una scheda sola; se OSM ha i dettagli vince OSM e il Comune compare come "Presente anche in".
+
+Import: `uv run python scripts/radar/import_municipal_dog_parks.py` (anche nel flusso mensile). Ogni Comune è una fonte a sé in `data_sources`, con la propria attribuzione nella scheda e in "Fonti dati".
 
 ### Altre fonti italiane
 

@@ -9,4 +9,5 @@ Documentazione sulla conformità normativa di VetApp (AI Act, protezione dati) e
 - `04_termini_e_consensi.md` — quadro normativo su Termini di Servizio, consensi opt-in (GDPR art. 6/7) e permessi OS; architettura dei consensi a livello di account.
 - `05_permessi_dispositivo_os.md` — catalogo permessi OS per l'app nativa Android (fotocamera, microfono, posizione, notifiche): cosa dichiarare ora, testo di richiesta, e il flusso "aggiorna per continuare" quando un permesso non è già dichiarato.
 - `06_radar_mappe_sponsorizzazioni.md` — parere operativo su radar servizi OSM: licenza ODbL, policy Overpass/tile, pubblicità veterinaria, trasparenza commerciale, privacy posizione; sponsorizzazioni rimandate.
+- `07_contributi_utenti.md` — parere su contributi degli utenti nel radar (conferme, stelle, foto, testo libero, segnalazioni): obblighi DSA per piccole imprese, foto, recensioni, dati dei Comuni, bozze privacy e regole d'uso.
 - `legislative-watch/` — meccanismo di monitoraggio degli aggiornamenti legislativi (job schedulato + report per revisione umana).

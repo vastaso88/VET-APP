@@ -46,9 +46,7 @@ class ResponseGenerator:
             )
 
         if synthesis.safe_owner_actions:
-            parts.append(
-                "Nel frattempo puoi: " + "; ".join(synthesis.safe_owner_actions) + "."
-            )
+            parts.append("Nel frattempo puoi: " + "; ".join(synthesis.safe_owner_actions) + ".")
 
         if synthesis.monitoring_points:
             parts.append("Tieni d'occhio: " + "; ".join(synthesis.monitoring_points) + ".")

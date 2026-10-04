@@ -30,6 +30,10 @@ class Settings(BaseSettings):
     # No default on purpose: these are real personal addresses, set via
     # DEVELOPER_EMAILS in .env (comma-separated), never hardcoded in source.
     developer_emails: list[str] = Field(default=[], alias="DEVELOPER_EMAILS")
+    # Secret key for the pseudonym stored in place of the reporter's id on
+    # chat response reports. Changing it orphans existing pseudonyms (no
+    # more dedup/erasure match for old rows), so set it once and keep it.
+    reporter_pseudonym_salt: str = Field(default="", alias="REPORTER_PSEUDONYM_SALT")
     llm_provider: str = Field(default="echo", alias="LLM_PROVIDER")
     llm_model: str = Field(default="demo-model", alias="LLM_MODEL")
     llm_api_key: str = Field(default="", alias="LLM_API_KEY")
@@ -81,6 +85,33 @@ class Settings(BaseSettings):
     overpass_user_agent: str = Field(
         default="VET-APP/1.0 (+https://vet-app-psi-nine.vercel.app)", alias="OVERPASS_USER_AGENT"
     )
+    # "Segnala!" (community reports on the radar). The pseudonym key
+    # turns account ids into the stand-ins stored with reports and votes;
+    # it must live only here (environment), never in the database. When
+    # empty, the key is derived from SUPABASE_SERVICE_ROLE_KEY (see
+    # ApplicationContainer.radar_report_settings), so contributions work
+    # without one more variable to set. Setting it explicitly is still
+    # the better option: a derived key changes if the service key is
+    # rotated, and every pseudonym with it.
+    radar_pseudonym_key: str = Field(default="", alias="RADAR_PSEUDONYM_KEY")
+    radar_report_confirmations: int = Field(default=5, ge=1, alias="RADAR_REPORT_CONFIRMATIONS")
+    radar_report_closed_confirmations: int = Field(
+        default=5, ge=1, alias="RADAR_REPORT_CLOSED_CONFIRMATIONS"
+    )
+    radar_report_daily_limit: int = Field(default=5, ge=1, alias="RADAR_REPORT_DAILY_LIMIT")
+    # Categories that can be reported as missing (a JSON list in env).
+    radar_report_place_types: list[str] = Field(
+        default=["veterinary", "grooming", "shop", "hotel"], alias="RADAR_REPORT_PLACE_TYPES"
+    )
+    # Whether a not-yet-confirmed "closed" report is shown on the place.
+    radar_report_show_pending_closures: bool = Field(
+        default=False, alias="RADAR_REPORT_SHOW_PENDING_CLOSURES"
+    )
+    # Where a business owner or a user can ask for a correction or the
+    # removal of a place. Shown publicly in the app; empty hides it.
+    support_contact_email: str = Field(
+        default="vastaso88@gmail.com", alias="SUPPORT_CONTACT_EMAIL"
+    )
     # Attachment bytes: local disk outside of PERSISTENCE_BACKEND=supabase
     # (fine for local dev), a Supabase Storage bucket when it is (required
     # on serverless deploys like Vercel, whose filesystem is read-only).
@@ -104,6 +135,18 @@ class Settings(BaseSettings):
     locale: str = Field(default="it-IT", alias="LOCALE")
     response_language: str = Field(default="it", alias="RESPONSE_LANGUAGE")
     retrieval_languages: list[str] = Field(default=["en", "it"], alias="RETRIEVAL_LANGUAGES")
+
+    def reporter_pseudonym_secret(self) -> str:
+        """The dedicated salt when configured; otherwise the Supabase
+        service-role key (already a server-only secret), so a deployment
+        that never set the new variable still never stores a guessable
+        hash. The fixed last resort only applies to local in-memory runs.
+        """
+        return (
+            self.reporter_pseudonym_salt
+            or self.supabase_service_role_key
+            or "vetapp-local-development-only"
+        )
 
     @model_validator(mode="after")
     def validate_backend_configuration(self) -> "Settings":

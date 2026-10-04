@@ -22,3 +22,7 @@ uv.lock
 /data/
 .vercel
 .env*
+
+# Working data that may contain real names and phone numbers of
+# businesses (e.g. the radar dedup calibration sample): never committed.
+.local/

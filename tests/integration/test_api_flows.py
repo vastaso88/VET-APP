@@ -145,9 +145,7 @@ def test_local_services_places_flow() -> None:
     get_container().radar_places_source = _FakeSource()
     client = TestClient(app)
 
-    response = client.get(
-        "/local-services/places", params={"latitude": 45.4642, "longitude": 9.19}
-    )
+    response = client.get("/local-services/places", params={"latitude": 45.4642, "longitude": 9.19})
 
     assert response.status_code == 200
     body = response.json()
@@ -160,3 +158,100 @@ def test_local_services_places_flow() -> None:
     assert "owner_id" not in place
 
     assert client.get("/local-services/places").status_code == 422
+
+
+def test_local_services_sources_lists_imported_datasets() -> None:
+    from datetime import UTC, datetime
+
+    from apps.api.dependencies.container import get_container
+    from packages.core.domain.radar_places.models import RadarDataSource
+
+    catalog = get_container().radar_catalog_repository
+    catalog.sources = [  # type: ignore[attr-defined]
+        RadarDataSource(
+            source="overture",
+            release="2026-09-23.1",
+            license="CDLA-Permissive-2.0",
+            attribution="© Overture Maps Foundation — Places",
+            imported_at=datetime(2026, 10, 4, tzinfo=UTC),
+            place_count=15831,
+        )
+    ]
+    client = TestClient(app)
+
+    body = client.get("/local-services/sources").json()
+
+    assert body["sources"] == [
+        {
+            "source": "overture",
+            "release": "2026-09-23.1",
+            "license": "CDLA-Permissive-2.0",
+            "attribution": "© Overture Maps Foundation — Places",
+            "url": None,
+            "imported_at": "2026-10-04T00:00:00Z",
+        }
+    ]
+
+
+def test_segnala_flow_needs_the_rules_then_shows_the_pending_place() -> None:
+    from apps.api.dependencies.container import get_container
+    from packages.core.application.services.request_radar_places_ingestion import (
+        RequestRadarPlacesIngestionInput,
+    )
+    from packages.core.domain.radar_places.models import RadarPlace
+
+    class _EmptySource:
+        name = "fake_source"
+
+        def fetch_places(self, request_data: RequestRadarPlacesIngestionInput) -> list[RadarPlace]:
+            return []
+
+    get_container().radar_places_source = _EmptySource()
+    client = TestClient(app)
+    report = {
+        "kind": "missing",
+        "place_type": "grooming",
+        "name": "Toelettatura Bau",
+        "latitude": 45.4650,
+        "longitude": 9.1910,
+    }
+
+    options = client.get("/local-services/reports/options").json()
+    assert options["enabled"] is True
+    assert "grooming" in options["missing_place_types"]
+
+    refused = client.post("/local-services/reports", json=report)
+    assert refused.status_code == 403
+    assert refused.json()["code"] == "contribution_rules_required"
+
+    accepted = client.post(
+        "/account/consents", json={"consent_key": "contribution_rules", "granted": True}
+    )
+    assert accepted.status_code == 200
+
+    created = client.post("/local-services/reports", json=report)
+    assert created.status_code == 200
+    body = created.json()
+    assert (body["status"], body["confirmations"], body["required"]) == ("pending", 0, 5)
+    assert "reporter_pseudonym" not in body
+
+    own_vote = client.post(
+        f"/local-services/reports/{body['report_id']}/vote", json={"vote": "confirm"}
+    )
+    assert own_vote.status_code == 400
+
+    places = client.get(
+        "/local-services/places", params={"latitude": 45.4642, "longitude": 9.19}
+    ).json()["places"]
+    assert len(places) == 1
+    place = places[0]
+    assert place["name"] == "Toelettatura Bau"
+    assert place["source_name"] == "vetapp_users"
+    assert place["community"]["status"] == "pending"
+    assert place["community"]["viewer_is_reporter"] is True
+    assert "reporter_pseudonym" not in str(places)
+
+    with_contact = client.post(
+        "/local-services/reports", json={**report, "name": "Bau 02 0000 0001", "latitude": 45.5}
+    )
+    assert with_contact.status_code == 400

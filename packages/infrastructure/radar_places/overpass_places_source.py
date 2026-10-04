@@ -10,7 +10,7 @@ from urllib import error, parse, request
 from packages.core.application.services.request_radar_places_ingestion import (
     RequestRadarPlacesIngestionInput,
 )
-from packages.core.domain.radar_places.models import RadarPlace
+from packages.core.domain.radar_places.models import OSM_SOURCE_NAME, RadarPlace
 from packages.shared.config.settings import Settings
 from packages.shared.errors.base import ProviderError
 
@@ -46,6 +46,23 @@ _OSM_SPECIES = {
 }
 
 _logger = logging.getLogger(__name__)
+
+# Tag filters of the pet categories, one Overpass statement each.
+OSM_SELECTORS = (
+    '["amenity"="veterinary"]',
+    '["shop"="pet"]',
+    '["shop"="pet_grooming"]',
+    '["amenity"="animal_boarding"]',
+    '["amenity"="animal_training"]',
+    '["amenity"="animal_breeding"]',
+    '["office"="pet_sitting"]',
+    '["craft"="dog_walker"]',
+    '["leisure"="dog_park"]',
+)
+
+# Tags worth showing on a place card when the mapper recorded them. Only
+# what OSM states is passed on: an absent key means "unknown", never "no".
+_DETAIL_TAGS = ("barrier", "lit", "surface", "access", "drinking_water", "wheelchair", "dog", "fee")
 
 # Whole import, retries included. Kept well under a minute: the caller is
 # an HTTP request with a person waiting, and the app retries on its own.
@@ -186,68 +203,79 @@ class OverpassRadarPlacesSource:
         coverage_key: str,
         fetched_at: datetime,
     ) -> RadarPlace | None:
-        element_type = _read_string(element.get("type"))
-        element_id = element.get("id")
-        if element_type not in {"node", "way", "relation"} or not isinstance(
-            element_id,
-            int,
-        ):
-            return None
-
-        tags_raw = element.get("tags")
-        tags = (
-            {str(key): str(value) for key, value in tags_raw.items()}
-            if isinstance(tags_raw, dict)
-            else {}
-        )
-        classification = _classify_tags(tags)
-        if classification is None:
-            return None
-        place_type, subtype = classification
-
-        latitude, longitude = _read_coordinates(element)
-        if latitude is None or longitude is None:
-            return None
-
-        name = _first_tag(tags, "name", "brand", "operator") or _DEFAULT_NAMES.get(place_type)
-        if not name:
-            return None
-
-        source_external_id = f"{element_type}/{element_id}"
-        source_url = f"https://www.openstreetmap.org/{source_external_id}"
-        address_label = _build_address_label(tags)
-        city = _first_tag(tags, "addr:city", "addr:town", "addr:village")
-        phone = _first_tag(tags, "contact:phone", "phone")
-        website_url = _first_tag(tags, "contact:website", "website")
-        opening_hours = _first_tag(tags, "opening_hours")
-        summary = _first_tag(tags, "description")
-
-        return RadarPlace(
+        return map_osm_element(
+            element,
             owner_id=request_data.owner_id,
             coverage_key=coverage_key,
-            place_type=place_type,
-            subtype=subtype,
-            name=name,
-            summary=summary,
-            opening_hours=opening_hours,
-            species=_read_species(tags, place_type=place_type, subtype=subtype),
-            city=city,
-            address_label=address_label,
-            latitude=latitude,
-            longitude=longitude,
+            fetched_at=fetched_at,
             source_name=self.name,
-            source_external_id=source_external_id,
-            external_record_id=source_external_id,
-            source_url=source_url,
-            phone=phone,
-            website_url=website_url or source_url,
-            is_pet_friendly=True,
-            tags=_display_tags(tags, subtype=subtype),
-            source_payload=element,
-            source_fetched_at=fetched_at,
-            freshness_status="fresh",
-            status="active",
         )
+
+
+def map_osm_element(
+    element: dict[str, object],
+    *,
+    owner_id: str,
+    coverage_key: str,
+    fetched_at: datetime,
+    source_name: str = OSM_SOURCE_NAME,
+) -> RadarPlace | None:
+    """One Overpass element as a radar place, or None when it is not one
+    of the pet categories or has no usable position. Shared by the live
+    source and by the offline importer (scripts/radar/)."""
+    element_type = _read_string(element.get("type"))
+    element_id = element.get("id")
+    if element_type not in {"node", "way", "relation"} or not isinstance(element_id, int):
+        return None
+
+    tags_raw = element.get("tags")
+    tags = (
+        {str(key): str(value) for key, value in tags_raw.items()}
+        if isinstance(tags_raw, dict)
+        else {}
+    )
+    classification = _classify_tags(tags)
+    if classification is None:
+        return None
+    place_type, subtype = classification
+
+    latitude, longitude = _read_coordinates(element)
+    if latitude is None or longitude is None:
+        return None
+
+    name = _first_tag(tags, "name", "brand", "operator") or _DEFAULT_NAMES.get(place_type)
+    if not name:
+        return None
+
+    source_external_id = f"{element_type}/{element_id}"
+    source_url = f"https://www.openstreetmap.org/{source_external_id}"
+    return RadarPlace(
+        owner_id=owner_id,
+        coverage_key=coverage_key,
+        place_type=place_type,
+        subtype=subtype,
+        name=name,
+        summary=_first_tag(tags, "description"),
+        opening_hours=_first_tag(tags, "opening_hours"),
+        species=_read_species(tags, place_type=place_type, subtype=subtype),
+        details=_read_details(tags),
+        city=_first_tag(tags, "addr:city", "addr:town", "addr:village"),
+        address_label=_build_address_label(tags),
+        latitude=latitude,
+        longitude=longitude,
+        source_name=source_name,
+        source_external_id=source_external_id,
+        external_record_id=source_external_id,
+        source_url=source_url,
+        phone=_first_tag(tags, "contact:phone", "phone"),
+        website_url=_first_tag(tags, "contact:website", "website") or source_url,
+        is_pet_friendly=True,
+        tags=_display_tags(tags, subtype=subtype),
+        source_payload=element,
+        source_fetched_at=fetched_at,
+        freshness_status="fresh",
+        status="active",
+    )
 
 
 def _build_overpass_query(
@@ -258,19 +286,22 @@ def _build_overpass_query(
     timeout_seconds: int,
 ) -> str:
     around = f"around:{radius_meters},{latitude:.6f},{longitude:.6f}"
-    selectors = (
-        '["amenity"="veterinary"]',
-        '["shop"="pet"]',
-        '["shop"="pet_grooming"]',
-        '["amenity"="animal_boarding"]',
-        '["amenity"="animal_training"]',
-        '["amenity"="animal_breeding"]',
-        '["office"="pet_sitting"]',
-        '["craft"="dog_walker"]',
-        '["leisure"="dog_park"]',
-    )
-    statements = "\n".join(f"  nwr({around}){selector};" for selector in selectors)
+    statements = "\n".join(f"  nwr({around}){selector};" for selector in OSM_SELECTORS)
     return f"[out:json][timeout:{timeout_seconds}];\n(\n{statements}\n);\nout center tags qt;"
+
+
+def build_overpass_area_query(*, iso_3166_2: str, timeout_seconds: int) -> str:
+    """Every pet place inside one administrative area (an Italian region,
+    e.g. "IT-25"), for the offline importer."""
+    statements = "\n".join(f"  nwr(area.a){selector};" for selector in OSM_SELECTORS)
+    return (
+        f'[out:json][timeout:{timeout_seconds}];\narea["ISO3166-2"="{iso_3166_2}"]->.a;\n'
+        f"(\n{statements}\n);\nout center tags qt;"
+    )
+
+
+def _read_details(tags: dict[str, str]) -> dict[str, str]:
+    return {key: tags[key].strip() for key in _DETAIL_TAGS if tags.get(key, "").strip()}
 
 
 def _read_coordinates(element: dict[str, object]) -> tuple[float | None, float | None]:

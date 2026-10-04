@@ -102,9 +102,7 @@ class SendChatMessageService:
 
         today = datetime.now(UTC).date()
         reminders_context = (
-            self._reminder_context_retriever.summarize_for_pet(
-                data.owner_id, pet_profile.id, today
-            )
+            self._reminder_context_retriever.summarize_for_pet(data.owner_id, pet_profile.id, today)
             if self._reminder_context_retriever is not None
             else None
         )

@@ -1077,8 +1077,7 @@ class ChatOrchestrator:
                         "unusual or describes an object or place rather than a typical name."
                     ),
                     user_prompt=(
-                        f"{self._pet_context_block(data)}\n"
-                        f"User request: {anonymized_message}"
+                        f"{self._pet_context_block(data)}\nUser request: {anonymized_message}"
                     ),
                     # See EvidenceSynthesizer/SituationModelBuilder for why:
                     # a reasoning model can burn the whole 600-token default
@@ -1418,8 +1417,12 @@ class ChatOrchestrator:
                         f"{medical_context}"
                         f"{reminders_context}"
                         f"\n\nToday's date: {today.isoformat()}"
-                        + (f"\n\nReference material (optional, use only if genuinely "
-                           f"relevant):\n{evidence_block}" if evidence_block else "")
+                        + (
+                            f"\n\nReference material (optional, use only if genuinely "
+                            f"relevant):\n{evidence_block}"
+                            if evidence_block
+                            else ""
+                        )
                     ),
                     # Real-world finding (2026-09-21 live test): an
                     # unconstrained free-form answer (headings, tables,
@@ -1481,9 +1484,7 @@ class ChatOrchestrator:
         never blocks the answer, so any failure here just means no
         supporting context gets attached, not a refusal."""
         try:
-            default_max_results: int = EvidenceRetrievalRequest.model_fields[
-                "max_results"
-            ].default
+            default_max_results: int = EvidenceRetrievalRequest.model_fields["max_results"].default
             return self._rank_evidence(
                 message, effective_species, intent, default_max_results
             ).sources
@@ -1619,9 +1620,7 @@ class ChatOrchestrator:
                     f"dimensions {data.habitat.dimensions_label()}"
                     if data.habitat.dimensions_label()
                     else "",
-                    f"{data.habitat.volume_liters} liters"
-                    if data.habitat.volume_liters
-                    else "",
+                    f"{data.habitat.volume_liters} liters" if data.habitat.volume_liters else "",
                     f"temperature {data.habitat.temperature_label}"
                     if data.habitat.temperature_label
                     else "",

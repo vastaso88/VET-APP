@@ -22,8 +22,6 @@ class SelectPlanService:
         if data.plan not in SubscriptionPlan.ALL:
             raise ValidationError(f"Unknown plan: {data.plan}")
 
-        subscription = self._repository.get(data.owner_id) or Subscription(
-            owner_id=data.owner_id
-        )
+        subscription = self._repository.get(data.owner_id) or Subscription(owner_id=data.owner_id)
         updated = subscription.model_copy(update={"plan": data.plan})
         return SelectPlanOutput(subscription=self._repository.save(updated))

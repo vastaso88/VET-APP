@@ -10,8 +10,11 @@ import 'package:vet_app_mobile/features/location/data/device_location_service.da
 import 'package:vet_app_mobile/features/location/data/location_preference_store.dart';
 import 'package:vet_app_mobile/features/location/domain/coordinates.dart';
 import 'package:vet_app_mobile/features/nearby_places/data/radar_places_repository.dart';
+import 'package:vet_app_mobile/features/nearby_places/domain/radar_data_source.dart';
 import 'package:vet_app_mobile/features/nearby_places/domain/radar_place.dart';
+import 'package:vet_app_mobile/features/nearby_places/presentation/pages/data_sources_page.dart';
 import 'package:vet_app_mobile/features/nearby_places/presentation/radar_category.dart';
+import 'package:vet_app_mobile/features/nearby_places/presentation/radar_place_sheet.dart';
 import 'package:vet_app_mobile/features/nearby_places/presentation/widgets/radar_chip.dart';
 import 'package:vet_app_mobile/shared/errors/app_network_error.dart';
 import 'package:vet_app_mobile/shared/types/result.dart';
@@ -21,7 +24,13 @@ const _milan = Coordinates(latitude: 45.4642, longitude: 9.1900);
 const _turin = Coordinates(latitude: 45.0703, longitude: 7.6869);
 
 class _FakeRadarPlacesRepository extends RadarPlacesRepository {
-  _FakeRadarPlacesRepository(this._results);
+  _FakeRadarPlacesRepository(this._results, {this.sources = const []});
+
+  final List<RadarDataSource> sources;
+
+  @override
+  Future<RadarSourcesInfo> loadSources() async =>
+      RadarSourcesInfo(sources: sources, supportContactEmail: 'aiuto@esempio.example');
 
   /// Answers in order; the last one repeats.
   final List<Result<RadarPlacesResult>> _results;
@@ -59,8 +68,8 @@ const _clinic = RadarPlace(
   name: 'Clinica Veterinaria Duomo',
   location: Coordinates(latitude: 45.465, longitude: 9.19),
   distanceMeters: 800,
-  addressLabel: 'Via Torino 10, Milano',
-  phone: '+39 02 1234567',
+  addressLabel: 'Via Esempio 10, Milano',
+  phone: '+39 02 0000 0001',
   openingHours: 'Mo-Fr 09:00-19:00; Sa off',
 );
 
@@ -153,6 +162,45 @@ void main() {
     expect(radarPlaceTypeFromApi('something_new'), RadarPlaceType.other);
   });
 
+  test('place details list only what the source states, in Italian', () {
+    final details = radarPlaceDetails({
+      'barrier': 'fence',
+      'lit': 'yes',
+      'surface': 'grass',
+      'access': 'yes',
+      'wheelchair': 'no',
+      'dog': 'unleashed',
+      'unknown_key': 'x',
+    });
+
+    expect(details.map((detail) => detail.label), [
+      'Recintata',
+      'Illuminata',
+      'Fondo in erba',
+      'Accesso libero',
+      'Cani liberi senza guinzaglio',
+      'Non accessibile in sedia a rotelle',
+    ]);
+    // Unknown values and missing keys say nothing: no "non recintata".
+    expect(radarPlaceDetails({'barrier': 'bollard'}), isEmpty);
+    expect(radarPlaceDetails(const {}), isEmpty);
+  });
+
+  test('tryFromJson reads source, confirmations and details', () {
+    final place = RadarPlace.tryFromJson({
+      'name': 'Clinica Duomo',
+      'latitude': 45.46,
+      'longitude': 9.19,
+      'source_name': 'overture',
+      'confirmed_by': ['openstreetmap_overpass'],
+      'details': {'lit': 'yes', 'bad': 3},
+    })!;
+
+    expect(place.sourceName, 'overture');
+    expect(place.confirmedBy, ['openstreetmap_overpass']);
+    expect(place.details, {'lit': 'yes'});
+  });
+
   test('species filter keeps places that do not state a species', () {
     expect(_dogPark.matchesSpecies({'cat'}), isFalse);
     expect(_dogPark.matchesSpecies({'cat', 'dog'}), isTrue);
@@ -230,6 +278,71 @@ void main() {
     await _settle(tester);
 
     expect(find.text('Area cani 5'), findsOneWidget);
+  });
+
+  testWidgets('the place card names its source and the one confirming it', (tester) async {
+    const overturePlace = RadarPlace(
+      id: 'ov',
+      type: RadarPlaceType.grooming,
+      name: 'Toelettatura Bau',
+      location: Coordinates(latitude: 45.465, longitude: 9.19),
+      distanceMeters: 500,
+      sourceName: 'overture',
+      confirmedBy: ['openstreetmap_overpass'],
+    );
+    const park = RadarPlace(
+      id: 'park-details',
+      type: RadarPlaceType.dogPark,
+      name: 'Area cani Sempione',
+      location: Coordinates(latitude: 45.47, longitude: 9.18),
+      distanceMeters: 900,
+      details: {'barrier': 'fence', 'lit': 'yes'},
+    );
+    await _pumpPage(tester, _repositoryWith([overturePlace, park]));
+
+    await tester.tap(find.text('Toelettatura Bau'));
+    await tester.pumpAndSettle();
+    expect(find.textContaining('Fonte: © Overture Maps Foundation'), findsOneWidget);
+    expect(find.textContaining('Presente anche in: OpenStreetMap'), findsOneWidget);
+    Navigator.of(tester.element(find.text('Indicazioni'))).pop();
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('Area cani Sempione'));
+    await tester.pumpAndSettle();
+    expect(find.text('Recintata'), findsOneWidget);
+    expect(find.text('Illuminata'), findsOneWidget);
+    expect(find.textContaining('Fonte: © OpenStreetMap contributors'), findsOneWidget);
+  });
+
+  testWidgets('Fonti dati lists every source with license and import date', (tester) async {
+    // Four source cards plus the contact line: taller than the default surface.
+    await tester.binding.setSurfaceSize(const Size(420, 1800));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+    await tester.pumpWidget(
+      MaterialApp(
+        home: DataSourcesPage(
+          repository: _FakeRadarPlacesRepository(
+            [_success(const [])],
+            sources: [
+              RadarDataSource(
+                source: 'overture',
+                release: '2026-09-23.1',
+                importedAt: DateTime.utc(2026, 10, 4),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+    await _settle(tester);
+
+    expect(find.text('OpenStreetMap'), findsOneWidget);
+    expect(find.text('Overture Maps'), findsOneWidget);
+    expect(find.textContaining('ODbL'), findsOneWidget);
+    expect(find.textContaining('Permissive 2.0'), findsOneWidget);
+    expect(find.textContaining('Versione 2026-09-23.1, importata il 4 ottobre 2026'), findsOneWidget);
+    // The contact shown is the one the backend configures, never a hardcoded one.
+    expect(find.textContaining('Scrivi a aiuto@esempio.example'), findsOneWidget);
   });
 
   testWidgets('a quick category filter narrows lists without a new request', (tester) async {
