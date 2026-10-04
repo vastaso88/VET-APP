@@ -129,11 +129,50 @@ String formatOpeningHours(String raw) {
   );
 }
 
-/// Colored disc with the category icon: the leading of list rows.
+/// Colored disc with the category icon: the leading of list rows. A
+/// [pending] place (a user report nobody confirmed yet) is drawn hollow
+/// with a question mark, so it is never mistaken for an established one.
 class RadarCategoryBadge extends StatelessWidget {
-  const RadarCategoryBadge({super.key, required this.category, this.size = 40});
+  const RadarCategoryBadge({super.key, required this.category, this.size = 40, this.pending = false});
 
   final RadarCategory category;
+  final double size;
+  final bool pending;
+
+  @override
+  Widget build(BuildContext context) {
+    final badge = Container(
+      width: size,
+      height: size,
+      alignment: Alignment.center,
+      decoration: BoxDecoration(
+        color: pending ? Colors.transparent : category.color.withValues(alpha: 0.14),
+        borderRadius: BorderRadius.circular(size * 0.4),
+        border: pending ? Border.all(color: category.color.withValues(alpha: 0.6)) : null,
+      ),
+      child: Icon(
+        category.icon,
+        color: category.color.withValues(alpha: pending ? 0.6 : 1),
+        size: size * 0.5,
+      ),
+    );
+    if (!pending) {
+      return badge;
+    }
+    return Stack(
+      clipBehavior: Clip.none,
+      children: [
+        badge,
+        const Positioned(top: -4, right: -4, child: RadarPendingMark()),
+      ],
+    );
+  }
+}
+
+/// The small "?" that marks a not-yet-confirmed user report.
+class RadarPendingMark extends StatelessWidget {
+  const RadarPendingMark({super.key, this.size = 16});
+
   final double size;
 
   @override
@@ -143,10 +182,19 @@ class RadarCategoryBadge extends StatelessWidget {
       height: size,
       alignment: Alignment.center,
       decoration: BoxDecoration(
-        color: category.color.withValues(alpha: 0.14),
-        borderRadius: BorderRadius.circular(size * 0.4),
+        color: const Color(0xFFD8A35A),
+        shape: BoxShape.circle,
+        border: Border.all(color: Colors.white, width: 1.5),
       ),
-      child: Icon(category.icon, color: category.color, size: size * 0.5),
+      child: Text(
+        '?',
+        style: TextStyle(
+          fontSize: size * 0.62,
+          height: 1,
+          fontWeight: FontWeight.w800,
+          color: const Color(0xFF213134),
+        ),
+      ),
     );
   }
 }

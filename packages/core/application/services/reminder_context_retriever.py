@@ -53,8 +53,7 @@ class ReminderContextRetriever:
         course_end = self._course_end(reminder)
         if course_end is not None and reminder.due_date <= today <= course_end:
             when = (
-                f"terapia in corso dal {reminder.due_date.isoformat()} "
-                f"al {course_end.isoformat()}"
+                f"terapia in corso dal {reminder.due_date.isoformat()} al {course_end.isoformat()}"
             )
         elif reminder.due_date < today:
             when = f"scaduto il {reminder.due_date.isoformat()}"

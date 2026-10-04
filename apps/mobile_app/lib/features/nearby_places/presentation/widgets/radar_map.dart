@@ -16,12 +16,16 @@ class RadarMapItem {
     required this.location,
     required this.label,
     required this.onTap,
+    this.pending = false,
   });
 
   final RadarCategory category;
   final Coordinates location;
   final String label;
   final VoidCallback onTap;
+
+  /// A user report not yet confirmed: drawn hollow with a "?".
+  final bool pending;
 }
 
 /// Zoom that roughly fits a circle of [radiusKm] in the map viewport.
@@ -176,17 +180,35 @@ class _ClusteredMarkers extends StatelessWidget {
       width: 30,
       height: 30,
       child: Semantics(
-        label: '${item.category.label}: ${item.label}',
+        label: item.pending
+            ? '${item.category.label}, in attesa di conferma: ${item.label}'
+            : '${item.category.label}: ${item.label}',
         button: true,
         child: GestureDetector(
           onTap: interactive ? item.onTap : null,
-          child: Container(
-            decoration: BoxDecoration(
-              color: item.category.color,
-              shape: BoxShape.circle,
-              border: Border.all(color: Colors.white, width: 2),
-            ),
-            child: Icon(item.category.icon, color: Colors.white, size: 16),
+          child: Stack(
+            clipBehavior: Clip.none,
+            children: [
+              Container(
+                width: 30,
+                height: 30,
+                decoration: BoxDecoration(
+                  color: item.pending ? Colors.white : item.category.color,
+                  shape: BoxShape.circle,
+                  border: Border.all(
+                    color: item.pending ? item.category.color : Colors.white,
+                    width: 2,
+                  ),
+                ),
+                child: Icon(
+                  item.category.icon,
+                  color: item.pending ? item.category.color : Colors.white,
+                  size: 16,
+                ),
+              ),
+              if (item.pending)
+                const Positioned(top: -5, right: -5, child: RadarPendingMark(size: 14)),
+            ],
           ),
         ),
       ),

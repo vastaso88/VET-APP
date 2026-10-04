@@ -20,9 +20,7 @@ _FIELD_INTENTS: dict[str, str] = {
         "own behaviour if that's what the case is about, or in the enclosure/"
         "equipment/environment if the case is about that instead"
     ),
-    "associated_signs": (
-        "whether anything else has also changed alongside the main problem"
-    ),
+    "associated_signs": ("whether anything else has also changed alongside the main problem"),
     "environmental_changes": (
         "whether anything recently changed (diet, environment, routine, a new "
         "animal, equipment, travel) that could be related"

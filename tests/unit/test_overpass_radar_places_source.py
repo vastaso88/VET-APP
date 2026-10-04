@@ -34,11 +34,11 @@ class _FakeResponse:
                         "tags": {
                             "amenity": "veterinary",
                             "name": "Veterinario Milano",
-                            "addr:street": "Via Torino",
+                            "addr:street": "Via Esempio",
                             "addr:housenumber": "10",
-                            "addr:postcode": "20123",
+                            "addr:postcode": "20100",
                             "addr:city": "Milano",
-                            "contact:phone": "+39 02 1234567",
+                            "contact:phone": "+39 02 0000 0001",
                             "contact:website": "https://vet.example",
                             "opening_hours": "Mo-Fr 09:00-19:00",
                         },
@@ -115,11 +115,11 @@ def test_overpass_source_posts_query_and_maps_osm_elements(
     assert veterinary.name == "Veterinario Milano"
     assert veterinary.place_type == "veterinary"
     assert veterinary.subtype == "amenity:veterinary"
-    assert veterinary.address_label == "Via Torino 10, 20123, Milano"
+    assert veterinary.address_label == "Via Esempio 10, 20100, Milano"
     assert veterinary.city == "Milano"
     assert veterinary.latitude == 45.4629
     assert veterinary.longitude == 9.1882
-    assert veterinary.phone == "+39 02 1234567"
+    assert veterinary.phone == "+39 02 0000 0001"
     assert veterinary.website_url == "https://vet.example"
     assert veterinary.source_url == "https://www.openstreetmap.org/node/101"
     assert veterinary.freshness_status == "fresh"

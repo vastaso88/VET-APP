@@ -184,7 +184,8 @@ class EvidenceQueryPlanner:
         # docstring for why this generically fixes it while preserving
         # every deliberate stem in IT_EN_TERMS (e.g. "aliment", "aggress").
         matched = {
-            english for it_term, english in IT_EN_TERMS.items()
+            english
+            for it_term, english in IT_EN_TERMS.items()
             if contains_keyword(lowered, it_term)
         }
         fuzzy_terms = find_fuzzy_keyword_matches(lowered, FUZZY_ELIGIBLE_TERMS)

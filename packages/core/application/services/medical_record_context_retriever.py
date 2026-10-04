@@ -41,9 +41,9 @@ class MedicalRecordContextRetriever:
         events = self._repository.list_by_pet(pet_id)
         if not events:
             return None
-        recent = sorted(
-            events, key=lambda event: event.created_at, reverse=True
-        )[: self._max_entries]
+        recent = sorted(events, key=lambda event: event.created_at, reverse=True)[
+            : self._max_entries
+        ]
         lines = [self._format_event(event) for event in recent]
         return "\n".join(lines)
 

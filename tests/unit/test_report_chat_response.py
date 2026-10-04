@@ -9,6 +9,7 @@ from packages.infrastructure.persistence.in_memory_repositories import (
     InMemoryChatResponseReportRepository,
     InMemoryConversationRepository,
 )
+from packages.infrastructure.privacy.noop_pii_anonymizer import NoopPiiAnonymizer
 from packages.shared.errors.base import ValidationError
 
 
@@ -30,7 +31,10 @@ def test_reports_an_assistant_reply() -> None:
     conversation = _seeded_conversation(conversation_repository)
     assistant_message = conversation.messages[1]
     service = ReportChatResponseService(
-        conversation_repository, InMemoryChatResponseReportRepository()
+        conversation_repository,
+        InMemoryChatResponseReportRepository(),
+        NoopPiiAnonymizer(),
+        "test-salt",
     )
 
     result = service.execute(
@@ -51,7 +55,10 @@ def test_reports_an_assistant_reply() -> None:
 
 def test_rejects_an_unknown_conversation() -> None:
     service = ReportChatResponseService(
-        InMemoryConversationRepository(), InMemoryChatResponseReportRepository()
+        InMemoryConversationRepository(),
+        InMemoryChatResponseReportRepository(),
+        NoopPiiAnonymizer(),
+        "test-salt",
     )
 
     with pytest.raises(ValidationError):
@@ -66,7 +73,10 @@ def test_rejects_a_conversation_belonging_to_a_different_owner() -> None:
     conversation_repository = InMemoryConversationRepository()
     conversation = _seeded_conversation(conversation_repository)
     service = ReportChatResponseService(
-        conversation_repository, InMemoryChatResponseReportRepository()
+        conversation_repository,
+        InMemoryChatResponseReportRepository(),
+        NoopPiiAnonymizer(),
+        "test-salt",
     )
 
     with pytest.raises(ValidationError):
@@ -83,7 +93,10 @@ def test_rejects_an_unknown_message_id() -> None:
     conversation_repository = InMemoryConversationRepository()
     conversation = _seeded_conversation(conversation_repository)
     service = ReportChatResponseService(
-        conversation_repository, InMemoryChatResponseReportRepository()
+        conversation_repository,
+        InMemoryChatResponseReportRepository(),
+        NoopPiiAnonymizer(),
+        "test-salt",
     )
 
     with pytest.raises(ValidationError):
@@ -103,7 +116,10 @@ def test_rejects_reporting_the_owners_own_message() -> None:
     conversation = _seeded_conversation(conversation_repository)
     user_message = conversation.messages[0]
     service = ReportChatResponseService(
-        conversation_repository, InMemoryChatResponseReportRepository()
+        conversation_repository,
+        InMemoryChatResponseReportRepository(),
+        NoopPiiAnonymizer(),
+        "test-salt",
     )
 
     with pytest.raises(ValidationError):

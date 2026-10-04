@@ -25,9 +25,13 @@ class AccountConsentType:
     PRIVACY_POLICY = "privacy_policy"
     MARKETING_EMAIL = "marketing_email"
     ANALYTICS = "analytics"
+    # Rules for radar reports and dog-park votes: accepted before the
+    # first contribution, never a gate on the app itself (see
+    # docs/compliance/07_contributi_utenti.md).
+    CONTRIBUTION_RULES = "contribution_rules"
 
     MANDATORY = frozenset({TERMS_OF_SERVICE, PRIVACY_POLICY})
-    OPTIONAL = frozenset({MARKETING_EMAIL, ANALYTICS})
+    OPTIONAL = frozenset({MARKETING_EMAIL, ANALYTICS, CONTRIBUTION_RULES})
     ALL = MANDATORY | OPTIONAL
 
 

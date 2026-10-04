@@ -21,6 +21,8 @@ import '../../../location/data/device_location_service.dart';
 import '../../../location/data/location_preference_store.dart';
 import '../../../location/data/location_repository.dart';
 import '../../../location/domain/coordinates.dart';
+import '../../../nearby_places/data/radar_places_repository.dart';
+import '../../../nearby_places/presentation/pages/data_sources_page.dart';
 import '../../../pets/data/pet_demo_store.dart';
 import '../../../pets/domain/pet_models.dart';
 import '../../../pets/presentation/widgets/medical_record_consent_card.dart';
@@ -53,6 +55,16 @@ class _SettingsPageState extends State<SettingsPage> {
     _loadConsents();
     unawaited(LayoutSettingsStore.instance.ensureLoaded());
     unawaited(_loadLocation());
+    unawaited(_loadSupportContact());
+  }
+
+  String? _supportContactEmail;
+
+  Future<void> _loadSupportContact() async {
+    final info = await RadarPlacesRepository().loadSources();
+    if (mounted) {
+      setState(() => _supportContactEmail = info.supportContactEmail);
+    }
   }
 
   void _updateLayout(LayoutSettings settings) {
@@ -178,6 +190,12 @@ class _SettingsPageState extends State<SettingsPage> {
   void _openBilling() {
     Navigator.of(context).push(
       MaterialPageRoute<void>(builder: (_) => const BillingPage()),
+    );
+  }
+
+  void _openDataSources() {
+    Navigator.of(context).push(
+      MaterialPageRoute<void>(builder: (_) => const DataSourcesPage()),
     );
   }
 
@@ -472,10 +490,15 @@ class _SettingsPageState extends State<SettingsPage> {
               icon: Icons.mail_outline_rounded,
               iconColor: AppColors.accent,
               title: 'Contattaci',
-              subtitle: 'supporto@vetapp.it',
+              // The address comes from the backend (SUPPORT_CONTACT_EMAIL):
+              // none is shown until it is known, rather than a hardcoded
+              // one on a domain that may not be ours.
+              subtitle: _supportContactEmail,
               onTap: () => _showInfoDialog(
                 'Contattaci',
-                'Scrivi a supporto@vetapp.it per qualsiasi domanda: rispondiamo di solito entro un giorno lavorativo.',
+                _supportContactEmail == null
+                    ? 'Il contatto dell’assistenza non è disponibile in questo momento. Riprova più tardi.'
+                    : 'Scrivi a $_supportContactEmail per qualsiasi domanda.',
               ),
             ),
             _Row(
@@ -485,6 +508,13 @@ class _SettingsPageState extends State<SettingsPage> {
               onTap: _rateApp,
             ),
             const _SectionLabel('Info'),
+            _Row(
+              icon: Icons.dataset_outlined,
+              iconColor: AppColors.info,
+              title: 'Fonti dati',
+              subtitle: 'Da dove arrivano i luoghi del radar',
+              onTap: _openDataSources,
+            ),
             const _Row(
               icon: Icons.info_outline_rounded,
               iconColor: AppColors.mutedText,

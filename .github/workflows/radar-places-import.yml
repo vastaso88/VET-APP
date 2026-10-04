@@ -1,0 +1,52 @@
+name: Radar places import
+
+# Refreshes the radar's offline catalog (Overture Maps + OpenStreetMap for
+# Italy) in Supabase. Needs two repository secrets, set by the owner in
+# Settings -> Secrets and variables -> Actions:
+#   RADAR_SUPABASE_URL                 e.g. https://<project-ref>.supabase.co
+#   RADAR_SUPABASE_SERVICE_ROLE_KEY    the project's secret (service-role) key
+# Without them the job stops at the first step and writes nothing.
+
+on:
+  schedule:
+    # 03:00 UTC on the 2nd of each month: Overture publishes monthly.
+    - cron: "0 3 2 * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: radar-places-import
+  cancel-in-progress: false
+
+jobs:
+  import:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    env:
+      SUPABASE_URL: ${{ secrets.RADAR_SUPABASE_URL }}
+      SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.RADAR_SUPABASE_SERVICE_ROLE_KEY }}
+    steps:
+      - name: Check secrets
+        run: |
+          if [ -z "$SUPABASE_URL" ] || [ -z "$SUPABASE_SERVICE_ROLE_KEY" ]; then
+            echo "::error::RADAR_SUPABASE_URL and RADAR_SUPABASE_SERVICE_ROLE_KEY are not set"
+            exit 1
+          fi
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+      - name: Install dependencies
+        run: uv sync
+      - name: Import Overture places
+        run: uv run --with duckdb python scripts/radar/import_overture_places.py
+      - name: Import OpenStreetMap places
+        run: uv run python scripts/radar/import_osm_places.py
+      - name: Import municipal dog parks
+        run: uv run python scripts/radar/import_municipal_dog_parks.py
+      - name: Apply report retention
+        run: uv run python scripts/radar/cleanup_reports.py

@@ -497,6 +497,29 @@ create index if not exists idx_marketplace_listing_reports_listing_id
     on public.marketplace_listing_reports(listing_id);
 create index if not exists idx_local_activities_status on public.local_activities(status);
 create index if not exists idx_local_activities_kind on public.local_activities(kind);
+-- Privacy posture for chat response reports (2026-10-03,
+-- docs/compliance/07_contributi_utenti.md). Additive/idempotent, because
+-- the table already exists live:
+-- * reporter_ref: keyed pseudonym (HMAC of the owner id, computed by the
+--   backend) stored instead of the owner id. reporter_owner_id is kept
+--   only as a nullable legacy column: new rows leave it null, and the
+--   backend maintenance job converts and blanks any old row.
+-- * chat_response_report_counters: all that survives a report once its
+--   retention (12 months after the outcome) has passed.
+alter table public.chat_response_reports add column if not exists reporter_ref text;
+alter table public.chat_response_reports alter column reporter_owner_id drop not null;
+create index if not exists idx_chat_response_reports_reporter_ref
+    on public.chat_response_reports(reporter_ref);
+
+create table if not exists public.chat_response_report_counters (
+    period text not null,
+    reason text not null,
+    status text not null,
+    total integer not null default 0,
+    primary key (period, reason, status)
+);
+alter table public.chat_response_report_counters enable row level security;
+
 create index if not exists idx_chat_response_reports_conversation_id
     on public.chat_response_reports(conversation_id);
 create index if not exists idx_chat_response_reports_status
@@ -664,27 +687,15 @@ for update
 using (submitted_by_owner_id = auth.uid()::text)
 with check (submitted_by_owner_id = auth.uid()::text);
 
--- chat_response_reports: insert-only for regular users, same posture as
--- marketplace_listing_reports. No select/update policy -> default deny;
--- the review/resolve workflow (list all, mark resolved, credit a bug
--- ref) goes through the Python backend's service-role client only. No
--- staff/admin role concept exists yet anywhere in this schema, so those
--- endpoints have no additional authorization gate today - same MVP
--- maturity level as the rest of this app, flagged here rather than
--- silently assumed safe.
+-- chat_response_reports: no client access at all. RLS is enabled with NO
+-- policy -> default deny for select/insert/update/delete, so nobody can
+-- read (or forge) a report through the Supabase client; every read and
+-- write goes through the Python backend's service-role client, which
+-- pseudonymizes the reporter and anonymizes the text before storing, and
+-- restricts review to the developer allowlist. The earlier insert-own
+-- policy is dropped: a direct client insert would bypass exactly those
+-- protections. Same for chat_response_report_counters (RLS on, no policy).
 drop policy if exists chat_response_reports_insert_own on public.chat_response_reports;
-create policy chat_response_reports_insert_own
-on public.chat_response_reports
-for insert
-with check (
-    reporter_owner_id = auth.uid()::text
-    and exists (
-        select 1
-        from public.conversations
-        where public.conversations.id = public.chat_response_reports.conversation_id
-          and public.conversations.owner_id = auth.uid()::text
-    )
-);
 
 -- chat_attachments: insert-only for regular users, same posture as
 -- chat_response_reports. No select/update policy -> default deny; the
@@ -810,3 +821,150 @@ for insert with check (bucket_id = 'pet-photos' and (storage.foldername(name))[1
 drop policy if exists pet_photos_objects_delete_own on storage.objects;
 create policy pet_photos_objects_delete_own on storage.objects
 for delete using (bucket_id = 'pet-photos' and (storage.foldername(name))[1] = auth.uid()::text);
+
+-- Radar offline catalog: places imported in bulk by scripts/radar/, so
+-- the API answers from this database instead of calling a provider while
+-- a user waits. One table per source, never joined into a combined
+-- table: OpenStreetMap is ODbL (share-alike) and must stay separable
+-- from the permissively licensed Overture data. Sources are combined
+-- only in memory, per request (packages/core/domain/radar_places/dedup.py).
+-- RLS on with no policies: service-role only, same posture as the cache.
+create table if not exists public.data_sources (
+    source text primary key,
+    release text not null,
+    license text not null,
+    attribution text not null,
+    url text,
+    place_count integer not null default 0,
+    imported_at timestamptz not null default now(),
+    min_latitude double precision,
+    max_latitude double precision,
+    min_longitude double precision,
+    max_longitude double precision
+);
+
+create table if not exists public.radar_places_osm (
+    id text primary key,
+    place_type text not null,
+    subtype text,
+    name text not null,
+    summary text,
+    opening_hours text,
+    species jsonb not null default '[]'::jsonb,
+    details jsonb not null default '{}'::jsonb,
+    city text,
+    address_label text,
+    latitude double precision not null,
+    longitude double precision not null,
+    source_external_id text not null,
+    source_url text,
+    phone text,
+    website_url text,
+    imported_at timestamptz not null default now()
+);
+
+create index if not exists radar_places_osm_position_idx
+    on public.radar_places_osm (latitude, longitude);
+
+create table if not exists public.radar_places_open (
+    id text primary key,
+    source text not null,
+    source_id text not null,
+    place_type text not null,
+    subtype text,
+    name text not null,
+    latitude double precision not null,
+    longitude double precision not null,
+    address_label text,
+    city text,
+    phone text,
+    website_url text,
+    confidence double precision,
+    license text not null,
+    release text not null,
+    imported_at timestamptz not null default now()
+);
+
+create index if not exists radar_places_open_position_idx
+    on public.radar_places_open (latitude, longitude);
+
+-- Manual corrections the importers and the API respect: a place listed
+-- here with action 'exclude' is not imported again and not shown.
+create table if not exists public.radar_place_overrides (
+    source text not null,
+    source_id text not null,
+    action text not null default 'exclude',
+    reason text,
+    created_at timestamptz not null default now(),
+    primary key (source, source_id, action)
+);
+
+alter table public.radar_places_cache
+    add column if not exists details jsonb not null default '{}'::jsonb;
+
+alter table public.data_sources enable row level security;
+alter table public.radar_places_osm enable row level security;
+alter table public.radar_places_open enable row level security;
+alter table public.radar_place_overrides enable row level security;
+
+-- "Segnala!": community reports on the radar, the votes that confirm or
+-- deny them, and star ratings of public dog parks. Our own data, never
+-- written to OpenStreetMap or into the open-data tables. People appear
+-- only as a keyed pseudonym computed by the backend (RADAR_PSEUDONYM_KEY,
+-- kept outside the database): no account id is stored here, and no
+-- table maps pseudonyms back to accounts. RLS on with no policies: all
+-- access goes through the backend's service-role client.
+create table if not exists public.radar_user_reports (
+    id text primary key,
+    kind text not null,
+    status text not null default 'pending',
+    place_type text not null,
+    name text not null,
+    latitude double precision not null,
+    longitude double precision not null,
+    address_label text,
+    target_source text,
+    target_source_id text,
+    reporter_pseudonym text not null,
+    confirmations integer not null default 0,
+    denials integer not null default 0,
+    created_at timestamptz not null default now(),
+    resolved_at timestamptz
+);
+
+create index if not exists radar_user_reports_position_idx
+    on public.radar_user_reports (latitude, longitude);
+create index if not exists radar_user_reports_reporter_idx
+    on public.radar_user_reports (reporter_pseudonym, created_at);
+
+create table if not exists public.radar_report_votes (
+    report_id text not null references public.radar_user_reports(id) on delete cascade,
+    voter_pseudonym text not null,
+    vote smallint not null,
+    created_at timestamptz not null default now(),
+    primary key (report_id, voter_pseudonym)
+);
+
+create table if not exists public.radar_place_ratings (
+    source text not null,
+    source_id text not null,
+    voter_pseudonym text not null,
+    stars smallint not null check (stars between 1 and 5),
+    latitude double precision not null,
+    longitude double precision not null,
+    updated_at timestamptz not null default now(),
+    primary key (source, source_id, voter_pseudonym)
+);
+
+create index if not exists radar_place_ratings_position_idx
+    on public.radar_place_ratings (latitude, longitude);
+
+-- Position and category of an excluded place, so the same place listed by
+-- another source is dropped too.
+alter table public.radar_place_overrides add column if not exists place_type text;
+alter table public.radar_place_overrides add column if not exists latitude double precision;
+alter table public.radar_place_overrides add column if not exists longitude double precision;
+
+alter table public.radar_user_reports enable row level security;
+alter table public.radar_report_votes enable row level security;
+alter table public.radar_place_ratings enable row level security;

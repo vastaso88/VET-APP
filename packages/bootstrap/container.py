@@ -1,3 +1,5 @@
+import hashlib
+import hmac
 from functools import lru_cache
 
 from packages.core.application.ports.account_consents_repository import AccountConsentsRepository
@@ -19,8 +21,10 @@ from packages.core.application.ports.marketplace_listing_repository import (
 from packages.core.application.ports.media_storage import MediaStorage
 from packages.core.application.ports.pet_profile_repository import PetProfileRepository
 from packages.core.application.ports.pii_anonymizer import PiiAnonymizer
+from packages.core.application.ports.radar_catalog_repository import RadarCatalogRepository
 from packages.core.application.ports.radar_places_repository import RadarPlacesRepository
 from packages.core.application.ports.radar_places_source import RadarPlacesSource
+from packages.core.application.ports.radar_reports_repository import RadarReportsRepository
 from packages.core.application.ports.reminder_repository import ReminderRepository
 from packages.core.application.ports.speech_to_text_provider import SpeechToTextProvider
 from packages.core.application.ports.subscription_repository import SubscriptionRepository
@@ -54,8 +58,18 @@ from packages.core.application.services.list_nearby_radar_places import (
 from packages.core.application.services.list_pet_profiles import ListPetProfilesService
 from packages.core.application.services.list_reminders import ListRemindersService
 from packages.core.application.services.list_walks import ListWalksService
+from packages.core.application.services.maintain_chat_response_reports import (
+    ChatResponseReportMaintenanceService,
+)
 from packages.core.application.services.medical_record_context_retriever import (
     MedicalRecordContextRetriever,
+)
+from packages.core.application.services.radar_reports import (
+    RadarCommunityView,
+    RadarReportSettings,
+    RateDogParkService,
+    SubmitRadarReportService,
+    VoteRadarReportService,
 )
 from packages.core.application.services.record_route_point import RecordRoutePointService
 from packages.core.application.services.reminder_context_retriever import (
@@ -120,7 +134,9 @@ from packages.infrastructure.persistence.in_memory_repositories import (
     InMemoryLocalActivityRepository,
     InMemoryMarketplaceListingRepository,
     InMemoryPetProfileRepository,
+    InMemoryRadarCatalogRepository,
     InMemoryRadarPlacesRepository,
+    InMemoryRadarReportsRepository,
     InMemoryReminderRepository,
     InMemorySubscriptionRepository,
     InMemoryUserLocationRepository,
@@ -163,6 +179,8 @@ class ApplicationContainer:
         self.user_location_repository = self._build_user_location_repository()
         self.dog_walk_repository = self._build_dog_walk_repository()
         self.radar_places_repository = self._build_radar_places_repository()
+        self.radar_catalog_repository = self._build_radar_catalog_repository()
+        self.radar_reports_repository = self._build_radar_reports_repository()
         self.radar_places_source: RadarPlacesSource = OverpassRadarPlacesSource(settings)
         self.marketplace_listing_repository = self._build_marketplace_listing_repository()
         self.listing_report_repository = self._build_listing_report_repository()
@@ -222,6 +240,8 @@ class ApplicationContainer:
             RequestRadarPlacesIngestionService(
                 self.radar_places_repository, self.radar_places_source
             ),
+            self.radar_catalog_repository,
+            self.radar_community_view(),
             max_search_radius_km=self.settings.radar_search_radius_km,
             freshness_ttl_hours=self.settings.radar_freshness_ttl_hours,
         )
@@ -285,7 +305,15 @@ class ApplicationContainer:
 
     def report_chat_response_service(self) -> ReportChatResponseService:
         return ReportChatResponseService(
-            self.conversation_repository, self.chat_response_report_repository
+            self.conversation_repository,
+            self.chat_response_report_repository,
+            self.pii_anonymizer,
+            self.settings.reporter_pseudonym_secret(),
+        )
+
+    def chat_response_report_maintenance_service(self) -> ChatResponseReportMaintenanceService:
+        return ChatResponseReportMaintenanceService(
+            self.chat_response_report_repository, self.settings.reporter_pseudonym_secret()
         )
 
     def list_chat_response_reports_service(self) -> ListChatResponseReportsService:
@@ -456,6 +484,98 @@ class ApplicationContainer:
                     return InMemoryUserLocationRepository()
                 raise
         return InMemoryUserLocationRepository()
+
+    def radar_report_settings(self) -> RadarReportSettings | None:
+        """None when contributions are switched off: in production with no
+        secret to key pseudonyms with, rather than using a known key."""
+        key = self.settings.radar_pseudonym_key.strip()
+        service_key = self.settings.supabase_service_role_key.strip()
+        if not key and service_key:
+            # Domain-separated derivation: a secret the deployment already
+            # has, bound to this one purpose by the label, so it is not the
+            # service key itself and is not shared with any other feature.
+            # Never logged. Rotating the service key changes it.
+            key = hmac.new(
+                service_key.encode("utf-8"), b"radar-contributions-v1", hashlib.sha256
+            ).hexdigest()
+        if not key:
+            if self.settings.environment == "production":
+                return None
+            key = "local-development-only"
+        return RadarReportSettings(
+            pseudonym_key=key,
+            confirmations_required=self.settings.radar_report_confirmations,
+            closed_confirmations_required=self.settings.radar_report_closed_confirmations,
+            daily_limit=self.settings.radar_report_daily_limit,
+            missing_place_types=frozenset(self.settings.radar_report_place_types),
+            show_pending_closures=self.settings.radar_report_show_pending_closures,
+        )
+
+    def radar_community_view(self) -> RadarCommunityView | None:
+        settings = self.radar_report_settings()
+        if settings is None:
+            return None
+        return RadarCommunityView(
+            self.radar_reports_repository, self.account_consents_repository, settings
+        )
+
+    def submit_radar_report_service(self) -> SubmitRadarReportService | None:
+        settings = self.radar_report_settings()
+        if settings is None:
+            return None
+        return SubmitRadarReportService(
+            self.radar_reports_repository, self.account_consents_repository, settings
+        )
+
+    def vote_radar_report_service(self) -> VoteRadarReportService | None:
+        settings = self.radar_report_settings()
+        if settings is None:
+            return None
+        return VoteRadarReportService(
+            self.radar_reports_repository, self.account_consents_repository, settings
+        )
+
+    def rate_dog_park_service(self) -> RateDogParkService | None:
+        settings = self.radar_report_settings()
+        if settings is None:
+            return None
+        return RateDogParkService(
+            self.radar_reports_repository, self.account_consents_repository, settings
+        )
+
+    def _build_radar_reports_repository(self) -> RadarReportsRepository:
+        if self.settings.persistence_backend == "supabase":
+            try:
+                from packages.infrastructure.persistence.supabase.client import (
+                    build_supabase_client,
+                )
+                from packages.infrastructure.persistence.supabase.supabase_repositories import (
+                    SupabaseRadarReportsRepository,
+                )
+
+                return SupabaseRadarReportsRepository(build_supabase_client(self.settings))
+            except ModuleNotFoundError:
+                if self.settings.environment != "production":
+                    return InMemoryRadarReportsRepository()
+                raise
+        return InMemoryRadarReportsRepository()
+
+    def _build_radar_catalog_repository(self) -> RadarCatalogRepository:
+        if self.settings.persistence_backend == "supabase":
+            try:
+                from packages.infrastructure.persistence.supabase.client import (
+                    build_supabase_client,
+                )
+                from packages.infrastructure.persistence.supabase.supabase_repositories import (
+                    SupabaseRadarCatalogRepository,
+                )
+
+                return SupabaseRadarCatalogRepository(build_supabase_client(self.settings))
+            except ModuleNotFoundError:
+                if self.settings.environment != "production":
+                    return InMemoryRadarCatalogRepository()
+                raise
+        return InMemoryRadarCatalogRepository()
 
     def _build_radar_places_repository(self) -> RadarPlacesRepository:
         if self.settings.persistence_backend == "supabase":

@@ -8,6 +8,7 @@ import '../../../shared/config/app_runtime_config_loader.dart';
 import '../../../shared/errors/app_network_error.dart';
 import '../../../shared/types/result.dart';
 import '../../location/domain/coordinates.dart';
+import '../domain/radar_data_source.dart';
 import '../domain/radar_place.dart';
 
 /// Pet services around a point, from the backend's `/local-services/places`.
@@ -39,6 +40,39 @@ class RadarPlacesRepository {
 
   /// Error code of a failure worth retrying automatically after a pause.
   static const preparingErrorCode = 'radar_places_preparing';
+
+  /// Imported datasets with their release and date, plus the contact for
+  /// corrections, for "Fonti dati". Empty when signed out or unreachable:
+  /// the page then shows the fixed attribution alone.
+  Future<RadarSourcesInfo> loadSources() async {
+    const nothing = RadarSourcesInfo();
+    final baseUrl = _configLoader.load().apiBaseUrl;
+    final token = CurrentUser.accessToken();
+    if (baseUrl.isEmpty || token == null || token.isEmpty) {
+      return nothing;
+    }
+    try {
+      final response = await _client.get(
+        Uri.parse('$baseUrl/local-services/sources'),
+        headers: {'Authorization': 'Bearer $token'},
+      ).timeout(const Duration(seconds: 15));
+      if (response.statusCode != 200) {
+        return nothing;
+      }
+      final json = jsonDecode(utf8.decode(response.bodyBytes)) as Map<String, dynamic>;
+      final email = json['support_contact_email'];
+      return RadarSourcesInfo(
+        sources: (json['sources'] as List<dynamic>? ?? const [])
+            .whereType<Map<String, dynamic>>()
+            .map(RadarDataSource.tryFromJson)
+            .whereType<RadarDataSource>()
+            .toList(growable: false),
+        supportContactEmail: email is String && email.trim().isNotEmpty ? email.trim() : null,
+      );
+    } catch (_) {
+      return nothing;
+    }
+  }
 
   Future<Result<RadarPlacesResult>> loadNearby({
     required Coordinates center,
@@ -120,6 +154,17 @@ class RadarPlacesRepository {
       );
     }
   }
+}
+
+class RadarSourcesInfo {
+  const RadarSourcesInfo({this.sources = const [], this.supportContactEmail});
+
+  final List<RadarDataSource> sources;
+
+  /// Where to ask for a correction or removal, as configured on the
+  /// backend. Null when none is configured: the app then shows no address
+  /// rather than one that may not be ours.
+  final String? supportContactEmail;
 }
 
 class RadarPlacesResult {
