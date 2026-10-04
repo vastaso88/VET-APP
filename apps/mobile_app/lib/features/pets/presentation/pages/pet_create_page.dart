@@ -74,6 +74,15 @@ class _CreateForm extends StatelessWidget {
             ? pet
             : await PetDemoStore.instance.upsert(pet.copyWith(photoPath: photoPath));
         if (!context.mounted) return;
+        if (PetDemoStore.instance.isUnsynced(saved.id)) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text(
+                'Profilo salvato sul telefono ma non sul server. Aprilo dalla lista e tocca Riprova.',
+              ),
+            ),
+          );
+        }
         Navigator.of(context).pop(saved);
       },
     );

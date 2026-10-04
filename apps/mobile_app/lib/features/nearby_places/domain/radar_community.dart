@@ -8,6 +8,7 @@ class RadarReportInfo {
     required this.required,
     this.viewerVote,
     this.viewerIsReporter = false,
+    this.expiresInDays,
   });
 
   final String reportId;
@@ -21,7 +22,19 @@ class RadarReportInfo {
   final int? viewerVote;
   final bool viewerIsReporter;
 
+  /// Days before the report is dropped because nobody confirmed it; null
+  /// once it has a confirmation.
+  final int? expiresInDays;
+
   String get progressLabel => '$confirmations/$required';
+
+  /// "Scade tra N giorni se nessuno conferma", or null when it does not expire.
+  String? get expiryLabel => switch (expiresInDays) {
+        null => null,
+        0 => 'Scade oggi se nessuno conferma.',
+        1 => 'Scade tra 1 giorno se nessuno conferma.',
+        final days => 'Scade tra $days giorni se nessuno conferma.',
+      };
 
   static RadarReportInfo? tryFromJson(Object? json) {
     if (json is! Map<String, dynamic>) {
@@ -38,6 +51,7 @@ class RadarReportInfo {
       required: (json['required'] as num?)?.toInt() ?? 5,
       viewerVote: (json['viewer_vote'] as num?)?.toInt(),
       viewerIsReporter: json['viewer_is_reporter'] == true,
+      expiresInDays: (json['expires_in_days'] as num?)?.toInt(),
     );
   }
 }
@@ -50,6 +64,29 @@ class RadarRating {
   final int count;
   final double? average;
   final int? viewerStars;
+
+  /// This rating with the viewer's vote set to [stars]: used to show a
+  /// vote just given on a card whose data was loaded before it.
+  RadarRating withViewerStars(int? stars) => stars == null
+      ? this
+      : RadarRating(
+          count: viewerStars == null ? count + 1 : count,
+          average: average,
+          viewerStars: stars,
+        );
+
+  /// The community's vote in words. Below the threshold only how many
+  /// voted is said, never what a single person gave.
+  String get communityLabel {
+    final votes = count == 1 ? '1 voto' : '$count voti';
+    final average = this.average;
+    if (average != null) {
+      return 'Voto della community: ${average.toStringAsFixed(1).replaceAll('.', ',')} su 5 · $votes';
+    }
+    return count == 0
+        ? 'Voto della community: nessun voto ancora'
+        : 'Voto della community: $votes · la media compare da 3 voti';
+  }
 
   static RadarRating? tryFromJson(Object? json) {
     if (json is! Map<String, dynamic> || json['can_rate'] != true) {

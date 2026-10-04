@@ -8,6 +8,7 @@ import '../../../../../design_system/tokens/app_radii.dart';
 import '../../../../../design_system/tokens/app_spacing.dart';
 import '../../../../../design_system/tokens/app_text_styles.dart';
 import '../../data/medical_records_repository.dart';
+import '../record_file_actions.dart';
 
 class MedicalRecordsListPage extends StatefulWidget {
   const MedicalRecordsListPage({super.key});
@@ -58,11 +59,7 @@ class _MedicalRecordsListPageState extends State<MedicalRecordsListPage> {
   }
 
   void _openDetail(MedicalRecordEntry record) {
-    Navigator.of(context).push(
-      MaterialPageRoute<void>(
-        builder: (_) => MedicalRecordDetailPage(record: record),
-      ),
-    );
+    showRecordActions(context, record: record, onChanged: () => unawaited(_reload()));
   }
 
   void _selectPet(String? petName) {
@@ -227,13 +224,16 @@ class _MedicalRecordsUploadPageState extends State<MedicalRecordsUploadPage> {
       title: 'Carica documento',
       subtitle: 'Carica PDF, JPG o PNG e completa i metadati.',
       actionLabel: 'Dettaglio',
-      onAction: () {
-        unawaited(_repository.saveRecord(_draftRecord));
-        Navigator.of(context).push(
-          MaterialPageRoute<void>(
-            builder: (_) => MedicalRecordDetailPage(record: _draftRecord),
-          ),
-        );
+      onAction: () async {
+        try {
+          await _repository.saveRecord(_draftRecord);
+        } on MedicalRecordSaveException catch (error) {
+          if (!context.mounted) return;
+          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(error.message)));
+          return;
+        }
+        if (!context.mounted) return;
+        Navigator.of(context).maybePop();
       },
       child: const Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -256,56 +256,6 @@ class _MedicalRecordsUploadPageState extends State<MedicalRecordsUploadPage> {
           _Checklist(),
         ],
       ),
-    );
-  }
-}
-
-class MedicalRecordDetailPage extends StatefulWidget {
-  const MedicalRecordDetailPage({super.key, this.record});
-
-  final MedicalRecordEntry? record;
-
-  @override
-  State<MedicalRecordDetailPage> createState() => _MedicalRecordDetailPageState();
-}
-
-class _MedicalRecordDetailPageState extends State<MedicalRecordDetailPage> {
-  @override
-  Widget build(BuildContext context) {
-    return _FeatureScaffold(
-      title: 'Dettaglio metadati',
-      subtitle: 'Fonte, formato, data e prossima nota operativa.',
-      actionLabel: 'Indietro',
-      onAction: () => Navigator.of(context).pop(),
-      child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              _SummaryCard(
-                title: widget.record?.title ?? 'richiamo_vaccinale_moka.pdf',
-                body: widget.record?.detailSource ??
-                    'Documento clinico collegato al profilo attivo di ${widget.record?.petName ?? 'Moka'}.',
-                icon: Icons.verified_outlined,
-              ),
-              const SizedBox(height: AppSpacing.lg),
-              const _SummaryCard(
-                title: 'Prossima azione',
-                body: 'Condividi il referto con Francesco e conserva la nota nel profilo di Moka.',
-                icon: Icons.send_outlined,
-              ),
-              const SizedBox(height: AppSpacing.lg),
-              _MetaGrid(
-                items: [
-                  _MetaItem('Pet', widget.record?.petName ?? 'Moka'),
-                  _MetaItem('Clinica', widget.record?.detailSource ?? 'Clinica Vet Roma'),
-                  _MetaItem('Creato', widget.record?.createdAt ?? '25 Mar 2026, 09:32'),
-                  const _MetaItem('Pagine', '2'),
-                  const _MetaItem('Tag', 'Vaccini, controllo annuale'),
-                ],
-              ),
-              const SizedBox(height: AppSpacing.lg),
-              _TimelineCard(timeline: widget.record?.timeline),
-            ],
-          ),
     );
   }
 }
@@ -966,86 +916,6 @@ class _LineItem extends StatelessWidget {
           const Icon(Icons.check_circle, size: 18, color: Color(0xFF2D6B60)),
           const SizedBox(width: AppSpacing.sm),
           Text(text, style: AppTextStyles.bodySmall.copyWith(color: AppColors.text)),
-        ],
-      ),
-    );
-  }
-}
-
-class _TimelineCard extends StatelessWidget {
-  const _TimelineCard({this.timeline});
-
-  final List<MedicalRecordTimelineEntry>? timeline;
-
-  @override
-  Widget build(BuildContext context) {
-    final rows = timeline ??
-        const [
-          MedicalRecordTimelineEntry(label: 'Importato', value: '25 Mar 2026'),
-          MedicalRecordTimelineEntry(label: 'Revisionato', value: '25 Mar 2026, 09:45'),
-          MedicalRecordTimelineEntry(label: "Pronto per l'invio", value: 'Disponibile'),
-        ];
-
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(AppSpacing.xl),
-      decoration: BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.circular(28),
-        border: Border.all(color: AppColors.border),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text('Cronologia documento', style: AppTextStyles.title),
-          const SizedBox(height: AppSpacing.lg),
-          ...rows.map(
-            (row) => _TimelineRow(label: row.label, value: row.value),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _TimelineRow extends StatelessWidget {
-  const _TimelineRow({
-    required this.label,
-    required this.value,
-  });
-
-  final String label;
-  final String value;
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: AppSpacing.md),
-      child: Row(
-        children: [
-          Container(
-            width: 10,
-            height: 10,
-            decoration: const BoxDecoration(
-              shape: BoxShape.circle,
-              color: AppColors.primary,
-            ),
-          ),
-          const SizedBox(width: AppSpacing.sm),
-          Expanded(
-            child: Text(
-              label,
-              style: AppTextStyles.bodySmall.copyWith(color: AppColors.text),
-            ),
-          ),
-          const SizedBox(width: AppSpacing.sm),
-          Flexible(
-            child: Text(
-              value,
-              textAlign: TextAlign.end,
-              style: AppTextStyles.caption,
-            ),
-          ),
         ],
       ),
     );

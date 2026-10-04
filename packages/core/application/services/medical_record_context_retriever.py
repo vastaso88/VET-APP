@@ -41,15 +41,19 @@ class MedicalRecordContextRetriever:
         events = self._repository.list_by_pet(pet_id)
         if not events:
             return None
-        recent = sorted(events, key=lambda event: event.created_at, reverse=True)[
-            : self._max_entries
-        ]
+        recent = sorted(
+            events, key=lambda event: (event.occurred_on, event.created_at), reverse=True
+        )[: self._max_entries]
         lines = [self._format_event(event) for event in recent]
         return "\n".join(lines)
 
     def _format_event(self, event: ClinicalEvent) -> str:
-        detail = f": {event.subtitle}" if event.subtitle else ""
-        line = f"- {event.title}{detail}"
+        # `subtitle` is what the app writes; `summary` is the column the
+        # live table already had — either one describes the record.
+        description = event.subtitle or event.summary
+        detail = f": {description}" if description else ""
+        dated = f" ({event.event_date.strftime('%d/%m/%Y')})" if event.event_date else ""
+        line = f"- {event.title or 'Documento'}{dated}{detail}"
         content = self._document_summary(event)
         if content:
             line += f"\n  Contenuto del documento: {content}"

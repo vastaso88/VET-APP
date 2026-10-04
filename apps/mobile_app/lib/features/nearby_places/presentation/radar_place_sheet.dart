@@ -152,8 +152,9 @@ class _RadarPlaceSheetState extends State<_RadarPlaceSheet> {
   /// Runs one contribution and closes the card when it went through: the
   /// page reloads, so what the card shows would be out of date.
   Future<void> _contribute<T>(
-    Future<bool> Function(RadarContributions contributions) action,
-  ) async {
+    Future<bool> Function(RadarContributions contributions) action, {
+    bool closeOnSuccess = true,
+  }) async {
     final contributions = widget.contributions;
     if (contributions == null || _busy) {
       return;
@@ -164,9 +165,39 @@ class _RadarPlaceSheetState extends State<_RadarPlaceSheet> {
       return;
     }
     setState(() => _busy = false);
-    if (done) {
+    if (done && closeOnSuccess) {
       Navigator.of(context).pop();
     }
+  }
+
+  Future<void> _withdraw(RadarReportInfo report) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: const Text('Ritirare la segnalazione?'),
+        content: const Text('La segnalazione viene cancellata e non sarà più visibile a nessuno.'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(false),
+            child: const Text('Annulla'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.of(dialogContext).pop(true),
+            child: const Text('Ritira'),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true || !mounted) {
+      return;
+    }
+    await _contribute(
+      (contributions) => contributions.run<void>(
+        context,
+        () => contributions.repository.withdraw(report.reportId),
+        successMessage: (_) => 'Segnalazione ritirata.',
+      ),
+    );
   }
 
   Future<void> _vote(RadarReportInfo report, {required bool confirm}) {
@@ -179,13 +210,22 @@ class _RadarPlaceSheetState extends State<_RadarPlaceSheet> {
     );
   }
 
+  /// The card stays open after a vote, showing it: closing it made the
+  /// vote look as if it had not been taken.
   Future<void> _rate(int stars) {
     return _contribute(
-      (contributions) => contributions.run<void>(
-        context,
-        () => contributions.repository.rate(_place, stars),
-        successMessage: (_) => 'Voto registrato: $stars su 5.',
-      ),
+      (contributions) async {
+        final done = await contributions.run<void>(
+          context,
+          () => contributions.repository.rate(_place, stars),
+          successMessage: (_) => 'Voto registrato: $stars su 5.',
+        );
+        if (done) {
+          contributions.rememberStars(_place, stars);
+        }
+        return done;
+      },
+      closeOnSuccess: false,
     );
   }
 
@@ -245,7 +285,7 @@ class _RadarPlaceSheetState extends State<_RadarPlaceSheet> {
         place.confirmedBy.map((name) => radarSourceInfo(name)?.name).whereType<String>().join(', ');
     final community = place.community;
     final pendingClosure = place.pendingClosure;
-    final rating = place.rating;
+    final rating = place.rating?.withViewerStars(widget.contributions?.starsGivenTo(place));
     final canContribute = widget.contributions != null;
 
     return SafeArea(
@@ -281,6 +321,7 @@ class _RadarPlaceSheetState extends State<_RadarPlaceSheet> {
                 report: community,
                 busy: _busy,
                 onVote: canContribute ? _vote : null,
+                onWithdraw: canContribute ? _withdraw : null,
               ),
             ],
             if (community != null &&
@@ -304,6 +345,7 @@ class _RadarPlaceSheetState extends State<_RadarPlaceSheet> {
                 report: pendingClosure,
                 busy: _busy,
                 onVote: canContribute ? _vote : null,
+                onWithdraw: canContribute ? _withdraw : null,
               ),
             ],
             if (address != null) ...[
@@ -403,6 +445,7 @@ class _ReportBanner extends StatelessWidget {
     required this.report,
     required this.busy,
     required this.onVote,
+    required this.onWithdraw,
   });
 
   final String label;
@@ -411,9 +454,14 @@ class _ReportBanner extends StatelessWidget {
   final bool busy;
   final Future<void> Function(RadarReportInfo report, {required bool confirm})? onVote;
 
+  /// Offered only to whoever made the report.
+  final Future<void> Function(RadarReportInfo report)? onWithdraw;
+
   @override
   Widget build(BuildContext context) {
     final onVote = this.onVote;
+    final onWithdraw = this.onWithdraw;
+    final expiryLabel = report.expiryLabel;
     final viewerNote = report.viewerIsReporter
         ? 'L’hai segnalato tu: servono le conferme di altri utenti.'
         : switch (report.viewerVote) {
@@ -449,6 +497,18 @@ class _ReportBanner extends StatelessWidget {
           ),
           const SizedBox(height: AppSpacing.xs),
           Text(viewerNote, style: AppTextStyles.bodySmall.copyWith(color: AppColors.text)),
+          if (expiryLabel != null) ...[
+            const SizedBox(height: AppSpacing.xs),
+            Text(expiryLabel, style: AppTextStyles.bodySmall.copyWith(color: AppColors.text)),
+          ],
+          if (onWithdraw != null && report.viewerIsReporter) ...[
+            const SizedBox(height: AppSpacing.sm),
+            OutlinedButton.icon(
+              onPressed: busy ? null : () => onWithdraw(report),
+              icon: const Icon(Icons.undo, size: 18),
+              label: const Text('Ritira la mia segnalazione'),
+            ),
+          ],
           if (onVote != null && !report.viewerIsReporter) ...[
             const SizedBox(height: AppSpacing.sm),
             Wrap(
@@ -479,19 +539,16 @@ class _RatingRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final average = rating.average;
     final viewerStars = rating.viewerStars ?? 0;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          average != null
-              ? 'Secondo gli utenti VetApp: ${average.toStringAsFixed(1).replaceAll('.', ',')} '
-                  'su 5 (${rating.count} voti)'
-              : rating.count == 0
-                  ? 'Nessun voto ancora. Com’è quest’area cani?'
-                  : 'Voti finora: ${rating.count}. La media compare da 3 voti.',
-          style: AppTextStyles.bodySmall,
+          rating.communityLabel,
+          style: AppTextStyles.bodySmall.copyWith(
+            color: AppColors.text,
+            fontWeight: FontWeight.w700,
+          ),
         ),
         Row(
           children: [
@@ -507,9 +564,12 @@ class _RatingRow extends StatelessWidget {
               ),
           ],
         ),
-        if (viewerStars > 0)
-          Text('Il tuo voto: $viewerStars su 5. Tocca per cambiarlo.',
-              style: AppTextStyles.caption),
+        Text(
+          viewerStars > 0
+              ? 'Il tuo voto: $viewerStars su 5. Tocca una stella per cambiarlo.'
+              : 'Com’è quest’area cani? Tocca una stella per dare il tuo voto.',
+          style: AppTextStyles.bodySmall,
+        ),
       ],
     );
   }

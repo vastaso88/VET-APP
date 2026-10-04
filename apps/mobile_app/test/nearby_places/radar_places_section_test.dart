@@ -356,8 +356,6 @@ void main() {
 
     expect(find.text('Clinica Veterinaria Duomo'), findsOneWidget);
     expect(find.text('Area cani'), findsNothing);
-    // Events are a category too: hidden once another one is selected.
-    expect(find.text('In programma'), findsNothing);
     expect(repository.requestedRadii, [10]);
   });
 
@@ -392,21 +390,18 @@ void main() {
     expect(repository.requestedRadii, [10, 50, 5]);
   });
 
-  testWidgets('the Filtri sheet applies a species filter', (tester) async {
+  testWidgets('there is no Filtri button and no descriptive subtitle', (tester) async {
     await _pumpPage(tester, _repositoryWith([_clinic, _dogPark]));
 
-    await tester.tap(find.text('Filtri'));
-    await tester.pumpAndSettle();
-    await tester.tap(find.widgetWithText(RadarChip, 'Gatto'));
-    await tester.tap(find.text('Applica'));
-    await tester.pumpAndSettle();
-
-    expect(find.text('Filtri (1)'), findsOneWidget);
-    expect(find.text('Area cani'), findsNothing);
-    expect(find.text('Clinica Veterinaria Duomo'), findsOneWidget);
+    expect(find.text('Filtri'), findsNothing);
+    expect(find.text('Servizi nella zona'), findsOneWidget);
+    expect(find.textContaining('Negozi, aree cani, toelettature'), findsNothing);
+    // Radius and category chips are still there.
+    expect(find.widgetWithText(RadarChip, '25 km'), findsOneWidget);
+    expect(find.widgetWithText(RadarChip, 'Veterinari'), findsOneWidget);
   });
 
-  testWidgets('national events are listed whatever the radius', (tester) async {
+  testWidgets('a national event is not listed: events live in their own section', (tester) async {
     await LocalActivitiesRepository().saveActivity(
       LocalActivity(
         id: 'test-national-fair',
@@ -419,8 +414,8 @@ void main() {
     );
     await _pumpPage(tester, _repositoryWith(const []));
 
-    expect(find.text('Grande fiera a Roma'), findsOneWidget);
-    expect(find.textContaining('Evento nazionale'), findsOneWidget);
+    expect(find.text('Grande fiera a Roma'), findsNothing);
+    expect(find.text('In programma'), findsNothing);
   });
 
   testWidgets('tells the user when the area is served from an old import', (tester) async {
@@ -439,8 +434,8 @@ void main() {
 
     expect(find.text('Non sono riuscito a caricare i servizi.'), findsOneWidget);
     expect(find.text('Riprova'), findsOneWidget);
-    // The events part of the page is unaffected by a radar failure.
-    expect(find.text('Fiera cinofila regionale'), findsOneWidget);
+    // The rest of the page is still there.
+    expect(find.text('Servizi nella zona'), findsOneWidget);
   });
 
   testWidgets('without any position asks for a Località instead of showing a default city',

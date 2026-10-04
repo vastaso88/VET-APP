@@ -59,6 +59,9 @@ class RadarReportSettings(BaseModel):
     show_pending_closures: bool = False
     # Switches (see Settings): reports and votes, the "closed" kind alone,
     # dog-park stars.
+    # A pending report nobody confirmed even once is dropped after this
+    # many days; with one confirmation it waits for the others.
+    expiry_days: int = 7
     reports_enabled: bool = True
     closed_reports_enabled: bool = True
     ratings_enabled: bool = True
@@ -109,11 +112,28 @@ class _Contributions:
                 "Per segnalare o votare accetta prima le regole per segnalazioni e voti."
             )
 
+    def _is_live(self, report: RadarUserReport) -> bool:
+        """False for a report that expired unconfirmed. Checked wherever
+        reports are read, so expiry does not depend on the cleanup job
+        having run (scripts/radar/cleanup_reports.py deletes them)."""
+        return not report.is_expired(expiry_days=self._settings.expiry_days)
+
+    def _live_reports(
+        self, box: BoundingBox, *, kinds: list[str], statuses: list[str]
+    ) -> list[RadarUserReport]:
+        return [
+            report
+            for report in self._repository.list_reports(box, kinds=kinds, statuses=statuses)
+            if self._is_live(report)
+        ]
+
     def _register_vote(self, report: RadarUserReport, voter: str, value: int) -> RadarUserReport:
         """Records one person's vote (replacing their previous one) and
         resolves the report if the tallies now decide it."""
         if report.status != "pending":
             raise ValidationError("Questa segnalazione è già stata chiusa.")
+        if not self._is_live(report):
+            raise ValidationError("Questa segnalazione è scaduta: nessuno l'ha confermata.")
         if voter == report.reporter_pseudonym:
             raise ValidationError("Non puoi confermare una tua segnalazione.")
         self._repository.save_vote(
@@ -237,7 +257,7 @@ class SubmitRadarReportService(_Contributions):
             max_longitude=longitude + delta,
         )
         origin = Coordinates(latitude=latitude, longitude=longitude)
-        for report in self._repository.list_reports(box, kinds=[data.kind], statuses=["pending"]):
+        for report in self._live_reports(box, kinds=[data.kind], statuses=["pending"]):
             if data.kind == "missing":
                 position = Coordinates(latitude=report.latitude, longitude=report.longitude)
                 if (
@@ -271,6 +291,27 @@ class VoteRadarReportService(_Contributions):
         if not self._settings.accepts(report.kind):
             raise ValidationError(KIND_NOT_ACTIVE_MESSAGE)
         return self._register_vote(report, self._pseudonym(data.user_id), 1 if data.confirm else -1)
+
+
+class WithdrawRadarReportInput(BaseModel):
+    user_id: str
+    report_id: str
+
+
+class WithdrawRadarReportService(_Contributions):
+    """ "Ritira la mia segnalazione": whoever made a report can take it
+    back while it is still pending (made by mistake, or as a trial). The
+    report and the votes on it are deleted."""
+
+    def execute(self, data: WithdrawRadarReportInput) -> None:
+        report = self._repository.get_report(data.report_id)
+        if report is None:
+            raise ValidationError("Segnalazione non trovata.")
+        if report.reporter_pseudonym != self._pseudonym(data.user_id):
+            raise ValidationError("Puoi ritirare solo una tua segnalazione.")
+        if report.status != "pending":
+            raise ValidationError("Questa segnalazione è già chiusa: non si può più ritirare.")
+        self._repository.delete_report(report.id)
 
 
 class RateDogParkInput(BaseModel):
@@ -311,7 +352,7 @@ class RadarCommunityView(_Contributions):
             return []
         return [
             report.as_place()
-            for report in self._repository.list_reports(
+            for report in self._live_reports(
                 box, kinds=["missing"], statuses=["pending", "confirmed"]
             )
         ]
@@ -331,9 +372,7 @@ class RadarCommunityView(_Contributions):
             if kind == "missing" or (kind == "closed" and self._settings.show_pending_closures)
         ]
         reports = (
-            self._repository.list_reports(box, kinds=kinds, statuses=["pending", "confirmed"])
-            if kinds
-            else []
+            self._live_reports(box, kinds=kinds, statuses=["pending", "confirmed"]) if kinds else []
         )
         viewer_votes = (
             {
@@ -354,6 +393,9 @@ class RadarCommunityView(_Contributions):
                 "required": self._settings.required_for(report.kind),
                 "viewer_vote": viewer_votes.get(report.id),
                 "viewer_is_reporter": viewer is not None and report.reporter_pseudonym == viewer,
+                # Days left before it is dropped unconfirmed; null once it
+                # has a confirmation.
+                "expires_in_days": report.expires_in_days(expiry_days=self._settings.expiry_days),
             }
 
         missing = {report.id: report for report in reports if report.kind == "missing"}

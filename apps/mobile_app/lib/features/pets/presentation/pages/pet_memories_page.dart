@@ -46,7 +46,13 @@ class _PetMemoriesPageState extends State<PetMemoriesPage> {
     );
     if (confirmed != true) return;
 
-    await PetDemoStore.instance.delete(pet.id);
+    try {
+      await PetDemoStore.instance.delete(pet.id);
+    } on PetSyncException catch (error) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(error.message)));
+      return;
+    }
     if (!mounted) return;
     _reload();
   }

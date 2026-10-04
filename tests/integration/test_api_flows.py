@@ -394,3 +394,71 @@ def test_open_sources_switch_limits_places_and_the_sources_page(
         ["comune_milano"],
         ["comune_milano"],
     )
+
+
+def test_a_report_can_be_withdrawn_by_who_made_it_and_ratings_are_read_back(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    from apps.api.dependencies.container import get_container
+    from packages.core.domain.radar_places.models import RadarPlace
+
+    client = _client_with_env(monkeypatch)
+    get_container().radar_places_source = _NoPlacesSource()  # type: ignore[assignment]
+    client.post("/account/consents", json={"consent_key": "contribution_rules", "granted": True})
+    here = {"latitude": 45.4642, "longitude": 9.19}
+
+    options = client.get("/local-services/reports/options").json()
+    assert options["expiry_days"] == 7
+
+    created = client.post("/local-services/reports", json=_REPORT).json()
+    assert created["expires_in_days"] == 7
+    listed = client.get("/local-services/places", params=here).json()["places"]
+    assert listed[0]["community"]["expires_in_days"] == 7
+
+    withdrawn = client.delete(f"/local-services/reports/{created['report_id']}")
+    assert withdrawn.json() == {"withdrawn": True}
+    assert client.get("/local-services/places", params=here).json()["places"] == []
+    assert client.delete(f"/local-services/reports/{created['report_id']}").status_code == 400
+
+    # A star vote is stored and comes back as the viewer's own on the next read.
+    get_container().radar_catalog_repository.open_places = [  # type: ignore[attr-defined]
+        RadarPlace(
+            coverage_key="catalog",
+            place_type="dog_park",
+            name="Area cani Esempio",
+            latitude=45.4660,
+            longitude=9.19,
+            source_name="comune_milano",
+            source_external_id="park-1",
+        )
+    ]
+    get_container().radar_catalog_repository.sources = [  # type: ignore[attr-defined]
+        _data_source("comune_milano")
+    ]
+    rating = {
+        "source": "comune_milano",
+        "source_id": "park-1",
+        "latitude": 45.4660,
+        "longitude": 9.19,
+        "stars": 4,
+    }
+    assert client.put("/local-services/ratings", json=rating).json() == {"stars": 4}
+    park = client.get("/local-services/places", params=here).json()["places"][0]
+    assert park["rating"] == {"can_rate": True, "count": 1, "average": None, "viewer_stars": 4}
+    assert client.put("/local-services/ratings", json={**rating, "stars": 2}).status_code == 200
+    park = client.get("/local-services/places", params=here).json()["places"][0]
+    assert (park["rating"]["count"], park["rating"]["viewer_stars"]) == (1, 2)
+
+
+def _data_source(name: str) -> object:
+    from datetime import UTC, datetime
+
+    from packages.core.domain.radar_places.models import RadarDataSource
+
+    return RadarDataSource(
+        source=name,
+        release="test",
+        license="test",
+        attribution="test",
+        imported_at=datetime(2026, 10, 4, tzinfo=UTC),
+    )

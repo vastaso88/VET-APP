@@ -1,6 +1,6 @@
-# Radar nei dintorni
+# Vicino a me (già "Radar nei dintorni")
 
-Pagina unica (`LocalEventsPage`, titolo "Radar nei dintorni") che riunisce tutto ciò che riguarda gli animali attorno alla Località dell'utente: eventi, servizi e cliniche.
+Pagina unica (`LocalEventsPage`, titolo "Vicino a me" dal 2026-10-04) che riunisce i luoghi per animali attorno alla Località dell'utente: servizi e cliniche. Gli eventi non ne fanno più parte: hanno una sezione propria dell'app, costruita da un'altra sessione; dominio e repository `local_activities` sono rimasti intatti per quella.
 
 Origine: il motore di ricerca su OpenStreetMap (`overpass_places_source.py`) è stato scritto da Roberto sul branch `roberto`. Cache per zona, API e schermata sono stati costruiti su `Francesco` il 2026-10-03. Parere legale: `docs/compliance/06_radar_mappe_sponsorizzazioni.md`.
 
@@ -34,6 +34,14 @@ uv run --with duckdb python scripts/radar/import_overture_places.py
 ```bash
 uv run python scripts/radar/import_osm_places.py
 ```
+
+Su un computer dove un antivirus intercetta le connessioni HTTPS (è il caso del PC del proprietario) servono due opzioni in più, altrimenti `uv` non riesce a scaricare i pacchetti e gli script non raggiungono Supabase. Comando usato per gli import in produzione del 2026-10-04:
+
+```bash
+uv run --system-certs --with truststore python -u scripts/radar/import_osm_places.py
+```
+
+Lo stesso vale per gli altri script della cartella (per Overture si aggiunge `--with duckdb`). Import in produzione del 2026-10-04: Overture 15.852 luoghi, OpenStreetMap Italia 8.069 (20 regioni su 20), Bologna 33, Torino 52, Milano 297.
 
 Con `--dry-run` gli script contano senza scrivere. `.github/workflows/radar-places-import.yml` li esegue il 2 di ogni mese, una volta impostati i segreti `RADAR_SUPABASE_URL` e `RADAR_SUPABASE_SERVICE_ROLE_KEY` nel repository.
 
@@ -73,7 +81,8 @@ Parere e condizioni: `docs/compliance/07_contributi_utenti.md`. Niente foto, nie
 - **Segnalare un luogo mancante**: categoria da elenco chiuso, nome dell'insegna (facoltativo solo per le aree cani), posizione scelta sulla mappa, indirizzo ricavato dalla posizione. Nessun campo note e nessun campo di contatto.
 - **Segnalare un problema su un luogo esistente**: ha chiuso, è un doppione, la posizione è sbagliata.
 - **Confermare o smentire** una segnalazione in attesa ("Confermo" / "Non è così").
-- **Dare da 1 a 5 stelle a un'area cani pubblica**. Un voto per persona e area, modificabile. La media compare da 3 voti. Sono escluse le aree a pagamento o riservate ai clienti (`fee=yes`, `access=customers|private`).
+- **Ritirare una propria segnalazione** finché è in attesa ("Ritira la mia segnalazione" nella scheda, con conferma): la segnalazione e i voti ricevuti vengono cancellati. Una segnalazione già confermata dagli altri non si può più ritirare.
+- **Dare da 1 a 5 stelle a un'area cani pubblica**. Un voto per persona e area, modificabile. La scheda mostra il voto della community (media e numero di voti; sotto i 3 voti solo il numero, "1 voto · la media compare da 3 voti", così non si ricava il voto di una singola persona) e il proprio voto a stelle piene; dopo il voto la scheda resta aperta e lo mostra subito. Sono escluse le aree a pagamento o riservate ai clienti (`fee=yes`, `access=customers|private`).
 
 Prima del primo contributo l'app mostra le regole d'uso e chiede di accettarle (consenso `contribution_rules`, versionato, revocabile dalle impostazioni dei consensi; non blocca l'uso dell'app). La versione in vigore è la v2 (2026-10-04, regola 5 riscritta per le aree cani): chi avesse accettato una versione precedente deve accettare di nuovo.
 
@@ -141,13 +150,19 @@ Spegnere non cancella nulla: riaccendendo, segnalazioni, voti e stelle ricompaio
 
 L'app legge `GET /local-services/reports/options` (`enabled`, `report_kinds`, `ratings_enabled`, `missing_place_types`): la pagina "Segnala!" e l'elenco dei problemi segnalabili seguono il server senza una nuova build; le stelle spariscono perché il server non le invia più.
 
+### Scadenza delle segnalazioni
+
+Una segnalazione che entro 7 giorni non riceve nemmeno una conferma non viene più mostrata né accettata come base per conferme, e lo script di pulizia la cancella. Con almeno una conferma resta in attesa fino al numero richiesto. Chi segnala lo legge nel modulo, nel messaggio di invio e nella scheda ("Scade tra N giorni se nessuno conferma"). Il numero di giorni arriva all'app da `GET /local-services/reports/options` (`expiry_days`) e per ogni segnalazione da `expires_in_days`.
+
+Ritiro: `DELETE /local-services/reports/{id}`, solo per chi l'ha fatta e solo finché è in attesa.
+
 ### Dati e identità
 
 - Tabelle nostre: `radar_user_reports`, `radar_report_votes`, `radar_place_ratings`, `radar_place_overrides`. Nulla viene scritto verso OpenStreetMap né nelle tabelle delle fonti aperte.
 - Chi segnala o vota è registrato solo come pseudonimo: HMAC-SHA256 dell'id utente con la chiave `RADAR_PSEUDONYM_KEY`, che sta solo nelle variabili d'ambiente del backend. Nel database non c'è l'id utente e non esiste una tabella di corrispondenza. Per trovare i contributi di un account (ad esempio alla sua cancellazione) si ricalcola lo pseudonimo.
 - Se `RADAR_PSEUDONYM_KEY` non è impostata, la chiave viene derivata da `SUPABASE_SERVICE_ROLE_KEY` (HMAC con etichetta fissa `radar-contributions-v1`): i contributi funzionano senza una variabile in più. Limite: se la service key viene ruotata, gli pseudonimi cambiano e i voti già dati non sono più riconducibili alla stessa persona. Impostare la variabile dedicata resta la scelta consigliata. Senza nessuna delle due in produzione i contributi sono disattivati (risposta 503) e il radar funziona in sola lettura.
 - RLS attiva senza policy: tutto passa dal backend. L'API non restituisce mai lo pseudonimo; a chi guarda dice solo il proprio voto e se la segnalazione è sua.
-- Conservazione (`scripts/radar/cleanup_reports.py`, eseguito anche dal flusso mensile): segnalazioni non confermate eliminate dopo 90 giorni; 12 mesi dopo l'esito vengono cancellati i voti e lo pseudonimo di chi ha segnalato, restano i contatori.
+- Conservazione (`scripts/radar/cleanup_reports.py`, eseguito anche dal flusso mensile): segnalazioni che nessuno ha confermato nemmeno una volta eliminate dopo 7 giorni (`RADAR_REPORT_EXPIRY_DAYS`; il backend smette comunque di servirle a quella scadenza, senza dipendere dallo script), segnalazioni ancora in attesa eliminate dopo 90 giorni; 12 mesi dopo l'esito vengono cancellati i voti e lo pseudonimo di chi ha segnalato, restano i contatori.
 
 ### Cosa non è implementato
 
@@ -168,40 +183,20 @@ Anche il primo risultato si attende con il caricamento a tutta pagina: mappa ed 
 
 | Sezione | Fonte | Note |
 | --- | --- | --- |
-| In programma | tabella `local_activities` (righe con `starts_at`) | eventi nel raggio più gli eventi nazionali |
 | Servizi nella zona | OpenStreetMap (tutte le categorie tranne i veterinari) + `local_activities` senza data | |
 | Cliniche e ambulatori | OpenStreetMap `amenity=veterinary` + `local_activities` senza data con categoria che contiene "ambulator", "veterin" o "clinic" | pensata per le urgenze |
 
 ## Controlli della pagina
 
 - **Raggio** (5, 10, 25, 50 km): comanda sia la mappa sia la ricerca sul backend. Ogni raggio fa una richiesta, tenuta in memoria finché la pagina è aperta.
-- **Filtri rapidi** per categoria (Veterinari, Negozi, Aree cani, Eventi, Toelettature, Pensioni) e pulsante **Filtri** con distanza, categorie (multi) e specie (multi). Categorie e specie filtrano i dati già caricati, senza nuove richieste.
-- **Specie**: nasconde i luoghi dedicati esplicitamente ad altre specie. Un luogo che non dichiara specie resta sempre visibile. Le specie arrivano dai tag OSM `animal_boarding`, `animal_breeding`, `animal_training`, `pets`; le aree cani valgono "cane". Gli eventi non hanno questo dato e non vengono mai nascosti.
+- **Categorie** a un tocco (Veterinari, Negozi, Aree cani, Toelettature, Pensioni): filtrano i dati già caricati, senza nuove richieste. Il pulsante "Filtri" con il suo pannello è stato tolto il 2026-10-04 (sul dispositivo non funzionava), e con lui il filtro per specie, che esisteva solo lì.
 - **Categorie**: etichetta, icona e colore di ogni categoria sono definiti una sola volta in `radar_category.dart` e usati da liste, marker, filtri e legenda.
 - **Mappa**: anteprima con cerchio del raggio e legenda; il pulsante in alto a destra apre la mappa a tutto schermo. Tutti i luoghi del raggio sono sulla mappa: quelli che si sovrapporrebbero diventano un marker numerato, che al tocco ingrandisce.
 - **Servizi nella zona** è divisa per categoria, ognuna con il suo conteggio e i 3 più vicini. Un elenco unico per distanza nascondeva le categorie scarse (poche toelettature) sotto quelle abbondanti (centinaia di aree cani).
 
-## Eventi nazionali
+## Eventi
 
-Un evento compare sempre, qualunque sia il raggio, se la sua `category` contiene la parola `nazionale` (ad esempio `fiera nazionale`). È una convenzione sul campo testuale esistente: non richiede colonne nuove.
-
-### Inserire eventi
-
-La tabella `local_activities` sul database nuovo è vuota, e con un backend configurato l'app non mostra mai i dati demo (restano solo per l'anteprima senza backend e per i test): la sezione dice che non ci sono eventi. Gli eventi si inseriscono dall'editor SQL di Supabase con questo modello, dopo aver verificato date e luogo sul sito ufficiale dell'organizzatore:
-
-```sql
-insert into public.local_activities
-    (id, kind, title, description, category, latitude, longitude, address_label, starts_at, ends_at, source)
-values
-    ('fiera-<slug>-<anno>', 'event', '<Nome della fiera>', '<descrizione breve, con il sito ufficiale>',
-     'fiera nazionale', <lat>, <lon>, '<Quartiere fieristico, Città>',
-     '<AAAA-MM-GG>T09:00:00+02:00', '<AAAA-MM-GG>T19:00:00+02:00', 'seeded')
-on conflict (id) do nothing;
-```
-
-Per un evento locale basta una `category` senza "nazionale" (ad esempio `fiera`, `vaccinazioni`, `adozioni`).
-
-Non sono stati inseriti eventi reali: le date trovate in rete per le fiere 2026-2027 non erano verificabili con certezza, e un evento con data sbagliata è peggio di una sezione vuota. Candidati da verificare: Quattrozampeinfiera (più città), Petsfestival (Cremona), esposizioni ENCI. Fonte stabile da valutare in seguito: un feed curato a mano dal team, oppure le segnalazioni degli utenti già previste dal dominio (`source = 'user_submitted'`).
+Tolti dalla pagina il 2026-10-04: niente sezione "In programma", niente categoria Eventi nei chip e sulla mappa, niente regola degli eventi nazionali sempre visibili. Dalla tabella `local_activities` la pagina legge ancora solo le righe senza data (servizi inseriti a mano), tra i servizi o tra le cliniche.
 
 ## Backend
 
@@ -305,6 +300,14 @@ Qualità osservata:
 - 56 veterinari OSM non hanno riscontro in Overture: le due fonti si completano, nessuna sostituisce l'altra.
 
 Foursquare Open Source Places non è stato provato direttamente: Overture ne include già una parte. Va valutato solo se dopo Overture restassero buchi.
+
+### Controllo di qualità sui dati importati (2026-10-04, solo numeri)
+
+Fatto sugli estratti locali (cartella `.local/`, fuori da git), per tutta l'Italia.
+
+- **Unione delle due fonti**: veterinari OSM 1.891 + Overture 4.849 diventano 5.857 schede (883 doppioni uniti); toelettature 393 + 3.182 diventano 3.391; negozi 2.033 + 5.263 diventano 6.282. Le grafie diverse della stessa struttura (maiuscole, "Ambulatorio Veterinario Nome" contro il solo "Nome") vengono unite entro 120 m; i casi sono nei test con nomi sintetici. Restano separate 7 coppie di veterinari con nome compatibile ma distanti tra 120 e 300 m, e 1 coppia con nome fatto solo di parole generiche: scelta voluta, meglio un doppione che due strutture fuse.
+- **Categoria sbagliata alla fonte**: in questa versione di Overture le categorie alternative sono quasi sempre vuote (319 righe su 30.549), quindi non c'è una "primaria contro alternativa" da ordinare: l'errore è nella primaria. L'import ora corregge i luoghi classificati "veterinario" il cui nome dichiara un altro mestiere e nulla di veterinario (`place_type_for` in `overture_mapping.py`): 104 righe (37 addestramento, 29 toelettature, 20 allevamenti, 10 pensioni, 8 negozi). Solo in uscita dalla categoria veterinari; vale dal prossimo import.
+- **Voci che sono solo un nome di persona** tra i veterinari: stima, non conteggio esatto. La regola automatica "nessuna parola di attività nel nome" ne trova 324 su 5.857 (più 193 con titolo, tipo "Dott. Nome Cognome"); in un campione di 40 delle 324 poco più della metà erano davvero nome e cognome, le altre nomi di fantasia o attività di altro tipo. Ordine di grandezza: 170-190 voci con solo nome e cognome, più circa 190 con titolo. Nessuna regola applicata: decisione del proprietario.
 
 ### Architettura proposta
 

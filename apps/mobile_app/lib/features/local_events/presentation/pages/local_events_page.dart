@@ -10,7 +10,6 @@ import '../../../../shared/widgets/pet_loader.dart';
 import '../../../home/presentation/widgets/home_dashboard_primitives.dart';
 import '../../../local_activities/data/local_activities_repository.dart';
 import '../../../local_activities/domain/local_activity.dart';
-import '../../../local_activities/presentation/local_activity_labels.dart';
 import '../../../local_activities/presentation/pages/local_activity_detail_page.dart';
 import '../../../location/data/device_location_service.dart';
 import '../../../location/data/location_preference_store.dart';
@@ -25,18 +24,16 @@ import '../../../nearby_places/presentation/radar_category.dart';
 import '../../../nearby_places/presentation/radar_contributions.dart';
 import '../../../nearby_places/presentation/radar_place_sheet.dart';
 import '../../../nearby_places/presentation/widgets/radar_chip.dart';
-import '../../../nearby_places/presentation/widgets/radar_filters_sheet.dart';
 import '../../../nearby_places/presentation/widgets/radar_map.dart';
 import '../../../settings/presentation/pages/settings_page.dart';
 
-/// The radar: everything pet-related around the user's Località in one
-/// page. Events and user-submitted services come from
-/// packages/core/domain/local_activity (LocalActivitiesRepository);
-/// clinics, shops, dog parks and the other businesses come from open
-/// datasets (OpenStreetMap, Overture) through the backend
-/// (features/nearby_places). One radius
-/// and one set of category/species filters drive the map and all three
-/// sections.
+/// "Vicino a me": the pet-related places around the user's Località in
+/// one page. Clinics, shops, dog parks and the other businesses come from
+/// open datasets (OpenStreetMap, Overture) through the backend
+/// (features/nearby_places); standing services users submitted come from
+/// LocalActivitiesRepository. Dated events are not shown here: they have
+/// their own section of the app. One radius and one set of category chips
+/// drive the map and both lists.
 ///
 /// The page is always centered on the Località chosen in Impostazioni
 /// (current position or home). There is no default city: until a position
@@ -72,18 +69,23 @@ class _LocalEventsPageState extends State<LocalEventsPage> {
   /// area: the import usually succeeds on a later attempt.
   static const _preparingRetryDelays = [Duration(seconds: 8), Duration(seconds: 15)];
 
-  /// Categories offered as one-tap shortcuts above the map, most used
-  /// first; the full set lives in the "Filtri" sheet.
+  /// Categories offered as one-tap chips above the map, most used first.
   static const _quickCategories = [
     RadarCategory.veterinary,
     RadarCategory.shop,
     RadarCategory.dogPark,
-    RadarCategory.events,
     RadarCategory.grooming,
     RadarCategory.hotel,
   ];
 
-  RadarFilters _filters = const RadarFilters(radiusKm: 10);
+  double _radiusKm = 10;
+
+  /// Categories shown; empty means all of them.
+  Set<RadarCategory> _categories = const {};
+
+  bool _showsCategory(RadarCategory category) =>
+      _categories.isEmpty || _categories.contains(category);
+
   /// Service categories whose list is expanded past the first rows.
   final Set<RadarCategory> _expandedCategories = {};
   bool _showAllClinics = false;
@@ -101,8 +103,8 @@ class _LocalEventsPageState extends State<LocalEventsPage> {
   bool _locationConsentAsked = false;
 
   /// One backend request per radius, kept for the page's lifetime so going
-  /// back to a radius already seen is instant. Category and species
-  /// filters never trigger a request: they only re-filter what is loaded.
+  /// back to a radius already seen is instant. The category chips never
+  /// trigger a request: they only re-filter what is loaded.
   final Map<double, Future<Result<RadarPlacesResult>>> _radarFutures = {};
 
   /// Reports, votes and ratings, reloading the radar when one goes through
@@ -139,7 +141,10 @@ class _LocalEventsPageState extends State<LocalEventsPage> {
     if (referenceLocation == null) {
       return null;
     }
-    final activities = await LocalActivitiesRepository().loadActiveActivities();
+    // Standing services only: dated events belong to their own section.
+    final activities = (await LocalActivitiesRepository().loadActiveActivities())
+        .where((activity) => activity.startsAt == null)
+        .toList();
     return _LocalEventsViewData(referenceLocation: referenceLocation, activities: activities);
   }
 
@@ -276,32 +281,22 @@ class _LocalEventsPageState extends State<LocalEventsPage> {
   }
 
   void _retryRadarPlaces() {
-    setState(() => _radarFutures.remove(_filters.radiusKm));
+    setState(() => _radarFutures.remove(_radiusKm));
   }
 
-  void _setFilters(RadarFilters filters) {
+  void _setFilters({double? radiusKm, Set<RadarCategory>? categories}) {
     setState(() {
-      _filters = filters;
+      _radiusKm = radiusKm ?? _radiusKm;
+      _categories = categories ?? _categories;
       _expandedCategories.clear();
       _showAllClinics = false;
     });
   }
 
   void _toggleQuickCategory(RadarCategory category) {
-    final categories = {..._filters.categories};
+    final categories = {..._categories};
     categories.contains(category) ? categories.remove(category) : categories.add(category);
-    _setFilters(_filters.copyWith(categories: categories));
-  }
-
-  Future<void> _openFilters() async {
-    final edited = await showRadarFiltersSheet(
-      context,
-      filters: _filters,
-      radiusOptionsKm: _radiusOptionsKm,
-    );
-    if (edited != null && mounted) {
-      _setFilters(edited);
-    }
+    _setFilters(categories: categories);
   }
 
   Future<void> _openActivity(LocalActivity activity, double distanceMeters) async {
@@ -315,7 +310,7 @@ class _LocalEventsPageState extends State<LocalEventsPage> {
   void _openMap(Coordinates center, List<RadarMapItem> items) {
     Navigator.of(context).push(
       MaterialPageRoute<void>(
-        builder: (_) => RadarMapPage(center: center, radiusKm: _filters.radiusKm, items: items),
+        builder: (_) => RadarMapPage(center: center, radiusKm: _radiusKm, items: items),
       ),
     );
   }
@@ -342,7 +337,7 @@ class _LocalEventsPageState extends State<LocalEventsPage> {
         backgroundColor: AppColors.background,
         elevation: 0,
         foregroundColor: AppColors.text,
-        title: Text('Radar nei dintorni', style: AppTextStyles.title),
+        title: Text('Vicino a me', style: AppTextStyles.title),
       ),
       body: SafeArea(
         child: FutureBuilder<_LocalEventsViewData?>(
@@ -356,7 +351,7 @@ class _LocalEventsPageState extends State<LocalEventsPage> {
               return _NoLocationState(onOpenSettings: _openSettings, onRetry: _reload);
             }
             return FutureBuilder<Result<RadarPlacesResult>>(
-              future: _radarFor(_filters.radiusKm),
+              future: _radarFor(_radiusKm),
               builder: (context, radarSnapshot) {
                 // While a newly selected radius loads, FutureBuilder still
                 // holds the previous radius' data: do not show it as if it
@@ -380,7 +375,7 @@ class _LocalEventsPageState extends State<LocalEventsPage> {
   }
 
   Widget _buildContent(_LocalEventsViewData data, Result<RadarPlacesResult>? radarResult) {
-    final radiusMeters = _filters.radiusKm * 1000;
+    final radiusMeters = _radiusKm * 1000;
     final radar = radarResult is Success<RadarPlacesResult> ? radarResult.value : null;
 
     final activities = data.activities
@@ -392,38 +387,20 @@ class _LocalEventsPageState extends State<LocalEventsPage> {
         )
         .toList();
 
-    // National fairs ignore the radius: worth knowing about wherever you are.
-    final upcoming = activities
-        .where((entry) => entry.activity.startsAt != null)
-        .where((entry) => entry.distanceMeters <= radiusMeters || isNationalActivity(entry.activity))
-        .where((_) => _filters.showsCategory(RadarCategory.events))
-        .toList()
-      ..sort((a, b) => a.activity.startsAt!.compareTo(b.activity.startsAt!));
-
     final entries = <_RadarEntry>[
       ...activities
-          .where((entry) => entry.activity.startsAt == null)
           .where((entry) => entry.distanceMeters <= radiusMeters)
           .map((entry) => _RadarEntry.activity(entry.activity, entry.distanceMeters)),
       ...(radar?.places ?? const <RadarPlace>[])
           .where((place) => place.distanceMeters <= radiusMeters)
-          .where((place) => place.matchesSpecies(_filters.species))
           .map(_RadarEntry.place),
-    ].where((entry) => _filters.showsCategory(entry.category)).toList()
+    ].where((entry) => _showsCategory(entry.category)).toList()
       ..sort((a, b) => a.distanceMeters.compareTo(b.distanceMeters));
 
     final clinics = entries.where((entry) => entry.category == RadarCategory.veterinary).toList();
     final services = entries.where((entry) => entry.category != RadarCategory.veterinary).toList();
 
     final mapItems = <RadarMapItem>[
-      ...upcoming.map(
-        (entry) => RadarMapItem(
-          category: RadarCategory.events,
-          location: entry.activity.location,
-          label: entry.activity.title,
-          onTap: () => _openActivity(entry.activity, entry.distanceMeters),
-        ),
-      ),
       ...entries.map(
         (entry) => RadarMapItem(
           category: entry.category,
@@ -447,29 +424,27 @@ class _LocalEventsPageState extends State<LocalEventsPage> {
         children: [
           _RadiusSelector(
             options: _radiusOptionsKm,
-            selected: _filters.radiusKm,
-            onSelected: (value) => _setFilters(_filters.copyWith(radiusKm: value)),
+            selected: _radiusKm,
+            onSelected: (value) => _setFilters(radiusKm: value),
           ),
           const SizedBox(height: AppSpacing.sm),
           _QuickCategoryBar(
             categories: _quickCategories,
-            selected: _filters.categories,
-            activeFilterCount: _filters.activeCount,
-            onOpenFilters: _openFilters,
+            selected: _categories,
             onToggle: _toggleQuickCategory,
-            onClear: () => _setFilters(_filters.copyWith(categories: const {})),
+            onClear: () => _setFilters(categories: const {}),
           ),
           const SizedBox(height: AppSpacing.lg),
           _MapPreview(
             center: data.referenceLocation,
-            radiusKm: _filters.radiusKm,
+            radiusKm: _radiusKm,
             items: mapItems,
             onExpand: () => _openMap(data.referenceLocation, mapItems),
           ),
           const SizedBox(height: AppSpacing.sm),
           RadarLegend(categories: mapItems.map((item) => item.category).toSet()),
           const SizedBox(height: AppSpacing.md),
-          _RadarStatus(result: radarResult, radiusKm: _filters.radiusKm, onRetry: _retryRadarPlaces),
+          _RadarStatus(result: radarResult, radiusKm: _radiusKm, onRetry: _retryRadarPlaces),
           const SizedBox(height: AppSpacing.md),
           Align(
             alignment: Alignment.centerLeft,
@@ -479,31 +454,8 @@ class _LocalEventsPageState extends State<LocalEventsPage> {
               label: const Text('Segnala! Manca un luogo'),
             ),
           ),
-          if (_filters.showsCategory(RadarCategory.events)) ...[
-            const SizedBox(height: AppSpacing.xl),
-            const DashboardSectionHeader(
-              title: 'In programma',
-              subtitle: 'Eventi vicini e fiere nazionali nei prossimi giorni e mesi.',
-            ),
-            const SizedBox(height: AppSpacing.lg),
-            if (upcoming.isEmpty)
-              Text(
-                'Nessun evento in programma in questo raggio per ora.',
-                style: AppTextStyles.bodySmall,
-              )
-            else
-              ...upcoming.map(
-                (entry) => Padding(
-                  padding: const EdgeInsets.only(bottom: AppSpacing.sm),
-                  child: _EventRow(entry: entry, onTap: _openActivity),
-                ),
-              ),
-          ],
           const SizedBox(height: AppSpacing.xxl),
-          const DashboardSectionHeader(
-            title: 'Servizi nella zona',
-            subtitle: 'Negozi, aree cani, toelettature, pensioni e altri servizi.',
-          ),
+          const DashboardSectionHeader(title: 'Servizi nella zona'),
           const SizedBox(height: AppSpacing.lg),
           _ServicesByCategory(
             entries: services,
@@ -543,8 +495,6 @@ class _LocalEventsPageState extends State<LocalEventsPage> {
 }
 
 enum _LocationChoice { allow, address }
-
-typedef _ActivityWithDistance = ({LocalActivity activity, double distanceMeters});
 
 class _LocalEventsViewData {
   const _LocalEventsViewData({required this.referenceLocation, required this.activities});
@@ -614,16 +564,12 @@ class _QuickCategoryBar extends StatelessWidget {
   const _QuickCategoryBar({
     required this.categories,
     required this.selected,
-    required this.activeFilterCount,
-    required this.onOpenFilters,
     required this.onToggle,
     required this.onClear,
   });
 
   final List<RadarCategory> categories;
   final Set<RadarCategory> selected;
-  final int activeFilterCount;
-  final VoidCallback onOpenFilters;
   final ValueChanged<RadarCategory> onToggle;
   final VoidCallback onClear;
 
@@ -633,17 +579,6 @@ class _QuickCategoryBar extends StatelessWidget {
       scrollDirection: Axis.horizontal,
       child: Row(
         children: [
-          // First in the row so the full filters stay reachable without
-          // scrolling the shortcuts.
-          Padding(
-            padding: const EdgeInsets.only(right: AppSpacing.sm),
-            child: RadarChip(
-              label: activeFilterCount == 0 ? 'Filtri' : 'Filtri ($activeFilterCount)',
-              icon: Icons.tune,
-              selected: activeFilterCount > 0,
-              onTap: onOpenFilters,
-            ),
-          ),
           Padding(
             padding: const EdgeInsets.only(right: AppSpacing.sm),
             child: RadarChip(label: 'Tutti', selected: selected.isEmpty, onTap: onClear),
@@ -766,7 +701,7 @@ class _NoLocationState extends StatelessWidget {
 }
 
 /// Loading, error and "served from an old import" states of the
-/// OpenStreetMap part of the page. Events are unaffected by any of them.
+/// OpenStreetMap part of the page.
 class _RadarStatus extends StatelessWidget {
   const _RadarStatus({required this.result, required this.radiusKm, required this.onRetry});
 
@@ -932,33 +867,6 @@ class _ServicesByCategory extends StatelessWidget {
       );
     }
     return Column(crossAxisAlignment: CrossAxisAlignment.start, children: groups);
-  }
-}
-
-class _EventRow extends StatelessWidget {
-  const _EventRow({required this.entry, required this.onTap});
-
-  final _ActivityWithDistance entry;
-  final void Function(LocalActivity activity, double distanceMeters) onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    final activity = entry.activity;
-    final dateLabel = localActivityDateRangeLabel(activity);
-    final subtitleParts = [
-      if (isNationalActivity(activity)) 'Evento nazionale',
-      if (dateLabel != null) dateLabel,
-      if (activity.addressLabel != null) activity.addressLabel!,
-      formatDistance(entry.distanceMeters),
-    ];
-
-    return DashboardListRow(
-      title: activity.title,
-      subtitle: subtitleParts.join(' · '),
-      leading: const RadarCategoryBadge(category: RadarCategory.events),
-      trailing: const Icon(Icons.chevron_right_rounded, color: AppColors.mutedText),
-      onTap: () => onTap(activity, entry.distanceMeters),
-    );
   }
 }
 

@@ -172,7 +172,14 @@ class _MedicalRecordUploadPageState extends State<MedicalRecordUploadPage> {
       ],
     );
 
-    await _repository.saveRecord(record);
+    try {
+      await _repository.saveRecord(record);
+    } on MedicalRecordSaveException catch (error) {
+      if (!mounted) return;
+      setState(() => _saving = false);
+      _showMessage(error.message);
+      return;
+    }
     if (bytes != null) {
       MedicalRecordFileCache.instance.put(
         id,

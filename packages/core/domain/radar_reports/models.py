@@ -9,8 +9,9 @@ the account id never reaches these tables.
 
 import hashlib
 import hmac
+import math
 import re
-from datetime import datetime
+from datetime import datetime, timedelta
 from typing import Literal
 
 from pydantic import BaseModel, Field
@@ -123,6 +124,26 @@ class RadarUserReport(BaseModel):
         if self.denials - self.confirmations >= DENIALS_TO_REJECT:
             return "rejected"
         return "pending"
+
+    def expires_at(self, *, expiry_days: int) -> datetime | None:
+        """When a report nobody confirmed stops being served. None once it
+        has a confirmation (it then waits for the others) or is resolved."""
+        if self.status != "pending" or self.confirmations > 0:
+            return None
+        return self.created_at + timedelta(days=expiry_days)
+
+    def is_expired(self, *, expiry_days: int, now: datetime | None = None) -> bool:
+        expires_at = self.expires_at(expiry_days=expiry_days)
+        return expires_at is not None and expires_at <= (now or utc_now())
+
+    def expires_in_days(self, *, expiry_days: int, now: datetime | None = None) -> int | None:
+        """Whole days left, rounded up ("scade tra N giorni"); None when
+        the report does not expire."""
+        expires_at = self.expires_at(expiry_days=expiry_days)
+        if expires_at is None:
+            return None
+        seconds = (expires_at - (now or utc_now())).total_seconds()
+        return max(0, math.ceil(seconds / 86400))
 
     def as_place(self) -> RadarPlace:
         """A "missing place" report as a place on the radar."""

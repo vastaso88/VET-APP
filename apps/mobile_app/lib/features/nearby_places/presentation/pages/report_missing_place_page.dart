@@ -67,6 +67,7 @@ class _ReportMissingPlacePageState extends State<ReportMissingPlacePage> {
       return;
     }
     setState(() => _sending = true);
+    final expiryDays = (await _optionsFuture).expiryDays;
     final address = await (widget.reverseGeocoder ?? ReverseGeocoder()).addressOf(_position);
     if (!mounted) {
       return;
@@ -81,7 +82,8 @@ class _ReportMissingPlacePageState extends State<ReportMissingPlacePage> {
       ),
       successMessage: (receipt) => receipt.countedAsConfirmation
           ? 'Era già stato segnalato: la tua segnalazione vale come conferma.'
-          : 'Segnalazione inviata. Sarà visibile a tutti come "in attesa di conferma".',
+          : 'Segnalazione inviata. Se entro $expiryDays giorni nessuno la conferma, '
+              'viene cancellata.',
     );
     if (!mounted) {
       return;
@@ -220,7 +222,9 @@ class _ReportMissingPlacePageState extends State<ReportMissingPlacePage> {
         const SizedBox(height: AppSpacing.sm),
         Text(
           'La segnalazione sarà visibile a tutti come "in attesa di conferma" e diventerà '
-          'definitiva quando altri utenti la confermano. Il tuo nome non compare.',
+          'definitiva quando altri utenti la confermano. Se entro ${options.expiryDays} giorni '
+          'nessuno la conferma, viene cancellata in automatico. Puoi ritirarla in ogni momento '
+          'dalla sua scheda. Il tuo nome non compare.',
           style: AppTextStyles.caption,
         ),
       ],

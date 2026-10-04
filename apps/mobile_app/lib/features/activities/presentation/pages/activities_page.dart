@@ -5,6 +5,7 @@ import '../../../../design_system/tokens/app_radii.dart';
 import '../../../../design_system/tokens/app_spacing.dart';
 import '../../../../design_system/tokens/app_text_styles.dart';
 import '../../../../shared/widgets/coming_soon_page.dart';
+import '../../../events/presentation/pages/events_page.dart';
 import '../../../local_events/presentation/pages/local_events_page.dart';
 import '../../../marketplace/presentation/pages/marketplace_page.dart';
 import '../../../pet_news/presentation/pages/news_feed_page.dart';
@@ -44,10 +45,19 @@ class ActivitiesPage extends StatelessWidget {
             _ActivityRow(
               icon: Icons.map_outlined,
               iconTone: AppColors.info,
-              title: 'Radar nei dintorni',
+              title: 'Vicino a me',
               subtitle: 'Veterinari, negozi, aree cani ed eventi vicino a te.',
               onTap: () => Navigator.of(context).push(
                 MaterialPageRoute<void>(builder: (_) => const LocalEventsPage()),
+              ),
+            ),
+            _ActivityRow(
+              icon: Icons.event_outlined,
+              iconTone: AppColors.accent,
+              title: 'Eventi',
+              subtitle: 'Fiere, esposizioni e iniziative per animali in tutta Italia.',
+              onTap: () => Navigator.of(context).push(
+                MaterialPageRoute<void>(builder: (_) => const EventsPage()),
               ),
             ),
             _ActivityRow(

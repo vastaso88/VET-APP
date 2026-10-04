@@ -6,6 +6,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../../shared/auth/current_user.dart';
 import '../../../shared/config/app_runtime_config_loader.dart';
 import '../domain/fish_species.dart';
+import '../domain/pet_breeds.dart';
 import '../domain/pet_format.dart';
 import 'pet_photo_repository.dart';
 import '../domain/pet_identity_colors.dart';
@@ -194,10 +195,15 @@ class PetDemoStore {
     ),
   ];
 
+  /// Values stored in pet_profiles.sex and read by the chat backend (which
+  /// echoes them as text, so changing them needs its prompt side aligned).
   static const List<String> sexOptions = [
     'Maschio',
     'Femmina',
-    'Sconosciuto',
+    'Maschio intero',
+    'Maschio castrato',
+    'Femmina intera',
+    'Femmina sterilizzata',
   ];
 
   /// Size classes for a dog whose breed isn't in the list ("Altro") — there's
@@ -259,6 +265,11 @@ class PetDemoStore {
           loaded.add(pet);
         }
       }
+      for (final pet in _pets) {
+        if (_unsynced.contains(pet.id) && loaded.every((item) => item.id != pet.id)) {
+          loaded.add(pet);
+        }
+      }
       _pets = loaded;
       _hydratedOwnerId = ownerId;
       changes.value++;
@@ -268,18 +279,38 @@ class PetDemoStore {
     }
   }
 
-  Future<void> _persistRemote(PetProfile pet) async {
+  /// Pets whose last write to the server failed. They stay visible on this
+  /// device, flagged for the owner, and are kept across reloads this session.
+  final Set<String> _unsynced = {};
+
+  bool isUnsynced(String id) => _unsynced.contains(id);
+
+  /// Writes [pet] to the server. Returns false (and flags the pet) when the
+  /// write failed; local-only mode (no backend or signed out) counts as saved.
+  Future<bool> _persistRemote(PetProfile pet) async {
     final ownerId = CurrentUser.get()?.id;
     final client = _resolveClient();
     if (ownerId == null || client == null) {
-      return;
+      return true;
     }
 
     try {
       await client.from('pet_profiles').upsert(_petToRow(pet, ownerId));
+      _unsynced.remove(pet.id);
+      changes.value++;
+      return true;
     } catch (_) {
-      // Best-effort: kept locally regardless.
+      _unsynced.add(pet.id);
+      changes.value++;
+      return false;
     }
+  }
+
+  /// Tries again to save a pet flagged as unsynced. Returns true when it worked.
+  Future<bool> retrySync(String id) async {
+    final pet = _pets.where((item) => item.id == id).firstOrNull;
+    if (pet == null) return true;
+    return _persistRemote(pet);
   }
 
   Future<void> _deleteRemote(String id) async {
@@ -291,7 +322,7 @@ class PetDemoStore {
     try {
       await client.from('pet_profiles').delete().eq('id', id);
     } catch (_) {
-      // Removed locally regardless.
+      throw const PetSyncException('Non sono riuscito a eliminare il profilo. Riprova.');
     }
   }
 
@@ -499,10 +530,20 @@ class PetDemoStore {
     return null;
   }
 
+  /// Deletes the pet. If the server refuses, the pet is put back and the
+  /// [PetSyncException] reaches the caller — never a silent disappearance.
   Future<void> delete(String id) async {
+    final previous = _pets;
     _pets = _pets.where((pet) => pet.id != id).toList();
     changes.value++;
-    await _deleteRemote(id);
+    try {
+      await _deleteRemote(id);
+    } catch (_) {
+      _pets = previous;
+      changes.value++;
+      rethrow;
+    }
+    _unsynced.remove(id);
     await PetPhotoRepository().deleteAllForPet(id);
   }
 
@@ -559,17 +600,26 @@ class PetDemoStore {
   }
 
   static List<String> breedsForSpecies(String species) {
+    final key = species.trim().toLowerCase();
+    // Dogs and cats: the full recognised list (alphabetical) and the free
+    // "Meticcio / altra razza" option last, which opens a text field.
+    if (key == 'cane') return [...fciDogBreeds, otherBreedLabel];
+    if (key == 'gatto') return [...fifeCatBreeds, otherBreedLabel];
     final option = optionForSpecies(species);
-    // Dogs get "Altro" as the top default instead of an "unspecified"
-    // placeholder — picking it unlocks the size-category field below, so an
-    // owner whose dog's breed isn't listed can still describe it.
-    if (species.trim().toLowerCase() == 'cane') {
-      return ['Altro', ...option.breeds];
-    }
     return [
       'Razza non specificata',
       ...option.breeds,
     ];
   }
 
+}
+
+/// A pet change that did not reach the server. The message is shown to the owner.
+class PetSyncException implements Exception {
+  const PetSyncException(this.message);
+
+  final String message;
+
+  @override
+  String toString() => message;
 }

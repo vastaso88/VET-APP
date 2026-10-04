@@ -646,7 +646,7 @@ class _LocalEventsNoticeState extends State<_LocalEventsNotice> {
     );
 
     if (nearby.isEmpty) {
-      return 'Radar nei dintorni · nessuno nel raggio di ${_nearbyRadiusKm.round()} km';
+      return 'Vicino a me · nessuno nel raggio di ${_nearbyRadiusKm.round()} km';
     }
     final count = nearby.length;
     final nearest = nearby.reduce(
@@ -656,8 +656,8 @@ class _LocalEventsNoticeState extends State<_LocalEventsNotice> {
           : b,
     );
     return count == 1
-        ? 'Radar nei dintorni · ${nearest.title}'
-        : 'Radar nei dintorni · $count nella tua zona, tra cui ${nearest.title}';
+        ? 'Vicino a me · ${nearest.title}'
+        : 'Vicino a me · $count nella tua zona, tra cui ${nearest.title}';
   }
 
   @override
@@ -687,7 +687,7 @@ class _LocalEventsNoticeState extends State<_LocalEventsNotice> {
               future: _summaryFuture,
               builder: (context, snapshot) {
                 return Text(
-                  snapshot.data ?? 'Radar nei dintorni',
+                  snapshot.data ?? 'Vicino a me',
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: AppTextStyles.bodySmall.copyWith(

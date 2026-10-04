@@ -1,3 +1,6 @@
+from datetime import timedelta
+from typing import Any
+
 import pytest
 
 from packages.core.application.ports.radar_catalog_repository import BoundingBox
@@ -12,6 +15,8 @@ from packages.core.application.services.radar_reports import (
     SubmitRadarReportService,
     VoteRadarReportInput,
     VoteRadarReportService,
+    WithdrawRadarReportInput,
+    WithdrawRadarReportService,
 )
 from packages.core.domain.consent.models import AccountConsents, ConsentRecord
 from packages.core.domain.radar_places.models import RadarPlace
@@ -53,6 +58,15 @@ class _World:
         self.vote = VoteRadarReportService(*args)
         self.rate = RateDogParkService(*args)
         self.view = RadarCommunityView(*args)
+        self.withdraw = WithdrawRadarReportService(*args)
+
+    def age(self, report_id: str, *, days: float) -> None:
+        """Makes a report look as if it was made `days` ago."""
+        report = self.reports.get_report(report_id)
+        assert report is not None
+        self.reports.save_report(
+            report.model_copy(update={"created_at": report.created_at - timedelta(days=days)})
+        )
 
     def accept_rules(self, *users: str) -> None:
         for user in users:
@@ -509,3 +523,97 @@ def test_ratings_switched_off_hide_stars_and_refuse_new_ones() -> None:
         RateDogParkService(*args).execute(RateDogParkInput(user_id="anna", place=park, stars=5))
     # Reports are a separate switch.
     assert off_settings.report_kinds() == ["missing", "closed", "duplicate", "wrong_position"]
+
+
+def _community(world: _World, report_id: str, viewer: str) -> dict[str, Any]:
+    report = world.reports.get_report(report_id)
+    assert report is not None
+    place = report.as_place()
+    extras = world.view.extras([place], BOX, viewer_id=viewer)
+    community: dict[str, Any] = extras.get(place.id, {}).get("community", {})
+    return community
+
+
+def test_the_reporter_can_withdraw_a_pending_report_and_its_votes_go_too() -> None:
+    world = _World()
+    world.accept_rules("anna", "bruno")
+    report_id = world.report_missing("anna")
+    world.vote.execute(VoteRadarReportInput(user_id="bruno", report_id=report_id, confirm=True))
+
+    world.withdraw.execute(WithdrawRadarReportInput(user_id="anna", report_id=report_id))
+
+    assert world.reports.get_report(report_id) is None
+    assert world.reports.list_votes(report_id) == []
+    assert world.view.user_places(BOX) == []
+
+
+def test_only_the_reporter_can_withdraw_and_only_while_pending() -> None:
+    world = _World()
+    world.accept_rules("anna", "bruno", "carla")
+    report_id = world.report_missing("anna")
+
+    with pytest.raises(ValidationError):
+        world.withdraw.execute(WithdrawRadarReportInput(user_id="bruno", report_id=report_id))
+    with pytest.raises(ValidationError):
+        world.withdraw.execute(WithdrawRadarReportInput(user_id="anna", report_id="unknown"))
+
+    for user in ("bruno", "carla"):
+        world.vote.execute(VoteRadarReportInput(user_id=user, report_id=report_id, confirm=True))
+    # Confirmed by others: it is no longer the reporter's alone to remove.
+    with pytest.raises(ValidationError):
+        world.withdraw.execute(WithdrawRadarReportInput(user_id="anna", report_id=report_id))
+    assert world.reports.get_report(report_id) is not None
+
+
+def test_a_report_nobody_confirmed_tells_how_many_days_it_has_left() -> None:
+    world = _World()
+    world.accept_rules("anna")
+    report_id = world.report_missing("anna")
+
+    assert _community(world, report_id, "anna")["expires_in_days"] == 7
+    world.age(report_id, days=5.5)
+    assert _community(world, report_id, "anna")["expires_in_days"] == 2
+
+
+def test_a_report_nobody_confirmed_in_seven_days_is_no_longer_served() -> None:
+    world = _World()
+    world.accept_rules("anna", "bruno")
+    report_id = world.report_missing("anna")
+    world.age(report_id, days=7.1)
+
+    assert world.view.user_places(BOX) == []
+    with pytest.raises(ValidationError):
+        world.vote.execute(VoteRadarReportInput(user_id="bruno", report_id=report_id, confirm=True))
+    # The same place reported again is a new report, not a confirmation of
+    # the expired one.
+    again = world.submit.execute(
+        SubmitRadarReportInput(
+            user_id="bruno",
+            kind="missing",
+            place_type="grooming",
+            name="Toelettatura Bau",
+            latitude=LAT,
+            longitude=LON,
+        )
+    )
+    assert again.counted_as_confirmation is False
+
+
+def test_one_confirmation_keeps_a_report_waiting_past_seven_days() -> None:
+    world = _World()
+    world.accept_rules("anna", "bruno")
+    report_id = world.report_missing("anna")
+    world.vote.execute(VoteRadarReportInput(user_id="bruno", report_id=report_id, confirm=True))
+    world.age(report_id, days=30)
+
+    assert [place.name for place in world.view.user_places(BOX)] == ["Toelettatura Bau"]
+    assert _community(world, report_id, "anna")["expires_in_days"] is None
+
+
+def test_the_expiry_length_is_configurable() -> None:
+    world = _World(expiry_days=2)
+    world.accept_rules("anna")
+    report_id = world.report_missing("anna")
+    world.age(report_id, days=2.5)
+
+    assert world.view.user_places(BOX) == []

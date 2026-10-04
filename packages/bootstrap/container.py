@@ -72,6 +72,7 @@ from packages.core.application.services.radar_reports import (
     RateDogParkService,
     SubmitRadarReportService,
     VoteRadarReportService,
+    WithdrawRadarReportService,
 )
 from packages.core.application.services.record_route_point import RecordRoutePointService
 from packages.core.application.services.reminder_context_retriever import (
@@ -525,6 +526,7 @@ class ApplicationContainer:
             confirmations_required=self.settings.radar_report_confirmations,
             closed_confirmations_required=self.settings.radar_report_closed_confirmations,
             daily_limit=self.settings.radar_report_daily_limit,
+            expiry_days=self.settings.radar_report_expiry_days,
             missing_place_types=frozenset(self.settings.radar_report_place_types),
             show_pending_closures=self.settings.radar_report_show_pending_closures,
             reports_enabled=self.settings.radar_reports_enabled,
@@ -550,6 +552,15 @@ class ApplicationContainer:
         if settings is None or not settings.reports_enabled:
             return None
         return SubmitRadarReportService(
+            self.radar_reports_repository, self.account_consents_repository, settings
+        )
+
+    def withdraw_radar_report_service(self) -> WithdrawRadarReportService | None:
+        # Also with reports switched off: taking back one's own is always allowed.
+        settings = self.radar_report_settings()
+        if settings is None:
+            return None
+        return WithdrawRadarReportService(
             self.radar_reports_repository, self.account_consents_repository, settings
         )
 

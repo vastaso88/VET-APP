@@ -18,6 +18,7 @@ class RadarReportOptions {
     required this.enabled,
     required this.missingPlaceTypes,
     this.problems = RadarProblem.values,
+    this.expiryDays = 7,
   });
 
   final bool enabled;
@@ -25,6 +26,9 @@ class RadarReportOptions {
 
   /// What can be reported about an existing place right now.
   final List<RadarProblem> problems;
+
+  /// A report nobody confirms within this many days is deleted.
+  final int expiryDays;
 }
 
 /// Outcome of a submitted report.
@@ -63,6 +67,7 @@ class RadarContributionsRepository {
             .where((type) => type != RadarPlaceType.other)
             .toList(growable: false),
         problems: _problems(json),
+        expiryDays: (json['expiry_days'] as num?)?.toInt() ?? 7,
       ),
     );
   }
@@ -115,6 +120,12 @@ class RadarContributionsRepository {
       '/local-services/reports/$reportId/vote',
       body: {'vote': confirm ? 'confirm' : 'deny'},
     );
+    return result.map((_) {});
+  }
+
+  /// Takes back a report the user made themself, while it is pending.
+  Future<Result<void>> withdraw(String reportId) async {
+    final result = await _send('DELETE', '/local-services/reports/$reportId');
     return result.map((_) {});
   }
 

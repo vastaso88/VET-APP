@@ -197,6 +197,10 @@ class InMemoryRadarReportsRepository(RadarReportsRepository):
     def get_report(self, report_id: str) -> RadarUserReport | None:
         return self._reports.get(report_id)
 
+    def delete_report(self, report_id: str) -> None:
+        self._reports.pop(report_id, None)
+        self._votes = {key: vote for key, vote in self._votes.items() if key[0] != report_id}
+
     def list_reports(
         self, box: BoundingBox, *, kinds: list[str], statuses: list[str]
     ) -> list[RadarUserReport]:
