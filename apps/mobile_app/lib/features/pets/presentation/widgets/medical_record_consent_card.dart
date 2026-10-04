@@ -38,8 +38,7 @@ class _MedicalRecordConsentCardState extends State<MedicalRecordConsentCard> {
 
   late bool? _granted = widget.pet.medicalRecordConsentGranted;
   bool _saving = false;
-  bool _statusUnknown = false;
-  String? _error;
+  _CardStatus _status = _CardStatus.none;
 
   @override
   void initState() {
@@ -60,10 +59,10 @@ class _MedicalRecordConsentCardState extends State<MedicalRecordConsentCard> {
     final remote = await PetDemoStore.instance.fetchMedicalRecordConsent(widget.pet.id);
     if (!mounted) return;
     setState(() {
-      _statusUnknown = remote == null && _granted == null;
+      if (remote == null && _granted == null) _status = _CardStatus.readError;
       if (remote != null) {
         _granted = remote;
-        _statusUnknown = false;
+        _status = _CardStatus.none;
       }
     });
     if (remote != null) {
@@ -76,7 +75,7 @@ class _MedicalRecordConsentCardState extends State<MedicalRecordConsentCard> {
     setState(() {
       _granted = value;
       _saving = true;
-      _error = null;
+      _status = _CardStatus.none;
     });
 
     final result = await _remote.setGranted(petId: widget.pet.id, granted: value);
@@ -94,7 +93,7 @@ class _MedicalRecordConsentCardState extends State<MedicalRecordConsentCard> {
         setState(() {
           _granted = previous;
           _saving = false;
-          _error = error.message;
+          _status = _CardStatus.saveError;
         });
       },
     );
@@ -143,18 +142,15 @@ class _MedicalRecordConsentCardState extends State<MedicalRecordConsentCard> {
               style: AppTextStyles.caption.copyWith(fontWeight: FontWeight.w700),
             ),
           ],
-          if (_error != null) ...[
+          if (_status != _CardStatus.none) ...[
             const SizedBox(height: AppSpacing.xs),
             Text(
-              _error!,
-              style: AppTextStyles.caption.copyWith(color: Colors.red.shade700),
-            ),
-          ],
-          if (_statusUnknown) ...[
-            const SizedBox(height: AppSpacing.xs),
-            Text(
-              'Non riesco a leggere lo stato del consenso: controlla la connessione.',
-              style: AppTextStyles.caption.copyWith(color: AppColors.mutedText),
+              _status == _CardStatus.saveError
+                  ? 'Non sono riuscito a salvare il consenso. Riprova.'
+                  : 'Stato del consenso non disponibile: controlla la connessione.',
+              style: AppTextStyles.caption.copyWith(
+                color: _status == _CardStatus.saveError ? Colors.red.shade700 : AppColors.mutedText,
+              ),
             ),
           ],
         ],
@@ -162,3 +158,5 @@ class _MedicalRecordConsentCardState extends State<MedicalRecordConsentCard> {
     );
   }
 }
+
+enum _CardStatus { none, saveError, readError }

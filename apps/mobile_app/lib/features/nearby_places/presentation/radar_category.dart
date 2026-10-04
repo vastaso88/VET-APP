@@ -10,7 +10,6 @@ enum RadarCategory {
   veterinary('Veterinari', Icons.local_hospital, Color(0xFFB3261E)),
   shop('Negozi', Icons.storefront, Color(0xFF8A5A00)),
   dogPark('Aree cani', Icons.park, Color(0xFF2E7D32)),
-  events('Eventi', Icons.event, Color(0xFF3949AB)),
   grooming('Toelettature', Icons.content_cut, Color(0xFF7B4FA3)),
   hotel('Pensioni', Icons.night_shelter, Color(0xFF1F6FA5)),
   school('Addestramento', Icons.school, Color(0xFF00796B)),
@@ -52,22 +51,14 @@ RadarCategory radarCategoryForPlace(RadarPlaceType type) {
   }
 }
 
-/// Dated activities are events; standing ones are services, sorted into
-/// the clinic category when their free-text category says so.
+/// A standing service a user submitted, sorted into the clinic category
+/// when its free-text category says so. (Dated activities are events and
+/// are not part of this page.)
 RadarCategory radarCategoryForActivity(LocalActivity activity) {
-  if (activity.startsAt != null) {
-    return RadarCategory.events;
-  }
   final category = activity.category?.toLowerCase() ?? '';
   const clinicHints = ['ambulator', 'veterin', 'clinic'];
   return clinicHints.any(category.contains) ? RadarCategory.veterinary : RadarCategory.other;
 }
-
-/// "Fiera nazionale"-style events are shown whatever the selected radius.
-/// Encoded in the existing free-text `category` rather than a new column,
-/// so it needs no schema change: any category containing "nazionale".
-bool isNationalActivity(LocalActivity activity) =>
-    (activity.category?.toLowerCase() ?? '').contains('nazionale');
 
 /// Singular label for one place ("Veterinario", not "Veterinari").
 String radarPlaceTypeLabel(RadarPlaceType type) {
@@ -92,18 +83,6 @@ String radarPlaceTypeLabel(RadarPlaceType type) {
       return 'Servizio per animali';
   }
 }
-
-/// Species the "Filtri" sheet offers, keyed by the backend's canonical
-/// species keys (packages/core/domain/pet_profile/species.py).
-const radarSpeciesOptions = <String, String>{
-  'dog': 'Cane',
-  'cat': 'Gatto',
-  'small_mammal': 'Piccoli mammiferi',
-  'bird': 'Uccelli',
-  'reptile_amphibian': 'Rettili e anfibi',
-  'fish': 'Pesci',
-  'other': 'Altro',
-};
 
 /// Turns OpenStreetMap's `opening_hours` shorthand into readable Italian
 /// without interpreting it: day and keyword abbreviations only.

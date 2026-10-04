@@ -10,10 +10,12 @@ from packages.core.application.services.list_nearby_radar_places import (
 )
 from packages.core.application.services.radar_reports import (
     ContributionRulesRequiredError,
+    RadarReportSettings,
     RateDogParkInput,
     ReportLimitReachedError,
     SubmitRadarReportInput,
     VoteRadarReportInput,
+    WithdrawRadarReportInput,
 )
 from packages.core.domain.radar_places.models import (
     OSM_SOURCE_NAME,
@@ -57,14 +59,15 @@ def _source_payload(source: RadarDataSource) -> dict[str, object]:
     )
 
 
-def _report_payload(report: RadarUserReport, *, required: int) -> dict[str, object]:
+def _report_payload(report: RadarUserReport, settings: RadarReportSettings) -> dict[str, object]:
     # Never the reporter: not even as a pseudonym.
     return {
         "report_id": report.id,
         "kind": report.kind,
         "status": report.status,
         "confirmations": max(0, report.confirmations - report.denials),
-        "required": required,
+        "required": settings.required_for(report.kind),
+        "expires_in_days": report.expires_in_days(expiry_days=settings.expiry_days),
     }
 
 
@@ -165,6 +168,8 @@ def report_options() -> dict[str, object]:
         # Kinds of report accepted now, and whether dog parks can be rated.
         "report_kinds": kinds,
         "ratings_enabled": settings is not None and settings.ratings_enabled,
+        # A report nobody confirmed within this many days is dropped.
+        "expiry_days": settings.expiry_days if settings else None,
     }
 
 
@@ -185,7 +190,7 @@ def submit_report(request: SubmitReportRequest) -> dict[str, object] | JSONRespo
             status_code=429, content={"detail": str(exc), "code": "report_limit_reached"}
         )
     return {
-        **_report_payload(result.report, required=settings.required_for(result.report.kind)),
+        **_report_payload(result.report, settings),
         "counted_as_confirmation": result.counted_as_confirmation,
     }
 
@@ -206,7 +211,19 @@ def vote_report(report_id: str, request: VoteReportRequest) -> dict[str, object]
         )
     except ContributionRulesRequiredError as exc:
         return _rules_required(exc)
-    return _report_payload(report, required=settings.required_for(report.kind))
+    return _report_payload(report, settings)
+
+
+@router.delete("/reports/{report_id}", response_model=None)
+def withdraw_report(report_id: str) -> dict[str, object] | JSONResponse:
+    """The reporter takes back their own pending report."""
+    container = get_container()
+    user = container.auth_provider.get_current_user()
+    service = container.withdraw_radar_report_service()
+    if service is None:
+        return _contributions_off()
+    service.execute(WithdrawRadarReportInput(user_id=user.id, report_id=report_id))
+    return {"withdrawn": True}
 
 
 @router.put("/ratings", response_model=None)

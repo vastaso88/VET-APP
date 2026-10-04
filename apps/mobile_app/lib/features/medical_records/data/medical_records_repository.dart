@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+import '../../../../shared/auth/current_user.dart';
 import '../../../../shared/config/app_runtime_config_loader.dart';
 import '../../pets/data/pet_demo_store.dart';
 
@@ -61,39 +62,27 @@ class MedicalRecordsRepository {
       return _previewRecords;
     }
 
-    try {
-      final response = await client.from('clinical_events').select(
-          'id,pet_id,pet_name,title,subtitle,meta,badge,detail_source,created_at,attachment_id');
-      final rows = response as List<dynamic>;
-      return rows
-          .map(
-            (row) => MedicalRecordEntry(
-              id: (row['id'] ?? '').toString(),
-              petName: (row['pet_name'] ?? 'Moka').toString(),
-              title: (row['title'] ?? 'Referto clinico').toString(),
-              subtitle:
-                  (row['subtitle'] ?? 'Documento sincronizzato').toString(),
-              meta: (row['meta'] ?? 'Sincronizzato da Supabase').toString(),
-              badge: (row['badge'] ?? 'Sincronizzato').toString(),
-              detailSource: (row['detail_source'] ?? 'Supabase').toString(),
-              createdAt: (row['created_at'] ?? 'Adesso').toString(),
-              attachmentId: row['attachment_id'] as String?,
-              timeline: const [
-                MedicalRecordTimelineEntry(
-                    label: 'Importato', value: 'Sincronizzato'),
-                MedicalRecordTimelineEntry(
-                    label: 'Revisionato', value: 'In attesa'),
-                MedicalRecordTimelineEntry(
-                    label: "Pronto per l'invio", value: 'Disponibile'),
-              ],
-            ),
-          )
-          .toList(growable: false);
-    } catch (_) {
-      // Same best-effort-remote fallback as the other repositories: don't
-      // show an empty list just because the query failed transiently.
-      return _previewRecords;
-    }
+    // Errors are rethrown on purpose: an empty list would look like "no
+    // records" and hide that the server could not be read.
+    final response = await client.from('clinical_events').select(
+        'id,pet_id,pet_name,title,subtitle,meta,badge,detail_source,created_at,attachment_id');
+    final rows = response as List<dynamic>;
+    return rows
+        .map(
+          (row) => MedicalRecordEntry(
+            id: (row['id'] ?? '').toString(),
+            petName: (row['pet_name'] ?? '').toString(),
+            title: (row['title'] ?? 'Referto clinico').toString(),
+            subtitle: (row['subtitle'] ?? '').toString(),
+            meta: (row['meta'] ?? '').toString(),
+            badge: (row['badge'] ?? '').toString(),
+            detailSource: (row['detail_source'] ?? '').toString(),
+            createdAt: formatStoredRecordDate(row['created_at']),
+            attachmentId: row['attachment_id'] as String?,
+            timeline: const [],
+          ),
+        )
+        .toList(growable: false);
   }
 
   Future<MedicalRecordEntry?> loadRecordById(String id) async {
@@ -114,23 +103,41 @@ class MedicalRecordsRepository {
       return;
     }
 
+    final ownerId = CurrentUser.get()?.id;
+    if (ownerId == null) {
+      throw const MedicalRecordSaveException(
+        'Accesso non disponibile: riprova dopo aver effettuato di nuovo il login.',
+      );
+    }
+    await PetDemoStore.instance.ensureHydrated();
+    final petId = PetDemoStore.instance.byName(record.petName)?.id;
+    if (petId == null) {
+      throw MedicalRecordSaveException(
+        'Il profilo di ${record.petName} non è sincronizzato sul server: sistemalo prima di caricare referti.',
+      );
+    }
+
+    final now = DateTime.now().toUtc();
     try {
-      await PetDemoStore.instance.ensureHydrated();
-      final petId = PetDemoStore.instance.byName(record.petName)?.id;
       await client.from('clinical_events').upsert({
         'id': record.id,
-        if (petId != null) 'pet_id': petId,
-        'pet_name': record.petName,
+        'owner_id': ownerId,
+        'pet_id': petId,
+        'event_type': 'document',
+        'event_date': _isoDate(now),
+        'created_at': now.toIso8601String(),
         'title': record.title,
+        'pet_name': record.petName,
         'subtitle': record.subtitle,
         'meta': record.meta,
         'badge': record.badge,
         'detail_source': record.detailSource,
-        'created_at': record.createdAt,
         'attachment_id': record.attachmentId,
       });
     } catch (_) {
-      _upsertPreviewRecord(record);
+      throw const MedicalRecordSaveException(
+        'Non sono riuscito a salvare il referto sul server. Controlla la connessione e riprova.',
+      );
     }
     changes.value++;
   }
@@ -146,7 +153,9 @@ class MedicalRecordsRepository {
     try {
       await client.from('clinical_events').delete().eq('id', id);
     } catch (_) {
-      _previewRecords.removeWhere((record) => record.id == id);
+      throw const MedicalRecordSaveException(
+        'Non sono riuscito a eliminare il referto. Riprova.',
+      );
     }
     changes.value++;
   }
@@ -277,4 +286,33 @@ class MedicalRecordsRepository {
 
     _previewRecords[index] = record;
   }
+}
+
+/// A write to the server that did not happen. The message is shown to the owner.
+class MedicalRecordSaveException implements Exception {
+  const MedicalRecordSaveException(this.message);
+
+  final String message;
+
+  @override
+  String toString() => message;
+}
+
+String _isoDate(DateTime utc) =>
+    '${utc.year.toString().padLeft(4, '0')}-${utc.month.toString().padLeft(2, '0')}-${utc.day.toString().padLeft(2, '0')}';
+
+const _monthsIt = [
+  'gen', 'feb', 'mar', 'apr', 'mag', 'giu', 'lug', 'ago', 'set', 'ott', 'nov', 'dic',
+];
+
+/// Display text for a `created_at` timestamptz from the server, in local time.
+/// Unparseable values are shown as they are rather than hidden.
+String formatStoredRecordDate(Object? stored) {
+  final text = stored?.toString() ?? '';
+  final parsed = DateTime.tryParse(text);
+  if (parsed == null) return text;
+  final local = parsed.toLocal();
+  final hh = local.hour.toString().padLeft(2, '0');
+  final mm = local.minute.toString().padLeft(2, '0');
+  return '${local.day} ${_monthsIt[local.month - 1]} ${local.year}, $hh:$mm';
 }

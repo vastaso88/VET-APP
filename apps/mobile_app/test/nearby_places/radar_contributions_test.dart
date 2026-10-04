@@ -92,6 +92,12 @@ class _FakeContributions extends RadarContributionsRepository {
   }
 
   @override
+  Future<Result<void>> withdraw(String reportId) async {
+    calls.add('withdraw:$reportId');
+    return _gate<void>(null);
+  }
+
+  @override
   Future<Result<void>> rate(RadarPlace place, int stars) async {
     calls.add('rate:${place.id}:$stars');
     return _gate<void>(null);
@@ -163,6 +169,7 @@ const _ownReport = RadarPlace(
     confirmations: 0,
     required: 5,
     viewerIsReporter: true,
+    expiresInDays: 5,
   ),
 );
 
@@ -185,6 +192,16 @@ const _dogPark = RadarPlace(
   distanceMeters: 900,
   sourceExternalId: 'way/1',
   rating: RadarRating(count: 4, average: 4.25, viewerStars: 3),
+);
+
+const _unratedDogPark = RadarPlace(
+  id: 'park-new',
+  type: RadarPlaceType.dogPark,
+  name: 'Area cani Nuova',
+  location: Coordinates(latitude: 45.471, longitude: 9.181),
+  distanceMeters: 950,
+  sourceExternalId: 'way/2',
+  rating: RadarRating(count: 0),
 );
 
 const _clinic = RadarPlace(
@@ -288,6 +305,34 @@ void main() {
     expect(find.textContaining('L’hai segnalato tu'), findsOneWidget);
     expect(find.text('Confermo'), findsNothing);
     expect(find.text('Non è così'), findsNothing);
+    expect(find.text('Scade tra 5 giorni se nessuno conferma.'), findsOneWidget);
+  });
+
+  testWidgets('the reporter can withdraw their report after confirming', (tester) async {
+    final (places, contributions) = await _pumpRadar(tester, [_ownReport]);
+
+    await tester.tap(find.text('Negozio Mio'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Ritira la mia segnalazione'));
+    await tester.pumpAndSettle();
+    expect(find.text('Ritirare la segnalazione?'), findsOneWidget);
+    expect(contributions.calls, isEmpty);
+
+    await tester.tap(find.text('Ritira'));
+    await _settle(tester);
+
+    expect(contributions.calls, ['withdraw:r2']);
+    expect(find.text('Ritira la mia segnalazione'), findsNothing);
+    expect(places.requests, 2);
+  });
+
+  testWidgets('someone else’s report cannot be withdrawn', (tester) async {
+    await _pumpRadar(tester, [_pendingGroomer]);
+
+    await tester.tap(find.text('Toelettatura Nuova'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Ritira la mia segnalazione'), findsNothing);
   });
 
   testWidgets('the rules are asked once, then the action goes through', (tester) async {
@@ -332,13 +377,40 @@ void main() {
 
     await tester.tap(find.text('Area cani Sempione'));
     await tester.pumpAndSettle();
-    expect(find.textContaining('4,3 su 5 (4 voti)'), findsOneWidget);
+    expect(find.text('Voto della community: 4,3 su 5 · 4 voti'), findsOneWidget);
     expect(find.textContaining('Il tuo voto: 3 su 5'), findsOneWidget);
 
     await tester.tap(find.byTooltip('Dai 5 stelle'));
     await _settle(tester);
 
     expect(contributions.calls, ['rate:park:5']);
+    // The card stays open and shows the new vote straight away.
+    expect(find.textContaining('Il tuo voto: 5 su 5'), findsOneWidget);
+    expect(tester.widgetList<Icon>(find.byIcon(Icons.star_rounded)).length, 5);
+  });
+
+  testWidgets('a vote is still shown when the card reopens from data loaded before it',
+      (tester) async {
+    // The radar keeps answering with the park as it was before the vote.
+    await _pumpRadar(tester, [_unratedDogPark]);
+
+    await tester.tap(find.text('Area cani Nuova'));
+    await tester.pumpAndSettle();
+    expect(find.text('Voto della community: nessun voto ancora'), findsOneWidget);
+    expect(find.textContaining('Tocca una stella per dare il tuo voto'), findsOneWidget);
+    await tester.tap(find.byTooltip('Dai 4 stelle'));
+    await _settle(tester);
+    Navigator.of(tester.element(find.textContaining('Il tuo voto: 4 su 5'))).pop();
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('Area cani Nuova'));
+    await tester.pumpAndSettle();
+
+    expect(find.textContaining('Il tuo voto: 4 su 5'), findsOneWidget);
+    expect(
+      find.text('Voto della community: 1 voto · la media compare da 3 voti'),
+      findsOneWidget,
+    );
   });
 
   testWidgets('places that are not dog parks have no stars', (tester) async {

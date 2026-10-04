@@ -1,8 +1,8 @@
 """Takes a place off the radar at once, on request of an owner or a user.
 
-    uv run --with truststore python scripts/radar/remove_reported_place.py \\
+    uv run --system-certs --with truststore python scripts/radar/remove_reported_place.py \\
         --report-id <id> --reason-code not_public --reason "richiesta del proprietario"
-    uv run --with truststore python scripts/radar/remove_reported_place.py \\
+    uv run --system-certs --with truststore python scripts/radar/remove_reported_place.py \\
         --source overture --source-id <id> --reason-code closed
 
 The id is the one in the email the app prepares ("Identificativo: ...").

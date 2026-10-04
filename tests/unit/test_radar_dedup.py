@@ -202,3 +202,31 @@ def test_merge_does_not_mutate_its_inputs() -> None:
 
     assert osm[0].confirmed_by == []
     assert overture[0].confirmed_by == []
+
+
+def test_same_clinic_written_differently_by_two_sources_is_one_card() -> None:
+    # What the two sources really do with one clinic: different capitals,
+    # and the full name in one against the bare name in the other.
+    for osm_name, overture_name in (
+        ("Clinica Veterinaria Esempio", "CLINICA VETERINARIA ESEMPIO"),
+        ("Ambulatorio Veterinario Esempio", "Esempio"),
+        ("Ambulatorio Veterinario Dott. Esempio", "ambulatorio veterinario esempio"),
+    ):
+        osm = _place(osm_name)
+        overture = _place(overture_name, source="overture", meters_north=80)
+
+        merged = merge_radar_places([osm], [overture])
+
+        assert len(merged) == 1, (osm_name, overture_name)
+        assert merged[0].confirmed_by == ["overture"]
+
+
+def test_generic_name_against_a_named_clinic_merges_only_at_the_same_spot() -> None:
+    named = _place("Ambulatorio Veterinario Esempio")
+
+    same_door = _place("Ambulatorio Veterinario", source="overture", meters_north=20)
+    down_the_road = _place("Ambulatorio Veterinario", source="overture", meters_north=90)
+
+    assert len(merge_radar_places([named], [same_door])) == 1
+    # 90 m away it may well be another practice: kept apart on purpose.
+    assert len(merge_radar_places([named], [down_the_road])) == 2

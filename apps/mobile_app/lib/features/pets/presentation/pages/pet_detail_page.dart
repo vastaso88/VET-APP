@@ -34,7 +34,7 @@ import '../../../../shared/auth/current_owner.dart';
 import '../../../medical_records/data/medical_record_file_cache.dart';
 import '../../../medical_records/data/medical_records_repository.dart';
 import '../../../medical_records/presentation/pages/medical_record_upload_page.dart';
-import '../../../medical_records/presentation/pages/medical_records_pages.dart';
+import '../../../medical_records/presentation/record_file_actions.dart';
 import '../../../reminders/data/reminders_repository.dart';
 import '../../../reminders/domain/reminder_presentation.dart';
 import '../../../reminders/presentation/pages/reminders_pages.dart';
@@ -209,6 +209,15 @@ class _PetDetailContentState extends State<_PetDetailContent>
     final habitat = widget.pet.habitat;
     return Column(
       children: [
+        ValueListenableBuilder<int>(
+          valueListenable: PetDemoStore.changes,
+          builder: (context, _, __) => PetDemoStore.instance.isUnsynced(widget.pet.id)
+              ? Padding(
+                  padding: const EdgeInsets.only(bottom: AppSpacing.sm),
+                  child: _UnsyncedPetBanner(petId: widget.pet.id),
+                )
+              : const SizedBox.shrink(),
+        ),
         if (habitat != null && !habitat.isEmpty) ...[
           _HabitatSummaryRow(pet: widget.pet, habitat: habitat),
           const SizedBox(height: AppSpacing.sm),
@@ -853,12 +862,25 @@ class _RecordsTabState extends State<_RecordsTab> {
     await _reload();
   }
 
-  void _openDetail(MedicalRecordEntry record) {
-    Navigator.of(context).push(
-      MaterialPageRoute<void>(
-          builder: (_) => MedicalRecordDetailPage(record: record)),
-    );
+  /// Records picked for a group share. A non-empty set means selection mode:
+  /// taps toggle instead of opening the actions sheet.
+  final Set<String> _selectedIds = {};
+
+  void _onRecordTap(MedicalRecordEntry record) {
+    if (_selectedIds.isNotEmpty) {
+      _toggleSelected(record);
+      return;
+    }
+    showRecordActions(context, record: record, onChanged: () => unawaited(_reload()));
   }
+
+  void _toggleSelected(MedicalRecordEntry record) {
+    setState(() {
+      if (!_selectedIds.remove(record.id)) _selectedIds.add(record.id);
+    });
+  }
+
+  void _clearSelection() => setState(_selectedIds.clear);
 
   Future<void> _deleteRecord(MedicalRecordEntry record) async {
     final confirmed = await _confirmDelete(
@@ -868,7 +890,13 @@ class _RecordsTabState extends State<_RecordsTab> {
     );
     if (!confirmed) return;
 
-    await widget.repository.deleteRecord(record.id);
+    try {
+      await widget.repository.deleteRecord(record.id);
+    } on MedicalRecordSaveException catch (error) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(error.message)));
+      return;
+    }
     if (!mounted) return;
     await _reload();
   }
@@ -971,12 +999,18 @@ class _RecordsTabState extends State<_RecordsTab> {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return const Center(child: PetLoader());
         }
+        if (snapshot.hasError) {
+          return _RecordsLoadError(onRetry: () => unawaited(_reload()));
+        }
 
         final records = (snapshot.data ?? const <MedicalRecordEntry>[])
             .where((record) => record.petName == widget.pet.name)
             .toList(growable: false);
 
-        return Column(
+        // One scrollable list: the consent card, the actions and the records
+        // scroll together, so nothing can overflow a fixed-height tab body.
+        return ListView(
+          padding: const EdgeInsets.only(bottom: AppSpacing.xl),
           children: [
             MedicalRecordConsentCard(pet: widget.pet),
             const SizedBox(height: AppSpacing.md),
@@ -986,38 +1020,47 @@ class _RecordsTabState extends State<_RecordsTab> {
                   child: OutlinedButton.icon(
                     onPressed: _openUpload,
                     icon: const Icon(Icons.upload_file_outlined, size: 18),
-                    label: const Text('Carica nuovo file'),
+                    label: const Text('Carica file'),
                   ),
                 ),
                 const SizedBox(width: AppSpacing.sm),
                 Expanded(
                   child: FilledButton.icon(
-                    onPressed:
-                        records.isEmpty ? null : () => _openSendSheet(records),
+                    onPressed: records.isEmpty ? null : () => _openSendSheet(records),
                     icon: const Icon(Icons.ios_share_rounded, size: 18),
-                    label: const Text('Invia file'),
+                    label: const Text('Invia'),
                   ),
                 ),
               ],
             ),
             const SizedBox(height: AppSpacing.md),
-            Expanded(
-              child: records.isEmpty
-                  ? _EmptyTabState(
-                      icon: Icons.folder_open_outlined,
-                      text: 'Nessun documento ancora per ${widget.pet.name}.',
-                    )
-                  : ListView.separated(
-                      itemCount: records.length,
-                      separatorBuilder: (_, __) =>
-                          const SizedBox(height: AppSpacing.sm),
-                      itemBuilder: (_, index) => _RecordRow(
-                        record: records[index],
-                        onTap: () => _openDetail(records[index]),
-                        onDelete: () => _deleteRecord(records[index]),
-                      ),
-                    ),
-            ),
+            if (_selectedIds.isNotEmpty) ...[
+              _SelectionBar(
+                count: _selectedIds.length,
+                onCancel: _clearSelection,
+                onSend: () => shareRecords(
+                  context,
+                  records.where((r) => _selectedIds.contains(r.id)).toList(),
+                ),
+              ),
+              const SizedBox(height: AppSpacing.md),
+            ],
+            if (records.isEmpty)
+              _EmptyTabState(
+                icon: Icons.folder_open_outlined,
+                text: 'Nessun documento ancora per ${widget.pet.name}.',
+              )
+            else
+              for (final record in records) ...[
+                _RecordRow(
+                  record: record,
+                  selected: _selectedIds.contains(record.id),
+                  onTap: () => _onRecordTap(record),
+                  onLongPress: () => _toggleSelected(record),
+                  onDelete: () => _deleteRecord(record),
+                ),
+                const SizedBox(height: AppSpacing.sm),
+              ],
           ],
         );
       },
@@ -1026,19 +1069,34 @@ class _RecordsTabState extends State<_RecordsTab> {
 }
 
 class _RecordRow extends StatelessWidget {
-  const _RecordRow(
-      {required this.record, required this.onTap, required this.onDelete});
+  const _RecordRow({
+    required this.record,
+    required this.onTap,
+    required this.onLongPress,
+    required this.onDelete,
+    required this.selected,
+  });
 
   final MedicalRecordEntry record;
   final VoidCallback onTap;
+  final VoidCallback onLongPress;
   final VoidCallback onDelete;
+  final bool selected;
 
   @override
   Widget build(BuildContext context) {
     return _CompactRow(
       onTap: onTap,
+      onLongPress: onLongPress,
       onDelete: onDelete,
-      leading: const _RowIcon(icon: Icons.description_outlined),
+      selected: selected,
+      leading: _RowIcon(
+        icon: selected
+            ? Icons.check_circle_rounded
+            : isPdfFileName(record.title)
+                ? Icons.picture_as_pdf_outlined
+                : Icons.description_outlined,
+      ),
       title: record.title,
       subtitle: record.subtitle,
     );
@@ -1609,15 +1667,19 @@ class _CompactRow extends StatelessWidget {
     required this.title,
     required this.subtitle,
     this.onTap,
+    this.onLongPress,
     this.onDelete,
     this.trailingText,
     this.badgeCount = 0,
+    this.selected = false,
   });
 
   final Widget leading;
   final String title;
   final String subtitle;
   final VoidCallback? onTap;
+  final VoidCallback? onLongPress;
+  final bool selected;
   final VoidCallback? onDelete;
   final String? trailingText;
   final int badgeCount;
@@ -1630,12 +1692,16 @@ class _CompactRow extends StatelessWidget {
       child: InkWell(
         borderRadius: BorderRadius.circular(AppRadii.large),
         onTap: onTap,
+        onLongPress: onLongPress,
         child: Container(
           padding: const EdgeInsets.symmetric(
               horizontal: AppSpacing.md, vertical: AppSpacing.sm),
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(AppRadii.large),
-            border: Border.all(color: AppColors.border),
+            border: Border.all(
+              color: selected ? AppColors.primary : AppColors.border,
+              width: selected ? 2 : 1,
+            ),
           ),
           child: Row(
             children: [
@@ -1739,4 +1805,118 @@ class _EmptyTabState extends StatelessWidget {
 
 extension _IterableFirstOrNull<T> on Iterable<T> {
   T? get firstOrNull => isEmpty ? null : first;
+}
+
+/// Shown while a pet change is only on this device. "Riprova" tries the
+/// server again; the pet keeps its local data either way.
+class _UnsyncedPetBanner extends StatefulWidget {
+  const _UnsyncedPetBanner({required this.petId});
+
+  final String petId;
+
+  @override
+  State<_UnsyncedPetBanner> createState() => _UnsyncedPetBannerState();
+}
+
+class _UnsyncedPetBannerState extends State<_UnsyncedPetBanner> {
+  bool _retrying = false;
+
+  Future<void> _retry() async {
+    setState(() => _retrying = true);
+    final ok = await PetDemoStore.instance.retrySync(widget.petId);
+    if (!mounted) return;
+    setState(() => _retrying = false);
+    if (!ok) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Ancora nessun collegamento al server. Riprova più tardi.')),
+      );
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(AppSpacing.md),
+      decoration: BoxDecoration(
+        color: AppColors.surfaceElevated,
+        borderRadius: BorderRadius.circular(AppRadii.medium),
+        border: Border.all(color: AppColors.danger),
+      ),
+      child: Row(
+        children: [
+          Expanded(
+            child: Text(
+              'Non sincronizzato: le modifiche sono solo su questo telefono.',
+              style: AppTextStyles.caption.copyWith(color: AppColors.danger, fontWeight: FontWeight.w700),
+            ),
+          ),
+          const SizedBox(width: AppSpacing.sm),
+          _retrying
+              ? const PetLoader.small()
+              : TextButton(onPressed: _retry, child: const Text('Riprova')),
+        ],
+      ),
+    );
+  }
+}
+
+/// Shown while records are selected for a group share.
+class _SelectionBar extends StatelessWidget {
+  const _SelectionBar({required this.count, required this.onCancel, required this.onSend});
+
+  final int count;
+  final VoidCallback onCancel;
+  final VoidCallback onSend;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md, vertical: AppSpacing.xs),
+      decoration: BoxDecoration(
+        color: AppColors.accentSoft,
+        borderRadius: BorderRadius.circular(AppRadii.medium),
+      ),
+      child: Row(
+        children: [
+          Expanded(
+            child: Text(
+              '$count selezionat${count == 1 ? 'o' : 'i'}',
+              style: AppTextStyles.bodySmall.copyWith(fontWeight: FontWeight.w700),
+            ),
+          ),
+          TextButton(onPressed: onCancel, child: const Text('Annulla')),
+          FilledButton.icon(
+            onPressed: onSend,
+            icon: const Icon(Icons.ios_share_rounded, size: 18),
+            label: const Text('Invia'),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _RecordsLoadError extends StatelessWidget {
+  const _RecordsLoadError({required this.onRetry});
+
+  final VoidCallback onRetry;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.all(AppSpacing.lg),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(
+            'Non riesco a leggere i referti. Controlla la connessione e riprova.',
+            textAlign: TextAlign.center,
+            style: AppTextStyles.bodySmall,
+          ),
+          const SizedBox(height: AppSpacing.sm),
+          TextButton(onPressed: onRetry, child: const Text('Riprova')),
+        ],
+      ),
+    );
+  }
 }

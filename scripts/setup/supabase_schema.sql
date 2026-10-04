@@ -105,6 +105,33 @@ create table if not exists public.clinical_events (
 -- of this one).
 alter table public.clinical_events add column if not exists attachment_id text;
 
+-- Found 2026-10-04 reading the live schema: clinical_events already existed
+-- in the live project (from the earlier system) with a different shape, so
+-- the `create table if not exists` above was a no-op there - same trap as
+-- 9d6522f. Live columns: id, owner_id NOT NULL, pet_id NOT NULL, event_type
+-- NOT NULL, title NOT NULL, event_date date NOT NULL, summary, severity,
+-- source, linked_document_id, created_at timestamptz, attachment_id.
+-- Every column the app writes is therefore declared explicitly here, and
+-- the live table's NOT NULL columns that the app does not fill get a
+-- default, so an insert from the app succeeds on either shape.
+alter table public.clinical_events add column if not exists pet_name text;
+alter table public.clinical_events add column if not exists subtitle text;
+alter table public.clinical_events add column if not exists meta text;
+alter table public.clinical_events add column if not exists badge text;
+alter table public.clinical_events add column if not exists detail_source text;
+-- The live table's own columns, so a database created from this script has
+-- the same shape (nullable here; NOT NULL only where it already was).
+alter table public.clinical_events add column if not exists owner_id text;
+alter table public.clinical_events add column if not exists event_type text;
+alter table public.clinical_events add column if not exists event_date date;
+alter table public.clinical_events add column if not exists summary text;
+alter table public.clinical_events alter column owner_id set default auth.uid()::text;
+alter table public.clinical_events alter column event_type set default 'document';
+alter table public.clinical_events alter column event_date set default current_date;
+-- pet_name was NOT NULL only in this script's own (never applied live)
+-- definition; the chat does not need it and old rows do not have it.
+alter table public.clinical_events alter column pet_name drop not null;
+
 create table if not exists public.reminders (
     id text primary key,
     owner_id text not null,
@@ -968,3 +995,53 @@ alter table public.radar_place_overrides add column if not exists longitude doub
 alter table public.radar_user_reports enable row level security;
 alter table public.radar_report_votes enable row level security;
 alter table public.radar_place_ratings enable row level security;
+
+-- ---------------------------------------------------------------------------
+-- Eventi (sezione "Eventi" in Attività, docs/features/events_engine.md, Fase A
+-- in versione snella). Una riga = una edizione (date concrete). Nazionale,
+-- senza mappa: città/provincia/regione sono testo, niente coordinate né
+-- tabella ISTAT (Fase B). Caricamento curato da data/events/curated/*.json con
+-- scripts/events/import_curated.py (service role); l'app legge direttamente
+-- con la anon key, quindi RLS è in SOLA LETTURA pubblica: nessuna policy di
+-- scrittura -> solo la service role può inserire o modificare.
+-- ---------------------------------------------------------------------------
+create table if not exists public.events (
+    id uuid primary key default gen_random_uuid(),
+    slug text not null unique,             -- "petsfestival-cremona-2026"
+    title text not null,
+    description text,                      -- breve, scritta da noi
+    event_type text not null default 'other',
+    level text not null default 'local',   -- local|provincial|regional|national|international
+    level_basis text not null default 'default',
+    audience text not null default 'public',  -- public|professional
+    species text[] not null default '{}',     -- vuoto = tutte
+    starts_on date not null,
+    ends_on date not null,
+    city text,
+    province_code text,                    -- sigla, es. 'CR'
+    region text,                           -- nome, es. 'Lombardia'
+    venue_name text,
+    organizer_name text,                   -- solo enti e società, mai persone
+    source_url text,                       -- pagina ufficiale dell'evento/organizzatore
+    source text not null default 'curated',
+    license text not null default 'fatti pubblici verificati dal curatore',
+    status text not null default 'draft',  -- draft|published|cancelled|postponed|rejected
+    verification_status text not null default 'unverified',
+    last_verified_at timestamptz,
+    created_at timestamptz not null default now(),
+    updated_at timestamptz not null default now(),
+    check (ends_on >= starts_on)
+);
+
+create index if not exists events_active_idx
+    on public.events (ends_on, starts_on) where status in ('published', 'cancelled', 'postponed');
+create index if not exists events_region_idx
+    on public.events (region, starts_on) where status in ('published', 'cancelled', 'postponed');
+
+alter table public.events enable row level security;
+
+drop policy if exists events_select_public on public.events;
+create policy events_select_public
+on public.events
+for select
+using (status in ('published', 'cancelled', 'postponed') and audience = 'public');

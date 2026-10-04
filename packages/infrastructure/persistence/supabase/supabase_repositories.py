@@ -387,6 +387,10 @@ class SupabaseRadarReportsRepository(RadarReportsRepository):
         )
         return RadarUserReport.model_validate(response.data[0]) if response.data else None
 
+    def delete_report(self, report_id: str) -> None:
+        # Its votes go with it (on delete cascade).
+        self._client.table("radar_user_reports").delete().eq("id", report_id).execute()
+
     def list_reports(
         self, box: BoundingBox, *, kinds: list[str], statuses: list[str]
     ) -> list[RadarUserReport]:
@@ -461,6 +465,7 @@ class SupabaseRadarReportsRepository(RadarReportsRepository):
                 .execute()
             )
         except Exception:
+            _logger.warning("radar ratings unavailable: radar_place_ratings could not be read")
             return []
         return [RadarPlaceRating.model_validate(row) for row in response.data or []]
 

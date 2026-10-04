@@ -15,6 +15,10 @@ class RadarReportsRepository(Protocol):
 
     def get_report(self, report_id: str) -> RadarUserReport | None: ...
 
+    def delete_report(self, report_id: str) -> None:
+        """Deletes the report and the votes on it."""
+        ...
+
     def list_reports(
         self, box: BoundingBox, *, kinds: list[str], statuses: list[str]
     ) -> list[RadarUserReport]: ...

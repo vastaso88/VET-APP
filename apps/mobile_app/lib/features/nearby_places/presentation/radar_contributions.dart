@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../../shared/types/result.dart';
 import '../../account_consents/data/account_consents_remote_data_source.dart';
 import '../data/radar_contributions_repository.dart';
+import '../domain/radar_place.dart';
 
 const _rulesConsentKey = 'contribution_rules';
 
@@ -22,8 +23,10 @@ class RadarContributions {
     RadarContributionsRepository? repository,
     AccountConsentsRemoteDataSource? consents,
     required this.onChanged,
+    Map<String, int>? starsGiven,
   })  : repository = repository ?? RadarContributionsRepository(),
-        _consents = consents ?? HttpAccountConsentsRemoteDataSource();
+        _consents = consents ?? HttpAccountConsentsRemoteDataSource(),
+        _starsGiven = starsGiven ?? {};
 
   final RadarContributionsRepository repository;
   final AccountConsentsRemoteDataSource _consents;
@@ -32,8 +35,23 @@ class RadarContributions {
   final VoidCallback onChanged;
 
   /// Same backend, different listener: lets a page plug in its own reload.
-  RadarContributions reloading(VoidCallback onChanged) =>
-      RadarContributions(repository: repository, consents: _consents, onChanged: onChanged);
+  RadarContributions reloading(VoidCallback onChanged) => RadarContributions(
+        repository: repository,
+        consents: _consents,
+        onChanged: onChanged,
+        starsGiven: _starsGiven,
+      );
+
+  /// Stars the user gave during this visit, by place. A card can be opened
+  /// from data loaded before the vote (the full-screen map keeps the list
+  /// it was opened with): this is what lets it still show the vote.
+  final Map<String, int> _starsGiven;
+
+  static String _placeKey(RadarPlace place) => '${place.sourceName}|${place.sourceExternalId}';
+
+  int? starsGivenTo(RadarPlace place) => _starsGiven[_placeKey(place)];
+
+  void rememberStars(RadarPlace place, int stars) => _starsGiven[_placeKey(place)] = stars;
 
   /// Runs [action]; if the backend answers that the rules were never
   /// accepted, shows them and retries once after acceptance. Returns

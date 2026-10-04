@@ -5,6 +5,8 @@ Kept apart from scripts/radar/import_overture_places.py so the rules
 functions with tests, independent of DuckDB and of the network.
 """
 
+import re
+import unicodedata
 from collections.abc import Iterable, Mapping
 from typing import Any
 
@@ -37,6 +39,37 @@ DEFAULT_MIN_CONFIDENCE = 0.7
 
 OVERTURE_DEFAULT_LICENSE = "CDLA-Permissive-2.0"
 
+# Overture's primary category is sometimes wrong in a way the name makes
+# obvious: a "Toelettatura ..." or an "Allevamento ..." filed as a
+# veterinarian (about 100 rows of the Italian extract of 2026-09-23.1,
+# where the alternate categories are almost always empty and cannot
+# help). Corrected only out of "veterinary", the one category where a
+# wrong entry costs someone time in an emergency; the other way round a
+# name is weaker evidence ("Farmacia veterinaria" is not a clinic).
+_VETERINARY_WORDS = re.compile(r"veterinar|clinic|ambulator|ospedale|tierarzt|tierklinik|praxis")
+_OTHER_KIND_WORDS: dict[str, re.Pattern[str]] = {
+    "grooming": re.compile(r"toelett|toilett|tolett|grooming"),
+    "breeder": re.compile(r"allevament"),
+    "school": re.compile(r"addestr|cinofil|educator"),
+    "shop": re.compile(r"pet ?shop|pet ?store|negozio|mangimi|uccelleria|acquari"),
+    "hotel": re.compile(r"pensione"),
+}
+
+
+def place_type_for(category_type: str, name: str) -> str:
+    """The radar type of an Overture place: its category's, unless the
+    category says veterinarian and the name plainly says another kind of
+    business (and nothing veterinary)."""
+    if category_type != "veterinary":
+        return category_type
+    folded = unicodedata.normalize("NFKD", name.lower())
+    plain = "".join(char for char in folded if not unicodedata.combining(char))
+    if _VETERINARY_WORDS.search(plain):
+        return category_type
+    stated = [kind for kind, words in _OTHER_KIND_WORDS.items() if words.search(plain)]
+    # Two kinds in one name ("Toelettatura e pet shop") decide nothing.
+    return stated[0] if len(stated) == 1 else category_type
+
 
 def _text(value: Any) -> str | None:
     text = value.strip() if isinstance(value, str) else ""
@@ -48,8 +81,9 @@ def overture_row_to_place(
 ) -> RadarPlace | None:
     """None for anything not worth showing: unknown category, low
     confidence, closed, or without a name or position."""
-    place_type = OVERTURE_CATEGORIES.get(str(row.get("category") or ""))
+    category_type = OVERTURE_CATEGORIES.get(str(row.get("category") or ""))
     name = _text(row.get("name"))
+    place_type = place_type_for(category_type, name) if category_type and name else None
     latitude, longitude = row.get("latitude"), row.get("longitude")
     confidence = row.get("confidence")
     if (

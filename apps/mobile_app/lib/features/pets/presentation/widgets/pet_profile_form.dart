@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 
 import '../../data/pet_demo_store.dart';
 import '../../domain/fish_species.dart';
+import '../../domain/pet_breeds.dart';
 import '../../domain/pet_format.dart';
 import '../../domain/pet_identity_colors.dart';
 import '../../domain/pet_models.dart';
@@ -95,6 +96,8 @@ class _PetProfileFormState extends State<PetProfileForm> {
   late final TextEditingController _notesController;
   late String? _species;
   late String? _breed;
+  bool _otherBreed = false;
+  final _otherBreedController = TextEditingController();
   late String? _dogSizeCategory;
   late String? _sex;
   DateTime? _birthDate;
@@ -128,6 +131,14 @@ class _PetProfileFormState extends State<PetProfileForm> {
     _notesController = TextEditingController(text: pet?.medicalNote ?? '');
     _species = pet?.species;
     _breed = _normalizeBreed(pet?.breed);
+    final initialBreed = _breed;
+    if (initialBreed == 'Altro') {
+      _otherBreed = true;
+    } else if (initialBreed != null && (_species == 'Cane' || _species == 'Gatto') &&
+        isCustomBreed(initialBreed, PetDemoStore.breedsForSpecies(_species!))) {
+      _otherBreed = true;
+      _otherBreedController.text = initialBreed;
+    }
     _dogSizeCategory = pet?.dogSizeCategory;
     _sex = pet?.sex;
     _birthDate = _parseBirthDate(pet?.birthDateLabel);
@@ -265,6 +276,7 @@ class _PetProfileFormState extends State<PetProfileForm> {
   @override
   void dispose() {
     _nameController.dispose();
+    _otherBreedController.dispose();
     _weightController.dispose();
     _notesController.dispose();
     _lengthController.dispose();
@@ -347,6 +359,8 @@ class _PetProfileFormState extends State<PetProfileForm> {
                     setState(() {
                       _species = value;
                       _breed = null;
+                      _otherBreed = false;
+                      _otherBreedController.clear();
                       _dogSizeCategory = null;
                       if (value != 'Pesce') {
                         _isAquarium = false;
@@ -387,34 +401,60 @@ class _PetProfileFormState extends State<PetProfileForm> {
                     onRemove: _removeStock,
                   ),
                 ] else
-                  DropdownButtonFormField<String>(
-                    initialValue: breedOptions.contains(_breed) ? _breed : null,
-                    decoration: _inputDecoration(
-                      'Razza',
-                      _species == null
-                          ? 'Seleziona prima la specie'
-                          : 'Facoltativa',
-                    ),
-                    items: breedOptions
-                        .map(
-                          (breed) => DropdownMenuItem<String>(
-                            value: breed == 'Razza non specificata' ? '' : breed,
-                            child: Text(breed),
-                          ),
-                        )
-                        .toList(growable: false),
-                    onChanged: _species == null
+                  InkWell(
+                    onTap: _species == null
                         ? null
-                        : (value) {
+                        : () async {
+                            final picked = await _pickBreed(breedOptions);
+                            if (picked == null || !mounted) return;
                             setState(() {
-                              _breed = value;
-                              if (value != 'Altro') {
+                              if (picked == otherBreedLabel) {
+                                _otherBreed = true;
+                                _breed = _otherBreedController.text.trim().isEmpty
+                                    ? 'Altro'
+                                    : _otherBreedController.text.trim();
+                              } else {
+                                _otherBreed = false;
+                                _breed = picked == 'Razza non specificata' ? null : picked;
                                 _dogSizeCategory = null;
                               }
                             });
                           },
+                    borderRadius: BorderRadius.circular(18),
+                    child: InputDecorator(
+                      decoration: _inputDecoration(
+                        'Razza',
+                        _species == null ? 'Seleziona prima la specie' : 'Facoltativa',
+                      ),
+                      child: Row(
+                        children: [
+                          Expanded(
+                            child: Text(
+                              _breedDisplay(),
+                              style: AppTextStyles.bodySmall.copyWith(
+                                color: _breedDisplay() == _breedPlaceholder
+                                    ? AppColors.mutedText
+                                    : AppColors.text,
+                              ),
+                            ),
+                          ),
+                          const Icon(Icons.search_rounded, color: AppColors.primary),
+                        ],
+                      ),
+                    ),
                   ),
-                if (_species == 'Cane' && _breed == 'Altro') ...[
+                if (_otherBreed && (_species == 'Cane' || _species == 'Gatto')) ...[
+                  const SizedBox(height: AppSpacing.md),
+                  TextFormField(
+                    controller: _otherBreedController,
+                    textCapitalization: TextCapitalization.sentences,
+                    decoration: _inputDecoration('Quale razza? (facoltativo)', 'Es. incrocio di barboncino'),
+                    onChanged: (value) => setState(() {
+                      _breed = value.trim().isEmpty ? 'Altro' : value.trim();
+                    }),
+                  ),
+                ],
+                if (_species == 'Cane' && _otherBreed) ...[
                   const SizedBox(height: AppSpacing.md),
                   DropdownButtonFormField<String>(
                     initialValue: _dogSizeCategory,
@@ -490,7 +530,12 @@ class _PetProfileFormState extends State<PetProfileForm> {
                   DropdownButtonFormField<String>(
                     initialValue: _sex,
                     decoration: _inputDecoration('Sesso', 'Seleziona'),
-                    items: PetDemoStore.sexOptions
+                    items: [
+                      ...PetDemoStore.sexOptions,
+                      // A pet saved with an older value (e.g. "Sconosciuto") must
+                      // still show it, or the dropdown has no matching item.
+                      if (_sex != null && !PetDemoStore.sexOptions.contains(_sex)) _sex!,
+                    ]
                         .map(
                           (sex) => DropdownMenuItem<String>(
                             value: sex,
@@ -583,6 +628,27 @@ class _PetProfileFormState extends State<PetProfileForm> {
     );
   }
 
+  static const _breedPlaceholder = 'Seleziona una razza';
+
+  String _breedDisplay() {
+    if (_species == null) return 'Seleziona prima la specie';
+    if (_otherBreed) return otherBreedLabel;
+    final breed = _breed;
+    return breed == null || breed.isEmpty ? _breedPlaceholder : breed;
+  }
+
+  Future<String?> _pickBreed(List<String> options) {
+    return showModalBottomSheet<String>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: AppColors.surface,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(AppRadii.xl)),
+      ),
+      builder: (_) => _BreedPickerSheet(options: options),
+    );
+  }
+
   Future<void> _pickBirthDate() async {
     final initialDate = _birthDate ?? DateTime(2021, 1, 1);
     final picked = await showDatePicker(
@@ -626,7 +692,7 @@ class _PetProfileFormState extends State<PetProfileForm> {
       photoTouched: _photoTouched,
       aquariumStock: isAquariumProfile ? _aquariumStock : const [],
       habitat: _buildHabitat(),
-      dogSizeCategory: _species == 'Cane' && _breed == 'Altro' ? _dogSizeCategory : null,
+      dogSizeCategory: _species == 'Cane' && _otherBreed ? _dogSizeCategory : null,
     );
 
     await widget.onSubmit(draft);
@@ -1130,6 +1196,71 @@ class _IdentityColorPicker extends StatelessWidget {
             ),
           ),
       ],
+    );
+  }
+}
+
+/// Searchable list of breeds. Typing narrows it; "Meticcio / altra razza" is
+/// always offered so an unlisted breed can still be described.
+class _BreedPickerSheet extends StatefulWidget {
+  const _BreedPickerSheet({required this.options});
+
+  final List<String> options;
+
+  @override
+  State<_BreedPickerSheet> createState() => _BreedPickerSheetState();
+}
+
+class _BreedPickerSheetState extends State<_BreedPickerSheet> {
+  String _query = '';
+
+  @override
+  Widget build(BuildContext context) {
+    final query = foldBreedText(_query);
+    final matches = widget.options
+        .where((breed) => query.isEmpty || foldBreedText(breed).contains(query))
+        .toList(growable: false);
+
+    return SafeArea(
+      child: SizedBox(
+        height: MediaQuery.sizeOf(context).height * 0.7,
+        child: Column(
+          children: [
+            Padding(
+              padding: const EdgeInsets.fromLTRB(AppSpacing.lg, AppSpacing.md, AppSpacing.lg, AppSpacing.sm),
+              child: TextField(
+                autofocus: true,
+                onChanged: (value) => setState(() => _query = value),
+                decoration: InputDecoration(
+                  hintText: 'Cerca una razza',
+                  prefixIcon: const Icon(Icons.search_rounded),
+                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(18)),
+                ),
+              ),
+            ),
+            Expanded(
+              child: matches.isEmpty
+                  ? Center(
+                      child: Padding(
+                        padding: const EdgeInsets.all(AppSpacing.lg),
+                        child: Text(
+                          'Nessuna razza trovata. Prova con "Meticcio / altra razza".',
+                          textAlign: TextAlign.center,
+                          style: AppTextStyles.bodySmall,
+                        ),
+                      ),
+                    )
+                  : ListView.builder(
+                      itemCount: matches.length,
+                      itemBuilder: (_, index) => ListTile(
+                        title: Text(matches[index]),
+                        onTap: () => Navigator.of(context).pop(matches[index]),
+                      ),
+                    ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }

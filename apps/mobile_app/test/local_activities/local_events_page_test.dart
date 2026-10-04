@@ -49,7 +49,7 @@ void main() {
     expect(find.text('Servizi nella zona'), findsOneWidget);
   });
 
-  testWidgets('shows seeded dated events in "In programma"', (tester) async {
+  testWidgets('dated events are not part of the page', (tester) async {
     await _useTallSurface(tester);
     await tester.pumpWidget(const MaterialApp(home: LocalEventsPage()));
 
@@ -57,9 +57,11 @@ void main() {
     await tester.pump(const Duration(milliseconds: 50));
     await tester.pump(const Duration(milliseconds: 50));
 
-    expect(find.text('In programma'), findsOneWidget);
-    expect(find.text('Fiera cinofila regionale'), findsOneWidget);
-    expect(find.text('Giornata vaccinazioni gratuite'), findsOneWidget);
+    expect(find.text('Vicino a me'), findsOneWidget);
+    expect(find.text('In programma'), findsNothing);
+    expect(find.text('Fiera cinofila regionale'), findsNothing);
+    expect(find.text('Giornata vaccinazioni gratuite'), findsNothing);
+    expect(find.text('Eventi'), findsNothing);
   });
 
   testWidgets('tapping an activity opens its detail page', (tester) async {

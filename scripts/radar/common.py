@@ -29,7 +29,7 @@ def _use_system_certificates() -> None:
     shipped with `certifi`, which does not know that root. `truststore`
     fixes it; it is optional, so the scripts run it only when present:
 
-        uv run --with truststore python scripts/radar/<script>.py
+        uv run --system-certs --with truststore python scripts/radar/<script>.py
     """
     try:
         import truststore
@@ -75,7 +75,7 @@ def build_client() -> Client:
 
 CERTIFICATE_HINT = (
     "Errore di certificato HTTPS: su questo computer un antivirus intercetta le connessioni. "
-    "Rilancia con: uv run --with truststore python scripts/radar/<script>.py"
+    "Rilancia con: uv run --system-certs --with truststore python scripts/radar/<script>.py"
 )
 
 

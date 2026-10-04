@@ -102,6 +102,15 @@ class _EditForm extends StatelessWidget {
         );
         await PetDemoStore.instance.upsert(updated);
         if (!context.mounted) return;
+        if (PetDemoStore.instance.isUnsynced(updated.id)) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text(
+                'Modifiche salvate sul telefono ma non sul server. Apri il profilo e tocca Riprova.',
+              ),
+            ),
+          );
+        }
         Navigator.of(context).pop(updated);
       },
     );
@@ -136,7 +145,13 @@ class _PetLifecycleActions extends StatelessWidget {
     );
     if (confirmed != true) return;
 
-    await PetDemoStore.instance.delete(pet.id);
+    try {
+      await PetDemoStore.instance.delete(pet.id);
+    } on PetSyncException catch (error) {
+      if (!context.mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(error.message)));
+      return;
+    }
     if (!context.mounted) return;
     Navigator.of(context)
       ..pop()

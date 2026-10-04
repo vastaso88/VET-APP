@@ -1,6 +1,6 @@
 """Imports dog parks published as open data by Italian municipalities.
 
-    uv run --with truststore python scripts/radar/import_municipal_dog_parks.py
+    uv run --system-certs --with truststore python scripts/radar/import_municipal_dog_parks.py
 
 Covers only the datasets whose license was verified (Bologna, Torino and
 Milano, CC BY 4.0): see packages/infrastructure/radar_places/municipal_mapping.py.

@@ -99,6 +99,8 @@ class Settings(BaseSettings):
         default=5, ge=1, alias="RADAR_REPORT_CLOSED_CONFIRMATIONS"
     )
     radar_report_daily_limit: int = Field(default=5, ge=1, alias="RADAR_REPORT_DAILY_LIMIT")
+    # Days after which a report nobody confirmed even once is dropped.
+    radar_report_expiry_days: int = Field(default=7, ge=1, alias="RADAR_REPORT_EXPIRY_DAYS")
     # Categories that can be reported as missing (a JSON list in env).
     radar_report_place_types: list[str] = Field(
         default=["veterinary", "grooming", "shop", "hotel", "dog_park"],

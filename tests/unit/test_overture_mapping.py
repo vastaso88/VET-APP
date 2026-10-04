@@ -92,3 +92,30 @@ def test_open_row_carries_provenance() -> None:
     assert row["release"] == "2026-09-23.1"
     assert row["imported_at"] == "2026-10-04T00:00:00+00:00"
     assert "confirmed_by" not in row
+
+
+def test_a_name_that_states_its_kind_wins_over_a_wrong_category() -> None:
+    from packages.infrastructure.radar_places.overture_mapping import place_type_for
+
+    assert place_type_for("veterinary", "Toelettatura Esempio") == "grooming"
+    assert place_type_for("veterinary", "Allevamento Esempio") == "breeder"
+    assert place_type_for("veterinary", "Centro Cinofilo Esempio") == "school"
+    assert place_type_for("veterinary", "Uccelleria Esempio") == "shop"
+    # Only out of veterinary: elsewhere the category stands.
+    assert place_type_for("grooming", "Ambulatorio Veterinario Esempio") == "grooming"
+    assert place_type_for("shop", "Farmacia Veterinaria Esempio") == "shop"
+    assert place_type_for("shop", "Toelettatura Esempio") == "shop"
+
+
+def test_the_category_is_kept_when_the_name_agrees_or_decides_nothing() -> None:
+    from packages.infrastructure.radar_places.overture_mapping import place_type_for
+
+    # States the category's own kind too: stays what the source says.
+    assert (
+        place_type_for("veterinary", "Clinica Veterinaria e Toelettatura Esempio") == "veterinary"
+    )
+    # Says nothing about the kind.
+    assert place_type_for("veterinary", "Esempio") == "veterinary"
+    # Names two other kinds: no way to choose.
+    assert place_type_for("veterinary", "Toelettatura e Pet Shop Esempio") == "veterinary"
+    assert place_type_for("shop", "Pet Shop Esempio") == "shop"

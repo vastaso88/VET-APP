@@ -1,6 +1,6 @@
 """Imports pet-related places for Italy from OpenStreetMap into Supabase.
 
-    uv run --with truststore python scripts/radar/import_osm_places.py
+    uv run --system-certs --with truststore python scripts/radar/import_osm_places.py
 
 Asks the public Overpass servers for one Italian region at a time (dog
 parks, veterinarians, shops, groomers, boarding, trainers, sitters,
