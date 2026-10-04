@@ -8,6 +8,7 @@ from packages.core.application.ports.account_consents_repository import AccountC
 from packages.core.application.ports.radar_catalog_repository import BoundingBox
 from packages.core.application.ports.radar_reports_repository import RadarReportsRepository
 from packages.core.domain.common.entity import utc_now
+from packages.core.domain.consent.account_consent_text import CURRENT_VERSIONS
 from packages.core.domain.consent.models import AccountConsentType
 from packages.core.domain.geo.models import Coordinates, haversine_distance_km
 from packages.core.domain.radar_places.models import RadarPlace
@@ -42,15 +43,38 @@ class ReportLimitReachedError(VetAppError):
     """Too many reports from this account today."""
 
 
+KIND_NOT_ACTIVE_MESSAGE = "Questo tipo di segnalazione non è attivo."
+
+
 class RadarReportSettings(BaseModel):
     pseudonym_key: str
     confirmations_required: int = 5
     closed_confirmations_required: int = 5
     daily_limit: int = 5
     # Categories that can be reported as missing.
-    missing_place_types: frozenset[str] = frozenset({"veterinary", "grooming", "shop", "hotel"})
+    missing_place_types: frozenset[str] = frozenset(
+        {"veterinary", "grooming", "shop", "hotel", "dog_park"}
+    )
     # Whether a pending "closed" report is shown to everyone on the place.
     show_pending_closures: bool = False
+    # Switches (see Settings): reports and votes, the "closed" kind alone,
+    # dog-park stars.
+    reports_enabled: bool = True
+    closed_reports_enabled: bool = True
+    ratings_enabled: bool = True
+
+    def report_kinds(self) -> list[str]:
+        """Kinds of report accepted right now."""
+        if not self.reports_enabled:
+            return []
+        return [
+            kind
+            for kind in ("missing", "closed", "duplicate", "wrong_position")
+            if kind != "closed" or self.closed_reports_enabled
+        ]
+
+    def accepts(self, kind: str) -> bool:
+        return kind in self.report_kinds()
 
     def required_for(self, kind: str) -> int:
         return (
@@ -78,7 +102,9 @@ class _Contributions:
     def _require_rules_accepted(self, user_id: str) -> None:
         record = self._consents.get(user_id)
         consent = record.consents.get(AccountConsentType.CONTRIBUTION_RULES) if record else None
-        if consent is None or not consent.granted:
+        # Accepting an older wording does not cover the current one.
+        current = CURRENT_VERSIONS[AccountConsentType.CONTRIBUTION_RULES]
+        if consent is None or not consent.granted or consent.version != current:
             raise ContributionRulesRequiredError(
                 "Per segnalare o votare accetta prima le regole per segnalazioni e voti."
             )
@@ -148,6 +174,8 @@ class SubmitRadarReportService(_Contributions):
     a duplicate or is in the wrong position."""
 
     def execute(self, data: SubmitRadarReportInput) -> SubmitRadarReportOutput:
+        if not self._settings.accepts(data.kind):
+            raise ValidationError(KIND_NOT_ACTIVE_MESSAGE)
         self._require_rules_accepted(data.user_id)
         reporter = self._pseudonym(data.user_id)
 
@@ -240,6 +268,8 @@ class VoteRadarReportService(_Contributions):
         report = self._repository.get_report(data.report_id)
         if report is None:
             raise ValidationError("Segnalazione non trovata.")
+        if not self._settings.accepts(report.kind):
+            raise ValidationError(KIND_NOT_ACTIVE_MESSAGE)
         return self._register_vote(report, self._pseudonym(data.user_id), 1 if data.confirm else -1)
 
 
@@ -253,6 +283,8 @@ class RateDogParkService(_Contributions):
     """One 1-5 star vote per person per public dog park, replaceable."""
 
     def execute(self, data: RateDogParkInput) -> None:
+        if not self._settings.ratings_enabled:
+            raise ValidationError("Le valutazioni non sono attive.")
         self._require_rules_accepted(data.user_id)
         if not is_publicly_ratable(data.place):
             raise ValidationError("Si possono valutare solo le aree cani pubbliche.")
@@ -275,6 +307,8 @@ class RadarCommunityView(_Contributions):
     data, so open-data records stay exactly as their source gave them."""
 
     def user_places(self, box: BoundingBox) -> list[RadarPlace]:
+        if not self._settings.reports_enabled:
+            return []
         return [
             report.as_place()
             for report in self._repository.list_reports(
@@ -291,8 +325,16 @@ class RadarCommunityView(_Contributions):
         viewer = self._pseudonym(viewer_id) if viewer_id else None
         extras: dict[str, dict[str, Any]] = defaultdict(dict)
 
-        kinds = ["missing", "closed"] if self._settings.show_pending_closures else ["missing"]
-        reports = self._repository.list_reports(box, kinds=kinds, statuses=["pending", "confirmed"])
+        kinds = [
+            kind
+            for kind in self._settings.report_kinds()
+            if kind == "missing" or (kind == "closed" and self._settings.show_pending_closures)
+        ]
+        reports = (
+            self._repository.list_reports(box, kinds=kinds, statuses=["pending", "confirmed"])
+            if kinds
+            else []
+        )
         viewer_votes = (
             {
                 vote.report_id: vote.vote
@@ -321,7 +363,8 @@ class RadarCommunityView(_Contributions):
             if report.kind == "closed" and report.status == "pending"
         }
         ratings: dict[tuple[str, str], list[RadarPlaceRating]] = defaultdict(list)
-        for rating in self._repository.list_ratings(box):
+        ratings_enabled = self._settings.ratings_enabled
+        for rating in self._repository.list_ratings(box) if ratings_enabled else []:
             ratings[(rating.source, rating.source_id)].append(rating)
 
         for place in places:
@@ -330,7 +373,7 @@ class RadarCommunityView(_Contributions):
                 extras[place.id]["community"] = report_info(missing[place.source_external_id])
             if key in closures:
                 extras[place.id]["pending_closure"] = report_info(closures[key])
-            if is_publicly_ratable(place):
+            if ratings_enabled and is_publicly_ratable(place):
                 votes = ratings.get(key, [])
                 extras[place.id]["rating"] = {
                     "can_rate": True,

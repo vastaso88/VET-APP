@@ -65,7 +65,8 @@ const radarSourceCatalog = [
     source: 'comune_bologna',
     name: 'Comune di Bologna',
     description: 'Elenco ufficiale delle aree di sgambatura per cani del Comune di Bologna.',
-    attribution: 'Comune di Bologna — Open Data',
+    attribution: 'Comune di Bologna, Aree sgambatura cani '
+        '(opendata.comune.bologna.it), licenza CC BY 4.0',
     license: 'Creative Commons Attribuzione 4.0 (CC BY 4.0)',
     url: 'https://opendata.comune.bologna.it/explore/dataset/sgambatura_cani/',
   ),
@@ -73,9 +74,20 @@ const radarSourceCatalog = [
     source: 'comune_torino',
     name: 'Città di Torino',
     description: 'Elenco ufficiale delle aree cani della Città di Torino.',
-    attribution: 'Città di Torino — aperTO',
+    attribution: 'Comune di Torino, Aree Cani (aperto.comune.torino.it), '
+        'licenza CC BY 4.0, dati del 2019',
     license: 'Creative Commons Attribuzione 4.0 (CC BY 4.0)',
     url: 'https://aperto.comune.torino.it/dataset/aree-cani',
+  ),
+  RadarSourceInfo(
+    source: 'comune_milano',
+    name: 'Comune di Milano',
+    description: 'Elenco ufficiale delle aree cani del Comune di Milano.',
+    attribution: 'Comune di Milano, Territorio: localizzazione delle aree cani '
+        '(dati.comune.milano.it), licenza CC BY 4.0. Contiene elaborazioni di dati CC BY 3.0 '
+        'da dati.gov.it',
+    license: 'Creative Commons Attribuzione 4.0 (CC BY 4.0)',
+    url: 'https://dati.comune.milano.it/dataset/ds52_infogeo_aree_cani_localizzazione',
   ),
 ];
 

@@ -26,12 +26,29 @@ from packages.shared.errors.base import ValidationError
 MAX_HISTORY_MESSAGES = 12
 
 
+def owner_names_for_anonymization(display_name: str | None, *, pet_name: str) -> list[str]:
+    """The owner's name as a value to redact from text sent to the LLM
+    provider — unless it is also the pet's name (people do name a pet
+    after themselves, or register with the pet's name): redacting it then
+    would blank the one name the conversation is about.
+    """
+    name = (display_name or "").strip()
+    if not name:
+        return []
+    pet = pet_name.strip().lower()
+    if name.lower() == pet or pet in {part.lower() for part in name.split()}:
+        return []
+    return [name]
+
+
 class SendChatMessageInput(BaseModel):
     owner_id: str
     pet_id: str
     conversation_id: str | None = None
     user_message: str
     attachment_id: str | None = None
+    # The signed-in owner's display name, when the account has one.
+    owner_display_name: str | None = None
 
 
 class SendChatMessageOutput(BaseModel):
@@ -121,6 +138,9 @@ class SendChatMessageService:
                 weight_label=pet_profile.weight_label,
                 dog_size_category=pet_profile.dog_size_category,
                 reminders_context=reminders_context,
+                owner_names=owner_names_for_anonymization(
+                    data.owner_display_name, pet_name=pet_profile.name
+                ),
                 today=today,
                 habitat=pet_profile.habitat,
                 aquarium_stock=pet_profile.aquarium_stock,

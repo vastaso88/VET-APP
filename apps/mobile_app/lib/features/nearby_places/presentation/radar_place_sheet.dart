@@ -13,8 +13,7 @@ import '../domain/radar_place.dart';
 import 'radar_category.dart';
 import 'radar_contributions.dart';
 
-Future<void> callRadarPlace(RadarPlace place) =>
-    launchUrl(Uri(scheme: 'tel', path: place.phone));
+Future<void> callRadarPlace(RadarPlace place) => launchUrl(Uri(scheme: 'tel', path: place.phone));
 
 /// Opens the device's maps app with directions to [destination].
 Future<void> openDirections(Coordinates destination) => launchUrl(
@@ -32,13 +31,18 @@ Future<void> showRadarPlaceSheet(
   BuildContext context,
   RadarPlace place, {
   RadarContributions? contributions,
+  String? supportContactEmail,
 }) {
   return showModalBottomSheet<void>(
     context: context,
     backgroundColor: AppColors.surface,
     showDragHandle: true,
     isScrollControlled: true,
-    builder: (_) => _RadarPlaceSheet(place: place, contributions: contributions),
+    builder: (_) => _RadarPlaceSheet(
+      place: place,
+      contributions: contributions,
+      supportContactEmail: supportContactEmail,
+    ),
   );
 }
 
@@ -98,15 +102,43 @@ List<RadarDetail> radarPlaceDetails(Map<String, String> details) {
   return result;
 }
 
-/// "Segnalato dagli utenti · in attesa di conferma (2/5)".
-String pendingReportLabel(RadarReportInfo report) =>
-    'Segnalato dagli utenti · in attesa di conferma (${report.progressLabel})';
+/// How a not-yet-confirmed user report is announced, in lists and on the
+/// card. A dog park gets an explicit caution: unlike a shop, a patch of
+/// grass someone reported may be private ground.
+String pendingPlaceLabel(RadarPlace place) {
+  final progress = place.community?.progressLabel ?? '';
+  return place.type == RadarPlaceType.dogPark
+      ? 'Segnalata dagli utenti, verifica che sia un’area pubblica ($progress)'
+      : 'Segnalato dagli utenti · in attesa di conferma ($progress)';
+}
+
+/// Opens an email to the support contact about [place], with subject and
+/// identifier already filled in: the fastest way to get a reported area
+/// that is not public taken down.
+Future<void> writeAboutPlace(RadarPlace place, String supportContactEmail) => launchUrl(
+      Uri(
+        scheme: 'mailto',
+        path: supportContactEmail,
+        query: _mailQuery({
+          'subject': 'Area cani da rimuovere dal radar (${place.sourceExternalId})',
+          'body': 'Questa area segnalata dagli utenti non è un’area cani pubblica.\n\n'
+              'Nome: ${place.name}\n'
+              'Posizione: ${place.location.latitude}, ${place.location.longitude}\n'
+              'Identificativo: ${place.sourceExternalId}\n\n'
+              'Motivo: ',
+        }),
+      ),
+    );
+
+String _mailQuery(Map<String, String> fields) =>
+    fields.entries.map((entry) => '${entry.key}=${Uri.encodeComponent(entry.value)}').join('&');
 
 class _RadarPlaceSheet extends StatefulWidget {
-  const _RadarPlaceSheet({required this.place, this.contributions});
+  const _RadarPlaceSheet({required this.place, this.contributions, this.supportContactEmail});
 
   final RadarPlace place;
   final RadarContributions? contributions;
+  final String? supportContactEmail;
 
   @override
   State<_RadarPlaceSheet> createState() => _RadarPlaceSheetState();
@@ -158,11 +190,26 @@ class _RadarPlaceSheetState extends State<_RadarPlaceSheet> {
   }
 
   Future<void> _reportProblem() async {
+    final contributions = widget.contributions;
+    if (contributions == null) {
+      return;
+    }
+    // The backend decides which problems can be reported right now.
+    final problems = (await contributions.repository.loadOptions()).problems;
+    if (!mounted) {
+      return;
+    }
+    if (problems.isEmpty) {
+      ScaffoldMessenger.maybeOf(context)?.showSnackBar(
+        const SnackBar(content: Text('Le segnalazioni non sono attive in questo momento.')),
+      );
+      return;
+    }
     final problem = await showDialog<RadarProblem>(
       context: context,
       builder: (dialogContext) => SimpleDialog(
         title: const Text('Cosa non va in questo luogo?'),
-        children: RadarProblem.values
+        children: problems
             .map(
               (problem) => SimpleDialogOption(
                 onPressed: () => Navigator.of(dialogContext).pop(problem),
@@ -194,10 +241,8 @@ class _RadarPlaceSheetState extends State<_RadarPlaceSheet> {
     final isClinic = place.type == RadarPlaceType.veterinary;
     final details = radarPlaceDetails(place.details);
     final source = radarSourceInfo(place.sourceName);
-    final confirmedBy = place.confirmedBy
-        .map((name) => radarSourceInfo(name)?.name)
-        .whereType<String>()
-        .join(', ');
+    final confirmedBy =
+        place.confirmedBy.map((name) => radarSourceInfo(name)?.name).whereType<String>().join(', ');
     final community = place.community;
     final pendingClosure = place.pendingClosure;
     final rating = place.rating;
@@ -231,13 +276,26 @@ class _RadarPlaceSheetState extends State<_RadarPlaceSheet> {
             if (community != null && community.isPending) ...[
               const SizedBox(height: AppSpacing.md),
               _ReportBanner(
-                label: pendingReportLabel(community),
+                label: pendingPlaceLabel(place),
                 question: 'Questo luogo esiste davvero qui?',
                 report: community,
                 busy: _busy,
                 onVote: canContribute ? _vote : null,
               ),
             ],
+            if (community != null &&
+                community.isPending &&
+                place.type == RadarPlaceType.dogPark &&
+                widget.supportContactEmail != null)
+              Align(
+                alignment: Alignment.centerLeft,
+                child: TextButton.icon(
+                  style: TextButton.styleFrom(padding: EdgeInsets.zero),
+                  onPressed: () => writeAboutPlace(place, widget.supportContactEmail!),
+                  icon: const Icon(Icons.mail_outline, size: 18),
+                  label: const Text('Non è un’area pubblica? Scrivici'),
+                ),
+              ),
             if (pendingClosure != null) ...[
               const SizedBox(height: AppSpacing.md),
               _ReportBanner(
@@ -450,7 +508,8 @@ class _RatingRow extends StatelessWidget {
           ],
         ),
         if (viewerStars > 0)
-          Text('Il tuo voto: $viewerStars su 5. Tocca per cambiarlo.', style: AppTextStyles.caption),
+          Text('Il tuo voto: $viewerStars su 5. Tocca per cambiarlo.',
+              style: AppTextStyles.caption),
       ],
     );
   }

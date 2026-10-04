@@ -385,3 +385,53 @@ def test_municipal_sources_are_read_like_any_other_open_source() -> None:
         "comune_torino",
         "openstreetmap_overpass",
     ]
+
+
+def _two_open_sources() -> InMemoryRadarCatalogRepository:
+    catalog = InMemoryRadarCatalogRepository()
+    catalog.sources = [
+        _source("openstreetmap_overpass"),
+        _source("overture"),
+        _source("comune_torino", covers_italy=False),
+    ]
+    catalog.osm_places = [
+        _catalog_place("Negozio Esempio", "shop", 45.4650, 9.19, source="openstreetmap_overpass")
+    ]
+    catalog.open_places = [
+        _catalog_place("Clinica Esempio", "veterinary", 45.4700, 9.19, source="overture"),
+        _catalog_place("Area cani Esempio", "dog_park", 45.4660, 9.19, source="comune_torino"),
+    ]
+    return catalog
+
+
+def _served(open_sources: frozenset[str] | None) -> tuple[list[str], list[str]]:
+    repository = InMemoryRadarPlacesRepository()
+    service = ListNearbyRadarPlacesService(
+        repository,
+        RequestRadarPlacesIngestionService(repository, _FakeSource()),
+        _two_open_sources(),
+        max_search_radius_km=50,
+        freshness_ttl_hours=168,
+        open_sources=open_sources,
+    )
+    result = service.execute(ListNearbyRadarPlacesInput(latitude=MILAN_LAT, longitude=MILAN_LON))
+    return (
+        sorted(item.place.source_name for item in result.places),
+        sorted(source.source for source in result.sources),
+    )
+
+
+def test_every_open_source_is_served_by_default() -> None:
+    all_names = ["comune_torino", "openstreetmap_overpass", "overture"]
+
+    assert _served(None) == (all_names, all_names)
+
+
+def test_only_the_listed_open_sources_are_served() -> None:
+    names = ["comune_torino", "openstreetmap_overpass"]
+
+    assert _served(frozenset({"comune_torino"})) == (names, names)
+
+
+def test_no_open_source_listed_leaves_openstreetmap_alone() -> None:
+    assert _served(frozenset()) == (["openstreetmap_overpass"], ["openstreetmap_overpass"])

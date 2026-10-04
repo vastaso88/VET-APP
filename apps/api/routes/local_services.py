@@ -16,6 +16,7 @@ from packages.core.application.services.radar_reports import (
     VoteRadarReportInput,
 )
 from packages.core.domain.radar_places.models import (
+    OSM_SOURCE_NAME,
     RADAR_PLACE_API_EXCLUDED_FIELDS,
     RadarDataSource,
     RadarPlaceType,
@@ -125,6 +126,8 @@ def list_nearby_places(
             "search_radius_km": result.search_radius_km,
         },
         "sources": [_source_payload(source) for source in result.sources],
+        # Where to write about a place that should not be listed.
+        "support_contact_email": container.settings.support_contact_email.strip() or None,
     }
 
 
@@ -133,9 +136,12 @@ def list_data_sources() -> dict[str, object]:
     """Datasets behind the radar, for the app's "Fonti dati" page."""
     container = get_container()
     container.auth_provider.get_current_user()
+    served = container.radar_open_sources()
     return {
         "sources": [
-            _source_payload(source) for source in container.radar_catalog_repository.list_sources()
+            _source_payload(source)
+            for source in container.radar_catalog_repository.list_sources()
+            if source.source == OSM_SOURCE_NAME or served is None or source.source in served
         ],
         # Where to ask for a correction or removal; null when not configured.
         "support_contact_email": container.settings.support_contact_email.strip() or None,
@@ -149,10 +155,16 @@ def report_options() -> dict[str, object]:
     container = get_container()
     container.auth_provider.get_current_user()
     settings = container.radar_report_settings()
+    kinds = settings.report_kinds() if settings else []
     return {
-        "enabled": settings is not None,
-        "missing_place_types": sorted(settings.missing_place_types) if settings else [],
+        "enabled": bool(kinds),
+        "missing_place_types": (
+            sorted(settings.missing_place_types) if settings and "missing" in kinds else []
+        ),
         "confirmations_required": settings.confirmations_required if settings else None,
+        # Kinds of report accepted now, and whether dog parks can be rated.
+        "report_kinds": kinds,
+        "ratings_enabled": settings is not None and settings.ratings_enabled,
     }
 
 

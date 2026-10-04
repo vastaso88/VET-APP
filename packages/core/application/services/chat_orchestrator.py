@@ -328,6 +328,9 @@ class ChatOrchestratorInput(BaseModel):
     # The pet's active, relevant reminders as plain text (see
     # ReminderContextRetriever) — e.g. an ongoing therapy course.
     reminders_context: str | None = None
+    # The owner's own name(s) when known from their account, so they can be
+    # replaced wherever they appear in text sent to the LLM provider.
+    owner_names: list[str] = Field(default_factory=list)
     # Injectable "today" so age/reminder reasoning is testable; defaults
     # to the real current date.
     today: date | None = None
@@ -517,7 +520,7 @@ class ChatOrchestrator:
             # transcript) so it flows through safety checks, intent
             # classification, species detection and evidence retrieval
             # exactly like anything the owner typed.
-            message = f"{message}\n\nContesto dalla foto allegata: {data.photo_context}".strip()
+            message = f"{message}\n\nContesto dall'allegato: {data.photo_context}".strip()
         lowered = message.lower()
 
         if data.awaiting_safety_clarification and data.safety_clarification_category:
@@ -626,8 +629,17 @@ class ChatOrchestrator:
         # reach the target anyway (a "husbandry_question" doesn't set
         # presenting_problem/onset the way a symptom report does).
         if self._enable_interview_loop and intent != "husbandry_question":
+            # Extraction is an LLM call: it gets anonymized text, like every
+            # other prompt (the stored conversation keeps the original).
             situation = self._situation_model_builder.update(
-                situation, message, data.conversation_history
+                situation,
+                self._anonymize_for_provider(message, data),
+                [
+                    entry.model_copy(
+                        update={"content": self._anonymize_for_provider(entry.content, data)}
+                    )
+                    for entry in data.conversation_history
+                ],
             )
             if intent not in situation.working_domains:
                 situation = situation.merge(SituationModel(working_domains=[intent]))
@@ -949,7 +961,7 @@ class ChatOrchestrator:
             return (
                 "\n\nMedical records the owner allowed you to consult (most recent "
                 "first; an old exam may no longer reflect the current situation):\n"
-                f"{self._anonymize_for_provider(summary)}"
+                f"{self._anonymize_for_provider(summary, data)}"
             )
         count = self._medical_record_context_retriever.count_for_pet(data.pet_id)
         if count == 0:
@@ -1063,7 +1075,7 @@ class ChatOrchestrator:
         message: str,
         effective_species: str,
     ) -> ChatOrchestratorResult:
-        anonymized_message = self._anonymize_for_provider(message)
+        anonymized_message = self._anonymize_for_provider(message, data)
         try:
             response = self._llm_client.generate(
                 LLMGenerationRequest(
@@ -1166,7 +1178,7 @@ class ChatOrchestrator:
             )
 
         evidence_block = self._format_sources_for_prompt(sources)
-        anonymized_message = self._anonymize_for_provider(case_text)
+        anonymized_message = self._anonymize_for_provider(case_text, data)
         try:
             synthesis, response = self._evidence_synthesizer.synthesize(
                 f"{self._pet_context_block(data)}\n"
@@ -1315,7 +1327,7 @@ class ChatOrchestrator:
             query = self._case_context_text(situation, message)
             sources = self._retrieve_optional_evidence(query, intent, effective_species)
         evidence_block = self._format_sources_for_prompt(sources) if sources else ""
-        anonymized_message = self._anonymize_for_provider(message)
+        anonymized_message = self._anonymize_for_provider(message, data)
 
         # Real-world finding (2026-09-22 live test, "Acquario del
         # salotto"): a short follow-up ("dimmelo comunque") got a
@@ -1325,7 +1337,7 @@ class ChatOrchestrator:
         # continuation rather than answering the real follow-up. Every
         # other answer path here (situation model, interview planner)
         # already had conversation context; this one didn't.
-        history_block = self._format_conversation_history(data.conversation_history)
+        history_block = self._format_conversation_history(data)
 
         # Same live test: recent clinical history changes the answer
         # (e.g. an ongoing antibiotic course) but was never fetched here
@@ -1341,7 +1353,7 @@ class ChatOrchestrator:
             reminders_context = (
                 "\n\nActive reminders the owner set for this pet (take them into "
                 "account when relevant, e.g. an ongoing therapy):\n"
-                f"{self._anonymize_for_provider(data.reminders_context)}"
+                f"{self._anonymize_for_provider(data.reminders_context, data)}"
             )
         today = data.today or datetime.now(UTC).date()
 
@@ -1575,12 +1587,14 @@ class ChatOrchestrator:
         parts.append(latest_message)
         return " ".join(parts)
 
-    def _anonymize_for_provider(self, text: str) -> str:
+    def _anonymize_for_provider(self, text: str, data: ChatOrchestratorInput) -> str:
         """Strip PII before text leaves the system to the external LLM
         provider. Only applied to the outbound prompt — evidence retrieval
         (local) and the stored conversation/reply keep the original text,
         per the documented anonymization boundary (docs/compliance/02_pii_anonymization.md)."""
-        return self._pii_anonymizer.anonymize(PiiAnonymizationRequest(text=text)).anonymized_text
+        return self._pii_anonymizer.anonymize(
+            PiiAnonymizationRequest(text=text, known_person_names=data.owner_names)
+        ).anonymized_text
 
     def _pet_context_block(self, data: ChatOrchestratorInput) -> str:
         """Every field PetProfile actually has today, not just name/species
@@ -1596,7 +1610,7 @@ class ChatOrchestrator:
         starts sending it (still local-only as of this finding).
         """
         lines = [
-            f"Pet name: {self._anonymize_for_provider(data.pet_name)}",
+            f"Pet name: {self._anonymize_for_provider(data.pet_name, data)}",
             f"Species: {data.species}",
         ]
         if data.breed:
@@ -1612,7 +1626,7 @@ class ChatOrchestrator:
         if data.dog_size_category:
             lines.append(f"Size category: {data.dog_size_category}")
         if data.notes:
-            lines.append(f"Owner notes: {self._anonymize_for_provider(data.notes)}")
+            lines.append(f"Owner notes: {self._anonymize_for_provider(data.notes, data)}")
         if data.habitat is not None and not data.habitat.is_empty():
             habitat_facts = [
                 fact
@@ -1631,7 +1645,9 @@ class ChatOrchestrator:
             if habitat_facts:
                 lines.append(f"Habitat: {', '.join(habitat_facts)}")
             if data.habitat.notes:
-                lines.append(f"Habitat notes: {self._anonymize_for_provider(data.habitat.notes)}")
+                lines.append(
+                    f"Habitat notes: {self._anonymize_for_provider(data.habitat.notes, data)}"
+                )
         if data.aquarium_stock:
             stock_text = "; ".join(
                 f"{fish.species} ({fish.male_count}M/{fish.female_count}F)"
@@ -1655,16 +1671,21 @@ class ChatOrchestrator:
             return "general_info"
         return "clinical_question"
 
-    @staticmethod
-    def _format_conversation_history(history: list[ChatMessage]) -> str:
+    def _format_conversation_history(self, data: ChatOrchestratorInput) -> str:
         """Recent prior turns of THIS conversation, for `_generate_natural_answer`
         — without this, a short follow-up ("dimmelo comunque", "e se fosse più
         grande?") has nothing to attach to and the model can only improvise a
         plausible-sounding but ungrounded continuation. Empty for a first
         message, which is the common case and needs no such block."""
-        if not history:
+        if not data.conversation_history:
             return ""
-        lines = [f"{m.role}: {m.content}" for m in history]
+        # Earlier turns leave for the provider too, so they get the same
+        # anonymization as the current message (2026-10-04: they used to
+        # be sent as typed).
+        lines = [
+            f"{m.role}: {self._anonymize_for_provider(m.content, data)}"
+            for m in data.conversation_history
+        ]
         return "Earlier in this conversation:\n" + "\n".join(lines) + "\n\n"
 
     @staticmethod

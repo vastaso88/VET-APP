@@ -315,8 +315,8 @@ void main() {
   });
 
   testWidgets('Fonti dati lists every source with license and import date', (tester) async {
-    // Four source cards plus the contact line: taller than the default surface.
-    await tester.binding.setSurfaceSize(const Size(420, 1800));
+    // One card per source plus the contact line: taller than the default surface.
+    await tester.binding.setSurfaceSize(const Size(420, 3000));
     addTearDown(() => tester.binding.setSurfaceSize(null));
     await tester.pumpWidget(
       MaterialApp(
@@ -340,7 +340,8 @@ void main() {
     expect(find.text('Overture Maps'), findsOneWidget);
     expect(find.textContaining('ODbL'), findsOneWidget);
     expect(find.textContaining('Permissive 2.0'), findsOneWidget);
-    expect(find.textContaining('Versione 2026-09-23.1, importata il 4 ottobre 2026'), findsOneWidget);
+    expect(
+        find.textContaining('Versione 2026-09-23.1, importata il 4 ottobre 2026'), findsOneWidget);
     // The contact shown is the one the backend configures, never a hardcoded one.
     expect(find.textContaining('Scrivi a aiuto@esempio.example'), findsOneWidget);
   });

@@ -1,3 +1,5 @@
+from urllib.parse import quote
+
 from fastapi import APIRouter, File, Form, HTTPException, UploadFile
 from fastapi.responses import Response
 
@@ -21,6 +23,7 @@ async def upload_attachment(
             file_bytes=file_bytes,
             filename=file.filename or "photo",
             content_type=file.content_type or "application/octet-stream",
+            owner_display_name=user.display_name,
         )
     )
     return result.model_dump()
@@ -38,4 +41,15 @@ def get_attachment_file(attachment_id: str) -> Response:
     content = container.media_storage.read(attachment.storage_key)
     if content is None:
         raise HTTPException(status_code=404, detail="attachment file not found")
-    return Response(content=content, media_type=attachment.content_type)
+    # RFC 5987 form, so a filename with accents or spaces survives intact.
+    filename = quote(attachment.original_filename or "allegato", safe="")
+    return Response(
+        content=content,
+        media_type=attachment.content_type,
+        headers={
+            "Content-Disposition": f"inline; filename*=UTF-8''{filename}",
+            # The stored type comes from the file's own signature; never
+            # let a browser second-guess it.
+            "X-Content-Type-Options": "nosniff",
+        },
+    )

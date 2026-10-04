@@ -39,6 +39,27 @@ Con `--dry-run` gli script contano senza scrivere. `.github/workflows/radar-plac
 
 Ogni import sostituisce il contenuto della propria tabella, rispetta le esclusioni manuali di `radar_place_overrides` e, per Overture, aggiorna `docs/licenses/overture_places_release.md`. L'import OSM dichiara l'Italia coperta solo se tutte e venti le regioni sono andate a buon fine.
 
+### Import OpenStreetMap per tutta l'Italia: come regge i server pubblici
+
+`scripts/radar/import_osm_places.py` scarica una regione alla volta e si può rilanciare finché non ha finito:
+
+- ogni regione scaricata resta in `.local/radar/osm/` (fuori da git) per 24 ore: un nuovo lancio scarica solo quelle che mancano;
+- il server principale (`overpass-api.de`) concede a ogni indirizzo pochi posti e fa attendere dopo una richiesta pesante: lo script legge la sua pagina di stato, aspetta il tempo indicato e riprova fino a tre volte; i due server alternativi sono una seconda possibilità con attesa breve, e uno che non risponde non viene più interpellato in quel lancio;
+- `--max-seconds` (480 di default) ferma il lancio in modo pulito con codice di uscita 3 e il messaggio "Riprendi rilanciando lo stesso comando";
+- su Supabase non viene scritto nulla finché non ci sono tutte e 20 le regioni.
+
+Prova senza scrittura del 2026-10-04 (`uv run --extra dev python -u scripts/radar/import_osm_places.py --dry-run`): due lanci, cioè una ripresa. Il primo, con la versione precedente della gestione dei server, ha scaricato 3 regioni e si è fermato al limite di tempo; il secondo ha scaricato le altre 17 in 7 minuti e mezzo. Totale 8.069 luoghi: 2.517 aree cani, 2.033 negozi, 1.891 veterinari, 1.014 allevamenti, 393 toelettature, 141 pensioni, 80 educatori.
+
+Il flusso mensile su GitHub rilancia da solo lo script quando esce con codice 3 (fino a quattro volte).
+
+#### Alternativa valutata: estratto Geofabrik (non implementata)
+
+Geofabrik pubblica ogni giorno un file con tutta l'Italia di OpenStreetMap (`italy-latest.osm.pbf`, 2,24 GB al 2026-10-04). Si può leggere senza installazioni di sistema: la libreria `osmium` ha pacchetti pronti per Windows e Linux (circa 2 MB), quindi basterebbe `uv run --with osmium`.
+
+- A favore: è un file statico, non dipende dalla disponibilità dei server Overpass e lo scaricamento si può riprendere.
+- Contro: 2,24 GB da scaricare a ogni import contro circa 2 MB di risposte Overpass; per avere la posizione di aree e perimetri (le aree cani sono quasi tutte perimetri) bisogna far passare tutti i punti del file, con alcuni GB di memoria o un file d'appoggio su disco; tempi di elaborazione non misurati (stima: diversi minuti).
+- Conclusione: finché l'import a riprese completa l'Italia in uno o due lanci, resta la strada più leggera. Geofabrik è la strada più affidabile se i server pubblici diventassero inutilizzabili: da realizzare solo in quel caso, dentro il flusso mensile su GitHub (rete e disco adeguati), non sul computer del proprietario.
+
 ### Nell'app
 
 Ogni scheda indica la fonte ("Fonte: © Overture Maps Foundation — Places") e, se c'è, l'altra fonte che la conferma. Impostazioni → Info → **Fonti dati** elenca le fonti con licenza, versione e data dell'import. Le aree cani mostrano ciò che OpenStreetMap dichiara (recintata, illuminata, fondo, accesso, acqua, accessibilità): un dato assente non viene mostrato come "no".
@@ -54,7 +75,7 @@ Parere e condizioni: `docs/compliance/07_contributi_utenti.md`. Niente foto, nie
 - **Confermare o smentire** una segnalazione in attesa ("Confermo" / "Non è così").
 - **Dare da 1 a 5 stelle a un'area cani pubblica**. Un voto per persona e area, modificabile. La media compare da 3 voti. Sono escluse le aree a pagamento o riservate ai clienti (`fee=yes`, `access=customers|private`).
 
-Prima del primo contributo l'app mostra le regole d'uso e chiede di accettarle (consenso `contribution_rules`, versionato, revocabile dalle impostazioni dei consensi; non blocca l'uso dell'app).
+Prima del primo contributo l'app mostra le regole d'uso e chiede di accettarle (consenso `contribution_rules`, versionato, revocabile dalle impostazioni dei consensi; non blocca l'uso dell'app). La versione in vigore è la v2 (2026-10-04, regola 5 riscritta per le aree cani): chi avesse accettato una versione precedente deve accettare di nuovo.
 
 ### Come appare
 
@@ -81,9 +102,44 @@ Sono impostazioni lato server, quindi la scelta non richiede una nuova build. De
 | Impostazione | Default | Effetto |
 | --- | --- | --- |
 | `RADAR_REPORT_SHOW_PENDING_CLOSURES` | `false` | Se `true`, un luogo segnalato come chiuso mostra a tutti "Segnalato come chiuso (2/5)" con i pulsanti. Se `false`, le segnalazioni di chiusura non sono visibili: ogni nuova segnalazione indipendente vale come conferma. |
-| `RADAR_REPORT_PLACE_TYPES` | veterinari, toelettature, negozi, pensioni | Categorie segnalabili come mancanti. Per includere le aree cani: aggiungere `dog_park` alla lista. |
+| `RADAR_REPORT_PLACE_TYPES` | veterinari, toelettature, negozi, pensioni, aree cani | Categorie segnalabili come mancanti. |
 
-I default seguono le condizioni del parere legale; la richiesta iniziale dell'utente era il contrario su entrambi i punti.
+Decisioni del proprietario (2026-10-04): le segnalazioni di chiusura restano non visibili fino alla soglia, come da parere legale; le aree cani **si possono** segnalare come mancanti, con le cautele qui sotto.
+
+### Aree cani segnalate dagli utenti
+
+Un'area cani segnalata può essere un prato privato o non esistere. Per questo, finché non raggiunge le 5 conferme:
+
+- in elenco, sulla scheda e sulla mappa è distinta dalle altre e porta la dicitura "Segnalata dagli utenti, verifica che sia un'area pubblica (2/5)";
+- non si può valutare con le stelle (né interfaccia né API);
+- sulla scheda c'è l'azione **"Non è un'area pubblica? Scrivici"**, che apre un'email al contatto configurato (`SUPPORT_CONTACT_EMAIL`) con oggetto, nome, posizione e identificativo già compilati. Se il contatto non è configurato l'azione non compare.
+
+La rimozione su richiesta, del proprietario del terreno o di un utente, è immediata e non aspetta le smentite della comunità:
+
+```bash
+uv run python scripts/radar/remove_reported_place.py --report-id <identificativo dell'email>
+```
+
+Lo script segna la segnalazione come respinta: l'area sparisce alla richiesta successiva. Con `--source` e `--source-id` rimuove invece un luogo di una fonte aperta, scrivendo in `radar_place_overrides`. Con `--dry-run` mostra cosa farebbe.
+
+Regola 5 delle regole d'uso (v2): "Un'area cani mancante va segnalata solo se è pubblica e aperta al pubblico. Non segnalare proprietà private e non invitare altri a entrare in luoghi privati."
+
+Se una richiesta di rimozione si rivela infondata, `--restore` insieme a `--report-id` riporta la segnalazione in attesa di conferma. Il registro delle richieste e delle decisioni, con la motivazione, è tenuto fuori dall'app (la casella del contatto); per i luoghi delle fonti aperte la motivazione resta nella colonna `reason` di `radar_place_overrides`.
+
+### Interruttori (variabili d'ambiente del backend)
+
+Tutti accesi di default: senza impostare nulla il comportamento è quello di sempre. Su Vercel una variabile cambiata vale dal deploy successivo.
+
+| Variabile | Default | Spenta |
+| --- | --- | --- |
+| `RADAR_REPORTS_ENABLED` | `true` | Niente nuove segnalazioni né voti (risposta 503 `contributions_disabled`); i luoghi segnalati dagli utenti e i loro contatori non vengono più mostrati. |
+| `RADAR_REPORT_CLOSED_ENABLED` | `true` | Solo il tipo "ha chiuso" non è più accettato né votabile, e le chiusure in attesa non vengono mostrate; gli altri tipi restano. |
+| `RADAR_RATINGS_ENABLED` | `true` | Niente nuove stelle (503) e le stelle non vengono più mostrate. |
+| `RADAR_OPEN_SOURCES` | `["*"]` | Elenco JSON delle fonti di `radar_places_open` da servire, per esempio `["overture","comune_milano"]`; `[]` nessuna. Vale anche per la pagina "Fonti dati". OpenStreetMap non dipende da questo interruttore. |
+
+Spegnere non cancella nulla: riaccendendo, segnalazioni, voti e stelle ricompaiono. Le esclusioni già applicate (`radar_place_overrides`: chiusure e doppioni già confermati, rimozioni fatte a mano) restano in vigore anche a interruttori spenti, così una rimozione su richiesta non torna visibile.
+
+L'app legge `GET /local-services/reports/options` (`enabled`, `report_kinds`, `ratings_enabled`, `missing_place_types`): la pagina "Segnala!" e l'elenco dei problemi segnalabili seguono il server senza una nuova build; le stelle spariscono perché il server non le invia più.
 
 ### Dati e identità
 
@@ -278,18 +334,18 @@ Stima: 2-3 giorni di lavoro (script, tabelle, unione con deduplica, attribuzione
 
 ### Aree cani dei Comuni: verifica (2026-10-04)
 
-Controllo fatto interrogando i portali open data dei Comuni. Regola del parere legale: si importa solo con licenza IODL 2.0, CC BY 4.0 o CC0 accertata sulla pagina di chi pubblica.
+Controllo fatto interrogando i portali open data dei Comuni. Regola del parere legale: si importa solo con licenza IODL 2.0, CC BY 4.0, CC BY 3.0 Italia o CC0 accertata sulla pagina di chi pubblica, escluse icone e grafiche.
 
 | Comune | Dataset | Aree | Licenza dichiarata | Formato | Aggiornato | Esito |
 | --- | --- | --- | --- | --- | --- | --- |
 | Bologna | `sgambatura_cani` (opendata.comune.bologna.it) | 33 | CC BY 4.0, con link alla licenza | JSON, GeoJSON (punto e perimetro) | 2026-09-14 | **Importato** |
-| Torino | `aree-cani` (aperto.comune.torino.it) | 52 | CC BY 4.0 (link al testo 4.0 nella pagina) | CSV con coordinate, SHP | 2019-06-05 | **Importato**, dati vecchi |
-| Milano | `ds52_infogeo_aree_cani_localizzazione` (dati.comune.milano.it) | 423 | "Creative Commons Attribution": la pagina cita sia CC BY 4.0 sia CC BY 3.0 Italia | GeoJSON (perimetri), CSV | 2026-05-08 | **Non importato**: versione della licenza da accertare |
+| Torino | `aree-cani` (aperto.comune.torino.it) | 52 | CC BY 4.0 (link al testo 4.0 nella pagina) | CSV con coordinate, SHP | 2019-06-05 | **Importato**, con "dati del 2019" nell'attribuzione |
+| Milano | `ds52_infogeo_aree_cani_localizzazione` (dati.comune.milano.it) | 297 (in 423 perimetri) | CC BY 4.0 nei metadati; la pagina cita CC BY 3.0 Italia per icone e aree tematiche del portale, che non usiamo | GeoJSON (perimetri), CSV | 2026-05-08 | **Importato** |
 | Roma | "Aree ludiche per cani" (dati.comune.roma.it) | non contate | "Creative Commons Attribution", versione non indicata | ODS | 2020-03-24 | Non importato |
 | Napoli | nessun dataset trovato | | | | | |
 | Firenze, Genova | il portale non ha risposto alla ricerca | | | | | Da riprovare |
 
-Milano è il caso che conta di più: 423 aree ufficiali contro 364 in OpenStreetMap nello stesso territorio, e 166 delle 423 non hanno un'area OSM entro 60 m. Appena accertata la versione della licenza (basta la pagina del dataset o una risposta del Comune), l'import è una funzione di una ventina di righe in `municipal_mapping.py`.
+Milano è il caso che conta di più. Il file ha 423 perimetri, che corrispondono a 297 aree: un'area grande è disegnata con più perimetri che condividono lo stesso identificativo, e l'import ne fa una scheda sola. Nella prima versione di questa tabella avevo scritto "423 aree": erano i perimetri. In OpenStreetMap, nello stesso territorio, le aree cani sono 364; il confronto fatto perimetro per perimetro dava 166 perimetri su 423 senza un'area OSM entro 60 m. La licenza è stata accertata da MARKETING e NORMATIVA il 2026-10-04 (`docs/compliance/07_contributi_utenti.md`): CC BY 4.0 per i dati; CC BY 3.0 Italia, che riguarda icone e grafiche del portale, è comunque compatibile ma quelle parti non vengono usate.
 
 Qualità: Bologna e Milano pubblicano i perimetri, Torino solo un punto. Nessuno dei dataset contiene recinzione, acqua o illuminazione: quei dettagli restano quelli di OpenStreetMap. Quando la stessa area è in OSM e nell'elenco del Comune (stessa area entro 60 m) resta una scheda sola; se OSM ha i dettagli vince OSM e il Comune compare come "Presente anche in".
 
@@ -298,6 +354,51 @@ Import: `uv run python scripts/radar/import_municipal_dog_parks.py` (anche nel f
 ### Altre fonti italiane
 
 Non è nota a chi scrive una banca dati nazionale delle strutture veterinarie pubblicata con licenza aperta e verificabile. Esistono elenchi pubblici consultabili (ad esempio l'anagrafe delle strutture veterinarie della FNOVI), ma senza una licenza di riuso accertata non vanno importati. Da verificare con una ricerca dedicata prima di contarci.
+
+## Contribuire a OpenStreetMap: valutazione (non implementato)
+
+**Decisione del proprietario, 2026-10-04: non si procede.** Resta solo come possibile idea di comunicazione per il futuro. Quanto segue è la valutazione che ha portato alla decisione; nulla di questa sezione è implementato.
+
+Domanda del proprietario: l'app può aiutare a migliorare OpenStreetMap, anche come elemento di comunicazione? Pagine ufficiali lette il 2026-10-04: [Notes](https://wiki.openstreetmap.org/wiki/Notes), [API v0.6](https://wiki.openstreetmap.org/wiki/API_v0.6), [Automated Edits code of conduct](https://wiki.openstreetmap.org/wiki/Automated_Edits_code_of_conduct), [Import/Guidelines](https://wiki.openstreetmap.org/wiki/Import/Guidelines), [Organised Editing Guidelines](https://osmfoundation.org/wiki/Organised_Editing_Guidelines), [API Usage Policy](https://operations.osmfoundation.org/policies/api/).
+
+### Cosa dicono le regole (verificato sulle pagine)
+
+- **Note**: sono commenti geolocalizzati che i mappatori leggono e poi chiudono dopo aver corretto la mappa. L'API permette di crearle (`POST /api/0.6/notes`) anche senza account; una nota senza account viene rifiutata nelle zone sotto moderazione. La pagina Notes chiede esplicitamente di **non creare note automatiche**: le note devono essere una comunicazione tra persone.
+- **Modifiche non riviste una per una** da chi le esegue (bot, script, import) ricadono nel codice di condotta sulle modifiche automatiche: vanno documentate in una pagina wiki e discusse prima con la comunità.
+- **Import di dati esterni**: serve una licenza compatibile con ODbL, la discussione con la comunità locale e sul forum, e un account dedicato all'import.
+- **Attività organizzate** (più persone coordinate da un'organizzazione): le linee guida chiedono una pagina wiki dell'attività con responsabile e contatto, l'avviso alla comunità interessata e risposte ai mappatori entro due giorni lavorativi. Non sono una policy vincolante, ma ignorarle può portare al blocco e all'annullamento delle modifiche.
+- **API**: serve un User-Agent che identifichi app e versione; non si inviano dati personali; l'accesso può essere revocato in qualsiasi momento.
+
+### Le tre strade
+
+| Strada | Come funzionerebbe | Valutazione |
+| --- | --- | --- |
+| (a) Note inviate dall'app in automatico quando un luogo raggiunge 5 conferme | Il backend crea la nota senza che una persona la scriva | **No così com'è**: è proprio la "nota automatica" che la pagina Notes chiede di evitare. |
+| (a-bis) Nota inviata da un utente, per sua scelta | Sulla scheda di un luogo confermato: "Segnala anche a OpenStreetMap". L'utente vede il testo, può modificarlo e la invia lui | **Praticabile**: resta una comunicazione tra persone. Volume basso per natura. |
+| (b) Modifiche vere con l'account OSM dell'utente (accesso OAuth, come fanno gli editor per telefono) | L'utente accede con il proprio account OSM e l'app aggiunge o corregge l'oggetto a suo nome | Corretta nei principi, ma è un editor di mappe dentro l'app: schema dei tag, conflitti, annullamenti, responsabilità dell'utente per ogni modifica. Settimane di lavoro e supporto continuo. Da considerare solo più avanti. |
+| (c) Account dell'app che carica le modifiche | Un unico account VetApp scrive in OSM i luoghi confermati | **Non è la via**: sono modifiche non riviste da chi le esegue, quindi automatiche; servirebbero documentazione, discussione preventiva e assenso della comunità, e resterebbe il rischio di blocco e annullamento. |
+
+Supposizioni, non verificate sulle pagine: che la comunità italiana accolga bene un flusso di note da un'app nuova (va chiesto sul forum prima di partire); quante note al giorno siano tollerate (le pagine lette non indicano un numero).
+
+### Vincoli di licenza
+
+- Verso OSM può andare **solo ciò che creano i nostri utenti**, e solo se l'utente ha accettato esplicitamente che quel contributo sia pubblicato con licenza ODbL.
+- **Mai** dati di Overture, dei Comuni o di altre fonti riversati in OSM: non sono nostri da rilicenziare, e sarebbe un import soggetto alle regole sopra.
+- Mai telefoni o nomi di persone: la policy dell'API vieta di inviare dati personali, e le nostre regole d'uso già li escludono dalle segnalazioni.
+
+### Raccomandazione
+
+Partire, se si vuole, dalla sola strada (a-bis), con questi passi:
+
+1. Aprire una discussione sul forum della comunità italiana di OpenStreetMap, descrivendo l'app e il flusso, **prima** di attivarlo. Creare la pagina wiki dell'attività con un contatto.
+2. Account OSM dedicato per le note dell'app, e User-Agent che identifica app e versione. Le note senza account sono possibili ma non raggiungono le zone moderate e non permettono ai mappatori di rispondere a qualcuno.
+3. Una nota solo per luoghi già confermati da 5 utenti, una sola volta per luogo, e sempre su azione dell'utente che la legge e la invia. Tetto giornaliero basso lato server.
+4. Testo della nota: categoria, nome dell'insegna, "segnalato e confermato da utenti dell'app VetApp", nessun dato personale.
+5. Nuovo punto nelle regole d'uso, con accettazione separata: "Se scegli di inviare una segnalazione a OpenStreetMap, il testo che invii è pubblicato su OpenStreetMap con licenza ODbL ed è visibile a tutti". Il consenso va chiesto al momento dell'invio, non una volta per tutte.
+
+Comunicazione: si può dire "VetApp usa OpenStreetMap e aiuta a migliorarlo: gli utenti possono segnalare ai volontari i luoghi mancanti". Non "VetApp aggiorna OpenStreetMap": la mappa la aggiornano i volontari, e una promessa più larga del vero sarebbe notata proprio dalla comunità a cui ci si rivolge.
+
+Stima per (a-bis): 2-3 giorni, più il tempo della discussione con la comunità, che non dipende da noi.
 
 ## Urgenze: cosa la pagina non fa
 

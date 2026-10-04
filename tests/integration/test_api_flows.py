@@ -1,3 +1,4 @@
+import pytest
 from fastapi.testclient import TestClient
 
 from apps.api.main import app
@@ -255,3 +256,141 @@ def test_segnala_flow_needs_the_rules_then_shows_the_pending_place() -> None:
         "/local-services/reports", json={**report, "name": "Bau 02 0000 0001", "latitude": 45.5}
     )
     assert with_contact.status_code == 400
+
+
+def _client_with_env(monkeypatch: pytest.MonkeyPatch, **env: str) -> TestClient:
+    from apps.api.dependencies.container import reset_container
+    from packages.shared.config.settings import reset_settings
+
+    for name, value in env.items():
+        monkeypatch.setenv(name, value)
+    reset_settings()
+    reset_container()
+    return TestClient(app)
+
+
+_REPORT = {
+    "kind": "missing",
+    "place_type": "grooming",
+    "name": "Toelettatura Bau",
+    "latitude": 45.4650,
+    "longitude": 9.1910,
+}
+_RATING = {
+    "source": "openstreetmap_overpass",
+    "source_id": "way/1",
+    "latitude": 45.4650,
+    "longitude": 9.1910,
+    "stars": 4,
+}
+
+
+def test_radar_switches_default_to_everything_on(monkeypatch: pytest.MonkeyPatch) -> None:
+    options = _client_with_env(monkeypatch).get("/local-services/reports/options").json()
+
+    assert options["enabled"] is True
+    assert options["report_kinds"] == ["missing", "closed", "duplicate", "wrong_position"]
+    assert options["ratings_enabled"] is True
+
+
+def test_reports_switch_off_is_told_to_the_app_and_enforced(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    client = _client_with_env(monkeypatch, RADAR_REPORTS_ENABLED="false")
+
+    options = client.get("/local-services/reports/options").json()
+    assert (options["enabled"], options["report_kinds"]) == (False, [])
+    assert options["missing_place_types"] == []
+    assert options["ratings_enabled"] is True
+    refused = client.post("/local-services/reports", json=_REPORT)
+    assert (refused.status_code, refused.json()["code"]) == (503, "contributions_disabled")
+    vote = client.post("/local-services/reports/any/vote", json={"vote": "confirm"})
+    assert vote.status_code == 503
+
+
+def test_closed_switch_off_refuses_only_that_kind(monkeypatch: pytest.MonkeyPatch) -> None:
+    client = _client_with_env(monkeypatch, RADAR_REPORT_CLOSED_ENABLED="false")
+
+    options = client.get("/local-services/reports/options").json()
+    assert options["enabled"] is True
+    assert options["report_kinds"] == ["missing", "duplicate", "wrong_position"]
+    closed = client.post(
+        "/local-services/reports",
+        json={**_REPORT, "kind": "closed", "target_source": "overture", "target_source_id": "abc"},
+    )
+    assert closed.status_code == 400
+    # A missing place gets as far as the rules, as usual.
+    assert client.post("/local-services/reports", json=_REPORT).status_code == 403
+
+
+def test_ratings_switch_off_is_told_to_the_app_and_enforced(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    client = _client_with_env(monkeypatch, RADAR_RATINGS_ENABLED="false")
+
+    options = client.get("/local-services/reports/options").json()
+    assert (options["enabled"], options["ratings_enabled"]) == (True, False)
+    refused = client.put("/local-services/ratings", json=_RATING)
+    assert (refused.status_code, refused.json()["code"]) == (503, "contributions_disabled")
+
+
+class _NoPlacesSource:
+    name = "fake_source"
+
+    def fetch_places(self, request_data: object) -> list[object]:
+        return []
+
+
+def test_open_sources_switch_limits_places_and_the_sources_page(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    from datetime import UTC, datetime
+
+    from apps.api.dependencies.container import get_container
+    from packages.core.domain.radar_places.models import RadarDataSource, RadarPlace
+
+    def names(env: dict[str, str]) -> tuple[list[str], list[str]]:
+        client = _client_with_env(monkeypatch, **env)
+        # No live provider in a test: OpenStreetMap answers with nothing.
+        get_container().radar_places_source = _NoPlacesSource()  # type: ignore[assignment]
+        catalog = get_container().radar_catalog_repository
+        catalog.sources = [  # type: ignore[attr-defined]
+            RadarDataSource(
+                source=name,
+                release="test",
+                license="test",
+                attribution="test",
+                imported_at=datetime(2026, 10, 4, tzinfo=UTC),
+            )
+            for name in ("overture", "comune_milano")
+        ]
+        catalog.open_places = [  # type: ignore[attr-defined]
+            RadarPlace(
+                coverage_key="catalog",
+                place_type=place_type,
+                name=name,
+                latitude=latitude,
+                longitude=9.19,
+                source_name=source,
+                source_external_id=name,
+            )
+            for name, place_type, latitude, source in (
+                ("Clinica Esempio", "veterinary", 45.4700, "overture"),
+                ("Area cani Esempio", "dog_park", 45.4660, "comune_milano"),
+            )
+        ]
+        places = client.get(
+            "/local-services/places", params={"latitude": 45.4642, "longitude": 9.19}
+        ).json()["places"]
+        sources = client.get("/local-services/sources").json()["sources"]
+        return (
+            sorted(place["source_name"] for place in places),
+            sorted(source["source"] for source in sources),
+        )
+
+    both = ["comune_milano", "overture"]
+    assert names({}) == (both, both)
+    assert names({"RADAR_OPEN_SOURCES": '["comune_milano"]'}) == (
+        ["comune_milano"],
+        ["comune_milano"],
+    )

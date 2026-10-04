@@ -57,7 +57,13 @@ class SupabaseAuthProvider(AuthProvider):
         if user is None:
             raise AuthenticationError("Invalid access token")
 
-        return AuthenticatedUser(id=user.id, email=user.email or "")
+        metadata = getattr(user, "user_metadata", None) or {}
+        display_name = metadata.get("display_name") if isinstance(metadata, dict) else None
+        return AuthenticatedUser(
+            id=user.id,
+            email=user.email or "",
+            display_name=display_name if isinstance(display_name, str) else None,
+        )
 
     def sign_in_with_password(self, email: str, password: str) -> AuthSession:
         response = self._public_client.auth.sign_in_with_password(

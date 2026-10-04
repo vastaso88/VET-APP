@@ -14,10 +14,17 @@ import '../domain/radar_place.dart';
 /// What "Segnala!" accepts right now, decided by the backend so it can
 /// change without a new app build.
 class RadarReportOptions {
-  const RadarReportOptions({required this.enabled, required this.missingPlaceTypes});
+  const RadarReportOptions({
+    required this.enabled,
+    required this.missingPlaceTypes,
+    this.problems = RadarProblem.values,
+  });
 
   final bool enabled;
   final List<RadarPlaceType> missingPlaceTypes;
+
+  /// What can be reported about an existing place right now.
+  final List<RadarProblem> problems;
 }
 
 /// Outcome of a submitted report.
@@ -46,7 +53,8 @@ class RadarContributionsRepository {
   Future<RadarReportOptions> loadOptions() async {
     final result = await _send('GET', '/local-services/reports/options');
     return result.fold(
-      onFailure: (_) => const RadarReportOptions(enabled: false, missingPlaceTypes: []),
+      onFailure: (_) =>
+          const RadarReportOptions(enabled: false, missingPlaceTypes: [], problems: []),
       onSuccess: (json) => RadarReportOptions(
         enabled: json['enabled'] == true,
         missingPlaceTypes: (json['missing_place_types'] as List<dynamic>? ?? const [])
@@ -54,8 +62,23 @@ class RadarContributionsRepository {
             .map(radarPlaceTypeFromApi)
             .where((type) => type != RadarPlaceType.other)
             .toList(growable: false),
+        problems: _problems(json),
       ),
     );
+  }
+
+  /// A backend that does not list the kinds yet accepts them all.
+  static List<RadarProblem> _problems(Map<String, dynamic> json) {
+    if (json['enabled'] != true) {
+      return const [];
+    }
+    final kinds = json['report_kinds'];
+    if (kinds is! List) {
+      return RadarProblem.values;
+    }
+    return RadarProblem.values
+        .where((problem) => kinds.contains(problem.apiValue))
+        .toList(growable: false);
   }
 
   Future<Result<RadarReportReceipt>> reportMissing({
@@ -144,15 +167,18 @@ class RadarContributionsRepository {
       if (body != null) {
         request.body = jsonEncode(body);
       }
-      final response = await http.Response.fromStream(await _client.send(request).timeout(_timeout));
-      final decoded = response.bodyBytes.isEmpty ? null : jsonDecode(utf8.decode(response.bodyBytes));
+      final response =
+          await http.Response.fromStream(await _client.send(request).timeout(_timeout));
+      final decoded =
+          response.bodyBytes.isEmpty ? null : jsonDecode(utf8.decode(response.bodyBytes));
       final json = decoded is Map<String, dynamic> ? decoded : const <String, dynamic>{};
       if (response.statusCode < 200 || response.statusCode >= 300) {
         final detail = json['detail'];
         return Result.failure(
           AppNetworkError(
             code: json['code'] as String? ?? 'radar_contribution_http_${response.statusCode}',
-            message: detail is String ? detail : 'Non sono riuscito a completare l’operazione. Riprova.',
+            message:
+                detail is String ? detail : 'Non sono riuscito a completare l’operazione. Riprova.',
           ),
         );
       }

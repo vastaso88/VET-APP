@@ -45,7 +45,14 @@ jobs:
       - name: Import Overture places
         run: uv run --with duckdb python scripts/radar/import_overture_places.py
       - name: Import OpenStreetMap places
-        run: uv run python scripts/radar/import_osm_places.py
+        # Exit code 3 means "out of time, run me again": what was
+        # downloaded is kept on disk, so each attempt only adds to it.
+        run: |
+          for attempt in 1 2 3 4; do
+            uv run python scripts/radar/import_osm_places.py && exit 0
+            [ $? -eq 3 ] || exit 1
+          done
+          exit 1
       - name: Import municipal dog parks
         run: uv run python scripts/radar/import_municipal_dog_parks.py
       - name: Apply report retention

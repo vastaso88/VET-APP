@@ -21,6 +21,8 @@ from packages.core.domain.radar_places.models import RadarPlace
 from packages.shared.errors.base import ValidationError
 
 USER_SOURCE_NAME = "vetapp_users"
+USER_REPORT_PENDING_SUBTYPE = "user_report_pending"
+USER_REPORT_CONFIRMED_SUBTYPE = "user_report_confirmed"
 
 ReportKind = Literal["missing", "closed", "duplicate", "wrong_position"]
 ReportStatus = Literal["pending", "confirmed", "rejected"]
@@ -128,6 +130,11 @@ class RadarUserReport(BaseModel):
             id=f"{USER_SOURCE_NAME}|{self.id}",
             coverage_key="reports",
             place_type=self.place_type,
+            subtype=(
+                USER_REPORT_CONFIRMED_SUBTYPE
+                if self.status == "confirmed"
+                else USER_REPORT_PENDING_SUBTYPE
+            ),
             name=self.name,
             latitude=self.latitude,
             longitude=self.longitude,
@@ -198,10 +205,12 @@ def apply_overrides(
 
 
 def is_publicly_ratable(place: RadarPlace) -> bool:
-    """Stars are for public dog parks only: never for a business, and not
-    for a park run for paying customers."""
+    """Stars are for public dog parks only: never for a business, not for
+    a park run for paying customers, and not for an area users reported
+    that nobody confirmed yet (it may not be public, or not exist)."""
     return (
         place.place_type == "dog_park"
+        and place.subtype != USER_REPORT_PENDING_SUBTYPE
         and place.details.get("fee") != "yes"
         and place.details.get("access") not in {"customers", "private"}
     )

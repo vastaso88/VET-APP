@@ -1,5 +1,6 @@
 import hashlib
 import hmac
+import logging
 from functools import lru_cache
 
 from packages.core.application.ports.account_consents_repository import AccountConsentsRepository
@@ -36,6 +37,7 @@ from packages.core.application.services.create_local_activity import CreateLocal
 from packages.core.application.services.create_pet_profile import CreatePetProfileService
 from packages.core.application.services.create_reminder import CreateReminderService
 from packages.core.application.services.delete_conversation import DeleteConversationService
+from packages.core.application.services.document_summarizer import DocumentSummarizer
 from packages.core.application.services.end_walk import EndWalkService
 from packages.core.application.services.get_account_consents import GetAccountConsentsService
 from packages.core.application.services.get_or_create_subscription import (
@@ -97,6 +99,7 @@ from packages.core.application.services.transcribe_audio import TranscribeAudioS
 from packages.core.application.services.update_pet_profile import UpdatePetProfileService
 from packages.core.application.services.upload_chat_attachment import UploadChatAttachmentService
 from packages.infrastructure.auth.bootstrap_auth_provider import BootstrapAuthProvider
+from packages.infrastructure.documents.pypdf_reader import PypdfReader
 from packages.infrastructure.llm.providers.echo_llm_client import EchoLLMClient
 from packages.infrastructure.llm.providers.groq_llm_client import GroqLLMClient
 from packages.infrastructure.llm.retrieval.crossref_evidence_retriever import (
@@ -142,6 +145,7 @@ from packages.infrastructure.persistence.in_memory_repositories import (
     InMemoryUserLocationRepository,
 )
 from packages.infrastructure.privacy.noop_pii_anonymizer import NoopPiiAnonymizer
+from packages.infrastructure.privacy.rule_based_pii_anonymizer import RuleBasedPiiAnonymizer
 from packages.infrastructure.radar_places.overpass_places_source import (
     OverpassRadarPlacesSource,
 )
@@ -155,6 +159,8 @@ from packages.infrastructure.storage.local_file_storage import LocalFileStorage
 from packages.infrastructure.vision.echo_image_analyzer import EchoImageAnalyzer
 from packages.infrastructure.vision.groq_image_analyzer import GroqImageAnalyzer
 from packages.shared.config.settings import Settings, get_settings
+
+logger = logging.getLogger(__name__)
 
 
 class ApplicationContainer:
@@ -244,6 +250,7 @@ class ApplicationContainer:
             self.radar_community_view(),
             max_search_radius_km=self.settings.radar_search_radius_km,
             freshness_ttl_hours=self.settings.radar_freshness_ttl_hours,
+            open_sources=self.radar_open_sources(),
         )
 
     def get_user_location_service(self) -> GetUserLocationService:
@@ -331,6 +338,9 @@ class ApplicationContainer:
             self.chat_attachment_repository,
             self.media_storage,
             self.image_analyzer,
+            pdf_reader=PypdfReader(),
+            document_summarizer=DocumentSummarizer(self.llm_client, self.pii_anonymizer),
+            pii_anonymizer=self.pii_anonymizer,
         )
 
     def _build_auth_provider(self) -> AuthProvider:
@@ -412,10 +422,18 @@ class ApplicationContainer:
 
                 return PresidioPiiAnonymizer()
             except ModuleNotFoundError:
-                if self.settings.environment != "production":
-                    return NoopPiiAnonymizer()
-                raise
-        return NoopPiiAnonymizer()
+                # Presidio isn't installed here (it is too heavy for the
+                # serverless runtime): fall back to the rules, never to
+                # "nothing removed".
+                logger.warning("presidio not installed: using the rule-based PII anonymizer")
+                return RuleBasedPiiAnonymizer()
+        if (
+            self.settings.pii_anonymizer_backend == "noop"
+            and self.settings.environment != "production"
+        ):
+            return NoopPiiAnonymizer()
+        # The default — and what production gets even if "noop" is set.
+        return RuleBasedPiiAnonymizer()
 
     def _build_clinical_event_repository(self) -> ClinicalEventRepository:
         if self.settings.persistence_backend == "supabase":
@@ -509,7 +527,15 @@ class ApplicationContainer:
             daily_limit=self.settings.radar_report_daily_limit,
             missing_place_types=frozenset(self.settings.radar_report_place_types),
             show_pending_closures=self.settings.radar_report_show_pending_closures,
+            reports_enabled=self.settings.radar_reports_enabled,
+            closed_reports_enabled=self.settings.radar_report_closed_enabled,
+            ratings_enabled=self.settings.radar_ratings_enabled,
         )
+
+    def radar_open_sources(self) -> frozenset[str] | None:
+        """Sources of `radar_places_open` that are served; None is all."""
+        names = {name.strip() for name in self.settings.radar_open_sources}
+        return None if "*" in names else frozenset(names)
 
     def radar_community_view(self) -> RadarCommunityView | None:
         settings = self.radar_report_settings()
@@ -521,7 +547,7 @@ class ApplicationContainer:
 
     def submit_radar_report_service(self) -> SubmitRadarReportService | None:
         settings = self.radar_report_settings()
-        if settings is None:
+        if settings is None or not settings.reports_enabled:
             return None
         return SubmitRadarReportService(
             self.radar_reports_repository, self.account_consents_repository, settings
@@ -529,7 +555,7 @@ class ApplicationContainer:
 
     def vote_radar_report_service(self) -> VoteRadarReportService | None:
         settings = self.radar_report_settings()
-        if settings is None:
+        if settings is None or not settings.reports_enabled:
             return None
         return VoteRadarReportService(
             self.radar_reports_repository, self.account_consents_repository, settings
@@ -537,7 +563,7 @@ class ApplicationContainer:
 
     def rate_dog_park_service(self) -> RateDogParkService | None:
         settings = self.radar_report_settings()
-        if settings is None:
+        if settings is None or not settings.ratings_enabled:
             return None
         return RateDogParkService(
             self.radar_reports_repository, self.account_consents_repository, settings

@@ -60,14 +60,13 @@ class RadarPlacesRepository {
         return nothing;
       }
       final json = jsonDecode(utf8.decode(response.bodyBytes)) as Map<String, dynamic>;
-      final email = json['support_contact_email'];
       return RadarSourcesInfo(
         sources: (json['sources'] as List<dynamic>? ?? const [])
             .whereType<Map<String, dynamic>>()
             .map(RadarDataSource.tryFromJson)
             .whereType<RadarDataSource>()
             .toList(growable: false),
-        supportContactEmail: email is String && email.trim().isNotEmpty ? email.trim() : null,
+        supportContactEmail: _nonEmpty(json['support_contact_email']),
       );
     } catch (_) {
       return nothing;
@@ -99,8 +98,8 @@ class RadarPlacesRepository {
     );
 
     try {
-      final response = await _client
-          .get(uri, headers: {'Authorization': 'Bearer $token'}).timeout(_timeout);
+      final response =
+          await _client.get(uri, headers: {'Authorization': 'Bearer $token'}).timeout(_timeout);
 
       if (const {502, 503, 504}.contains(response.statusCode)) {
         // The backend could not import this area from OpenStreetMap right
@@ -134,6 +133,7 @@ class RadarPlacesRepository {
           places: places,
           searchRadiusKm: (context['search_radius_km'] as num?)?.toDouble() ?? radiusKm,
           isStale: coverage['status'] == 'stale',
+          supportContactEmail: _nonEmpty(json['support_contact_email']),
           refreshedAt: DateTime.tryParse(coverage['refreshed_at'] as String? ?? ''),
         ),
       );
@@ -173,6 +173,7 @@ class RadarPlacesResult {
     required this.searchRadiusKm,
     this.isStale = false,
     this.refreshedAt,
+    this.supportContactEmail,
   });
 
   final List<RadarPlace> places;
@@ -182,4 +183,13 @@ class RadarPlacesResult {
   /// serving its previous import.
   final bool isStale;
   final DateTime? refreshedAt;
+
+  /// Where to write about a place that should not be listed, as
+  /// configured on the backend; null when none is configured.
+  final String? supportContactEmail;
+}
+
+String? _nonEmpty(Object? value) {
+  final text = value is String ? value.trim() : '';
+  return text.isEmpty ? null : text;
 }

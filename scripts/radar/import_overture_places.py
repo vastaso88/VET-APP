@@ -1,6 +1,10 @@
 """Imports pet-related places for Italy from Overture Maps into Supabase.
 
-    uv run --with duckdb python scripts/radar/import_overture_places.py
+    uv run --with duckdb --with truststore python scripts/radar/import_overture_places.py
+
+(`--with truststore` matters only where an antivirus intercepts HTTPS: see
+scripts/radar/common.py. On such a machine uv itself may also need
+`--system-certs` to download the two packages.)
 
 Reads the public Overture release on S3 with DuckDB (no account needed),
 keeps veterinarians, groomers, pet shops, boarding, sitters, trainers and

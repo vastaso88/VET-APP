@@ -19,6 +19,27 @@ if str(ROOT_DIR) not in sys.path:
 if TYPE_CHECKING:
     from supabase import Client
 
+
+def _use_system_certificates() -> None:
+    """Makes HTTPS trust the operating system's certificate store.
+
+    Where an antivirus intercepts HTTPS (it re-signs every connection with
+    its own root certificate, installed in the Windows store), the Supabase
+    client fails with CERTIFICATE_VERIFY_FAILED: it trusts only the bundle
+    shipped with `certifi`, which does not know that root. `truststore`
+    fixes it; it is optional, so the scripts run it only when present:
+
+        uv run --with truststore python scripts/radar/<script>.py
+    """
+    try:
+        import truststore
+    except ModuleNotFoundError:
+        return
+    truststore.inject_into_ssl()
+
+
+_use_system_certificates()
+
 BATCH_SIZE = 500
 
 # Bounding box of Italy, islands included. Stored with a completed
@@ -52,6 +73,19 @@ def build_client() -> Client:
     return create_client(url, key)
 
 
+CERTIFICATE_HINT = (
+    "Errore di certificato HTTPS: su questo computer un antivirus intercetta le connessioni. "
+    "Rilancia con: uv run --with truststore python scripts/radar/<script>.py"
+)
+
+
+def explain_certificate_error(exc: BaseException) -> None:
+    """Prints what to do when a write failed because of the certificate
+    problem described in `_use_system_certificates`."""
+    if "CERTIFICATE_VERIFY_FAILED" in repr(exc):
+        print(CERTIFICATE_HINT, file=sys.stderr)
+
+
 def _load_dotenv() -> None:
     env_file = ROOT_DIR / ".env"
     if not env_file.exists():
@@ -64,7 +98,11 @@ def _load_dotenv() -> None:
 
 def upsert_rows(client: Client, table: str, rows: list[dict[str, Any]]) -> None:
     for start in range(0, len(rows), BATCH_SIZE):
-        client.table(table).upsert(rows[start : start + BATCH_SIZE]).execute()
+        try:
+            client.table(table).upsert(rows[start : start + BATCH_SIZE]).execute()
+        except Exception as exc:
+            explain_certificate_error(exc)
+            raise
         print(f"  {table}: {min(start + BATCH_SIZE, len(rows))}/{len(rows)}", flush=True)
 
 

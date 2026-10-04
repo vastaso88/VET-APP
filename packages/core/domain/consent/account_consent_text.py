@@ -14,7 +14,7 @@ CURRENT_VERSIONS: dict[str, str] = {
     AccountConsentType.PRIVACY_POLICY: "v1",
     AccountConsentType.MARKETING_EMAIL: "v1",
     AccountConsentType.ANALYTICS: "v1",
-    AccountConsentType.CONTRIBUTION_RULES: "v1",
+    AccountConsentType.CONTRIBUTION_RULES: "v2",
 }
 
 CONSENT_TEXT_IT: dict[str, str] = {
@@ -55,13 +55,14 @@ CONSENT_TEXT_IT: dict[str, str] = {
         "utenti non le confermano. Non sono una garanzia: verifica sempre "
         "prima di recarti in un luogo.\n"
         "4. I voti sulle aree cani sono opinioni personali: un voto per area.\n"
-        "5. Non segnalare come area cani proprietà private e non invitare "
-        "altri a entrare in luoghi privati.\n"
+        "5. Un'area cani mancante va segnalata solo se è pubblica e aperta al "
+        "pubblico. Non segnalare proprietà private e non invitare altri a "
+        "entrare in luoghi privati.\n"
         "6. Non usare le segnalazioni per danneggiare un'attività. "
         "Segnalazioni false o ripetute possono portare alla sospensione "
         "dell'account.\n"
         "7. Le attività possono chiedere una correzione o la rimozione di un "
-        "dato: verifichiamo e rispondiamo entro 5 giorni lavorativi.\n"
+        "dato: verifichiamo e rispondiamo appena possibile.\n"
         "8. Le tue segnalazioni e i tuoi voti sono pubblicati senza il tuo "
         "nome né i tuoi dati personali, che restano trattati come da "
         "informativa privacy."

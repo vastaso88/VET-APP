@@ -59,7 +59,7 @@ class _World:
             self.consents.save(
                 AccountConsents(
                     owner_id=user,
-                    consents={"contribution_rules": ConsentRecord(granted=True, version="v1")},
+                    consents={"contribution_rules": ConsentRecord(granted=True, version="v2")},
                 )
             )
 
@@ -96,7 +96,14 @@ def test_pseudonym_is_stable_keyed_and_not_the_user_id() -> None:
 def test_place_name_rules() -> None:
     assert clean_place_name("  Toelettatura   Bau ", place_type="grooming") == "Toelettatura Bau"
     assert clean_place_name(None, place_type="dog_park") == "Area cani"
-    for bad in ("", "Bau 02 0000 0001", "bau@mail.it", "www.bau.it", "x" * 61, "Merda di posto"):
+    for bad in (
+        "",
+        "Bau 02 0000 0001",
+        "bau@esempio.example",
+        "www.esempio.example",
+        "x" * 61,
+        "Merda di posto",
+    ):
         with pytest.raises(ValidationError):
             clean_place_name(bad, place_type="grooming")
 
@@ -353,3 +360,152 @@ def test_pending_closures_are_shown_only_when_enabled() -> None:
 
     assert "pending_closure" not in closure_extras(_World())
     assert "pending_closure" in closure_extras(_World(show_pending_closures=True))
+
+
+def test_a_reported_dog_park_cannot_be_rated_until_it_is_confirmed() -> None:
+    world = _World()
+    world.accept_rules("anna", "bruno", "carla")
+    report_id = world.report_missing("anna", name="", place_type="dog_park")
+    pending = world.view.user_places(BOX)[0]
+
+    assert pending.name == "Area cani"
+    assert "rating" not in world.view.extras([pending], BOX, viewer_id="bruno")[pending.id]
+    with pytest.raises(ValidationError):
+        world.rate.execute(RateDogParkInput(user_id="bruno", place=pending, stars=5))
+
+    for user in ("bruno", "carla"):
+        world.vote.execute(VoteRadarReportInput(user_id=user, report_id=report_id, confirm=True))
+    confirmed = world.view.user_places(BOX)[0]
+
+    assert world.view.extras([confirmed], BOX, viewer_id="bruno")[confirmed.id]["rating"][
+        "can_rate"
+    ]
+    world.rate.execute(RateDogParkInput(user_id="bruno", place=confirmed, stars=5))
+
+
+def test_dog_parks_are_reportable_by_default() -> None:
+    assert "dog_park" in RadarReportSettings(pseudonym_key="k").missing_place_types
+
+
+def test_accepting_an_older_version_of_the_rules_is_not_enough() -> None:
+    world = _World()
+    world.consents.save(
+        AccountConsents(
+            owner_id="anna",
+            consents={"contribution_rules": ConsentRecord(granted=True, version="v1")},
+        )
+    )
+
+    with pytest.raises(ContributionRulesRequiredError):
+        world.report_missing("anna")
+
+
+def _closed_report(user: str) -> SubmitRadarReportInput:
+    return SubmitRadarReportInput(
+        user_id=user,
+        kind="closed",
+        place_type="veterinary",
+        name="Clinica Esempio",
+        latitude=LAT,
+        longitude=LON,
+        target_source="overture",
+        target_source_id="abc",
+    )
+
+
+def test_switches_are_all_on_by_default() -> None:
+    settings = _World().settings
+
+    assert settings.report_kinds() == ["missing", "closed", "duplicate", "wrong_position"]
+    assert settings.ratings_enabled is True
+
+
+def test_reports_switched_off_hide_user_places_and_refuse_new_ones() -> None:
+    on = _World()
+    on.accept_rules("anna", "bruno")
+    report_id = on.report_missing("anna")
+    assert [place.name for place in on.view.user_places(BOX)] == ["Toelettatura Bau"]
+
+    # Same data, switch off: nothing is deleted, nothing is shown or accepted.
+    off = _World(reports_enabled=False)
+    off.reports, off.consents = on.reports, on.consents
+    args = (on.reports, on.consents, off.settings)
+    view = RadarCommunityView(*args)
+    place = on.reports.get_report(report_id).as_place()  # type: ignore[union-attr]
+
+    assert off.settings.report_kinds() == []
+    assert view.user_places(BOX) == []
+    assert "community" not in view.extras([place], BOX, viewer_id="bruno").get(place.id, {})
+    with pytest.raises(ValidationError):
+        SubmitRadarReportService(*args).execute(
+            SubmitRadarReportInput(
+                user_id="bruno",
+                kind="missing",
+                place_type="grooming",
+                name="Toelettatura Miao",
+                latitude=LAT,
+                longitude=LON,
+            )
+        )
+    with pytest.raises(ValidationError):
+        VoteRadarReportService(*args).execute(
+            VoteRadarReportInput(user_id="bruno", report_id=report_id, confirm=True)
+        )
+    assert on.reports.get_report(report_id) is not None
+
+
+def test_closed_reports_switched_off_leave_the_other_kinds_working() -> None:
+    on = _World(show_pending_closures=True)
+    on.accept_rules("anna", "bruno")
+    closed_id = on.submit.execute(_closed_report("anna")).report.id
+
+    off_settings = on.settings.model_copy(update={"closed_reports_enabled": False})
+    args = (on.reports, on.consents, off_settings)
+    place = RadarPlace(
+        coverage_key="catalog",
+        place_type="veterinary",
+        name="Clinica Esempio",
+        latitude=LAT,
+        longitude=LON,
+        source_name="overture",
+        source_external_id="abc",
+    )
+
+    assert "closed" not in off_settings.report_kinds()
+    assert "pending_closure" in on.view.extras([place], BOX, viewer_id="bruno")[place.id]
+    assert RadarCommunityView(*args).extras([place], BOX, viewer_id="bruno") == {}
+    with pytest.raises(ValidationError):
+        SubmitRadarReportService(*args).execute(_closed_report("bruno"))
+    with pytest.raises(ValidationError):
+        VoteRadarReportService(*args).execute(
+            VoteRadarReportInput(user_id="bruno", report_id=closed_id, confirm=True)
+        )
+    # A missing place is still accepted.
+    created = SubmitRadarReportService(*args).execute(
+        SubmitRadarReportInput(
+            user_id="bruno",
+            kind="missing",
+            place_type="grooming",
+            name="Toelettatura Bau",
+            latitude=LAT,
+            longitude=LON,
+        )
+    )
+    assert created.report.status == "pending"
+
+
+def test_ratings_switched_off_hide_stars_and_refuse_new_ones() -> None:
+    on = _World()
+    on.accept_rules("anna")
+    park = _dog_park()
+    on.rate.execute(RateDogParkInput(user_id="anna", place=park, stars=4))
+    assert on.view.extras([park], BOX, viewer_id="anna")[park.id]["rating"]["viewer_stars"] == 4
+
+    off_settings = on.settings.model_copy(update={"ratings_enabled": False})
+    args = (on.reports, on.consents, off_settings)
+
+    assert RadarCommunityView(*args).extras([park], BOX, viewer_id="anna") == {}
+    with pytest.raises(ValidationError):
+        RateDogParkService(*args).execute(RateDogParkInput(user_id="anna", place=park, stars=5))
+    # Reports are a separate switch.
+    assert off_settings.report_kinds() == ["missing", "closed", "duplicate", "wrong_position"]
