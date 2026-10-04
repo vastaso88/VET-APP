@@ -1,6 +1,7 @@
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 
+import '../../../../shared/files/attachment_media_type.dart';
 import '../../../../shared/widgets/pet_loader.dart';
 
 
@@ -37,12 +38,21 @@ class _MedicalRecordUploadPageState extends State<MedicalRecordUploadPage> {
   PlatformFile? _picked;
   bool _saving = false;
 
-  static const _imageExtensions = {'jpg', 'jpeg', 'png'};
+  static const _imageExtensions = {'jpg', 'jpeg', 'png', 'webp'};
+
+  // Backend rejections of the file itself: retrying or saving locally would
+  // only hide the reason, so these stop the save with their message.
+  static const _validationCodes = {
+    'attachment_too_large',
+    'unsupported_attachment_type',
+    'pdf_too_many_pages',
+    'pdf_unreadable',
+  };
 
   Future<void> _pickFile() async {
     final result = await FilePicker.platform.pickFiles(
       type: FileType.custom,
-      allowedExtensions: const ['pdf', 'jpg', 'jpeg', 'png'],
+      allowedExtensions: const ['pdf', 'jpg', 'jpeg', 'png', 'webp'],
       withData: true,
     );
     if (result == null || result.files.isEmpty) return;
@@ -53,56 +63,165 @@ class _MedicalRecordUploadPageState extends State<MedicalRecordUploadPage> {
     final picked = _picked;
     if (picked == null || _saving) return;
 
+    final bytes = picked.bytes;
+    if (bytes != null) {
+      final validationError = attachmentValidationError(bytes, picked.name);
+      if (validationError != null) {
+        _showMessage(validationError);
+        return;
+      }
+    }
+
+    setState(() => _saving = true);
+
+    String? attachmentId;
+    var analysisFailed = false;
+    var uploadFailed = false;
+    String? uploadError;
+    String? rejectionMessage;
+    if (bytes != null && _isUploadableFile(picked)) {
+      await PetDemoStore.instance.ensureHydrated();
+      final petId = PetDemoStore.instance.byName(widget.petName)?.id;
+      if (petId == null) {
+        uploadFailed = true;
+      } else {
+        final result = await _attachmentDataSource.upload(
+          petId: petId,
+          imageBytes: bytes,
+          fileName: picked.name,
+        );
+        result.fold(
+          onSuccess: (uploaded) {
+            attachmentId = uploaded.id;
+            analysisFailed = uploaded.analysisFailed;
+          },
+          onFailure: (error) {
+            if (_validationCodes.contains(error.code)) {
+              rejectionMessage = error.message;
+            } else {
+              uploadFailed = true;
+              uploadError = error.message;
+            }
+          },
+        );
+        if (rejectionMessage != null) {
+          setState(() => _saving = false);
+          _showMessage(rejectionMessage!);
+          return;
+        }
+      }
+    }
+
+    if (!mounted) return;
+    if (uploadFailed) {
+      setState(() => _saving = false);
+      final choice = await _askUploadFailed(uploadError);
+      if (!mounted) return;
+      switch (choice) {
+        case _UploadFailedChoice.retry:
+          await _save();
+        case _UploadFailedChoice.saveLocalOnly:
+          await _persistRecord(attachmentId: null, uploadFailed: true, analysisFailed: false);
+        case _UploadFailedChoice.cancel:
+          break;
+      }
+      return;
+    }
+
+    await _persistRecord(
+      attachmentId: attachmentId,
+      uploadFailed: false,
+      analysisFailed: analysisFailed,
+    );
+  }
+
+  Future<void> _persistRecord({
+    required String? attachmentId,
+    required bool uploadFailed,
+    required bool analysisFailed,
+  }) async {
+    final picked = _picked;
+    if (picked == null) return;
     setState(() => _saving = true);
 
     final now = DateTime.now();
     final id = 'upload-${now.microsecondsSinceEpoch}';
     final bytes = picked.bytes;
 
-    String? attachmentId;
-    final isImage = _imageExtensions.contains((picked.extension ?? '').toLowerCase());
-    if (isImage && bytes != null) {
-      await PetDemoStore.instance.ensureHydrated();
-      final petId = PetDemoStore.instance.byName(widget.petName)?.id;
-      if (petId != null) {
-        final result = await _attachmentDataSource.upload(
-          petId: petId,
-          imageBytes: bytes,
-          fileName: picked.name,
-        );
-        attachmentId = result.fold(
-          onSuccess: (uploaded) => uploaded.id,
-          // Upload failed (offline, backend down, ...): still save the
-          // record with the local-session cache below, same as before.
-          onFailure: (_) => null,
-        );
-      }
-    }
-
     final record = MedicalRecordEntry(
       id: id,
       petName: widget.petName,
       title: picked.name,
       subtitle: '${_extensionLabel(picked.extension)} · ${_formatSize(picked.size)}',
-      meta: 'Caricato adesso da te',
-      badge: 'Nuovo',
-      detailSource: 'Caricato da te',
+      meta: uploadFailed
+          ? 'File non caricato sul server'
+          : analysisFailed
+              ? 'File salvato, lettura automatica non riuscita'
+              : 'Caricato adesso da te',
+      badge: uploadFailed ? 'Non caricato' : 'Nuovo',
+      detailSource: uploadFailed ? 'Solo su questo telefono' : 'Caricato da te',
       createdAt: _formatDate(now),
       attachmentId: attachmentId,
       timeline: [
         MedicalRecordTimelineEntry(label: 'Importato', value: _formatDate(now)),
-        const MedicalRecordTimelineEntry(label: 'Revisionato', value: 'In attesa'),
+        MedicalRecordTimelineEntry(
+          label: 'Caricamento',
+          value: uploadFailed ? 'Non riuscito' : 'Completato',
+        ),
         const MedicalRecordTimelineEntry(label: "Pronto per l'invio", value: 'Disponibile'),
       ],
     );
 
     await _repository.saveRecord(record);
     if (bytes != null) {
-      MedicalRecordFileCache.instance.put(id, bytes, picked.name);
+      MedicalRecordFileCache.instance.put(
+        id,
+        bytes,
+        picked.name,
+        mimeType: attachmentMediaType(bytes, picked.name).toString(),
+      );
     }
 
     if (!mounted) return;
     Navigator.of(context).pop(record);
+  }
+
+  bool _isUploadableFile(PlatformFile picked) {
+    final extension = (picked.extension ?? '').toLowerCase();
+    return _imageExtensions.contains(extension) || extension == 'pdf';
+  }
+
+  Future<_UploadFailedChoice> _askUploadFailed(String? reason) async {
+    final choice = await showDialog<_UploadFailedChoice>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: const Text('Il file non è stato caricato'),
+        content: Text(
+          '${reason ?? 'Controlla la connessione e riprova.'} '
+          'In alternativa puoi salvare il referto solo su questo telefono: sarà marcato '
+          'come «Non caricato» e non sarà disponibile sugli altri dispositivi.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(_UploadFailedChoice.cancel),
+            child: const Text('Annulla'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(_UploadFailedChoice.saveLocalOnly),
+            child: const Text('Salva solo sul telefono'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.of(dialogContext).pop(_UploadFailedChoice.retry),
+            child: const Text('Riprova'),
+          ),
+        ],
+      ),
+    );
+    return choice ?? _UploadFailedChoice.cancel;
+  }
+
+  void _showMessage(String text) {
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(text)));
   }
 
   @override
@@ -274,3 +393,5 @@ String _formatDate(DateTime date) {
   final minute = date.minute.toString().padLeft(2, '0');
   return '${date.day} ${months[date.month - 1]} ${date.year}, $hour:$minute';
 }
+
+enum _UploadFailedChoice { retry, saveLocalOnly, cancel }

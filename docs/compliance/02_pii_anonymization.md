@@ -2,18 +2,39 @@
 
 ## Confine (deciso esplicitamente)
 
-L'anonimizzazione si applica **solo al testo inviato al provider LLM esterno** (oggi Groq), non ai dati salvati internamente. Nel database interno i dati restano identificabili: servono per finalità di cura reale (richiamare il cliente, storico clinico del pet). Non c'è anonimizzazione at-rest in questa iterazione — è una scelta deliberata, non una dimenticanza.
+L'anonimizzazione si applica **al testo inviato al provider LLM esterno** (oggi Groq) e ai testi derivati che conserviamo per uso interno della chat o del team (trascrizione degli allegati, segnalazioni delle risposte). I dati inseriti dal proprietario nel database restano identificabili: servono per finalità di cura reale (storico clinico del pet). Non c'è anonimizzazione at-rest di quei dati — è una scelta deliberata, non una dimenticanza.
 
-In [chat_orchestrator.py](../../packages/core/application/services/chat_orchestrator.py), il testo libero dell'utente (`message`) e il nome del pet (`pet_name`, potenzialmente un nome di persona in casi limite) passano per `_anonymize_for_provider(...)` prima di entrare in `LLMGenerationRequest.user_prompt`. La retrieval delle evidenze (`_evidence_retriever.retrieve(...)`) usa invece il testo originale — è un servizio locale, non una chiamata esterna, quindi non rientra nel confine dell'anonimizzazione. Se in futuro la retrieval diventasse un servizio esterno, questo confine andrebbe rivisto esplicitamente, non esteso implicitamente. La risposta del modello (`result.answer`) non viene mai anonimizzata: torna identificabile al client e al database.
+La retrieval delle evidenze (`_evidence_retriever.retrieve(...)`) usa il testo originale — è un servizio locale, non una chiamata esterna. Se in futuro diventasse un servizio esterno, questo confine andrebbe rivisto esplicitamente. La risposta del modello non viene anonimizzata: torna al client così com'è.
+
+## Dove viene applicata
+
+| Punto | Cosa passa dal filtro |
+|---|---|
+| [chat_orchestrator.py](../../packages/core/application/services/chat_orchestrator.py) `_anonymize_for_provider` | messaggio dell'utente, **turni precedenti della conversazione**, nome e note del pet, note dell'habitat, promemoria, riassunto della cartella clinica, testo passato all'estrazione del "situation model" |
+| [document_summarizer.py](../../packages/core/application/services/document_summarizer.py) | testo estratto da un PDF, prima di inviarlo al modello |
+| [upload_chat_attachment.py](../../packages/core/application/services/upload_chat_attachment.py) | trascrizione di foto/PDF, prima di salvarla (è il testo che la chat rilegge in seguito) |
+| [report_chat_response.py](../../packages/core/application/services/report_chat_response.py) | risposta segnalata e dettagli della segnalazione, prima di salvarli |
+
+In tutti questi punti viene passato anche il **nome del proprietario** (`display_name` dell'account, letto dai metadati Supabase), così viene rimosso anche quando compare senza etichetta. Se coincide con il nome del pet non viene rimosso (cancellerebbe il nome di cui si sta parlando).
 
 ## Meccanismo
 
-- Port: [`PiiAnonymizer`](../../packages/core/application/ports/pii_anonymizer.py) — stesso pattern di `LLMClient`.
-- Adapter di default: [`NoopPiiAnonymizer`](../../packages/infrastructure/privacy/noop_pii_anonymizer.py) (pass-through) — usato quando `PII_ANONYMIZER_BACKEND=noop` (default), inclusi test e CI.
-- Adapter locale reale: [`PresidioPiiAnonymizer`](../../packages/infrastructure/privacy/presidio_pii_anonymizer.py), basato su [Microsoft Presidio](https://microsoft.github.io/presidio/) + un modello spaCy italiano. Gira interamente offline: nessun testo lascia il processo durante questo passaggio. Attivabile con `PII_ANONYMIZER_BACKEND=presidio` dopo il setup descritto in [docs/runbooks/pii_anonymizer_setup.md](../runbooks/pii_anonymizer_setup.md).
+- Port: [`PiiAnonymizer`](../../packages/core/application/ports/pii_anonymizer.py).
+- **Default: [`RuleBasedPiiAnonymizer`](../../packages/infrastructure/privacy/rule_based_pii_anonymizer.py)** (`PII_ANONYMIZER_BACKEND=rules`): regole deterministiche, nessuna dipendenza, gira anche su Vercel. Nessun testo lascia il processo durante questo passaggio.
+- [`PresidioPiiAnonymizer`](../../packages/infrastructure/privacy/presidio_pii_anonymizer.py) (`PII_ANONYMIZER_BACKEND=presidio`): Presidio + spaCy italiano, solo dove sono installati ([setup](../runbooks/pii_anonymizer_setup.md)). Se manca, si ricade sulle regole, mai su "niente".
+- [`NoopPiiAnonymizer`](../../packages/infrastructure/privacy/noop_pii_anonymizer.py) (`PII_ANONYMIZER_BACKEND=noop`): pass-through, rispettato **solo fuori produzione**. In produzione `noop` viene sostituito dalle regole.
 
-## Cosa viene rilevato (e cosa no)
+## Cosa rimuove il filtro a regole
 
-Presidio, tramite il modello spaCy italiano, riconosce automaticamente nomi di persona (NER), email, numeri di telefono generici, e altre entità comuni. Formati italiani specifici (es. codice fiscale) richiedono pattern dedicati registrati in `PresidioPiiAnonymizer._build_italian_recognizers()`.
+Email, telefoni italiani (cellulari e fissi, con o senza +39), codice fiscale, partita IVA, IBAN, URL e domini, indirizzi con numero civico (via/viale/piazza/corso… + civico, con CAP e comune se presenti), nomi preceduti da un'etichetta o un titolo ("Proprietario:", "Sig.", "Dott.ssa"…), nome e cognome del proprietario noti dall'account. Ogni valore è sostituito da un segnaposto (`[EMAIL]`, `[TELEFONO]`, `[INDIRIZZO]`, `[NOME]`…).
 
-**Disclaimer sul rischio residuo**: il riconoscimento NLP è probabilistico, non una garanzia assoluta. Un nome scritto in modo insolito, un numero di telefono in un formato non standard, o un riferimento indiretto possono non essere rilevati. Questo meccanismo riduce il rischio di esposizione di PII al provider esterno, non lo elimina; è un livello di difesa aggiuntivo, non l'unico.
+Non tocca mai: dosaggi, date, valori di laboratorio, pesi, numeri di microchip.
+
+## Cosa NON copre (rischio residuo)
+
+- Nomi di persona senza etichetta e non noti dall'account (es. il nome di un familiare o del veterinario scritto in mezzo a una frase): servirebbe un modello NER (Presidio).
+- Indirizzi senza numero civico o scritti tutti in minuscolo; telefoni esteri o in formati insoliti.
+- **Immagini e audio**: la foto di un referto inviata al modello di visione e l'audio inviato alla trascrizione partono così come sono; viene ripulito solo il testo che ne risulta.
+- Il nome del proprietario è rimosso solo se l'account ha un `display_name`.
+
+È un livello di riduzione del rischio, non una garanzia assoluta.

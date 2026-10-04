@@ -133,7 +133,8 @@ String formatOpeningHours(String raw) {
 /// [pending] place (a user report nobody confirmed yet) is drawn hollow
 /// with a question mark, so it is never mistaken for an established one.
 class RadarCategoryBadge extends StatelessWidget {
-  const RadarCategoryBadge({super.key, required this.category, this.size = 40, this.pending = false});
+  const RadarCategoryBadge(
+      {super.key, required this.category, this.size = 40, this.pending = false});
 
   final RadarCategory category;
   final double size;

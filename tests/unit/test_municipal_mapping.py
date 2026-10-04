@@ -2,8 +2,10 @@ from packages.core.domain.radar_places.dedup import merge_radar_places, same_pla
 from packages.core.domain.radar_places.models import RadarPlace
 from packages.infrastructure.radar_places.municipal_mapping import (
     BOLOGNA,
+    MILANO,
     TORINO,
     bologna_record_to_place,
+    milano_feature_to_place,
     municipal_records_to_places,
     torino_row_to_place,
 )
@@ -102,3 +104,31 @@ def test_osm_details_are_not_lost_when_the_municipal_record_only_adds_an_address
     assert merged[0].source_name == "openstreetmap_overpass"
     assert merged[0].details == {"barrier": "fence"}
     assert merged[0].confirmed_by == ["comune_torino"]
+
+
+MILANO_FEATURE = {
+    "type": "Feature",
+    "properties": {"id_area": "1_043", "municipio": 1, "localit\u00e0": "via Esempio"},
+    "geometry": {
+        "type": "MultiPolygon",
+        "coordinates": [[[[9.19, 45.46], [9.192, 45.46], [9.192, 45.462], [9.19, 45.462]]]],
+    },
+}
+
+
+def test_milano_feature_is_placed_at_the_centre_of_its_outline() -> None:
+    place = milano_feature_to_place(MILANO_FEATURE, release="2026-10-04")
+
+    assert place is not None
+    assert place.id == "comune_milano|1_043"
+    assert place.name == "Area cani via Esempio"
+    assert place.address_label == "via Esempio, Milano"
+    assert (round(place.latitude, 3), round(place.longitude, 3)) == (45.461, 9.191)
+    assert (place.source_name, place.license) == ("comune_milano", "CC-BY-4.0")
+
+
+def test_milano_features_without_an_outline_or_id_are_skipped() -> None:
+    no_geometry = {"properties": {"id_area": "1_001"}, "geometry": None}
+    no_id = {**MILANO_FEATURE, "properties": {}}
+
+    assert municipal_records_to_places(MILANO, [no_geometry, no_id], release="r") == []

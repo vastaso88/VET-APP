@@ -25,6 +25,7 @@ class ReportChatResponseInput(BaseModel):
     message_id: str
     reason: ChatResponseReportReason = "other"
     details: str | None = None
+    reporter_display_name: str | None = None
 
 
 class ReportChatResponseOutput(BaseModel):
@@ -66,6 +67,7 @@ class ReportChatResponseService:
             raise ValidationError("only an assistant reply can be reported")
 
         ref = reporter_ref(data.reporter_owner_id, self._pseudonym_salt)
+        names = [data.reporter_display_name] if data.reporter_display_name else []
         already_reported = next(
             (
                 report
@@ -85,16 +87,17 @@ class ReportChatResponseService:
                 pet_id=conversation.pet_id,
                 reporter_ref=ref,
                 reason=data.reason,
-                details=self._sanitize(data.details, MAX_DETAILS_CHARS),
-                reported_answer=self._sanitize(message.content, MAX_REPORTED_ANSWER_CHARS) or "",
+                details=self._sanitize(data.details, MAX_DETAILS_CHARS, names),
+                reported_answer=self._sanitize(message.content, MAX_REPORTED_ANSWER_CHARS, names)
+                or "",
             )
         )
         return ReportChatResponseOutput(report=report)
 
-    def _sanitize(self, text: str | None, limit: int) -> str | None:
+    def _sanitize(self, text: str | None, limit: int, names: list[str]) -> str | None:
         if text is None:
             return None
         anonymized = self._pii_anonymizer.anonymize(
-            PiiAnonymizationRequest(text=text)
+            PiiAnonymizationRequest(text=text, known_person_names=names)
         ).anonymized_text
         return clip(anonymized, limit)

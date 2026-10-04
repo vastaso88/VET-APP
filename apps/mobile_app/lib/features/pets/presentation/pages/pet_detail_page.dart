@@ -9,6 +9,7 @@ import 'package:latlong2/latlong.dart' as latlong;
 import 'package:share_plus/share_plus.dart';
 
 import '../../../../design_system/tokens/app_colors.dart';
+import '../../../../shared/files/attachment_media_type.dart';
 import '../../../../design_system/tokens/app_radii.dart';
 import '../../../../design_system/tokens/app_spacing.dart';
 import '../../../../design_system/tokens/app_text_styles.dart';
@@ -925,7 +926,11 @@ class _RecordsTabState extends State<_RecordsTab> {
         final bytes =
             result.fold(onSuccess: (bytes) => bytes, onFailure: (_) => null);
         if (bytes != null) {
-          cached = (bytes: bytes, fileName: record.title, mimeType: null);
+          cached = (
+            bytes: bytes,
+            fileName: record.title,
+            mimeType: attachmentMediaType(bytes, record.title).toString(),
+          );
         }
       }
 

@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 
 import '../../../../../design_system/tokens/app_colors.dart';
+import '../../../../shared/files/attachment_media_type.dart';
 import '../../../../../design_system/tokens/app_radii.dart';
 import '../../../../../design_system/tokens/app_spacing.dart';
 import '../../../../../design_system/tokens/app_text_styles.dart';
@@ -798,7 +799,10 @@ class _RecordTile extends StatelessWidget {
                       color: AppColors.accentSoft,
                       borderRadius: BorderRadius.circular(18),
                     ),
-                    child: const Icon(Icons.description_outlined, color: AppColors.primary),
+                    child: Icon(
+                      isPdfFileName(title) ? Icons.picture_as_pdf_outlined : Icons.description_outlined,
+                      color: AppColors.primary,
+                    ),
                   ),
                   const SizedBox(width: AppSpacing.md),
                   Expanded(

@@ -108,6 +108,7 @@ class ListNearbyRadarPlacesService:
         *,
         max_search_radius_km: float,
         freshness_ttl_hours: int,
+        open_sources: frozenset[str] | None = None,
     ) -> None:
         self._repository = repository
         self._ingestion_service = ingestion_service
@@ -115,6 +116,9 @@ class ListNearbyRadarPlacesService:
         self._community = community
         self._max_search_radius_km = max_search_radius_km
         self._freshness_ttl_hours = freshness_ttl_hours
+        # Imported sources (other than OpenStreetMap) that are served;
+        # None is all of them.
+        self._open_sources = open_sources
 
     def execute(self, data: ListNearbyRadarPlacesInput) -> ListNearbyRadarPlacesOutput:
         origin = Coordinates(latitude=data.latitude, longitude=data.longitude)
@@ -122,12 +126,22 @@ class ListNearbyRadarPlacesService:
         tier = tier_for_radius(requested_radius_km, max_search_radius_km=self._max_search_radius_km)
         search_radius_km = min(requested_radius_km, tier.search_radius_km)
         box = _bounding_box(origin, search_radius_km)
-        sources = {source.source: source for source in self._catalog.list_sources()}
+        sources = {
+            source.source: source
+            for source in self._catalog.list_sources()
+            if source.source == OSM_SOURCE_NAME
+            or self._open_sources is None
+            or source.source in self._open_sources
+        }
 
         # Everything imported that is not OpenStreetMap (Overture, municipal
         # datasets) shares one table.
         has_open_sources = any(name != OSM_SOURCE_NAME for name in sources)
-        open_places = self._catalog.list_open_places(box) if has_open_sources else []
+        open_places = [
+            place
+            for place in (self._catalog.list_open_places(box) if has_open_sources else [])
+            if self._open_sources is None or place.source_name in self._open_sources
+        ]
 
         osm_source = sources.get(OSM_SOURCE_NAME)
         if osm_source is not None and osm_source.covers(origin):

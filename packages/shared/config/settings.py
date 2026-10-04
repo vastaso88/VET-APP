@@ -101,17 +101,27 @@ class Settings(BaseSettings):
     radar_report_daily_limit: int = Field(default=5, ge=1, alias="RADAR_REPORT_DAILY_LIMIT")
     # Categories that can be reported as missing (a JSON list in env).
     radar_report_place_types: list[str] = Field(
-        default=["veterinary", "grooming", "shop", "hotel"], alias="RADAR_REPORT_PLACE_TYPES"
+        default=["veterinary", "grooming", "shop", "hotel", "dog_park"],
+        alias="RADAR_REPORT_PLACE_TYPES",
     )
     # Whether a not-yet-confirmed "closed" report is shown on the place.
     radar_report_show_pending_closures: bool = Field(
         default=False, alias="RADAR_REPORT_SHOW_PENDING_CLOSURES"
     )
+    # Switches, all on by default, to turn one part of the radar off
+    # from the environment alone (docs/features/radar_places_overpass.md):
+    # reports and votes; the "closed" kind of report only; dog-park stars;
+    # and which sources of `radar_places_open` are served (a JSON list of
+    # source names, e.g. ["overture","comune_milano"]; ["*"] is all of
+    # them, [] none). Off means: nothing new is accepted and what users
+    # contributed is no longer shown; nothing is deleted.
+    radar_reports_enabled: bool = Field(default=True, alias="RADAR_REPORTS_ENABLED")
+    radar_report_closed_enabled: bool = Field(default=True, alias="RADAR_REPORT_CLOSED_ENABLED")
+    radar_ratings_enabled: bool = Field(default=True, alias="RADAR_RATINGS_ENABLED")
+    radar_open_sources: list[str] = Field(default=["*"], alias="RADAR_OPEN_SOURCES")
     # Where a business owner or a user can ask for a correction or the
     # removal of a place. Shown publicly in the app; empty hides it.
-    support_contact_email: str = Field(
-        default="vastaso88@gmail.com", alias="SUPPORT_CONTACT_EMAIL"
-    )
+    support_contact_email: str = Field(default="vastaso88@gmail.com", alias="SUPPORT_CONTACT_EMAIL")
     # Attachment bytes: local disk outside of PERSISTENCE_BACKEND=supabase
     # (fine for local dev), a Supabase Storage bucket when it is (required
     # on serverless deploys like Vercel, whose filesystem is read-only).
@@ -125,7 +135,10 @@ class Settings(BaseSettings):
     enable_interview_loop: bool = Field(default=False, alias="ENABLE_INTERVIEW_LOOP")
     situation_coverage_target: float = Field(default=0.85, alias="SITUATION_COVERAGE_TARGET")
     interview_max_questions: int = Field(default=3, alias="INTERVIEW_MAX_QUESTIONS")
-    pii_anonymizer_backend: str = Field(default="noop", alias="PII_ANONYMIZER_BACKEND")
+    # "rules" (default): the dependency-free rule-based anonymizer.
+    # "presidio": Presidio + spaCy, only where those are installed.
+    # "noop": nothing is removed — honoured outside production only.
+    pii_anonymizer_backend: str = Field(default="rules", alias="PII_ANONYMIZER_BACKEND")
     max_active_conversations_per_pet: int = Field(
         default=4, alias="MAX_ACTIVE_CONVERSATIONS_PER_PET"
     )

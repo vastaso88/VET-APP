@@ -39,7 +39,11 @@ def create_report(request: CreateChatResponseReportRequest) -> dict[str, object]
     container = get_container()
     user = container.auth_provider.get_current_user()
     result = container.report_chat_response_service().execute(
-        ReportChatResponseInput(reporter_owner_id=user.id, **request.model_dump())
+        ReportChatResponseInput(
+            reporter_owner_id=user.id,
+            reporter_display_name=user.display_name,
+            **request.model_dump(),
+        )
     )
     return {"report": result.report.model_dump(exclude=_REPORTER_FIELDS)}
 
@@ -60,15 +64,11 @@ def list_reports(status: ChatResponseReportStatus | None = None) -> dict[str, ob
     result = container.list_chat_response_reports_service().execute(
         ListChatResponseReportsInput(status=status)
     )
-    return {
-        "reports": [report.model_dump(exclude=_REPORTER_FIELDS) for report in result.reports]
-    }
+    return {"reports": [report.model_dump(exclude=_REPORTER_FIELDS) for report in result.reports]}
 
 
 @router.put("/{report_id}/resolve")
-def resolve_report(
-    report_id: str, request: ResolveChatResponseReportRequest
-) -> dict[str, object]:
+def resolve_report(report_id: str, request: ResolveChatResponseReportRequest) -> dict[str, object]:
     container = get_container()
     _require_developer(container)
     result = container.resolve_chat_response_report_service().execute(

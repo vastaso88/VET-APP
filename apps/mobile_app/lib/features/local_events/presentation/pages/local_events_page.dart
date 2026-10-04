@@ -93,6 +93,9 @@ class _LocalEventsPageState extends State<LocalEventsPage> {
   /// while false the whole page is a loader instead of an empty map.
   bool _firstRadarAnswerReady = false;
 
+  /// Contact for "this should not be listed", from the last radar answer.
+  String? _supportContactEmail;
+
   /// The explanation before the system location prompt is shown at most
   /// once per visit to the page.
   bool _locationConsentAsked = false;
@@ -241,6 +244,10 @@ class _LocalEventsPageState extends State<LocalEventsPage> {
       result = await repository.loadNearby(center: data.referenceLocation, radiusKm: radiusKm);
     }
     _firstRadarAnswerReady = true;
+    _supportContactEmail = result.fold(
+      onSuccess: (value) => value.supportContactEmail ?? _supportContactEmail,
+      onFailure: (_) => _supportContactEmail,
+    );
     return result;
   }
 
@@ -316,7 +323,12 @@ class _LocalEventsPageState extends State<LocalEventsPage> {
   void _openEntry(_RadarEntry entry) {
     final place = entry.place;
     if (place != null) {
-      showRadarPlaceSheet(context, place, contributions: _contributions);
+      showRadarPlaceSheet(
+        context,
+        place,
+        contributions: _contributions,
+        supportContactEmail: _supportContactEmail,
+      );
     } else {
       _openActivity(entry.activity!, entry.distanceMeters);
     }
@@ -958,12 +970,12 @@ class _ServiceRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final report = entry.place?.community;
-    final pending = report != null && report.isPending;
+    final place = entry.place;
+    final pending = place?.isPendingReport ?? false;
     return DashboardListRow(
       title: entry.title,
       subtitle: [
-        if (pending) pendingReportLabel(report),
+        if (pending) pendingPlaceLabel(place!),
         if (!pending && entry.typeLabel != null) entry.typeLabel!,
         if (entry.addressLabel != null) entry.addressLabel!,
         formatDistance(entry.distanceMeters),
@@ -987,12 +999,11 @@ class _ClinicRow extends StatelessWidget {
   Widget build(BuildContext context) {
     final place = entry.place;
     final hours = place?.openingHours;
-    final report = place?.community;
-    final pending = report != null && report.isPending;
+    final pending = place?.isPendingReport ?? false;
     return DashboardListRow(
       title: entry.title,
       subtitle: [
-        if (pending) pendingReportLabel(report),
+        if (pending) pendingPlaceLabel(place!),
         formatDistance(entry.distanceMeters),
         if (entry.addressLabel != null) entry.addressLabel!,
         if (hours != null) formatOpeningHours(hours),

@@ -1,9 +1,9 @@
 """Imports dog parks published as open data by Italian municipalities.
 
-    uv run python scripts/radar/import_municipal_dog_parks.py
+    uv run --with truststore python scripts/radar/import_municipal_dog_parks.py
 
-Covers only the datasets whose license was verified (Bologna and Torino,
-both CC BY 4.0): see packages/infrastructure/radar_places/municipal_mapping.py.
+Covers only the datasets whose license was verified (Bologna, Torino and
+Milano, CC BY 4.0): see packages/infrastructure/radar_places/municipal_mapping.py.
 Rows go to `radar_places_open` under one source per municipality, next to
 the Overture rows and apart from OpenStreetMap.
 """
@@ -44,7 +44,9 @@ def download(dataset: MunicipalDataset) -> list[dict[str, Any]]:
         raw = response.read().decode("utf-8", errors="replace")
     if dataset.file_format == "csv":
         return list(csv.DictReader(io.StringIO(raw)))
-    return [item for item in json.loads(raw) if isinstance(item, dict)]
+    parsed = json.loads(raw)
+    items = parsed.get("features", []) if dataset.file_format == "geojson" else parsed
+    return [item for item in items if isinstance(item, dict)]
 
 
 def main() -> int:

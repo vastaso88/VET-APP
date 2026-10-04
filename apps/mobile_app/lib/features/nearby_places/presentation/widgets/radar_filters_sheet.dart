@@ -19,8 +19,7 @@ class RadarFilters {
   final Set<RadarCategory> categories;
   final Set<String> species;
 
-  bool showsCategory(RadarCategory category) =>
-      categories.isEmpty || categories.contains(category);
+  bool showsCategory(RadarCategory category) => categories.isEmpty || categories.contains(category);
 
   /// How many filter groups differ from the defaults (for the badge on
   /// the "Filtri" button). Radius is excluded: it has its own control.

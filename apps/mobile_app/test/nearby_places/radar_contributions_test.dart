@@ -33,7 +33,13 @@ class _FakePlaces extends RadarPlacesRepository {
     required double radiusKm,
   }) async {
     requests++;
-    return Result.success(RadarPlacesResult(places: places, searchRadiusKm: 50));
+    return Result.success(
+      RadarPlacesResult(
+        places: places,
+        searchRadiusKm: 50,
+        supportContactEmail: 'aiuto@esempio.example',
+      ),
+    );
   }
 }
 
@@ -52,10 +58,14 @@ class _FakeContributions extends RadarContributionsRepository {
           ),
         );
 
+  /// Problems the backend accepts; the test changes it to play a switch.
+  List<RadarProblem> problems = RadarProblem.values;
+
   @override
-  Future<RadarReportOptions> loadOptions() async => const RadarReportOptions(
+  Future<RadarReportOptions> loadOptions() async => RadarReportOptions(
         enabled: true,
-        missingPlaceTypes: [RadarPlaceType.veterinary, RadarPlaceType.grooming],
+        missingPlaceTypes: const [RadarPlaceType.veterinary, RadarPlaceType.grooming],
+        problems: problems,
       );
 
   @override
@@ -156,6 +166,17 @@ const _ownReport = RadarPlace(
   ),
 );
 
+const _reportedDogPark = RadarPlace(
+  id: 'vetapp_users|r3',
+  type: RadarPlaceType.dogPark,
+  name: 'Area cani',
+  location: Coordinates(latitude: 45.468, longitude: 9.19),
+  distanceMeters: 600,
+  sourceName: 'vetapp_users',
+  sourceExternalId: 'r3',
+  community: RadarReportInfo(reportId: 'r3', isPending: true, confirmations: 1, required: 5),
+);
+
 const _dogPark = RadarPlace(
   id: 'park',
   type: RadarPlaceType.dogPark,
@@ -240,6 +261,24 @@ void main() {
     expect(places.requests, 2);
   });
 
+  testWidgets('a reported dog park warns it may not be public and offers to write in',
+      (tester) async {
+    await _pumpRadar(tester, [_reportedDogPark]);
+
+    expect(
+      find.textContaining('Segnalata dagli utenti, verifica che sia un’area pubblica (1/5)'),
+      findsOneWidget,
+    );
+
+    await tester.tap(find.text('Area cani'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Non è un’area pubblica? Scrivici'), findsOneWidget);
+    // Not confirmed yet: it can be confirmed or denied, but not rated.
+    expect(find.text('Confermo'), findsOneWidget);
+    expect(find.byTooltip('Dai 5 stelle'), findsNothing);
+  });
+
   testWidgets('the reporter sees their own report without vote buttons', (tester) async {
     await _pumpRadar(tester, [_ownReport]);
 
@@ -262,7 +301,8 @@ void main() {
     expect(find.text('Prima di segnalare o votare'), findsOneWidget);
     expect(find.text('Regole di prova.'), findsOneWidget);
     // "Accetto" stays disabled until the box is ticked.
-    expect(tester.widget<FilledButton>(find.widgetWithText(FilledButton, 'Accetto')).onPressed, isNull);
+    expect(tester.widget<FilledButton>(find.widgetWithText(FilledButton, 'Accetto')).onPressed,
+        isNull);
 
     await tester.tap(find.byType(Checkbox));
     await tester.pump();
@@ -321,6 +361,33 @@ void main() {
     await _settle(tester);
 
     expect(contributions.calls, ['problem:clinic:closed']);
+  });
+
+  testWidgets('a kind of report the backend switched off is not offered', (tester) async {
+    final (_, contributions) = await _pumpRadar(tester, [_clinic]);
+    contributions.problems = const [RadarProblem.duplicate, RadarProblem.wrongPosition];
+
+    await tester.tap(find.text('Clinica Duomo'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Segnala un problema'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Ha chiuso o non esiste più'), findsNothing);
+    expect(find.text('È un doppione di un altro luogo'), findsOneWidget);
+  });
+
+  testWidgets('with reports switched off the card says so instead of asking', (tester) async {
+    final (_, contributions) = await _pumpRadar(tester, [_clinic]);
+    contributions.problems = const [];
+
+    await tester.tap(find.text('Clinica Duomo'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Segnala un problema'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Cosa non va in questo luogo?'), findsNothing);
+    expect(find.text('Le segnalazioni non sono attive in questo momento.'), findsOneWidget);
+    expect(contributions.calls, isEmpty);
   });
 
   testWidgets('reporting a missing place needs a category and a name', (tester) async {

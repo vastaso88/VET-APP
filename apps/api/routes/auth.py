@@ -23,4 +23,5 @@ def sign_in(request: AuthCredentialsRequest) -> dict[str, object]:
 @router.get("/me")
 def get_me() -> dict[str, str]:
     user = get_container().auth_provider.get_current_user()
-    return user.model_dump()
+    # Same body as before the user gained an optional display name.
+    return user.model_dump(include={"id", "email"})

@@ -29,12 +29,14 @@ class ReverseGeocoder {
       if (response.statusCode != 200) {
         return null;
       }
-      final address = (jsonDecode(utf8.decode(response.bodyBytes)) as Map<String, dynamic>)['address'];
+      final address =
+          (jsonDecode(utf8.decode(response.bodyBytes)) as Map<String, dynamic>)['address'];
       if (address is! Map<String, dynamic>) {
         return null;
       }
       final street = [address['road'], address['house_number']].whereType<String>().join(' ');
-      final town = address['city'] ?? address['town'] ?? address['village'] ?? address['municipality'];
+      final town =
+          address['city'] ?? address['town'] ?? address['village'] ?? address['municipality'];
       final parts = [if (street.isNotEmpty) street, if (town is String) town];
       return parts.isEmpty ? null : parts.join(', ');
     } catch (_) {

@@ -12,6 +12,8 @@ def send_chat_message(request: SendChatMessageRequest) -> dict[str, object]:
     container = get_container()
     user = container.auth_provider.get_current_user()
     result = container.send_chat_message_service().execute(
-        SendChatMessageInput(owner_id=user.id, **request.model_dump())
+        SendChatMessageInput(
+            owner_id=user.id, owner_display_name=user.display_name, **request.model_dump()
+        )
     )
     return result.model_dump()

@@ -6,6 +6,8 @@ from pydantic import BaseModel
 class AuthenticatedUser(BaseModel):
     id: str
     email: str
+    # The name the owner gave at sign-up, when there is one.
+    display_name: str | None = None
 
 
 class AuthSession(BaseModel):

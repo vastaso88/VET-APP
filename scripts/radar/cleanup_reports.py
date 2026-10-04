@@ -1,6 +1,6 @@
 """Applies the retention rules of "Segnala!" (docs/compliance/07_contributi_utenti.md).
 
-    uv run python scripts/radar/cleanup_reports.py
+    uv run --with truststore python scripts/radar/cleanup_reports.py
 
 - A report nobody confirmed within 90 days is deleted, with its votes.
 - 12 months after a report was confirmed or rejected, who reported and who
