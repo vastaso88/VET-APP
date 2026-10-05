@@ -1,4 +1,6 @@
 from collections import defaultdict
+from collections.abc import Callable
+from concurrent.futures import ThreadPoolExecutor
 from datetime import timedelta
 from typing import Any
 
@@ -341,39 +343,77 @@ class RateDogParkService(_Contributions):
         )
 
 
+class RadarCommunitySnapshot(BaseModel):
+    """What the community layer knows about one area at one moment."""
+
+    # Live reports of the kinds that are shown, pending or confirmed.
+    reports: list[RadarUserReport]
+    overrides: list[RadarPlaceOverride]
+    ratings: list[RadarPlaceRating]
+
+
+def run_together(*reads: Callable[[], Any]) -> list[Any]:
+    """Runs independent reads at the same time and returns their results
+    in order. Each is a round trip to the database, so the wait is the
+    slowest one instead of their sum."""
+    if len(reads) < 2:
+        return [read() for read in reads]
+    with ThreadPoolExecutor(max_workers=len(reads)) as pool:
+        return [future.result() for future in [pool.submit(read) for read in reads]]
+
+
 class RadarCommunityView(_Contributions):
     """Everything the community adds to a radar answer: places reported as
     missing, places removed for good, ratings, and what the viewer has
     already voted. Returned as per-place extras, apart from the place
     data, so open-data records stay exactly as their source gave them."""
 
-    def user_places(self, box: BoundingBox) -> list[RadarPlace]:
-        if not self._settings.reports_enabled:
-            return []
-        return [
-            report.as_place()
-            for report in self._live_reports(
-                box, kinds=["missing"], statuses=["pending", "confirmed"]
-            )
-        ]
-
-    def without_excluded(self, places: list[RadarPlace]) -> list[RadarPlace]:
-        return apply_overrides(places, self._repository.list_overrides())
-
-    def extras(
-        self, places: list[RadarPlace], box: BoundingBox, *, viewer_id: str | None
-    ) -> dict[str, dict[str, Any]]:
-        viewer = self._pseudonym(viewer_id) if viewer_id else None
-        extras: dict[str, dict[str, Any]] = defaultdict(dict)
-
+    def snapshot(self, box: BoundingBox) -> RadarCommunitySnapshot:
+        """Everything the three methods below need for one area, read once
+        and with the three reads running side by side: a radar answer used
+        to read the reports twice and wait for each read in turn."""
         kinds = [
             kind
             for kind in self._settings.report_kinds()
             if kind == "missing" or (kind == "closed" and self._settings.show_pending_closures)
         ]
-        reports = (
-            self._live_reports(box, kinds=kinds, statuses=["pending", "confirmed"]) if kinds else []
+        ratings_enabled = self._settings.ratings_enabled
+        reports, overrides, ratings = run_together(
+            lambda: (
+                self._live_reports(box, kinds=kinds, statuses=["pending", "confirmed"])
+                if kinds
+                else []
+            ),
+            self._repository.list_overrides,
+            lambda: self._repository.list_ratings(box) if ratings_enabled else [],
         )
+        return RadarCommunitySnapshot(reports=reports, overrides=overrides, ratings=ratings)
+
+    def user_places(
+        self, box: BoundingBox, snapshot: RadarCommunitySnapshot | None = None
+    ) -> list[RadarPlace]:
+        reports = (snapshot or self.snapshot(box)).reports
+        return [report.as_place() for report in reports if report.kind == "missing"]
+
+    def without_excluded(
+        self, places: list[RadarPlace], snapshot: RadarCommunitySnapshot | None = None
+    ) -> list[RadarPlace]:
+        overrides = snapshot.overrides if snapshot else self._repository.list_overrides()
+        return apply_overrides(places, overrides)
+
+    def extras(
+        self,
+        places: list[RadarPlace],
+        box: BoundingBox,
+        *,
+        viewer_id: str | None,
+        snapshot: RadarCommunitySnapshot | None = None,
+    ) -> dict[str, dict[str, Any]]:
+        viewer = self._pseudonym(viewer_id) if viewer_id else None
+        extras: dict[str, dict[str, Any]] = defaultdict(dict)
+
+        snapshot = snapshot or self.snapshot(box)
+        reports = snapshot.reports
         viewer_votes = (
             {
                 vote.report_id: vote.vote
@@ -406,7 +446,7 @@ class RadarCommunityView(_Contributions):
         }
         ratings: dict[tuple[str, str], list[RadarPlaceRating]] = defaultdict(list)
         ratings_enabled = self._settings.ratings_enabled
-        for rating in self._repository.list_ratings(box) if ratings_enabled else []:
+        for rating in snapshot.ratings:
             ratings[(rating.source, rating.source_id)].append(rating)
 
         for place in places:

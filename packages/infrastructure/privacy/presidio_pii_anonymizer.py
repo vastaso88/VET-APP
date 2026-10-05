@@ -89,7 +89,8 @@ class PresidioPiiAnonymizer:
         # the documented way to wire the two packages together) but mypy
         # sees two distinct types.
         anonymized = self._anonymizer.anonymize(
-            text=request.text, analyzer_results=results  # type: ignore[arg-type]
+            text=request.text,
+            analyzer_results=results,  # type: ignore[arg-type]
         )
         entity_types = sorted({result.entity_type for result in results})
         return PiiAnonymizationResult(

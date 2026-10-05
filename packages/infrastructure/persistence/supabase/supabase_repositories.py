@@ -311,31 +311,33 @@ class SupabaseRadarCatalogRepository(RadarCatalogRepository):
         return list(self._sources)
 
     def list_osm_places(self, box: BoundingBox) -> list[RadarPlace]:
-        return [
-            RadarPlace.model_validate(
-                {
-                    **row,
-                    "coverage_key": "catalog",
-                    "source_name": OSM_SOURCE_NAME,
-                    "source_fetched_at": row.get("imported_at"),
-                }
-            )
-            for row in self._rows_in_box("radar_places_osm", box)
-        ]
+        return [_osm_place(row) for row in self._rows_in_box("radar_places_osm", box)]
 
     def list_open_places(self, box: BoundingBox) -> list[RadarPlace]:
-        return [
-            RadarPlace.model_validate(
-                {
-                    **row,
-                    "coverage_key": "catalog",
-                    "source_name": row["source"],
-                    "source_external_id": row["source_id"],
-                    "source_fetched_at": row.get("imported_at"),
-                }
-            )
-            for row in self._rows_in_box("radar_places_open", box)
-        ]
+        return [_open_place(row) for row in self._rows_in_box("radar_places_open", box)]
+
+    def get_place(self, source: str, source_id: str) -> RadarPlace | None:
+        try:
+            if source == OSM_SOURCE_NAME:
+                query = (
+                    self._client.table("radar_places_osm")
+                    .select("*")
+                    .eq("source_external_id", source_id)
+                )
+            else:
+                query = (
+                    self._client.table("radar_places_open")
+                    .select("*")
+                    .eq("source", source)
+                    .eq("source_id", source_id)
+                )
+            rows = cast(list[dict[str, Any]], query.limit(1).execute().data or [])
+        except Exception:
+            _logger.warning("radar catalog unavailable: a place could not be read")
+            return None
+        if not rows:
+            return None
+        return _osm_place(rows[0]) if source == OSM_SOURCE_NAME else _open_place(rows[0])
 
     def _rows_in_box(self, table: str, box: BoundingBox) -> list[dict[str, Any]]:
         # PostgREST caps a response at 1000 rows; a 50 km box around a big
@@ -359,6 +361,29 @@ class SupabaseRadarCatalogRepository(RadarCatalogRepository):
                 return rows
 
 
+def _osm_place(row: dict[str, Any]) -> RadarPlace:
+    return RadarPlace.model_validate(
+        {
+            **row,
+            "coverage_key": "catalog",
+            "source_name": OSM_SOURCE_NAME,
+            "source_fetched_at": row.get("imported_at"),
+        }
+    )
+
+
+def _open_place(row: dict[str, Any]) -> RadarPlace:
+    return RadarPlace.model_validate(
+        {
+            **row,
+            "coverage_key": "catalog",
+            "source_name": row["source"],
+            "source_external_id": row["source_id"],
+            "source_fetched_at": row.get("imported_at"),
+        }
+    )
+
+
 class SupabaseRadarReportsRepository(RadarReportsRepository):
     """Community reports, votes and ratings. RLS on with no policies:
     every read and write goes through this service-role client, because
@@ -369,9 +394,12 @@ class SupabaseRadarReportsRepository(RadarReportsRepository):
     loudly."""
 
     _MAX_IDS_PER_QUERY = 100
+    _OVERRIDES_TTL_SECONDS = 60.0
 
     def __init__(self, client: Client) -> None:
         self._client = client
+        self._overrides: list[RadarPlaceOverride] = []
+        self._overrides_read_at: float | None = None
 
     def save_report(self, report: RadarUserReport) -> RadarUserReport:
         self._client.table("radar_user_reports").upsert(report.model_dump(mode="json")).execute()
@@ -473,13 +501,23 @@ class SupabaseRadarReportsRepository(RadarReportsRepository):
         self._client.table("radar_place_overrides").upsert(
             override.model_dump(mode="json")
         ).execute()
+        self._overrides_read_at = None
 
     def list_overrides(self) -> list[RadarPlaceOverride]:
+        # The whole (small, rarely changing) table is needed by every radar
+        # request: kept for a minute rather than read each time. A removal
+        # made elsewhere (the script, another instance) shows within that.
+        now = time.monotonic()
+        read_at = self._overrides_read_at
+        if read_at is not None and now - read_at < self._OVERRIDES_TTL_SECONDS:
+            return list(self._overrides)
         try:
             response = self._client.table("radar_place_overrides").select("*").execute()
         except Exception:
             return []
-        return [RadarPlaceOverride.model_validate(row) for row in response.data or []]
+        self._overrides = [RadarPlaceOverride.model_validate(row) for row in response.data or []]
+        self._overrides_read_at = now
+        return list(self._overrides)
 
 
 class SupabaseDogWalkRepository(DogWalkRepository):

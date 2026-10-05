@@ -1,8 +1,12 @@
 import base64
-import json
-from urllib import error, request
+from typing import Any
 
 from packages.core.application.ports.image_analyzer import ImageAnalyzer
+from packages.infrastructure.llm.providers.groq_chat_api import (
+    GroqChatApi,
+    Transport,
+    split_models,
+)
 from packages.shared.config.settings import Settings
 from packages.shared.errors.base import ProviderError
 
@@ -25,14 +29,23 @@ class GroqImageAnalyzer(ImageAnalyzer):
     than silently degrading if the configured model is rejected.
     """
 
-    def __init__(self, settings: Settings) -> None:
+    def __init__(self, settings: Settings, *, transport: Transport | None = None) -> None:
         self._settings = settings
+        self._api = GroqChatApi(
+            base_url=settings.llm_base_url,
+            api_key=settings.llm_api_key,
+            timeout_seconds=settings.llm_timeout_seconds,
+            models=[settings.vision_model, *split_models(settings.vision_fallback_models)],
+            purpose="vision",
+            transport=transport,
+        )
 
     def analyze(self, image_bytes: bytes, content_type: str, context: str) -> str:
         data_uri = f"data:{content_type};base64,{base64.b64encode(image_bytes).decode('ascii')}"
-        payload = json.dumps(
-            {
-                "model": self._settings.vision_model,
+
+        def payload(model: str) -> dict[str, Any]:
+            return {
+                "model": model,
                 "messages": [
                     {
                         "role": "system",
@@ -68,34 +81,8 @@ class GroqImageAnalyzer(ImageAnalyzer):
                 "temperature": 0.2,
                 "max_tokens": 700,
             }
-        ).encode("utf-8")
 
-        http_request = request.Request(
-            url=f"{self._settings.llm_base_url.rstrip('/')}/chat/completions",
-            data=payload,
-            headers={
-                "Content-Type": "application/json",
-                "Authorization": f"Bearer {self._settings.llm_api_key}",
-                # See GroqLLMClient for why: Cloudflare blocks urllib's
-                # default user agent outright.
-                "User-Agent": "VetApp/1.0",
-            },
-            method="POST",
-        )
-        try:
-            with request.urlopen(
-                http_request, timeout=self._settings.llm_timeout_seconds
-            ) as response:
-                body = json.loads(response.read().decode("utf-8"))
-        except error.HTTPError as exc:
-            detail = exc.read().decode("utf-8", errors="ignore")
-            raise ProviderError(
-                f"Groq vision request failed with status {exc.code}: {detail}"
-            ) from exc
-        except error.URLError as exc:
-            raise ProviderError(f"Unable to reach Groq API: {exc.reason}") from exc
-        except TimeoutError as exc:
-            raise ProviderError("Groq vision request timed out") from exc
+        body, _model = self._api.complete(payload)
 
         choices = body.get("choices") or []
         if not choices:

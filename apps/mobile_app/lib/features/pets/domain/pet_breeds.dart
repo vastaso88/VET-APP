@@ -326,12 +326,21 @@ final List<String> fifeCatBreeds = _sortedUnique([
 ]);
 
 /// The free-text escape hatch, always last in a species' list.
-const otherBreedLabel = 'Meticcio / altra razza';
+const otherBreedLabel = 'Altra razza (scrivi)';
+
+/// Pinned at the top of the picker: the neutral term for a mixed-breed pet.
+const meticcioBreedLabel = 'Meticcio / incrocio';
+const catMeticcioBreedLabel = 'Meticcio / europeo comune';
+
+/// The pinned entries, which the picker shows first and separates visually.
+const pinnedBreedLabels = <String>{meticcioBreedLabel, catMeticcioBreedLabel};
 
 /// Names saved before the list was complete, still accepted as known.
 const _knownAliases = <String, Set<String>>{
   'Europeo / comune': {'Europeo'},
   'Cane di San Bernardo': {'San Bernardo'},
+  meticcioBreedLabel: {'Meticcio / altra razza', 'Meticcio'},
+  catMeticcioBreedLabel: {'Meticcio'},
 };
 
 /// Lowercase and without accents, for tolerant search and comparison.
@@ -351,8 +360,9 @@ String foldBreedText(String text) {
 /// (or an alias of one), so the form shows the "altra razza" field for it.
 bool isCustomBreed(String breed, List<String> listed) {
   if (breed == 'Altro') return true;
+  if (pinnedBreedLabels.contains(breed)) return false;
   final folded = foldBreedText(breed);
-  for (final known in listed) {
+  for (final known in [...listed, ...pinnedBreedLabels]) {
     if (foldBreedText(known) == folded) return false;
     if (_knownAliases[known]?.any((alias) => foldBreedText(alias) == folded) ?? false) {
       return false;

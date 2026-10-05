@@ -4,6 +4,7 @@ import '../../../../design_system/tokens/app_colors.dart';
 import '../../../../design_system/tokens/app_radii.dart';
 import '../../../../design_system/tokens/app_spacing.dart';
 import '../../../../design_system/tokens/app_text_styles.dart';
+import '../../../../shared/widgets/pet_loader.dart';
 import '../../data/medical_record_consent_remote_data_source.dart';
 import '../../data/pet_demo_store.dart';
 import '../../domain/pet_models.dart';
@@ -114,6 +115,10 @@ class _MedicalRecordConsentCardState extends State<MedicalRecordConsentCard> {
               fontWeight: FontWeight.w700,
             ),
           ),
+        ),
+        if (_saving) const Padding(
+          padding: EdgeInsets.only(right: AppSpacing.sm),
+          child: PetLoader.small(),
         ),
         Switch(
           value: granted,

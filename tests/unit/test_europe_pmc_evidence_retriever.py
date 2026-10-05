@@ -95,9 +95,7 @@ def test_tier_reflects_publication_type() -> None:
 
 def test_retracted_publications_are_never_returned() -> None:
     payload = {
-        "resultList": {
-            "result": [_result(pubTypeList={"pubType": ["Retracted Publication"]})]
-        }
+        "resultList": {"result": [_result(pubTypeList={"pubType": ["Retracted Publication"]})]}
     }
     retriever = EuropePmcEvidenceRetriever(fetcher=_fetcher_for(payload))
 
@@ -129,9 +127,7 @@ def test_deduplicates_by_doi() -> None:
 def test_respects_max_results() -> None:
     payload = {
         "resultList": {
-            "result": [
-                _result(id=str(i), pmid=str(i), doi=f"10.1/{i}") for i in range(10)
-            ]
+            "result": [_result(id=str(i), pmid=str(i), doi=f"10.1/{i}") for i in range(10)]
         }
     }
     retriever = EuropePmcEvidenceRetriever(fetcher=_fetcher_for(payload))

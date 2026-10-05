@@ -228,9 +228,7 @@ def test_chat_orchestrator_rejects_a_general_answer_that_calls_the_pet_the_wrong
     orchestrator = ChatOrchestrator(client, InMemoryEvidenceRetriever(), NoopPiiAnonymizer())
 
     result = orchestrator.answer(
-        ChatOrchestratorInput(
-            user_message="ciao", species="Pesce", pet_name="Acquario del salotto"
-        )
+        ChatOrchestratorInput(user_message="ciao", species="Pesce", pet_name="Acquario del salotto")
     )
 
     assert result.mode == "general"
@@ -242,9 +240,7 @@ def test_chat_orchestrator_allows_a_legitimate_comparison_mentioning_another_spe
     # Mentioning another species without claiming it's THIS pet (no
     # possessive "tuo"/"tua") must not be flagged.
     client = ScriptedContentLLMClient(
-        '{"supported_claims": ['
-        '"A differenza del cane, i pesci non hanno una vescica simile [1]."'
-        ']}'
+        '{"supported_claims": ["A differenza del cane, i pesci non hanno una vescica simile [1]."]}'
     )
     orchestrator = ChatOrchestrator(client, InMemoryEvidenceRetriever(), NoopPiiAnonymizer())
 
@@ -289,8 +285,7 @@ def test_chat_orchestrator_escalates_paracetamol_brand_name_for_cats() -> None:
     result = orchestrator.answer(
         ChatOrchestratorInput(
             user_message=(
-                "Vorrei dare la tachipirina al mio gatto che ha la febbre, "
-                "che dosaggio uso?"
+                "Vorrei dare la tachipirina al mio gatto che ha la febbre, che dosaggio uso?"
             ),
             species="Gatto",
             pet_name="Micio",
@@ -718,9 +713,7 @@ def test_chat_orchestrator_answers_enclosure_size_questions_from_curated_catalog
 
     assert result.mode == "evidence"
     assert result.ai_generated is True
-    assert any(
-        "enclosure size" in (source.title or "") for source in result.sources
-    )
+    assert any("enclosure size" in (source.title or "") for source in result.sources)
 
 
 def test_chat_orchestrator_answers_aquarium_husbandry_questions_from_curated_catalog() -> None:
@@ -963,8 +956,7 @@ def test_independent_multi_pet_complaint_is_redirected() -> None:
     result = orchestrator.answer(
         ChatOrchestratorInput(
             user_message=(
-                "Ho un cane e anche un gatto, entrambi non mangiano da "
-                "stamattina, cosa può essere?"
+                "Ho un cane e anche un gatto, entrambi non mangiano da stamattina, cosa può essere?"
             ),
             species="dog",
             pet_name="Rex",

@@ -46,7 +46,10 @@ void main() {
     expect(isCustomBreed('Incrocio di barboncino', fciDogBreeds), isTrue);
   });
 
-  test('dogs and cats end with the free-text option, which is never a real breed', () {
+  test('dogs and cats start with the pinned mixed-breed option and end with free text', () {
+    expect(PetDemoStore.breedsForSpecies('Cane').first, meticcioBreedLabel);
+    expect(PetDemoStore.breedsForSpecies('Gatto').first, catMeticcioBreedLabel);
+    expect(isCustomBreed('Meticcio / altra razza', fciDogBreeds), isFalse);
     expect(PetDemoStore.breedsForSpecies('Cane').last, otherBreedLabel);
     expect(PetDemoStore.breedsForSpecies('Gatto').last, otherBreedLabel);
     expect(fciDogBreeds, isNot(contains(otherBreedLabel)));

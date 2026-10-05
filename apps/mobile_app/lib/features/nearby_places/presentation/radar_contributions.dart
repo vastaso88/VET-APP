@@ -55,11 +55,13 @@ class RadarContributions {
 
   /// Runs [action]; if the backend answers that the rules were never
   /// accepted, shows them and retries once after acceptance. Returns
-  /// whether the action succeeded.
+  /// whether the action succeeded. On success the radar reloads, unless
+  /// [reload] is false.
   Future<bool> run<T>(
     BuildContext context,
     Future<Result<T>> Function() action, {
     required String Function(T value) successMessage,
+    bool reload = true,
   }) async {
     var result = await action();
     final needsRules = result.fold(
@@ -79,7 +81,11 @@ class RadarContributions {
     return result.fold(
       onSuccess: (value) {
         messenger?.showSnackBar(SnackBar(content: Text(successMessage(value))));
-        onChanged();
+        // A star vote changes nothing in the lists: no need to load the
+        // whole radar again for it.
+        if (reload) {
+          onChanged();
+        }
         return true;
       },
       onFailure: (error) {

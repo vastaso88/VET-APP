@@ -21,9 +21,7 @@ class SupabaseMediaStorage(MediaStorage):
         self._bucket = bucket
 
     def save(self, key: str, content: bytes) -> None:
-        self._client.storage.from_(self._bucket).upload(
-            key, content, {"upsert": "true"}
-        )
+        self._client.storage.from_(self._bucket).upload(key, content, {"upsert": "true"})
 
     def read(self, key: str) -> bytes | None:
         try:

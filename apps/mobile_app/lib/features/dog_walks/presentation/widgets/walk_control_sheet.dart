@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../../../shared/widgets/pet_loader.dart';
 import '../../../pets/domain/pet_models.dart';
 import '../../data/active_walk_controller.dart';
 import '../pages/active_walk_page.dart';
@@ -53,6 +54,24 @@ Future<void> showWalkControlSheet(BuildContext context, {required PetProfile pet
     case 'resume':
       await ActiveWalkController.instance.resume();
     case 'finish':
-      await finishActiveWalk(context, pet);
+      // The sheet is gone and saving can take seconds: say so meanwhile.
+      final messenger = ScaffoldMessenger.of(context);
+      messenger.showSnackBar(
+        const SnackBar(
+          duration: Duration(minutes: 1),
+          content: Row(
+            children: [
+              PetLoader.small(),
+              SizedBox(width: 12),
+              Text('Salvo la passeggiata...'),
+            ],
+          ),
+        ),
+      );
+      try {
+        await finishActiveWalk(context, pet, onSaved: messenger.hideCurrentSnackBar);
+      } finally {
+        messenger.hideCurrentSnackBar();
+      }
   }
 }

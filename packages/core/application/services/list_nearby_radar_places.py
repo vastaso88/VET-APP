@@ -9,7 +9,10 @@ from packages.core.application.ports.radar_catalog_repository import (
     RadarCatalogRepository,
 )
 from packages.core.application.ports.radar_places_repository import RadarPlacesRepository
-from packages.core.application.services.radar_reports import RadarCommunityView
+from packages.core.application.services.radar_reports import (
+    RadarCommunityView,
+    run_together,
+)
 from packages.core.application.services.request_radar_places_ingestion import (
     RequestRadarPlacesIngestionInput,
     RequestRadarPlacesIngestionService,
@@ -137,16 +140,26 @@ class ListNearbyRadarPlacesService:
         # Everything imported that is not OpenStreetMap (Overture, municipal
         # datasets) shares one table.
         has_open_sources = any(name != OSM_SOURCE_NAME for name in sources)
+        osm_source = sources.get(OSM_SOURCE_NAME)
+        osm_from_catalog = osm_source is not None and osm_source.covers(origin)
+
+        # The reads that do not depend on each other go out together: from
+        # a server far from the database each one is a long round trip.
+        community = self._community
+        all_open_places, catalog_osm_places, snapshot = run_together(
+            lambda: self._catalog.list_open_places(box) if has_open_sources else [],
+            lambda: self._catalog.list_osm_places(box) if osm_from_catalog else [],
+            lambda: community.snapshot(box) if community is not None else None,
+        )
         open_places = [
             place
-            for place in (self._catalog.list_open_places(box) if has_open_sources else [])
+            for place in all_open_places
             if self._open_sources is None or place.source_name in self._open_sources
         ]
 
-        osm_source = sources.get(OSM_SOURCE_NAME)
-        if osm_source is not None and osm_source.covers(origin):
+        if osm_source is not None and osm_from_catalog:
             osm = _OsmPlaces(
-                places=self._catalog.list_osm_places(box),
+                places=catalog_osm_places,
                 status="fresh",
                 search_radius_km=search_radius_km,
                 coverage_key=f"catalog:{osm_source.release}",
@@ -173,14 +186,17 @@ class ListNearbyRadarPlacesService:
             # Places users reported as missing join the others (a report of
             # something already listed collapses into it); places confirmed
             # closed or duplicate drop out.
-            places = merge_radar_places(places, self._community.user_places(box))
-            places = self._community.without_excluded(places)
+            places = merge_radar_places(places, self._community.user_places(box, snapshot))
+            places = self._community.without_excluded(places, snapshot)
         nearest = _nearest(places, origin, data, search_radius_km)
         return ListNearbyRadarPlacesOutput(
             places=nearest,
             extras=(
                 self._community.extras(
-                    [item.place for item in nearest], box, viewer_id=data.viewer_id
+                    [item.place for item in nearest],
+                    box,
+                    viewer_id=data.viewer_id,
+                    snapshot=snapshot,
                 )
                 if self._community is not None
                 else {}

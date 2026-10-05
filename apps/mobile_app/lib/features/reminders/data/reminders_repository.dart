@@ -160,8 +160,12 @@ class RemindersRepository {
     return null;
   }
 
+  /// Applies the change locally at once, so lists and the calendar update
+  /// before the server answers. If the server refuses it, the previous state
+  /// comes back and a [ReminderSyncException] says so.
   Future<void> saveReminder(ReminderEntry reminder) async {
     final index = _localReminders.indexWhere((r) => r.id == reminder.id);
+    final previous = index == -1 ? null : _localReminders[index];
     if (index == -1) {
       _localReminders.insert(0, reminder);
     } else {
@@ -170,26 +174,21 @@ class RemindersRepository {
     changes.value++;
 
     final client = _resolveClient();
-    if (client == null) {
-      return;
-    }
-
     final ownerId = CurrentUser.get()?.id;
-    if (ownerId == null) {
+    if (client == null || ownerId == null) {
       return;
     }
 
-    // reminders.pet_id is a required FK to pet_profiles (and RLS checks the
-    // referenced pet's owner_id) — a reminder whose pet name doesn't
-    // resolve to a real pet can't be written remotely at all, so it stays
-    // local-only rather than sending a row that would fail the FK/RLS.
+    // reminders.pet_id is a required FK to pet_profiles: a reminder whose pet
+    // isn't on the server can't be written, so it is refused, not hidden.
     await PetDemoStore.instance.ensureHydrated();
     final petId = PetDemoStore.instance.byName(reminder.petName)?.id;
-    if (petId == null) {
-      return;
-    }
-
     try {
+      if (petId == null) {
+        throw const ReminderSyncException(
+          'Il profilo dell\'animale non è sincronizzato sul server: sistemalo prima di creare promemoria.',
+        );
+      }
       await client.from('reminders').upsert({
         'id': reminder.id,
         'owner_id': ownerId,
@@ -208,16 +207,20 @@ class RemindersRepository {
         'course_duration_days': reminder.courseDurationDays,
         'is_done': reminder.isDone,
       });
-    } catch (_) {
-      // Kept locally regardless — same best-effort-remote pattern as
-      // deleteReminder below.
+    } catch (error) {
+      _restore(reminder.id, previous);
+      if (error is ReminderSyncException) rethrow;
+      throw const ReminderSyncException('Non sono riuscito a salvare il promemoria. Riprova.');
     }
   }
 
   static String _dateOnly(DateTime date) =>
       '${date.year.toString().padLeft(4, '0')}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}';
 
+  /// Removes the reminder at once; if the server refuses, it comes back.
   Future<void> deleteReminder(String id) async {
+    final index = _localReminders.indexWhere((r) => r.id == id);
+    final previous = index == -1 ? null : _localReminders[index];
     _localReminders.removeWhere((r) => r.id == id);
     changes.value++;
 
@@ -229,9 +232,17 @@ class RemindersRepository {
     try {
       await client.from('reminders').delete().eq('id', id);
     } catch (_) {
-      // Removed locally regardless — same best-effort-remote pattern as
-      // the rest of this demo repository.
+      _restore(id, previous);
+      throw const ReminderSyncException('Non sono riuscito a eliminare il promemoria. Riprova.');
     }
+  }
+
+  void _restore(String id, ReminderEntry? previous) {
+    _localReminders.removeWhere((r) => r.id == id);
+    if (previous != null) {
+      _localReminders.insert(0, previous);
+    }
+    changes.value++;
   }
 
   /// Defensive parsing: `kind` and `due_at` are now required fields, so a
@@ -370,4 +381,15 @@ class RemindersRepository {
       note: 'Controllo di routine su becco, unghie e piumaggio.',
     ),
   ];
+}
+
+/// A reminder change that the server did not accept. The local state has
+/// already been put back; the message is for the owner.
+class ReminderSyncException implements Exception {
+  const ReminderSyncException(this.message);
+
+  final String message;
+
+  @override
+  String toString() => message;
 }

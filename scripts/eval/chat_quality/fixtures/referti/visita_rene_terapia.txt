@@ -1,0 +1,15 @@
+CLINICA VETERINARIA ESEMPIO (struttura fittizia, dati di prova)
+Referto visita di controllo nefrologica
+Data: 22/09/2026
+Paziente: Luna - gatto europeo, femmina sterilizzata, 11 anni, 4,0 kg
+
+Esame clinico: buone condizioni generali, idratazione nella norma, peso stabile.
+Pressione arteriosa sistolica: 165 mmHg (rif. < 150)      ALTA
+Creatinina: 2,2 mg/dL (rif. 0,8 - 2,0)                     LIEVEMENTE ALTA
+SDMA: 18 ug/dL (rif. 0 - 14)                               ALTO
+Rapporto proteine/creatinina urinario (UPC): 0,3 (borderline 0,2 - 0,4)
+
+Diagnosi: malattia renale cronica, stadio IRIS 2, con ipertensione.
+Terapia prescritta: amlodipina, una somministrazione al giorno per bocca, secondo le
+indicazioni consegnate al proprietario. Dieta renale.
+Controllo: misurazione della pressione tra 3 settimane, esami del sangue tra 3 mesi.

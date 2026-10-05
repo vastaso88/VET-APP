@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:intl/date_symbol_data_local.dart';
@@ -49,6 +51,13 @@ class _FakeContributions extends RadarContributionsRepository {
   bool rulesAccepted = true;
   final List<String> calls = [];
 
+  /// While set, votes, ratings and withdrawals do not answer: plays a
+  /// slow server. Completing it lets them through.
+  Completer<void>? hold;
+
+  /// Makes votes, ratings and withdrawals fail, as a server error would.
+  bool failing = false;
+
   Result<T> _gate<T>(T value) => rulesAccepted
       ? Result.success(value)
       : Result.failure(
@@ -57,6 +66,13 @@ class _FakeContributions extends RadarContributionsRepository {
             message: 'Accetta le regole.',
           ),
         );
+
+  Future<Result<void>> _slowGate() async {
+    await hold?.future;
+    return failing
+        ? Result.failure(const AppNetworkError(message: 'Il server non ha risposto.'))
+        : _gate<void>(null);
+  }
 
   /// Problems the backend accepts; the test changes it to play a switch.
   List<RadarProblem> problems = RadarProblem.values;
@@ -88,19 +104,19 @@ class _FakeContributions extends RadarContributionsRepository {
   @override
   Future<Result<void>> vote(String reportId, {required bool confirm}) async {
     calls.add('vote:$reportId:$confirm');
-    return _gate<void>(null);
+    return _slowGate();
   }
 
   @override
   Future<Result<void>> withdraw(String reportId) async {
     calls.add('withdraw:$reportId');
-    return _gate<void>(null);
+    return _slowGate();
   }
 
   @override
   Future<Result<void>> rate(RadarPlace place, int stars) async {
     calls.add('rate:${place.id}:$stars');
-    return _gate<void>(null);
+    return _slowGate();
   }
 }
 
@@ -411,6 +427,100 @@ void main() {
       find.text('Voto della community: 1 voto · la media compare da 3 voti'),
       findsOneWidget,
     );
+  });
+
+  testWidgets('stars fill at the tap, before the server answers, without reloading the radar',
+      (tester) async {
+    final (places, contributions) = await _pumpRadar(tester, [_unratedDogPark]);
+    contributions.hold = Completer<void>();
+
+    await tester.tap(find.text('Area cani Nuova'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byTooltip('Dai 4 stelle'));
+    await tester.pump();
+
+    expect(find.text('Il tuo voto: 4 su 5. Salvataggio…'), findsOneWidget);
+    expect(tester.widgetList<Icon>(find.byIcon(Icons.star_rounded)).length, 4);
+
+    contributions.hold!.complete();
+    await _settle(tester);
+
+    expect(find.textContaining('Il tuo voto: 4 su 5. Tocca una stella'), findsOneWidget);
+    expect(find.text('Voto registrato: 4 su 5.'), findsOneWidget);
+    expect(places.requests, 1);
+  });
+
+  testWidgets('a star vote the server refuses is taken back, with the reason', (tester) async {
+    final (_, contributions) = await _pumpRadar(tester, [_unratedDogPark]);
+    contributions
+      ..hold = Completer<void>()
+      ..failing = true;
+
+    await tester.tap(find.text('Area cani Nuova'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byTooltip('Dai 4 stelle'));
+    await tester.pump();
+    expect(find.text('Il tuo voto: 4 su 5. Salvataggio…'), findsOneWidget);
+
+    contributions.hold!.complete();
+    await _settle(tester);
+
+    expect(find.textContaining('Tocca una stella per dare il tuo voto'), findsOneWidget);
+    expect(find.byIcon(Icons.star_rounded), findsNothing);
+    expect(find.text('Il server non ha risposto.'), findsOneWidget);
+  });
+
+  testWidgets('a confirmation shows at the tap and the card closes when it is saved',
+      (tester) async {
+    final (_, contributions) = await _pumpRadar(tester, [_pendingGroomer]);
+    contributions.hold = Completer<void>();
+
+    await tester.tap(find.text('Toelettatura Nuova'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Confermo'));
+    await tester.pump();
+
+    expect(find.text('Hai confermato. Salvataggio…'), findsOneWidget);
+
+    contributions.hold!.complete();
+    await _settle(tester);
+
+    expect(find.text('Confermo'), findsNothing);
+    expect(find.text('Grazie, conferma registrata.'), findsOneWidget);
+  });
+
+  testWidgets('a confirmation the server refuses puts the question back', (tester) async {
+    final (_, contributions) = await _pumpRadar(tester, [_pendingGroomer]);
+    contributions.failing = true;
+
+    await tester.tap(find.text('Toelettatura Nuova'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Confermo'));
+    await _settle(tester);
+
+    expect(find.text('Questo luogo esiste davvero qui?'), findsOneWidget);
+    expect(find.text('Il server non ha risposto.'), findsOneWidget);
+  });
+
+  testWidgets('a withdrawal shows it is under way while the server answers', (tester) async {
+    final (_, contributions) = await _pumpRadar(tester, [_ownReport]);
+    contributions.hold = Completer<void>();
+
+    await tester.tap(find.text('Negozio Mio'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Ritira la mia segnalazione'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Ritira'));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 300));
+
+    expect(find.text('Ritiro la segnalazione…'), findsOneWidget);
+
+    contributions.hold!.complete();
+    await _settle(tester);
+
+    expect(find.text('Segnalazione ritirata.'), findsOneWidget);
+    expect(find.text('Ritira la mia segnalazione'), findsNothing);
   });
 
   testWidgets('places that are not dog parks have no stars', (tester) async {

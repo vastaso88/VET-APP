@@ -28,7 +28,8 @@ MIN_PDF_TEXT_CHARS = 80
 _DOCUMENT_OR_PHOTO_CONTEXT = (
     "Se è una foto dell'animale o del suo ambiente, descrivi eventuali segni "
     "clinicamente rilevanti visibili. Se è un documento (referto, esame, ricetta, "
-    "libretto), trascrivine il contenuto rilevante."
+    "libretto), trascrivine il contenuto rilevante, compreso l'animale a cui si "
+    "riferisce così come è scritto (nome, specie, età)."
 )
 
 

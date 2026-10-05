@@ -12,6 +12,7 @@ import '../../../../design_system/tokens/app_colors.dart';
 import '../../../../design_system/tokens/app_radii.dart';
 import '../../../../design_system/tokens/app_spacing.dart';
 import '../../../../design_system/tokens/app_text_styles.dart';
+import '../../../../shared/widgets/pet_loader.dart';
 import 'pet_avatar.dart';
 import 'pet_sections.dart';
 
@@ -103,6 +104,7 @@ class _PetProfileFormState extends State<PetProfileForm> {
   DateTime? _birthDate;
   Uint8List? _photoBytes;
   bool _photoTouched = false;
+  bool _submitting = false;
   late Color _identityColor;
   late bool _isAquarium;
   late List<FishStock> _aquariumStock;
@@ -594,9 +596,11 @@ class _PetProfileFormState extends State<PetProfileForm> {
             SizedBox(
               width: double.infinity,
               child: ElevatedButton.icon(
-                onPressed: _submit,
-                icon: const Icon(Icons.save_rounded),
-                label: Text(widget.submitLabel),
+                onPressed: _submitting ? null : _submit,
+                icon: _submitting
+                    ? const PetLoader.small(color: AppColors.onPrimary)
+                    : const Icon(Icons.save_rounded),
+                label: Text(_submitting ? 'Salvataggio in corso…' : widget.submitLabel),
               ),
             ),
             if (widget.footerActions != null) widget.footerActions!,
@@ -695,7 +699,12 @@ class _PetProfileFormState extends State<PetProfileForm> {
       dogSizeCategory: _species == 'Cane' && _otherBreed ? _dogSizeCategory : null,
     );
 
-    await widget.onSubmit(draft);
+    setState(() => _submitting = true);
+    try {
+      await widget.onSubmit(draft);
+    } finally {
+      if (mounted) setState(() => _submitting = false);
+    }
   }
 
   HabitatDetails? _buildHabitat() {
@@ -1252,10 +1261,27 @@ class _BreedPickerSheetState extends State<_BreedPickerSheet> {
                     )
                   : ListView.builder(
                       itemCount: matches.length,
-                      itemBuilder: (_, index) => ListTile(
-                        title: Text(matches[index]),
-                        onTap: () => Navigator.of(context).pop(matches[index]),
-                      ),
+                      itemBuilder: (_, index) {
+                        final breed = matches[index];
+                        final pinned = pinnedBreedLabels.contains(breed);
+                        final lastPinned = pinned &&
+                            (index + 1 >= matches.length ||
+                                !pinnedBreedLabels.contains(matches[index + 1]));
+                        final tile = ListTile(
+                          tileColor: pinned ? AppColors.accentSoft.withValues(alpha: 0.35) : null,
+                          leading: pinned ? const Icon(Icons.pets_outlined, color: AppColors.primary) : null,
+                          title: Text(
+                            breed,
+                            style: pinned ? const TextStyle(fontWeight: FontWeight.w600) : null,
+                          ),
+                          onTap: () => Navigator.of(context).pop(breed),
+                        );
+                        if (!lastPinned) return tile;
+                        return Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [tile, const Divider(height: 1)],
+                        );
+                      },
                     ),
             ),
           ],

@@ -31,9 +31,7 @@ def test_rejects_deleting_a_conversation_owned_by_someone_else() -> None:
     service = DeleteConversationService(repository)
 
     with pytest.raises(ValidationError):
-        service.execute(
-            DeleteConversationInput(owner_id="user-2", conversation_id=conversation.id)
-        )
+        service.execute(DeleteConversationInput(owner_id="user-2", conversation_id=conversation.id))
     assert repository.get(conversation.id) is not None
 
 

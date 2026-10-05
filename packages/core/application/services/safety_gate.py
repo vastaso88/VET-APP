@@ -10,6 +10,16 @@ URGENT_RED_FLAG_KEYWORDS = {
     "non respira",
     "respira male",
     "dispnea",
+    # Real-world finding (2026-10-05 evaluation): "respira a bocca aperta e
+    # fa molta fatica a respirare", about a cat, raised no flag at all and
+    # got an ordinary round of questions - none of the three phrasings
+    # above is how an owner actually says it.
+    "fatica a respirare",
+    "respira a fatica",
+    "respira con fatica",
+    "respira a bocca aperta",
+    "respira con la bocca aperta",
+    "non riesce a respirare",
     "emorrag",
     "sanguina",
     "trauma",
@@ -72,6 +82,16 @@ SPECIES_SPECIFIC_RED_FLAGS: dict[str, tuple[str, ...]] = {
         "non produce feci",
         "non fa feci",
         "niente cacca",
+        # Same evaluation: "non mangia e non fa le feci da ieri sera", about
+        # a rabbit, matched none of the wordings above (the article in "le
+        # feci", the day named after the second symptom).
+        "non fa le feci",
+        "non fa più le feci",
+        "non fa più la cacca",
+        "non fa più cacca",
+        "ha smesso di mangiare",
+        "non mangia più",
+        "non mangia da stamattina",
         # Real-world finding: the medication-safety coverage below stopped
         # at cat/dog, so "posso dare l'aspirina al mio coniglio?" raised no
         # flag at all. Rabbits, guinea pigs, chinchillas and hamsters

@@ -617,3 +617,25 @@ def test_the_expiry_length_is_configurable() -> None:
     world.age(report_id, days=2.5)
 
     assert world.view.user_places(BOX) == []
+
+
+def test_one_snapshot_serves_a_whole_radar_answer_with_a_single_read_of_each_table() -> None:
+    world = _World()
+    world.accept_rules("anna")
+    report_id = world.report_missing("anna")
+    calls: list[str] = []
+    for name in ("list_reports", "list_overrides", "list_ratings"):
+        original = getattr(world.reports, name)
+
+        def counted(*args: Any, _name: str = name, _original: Any = original, **kwargs: Any) -> Any:
+            calls.append(_name)
+            return _original(*args, **kwargs)
+
+        setattr(world.reports, name, counted)
+
+    snapshot = world.view.snapshot(BOX)
+    places = world.view.without_excluded(world.view.user_places(BOX, snapshot), snapshot)
+    extras = world.view.extras(places, BOX, viewer_id="anna", snapshot=snapshot)
+
+    assert sorted(calls) == ["list_overrides", "list_ratings", "list_reports"]
+    assert extras[places[0].id]["community"]["report_id"] == report_id

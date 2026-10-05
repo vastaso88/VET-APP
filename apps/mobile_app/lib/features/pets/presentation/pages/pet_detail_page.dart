@@ -19,6 +19,7 @@ import '../../../chat/domain/chat_models.dart';
 import '../../../chat/presentation/pages/chat_conversation_detail_page.dart';
 import '../../../dog_walks/data/active_walk_controller.dart';
 import '../../../dog_walks/data/dog_walks_repository.dart';
+import '../../../dog_walks/data/walk_history_controller.dart';
 import '../../../dog_walks/domain/walk_eligibility.dart';
 import '../../../dog_walks/domain/walk_retention.dart';
 import '../../../dog_walks/domain/walk_route_markers.dart';
@@ -30,7 +31,6 @@ import '../../../dog_walks/presentation/walk_labels.dart';
 import '../../../dog_walks/presentation/widgets/badge_gallery_dialog.dart';
 import '../../../dog_walks/presentation/widgets/walk_map_style.dart';
 import '../../../dog_walks/presentation/widgets/walk_route_markers_layer.dart';
-import '../../../../shared/auth/current_owner.dart';
 import '../../../medical_records/data/medical_record_file_cache.dart';
 import '../../../medical_records/data/medical_records_repository.dart';
 import '../../../medical_records/presentation/pages/medical_record_upload_page.dart';
@@ -527,7 +527,12 @@ class _RemindersTabState extends State<_RemindersTab> {
     );
     if (!confirmed) return;
 
-    await widget.repository.deleteReminder(reminder.id);
+    try {
+      await widget.repository.deleteReminder(reminder.id);
+    } on ReminderSyncException catch (error) {
+      if (mounted) showReminderFailure(error.message);
+      return;
+    }
     if (!mounted) return;
     await _reload();
   }
@@ -1118,51 +1123,19 @@ class _WalksTab extends StatefulWidget {
 }
 
 class _WalksTabState extends State<_WalksTab> {
-  late Future<List<WalkSession>> _future = _load();
-
-  @override
-  void initState() {
-    super.initState();
-    // History, records, favorites and recents all hang off _future, so a
-    // change anywhere (walk just finished, favorite toggled, a walk deleted)
-    // has to produce a new one - otherwise they only refreshed after the
-    // owner left this tab and came back (owner report, 2026-10-03).
-    DogWalksRepository.changes.addListener(_onWalksChanged);
-  }
+  // History, records, favorites and recents all hang off this controller: it
+  // reloads on any change (walk just finished, favorite toggled, a walk
+  // deleted) without ever blanking the list, and applies star/trash taps
+  // optimistically (owner reports, 2026-10-03 and 2026-10-05).
+  late final WalkHistoryController _history = WalkHistoryController(
+    petId: widget.pet.id,
+    repository: widget.repository,
+  )..refresh();
 
   @override
   void dispose() {
-    DogWalksRepository.changes.removeListener(_onWalksChanged);
+    _history.dispose();
     super.dispose();
-  }
-
-  void _onWalksChanged() {
-    if (!mounted) return;
-    setState(() => _future = _load());
-  }
-
-  Future<List<WalkSession>> _load() async {
-    final ownerId = resolveCurrentOwnerId();
-    final walks = await widget.repository.loadWalks(ownerId);
-    final completed = walks
-        .where((walk) => walk.petId == widget.pet.id && walk.status == WalkStatus.completed)
-        .toList();
-
-    // One-time cleanup (owner request, 2026-09-30) for zero-distance walks
-    // saved before the fix that stops them being saved at all
-    // (walk_completion_flow.dart) - a no-op once none are left.
-    final zeroDistance = completed.where((walk) => walk.distanceMeters <= 0).toList();
-    for (final walk in zeroDistance) {
-      await widget.repository.deleteWalk(ownerId, walk.id);
-    }
-
-    return completed.where((walk) => walk.distanceMeters > 0).toList()
-      ..sort((a, b) => b.startedAt.compareTo(a.startedAt));
-  }
-
-  Future<void> _reload() async {
-    setState(() => _future = _load());
-    await _future;
   }
 
   /// Pushes the live/paused/fresh-start page - ActiveWalkPage itself already
@@ -1177,14 +1150,14 @@ class _WalksTabState extends State<_WalksTab> {
       MaterialPageRoute<bool>(builder: (_) => ActiveWalkPage(pet: widget.pet)),
     );
     if (!mounted) return;
-    await _reload();
+    unawaited(_history.refresh());
   }
 
   Future<void> _showBadges() async {
-    final walks = await _future;
+    await _history.settled;
     if (!mounted) return;
     await showBadgeGalleryDialog(context,
-        petId: widget.pet.id, walksForPet: walks);
+        petId: widget.pet.id, walksForPet: _history.walks ?? const <WalkSession>[]);
   }
 
   @override
@@ -1229,15 +1202,15 @@ class _WalksTabState extends State<_WalksTab> {
         ),
         const SizedBox(height: AppSpacing.md),
         Expanded(
-          child: FutureBuilder<List<WalkSession>>(
-            future: _future,
-            builder: (context, snapshot) {
-              if (snapshot.connectionState == ConnectionState.waiting) {
-                return const Center(
-                    child: PetLoader());
+          child: AnimatedBuilder(
+            animation: _history,
+            builder: (context, _) {
+              // Only the very first load shows the loader; later reloads
+              // keep the walks on screen until the new ones arrive.
+              final walks = _history.walks;
+              if (walks == null) {
+                return const Center(child: PetLoader());
               }
-
-              final walks = snapshot.data ?? const <WalkSession>[];
               if (walks.isEmpty) {
                 return _EmptyTabState(
                   icon: Icons.directions_walk_outlined,
@@ -1254,8 +1227,7 @@ class _WalksTabState extends State<_WalksTab> {
                       _WalkCard(
                         walk: history.longestDistance!,
                         petName: widget.pet.name,
-                        repository: widget.repository,
-                        onChanged: _reload,
+                        history: _history,
                         recordLabel: history.longestDuration?.id == history.longestDistance!.id
                             ? 'Più lunga · Più duratura'
                             : 'Più lunga',
@@ -1266,8 +1238,7 @@ class _WalksTabState extends State<_WalksTab> {
                       _WalkCard(
                         walk: history.longestDuration!,
                         petName: widget.pet.name,
-                        repository: widget.repository,
-                        onChanged: _reload,
+                        history: _history,
                         recordLabel: 'Più duratura',
                       ),
                     ],
@@ -1279,8 +1250,7 @@ class _WalksTabState extends State<_WalksTab> {
                       _WalkCard(
                           walk: walk,
                           petName: widget.pet.name,
-                          repository: widget.repository,
-                          onChanged: _reload),
+                          history: _history),
                       const SizedBox(height: AppSpacing.sm),
                     ],
                     const SizedBox(height: AppSpacing.sm),
@@ -1291,8 +1261,7 @@ class _WalksTabState extends State<_WalksTab> {
                       _WalkCard(
                           walk: walk,
                           petName: widget.pet.name,
-                          repository: widget.repository,
-                          onChanged: _reload),
+                          history: _history),
                       const SizedBox(height: AppSpacing.sm),
                     ],
                   ],
@@ -1403,15 +1372,16 @@ class _WalkCard extends StatelessWidget {
   const _WalkCard({
     required this.walk,
     required this.petName,
-    required this.repository,
-    required this.onChanged,
+    required this.history,
     this.recordLabel,
   });
 
   final WalkSession walk;
   final String petName;
-  final DogWalksRepository repository;
-  final VoidCallback onChanged;
+
+  /// Star and trash go through it: the card changes at once, the write
+  /// follows behind and is undone with a message if it is refused.
+  final WalkHistoryController history;
 
   /// "Più lunga" / "Più duratura" / both, when this card is shown under the
   /// Record section (owner request, 2026-09-30: distance and duration are
@@ -1448,8 +1418,7 @@ class _WalkCard extends StatelessWidget {
       if (confirmed != true) return;
     }
 
-    await repository.saveWalk(walk.copyWith(isFavorite: !walk.isFavorite));
-    onChanged();
+    await history.setFavorite(walk, !walk.isFavorite);
   }
 
   Future<void> _delete(BuildContext context) async {
@@ -1476,8 +1445,7 @@ class _WalkCard extends StatelessWidget {
     );
     if (confirmed != true) return;
 
-    await repository.deleteWalk(resolveCurrentOwnerId(), walk.id);
-    onChanged();
+    await history.delete(walk);
   }
 
   Future<void> _openDetail(BuildContext context) async {

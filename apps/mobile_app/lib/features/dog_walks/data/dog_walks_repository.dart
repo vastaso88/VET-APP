@@ -12,8 +12,9 @@ import '../domain/walk_session.dart';
 /// just not responding to the tap). Uses AppRouter's global
 /// scaffoldMessengerKey rather than threading a BuildContext through every
 /// repository method - same idea as its navigatorKey.
-void _notifySyncFailure(String action, Object error) {
+void _notifySyncFailure(String action, Object error, {bool showMessage = true}) {
   debugPrint('DogWalksRepository: $action failed against Supabase: $error');
+  if (!showMessage) return;
   AppRouter.scaffoldMessengerKey.currentState?.showSnackBar(
     const SnackBar(content: Text('Sincronizzazione non riuscita: modifica salvata solo sul telefono')),
   );
@@ -131,11 +132,18 @@ class DogWalksRepository {
     return List<WalkSession>.unmodifiable(merged);
   }
 
-  Future<void> saveWalk(WalkSession walk) async {
+  /// Applies [walk] locally at once (and announces it) and then writes it to
+  /// Supabase. Returns whether the write is safely stored: true when synced
+  /// or when no backend is configured, false when the remote write failed -
+  /// the local copy still stands (see [loadWalks]), so most callers ignore
+  /// it. The owner-initiated actions on the history cards pass
+  /// [notifyFailure] false and undo the edit with [restoreWalk] plus their
+  /// own message instead of the generic "saved only on the phone".
+  Future<bool> saveWalk(WalkSession walk, {bool notifyFailure = true}) async {
     if (_deletedKeys.contains((walk.ownerId, walk.id))) {
       // Refuse to resurrect a walk this repository was explicitly told to
       // delete - see _deletedKeys' doc comment for why this exists.
-      return;
+      return true;
     }
 
     final index = _localWalks.indexWhere((item) => item.id == walk.id);
@@ -153,7 +161,7 @@ class DogWalksRepository {
       // relative to.
       _unsyncedIds.remove(walk.id);
       _announceChange(walk);
-      return;
+      return true;
     }
 
     // Unsynced from the moment the write starts, not just once it fails:
@@ -166,11 +174,30 @@ class DogWalksRepository {
     try {
       await client.from('dog_walks').upsert(toRow(walk));
       _unsyncedIds.remove(walk.id);
+      return true;
     } catch (error) {
       // The local list above already applied for this session; loadWalks
       // won't let a stale remote row overwrite it until this succeeds.
-      _notifySyncFailure('saving walk ${walk.id}', error);
+      _notifySyncFailure('saving walk ${walk.id}', error, showMessage: notifyFailure);
+      return false;
     }
+  }
+
+  /// Local-only undo of an owner action whose remote write was refused:
+  /// puts [walk] back as it was before the edit/delete, lifts the delete
+  /// tombstone and the "trust local over remote" marks (remote still holds
+  /// the old row, so it is the truth again) and announces the change.
+  void restoreWalk(WalkSession walk) {
+    _deletedKeys.remove((walk.ownerId, walk.id));
+    _pendingDeleteIds.remove(walk.id);
+    _unsyncedIds.remove(walk.id);
+    final index = _localWalks.indexWhere((item) => item.id == walk.id);
+    if (index == -1) {
+      _localWalks.insert(0, walk);
+    } else {
+      _localWalks[index] = walk;
+    }
+    changes.value++;
   }
 
   /// Ticks [changes] for a save - except while a walk is still being
@@ -188,7 +215,10 @@ class DogWalksRepository {
   /// Removes a walk entirely - the trash button on a history card (owner
   /// request, 2026-09-30), and the one-time cleanup of already-saved
   /// zero-distance walks (_WalksTabState._load() in pet_detail_page.dart).
-  Future<void> deleteWalk(String ownerId, String walkId) async {
+  ///
+  /// Returns whether the remote delete went through (true with no backend);
+  /// see [saveWalk] for [notifyFailure] and [restoreWalk].
+  Future<bool> deleteWalk(String ownerId, String walkId, {bool notifyFailure = true}) async {
     _deletedKeys.add((ownerId, walkId));
     _localWalks.removeWhere((walk) => walk.id == walkId && walk.ownerId == ownerId);
     _unsyncedIds.remove(walkId);
@@ -197,7 +227,7 @@ class DogWalksRepository {
     final client = _resolveClient();
     if (client == null) {
       _pendingDeleteIds.remove(walkId);
-      return;
+      return true;
     }
 
     // Hidden from remote reads from the moment the delete starts (the
@@ -206,10 +236,12 @@ class DogWalksRepository {
     try {
       await client.from('dog_walks').delete().eq('id', walkId).eq('owner_id', ownerId);
       _pendingDeleteIds.remove(walkId);
+      return true;
     } catch (error) {
       // Same posture as saveWalk: loadWalks hides this id out of remote
       // until the delete actually goes through.
-      _notifySyncFailure('deleting walk $walkId', error);
+      _notifySyncFailure('deleting walk $walkId', error, showMessage: notifyFailure);
+      return false;
     }
   }
 

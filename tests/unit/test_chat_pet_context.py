@@ -208,9 +208,7 @@ def test_reminder_summary_keeps_only_active_relevant_reminders_of_this_pet() -> 
     repository.save(_reminder("Già fatto", TODAY + timedelta(days=3), is_done=True))
     repository.save(_reminder("Vecchio", TODAY - timedelta(days=90)))
     repository.save(_reminder("Lontano", TODAY + timedelta(days=200)))
-    repository.save(
-        Reminder(owner_id="owner-1", pet_id="pet-2", title="Altro pet", due_date=TODAY)
-    )
+    repository.save(Reminder(owner_id="owner-1", pet_id="pet-2", title="Altro pet", due_date=TODAY))
 
     summary = ReminderContextRetriever(repository).summarize_for_pet("owner-1", "pet-1", TODAY)
 
@@ -222,9 +220,12 @@ def test_reminder_summary_keeps_only_active_relevant_reminders_of_this_pet() -> 
 
 
 def test_reminder_summary_is_none_when_nothing_is_relevant() -> None:
-    assert ReminderContextRetriever(InMemoryReminderRepository()).summarize_for_pet(
-        "owner-1", "pet-1", TODAY
-    ) is None
+    assert (
+        ReminderContextRetriever(InMemoryReminderRepository()).summarize_for_pet(
+            "owner-1", "pet-1", TODAY
+        )
+        is None
+    )
 
 
 def test_send_chat_message_feeds_profile_and_reminders_into_the_prompt() -> None:
@@ -414,7 +415,12 @@ def test_a_document_summary_from_another_pets_attachment_is_never_used() -> None
         events, attachment_repository=attachments
     ).summarize_for_pet("pet-1")
 
-    assert summary == "- Referto"
+    # The record is listed, with an honest note that its file was not
+    # read — and nothing of the other pet's document.
+    assert summary is not None
+    assert summary.startswith("- Referto")
+    assert "contenuto di un altro animale" not in summary
+    assert "non è stato letto" in summary
 
 
 def test_long_document_summaries_are_clipped() -> None:

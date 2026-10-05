@@ -28,8 +28,7 @@ _GENERIC_CATALOG = [
         clinical_domain="nutrition",
         species="cat",
         snippet=(
-            "Nutritional support and hydration monitoring remain central in feline "
-            "CKD management."
+            "Nutritional support and hydration monitoring remain central in feline CKD management."
         ),
     ),
     EvidenceSource(

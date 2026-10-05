@@ -12,7 +12,17 @@ unless the reply gives a clear, specific, benign explanation.
 """
 
 RED_FLAG_CATEGORIES: dict[str, tuple[str, ...]] = {
-    "respiratory": ("non respira", "respira male", "dispnea"),
+    "respiratory": (
+        "non respira",
+        "respira male",
+        "dispnea",
+        "fatica a respirare",
+        "respira a fatica",
+        "respira con fatica",
+        "respira a bocca aperta",
+        "respira con la bocca aperta",
+        "non riesce a respirare",
+    ),
     "collapse": ("collasso", "collapse"),
     "seizure": ("convuls", "seizure"),
     "bleeding_trauma": ("emorrag", "sanguina", "trauma", "incidente"),
@@ -30,6 +40,13 @@ RED_FLAG_CATEGORIES: dict[str, tuple[str, ...]] = {
         "non defeca",
         "non produce feci",
         "non fa feci",
+        "non fa le feci",
+        "non fa più le feci",
+        "non fa più la cacca",
+        "non fa più cacca",
+        "ha smesso di mangiare",
+        "non mangia più",
+        "non mangia da stamattina",
         "niente cacca",
     ),
     # Real-world finding (2026-09-25, reported via gestore git): a
@@ -87,6 +104,11 @@ IMMEDIATE_ESCALATION_MARKERS: tuple[str, ...] = (
     "non risponde più",
     "non respira per niente",
     "smesso di respirare",
+    # 2026-10-05 evaluation: "fa molta fatica a respirare" was met with the
+    # "after a run, or at rest?" question. Said this strongly, it is not
+    # the ambiguous panting that question exists for.
+    "molta fatica a respirare",
+    "non riesce a respirare",
     "labbra blu",
     "gengive bianche",
     "sangue ovunque",

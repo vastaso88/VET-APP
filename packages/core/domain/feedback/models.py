@@ -5,9 +5,7 @@ from pydantic import BaseModel, Field
 
 from packages.core.domain.common.entity import new_id, utc_now
 
-ChatResponseReportReason = Literal[
-    "no_answer", "wrong_answer", "incomplete_answer", "other"
-]
+ChatResponseReportReason = Literal["no_answer", "wrong_answer", "incomplete_answer", "other"]
 ChatResponseReportStatus = Literal["reported", "under_review", "resolved", "wont_fix"]
 
 

@@ -33,9 +33,11 @@ def test_send_chat_message_degrades_gracefully_on_provider_failure() -> None:
     # surface as a 500 to the owner, same fail-safe posture the retrieval
     # adapters already have for network failures.
     pet_repository = InMemoryPetProfileRepository()
-    pet = CreatePetProfileService(pet_repository).execute(
-        CreatePetProfileInput(owner_id="user-1", name="Milo", species="dog")
-    ).pet_profile
+    pet = (
+        CreatePetProfileService(pet_repository)
+        .execute(CreatePetProfileInput(owner_id="user-1", name="Milo", species="dog"))
+        .pet_profile
+    )
 
     orchestrator = ChatOrchestrator(
         FailingLLMClient(), InMemoryEvidenceRetriever(), NoopPiiAnonymizer()

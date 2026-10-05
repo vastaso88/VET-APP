@@ -36,6 +36,13 @@ class Settings(BaseSettings):
     reporter_pseudonym_salt: str = Field(default="", alias="REPORTER_PSEUDONYM_SALT")
     llm_provider: str = Field(default="echo", alias="LLM_PROVIDER")
     llm_model: str = Field(default="demo-model", alias="LLM_MODEL")
+    # Reserve models, comma-separated, tried in order when LLM_MODEL is rate
+    # limited (Groq counts its daily limit per model: 2026-10-05, the chat
+    # was down for hours on a single exhausted model). Empty = no reserve.
+    # Default: the models active on the Groq account on 2026-10-05.
+    llm_fallback_models: str = Field(
+        default="openai/gpt-oss-20b,qwen/qwen3.8-27b", alias="LLM_FALLBACK_MODELS"
+    )
     llm_api_key: str = Field(default="", alias="LLM_API_KEY")
     llm_base_url: str = Field(default="https://api.groq.com/openai/v1", alias="LLM_BASE_URL")
     llm_timeout_seconds: int = Field(default=30, alias="LLM_TIMEOUT_SECONDS")
@@ -49,6 +56,9 @@ class Settings(BaseSettings):
     # (LLM_API_KEY/LLM_BASE_URL) as chat and voice dictation.
     vision_provider: str = Field(default="echo", alias="VISION_PROVIDER")
     vision_model: str = Field(default="qwen/qwen3.8-27b", alias="VISION_MODEL")
+    # Same idea for reading photos and scans. Empty by default: on
+    # 2026-10-05 the Groq account had no second model that accepts images.
+    vision_fallback_models: str = Field(default="", alias="VISION_FALLBACK_MODELS")
     # Nearby pet-services radar ("cosa c'e' attorno"). OpenStreetMap via
     # Overpass is the only provider; results are cached per geographic cell
     # in Supabase (radar_coverage_cells / radar_places_cache), so Overpass

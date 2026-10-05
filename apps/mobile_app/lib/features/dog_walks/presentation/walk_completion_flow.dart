@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 
 import '../../../shared/auth/current_owner.dart';
@@ -18,13 +20,20 @@ import 'widgets/favorite_eviction_dialog.dart';
 /// passeggiata") so both entry points behave identically (owner request,
 /// 2026-09-30 - the sheet needed the exact same completion flow the page
 /// already had, not a second copy of it).
-Future<void> finishActiveWalk(BuildContext context, PetProfile pet) async {
+///
+/// [onSaved] runs once the walk is stopped and saved, right before the first
+/// dialog - the caller's "saving..." indicator can go away there.
+Future<void> finishActiveWalk(
+  BuildContext context,
+  PetProfile pet, {
+  VoidCallback? onSaved,
+}) async {
   final repository = DogWalksRepository();
   final ownerId = resolveCurrentOwnerId();
-  final beforeWalks =
-      (await repository.loadWalks(ownerId)).where((walk) => walk.petId == pet.id).toList();
-  final beforeBadges = evaluateBadges(beforeWalks).toSet();
 
+  // Stop first: the walk's end time is taken inside stop(), so anything
+  // awaited before it (a remote read used to be) stretched the recorded
+  // duration by however long it took.
   await ActiveWalkController.instance.stop();
   if (!context.mounted) return;
 
@@ -33,8 +42,8 @@ Future<void> finishActiveWalk(BuildContext context, PetProfile pet) async {
     // No point tracked far enough apart to register any distance - not a
     // real walk to keep (owner request, 2026-09-30). stop() already saved
     // it, so this is a delete, not a "never save" - same visible result.
-    await repository.deleteWalk(ownerId, justStopped.id);
-    if (!context.mounted) return;
+    unawaited(repository.deleteWalk(ownerId, justStopped.id));
+    onSaved?.call();
     await showDialog<void>(
       context: context,
       builder: (context) => AlertDialog(
@@ -55,9 +64,13 @@ Future<void> finishActiveWalk(BuildContext context, PetProfile pet) async {
 
   final afterWalks =
       (await repository.loadWalks(ownerId)).where((walk) => walk.petId == pet.id).toList();
-  final afterBadges = evaluateBadges(afterWalks);
-  final newlyEarned = afterBadges.where((badge) => !beforeBadges.contains(badge)).toList();
+  // "Before" is "after" without the walk that just ended (badges only count
+  // completed walks), so one read serves both.
+  final beforeBadges =
+      evaluateBadges(afterWalks.where((walk) => walk.id != justStopped?.id).toList()).toSet();
+  final newlyEarned = evaluateBadges(afterWalks).where((badge) => !beforeBadges.contains(badge)).toList();
 
+  onSaved?.call();
   if (!context.mounted) return;
   if (newlyEarned.isNotEmpty) {
     await showBadgeEarnedDialog(context, newlyEarned);

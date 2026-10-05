@@ -462,3 +462,38 @@ def _data_source(name: str) -> object:
         attribution="test",
         imported_at=datetime(2026, 10, 4, tzinfo=UTC),
     )
+
+
+def test_a_confirmed_user_reported_dog_park_is_rated_without_searching_the_area(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    from apps.api.dependencies.container import get_container
+    from packages.core.domain.radar_reports.models import RadarUserReport
+
+    client = _client_with_env(monkeypatch)
+    container = get_container()
+    container.radar_places_source = _NoPlacesSource()  # type: ignore[assignment]
+    client.post("/account/consents", json={"consent_key": "contribution_rules", "granted": True})
+    report = container.radar_reports_repository.save_report(
+        RadarUserReport(
+            kind="missing",
+            status="confirmed",
+            place_type="dog_park",
+            name="Area cani",
+            latitude=45.4660,
+            longitude=9.19,
+            reporter_pseudonym="someone-else",
+            confirmations=5,
+        )
+    )
+    rating = {
+        "source": "vetapp_users",
+        "source_id": report.id,
+        "latitude": 45.4660,
+        "longitude": 9.19,
+        "stars": 5,
+    }
+
+    assert client.put("/local-services/ratings", json=rating).json() == {"stars": 5}
+    unknown = client.put("/local-services/ratings", json={**rating, "source_id": "nope"})
+    assert unknown.status_code == 400

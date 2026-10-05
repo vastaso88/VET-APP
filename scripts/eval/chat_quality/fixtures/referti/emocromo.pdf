@@ -1,0 +1,71 @@
+%PDF-1.4
+1 0 obj
+<< /Type /Catalog /Pages 2 0 R >>
+endobj
+2 0 obj
+<< /Type /Pages /Kids [3 0 R] /Count 1 >>
+endobj
+3 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] /Contents 4 0 R /Resources << /Font << /F1 5 0 R >> >> >>
+endobj
+4 0 obj
+<< /Length 1262 >>
+stream
+BT
+/F1 9 Tf
+40 800 Td
+(CLINICA VETERINARIA ESEMPIO \(struttura fittizia, dati di prova\)) Tj
+0 -13 Td
+(Esame emocromocitometrico) Tj
+0 -13 Td
+(Data prelievo: 03/09/2026) Tj
+0 -13 Td
+(Paziente: Argo - cane Labrador, maschio castrato, 12 anni, 34 kg) Tj
+0 -13 Td
+() Tj
+0 -13 Td
+(Esame                    Risultato    Unita       Intervallo di riferimento) Tj
+0 -13 Td
+(Globuli rossi \(RBC\)      5,2          10^6/uL     5,5 - 8,5      BASSO) Tj
+0 -13 Td
+(Emoglobina \(HGB\)         11,6         g/dL        12,0 - 18,0    BASSO) Tj
+0 -13 Td
+(Ematocrito \(HCT\)         35           %           37 - 55        BASSO) Tj
+0 -13 Td
+(MCV                      67           fL          60 - 77) Tj
+0 -13 Td
+(MCHC                     33           g/dL        32 - 36) Tj
+0 -13 Td
+(Reticolociti             45           10^3/uL     10 - 110) Tj
+0 -13 Td
+(Globuli bianchi \(WBC\)    9,8          10^3/uL     6,0 - 17,0) Tj
+0 -13 Td
+(Neutrofili               6,9          10^3/uL     3,0 - 11,5) Tj
+0 -13 Td
+(Linfociti                1,9          10^3/uL     1,0 - 4,8) Tj
+0 -13 Td
+(Piastrine \(PLT\)          310          10^3/uL     200 - 500) Tj
+0 -13 Td
+() Tj
+0 -13 Td
+(Commento: lieve anemia normocitica normocromica. Da correlare con il quadro clinico.) Tj
+0 -13 Td
+ET
+endstream
+endobj
+5 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Courier /Encoding /WinAnsiEncoding >>
+endobj
+xref
+0 6
+0000000000 65535 f 
+0000000009 00000 n 
+0000000058 00000 n 
+0000000115 00000 n 
+0000000241 00000 n 
+0000001555 00000 n 
+trailer
+<< /Size 6 /Root 1 0 R >>
+startxref
+1650
+%%EOF

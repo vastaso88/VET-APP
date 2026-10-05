@@ -1,0 +1,18 @@
+CLINICA VETERINARIA ESEMPIO (struttura fittizia, dati di prova)
+Esame emocromocitometrico
+Data prelievo: 03/09/2026
+Paziente: Argo - cane Labrador, maschio castrato, 12 anni, 34 kg
+
+Esame                    Risultato    Unita       Intervallo di riferimento
+Globuli rossi (RBC)      5,2          10^6/uL     5,5 - 8,5      BASSO
+Emoglobina (HGB)         11,6         g/dL        12,0 - 18,0    BASSO
+Ematocrito (HCT)         35           %           37 - 55        BASSO
+MCV                      67           fL          60 - 77
+MCHC                     33           g/dL        32 - 36
+Reticolociti             45           10^3/uL     10 - 110
+Globuli bianchi (WBC)    9,8          10^3/uL     6,0 - 17,0
+Neutrofili               6,9          10^3/uL     3,0 - 11,5
+Linfociti                1,9          10^3/uL     1,0 - 4,8
+Piastrine (PLT)          310          10^3/uL     200 - 500
+
+Commento: lieve anemia normocitica normocromica. Da correlare con il quadro clinico.

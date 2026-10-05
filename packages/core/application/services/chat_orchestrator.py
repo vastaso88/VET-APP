@@ -8,7 +8,11 @@ from packages.core.application.ports.evidence_retriever import (
     EvidenceRetrievalRequest,
     EvidenceRetriever,
 )
-from packages.core.application.ports.llm_client import LLMClient, LLMGenerationRequest
+from packages.core.application.ports.llm_client import (
+    LLMClient,
+    LLMGenerationRequest,
+    LLMResponse,
+)
 from packages.core.application.ports.pii_anonymizer import PiiAnonymizationRequest, PiiAnonymizer
 from packages.core.application.services.consent_interpreter import ConsentInterpreter
 from packages.core.application.services.evidence_quality_engine import (
@@ -19,11 +23,25 @@ from packages.core.application.services.evidence_synthesizer import EvidenceSynt
 from packages.core.application.services.interview_planner import InterviewPlanner
 from packages.core.application.services.medical_record_context_retriever import (
     MedicalRecordContextRetriever,
+    RecordDocument,
+)
+from packages.core.application.services.natural_answer_prompt import (
+    ANSWER_NOW_REMINDER,
+    build_system_prompt,
 )
 from packages.core.application.services.response_generator import ResponseGenerator
 from packages.core.application.services.safety_gate import SafetyGate
 from packages.core.application.services.situation_model_builder import SituationModelBuilder
 from packages.core.domain.conversation.models import ChatMessage
+from packages.core.domain.conversation.request_kind import (
+    RequestKind,
+    asks_to_stop_questions,
+    classify_request,
+    consecutive_question_turns,
+    is_question_only,
+    looks_like_document,
+    may_ask_before_answering,
+)
 from packages.core.domain.conversation.states import ConversationState
 from packages.core.domain.knowledge.answer_validation import validate_answer
 from packages.core.domain.knowledge.evidence_synthesis import EvidenceSynthesis
@@ -347,6 +365,9 @@ class ChatOrchestratorInput(BaseModel):
     # anything the owner typed, without every one of those needing to
     # become vision-aware itself.
     photo_context: str | None = None
+    # A file came with this message but its reading failed: the chat must
+    # say so rather than answer as if nothing had been attached.
+    attachment_unreadable: bool = False
     conversation_history: list[ChatMessage] = Field(default_factory=list)
     situation_model: SituationModel | None = None
     interview_turns_used: int = 0
@@ -593,6 +614,30 @@ class ChatOrchestrator:
         )
         if resolving_consent:
             return self._resolve_medical_record_consent(data, message, situation, turns_used)
+
+        # What the owner asked for comes before any anamnesis (build 22
+        # feedback: "spiegami il referto" was answered by asking for
+        # symptoms). A request to explain a document is self-contained:
+        # it never enters the intent/interview/evidence routing below.
+        request_kind = self._request_kind(data)
+        if request_kind is RequestKind.REPORT:
+            unavailable = self._report_unavailable_result(data)
+            if unavailable is not None:
+                return unavailable
+            result = self._generate_natural_answer(
+                data,
+                message,
+                "clinical_question",
+                situation,
+                effective_species,
+                # Literature search adds nothing to reading a report.
+                sources=[],
+                request_kind=request_kind,
+            )
+            result.situation_model = situation
+            result.interview_turns_used = turns_used
+            result.medical_record_consent = medical_record_consent
+            return result
 
         intent = self._classify_intent(lowered)
         if (
@@ -942,30 +987,42 @@ class ChatOrchestrator:
             ),
         )
 
-    def _medical_context_for_prompt(self, data: ChatOrchestratorInput) -> str:
+    def _medical_context_for_prompt(
+        self, data: ChatOrchestratorInput, kind: RequestKind
+    ) -> tuple[str, list[RecordDocument]]:
         """The medical-record part of the natural-answer prompt, gated by
-        the per-pet, revocable consent (spec v3 §18).
+        the per-pet, revocable consent (spec v3 §18), plus the documents
+        whose full text went into it (empty unless the owner asked to have
+        a document explained).
 
         With consent: a short, anonymized summary of the most recent
-        records. Without it (never asked, or revoked): no record content
-        at all — only the fact that documents exist, with an instruction
-        to say so transparently instead of guessing or silently ignoring
-        them.
+        records — or, when the request is to explain a document, the full
+        text of the documents it is about. Without it (never asked, or
+        revoked): no record content at all — only the fact that documents
+        exist, with an instruction to say so transparently instead of
+        guessing or silently ignoring them.
         """
-        if self._medical_record_context_retriever is None or not data.pet_id:
-            return ""
+        retriever = self._medical_record_context_retriever
+        if retriever is None or not data.pet_id:
+            return "", []
         if data.medical_record_consent:
+            # A file attached to this very message is the document to
+            # explain: the cartella then stays background context.
+            if kind is RequestKind.REPORT and not data.photo_context:
+                explained = self._documents_to_explain(data)
+                if explained is not None:
+                    return explained
             summary = self._retrieve_medical_record_summary(data.pet_id)
             if not summary:
-                return ""
+                return "", []
             return (
                 "\n\nMedical records the owner allowed you to consult (most recent "
                 "first; an old exam may no longer reflect the current situation):\n"
                 f"{self._anonymize_for_provider(summary, data)}"
-            )
-        count = self._medical_record_context_retriever.count_for_pet(data.pet_id)
+            ), []
+        count = retriever.count_for_pet(data.pet_id)
         if count == 0:
-            return ""
+            return "", []
         return (
             f"\n\nMedical records: this pet has {count} document(s) in its cartella "
             "clinica, but the owner has NOT given you permission to read them, so "
@@ -973,7 +1030,171 @@ class ChatOrchestrator:
             "say. The owner is told about this separately (a short notice is added "
             "to the reply automatically), so do not bring it up yourself: just "
             "answer as well as you can without them."
+        ), []
+
+    def _documents_to_explain(
+        self, data: ChatOrchestratorInput
+    ) -> tuple[str, list[RecordDocument]] | None:
+        """Full text of the documents an "explain this report" request is
+        about. None when the cartella has nothing for it."""
+        retriever = self._medical_record_context_retriever
+        assert retriever is not None
+        documents = retriever.documents_for_pet(data.pet_id)
+        selected = retriever.select_for_request(documents, data.user_message)
+        readable = [document for document in selected if document.explainable]
+        unreadable = [document for document in selected if document.unreadable]
+        if not readable and not unreadable:
+            return None
+        block = ""
+        if readable:
+            block += (
+                "\n\nDocuments from this pet's cartella clinica that you have read for "
+                "this answer (the owner allowed it):"
+            )
+            for document in readable:
+                text = "\n".join(part for part in (document.description, document.content) if part)
+                block += (
+                    f"\n--- {document.title}, {document.occurred_on.strftime('%d/%m/%Y')}\n"
+                    f"{self._anonymize_for_provider(text, data)}"
+                )
+        if unreadable:
+            block += (
+                "\n\nThe cartella also holds a file whose reading FAILED, so you know "
+                "nothing of what it says. Tell the owner plainly and suggest uploading it "
+                "again or typing its values: "
+                + "; ".join(document.label() for document in unreadable)
+            )
+        others = [document for document in documents if document not in selected]
+        if others:
+            block += "\n\nOther documents in the cartella, not shown here: " + "; ".join(
+                document.label() for document in others
+            )
+        return block, readable
+
+    def _request_kind(self, data: ChatOrchestratorInput) -> RequestKind:
+        document_attached = data.attachment_unreadable or (
+            bool(data.photo_context) and looks_like_document(data.photo_context or "")
         )
+        return classify_request(data.user_message, has_attachment=document_attached)
+
+    @staticmethod
+    def _may_ask(data: ChatOrchestratorInput, kind: RequestKind) -> bool:
+        """Whether this reply may consist of questions only: never for an
+        explicit request, never after the owner said to stop, and never a
+        third time in a row."""
+        history = data.conversation_history
+        owner_said_stop = asks_to_stop_questions(data.user_message) or any(
+            message.role == "user" and asks_to_stop_questions(message.content)
+            for message in history
+        )
+        return may_ask_before_answering(
+            kind,
+            question_turns_in_a_row=consecutive_question_turns(
+                [message.content for message in history if message.role == "assistant"]
+            ),
+            owner_said_stop=owner_said_stop,
+        )
+
+    @staticmethod
+    def _owner_supplied_content(data: ChatOrchestratorInput) -> bool:
+        """The owner gave the figures to explain themselves — typed in a
+        message, or in a file sent earlier in this conversation."""
+        if any(char.isdigit() for char in data.user_message):
+            return True
+        return any(
+            message.role == "user"
+            and (message.attachment_id or any(char.isdigit() for char in message.content))
+            for message in data.conversation_history
+        )
+
+    @staticmethod
+    def _record_status_result(answer: str) -> ChatOrchestratorResult:
+        return ChatOrchestratorResult(
+            answer=answer,
+            mode="record_status",
+            confidence="high",
+            ai_generated=False,
+            provider="rule-based",
+            model="record-status",
+            state=ConversationState.NEED_MORE_INFORMATION,
+        )
+
+    def _report_unavailable_result(
+        self, data: ChatOrchestratorInput
+    ) -> ChatOrchestratorResult | None:
+        """Asked to explain a document the chat has no way to read: say
+        exactly why, in fixed wording — never a guess at its content, and
+        never a detour into the animal's symptoms. None when there is
+        something to explain."""
+        if data.attachment_unreadable:
+            return self._record_status_result(
+                "Non sono riuscito a leggere il file che hai allegato, quindi non posso "
+                "dirti cosa c'è scritto. Prova a inviarlo di nuovo: un PDF o una foto "
+                "nitida e ben illuminata di solito funzionano. In alternativa scrivimi qui "
+                "i valori che ti interessano e te li spiego."
+            )
+        retriever = self._medical_record_context_retriever
+        if data.photo_context or self._owner_supplied_content(data):
+            return None
+        if retriever is None or not data.pet_id:
+            return None
+        count = retriever.count_for_pet(data.pet_id)
+        if count == 0:
+            return self._record_status_result(
+                f"Non trovo documenti nella cartella clinica di {data.pet_name}, quindi non "
+                "ho un referto da spiegarti. Puoi caricarlo nella cartella clinica oppure "
+                "allegarlo qui in chat; in alternativa scrivimi i valori che ti interessano "
+                "e te li spiego."
+            )
+        if not data.medical_record_consent:
+            documents_found = "un documento" if count == 1 else f"{count} documenti"
+            return self._record_status_result(
+                f"Nella cartella clinica di {data.pet_name} c'è {documents_found}, ma "
+                f"{MEDICAL_RECORD_NOTICE_MARKER} perché il consenso non è attivo: non so "
+                f"cosa c'è scritto. Puoi attivarlo dalla scheda di {data.pet_name}. In "
+                "alternativa allega qui il referto o scrivimi i valori, e te li spiego "
+                "subito."
+            )
+        selected = retriever.select_for_request(
+            retriever.documents_for_pet(data.pet_id), data.user_message
+        )
+        if any(document.explainable for document in selected):
+            return None
+        labels = " e ".join(document.label() for document in selected)
+        if any(document.unreadable for document in selected):
+            return self._record_status_result(
+                f"In cartella vedo {labels}, ma non sono riuscito a leggere il file: non "
+                "posso dirti cosa c'è scritto senza inventare. Prova a caricarlo di nuovo "
+                "(un PDF o una foto nitida di solito funzionano), oppure scrivimi qui i "
+                "valori e te li spiego."
+            )
+        return self._record_status_result(
+            f"In cartella vedo {labels}, ma senza un file o una descrizione da leggere. "
+            "Allega qui il referto o scrivimi i valori che ti interessano e te li spiego."
+        )
+
+    @staticmethod
+    def _report_reading_line(
+        data: ChatOrchestratorInput, kind: RequestKind, documents_read: list[RecordDocument]
+    ) -> str:
+        """One fixed line naming the document the reply is based on (build
+        22 feedback: "sembra leggere i referti, ma non ho capito quanto li
+        usi veramente"). Deterministic so it is always true; not repeated
+        within a conversation."""
+        if kind is not RequestKind.REPORT:
+            return ""
+        if data.photo_context:
+            line = "Ho letto il documento che mi hai allegato."
+        elif documents_read:
+            line = "Ho letto " + " e ".join(d.label() for d in documents_read) + "."
+        else:
+            return ""
+        if any(
+            message.role == "assistant" and line in message.content
+            for message in data.conversation_history
+        ):
+            return ""
+        return f"{line}\n\n"
 
     # Intents where the pet's clinical documents could plausibly matter —
     # the no-consent notice is not shown for e.g. a behaviour or enclosure
@@ -1289,6 +1510,7 @@ class ChatOrchestrator:
         effective_species: str,
         *,
         sources: list[EvidenceSource] | None = None,
+        request_kind: RequestKind | None = None,
     ) -> ChatOrchestratorResult:
         """Default answer path (2026-09-21 product realignment) for every
         non-emergency, non-dosage, non-small-talk question whose intent
@@ -1347,7 +1569,8 @@ class ChatOrchestrator:
         # decision, or granted earlier this conversation) — this does
         # NOT yet ask for consent on its own when it's still unknown;
         # that's a separate, still-open piece of work.
-        medical_context = self._medical_context_for_prompt(data)
+        kind = request_kind or self._request_kind(data)
+        medical_context, documents_read = self._medical_context_for_prompt(data, kind)
         reminders_context = ""
         if data.reminders_context:
             reminders_context = (
@@ -1355,96 +1578,57 @@ class ChatOrchestrator:
                 "account when relevant, e.g. an ongoing therapy):\n"
                 f"{self._anonymize_for_provider(data.reminders_context, data)}"
             )
+        attachment_note = ""
+        if data.attachment_unreadable:
+            attachment_note = (
+                "\n\nThe owner attached a file to this message, but its reading failed: "
+                "you know nothing of what it shows. Say so and suggest sending it again."
+            )
         today = data.today or datetime.now(UTC).date()
 
-        # 2026-09-21: this is the primary answer-writing voice for most of
-        # the product's real traffic now (used to be a narrow fallback for
-        # one edge case; the architecture change above promoted it to the
-        # default path for ordinary questions). validate_answer below
-        # still enforces the citation rule mechanically if `sources` is
-        # non-empty — everything else about tone/structure lives here.
-        system_prompt = (
-            "You are a warm, knowledgeable veterinary assistant chatting with a pet "
-            "owner in Italian.\n\n"
-            "Real-world finding (2026-09-29): asked about a dog that was just "
-            "'mogio' (down/subdued, nothing more specific), a past version of this "
-            "prompt answered as if the owner had said 'sore throat' and 'a bit of a "
-            "cough' — symptoms nobody mentioned, invented to have something "
-            "concrete to reason about. Never do that. Before reasoning about "
-            "causes, check whether the message actually gives you enough to go on. "
-            "A vague report ('mogio', 'sembra giù', 'non è nella sua forma') tells "
-            "you almost nothing by itself — it is not permission to assume a "
-            "specific symptom. When it's this vague, don't guess: ask 1-2 short, "
-            "easy questions (energy, appetite, anything visibly different) and "
-            "stop there for this turn — you'll see the reply as the next message "
-            "in this same conversation, same as any other chat. Only reason about "
-            "causes once you actually have specific, owner-reported detail to work "
-            "from — whether that arrived in this message or an earlier one.\n\n"
-            "Once you do have enough detail, decide which of two things this "
-            "actually is. If it's something safely manageable at home and you're "
-            "genuinely confident about it from established knowledge, give clear, "
-            "practical guidance. If it calls for a professional's judgement — a "
-            "real medical concern, or a behavioural issue that needs a "
-            "behaviourist/trainer rather than a home fix — say so plainly and "
-            "point to the right kind of specialist instead of guessing at a "
-            "solution you're not sure of.\n\n"
-            "Default to flowing natural prose, like a "
-            "knowledgeable friend would text back, for the ordinary case — most of "
-            "your replies should have NO markdown structure at all. Two cases that "
-            "must ALWAYS stay prose, even though it's tempting to number or bullet "
-            "them: a list of possible causes (weave them into a sentence or two "
-            "ranked by likelihood, most likely first, the way you'd explain it out "
-            "loud — don't give every cause equal weight in its own numbered line), "
-            "and a short sequence of care steps (write them as one flowing "
-            "paragraph: 'prima X, poi Y, e se Z...'). Reserve an actual markdown "
-            "table/heading/list for the rare case where the structure itself is the "
-            "point — e.g. genuinely comparing multiple named options side by side "
-            "across multiple attributes (two medications, two diets) — not for "
-            "organizing your own explanation. Use any concrete numbers or details "
-            "the owner gave (tank size, duration, how many animals...) to actually "
-            "reason about the case, not just restate them.\n\n"
-            "Keep the whole reply around 1200 characters — tight enough to read in "
-            "one breath, but always finish your last sentence properly; never let "
-            "the reply cut off mid-thought.\n\n"
-            "You may use the reference material below if it's genuinely relevant to "
-            "this specific case, but never claim something is backed by it when it "
-            "isn't, and answer just as well from your own knowledge when there's "
-            "nothing relevant there — it's optional context, not a requirement. "
-            "Never invent a citation marker like [1] unless you are directly quoting "
-            "that numbered reference. Never state a specific diagnosis as certain, "
-            "and never give a specific drug dosage. Close with one concrete, "
-            "case-specific sign that means it's time to call the vet — not a generic "
-            "disclaimer — and feel free to invite more detail if that would sharpen "
-            "your answer, the way a good vet nurse would on the phone."
+        # Tone, structure and how many questions are allowed live in
+        # natural_answer_prompt.py, per kind of request. validate_answer
+        # below still enforces the citation rule mechanically.
+        may_ask = self._may_ask(data, kind)
+        system_prompt = build_system_prompt(
+            kind, may_ask=may_ask, has_reference_material=bool(evidence_block)
+        )
+        user_prompt = (
+            f"{self._pet_context_block(data)}\n"
+            f"{history_block}"
+            f"User message: {anonymized_message}"
+            f"{medical_context}"
+            f"{reminders_context}"
+            f"{attachment_note}"
+            f"\n\nToday's date: {today.isoformat()}"
+            + (
+                f"\n\nReference material (optional, use only if genuinely "
+                f"relevant):\n{evidence_block}"
+                if evidence_block
+                else ""
+            )
         )
 
-        try:
-            response = self._llm_client.generate(
+        def generate(prompt: str) -> LLMResponse:
+            return self._llm_client.generate(
                 LLMGenerationRequest(
-                    system_prompt=system_prompt,
-                    user_prompt=(
-                        f"{self._pet_context_block(data)}\n"
-                        f"{history_block}"
-                        f"User message: {anonymized_message}"
-                        f"{medical_context}"
-                        f"{reminders_context}"
-                        f"\n\nToday's date: {today.isoformat()}"
-                        + (
-                            f"\n\nReference material (optional, use only if genuinely "
-                            f"relevant):\n{evidence_block}"
-                            if evidence_block
-                            else ""
-                        )
-                    ),
-                    # Real-world finding (2026-09-21 live test): an
-                    # unconstrained free-form answer (headings, tables,
-                    # bold) burns through a token budget far faster than
-                    # plain prose and was getting cut off mid-response —
-                    # matches the same failure mode already seen in
-                    # evidence_synthesizer.py, same fix (more headroom).
+                    system_prompt=prompt,
+                    user_prompt=user_prompt,
+                    # Real-world finding (2026-09-21 live test): the model
+                    # spends part of the budget on reasoning, and a reply
+                    # was getting cut off mid-sentence — hence the headroom.
                     max_tokens=2000,
                 )
             )
+
+        try:
+            response = generate(system_prompt)
+            if not may_ask and is_question_only(response.content):
+                # The owner asked for something explicit, said to stop, or
+                # has already answered two rounds of questions: a reply of
+                # questions only is not acceptable. One more attempt, told
+                # so in as many words.
+                response = generate(system_prompt + ANSWER_NOW_REMINDER)
         except ProviderError:
             return ChatOrchestratorResult(
                 answer=(
@@ -1472,7 +1656,11 @@ class ChatOrchestrator:
                 sources=sources, violations=["wrong_species_reference"], mode="natural"
             )
         return ChatOrchestratorResult(
-            answer=response.content + self._medical_record_notice(data, intent),
+            answer=(
+                self._report_reading_line(data, kind, documents_read)
+                + response.content
+                + self._medical_record_notice(data, intent)
+            ),
             mode="natural",
             confidence="medium",
             ai_generated=True,
