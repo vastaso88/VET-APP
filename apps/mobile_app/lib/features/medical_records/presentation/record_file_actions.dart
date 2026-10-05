@@ -136,6 +136,7 @@ Future<void> _offerShareInstead(BuildContext context, MedicalRecordEntry record)
 
 /// Sends one or several records' files through the system share sheet.
 Future<void> shareRecords(BuildContext context, List<MedicalRecordEntry> records) async {
+  _showMessage(context, 'Preparo i file da inviare…');
   final files = <XFile>[];
   var missing = 0;
   for (final record in records) {
@@ -181,6 +182,7 @@ Future<void> deleteRecordWithConfirm(
     ),
   );
   if (confirmed != true) return;
+  if (context.mounted) _showMessage(context, 'Elimino il referto…');
   try {
     await MedicalRecordsRepository().deleteRecord(record.id);
   } on MedicalRecordSaveException catch (error) {

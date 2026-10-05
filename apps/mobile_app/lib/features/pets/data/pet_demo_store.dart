@@ -603,8 +603,8 @@ class PetDemoStore {
     final key = species.trim().toLowerCase();
     // Dogs and cats: the full recognised list (alphabetical) and the free
     // "Meticcio / altra razza" option last, which opens a text field.
-    if (key == 'cane') return [...fciDogBreeds, otherBreedLabel];
-    if (key == 'gatto') return [...fifeCatBreeds, otherBreedLabel];
+    if (key == 'cane') return [meticcioBreedLabel, ...fciDogBreeds, otherBreedLabel];
+    if (key == 'gatto') return [catMeticcioBreedLabel, ...fifeCatBreeds, otherBreedLabel];
     final option = optionForSpecies(species);
     return [
       'Razza non specificata',

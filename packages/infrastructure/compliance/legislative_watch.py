@@ -41,6 +41,7 @@ def extract_visible_text(html: str) -> str:
     flat_text = _WHITESPACE_RE.sub(" ", text_only).strip()
     return "\n".join(textwrap.wrap(flat_text, width=100))
 
+
 REPO_ROOT = Path(__file__).resolve().parents[3]
 SNAPSHOTS_DIR = REPO_ROOT / "docs" / "compliance" / "legislative-watch" / "snapshots"
 REPORTS_DIR = REPO_ROOT / "docs" / "compliance" / "legislative-watch" / "reports"

@@ -78,9 +78,7 @@ def test_deduplicates_by_doi() -> None:
 
 
 def test_classifies_systematic_review_as_tier_a() -> None:
-    fetcher = _fetcher_for(
-        ["111"], {"111": _summary("111", pubtype=["Systematic Review"])}
-    )
+    fetcher = _fetcher_for(["111"], {"111": _summary("111", pubtype=["Systematic Review"])})
     retriever = PubMedEvidenceRetriever(fetcher=fetcher)
 
     sources = retriever.retrieve(

@@ -4,7 +4,7 @@ from fastapi import APIRouter, Query
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel, Field
 
-from apps.api.dependencies.container import get_container
+from apps.api.dependencies.container import ApplicationContainer, get_container
 from packages.core.application.services.list_nearby_radar_places import (
     ListNearbyRadarPlacesInput,
 )
@@ -21,9 +21,14 @@ from packages.core.domain.radar_places.models import (
     OSM_SOURCE_NAME,
     RADAR_PLACE_API_EXCLUDED_FIELDS,
     RadarDataSource,
+    RadarPlace,
     RadarPlaceType,
 )
-from packages.core.domain.radar_reports.models import RadarUserReport, ReportKind
+from packages.core.domain.radar_reports.models import (
+    USER_SOURCE_NAME,
+    RadarUserReport,
+    ReportKind,
+)
 from packages.shared.errors.base import ValidationError
 
 router = APIRouter(prefix="/local-services", tags=["local-services"])
@@ -226,6 +231,38 @@ def withdraw_report(report_id: str) -> dict[str, object] | JSONResponse:
     return {"withdrawn": True}
 
 
+def _place_to_rate(container: ApplicationContainer, request: RatePlaceRequest) -> RadarPlace | None:
+    """The place a rating is about, read by its id: one query. Searching
+    the area around it (every source, merged, with the community layer)
+    made a star vote cost as much as loading the radar."""
+    if request.source == USER_SOURCE_NAME:
+        report = container.radar_reports_repository.get_report(request.source_id)
+        return report.as_place() if report is not None and report.kind == "missing" else None
+    place = container.radar_catalog_repository.get_place(request.source, request.source_id)
+    if place is not None:
+        return place
+    # Not in the imported catalog: an area still served from the live
+    # per-cell cache. Found the long way.
+    nearby = container.list_nearby_radar_places_service().execute(
+        ListNearbyRadarPlacesInput(
+            latitude=request.latitude,
+            longitude=request.longitude,
+            radius_km=0.3,
+            place_types=["dog_park"],
+            per_type_limit=400,
+        )
+    )
+    return next(
+        (
+            item.place
+            for item in nearby.places
+            if item.place.source_name == request.source
+            and item.place.source_external_id == request.source_id
+        ),
+        None,
+    )
+
+
 @router.put("/ratings", response_model=None)
 def rate_place(request: RatePlaceRequest) -> dict[str, object] | JSONResponse:
     """Stars for a public dog park. The place is looked up in our own data
@@ -236,24 +273,7 @@ def rate_place(request: RatePlaceRequest) -> dict[str, object] | JSONResponse:
     service = container.rate_dog_park_service()
     if service is None:
         return _contributions_off()
-    nearby = container.list_nearby_radar_places_service().execute(
-        ListNearbyRadarPlacesInput(
-            latitude=request.latitude,
-            longitude=request.longitude,
-            radius_km=0.3,
-            place_types=["dog_park"],
-            per_type_limit=400,
-        )
-    )
-    place = next(
-        (
-            item.place
-            for item in nearby.places
-            if item.place.source_name == request.source
-            and item.place.source_external_id == request.source_id
-        ),
-        None,
-    )
+    place = _place_to_rate(container, request)
     if place is None:
         raise ValidationError("Area cani non trovata.")
     try:

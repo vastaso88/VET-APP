@@ -147,6 +147,13 @@ class _RadarPlaceSheet extends StatefulWidget {
 class _RadarPlaceSheetState extends State<_RadarPlaceSheet> {
   bool _busy = false;
 
+  // What the user just tapped, shown at once while the server answers
+  // (it can take seconds): cleared when the answer arrives, so a failure
+  // puts the card back as it was.
+  int? _savingStars;
+  int? _savingVote;
+  bool _withdrawing = false;
+
   RadarPlace get _place => widget.place;
 
   /// Runs one contribution and closes the card when it went through: the
@@ -164,7 +171,12 @@ class _RadarPlaceSheetState extends State<_RadarPlaceSheet> {
     if (!mounted) {
       return;
     }
-    setState(() => _busy = false);
+    setState(() {
+      _busy = false;
+      _savingStars = null;
+      _savingVote = null;
+      _withdrawing = false;
+    });
     if (done && closeOnSuccess) {
       Navigator.of(context).pop();
     }
@@ -188,9 +200,10 @@ class _RadarPlaceSheetState extends State<_RadarPlaceSheet> {
         ],
       ),
     );
-    if (confirmed != true || !mounted) {
+    if (confirmed != true || !mounted || _busy) {
       return;
     }
+    setState(() => _withdrawing = true);
     await _contribute(
       (contributions) => contributions.run<void>(
         context,
@@ -201,6 +214,10 @@ class _RadarPlaceSheetState extends State<_RadarPlaceSheet> {
   }
 
   Future<void> _vote(RadarReportInfo report, {required bool confirm}) {
+    if (_busy) {
+      return Future.value();
+    }
+    setState(() => _savingVote = confirm ? 1 : -1);
     return _contribute(
       (contributions) => contributions.run<void>(
         context,
@@ -213,12 +230,17 @@ class _RadarPlaceSheetState extends State<_RadarPlaceSheet> {
   /// The card stays open after a vote, showing it: closing it made the
   /// vote look as if it had not been taken.
   Future<void> _rate(int stars) {
+    if (_busy || widget.contributions == null) {
+      return Future.value();
+    }
+    setState(() => _savingStars = stars);
     return _contribute(
       (contributions) async {
         final done = await contributions.run<void>(
           context,
           () => contributions.repository.rate(_place, stars),
           successMessage: (_) => 'Voto registrato: $stars su 5.',
+          reload: false,
         );
         if (done) {
           contributions.rememberStars(_place, stars);
@@ -285,7 +307,8 @@ class _RadarPlaceSheetState extends State<_RadarPlaceSheet> {
         place.confirmedBy.map((name) => radarSourceInfo(name)?.name).whereType<String>().join(', ');
     final community = place.community;
     final pendingClosure = place.pendingClosure;
-    final rating = place.rating?.withViewerStars(widget.contributions?.starsGivenTo(place));
+    final rating =
+        place.rating?.withViewerStars(_savingStars ?? widget.contributions?.starsGivenTo(place));
     final canContribute = widget.contributions != null;
 
     return SafeArea(
@@ -320,6 +343,8 @@ class _RadarPlaceSheetState extends State<_RadarPlaceSheet> {
                 question: 'Questo luogo esiste davvero qui?',
                 report: community,
                 busy: _busy,
+                savingVote: _savingVote,
+                withdrawing: _withdrawing,
                 onVote: canContribute ? _vote : null,
                 onWithdraw: canContribute ? _withdraw : null,
               ),
@@ -344,6 +369,8 @@ class _RadarPlaceSheetState extends State<_RadarPlaceSheet> {
                 question: 'Ha chiuso davvero?',
                 report: pendingClosure,
                 busy: _busy,
+                savingVote: _savingVote,
+                withdrawing: _withdrawing,
                 onVote: canContribute ? _vote : null,
                 onWithdraw: canContribute ? _withdraw : null,
               ),
@@ -373,7 +400,11 @@ class _RadarPlaceSheetState extends State<_RadarPlaceSheet> {
             ],
             if (rating != null) ...[
               const SizedBox(height: AppSpacing.md),
-              _RatingRow(rating: rating, onRate: canContribute && !_busy ? _rate : null),
+              _RatingRow(
+                rating: rating,
+                saving: _savingStars != null,
+                onRate: canContribute && !_busy ? _rate : null,
+              ),
             ],
             const SizedBox(height: AppSpacing.lg),
             Wrap(
@@ -446,6 +477,8 @@ class _ReportBanner extends StatelessWidget {
     required this.busy,
     required this.onVote,
     required this.onWithdraw,
+    this.savingVote,
+    this.withdrawing = false,
   });
 
   final String label;
@@ -457,18 +490,26 @@ class _ReportBanner extends StatelessWidget {
   /// Offered only to whoever made the report.
   final Future<void> Function(RadarReportInfo report)? onWithdraw;
 
+  /// The vote (+1 / -1) being saved right now, shown as if already given.
+  final int? savingVote;
+  final bool withdrawing;
+
   @override
   Widget build(BuildContext context) {
     final onVote = this.onVote;
     final onWithdraw = this.onWithdraw;
     final expiryLabel = report.expiryLabel;
-    final viewerNote = report.viewerIsReporter
-        ? 'L’hai segnalato tu: servono le conferme di altri utenti.'
-        : switch (report.viewerVote) {
-            1 => 'Hai confermato. Puoi cambiare idea.',
-            -1 => 'Hai indicato che non è così. Puoi cambiare idea.',
-            _ => question,
-          };
+    final viewerNote = withdrawing
+        ? 'Ritiro la segnalazione…'
+        : report.viewerIsReporter
+            ? 'L’hai segnalato tu: servono le conferme di altri utenti.'
+            : switch (savingVote ?? report.viewerVote) {
+                1 =>
+                  'Hai confermato.${savingVote != null ? ' Salvataggio…' : ' Puoi cambiare idea.'}',
+                -1 => 'Hai indicato che non è così.'
+                    '${savingVote != null ? ' Salvataggio…' : ' Puoi cambiare idea.'}',
+                _ => question,
+              };
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(AppSpacing.md),
@@ -532,9 +573,12 @@ class _ReportBanner extends StatelessWidget {
 }
 
 class _RatingRow extends StatelessWidget {
-  const _RatingRow({required this.rating, required this.onRate});
+  const _RatingRow({required this.rating, required this.onRate, this.saving = false});
 
   final RadarRating rating;
+
+  /// The stars shown are being saved: not confirmed by the server yet.
+  final bool saving;
   final ValueChanged<int>? onRate;
 
   @override
@@ -565,9 +609,11 @@ class _RatingRow extends StatelessWidget {
           ],
         ),
         Text(
-          viewerStars > 0
-              ? 'Il tuo voto: $viewerStars su 5. Tocca una stella per cambiarlo.'
-              : 'Com’è quest’area cani? Tocca una stella per dare il tuo voto.',
+          saving
+              ? 'Il tuo voto: $viewerStars su 5. Salvataggio…'
+              : viewerStars > 0
+                  ? 'Il tuo voto: $viewerStars su 5. Tocca una stella per cambiarlo.'
+                  : 'Com’è quest’area cani? Tocca una stella per dare il tuo voto.',
           style: AppTextStyles.bodySmall,
         ),
       ],

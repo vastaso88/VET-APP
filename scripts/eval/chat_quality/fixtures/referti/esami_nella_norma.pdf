@@ -1,0 +1,71 @@
+%PDF-1.4
+1 0 obj
+<< /Type /Catalog /Pages 2 0 R >>
+endobj
+2 0 obj
+<< /Type /Pages /Kids [3 0 R] /Count 1 >>
+endobj
+3 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] /Contents 4 0 R /Resources << /Font << /F1 5 0 R >> >> >>
+endobj
+4 0 obj
+<< /Length 1240 >>
+stream
+BT
+/F1 9 Tf
+40 800 Td
+(CLINICA VETERINARIA ESEMPIO \(struttura fittizia, dati di prova\)) Tj
+0 -13 Td
+(Esami del sangue di controllo - emocromo e profilo biochimico) Tj
+0 -13 Td
+(Data prelievo: 15/09/2026) Tj
+0 -13 Td
+(Paziente: Toby - cane meticcio, maschio castrato, 5 anni) Tj
+0 -13 Td
+() Tj
+0 -13 Td
+(Esame                    Risultato    Unita       Intervallo di riferimento) Tj
+0 -13 Td
+(Globuli rossi \(RBC\)      6,9          10^6/uL     5,5 - 8,5) Tj
+0 -13 Td
+(Ematocrito \(HCT\)         46           %           37 - 55) Tj
+0 -13 Td
+(Globuli bianchi \(WBC\)    10,2         10^3/uL     6,0 - 17,0) Tj
+0 -13 Td
+(Piastrine \(PLT\)          280          10^3/uL     200 - 500) Tj
+0 -13 Td
+(Creatinina               1,0          mg/dL       0,5 - 1,5) Tj
+0 -13 Td
+(Urea                     32           mg/dL       20 - 50) Tj
+0 -13 Td
+(ALT \(GPT\)                41           U/L         10 - 100) Tj
+0 -13 Td
+(Fosfatasi alcalina       60           U/L         20 - 150) Tj
+0 -13 Td
+(Glucosio                 92           mg/dL       70 - 120) Tj
+0 -13 Td
+(Proteine totali          6,6          g/dL        5,4 - 7,5) Tj
+0 -13 Td
+() Tj
+0 -13 Td
+(Commento: tutti i parametri rientrano negli intervalli di riferimento.) Tj
+0 -13 Td
+ET
+endstream
+endobj
+5 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Courier /Encoding /WinAnsiEncoding >>
+endobj
+xref
+0 6
+0000000000 65535 f 
+0000000009 00000 n 
+0000000058 00000 n 
+0000000115 00000 n 
+0000000241 00000 n 
+0000001533 00000 n 
+trailer
+<< /Size 6 /Root 1 0 R >>
+startxref
+1628
+%%EOF

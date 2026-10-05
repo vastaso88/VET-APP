@@ -9,6 +9,7 @@ import '../../../events/presentation/pages/events_page.dart';
 import '../../../local_events/presentation/pages/local_events_page.dart';
 import '../../../marketplace/presentation/pages/marketplace_page.dart';
 import '../../../pet_news/presentation/pages/news_feed_page.dart';
+import '../../../pets/presentation/pages/gallery_folders_page.dart';
 
 class ActivitiesPage extends StatelessWidget {
   const ActivitiesPage({super.key});
@@ -58,6 +59,15 @@ class ActivitiesPage extends StatelessWidget {
               subtitle: 'Fiere, esposizioni e iniziative per animali in tutta Italia.',
               onTap: () => Navigator.of(context).push(
                 MaterialPageRoute<void>(builder: (_) => const EventsPage()),
+              ),
+            ),
+            _ActivityRow(
+              icon: Icons.photo_library_outlined,
+              iconTone: AppColors.info,
+              title: 'Galleria',
+              subtitle: 'Le foto dei tuoi animali, per cartella.',
+              onTap: () => Navigator.of(context).push(
+                MaterialPageRoute<void>(builder: (_) => const GalleryFoldersPage()),
               ),
             ),
             _ActivityRow(

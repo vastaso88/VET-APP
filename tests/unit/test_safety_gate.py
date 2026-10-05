@@ -75,9 +75,7 @@ def test_flags_reptile_prolapse_but_not_ordinary_lethargy() -> None:
 def test_flags_bird_unable_to_perch() -> None:
     gate = SafetyGate()
 
-    assert gate.evaluate(
-        "Non riesce a stare sul trespolo e sta fermo", species="Uccello"
-    )
+    assert gate.evaluate("Non riesce a stare sul trespolo e sta fermo", species="Uccello")
 
 
 def test_universal_red_flags_still_apply_to_every_species() -> None:
@@ -146,9 +144,7 @@ def test_flags_nsaids_and_dangerous_antibiotics_for_small_mammals() -> None:
     assert gate.evaluate(
         "Posso dare un po' di aspirina al mio coniglio?", species="Piccoli mammiferi"
     )
-    assert gate.evaluate(
-        "Gli ho dato dell'amoxicillina che avevo in casa", species="small_mammal"
-    )
+    assert gate.evaluate("Gli ho dato dell'amoxicillina che avevo in casa", species="small_mammal")
 
 
 def test_flags_permethrin_spot_ons_for_birds_too() -> None:
@@ -178,9 +174,7 @@ def test_does_not_flag_moment_due_to_common_word_collision() -> None:
     # poisoning alarm. This test guards against it being re-added later.
     gate = SafetyGate()
 
-    flags = gate.evaluate(
-        "Al momento non ha altri sintomi, sta tranquillo", species="Gatto"
-    )
+    flags = gate.evaluate("Al momento non ha altri sintomi, sta tranquillo", species="Gatto")
 
     assert flags == []
 
@@ -204,9 +198,7 @@ def test_does_not_fuzzy_flag_an_unrelated_word_of_similar_length() -> None:
     # must not trigger a false alarm.
     gate = SafetyGate()
 
-    flags = gate.evaluate(
-        "Il gatto ha mangiato una banana per sbaglio ieri", species="Gatto"
-    )
+    flags = gate.evaluate("Il gatto ha mangiato una banana per sbaglio ieri", species="Gatto")
 
     assert flags == []
 
@@ -220,9 +212,7 @@ def test_does_not_flag_aglio_embedded_in_per_sbaglio() -> None:
     # problem, not a hypothetical edge case.
     gate = SafetyGate()
 
-    flags = gate.evaluate(
-        "Gli ho dato la tachipirina per sbaglio ieri sera", species="Gatto"
-    )
+    flags = gate.evaluate("Gli ho dato la tachipirina per sbaglio ieri sera", species="Gatto")
 
     assert "aglio" not in flags
     assert "tachipirina" in flags

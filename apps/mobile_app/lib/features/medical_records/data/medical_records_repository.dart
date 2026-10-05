@@ -64,25 +64,32 @@ class MedicalRecordsRepository {
 
     // Errors are rethrown on purpose: an empty list would look like "no
     // records" and hide that the server could not be read.
-    final response = await client.from('clinical_events').select(
-        'id,pet_id,pet_name,title,subtitle,meta,badge,detail_source,created_at,attachment_id');
-    final rows = response as List<dynamic>;
-    return rows
-        .map(
-          (row) => MedicalRecordEntry(
-            id: (row['id'] ?? '').toString(),
-            petName: (row['pet_name'] ?? '').toString(),
-            title: (row['title'] ?? 'Referto clinico').toString(),
-            subtitle: (row['subtitle'] ?? '').toString(),
-            meta: (row['meta'] ?? '').toString(),
-            badge: (row['badge'] ?? '').toString(),
-            detailSource: (row['detail_source'] ?? '').toString(),
-            createdAt: formatStoredRecordDate(row['created_at']),
-            attachmentId: row['attachment_id'] as String?,
-            timeline: const [],
-          ),
-        )
-        .toList(growable: false);
+    try {
+      final response = await client.from('clinical_events').select(
+          'id,pet_id,pet_name,title,subtitle,meta,badge,detail_source,created_at,attachment_id');
+      final rows = response as List<dynamic>;
+      final fromServer = rows
+          .map(
+            (row) => MedicalRecordEntry(
+              id: (row['id'] ?? '').toString(),
+              petName: (row['pet_name'] ?? '').toString(),
+              title: (row['title'] ?? 'Referto clinico').toString(),
+              subtitle: (row['subtitle'] ?? '').toString(),
+              meta: (row['meta'] ?? '').toString(),
+              badge: (row['badge'] ?? '').toString(),
+              detailSource: (row['detail_source'] ?? '').toString(),
+              createdAt: formatStoredRecordDate(row['created_at']),
+              attachmentId: row['attachment_id'] as String?,
+              timeline: const [],
+            ),
+          )
+          .toList(growable: false);
+      return mergeRecentRecords(fromServer, _savedThisSession);
+    } catch (_) {
+      // A read that fails (e.g. a schema mismatch) must not hide what was just saved.
+      if (_savedThisSession.isEmpty) rethrow;
+      return List<MedicalRecordEntry>.of(_savedThisSession);
+    }
   }
 
   Future<MedicalRecordEntry?> loadRecordById(String id) async {
@@ -139,6 +146,8 @@ class MedicalRecordsRepository {
         'Non sono riuscito a salvare il referto sul server. Controlla la connessione e riprova.',
       );
     }
+    _savedThisSession.removeWhere((item) => item.id == record.id);
+    _savedThisSession.add(record);
     changes.value++;
   }
 
@@ -157,6 +166,7 @@ class MedicalRecordsRepository {
         'Non sono riuscito a eliminare il referto. Riprova.',
       );
     }
+    _savedThisSession.removeWhere((item) => item.id == id);
     changes.value++;
   }
 
@@ -315,4 +325,20 @@ String formatStoredRecordDate(Object? stored) {
   final hh = local.hour.toString().padLeft(2, '0');
   final mm = local.minute.toString().padLeft(2, '0');
   return '${local.day} ${_monthsIt[local.month - 1]} ${local.year}, $hh:$mm';
+}
+
+/// Records saved this session, kept in memory. They are shown at once, and
+/// stay visible even when the server read that follows is slow or fails.
+final List<MedicalRecordEntry> _savedThisSession = [];
+
+/// [recent] first (newest), then the server's records, without repeating an id.
+List<MedicalRecordEntry> mergeRecentRecords(
+  List<MedicalRecordEntry> fromServer,
+  List<MedicalRecordEntry> recent,
+) {
+  final serverIds = fromServer.map((record) => record.id).toSet();
+  return [
+    ...recent.where((record) => !serverIds.contains(record.id)),
+    ...fromServer,
+  ];
 }

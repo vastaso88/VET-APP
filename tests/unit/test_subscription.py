@@ -47,9 +47,7 @@ def test_second_lookup_reuses_the_same_subscription() -> None:
 
 def test_expired_trial_without_a_plan_loses_access() -> None:
     repository = InMemorySubscriptionRepository()
-    repository.save(
-        Subscription(owner_id="user-1", trial_ends_at=utc_now() - timedelta(days=1))
-    )
+    repository.save(Subscription(owner_id="user-1", trial_ends_at=utc_now() - timedelta(days=1)))
     service = GetOrCreateSubscriptionService(repository, _DEVELOPER_EMAILS)
 
     result = service.execute(
@@ -61,9 +59,7 @@ def test_expired_trial_without_a_plan_loses_access() -> None:
 
 def test_developer_allowlist_always_has_access_even_after_trial_expiry() -> None:
     repository = InMemorySubscriptionRepository()
-    repository.save(
-        Subscription(owner_id="dev-1", trial_ends_at=utc_now() - timedelta(days=1))
-    )
+    repository.save(Subscription(owner_id="dev-1", trial_ends_at=utc_now() - timedelta(days=1)))
     service = GetOrCreateSubscriptionService(repository, _DEVELOPER_EMAILS)
 
     result = service.execute(
@@ -76,9 +72,7 @@ def test_developer_allowlist_always_has_access_even_after_trial_expiry() -> None
 
 def test_select_plan_grants_access_even_after_trial_expiry() -> None:
     repository = InMemorySubscriptionRepository()
-    repository.save(
-        Subscription(owner_id="user-1", trial_ends_at=utc_now() - timedelta(days=1))
-    )
+    repository.save(Subscription(owner_id="user-1", trial_ends_at=utc_now() - timedelta(days=1)))
     select_plan = SelectPlanService(repository)
     get_status = GetOrCreateSubscriptionService(repository, _DEVELOPER_EMAILS)
 

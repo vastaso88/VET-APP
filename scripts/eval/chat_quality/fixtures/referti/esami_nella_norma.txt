@@ -1,0 +1,18 @@
+CLINICA VETERINARIA ESEMPIO (struttura fittizia, dati di prova)
+Esami del sangue di controllo - emocromo e profilo biochimico
+Data prelievo: 15/09/2026
+Paziente: Toby - cane meticcio, maschio castrato, 5 anni
+
+Esame                    Risultato    Unita       Intervallo di riferimento
+Globuli rossi (RBC)      6,9          10^6/uL     5,5 - 8,5
+Ematocrito (HCT)         46           %           37 - 55
+Globuli bianchi (WBC)    10,2         10^3/uL     6,0 - 17,0
+Piastrine (PLT)          280          10^3/uL     200 - 500
+Creatinina               1,0          mg/dL       0,5 - 1,5
+Urea                     32           mg/dL       20 - 50
+ALT (GPT)                41           U/L         10 - 100
+Fosfatasi alcalina       60           U/L         20 - 150
+Glucosio                 92           mg/dL       70 - 120
+Proteine totali          6,6          g/dL        5,4 - 7,5
+
+Commento: tutti i parametri rientrano negli intervalli di riferimento.

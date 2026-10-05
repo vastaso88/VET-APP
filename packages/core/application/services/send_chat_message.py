@@ -145,6 +145,7 @@ class SendChatMessageService:
                 habitat=pet_profile.habitat,
                 aquarium_stock=pet_profile.aquarium_stock,
                 photo_context=photo_context,
+                attachment_unreadable=bool(data.attachment_id) and not photo_context,
                 # Data minimization (spec v3 §38): only recent turns cross
                 # the service boundary — the full history never needs to,
                 # since SituationModel already carries the compact,

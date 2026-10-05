@@ -1,0 +1,20 @@
+CLINICA VETERINARIA ESEMPIO (struttura fittizia, dati di prova)
+Referto esami ematochimici - profilo biochimico
+Data prelievo: 12/09/2026
+Paziente: Micia - gatto europeo, femmina sterilizzata, 14 anni, 3,6 kg
+
+Esame                Risultato    Unita     Intervallo di riferimento
+Creatinina           3,1          mg/dL     0,8 - 2,0      ALTO
+Urea                 110          mg/dL     30 - 65        ALTO
+Fosforo              6,8          mg/dL     2,6 - 6,0      ALTO
+SDMA                 22           ug/dL     0 - 14         ALTO
+Potassio             3,6          mEq/L     3,5 - 5,5
+Proteine totali      7,1          g/dL      5,7 - 8,0
+Albumina             3,0          g/dL      2,5 - 3,9
+ALT (GPT)            48           U/L       20 - 100
+Glucosio             102          mg/dL     70 - 150
+Calcio               9,8          mg/dL     8,0 - 10,7
+
+Note del laboratorio: quadro compatibile con riduzione della funzionalita renale.
+Si consiglia valutazione insieme a esame delle urine e misurazione della pressione.
+Referto firmato dal direttore sanitario (nome di prova).

@@ -147,9 +147,7 @@ class EuropePmcEvidenceRetriever(EvidenceRetriever):
             if item.get("source") and item.get("id")
             else None
         )
-        journal_title = (
-            (item.get("journalInfo") or {}).get("journal") or {}
-        ).get("title")
+        journal_title = ((item.get("journalInfo") or {}).get("journal") or {}).get("title")
         access_depth = _access_depth_from_item(item, tier)
         return EvidenceSource(
             title=title,

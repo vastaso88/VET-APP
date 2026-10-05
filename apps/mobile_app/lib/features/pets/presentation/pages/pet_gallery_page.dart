@@ -3,12 +3,12 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 import '../../../../shared/widgets/pet_loader.dart';
+import '../widgets/photo_timeline_view.dart';
 
 import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
 
 import '../../../../design_system/tokens/app_colors.dart';
-import '../../../../design_system/tokens/app_radii.dart';
 import '../../../../design_system/tokens/app_spacing.dart';
 import '../../../../design_system/tokens/app_text_styles.dart';
 import '../../data/pet_demo_store.dart';
@@ -198,7 +198,7 @@ class _PetGalleryPageState extends State<PetGalleryPage> {
         IconButton(
           tooltip: 'Aggiungi foto',
           onPressed: _busy ? null : _showAddSheet,
-          icon: const Icon(Icons.add_a_photo_outlined),
+          icon: _busy ? const PetLoader.small(color: Colors.white) : const Icon(Icons.add_a_photo_outlined),
           color: Colors.white,
         ),
       ],
@@ -221,78 +221,12 @@ class _PetGalleryPageState extends State<PetGalleryPage> {
               ),
             );
           }
-          return GridView.builder(
-            padding: const EdgeInsets.all(AppSpacing.lg),
-            gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
-              maxCrossAxisExtent: 160,
-              mainAxisSpacing: AppSpacing.sm,
-              crossAxisSpacing: AppSpacing.sm,
-            ),
-            itemCount: photos.length,
-            itemBuilder: (context, index) {
-              final photo = photos[index];
-              return _PhotoTile(
-                key: ValueKey(photo.storagePath),
-                photo: photo,
-                onTap: () => _openViewer(photo),
-                onLongPress: () => _showActions(photo),
-              );
-            },
+          return PhotoTimelineView(
+            photos: photos,
+            onOpen: _openViewer,
+            onLongPress: _showActions,
           );
         },
-      ),
-    );
-  }
-}
-
-class _PhotoTile extends StatefulWidget {
-  const _PhotoTile({
-    required this.photo,
-    required this.onTap,
-    required this.onLongPress,
-    super.key,
-  });
-
-  final PetPhotoEntry photo;
-  final VoidCallback onTap;
-  final VoidCallback onLongPress;
-
-  @override
-  State<_PhotoTile> createState() => _PhotoTileState();
-}
-
-class _PhotoTileState extends State<_PhotoTile> {
-  late final Future<Uint8List?> _bytes = PetPhotoRepository().loadBytes(widget.photo.storagePath);
-
-  @override
-  Widget build(BuildContext context) {
-    return InkWell(
-      onTap: widget.onTap,
-      onLongPress: widget.onLongPress,
-      borderRadius: BorderRadius.circular(AppRadii.medium),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(AppRadii.medium),
-        child: Stack(
-          fit: StackFit.expand,
-          children: [
-            FutureBuilder<Uint8List?>(
-              future: _bytes,
-              builder: (context, snapshot) {
-                final bytes = snapshot.data;
-                if (bytes == null) {
-                  return const ColoredBox(color: AppColors.surfaceElevated);
-                }
-                return Image.memory(bytes, fit: BoxFit.cover);
-              },
-            ),
-            if (widget.photo.isProfile)
-              const Positioned(
-                left: AppSpacing.xs,
-                top: AppSpacing.xs,
-                child: Icon(Icons.account_circle, color: Colors.white, size: 20),
-              ),
-          ],
-        ),
       ),
     );
   }

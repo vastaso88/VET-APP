@@ -107,6 +107,10 @@ class _LocalEventsPageState extends State<LocalEventsPage> {
   /// trigger a request: they only re-filter what is loaded.
   final Map<double, Future<Result<RadarPlacesResult>>> _radarFutures = {};
 
+  /// Last answer per radius, shown while the same radius is loaded
+  /// again after a contribution: the lists stay instead of emptying.
+  final Map<double, Result<RadarPlacesResult>> _lastRadarResults = {};
+
   /// Reports, votes and ratings, reloading the radar when one goes through
   /// (a new pending place, a changed count) without the full-page loader.
   late final RadarContributions _contributions =
@@ -249,6 +253,7 @@ class _LocalEventsPageState extends State<LocalEventsPage> {
       result = await repository.loadNearby(center: data.referenceLocation, radiusKm: radiusKm);
     }
     _firstRadarAnswerReady = true;
+    _lastRadarResults[radiusKm] = result;
     _supportContactEmail = result.fold(
       onSuccess: (value) => value.supportContactEmail ?? _supportContactEmail,
       onFailure: (_) => _supportContactEmail,
@@ -262,6 +267,7 @@ class _LocalEventsPageState extends State<LocalEventsPage> {
       _locationConsentAsked = false;
       _dataFuture = _loadData();
       _radarFutures.clear();
+      _lastRadarResults.clear();
     });
     await _dataFuture;
   }
@@ -276,12 +282,16 @@ class _LocalEventsPageState extends State<LocalEventsPage> {
         _locationConsentAsked = true;
         _dataFuture = _loadData();
         _radarFutures.clear();
+        _lastRadarResults.clear();
       });
     }
   }
 
   void _retryRadarPlaces() {
-    setState(() => _radarFutures.remove(_radiusKm));
+    setState(() {
+      _radarFutures.remove(_radiusKm);
+      _lastRadarResults.remove(_radiusKm);
+    });
   }
 
   void _setFilters({double? radiusKm, Set<RadarCategory>? categories}) {
@@ -358,7 +368,7 @@ class _LocalEventsPageState extends State<LocalEventsPage> {
                 // were the answer for the new one.
                 final radarResult = radarSnapshot.connectionState == ConnectionState.done
                     ? radarSnapshot.data
-                    : null;
+                    : _lastRadarResults[_radiusKm];
                 if (radarResult == null && !_firstRadarAnswerReady) {
                   return const _PageLoader(
                     label: 'Cerco cosa c’è attorno a te. La prima volta in una zona '

@@ -27,9 +27,7 @@ def test_does_not_match_a_short_keyword_even_with_a_one_letter_typo() -> None:
 
 
 def test_does_not_match_an_unrelated_word_of_similar_length() -> None:
-    matches = find_fuzzy_keyword_matches(
-        "il gatto ha mangiato una banana", ["permetrina"]
-    )
+    matches = find_fuzzy_keyword_matches("il gatto ha mangiato una banana", ["permetrina"])
 
     assert matches == set()
 
@@ -37,9 +35,7 @@ def test_does_not_match_an_unrelated_word_of_similar_length() -> None:
 def test_does_not_fuzzy_match_a_multi_word_phrase() -> None:
     # Phrases are exact-substring only — edit distance across a whole
     # phrase isn't the same problem as a single-word typo.
-    matches = find_fuzzy_keyword_matches(
-        "acido acetilsalicico", ["acido acetilsalicilico"]
-    )
+    matches = find_fuzzy_keyword_matches("acido acetilsalicico", ["acido acetilsalicilico"])
 
     assert matches == set()
 
@@ -64,8 +60,6 @@ def test_allows_a_larger_edit_distance_for_a_longer_keyword() -> None:
     # "amoxicillina" (12 letters) with two dropped/altered letters should
     # still be recognized; the same absolute distance on a much shorter
     # word would not be (see the short-keyword test above).
-    matches = find_fuzzy_keyword_matches(
-        "gli ho dato dell'amoxicilina", ["amoxicillina"]
-    )
+    matches = find_fuzzy_keyword_matches("gli ho dato dell'amoxicilina", ["amoxicillina"])
 
     assert matches == {"amoxicillina"}

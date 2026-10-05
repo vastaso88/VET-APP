@@ -175,6 +175,16 @@ class InMemoryRadarCatalogRepository(RadarCatalogRepository):
     def list_open_places(self, box: BoundingBox) -> list[RadarPlace]:
         return [place for place in self.open_places if _in_box(place, box)]
 
+    def get_place(self, source: str, source_id: str) -> RadarPlace | None:
+        return next(
+            (
+                place
+                for place in [*self.osm_places, *self.open_places]
+                if place.source_name == source and place.source_external_id == source_id
+            ),
+            None,
+        )
+
 
 def _in_box(place: RadarPlace, box: BoundingBox) -> bool:
     return (

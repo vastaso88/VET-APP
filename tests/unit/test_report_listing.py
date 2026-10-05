@@ -62,9 +62,7 @@ def test_reaching_the_threshold_of_distinct_reporters_removes_the_listing() -> N
     result = None
     for i in range(REPORT_COUNT_AUTO_REMOVE_THRESHOLD):
         result = service.execute(
-            ReportListingInput(
-                listing_id=listing_id, reporter_owner_id=f"user-{i}", reason="scam"
-            )
+            ReportListingInput(listing_id=listing_id, reporter_owner_id=f"user-{i}", reason="scam")
         )
 
     assert result is not None

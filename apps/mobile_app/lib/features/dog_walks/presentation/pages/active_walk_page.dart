@@ -64,6 +64,11 @@ class _ActiveWalkPageState extends State<ActiveWalkPage> {
   final MapController _mapController = MapController();
 
   bool _starting = false;
+
+  /// A pause/resume or the end-of-walk save is still running: the buttons
+  /// show it and refuse a second tap instead of looking dead for seconds.
+  bool _togglingPause = false;
+  bool _stopping = false;
   String? _locationError;
   Timer? _elapsedTimer;
   Coordinates? _initialMapCenter;
@@ -159,17 +164,28 @@ class _ActiveWalkPageState extends State<ActiveWalkPage> {
 
   Future<void> _togglePause() async {
     final walk = _controller.walk;
-    if (walk == null) return;
-    if (walk.isPaused) {
-      await _controller.resume();
-    } else {
-      await _controller.pause();
+    if (walk == null || _togglingPause || _stopping) return;
+    setState(() => _togglingPause = true);
+    try {
+      if (walk.isPaused) {
+        await _controller.resume();
+      } else {
+        await _controller.pause();
+      }
+    } finally {
+      if (mounted) setState(() => _togglingPause = false);
     }
   }
 
   Future<void> _stop() async {
+    if (_stopping || _togglingPause) return;
+    setState(() => _stopping = true);
     _elapsedTimer?.cancel();
-    await finishActiveWalk(context, widget.pet);
+    try {
+      await finishActiveWalk(context, widget.pet);
+    } finally {
+      if (mounted) setState(() => _stopping = false);
+    }
     if (!mounted) return;
     Navigator.of(context).pop(true);
   }
@@ -261,20 +277,26 @@ class _ActiveWalkPageState extends State<ActiveWalkPage> {
                           children: [
                             Expanded(
                               child: OutlinedButton.icon(
-                                onPressed: _togglePause,
-                                icon: Icon(
-                                  walk!.isPaused ? Icons.play_arrow_rounded : Icons.pause_rounded,
-                                ),
-                                label: Text(walk.isPaused ? 'Riavvia' : 'Pausa'),
+                                onPressed: _togglingPause || _stopping ? null : _togglePause,
+                                icon: _togglingPause
+                                    ? const PetLoader.small()
+                                    : Icon(
+                                        walk!.isPaused
+                                            ? Icons.play_arrow_rounded
+                                            : Icons.pause_rounded,
+                                      ),
+                                label: Text(walk!.isPaused ? 'Riavvia' : 'Pausa'),
                               ),
                             ),
                             const SizedBox(width: AppSpacing.sm),
                             Expanded(
                               child: FilledButton.icon(
-                                onPressed: _stop,
+                                onPressed: _stopping || _togglingPause ? null : _stop,
                                 style: FilledButton.styleFrom(backgroundColor: AppColors.danger),
-                                icon: const Icon(Icons.stop_rounded),
-                                label: const Text('Termina'),
+                                icon: _stopping
+                                    ? const PetLoader.small()
+                                    : const Icon(Icons.stop_rounded),
+                                label: Text(_stopping ? 'Salvataggio...' : 'Termina'),
                               ),
                             ),
                           ],
@@ -284,7 +306,9 @@ class _ActiveWalkPageState extends State<ActiveWalkPage> {
                           width: double.infinity,
                           child: FilledButton.icon(
                             onPressed: _starting ? null : _start,
-                            icon: const Icon(Icons.play_arrow_rounded),
+                            icon: _starting
+                                ? const PetLoader.small()
+                                : const Icon(Icons.play_arrow_rounded),
                             label: Text(_starting ? 'Avvio...' : 'Avvia passeggiata'),
                           ),
                         ),

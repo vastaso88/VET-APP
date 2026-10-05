@@ -8,12 +8,7 @@ import '../../../../design_system/tokens/app_radii.dart';
 import '../../../../design_system/tokens/app_spacing.dart';
 import '../../../../design_system/tokens/app_text_styles.dart';
 import '../../../../shared/auth/current_user.dart';
-import '../../../local_activities/data/local_activities_repository.dart';
 import '../../../local_events/presentation/pages/local_events_page.dart';
-import '../../../location/data/location_preference_store.dart';
-import '../../../location/domain/coordinates.dart';
-import '../../../location/domain/geo_math.dart';
-import '../../../location/presentation/reference_location.dart';
 import '../../../pet_news/data/pet_news_repository.dart';
 import '../../../pet_news/domain/pet_news_item.dart';
 import '../../../pet_news/presentation/pages/news_feed_page.dart';
@@ -624,42 +619,6 @@ class _LocalEventsNotice extends StatefulWidget {
 }
 
 class _LocalEventsNoticeState extends State<_LocalEventsNotice> {
-  // Same Milano fallback used by the maps demo route and the marketplace
-  // page while the user hasn't set a Località preference.
-  static const _fallbackLocation =
-      Coordinates(latitude: 45.4642, longitude: 9.1900);
-  static const _nearbyRadiusKm = 25.0;
-
-  late final Future<String> _summaryFuture = _loadSummary();
-
-  Future<String> _loadSummary() async {
-    await LocationPreferenceStore.instance.ensureLoaded();
-    final preference = LocationPreferenceStore.instance.preference;
-    final referenceLocation =
-        resolveReferenceLocation(preference, _fallbackLocation);
-
-    final activities = await LocalActivitiesRepository().loadActiveActivities();
-    final nearby = activities.where(
-      (activity) =>
-          haversineMeters(referenceLocation, activity.location) <=
-          _nearbyRadiusKm * 1000,
-    );
-
-    if (nearby.isEmpty) {
-      return 'Vicino a me · nessuno nel raggio di ${_nearbyRadiusKm.round()} km';
-    }
-    final count = nearby.length;
-    final nearest = nearby.reduce(
-      (a, b) => haversineMeters(referenceLocation, a.location) <=
-              haversineMeters(referenceLocation, b.location)
-          ? a
-          : b,
-    );
-    return count == 1
-        ? 'Vicino a me · ${nearest.title}'
-        : 'Vicino a me · $count nella tua zona, tra cui ${nearest.title}';
-  }
-
   @override
   Widget build(BuildContext context) {
     return DashboardSurfaceCard(
@@ -683,17 +642,12 @@ class _LocalEventsNoticeState extends State<_LocalEventsNotice> {
           ),
           const SizedBox(width: AppSpacing.md),
           Expanded(
-            child: FutureBuilder<String>(
-              future: _summaryFuture,
-              builder: (context, snapshot) {
-                return Text(
-                  snapshot.data ?? 'Vicino a me',
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: AppTextStyles.bodySmall.copyWith(
-                      fontWeight: FontWeight.w600, color: AppColors.text),
-                );
-              },
+            child: Text(
+              'Vicino a me',
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: AppTextStyles.bodySmall.copyWith(
+                  fontWeight: FontWeight.w600, color: AppColors.text),
             ),
           ),
           const Icon(Icons.chevron_right_rounded, color: AppColors.mutedText),

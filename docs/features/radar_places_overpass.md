@@ -171,6 +171,37 @@ Ritiro: `DELETE /local-services/reports/{id}`, solo per chi l'ha fatta e solo fi
 - Filtro sui nomi di persona nel nome del luogo: c'è solo il filtro su contatti e insulti.
 - Cancellazione dei contributi alla chiusura dell'account: la logica è possibile (pseudonimo ricalcolabile) ma non è collegata, perché l'app non ha ancora una funzione di cancellazione dell'account.
 
+## Tempi di risposta (misure del 2026-10-05)
+
+Segnalazione dell'utente sulla build 22: dopo il tocco su una stella passavano circa 10 secondi senza alcun segno.
+
+Cosa è stato misurato:
+
+- Il database Supabase è in Irlanda (regione AWS `eu-west-1`, dal suo indirizzo di rete). Il backend su Vercel girava a Washington (`iad1`, dall'intestazione `X-Vercel-Id` delle risposte): ogni lettura del database attraversava l'oceano due volte.
+- Avvio a freddo del backend: 2,4 s alla prima richiesta dopo una pausa, 0,23 s alle successive (richiesta senza accesso, quindi senza letture).
+- Il voto faceva una decina di letture una dopo l'altra: per trovare l'area votata rifaceva l'intera ricerca dei dintorni (6 richieste). Poi l'app ricaricava tutto il radar (altre 6-9).
+- L'unione delle fonti con deduplica NON era il collo di bottiglia: circa 90 ms su 630 per Milano a 10 km. Il tempo andava nelle richieste al database fatte in fila.
+
+Tempi lato server misurati dall'Italia contro il database reale, sola lettura, migliore di tre (dal server Vercel i valori assoluti sono diversi, le proporzioni restano):
+
+| Caso | Prima | Dopo |
+| --- | --- | --- |
+| Milano 10 km, tutte le categorie (889 luoghi) | 628 ms, 6 richieste in fila | 285 ms, 4 richieste insieme |
+| Milano 25 km (1.010 luoghi) | 929 ms | 479 ms |
+| Milano 50 km (1.231 luoghi) | 1.162 ms | 796 ms |
+| Lecce 10 km (69 luoghi) | 474 ms | 93 ms |
+| Ricerca dell'area nel voto | 449 ms, 6 richieste | 75 ms, 1 richiesta |
+
+Cosa è cambiato:
+
+- **Voto**: l'area si legge con una sola richiesta per identificativo (`get_place`); la ricerca nei dintorni resta solo come ripiego per le zone servite dalla cache per celle.
+- **Radar**: le letture indipendenti (due tabelle dei luoghi, segnalazioni, esclusioni, voti) partono insieme; le segnalazioni si leggono una volta sola per richiesta invece di due; le esclusioni restano in memoria per 60 secondi.
+- **Connessioni**: un solo client verso il database per tutto il backend invece di uno per ogni archivio (erano 17): a freddo ognuno pagava la propria apertura di connessione.
+- **Regione Vercel**: `vercel.json` chiede `dub1` (Dublino), accanto al database. Da verificare dopo il deploy: l'intestazione `X-Vercel-Id` deve finire con `::dub1::`. Non misurato: è la modifica da cui ci si aspetta di più, ma il dato arriva solo dal deploy.
+- **App**: stelle, conferma, smentita e ritiro si vedono al tocco con "Salvataggio…"; se il server rifiuta tornano com'erano con il messaggio. Dopo un voto a stelle il radar non viene più ricaricato; dopo le altre azioni si ricarica tenendo a schermo l'elenco precedente invece di svuotarlo.
+
+Non misurato: i tempi veri di `PUT /local-services/ratings` e `GET /local-services/places` in produzione con accesso (servirebbe una sessione utente). Non applicati perché non giustificati dalle misure: limiti per categoria in SQL (l'app chiede sempre tutte le categorie) e modifiche agli indici (il riquadro per latitudine e longitudine usa già l'indice di posizione).
+
 ## Posizione
 
 Al primo ingresso senza nessuna posizione nota, la pagina mostra una spiegazione ("VetApp usa la posizione del telefono solo mentre usi l'app") con due scelte: **Consenti**, che fa comparire la richiesta di sistema, salva la modalità "posizione attuale" e centra subito; **Scegli un indirizzo**, che apre le Impostazioni. Chi ha già una posizione salvata non rivede la spiegazione.

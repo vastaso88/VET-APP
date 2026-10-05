@@ -12,14 +12,22 @@ def test_lists_every_report_when_no_status_filter_is_given() -> None:
     repository = InMemoryChatResponseReportRepository()
     repository.save(
         ChatResponseReport(
-            conversation_id="c1", message_id="m1", pet_id="p1", reporter_owner_id="o1",
-            reported_answer="answer", status="reported",
+            conversation_id="c1",
+            message_id="m1",
+            pet_id="p1",
+            reporter_owner_id="o1",
+            reported_answer="answer",
+            status="reported",
         )
     )
     repository.save(
         ChatResponseReport(
-            conversation_id="c2", message_id="m2", pet_id="p1", reporter_owner_id="o2",
-            reported_answer="answer", status="resolved",
+            conversation_id="c2",
+            message_id="m2",
+            pet_id="p1",
+            reporter_owner_id="o2",
+            reported_answer="answer",
+            status="resolved",
         )
     )
     service = ListChatResponseReportsService(repository)
@@ -33,14 +41,22 @@ def test_filters_by_status() -> None:
     repository = InMemoryChatResponseReportRepository()
     repository.save(
         ChatResponseReport(
-            conversation_id="c1", message_id="m1", pet_id="p1", reporter_owner_id="o1",
-            reported_answer="answer", status="reported",
+            conversation_id="c1",
+            message_id="m1",
+            pet_id="p1",
+            reporter_owner_id="o1",
+            reported_answer="answer",
+            status="reported",
         )
     )
     repository.save(
         ChatResponseReport(
-            conversation_id="c2", message_id="m2", pet_id="p1", reporter_owner_id="o2",
-            reported_answer="answer", status="resolved",
+            conversation_id="c2",
+            message_id="m2",
+            pet_id="p1",
+            reporter_owner_id="o2",
+            reported_answer="answer",
+            status="resolved",
         )
     )
     service = ListChatResponseReportsService(repository)

@@ -12,6 +12,7 @@ import '../../../pets/data/pet_demo_store.dart';
 import '../../../pets/domain/pet_models.dart';
 import '../../../pets/presentation/widgets/pet_avatar.dart';
 import '../../../settings/data/layout_settings_store.dart';
+import '../../../../app/router/app_router.dart';
 import '../../data/reminders_repository.dart';
 import '../../domain/reminder_calendar.dart';
 import '../../domain/reminder_presentation.dart';
@@ -88,7 +89,12 @@ class _RemindersListPageState extends State<RemindersListPage> {
   }
 
   Future<void> _markDone(ReminderEntry reminder) async {
-    await _repository.saveReminder(reminder.copyWith(isDone: true));
+    try {
+      await _repository.saveReminder(reminder.copyWith(isDone: true));
+    } on ReminderSyncException catch (error) {
+      showReminderFailure(error.message);
+      return;
+    }
     if (!mounted) return;
     await _reload();
   }
@@ -723,7 +729,7 @@ class _ReminderCreatePageState extends State<ReminderCreatePage> {
   final RemindersRepository _repository = RemindersRepository();
 
   void _save(ReminderEntry reminder) {
-    unawaited(_repository.saveReminder(reminder));
+    saveReminderInBackground(_repository, reminder);
     Navigator.of(context).pop();
   }
 
@@ -758,7 +764,7 @@ class _ReminderEditPageState extends State<ReminderEditPage> {
   final RemindersRepository _repository = RemindersRepository();
 
   void _save(ReminderEntry reminder) {
-    unawaited(_repository.saveReminder(reminder));
+    saveReminderInBackground(_repository, reminder);
     Navigator.of(context).pop(reminder);
   }
 
@@ -1439,7 +1445,12 @@ class _ReminderDetailPageState extends State<ReminderDetailPage> {
     );
     if (confirmed != true) return;
 
-    await _repository.deleteReminder(reminder.id);
+    try {
+      await _repository.deleteReminder(reminder.id);
+    } on ReminderSyncException catch (error) {
+      if (mounted) showReminderFailure(error.message);
+      return;
+    }
     if (!mounted) return;
     Navigator.of(context).pop();
   }
@@ -2092,4 +2103,21 @@ class _InputLike extends StatelessWidget {
       ),
     );
   }
+}
+
+/// Shows a reminder refusal even when the page that caused it has closed.
+void showReminderFailure(String message) {
+  AppRouter.scaffoldMessengerKey.currentState?.showSnackBar(SnackBar(content: Text(message)));
+}
+
+/// Saves without making the owner wait for the server: the change is already
+/// on screen, and a refusal is shown rather than lost.
+void saveReminderInBackground(RemindersRepository repository, ReminderEntry reminder) {
+  unawaited(repository.saveReminder(reminder).catchError((Object error) {
+    showReminderFailure(
+      error is ReminderSyncException
+          ? error.message
+          : 'Non sono riuscito a salvare il promemoria. Riprova.',
+    );
+  }));
 }
