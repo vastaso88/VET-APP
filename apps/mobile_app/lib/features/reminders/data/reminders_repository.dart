@@ -145,9 +145,15 @@ class RemindersRepository {
     }
   }
 
+  /// Only reminders whose pet the owner actually has. The in-memory seed list
+  /// is not owner-scoped, so without this a pet-less account still sees (and
+  /// counts) reminders for pets it never created.
   Future<List<ReminderEntry>> loadReminders() async {
     await ensureHydrated();
-    return List<ReminderEntry>.unmodifiable(_localReminders);
+    await PetDemoStore.instance.ensureHydrated();
+    return List<ReminderEntry>.unmodifiable(
+      _localReminders.where((r) => PetDemoStore.instance.byName(r.petName) != null),
+    );
   }
 
   Future<ReminderEntry?> loadReminderById(String id) async {
