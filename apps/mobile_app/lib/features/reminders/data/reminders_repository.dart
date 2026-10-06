@@ -81,13 +81,13 @@ class RemindersRepository {
 
   final SupabaseClient? _client;
 
-  /// Session-lifetime local store: `_seedReminders` only while nobody is
-  /// signed in (offline/demo preview); once a real owner is known,
-  /// [ensureHydrated] replaces this with that owner's real (possibly empty)
-  /// reminders, so a brand-new account never inherits Moka/Oliver/Rex's
-  /// demo activities — same pattern as PetDemoStore.ensureHydrated.
-  static List<ReminderEntry> _localReminders =
-      List<ReminderEntry>.of(_seedReminders);
+  /// Session-lifetime local store. Starts empty: `_seedReminders` are added
+  /// only in offline/demo preview (no Supabase client), so a real account
+  /// never sees Moka/Oliver/Rex's demo activities — not even while hydration
+  /// is pending or after it failed. With a client, [ensureHydrated] fills
+  /// this with the owner's real reminders.
+  static List<ReminderEntry> _localReminders = <ReminderEntry>[];
+  static bool _seedsAdded = false;
 
   /// Owner id this store's contents were hydrated for — see
   /// PetDemoStore.ensureHydrated for the same no-op-on-repeat rationale.
@@ -145,15 +145,18 @@ class RemindersRepository {
     }
   }
 
-  /// Only reminders whose pet the owner actually has. The in-memory seed list
-  /// is not owner-scoped, so without this a pet-less account still sees (and
-  /// counts) reminders for pets it never created.
   Future<List<ReminderEntry>> loadReminders() async {
     await ensureHydrated();
-    await PetDemoStore.instance.ensureHydrated();
-    return List<ReminderEntry>.unmodifiable(
-      _localReminders.where((r) => PetDemoStore.instance.byName(r.petName) != null),
-    );
+    _addSeedsWithoutClient();
+    return List<ReminderEntry>.unmodifiable(_localReminders);
+  }
+
+  void _addSeedsWithoutClient() {
+    if (_seedsAdded || _resolveClient() != null) {
+      return;
+    }
+    _seedsAdded = true;
+    _localReminders.addAll(_seedReminders);
   }
 
   Future<ReminderEntry?> loadReminderById(String id) async {

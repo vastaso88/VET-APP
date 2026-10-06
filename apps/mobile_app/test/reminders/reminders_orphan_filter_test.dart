@@ -1,26 +1,24 @@
-import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:vet_app_mobile/features/pets/data/pet_demo_store.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:vet_app_mobile/features/reminders/data/reminders_repository.dart';
 
+/// Any Supabase call fails: hydration is treated as failed, never as empty.
+class _FailingSupabaseClient implements SupabaseClient {
+  @override
+  dynamic noSuchMethod(Invocation invocation) => throw StateError('offline');
+}
+
 void main() {
-  test('loadReminders hides seed reminders for pets the owner does not have', () async {
-    final repository = RemindersRepository();
+  test('demo seeds only appear without a Supabase client', () async {
+    // Client present, hydration not completed/failed: no demo reminders.
+    final withClient = RemindersRepository(client: _FailingSupabaseClient());
+    final real = await withClient.loadReminders();
+    expect(real.where((r) => r.petName == 'Moka'), isEmpty);
 
-    final withoutPets = await repository.loadReminders();
-    expect(withoutPets.where((r) => r.petName == 'Moka'), isEmpty);
-
-    await PetDemoStore.instance.create(
-      name: 'Moka',
-      species: 'Cane',
-      breed: null,
-      birthDate: null,
-      sex: 'Femmina',
-      identityColor: Colors.teal,
-    );
-
-    final withMoka = await repository.loadReminders();
-    expect(withMoka.where((r) => r.petName == 'Moka'), isNotEmpty);
-    expect(withMoka.where((r) => r.petName == 'Oliver'), isEmpty);
+    // No client (offline preview): seeds are visible with zero pets, and
+    // they are not tied to pet names, so a renamed pet's reminders stay too.
+    final preview = RemindersRepository();
+    final demo = await preview.loadReminders();
+    expect(demo.where((r) => r.petName == 'Moka'), isNotEmpty);
   });
 }

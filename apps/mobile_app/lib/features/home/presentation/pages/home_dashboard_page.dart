@@ -233,11 +233,9 @@ class _AgendaSection extends StatelessWidget {
         // initState never saw a reminder created elsewhere. Listening to
         // RemindersRepository.changes and re-fetching on every tick keeps
         // the calendar in sync no matter where the reminder was added.
-        // Also rebuilds on pet changes: which reminders count depends on which
-        // pets exist (see RemindersRepository.loadReminders).
-        return ListenableBuilder(
-          listenable: Listenable.merge([RemindersRepository.changes, PetDemoStore.changes]),
-          builder: (context, _) {
+        return ValueListenableBuilder<int>(
+          valueListenable: RemindersRepository.changes,
+          builder: (context, _, __) {
             return FutureBuilder<List<ReminderEntry>>(
               future: repository.loadReminders(),
               builder: (context, snapshot) {
