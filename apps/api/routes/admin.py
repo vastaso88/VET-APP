@@ -4,7 +4,6 @@ from fastapi import APIRouter, HTTPException, status
 from postgrest.types import CountMethod
 
 from apps.api.dependencies.container import get_container
-from packages.infrastructure.persistence.supabase.client import build_supabase_client
 
 router = APIRouter(prefix="/admin", tags=["admin"])
 
@@ -71,6 +70,8 @@ def admin_overview() -> dict[str, object]:
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
             detail="Admin overview requires PERSISTENCE_BACKEND=supabase",
         )
+
+    from packages.infrastructure.persistence.supabase.client import build_supabase_client
 
     client = build_supabase_client(settings)
 
