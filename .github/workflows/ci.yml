@@ -23,3 +23,21 @@ jobs:
         run: uv run mypy apps packages tests
       - name: Test
         run: uv run pytest
+
+
+  admin_portal:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: apps/admin_portal
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+      - name: Install admin dependencies
+        run: npm install
+      - name: Admin typecheck
+        run: npm run typecheck
+      - name: Admin build
+        run: npm run build
