@@ -36,7 +36,7 @@ export default async function JobsPage() {
             <span>Status</span>
             <span>Source</span>
             <span>Coverage</span>
-            <span>Places</span>
+            <span>Records</span>
             <span>Duration / error</span>
           </div>
           {jobs.length ? jobs.map((job) => {

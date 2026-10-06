@@ -650,3 +650,266 @@ set
     source_url = excluded.source_url,
     notes = excluded.notes,
     updated_at = now();
+
+
+-- Admin scientific discovery ingestion.
+-- Discovery metadata is stored in ai.source_documents but remains
+-- ineligible for RAG until a later verification/full-text pipeline promotes it.
+
+create unique index if not exists idx_source_documents_doi_unique
+    on ai.source_documents (lower(doi))
+    where doi is not null and btrim(doi) <> '';
+
+create unique index if not exists idx_source_documents_pmid_unique
+    on ai.source_documents (pmid)
+    where pmid is not null and btrim(pmid) <> '';
+
+insert into ai.trusted_source_domains (
+    host, display_name, base_url, source_kind, discovery_only,
+    allowed_for_direct_ingest, authority_score, direct_source_score,
+    veterinary_relevance_score, evidence_policy, notes
+)
+values
+    (
+        'doi.org', 'DOI resolver', 'https://doi.org', 'knowledge_base', true,
+        false, 0.700, 0.500, 0.700, 'curated_only',
+        'Canonical DOI resolver used to deduplicate discovery metadata; never a RAG source by itself.'
+    ),
+    (
+        'europepmc.org', 'Europe PMC', 'https://europepmc.org', 'knowledge_base', true,
+        false, 0.900, 0.750, 0.850, 'allow_auto_ingest',
+        'Discovery and metadata source. Full-text promotion requires a direct eligible source.'
+    ),
+    (
+        'openalex.org', 'OpenAlex', 'https://openalex.org', 'knowledge_base', true,
+        false, 0.800, 0.650, 0.750, 'curated_only',
+        'Bibliographic discovery/enrichment source; not a direct RAG source.'
+    )
+on conflict (host) do update
+set
+    display_name = excluded.display_name,
+    base_url = excluded.base_url,
+    source_kind = excluded.source_kind,
+    discovery_only = excluded.discovery_only,
+    allowed_for_direct_ingest = excluded.allowed_for_direct_ingest,
+    authority_score = excluded.authority_score,
+    direct_source_score = excluded.direct_source_score,
+    veterinary_relevance_score = excluded.veterinary_relevance_score,
+    evidence_policy = excluded.evidence_policy,
+    notes = excluded.notes,
+    updated_at = now();
+
+create or replace function public.admin_scientific_catalog(limit_count integer default 50)
+returns jsonb
+language sql
+security invoker
+set search_path = public, ai, extensions
+as $$
+    select jsonb_build_object(
+        'metrics',
+        jsonb_build_object(
+            'trusted_domains', (select count(*) from ai.trusted_source_domains where is_active = true),
+            'documents', (select count(*) from ai.source_documents),
+            'eligible_for_rag', (select count(*) from ai.source_documents where eligible_for_rag = true),
+            'embedded', (select count(*) from ai.source_documents where embedding_status = 'embedded'),
+            'chunks', (select count(*) from ai.source_document_chunks)
+        ),
+        'recent_documents',
+        coalesce(
+            (
+                select jsonb_agg(to_jsonb(x) order by x.created_at desc)
+                from (
+                    select
+                        d.id,
+                        d.title,
+                        d.journal_name,
+                        d.doi,
+                        d.pmid,
+                        d.publication_year,
+                        d.reliability_tier,
+                        d.eligible_for_rag,
+                        d.embedding_status,
+                        d.ingestion_status,
+                        d.canonical_url,
+                        d.species_tags,
+                        d.clinical_domain,
+                        d.created_at,
+                        d.updated_at,
+                        td.host as source_host,
+                        td.display_name as source_name
+                    from ai.source_documents d
+                    join ai.trusted_source_domains td on td.id = d.domain_id
+                    order by d.created_at desc
+                    limit greatest(coalesce(limit_count, 50), 1)
+                ) x
+            ),
+            '[]'::jsonb
+        )
+    );
+$$;
+
+revoke all on function public.admin_scientific_catalog(integer) from public, anon, authenticated;
+grant execute on function public.admin_scientific_catalog(integer) to service_role;
+
+create or replace function public.admin_ingest_scientific_documents(payload jsonb)
+returns jsonb
+language plpgsql
+security invoker
+set search_path = public, ai, extensions
+as $$
+declare
+    item jsonb;
+    domain_row ai.trusted_source_domains%rowtype;
+    existing_id uuid;
+    inserted_count integer := 0;
+    updated_count integer := 0;
+    skipped_count integer := 0;
+    canonical text;
+    normalized_doi text;
+    normalized_pmid text;
+    species_value text;
+    domain_value text;
+    metadata_value jsonb;
+begin
+    if payload is null or jsonb_typeof(payload) <> 'array' then
+        raise exception 'payload must be a JSON array';
+    end if;
+
+    for item in select value from jsonb_array_elements(payload)
+    loop
+        canonical := nullif(btrim(item->>'canonical_url'), '');
+        normalized_doi := nullif(lower(btrim(item->>'doi')), '');
+        normalized_pmid := nullif(btrim(item->>'pmid'), '');
+        species_value := coalesce(nullif(btrim(item->>'species'), ''), 'other');
+        domain_value := coalesce(nullif(btrim(item->>'clinical_domain'), ''), 'general');
+        metadata_value := coalesce(item->'metadata', '{}'::jsonb);
+
+        if canonical is null or nullif(btrim(item->>'title'), '') is null then
+            skipped_count := skipped_count + 1;
+            continue;
+        end if;
+
+        select *
+        into domain_row
+        from ai.trusted_source_domains
+        where host = lower(btrim(item->>'domain_host'))
+          and is_active = true
+        limit 1;
+
+        if domain_row.id is null then
+            skipped_count := skipped_count + 1;
+            continue;
+        end if;
+
+        existing_id := null;
+
+        if normalized_doi is not null then
+            select id into existing_id
+            from ai.source_documents
+            where lower(doi) = normalized_doi
+            limit 1;
+        end if;
+
+        if existing_id is null and normalized_pmid is not null then
+            select id into existing_id
+            from ai.source_documents
+            where pmid = normalized_pmid
+            limit 1;
+        end if;
+
+        if existing_id is null then
+            select id into existing_id
+            from ai.source_documents
+            where lower(canonical_url) = lower(canonical)
+            limit 1;
+        end if;
+
+        if existing_id is not null then
+            update ai.source_documents
+            set
+                title = coalesce(nullif(btrim(item->>'title'), ''), title),
+                journal_name = coalesce(nullif(btrim(item->>'journal'), ''), journal_name),
+                doi = coalesce(normalized_doi, doi),
+                pmid = coalesce(normalized_pmid, pmid),
+                publication_year = coalesce((item->>'publication_year')::integer, publication_year),
+                species_tags = array(
+                    select distinct v
+                    from unnest(species_tags || array[species_value]) as v
+                    where v is not null and btrim(v) <> ''
+                ),
+                clinical_domain = array(
+                    select distinct v
+                    from unnest(clinical_domain || array[domain_value]) as v
+                    where v is not null and btrim(v) <> ''
+                ),
+                reliability_tier = case
+                    when ai.tier_rank(coalesce(item->>'reliability_tier', 'D'))
+                         > ai.tier_rank(reliability_tier)
+                    then coalesce(item->>'reliability_tier', reliability_tier)
+                    else reliability_tier
+                end,
+                summary = coalesce(nullif(item->>'summary', ''), summary),
+                metadata = metadata || metadata_value || jsonb_build_object('last_discovered_at', now())
+            where id = existing_id;
+            updated_count := updated_count + 1;
+        else
+            insert into ai.source_documents (
+                domain_id,
+                canonical_url,
+                url_host,
+                title,
+                document_kind,
+                journal_name,
+                doi,
+                pmid,
+                publication_year,
+                species_tags,
+                clinical_domain,
+                reliability_tier,
+                trust_score,
+                peer_reviewed,
+                eligible_for_rag,
+                embedding_status,
+                ingestion_status,
+                summary,
+                metadata
+            )
+            values (
+                domain_row.id,
+                canonical,
+                lower(btrim(item->>'domain_host')),
+                btrim(item->>'title'),
+                'abstract',
+                nullif(btrim(item->>'journal'), ''),
+                normalized_doi,
+                normalized_pmid,
+                nullif(item->>'publication_year', '')::integer,
+                array[species_value],
+                array[domain_value],
+                coalesce(nullif(btrim(item->>'reliability_tier'), ''), 'C'),
+                domain_row.authority_score,
+                true,
+                false,
+                'pending',
+                'pending',
+                nullif(item->>'summary', ''),
+                metadata_value || jsonb_build_object(
+                    'first_discovered_at', now(),
+                    'last_discovered_at', now()
+                )
+            );
+            inserted_count := inserted_count + 1;
+        end if;
+    end loop;
+
+    return jsonb_build_object(
+        'inserted', inserted_count,
+        'updated', updated_count,
+        'skipped', skipped_count,
+        'documents', (select count(*) from ai.source_documents)
+    );
+end;
+$$;
+
+revoke all on function public.admin_ingest_scientific_documents(jsonb) from public, anon, authenticated;
+grant execute on function public.admin_ingest_scientific_documents(jsonb) to service_role;
