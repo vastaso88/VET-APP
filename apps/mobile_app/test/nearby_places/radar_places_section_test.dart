@@ -438,6 +438,70 @@ void main() {
     expect(find.text('Servizi nella zona'), findsOneWidget);
   });
 
+  testWidgets('signed out, the page asks to sign in and shows no demo service next to it',
+      (tester) async {
+    await _pumpPage(
+      tester,
+      _FakeRadarPlacesRepository([
+        Result.failure(
+          const AppNetworkError(
+            code: RadarPlacesRepository.signedOutErrorCode,
+            message: 'Accedi per vedere i servizi per animali vicino a te.',
+          ),
+        ),
+      ]),
+    );
+
+    expect(find.text('Accedi per vedere i servizi per animali vicino a te.'), findsOneWidget);
+    expect(find.text('Riprova'), findsOneWidget);
+    // The seeded demo service of the no-backend preview stays hidden.
+    expect(find.text('Ambulatorio veterinario Navigli'), findsNothing);
+  });
+
+  test('the repository tells a missing backend from a missing session', () async {
+    // No API_BASE_URL in a test build: that is a preview, not a sign-in problem.
+    final result = await RadarPlacesRepository().loadNearby(
+      center: const Coordinates(latitude: 45.4642, longitude: 9.19),
+      radiusKm: 10,
+    );
+
+    final code = result.fold(onSuccess: (_) => null, onFailure: (error) => error.code);
+    expect(code, RadarPlacesRepository.notConfiguredErrorCode);
+  });
+
+  testWidgets('a Località saved in Impostazioni reloads the page for the new place',
+      (tester) async {
+    final repository = _repositoryWith([_clinic]);
+    await _pumpPage(tester, repository);
+    expect(repository.requestedRadii, [10]);
+
+    // What Impostazioni does when the user picks another residence.
+    await _useHome(const Coordinates(latitude: 41.9028, longitude: 12.4964));
+    await _settle(tester);
+
+    expect(repository.requestedRadii, [10, 10]);
+    expect(repository.requestedCenters.last.latitude, closeTo(41.9028, 0.0001));
+  });
+
+  testWidgets('the page’s own GPS reading does not make it reload itself', (tester) async {
+    await _useHome(null);
+    await LocationPreferenceStore.instance.update(
+      const UserLocationPreference(mode: LocationMode.currentPosition, current: _milan),
+    );
+    final repository = _repositoryWith([_clinic]);
+    await _pumpPage(
+      tester,
+      repository,
+      locationSampler: const _FakeLocationSampler(
+        DeviceLocationResult.success(Coordinates(latitude: 45.5, longitude: 9.2)),
+      ),
+    );
+    await _settle(tester);
+
+    // One load: the reading it saved itself did not count as a change.
+    expect(repository.requestedRadii, [10]);
+  });
+
   testWidgets('without any position asks for a Località instead of showing a default city',
       (tester) async {
     await _useHome(null);

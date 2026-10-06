@@ -40,7 +40,10 @@ class PetEditPage extends StatelessWidget {
       actions: [
         TextButton(
           onPressed: () => Navigator.of(context).maybePop(),
-          style: TextButton.styleFrom(foregroundColor: Colors.white),
+          style: TextButton.styleFrom(
+            foregroundColor: AppColors.primaryStrong,
+            textStyle: const TextStyle(fontWeight: FontWeight.w700),
+          ),
           child: const Text('Chiudi'),
         ),
       ],

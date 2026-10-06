@@ -11,6 +11,7 @@ import '../../../../design_system/tokens/app_text_styles.dart';
 import '../../../billing/data/billing_demo_store.dart';
 import '../../../billing/data/subscription_remote_data_source.dart';
 import '../../../billing/domain/billing_models.dart';
+import '../../../billing/presentation/widgets/plan_feature_list.dart';
 
 /// First screen after signup: proposes the 10-day free trial (already
 /// started server-side by the time this shows — see register_page.dart)
@@ -75,6 +76,8 @@ class _PlanIntroPageState extends State<PlanIntroPage> {
               style: AppTextStyles.caption.copyWith(letterSpacing: 0.8),
             ),
             const SizedBox(height: AppSpacing.md),
+            const IncludedInAllPlansCard(),
+            const SizedBox(height: AppSpacing.sm),
             for (final plan in BillingDemoStore.plans) ...[
               _CompactPlanCard(
                 plan: plan,
@@ -176,6 +179,8 @@ class _CompactPlanCard extends StatelessWidget {
               children: [
                 Text(plan.displayName, style: AppTextStyles.body.copyWith(fontWeight: FontWeight.w700)),
                 Text(priceLabel, style: AppTextStyles.bodySmall),
+                const SizedBox(height: AppSpacing.xs),
+                PlanFeatureList(features: plan.features),
               ],
             ),
           ),

@@ -9,7 +9,7 @@ import '../../../../../design_system/tokens/app_spacing.dart';
 import '../../../../../design_system/tokens/app_text_styles.dart';
 import '../../../../../shared/auth/current_user.dart';
 import '../../../auth/data/auth_repository_factory.dart';
-import '../../../settings/presentation/pages/settings_page.dart';
+import '../../../../app/shell/home_shell_page.dart';
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
@@ -22,9 +22,8 @@ class _ProfilePageState extends State<ProfilePage> {
   bool _darkMode = false;
 
   void _openSettings() {
-    Navigator.of(context).pushReplacement(
-      MaterialPageRoute<void>(builder: (_) => const SettingsPage()),
-    );
+    Navigator.of(context).pop();
+    HomeShellNavigation.goToTab(HomeShellNavigation.settingsTab);
   }
 
   void _confirmLogout() {

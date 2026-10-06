@@ -31,6 +31,12 @@ Future<void> bootstrap() async {
   }
 
   final runtimeConfig = const AppRuntimeConfigLoader().load();
+  if (runtimeConfig.isProduction && !runtimeConfig.hasSupabaseCredentials) {
+    throw StateError(
+      'Build di produzione senza SUPABASE_URL/SUPABASE_ANON_KEY: '
+      'usa --dart-define-from-file=.env.production.json',
+    );
+  }
   var supabaseEnabled = false;
 
   if (runtimeConfig.hasSupabaseCredentials) {

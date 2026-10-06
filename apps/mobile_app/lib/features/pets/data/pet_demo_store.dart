@@ -477,9 +477,18 @@ class PetDemoStore {
     }
   }
 
+  /// The consent text version the app shows today (see
+  /// medical_record_consent_card.dart and, on the backend,
+  /// packages/core/domain/medical_record/consent_text.py).
+  static const _currentConsentVersion = 'v2';
+
+  /// A decision taken under an earlier consent text counts as no decision
+  /// (2026-10-06): the switch shows "off / not decided" and the owner
+  /// decides again on the current wording. Same rule as the backend.
   static bool? _grantedFromConsentJson(Object? json) {
-    if (json is Map && json['granted'] is bool) return json['granted'] as bool;
-    return null;
+    if (json is! Map || json['granted'] is! bool) return null;
+    if (json['version'] != _currentConsentVersion) return null;
+    return json['granted'] as bool;
   }
 
   /// Deletes the pet. If the server refuses, the pet is put back and the
@@ -526,7 +535,7 @@ class PetDemoStore {
       medicalNote: medicalNote.trim().isEmpty
           ? 'Profilo creato da poco, pronto per la prossima visita.'
           : medicalNote.trim(),
-      healthBadge: 'Nuovo profilo',
+      healthBadge: 'Da valutare',
       nextVisitLabel: 'Da pianificare',
       avatarEmoji: name.trim().isEmpty ? option.avatarEmoji : name.trim()[0].toUpperCase(),
       accentColor: option.accentColor,

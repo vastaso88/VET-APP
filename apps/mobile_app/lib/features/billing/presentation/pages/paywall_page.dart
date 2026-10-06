@@ -12,6 +12,7 @@ import '../../../../design_system/tokens/app_text_styles.dart';
 import '../../data/billing_demo_store.dart';
 import '../../data/subscription_remote_data_source.dart';
 import '../../domain/billing_models.dart';
+import '../widgets/plan_feature_list.dart';
 
 /// Blocking screen shown when the free trial has ended and no plan has
 /// been chosen (packages/core/domain/subscription/models.py:
@@ -67,9 +68,7 @@ class _PaywallPageState extends State<PaywallPage> {
                 style: AppTextStyles.body,
               ),
               const SizedBox(height: AppSpacing.lg),
-              const _BenefitRow(icon: Icons.pets_outlined, text: 'Tutti i tuoi animali in un unico posto'),
-              const _BenefitRow(icon: Icons.chat_bubble_outline_rounded, text: 'Assistente per dubbi e routine'),
-              const _BenefitRow(icon: Icons.event_available_outlined, text: 'Promemoria che non ti fanno dimenticare nulla'),
+              const IncludedInAllPlansCard(),
               const SizedBox(height: AppSpacing.xl),
               for (final plan in BillingDemoStore.plans) ...[
                 _PaywallPlanCard(
@@ -82,36 +81,6 @@ class _PaywallPageState extends State<PaywallPage> {
             ],
           ),
         ),
-      ),
-    );
-  }
-}
-
-class _BenefitRow extends StatelessWidget {
-  const _BenefitRow({required this.icon, required this.text});
-
-  final IconData icon;
-  final String text;
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: AppSpacing.sm),
-      child: Row(
-        children: [
-          Container(
-            width: 36,
-            height: 36,
-            alignment: Alignment.center,
-            decoration: BoxDecoration(
-              color: AppColors.primary.withValues(alpha: 0.12),
-              borderRadius: BorderRadius.circular(AppRadii.medium),
-            ),
-            child: Icon(icon, size: 18, color: AppColors.primary),
-          ),
-          const SizedBox(width: AppSpacing.md),
-          Expanded(child: Text(text, style: AppTextStyles.body)),
-        ],
       ),
     );
   }
@@ -167,18 +136,7 @@ class _PaywallPlanCard extends StatelessWidget {
           const SizedBox(height: 4),
           Text(priceLabel, style: AppTextStyles.bodySmall),
           const SizedBox(height: AppSpacing.md),
-          for (final feature in plan.features)
-            Padding(
-              padding: const EdgeInsets.only(bottom: AppSpacing.xs),
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Icon(Icons.check_rounded, size: 18, color: AppColors.success),
-                  const SizedBox(width: AppSpacing.sm),
-                  Expanded(child: Text(feature, style: AppTextStyles.bodySmall)),
-                ],
-              ),
-            ),
+          PlanFeatureList(features: plan.features),
           const SizedBox(height: AppSpacing.sm),
           SizedBox(
             width: double.infinity,

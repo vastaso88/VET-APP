@@ -153,7 +153,7 @@ Future<void> showBadgeGalleryDialog(
                     crossAxisCount: 2,
                     mainAxisSpacing: AppSpacing.md,
                     crossAxisSpacing: AppSpacing.md,
-                    childAspectRatio: 0.85,
+                    childAspectRatio: 0.7,
                   ),
                   itemCount: _walkBadgeCatalog.length,
                   itemBuilder: (context, index) {
@@ -222,7 +222,6 @@ class _BadgeTile extends StatelessWidget {
             child: Text(
               entry.description,
               textAlign: TextAlign.center,
-              overflow: TextOverflow.fade,
               style: AppTextStyles.caption
                   .copyWith(color: earned ? AppColors.secondaryText : AppColors.mutedText),
             ),

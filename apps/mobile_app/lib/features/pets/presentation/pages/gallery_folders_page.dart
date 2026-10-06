@@ -11,7 +11,6 @@ import '../../data/pet_demo_store.dart';
 import '../../data/pet_photo_repository.dart';
 import '../../domain/pet_models.dart';
 import '../widgets/pet_avatar.dart';
-import '../widgets/pets_scaffold.dart';
 import 'pet_gallery_page.dart';
 
 /// Attività > Galleria: one folder per pet, two columns. The cover is the
@@ -28,51 +27,84 @@ class _GalleryFoldersPageState extends State<GalleryFoldersPage> {
 
   Future<List<PetProfile>> _load() async {
     await PetDemoStore.instance.ensureHydrated();
-    return PetDemoStore.instance.list().where((pet) => !pet.isMemorial).toList(growable: false);
+    return PetDemoStore.instance
+        .list()
+        .where((pet) => !pet.isMemorial)
+        .toList(growable: false);
   }
 
   @override
   Widget build(BuildContext context) {
-    return PetsScaffold(
-      title: 'Galleria',
-      subtitle: 'Le foto dei tuoi animali, per cartella.',
-      onBack: () => Navigator.of(context).maybePop(),
-      body: FutureBuilder<List<PetProfile>>(
-        future: _pets,
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: PetLoader(label: 'Carico le cartelle…'));
-          }
-          final pets = snapshot.data ?? const <PetProfile>[];
-          if (pets.isEmpty) {
-            return Center(
-              child: Padding(
-                padding: const EdgeInsets.all(AppSpacing.xl),
-                child: Text(
-                  'Aggiungi un animale per creare la sua cartella di foto.',
-                  textAlign: TextAlign.center,
-                  style: AppTextStyles.bodySmall,
-                ),
-              ),
-            );
-          }
-          return GridView.builder(
-            padding: const EdgeInsets.all(AppSpacing.lg),
-            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: 2,
-              mainAxisSpacing: AppSpacing.md,
-              crossAxisSpacing: AppSpacing.md,
-              childAspectRatio: 0.82,
-            ),
-            itemCount: pets.length,
-            itemBuilder: (context, index) => _FolderCard(
-              pet: pets[index],
-              onTap: () => Navigator.of(context).push(
-                MaterialPageRoute<void>(builder: (_) => PetGalleryPage(pet: pets[index])),
+    // Same header as the other Attività pages (back button + title).
+    return Scaffold(
+      backgroundColor: AppColors.background,
+      body: SafeArea(
+        child: Column(
+          children: [
+            Padding(
+              padding: const EdgeInsets.fromLTRB(
+                  AppSpacing.lg, AppSpacing.lg, AppSpacing.lg, AppSpacing.md),
+              child: Row(
+                children: [
+                  IconButton(
+                    onPressed: () => Navigator.of(context).maybePop(),
+                    icon: const Icon(Icons.arrow_back_rounded),
+                    color: Colors.white,
+                    style: IconButton.styleFrom(
+                        backgroundColor: const Color(0xFF163A35)),
+                  ),
+                  const SizedBox(width: AppSpacing.sm),
+                  Expanded(
+                    child: Text('Galleria',
+                        style: AppTextStyles.display.copyWith(fontSize: 26)),
+                  ),
+                ],
               ),
             ),
-          );
-        },
+            Expanded(
+              child: FutureBuilder<List<PetProfile>>(
+                future: _pets,
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return const Center(
+                        child: PetLoader(label: 'Carico le cartelle…'));
+                  }
+                  final pets = snapshot.data ?? const <PetProfile>[];
+                  if (pets.isEmpty) {
+                    return Center(
+                      child: Padding(
+                        padding: const EdgeInsets.all(AppSpacing.xl),
+                        child: Text(
+                          'Aggiungi un animale per creare la sua cartella di foto.',
+                          textAlign: TextAlign.center,
+                          style: AppTextStyles.bodySmall,
+                        ),
+                      ),
+                    );
+                  }
+                  return GridView.builder(
+                    padding: const EdgeInsets.all(AppSpacing.lg),
+                    gridDelegate:
+                        const SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount: 2,
+                      mainAxisSpacing: AppSpacing.md,
+                      crossAxisSpacing: AppSpacing.md,
+                      childAspectRatio: 0.82,
+                    ),
+                    itemCount: pets.length,
+                    itemBuilder: (context, index) => _FolderCard(
+                      pet: pets[index],
+                      onTap: () => Navigator.of(context).push(
+                        MaterialPageRoute<void>(
+                            builder: (_) => PetGalleryPage(pet: pets[index])),
+                      ),
+                    ),
+                  );
+                },
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -98,9 +130,11 @@ class _FolderCard extends StatefulWidget {
 }
 
 class _FolderCardState extends State<_FolderCard> {
-  late final Future<List<PetPhotoEntry>> _photos = PetPhotoRepository().list(widget.pet.id);
-  late final Future<Uint8List?>? _cover =
-      widget.pet.photoPath == null ? null : PetPhotoRepository().loadBytes(widget.pet.photoPath!);
+  late final Future<List<PetPhotoEntry>> _photos =
+      PetPhotoRepository().list(widget.pet.id);
+  late final Future<Uint8List?>? _cover = widget.pet.photoPath == null
+      ? null
+      : PetPhotoRepository().loadBytes(widget.pet.photoPath!);
 
   @override
   Widget build(BuildContext context) {
@@ -123,14 +157,19 @@ class _FolderCardState extends State<_FolderCard> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(widget.pet.name, maxLines: 1, overflow: TextOverflow.ellipsis, style: AppTextStyles.title.copyWith(fontSize: 16)),
+                  Text(widget.pet.name,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: AppTextStyles.title.copyWith(fontSize: 16)),
                   const SizedBox(height: AppSpacing.xs),
                   FutureBuilder<List<PetPhotoEntry>>(
                     future: _photos,
                     builder: (context, snapshot) {
                       final entries = snapshot.data;
                       return Text(
-                        entries == null ? 'Conto le foto…' : galleryCountLabel(entries),
+                        entries == null
+                            ? 'Conto le foto…'
+                            : galleryCountLabel(entries),
                         style: AppTextStyles.caption,
                       );
                     },

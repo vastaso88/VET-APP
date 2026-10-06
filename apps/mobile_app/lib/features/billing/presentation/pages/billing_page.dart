@@ -12,6 +12,7 @@ import '../../../../shared/widgets/coming_soon_page.dart';
 import '../../data/billing_demo_store.dart';
 import '../../data/subscription_remote_data_source.dart';
 import '../../domain/billing_models.dart';
+import '../widgets/plan_feature_list.dart';
 
 /// "Abbonamento e metodi di pagamento" — reached from Impostazioni.
 /// Structured like the subscription/billing screen of most consumer apps:
@@ -109,6 +110,8 @@ class _BillingPageState extends State<BillingPage> {
                 const SizedBox(height: AppSpacing.xl),
                 const _SectionLabel('Confronta i piani'),
                 _BillingCycleToggle(store: _store),
+                const SizedBox(height: AppSpacing.md),
+                const IncludedInAllPlansCard(),
                 const SizedBox(height: AppSpacing.md),
                 for (final plan in BillingDemoStore.plans) ...[
                   _PlanCard(
@@ -390,18 +393,7 @@ class _PlanCard extends StatelessWidget {
           const SizedBox(height: 4),
           Text(_priceLabel(plan, cycle), style: AppTextStyles.bodySmall),
           const SizedBox(height: AppSpacing.md),
-          for (final feature in plan.features)
-            Padding(
-              padding: const EdgeInsets.only(bottom: AppSpacing.xs),
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Icon(Icons.check_rounded, size: 18, color: AppColors.success),
-                  const SizedBox(width: AppSpacing.sm),
-                  Expanded(child: Text(feature, style: AppTextStyles.bodySmall)),
-                ],
-              ),
-            ),
+          PlanFeatureList(features: plan.features),
           const SizedBox(height: AppSpacing.sm),
           SizedBox(
             width: double.infinity,

@@ -46,6 +46,8 @@ from packages.core.domain.conversation.states import ConversationState
 from packages.core.domain.knowledge.answer_validation import validate_answer
 from packages.core.domain.knowledge.evidence_synthesis import EvidenceSynthesis
 from packages.core.domain.knowledge.models import EvidenceSource
+from packages.core.domain.knowledge.relevance import relevant_sources
+from packages.core.domain.medical_record.consent_text import INLINE_QUESTION_IT
 from packages.core.domain.pet_profile.models import FishStock, HabitatDetails
 from packages.core.domain.pet_profile.species import normalize_species
 from packages.core.domain.pet_profile.species_facts import species_facts
@@ -696,8 +698,13 @@ class ChatOrchestrator:
                 # use it rather than re-asking or silently ignoring it.
                 record_summary = self._retrieve_medical_record_summary(data.pet_id)
                 if record_summary:
+                    # The situation model travels to the provider (extraction
+                    # and planner prompts): anonymized on the way in, like the
+                    # answer prompt already was (2026-10-06).
                     situation = situation.merge(
-                        SituationModel(known_medical_context=record_summary)
+                        SituationModel(
+                            known_medical_context=self._anonymize_for_provider(record_summary, data)
+                        )
                     )
 
             coverage = coverage_score(situation, self._coverage_weights)
@@ -708,11 +715,10 @@ class ChatOrchestrator:
                     and self._retrieve_medical_record_summary(data.pet_id) is not None
                 ):
                     return ChatOrchestratorResult(
-                        answer=(
-                            f"Vuoi che consulti la cartella clinica di {data.pet_name} "
-                            "per darti un consiglio più preciso? Guarderò solo le informazioni "
-                            "rilevanti per questo caso."
-                        ),
+                        # The same facts as the consent text on record (v2):
+                        # what is read and where it goes, no promise of a
+                        # selection the code does not make.
+                        answer=INLINE_QUESTION_IT.format(pet_name=data.pet_name),
                         mode="consent_request",
                         confidence="low",
                         ai_generated=False,
@@ -1254,7 +1260,11 @@ class ChatOrchestrator:
         if consent:
             record_summary = self._retrieve_medical_record_summary(data.pet_id)
             if record_summary:
-                situation = situation.merge(SituationModel(known_medical_context=record_summary))
+                situation = situation.merge(
+                    SituationModel(
+                        known_medical_context=self._anonymize_for_provider(record_summary, data)
+                    )
+                )
                 acknowledgement = "Grazie, ho dato un'occhiata alla cartella clinica. "
             else:
                 acknowledgement = "Va bene. "
@@ -1669,6 +1679,11 @@ class ChatOrchestrator:
             confidence="medium",
             ai_generated=True,
             sources=sources,
+            state=(
+                ConversationState.ADEQUATE_EVIDENCE_FOUND
+                if sources
+                else ConversationState.NO_RELEVANT_SOURCES
+            ),
             limitations=[
                 "Risposta generata liberamente dal modello, non vincolata a fonti "
                 "verificate — utile per orientarsi, non sostituisce una visita veterinaria."
@@ -1711,8 +1726,12 @@ class ChatOrchestrator:
         pool_size = max(request.max_results * EVIDENCE_POOL_MULTIPLIER, EVIDENCE_MIN_POOL_SIZE)
         pool_request = request.model_copy(update={"max_results": pool_size})
         raw_sources = self._evidence_retriever.retrieve(pool_request)
+        # Retrievers select by domain and species, not by topic: a question
+        # about chewing shoes came back with arthritis and blood-count
+        # papers (2026-10-06). Only sources that concern the question are
+        # ranked; with none left, the answer goes on without sources.
         return self._evidence_quality_engine.rank_and_select(
-            raw_sources,
+            relevant_sources(raw_sources, query),
             species=canonical_species,
             intent=intent,
             max_results=request.max_results,

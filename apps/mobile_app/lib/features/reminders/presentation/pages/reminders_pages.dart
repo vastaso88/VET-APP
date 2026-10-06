@@ -1153,18 +1153,18 @@ class _DatePickerField extends StatelessWidget {
   final VoidCallback onTap;
 
   static const _months = [
-    'Gen',
-    'Feb',
-    'Mar',
-    'Apr',
-    'Mag',
-    'Giu',
-    'Lug',
-    'Ago',
-    'Set',
-    'Ott',
-    'Nov',
-    'Dic',
+    'gen',
+    'feb',
+    'mar',
+    'apr',
+    'mag',
+    'giu',
+    'lug',
+    'ago',
+    'set',
+    'ott',
+    'nov',
+    'dic',
   ];
 
   @override
