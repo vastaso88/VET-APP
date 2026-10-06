@@ -332,6 +332,8 @@ def _scientific_catalog_payload(client: Any, limit_count: int = 50) -> dict[str,
             "embedded": 0,
             "chunks": 0,
         },
+        "trusted_domains": [],
+        "registries": [],
         "recent_documents": [],
     }
 
@@ -803,8 +805,6 @@ def admin_geographic() -> dict[str, object]:
     users_response = (
         client.table("owner_profiles")
         .select("owner_id,city,address_label,latitude,longitude,created_at")
-        .not_.is_("latitude", "null")
-        .not_.is_("longitude", "null")
         .limit(500)
         .execute()
     )
@@ -812,6 +812,8 @@ def admin_geographic() -> dict[str, object]:
     for row in getattr(users_response, "data", None) or []:
         owner_id = str(row.get("owner_id"))
         if owner_id not in auth_by_id:
+            continue
+        if row.get("latitude") is None or row.get("longitude") is None:
             continue
         users.append({**row, "email": auth_by_id[owner_id]})
 
