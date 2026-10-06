@@ -61,6 +61,7 @@ export default async function ScientificDataPage() {
               <span>
                 <strong>{domain.display_name}</strong>
                 <small>{domain.host}</small>
+                {domain.notes ? <small>{domain.notes}</small> : null}
               </span>
               <span>{domain.discovery_only ? "Discovery / ranking" : domain.source_kind}</span>
               <span>{Number(domain.authority_score).toFixed(3)}</span>
