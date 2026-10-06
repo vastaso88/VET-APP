@@ -1,0 +1,33 @@
+name: Admin ingestion scheduler
+
+on:
+  schedule:
+    - cron: "17 * * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: admin-ingestion-scheduler
+  cancel-in-progress: false
+
+jobs:
+  tick:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      SCHEDULER_SERVICE_ROLE_KEY: ${{ secrets.RADAR_SUPABASE_SERVICE_ROLE_KEY }}
+      VET_API_BASE_URL: https://vet-app-psi-nine.vercel.app
+    steps:
+      - name: Check scheduler secret
+        run: |
+          if [ -z "$SCHEDULER_SERVICE_ROLE_KEY" ]; then
+            echo "::error::RADAR_SUPABASE_SERVICE_ROLE_KEY is not set"
+            exit 1
+          fi
+      - name: Run due admin schedules
+        shell: bash
+        run: |
+          TOKEN="$(printf 'vetapp-admin-scheduler:%s' "$SCHEDULER_SERVICE_ROLE_KEY" | sha256sum | awk '{print $1}')"
+          curl --fail-with-body --silent --show-error             --max-time 540             --request POST             --header "X-VetApp-Scheduler: $TOKEN"             "$VET_API_BASE_URL/admin/scheduler/tick"
