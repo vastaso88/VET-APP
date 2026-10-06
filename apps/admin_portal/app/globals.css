@@ -386,3 +386,176 @@ button, input, select { font: inherit; }
 @media (max-width: 1200px) {
   .metric-grid-six { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
+
+
+.moderation-live-table .table-row {
+  grid-template-columns: .8fr .8fr 1.5fr .7fr .5fr;
+}
+
+.radar-report-table .table-row {
+  grid-template-columns: .9fr .7fr .7fr 1.2fr .6fr 1fr;
+}
+
+.geographic-source-table .table-row {
+  grid-template-columns: 1.3fr .8fr .7fr 1fr .8fr;
+}
+
+.coverage-table .table-row {
+  grid-template-columns: 2fr .9fr .6fr .6fr 1fr 1fr;
+}
+
+.jobs-table .table-row {
+  grid-template-columns: .9fr .7fr .7fr 1fr 1.8fr .5fr 1.4fr;
+}
+
+.operation-sample-table .table-row {
+  grid-template-columns: .8fr 1.3fr .9fr 1.5fr;
+}
+
+.scientific-results-table .table-row {
+  grid-template-columns: .4fr .5fr 2.4fr 1.2fr 1fr .5fr;
+}
+
+.stack-list {
+  display: grid;
+  gap: 14px;
+}
+
+.record-card {
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  padding: 16px;
+}
+
+.record-card-head {
+  display: flex;
+  align-items: start;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.record-card-head strong,
+.record-card-head span {
+  display: block;
+}
+
+.record-card-head span {
+  margin-top: 4px;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.record-card code {
+  font-size: 11px;
+  color: var(--muted);
+}
+
+.report-answer,
+.job-error {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  max-height: 260px;
+  overflow: auto;
+  background: #f8f9fa;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 12px;
+  font-size: 12px;
+}
+
+.inline-admin-form,
+.operation-form,
+.scientific-form {
+  display: grid;
+  gap: 12px;
+  margin-top: 14px;
+}
+
+.inline-admin-form {
+  grid-template-columns: 180px minmax(260px, 1fr) auto;
+}
+
+.operation-form {
+  grid-template-columns: repeat(3, minmax(160px, 1fr)) auto;
+  align-items: end;
+}
+
+.scientific-form {
+  grid-template-columns: minmax(320px, 2fr) repeat(3, minmax(150px, .7fr)) auto;
+  align-items: end;
+}
+
+.inline-admin-form input,
+.inline-admin-form select,
+.operation-form input,
+.operation-form select,
+.scientific-form input,
+.scientific-form select {
+  width: 100%;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 9px 10px;
+  background: white;
+  color: var(--text);
+}
+
+.operation-form label,
+.scientific-form label {
+  display: grid;
+  gap: 6px;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.form-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.operation-error,
+.operation-result-message {
+  margin-top: 16px;
+  border-radius: 8px;
+  padding: 10px 12px;
+  font-size: 13px;
+}
+
+.operation-error {
+  background: #fff3f3;
+  border: 1px solid #e2b7b7;
+  color: #8a2e2e;
+}
+
+.operation-result-message {
+  background: var(--accent-soft);
+  border: 1px solid #b8d8cc;
+  color: #1b5b49;
+}
+
+.operation-result {
+  display: grid;
+  gap: 16px;
+  margin-top: 18px;
+}
+
+.scientific-results-table {
+  margin-top: 18px;
+}
+
+.scientific-results-table a {
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+@media (max-width: 1300px) {
+  .operation-form,
+  .scientific-form {
+    grid-template-columns: repeat(2, minmax(180px, 1fr));
+  }
+}
+
+
+.scientific-catalog-table .table-row {
+  grid-template-columns: .8fr .4fr .5fr 2.4fr 1fr 1fr .4fr;
+}

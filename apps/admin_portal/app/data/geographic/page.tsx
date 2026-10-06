@@ -1,42 +1,90 @@
 import { AdminShell } from "../../../components/admin-shell";
+import { GeographicIngestionPanel } from "../../../components/geographic-ingestion-panel";
+import { getAdminGeographic } from "../../../lib/admin-api";
 
-const sources = [
-  ["OpenStreetMap", "8,069", "Active", "Radar import script available"],
-  ["Open data", "16,235", "Active", "Imported source datasets"],
-  ["Radar cache", "1,052", "Active", "Runtime/cache layer"],
-];
+function formatNumber(value: number): string {
+  return new Intl.NumberFormat("it-IT").format(value);
+}
 
-export default function GeographicDataPage() {
+function date(value: string | null): string {
+  if (!value) return "—";
+  return new Intl.DateTimeFormat("it-IT", {
+    dateStyle: "short",
+    timeStyle: "short",
+  }).format(new Date(value));
+}
+
+export default async function GeographicDataPage() {
+  const geographic = await getAdminGeographic();
+
   return (
     <AdminShell title="Geographic data" eyebrow="Data operations">
+      <div className="metric-grid">
+        <article className="metric-card">
+          <span>OSM catalog</span>
+          <strong>{formatNumber(geographic.counts.osm)}</strong>
+          <small>radar_places_osm</small>
+        </article>
+        <article className="metric-card">
+          <span>Open datasets</span>
+          <strong>{formatNumber(geographic.counts.open)}</strong>
+          <small>radar_places_open</small>
+        </article>
+        <article className="metric-card">
+          <span>Live cache</span>
+          <strong>{formatNumber(geographic.counts.cache)}</strong>
+          <small>radar_places_cache</small>
+        </article>
+      </div>
+
       <section className="panel">
         <div className="panel-heading">
           <div>
             <p className="eyebrow">Sources</p>
             <h2>Territorial datasets</h2>
           </div>
-          <button className="primary-button" disabled>New ingestion</button>
         </div>
 
-        <div className="data-table">
+        <div className="data-table geographic-source-table">
           <div className="table-row table-head">
-            <span>Source</span><span>Records</span><span>Status</span><span>Notes</span>
+            <span>Source</span><span>Release</span><span>Records</span><span>Imported</span><span>License</span>
           </div>
-          {sources.map((row) => (
-            <div className="table-row" key={row[0]}>
-              {row.map((cell) => <span key={cell}>{cell}</span>)}
+          {geographic.sources.map((source) => (
+            <div className="table-row" key={source.source}>
+              <span>{source.source}</span>
+              <span>{source.release}</span>
+              <span>{formatNumber(source.place_count)}</span>
+              <span>{date(source.imported_at)}</span>
+              <span>{source.license ?? "—"}</span>
             </div>
           ))}
         </div>
       </section>
 
+      <GeographicIngestionPanel />
+
       <section className="panel">
-        <p className="eyebrow">Next connection</p>
-        <h2>Zonal ingestion</h2>
-        <p className="muted">
-          The first live workflow will expose dry-run and execution for a geographic scope
-          (country / region / province / bounding box) while reusing the existing Radar scripts.
-        </p>
+        <div className="panel-heading">
+          <div>
+            <p className="eyebrow">Live cache</p>
+            <h2>Recent coverage cells</h2>
+          </div>
+        </div>
+        <div className="data-table coverage-table">
+          <div className="table-row table-head">
+            <span>Coverage</span><span>Center</span><span>Radius</span><span>Places</span><span>Refreshed</span><span>Expires</span>
+          </div>
+          {geographic.coverage.length ? geographic.coverage.map((cell) => (
+            <div className="table-row" key={cell.coverage_key}>
+              <span><code>{cell.coverage_key}</code></span>
+              <span>{cell.center_latitude.toFixed(2)}, {cell.center_longitude.toFixed(2)}</span>
+              <span>{cell.radius_km} km</span>
+              <span>{formatNumber(cell.place_count)}</span>
+              <span>{date(cell.refreshed_at)}</span>
+              <span>{date(cell.expires_at)}</span>
+            </div>
+          )) : <div className="table-empty">No live coverage cells.</div>}
+        </div>
       </section>
     </AdminShell>
   );
