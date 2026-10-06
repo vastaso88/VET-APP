@@ -182,7 +182,9 @@ ANSWER_NOW_REMINDER = (
 )
 
 
-def build_system_prompt(kind: RequestKind, *, may_ask: bool, has_reference_material: bool) -> str:
+def build_system_prompt(
+    kind: RequestKind, *, may_ask: bool, has_reference_material: bool, species_facts: str = ""
+) -> str:
     if kind is RequestKind.REPORT:
         request = _REPORT
     elif kind is RequestKind.DIRECT:
@@ -190,6 +192,11 @@ def build_system_prompt(kind: RequestKind, *, may_ask: bool, has_reference_mater
     else:
         request = _SYMPTOM_MAY_ASK if may_ask else _SYMPTOM_NO_MORE_QUESTIONS
     parts = [_VOICE, request]
+    if species_facts:
+        parts.append(
+            "FACTS ABOUT THIS KIND OF ANIMAL (verified; where your own assumptions differ, "
+            "these win):\n" + species_facts
+        )
     if has_reference_material:
         parts.append(_REFERENCE_MATERIAL)
     return "\n\n".join(parts)

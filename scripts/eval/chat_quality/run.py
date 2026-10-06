@@ -42,6 +42,7 @@ THE GRID (one row per scenario)
   tecnicismi    n    technical terms left unexplained               (mechanical)
   farmaci       n    drug names the owner did not mention           (mechanical)
   onesta        s/n  says plainly what it cannot read (where due)   (mechanical)
+  evita_errori  s/n  none of the scenario's known wrong claims       (mechanical)
   urgenza       s/n  emergencies are escalated at once              (mechanical)
   rimando       -    the vet is mentioned: appropriato / superfluo /
                      mancante / nessuno (or ammesso when either is fine) (mechanical)
@@ -596,6 +597,10 @@ def mechanical_scores(scenario: Scenario, turns: list[dict[str, Any]]) -> dict[s
             value for value in scenario.key_values if _normalize(value) in _normalize(everything)
         ]
         scores["valori"] = round(len(found) / len(scenario.key_values), 2)
+    if scenario.must_not_say_any:
+        scores["evita_errori"] = not any(
+            re.search(pattern, everything, re.IGNORECASE) for pattern in scenario.must_not_say_any
+        )
     if scenario.must_say_any:
         scores["onesta"] = any(
             re.search(pattern, everything, re.IGNORECASE) for pattern in scenario.must_say_any
@@ -740,7 +745,7 @@ NUMERIC = (
     "chiamate",
     "secondi",
 )
-BOOLEAN = ("nei_tempi", "cita_referto", "onesta", "urgenza")
+BOOLEAN = ("nei_tempi", "cita_referto", "onesta", "urgenza", "evita_errori")
 
 
 def summarize(results: list[dict[str, Any]]) -> dict[str, Any]:

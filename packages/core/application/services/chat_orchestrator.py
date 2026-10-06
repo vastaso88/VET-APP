@@ -48,6 +48,7 @@ from packages.core.domain.knowledge.evidence_synthesis import EvidenceSynthesis
 from packages.core.domain.knowledge.models import EvidenceSource
 from packages.core.domain.pet_profile.models import FishStock, HabitatDetails
 from packages.core.domain.pet_profile.species import normalize_species
+from packages.core.domain.pet_profile.species_facts import species_facts
 from packages.core.domain.pet_profile.weight import (
     WEIGHT_SUGGESTION_MARKER,
     is_weight_relevant,
@@ -1591,7 +1592,10 @@ class ChatOrchestrator:
         # below still enforces the citation rule mechanically.
         may_ask = self._may_ask(data, kind)
         system_prompt = build_system_prompt(
-            kind, may_ask=may_ask, has_reference_material=bool(evidence_block)
+            kind,
+            may_ask=may_ask,
+            has_reference_material=bool(evidence_block),
+            species_facts=species_facts(data.species, data.breed, data.notes),
         )
         user_prompt = (
             f"{self._pet_context_block(data)}\n"

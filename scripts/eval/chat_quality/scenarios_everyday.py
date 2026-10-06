@@ -49,7 +49,15 @@ EXTRA_PETS: dict[str, Pet] = {
 }
 
 
-def _concrete(id: str, pet: str, text: str, expected: str, *, vet: bool | None) -> Scenario:
+def _concrete(
+    id: str,
+    pet: str,
+    text: str,
+    expected: str,
+    *,
+    vet: bool | None,
+    forbidden: tuple[str, ...] = (),
+) -> Scenario:
     return Scenario(
         id,
         "caso",
@@ -57,6 +65,7 @@ def _concrete(id: str, pet: str, text: str, expected: str, *, vet: bool | None) 
         (Turn(text),),
         expected,
         vet_referral=vet,
+        must_not_say_any=forbidden,
     )
 
 
@@ -187,6 +196,7 @@ EXTRA_SCENARIOS: tuple[Scenario, ...] = (
         "Sì: i ciecotrofi, feci morbide a grappolo che il coniglio rimangia per nutrirsi; "
         "diverso dalle palline secche. Nessun rimando al veterinario.",
         vet=False,
+        forbidden=(r"non (e|e'|è) normale", r"segno che qualcosa non va"),
     ),
     _concrete(
         "coniglio-starnuti",
@@ -320,6 +330,7 @@ EXTRA_SCENARIOS: tuple[Scenario, ...] = (
         "gradi e il peso; dal veterinario esperto di rettili se perde peso o la coda si "
         "assottiglia.",
         vet=None,
+        forbidden=(r"frutta|verdur|melone|cetriolo|insalata|banana",),
     ),
     _concrete(
         "geco-muta-dita",
@@ -336,6 +347,7 @@ EXTRA_SCENARIOS: tuple[Scenario, ...] = (
         "Sì: la parte bianca è l'urato, il modo in cui i rettili eliminano l'urina. Nessun "
         "rimando al veterinario.",
         vet=False,
+        forbidden=(r"frutta|verdur|melone|cetriolo|insalata|banana",),
     ),
     _curiosity(
         "geco-curiosita-coda",

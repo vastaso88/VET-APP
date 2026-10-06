@@ -6,6 +6,8 @@ from packages.core.application.services.upload_chat_attachment import (
     UploadChatAttachmentInput,
     UploadChatAttachmentService,
 )
+from packages.core.domain.conversation.media_privacy import strip_image_metadata
+from packages.core.domain.conversation.media_type import JPEG
 from packages.core.domain.pet_profile.models import PetProfile
 from packages.infrastructure.persistence.in_memory_repositories import (
     InMemoryChatAttachmentRepository,
@@ -75,7 +77,7 @@ def test_uploads_and_analyzes_a_photo() -> None:
     assert "dog" in result.attachment.analysis
     assert result.attachment.analysis_failed is False
     assert result.attachment.content_type == "image/jpeg"
-    assert storage.read(result.attachment.storage_key) == JPEG_BYTES
+    assert storage.read(result.attachment.storage_key) == strip_image_metadata(JPEG_BYTES, JPEG)
 
 
 def test_saves_the_photo_even_when_analysis_fails() -> None:
@@ -85,7 +87,7 @@ def test_saves_the_photo_even_when_analysis_fails() -> None:
 
     assert result.attachment.analysis is None
     assert result.attachment.analysis_failed is True
-    assert storage.read(result.attachment.storage_key) == JPEG_BYTES
+    assert storage.read(result.attachment.storage_key) == strip_image_metadata(JPEG_BYTES, JPEG)
 
 
 def test_rejects_a_pet_belonging_to_a_different_owner() -> None:

@@ -190,9 +190,11 @@ def test_a_jpeg_without_jfif_still_gets_its_orientation_right_after_soi() -> Non
     assert _exif_segments(cleaned)[0].startswith(b"Exif")
 
 
-def test_an_unparseable_file_is_returned_unchanged() -> None:
+def test_an_unparseable_jpeg_never_passes_its_bytes_through_unread() -> None:
+    # Fail closed (2026-10-06): a JPEG that cannot be parsed to the end
+    # comes back only as far as it was understood, never as uploaded.
     garbage = b"\xff\xd8\xff" + b"\x01\x02\x03"
-    assert strip_image_metadata(garbage, JPEG) == garbage
+    assert strip_image_metadata(garbage, JPEG) == b"\xff\xd8\xff\x01"
 
 
 # --- PNG / WEBP ---------------------------------------------------------------------
