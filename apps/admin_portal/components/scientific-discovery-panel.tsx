@@ -17,7 +17,7 @@ export function ScientificDiscoveryPanel() {
       <div className="panel-heading">
         <div>
           <p className="eyebrow">Live evidence retrieval</p>
-          <h2>Discover papers</h2>
+          <h2>Discover / ingest papers</h2>
         </div>
       </div>
 
@@ -55,15 +55,38 @@ export function ScientificDiscoveryPanel() {
           Max results
           <input name="max_results" type="number" min="1" max="20" defaultValue="10" />
         </label>
-        <button className="primary-button" type="submit" disabled={pending}>
-          {pending ? "Searching…" : "Discover papers"}
-        </button>
+        <div className="form-actions">
+          <button
+            className="ghost-button"
+            type="submit"
+            name="operation"
+            value="discover"
+            disabled={pending}
+          >
+            {pending ? "Running…" : "Discover"}
+          </button>
+          <button
+            className="primary-button"
+            type="submit"
+            name="operation"
+            value="ingest"
+            disabled={pending}
+          >
+            {pending ? "Running…" : "Ingest results"}
+          </button>
+        </div>
       </form>
 
       {state.message ? (
         <div className={state.status === "error" ? "operation-error" : "operation-result-message"}>
           {state.message}
         </div>
+      ) : null}
+
+      {state.result?.job_id ? (
+        <p className="muted">
+          Job: <code>{state.result.job_id}</code>
+        </p>
       ) : null}
 
       {state.result ? (
@@ -89,7 +112,8 @@ export function ScientificDiscoveryPanel() {
       ) : null}
 
       <p className="muted">
-        Discovery is live and read-only. It does not yet persist papers into a scientific document store.
+        Discover is read-only. Ingest stores deduplicated metadata in ai.source_documents.
+        New records remain pending and not eligible for RAG until a later verification/full-text step.
       </p>
     </section>
   );
