@@ -711,6 +711,7 @@ button, input, select { font: inherit; }
 }
 
 .user-map-pin {
+  position: relative;
   display: block;
   width: 20px;
   height: 20px;
