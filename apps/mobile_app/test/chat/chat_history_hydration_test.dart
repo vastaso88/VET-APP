@@ -83,6 +83,14 @@ class _FakeRemote implements ChatRemoteDataSource {
       Result.success<void>(null);
 
   @override
+  Future<Result<String>> renameConversation(String conversationId, String title) async =>
+      Result.success(title);
+
+  @override
+  Future<Result<String>> conversationSummary(String conversationId) async =>
+      Result.success('');
+
+  @override
   Future<Result<String>> ensureDefaultPetId({
     required String fallbackName,
     required String fallbackSpecies,

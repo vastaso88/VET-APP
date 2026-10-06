@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
@@ -11,6 +12,7 @@ import '../../data/chat_demo_store.dart';
 import '../../data/chat_seed_data.dart';
 import '../../domain/chat_models.dart';
 import '../widgets/chat_composer.dart';
+import '../widgets/chat_conversation_menu.dart';
 import '../widgets/chat_empty_state.dart';
 import '../widgets/chat_error_state.dart';
 import '../widgets/chat_loading_state.dart';
@@ -223,7 +225,7 @@ class _Header extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                conversation.title,
+                _headerTitle(conversation),
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
                 style: const TextStyle(
@@ -246,6 +248,11 @@ class _Header extends StatelessWidget {
               ),
             ],
           ),
+        ),
+        ChatConversationMenuButton(
+          conversationId: conversation.id,
+          title: conversation.title,
+          petName: conversation.petName,
         ),
       ],
     );
@@ -292,6 +299,15 @@ class _SuccessConversationView extends StatelessWidget {
                       itemBuilder: (context, index) {
                         if (index < conversation.messages.length) {
                           final message = conversation.messages[index];
+                          if (message.author == ChatMessageAuthor.assistant &&
+                              ChatDemoStore.instance.takeFreshReply(message.id)) {
+                            return _RevealingBubble(
+                              message: message,
+                              onProgress: () => context
+                                  .findAncestorStateOfType<_ChatConversationDetailPageState>()
+                                  ?._scrollToBottom(),
+                            );
+                          }
                           return ChatMessageBubble(message: message);
                         }
 
@@ -394,11 +410,7 @@ class _TypingBubble extends StatelessWidget {
         child: const Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            SizedBox(
-              width: 14,
-              height: 14,
-              child: PetLoader.small(),
-            ),
+            PetLoader.small(),
             SizedBox(width: AppSpacing.sm),
             Text(
               'Sta scrivendo una risposta...',
@@ -409,6 +421,80 @@ class _TypingBubble extends StatelessWidget {
               ),
             ),
           ],
+        ),
+      ),
+    );
+  }
+}
+
+/// The stored title is a placeholder until the backend names the chat.
+String _headerTitle(ChatConversationDetail conversation) {
+  if (conversation.title.trim().isEmpty || conversation.title.startsWith('Chat for')) {
+    return 'Chat con ${conversation.petName}';
+  }
+  return conversation.title;
+}
+
+
+/// Types out a freshly received answer, so it reads like a live reply. Tapping
+/// the bubble shows the whole text at once.
+class _RevealingBubble extends StatefulWidget {
+  const _RevealingBubble({required this.message, required this.onProgress});
+
+  final ChatMessage message;
+  final VoidCallback onProgress;
+
+  @override
+  State<_RevealingBubble> createState() => _RevealingBubbleState();
+}
+
+class _RevealingBubbleState extends State<_RevealingBubble> {
+  static const _tick = Duration(milliseconds: 22);
+  static const _charsPerTick = 3;
+
+  late int _shown = 0;
+  Timer? _timer;
+
+  @override
+  void initState() {
+    super.initState();
+    _timer = Timer.periodic(_tick, (_) {
+      if (!mounted) return;
+      final total = widget.message.text.length;
+      setState(() => _shown = (_shown + _charsPerTick).clamp(0, total));
+      widget.onProgress();
+      if (_shown >= total) _timer?.cancel();
+    });
+  }
+
+  @override
+  void dispose() {
+    _timer?.cancel();
+    super.dispose();
+  }
+
+  void _finish() {
+    _timer?.cancel();
+    setState(() => _shown = widget.message.text.length);
+    widget.onProgress();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final message = widget.message;
+    final text = message.text;
+    final visible = _shown.clamp(0, text.length);
+    return GestureDetector(
+      onTap: visible < text.length ? _finish : null,
+      child: ChatMessageBubble(
+        message: ChatMessage(
+          id: message.id,
+          author: message.author,
+          text: text.substring(0, visible),
+          timeLabel: message.timeLabel,
+          isRead: message.isRead,
+          aiGenerated: message.aiGenerated,
+          attachmentImageBytes: message.attachmentImageBytes,
         ),
       ),
     );

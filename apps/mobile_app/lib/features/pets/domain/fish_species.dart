@@ -1,26 +1,69 @@
-/// Common aquarium fish species, alphabetically sorted — shared by the
-/// single-fish breed picker and the multi-species aquarium population
-/// editor, so both offer the same, consistent list.
-const List<String> aquariumFishSpecies = [
+import 'pet_breeds.dart';
+
+/// Aquarium fish - freshwater, marine and goldfish varieties - alphabetical.
+/// Shared by the single-fish breed picker and the multi-species aquarium
+/// population editor, so both offer the same, consistent list.
+///
+/// The first 21 names are the ones saved aquariums and fish already carry, so
+/// they keep their exact spelling; scientific names for those are searchable
+/// through breedSearchAliases instead (pet_species_breeds.dart).
+final List<String> aquariumFishSpecies = sortedUniqueNames(const [
+  'Ancistrus',
+  'Barbo ciliegia (Puntius titteya)',
   'Barbo di Sumatra',
   'Betta (pesce combattente)',
+  'Blennio (Blenniidae)',
+  'Cardinale (Tanichthys albonubes)',
+  'Carpa Koi (Cyprinus rubrofuscus)',
+  'Cavalluccio marino (Hippocampus)',
+  'Ciclide del Malawi (mbuna)',
+  'Ciclide del Tanganica',
   'Corydoras',
+  'Damigella verde (Chromis viridis)',
+  'Danio perla (Danio albolineatus)',
   'Danio zebra',
   'Discus',
+  'Endler (Poecilia wingei)',
+  'Gobide (Gobiidae)',
+  'Gourami baciatore (Helostoma temminckii)',
+  'Gourami blu (Trichopodus trichopterus)',
+  'Gourami nano (Trichogaster lalius)',
   'Gourami perla',
   'Guppy',
   'Killifish',
   'Loach botia',
   'Molly',
+  'Neon cardinale (Paracheirodon axelrodi)',
   'Neon tetra',
   'Oscar',
+  'Otocinclus',
   'Pesce angelo (scalare)',
+  'Pesce angelo nano (Centropyge)',
+  'Pesce arcobaleno (Melanotaenia)',
+  'Pesce balestra (Balistidae)',
+  'Pesce chirurgo blu (Paracanthurus hepatus)',
+  'Pesce chirurgo giallo (Zebrasoma flavescens)',
+  'Pesce farfalla marino (Chaetodon)',
   'Pesce gatto corazzato',
+  'Pesce leone (Pterois volitans)',
+  'Pesce mandarino (Synchiropus splendidus)',
   'Pesce pagliaccio',
   'Pesce rosso',
+  'Pesce rosso Comet',
+  'Pesce rosso Oranda',
+  'Pesce rosso Ranchu',
+  'Pesce rosso Ryukin',
+  'Pesce rosso Shubunkin',
+  'Pesce rosso Telescopio (occhi di drago)',
+  'Pesce vetro (Parambassis ranga)',
   'Platy',
   'Plecostomus',
+  'Pseudocromide (Pseudochromis)',
+  'Ramirezi (Mikrogeophagus ramirezi)',
   'Rasbora arlecchino',
+  'Tetra limone (Hyphessobrycon pulchripinnis)',
   'Tetra pinna nera',
+  'Tetra rosso (Hyphessobrycon)',
+  'Tigrato (Puntigrus tetrazona)',
   'Xifo (pesce spada)',
-];
+]);

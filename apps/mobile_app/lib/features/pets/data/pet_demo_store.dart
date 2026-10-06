@@ -8,6 +8,7 @@ import '../../../shared/config/app_runtime_config_loader.dart';
 import '../domain/fish_species.dart';
 import '../domain/pet_breeds.dart';
 import '../domain/pet_format.dart';
+import '../domain/pet_species_breeds.dart';
 import 'pet_photo_repository.dart';
 import '../domain/pet_identity_colors.dart';
 import '../domain/pet_models.dart';
@@ -37,8 +38,8 @@ class PetDemoStore {
 
   static final PetDemoStore instance = PetDemoStore._();
 
-  static const List<PetSpeciesOption> speciesOptions = [
-    PetSpeciesOption(
+  static final List<PetSpeciesOption> speciesOptions = [
+    const PetSpeciesOption(
       label: 'Cane',
       avatarEmoji: '🐶',
       accentColor: Color(0xFFE7F2EE),
@@ -82,7 +83,7 @@ class PetDemoStore {
         'Yorkshire Terrier',
       ],
     ),
-    PetSpeciesOption(
+    const PetSpeciesOption(
       label: 'Gatto',
       avatarEmoji: '🐱',
       accentColor: Color(0xFFF6EADF),
@@ -117,81 +118,32 @@ class PetDemoStore {
     PetSpeciesOption(
       label: 'Piccoli mammiferi',
       avatarEmoji: '🐹',
-      accentColor: Color(0xFFF5F0D8),
-      breeds: [
-        'Cavia',
-        'Chinchilla',
-        'Coniglio ariete',
-        'Coniglio nano',
-        'Coniglio olandese',
-        'Coniglio Rex',
-        'Criceto Roborovski',
-        'Criceto Siberiano',
-        'Criceto Siriano',
-        'Degu',
-        'Furetto',
-        'Gerbillo',
-        'Istrice africano',
-        'Ratto domestico',
-        'Riccio africano',
-        'Topo domestico',
-      ],
+      accentColor: const Color(0xFFF5F0D8),
+      breeds: smallMammalBreeds,
     ),
     PetSpeciesOption(
       label: 'Uccello',
       avatarEmoji: '🦜',
-      accentColor: Color(0xFFE3EBF0),
-      breeds: [
-        'Agapornis (inseparabile)',
-        'Amazzone',
-        'Ara',
-        'Cacatua',
-        'Calopsite',
-        'Canarino',
-        'Cocorita',
-        'Diamante mandarino',
-        'Fringuello',
-        'Lorichetto arcobaleno',
-        'Pappagallo cenerino',
-        'Pappagallo del Senegal',
-        'Parrocchetto dal collare',
-        'Passero del Giappone',
-      ],
+      accentColor: const Color(0xFFE3EBF0),
+      breeds: birdBreeds,
     ),
     PetSpeciesOption(
       label: 'Rettili e anfibi',
       avatarEmoji: '🦎',
-      accentColor: Color(0xFFEDF0DF),
-      breeds: [
-        'Axolotl',
-        'Boa constrictor',
-        'Camaleonte del velo',
-        'Drago barbuto',
-        'Gecko crestato',
-        'Gecko leopardino',
-        'Iguana verde',
-        'Pitone reale',
-        'Rana artigliata africana',
-        'Rana toro',
-        'Salamandra tigrata',
-        'Serpente del latte',
-        'Serpente del mais',
-        'Testuggine di terra',
-        'Testuggine palustre',
-        'Tritone',
-      ],
+      accentColor: const Color(0xFFEDF0DF),
+      breeds: reptileAmphibianBreeds,
     ),
     PetSpeciesOption(
       label: 'Pesce',
       avatarEmoji: '🐠',
-      accentColor: Color(0xFFE1EEEE),
+      accentColor: const Color(0xFFE1EEEE),
       breeds: aquariumFishSpecies,
     ),
     PetSpeciesOption(
       label: 'Altro',
       avatarEmoji: '🐾',
-      accentColor: Color(0xFFF1E7F3),
-      breeds: [],
+      accentColor: const Color(0xFFF1E7F3),
+      breeds: otherAnimalBreeds,
     ),
   ];
 
@@ -605,11 +557,9 @@ class PetDemoStore {
     // "Meticcio / altra razza" option last, which opens a text field.
     if (key == 'cane') return [meticcioBreedLabel, ...fciDogBreeds, otherBreedLabel];
     if (key == 'gatto') return [catMeticcioBreedLabel, ...fifeCatBreeds, otherBreedLabel];
-    final option = optionForSpecies(species);
-    return [
-      'Razza non specificata',
-      ...option.breeds,
-    ];
+    // Every other category: its generic entries first (styled like
+    // "Meticcio / incrocio"), then the list, then "Altra (scrivi)".
+    return otherSpeciesBreedOptions(key) ?? ['Razza non specificata', ...optionForSpecies(species).breeds];
   }
 
 }

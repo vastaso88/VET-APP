@@ -1,5 +1,4 @@
 
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 import '../../../../shared/widgets/pet_loader.dart';
@@ -7,17 +6,20 @@ import '../widgets/photo_timeline_view.dart';
 
 import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:video_player/video_player.dart';
 
 import '../../../../design_system/tokens/app_colors.dart';
 import '../../../../design_system/tokens/app_spacing.dart';
 import '../../../../design_system/tokens/app_text_styles.dart';
 import '../../data/pet_demo_store.dart';
+import '../../data/pet_media_importer.dart';
 import '../../data/pet_photo_repository.dart';
 import '../../domain/pet_models.dart';
+import '../../domain/pet_video_rules.dart';
 import '../widgets/pets_scaffold.dart';
 
-/// Every photo of one pet, newest first: profile pictures saved over time
-/// plus anything added from the camera or gallery here.
+/// Every photo and short video of one pet, newest first: profile pictures
+/// saved over time plus anything imported from the gallery or recorded here.
 class PetGalleryPage extends StatefulWidget {
   const PetGalleryPage({required this.pet, super.key});
 
@@ -32,6 +34,10 @@ class _PetGalleryPageState extends State<PetGalleryPage> {
   final _picker = ImagePicker();
   late Future<List<PetPhotoEntry>> _photosFuture = _load();
   bool _busy = false;
+
+  /// "Carico 2 di 5..." while an import runs - null otherwise. Set the moment
+  /// the picker returns, so the screen answers before any file is read.
+  String? _importProgress;
 
   PetProfile get _pet =>
       PetDemoStore.instance.list().where((p) => p.id == widget.pet.id).firstOrNull ?? widget.pet;
@@ -57,14 +63,46 @@ class _PetGalleryPageState extends State<PetGalleryPage> {
 
   void _reload() => setState(() => _photosFuture = _load());
 
-  Future<void> _add(ImageSource source) async {
-    final file = await _picker.pickImage(source: source, imageQuality: 100);
-    if (file == null) return;
-    final raw = await file.readAsBytes();
-    await _run(() async {
-      final jpeg = await compute(compressPetPhoto, raw);
-      await _repository.upload(petId: widget.pet.id, compressedJpeg: jpeg, isProfile: false);
-    });
+  Future<void> _importFromGallery() async {
+    final files = await _picker.pickMultipleMedia(imageQuality: 100);
+    await _import(files);
+  }
+
+  Future<void> _takePhoto() async {
+    final file = await _picker.pickImage(source: ImageSource.camera, imageQuality: 100);
+    await _import([if (file != null) file]);
+  }
+
+  Future<void> _recordVideo() async {
+    final file = await _picker.pickVideo(
+      source: ImageSource.camera,
+      maxDuration: const Duration(seconds: petVideoMaxSeconds),
+    );
+    await _import([if (file != null) file]);
+  }
+
+  Future<void> _import(List<XFile> files) async {
+    if (files.isEmpty || !mounted) return;
+    setState(() => _importProgress = 'Preparo ${files.length == 1 ? 'il file' : '${files.length} file'}...');
+    try {
+      final result = await PetMediaImporter().importAll(
+        petId: widget.pet.id,
+        files: files,
+        onProgress: (current, total) {
+          if (!mounted) return;
+          setState(() {
+            _importProgress = total == 1 ? 'Carico il file...' : 'Carico $current di $total...';
+          });
+        },
+      );
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(result.summary())));
+    } finally {
+      if (mounted) {
+        setState(() => _importProgress = null);
+        _reload();
+      }
+    }
   }
 
   Future<void> _setProfile(PetPhotoEntry photo) async {
@@ -80,8 +118,12 @@ class _PetGalleryPageState extends State<PetGalleryPage> {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (dialogContext) => AlertDialog(
-        title: const Text('Eliminare questa foto?'),
-        content: const Text('La foto verrà rimossa definitivamente dalla galleria.'),
+        title: Text(photo.isVideo ? 'Eliminare questo video?' : 'Eliminare questa foto?'),
+        content: Text(
+          photo.isVideo
+              ? 'Il video verrà rimosso definitivamente dalla galleria.'
+              : 'La foto verrà rimossa definitivamente dalla galleria.',
+        ),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(dialogContext).pop(false),
@@ -123,7 +165,11 @@ class _PetGalleryPageState extends State<PetGalleryPage> {
 
   void _openViewer(PetPhotoEntry photo) {
     Navigator.of(context).push(
-      MaterialPageRoute<void>(builder: (_) => _PhotoViewerPage(storagePath: photo.storagePath)),
+      MaterialPageRoute<void>(
+        builder: (_) => photo.isVideo
+            ? _VideoViewerPage(storagePath: photo.storagePath)
+            : _PhotoViewerPage(storagePath: photo.storagePath),
+      ),
     );
   }
 
@@ -135,7 +181,7 @@ class _PetGalleryPageState extends State<PetGalleryPage> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            if (!photo.isProfile)
+            if (!photo.isProfile && !photo.isVideo)
               ListTile(
                 leading: const Icon(Icons.account_circle_outlined),
                 title: const Text('Imposta come foto profilo'),
@@ -146,7 +192,7 @@ class _PetGalleryPageState extends State<PetGalleryPage> {
               ),
             ListTile(
               leading: const Icon(Icons.delete_outline, color: Colors.red),
-              title: const Text('Elimina foto'),
+              title: Text(photo.isVideo ? 'Elimina video' : 'Elimina foto'),
               onTap: () {
                 Navigator.of(sheetContext).pop();
                 _delete(photo);
@@ -167,19 +213,29 @@ class _PetGalleryPageState extends State<PetGalleryPage> {
           mainAxisSize: MainAxisSize.min,
           children: [
             ListTile(
-              leading: const Icon(Icons.photo_camera_outlined),
-              title: const Text('Scatta una foto'),
+              leading: const Icon(Icons.photo_library_outlined),
+              title: const Text('Importa dalla galleria'),
+              subtitle: const Text('Foto e video, anche più di uno'),
               onTap: () {
                 Navigator.of(sheetContext).pop();
-                _add(ImageSource.camera);
+                _importFromGallery();
               },
             ),
             ListTile(
-              leading: const Icon(Icons.photo_library_outlined),
-              title: const Text('Scegli dalla galleria'),
+              leading: const Icon(Icons.photo_camera_outlined),
+              title: const Text('Scatta foto'),
               onTap: () {
                 Navigator.of(sheetContext).pop();
-                _add(ImageSource.gallery);
+                _takePhoto();
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.videocam_outlined),
+              title: const Text('Registra video'),
+              subtitle: const Text('Fino a $petVideoMaxSeconds secondi'),
+              onTap: () {
+                Navigator.of(sheetContext).pop();
+                _recordVideo();
               },
             ),
           ],
@@ -194,39 +250,54 @@ class _PetGalleryPageState extends State<PetGalleryPage> {
     return PetsScaffold(
       title: 'Galleria di ${pet.name}',
       onBack: () => Navigator.of(context).maybePop(),
-      actions: [
-        IconButton(
-          tooltip: 'Aggiungi foto',
-          onPressed: _busy ? null : _showAddSheet,
-          icon: _busy ? const PetLoader.small(color: Colors.white) : const Icon(Icons.add_a_photo_outlined),
-          color: Colors.white,
-        ),
-      ],
-      body: FutureBuilder<List<PetPhotoEntry>>(
-        future: _photosFuture,
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: PetLoader());
-          }
-          final photos = snapshot.data ?? const <PetPhotoEntry>[];
-          if (photos.isEmpty) {
-            return Padding(
-              padding: const EdgeInsets.all(AppSpacing.xl),
-              child: Center(
-                child: Text(
-                  'Nessuna foto ancora. Aggiungine una dal pulsante in alto.',
-                  textAlign: TextAlign.center,
-                  style: AppTextStyles.bodySmall,
-                ),
+      body: Stack(
+        children: [
+          FutureBuilder<List<PetPhotoEntry>>(
+            future: _photosFuture,
+            builder: (context, snapshot) {
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return const Center(child: PetLoader());
+              }
+              final photos = snapshot.data ?? const <PetPhotoEntry>[];
+              if (photos.isEmpty) {
+                return Padding(
+                  padding: const EdgeInsets.all(AppSpacing.xl),
+                  child: Center(
+                    child: Text(
+                      'Nessuna foto o video ancora. Usa il pulsante "Aggiungi" qui sotto.',
+                      textAlign: TextAlign.center,
+                      style: AppTextStyles.bodySmall,
+                    ),
+                  ),
+                );
+              }
+              return PhotoTimelineView(
+                photos: photos,
+                onOpen: _openViewer,
+                onLongPress: _showActions,
+              );
+            },
+          ),
+          Positioned(
+            right: AppSpacing.md,
+            bottom: AppSpacing.md,
+            child: FloatingActionButton.extended(
+              heroTag: 'pet-gallery-add',
+              onPressed: _busy || _importProgress != null ? null : _showAddSheet,
+              backgroundColor: AppColors.primary,
+              foregroundColor: AppColors.onPrimary,
+              icon: const Icon(Icons.add_a_photo_outlined),
+              label: const Text('Aggiungi'),
+            ),
+          ),
+          if (_busy || _importProgress != null)
+            Positioned.fill(
+              child: ColoredBox(
+                color: Colors.black.withValues(alpha: 0.35),
+                child: Center(child: PetLoader(label: _importProgress, color: Colors.white)),
               ),
-            );
-          }
-          return PhotoTimelineView(
-            photos: photos,
-            onOpen: _openViewer,
-            onLongPress: _showActions,
-          );
-        },
+            ),
+        ],
       ),
     );
   }
@@ -286,6 +357,136 @@ class _PhotoViewerPageState extends State<_PhotoViewerPage> {
           );
         },
       ),
+    );
+  }
+}
+
+/// Fullscreen video, streamed from a short-lived signed link (the bucket is
+/// private) instead of being downloaded whole. Tap toggles play/pause.
+class _VideoViewerPage extends StatefulWidget {
+  const _VideoViewerPage({required this.storagePath});
+
+  final String storagePath;
+
+  @override
+  State<_VideoViewerPage> createState() => _VideoViewerPageState();
+}
+
+class _VideoViewerPageState extends State<_VideoViewerPage> {
+  VideoPlayerController? _controller;
+  bool _failed = false;
+
+  @override
+  void initState() {
+    super.initState();
+    SystemChrome.setPreferredOrientations(DeviceOrientation.values);
+    _open();
+  }
+
+  Future<void> _open() async {
+    final url = await PetPhotoRepository().signedVideoUrl(widget.storagePath);
+    if (url == null) {
+      if (mounted) setState(() => _failed = true);
+      return;
+    }
+    final controller = VideoPlayerController.networkUrl(Uri.parse(url));
+    try {
+      await controller.initialize();
+    } catch (_) {
+      await controller.dispose();
+      if (mounted) setState(() => _failed = true);
+      return;
+    }
+    if (!mounted) {
+      await controller.dispose();
+      return;
+    }
+    controller.addListener(_onTick);
+    setState(() => _controller = controller);
+    await controller.play();
+  }
+
+  void _onTick() {
+    if (mounted) setState(() {});
+  }
+
+  @override
+  void dispose() {
+    _controller?.removeListener(_onTick);
+    _controller?.dispose();
+    SystemChrome.setPreferredOrientations(const [
+      DeviceOrientation.portraitUp,
+      DeviceOrientation.portraitDown,
+    ]);
+    super.dispose();
+  }
+
+  void _togglePlay() {
+    final controller = _controller;
+    if (controller == null) return;
+    if (controller.value.isPlaying) {
+      controller.pause();
+    } else if (controller.value.position >= controller.value.duration) {
+      controller.seekTo(Duration.zero).then((_) => controller.play());
+    } else {
+      controller.play();
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final controller = _controller;
+    return Scaffold(
+      backgroundColor: Colors.black,
+      appBar: AppBar(
+        backgroundColor: Colors.black,
+        foregroundColor: Colors.white,
+        elevation: 0,
+      ),
+      body: _failed
+          ? const Center(
+              child: Text(
+                'Non riesco a riprodurre questo video.',
+                style: TextStyle(color: Colors.white),
+              ),
+            )
+          : controller == null
+              ? const Center(child: PetLoader(label: 'Carico il video...', color: Colors.white))
+              : Column(
+                  children: [
+                    Expanded(
+                      child: GestureDetector(
+                        behavior: HitTestBehavior.opaque,
+                        onTap: _togglePlay,
+                        child: Stack(
+                          alignment: Alignment.center,
+                          children: [
+                            Center(
+                              child: AspectRatio(
+                                aspectRatio: controller.value.aspectRatio,
+                                child: VideoPlayer(controller),
+                              ),
+                            ),
+                            if (!controller.value.isPlaying)
+                              const Icon(Icons.play_circle_fill_rounded, size: 72, color: Colors.white70),
+                          ],
+                        ),
+                      ),
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.all(AppSpacing.lg),
+                      child: VideoProgressIndicator(
+                        controller,
+                        allowScrubbing: true,
+                        colors: const VideoProgressColors(
+                          playedColor: Colors.white,
+                          bufferedColor: Colors.white38,
+                          backgroundColor: Colors.white24,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
     );
   }
 }

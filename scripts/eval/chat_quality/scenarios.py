@@ -65,6 +65,9 @@ class Scenario:
     must_say_any: tuple[str, ...] = ()
     urgent: bool = False
     tags: tuple[str, ...] = field(default_factory=tuple)
+    # Whether the answer should mention the vet: True = needed (missing it
+    # is a fault), False = superfluous, None = either way is fine.
+    vet_referral: bool | None = None
 
 
 PETS: dict[str, Pet] = {

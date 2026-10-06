@@ -9,6 +9,7 @@ import '../../../../design_system/tokens/app_spacing.dart';
 import '../../../../design_system/tokens/app_text_styles.dart';
 import '../../../../shared/widgets/pet_loader.dart';
 import '../../data/pet_photo_repository.dart';
+import '../../domain/pet_video_rules.dart';
 
 const _monthsIt = [
   'gennaio', 'febbraio', 'marzo', 'aprile', 'maggio', 'giugno',
@@ -239,10 +240,24 @@ class PhotoThumb extends StatefulWidget {
 }
 
 class _PhotoThumbState extends State<PhotoThumb> {
-  late final Future<Uint8List?> _bytes = PetPhotoRepository().loadBytes(widget.photo.storagePath);
+  // A video is never downloaded for the grid: it gets a play tile instead
+  // (no poster frame without a native thumbnail plugin).
+  late final Future<Uint8List?>? _bytes =
+      widget.photo.isVideo ? null : PetPhotoRepository().loadBytes(widget.photo.storagePath);
 
   @override
   Widget build(BuildContext context) {
+    if (widget.photo.isVideo) {
+      return InkWell(
+        onTap: widget.onTap,
+        onLongPress: widget.onLongPress,
+        borderRadius: BorderRadius.circular(AppRadii.medium),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(AppRadii.medium),
+          child: _VideoTile(durationSeconds: widget.photo.durationSeconds),
+        ),
+      );
+    }
     return InkWell(
       onTap: widget.onTap,
       onLongPress: widget.onLongPress,
@@ -267,6 +282,47 @@ class _PhotoThumbState extends State<PhotoThumb> {
             }
             return Image.memory(bytes, fit: BoxFit.cover, cacheWidth: 300);
           },
+        ),
+      ),
+    );
+  }
+}
+
+/// Dark tile with a play button and the length, standing in for a video's
+/// first frame.
+class _VideoTile extends StatelessWidget {
+  const _VideoTile({this.durationSeconds});
+
+  final int? durationSeconds;
+
+  @override
+  Widget build(BuildContext context) {
+    return Semantics(
+      label: 'Video',
+      child: ColoredBox(
+        color: const Color(0xFF163A35),
+        child: Stack(
+          children: [
+            const Center(
+              child: Icon(Icons.play_circle_fill_rounded, size: 40, color: Colors.white70),
+            ),
+            if (durationSeconds != null)
+              Positioned(
+                right: AppSpacing.xs,
+                bottom: AppSpacing.xs,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                  decoration: BoxDecoration(
+                    color: Colors.black54,
+                    borderRadius: BorderRadius.circular(AppRadii.pill),
+                  ),
+                  child: Text(
+                    petVideoDurationLabel(durationSeconds!),
+                    style: AppTextStyles.caption.copyWith(color: Colors.white, fontSize: 11),
+                  ),
+                ),
+              ),
+          ],
         ),
       ),
     );

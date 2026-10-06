@@ -2,6 +2,7 @@ import 'dart:collection';
 
 import 'package:flutter/foundation.dart';
 
+import '../../../shared/errors/app_network_error.dart';
 import '../../../shared/auth/current_user.dart';
 import '../../../shared/config/app_runtime_config_loader.dart';
 import '../../../shared/types/result.dart';
@@ -211,6 +212,58 @@ class ChatDemoStore extends ChangeNotifier {
     return _remote.deleteConversation(backendConversationId);
   }
 
+  /// Renames the chat at once. If the backend refuses, the old title comes back
+  /// and the failure is returned so the caller can say so.
+  Future<Result<void>> renameConversation(String id, String title) async {
+    final index = _threads.indexWhere((thread) => thread.id == id);
+    if (index == -1) return Result.success<void>(null);
+    final previous = _threads[index];
+    _threads[index] = previous.copyWith(title: title);
+    notifyListeners();
+
+    final backendConversationId = previous.backendConversationId;
+    if (backendConversationId == null) return Result.success<void>(null);
+    final result = await _remote.renameConversation(backendConversationId, title);
+    return result.fold(
+      onSuccess: (storedTitle) {
+        final current = _threads.indexWhere((thread) => thread.id == id);
+        if (current != -1) {
+          _threads[current] = _threads[current].copyWith(title: storedTitle);
+          notifyListeners();
+        }
+        return Result.success<void>(null);
+      },
+      onFailure: (error) {
+        final current = _threads.indexWhere((thread) => thread.id == id);
+        if (current != -1) _threads[current] = previous;
+        notifyListeners();
+        return Result.failure<void>(error);
+      },
+    );
+  }
+
+  /// The veterinary summary of a stored chat. Needs the backend conversation.
+  Future<Result<String>> conversationSummary(String id) {
+    final backendConversationId = conversationById(id)?.backendConversationId;
+    if (backendConversationId == null) {
+      return Future.value(
+        Result.failure<String>(
+          const AppNetworkError(
+            code: 'conversation_summary_unavailable',
+            message: 'Il riassunto sarà disponibile dopo il primo messaggio.',
+          ),
+        ),
+      );
+    }
+    return _remote.conversationSummary(backendConversationId);
+  }
+
+  /// Replies that arrived since the last time they were shown; the page reveals
+  /// them progressively and takes each one once.
+  final Set<String> _freshAssistantIds = <String>{};
+
+  bool takeFreshReply(String messageId) => _freshAssistantIds.remove(messageId);
+
   ChatConversationDetail? conversationById(String id) {
     for (final thread in _threads) {
       if (thread.id == id) {
@@ -322,6 +375,7 @@ class ChatDemoStore extends ChangeNotifier {
       text: _generateReply(cleanMessage, updatedThread.petName),
       timeLabel: _clockLabel(),
     );
+    _freshAssistantIds.add(assistantMessage.id);
 
     _replaceThread(
       conversationId,
@@ -364,6 +418,7 @@ class ChatDemoStore extends ChangeNotifier {
               timeLabel: _clockLabel(),
               aiGenerated: reply.aiGenerated,
             );
+            _freshAssistantIds.add(assistantMessage.id);
 
             final resultThread = updatedThread.copyWith(
               statusLabel: 'Risposta pronta',

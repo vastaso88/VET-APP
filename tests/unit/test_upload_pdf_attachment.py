@@ -2,9 +2,12 @@
 summarized from their text, scans through the vision model, and anything
 that isn't a readable PDF within the limits is rejected before storage."""
 
+import io
+
 import pytest
 from fastapi.testclient import TestClient
 from pdf_samples import JPEG_PAGE_SCAN, blank_pdf, scanned_pdf, text_pdf
+from pypdf import PdfReader
 
 from apps.api.main import app
 from packages.core.application.ports.llm_client import LLMGenerationRequest, LLMResponse
@@ -35,6 +38,14 @@ REPORT_LINES = [
     "Creatinina: 2,4 mg/dL (rif. 0,5 - 1,5) ALTO",
     "Conclusioni: controllo della funzionalita renale tra 30 giorni.",
 ]
+
+
+def _same_pages(stored: bytes | None, original: bytes) -> bool:
+    """What is stored is the document without its metadata (2026-10-06):
+    still a PDF, with the same pages."""
+    assert stored is not None
+    pages = len(PdfReader(io.BytesIO(stored)).pages)
+    return stored.startswith(b"%PDF") and pages == len(PdfReader(io.BytesIO(original)).pages)
 
 
 class _Storage:
@@ -127,7 +138,7 @@ def test_a_text_pdf_is_summarized_from_its_text_and_stored_as_a_pdf() -> None:
     assert attachment.analysis_failed is False
     assert attachment.analysis is not None
     assert "Creatinina: 2,4 mg/dL" in attachment.analysis
-    assert storage.read(attachment.storage_key) == pdf
+    assert _same_pages(storage.read(attachment.storage_key), pdf)
     assert vision.images == []
     assert DOCUMENT_SUMMARY_MARKER in llm.requests[0].system_prompt
 
@@ -163,7 +174,7 @@ def test_a_pdf_with_neither_text_nor_readable_scans_is_saved_without_analysis() 
 
     assert attachment.analysis is None
     assert attachment.analysis_failed is True
-    assert storage.read(attachment.storage_key) == pdf
+    assert _same_pages(storage.read(attachment.storage_key), pdf)
 
 
 def test_the_pdf_is_saved_even_when_the_summary_provider_fails() -> None:
@@ -173,7 +184,7 @@ def test_the_pdf_is_saved_even_when_the_summary_provider_fails() -> None:
     attachment = service.execute(_upload(pdf)).attachment
 
     assert attachment.analysis_failed is True
-    assert storage.read(attachment.storage_key) == pdf
+    assert _same_pages(storage.read(attachment.storage_key), pdf)
 
 
 def test_a_pdf_over_the_size_limit_is_rejected_and_not_stored() -> None:
@@ -253,7 +264,7 @@ def test_api_uploads_a_pdf_as_the_app_sends_it_and_serves_it_back() -> None:
     assert served.status_code == 200
     assert served.headers["content-type"] == "application/pdf"
     assert "Referto%20esami%20%C3%A0.pdf" in served.headers["content-disposition"]
-    assert served.content == pdf
+    assert _same_pages(served.content, pdf)
 
 
 def test_api_reports_a_fake_pdf_with_the_agreed_error_code() -> None:

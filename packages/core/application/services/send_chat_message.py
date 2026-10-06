@@ -14,6 +14,10 @@ from packages.core.application.services.reminder_context_retriever import (
 )
 from packages.core.domain.conversation.models import ChatMessage, Conversation
 from packages.core.domain.conversation.states import ConversationState
+from packages.core.domain.conversation.title import (
+    is_legacy_title,
+    title_from_message,
+)
 from packages.core.domain.knowledge.models import EvidenceSource
 from packages.core.domain.medical_record.consent_text import CURRENT_VERSION
 from packages.core.domain.medical_record.models import MedicalRecordConsentRecord
@@ -39,6 +43,18 @@ def owner_names_for_anonymization(display_name: str | None, *, pet_name: str) ->
     if name.lower() == pet or pet in {part.lower() for part in name.split()}:
         return []
     return [name]
+
+
+def migrate_legacy_title(conversation: Conversation) -> Conversation:
+    """Conversations created before 2026-10-06 are titled "Chat for {pet_id}":
+    given a title from their first message the first time they are read."""
+    if not is_legacy_title(conversation.title):
+        return conversation
+    first = next((m for m in conversation.messages if m.role == "user"), None)
+    if first is None:
+        return conversation
+    conversation.title = title_from_message(first.content)
+    return conversation
 
 
 class SendChatMessageInput(BaseModel):
@@ -229,7 +245,7 @@ class SendChatMessageService:
         if data.conversation_id:
             stored = self._repository.get(data.conversation_id)
             if stored:
-                return stored
+                return migrate_legacy_title(stored)
             raise ValidationError("conversation not found")
 
         existing_for_pet = self._repository.list_by_pet(data.pet_id)
@@ -240,7 +256,9 @@ class SendChatMessageService:
                 "animale. Chiudine una per crearne una nuova."
             )
         return Conversation(
-            owner_id=data.owner_id, pet_id=data.pet_id, title=f"Chat for {data.pet_id}"
+            owner_id=data.owner_id,
+            pet_id=data.pet_id,
+            title=title_from_message(data.user_message),
         )
 
     def _persist_pet_level_consent(self, pet_profile: PetProfile, granted: bool | None) -> None:

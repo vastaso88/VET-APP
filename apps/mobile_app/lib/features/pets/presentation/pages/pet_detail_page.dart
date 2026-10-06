@@ -41,6 +41,7 @@ import '../../../reminders/presentation/pages/reminders_pages.dart';
 import '../../data/pet_demo_store.dart';
 import '../../domain/pet_models.dart';
 import '../widgets/medical_record_consent_card.dart';
+import '../../../chat/presentation/widgets/chat_conversation_menu.dart';
 import '../widgets/pet_avatar.dart';
 import '../widgets/pets_scaffold.dart';
 import '../widgets/pets_state_views.dart';
@@ -682,12 +683,6 @@ class _ChatTabState extends State<_ChatTab> {
                             conversation: conversation,
                             onTap: () =>
                                 _openConversation(context, conversation),
-                            onDelete: () async {
-                              if (await _confirmDeleteChat(
-                                  context, conversation)) {
-                                await _deleteConversation(conversation.id);
-                              }
-                            },
                           ),
                         );
                       },
@@ -780,17 +775,21 @@ class _ChatRow extends StatelessWidget {
   const _ChatRow(
       {required this.conversation,
       required this.onTap,
-      required this.onDelete});
+      });
 
   final ChatConversationSummary conversation;
   final VoidCallback onTap;
-  final VoidCallback onDelete;
+
 
   @override
   Widget build(BuildContext context) {
     return _CompactRow(
       onTap: onTap,
-      onDelete: onDelete,
+      trailingAction: ChatConversationMenuButton(
+        conversationId: conversation.id,
+        title: conversation.title,
+        petName: conversation.activePetName,
+      ),
       leading: const _RowIcon(icon: Icons.chat_bubble_outline_rounded),
       title: conversation.title,
       subtitle: conversation.previewMessage,
@@ -1638,6 +1637,7 @@ class _CompactRow extends StatelessWidget {
     this.onLongPress,
     this.onDelete,
     this.trailingText,
+    this.trailingAction,
     this.badgeCount = 0,
     this.selected = false,
   });
@@ -1650,6 +1650,7 @@ class _CompactRow extends StatelessWidget {
   final bool selected;
   final VoidCallback? onDelete;
   final String? trailingText;
+  final Widget? trailingAction;
   final int badgeCount;
 
   @override
@@ -1721,6 +1722,10 @@ class _CompactRow extends StatelessWidget {
                 const SizedBox(width: AppSpacing.sm),
                 Text(trailingText!, style: AppTextStyles.caption),
               ],
+              if (trailingAction != null) ...[
+                const SizedBox(width: 2),
+                trailingAction!,
+              ] else ...[
               if (onDelete != null) ...[
                 const SizedBox(width: 2),
                 IconButton(
@@ -1733,7 +1738,8 @@ class _CompactRow extends StatelessWidget {
                       const BoxConstraints(minWidth: 32, minHeight: 32),
                 ),
               ],
-              if (onTap != null) ...[
+              ],
+              if (onTap != null && trailingAction == null) ...[
                 const SizedBox(width: AppSpacing.xs),
                 const Icon(Icons.chevron_right_rounded,
                     size: 18, color: AppColors.mutedText),

@@ -43,6 +43,9 @@ THE GRID (one row per scenario)
   farmaci       n    drug names the owner did not mention           (mechanical)
   onesta        s/n  says plainly what it cannot read (where due)   (mechanical)
   urgenza       s/n  emergencies are escalated at once              (mechanical)
+  rimando       -    the vet is mentioned: appropriato / superfluo /
+                     mancante / nessuno (or ammesso when either is fine) (mechanical)
+  esperto       0-2  answers as an expert instead of delegating      (judge)
   caratteri     n    average length of a reply                      (mechanical)
   chiamate      n    LLM calls per reply (a regeneration counts)    (measured)
   secondi       n    time to produce a reply, evidence search and
@@ -73,7 +76,13 @@ for path in (str(ROOT_DIR), str(HERE)):
     if path not in sys.path:
         sys.path.insert(0, path)
 
-from scenarios import PETS, SCENARIOS, Pet, Scenario  # noqa: E402
+from scenarios import PETS as BASE_PETS  # noqa: E402
+from scenarios import SCENARIOS as BASE_SCENARIOS  # noqa: E402
+from scenarios import Pet, Scenario  # noqa: E402
+from scenarios_everyday import EXTRA_PETS, EXTRA_SCENARIOS  # noqa: E402
+
+PETS: dict[str, Pet] = {**BASE_PETS, **EXTRA_PETS}
+SCENARIOS: tuple[Scenario, ...] = BASE_SCENARIOS + EXTRA_SCENARIOS
 
 from packages.bootstrap.container import ApplicationContainer  # noqa: E402
 from packages.core.application.ports.llm_client import LLMGenerationRequest  # noqa: E402
@@ -189,6 +198,23 @@ DRUGS = (
     "idrossido di alluminio",
 )
 
+# Ways a reply sends the owner to the vet.
+_VET_REFERRAL = re.compile(
+    r"veterinari|\bvet\b|pronto soccorso|prossimo controllo|una visita|"
+    r"farl[oa] (visitare|vedere|controllare)|portal[oa] (dal|da un|in)",
+    re.IGNORECASE,
+)
+
+
+def vet_referral_outcome(expected: bool | None, replies: list[str]) -> str:
+    present = any(_VET_REFERRAL.search(reply) for reply in replies)
+    if expected is None:
+        return "ammesso" if present else "nessuno"
+    if expected:
+        return "appropriato" if present else "mancante"
+    return "superfluo" if present else "nessuno"
+
+
 _READ_REPORT = re.compile(
     r"ho (letto|guardato|consultato|visto)|"
     r"(nel|dal|sul|il) referto|"
@@ -218,6 +244,17 @@ class CallCounter:
     calls = 0
     tokens = 0
     max_tokens = DEFAULT_MAX_TOKENS
+    # Called with the tokens of each call as soon as it returns, so an
+    # interrupted or failing execution still counts against the daily cap.
+    on_tokens: Any = None
+
+    @staticmethod
+    def estimated_cost(request: Any) -> int:
+        """Upper bound of what one call can cost: the prompt (about one
+        token every 3 characters, deliberately pessimistic for Italian) plus
+        the whole reply budget."""
+        prompt = f"{getattr(request, 'system_prompt', '')}{getattr(request, 'user_prompt', '')}"
+        return len(prompt) // 3 + int(getattr(request, "max_tokens", 0) or 0)
 
     @classmethod
     def install(cls, client: Any) -> None:
@@ -227,11 +264,15 @@ class CallCounter:
         original = client_class.generate
 
         def counted(self: Any, request: Any) -> Any:
-            if cls.tokens >= cls.max_tokens:
+            # Never start a call whose worst case would cross the ceiling.
+            if cls.tokens + cls.estimated_cost(request) > cls.max_tokens:
                 raise BudgetExceeded
             cls.calls += 1
             response = original(self, request)
-            cls.tokens += int(getattr(response, "token_count", 0) or 0)
+            used = int(getattr(response, "token_count", 0) or 0)
+            cls.tokens += used
+            if cls.on_tokens is not None:
+                cls.on_tokens(used)
             return response
 
         client_class.generate = counted
@@ -241,13 +282,7 @@ class CallCounter:
 def _dedicated_key(production_key: str) -> str:
     """EVAL_LLM_API_KEY from the environment or the local .env. Exits with
     an explanation when it is missing or is the production key."""
-    key = os.environ.get("EVAL_LLM_API_KEY", "").strip()
-    env_file = ROOT_DIR / ".env"
-    if not key and env_file.exists():
-        for line in env_file.read_text(encoding="utf-8").splitlines():
-            name, separator, value = line.partition("=")
-            if separator and name.strip() == "EVAL_LLM_API_KEY":
-                key = value.strip().strip('"').strip("'")
+    key = _env_value("EVAL_LLM_API_KEY")
     if not key:
         sys.exit(
             "Manca EVAL_LLM_API_KEY.\n"
@@ -257,7 +292,7 @@ def _dedicated_key(production_key: str) -> str:
             "(i limiti sono per conto, non per chiave) e aggiungila al file .env locale "
             "come EVAL_LLM_API_KEY=... Vedi scripts/eval/chat_quality/README.md."
         )
-    if key == production_key:
+    if key == production_key and not _env_value("EVAL_LLM_BASE_URL"):
         sys.exit(
             "EVAL_LLM_API_KEY è uguale a LLM_API_KEY: è la chiave di produzione. "
             "Usa una chiave di un conto separato."
@@ -265,7 +300,74 @@ def _dedicated_key(production_key: str) -> str:
     return key
 
 
-def build_settings(evidence: str | None, *, real_calls: bool = True) -> Settings:
+PRODUCTION_KEY_DAILY_CAP = 40_000
+PRODUCTION_KEY_USAGE = OUTPUT_DIR / "production_key_usage.json"
+
+
+def _env_value(name: str) -> str:
+    """From the environment, else the local .env (Settings ignores names it
+    does not know). Never printed."""
+    value = os.environ.get(name, "").strip()
+    env_file = ROOT_DIR / ".env"
+    if not value and env_file.exists():
+        for line in env_file.read_text(encoding="utf-8").splitlines():
+            key, separator, raw = line.partition("=")
+            if separator and key.strip() == name:
+                value = raw.strip().strip('"').strip("'")
+    return value
+
+
+def _production_key_tokens_today() -> int:
+    if not PRODUCTION_KEY_USAGE.exists():
+        return 0
+    usage: dict[str, int] = json.loads(PRODUCTION_KEY_USAGE.read_text(encoding="utf-8"))
+    return int(usage.get(date.today().isoformat(), 0))
+
+
+def record_production_key_usage(tokens: int) -> None:
+    usage: dict[str, int] = {}
+    if PRODUCTION_KEY_USAGE.exists():
+        usage = json.loads(PRODUCTION_KEY_USAGE.read_text(encoding="utf-8"))
+    today = date.today().isoformat()
+    usage[today] = int(usage.get(today, 0)) + tokens
+    PRODUCTION_KEY_USAGE.parent.mkdir(parents=True, exist_ok=True)
+    PRODUCTION_KEY_USAGE.write_text(json.dumps(usage, indent=2), encoding="utf-8")
+
+
+def _allow_production_key(max_tokens: int | None) -> None:
+    """The one sanctioned exception (Orchestratore, 2026-10-06): the
+    production key may be used only with an explicit flag, only under an
+    explicit ceiling no larger than what is left of PRODUCTION_KEY_DAILY_CAP
+    for today (the ledger is updated after every call)."""
+    used = _production_key_tokens_today()
+    remaining = max(PRODUCTION_KEY_DAILY_CAP - used, 0)
+    if max_tokens is None:
+        sys.exit(
+            "Con --allow-production-key devi indicare --max-tokens esplicitamente "
+            f"(oggi restano {remaining} token su {PRODUCTION_KEY_DAILY_CAP})."
+        )
+    if max_tokens <= 0 or max_tokens > remaining:
+        sys.exit(
+            f"Con la chiave di produzione il tetto e' {PRODUCTION_KEY_DAILY_CAP} token al "
+            f"giorno in totale: oggi ne sono gia' stati usati {used}, ne restano {remaining}, "
+            f"e questa esecuzione ne chiede fino a {max_tokens}. Riduci --max-tokens o usa "
+            "EVAL_LLM_API_KEY."
+        )
+    # Every call is written to the ledger as it returns, not at the end.
+    CallCounter.on_tokens = record_production_key_usage
+    print(
+        f"ATTENZIONE: chiave di produzione in uso, tetto {max_tokens} token "
+        f"(oggi gia' usati {used} su {PRODUCTION_KEY_DAILY_CAP})."
+    )
+
+
+def build_settings(
+    evidence: str | None,
+    *,
+    real_calls: bool = True,
+    allow_production_key: bool = False,
+    max_tokens: int | None = DEFAULT_MAX_TOKENS,
+) -> Settings:
     overrides: dict[str, Any] = {
         # The model under test only: a silent switch to a reserve model
         # would make two runs incomparable.
@@ -281,8 +383,22 @@ def build_settings(evidence: str | None, *, real_calls: bool = True) -> Settings
     settings = Settings().model_copy(update=overrides)
     if not real_calls:
         return settings
+    # Another OpenAI-compatible provider under test (EVAL_LLM_BASE_URL and
+    # EVAL_LLM_MODEL): the Groq client speaks that protocol.
+    base_url, model = _env_value("EVAL_LLM_BASE_URL"), _env_value("EVAL_LLM_MODEL")
+    if base_url or model:
+        settings = settings.model_copy(
+            update={
+                "llm_provider": "groq",
+                "llm_base_url": base_url or settings.llm_base_url,
+                "llm_model": model or settings.llm_model,
+            }
+        )
     if settings.llm_provider == "echo":
         sys.exit("LLM_PROVIDER è 'echo': nel .env serve un provider reale per valutare la chat.")
+    if allow_production_key and not _env_value("EVAL_LLM_API_KEY"):
+        _allow_production_key(max_tokens)
+        return settings
     return settings.model_copy(update={"llm_api_key": _dedicated_key(settings.llm_api_key)})
 
 
@@ -484,6 +600,7 @@ def mechanical_scores(scenario: Scenario, turns: list[dict[str, Any]]) -> dict[s
         scores["onesta"] = any(
             re.search(pattern, everything, re.IGNORECASE) for pattern in scenario.must_say_any
         )
+    scores["rimando"] = vet_referral_outcome(scenario.vet_referral, replies)
     if scenario.urgent:
         scores["urgenza"] = turns[0]["mode"] in {"triage", "safety_clarification"} or (
             turns[0]["state"] == str(ConversationState.POSSIBLE_URGENT_CASE)
@@ -491,7 +608,7 @@ def mechanical_scores(scenario: Scenario, turns: list[dict[str, Any]]) -> dict[s
     return scores
 
 
-JUDGE_KEYS = ("risponde", "ansia", "gergo", "naturale", "corretta")
+JUDGE_KEYS = ("risponde", "ansia", "gergo", "naturale", "corretta", "esperto")
 
 JUDGE_SYSTEM = (
     "Sei un valutatore severo di un assistente veterinario per proprietari di animali NON "
@@ -509,11 +626,14 @@ JUDGE_SYSTEM = (
     "e gentile;\n"
     '"corretta": 0 contiene errori clinici o contenuti inventati, 1 imprecisa o generica, 2 '
     "corretta di massima e coerente con il comportamento atteso;\n"
+    '"esperto": 0 delega (rimanda al veterinario o chiede invece di rispondere), 1 risponde '
+    "ma si copre con rimandi o avvertenze non necessari, 2 risponde da esperto, con "
+    "sostanza, e nomina il veterinario solo se c'\u00e8 un motivo concreto;\n"
     '"nota": una frase in italiano sul difetto principale, o "ok".\n'
     'Tutte le chiavi stanno allo stesso livello; "turni" è una lista di sole stringhe. '
     "Esempio di forma per una conversazione con due risposte: "
     '{"turni": ["solo_domande", "valore"], "risponde": 2, "ansia": 0, "gergo": 1, '
-    '"naturale": 2, "corretta": 2, "nota": "ok"}'
+    '"naturale": 2, "corretta": 2, "esperto": 2, "nota": "ok"}'
 )
 
 
@@ -580,6 +700,7 @@ def score(
             "gergo": verdict.get("gergo"),
             "naturale": verdict.get("naturale"),
             "corretta": verdict.get("corretta"),
+            "esperto": verdict.get("esperto"),
             "nota": verdict.get("nota"),
         }
     )
@@ -610,6 +731,7 @@ NUMERIC = (
     "gergo",
     "naturale",
     "corretta",
+    "esperto",
     "valori",
     "allarmi",
     "tecnicismi",
@@ -633,6 +755,13 @@ def summarize(results: list[dict[str, Any]]) -> dict[str, Any]:
         values = [r["scores"][key] for r in results if isinstance(r["scores"].get(key), bool)]
         if values:
             summary[key] = f"{sum(values)}/{len(values)}"
+    outcomes = [r["scores"].get("rimando") for r in results if r["scores"].get("rimando")]
+    if outcomes:
+        summary["rimando"] = ", ".join(
+            f"{name} {outcomes.count(name)}"
+            for name in ("superfluo", "mancante", "appropriato", "ammesso", "nessuno")
+            if outcomes.count(name)
+        )
     return summary
 
 
@@ -690,10 +819,10 @@ def command_rescore(arguments: argparse.Namespace) -> int:
 def command_rejudge(arguments: argparse.Namespace) -> int:
     """Asks the judge again for the scenarios of a saved run that have no
     judge scores (or for all with --all), on the saved transcripts."""
-    settings = build_settings(None)
+    settings = _eval_settings(arguments)
     container = ApplicationContainer(settings)
     CallCounter.install(container.llm_client)
-    CallCounter.max_tokens = arguments.max_tokens
+    CallCounter.max_tokens = arguments.max_tokens or DEFAULT_MAX_TOKENS
     by_id = {scenario.id: scenario for scenario in SCENARIOS}
     results = _previous_results(arguments.label)
     for result in results:
@@ -723,14 +852,22 @@ def _budget_message(label: str, command: str) -> str:
     )
 
 
+def _eval_settings(arguments: argparse.Namespace) -> Settings:
+    return build_settings(
+        getattr(arguments, "evidence", None) or None,
+        allow_production_key=arguments.allow_production_key,
+        max_tokens=arguments.max_tokens,
+    )
+
+
 def command_run(arguments: argparse.Namespace) -> int:
-    settings = build_settings(arguments.evidence)
+    settings = _eval_settings(arguments)
     wanted = set(arguments.only.split(",")) if arguments.only else None
     scenarios = [s for s in SCENARIOS if wanted is None or s.id in wanted]
     cache = _load_cache()
     judge_container = None if arguments.no_judge else ApplicationContainer(settings)
     CallCounter.install(ApplicationContainer(settings).llm_client)
-    CallCounter.max_tokens = arguments.max_tokens
+    CallCounter.max_tokens = arguments.max_tokens or DEFAULT_MAX_TOKENS
     results = _previous_results(arguments.label) if (wanted or arguments.resume) else []
     if wanted:
         results = [r for r in results if r["id"] not in wanted]
@@ -784,6 +921,9 @@ def command_compare(arguments: argparse.Namespace) -> int:
     for key in keys:
         first, second = (run["summary"].get(key, "-") for run in (before, after))
         print(f"{key:<16}{first!s:>12}{second!s:>12}")
+    print("rimando al veterinario:")
+    for run, label in ((before, arguments.before), (after, arguments.after)):
+        print(f"  {label:<14}{run['summary'].get('rimando', '-')}")
     print("\nPer categoria (risponde / turni_attesa / ansia / naturale):")
     for category in sorted(set(before["by_category"]) | set(after["by_category"])):
         cells = []
@@ -819,8 +959,19 @@ def main() -> int:
     run.add_argument(
         "--max-tokens",
         type=int,
-        default=DEFAULT_MAX_TOKENS,
-        help="tetto di token per questa esecuzione: raggiunto, si ferma da solo",
+        default=None,
+        help=(
+            f"tetto di token per questa esecuzione (predefinito {DEFAULT_MAX_TOKENS}; "
+            "obbligatorio con --allow-production-key): raggiunto, si ferma da solo"
+        ),
+    )
+    run.add_argument(
+        "--allow-production-key",
+        action="store_true",
+        help=(
+            "usa LLM_API_KEY se manca EVAL_LLM_API_KEY: solo con --max-tokens, massimo "
+            f"{PRODUCTION_KEY_DAILY_CAP} token al giorno in totale"
+        ),
     )
     run.set_defaults(handler=command_run)
     rescore = commands.add_parser("rescore", help="ricalcola le misure meccaniche")
@@ -830,7 +981,8 @@ def main() -> int:
     rejudge.add_argument("label")
     rejudge.add_argument("--all", action="store_true")
     rejudge.add_argument("--pause", type=float, default=2.0)
-    rejudge.add_argument("--max-tokens", type=int, default=DEFAULT_MAX_TOKENS)
+    rejudge.add_argument("--max-tokens", type=int, default=None)
+    rejudge.add_argument("--allow-production-key", action="store_true")
     rejudge.set_defaults(handler=command_rejudge)
     compare = commands.add_parser("compare", help="confronta due esecuzioni")
     compare.add_argument("before")

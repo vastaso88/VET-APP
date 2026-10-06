@@ -78,6 +78,9 @@ from packages.core.application.services.record_route_point import RecordRoutePoi
 from packages.core.application.services.reminder_context_retriever import (
     ReminderContextRetriever,
 )
+from packages.core.application.services.rename_conversation import (
+    RenameConversationService,
+)
 from packages.core.application.services.report_chat_response import ReportChatResponseService
 from packages.core.application.services.report_listing import ReportListingService
 from packages.core.application.services.request_radar_places_ingestion import (
@@ -99,6 +102,7 @@ from packages.core.application.services.start_walk import StartWalkService
 from packages.core.application.services.transcribe_audio import TranscribeAudioService
 from packages.core.application.services.update_pet_profile import UpdatePetProfileService
 from packages.core.application.services.upload_chat_attachment import UploadChatAttachmentService
+from packages.core.application.services.vet_summary import VetSummaryService
 from packages.infrastructure.auth.bootstrap_auth_provider import BootstrapAuthProvider
 from packages.infrastructure.documents.pypdf_reader import PypdfReader
 from packages.infrastructure.llm.providers.echo_llm_client import EchoLLMClient
@@ -304,6 +308,17 @@ class ApplicationContainer:
 
     def delete_conversation_service(self) -> DeleteConversationService:
         return DeleteConversationService(self.conversation_repository)
+
+    def rename_conversation_service(self) -> RenameConversationService:
+        return RenameConversationService(self.conversation_repository)
+
+    def vet_summary_service(self) -> VetSummaryService:
+        return VetSummaryService(
+            self.conversation_repository,
+            self.pet_profile_repository,
+            self.llm_client,
+            self.pii_anonymizer,
+        )
 
     def create_reminder_service(self) -> CreateReminderService:
         return CreateReminderService(self.reminder_repository, self.pet_profile_repository)

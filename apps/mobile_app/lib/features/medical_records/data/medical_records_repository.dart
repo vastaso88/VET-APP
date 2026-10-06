@@ -151,6 +151,28 @@ class MedicalRecordsRepository {
     changes.value++;
   }
 
+  /// Changes only the title: the date and the file stay as they were.
+  Future<void> renameRecord(MedicalRecordEntry record, String title) async {
+    final client = _resolveClient();
+    if (client == null) {
+      final index = _previewRecords.indexWhere((item) => item.id == record.id);
+      if (index != -1) _previewRecords[index] = _withTitle(record, title);
+      changes.value++;
+      return;
+    }
+
+    try {
+      await client.from('clinical_events').update({'title': title}).eq('id', record.id);
+    } catch (_) {
+      throw const MedicalRecordSaveException(
+        'Non sono riuscito a rinominare il referto. Riprova.',
+      );
+    }
+    final sessionIndex = _savedThisSession.indexWhere((item) => item.id == record.id);
+    if (sessionIndex != -1) _savedThisSession[sessionIndex] = _withTitle(record, title);
+    changes.value++;
+  }
+
   Future<void> deleteRecord(String id) async {
     final client = _resolveClient();
     if (client == null) {
@@ -342,3 +364,16 @@ List<MedicalRecordEntry> mergeRecentRecords(
     ...fromServer,
   ];
 }
+
+MedicalRecordEntry _withTitle(MedicalRecordEntry record, String title) => MedicalRecordEntry(
+      id: record.id,
+      petName: record.petName,
+      title: title,
+      subtitle: record.subtitle,
+      meta: record.meta,
+      badge: record.badge,
+      detailSource: record.detailSource,
+      createdAt: record.createdAt,
+      timeline: record.timeline,
+      attachmentId: record.attachmentId,
+    );

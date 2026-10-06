@@ -39,8 +39,10 @@ def create_pet(request: CreatePetProfileRequest) -> dict[str, object]:
 
 @router.put("/{pet_id}")
 def update_pet(pet_id: str, request: CreatePetProfileRequest) -> dict[str, object]:
-    result = get_container().update_pet_profile_service().execute(
-        UpdatePetProfileInput(pet_id=pet_id, **request.model_dump())
+    result = (
+        get_container()
+        .update_pet_profile_service()
+        .execute(UpdatePetProfileInput(pet_id=pet_id, **request.model_dump()))
     )
     return result.model_dump()
 

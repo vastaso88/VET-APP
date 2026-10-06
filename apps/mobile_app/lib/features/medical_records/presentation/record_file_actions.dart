@@ -61,6 +61,14 @@ Future<void> showRecordActions(
             },
           ),
           ListTile(
+            leading: const Icon(Icons.drive_file_rename_outline_rounded),
+            title: const Text('Rinomina'),
+            onTap: () {
+              Navigator.of(sheetContext).pop();
+              renameRecordWithDialog(context, record: record, onRenamed: onChanged);
+            },
+          ),
+          ListTile(
             leading: const Icon(Icons.delete_outline, color: Colors.red),
             title: const Text('Elimina'),
             onTap: () {
@@ -219,4 +227,46 @@ class RecordImageViewer extends StatelessWidget {
       ),
     );
   }
+}
+
+/// Asks for a new title and saves it on the title field only.
+Future<void> renameRecordWithDialog(
+  BuildContext context, {
+  required MedicalRecordEntry record,
+  required VoidCallback onRenamed,
+}) async {
+  final controller = TextEditingController(text: record.title);
+  final newTitle = await showDialog<String>(
+    context: context,
+    builder: (dialogContext) => AlertDialog(
+      title: const Text('Rinomina referto'),
+      content: TextField(
+        controller: controller,
+        autofocus: true,
+        textCapitalization: TextCapitalization.sentences,
+        decoration: const InputDecoration(labelText: 'Nome del file'),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.of(dialogContext).pop(),
+          child: const Text('Annulla'),
+        ),
+        FilledButton(
+          onPressed: () => Navigator.of(dialogContext).pop(controller.text.trim()),
+          child: const Text('Salva'),
+        ),
+      ],
+    ),
+  );
+  controller.dispose();
+  if (newTitle == null || newTitle.isEmpty || newTitle == record.title || !context.mounted) {
+    return;
+  }
+  try {
+    await MedicalRecordsRepository().renameRecord(record, newTitle);
+  } on MedicalRecordSaveException catch (error) {
+    if (context.mounted) _showMessage(context, error.message);
+    return;
+  }
+  onRenamed();
 }
