@@ -5,6 +5,7 @@ import 'package:flutter/services.dart';
 import '../../data/pet_demo_store.dart';
 import '../../domain/fish_species.dart';
 import '../../domain/pet_breeds.dart';
+import '../../domain/pet_species_breeds.dart';
 import '../../domain/pet_format.dart';
 import '../../domain/pet_identity_colors.dart';
 import '../../domain/pet_models.dart';
@@ -136,7 +137,7 @@ class _PetProfileFormState extends State<PetProfileForm> {
     final initialBreed = _breed;
     if (initialBreed == 'Altro') {
       _otherBreed = true;
-    } else if (initialBreed != null && (_species == 'Cane' || _species == 'Gatto') &&
+    } else if (initialBreed != null && _species != null && !(_species == 'Pesce' && (pet?.isAquarium ?? false)) &&
         isCustomBreed(initialBreed, PetDemoStore.breedsForSpecies(_species!))) {
       _otherBreed = true;
       _otherBreedController.text = initialBreed;
@@ -410,7 +411,7 @@ class _PetProfileFormState extends State<PetProfileForm> {
                             final picked = await _pickBreed(breedOptions);
                             if (picked == null || !mounted) return;
                             setState(() {
-                              if (picked == otherBreedLabel) {
+                              if (isOtherBreedEntry(picked)) {
                                 _otherBreed = true;
                                 _breed = _otherBreedController.text.trim().isEmpty
                                     ? 'Altro'
@@ -445,12 +446,14 @@ class _PetProfileFormState extends State<PetProfileForm> {
                       ),
                     ),
                   ),
-                if (_otherBreed && (_species == 'Cane' || _species == 'Gatto')) ...[
+                if (_otherBreed) ...[
                   const SizedBox(height: AppSpacing.md),
                   TextFormField(
                     controller: _otherBreedController,
                     textCapitalization: TextCapitalization.sentences,
-                    decoration: _inputDecoration('Quale razza? (facoltativo)', 'Es. incrocio di barboncino'),
+                    decoration: _species == 'Cane' || _species == 'Gatto'
+                        ? _inputDecoration('Quale razza? (facoltativo)', 'Es. incrocio di barboncino')
+                        : _inputDecoration('Quale specie o razza? (facoltativo)', 'Es. nome comune o varietà'),
                     onChanged: (value) => setState(() {
                       _breed = value.trim().isEmpty ? 'Altro' : value.trim();
                     }),
@@ -636,7 +639,9 @@ class _PetProfileFormState extends State<PetProfileForm> {
 
   String _breedDisplay() {
     if (_species == null) return 'Seleziona prima la specie';
-    if (_otherBreed) return otherBreedLabel;
+    if (_otherBreed) {
+      return _species == 'Cane' || _species == 'Gatto' ? otherBreedLabel : otherEntryLabel;
+    }
     final breed = _breed;
     return breed == null || breed.isEmpty ? _breedPlaceholder : breed;
   }
@@ -1227,7 +1232,7 @@ class _BreedPickerSheetState extends State<_BreedPickerSheet> {
   Widget build(BuildContext context) {
     final query = foldBreedText(_query);
     final matches = widget.options
-        .where((breed) => query.isEmpty || foldBreedText(breed).contains(query))
+        .where((breed) => query.isEmpty || breedMatchesQuery(breed, _query))
         .toList(growable: false);
 
     return SafeArea(
@@ -1241,7 +1246,7 @@ class _BreedPickerSheetState extends State<_BreedPickerSheet> {
                 autofocus: true,
                 onChanged: (value) => setState(() => _query = value),
                 decoration: InputDecoration(
-                  hintText: 'Cerca una razza',
+                  hintText: 'Cerca (anche per nome scientifico)',
                   prefixIcon: const Icon(Icons.search_rounded),
                   border: OutlineInputBorder(borderRadius: BorderRadius.circular(18)),
                 ),
@@ -1253,7 +1258,7 @@ class _BreedPickerSheetState extends State<_BreedPickerSheet> {
                       child: Padding(
                         padding: const EdgeInsets.all(AppSpacing.lg),
                         child: Text(
-                          'Nessuna razza trovata. Prova con "Meticcio / altra razza".',
+                          'Nessun risultato. Prova con una voce generica o con "Altra (scrivi)".',
                           textAlign: TextAlign.center,
                           style: AppTextStyles.bodySmall,
                         ),
@@ -1263,10 +1268,9 @@ class _BreedPickerSheetState extends State<_BreedPickerSheet> {
                       itemCount: matches.length,
                       itemBuilder: (_, index) {
                         final breed = matches[index];
-                        final pinned = pinnedBreedLabels.contains(breed);
+                        final pinned = isPinnedBreedEntry(breed);
                         final lastPinned = pinned &&
-                            (index + 1 >= matches.length ||
-                                !pinnedBreedLabels.contains(matches[index + 1]));
+                            (index + 1 >= matches.length || !isPinnedBreedEntry(matches[index + 1]));
                         final tile = ListTile(
                           tileColor: pinned ? AppColors.accentSoft.withValues(alpha: 0.35) : null,
                           leading: pinned ? const Icon(Icons.pets_outlined, color: AppColors.primary) : null,

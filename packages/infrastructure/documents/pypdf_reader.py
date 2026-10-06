@@ -3,6 +3,7 @@ import logging
 from typing import Any
 
 from pypdf import PdfReader as _PypdfReader
+from pypdf import PdfWriter
 from pypdf.errors import PyPdfError
 
 from packages.core.application.ports.pdf_reader import PdfContent, PdfReader
@@ -58,6 +59,21 @@ class PypdfReader(PdfReader):
             text="\n\n".join(part for part in text_parts if part),
             page_images=images,
         )
+
+    def strip_metadata(self, content: bytes) -> bytes:
+        # The document is cloned object by object (no content stream is
+        # decoded or re-compressed) and written back without its Info
+        # dictionary and XMP packet.
+        try:
+            writer = PdfWriter(clone_from=_PypdfReader(io.BytesIO(content)))
+            writer.metadata = None
+            writer.xmp_metadata = None
+            buffer = io.BytesIO()
+            writer.write(buffer)
+            return buffer.getvalue()
+        except (PyPdfError, ValueError, KeyError, TypeError, AttributeError, RecursionError):
+            logger.warning("pdf metadata could not be stripped; file kept as uploaded")
+            return content
 
     @staticmethod
     def _largest_jpeg(page: Any) -> bytes | None:

@@ -78,6 +78,15 @@ class _GalleryFoldersPageState extends State<GalleryFoldersPage> {
   }
 }
 
+/// "12 foto", "12 foto · 2 video" or "1 video" for a folder's caption.
+String galleryCountLabel(List<PetPhotoEntry> entries) {
+  final videos = entries.where((entry) => entry.isVideo).length;
+  final photos = entries.length - videos;
+  if (videos == 0) return '$photos foto';
+  if (photos == 0) return '$videos video';
+  return '$photos foto · $videos video';
+}
+
 class _FolderCard extends StatefulWidget {
   const _FolderCard({required this.pet, required this.onTap});
 
@@ -119,9 +128,9 @@ class _FolderCardState extends State<_FolderCard> {
                   FutureBuilder<List<PetPhotoEntry>>(
                     future: _photos,
                     builder: (context, snapshot) {
-                      final count = snapshot.data?.length;
+                      final entries = snapshot.data;
                       return Text(
-                        count == null ? 'Conto le foto…' : '$count foto',
+                        entries == null ? 'Conto le foto…' : galleryCountLabel(entries),
                         style: AppTextStyles.caption,
                       );
                     },

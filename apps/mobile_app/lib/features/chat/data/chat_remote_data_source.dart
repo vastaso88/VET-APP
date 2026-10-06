@@ -82,6 +82,12 @@ abstract class ChatRemoteDataSource {
 
   Future<Result<void>> deleteConversation(String conversationId);
 
+  /// PATCH /conversations/{id} with the new title.
+  Future<Result<String>> renameConversation(String conversationId, String title);
+
+  /// GET /conversations/{id}/summary: the veterinary summary, not a diagnosis.
+  Future<Result<String>> conversationSummary(String conversationId);
+
   /// The signed-in owner's stored conversations with their messages
   /// (`GET /conversations`), so chat history survives an app restart.
   Future<Result<List<RemoteConversation>>> fetchConversations();
@@ -241,6 +247,92 @@ class HttpChatRemoteDataSource implements ChatRemoteDataSource {
         ),
       );
     }
+  }
+
+  @override
+  @override
+  Future<Result<String>> renameConversation(String conversationId, String title) async {
+    try {
+      final response = await _client
+          .patch(
+            Uri.parse('$_baseUrl/conversations/$conversationId'),
+            headers: {..._headers, 'Content-Type': 'application/json'},
+            body: jsonEncode({'title': title}),
+          )
+          .timeout(_timeout);
+      if (response.statusCode < 200 || response.statusCode >= 300) {
+        final detail = _detailOf(response.body);
+        return Result.failure<String>(
+          AppNetworkError(
+            code: 'conversation_rename_http_${response.statusCode}',
+            message: detail != null && detail.startsWith('invalid_title')
+                ? 'Il titolo non può essere vuoto.'
+                : 'Non sono riuscito a rinominare la chat. Riprova.',
+          ),
+        );
+      }
+      // The backend cleans the title; show what it stored, not what was typed.
+      final json = jsonDecode(response.body) as Map<String, dynamic>;
+      return Result.success(json['title'] as String? ?? title);
+    } catch (e) {
+      return Result.failure<String>(
+        AppNetworkError(
+          code: 'conversation_rename_failed',
+          message: 'Non sono riuscito a rinominare la chat. Controlla la connessione.',
+          details: e,
+        ),
+      );
+    }
+  }
+
+  @override
+  Future<Result<String>> conversationSummary(String conversationId) async {
+    try {
+      final response = await _client
+          .get(Uri.parse('$_baseUrl/conversations/$conversationId/summary'), headers: _headers)
+          .timeout(_timeout);
+      if (response.statusCode < 200 || response.statusCode >= 300) {
+        final detail = _detailOf(response.body);
+        final message = switch (detail) {
+          final d? when d.startsWith('conversation_empty') =>
+            'Scrivi almeno un messaggio per avere un riassunto.',
+          _ when response.statusCode == 502 =>
+            'Il modello non ha risposto. Riprova tra poco.',
+          _ => 'Non sono riuscito a preparare il riassunto. Riprova.',
+        };
+        return Result.failure<String>(
+          AppNetworkError(
+            code: detail != null && detail.isNotEmpty
+                ? 'conversation_summary_${detail.split(':').first.trim()}'
+                : 'conversation_summary_http_${response.statusCode}',
+            message: message,
+          ),
+        );
+      }
+      final json = jsonDecode(response.body) as Map<String, dynamic>;
+      return Result.success(json['summary'] as String? ?? '');
+    } catch (e) {
+      return Result.failure<String>(
+        AppNetworkError(
+          code: 'conversation_summary_failed',
+          message: 'Non sono riuscito a preparare il riassunto. Controlla la connessione.',
+          details: e,
+        ),
+      );
+    }
+  }
+
+  /// The `detail` text of an error body, or null when there is none.
+  static String? _detailOf(String body) {
+    try {
+      final decoded = jsonDecode(body);
+      if (decoded is Map<String, dynamic> && decoded['detail'] is String) {
+        return decoded['detail'] as String;
+      }
+    } catch (_) {
+      // Not JSON: no detail.
+    }
+    return null;
   }
 
   @override

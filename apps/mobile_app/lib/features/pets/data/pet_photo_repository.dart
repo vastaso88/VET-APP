@@ -6,6 +6,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../../shared/auth/current_user.dart';
 import '../../../shared/config/app_runtime_config_loader.dart';
+import '../domain/pet_video_rules.dart';
 
 /// Longest side and JPEG quality every pet photo is normalised to before
 /// upload — keeps the private bucket small without visible loss on a phone.
@@ -19,6 +20,8 @@ class PetPhotoEntry {
     required this.storagePath,
     required this.createdAt,
     required this.isProfile,
+    this.kind = PetMediaKind.photo,
+    this.durationSeconds,
   });
 
   final String id;
@@ -26,6 +29,29 @@ class PetPhotoEntry {
   final String storagePath;
   final DateTime createdAt;
   final bool isProfile;
+
+  /// A gallery entry is a photo or, since 2026-10-06, a short video.
+  final PetMediaKind kind;
+
+  /// Videos only.
+  final int? durationSeconds;
+
+  bool get isVideo => kind == PetMediaKind.video;
+}
+
+/// One `pet_photos` row as an entry; rows without `media_type` (every row
+/// written before videos existed) are photos.
+PetPhotoEntry petPhotoEntryFromRow(Map<String, dynamic> map) {
+  final isVideo = map['media_type'] == 'video';
+  return PetPhotoEntry(
+    id: map['id'].toString(),
+    petId: map['pet_id'].toString(),
+    storagePath: map['storage_path'].toString(),
+    createdAt: DateTime.parse(map['created_at'].toString()),
+    isProfile: map['is_profile'] == true,
+    kind: isVideo ? PetMediaKind.video : PetMediaKind.photo,
+    durationSeconds: isVideo ? (map['duration_seconds'] as num?)?.toInt() : null,
+  );
 }
 
 /// Resizes and re-encodes a picked image as JPEG. Pure, so it runs in an
@@ -40,25 +66,33 @@ Uint8List compressPetPhoto(Uint8List input) {
   if (decoded == null) {
     throw const FormatException('Immagine non valida');
   }
-  final longest = max(decoded.width, decoded.height);
+  // Orientation is baked into the pixels first: once the EXIF block is gone
+  // below, a portrait shot would otherwise come out lying on its side.
+  final upright = img.bakeOrientation(decoded);
+  final longest = max(upright.width, upright.height);
   final resized = longest <= petPhotoMaxSide
-      ? decoded
+      ? upright
       : img.copyResize(
-          decoded,
-          width: decoded.width >= decoded.height ? petPhotoMaxSide : null,
-          height: decoded.height > decoded.width ? petPhotoMaxSide : null,
+          upright,
+          width: upright.width >= upright.height ? petPhotoMaxSide : null,
+          height: upright.height > upright.width ? petPhotoMaxSide : null,
         );
+  // The encoder writes whatever EXIF the image carries - GPS position, device,
+  // time. None of it may reach the server (owner request, 2026-10-06).
+  resized.exif = img.ExifData();
   return Uint8List.fromList(img.encodeJpg(resized, quality: petPhotoJpegQuality));
 }
 
 /// `<owner>/<pet>/<photo>.jpg` — the first segment is the owner id, which the
-/// bucket's storage policy checks against `auth.uid()`.
+/// bucket's storage policy checks against `auth.uid()`. Videos use their own
+/// extension (mp4/mov) in the same folder.
 String petPhotoStoragePath({
   required String ownerId,
   required String petId,
   required String photoId,
+  String extension = 'jpg',
 }) =>
-    '$ownerId/$petId/$photoId.jpg';
+    '$ownerId/$petId/$photoId.$extension';
 
 /// Photos for pets, kept in the private `pet-photos` Storage bucket and the
 /// `pet_photos` table. Downloaded bytes are cached in memory for the session;
@@ -94,23 +128,23 @@ class PetPhotoRepository {
     final ownerId = CurrentUser.get()?.id;
     if (client == null || ownerId == null) return null;
 
-    final photoId =
-        '${DateTime.now().microsecondsSinceEpoch}-${Random().nextInt(1 << 32).toRadixString(16)}';
+    final photoId = _newMediaId();
     final path = petPhotoStoragePath(ownerId: ownerId, petId: petId, photoId: photoId);
-    await client.storage.from(bucket).uploadBinary(
-          path,
-          compressedJpeg,
-          fileOptions: const FileOptions(contentType: 'image/jpeg', upsert: false),
-        );
     final createdAt = DateTime.now().toUtc();
-    await client.from('pet_photos').insert({
-      'id': photoId,
-      'owner_id': ownerId,
-      'pet_id': petId,
-      'storage_path': path,
-      'created_at': createdAt.toIso8601String(),
-      'is_profile': isProfile,
-    });
+    await _store(
+      client,
+      path: path,
+      bytes: compressedJpeg,
+      contentType: 'image/jpeg',
+      row: {
+        'id': photoId,
+        'owner_id': ownerId,
+        'pet_id': petId,
+        'storage_path': path,
+        'created_at': createdAt.toIso8601String(),
+        'is_profile': isProfile,
+      },
+    );
     _memoryCache[path] = compressedJpeg;
     return PetPhotoEntry(
       id: photoId,
@@ -121,24 +155,112 @@ class PetPhotoRepository {
     );
   }
 
+  /// Uploads an already checked and scrubbed video (see [checkPetVideo] and
+  /// [stripVideoLocationMetadata]). Null without a backend. Not kept in the
+  /// session cache: a video is streamed from a signed URL, never held in
+  /// memory for the grid.
+  Future<PetPhotoEntry?> uploadVideo({
+    required String petId,
+    required Uint8List bytes,
+    required String extension,
+    required int durationSeconds,
+  }) async {
+    final client = _resolveClient();
+    final ownerId = CurrentUser.get()?.id;
+    if (client == null || ownerId == null) return null;
+
+    final photoId = _newMediaId();
+    final path = petPhotoStoragePath(
+      ownerId: ownerId,
+      petId: petId,
+      photoId: photoId,
+      extension: extension,
+    );
+    final createdAt = DateTime.now().toUtc();
+    await _store(
+      client,
+      path: path,
+      bytes: bytes,
+      contentType: petVideoContentType(extension),
+      row: {
+        'id': photoId,
+        'owner_id': ownerId,
+        'pet_id': petId,
+        'storage_path': path,
+        'created_at': createdAt.toIso8601String(),
+        'is_profile': false,
+        'media_type': 'video',
+        'duration_seconds': durationSeconds,
+        'size_bytes': bytes.length,
+      },
+    );
+    return PetPhotoEntry(
+      id: photoId,
+      petId: petId,
+      storagePath: path,
+      createdAt: createdAt,
+      isProfile: false,
+      kind: PetMediaKind.video,
+      durationSeconds: durationSeconds,
+    );
+  }
+
+  static String _newMediaId() =>
+      '${DateTime.now().microsecondsSinceEpoch}-${Random().nextInt(1 << 32).toRadixString(16)}';
+
+  /// Object first, row second - and if the row is refused (for instance the
+  /// video columns have not been added to the live table yet) the object is
+  /// removed again rather than left orphaned in the bucket.
+  Future<void> _store(
+    SupabaseClient client, {
+    required String path,
+    required Uint8List bytes,
+    required String contentType,
+    required Map<String, Object?> row,
+  }) async {
+    await client.storage.from(bucket).uploadBinary(
+          path,
+          bytes,
+          fileOptions: FileOptions(contentType: contentType, upsert: false),
+        );
+    try {
+      await client.from('pet_photos').insert(row);
+    } catch (_) {
+      try {
+        await client.storage.from(bucket).remove([path]);
+      } catch (_) {
+        // Best effort: an orphan is recoverable, hiding the real error is not.
+      }
+      rethrow;
+    }
+  }
+
+  /// Short-lived link the video player streams from (the bucket is private).
+  /// Null without a backend or when the link cannot be created.
+  Future<String?> signedVideoUrl(String storagePath) async {
+    final client = _resolveClient();
+    if (client == null) return null;
+    try {
+      return await client.storage.from(bucket).createSignedUrl(storagePath, 3600);
+    } catch (_) {
+      return null;
+    }
+  }
+
   Future<List<PetPhotoEntry>> list(String petId) async {
     final client = _resolveClient();
     if (client == null) return const [];
+    // select() without a column list: the video columns may not exist yet on a
+    // table the migration has not reached, and naming them would break the
+    // whole gallery.
     final rows = await client
         .from('pet_photos')
-        .select('id,pet_id,storage_path,created_at,is_profile')
+        .select()
         .eq('pet_id', petId)
         .order('created_at', ascending: false);
-    return (rows as List<dynamic>).map((row) {
-      final map = row as Map<String, dynamic>;
-      return PetPhotoEntry(
-        id: map['id'].toString(),
-        petId: map['pet_id'].toString(),
-        storagePath: map['storage_path'].toString(),
-        createdAt: DateTime.parse(map['created_at'].toString()),
-        isProfile: map['is_profile'] == true,
-      );
-    }).toList(growable: false);
+    return (rows as List<dynamic>)
+        .map((row) => petPhotoEntryFromRow(row as Map<String, dynamic>))
+        .toList(growable: false);
   }
 
   /// Makes [photo] the profile picture: flips `is_profile` on the pet's

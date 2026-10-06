@@ -1,7 +1,9 @@
 from pydantic import BaseModel
 
 from packages.core.application.ports.conversation_repository import ConversationRepository
+from packages.core.application.services.send_chat_message import migrate_legacy_title
 from packages.core.domain.conversation.models import Conversation
+from packages.core.domain.conversation.title import is_legacy_title
 
 
 class ListConversationsInput(BaseModel):
@@ -17,4 +19,12 @@ class ListConversationsService:
         self._repository = repository
 
     def execute(self, data: ListConversationsInput) -> ListConversationsOutput:
-        return ListConversationsOutput(conversations=self._repository.list_by_owner(data.owner_id))
+        conversations = []
+        for conversation in self._repository.list_by_owner(data.owner_id):
+            if is_legacy_title(conversation.title):
+                migrated = migrate_legacy_title(conversation)
+                if migrated.title != conversation.title:
+                    # Persisted, so the next listing does not redo it.
+                    conversation = self._repository.save(migrated)
+            conversations.append(conversation)
+        return ListConversationsOutput(conversations=conversations)

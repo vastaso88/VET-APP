@@ -341,6 +341,7 @@ const _knownAliases = <String, Set<String>>{
   'Cane di San Bernardo': {'San Bernardo'},
   meticcioBreedLabel: {'Meticcio / altra razza', 'Meticcio'},
   catMeticcioBreedLabel: {'Meticcio'},
+  'Criceto di Roborovski (Phodopus roborovskii)': {'Criceto Roborovski'},
 };
 
 /// Lowercase and without accents, for tolerant search and comparison.
@@ -364,12 +365,25 @@ bool isCustomBreed(String breed, List<String> listed) {
   final folded = foldBreedText(breed);
   for (final known in [...listed, ...pinnedBreedLabels]) {
     if (foldBreedText(known) == folded) return false;
+    // "Calopsite (Nymphicus hollandicus)" also accepts the older, shorter
+    // "Calopsite" - a name saved before the scientific name was added.
+    if (foldBreedText(_withoutBrackets(known)) == folded) return false;
     if (_knownAliases[known]?.any((alias) => foldBreedText(alias) == folded) ?? false) {
       return false;
     }
   }
   return true;
 }
+
+/// [name] without a trailing "(...)": the common name alone.
+String _withoutBrackets(String name) => name.replaceFirst(RegExp(r'\s*\([^)]*\)\s*$'), '');
+
+/// [name] without a trailing "(...)" - the common name alone, as saved by older
+/// versions that listed no scientific names.
+String breedCommonName(String name) => _withoutBrackets(name);
+
+/// Names alphabetical (accents and case ignored) and without duplicates.
+List<String> sortedUniqueNames(List<String> names) => _sortedUnique(names);
 
 List<String> _sortedUnique(List<String> names) {
   final unique = names.toSet().toList()

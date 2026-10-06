@@ -47,7 +47,7 @@ class ActivitiesPage extends StatelessWidget {
               icon: Icons.map_outlined,
               iconTone: AppColors.info,
               title: 'Vicino a me',
-              subtitle: 'Veterinari, negozi, aree cani ed eventi vicino a te.',
+              subtitle: 'Veterinari, negozi e aree cani vicino a te.',
               onTap: () => Navigator.of(context).push(
                 MaterialPageRoute<void>(builder: (_) => const LocalEventsPage()),
               ),
@@ -65,7 +65,7 @@ class ActivitiesPage extends StatelessWidget {
               icon: Icons.photo_library_outlined,
               iconTone: AppColors.info,
               title: 'Galleria',
-              subtitle: 'Le foto dei tuoi animali, per cartella.',
+              subtitle: 'Raccogli foto e ricordi dei tuoi animali.',
               onTap: () => Navigator.of(context).push(
                 MaterialPageRoute<void>(builder: (_) => const GalleryFoldersPage()),
               ),
@@ -109,22 +109,6 @@ class ActivitiesPage extends StatelessWidget {
                     icon: Icons.favorite_outline,
                     description:
                         'Incontra altri proprietari e organizza uscite tra animali con affinità simili.',
-                  ),
-                ),
-              ),
-            ),
-            _ActivityRow(
-              icon: Icons.photo_library_outlined,
-              iconTone: AppColors.secondary,
-              title: 'Gallery',
-              subtitle: 'Raccogli foto e ricordi dei tuoi animali.',
-              badge: 'In arrivo',
-              onTap: () => Navigator.of(context).push(
-                MaterialPageRoute<void>(
-                  builder: (_) => const ComingSoonPage(
-                    title: 'Gallery',
-                    icon: Icons.photo_library_outlined,
-                    description: 'Una raccolta di foto e ricordi condivisibile per ogni animale.',
                   ),
                 ),
               ),

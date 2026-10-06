@@ -6,6 +6,7 @@ import 'package:http/http.dart' as http;
 
 import '../../../shared/auth/current_user.dart';
 import '../../../shared/files/attachment_media_type.dart';
+import '../../../shared/files/image_metadata.dart';
 import '../../../shared/config/app_runtime_config_loader.dart';
 import '../../../shared/errors/app_network_error.dart';
 import '../../../shared/types/result.dart';
@@ -67,7 +68,7 @@ class HttpChatAttachmentRemoteDataSource implements ChatAttachmentRemoteDataSour
         ..fields['pet_id'] = petId
         ..files.add(http.MultipartFile.fromBytes(
           'file',
-          imageBytes,
+          stripImageMetadata(imageBytes),
           filename: fileName,
           contentType: attachmentMediaType(imageBytes, fileName),
         ));

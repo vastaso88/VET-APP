@@ -815,6 +815,22 @@ create table if not exists public.pet_photos (
 );
 create index if not exists pet_photos_pet_created_idx on public.pet_photos (pet_id, created_at desc);
 
+-- Short videos share the gallery table and the same private bucket (the file
+-- keeps its mp4/mov extension in storage_path). Rows written before this
+-- migration are photos by default, so the app works with or without it.
+alter table public.pet_photos add column if not exists media_type text not null default 'photo';
+alter table public.pet_photos add column if not exists duration_seconds integer;
+alter table public.pet_photos add column if not exists size_bytes bigint;
+do $$
+begin
+    if not exists (
+        select 1 from pg_constraint where conname = 'pet_photos_media_type_check'
+    ) then
+        alter table public.pet_photos
+            add constraint pet_photos_media_type_check check (media_type in ('photo', 'video'));
+    end if;
+end $$;
+
 alter table public.pet_photos enable row level security;
 
 drop policy if exists pet_photos_select_own on public.pet_photos;
@@ -836,6 +852,10 @@ for delete using (owner_id = auth.uid()::text);
 insert into storage.buckets (id, name, public)
 values ('pet-photos', 'pet-photos', false)
 on conflict (id) do nothing;
+
+-- Server-side ceiling for one object (the free plan's global cap is 50 MB):
+-- the app checks first, this stops anything that bypasses it.
+update storage.buckets set file_size_limit = 50000000 where id = 'pet-photos';
 
 drop policy if exists pet_photos_objects_select_own on storage.objects;
 create policy pet_photos_objects_select_own on storage.objects

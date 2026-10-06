@@ -8,6 +8,7 @@ from packages.core.application.ports.pet_profile_repository import PetProfileRep
 from packages.core.application.ports.pii_anonymizer import PiiAnonymizationRequest, PiiAnonymizer
 from packages.core.application.services.document_summarizer import DocumentSummarizer
 from packages.core.domain.conversation.attachment import ChatAttachment
+from packages.core.domain.conversation.media_privacy import strip_image_metadata
 from packages.core.domain.conversation.media_type import (
     IMAGE_TYPES,
     JPEG,
@@ -114,6 +115,11 @@ class UploadChatAttachmentService:
         # Everything that can reject the file happens before it is stored.
         pdf_content = self._read_pdf(data.file_bytes) if media_type == PDF else None
         known_names = [data.owner_display_name] if data.owner_display_name else []
+        # Privacy (2026-10-06): a phone photo carries GPS position, date and
+        # device model in its metadata; a PDF carries author and software.
+        # Stripped here, server side, so neither storage nor the vision
+        # model ever receives them — whatever the app did.
+        content = self._without_metadata(data.file_bytes, media_type)
 
         attachment = ChatAttachment(
             owner_id=data.owner_id,
@@ -122,14 +128,14 @@ class UploadChatAttachmentService:
             content_type=media_type,
             original_filename=data.filename,
         )
-        self._media_storage.save(attachment.id, data.file_bytes)
+        self._media_storage.save(attachment.id, content)
         attachment = attachment.model_copy(update={"storage_key": attachment.id})
 
         try:
             if pdf_content is not None:
                 analysis = self._analyze_pdf(pdf_content, pet_profile.species, known_names)
             else:
-                analysis = self._analyze_image(data.file_bytes, media_type, pet_profile.species)
+                analysis = self._analyze_image(content, media_type, pet_profile.species)
         except ProviderError:
             # The file itself is still saved and usable — only the
             # analysis step degrades, the same fail-safe posture as every
@@ -143,6 +149,12 @@ class UploadChatAttachmentService:
             attachment = attachment.model_copy(update={"analysis_failed": True})
 
         return UploadChatAttachmentOutput(attachment=self._attachment_repository.save(attachment))
+
+    def _without_metadata(self, content: bytes, media_type: str) -> bytes:
+        if media_type == PDF:
+            assert self._pdf_reader is not None
+            return self._pdf_reader.strip_metadata(content)
+        return strip_image_metadata(content, media_type)
 
     def _read_pdf(self, content: bytes) -> PdfContent:
         assert self._pdf_reader is not None
@@ -169,7 +181,7 @@ class UploadChatAttachmentService:
         # photographed document is read.
         pages = [
             self._image_analyzer.analyze(
-                image,
+                strip_image_metadata(image, JPEG),
                 JPEG,
                 context=(
                     f"Specie: {species}. Pagina {index} di un documento scansionato: "

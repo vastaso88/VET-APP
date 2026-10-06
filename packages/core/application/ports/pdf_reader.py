@@ -17,3 +17,9 @@ class PdfReader(Protocol):
         """Raises ValidationError("pdf_unreadable: ...") for a corrupt or
         password-protected file."""
         ...
+
+    def strip_metadata(self, content: bytes) -> bytes:
+        """The same document without its metadata (author, producer,
+        creation date, XMP). Pages and their content are not re-encoded.
+        Returns the input unchanged when it cannot be processed."""
+        ...
