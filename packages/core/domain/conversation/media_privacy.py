@@ -99,11 +99,12 @@ def _strip_jpeg(content: bytes) -> bytes:
         segment = content[position:segment_end]
         position = segment_end
         if marker == _JPEG_SOS:
-            # Scan data up to the end-of-image marker of THIS image. A
-            # second image appended after it (MPF, "motion photos") carries
-            # its own metadata and is dropped with everything that follows.
-            eoi = content.find(b"\xff\xd9", position)
-            out += segment + (content[position:] if eoi < 0 else content[position : eoi + 2])
+            # From here to the end-of-image marker of THIS image, scan by
+            # scan (a progressive JPEG has several, with tables between
+            # them). A second image appended after the EOI (MPF, "motion
+            # photos") carries its own metadata and is dropped with
+            # everything that follows.
+            out += segment + _scans_until_end_of_image(content, position)
             reached_scan = True
             break
         if marker == _JPEG_APP1:
@@ -119,6 +120,51 @@ def _strip_jpeg(content: bytes) -> bytes:
     if reached_scan and orientation != 1:
         insert_at = _exif_insert_point(out)
         out[insert_at:insert_at] = _orientation_only_exif(orientation)
+    return bytes(out)
+
+
+def _scans_until_end_of_image(content: bytes, position: int) -> bytes:
+    """The entropy-coded data and the tables between scans, up to and
+    including the real EOI. Inside scan data 0xFF is always followed by
+    0x00 (stuffing) or by an RSTn marker, so any other marker is a segment
+    boundary — a naive search for FF D9 would stop inside a later table
+    (gestore git, 2026-10-06). Metadata segments between scans are dropped
+    like the ones before; a file that ends without EOI yields what it has."""
+    out = bytearray()
+    run_start = position
+    index = position
+    size = len(content)
+    while index + 1 < size:
+        if content[index] != 0xFF:
+            index += 1
+            continue
+        following = content[index + 1]
+        if following == 0x00 or 0xD0 <= following <= 0xD7:
+            index += 2  # stuffed byte or restart marker: still scan data
+            continue
+        if following == 0xFF:
+            index += 1  # fill byte
+            continue
+        out += content[run_start:index]
+        if following == _JPEG_EOI:
+            out += content[index : index + 2]
+            return bytes(out)
+        if following in _JPEG_STANDALONE:
+            out += content[index : index + 2]
+            index += 2
+            run_start = index
+            continue
+        if index + 4 > size:
+            return bytes(out)
+        length = struct.unpack(">H", content[index + 2 : index + 4])[0]
+        segment_end = index + 2 + length
+        if length < 2 or segment_end > size:
+            return bytes(out)
+        if not (_JPEG_APP0 <= following <= 0xEF or following == _JPEG_COM):
+            out += content[index:segment_end]
+        index = segment_end
+        run_start = index
+    out += content[run_start:size]
     return bytes(out)
 
 
@@ -190,12 +236,16 @@ def _strip_png(content: bytes) -> bytes:
     while position + 8 <= len(content):
         length = struct.unpack(">I", content[position : position + 4])[0]
         kind = content[position + 4 : position + 8]
-        chunk = content[position : position + 12 + length]
-        position += 12 + length
+        chunk_end = position + 12 + length
+        if chunk_end > len(content):
+            break  # incomplete chunk: not copied
+        chunk = content[position:chunk_end]
+        position = chunk_end
         if kind not in _PNG_METADATA_CHUNKS:
             out += chunk
-    # Whatever trails the last whole chunk is kept as is.
-    out += content[position:]
+        if kind == b"IEND":
+            break  # anything after the end marker is not part of the image
+    # Fail closed: nothing after the last whole chunk is passed through.
     return bytes(out)
 
 
@@ -206,19 +256,24 @@ def _strip_webp(content: bytes) -> bytes:
     if content[:4] != b"RIFF" or content[8:12] != b"WEBP":
         return content
     chunks = bytearray()
+    # Only what the RIFF header declares belongs to the file; a tail
+    # beyond it (or an incomplete chunk) is dropped, not copied.
+    declared_end = min(8 + struct.unpack("<I", content[4:8])[0], len(content))
     position = 12
-    while position + 8 <= len(content):
+    while position + 8 <= declared_end:
         kind = content[position : position + 4]
         length = struct.unpack("<I", content[position + 4 : position + 8])[0]
         padded = length + (length & 1)
-        chunk = bytearray(content[position : position + 8 + padded])
-        position += 8 + padded
+        chunk_end = position + 8 + padded
+        if chunk_end > declared_end:
+            break
+        chunk = bytearray(content[position:chunk_end])
+        position = chunk_end
         if kind in _WEBP_METADATA_CHUNKS:
             continue
         if kind == b"VP8X" and len(chunk) >= 9:
             chunk[8] &= ~(_WEBP_FLAG_EXIF | _WEBP_FLAG_XMP) & 0xFF
         chunks += chunk
-    chunks += content[position:]
     return b"RIFF" + struct.pack("<I", 4 + len(chunks)) + b"WEBP" + bytes(chunks)
 
 

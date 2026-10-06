@@ -4,6 +4,8 @@ multipart POST whose file part is declared application/octet-stream."""
 from fastapi.testclient import TestClient
 
 from apps.api.main import app
+from packages.core.domain.conversation.media_privacy import strip_image_metadata
+from packages.core.domain.conversation.media_type import PNG
 
 PNG_BYTES = b"\x89PNG\r\n\x1a\n" + b"\x00" * 64
 
@@ -31,7 +33,8 @@ def test_the_apps_real_upload_request_is_accepted_and_the_file_is_served_back() 
 
     assert served.status_code == 200
     assert served.headers["content-type"] == "image/png"
-    assert served.content == PNG_BYTES
+    # Served as stored: the image without its metadata chunks.
+    assert served.content == strip_image_metadata(PNG_BYTES, PNG)
 
 
 def test_an_unsupported_file_is_rejected_with_a_stable_error_code() -> None:
