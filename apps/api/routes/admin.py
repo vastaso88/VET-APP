@@ -761,6 +761,22 @@ def admin_resolve_marketplace_report(
         "id", report_id
     ).execute()
 
+    open_reports_response = (
+        client.table("marketplace_listing_reports")
+        .select("reporter_owner_id")
+        .eq("listing_id", listing_id)
+        .eq("status", "open")
+        .execute()
+    )
+    open_reporters = {
+        str(row["reporter_owner_id"])
+        for row in (getattr(open_reports_response, "data", None) or [])
+        if row.get("reporter_owner_id") is not None
+    }
+    client.table("marketplace_listings").update(
+        {"report_count": len(open_reporters), "updated_at": now}
+    ).eq("id", listing_id).execute()
+
     updated = (
         client.table("marketplace_listing_reports")
         .select("*")
