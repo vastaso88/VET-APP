@@ -1116,7 +1116,7 @@ def admin_scheduler_tick(
 ) -> dict[str, object]:
     _require_scheduler_token(x_vetapp_scheduler)
     client = _admin_client()
-    claimed = client.rpc("admin_claim_due_schedules", {"limit_count": 10}).execute()
+    claimed = client.rpc("admin_claim_due_schedules", {"limit_count": 1}).execute()
     schedules = list(getattr(claimed, "data", None) or [])
     outcomes: list[dict[str, object]] = []
     now = datetime.now(UTC)
