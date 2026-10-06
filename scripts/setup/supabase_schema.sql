@@ -1153,3 +1153,41 @@ revoke all on function public.admin_claim_due_schedules(integer)
     from public, anon, authenticated;
 grant execute on function public.admin_claim_due_schedules(integer)
     to service_role;
+
+
+-- Marketplace moderation changes report state after the original trigger was
+-- introduced. Count only unresolved/open reports and keep the trigger function
+-- non-callable as a public RPC; it is invoked automatically by PostgreSQL.
+create or replace function public.handle_marketplace_listing_report()
+returns trigger
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+    distinct_reporters integer;
+begin
+    select count(distinct reporter_owner_id)
+    into distinct_reporters
+    from public.marketplace_listing_reports
+    where listing_id = new.listing_id
+      and status = 'open';
+
+    update public.marketplace_listings
+    set report_count = distinct_reporters,
+        status = case
+            when distinct_reporters >= 3 and status not in ('sold', 'removed') then 'removed'
+            else status
+        end,
+        updated_at = now()
+    where id = new.listing_id;
+
+    return new;
+end;
+$$;
+
+revoke all on function public.handle_marketplace_listing_report()
+from public, anon, authenticated;
+
+grant execute on function public.handle_marketplace_listing_report()
+to service_role;
