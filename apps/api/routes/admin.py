@@ -78,9 +78,13 @@ def admin_overview() -> dict[str, object]:
     pets = _count_rows(client.table("pet_profiles").select("id", count=CountMethod.exact))
     conversations = _count_rows(client.table("conversations").select("id", count=CountMethod.exact))
     radar_osm = _count_rows(client.table("radar_places_osm").select("id", count=CountMethod.exact))
-    radar_open = _count_rows(client.table("radar_places_open").select("id", count=CountMethod.exact))
+    radar_open = _count_rows(
+        client.table("radar_places_open").select("id", count=CountMethod.exact)
+    )
     radar_reports = _count_rows(
-        client.table("radar_user_reports").select("id", count=CountMethod.exact).eq("status", "pending")
+        client.table("radar_user_reports")
+        .select("id", count=CountMethod.exact)
+        .eq("status", "pending")
     )
     chat_reports = _count_rows(
         client.table("chat_response_reports")
