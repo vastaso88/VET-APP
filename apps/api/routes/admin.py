@@ -6,7 +6,7 @@ from typing import Any, Literal
 from urllib.parse import urlsplit
 from uuid import uuid4
 
-from fastapi import APIRouter, HTTPException, Header, status
+from fastapi import APIRouter, Header, HTTPException, status
 from postgrest.types import CountMethod
 from pydantic import BaseModel, Field
 
@@ -798,7 +798,7 @@ def admin_geographic() -> dict[str, object]:
 
     auth_users = _list_auth_users(client)
     auth_by_id = {
-        str(getattr(user, "id")): getattr(user, "email", None)
+        str(user.id): getattr(user, "email", None)
         for user in auth_users
         if getattr(user, "id", None)
     }
