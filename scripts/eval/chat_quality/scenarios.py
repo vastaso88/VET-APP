@@ -63,6 +63,9 @@ class Scenario:
     # At least one of these (regex, case-insensitive) must appear: used
     # where honesty about what the chat cannot read is the point.
     must_say_any: tuple[str, ...] = ()
+    # None of these (regex, case-insensitive) may appear: known knowledge
+    # errors of the model (see species_facts.py).
+    must_not_say_any: tuple[str, ...] = ()
     urgent: bool = False
     tags: tuple[str, ...] = field(default_factory=tuple)
     # Whether the answer should mention the vet: True = needed (missing it

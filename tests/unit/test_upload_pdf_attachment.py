@@ -23,7 +23,8 @@ from packages.core.application.services.upload_chat_attachment import (
     UploadChatAttachmentInput,
     UploadChatAttachmentService,
 )
-from packages.core.domain.conversation.media_type import detect_media_type
+from packages.core.domain.conversation.media_privacy import strip_image_metadata
+from packages.core.domain.conversation.media_type import JPEG, detect_media_type
 from packages.core.domain.pet_profile.models import PetProfile
 from packages.infrastructure.documents.pypdf_reader import PypdfReader
 from packages.infrastructure.persistence.in_memory_repositories import (
@@ -158,7 +159,8 @@ def test_a_scanned_pdf_is_read_through_the_vision_model() -> None:
 
     attachment = service.execute(_upload(scanned_pdf())).attachment
 
-    assert vision.images == [JPEG_PAGE_SCAN]
+    # The page image reaches the vision model without metadata.
+    assert vision.images == [strip_image_metadata(JPEG_PAGE_SCAN, JPEG)]
     assert llm.requests == []
     assert attachment.analysis is not None
     assert "Trascrizione pagina (image/jpeg)" in attachment.analysis

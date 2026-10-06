@@ -32,6 +32,7 @@ _JPEG_SOS = 0xDA
 _JPEG_APP0 = 0xE0
 _JPEG_APP1 = 0xE1
 _JPEG_APP2 = 0xE2
+_JPEG_APP14 = 0xEE
 _JPEG_COM = 0xFE
 _JPEG_STANDALONE = {0x01, *range(0xD0, 0xD8)}  # TEM, RSTn: no length field
 _ICC_PROFILE = b"ICC_PROFILE\x00"
@@ -45,8 +46,10 @@ _WEBP_FLAG_XMP = 0x04
 
 
 def strip_image_metadata(content: bytes, media_type: str) -> bytes:
-    """The same image without EXIF/XMP/IPTC/comments. Anything this code
-    cannot parse is returned unchanged rather than damaged."""
+    """The same image without EXIF/XMP/IPTC/comments. A file whose format
+    is not recognised is returned unchanged; a recognised file that turns
+    out corrupt is returned only as far as it was understood (see
+    _strip_jpeg), so metadata never slips through on an error."""
     try:
         if media_type == JPEG:
             return _strip_jpeg(content)
@@ -63,14 +66,21 @@ def strip_image_metadata(content: bytes, media_type: str) -> bytes:
 
 
 def _strip_jpeg(content: bytes) -> bytes:
+    """Fail CLOSED: whatever cannot be parsed is left out, never passed
+    through. Metadata segments are dropped as they are recognised; on a
+    corrupt or truncated segment the output stops there (an unreadable
+    picture is acceptable, a leaked position is not). The original comes
+    back only when the file is not a JPEG at all."""
     if not content.startswith(_JPEG_SOI):
         return content
     out = bytearray(_JPEG_SOI)
     position = 2
     orientation = 1
+    reached_scan = False
     while position + 4 <= len(content):
         if content[position] != 0xFF:
-            raise ValueError("not a JPEG segment")
+            # Garbage where a marker should be: stop with what was kept.
+            return bytes(out)
         marker = content[position + 1]
         if marker == 0xFF:  # fill byte
             position += 1
@@ -80,49 +90,80 @@ def _strip_jpeg(content: bytes) -> bytes:
             position += 2
             continue
         length = struct.unpack(">H", content[position + 2 : position + 4])[0]
-        segment = content[position : position + 2 + length]
-        position += 2 + length
+        segment_end = position + 2 + length
+        if length < 2 or segment_end > len(content):
+            # Truncated or corrupt segment (gestore git fuzzing, 2026-10-06:
+            # a JFIF declaring more bytes than the file has): nothing of it
+            # is kept and nothing is appended afterwards.
+            return bytes(out)
+        segment = content[position:segment_end]
+        position = segment_end
         if marker == _JPEG_SOS:
-            # Entropy-coded data follows until the end: copied as is.
-            out += segment + content[position:]
+            # Scan data up to the end-of-image marker of THIS image. A
+            # second image appended after it (MPF, "motion photos") carries
+            # its own metadata and is dropped with everything that follows.
+            eoi = content.find(b"\xff\xd9", position)
+            out += segment + (content[position:] if eoi < 0 else content[position : eoi + 2])
+            reached_scan = True
             break
-        if marker == _JPEG_APP1 and segment[4:10] == _EXIF_HEADER:
-            orientation = _exif_orientation(segment[10:]) or orientation
+        if marker == _JPEG_APP1:
+            # EXIF or XMP: dropped either way; only the orientation is read
+            # out first, and a malformed EXIF simply yields none.
+            if segment[4:10] == _EXIF_HEADER:
+                orientation = _exif_orientation(segment[10:]) or orientation
             continue
         if _JPEG_APP0 <= marker <= 0xEF or marker == _JPEG_COM:
-            keep = marker == _JPEG_APP0 or (
-                marker == _JPEG_APP2 and segment[4 : 4 + len(_ICC_PROFILE)] == _ICC_PROFILE
-            )
-            if not keep:
+            if not _carries_colour_information(marker, segment):
                 continue
         out += segment
-    else:
-        out += content[position:]
-    if orientation != 1:
-        # Right after SOI (and JFIF, if present), where EXIF belongs.
-        insert_at = 2
-        if out[2:4] == bytes((0xFF, _JPEG_APP0)):
-            insert_at = 4 + struct.unpack(">H", out[4:6])[0]
+    if reached_scan and orientation != 1:
+        insert_at = _exif_insert_point(out)
         out[insert_at:insert_at] = _orientation_only_exif(orientation)
     return bytes(out)
 
 
+def _carries_colour_information(marker: int, segment: bytes) -> bool:
+    """JFIF, the ICC profile and the Adobe APP14 (colour transform: dropping
+    it can shift the colours of CMYK/editor JPEGs) are not personal data."""
+    if marker == _JPEG_APP0:
+        return True
+    if marker == _JPEG_APP2:
+        return segment[4 : 4 + len(_ICC_PROFILE)] == _ICC_PROFILE
+    if marker == _JPEG_APP14:
+        return segment[4:9] == b"Adobe"
+    return False
+
+
+def _exif_insert_point(out: bytearray) -> int:
+    """Right after SOI, or after a complete JFIF segment."""
+    if out[2:4] == bytes((0xFF, _JPEG_APP0)) and len(out) >= 6:
+        after_jfif = 4 + int(struct.unpack(">H", out[4:6])[0])
+        if after_jfif <= len(out):
+            return after_jfif
+    return 2
+
+
 def _exif_orientation(tiff: bytes) -> int | None:
-    """The Orientation tag of an EXIF TIFF block, if present and sane."""
-    if tiff[:2] == b"II":
-        order = "<"
-    elif tiff[:2] == b"MM":
-        order = ">"
-    else:
+    """The Orientation tag of an EXIF TIFF block, if present and sane.
+    A malformed block (offsets beyond the data) yields None: the block is
+    dropped regardless, this must never raise."""
+    try:
+        if tiff[:2] == b"II":
+            order = "<"
+        elif tiff[:2] == b"MM":
+            order = ">"
+        else:
+            return None
+        ifd_offset = struct.unpack(order + "I", tiff[4:8])[0]
+        count = struct.unpack(order + "H", tiff[ifd_offset : ifd_offset + 2])[0]
+        for index in range(min(count, 512)):
+            entry = ifd_offset + 2 + index * 12
+            tag, kind, _count = struct.unpack(order + "HHI", tiff[entry : entry + 8])
+            if tag == _ORIENTATION_TAG and kind == 3:
+                value = struct.unpack(order + "H", tiff[entry + 8 : entry + 10])[0]
+                return value if 1 <= value <= 8 else None
+    except (struct.error, IndexError, ValueError):
         return None
-    ifd_offset = struct.unpack(order + "I", tiff[4:8])[0]
-    count = struct.unpack(order + "H", tiff[ifd_offset : ifd_offset + 2])[0]
-    for index in range(count):
-        entry = ifd_offset + 2 + index * 12
-        tag, kind, _count = struct.unpack(order + "HHI", tiff[entry : entry + 8])
-        if tag == _ORIENTATION_TAG and kind == 3:
-            value = struct.unpack(order + "H", tiff[entry + 8 : entry + 10])[0]
-            return value if 1 <= value <= 8 else None
     return None
 
 
