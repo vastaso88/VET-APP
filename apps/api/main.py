@@ -5,6 +5,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
 from apps.api.routes.account_consents import router as account_consents_router
+from apps.api.routes.admin import router as admin_router
 from apps.api.routes.auth import router as auth_router
 from apps.api.routes.chat import router as chat_router
 from apps.api.routes.chat_attachments import router as chat_attachments_router
@@ -74,6 +75,7 @@ async def handle_provider_error(_: Request, exc: ProviderError) -> JSONResponse:
 
 
 app.include_router(health_router)
+app.include_router(admin_router)
 app.include_router(auth_router)
 app.include_router(pets_router)
 app.include_router(conversations_router)
