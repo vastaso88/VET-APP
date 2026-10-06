@@ -1,6 +1,9 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
 
+import { requireAdminSession } from "../lib/admin-api";
+import { logout } from "../app/login/actions";
+
 const sections = [
   { href: "/", label: "Overview" },
   { href: "/moderation", label: "Moderation" },
@@ -9,7 +12,7 @@ const sections = [
   { href: "/jobs", label: "Ingestion jobs" },
 ];
 
-export function AdminShell({
+export async function AdminShell({
   title,
   eyebrow,
   children,
@@ -18,6 +21,8 @@ export function AdminShell({
   eyebrow: string;
   children: ReactNode;
 }) {
+  const admin = await requireAdminSession();
+
   return (
     <div className="admin-shell">
       <aside className="sidebar">
@@ -49,7 +54,12 @@ export function AdminShell({
             <p className="eyebrow">{eyebrow}</p>
             <h1>{title}</h1>
           </div>
-          <div className="environment-badge">development</div>
+          <div className="admin-account">
+            <span>{admin.email}</span>
+            <form action={logout}>
+              <button className="ghost-button" type="submit">Logout</button>
+            </form>
+          </div>
         </header>
         <section className="content">{children}</section>
       </main>
