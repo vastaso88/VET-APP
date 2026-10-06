@@ -30,4 +30,11 @@ jobs:
         shell: bash
         run: |
           TOKEN="$(printf 'vetapp-admin-scheduler:%s' "$SCHEDULER_SERVICE_ROLE_KEY" | sha256sum | awk '{print $1}')"
-          curl --fail-with-body --silent --show-error             --max-time 540             --request POST             --header "X-VetApp-Scheduler: $TOKEN"             "$VET_API_BASE_URL/admin/scheduler/tick"
+          for attempt in {1..10}; do
+            RESPONSE="$(curl --fail-with-body --silent --show-error               --max-time 300               --request POST               --header "X-VetApp-Scheduler: $TOKEN"               "$VET_API_BASE_URL/admin/scheduler/tick")"
+            echo "$RESPONSE"
+            CLAIMED="$(echo "$RESPONSE" | jq -r '.claimed // 0')"
+            if [ "$CLAIMED" -eq 0 ]; then
+              break
+            fi
+          done
