@@ -219,7 +219,11 @@ def _retrieve_scientific_evidence(request: ScientificDiscoveryRequest) -> tuple[
     return container, evidence
 
 
-def _scientific_domain_host(source_url: str | None, doi: str | None, pmid: str | None) -> str | None:
+def _scientific_domain_host(
+    source_url: str | None,
+    doi: str | None,
+    pmid: str | None,
+) -> str | None:
     host = ""
     if source_url:
         try:
@@ -235,7 +239,11 @@ def _scientific_domain_host(source_url: str | None, doi: str | None, pmid: str |
     return None
 
 
-def _scientific_canonical_url(source_url: str | None, doi: str | None, pmid: str | None) -> str | None:
+def _scientific_canonical_url(
+    source_url: str | None,
+    doi: str | None,
+    pmid: str | None,
+) -> str | None:
     if doi:
         normalized = doi.strip().lower()
         for prefix in ("https://doi.org/", "http://doi.org/", "doi:"):
@@ -627,7 +635,7 @@ def admin_scientific_ingest(
     job_id = str(uuid4())
     now = datetime.now(UTC).isoformat()
     query_key = hashlib.sha256(
-        f"{request.species}|{request.intent}|{request.query.strip().lower()}".encode("utf-8")
+        f"{request.species}|{request.intent}|{request.query.strip().lower()}".encode()
     ).hexdigest()[:16]
     coverage_key = f"scientific:{request.species}:{query_key}"
     backend = container.settings.evidence_backend
