@@ -261,3 +261,128 @@ button, input, select { font: inherit; }
   .sidebar { padding-left: 10px; padding-right: 10px; }
   .content, .topbar { padding-left: 22px; padding-right: 22px; }
 }
+
+
+.metric-grid-six {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.admin-account {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.ghost-button {
+  border: 1px solid var(--border);
+  background: white;
+  color: var(--text);
+  border-radius: 8px;
+  padding: 7px 10px;
+  cursor: pointer;
+}
+
+.overview-source-table .table-row {
+  grid-template-columns: 1fr .9fr .7fr 1fr;
+}
+
+.recent-runs-table .table-row {
+  grid-template-columns: 1fr .8fr 1.5fr .6fr 1fr;
+}
+
+.table-empty {
+  padding: 24px 14px;
+  color: var(--muted);
+  font-size: 13px;
+  text-align: center;
+}
+
+.login-page {
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  padding: 32px;
+  background:
+    radial-gradient(circle at top left, rgba(31,111,92,.10), transparent 34rem),
+    var(--bg);
+}
+
+.login-card {
+  width: min(440px, 100%);
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 28px;
+  box-shadow: 0 20px 60px rgba(17,24,32,.08);
+}
+
+.login-brand {
+  border-bottom-color: var(--border);
+  padding-left: 0;
+  color: var(--text);
+}
+
+.login-brand span {
+  color: var(--muted);
+}
+
+.login-copy {
+  padding: 26px 0 18px;
+}
+
+.login-copy h1 {
+  margin: 6px 0 8px;
+  font-size: 26px;
+  letter-spacing: -.025em;
+}
+
+.login-copy p:not(.eyebrow) {
+  margin: 0;
+  color: var(--muted);
+  line-height: 1.55;
+  font-size: 14px;
+}
+
+.login-form {
+  display: grid;
+  gap: 16px;
+}
+
+.login-form label {
+  display: grid;
+  gap: 7px;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.login-form input {
+  width: 100%;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 10px 11px;
+  background: white;
+  color: var(--text);
+  outline: none;
+}
+
+.login-form input:focus {
+  border-color: #7aaf9f;
+  box-shadow: 0 0 0 3px rgba(31,111,92,.10);
+}
+
+.login-error {
+  margin-bottom: 18px;
+  padding: 10px 12px;
+  border: 1px solid #e2b7b7;
+  border-radius: 8px;
+  background: #fff3f3;
+  color: #8a2e2e;
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+@media (max-width: 1200px) {
+  .metric-grid-six { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
