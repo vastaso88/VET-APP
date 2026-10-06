@@ -46,45 +46,56 @@ export default async function OverviewPage() {
         ))}
       </div>
 
-      <div className="two-column">
-        <section className="panel kpi-detail-panel">
-          <div className="panel-heading">
-            <div>
-              <p className="eyebrow">Users KPI</p>
-              <h2>Account detail</h2>
-            </div>
-          </div>
-          <div className="mini-kpi-grid">
-            <div><span>Auth accounts</span><strong>{overview.user_details.auth_accounts}</strong></div>
-            <div><span>Owner profiles</span><strong>{overview.user_details.profiles}</strong></div>
-            <div><span>Geolocated</span><strong>{overview.user_details.geolocated}</strong></div>
-            <div><span>With pets</span><strong>{overview.user_details.with_pets}</strong></div>
-            <div><span>New 7d</span><strong>{overview.user_details.new_7d}</strong></div>
-            <div><span>New 30d</span><strong>{overview.user_details.new_30d}</strong></div>
-          </div>
-        </section>
-
-        <section className="panel kpi-detail-panel">
-          <div className="panel-heading">
-            <div>
-              <p className="eyebrow">Pets KPI</p>
-              <h2>Pet detail</h2>
-            </div>
-          </div>
-          <div className="mini-kpi-grid">
-            <div><span>Total</span><strong>{overview.pet_details.total}</strong></div>
-            <div><span>Active flag</span><strong>{overview.pet_details.active}</strong></div>
-            <div><span>Exotic</span><strong>{overview.pet_details.exotic}</strong></div>
-            <div><span>Memorial</span><strong>{overview.pet_details.memorial}</strong></div>
-            {Object.entries(overview.pet_details.species).map(([species, count]) => (
-              <div key={species}>
-                <span>{speciesLabels[species] ?? species}</span>
-                <strong>{count}</strong>
+      {overview.detail_available ? (
+        <div className="two-column">
+          <section className="panel kpi-detail-panel">
+            <div className="panel-heading">
+              <div>
+                <p className="eyebrow">Users KPI</p>
+                <h2>Account detail</h2>
               </div>
-            ))}
-          </div>
+            </div>
+            <div className="mini-kpi-grid">
+              <div><span>Auth accounts</span><strong>{overview.user_details.auth_accounts}</strong></div>
+              <div><span>Owner profiles</span><strong>{overview.user_details.profiles}</strong></div>
+              <div><span>Geolocated</span><strong>{overview.user_details.geolocated}</strong></div>
+              <div><span>With pets</span><strong>{overview.user_details.with_pets}</strong></div>
+              <div><span>New 7d</span><strong>{overview.user_details.new_7d}</strong></div>
+              <div><span>New 30d</span><strong>{overview.user_details.new_30d}</strong></div>
+            </div>
+          </section>
+
+          <section className="panel kpi-detail-panel">
+            <div className="panel-heading">
+              <div>
+                <p className="eyebrow">Pets KPI</p>
+                <h2>Pet detail</h2>
+              </div>
+            </div>
+            <div className="mini-kpi-grid">
+              <div><span>Total</span><strong>{overview.pet_details.total}</strong></div>
+              <div><span>Active flag</span><strong>{overview.pet_details.active}</strong></div>
+              <div><span>Exotic</span><strong>{overview.pet_details.exotic}</strong></div>
+              <div><span>Memorial</span><strong>{overview.pet_details.memorial}</strong></div>
+              {Object.entries(overview.pet_details.species).map(([species, count]) => (
+                <div key={species}>
+                  <span>{speciesLabels[species] ?? species}</span>
+                  <strong>{count}</strong>
+                </div>
+              ))}
+            </div>
+          </section>
+        </div>
+      ) : (
+        <section className="panel">
+          <p className="eyebrow">Detailed KPI</p>
+          <h2>Backend update pending</h2>
+          <p className="muted">
+            The top-level counters remain live. User and pet detail palettes will activate
+            automatically as soon as the matching backend deployment is available.
+          </p>
         </section>
-      </div>
+      )}
 
       <div className="two-column wide-left">
         <section className="panel">
