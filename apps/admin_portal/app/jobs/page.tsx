@@ -156,8 +156,7 @@ export default async function JobsPage() {
         </div>
 
         <p className="muted">
-          Due schedules are claimed atomically from Supabase and executed by the hourly
-          GitHub scheduler runner. "Run now" moves the next run to the next scheduler tick.
+          Due schedules are claimed atomically from Supabase and executed by the hourly GitHub runner. "Run now" executes the selected schedule immediately and resets its next recurrence.
         </p>
       </section>
 
