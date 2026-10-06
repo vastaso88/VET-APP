@@ -1,7 +1,34 @@
+import json
 from functools import lru_cache
+from typing import Annotated, Any
 
-from pydantic import Field, model_validator
-from pydantic_settings import BaseSettings, SettingsConfigDict
+from pydantic import BeforeValidator, Field, model_validator
+from pydantic_settings import BaseSettings, NoDecode, SettingsConfigDict
+
+
+def _string_list(value: Any) -> Any:
+    """A list setting from the environment: a JSON array (["a", "b"]) or plain
+    text separated by commas ("a, b"). Spaces are trimmed and empty items
+    dropped. pydantic-settings alone only understands JSON, and a plain
+    "a@b.it" in an env var made Settings() raise at import, taking the whole
+    serverless function down (2026-10-06)."""
+    if not isinstance(value, str):
+        return value
+    text = value.strip()
+    if text.startswith("["):
+        try:
+            parsed = json.loads(text)
+        except ValueError:
+            parsed = None
+        if isinstance(parsed, list):
+            return [str(item).strip() for item in parsed if str(item).strip()]
+        text = text.strip("[]")
+    parts = (part.strip().strip("\"'").strip() for part in text.split(","))
+    return [item for item in parts if item]
+
+
+# NoDecode: hand the raw env text to the validator above instead of JSON-decoding it.
+StringList = Annotated[list[str], NoDecode, BeforeValidator(_string_list)]
 
 
 class Settings(BaseSettings):
@@ -29,11 +56,11 @@ class Settings(BaseSettings):
     # (packages/core/application/services/get_or_create_subscription.py).
     # No default on purpose: these are real personal addresses, set via
     # DEVELOPER_EMAILS in .env (comma-separated), never hardcoded in source.
-    developer_emails: list[str] = Field(default=[], alias="DEVELOPER_EMAILS")
+    developer_emails: StringList = Field(default=[], alias="DEVELOPER_EMAILS")
     # Backoffice allowlist. When empty, admin endpoints fall back to
     # DEVELOPER_EMAILS so existing founder/developer accounts can be reused
     # without hardcoding personal addresses in source control.
-    admin_emails: list[str] = Field(default=[], alias="ADMIN_EMAILS")
+    admin_emails: StringList = Field(default=[], alias="ADMIN_EMAILS")
     # Secret key for the pseudonym stored in place of the reporter's id on
     # chat response reports. Changing it orphans existing pseudonyms (no
     # more dedup/erasure match for old rows), so set it once and keep it.
@@ -79,7 +106,7 @@ class Settings(BaseSettings):
         default="https://overpass-api.de/api/interpreter", alias="OVERPASS_BASE_URL"
     )
     # Tried in order when the main interpreter is overloaded (429/504).
-    overpass_fallback_urls: list[str] = Field(
+    overpass_fallback_urls: StringList = Field(
         default=[
             "https://overpass.private.coffee/api/interpreter",
             "https://overpass.kumi.systems/api/interpreter",
@@ -116,7 +143,7 @@ class Settings(BaseSettings):
     # Days after which a report nobody confirmed even once is dropped.
     radar_report_expiry_days: int = Field(default=7, ge=1, alias="RADAR_REPORT_EXPIRY_DAYS")
     # Categories that can be reported as missing (a JSON list in env).
-    radar_report_place_types: list[str] = Field(
+    radar_report_place_types: StringList = Field(
         default=["veterinary", "grooming", "shop", "hotel", "dog_park"],
         alias="RADAR_REPORT_PLACE_TYPES",
     )
@@ -134,7 +161,7 @@ class Settings(BaseSettings):
     radar_reports_enabled: bool = Field(default=True, alias="RADAR_REPORTS_ENABLED")
     radar_report_closed_enabled: bool = Field(default=True, alias="RADAR_REPORT_CLOSED_ENABLED")
     radar_ratings_enabled: bool = Field(default=True, alias="RADAR_RATINGS_ENABLED")
-    radar_open_sources: list[str] = Field(default=["*"], alias="RADAR_OPEN_SOURCES")
+    radar_open_sources: StringList = Field(default=["*"], alias="RADAR_OPEN_SOURCES")
     # Where a business owner or a user can ask for a correction or the
     # removal of a place. Shown publicly in the app; empty hides it.
     support_contact_email: str = Field(default="vastaso88@gmail.com", alias="SUPPORT_CONTACT_EMAIL")
@@ -163,7 +190,7 @@ class Settings(BaseSettings):
     # adding a locale later is a config change, not a core-engine rewrite.
     locale: str = Field(default="it-IT", alias="LOCALE")
     response_language: str = Field(default="it", alias="RESPONSE_LANGUAGE")
-    retrieval_languages: list[str] = Field(default=["en", "it"], alias="RETRIEVAL_LANGUAGES")
+    retrieval_languages: StringList = Field(default=["en", "it"], alias="RETRIEVAL_LANGUAGES")
 
     def reporter_pseudonym_secret(self) -> str:
         """The dedicated salt when configured; otherwise the Supabase
