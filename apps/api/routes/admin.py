@@ -1,6 +1,7 @@
 from typing import Any
 
 from fastapi import APIRouter, HTTPException, status
+from postgrest.types import CountMethod
 
 from apps.api.dependencies.container import get_container
 from packages.infrastructure.persistence.supabase.client import build_supabase_client
@@ -74,22 +75,22 @@ def admin_overview() -> dict[str, object]:
     client = build_supabase_client(settings)
 
     users = _count_auth_users(client)
-    pets = _count_rows(client.table("pet_profiles").select("id", count="exact"))
-    conversations = _count_rows(client.table("conversations").select("id", count="exact"))
-    radar_osm = _count_rows(client.table("radar_places_osm").select("id", count="exact"))
-    radar_open = _count_rows(client.table("radar_places_open").select("id", count="exact"))
+    pets = _count_rows(client.table("pet_profiles").select("id", count=CountMethod.exact))
+    conversations = _count_rows(client.table("conversations").select("id", count=CountMethod.exact))
+    radar_osm = _count_rows(client.table("radar_places_osm").select("id", count=CountMethod.exact))
+    radar_open = _count_rows(client.table("radar_places_open").select("id", count=CountMethod.exact))
     radar_reports = _count_rows(
-        client.table("radar_user_reports").select("id", count="exact").eq("status", "pending")
+        client.table("radar_user_reports").select("id", count=CountMethod.exact).eq("status", "pending")
     )
     chat_reports = _count_rows(
         client.table("chat_response_reports")
-        .select("id", count="exact")
+        .select("id", count=CountMethod.exact)
         .eq("status", "reported")
     )
     marketplace_reports = _count_rows(
-        client.table("marketplace_listing_reports").select("id", count="exact")
+        client.table("marketplace_listing_reports").select("id", count=CountMethod.exact)
     )
-    scrape_runs = _count_rows(client.table("scrape_runs").select("id", count="exact"))
+    scrape_runs = _count_rows(client.table("scrape_runs").select("id", count=CountMethod.exact))
 
     sources_response = (
         client.table("data_sources")
