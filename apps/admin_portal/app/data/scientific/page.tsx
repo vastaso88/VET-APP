@@ -1,48 +1,21 @@
 import { AdminShell } from "../../../components/admin-shell";
+import { ScientificDiscoveryPanel } from "../../../components/scientific-discovery-panel";
 
-const upstream = [
-  ["Europe PMC", "Discovery + literature", "Available"],
-  ["PubMed", "Biomedical metadata", "Available"],
-  ["Crossref", "DOI metadata", "Available"],
-  ["OpenAlex", "Bibliographic enrichment", "Available"],
-];
-
-export default function ScientificDataPage() {
+export default async function ScientificDataPage() {
   return (
     <AdminShell title="Scientific data" eyebrow="Knowledge operations">
-      <div className="two-column wide-left">
-        <section className="panel">
-          <div className="panel-heading">
-            <div>
-              <p className="eyebrow">Upstream</p>
-              <h2>Evidence sources</h2>
-            </div>
-            <button className="primary-button" disabled>Discover papers</button>
-          </div>
-          <div className="data-table scientific-table">
-            <div className="table-row table-head">
-              <span>Provider</span><span>Role</span><span>Status</span>
-            </div>
-            {upstream.map((row) => (
-              <div className="table-row" key={row[0]}>
-                {row.map((cell) => <span key={cell}>{cell}</span>)}
-              </div>
-            ))}
-          </div>
-        </section>
+      <ScientificDiscoveryPanel />
 
-        <section className="panel">
-          <p className="eyebrow">Pipeline</p>
-          <h2>Scientific ingestion</h2>
-          <ol className="pipeline">
-            <li>Discover</li>
-            <li>Normalize + deduplicate</li>
-            <li>Integrity / quality evaluation</li>
-            <li>Species + clinical classification</li>
-            <li>Index for retrieval</li>
-          </ol>
-        </section>
-      </div>
+      <section className="panel">
+        <p className="eyebrow">Current boundary</p>
+        <h2>Discovery is real; persistence is not wired yet</h2>
+        <p className="muted">
+          The query above uses the backend evidence retriever currently configured for the
+          application. Results are retrieved, deduplicated and ranked by the existing evidence
+          pipeline. This page does not claim that a paper is ingested into the database until a
+          scientific document store is added.
+        </p>
+      </section>
     </AdminShell>
   );
 }
