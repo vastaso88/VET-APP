@@ -30,6 +30,7 @@ export type ScrapeRunSummary = {
 };
 
 export type AdminOverview = {
+  detail_available: boolean;
   metrics: {
     users: number;
     pets: number;
@@ -170,6 +171,7 @@ export type GeographicUser = {
 };
 
 export type AdminGeographicData = {
+  users_available: boolean;
   counts: {
     osm: number;
     open: number;
@@ -300,6 +302,7 @@ export type ScientificRegistry = {
 };
 
 export type ScientificCatalog = {
+  governance_available: boolean;
   metrics: {
     trusted_domains: number;
     documents: number;
@@ -443,12 +446,52 @@ export async function requireAdminSession(): Promise<AdminUser> {
 
 export async function getAdminOverview(): Promise<AdminOverview> {
   await requireAdminSession();
-  return authenticatedAdminRequest<AdminOverview>("/admin/overview");
+  const payload = await authenticatedAdminRequest<Omit<AdminOverview, "detail_available"> & {
+    user_details?: AdminOverview["user_details"];
+    pet_details?: AdminOverview["pet_details"];
+  }>("/admin/overview");
+  const detailAvailable = Boolean(payload.user_details && payload.pet_details);
+  return {
+    ...payload,
+    detail_available: detailAvailable,
+    user_details: payload.user_details ?? {
+      auth_accounts: payload.metrics.users,
+      profiles: 0,
+      geolocated: 0,
+      with_pets: 0,
+      new_7d: 0,
+      new_30d: 0,
+    },
+    pet_details: payload.pet_details ?? {
+      total: payload.metrics.pets,
+      active: 0,
+      exotic: 0,
+      memorial: 0,
+      species: {},
+    },
+  };
 }
 
 export async function getAdminModeration(): Promise<AdminModeration> {
   await requireAdminSession();
-  return authenticatedAdminRequest<AdminModeration>("/admin/moderation");
+  const payload = await authenticatedAdminRequest<AdminModeration>("/admin/moderation");
+  return {
+    radar: payload.radar.map((item) => ({
+      ...item,
+      admin_resolution_note: item.admin_resolution_note ?? null,
+      resolved_by_admin_id: item.resolved_by_admin_id ?? null,
+    })),
+    chat: payload.chat,
+    marketplace: payload.marketplace.map((item) => ({
+      ...item,
+      status: item.status ?? "open",
+      reporter_owner_id: item.reporter_owner_id ?? null,
+      resolution_action: item.resolution_action ?? null,
+      resolution_note: item.resolution_note ?? null,
+      resolved_at: item.resolved_at ?? null,
+      resolved_by_admin_id: item.resolved_by_admin_id ?? null,
+    })),
+  };
 }
 
 export async function resolveChatModeration(
@@ -468,7 +511,14 @@ export async function resolveChatModeration(
 
 export async function getAdminGeographic(): Promise<AdminGeographicData> {
   await requireAdminSession();
-  return authenticatedAdminRequest<AdminGeographicData>("/admin/geographic");
+  const payload = await authenticatedAdminRequest<Omit<AdminGeographicData, "users_available"> & {
+    users?: GeographicUser[];
+  }>("/admin/geographic");
+  return {
+    ...payload,
+    users_available: Array.isArray(payload.users),
+    users: payload.users ?? [],
+  };
 }
 
 export async function previewGeographicIngestion(
@@ -522,7 +572,16 @@ export async function discoverScientificEvidence(input: {
 
 export async function getScientificCatalog(): Promise<ScientificCatalog> {
   await requireAdminSession();
-  return authenticatedAdminRequest<ScientificCatalog>("/admin/scientific");
+  const payload = await authenticatedAdminRequest<Omit<ScientificCatalog, "governance_available"> & {
+    trusted_domains?: ScientificTrustedDomain[];
+    registries?: ScientificRegistry[];
+  }>("/admin/scientific");
+  return {
+    ...payload,
+    governance_available: Array.isArray(payload.trusted_domains),
+    trusted_domains: payload.trusted_domains ?? [],
+    registries: payload.registries ?? [],
+  };
 }
 
 export async function ingestScientificEvidence(input: {
@@ -545,11 +604,16 @@ export async function ingestScientificEvidence(input: {
 export async function getModerationDetail(
   queue: "radar" | "chat" | "marketplace",
   itemId: string,
-): Promise<ModerationDetail> {
+): Promise<ModerationDetail | null> {
   await requireAdminSession();
-  return authenticatedAdminRequest<ModerationDetail>(
-    `/admin/moderation/${queue}/${encodeURIComponent(itemId)}`,
-  );
+  try {
+    return await authenticatedAdminRequest<ModerationDetail>(
+      `/admin/moderation/${queue}/${encodeURIComponent(itemId)}`,
+    );
+  } catch (error) {
+    if (error instanceof Error && error.message.includes("(404)")) return null;
+    throw error;
+  }
 }
 
 export async function resolveRadarModeration(
@@ -588,12 +652,22 @@ export async function resolveMarketplaceModeration(
   );
 }
 
-export async function getAdminSchedules(): Promise<AdminSchedule[]> {
+export async function getAdminSchedules(): Promise<{
+  available: boolean;
+  schedules: AdminSchedule[];
+}> {
   await requireAdminSession();
-  const payload = await authenticatedAdminRequest<{ schedules: AdminSchedule[] }>(
-    "/admin/schedules",
-  );
-  return payload.schedules;
+  try {
+    const payload = await authenticatedAdminRequest<{ schedules: AdminSchedule[] }>(
+      "/admin/schedules",
+    );
+    return { available: true, schedules: payload.schedules };
+  } catch (error) {
+    if (error instanceof Error && error.message.includes("(404)")) {
+      return { available: false, schedules: [] };
+    }
+    throw error;
+  }
 }
 
 export async function createAdminSchedule(input: {

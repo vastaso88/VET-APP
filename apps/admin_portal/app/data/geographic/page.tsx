@@ -50,6 +50,11 @@ export default async function GeographicDataPage() {
           User pins are shown over the global map. Coverage areas use five freshness bands:
           green is recent, red is obsolete; fills are rendered at 30% opacity.
         </p>
+        {!geographic.users_available ? (
+          <div className="operation-result-message">
+            Coverage is live. User pins will appear automatically when the updated backend is deployed.
+          </div>
+        ) : null}
         <GeographicWorldMap users={geographic.users} coverage={geographic.coverage} />
       </section>
 

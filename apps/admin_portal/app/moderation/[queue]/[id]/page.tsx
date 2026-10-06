@@ -39,6 +39,25 @@ export default async function ModerationDetailPage({
     queue as "radar" | "chat" | "marketplace",
     id,
   );
+
+  if (!detail) {
+    return (
+      <AdminShell title="Moderation detail" eyebrow={queue}>
+        <div>
+          <Link className="table-action-link" href="/moderation">← Back to moderation</Link>
+        </div>
+        <section className="panel">
+          <p className="eyebrow">Backend update pending</p>
+          <h2>Detail actions are temporarily unavailable</h2>
+          <p className="muted">
+            The moderation queue remains readable. This detail endpoint will activate
+            automatically when the matching backend deployment is available.
+          </p>
+        </section>
+      </AdminShell>
+    );
+  }
+
   const item = detail.item;
   const listing =
     queue === "marketplace" && item.listing && typeof item.listing === "object"
