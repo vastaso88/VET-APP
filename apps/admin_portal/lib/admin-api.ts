@@ -53,9 +53,24 @@ export function apiBaseUrl(): string {
   const configured = process.env.VET_API_BASE_URL?.trim();
   if (configured) return configured.replace(/\/$/, "");
 
-  // Existing backend alias already referenced by the repository config.
-  // Override with VET_API_BASE_URL on Vercel if the backend alias changes.
   return "https://vet-app-psi-nine.vercel.app";
+}
+
+export function supabaseUrl(): string {
+  const configured =
+    process.env.ADMIN_SUPABASE_URL?.trim() ??
+    process.env.NEXT_PUBLIC_SUPABASE_URL?.trim();
+  if (configured) return configured.replace(/\/$/, "");
+
+  return "https://ywbuzgwbkrmkukkpysbz.supabase.co";
+}
+
+export function supabasePublishableKey(): string {
+  return (
+    process.env.ADMIN_SUPABASE_PUBLISHABLE_KEY?.trim() ??
+    process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY?.trim() ??
+    "sb_publishable_t5vFAehg91FYPh_rFLOiUQ_Wv9tFh5m"
+  );
 }
 
 async function tokenFromCookie(): Promise<string | null> {
