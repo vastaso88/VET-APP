@@ -1019,33 +1019,86 @@ def admin_schedule_action(
     schedule_id: str,
     request: AdminScheduleActionRequest,
 ) -> dict[str, object]:
-    _require_admin()
+    admin = _require_admin()
     client = _admin_client()
 
     if request.action == "delete":
         client.table("admin_ingestion_schedules").delete().eq("id", schedule_id).execute()
         return {"deleted": True}
 
-    update: dict[str, object] = {}
-    if request.action == "enable":
-        update = {"enabled": True, "locked_at": None}
-    elif request.action == "disable":
-        update = {"enabled": False, "locked_at": None}
-    elif request.action == "run_now":
-        update = {
-            "enabled": True,
-            "next_run_at": datetime.now(UTC).isoformat(),
-            "locked_at": None,
-        }
+    if request.action in {"enable", "disable"}:
+        response = (
+            client.table("admin_ingestion_schedules")
+            .update(
+                {
+                    "enabled": request.action == "enable",
+                    "locked_at": None,
+                }
+            )
+            .eq("id", schedule_id)
+            .execute()
+        )
+        rows = getattr(response, "data", None) or []
+        return {"schedule": rows[0] if rows else None}
+
+    found = (
+        client.table("admin_ingestion_schedules")
+        .select("*")
+        .eq("id", schedule_id)
+        .limit(1)
+        .execute()
+    )
+    schedules = getattr(found, "data", None) or []
+    if not schedules:
+        raise HTTPException(status_code=404, detail="Schedule not found")
+    schedule = schedules[0]
+    now = datetime.now(UTC)
+    interval_hours = int(schedule["interval_hours"])
+    payload = dict(schedule.get("payload") or {})
+    engine = str(schedule["engine"])
+
+    try:
+        if engine == "geographic":
+            result = _execute_geographic_ingestion(
+                GeographicIngestionRequest(**payload),
+                actor_id=admin.id,
+            )
+        elif engine == "scientific":
+            result = _execute_scientific_ingestion(
+                ScientificDiscoveryRequest(**payload),
+                actor_id=admin.id,
+            )
+        else:
+            raise ValueError(f"Unsupported engine: {engine}")
+    except Exception as exc:
+        client.table("admin_ingestion_schedules").update(
+            {
+                "last_run_at": now.isoformat(),
+                "last_status": "failed",
+                "last_error": str(exc)[:2000],
+                "locked_at": None,
+            }
+        ).eq("id", schedule_id).execute()
+        raise
 
     response = (
         client.table("admin_ingestion_schedules")
-        .update(update)
+        .update(
+            {
+                "enabled": True,
+                "last_run_at": now.isoformat(),
+                "last_status": "completed",
+                "last_error": None,
+                "last_job_id": result.get("job_id"),
+                "next_run_at": (now + timedelta(hours=interval_hours)).isoformat(),
+                "locked_at": None,
+            }
+        )
         .eq("id", schedule_id)
         .execute()
     )
     rows = getattr(response, "data", None) or []
-    return {"schedule": rows[0] if rows else None}
+    return {"schedule": rows[0] if rows else None, "result": result}
 
 
 def _require_scheduler_token(value: str | None) -> None:
