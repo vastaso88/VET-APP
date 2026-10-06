@@ -1,6 +1,8 @@
+import hashlib
 from collections import Counter
 from datetime import UTC, datetime
 from typing import Any, Literal
+from urllib.parse import urlsplit
 from uuid import uuid4
 
 from fastapi import APIRouter, HTTPException, status
@@ -186,6 +188,83 @@ def _geographic_result_payload(
             }
             for place in places[:20]
         ],
+    }
+
+
+_SCIENTIFIC_DISCOVERY_HOSTS = frozenset(
+    {
+        "doi.org",
+        "europepmc.org",
+        "openalex.org",
+        "pmc.ncbi.nlm.nih.gov",
+        "pubmed.ncbi.nlm.nih.gov",
+    }
+)
+
+
+def _retrieve_scientific_evidence(request: ScientificDiscoveryRequest) -> tuple[Any, list[Any]]:
+    from packages.core.application.ports.evidence_retriever import (
+        EvidenceRetrievalRequest,
+    )
+
+    container = get_container()
+    evidence = container.evidence_retriever.retrieve(
+        EvidenceRetrievalRequest(
+            query=request.query,
+            species=request.species,
+            intent=request.intent,
+            max_results=request.max_results,
+        )
+    )
+    return container, evidence
+
+
+def _scientific_domain_host(source_url: str | None, doi: str | None, pmid: str | None) -> str | None:
+    host = ""
+    if source_url:
+        try:
+            host = (urlsplit(source_url).hostname or "").lower()
+        except ValueError:
+            host = ""
+    if host in _SCIENTIFIC_DISCOVERY_HOSTS:
+        return host
+    if pmid:
+        return "pubmed.ncbi.nlm.nih.gov"
+    if doi:
+        return "doi.org"
+    return None
+
+
+def _scientific_canonical_url(source_url: str | None, doi: str | None, pmid: str | None) -> str | None:
+    if doi:
+        normalized = doi.strip().lower()
+        for prefix in ("https://doi.org/", "http://doi.org/", "doi:"):
+            if normalized.startswith(prefix):
+                normalized = normalized.removeprefix(prefix)
+        if normalized:
+            return f"https://doi.org/{normalized}"
+    if pmid and pmid.strip():
+        return f"https://pubmed.ncbi.nlm.nih.gov/{pmid.strip()}/"
+    return source_url.strip() if source_url and source_url.strip() else None
+
+
+def _scientific_catalog_payload(client: Any, limit_count: int = 50) -> dict[str, object]:
+    response = client.rpc("admin_scientific_catalog", {"limit_count": limit_count}).execute()
+    data = getattr(response, "data", None)
+    if isinstance(data, dict):
+        return data
+    if isinstance(data, list) and data and isinstance(data[0], dict):
+        # Defensive compatibility for PostgREST/client versions that wrap a scalar JSON result.
+        return data[0]
+    return {
+        "metrics": {
+            "trusted_domains": 0,
+            "documents": 0,
+            "eligible_for_rag": 0,
+            "embedded": 0,
+            "chunks": 0,
+        },
+        "recent_documents": [],
     }
 
 
@@ -519,26 +598,134 @@ def admin_jobs() -> dict[str, object]:
     return {"jobs": getattr(response, "data", None) or []}
 
 
+@router.get("/scientific")
+def admin_scientific_catalog() -> dict[str, object]:
+    _require_admin()
+    return _scientific_catalog_payload(_admin_client())
+
+
 @router.post("/scientific/discover")
 def admin_scientific_discover(
     request: ScientificDiscoveryRequest,
 ) -> dict[str, object]:
     _require_admin()
-
-    from packages.core.application.ports.evidence_retriever import (
-        EvidenceRetrievalRequest,
-    )
-
-    container = get_container()
-    evidence = container.evidence_retriever.retrieve(
-        EvidenceRetrievalRequest(
-            query=request.query,
-            species=request.species,
-            intent=request.intent,
-            max_results=request.max_results,
-        )
-    )
+    container, evidence = _retrieve_scientific_evidence(request)
     return {
         "backend": container.settings.evidence_backend,
         "results": [item.model_dump(mode="json") for item in evidence],
+    }
+
+
+@router.post("/scientific/ingest")
+def admin_scientific_ingest(
+    request: ScientificDiscoveryRequest,
+) -> dict[str, object]:
+    admin = _require_admin()
+    client = _admin_client()
+    container, evidence = _retrieve_scientific_evidence(request)
+
+    job_id = str(uuid4())
+    now = datetime.now(UTC).isoformat()
+    query_key = hashlib.sha256(
+        f"{request.species}|{request.intent}|{request.query.strip().lower()}".encode("utf-8")
+    ).hexdigest()[:16]
+    coverage_key = f"scientific:{request.species}:{query_key}"
+    backend = container.settings.evidence_backend
+
+    client.table("scrape_runs").insert(
+        {
+            "id": job_id,
+            "job_id": job_id,
+            "engine": "scientific_papers",
+            "owner_id": admin.id,
+            "coverage_key": coverage_key,
+            "status": "running",
+            "source_names": [backend],
+            "place_count": 0,
+            "requested_at": now,
+            "started_at": now,
+            "created_at": now,
+            "updated_at": now,
+        }
+    ).execute()
+
+    rows: list[dict[str, object]] = []
+    for item in evidence:
+        canonical_url = _scientific_canonical_url(item.source_url, item.doi, item.pmid)
+        domain_host = _scientific_domain_host(item.source_url, item.doi, item.pmid)
+        if canonical_url is None or domain_host is None:
+            continue
+        rows.append(
+            {
+                "canonical_url": canonical_url,
+                "domain_host": domain_host,
+                "title": item.title,
+                "journal": item.journal,
+                "doi": item.doi,
+                "pmid": item.pmid,
+                "publication_year": item.year,
+                "species": item.species,
+                "clinical_domain": item.clinical_domain,
+                "reliability_tier": item.tier,
+                "summary": item.snippet,
+                "metadata": {
+                    "retrieval_backend": backend,
+                    "original_source_url": item.source_url,
+                    "access_depth": item.access_depth,
+                    "discovery_query": request.query,
+                    "discovery_intent": request.intent,
+                    "discovered_by_admin_id": admin.id,
+                },
+            }
+        )
+
+    try:
+        response = client.rpc(
+            "admin_ingest_scientific_documents",
+            {"payload": rows},
+        ).execute()
+        ingestion = getattr(response, "data", None)
+        if isinstance(ingestion, list) and ingestion and isinstance(ingestion[0], dict):
+            ingestion = ingestion[0]
+        if not isinstance(ingestion, dict):
+            ingestion = {
+                "inserted": 0,
+                "updated": 0,
+                "skipped": len(rows),
+                "documents": 0,
+            }
+    except Exception as exc:
+        finished = datetime.now(UTC).isoformat()
+        client.table("scrape_runs").update(
+            {
+                "status": "failed",
+                "error_message": str(exc)[:2000],
+                "finished_at": finished,
+                "updated_at": finished,
+            }
+        ).eq("id", job_id).execute()
+        raise HTTPException(
+            status_code=status.HTTP_502_BAD_GATEWAY,
+            detail=f"Scientific ingestion failed: {str(exc)[:500]}",
+        ) from exc
+
+    finished = datetime.now(UTC).isoformat()
+    client.table("scrape_runs").update(
+        {
+            "status": "completed",
+            "place_count": int(ingestion.get("inserted", 0)) + int(ingestion.get("updated", 0)),
+            "error_message": None,
+            "finished_at": finished,
+            "updated_at": finished,
+        }
+    ).eq("id", job_id).execute()
+
+    return {
+        "backend": backend,
+        "job_id": job_id,
+        "discovered": len(evidence),
+        "submitted": len(rows),
+        "ingestion": ingestion,
+        "results": [item.model_dump(mode="json") for item in evidence],
+        "catalog": _scientific_catalog_payload(client),
     }
