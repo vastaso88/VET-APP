@@ -209,9 +209,52 @@ export type ScientificEvidence = {
   source_url: string | null;
 };
 
+export type ScientificDocument = {
+  id: string;
+  title: string;
+  journal_name: string | null;
+  doi: string | null;
+  pmid: string | null;
+  publication_year: number | null;
+  reliability_tier: string;
+  eligible_for_rag: boolean;
+  embedding_status: string;
+  ingestion_status: string;
+  canonical_url: string;
+  species_tags: string[];
+  clinical_domain: string[];
+  created_at: string;
+  updated_at: string;
+  source_host: string;
+  source_name: string;
+};
+
+export type ScientificCatalog = {
+  metrics: {
+    trusted_domains: number;
+    documents: number;
+    eligible_for_rag: number;
+    embedded: number;
+    chunks: number;
+  };
+  recent_documents: ScientificDocument[];
+};
+
+export type ScientificIngestionSummary = {
+  inserted: number;
+  updated: number;
+  skipped: number;
+  documents: number;
+};
+
 export type ScientificDiscoveryResult = {
   backend: string;
   results: ScientificEvidence[];
+  job_id?: string;
+  discovered?: number;
+  submitted?: number;
+  ingestion?: ScientificIngestionSummary;
+  catalog?: ScientificCatalog;
 };
 
 export function apiBaseUrl(): string {
@@ -373,6 +416,28 @@ export async function discoverScientificEvidence(input: {
   await requireAdminSession();
   return authenticatedAdminRequest<ScientificDiscoveryResult>(
     "/admin/scientific/discover",
+    {
+      method: "POST",
+      body: JSON.stringify(input),
+    },
+  );
+}
+
+
+export async function getScientificCatalog(): Promise<ScientificCatalog> {
+  await requireAdminSession();
+  return authenticatedAdminRequest<ScientificCatalog>("/admin/scientific");
+}
+
+export async function ingestScientificEvidence(input: {
+  query: string;
+  species: string;
+  intent: string;
+  max_results: number;
+}): Promise<ScientificDiscoveryResult> {
+  await requireAdminSession();
+  return authenticatedAdminRequest<ScientificDiscoveryResult>(
+    "/admin/scientific/ingest",
     {
       method: "POST",
       body: JSON.stringify(input),
