@@ -3,13 +3,18 @@
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 
-import { ADMIN_COOKIE, apiBaseUrl } from "../../lib/admin-api";
+import {
+  ADMIN_COOKIE,
+  apiBaseUrl,
+  supabasePublishableKey,
+  supabaseUrl,
+} from "../../lib/admin-api";
 
-type LoginPayload = {
+type SupabaseLoginPayload = {
   access_token?: string;
-  user?: {
-    email?: string;
-  };
+  error?: string;
+  error_description?: string;
+  msg?: string;
 };
 
 function loginError(code: string): never {
@@ -22,22 +27,34 @@ export async function login(formData: FormData): Promise<void> {
 
   if (!email || !password) loginError("missing");
 
-  let response: Response;
+  let authResponse: Response;
   try {
-    response = await fetch(`${apiBaseUrl()}/auth/login`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json", Accept: "application/json" },
-      body: JSON.stringify({ email, password }),
-      cache: "no-store",
-    });
+    authResponse = await fetch(
+      `${supabaseUrl()}/auth/v1/token?grant_type=password`,
+      {
+        method: "POST",
+        headers: {
+          apikey: supabasePublishableKey(),
+          "Content-Type": "application/json",
+          Accept: "application/json",
+        },
+        body: JSON.stringify({ email, password }),
+        cache: "no-store",
+      },
+    );
   } catch {
-    loginError("backend");
+    loginError("auth-service");
   }
 
-  if (!response.ok) loginError("invalid");
+  if (authResponse.status === 400 || authResponse.status === 401) {
+    loginError("invalid");
+  }
+  if (!authResponse.ok) {
+    loginError("auth-service");
+  }
 
-  const payload = (await response.json()) as LoginPayload;
-  if (!payload.access_token) loginError("invalid");
+  const payload = (await authResponse.json()) as SupabaseLoginPayload;
+  if (!payload.access_token) loginError("auth-service");
 
   let adminCheck: Response;
   try {
@@ -53,7 +70,9 @@ export async function login(formData: FormData): Promise<void> {
   }
 
   if (adminCheck.status === 503) loginError("not-configured");
-  if (!adminCheck.ok) loginError("forbidden");
+  if (adminCheck.status === 401) loginError("backend-auth");
+  if (adminCheck.status === 403) loginError("forbidden");
+  if (!adminCheck.ok) loginError("backend");
 
   const cookieStore = await cookies();
   cookieStore.set(ADMIN_COOKIE, payload.access_token, {

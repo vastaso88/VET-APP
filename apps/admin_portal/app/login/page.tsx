@@ -8,7 +8,9 @@ const messages: Record<string, string> = {
   invalid: "Credenziali non valide.",
   forbidden: "Questo account non è autorizzato ad accedere al backoffice.",
   "not-configured": "L'accesso admin non è ancora configurato sul backend.",
-  backend: "Backend non raggiungibile. Controlla VET_API_BASE_URL e il deploy API.",
+  "auth-service": "Supabase Auth non è raggiungibile o ha restituito un errore inatteso.",
+  "backend-auth": "Il backend non riconosce la sessione Supabase. Verifica che punti allo stesso progetto.",
+  backend: "Backend amministrativo non raggiungibile o in errore.",
 };
 
 export default async function LoginPage({
