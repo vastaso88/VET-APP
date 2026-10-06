@@ -132,7 +132,7 @@ export function GeographicWorldMap({
         });
       }
 
-      const legend = L.control({ position: "bottomright" });
+      const legend = new L.Control({ position: "bottomright" });
       legend.onAdd = () => {
         const node = L.DomUtil.create("div", "map-legend");
         const title = document.createElement("strong");
