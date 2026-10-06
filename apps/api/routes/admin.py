@@ -1,11 +1,12 @@
 import hashlib
+import hmac
 from collections import Counter
-from datetime import UTC, datetime
+from datetime import UTC, datetime, timedelta
 from typing import Any, Literal
 from urllib.parse import urlsplit
 from uuid import uuid4
 
-from fastapi import APIRouter, HTTPException, status
+from fastapi import APIRouter, Header, HTTPException, status
 from postgrest.types import CountMethod
 from pydantic import BaseModel, Field
 
@@ -43,6 +44,29 @@ class ScientificDiscoveryRequest(BaseModel):
         "preventive_care",
     ] = "clinical_question"
     max_results: int = Field(default=10, ge=1, le=20)
+
+
+class RadarModerationRequest(BaseModel):
+    action: Literal["confirm", "reject", "reopen"]
+    resolution_note: str | None = Field(default=None, max_length=1000)
+
+
+class MarketplaceModerationRequest(BaseModel):
+    action: Literal["remove_listing", "dismiss_report", "restore_listing", "reopen_report"]
+    resolution_note: str | None = Field(default=None, max_length=1000)
+
+
+class AdminScheduleRequest(BaseModel):
+    name: str = Field(min_length=2, max_length=120)
+    engine: Literal["geographic", "scientific"]
+    interval_hours: int = Field(ge=1, le=8760)
+    payload: dict[str, Any]
+    enabled: bool = True
+    run_immediately: bool = False
+
+
+class AdminScheduleActionRequest(BaseModel):
+    action: Literal["enable", "disable", "run_now", "delete"]
 
 
 def _configured_admin_emails() -> frozenset[str]:
@@ -85,8 +109,8 @@ def _count_rows(query: Any) -> int:
     return int(count or 0)
 
 
-def _count_auth_users(client: Any) -> int:
-    total = 0
+def _list_auth_users(client: Any) -> list[Any]:
+    all_users: list[Any] = []
     page = 1
     per_page = 1000
 
@@ -96,12 +120,48 @@ def _count_auth_users(client: Any) -> int:
             users = response
         else:
             users = getattr(response, "users", None) or []
-        total += len(users)
+        all_users.extend(users)
         if len(users) < per_page:
             break
         page += 1
 
-    return total
+    return all_users
+
+
+def _count_auth_users(client: Any) -> int:
+    return len(_list_auth_users(client))
+
+
+def _parse_datetime(value: Any) -> datetime | None:
+    if isinstance(value, datetime):
+        return value if value.tzinfo else value.replace(tzinfo=UTC)
+    if value is None:
+        return None
+    try:
+        return datetime.fromisoformat(str(value).replace("Z", "+00:00"))
+    except ValueError:
+        return None
+
+
+def _species_bucket(row: dict[str, Any]) -> str:
+    raw = str(row.get("species_group") or row.get("species") or "unknown").strip().lower()
+    aliases = {
+        "cane": "dog",
+        "dog": "dog",
+        "gatto": "cat",
+        "cat": "cat",
+        "uccello": "bird",
+        "bird": "bird",
+        "roditore": "small_mammal",
+        "rodent": "small_mammal",
+        "small_mammal": "small_mammal",
+        "rettile": "reptile_amphibian",
+        "reptile": "reptile_amphibian",
+        "reptile_amphibian": "reptile_amphibian",
+        "pesce": "fish",
+        "fish": "fish",
+    }
+    return aliases.get(raw, raw or "unknown")
 
 
 def _geographic_input(request: GeographicIngestionRequest) -> tuple[Any, float, float]:
@@ -272,6 +332,8 @@ def _scientific_catalog_payload(client: Any, limit_count: int = 50) -> dict[str,
             "embedded": 0,
             "chunks": 0,
         },
+        "trusted_domains": [],
+        "registries": [],
         "recent_documents": [],
     }
 
@@ -287,8 +349,45 @@ def admin_overview() -> dict[str, object]:
     _require_admin()
     client = _admin_client()
 
-    users = _count_auth_users(client)
-    pets = _count_rows(client.table("pet_profiles").select("id", count=CountMethod.exact))
+    auth_users = _list_auth_users(client)
+    users = len(auth_users)
+    auth_ids = {str(getattr(user, "id", "")) for user in auth_users if getattr(user, "id", None)}
+    now = datetime.now(UTC)
+
+    owner_profiles_response = (
+        client.table("owner_profiles")
+        .select("owner_id,city,latitude,longitude,created_at")
+        .execute()
+    )
+    owner_profiles = [
+        row
+        for row in (getattr(owner_profiles_response, "data", None) or [])
+        if str(row.get("owner_id")) in auth_ids
+    ]
+
+    pet_profiles_response = (
+        client.table("pet_profiles")
+        .select(
+            "id,owner_id,species,species_group,is_active,is_exotic,is_memorial"
+        )
+        .execute()
+    )
+    pet_rows = list(getattr(pet_profiles_response, "data", None) or [])
+    pet_owner_ids = {str(row.get("owner_id")) for row in pet_rows if row.get("owner_id")}
+
+    new_7d = 0
+    new_30d = 0
+    for user in auth_users:
+        created_at = _parse_datetime(getattr(user, "created_at", None))
+        if created_at is None:
+            continue
+        if created_at >= now - timedelta(days=7):
+            new_7d += 1
+        if created_at >= now - timedelta(days=30):
+            new_30d += 1
+
+    species_counts: Counter[str] = Counter(_species_bucket(row) for row in pet_rows)
+
     conversations = _count_rows(client.table("conversations").select("id", count=CountMethod.exact))
     radar_osm = _count_rows(client.table("radar_places_osm").select("id", count=CountMethod.exact))
     radar_open = _count_rows(
@@ -305,7 +404,9 @@ def admin_overview() -> dict[str, object]:
         .in_("status", ["reported", "under_review"])
     )
     marketplace_reports = _count_rows(
-        client.table("marketplace_listing_reports").select("id", count=CountMethod.exact)
+        client.table("marketplace_listing_reports")
+        .select("id", count=CountMethod.exact)
+        .eq("status", "open")
     )
     scrape_runs = _count_rows(client.table("scrape_runs").select("id", count=CountMethod.exact))
 
@@ -329,13 +430,32 @@ def admin_overview() -> dict[str, object]:
     return {
         "metrics": {
             "users": users,
-            "pets": pets,
+            "pets": len(pet_rows),
             "conversations": conversations,
             "radar_places": radar_osm + radar_open,
             "radar_osm": radar_osm,
             "radar_open": radar_open,
             "open_moderation": radar_reports + chat_reports + marketplace_reports,
             "scrape_runs": scrape_runs,
+        },
+        "user_details": {
+            "auth_accounts": users,
+            "profiles": len(owner_profiles),
+            "geolocated": sum(
+                1
+                for row in owner_profiles
+                if row.get("latitude") is not None and row.get("longitude") is not None
+            ),
+            "with_pets": len(auth_ids & pet_owner_ids),
+            "new_7d": new_7d,
+            "new_30d": new_30d,
+        },
+        "pet_details": {
+            "total": len(pet_rows),
+            "active": sum(1 for row in pet_rows if row.get("is_active") is True),
+            "exotic": sum(1 for row in pet_rows if row.get("is_exotic") is True),
+            "memorial": sum(1 for row in pet_rows if row.get("is_memorial") is True),
+            "species": dict(species_counts.most_common()),
         },
         "moderation": {
             "radar_reports": radar_reports,
@@ -356,7 +476,8 @@ def admin_moderation() -> dict[str, object]:
         client.table("radar_user_reports")
         .select(
             "id,kind,status,place_type,name,latitude,longitude,address_label,"
-            "target_source,target_source_id,confirmations,denials,created_at,resolved_at"
+            "target_source,target_source_id,confirmations,denials,created_at,resolved_at,"
+            "admin_resolution_note,resolved_by_admin_id"
         )
         .order("created_at", desc=True)
         .limit(100)
@@ -374,7 +495,10 @@ def admin_moderation() -> dict[str, object]:
     )
     marketplace_response = (
         client.table("marketplace_listing_reports")
-        .select("id,listing_id,reason,created_at")
+        .select(
+            "id,listing_id,reporter_owner_id,reason,created_at,status,resolution_action,"
+            "resolution_note,resolved_at,resolved_by_admin_id"
+        )
         .order("created_at", desc=True)
         .limit(100)
         .execute()
@@ -392,7 +516,10 @@ def admin_moderation() -> dict[str, object]:
     if listing_ids:
         listings_response = (
             client.table("marketplace_listings")
-            .select("id,title,status,report_count,category,city_label,created_at")
+            .select(
+                "id,owner_id,title,description,category,condition,price_cents,photo_urls,"
+                "latitude,longitude,city_label,status,report_count,created_at,updated_at"
+            )
             .in_("id", listing_ids)
             .execute()
         )
@@ -408,6 +535,70 @@ def admin_moderation() -> dict[str, object]:
         "chat": getattr(chat_response, "data", None) or [],
         "marketplace": marketplace_reports,
     }
+
+
+@router.get("/moderation/{queue}/{item_id}")
+def admin_moderation_detail(queue: str, item_id: str) -> dict[str, object]:
+    _require_admin()
+    client = _admin_client()
+
+    if queue == "radar":
+        response = (
+            client.table("radar_user_reports")
+            .select("*")
+            .eq("id", item_id)
+            .limit(1)
+            .execute()
+        )
+        rows = getattr(response, "data", None) or []
+        if not rows:
+            raise HTTPException(status_code=404, detail="Radar report not found")
+        votes = (
+            client.table("radar_report_votes")
+            .select("vote,created_at")
+            .eq("report_id", item_id)
+            .order("created_at", desc=True)
+            .execute()
+        )
+        return {"queue": queue, "item": rows[0], "votes": getattr(votes, "data", None) or []}
+
+    if queue == "chat":
+        response = (
+            client.table("chat_response_reports")
+            .select("*")
+            .eq("id", item_id)
+            .limit(1)
+            .execute()
+        )
+        rows = getattr(response, "data", None) or []
+        if not rows:
+            raise HTTPException(status_code=404, detail="Chat report not found")
+        return {"queue": queue, "item": rows[0]}
+
+    if queue == "marketplace":
+        response = (
+            client.table("marketplace_listing_reports")
+            .select("*")
+            .eq("id", item_id)
+            .limit(1)
+            .execute()
+        )
+        rows = getattr(response, "data", None) or []
+        if not rows:
+            raise HTTPException(status_code=404, detail="Marketplace report not found")
+        report = rows[0]
+        listing_response = (
+            client.table("marketplace_listings")
+            .select("*")
+            .eq("id", report["listing_id"])
+            .limit(1)
+            .execute()
+        )
+        listing_rows = getattr(listing_response, "data", None) or []
+        report["listing"] = listing_rows[0] if listing_rows else None
+        return {"queue": queue, "item": report}
+
+    raise HTTPException(status_code=404, detail="Unknown moderation queue")
 
 
 @router.post("/moderation/chat/{report_id}")
@@ -436,6 +627,166 @@ def admin_resolve_chat_report(
     }
 
 
+@router.post("/moderation/radar/{report_id}")
+def admin_resolve_radar_report(
+    report_id: str,
+    request: RadarModerationRequest,
+) -> dict[str, object]:
+    admin = _require_admin()
+    client = _admin_client()
+    response = (
+        client.table("radar_user_reports")
+        .select("*")
+        .eq("id", report_id)
+        .limit(1)
+        .execute()
+    )
+    rows = getattr(response, "data", None) or []
+    if not rows:
+        raise HTTPException(status_code=404, detail="Radar report not found")
+    report = rows[0]
+    now = datetime.now(UTC).isoformat()
+    override_reason = f"admin-report:{report_id}"
+
+    if request.action == "reopen":
+        client.table("radar_user_reports").update(
+            {
+                "status": "pending",
+                "resolved_at": None,
+                "admin_resolution_note": request.resolution_note,
+                "resolved_by_admin_id": admin.id,
+            }
+        ).eq("id", report_id).execute()
+        if report.get("target_source") and report.get("target_source_id"):
+            client.table("radar_place_overrides").delete().eq(
+                "source", report["target_source"]
+            ).eq("source_id", report["target_source_id"]).eq(
+                "reason", override_reason
+            ).execute()
+    else:
+        new_status = "confirmed" if request.action == "confirm" else "rejected"
+        client.table("radar_user_reports").update(
+            {
+                "status": new_status,
+                "resolved_at": now,
+                "admin_resolution_note": request.resolution_note,
+                "resolved_by_admin_id": admin.id,
+            }
+        ).eq("id", report_id).execute()
+        if request.action == "confirm" and report.get("kind") in {"closed", "duplicate"}:
+            if report.get("target_source") and report.get("target_source_id"):
+                client.table("radar_place_overrides").upsert(
+                    {
+                        "source": report["target_source"],
+                        "source_id": report["target_source_id"],
+                        "action": "exclude",
+                        "reason": override_reason,
+                        "place_type": report.get("place_type"),
+                        "latitude": report.get("latitude"),
+                        "longitude": report.get("longitude"),
+                    }
+                ).execute()
+
+    updated = (
+        client.table("radar_user_reports")
+        .select("*")
+        .eq("id", report_id)
+        .limit(1)
+        .execute()
+    )
+    return {"report": (getattr(updated, "data", None) or [report])[0]}
+
+
+@router.post("/moderation/marketplace/{report_id}")
+def admin_resolve_marketplace_report(
+    report_id: str,
+    request: MarketplaceModerationRequest,
+) -> dict[str, object]:
+    admin = _require_admin()
+    client = _admin_client()
+    response = (
+        client.table("marketplace_listing_reports")
+        .select("*")
+        .eq("id", report_id)
+        .limit(1)
+        .execute()
+    )
+    rows = getattr(response, "data", None) or []
+    if not rows:
+        raise HTTPException(status_code=404, detail="Marketplace report not found")
+    report = rows[0]
+    listing_id = str(report["listing_id"])
+    now = datetime.now(UTC).isoformat()
+
+    if request.action == "remove_listing":
+        client.table("marketplace_listings").update(
+            {"status": "removed", "updated_at": now}
+        ).eq("id", listing_id).execute()
+        report_update = {
+            "status": "resolved",
+            "resolution_action": "remove_listing",
+            "resolution_note": request.resolution_note,
+            "resolved_at": now,
+            "resolved_by_admin_id": admin.id,
+        }
+    elif request.action == "dismiss_report":
+        report_update = {
+            "status": "dismissed",
+            "resolution_action": "keep_listing",
+            "resolution_note": request.resolution_note,
+            "resolved_at": now,
+            "resolved_by_admin_id": admin.id,
+        }
+    elif request.action == "restore_listing":
+        client.table("marketplace_listings").update(
+            {"status": "active", "updated_at": now}
+        ).eq("id", listing_id).execute()
+        report_update = {
+            "status": "resolved",
+            "resolution_action": "restore_listing",
+            "resolution_note": request.resolution_note,
+            "resolved_at": now,
+            "resolved_by_admin_id": admin.id,
+        }
+    else:
+        report_update = {
+            "status": "open",
+            "resolution_action": None,
+            "resolution_note": request.resolution_note,
+            "resolved_at": None,
+            "resolved_by_admin_id": admin.id,
+        }
+
+    client.table("marketplace_listing_reports").update(report_update).eq(
+        "id", report_id
+    ).execute()
+
+    open_reports_response = (
+        client.table("marketplace_listing_reports")
+        .select("reporter_owner_id")
+        .eq("listing_id", listing_id)
+        .eq("status", "open")
+        .execute()
+    )
+    open_reporters = {
+        str(row["reporter_owner_id"])
+        for row in (getattr(open_reports_response, "data", None) or [])
+        if row.get("reporter_owner_id") is not None
+    }
+    client.table("marketplace_listings").update(
+        {"report_count": len(open_reporters), "updated_at": now}
+    ).eq("id", listing_id).execute()
+
+    updated = (
+        client.table("marketplace_listing_reports")
+        .select("*")
+        .eq("id", report_id)
+        .limit(1)
+        .execute()
+    )
+    return {"report": (getattr(updated, "data", None) or [report])[0]}
+
+
 @router.get("/geographic")
 def admin_geographic() -> dict[str, object]:
     _require_admin()
@@ -457,9 +808,30 @@ def admin_geographic() -> dict[str, object]:
             "place_count,refreshed_at,expires_at"
         )
         .order("refreshed_at", desc=True)
-        .limit(50)
+        .limit(500)
         .execute()
     )
+
+    auth_users = _list_auth_users(client)
+    auth_by_id = {
+        str(user.id): getattr(user, "email", None)
+        for user in auth_users
+        if getattr(user, "id", None)
+    }
+    users_response = (
+        client.table("owner_profiles")
+        .select("owner_id,city,address_label,latitude,longitude,created_at")
+        .limit(500)
+        .execute()
+    )
+    users = []
+    for row in getattr(users_response, "data", None) or []:
+        owner_id = str(row.get("owner_id"))
+        if owner_id not in auth_by_id:
+            continue
+        if row.get("latitude") is None or row.get("longitude") is None:
+            continue
+        users.append({**row, "email": auth_by_id[owner_id]})
 
     return {
         "counts": {
@@ -475,6 +847,7 @@ def admin_geographic() -> dict[str, object]:
         },
         "sources": getattr(sources_response, "data", None) or [],
         "coverage": getattr(coverage_response, "data", None) or [],
+        "users": users,
     }
 
 
@@ -506,11 +879,11 @@ def admin_geographic_preview(
     )
 
 
-@router.post("/geographic/execute")
-def admin_geographic_execute(
+def _execute_geographic_ingestion(
     request: GeographicIngestionRequest,
+    *,
+    actor_id: str,
 ) -> dict[str, object]:
-    admin = _require_admin()
     container = get_container()
     client = _admin_client()
     ingestion, search_radius, ingestion_radius = _geographic_input(request)
@@ -529,7 +902,7 @@ def admin_geographic_execute(
             "id": job_id,
             "job_id": job_id,
             "engine": "admin_places",
-            "owner_id": admin.id,
+            "owner_id": actor_id,
             "coverage_key": coverage_key,
             "status": "running",
             "search_radius_km": search_radius,
@@ -588,6 +961,14 @@ def admin_geographic_execute(
     return payload
 
 
+@router.post("/geographic/execute")
+def admin_geographic_execute(
+    request: GeographicIngestionRequest,
+) -> dict[str, object]:
+    admin = _require_admin()
+    return _execute_geographic_ingestion(request, actor_id=admin.id)
+
+
 @router.get("/jobs")
 def admin_jobs() -> dict[str, object]:
     _require_admin()
@@ -600,10 +981,211 @@ def admin_jobs() -> dict[str, object]:
             "error_message,requested_at,started_at,finished_at,created_at,updated_at"
         )
         .order("created_at", desc=True)
-        .limit(100)
+        .limit(250)
         .execute()
     )
     return {"jobs": getattr(response, "data", None) or []}
+
+
+def _validated_schedule_payload(engine: str, payload: dict[str, Any]) -> dict[str, Any]:
+    if engine == "geographic":
+        return GeographicIngestionRequest(**payload).model_dump(mode="json")
+    if engine == "scientific":
+        return ScientificDiscoveryRequest(**payload).model_dump(mode="json")
+    raise HTTPException(status_code=422, detail="Unsupported schedule engine")
+
+
+@router.get("/schedules")
+def admin_schedules() -> dict[str, object]:
+    _require_admin()
+    response = (
+        _admin_client().table("admin_ingestion_schedules")
+        .select("*")
+        .order("next_run_at")
+        .limit(100)
+        .execute()
+    )
+    return {"schedules": getattr(response, "data", None) or []}
+
+
+@router.post("/schedules")
+def admin_create_schedule(request: AdminScheduleRequest) -> dict[str, object]:
+    admin = _require_admin()
+    client = _admin_client()
+    payload = _validated_schedule_payload(request.engine, request.payload)
+    now = datetime.now(UTC)
+    next_run = now if request.run_immediately else now + timedelta(hours=request.interval_hours)
+    response = client.table("admin_ingestion_schedules").insert(
+        {
+            "name": request.name,
+            "engine": request.engine,
+            "enabled": request.enabled,
+            "interval_hours": request.interval_hours,
+            "payload": payload,
+            "next_run_at": next_run.isoformat(),
+            "created_by": admin.id,
+        }
+    ).execute()
+    rows = getattr(response, "data", None) or []
+    return {"schedule": rows[0] if rows else None}
+
+
+@router.post("/schedules/{schedule_id}")
+def admin_schedule_action(
+    schedule_id: str,
+    request: AdminScheduleActionRequest,
+) -> dict[str, object]:
+    admin = _require_admin()
+    client = _admin_client()
+
+    if request.action == "delete":
+        client.table("admin_ingestion_schedules").delete().eq("id", schedule_id).execute()
+        return {"deleted": True}
+
+    if request.action in {"enable", "disable"}:
+        response = (
+            client.table("admin_ingestion_schedules")
+            .update(
+                {
+                    "enabled": request.action == "enable",
+                    "locked_at": None,
+                }
+            )
+            .eq("id", schedule_id)
+            .execute()
+        )
+        rows = getattr(response, "data", None) or []
+        return {"schedule": rows[0] if rows else None}
+
+    found = (
+        client.table("admin_ingestion_schedules")
+        .select("*")
+        .eq("id", schedule_id)
+        .limit(1)
+        .execute()
+    )
+    schedules = getattr(found, "data", None) or []
+    if not schedules:
+        raise HTTPException(status_code=404, detail="Schedule not found")
+    schedule = schedules[0]
+    now = datetime.now(UTC)
+    interval_hours = int(schedule["interval_hours"])
+    payload = dict(schedule.get("payload") or {})
+    engine = str(schedule["engine"])
+
+    try:
+        if engine == "geographic":
+            result = _execute_geographic_ingestion(
+                GeographicIngestionRequest(**payload),
+                actor_id=admin.id,
+            )
+        elif engine == "scientific":
+            result = _execute_scientific_ingestion(
+                ScientificDiscoveryRequest(**payload),
+                actor_id=admin.id,
+            )
+        else:
+            raise ValueError(f"Unsupported engine: {engine}")
+    except Exception as exc:
+        client.table("admin_ingestion_schedules").update(
+            {
+                "last_run_at": now.isoformat(),
+                "last_status": "failed",
+                "last_error": str(exc)[:2000],
+                "locked_at": None,
+            }
+        ).eq("id", schedule_id).execute()
+        raise
+
+    response = (
+        client.table("admin_ingestion_schedules")
+        .update(
+            {
+                "enabled": True,
+                "last_run_at": now.isoformat(),
+                "last_status": "completed",
+                "last_error": None,
+                "last_job_id": result.get("job_id"),
+                "next_run_at": (now + timedelta(hours=interval_hours)).isoformat(),
+                "locked_at": None,
+            }
+        )
+        .eq("id", schedule_id)
+        .execute()
+    )
+    rows = getattr(response, "data", None) or []
+    return {"schedule": rows[0] if rows else None, "result": result}
+
+
+def _require_scheduler_token(value: str | None) -> None:
+    service_key = get_container().settings.supabase_service_role_key
+    if not service_key:
+        raise HTTPException(status_code=503, detail="Scheduler is not configured")
+    expected = hashlib.sha256(f"vetapp-admin-scheduler:{service_key}".encode()).hexdigest()
+    if not value or not hmac.compare_digest(value, expected):
+        raise HTTPException(status_code=403, detail="Invalid scheduler token")
+
+
+@router.post("/scheduler/tick")
+def admin_scheduler_tick(
+    x_vetapp_scheduler: str | None = Header(default=None, alias="X-VetApp-Scheduler"),
+) -> dict[str, object]:
+    _require_scheduler_token(x_vetapp_scheduler)
+    client = _admin_client()
+    claimed = client.rpc("admin_claim_due_schedules", {"limit_count": 1}).execute()
+    schedules = list(getattr(claimed, "data", None) or [])
+    outcomes: list[dict[str, object]] = []
+    now = datetime.now(UTC)
+
+    for schedule in schedules:
+        schedule_id = str(schedule["id"])
+        interval_hours = int(schedule["interval_hours"])
+        next_run = _parse_datetime(schedule.get("next_run_at")) or now
+        while next_run <= now:
+            next_run += timedelta(hours=interval_hours)
+
+        try:
+            engine = str(schedule["engine"])
+            payload = dict(schedule.get("payload") or {})
+            actor_id = f"schedule:{schedule_id}"
+            if engine == "geographic":
+                result = _execute_geographic_ingestion(
+                    GeographicIngestionRequest(**payload),
+                    actor_id=actor_id,
+                )
+            elif engine == "scientific":
+                result = _execute_scientific_ingestion(
+                    ScientificDiscoveryRequest(**payload),
+                    actor_id=actor_id,
+                )
+            else:
+                raise ValueError(f"Unsupported engine: {engine}")
+
+            job_id = str(result.get("job_id") or "")
+            client.table("admin_ingestion_schedules").update(
+                {
+                    "last_run_at": now.isoformat(),
+                    "last_status": "completed",
+                    "last_error": None,
+                    "last_job_id": job_id or None,
+                    "next_run_at": next_run.isoformat(),
+                    "locked_at": None,
+                }
+            ).eq("id", schedule_id).execute()
+            outcomes.append({"id": schedule_id, "status": "completed", "job_id": job_id})
+        except Exception as exc:
+            client.table("admin_ingestion_schedules").update(
+                {
+                    "last_run_at": now.isoformat(),
+                    "last_status": "failed",
+                    "last_error": str(exc)[:2000],
+                    "next_run_at": next_run.isoformat(),
+                    "locked_at": None,
+                }
+            ).eq("id", schedule_id).execute()
+            outcomes.append({"id": schedule_id, "status": "failed", "error": str(exc)[:500]})
+
+    return {"claimed": len(schedules), "outcomes": outcomes}
 
 
 @router.get("/scientific")
@@ -624,11 +1206,11 @@ def admin_scientific_discover(
     }
 
 
-@router.post("/scientific/ingest")
-def admin_scientific_ingest(
+def _execute_scientific_ingestion(
     request: ScientificDiscoveryRequest,
+    *,
+    actor_id: str,
 ) -> dict[str, object]:
-    admin = _require_admin()
     client = _admin_client()
     container, evidence = _retrieve_scientific_evidence(request)
 
@@ -645,7 +1227,7 @@ def admin_scientific_ingest(
             "id": job_id,
             "job_id": job_id,
             "engine": "scientific_papers",
-            "owner_id": admin.id,
+            "owner_id": actor_id,
             "coverage_key": coverage_key,
             "status": "running",
             "source_names": [backend],
@@ -682,7 +1264,7 @@ def admin_scientific_ingest(
                     "access_depth": item.access_depth,
                     "discovery_query": request.query,
                     "discovery_intent": request.intent,
-                    "discovered_by_admin_id": admin.id,
+                    "discovered_by_actor_id": actor_id,
                 },
             }
         )
@@ -737,3 +1319,12 @@ def admin_scientific_ingest(
         "results": [item.model_dump(mode="json") for item in evidence],
         "catalog": _scientific_catalog_payload(client),
     }
+
+
+@router.post("/scientific/ingest")
+def admin_scientific_ingest(
+    request: ScientificDiscoveryRequest,
+) -> dict[str, object]:
+    admin = _require_admin()
+    return _execute_scientific_ingestion(request, actor_id=admin.id)
+

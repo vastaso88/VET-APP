@@ -1,5 +1,6 @@
 import { AdminShell } from "../../../components/admin-shell";
 import { GeographicIngestionPanel } from "../../../components/geographic-ingestion-panel";
+import { GeographicWorldMap } from "../../../components/geographic-world-map";
 import { getAdminGeographic } from "../../../lib/admin-api";
 
 function formatNumber(value: number): string {
@@ -36,6 +37,21 @@ export default async function GeographicDataPage() {
           <small>radar_places_cache</small>
         </article>
       </div>
+
+      <section className="panel map-panel">
+        <div className="panel-heading">
+          <div>
+            <p className="eyebrow">World coverage</p>
+            <h2>Users + ingested zones</h2>
+          </div>
+          <span className="tag">{geographic.users.length} users · {geographic.coverage.length} cells</span>
+        </div>
+        <p className="muted">
+          User pins are shown over the global map. Coverage areas use five freshness bands:
+          green is recent, red is obsolete; fills are rendered at 30% opacity.
+        </p>
+        <GeographicWorldMap users={geographic.users} coverage={geographic.coverage} />
+      </section>
 
       <section className="panel">
         <div className="panel-heading">

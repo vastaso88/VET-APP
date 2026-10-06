@@ -37,6 +37,61 @@ export default async function ScientificDataPage() {
         </article>
       </div>
 
+      <section className="panel">
+        <div className="panel-heading">
+          <div>
+            <p className="eyebrow">Trusted source governance</p>
+            <h2>Trusted domains</h2>
+          </div>
+          <span className="tag">{catalog.trusted_domains.length} configured</span>
+        </div>
+
+        <div className="data-table trusted-domains-table">
+          <div className="table-row table-head">
+            <span>Domain</span>
+            <span>Role</span>
+            <span>Authority</span>
+            <span>Vet relevance</span>
+            <span>Policy</span>
+            <span>Direct ingest</span>
+            <span>Status</span>
+          </div>
+          {catalog.trusted_domains.map((domain) => (
+            <div className="table-row" key={domain.id}>
+              <span>
+                <strong>{domain.display_name}</strong>
+                <small>{domain.host}</small>
+                {domain.notes ? <small>{domain.notes}</small> : null}
+              </span>
+              <span>{domain.discovery_only ? "Discovery / ranking" : domain.source_kind}</span>
+              <span>{Number(domain.authority_score).toFixed(3)}</span>
+              <span>{Number(domain.veterinary_relevance_score).toFixed(3)}</span>
+              <span>{domain.evidence_policy}</span>
+              <span>{domain.allowed_for_direct_ingest ? "yes" : "no"}</span>
+              <span>{domain.is_active ? "active" : "disabled"}</span>
+            </div>
+          ))}
+        </div>
+
+        <details className="registry-details">
+          <summary>Ranking / registry inputs ({catalog.registries.length})</summary>
+          <div className="data-table registry-table">
+            <div className="table-row table-head">
+              <span>Registry</span><span>Kind</span><span>Metric</span><span>Weight</span><span>Status</span>
+            </div>
+            {catalog.registries.map((registry) => (
+              <div className="table-row" key={registry.registry_key}>
+                <span>{registry.display_name}</span>
+                <span>{registry.registry_kind}</span>
+                <span>{registry.metric_name}</span>
+                <span>{Number(registry.weight).toFixed(3)}</span>
+                <span>{registry.is_active ? "active" : "disabled"}</span>
+              </div>
+            ))}
+          </div>
+        </details>
+      </section>
+
       <ScientificDiscoveryPanel />
 
       <section className="panel">

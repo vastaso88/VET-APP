@@ -559,3 +559,355 @@ button, input, select { font: inherit; }
 .scientific-catalog-table .table-row {
   grid-template-columns: .8fr .4fr .5fr 2.4fr 1fr 1fr .4fr;
 }
+
+
+.mini-kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.mini-kpi-grid > div {
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 12px;
+  background: #fafbfc;
+}
+
+.mini-kpi-grid span,
+.mini-kpi-grid strong {
+  display: block;
+}
+
+.mini-kpi-grid span {
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.mini-kpi-grid strong {
+  margin-top: 6px;
+  font-size: 20px;
+}
+
+.moderation-live-table.moderation-with-action .table-row {
+  grid-template-columns: .8fr .8fr 1.4fr .7fr .7fr .45fr;
+}
+
+.chat-report-table .table-row {
+  grid-template-columns: .9fr 1fr .8fr 1.5fr .45fr;
+}
+
+.radar-report-table.moderation-with-action .table-row {
+  grid-template-columns: .9fr .7fr .7fr 1.2fr .6fr 1fr .45fr;
+}
+
+.table-action-link {
+  color: var(--accent);
+  font-weight: 800;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.detail-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.detail-grid > div {
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 12px;
+  min-width: 0;
+}
+
+.detail-grid span,
+.detail-grid strong {
+  display: block;
+}
+
+.detail-grid span {
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .04em;
+}
+
+.detail-grid strong {
+  margin-top: 6px;
+  font-size: 13px;
+  overflow-wrap: anywhere;
+}
+
+.detail-copy {
+  margin-top: 18px;
+}
+
+.detail-copy h3 {
+  margin: 0 0 8px;
+  font-size: 14px;
+}
+
+.compact-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.compact-list span {
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 6px 9px;
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.moderation-action-form {
+  display: grid;
+  gap: 14px;
+}
+
+.moderation-action-form label {
+  display: grid;
+  gap: 6px;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.moderation-action-form input {
+  width: 100%;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 9px 10px;
+  background: white;
+}
+
+.danger-button {
+  border: 1px solid #d7aaaa;
+  border-radius: 8px;
+  padding: 8px 11px;
+  background: #fff2f2;
+  color: #8b2222;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.geographic-world-map {
+  width: 100%;
+  height: 620px;
+  margin-top: 16px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  overflow: hidden;
+  background: #e9edf0;
+}
+
+.user-map-pin-shell {
+  background: transparent;
+  border: 0;
+}
+
+.user-map-pin {
+  position: relative;
+  display: block;
+  width: 20px;
+  height: 20px;
+  border-radius: 50% 50% 50% 0;
+  background: #243746;
+  border: 2px solid white;
+  transform: rotate(-45deg);
+  box-shadow: 0 2px 7px rgba(0,0,0,.28);
+}
+
+.user-map-pin::after {
+  content: "";
+  position: absolute;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: white;
+  top: 7px;
+  left: 7px;
+}
+
+.map-legend {
+  background: rgba(255,255,255,.94);
+  border: 1px solid #cad0d6;
+  border-radius: 8px;
+  padding: 9px 10px;
+  min-width: 150px;
+  font-size: 11px;
+  box-shadow: 0 3px 12px rgba(0,0,0,.12);
+}
+
+.map-legend > strong {
+  display: block;
+  margin-bottom: 6px;
+}
+
+.map-legend > div {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  margin: 4px 0;
+}
+
+.map-legend > div > span:first-child {
+  width: 16px;
+  height: 10px;
+  border-radius: 2px;
+  opacity: .72;
+}
+
+.legend-user-pin {
+  background: #243746 !important;
+  border-radius: 50% !important;
+  opacity: 1 !important;
+}
+
+.map-popup > div {
+  display: grid;
+  grid-template-columns: 74px 1fr;
+  gap: 8px;
+  margin: 4px 0;
+}
+
+.map-popup strong {
+  font-size: 11px;
+}
+
+.map-popup span {
+  font-size: 11px;
+  overflow-wrap: anywhere;
+}
+
+.trusted-domains-table .table-row {
+  grid-template-columns: 1.3fr 1fr .6fr .7fr 1fr .6fr .6fr;
+}
+
+.trusted-domains-table strong,
+.trusted-domains-table small,
+.schedule-table strong,
+.schedule-table small {
+  display: block;
+}
+
+.trusted-domains-table small,
+.schedule-table small {
+  margin-top: 3px;
+  color: var(--muted);
+  font-size: 10px;
+  overflow-wrap: anywhere;
+}
+
+.registry-details {
+  margin-top: 18px;
+}
+
+.registry-details summary {
+  cursor: pointer;
+  font-weight: 700;
+  font-size: 13px;
+  margin-bottom: 12px;
+}
+
+.registry-table .table-row {
+  grid-template-columns: 1.6fr 1fr 1fr .6fr .7fr;
+}
+
+.job-filters {
+  display: grid;
+  grid-template-columns: .8fr .8fr 1.5fr .8fr .8fr auto;
+  gap: 10px;
+  align-items: end;
+  margin-bottom: 12px;
+}
+
+.job-filters label,
+.scheduler-form label {
+  display: grid;
+  gap: 5px;
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.job-filters input,
+.job-filters select,
+.scheduler-form input,
+.scheduler-form select {
+  width: 100%;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 8px 9px;
+  background: white;
+  color: var(--text);
+}
+
+.filter-count {
+  margin-bottom: 9px;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.scheduler-form {
+  display: grid;
+  gap: 12px;
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  padding: 16px;
+}
+
+.scheduler-form h3 {
+  margin: 0;
+  font-size: 15px;
+}
+
+.scheduler-fields {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.checkbox-label {
+  display: flex !important;
+  grid-template-columns: auto 1fr;
+  align-items: center;
+  gap: 8px !important;
+}
+
+.checkbox-label input {
+  width: auto;
+}
+
+.schedule-table {
+  margin-top: 18px;
+}
+
+.schedule-table .table-row {
+  grid-template-columns: 1.3fr .7fr .5fr .9fr .9fr 1fr 1.4fr;
+}
+
+.schedule-actions {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+@media (max-width: 1200px) {
+  .mini-kpi-grid,
+  .detail-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .job-filters {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .geographic-world-map {
+    height: 500px;
+  }
+}
