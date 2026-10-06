@@ -12,7 +12,8 @@ class AuthPlaceholderPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return AuthScreenScaffold(
-      title: 'Vet-App: i tuoi pet a portata di zampa',
+      title: 'VetApp: i tuoi pet a portata di zampa',
+      allowBack: false,
       subtitle: 'Accedi al tuo account oppure creane uno nuovo in pochi secondi.',
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,

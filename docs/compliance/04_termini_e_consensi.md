@@ -47,7 +47,7 @@ Non è nella tripartizione sopra perché non è consenso al trattamento dati né
 ## Implementazione
 
 - `packages/core/domain/consent/models.py`: `ConsentRecord` (forma condivisa, già usata anche da `MedicalRecordConsentRecord`), `AccountConsentType` (chiavi + insiemi `MANDATORY`/`OPTIONAL`), `AccountConsents`.
-- `packages/core/domain/consent/account_consent_text.py`: testo e versione di ciascun consenso.
+- `packages/core/domain/consent/account_consent_text.py`: testo e versione di ciascun consenso. Ogni modifica sostanziale cambia la versione: il record conserva quella vista dall'utente. Oggi l'app non confronta la versione accettata con quella corrente e non chiede di riaccettare: chi ha accettato una versione precedente vede «Accettati vN» in Impostazioni e può continuare a usare l'app. Se una modifica richiederà una nuova accettazione servono due cose: «Da riconfermare» in Impostazioni (`_buildMandatoryConsentRow`, `settings_page.dart`) e, se l'accettazione è obbligatoria, un passaggio dopo l'accesso. La privacy è passata a v2 il 2026-10-06 senza riaccettazione: toglie una promessa falsa e aggiunge una sintesi, non cambia i trattamenti.
 - `packages/core/application/services/set_account_consent.py`: applica la regola "obbligatorio non è un toggle" lato server, non solo in UI.
 - Endpoint `GET/POST /account/consents` (`apps/api/routes/account_consents.py`).
 - Mobile: registrazione ([register_page.dart](../../apps/mobile_app/lib/features/auth/presentation/pages/register_page.dart)) registra ToS/Privacy dopo la creazione account; Impostazioni ([settings_page.dart](../../apps/mobile_app/lib/features/settings/presentation/pages/settings_page.dart)) mostra stato e permette di gestire marketing/analytics.

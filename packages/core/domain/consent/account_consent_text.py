@@ -11,7 +11,10 @@ from packages.core.domain.consent.models import AccountConsentType, ConsentCatal
 
 CURRENT_VERSIONS: dict[str, str] = {
     AccountConsentType.TERMS_OF_SERVICE: "v1",
-    AccountConsentType.PRIVACY_POLICY: "v1",
+    # v2 (2026-10-06): v1 promised a full notice "consultabile dalle
+    # Impostazioni" that does not exist; v2 says what is processed and that
+    # the full notice is still being written.
+    AccountConsentType.PRIVACY_POLICY: "v2",
     AccountConsentType.MARKETING_EMAIL: "v1",
     AccountConsentType.ANALYTICS: "v1",
     AccountConsentType.CONTRIBUTION_RULES: "v2",
@@ -25,12 +28,22 @@ CONSENT_TEXT_IT: dict[str, str] = {
         "dell'assistente non sostituiscono il parere di un veterinario. "
         "Senza questa accettazione non è possibile creare un account."
     ),
+    # A summary, not the full notice (art. 13 GDPR): it must stay true to what
+    # the app does today (see docs/compliance/09_informativa_privacy_bozza.md)
+    # and must not promise a page that does not exist.
     AccountConsentType.PRIVACY_POLICY: (
-        "Ti informiamo su quali dati raccogliamo, perché li trattiamo (per "
-        "gestire il tuo account, il profilo dei tuoi animali e le risposte "
-        "dell'assistente) e quali diritti puoi esercitare, in conformità al "
-        "GDPR. L'informativa completa resta consultabile in qualsiasi "
-        "momento dalle Impostazioni."
+        "In sintesi: per farti usare VetApp trattiamo i dati dell'account "
+        "(nome ed email), il profilo dei tuoi animali, i documenti e le foto "
+        "che carichi, le conversazioni con l'assistente e, se li attivi, la "
+        "tua posizione e i percorsi delle passeggiate. Quello che mandi "
+        "all'assistente (domande, allegati, messaggi vocali) viene inviato a "
+        "un fornitore esterno di intelligenza artificiale per scrivere le "
+        "risposte; la cartella clinica solo se lo consenti. I dati sono "
+        "conservati su servizi di terzi (hosting e database). Puoi chiedere "
+        "accesso, correzione o cancellazione dei tuoi dati scrivendo da "
+        "Impostazioni → Contattaci, e revocare in ogni momento i consensi "
+        "facoltativi dalle Impostazioni. L'informativa completa è in "
+        "preparazione."
     ),
     AccountConsentType.MARKETING_EMAIL: (
         "Con il tuo consenso, possiamo inviarti via email novità su VetApp "

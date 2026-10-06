@@ -10,7 +10,7 @@ La retrieval delle evidenze (`_evidence_retriever.retrieve(...)`) usa il testo o
 
 | Punto | Cosa passa dal filtro |
 |---|---|
-| [chat_orchestrator.py](../../packages/core/application/services/chat_orchestrator.py) `_anonymize_for_provider` | messaggio dell'utente, **turni precedenti della conversazione**, nome e note del pet, note dell'habitat, promemoria, riassunto della cartella clinica, testo passato all'estrazione del "situation model" |
+| [chat_orchestrator.py](../../packages/core/application/services/chat_orchestrator.py) `_anonymize_for_provider` | messaggio dell'utente, **turni precedenti della conversazione**, nome e note del pet, note dell'habitat, promemoria, riassunto della cartella clinica **nel prompt della risposta** (non nello stato della conversazione: vedi «Cosa NON copre»), messaggio e storico passati all'estrazione del "situation model" |
 | [document_summarizer.py](../../packages/core/application/services/document_summarizer.py) | testo estratto da un PDF, prima di inviarlo al modello |
 | [upload_chat_attachment.py](../../packages/core/application/services/upload_chat_attachment.py) | trascrizione di foto/PDF, prima di salvarla (è il testo che la chat rilegge in seguito) |
 | [report_chat_response.py](../../packages/core/application/services/report_chat_response.py) | risposta segnalata e dettagli della segnalazione, prima di salvarli |
@@ -36,5 +36,6 @@ Non tocca mai: dosaggi, date, valori di laboratorio, pesi, numeri di microchip.
 - Indirizzi senza numero civico o scritti tutti in minuscolo; telefoni esteri o in formati insoliti.
 - **Immagini e audio**: la foto di un referto inviata al modello di visione e l'audio inviato alla trascrizione partono così come sono; viene ripulito solo il testo che ne risulta.
 - Il nome del proprietario è rimosso solo se l'account ha un `display_name`.
+- **Il riassunto della cartella clinica nello stato della conversazione** (`SituationModel.known_medical_context`, salvato con la conversazione) è il testo originale, non filtrato (verificato il 2026-10-06). Lo ricevono così com'è due chiamate al fornitore esterno: l'estrazione del situation model (`situation_model_builder.py`, «Situation known so far») e il planner dell'intervista (`interview_planner.py`, «Case so far»). Il filtro è applicato solo al riassunto che entra nel prompt della risposta (`_medical_context_for_prompt`). Correzione proposta: anonimizzare il riassunto quando viene messo nello stato, in `chat_orchestrator.py` dove si costruisce `SituationModel(known_medical_context=...)` (due punti). Registro 08, punto 28.
 
 È un livello di riduzione del rischio, non una garanzia assoluta.

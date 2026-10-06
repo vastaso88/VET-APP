@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
 import '../../../../app/router/app_router.dart';
+import '../../../../app/shell/home_shell_page.dart';
 import '../../../../design_system/tokens/app_colors.dart';
 import '../../../../design_system/tokens/app_radii.dart';
 import '../../../../design_system/tokens/app_spacing.dart';
@@ -14,6 +15,8 @@ import '../../../../shared/widgets/coming_soon_page.dart';
 import '../../../account_consents/data/account_consents_remote_data_source.dart';
 import '../../../account_consents/domain/account_consent_models.dart';
 import '../../../auth/data/auth_repository_factory.dart';
+import 'package:permission_handler/permission_handler.dart';
+
 import '../../../billing/data/billing_demo_store.dart';
 import '../../../billing/presentation/pages/billing_page.dart';
 import '../../../location/data/address_geocoder.dart';
@@ -56,6 +59,54 @@ class _SettingsPageState extends State<SettingsPage> {
     unawaited(LayoutSettingsStore.instance.ensureLoaded());
     unawaited(_loadLocation());
     unawaited(_loadSupportContact());
+    unawaited(_loadNotificationPermission());
+    unawaited(BillingDemoStore.instance.syncFromBackend());
+    if (HomeShellNavigation.consumeLocationScroll()) {
+      WidgetsBinding.instance.addPostFrameCallback((_) => _scrollToLocation());
+    }
+    HomeShellNavigation.locationScrollRequests.addListener(_scrollToLocation);
+  }
+
+  @override
+  void dispose() {
+    HomeShellNavigation.locationScrollRequests.removeListener(_scrollToLocation);
+    super.dispose();
+  }
+
+  final _locationKey = GlobalKey();
+
+  void _scrollToLocation() {
+    if (!mounted) return;
+    HomeShellNavigation.consumeLocationScroll();
+    final context = _locationKey.currentContext;
+    if (context != null) {
+      Scrollable.ensureVisible(context, duration: const Duration(milliseconds: 300));
+    }
+  }
+
+  Future<void> _loadNotificationPermission() async {
+    try {
+      final status = await Permission.notification.status;
+      if (mounted) setState(() => _notifications = status.isGranted);
+    } catch (_) {}
+  }
+
+  Future<void> _setNotifications(bool value) async {
+    if (!value) {
+      // The OS only lets the owner revoke a notification permission from its
+      // own settings, so send them there rather than pretending it's off.
+      await openAppSettings();
+      return;
+    }
+    try {
+      final status = await Permission.notification.request();
+      if (mounted) setState(() => _notifications = status.isGranted);
+    } catch (_) {}
+  }
+
+  String _shortPlaceLabel(String label) {
+    final parts = label.split(',').map((part) => part.trim()).where((part) => part.isNotEmpty);
+    return parts.take(3).join(', ');
   }
 
   String? _supportContactEmail;
@@ -381,7 +432,9 @@ class _SettingsPageState extends State<SettingsPage> {
                 icon: Icons.workspace_premium_outlined,
                 iconColor: AppColors.accent,
                 title: 'Abbonamento e pagamenti',
-                trailingText: BillingDemoStore.instance.currentPlan.displayName,
+                trailingText: BillingDemoStore.instance.isOnTrial
+                    ? 'Prova · scade il ${DateFormat('dd/MM/yyyy').format(BillingDemoStore.instance.trialEndsAt!)}'
+                    : BillingDemoStore.instance.currentPlan.displayName,
                 onTap: _openBilling,
               ),
             ),
@@ -391,7 +444,7 @@ class _SettingsPageState extends State<SettingsPage> {
               iconColor: AppColors.primary,
               title: 'Notifiche push',
               value: _notifications,
-              onChanged: (value) => setState(() => _notifications = value),
+              onChanged: (value) => unawaited(_setNotifications(value)),
             ),
             _ToggleRow(
               icon: Icons.event_available_outlined,
@@ -435,7 +488,10 @@ class _SettingsPageState extends State<SettingsPage> {
               onSelectLeft: () => _updateLayout(layout.copyWith(listDensity: ListDensity.comfortable)),
               onSelectRight: () => _updateLayout(layout.copyWith(listDensity: ListDensity.compact)),
             ),
-            const _SectionLabel('Località'),
+            KeyedSubtree(
+              key: _locationKey,
+              child: const _SectionLabel('Località'),
+            ),
             Text(
               'Usata per personalizzare eventi e news in base alla zona.',
               style: AppTextStyles.bodySmall,
@@ -468,9 +524,9 @@ class _SettingsPageState extends State<SettingsPage> {
               iconColor: AppColors.accent,
               title: 'Residenza abituale',
               subtitle: location.home != null
-                  ? (location.homeLabel ?? _formatCoordinates(location.home!))
+                  ? _shortPlaceLabel(location.homeLabel ?? _formatCoordinates(location.home!))
                   : 'Non impostata',
-              trailingText: 'Imposta',
+              trailingText: location.home != null ? 'Modifica' : 'Imposta',
               onTap: () => _showSetHomeLocationDialog(location),
             ),
             if (_locationError != null) ...[

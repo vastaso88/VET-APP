@@ -52,6 +52,7 @@ class NominatimAddressGeocoder implements AddressGeocoder {
       'q': query,
       'format': 'json',
       'limit': '1',
+      'addressdetails': '1',
     });
 
     try {
@@ -78,10 +79,26 @@ class NominatimAddressGeocoder implements AddressGeocoder {
 
       return GeocodedAddress(
         coordinates: Coordinates(latitude: latitude, longitude: longitude),
-        displayLabel: (match['display_name'] as String?) ?? query,
+        displayLabel: compactAddressLabel(
+          match['address'] as Map<String, dynamic>?,
+          (match['display_name'] as String?) ?? query,
+        ),
       );
     } catch (_) {
       return null;
     }
   }
+}
+
+/// "Piazza del Duomo 1, Milano" from Nominatim's structured address, falling
+/// back to the full display name when the street or city is missing.
+String compactAddressLabel(Map<String, dynamic>? address, String fallback) {
+  if (address == null) return fallback;
+  final road = (address['road'] ?? address['pedestrian'] ?? address['footway']) as String?;
+  final city = (address['city'] ?? address['town'] ?? address['village'] ?? address['municipality'])
+      as String?;
+  if (road == null || city == null) return fallback;
+  final number = address['house_number'] as String?;
+  final street = number == null ? road : '$road $number';
+  return '$street, $city';
 }

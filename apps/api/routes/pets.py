@@ -9,6 +9,11 @@ from packages.core.application.services.set_medical_record_consent import (
     SetMedicalRecordConsentInput,
 )
 from packages.core.application.services.update_pet_profile import UpdatePetProfileInput
+from packages.core.domain.medical_record.consent_text import (
+    CURRENT_VERSION,
+    effective_decision,
+)
+from packages.shared.errors.base import ValidationError
 
 router = APIRouter(prefix="/pets", tags=["pets"])
 
@@ -45,6 +50,26 @@ def update_pet(pet_id: str, request: CreatePetProfileRequest) -> dict[str, objec
         .execute(UpdatePetProfileInput(pet_id=pet_id, **request.model_dump()))
     )
     return result.model_dump()
+
+
+@router.get("/{pet_id}/medical-record-consent")
+def get_medical_record_consent(pet_id: str) -> dict[str, object]:
+    """The owner's decision as it counts today: `granted` is None when
+    there is none yet or when it was taken under an earlier consent text,
+    so the app shows the current wording and asks again."""
+    container = get_container()
+    user = container.auth_provider.get_current_user()
+    pet_profile = container.pet_profile_repository.get(pet_id)
+    if pet_profile is None or pet_profile.owner_id != user.id:
+        raise ValidationError("pet_profile not found")
+    record = pet_profile.medical_record_consent
+    return {
+        "granted": effective_decision(record),
+        "needs_decision": effective_decision(record) is None,
+        "recorded_version": record.version if record else None,
+        "current_version": CURRENT_VERSION,
+        "decided_at": record.decided_at.isoformat() if record else None,
+    }
 
 
 @router.put("/{pet_id}/medical-record-consent")

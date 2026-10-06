@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../../../../app/shell/home_shell_page.dart';
+
 import '../../../../design_system/tokens/app_colors.dart';
 import '../../../../design_system/tokens/app_radii.dart';
 import '../../../../design_system/tokens/app_spacing.dart';
@@ -25,7 +27,6 @@ import '../../../nearby_places/presentation/radar_contributions.dart';
 import '../../../nearby_places/presentation/radar_place_sheet.dart';
 import '../../../nearby_places/presentation/widgets/radar_chip.dart';
 import '../../../nearby_places/presentation/widgets/radar_map.dart';
-import '../../../settings/presentation/pages/settings_page.dart';
 
 /// "Vicino a me": the pet-related places around the user's Località in
 /// one page. Clinics, shops, dog parks and the other businesses come from
@@ -133,15 +134,60 @@ class _LocalEventsPageState extends State<LocalEventsPage> {
     );
   }
 
+  /// The Località this page's data was loaded for, and whether a load is
+  /// under way. Impostazioni saves the Località in the shared store; the
+  /// page listens to it and reloads when it changes, but a load of its own
+  /// also writes the store (a fresh GPS reading) and must not restart
+  /// itself.
+  String? _loadedLocationKey;
+  bool _loadingLocation = false;
+
+  static String _locationKey(UserLocationPreference preference) =>
+      '${preference.mode}|${preference.home?.latitude},${preference.home?.longitude}|'
+      '${preference.current?.latitude},${preference.current?.longitude}';
+
   @override
   void initState() {
     super.initState();
+    LocationPreferenceStore.instance.addListener(_onLocationChanged);
     _dataFuture = _loadData();
+  }
+
+  @override
+  void dispose() {
+    LocationPreferenceStore.instance.removeListener(_onLocationChanged);
+    super.dispose();
+  }
+
+  void _onLocationChanged() {
+    if (!mounted || _loadingLocation) {
+      return;
+    }
+    if (_locationKey(LocationPreferenceStore.instance.preference) == _loadedLocationKey) {
+      return;
+    }
+    setState(() {
+      _firstRadarAnswerReady = false;
+      // The user has just chosen a Località: no need to ask about it again.
+      _locationConsentAsked = true;
+      _dataFuture = _loadData();
+      _radarFutures.clear();
+      _lastRadarResults.clear();
+    });
   }
 
   /// Null when no position is available (see [_resolveLocation]).
   Future<_LocalEventsViewData?> _loadData() async {
-    final referenceLocation = await _resolveLocation();
+    _loadingLocation = true;
+    try {
+      return await _loadDataFor(await _resolveLocation());
+    } finally {
+      _loadedLocationKey = _locationKey(LocationPreferenceStore.instance.preference);
+      _loadingLocation = false;
+    }
+  }
+
+  Future<_LocalEventsViewData?> _loadDataFor(Coordinates? referenceLocation) async {
     if (referenceLocation == null) {
       return null;
     }
@@ -272,19 +318,10 @@ class _LocalEventsPageState extends State<LocalEventsPage> {
     await _dataFuture;
   }
 
-  Future<void> _openSettings() async {
-    await Navigator.of(context).push(
-      MaterialPageRoute<void>(builder: (_) => const SettingsPage()),
-    );
-    if (mounted) {
-      setState(() {
-        _firstRadarAnswerReady = false;
-        _locationConsentAsked = true;
-        _dataFuture = _loadData();
-        _radarFutures.clear();
-        _lastRadarResults.clear();
-      });
-    }
+  /// Switches to Impostazioni → Località. When the user saves a new
+  /// Località there, the store notifies and [_onLocationChanged] reloads.
+  void _openSettings() {
+    HomeShellNavigation.showSettingsLocation();
   }
 
   void _retryRadarPlaces() {
@@ -387,6 +424,12 @@ class _LocalEventsPageState extends State<LocalEventsPage> {
   Widget _buildContent(_LocalEventsViewData data, Result<RadarPlacesResult>? radarResult) {
     final radiusMeters = _radiusKm * 1000;
     final radar = radarResult is Success<RadarPlacesResult> ? radarResult.value : null;
+    final failureCode = radarResult?.fold(onSuccess: (_) => null, onFailure: (error) => error.code);
+    // Without a session the hand-entered services (demo rows, in a local
+    // run) would sit next to "Accedi per vedere...": nothing is shown
+    // then. A build with no backend at all is a preview, and says so.
+    final showsActivities = failureCode != RadarPlacesRepository.signedOutErrorCode &&
+        failureCode != RadarPlacesRepository.sessionExpiredErrorCode;
 
     final activities = data.activities
         .map(
@@ -399,6 +442,7 @@ class _LocalEventsPageState extends State<LocalEventsPage> {
 
     final entries = <_RadarEntry>[
       ...activities
+          .where((_) => showsActivities)
           .where((entry) => entry.distanceMeters <= radiusMeters)
           .map((entry) => _RadarEntry.activity(entry.activity, entry.distanceMeters)),
       ...(radar?.places ?? const <RadarPlace>[])
@@ -745,7 +789,9 @@ class _RadarStatus extends StatelessWidget {
       onFailure: (error) => Row(
         children: [
           Expanded(child: Text(error.message, style: AppTextStyles.bodySmall)),
-          TextButton(onPressed: onRetry, child: const Text('Riprova')),
+          // Retrying cannot configure a backend.
+          if (error.code != RadarPlacesRepository.notConfiguredErrorCode)
+            TextButton(onPressed: onRetry, child: const Text('Riprova')),
         ],
       ),
       onSuccess: (value) {

@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -50,6 +51,7 @@ class _HomeShellPageState extends State<HomeShellPage> {
   @override
   void initState() {
     super.initState();
+    HomeShellNavigation._requests.addListener(_onTabRequested);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       // The shell being up means signed in and past splash/paywall: only now
       // may a tapped home-screen widget shortcut (reminder / walk) be opened,
@@ -64,6 +66,7 @@ class _HomeShellPageState extends State<HomeShellPage> {
 
   @override
   void dispose() {
+    HomeShellNavigation._requests.removeListener(_onTabRequested);
     HomeWidgetActionStore.instance.shellGone();
     super.dispose();
   }
@@ -255,6 +258,12 @@ class _HomeShellPageState extends State<HomeShellPage> {
     // true root, so let the system close the app rather than trapping the
     // back button here.
     SystemNavigator.pop();
+  }
+
+  void _onTabRequested() {
+    final request = HomeShellNavigation._requests.value;
+    if (request == null || !mounted) return;
+    _handleDestinationSelected(request.tab);
   }
 
   void _handleDestinationSelected(int value) {
@@ -494,4 +503,49 @@ class _ActiveWalkBannerState extends State<_ActiveWalkBanner> {
       },
     );
   }
+}
+
+/// Lets any page switch the bottom navigation to another tab, so a screen of
+/// another tab (e.g. Impostazioni) is opened as itself and the bar highlights
+/// it, instead of being pushed on top of the tab the owner came from.
+class HomeShellNavigation {
+  const HomeShellNavigation._();
+
+  static const homeTab = 0;
+  static const petsTab = 1;
+  static const activitiesTab = 2;
+  static const settingsTab = 3;
+
+  static final ValueNotifier<_TabRequest?> _requests = ValueNotifier<_TabRequest?>(null);
+
+  /// Switches to [tab] and shows its root page. A new request object each
+  /// time, so asking for the same tab twice still notifies.
+  static void goToTab(int tab) => _requests.value = _TabRequest(tab);
+
+  static bool _pendingLocationScroll = false;
+  static final ValueNotifier<int> _locationScrollRequests = ValueNotifier<int>(0);
+
+  /// Opens the Impostazioni tab already scrolled to the Località section.
+  static void showSettingsLocation() {
+    _pendingLocationScroll = true;
+    _locationScrollRequests.value++;
+    goToTab(settingsTab);
+  }
+
+  /// True once per [showSettingsLocation] request, for a Settings page built
+  /// after the request was made.
+  static bool consumeLocationScroll() {
+    final pending = _pendingLocationScroll;
+    _pendingLocationScroll = false;
+    return pending;
+  }
+
+  /// Fires on each [showSettingsLocation], for a Settings page already built.
+  static ValueListenable<int> get locationScrollRequests => _locationScrollRequests;
+}
+
+class _TabRequest {
+  const _TabRequest(this.tab);
+
+  final int tab;
 }

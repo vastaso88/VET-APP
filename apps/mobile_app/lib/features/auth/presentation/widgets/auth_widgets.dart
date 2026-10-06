@@ -23,32 +23,39 @@ class AuthScreenScaffold extends StatelessWidget {
     required this.title,
     required this.subtitle,
     required this.child,
+    this.allowBack = true,
   });
 
   final String title;
   final String subtitle;
   final Widget child;
+  final bool allowBack;
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.background,
       body: SafeArea(
-          child: SingleChildScrollView(
+          child: LayoutBuilder(
+          builder: (ctx, viewport) => SingleChildScrollView(
             padding: const EdgeInsets.fromLTRB(
               AppSpacing.lg,
               AppSpacing.lg,
               AppSpacing.lg,
               AppSpacing.xxl,
             ),
-            child: Center(
+            child: ConstrainedBox(
+              constraints: BoxConstraints(
+                minHeight: viewport.maxHeight - AppSpacing.lg - AppSpacing.xxl,
+              ),
+              child: Center(
               child: ConstrainedBox(
                 constraints: const BoxConstraints(maxWidth: _kAuthContentMaxWidth),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     _BrandRow(
-                      onBack: Navigator.of(context).canPop()
+                      onBack: allowBack && Navigator.of(context).canPop()
                           ? () => Navigator.of(context).pop()
                           : null,
                     ),
@@ -81,6 +88,8 @@ class AuthScreenScaffold extends StatelessWidget {
                     ),
                   ],
                 ),
+              ),
+            ),
               ),
             ),
           ),

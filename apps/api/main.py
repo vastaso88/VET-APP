@@ -12,6 +12,7 @@ from apps.api.routes.chat_attachments import router as chat_attachments_router
 from apps.api.routes.chat_response_reports import router as chat_response_reports_router
 from apps.api.routes.conversations import router as conversations_router
 from apps.api.routes.health import router as health_router
+from apps.api.routes.legal import router as legal_router
 from apps.api.routes.local_services import router as local_services_router
 from apps.api.routes.pets import router as pets_router
 from apps.api.routes.reminders import router as reminders_router
@@ -81,6 +82,7 @@ app.include_router(conversations_router)
 app.include_router(chat_router)
 app.include_router(reminders_router)
 app.include_router(account_consents_router)
+app.include_router(legal_router)
 app.include_router(chat_response_reports_router)
 app.include_router(speech_to_text_router)
 app.include_router(chat_attachments_router)

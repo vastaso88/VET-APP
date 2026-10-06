@@ -23,6 +23,22 @@ class BillingDemoStore extends ChangeNotifier {
   static const double _proMonthly = 9.99;
   static const double _proYearly = 7.99;
 
+  /// Features that exist today and work the same on every plan: nothing in
+  /// the code (backend `Subscription.has_access` or the Flutter side) limits
+  /// anything per plan yet, so this is the whole honest "what's included".
+  /// Each line maps to a real backend route (pets, chat + chat attachments +
+  /// speech_to_text, reminders, local_services).
+  static const List<PlanFeature> includedInAllPlans = [
+    PlanFeature('Profili dei tuoi animali'),
+    PlanFeature('Assistente per dubbi su salute, comportamento e routine'),
+    PlanFeature('Foto, PDF e dettatura vocale nella chat'),
+    PlanFeature('Promemoria'),
+    PlanFeature('Servizi per animali nei dintorni'),
+  ];
+
+  // TODO(owner): le differenze reali tra i piani sono una scelta commerciale
+  // non ancora presa. Finché non le decidi, ogni piano mostra una riga
+  // segnaposto (isPlaceholder) al posto di promesse non applicate dal codice.
   static const List<SubscriptionPlan> plans = [
     SubscriptionPlan(
       tier: PlanTier.free,
@@ -30,9 +46,7 @@ class BillingDemoStore extends ChangeNotifier {
       monthlyPrice: 0,
       yearlyPrice: 0,
       features: [
-        'Profilo di un animale',
-        'Promemoria di base',
-        '5 domande all\'assistente al mese',
+        PlanFeature('Limiti del piano Free: da definire', isPlaceholder: true),
       ],
     ),
     SubscriptionPlan(
@@ -41,10 +55,7 @@ class BillingDemoStore extends ChangeNotifier {
       monthlyPrice: _plusMonthly,
       yearlyPrice: _plusYearly,
       features: [
-        'Fino a 3 animali',
-        'Promemoria illimitati',
-        'Domande illimitate all\'assistente',
-        'Cartella clinica digitale',
+        PlanFeature('Funzioni extra del piano Plus: da definire', isPlaceholder: true),
       ],
     ),
     SubscriptionPlan(
@@ -53,10 +64,7 @@ class BillingDemoStore extends ChangeNotifier {
       monthlyPrice: _proMonthly,
       yearlyPrice: _proYearly,
       features: [
-        'Animali illimitati',
-        'Tutto quanto incluso in Plus',
-        'Riepilogo pre-visita per il veterinario',
-        'Supporto prioritario',
+        PlanFeature('Funzioni extra del piano Pro: da definire', isPlaceholder: true),
       ],
       // "Più scelto" would claim a real popularity ranking we don't have
       // data for yet (no paying users exist). "Consigliato" makes the same
@@ -104,6 +112,8 @@ class BillingDemoStore extends ChangeNotifier {
       _subscriptionStatus!.isTrialActive;
 
   int get trialDaysLeft => _subscriptionStatus?.trialDaysLeft ?? 0;
+
+  DateTime? get trialEndsAt => _subscriptionStatus?.trialEndsAt;
 
   bool get isDeveloperAccount => _subscriptionStatus?.isDeveloper ?? false;
 

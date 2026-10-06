@@ -19,7 +19,10 @@ from packages.core.domain.conversation.title import (
     title_from_message,
 )
 from packages.core.domain.knowledge.models import EvidenceSource
-from packages.core.domain.medical_record.consent_text import CURRENT_VERSION
+from packages.core.domain.medical_record.consent_text import (
+    CURRENT_VERSION,
+    effective_decision,
+)
 from packages.core.domain.medical_record.models import MedicalRecordConsentRecord
 from packages.core.domain.pet_profile.models import PetProfile
 from packages.shared.errors.base import ValidationError
@@ -130,7 +133,10 @@ class SendChatMessageService:
         medical_record_consent = conversation.medical_record_consent
         awaiting_medical_record_consent = conversation.awaiting_medical_record_consent
         if pet_profile.medical_record_consent is not None:
-            medical_record_consent = pet_profile.medical_record_consent.granted
+            # A decision taken under an earlier consent text (v1) counts as
+            # no decision (2026-10-06, compliance audit): the record is not
+            # read, and the chat asks again with the current wording.
+            medical_record_consent = effective_decision(pet_profile.medical_record_consent)
             awaiting_medical_record_consent = False
 
         today = datetime.now(UTC).date()
@@ -265,7 +271,11 @@ class SendChatMessageService:
         if granted is None:
             return
         current = pet_profile.medical_record_consent
-        if current is not None and current.granted == granted:
+        if (
+            current is not None
+            and current.granted == granted
+            and current.version == CURRENT_VERSION
+        ):
             return
         updated = pet_profile.model_copy(
             update={

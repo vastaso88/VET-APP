@@ -1,6 +1,9 @@
 import 'dart:async';
 
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+
+import '../../../../design_system/tokens/app_colors.dart';
 
 import '../../../../shared/widgets/pet_loader.dart';
 
@@ -18,7 +21,48 @@ import '../../../first_run/presentation/pages/tutorial_page.dart';
 import '../../data/auth_repository_factory.dart';
 import '../../domain/auth_error_messages.dart';
 import '../widgets/auth_widgets.dart';
+import 'legal_text_page.dart';
 import 'login_page.dart';
+
+class _TermsAcceptanceText extends StatefulWidget {
+  const _TermsAcceptanceText({required this.onTermsTap, required this.onPrivacyTap});
+
+  final VoidCallback onTermsTap;
+  final VoidCallback onPrivacyTap;
+
+  @override
+  State<_TermsAcceptanceText> createState() => _TermsAcceptanceTextState();
+}
+
+class _TermsAcceptanceTextState extends State<_TermsAcceptanceText> {
+  late final TapGestureRecognizer _termsTap = TapGestureRecognizer()..onTap = widget.onTermsTap;
+  late final TapGestureRecognizer _privacyTap =
+      TapGestureRecognizer()..onTap = widget.onPrivacyTap;
+
+  @override
+  void dispose() {
+    _termsTap.dispose();
+    _privacyTap.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    const base = TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: AppColors.text);
+    final link = base.copyWith(color: AppColors.primary, decoration: TextDecoration.underline);
+    return Text.rich(
+      TextSpan(
+        style: base,
+        children: [
+          const TextSpan(text: 'Accetto i '),
+          TextSpan(text: 'Termini di Servizio', style: link, recognizer: _termsTap),
+          const TextSpan(text: " e l'"),
+          TextSpan(text: 'Informativa Privacy', style: link, recognizer: _privacyTap),
+        ],
+      ),
+    );
+  }
+}
 
 class RegisterPage extends StatefulWidget {
   const RegisterPage({super.key});
@@ -142,6 +186,14 @@ class _RegisterPageState extends State<RegisterPage> {
     }
   }
 
+  void _openLegal(String consentKey, String title) {
+    Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder: (_) => LegalTextPage(consentKey: consentKey, title: title),
+      ),
+    );
+  }
+
   /// Plan proposal (trial or immediate pick) → short feature tutorial →
   /// notification permission → optional guided first-pet creation. Each
   /// page pops itself when done, so this just runs them in sequence before
@@ -236,9 +288,15 @@ class _RegisterPageState extends State<RegisterPage> {
                 contentPadding: EdgeInsets.zero,
                 value: _acceptTerms,
                 onChanged: (value) => setState(() => _acceptTerms = value),
-                title: const Text(
-                  "Accetto i Termini di Servizio e l'Informativa Privacy",
-                  style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700),
+                title: _TermsAcceptanceText(
+                  onTermsTap: () => _openLegal(
+                    AccountConsentKeys.termsOfService,
+                    'Termini di Servizio',
+                  ),
+                  onPrivacyTap: () => _openLegal(
+                    AccountConsentKeys.privacyPolicy,
+                    'Informativa Privacy',
+                  ),
                 ),
               ),
             ),
@@ -258,7 +316,7 @@ class _RegisterPageState extends State<RegisterPage> {
             ),
             const SizedBox(height: AppSpacing.md),
             AuthFooterLink(
-              label: 'Hai gia un account? Accedi',
+              label: 'Hai già un account? Accedi',
               onTap: () => Navigator.of(context).push(
                 MaterialPageRoute<void>(builder: (_) => const LoginPage()),
               ),

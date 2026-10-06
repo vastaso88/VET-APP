@@ -41,6 +41,16 @@ class RadarPlacesRepository {
   /// Error code of a failure worth retrying automatically after a pause.
   static const preparingErrorCode = 'radar_places_preparing';
 
+  /// This build has no backend address (API_BASE_URL): a local preview,
+  /// not something signing in can fix.
+  static const notConfiguredErrorCode = 'radar_places_not_configured';
+
+  /// No signed-in session on the device.
+  static const signedOutErrorCode = 'radar_places_signed_out';
+
+  /// The backend refused the session (401/403): expired or revoked token.
+  static const sessionExpiredErrorCode = 'radar_places_session_expired';
+
   /// Imported datasets with their release and date, plus the contact for
   /// corrections, for "Fonti dati". Empty when signed out or unreachable:
   /// the page then shows the fixed attribution alone.
@@ -78,11 +88,21 @@ class RadarPlacesRepository {
     required double radiusKm,
   }) async {
     final baseUrl = _configLoader.load().apiBaseUrl;
-    final token = CurrentUser.accessToken();
-    if (baseUrl.isEmpty || token == null || token.isEmpty) {
+    // Two different situations that used to share one message ("Accedi
+    // per vedere..."), which was wrong for a build without a backend.
+    if (baseUrl.isEmpty) {
       return Result.failure(
         const AppNetworkError(
-          code: 'radar_places_unavailable',
+          code: notConfiguredErrorCode,
+          message: 'Anteprima senza backend: i luoghi mostrati sono dati di esempio.',
+        ),
+      );
+    }
+    final token = CurrentUser.accessToken();
+    if (token == null || token.isEmpty) {
+      return Result.failure(
+        const AppNetworkError(
+          code: signedOutErrorCode,
           message: 'Accedi per vedere i servizi per animali vicino a te.',
         ),
       );
@@ -108,6 +128,15 @@ class RadarPlacesRepository {
           const AppNetworkError(
             code: preparingErrorCode,
             message: 'Sto ancora preparando i servizi di questa zona. Riprova tra poco.',
+          ),
+        );
+      }
+      if (response.statusCode == 401 || response.statusCode == 403) {
+        return Result.failure(
+          const AppNetworkError(
+            code: sessionExpiredErrorCode,
+            message: 'La sessione non è più valida: esci e accedi di nuovo per vedere i '
+                'servizi vicini.',
           ),
         );
       }

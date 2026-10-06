@@ -47,6 +47,11 @@ void main() {
 
     expect(find.text('Ambulatorio veterinario Navigli'), findsOneWidget);
     expect(find.text('Servizi nella zona'), findsOneWidget);
+    // No backend in this build: the page says so, and never asks to sign in.
+    expect(find.text('Anteprima senza backend: i luoghi mostrati sono dati di esempio.'),
+        findsOneWidget);
+    expect(find.textContaining('Accedi per vedere'), findsNothing);
+    expect(find.text('Riprova'), findsNothing);
   });
 
   testWidgets('dated events are not part of the page', (tester) async {

@@ -4,8 +4,6 @@ import 'package:flutter/material.dart';
 
 import '../../../../shared/widgets/pet_loader.dart';
 
-import 'package:flutter_map/flutter_map.dart';
-import 'package:latlong2/latlong.dart' as latlong;
 import 'package:share_plus/share_plus.dart';
 
 import '../../../../design_system/tokens/app_colors.dart';
@@ -22,15 +20,12 @@ import '../../../dog_walks/data/dog_walks_repository.dart';
 import '../../../dog_walks/data/walk_history_controller.dart';
 import '../../../dog_walks/domain/walk_eligibility.dart';
 import '../../../dog_walks/domain/walk_retention.dart';
-import '../../../dog_walks/domain/walk_route_markers.dart';
-import '../../../dog_walks/domain/walk_route_segments.dart';
 import '../../../dog_walks/domain/walk_session.dart';
 import '../../../dog_walks/presentation/pages/active_walk_page.dart';
 import '../../../dog_walks/presentation/pages/walk_detail_page.dart';
 import '../../../dog_walks/presentation/walk_labels.dart';
 import '../../../dog_walks/presentation/widgets/badge_gallery_dialog.dart';
-import '../../../dog_walks/presentation/widgets/walk_map_style.dart';
-import '../../../dog_walks/presentation/widgets/walk_route_markers_layer.dart';
+import '../../../dog_walks/presentation/widgets/walk_mini_map.dart';
 import '../../../medical_records/data/medical_record_file_cache.dart';
 import '../../../medical_records/data/medical_records_repository.dart';
 import '../../../medical_records/presentation/pages/medical_record_upload_page.dart';
@@ -38,7 +33,9 @@ import '../../../medical_records/presentation/record_file_actions.dart';
 import '../../../reminders/data/reminders_repository.dart';
 import '../../../reminders/domain/reminder_presentation.dart';
 import '../../../reminders/presentation/pages/reminders_pages.dart';
+import '../../../reminders/presentation/widgets/reminder_menu_button.dart';
 import '../../data/pet_demo_store.dart';
+import '../../domain/pet_format.dart';
 import '../../domain/pet_models.dart';
 import '../widgets/medical_record_consent_card.dart';
 import '../../../chat/presentation/widgets/chat_conversation_menu.dart';
@@ -83,7 +80,7 @@ class _PetDetailPageState extends State<PetDetailPage> {
 
     return PetsScaffold(
       title: pet?.name ?? 'Dettaglio pet',
-      subtitle: pet == null ? null : pet.species,
+      subtitle: pet == null ? null : petHeaderSubtitle(pet),
       onBack: () => Navigator.of(context).maybePop(),
       badge: pet == null
           ? null
@@ -151,6 +148,44 @@ class _PetDetailPageState extends State<PetDetailPage> {
     if (updated != null) {
       setState(() => _pet = updated);
     }
+  }
+}
+
+/// "Cane · Labrador · 3 anni" - what sits under the pet's name. Whatever is
+/// missing is simply left out: no breed (or the bare "Altro") and no readable
+/// birth date leave just the species. An aquarium shows its population
+/// instead of a breed and has no age.
+String petHeaderSubtitle(PetProfile pet, {DateTime? now}) {
+  final breed = pet.breed.trim();
+  final age = pet.isAquarium ? null : petAgeLabel(pet.birthDateLabel, now: now);
+  final parts = <String>[
+    pet.species,
+    if (pet.isAquarium)
+      pet.breedLabel
+    else if (breed.isNotEmpty && breed != 'Altro')
+      pet.breedLabel
+    else if (breed == 'Altro' && (pet.dogSizeCategory ?? '').isNotEmpty)
+      pet.breedLabel,
+    if (age != null) age,
+  ];
+  return parts.join(' · ');
+}
+
+/// One tab title that always fits: it scales down to the width its tab gets
+/// instead of being truncated with an ellipsis.
+class PetTabLabel extends StatelessWidget {
+  const PetTabLabel(this.label, {super.key});
+
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    return Tab(
+      child: FittedBox(
+        fit: BoxFit.scaleDown,
+        child: Text(label, maxLines: 1, softWrap: false),
+      ),
+    );
   }
 }
 
@@ -235,13 +270,16 @@ class _PetDetailContentState extends State<_PetDetailContent>
           labelStyle:
               AppTextStyles.bodySmall.copyWith(fontWeight: FontWeight.w700),
           unselectedLabelStyle: AppTextStyles.bodySmall,
-          isScrollable: true,
-          tabAlignment: TabAlignment.start,
+          // Not scrollable: all the labels are on screen at once and each
+          // shrinks to its share of the width rather than being cut off or
+          // pushed past the edge (owner report, 2026-10-06: "Passeggi...").
+          isScrollable: false,
+          labelPadding: const EdgeInsets.symmetric(horizontal: 2),
           tabs: [
-            const Tab(text: 'Promemoria'),
-            const Tab(text: 'Chat'),
-            const Tab(text: 'Referti'),
-            if (_showsWalks) const Tab(text: 'Passeggiate'),
+            const PetTabLabel('Promemoria'),
+            const PetTabLabel('Chat'),
+            const PetTabLabel('Referti'),
+            if (_showsWalks) const PetTabLabel('Passeggiate'),
           ],
         ),
         const SizedBox(height: AppSpacing.md),
@@ -520,24 +558,6 @@ class _RemindersTabState extends State<_RemindersTab> {
     await _reload();
   }
 
-  Future<void> _deleteReminder(ReminderEntry reminder) async {
-    final confirmed = await _confirmDelete(
-      context,
-      title: 'Eliminare questo promemoria?',
-      message: '"${reminder.title}" verrà eliminato definitivamente.',
-    );
-    if (!confirmed) return;
-
-    try {
-      await widget.repository.deleteReminder(reminder.id);
-    } on ReminderSyncException catch (error) {
-      if (mounted) showReminderFailure(error.message);
-      return;
-    }
-    if (!mounted) return;
-    await _reload();
-  }
-
   @override
   Widget build(BuildContext context) {
     return Column(
@@ -579,8 +599,8 @@ class _RemindersTabState extends State<_RemindersTab> {
                       const SizedBox(height: AppSpacing.sm),
                   itemBuilder: (_, index) => _ReminderRow(
                     reminder: reminders[index],
+                    repository: widget.repository,
                     onTap: () => _openDetail(reminders[index]),
-                    onDelete: () => _deleteReminder(reminders[index]),
                   ),
                 );
               },
@@ -594,22 +614,24 @@ class _RemindersTabState extends State<_RemindersTab> {
 
 class _ReminderRow extends StatelessWidget {
   const _ReminderRow(
-      {required this.reminder, required this.onTap, required this.onDelete});
+      {required this.reminder, required this.repository, required this.onTap});
 
   final ReminderEntry reminder;
+  final RemindersRepository repository;
   final VoidCallback onTap;
-  final VoidCallback onDelete;
 
   @override
   Widget build(BuildContext context) {
     final presentation = ReminderPresentation.of(reminder);
     return _CompactRow(
       onTap: onTap,
-      onDelete: onDelete,
       leading: _RowIcon(icon: presentation.icon),
       title: reminder.title,
       subtitle: presentation.kindLabel,
       trailingText: presentation.dateLabel,
+      // Edit / mark done / delete live in the three-dot menu; the list
+      // rebuilds by itself through RemindersRepository.changes.
+      trailingAction: ReminderMenuButton(reminder: reminder, repository: repository),
     );
   }
 }
@@ -1224,6 +1246,7 @@ class _WalksTabState extends State<_WalksTab> {
                     const _WalksSectionLabel('Record 🏆'),
                     if (history.longestDistance != null)
                       _WalkCard(
+                        key: ValueKey('record-distance-${history.longestDistance!.id}'),
                         walk: history.longestDistance!,
                         petName: widget.pet.name,
                         history: _history,
@@ -1235,6 +1258,7 @@ class _WalksTabState extends State<_WalksTab> {
                         history.longestDuration!.id != history.longestDistance?.id) ...[
                       const SizedBox(height: AppSpacing.sm),
                       _WalkCard(
+                        key: ValueKey('record-duration-${history.longestDuration!.id}'),
                         walk: history.longestDuration!,
                         petName: widget.pet.name,
                         history: _history,
@@ -1247,6 +1271,7 @@ class _WalksTabState extends State<_WalksTab> {
                     const _WalksSectionLabel('Preferite ⭐'),
                     for (final walk in history.favorites) ...[
                       _WalkCard(
+                          key: ValueKey('favorite-${walk.id}'),
                           walk: walk,
                           petName: widget.pet.name,
                           history: _history),
@@ -1258,9 +1283,11 @@ class _WalksTabState extends State<_WalksTab> {
                     const _WalksSectionLabel('Recenti'),
                     for (final walk in history.recent) ...[
                       _WalkCard(
+                          key: ValueKey('recent-${walk.id}'),
                           walk: walk,
                           petName: widget.pet.name,
-                          history: _history),
+                          history: _history,
+                          recordLabel: history.highlightLabelFor(walk)),
                       const SizedBox(height: AppSpacing.sm),
                     ],
                   ],
@@ -1369,6 +1396,7 @@ class _WalksSectionLabel extends StatelessWidget {
 /// ones).
 class _WalkCard extends StatelessWidget {
   const _WalkCard({
+    super.key,
     required this.walk,
     required this.petName,
     required this.history,
@@ -1472,10 +1500,8 @@ class _WalkCard extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             SizedBox(
-              height: 120,
-              child: walk.route.isEmpty
-                  ? const _WalkMissingRoutePlaceholder()
-                  : _WalkMiniMap(route: walk.route),
+              height: 150,
+              child: WalkMiniMap(walk: walk),
             ),
             Padding(
               padding: const EdgeInsets.all(AppSpacing.md),
@@ -1528,77 +1554,6 @@ class _WalkCard extends StatelessWidget {
             ),
           ],
         ),
-      ),
-    );
-  }
-}
-
-/// Static (no pan/zoom) preview of one walk's route - the history cards
-/// only need a glance, not an interactive map.
-class _WalkMiniMap extends StatelessWidget {
-  const _WalkMiniMap({required this.route});
-
-  final List<RoutePoint> route;
-
-  @override
-  Widget build(BuildContext context) {
-    final points = route
-        .map((point) => latlong.LatLng(
-            point.coordinates.latitude, point.coordinates.longitude))
-        .toList();
-    final bounds = LatLngBounds.fromPoints(points);
-    final segments = splitRouteIntoSegments(route);
-
-    return IgnorePointer(
-      child: FlutterMap(
-        options: MapOptions(
-          initialCameraFit: CameraFit.bounds(
-              bounds: bounds, padding: const EdgeInsets.all(24)),
-          interactionOptions:
-              const InteractionOptions(flags: InteractiveFlag.none),
-        ),
-        children: [
-          buildWalkTileLayer(),
-          PolylineLayer(
-            polylines: [
-              for (final segment in segments)
-                if (segment.length >= 2)
-                  Polyline(
-                    points: segment
-                        .map((point) =>
-                            latlong.LatLng(point.coordinates.latitude, point.coordinates.longitude))
-                        .toList(),
-                    color: AppColors.primary,
-                    strokeWidth: 3,
-                  ),
-            ],
-          ),
-          buildWalkRouteMarkersLayer(computeWalkRouteMarkers(route, isFinished: true)),
-        ],
-      ),
-    );
-  }
-}
-
-/// Shown instead of _WalkMiniMap for a walk whose route is empty - either
-/// pruned by retention (walk_retention.dart, expected) or saved by a
-/// release from before GPS tracking existed (owner report, 2026-09-30: a
-/// blank thumbnail with no explanation looked like a bug either way).
-class _WalkMissingRoutePlaceholder extends StatelessWidget {
-  const _WalkMissingRoutePlaceholder();
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      color: AppColors.background,
-      alignment: Alignment.center,
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          const Icon(Icons.map_outlined, color: AppColors.mutedText, size: 28),
-          const SizedBox(height: 4),
-          Text('Percorso non disponibile', style: AppTextStyles.caption),
-        ],
       ),
     );
   }

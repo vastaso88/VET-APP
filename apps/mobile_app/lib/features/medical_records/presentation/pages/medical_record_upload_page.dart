@@ -393,8 +393,8 @@ String _formatSize(int bytes) {
 
 String _formatDate(DateTime date) {
   const months = [
-    'Gen', 'Feb', 'Mar', 'Apr', 'Mag', 'Giu',
-    'Lug', 'Ago', 'Set', 'Ott', 'Nov', 'Dic',
+    'gen', 'feb', 'mar', 'apr', 'mag', 'giu',
+    'lug', 'ago', 'set', 'ott', 'nov', 'dic',
   ];
   final hour = date.hour.toString().padLeft(2, '0');
   final minute = date.minute.toString().padLeft(2, '0');

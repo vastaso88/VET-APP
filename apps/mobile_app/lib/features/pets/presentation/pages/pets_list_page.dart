@@ -8,6 +8,7 @@ import '../../../../design_system/tokens/app_spacing.dart';
 import '../../../../design_system/tokens/app_text_styles.dart';
 import '../../../dog_walks/data/walk_home_widget.dart';
 import '../../data/pet_demo_store.dart';
+import '../../domain/pet_format.dart';
 import '../../domain/pet_models.dart';
 import '../widgets/pet_avatar.dart';
 import '../widgets/pets_scaffold.dart';
@@ -69,7 +70,7 @@ class _PetsListPageState extends State<PetsListPage> {
 
     return PetsScaffold(
       title: 'Animali',
-      subtitle: '${PetDemoStore.instance.list().length} profili',
+      subtitle: petProfilesCountLabel(PetDemoStore.instance.list().length),
       actions: [
         if (PetDemoStore.instance.memorialPets().isNotEmpty)
           IconButton(
@@ -254,7 +255,8 @@ class _PetRow extends StatelessWidget {
               ConstrainedBox(
                 constraints: const BoxConstraints(maxWidth: 90),
                 child: Text(
-                  pet.healthBadge,
+                  // Profiles saved before the wording changed still say "Nuovo profilo".
+                  pet.healthBadge == 'Nuovo profilo' ? 'Da valutare' : pet.healthBadge,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   textAlign: TextAlign.end,

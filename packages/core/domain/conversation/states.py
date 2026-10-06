@@ -13,3 +13,6 @@ class ConversationState(StrEnum):
     SOURCE_VALIDATION_FAILURE = "SOURCE_VALIDATION_FAILURE"
     USER_DECLINED_RECORD_ACCESS = "USER_DECLINED_RECORD_ACCESS"
     USER_STOPPED_INTERVIEW = "USER_STOPPED_INTERVIEW"
+    # Answered from the model's general knowledge: no retrieved source
+    # concerned the question (2026-10-06), so none was offered or cited.
+    NO_RELEVANT_SOURCES = "NO_RELEVANT_SOURCES"

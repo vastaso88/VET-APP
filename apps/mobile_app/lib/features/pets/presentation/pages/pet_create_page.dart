@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../../../../design_system/tokens/app_colors.dart';
+
 import '../../data/pet_demo_store.dart';
 import '../../data/pet_photo_repository.dart';
 import '../../domain/pet_models.dart';
@@ -25,7 +27,10 @@ class PetCreatePage extends StatelessWidget {
       actions: [
         TextButton(
           onPressed: () => Navigator.of(context).maybePop(),
-          style: TextButton.styleFrom(foregroundColor: Colors.white),
+          style: TextButton.styleFrom(
+            foregroundColor: AppColors.primaryStrong,
+            textStyle: const TextStyle(fontWeight: FontWeight.w700),
+          ),
           child: const Text('Annulla'),
         ),
       ],

@@ -70,7 +70,13 @@ def build_report(outcomes: list[EvaluationCaseOutcome]) -> EvaluationReport:
             1.0
             if (
                 o.mode in ("evidence", "natural")
-                and o.state == ConversationState.ADEQUATE_EVIDENCE_FOUND
+                and o.state
+                in (
+                    ConversationState.ADEQUATE_EVIDENCE_FOUND,
+                    # A natural answer given without sources, because none
+                    # concerned the question, is still a real answer.
+                    ConversationState.NO_RELEVANT_SOURCES,
+                )
             )
             else 0.0
             for o in evidence_relevant

@@ -99,6 +99,8 @@ class _PetProfileFormState extends State<PetProfileForm> {
   late String? _species;
   late String? _breed;
   bool _otherBreed = false;
+  bool _birthTouched = false;
+  bool _submitAttempted = false;
   final _otherBreedController = TextEditingController();
   late String? _dogSizeCategory;
   late String? _sex;
@@ -419,7 +421,6 @@ class _PetProfileFormState extends State<PetProfileForm> {
                               } else {
                                 _otherBreed = false;
                                 _breed = picked == 'Razza non specificata' ? null : picked;
-                                _dogSizeCategory = null;
                               }
                             });
                           },
@@ -459,11 +460,11 @@ class _PetProfileFormState extends State<PetProfileForm> {
                     }),
                   ),
                 ],
-                if (_species == 'Cane' && _otherBreed) ...[
+                if (_species == 'Cane') ...[
                   const SizedBox(height: AppSpacing.md),
                   DropdownButtonFormField<String>(
                     initialValue: _dogSizeCategory,
-                    decoration: _inputDecoration('Taglia', 'Seleziona una taglia'),
+                    decoration: _inputDecoration('Taglia (facoltativa)', 'Seleziona una taglia'),
                     items: PetDemoStore.dogSizeCategories
                         .map(
                           (size) => DropdownMenuItem<String>(value: size, child: Text(size)),
@@ -518,7 +519,7 @@ class _PetProfileFormState extends State<PetProfileForm> {
                       ),
                     ),
                   ),
-                  if (_birthDate == null) ...[
+                  if (_birthDate == null && (_birthTouched || _submitAttempted)) ...[
                     const SizedBox(height: 6),
                     Text(
                       'Seleziona la data di nascita.',
@@ -666,18 +667,17 @@ class _PetProfileFormState extends State<PetProfileForm> {
       firstDate: DateTime(2000),
       lastDate: DateTime.now(),
     );
-    if (picked != null) {
-      setState(() {
-        _birthDate = picked;
-      });
-    }
+    setState(() {
+      _birthTouched = true;
+      if (picked != null) _birthDate = picked;
+    });
   }
 
   void _submit() async {
     final isAquariumProfile = _species == 'Pesce' && _isAquarium;
     final isValid = _formKey.currentState?.validate() ?? false;
     if (!isValid || (!isAquariumProfile && _birthDate == null)) {
-      setState(() {});
+      setState(() => _submitAttempted = true);
       return;
     }
 
@@ -701,7 +701,7 @@ class _PetProfileFormState extends State<PetProfileForm> {
       photoTouched: _photoTouched,
       aquariumStock: isAquariumProfile ? _aquariumStock : const [],
       habitat: _buildHabitat(),
-      dogSizeCategory: _species == 'Cane' && _otherBreed ? _dogSizeCategory : null,
+      dogSizeCategory: _species == 'Cane' ? _dogSizeCategory : null,
     );
 
     setState(() => _submitting = true);
@@ -780,21 +780,22 @@ class _PetProfileFormState extends State<PetProfileForm> {
 
   int? _monthNumber(String label) {
     const months = {
-      'Gen': 1,
-      'Feb': 2,
-      'Mar': 3,
-      'Apr': 4,
-      'Mag': 5,
-      'Giu': 6,
-      'Lug': 7,
-      'Ago': 8,
-      'Set': 9,
-      'Ott': 10,
-      'Nov': 11,
-      'Dic': 12,
+      'gen': 1,
+      'feb': 2,
+      'mar': 3,
+      'apr': 4,
+      'mag': 5,
+      'giu': 6,
+      'lug': 7,
+      'ago': 8,
+      'set': 9,
+      'ott': 10,
+      'nov': 11,
+      'dic': 12,
     };
 
-    return months[label];
+    // Saved labels may still use the old capitalised form ("05 Mag 2021").
+    return months[label.toLowerCase()];
   }
 
 }
@@ -1231,9 +1232,18 @@ class _BreedPickerSheetState extends State<_BreedPickerSheet> {
   @override
   Widget build(BuildContext context) {
     final query = foldBreedText(_query);
-    final matches = widget.options
-        .where((breed) => query.isEmpty || breedMatchesQuery(breed, _query))
-        .toList(growable: false);
+    // The free-text entry is always the last row, whatever was typed, so an
+    // unlisted breed can be entered even when the search finds nothing.
+    final freeText = widget.options.where(isOtherBreedEntry).toList(growable: false);
+    final matches = [
+      ...widget.options.where(
+        (breed) => !isOtherBreedEntry(breed) && (query.isEmpty || breedMatchesQuery(breed, _query)),
+      ),
+      ...freeText,
+    ];
+    // Dogs and cats are searched by breed name; the scientific name only
+    // matters for the other animal categories.
+    final dogOrCat = widget.options.contains(otherBreedLabel);
 
     return SafeArea(
       child: SizedBox(
@@ -1246,25 +1256,14 @@ class _BreedPickerSheetState extends State<_BreedPickerSheet> {
                 autofocus: true,
                 onChanged: (value) => setState(() => _query = value),
                 decoration: InputDecoration(
-                  hintText: 'Cerca (anche per nome scientifico)',
+                  hintText: dogOrCat ? 'Cerca una razza' : 'Cerca (anche per nome scientifico)',
                   prefixIcon: const Icon(Icons.search_rounded),
                   border: OutlineInputBorder(borderRadius: BorderRadius.circular(18)),
                 ),
               ),
             ),
             Expanded(
-              child: matches.isEmpty
-                  ? Center(
-                      child: Padding(
-                        padding: const EdgeInsets.all(AppSpacing.lg),
-                        child: Text(
-                          'Nessun risultato. Prova con una voce generica o con "Altra (scrivi)".',
-                          textAlign: TextAlign.center,
-                          style: AppTextStyles.bodySmall,
-                        ),
-                      ),
-                    )
-                  : ListView.builder(
+              child: ListView.builder(
                       itemCount: matches.length,
                       itemBuilder: (_, index) {
                         final breed = matches[index];

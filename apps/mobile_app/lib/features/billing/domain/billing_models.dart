@@ -17,6 +17,16 @@ extension CardBrandLabel on CardBrand {
   }
 }
 
+/// One line in a plan's "what's included" list. [isPlaceholder] marks a
+/// commercial decision the owner hasn't made yet, so the UI renders it as an
+/// obvious "to be defined" line instead of a promise.
+class PlanFeature {
+  const PlanFeature(this.label, {this.isPlaceholder = false});
+
+  final String label;
+  final bool isPlaceholder;
+}
+
 /// A subscription tier as shown in the plan comparison — mirrors the
 /// "Free / Plus / Pro" ladder common apps use for their pricing screen.
 class SubscriptionPlan {
@@ -38,7 +48,9 @@ class SubscriptionPlan {
   /// Price in euro for one month, billed yearly (usually discounted).
   final double yearlyPrice;
 
-  final List<String> features;
+  /// What this plan has beyond (or instead of) the shared baseline in
+  /// `BillingDemoStore.includedInAllPlans`.
+  final List<PlanFeature> features;
 
   /// Optional short label shown on the plan card, e.g. "Più scelto".
   final String? badge;
