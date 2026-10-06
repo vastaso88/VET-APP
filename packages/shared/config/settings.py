@@ -30,6 +30,10 @@ class Settings(BaseSettings):
     # No default on purpose: these are real personal addresses, set via
     # DEVELOPER_EMAILS in .env (comma-separated), never hardcoded in source.
     developer_emails: list[str] = Field(default=[], alias="DEVELOPER_EMAILS")
+    # Backoffice allowlist. When empty, admin endpoints fall back to
+    # DEVELOPER_EMAILS so existing founder/developer accounts can be reused
+    # without hardcoding personal addresses in source control.
+    admin_emails: list[str] = Field(default=[], alias="ADMIN_EMAILS")
     # Secret key for the pseudonym stored in place of the reporter's id on
     # chat response reports. Changing it orphans existing pseudonyms (no
     # more dedup/erasure match for old rows), so set it once and keep it.
