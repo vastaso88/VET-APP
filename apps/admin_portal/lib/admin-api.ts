@@ -402,6 +402,20 @@ async function adminFetch(
   });
 }
 
+class AdminApiError extends Error {
+  constructor(
+    public readonly status: number,
+    message: string,
+  ) {
+    super(message);
+    this.name = "AdminApiError";
+  }
+}
+
+function isAdminApiStatus(error: unknown, status: number): boolean {
+  return error instanceof AdminApiError && error.status === status;
+}
+
 async function authenticatedAdminRequest<T>(
   path: string,
   init: RequestInit = {},
@@ -419,7 +433,7 @@ async function authenticatedAdminRequest<T>(
     } catch {
       // Keep the HTTP status fallback.
     }
-    throw new Error(detail);
+    throw new AdminApiError(response.status, detail);
   }
 
   return (await response.json()) as T;
@@ -611,7 +625,7 @@ export async function getModerationDetail(
       `/admin/moderation/${queue}/${encodeURIComponent(itemId)}`,
     );
   } catch (error) {
-    if (error instanceof Error && error.message.includes("(404)")) return null;
+    if (isAdminApiStatus(error, 404)) return null;
     throw error;
   }
 }
@@ -663,7 +677,7 @@ export async function getAdminSchedules(): Promise<{
     );
     return { available: true, schedules: payload.schedules };
   } catch (error) {
-    if (error instanceof Error && error.message.includes("(404)")) {
+    if (isAdminApiStatus(error, 404)) {
       return { available: false, schedules: [] };
     }
     throw error;
