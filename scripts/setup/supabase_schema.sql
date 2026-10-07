@@ -155,6 +155,9 @@ alter table public.reminders add column if not exists occurrence_count integer;
 alter table public.reminders add column if not exists recurrence_end_date timestamptz;
 alter table public.reminders add column if not exists course_duration_days integer;
 alter table public.reminders add column if not exists is_done boolean not null default false;
+-- Daily dose times ("08:00", "20:00") of a medicine course, one phone
+-- notification each per day (apps/mobile_app/lib/features/notifications/).
+alter table public.reminders add column if not exists dose_times text[];
 
 -- Account-level consents (docs/compliance/04_termini_e_consensi.md): ToS,
 -- privacy policy, marketing email, analytics. One row per owner; each key

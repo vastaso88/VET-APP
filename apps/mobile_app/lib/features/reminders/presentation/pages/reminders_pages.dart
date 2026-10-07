@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 import '../../../../../design_system/responsive.dart';
 import '../../../../../shared/formatters/date_input_formatter.dart';
@@ -15,6 +16,7 @@ import '../../../pets/presentation/widgets/pet_avatar.dart';
 import '../../../settings/data/layout_settings_store.dart';
 import '../../../../app/router/app_router.dart';
 import '../../data/reminders_repository.dart';
+import '../../domain/clock_time.dart';
 import '../../domain/reminder_calendar.dart';
 import '../../domain/reminder_presentation.dart';
 
@@ -815,10 +817,11 @@ class _ReminderFormState extends State<_ReminderForm> {
 
   late EventKind _kind = widget.initial?.kind ?? EventKind.spot;
   late final _dateController = TextEditingController(
-    text: formatDateForInput(
-      widget.initial?.dueAt ?? DateTime.now().add(const Duration(days: 1)),
-    ),
+    text: formatDateForInput(_initialDate()),
   );
+  // The time of day lives apart from the typed date: changing the date keeps it.
+  late TimeOfDay _time = TimeOfDay.fromDateTime(_initialDate());
+  late final List<String> _doseTimes = [...?widget.initial?.doseTimes];
   late IntervalUnit _intervalUnit =
       widget.initial?.intervalUnit ?? IntervalUnit.days;
   late int _intervalValue = widget.initial?.intervalValue ?? 30;
@@ -849,6 +852,20 @@ class _ReminderFormState extends State<_ReminderForm> {
     super.dispose();
   }
 
+  /// Tomorrow at 09:00 for a new reminder. A reminder saved before the time
+  /// could be picked sits at midnight: it is shown (and notified) at 09:00.
+  DateTime _initialDate() {
+    final initial = widget.initial?.dueAt;
+    if (initial == null) {
+      final tomorrow = DateTime.now().add(const Duration(days: 1));
+      return DateTime(tomorrow.year, tomorrow.month, tomorrow.day, 9);
+    }
+    if (initial.hour == 0 && initial.minute == 0) {
+      return DateTime(initial.year, initial.month, initial.day, 9);
+    }
+    return initial;
+  }
+
   Future<void> _pickDate() async {
     final initialDate = parseStrictDate(_dateController.text) ?? DateTime.now();
     final picked = await showDatePicker(
@@ -863,6 +880,32 @@ class _ReminderFormState extends State<_ReminderForm> {
     if (picked != null) {
       setState(() => _dateController.text = formatDateForInput(picked));
     }
+  }
+
+  Future<void> _pickTime() async {
+    final picked = await showTimePicker(
+      context: context,
+      initialTime: _time,
+    );
+    if (picked != null) {
+      setState(() => _time = picked);
+    }
+  }
+
+  Future<void> _addDoseTime() async {
+    final picked = await showTimePicker(
+      context: context,
+      initialTime: _doseTimes.isEmpty
+          ? const TimeOfDay(hour: 8, minute: 0)
+          : const TimeOfDay(hour: 20, minute: 0),
+      helpText: 'Orario della dose',
+    );
+    if (picked == null) return;
+    final time = formatClockTime(picked.hour, picked.minute);
+    if (_doseTimes.contains(time)) return;
+    setState(() => _doseTimes
+      ..add(time)
+      ..sort());
   }
 
   Future<void> _pickRecurrenceEndDate() async {
@@ -886,6 +929,10 @@ class _ReminderFormState extends State<_ReminderForm> {
     return null;
   }
 
+  /// The typed day at the chosen time of day.
+  DateTime _combine(DateTime day) =>
+      DateTime(day.year, day.month, day.day, _time.hour, _time.minute);
+
   void _save() {
     if (!(_formKey.currentState?.validate() ?? false)) {
       return;
@@ -897,7 +944,7 @@ class _ReminderFormState extends State<_ReminderForm> {
       petName: widget.initial?.petName ?? widget.petName,
       title: _titleController.text.trim(),
       kind: _kind,
-      dueAt: parseStrictDate(_dateController.text.trim())!,
+      dueAt: _combine(parseStrictDate(_dateController.text.trim())!),
       note: _noteController.text.trim(),
       intervalUnit: _kind == EventKind.recurring ? _intervalUnit : null,
       intervalValue: _kind == EventKind.recurring ? _intervalValue : null,
@@ -911,6 +958,7 @@ class _ReminderFormState extends State<_ReminderForm> {
               ? parseStrictDate(_recurrenceEndDateController.text.trim())
               : null,
       courseDurationDays: _kind == EventKind.course ? _courseDuration : null,
+      doseTimes: _kind == EventKind.course ? List.unmodifiable(_doseTimes) : const [],
       isDone: widget.initial?.isDone ?? false,
     );
 
@@ -952,15 +1000,37 @@ class _ReminderFormState extends State<_ReminderForm> {
                   (value ?? '').trim().isEmpty ? 'Inserisci un titolo.' : null,
             ),
             const SizedBox(height: AppSpacing.lg),
-            _DatePickerField(
-              label: switch (_kind) {
-                EventKind.spot => 'Data',
-                EventKind.recurring => 'Prossima scadenza',
-                EventKind.course => 'Data di inizio',
-              },
-              controller: _dateController,
-              onPick: _pickDate,
-              validator: _validateDate,
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Expanded(
+                  flex: 3,
+                  child: _DatePickerField(
+                    label: switch (_kind) {
+                      EventKind.spot => 'Data',
+                      EventKind.recurring => 'Prossima scadenza',
+                      EventKind.course => 'Data di inizio',
+                    },
+                    controller: _dateController,
+                    onPick: _pickDate,
+                    validator: _validateDate,
+                  ),
+                ),
+                // A course is notified at its dose times instead.
+                if (_kind != EventKind.course) ...[
+                  const SizedBox(width: AppSpacing.sm),
+                  Expanded(
+                    flex: 2,
+                    child: _PickerField(
+                      label: 'Ora',
+                      icon: Icons.schedule_rounded,
+                      text: formatClockTime(_time.hour, _time.minute),
+                      onTap: _pickTime,
+                      showChevron: false,
+                    ),
+                  ),
+                ],
+              ],
             ),
             if (_kind == EventKind.recurring) ...[
               const SizedBox(height: AppSpacing.lg),
@@ -1044,6 +1114,32 @@ class _ReminderFormState extends State<_ReminderForm> {
                 days: _courseDuration,
                 onChanged: (days) => setState(() => _courseDuration = days),
               ),
+              const SizedBox(height: AppSpacing.lg),
+              Text('Orari delle dosi', style: AppTextStyles.caption),
+              const SizedBox(height: AppSpacing.sm),
+              Wrap(
+                spacing: AppSpacing.sm,
+                runSpacing: AppSpacing.sm,
+                children: [
+                  for (final time in _doseTimes)
+                    InputChip(
+                      label: Text(time),
+                      onDeleted: () => setState(() => _doseTimes.remove(time)),
+                    ),
+                  ActionChip(
+                    avatar: const Icon(Icons.add_rounded, size: 18),
+                    label: const Text('Aggiungi orario'),
+                    onPressed: _addDoseTime,
+                  ),
+                ],
+              ),
+              if (_doseTimes.isEmpty) ...[
+                const SizedBox(height: AppSpacing.xs),
+                Text(
+                  'Senza orari ricevi un avviso al giorno, alle 9:00.',
+                  style: AppTextStyles.caption.copyWith(color: AppColors.mutedText),
+                ),
+              ],
             ],
             const SizedBox(height: AppSpacing.lg),
             const _FieldLabel('Nota'),
@@ -1226,6 +1322,72 @@ class _DatePickerField extends StatelessWidget {
   }
 }
 
+/// A tappable field showing a picked value (a date, a time) that opens its
+/// picker on tap.
+class _PickerField extends StatelessWidget {
+  const _PickerField({
+    required this.label,
+    required this.icon,
+    required this.text,
+    required this.onTap,
+    this.showChevron = true,
+  });
+
+  final String label;
+  final IconData icon;
+  final String text;
+  final VoidCallback onTap;
+
+  /// Off for narrow fields (the time next to the date), where it would
+  /// squeeze the value itself.
+  final bool showChevron;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(label, style: AppTextStyles.caption),
+        const SizedBox(height: AppSpacing.xs),
+        Material(
+          color: AppColors.background,
+          borderRadius: BorderRadius.circular(AppRadii.medium),
+          child: InkWell(
+            borderRadius: BorderRadius.circular(AppRadii.medium),
+            onTap: onTap,
+            child: Container(
+              padding: const EdgeInsets.symmetric(
+                  horizontal: AppSpacing.lg, vertical: AppSpacing.md),
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(AppRadii.medium),
+                border: Border.all(color: AppColors.border),
+              ),
+              child: Row(
+                children: [
+                  Icon(icon, size: 16, color: AppColors.primary),
+                  const SizedBox(width: AppSpacing.sm),
+                  Expanded(
+                    child: Text(
+                      text,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style:
+                          AppTextStyles.bodySmall.copyWith(color: AppColors.text),
+                    ),
+                  ),
+                  if (showChevron)
+                    const Icon(Icons.chevron_right_rounded,
+                        color: AppColors.mutedText),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
 class _IntervalPresetChips extends StatelessWidget {
   const _IntervalPresetChips({
     required this.selectedUnit,
@@ -1321,44 +1483,109 @@ class _UnitToggle extends StatelessWidget {
   }
 }
 
-class _DurationStepper extends StatelessWidget {
+/// Course length in days: typed directly (long courses) or nudged with
+/// −/+. Part of the reminder [Form], so an empty or out-of-range number
+/// blocks "Salva" with a message under the field.
+class _DurationStepper extends StatefulWidget {
   const _DurationStepper({required this.days, required this.onChanged});
+
+  static const minDays = 1;
+  static const maxDays = 365;
 
   final int days;
   final ValueChanged<int> onChanged;
 
   @override
+  State<_DurationStepper> createState() => _DurationStepperState();
+}
+
+class _DurationStepperState extends State<_DurationStepper> {
+  late final _controller = TextEditingController(text: '${widget.days}');
+
+  @override
+  void didUpdateWidget(_DurationStepper oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    // −/+ changed the value: show it, unless the field already says so
+    // (typing "1" on the way to "12" must not be rewritten).
+    if (int.tryParse(_controller.text) != widget.days) {
+      _controller.text = '${widget.days}';
+    }
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(
-          horizontal: AppSpacing.md, vertical: AppSpacing.xs),
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(AppRadii.medium),
-        border: Border.all(color: AppColors.border),
-        color: AppColors.background,
-      ),
-      child: Row(
-        children: [
-          IconButton(
-            onPressed: days > 1 ? () => onChanged(days - 1) : null,
-            icon: const Icon(Icons.remove_circle_outline),
-            color: AppColors.primary,
-          ),
-          Expanded(
-            child: Text(
-              days == 1 ? '1 giorno' : '$days giorni',
-              textAlign: TextAlign.center,
-              style: AppTextStyles.bodySmall
-                  .copyWith(color: AppColors.text, fontWeight: FontWeight.w700),
+    final days = widget.days;
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        IconButton(
+          tooltip: 'Un giorno in meno',
+          onPressed:
+              days > _DurationStepper.minDays ? () => widget.onChanged(days - 1) : null,
+          icon: const Icon(Icons.remove_circle_outline),
+          color: AppColors.primary,
+        ),
+        Expanded(
+          child: TextFormField(
+            controller: _controller,
+            keyboardType: TextInputType.number,
+            inputFormatters: [
+              FilteringTextInputFormatter.digitsOnly,
+              LengthLimitingTextInputFormatter(3),
+            ],
+            textAlign: TextAlign.center,
+            style: AppTextStyles.bodySmall
+                .copyWith(color: AppColors.text, fontWeight: FontWeight.w700),
+            onChanged: (value) {
+              final parsed = int.tryParse(value);
+              if (parsed != null &&
+                  parsed >= _DurationStepper.minDays &&
+                  parsed <= _DurationStepper.maxDays) {
+                widget.onChanged(parsed);
+              }
+            },
+            validator: (value) {
+              final parsed = int.tryParse(value ?? '');
+              if (parsed == null ||
+                  parsed < _DurationStepper.minDays ||
+                  parsed > _DurationStepper.maxDays) {
+                return 'Da ${_DurationStepper.minDays} a ${_DurationStepper.maxDays} giorni.';
+              }
+              return null;
+            },
+            decoration: InputDecoration(
+              suffixText: days == 1 ? 'giorno' : 'giorni',
+              filled: true,
+              fillColor: AppColors.background,
+              contentPadding: const EdgeInsets.symmetric(
+                horizontal: AppSpacing.md,
+                vertical: AppSpacing.md,
+              ),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(AppRadii.medium),
+                borderSide: const BorderSide(color: AppColors.border),
+              ),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(AppRadii.medium),
+                borderSide: const BorderSide(color: AppColors.border),
+              ),
             ),
           ),
-          IconButton(
-            onPressed: days < 60 ? () => onChanged(days + 1) : null,
-            icon: const Icon(Icons.add_circle_outline),
-            color: AppColors.primary,
-          ),
-        ],
-      ),
+        ),
+        IconButton(
+          tooltip: 'Un giorno in più',
+          onPressed:
+              days < _DurationStepper.maxDays ? () => widget.onChanged(days + 1) : null,
+          icon: const Icon(Icons.add_circle_outline),
+          color: AppColors.primary,
+        ),
+      ],
     );
   }
 }

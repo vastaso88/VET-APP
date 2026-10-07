@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
@@ -24,6 +25,8 @@ import '../../../location/data/device_location_service.dart';
 import '../../../location/data/location_preference_store.dart';
 import '../../../location/data/location_repository.dart';
 import '../../../location/domain/coordinates.dart';
+import '../../../notifications/application/notification_scheduler.dart';
+import '../../../notifications/data/notification_preferences_store.dart';
 import '../../../nearby_places/data/radar_places_repository.dart';
 import '../../../nearby_places/data/reverse_geocoder.dart';
 import '../../../nearby_places/presentation/pages/data_sources_page.dart';
@@ -46,7 +49,6 @@ class SettingsPage extends StatefulWidget {
 
 class _SettingsPageState extends State<SettingsPage> {
   bool _notifications = true;
-  bool _activityReminders = true;
   String _weightUnit = 'kg';
 
   final _consentsDataSource = HttpAccountConsentsRemoteDataSource();
@@ -124,6 +126,7 @@ class _SettingsPageState extends State<SettingsPage> {
       final status = await Permission.notification.request();
       if (mounted) setState(() => _notifications = status.isGranted);
     } catch (_) {}
+    NotificationScheduler.instance.requestResync();
   }
 
   String _shortPlaceLabel(String label) {
@@ -347,8 +350,12 @@ class _SettingsPageState extends State<SettingsPage> {
     final result = await const AuthRepositoryFactory().create().signOut();
     if (!mounted) return;
     result.fold(
-      onSuccess: (_) => Navigator.of(context, rootNavigator: true)
-          .pushNamedAndRemoveUntil(AppRouter.auth, (route) => false),
+      onSuccess: (_) {
+        // No reminders or pet names left on the phone after logout.
+        unawaited(NotificationScheduler.instance.clearAll());
+        Navigator.of(context, rootNavigator: true)
+            .pushNamedAndRemoveUntil(AppRouter.auth, (route) => false);
+      },
       onFailure: (error) => ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(error.message)),
       ),
@@ -496,17 +503,12 @@ class _SettingsPageState extends State<SettingsPage> {
                     _ToggleRow(
                       icon: Icons.notifications_active_outlined,
                       iconColor: AppColors.primary,
-                      title: 'Notifiche push',
+                      title: 'Notifiche',
                       value: _notifications,
                       onChanged: (value) => unawaited(_setNotifications(value)),
                     ),
-                    _ToggleRow(
-                      icon: Icons.event_available_outlined,
-                      iconColor: AppColors.success,
-                      title: 'Promemoria attività',
-                      value: _activityReminders,
-                      onChanged: (value) => setState(() => _activityReminders = value),
-                    ),
+                    // The browser can't receive scheduled notifications.
+                    if (!kIsWeb) const _NotificationCategoryToggles(),
                     _UnitRow(
                       value: _weightUnit,
                       onChanged: (value) => setState(() => _weightUnit = value),
@@ -891,6 +893,52 @@ class _ToggleRow extends StatelessWidget {
           Switch(value: value, onChanged: onChanged),
         ],
       ),
+    );
+  }
+}
+
+/// Which kinds of notification arrive on the phone; stored on the phone
+/// and followed at once by NotificationScheduler.
+class _NotificationCategoryToggles extends StatelessWidget {
+  const _NotificationCategoryToggles();
+
+  @override
+  Widget build(BuildContext context) {
+    final store = NotificationPreferencesStore.instance;
+    unawaited(store.ensureLoaded());
+    return ListenableBuilder(
+      listenable: store,
+      builder: (context, _) {
+        final preferences = store.preferences;
+        return Column(
+          children: [
+            _ToggleRow(
+              icon: Icons.event_available_outlined,
+              iconColor: AppColors.success,
+              title: 'Visite e vaccini',
+              value: preferences.reminders,
+              onChanged: (value) =>
+                  unawaited(store.update(preferences.copyWith(reminders: value))),
+            ),
+            _ToggleRow(
+              icon: Icons.medication_outlined,
+              iconColor: AppColors.info,
+              title: 'Orari dei farmaci',
+              value: preferences.medicines,
+              onChanged: (value) =>
+                  unawaited(store.update(preferences.copyWith(medicines: value))),
+            ),
+            _ToggleRow(
+              icon: Icons.cake_outlined,
+              iconColor: AppColors.accent,
+              title: 'Compleanni',
+              value: preferences.birthdays,
+              onChanged: (value) =>
+                  unawaited(store.update(preferences.copyWith(birthdays: value))),
+            ),
+          ],
+        );
+      },
     );
   }
 }

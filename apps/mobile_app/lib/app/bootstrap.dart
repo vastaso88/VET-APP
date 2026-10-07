@@ -9,6 +9,7 @@ import 'app.dart';
 import 'config/app_bootstrap_state.dart';
 import 'router/app_router.dart';
 import '../features/dog_walks/data/walk_home_widget.dart';
+import '../features/notifications/application/notification_scheduler.dart';
 import '../shared/config/app_runtime_config_loader.dart';
 
 Future<void> bootstrap() async {
@@ -75,6 +76,8 @@ Future<void> bootstrap() async {
   );
 
   initWalkHomeWidgetLaunchHandling();
+  // Reminder, medicine and birthday notifications on the phone (no-op on web).
+  NotificationScheduler.instance.start();
 }
 
 /// On a cold start the recovery link can arrive before the first frame, when

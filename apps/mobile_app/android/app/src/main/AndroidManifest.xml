@@ -6,6 +6,12 @@
          permission_handler from the first-run notification prompt — see
          lib/features/first_run/presentation/pages/notification_permission_page.dart. -->
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <!-- Lets flutter_local_notifications put the scheduled reminder/medicine/
+         birthday notifications back after a reboot (lib/features/notifications/).
+         Deliberately NO SCHEDULE_EXACT_ALARM / USE_EXACT_ALARM: inexact alarms
+         may arrive a few minutes late in Doze, which is fine for these, and
+         exact ones need a Google Play declaration reserved to alarm/calendar apps. -->
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
     <!-- Foreground-only location — Località in Impostazioni, passeggiate, attività locali.
          See docs/compliance/05_permessi_dispositivo_os.md. -->
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
@@ -104,6 +110,21 @@
             <meta-data
                 android:name="android.appwidget.provider"
                 android:resource="@xml/dog_walks_widget_info" />
+        </receiver>
+        <!-- flutter_local_notifications: shows the scheduled notifications and
+             reschedules them after a reboot or an app update. -->
+        <receiver
+            android:exported="false"
+            android:name="com.dexterous.flutterlocalnotifications.ScheduledNotificationReceiver" />
+        <receiver
+            android:exported="false"
+            android:name="com.dexterous.flutterlocalnotifications.ScheduledNotificationBootReceiver">
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED"/>
+                <action android:name="android.intent.action.MY_PACKAGE_REPLACED"/>
+                <action android:name="android.intent.action.QUICKBOOT_POWERON" />
+                <action android:name="com.htc.intent.action.QUICKBOOT_POWERON"/>
+            </intent-filter>
         </receiver>
         <!-- Don't delete the meta-data below.
              This is used by the Flutter tool to generate GeneratedPluginRegistrant.java -->

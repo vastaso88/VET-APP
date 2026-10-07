@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../home/presentation/widgets/home_dashboard_primitives.dart';
 import '../data/reminders_repository.dart';
+import 'clock_time.dart';
 import 'relative_date.dart';
 
 /// Icon, type label, date/progress label, and urgency tone for a
@@ -30,14 +31,14 @@ class ReminderPresentation {
         return ReminderPresentation(
           icon: Icons.event_outlined,
           kindLabel: 'Evento',
-          dateLabel: relativeDayLabel(reminder.dueAt),
+          dateLabel: _withTime(relativeDayLabel(reminder.dueAt), reminder.dueAt),
           tone: _urgencyTone(reminder.dueAt, startOfToday),
         );
       case EventKind.recurring:
         return ReminderPresentation(
           icon: Icons.autorenew_rounded,
           kindLabel: 'Ricorrente · ${_intervalLabel(reminder)}${_recurrenceEndLabel(reminder)}',
-          dateLabel: relativeDayLabel(reminder.dueAt),
+          dateLabel: _withTime(relativeDayLabel(reminder.dueAt), reminder.dueAt),
           tone: _urgencyTone(reminder.dueAt, startOfToday),
         );
       case EventKind.course:
@@ -65,10 +66,18 @@ class ReminderPresentation {
 
     return ReminderPresentation(
       icon: Icons.medication_outlined,
-      kindLabel: 'Ciclo · $duration giorni',
+      kindLabel: reminder.doseTimes.isEmpty
+          ? 'Ciclo · $duration giorni'
+          : 'Ciclo · $duration giorni · ${reminder.doseTimes.join(', ')}',
       dateLabel: dateLabel,
       tone: tone,
     );
+  }
+
+  /// "Domani · 15:30"; date-only reminders (midnight) keep just the day.
+  static String _withTime(String dayLabel, DateTime dueAt) {
+    if (dueAt.hour == 0 && dueAt.minute == 0) return dayLabel;
+    return '$dayLabel · ${formatClockTime(dueAt.hour, dueAt.minute)}';
   }
 
   static DashboardTone _urgencyTone(DateTime dueAt, DateTime startOfToday) {
