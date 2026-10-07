@@ -17,8 +17,8 @@
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
     <!-- Keeps GPS tracking alive while a walk is running and the app is
-         backgrounded (active_walk_controller.dart's foregroundNotificationConfig)
-         via a persistent notification - NOT the same thing as
+         backgrounded (WalkTrackingService.kt, with geolocator's own
+         foregroundNotificationConfig as fallback) via a persistent notification - NOT the same thing as
          ACCESS_BACKGROUND_LOCATION ("Allow all the time"), which
          docs/compliance/05_permessi_dispositivo_os.md explicitly defers
          pending a roadmap decision because of its store-review scrutiny.
@@ -129,6 +129,14 @@
                 <action android:name="com.htc.intent.action.QUICKBOOT_POWERON"/>
             </intent-filter>
         </receiver>
+        <!-- Walk tracking (WalkTrackingService.kt): keeps GPS alive in the
+             background with the "Passeggiata con <pet>" notification. Typed
+             "location", covered by FOREGROUND_SERVICE_LOCATION above; no new
+             permission. -->
+        <service
+            android:name=".WalkTrackingService"
+            android:exported="false"
+            android:foregroundServiceType="location" />
         <!-- Don't delete the meta-data below.
              This is used by the Flutter tool to generate GeneratedPluginRegistrant.java -->
         <meta-data

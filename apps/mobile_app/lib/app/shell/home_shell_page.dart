@@ -255,9 +255,23 @@ class _HomeShellPageState extends State<HomeShellPage> {
     }
 
     // Already on the Home tab with nothing pushed above it: this is the
-    // true root, so let the system close the app rather than trapping the
-    // back button here.
+    // true root, so leave the app rather than trapping the back button here.
+    // On Android it goes to the background (as Android 12+ does by default)
+    // instead of finishing: finishing killed the Flutter engine, and with it
+    // any walk being tracked (owner report, 2026-10-07).
+    if (await _moveAppToBackground()) return;
     SystemNavigator.pop();
+  }
+
+  static const _appNavigationChannel = MethodChannel('vetapp/app_navigation');
+
+  Future<bool> _moveAppToBackground() async {
+    if (kIsWeb || defaultTargetPlatform != TargetPlatform.android) return false;
+    try {
+      return await _appNavigationChannel.invokeMethod<bool>('moveToBackground') ?? false;
+    } catch (_) {
+      return false;
+    }
   }
 
   void _onTabRequested() {

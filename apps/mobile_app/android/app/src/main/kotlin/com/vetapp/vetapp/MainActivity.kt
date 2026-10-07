@@ -39,6 +39,10 @@ object WalkWidgetBridge {
 }
 
 class MainActivity : FlutterActivity() {
+  companion object {
+    private const val APP_NAVIGATION_CHANNEL = "vetapp/app_navigation"
+  }
+
   override fun onCreate(savedInstanceState: Bundle?) {
     // After the system killed the process and restores this Activity (e.g.
     // from Recents), Android replays the ORIGINAL launch intent. If that was a
@@ -58,6 +62,34 @@ class MainActivity : FlutterActivity() {
     WalkWidgetBridge.attach(
         MethodChannel(flutterEngine.dartExecutor.binaryMessenger, WalkWidgetBridge.CHANNEL)
     )
+    MethodChannel(flutterEngine.dartExecutor.binaryMessenger, WalkTrackingService.CHANNEL)
+        .setMethodCallHandler { call, result ->
+          val args = call.arguments as? Map<*, *> ?: emptyMap<String, Any>()
+          when (call.method) {
+            "start" -> result.success(WalkTrackingService.start(applicationContext, args))
+            "update" -> {
+              WalkTrackingService.update(applicationContext, args)
+              result.success(null)
+            }
+            "stop" -> {
+              WalkTrackingService.stop(applicationContext)
+              result.success(null)
+            }
+            else -> result.notImplemented()
+          }
+        }
+    // Back on the shell's root page: send the app to the background like
+    // Android 12+ does for launcher activities, instead of finishing the
+    // activity - which used to kill the Flutter engine and so any walk being
+    // tracked (owner report, 2026-10-07).
+    MethodChannel(flutterEngine.dartExecutor.binaryMessenger, APP_NAVIGATION_CHANNEL)
+        .setMethodCallHandler { call, result ->
+          if (call.method == "moveToBackground") {
+            result.success(moveTaskToBack(true))
+          } else {
+            result.notImplemented()
+          }
+        }
   }
 
   override fun cleanUpFlutterEngine(flutterEngine: FlutterEngine) {
@@ -69,8 +101,11 @@ class MainActivity : FlutterActivity() {
     val finishing = isFinishing
     super.onDestroy()
     // The engine (and the walk tracking in it) dies with a finished activity:
-    // stop advertising the walk on the widget. A walk recovered on the next
-    // launch is re-published by Dart.
-    if (finishing) DogWalksWidgetProvider.clearActiveWalk(applicationContext)
+    // stop advertising the walk on the widget and in the notification. A
+    // walk recovered on the next launch is re-published by Dart.
+    if (finishing) {
+      DogWalksWidgetProvider.clearActiveWalk(applicationContext)
+      WalkTrackingService.stop(applicationContext)
+    }
   }
 }

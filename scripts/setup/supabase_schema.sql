@@ -824,6 +824,13 @@ create index if not exists pet_photos_pet_created_idx on public.pet_photos (pet_
 alter table public.pet_photos add column if not exists media_type text not null default 'photo';
 alter table public.pet_photos add column if not exists duration_seconds integer;
 alter table public.pet_photos add column if not exists size_bytes bigint;
+
+-- When a photo or video was actually shot (in-app camera time, or the EXIF
+-- date of an imported photo) - created_at is only the upload time. Lets the
+-- gallery caption a shot taken during a walk ("Passeggiata del 07/10/26").
+-- Nullable: unknown for older rows and imported videos. The app saves rows
+-- without it until this has run.
+alter table public.pet_photos add column if not exists taken_at timestamptz;
 do $$
 begin
     if not exists (

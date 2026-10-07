@@ -17,6 +17,7 @@ class _RecordingRepository extends PetPhotoRepository {
     required Uint8List bytes,
     required String extension,
     required int durationSeconds,
+    DateTime? takenAt,
   }) async {
     uploads.add((size: bytes.length, extension: extension));
     return PetPhotoEntry(

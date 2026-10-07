@@ -92,11 +92,16 @@ class PetMediaImporter {
   /// [onProgress] reports (file being handled, total) before each file, so the
   /// screen can say "Carico 2 di 5" from the first moment. [onCompressProgress]
   /// reports 0..1 while a video is being reduced (phone only).
+  ///
+  /// [capturedAt] is set for a shot just taken with the in-app camera (the
+  /// moment the camera returned it); imported files leave it null and a
+  /// photo's shooting time comes from its EXIF instead.
   Future<PetMediaImportResult> importAll({
     required String petId,
     required List<XFile> files,
     void Function(int current, int total)? onProgress,
     void Function(double fraction)? onCompressProgress,
+    DateTime? capturedAt,
   }) async {
     var photos = 0;
     var videos = 0;
@@ -108,8 +113,8 @@ class PetMediaImporter {
       try {
         final kind = classifyPickedMedia(fileName: file.name, mimeType: file.mimeType);
         final outcome = kind == PetMediaKind.video
-            ? await _importVideo(petId, file, onCompressProgress)
-            : _uploaded(await _importPhoto(petId, file));
+            ? await _importVideo(petId, file, onCompressProgress, capturedAt)
+            : _uploaded(await _importPhoto(petId, file, capturedAt));
         if (outcome.problem case final problem?) {
           problems.add(problem);
         } else if (!outcome.uploaded) {
@@ -135,11 +140,18 @@ class PetMediaImporter {
 
   static String _label(XFile file) => file.name.isEmpty ? 'un file' : '"${file.name}"';
 
-  Future<String?> _importPhoto(String petId, XFile file) async {
+  Future<String?> _importPhoto(String petId, XFile file, DateTime? capturedAt) async {
     final raw = await file.readAsBytes();
-    // Re-encoding drops the EXIF block (position, device) - see compressPetPhoto.
+    // Only the shooting time is kept from the EXIF block; re-encoding then
+    // drops the rest (position, device) - see compressPetPhoto.
+    final takenAt = capturedAt ?? photoTakenAtFromExif(raw);
     final jpeg = await compute(compressPetPhoto, raw);
-    final entry = await _repository.upload(petId: petId, compressedJpeg: jpeg, isProfile: false);
+    final entry = await _repository.upload(
+      petId: petId,
+      compressedJpeg: jpeg,
+      isProfile: false,
+      takenAt: takenAt,
+    );
     return entry == null ? 'Il salvataggio delle foto non è disponibile senza connessione.' : null;
   }
 
@@ -154,6 +166,7 @@ class PetMediaImporter {
     String petId,
     XFile file,
     void Function(double fraction)? onCompressProgress,
+    DateTime? capturedAt,
   ) async {
     final size = await file.length();
     final willCompress = _compressor.isAvailable;
@@ -204,6 +217,7 @@ class PetMediaImporter {
         bytes: bytes,
         extension: extension,
         durationSeconds: duration!.inSeconds,
+        takenAt: capturedAt,
       );
       return _uploaded(
         entry == null ? 'Il salvataggio dei video non è disponibile senza connessione.' : null,

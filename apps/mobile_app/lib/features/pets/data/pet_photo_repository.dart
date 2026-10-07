@@ -23,6 +23,7 @@ class PetPhotoEntry {
     required this.isProfile,
     this.kind = PetMediaKind.photo,
     this.durationSeconds,
+    this.takenAt,
   });
 
   final String id;
@@ -36,6 +37,12 @@ class PetPhotoEntry {
 
   /// Videos only.
   final int? durationSeconds;
+
+  /// When the shot was actually taken: the moment the in-app camera returned
+  /// it, or the original EXIF date of an imported photo. Null when unknown
+  /// (imported videos, photos without EXIF, rows saved before 2026-10-07) -
+  /// [createdAt] is only the upload time, so it is never used in its place.
+  final DateTime? takenAt;
 
   bool get isVideo => kind == PetMediaKind.video;
 }
@@ -52,7 +59,28 @@ PetPhotoEntry petPhotoEntryFromRow(Map<String, dynamic> map) {
     isProfile: map['is_profile'] == true,
     kind: isVideo ? PetMediaKind.video : PetMediaKind.photo,
     durationSeconds: isVideo ? (map['duration_seconds'] as num?)?.toInt() : null,
+    takenAt: DateTime.tryParse(map['taken_at']?.toString() ?? ''),
   );
+}
+
+/// The original shooting time recorded by the camera in [raw]'s EXIF
+/// (DateTimeOriginal, else DateTime), read before compressPetPhoto strips
+/// the block. EXIF stores local wall time without a zone, so it is read as
+/// the phone's local time. Null when absent or unreadable.
+DateTime? photoTakenAtFromExif(Uint8List raw) {
+  try {
+    final exif = img.decodeJpgExif(raw);
+    if (exif == null) return null;
+    final value = exif.exifIfd['DateTimeOriginal'] ?? exif.imageIfd['DateTime'];
+    final match = RegExp(r'^(\d{4}):(\d{2}):(\d{2}) (\d{2}):(\d{2}):(\d{2})')
+        .firstMatch(value?.toString().trim() ?? '');
+    if (match == null) return null;
+    final parts = [for (var i = 1; i <= 6; i++) int.parse(match.group(i)!)];
+    if (parts[0] < 1990 || parts[1] < 1 || parts[1] > 12 || parts[2] < 1) return null;
+    return DateTime(parts[0], parts[1], parts[2], parts[3], parts[4], parts[5]);
+  } catch (_) {
+    return null;
+  }
 }
 
 /// Resizes and re-encodes a picked image as JPEG. Pure, so it runs in an
@@ -134,6 +162,7 @@ class PetPhotoRepository {
     required String petId,
     required Uint8List compressedJpeg,
     required bool isProfile,
+    DateTime? takenAt,
   }) async {
     final client = _resolveClient();
     final ownerId = CurrentUser.get()?.id;
@@ -154,6 +183,7 @@ class PetPhotoRepository {
         'storage_path': path,
         'created_at': createdAt.toIso8601String(),
         'is_profile': isProfile,
+        if (takenAt != null) 'taken_at': takenAt.toUtc().toIso8601String(),
       },
     );
     _memoryCache[path] = compressedJpeg;
@@ -164,6 +194,7 @@ class PetPhotoRepository {
       storagePath: path,
       createdAt: createdAt,
       isProfile: isProfile,
+      takenAt: takenAt,
     );
   }
 
@@ -176,6 +207,7 @@ class PetPhotoRepository {
     required Uint8List bytes,
     required String extension,
     required int durationSeconds,
+    DateTime? takenAt,
   }) async {
     final client = _resolveClient();
     final ownerId = CurrentUser.get()?.id;
@@ -204,6 +236,7 @@ class PetPhotoRepository {
         'media_type': 'video',
         'duration_seconds': durationSeconds,
         'size_bytes': bytes.length,
+        if (takenAt != null) 'taken_at': takenAt.toUtc().toIso8601String(),
       },
     );
     return PetPhotoEntry(
@@ -214,6 +247,7 @@ class PetPhotoRepository {
       isProfile: false,
       kind: PetMediaKind.video,
       durationSeconds: durationSeconds,
+      takenAt: takenAt,
     );
   }
 
@@ -236,7 +270,7 @@ class PetPhotoRepository {
           fileOptions: FileOptions(contentType: contentType, upsert: false),
         );
     try {
-      await client.from('pet_photos').insert(row);
+      await _insertRow(client, row);
     } catch (_) {
       try {
         await client.storage.from(bucket).remove([path]);
@@ -244,6 +278,18 @@ class PetPhotoRepository {
         // Best effort: an orphan is recoverable, hiding the real error is not.
       }
       rethrow;
+    }
+  }
+
+  /// `taken_at` arrived 2026-10-07 (scripts/setup/supabase_schema.sql): until
+  /// the live table has it, the row is saved without it rather than losing
+  /// the upload - the photo then just carries no walk caption.
+  static Future<void> _insertRow(SupabaseClient client, Map<String, Object?> row) async {
+    try {
+      await client.from('pet_photos').insert(row);
+    } catch (_) {
+      if (!row.containsKey('taken_at')) rethrow;
+      await client.from('pet_photos').insert({...row}..remove('taken_at'));
     }
   }
 
@@ -352,11 +398,13 @@ class PetPhotoRepository {
 /// pet still saves, and the photo stays in memory for this session.
 Future<String?> saveProfilePhoto({required String petId, required Uint8List raw}) async {
   try {
+    final takenAt = photoTakenAtFromExif(raw);
     final jpeg = await compute(compressPetPhoto, raw);
     final entry = await PetPhotoRepository().upload(
       petId: petId,
       compressedJpeg: jpeg,
       isProfile: true,
+      takenAt: takenAt,
     );
     return entry?.storagePath;
   } catch (_) {
