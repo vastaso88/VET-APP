@@ -856,9 +856,11 @@ insert into storage.buckets (id, name, public)
 values ('pet-photos', 'pet-photos', false)
 on conflict (id) do nothing;
 
--- Server-side ceiling for one object (the free plan's global cap is 50 MB):
--- the app checks first, this stops anything that bypasses it.
-update storage.buckets set file_size_limit = 50000000 where id = 'pet-photos';
+-- Server-side ceiling for one object, equal to petVideoMaxBytes in the app
+-- (pet_video_rules.dart): 20 MB since build 26, when the phone started
+-- re-encoding videos to 720p (was 50 MB). The app checks first, this stops
+-- anything that bypasses it. Photos are ~0.3-0.6 MB.
+update storage.buckets set file_size_limit = 20000000 where id = 'pet-photos';
 
 drop policy if exists pet_photos_objects_select_own on storage.objects;
 create policy pet_photos_objects_select_own on storage.objects

@@ -84,7 +84,31 @@ void main() {
       );
 
       expect(check.rejection, PetVideoRejection.tooBig);
-      expect(check.message, contains('50 MB'));
+      expect(check.message, contains('20 MB'));
+      expect(check.message, contains('browser'));
+    });
+
+    test('on the phone a heavy original is fine: it will be reduced', () {
+      final check = checkPetVideo(
+        fileName: 'a.mp4',
+        sizeBytes: 180 * 1000 * 1000,
+        duration: const Duration(seconds: 30),
+        willCompress: true,
+      );
+
+      expect(check.isOk, isTrue);
+    });
+
+    test('on the phone an absurdly large original is refused before any work', () {
+      final check = checkPetVideo(
+        fileName: 'a.mp4',
+        sizeBytes: petVideoMaxSourceBytes + 1,
+        duration: Duration.zero,
+        willCompress: true,
+      );
+
+      expect(check.rejection, PetVideoRejection.tooBig);
+      expect(check.message, contains('500 MB'));
     });
 
     test('rejects formats outside mp4/m4v/mov', () {

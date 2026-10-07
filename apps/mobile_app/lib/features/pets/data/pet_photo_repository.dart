@@ -7,6 +7,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../../shared/auth/current_user.dart';
 import '../../../shared/config/app_runtime_config_loader.dart';
 import '../domain/pet_video_rules.dart';
+import 'pet_photo_disk_cache.dart';
 
 /// Longest side and JPEG quality every pet photo is normalised to before
 /// upload — keeps the private bucket small without visible loss on a phone.
@@ -95,16 +96,26 @@ String petPhotoStoragePath({
     '$ownerId/$petId/$photoId.$extension';
 
 /// Photos for pets, kept in the private `pet-photos` Storage bucket and the
-/// `pet_photos` table. Downloaded bytes are cached in memory for the session;
-/// there is no cross-restart disk cache (the app is web-first, and dart:io
-/// isn't available there).
+/// `pet_photos` table. Downloaded bytes are cached in memory for the session
+/// and, on the phone, on disk across launches ([PetPhotoDiskCache]) - both
+/// wiped by [clearLocalCaches] on sign-out.
 class PetPhotoRepository {
-  PetPhotoRepository({SupabaseClient? client}) : _client = client;
+  PetPhotoRepository({SupabaseClient? client, PetPhotoDiskCache? diskCache})
+      : _client = client,
+        _disk = diskCache ?? PetPhotoDiskCache.instance;
 
   static const bucket = 'pet-photos';
   static final Map<String, Uint8List> _memoryCache = {};
 
+  /// Forgets every photo held on this device (memory and disk) - the next
+  /// account to sign in must not see the previous one's pets.
+  static Future<void> clearLocalCaches() async {
+    _memoryCache.clear();
+    await PetPhotoDiskCache.instance.clear();
+  }
+
   final SupabaseClient? _client;
+  final PetPhotoDiskCache _disk;
 
   SupabaseClient? _resolveClient() {
     if (_client != null) return _client;
@@ -146,6 +157,7 @@ class PetPhotoRepository {
       },
     );
     _memoryCache[path] = compressedJpeg;
+    await _disk.write(path, compressedJpeg);
     return PetPhotoEntry(
       id: photoId,
       petId: petId,
@@ -282,6 +294,7 @@ class PetPhotoRepository {
     await client.storage.from(bucket).remove([photo.storagePath]);
     await client.from('pet_photos').delete().eq('id', photo.id);
     _memoryCache.remove(photo.storagePath);
+    await _disk.remove(photo.storagePath);
   }
 
   /// Removes every file under `<owner>/<pet>/` — called when the pet itself is
@@ -298,22 +311,35 @@ class PetPhotoRepository {
       if (files.isEmpty) return;
       await client.storage.from(bucket).remove([for (final file in files) '$prefix/${file.name}']);
       _memoryCache.removeWhere((key, _) => key.startsWith('$prefix/'));
+      await _disk.removeFolder(prefix);
     } catch (_) {
       // Orphaned objects are recoverable later; the pet deletion must still succeed.
     }
   }
 
-  /// Bytes for [storagePath] from the session cache, else downloaded once.
-  /// Null when there's no backend or the download fails.
+  /// Bytes for [storagePath] from the session cache, else the disk cache,
+  /// else downloaded once. Null when there's no backend or the download fails.
+  /// Photos never change once uploaded (a new one gets a new path), so a
+  /// cached copy is never stale.
   Future<Uint8List?> loadBytes(String storagePath) async {
     final cached = _memoryCache[storagePath];
     if (cached != null) return cached;
 
     final client = _resolveClient();
     if (client == null) return null;
+    // Paths start with the owner id: only the signed-in account's own photos
+    // are ever served from disk, even if a sign-out was missed.
+    final ownerId = CurrentUser.get()?.id;
+    final ownPhoto = ownerId != null && storagePath.startsWith('$ownerId/');
+    final onDisk = ownPhoto ? await _disk.read(storagePath) : null;
+    if (onDisk != null) {
+      _memoryCache[storagePath] = onDisk;
+      return onDisk;
+    }
     try {
       final bytes = await client.storage.from(bucket).download(storagePath);
       _memoryCache[storagePath] = bytes;
+      if (ownPhoto) await _disk.write(storagePath, bytes);
       return bytes;
     } catch (_) {
       return null;

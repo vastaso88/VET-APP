@@ -1,4 +1,6 @@
 
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 
 import '../../../../shared/widgets/pet_loader.dart';
@@ -40,6 +42,12 @@ class _PetGalleryPageState extends State<PetGalleryPage> {
   /// "Carico 2 di 5..." while an import runs - null otherwise. Set the moment
   /// the picker returns, so the screen answers before any file is read.
   String? _importProgress;
+
+  /// The running import (for "Annulla") and, while a video is being reduced
+  /// on the phone, how far along it is (0..1).
+  PetMediaImporter? _importer;
+  double? _compressFraction;
+  bool _cancelling = false;
 
   PetProfile get _pet =>
       PetDemoStore.instance.list().where((p) => p.id == widget.pet.id).firstOrNull ?? widget.pet;
@@ -94,15 +102,31 @@ class _PetGalleryPageState extends State<PetGalleryPage> {
 
   Future<void> _import(List<XFile> files) async {
     if (files.isEmpty || !mounted) return;
-    setState(() => _importProgress = 'Preparo ${files.length == 1 ? 'il file' : '${files.length} file'}...');
+    final importer = PetMediaImporter();
+    var step = '';
+    setState(() {
+      _importer = importer;
+      _importProgress = 'Preparo ${files.length == 1 ? 'il file' : '${files.length} file'}...';
+    });
     try {
-      final result = await PetMediaImporter().importAll(
+      final result = await importer.importAll(
         petId: widget.pet.id,
         files: files,
         onProgress: (current, total) {
-          if (!mounted) return;
+          if (!mounted || _cancelling) return;
+          step = total == 1 ? '' : ' $current di $total';
           setState(() {
+            _compressFraction = null;
             _importProgress = total == 1 ? 'Carico il file...' : 'Carico $current di $total...';
+          });
+        },
+        onCompressProgress: (fraction) {
+          if (!mounted || _cancelling) return;
+          setState(() {
+            _compressFraction = fraction;
+            _importProgress = fraction >= 1
+                ? 'Carico il video$step...'
+                : 'Riduco il video$step... ${(fraction * 100).round()}%';
           });
         },
       );
@@ -110,10 +134,26 @@ class _PetGalleryPageState extends State<PetGalleryPage> {
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(result.summary())));
     } finally {
       if (mounted) {
-        setState(() => _importProgress = null);
+        setState(() {
+          _importProgress = null;
+          _compressFraction = null;
+          _importer = null;
+          _cancelling = false;
+        });
         _reload();
       }
     }
+  }
+
+  void _cancelImport() {
+    final importer = _importer;
+    if (importer == null || _cancelling) return;
+    setState(() {
+      _cancelling = true;
+      _compressFraction = null;
+      _importProgress = 'Annullo...';
+    });
+    unawaited(importer.cancel());
   }
 
   Future<void> _setProfile(PetPhotoEntry photo) async {
@@ -305,7 +345,36 @@ class _PetGalleryPageState extends State<PetGalleryPage> {
             Positioned.fill(
               child: ColoredBox(
                 color: Colors.black.withValues(alpha: 0.35),
-                child: Center(child: PetLoader(label: _importProgress, color: Colors.white)),
+                child: Center(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      PetLoader(label: _importProgress, color: Colors.white),
+                      if (_compressFraction case final fraction?) ...[
+                        const SizedBox(height: AppSpacing.sm),
+                        SizedBox(
+                          width: 200,
+                          child: LinearProgressIndicator(
+                            value: fraction,
+                            color: Colors.white,
+                            backgroundColor: Colors.white24,
+                          ),
+                        ),
+                      ],
+                      if (_importer != null) ...[
+                        const SizedBox(height: AppSpacing.md),
+                        OutlinedButton(
+                          onPressed: _cancelling ? null : _cancelImport,
+                          style: OutlinedButton.styleFrom(
+                            foregroundColor: Colors.white,
+                            side: const BorderSide(color: Colors.white70),
+                          ),
+                          child: const Text('Annulla'),
+                        ),
+                      ],
+                    ],
+                  ),
+                ),
               ),
             ),
         ],

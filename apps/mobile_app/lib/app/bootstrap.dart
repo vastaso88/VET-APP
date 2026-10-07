@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
@@ -10,6 +12,7 @@ import 'config/app_bootstrap_state.dart';
 import 'router/app_router.dart';
 import '../features/dog_walks/data/walk_home_widget.dart';
 import '../features/notifications/application/notification_scheduler.dart';
+import '../features/pets/data/pet_photo_repository.dart';
 import '../shared/config/app_runtime_config_loader.dart';
 
 Future<void> bootstrap() async {
@@ -59,6 +62,11 @@ Future<void> bootstrap() async {
         if (state.event == AuthChangeEvent.passwordRecovery) {
           AppRouter.passwordRecoveryPending = true;
           _openSetNewPasswordWhenReady();
+        }
+        // Any sign-out (button, expired session): pet photos kept on this
+        // device go with it.
+        if (state.event == AuthChangeEvent.signedOut) {
+          unawaited(PetPhotoRepository.clearLocalCaches());
         }
       });
     } catch (_) {
