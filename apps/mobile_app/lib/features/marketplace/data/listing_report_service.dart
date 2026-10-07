@@ -39,7 +39,7 @@ class ListingReportService {
       status: reportCount >= reportCountAutoRemoveThreshold ? ListingStatus.removed : null,
       updatedAt: DateTime.now(),
     );
-    await _listingRepository.saveListing(updated);
+    _listingRepository.applyModerationResult(updated);
     return updated;
   }
 }

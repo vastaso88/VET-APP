@@ -78,6 +78,31 @@ def fuzz_coordinates(exact: Coordinates, listing_id: str) -> Coordinates:
     )
 
 
+LISTING_GRID_STEPS_PER_DEGREE = 100
+
+
+def _snap_to_grid(value: float) -> float:
+    # Half away from zero, like Dart's round() and Postgres' round(numeric):
+    # Python's round() is banker's rounding and would disagree on exact halves.
+    steps = math.floor(abs(value) * LISTING_GRID_STEPS_PER_DEGREE + 0.5)
+    return math.copysign(steps, value) / LISTING_GRID_STEPS_PER_DEGREE
+
+
+def approximate_coordinates(exact: Coordinates) -> Coordinates:
+    """Snaps a coordinate to a fixed 0.01-degree grid (~1.1 km north-south,
+    ~0.8 km east-west in Italy). Used for marketplace listings since
+    2026-10-07 instead of fuzz_coordinates: a per-listing random offset is
+    centred on the real address, so averaging one seller's listings walks
+    back to it, while a grid point is shared by everyone in the cell and
+    never reveals more than the cell. Mirrors the app's
+    marketplace/domain/listing_location.dart and the database's
+    guard_marketplace_listing trigger."""
+    return Coordinates(
+        latitude=max(-90.0, min(90.0, _snap_to_grid(exact.latitude))),
+        longitude=max(-180.0, min(180.0, _snap_to_grid(exact.longitude))),
+    )
+
+
 LocationSource = Literal["device_gps", "manual"]
 LocationMode = Literal["current_position", "home_residence"]
 

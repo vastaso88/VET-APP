@@ -419,9 +419,9 @@ alter table public.dog_walks add column if not exists is_paused boolean not null
 alter table public.dog_walks add column if not exists paused_at timestamptz;
 alter table public.dog_walks add column if not exists paused_seconds integer not null default 0;
 
--- Mercatino dell'usato. latitude/longitude are ALREADY fuzzed before
--- insert (packages/core/application/services/create_listing.py) - the
--- application service, not this table, is the privacy boundary.
+-- Mercatino dell'usato. latitude/longitude are snapped to a ~1 km grid
+-- before insert (the app's listing_location.dart, create_listing.py) and
+-- again by the guard_marketplace_listing trigger further down.
 create table if not exists public.marketplace_listings (
     id text primary key,
     owner_id text not null,
@@ -622,8 +622,8 @@ using (owner_id = auth.uid()::text);
 
 -- marketplace_listings: FIRST table in this schema with intentionally open
 -- read access - everyone needs to browse everyone's listings. Safe only
--- because latitude/longitude are pre-fuzzed at write time by the service
--- layer, never the exact address (see create_listing.py).
+-- because latitude/longitude are snapped to a ~1 km grid at write time,
+-- never the exact address (see guard_marketplace_listing below).
 drop policy if exists marketplace_listings_select_all on public.marketplace_listings;
 create policy marketplace_listings_select_all
 on public.marketplace_listings
@@ -1077,3 +1077,129 @@ create policy events_select_public
 on public.events
 for select
 using (status in ('published', 'cancelled', 'postponed') and audience = 'public');
+
+
+-- Mercatino v2 (2026-10-07): species, new category list, grid-rounded
+-- positions + moderation guard, public photo bucket. Same content as
+-- scripts/setup/marketplace_v2.sql (the one-off for existing databases).
+
+alter table public.marketplace_listings
+    add column if not exists target_species jsonb not null default '[]'::jsonb;
+
+-- Old form saved "0" as a price; free items are "in regalo" (null) now.
+update public.marketplace_listings set price_cents = null where price_cents <= 0;
+
+-- Rows written before the grid (randomly offset positions) are snapped too.
+update public.marketplace_listings
+set latitude = round(latitude::numeric, 2)::double precision,
+    longitude = round(longitude::numeric, 2)::double precision
+where latitude <> round(latitude::numeric, 2)::double precision
+   or longitude <> round(longitude::numeric, 2)::double precision;
+
+update public.marketplace_listings
+set category = case category
+        when 'transport_carriers' then 'kennels_carriers'
+        when 'food' then 'feeding'
+        when 'grooming' then 'hygiene_grooming'
+        else 'other'
+    end
+where category in ('transport_carriers', 'food', 'grooming', 'accessories', 'health_wellness');
+
+do $$
+begin
+    if not exists (
+        select 1 from pg_constraint
+        where conname = 'marketplace_listings_category_check'
+          and conrelid = 'public.marketplace_listings'::regclass
+    ) then
+        alter table public.marketplace_listings
+            add constraint marketplace_listings_category_check
+            check (category in (
+                'kennels_carriers', 'leashes_collars', 'toys', 'clothing', 'feeding',
+                'hygiene_grooming', 'aquariums_terrariums', 'cages_aviaries', 'other'
+            ));
+    end if;
+    if not exists (
+        select 1 from pg_constraint
+        where conname = 'marketplace_listings_price_check'
+          and conrelid = 'public.marketplace_listings'::regclass
+    ) then
+        alter table public.marketplace_listings
+            add constraint marketplace_listings_price_check
+            check (price_cents is null or price_cents > 0);
+    end if;
+    if not exists (
+        select 1 from pg_constraint
+        where conname = 'marketplace_listings_photos_check'
+          and conrelid = 'public.marketplace_listings'::regclass
+    ) then
+        alter table public.marketplace_listings
+            add constraint marketplace_listings_photos_check
+            check (jsonb_typeof(photo_urls) = 'array' and jsonb_array_length(photo_urls) <= 6);
+    end if;
+end;
+$$;
+
+-- Runs as the caller (no security definer), so current_user tells a regular
+-- app user ('authenticated'/'anon') apart from the service role (admin
+-- moderation in apps/api/routes/admin.py) and from the report trigger,
+-- which runs as its owner and must keep updating report_count/status.
+create or replace function public.guard_marketplace_listing()
+returns trigger
+language plpgsql
+set search_path = public
+as $$
+begin
+    new.latitude := round(new.latitude::numeric, 2)::double precision;
+    new.longitude := round(new.longitude::numeric, 2)::double precision;
+
+    if current_user in ('authenticated', 'anon') then
+        if tg_op = 'INSERT' then
+            new.report_count := 0;
+            new.status := 'active';
+        else
+            new.owner_id := old.owner_id;
+            new.created_at := old.created_at;
+            new.report_count := old.report_count;
+            if old.status = 'removed' or new.status = 'removed' then
+                new.status := old.status;
+            end if;
+        end if;
+    end if;
+
+    return new;
+end;
+$$;
+
+drop trigger if exists marketplace_listing_guard on public.marketplace_listings;
+create trigger marketplace_listing_guard
+before insert or update on public.marketplace_listings
+for each row execute function public.guard_marketplace_listing();
+
+insert into storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
+values ('marketplace-photos', 'marketplace-photos', true, 5000000, array['image/jpeg'])
+on conflict (id) do update
+set public = true,
+    file_size_limit = 5000000,
+    allowed_mime_types = array['image/jpeg'];
+
+-- Viewing goes through the public url and needs no policy; this select
+-- policy is what Storage requires (with delete) for the author to remove
+-- their own photos.
+drop policy if exists marketplace_photos_objects_select_own on storage.objects;
+create policy marketplace_photos_objects_select_own on storage.objects
+for select using (
+    bucket_id = 'marketplace-photos' and (storage.foldername(name))[1] = auth.uid()::text
+);
+
+drop policy if exists marketplace_photos_objects_insert_own on storage.objects;
+create policy marketplace_photos_objects_insert_own on storage.objects
+for insert with check (
+    bucket_id = 'marketplace-photos' and (storage.foldername(name))[1] = auth.uid()::text
+);
+
+drop policy if exists marketplace_photos_objects_delete_own on storage.objects;
+create policy marketplace_photos_objects_delete_own on storage.objects
+for delete using (
+    bucket_id = 'marketplace-photos' and (storage.foldername(name))[1] = auth.uid()::text
+);
