@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 
 import '../../../../../design_system/responsive.dart';
+import '../../../../../shared/formatters/date_input_formatter.dart';
 import '../../../../../design_system/tokens/app_colors.dart';
 import '../../../../../design_system/tokens/app_radii.dart';
 import '../../../../../design_system/tokens/app_spacing.dart';
@@ -813,8 +814,11 @@ class _ReminderFormState extends State<_ReminderForm> {
       TextEditingController(text: widget.initial?.note ?? '');
 
   late EventKind _kind = widget.initial?.kind ?? EventKind.spot;
-  late DateTime _date =
-      widget.initial?.dueAt ?? DateTime.now().add(const Duration(days: 1));
+  late final _dateController = TextEditingController(
+    text: formatDateForInput(
+      widget.initial?.dueAt ?? DateTime.now().add(const Duration(days: 1)),
+    ),
+  );
   late IntervalUnit _intervalUnit =
       widget.initial?.intervalUnit ?? IntervalUnit.days;
   late int _intervalValue = widget.initial?.intervalValue ?? 30;
@@ -826,8 +830,11 @@ class _ReminderFormState extends State<_ReminderForm> {
   late RecurrenceEnd _recurrenceEnd =
       widget.initial?.recurrenceEnd ?? RecurrenceEnd.never;
   late int _occurrenceCount = widget.initial?.occurrenceCount ?? 6;
-  late DateTime _recurrenceEndDate = widget.initial?.recurrenceEndDate ??
-      DateTime.now().add(const Duration(days: 365));
+  late final _recurrenceEndDateController = TextEditingController(
+    text: formatDateForInput(
+      widget.initial?.recurrenceEndDate ?? DateTime.now().add(const Duration(days: 365)),
+    ),
+  );
   late final _occurrenceCountController = TextEditingController(
       text: (widget.initial?.occurrenceCount ?? 6).toString());
 
@@ -835,33 +842,48 @@ class _ReminderFormState extends State<_ReminderForm> {
   void dispose() {
     _titleController.dispose();
     _noteController.dispose();
+    _dateController.dispose();
+    _recurrenceEndDateController.dispose();
     _customIntervalController.dispose();
     _occurrenceCountController.dispose();
     super.dispose();
   }
 
   Future<void> _pickDate() async {
+    final initialDate = parseStrictDate(_dateController.text) ?? DateTime.now();
     final picked = await showDatePicker(
       context: context,
-      initialDate: _date,
+      initialDate: initialDate,
       firstDate: DateTime.now().subtract(const Duration(days: 365)),
       lastDate: DateTime.now().add(const Duration(days: 365 * 3)),
+      // Typing already happens in the field next to this icon (with its
+      // gg/mm/aaaa slashes); the dialog only needs to offer the calendar.
+      initialEntryMode: DatePickerEntryMode.calendarOnly,
     );
     if (picked != null) {
-      setState(() => _date = picked);
+      setState(() => _dateController.text = formatDateForInput(picked));
     }
   }
 
   Future<void> _pickRecurrenceEndDate() async {
+    final initialDate = parseStrictDate(_recurrenceEndDateController.text) ?? DateTime.now();
     final picked = await showDatePicker(
       context: context,
-      initialDate: _recurrenceEndDate,
+      initialDate: initialDate,
       firstDate: DateTime.now(),
       lastDate: DateTime.now().add(const Duration(days: 365 * 10)),
+      initialEntryMode: DatePickerEntryMode.calendarOnly,
     );
     if (picked != null) {
-      setState(() => _recurrenceEndDate = picked);
+      setState(() => _recurrenceEndDateController.text = formatDateForInput(picked));
     }
+  }
+
+  String? _validateDate(String? value) {
+    final raw = (value ?? '').trim();
+    if (raw.isEmpty) return 'Inserisci una data.';
+    if (parseStrictDate(raw) == null) return 'Data non valida (gg/mm/aaaa).';
+    return null;
   }
 
   void _save() {
@@ -875,7 +897,7 @@ class _ReminderFormState extends State<_ReminderForm> {
       petName: widget.initial?.petName ?? widget.petName,
       title: _titleController.text.trim(),
       kind: _kind,
-      dueAt: _date,
+      dueAt: parseStrictDate(_dateController.text.trim())!,
       note: _noteController.text.trim(),
       intervalUnit: _kind == EventKind.recurring ? _intervalUnit : null,
       intervalValue: _kind == EventKind.recurring ? _intervalValue : null,
@@ -886,7 +908,7 @@ class _ReminderFormState extends State<_ReminderForm> {
           : null,
       recurrenceEndDate:
           _kind == EventKind.recurring && _recurrenceEnd == RecurrenceEnd.onDate
-              ? _recurrenceEndDate
+              ? parseStrictDate(_recurrenceEndDateController.text.trim())
               : null,
       courseDurationDays: _kind == EventKind.course ? _courseDuration : null,
       isDone: widget.initial?.isDone ?? false,
@@ -899,6 +921,9 @@ class _ReminderFormState extends State<_ReminderForm> {
   Widget build(BuildContext context) {
     return Form(
       key: _formKey,
+      // Mirrors the pet form: a date typo shows its error as soon as the
+      // owner types it, not only after they hit Salva.
+      autovalidateMode: AutovalidateMode.onUserInteraction,
       child: Container(
         width: double.infinity,
         padding: const EdgeInsets.all(AppSpacing.lg),
@@ -933,8 +958,9 @@ class _ReminderFormState extends State<_ReminderForm> {
                 EventKind.recurring => 'Prossima scadenza',
                 EventKind.course => 'Data di inizio',
               },
-              date: _date,
-              onTap: _pickDate,
+              controller: _dateController,
+              onPick: _pickDate,
+              validator: _validateDate,
             ),
             if (_kind == EventKind.recurring) ...[
               const SizedBox(height: AppSpacing.lg),
@@ -1004,8 +1030,9 @@ class _ReminderFormState extends State<_ReminderForm> {
                 const SizedBox(height: AppSpacing.md),
                 _DatePickerField(
                   label: 'Ultima data',
-                  date: _recurrenceEndDate,
-                  onTap: _pickRecurrenceEndDate,
+                  controller: _recurrenceEndDateController,
+                  onPick: _pickRecurrenceEndDate,
+                  validator: _validateDate,
                 ),
               ],
             ],
@@ -1144,28 +1171,21 @@ class _KindOption extends StatelessWidget {
   }
 }
 
+/// A typed `gg/mm/aaaa` field: digits format themselves as the owner types
+/// (see [DateInputFormatter]), and the trailing calendar icon still opens the
+/// native picker and fills the field for those who'd rather tap than type.
 class _DatePickerField extends StatelessWidget {
-  const _DatePickerField(
-      {required this.label, required this.date, required this.onTap});
+  const _DatePickerField({
+    required this.label,
+    required this.controller,
+    required this.onPick,
+    this.validator,
+  });
 
   final String label;
-  final DateTime date;
-  final VoidCallback onTap;
-
-  static const _months = [
-    'gen',
-    'feb',
-    'mar',
-    'apr',
-    'mag',
-    'giu',
-    'lug',
-    'ago',
-    'set',
-    'ott',
-    'nov',
-    'dic',
-  ];
+  final TextEditingController controller;
+  final VoidCallback onPick;
+  final FormFieldValidator<String>? validator;
 
   @override
   Widget build(BuildContext context) {
@@ -1174,34 +1194,30 @@ class _DatePickerField extends StatelessWidget {
       children: [
         Text(label, style: AppTextStyles.caption),
         const SizedBox(height: AppSpacing.xs),
-        Material(
-          color: AppColors.background,
-          borderRadius: BorderRadius.circular(AppRadii.medium),
-          child: InkWell(
-            borderRadius: BorderRadius.circular(AppRadii.medium),
-            onTap: onTap,
-            child: Container(
-              padding: const EdgeInsets.symmetric(
-                  horizontal: AppSpacing.lg, vertical: AppSpacing.md),
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(AppRadii.medium),
-                border: Border.all(color: AppColors.border),
-              ),
-              child: Row(
-                children: [
-                  const Icon(Icons.calendar_today_outlined,
-                      size: 16, color: AppColors.primary),
-                  const SizedBox(width: AppSpacing.sm),
-                  Text(
-                    '${date.day.toString().padLeft(2, '0')} ${_months[date.month - 1]} ${date.year}',
-                    style:
-                        AppTextStyles.bodySmall.copyWith(color: AppColors.text),
-                  ),
-                  const Spacer(),
-                  const Icon(Icons.chevron_right_rounded,
-                      color: AppColors.mutedText),
-                ],
-              ),
+        TextFormField(
+          controller: controller,
+          keyboardType: TextInputType.number,
+          inputFormatters: const [DateInputFormatter()],
+          validator: validator,
+          style: AppTextStyles.bodySmall.copyWith(color: AppColors.text),
+          decoration: InputDecoration(
+            hintText: 'gg/mm/aaaa',
+            filled: true,
+            fillColor: AppColors.background,
+            contentPadding: const EdgeInsets.symmetric(
+                horizontal: AppSpacing.lg, vertical: AppSpacing.md),
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(AppRadii.medium),
+              borderSide: const BorderSide(color: AppColors.border),
+            ),
+            enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(AppRadii.medium),
+              borderSide: const BorderSide(color: AppColors.border),
+            ),
+            suffixIcon: IconButton(
+              onPressed: onPick,
+              icon: const Icon(Icons.calendar_today_outlined,
+                  size: 18, color: AppColors.primary),
             ),
           ),
         ),
