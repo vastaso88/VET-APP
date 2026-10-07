@@ -14,6 +14,8 @@ RadarPlaceType = Literal[
     "breeder",
     "hotel",
     "dog_park",
+    # Canili, gattili, rifugi, centri di adozione.
+    "shelter",
 ]
 
 OSM_SOURCE_NAME = "openstreetmap_overpass"

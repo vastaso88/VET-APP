@@ -56,6 +56,15 @@ DateTime? parsePetBirthDateLabel(String? label) {
   return DateTime(year, month, day);
 }
 
+/// The birthday from a birth date label, only when the label has the day
+/// ("05 mag 2021"): "mag 2021" or "2021" would make up a day the owner
+/// never gave.
+DateTime? parsePetBirthdayLabel(String? label) {
+  final parts = (label ?? '').trim().split(RegExp(r'\s+'));
+  if (parts.length != 3) return null;
+  return parsePetBirthDateLabel(label);
+}
+
 /// "3 anni", "1 anno", "8 mesi", "1 mese" or "Meno di un mese" - the age at
 /// [now] for a birth date label. Null when the label is empty, unreadable or
 /// in the future.

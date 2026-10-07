@@ -1,4 +1,6 @@
 
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 
 import '../../../../shared/widgets/pet_loader.dart';
@@ -11,6 +13,12 @@ import 'package:video_player/video_player.dart';
 import '../../../../design_system/tokens/app_colors.dart';
 import '../../../../design_system/tokens/app_spacing.dart';
 import '../../../../design_system/tokens/app_text_styles.dart';
+import '../../../../shared/auth/current_owner.dart';
+import '../../../dog_walks/data/dog_walks_repository.dart';
+import '../../../dog_walks/domain/photo_walk_match.dart';
+import '../../../dog_walks/domain/walk_session.dart';
+import '../../../settings/data/gallery_save_settings_store.dart';
+import '../../data/device_gallery_saver.dart';
 import '../../data/pet_demo_store.dart';
 import '../../data/pet_media_importer.dart';
 import '../../data/pet_photo_repository.dart';
@@ -35,9 +43,50 @@ class _PetGalleryPageState extends State<PetGalleryPage> {
   late Future<List<PetPhotoEntry>> _photosFuture = _load();
   bool _busy = false;
 
+  /// This pet's walks, for the "Passeggiata del ..." captions. Empty until
+  /// loaded (or for a pet that never walks): photos just show no caption.
+  List<WalkSession> _walks = const [];
+
+  @override
+  void initState() {
+    super.initState();
+    _loadWalks();
+  }
+
+  Future<void> _loadWalks() async {
+    try {
+      final walks = await DogWalksRepository().loadWalks(resolveCurrentOwnerId());
+      if (!mounted) return;
+      setState(() {
+        _walks = [
+          for (final walk in walks)
+            if (walk.petId == widget.pet.id && walk.status != WalkStatus.discarded) walk,
+        ];
+      });
+    } catch (_) {
+      // Captions are a nicety: the gallery works the same without them.
+    }
+  }
+
+  /// "Passeggiata del 07/10/26" when the photo was taken during one of this
+  /// pet's walks (owner request, 2026-10-07); null otherwise or when the
+  /// shooting time is unknown.
+  String? _walkCaption(PetPhotoEntry photo) {
+    final takenAt = photo.takenAt;
+    if (takenAt == null || _walks.isEmpty) return null;
+    final walk = walkForPhoto(takenAt, _walks);
+    return walk == null ? null : walkPhotoLabel(walk);
+  }
+
   /// "Carico 2 di 5..." while an import runs - null otherwise. Set the moment
   /// the picker returns, so the screen answers before any file is read.
   String? _importProgress;
+
+  /// The running import (for "Annulla") and, while a video is being reduced
+  /// on the phone, how far along it is (0..1).
+  PetMediaImporter? _importer;
+  double? _compressFraction;
+  bool _cancelling = false;
 
   PetProfile get _pet =>
       PetDemoStore.instance.list().where((p) => p.id == widget.pet.id).firstOrNull ?? widget.pet;
@@ -70,7 +119,9 @@ class _PetGalleryPageState extends State<PetGalleryPage> {
 
   Future<void> _takePhoto() async {
     final file = await _picker.pickImage(source: ImageSource.camera, imageQuality: 100);
-    await _import([if (file != null) file]);
+    if (file != null) await _saveCopyToDeviceGallery(file, isVideo: false);
+    // The camera returns right after the shot: that moment is when it was taken.
+    await _import([if (file != null) file], capturedAt: DateTime.now());
   }
 
   Future<void> _recordVideo() async {
@@ -78,20 +129,45 @@ class _PetGalleryPageState extends State<PetGalleryPage> {
       source: ImageSource.camera,
       maxDuration: const Duration(seconds: petVideoMaxSeconds),
     );
-    await _import([if (file != null) file]);
+    if (file != null) await _saveCopyToDeviceGallery(file, isVideo: true);
+    await _import([if (file != null) file], capturedAt: DateTime.now());
   }
 
-  Future<void> _import(List<XFile> files) async {
+  /// Camera captures only (gallery imports are already on the phone). Runs
+  /// before the upload so the copy exists even when the upload fails.
+  Future<void> _saveCopyToDeviceGallery(XFile file, {required bool isVideo}) async {
+    await GallerySaveSettingsStore.instance.ensureLoaded();
+    await const DeviceGallerySaver().save(file, isVideo: isVideo);
+  }
+
+  Future<void> _import(List<XFile> files, {DateTime? capturedAt}) async {
     if (files.isEmpty || !mounted) return;
-    setState(() => _importProgress = 'Preparo ${files.length == 1 ? 'il file' : '${files.length} file'}...');
+    final importer = PetMediaImporter();
+    var step = '';
+    setState(() {
+      _importer = importer;
+      _importProgress = 'Preparo ${files.length == 1 ? 'il file' : '${files.length} file'}...';
+    });
     try {
-      final result = await PetMediaImporter().importAll(
+      final result = await importer.importAll(
         petId: widget.pet.id,
         files: files,
+        capturedAt: capturedAt,
         onProgress: (current, total) {
-          if (!mounted) return;
+          if (!mounted || _cancelling) return;
+          step = total == 1 ? '' : ' $current di $total';
           setState(() {
+            _compressFraction = null;
             _importProgress = total == 1 ? 'Carico il file...' : 'Carico $current di $total...';
+          });
+        },
+        onCompressProgress: (fraction) {
+          if (!mounted || _cancelling) return;
+          setState(() {
+            _compressFraction = fraction;
+            _importProgress = fraction >= 1
+                ? 'Carico il video$step...'
+                : 'Riduco il video$step... ${(fraction * 100).round()}%';
           });
         },
       );
@@ -99,10 +175,26 @@ class _PetGalleryPageState extends State<PetGalleryPage> {
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(result.summary())));
     } finally {
       if (mounted) {
-        setState(() => _importProgress = null);
+        setState(() {
+          _importProgress = null;
+          _compressFraction = null;
+          _importer = null;
+          _cancelling = false;
+        });
         _reload();
       }
     }
+  }
+
+  void _cancelImport() {
+    final importer = _importer;
+    if (importer == null || _cancelling) return;
+    setState(() {
+      _cancelling = true;
+      _compressFraction = null;
+      _importProgress = 'Annullo...';
+    });
+    unawaited(importer.cancel());
   }
 
   Future<void> _setProfile(PetPhotoEntry photo) async {
@@ -167,8 +259,8 @@ class _PetGalleryPageState extends State<PetGalleryPage> {
     Navigator.of(context).push(
       MaterialPageRoute<void>(
         builder: (_) => photo.isVideo
-            ? _VideoViewerPage(storagePath: photo.storagePath)
-            : _PhotoViewerPage(storagePath: photo.storagePath),
+            ? _VideoViewerPage(storagePath: photo.storagePath, caption: _walkCaption(photo))
+            : _PhotoViewerPage(storagePath: photo.storagePath, caption: _walkCaption(photo)),
       ),
     );
   }
@@ -275,6 +367,7 @@ class _PetGalleryPageState extends State<PetGalleryPage> {
                 photos: photos,
                 onOpen: _openViewer,
                 onLongPress: _showActions,
+                captionFor: _walkCaption,
               );
             },
           ),
@@ -294,7 +387,36 @@ class _PetGalleryPageState extends State<PetGalleryPage> {
             Positioned.fill(
               child: ColoredBox(
                 color: Colors.black.withValues(alpha: 0.35),
-                child: Center(child: PetLoader(label: _importProgress, color: Colors.white)),
+                child: Center(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      PetLoader(label: _importProgress, color: Colors.white),
+                      if (_compressFraction case final fraction?) ...[
+                        const SizedBox(height: AppSpacing.sm),
+                        SizedBox(
+                          width: 200,
+                          child: LinearProgressIndicator(
+                            value: fraction,
+                            color: Colors.white,
+                            backgroundColor: Colors.white24,
+                          ),
+                        ),
+                      ],
+                      if (_importer != null) ...[
+                        const SizedBox(height: AppSpacing.md),
+                        OutlinedButton(
+                          onPressed: _cancelling ? null : _cancelImport,
+                          style: OutlinedButton.styleFrom(
+                            foregroundColor: Colors.white,
+                            side: const BorderSide(color: Colors.white70),
+                          ),
+                          child: const Text('Annulla'),
+                        ),
+                      ],
+                    ],
+                  ),
+                ),
               ),
             ),
         ],
@@ -306,9 +428,12 @@ class _PetGalleryPageState extends State<PetGalleryPage> {
 /// Fullscreen photo. Rotation is allowed here only: the app is otherwise
 /// portrait-locked, so the lock is restored when the viewer closes.
 class _PhotoViewerPage extends StatefulWidget {
-  const _PhotoViewerPage({required this.storagePath});
+  const _PhotoViewerPage({required this.storagePath, this.caption});
 
   final String storagePath;
+
+  /// "Passeggiata del ..." under the photo, when it was taken on a walk.
+  final String? caption;
 
   @override
   State<_PhotoViewerPage> createState() => _PhotoViewerPageState();
@@ -350,10 +475,18 @@ class _PhotoViewerPageState extends State<_PhotoViewerPage> {
               child: PetLoader(color: Colors.white),
             );
           }
-          return InteractiveViewer(
-            minScale: 1,
-            maxScale: 4,
-            child: Center(child: Image.memory(bytes, fit: BoxFit.contain)),
+          final caption = widget.caption;
+          return Column(
+            children: [
+              Expanded(
+                child: InteractiveViewer(
+                  minScale: 1,
+                  maxScale: 4,
+                  child: Center(child: Image.memory(bytes, fit: BoxFit.contain)),
+                ),
+              ),
+              if (caption != null) _ViewerCaption(caption),
+            ],
           );
         },
       ),
@@ -364,9 +497,10 @@ class _PhotoViewerPageState extends State<_PhotoViewerPage> {
 /// Fullscreen video, streamed from a short-lived signed link (the bucket is
 /// private) instead of being downloaded whole. Tap toggles play/pause.
 class _VideoViewerPage extends StatefulWidget {
-  const _VideoViewerPage({required this.storagePath});
+  const _VideoViewerPage({required this.storagePath, this.caption});
 
   final String storagePath;
+  final String? caption;
 
   @override
   State<_VideoViewerPage> createState() => _VideoViewerPageState();
@@ -473,6 +607,7 @@ class _VideoViewerPageState extends State<_VideoViewerPage> {
                         ),
                       ),
                     ),
+                    if (widget.caption != null) _ViewerCaption(widget.caption!),
                     Padding(
                       padding: const EdgeInsets.all(AppSpacing.lg),
                       child: VideoProgressIndicator(
@@ -487,6 +622,36 @@ class _VideoViewerPageState extends State<_VideoViewerPage> {
                     ),
                   ],
                 ),
+    );
+  }
+}
+
+/// The walk caption under a full-screen photo or video.
+class _ViewerCaption extends StatelessWidget {
+  const _ViewerCaption(this.text);
+
+  final String text;
+
+  @override
+  Widget build(BuildContext context) {
+    return SafeArea(
+      top: false,
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(AppSpacing.lg, AppSpacing.sm, AppSpacing.lg, AppSpacing.md),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Icon(Icons.pets_rounded, size: 16, color: Colors.white70),
+            const SizedBox(width: AppSpacing.xs),
+            Flexible(
+              child: Text(
+                text,
+                style: AppTextStyles.bodySmall.copyWith(color: Colors.white),
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }

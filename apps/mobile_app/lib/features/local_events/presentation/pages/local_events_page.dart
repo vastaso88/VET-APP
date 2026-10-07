@@ -77,11 +77,13 @@ class _LocalEventsPageState extends State<LocalEventsPage> {
     RadarCategory.dogPark,
     RadarCategory.grooming,
     RadarCategory.hotel,
+    RadarCategory.shelter,
   ];
 
   double _radiusKm = 10;
 
-  /// Categories shown; empty means all of them.
+  /// The category shown; empty means all of them. At most one: the
+  /// owner wants one category at a time, like the radius.
   Set<RadarCategory> _categories = const {};
 
   bool _showsCategory(RadarCategory category) =>
@@ -340,10 +342,10 @@ class _LocalEventsPageState extends State<LocalEventsPage> {
     });
   }
 
+  /// Tapping a category shows only that one, replacing the previous
+  /// choice; tapping the active one again goes back to all of them.
   void _toggleQuickCategory(RadarCategory category) {
-    final categories = {..._categories};
-    categories.contains(category) ? categories.remove(category) : categories.add(category);
-    _setFilters(categories: categories);
+    _setFilters(categories: _categories.contains(category) ? const {} : {category});
   }
 
   Future<void> _openActivity(LocalActivity activity, double distanceMeters) async {
@@ -513,6 +515,8 @@ class _LocalEventsPageState extends State<LocalEventsPage> {
           const SizedBox(height: AppSpacing.lg),
           _ServicesByCategory(
             entries: services,
+            selected: _categories.difference({RadarCategory.veterinary}),
+            radiusKm: _radiusKm,
             expanded: _expandedCategories,
             collapsedRows: _collapsedRowsPerCategory,
             onToggleExpanded: (category) => setState(
@@ -523,10 +527,7 @@ class _LocalEventsPageState extends State<LocalEventsPage> {
             onOpen: _openEntry,
           ),
           const SizedBox(height: AppSpacing.xxl),
-          const DashboardSectionHeader(
-            title: 'Cliniche e ambulatori',
-            subtitle: 'I veterinari più vicini, con telefono e indicazioni.',
-          ),
+          const DashboardSectionHeader(title: 'Cliniche e ambulatori'),
           const SizedBox(height: AppSpacing.sm),
           Text(
             'In caso di urgenza telefona prima di partire: orari e recapiti arrivano da '
@@ -860,6 +861,8 @@ class _EntryList extends StatelessWidget {
 class _ServicesByCategory extends StatelessWidget {
   const _ServicesByCategory({
     required this.entries,
+    required this.selected,
+    required this.radiusKm,
     required this.expanded,
     required this.collapsedRows,
     required this.onToggleExpanded,
@@ -868,6 +871,12 @@ class _ServicesByCategory extends StatelessWidget {
 
   /// Sorted by distance.
   final List<_RadarEntry> entries;
+
+  /// Categories the user picked (clinics excluded: they have their own
+  /// section). A picked category with nothing nearby still gets a line, so
+  /// it is clear the selection was applied rather than ignored.
+  final Set<RadarCategory> selected;
+  final double radiusKm;
   final Set<RadarCategory> expanded;
   final int collapsedRows;
   final ValueChanged<RadarCategory> onToggleExpanded;
@@ -875,13 +884,32 @@ class _ServicesByCategory extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    if (entries.isEmpty) {
+    if (entries.isEmpty && selected.isEmpty) {
       return Text('Nessun servizio trovato con questi filtri.', style: AppTextStyles.bodySmall);
     }
     final groups = <Widget>[];
     for (final category in RadarCategory.values) {
       final group = entries.where((entry) => entry.category == category).toList();
       if (group.isEmpty) {
+        if (selected.contains(category)) {
+          groups.add(
+            Padding(
+              padding: const EdgeInsets.only(bottom: AppSpacing.lg),
+              child: Row(
+                children: [
+                  Icon(category.icon, color: category.color, size: 18),
+                  const SizedBox(width: AppSpacing.sm),
+                  Expanded(
+                    child: Text(
+                      '${category.label}: nessuno entro ${radiusKm.round()} km',
+                      style: AppTextStyles.bodySmall,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          );
+        }
         continue;
       }
       final isExpanded = expanded.contains(category);

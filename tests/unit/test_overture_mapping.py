@@ -119,3 +119,16 @@ def test_the_category_is_kept_when_the_name_agrees_or_decides_nothing() -> None:
     # Names two other kinds: no way to choose.
     assert place_type_for("veterinary", "Toelettatura e Pet Shop Esempio") == "veterinary"
     assert place_type_for("shop", "Pet Shop Esempio") == "shop"
+
+
+def test_shelters_adoption_and_rescue_services_become_shelters() -> None:
+    from packages.infrastructure.radar_places.overture_mapping import (
+        OVERTURE_CATEGORIES,
+        place_type_for,
+    )
+
+    assert {
+        OVERTURE_CATEGORIES[c] for c in ("animal_shelter", "pet_adoption", "animal_rescue_service")
+    } == {"shelter"}
+    # A "Canile ..." filed as a veterinarian is a shelter.
+    assert place_type_for("veterinary", "Canile Esempio") == "shelter"

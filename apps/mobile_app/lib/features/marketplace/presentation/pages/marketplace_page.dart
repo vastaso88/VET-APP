@@ -1,38 +1,49 @@
 import 'package:flutter/material.dart';
 
-import '../../../../shared/widgets/pet_loader.dart';
-
-
 import '../../../../design_system/tokens/app_colors.dart';
 import '../../../../design_system/tokens/app_radii.dart';
 import '../../../../design_system/tokens/app_spacing.dart';
 import '../../../../design_system/tokens/app_text_styles.dart';
+import '../../../../shared/widgets/pet_loader.dart';
 import '../../../home/presentation/widgets/home_dashboard_primitives.dart';
 import '../../../location/data/location_preference_store.dart';
 import '../../../location/domain/coordinates.dart';
-import '../../../location/domain/geo_math.dart';
 import '../../../location/presentation/reference_location.dart';
 import '../../data/marketplace_repository.dart';
+import '../../domain/listing_filters.dart';
 import '../../domain/marketplace_listing.dart';
 import '../marketplace_labels.dart';
+import '../widgets/listing_photo.dart';
 import 'create_listing_page.dart';
 import 'listing_detail_page.dart';
+import 'marketplace_map_page.dart';
+
+/// The user's position for distances: the Località preference (its mode
+/// decides between current position and residence), or null when neither
+/// was ever set - then the distance filter is off rather than measuring
+/// from an arbitrary city.
+Future<Coordinates?> loadMarketplaceReferenceLocation() async {
+  await LocationPreferenceStore.instance.ensureLoaded();
+  final preference = LocationPreferenceStore.instance.preference;
+  if (preference.current == null && preference.home == null) return null;
+  return resolveReferenceLocation(preference, preference.current ?? preference.home!);
+}
 
 class MarketplacePage extends StatefulWidget {
-  const MarketplacePage({super.key});
+  const MarketplacePage({super.key, this.repository, this.referenceLoader});
+
+  /// Injectable for widget tests.
+  final MarketplaceRepository? repository;
+  final Future<Coordinates?> Function()? referenceLoader;
 
   @override
   State<MarketplacePage> createState() => _MarketplacePageState();
 }
 
 class _MarketplacePageState extends State<MarketplacePage> {
-  // Milano center, same fallback used by the maps demo route - lets
-  // distances/sorting still make sense before the user has ever set a
-  // Località preference or granted GPS access.
-  static const _fallbackLocation = Coordinates(latitude: 45.4642, longitude: 9.1900);
-
-  final _repository = MarketplaceRepository();
-  ListingCategory? _categoryFilter;
+  late final MarketplaceRepository _repository = widget.repository ?? MarketplaceRepository();
+  ListingFilter _filter = const ListingFilter();
+  bool _distanceInitialized = false;
   late Future<_MarketplaceViewData> _dataFuture;
 
   @override
@@ -42,12 +53,15 @@ class _MarketplacePageState extends State<MarketplacePage> {
   }
 
   Future<_MarketplaceViewData> _loadData() async {
-    await LocationPreferenceStore.instance.ensureLoaded();
-    final preference = LocationPreferenceStore.instance.preference;
-    final referenceLocation = resolveReferenceLocation(preference, _fallbackLocation);
-
+    final reference = await (widget.referenceLoader ?? loadMarketplaceReferenceLocation)();
     final listings = await _repository.loadActiveListings();
-    return _MarketplaceViewData(referenceLocation: referenceLocation, listings: listings);
+    if (!_distanceInitialized) {
+      _distanceInitialized = true;
+      // 25 km by default, "Ovunque" for users without a position (owner
+      // decision, 2026-10-07).
+      _filter = _filter.withMaxDistance(reference != null ? defaultListingDistanceKm : null);
+    }
+    return _MarketplaceViewData(referenceLocation: reference, listings: listings);
   }
 
   Future<void> _reload() async {
@@ -59,22 +73,37 @@ class _MarketplacePageState extends State<MarketplacePage> {
 
   Future<void> _openCreateListing() async {
     final created = await Navigator.of(context).push<bool>(
-      MaterialPageRoute<bool>(builder: (_) => const CreateListingPage()),
+      MaterialPageRoute<bool>(builder: (_) => CreateListingPage(repository: _repository)),
     );
-    if (created == true) {
-      await _reload();
-    }
+    if (created == true) await _reload();
   }
 
-  Future<void> _openListing(MarketplaceListing listing, double distanceMeters) async {
+  Future<void> _openListing(ListingMatch match) async {
     final changed = await Navigator.of(context).push<bool>(
       MaterialPageRoute<bool>(
-        builder: (_) => ListingDetailPage(listing: listing, distanceMeters: distanceMeters),
+        builder: (_) => ListingDetailPage(
+          listing: match.listing,
+          distanceMeters: match.distanceMeters,
+          repository: _repository,
+        ),
       ),
     );
-    if (changed == true) {
-      await _reload();
-    }
+    if (changed == true) await _reload();
+  }
+
+  Future<void> _openMap(_MarketplaceViewData data) async {
+    final reference = data.referenceLocation;
+    final changed = await Navigator.of(context).push<bool>(
+      MaterialPageRoute<bool>(
+        builder: (_) => MarketplaceMapPage(
+          matches: applyListingFilter(data.listings, _filter, reference: reference),
+          reference: reference,
+          radiusKm: reference == null ? null : _filter.maxDistanceKm,
+          repository: _repository,
+        ),
+      ),
+    );
+    if (changed == true) await _reload();
   }
 
   @override
@@ -86,6 +115,17 @@ class _MarketplacePageState extends State<MarketplacePage> {
         elevation: 0,
         foregroundColor: AppColors.text,
         title: Text('Mercatino dell\'usato', style: AppTextStyles.title),
+        actions: [
+          FutureBuilder<_MarketplaceViewData>(
+            future: _dataFuture,
+            builder: (context, snapshot) => TextButton.icon(
+              onPressed: snapshot.hasData ? () => _openMap(snapshot.data!) : null,
+              icon: const Icon(Icons.map_outlined),
+              label: const Text('Mappa'),
+            ),
+          ),
+          const SizedBox(width: AppSpacing.sm),
+        ],
       ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: _openCreateListing,
@@ -96,20 +136,19 @@ class _MarketplacePageState extends State<MarketplacePage> {
         child: FutureBuilder<_MarketplaceViewData>(
           future: _dataFuture,
           builder: (context, snapshot) {
+            if (snapshot.hasError) {
+              return _LoadError(onRetry: _reload);
+            }
             if (!snapshot.hasData) {
               return const Center(child: PetLoader());
             }
 
             final data = snapshot.data!;
-            final filtered = _categoryFilter == null
-                ? data.listings
-                : data.listings.where((listing) => listing.category == _categoryFilter).toList();
-
-            final sorted = [...filtered]
-              ..sort(
-                (a, b) => haversineMeters(data.referenceLocation, a.location)
-                    .compareTo(haversineMeters(data.referenceLocation, b.location)),
-              );
+            final matches = applyListingFilter(
+              data.listings,
+              _filter,
+              reference: data.referenceLocation,
+            );
 
             return RefreshIndicator(
               onRefresh: _reload,
@@ -118,52 +157,54 @@ class _MarketplacePageState extends State<MarketplacePage> {
                   AppSpacing.xl,
                   AppSpacing.md,
                   AppSpacing.xl,
-                  AppSpacing.xxxl,
+                  AppSpacing.xxxxl + AppSpacing.xl,
                 ),
                 children: [
                   Text(
-                    'Compra, vendi e scambia articoli per animali con altri proprietari.',
+                    'Compra, vendi e regala articoli per animali con altri proprietari.',
                     style: AppTextStyles.bodySmall,
                   ),
                   const SizedBox(height: AppSpacing.lg),
                   _CategoryFilterRow(
-                    selected: _categoryFilter,
-                    onSelected: (category) => setState(() => _categoryFilter = category),
+                    selected: _filter.category,
+                    onSelected: (category) =>
+                        setState(() => _filter = _filter.withCategory(category)),
                   ),
+                  const SizedBox(height: AppSpacing.sm),
+                  _SpeciesFilterRow(
+                    selected: _filter.species,
+                    onSelected: (species) => setState(() => _filter = _filter.withSpecies(species)),
+                  ),
+                  const SizedBox(height: AppSpacing.sm),
+                  _DistanceFilterRow(
+                    selected: _filter.maxDistanceKm,
+                    enabled: data.referenceLocation != null,
+                    onSelected: (km) => setState(() => _filter = _filter.withMaxDistance(km)),
+                  ),
+                  if (data.referenceLocation == null) ...[
+                    const SizedBox(height: AppSpacing.xs),
+                    Text(
+                      'Per filtrare per distanza imposta la tua posizione in Impostazioni → Località.',
+                      style: AppTextStyles.caption,
+                    ),
+                  ],
                   const SizedBox(height: AppSpacing.lg),
-                  if (sorted.isEmpty)
+                  if (matches.isEmpty)
                     Padding(
                       padding: const EdgeInsets.symmetric(vertical: AppSpacing.xxl),
                       child: Text(
-                        'Nessun annuncio in questa categoria per ora.',
+                        'Nessun annuncio con questi filtri per ora.',
                         style: AppTextStyles.bodySmall,
                         textAlign: TextAlign.center,
                       ),
                     )
                   else
-                    ...sorted.map((listing) {
-                      final distanceMeters = haversineMeters(data.referenceLocation, listing.location);
-                      return Padding(
+                    ...matches.map(
+                      (match) => Padding(
                         padding: const EdgeInsets.only(bottom: AppSpacing.md),
-                        child: DashboardListRow(
-                          title: listing.title,
-                          subtitle:
-                              '${listingConditionLabel(listing.condition)} · ${listingPriceLabel(listing.priceCents)} · ${listingDistanceLabel(distanceMeters)}',
-                          leading: Container(
-                            width: 44,
-                            height: 44,
-                            alignment: Alignment.center,
-                            decoration: BoxDecoration(
-                              color: AppColors.warning.withValues(alpha: 0.14),
-                              borderRadius: BorderRadius.circular(AppRadii.medium),
-                            ),
-                            child: const Icon(Icons.storefront_outlined, color: AppColors.warning),
-                          ),
-                          trailing: const Icon(Icons.chevron_right_rounded, color: AppColors.mutedText),
-                          onTap: () => _openListing(listing, distanceMeters),
-                        ),
-                      );
-                    }),
+                        child: _ListingRow(match: match, onTap: () => _openListing(match)),
+                      ),
+                    ),
                 ],
               ),
             );
@@ -177,8 +218,72 @@ class _MarketplacePageState extends State<MarketplacePage> {
 class _MarketplaceViewData {
   const _MarketplaceViewData({required this.referenceLocation, required this.listings});
 
-  final Coordinates referenceLocation;
+  final Coordinates? referenceLocation;
   final List<MarketplaceListing> listings;
+}
+
+class _ListingRow extends StatelessWidget {
+  const _ListingRow({required this.match, required this.onTap});
+
+  final ListingMatch match;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final listing = match.listing;
+    final details = [
+      listingConditionLabel(listing.condition),
+      listingPriceLabel(listing.priceCents),
+      if (match.distanceMeters != null) listingDistanceLabel(match.distanceMeters),
+      if (listing.cityLabel != null) listing.cityLabel!,
+    ];
+    return DashboardListRow(
+      title: listing.title,
+      subtitle: details.join(' · '),
+      leading: ClipRRect(
+        borderRadius: BorderRadius.circular(AppRadii.medium),
+        child: SizedBox(
+          width: 52,
+          height: 52,
+          child: listing.photoUrls.isNotEmpty
+              ? ListingPhoto(url: listing.photoUrls.first)
+              : ColoredBox(
+                  color: AppColors.warning.withValues(alpha: 0.14),
+                  child: Icon(listingCategoryIcon(listing.category), color: AppColors.warning),
+                ),
+        ),
+      ),
+      trailing: const Icon(Icons.chevron_right_rounded, color: AppColors.mutedText),
+      onTap: onTap,
+    );
+  }
+}
+
+class _LoadError extends StatelessWidget {
+  const _LoadError({required this.onRetry});
+
+  final Future<void> Function() onRetry;
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(AppSpacing.xl),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              'Non riesco a caricare gli annunci. Controlla la connessione.',
+              style: AppTextStyles.bodySmall,
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: AppSpacing.lg),
+            OutlinedButton(onPressed: onRetry, child: const Text('Riprova')),
+          ],
+        ),
+      ),
+    );
+  }
 }
 
 class _CategoryFilterRow extends StatelessWidget {
@@ -190,7 +295,7 @@ class _CategoryFilterRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      height: 36,
+      height: 40,
       child: ListView(
         scrollDirection: Axis.horizontal,
         children: [
@@ -209,6 +314,87 @@ class _CategoryFilterRow extends StatelessWidget {
                 label: Text(listingCategoryLabel(category)),
                 selected: selected == category,
                 onSelected: (_) => onSelected(category),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// "Tutti gli animali" plus each concrete species. Picking one also keeps
+/// the listings meant for all species (ListingSpecies.allSpecies).
+class _SpeciesFilterRow extends StatelessWidget {
+  const _SpeciesFilterRow({required this.selected, required this.onSelected});
+
+  final ListingSpecies? selected;
+  final ValueChanged<ListingSpecies?> onSelected;
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      height: 40,
+      child: ListView(
+        scrollDirection: Axis.horizontal,
+        children: [
+          Padding(
+            padding: const EdgeInsets.only(right: AppSpacing.sm),
+            child: ChoiceChip(
+              label: const Text('Tutti gli animali'),
+              selected: selected == null,
+              onSelected: (_) => onSelected(null),
+            ),
+          ),
+          ...ListingSpecies.values.where((species) => species != ListingSpecies.allSpecies).map(
+                (species) => Padding(
+                  padding: const EdgeInsets.only(right: AppSpacing.sm),
+                  child: ChoiceChip(
+                    label: Text(listingSpeciesLabel(species)),
+                    selected: selected == species,
+                    onSelected: (_) => onSelected(species),
+                  ),
+                ),
+              ),
+        ],
+      ),
+    );
+  }
+}
+
+class _DistanceFilterRow extends StatelessWidget {
+  const _DistanceFilterRow({
+    required this.selected,
+    required this.enabled,
+    required this.onSelected,
+  });
+
+  final double? selected;
+  final bool enabled;
+  final ValueChanged<double?> onSelected;
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      height: 40,
+      child: ListView(
+        scrollDirection: Axis.horizontal,
+        children: [
+          Padding(
+            padding: const EdgeInsets.only(right: AppSpacing.sm),
+            child: Icon(
+              Icons.near_me_outlined,
+              size: 18,
+              color: enabled ? AppColors.secondaryText : AppColors.mutedText,
+            ),
+          ),
+          ...listingDistanceOptionsKm.map(
+            (km) => Padding(
+              padding: const EdgeInsets.only(right: AppSpacing.sm),
+              child: ChoiceChip(
+                label: Text(listingDistanceFilterLabel(km)),
+                selected: selected == km,
+                onSelected: enabled ? (_) => onSelected(km) : null,
               ),
             ),
           ),

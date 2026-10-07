@@ -1,11 +1,14 @@
+import 'dart:io' show File;
 import 'dart:typed_data';
 
 import 'package:file_picker/file_picker.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 
 import '../../../../shared/widgets/pet_loader.dart';
 
 import 'package:http/http.dart' as http;
+import 'package:path_provider/path_provider.dart';
 import 'package:record/record.dart';
 
 import '../../../../design_system/tokens/app_colors.dart';
@@ -23,6 +26,8 @@ class ChatComposer extends StatefulWidget {
     required this.petName,
     this.onSend,
     this.speechToText,
+    this.recorder,
+    this.recordingPathProvider,
   });
 
   final String hintText;
@@ -33,13 +38,17 @@ class ChatComposer extends StatefulWidget {
   final void Function(String text, {String? attachmentId, Uint8List? attachmentImageBytes})? onSend;
   final SpeechToTextRemoteDataSource? speechToText;
 
+  /// Overridable so tests can drive the dictation flow without a microphone.
+  final AudioRecorder? recorder;
+  final Future<String> Function()? recordingPathProvider;
+
   @override
   State<ChatComposer> createState() => _ChatComposerState();
 }
 
 class _ChatComposerState extends State<ChatComposer> {
   final TextEditingController _controller = TextEditingController();
-  final AudioRecorder _recorder = AudioRecorder();
+  late final AudioRecorder _recorder = widget.recorder ?? AudioRecorder();
   late final SpeechToTextRemoteDataSource _speechToText =
       widget.speechToText ?? HttpSpeechToTextRemoteDataSource();
 
@@ -238,7 +247,12 @@ class _ChatComposerState extends State<ChatComposer> {
     }
     if (_voiceState != _VoiceState.idle) return;
 
-    final hasPermission = await _recorder.hasPermission();
+    var hasPermission = false;
+    try {
+      hasPermission = await _recorder.hasPermission();
+    } catch (_) {
+      // Treated like a refusal: the message below is shown.
+    }
     if (!hasPermission) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
@@ -247,13 +261,46 @@ class _ChatComposerState extends State<ChatComposer> {
       return;
     }
 
-    await _recorder.start(const RecordConfig(), path: 'chat-voice-message.webm');
+    try {
+      // `record` opens the file as given, and a bare name resolves against the
+      // process working directory (read-only "/" on Android): the recorder
+      // refused to start there. Native recordings go to a real temp file.
+      final path = await (widget.recordingPathProvider ?? _defaultRecordingPath)();
+      await _recorder.start(_recordConfig, path: path);
+    } catch (_) {
+      _showMessage('Non riesco ad avviare il microfono. Riprova.');
+      return;
+    }
     if (!mounted) return;
     setState(() => _voiceState = _VoiceState.recording);
   }
 
+  /// Mono 16 kHz AAC (.m4a) is plenty for speech and keeps the upload small.
+  /// The web recorder picks its own container (webm), so keep its defaults.
+  static const _recordConfig = kIsWeb
+      ? RecordConfig()
+      : RecordConfig(encoder: AudioEncoder.aacLc, sampleRate: 16000, numChannels: 1, bitRate: 64000);
+
+  static Future<String> _defaultRecordingPath() async {
+    if (kIsWeb) return 'chat-voice-message.webm';
+    final directory = await getTemporaryDirectory();
+    return '${directory.path}/chat-voice-${DateTime.now().millisecondsSinceEpoch}.m4a';
+  }
+
+  void _showMessage(String message) {
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(message)));
+  }
+
   Future<void> _stopAndTranscribe() async {
-    final path = await _recorder.stop();
+    String? path;
+    try {
+      path = await _recorder.stop();
+    } catch (_) {
+      if (mounted) setState(() => _voiceState = _VoiceState.idle);
+      _showMessage('La registrazione non è andata a buon fine. Riprova.');
+      return;
+    }
     if (!mounted) return;
     setState(() => _voiceState = _VoiceState.transcribing);
 
@@ -264,11 +311,13 @@ class _ChatComposerState extends State<ChatComposer> {
 
     try {
       // On web `stop()` returns a `blob:` URL for the recording; http can
-      // fetch it directly (the blob lives in this same page's origin).
-      final response = await http.get(Uri.parse(path));
+      // fetch it directly (the blob lives in this same page's origin). On
+      // Android/iOS it is a plain file path.
+      final audioBytes =
+          kIsWeb ? (await http.get(Uri.parse(path))).bodyBytes : await File(path).readAsBytes();
       final result = await _speechToText.transcribe(
-        audioBytes: response.bodyBytes,
-        fileName: 'chat-voice-message.webm',
+        audioBytes: audioBytes,
+        fileName: kIsWeb ? 'chat-voice-message.webm' : 'chat-voice-message.m4a',
       );
       if (!mounted) return;
       result.fold(
@@ -292,6 +341,12 @@ class _ChatComposerState extends State<ChatComposer> {
         const SnackBar(content: Text('Non sono riuscito a leggere la registrazione. Riprova.')),
       );
     } finally {
+      if (!kIsWeb) {
+        // The clip is only needed for the transcription.
+        try {
+          await File(path).delete();
+        } catch (_) {}
+      }
       if (mounted) setState(() => _voiceState = _VoiceState.idle);
     }
   }

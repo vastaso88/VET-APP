@@ -6,13 +6,13 @@ import '../../data/pet_demo_store.dart';
 import '../../domain/fish_species.dart';
 import '../../domain/pet_breeds.dart';
 import '../../domain/pet_species_breeds.dart';
-import '../../domain/pet_format.dart';
 import '../../domain/pet_identity_colors.dart';
 import '../../domain/pet_models.dart';
 import '../../../../design_system/tokens/app_colors.dart';
 import '../../../../design_system/tokens/app_radii.dart';
 import '../../../../design_system/tokens/app_spacing.dart';
 import '../../../../design_system/tokens/app_text_styles.dart';
+import '../../../../shared/formatters/date_input_formatter.dart';
 import '../../../../shared/widgets/pet_loader.dart';
 import 'pet_avatar.dart';
 import 'pet_sections.dart';
@@ -99,12 +99,10 @@ class _PetProfileFormState extends State<PetProfileForm> {
   late String? _species;
   late String? _breed;
   bool _otherBreed = false;
-  bool _birthTouched = false;
-  bool _submitAttempted = false;
   final _otherBreedController = TextEditingController();
   late String? _dogSizeCategory;
   late String? _sex;
-  DateTime? _birthDate;
+  late final TextEditingController _birthDateController;
   Uint8List? _photoBytes;
   bool _photoTouched = false;
   bool _submitting = false;
@@ -146,7 +144,10 @@ class _PetProfileFormState extends State<PetProfileForm> {
     }
     _dogSizeCategory = pet?.dogSizeCategory;
     _sex = pet?.sex;
-    _birthDate = _parseBirthDate(pet?.birthDateLabel);
+    final initialBirthDate = _parseBirthDate(pet?.birthDateLabel);
+    _birthDateController = TextEditingController(
+      text: initialBirthDate == null ? '' : formatDateForInput(initialBirthDate),
+    );
     _photoBytes = pet?.photoBytes;
     _identityColor = pet?.identityColor ?? PetDemoStore.instance.nextDefaultIdentityColor();
     _isAquarium = pet?.isAquarium ?? false;
@@ -282,6 +283,7 @@ class _PetProfileFormState extends State<PetProfileForm> {
   void dispose() {
     _nameController.dispose();
     _otherBreedController.dispose();
+    _birthDateController.dispose();
     _weightController.dispose();
     _notesController.dispose();
     _lengthController.dispose();
@@ -302,6 +304,9 @@ class _PetProfileFormState extends State<PetProfileForm> {
     return SingleChildScrollView(
       child: Form(
         key: _formKey,
+        // Re-validate each field as the owner edits it, so a message clears as
+        // soon as its value becomes valid instead of lingering until next submit.
+        autovalidateMode: AutovalidateMode.onUserInteraction,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -494,38 +499,31 @@ class _PetProfileFormState extends State<PetProfileForm> {
                 // only for a single pet (a lone fish included).
                 if (!isAquariumProfile) ...[
                   const SizedBox(height: AppSpacing.md),
-                  InkWell(
-                    onTap: _pickBirthDate,
-                    borderRadius: BorderRadius.circular(18),
-                    child: InputDecorator(
-                      decoration:
-                          _inputDecoration('Data di nascita', 'Seleziona una data'),
-                      child: Row(
-                        children: [
-                          Expanded(
-                            child: Text(
-                              _birthDate == null
-                                  ? 'Seleziona una data'
-                                  : formatPetBirthDate(_birthDate!),
-                              style: AppTextStyles.bodySmall.copyWith(
-                                color: _birthDate == null
-                                    ? AppColors.mutedText
-                                    : AppColors.text,
-                              ),
-                            ),
-                          ),
-                          const Icon(Icons.calendar_month_rounded, color: AppColors.primary),
-                        ],
+                  TextFormField(
+                    controller: _birthDateController,
+                    keyboardType: TextInputType.number,
+                    inputFormatters: const [DateInputFormatter()],
+                    decoration: _inputDecoration('Data di nascita', 'gg/mm/aaaa').copyWith(
+                      suffixIcon: IconButton(
+                        onPressed: _pickBirthDate,
+                        icon: const Icon(Icons.calendar_month_rounded, color: AppColors.primary),
                       ),
                     ),
+                    validator: (value) {
+                      final raw = (value ?? '').trim();
+                      if (raw.isEmpty) {
+                        return 'Seleziona la data di nascita.';
+                      }
+                      final parsed = parseStrictDate(raw);
+                      if (parsed == null) {
+                        return 'Data non valida (gg/mm/aaaa).';
+                      }
+                      if (parsed.isAfter(DateTime.now())) {
+                        return 'La data di nascita non può essere nel futuro.';
+                      }
+                      return null;
+                    },
                   ),
-                  if (_birthDate == null && (_birthTouched || _submitAttempted)) ...[
-                    const SizedBox(height: 6),
-                    Text(
-                      'Seleziona la data di nascita.',
-                      style: AppTextStyles.caption.copyWith(color: Colors.red.shade700),
-                    ),
-                  ],
                 ],
                 // Fish don't get a standalone Sesso field: for an aquarium,
                 // one sex value for the whole tank doesn't make sense — it's
@@ -660,24 +658,25 @@ class _PetProfileFormState extends State<PetProfileForm> {
   }
 
   Future<void> _pickBirthDate() async {
-    final initialDate = _birthDate ?? DateTime(2021, 1, 1);
+    final initialDate = parseStrictDate(_birthDateController.text) ?? DateTime(2021, 1, 1);
     final picked = await showDatePicker(
       context: context,
       initialDate: initialDate,
       firstDate: DateTime(2000),
       lastDate: DateTime.now(),
+      // The dialog's own "write" mode has no gg/mm/aaaa slashes; typing
+      // already happens in the field next to this icon, so the dialog only
+      // needs to offer the calendar.
+      initialEntryMode: DatePickerEntryMode.calendarOnly,
     );
-    setState(() {
-      _birthTouched = true;
-      if (picked != null) _birthDate = picked;
-    });
+    if (picked == null) return;
+    setState(() => _birthDateController.text = formatDateForInput(picked));
   }
 
   void _submit() async {
     final isAquariumProfile = _species == 'Pesce' && _isAquarium;
     final isValid = _formKey.currentState?.validate() ?? false;
-    if (!isValid || (!isAquariumProfile && _birthDate == null)) {
-      setState(() => _submitAttempted = true);
+    if (!isValid) {
       return;
     }
 
@@ -692,7 +691,7 @@ class _PetProfileFormState extends State<PetProfileForm> {
       name: _nameController.text.trim(),
       species: _species!.trim(),
       breed: isAquariumProfile ? null : _normalizeBreed(_breed),
-      birthDate: isAquariumProfile ? null : _birthDate,
+      birthDate: isAquariumProfile ? null : parseStrictDate(_birthDateController.text.trim()),
       sex: _sex!.trim(),
       weightKg: _parseWeight(_weightController.text),
       medicalNote: _notesController.text.trim(),

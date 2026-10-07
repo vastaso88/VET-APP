@@ -103,6 +103,7 @@ class _FakeRemote implements ChatRemoteDataSource {
     String? conversationId,
     required String userMessage,
     String? attachmentId,
+    String? clientMessageId,
   }) async =>
       Result.failure(const AppNetworkError(code: 'x', message: 'unused'));
 }

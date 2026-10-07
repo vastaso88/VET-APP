@@ -17,7 +17,7 @@ void main() {
 
     expect(find.text('Maps demo (fondamenta)'), findsOneWidget);
     expect(find.textContaining('Attività/eventi: 3'), findsOneWidget);
-    expect(find.textContaining('Annunci mercatino: 1'), findsOneWidget);
+    expect(find.textContaining('Annunci mercatino: 2'), findsOneWidget);
     expect(find.textContaining('Percorsi passeggiata: 1'), findsOneWidget);
   });
 }

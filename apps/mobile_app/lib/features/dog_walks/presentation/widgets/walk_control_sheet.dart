@@ -54,24 +54,53 @@ Future<void> showWalkControlSheet(BuildContext context, {required PetProfile pet
     case 'resume':
       await ActiveWalkController.instance.resume();
     case 'finish':
-      // The sheet is gone and saving can take seconds: say so meanwhile.
-      final messenger = ScaffoldMessenger.of(context);
-      messenger.showSnackBar(
-        const SnackBar(
-          duration: Duration(minutes: 1),
-          content: Row(
-            children: [
-              PetLoader.small(),
-              SizedBox(width: 12),
-              Text('Salvo la passeggiata...'),
-            ],
-          ),
+      await _finishWithProgress(context, pet);
+  }
+}
+
+/// "Termina" on the walk notification (WalkTrackingService.kt): the app
+/// opens and asks first - a tap in the shade is easy to make by mistake,
+/// and ending a walk can't be undone.
+Future<void> confirmAndFinishWalk(BuildContext context, {required PetProfile pet}) async {
+  final confirmed = await showDialog<bool>(
+    context: context,
+    builder: (dialogContext) => AlertDialog(
+      title: Text('Terminare la passeggiata con ${pet.name}?'),
+      content: const Text('Il percorso registrato finora verrà salvato.'),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.of(dialogContext).pop(false),
+          child: const Text('Continua'),
         ),
-      );
-      try {
-        await finishActiveWalk(context, pet, onSaved: messenger.hideCurrentSnackBar);
-      } finally {
-        messenger.hideCurrentSnackBar();
-      }
+        FilledButton(
+          onPressed: () => Navigator.of(dialogContext).pop(true),
+          child: const Text('Termina'),
+        ),
+      ],
+    ),
+  );
+  if (confirmed != true || !context.mounted) return;
+  await _finishWithProgress(context, pet);
+}
+
+Future<void> _finishWithProgress(BuildContext context, PetProfile pet) async {
+  // The sheet is gone and saving can take seconds: say so meanwhile.
+  final messenger = ScaffoldMessenger.of(context);
+  messenger.showSnackBar(
+    const SnackBar(
+      duration: Duration(minutes: 1),
+      content: Row(
+        children: [
+          PetLoader.small(),
+          SizedBox(width: 12),
+          Text('Salvo la passeggiata...'),
+        ],
+      ),
+    ),
+  );
+  try {
+    await finishActiveWalk(context, pet, onSaved: messenger.hideCurrentSnackBar);
+  } finally {
+    messenger.hideCurrentSnackBar();
   }
 }

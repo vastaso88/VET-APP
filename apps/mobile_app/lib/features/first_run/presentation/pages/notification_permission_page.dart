@@ -8,6 +8,7 @@ import '../../../../design_system/tokens/app_colors.dart';
 import '../../../../design_system/tokens/app_radii.dart';
 import '../../../../design_system/tokens/app_spacing.dart';
 import '../../../../design_system/tokens/app_text_styles.dart';
+import '../../../notifications/application/notification_scheduler.dart';
 
 /// Asks for the OS notification permission right after the tutorial — the
 /// natural moment, since the tutorial just explained reminders/vaccine
@@ -32,6 +33,7 @@ class _NotificationPermissionPageState extends State<NotificationPermissionPage>
       // Some platforms/targets don't support a native prompt at all — the
       // toggle in Impostazioni still reflects whatever the OS allows.
     }
+    NotificationScheduler.instance.requestResync();
     if (!mounted) return;
     Navigator.of(context).pop();
   }

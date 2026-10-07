@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
@@ -24,13 +25,20 @@ import '../../../location/data/device_location_service.dart';
 import '../../../location/data/location_preference_store.dart';
 import '../../../location/data/location_repository.dart';
 import '../../../location/domain/coordinates.dart';
+import '../../../notifications/application/notification_scheduler.dart';
+import '../../../notifications/data/notification_preferences_store.dart';
 import '../../../nearby_places/data/radar_places_repository.dart';
+import '../../../nearby_places/data/reverse_geocoder.dart';
 import '../../../nearby_places/presentation/pages/data_sources_page.dart';
 import '../../../pets/data/pet_demo_store.dart';
 import '../../../pets/domain/pet_models.dart';
 import '../../../pets/presentation/widgets/medical_record_consent_card.dart';
 import '../../../profile/presentation/pages/profile_page.dart';
+import '../../data/gallery_save_settings_store.dart';
 import '../../data/layout_settings_store.dart';
+import '../../../auth/presentation/pages/legal_text_page.dart';
+import '../widgets/collapsible_section.dart';
+import 'location_picker_page.dart';
 
 class SettingsPage extends StatefulWidget {
   const SettingsPage({super.key});
@@ -41,7 +49,6 @@ class SettingsPage extends StatefulWidget {
 
 class _SettingsPageState extends State<SettingsPage> {
   bool _notifications = true;
-  bool _activityReminders = true;
   String _weightUnit = 'kg';
 
   final _consentsDataSource = HttpAccountConsentsRemoteDataSource();
@@ -57,6 +64,7 @@ class _SettingsPageState extends State<SettingsPage> {
     super.initState();
     _loadConsents();
     unawaited(LayoutSettingsStore.instance.ensureLoaded());
+    unawaited(GallerySaveSettingsStore.instance.ensureLoaded());
     unawaited(_loadLocation());
     unawaited(_loadSupportContact());
     unawaited(_loadNotificationPermission());
@@ -73,15 +81,31 @@ class _SettingsPageState extends State<SettingsPage> {
     super.dispose();
   }
 
-  final _locationKey = GlobalKey();
+  final _locationKey = GlobalKey<CollapsibleSectionState>();
+
+  void _openFullPrivacyPolicy() {
+    Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder: (_) => const LegalTextPage(
+          consentKey: AccountConsentKeys.privacyPolicy,
+          title: 'Informativa privacy completa',
+          shareable: true,
+        ),
+      ),
+    );
+  }
 
   void _scrollToLocation() {
     if (!mounted) return;
     HomeShellNavigation.consumeLocationScroll();
-    final context = _locationKey.currentContext;
-    if (context != null) {
-      Scrollable.ensureVisible(context, duration: const Duration(milliseconds: 300));
-    }
+    // Open the section first (it may be collapsed), then scroll once laid out.
+    _locationKey.currentState?.expand();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final context = _locationKey.currentContext;
+      if (mounted && context != null) {
+        Scrollable.ensureVisible(context, duration: const Duration(milliseconds: 300));
+      }
+    });
   }
 
   Future<void> _loadNotificationPermission() async {
@@ -102,6 +126,7 @@ class _SettingsPageState extends State<SettingsPage> {
       final status = await Permission.notification.request();
       if (mounted) setState(() => _notifications = status.isGranted);
     } catch (_) {}
+    NotificationScheduler.instance.requestResync();
   }
 
   String _shortPlaceLabel(String label) {
@@ -131,7 +156,26 @@ class _SettingsPageState extends State<SettingsPage> {
     if (remote != null) {
       await LocationPreferenceStore.instance.update(remote);
     }
+    unawaited(_migrateLegacyHomeLabel());
   }
+
+  /// Residences saved before compactAddressLabel() existed still carry
+  /// Nominatim's full display_name (lots of comma-separated segments:
+  /// street, neighborhood, municipio, city, province, region, country...).
+  /// Re-derive a short label for those, once, so the owner doesn't have to
+  /// re-set their address by hand.
+  Future<void> _migrateLegacyHomeLabel() async {
+    final preference = LocationPreferenceStore.instance.preference;
+    final home = preference.home;
+    final label = preference.homeLabel;
+    if (home == null || label == null || !_looksLikeLegacyLongLabel(label)) return;
+
+    final shortened = await ReverseGeocoder().addressOf(home);
+    if (shortened == null || shortened == label) return;
+    _updateLocation(preference.copyWith(homeLabel: shortened));
+  }
+
+  bool _looksLikeLegacyLongLabel(String label) => isLegacyLongAddressLabel(label);
 
   void _updateLocation(UserLocationPreference preference) {
     unawaited(LocationPreferenceStore.instance.update(preference));
@@ -306,8 +350,12 @@ class _SettingsPageState extends State<SettingsPage> {
     final result = await const AuthRepositoryFactory().create().signOut();
     if (!mounted) return;
     result.fold(
-      onSuccess: (_) => Navigator.of(context, rootNavigator: true)
-          .pushNamedAndRemoveUntil(AppRouter.auth, (route) => false),
+      onSuccess: (_) {
+        // No reminders or pet names left on the phone after logout.
+        unawaited(NotificationScheduler.instance.clearAll());
+        Navigator.of(context, rootNavigator: true)
+            .pushNamedAndRemoveUntil(AppRouter.auth, (route) => false);
+      },
       onFailure: (error) => ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(error.message)),
       ),
@@ -404,188 +452,257 @@ class _SettingsPageState extends State<SettingsPage> {
       backgroundColor: AppColors.background,
       body: SafeArea(
         child: ListenableBuilder(
-          listenable: Listenable.merge([LayoutSettingsStore.instance, LocationPreferenceStore.instance]),
+          listenable: Listenable.merge([
+            LayoutSettingsStore.instance,
+            LocationPreferenceStore.instance,
+            GallerySaveSettingsStore.instance,
+          ]),
           builder: (context, _) {
             final layout = LayoutSettingsStore.instance.settings;
             final location = LocationPreferenceStore.instance.preference;
 
             return ListView(
-          padding: const EdgeInsets.fromLTRB(
-            AppSpacing.xl,
-            AppSpacing.lg,
-            AppSpacing.xl,
-            AppSpacing.xxxl,
-          ),
-          children: [
-            Text('Impostazioni', style: AppTextStyles.display.copyWith(fontSize: 28)),
-            const SizedBox(height: AppSpacing.xl),
-            _Row(
-              leading: _Avatar(letter: CurrentUser.firstName(fallback: 'O').substring(0, 1).toUpperCase()),
-              title: CurrentUser.fullName(fallback: 'Ospite'),
-              subtitle: user?.email ?? 'Nessuna sessione attiva',
-              onTap: _openProfile,
-            ),
-            const _SectionLabel('Abbonamento'),
-            ListenableBuilder(
-              listenable: BillingDemoStore.instance,
-              builder: (context, _) => _Row(
-                icon: Icons.workspace_premium_outlined,
-                iconColor: AppColors.accent,
-                title: 'Abbonamento e pagamenti',
-                trailingText: BillingDemoStore.instance.isOnTrial
-                    ? 'Prova · scade il ${DateFormat('dd/MM/yyyy').format(BillingDemoStore.instance.trialEndsAt!)}'
-                    : BillingDemoStore.instance.currentPlan.displayName,
-                onTap: _openBilling,
+              padding: const EdgeInsets.fromLTRB(
+                AppSpacing.xl,
+                AppSpacing.lg,
+                AppSpacing.xl,
+                AppSpacing.xxxl,
               ),
-            ),
-            const _SectionLabel('Preferenze'),
-            _ToggleRow(
-              icon: Icons.notifications_active_outlined,
-              iconColor: AppColors.primary,
-              title: 'Notifiche push',
-              value: _notifications,
-              onChanged: (value) => unawaited(_setNotifications(value)),
-            ),
-            _ToggleRow(
-              icon: Icons.event_available_outlined,
-              iconColor: AppColors.success,
-              title: 'Promemoria attività',
-              value: _activityReminders,
-              onChanged: (value) => setState(() => _activityReminders = value),
-            ),
-            _UnitRow(
-              value: _weightUnit,
-              onChanged: (value) => setState(() => _weightUnit = value),
-            ),
-            const _SectionLabel('Layout'),
-            _StepperRow(
-              icon: Icons.view_week_outlined,
-              iconColor: AppColors.primary,
-              title: 'Settimane visualizzate in Home',
-              subtitle: 'Quante settimane mostrare nel calendario della Home.',
-              value: layout.weeksShown,
-              minValue: 1,
-              maxValue: 4,
-              onChanged: (value) => _updateLayout(layout.copyWith(weeksShown: value)),
-            ),
-            _ChoiceRow(
-              icon: Icons.calendar_view_week_outlined,
-              iconColor: AppColors.info,
-              title: 'Inizio settimana',
-              leftLabel: 'Lunedì',
-              rightLabel: 'Domenica',
-              isLeftSelected: layout.weekStartDay == WeekStartDay.monday,
-              onSelectLeft: () => _updateLayout(layout.copyWith(weekStartDay: WeekStartDay.monday)),
-              onSelectRight: () => _updateLayout(layout.copyWith(weekStartDay: WeekStartDay.sunday)),
-            ),
-            _ChoiceRow(
-              icon: Icons.density_medium_outlined,
-              iconColor: AppColors.accent,
-              title: 'Densità liste',
-              leftLabel: 'Comoda',
-              rightLabel: 'Compatta',
-              isLeftSelected: layout.listDensity == ListDensity.comfortable,
-              onSelectLeft: () => _updateLayout(layout.copyWith(listDensity: ListDensity.comfortable)),
-              onSelectRight: () => _updateLayout(layout.copyWith(listDensity: ListDensity.compact)),
-            ),
-            KeyedSubtree(
-              key: _locationKey,
-              child: const _SectionLabel('Località'),
-            ),
-            Text(
-              'Usata per personalizzare eventi e news in base alla zona.',
-              style: AppTextStyles.bodySmall,
-            ),
-            const SizedBox(height: AppSpacing.sm),
-            _ChoiceRow(
-              icon: Icons.my_location_outlined,
-              iconColor: AppColors.info,
-              title: 'Posizione di riferimento',
-              leftLabel: 'Attuale',
-              rightLabel: 'Residenza',
-              isLeftSelected: location.mode == LocationMode.currentPosition,
-              onSelectLeft: () => _updateLocation(location.copyWith(mode: LocationMode.currentPosition)),
-              onSelectRight: () => _updateLocation(location.copyWith(mode: LocationMode.homeResidence)),
-            ),
-            _Row(
-              icon: Icons.gps_fixed_rounded,
-              iconColor: AppColors.primary,
-              title: 'Posizione attuale',
-              subtitle: _capturingLocation
-                  ? 'Rilevamento in corso…'
-                  : location.current != null
-                      ? _formatCoordinates(location.current!)
-                      : 'Non ancora impostata',
-              trailingText: _capturingLocation ? null : 'Aggiorna',
-              onTap: _captureCurrentPosition,
-            ),
-            _Row(
-              icon: Icons.home_outlined,
-              iconColor: AppColors.accent,
-              title: 'Residenza abituale',
-              subtitle: location.home != null
-                  ? _shortPlaceLabel(location.homeLabel ?? _formatCoordinates(location.home!))
-                  : 'Non impostata',
-              trailingText: location.home != null ? 'Modifica' : 'Imposta',
-              onTap: () => _showSetHomeLocationDialog(location),
-            ),
-            if (_locationError != null) ...[
-              const SizedBox(height: AppSpacing.sm),
-              Text(_locationError!, style: AppTextStyles.bodySmall.copyWith(color: AppColors.danger)),
-            ],
-            const _SectionLabel('Permessi e consensi'),
-            ..._buildConsentRows(),
-            const _SectionLabel('Assistenza'),
-            _Row(
-              icon: Icons.help_outline_rounded,
-              iconColor: AppColors.primary,
-              title: 'Centro assistenza',
-              onTap: _openHelpCenter,
-            ),
-            _Row(
-              icon: Icons.mail_outline_rounded,
-              iconColor: AppColors.accent,
-              title: 'Contattaci',
-              // The address comes from the backend (SUPPORT_CONTACT_EMAIL):
-              // none is shown until it is known, rather than a hardcoded
-              // one on a domain that may not be ours.
-              subtitle: _supportContactEmail,
-              onTap: () => _showInfoDialog(
-                'Contattaci',
-                _supportContactEmail == null
-                    ? 'Il contatto dell’assistenza non è disponibile in questo momento. Riprova più tardi.'
-                    : 'Scrivi a $_supportContactEmail per qualsiasi domanda.',
-              ),
-            ),
-            _Row(
-              icon: Icons.star_outline_rounded,
-              iconColor: AppColors.warning,
-              title: "Valuta l'app",
-              onTap: _rateApp,
-            ),
-            const _SectionLabel('Info'),
-            _Row(
-              icon: Icons.dataset_outlined,
-              iconColor: AppColors.info,
-              title: 'Fonti dati',
-              subtitle: 'Da dove arrivano i luoghi del radar',
-              onTap: _openDataSources,
-            ),
-            const _Row(
-              icon: Icons.info_outline_rounded,
-              iconColor: AppColors.mutedText,
-              title: 'Versione app',
-              trailingText: '1.0.0',
-            ),
-            const _SectionLabel('Account'),
-            _Row(
-              icon: Icons.logout_rounded,
-              iconColor: AppColors.danger,
-              title: 'Esci',
-              titleColor: AppColors.danger,
-              onTap: _logout,
-            ),
-          ],
+              children: [
+                Text('Impostazioni', style: AppTextStyles.display.copyWith(fontSize: 28)),
+                const SizedBox(height: AppSpacing.xl),
+                _Row(
+                  leading: _Avatar(
+                      letter: CurrentUser.firstName(fallback: 'O').substring(0, 1).toUpperCase()),
+                  title: CurrentUser.fullName(fallback: 'Ospite'),
+                  subtitle: user?.email ?? 'Nessuna sessione attiva',
+                  onTap: _openProfile,
+                ),
+                CollapsibleSection(
+                  sectionId: 'abbonamento',
+                  title: 'Abbonamento',
+                  children: [
+                    ListenableBuilder(
+                      listenable: BillingDemoStore.instance,
+                      builder: (context, _) => _Row(
+                        icon: Icons.workspace_premium_outlined,
+                        iconColor: AppColors.accent,
+                        title: 'Abbonamento e pagamenti',
+                        trailingText: BillingDemoStore.instance.isOnTrial
+                            ? 'Prova · scade il ${DateFormat('dd/MM/yyyy').format(BillingDemoStore.instance.trialEndsAt!)}'
+                            : BillingDemoStore.instance.currentPlan.displayName,
+                        onTap: _openBilling,
+                      ),
+                    ),
+                  ],
+                ),
+                CollapsibleSection(
+                  sectionId: 'preferenze',
+                  title: 'Preferenze',
+                  children: [
+                    _ToggleRow(
+                      icon: Icons.notifications_active_outlined,
+                      iconColor: AppColors.primary,
+                      title: 'Notifiche',
+                      value: _notifications,
+                      onChanged: (value) => unawaited(_setNotifications(value)),
+                    ),
+                    // The browser can't receive scheduled notifications.
+                    if (!kIsWeb) const _NotificationCategoryToggles(),
+                    _UnitRow(
+                      value: _weightUnit,
+                      onChanged: (value) => setState(() => _weightUnit = value),
+                    ),
+                  ],
+                ),
+                CollapsibleSection(
+                  sectionId: 'layout',
+                  title: 'Layout',
+                  children: [
+                    _StepperRow(
+                      icon: Icons.view_week_outlined,
+                      iconColor: AppColors.primary,
+                      title: 'Settimane visualizzate in Home',
+                      subtitle: 'Quante settimane mostrare nel calendario della Home.',
+                      value: layout.weeksShown,
+                      minValue: 1,
+                      maxValue: 4,
+                      onChanged: (value) => _updateLayout(layout.copyWith(weeksShown: value)),
+                    ),
+                    _ChoiceRow(
+                      icon: Icons.calendar_view_week_outlined,
+                      iconColor: AppColors.info,
+                      title: 'Inizio settimana',
+                      leftLabel: 'Lunedì',
+                      rightLabel: 'Domenica',
+                      isLeftSelected: layout.weekStartDay == WeekStartDay.monday,
+                      onSelectLeft: () =>
+                          _updateLayout(layout.copyWith(weekStartDay: WeekStartDay.monday)),
+                      onSelectRight: () =>
+                          _updateLayout(layout.copyWith(weekStartDay: WeekStartDay.sunday)),
+                    ),
+                    _ChoiceRow(
+                      icon: Icons.density_medium_outlined,
+                      iconColor: AppColors.accent,
+                      title: 'Densità liste',
+                      leftLabel: 'Comoda',
+                      rightLabel: 'Compatta',
+                      isLeftSelected: layout.listDensity == ListDensity.comfortable,
+                      onSelectLeft: () =>
+                          _updateLayout(layout.copyWith(listDensity: ListDensity.comfortable)),
+                      onSelectRight: () =>
+                          _updateLayout(layout.copyWith(listDensity: ListDensity.compact)),
+                    ),
+                  ],
+                ),
+                CollapsibleSection(
+                  sectionId: 'foto_e_video',
+                  title: 'Foto e video',
+                  children: [
+                    _ToggleRow(
+                      icon: Icons.photo_library_outlined,
+                      iconColor: AppColors.primary,
+                      title: 'Salva le foto nella galleria',
+                      subtitle: 'Le foto e i video scattati con la fotocamera dell\'app vengono '
+                          'copiati nell\'album "VetApp" del telefono.',
+                      value: GallerySaveSettingsStore.instance.enabled,
+                      onChanged: (value) =>
+                          unawaited(GallerySaveSettingsStore.instance.setEnabled(value)),
+                    ),
+                  ],
+                ),
+                CollapsibleSection(
+                  key: _locationKey,
+                  sectionId: 'localita',
+                  title: 'Località',
+                  children: [
+                    Text(
+                      'Usata per personalizzare eventi e news in base alla zona.',
+                      style: AppTextStyles.bodySmall,
+                    ),
+                    const SizedBox(height: AppSpacing.sm),
+                    _ChoiceRow(
+                      icon: Icons.my_location_outlined,
+                      iconColor: AppColors.info,
+                      title: 'Posizione di riferimento',
+                      leftLabel: 'Attuale',
+                      rightLabel: 'Residenza',
+                      isLeftSelected: location.mode == LocationMode.currentPosition,
+                      onSelectLeft: () =>
+                          _updateLocation(location.copyWith(mode: LocationMode.currentPosition)),
+                      onSelectRight: () =>
+                          _updateLocation(location.copyWith(mode: LocationMode.homeResidence)),
+                    ),
+                    _Row(
+                      icon: Icons.gps_fixed_rounded,
+                      iconColor: AppColors.primary,
+                      title: 'Posizione attuale',
+                      subtitle: _capturingLocation
+                          ? 'Rilevamento in corso…'
+                          : location.current != null
+                              ? _formatCoordinates(location.current!)
+                              : 'Non ancora impostata',
+                      trailingText: _capturingLocation ? null : 'Aggiorna',
+                      onTap: _captureCurrentPosition,
+                    ),
+                    _Row(
+                      icon: Icons.home_outlined,
+                      iconColor: AppColors.accent,
+                      title: 'Residenza abituale',
+                      subtitle: location.home != null
+                          ? _shortPlaceLabel(
+                              location.homeLabel ?? _formatCoordinates(location.home!))
+                          : 'Non impostata',
+                      trailingText: location.home != null ? 'Modifica' : 'Imposta',
+                      onTap: () => _showSetHomeLocationDialog(location),
+                    ),
+                    if (_locationError != null) ...[
+                      const SizedBox(height: AppSpacing.sm),
+                      Text(_locationError!,
+                          style: AppTextStyles.bodySmall.copyWith(color: AppColors.danger)),
+                    ],
+                  ],
+                ),
+                CollapsibleSection(
+                  sectionId: 'permessi',
+                  title: 'Permessi e consensi',
+                  children: [
+                    ..._buildConsentRows(),
+                    _Row(
+                      icon: Icons.description_outlined,
+                      iconColor: AppColors.info,
+                      title: 'Informativa privacy completa',
+                      subtitle: 'Leggi, scarica o condividi il testo',
+                      onTap: _openFullPrivacyPolicy,
+                    ),
+                  ],
+                ),
+                CollapsibleSection(
+                  sectionId: 'assistenza',
+                  title: 'Assistenza',
+                  children: [
+                    _Row(
+                      icon: Icons.help_outline_rounded,
+                      iconColor: AppColors.primary,
+                      title: 'Centro assistenza',
+                      onTap: _openHelpCenter,
+                    ),
+                    _Row(
+                      icon: Icons.mail_outline_rounded,
+                      iconColor: AppColors.accent,
+                      title: 'Contattaci',
+                      // The address comes from the backend (SUPPORT_CONTACT_EMAIL):
+                      // none is shown until it is known, rather than a hardcoded
+                      // one on a domain that may not be ours.
+                      subtitle: _supportContactEmail,
+                      onTap: () => _showInfoDialog(
+                        'Contattaci',
+                        _supportContactEmail == null
+                            ? 'Il contatto dell’assistenza non è disponibile in questo momento. Riprova più tardi.'
+                            : 'Scrivi a $_supportContactEmail per qualsiasi domanda.',
+                      ),
+                    ),
+                    _Row(
+                      icon: Icons.star_outline_rounded,
+                      iconColor: AppColors.warning,
+                      title: "Valuta l'app",
+                      onTap: _rateApp,
+                    ),
+                  ],
+                ),
+                CollapsibleSection(
+                  sectionId: 'info',
+                  title: 'Info',
+                  children: [
+                    _Row(
+                      icon: Icons.dataset_outlined,
+                      iconColor: AppColors.info,
+                      title: 'Fonti dati',
+                      subtitle: 'Da dove arrivano i luoghi del radar',
+                      onTap: _openDataSources,
+                    ),
+                    const _Row(
+                      icon: Icons.info_outline_rounded,
+                      iconColor: AppColors.mutedText,
+                      title: 'Versione app',
+                      trailingText: '1.0.0',
+                    ),
+                  ],
+                ),
+                CollapsibleSection(
+                  sectionId: 'account',
+                  title: 'Account',
+                  children: [
+                    _Row(
+                      icon: Icons.logout_rounded,
+                      iconColor: AppColors.danger,
+                      title: 'Esci',
+                      titleColor: AppColors.danger,
+                      onTap: _logout,
+                    ),
+                  ],
+                ),
+              ],
             );
           },
         ),
@@ -614,7 +731,6 @@ class _PetClinicalConsentSection extends StatelessWidget {
             child: MedicalRecordConsentCard(
               key: ValueKey('settings-consent-${pet.id}'),
               pet: pet,
-              compact: true,
             ),
           ),
       ],
@@ -683,7 +799,8 @@ class _Row extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final effectiveLeading = leading ?? (icon != null ? _IconBadge(icon: icon!, color: iconColor ?? AppColors.primary) : null);
+    final effectiveLeading = leading ??
+        (icon != null ? _IconBadge(icon: icon!, color: iconColor ?? AppColors.primary) : null);
 
     return Material(
       color: Colors.transparent,
@@ -696,7 +813,10 @@ class _Row extends StatelessWidget {
           ),
           child: Row(
             children: [
-              if (effectiveLeading != null) ...[effectiveLeading, const SizedBox(width: AppSpacing.md)],
+              if (effectiveLeading != null) ...[
+                effectiveLeading,
+                const SizedBox(width: AppSpacing.md)
+              ],
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -736,11 +856,13 @@ class _ToggleRow extends StatelessWidget {
     required this.title,
     required this.value,
     required this.onChanged,
+    this.subtitle,
   });
 
   final IconData icon;
   final Color iconColor;
   final String title;
+  final String? subtitle;
   final bool value;
   final ValueChanged<bool> onChanged;
 
@@ -756,14 +878,67 @@ class _ToggleRow extends StatelessWidget {
           _IconBadge(icon: icon, color: iconColor),
           const SizedBox(width: AppSpacing.md),
           Expanded(
-            child: Text(
-              title,
-              style: AppTextStyles.body.copyWith(color: AppColors.text, fontWeight: FontWeight.w600),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: AppTextStyles.body
+                      .copyWith(color: AppColors.text, fontWeight: FontWeight.w600),
+                ),
+                if (subtitle != null) Text(subtitle!, style: AppTextStyles.bodySmall),
+              ],
             ),
           ),
           Switch(value: value, onChanged: onChanged),
         ],
       ),
+    );
+  }
+}
+
+/// Which kinds of notification arrive on the phone; stored on the phone
+/// and followed at once by NotificationScheduler.
+class _NotificationCategoryToggles extends StatelessWidget {
+  const _NotificationCategoryToggles();
+
+  @override
+  Widget build(BuildContext context) {
+    final store = NotificationPreferencesStore.instance;
+    unawaited(store.ensureLoaded());
+    return ListenableBuilder(
+      listenable: store,
+      builder: (context, _) {
+        final preferences = store.preferences;
+        return Column(
+          children: [
+            _ToggleRow(
+              icon: Icons.event_available_outlined,
+              iconColor: AppColors.success,
+              title: 'Visite e vaccini',
+              value: preferences.reminders,
+              onChanged: (value) =>
+                  unawaited(store.update(preferences.copyWith(reminders: value))),
+            ),
+            _ToggleRow(
+              icon: Icons.medication_outlined,
+              iconColor: AppColors.info,
+              title: 'Orari dei farmaci',
+              value: preferences.medicines,
+              onChanged: (value) =>
+                  unawaited(store.update(preferences.copyWith(medicines: value))),
+            ),
+            _ToggleRow(
+              icon: Icons.cake_outlined,
+              iconColor: AppColors.accent,
+              title: 'Compleanni',
+              value: preferences.birthdays,
+              onChanged: (value) =>
+                  unawaited(store.update(preferences.copyWith(birthdays: value))),
+            ),
+          ],
+        );
+      },
     );
   }
 }
@@ -788,7 +963,8 @@ class _UnitRow extends StatelessWidget {
           Expanded(
             child: Text(
               'Unità di misura',
-              style: AppTextStyles.body.copyWith(color: AppColors.text, fontWeight: FontWeight.w600),
+              style:
+                  AppTextStyles.body.copyWith(color: AppColors.text, fontWeight: FontWeight.w600),
             ),
           ),
           _UnitToggleButton(label: 'kg', selected: value == 'kg', onTap: () => onChanged('kg')),
@@ -876,10 +1052,12 @@ class _StepperRow extends StatelessWidget {
                   title,
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
-                  style: AppTextStyles.body.copyWith(color: AppColors.text, fontWeight: FontWeight.w600),
+                  style: AppTextStyles.body
+                      .copyWith(color: AppColors.text, fontWeight: FontWeight.w600),
                 ),
                 const SizedBox(height: 2),
-                Text(subtitle, maxLines: 2, overflow: TextOverflow.ellipsis, style: AppTextStyles.bodySmall),
+                Text(subtitle,
+                    maxLines: 2, overflow: TextOverflow.ellipsis, style: AppTextStyles.bodySmall),
               ],
             ),
           ),
@@ -942,7 +1120,8 @@ class _ChoiceRow extends StatelessWidget {
               title,
               maxLines: 2,
               overflow: TextOverflow.ellipsis,
-              style: AppTextStyles.body.copyWith(color: AppColors.text, fontWeight: FontWeight.w600),
+              style:
+                  AppTextStyles.body.copyWith(color: AppColors.text, fontWeight: FontWeight.w600),
             ),
           ),
           _ChoicePill(label: leftLabel, selected: isLeftSelected, onTap: onSelectLeft),
@@ -1049,6 +1228,21 @@ class _HomeAddressDialogState extends State<_HomeAddressDialog> {
     Navigator.of(context).pop(result);
   }
 
+  Future<void> _pickOnMap() async {
+    final current = LocationPreferenceStore.instance.preference;
+    final result = await Navigator.of(context).push<GeocodedAddress>(
+      MaterialPageRoute(
+        builder: (_) => LocationPickerPage(
+          initialPosition: current.home ??
+              current.current ??
+              const Coordinates(latitude: 41.9028, longitude: 12.4964),
+        ),
+      ),
+    );
+    if (result == null || !mounted) return;
+    Navigator.of(context).pop(result);
+  }
+
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
@@ -1062,6 +1256,15 @@ class _HomeAddressDialogState extends State<_HomeAddressDialog> {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              OutlinedButton.icon(
+                onPressed: _submitting ? null : _pickOnMap,
+                icon: const Icon(Icons.map_outlined, size: 18),
+                label: const Text('Scegli sulla mappa'),
+                style: OutlinedButton.styleFrom(minimumSize: Size.zero),
+              ),
+              const SizedBox(height: AppSpacing.md),
+              Text('Oppure scrivi l\'indirizzo:', style: AppTextStyles.bodySmall),
+              const SizedBox(height: AppSpacing.sm),
               TextFormField(
                 controller: _streetController,
                 decoration: const InputDecoration(labelText: 'Indirizzo'),

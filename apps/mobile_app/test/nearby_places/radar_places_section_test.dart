@@ -16,6 +16,7 @@ import 'package:vet_app_mobile/features/nearby_places/presentation/pages/data_so
 import 'package:vet_app_mobile/features/nearby_places/presentation/radar_category.dart';
 import 'package:vet_app_mobile/features/nearby_places/presentation/radar_place_sheet.dart';
 import 'package:vet_app_mobile/features/nearby_places/presentation/widgets/radar_chip.dart';
+import 'package:vet_app_mobile/features/nearby_places/presentation/widgets/radar_map.dart';
 import 'package:vet_app_mobile/shared/errors/app_network_error.dart';
 import 'package:vet_app_mobile/shared/types/result.dart';
 import 'package:vet_app_mobile/shared/widgets/pet_loader.dart';
@@ -71,6 +72,14 @@ const _clinic = RadarPlace(
   addressLabel: 'Via Esempio 10, Milano',
   phone: '+39 02 0000 0001',
   openingHours: 'Mo-Fr 09:00-19:00; Sa off',
+);
+
+const _shop = RadarPlace(
+  id: 'shop',
+  type: RadarPlaceType.shop,
+  name: 'Negozio Esempio',
+  location: Coordinates(latitude: 45.4650, longitude: 9.1905),
+  distanceMeters: 300,
 );
 
 const _dogPark = RadarPlace(
@@ -211,6 +220,22 @@ void main() {
   test('opening hours are translated, not interpreted', () {
     expect(formatOpeningHours('Mo-Fr 09:00-19:00; Sa off'), 'Lun-Ven 09:00-19:00; Sab chiuso');
     expect(formatOpeningHours('24/7'), 'Indicato come aperto 24 ore su 24');
+  });
+
+  test('shelters arrive from the API with their own category', () {
+    final shelter = RadarPlace.tryFromJson({
+      'id': 's1',
+      'place_type': 'shelter',
+      'name': 'Rifugio Esempio',
+      'latitude': 45.47,
+      'longitude': 9.19,
+      'distance_km': 1.2,
+      'details': {'animal_shelter:adoption': 'yes'},
+    });
+
+    expect(radarCategoryForPlace(shelter!.type), RadarCategory.shelter);
+    expect(radarPlaceTypeLabel(shelter.type), 'Rifugio per animali');
+    expect(radarPlaceDetails(shelter.details).map((d) => d.label), contains('Adozioni possibili'));
   });
 
   test('every category has its own icon and color', () {
@@ -359,6 +384,58 @@ void main() {
     expect(repository.requestedRadii, [10]);
   });
 
+  testWidgets('one category at a time: a new one replaces the previous, the same one clears',
+      (tester) async {
+    final repository = _repositoryWith([_clinic, _dogPark, _shop]);
+    await _pumpPage(tester, repository);
+    Future<void> tapChip(String label) async {
+      await tester.ensureVisible(find.widgetWithText(RadarChip, label));
+      await tester.tap(find.widgetWithText(RadarChip, label));
+      await tester.pumpAndSettle();
+    }
+
+    bool isSelected(String label) =>
+        tester.widget<RadarChip>(find.widgetWithText(RadarChip, label)).selected;
+
+    await tapChip('Veterinari');
+    await tapChip('Aree cani');
+
+    // Only the last one is on.
+    expect(isSelected('Aree cani'), isTrue);
+    expect(isSelected('Veterinari'), isFalse);
+    expect(find.text('Clinica Veterinaria Duomo'), findsNothing);
+    expect(find.text('Negozio Esempio'), findsNothing);
+    final legend = find.byType(RadarLegend);
+    expect(find.descendant(of: legend, matching: find.text('Aree cani')), findsOneWidget);
+    expect(find.descendant(of: legend, matching: find.text('Veterinari')), findsNothing);
+    expect(find.textContaining('Mostro:'), findsNothing);
+    expect(find.text('Togli tutti'), findsNothing);
+
+    // Tapping the active one again goes back to everything.
+    await tapChip('Aree cani');
+    expect(isSelected('Tutti'), isTrue);
+    expect(find.text('Clinica Veterinaria Duomo'), findsOneWidget);
+    expect(find.text('Negozio Esempio'), findsOneWidget);
+    expect(repository.requestedRadii, [10]);
+  });
+
+  testWidgets('a selected category with nothing nearby says so', (tester) async {
+    await _pumpPage(tester, _repositoryWith([_clinic]));
+
+    await tester.ensureVisible(find.widgetWithText(RadarChip, 'Rifugi e adozioni'));
+    await tester.tap(find.widgetWithText(RadarChip, 'Rifugi e adozioni'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Rifugi e adozioni: nessuno entro 10 km'), findsOneWidget);
+  });
+
+  testWidgets('the clinics section has no descriptive subtitle', (tester) async {
+    await _pumpPage(tester, _repositoryWith([_clinic]));
+
+    expect(find.text('Cliniche e ambulatori'), findsOneWidget);
+    expect(find.textContaining('I veterinari più vicini'), findsNothing);
+  });
+
   testWidgets('selected chips use a light label on the dark background', (tester) async {
     await _pumpPage(tester, _repositoryWith([_clinic]));
 
@@ -399,6 +476,7 @@ void main() {
     // Radius and category chips are still there.
     expect(find.widgetWithText(RadarChip, '25 km'), findsOneWidget);
     expect(find.widgetWithText(RadarChip, 'Veterinari'), findsOneWidget);
+    expect(find.widgetWithText(RadarChip, 'Rifugi e adozioni'), findsOneWidget);
   });
 
   testWidgets('a national event is not listed: events live in their own section', (tester) async {

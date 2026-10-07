@@ -69,6 +69,10 @@ class _EventsPageState extends State<EventsPage> {
       initialDateRange: DateTimeRange(start: _filter.from, end: _filter.to),
       helpText: 'Scegli il periodo',
       saveText: 'Applica',
+      // The dialog's own "write" mode has no gg/mm/aaaa slashes, and this
+      // filter has no text field of its own to type into instead — hide
+      // that mode rather than leave a typing path with no slashes.
+      initialEntryMode: DatePickerEntryMode.calendarOnly,
     );
     if (picked == null || !mounted) return;
     _filter = _filter.copyWith(from: eventDay(picked.start), to: eventDay(picked.end));

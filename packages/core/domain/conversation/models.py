@@ -16,6 +16,13 @@ class ChatMessage(BaseModel):
     # packages/core/domain/conversation/attachment.py) — lets the client
     # render the photo inline without a separate lookup call.
     attachment_id: str | None = None
+    # The app's own id for a message the owner sent: a retry of the same
+    # message carries it again, so the server can hand back the reply it
+    # already produced instead of answering (and storing) it twice.
+    client_message_id: str | None = None
+    # On assistant messages: whether the text was written by the AI model
+    # (drives the AI-disclosure badge) — kept so a replayed reply carries it.
+    ai_generated: bool | None = None
 
 
 class Conversation(BaseModel):

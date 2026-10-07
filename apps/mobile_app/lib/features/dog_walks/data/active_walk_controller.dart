@@ -10,6 +10,7 @@ import '../domain/gps_quality.dart';
 import '../domain/walk_session.dart';
 import 'active_walk_recovery_store.dart';
 import 'dog_walks_repository.dart';
+import 'walk_foreground_service.dart';
 
 /// Mirrors packages/core/domain/dog_walk/models.py:estimate_steps.
 int estimateSteps(double distanceMeters, {double strideMeters = 0.75}) {
@@ -29,22 +30,32 @@ class ActiveWalkController extends ChangeNotifier {
   ActiveWalkController({
     required DogWalksRepository repository,
     ActiveWalkRecoveryStore recoveryStore = const ActiveWalkRecoveryStore(),
+    WalkForegroundService foregroundService = const NoopWalkForegroundService(),
   })  : _repository = repository,
-        _recoveryStore = recoveryStore;
+        _recoveryStore = recoveryStore,
+        _foregroundService = foregroundService;
 
-  static final ActiveWalkController instance =
-      ActiveWalkController(repository: DogWalksRepository());
+  static final ActiveWalkController instance = ActiveWalkController(
+    repository: DogWalksRepository(),
+    foregroundService: WalkForegroundService.forPlatform(),
+  );
 
   final DogWalksRepository _repository;
   final ActiveWalkRecoveryStore _recoveryStore;
+
+  /// The walk's own ongoing notification + Android foreground service
+  /// (WalkTrackingService.kt) - what keeps GPS alive in the background.
+  final WalkForegroundService _foregroundService;
   StreamSubscription<GpsFix>? _subscription;
 
-  /// Whether the current subscription came from [_defaultPositionStream] -
-  /// only that one can be usefully restarted to change the Android
-  /// notification's text when pausing/resuming (a test's injected stream
-  /// has no such notification, and re-listening to it would likely throw
-  /// anyway since most test streams are single-subscription).
-  bool _usingDefaultStream = false;
+  /// True when the walk's own notification couldn't be started and the
+  /// device stream carries geolocator's foreground notification instead.
+  /// Only then is the stream restarted on pause/resume, purely to swap that
+  /// notification's text (the plugin can't edit it in place). With the
+  /// walk's own notification, pausing just re-posts it - restarting GPS
+  /// from the background (a pause from the widget) is refused by Android
+  /// 12+ and used to silently stop tracking (2026-10-07).
+  bool _usingFallbackNotification = false;
 
   /// Set on [resume] so the very next accepted fix starts a new route
   /// segment (walk_route_segments.dart) instead of being compared/joined
@@ -104,10 +115,11 @@ class ActiveWalkController extends ChangeNotifier {
     _walk = walk;
     _awaitingAccurateStart = true;
     notifyListeners();
+    final hasOwnNotification = await _foregroundService.start(walk);
+    _usingFallbackNotification = positionStream == null && !hasOwnNotification;
     await _repository.saveWalk(walk);
     await _recoveryStore.save(walk);
 
-    _usingDefaultStream = positionStream == null;
     await _attachStream(
       positionStream ?? _defaultPositionStream(paused: false),
     );
@@ -129,7 +141,8 @@ class ActiveWalkController extends ChangeNotifier {
     _pendingSegmentBreak = recoveredWalk.route.isNotEmpty;
     notifyListeners();
 
-    _usingDefaultStream = positionStream == null;
+    final hasOwnNotification = await _foregroundService.start(recoveredWalk);
+    _usingFallbackNotification = positionStream == null && !hasOwnNotification;
     await _attachStream(
       positionStream ?? _defaultPositionStream(paused: recoveredWalk.isPaused),
     );
@@ -137,8 +150,7 @@ class ActiveWalkController extends ChangeNotifier {
 
   /// Freezes the live timer and stops recording route points (owner
   /// request, 2026-09-30) - GPS fixes keep arriving but _onFix ignores them
-  /// until [resume]. The Android foreground notification (real device
-  /// stream only) is restarted with "in pausa" text.
+  /// until [resume]. The walk notification switches to its "in pausa" text.
   Future<void> pause() async {
     final current = _walk;
     if (current == null ||
@@ -152,8 +164,10 @@ class ActiveWalkController extends ChangeNotifier {
     await _repository.saveWalk(_walk!);
     await _recoveryStore.save(_walk!);
 
-    if (_usingDefaultStream) {
+    if (_usingFallbackNotification) {
       await _attachStream(_defaultPositionStream(paused: true));
+    } else {
+      await _foregroundService.update(_walk!);
     }
   }
 
@@ -196,8 +210,10 @@ class ActiveWalkController extends ChangeNotifier {
     await _repository.saveWalk(_walk!);
     await _recoveryStore.save(_walk!);
 
-    if (_usingDefaultStream) {
+    if (_usingFallbackNotification) {
       await _attachStream(_defaultPositionStream(paused: false));
+    } else {
+      await _foregroundService.update(_walk!);
     }
   }
 
@@ -212,33 +228,34 @@ class ActiveWalkController extends ChangeNotifier {
     ).map(_toGpsFix);
   }
 
-  /// On Android, runs GPS updates as a foreground service with a persistent
-  /// notification so tracking survives the owner switching to another app
-  /// mid-walk (owner report, 2026-09-29). This only needs the foreground
-  /// location permission the app already requests - it's not
-  /// ACCESS_BACKGROUND_LOCATION ("Allow all the time"), which
-  /// docs/compliance/05_permessi_dispositivo_os.md explicitly defers.
+  /// On Android, tracking survives the owner switching to another app
+  /// mid-walk (owner report, 2026-09-29) because a foreground service with
+  /// a persistent notification runs alongside: normally the walk's own
+  /// (WalkTrackingService.kt via [_foregroundService]), otherwise - only if
+  /// that one couldn't start - geolocator's built-in one configured here.
+  /// Either needs only the foreground location permission the app already
+  /// requests - not ACCESS_BACKGROUND_LOCATION ("Allow all the time"),
+  /// which docs/compliance/05_permessi_dispositivo_os.md explicitly defers.
   /// bestForNavigation + a short interval trade extra battery for the
-  /// tighter accuracy the owner asked for (2026-09-29). Pausing/resuming
-  /// restarts this stream purely to swap the notification's text - the
-  /// Android plugin has no API to edit it in place, and this is the only
-  /// way it reliably shows "in pausa" (owner request, 2026-09-30). Other
-  /// platforms keep plain settings, web ignores AndroidSettings entirely.
+  /// tighter accuracy the owner asked for (2026-09-29). Other platforms keep
+  /// plain settings, web ignores AndroidSettings entirely.
   geolocator.LocationSettings _androidAwareSettings({required bool paused}) {
     if (!kIsWeb && defaultTargetPlatform == TargetPlatform.android) {
       return geolocator.AndroidSettings(
         accuracy: geolocator.LocationAccuracy.bestForNavigation,
         distanceFilter: 5,
         intervalDuration: const Duration(seconds: 3),
-        foregroundNotificationConfig: geolocator.ForegroundNotificationConfig(
-          notificationTitle:
-              paused ? 'Passeggiata in pausa' : 'Passeggiata in corso',
-          notificationText: paused
-              ? 'Il tracciamento è in pausa. Riprendi dall\'app quando vuoi.'
-              : 'VetApp sta tracciando il percorso della passeggiata.',
-          notificationChannelName: 'Tracciamento passeggiata',
-          setOngoing: true,
-        ),
+        foregroundNotificationConfig: !_usingFallbackNotification
+            ? null
+            : geolocator.ForegroundNotificationConfig(
+                notificationTitle:
+                    paused ? 'Passeggiata in pausa' : 'Passeggiata in corso',
+                notificationText: paused
+                    ? 'Il tracciamento è in pausa. Riprendi dall\'app quando vuoi.'
+                    : 'VetApp sta tracciando il percorso della passeggiata.',
+                notificationChannelName: 'Tracciamento passeggiata',
+                setOngoing: true,
+              ),
       );
     }
     return const geolocator.LocationSettings(
@@ -318,6 +335,7 @@ class ActiveWalkController extends ChangeNotifier {
     notifyListeners();
     unawaited(_repository.saveWalk(updated));
     unawaited(_recoveryStore.save(updated));
+    unawaited(_foregroundService.update(updated));
   }
 
   Future<void> stop() async {
@@ -328,6 +346,8 @@ class ActiveWalkController extends ChangeNotifier {
 
     await _subscription?.cancel();
     _subscription = null;
+    await _foregroundService.stop();
+    _usingFallbackNotification = false;
 
     final endedAt = DateTime.now();
     final updated = current.copyWith(
@@ -347,6 +367,7 @@ class ActiveWalkController extends ChangeNotifier {
   @override
   void dispose() {
     _subscription?.cancel();
+    unawaited(_foregroundService.stop());
     super.dispose();
   }
 }

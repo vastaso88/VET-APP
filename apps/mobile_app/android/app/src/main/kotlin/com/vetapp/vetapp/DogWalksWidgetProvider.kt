@@ -118,6 +118,50 @@ class DogWalksWidgetProvider : HomeWidgetProvider() {
       )
     }
 
+    internal fun controlBroadcast(context: Context, command: String, petId: String): PendingIntent {
+      val intent = Intent(context, DogWalksWidgetProvider::class.java).apply {
+        action = ACTION_WALK_CONTROL
+        putExtra(EXTRA_COMMAND, command)
+        putExtra(EXTRA_PET_ID, petId)
+      }
+      return PendingIntent.getBroadcast(
+          context,
+          "broadcast:$command:$petId".hashCode(),
+          intent,
+          PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE,
+      )
+    }
+
+    /**
+     * Same intent as home_widget's HomeWidgetLaunchIntent (LAUNCH action + data
+     * URI, delivered to MainActivity and surfaced to Dart by the plugin), but
+     * with a request code unique per (action, pet) instead of a constant 0, so
+     * no two pills can ever share (and FLAG_UPDATE_CURRENT overwrite) one
+     * PendingIntent.
+     */
+    internal fun actionIntent(context: Context, action: String, petId: String): PendingIntent {
+      val intent = Intent(context, MainActivity::class.java).apply {
+        this.action = HomeWidgetLaunchIntent.HOME_WIDGET_LAUNCH_ACTION
+        data = Uri.parse("homewidget://$action?petId=${Uri.encode(petId)}")
+      }
+      val flags = PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+      val requestCode = "$action:$petId".hashCode()
+
+      if (Build.VERSION.SDK_INT < 34) {
+        return PendingIntent.getActivity(context, requestCode, intent, flags)
+      }
+      val options = ActivityOptions.makeBasic()
+      if (Build.VERSION.SDK_INT >= 35) {
+        options.setPendingIntentCreatorBackgroundActivityStartMode(
+            ActivityOptions.MODE_BACKGROUND_ACTIVITY_START_ALLOWED
+        )
+      } else {
+        options.pendingIntentBackgroundActivityStartMode =
+            ActivityOptions.MODE_BACKGROUND_ACTIVITY_START_ALLOWED
+      }
+      return PendingIntent.getActivity(context, requestCode, intent, flags, options.toBundle())
+    }
+
     // AppColors.primary, used when the pet has no identity colour yet.
     private const val DEFAULT_COLOR = 0xFF2E686A.toInt()
 
@@ -357,50 +401,6 @@ class DogWalksWidgetProvider : HomeWidgetProvider() {
           actionIntent(context, "${command}_walk", pet.id)
         },
     )
-  }
-
-  private fun controlBroadcast(context: Context, command: String, petId: String): PendingIntent {
-    val intent = Intent(context, DogWalksWidgetProvider::class.java).apply {
-      action = ACTION_WALK_CONTROL
-      putExtra(EXTRA_COMMAND, command)
-      putExtra(EXTRA_PET_ID, petId)
-    }
-    return PendingIntent.getBroadcast(
-        context,
-        "broadcast:$command:$petId".hashCode(),
-        intent,
-        PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE,
-    )
-  }
-
-  /**
-   * Same intent as home_widget's HomeWidgetLaunchIntent (LAUNCH action + data
-   * URI, delivered to MainActivity and surfaced to Dart by the plugin), but
-   * with a request code unique per (action, pet) instead of a constant 0, so
-   * no two pills can ever share (and FLAG_UPDATE_CURRENT overwrite) one
-   * PendingIntent.
-   */
-  private fun actionIntent(context: Context, action: String, petId: String): PendingIntent {
-    val intent = Intent(context, MainActivity::class.java).apply {
-      this.action = HomeWidgetLaunchIntent.HOME_WIDGET_LAUNCH_ACTION
-      data = Uri.parse("homewidget://$action?petId=${Uri.encode(petId)}")
-    }
-    val flags = PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
-    val requestCode = "$action:$petId".hashCode()
-
-    if (Build.VERSION.SDK_INT < 34) {
-      return PendingIntent.getActivity(context, requestCode, intent, flags)
-    }
-    val options = ActivityOptions.makeBasic()
-    if (Build.VERSION.SDK_INT >= 35) {
-      options.setPendingIntentCreatorBackgroundActivityStartMode(
-          ActivityOptions.MODE_BACKGROUND_ACTIVITY_START_ALLOWED
-      )
-    } else {
-      options.pendingIntentBackgroundActivityStartMode =
-          ActivityOptions.MODE_BACKGROUND_ACTIVITY_START_ALLOWED
-    }
-    return PendingIntent.getActivity(context, requestCode, intent, flags, options.toBundle())
   }
 
   private fun openAppIntent(context: Context): PendingIntent {

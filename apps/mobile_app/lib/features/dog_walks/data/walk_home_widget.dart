@@ -13,6 +13,7 @@ import '../../reminders/presentation/pages/reminders_pages.dart';
 import '../domain/walk_eligibility.dart';
 import '../domain/walk_session.dart';
 import '../presentation/pages/active_walk_page.dart';
+import '../presentation/widgets/walk_control_sheet.dart';
 import 'active_walk_controller.dart';
 import 'home_widget_action_store.dart';
 
@@ -333,6 +334,13 @@ Future<void> _openWidgetAction(HomeWidgetAction action) async {
       if (ActiveWalkController.instance.walk?.petId == matchedPet.id) {
         await ActiveWalkController.instance.resume();
       }
+    case HomeWidgetActionKind.finishWalk:
+      final controller = ActiveWalkController.instance;
+      // Stale notification (walk already finished): nothing to end.
+      if (!controller.isActive || controller.walk?.petId != matchedPet.id) return;
+      final context = navigator.overlay?.context;
+      if (context == null || !context.mounted) return;
+      await confirmAndFinishWalk(context, pet: matchedPet);
     case HomeWidgetActionKind.newReminder:
       unawaited(
         navigator.push(

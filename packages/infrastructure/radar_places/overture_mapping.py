@@ -31,6 +31,9 @@ OVERTURE_CATEGORIES: dict[str, str] = {
     "dog_trainer": "school",
     "pet_training": "school",
     "pet_breeder": "breeder",
+    "animal_shelter": "shelter",
+    "pet_adoption": "shelter",
+    "animal_rescue_service": "shelter",
 }
 
 # Below this Overture's own confidence the sample held mislabelled
@@ -53,6 +56,7 @@ _OTHER_KIND_WORDS: dict[str, re.Pattern[str]] = {
     "school": re.compile(r"addestr|cinofil|educator"),
     "shop": re.compile(r"pet ?shop|pet ?store|negozio|mangimi|uccelleria|acquari"),
     "hotel": re.compile(r"pensione"),
+    "shelter": re.compile(r"canile|gattile|rifugio|oasi felina"),
 }
 
 

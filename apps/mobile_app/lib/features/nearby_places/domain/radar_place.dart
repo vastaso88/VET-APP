@@ -13,6 +13,7 @@ enum RadarPlaceType {
   breeder,
   hotel,
   dogPark,
+  shelter,
   other,
 }
 
@@ -34,6 +35,8 @@ RadarPlaceType radarPlaceTypeFromApi(String? value) {
       return RadarPlaceType.hotel;
     case 'dog_park':
       return RadarPlaceType.dogPark;
+    case 'shelter':
+      return RadarPlaceType.shelter;
     default:
       return RadarPlaceType.other;
   }
@@ -57,6 +60,8 @@ String radarPlaceTypeToApi(RadarPlaceType type) {
       return 'hotel';
     case RadarPlaceType.dogPark:
       return 'dog_park';
+    case RadarPlaceType.shelter:
+      return 'shelter';
     case RadarPlaceType.other:
       return 'other';
   }

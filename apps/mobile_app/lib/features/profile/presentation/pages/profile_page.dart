@@ -9,6 +9,7 @@ import '../../../../../design_system/tokens/app_spacing.dart';
 import '../../../../../design_system/tokens/app_text_styles.dart';
 import '../../../../../shared/auth/current_user.dart';
 import '../../../auth/data/auth_repository_factory.dart';
+import '../../../notifications/application/notification_scheduler.dart';
 import '../../../../app/shell/home_shell_page.dart';
 
 class ProfilePage extends StatefulWidget {
@@ -58,8 +59,12 @@ class _ProfilePageState extends State<ProfilePage> {
     final result = await const AuthRepositoryFactory().create().signOut();
     if (!mounted) return;
     result.fold(
-      onSuccess: (_) => Navigator.of(context, rootNavigator: true)
-          .pushNamedAndRemoveUntil(AppRouter.auth, (route) => false),
+      onSuccess: (_) {
+        // No reminders or pet names left on the phone after logout.
+        unawaited(NotificationScheduler.instance.clearAll());
+        Navigator.of(context, rootNavigator: true)
+            .pushNamedAndRemoveUntil(AppRouter.auth, (route) => false);
+      },
       onFailure: (error) => ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(error.message)),
       ),

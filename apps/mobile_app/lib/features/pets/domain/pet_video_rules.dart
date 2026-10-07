@@ -1,17 +1,19 @@
 /// What a pet's gallery accepts as a video, in one place.
 ///
-/// The ceilings come from the Supabase free plan the app runs on: a single
-/// upload is capped at 50 MB and the whole project has 1 GB of Storage.
-/// Nothing transcodes on the phone (no heavy native dependency), so the file
-/// is stored as the camera wrote it and the limits are what keep it small:
+/// Storage plan approved 2026-10-07: on the phone every video is re-encoded
+/// to 720p before upload (PetVideoCompressor) - roughly 8-15 MB for 30 s
+/// instead of 40-75 MB in Full HD, and 4K clips become usable at all. The
+/// browser cannot re-encode, so there the file goes up as it is and must
+/// already be small.
 ///
-/// * 30 s of a phone's default 1080p30 (about 10-13 Mbit/s) is 37-49 MB, so
-///   it fits under the 50 MB cap; 60 s would not (75-100 MB). 4K never fits.
-/// * 1 GB / 50 MB is only 20 maximal videos for the whole project - the
-///   reason to move to a paid plan (or add per-user quotas) before the video
-///   feature is opened to everyone, not a reason for tighter limits here.
+/// * [petVideoMaxBytes] is what may be stored, whatever the platform; the
+///   `pet-photos` bucket's file_size_limit matches it.
+/// * [petVideoMaxSourceBytes] only bounds what the phone agrees to re-encode
+///   (30 s of 4K is ~150-200 MB), so a mistaken pick of a huge file is
+///   refused at once instead of after minutes of work.
 const petVideoMaxSeconds = 30;
-const petVideoMaxBytes = 50 * 1000 * 1000;
+const petVideoMaxBytes = 20 * 1000 * 1000;
+const petVideoMaxSourceBytes = 500 * 1000 * 1000;
 
 /// Containers whose metadata [stripVideoLocationMetadata] knows how to clean
 /// and every phone camera produces (Android: mp4, iOS: mov).
@@ -61,12 +63,19 @@ class PetVideoCheck {
   bool get isOk => rejection == null;
 }
 
+int _megabytes(int bytes) => (bytes / 1000000).ceil();
+
+const _maxMegabytes = petVideoMaxBytes ~/ 1000000;
+
 /// Checks a picked video against the limits above. [duration] is null when
 /// the player could not read it - treated as unreadable, never as "short".
+/// [willCompress] is true on the phone, where the file is re-encoded before
+/// upload and may therefore start out larger than [petVideoMaxBytes].
 PetVideoCheck checkPetVideo({
   required String fileName,
   required int sizeBytes,
   required Duration? duration,
+  bool willCompress = false,
 }) {
   if (!petVideoExtensions.contains(fileExtension(fileName))) {
     return const PetVideoCheck.rejected(
@@ -74,12 +83,18 @@ PetVideoCheck checkPetVideo({
       'Formato video non supportato: usa un file MP4 o MOV.',
     );
   }
-  if (sizeBytes > petVideoMaxBytes) {
-    final megabytes = (sizeBytes / 1000000).round();
+  if (willCompress && sizeBytes > petVideoMaxSourceBytes) {
     return PetVideoCheck.rejected(
       PetVideoRejection.tooBig,
-      'Video troppo pesante ($megabytes MB): il massimo è ${petVideoMaxBytes ~/ 1000000} MB. '
-      'Registra un clip più breve o a risoluzione più bassa.',
+      'Video troppo pesante (${_megabytes(sizeBytes)} MB): '
+      'il massimo è ${petVideoMaxSourceBytes ~/ 1000000} MB.',
+    );
+  }
+  if (!willCompress && sizeBytes > petVideoMaxBytes) {
+    return PetVideoCheck.rejected(
+      PetVideoRejection.tooBig,
+      'Video troppo pesante (${_megabytes(sizeBytes)} MB): dal browser il massimo è '
+      '$_maxMegabytes MB. Dall\'app sul telefono i video vengono ridotti in automatico.',
     );
   }
   if (duration == null) {
@@ -95,6 +110,21 @@ PetVideoCheck checkPetVideo({
     );
   }
   return const PetVideoCheck.ok();
+}
+
+/// Last check on the phone, on the file that would actually be uploaded:
+/// the re-encoded one, or the original when re-encoding failed.
+PetVideoCheck checkPetVideoUploadSize({required int sizeBytes, required bool wasCompressed}) {
+  if (sizeBytes <= petVideoMaxBytes) return const PetVideoCheck.ok();
+  final megabytes = _megabytes(sizeBytes);
+  return PetVideoCheck.rejected(
+    PetVideoRejection.tooBig,
+    wasCompressed
+        ? 'Anche ridotto il video pesa $megabytes MB (massimo $_maxMegabytes MB): '
+            'prova con un clip più breve.'
+        : 'Non sono riuscito a ridurre il video e pesa $megabytes MB '
+            '(massimo $_maxMegabytes MB): prova con un clip più breve.',
+  );
 }
 
 /// "0:07", "0:30" - for the badge on a video tile.

@@ -50,7 +50,7 @@ class _World:
             confirmations_required=2,
             closed_confirmations_required=2,
             daily_limit=3,
-            missing_place_types=frozenset({"veterinary", "grooming", "shop", "hotel", "dog_park"}),
+            missing_place_types=RadarReportSettings(pseudonym_key="k").missing_place_types,
             **overrides,  # type: ignore[arg-type]
         )
         args = (self.reports, self.consents, self.settings)
@@ -639,3 +639,29 @@ def test_one_snapshot_serves_a_whole_radar_answer_with_a_single_read_of_each_tab
 
     assert sorted(calls) == ["list_overrides", "list_ratings", "list_reports"]
     assert extras[places[0].id]["community"]["report_id"] == report_id
+
+
+def test_shelters_are_reportable_as_missing_by_default() -> None:
+    from packages.shared.config.settings import Settings
+
+    assert "shelter" in RadarReportSettings(pseudonym_key="k").missing_place_types
+    assert "shelter" in Settings().radar_report_place_types
+
+    world = _World()
+    world.accept_rules("anna")
+    report_id = world.report_missing("anna", name="Rifugio Esempio", place_type="shelter")
+
+    places = world.view.user_places(BOX)
+    assert [(place.place_type, place.name) for place in places] == [("shelter", "Rifugio Esempio")]
+    assert places[0].source_external_id == report_id
+
+
+def test_the_reportable_list_can_still_be_narrowed_from_the_environment(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    from packages.shared.config.settings import Settings
+
+    monkeypatch.setenv("RADAR_REPORT_PLACE_TYPES", "veterinary,shop")
+    assert Settings().radar_report_place_types == ["veterinary", "shop"]
+    monkeypatch.setenv("RADAR_REPORT_PLACE_TYPES", '["veterinary","shelter"]')
+    assert Settings().radar_report_place_types == ["veterinary", "shelter"]

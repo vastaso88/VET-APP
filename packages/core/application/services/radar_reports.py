@@ -55,7 +55,7 @@ class RadarReportSettings(BaseModel):
     daily_limit: int = 5
     # Categories that can be reported as missing.
     missing_place_types: frozenset[str] = frozenset(
-        {"veterinary", "grooming", "shop", "hotel", "dog_park"}
+        {"veterinary", "grooming", "shop", "hotel", "dog_park", "shelter"}
     )
     # Whether a pending "closed" report is shown to everyone on the place.
     show_pending_closures: bool = False

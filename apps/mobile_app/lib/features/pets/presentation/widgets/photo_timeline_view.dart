@@ -72,12 +72,18 @@ class PhotoTimelineView extends StatefulWidget {
     required this.photos,
     required this.onOpen,
     this.onLongPress,
+    this.captionFor,
     super.key,
   });
 
   final List<PetPhotoEntry> photos;
   final void Function(PetPhotoEntry photo) onOpen;
   final void Function(PetPhotoEntry photo)? onLongPress;
+
+  /// Short text laid over a thumbnail ("Passeggiata del 07/10/26"), or null
+  /// for none. Drawn inside the square tile, so the timeline's exact
+  /// section heights are unaffected.
+  final String? Function(PetPhotoEntry photo)? captionFor;
 
   @override
   State<PhotoTimelineView> createState() => _PhotoTimelineViewState();
@@ -172,6 +178,7 @@ class _PhotoTimelineViewState extends State<PhotoTimelineView> {
                             PhotoThumb(
                               key: ValueKey(photo.storagePath),
                               photo: photo,
+                              caption: widget.captionFor?.call(photo),
                               onTap: () => widget.onOpen(photo),
                               onLongPress: widget.onLongPress == null
                                   ? null
@@ -229,11 +236,18 @@ class _PhotoTimelineViewState extends State<PhotoTimelineView> {
 /// One square thumbnail. Bytes load on first build, so a long list only pays
 /// for the photos on screen.
 class PhotoThumb extends StatefulWidget {
-  const PhotoThumb({required this.photo, required this.onTap, this.onLongPress, super.key});
+  const PhotoThumb({
+    required this.photo,
+    required this.onTap,
+    this.onLongPress,
+    this.caption,
+    super.key,
+  });
 
   final PetPhotoEntry photo;
   final VoidCallback onTap;
   final VoidCallback? onLongPress;
+  final String? caption;
 
   @override
   State<PhotoThumb> createState() => _PhotoThumbState();
@@ -254,7 +268,11 @@ class _PhotoThumbState extends State<PhotoThumb> {
         borderRadius: BorderRadius.circular(AppRadii.medium),
         child: ClipRRect(
           borderRadius: BorderRadius.circular(AppRadii.medium),
-          child: _VideoTile(durationSeconds: widget.photo.durationSeconds),
+          child: _withCaption(
+            _VideoTile(durationSeconds: widget.photo.durationSeconds),
+            // The video's length sits bottom-right: the caption goes on top.
+            atTop: true,
+          ),
         ),
       );
     }
@@ -280,8 +298,59 @@ class _PhotoThumbState extends State<PhotoThumb> {
                 child: Icon(Icons.broken_image_outlined, color: AppColors.mutedText),
               );
             }
-            return Image.memory(bytes, fit: BoxFit.cover, cacheWidth: 300);
+            return _withCaption(Image.memory(bytes, fit: BoxFit.cover, cacheWidth: 300));
           },
+        ),
+      ),
+    );
+  }
+
+  Widget _withCaption(Widget tile, {bool atTop = false}) {
+    final caption = widget.caption;
+    if (caption == null) return tile;
+    return Stack(
+      fit: StackFit.expand,
+      children: [
+        tile,
+        Positioned(
+          left: 0,
+          right: 0,
+          top: atTop ? 0 : null,
+          bottom: atTop ? null : 0,
+          child: PhotoCaptionStrip(caption),
+        ),
+      ],
+    );
+  }
+}
+
+/// Dark strip with a paw and [text], shrunk to fit a third of the screen.
+class PhotoCaptionStrip extends StatelessWidget {
+  const PhotoCaptionStrip(this.text, {super.key});
+
+  final String text;
+
+  @override
+  Widget build(BuildContext context) {
+    return ColoredBox(
+      color: Colors.black54,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+        child: FittedBox(
+          fit: BoxFit.scaleDown,
+          alignment: Alignment.centerLeft,
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Icon(Icons.pets_rounded, size: 12, color: Colors.white),
+              const SizedBox(width: 3),
+              Text(
+                text,
+                maxLines: 1,
+                style: AppTextStyles.caption.copyWith(color: Colors.white, fontSize: 11),
+              ),
+            ],
+          ),
         ),
       ),
     );

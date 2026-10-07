@@ -58,9 +58,8 @@ class NominatimAddressGeocoder implements AddressGeocoder {
     try {
       // Nominatim's usage policy requires a descriptive User-Agent instead
       // of an API key — same identifier already used for the map tiles.
-      final response = await _client
-          .get(uri, headers: {'User-Agent': 'com.vetapp.mobile_app'})
-          .timeout(const Duration(seconds: 10));
+      final response = await _client.get(uri,
+          headers: {'User-Agent': 'com.vetapp.mobile_app'}).timeout(const Duration(seconds: 10));
       if (response.statusCode != 200) {
         return null;
       }
@@ -89,6 +88,12 @@ class NominatimAddressGeocoder implements AddressGeocoder {
     }
   }
 }
+
+/// True for a residence label saved before [compactAddressLabel] existed, i.e.
+/// Nominatim's raw display_name: 3+ commas, or longer than 60 characters.
+/// A compact label ("Via Roma 12, Torino") has one comma and is short.
+bool isLegacyLongAddressLabel(String label) =>
+    ','.allMatches(label).length >= 3 || label.length > 60;
 
 /// "Piazza del Duomo 1, Milano" from Nominatim's structured address, falling
 /// back to the full display name when the street or city is missing.

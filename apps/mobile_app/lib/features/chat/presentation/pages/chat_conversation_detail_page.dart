@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 
 import '../../../../shared/widgets/pet_loader.dart';
 
@@ -43,6 +44,12 @@ class _ChatConversationDetailPageState extends State<ChatConversationDetailPage>
 
   bool _isSending = false;
   int _lastRenderedMessageCount = 0;
+
+  /// The reply that just arrived: the list keeps its start in view (at a
+  /// third from the top) instead of jumping to its end, until the owner
+  /// sends the next message.
+  String? _anchoredReplyId;
+  final GlobalKey _anchoredReplyKey = GlobalKey();
 
   @override
   void initState() {
@@ -137,6 +144,7 @@ class _ChatConversationDetailPageState extends State<ChatConversationDetailPage>
     String message, {
     String? attachmentId,
     Uint8List? attachmentImageBytes,
+    String? retryOfMessageId,
   }) async {
     if (_isSending) return;
 
@@ -145,6 +153,8 @@ class _ChatConversationDetailPageState extends State<ChatConversationDetailPage>
 
     setState(() {
       _isSending = true;
+      // The owner's own message and the typing indicator go to the bottom.
+      _anchoredReplyId = null;
     });
 
     final result = await _store.sendMessage(
@@ -152,20 +162,25 @@ class _ChatConversationDetailPageState extends State<ChatConversationDetailPage>
       cleanMessage,
       attachmentId: attachmentId,
       attachmentImageBytes: attachmentImageBytes,
+      retryOfMessageId: retryOfMessageId,
     );
 
     if (!mounted) return;
     setState(() {
       _isSending = false;
     });
-    _scrollToBottom();
 
     result.fold(
       onSuccess: (_) {},
       onFailure: (error) {
+        _scrollToBottom();
         // A reached conversation limit is expected, not a failure to
         // retry — retrying would just hit the same 400 again.
         final isLimitReached = error.code == 'chat_conversation_limit_reached';
+        // A retry reuses the message already shown (and its attachment):
+        // the backend recognises it and returns the answer it may already
+        // have produced, so nothing is sent or shown twice.
+        final failed = _store.lastUserMessage(widget.conversationId);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(error.message),
@@ -173,7 +188,11 @@ class _ChatConversationDetailPageState extends State<ChatConversationDetailPage>
                 ? null
                 : SnackBarAction(
                     label: 'Riprova',
-                    onPressed: () => _sendMessage(cleanMessage),
+                    onPressed: () => _sendMessage(
+                      cleanMessage,
+                      attachmentId: attachmentId,
+                      retryOfMessageId: failed?.text == cleanMessage ? failed?.id : null,
+                    ),
                   ),
           ),
         );
@@ -181,13 +200,35 @@ class _ChatConversationDetailPageState extends State<ChatConversationDetailPage>
     );
   }
 
+  /// After a list change: a reply that just arrived is shown from its
+  /// start (see [chatReplyScrollOffset]); anything else scrolls to the end.
   void _scrollToBottom() {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted || !_scrollController.hasClients) {
         return;
       }
-      _scrollController.jumpTo(_scrollController.position.maxScrollExtent);
+      final position = _scrollController.position;
+      final reply = _anchoredReplyId == null ? null : _anchoredReplyKey.currentContext;
+      final box = reply?.findRenderObject();
+      if (box != null && box.attached) {
+        final revealTop = RenderAbstractViewport.of(box).getOffsetToReveal(box, 0).offset;
+        _scrollController.jumpTo(
+          chatReplyScrollOffset(
+            replyTop: revealTop,
+            viewportExtent: position.viewportDimension,
+            minScrollExtent: position.minScrollExtent,
+            maxScrollExtent: position.maxScrollExtent,
+          ),
+        );
+        return;
+      }
+      _scrollController.jumpTo(position.maxScrollExtent);
     });
+  }
+
+  /// Called while the list lays out a reply that just arrived.
+  void _anchorFreshReply(String messageId) {
+    _anchoredReplyId = messageId;
   }
 
   void _scheduleScrollIfNeeded(int messageCount) {
@@ -299,19 +340,23 @@ class _SuccessConversationView extends StatelessWidget {
                       itemBuilder: (context, index) {
                         if (index < conversation.messages.length) {
                           final message = conversation.messages[index];
+                          // The whole reply at once (build 26: no more
+                          // letter-by-letter reveal); the page keeps its
+                          // start in view.
                           if (message.author == ChatMessageAuthor.assistant &&
                               ChatDemoStore.instance.takeFreshReply(message.id)) {
-                            return _RevealingBubble(
-                              message: message,
-                              onProgress: () => context
-                                  .findAncestorStateOfType<_ChatConversationDetailPageState>()
-                                  ?._scrollToBottom(),
+                            state?._anchorFreshReply(message.id);
+                          }
+                          if (state != null && message.id == state._anchoredReplyId) {
+                            return KeyedSubtree(
+                              key: state._anchoredReplyKey,
+                              child: ChatMessageBubble(message: message),
                             );
                           }
                           return ChatMessageBubble(message: message);
                         }
 
-                        return const _TypingBubble();
+                        return const ChatTypingBubble();
                       },
                       separatorBuilder: (_, __) => const SizedBox(height: AppSpacing.sm),
                       itemCount: totalItems,
@@ -390,8 +435,38 @@ class _NewConversationPlaceholder extends StatelessWidget {
   }
 }
 
-class _TypingBubble extends StatelessWidget {
-  const _TypingBubble();
+/// Shown while the answer is being produced. After [slowAfter] it says so:
+/// an answer can take longer than usual, and the owner should not think
+/// the app has stopped (build 26).
+class ChatTypingBubble extends StatefulWidget {
+  const ChatTypingBubble({super.key, this.slowAfter = const Duration(seconds: 12)});
+
+  final Duration slowAfter;
+
+  static const typingText = 'Sta scrivendo una risposta...';
+  static const slowText = 'Ci sto mettendo più del solito, la risposta arriva tra poco...';
+
+  @override
+  State<ChatTypingBubble> createState() => _ChatTypingBubbleState();
+}
+
+class _ChatTypingBubbleState extends State<ChatTypingBubble> {
+  Timer? _timer;
+  bool _slow = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _timer = Timer(widget.slowAfter, () {
+      if (mounted) setState(() => _slow = true);
+    });
+  }
+
+  @override
+  void dispose() {
+    _timer?.cancel();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -407,17 +482,19 @@ class _TypingBubble extends StatelessWidget {
           borderRadius: BorderRadius.circular(20),
           border: Border.all(color: AppColors.border),
         ),
-        child: const Row(
+        child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            PetLoader.small(),
-            SizedBox(width: AppSpacing.sm),
-            Text(
-              'Sta scrivendo una risposta...',
-              style: TextStyle(
-                color: AppColors.secondaryText,
-                fontSize: 12,
-                fontWeight: FontWeight.w600,
+            const PetLoader.small(),
+            const SizedBox(width: AppSpacing.sm),
+            Flexible(
+              child: Text(
+                _slow ? ChatTypingBubble.slowText : ChatTypingBubble.typingText,
+                style: const TextStyle(
+                  color: AppColors.secondaryText,
+                  fontSize: 12,
+                  fontWeight: FontWeight.w600,
+                ),
               ),
             ),
           ],
@@ -427,76 +504,25 @@ class _TypingBubble extends StatelessWidget {
   }
 }
 
+/// Where the list should stand once a reply has arrived: the reply's start
+/// a third of the way down the screen, so the owner reads it from the top
+/// and scrolls for the rest. A reply short enough to fit below that point
+/// simply ends at the bottom of the list, as before.
+double chatReplyScrollOffset({
+  required double replyTop,
+  required double viewportExtent,
+  required double minScrollExtent,
+  required double maxScrollExtent,
+}) {
+  final anchored = replyTop - viewportExtent / 3;
+  final target = anchored < maxScrollExtent ? anchored : maxScrollExtent;
+  return target < minScrollExtent ? minScrollExtent : target;
+}
+
 /// The stored title is a placeholder until the backend names the chat.
 String _headerTitle(ChatConversationDetail conversation) {
   if (conversation.title.trim().isEmpty || conversation.title.startsWith('Chat for')) {
     return 'Chat con ${conversation.petName}';
   }
   return conversation.title;
-}
-
-
-/// Types out a freshly received answer, so it reads like a live reply. Tapping
-/// the bubble shows the whole text at once.
-class _RevealingBubble extends StatefulWidget {
-  const _RevealingBubble({required this.message, required this.onProgress});
-
-  final ChatMessage message;
-  final VoidCallback onProgress;
-
-  @override
-  State<_RevealingBubble> createState() => _RevealingBubbleState();
-}
-
-class _RevealingBubbleState extends State<_RevealingBubble> {
-  static const _tick = Duration(milliseconds: 22);
-  static const _charsPerTick = 3;
-
-  late int _shown = 0;
-  Timer? _timer;
-
-  @override
-  void initState() {
-    super.initState();
-    _timer = Timer.periodic(_tick, (_) {
-      if (!mounted) return;
-      final total = widget.message.text.length;
-      setState(() => _shown = (_shown + _charsPerTick).clamp(0, total));
-      widget.onProgress();
-      if (_shown >= total) _timer?.cancel();
-    });
-  }
-
-  @override
-  void dispose() {
-    _timer?.cancel();
-    super.dispose();
-  }
-
-  void _finish() {
-    _timer?.cancel();
-    setState(() => _shown = widget.message.text.length);
-    widget.onProgress();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final message = widget.message;
-    final text = message.text;
-    final visible = _shown.clamp(0, text.length);
-    return GestureDetector(
-      onTap: visible < text.length ? _finish : null,
-      child: ChatMessageBubble(
-        message: ChatMessage(
-          id: message.id,
-          author: message.author,
-          text: text.substring(0, visible),
-          timeLabel: message.timeLabel,
-          isRead: message.isRead,
-          aiGenerated: message.aiGenerated,
-          attachmentImageBytes: message.attachmentImageBytes,
-        ),
-      ),
-    );
-  }
 }

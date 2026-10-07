@@ -284,6 +284,22 @@ Su Vercel l'indirizzo IP è condiviso con altri clienti, quindi i 429 possono es
 | `amenity=animal_training` | `school` | Addestramento |
 | `office=pet_sitting`, `craft=dog_walker` | `pet_sitting` | Pet sitter |
 | `amenity=animal_breeding` | `breeder` | Allevamenti |
+| `amenity=animal_shelter` (anche da Overture: `animal_shelter`, `pet_adoption`, `animal_rescue_service`) | `shelter` | Rifugi e adozioni (nome predefinito "Rifugio per animali"; specie da `animal_shelter=dog;cat`; dettaglio "Adozioni possibili" da `animal_shelter:adoption=yes`) |
+
+La categoria `shelter` è del 2026-10-07 e compare dopo il prossimo import OSM e Overture (`import_osm_places.py`, `import_overture_places.py`); fino ad allora le mostra solo la cache per celle delle zone non coperte dal catalogo. Numeri trovati prima di aggiungerle: vedi "Tre categorie chieste il 2026-10-07".
+
+### Tre categorie chieste il 2026-10-07: cosa c'è nelle fonti
+
+Conteggi fatti il 2026-10-07 su OpenStreetMap (Overpass, raggio di 15 km dal centro) e sull'estratto Overture Italia 2026-09-23.1 (confidenza ≥ 0,7, non chiusi).
+
+| Categoria | Milano | Roma | Italia | Esito |
+| --- | --- | --- | --- | --- |
+| Rifugi e adozioni: OSM `amenity=animal_shelter` | 21 | 9 | 657 (67 con `animal_shelter:adoption=yes`, 165 per cani, 89 per gatti) | **Aggiunta** |
+| Rifugi e adozioni: Overture `animal_shelter` + `pet_adoption` + `animal_rescue_service` | 16 | 15 | 537 | **Aggiunta** (stessa categoria, deduplica in lettura) |
+| Campi agility: OSM `sport=dog_agility` | 1 | 0 | 13 (più 13 luoghi con "agility" nel nome, in gran parte centri di addestramento già mostrati; 1 sola area cani con il tag) | **Non aggiunta**: 13 campi in tutta Italia sono troppo pochi per una categoria. Chi li mappa in OSM come `amenity=animal_training` è già tra gli "Addestramento". |
+| Pet therapy / IAA | 0 | 0 | 3 (`healthcare:speciality`), 0 (`social_facility:for`); Overture per nome 3 | **Non aggiunta**: nessun tag OSM standard; per nome si trovano pochissime voci (Overture: 3 in Italia). Una categoria quasi vuota farebbe pensare che non esistano. |
+
+Nota su `animal_shelter:adoption`: in Italia OSM lo dichiara su 67 rifugi su 657 e mai con valore `no`; non basta per separare "centri di adozione" da "rifugi", quindi la categoria è una sola e il dettaglio compare sulla scheda quando c'è.
 
 ### Dati
 

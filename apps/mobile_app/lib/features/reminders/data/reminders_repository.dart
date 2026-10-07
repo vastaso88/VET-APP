@@ -27,6 +27,7 @@ class ReminderEntry {
     this.occurrenceCount,
     this.recurrenceEndDate,
     this.courseDurationDays,
+    this.doseTimes = const [],
     this.isDone = false,
   });
 
@@ -55,6 +56,11 @@ class ReminderEntry {
   /// Course only.
   final int? courseDurationDays;
 
+  /// Course only: the daily dose times as "HH:mm" (e.g. 08:00 and 20:00),
+  /// each one a phone notification on every day of the course. Empty means
+  /// one notification a day at [dueAt]'s time.
+  final List<String> doseTimes;
+
   final bool isDone;
 
   ReminderEntry copyWith({bool? isDone}) {
@@ -71,6 +77,7 @@ class ReminderEntry {
       occurrenceCount: occurrenceCount,
       recurrenceEndDate: recurrenceEndDate,
       courseDurationDays: courseDurationDays,
+      doseTimes: doseTimes,
       isDone: isDone ?? this.isDone,
     );
   }
@@ -81,13 +88,13 @@ class RemindersRepository {
 
   final SupabaseClient? _client;
 
-  /// Session-lifetime local store: `_seedReminders` only while nobody is
-  /// signed in (offline/demo preview); once a real owner is known,
-  /// [ensureHydrated] replaces this with that owner's real (possibly empty)
-  /// reminders, so a brand-new account never inherits Moka/Oliver/Rex's
-  /// demo activities — same pattern as PetDemoStore.ensureHydrated.
-  static List<ReminderEntry> _localReminders =
-      List<ReminderEntry>.of(_seedReminders);
+  /// Session-lifetime local store. Starts empty: `_seedReminders` are added
+  /// only in offline/demo preview (no Supabase client), so a real account
+  /// never sees Moka/Oliver/Rex's demo activities — not even while hydration
+  /// is pending or after it failed. With a client, [ensureHydrated] fills
+  /// this with the owner's real reminders.
+  static List<ReminderEntry> _localReminders = <ReminderEntry>[];
+  static bool _seedsAdded = false;
 
   /// Owner id this store's contents were hydrated for — see
   /// PetDemoStore.ensureHydrated for the same no-op-on-repeat rationale.
@@ -147,7 +154,16 @@ class RemindersRepository {
 
   Future<List<ReminderEntry>> loadReminders() async {
     await ensureHydrated();
+    _addSeedsWithoutClient();
     return List<ReminderEntry>.unmodifiable(_localReminders);
+  }
+
+  void _addSeedsWithoutClient() {
+    if (_seedsAdded || _resolveClient() != null) {
+      return;
+    }
+    _seedsAdded = true;
+    _localReminders.addAll(_seedReminders);
   }
 
   Future<ReminderEntry?> loadReminderById(String id) async {
@@ -206,6 +222,10 @@ class RemindersRepository {
         'recurrence_end_date': reminder.recurrenceEndDate?.toIso8601String(),
         'course_duration_days': reminder.courseDurationDays,
         'is_done': reminder.isDone,
+        // Only sent when set, so reminders without dose times keep saving on a
+        // database where scripts/setup/supabase_schema.sql's dose_times column
+        // hasn't been added yet.
+        if (reminder.doseTimes.isNotEmpty) 'dose_times': reminder.doseTimes,
       });
     } catch (error) {
       _restore(reminder.id, previous);
@@ -249,7 +269,7 @@ class RemindersRepository {
   /// row missing or with an unparsable value for either is skipped rather
   /// than risking a crash or a fabricated default.
   ReminderEntry? _parseRow(Map<String, dynamic> row) {
-    final dueAt = DateTime.tryParse((row['due_at'] ?? '').toString());
+    final dueAt = _wallClock(DateTime.tryParse((row['due_at'] ?? '').toString()));
     final kind = _kindFromName(row['kind'] as String?);
     if (dueAt == null || kind == null) {
       return null;
@@ -267,10 +287,24 @@ class RemindersRepository {
       recurrenceEnd: _recurrenceEndFromName(row['recurrence_end'] as String?),
       occurrenceCount: row['occurrence_count'] as int?,
       recurrenceEndDate:
-          DateTime.tryParse((row['recurrence_end_date'] ?? '').toString()),
+          _wallClock(DateTime.tryParse((row['recurrence_end_date'] ?? '').toString())),
       courseDurationDays: row['course_duration_days'] as int?,
+      doseTimes: [
+        for (final time in (row['dose_times'] as List<dynamic>?) ?? const [])
+          time.toString(),
+      ],
       isDone: row['is_done'] as bool? ?? false,
     );
+  }
+
+  /// [saveReminder] writes the local wall-clock time with no offset, which
+  /// the timestamptz column stores as if it were UTC, so it comes back as
+  /// e.g. "09:00+00:00". Reading those fields back as local time returns the
+  /// 09:00 the owner picked (instead of 11:00 in Italian summer time) and
+  /// keeps every row saved before this the same.
+  static DateTime? _wallClock(DateTime? value) {
+    if (value == null || !value.isUtc) return value;
+    return DateTime(value.year, value.month, value.day, value.hour, value.minute, value.second);
   }
 
   static EventKind? _kindFromName(String? name) {
@@ -351,6 +385,7 @@ class RemindersRepository {
       kind: EventKind.course,
       dueAt: DateTime.now().subtract(const Duration(days: 2)),
       courseDurationDays: 7,
+      doseTimes: const ['08:00', '20:00'],
       note: 'Una compressa mattina e sera, insieme al cibo.',
     ),
     ReminderEntry(

@@ -22,6 +22,7 @@ import '../../../location/data/device_location_service.dart';
 import '../../../location/domain/coordinates.dart';
 import '../walk_completion_flow.dart';
 import '../walk_labels.dart';
+import '../walk_notification_permission.dart';
 import '../widgets/walk_map_style.dart';
 import '../widgets/walk_route_markers_layer.dart';
 
@@ -149,6 +150,11 @@ class _ActiveWalkPageState extends State<ActiveWalkPage> {
       });
       return;
     }
+
+    // First walk only: explain the walk notification and ask to show it.
+    if (!mounted) return;
+    await maybeAskWalkNotificationPermission(context);
+    if (!mounted) return;
 
     await _controller.start(
       ownerId: resolveCurrentOwnerId(),

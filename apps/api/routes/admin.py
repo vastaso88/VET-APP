@@ -612,11 +612,15 @@ def admin_resolve_chat_report(
         ResolveChatResponseReportInput,
     )
 
-    result = get_container().resolve_chat_response_report_service().execute(
-        ResolveChatResponseReportInput(
-            report_id=report_id,
-            status=request.status,
-            resolution_note=request.resolution_note,
+    result = (
+        get_container()
+        .resolve_chat_response_report_service()
+        .execute(
+            ResolveChatResponseReportInput(
+                report_id=report_id,
+                status=request.status,
+                resolution_note=request.resolution_note,
+            )
         )
     )
     return {
