@@ -1079,6 +1079,132 @@ for select
 using (status in ('published', 'cancelled', 'postponed') and audience = 'public');
 
 
+-- Admin operations: moderation resolution metadata and recurring ingestion schedules.
+
+alter table public.marketplace_listing_reports
+    add column if not exists status text not null default 'open',
+    add column if not exists resolution_action text,
+    add column if not exists resolution_note text,
+    add column if not exists resolved_at timestamptz,
+    add column if not exists resolved_by_admin_id text;
+
+do $$
+begin
+    if not exists (
+        select 1 from pg_constraint
+        where conname = 'marketplace_listing_reports_status_check'
+          and conrelid = 'public.marketplace_listing_reports'::regclass
+    ) then
+        alter table public.marketplace_listing_reports
+            add constraint marketplace_listing_reports_status_check
+            check (status in ('open','resolved','dismissed'));
+    end if;
+end $$;
+
+alter table public.radar_user_reports
+    add column if not exists admin_resolution_note text,
+    add column if not exists resolved_by_admin_id text;
+
+create table if not exists public.admin_ingestion_schedules (
+    id uuid primary key default extensions.gen_random_uuid(),
+    name text not null,
+    engine text not null check (engine in ('geographic','scientific')),
+    enabled boolean not null default true,
+    interval_hours integer not null check (interval_hours between 1 and 8760),
+    payload jsonb not null default '{}'::jsonb,
+    next_run_at timestamptz not null,
+    last_run_at timestamptz,
+    last_status text check (last_status is null or last_status in ('completed','failed')),
+    last_error text,
+    last_job_id text,
+    locked_at timestamptz,
+    created_by text,
+    created_at timestamptz not null default now(),
+    updated_at timestamptz not null default now()
+);
+
+create index if not exists idx_admin_ingestion_schedules_due
+    on public.admin_ingestion_schedules (enabled, next_run_at)
+    where enabled = true;
+
+drop trigger if exists trg_admin_ingestion_schedules_set_updated_at
+    on public.admin_ingestion_schedules;
+create trigger trg_admin_ingestion_schedules_set_updated_at
+before update on public.admin_ingestion_schedules
+for each row execute function public.set_updated_at();
+
+alter table public.admin_ingestion_schedules enable row level security;
+
+create or replace function public.admin_claim_due_schedules(limit_count integer default 10)
+returns setof public.admin_ingestion_schedules
+language plpgsql
+security invoker
+set search_path = public, extensions
+as $$
+begin
+    return query
+    with due as (
+        select id
+        from public.admin_ingestion_schedules
+        where enabled = true
+          and next_run_at <= now()
+          and (locked_at is null or locked_at < now() - interval '2 hours')
+        order by next_run_at asc
+        for update skip locked
+        limit greatest(coalesce(limit_count,10),1)
+    )
+    update public.admin_ingestion_schedules s
+    set locked_at = now()
+    from due
+    where s.id = due.id
+    returning s.*;
+end;
+$$;
+
+revoke all on function public.admin_claim_due_schedules(integer)
+    from public, anon, authenticated;
+grant execute on function public.admin_claim_due_schedules(integer)
+    to service_role;
+
+
+-- Marketplace moderation changes report state after the original trigger was
+-- introduced. Count only unresolved/open reports and keep the trigger function
+-- non-callable as a public RPC; it is invoked automatically by PostgreSQL.
+create or replace function public.handle_marketplace_listing_report()
+returns trigger
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+    distinct_reporters integer;
+begin
+    select count(distinct reporter_owner_id)
+    into distinct_reporters
+    from public.marketplace_listing_reports
+    where listing_id = new.listing_id
+      and status = 'open';
+
+    update public.marketplace_listings
+    set report_count = distinct_reporters,
+        status = case
+            when distinct_reporters >= 3 and status not in ('sold', 'removed') then 'removed'
+            else status
+        end,
+        updated_at = now()
+    where id = new.listing_id;
+
+    return new;
+end;
+$$;
+
+revoke all on function public.handle_marketplace_listing_report()
+from public, anon, authenticated;
+
+grant execute on function public.handle_marketplace_listing_report()
+to service_role;
+
+
 -- Mercatino v2 (2026-10-07): species, new category list, grid-rounded
 -- positions + moderation guard, public photo bucket. Same content as
 -- scripts/setup/marketplace_v2.sql (the one-off for existing databases).

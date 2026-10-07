@@ -913,3 +913,97 @@ $$;
 
 revoke all on function public.admin_ingest_scientific_documents(jsonb) from public, anon, authenticated;
 grant execute on function public.admin_ingest_scientific_documents(jsonb) to service_role;
+
+
+-- Expanded admin scientific catalog: source-domain governance + registries.
+create or replace function public.admin_scientific_catalog(limit_count integer default 50)
+returns jsonb
+language sql
+security invoker
+set search_path = public, ai, extensions
+as $$
+    select jsonb_build_object(
+        'metrics',
+        jsonb_build_object(
+            'trusted_domains', (select count(*) from ai.trusted_source_domains where is_active = true),
+            'documents', (select count(*) from ai.source_documents),
+            'eligible_for_rag', (select count(*) from ai.source_documents where eligible_for_rag = true),
+            'embedded', (select count(*) from ai.source_documents where embedding_status = 'embedded'),
+            'chunks', (select count(*) from ai.source_document_chunks)
+        ),
+        'trusted_domains',
+        coalesce(
+            (
+                select jsonb_agg(to_jsonb(x) order by x.authority_score desc, x.host)
+                from (
+                    select
+                        id,
+                        host,
+                        display_name,
+                        source_kind,
+                        discovery_only,
+                        allowed_for_direct_ingest,
+                        authority_score,
+                        direct_source_score,
+                        registry_consensus_score,
+                        veterinary_relevance_score,
+                        evidence_policy,
+                        is_active,
+                        notes
+                    from ai.trusted_source_domains
+                    order by authority_score desc, host
+                ) x
+            ),
+            '[]'::jsonb
+        ),
+        'registries',
+        coalesce(
+            (
+                select jsonb_agg(to_jsonb(r) order by r.weight desc, r.registry_key)
+                from (
+                    select registry_key, display_name, registry_kind, metric_name,
+                           normalization_strategy, weight, is_active, source_url, notes
+                    from ai.source_registries
+                    order by weight desc, registry_key
+                ) r
+            ),
+            '[]'::jsonb
+        ),
+        'recent_documents',
+        coalesce(
+            (
+                select jsonb_agg(to_jsonb(x) order by x.created_at desc)
+                from (
+                    select
+                        d.id,
+                        d.title,
+                        d.journal_name,
+                        d.doi,
+                        d.pmid,
+                        d.publication_year,
+                        d.reliability_tier,
+                        d.eligible_for_rag,
+                        d.embedding_status,
+                        d.ingestion_status,
+                        d.canonical_url,
+                        d.species_tags,
+                        d.clinical_domain,
+                        d.created_at,
+                        d.updated_at,
+                        td.host as source_host,
+                        td.display_name as source_name
+                    from ai.source_documents d
+                    join ai.trusted_source_domains td on td.id = d.domain_id
+                    order by d.created_at desc
+                    limit greatest(coalesce(limit_count, 50), 1)
+                ) x
+            ),
+            '[]'::jsonb
+        )
+    );
+$$;
+
+revoke all on function public.admin_scientific_catalog(integer)
+    from public, anon, authenticated;
+grant execute on function public.admin_scientific_catalog(integer)
+    to service_role;

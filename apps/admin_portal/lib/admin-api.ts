@@ -30,6 +30,7 @@ export type ScrapeRunSummary = {
 };
 
 export type AdminOverview = {
+  detail_available: boolean;
   metrics: {
     users: number;
     pets: number;
@@ -39,6 +40,21 @@ export type AdminOverview = {
     radar_open: number;
     open_moderation: number;
     scrape_runs: number;
+  };
+  user_details: {
+    auth_accounts: number;
+    profiles: number;
+    geolocated: number;
+    with_pets: number;
+    new_7d: number;
+    new_30d: number;
+  };
+  pet_details: {
+    total: number;
+    active: number;
+    exotic: number;
+    memorial: number;
+    species: Record<string, number>;
   };
   moderation: {
     radar_reports: number;
@@ -64,6 +80,8 @@ export type RadarModerationItem = {
   denials: number;
   created_at: string;
   resolved_at: string | null;
+  admin_resolution_note: string | null;
+  resolved_by_admin_id: string | null;
 };
 
 export type ChatModerationItem = {
@@ -84,16 +102,30 @@ export type ChatModerationItem = {
 export type MarketplaceModerationItem = {
   id: string;
   listing_id: string;
+  reporter_owner_id: string | null;
   reason: string;
   created_at: string;
+  status: string;
+  resolution_action: string | null;
+  resolution_note: string | null;
+  resolved_at: string | null;
+  resolved_by_admin_id: string | null;
   listing: {
     id: string;
+    owner_id: string;
     title: string;
+    description: string | null;
+    category: string;
+    condition: string;
+    price_cents: number | null;
+    photo_urls: unknown;
+    latitude: number;
+    longitude: number;
     status: string;
     report_count: number;
-    category: string;
     city_label: string | null;
     created_at: string;
+    updated_at: string;
   } | null;
 };
 
@@ -128,7 +160,18 @@ export type GeographicCoverage = {
   expires_at: string;
 };
 
+export type GeographicUser = {
+  owner_id: string;
+  email: string | null;
+  city: string | null;
+  address_label: string | null;
+  latitude: number;
+  longitude: number;
+  created_at: string;
+};
+
 export type AdminGeographicData = {
+  users_available: boolean;
   counts: {
     osm: number;
     open: number;
@@ -136,6 +179,7 @@ export type AdminGeographicData = {
   };
   sources: GeographicSource[];
   coverage: GeographicCoverage[];
+  users: GeographicUser[];
 };
 
 export type GeographicOperationInput = {
@@ -229,7 +273,36 @@ export type ScientificDocument = {
   source_name: string;
 };
 
+export type ScientificTrustedDomain = {
+  id: string;
+  host: string;
+  display_name: string;
+  source_kind: string;
+  discovery_only: boolean;
+  allowed_for_direct_ingest: boolean;
+  authority_score: number | string;
+  direct_source_score: number | string;
+  registry_consensus_score: number | string;
+  veterinary_relevance_score: number | string;
+  evidence_policy: string;
+  is_active: boolean;
+  notes: string | null;
+};
+
+export type ScientificRegistry = {
+  registry_key: string;
+  display_name: string;
+  registry_kind: string;
+  metric_name: string;
+  normalization_strategy: string;
+  weight: number | string;
+  is_active: boolean;
+  source_url: string | null;
+  notes: string | null;
+};
+
 export type ScientificCatalog = {
+  governance_available: boolean;
   metrics: {
     trusted_domains: number;
     documents: number;
@@ -237,6 +310,8 @@ export type ScientificCatalog = {
     embedded: number;
     chunks: number;
   };
+  trusted_domains: ScientificTrustedDomain[];
+  registries: ScientificRegistry[];
   recent_documents: ScientificDocument[];
 };
 
@@ -255,6 +330,30 @@ export type ScientificDiscoveryResult = {
   submitted?: number;
   ingestion?: ScientificIngestionSummary;
   catalog?: ScientificCatalog;
+};
+
+export type AdminSchedule = {
+  id: string;
+  name: string;
+  engine: "geographic" | "scientific";
+  enabled: boolean;
+  interval_hours: number;
+  payload: Record<string, unknown>;
+  next_run_at: string;
+  last_run_at: string | null;
+  last_status: string | null;
+  last_error: string | null;
+  last_job_id: string | null;
+  locked_at: string | null;
+  created_by: string | null;
+  created_at: string;
+  updated_at: string;
+};
+
+export type ModerationDetail = {
+  queue: "radar" | "chat" | "marketplace";
+  item: Record<string, unknown>;
+  votes?: Array<{ vote: number; created_at: string }>;
 };
 
 export function apiBaseUrl(): string {
@@ -303,6 +402,20 @@ async function adminFetch(
   });
 }
 
+class AdminApiError extends Error {
+  constructor(
+    public readonly status: number,
+    message: string,
+  ) {
+    super(message);
+    this.name = "AdminApiError";
+  }
+}
+
+function isAdminApiStatus(error: unknown, status: number): boolean {
+  return error instanceof AdminApiError && error.status === status;
+}
+
 async function authenticatedAdminRequest<T>(
   path: string,
   init: RequestInit = {},
@@ -320,7 +433,7 @@ async function authenticatedAdminRequest<T>(
     } catch {
       // Keep the HTTP status fallback.
     }
-    throw new Error(detail);
+    throw new AdminApiError(response.status, detail);
   }
 
   return (await response.json()) as T;
@@ -347,12 +460,52 @@ export async function requireAdminSession(): Promise<AdminUser> {
 
 export async function getAdminOverview(): Promise<AdminOverview> {
   await requireAdminSession();
-  return authenticatedAdminRequest<AdminOverview>("/admin/overview");
+  const payload = await authenticatedAdminRequest<Omit<AdminOverview, "detail_available"> & {
+    user_details?: AdminOverview["user_details"];
+    pet_details?: AdminOverview["pet_details"];
+  }>("/admin/overview");
+  const detailAvailable = Boolean(payload.user_details && payload.pet_details);
+  return {
+    ...payload,
+    detail_available: detailAvailable,
+    user_details: payload.user_details ?? {
+      auth_accounts: payload.metrics.users,
+      profiles: 0,
+      geolocated: 0,
+      with_pets: 0,
+      new_7d: 0,
+      new_30d: 0,
+    },
+    pet_details: payload.pet_details ?? {
+      total: payload.metrics.pets,
+      active: 0,
+      exotic: 0,
+      memorial: 0,
+      species: {},
+    },
+  };
 }
 
 export async function getAdminModeration(): Promise<AdminModeration> {
   await requireAdminSession();
-  return authenticatedAdminRequest<AdminModeration>("/admin/moderation");
+  const payload = await authenticatedAdminRequest<AdminModeration>("/admin/moderation");
+  return {
+    radar: payload.radar.map((item) => ({
+      ...item,
+      admin_resolution_note: item.admin_resolution_note ?? null,
+      resolved_by_admin_id: item.resolved_by_admin_id ?? null,
+    })),
+    chat: payload.chat,
+    marketplace: payload.marketplace.map((item) => ({
+      ...item,
+      status: item.status ?? "open",
+      reporter_owner_id: item.reporter_owner_id ?? null,
+      resolution_action: item.resolution_action ?? null,
+      resolution_note: item.resolution_note ?? null,
+      resolved_at: item.resolved_at ?? null,
+      resolved_by_admin_id: item.resolved_by_admin_id ?? null,
+    })),
+  };
 }
 
 export async function resolveChatModeration(
@@ -372,7 +525,14 @@ export async function resolveChatModeration(
 
 export async function getAdminGeographic(): Promise<AdminGeographicData> {
   await requireAdminSession();
-  return authenticatedAdminRequest<AdminGeographicData>("/admin/geographic");
+  const payload = await authenticatedAdminRequest<Omit<AdminGeographicData, "users_available"> & {
+    users?: GeographicUser[];
+  }>("/admin/geographic");
+  return {
+    ...payload,
+    users_available: Array.isArray(payload.users),
+    users: payload.users ?? [],
+  };
 }
 
 export async function previewGeographicIngestion(
@@ -426,7 +586,16 @@ export async function discoverScientificEvidence(input: {
 
 export async function getScientificCatalog(): Promise<ScientificCatalog> {
   await requireAdminSession();
-  return authenticatedAdminRequest<ScientificCatalog>("/admin/scientific");
+  const payload = await authenticatedAdminRequest<Omit<ScientificCatalog, "governance_available"> & {
+    trusted_domains?: ScientificTrustedDomain[];
+    registries?: ScientificRegistry[];
+  }>("/admin/scientific");
+  return {
+    ...payload,
+    governance_available: Array.isArray(payload.trusted_domains),
+    trusted_domains: payload.trusted_domains ?? [],
+    registries: payload.registries ?? [],
+  };
 }
 
 export async function ingestScientificEvidence(input: {
@@ -441,6 +610,105 @@ export async function ingestScientificEvidence(input: {
     {
       method: "POST",
       body: JSON.stringify(input),
+    },
+  );
+}
+
+
+export async function getModerationDetail(
+  queue: "radar" | "chat" | "marketplace",
+  itemId: string,
+): Promise<ModerationDetail | null> {
+  await requireAdminSession();
+  try {
+    return await authenticatedAdminRequest<ModerationDetail>(
+      `/admin/moderation/${queue}/${encodeURIComponent(itemId)}`,
+    );
+  } catch (error) {
+    if (isAdminApiStatus(error, 404)) return null;
+    throw error;
+  }
+}
+
+export async function resolveRadarModeration(
+  reportId: string,
+  action: "confirm" | "reject" | "reopen",
+  resolutionNote?: string,
+): Promise<void> {
+  await requireAdminSession();
+  await authenticatedAdminRequest(
+    `/admin/moderation/radar/${encodeURIComponent(reportId)}`,
+    {
+      method: "POST",
+      body: JSON.stringify({
+        action,
+        resolution_note: resolutionNote?.trim() || null,
+      }),
+    },
+  );
+}
+
+export async function resolveMarketplaceModeration(
+  reportId: string,
+  action: "remove_listing" | "dismiss_report" | "restore_listing" | "reopen_report",
+  resolutionNote?: string,
+): Promise<void> {
+  await requireAdminSession();
+  await authenticatedAdminRequest(
+    `/admin/moderation/marketplace/${encodeURIComponent(reportId)}`,
+    {
+      method: "POST",
+      body: JSON.stringify({
+        action,
+        resolution_note: resolutionNote?.trim() || null,
+      }),
+    },
+  );
+}
+
+export async function getAdminSchedules(): Promise<{
+  available: boolean;
+  schedules: AdminSchedule[];
+}> {
+  await requireAdminSession();
+  try {
+    const payload = await authenticatedAdminRequest<{ schedules: AdminSchedule[] }>(
+      "/admin/schedules",
+    );
+    return { available: true, schedules: payload.schedules };
+  } catch (error) {
+    if (isAdminApiStatus(error, 404)) {
+      return { available: false, schedules: [] };
+    }
+    throw error;
+  }
+}
+
+export async function createAdminSchedule(input: {
+  name: string;
+  engine: "geographic" | "scientific";
+  interval_hours: number;
+  payload: Record<string, unknown>;
+  enabled?: boolean;
+  run_immediately?: boolean;
+}): Promise<void> {
+  await requireAdminSession();
+  await authenticatedAdminRequest("/admin/schedules", {
+    method: "POST",
+    body: JSON.stringify(input),
+  });
+}
+
+export async function updateAdminSchedule(
+  scheduleId: string,
+  action: "enable" | "disable" | "run_now" | "delete",
+): Promise<void> {
+  await requireAdminSession();
+  await authenticatedAdminRequest(
+    `/admin/schedules/${encodeURIComponent(scheduleId)}`,
+    {
+      method: "POST",
+      body: JSON.stringify({ action }),
     },
   );
 }
