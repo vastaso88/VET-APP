@@ -535,7 +535,7 @@ class PetDemoStore {
       medicalNote: medicalNote.trim().isEmpty
           ? 'Profilo creato da poco, pronto per la prossima visita.'
           : medicalNote.trim(),
-      healthBadge: 'Da valutare',
+      healthBadge: '',
       nextVisitLabel: 'Da pianificare',
       avatarEmoji: name.trim().isEmpty ? option.avatarEmoji : name.trim()[0].toUpperCase(),
       accentColor: option.accentColor,

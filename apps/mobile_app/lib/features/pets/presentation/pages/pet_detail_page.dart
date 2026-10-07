@@ -908,24 +908,6 @@ class _RecordsTabState extends State<_RecordsTab> {
 
   void _clearSelection() => setState(_selectedIds.clear);
 
-  Future<void> _deleteRecord(MedicalRecordEntry record) async {
-    final confirmed = await _confirmDelete(
-      context,
-      title: 'Eliminare questo documento?',
-      message: '"${record.title}" verrà eliminato definitivamente.',
-    );
-    if (!confirmed) return;
-
-    try {
-      await widget.repository.deleteRecord(record.id);
-    } on MedicalRecordSaveException catch (error) {
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(error.message)));
-      return;
-    }
-    if (!mounted) return;
-    await _reload();
-  }
 
   Future<void> _openSendSheet(List<MedicalRecordEntry> records) async {
     await showModalBottomSheet<void>(
@@ -1083,7 +1065,6 @@ class _RecordsTabState extends State<_RecordsTab> {
                   selected: _selectedIds.contains(record.id),
                   onTap: () => _onRecordTap(record),
                   onLongPress: () => _toggleSelected(record),
-                  onDelete: () => _deleteRecord(record),
                 ),
                 const SizedBox(height: AppSpacing.sm),
               ],
@@ -1099,14 +1080,12 @@ class _RecordRow extends StatelessWidget {
     required this.record,
     required this.onTap,
     required this.onLongPress,
-    required this.onDelete,
     required this.selected,
   });
 
   final MedicalRecordEntry record;
   final VoidCallback onTap;
   final VoidCallback onLongPress;
-  final VoidCallback onDelete;
   final bool selected;
 
   @override
@@ -1114,7 +1093,6 @@ class _RecordRow extends StatelessWidget {
     return _CompactRow(
       onTap: onTap,
       onLongPress: onLongPress,
-      onDelete: onDelete,
       selected: selected,
       leading: _RowIcon(
         icon: selected
@@ -1590,7 +1568,6 @@ class _CompactRow extends StatelessWidget {
     required this.subtitle,
     this.onTap,
     this.onLongPress,
-    this.onDelete,
     this.trailingText,
     this.trailingAction,
     this.badgeCount = 0,
@@ -1603,7 +1580,6 @@ class _CompactRow extends StatelessWidget {
   final VoidCallback? onTap;
   final VoidCallback? onLongPress;
   final bool selected;
-  final VoidCallback? onDelete;
   final String? trailingText;
   final Widget? trailingAction;
   final int badgeCount;
@@ -1681,18 +1657,6 @@ class _CompactRow extends StatelessWidget {
                 const SizedBox(width: 2),
                 trailingAction!,
               ] else ...[
-              if (onDelete != null) ...[
-                const SizedBox(width: 2),
-                IconButton(
-                  onPressed: onDelete,
-                  icon: const Icon(Icons.delete_outline_rounded,
-                      size: 18, color: AppColors.danger),
-                  tooltip: 'Elimina',
-                  visualDensity: VisualDensity.compact,
-                  constraints:
-                      const BoxConstraints(minWidth: 32, minHeight: 32),
-                ),
-              ],
               ],
               if (onTap != null && trailingAction == null) ...[
                 const SizedBox(width: AppSpacing.xs),

@@ -11,6 +11,8 @@ import 'package:video_player/video_player.dart';
 import '../../../../design_system/tokens/app_colors.dart';
 import '../../../../design_system/tokens/app_spacing.dart';
 import '../../../../design_system/tokens/app_text_styles.dart';
+import '../../../settings/data/gallery_save_settings_store.dart';
+import '../../data/device_gallery_saver.dart';
 import '../../data/pet_demo_store.dart';
 import '../../data/pet_media_importer.dart';
 import '../../data/pet_photo_repository.dart';
@@ -70,6 +72,7 @@ class _PetGalleryPageState extends State<PetGalleryPage> {
 
   Future<void> _takePhoto() async {
     final file = await _picker.pickImage(source: ImageSource.camera, imageQuality: 100);
+    if (file != null) await _saveCopyToDeviceGallery(file, isVideo: false);
     await _import([if (file != null) file]);
   }
 
@@ -78,7 +81,15 @@ class _PetGalleryPageState extends State<PetGalleryPage> {
       source: ImageSource.camera,
       maxDuration: const Duration(seconds: petVideoMaxSeconds),
     );
+    if (file != null) await _saveCopyToDeviceGallery(file, isVideo: true);
     await _import([if (file != null) file]);
+  }
+
+  /// Camera captures only (gallery imports are already on the phone). Runs
+  /// before the upload so the copy exists even when the upload fails.
+  Future<void> _saveCopyToDeviceGallery(XFile file, {required bool isVideo}) async {
+    await GallerySaveSettingsStore.instance.ensureLoaded();
+    await const DeviceGallerySaver().save(file, isVideo: isVideo);
   }
 
   Future<void> _import(List<XFile> files) async {

@@ -58,11 +58,14 @@ class RemoteConversation {
 }
 
 abstract class ChatRemoteDataSource {
+  /// [clientMessageId] identifies this message across retries: sending it
+  /// again after a timeout returns the answer the server already produced.
   Future<Result<ChatSendResult>> sendMessage({
     required String petId,
     String? conversationId,
     required String userMessage,
     String? attachmentId,
+    String? clientMessageId,
   });
 
   /// Resolves a real, backend-known pet id to attach chat messages to.
@@ -109,6 +112,13 @@ class HttpChatRemoteDataSource implements ChatRemoteDataSource {
 
   static const _timeout = Duration(seconds: 25);
 
+  /// Producing an answer can take longer than any other call: the backend
+  /// may search the literature (up to ~10-20 s) and then wait for the model
+  /// (up to 30 s per call). 25 s used to cut answers the server then stored
+  /// anyway (2026-10-07); the page shows "ci sto mettendo più del solito"
+  /// well before this.
+  static const _chatTimeout = Duration(seconds: 90);
+
   String get _baseUrl => _configLoader.load().apiBaseUrl;
 
   Map<String, String> get _headers {
@@ -125,6 +135,7 @@ class HttpChatRemoteDataSource implements ChatRemoteDataSource {
     String? conversationId,
     required String userMessage,
     String? attachmentId,
+    String? clientMessageId,
   }) async {
     try {
       final response = await _client
@@ -136,9 +147,10 @@ class HttpChatRemoteDataSource implements ChatRemoteDataSource {
               if (conversationId != null) 'conversation_id': conversationId,
               'user_message': userMessage,
               if (attachmentId != null) 'attachment_id': attachmentId,
+              if (clientMessageId != null) 'client_message_id': clientMessageId,
             }),
           )
-          .timeout(_timeout);
+          .timeout(_chatTimeout);
 
       if (response.statusCode < 200 || response.statusCode >= 300) {
         // The backend enforces a max-active-conversations-per-pet limit and
@@ -178,7 +190,8 @@ class HttpChatRemoteDataSource implements ChatRemoteDataSource {
       return Result.failure<ChatSendResult>(
         const AppNetworkError(
           code: 'chat_timeout',
-          message: 'La richiesta ha impiegato troppo tempo. Riprova.',
+          message:
+              "L'assistente non ha risposto in tempo. Tocca Riprova: se la risposta è già pronta, la recupero.",
         ),
       );
     } catch (e) {

@@ -68,6 +68,8 @@ class SendChatMessageInput(BaseModel):
     attachment_id: str | None = None
     # The signed-in owner's display name, when the account has one.
     owner_display_name: str | None = None
+    # The app's id for this message; the same on a retry.
+    client_message_id: str | None = None
 
 
 class SendChatMessageOutput(BaseModel):
@@ -120,10 +122,21 @@ class SendChatMessageService:
         if pet_profile is None:
             raise ValidationError("pet_profile not found")
 
+        # A retry of a message this server already answered (the app gave up
+        # waiting, the answer was stored anyway — 2026-10-07): hand back that
+        # answer. No second model call, no duplicate turn, and for a new chat
+        # no second conversation.
+        replay = self._already_answered(data)
+        if replay is not None:
+            return replay
+
         conversation = self._load_or_create_conversation(data)
         photo_context = self._resolve_attachment(data, conversation, pet_profile)
         user_message = ChatMessage(
-            role="user", content=data.user_message.strip(), attachment_id=data.attachment_id
+            role="user",
+            content=data.user_message.strip(),
+            attachment_id=data.attachment_id,
+            client_message_id=data.client_message_id,
         )
         conversation.messages.append(user_message)
 
@@ -181,7 +194,11 @@ class SendChatMessageService:
                 safety_clarification_category=conversation.safety_clarification_category,
             )
         )
-        reply = ChatMessage(role="assistant", content=orchestrator_result.answer)
+        reply = ChatMessage(
+            role="assistant",
+            content=orchestrator_result.answer,
+            ai_generated=orchestrator_result.ai_generated,
+        )
         conversation.messages.append(reply)
         conversation.situation_model = orchestrator_result.situation_model
         conversation.coverage_score = orchestrator_result.coverage_score
@@ -219,6 +236,44 @@ class SendChatMessageService:
             awaiting_safety_clarification=orchestrator_result.awaiting_safety_clarification,
             safety_clarification_category=orchestrator_result.safety_clarification_category,
         )
+
+    def _already_answered(self, data: SendChatMessageInput) -> SendChatMessageOutput | None:
+        if not data.client_message_id:
+            return None
+        if data.conversation_id:
+            stored = self._repository.get(data.conversation_id)
+            candidates = [stored] if stored is not None else []
+        else:
+            candidates = self._repository.list_by_pet(data.pet_id)
+        for conversation in candidates:
+            if conversation.owner_id != data.owner_id:
+                continue
+            messages = conversation.messages
+            for index, message in enumerate(messages):
+                if message.role != "user" or message.client_message_id != data.client_message_id:
+                    continue
+                reply = next((m for m in messages[index + 1 :] if m.role == "assistant"), None)
+                if reply is None:
+                    return None
+                return SendChatMessageOutput(
+                    conversation=conversation,
+                    reply=reply,
+                    mode="replayed",
+                    confidence="medium",
+                    ai_generated=bool(reply.ai_generated),
+                    sources=[],
+                    limitations=[],
+                    safety_flags=[],
+                    provider="replay",
+                    model="replay",
+                    state=conversation.state,
+                    coverage_score=conversation.coverage_score,
+                    medical_record_consent=conversation.medical_record_consent,
+                    awaiting_medical_record_consent=conversation.awaiting_medical_record_consent,
+                    awaiting_safety_clarification=conversation.awaiting_safety_clarification,
+                    safety_clarification_category=conversation.safety_clarification_category,
+                )
+        return None
 
     def _resolve_attachment(
         self,

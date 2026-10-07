@@ -31,4 +31,18 @@ void main() {
     );
     expect(label, 'Via Roma 10, Borgo Antico');
   });
+
+  group('isLegacyLongAddressLabel', () {
+    test('flags a raw Nominatim display_name (3+ commas)', () {
+      expect(isLegacyLongAddressLabel('1, Piazza del Duomo, Duomo, Municipio 1, Milano'), isTrue);
+    });
+
+    test('flags a label over 60 characters even with few commas', () {
+      expect(isLegacyLongAddressLabel('${'a' * 61}, Milano'), isTrue);
+    });
+
+    test('keeps an already compact label', () {
+      expect(isLegacyLongAddressLabel('Piazza del Duomo 1, Milano'), isFalse);
+    });
+  });
 }

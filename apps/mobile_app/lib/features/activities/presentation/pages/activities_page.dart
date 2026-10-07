@@ -71,23 +71,6 @@ class ActivitiesPage extends StatelessWidget {
               ),
             ),
             _ActivityRow(
-              icon: Icons.medical_services_outlined,
-              iconTone: AppColors.success,
-              title: 'Cerca il vet',
-              subtitle: 'Trova un veterinario vicino a te.',
-              badge: 'In arrivo',
-              onTap: () => Navigator.of(context).push(
-                MaterialPageRoute<void>(
-                  builder: (_) => const ComingSoonPage(
-                    title: 'Cerca il vet',
-                    icon: Icons.medical_services_outlined,
-                    description:
-                        'Presto potrai trovare e contattare veterinari vicino a te direttamente dall\'app.',
-                  ),
-                ),
-              ),
-            ),
-            _ActivityRow(
               icon: Icons.storefront_outlined,
               iconTone: AppColors.warning,
               title: 'Mercatino dell\'usato',

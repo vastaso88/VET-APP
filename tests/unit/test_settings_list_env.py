@@ -91,6 +91,8 @@ def test_defaults_are_unchanged() -> None:
         "shop",
         "hotel",
         "dog_park",
+        # Shelters reportable as missing from 2026-10-07 (owner's decision).
+        "shelter",
     ]
     assert len(settings.overpass_fallback_urls) == 2
 

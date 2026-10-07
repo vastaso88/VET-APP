@@ -13,13 +13,9 @@ import '../../domain/pet_models.dart';
 /// Off means the chat sees neither titles nor contents. Read from the pet row
 /// on open, written with PUT, and applied locally at once on success.
 class MedicalRecordConsentCard extends StatefulWidget {
-  const MedicalRecordConsentCard({required this.pet, this.compact = false, super.key});
+  const MedicalRecordConsentCard({required this.pet, super.key});
 
   final PetProfile pet;
-
-  /// Settings variant: title and switch only, without the consent explanation
-  /// (the full text is shown where the records are).
-  final bool compact;
 
   @override
   State<MedicalRecordConsentCard> createState() => _MedicalRecordConsentCardState();
@@ -45,6 +41,7 @@ class _MedicalRecordConsentCardState extends State<MedicalRecordConsentCard> {
 
   late bool? _granted = widget.pet.medicalRecordConsentGranted;
   bool _saving = false;
+  bool _expanded = false;
   _CardStatus _status = _CardStatus.none;
 
   @override
@@ -111,30 +108,72 @@ class _MedicalRecordConsentCardState extends State<MedicalRecordConsentCard> {
     final name = widget.pet.name;
     final granted = _granted ?? false;
 
+    // One row: tapping the title area expands the full consent text, tapping
+    // again closes it. The arrow and "Leggi" make the expansion evident; the
+    // switch stays separate so toggling never needs the text open.
     final titleRow = Row(
       children: [
         Expanded(
-          child: Text(
-            "Consenti all'assistente di leggere la cartella clinica di $name",
-            style: AppTextStyles.bodySmall.copyWith(
-              color: AppColors.text,
-              fontWeight: FontWeight.w700,
+          child: Semantics(
+            button: true,
+            expanded: _expanded,
+            label: 'Consenso alla lettura della cartella clinica di $name. '
+                '${_expanded ? 'Tocca per chiudere il testo completo' : 'Tocca per leggere il testo completo'}',
+            excludeSemantics: true,
+            child: InkWell(
+              borderRadius: BorderRadius.circular(AppRadii.small),
+              onTap: () => setState(() => _expanded = !_expanded),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(vertical: AppSpacing.xs),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Cartella clinica di $name',
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: AppTextStyles.bodySmall.copyWith(
+                              color: AppColors.text,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                          Text(
+                            _expanded ? 'Chiudi' : 'Leggi come viene usata',
+                            style: AppTextStyles.caption.copyWith(color: AppColors.primary),
+                          ),
+                        ],
+                      ),
+                    ),
+                    Icon(
+                      _expanded ? Icons.expand_less_rounded : Icons.expand_more_rounded,
+                      color: AppColors.primary,
+                    ),
+                  ],
+                ),
+              ),
             ),
           ),
         ),
-        if (_saving) const Padding(
-          padding: EdgeInsets.only(right: AppSpacing.sm),
-          child: PetLoader.small(),
-        ),
-        Switch(
-          value: granted,
-          onChanged: _saving ? null : _toggle,
+        if (_saving)
+          const Padding(
+            padding: EdgeInsets.only(right: AppSpacing.sm),
+            child: PetLoader.small(),
+          ),
+        Semantics(
+          label: "Consenti all'assistente di leggere la cartella clinica di $name",
+          child: Switch(
+            value: granted,
+            onChanged: _saving ? null : _toggle,
+          ),
         ),
       ],
     );
 
     return Container(
-      padding: const EdgeInsets.all(AppSpacing.md),
+      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md, vertical: AppSpacing.xs),
       decoration: BoxDecoration(
         color: AppColors.surfaceElevated,
         borderRadius: BorderRadius.circular(AppRadii.medium),
@@ -144,7 +183,7 @@ class _MedicalRecordConsentCardState extends State<MedicalRecordConsentCard> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           titleRow,
-          if (!widget.compact) ...[
+          if (_expanded) ...[
             const SizedBox(height: AppSpacing.xs),
             Text(_approvedConsentText, style: AppTextStyles.caption),
             const SizedBox(height: AppSpacing.xs),
@@ -152,9 +191,9 @@ class _MedicalRecordConsentCardState extends State<MedicalRecordConsentCard> {
               "Senza consenso l'assistente non vede né i titoli né il contenuto dei referti.",
               style: AppTextStyles.caption.copyWith(fontWeight: FontWeight.w700),
             ),
+            const SizedBox(height: AppSpacing.xs),
           ],
           if (_status != _CardStatus.none) ...[
-            const SizedBox(height: AppSpacing.xs),
             Text(
               _status == _CardStatus.saveError
                   ? 'Non sono riuscito a salvare il consenso. Riprova.'
@@ -163,6 +202,7 @@ class _MedicalRecordConsentCardState extends State<MedicalRecordConsentCard> {
                 color: _status == _CardStatus.saveError ? Colors.red.shade700 : AppColors.mutedText,
               ),
             ),
+            const SizedBox(height: AppSpacing.xs),
           ],
         ],
       ),

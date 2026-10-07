@@ -131,3 +131,31 @@ def test_overpass_source_posts_query_and_maps_osm_elements(
     assert grooming.latitude == 45.4701
     assert grooming.longitude == 9.2011
     assert grooming.website_url == "https://www.openstreetmap.org/way/202"
+
+
+def test_shelters_are_classified_with_their_own_type() -> None:
+    from datetime import UTC, datetime
+
+    from packages.infrastructure.radar_places.overpass_places_source import map_osm_element
+
+    shelter = map_osm_element(
+        {
+            "type": "node",
+            "id": 1,
+            "lat": 45.0,
+            "lon": 9.0,
+            "tags": {
+                "amenity": "animal_shelter",
+                "animal_shelter": "dog;cat",
+                "animal_shelter:adoption": "yes",
+            },
+        },
+        owner_id="",
+        coverage_key="catalog",
+        fetched_at=datetime(2026, 10, 7, tzinfo=UTC),
+    )
+
+    assert shelter is not None
+    assert (shelter.place_type, shelter.name) == ("shelter", "Rifugio per animali")
+    assert shelter.species == ["dog", "cat"]
+    assert shelter.details == {"animal_shelter:adoption": "yes"}

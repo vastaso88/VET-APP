@@ -251,18 +251,6 @@ class _PetRow extends StatelessWidget {
                   ],
                 ),
               ),
-              const SizedBox(width: AppSpacing.sm),
-              ConstrainedBox(
-                constraints: const BoxConstraints(maxWidth: 90),
-                child: Text(
-                  // Profiles saved before the wording changed still say "Nuovo profilo".
-                  pet.healthBadge == 'Nuovo profilo' ? 'Da valutare' : pet.healthBadge,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  textAlign: TextAlign.end,
-                  style: AppTextStyles.caption,
-                ),
-              ),
               const SizedBox(width: AppSpacing.xs),
               const Icon(Icons.chevron_right_rounded, color: AppColors.mutedText),
             ],

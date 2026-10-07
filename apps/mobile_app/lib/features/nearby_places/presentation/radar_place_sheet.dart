@@ -98,6 +98,13 @@ List<RadarDetail> radarPlaceDetails(Map<String, String> details) {
   add(Icons.grass, surfaces[details['surface']]);
   add(Icons.lock_open_outlined, accesses[details['access']]);
   add(Icons.pets, const {'unleashed': 'Cani liberi senza guinzaglio'}[details['dog']]);
+  add(
+    Icons.favorite_outline,
+    const {
+      'yes': 'Adozioni possibili',
+      'no': 'Non dà in adozione'
+    }[details['animal_shelter:adoption']],
+  );
   add(Icons.accessible, wheelchairs[details['wheelchair']]);
   return result;
 }

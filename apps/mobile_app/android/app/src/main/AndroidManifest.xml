@@ -23,6 +23,12 @@
     <!-- Photos and videos go through the system camera and picker (image_picker,
          file_picker), which need no permission. open_filex (PDF viewer) brings in
          media-read permissions through its manifest; they are removed here. -->
+    <!-- Android 9 and older only: gal (copy of in-app camera captures into the
+         "VetApp" album) needs it there; from Android 10 MediaStore saves our own
+         files with no permission. -->
+    <uses-permission
+        android:name="android.permission.WRITE_EXTERNAL_STORAGE"
+        android:maxSdkVersion="28" />
     <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" tools:node="remove" />
     <uses-permission android:name="android.permission.READ_MEDIA_VIDEO" tools:node="remove" />
     <uses-permission android:name="android.permission.READ_MEDIA_AUDIO" tools:node="remove" />

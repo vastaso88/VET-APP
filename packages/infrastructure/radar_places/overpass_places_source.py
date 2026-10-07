@@ -26,6 +26,7 @@ _DEFAULT_NAMES = {
     "breeder": "Allevamento",
     "hotel": "Pensione per animali",
     "dog_park": "Area cani",
+    "shelter": "Rifugio per animali",
 }
 
 _OSM_SPECIES = {
@@ -58,11 +59,22 @@ OSM_SELECTORS = (
     '["office"="pet_sitting"]',
     '["craft"="dog_walker"]',
     '["leisure"="dog_park"]',
+    '["amenity"="animal_shelter"]',
 )
 
 # Tags worth showing on a place card when the mapper recorded them. Only
 # what OSM states is passed on: an absent key means "unknown", never "no".
-_DETAIL_TAGS = ("barrier", "lit", "surface", "access", "drinking_water", "wheelchair", "dog", "fee")
+_DETAIL_TAGS = (
+    "barrier",
+    "lit",
+    "surface",
+    "access",
+    "drinking_water",
+    "wheelchair",
+    "dog",
+    "fee",
+    "animal_shelter:adoption",
+)
 
 # Whole import, retries included. Kept well under a minute: the caller is
 # an HTTP request with a person waiting, and the app retries on its own.
@@ -327,6 +339,8 @@ def _classify_tags(tags: dict[str, str]) -> tuple[str, str] | None:
     craft = tags.get("craft", "").strip().lower()
     leisure = tags.get("leisure", "").strip().lower()
 
+    if amenity == "animal_shelter":
+        return "shelter", "amenity:animal_shelter"
     if amenity == "veterinary":
         return "veterinary", "amenity:veterinary"
     if shop == "pet_grooming":
@@ -355,7 +369,7 @@ def _read_species(tags: dict[str, str], *, place_type: str, subtype: str) -> lis
     if place_type == "dog_park" or subtype == "craft:dog_walker":
         return ["dog"]
     found: list[str] = []
-    for key in ("animal_boarding", "animal_breeding", "animal_training", "pets"):
+    for key in ("animal_boarding", "animal_breeding", "animal_training", "animal_shelter", "pets"):
         for raw in tags.get(key, "").lower().replace(",", ";").split(";"):
             species = _OSM_SPECIES.get(raw.strip())
             if species and species not in found:

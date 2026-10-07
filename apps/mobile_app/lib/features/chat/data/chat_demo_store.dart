@@ -304,11 +304,16 @@ class ChatDemoStore extends ChangeNotifier {
     return conversation;
   }
 
+  /// Sends [message]. With [retryOfMessageId] (the id of a message already
+  /// in the thread whose send failed) the message is not added again: the
+  /// same id goes to the backend, which returns the answer it may already
+  /// have produced instead of answering twice.
   Future<Result<ChatConversationDetail>> sendMessage(
     String conversationId,
     String message, {
     String? attachmentId,
     Uint8List? attachmentImageBytes,
+    String? retryOfMessageId,
   }) async {
     final cleanMessage = message.trim();
     if (cleanMessage.isEmpty) {
@@ -316,30 +321,50 @@ class ChatDemoStore extends ChangeNotifier {
     }
 
     final thread = conversationById(conversationId) ?? _threads.first;
-    final userMessage = ChatMessage(
-      id: _messageId('user'),
-      author: ChatMessageAuthor.user,
-      text: cleanMessage,
-      timeLabel: _clockLabel(),
-      isRead: true,
-      attachmentImageBytes: attachmentImageBytes,
-    );
+    final alreadyInThread = retryOfMessageId != null &&
+        thread.messages.any((message) => message.id == retryOfMessageId);
+    final userMessageId = alreadyInThread ? retryOfMessageId : _messageId('user');
 
-    _replaceThread(
-      conversationId,
-      thread.copyWith(
-        title: _maybeRetitle(thread.title, cleanMessage),
-        statusLabel: 'Messaggio inviato',
-        messages: [...thread.messages, userMessage],
-      ),
-    );
+    if (!alreadyInThread) {
+      final userMessage = ChatMessage(
+        id: userMessageId,
+        author: ChatMessageAuthor.user,
+        text: cleanMessage,
+        timeLabel: _clockLabel(),
+        isRead: true,
+        attachmentImageBytes: attachmentImageBytes,
+      );
+      _replaceThread(
+        conversationId,
+        thread.copyWith(
+          title: _maybeRetitle(thread.title, cleanMessage),
+          statusLabel: 'Messaggio inviato',
+          messages: [...thread.messages, userMessage],
+        ),
+      );
+    }
     _openedConversationIds.add(conversationId);
     notifyListeners();
 
     if (!_configLoader.load().hasApiBaseUrl) {
       return Result.success(await _sendDemoReply(conversationId, cleanMessage));
     }
-    return _sendRealMessage(conversationId, cleanMessage, attachmentId: attachmentId);
+    return _sendRealMessage(
+      conversationId,
+      cleanMessage,
+      attachmentId: attachmentId,
+      clientMessageId: userMessageId,
+    );
+  }
+
+  /// The most recent message the owner sent in [conversationId]: after a
+  /// failed send, the one a retry should reuse.
+  ChatMessage? lastUserMessage(String conversationId) {
+    final messages = conversationById(conversationId)?.messages ?? const <ChatMessage>[];
+    for (final message in messages.reversed) {
+      if (message.author == ChatMessageAuthor.user) return message;
+    }
+    return null;
   }
 
   /// Uploads a photo for [petName] and returns its backend attachment id —
@@ -394,6 +419,7 @@ class ChatDemoStore extends ChangeNotifier {
     String conversationId,
     String cleanMessage, {
     String? attachmentId,
+    String? clientMessageId,
   }) async {
     final thread = conversationById(conversationId) ?? _threads.first;
 
@@ -406,6 +432,7 @@ class ChatDemoStore extends ChangeNotifier {
           conversationId: thread.backendConversationId,
           userMessage: cleanMessage,
           attachmentId: attachmentId,
+          clientMessageId: clientMessageId,
         );
         return sendResult.fold(
           onFailure: (error) => Result.failure(error),

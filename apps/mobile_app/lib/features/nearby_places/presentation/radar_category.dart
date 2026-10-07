@@ -10,6 +10,7 @@ enum RadarCategory {
   veterinary('Veterinari', Icons.local_hospital, Color(0xFFB3261E)),
   shop('Negozi', Icons.storefront, Color(0xFF8A5A00)),
   dogPark('Aree cani', Icons.park, Color(0xFF2E7D32)),
+  shelter('Rifugi e adozioni', Icons.cottage, Color(0xFF3949AB)),
   grooming('Toelettature', Icons.content_cut, Color(0xFF7B4FA3)),
   hotel('Pensioni', Icons.night_shelter, Color(0xFF1F6FA5)),
   school('Addestramento', Icons.school, Color(0xFF00796B)),
@@ -46,6 +47,8 @@ RadarCategory radarCategoryForPlace(RadarPlaceType type) {
       return RadarCategory.hotel;
     case RadarPlaceType.dogPark:
       return RadarCategory.dogPark;
+    case RadarPlaceType.shelter:
+      return RadarCategory.shelter;
     case RadarPlaceType.other:
       return RadarCategory.other;
   }
@@ -79,6 +82,8 @@ String radarPlaceTypeLabel(RadarPlaceType type) {
       return 'Pensione per animali';
     case RadarPlaceType.dogPark:
       return 'Area cani';
+    case RadarPlaceType.shelter:
+      return 'Rifugio per animali';
     case RadarPlaceType.other:
       return 'Servizio per animali';
   }
