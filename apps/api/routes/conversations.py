@@ -1,8 +1,9 @@
 from fastapi import APIRouter, Response
 
 from apps.api.dependencies.container import get_container
-from apps.api.schemas.conversations import RenameConversationRequest
+from apps.api.schemas.conversations import EditChatMessageRequest, RenameConversationRequest
 from packages.core.application.services.delete_conversation import DeleteConversationInput
+from packages.core.application.services.edit_chat_message import EditChatMessageInput
 from packages.core.application.services.list_conversations import ListConversationsInput
 from packages.core.application.services.rename_conversation import RenameConversationInput
 from packages.core.application.services.send_chat_message import owner_names_for_anonymization
@@ -34,6 +35,27 @@ def rename_conversation(
         )
     )
     return {"id": result.conversation.id, "title": result.conversation.title}
+
+
+@router.put("/{conversation_id}/messages/{message_id}")
+def edit_message(
+    conversation_id: str, message_id: str, request: EditChatMessageRequest
+) -> dict[str, object]:
+    """Replaces one of the owner's messages and everything after it, then
+    answers again. Same response body as POST /chat."""
+    container = get_container()
+    user = container.auth_provider.get_current_user()
+    result = container.edit_chat_message_service().execute(
+        EditChatMessageInput(
+            owner_id=user.id,
+            conversation_id=conversation_id,
+            message_id=message_id,
+            user_message=request.user_message,
+            client_message_id=request.client_message_id,
+            owner_display_name=user.display_name,
+        )
+    )
+    return result.model_dump()
 
 
 @router.get("/{conversation_id}/summary")

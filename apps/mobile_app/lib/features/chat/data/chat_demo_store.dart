@@ -357,6 +357,90 @@ class ChatDemoStore extends ChangeNotifier {
     );
   }
 
+  /// Replaces the owner's message [messageId] with [newText]: the thread is
+  /// cut there (that message and everything after it go, replies included)
+  /// and the assistant answers the edited text. The original attachment is
+  /// kept. With [retryOfMessageId] (the edited message already shown, after
+  /// a failed attempt) the thread is not cut again and the same id goes to
+  /// the backend, which returns the answer it may already have produced.
+  Future<Result<ChatConversationDetail>> editMessage(
+    String conversationId,
+    String messageId,
+    String newText, {
+    String? retryOfMessageId,
+  }) async {
+    final text = newText.trim();
+    final thread = conversationById(conversationId) ?? _threads.first;
+    final alreadyEdited = retryOfMessageId != null &&
+        thread.messages.any((message) => message.id == retryOfMessageId);
+    final index = thread.messages.indexWhere((message) => message.id == messageId);
+    if (!alreadyEdited && index < 0) {
+      return Result.failure(
+        const AppNetworkError(
+          code: 'chat_edit_message_missing',
+          message: 'Questo messaggio non è più nella conversazione.',
+        ),
+      );
+    }
+
+    final editedId = alreadyEdited ? retryOfMessageId : _messageId('user');
+    if (!alreadyEdited) {
+      final original = thread.messages[index];
+      final edited = ChatMessage(
+        id: editedId,
+        author: ChatMessageAuthor.user,
+        text: text,
+        timeLabel: _clockLabel(),
+        isRead: true,
+        attachmentImageBytes: original.attachmentImageBytes,
+      );
+      _replaceThread(
+        conversationId,
+        thread.copyWith(
+          statusLabel: 'Messaggio modificato',
+          messages: [...thread.messages.take(index), edited],
+        ),
+      );
+    }
+    _openedConversationIds.add(conversationId);
+    notifyListeners();
+
+    final backendConversationId = thread.backendConversationId;
+    if (!_configLoader.load().hasApiBaseUrl || backendConversationId == null) {
+      return Result.success(await _sendDemoReply(conversationId, text));
+    }
+
+    final result = await _remote.editMessage(
+      conversationId: backendConversationId,
+      messageId: messageId,
+      userMessage: text,
+      clientMessageId: editedId,
+    );
+    return result.fold(
+      onFailure: (error) => Result.failure(error),
+      onSuccess: (reply) {
+        final updatedThread = conversationById(conversationId) ?? thread;
+        final assistantMessage = ChatMessage(
+          id: _messageId('assistant'),
+          author: ChatMessageAuthor.assistant,
+          text: reply.content,
+          timeLabel: _clockLabel(),
+          aiGenerated: reply.aiGenerated,
+        );
+        _freshAssistantIds.add(assistantMessage.id);
+        final serverTitle = reply.title?.trim();
+        final resultThread = updatedThread.copyWith(
+          title: serverTitle == null || serverTitle.isEmpty ? null : serverTitle,
+          statusLabel: 'Risposta pronta',
+          messages: [...updatedThread.messages, assistantMessage],
+        );
+        _replaceThread(conversationId, resultThread);
+        notifyListeners();
+        return Result.success(resultThread);
+      },
+    );
+  }
+
   /// The most recent message the owner sent in [conversationId]: after a
   /// failed send, the one a retry should reuse.
   ChatMessage? lastUserMessage(String conversationId) {

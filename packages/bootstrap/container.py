@@ -38,6 +38,7 @@ from packages.core.application.services.create_pet_profile import CreatePetProfi
 from packages.core.application.services.create_reminder import CreateReminderService
 from packages.core.application.services.delete_conversation import DeleteConversationService
 from packages.core.application.services.document_summarizer import DocumentSummarizer
+from packages.core.application.services.edit_chat_message import EditChatMessageService
 from packages.core.application.services.end_walk import EndWalkService
 from packages.core.application.services.get_account_consents import GetAccountConsentsService
 from packages.core.application.services.get_or_create_subscription import (
@@ -308,6 +309,11 @@ class ApplicationContainer:
 
     def delete_conversation_service(self) -> DeleteConversationService:
         return DeleteConversationService(self.conversation_repository)
+
+    def edit_chat_message_service(self) -> EditChatMessageService:
+        return EditChatMessageService(
+            self.conversation_repository, self.send_chat_message_service()
+        )
 
     def rename_conversation_service(self) -> RenameConversationService:
         return RenameConversationService(self.conversation_repository)

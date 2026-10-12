@@ -27,6 +27,16 @@ Future<void> showWalkControlSheet(BuildContext context, {required PetProfile pet
             onTap: () => Navigator.of(context).pop('open'),
           ),
           ListTile(
+            leading: const Icon(Icons.photo_camera_outlined),
+            title: const Text('Scatta foto'),
+            onTap: () => Navigator.of(context).pop('photo'),
+          ),
+          ListTile(
+            leading: const Icon(Icons.videocam_outlined),
+            title: const Text('Registra video'),
+            onTap: () => Navigator.of(context).pop('video'),
+          ),
+          ListTile(
             leading: Icon(
               walk.isPaused ? Icons.play_circle_outline : Icons.pause_circle_outline,
             ),
@@ -48,6 +58,17 @@ Future<void> showWalkControlSheet(BuildContext context, {required PetProfile pet
     case 'open':
       await Navigator.of(context, rootNavigator: true).push(
         MaterialPageRoute<bool>(builder: (_) => ActiveWalkPage(pet: pet)),
+      );
+    // Photo and video open the walk page, which owns the camera flow and the
+    // progress (and shows the new photo on the map).
+    case 'photo' || 'video':
+      await Navigator.of(context, rootNavigator: true).push(
+        MaterialPageRoute<bool>(
+          builder: (_) => ActiveWalkPage(
+            pet: pet,
+            autoCapture: action == 'photo' ? WalkCaptureKind.photo : WalkCaptureKind.video,
+          ),
+        ),
       );
     case 'pause':
       await ActiveWalkController.instance.pause();

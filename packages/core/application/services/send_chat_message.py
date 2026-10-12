@@ -116,7 +116,9 @@ class SendChatMessageService:
         self._max_active_conversations_per_pet = max_active_conversations_per_pet
 
     def execute(self, data: SendChatMessageInput) -> SendChatMessageOutput:
-        if not data.user_message.strip():
+        # A photo alone is a message (an edited message may keep only its
+        # attachment); no text and no attachment is not.
+        if not data.user_message.strip() and not data.attachment_id:
             raise ValidationError("user_message must not be empty")
         pet_profile = self._pet_profile_repository.get(data.pet_id)
         if pet_profile is None:
@@ -126,11 +128,26 @@ class SendChatMessageService:
         # waiting, the answer was stored anyway — 2026-10-07): hand back that
         # answer. No second model call, no duplicate turn, and for a new chat
         # no second conversation.
-        replay = self._already_answered(data)
+        replay = self.already_answered(data)
         if replay is not None:
             return replay
 
         conversation = self._load_or_create_conversation(data)
+        return self.respond_in(conversation, data, pet_profile)
+
+    def respond_in(
+        self,
+        conversation: Conversation,
+        data: SendChatMessageInput,
+        pet_profile: PetProfile | None = None,
+    ) -> SendChatMessageOutput:
+        """Adds the owner's message to [conversation] (already loaded, and
+        possibly changed by the caller — see EditChatMessageService), answers
+        it through the usual path and stores the result."""
+        if pet_profile is None:
+            pet_profile = self._pet_profile_repository.get(conversation.pet_id)
+            if pet_profile is None:
+                raise ValidationError("pet_profile not found")
         photo_context = self._resolve_attachment(data, conversation, pet_profile)
         user_message = ChatMessage(
             role="user",
@@ -214,6 +231,7 @@ class SendChatMessageService:
         conversation.safety_clarification_category = (
             orchestrator_result.safety_clarification_category
         )
+        reply.state_after = conversation.snapshot()
         self._persist_pet_level_consent(pet_profile, orchestrator_result.medical_record_consent)
 
         stored_conversation = self._repository.save(conversation)
@@ -237,7 +255,7 @@ class SendChatMessageService:
             safety_clarification_category=orchestrator_result.safety_clarification_category,
         )
 
-    def _already_answered(self, data: SendChatMessageInput) -> SendChatMessageOutput | None:
+    def already_answered(self, data: SendChatMessageInput) -> SendChatMessageOutput | None:
         if not data.client_message_id:
             return None
         if data.conversation_id:

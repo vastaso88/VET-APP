@@ -60,6 +60,17 @@ class PetMediaImportResult {
     final extra = problems.length > 1 ? ' (altri ${problems.length - 1} non aggiunti)' : '';
     return done == null ? '${problems.first}$extra' : '$done. ${problems.first}$extra';
   }
+
+  /// "Foto aggiunta alla galleria di Thor" after one clean upload; anything
+  /// else (several files, a problem, cancelled) falls back to [summary].
+  String confirmation(String petName) {
+    if (problems.isEmpty && !cancelled && added == 1) {
+      return photos == 1
+          ? 'Foto aggiunta alla galleria di $petName'
+          : 'Video aggiunto alla galleria di $petName';
+    }
+    return summary();
+  }
 }
 
 /// Takes what the pickers returned (any mix of photos and videos), checks it,

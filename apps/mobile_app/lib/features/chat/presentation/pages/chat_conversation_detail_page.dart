@@ -51,6 +51,9 @@ class _ChatConversationDetailPageState extends State<ChatConversationDetailPage>
   String? _anchoredReplyId;
   final GlobalKey _anchoredReplyKey = GlobalKey();
 
+  /// The owner's message being edited (its text is in the composer).
+  ChatMessage? _editingMessage;
+
   @override
   void initState() {
     super.initState();
@@ -126,8 +129,11 @@ class _ChatConversationDetailPageState extends State<ChatConversationDetailPage>
                           key: const ValueKey('success'),
                           conversation: conversation,
                           isSending: _isSending,
-                          onSendMessage: _sendMessage,
+                          onSendMessage: _onComposerSend,
                           scrollController: _scrollController,
+                          editingMessage: _editingMessage,
+                          onRequestEdit: _showMessageActions,
+                          onCancelEditing: () => setState(() => _editingMessage = null),
                         ),
                     },
                   ),
@@ -194,6 +200,87 @@ class _ChatConversationDetailPageState extends State<ChatConversationDetailPage>
                       retryOfMessageId: failed?.text == cleanMessage ? failed?.id : null,
                     ),
                   ),
+          ),
+        );
+      },
+    );
+  }
+
+  void _onComposerSend(
+    String text, {
+    String? attachmentId,
+    Uint8List? attachmentImageBytes,
+  }) {
+    final editing = _editingMessage;
+    if (editing != null) {
+      _editMessage(editing, text);
+      return;
+    }
+    _sendMessage(text, attachmentId: attachmentId, attachmentImageBytes: attachmentImageBytes);
+  }
+
+  /// Long press on one of the owner's messages.
+  Future<void> _showMessageActions(ChatMessage message) async {
+    if (_isSending) return;
+    final choice = await showModalBottomSheet<String>(
+      context: context,
+      showDragHandle: true,
+      builder: (sheetContext) => SafeArea(
+        child: ListTile(
+          leading: const Icon(Icons.edit_outlined),
+          title: const Text('Modifica messaggio'),
+          subtitle: const Text('La risposta e i messaggi successivi verranno sostituiti.'),
+          onTap: () => Navigator.of(sheetContext).pop('edit'),
+        ),
+      ),
+    );
+    if (!mounted || choice != 'edit') return;
+    setState(() => _editingMessage = message);
+  }
+
+  /// Replaces [original] with [text]: the thread is cut there and the
+  /// assistant answers again (see ChatDemoStore.editMessage).
+  Future<void> _editMessage(
+    ChatMessage original,
+    String text, {
+    String? retryOfMessageId,
+  }) async {
+    if (_isSending) return;
+    setState(() {
+      _isSending = true;
+      _anchoredReplyId = null;
+      _editingMessage = null;
+    });
+
+    final result = await _store.editMessage(
+      widget.conversationId,
+      original.id,
+      text,
+      retryOfMessageId: retryOfMessageId,
+    );
+
+    if (!mounted) return;
+    setState(() => _isSending = false);
+
+    result.fold(
+      onSuccess: (_) {},
+      onFailure: (error) {
+        _scrollToBottom();
+        final canRetry = error.code != 'chat_edit_message_missing';
+        final edited = _store.lastUserMessage(widget.conversationId);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(error.message),
+            action: canRetry
+                ? SnackBarAction(
+                    label: 'Riprova',
+                    onPressed: () => _editMessage(
+                      original,
+                      text,
+                      retryOfMessageId: edited?.text == text.trim() ? edited?.id : null,
+                    ),
+                  )
+                : null,
           ),
         );
       },
@@ -307,6 +394,9 @@ class _SuccessConversationView extends StatelessWidget {
     required this.isSending,
     required this.onSendMessage,
     required this.scrollController,
+    required this.editingMessage,
+    required this.onRequestEdit,
+    required this.onCancelEditing,
   });
 
   final ChatConversationDetail conversation;
@@ -314,6 +404,9 @@ class _SuccessConversationView extends StatelessWidget {
   final void Function(String text, {String? attachmentId, Uint8List? attachmentImageBytes})
       onSendMessage;
   final ScrollController scrollController;
+  final ChatMessage? editingMessage;
+  final void Function(ChatMessage message) onRequestEdit;
+  final VoidCallback onCancelEditing;
 
   @override
   Widget build(BuildContext context) {
@@ -353,7 +446,12 @@ class _SuccessConversationView extends StatelessWidget {
                               child: ChatMessageBubble(message: message),
                             );
                           }
-                          return ChatMessageBubble(message: message);
+                          final editable =
+                              message.author == ChatMessageAuthor.user && !isSending;
+                          return ChatMessageBubble(
+                            message: message,
+                            onLongPress: editable ? () => onRequestEdit(message) : null,
+                          );
                         }
 
                         return const ChatTypingBubble();
@@ -373,6 +471,10 @@ class _SuccessConversationView extends StatelessWidget {
                 hintText: 'Scrivi una domanda su ${conversation.petName}',
                 petName: conversation.petName,
                 onSend: onSendMessage,
+                editingText: editingMessage?.text,
+                onCancelEditing: onCancelEditing,
+                // An edited message keeps its photo; the text may go.
+                allowEmptySend: editingMessage?.attachmentImageBytes != null,
               ),
             ),
           ],
