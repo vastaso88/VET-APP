@@ -1,73 +1,68 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../../design_system/tokens/app_colors.dart';
 import '../../../../design_system/tokens/app_spacing.dart';
 import '../../../../design_system/tokens/app_text_styles.dart';
 
-/// A settings section with a tappable header (title + chevron) that
-/// collapses/expands its body. Remembers the open/closed state per
-/// [sectionId] in shared_preferences, so it survives app restarts.
+/// A settings section with a tappable header (title + chevron) that shows or
+/// hides its body. Controlled by the parent, which keeps a single "open
+/// section" so the page behaves as an accordion. Whenever the section opens it
+/// scrolls itself so the header sits at the top of the viewport.
 ///
-/// Reusable on purpose: Impostazioni is touched by several sessions at once
-/// (Foto e video, Notifiche, Località, ...) — wrap a section's existing
-/// widgets in this instead of writing a new header each time.
+/// Reusable on purpose: Impostazioni is touched by several sessions at once —
+/// wrap a section's existing widgets in this instead of writing a new header.
 class CollapsibleSection extends StatefulWidget {
   const CollapsibleSection({
     super.key,
     required this.sectionId,
     required this.title,
     required this.children,
-    this.initiallyExpanded = true,
+    required this.expanded,
+    required this.onToggle,
   });
 
-  /// Stable id for the shared_preferences key — keep it short and unique
-  /// within this page (e.g. 'abbonamento', 'localita').
+  /// Stable id, handed back to [onToggle] (e.g. 'abbonamento', 'localita').
   final String sectionId;
   final String title;
   final List<Widget> children;
-  final bool initiallyExpanded;
+  final bool expanded;
+  final ValueChanged<String> onToggle;
 
   @override
-  State<CollapsibleSection> createState() => CollapsibleSectionState();
+  State<CollapsibleSection> createState() => _CollapsibleSectionState();
 }
 
-class CollapsibleSectionState extends State<CollapsibleSection> {
-  static const _keyPrefix = 'settings_section_expanded.';
-
-  late bool _expanded = widget.initiallyExpanded;
+class _CollapsibleSectionState extends State<CollapsibleSection> {
+  static const _animation = Duration(milliseconds: 180);
 
   @override
   void initState() {
     super.initState();
-    unawaited(_restore());
+    if (widget.expanded) _scrollIntoViewSoon();
   }
 
-  Future<void> _restore() async {
-    final preferences = await SharedPreferences.getInstance();
-    final stored = preferences.getBool('$_keyPrefix${widget.sectionId}');
-    if (stored != null && mounted) setState(() => _expanded = stored);
+  @override
+  void didUpdateWidget(CollapsibleSection oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.expanded && !oldWidget.expanded) _scrollIntoViewSoon();
   }
 
-  Future<void> _persist(bool value) async {
-    final preferences = await SharedPreferences.getInstance();
-    await preferences.setBool('$_keyPrefix${widget.sectionId}', value);
-  }
-
-  /// Opens the section if it's collapsed (used when the owner is sent here
-  /// from elsewhere, e.g. "Scegli un indirizzo" → Località). No-op if
-  /// already open.
-  void expand() {
-    if (_expanded) return;
-    setState(() => _expanded = true);
-    unawaited(_persist(true));
-  }
-
-  void _toggle() {
-    setState(() => _expanded = !_expanded);
-    unawaited(_persist(_expanded));
+  /// Waits for the previously open section to finish collapsing, otherwise the
+  /// header would still move after the scroll has been computed.
+  void _scrollIntoViewSoon() {
+    unawaited(
+      Future<void>.delayed(_animation + const Duration(milliseconds: 40), () {
+        if (!mounted || !widget.expanded) return;
+        Scrollable.ensureVisible(
+          context,
+          alignment: 0,
+          duration: const Duration(milliseconds: 250),
+          curve: Curves.easeOut,
+        );
+      }),
+    );
   }
 
   @override
@@ -78,7 +73,7 @@ class CollapsibleSectionState extends State<CollapsibleSection> {
         Material(
           color: Colors.transparent,
           child: InkWell(
-            onTap: _toggle,
+            onTap: () => widget.onToggle(widget.sectionId),
             child: Padding(
               padding: const EdgeInsets.only(top: AppSpacing.xl, bottom: AppSpacing.xs),
               child: Row(
@@ -90,10 +85,13 @@ class CollapsibleSectionState extends State<CollapsibleSection> {
                     ),
                   ),
                   AnimatedRotation(
-                    turns: _expanded ? 0.5 : 0,
-                    duration: const Duration(milliseconds: 180),
-                    child: const Icon(Icons.keyboard_arrow_down_rounded,
-                        color: AppColors.mutedText, size: 20),
+                    turns: widget.expanded ? 0.5 : 0,
+                    duration: _animation,
+                    child: const Icon(
+                      Icons.keyboard_arrow_down_rounded,
+                      color: AppColors.mutedText,
+                      size: 20,
+                    ),
                   ),
                 ],
               ),
@@ -101,11 +99,11 @@ class CollapsibleSectionState extends State<CollapsibleSection> {
           ),
         ),
         AnimatedCrossFade(
-          duration: const Duration(milliseconds: 180),
-          crossFadeState: _expanded ? CrossFadeState.showFirst : CrossFadeState.showSecond,
+          duration: _animation,
+          crossFadeState: widget.expanded ? CrossFadeState.showFirst : CrossFadeState.showSecond,
           firstChild:
               Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: widget.children),
-          secondChild: const SizedBox.shrink(),
+          secondChild: const SizedBox(width: double.infinity),
         ),
       ],
     );

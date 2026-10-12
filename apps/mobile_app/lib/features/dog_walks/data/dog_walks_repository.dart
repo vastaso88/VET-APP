@@ -4,6 +4,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../../app/router/app_router.dart';
 import '../../../../shared/config/app_runtime_config_loader.dart';
 import '../../location/domain/coordinates.dart';
+import '../domain/wall_clock_time.dart';
 import '../domain/walk_retention.dart';
 import '../domain/walk_session.dart';
 
@@ -338,14 +339,14 @@ class DogWalksRepository {
       'owner_id': walk.ownerId,
       'pet_id': walk.petId,
       'status': _statusToString(walk.status),
-      'started_at': walk.startedAt.toIso8601String(),
-      'ended_at': walk.endedAt?.toIso8601String(),
+      'started_at': wallClockToStored(walk.startedAt),
+      'ended_at': walk.endedAt == null ? null : wallClockToStored(walk.endedAt!),
       'distance_meters': walk.distanceMeters,
       'duration_seconds': walk.durationSeconds,
       'step_count_estimate': walk.stepCountEstimate,
       'is_favorite': walk.isFavorite,
       'is_paused': walk.isPaused,
-      'paused_at': walk.pausedAt?.toIso8601String(),
+      'paused_at': walk.pausedAt == null ? null : wallClockToStored(walk.pausedAt!),
       'paused_seconds': walk.pausedSeconds,
       'route': walk.route
           .map(
@@ -364,7 +365,7 @@ class DogWalksRepository {
   }
 
   static WalkSession? fromRow(Map<String, dynamic> row) {
-    final startedAt = DateTime.tryParse((row['started_at'] ?? '').toString());
+    final startedAt = storedToWallClock(row['started_at']);
     final status = _statusFromString(row['status'] as String?);
     if (startedAt == null || status == null) {
       return null;
@@ -385,13 +386,13 @@ class DogWalksRepository {
       petId: (row['pet_id'] ?? '').toString(),
       status: status,
       startedAt: startedAt,
-      endedAt: DateTime.tryParse((row['ended_at'] ?? '').toString()),
+      endedAt: storedToWallClock(row['ended_at']),
       distanceMeters: (row['distance_meters'] as num?)?.toDouble() ?? 0,
       durationSeconds: (row['duration_seconds'] as num?)?.toInt(),
       stepCountEstimate: (row['step_count_estimate'] as num?)?.toInt(),
       isFavorite: row['is_favorite'] as bool? ?? false,
       isPaused: row['is_paused'] as bool? ?? false,
-      pausedAt: DateTime.tryParse((row['paused_at'] ?? '').toString()),
+      pausedAt: storedToWallClock(row['paused_at']),
       pausedSeconds: (row['paused_seconds'] as num?)?.toInt() ?? 0,
       route: route,
     );

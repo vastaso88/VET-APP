@@ -13,6 +13,7 @@ import '../../../../design_system/tokens/app_radii.dart';
 import '../../../../design_system/tokens/app_spacing.dart';
 import '../../../../design_system/tokens/app_text_styles.dart';
 import '../../../../shared/formatters/date_input_formatter.dart';
+import '../../../../shared/widgets/typed_date_field.dart';
 import '../../../../shared/widgets/pet_loader.dart';
 import 'pet_avatar.dart';
 import 'pet_sections.dart';
@@ -499,16 +500,11 @@ class _PetProfileFormState extends State<PetProfileForm> {
                 // only for a single pet (a lone fish included).
                 if (!isAquariumProfile) ...[
                   const SizedBox(height: AppSpacing.md),
-                  TextFormField(
+                  TypedDateField(
                     controller: _birthDateController,
-                    keyboardType: TextInputType.number,
-                    inputFormatters: const [DateInputFormatter()],
-                    decoration: _inputDecoration('Data di nascita', 'gg/mm/aaaa').copyWith(
-                      suffixIcon: IconButton(
-                        onPressed: _pickBirthDate,
-                        icon: const Icon(Icons.calendar_month_rounded, color: AppColors.primary),
-                      ),
-                    ),
+                    onPick: _pickBirthDate,
+                    pickIcon: const Icon(Icons.calendar_month_rounded, color: AppColors.primary),
+                    decoration: _inputDecoration('Data di nascita', 'gg/mm/aaaa'),
                     validator: (value) {
                       final raw = (value ?? '').trim();
                       if (raw.isEmpty) {

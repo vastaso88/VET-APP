@@ -113,12 +113,15 @@ class _PetGalleryPageState extends State<PetGalleryPage> {
   void _reload() => setState(() => _photosFuture = _load());
 
   Future<void> _importFromGallery() async {
-    final files = await _picker.pickMultipleMedia(imageQuality: 100);
+    // No imageQuality: with it the picker re-encodes the photo on the phone
+    // (and may lose its EXIF shooting time, which the walk caption and the walk
+    // map pin depend on); compressPetPhoto re-encodes once, after the time is read.
+    final files = await _picker.pickMultipleMedia();
     await _import(files);
   }
 
   Future<void> _takePhoto() async {
-    final file = await _picker.pickImage(source: ImageSource.camera, imageQuality: 100);
+    final file = await _picker.pickImage(source: ImageSource.camera);
     if (file != null) await _saveCopyToDeviceGallery(file, isVideo: false);
     // The camera returns right after the shot: that moment is when it was taken.
     await _import([if (file != null) file], capturedAt: DateTime.now());
@@ -260,7 +263,7 @@ class _PetGalleryPageState extends State<PetGalleryPage> {
       MaterialPageRoute<void>(
         builder: (_) => photo.isVideo
             ? _VideoViewerPage(storagePath: photo.storagePath, caption: _walkCaption(photo))
-            : _PhotoViewerPage(storagePath: photo.storagePath, caption: _walkCaption(photo)),
+            : PetPhotoViewerPage(storagePath: photo.storagePath, caption: _walkCaption(photo)),
       ),
     );
   }
@@ -427,8 +430,8 @@ class _PetGalleryPageState extends State<PetGalleryPage> {
 
 /// Fullscreen photo. Rotation is allowed here only: the app is otherwise
 /// portrait-locked, so the lock is restored when the viewer closes.
-class _PhotoViewerPage extends StatefulWidget {
-  const _PhotoViewerPage({required this.storagePath, this.caption});
+class PetPhotoViewerPage extends StatefulWidget {
+  const PetPhotoViewerPage({required this.storagePath, this.caption, super.key});
 
   final String storagePath;
 
@@ -436,10 +439,10 @@ class _PhotoViewerPage extends StatefulWidget {
   final String? caption;
 
   @override
-  State<_PhotoViewerPage> createState() => _PhotoViewerPageState();
+  State<PetPhotoViewerPage> createState() => _PetPhotoViewerPageState();
 }
 
-class _PhotoViewerPageState extends State<_PhotoViewerPage> {
+class _PetPhotoViewerPageState extends State<PetPhotoViewerPage> {
   late final Future<Uint8List?> _bytes = PetPhotoRepository().loadBytes(widget.storagePath);
 
   @override

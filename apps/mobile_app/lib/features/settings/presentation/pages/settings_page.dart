@@ -70,7 +70,7 @@ class _SettingsPageState extends State<SettingsPage> {
     unawaited(_loadNotificationPermission());
     unawaited(BillingDemoStore.instance.syncFromBackend());
     if (HomeShellNavigation.consumeLocationScroll()) {
-      WidgetsBinding.instance.addPostFrameCallback((_) => _scrollToLocation());
+      _openSection = 'localita';
     }
     HomeShellNavigation.locationScrollRequests.addListener(_scrollToLocation);
   }
@@ -81,7 +81,10 @@ class _SettingsPageState extends State<SettingsPage> {
     super.dispose();
   }
 
-  final _locationKey = GlobalKey<CollapsibleSectionState>();
+  /// Accordion: at most one section is open, and all start closed.
+  String? _openSection;
+
+  void _toggleSection(String id) => setState(() => _openSection = _openSection == id ? null : id);
 
   void _openFullPrivacyPolicy() {
     Navigator.of(context).push(
@@ -95,17 +98,12 @@ class _SettingsPageState extends State<SettingsPage> {
     );
   }
 
+  /// From "Scegli un indirizzo": open Località; the section scrolls itself
+  /// into view when it expands.
   void _scrollToLocation() {
     if (!mounted) return;
     HomeShellNavigation.consumeLocationScroll();
-    // Open the section first (it may be collapsed), then scroll once laid out.
-    _locationKey.currentState?.expand();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      final context = _locationKey.currentContext;
-      if (mounted && context != null) {
-        Scrollable.ensureVisible(context, duration: const Duration(milliseconds: 300));
-      }
-    });
+    setState(() => _openSection = 'localita');
   }
 
   Future<void> _loadNotificationPermission() async {
@@ -480,6 +478,8 @@ class _SettingsPageState extends State<SettingsPage> {
                 ),
                 CollapsibleSection(
                   sectionId: 'abbonamento',
+                  expanded: _openSection == 'abbonamento',
+                  onToggle: _toggleSection,
                   title: 'Abbonamento',
                   children: [
                     ListenableBuilder(
@@ -498,6 +498,8 @@ class _SettingsPageState extends State<SettingsPage> {
                 ),
                 CollapsibleSection(
                   sectionId: 'preferenze',
+                  expanded: _openSection == 'preferenze',
+                  onToggle: _toggleSection,
                   title: 'Preferenze',
                   children: [
                     _ToggleRow(
@@ -517,6 +519,8 @@ class _SettingsPageState extends State<SettingsPage> {
                 ),
                 CollapsibleSection(
                   sectionId: 'layout',
+                  expanded: _openSection == 'layout',
+                  onToggle: _toggleSection,
                   title: 'Layout',
                   children: [
                     _StepperRow(
@@ -557,6 +561,8 @@ class _SettingsPageState extends State<SettingsPage> {
                 ),
                 CollapsibleSection(
                   sectionId: 'foto_e_video',
+                  expanded: _openSection == 'foto_e_video',
+                  onToggle: _toggleSection,
                   title: 'Foto e video',
                   children: [
                     _ToggleRow(
@@ -572,8 +578,9 @@ class _SettingsPageState extends State<SettingsPage> {
                   ],
                 ),
                 CollapsibleSection(
-                  key: _locationKey,
                   sectionId: 'localita',
+                  expanded: _openSection == 'localita',
+                  onToggle: _toggleSection,
                   title: 'Località',
                   children: [
                     Text(
@@ -625,6 +632,8 @@ class _SettingsPageState extends State<SettingsPage> {
                 ),
                 CollapsibleSection(
                   sectionId: 'permessi',
+                  expanded: _openSection == 'permessi',
+                  onToggle: _toggleSection,
                   title: 'Permessi e consensi',
                   children: [
                     ..._buildConsentRows(),
@@ -639,6 +648,8 @@ class _SettingsPageState extends State<SettingsPage> {
                 ),
                 CollapsibleSection(
                   sectionId: 'assistenza',
+                  expanded: _openSection == 'assistenza',
+                  onToggle: _toggleSection,
                   title: 'Assistenza',
                   children: [
                     _Row(
@@ -672,6 +683,8 @@ class _SettingsPageState extends State<SettingsPage> {
                 ),
                 CollapsibleSection(
                   sectionId: 'info',
+                  expanded: _openSection == 'info',
+                  onToggle: _toggleSection,
                   title: 'Info',
                   children: [
                     _Row(
@@ -691,6 +704,8 @@ class _SettingsPageState extends State<SettingsPage> {
                 ),
                 CollapsibleSection(
                   sectionId: 'account',
+                  expanded: _openSection == 'account',
+                  onToggle: _toggleSection,
                   title: 'Account',
                   children: [
                     _Row(
@@ -917,24 +932,21 @@ class _NotificationCategoryToggles extends StatelessWidget {
               iconColor: AppColors.success,
               title: 'Visite e vaccini',
               value: preferences.reminders,
-              onChanged: (value) =>
-                  unawaited(store.update(preferences.copyWith(reminders: value))),
+              onChanged: (value) => unawaited(store.update(preferences.copyWith(reminders: value))),
             ),
             _ToggleRow(
               icon: Icons.medication_outlined,
               iconColor: AppColors.info,
               title: 'Orari dei farmaci',
               value: preferences.medicines,
-              onChanged: (value) =>
-                  unawaited(store.update(preferences.copyWith(medicines: value))),
+              onChanged: (value) => unawaited(store.update(preferences.copyWith(medicines: value))),
             ),
             _ToggleRow(
               icon: Icons.cake_outlined,
               iconColor: AppColors.accent,
               title: 'Compleanni',
               value: preferences.birthdays,
-              onChanged: (value) =>
-                  unawaited(store.update(preferences.copyWith(birthdays: value))),
+              onChanged: (value) => unawaited(store.update(preferences.copyWith(birthdays: value))),
             ),
           ],
         );

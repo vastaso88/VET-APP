@@ -5,6 +5,7 @@ import 'package:flutter/services.dart';
 
 import '../../../../../design_system/responsive.dart';
 import '../../../../../shared/formatters/date_input_formatter.dart';
+import '../../../../../shared/widgets/typed_date_field.dart';
 import '../../../../../design_system/tokens/app_colors.dart';
 import '../../../../../design_system/tokens/app_radii.dart';
 import '../../../../../design_system/tokens/app_spacing.dart';
@@ -1268,7 +1269,7 @@ class _KindOption extends StatelessWidget {
 }
 
 /// A typed `gg/mm/aaaa` field: digits format themselves as the owner types
-/// (see [DateInputFormatter]), and the trailing calendar icon still opens the
+/// (see [TypedDateField]), and the trailing calendar icon still opens the
 /// native picker and fills the field for those who'd rather tap than type.
 class _DatePickerField extends StatelessWidget {
   const _DatePickerField({
@@ -1280,7 +1281,7 @@ class _DatePickerField extends StatelessWidget {
 
   final String label;
   final TextEditingController controller;
-  final VoidCallback onPick;
+  final FutureOr<void> Function() onPick;
   final FormFieldValidator<String>? validator;
 
   @override
@@ -1290,11 +1291,12 @@ class _DatePickerField extends StatelessWidget {
       children: [
         Text(label, style: AppTextStyles.caption),
         const SizedBox(height: AppSpacing.xs),
-        TextFormField(
+        TypedDateField(
           controller: controller,
-          keyboardType: TextInputType.number,
-          inputFormatters: const [DateInputFormatter()],
           validator: validator,
+          onPick: onPick,
+          pickIcon: const Icon(Icons.calendar_today_outlined,
+              size: 18, color: AppColors.primary),
           style: AppTextStyles.bodySmall.copyWith(color: AppColors.text),
           decoration: InputDecoration(
             hintText: 'gg/mm/aaaa',
@@ -1309,11 +1311,6 @@ class _DatePickerField extends StatelessWidget {
             enabledBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(AppRadii.medium),
               borderSide: const BorderSide(color: AppColors.border),
-            ),
-            suffixIcon: IconButton(
-              onPressed: onPick,
-              icon: const Icon(Icons.calendar_today_outlined,
-                  size: 18, color: AppColors.primary),
             ),
           ),
         ),
