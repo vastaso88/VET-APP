@@ -3,6 +3,7 @@ import 'dart:convert';
 
 import 'package:http/http.dart' as http;
 
+import '../../../l10n/l10n.dart';
 import '../../../shared/auth/current_user.dart';
 import '../../../shared/config/app_runtime_config_loader.dart';
 import '../../../shared/errors/app_network_error.dart';
@@ -49,7 +50,7 @@ class HttpSubscriptionRemoteDataSource implements SubscriptionRemoteDataSource {
         return Result.failure(
           AppNetworkError(
             code: 'subscription_status_http_${response.statusCode}',
-            message: 'Non sono riuscito a verificare il tuo abbonamento. Riprova.',
+            message: appL10n.billingErrorStatus,
           ),
         );
       }
@@ -58,16 +59,16 @@ class HttpSubscriptionRemoteDataSource implements SubscriptionRemoteDataSource {
       return Result.success(SubscriptionStatus.fromJson(json));
     } on TimeoutException {
       return Result.failure<SubscriptionStatus>(
-        const AppNetworkError(
+        AppNetworkError(
           code: 'subscription_status_timeout',
-          message: 'La richiesta ha impiegato troppo tempo. Riprova.',
+          message: appL10n.authNetworkTimeout,
         ),
       );
     } catch (e) {
       return Result.failure<SubscriptionStatus>(
         AppNetworkError(
           code: 'subscription_status_unexpected_error',
-          message: "Qualcosa e' andato storto. Riprova.",
+          message: appL10n.authNetworkUnexpected,
           details: e,
         ),
       );
@@ -89,7 +90,7 @@ class HttpSubscriptionRemoteDataSource implements SubscriptionRemoteDataSource {
         return Result.failure(
           AppNetworkError(
             code: 'subscription_select_plan_http_${response.statusCode}',
-            message: 'Non sono riuscito a salvare il piano scelto. Riprova.',
+            message: appL10n.billingErrorSelectPlan,
           ),
         );
       }
@@ -97,16 +98,16 @@ class HttpSubscriptionRemoteDataSource implements SubscriptionRemoteDataSource {
       return fetchStatus();
     } on TimeoutException {
       return Result.failure<SubscriptionStatus>(
-        const AppNetworkError(
+        AppNetworkError(
           code: 'subscription_select_plan_timeout',
-          message: 'La richiesta ha impiegato troppo tempo. Riprova.',
+          message: appL10n.authNetworkTimeout,
         ),
       );
     } catch (e) {
       return Result.failure<SubscriptionStatus>(
         AppNetworkError(
           code: 'subscription_select_plan_unexpected_error',
-          message: "Qualcosa e' andato storto. Riprova.",
+          message: appL10n.authNetworkUnexpected,
           details: e,
         ),
       );

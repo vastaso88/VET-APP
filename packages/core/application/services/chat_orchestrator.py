@@ -32,6 +32,7 @@ from packages.core.application.services.natural_answer_prompt import (
 from packages.core.application.services.response_generator import ResponseGenerator
 from packages.core.application.services.safety_gate import SafetyGate
 from packages.core.application.services.situation_model_builder import SituationModelBuilder
+from packages.core.domain.common.language import response_language_instruction
 from packages.core.domain.conversation.models import ChatMessage
 from packages.core.domain.conversation.referral_style import strip_ritual_referral
 from packages.core.domain.conversation.request_kind import (
@@ -329,6 +330,12 @@ MULTI_PET_INTERACTION_MARKERS: tuple[str, ...] = (
 )
 
 
+def _language_suffix(language: str) -> str:
+    """The reply-language line to append to a system prompt ("" for Italian)."""
+    line = response_language_instruction(language)
+    return f"\n\n{line}" if line else ""
+
+
 class ChatOrchestratorInput(BaseModel):
     user_message: str
     species: str
@@ -379,6 +386,8 @@ class ChatOrchestratorInput(BaseModel):
     awaiting_medical_record_consent: bool = False
     awaiting_safety_clarification: bool = False
     safety_clarification_category: str | None = None
+    # Language of the reply: "it" leaves every prompt as it always was.
+    language: str = "it"
 
 
 class ChatOrchestratorResult(BaseModel):
@@ -1324,7 +1333,8 @@ class ChatOrchestrator:
                         "never assume or default to a different species (e.g. never call it a "
                         "dog/cane unless Species really is a dog), even if the pet's name is "
                         "unusual or describes an object or place rather than a typical name."
-                    ),
+                    )
+                    + _language_suffix(data.language),
                     user_prompt=(
                         f"{self._pet_context_block(data)}\nUser request: {anonymized_message}"
                     ),
@@ -1611,6 +1621,7 @@ class ChatOrchestrator:
             may_ask=may_ask,
             has_reference_material=bool(evidence_block),
             species_facts=species_facts(data.species, data.breed, data.notes),
+            language=data.language,
         )
         user_prompt = (
             f"{self._pet_context_block(data)}\n"

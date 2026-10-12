@@ -5,6 +5,7 @@ import '../../../design_system/tokens/app_colors.dart';
 import '../../../design_system/tokens/app_radii.dart';
 import '../../../design_system/tokens/app_spacing.dart';
 import '../../../design_system/tokens/app_text_styles.dart';
+import '../../../l10n/l10n.dart';
 import '../../location/domain/coordinates.dart';
 import '../../location/presentation/distance_label.dart';
 import '../domain/radar_community.dart';
@@ -49,37 +50,38 @@ Future<void> showRadarPlaceSheet(
 /// One stated fact about a place, ready to show.
 typedef RadarDetail = ({IconData icon, String label});
 
-/// What OpenStreetMap says about a place (mostly dog parks), in Italian.
-/// Only stated values with a known meaning are listed: nothing is implied
-/// from a missing or unrecognized tag.
+/// What OpenStreetMap says about a place (mostly dog parks), in the app
+/// language. Only stated values with a known meaning are listed: nothing is
+/// implied from a missing or unrecognized tag.
 List<RadarDetail> radarPlaceDetails(Map<String, String> details) {
-  const barriers = {
-    'fence': 'Recintata',
-    'wall': 'Recintata da un muro',
-    'hedge': 'Delimitata da una siepe',
+  final l10n = appL10n;
+  final barriers = {
+    'fence': l10n.placesDetailBarrierFence,
+    'wall': l10n.placesDetailBarrierWall,
+    'hedge': l10n.placesDetailBarrierHedge,
   };
-  const surfaces = {
-    'grass': 'Fondo in erba',
-    'ground': 'Fondo in terra',
-    'earth': 'Fondo in terra',
-    'dirt': 'Fondo in terra',
-    'sand': 'Fondo in sabbia',
-    'gravel': 'Fondo in ghiaia',
-    'fine_gravel': 'Fondo in ghiaia',
-    'asphalt': 'Fondo asfaltato',
-    'paved': 'Fondo pavimentato',
+  final surfaces = {
+    'grass': l10n.placesDetailSurfaceGrass,
+    'ground': l10n.placesDetailSurfaceGround,
+    'earth': l10n.placesDetailSurfaceGround,
+    'dirt': l10n.placesDetailSurfaceGround,
+    'sand': l10n.placesDetailSurfaceSand,
+    'gravel': l10n.placesDetailSurfaceGravel,
+    'fine_gravel': l10n.placesDetailSurfaceGravel,
+    'asphalt': l10n.placesDetailSurfaceAsphalt,
+    'paved': l10n.placesDetailSurfacePaved,
   };
-  const accesses = {
-    'yes': 'Accesso libero',
-    'public': 'Accesso libero',
-    'permissive': 'Accesso consentito',
-    'customers': 'Solo per i clienti',
-    'private': 'Area privata',
+  final accesses = {
+    'yes': l10n.placesDetailAccessFree,
+    'public': l10n.placesDetailAccessFree,
+    'permissive': l10n.placesDetailAccessPermissive,
+    'customers': l10n.placesDetailAccessCustomers,
+    'private': l10n.placesDetailAccessPrivate,
   };
-  const wheelchairs = {
-    'yes': 'Accessibile in sedia a rotelle',
-    'limited': 'Accessibilità parziale in sedia a rotelle',
-    'no': 'Non accessibile in sedia a rotelle',
+  final wheelchairs = {
+    'yes': l10n.placesDetailWheelchairYes,
+    'limited': l10n.placesDetailWheelchairLimited,
+    'no': l10n.placesDetailWheelchairNo,
   };
 
   final result = <RadarDetail>[];
@@ -92,17 +94,23 @@ List<RadarDetail> radarPlaceDetails(Map<String, String> details) {
   add(Icons.fence, barriers[details['barrier']]);
   add(
     Icons.water_drop_outlined,
-    const {'yes': 'Acqua potabile', 'no': 'Senza acqua potabile'}[details['drinking_water']],
+    {
+      'yes': l10n.placesDetailDrinkingWaterYes,
+      'no': l10n.placesDetailDrinkingWaterNo,
+    }[details['drinking_water']],
   );
-  add(Icons.lightbulb_outline, const {'yes': 'Illuminata', 'no': 'Non illuminata'}[details['lit']]);
+  add(
+    Icons.lightbulb_outline,
+    {'yes': l10n.placesDetailLitYes, 'no': l10n.placesDetailLitNo}[details['lit']],
+  );
   add(Icons.grass, surfaces[details['surface']]);
   add(Icons.lock_open_outlined, accesses[details['access']]);
-  add(Icons.pets, const {'unleashed': 'Cani liberi senza guinzaglio'}[details['dog']]);
+  add(Icons.pets, {'unleashed': l10n.placesDetailDogUnleashed}[details['dog']]);
   add(
     Icons.favorite_outline,
-    const {
-      'yes': 'Adozioni possibili',
-      'no': 'Non dà in adozione'
+    {
+      'yes': l10n.placesDetailAdoptionYes,
+      'no': l10n.placesDetailAdoptionNo,
     }[details['animal_shelter:adoption']],
   );
   add(Icons.accessible, wheelchairs[details['wheelchair']]);
@@ -114,28 +122,32 @@ List<RadarDetail> radarPlaceDetails(Map<String, String> details) {
 /// grass someone reported may be private ground.
 String pendingPlaceLabel(RadarPlace place) {
   final progress = place.community?.progressLabel ?? '';
+  final l10n = appL10n;
   return place.type == RadarPlaceType.dogPark
-      ? 'Segnalata dagli utenti, verifica che sia un’area pubblica ($progress)'
-      : 'Segnalato dagli utenti · in attesa di conferma ($progress)';
+      ? l10n.placesPendingDogPark(progress)
+      : l10n.placesPendingPlace(progress);
 }
 
 /// Opens an email to the support contact about [place], with subject and
 /// identifier already filled in: the fastest way to get a reported area
 /// that is not public taken down.
-Future<void> writeAboutPlace(RadarPlace place, String supportContactEmail) => launchUrl(
-      Uri(
-        scheme: 'mailto',
-        path: supportContactEmail,
-        query: _mailQuery({
-          'subject': 'Area cani da rimuovere dal radar (${place.sourceExternalId})',
-          'body': 'Questa area segnalata dagli utenti non è un’area cani pubblica.\n\n'
-              'Nome: ${place.name}\n'
-              'Posizione: ${place.location.latitude}, ${place.location.longitude}\n'
-              'Identificativo: ${place.sourceExternalId}\n\n'
-              'Motivo: ',
-        }),
-      ),
-    );
+Future<void> writeAboutPlace(RadarPlace place, String supportContactEmail) {
+  final l10n = appL10n;
+  return launchUrl(
+    Uri(
+      scheme: 'mailto',
+      path: supportContactEmail,
+      query: _mailQuery({
+        'subject': l10n.placesMailRemoveSubject(place.sourceExternalId),
+        'body': l10n.placesMailRemoveBody(
+          place.name,
+          '${place.location.latitude}, ${place.location.longitude}',
+          place.sourceExternalId,
+        ),
+      }),
+    ),
+  );
+}
 
 String _mailQuery(Map<String, String> fields) =>
     fields.entries.map((entry) => '${entry.key}=${Uri.encodeComponent(entry.value)}').join('&');
@@ -193,16 +205,16 @@ class _RadarPlaceSheetState extends State<_RadarPlaceSheet> {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (dialogContext) => AlertDialog(
-        title: const Text('Ritirare la segnalazione?'),
-        content: const Text('La segnalazione viene cancellata e non sarà più visibile a nessuno.'),
+        title: Text(dialogContext.l10n.placesWithdrawTitle),
+        content: Text(dialogContext.l10n.placesWithdrawBody),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(dialogContext).pop(false),
-            child: const Text('Annulla'),
+            child: Text(dialogContext.l10n.commonCancel),
           ),
           FilledButton(
             onPressed: () => Navigator.of(dialogContext).pop(true),
-            child: const Text('Ritira'),
+            child: Text(dialogContext.l10n.placesWithdrawConfirm),
           ),
         ],
       ),
@@ -215,7 +227,7 @@ class _RadarPlaceSheetState extends State<_RadarPlaceSheet> {
       (contributions) => contributions.run<void>(
         context,
         () => contributions.repository.withdraw(report.reportId),
-        successMessage: (_) => 'Segnalazione ritirata.',
+        successMessage: (_) => context.l10n.placesWithdrawnSnack,
       ),
     );
   }
@@ -229,7 +241,9 @@ class _RadarPlaceSheetState extends State<_RadarPlaceSheet> {
       (contributions) => contributions.run<void>(
         context,
         () => contributions.repository.vote(report.reportId, confirm: confirm),
-        successMessage: (_) => confirm ? 'Grazie, conferma registrata.' : 'Grazie, registrato.',
+        successMessage: (_) => confirm
+            ? context.l10n.placesVoteConfirmedSnack
+            : context.l10n.placesVoteDeniedSnack,
       ),
     );
   }
@@ -246,7 +260,7 @@ class _RadarPlaceSheetState extends State<_RadarPlaceSheet> {
         final done = await contributions.run<void>(
           context,
           () => contributions.repository.rate(_place, stars),
-          successMessage: (_) => 'Voto registrato: $stars su 5.',
+          successMessage: (_) => context.l10n.placesRatedSnack(stars),
           reload: false,
         );
         if (done) {
@@ -270,14 +284,14 @@ class _RadarPlaceSheetState extends State<_RadarPlaceSheet> {
     }
     if (problems.isEmpty) {
       ScaffoldMessenger.maybeOf(context)?.showSnackBar(
-        const SnackBar(content: Text('Le segnalazioni non sono attive in questo momento.')),
+        SnackBar(content: Text(context.l10n.placesReportsInactiveSnack)),
       );
       return;
     }
     final problem = await showDialog<RadarProblem>(
       context: context,
       builder: (dialogContext) => SimpleDialog(
-        title: const Text('Cosa non va in questo luogo?'),
+        title: Text(dialogContext.l10n.placesReportProblemTitle),
         children: problems
             .map(
               (problem) => SimpleDialogOption(
@@ -296,8 +310,8 @@ class _RadarPlaceSheetState extends State<_RadarPlaceSheet> {
         context,
         () => contributions.repository.reportProblem(_place, problem),
         successMessage: (receipt) => receipt.countedAsConfirmation
-            ? 'Era già stato segnalato: la tua segnalazione vale come conferma.'
-            : 'Segnalazione inviata. Sarà applicata quando altri utenti la confermano.',
+            ? context.l10n.placesReportAlreadyKnown
+            : context.l10n.placesReportSent,
       ),
     );
   }
@@ -347,7 +361,7 @@ class _RadarPlaceSheetState extends State<_RadarPlaceSheet> {
               const SizedBox(height: AppSpacing.md),
               _ReportBanner(
                 label: pendingPlaceLabel(place),
-                question: 'Questo luogo esiste davvero qui?',
+                question: context.l10n.placesSheetPendingQuestion,
                 report: community,
                 busy: _busy,
                 savingVote: _savingVote,
@@ -366,14 +380,14 @@ class _RadarPlaceSheetState extends State<_RadarPlaceSheet> {
                   style: TextButton.styleFrom(padding: EdgeInsets.zero),
                   onPressed: () => writeAboutPlace(place, widget.supportContactEmail!),
                   icon: const Icon(Icons.mail_outline, size: 18),
-                  label: const Text('Non è un’area pubblica? Scrivici'),
+                  label: Text(context.l10n.placesSheetNotPublicWrite),
                 ),
               ),
             if (pendingClosure != null) ...[
               const SizedBox(height: AppSpacing.md),
               _ReportBanner(
-                label: 'Segnalato come chiuso (${pendingClosure.progressLabel})',
-                question: 'Ha chiuso davvero?',
+                label: context.l10n.placesSheetClosedReported(pendingClosure.progressLabel),
+                question: context.l10n.placesSheetClosedQuestion,
                 report: pendingClosure,
                 busy: _busy,
                 savingVote: _savingVote,
@@ -389,7 +403,7 @@ class _RadarPlaceSheetState extends State<_RadarPlaceSheet> {
             if (place.openingHours != null) ...[
               const SizedBox(height: AppSpacing.sm),
               Text(
-                'Orari indicati: ${formatOpeningHours(place.openingHours!)}',
+                context.l10n.placesSheetOpeningHours(formatOpeningHours(place.openingHours!)),
                 style: AppTextStyles.bodySmall,
               ),
             ],
@@ -422,38 +436,36 @@ class _RadarPlaceSheetState extends State<_RadarPlaceSheet> {
                   FilledButton.icon(
                     onPressed: () => callRadarPlace(place),
                     icon: const Icon(Icons.call),
-                    label: const Text('Chiama'),
+                    label: Text(context.l10n.placesActionCall),
                   ),
                 OutlinedButton.icon(
                   onPressed: () => openDirections(place.location),
                   icon: const Icon(Icons.directions_outlined),
-                  label: const Text('Indicazioni'),
+                  label: Text(context.l10n.placesActionDirections),
                 ),
                 if (place.websiteUrl != null)
                   OutlinedButton.icon(
                     onPressed: () =>
                         launchUrl(Uri.parse(place.websiteUrl!), webOnlyWindowName: '_blank'),
                     icon: const Icon(Icons.public),
-                    label: const Text('Sito web'),
+                    label: Text(context.l10n.placesActionWebsite),
                   ),
               ],
             ),
             const SizedBox(height: AppSpacing.md),
             Text(
               community != null
-                  ? 'Luogo segnalato dagli utenti: non è una garanzia, verifica prima di andarci.'
+                  ? context.l10n.placesDisclaimerCommunity
                   : isClinic
-                      ? 'In caso di urgenza telefona prima di partire: orari e recapiti arrivano '
-                          'da archivi aperti e non sono verificati da VetApp.'
-                      : 'Orari e recapiti arrivano da archivi aperti e non sono verificati '
-                          'da VetApp.',
+                      ? context.l10n.placesDisclaimerClinic
+                      : context.l10n.placesDisclaimerGeneric,
               style: AppTextStyles.caption,
             ),
             const SizedBox(height: AppSpacing.xs),
             Text(
               [
-                'Fonte: ${source?.attribution ?? place.sourceName}',
-                if (confirmedBy.isNotEmpty) 'Presente anche in: $confirmedBy',
+                context.l10n.placesSourceLine(source?.attribution ?? place.sourceName),
+                if (confirmedBy.isNotEmpty) context.l10n.placesAlsoIn(confirmedBy),
               ].join('. '),
               style: AppTextStyles.caption,
             ),
@@ -466,7 +478,7 @@ class _RadarPlaceSheetState extends State<_RadarPlaceSheet> {
                   style: TextButton.styleFrom(padding: EdgeInsets.zero),
                   onPressed: _busy ? null : _reportProblem,
                   icon: const Icon(Icons.flag_outlined, size: 18),
-                  label: const Text('Segnala un problema'),
+                  label: Text(context.l10n.placesReportProblemAction),
                 ),
               ),
           ],
@@ -506,15 +518,18 @@ class _ReportBanner extends StatelessWidget {
     final onVote = this.onVote;
     final onWithdraw = this.onWithdraw;
     final expiryLabel = report.expiryLabel;
+    final l10n = context.l10n;
     final viewerNote = withdrawing
-        ? 'Ritiro la segnalazione…'
+        ? l10n.placesBannerWithdrawing
         : report.viewerIsReporter
-            ? 'L’hai segnalato tu: servono le conferme di altri utenti.'
+            ? l10n.placesBannerYouReported
             : switch (savingVote ?? report.viewerVote) {
-                1 =>
-                  'Hai confermato.${savingVote != null ? ' Salvataggio…' : ' Puoi cambiare idea.'}',
-                -1 => 'Hai indicato che non è così.'
-                    '${savingVote != null ? ' Salvataggio…' : ' Puoi cambiare idea.'}',
+                1 => savingVote != null
+                    ? l10n.placesBannerConfirmedSaving
+                    : l10n.placesBannerConfirmedChange,
+                -1 => savingVote != null
+                    ? l10n.placesBannerDeniedSaving
+                    : l10n.placesBannerDeniedChange,
                 _ => question,
               };
     return Container(
@@ -554,7 +569,7 @@ class _ReportBanner extends StatelessWidget {
             OutlinedButton.icon(
               onPressed: busy ? null : () => onWithdraw(report),
               icon: const Icon(Icons.undo, size: 18),
-              label: const Text('Ritira la mia segnalazione'),
+              label: Text(l10n.placesBannerWithdrawButton),
             ),
           ],
           if (onVote != null && !report.viewerIsReporter) ...[
@@ -564,11 +579,11 @@ class _ReportBanner extends StatelessWidget {
               children: [
                 FilledButton(
                   onPressed: busy ? null : () => onVote(report, confirm: true),
-                  child: const Text('Confermo'),
+                  child: Text(l10n.placesBannerConfirm),
                 ),
                 OutlinedButton(
                   onPressed: busy ? null : () => onVote(report, confirm: false),
-                  child: const Text('Non è così'),
+                  child: Text(l10n.placesBannerDeny),
                 ),
               ],
             ),
@@ -605,7 +620,7 @@ class _RatingRow extends StatelessWidget {
           children: [
             for (var star = 1; star <= 5; star++)
               IconButton(
-                tooltip: 'Dai $star ${star == 1 ? 'stella' : 'stelle'}',
+                tooltip: context.l10n.placesRateStarTooltip(star),
                 visualDensity: VisualDensity.compact,
                 onPressed: onRate == null ? null : () => onRate!(star),
                 icon: Icon(
@@ -617,10 +632,10 @@ class _RatingRow extends StatelessWidget {
         ),
         Text(
           saving
-              ? 'Il tuo voto: $viewerStars su 5. Salvataggio…'
+              ? context.l10n.placesRatingSaving(viewerStars)
               : viewerStars > 0
-                  ? 'Il tuo voto: $viewerStars su 5. Tocca una stella per cambiarlo.'
-                  : 'Com’è quest’area cani? Tocca una stella per dare il tuo voto.',
+                  ? context.l10n.placesRatingYours(viewerStars)
+                  : context.l10n.placesRatingPrompt,
           style: AppTextStyles.bodySmall,
         ),
       ],

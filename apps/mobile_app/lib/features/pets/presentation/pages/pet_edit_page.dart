@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../../../design_system/tokens/app_colors.dart';
 import '../../../../design_system/tokens/app_radii.dart';
 import '../../../../design_system/tokens/app_spacing.dart';
+import '../../../../l10n/l10n.dart';
 import '../../data/pet_demo_store.dart';
 import '../../data/pet_photo_repository.dart';
 import '../../domain/pet_format.dart';
@@ -17,17 +18,17 @@ class PetEditPage extends StatelessWidget {
     required this.pet,
     super.key,
     this.state = PetsScreenStatus.success,
-    this.errorMessage = 'Non riesco ad aprire questo profilo pet per la modifica.',
+    this.errorMessage,
   });
 
   final PetProfile pet;
   final PetsScreenStatus state;
-  final String errorMessage;
+  final String? errorMessage;
 
   @override
   Widget build(BuildContext context) {
     return PetsScaffold(
-      title: 'Modifica ${pet.name}',
+      title: context.l10n.petsEditTitle(pet.name),
       onBack: () => Navigator.of(context).maybePop(),
       badge: PetAvatar(
         label: pet.avatarEmoji,
@@ -44,16 +45,16 @@ class PetEditPage extends StatelessWidget {
             foregroundColor: AppColors.primaryStrong,
             textStyle: const TextStyle(fontWeight: FontWeight.w700),
           ),
-          child: const Text('Chiudi'),
+          child: Text(context.l10n.commonClose),
         ),
       ],
       body: switch (state) {
         PetsScreenStatus.loading =>
-          const PetsLoadingView(label: 'Carico il form di modifica...'),
+          PetsLoadingView(label: context.l10n.petsEditLoading),
         PetsScreenStatus.error => PetsErrorView(
-            title: 'Modifica non disponibile',
-            subtitle: errorMessage,
-            actionLabel: 'Chiudi',
+            title: context.l10n.petsEditErrorTitle,
+            subtitle: errorMessage ?? context.l10n.petsEditErrorDefault,
+            actionLabel: context.l10n.commonClose,
             onRetry: () => Navigator.of(context).maybePop(),
           ),
         PetsScreenStatus.empty => _EditForm(pet: pet),
@@ -71,9 +72,9 @@ class _EditForm extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return PetProfileForm(
-      title: 'Bozza profilo',
+      title: context.l10n.petsEditFormTitle,
       initialPet: pet,
-      submitLabel: 'Salva modifiche',
+      submitLabel: context.l10n.petsEditSubmit,
       footerActions: _PetLifecycleActions(pet: pet),
       onSubmit: (draft) async {
         final raw = draft.photoBytes;
@@ -107,11 +108,7 @@ class _EditForm extends StatelessWidget {
         if (!context.mounted) return;
         if (PetDemoStore.instance.isUnsynced(updated.id)) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text(
-                'Modifiche salvate sul telefono ma non sul server. Apri il profilo e tocca Riprova.',
-              ),
-            ),
+            SnackBar(content: Text(context.l10n.petsEditUnsyncedSnack)),
           );
         }
         Navigator.of(context).pop(updated);
@@ -134,14 +131,14 @@ class _PetLifecycleActions extends StatelessWidget {
       builder: (dialogContext) => AlertDialog(
         backgroundColor: AppColors.surface,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadii.large)),
-        title: const Text('Rimuovere questo profilo?'),
-        content: Text('Il profilo di "${pet.name}" verrà eliminato definitivamente, insieme ai suoi dati.'),
+        title: Text(context.l10n.petsEditDeleteTitle),
+        content: Text(context.l10n.petsEditDeleteMessage(pet.name)),
         actions: [
-          TextButton(onPressed: () => Navigator.of(dialogContext).pop(false), child: const Text('Annulla')),
+          TextButton(onPressed: () => Navigator.of(dialogContext).pop(false), child: Text(context.l10n.commonCancel)),
           FilledButton(
             style: FilledButton.styleFrom(backgroundColor: AppColors.danger),
             onPressed: () => Navigator.of(dialogContext).pop(true),
-            child: const Text('Rimuovi'),
+            child: Text(context.l10n.petsEditDeleteConfirm),
           ),
         ],
       ),
@@ -167,16 +164,13 @@ class _PetLifecycleActions extends StatelessWidget {
       builder: (dialogContext) => AlertDialog(
         backgroundColor: AppColors.surface,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadii.large)),
-        title: const Text('Spostare nei ricordi?'),
-        content: Text(
-          '"${pet.name}" uscirà dalla lista Animali e sarà conservato nella sezione Ricordi, '
-          'con il suo profilo e le sue foto.',
-        ),
+        title: Text(context.l10n.petsEditMemorialTitle),
+        content: Text(context.l10n.petsEditMemorialMessage(pet.name)),
         actions: [
-          TextButton(onPressed: () => Navigator.of(dialogContext).pop(false), child: const Text('Annulla')),
+          TextButton(onPressed: () => Navigator.of(dialogContext).pop(false), child: Text(context.l10n.commonCancel)),
           FilledButton(
             onPressed: () => Navigator.of(dialogContext).pop(true),
-            child: const Text('Sposta'),
+            child: Text(context.l10n.petsEditMemorialConfirm),
           ),
         ],
       ),
@@ -202,7 +196,7 @@ class _PetLifecycleActions extends StatelessWidget {
           child: OutlinedButton.icon(
             onPressed: () => _moveToMemories(context),
             icon: const Icon(Icons.auto_awesome_outlined, size: 18),
-            label: const Text('Sposta nei ricordi'),
+            label: Text(context.l10n.petsEditMemorialAction),
           ),
         ),
         const SizedBox(height: AppSpacing.sm),
@@ -211,7 +205,7 @@ class _PetLifecycleActions extends StatelessWidget {
           child: TextButton.icon(
             onPressed: () => _delete(context),
             icon: const Icon(Icons.delete_outline_rounded, size: 18, color: AppColors.danger),
-            label: const Text('Rimuovi profilo', style: TextStyle(color: AppColors.danger)),
+            label: Text(context.l10n.petsEditDeleteAction, style: const TextStyle(color: AppColors.danger)),
           ),
         ),
       ],

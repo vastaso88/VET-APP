@@ -4,18 +4,19 @@ import '../../../../design_system/tokens/app_colors.dart';
 import '../../../../design_system/tokens/app_radii.dart';
 import '../../../../design_system/tokens/app_spacing.dart';
 import '../../../../design_system/tokens/app_text_styles.dart';
+import '../../../../l10n/l10n.dart';
 
 class PetsLoadingView extends StatelessWidget {
-  const PetsLoadingView({super.key, this.label = 'Caricamento pet...'});
+  const PetsLoadingView({super.key, this.label});
 
-  final String label;
+  final String? label;
 
   @override
   Widget build(BuildContext context) {
     return _StateSurface(
       icon: Icons.hourglass_top_rounded,
-      title: label,
-      subtitle: 'Attendi un istante mentre prepariamo la schermata.',
+      title: label ?? context.l10n.petsLoadingDefaultLabel,
+      subtitle: context.l10n.petsLoadingSubtitle,
       child: Column(
         children: List.generate(
           3,
@@ -41,13 +42,13 @@ class PetsErrorView extends StatelessWidget {
     required this.subtitle,
     super.key,
     this.onRetry,
-    this.actionLabel = 'Riprova',
+    this.actionLabel,
   });
 
   final String title;
   final String subtitle;
   final VoidCallback? onRetry;
-  final String actionLabel;
+  final String? actionLabel;
 
   @override
   Widget build(BuildContext context) {
@@ -60,7 +61,7 @@ class PetsErrorView extends StatelessWidget {
         width: double.infinity,
         child: OutlinedButton(
           onPressed: onRetry,
-          child: Text(actionLabel),
+          child: Text(actionLabel ?? context.l10n.commonRetry),
         ),
       ),
     );

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../../app/router/app_router.dart';
+import '../../../l10n/l10n.dart';
 import '../../../../shared/config/app_runtime_config_loader.dart';
 import '../../location/domain/coordinates.dart';
 import '../domain/wall_clock_time.dart';
@@ -17,7 +18,7 @@ void _notifySyncFailure(String action, Object error, {bool showMessage = true}) 
   debugPrint('DogWalksRepository: $action failed against Supabase: $error');
   if (!showMessage) return;
   AppRouter.scaffoldMessengerKey.currentState?.showSnackBar(
-    const SnackBar(content: Text('Sincronizzazione non riuscita: modifica salvata solo sul telefono')),
+    SnackBar(content: Text(appL10n.walksSyncFailed)),
   );
 }
 

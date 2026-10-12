@@ -29,6 +29,7 @@ import '../../../nearby_places/presentation/widgets/radar_chip.dart';
 import '../../../nearby_places/presentation/widgets/radar_map.dart';
 import '../../../settings/data/unit_settings_store.dart';
 import '../../../settings/domain/unit_conversion.dart';
+import '../../../../l10n/l10n.dart';
 
 /// "Vicino a me": the pet-related places around the user's Località in
 /// one page. Clinics, shops, dog parks and the other businesses come from
@@ -261,19 +262,16 @@ class _LocalEventsPageState extends State<LocalEventsPage> {
     return showDialog<_LocationChoice>(
       context: context,
       builder: (dialogContext) => AlertDialog(
-        title: const Text('Usare la tua posizione?'),
-        content: const Text(
-          'Per mostrarti cosa c’è vicino a te VetApp usa la posizione del telefono '
-          'solo mentre usi l’app. In alternativa puoi indicare un indirizzo.',
-        ),
+        title: Text(dialogContext.l10n.localEventsConsentTitle),
+        content: Text(dialogContext.l10n.localEventsConsentBody),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(dialogContext).pop(_LocationChoice.address),
-            child: const Text('Scegli un indirizzo'),
+            child: Text(dialogContext.l10n.localEventsConsentChooseAddress),
           ),
           FilledButton(
             onPressed: () => Navigator.of(dialogContext).pop(_LocationChoice.allow),
-            child: const Text('Consenti'),
+            child: Text(dialogContext.l10n.localEventsConsentAllow),
           ),
         ],
       ),
@@ -388,14 +386,14 @@ class _LocalEventsPageState extends State<LocalEventsPage> {
         backgroundColor: AppColors.background,
         elevation: 0,
         foregroundColor: AppColors.text,
-        title: Text('Vicino a me', style: AppTextStyles.title),
+        title: Text(context.l10n.localEventsTitle, style: AppTextStyles.title),
       ),
       body: SafeArea(
         child: FutureBuilder<_LocalEventsViewData?>(
           future: _dataFuture,
           builder: (context, snapshot) {
             if (snapshot.connectionState != ConnectionState.done) {
-              return const _PageLoader(label: 'Cerco la tua posizione…');
+              return _PageLoader(label: context.l10n.localEventsLocating);
             }
             final data = snapshot.data;
             if (data == null) {
@@ -411,10 +409,7 @@ class _LocalEventsPageState extends State<LocalEventsPage> {
                     ? radarSnapshot.data
                     : _lastRadarResults[_radiusKm];
                 if (radarResult == null && !_firstRadarAnswerReady) {
-                  return const _PageLoader(
-                    label: 'Cerco cosa c’è attorno a te. La prima volta in una zona '
-                        'può richiedere fino a un minuto.',
-                  );
+                  return _PageLoader(label: context.l10n.localEventsSearchingAround);
                 }
                 return _buildContent(data, radarResult);
               },
@@ -509,11 +504,11 @@ class _LocalEventsPageState extends State<LocalEventsPage> {
             child: OutlinedButton.icon(
               onPressed: () => _openReportMissing(data.referenceLocation),
               icon: const Icon(Icons.add_location_alt_outlined),
-              label: const Text('Segnala! Manca un luogo'),
+              label: Text(context.l10n.localEventsReportMissing),
             ),
           ),
           const SizedBox(height: AppSpacing.xxl),
-          const DashboardSectionHeader(title: 'Servizi nella zona'),
+          DashboardSectionHeader(title: context.l10n.localEventsServicesHeader),
           const SizedBox(height: AppSpacing.lg),
           _ServicesByCategory(
             entries: services,
@@ -529,11 +524,10 @@ class _LocalEventsPageState extends State<LocalEventsPage> {
             onOpen: _openEntry,
           ),
           const SizedBox(height: AppSpacing.xxl),
-          const DashboardSectionHeader(title: 'Cliniche e ambulatori'),
+          DashboardSectionHeader(title: context.l10n.localEventsClinicsHeader),
           const SizedBox(height: AppSpacing.sm),
           Text(
-            'In caso di urgenza telefona prima di partire: orari e recapiti arrivano da '
-            'archivi aperti e non sono verificati da VetApp.',
+            context.l10n.placesDisclaimerClinic,
             style: AppTextStyles.caption,
           ),
           const SizedBox(height: AppSpacing.md),
@@ -541,7 +535,7 @@ class _LocalEventsPageState extends State<LocalEventsPage> {
             entries: clinics,
             expanded: _showAllClinics,
             collapsedRows: _collapsedRows,
-            emptyLabel: 'Nessuna clinica trovata con questi filtri.',
+            emptyLabel: context.l10n.localEventsNoClinics,
             onToggleExpanded: () => setState(() => _showAllClinics = !_showAllClinics),
             rowBuilder: (entry) => _ClinicRow(entry: entry, onTap: () => _openEntry(entry)),
           ),
@@ -638,7 +632,11 @@ class _QuickCategoryBar extends StatelessWidget {
         children: [
           Padding(
             padding: const EdgeInsets.only(right: AppSpacing.sm),
-            child: RadarChip(label: 'Tutti', selected: selected.isEmpty, onTap: onClear),
+            child: RadarChip(
+              label: context.l10n.localEventsAll,
+              selected: selected.isEmpty,
+              onTap: onClear,
+            ),
           ),
           ...categories.map(
             (category) => Padding(
@@ -688,7 +686,7 @@ class _MapPreview extends StatelessWidget {
                 shape: const CircleBorder(),
                 elevation: 2,
                 child: IconButton(
-                  tooltip: 'Apri la mappa a tutto schermo',
+                  tooltip: context.l10n.localEventsMapFullscreen,
                   icon: const Icon(Icons.fullscreen),
                   onPressed: onExpand,
                 ),
@@ -735,11 +733,14 @@ class _NoLocationState extends StatelessWidget {
           children: [
             const Icon(Icons.location_off_outlined, size: 48, color: AppColors.mutedText),
             const SizedBox(height: AppSpacing.lg),
-            Text('Imposta una località', style: AppTextStyles.title, textAlign: TextAlign.center),
+            Text(
+              context.l10n.localEventsNoLocationTitle,
+              style: AppTextStyles.title,
+              textAlign: TextAlign.center,
+            ),
             const SizedBox(height: AppSpacing.sm),
             Text(
-              'Per mostrarti cosa c’è attorno a te serve la tua posizione. Consenti '
-              'l’accesso alla posizione oppure indica la tua residenza in Impostazioni → Località.',
+              context.l10n.localEventsNoLocationBody,
               style: AppTextStyles.bodySmall,
               textAlign: TextAlign.center,
             ),
@@ -747,9 +748,9 @@ class _NoLocationState extends StatelessWidget {
             FilledButton.icon(
               onPressed: onOpenSettings,
               icon: const Icon(Icons.settings_outlined),
-              label: const Text('Apri Impostazioni'),
+              label: Text(context.l10n.localEventsOpenSettings),
             ),
-            TextButton(onPressed: onRetry, child: const Text('Riprova')),
+            TextButton(onPressed: onRetry, child: Text(context.l10n.commonRetry)),
           ],
         ),
       ),
@@ -778,9 +779,10 @@ class _RadarStatus extends StatelessWidget {
           Expanded(
             child: Text(
               radiusKm > 10
-                  ? 'Cerco i servizi entro ${formatKilometersIn(radiusKm, UnitSettingsStore.instance.system)}. La prima volta in una zona '
-                      'può richiedere fino a un minuto.'
-                  : 'Cerco i servizi nella tua zona. La prima volta può richiedere qualche secondo.',
+                  ? context.l10n.localEventsSearchingRadius(
+                      formatKilometersIn(radiusKm, UnitSettingsStore.instance.system),
+                    )
+                  : context.l10n.localEventsSearchingNearby,
               style: AppTextStyles.bodySmall,
             ),
           ),
@@ -794,7 +796,7 @@ class _RadarStatus extends StatelessWidget {
           Expanded(child: Text(error.message, style: AppTextStyles.bodySmall)),
           // Retrying cannot configure a backend.
           if (error.code != RadarPlacesRepository.notConfiguredErrorCode)
-            TextButton(onPressed: onRetry, child: const Text('Riprova')),
+            TextButton(onPressed: onRetry, child: Text(context.l10n.commonRetry)),
         ],
       ),
       onSuccess: (value) {
@@ -803,10 +805,10 @@ class _RadarStatus extends StatelessWidget {
         }
         return Text(
           value.isStale
-              ? 'Non sono riuscito ad aggiornare i servizi di questa zona: vedi gli ultimi '
-                  'dati disponibili, che potrebbero non essere recenti.'
-              : 'Per ora i servizi sono disponibili entro ${formatKilometersIn(value.searchRadiusKm, UnitSettingsStore.instance.system)}: '
-                  'riprova tra poco per il raggio completo.',
+              ? context.l10n.localEventsStale
+              : context.l10n.localEventsPartialRadius(
+                  formatKilometersIn(value.searchRadiusKm, UnitSettingsStore.instance.system),
+                ),
           style: AppTextStyles.caption,
         );
       },
@@ -849,7 +851,11 @@ class _EntryList extends StatelessWidget {
         if (entries.length > collapsedRows)
           TextButton(
             onPressed: onToggleExpanded,
-            child: Text(expanded ? 'Mostra meno' : 'Mostra tutti (${entries.length})'),
+            child: Text(
+              expanded
+                  ? context.l10n.localEventsShowLess
+                  : context.l10n.localEventsShowAllCount(entries.length),
+            ),
           ),
       ],
     );
@@ -887,7 +893,7 @@ class _ServicesByCategory extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (entries.isEmpty && selected.isEmpty) {
-      return Text('Nessun servizio trovato con questi filtri.', style: AppTextStyles.bodySmall);
+      return Text(context.l10n.localEventsNoServices, style: AppTextStyles.bodySmall);
     }
     final groups = <Widget>[];
     for (final category in RadarCategory.values) {
@@ -903,7 +909,10 @@ class _ServicesByCategory extends StatelessWidget {
                   const SizedBox(width: AppSpacing.sm),
                   Expanded(
                     child: Text(
-                      '${category.label}: nessuno entro ${formatKilometersIn(radiusKm, UnitSettingsStore.instance.system)}',
+                      context.l10n.localEventsCategoryNone(
+                        category.label,
+                        formatKilometersIn(radiusKm, UnitSettingsStore.instance.system),
+                      ),
                       style: AppTextStyles.bodySmall,
                     ),
                   ),
@@ -926,7 +935,7 @@ class _ServicesByCategory extends StatelessWidget {
                   Icon(category.icon, color: category.color, size: 18),
                   const SizedBox(width: AppSpacing.sm),
                   Text(
-                    '${category.label} (${group.length})',
+                    context.l10n.localEventsCategoryCount(category.label, group.length),
                     style: AppTextStyles.body.copyWith(fontWeight: FontWeight.w700),
                   ),
                 ],
@@ -943,8 +952,11 @@ class _ServicesByCategory extends StatelessWidget {
                   onPressed: () => onToggleExpanded(category),
                   child: Text(
                     isExpanded
-                        ? 'Mostra meno'
-                        : 'Mostra tutti: ${category.label.toLowerCase()} (${group.length})',
+                        ? context.l10n.localEventsShowLess
+                        : context.l10n.localEventsShowAllCategory(
+                            category.label.toLowerCase(),
+                            group.length,
+                          ),
                   ),
                 ),
             ],
@@ -1008,12 +1020,12 @@ class _ClinicRow extends StatelessWidget {
         children: [
           if (place?.phone != null)
             IconButton(
-              tooltip: 'Chiama ${entry.title}',
+              tooltip: context.l10n.localEventsCallTooltip(entry.title),
               icon: Icon(Icons.call, color: RadarCategory.veterinary.color),
               onPressed: () => callRadarPlace(place!),
             ),
           IconButton(
-            tooltip: 'Indicazioni per ${entry.title}',
+            tooltip: context.l10n.localEventsDirectionsTooltip(entry.title),
             icon: const Icon(Icons.directions_outlined, color: AppColors.primary),
             onPressed: () => openDirections(entry.location),
           ),

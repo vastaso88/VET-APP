@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../../../design_system/tokens/app_colors.dart';
@@ -9,6 +8,8 @@ import '../../../../design_system/tokens/app_text_styles.dart';
 import '../../../../shared/widgets/pet_loader.dart';
 import '../../data/radar_places_repository.dart';
 import '../../domain/radar_data_source.dart';
+import '../../../../l10n/date_formats.dart';
+import '../../../../l10n/l10n.dart';
 
 /// "Fonti dati": where the radar's places come from and under which
 /// license. The list of sources is fixed (attribution must be shown even
@@ -36,7 +37,7 @@ class _DataSourcesPageState extends State<DataSourcesPage> {
         backgroundColor: AppColors.background,
         elevation: 0,
         foregroundColor: AppColors.text,
-        title: Text('Fonti dati', style: AppTextStyles.title),
+        title: Text(context.l10n.placesSourcesTitle, style: AppTextStyles.title),
       ),
       body: SafeArea(
         child: FutureBuilder<RadarSourcesInfo>(
@@ -52,8 +53,7 @@ class _DataSourcesPageState extends State<DataSourcesPage> {
               padding: const EdgeInsets.all(AppSpacing.xl),
               children: [
                 Text(
-                  'I luoghi del radar arrivano da archivi aperti, non da VetApp. Ogni scheda '
-                  'indica la sua fonte. Orari e recapiti possono non essere aggiornati.',
+                  context.l10n.placesSourcesIntro,
                   style: AppTextStyles.bodySmall,
                 ),
                 const SizedBox(height: AppSpacing.lg),
@@ -63,10 +63,8 @@ class _DataSourcesPageState extends State<DataSourcesPage> {
                 ],
                 Text(
                   contact == null
-                      ? 'Hai trovato un dato sbagliato? Usa "Segnala un problema" nella scheda '
-                          'del luogo.'
-                      : 'Hai trovato un dato sbagliato, o sei il titolare e vuoi che una scheda '
-                          'venga corretta o rimossa? Scrivi a $contact.',
+                      ? context.l10n.placesSourcesNoContact
+                      : context.l10n.placesSourcesContact(contact),
                   style: AppTextStyles.bodySmall,
                 ),
               ],
@@ -102,17 +100,19 @@ class _SourceCard extends StatelessWidget {
           Text(info.description, style: AppTextStyles.bodySmall),
           const SizedBox(height: AppSpacing.sm),
           Text(info.attribution, style: AppTextStyles.caption),
-          Text('Licenza: ${info.license}', style: AppTextStyles.caption),
+          Text(context.l10n.placesSourceLicense(info.license), style: AppTextStyles.caption),
           if (imported != null)
             Text(
-              'Versione ${imported.release}, importata il '
-              '${DateFormat('d MMMM yyyy', 'it_IT').format(imported.importedAt.toLocal())}',
+              context.l10n.placesSourceVersion(
+                imported.release,
+                formatAppDate(imported.importedAt.toLocal(), 'd MMMM yyyy'),
+              ),
               style: AppTextStyles.caption,
             ),
           TextButton(
             style: TextButton.styleFrom(padding: EdgeInsets.zero),
             onPressed: () => launchUrl(Uri.parse(info.url), webOnlyWindowName: '_blank'),
-            child: const Text('Licenza e condizioni'),
+            child: Text(context.l10n.placesSourceLicenseLink),
           ),
         ],
       ),

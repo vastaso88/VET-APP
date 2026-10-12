@@ -1,3 +1,5 @@
+import '../../../l10n/date_formats.dart';
+import '../../../l10n/l10n.dart';
 import 'unit_system.dart';
 
 /// Pure metric ⇄ imperial/USA conversion and formatting. Callers pass the
@@ -9,10 +11,9 @@ const _kgPerPound = 0.45359237;
 const _litersPerUsGallon = 3.785411784;
 const _cmPerInch = 2.54;
 
-/// The decimal separator of the app language. The one place to change when
-/// the app is translated (English: '.'); every number shown with units goes
-/// through [formatDecimal].
-String decimalSeparator = ',';
+/// The decimal separator of the app language ("," Italian / "." English); every
+/// number shown with units goes through [formatDecimal].
+String get decimalSeparator => appDecimalSeparator();
 
 /// A number with up to [digits] decimals (trailing zeros dropped unless
 /// [trimZeros] is false), written with
@@ -118,11 +119,11 @@ int displayToLiters(double value, UnitSystem system) =>
 
 /// "112 litri" / "30 US gal".
 String formatVolumeIn(int liters, UnitSystem system) {
-  if (!system.usesUsGallons) return '$liters litri';
+  if (!system.usesUsGallons) return appL10n.settingsVolumeLiters(liters);
   return '${formatDecimal(litersToDisplay(liters.toDouble(), system))} US gal';
 }
 
-String volumeUnitName(UnitSystem system) => system.usesUsGallons ? 'US gal' : 'litri';
+String volumeUnitName(UnitSystem system) => system.usesUsGallons ? 'US gal' : appL10n.settingsUnitLitersName;
 
 double cmToDisplay(int cm, UnitSystem system) =>
     system.usesInches ? cm / _cmPerInch : cm.toDouble();

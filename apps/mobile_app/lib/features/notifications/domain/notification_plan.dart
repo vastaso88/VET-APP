@@ -1,3 +1,4 @@
+import '../../../l10n/l10n.dart';
 import '../../pets/domain/pet_format.dart';
 import '../../pets/domain/pet_models.dart';
 import '../../reminders/data/reminders_repository.dart';
@@ -154,18 +155,19 @@ Iterable<PlannedNotification> _eventNotifications(
   DateTime now,
   DateTime until,
 ) sync* {
+  final l10n = appL10n;
   for (final at in reminderOccurrences(reminder, until)) {
     final time = formatClockTime(at.hour, at.minute);
     yield PlannedNotification(
       at: at,
       title: reminder.title,
-      body: '${reminder.petName} · oggi alle $time',
+      body: l10n.notificationsReminderTodayBody(reminder.petName, time),
       category: NotificationCategory.reminders,
     );
     yield PlannedNotification(
       at: DateTime(at.year, at.month, at.day - 1, kDayBeforeHour),
-      title: 'Domani: ${reminder.title}',
-      body: '${reminder.petName} · alle $time',
+      title: l10n.notificationsReminderTomorrowTitle(reminder.title),
+      body: l10n.notificationsReminderTomorrowBody(reminder.petName, time),
       category: NotificationCategory.reminders,
     );
   }
@@ -178,6 +180,7 @@ Iterable<PlannedNotification> _courseNotifications(
   DateTime now,
   DateTime until,
 ) sync* {
+  final l10n = appL10n;
   final start = reminderTime(course.dueAt);
   final days = course.courseDurationDays ?? 1;
   final times = course.doseTimes.map(parseClockTime).whereType<({int hour, int minute})>().toList();
@@ -189,10 +192,11 @@ Iterable<PlannedNotification> _courseNotifications(
       if (at.isAfter(until)) return;
       yield PlannedNotification(
         at: at,
-        title: 'Farmaco per ${course.petName}',
+        title: l10n.notificationsMedicineTitle(course.petName),
         body: course.doseTimes.isEmpty
-            ? '${course.title} · giorno ${day + 1} di $days'
-            : '${course.title} · dose delle ${formatClockTime(time.hour, time.minute)}',
+            ? l10n.notificationsMedicineDayBody(course.title, day + 1, days)
+            : l10n.notificationsMedicineDoseBody(
+                course.title, formatClockTime(time.hour, time.minute)),
         category: NotificationCategory.medicines,
       );
     }
@@ -208,14 +212,15 @@ Iterable<PlannedNotification> _birthdayNotifications(PetProfile pet, DateTime no
   if (birth == null) return;
   final today = _dayOf(now);
   if (birth.isAfter(today)) return;
+  final l10n = appL10n;
 
   final birthday = nextBirthday(birth, today);
   final years = birthday.year - birth.year;
   if (years >= 1) {
     yield PlannedNotification(
       at: DateTime(birthday.year, birthday.month, birthday.day, kDefaultNotificationHour),
-      title: 'Buon compleanno, ${pet.name}!',
-      body: years == 1 ? 'Oggi compie 1 anno.' : 'Oggi compie $years anni.',
+      title: l10n.notificationsBirthdayTitle(pet.name),
+      body: l10n.notificationsBirthdayBody(years),
       category: NotificationCategory.birthdays,
     );
   }
@@ -225,8 +230,8 @@ Iterable<PlannedNotification> _birthdayNotifications(PetProfile pet, DateTime no
   final headsUp = DateTime(upcoming.year, upcoming.month, upcoming.day - 7, kDefaultNotificationHour);
   yield PlannedNotification(
     at: headsUp,
-    title: 'Compleanno in arrivo',
-    body: 'Tra una settimana è il compleanno di ${pet.name}: pensa a un regalo.',
+    title: l10n.notificationsBirthdayUpcomingTitle,
+    body: l10n.notificationsBirthdayUpcomingBody(pet.name),
     category: NotificationCategory.birthdays,
   );
 }

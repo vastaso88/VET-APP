@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../../../l10n/date_formats.dart';
+import '../../../l10n/l10n.dart';
 import '../../home/presentation/widgets/home_dashboard_primitives.dart';
 import '../data/reminders_repository.dart';
 import 'clock_time.dart';
@@ -30,14 +32,17 @@ class ReminderPresentation {
       case EventKind.spot:
         return ReminderPresentation(
           icon: Icons.event_outlined,
-          kindLabel: 'Evento',
+          kindLabel: appL10n.remindersKindEvent,
           dateLabel: _withTime(relativeDayLabel(reminder.dueAt), reminder.dueAt),
           tone: _urgencyTone(reminder.dueAt, startOfToday),
         );
       case EventKind.recurring:
         return ReminderPresentation(
           icon: Icons.autorenew_rounded,
-          kindLabel: 'Ricorrente · ${_intervalLabel(reminder)}${_recurrenceEndLabel(reminder)}',
+          kindLabel: appL10n.remindersKindRecurring(
+            _intervalLabel(reminder),
+            _recurrenceEndLabel(reminder),
+          ),
           dateLabel: _withTime(relativeDayLabel(reminder.dueAt), reminder.dueAt),
           tone: _urgencyTone(reminder.dueAt, startOfToday),
         );
@@ -54,21 +59,21 @@ class ReminderPresentation {
     final String dateLabel;
     final DashboardTone tone;
     if (dayNumber < 1) {
-      dateLabel = 'Inizia ${relativeDayLabel(reminder.dueAt)}';
+      dateLabel = appL10n.remindersCourseStarts(relativeDayLabel(reminder.dueAt));
       tone = DashboardTone.neutral;
     } else if (dayNumber > duration) {
-      dateLabel = 'Completato';
+      dateLabel = appL10n.remindersCourseCompleted;
       tone = DashboardTone.success;
     } else {
-      dateLabel = 'Giorno $dayNumber di $duration';
+      dateLabel = appL10n.remindersCourseDayOf(dayNumber, duration);
       tone = dayNumber == duration ? DashboardTone.warning : DashboardTone.primary;
     }
 
     return ReminderPresentation(
       icon: Icons.medication_outlined,
       kindLabel: reminder.doseTimes.isEmpty
-          ? 'Ciclo · $duration giorni'
-          : 'Ciclo · $duration giorni · ${reminder.doseTimes.join(', ')}',
+          ? appL10n.remindersKindCourse(duration)
+          : appL10n.remindersKindCourseWithTimes(duration, reminder.doseTimes.join(', ')),
       dateLabel: dateLabel,
       tone: tone,
     );
@@ -91,27 +96,22 @@ class ReminderPresentation {
   static String _intervalLabel(ReminderEntry reminder) {
     final value = reminder.intervalValue ?? 1;
     final unit = reminder.intervalUnit ?? IntervalUnit.days;
-    final unitLabel = switch (unit) {
-      IntervalUnit.days => value == 1 ? 'giorno' : 'giorni',
-      IntervalUnit.months => value == 1 ? 'mese' : 'mesi',
+    return switch (unit) {
+      IntervalUnit.days => appL10n.remindersIntervalEveryDays(value),
+      IntervalUnit.months => appL10n.remindersIntervalEveryMonths(value),
     };
-    return 'ogni $value $unitLabel';
   }
-
-  static const _months = [
-    'gen', 'feb', 'mar', 'apr', 'mag', 'giu', 'lug', 'ago', 'set', 'ott', 'nov', 'dic',
-  ];
 
   static String _recurrenceEndLabel(ReminderEntry reminder) {
     switch (reminder.recurrenceEnd) {
       case RecurrenceEnd.afterOccurrences:
         final count = reminder.occurrenceCount;
         if (count == null) return '';
-        return count == 1 ? ' · per 1 volta' : ' · per $count volte';
+        return appL10n.remindersEndAfterTimes(count);
       case RecurrenceEnd.onDate:
         final end = reminder.recurrenceEndDate;
         if (end == null) return '';
-        return ' · fino al ${end.day} ${_months[end.month - 1]} ${end.year}';
+        return appL10n.remindersEndUntilDate(formatAppDate(end, 'd MMM y'));
       case RecurrenceEnd.never:
       case null:
         return '';

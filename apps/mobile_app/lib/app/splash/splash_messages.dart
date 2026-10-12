@@ -1,17 +1,22 @@
+import '../../l10n/l10n.dart';
+
 /// Feature teasers rotated under the splash animation while the app
-/// preloads (Italian copy, one every ~2.5 s).
-const splashMessages = <String>[
-  'Registra le passeggiate con il tuo cane!',
-  'Chiedi al veterinario virtuale, 24 ore su 24',
-  'Non dimenticare più una scadenza: promemoria e calendario',
-  'Tieni i referti sempre a portata di mano',
-  'Scopri le attività pet-friendly vicino a te',
-  'Segui le novità sul mondo degli animali',
-  'Un profilo per ogni amico a quattro zampe (o con le pinne!)',
-  'Il libretto sanitario nel taschino, senza più carte sparse',
-  'Vaccini, vermifughi, visite: ci pensiamo noi a ricordarteli',
-  'Cane, gatto, coniglio, pappagallo o pesciolino: qui c\'è posto per tutti',
-];
+/// preloads (one every ~2.5 s), in the language of [l10n].
+List<String> splashMessagesFor(AppLocalizations l10n) => [
+      l10n.splashMessageWalks,
+      l10n.splashMessageVet,
+      l10n.splashMessageReminders,
+      l10n.splashMessageRecords,
+      l10n.splashMessageNearby,
+      l10n.splashMessageNews,
+      l10n.splashMessageProfiles,
+      l10n.splashMessageHealthBook,
+      l10n.splashMessageVaccines,
+      l10n.splashMessageSpecies,
+    ];
+
+/// The teasers in the app language, for code that has no BuildContext.
+List<String> get splashMessages => splashMessagesFor(appL10n);
 
 /// Species shown scrolling in the splash animation.
 const splashAnimals = <String>['🐶', '🐱', '🐰', '🐦', '🐠', '🐹', '🐢', '🦜'];

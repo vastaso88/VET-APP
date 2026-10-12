@@ -10,6 +10,7 @@ import '../../data/events_repository.dart';
 import '../../domain/event_entry.dart';
 import '../../domain/event_filter.dart';
 import '../event_labels.dart';
+import '../../../../l10n/l10n.dart';
 
 typedef EventLinkLauncher = Future<void> Function(Uri url);
 
@@ -67,8 +68,8 @@ class _EventsPageState extends State<EventsPage> {
       firstDate: DateTime(today.year, today.month, today.day - 30),
       lastDate: DateTime(today.year + 2, today.month, today.day),
       initialDateRange: DateTimeRange(start: _filter.from, end: _filter.to),
-      helpText: 'Scegli il periodo',
-      saveText: 'Applica',
+      helpText: context.l10n.eventsPickDatesHelp,
+      saveText: context.l10n.eventsPickDatesSave,
       // The dialog's own "write" mode has no gg/mm/aaaa slashes, and this
       // filter has no text field of its own to type into instead — hide
       // that mode rather than leave a typing path with no slashes.
@@ -81,8 +82,8 @@ class _EventsPageState extends State<EventsPage> {
 
   Future<void> _pickRegion(List<String> regions) async {
     final chosen = await _pickOne<String>(
-      title: 'Regione',
-      allLabel: 'Tutte le regioni',
+      title: context.l10n.eventsPickRegionTitle,
+      allLabel: context.l10n.eventsAllRegions,
       options: regions,
       labelOf: (region) => region,
       selected: _filter.region,
@@ -95,8 +96,8 @@ class _EventsPageState extends State<EventsPage> {
 
   Future<void> _pickType(List<String> types) async {
     final chosen = await _pickOne<String>(
-      title: 'Tipo di evento',
-      allLabel: 'Tutti i tipi',
+      title: context.l10n.eventsPickTypeTitle,
+      allLabel: context.l10n.eventsAllTypes,
       options: types,
       labelOf: eventTypeLabel,
       selected: _filter.eventType,
@@ -158,14 +159,14 @@ class _EventsPageState extends State<EventsPage> {
         backgroundColor: AppColors.background,
         elevation: 0,
         foregroundColor: AppColors.text,
-        title: Text('Eventi', style: AppTextStyles.title),
+        title: Text(context.l10n.eventsTitle, style: AppTextStyles.title),
       ),
       body: SafeArea(
         child: FutureBuilder<EventsLoadResult>(
           future: _future,
           builder: (context, snapshot) {
             if (snapshot.connectionState != ConnectionState.done) {
-              return const Center(child: PetLoader(label: 'Cerco gli eventi...'));
+              return Center(child: PetLoader(label: context.l10n.eventsSearching));
             }
 
             final result = snapshot.data ?? const EventsLoadResult(events: [], failed: true);
@@ -191,8 +192,10 @@ class _EventsPageState extends State<EventsPage> {
                 children: [
                   _FilterBar(
                     dateLabel: eventWindowChipLabel(_filter, today),
-                    regionLabel: _filter.region ?? 'Tutte le regioni',
-                    typeLabel: _filter.eventType == null ? 'Tutti i tipi' : eventTypeLabel(_filter.eventType!),
+                    regionLabel: _filter.region ?? context.l10n.eventsAllRegions,
+                    typeLabel: _filter.eventType == null
+                        ? context.l10n.eventsAllTypes
+                        : eventTypeLabel(_filter.eventType!),
                     regionActive: _filter.region != null,
                     typeActive: _filter.eventType != null,
                     datesActive: !_filter.isDefaultWindow(today),
@@ -211,7 +214,7 @@ class _EventsPageState extends State<EventsPage> {
                     ],
                   const SizedBox(height: AppSpacing.sm),
                   Text(
-                    'Date e luoghi possono cambiare: verifica sempre sul sito dell\'organizzatore.',
+                    context.l10n.eventsDisclaimer,
                     style: AppTextStyles.caption,
                   ),
                 ],
@@ -272,7 +275,7 @@ class _FilterBar extends StatelessWidget {
         _FilterChip(icon: Icons.place_outlined, label: regionLabel, active: regionActive, onTap: onPickRegion),
         _FilterChip(icon: Icons.category_outlined, label: typeLabel, active: typeActive, onTap: onPickType),
         if (onReset != null)
-          TextButton(onPressed: onReset, child: const Text('Reimposta')),
+          TextButton(onPressed: onReset, child: Text(context.l10n.eventsReset)),
       ],
     );
   }
@@ -361,7 +364,12 @@ class _EventCard extends StatelessWidget {
                       ),
                     ),
                   ),
-                  if (cancelled || postponed) _Pill(label: cancelled ? 'Annullato' : 'Rinviato', danger: true),
+                  if (cancelled || postponed) _Pill(
+                      label: cancelled
+                          ? context.l10n.eventsStatusCancelled
+                          : context.l10n.eventsStatusPostponed,
+                      danger: true,
+                    ),
                 ],
               ),
               const SizedBox(height: AppSpacing.xs),
@@ -425,7 +433,10 @@ class _EventCard extends StatelessWidget {
               ),
               if (event.organizerName != null) ...[
                 const SizedBox(height: AppSpacing.sm),
-                Text('Organizzato da ${event.organizerName}', style: AppTextStyles.caption),
+                Text(
+                  context.l10n.eventsOrganizedBy(event.organizerName!),
+                  style: AppTextStyles.caption,
+                ),
               ],
             ],
           ),
@@ -503,12 +514,12 @@ class _ErrorState extends StatelessWidget {
             const Icon(Icons.cloud_off_outlined, size: 40, color: AppColors.mutedText),
             const SizedBox(height: AppSpacing.md),
             Text(
-              'Non riesco a caricare gli eventi. Controlla la connessione e riprova.',
+              context.l10n.eventsLoadError,
               textAlign: TextAlign.center,
               style: AppTextStyles.body,
             ),
             const SizedBox(height: AppSpacing.md),
-            FilledButton(onPressed: onRetry, child: const Text('Riprova')),
+            FilledButton(onPressed: onRetry, child: Text(context.l10n.commonRetry)),
           ],
         ),
       ),

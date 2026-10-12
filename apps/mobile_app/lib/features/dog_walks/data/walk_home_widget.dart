@@ -128,7 +128,7 @@ class ActiveWalkWidgetSnapshot {
       };
 }
 
-/// "1,3 km" - Italian decimal comma, one decimal (miles/yards/feet for the
+/// "1,3 km" - decimal separator of the app language, one decimal (miles/yards/feet for the
 /// imperial and USA systems).
 @visibleForTesting
 String formatWidgetDistance(double meters) {

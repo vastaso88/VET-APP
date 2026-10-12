@@ -29,11 +29,11 @@ class BillingDemoStore extends ChangeNotifier {
   /// Each line maps to a real backend route (pets, chat + chat attachments +
   /// speech_to_text, reminders, local_services).
   static const List<PlanFeature> includedInAllPlans = [
-    PlanFeature('Profili dei tuoi animali'),
-    PlanFeature('Assistente per dubbi su salute, comportamento e routine'),
-    PlanFeature('Foto, PDF e dettatura vocale nella chat'),
-    PlanFeature('Promemoria'),
-    PlanFeature('Servizi per animali nei dintorni'),
+    PlanFeature(PlanFeatureId.includedPets),
+    PlanFeature(PlanFeatureId.includedAssistant),
+    PlanFeature(PlanFeatureId.includedChatMedia),
+    PlanFeature(PlanFeatureId.includedReminders),
+    PlanFeature(PlanFeatureId.includedNearbyServices),
   ];
 
   // TODO(owner): le differenze reali tra i piani sono una scelta commerciale
@@ -46,7 +46,7 @@ class BillingDemoStore extends ChangeNotifier {
       monthlyPrice: 0,
       yearlyPrice: 0,
       features: [
-        PlanFeature('Limiti del piano Free: da definire', isPlaceholder: true),
+        PlanFeature(PlanFeatureId.freePlaceholder, isPlaceholder: true),
       ],
     ),
     SubscriptionPlan(
@@ -55,7 +55,7 @@ class BillingDemoStore extends ChangeNotifier {
       monthlyPrice: _plusMonthly,
       yearlyPrice: _plusYearly,
       features: [
-        PlanFeature('Funzioni extra del piano Plus: da definire', isPlaceholder: true),
+        PlanFeature(PlanFeatureId.plusPlaceholder, isPlaceholder: true),
       ],
     ),
     SubscriptionPlan(
@@ -64,13 +64,13 @@ class BillingDemoStore extends ChangeNotifier {
       monthlyPrice: _proMonthly,
       yearlyPrice: _proYearly,
       features: [
-        PlanFeature('Funzioni extra del piano Pro: da definire', isPlaceholder: true),
+        PlanFeature(PlanFeatureId.proPlaceholder, isPlaceholder: true),
       ],
       // "Più scelto" would claim a real popularity ranking we don't have
       // data for yet (no paying users exist). "Consigliato" makes the same
       // visual point without asserting an unverified fact — see legal
       // review note in docs/auth/01_brainstorm.md (2026-09-26).
-      badge: 'Consigliato',
+      isRecommended: true,
     ),
   ];
 

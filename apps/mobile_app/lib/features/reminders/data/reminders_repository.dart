@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+import '../../../../l10n/l10n.dart';
 import '../../../../shared/auth/current_user.dart';
 import '../../../../shared/config/app_runtime_config_loader.dart';
 import '../../pets/data/pet_demo_store.dart';
@@ -201,9 +202,7 @@ class RemindersRepository {
     final petId = PetDemoStore.instance.byName(reminder.petName)?.id;
     try {
       if (petId == null) {
-        throw const ReminderSyncException(
-          'Il profilo dell\'animale non è sincronizzato sul server: sistemalo prima di creare promemoria.',
-        );
+        throw ReminderSyncException(appL10n.remindersErrorPetNotSynced);
       }
       await client.from('reminders').upsert({
         'id': reminder.id,
@@ -230,7 +229,7 @@ class RemindersRepository {
     } catch (error) {
       _restore(reminder.id, previous);
       if (error is ReminderSyncException) rethrow;
-      throw const ReminderSyncException('Non sono riuscito a salvare il promemoria. Riprova.');
+      throw ReminderSyncException(appL10n.remindersErrorSaveFailed);
     }
   }
 
@@ -253,7 +252,7 @@ class RemindersRepository {
       await client.from('reminders').delete().eq('id', id);
     } catch (_) {
       _restore(id, previous);
-      throw const ReminderSyncException('Non sono riuscito a eliminare il promemoria. Riprova.');
+      throw ReminderSyncException(appL10n.remindersErrorDeleteFailed);
     }
   }
 
@@ -278,7 +277,7 @@ class RemindersRepository {
     return ReminderEntry(
       id: (row['id'] ?? '').toString(),
       petName: (row['pet_name'] ?? '').toString(),
-      title: (row['title'] ?? 'Promemoria').toString(),
+      title: (row['title'] ?? appL10n.remindersTitle).toString(),
       kind: kind,
       dueAt: dueAt,
       note: (row['notes'] ?? '').toString(),

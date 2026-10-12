@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:geolocator/geolocator.dart' as geolocator;
 
+import '../../../l10n/l10n.dart';
 import '../../location/domain/coordinates.dart';
 import '../../location/domain/geo_math.dart';
 import '../domain/gps_fix.dart';
@@ -249,11 +250,11 @@ class ActiveWalkController extends ChangeNotifier {
             ? null
             : geolocator.ForegroundNotificationConfig(
                 notificationTitle:
-                    paused ? 'Passeggiata in pausa' : 'Passeggiata in corso',
+                    paused ? appL10n.walksStatusPaused : appL10n.walksStatusInProgress,
                 notificationText: paused
-                    ? 'Il tracciamento è in pausa. Riprendi dall\'app quando vuoi.'
-                    : 'VetApp sta tracciando il percorso della passeggiata.',
-                notificationChannelName: 'Tracciamento passeggiata',
+                    ? appL10n.walksNotifFallbackPausedText
+                    : appL10n.walksNotifFallbackRunningText,
+                notificationChannelName: appL10n.walksNotifChannelName,
                 setOngoing: true,
               ),
       );

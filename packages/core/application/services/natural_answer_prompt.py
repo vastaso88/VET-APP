@@ -21,6 +21,7 @@ The instructions are in English (the model follows them more reliably);
 the reply is always Italian.
 """
 
+from packages.core.domain.common.language import response_language_instruction
 from packages.core.domain.conversation.request_kind import RequestKind
 
 _VOICE = (
@@ -203,7 +204,12 @@ ANSWER_NOW_REMINDER = (
 
 
 def build_system_prompt(
-    kind: RequestKind, *, may_ask: bool, has_reference_material: bool, species_facts: str = ""
+    kind: RequestKind,
+    *,
+    may_ask: bool,
+    has_reference_material: bool,
+    species_facts: str = "",
+    language: str = "it",
 ) -> str:
     if kind is RequestKind.REPORT:
         request = _REPORT
@@ -219,4 +225,8 @@ def build_system_prompt(
         )
     if has_reference_material:
         parts.append(_REFERENCE_MATERIAL)
+    # Nothing is added for Italian: that prompt stays as it has always been.
+    language_line = response_language_instruction(language)
+    if language_line:
+        parts.append(language_line)
     return "\n\n".join(parts)

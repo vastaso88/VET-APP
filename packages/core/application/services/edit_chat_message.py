@@ -43,6 +43,7 @@ class EditChatMessageInput(BaseModel):
     # The app's id for the edited message; the same on a retry.
     client_message_id: str | None = None
     owner_display_name: str | None = None
+    language: str = "it"
 
 
 class EditChatMessageService:
@@ -64,6 +65,7 @@ class EditChatMessageService:
             user_message=data.user_message.strip(),
             owner_display_name=data.owner_display_name,
             client_message_id=data.client_message_id,
+            language=data.language,
         )
         # A retry of an edit that was already applied: the edited message is
         # in the conversation with this client id (and the original is gone),

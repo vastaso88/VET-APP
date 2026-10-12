@@ -4,6 +4,7 @@ import '../../../../design_system/tokens/app_colors.dart';
 import '../../../../design_system/tokens/app_radii.dart';
 import '../../../../design_system/tokens/app_spacing.dart';
 import '../../../../design_system/tokens/app_text_styles.dart';
+import '../../../../l10n/l10n.dart';
 import '../../../../shared/auth/current_owner.dart';
 import '../../../home/presentation/widgets/home_dashboard_primitives.dart';
 import '../../data/listing_report_service.dart';
@@ -37,13 +38,13 @@ class _ListingDetailPageState extends State<ListingDetailPage> {
   late final MarketplaceRepository _repository = widget.repository ?? MarketplaceRepository();
   bool _busy = false;
 
-  static const _reasons = {
-    'spam': 'Spam',
-    'scam': 'Truffa',
-    'prohibited_item': 'Articolo non consentito',
-    'inappropriate': 'Contenuto inappropriato',
-    'other': 'Altro',
-  };
+  Map<String, String> _reasons(BuildContext context) => {
+        'spam': context.l10n.marketplaceReasonSpam,
+        'scam': context.l10n.marketplaceReasonScam,
+        'prohibited_item': context.l10n.marketplaceReasonProhibitedItem,
+        'inappropriate': context.l10n.marketplaceReasonInappropriate,
+        'other': context.l10n.marketplaceOther,
+      };
 
   String get _currentOwnerId => widget.currentOwnerId ?? resolveCurrentOwnerId();
 
@@ -51,8 +52,8 @@ class _ListingDetailPageState extends State<ListingDetailPage> {
     final reason = await showDialog<String>(
       context: context,
       builder: (context) => SimpleDialog(
-        title: const Text('Segnala annuncio'),
-        children: _reasons.entries
+        title: Text(context.l10n.marketplaceReportListing),
+        children: _reasons(context).entries
             .map(
               (entry) => SimpleDialogOption(
                 onPressed: () => Navigator.of(context).pop(entry.key),
@@ -76,8 +77,8 @@ class _ListingDetailPageState extends State<ListingDetailPage> {
       SnackBar(
         content: Text(
           updated.status == ListingStatus.removed
-              ? 'Grazie, l\'annuncio è stato rimosso dopo le segnalazioni ricevute.'
-              : 'Segnalazione inviata, grazie.',
+              ? context.l10n.marketplaceReportRemoved
+              : context.l10n.marketplaceReportSent,
         ),
       ),
     );
@@ -108,18 +109,17 @@ class _ListingDetailPageState extends State<ListingDetailPage> {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Eliminare l\'annuncio?'),
-        content: Text(
-            '"${widget.listing.title}" e le sue foto verranno cancellati. Non si può annullare.'),
+        title: Text(context.l10n.marketplaceDeleteConfirmTitle),
+        content: Text(context.l10n.marketplaceDeleteConfirmBody(widget.listing.title)),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(false),
-            child: const Text('Annulla'),
+            child: Text(context.l10n.commonCancel),
           ),
           TextButton(
             onPressed: () => Navigator.of(context).pop(true),
             style: TextButton.styleFrom(foregroundColor: AppColors.danger),
-            child: const Text('Elimina'),
+            child: Text(context.l10n.commonDelete),
           ),
         ],
       ),
@@ -137,7 +137,7 @@ class _ListingDetailPageState extends State<ListingDetailPage> {
           content: Text(
             error is ListingPermissionException
                 ? error.toString()
-                : 'Non sono riuscito a eliminare l\'annuncio. Riprova.',
+                : context.l10n.marketplaceDeleteFailed,
           ),
         ),
       );
@@ -145,7 +145,7 @@ class _ListingDetailPageState extends State<ListingDetailPage> {
     }
     if (!mounted) return;
     ScaffoldMessenger.of(context)
-        .showSnackBar(const SnackBar(content: Text('Annuncio eliminato.')));
+        .showSnackBar(SnackBar(content: Text(context.l10n.marketplaceDeleted)));
     Navigator.of(context).pop(true);
   }
 
@@ -198,12 +198,14 @@ class _ListingDetailPageState extends State<ListingDetailPage> {
             Text(listingPriceLabel(listing.priceCents), style: AppTextStyles.heading),
             if (listing.cityLabel != null) ...[
               const SizedBox(height: AppSpacing.xs),
-              Text('${listing.cityLabel!} · zona approssimata', style: AppTextStyles.bodySmall),
+              Text(context.l10n.marketplaceDetailApproxZone(listing.cityLabel!), style: AppTextStyles.bodySmall),
             ],
             if (listing.species.isNotEmpty) ...[
               const SizedBox(height: AppSpacing.md),
               Text(
-                'Per: ${listing.species.map(listingSpeciesLabel).join(', ')}',
+                context.l10n.marketplaceDetailForSpecies(
+                  listing.species.map(listingSpeciesLabel).join(', '),
+                ),
                 style: AppTextStyles.bodySmall,
               ),
             ],
@@ -214,13 +216,15 @@ class _ListingDetailPageState extends State<ListingDetailPage> {
             const SizedBox(height: AppSpacing.xxl),
             if (isOwner) ...[
               DashboardActionButton(
-                label: 'Modifica annuncio',
+                label: context.l10n.marketplaceEditListing,
                 icon: Icons.edit_outlined,
                 onPressed: _busy ? null : _editListing,
               ),
               const SizedBox(height: AppSpacing.md),
               DashboardActionButton(
-                label: _busy ? 'Eliminazione...' : 'Elimina annuncio',
+                label: _busy
+                    ? context.l10n.marketplaceDeleting
+                    : context.l10n.marketplaceDeleteListing,
                 icon: Icons.delete_outline_rounded,
                 tone: DashboardTone.danger,
                 filled: false,
@@ -228,7 +232,9 @@ class _ListingDetailPageState extends State<ListingDetailPage> {
               ),
             ] else
               DashboardActionButton(
-                label: _busy ? 'Invio segnalazione...' : 'Segnala annuncio',
+                label: _busy
+                    ? context.l10n.marketplaceReporting
+                    : context.l10n.marketplaceReportListing,
                 icon: Icons.flag_outlined,
                 tone: DashboardTone.danger,
                 filled: false,

@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 
 import '../../../../../design_system/tokens/app_colors.dart';
+import '../../../../l10n/l10n.dart';
 import '../../../../shared/files/attachment_media_type.dart';
 import '../../../../../design_system/tokens/app_radii.dart';
 import '../../../../../design_system/tokens/app_spacing.dart';
@@ -71,9 +72,9 @@ class _MedicalRecordsListPageState extends State<MedicalRecordsListPage> {
   @override
   Widget build(BuildContext context) {
     return _FeatureScaffold(
-      title: 'Referti',
-      subtitle: 'Referti, note e allegati di Moka in un archivio chiaro.',
-      actionLabel: 'Carica',
+      title: context.l10n.medicalListTitle,
+      subtitle: context.l10n.medicalListSubtitle,
+      actionLabel: context.l10n.medicalUploadAction,
       onAction: _openUpload,
       // A FAB instead of a header button: this list can grow long, and a
       // header action would scroll out of thumb reach once it does.
@@ -82,18 +83,18 @@ class _MedicalRecordsListPageState extends State<MedicalRecordsListPage> {
             future: _recordsFuture,
             builder: (context, snapshot) {
               if (snapshot.connectionState == ConnectionState.waiting) {
-                return const _LoadingState(
-                  title: 'Sincronizzazione referti',
-                  body: 'Sto recuperando documenti e metadati da Supabase o dalla sorgente demo.',
+                return _LoadingState(
+                  title: context.l10n.medicalListSyncTitle,
+                  body: context.l10n.medicalListSyncBody,
                 );
               }
 
               if (snapshot.hasError) {
                 return _EmptyState(
-                  title: 'Impossibile caricare l archivio',
-                  body: 'Riprova dopo aver controllato la connessione o continua con il fallback demo.',
+                  title: context.l10n.medicalListLoadErrorTitle,
+                  body: context.l10n.medicalListLoadErrorBody,
                   icon: Icons.cloud_off_outlined,
-                  actionLabel: 'Riprova',
+                  actionLabel: context.l10n.commonRetry,
                   onAction: () => unawaited(_reload()),
                 );
               }
@@ -115,10 +116,10 @@ class _MedicalRecordsListPageState extends State<MedicalRecordsListPage> {
 
               if (records.isEmpty) {
                 return _EmptyState(
-                  title: 'Nessun documento ancora',
-                  body: 'Carica il primo referto per costruire l archivio documenti.',
+                  title: context.l10n.medicalListEmptyTitle,
+                  body: context.l10n.medicalListEmptyBody,
                   icon: Icons.folder_open_outlined,
-                  actionLabel: 'Carica il primo file',
+                  actionLabel: context.l10n.medicalListUploadFirst,
                   onAction: _openUpload,
                 );
               }
@@ -134,19 +135,22 @@ class _MedicalRecordsListPageState extends State<MedicalRecordsListPage> {
                   const SizedBox(height: AppSpacing.lg),
                   _SummaryCard(
                     title: selectedPetName == null
-                        ? '${records.length} documenti attivi'
-                        : '${filteredRecords.length} documenti di $selectedPetName',
+                        ? context.l10n.medicalListSummaryAllTitle(records.length)
+                        : context.l10n.medicalListSummaryPetTitle(
+                            filteredRecords.length,
+                            selectedPetName,
+                          ),
                     body: selectedPetName == null
-                        ? '1 referto pronto da condividere, 1 esame da rivedere e 1 nota archiviata.'
-                        : 'Filtri attivi sul profilo di $selectedPetName. Apri i documenti piu utili senza rumore.',
+                        ? context.l10n.medicalListSummaryAllBody
+                        : context.l10n.medicalListSummaryPetBody(selectedPetName),
                     icon: Icons.description_outlined,
                   ),
                   const SizedBox(height: AppSpacing.lg),
                   _SummaryCard(
-                    title: 'Prossima azione',
+                    title: context.l10n.medicalListNextActionTitle,
                     body: selectedPetName == null
-                        ? 'Apri il referto vaccinale di Moka e condividilo con Francesco.'
-                        : 'Condividi il documento piu recente di $selectedPetName e conserva la nota nel profilo.',
+                        ? context.l10n.medicalListNextActionAllBody
+                        : context.l10n.medicalListNextActionPetBody(selectedPetName),
                     icon: Icons.verified_outlined,
                   ),
                   const SizedBox(height: AppSpacing.lg),
@@ -171,15 +175,15 @@ class _MedicalRecordsListPageState extends State<MedicalRecordsListPage> {
                   if (filteredRecords.isEmpty)
                     _EmptyState(
                       title: selectedPetName == null
-                          ? 'Nessun documento ancora'
-                          : 'Nessun documento per $selectedPetName',
+                          ? context.l10n.medicalListEmptyTitle
+                          : context.l10n.medicalListEmptyPetTitle(selectedPetName),
                       body: selectedPetName == null
-                          ? 'Carica il primo referto per costruire l archivio documenti.'
-                          : 'Cambia filtro oppure carica un nuovo documento per questo pet.',
+                          ? context.l10n.medicalListEmptyBody
+                          : context.l10n.medicalListEmptyPetBody,
                       icon: Icons.folder_open_outlined,
                       actionLabel: selectedPetName == null
-                          ? 'Carica il primo file'
-                          : 'Rimuovi filtro',
+                          ? context.l10n.medicalListUploadFirst
+                          : context.l10n.medicalListRemoveFilter,
                       onAction: selectedPetName == null
                           ? _openUpload
                           : () => _selectPet(null),
@@ -221,9 +225,9 @@ class _MedicalRecordsUploadPageState extends State<MedicalRecordsUploadPage> {
   @override
   Widget build(BuildContext context) {
     return _FeatureScaffold(
-      title: 'Carica documento',
-      subtitle: 'Carica PDF, JPG o PNG e completa i metadati.',
-      actionLabel: 'Dettaglio',
+      title: context.l10n.medicalUploadTitle,
+      subtitle: context.l10n.medicalUploadDemoSubtitle,
+      actionLabel: context.l10n.medicalUploadDemoAction,
       onAction: () async {
         try {
           await _repository.saveRecord(_draftRecord);
@@ -235,25 +239,25 @@ class _MedicalRecordsUploadPageState extends State<MedicalRecordsUploadPage> {
         if (!context.mounted) return;
         Navigator.of(context).maybePop();
       },
-      child: const Column(
+      child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           _SummaryCard(
             title: 'richiamo_vaccinale_moka.pdf',
-            body: 'Caricato con successo e pronto per la revisione dei metadati.',
+            body: context.l10n.medicalUploadDemoCardBody,
             icon: Icons.check_circle_outline,
           ),
-          SizedBox(height: AppSpacing.lg),
+          const SizedBox(height: AppSpacing.lg),
           _MetaGrid(
             items: [
-              _MetaItem('Tipo', 'Vaccinazione'),
-              _MetaItem('Data', '25 Mar 2026'),
-              _MetaItem('Fonte', 'Clinica Vet Roma'),
-              _MetaItem('Formato', 'PDF'),
+              _MetaItem(context.l10n.medicalMetaType, 'Vaccinazione'),
+              _MetaItem(context.l10n.medicalMetaDate, '25 Mar 2026'),
+              _MetaItem(context.l10n.medicalMetaSource, 'Clinica Vet Roma'),
+              _MetaItem(context.l10n.medicalMetaFormat, 'PDF'),
             ],
           ),
-          SizedBox(height: AppSpacing.lg),
-          _Checklist(),
+          const SizedBox(height: AppSpacing.lg),
+          const _Checklist(),
         ],
       ),
     );
@@ -467,7 +471,7 @@ class _EmptyState extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return _StateCard(
-      accentLabel: 'Stato anteprima',
+      accentLabel: context.l10n.medicalStatePreviewPill,
       title: title,
       body: body,
       icon: icon,
@@ -572,7 +576,7 @@ class _LoadingCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const _AccentPill(label: 'Caricamento'),
+          _AccentPill(label: context.l10n.medicalStateLoadingPill),
           const SizedBox(height: AppSpacing.lg),
           Text(title, style: AppTextStyles.title),
           const SizedBox(height: AppSpacing.sm),
@@ -891,12 +895,12 @@ class _Checklist extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const Column(
+    return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        _LineItem(text: 'Formato file supportato'),
-        _LineItem(text: 'Metadati estratti'),
-        _LineItem(text: 'Collegato al pet attivo'),
+        _LineItem(text: context.l10n.medicalChecklistFormat),
+        _LineItem(text: context.l10n.medicalChecklistMetadata),
+        _LineItem(text: context.l10n.medicalChecklistLinkedPet),
       ],
     );
   }
@@ -952,7 +956,7 @@ class _PetFilterBar extends StatelessWidget {
         runSpacing: AppSpacing.sm,
         children: [
           ChoiceChip(
-            label: Text('Tutti (${petNames.length})'),
+            label: Text(context.l10n.medicalFilterAll(petNames.length)),
             selected: selectedPetName == null,
             onSelected: (_) => onChanged(null),
             labelStyle: TextStyle(

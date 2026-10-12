@@ -1,0 +1,60 @@
+# Justified Italian strings outside lib/l10n. Two kinds of entry:
+#   path/glob.dart                    -> the whole file is exempt
+#   path/glob.dart :: some substring  -> lines containing the substring are exempt
+# Paths are relative to apps/mobile_app. Always say WHY in a comment.
+
+# Data lists (breeds, species): not translated, they are the stored values.
+lib/features/pets/domain/pet_breeds.dart
+lib/features/pets/domain/pet_species_breeds.dart
+lib/features/pets/domain/fish_species.dart
+# Language names are written in their own language, never translated.
+lib/features/language/domain/app_language.dart
+
+# Demo/seed data shown only in builds without Supabase and in tests (never in production).
+lib/features/medical_records/data/medical_records_repository.dart :: _previewRecords
+lib/features/medical_records/data/medical_records_repository.dart :: 'Letto ieri
+lib/features/medical_records/data/medical_records_repository.dart :: 'Archiviato il 12 marzo
+lib/features/medical_records/data/medical_records_repository.dart :: 'Utile per il follow-up
+lib/features/medical_records/data/medical_records_repository.dart :: 'Esami del sangue di Oliver'
+lib/features/medical_records/data/medical_records_repository.dart :: 'Valori nella norma
+lib/features/medical_records/presentation/pages/medical_records_pages.dart :: 'Caricato con successo
+lib/features/pets/domain/pet_models.dart :: 'Stomaco delicato
+lib/features/pets/domain/pet_models.dart :: 'Vaccino di richiamo tra 12 giorni'
+lib/features/pets/domain/pet_models.dart :: 'Controllo becco e unghie
+lib/features/reminders/data/reminders_repository.dart :: 'Notifica già pronta
+lib/features/reminders/data/reminders_repository.dart :: 'Documento già caricato
+lib/features/reminders/data/reminders_repository.dart :: 'Porta il libretto
+lib/features/reminders/data/reminders_repository.dart :: 'Verifica intensità
+# Developer-only page, not linked from the app.
+lib/app/preview/maps_demo_page.dart
+# Technical id.
+lib/features/reminders/presentation/pages/reminders_pages.dart :: 'promemoria-$
+# Backend Italian texts used as lookup keys (the user sees the localized key, not these).
+lib/features/nearby_places/data/radar_contributions_repository.dart
+# Proper name of a municipality (data source).
+lib/features/nearby_places/domain/radar_data_source.dart :: 'Città di Torino'
+# Legal consent text: tests/unit/test_consent_texts_match_behaviour.py reads it from this Dart
+# source with a regex. Do not move it without updating that test (owned by the legal/consent work).
+lib/features/pets/presentation/widgets/medical_record_consent_card.dart
+
+# Demo seeds again (capitalised UI-style literals): only used without Supabase and in tests.
+lib/features/local_activities/data/local_activities_repository.dart
+lib/features/reminders/data/reminders_repository.dart :: di Moka'
+lib/features/reminders/data/reminders_repository.dart :: di Oliver'
+lib/features/reminders/data/reminders_repository.dart :: di Rex'
+lib/features/reminders/data/reminders_repository.dart :: di Pico'
+lib/features/reminders/data/reminders_repository.dart :: 'Controllo peso di
+lib/features/medical_records/data/medical_records_repository.dart :: title:
+lib/features/medical_records/data/medical_records_repository.dart :: subtitle:
+lib/features/medical_records/data/medical_records_repository.dart :: 'Importato'
+lib/features/medical_records/data/medical_records_repository.dart :: 'Revisionato'
+lib/features/medical_records/data/medical_records_repository.dart :: Pronto per l'invio
+lib/features/medical_records/presentation/pages/medical_records_pages.dart :: 'Importato'
+lib/features/medical_records/presentation/pages/medical_records_pages.dart :: 'Revisionato'
+lib/features/medical_records/presentation/pages/medical_records_pages.dart :: Pronto per l'invio
+# Species written to the pet profile and sent to the backend (stored values, not labels).
+lib/features/pets/data/pet_demo_store.dart :: label:
+# Test double of the auth backend: its messages are English and never shown.
+lib/features/auth/data/fake_auth_remote_data_source.dart
+# Internal English fallback messages; the user sees the localized text from auth_error_messages.dart.
+lib/features/auth/data/supabase_auth_remote_data_source.dart

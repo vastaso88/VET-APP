@@ -4,6 +4,7 @@ import 'package:latlong2/latlong.dart' as latlong;
 
 import '../../../../design_system/tokens/app_colors.dart';
 import '../../../../design_system/tokens/app_text_styles.dart';
+import '../../../../l10n/l10n.dart';
 import '../../../../shared/widgets/pet_loader.dart';
 import '../../../location/data/address_geocoder.dart';
 import '../../../location/domain/coordinates.dart';
@@ -62,7 +63,7 @@ class _LocationPickerPageState extends State<LocationPickerPage> {
         backgroundColor: AppColors.background,
         elevation: 0,
         foregroundColor: AppColors.text,
-        title: Text('Scegli sulla mappa', style: AppTextStyles.title),
+        title: Text(context.l10n.settingsLocationPickerTitle, style: AppTextStyles.title),
       ),
       body: SafeArea(
         child: Stack(
@@ -72,7 +73,7 @@ class _LocationPickerPageState extends State<LocationPickerPage> {
                 Padding(
                   padding: const EdgeInsets.all(16),
                   child: Text(
-                    'Sposta la mappa finché il segnaposto è sul punto giusto, poi conferma.',
+                    context.l10n.settingsLocationPickerHint,
                     style: AppTextStyles.bodySmall,
                   ),
                 ),
@@ -122,7 +123,7 @@ class _LocationPickerPageState extends State<LocationPickerPage> {
                       onPressed: _confirming ? null : _confirm,
                       child: _confirming
                           ? const PetLoader.small()
-                          : const Text('Conferma questo punto'),
+                          : Text(context.l10n.settingsLocationPickerConfirm),
                     ),
                   ),
                 ),

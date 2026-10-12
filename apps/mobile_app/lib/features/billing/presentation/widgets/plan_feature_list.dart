@@ -4,6 +4,7 @@ import '../../../../design_system/tokens/app_colors.dart';
 import '../../../../design_system/tokens/app_radii.dart';
 import '../../../../design_system/tokens/app_spacing.dart';
 import '../../../../design_system/tokens/app_text_styles.dart';
+import '../../../../l10n/l10n.dart';
 import '../../data/billing_demo_store.dart';
 import '../../domain/billing_models.dart';
 
@@ -68,7 +69,7 @@ class IncludedInAllPlansCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('Incluso in tutti i piani', style: AppTextStyles.title.copyWith(fontSize: 16)),
+          Text(context.l10n.billingIncludedInAllPlans, style: AppTextStyles.title.copyWith(fontSize: 16)),
           const SizedBox(height: AppSpacing.sm),
           const PlanFeatureList(features: BillingDemoStore.includedInAllPlans),
         ],

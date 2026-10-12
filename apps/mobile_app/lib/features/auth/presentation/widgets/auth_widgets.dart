@@ -4,6 +4,7 @@ import '../../../../design_system/tokens/app_colors.dart';
 import '../../../../design_system/tokens/app_radii.dart';
 import '../../../../design_system/tokens/app_spacing.dart';
 import '../../../../design_system/tokens/app_text_styles.dart';
+import '../../../../l10n/l10n.dart';
 
 const _kAuthContentMaxWidth = 520.0;
 
@@ -236,7 +237,7 @@ class _AuthInputFieldState extends State<AuthInputField> {
         suffixIcon: widget.obscureText
             ? IconButton(
                 icon: Icon(_obscured ? Icons.visibility_off : Icons.visibility),
-                tooltip: _obscured ? 'Mostra password' : 'Nascondi password',
+                tooltip: _obscured ? context.l10n.authPasswordShow : context.l10n.authPasswordHide,
                 onPressed: () => setState(() => _obscured = !_obscured),
               )
             : null,
@@ -288,7 +289,7 @@ class _BrandRow extends StatelessWidget {
         style: TextButton.styleFrom(minimumSize: const Size(0, 44)),
         onPressed: onBack,
         icon: const Icon(Icons.arrow_back_rounded, size: 18),
-        label: const Text('Indietro'),
+        label: Text(context.l10n.commonBack),
       ),
     );
   }

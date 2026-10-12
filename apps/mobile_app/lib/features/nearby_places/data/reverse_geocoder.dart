@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 
 import '../../location/domain/coordinates.dart';
+import '../../../l10n/l10n.dart';
 
 /// Street address of a point, via OpenStreetMap's Nominatim (the same
 /// keyless provider the Località settings use to geocode an address). One
@@ -19,7 +20,7 @@ class ReverseGeocoder {
       'lat': position.latitude.toString(),
       'lon': position.longitude.toString(),
       'zoom': '18',
-      'accept-language': 'it',
+      'accept-language': AppLocaleHolder.current.languageCode,
     });
     try {
       final response = await _client.get(

@@ -4,6 +4,7 @@ import 'dart:typed_data';
 
 import 'package:http/http.dart' as http;
 
+import '../../../l10n/l10n.dart';
 import '../../../shared/auth/current_user.dart';
 import '../../../shared/files/attachment_media_type.dart';
 import '../../../shared/files/image_metadata.dart';
@@ -97,23 +98,23 @@ class HttpChatAttachmentRemoteDataSource implements ChatAttachmentRemoteDataSour
       );
     } on TimeoutException {
       return Result.failure<ChatAttachmentUploadResult>(
-        const AppNetworkError(
+        AppNetworkError(
           code: 'chat_attachment_timeout',
-          message: 'Richiesta scaduta. Riprova.',
+          message: appL10n.chatErrorRequestTimeout,
         ),
       );
     } on http.ClientException {
       return Result.failure<ChatAttachmentUploadResult>(
-        const AppNetworkError(
+        AppNetworkError(
           code: 'chat_attachment_offline',
-          message: 'Sei offline o la connessione non è stabile. Riprova quando torni online.',
+          message: appL10n.chatErrorAttachmentOffline,
         ),
       );
     } catch (e) {
       return Result.failure<ChatAttachmentUploadResult>(
         AppNetworkError(
           code: 'chat_attachment_unexpected_error',
-          message: "Qualcosa e' andato storto. Riprova.",
+          message: appL10n.chatErrorGeneric,
           details: e,
         ),
       );
@@ -135,7 +136,7 @@ class HttpChatAttachmentRemoteDataSource implements ChatAttachmentRemoteDataSour
         return Result.failure(
           AppNetworkError(
             code: 'chat_attachment_download_http_${response.statusCode}',
-            message: 'Non sono riuscito a scaricare il file.',
+            message: appL10n.chatErrorAttachmentDownload,
           ),
         );
       }
@@ -143,16 +144,16 @@ class HttpChatAttachmentRemoteDataSource implements ChatAttachmentRemoteDataSour
       return Result.success(response.bodyBytes);
     } on TimeoutException {
       return Result.failure<Uint8List>(
-        const AppNetworkError(
+        AppNetworkError(
           code: 'chat_attachment_download_timeout',
-          message: 'Richiesta scaduta. Riprova.',
+          message: appL10n.chatErrorRequestTimeout,
         ),
       );
     } catch (e) {
       return Result.failure<Uint8List>(
         AppNetworkError(
           code: 'chat_attachment_download_unexpected_error',
-          message: "Qualcosa e' andato storto. Riprova.",
+          message: appL10n.chatErrorGeneric,
           details: e,
         ),
       );
@@ -185,14 +186,14 @@ const _knownCodes = {
 String _messageFor(String? detailCode, int statusCode) {
   switch (detailCode) {
     case 'attachment_too_large':
-      return 'Il file è troppo grande (max 4 MB).';
+      return appL10n.chatErrorAttachmentTooLarge;
     case 'unsupported_attachment_type':
-      return 'Questo tipo di file non è supportato. Puoi caricare foto (JPG, PNG, WEBP) o PDF.';
+      return appL10n.chatErrorAttachmentUnsupported;
     case 'pdf_too_many_pages':
-      return 'Il PDF supera le 30 pagine consentite.';
+      return appL10n.chatErrorPdfTooManyPages;
     case 'pdf_unreadable':
-      return 'Non riesco a leggere questo PDF: potrebbe essere danneggiato o protetto da password.';
+      return appL10n.chatErrorPdfUnreadable;
   }
-  if (statusCode == 413) return 'Il file è troppo grande (max 4 MB).';
-  return 'Non sono riuscito a caricare il file. Riprova.';
+  if (statusCode == 413) return appL10n.chatErrorAttachmentTooLarge;
+  return appL10n.chatErrorAttachmentUpload;
 }

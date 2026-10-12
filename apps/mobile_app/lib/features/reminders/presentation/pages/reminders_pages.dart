@@ -10,6 +10,8 @@ import '../../../../../design_system/tokens/app_colors.dart';
 import '../../../../../design_system/tokens/app_radii.dart';
 import '../../../../../design_system/tokens/app_spacing.dart';
 import '../../../../../design_system/tokens/app_text_styles.dart';
+import '../../../../../l10n/date_formats.dart';
+import '../../../../../l10n/l10n.dart';
 import '../../../home/presentation/widgets/home_dashboard_primitives.dart';
 import '../../../pets/data/pet_demo_store.dart';
 import '../../../pets/domain/pet_models.dart';
@@ -106,9 +108,9 @@ class _RemindersListPageState extends State<RemindersListPage> {
   @override
   Widget build(BuildContext context) {
     return _Shell(
-          title: 'Promemoria',
-          subtitle: 'Vaccini, trattamenti e visite da tenere sotto controllo.',
-          actionLabel: 'Crea',
+          title: context.l10n.remindersTitle,
+          subtitle: context.l10n.remindersSubtitle,
+          actionLabel: context.l10n.remindersCreateButton,
           onAction: _openCreate,
           child: ValueListenableBuilder<int>(
             valueListenable: RemindersRepository.changes,
@@ -116,21 +118,19 @@ class _RemindersListPageState extends State<RemindersListPage> {
               future: _repository.loadReminders(),
               builder: (context, snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting) {
-                  return const _LoadingPanel(
-                    title: 'Caricamento promemoria',
-                    body:
-                        'Sto leggendo date, ricorrenze e note del proprietario.',
+                  return _LoadingPanel(
+                    title: context.l10n.remindersLoadingTitle,
+                    body: context.l10n.remindersLoadingBody,
                   );
                 }
 
                 if (snapshot.hasError) {
                   return _StatePanel(
-                    label: 'Errore sync',
-                    title: 'Sincronizzazione promemoria fallita.',
-                    body:
-                        'La sorgente demo e ancora disponibile. Riprova quando la rete torna su.',
+                    label: context.l10n.remindersSyncErrorLabel,
+                    title: context.l10n.remindersSyncErrorTitle,
+                    body: context.l10n.remindersSyncErrorBody,
                     icon: Icons.wifi_off_outlined,
-                    actionLabel: 'Riprova',
+                    actionLabel: context.l10n.commonRetry,
                     onAction: () => unawaited(_reload()),
                   );
                 }
@@ -141,12 +141,11 @@ class _RemindersListPageState extends State<RemindersListPage> {
 
                 if (all.isEmpty) {
                   return _StatePanel(
-                    label: 'Nessun promemoria',
-                    title: 'La lista dei promemoria e vuota.',
-                    body:
-                        'Crea il primo promemoria per vaccino o trattamento e resta in carreggiata.',
+                    label: context.l10n.remindersEmptyLabel,
+                    title: context.l10n.remindersEmptyTitle,
+                    body: context.l10n.remindersEmptyBody,
                     icon: Icons.event_note_outlined,
-                    actionLabel: 'Crea promemoria',
+                    actionLabel: context.l10n.remindersCreateTitle,
                     onAction: _openCreate,
                   );
                 }
@@ -190,7 +189,7 @@ class _RemindersListPageState extends State<RemindersListPage> {
                         padding:
                             const EdgeInsets.symmetric(vertical: AppSpacing.xl),
                         child: Text(
-                          'Nessun promemoria per questi filtri.',
+                          context.l10n.remindersNoMatchForFilters,
                           style: AppTextStyles.bodySmall,
                         ),
                       )
@@ -235,20 +234,20 @@ class _KindFilterBar extends StatelessWidget {
         scrollDirection: Axis.horizontal,
         children: [
           _KindChip(
-            label: 'Tutti',
+            label: context.l10n.remindersFilterAll,
             selected: selected == _KindFilterOption.all,
             onTap: () => onSelect(_KindFilterOption.all),
           ),
           const SizedBox(width: AppSpacing.sm),
           _KindChip(
-            label: 'Eventi',
+            label: context.l10n.remindersFilterEvents,
             icon: Icons.event_outlined,
             selected: selected == _KindFilterOption.events,
             onTap: () => onSelect(_KindFilterOption.events),
           ),
           const SizedBox(width: AppSpacing.sm),
           _KindChip(
-            label: 'Cicli',
+            label: context.l10n.remindersFilterCourses,
             icon: Icons.medication_outlined,
             selected: selected == _KindFilterOption.courses,
             onTap: () => onSelect(_KindFilterOption.courses),
@@ -275,7 +274,7 @@ class _PetFilterBar extends StatelessWidget {
         scrollDirection: Axis.horizontal,
         children: [
           _KindChip(
-              label: 'Tutti',
+              label: context.l10n.remindersFilterAll,
               selected: selected == null,
               onTap: () => onSelect(null)),
           for (final pet in pets) ...[
@@ -401,16 +400,16 @@ class _ViewModeToggle extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SegmentedButton<_ViewMode>(
-      segments: const [
+      segments: [
         ButtonSegment(
           value: _ViewMode.list,
-          icon: Icon(Icons.view_list_rounded, size: 16),
-          label: Text('Lista'),
+          icon: const Icon(Icons.view_list_rounded, size: 16),
+          label: Text(context.l10n.remindersViewList),
         ),
         ButtonSegment(
           value: _ViewMode.calendar,
-          icon: Icon(Icons.calendar_month_rounded, size: 16),
-          label: Text('Calendario'),
+          icon: const Icon(Icons.calendar_month_rounded, size: 16),
+          label: Text(context.l10n.remindersViewCalendar),
         ),
       ],
       selected: {value},
@@ -449,31 +448,23 @@ class _MonthCalendarViewState extends State<_MonthCalendarView> {
       DateTime(DateTime.now().year, DateTime.now().month);
   DateTime? _selectedDay = DateTime.now();
 
-  static const _monthNames = [
-    'Gennaio',
-    'Febbraio',
-    'Marzo',
-    'Aprile',
-    'Maggio',
-    'Giugno',
-    'Luglio',
-    'Agosto',
-    'Settembre',
-    'Ottobre',
-    'Novembre',
-    'Dicembre',
-  ];
-  static const _weekdayNames = [
-    'Lunedì',
-    'Martedì',
-    'Mercoledì',
-    'Giovedì',
-    'Venerdì',
-    'Sabato',
-    'Domenica',
-  ];
-  static const _mondayFirstLabels = ['L', 'M', 'M', 'G', 'V', 'S', 'D'];
-  static const _sundayFirstLabels = ['D', 'L', 'M', 'M', 'G', 'V', 'S'];
+  static String _capitalized(String text) =>
+      text.isEmpty ? text : text[0].toUpperCase() + text.substring(1);
+
+  /// "Gennaio" … "Dicembre" in the app language.
+  static List<String> _monthNames() => appLongMonths().map(_capitalized).toList();
+
+  /// "Lunedì" … "Domenica" in the app language (Monday first).
+  static List<String> _weekdayNames() => appLongWeekdaysMondayFirst().map(_capitalized).toList();
+
+  /// One-letter weekday headers, Monday first ("L", "M", "M", "G", "V", "S", "D").
+  static List<String> _mondayFirstLabels() =>
+      _weekdayNames().map((name) => name.substring(0, 1)).toList();
+
+  static List<String> _sundayFirstLabels() {
+    final labels = _mondayFirstLabels();
+    return [labels.last, ...labels.sublist(0, 6)];
+  }
 
   void _changeMonth(int delta) {
     setState(() {
@@ -493,8 +484,8 @@ class _MonthCalendarViewState extends State<_MonthCalendarView> {
     final weekStartDay = LayoutSettingsStore.instance.settings.weekStartDay;
     final pets = PetDemoStore.instance.list();
     final labels = weekStartDay == WeekStartDay.monday
-        ? _mondayFirstLabels
-        : _sundayFirstLabels;
+        ? _mondayFirstLabels()
+        : _sundayFirstLabels();
 
     final firstOfMonth = DateTime(_visibleMonth.year, _visibleMonth.month);
     final firstOffset = weekStartDay == WeekStartDay.monday
@@ -531,7 +522,7 @@ class _MonthCalendarViewState extends State<_MonthCalendarView> {
               ),
               Expanded(
                 child: Text(
-                  '${_monthNames[_visibleMonth.month - 1]} ${_visibleMonth.year}',
+                  '${_monthNames()[_visibleMonth.month - 1]} ${_visibleMonth.year}',
                   textAlign: TextAlign.center,
                   style: AppTextStyles.title.copyWith(fontSize: 18),
                 ),
@@ -596,8 +587,7 @@ class _MonthCalendarViewState extends State<_MonthCalendarView> {
             ),
             const SizedBox(height: AppSpacing.sm),
             if (selectedReminders.isEmpty)
-              Text('Nessuna attività in questo giorno.',
-                  style: AppTextStyles.bodySmall)
+              Text(context.l10n.remindersNothingThisDay, style: AppTextStyles.bodySmall)
             else
               ...selectedReminders.asMap().entries.expand((entry) {
                 final index = entry.key;
@@ -622,8 +612,8 @@ class _MonthCalendarViewState extends State<_MonthCalendarView> {
   }
 
   String _selectedDayLabel(DateTime day) {
-    if (isSameDay(day, DateTime.now())) return 'Oggi';
-    return '${_weekdayNames[day.weekday - 1]} ${day.day} ${_monthNames[day.month - 1]}';
+    if (isSameDay(day, DateTime.now())) return context.l10n.remindersTodayCapitalized;
+    return '${_weekdayNames()[day.weekday - 1]} ${day.day} ${_monthNames()[day.month - 1]}';
   }
 }
 
@@ -732,9 +722,9 @@ class _ReminderCreatePageState extends State<ReminderCreatePage> {
   Widget build(BuildContext context) {
     return _Shell(
       title: widget.petName.isEmpty
-          ? 'Crea promemoria'
-          : 'Nuovo promemoria per ${widget.petName}',
-      subtitle: 'Scegli il tipo, la data e i dettagli.',
+          ? context.l10n.remindersCreateTitle
+          : context.l10n.remindersCreateTitleForPet(widget.petName),
+      subtitle: context.l10n.remindersCreateSubtitle,
       petName: widget.petName,
       child: _ReminderForm(
         petName: widget.petName,
@@ -766,8 +756,8 @@ class _ReminderEditPageState extends State<ReminderEditPage> {
   @override
   Widget build(BuildContext context) {
     return _Shell(
-      title: 'Modifica promemoria',
-      subtitle: 'Aggiorna tipo, data e note.',
+      title: context.l10n.remindersEditTitle,
+      subtitle: context.l10n.remindersEditSubtitle,
       petName: widget.reminder?.petName,
       child: _ReminderForm(
         petName: widget.reminder?.petName ?? '',
@@ -890,7 +880,7 @@ class _ReminderFormState extends State<_ReminderForm> {
       initialTime: _doseTimes.isEmpty
           ? const TimeOfDay(hour: 8, minute: 0)
           : const TimeOfDay(hour: 20, minute: 0),
-      helpText: 'Orario della dose',
+      helpText: context.l10n.remindersDosePickerHelp,
     );
     if (picked == null) return;
     final time = formatClockTime(picked.hour, picked.minute);
@@ -916,8 +906,8 @@ class _ReminderFormState extends State<_ReminderForm> {
 
   String? _validateDate(String? value) {
     final raw = (value ?? '').trim();
-    if (raw.isEmpty) return 'Inserisci una data.';
-    if (parseStrictDate(raw) == null) return 'Data non valida (gg/mm/aaaa).';
+    if (raw.isEmpty) return context.l10n.remindersDateRequired;
+    if (parseStrictDate(raw) == null) return context.l10n.remindersDateInvalid;
     return null;
   }
 
@@ -975,21 +965,22 @@ class _ReminderFormState extends State<_ReminderForm> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Tipo', style: AppTextStyles.caption),
+            Text(context.l10n.remindersFormKind, style: AppTextStyles.caption),
             const SizedBox(height: AppSpacing.sm),
             _KindSelector(
                 value: _kind,
                 onChanged: (kind) => setState(() => _kind = kind)),
             const SizedBox(height: AppSpacing.lg),
-            const _FieldLabel('Titolo'),
+            _FieldLabel(context.l10n.remindersFormTitleLabel),
             const SizedBox(height: AppSpacing.xs),
             _TextField(
               controller: _titleController,
               hintText: widget.petName.isEmpty
-                  ? 'Es. Richiamo vaccinale'
-                  : 'Es. Richiamo vaccinale di ${widget.petName}',
-              validator: (value) =>
-                  (value ?? '').trim().isEmpty ? 'Inserisci un titolo.' : null,
+                  ? context.l10n.remindersFormTitleHint
+                  : context.l10n.remindersFormTitleHintWithPet(widget.petName),
+              validator: (value) => (value ?? '').trim().isEmpty
+                  ? context.l10n.remindersTitleRequired
+                  : null,
             ),
             const SizedBox(height: AppSpacing.lg),
             Row(
@@ -999,9 +990,9 @@ class _ReminderFormState extends State<_ReminderForm> {
                   flex: 3,
                   child: _DatePickerField(
                     label: switch (_kind) {
-                      EventKind.spot => 'Data',
-                      EventKind.recurring => 'Prossima scadenza',
-                      EventKind.course => 'Data di inizio',
+                      EventKind.spot => context.l10n.remindersFieldDate,
+                      EventKind.recurring => context.l10n.remindersFieldNextDue,
+                      EventKind.course => context.l10n.remindersFieldStartDate,
                     },
                     controller: _dateController,
                     onPick: _pickDate,
@@ -1014,7 +1005,7 @@ class _ReminderFormState extends State<_ReminderForm> {
                   Expanded(
                     flex: 2,
                     child: _PickerField(
-                      label: 'Ora',
+                      label: context.l10n.remindersFieldTime,
                       icon: Icons.schedule_rounded,
                       text: formatClockTime(_time.hour, _time.minute),
                       onTap: _pickTime,
@@ -1026,7 +1017,7 @@ class _ReminderFormState extends State<_ReminderForm> {
             ),
             if (_kind == EventKind.recurring) ...[
               const SizedBox(height: AppSpacing.lg),
-              Text('Si ripete', style: AppTextStyles.caption),
+              Text(context.l10n.remindersRepeats, style: AppTextStyles.caption),
               const SizedBox(height: AppSpacing.sm),
               _IntervalPresetChips(
                 selectedUnit: _intervalUnit,
@@ -1046,7 +1037,7 @@ class _ReminderFormState extends State<_ReminderForm> {
                     Expanded(
                       child: _TextField(
                         controller: _customIntervalController,
-                        hintText: 'Numero',
+                        hintText: context.l10n.remindersCustomNumberHint,
                         keyboardType: TextInputType.number,
                         onChanged: (value) {
                           final parsed = int.tryParse(value);
@@ -1068,7 +1059,7 @@ class _ReminderFormState extends State<_ReminderForm> {
                 ),
               ],
               const SizedBox(height: AppSpacing.lg),
-              Text('Fine ricorrenza', style: AppTextStyles.caption),
+              Text(context.l10n.remindersRecurrenceEndLabel, style: AppTextStyles.caption),
               const SizedBox(height: AppSpacing.sm),
               _RecurrenceEndChips(
                 value: _recurrenceEnd,
@@ -1078,7 +1069,7 @@ class _ReminderFormState extends State<_ReminderForm> {
                 const SizedBox(height: AppSpacing.md),
                 _TextField(
                   controller: _occurrenceCountController,
-                  hintText: 'Numero di volte',
+                  hintText: context.l10n.remindersOccurrenceCountHint,
                   keyboardType: TextInputType.number,
                   onChanged: (value) {
                     final parsed = int.tryParse(value);
@@ -1091,7 +1082,7 @@ class _ReminderFormState extends State<_ReminderForm> {
               if (_recurrenceEnd == RecurrenceEnd.onDate) ...[
                 const SizedBox(height: AppSpacing.md),
                 _DatePickerField(
-                  label: 'Ultima data',
+                  label: context.l10n.remindersLastDate,
                   controller: _recurrenceEndDateController,
                   onPick: _pickRecurrenceEndDate,
                   validator: _validateDate,
@@ -1100,14 +1091,14 @@ class _ReminderFormState extends State<_ReminderForm> {
             ],
             if (_kind == EventKind.course) ...[
               const SizedBox(height: AppSpacing.lg),
-              Text('Durata del ciclo', style: AppTextStyles.caption),
+              Text(context.l10n.remindersCourseDuration, style: AppTextStyles.caption),
               const SizedBox(height: AppSpacing.sm),
               _DurationStepper(
                 days: _courseDuration,
                 onChanged: (days) => setState(() => _courseDuration = days),
               ),
               const SizedBox(height: AppSpacing.lg),
-              Text('Orari delle dosi', style: AppTextStyles.caption),
+              Text(context.l10n.remindersDoseTimes, style: AppTextStyles.caption),
               const SizedBox(height: AppSpacing.sm),
               Wrap(
                 spacing: AppSpacing.sm,
@@ -1120,7 +1111,7 @@ class _ReminderFormState extends State<_ReminderForm> {
                     ),
                   ActionChip(
                     avatar: const Icon(Icons.add_rounded, size: 18),
-                    label: const Text('Aggiungi orario'),
+                    label: Text(context.l10n.remindersAddDoseTime),
                     onPressed: _addDoseTime,
                   ),
                 ],
@@ -1128,17 +1119,17 @@ class _ReminderFormState extends State<_ReminderForm> {
               if (_doseTimes.isEmpty) ...[
                 const SizedBox(height: AppSpacing.xs),
                 Text(
-                  'Senza orari ricevi un avviso al giorno, alle 9:00.',
+                  context.l10n.remindersNoDoseTimesNote,
                   style: AppTextStyles.caption.copyWith(color: AppColors.mutedText),
                 ),
               ],
             ],
             const SizedBox(height: AppSpacing.lg),
-            const _FieldLabel('Nota'),
+            _FieldLabel(context.l10n.remindersFormNote),
             const SizedBox(height: AppSpacing.xs),
             _TextField(
               controller: _noteController,
-              hintText: 'Es. Porta il libretto sanitario',
+              hintText: context.l10n.remindersFormNoteHint,
               maxLines: 2,
             ),
             const SizedBox(height: AppSpacing.xl),
@@ -1146,11 +1137,11 @@ class _ReminderFormState extends State<_ReminderForm> {
               children: [
                 Expanded(
                     child: FilledButton(
-                        onPressed: _save, child: const Text('Salva'))),
+                        onPressed: _save, child: Text(context.l10n.commonSave))),
                 const SizedBox(width: AppSpacing.sm),
                 Expanded(
                   child: OutlinedButton(
-                      onPressed: widget.onCancel, child: const Text('Annulla')),
+                      onPressed: widget.onCancel, child: Text(context.l10n.commonCancel)),
                 ),
               ],
             ),
@@ -1182,11 +1173,17 @@ class _KindSelector extends StatelessWidget {
   final EventKind value;
   final ValueChanged<EventKind> onChanged;
 
-  static const _options = <(EventKind, IconData, String)>[
-    (EventKind.spot, Icons.event_outlined, 'Evento'),
-    (EventKind.recurring, Icons.autorenew_rounded, 'Ricorrente'),
-    (EventKind.course, Icons.medication_outlined, 'Ciclo'),
+  static const _options = <(EventKind, IconData)>[
+    (EventKind.spot, Icons.event_outlined),
+    (EventKind.recurring, Icons.autorenew_rounded),
+    (EventKind.course, Icons.medication_outlined),
   ];
+
+  static String _label(BuildContext context, EventKind kind) => switch (kind) {
+        EventKind.spot => context.l10n.remindersKindEvent,
+        EventKind.recurring => context.l10n.remindersKindOptionRecurring,
+        EventKind.course => context.l10n.remindersKindOptionCourse,
+      };
 
   @override
   Widget build(BuildContext context) {
@@ -1197,7 +1194,7 @@ class _KindSelector extends StatelessWidget {
           Expanded(
             child: _KindOption(
               icon: _options[i].$2,
-              label: _options[i].$3,
+              label: _label(context, _options[i].$1),
               selected: value == _options[i].$1,
               onTap: () => onChanged(_options[i].$1),
             ),
@@ -1290,7 +1287,7 @@ class _DatePickerField extends StatelessWidget {
               size: 18, color: AppColors.primary),
           style: AppTextStyles.bodySmall.copyWith(color: AppColors.text),
           decoration: InputDecoration(
-            hintText: 'gg/mm/aaaa',
+            hintText: context.l10n.remindersDatePlaceholder,
             filled: true,
             fillColor: AppColors.background,
             contentPadding: const EdgeInsets.symmetric(
@@ -1400,15 +1397,15 @@ class _IntervalPresetChips extends StatelessWidget {
       spacing: AppSpacing.sm,
       runSpacing: AppSpacing.sm,
       children: [
-        _presetChip('7 gg', _isSelected(IntervalUnit.days, 7),
+        _presetChip(context.l10n.remindersPreset7Days, _isSelected(IntervalUnit.days, 7),
             () => onPreset(IntervalUnit.days, 7)),
-        _presetChip('30 gg', _isSelected(IntervalUnit.days, 30),
+        _presetChip(context.l10n.remindersPreset30Days, _isSelected(IntervalUnit.days, 30),
             () => onPreset(IntervalUnit.days, 30)),
-        _presetChip('6 mesi', _isSelected(IntervalUnit.months, 6),
+        _presetChip(context.l10n.remindersPreset6Months, _isSelected(IntervalUnit.months, 6),
             () => onPreset(IntervalUnit.months, 6)),
-        _presetChip('12 mesi', _isSelected(IntervalUnit.months, 12),
+        _presetChip(context.l10n.remindersPreset12Months, _isSelected(IntervalUnit.months, 12),
             () => onPreset(IntervalUnit.months, 12)),
-        _presetChip('Personalizzato', isCustom, onCustom),
+        _presetChip(context.l10n.remindersPresetCustom, isCustom, onCustom),
       ],
     );
   }
@@ -1431,17 +1428,17 @@ class _RecurrenceEndChips extends StatelessWidget {
       runSpacing: AppSpacing.sm,
       children: [
         _KindChip(
-          label: 'Sempre',
+          label: context.l10n.remindersEndAlways,
           selected: value == RecurrenceEnd.never,
           onTap: () => onChanged(RecurrenceEnd.never),
         ),
         _KindChip(
-          label: 'Per N volte',
+          label: context.l10n.remindersEndAfterN,
           selected: value == RecurrenceEnd.afterOccurrences,
           onTap: () => onChanged(RecurrenceEnd.afterOccurrences),
         ),
         _KindChip(
-          label: 'Fino a una data',
+          label: context.l10n.remindersEndUntil,
           selected: value == RecurrenceEnd.onDate,
           onTap: () => onChanged(RecurrenceEnd.onDate),
         ),
@@ -1459,9 +1456,9 @@ class _UnitToggle extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SegmentedButton<IntervalUnit>(
-      segments: const [
-        ButtonSegment(value: IntervalUnit.days, label: Text('Giorni')),
-        ButtonSegment(value: IntervalUnit.months, label: Text('Mesi')),
+      segments: [
+        ButtonSegment(value: IntervalUnit.days, label: Text(context.l10n.remindersUnitDays)),
+        ButtonSegment(value: IntervalUnit.months, label: Text(context.l10n.remindersUnitMonths)),
       ],
       selected: {value},
       showSelectedIcon: false,
@@ -1513,7 +1510,7 @@ class _DurationStepperState extends State<_DurationStepper> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         IconButton(
-          tooltip: 'Un giorno in meno',
+          tooltip: context.l10n.remindersOneDayLess,
           onPressed:
               days > _DurationStepper.minDays ? () => widget.onChanged(days - 1) : null,
           icon: const Icon(Icons.remove_circle_outline),
@@ -1543,12 +1540,15 @@ class _DurationStepperState extends State<_DurationStepper> {
               if (parsed == null ||
                   parsed < _DurationStepper.minDays ||
                   parsed > _DurationStepper.maxDays) {
-                return 'Da ${_DurationStepper.minDays} a ${_DurationStepper.maxDays} giorni.';
+                return context.l10n.remindersDurationRange(
+                  _DurationStepper.minDays,
+                  _DurationStepper.maxDays,
+                );
               }
               return null;
             },
             decoration: InputDecoration(
-              suffixText: days == 1 ? 'giorno' : 'giorni',
+              suffixText: context.l10n.remindersDurationUnit(days),
               filled: true,
               fillColor: AppColors.background,
               contentPadding: const EdgeInsets.symmetric(
@@ -1567,7 +1567,7 @@ class _DurationStepperState extends State<_DurationStepper> {
           ),
         ),
         IconButton(
-          tooltip: 'Un giorno in più',
+          tooltip: context.l10n.remindersOneDayMore,
           onPressed:
               days < _DurationStepper.maxDays ? () => widget.onChanged(days + 1) : null,
           icon: const Icon(Icons.add_circle_outline),
@@ -1659,17 +1659,17 @@ class _ReminderDetailPageState extends State<ReminderDetailPage> {
         backgroundColor: AppColors.surface,
         shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(AppRadii.large)),
-        title: const Text('Eliminare questo promemoria?'),
-        content: Text('"${reminder.title}" verrà eliminato definitivamente.'),
+        title: Text(dialogContext.l10n.remindersDeleteConfirmTitle),
+        content: Text(dialogContext.l10n.remindersDeleteConfirmBody(reminder.title)),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(dialogContext).pop(false),
-            child: const Text('Annulla'),
+            child: Text(dialogContext.l10n.commonCancel),
           ),
           FilledButton(
             style: FilledButton.styleFrom(backgroundColor: AppColors.danger),
             onPressed: () => Navigator.of(dialogContext).pop(true),
-            child: const Text('Elimina'),
+            child: Text(dialogContext.l10n.commonDelete),
           ),
         ],
       ),
@@ -1692,17 +1692,16 @@ class _ReminderDetailPageState extends State<ReminderDetailPage> {
 
     if (reminder == null) {
       return _Shell(
-        title: 'Promemoria non trovato',
-        subtitle: 'Questo promemoria non è più disponibile.',
-        actionLabel: 'Indietro',
+        title: context.l10n.remindersNotFoundTitle,
+        subtitle: context.l10n.remindersNotFoundSubtitle,
+        actionLabel: context.l10n.commonBack,
         onAction: () => Navigator.of(context).pop(),
         child: _StatePanel(
-          label: 'Non trovato',
-          title: 'Nessun promemoria da mostrare.',
-          body:
-              'Potrebbe essere stato eliminato o non essere ancora sincronizzato.',
+          label: context.l10n.remindersNotFoundLabel,
+          title: context.l10n.remindersNotFoundPanelTitle,
+          body: context.l10n.remindersNotFoundBody,
           icon: Icons.search_off_rounded,
-          actionLabel: 'Torna alla lista',
+          actionLabel: context.l10n.remindersBackToList,
           onAction: () => Navigator.of(context).pop(),
         ),
       );
@@ -1711,9 +1710,9 @@ class _ReminderDetailPageState extends State<ReminderDetailPage> {
     final presentation = ReminderPresentation.of(reminder);
 
     return _Shell(
-      title: 'Dettaglio promemoria',
-      subtitle: 'Tipo, data e nota del promemoria.',
-      actionLabel: 'Modifica',
+      title: context.l10n.remindersDetailTitle,
+      subtitle: context.l10n.remindersDetailSubtitle,
+      actionLabel: context.l10n.commonEdit,
       onAction: _openEdit,
       petName: reminder.petName,
       child: Column(
@@ -1722,19 +1721,19 @@ class _ReminderDetailPageState extends State<ReminderDetailPage> {
           _SummaryCard(
             title: reminder.title,
             body: reminder.note.isEmpty
-                ? 'Nessuna nota aggiunta.'
+                ? context.l10n.remindersNoNote
                 : reminder.note,
             icon: presentation.icon,
           ),
           const SizedBox(height: AppSpacing.lg),
           _FormPanel(
-            title: 'Riepilogo promemoria',
+            title: context.l10n.remindersSummaryTitle,
             items: [
               _FormItem(
-                  label: 'Animale',
+                  label: context.l10n.remindersSummaryPet,
                   value: reminder.petName.isEmpty ? '—' : reminder.petName),
-              _FormItem(label: 'Tipo', value: presentation.kindLabel),
-              _FormItem(label: 'Stato', value: presentation.dateLabel),
+              _FormItem(label: context.l10n.remindersFormKind, value: presentation.kindLabel),
+              _FormItem(label: context.l10n.remindersSummaryStatus, value: presentation.dateLabel),
             ],
             onSave: _openEdit,
             onCancel: () => Navigator.of(context).pop(),
@@ -1746,8 +1745,8 @@ class _ReminderDetailPageState extends State<ReminderDetailPage> {
               onPressed: _delete,
               icon: const Icon(Icons.delete_outline_rounded,
                   size: 18, color: AppColors.danger),
-              label: const Text('Elimina promemoria',
-                  style: TextStyle(color: AppColors.danger)),
+              label: Text(context.l10n.remindersDeleteButton,
+                  style: const TextStyle(color: AppColors.danger)),
             ),
           ),
         ],
@@ -1902,15 +1901,15 @@ class _BrandPill extends StatelessWidget {
         color: AppColors.primary,
         borderRadius: BorderRadius.circular(AppRadii.pill),
       ),
-      child: const Row(
+      child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(Icons.notifications_active_outlined,
+          const Icon(Icons.notifications_active_outlined,
               size: 14, color: AppColors.accent),
-          SizedBox(width: AppSpacing.sm),
+          const SizedBox(width: AppSpacing.sm),
           Text(
-            'VET APP',
-            style: TextStyle(
+            context.l10n.appTitle,
+            style: const TextStyle(
                 color: AppColors.onPrimary,
                 fontSize: 12,
                 fontWeight: FontWeight.w800),
@@ -1963,11 +1962,11 @@ class _LoadingPanel extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return _Card(
-      label: 'Caricamento',
+      label: context.l10n.remindersLoadingLabel,
       title: title,
       body: body,
       icon: Icons.hourglass_empty_outlined,
-      actionLabel: 'Attendi',
+      actionLabel: context.l10n.remindersWait,
       onAction: null,
       loading: true,
     );
@@ -2276,12 +2275,12 @@ class _FormPanel extends StatelessWidget {
             children: [
               Expanded(
                 child: FilledButton(
-                    onPressed: onSave, child: const Text('Modifica')),
+                    onPressed: onSave, child: Text(context.l10n.commonEdit)),
               ),
               const SizedBox(width: AppSpacing.sm),
               Expanded(
                   child: OutlinedButton(
-                      onPressed: onCancel, child: const Text('Indietro'))),
+                      onPressed: onCancel, child: Text(context.l10n.commonBack))),
             ],
           ),
         ],
@@ -2348,7 +2347,7 @@ void saveReminderInBackground(RemindersRepository repository, ReminderEntry remi
     showReminderFailure(
       error is ReminderSyncException
           ? error.message
-          : 'Non sono riuscito a salvare il promemoria. Riprova.',
+          : appL10n.remindersErrorSaveFailed,
     );
   }));
 }

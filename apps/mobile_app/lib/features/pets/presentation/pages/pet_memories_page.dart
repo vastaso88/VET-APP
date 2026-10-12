@@ -4,8 +4,11 @@ import '../../../../design_system/tokens/app_colors.dart';
 import '../../../../design_system/tokens/app_radii.dart';
 import '../../../../design_system/tokens/app_spacing.dart';
 import '../../../../design_system/tokens/app_text_styles.dart';
+import '../../../../l10n/date_formats.dart';
+import '../../../../l10n/l10n.dart';
 import '../../data/pet_demo_store.dart';
 import '../../domain/pet_models.dart';
+import '../../domain/pet_value_labels.dart';
 import '../widgets/pet_avatar.dart';
 import '../widgets/pets_scaffold.dart';
 
@@ -32,14 +35,14 @@ class _PetMemoriesPageState extends State<PetMemoriesPage> {
       builder: (dialogContext) => AlertDialog(
         backgroundColor: AppColors.surface,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadii.large)),
-        title: const Text('Rimuovere definitivamente?'),
-        content: Text('Il ricordo di "${pet.name}" verrà eliminato, senza possibilità di recupero.'),
+        title: Text(context.l10n.petsMemoriesRemoveTitle),
+        content: Text(context.l10n.petsMemoriesRemoveBody(pet.name)),
         actions: [
-          TextButton(onPressed: () => Navigator.of(dialogContext).pop(false), child: const Text('Annulla')),
+          TextButton(onPressed: () => Navigator.of(dialogContext).pop(false), child: Text(context.l10n.commonCancel)),
           FilledButton(
             style: FilledButton.styleFrom(backgroundColor: AppColors.danger),
             onPressed: () => Navigator.of(dialogContext).pop(true),
-            child: const Text('Rimuovi'),
+            child: Text(context.l10n.petsMemoriesRemoveConfirm),
           ),
         ],
       ),
@@ -60,12 +63,12 @@ class _PetMemoriesPageState extends State<PetMemoriesPage> {
   @override
   Widget build(BuildContext context) {
     return PetsScaffold(
-      title: 'Ricordi',
-      subtitle: 'I profili dei pet che hanno condiviso la vostra strada.',
+      title: context.l10n.petsMemoriesTitle,
+      subtitle: context.l10n.petsMemoriesSubtitle,
       onBack: () => Navigator.of(context).maybePop(),
       body: _pets.isEmpty
           ? Center(
-              child: Text('Nessun ricordo conservato ancora.', style: AppTextStyles.bodySmall),
+              child: Text(context.l10n.petsMemoriesEmpty, style: AppTextStyles.bodySmall),
             )
           : ListView.separated(
               itemCount: _pets.length + 1,
@@ -88,16 +91,14 @@ class _MemoryRow extends StatelessWidget {
   final PetProfile pet;
   final VoidCallback onRemove;
 
-  String _dateRange() {
+  String _dateRange(BuildContext context) {
+    final birth = localizedBirthDateLabel(pet.birthDateLabel);
     final memorialDate = pet.memorialDate;
-    if (memorialDate == null) return pet.birthDateLabel;
-    const months = [
-      'gen', 'feb', 'mar', 'apr', 'mag', 'giu', 'lug', 'ago', 'set', 'ott', 'nov', 'dic',
-    ];
-    final formatted = '${memorialDate.day} ${months[memorialDate.month - 1]} ${memorialDate.year}';
-    return pet.birthDateLabel.isEmpty
-        ? 'Con noi fino al $formatted'
-        : 'Con noi dal ${pet.birthDateLabel} al $formatted';
+    if (memorialDate == null) return birth;
+    final formatted = formatAppDate(memorialDate, 'd MMM y');
+    return birth.isEmpty
+        ? context.l10n.petsMemoriesWithUsUntil(formatted)
+        : context.l10n.petsMemoriesWithUsRange(birth, formatted);
   }
 
   @override
@@ -134,14 +135,14 @@ class _MemoryRow extends StatelessWidget {
                 ),
                 const SizedBox(height: 2),
                 Text(
-                  '${pet.species} · ${pet.breedLabel}',
+                  '${localizedSpeciesLabel(pet.species)} · ${pet.breedLabel}',
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: AppTextStyles.caption,
                 ),
                 const SizedBox(height: 2),
                 Text(
-                  _dateRange(),
+                  _dateRange(context),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: AppTextStyles.caption.copyWith(color: AppColors.mutedText),
@@ -192,8 +193,7 @@ class _MemoriesComingSoonNote extends StatelessWidget {
           const SizedBox(width: AppSpacing.sm),
           Expanded(
             child: Text(
-              'Presto: i vostri momenti più belli insieme, come le passeggiate più lunghe o i traguardi '
-              'raggiunti, raccolti qui.',
+              context.l10n.petsMemoriesComingSoon,
               style: AppTextStyles.caption.copyWith(color: AppColors.primaryStrong),
             ),
           ),

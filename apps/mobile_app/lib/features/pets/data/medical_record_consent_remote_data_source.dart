@@ -3,6 +3,7 @@ import 'dart:convert';
 
 import 'package:http/http.dart' as http;
 
+import '../../../l10n/l10n.dart';
 import '../../../shared/auth/current_user.dart';
 import '../../../shared/config/app_runtime_config_loader.dart';
 import '../../../shared/errors/app_network_error.dart';
@@ -41,23 +42,23 @@ class MedicalRecordConsentRemoteDataSource {
         return Result.failure<bool>(
           AppNetworkError(
             code: 'medical_record_consent_http_${response.statusCode}',
-            message: 'Non sono riuscito a salvare il consenso. Riprova.',
+            message: appL10n.petsConsentSaveFailed,
           ),
         );
       }
       return Result.success(granted);
     } on TimeoutException {
       return Result.failure<bool>(
-        const AppNetworkError(
+        AppNetworkError(
           code: 'medical_record_consent_timeout',
-          message: 'Connessione lenta. Il consenso non è stato salvato, riprova.',
+          message: appL10n.petsConsentSlowConnection,
         ),
       );
     } catch (e) {
       return Result.failure<bool>(
         AppNetworkError(
           code: 'medical_record_consent_offline',
-          message: 'Sei offline: il consenso non è stato salvato. Riprova con la connessione.',
+          message: appL10n.petsConsentOffline,
           details: e,
         ),
       );

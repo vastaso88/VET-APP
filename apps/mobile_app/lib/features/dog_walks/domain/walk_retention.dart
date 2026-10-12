@@ -1,3 +1,4 @@
+import '../../../l10n/l10n.dart';
 import 'walk_session.dart';
 
 /// Owner-set cap on starred walks per pet (see pickFavoriteToEvict).
@@ -51,9 +52,9 @@ class WalkHistoryView {
   /// card in "Recenti" since it also appears higher up.
   String? highlightLabelFor(WalkSession walk) {
     final parts = [
-      if (longestDistance?.id == walk.id) 'Più lunga',
-      if (longestDuration?.id == walk.id) 'Più duratura',
-      if (walk.isFavorite) 'Preferita',
+      if (longestDistance?.id == walk.id) appL10n.walksHighlightLongest,
+      if (longestDuration?.id == walk.id) appL10n.walksHighlightMostDurable,
+      if (walk.isFavorite) appL10n.walksHighlightFavorite,
     ];
     return parts.isEmpty ? null : parts.join(' · ');
   }

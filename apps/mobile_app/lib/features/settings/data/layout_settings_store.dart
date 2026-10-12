@@ -3,21 +3,29 @@ import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../../../l10n/l10n.dart';
+
 enum WeekStartDay { monday, sunday }
 
 /// Text size of the chat bubbles and the message box. [normal] is the size
 /// the chat had before this setting existed; the default is one step up
 /// because owners found the original small.
 enum ChatTextSize {
-  small(0.9, 'Piccolo'),
-  normal(1.0, 'Normale'),
-  large(1.15, 'Grande'),
-  extraLarge(1.3, 'Molto grande');
+  small(0.9),
+  normal(1.0),
+  large(1.15),
+  extraLarge(1.3);
 
-  const ChatTextSize(this.scale, this.label);
+  const ChatTextSize(this.scale);
 
   final double scale;
-  final String label;
+
+  String get label => switch (this) {
+        ChatTextSize.small => appL10n.settingsTextSizeSmall,
+        ChatTextSize.normal => appL10n.settingsTextSizeNormal,
+        ChatTextSize.large => appL10n.settingsTextSizeLarge,
+        ChatTextSize.extraLarge => appL10n.settingsTextSizeExtraLarge,
+      };
 
   static ChatTextSize fromName(String? name) {
     for (final size in ChatTextSize.values) {

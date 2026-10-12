@@ -4,6 +4,7 @@ import '../../../../design_system/tokens/app_colors.dart';
 import '../../../../design_system/tokens/app_radii.dart';
 import '../../../../design_system/tokens/app_spacing.dart';
 import '../../../../design_system/tokens/app_text_styles.dart';
+import '../../../../l10n/l10n.dart';
 import '../../../../shared/widgets/pet_loader.dart';
 import '../../../home/presentation/widgets/home_dashboard_primitives.dart';
 import '../../../location/data/location_preference_store.dart';
@@ -114,14 +115,14 @@ class _MarketplacePageState extends State<MarketplacePage> {
         backgroundColor: AppColors.background,
         elevation: 0,
         foregroundColor: AppColors.text,
-        title: Text('Mercatino dell\'usato', style: AppTextStyles.title),
+        title: Text(context.l10n.marketplacePageTitle, style: AppTextStyles.title),
         actions: [
           FutureBuilder<_MarketplaceViewData>(
             future: _dataFuture,
             builder: (context, snapshot) => TextButton.icon(
               onPressed: snapshot.hasData ? () => _openMap(snapshot.data!) : null,
               icon: const Icon(Icons.map_outlined),
-              label: const Text('Mappa'),
+              label: Text(context.l10n.marketplaceMapAction),
             ),
           ),
           const SizedBox(width: AppSpacing.sm),
@@ -130,7 +131,7 @@ class _MarketplacePageState extends State<MarketplacePage> {
       floatingActionButton: FloatingActionButton.extended(
         onPressed: _openCreateListing,
         icon: const Icon(Icons.add),
-        label: const Text('Nuovo annuncio'),
+        label: Text(context.l10n.marketplaceNewListing),
       ),
       body: SafeArea(
         child: FutureBuilder<_MarketplaceViewData>(
@@ -161,7 +162,7 @@ class _MarketplacePageState extends State<MarketplacePage> {
                 ),
                 children: [
                   Text(
-                    'Compra, vendi e regala articoli per animali con altri proprietari.',
+                    context.l10n.marketplaceIntro,
                     style: AppTextStyles.bodySmall,
                   ),
                   const SizedBox(height: AppSpacing.lg),
@@ -184,7 +185,7 @@ class _MarketplacePageState extends State<MarketplacePage> {
                   if (data.referenceLocation == null) ...[
                     const SizedBox(height: AppSpacing.xs),
                     Text(
-                      'Per filtrare per distanza imposta la tua posizione in Impostazioni → Località.',
+                      context.l10n.marketplaceDistanceNeedsLocation,
                       style: AppTextStyles.caption,
                     ),
                   ],
@@ -193,7 +194,7 @@ class _MarketplacePageState extends State<MarketplacePage> {
                     Padding(
                       padding: const EdgeInsets.symmetric(vertical: AppSpacing.xxl),
                       child: Text(
-                        'Nessun annuncio con questi filtri per ora.',
+                        context.l10n.marketplaceEmptyFiltered,
                         style: AppTextStyles.bodySmall,
                         textAlign: TextAlign.center,
                       ),
@@ -273,12 +274,12 @@ class _LoadError extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             Text(
-              'Non riesco a caricare gli annunci. Controlla la connessione.',
+              context.l10n.marketplaceLoadError,
               style: AppTextStyles.bodySmall,
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: AppSpacing.lg),
-            OutlinedButton(onPressed: onRetry, child: const Text('Riprova')),
+            OutlinedButton(onPressed: onRetry, child: Text(context.l10n.commonRetry)),
           ],
         ),
       ),
@@ -302,7 +303,7 @@ class _CategoryFilterRow extends StatelessWidget {
           Padding(
             padding: const EdgeInsets.only(right: AppSpacing.sm),
             child: ChoiceChip(
-              label: const Text('Tutte'),
+              label: Text(context.l10n.marketplaceFilterAllCategories),
               selected: selected == null,
               onSelected: (_) => onSelected(null),
             ),
@@ -341,7 +342,7 @@ class _SpeciesFilterRow extends StatelessWidget {
           Padding(
             padding: const EdgeInsets.only(right: AppSpacing.sm),
             child: ChoiceChip(
-              label: const Text('Tutti gli animali'),
+              label: Text(context.l10n.marketplaceFilterAllSpecies),
               selected: selected == null,
               onSelected: (_) => onSelected(null),
             ),

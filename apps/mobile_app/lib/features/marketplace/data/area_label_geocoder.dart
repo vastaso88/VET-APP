@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:http/http.dart' as http;
 
+import '../../../l10n/l10n.dart';
 import '../../location/domain/coordinates.dart';
 
 /// Turns a listing's already-approximated position into a zone name
@@ -25,7 +26,7 @@ class NominatimAreaLabelResolver implements AreaLabelResolver {
       'lat': approximated.latitude.toString(),
       'lon': approximated.longitude.toString(),
       'zoom': '14',
-      'accept-language': 'it',
+      'accept-language': AppLocaleHolder.current.languageCode,
     });
     try {
       final response = await _client.get(

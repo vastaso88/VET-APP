@@ -54,7 +54,7 @@ class WalkTrackingService : Service() {
      * own notification so tracking still survives the background.
      */
     fun start(context: Context, args: Map<*, *>): Boolean {
-      val intent = Intent(context, WalkTrackingService::class.java).apply { putArgs(args) }
+      val intent = Intent(context, WalkTrackingService::class.java).apply { putArgs(context, args) }
       return try {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
           context.startForegroundService(intent)
@@ -71,7 +71,7 @@ class WalkTrackingService : Service() {
     /** Re-posts the notification in place; no-op when the service isn't running. */
     fun update(context: Context, args: Map<*, *>) {
       if (!isRunning) return
-      val intent = Intent().apply { putArgs(args) }
+      val intent = Intent().apply { putArgs(context, args) }
       notificationManager(context).notify(NOTIFICATION_ID, buildNotification(context, intent))
     }
 
@@ -79,9 +79,12 @@ class WalkTrackingService : Service() {
       context.stopService(Intent(context, WalkTrackingService::class.java))
     }
 
-    private fun Intent.putArgs(args: Map<*, *>) {
+    private fun Intent.putArgs(context: Context, args: Map<*, *>) {
       putExtra(EXTRA_PET_ID, args[EXTRA_PET_ID] as? String ?: "")
-      putExtra(EXTRA_TITLE, args[EXTRA_TITLE] as? String ?: "Passeggiata in corso")
+      putExtra(
+          EXTRA_TITLE,
+          args[EXTRA_TITLE] as? String ?: context.getString(R.string.walk_notif_title_default),
+      )
       putExtra(EXTRA_TEXT, args[EXTRA_TEXT] as? String ?: "")
       putExtra(EXTRA_PAUSED, args[EXTRA_PAUSED] as? Boolean ?: false)
       putExtra(EXTRA_CHRONOMETER_BASE, (args[EXTRA_CHRONOMETER_BASE] as? Number)?.toLong() ?: 0L)
@@ -98,13 +101,17 @@ class WalkTrackingService : Service() {
     private fun ensureChannel(context: Context) {
       if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) return
       val manager = notificationManager(context)
-      if (manager.getNotificationChannel(NOTIFICATION_CHANNEL_ID) != null) return
+      val name = context.getString(R.string.walk_notif_channel_name)
+      // Re-creating a channel with the same id only refreshes its name and
+      // description (importance and sound stay as the first time), so the
+      // channel follows the phone language when it changes.
+      if (manager.getNotificationChannel(NOTIFICATION_CHANNEL_ID)?.name?.toString() == name) return
       val channel = NotificationChannel(
           NOTIFICATION_CHANNEL_ID,
-          "Passeggiata in corso",
+          name,
           NotificationManager.IMPORTANCE_DEFAULT,
       ).apply {
-        description = "Mostra la passeggiata in corso: tempo, distanza, pausa e fine."
+        description = context.getString(R.string.walk_notif_channel_description)
         setSound(null, null)
         enableVibration(false)
         setShowBadge(false)
@@ -155,12 +162,17 @@ class WalkTrackingService : Service() {
         val command = if (paused) "resume" else "pause"
         builder.addAction(
             action(
-                if (paused) "Riprendi" else "Pausa",
+                context.getString(
+                    if (paused) R.string.walk_notif_action_resume else R.string.walk_notif_action_pause
+                ),
                 DogWalksWidgetProvider.controlBroadcast(context, command, petId),
             )
         )
         builder.addAction(
-            action("Termina", DogWalksWidgetProvider.actionIntent(context, "finish_walk", petId))
+            action(
+                context.getString(R.string.walk_notif_action_finish),
+                DogWalksWidgetProvider.actionIntent(context, "finish_walk", petId),
+            )
         )
       }
 

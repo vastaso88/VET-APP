@@ -1,6 +1,8 @@
 import 'package:flutter/foundation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+import '../../../l10n/date_formats.dart';
+import '../../../l10n/l10n.dart';
 import '../../../../shared/auth/current_user.dart';
 import '../../../../shared/config/app_runtime_config_loader.dart';
 import '../../pets/data/pet_demo_store.dart';
@@ -73,7 +75,7 @@ class MedicalRecordsRepository {
             (row) => MedicalRecordEntry(
               id: (row['id'] ?? '').toString(),
               petName: (row['pet_name'] ?? '').toString(),
-              title: (row['title'] ?? 'Referto clinico').toString(),
+              title: (row['title'] ?? appL10n.medicalDefaultRecordTitle).toString(),
               subtitle: (row['subtitle'] ?? '').toString(),
               meta: (row['meta'] ?? '').toString(),
               badge: (row['badge'] ?? '').toString(),
@@ -112,16 +114,12 @@ class MedicalRecordsRepository {
 
     final ownerId = CurrentUser.get()?.id;
     if (ownerId == null) {
-      throw const MedicalRecordSaveException(
-        'Accesso non disponibile: riprova dopo aver effettuato di nuovo il login.',
-      );
+      throw MedicalRecordSaveException(appL10n.medicalSaveNoSession);
     }
     await PetDemoStore.instance.ensureHydrated();
     final petId = PetDemoStore.instance.byName(record.petName)?.id;
     if (petId == null) {
-      throw MedicalRecordSaveException(
-        'Il profilo di ${record.petName} non è sincronizzato sul server: sistemalo prima di caricare referti.',
-      );
+      throw MedicalRecordSaveException(appL10n.medicalSavePetNotSynced(record.petName));
     }
 
     final now = DateTime.now().toUtc();
@@ -142,9 +140,7 @@ class MedicalRecordsRepository {
         'attachment_id': record.attachmentId,
       });
     } catch (_) {
-      throw const MedicalRecordSaveException(
-        'Non sono riuscito a salvare il referto sul server. Controlla la connessione e riprova.',
-      );
+      throw MedicalRecordSaveException(appL10n.medicalSaveFailed);
     }
     _savedThisSession.removeWhere((item) => item.id == record.id);
     _savedThisSession.add(record);
@@ -164,9 +160,7 @@ class MedicalRecordsRepository {
     try {
       await client.from('clinical_events').update({'title': title}).eq('id', record.id);
     } catch (_) {
-      throw const MedicalRecordSaveException(
-        'Non sono riuscito a rinominare il referto. Riprova.',
-      );
+      throw MedicalRecordSaveException(appL10n.medicalRenameFailed);
     }
     final sessionIndex = _savedThisSession.indexWhere((item) => item.id == record.id);
     if (sessionIndex != -1) _savedThisSession[sessionIndex] = _withTitle(record, title);
@@ -184,9 +178,7 @@ class MedicalRecordsRepository {
     try {
       await client.from('clinical_events').delete().eq('id', id);
     } catch (_) {
-      throw const MedicalRecordSaveException(
-        'Non sono riuscito a eliminare il referto. Riprova.',
-      );
+      throw MedicalRecordSaveException(appL10n.medicalDeleteFailed);
     }
     _savedThisSession.removeWhere((item) => item.id == id);
     changes.value++;
@@ -333,10 +325,6 @@ class MedicalRecordSaveException implements Exception {
 String _isoDate(DateTime utc) =>
     '${utc.year.toString().padLeft(4, '0')}-${utc.month.toString().padLeft(2, '0')}-${utc.day.toString().padLeft(2, '0')}';
 
-const _monthsIt = [
-  'gen', 'feb', 'mar', 'apr', 'mag', 'giu', 'lug', 'ago', 'set', 'ott', 'nov', 'dic',
-];
-
 /// Display text for a `created_at` timestamptz from the server, in local time.
 /// Unparseable values are shown as they are rather than hidden.
 String formatStoredRecordDate(Object? stored) {
@@ -346,7 +334,7 @@ String formatStoredRecordDate(Object? stored) {
   final local = parsed.toLocal();
   final hh = local.hour.toString().padLeft(2, '0');
   final mm = local.minute.toString().padLeft(2, '0');
-  return '${local.day} ${_monthsIt[local.month - 1]} ${local.year}, $hh:$mm';
+  return '${local.day} ${appShortMonths()[local.month - 1]} ${local.year}, $hh:$mm';
 }
 
 /// Records saved this session, kept in memory. They are shown at once, and

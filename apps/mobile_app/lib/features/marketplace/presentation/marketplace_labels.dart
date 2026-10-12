@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
+import '../../../l10n/date_formats.dart';
+import '../../../l10n/l10n.dart';
 import '../../location/presentation/distance_label.dart';
 import '../../settings/data/unit_settings_store.dart';
 import '../../settings/domain/unit_conversion.dart';
@@ -9,23 +11,23 @@ import '../domain/marketplace_listing.dart';
 String listingCategoryLabel(ListingCategory category) {
   switch (category) {
     case ListingCategory.kennelsCarriers:
-      return 'Cucce, lettini e trasportini';
+      return appL10n.marketplaceCategoryKennelsCarriers;
     case ListingCategory.leashesCollars:
-      return 'Guinzagli, collari e pettorine';
+      return appL10n.marketplaceCategoryLeashesCollars;
     case ListingCategory.toys:
-      return 'Giochi';
+      return appL10n.marketplaceCategoryToys;
     case ListingCategory.clothing:
-      return 'Abbigliamento';
+      return appL10n.marketplaceCategoryClothing;
     case ListingCategory.feeding:
-      return 'Ciotole e alimentazione';
+      return appL10n.marketplaceCategoryFeeding;
     case ListingCategory.hygieneGrooming:
-      return 'Igiene e toelettatura';
+      return appL10n.marketplaceCategoryHygieneGrooming;
     case ListingCategory.aquariumsTerrariums:
-      return 'Acquari e terrari';
+      return appL10n.marketplaceCategoryAquariumsTerrariums;
     case ListingCategory.cagesAviaries:
-      return 'Gabbie e voliere';
+      return appL10n.marketplaceCategoryCagesAviaries;
     case ListingCategory.other:
-      return 'Altro';
+      return appL10n.marketplaceOther;
   }
 }
 
@@ -55,42 +57,40 @@ IconData listingCategoryIcon(ListingCategory category) {
 String listingConditionLabel(ListingCondition condition) {
   switch (condition) {
     case ListingCondition.newItem:
-      return 'Nuovo';
+      return appL10n.marketplaceConditionNew;
     case ListingCondition.likeNew:
-      return 'Come nuovo';
+      return appL10n.marketplaceConditionLikeNew;
     case ListingCondition.good:
-      return 'Buono';
+      return appL10n.marketplaceConditionGood;
     case ListingCondition.worn:
-      return 'Usato';
+      return appL10n.marketplaceConditionWorn;
   }
 }
 
 String listingSpeciesLabel(ListingSpecies species) {
   switch (species) {
     case ListingSpecies.allSpecies:
-      return 'Tutte le specie';
+      return appL10n.marketplaceSpeciesAll;
     case ListingSpecies.dog:
-      return 'Cane';
+      return appL10n.marketplaceSpeciesDog;
     case ListingSpecies.cat:
-      return 'Gatto';
+      return appL10n.marketplaceSpeciesCat;
     case ListingSpecies.smallMammal:
-      return 'Piccoli mammiferi';
+      return appL10n.marketplaceSpeciesSmallMammal;
     case ListingSpecies.bird:
-      return 'Uccello';
+      return appL10n.marketplaceSpeciesBird;
     case ListingSpecies.reptileAmphibian:
-      return 'Rettili e anfibi';
+      return appL10n.marketplaceSpeciesReptileAmphibian;
     case ListingSpecies.fish:
-      return 'Pesce';
+      return appL10n.marketplaceSpeciesFish;
     case ListingSpecies.other:
-      return 'Altro';
+      return appL10n.marketplaceOther;
   }
 }
 
-final _priceFormat = NumberFormat.currency(locale: 'it_IT', symbol: '€');
-
 String listingPriceLabel(int? priceCents) {
-  if (priceCents == null) return 'In regalo';
-  return _priceFormat.format(priceCents / 100);
+  if (priceCents == null) return appL10n.marketplacePriceGift;
+  return NumberFormat.currency(locale: appIntlLocale, symbol: '€').format(priceCents / 100);
 }
 
 String listingDistanceLabel(double? distanceMeters) {
@@ -99,6 +99,6 @@ String listingDistanceLabel(double? distanceMeters) {
 }
 
 String listingDistanceFilterLabel(double? maxDistanceKm) {
-  if (maxDistanceKm == null) return 'Ovunque';
+  if (maxDistanceKm == null) return appL10n.marketplaceDistanceAnywhere;
   return formatKilometersIn(maxDistanceKm, UnitSettingsStore.instance.system);
 }

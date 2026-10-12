@@ -14,6 +14,7 @@ import '../../domain/radar_place.dart';
 import '../radar_category.dart';
 import '../radar_contributions.dart';
 import '../widgets/radar_chip.dart';
+import '../../../../l10n/l10n.dart';
 
 /// "Segnala!" for a place missing from the map: a category from a closed
 /// list, the name on the sign, and a position picked on the map. No notes
@@ -81,9 +82,8 @@ class _ReportMissingPlacePageState extends State<ReportMissingPlacePage> {
         addressLabel: address,
       ),
       successMessage: (receipt) => receipt.countedAsConfirmation
-          ? 'Era già stato segnalato: la tua segnalazione vale come conferma.'
-          : 'Segnalazione inviata. Se entro $expiryDays giorni nessuno la conferma, '
-              'viene cancellata.',
+          ? context.l10n.placesReportAlreadyKnown
+          : context.l10n.placesReportSentExpiry(expiryDays),
     );
     if (!mounted) {
       return;
@@ -102,7 +102,7 @@ class _ReportMissingPlacePageState extends State<ReportMissingPlacePage> {
         backgroundColor: AppColors.background,
         elevation: 0,
         foregroundColor: AppColors.text,
-        title: Text('Segnala un luogo mancante', style: AppTextStyles.title),
+        title: Text(context.l10n.placesReportTitle, style: AppTextStyles.title),
       ),
       body: SafeArea(
         child: FutureBuilder<RadarReportOptions>(
@@ -117,7 +117,7 @@ class _ReportMissingPlacePageState extends State<ReportMissingPlacePage> {
                 child: Padding(
                   padding: const EdgeInsets.all(AppSpacing.xxl),
                   child: Text(
-                    'Le segnalazioni non sono disponibili in questo momento. Riprova più tardi.',
+                    context.l10n.placesReportUnavailable,
                     style: AppTextStyles.bodySmall,
                     textAlign: TextAlign.center,
                   ),
@@ -135,7 +135,7 @@ class _ReportMissingPlacePageState extends State<ReportMissingPlacePage> {
     return ListView(
       padding: const EdgeInsets.all(AppSpacing.xl),
       children: [
-        Text('Che cos’è?', style: AppTextStyles.body.copyWith(fontWeight: FontWeight.w700)),
+        Text(context.l10n.placesReportWhatIs, style: AppTextStyles.body.copyWith(fontWeight: FontWeight.w700)),
         const SizedBox(height: AppSpacing.sm),
         Wrap(
           spacing: AppSpacing.sm,
@@ -158,16 +158,17 @@ class _ReportMissingPlacePageState extends State<ReportMissingPlacePage> {
           textCapitalization: TextCapitalization.words,
           onChanged: (_) => setState(() {}),
           decoration: InputDecoration(
-            labelText: _nameIsOptional ? 'Nome (facoltativo)' : 'Nome sull’insegna',
-            helperText: 'Solo il nome: niente telefoni, indirizzi o nomi di persone.',
+            labelText: _nameIsOptional
+                ? context.l10n.placesReportNameOptional
+                : context.l10n.placesReportNameLabel,
+            helperText: context.l10n.placesReportNameHelper,
           ),
         ),
         const SizedBox(height: AppSpacing.lg),
-        Text('Dove si trova?', style: AppTextStyles.body.copyWith(fontWeight: FontWeight.w700)),
+        Text(context.l10n.placesReportWhere, style: AppTextStyles.body.copyWith(fontWeight: FontWeight.w700)),
         const SizedBox(height: AppSpacing.xs),
         Text(
-          'Sposta la mappa finché il segnaposto è sul luogo. L’indirizzo viene ricavato '
-          'dalla posizione.',
+          context.l10n.placesReportMapHint,
           style: AppTextStyles.bodySmall,
         ),
         const SizedBox(height: AppSpacing.sm),
@@ -217,14 +218,11 @@ class _ReportMissingPlacePageState extends State<ReportMissingPlacePage> {
         const SizedBox(height: AppSpacing.xl),
         FilledButton(
           onPressed: _canSend ? _send : null,
-          child: _sending ? const PetLoader.small() : const Text('Invia segnalazione'),
+          child: _sending ? const PetLoader.small() : Text(context.l10n.placesReportSubmit),
         ),
         const SizedBox(height: AppSpacing.sm),
         Text(
-          'La segnalazione sarà visibile a tutti come "in attesa di conferma" e diventerà '
-          'definitiva quando altri utenti la confermano. Se entro ${options.expiryDays} giorni '
-          'nessuno la conferma, viene cancellata in automatico. Puoi ritirarla in ogni momento '
-          'dalla sua scheda. Il tuo nome non compare.',
+          context.l10n.placesReportFootnote(options.expiryDays),
           style: AppTextStyles.caption,
         ),
       ],

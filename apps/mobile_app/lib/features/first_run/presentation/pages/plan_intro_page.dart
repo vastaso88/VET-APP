@@ -2,12 +2,11 @@ import 'package:flutter/material.dart';
 
 import '../../../../shared/widgets/pet_loader.dart';
 
-import 'package:intl/intl.dart';
-
 import '../../../../design_system/tokens/app_colors.dart';
 import '../../../../design_system/tokens/app_radii.dart';
 import '../../../../design_system/tokens/app_spacing.dart';
 import '../../../../design_system/tokens/app_text_styles.dart';
+import '../../../../l10n/l10n.dart';
 import '../../../billing/data/billing_demo_store.dart';
 import '../../../billing/data/subscription_remote_data_source.dart';
 import '../../../billing/domain/billing_models.dart';
@@ -58,11 +57,10 @@ class _PlanIntroPageState extends State<PlanIntroPage> {
             AppSpacing.xxxl,
           ),
           children: [
-            Text('Benvenuto in VetApp.', style: AppTextStyles.display.copyWith(fontSize: 26)),
+            Text(context.l10n.firstRunWelcomeTitle, style: AppTextStyles.display.copyWith(fontSize: 26)),
             const SizedBox(height: AppSpacing.sm),
             Text(
-              'Scegli come iniziare: puoi provare tutto gratis per 10 giorni, senza carta, '
-              'oppure scegliere subito un piano.',
+              context.l10n.firstRunPlanIntroSubtitle,
               style: AppTextStyles.body,
             ),
             const SizedBox(height: AppSpacing.xl),
@@ -72,7 +70,7 @@ class _PlanIntroPageState extends State<PlanIntroPage> {
             ),
             const SizedBox(height: AppSpacing.xl),
             Text(
-              'OPPURE SCEGLI SUBITO UN PIANO',
+              context.l10n.firstRunPlanOrChoose,
               style: AppTextStyles.caption.copyWith(letterSpacing: 0.8),
             ),
             const SizedBox(height: AppSpacing.md),
@@ -116,15 +114,14 @@ class _TrialCard extends StatelessWidget {
               const Icon(Icons.celebration_outlined, color: AppColors.onPrimary),
               const SizedBox(width: AppSpacing.sm),
               Text(
-                'Prova gratuita — 10 giorni',
+                context.l10n.firstRunTrialCardTitle,
                 style: AppTextStyles.title.copyWith(color: AppColors.onPrimary, fontSize: 18),
               ),
             ],
           ),
           const SizedBox(height: AppSpacing.sm),
           Text(
-            'Nessuna carta richiesta. Alla scadenza dei 10 giorni ti chiederemo di '
-            'scegliere un piano per continuare.',
+            context.l10n.firstRunTrialCardBody,
             style: AppTextStyles.bodySmall.copyWith(color: AppColors.onPrimary.withValues(alpha: 0.9)),
           ),
           const SizedBox(height: AppSpacing.lg),
@@ -137,7 +134,7 @@ class _TrialCard extends StatelessWidget {
                 foregroundColor: AppColors.primaryStrong,
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadii.pill)),
               ),
-              child: const Text('Inizia la prova gratuita'),
+              child: Text(context.l10n.firstRunTrialStartButton),
             ),
           ),
         ],
@@ -161,8 +158,8 @@ class _CompactPlanCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final price = plan.priceFor(BillingCycle.monthly);
     final priceLabel = price == 0
-        ? 'Gratis'
-        : '${NumberFormat.currency(locale: 'it_IT', symbol: '€').format(price)}/mese';
+        ? context.l10n.billingPriceFree
+        : context.l10n.billingPricePerMonth(formatPlanAmount(price));
 
     return Container(
       padding: const EdgeInsets.all(AppSpacing.md),
@@ -200,7 +197,7 @@ class _CompactPlanCard extends StatelessWidget {
                     height: 16,
                     child: PetLoader.small(),
                   )
-                : const Text('Scegli'),
+                : Text(context.l10n.firstRunPlanSelectButton),
           ),
         ],
       ),

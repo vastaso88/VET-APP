@@ -7,6 +7,8 @@ import '../../../../design_system/tokens/app_colors.dart';
 import '../../../../design_system/tokens/app_radii.dart';
 import '../../../../design_system/tokens/app_spacing.dart';
 import '../../../../design_system/tokens/app_text_styles.dart';
+import '../../../../l10n/date_formats.dart';
+import '../../../../l10n/l10n.dart';
 import '../../../../shared/auth/current_user.dart';
 import '../../../local_events/presentation/pages/local_events_page.dart';
 import '../../../pet_news/data/pet_news_repository.dart';
@@ -84,7 +86,7 @@ class _HomeDashboardPageState extends State<HomeDashboardPage> {
 
   @override
   Widget build(BuildContext context) {
-    final ownerName = CurrentUser.firstName(fallback: 'Ospite');
+    final ownerName = CurrentUser.firstName(fallback: context.l10n.sharedGuestName);
 
     return SizedBox.expand(
       child: Container(
@@ -113,7 +115,7 @@ class _HomeDashboardPageState extends State<HomeDashboardPage> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text('Buongiorno', style: AppTextStyles.caption),
+                    Text(context.l10n.homeGreeting, style: AppTextStyles.caption),
                     const SizedBox(height: AppSpacing.xs),
                     Text(ownerName, style: AppTextStyles.display),
                     const SizedBox(height: AppSpacing.xxl),
@@ -240,15 +242,15 @@ class _AgendaSection extends StatelessWidget {
               future: repository.loadReminders(),
               builder: (context, snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting) {
-                  return const Column(
+                  return Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       DashboardSectionHeader(
-                        title: 'Prossime attività',
-                        subtitle: 'Spot e cicli, per tutti gli animali.',
+                        title: context.l10n.homeAgendaTitle,
+                        subtitle: context.l10n.homeAgendaLoadingSubtitle,
                       ),
-                      SizedBox(height: AppSpacing.lg),
-                      _SectionSkeleton(),
+                      const SizedBox(height: AppSpacing.lg),
+                      const _SectionSkeleton(),
                     ],
                   );
                 }
@@ -262,8 +264,8 @@ class _AgendaSection extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     DashboardSectionHeader(
-                      title: 'Prossime attività',
-                      subtitle: _summaryLine(reminders),
+                      title: context.l10n.homeAgendaTitle,
+                      subtitle: _summaryLine(context, reminders),
                     ),
                     const SizedBox(height: AppSpacing.lg),
                     ValueListenableBuilder<int>(
@@ -317,7 +319,7 @@ class _AgendaSection extends StatelessWidget {
   /// layout setting, which only governs the calendar strip above. Courses
   /// aren't counted here — they're ongoing rather than "upcoming", and are
   /// shown on the calendar as capsule markers instead.
-  String _summaryLine(List<ReminderEntry> reminders) {
+  String _summaryLine(BuildContext context, List<ReminderEntry> reminders) {
     final today = DateTime.now();
     final startOfToday = DateTime(today.year, today.month, today.day);
     final endOfWindow = startOfToday.add(const Duration(days: 10));
@@ -328,7 +330,7 @@ class _AgendaSection extends StatelessWidget {
       return !d.isBefore(startOfToday) && !d.isAfter(endOfWindow);
     }).length;
 
-    return '$count attività nei prossimi 10 giorni';
+    return context.l10n.homeAgendaSummary(count);
   }
 }
 
@@ -370,8 +372,19 @@ class _WeekStrip extends StatelessWidget {
   final int weeksShown;
   final WeekStartDay weekStartDay;
 
-  static const _mondayFirstLabels = ['L', 'M', 'M', 'G', 'V', 'S', 'D'];
-  static const _sundayFirstLabels = ['D', 'L', 'M', 'M', 'G', 'V', 'S'];
+  /// One-letter weekday headers in the app language ("L M M G V S D" in
+  /// Italian), Monday first.
+  static List<String> _mondayFirstLabels() => [
+        for (final name in appShortWeekdaysMondayFirst()) _initial(name),
+      ];
+
+  static List<String> _sundayFirstLabels() {
+    final monday = _mondayFirstLabels();
+    return [monday.last, ...monday.sublist(0, 6)];
+  }
+
+  static String _initial(String name) =>
+      name.isEmpty ? '' : String.fromCharCode(name.runes.first).toUpperCase();
 
   @override
   Widget build(BuildContext context) {
@@ -379,8 +392,8 @@ class _WeekStrip extends StatelessWidget {
     final startOfToday = DateTime(today.year, today.month, today.day);
     final weekStart = _startOfWeek(startOfToday, weekStartDay);
     final labels = weekStartDay == WeekStartDay.monday
-        ? _mondayFirstLabels
-        : _sundayFirstLabels;
+        ? _mondayFirstLabels()
+        : _sundayFirstLabels();
     final totalDays = weeksShown * 7;
     final days =
         List.generate(totalDays, (i) => weekStart.add(Duration(days: i)));
@@ -550,9 +563,9 @@ class _PetNewsSection extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const DashboardSectionHeader(
-          title: 'Curiosità per i tuoi animali',
-          subtitle: 'Notizie dal mondo dei pet selezionate per te.',
+        DashboardSectionHeader(
+          title: context.l10n.homeNewsTitle,
+          subtitle: context.l10n.homeNewsSubtitle,
         ),
         const SizedBox(height: AppSpacing.lg),
         FutureBuilder<List<PetNewsItem>>(
@@ -566,7 +579,7 @@ class _PetNewsSection extends StatelessWidget {
             if (items.isEmpty) {
               return DashboardSurfaceCard(
                 child: Text(
-                  'Curiosità non disponibili al momento. Riprova più tardi.',
+                  context.l10n.homeNewsUnavailable,
                   style: AppTextStyles.bodySmall,
                 ),
               );
@@ -605,7 +618,7 @@ class _MoreNewsButton extends StatelessWidget {
       child: OutlinedButton.icon(
         onPressed: onTap,
         icon: const Icon(Icons.newspaper_outlined, size: 18),
-        label: const Text('Scopri altre notizie'),
+        label: Text(context.l10n.homeNewsMore),
       ),
     );
   }
@@ -643,7 +656,7 @@ class _LocalEventsNoticeState extends State<_LocalEventsNotice> {
           const SizedBox(width: AppSpacing.md),
           Expanded(
             child: Text(
-              'Vicino a me',
+              context.l10n.homeNearbyTitle,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
               style: AppTextStyles.bodySmall.copyWith(
@@ -679,7 +692,7 @@ class _SponsorBanner extends StatelessWidget {
           const SizedBox(width: AppSpacing.md),
           Expanded(
             child: Text(
-              'Spazio riservato ai nostri partner.',
+              context.l10n.homeSponsorBanner,
               style: AppTextStyles.bodySmall
                   .copyWith(color: AppColors.secondaryText),
             ),
@@ -705,7 +718,7 @@ class _SectionSkeleton extends StatelessWidget {
             child: CircularProgressIndicator(strokeWidth: 2),
           ),
           const SizedBox(width: AppSpacing.md),
-          Text('Caricamento...', style: AppTextStyles.bodySmall),
+          Text(context.l10n.homeSectionLoading, style: AppTextStyles.bodySmall),
         ],
       ),
     );

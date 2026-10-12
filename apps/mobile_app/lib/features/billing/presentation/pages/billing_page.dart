@@ -2,12 +2,13 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:intl/intl.dart';
 
 import '../../../../design_system/tokens/app_colors.dart';
 import '../../../../design_system/tokens/app_radii.dart';
 import '../../../../design_system/tokens/app_spacing.dart';
 import '../../../../design_system/tokens/app_text_styles.dart';
+import '../../../../l10n/date_formats.dart';
+import '../../../../l10n/l10n.dart';
 import '../../../../shared/widgets/coming_soon_page.dart';
 import '../../data/billing_demo_store.dart';
 import '../../data/subscription_remote_data_source.dart';
@@ -45,7 +46,7 @@ class _BillingPageState extends State<BillingPage> {
       onSuccess: (status) {
         _store.switchToPlan(tier);
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Ora sei sul piano ${_store.currentPlan.displayName}.')),
+          SnackBar(content: Text(context.l10n.billingPlanSwitched(_store.currentPlan.displayName))),
         );
       },
       onFailure: (error) => ScaffoldMessenger.of(context).showSnackBar(
@@ -57,10 +58,10 @@ class _BillingPageState extends State<BillingPage> {
   void _openPaymentHistory() {
     Navigator.of(context).push(
       MaterialPageRoute<void>(
-        builder: (_) => const ComingSoonPage(
-          title: 'Cronologia pagamenti',
+        builder: (_) => ComingSoonPage(
+          title: context.l10n.billingPaymentHistory,
           icon: Icons.receipt_long_outlined,
-          description: 'Le tue fatture e ricevute saranno consultabili qui.',
+          description: context.l10n.billingPaymentHistoryComingSoon,
         ),
       ),
     );
@@ -84,7 +85,7 @@ class _BillingPageState extends State<BillingPage> {
         backgroundColor: AppColors.background,
         elevation: 0,
         foregroundColor: AppColors.text,
-        title: Text('Abbonamento e pagamenti', style: AppTextStyles.title),
+        title: Text(context.l10n.billingTitle, style: AppTextStyles.title),
       ),
       body: SafeArea(
         child: ListenableBuilder(
@@ -108,7 +109,7 @@ class _BillingPageState extends State<BillingPage> {
                 ],
                 _CurrentPlanCard(store: _store),
                 const SizedBox(height: AppSpacing.xl),
-                const _SectionLabel('Confronta i piani'),
+                _SectionLabel(context.l10n.billingComparePlans),
                 _BillingCycleToggle(store: _store),
                 const SizedBox(height: AppSpacing.md),
                 const IncludedInAllPlansCard(),
@@ -122,7 +123,7 @@ class _BillingPageState extends State<BillingPage> {
                   ),
                   const SizedBox(height: AppSpacing.md),
                 ],
-                const _SectionLabel('Metodi di pagamento'),
+                _SectionLabel(context.l10n.billingPaymentMethodsSection),
                 for (final method in _store.paymentMethods)
                   _PaymentMethodTile(
                     method: method,
@@ -130,11 +131,11 @@ class _BillingPageState extends State<BillingPage> {
                     onRemove: () => _store.removePaymentMethod(method.id),
                   ),
                 _AddPaymentMethodRow(onTap: _addPaymentMethod),
-                const _SectionLabel('Fatturazione'),
+                _SectionLabel(context.l10n.billingInvoicingSection),
                 _Row(
                   icon: Icons.receipt_long_outlined,
                   iconColor: AppColors.mutedText,
-                  title: 'Cronologia pagamenti',
+                  title: context.l10n.billingPaymentHistory,
                   onTap: _openPaymentHistory,
                 ),
               ],
@@ -146,11 +147,14 @@ class _BillingPageState extends State<BillingPage> {
   }
 }
 
-String _priceLabel(SubscriptionPlan plan, BillingCycle cycle) {
+String _priceLabel(BuildContext context, SubscriptionPlan plan, BillingCycle cycle) {
+  final l10n = context.l10n;
   final price = plan.priceFor(cycle);
-  if (price == 0) return 'Gratis';
-  final amount = NumberFormat.currency(locale: 'it_IT', symbol: '€').format(price);
-  return cycle == BillingCycle.yearly ? '$amount/mese, fatturato annualmente' : '$amount/mese';
+  if (price == 0) return l10n.billingPriceFree;
+  final amount = formatPlanAmount(price);
+  return cycle == BillingCycle.yearly
+      ? l10n.billingPricePerMonthYearly(amount)
+      : l10n.billingPricePerMonth(amount);
 }
 
 class _TrialBanner extends StatelessWidget {
@@ -177,7 +181,7 @@ class _TrialBanner extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Prova gratuita in corso',
+                  context.l10n.billingTrialBannerTitle,
                   style: AppTextStyles.bodySmall.copyWith(
                     color: AppColors.info,
                     fontWeight: FontWeight.w800,
@@ -186,8 +190,8 @@ class _TrialBanner extends StatelessWidget {
                 const SizedBox(height: 2),
                 Text(
                   daysLeft > 0
-                      ? 'Ti restano $daysLeft giorni gratis, nessuna carta richiesta. Scegli un piano quando vuoi, o alla scadenza.'
-                      : 'La prova gratuita sta per terminare: scegli un piano per continuare a usare VetApp.',
+                      ? context.l10n.billingTrialBannerDaysLeft(daysLeft)
+                      : context.l10n.billingTrialBannerEnding,
                   style: AppTextStyles.caption.copyWith(color: AppColors.info),
                 ),
               ],
@@ -217,7 +221,7 @@ class _DeveloperBanner extends StatelessWidget {
           const SizedBox(width: AppSpacing.sm),
           Expanded(
             child: Text(
-              'Account sviluppatore: accesso illimitato, nessun piano richiesto.',
+              context.l10n.billingDeveloperBanner,
               style: AppTextStyles.bodySmall.copyWith(
                 color: AppColors.success,
                 fontWeight: FontWeight.w700,
@@ -253,7 +257,7 @@ class _CurrentPlanCard extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Il tuo piano',
+                  context.l10n.billingCurrentPlanLabel,
                   style: AppTextStyles.caption.copyWith(color: AppColors.onPrimary.withValues(alpha: 0.7)),
                 ),
                 const SizedBox(height: 4),
@@ -264,7 +268,7 @@ class _CurrentPlanCard extends StatelessWidget {
                 if (renewal != null) ...[
                   const SizedBox(height: 4),
                   Text(
-                    'Rinnovo il ${DateFormat('dd/MM/yyyy').format(renewal)}',
+                    context.l10n.billingRenewalOn(formatAppDate(renewal, 'dd/MM/yyyy')),
                     style: AppTextStyles.bodySmall.copyWith(color: AppColors.onPrimary.withValues(alpha: 0.85)),
                   ),
                 ],
@@ -293,7 +297,7 @@ class _BillingCycleToggle extends StatelessWidget {
       children: [
         Expanded(
           child: _CyclePill(
-            label: 'Mensile',
+            label: context.l10n.billingCycleMonthly,
             selected: store.billingCycle == BillingCycle.monthly,
             onTap: () => store.setBillingCycle(BillingCycle.monthly),
           ),
@@ -301,7 +305,7 @@ class _BillingCycleToggle extends StatelessWidget {
         const SizedBox(width: AppSpacing.sm),
         Expanded(
           child: _CyclePill(
-            label: 'Annuale',
+            label: context.l10n.billingCycleYearly,
             selected: store.billingCycle == BillingCycle.yearly,
             onTap: () => store.setBillingCycle(BillingCycle.yearly),
           ),
@@ -391,7 +395,7 @@ class _PlanCard extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 4),
-          Text(_priceLabel(plan, cycle), style: AppTextStyles.bodySmall),
+          Text(_priceLabel(context, plan, cycle), style: AppTextStyles.bodySmall),
           const SizedBox(height: AppSpacing.md),
           PlanFeatureList(features: plan.features),
           const SizedBox(height: AppSpacing.sm),
@@ -405,7 +409,7 @@ class _PlanCard extends StatelessWidget {
                       side: const BorderSide(color: AppColors.border),
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadii.pill)),
                     ),
-                    child: const Text('Piano attuale'),
+                    child: Text(context.l10n.billingCurrentPlanButton),
                   )
                 : FilledButton(
                     onPressed: onSelect,
@@ -413,7 +417,11 @@ class _PlanCard extends StatelessWidget {
                       backgroundColor: AppColors.primary,
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadii.pill)),
                     ),
-                    child: Text(plan.tier == PlanTier.free ? 'Torna a Free' : 'Passa a ${plan.displayName}'),
+                    child: Text(
+                      plan.tier == PlanTier.free
+                          ? context.l10n.billingBackToFree
+                          : context.l10n.billingSwitchToPlan(plan.displayName),
+                    ),
                   ),
           ),
         ],
@@ -463,7 +471,9 @@ class _PaymentMethodTile extends StatelessWidget {
                 ),
                 const SizedBox(height: 2),
                 Text(
-                  method.isDefault ? 'Scade ${method.expiryLabel} · Predefinita' : 'Scade ${method.expiryLabel}',
+                  method.isDefault
+                      ? context.l10n.billingCardExpiresDefault(method.expiryLabel)
+                      : context.l10n.billingCardExpires(method.expiryLabel),
                   style: AppTextStyles.bodySmall,
                 ),
               ],
@@ -474,8 +484,8 @@ class _PaymentMethodTile extends StatelessWidget {
             onSelected: (value) => value == 'default' ? onSetDefault() : onRemove(),
             itemBuilder: (context) => [
               if (!method.isDefault)
-                const PopupMenuItem(value: 'default', child: Text('Imposta come predefinita')),
-              const PopupMenuItem(value: 'remove', child: Text('Rimuovi')),
+                PopupMenuItem(value: 'default', child: Text(context.l10n.billingSetDefault)),
+              PopupMenuItem(value: 'remove', child: Text(context.l10n.billingRemove)),
             ],
           ),
         ],
@@ -494,7 +504,7 @@ class _AddPaymentMethodRow extends StatelessWidget {
     return _Row(
       icon: Icons.add_circle_outline_rounded,
       iconColor: AppColors.primary,
-      title: 'Aggiungi metodo di pagamento',
+      title: context.l10n.billingAddPaymentMethod,
       onTap: onTap,
     );
   }
@@ -538,7 +548,7 @@ class _AddPaymentMethodDialogState extends State<_AddPaymentMethodDialog> {
     return AlertDialog(
       backgroundColor: AppColors.surface,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadii.large)),
-      title: Text('Aggiungi metodo di pagamento', style: AppTextStyles.title.copyWith(fontSize: 17)),
+      title: Text(context.l10n.billingAddPaymentMethod, style: AppTextStyles.title.copyWith(fontSize: 17)),
       content: Form(
         key: _formKey,
         child: Column(
@@ -546,7 +556,7 @@ class _AddPaymentMethodDialogState extends State<_AddPaymentMethodDialog> {
           children: [
             DropdownButtonFormField<CardBrand>(
               initialValue: _brand,
-              decoration: const InputDecoration(labelText: 'Circuito'),
+              decoration: InputDecoration(labelText: context.l10n.billingCardBrandLabel),
               items: CardBrand.values
                   .map((brand) => DropdownMenuItem(value: brand, child: Text(brand.label)))
                   .toList(),
@@ -555,19 +565,19 @@ class _AddPaymentMethodDialogState extends State<_AddPaymentMethodDialog> {
             const SizedBox(height: AppSpacing.sm),
             TextFormField(
               controller: _last4Controller,
-              decoration: const InputDecoration(labelText: 'Ultime 4 cifre'),
+              decoration: InputDecoration(labelText: context.l10n.billingCardLast4Label),
               keyboardType: TextInputType.number,
               maxLength: 4,
               inputFormatters: [FilteringTextInputFormatter.digitsOnly],
               validator: (value) =>
-                  (value == null || !RegExp(r'^\d{4}$').hasMatch(value)) ? 'Inserisci 4 cifre' : null,
+                  (value == null || !RegExp(r'^\d{4}$').hasMatch(value)) ? context.l10n.billingCardLast4Error : null,
             ),
             Row(
               children: [
                 Expanded(
                   child: DropdownButtonFormField<int>(
                     initialValue: _expiryMonth,
-                    decoration: const InputDecoration(labelText: 'Mese'),
+                    decoration: InputDecoration(labelText: context.l10n.billingExpiryMonthLabel),
                     items: [
                       for (var month = 1; month <= 12; month++)
                         DropdownMenuItem(value: month, child: Text(month.toString().padLeft(2, '0'))),
@@ -579,7 +589,7 @@ class _AddPaymentMethodDialogState extends State<_AddPaymentMethodDialog> {
                 Expanded(
                   child: DropdownButtonFormField<int>(
                     initialValue: _expiryYear,
-                    decoration: const InputDecoration(labelText: 'Anno'),
+                    decoration: InputDecoration(labelText: context.l10n.billingExpiryYearLabel),
                     items: [
                       for (var year = DateTime.now().year; year <= DateTime.now().year + 10; year++)
                         DropdownMenuItem(value: year, child: Text('$year')),
@@ -595,9 +605,9 @@ class _AddPaymentMethodDialogState extends State<_AddPaymentMethodDialog> {
       actions: [
         TextButton(
           onPressed: () => Navigator.of(context).pop(),
-          child: const Text('Annulla'),
+          child: Text(context.l10n.commonCancel),
         ),
-        TextButton(onPressed: _submit, child: const Text('Aggiungi')),
+        TextButton(onPressed: _submit, child: Text(context.l10n.commonAdd)),
       ],
     );
   }

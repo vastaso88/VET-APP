@@ -1,3 +1,5 @@
+import '../../../l10n/l10n.dart';
+
 /// What a pet's gallery accepts as a video, in one place.
 ///
 /// Storage plan approved 2026-10-07: on the phone every video is re-encoded
@@ -57,7 +59,7 @@ class PetVideoCheck {
 
   final PetVideoRejection? rejection;
 
-  /// Italian, ready for a SnackBar; null when accepted.
+  /// In the app language, ready for a SnackBar; null when accepted.
   final String? message;
 
   bool get isOk => rejection == null;
@@ -78,35 +80,33 @@ PetVideoCheck checkPetVideo({
   bool willCompress = false,
 }) {
   if (!petVideoExtensions.contains(fileExtension(fileName))) {
-    return const PetVideoCheck.rejected(
+    return PetVideoCheck.rejected(
       PetVideoRejection.unsupportedFormat,
-      'Formato video non supportato: usa un file MP4 o MOV.',
+      appL10n.petsMediaVideoUnsupportedFormat,
     );
   }
   if (willCompress && sizeBytes > petVideoMaxSourceBytes) {
     return PetVideoCheck.rejected(
       PetVideoRejection.tooBig,
-      'Video troppo pesante (${_megabytes(sizeBytes)} MB): '
-      'il massimo è ${petVideoMaxSourceBytes ~/ 1000000} MB.',
+      appL10n.petsMediaVideoTooBigSource(_megabytes(sizeBytes), petVideoMaxSourceBytes ~/ 1000000),
     );
   }
   if (!willCompress && sizeBytes > petVideoMaxBytes) {
     return PetVideoCheck.rejected(
       PetVideoRejection.tooBig,
-      'Video troppo pesante (${_megabytes(sizeBytes)} MB): dal browser il massimo è '
-      '$_maxMegabytes MB. Dall\'app sul telefono i video vengono ridotti in automatico.',
+      appL10n.petsMediaVideoTooBigBrowser(_megabytes(sizeBytes), _maxMegabytes),
     );
   }
   if (duration == null) {
-    return const PetVideoCheck.rejected(
+    return PetVideoCheck.rejected(
       PetVideoRejection.unreadable,
-      'Non riesco a leggere questo video.',
+      appL10n.petsMediaVideoUnreadable,
     );
   }
   if (duration.inMilliseconds > petVideoMaxSeconds * 1000) {
-    return const PetVideoCheck.rejected(
+    return PetVideoCheck.rejected(
       PetVideoRejection.tooLong,
-      'Video troppo lungo: il massimo è $petVideoMaxSeconds secondi.',
+      appL10n.petsMediaVideoTooLong(petVideoMaxSeconds),
     );
   }
   return const PetVideoCheck.ok();
@@ -120,10 +120,8 @@ PetVideoCheck checkPetVideoUploadSize({required int sizeBytes, required bool was
   return PetVideoCheck.rejected(
     PetVideoRejection.tooBig,
     wasCompressed
-        ? 'Anche ridotto il video pesa $megabytes MB (massimo $_maxMegabytes MB): '
-            'prova con un clip più breve.'
-        : 'Non sono riuscito a ridurre il video e pesa $megabytes MB '
-            '(massimo $_maxMegabytes MB): prova con un clip più breve.',
+        ? appL10n.petsMediaVideoTooBigReduced(megabytes, _maxMegabytes)
+        : appL10n.petsMediaVideoTooBigNotReduced(megabytes, _maxMegabytes),
   );
 }
 

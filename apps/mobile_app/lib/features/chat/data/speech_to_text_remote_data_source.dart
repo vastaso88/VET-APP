@@ -4,6 +4,7 @@ import 'dart:typed_data';
 
 import 'package:http/http.dart' as http;
 
+import '../../../l10n/l10n.dart';
 import '../../../shared/auth/current_user.dart';
 import '../../../shared/config/app_runtime_config_loader.dart';
 import '../../../shared/errors/app_network_error.dart';
@@ -53,7 +54,7 @@ class HttpSpeechToTextRemoteDataSource implements SpeechToTextRemoteDataSource {
         return Result.failure(
           AppNetworkError(
             code: 'speech_to_text_http_${response.statusCode}',
-            message: 'Non sono riuscito a trascrivere il messaggio vocale.',
+            message: appL10n.chatErrorTranscribe,
           ),
         );
       }
@@ -62,16 +63,16 @@ class HttpSpeechToTextRemoteDataSource implements SpeechToTextRemoteDataSource {
       return Result.success(json['text'] as String? ?? '');
     } on TimeoutException {
       return Result.failure<String>(
-        const AppNetworkError(
+        AppNetworkError(
           code: 'speech_to_text_timeout',
-          message: 'Richiesta scaduta. Riprova.',
+          message: appL10n.chatErrorRequestTimeout,
         ),
       );
     } catch (e) {
       return Result.failure<String>(
         AppNetworkError(
           code: 'speech_to_text_unexpected_error',
-          message: "Qualcosa e' andato storto. Riprova.",
+          message: appL10n.chatErrorGeneric,
           details: e,
         ),
       );

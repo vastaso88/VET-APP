@@ -4,6 +4,7 @@ import '../../../../design_system/tokens/app_colors.dart';
 import '../../../../design_system/tokens/app_radii.dart';
 import '../../../../design_system/tokens/app_spacing.dart';
 import '../../../../design_system/tokens/app_text_styles.dart';
+import '../../../../l10n/l10n.dart';
 import '../../domain/walk_session.dart';
 import '../walk_labels.dart';
 
@@ -25,7 +26,7 @@ Future<String?> pickFavoriteToEvict(
   return showDialog<String>(
     context: context,
     builder: (context) => AlertDialog(
-      title: const Text('Hai già 5 preferite'),
+      title: Text(context.l10n.walksFavoriteEvictTitle),
       content: SizedBox(
         width: double.maxFinite,
         child: ConstrainedBox(
@@ -35,7 +36,7 @@ Future<String?> pickFavoriteToEvict(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                'Scegli quale togliere dalle preferite per fare posto a quella appena conclusa.',
+                context.l10n.walksFavoriteEvictBody,
                 style: AppTextStyles.bodySmall,
               ),
               const SizedBox(height: AppSpacing.md),
@@ -58,7 +59,7 @@ Future<String?> pickFavoriteToEvict(
       actions: [
         TextButton(
           onPressed: () => Navigator.of(context).pop(),
-          child: const Text('Annulla'),
+          child: Text(context.l10n.commonCancel),
         ),
       ],
     ),

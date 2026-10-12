@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../../design_system/tokens/app_colors.dart';
+import '../../../../l10n/l10n.dart';
 import '../../data/reminders_repository.dart';
 import '../pages/reminders_pages.dart';
 
@@ -24,16 +25,22 @@ class ReminderMenuButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return PopupMenuButton<_Action>(
-      tooltip: 'Opzioni promemoria',
+      tooltip: context.l10n.remindersMenuTooltip,
       icon: const Icon(Icons.more_vert_rounded, color: AppColors.text),
       onSelected: (action) => _run(context, action),
-      itemBuilder: (_) => [
-        const PopupMenuItem(value: _Action.edit, child: Text('Modifica')),
+      itemBuilder: (menuContext) => [
+        PopupMenuItem(value: _Action.edit, child: Text(menuContext.l10n.commonEdit)),
         if (!reminder.isDone)
-          const PopupMenuItem(value: _Action.done, child: Text('Segna come fatto')),
-        const PopupMenuItem(
+          PopupMenuItem(
+            value: _Action.done,
+            child: Text(menuContext.l10n.remindersMenuMarkDone),
+          ),
+        PopupMenuItem(
           value: _Action.delete,
-          child: Text('Elimina', style: TextStyle(color: AppColors.danger)),
+          child: Text(
+            menuContext.l10n.commonDelete,
+            style: const TextStyle(color: AppColors.danger),
+          ),
         ),
       ],
     );
@@ -52,17 +59,17 @@ class ReminderMenuButton extends StatelessWidget {
         final confirmed = await showDialog<bool>(
           context: context,
           builder: (dialogContext) => AlertDialog(
-            title: const Text('Eliminare questo promemoria?'),
-            content: Text('"${reminder.title}" verrà eliminato definitivamente.'),
+            title: Text(dialogContext.l10n.remindersDeleteConfirmTitle),
+            content: Text(dialogContext.l10n.remindersDeleteConfirmBody(reminder.title)),
             actions: [
               TextButton(
                 onPressed: () => Navigator.of(dialogContext).pop(false),
-                child: const Text('Annulla'),
+                child: Text(dialogContext.l10n.commonCancel),
               ),
               FilledButton(
                 style: FilledButton.styleFrom(backgroundColor: AppColors.danger),
                 onPressed: () => Navigator.of(dialogContext).pop(true),
-                child: const Text('Elimina'),
+                child: Text(dialogContext.l10n.commonDelete),
               ),
             ],
           ),

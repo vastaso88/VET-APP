@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:image_picker/image_picker.dart';
 
+import '../../../l10n/l10n.dart';
 import '../../settings/data/gallery_save_settings_store.dart';
 import '../domain/pet_video_rules.dart';
 import 'device_gallery_saver.dart';
@@ -61,7 +62,7 @@ class PetMediaCapture extends ChangeNotifier {
     if (importer == null || _cancelling) return;
     _cancelling = true;
     _compressFraction = null;
-    _progress = 'Annullo...';
+    _progress = appL10n.petsMediaCancelling;
     _changed();
     unawaited(importer.cancel());
   }
@@ -100,7 +101,7 @@ class PetMediaCapture extends ChangeNotifier {
     if (file == null || _disposed || busy) return null;
     // The camera returns right after the shot: that moment is when it was taken.
     final capturedAt = _now();
-    _progress = 'Preparo il file...';
+    _progress = appL10n.petsMediaPreparingFile;
     _changed();
     // Runs before the upload so the copy in the VetApp album exists even if the
     // upload fails; never throws.
@@ -121,9 +122,10 @@ class PetMediaCapture extends ChangeNotifier {
     }
     final importer = _importerFactory();
     _importer = importer;
-    _progress = 'Preparo ${files.length == 1 ? 'il file' : '${files.length} file'}...';
+    _progress = appL10n.petsMediaPreparingFiles(files.length);
     _changed();
-    var step = '';
+    // Which file of how many is being handled; null for a single file.
+    ({int current, int total})? step;
     try {
       return await importer.importAll(
         petId: petId,
@@ -131,17 +133,26 @@ class PetMediaCapture extends ChangeNotifier {
         capturedAt: capturedAt,
         onProgress: (current, total) {
           if (_disposed || _cancelling) return;
-          step = total == 1 ? '' : ' $current di $total';
+          step = total == 1 ? null : (current: current, total: total);
           _compressFraction = null;
-          _progress = total == 1 ? 'Carico il file...' : 'Carico $current di $total...';
+          _progress = total == 1
+              ? appL10n.petsMediaUploadingFile
+              : appL10n.petsMediaUploadingProgress(current, total);
           _changed();
         },
         onCompressProgress: (fraction) {
           if (_disposed || _cancelling) return;
           _compressFraction = fraction;
+          final percent = (fraction * 100).round();
+          final l10n = appL10n;
+          final of = step;
           _progress = fraction >= 1
-              ? 'Carico il video$step...'
-              : 'Riduco il video$step... ${(fraction * 100).round()}%';
+              ? (of == null
+                  ? l10n.petsMediaUploadingVideo
+                  : l10n.petsMediaUploadingVideoOf(of.current, of.total))
+              : (of == null
+                  ? l10n.petsMediaReducingVideo(percent)
+                  : l10n.petsMediaReducingVideoOf(of.current, of.total, percent));
           _changed();
         },
       );

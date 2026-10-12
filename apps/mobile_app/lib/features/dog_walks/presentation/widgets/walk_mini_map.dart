@@ -4,6 +4,7 @@ import 'package:latlong2/latlong.dart' as latlong;
 
 import '../../../../design_system/tokens/app_colors.dart';
 import '../../../../design_system/tokens/app_text_styles.dart';
+import '../../../../l10n/l10n.dart';
 import '../../../location/domain/coordinates.dart';
 import '../../domain/walk_map_framing.dart';
 import '../../domain/walk_route_markers.dart';
@@ -130,7 +131,7 @@ class WalkMapUnavailable extends StatelessWidget {
         children: [
           const Icon(Icons.map_outlined, color: AppColors.mutedText, size: 28),
           const SizedBox(height: 4),
-          Text('Percorso non disponibile', style: AppTextStyles.caption),
+          Text(context.l10n.walksMapUnavailable, style: AppTextStyles.caption),
         ],
       ),
     );

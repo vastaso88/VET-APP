@@ -5,6 +5,7 @@ import 'package:latlong2/latlong.dart' as latlong;
 import '../../../../design_system/tokens/app_colors.dart';
 import '../../../../design_system/tokens/app_spacing.dart';
 import '../../../../design_system/tokens/app_text_styles.dart';
+import '../../../../l10n/l10n.dart';
 import '../../../dog_walks/presentation/widgets/walk_map_style.dart';
 import '../../../home/presentation/widgets/home_dashboard_primitives.dart';
 import '../../../location/domain/coordinates.dart';
@@ -80,7 +81,10 @@ class _MarketplaceMapPageState extends State<MarketplaceMapPage> {
           shrinkWrap: true,
           padding: const EdgeInsets.fromLTRB(AppSpacing.xl, 0, AppSpacing.xl, AppSpacing.xl),
           children: [
-            Text('${cluster.matches.length} annunci in questa zona', style: AppTextStyles.title),
+            Text(
+              context.l10n.marketplaceMapClusterTitle(cluster.matches.length),
+              style: AppTextStyles.title,
+            ),
             const SizedBox(height: AppSpacing.md),
             ...cluster.matches.map(
               (match) => Padding(
@@ -140,7 +144,7 @@ class _MarketplaceMapPageState extends State<MarketplaceMapPage> {
         backgroundColor: AppColors.background,
         elevation: 0,
         foregroundColor: AppColors.text,
-        title: Text('Mappa del mercatino', style: AppTextStyles.title),
+        title: Text(context.l10n.marketplaceMapTitle, style: AppTextStyles.title),
       ),
       body: Stack(
         children: [
@@ -216,8 +220,8 @@ class _MarketplaceMapPageState extends State<MarketplaceMapPage> {
               ),
               child: Text(
                 widget.matches.isEmpty
-                    ? 'Nessun annuncio con questi filtri.'
-                    : '${widget.matches.length} annunci · posizioni approssimate (circa 1 km)',
+                    ? context.l10n.marketplaceMapEmpty
+                    : context.l10n.marketplaceMapSummary(widget.matches.length),
                 style: AppTextStyles.caption,
               ),
             ),
@@ -240,7 +244,7 @@ class _ClusterMarker extends StatelessWidget {
     final single = count == 1 ? cluster.matches.single.listing : null;
     return Semantics(
       button: true,
-      label: single?.title ?? '$count annunci',
+      label: single?.title ?? context.l10n.marketplaceListingsCount(count),
       child: GestureDetector(
         onTap: onTap,
         child: Container(

@@ -2,8 +2,10 @@ import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 
+import '../../../l10n/l10n.dart';
 import '../../settings/domain/unit_conversion.dart';
 import '../../settings/domain/unit_system.dart';
+import 'pet_value_labels.dart';
 
 enum PetsScreenStatus {
   loading,
@@ -174,22 +176,21 @@ class PetProfile {
   /// breed to infer a size range from.
   final String? dogSizeCategory;
 
-  String get title => '$name - $species';
+  String get title => '$name - ${localizedSpeciesLabel(species)}';
 
   String get breedLabel {
     if (isAquarium) {
       final totalFish = aquariumStock.fold<int>(0, (sum, stock) => sum + stock.count);
       final speciesCount = aquariumStock.length;
-      final speciesLabel = speciesCount == 1 ? '1 specie' : '$speciesCount specie';
-      final fishLabel = totalFish == 1 ? '1 pesce' : '$totalFish pesci';
-      return '$speciesLabel · $fishLabel';
+      final t = appL10n;
+      return t.petsAquariumSummary(t.petsSpeciesCount(speciesCount), t.petsFishCount(totalFish));
     }
     if (breed.trim().isEmpty) {
-      return 'Razza non specificata';
+      return appL10n.petsBreedUnspecified;
     }
     final size = dogSizeCategory;
     if (breed.trim() == 'Altro' && size != null && size.isNotEmpty) {
-      return 'Altro · Taglia $size';
+      return appL10n.petsBreedOtherWithSize(localizedDogSizeLabel(size));
     }
     return breed.trim();
   }

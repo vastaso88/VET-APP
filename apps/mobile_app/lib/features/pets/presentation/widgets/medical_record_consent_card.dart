@@ -4,6 +4,7 @@ import '../../../../design_system/tokens/app_colors.dart';
 import '../../../../design_system/tokens/app_radii.dart';
 import '../../../../design_system/tokens/app_spacing.dart';
 import '../../../../design_system/tokens/app_text_styles.dart';
+import '../../../../l10n/l10n.dart';
 import '../../../../shared/widgets/pet_loader.dart';
 import '../../data/medical_record_consent_remote_data_source.dart';
 import '../../data/pet_demo_store.dart';
@@ -117,8 +118,9 @@ class _MedicalRecordConsentCardState extends State<MedicalRecordConsentCard> {
           child: Semantics(
             button: true,
             expanded: _expanded,
-            label: 'Consenso alla lettura della cartella clinica di $name. '
-                '${_expanded ? 'Tocca per chiudere il testo completo' : 'Tocca per leggere il testo completo'}',
+            label: _expanded
+                ? context.l10n.petsConsentSemanticsExpanded(name)
+                : context.l10n.petsConsentSemanticsCollapsed(name),
             excludeSemantics: true,
             child: InkWell(
               borderRadius: BorderRadius.circular(AppRadii.small),
@@ -132,7 +134,7 @@ class _MedicalRecordConsentCardState extends State<MedicalRecordConsentCard> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            'Cartella clinica di $name',
+                            context.l10n.petsConsentCardTitle(name),
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                             style: AppTextStyles.bodySmall.copyWith(
@@ -141,7 +143,7 @@ class _MedicalRecordConsentCardState extends State<MedicalRecordConsentCard> {
                             ),
                           ),
                           Text(
-                            _expanded ? 'Chiudi' : 'Leggi come viene usata',
+                            _expanded ? context.l10n.commonClose : context.l10n.petsConsentReadHow,
                             style: AppTextStyles.caption.copyWith(color: AppColors.primary),
                           ),
                         ],
@@ -163,7 +165,7 @@ class _MedicalRecordConsentCardState extends State<MedicalRecordConsentCard> {
             child: PetLoader.small(),
           ),
         Semantics(
-          label: "Consenti all'assistente di leggere la cartella clinica di $name",
+          label: context.l10n.petsConsentSwitchSemantics(name),
           child: Switch(
             value: granted,
             onChanged: _saving ? null : _toggle,
@@ -188,7 +190,7 @@ class _MedicalRecordConsentCardState extends State<MedicalRecordConsentCard> {
             Text(_approvedConsentText, style: AppTextStyles.caption),
             const SizedBox(height: AppSpacing.xs),
             Text(
-              "Senza consenso l'assistente non vede né i titoli né il contenuto dei referti.",
+              context.l10n.petsConsentWithoutConsent,
               style: AppTextStyles.caption.copyWith(fontWeight: FontWeight.w700),
             ),
             const SizedBox(height: AppSpacing.xs),
@@ -196,8 +198,8 @@ class _MedicalRecordConsentCardState extends State<MedicalRecordConsentCard> {
           if (_status != _CardStatus.none) ...[
             Text(
               _status == _CardStatus.saveError
-                  ? 'Non sono riuscito a salvare il consenso. Riprova.'
-                  : 'Stato del consenso non disponibile: controlla la connessione.',
+                  ? context.l10n.petsConsentSaveFailed
+                  : context.l10n.petsConsentStatusUnavailable,
               style: AppTextStyles.caption.copyWith(
                 color: _status == _CardStatus.saveError ? Colors.red.shade700 : AppColors.mutedText,
               ),

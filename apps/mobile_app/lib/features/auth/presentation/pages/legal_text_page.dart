@@ -4,6 +4,7 @@ import 'package:share_plus/share_plus.dart';
 import '../../../../design_system/tokens/app_colors.dart';
 import '../../../../design_system/tokens/app_spacing.dart';
 import '../../../../design_system/tokens/app_text_styles.dart';
+import '../../../../l10n/l10n.dart';
 import '../../data/legal_texts_remote_data_source.dart';
 
 /// Shows a legal text (terms of service / privacy policy) from the public
@@ -52,7 +53,7 @@ class _LegalTextPageState extends State<LegalTextPage> {
                 final text = snapshot.data;
                 final ready = text != null && text.length >= LegalTextPage.fullTextMinLength;
                 return IconButton(
-                  tooltip: 'Condividi o scarica',
+                  tooltip: context.l10n.authLegalShareTooltip,
                   icon: const Icon(Icons.ios_share_rounded),
                   onPressed: ready ? () => Share.share(text, subject: widget.title) : null,
                 );
@@ -72,7 +73,7 @@ class _LegalTextPageState extends State<LegalTextPage> {
               child: Padding(
                 padding: const EdgeInsets.all(AppSpacing.xl),
                 child: Text(
-                  'Non riesco a caricare il testo adesso. Riprova tra poco.',
+                  context.l10n.authLegalLoadError,
                   style: AppTextStyles.body,
                   textAlign: TextAlign.center,
                 ),
@@ -87,8 +88,7 @@ class _LegalTextPageState extends State<LegalTextPage> {
               children: [
                 if (preparing) ...[
                   Text(
-                    "Il testo completo dell'informativa è in preparazione e sarà disponibile qui "
-                    'a breve, con la possibilità di scaricarlo.',
+                    context.l10n.authLegalPreparingNotice,
                     style: AppTextStyles.body.copyWith(fontWeight: FontWeight.w700),
                   ),
                   const SizedBox(height: AppSpacing.lg),

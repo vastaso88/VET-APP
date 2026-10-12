@@ -10,6 +10,7 @@ import '../../../shared/types/result.dart';
 import '../../location/domain/coordinates.dart';
 import '../domain/radar_community.dart';
 import '../domain/radar_place.dart';
+import '../../../l10n/l10n.dart';
 
 /// What "Segnala!" accepts right now, decided by the backend so it can
 /// change without a new app build.
@@ -165,9 +166,9 @@ class RadarContributionsRepository {
     final token = CurrentUser.accessToken();
     if (baseUrl.isEmpty || token == null || token.isEmpty) {
       return Result.failure(
-        const AppNetworkError(
+        AppNetworkError(
           code: 'radar_contribution_signed_out',
-          message: 'Accedi per segnalare o votare.',
+          message: appL10n.placesErrSignedOutContribute,
         ),
       );
     }
@@ -188,27 +189,74 @@ class RadarContributionsRepository {
         return Result.failure(
           AppNetworkError(
             code: json['code'] as String? ?? 'radar_contribution_http_${response.statusCode}',
-            message:
-                detail is String ? detail : 'Non sono riuscito a completare l’operazione. Riprova.',
+            message: detail is String
+                ? localizedBackendMessage(detail)
+                : appL10n.placesErrOperationFailed,
           ),
         );
       }
       return Result.success(json);
     } on TimeoutException {
       return Result.failure(
-        const AppNetworkError(
+        AppNetworkError(
           code: 'radar_contribution_timeout',
-          message: 'La richiesta ha impiegato troppo tempo. Riprova.',
+          message: appL10n.placesErrTimeout,
         ),
       );
     } catch (e) {
       return Result.failure(
         AppNetworkError(
           code: 'radar_contribution_unexpected_error',
-          message: 'Non sono riuscito a completare l’operazione. Riprova.',
+          message: appL10n.placesErrOperationFailed,
           details: e,
         ),
       );
     }
   }
+}
+
+/// Known messages of the backend's `detail` field (written in Italian
+/// there), shown in the app language. An unknown message is returned as
+/// received.
+String localizedBackendMessage(String raw) {
+  final l10n = appL10n;
+  final text = raw.trim();
+  final key = text.toLowerCase();
+  final known = <String, String>{
+    'per segnalare o votare accetta prima le regole per segnalazioni e voti.':
+        l10n.placesBackendRulesRequired,
+    'questa segnalazione è già stata chiusa.': l10n.placesBackendReportClosed,
+    "questa segnalazione è scaduta: nessuno l'ha confermata.": l10n.placesBackendReportExpired,
+    'non puoi confermare una tua segnalazione.': l10n.placesBackendOwnReportVote,
+    'questo tipo di segnalazione non è attivo.': l10n.placesBackendKindNotActive,
+    'questa categoria non può essere segnalata.': l10n.placesBackendCategoryNotReportable,
+    'indica il luogo a cui si riferisce la segnalazione.': l10n.placesBackendTargetRequired,
+    'per un luogo in attesa di conferma usa "non è così" sulla sua scheda.':
+        l10n.placesBackendPendingUseDeny,
+    'hai già fatto questa segnalazione.': l10n.placesBackendAlreadyReported,
+    'segnalazione non trovata.': l10n.placesBackendReportNotFound,
+    'puoi ritirare solo una tua segnalazione.': l10n.placesBackendWithdrawOwnOnly,
+    'questa segnalazione è già chiusa: non si può più ritirare.':
+        l10n.placesBackendWithdrawClosed,
+    'le valutazioni non sono attive.': l10n.placesBackendRatingsOff,
+    'si possono valutare solo le aree cani pubbliche.': l10n.placesBackendRatePublicOnly,
+    'area cani non trovata.': l10n.placesBackendDogParkNotFound,
+    'segnalazioni e voti non sono ancora attivi.': l10n.placesBackendContributionsOff,
+    "scrivi il nome dell'attività, come appare sull'insegna.": l10n.placesBackendNameRequired,
+    'nel nome non inserire telefoni, email o siti web.': l10n.placesBackendNameNoContacts,
+    'il nome contiene parole non ammesse.': l10n.placesBackendNameBlockedWords,
+  };
+  final exact = known[key];
+  if (exact != null) {
+    return exact;
+  }
+  final limit = RegExp(r'^puoi fare al massimo (\d+) segnalazioni al giorno\.$').firstMatch(key);
+  if (limit != null) {
+    return l10n.placesBackendDailyLimit(int.parse(limit.group(1)!));
+  }
+  final length = RegExp(r'^il nome può avere al massimo (\d+) caratteri\.$').firstMatch(key);
+  if (length != null) {
+    return l10n.placesBackendNameTooLong(int.parse(length.group(1)!));
+  }
+  return raw;
 }

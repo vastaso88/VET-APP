@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../../../l10n/date_formats.dart';
+import '../../../l10n/l10n.dart';
 import '../../local_activities/domain/local_activity.dart';
 import '../domain/radar_place.dart';
 
@@ -7,26 +9,51 @@ import '../domain/radar_place.dart';
 /// marker, quick filter and legend entry reads its label, icon and color
 /// from here, so a category always looks the same wherever it appears.
 enum RadarCategory {
-  veterinary('Veterinari', Icons.local_hospital, Color(0xFFB3261E)),
-  shop('Negozi', Icons.storefront, Color(0xFF8A5A00)),
-  dogPark('Aree cani', Icons.park, Color(0xFF2E7D32)),
-  shelter('Rifugi e adozioni', Icons.cottage, Color(0xFF3949AB)),
-  grooming('Toelettature', Icons.content_cut, Color(0xFF7B4FA3)),
-  hotel('Pensioni', Icons.night_shelter, Color(0xFF1F6FA5)),
-  school('Addestramento', Icons.school, Color(0xFF00796B)),
-  petSitting('Pet sitter', Icons.volunteer_activism, Color(0xFFAD1457)),
-  breeder('Allevamenti', Icons.pets, Color(0xFF6D4C41)),
-  other('Altri servizi', Icons.place, Color(0xFF546E7A));
+  veterinary(Icons.local_hospital, Color(0xFFB3261E)),
+  shop(Icons.storefront, Color(0xFF8A5A00)),
+  dogPark(Icons.park, Color(0xFF2E7D32)),
+  shelter(Icons.cottage, Color(0xFF3949AB)),
+  grooming(Icons.content_cut, Color(0xFF7B4FA3)),
+  hotel(Icons.night_shelter, Color(0xFF1F6FA5)),
+  school(Icons.school, Color(0xFF00796B)),
+  petSitting(Icons.volunteer_activism, Color(0xFFAD1457)),
+  breeder(Icons.pets, Color(0xFF6D4C41)),
+  other(Icons.place, Color(0xFF546E7A));
 
-  const RadarCategory(this.label, this.icon, this.color);
+  const RadarCategory(this.icon, this.color);
 
-  /// Plural label, used for filters and the legend.
-  final String label;
   final IconData icon;
 
   /// Dark enough for a white icon on top (map markers) and for the icon
   /// itself on the app's light surfaces.
   final Color color;
+
+  /// Plural label, used for filters and the legend.
+  String get label {
+    final l10n = appL10n;
+    switch (this) {
+      case RadarCategory.veterinary:
+        return l10n.placesCategoryVeterinary;
+      case RadarCategory.shop:
+        return l10n.placesCategoryShop;
+      case RadarCategory.dogPark:
+        return l10n.placesCategoryDogPark;
+      case RadarCategory.shelter:
+        return l10n.placesCategoryShelter;
+      case RadarCategory.grooming:
+        return l10n.placesCategoryGrooming;
+      case RadarCategory.hotel:
+        return l10n.placesCategoryHotel;
+      case RadarCategory.school:
+        return l10n.placesCategorySchool;
+      case RadarCategory.petSitting:
+        return l10n.placesCategoryPetSitting;
+      case RadarCategory.breeder:
+        return l10n.placesCategoryBreeder;
+      case RadarCategory.other:
+        return l10n.placesCategoryOther;
+    }
+  }
 }
 
 RadarCategory radarCategoryForPlace(RadarPlaceType type) {
@@ -65,47 +92,53 @@ RadarCategory radarCategoryForActivity(LocalActivity activity) {
 
 /// Singular label for one place ("Veterinario", not "Veterinari").
 String radarPlaceTypeLabel(RadarPlaceType type) {
+  final l10n = appL10n;
   switch (type) {
     case RadarPlaceType.veterinary:
-      return 'Veterinario';
+      return l10n.placesTypeVeterinary;
     case RadarPlaceType.grooming:
-      return 'Toelettatura';
+      return l10n.placesTypeGrooming;
     case RadarPlaceType.shop:
-      return 'Negozio per animali';
+      return l10n.placesTypeShop;
     case RadarPlaceType.school:
-      return 'Addestramento';
+      return l10n.placesTypeSchool;
     case RadarPlaceType.petSitting:
-      return 'Pet sitter';
+      return l10n.placesTypePetSitting;
     case RadarPlaceType.breeder:
-      return 'Allevamento';
+      return l10n.placesTypeBreeder;
     case RadarPlaceType.hotel:
-      return 'Pensione per animali';
+      return l10n.placesTypeHotel;
     case RadarPlaceType.dogPark:
-      return 'Area cani';
+      return l10n.placesTypeDogPark;
     case RadarPlaceType.shelter:
-      return 'Rifugio per animali';
+      return l10n.placesTypeShelter;
     case RadarPlaceType.other:
-      return 'Servizio per animali';
+      return l10n.placesTypeOther;
   }
 }
 
-/// Turns OpenStreetMap's `opening_hours` shorthand into readable Italian
-/// without interpreting it: day and keyword abbreviations only.
+/// Turns OpenStreetMap's `opening_hours` shorthand into readable text in
+/// the app language without interpreting it: day and keyword abbreviations
+/// only.
 String formatOpeningHours(String raw) {
+  final l10n = appL10n;
   if (raw.trim() == '24/7') {
-    return 'Indicato come aperto 24 ore su 24';
+    return l10n.placesHours247;
   }
-  const words = {
-    'Mo': 'Lun',
-    'Tu': 'Mar',
-    'We': 'Mer',
-    'Th': 'Gio',
-    'Fr': 'Ven',
-    'Sa': 'Sab',
-    'Su': 'Dom',
-    'PH': 'Festivi',
-    'off': 'chiuso',
-    'closed': 'chiuso',
+  final weekdays = appShortWeekdaysMondayFirst()
+      .map((day) => day.isEmpty ? day : '${day[0].toUpperCase()}${day.substring(1)}')
+      .toList();
+  final words = {
+    'Mo': weekdays[0],
+    'Tu': weekdays[1],
+    'We': weekdays[2],
+    'Th': weekdays[3],
+    'Fr': weekdays[4],
+    'Sa': weekdays[5],
+    'Su': weekdays[6],
+    'PH': l10n.placesHoursHolidays,
+    'off': l10n.placesHoursClosed,
+    'closed': l10n.placesHoursClosed,
   };
   return raw.replaceAllMapped(
     RegExp(r'\b(Mo|Tu|We|Th|Fr|Sa|Su|PH|off|closed)\b'),

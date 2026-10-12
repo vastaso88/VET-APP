@@ -6,6 +6,7 @@ import '../../../../design_system/tokens/app_colors.dart';
 import '../../../../design_system/tokens/app_radii.dart';
 import '../../../../design_system/tokens/app_spacing.dart';
 import '../../../../design_system/tokens/app_text_styles.dart';
+import '../../../../l10n/l10n.dart';
 import '../../../../shared/widgets/pet_loader.dart';
 import '../../data/pet_demo_store.dart';
 import '../../data/pet_photo_repository.dart';
@@ -55,7 +56,7 @@ class _GalleryFoldersPageState extends State<GalleryFoldersPage> {
                   ),
                   const SizedBox(width: AppSpacing.sm),
                   Expanded(
-                    child: Text('Galleria',
+                    child: Text(context.l10n.petsMediaGalleryTitle,
                         style: AppTextStyles.display.copyWith(fontSize: 26)),
                   ),
                 ],
@@ -66,8 +67,8 @@ class _GalleryFoldersPageState extends State<GalleryFoldersPage> {
                 future: _pets,
                 builder: (context, snapshot) {
                   if (snapshot.connectionState == ConnectionState.waiting) {
-                    return const Center(
-                        child: PetLoader(label: 'Carico le cartelle…'));
+                    return Center(
+                        child: PetLoader(label: context.l10n.petsMediaFoldersLoading));
                   }
                   final pets = snapshot.data ?? const <PetProfile>[];
                   if (pets.isEmpty) {
@@ -75,7 +76,7 @@ class _GalleryFoldersPageState extends State<GalleryFoldersPage> {
                       child: Padding(
                         padding: const EdgeInsets.all(AppSpacing.xl),
                         child: Text(
-                          'Aggiungi un animale per creare la sua cartella di foto.',
+                          context.l10n.petsMediaFoldersEmpty,
                           textAlign: TextAlign.center,
                           style: AppTextStyles.bodySmall,
                         ),
@@ -112,11 +113,15 @@ class _GalleryFoldersPageState extends State<GalleryFoldersPage> {
 
 /// "12 foto", "12 foto · 2 video" or "1 video" for a folder's caption.
 String galleryCountLabel(List<PetPhotoEntry> entries) {
+  final l10n = appL10n;
   final videos = entries.where((entry) => entry.isVideo).length;
   final photos = entries.length - videos;
-  if (videos == 0) return '$photos foto';
-  if (photos == 0) return '$videos video';
-  return '$photos foto · $videos video';
+  if (videos == 0) return l10n.petsMediaCountPhotos(photos);
+  if (photos == 0) return l10n.petsMediaCountVideos(videos);
+  return l10n.petsMediaCountPhotosAndVideos(
+    l10n.petsMediaCountPhotos(photos),
+    l10n.petsMediaCountVideos(videos),
+  );
 }
 
 class _FolderCard extends StatefulWidget {
@@ -168,7 +173,7 @@ class _FolderCardState extends State<_FolderCard> {
                       final entries = snapshot.data;
                       return Text(
                         entries == null
-                            ? 'Conto le foto…'
+                            ? context.l10n.petsMediaFolderCounting
                             : galleryCountLabel(entries),
                         style: AppTextStyles.caption,
                       );

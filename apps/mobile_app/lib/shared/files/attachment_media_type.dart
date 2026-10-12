@@ -2,6 +2,8 @@ import 'dart:typed_data';
 
 import 'package:http_parser/http_parser.dart';
 
+import '../../l10n/l10n.dart';
+
 /// Upper bound per attachment, matching the backend and the platform body
 /// limit (4 MB — see Chat LLM interna's POST /chat-attachments contract).
 const maxAttachmentBytes = 4 * 1024 * 1024;
@@ -63,10 +65,10 @@ bool _startsWithAscii(Uint8List bytes, String prefix) {
 /// the file may be sent. The backend re-checks everything from the bytes.
 String? attachmentValidationError(Uint8List bytes, String fileName) {
   if (bytes.length > maxAttachmentBytes) {
-    return 'Il file è troppo grande (max 4 MB).';
+    return appL10n.sharedAttachmentTooLarge;
   }
   if (isPdfFileName(fileName) && !isPdfBytes(bytes)) {
-    return 'Questo file non sembra un PDF valido.';
+    return appL10n.sharedAttachmentInvalidPdf;
   }
   return null;
 }

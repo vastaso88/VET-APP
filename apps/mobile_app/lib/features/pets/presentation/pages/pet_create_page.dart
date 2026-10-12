@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../../design_system/tokens/app_colors.dart';
+import '../../../../l10n/l10n.dart';
 
 import '../../data/pet_demo_store.dart';
 import '../../data/pet_photo_repository.dart';
@@ -13,16 +14,16 @@ class PetCreatePage extends StatelessWidget {
   const PetCreatePage({
     super.key,
     this.state = PetsScreenStatus.success,
-    this.errorMessage = 'Al momento non riesco a creare un nuovo profilo pet.',
+    this.errorMessage,
   });
 
   final PetsScreenStatus state;
-  final String errorMessage;
+  final String? errorMessage;
 
   @override
   Widget build(BuildContext context) {
     return PetsScaffold(
-      title: 'Crea un profilo pet',
+      title: context.l10n.petsCreateTitle,
       onBack: () => Navigator.of(context).maybePop(),
       actions: [
         TextButton(
@@ -31,16 +32,16 @@ class PetCreatePage extends StatelessWidget {
             foregroundColor: AppColors.primaryStrong,
             textStyle: const TextStyle(fontWeight: FontWeight.w700),
           ),
-          child: const Text('Annulla'),
+          child: Text(context.l10n.commonCancel),
         ),
       ],
       body: switch (state) {
         PetsScreenStatus.loading =>
-          const PetsLoadingView(label: 'Preparo il form di creazione...'),
+          PetsLoadingView(label: context.l10n.petsCreateLoading),
         PetsScreenStatus.error => PetsErrorView(
-            title: 'Form di creazione non disponibile',
-            subtitle: errorMessage,
-            actionLabel: 'Chiudi',
+            title: context.l10n.petsCreateErrorTitle,
+            subtitle: errorMessage ?? context.l10n.petsCreateErrorDefault,
+            actionLabel: context.l10n.commonClose,
             onRetry: () => Navigator.of(context).maybePop(),
           ),
         PetsScreenStatus.empty => const _CreateForm(),
@@ -56,8 +57,8 @@ class _CreateForm extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return PetProfileForm(
-      title: 'Nuovo profilo',
-      submitLabel: 'Salva profilo pet',
+      title: context.l10n.petsCreateFormTitle,
+      submitLabel: context.l10n.petsCreateSubmit,
       onSubmit: (draft) async {
         final pet = await PetDemoStore.instance.create(
           name: draft.name,
@@ -81,11 +82,7 @@ class _CreateForm extends StatelessWidget {
         if (!context.mounted) return;
         if (PetDemoStore.instance.isUnsynced(saved.id)) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text(
-                'Profilo salvato sul telefono ma non sul server. Aprilo dalla lista e tocca Riprova.',
-              ),
-            ),
+            SnackBar(content: Text(context.l10n.petsCreateUnsyncedSnack)),
           );
         }
         Navigator.of(context).pop(saved);

@@ -7,14 +7,11 @@ import '../../../../design_system/tokens/app_colors.dart';
 import '../../../../design_system/tokens/app_radii.dart';
 import '../../../../design_system/tokens/app_spacing.dart';
 import '../../../../design_system/tokens/app_text_styles.dart';
+import '../../../../l10n/date_formats.dart';
+import '../../../../l10n/l10n.dart';
 import '../../../../shared/widgets/pet_loader.dart';
 import '../../data/pet_photo_repository.dart';
 import '../../domain/pet_video_rules.dart';
-
-const _monthsIt = [
-  'gennaio', 'febbraio', 'marzo', 'aprile', 'maggio', 'giugno',
-  'luglio', 'agosto', 'settembre', 'ottobre', 'novembre', 'dicembre',
-];
 
 /// Fixed layout of the timeline. Every height is derived from these and the
 /// photo counts, so scroll offsets are exact rather than estimated.
@@ -367,7 +364,7 @@ class _VideoTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Semantics(
-      label: 'Video',
+      label: context.l10n.petsMediaVideoSemantics,
       child: ColoredBox(
         color: const Color(0xFF163A35),
         child: Stack(
@@ -418,7 +415,7 @@ List<PhotoDayGroup> groupPhotosByDay(List<PetPhotoEntry> photos) {
       currentKey = key;
       groups.add(PhotoDayGroup(
         photoDayLabel(local),
-        '${_monthsIt[local.month - 1]} ${local.year}',
+        '${appLongMonths()[local.month - 1]} ${local.year}',
         [],
       ));
     }
@@ -427,4 +424,4 @@ List<PhotoDayGroup> groupPhotosByDay(List<PetPhotoEntry> photos) {
   return groups;
 }
 
-String photoDayLabel(DateTime local) => '${local.day} ${_monthsIt[local.month - 1]} ${local.year}';
+String photoDayLabel(DateTime local) => '${local.day} ${appLongMonths()[local.month - 1]} ${local.year}';

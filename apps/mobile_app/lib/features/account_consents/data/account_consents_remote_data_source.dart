@@ -3,6 +3,7 @@ import 'dart:convert';
 
 import 'package:http/http.dart' as http;
 
+import '../../../l10n/l10n.dart';
 import '../../../shared/auth/current_user.dart';
 import '../../../shared/config/app_runtime_config_loader.dart';
 import '../../../shared/errors/app_network_error.dart';
@@ -51,7 +52,7 @@ class HttpAccountConsentsRemoteDataSource implements AccountConsentsRemoteDataSo
         return Result.failure(
           AppNetworkError(
             code: 'account_consents_http_${response.statusCode}',
-            message: 'Non sono riuscito a leggere i tuoi consensi. Riprova.',
+            message: appL10n.consentsErrorLoad,
           ),
         );
       }
@@ -60,16 +61,16 @@ class HttpAccountConsentsRemoteDataSource implements AccountConsentsRemoteDataSo
       return Result.success(AccountConsentsSnapshot.fromJson(json));
     } on TimeoutException {
       return Result.failure<AccountConsentsSnapshot>(
-        const AppNetworkError(
+        AppNetworkError(
           code: 'account_consents_timeout',
-          message: 'La richiesta ha impiegato troppo tempo. Riprova.',
+          message: appL10n.authNetworkTimeout,
         ),
       );
     } catch (e) {
       return Result.failure<AccountConsentsSnapshot>(
         AppNetworkError(
           code: 'account_consents_unexpected_error',
-          message: "Qualcosa e' andato storto. Riprova.",
+          message: appL10n.authNetworkUnexpected,
           details: e,
         ),
       );
@@ -94,7 +95,7 @@ class HttpAccountConsentsRemoteDataSource implements AccountConsentsRemoteDataSo
         return Result.failure(
           AppNetworkError(
             code: 'account_consents_set_http_${response.statusCode}',
-            message: 'Non sono riuscito a salvare la tua scelta. Riprova.',
+            message: appL10n.consentsErrorSave,
           ),
         );
       }
@@ -103,16 +104,16 @@ class HttpAccountConsentsRemoteDataSource implements AccountConsentsRemoteDataSo
       return Result.success(AccountConsentsSnapshot.fromJson(json));
     } on TimeoutException {
       return Result.failure<AccountConsentsSnapshot>(
-        const AppNetworkError(
+        AppNetworkError(
           code: 'account_consents_set_timeout',
-          message: 'La richiesta ha impiegato troppo tempo. Riprova.',
+          message: appL10n.authNetworkTimeout,
         ),
       );
     } catch (e) {
       return Result.failure<AccountConsentsSnapshot>(
         AppNetworkError(
           code: 'account_consents_set_unexpected_error',
-          message: "Qualcosa e' andato storto. Riprova.",
+          message: appL10n.authNetworkUnexpected,
           details: e,
         ),
       );
