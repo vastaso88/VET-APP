@@ -98,6 +98,15 @@ class _FakeRemote implements ChatRemoteDataSource {
       Result.success('p1');
 
   @override
+  Future<Result<ChatSendResult>> editMessage({
+    required String conversationId,
+    required String messageId,
+    required String userMessage,
+    String? clientMessageId,
+  }) async =>
+      Result.failure(const AppNetworkError(code: 'x', message: 'unused'));
+
+  @override
   Future<Result<ChatSendResult>> sendMessage({
     required String petId,
     String? conversationId,

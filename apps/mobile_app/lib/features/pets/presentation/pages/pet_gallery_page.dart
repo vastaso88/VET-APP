@@ -7,7 +7,6 @@ import '../../../../shared/widgets/pet_loader.dart';
 import '../widgets/photo_timeline_view.dart';
 
 import 'package:flutter/services.dart';
-import 'package:image_picker/image_picker.dart';
 import 'package:video_player/video_player.dart';
 
 import '../../../../design_system/tokens/app_colors.dart';
@@ -17,9 +16,8 @@ import '../../../../shared/auth/current_owner.dart';
 import '../../../dog_walks/data/dog_walks_repository.dart';
 import '../../../dog_walks/domain/photo_walk_match.dart';
 import '../../../dog_walks/domain/walk_session.dart';
-import '../../../settings/data/gallery_save_settings_store.dart';
-import '../../data/device_gallery_saver.dart';
 import '../../data/pet_demo_store.dart';
+import '../../data/pet_media_capture.dart';
 import '../../data/pet_media_importer.dart';
 import '../../data/pet_photo_repository.dart';
 import '../../domain/pet_models.dart';
@@ -39,7 +37,6 @@ class PetGalleryPage extends StatefulWidget {
 
 class _PetGalleryPageState extends State<PetGalleryPage> {
   final _repository = PetPhotoRepository();
-  final _picker = ImagePicker();
   late Future<List<PetPhotoEntry>> _photosFuture = _load();
   bool _busy = false;
 
@@ -51,6 +48,12 @@ class _PetGalleryPageState extends State<PetGalleryPage> {
   void initState() {
     super.initState();
     _loadWalks();
+  }
+
+  @override
+  void dispose() {
+    _capture.dispose();
+    super.dispose();
   }
 
   Future<void> _loadWalks() async {
@@ -78,15 +81,13 @@ class _PetGalleryPageState extends State<PetGalleryPage> {
     return walk == null ? null : walkPhotoLabel(walk);
   }
 
-  /// "Carico 2 di 5..." while an import runs - null otherwise. Set the moment
-  /// the picker returns, so the screen answers before any file is read.
-  String? _importProgress;
+  /// The shared camera / import flow (also behind the walk's camera button):
+  /// its progress drives the overlay below.
+  late final PetMediaCapture _capture = PetMediaCapture()..addListener(_onCaptureChanged);
 
-  /// The running import (for "Annulla") and, while a video is being reduced
-  /// on the phone, how far along it is (0..1).
-  PetMediaImporter? _importer;
-  double? _compressFraction;
-  bool _cancelling = false;
+  void _onCaptureChanged() {
+    if (mounted) setState(() {});
+  }
 
   PetProfile get _pet =>
       PetDemoStore.instance.list().where((p) => p.id == widget.pet.id).firstOrNull ?? widget.pet;
@@ -112,93 +113,21 @@ class _PetGalleryPageState extends State<PetGalleryPage> {
 
   void _reload() => setState(() => _photosFuture = _load());
 
-  Future<void> _importFromGallery() async {
-    // No imageQuality: with it the picker re-encodes the photo on the phone
-    // (and may lose its EXIF shooting time, which the walk caption and the walk
-    // map pin depend on); compressPetPhoto re-encodes once, after the time is read.
-    final files = await _picker.pickMultipleMedia();
-    await _import(files);
-  }
-
-  Future<void> _takePhoto() async {
-    final file = await _picker.pickImage(source: ImageSource.camera);
-    if (file != null) await _saveCopyToDeviceGallery(file, isVideo: false);
-    // The camera returns right after the shot: that moment is when it was taken.
-    await _import([if (file != null) file], capturedAt: DateTime.now());
-  }
-
-  Future<void> _recordVideo() async {
-    final file = await _picker.pickVideo(
-      source: ImageSource.camera,
-      maxDuration: const Duration(seconds: petVideoMaxSeconds),
+  /// Runs one of the capture actions, then confirms it and refreshes the grid.
+  Future<void> _runCapture(Future<PetMediaImportResult?> Function() action) async {
+    final result = await action();
+    if (!mounted || result == null) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(result.confirmation(_pet.name))),
     );
-    if (file != null) await _saveCopyToDeviceGallery(file, isVideo: true);
-    await _import([if (file != null) file], capturedAt: DateTime.now());
+    _reload();
   }
 
-  /// Camera captures only (gallery imports are already on the phone). Runs
-  /// before the upload so the copy exists even when the upload fails.
-  Future<void> _saveCopyToDeviceGallery(XFile file, {required bool isVideo}) async {
-    await GallerySaveSettingsStore.instance.ensureLoaded();
-    await const DeviceGallerySaver().save(file, isVideo: isVideo);
-  }
+  Future<void> _importFromGallery() => _runCapture(() => _capture.importFromGallery(widget.pet.id));
 
-  Future<void> _import(List<XFile> files, {DateTime? capturedAt}) async {
-    if (files.isEmpty || !mounted) return;
-    final importer = PetMediaImporter();
-    var step = '';
-    setState(() {
-      _importer = importer;
-      _importProgress = 'Preparo ${files.length == 1 ? 'il file' : '${files.length} file'}...';
-    });
-    try {
-      final result = await importer.importAll(
-        petId: widget.pet.id,
-        files: files,
-        capturedAt: capturedAt,
-        onProgress: (current, total) {
-          if (!mounted || _cancelling) return;
-          step = total == 1 ? '' : ' $current di $total';
-          setState(() {
-            _compressFraction = null;
-            _importProgress = total == 1 ? 'Carico il file...' : 'Carico $current di $total...';
-          });
-        },
-        onCompressProgress: (fraction) {
-          if (!mounted || _cancelling) return;
-          setState(() {
-            _compressFraction = fraction;
-            _importProgress = fraction >= 1
-                ? 'Carico il video$step...'
-                : 'Riduco il video$step... ${(fraction * 100).round()}%';
-          });
-        },
-      );
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(result.summary())));
-    } finally {
-      if (mounted) {
-        setState(() {
-          _importProgress = null;
-          _compressFraction = null;
-          _importer = null;
-          _cancelling = false;
-        });
-        _reload();
-      }
-    }
-  }
+  Future<void> _takePhoto() => _runCapture(() => _capture.takePhoto(widget.pet.id));
 
-  void _cancelImport() {
-    final importer = _importer;
-    if (importer == null || _cancelling) return;
-    setState(() {
-      _cancelling = true;
-      _compressFraction = null;
-      _importProgress = 'Annullo...';
-    });
-    unawaited(importer.cancel());
-  }
+  Future<void> _recordVideo() => _runCapture(() => _capture.recordVideo(widget.pet.id));
 
   Future<void> _setProfile(PetPhotoEntry photo) async {
     await _run(() async {
@@ -379,14 +308,14 @@ class _PetGalleryPageState extends State<PetGalleryPage> {
             bottom: AppSpacing.md,
             child: FloatingActionButton.extended(
               heroTag: 'pet-gallery-add',
-              onPressed: _busy || _importProgress != null ? null : _showAddSheet,
+              onPressed: _busy || _capture.busy ? null : _showAddSheet,
               backgroundColor: AppColors.primary,
               foregroundColor: AppColors.onPrimary,
               icon: const Icon(Icons.add_a_photo_outlined),
               label: const Text('Aggiungi'),
             ),
           ),
-          if (_busy || _importProgress != null)
+          if (_busy || _capture.busy)
             Positioned.fill(
               child: ColoredBox(
                 color: Colors.black.withValues(alpha: 0.35),
@@ -394,8 +323,8 @@ class _PetGalleryPageState extends State<PetGalleryPage> {
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      PetLoader(label: _importProgress, color: Colors.white),
-                      if (_compressFraction case final fraction?) ...[
+                      PetLoader(label: _capture.progress, color: Colors.white),
+                      if (_capture.compressFraction case final fraction?) ...[
                         const SizedBox(height: AppSpacing.sm),
                         SizedBox(
                           width: 200,
@@ -406,10 +335,10 @@ class _PetGalleryPageState extends State<PetGalleryPage> {
                           ),
                         ),
                       ],
-                      if (_importer != null) ...[
+                      if (_capture.canCancel) ...[
                         const SizedBox(height: AppSpacing.md),
                         OutlinedButton(
-                          onPressed: _cancelling ? null : _cancelImport,
+                          onPressed: _capture.cancelling ? null : _capture.cancel,
                           style: OutlinedButton.styleFrom(
                             foregroundColor: Colors.white,
                             side: const BorderSide(color: Colors.white70),

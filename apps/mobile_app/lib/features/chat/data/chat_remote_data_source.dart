@@ -17,11 +17,16 @@ class ChatSendResult {
     required this.content,
     required this.aiGenerated,
     required this.backendConversationId,
+    this.title,
   });
 
   final String content;
   final bool aiGenerated;
   final String backendConversationId;
+
+  /// The conversation's title on the server (it follows an edited first
+  /// message when it was the automatic one).
+  final String? title;
 }
 
 /// One message of a stored backend conversation — see `ChatMessage` in
@@ -65,6 +70,18 @@ abstract class ChatRemoteDataSource {
     String? conversationId,
     required String userMessage,
     String? attachmentId,
+    String? clientMessageId,
+  });
+
+  /// `PUT /conversations/{id}/messages/{messageId}`: replaces one of the
+  /// owner's messages and everything after it, and returns the new answer
+  /// (same shape as [sendMessage]). [messageId] may be the server's id or the
+  /// app's own one; [clientMessageId] identifies the edited message across
+  /// retries.
+  Future<Result<ChatSendResult>> editMessage({
+    required String conversationId,
+    required String messageId,
+    required String userMessage,
     String? clientMessageId,
   });
 
@@ -176,16 +193,7 @@ class HttpChatRemoteDataSource implements ChatRemoteDataSource {
         );
       }
 
-      final json = jsonDecode(response.body) as Map<String, dynamic>;
-      final reply = json['reply'] as Map<String, dynamic>;
-      final conversation = json['conversation'] as Map<String, dynamic>;
-      return Result.success(
-        ChatSendResult(
-          content: reply['content'] as String? ?? '',
-          aiGenerated: json['ai_generated'] as bool? ?? false,
-          backendConversationId: conversation['id'] as String,
-        ),
-      );
+      return Result.success(_sendResultFrom(response.body));
     } on TimeoutException {
       return Result.failure<ChatSendResult>(
         const AppNetworkError(
@@ -199,6 +207,67 @@ class HttpChatRemoteDataSource implements ChatRemoteDataSource {
         AppNetworkError(
           code: 'chat_unexpected_error',
           message: "Qualcosa e' andato storto. Riprova.",
+          details: e,
+        ),
+      );
+    }
+  }
+
+  static ChatSendResult _sendResultFrom(String body) {
+    final json = jsonDecode(body) as Map<String, dynamic>;
+    final reply = json['reply'] as Map<String, dynamic>;
+    final conversation = json['conversation'] as Map<String, dynamic>;
+    return ChatSendResult(
+      content: reply['content'] as String? ?? '',
+      aiGenerated: json['ai_generated'] as bool? ?? false,
+      backendConversationId: conversation['id'] as String,
+      title: conversation['title'] as String?,
+    );
+  }
+
+  @override
+  Future<Result<ChatSendResult>> editMessage({
+    required String conversationId,
+    required String messageId,
+    required String userMessage,
+    String? clientMessageId,
+  }) async {
+    try {
+      final response = await _client
+          .put(
+            Uri.parse(
+              '$_baseUrl/conversations/${Uri.encodeComponent(conversationId)}'
+              '/messages/${Uri.encodeComponent(messageId)}',
+            ),
+            headers: _headers,
+            body: jsonEncode({
+              'user_message': userMessage,
+              if (clientMessageId != null) 'client_message_id': clientMessageId,
+            }),
+          )
+          .timeout(_chatTimeout);
+      if (response.statusCode < 200 || response.statusCode >= 300) {
+        return Result.failure(
+          AppNetworkError(
+            code: 'chat_edit_http_${response.statusCode}',
+            message: 'Non sono riuscito a modificare il messaggio. Riprova.',
+          ),
+        );
+      }
+      return Result.success(_sendResultFrom(response.body));
+    } on TimeoutException {
+      return Result.failure<ChatSendResult>(
+        const AppNetworkError(
+          code: 'chat_timeout',
+          message:
+              "L'assistente non ha risposto in tempo. Tocca Riprova: se la risposta è già pronta, la recupero.",
+        ),
+      );
+    } catch (e) {
+      return Result.failure<ChatSendResult>(
+        AppNetworkError(
+          code: 'chat_edit_failed',
+          message: 'Non sono riuscito a modificare il messaggio. Controlla la connessione.',
           details: e,
         ),
       );

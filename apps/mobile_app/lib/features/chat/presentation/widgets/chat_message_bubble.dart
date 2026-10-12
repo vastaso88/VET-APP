@@ -11,9 +11,13 @@ class ChatMessageBubble extends StatelessWidget {
   const ChatMessageBubble({
     super.key,
     required this.message,
+    this.onLongPress,
   });
 
   final ChatMessage message;
+
+  /// Opens the message's actions (on the owner's own messages: "Modifica").
+  final VoidCallback? onLongPress;
 
   @override
   Widget build(BuildContext context) {
@@ -27,70 +31,73 @@ class ChatMessageBubble extends StatelessWidget {
           isUser ? MainAxisAlignment.end : MainAxisAlignment.start,
       children: [
         Flexible(
-          child: Container(
-            padding: const EdgeInsets.all(AppSpacing.lg),
-            decoration: BoxDecoration(
-              color: backgroundColor,
-              borderRadius: BorderRadius.circular(AppRadii.xl),
-              border: isUser ? null : Border.all(color: AppColors.border),
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                if (message.attachmentImageBytes != null) ...[
-                  ClipRRect(
-                    borderRadius: BorderRadius.circular(AppRadii.medium),
-                    child: Image.memory(
-                      message.attachmentImageBytes!,
-                      width: 160,
-                      height: 160,
-                      fit: BoxFit.cover,
-                    ),
-                  ),
-                  const SizedBox(height: AppSpacing.sm),
-                ],
-                isUser
-                    ? Text(
-                        message.text,
-                        style: AppTextStyles.bodySmall.copyWith(
-                          color: foregroundColor,
-                        ),
-                      )
-                    : _MarkdownLiteText(
-                        text: message.text,
-                        style: AppTextStyles.bodySmall.copyWith(
-                          color: foregroundColor,
-                        ),
-                      ),
-                if (showAiDisclosure) ...[
-                  const SizedBox(height: AppSpacing.xs),
-                  const AiDisclosureBadge(),
-                ],
-                const SizedBox(height: AppSpacing.sm),
-                Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(
-                      message.timeLabel,
-                      style: AppTextStyles.caption.copyWith(
-                        color: isUser
-                            ? AppColors.onPrimary.withValues(alpha: 0.72)
-                            : AppColors.mutedText,
+          child: GestureDetector(
+            onLongPress: onLongPress,
+            child: Container(
+              padding: const EdgeInsets.all(AppSpacing.lg),
+              decoration: BoxDecoration(
+                color: backgroundColor,
+                borderRadius: BorderRadius.circular(AppRadii.xl),
+                border: isUser ? null : Border.all(color: AppColors.border),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  if (message.attachmentImageBytes != null) ...[
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(AppRadii.medium),
+                      child: Image.memory(
+                        message.attachmentImageBytes!,
+                        width: 160,
+                        height: 160,
+                        fit: BoxFit.cover,
                       ),
                     ),
-                    if (isUser) ...[
-                      const SizedBox(width: AppSpacing.xs),
-                      Icon(
-                        message.isRead
-                            ? Icons.done_all_rounded
-                            : Icons.done_rounded,
-                        size: 14,
-                        color: AppColors.onPrimary.withValues(alpha: 0.8),
-                      ),
-                    ],
+                    const SizedBox(height: AppSpacing.sm),
                   ],
-                ),
-              ],
+                  isUser
+                      ? Text(
+                          message.text,
+                          style: AppTextStyles.bodySmall.copyWith(
+                            color: foregroundColor,
+                          ),
+                        )
+                      : _MarkdownLiteText(
+                          text: message.text,
+                          style: AppTextStyles.bodySmall.copyWith(
+                            color: foregroundColor,
+                          ),
+                        ),
+                  if (showAiDisclosure) ...[
+                    const SizedBox(height: AppSpacing.xs),
+                    const AiDisclosureBadge(),
+                  ],
+                  const SizedBox(height: AppSpacing.sm),
+                  Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        message.timeLabel,
+                        style: AppTextStyles.caption.copyWith(
+                          color: isUser
+                              ? AppColors.onPrimary.withValues(alpha: 0.72)
+                              : AppColors.mutedText,
+                        ),
+                      ),
+                      if (isUser) ...[
+                        const SizedBox(width: AppSpacing.xs),
+                        Icon(
+                          message.isRead
+                              ? Icons.done_all_rounded
+                              : Icons.done_rounded,
+                          size: 14,
+                          color: AppColors.onPrimary.withValues(alpha: 0.8),
+                        ),
+                      ],
+                    ],
+                  ),
+                ],
+              ),
             ),
           ),
         ),
