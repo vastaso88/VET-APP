@@ -2,6 +2,9 @@ import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 
+import '../../settings/domain/unit_conversion.dart';
+import '../../settings/domain/unit_system.dart';
+
 enum PetsScreenStatus {
   loading,
   empty,
@@ -74,6 +77,14 @@ class HabitatDetails {
     if (!hasDimensions) return '';
     String part(int? value) => value?.toString() ?? '?';
     return '${part(lengthCm)}×${part(widthCm)}×${part(heightCm)} cm';
+  }
+
+  /// [dimensionsLabel] in the owner's unit system (inches instead of cm).
+  String dimensionsLabelIn(UnitSystem system) {
+    if (!hasDimensions) return '';
+    String part(int? value) =>
+        value == null ? '?' : formatLengthIn(value, system).split(' ').first;
+    return '${part(lengthCm)}×${part(widthCm)}×${part(heightCm)} ${lengthUnitName(system)}';
   }
 
   bool get isEmpty =>

@@ -4,6 +4,8 @@ import '../../../../design_system/tokens/app_colors.dart';
 import '../../../../design_system/tokens/app_spacing.dart';
 import '../../../../design_system/tokens/app_text_styles.dart';
 import '../../../location/domain/coordinates.dart';
+import '../../../settings/data/unit_settings_store.dart';
+import '../../../settings/domain/unit_conversion.dart';
 import '../widgets/radar_map.dart';
 
 /// Full-screen version of the radar map preview: same markers, pan and
@@ -28,7 +30,7 @@ class RadarMapPage extends StatelessWidget {
         backgroundColor: AppColors.background,
         elevation: 0,
         foregroundColor: AppColors.text,
-        title: Text('Mappa · ${radiusKm.round()} km', style: AppTextStyles.title),
+        title: Text('Mappa · ${formatKilometersIn(radiusKm, UnitSettingsStore.instance.system)}', style: AppTextStyles.title),
       ),
       body: SafeArea(
         child: Column(

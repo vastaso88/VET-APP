@@ -105,13 +105,7 @@ class _RemindersListPageState extends State<RemindersListPage> {
 
   @override
   Widget build(BuildContext context) {
-    return ListenableBuilder(
-      listenable: LayoutSettingsStore.instance,
-      builder: (context, _) {
-        final compact = LayoutSettingsStore.instance.settings.listDensity ==
-            ListDensity.compact;
-
-        return _Shell(
+    return _Shell(
           title: 'Promemoria',
           subtitle: 'Vaccini, trattamenti e visite da tenere sotto controllo.',
           actionLabel: 'Crea',
@@ -208,7 +202,6 @@ class _RemindersListPageState extends State<RemindersListPage> {
                           return <Widget>[
                             _ReminderTile(
                               reminder: reminder,
-                              compact: compact,
                               onTap: () => _openDetail(reminder),
                               onMarkDone: reminder.kind == EventKind.spot
                                   ? () => _markDone(reminder)
@@ -225,8 +218,6 @@ class _RemindersListPageState extends State<RemindersListPage> {
             ),
           ),
         );
-      },
-    );
   }
 }
 

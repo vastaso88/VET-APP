@@ -2,6 +2,8 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 
+import '../../../settings/data/unit_settings_store.dart';
+import '../../../settings/domain/unit_conversion.dart';
 import '../../../../shared/widgets/pet_loader.dart';
 
 import 'package:share_plus/share_plus.dart';
@@ -353,15 +355,20 @@ class _HabitatSummaryRow extends StatelessWidget {
   final HabitatDetails habitat;
 
   String _summary() {
+    final system = UnitSettingsStore.instance.system;
     final parts = <String>[
-      if (habitat.hasDimensions) habitat.dimensionsLabel,
-      if (habitat.volumeLiters != null) '${habitat.volumeLiters} L',
-      if (habitat.temperatureLabel.isNotEmpty) habitat.temperatureLabel,
+      if (habitat.hasDimensions) habitat.dimensionsLabelIn(system),
+      if (habitat.volumeLiters != null)
+        system.usesUsGallons
+            ? formatVolumeIn(habitat.volumeLiters!, system)
+            : '${habitat.volumeLiters} L',
+      if (habitat.temperatureLabel.isNotEmpty) temperatureLabelIn(habitat.temperatureLabel, system),
     ];
     return parts.isEmpty ? 'Tocca per i dettagli' : parts.join(' · ');
   }
 
   void _openDetails(BuildContext context) {
+    final system = UnitSettingsStore.instance.system;
     showModalBottomSheet<void>(
       context: context,
       backgroundColor: AppColors.surface,
@@ -378,11 +385,11 @@ class _HabitatSummaryRow extends StatelessWidget {
               Text(_habitatLabel(pet.species), style: AppTextStyles.title),
               const SizedBox(height: AppSpacing.md),
               if (habitat.hasDimensions)
-                _HabitatDetailRow('Dimensioni', habitat.dimensionsLabel),
+                _HabitatDetailRow('Dimensioni', habitat.dimensionsLabelIn(system)),
               if (habitat.volumeLiters != null)
-                _HabitatDetailRow('Volume', '${habitat.volumeLiters} litri'),
+                _HabitatDetailRow('Volume', formatVolumeIn(habitat.volumeLiters!, system)),
               if (habitat.temperatureLabel.isNotEmpty)
-                _HabitatDetailRow('Temperatura', habitat.temperatureLabel),
+                _HabitatDetailRow('Temperatura', temperatureLabelIn(habitat.temperatureLabel, system)),
               if (habitat.substrate.isNotEmpty)
                 _HabitatDetailRow('Substrato', habitat.substrate),
               if (habitat.notes.isNotEmpty)

@@ -13,11 +13,16 @@ import 'router/app_router.dart';
 import '../features/dog_walks/data/walk_home_widget.dart';
 import '../features/notifications/application/notification_scheduler.dart';
 import '../features/pets/data/pet_photo_repository.dart';
+import '../features/settings/data/layout_settings_store.dart';
+import '../features/settings/data/unit_settings_store.dart';
 import '../shared/config/app_runtime_config_loader.dart';
 
 Future<void> bootstrap() async {
   WidgetsFlutterBinding.ensureInitialized();
   await initializeDateFormatting('it_IT');
+  // Measurement units and chat text size are read synchronously by display code.
+  unawaited(UnitSettingsStore.instance.ensureLoaded());
+  unawaited(LayoutSettingsStore.instance.ensureLoaded());
 
   // The app has no landscape layouts anywhere; rotating breaks several
   // pages (Home's week-strip, the walk map). The Android manifest also

@@ -36,6 +36,8 @@ import '../../../pets/presentation/widgets/medical_record_consent_card.dart';
 import '../../../profile/presentation/pages/profile_page.dart';
 import '../../data/gallery_save_settings_store.dart';
 import '../../data/layout_settings_store.dart';
+import '../../data/unit_settings_store.dart';
+import '../../domain/unit_system.dart';
 import '../../../auth/presentation/pages/legal_text_page.dart';
 import '../widgets/collapsible_section.dart';
 import 'location_picker_page.dart';
@@ -49,7 +51,6 @@ class SettingsPage extends StatefulWidget {
 
 class _SettingsPageState extends State<SettingsPage> {
   bool _notifications = true;
-  String _weightUnit = 'kg';
 
   final _consentsDataSource = HttpAccountConsentsRemoteDataSource();
   AccountConsentsSnapshot? _consents;
@@ -497,10 +498,10 @@ class _SettingsPageState extends State<SettingsPage> {
                   ],
                 ),
                 CollapsibleSection(
-                  sectionId: 'preferenze',
-                  expanded: _openSection == 'preferenze',
+                  sectionId: 'notifiche',
+                  expanded: _openSection == 'notifiche',
                   onToggle: _toggleSection,
-                  title: 'Preferenze',
+                  title: 'Notifiche push',
                   children: [
                     _ToggleRow(
                       icon: Icons.notifications_active_outlined,
@@ -511,10 +512,6 @@ class _SettingsPageState extends State<SettingsPage> {
                     ),
                     // The browser can't receive scheduled notifications.
                     if (!kIsWeb) const _NotificationCategoryToggles(),
-                    _UnitRow(
-                      value: _weightUnit,
-                      onChanged: (value) => setState(() => _weightUnit = value),
-                    ),
                   ],
                 ),
                 CollapsibleSection(
@@ -545,17 +542,41 @@ class _SettingsPageState extends State<SettingsPage> {
                       onSelectRight: () =>
                           _updateLayout(layout.copyWith(weekStartDay: WeekStartDay.sunday)),
                     ),
-                    _ChoiceRow(
-                      icon: Icons.density_medium_outlined,
+                    _OptionsRow<ChatTextSize>(
+                      icon: Icons.text_fields_rounded,
                       iconColor: AppColors.accent,
-                      title: 'Densità liste',
-                      leftLabel: 'Comoda',
-                      rightLabel: 'Compatta',
-                      isLeftSelected: layout.listDensity == ListDensity.comfortable,
-                      onSelectLeft: () =>
-                          _updateLayout(layout.copyWith(listDensity: ListDensity.comfortable)),
-                      onSelectRight: () =>
-                          _updateLayout(layout.copyWith(listDensity: ListDensity.compact)),
+                      title: 'Dimensione del testo in chat',
+                      options: [
+                        for (final size in ChatTextSize.values) (value: size, label: size.label),
+                      ],
+                      selected: layout.chatTextSize,
+                      onSelected: (size) => _updateLayout(layout.copyWith(chatTextSize: size)),
+                      preview: Text(
+                        'Così vedrai i messaggi della chat.',
+                        style: AppTextStyles.bodySmall.copyWith(
+                          fontSize:
+                              (AppTextStyles.bodySmall.fontSize ?? 14) * layout.chatTextSize.scale,
+                        ),
+                      ),
+                    ),
+                    ListenableBuilder(
+                      listenable: UnitSettingsStore.instance,
+                      builder: (context, _) => _OptionsRow<UnitSystem>(
+                        icon: Icons.straighten_rounded,
+                        iconColor: AppColors.info,
+                        title: 'Unità di misura',
+                        options: [
+                          for (final system in UnitSystem.values)
+                            (value: system, label: system.label),
+                        ],
+                        selected: UnitSettingsStore.instance.system,
+                        onSelected: (system) =>
+                            unawaited(UnitSettingsStore.instance.setSystem(system)),
+                        preview: Text(
+                          UnitSettingsStore.instance.system.description,
+                          style: AppTextStyles.bodySmall,
+                        ),
+                      ),
                     ),
                   ],
                 ),
@@ -955,75 +976,6 @@ class _NotificationCategoryToggles extends StatelessWidget {
   }
 }
 
-class _UnitRow extends StatelessWidget {
-  const _UnitRow({required this.value, required this.onChanged});
-
-  final String value;
-  final ValueChanged<String> onChanged;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(vertical: AppSpacing.sm),
-      decoration: const BoxDecoration(
-        border: Border(bottom: BorderSide(color: AppColors.border)),
-      ),
-      child: Row(
-        children: [
-          const _IconBadge(icon: Icons.scale_outlined, color: AppColors.accent),
-          const SizedBox(width: AppSpacing.md),
-          Expanded(
-            child: Text(
-              'Unità di misura',
-              style:
-                  AppTextStyles.body.copyWith(color: AppColors.text, fontWeight: FontWeight.w600),
-            ),
-          ),
-          _UnitToggleButton(label: 'kg', selected: value == 'kg', onTap: () => onChanged('kg')),
-          const SizedBox(width: AppSpacing.xs),
-          _UnitToggleButton(label: 'lb', selected: value == 'lb', onTap: () => onChanged('lb')),
-        ],
-      ),
-    );
-  }
-}
-
-class _UnitToggleButton extends StatelessWidget {
-  const _UnitToggleButton({required this.label, required this.selected, required this.onTap});
-
-  final String label;
-  final bool selected;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    return Material(
-      color: selected ? AppColors.primary : AppColors.surface,
-      borderRadius: BorderRadius.circular(AppRadii.pill),
-      child: InkWell(
-        borderRadius: BorderRadius.circular(AppRadii.pill),
-        onTap: onTap,
-        child: Container(
-          width: 40,
-          padding: const EdgeInsets.symmetric(vertical: 6),
-          alignment: Alignment.center,
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(AppRadii.pill),
-            border: Border.all(color: selected ? AppColors.primary : AppColors.border),
-          ),
-          child: Text(
-            label,
-            style: AppTextStyles.caption.copyWith(
-              color: selected ? AppColors.onPrimary : AppColors.text,
-              fontWeight: FontWeight.w700,
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-}
-
 class _StepperRow extends StatelessWidget {
   const _StepperRow({
     required this.icon,
@@ -1139,6 +1091,73 @@ class _ChoiceRow extends StatelessWidget {
           _ChoicePill(label: leftLabel, selected: isLeftSelected, onTap: onSelectLeft),
           const SizedBox(width: AppSpacing.xs),
           _ChoicePill(label: rightLabel, selected: !isLeftSelected, onTap: onSelectRight),
+        ],
+      ),
+    );
+  }
+}
+
+/// A titled row with any number of mutually exclusive pills and an optional
+/// preview line underneath (used when two choices are not enough).
+class _OptionsRow<T> extends StatelessWidget {
+  const _OptionsRow({
+    required this.icon,
+    required this.iconColor,
+    required this.title,
+    required this.options,
+    required this.selected,
+    required this.onSelected,
+    this.preview,
+  });
+
+  final IconData icon;
+  final Color iconColor;
+  final String title;
+  final List<({T value, String label})> options;
+  final T selected;
+  final ValueChanged<T> onSelected;
+  final Widget? preview;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(vertical: AppSpacing.sm),
+      decoration: const BoxDecoration(
+        border: Border(bottom: BorderSide(color: AppColors.border)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              _IconBadge(icon: icon, color: iconColor),
+              const SizedBox(width: AppSpacing.md),
+              Expanded(
+                child: Text(
+                  title,
+                  style: AppTextStyles.body
+                      .copyWith(color: AppColors.text, fontWeight: FontWeight.w600),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: AppSpacing.sm),
+          Wrap(
+            spacing: AppSpacing.xs,
+            runSpacing: AppSpacing.xs,
+            children: [
+              for (final option in options)
+                _ChoicePill(
+                  label: option.label,
+                  selected: option.value == selected,
+                  onTap: () => onSelected(option.value),
+                ),
+            ],
+          ),
+          if (preview != null) ...[
+            const SizedBox(height: AppSpacing.sm),
+            preview!,
+          ],
         ],
       ),
     );

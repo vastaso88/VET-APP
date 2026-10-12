@@ -2,6 +2,9 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
+import '../../../settings/data/unit_settings_store.dart';
+import '../../../settings/domain/unit_conversion.dart';
+import '../../../settings/domain/unit_system.dart';
 import '../../data/pet_demo_store.dart';
 import '../../domain/fish_species.dart';
 import '../../domain/pet_breeds.dart';
@@ -153,29 +156,61 @@ class _PetProfileFormState extends State<PetProfileForm> {
     _identityColor = pet?.identityColor ?? PetDemoStore.instance.nextDefaultIdentityColor();
     _isAquarium = pet?.isAquarium ?? false;
     _aquariumStock = List.of(pet?.aquariumStock ?? const []);
-    _lengthController = TextEditingController(text: habitat?.lengthCm?.toString() ?? '');
-    _widthController = TextEditingController(text: habitat?.widthCm?.toString() ?? '');
-    _heightController = TextEditingController(text: habitat?.heightCm?.toString() ?? '');
-    _volumeController = TextEditingController(text: habitat?.volumeLiters?.toString() ?? '');
+    _lengthController = TextEditingController(text: _cmField(habitat?.lengthCm));
+    _widthController = TextEditingController(text: _cmField(habitat?.widthCm));
+    _heightController = TextEditingController(text: _cmField(habitat?.heightCm));
+    _volumeController = TextEditingController(text: _litersField(habitat?.volumeLiters));
     _volumeController.addListener(() {
       if (_isAutoUpdatingVolume) return;
       _volumeManuallyEdited = true;
     });
-    _temperatureController = TextEditingController(text: habitat?.temperatureLabel ?? '');
+    _temperatureController = TextEditingController(
+      text: temperatureLabelIn(habitat?.temperatureLabel ?? '', _units),
+    );
     _substrateController = TextEditingController(text: habitat?.substrate ?? '');
     _habitatNotesController = TextEditingController(text: habitat?.notes ?? '');
   }
 
+  UnitSystem get _units => UnitSettingsStore.instance.system;
+
+  /// Number as shown in a field in the owner's unit ("23,6"), one decimal.
+  String _fieldNumber(double value) => formatDecimal(value);
+
+  double? _typedNumber(String text) => double.tryParse(text.trim().replaceAll(',', '.'));
+
+  /// A dimension field (cm, or inches in the imperial/USA systems) as cm.
+  int? _typedCm(TextEditingController controller) {
+    final value = _typedNumber(controller.text);
+    return value == null ? null : displayToCm(value, _units);
+  }
+
+  String _cmField(int? cm) => cm == null
+      ? ''
+      : (_units.usesInches ? _fieldNumber(cmToDisplay(cm, _units)) : cm.toString());
+
+  /// The liters field (US gallons in the USA system) as liters.
+  int? _typedLiters() {
+    final value = _typedNumber(_volumeController.text);
+    return value == null ? null : displayToLiters(value, _units);
+  }
+
+  String _litersField(int? liters) {
+    if (liters == null) return '';
+    return _units.usesUsGallons
+        ? _fieldNumber(litersToDisplay(liters.toDouble(), _units))
+        : liters.toString();
+  }
+
   void _recalculateVolume() {
     if (_volumeManuallyEdited) return;
-    final length = int.tryParse(_lengthController.text.trim());
-    final width = int.tryParse(_widthController.text.trim());
-    final height = int.tryParse(_heightController.text.trim());
+    final length = _typedCm(_lengthController);
+    final width = _typedCm(_widthController);
+    final height = _typedCm(_heightController);
     if (length == null || width == null || height == null) return;
 
     final liters = (length * width * height / 1000).round();
     _isAutoUpdatingVolume = true;
-    _volumeController.text = liters.toString();
+    _volumeController.text = _litersField(liters);
     _isAutoUpdatingVolume = false;
   }
 
@@ -564,7 +599,10 @@ class _PetProfileFormState extends State<PetProfileForm> {
                   inputFormatters: [
                     FilteringTextInputFormatter.allow(RegExp(r'[0-9,.\s]')),
                   ],
-                  decoration: _inputDecoration('Peso (facoltativo)', 'Es. 18,4'),
+                  decoration: _inputDecoration(
+                    'Peso (facoltativo, ${_units.usesPounds ? 'lb' : 'kg'})',
+                    _units.usesPounds ? 'Es. 40,5' : 'Es. 18,4',
+                  ),
                   validator: (value) {
                     if ((value ?? '').trim().isEmpty) {
                       return null;
@@ -711,11 +749,11 @@ class _PetProfileFormState extends State<PetProfileForm> {
     if (!_speciesHasHabitat(_species)) return null;
 
     final habitat = HabitatDetails(
-      lengthCm: int.tryParse(_lengthController.text.trim()),
-      widthCm: int.tryParse(_widthController.text.trim()),
-      heightCm: int.tryParse(_heightController.text.trim()),
-      volumeLiters: _species == 'Pesce' ? int.tryParse(_volumeController.text.trim()) : null,
-      temperatureLabel: _temperatureController.text.trim(),
+      lengthCm: _typedCm(_lengthController),
+      widthCm: _typedCm(_widthController),
+      heightCm: _typedCm(_heightController),
+      volumeLiters: _species == 'Pesce' ? _typedLiters() : null,
+      temperatureLabel: temperatureLabelFromInput(_temperatureController.text, _units),
       substrate: _substrateController.text.trim(),
       notes: _habitatNotesController.text.trim(),
     );
@@ -744,13 +782,16 @@ class _PetProfileFormState extends State<PetProfileForm> {
       return null;
     }
 
-    final normalized = raw.replaceAll(',', '.');
-    return double.tryParse(normalized);
+    final typed = double.tryParse(raw.replaceAll(',', '.'));
+    // Typed in the owner's unit (kg or lb); stored in kg.
+    return typed == null ? null : displayToKg(typed, _units);
   }
 
+  /// The weight field's text: the stored kg label, in the owner's unit.
   String _weightFromLabel(String? label) {
-    final raw = label?.replaceAll('kg', '').trim() ?? '';
-    return raw.replaceAll(',', '.');
+    final kg = parseWeightLabelKg(label ?? '');
+    if (kg == null) return '';
+    return formatDecimal(kgToDisplay(kg, _units));
   }
 
   DateTime? _parseBirthDate(String? label) {
@@ -1102,7 +1143,13 @@ class _HabitatFields extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final dimensionFormatters = [FilteringTextInputFormatter.digitsOnly];
+    final system = UnitSettingsStore.instance.system;
+    final dimensionFormatters = [
+      system.usesInches
+          ? FilteringTextInputFormatter.allow(RegExp(r'[0-9,.]'))
+          : FilteringTextInputFormatter.digitsOnly,
+    ];
+    final lengthUnit = lengthUnitName(system);
 
     return Column(
       children: [
@@ -1111,9 +1158,9 @@ class _HabitatFields extends StatelessWidget {
             Expanded(
               child: TextFormField(
                 controller: lengthController,
-                keyboardType: TextInputType.number,
+                keyboardType: const TextInputType.numberWithOptions(decimal: true),
                 inputFormatters: dimensionFormatters,
-                decoration: inputDecoration('Lunghezza', 'cm'),
+                decoration: inputDecoration('Lunghezza', lengthUnit),
                 onChanged: (_) => onDimensionChanged(),
               ),
             ),
@@ -1121,9 +1168,9 @@ class _HabitatFields extends StatelessWidget {
             Expanded(
               child: TextFormField(
                 controller: widthController,
-                keyboardType: TextInputType.number,
+                keyboardType: const TextInputType.numberWithOptions(decimal: true),
                 inputFormatters: dimensionFormatters,
-                decoration: inputDecoration('Larghezza', 'cm'),
+                decoration: inputDecoration('Larghezza', lengthUnit),
                 onChanged: (_) => onDimensionChanged(),
               ),
             ),
@@ -1131,9 +1178,9 @@ class _HabitatFields extends StatelessWidget {
             Expanded(
               child: TextFormField(
                 controller: heightController,
-                keyboardType: TextInputType.number,
+                keyboardType: const TextInputType.numberWithOptions(decimal: true),
                 inputFormatters: dimensionFormatters,
-                decoration: inputDecoration('Altezza', 'cm'),
+                decoration: inputDecoration('Altezza', lengthUnit),
                 onChanged: (_) => onDimensionChanged(),
               ),
             ),
@@ -1143,15 +1190,22 @@ class _HabitatFields extends StatelessWidget {
           const SizedBox(height: AppSpacing.md),
           TextFormField(
             controller: volumeController,
-            keyboardType: TextInputType.number,
-            inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-            decoration: inputDecoration('Litri', 'Calcolati dalle dimensioni, modificabili'),
+            keyboardType: const TextInputType.numberWithOptions(decimal: true),
+            inputFormatters: [
+              system.usesUsGallons
+                  ? FilteringTextInputFormatter.allow(RegExp(r'[0-9,.]'))
+                  : FilteringTextInputFormatter.digitsOnly,
+            ],
+            decoration: inputDecoration(
+              system.usesUsGallons ? 'Galloni USA' : 'Litri',
+              'Calcolati dalle dimensioni, modificabili',
+            ),
           ),
         ],
         const SizedBox(height: AppSpacing.md),
         TextFormField(
           controller: temperatureController,
-          decoration: inputDecoration('Temperatura', 'Es. 24-26°C'),
+          decoration: inputDecoration('Temperatura', system.usesFahrenheit ? 'Es. 75-79°F' : 'Es. 24-26°C'),
         ),
         const SizedBox(height: AppSpacing.md),
         TextFormField(

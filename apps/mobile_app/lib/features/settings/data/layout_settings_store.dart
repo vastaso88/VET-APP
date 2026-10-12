@@ -5,29 +5,49 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 enum WeekStartDay { monday, sunday }
 
-enum ListDensity { comfortable, compact }
+/// Text size of the chat bubbles and the message box. [normal] is the size
+/// the chat had before this setting existed; the default is one step up
+/// because owners found the original small.
+enum ChatTextSize {
+  small(0.9, 'Piccolo'),
+  normal(1.0, 'Normale'),
+  large(1.15, 'Grande'),
+  extraLarge(1.3, 'Molto grande');
+
+  const ChatTextSize(this.scale, this.label);
+
+  final double scale;
+  final String label;
+
+  static ChatTextSize fromName(String? name) {
+    for (final size in ChatTextSize.values) {
+      if (size.name == name) return size;
+    }
+    return ChatTextSize.large;
+  }
+}
 
 class LayoutSettings {
   const LayoutSettings({
     this.weeksShown = 2,
     this.weekStartDay = WeekStartDay.monday,
-    this.listDensity = ListDensity.comfortable,
+    this.chatTextSize = ChatTextSize.large,
   });
 
   /// How many weeks the Home agenda's week-strip shows at once, 1-4.
   final int weeksShown;
   final WeekStartDay weekStartDay;
-  final ListDensity listDensity;
+  final ChatTextSize chatTextSize;
 
   LayoutSettings copyWith({
     int? weeksShown,
     WeekStartDay? weekStartDay,
-    ListDensity? listDensity,
+    ChatTextSize? chatTextSize,
   }) {
     return LayoutSettings(
       weeksShown: weeksShown ?? this.weeksShown,
       weekStartDay: weekStartDay ?? this.weekStartDay,
-      listDensity: listDensity ?? this.listDensity,
+      chatTextSize: chatTextSize ?? this.chatTextSize,
     );
   }
 }
@@ -64,8 +84,7 @@ class LayoutSettingsStore extends ChangeNotifier {
         weeksShown: ((payload['weeks_shown'] as num?)?.toInt() ?? 2).clamp(1, 4),
         weekStartDay:
             payload['week_start'] == 'sunday' ? WeekStartDay.sunday : WeekStartDay.monday,
-        listDensity:
-            payload['density'] == 'compact' ? ListDensity.compact : ListDensity.comfortable,
+        chatTextSize: ChatTextSize.fromName(payload['chat_text_size'] as String?),
       );
       notifyListeners();
     } catch (_) {
@@ -84,7 +103,7 @@ class LayoutSettingsStore extends ChangeNotifier {
         jsonEncode({
           'weeks_shown': settings.weeksShown,
           'week_start': settings.weekStartDay == WeekStartDay.sunday ? 'sunday' : 'monday',
-          'density': settings.listDensity == ListDensity.compact ? 'compact' : 'comfortable',
+          'chat_text_size': settings.chatTextSize.name,
         }),
       );
     } catch (_) {

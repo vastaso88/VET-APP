@@ -8,6 +8,8 @@ import 'package:home_widget/home_widget.dart';
 
 import '../../../app/router/app_router.dart';
 import '../../pets/data/pet_demo_store.dart';
+import '../../settings/data/unit_settings_store.dart';
+import '../../settings/domain/unit_conversion.dart';
 import '../../pets/domain/pet_models.dart';
 import '../../reminders/presentation/pages/reminders_pages.dart';
 import '../domain/walk_eligibility.dart';
@@ -126,11 +128,15 @@ class ActiveWalkWidgetSnapshot {
       };
 }
 
-/// "1,3 km" - Italian decimal comma, one decimal.
+/// "1,3 km" - Italian decimal comma, one decimal (miles/yards/feet for the
+/// imperial and USA systems).
 @visibleForTesting
 String formatWidgetDistance(double meters) {
-  final km = meters <= 0 ? 0.0 : meters / 1000;
-  return '${km.toStringAsFixed(1).replaceAll('.', ',')} km';
+  final distance = meters <= 0 ? 0.0 : meters;
+  if (UnitSettingsStore.instance.system.usesMiles) {
+    return '${formatDecimal(distance / 1609.344, trimZeros: false)} mi';
+  }
+  return '${formatDecimal(distance / 1000, trimZeros: false)} km';
 }
 
 /// Mirrors an [ActiveWalkController] into the widget, throttled: the first

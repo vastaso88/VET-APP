@@ -1,15 +1,14 @@
 import 'package:intl/intl.dart';
 
+import '../../settings/data/unit_settings_store.dart';
+import '../../settings/domain/unit_conversion.dart';
+
 final _dateFormat = DateFormat('d MMM y', 'it_IT');
 
 String walkDateLabel(DateTime startedAt) => _dateFormat.format(startedAt);
 
-String walkDistanceLabel(double distanceMeters) {
-  if (distanceMeters < 1000) {
-    return '${distanceMeters.round()} m';
-  }
-  return '${(distanceMeters / 1000).toStringAsFixed(1)} km';
-}
+String walkDistanceLabel(double distanceMeters) =>
+    formatDistanceIn(distanceMeters, UnitSettingsStore.instance.system);
 
 String walkDurationLabel(int? durationSeconds) {
   if (durationSeconds == null) return '';

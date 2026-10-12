@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
 import '../../location/presentation/distance_label.dart';
+import '../../settings/data/unit_settings_store.dart';
+import '../../settings/domain/unit_conversion.dart';
 import '../domain/marketplace_listing.dart';
 
 String listingCategoryLabel(ListingCategory category) {
@@ -98,5 +100,5 @@ String listingDistanceLabel(double? distanceMeters) {
 
 String listingDistanceFilterLabel(double? maxDistanceKm) {
   if (maxDistanceKm == null) return 'Ovunque';
-  return '${maxDistanceKm.round()} km';
+  return formatKilometersIn(maxDistanceKm, UnitSettingsStore.instance.system);
 }

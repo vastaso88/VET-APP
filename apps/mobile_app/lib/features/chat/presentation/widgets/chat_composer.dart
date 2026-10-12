@@ -15,6 +15,7 @@ import 'package:record/record.dart';
 import '../../../../design_system/tokens/app_colors.dart';
 import '../../../../design_system/tokens/app_radii.dart';
 import '../../../../design_system/tokens/app_spacing.dart';
+import '../../../settings/data/layout_settings_store.dart';
 import '../../data/chat_demo_store.dart';
 import '../../data/speech_to_text_remote_data_source.dart';
 
@@ -195,22 +196,29 @@ class _ChatComposerState extends State<ChatComposer> with SingleTickerProviderSt
           ],
           ConstrainedBox(
             constraints: const BoxConstraints(minHeight: 44),
-            child: TextField(
-              controller: _controller,
-              focusNode: _focusNode,
-              minLines: 1,
-              maxLines: 8,
-              textInputAction: TextInputAction.newline,
-              style: const TextStyle(color: AppColors.text, fontSize: 15, height: 1.4),
-              decoration: InputDecoration(
-                hintText: _voiceState == _VoiceState.recording
-                    ? 'Sto ascoltando...'
-                    : _voiceState == _VoiceState.transcribing
-                        ? 'Trascrivo il messaggio...'
-                        : widget.hintText,
-                border: InputBorder.none,
-                isCollapsed: true,
-                hintStyle: const TextStyle(color: AppColors.mutedText),
+            child: ListenableBuilder(
+              listenable: LayoutSettingsStore.instance,
+              builder: (context, _) => TextField(
+                controller: _controller,
+                focusNode: _focusNode,
+                minLines: 1,
+                maxLines: 8,
+                textInputAction: TextInputAction.newline,
+                style: TextStyle(
+                  color: AppColors.text,
+                  fontSize: 15 * LayoutSettingsStore.instance.settings.chatTextSize.scale,
+                  height: 1.4,
+                ),
+                decoration: InputDecoration(
+                  hintText: _voiceState == _VoiceState.recording
+                      ? 'Sto ascoltando...'
+                      : _voiceState == _VoiceState.transcribing
+                          ? 'Trascrivo il messaggio...'
+                          : widget.hintText,
+                  border: InputBorder.none,
+                  isCollapsed: true,
+                  hintStyle: const TextStyle(color: AppColors.mutedText),
+                ),
               ),
             ),
           ),
@@ -369,7 +377,8 @@ class _ChatComposerState extends State<ChatComposer> with SingleTickerProviderSt
   /// The web recorder picks its own container (webm), so keep its defaults.
   static const _recordConfig = kIsWeb
       ? RecordConfig()
-      : RecordConfig(encoder: AudioEncoder.aacLc, sampleRate: 16000, numChannels: 1, bitRate: 64000);
+      : RecordConfig(
+          encoder: AudioEncoder.aacLc, sampleRate: 16000, numChannels: 1, bitRate: 64000);
 
   static Future<String> _defaultRecordingPath() async {
     if (kIsWeb) return 'chat-voice-message.webm';

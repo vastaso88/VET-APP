@@ -240,7 +240,7 @@ def test_general_answer_with_hallucinated_citation_is_rejected() -> None:
     # produces there is by definition invented (spec v3 §28).
     class HallucinatingGeneralClient(ScriptedLLMClient):
         def generate(self, request: LLMGenerationRequest) -> LLMResponse:
-            if "veterinary app assistant" in request.system_prompt:
+            if "never include a [n] citation" in request.system_prompt:
                 return LLMResponse(
                     content="Come indicato in [1], è tutto ok.",
                     provider="fake",

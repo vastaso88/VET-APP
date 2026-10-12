@@ -27,6 +27,8 @@ import '../../../nearby_places/presentation/radar_contributions.dart';
 import '../../../nearby_places/presentation/radar_place_sheet.dart';
 import '../../../nearby_places/presentation/widgets/radar_chip.dart';
 import '../../../nearby_places/presentation/widgets/radar_map.dart';
+import '../../../settings/data/unit_settings_store.dart';
+import '../../../settings/domain/unit_conversion.dart';
 
 /// "Vicino a me": the pet-related places around the user's Località in
 /// one page. Clinics, shops, dog parks and the other businesses come from
@@ -605,7 +607,7 @@ class _RadiusSelector extends StatelessWidget {
       children: options
           .map(
             (option) => RadarChip(
-              label: '${option.round()} km',
+              label: formatKilometersIn(option, UnitSettingsStore.instance.system),
               selected: selected == option,
               onTap: () => onSelected(option),
             ),
@@ -776,7 +778,7 @@ class _RadarStatus extends StatelessWidget {
           Expanded(
             child: Text(
               radiusKm > 10
-                  ? 'Cerco i servizi entro ${radiusKm.round()} km. La prima volta in una zona '
+                  ? 'Cerco i servizi entro ${formatKilometersIn(radiusKm, UnitSettingsStore.instance.system)}. La prima volta in una zona '
                       'può richiedere fino a un minuto.'
                   : 'Cerco i servizi nella tua zona. La prima volta può richiedere qualche secondo.',
               style: AppTextStyles.bodySmall,
@@ -803,7 +805,7 @@ class _RadarStatus extends StatelessWidget {
           value.isStale
               ? 'Non sono riuscito ad aggiornare i servizi di questa zona: vedi gli ultimi '
                   'dati disponibili, che potrebbero non essere recenti.'
-              : 'Per ora i servizi sono disponibili entro ${value.searchRadiusKm.round()} km: '
+              : 'Per ora i servizi sono disponibili entro ${formatKilometersIn(value.searchRadiusKm, UnitSettingsStore.instance.system)}: '
                   'riprova tra poco per il raggio completo.',
           style: AppTextStyles.caption,
         );
@@ -901,7 +903,7 @@ class _ServicesByCategory extends StatelessWidget {
                   const SizedBox(width: AppSpacing.sm),
                   Expanded(
                     child: Text(
-                      '${category.label}: nessuno entro ${radiusKm.round()} km',
+                      '${category.label}: nessuno entro ${formatKilometersIn(radiusKm, UnitSettingsStore.instance.system)}',
                       style: AppTextStyles.bodySmall,
                     ),
                   ),
