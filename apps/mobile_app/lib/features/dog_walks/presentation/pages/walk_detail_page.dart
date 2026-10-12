@@ -7,6 +7,7 @@ import 'package:latlong2/latlong.dart' as latlong;
 import '../../../../design_system/tokens/app_colors.dart';
 import '../../../../design_system/tokens/app_spacing.dart';
 import '../../../../design_system/tokens/app_text_styles.dart';
+import '../../../../l10n/l10n.dart';
 import '../../../pets/data/pet_photo_repository.dart';
 import '../../../pets/presentation/pages/pet_gallery_page.dart';
 import '../../domain/photo_walk_match.dart';
@@ -105,7 +106,7 @@ class _WalkDetailPageState extends State<WalkDetailPage> {
         backgroundColor: AppColors.background,
         elevation: 0,
         foregroundColor: AppColors.text,
-        title: Text('Passeggiata di ${widget.petName}', style: AppTextStyles.title),
+        title: Text(context.l10n.walksPageTitle(widget.petName), style: AppTextStyles.title),
       ),
       body: SafeArea(
         child: Column(
@@ -128,15 +129,21 @@ class _WalkDetailPageState extends State<WalkDetailPage> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceAround,
                     children: [
-                      _StatColumn(label: 'Distanza', value: walkDistanceLabel(walk.distanceMeters)),
-                      _StatColumn(label: 'Durata', value: walkDurationLabel(walk.durationSeconds)),
+                      _StatColumn(
+                        label: context.l10n.walksStatDistance,
+                        value: walkDistanceLabel(walk.distanceMeters),
+                      ),
+                      _StatColumn(
+                        label: context.l10n.walksStatDuration,
+                        value: walkDurationLabel(walk.durationSeconds),
+                      ),
                       if (pauseCount > 0)
                         _StatColumn(
-                          label: pauseCount == 1 ? 'Pausa' : 'Pause',
+                          label: context.l10n.walksStatPauses(pauseCount),
                           value: '$pauseCount · ${walkDurationLabel(walk.pausedSeconds)}',
                         ),
                       if (_pins.isNotEmpty)
-                        _StatColumn(label: 'Foto', value: '${_pins.length}'),
+                        _StatColumn(label: context.l10n.walksStatPhotos, value: '${_pins.length}'),
                     ],
                   ),
                 ],
@@ -259,7 +266,7 @@ class _WalkPhotoPinMarkerState extends State<WalkPhotoPinMarker> {
   Widget build(BuildContext context) {
     return Semantics(
       button: true,
-      label: 'Foto scattata durante la passeggiata',
+      label: context.l10n.walksPhotoPinSemantics,
       child: GestureDetector(
         behavior: HitTestBehavior.opaque,
         onTap: widget.onTap,

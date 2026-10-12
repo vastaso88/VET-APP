@@ -1,3 +1,4 @@
+import '../../../l10n/l10n.dart';
 import 'walk_session.dart';
 
 /// "Passeggiata del 07/10/26" - the caption under a gallery photo taken
@@ -6,7 +7,9 @@ import 'walk_session.dart';
 String walkPhotoLabel(WalkSession walk) {
   final local = walk.startedAt.toLocal();
   String two(int value) => value.toString().padLeft(2, '0');
-  return 'Passeggiata del ${two(local.day)}/${two(local.month)}/${two(local.year % 100)}';
+  return appL10n.walksPhotoCaption(
+    '${two(local.day)}/${two(local.month)}/${two(local.year % 100)}',
+  );
 }
 
 /// The walk [takenAt] falls inside, among [walksForPet] (already filtered to

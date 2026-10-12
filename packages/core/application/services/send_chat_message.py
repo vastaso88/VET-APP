@@ -12,6 +12,7 @@ from packages.core.application.services.chat_orchestrator import (
 from packages.core.application.services.reminder_context_retriever import (
     ReminderContextRetriever,
 )
+from packages.core.domain.common.language import normalize_language
 from packages.core.domain.conversation.models import ChatMessage, Conversation
 from packages.core.domain.conversation.states import ConversationState
 from packages.core.domain.conversation.title import (
@@ -70,6 +71,8 @@ class SendChatMessageInput(BaseModel):
     owner_display_name: str | None = None
     # The app's id for this message; the same on a retry.
     client_message_id: str | None = None
+    # Language of the reply (see packages.core.domain.common.language).
+    language: str = "it"
 
 
 class SendChatMessageOutput(BaseModel):
@@ -190,6 +193,7 @@ class SendChatMessageService:
                 weight_label=pet_profile.weight_label,
                 dog_size_category=pet_profile.dog_size_category,
                 reminders_context=reminders_context,
+                language=normalize_language(data.language),
                 owner_names=owner_names_for_anonymization(
                     data.owner_display_name, pet_name=pet_profile.name
                 ),

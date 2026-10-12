@@ -10,6 +10,7 @@ import '../../../../design_system/tokens/app_colors.dart';
 import '../../../../design_system/tokens/app_radii.dart';
 import '../../../../design_system/tokens/app_spacing.dart';
 import '../../../../design_system/tokens/app_text_styles.dart';
+import '../../../../l10n/l10n.dart';
 import '../../../pets/data/pet_demo_store.dart';
 import '../../data/pet_news_repository.dart';
 import '../../domain/pet_news_item.dart';
@@ -151,7 +152,7 @@ class _NewsFeedPageState extends State<NewsFeedPage> {
                   ),
                   const SizedBox(width: AppSpacing.sm),
                   Expanded(
-                    child: Text('Notizie', style: AppTextStyles.display.copyWith(fontSize: 26)),
+                    child: Text(context.l10n.petNewsTitle, style: AppTextStyles.display.copyWith(fontSize: 26)),
                   ),
                   _RefreshButton(refreshing: _refreshing, onTap: _refresh),
                 ],
@@ -165,7 +166,7 @@ class _NewsFeedPageState extends State<NewsFeedPage> {
             const SizedBox(height: AppSpacing.md),
             Expanded(
               child: _loading
-                  ? const Center(child: LoadingAnimation(label: 'Carico le News...'))
+                  ? Center(child: LoadingAnimation(label: context.l10n.petNewsLoading))
                   : RefreshIndicator(
                       onRefresh: _refresh,
                       child: _shown.isEmpty
@@ -174,7 +175,7 @@ class _NewsFeedPageState extends State<NewsFeedPage> {
                               children: [
                                 const SizedBox(height: AppSpacing.xxxl),
                                 Text(
-                                  'Nessuna notizia disponibile per questa categoria al momento.',
+                                  context.l10n.petNewsEmpty,
                                   textAlign: TextAlign.center,
                                   style: AppTextStyles.bodySmall,
                                 ),
@@ -241,14 +242,16 @@ class _CategoryBar extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xl),
         children: [
           _CategoryChip(
-            label: 'Tutti',
+            label: context.l10n.petNewsCategoryAll,
+            isAll: true,
             selected: selected == null,
             onTap: () => onSelect(null),
           ),
           for (final category in categories) ...[
             const SizedBox(width: AppSpacing.sm),
             _CategoryChip(
-              label: category,
+              label: petNewsCategoryLabel(context, category),
+              species: category,
               selected: selected == category,
               onTap: () => onSelect(category),
             ),
@@ -259,21 +262,44 @@ class _CategoryBar extends StatelessWidget {
   }
 }
 
+/// Display name of a news category; [category] stays the technical value
+/// (species key used by the repository and the picking logic).
+String petNewsCategoryLabel(BuildContext context, String category) {
+  final l10n = context.l10n;
+  return switch (category) {
+    'Cane' => l10n.petNewsCategoryDog,
+    'Gatto' => l10n.petNewsCategoryCat,
+    'Piccoli mammiferi' => l10n.petNewsCategorySmallMammals,
+    'Uccello' => l10n.petNewsCategoryBird,
+    'Rettili e anfibi' => l10n.petNewsCategoryReptiles,
+    'Pesce' => l10n.petNewsCategoryFish,
+    'Altro' => l10n.petNewsCategoryOther,
+    'Generale' => l10n.petNewsCategoryGeneral,
+    _ => category,
+  };
+}
+
 class _CategoryChip extends StatelessWidget {
   const _CategoryChip({
     required this.label,
     required this.selected,
     required this.onTap,
+    this.species,
+    this.isAll = false,
   });
 
   final String label;
+
+  /// The technical category (also the species key); null for the "all" chip.
+  final String? species;
+  final bool isAll;
   final bool selected;
   final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
-    final isGenerale = label == 'Generale';
-    final isTutti = label == 'Tutti';
+    final isGenerale = species == 'Generale';
+    final isTutti = isAll;
 
     return Material(
       color: selected ? AppColors.primary : AppColors.surface,
@@ -296,7 +322,7 @@ class _CategoryChip extends StatelessWidget {
                 Icon(Icons.campaign_outlined, size: 15, color: selected ? AppColors.onPrimary : AppColors.text)
               else
                 Text(
-                  PetDemoStore.optionForSpecies(label).avatarEmoji,
+                  PetDemoStore.optionForSpecies(species ?? label).avatarEmoji,
                   style: const TextStyle(fontSize: 14),
                 ),
               const SizedBox(width: 6),

@@ -16,6 +16,9 @@ typecheck:
 test:
 	$(UV) run pytest
 
+i18n-check:
+	$(UV) run python scripts/i18n/check_i18n.py
+
 eval:
 	$(UV) run python scripts/eval/run_evaluation.py
 

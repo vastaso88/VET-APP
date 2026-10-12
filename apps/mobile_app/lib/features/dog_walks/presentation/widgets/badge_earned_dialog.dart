@@ -4,6 +4,7 @@ import '../../../../design_system/tokens/app_colors.dart';
 import '../../../../design_system/tokens/app_radii.dart';
 import '../../../../design_system/tokens/app_spacing.dart';
 import '../../../../design_system/tokens/app_text_styles.dart';
+import '../../../../l10n/l10n.dart';
 import '../walk_labels.dart';
 
 /// Celebrates newly-unlocked badges right after a walk ends. This is the
@@ -15,7 +16,7 @@ Future<void> showBadgeEarnedDialog(
   return showGeneralDialog<void>(
     context: context,
     barrierDismissible: true,
-    barrierLabel: 'Badge sbloccato',
+    barrierLabel: context.l10n.walksBadgeEarnedBarrier,
     barrierColor: Colors.black.withValues(alpha: 0.5),
     transitionDuration: const Duration(milliseconds: 300),
     pageBuilder: (context, _, __) =>
@@ -65,9 +66,7 @@ class _BadgeEarnedDialog extends StatelessWidget {
             ),
             const SizedBox(height: AppSpacing.lg),
             Text(
-              badgeIds.length == 1
-                  ? 'Nuovo badge sbloccato!'
-                  : 'Nuovi badge sbloccati!',
+              context.l10n.walksBadgeEarnedTitle(badgeIds.length),
               style: AppTextStyles.title,
               textAlign: TextAlign.center,
             ),
@@ -87,7 +86,7 @@ class _BadgeEarnedDialog extends StatelessWidget {
               width: double.infinity,
               child: FilledButton(
                 onPressed: () => Navigator.of(context).pop(),
-                child: const Text('Evviva!'),
+                child: Text(context.l10n.walksBadgeEarnedAction),
               ),
             ),
           ],

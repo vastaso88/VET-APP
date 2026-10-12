@@ -4,6 +4,7 @@ import '../../../../design_system/tokens/app_colors.dart';
 import '../../../../design_system/tokens/app_radii.dart';
 import '../../../../design_system/tokens/app_spacing.dart';
 import '../../../../design_system/tokens/app_text_styles.dart';
+import '../../../../l10n/l10n.dart';
 import '../../domain/badges.dart';
 import '../../domain/walk_session.dart';
 
@@ -21,8 +22,8 @@ class _BadgeCatalogEntry {
   /// than one pet's walks.
   final String idPrefix;
   final IconData icon;
-  final String name;
-  final String description;
+  final String Function(AppLocalizations l10n) name;
+  final String Function(AppLocalizations l10n) description;
 }
 
 /// All 13 badges evaluateBadges can award (badges.dart): the owner's
@@ -33,85 +34,64 @@ class _BadgeCatalogEntry {
 /// badges are recomputed from walk history rather than stored on their own
 /// (2026-09-29).
 final List<_BadgeCatalogEntry> _walkBadgeCatalog = [
-  const _BadgeCatalogEntry(
+  _BadgeCatalogEntry(
     idPrefix: firstWalkBadgePrefix,
     icon: Icons.pets_rounded,
-    name: 'Prima passeggiata',
-    description: 'Completa la tua prima passeggiata con questo pet.',
+    name: (l10n) => l10n.walksBadgeNameFirstWalk,
+    description: (l10n) => l10n.walksBadgeDescFirstWalk,
   ),
-  const _BadgeCatalogEntry(
-    idPrefix: 'distance_1km_pet_',
-    icon: Icons.directions_walk_rounded,
-    name: '1 km',
-    description: 'Percorri 1 km in totale.',
-  ),
-  const _BadgeCatalogEntry(
-    idPrefix: 'distance_5km_pet_',
-    icon: Icons.directions_walk_rounded,
-    name: '5 km',
-    description: 'Percorri 5 km in totale.',
-  ),
-  const _BadgeCatalogEntry(
-    idPrefix: 'distance_10km_pet_',
-    icon: Icons.directions_run_rounded,
-    name: '10 km',
-    description: 'Percorri 10 km in totale.',
-  ),
-  const _BadgeCatalogEntry(
-    idPrefix: 'distance_50km_pet_',
-    icon: Icons.directions_run_rounded,
-    name: '50 km',
-    description: 'Percorri 50 km in totale.',
-  ),
-  const _BadgeCatalogEntry(
-    idPrefix: 'distance_100km_pet_',
-    icon: Icons.emoji_events_rounded,
-    name: '100 km',
-    description: 'Percorri 100 km in totale.',
-  ),
-  const _BadgeCatalogEntry(
+  _kmEntry(1, Icons.directions_walk_rounded),
+  _kmEntry(5, Icons.directions_walk_rounded),
+  _kmEntry(10, Icons.directions_run_rounded),
+  _kmEntry(50, Icons.directions_run_rounded),
+  _kmEntry(100, Icons.emoji_events_rounded),
+  _BadgeCatalogEntry(
     idPrefix: singleWalkDuration30MinBadgePrefix,
     icon: Icons.timer_rounded,
-    name: '30 minuti',
-    description: 'Fai una passeggiata di almeno 30 minuti.',
+    name: (l10n) => l10n.walksBadgeName30Min,
+    description: (l10n) => l10n.walksBadgeDesc30Min,
   ),
-  const _BadgeCatalogEntry(
+  _BadgeCatalogEntry(
     idPrefix: singleWalkDuration1HourBadgePrefix,
     icon: Icons.timer_rounded,
-    name: '1 ora',
-    description: 'Fai una passeggiata di almeno un\'ora.',
+    name: (l10n) => l10n.walksBadgeName1Hour,
+    description: (l10n) => l10n.walksBadgeDesc1Hour,
   ),
-  const _BadgeCatalogEntry(
+  _BadgeCatalogEntry(
     idPrefix: sevenDayStreakBadgePrefix,
     icon: Icons.local_fire_department_rounded,
-    name: '7 giorni di fila',
-    description: 'Esci a passeggio per 7 giorni consecutivi.',
+    name: (l10n) => l10n.walksBadgeNameStreak,
+    description: (l10n) => l10n.walksBadgeDescStreak,
   ),
-  const _BadgeCatalogEntry(
+  _BadgeCatalogEntry(
     idPrefix: dawnWalkBadgePrefix,
     icon: Icons.wb_twilight_rounded,
-    name: 'Passeggiata all\'alba',
-    description: 'Fai una passeggiata tra le 5 e le 7 del mattino.',
+    name: (l10n) => l10n.walksBadgeNameDawn,
+    description: (l10n) => l10n.walksBadgeDescDawn,
   ),
-  const _BadgeCatalogEntry(
+  _BadgeCatalogEntry(
     idPrefix: nightWalkBadgePrefix,
     icon: Icons.nightlight_round,
-    name: 'Passeggiata notturna',
-    description: 'Fai una passeggiata dopo le 21 o prima delle 5.',
+    name: (l10n) => l10n.walksBadgeNameNight,
+    description: (l10n) => l10n.walksBadgeDescNight,
   ),
-  const _BadgeCatalogEntry(
-    idPrefix: 'walks_10_pet_',
-    icon: Icons.looks_one_rounded,
-    name: '10 uscite',
-    description: 'Completa 10 passeggiate in totale.',
-  ),
-  const _BadgeCatalogEntry(
-    idPrefix: 'walks_50_pet_',
-    icon: Icons.military_tech_rounded,
-    name: '50 uscite',
-    description: 'Completa 50 passeggiate in totale.',
-  ),
+  _walkCountEntry(10, Icons.looks_one_rounded),
+  _walkCountEntry(50, Icons.military_tech_rounded),
 ];
+
+_BadgeCatalogEntry _kmEntry(int km, IconData icon) => _BadgeCatalogEntry(
+      idPrefix: 'distance_${km}km_pet_',
+      icon: icon,
+      name: (l10n) => l10n.walksBadgeNameKm('$km'),
+      description: (l10n) => l10n.walksBadgeDescKm('$km'),
+    );
+
+_BadgeCatalogEntry _walkCountEntry(int count, IconData icon) => _BadgeCatalogEntry(
+      idPrefix: 'walks_${count}_pet_',
+      icon: icon,
+      name: (l10n) => l10n.walksBadgeNameWalkCount('$count'),
+      description: (l10n) => l10n.walksBadgeDescWalkCount('$count'),
+    );
 
 /// Almost-full-screen gallery of every badge, greyed out until earned
 /// (owner request, 2026-09-29) - reuses evaluateBadges (badges.dart) rather
@@ -140,7 +120,7 @@ Future<void> showBadgeGalleryDialog(
             children: [
               Row(
                 children: [
-                  Expanded(child: Text('Badge', style: AppTextStyles.title)),
+                  Expanded(child: Text(context.l10n.walksBadgeGalleryTitle, style: AppTextStyles.title)),
                   IconButton(
                     onPressed: () => Navigator.of(context).pop(),
                     icon: const Icon(Icons.close_rounded),
@@ -210,7 +190,7 @@ class _BadgeTile extends StatelessWidget {
           ),
           const SizedBox(height: AppSpacing.sm),
           Text(
-            entry.name,
+            entry.name(context.l10n),
             textAlign: TextAlign.center,
             style: AppTextStyles.bodySmall.copyWith(
               color: earned ? AppColors.text : AppColors.mutedText,
@@ -220,7 +200,7 @@ class _BadgeTile extends StatelessWidget {
           const SizedBox(height: 2),
           Expanded(
             child: Text(
-              entry.description,
+              entry.description(context.l10n),
               textAlign: TextAlign.center,
               style: AppTextStyles.caption
                   .copyWith(color: earned ? AppColors.secondaryText : AppColors.mutedText),

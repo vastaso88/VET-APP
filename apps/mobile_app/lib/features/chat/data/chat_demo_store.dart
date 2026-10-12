@@ -2,6 +2,7 @@ import 'dart:collection';
 
 import 'package:flutter/foundation.dart';
 
+import '../../../l10n/l10n.dart';
 import '../../../shared/errors/app_network_error.dart';
 import '../../../shared/auth/current_user.dart';
 import '../../../shared/config/app_runtime_config_loader.dart';
@@ -133,9 +134,11 @@ class ChatDemoStore extends ChangeNotifier {
               DateTime.fromMillisecondsSinceEpoch(0),
           ChatConversationDetail(
             id: conversation.id,
-            title: conversation.title.isEmpty ? '$petName - conversazione' : conversation.title,
+            title: conversation.title.isEmpty
+                ? appL10n.chatSavedConversationTitle(petName)
+                : conversation.title,
             petName: petName,
-            statusLabel: 'Conversazione salvata',
+            statusLabel: appL10n.chatStatusSaved,
             messages: [
               for (final message in conversation.messages)
                 ChatMessage(
@@ -175,7 +178,7 @@ class ChatDemoStore extends ChangeNotifier {
       return '${local.hour.toString().padLeft(2, '0')}:${local.minute.toString().padLeft(2, '0')}';
     }
     if (daysAgo == 1) {
-      return 'ieri';
+      return appL10n.chatTimeYesterday;
     }
     return '${local.day.toString().padLeft(2, '0')}/${local.month.toString().padLeft(2, '0')}';
   }
@@ -248,9 +251,9 @@ class ChatDemoStore extends ChangeNotifier {
     if (backendConversationId == null) {
       return Future.value(
         Result.failure<String>(
-          const AppNetworkError(
+          AppNetworkError(
             code: 'conversation_summary_unavailable',
-            message: 'Il riassunto sarà disponibile dopo il primo messaggio.',
+            message: appL10n.chatSummaryNotYet,
           ),
         ),
       );
@@ -286,7 +289,10 @@ class ChatDemoStore extends ChangeNotifier {
     }
 
     final created = fallback ??
-        _createConversation(petName: 'il tuo pet', title: 'Nuova conversazione');
+        _createConversation(
+          petName: appL10n.chatFallbackPetName,
+          title: appL10n.chatNewConversation,
+        );
     _threads.insert(0, created);
     _openedConversationIds.add(created.id);
     notifyListeners();
@@ -296,7 +302,7 @@ class ChatDemoStore extends ChangeNotifier {
   ChatConversationDetail startConversation({required String petName}) {
     final conversation = _createConversation(
       petName: petName,
-      title: '$petName - nuova conversazione',
+      title: appL10n.chatNewConversationTitle(petName),
     );
     _threads.insert(0, conversation);
     _openedConversationIds.add(conversation.id);
@@ -338,7 +344,7 @@ class ChatDemoStore extends ChangeNotifier {
         conversationId,
         thread.copyWith(
           title: _maybeRetitle(thread.title, cleanMessage),
-          statusLabel: 'Messaggio inviato',
+          statusLabel: appL10n.chatStatusSent,
           messages: [...thread.messages, userMessage],
         ),
       );
@@ -376,9 +382,9 @@ class ChatDemoStore extends ChangeNotifier {
     final index = thread.messages.indexWhere((message) => message.id == messageId);
     if (!alreadyEdited && index < 0) {
       return Result.failure(
-        const AppNetworkError(
+        AppNetworkError(
           code: 'chat_edit_message_missing',
-          message: 'Questo messaggio non è più nella conversazione.',
+          message: appL10n.chatEditMessageMissing,
         ),
       );
     }
@@ -397,7 +403,7 @@ class ChatDemoStore extends ChangeNotifier {
       _replaceThread(
         conversationId,
         thread.copyWith(
-          statusLabel: 'Messaggio modificato',
+          statusLabel: appL10n.chatStatusEdited,
           messages: [...thread.messages.take(index), edited],
         ),
       );
@@ -431,7 +437,7 @@ class ChatDemoStore extends ChangeNotifier {
         final serverTitle = reply.title?.trim();
         final resultThread = updatedThread.copyWith(
           title: serverTitle == null || serverTitle.isEmpty ? null : serverTitle,
-          statusLabel: 'Risposta pronta',
+          statusLabel: appL10n.chatStatusReplyReady,
           messages: [...updatedThread.messages, assistantMessage],
         );
         _replaceThread(conversationId, resultThread);
@@ -489,7 +495,7 @@ class ChatDemoStore extends ChangeNotifier {
     _replaceThread(
       conversationId,
       updatedThread.copyWith(
-        statusLabel: 'Risposta pronta',
+        statusLabel: appL10n.chatStatusReplyReady,
         messages: [...updatedThread.messages, assistantMessage],
       ),
     );
@@ -532,7 +538,7 @@ class ChatDemoStore extends ChangeNotifier {
             _freshAssistantIds.add(assistantMessage.id);
 
             final resultThread = updatedThread.copyWith(
-              statusLabel: 'Risposta pronta',
+              statusLabel: appL10n.chatStatusReplyReady,
               messages: [...updatedThread.messages, assistantMessage],
               backendConversationId: reply.backendConversationId,
             );
@@ -590,8 +596,8 @@ class ChatDemoStore extends ChangeNotifier {
         : ChatMessage(
             id: _messageId('summary'),
             author: ChatMessageAuthor.assistant,
-            text: 'Nuovo thread pronto per essere usato.',
-            timeLabel: 'adesso',
+            text: appL10n.chatEmptyThreadPreview,
+            timeLabel: appL10n.chatTimeNow,
           );
 
     final unreadCount = _openedConversationIds.contains(conversation.id)
@@ -607,8 +613,8 @@ class ChatDemoStore extends ChangeNotifier {
       activePetName: conversation.petName,
       previewMessage: lastMessage.text,
       lastSender: lastMessage.author == ChatMessageAuthor.assistant
-          ? 'Assistente'
-          : 'Tu',
+          ? appL10n.chatSenderAssistant
+          : appL10n.chatSenderYou,
     );
   }
 
@@ -623,7 +629,7 @@ class ChatDemoStore extends ChangeNotifier {
       id: _conversationId(petName),
       title: title,
       petName: petName,
-      statusLabel: 'Nuova conversazione',
+      statusLabel: appL10n.chatNewConversation,
       messages: const [],
     );
   }
@@ -657,32 +663,37 @@ class ChatDemoStore extends ChangeNotifier {
   }
 
   String _maybeRetitle(String title, String message) {
-    if (title.toLowerCase().contains('nuova conversazione')) {
+    final lowerTitle = title.toLowerCase();
+    // Titles saved before localisation (or in another language) carry the
+    // Italian marker; the current language's own marker is checked too.
+    if (lowerTitle.contains('nuova conversazione') ||
+        lowerTitle.contains(appL10n.chatNewConversation.toLowerCase())) {
       final subject = message.length > 34 ? '${message.substring(0, 34).trim()}...' : message;
-      return 'Chat - $subject';
+      return appL10n.chatRetitled(subject);
     }
     return title;
   }
 
+  // The keywords below match what the owner types (demo mode only).
   String _generateReply(String message, String petName) {
     final normalized = message.toLowerCase();
 
     if (normalized.contains('appetito') || normalized.contains('mang') || normalized.contains('cibo')) {
-      return 'Per $petName terrei sotto osservazione appetito, acqua e livello di energia per le prossime 24 ore. Se peggiora, meglio sentire il veterinario.';
+      return appL10n.chatDemoReplyAppetite(petName);
     }
 
     if (normalized.contains('vomit') || normalized.contains('diarrea')) {
-      return 'Se ci sono vomito o diarrea, conviene monitorare idratazione e contattare il veterinario se i sintomi si ripetono o diventano intensi.';
+      return appL10n.chatDemoReplyVomiting;
     }
 
     if (normalized.contains('vaccin') || normalized.contains('richiamo')) {
-      return 'Posso aiutarti a mettere il richiamo di $petName in agenda e aggiungere un reminder chiaro nella home.';
+      return appL10n.chatDemoReplyVaccine(petName);
     }
 
     if (normalized.contains('peso') || normalized.contains('dimagr')) {
-      return 'Sul peso di $petName possiamo fissare un controllo periodico e confrontarlo con l ultima visita per capire se il trend cambia davvero.';
+      return appL10n.chatDemoReplyWeight(petName);
     }
 
-    return 'Ho preso nota: per $petName ti preparo un riepilogo breve, cosi hai subito un piano pratico e leggibile.';
+    return appL10n.chatDemoReplyDefault(petName);
   }
 }

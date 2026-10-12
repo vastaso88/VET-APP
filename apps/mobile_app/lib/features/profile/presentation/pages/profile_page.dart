@@ -7,6 +7,7 @@ import '../../../../../design_system/tokens/app_colors.dart';
 import '../../../../../design_system/tokens/app_radii.dart';
 import '../../../../../design_system/tokens/app_spacing.dart';
 import '../../../../../design_system/tokens/app_text_styles.dart';
+import '../../../../../l10n/l10n.dart';
 import '../../../../../shared/auth/current_user.dart';
 import '../../../auth/data/auth_repository_factory.dart';
 import '../../../notifications/application/notification_scheduler.dart';
@@ -33,22 +34,22 @@ class _ProfilePageState extends State<ProfilePage> {
       builder: (dialogContext) => AlertDialog(
         backgroundColor: AppColors.surface,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadii.large)),
-        title: Text('Esci', style: AppTextStyles.title.copyWith(fontSize: 17)),
+        title: Text(dialogContext.l10n.profileLogoutDialogTitle, style: AppTextStyles.title.copyWith(fontSize: 17)),
         content: Text(
-          'Vuoi disconnetterti da questo account?',
+          dialogContext.l10n.profileLogoutDialogBody,
           style: AppTextStyles.bodySmall,
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(dialogContext).pop(),
-            child: const Text('Chiudi'),
+            child: Text(dialogContext.l10n.commonClose),
           ),
           TextButton(
             onPressed: () {
               Navigator.of(dialogContext).pop();
               unawaited(_performLogout());
             },
-            child: const Text('Conferma'),
+            child: Text(dialogContext.l10n.commonConfirm),
           ),
         ],
       ),
@@ -74,8 +75,8 @@ class _ProfilePageState extends State<ProfilePage> {
   @override
   Widget build(BuildContext context) {
     final user = CurrentUser.get();
-    final ownerName = CurrentUser.fullName(fallback: 'Ospite');
-    final ownerEmail = user?.email ?? 'Nessuna sessione attiva';
+    final ownerName = CurrentUser.fullName(fallback: context.l10n.profileGuestName);
+    final ownerEmail = user?.email ?? context.l10n.profileNoActiveSession;
 
     return Scaffold(
       body: Container(
@@ -105,32 +106,47 @@ class _ProfilePageState extends State<ProfilePage> {
                 const SizedBox(height: AppSpacing.lg),
                 _SummaryCard(
                   title: ownerName,
-                  body: 'Profilo owner collegato a ${_petCountLabel()} e pronto per la web app responsive.',
+                  body: context.l10n.profileSummaryBody(_petCountLabel(context)),
                   icon: Icons.verified_user_outlined,
                 ),
                 const SizedBox(height: AppSpacing.lg),
                 _InfoCard(
-                  title: 'Contatti',
+                  title: context.l10n.profileContactsTitle,
                   rows: [
-                    _InfoRow(label: 'Email', value: ownerEmail),
-                    const _InfoRow(label: 'Telefono', value: 'Non specificato'),
-                    const _InfoRow(label: 'Città', value: 'Non specificata'),
+                    _InfoRow(label: context.l10n.profileEmailLabel, value: ownerEmail),
+                    _InfoRow(
+                      label: context.l10n.profilePhoneLabel,
+                      value: context.l10n.profilePhoneNotSet,
+                    ),
+                    _InfoRow(
+                      label: context.l10n.profileCityLabel,
+                      value: context.l10n.profileCityNotSet,
+                    ),
                   ],
                 ),
                 const SizedBox(height: AppSpacing.sm),
                 _ToggleCard(
-                  title: 'Tema serale',
-                  body: 'Anteprima di una palette piu soft per l uso serale.',
+                  title: context.l10n.profileEveningThemeTitle,
+                  body: context.l10n.profileEveningThemeBody,
                   value: _darkMode,
                   onChanged: (value) => setState(() => _darkMode = value),
                 ),
                 const SizedBox(height: AppSpacing.sm),
-                const _InfoCard(
-                  title: 'Stato account',
+                _InfoCard(
+                  title: context.l10n.profileAccountStatusTitle,
                   rows: [
-                    _InfoRow(label: 'Sessione', value: 'Attiva'),
-                    _InfoRow(label: 'Privacy', value: 'Aggiornata'),
-                    _InfoRow(label: 'Supporto', value: 'Disponibile'),
+                    _InfoRow(
+                      label: context.l10n.profileSessionLabel,
+                      value: context.l10n.profileSessionActive,
+                    ),
+                    _InfoRow(
+                      label: context.l10n.profilePrivacyLabel,
+                      value: context.l10n.profilePrivacyUpdated,
+                    ),
+                    _InfoRow(
+                      label: context.l10n.profileSupportLabel,
+                      value: context.l10n.profileSupportAvailable,
+                    ),
                   ],
                 ),
                 const SizedBox(height: AppSpacing.lg),
@@ -143,7 +159,7 @@ class _ProfilePageState extends State<ProfilePage> {
     );
   }
 
-  String _petCountLabel() => '2 pet';
+  String _petCountLabel(BuildContext context) => context.l10n.profilePetCount(2);
 }
 
 class _Header extends StatelessWidget {
@@ -168,7 +184,7 @@ class _Header extends StatelessWidget {
               style: TextButton.styleFrom(minimumSize: const Size(0, 44)),
               onPressed: onBack,
               icon: const Icon(Icons.arrow_back_rounded, size: 18),
-              label: const Text('Indietro'),
+              label: Text(context.l10n.commonBack),
             ),
             const Spacer(),
             // OutlinedButton's app-wide theme sets minimumSize to
@@ -187,7 +203,7 @@ class _Header extends StatelessWidget {
               ),
               onPressed: onOpenSettings,
               icon: const Icon(Icons.settings_outlined, size: 18),
-              label: const Text('Impostazioni'),
+              label: Text(context.l10n.profileSettingsButton),
             ),
           ],
         ),
@@ -209,16 +225,16 @@ class _Header extends StatelessWidget {
               side: const BorderSide(color: AppColors.danger),
             ),
             icon: const Icon(Icons.logout_rounded, size: 18),
-            label: const Text('Logout'),
+            label: Text(context.l10n.profileLogoutButton),
           ),
         ),
         const SizedBox(height: AppSpacing.lg),
         const _BrandPill(),
         const SizedBox(height: AppSpacing.lg),
-        Text('Profilo', style: AppTextStyles.heading),
+        Text(context.l10n.profileTitle, style: AppTextStyles.heading),
         const SizedBox(height: AppSpacing.sm),
         Text(
-          'Dati owner, preferenze e dettagli account in un unico posto per la web app responsive.',
+          context.l10n.profileIntro,
           style: AppTextStyles.body,
         ),
       ],
@@ -243,7 +259,7 @@ class _BrandPill extends StatelessWidget {
           const Icon(Icons.person_outline, size: 14, color: AppColors.accent),
           const SizedBox(width: AppSpacing.sm),
           Text(
-            'VET APP',
+            context.l10n.appTitle,
             style: AppTextStyles.caption.copyWith(color: AppColors.onPrimary, letterSpacing: 0.4),
           ),
         ],
@@ -418,12 +434,12 @@ class _RoadmapCard extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'Prossimi step',
+            context.l10n.profileRoadmapTitle,
             style: AppTextStyles.title.copyWith(color: AppColors.onPrimary),
           ),
           const SizedBox(height: AppSpacing.sm),
           Text(
-            'Qui possiamo far evolvere consensi, preferenze e collegamento account senza cambiare il flusso web.',
+            context.l10n.profileRoadmapBody,
             style: AppTextStyles.bodySmall.copyWith(color: AppColors.onPrimary),
           ),
         ],

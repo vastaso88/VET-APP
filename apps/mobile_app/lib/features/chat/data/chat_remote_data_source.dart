@@ -3,6 +3,7 @@ import 'dart:convert';
 
 import 'package:http/http.dart' as http;
 
+import '../../../l10n/l10n.dart';
 import '../../../shared/auth/current_user.dart';
 import '../../../shared/config/app_runtime_config_loader.dart';
 import '../../../shared/errors/app_network_error.dart';
@@ -142,6 +143,7 @@ class HttpChatRemoteDataSource implements ChatRemoteDataSource {
     final token = CurrentUser.accessToken();
     return {
       'Content-Type': 'application/json',
+      'Accept-Language': AppLocaleHolder.current.languageCode,
       if (token != null && token.isNotEmpty) 'Authorization': 'Bearer $token',
     };
   }
@@ -165,6 +167,7 @@ class HttpChatRemoteDataSource implements ChatRemoteDataSource {
               'user_message': userMessage,
               if (attachmentId != null) 'attachment_id': attachmentId,
               if (clientMessageId != null) 'client_message_id': clientMessageId,
+              'language': AppLocaleHolder.current.languageCode,
             }),
           )
           .timeout(_chatTimeout);
@@ -181,14 +184,17 @@ class HttpChatRemoteDataSource implements ChatRemoteDataSource {
           return Result.failure(
             AppNetworkError(
               code: 'chat_conversation_limit_reached',
-              message: colonIndex == -1 ? detail : detail.substring(colonIndex + 1).trim(),
+              message: localizedBackendMessage(
+                colonIndex == -1 ? detail : detail.substring(colonIndex + 1).trim(),
+                detail: detail,
+              ),
             ),
           );
         }
         return Result.failure(
           AppNetworkError(
             code: 'chat_http_${response.statusCode}',
-            message: "Non sono riuscito a contattare l'assistente. Riprova.",
+            message: appL10n.chatErrorContactAssistant,
           ),
         );
       }
@@ -196,17 +202,16 @@ class HttpChatRemoteDataSource implements ChatRemoteDataSource {
       return Result.success(_sendResultFrom(response.body));
     } on TimeoutException {
       return Result.failure<ChatSendResult>(
-        const AppNetworkError(
+        AppNetworkError(
           code: 'chat_timeout',
-          message:
-              "L'assistente non ha risposto in tempo. Tocca Riprova: se la risposta è già pronta, la recupero.",
+          message: appL10n.chatErrorAssistantTimeout,
         ),
       );
     } catch (e) {
       return Result.failure<ChatSendResult>(
         AppNetworkError(
           code: 'chat_unexpected_error',
-          message: "Qualcosa e' andato storto. Riprova.",
+          message: appL10n.chatErrorGeneric,
           details: e,
         ),
       );
@@ -243,6 +248,7 @@ class HttpChatRemoteDataSource implements ChatRemoteDataSource {
             body: jsonEncode({
               'user_message': userMessage,
               if (clientMessageId != null) 'client_message_id': clientMessageId,
+              'language': AppLocaleHolder.current.languageCode,
             }),
           )
           .timeout(_chatTimeout);
@@ -250,24 +256,23 @@ class HttpChatRemoteDataSource implements ChatRemoteDataSource {
         return Result.failure(
           AppNetworkError(
             code: 'chat_edit_http_${response.statusCode}',
-            message: 'Non sono riuscito a modificare il messaggio. Riprova.',
+            message: appL10n.chatErrorEditFailed,
           ),
         );
       }
       return Result.success(_sendResultFrom(response.body));
     } on TimeoutException {
       return Result.failure<ChatSendResult>(
-        const AppNetworkError(
+        AppNetworkError(
           code: 'chat_timeout',
-          message:
-              "L'assistente non ha risposto in tempo. Tocca Riprova: se la risposta è già pronta, la recupero.",
+          message: appL10n.chatErrorAssistantTimeout,
         ),
       );
     } catch (e) {
       return Result.failure<ChatSendResult>(
         AppNetworkError(
           code: 'chat_edit_failed',
-          message: 'Non sono riuscito a modificare il messaggio. Controlla la connessione.',
+          message: appL10n.chatErrorEditNetwork,
           details: e,
         ),
       );
@@ -309,7 +314,7 @@ class HttpChatRemoteDataSource implements ChatRemoteDataSource {
         return Result.failure(
           AppNetworkError(
             code: 'pet_bootstrap_http_${createResponse.statusCode}',
-            message: 'Non sono riuscito a preparare il profilo del pet.',
+            message: appL10n.chatErrorPetBootstrap,
           ),
         );
       }
@@ -318,13 +323,13 @@ class HttpChatRemoteDataSource implements ChatRemoteDataSource {
       return Result.success(petProfile['id'] as String);
     } on TimeoutException {
       return Result.failure<String>(
-        const AppNetworkError(code: 'pet_bootstrap_timeout', message: 'Richiesta scaduta. Riprova.'),
+        AppNetworkError(code: 'pet_bootstrap_timeout', message: appL10n.chatErrorRequestTimeout),
       );
     } catch (e) {
       return Result.failure<String>(
         AppNetworkError(
           code: 'pet_bootstrap_unexpected_error',
-          message: "Qualcosa e' andato storto. Riprova.",
+          message: appL10n.chatErrorGeneric,
           details: e,
         ),
       );
@@ -348,8 +353,8 @@ class HttpChatRemoteDataSource implements ChatRemoteDataSource {
           AppNetworkError(
             code: 'conversation_rename_http_${response.statusCode}',
             message: detail != null && detail.startsWith('invalid_title')
-                ? 'Il titolo non può essere vuoto.'
-                : 'Non sono riuscito a rinominare la chat. Riprova.',
+                ? appL10n.chatErrorTitleEmpty
+                : appL10n.chatErrorRenameFailed,
           ),
         );
       }
@@ -360,7 +365,7 @@ class HttpChatRemoteDataSource implements ChatRemoteDataSource {
       return Result.failure<String>(
         AppNetworkError(
           code: 'conversation_rename_failed',
-          message: 'Non sono riuscito a rinominare la chat. Controlla la connessione.',
+          message: appL10n.chatErrorRenameNetwork,
           details: e,
         ),
       );
@@ -377,10 +382,9 @@ class HttpChatRemoteDataSource implements ChatRemoteDataSource {
         final detail = _detailOf(response.body);
         final message = switch (detail) {
           final d? when d.startsWith('conversation_empty') =>
-            'Scrivi almeno un messaggio per avere un riassunto.',
-          _ when response.statusCode == 502 =>
-            'Il modello non ha risposto. Riprova tra poco.',
-          _ => 'Non sono riuscito a preparare il riassunto. Riprova.',
+            appL10n.chatErrorSummaryEmpty,
+          _ when response.statusCode == 502 => appL10n.chatErrorSummaryModel,
+          _ => appL10n.chatErrorSummaryFailed,
         };
         return Result.failure<String>(
           AppNetworkError(
@@ -397,7 +401,7 @@ class HttpChatRemoteDataSource implements ChatRemoteDataSource {
       return Result.failure<String>(
         AppNetworkError(
           code: 'conversation_summary_failed',
-          message: 'Non sono riuscito a preparare il riassunto. Controlla la connessione.',
+          message: appL10n.chatErrorSummaryNetwork,
           details: e,
         ),
       );
@@ -428,23 +432,23 @@ class HttpChatRemoteDataSource implements ChatRemoteDataSource {
         return Result.failure(
           AppNetworkError(
             code: 'conversation_delete_http_${response.statusCode}',
-            message: 'Non sono riuscito a eliminare la chat sul server.',
+            message: appL10n.chatErrorDeleteFailed,
           ),
         );
       }
       return Result.success<void>(null);
     } on TimeoutException {
       return Result.failure<void>(
-        const AppNetworkError(
+        AppNetworkError(
           code: 'conversation_delete_timeout',
-          message: 'Richiesta scaduta. Riprova.',
+          message: appL10n.chatErrorRequestTimeout,
         ),
       );
     } catch (e) {
       return Result.failure<void>(
         AppNetworkError(
           code: 'conversation_delete_unexpected_error',
-          message: "Qualcosa e' andato storto. Riprova.",
+          message: appL10n.chatErrorGeneric,
           details: e,
         ),
       );
@@ -461,7 +465,7 @@ class HttpChatRemoteDataSource implements ChatRemoteDataSource {
         return Result.failure(
           AppNetworkError(
             code: 'conversation_list_http_${response.statusCode}',
-            message: 'Non sono riuscito a caricare le tue chat.',
+            message: appL10n.chatErrorListChats,
           ),
         );
       }
@@ -492,16 +496,16 @@ class HttpChatRemoteDataSource implements ChatRemoteDataSource {
       return Result.success(conversations);
     } on TimeoutException {
       return Result.failure<List<RemoteConversation>>(
-        const AppNetworkError(
+        AppNetworkError(
           code: 'conversation_list_timeout',
-          message: 'Richiesta scaduta. Riprova.',
+          message: appL10n.chatErrorRequestTimeout,
         ),
       );
     } catch (e) {
       return Result.failure<List<RemoteConversation>>(
         AppNetworkError(
           code: 'conversation_list_unexpected_error',
-          message: "Qualcosa e' andato storto. Riprova.",
+          message: appL10n.chatErrorGeneric,
           details: e,
         ),
       );
@@ -518,7 +522,7 @@ class HttpChatRemoteDataSource implements ChatRemoteDataSource {
         return Result.failure(
           AppNetworkError(
             code: 'pet_list_http_${response.statusCode}',
-            message: 'Non sono riuscito a caricare i tuoi pet.',
+            message: appL10n.chatErrorListPets,
           ),
         );
       }
@@ -530,13 +534,13 @@ class HttpChatRemoteDataSource implements ChatRemoteDataSource {
       });
     } on TimeoutException {
       return Result.failure<Map<String, String>>(
-        const AppNetworkError(code: 'pet_list_timeout', message: 'Richiesta scaduta. Riprova.'),
+        AppNetworkError(code: 'pet_list_timeout', message: appL10n.chatErrorRequestTimeout),
       );
     } catch (e) {
       return Result.failure<Map<String, String>>(
         AppNetworkError(
           code: 'pet_list_unexpected_error',
-          message: "Qualcosa e' andato storto. Riprova.",
+          message: appL10n.chatErrorGeneric,
           details: e,
         ),
       );
@@ -555,4 +559,26 @@ class HttpChatRemoteDataSource implements ChatRemoteDataSource {
     }
     return null;
   }
+}
+
+/// Maps the backend's known `detail` texts/codes to local, translated
+/// messages. [raw] is the text to show when it carries a payload (the part
+/// after "code: "), [detail] the full detail string (defaults to [raw]).
+/// Unknown texts are returned unchanged.
+String localizedBackendMessage(String raw, {String? detail}) {
+  final full = (detail ?? raw).trim();
+  final lower = full.toLowerCase();
+  if (lower.startsWith('conversation_limit_reached')) {
+    final max = RegExp(r'\((\d+)\)').firstMatch(full)?.group(1) ?? '4';
+    return appL10n.chatErrorConversationLimit(max);
+  }
+  if (lower.startsWith('invalid_title')) return appL10n.chatErrorTitleEmpty;
+  if (lower.startsWith('conversation_empty')) return appL10n.chatErrorSummaryEmpty;
+  switch (lower) {
+    case 'conversation not found':
+      return appL10n.chatErrorConversationNotFound;
+    case 'message not found':
+      return appL10n.chatEditMessageMissing;
+  }
+  return raw;
 }

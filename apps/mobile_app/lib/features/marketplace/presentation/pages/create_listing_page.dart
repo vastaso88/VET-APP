@@ -6,6 +6,8 @@ import '../../../../design_system/tokens/app_colors.dart';
 import '../../../../design_system/tokens/app_radii.dart';
 import '../../../../design_system/tokens/app_spacing.dart';
 import '../../../../design_system/tokens/app_text_styles.dart';
+import '../../../../l10n/date_formats.dart';
+import '../../../../l10n/l10n.dart';
 import '../../../../shared/auth/current_owner.dart';
 import '../../../home/presentation/widgets/home_dashboard_primitives.dart';
 import '../../../location/data/device_location_service.dart';
@@ -103,7 +105,7 @@ class _CreateListingPageState extends State<CreateListingPage> {
       _isGift = existing.isGift;
       if (existing.priceCents != null) {
         _priceController.text =
-            (existing.priceCents! / 100).toStringAsFixed(2).replaceAll('.', ',');
+            (existing.priceCents! / 100).toStringAsFixed(2).replaceAll('.', appDecimalSeparator());
       }
       _species.addAll(existing.species);
       _photos.addAll(existing.photoUrls.map(_DraftPhoto.existing));
@@ -169,8 +171,8 @@ class _CreateListingPageState extends State<CreateListingPage> {
       setState(() {
         _resolvingLocation = false;
         _locationError = _homeLocation != null
-            ? 'Non riesco a rilevare la tua posizione. Controlla i permessi di localizzazione oppure usa la residenza.'
-            : 'Non riesco a rilevare la tua posizione: serve per mostrare l\'annuncio nella zona giusta (in forma approssimata). Controlla i permessi di localizzazione e riprova.';
+            ? context.l10n.marketplaceLocationErrorWithHome
+            : context.l10n.marketplaceLocationErrorNoHome;
       });
       return;
     }
@@ -208,8 +210,12 @@ class _CreateListingPageState extends State<CreateListingPage> {
         );
       }
     } catch (_) {
+      if (!mounted) return;
       _showMessage(
-          'Non riesco ad aprire ${source == ImageSource.camera ? 'la fotocamera' : 'la galleria'}.');
+        source == ImageSource.camera
+            ? context.l10n.marketplaceCameraOpenError
+            : context.l10n.marketplaceGalleryOpenError,
+      );
       return;
     }
     if (files.isEmpty || !mounted) return;
@@ -227,9 +233,9 @@ class _CreateListingPageState extends State<CreateListingPage> {
     }
     if (!mounted) return;
     setState(() => _processingPhotos = false);
-    if (skipped > 0) _showMessage('$skipped foto non leggibili sono state saltate.');
+    if (skipped > 0) _showMessage(context.l10n.marketplacePhotosSkipped(skipped));
     if (files.length > remaining) {
-      _showMessage('Puoi aggiungere al massimo $maxListingPhotos foto.');
+      _showMessage(context.l10n.marketplacePhotosMaxReached(maxListingPhotos));
     }
   }
 
@@ -262,7 +268,7 @@ class _CreateListingPageState extends State<CreateListingPage> {
         await _selectLocation(_locationChoice!);
       }
       if (_approxLocation == null) {
-        setState(() => _locationError ??= 'Aspetta che la zona sia stata trovata, poi riprova.');
+        setState(() => _locationError ??= context.l10n.marketplaceZoneWait);
         return;
       }
     }
@@ -344,7 +350,7 @@ class _CreateListingPageState extends State<CreateListingPage> {
         _submitting = false;
         _submitError = error is ListingPermissionException
             ? error.toString()
-            : 'Non sono riuscito a salvare l\'annuncio. Controlla la connessione e riprova.';
+            : context.l10n.marketplaceSaveFailed;
       });
       return;
     }
@@ -356,12 +362,12 @@ class _CreateListingPageState extends State<CreateListingPage> {
   String? _validatePrice(String? value) {
     if (_isGift) return null;
     final text = value?.trim() ?? '';
-    if (text.isEmpty) return 'Inserisci un prezzo, oppure scegli "In regalo"';
+    if (text.isEmpty) return context.l10n.marketplacePriceRequired;
     final parsed = double.tryParse(text.replaceAll(',', '.'));
-    if (parsed == null) return 'Inserisci un prezzo valido';
-    if (parsed < 0) return 'Il prezzo non può essere negativo';
-    if (parsed == 0) return 'Per regalarlo scegli "In regalo"';
-    if (parsed > 100000) return 'Prezzo troppo alto';
+    if (parsed == null) return context.l10n.marketplacePriceInvalid;
+    if (parsed < 0) return context.l10n.marketplacePriceNegative;
+    if (parsed == 0) return context.l10n.marketplacePriceZero;
+    if (parsed > 100000) return context.l10n.marketplacePriceTooHigh;
     return null;
   }
 
@@ -373,8 +379,10 @@ class _CreateListingPageState extends State<CreateListingPage> {
         backgroundColor: AppColors.background,
         elevation: 0,
         foregroundColor: AppColors.text,
-        title:
-            Text(_isEditing ? 'Modifica annuncio' : 'Nuovo annuncio', style: AppTextStyles.title),
+        title: Text(
+          _isEditing ? context.l10n.marketplaceEditListing : context.l10n.marketplaceNewListing,
+          style: AppTextStyles.title,
+        ),
       ),
       body: SafeArea(
         child: Form(
@@ -397,15 +405,16 @@ class _CreateListingPageState extends State<CreateListingPage> {
               const SizedBox(height: AppSpacing.xl),
               TextFormField(
                 controller: _titleController,
-                decoration: const InputDecoration(labelText: 'Titolo'),
+                decoration: InputDecoration(labelText: context.l10n.marketplaceFieldTitle),
                 maxLength: 80,
-                validator: (value) =>
-                    (value == null || value.trim().isEmpty) ? 'Inserisci un titolo' : null,
+                validator: (value) => (value == null || value.trim().isEmpty)
+                    ? context.l10n.marketplaceTitleRequired
+                    : null,
               ),
               const SizedBox(height: AppSpacing.sm),
               TextFormField(
                 controller: _descriptionController,
-                decoration: const InputDecoration(labelText: 'Descrizione (facoltativa)'),
+                decoration: InputDecoration(labelText: context.l10n.marketplaceFieldDescription),
                 maxLines: 3,
                 maxLength: 1000,
               ),
@@ -413,7 +422,7 @@ class _CreateListingPageState extends State<CreateListingPage> {
               DropdownButtonFormField<ListingCategory>(
                 initialValue: _category,
                 isExpanded: true,
-                decoration: const InputDecoration(labelText: 'Categoria'),
+                decoration: InputDecoration(labelText: context.l10n.marketplaceFieldCategory),
                 items: ListingCategory.values
                     .map(
                       (category) => DropdownMenuItem(
@@ -422,11 +431,11 @@ class _CreateListingPageState extends State<CreateListingPage> {
                       ),
                     )
                     .toList(),
-                validator: (value) => value == null ? 'Scegli una categoria' : null,
+                validator: (value) => value == null ? context.l10n.marketplaceCategoryRequired : null,
                 onChanged: (value) => setState(() => _category = value),
               ),
               const SizedBox(height: AppSpacing.xl),
-              Text('Condizione', style: AppTextStyles.bodySmall),
+              Text(context.l10n.marketplaceConditionLabel, style: AppTextStyles.bodySmall),
               const SizedBox(height: AppSpacing.sm),
               Wrap(
                 spacing: AppSpacing.sm,
@@ -442,12 +451,11 @@ class _CreateListingPageState extends State<CreateListingPage> {
                     .toList(),
               ),
               const SizedBox(height: AppSpacing.xl),
-              Text('Per quali animali', style: AppTextStyles.bodySmall),
+              Text(context.l10n.marketplaceSpeciesLabel, style: AppTextStyles.bodySmall),
               const SizedBox(height: AppSpacing.sm),
               FormField<Set<ListingSpecies>>(
-                validator: (_) => _species.isEmpty
-                    ? 'Indica per quali animali è, oppure "Tutte le specie"'
-                    : null,
+                validator: (_) =>
+                    _species.isEmpty ? context.l10n.marketplaceSpeciesRequired : null,
                 builder: (field) => Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -480,15 +488,15 @@ class _CreateListingPageState extends State<CreateListingPage> {
               const SizedBox(height: AppSpacing.lg),
               SwitchListTile(
                 contentPadding: EdgeInsets.zero,
-                title: const Text('In regalo'),
-                subtitle: const Text('Lo regali a chi ne ha bisogno'),
+                title: Text(context.l10n.marketplacePriceGift),
+                subtitle: Text(context.l10n.marketplaceGiftSubtitle),
                 value: _isGift,
                 onChanged: (value) => setState(() => _isGift = value),
               ),
               if (!_isGift)
                 TextFormField(
                   controller: _priceController,
-                  decoration: const InputDecoration(labelText: 'Prezzo in €'),
+                  decoration: InputDecoration(labelText: context.l10n.marketplaceFieldPrice),
                   keyboardType: const TextInputType.numberWithOptions(decimal: true),
                   validator: _validatePrice,
                 ),
@@ -512,10 +520,10 @@ class _CreateListingPageState extends State<CreateListingPage> {
               const SizedBox(height: AppSpacing.xl),
               DashboardActionButton(
                 label: _submitting
-                    ? 'Salvataggio...'
+                    ? context.l10n.marketplaceSaving
                     : _isEditing
-                        ? 'Salva modifiche'
-                        : 'Pubblica annuncio',
+                        ? context.l10n.marketplaceSaveChanges
+                        : context.l10n.marketplacePublish,
                 icon: _isEditing ? Icons.check_rounded : Icons.storefront_outlined,
                 onPressed: _submitting || _processingPhotos ? null : _submit,
               ),
@@ -548,7 +556,10 @@ class _PhotosSection extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text('Foto (${photos.length}/$maxListingPhotos)', style: AppTextStyles.bodySmall),
+        Text(
+          context.l10n.marketplacePhotosTitle(photos.length, maxListingPhotos),
+          style: AppTextStyles.bodySmall,
+        ),
         const SizedBox(height: AppSpacing.sm),
         if (photos.isNotEmpty || processing)
           SizedBox(
@@ -602,18 +613,18 @@ class _PhotosSection extends StatelessWidget {
             OutlinedButton.icon(
               onPressed: full || processing ? null : onAddFromCamera,
               icon: const Icon(Icons.photo_camera_outlined),
-              label: const Text('Scatta foto'),
+              label: Text(context.l10n.marketplaceTakePhoto),
             ),
             OutlinedButton.icon(
               onPressed: full || processing ? null : onAddFromGallery,
               icon: const Icon(Icons.photo_library_outlined),
-              label: const Text('Dalla galleria'),
+              label: Text(context.l10n.marketplaceFromGallery),
             ),
           ],
         ),
         const SizedBox(height: AppSpacing.xs),
         Text(
-          'Prima dell\'invio togliamo dalle foto i dati nascosti (posizione, dispositivo, data).',
+          context.l10n.marketplacePhotosPrivacy,
           style: AppTextStyles.caption,
         ),
       ],
@@ -655,21 +666,21 @@ class _LocationSection extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text('Dove si trova', style: AppTextStyles.bodySmall),
+        Text(context.l10n.marketplaceLocationTitle, style: AppTextStyles.bodySmall),
         const SizedBox(height: AppSpacing.sm),
         Wrap(
           spacing: AppSpacing.sm,
           runSpacing: AppSpacing.sm,
           children: [
-            if (isEditing) chip(_LocationChoice.keep, 'Zona attuale dell\'annuncio'),
-            chip(_LocationChoice.current, 'Dove sono ora'),
-            chip(_LocationChoice.home, 'Residenza', enabled: hasHome),
+            if (isEditing) chip(_LocationChoice.keep, context.l10n.marketplaceLocationKeep),
+            chip(_LocationChoice.current, context.l10n.marketplaceLocationNow),
+            chip(_LocationChoice.home, context.l10n.marketplaceLocationHome, enabled: hasHome),
           ],
         ),
         if (!hasHome) ...[
           const SizedBox(height: AppSpacing.xs),
           Text(
-            'Per usare la residenza impostala in Impostazioni → Località.',
+            context.l10n.marketplaceLocationHomeHint,
             style: AppTextStyles.caption,
           ),
         ],
@@ -683,16 +694,16 @@ class _LocationSection extends StatelessWidget {
                 child: CircularProgressIndicator(strokeWidth: 2),
               ),
               const SizedBox(width: AppSpacing.sm),
-              Text('Cerco la tua zona...', style: AppTextStyles.caption),
+              Text(context.l10n.marketplaceLocationSearching, style: AppTextStyles.caption),
             ],
           ),
         if (error != null)
           Text(error!, style: AppTextStyles.bodySmall.copyWith(color: AppColors.danger)),
         TextFormField(
           controller: zoneController,
-          decoration: const InputDecoration(
-            labelText: 'Zona mostrata (quartiere o comune)',
-            helperText: 'Niente via o numero civico',
+          decoration: InputDecoration(
+            labelText: context.l10n.marketplaceZoneLabel,
+            helperText: context.l10n.marketplaceZoneHelper,
           ),
           maxLength: 80,
           onChanged: (_) => onZoneEdited(),
@@ -712,8 +723,8 @@ class _LocationSection extends StatelessWidget {
               Expanded(
                 child: Text(
                   hasLocation
-                      ? 'Sulla mappa l\'annuncio appare in un punto approssimato (circa 1 km), mai al tuo indirizzo.'
-                      : 'Per la tua privacy, la posizione dell\'annuncio è sempre approssimata (circa 1 km), mai il tuo indirizzo esatto.',
+                      ? context.l10n.marketplacePrivacyApproxOnMap
+                      : context.l10n.marketplacePrivacyApproxAlways,
                   style: AppTextStyles.caption,
                 ),
               ),

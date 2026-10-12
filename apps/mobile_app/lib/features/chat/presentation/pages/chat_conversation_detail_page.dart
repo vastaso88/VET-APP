@@ -4,6 +4,7 @@ import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 
+import '../../../../l10n/l10n.dart';
 import '../../../../shared/widgets/pet_loader.dart';
 
 
@@ -100,28 +101,25 @@ class _ChatConversationDetailPageState extends State<ChatConversationDetailPage>
                   child: AnimatedSwitcher(
                     duration: const Duration(milliseconds: 220),
                     child: switch (widget.state) {
-                      ChatScreenState.loading => const ChatLoadingState(
-                          key: ValueKey('loading'),
-                          title: 'Apriamo la conversazione',
-                          subtitle:
-                              'Stiamo caricando il thread e l ultimo contesto disponibile.',
+                      ChatScreenState.loading => ChatLoadingState(
+                          key: const ValueKey('loading'),
+                          title: context.l10n.chatLoadingTitle,
+                          subtitle: context.l10n.chatLoadingSubtitle,
                         ),
                       ChatScreenState.empty => ChatEmptyState(
                           key: const ValueKey('empty'),
-                          title: 'La conversazione e vuota',
-                          subtitle:
-                              'Scrivi il primo messaggio per iniziare il dialogo con l assistente.',
-                          actionLabel: 'Scrivi ora',
+                          title: context.l10n.chatEmptyTitle,
+                          subtitle: context.l10n.chatEmptySubtitle,
+                          actionLabel: context.l10n.chatEmptyAction,
                           onAction: () => _sendMessage(
-                            'Ciao, ho una domanda per ${conversation.petName}.',
+                            context.l10n.chatEmptyGreeting(conversation.petName),
                           ),
                         ),
                       ChatScreenState.error => ChatErrorState(
                           key: const ValueKey('error'),
-                          title: 'Conversazione non disponibile',
-                          subtitle:
-                              'Qualcosa e andato storto nel recupero del thread.',
-                          actionLabel: 'Torna alle chat',
+                          title: context.l10n.chatErrorTitle,
+                          subtitle: context.l10n.chatErrorSubtitle,
+                          actionLabel: context.l10n.chatErrorAction,
                           onAction:
                               widget.onRetry ?? () => Navigator.of(context).maybePop(),
                         ),
@@ -193,7 +191,7 @@ class _ChatConversationDetailPageState extends State<ChatConversationDetailPage>
             action: isLimitReached
                 ? null
                 : SnackBarAction(
-                    label: 'Riprova',
+                    label: context.l10n.commonRetry,
                     onPressed: () => _sendMessage(
                       cleanMessage,
                       attachmentId: attachmentId,
@@ -228,8 +226,8 @@ class _ChatConversationDetailPageState extends State<ChatConversationDetailPage>
       builder: (sheetContext) => SafeArea(
         child: ListTile(
           leading: const Icon(Icons.edit_outlined),
-          title: const Text('Modifica messaggio'),
-          subtitle: const Text('La risposta e i messaggi successivi verranno sostituiti.'),
+          title: Text(context.l10n.chatMessageEditAction),
+          subtitle: Text(context.l10n.chatMessageEditHint),
           onTap: () => Navigator.of(sheetContext).pop('edit'),
         ),
       ),
@@ -273,7 +271,7 @@ class _ChatConversationDetailPageState extends State<ChatConversationDetailPage>
             content: Text(error.message),
             action: canRetry
                 ? SnackBarAction(
-                    label: 'Riprova',
+                    label: context.l10n.commonRetry,
                     onPressed: () => _editMessage(
                       original,
                       text,
@@ -353,7 +351,7 @@ class _Header extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                _headerTitle(conversation),
+                _headerTitle(context, conversation),
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
                 style: const TextStyle(
@@ -468,7 +466,7 @@ class _SuccessConversationView extends StatelessWidget {
                 AppSpacing.lg,
               ),
               child: ChatComposer(
-                hintText: 'Scrivi una domanda su ${conversation.petName}',
+                hintText: context.l10n.chatComposerHint(conversation.petName),
                 petName: conversation.petName,
                 onSend: onSendMessage,
                 editingText: editingMessage?.text,
@@ -512,7 +510,7 @@ class _NewConversationPlaceholder extends StatelessWidget {
             ),
             const SizedBox(height: AppSpacing.md),
             Text(
-              'Nuova conversazione su $petName',
+              context.l10n.chatNewConversationOnPet(petName),
               textAlign: TextAlign.center,
               style: const TextStyle(
                 color: AppColors.text,
@@ -521,10 +519,10 @@ class _NewConversationPlaceholder extends StatelessWidget {
               ),
             ),
             const SizedBox(height: AppSpacing.xs),
-            const Text(
-              'Scrivi qui sotto cosa stai osservando: ti rispondo subito.',
+            Text(
+              context.l10n.chatNewConversationPrompt,
               textAlign: TextAlign.center,
-              style: TextStyle(
+              style: const TextStyle(
                 color: AppColors.secondaryText,
                 fontSize: 13,
                 height: 1.4,
@@ -545,8 +543,8 @@ class ChatTypingBubble extends StatefulWidget {
 
   final Duration slowAfter;
 
-  static const typingText = 'Sta scrivendo una risposta...';
-  static const slowText = 'Ci sto mettendo più del solito, la risposta arriva tra poco...';
+  static String get typingText => appL10n.chatTypingText;
+  static String get slowText => appL10n.chatTypingSlowText;
 
   @override
   State<ChatTypingBubble> createState() => _ChatTypingBubbleState();
@@ -591,7 +589,7 @@ class _ChatTypingBubbleState extends State<ChatTypingBubble> {
             const SizedBox(width: AppSpacing.sm),
             Flexible(
               child: Text(
-                _slow ? ChatTypingBubble.slowText : ChatTypingBubble.typingText,
+                _slow ? context.l10n.chatTypingSlowText : context.l10n.chatTypingText,
                 style: const TextStyle(
                   color: AppColors.secondaryText,
                   fontSize: 12,
@@ -622,9 +620,9 @@ double chatReplyScrollOffset({
 }
 
 /// The stored title is a placeholder until the backend names the chat.
-String _headerTitle(ChatConversationDetail conversation) {
+String _headerTitle(BuildContext context, ChatConversationDetail conversation) {
   if (conversation.title.trim().isEmpty || conversation.title.startsWith('Chat for')) {
-    return 'Chat con ${conversation.petName}';
+    return context.l10n.chatDefaultTitle(conversation.petName);
   }
   return conversation.title;
 }

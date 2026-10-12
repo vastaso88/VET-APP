@@ -6,6 +6,7 @@ import 'package:share_plus/share_plus.dart';
 import '../../../design_system/tokens/app_colors.dart';
 import '../../../design_system/tokens/app_spacing.dart';
 import '../../../design_system/tokens/app_text_styles.dart';
+import '../../../l10n/l10n.dart';
 import '../../../shared/files/attachment_media_type.dart';
 import '../../chat/data/chat_attachment_remote_data_source.dart';
 import '../data/medical_record_file_cache.dart';
@@ -46,7 +47,7 @@ Future<void> showRecordActions(
           ),
           ListTile(
             leading: const Icon(Icons.open_in_new_rounded),
-            title: const Text('Apri'),
+            title: Text(sheetContext.l10n.medicalActionOpen),
             onTap: () {
               Navigator.of(sheetContext).pop();
               openRecordFile(context, record);
@@ -54,7 +55,7 @@ Future<void> showRecordActions(
           ),
           ListTile(
             leading: const Icon(Icons.ios_share_rounded),
-            title: const Text('Invia'),
+            title: Text(sheetContext.l10n.medicalActionSend),
             onTap: () {
               Navigator.of(sheetContext).pop();
               shareRecords(context, [record]);
@@ -62,7 +63,7 @@ Future<void> showRecordActions(
           ),
           ListTile(
             leading: const Icon(Icons.drive_file_rename_outline_rounded),
-            title: const Text('Rinomina'),
+            title: Text(sheetContext.l10n.medicalActionRename),
             onTap: () {
               Navigator.of(sheetContext).pop();
               renameRecordWithDialog(context, record: record, onRenamed: onChanged);
@@ -70,7 +71,7 @@ Future<void> showRecordActions(
           ),
           ListTile(
             leading: const Icon(Icons.delete_outline, color: Colors.red),
-            title: const Text('Elimina'),
+            title: Text(sheetContext.l10n.commonDelete),
             onTap: () {
               Navigator.of(sheetContext).pop();
               deleteRecordWithConfirm(context, record: record, onDeleted: onChanged);
@@ -89,7 +90,7 @@ Future<void> openRecordFile(BuildContext context, MedicalRecordEntry record) asy
   final bytes = await loadRecordBytes(record);
   if (!context.mounted) return;
   if (bytes == null) {
-    _showMessage(context, 'Il file non è disponibile ora. Controlla la connessione e riprova.');
+    _showMessage(context, context.l10n.medicalFileUnavailable);
     return;
   }
   final mime = _mimeFor(bytes, record.title);
@@ -107,7 +108,7 @@ Future<void> openRecordFile(BuildContext context, MedicalRecordEntry record) asy
     case PdfOpenOutcome.noApp:
       await _offerShareInstead(context, record);
     case PdfOpenOutcome.failed:
-      _showMessage(context, 'Non sono riuscito ad aprire il PDF. Riprova oppure usa Invia.');
+      _showMessage(context, context.l10n.medicalPdfOpenFailed);
     case PdfOpenOutcome.unsupported:
       // Web: the browser's share/viewer path.
       await Share.shareXFiles(
@@ -121,18 +122,16 @@ Future<void> _offerShareInstead(BuildContext context, MedicalRecordEntry record)
   final share = await showDialog<bool>(
     context: context,
     builder: (dialogContext) => AlertDialog(
-      title: const Text('Nessuna app per aprire il PDF'),
-      content: const Text(
-        'Su questo dispositivo non c\'è un\'app che apre i PDF. Puoi inviare il file a un\'app che lo apre.',
-      ),
+      title: Text(dialogContext.l10n.medicalNoPdfAppTitle),
+      content: Text(dialogContext.l10n.medicalNoPdfAppBody),
       actions: [
         TextButton(
           onPressed: () => Navigator.of(dialogContext).pop(false),
-          child: const Text('Chiudi'),
+          child: Text(dialogContext.l10n.commonClose),
         ),
         FilledButton(
           onPressed: () => Navigator.of(dialogContext).pop(true),
-          child: const Text('Invia'),
+          child: Text(dialogContext.l10n.medicalActionSend),
         ),
       ],
     ),
@@ -144,7 +143,7 @@ Future<void> _offerShareInstead(BuildContext context, MedicalRecordEntry record)
 
 /// Sends one or several records' files through the system share sheet.
 Future<void> shareRecords(BuildContext context, List<MedicalRecordEntry> records) async {
-  _showMessage(context, 'Preparo i file da inviare…');
+  _showMessage(context, context.l10n.medicalPreparingFiles);
   final files = <XFile>[];
   var missing = 0;
   for (final record in records) {
@@ -157,11 +156,11 @@ Future<void> shareRecords(BuildContext context, List<MedicalRecordEntry> records
   }
   if (!context.mounted) return;
   if (files.isEmpty) {
-    _showMessage(context, 'Nessun file disponibile da inviare. Controlla la connessione e riprova.');
+    _showMessage(context, context.l10n.medicalNoFilesToSend);
     return;
   }
   if (missing > 0) {
-    _showMessage(context, '$missing file non disponibili non sono stati inclusi.');
+    _showMessage(context, context.l10n.medicalFilesMissing(missing));
   }
   await Share.shareXFiles(files);
 }
@@ -175,22 +174,22 @@ Future<void> deleteRecordWithConfirm(
   final confirmed = await showDialog<bool>(
     context: context,
     builder: (dialogContext) => AlertDialog(
-      title: const Text('Eliminare questo documento?'),
-      content: Text('"${record.title}" verrà eliminato definitivamente.'),
+      title: Text(dialogContext.l10n.medicalDeleteConfirmTitle),
+      content: Text(dialogContext.l10n.medicalDeleteConfirmBody(record.title)),
       actions: [
         TextButton(
           onPressed: () => Navigator.of(dialogContext).pop(false),
-          child: const Text('Annulla'),
+          child: Text(dialogContext.l10n.commonCancel),
         ),
         FilledButton(
           onPressed: () => Navigator.of(dialogContext).pop(true),
-          child: const Text('Elimina'),
+          child: Text(dialogContext.l10n.commonDelete),
         ),
       ],
     ),
   );
   if (confirmed != true) return;
-  if (context.mounted) _showMessage(context, 'Elimino il referto…');
+  if (context.mounted) _showMessage(context, context.l10n.medicalDeleting);
   try {
     await MedicalRecordsRepository().deleteRecord(record.id);
   } on MedicalRecordSaveException catch (error) {
@@ -239,21 +238,21 @@ Future<void> renameRecordWithDialog(
   final newTitle = await showDialog<String>(
     context: context,
     builder: (dialogContext) => AlertDialog(
-      title: const Text('Rinomina referto'),
+      title: Text(dialogContext.l10n.medicalRenameTitle),
       content: TextField(
         controller: controller,
         autofocus: true,
         textCapitalization: TextCapitalization.sentences,
-        decoration: const InputDecoration(labelText: 'Nome del file'),
+        decoration: InputDecoration(labelText: dialogContext.l10n.medicalRenameFieldLabel),
       ),
       actions: [
         TextButton(
           onPressed: () => Navigator.of(dialogContext).pop(),
-          child: const Text('Annulla'),
+          child: Text(dialogContext.l10n.commonCancel),
         ),
         FilledButton(
           onPressed: () => Navigator.of(dialogContext).pop(controller.text.trim()),
-          child: const Text('Salva'),
+          child: Text(dialogContext.l10n.commonSave),
         ),
       ],
     ),

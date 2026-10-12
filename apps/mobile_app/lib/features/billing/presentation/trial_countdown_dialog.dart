@@ -4,6 +4,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../../../design_system/tokens/app_colors.dart';
 import '../../../design_system/tokens/app_radii.dart';
 import '../../../design_system/tokens/app_text_styles.dart';
+import '../../../l10n/l10n.dart';
 import '../../../shared/auth/current_user.dart';
 import '../domain/subscription_status.dart';
 import '../domain/trial_reminder_rule.dart';
@@ -33,18 +34,17 @@ Future<void> showTrialCountdownIfDue(
       backgroundColor: AppColors.surface,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadii.large)),
       title: Text(
-        daysLeft == 1 ? 'Ultimo giorno di prova' : 'Ti restano $daysLeft giorni di prova',
+        dialogContext.l10n.billingTrialDialogTitle(daysLeft),
         style: AppTextStyles.title.copyWith(fontSize: 17),
       ),
       content: Text(
-        'Con il piano Free alcune funzioni sono limitate. Passa a Plus o Pro '
-        'per avere tutto senza limiti quando la prova finisce.',
+        dialogContext.l10n.billingTrialDialogBody,
         style: AppTextStyles.bodySmall,
       ),
       actions: [
         TextButton(
           onPressed: () => Navigator.of(dialogContext).pop(),
-          child: const Text('Più tardi'),
+          child: Text(dialogContext.l10n.billingTrialDialogLater),
         ),
         FilledButton(
           onPressed: () {
@@ -53,7 +53,7 @@ Future<void> showTrialCountdownIfDue(
               MaterialPageRoute<void>(builder: (_) => const BillingPage()),
             );
           },
-          child: const Text('Vedi i piani'),
+          child: Text(dialogContext.l10n.billingTrialDialogSeePlans),
         ),
       ],
     ),

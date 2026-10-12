@@ -10,6 +10,7 @@ import '../../../../shared/widgets/pet_loader.dart';
 
 import '../../../../app/router/app_router.dart';
 import '../../../../design_system/tokens/app_spacing.dart';
+import '../../../../l10n/l10n.dart';
 import '../../../../shared/auth/auth.dart';
 import '../../../account_consents/data/account_consents_remote_data_source.dart';
 import '../../../account_consents/domain/account_consent_models.dart';
@@ -50,17 +51,32 @@ class _TermsAcceptanceTextState extends State<_TermsAcceptanceText> {
   Widget build(BuildContext context) {
     const base = TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: AppColors.text);
     final link = base.copyWith(color: AppColors.primary, decoration: TextDecoration.underline);
-    return Text.rich(
-      TextSpan(
-        style: base,
-        children: [
-          const TextSpan(text: 'Accetto i '),
-          TextSpan(text: 'Termini di Servizio', style: link, recognizer: _termsTap),
-          const TextSpan(text: " e l'"),
-          TextSpan(text: 'Informativa Privacy', style: link, recognizer: _privacyTap),
-        ],
-      ),
+    final l10n = context.l10n;
+    // The sentence is one localized message; the two link names are swapped
+    // in as markers so the surrounding words can move with the language.
+    const termsMarker = '\u0001';
+    const privacyMarker = '\u0002';
+    final sentence = l10n.authTermsAcceptance(termsMarker, privacyMarker);
+    final spans = <InlineSpan>[];
+    sentence.splitMapJoin(
+      RegExp('[$termsMarker$privacyMarker]'),
+      onMatch: (match) {
+        final isTerms = match[0] == termsMarker;
+        spans.add(
+          TextSpan(
+            text: isTerms ? l10n.authTermsOfServiceLabel : l10n.authPrivacyPolicyLabel,
+            style: link,
+            recognizer: isTerms ? _termsTap : _privacyTap,
+          ),
+        );
+        return '';
+      },
+      onNonMatch: (text) {
+        if (text.isNotEmpty) spans.add(TextSpan(text: text));
+        return '';
+      },
     );
+    return Text.rich(TextSpan(style: base, children: spans));
   }
 }
 
@@ -101,10 +117,10 @@ class _RegisterPageState extends State<RegisterPage> {
     if (!isValid || !_acceptTerms) {
       setState(() {
         _status = AuthBannerStatus.error;
-        _title = 'Serve un ultimo controllo';
+        _title = context.l10n.authRegisterCheckTitle;
         _message = !_acceptTerms
-            ? 'Devi accettare privacy e disclaimer per continuare.'
-            : 'Controlla i campi: nome, email e password devono essere validi.';
+            ? context.l10n.authRegisterTermsRequired
+            : context.l10n.authRegisterFieldsInvalid;
       });
       return;
     }
@@ -114,8 +130,8 @@ class _RegisterPageState extends State<RegisterPage> {
       _emailServerError = null;
       _passwordServerError = null;
       _status = AuthBannerStatus.loading;
-      _title = 'Creazione account';
-      _message = 'Sto creando l account e preparando la sessione iniziale.';
+      _title = context.l10n.authRegisterLoadingTitle;
+      _message = context.l10n.authRegisterLoadingMessage;
     });
 
     final result = await _authRepository.signUpWithPassword(
@@ -132,8 +148,8 @@ class _RegisterPageState extends State<RegisterPage> {
         setState(() {
           _isLoading = false;
           _status = AuthBannerStatus.success;
-          _title = 'Account pronto';
-          _message = 'Registrazione completata. Ti porto nella home.';
+          _title = context.l10n.authRegisterSuccessTitle;
+          _message = context.l10n.authRegisterSuccessMessage;
         });
         return true;
       },
@@ -142,7 +158,7 @@ class _RegisterPageState extends State<RegisterPage> {
         setState(() {
           _isLoading = false;
           _status = AuthBannerStatus.error;
-          _title = 'Account non creato';
+          _title = context.l10n.authRegisterFailureTitle;
           _message = presented.message;
           if (presented.field == AuthErrorField.email) _emailServerError = presented.message;
           if (presented.field == AuthErrorField.password) _passwordServerError = presented.message;
@@ -219,8 +235,8 @@ class _RegisterPageState extends State<RegisterPage> {
   @override
   Widget build(BuildContext context) {
     return AuthScreenScaffold(
-      title: 'Crea il tuo profilo.',
-      subtitle: 'Pochi campi per iniziare a gestire salute e documenti dei tuoi animali.',
+      title: context.l10n.authRegisterTitle,
+      subtitle: context.l10n.authRegisterSubtitle,
       child: Form(
         key: _formKey,
         child: Column(
@@ -230,11 +246,11 @@ class _RegisterPageState extends State<RegisterPage> {
               AuthStateBanner(status: _status!, title: _title, message: _message),
             AuthInputField(
               controller: _nameController,
-              label: 'Nome',
-              hintText: 'Il tuo nome',
+              label: context.l10n.authNameLabel,
+              hintText: context.l10n.authNameHint,
               validator: (value) {
                 if ((value ?? '').trim().isEmpty) {
-                  return 'Inserisci il tuo nome.';
+                  return context.l10n.authNameRequired;
                 }
                 return null;
               },
@@ -242,42 +258,42 @@ class _RegisterPageState extends State<RegisterPage> {
             const SizedBox(height: AppSpacing.md),
             AuthInputField(
               controller: _emailController,
-              label: 'Email',
-              hintText: 'nome@dominio.it',
+              label: context.l10n.authEmailLabel,
+              hintText: context.l10n.authEmailHint,
               keyboardType: TextInputType.emailAddress,
               autofillHints: const [AutofillHints.email],
               serverError: _emailServerError,
               validator: (value) {
                 final text = value?.trim() ?? '';
-                if (text.isEmpty) return 'Inserisci la tua email.';
-                if (!text.contains('@')) return 'Email non valida.';
+                if (text.isEmpty) return context.l10n.authEmailRequired;
+                if (!text.contains('@')) return context.l10n.authEmailInvalid;
                 return null;
               },
             ),
             const SizedBox(height: AppSpacing.md),
             AuthInputField(
               controller: _passwordController,
-              label: 'Password',
+              label: context.l10n.authPasswordLabel,
               serverError: _passwordServerError,
-              hintText: 'Almeno 6 caratteri',
+              hintText: context.l10n.authPasswordHint,
               obscureText: true,
               autofillHints: const [AutofillHints.newPassword],
               validator: (value) {
                 final text = value ?? '';
-                if (text.isEmpty) return 'Inserisci una password.';
-                if (text.length < 6) return 'Minimo 6 caratteri.';
+                if (text.isEmpty) return context.l10n.authPasswordRequiredNew;
+                if (text.length < 6) return context.l10n.authPasswordMinLength;
                 return null;
               },
             ),
             const SizedBox(height: AppSpacing.md),
             AuthInputField(
               controller: _confirmPasswordController,
-              label: 'Conferma password',
-              hintText: 'Ripeti la password',
+              label: context.l10n.authConfirmPasswordLabel,
+              hintText: context.l10n.authConfirmPasswordHint,
               obscureText: true,
               autofillHints: const [AutofillHints.newPassword],
               validator: (value) {
-                if (value != _passwordController.text) return 'Le password non coincidono.';
+                if (value != _passwordController.text) return context.l10n.authPasswordsMismatch;
                 return null;
               },
             ),
@@ -291,11 +307,11 @@ class _RegisterPageState extends State<RegisterPage> {
                 title: _TermsAcceptanceText(
                   onTermsTap: () => _openLegal(
                     AccountConsentKeys.termsOfService,
-                    'Termini di Servizio',
+                    context.l10n.authTermsOfServiceLabel,
                   ),
                   onPrivacyTap: () => _openLegal(
                     AccountConsentKeys.privacyPolicy,
-                    'Informativa Privacy',
+                    context.l10n.authPrivacyPolicyLabel,
                   ),
                 ),
               ),
@@ -311,12 +327,12 @@ class _RegisterPageState extends State<RegisterPage> {
                         height: 20,
                         child: PetLoader.small(),
                       )
-                    : const Text('Crea account'),
+                    : Text(context.l10n.authRegisterButton),
               ),
             ),
             const SizedBox(height: AppSpacing.md),
             AuthFooterLink(
-              label: 'Hai già un account? Accedi',
+              label: context.l10n.authHaveAccountLoginLink,
               onTap: () => Navigator.of(context).push(
                 MaterialPageRoute<void>(builder: (_) => const LoginPage()),
               ),

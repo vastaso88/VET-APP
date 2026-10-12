@@ -6,6 +6,7 @@ import '../../design_system/responsive.dart';
 import '../../design_system/tokens/app_colors.dart';
 import '../../design_system/tokens/app_spacing.dart';
 import '../../design_system/tokens/app_text_styles.dart';
+import '../../l10n/l10n.dart';
 
 /// The app's loading indicator: an animal spinning on its vertical axis.
 ///
@@ -124,7 +125,7 @@ class _PetLoaderState extends State<PetLoader> with SingleTickerProviderStateMix
 
     final label = widget.label;
     return Semantics(
-      label: label ?? 'Caricamento',
+      label: label ?? context.l10n.sharedLoadingLabel,
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [

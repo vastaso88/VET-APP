@@ -1,3 +1,5 @@
+import '../../../l10n/l10n.dart';
+
 /// Measurement systems the owner can choose in Impostazioni → Layout.
 ///
 /// Everything is stored metric (meters, kg, °C, liters, cm); a system only
@@ -18,15 +20,15 @@ enum UnitSystem {
   us;
 
   String get label => switch (this) {
-        UnitSystem.metric => 'Metrico',
-        UnitSystem.uk => 'Regno Unito',
-        UnitSystem.us => 'USA',
+        UnitSystem.metric => appL10n.settingsUnitSystemMetricLabel,
+        UnitSystem.uk => appL10n.settingsUnitSystemUkLabel,
+        UnitSystem.us => appL10n.settingsUnitSystemUsLabel,
       };
 
   String get description => switch (this) {
-        UnitSystem.metric => 'km, kg, °C, litri',
-        UnitSystem.uk => 'miglia, libbre, °C, litri',
-        UnitSystem.us => 'miglia, libbre, °F, galloni USA',
+        UnitSystem.metric => appL10n.settingsUnitSystemMetricDescription,
+        UnitSystem.uk => appL10n.settingsUnitSystemUkDescription,
+        UnitSystem.us => appL10n.settingsUnitSystemUsDescription,
       };
 
   bool get usesMiles => this != UnitSystem.metric;

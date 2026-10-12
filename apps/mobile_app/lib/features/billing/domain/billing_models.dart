@@ -1,3 +1,8 @@
+import 'package:intl/intl.dart';
+
+import '../../../l10n/date_formats.dart';
+import '../../../l10n/l10n.dart';
+
 enum PlanTier { free, plus, pro }
 
 enum BillingCycle { monthly, yearly }
@@ -17,15 +22,46 @@ extension CardBrandLabel on CardBrand {
   }
 }
 
+/// Every feature line the plan screens can show; the wording lives in the
+/// ARB catalog and is resolved when read (see [PlanFeature.label]).
+enum PlanFeatureId {
+  includedPets,
+  includedAssistant,
+  includedChatMedia,
+  includedReminders,
+  includedNearbyServices,
+  freePlaceholder,
+  plusPlaceholder,
+  proPlaceholder,
+}
+
 /// One line in a plan's "what's included" list. [isPlaceholder] marks a
 /// commercial decision the owner hasn't made yet, so the UI renders it as an
 /// obvious "to be defined" line instead of a promise.
 class PlanFeature {
-  const PlanFeature(this.label, {this.isPlaceholder = false});
+  const PlanFeature(this.id, {this.isPlaceholder = false});
 
-  final String label;
+  final PlanFeatureId id;
   final bool isPlaceholder;
+
+  String get label {
+    final l10n = appL10n;
+    return switch (id) {
+      PlanFeatureId.includedPets => l10n.billingIncludedPets,
+      PlanFeatureId.includedAssistant => l10n.billingIncludedAssistant,
+      PlanFeatureId.includedChatMedia => l10n.billingIncludedChatMedia,
+      PlanFeatureId.includedReminders => l10n.billingIncludedReminders,
+      PlanFeatureId.includedNearbyServices => l10n.billingIncludedNearbyServices,
+      PlanFeatureId.freePlaceholder => l10n.billingFreePlaceholder,
+      PlanFeatureId.plusPlaceholder => l10n.billingPlusPlaceholder,
+      PlanFeatureId.proPlaceholder => l10n.billingProPlaceholder,
+    };
+  }
 }
+
+/// "4,99 €" in the app language (placeholder prices, always euro).
+String formatPlanAmount(double price) =>
+    NumberFormat.currency(locale: appIntlLocale, symbol: '€').format(price);
 
 /// A subscription tier as shown in the plan comparison — mirrors the
 /// "Free / Plus / Pro" ladder common apps use for their pricing screen.
@@ -36,7 +72,7 @@ class SubscriptionPlan {
     required this.monthlyPrice,
     required this.yearlyPrice,
     required this.features,
-    this.badge,
+    this.isRecommended = false,
   });
 
   final PlanTier tier;
@@ -52,8 +88,11 @@ class SubscriptionPlan {
   /// `BillingDemoStore.includedInAllPlans`.
   final List<PlanFeature> features;
 
-  /// Optional short label shown on the plan card, e.g. "Più scelto".
-  final String? badge;
+  /// Highlights the plan with a "Consigliato" badge.
+  final bool isRecommended;
+
+  /// Short label shown on the plan card, or null when not highlighted.
+  String? get badge => isRecommended ? appL10n.billingPlanBadgeRecommended : null;
 
   double priceFor(BillingCycle cycle) =>
       cycle == BillingCycle.yearly ? yearlyPrice : monthlyPrice;

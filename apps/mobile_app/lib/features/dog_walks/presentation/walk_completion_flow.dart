@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 
+import '../../../l10n/l10n.dart';
 import '../../../shared/auth/current_owner.dart';
 import '../../pets/domain/pet_models.dart';
 import '../data/active_walk_controller.dart';
@@ -47,14 +48,12 @@ Future<void> finishActiveWalk(
     await showDialog<void>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Passeggiata senza spostamento'),
-        content: const Text(
-          'Non è stato registrato alcuno spostamento: la passeggiata non è stata salvata.',
-        ),
+        title: Text(context.l10n.walksNoMoveTitle),
+        content: Text(context.l10n.walksNoMoveBody),
         actions: [
           FilledButton(
             onPressed: () => Navigator.of(context).pop(),
-            child: const Text('Ho capito'),
+            child: Text(context.l10n.walksNoMoveAck),
           ),
         ],
       ),
@@ -94,19 +93,18 @@ Future<void> _promptSaveAsFavorite(
   final wantsFavorite = await showDialog<bool>(
     context: context,
     builder: (context) => AlertDialog(
-      title: const Text('Salva tra le preferite?'),
+      title: Text(context.l10n.walksFavoritePromptTitle),
       content: Text(
-        'Vuoi aggiungere questa passeggiata (${walkDistanceLabel(walk.distanceMeters)}) '
-        'alle tue preferite ⭐?',
+        context.l10n.walksFavoritePromptBody(walkDistanceLabel(walk.distanceMeters)),
       ),
       actions: [
         TextButton(
           onPressed: () => Navigator.of(context).pop(false),
-          child: const Text('No, grazie'),
+          child: Text(context.l10n.walksFavoriteNoThanks),
         ),
         FilledButton(
           onPressed: () => Navigator.of(context).pop(true),
-          child: const Text('Salva ⭐'),
+          child: Text(context.l10n.walksFavoriteSave),
         ),
       ],
     ),

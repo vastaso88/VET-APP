@@ -1,3 +1,5 @@
+import '../../../l10n/l10n.dart';
+
 /// Portata dell'evento (docs/features/events_engine.md, sezione 2.2). Il
 /// livello descrive da quanto lontano ha senso venire, non la qualità; il
 /// valore arriva già deciso dal curatore con una base documentata.
@@ -16,17 +18,18 @@ enum EventLevel {
   }
 
   String get label {
+    final l10n = appL10n;
     switch (this) {
       case EventLevel.local:
-        return 'Locale';
+        return l10n.eventsLevelLocal;
       case EventLevel.provincial:
-        return 'Provinciale';
+        return l10n.eventsLevelProvincial;
       case EventLevel.regional:
-        return 'Regionale';
+        return l10n.eventsLevelRegional;
       case EventLevel.national:
-        return 'Nazionale';
+        return l10n.eventsLevelNational;
       case EventLevel.international:
-        return 'Internazionale';
+        return l10n.eventsLevelInternational;
     }
   }
 }
@@ -51,31 +54,51 @@ enum EventStatus {
 }
 
 /// Codici `event_type` (tassonomia della sezione 1 del documento) con
-/// l'etichetta italiana mostrata in app. Un codice sconosciuto non rompe nulla:
-/// si mostra come "Altro".
-const Map<String, String> eventTypeLabels = {
-  'pet_fair': 'Fiera per animali',
-  'dog_show': 'Esposizione canina',
-  'breed_gathering': 'Raduno di razza',
-  'cat_show': 'Esposizione felina',
-  'work_trial': 'Prova di lavoro',
-  'dog_sport': 'Sport cinofili',
-  'adoption_day': 'Giornata di adozione',
-  'shelter_open_day': 'Open day rifugio',
-  'microchip_day': 'Microchip day',
-  'vaccination_campaign': 'Campagna vaccinale',
-  'group_walk': 'Passeggiata di gruppo',
-  'course_seminar': 'Corso o seminario',
-  'market': 'Mercatino',
-  'charity_event': 'Evento benefico',
-  'aquarium_expo': 'Acquariofilia',
-  'reptile_expo': 'Terraristica',
-  'bird_show': 'Ornitologia',
-  'equestrian': 'Equestre',
-  'other': 'Altro',
-};
-
-String eventTypeLabel(String code) => eventTypeLabels[code] ?? eventTypeLabels['other']!;
+/// l'etichetta mostrata in app nella lingua dell'utente. Un codice
+/// sconosciuto non rompe nulla: si mostra come "Altro".
+String eventTypeLabel(String code) {
+  final l10n = appL10n;
+  switch (code) {
+    case 'pet_fair':
+      return l10n.eventsTypePetFair;
+    case 'dog_show':
+      return l10n.eventsTypeDogShow;
+    case 'breed_gathering':
+      return l10n.eventsTypeBreedGathering;
+    case 'cat_show':
+      return l10n.eventsTypeCatShow;
+    case 'work_trial':
+      return l10n.eventsTypeWorkTrial;
+    case 'dog_sport':
+      return l10n.eventsTypeDogSport;
+    case 'adoption_day':
+      return l10n.eventsTypeAdoptionDay;
+    case 'shelter_open_day':
+      return l10n.eventsTypeShelterOpenDay;
+    case 'microchip_day':
+      return l10n.eventsTypeMicrochipDay;
+    case 'vaccination_campaign':
+      return l10n.eventsTypeVaccinationCampaign;
+    case 'group_walk':
+      return l10n.eventsTypeGroupWalk;
+    case 'course_seminar':
+      return l10n.eventsTypeCourseSeminar;
+    case 'market':
+      return l10n.eventsTypeMarket;
+    case 'charity_event':
+      return l10n.eventsTypeCharityEvent;
+    case 'aquarium_expo':
+      return l10n.eventsTypeAquariumExpo;
+    case 'reptile_expo':
+      return l10n.eventsTypeReptileExpo;
+    case 'bird_show':
+      return l10n.eventsTypeBirdShow;
+    case 'equestrian':
+      return l10n.eventsTypeEquestrian;
+    default:
+      return l10n.eventsTypeOther;
+  }
+}
 
 /// Un evento (una edizione con date concrete). Le date sono solo-giorno:
 /// `startsOn`/`endsOn` sono mezzanotte locale del giorno, estremi inclusi.

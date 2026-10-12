@@ -1,6 +1,7 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../../shared/config/app_runtime_config_loader.dart';
+import '../../../l10n/l10n.dart';
 import '../../location/domain/coordinates.dart';
 import '../domain/marketplace_listing.dart';
 import 'listing_photo_store.dart';
@@ -11,7 +12,7 @@ class ListingPermissionException implements Exception {
   const ListingPermissionException();
 
   @override
-  String toString() => 'Solo chi ha pubblicato l\'annuncio può modificarlo o eliminarlo.';
+  String toString() => appL10n.marketplacePermissionDenied;
 }
 
 /// True only for the listing's author. The app-side check mirrors the
@@ -284,26 +285,26 @@ class MarketplaceRepository {
     MarketplaceListing(
       id: 'demo-listing-cuccia',
       ownerId: 'demo-seller',
-      title: 'Cuccia imbottita (demo)',
-      description: 'Poco usata, taglia media.',
+      title: appL10n.marketplaceDemoBedTitle,
+      description: appL10n.marketplaceDemoBedDescription,
       category: ListingCategory.kennelsCarriers,
       condition: ListingCondition.good,
       priceCents: 1500,
       species: const [ListingSpecies.dog],
       location: const Coordinates(latitude: 45.46, longitude: 9.19),
-      cityLabel: 'Centro, Milano',
+      cityLabel: appL10n.marketplaceDemoBedArea,
       createdAt: DateTime.now().subtract(const Duration(days: 2)),
       updatedAt: DateTime.now().subtract(const Duration(days: 2)),
     ),
     MarketplaceListing(
       id: 'demo-listing-tiragraffi',
       ownerId: 'demo-seller',
-      title: 'Tiragraffi a due piani (demo)',
+      title: appL10n.marketplaceDemoScratcherTitle,
       category: ListingCategory.toys,
       condition: ListingCondition.likeNew,
       species: const [ListingSpecies.cat],
       location: const Coordinates(latitude: 45.48, longitude: 9.21),
-      cityLabel: 'Città Studi, Milano',
+      cityLabel: appL10n.marketplaceDemoScratcherArea,
       createdAt: DateTime.now().subtract(const Duration(days: 1)),
       updatedAt: DateTime.now().subtract(const Duration(days: 1)),
     ),

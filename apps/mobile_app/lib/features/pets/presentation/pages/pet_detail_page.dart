@@ -13,6 +13,7 @@ import '../../../../shared/files/attachment_media_type.dart';
 import '../../../../design_system/tokens/app_radii.dart';
 import '../../../../design_system/tokens/app_spacing.dart';
 import '../../../../design_system/tokens/app_text_styles.dart';
+import '../../../../l10n/l10n.dart';
 import '../../../chat/data/chat_attachment_remote_data_source.dart';
 import '../../../chat/data/chat_demo_store.dart';
 import '../../../chat/domain/chat_models.dart';
@@ -42,6 +43,7 @@ import '../../data/pet_demo_store.dart';
 import '../../data/pet_photo_repository.dart';
 import '../../domain/pet_format.dart';
 import '../../domain/pet_models.dart';
+import '../../domain/pet_value_labels.dart';
 import '../widgets/medical_record_consent_card.dart';
 import '../../../chat/presentation/widgets/chat_conversation_menu.dart';
 import '../widgets/pet_avatar.dart';
@@ -55,12 +57,12 @@ class PetDetailPage extends StatefulWidget {
     super.key,
     this.pet,
     this.state = PetsScreenStatus.success,
-    this.errorMessage = 'Questo profilo pet non e disponibile al momento.',
+    this.errorMessage,
   });
 
   final PetProfile? pet;
   final PetsScreenStatus state;
-  final String errorMessage;
+  final String? errorMessage;
 
   @override
   State<PetDetailPage> createState() => _PetDetailPageState();
@@ -84,7 +86,7 @@ class _PetDetailPageState extends State<PetDetailPage> {
     final pet = _pet ?? widget.pet ?? PetDemoStore.instance.list().firstOrNull;
 
     return PetsScaffold(
-      title: pet?.name ?? 'Dettaglio pet',
+      title: pet?.name ?? context.l10n.petsDetailTitleFallback,
       subtitle: pet == null ? null : petHeaderSubtitle(pet),
       onBack: () => Navigator.of(context).maybePop(),
       badge: pet == null
@@ -99,7 +101,7 @@ class _PetDetailPageState extends State<PetDetailPage> {
             ),
       actions: [
         IconButton(
-          tooltip: 'Galleria foto',
+          tooltip: context.l10n.petsDetailGalleryTooltip,
           onPressed: pet == null
               ? null
               : () => Navigator.of(context).push(
@@ -120,18 +122,17 @@ class _PetDetailPageState extends State<PetDetailPage> {
       ],
       body: switch (widget.state) {
         PetsScreenStatus.loading =>
-          const PetsLoadingView(label: 'Carico il dettaglio pet...'),
+          PetsLoadingView(label: context.l10n.petsDetailLoading),
         PetsScreenStatus.error => PetsErrorView(
-            title: 'Dettaglio pet non disponibile',
-            subtitle: widget.errorMessage,
-            actionLabel: 'Torna alla lista',
+            title: context.l10n.petsDetailErrorTitle,
+            subtitle: widget.errorMessage ?? context.l10n.petsDetailErrorDefault,
+            actionLabel: context.l10n.petsDetailBackToList,
             onRetry: () => Navigator.of(context).maybePop(),
           ),
         PetsScreenStatus.empty => PetsEmptyView(
-            title: 'Nessun pet selezionato',
-            subtitle:
-                'Scegli un profilo dalla lista per vedere dettagli, chat e referti.',
-            actionLabel: 'Torna alla lista',
+            title: context.l10n.petsDetailEmptyTitle,
+            subtitle: context.l10n.petsDetailEmptySubtitle,
+            actionLabel: context.l10n.petsDetailBackToList,
             onAction: () => Navigator.of(context).maybePop(),
           ),
         PetsScreenStatus.success => _PetDetailContent(
@@ -164,7 +165,7 @@ String petHeaderSubtitle(PetProfile pet, {DateTime? now}) {
   final breed = pet.breed.trim();
   final age = pet.isAquarium ? null : petAgeLabel(pet.birthDateLabel, now: now);
   final parts = <String>[
-    pet.species,
+    localizedSpeciesLabel(pet.species),
     if (pet.isAquarium)
       pet.breedLabel
     else if (breed.isNotEmpty && breed != 'Altro')
@@ -281,10 +282,10 @@ class _PetDetailContentState extends State<_PetDetailContent>
           isScrollable: false,
           labelPadding: const EdgeInsets.symmetric(horizontal: 2),
           tabs: [
-            const PetTabLabel('Promemoria'),
-            const PetTabLabel('Chat'),
-            const PetTabLabel('Referti'),
-            if (_showsWalks) const PetTabLabel('Passeggiate'),
+            PetTabLabel(context.l10n.petsDetailTabReminders),
+            PetTabLabel(context.l10n.petsDetailTabChat),
+            PetTabLabel(context.l10n.petsDetailTabRecords),
+            if (_showsWalks) PetTabLabel(context.l10n.petsDetailTabWalks),
           ],
         ),
         const SizedBox(height: AppSpacing.md),
@@ -326,25 +327,18 @@ Future<bool> _confirmDelete(
       actions: [
         TextButton(
           onPressed: () => Navigator.of(dialogContext).pop(false),
-          child: const Text('Annulla'),
+          child: Text(context.l10n.commonCancel),
         ),
         FilledButton(
           style: FilledButton.styleFrom(backgroundColor: AppColors.danger),
           onPressed: () => Navigator.of(dialogContext).pop(true),
-          child: const Text('Elimina'),
+          child: Text(context.l10n.commonDelete),
         ),
       ],
     ),
   );
   return confirmed ?? false;
 }
-
-String _habitatLabel(String species) => switch (species) {
-      'Pesce' => 'Acquario',
-      'Rettili e anfibi' => 'Terrario',
-      'Uccello' => 'Voliera',
-      _ => 'Habitat',
-    };
 
 /// A single-line summary, tap to see the full habitat details — kept to
 /// one line so it doesn't eat into the space the tabs below need.
@@ -354,7 +348,7 @@ class _HabitatSummaryRow extends StatelessWidget {
   final PetProfile pet;
   final HabitatDetails habitat;
 
-  String _summary() {
+  String _summary(BuildContext context) {
     final system = UnitSettingsStore.instance.system;
     final parts = <String>[
       if (habitat.hasDimensions) habitat.dimensionsLabelIn(system),
@@ -364,7 +358,7 @@ class _HabitatSummaryRow extends StatelessWidget {
             : '${habitat.volumeLiters} L',
       if (habitat.temperatureLabel.isNotEmpty) temperatureLabelIn(habitat.temperatureLabel, system),
     ];
-    return parts.isEmpty ? 'Tocca per i dettagli' : parts.join(' · ');
+    return parts.isEmpty ? context.l10n.petsDetailHabitatTapForDetails : parts.join(' · ');
   }
 
   void _openDetails(BuildContext context) {
@@ -382,18 +376,21 @@ class _HabitatSummaryRow extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(_habitatLabel(pet.species), style: AppTextStyles.title),
+              Text(petHabitatLabel(pet.species, sheetContext.l10n), style: AppTextStyles.title),
               const SizedBox(height: AppSpacing.md),
               if (habitat.hasDimensions)
-                _HabitatDetailRow('Dimensioni', habitat.dimensionsLabelIn(system)),
+                _HabitatDetailRow(
+                    sheetContext.l10n.petsDetailHabitatDimensions, habitat.dimensionsLabelIn(system)),
               if (habitat.volumeLiters != null)
-                _HabitatDetailRow('Volume', formatVolumeIn(habitat.volumeLiters!, system)),
+                _HabitatDetailRow(sheetContext.l10n.petsDetailHabitatVolume,
+                    formatVolumeIn(habitat.volumeLiters!, system)),
               if (habitat.temperatureLabel.isNotEmpty)
-                _HabitatDetailRow('Temperatura', temperatureLabelIn(habitat.temperatureLabel, system)),
+                _HabitatDetailRow(sheetContext.l10n.petsFormHabitatTemperature,
+                    temperatureLabelIn(habitat.temperatureLabel, system)),
               if (habitat.substrate.isNotEmpty)
-                _HabitatDetailRow('Substrato', habitat.substrate),
+                _HabitatDetailRow(sheetContext.l10n.petsFormHabitatSubstrate, habitat.substrate),
               if (habitat.notes.isNotEmpty)
-                _HabitatDetailRow('Attrezzatura', habitat.notes),
+                _HabitatDetailRow(sheetContext.l10n.petsFormHabitatEquipment, habitat.notes),
             ],
           ),
         ),
@@ -424,7 +421,7 @@ class _HabitatSummaryRow extends StatelessWidget {
               const SizedBox(width: AppSpacing.sm),
               Expanded(
                 child: Text(
-                  '${_habitatLabel(pet.species)} · ${_summary()}',
+                  '${petHabitatLabel(pet.species, context.l10n)} · ${_summary(context)}',
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: AppTextStyles.caption.copyWith(
@@ -483,7 +480,7 @@ class _AquariumStockCard extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisSize: MainAxisSize.min,
         children: [
-          Text('Popolazione', style: AppTextStyles.caption),
+          Text(context.l10n.petsDetailPopulation, style: AppTextStyles.caption),
           const SizedBox(height: AppSpacing.sm),
           // Capped so a big population can't push the tabs below off
           // screen — scrolls internally instead once there are more than
@@ -577,7 +574,7 @@ class _RemindersTabState extends State<_RemindersTab> {
           child: FilledButton.icon(
             onPressed: _openCreate,
             icon: const Icon(Icons.add_rounded, size: 18),
-            label: const Text('Nuovo promemoria'),
+            label: Text(context.l10n.petsDetailRemindersNew),
           ),
         ),
         const SizedBox(height: AppSpacing.md),
@@ -599,7 +596,7 @@ class _RemindersTabState extends State<_RemindersTab> {
                 if (reminders.isEmpty) {
                   return _EmptyTabState(
                     icon: Icons.notifications_none_rounded,
-                    text: 'Nessun promemoria ancora per ${widget.pet.name}.',
+                    text: context.l10n.petsDetailRemindersEmpty(widget.pet.name),
                   );
                 }
 
@@ -686,7 +683,7 @@ class _ChatTabState extends State<_ChatTab> {
               child: FilledButton.icon(
                 onPressed: () => _startConversation(context),
                 icon: const Icon(Icons.add_comment_outlined, size: 18),
-                label: const Text('Nuova chat'),
+                label: Text(context.l10n.petsDetailChatNew),
               ),
             ),
             const SizedBox(height: AppSpacing.md),
@@ -694,8 +691,7 @@ class _ChatTabState extends State<_ChatTab> {
               child: conversations.isEmpty
                   ? _EmptyTabState(
                       icon: Icons.chat_bubble_outline_rounded,
-                      text:
-                          'Nessuna conversazione ancora per ${widget.pet.name}.',
+                      text: context.l10n.petsDetailChatEmpty(widget.pet.name),
                     )
                   : ListView.separated(
                       itemCount: conversations.length,
@@ -734,8 +730,7 @@ class _ChatTabState extends State<_ChatTab> {
         if (!mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-              content: Text(
-                  'Chat rimossa qui, ma non sul server: ${error.message}')),
+              content: Text(context.l10n.petsDetailChatDeleteFailed(error.message))),
         );
       },
     );
@@ -745,8 +740,8 @@ class _ChatTabState extends State<_ChatTab> {
       BuildContext context, ChatConversationSummary conversation) {
     return _confirmDelete(
       context,
-      title: 'Eliminare questa chat?',
-      message: '"${conversation.title}" verrà eliminata definitivamente.',
+      title: context.l10n.petsDetailChatDeleteTitle,
+      message: context.l10n.petsDetailChatDeleteMessage(conversation.title),
     );
   }
 
@@ -787,15 +782,17 @@ class _ChatTabState extends State<_ChatTab> {
         backgroundColor: AppColors.surface,
         shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(AppRadii.large)),
-        title: const Text('Limite chat raggiunto'),
+        title: Text(context.l10n.petsDetailChatLimitTitle),
         content: Text(
-          'Puoi avere al massimo ${ChatDemoStore.maxConversationsPerPet} conversazioni attive per '
-          '${widget.pet.name}. Elimina una chat esistente per aprirne una nuova.',
+          context.l10n.petsDetailChatLimitMessage(
+            ChatDemoStore.maxConversationsPerPet,
+            widget.pet.name,
+          ),
         ),
         actions: [
           FilledButton(
             onPressed: () => Navigator.of(dialogContext).pop(),
-            child: const Text('Ho capito'),
+            child: Text(context.l10n.petsDetailChatLimitOk),
           ),
         ],
       ),
@@ -933,10 +930,10 @@ class _RecordsTabState extends State<_RecordsTab> {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text('Invia file', style: AppTextStyles.title),
+              Text(sheetContext.l10n.petsDetailRecordsSendTitle, style: AppTextStyles.title),
               const SizedBox(height: AppSpacing.xs),
               Text(
-                'Scegli un documento da inviare via email, WhatsApp e altro.',
+                sheetContext.l10n.petsDetailRecordsSendSubtitle,
                 style: AppTextStyles.bodySmall,
               ),
               const SizedBox(height: AppSpacing.md),
@@ -961,6 +958,7 @@ class _RecordsTabState extends State<_RecordsTab> {
   }
 
   Future<void> _shareRecord(MedicalRecordEntry record) async {
+    final l10n = context.l10n;
     try {
       var cached = MedicalRecordFileCache.instance.get(record.id);
       if (cached == null && record.attachmentId != null) {
@@ -993,7 +991,11 @@ class _RecordsTabState extends State<_RecordsTab> {
         // something uploaded this session) — share a text summary instead
         // of pretending there's a file attached.
         await Share.share(
-          '📄 ${record.title}\n${record.detailSource} · ${record.createdAt}\n\nCondiviso da VetApp',
+          l10n.petsDetailRecordShareText(
+            record.title,
+            record.detailSource,
+            record.createdAt,
+          ),
         );
       }
     } catch (_) {
@@ -1002,9 +1004,7 @@ class _RecordsTabState extends State<_RecordsTab> {
       // than letting the exception surface as a broken interaction.
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-            content:
-                Text('Condivisione non disponibile su questo dispositivo.')),
+        SnackBar(content: Text(context.l10n.petsDetailShareUnavailable)),
       );
     }
   }
@@ -1038,7 +1038,7 @@ class _RecordsTabState extends State<_RecordsTab> {
                   child: OutlinedButton.icon(
                     onPressed: _openUpload,
                     icon: const Icon(Icons.upload_file_outlined, size: 18),
-                    label: const Text('Carica file'),
+                    label: Text(context.l10n.petsDetailRecordsUpload),
                   ),
                 ),
                 const SizedBox(width: AppSpacing.sm),
@@ -1046,7 +1046,7 @@ class _RecordsTabState extends State<_RecordsTab> {
                   child: FilledButton.icon(
                     onPressed: records.isEmpty ? null : () => _openSendSheet(records),
                     icon: const Icon(Icons.ios_share_rounded, size: 18),
-                    label: const Text('Invia'),
+                    label: Text(context.l10n.petsDetailRecordsSend),
                   ),
                 ),
               ],
@@ -1066,7 +1066,7 @@ class _RecordsTabState extends State<_RecordsTab> {
             if (records.isEmpty)
               _EmptyTabState(
                 icon: Icons.folder_open_outlined,
-                text: 'Nessun documento ancora per ${widget.pet.name}.',
+                text: context.l10n.petsDetailRecordsEmpty(widget.pet.name),
               )
             else
               for (final record in records) ...[
@@ -1225,7 +1225,7 @@ class _WalksTabState extends State<_WalksTab> {
                 ),
                 label: activeForThisPet
                     ? _WalkStatusLabel(walk: controller.walk!)
-                    : const Text('Avvia passeggiata'),
+                    : Text(context.l10n.petsDetailWalksStart),
               ),
             );
           },
@@ -1236,7 +1236,7 @@ class _WalksTabState extends State<_WalksTab> {
           child: OutlinedButton.icon(
             onPressed: _showBadges,
             icon: const Icon(Icons.emoji_events_outlined, size: 18),
-            label: const Text('Badge'),
+            label: Text(context.l10n.petsDetailWalksBadges),
           ),
         ),
         const SizedBox(height: AppSpacing.md),
@@ -1253,7 +1253,7 @@ class _WalksTabState extends State<_WalksTab> {
               if (walks.isEmpty) {
                 return _EmptyTabState(
                   icon: Icons.directions_walk_outlined,
-                  text: 'Nessuna passeggiata ancora per ${widget.pet.name}.',
+                  text: context.l10n.petsDetailWalksEmpty(widget.pet.name),
                 );
               }
 
@@ -1261,7 +1261,7 @@ class _WalksTabState extends State<_WalksTab> {
               return ListView(
                 children: [
                   if (history.longestDistance != null || history.longestDuration != null) ...[
-                    const _WalksSectionLabel('Record 🏆'),
+                    _WalksSectionLabel(context.l10n.petsDetailWalksRecords),
                     if (history.longestDistance != null)
                       _WalkCard(
                         key: ValueKey('record-distance-${history.longestDistance!.id}'),
@@ -1270,8 +1270,8 @@ class _WalksTabState extends State<_WalksTab> {
                         history: _history,
                         photoPoints: _photoPointsFor(history.longestDistance!),
                         recordLabel: history.longestDuration?.id == history.longestDistance!.id
-                            ? 'Più lunga · Più duratura'
-                            : 'Più lunga',
+                            ? context.l10n.petsDetailWalkLongestAndDuration
+                            : context.l10n.petsDetailWalkLongest,
                       ),
                     if (history.longestDuration != null &&
                         history.longestDuration!.id != history.longestDistance?.id) ...[
@@ -1282,13 +1282,13 @@ class _WalksTabState extends State<_WalksTab> {
                         petName: widget.pet.name,
                         history: _history,
                         photoPoints: _photoPointsFor(history.longestDuration!),
-                        recordLabel: 'Più duratura',
+                        recordLabel: context.l10n.petsDetailWalkLongestDuration,
                       ),
                     ],
                     const SizedBox(height: AppSpacing.md),
                   ],
                   if (history.favorites.isNotEmpty) ...[
-                    const _WalksSectionLabel('Preferite ⭐'),
+                    _WalksSectionLabel(context.l10n.petsDetailWalksFavorites),
                     for (final walk in history.favorites) ...[
                       _WalkCard(
                           key: ValueKey('favorite-${walk.id}'),
@@ -1301,7 +1301,7 @@ class _WalksTabState extends State<_WalksTab> {
                     const SizedBox(height: AppSpacing.sm),
                   ],
                   if (history.recent.isNotEmpty) ...[
-                    const _WalksSectionLabel('Recenti'),
+                    _WalksSectionLabel(context.l10n.petsDetailWalksRecent),
                     for (final walk in history.recent) ...[
                       _WalkCard(
                           key: ValueKey('recent-${walk.id}'),
@@ -1377,9 +1377,12 @@ class _WalkStatusLabelState extends State<_WalkStatusLabel> {
   @override
   Widget build(BuildContext context) {
     final activeSeconds = walkActiveDurationSeconds(widget.walk);
-    final prefix = widget.walk.isPaused ? 'In pausa' : 'Passeggiata in corso';
+    final distance = walkDistanceLabel(widget.walk.distanceMeters);
+    final elapsed = walkElapsedLabel(activeSeconds);
     return Text(
-      '$prefix · ${walkDistanceLabel(widget.walk.distanceMeters)} · ${walkElapsedLabel(activeSeconds)}',
+      widget.walk.isPaused
+          ? context.l10n.petsDetailWalkStatusPaused(distance, elapsed)
+          : context.l10n.petsDetailWalkStatusActive(distance, elapsed),
       overflow: TextOverflow.ellipsis,
     );
   }
@@ -1451,19 +1454,16 @@ class _WalkCard extends StatelessWidget {
       final confirmed = await showDialog<bool>(
         context: context,
         builder: (context) => AlertDialog(
-          title: const Text('Togliere dai preferiti?'),
-          content: const Text(
-            'Se non è anche il record o tra le ultime 3 passeggiate, potrà perdere la mappa '
-            'alla prossima pulizia automatica.',
-          ),
+          title: Text(context.l10n.petsDetailWalkUnfavoriteTitle),
+          content: Text(context.l10n.petsDetailWalkUnfavoriteMessage),
           actions: [
             TextButton(
               onPressed: () => Navigator.of(context).pop(false),
-              child: const Text('Annulla'),
+              child: Text(context.l10n.commonCancel),
             ),
             FilledButton(
               onPressed: () => Navigator.of(context).pop(true),
-              child: const Text('Togli dai preferiti'),
+              child: Text(context.l10n.petsDetailWalkUnfavoriteConfirm),
             ),
           ],
         ),
@@ -1478,20 +1478,22 @@ class _WalkCard extends StatelessWidget {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Eliminare questa passeggiata?'),
+        title: Text(context.l10n.petsDetailWalkDeleteTitle),
         content: Text(
-          'La passeggiata del ${walkDateLabel(walk.startedAt)} '
-          '(${walkDistanceLabel(walk.distanceMeters)}) verrà eliminata definitivamente.',
+          context.l10n.petsDetailWalkDeleteMessage(
+            walkDateLabel(walk.startedAt),
+            walkDistanceLabel(walk.distanceMeters),
+          ),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(false),
-            child: const Text('Annulla'),
+            child: Text(context.l10n.commonCancel),
           ),
           FilledButton(
             style: FilledButton.styleFrom(backgroundColor: AppColors.danger),
             onPressed: () => Navigator.of(context).pop(true),
-            child: const Text('Elimina'),
+            child: Text(context.l10n.commonDelete),
           ),
         ],
       ),
@@ -1514,7 +1516,8 @@ class _WalkCard extends StatelessWidget {
     final subtitleParts = [
       walkDistanceLabel(walk.distanceMeters),
       if (walk.durationSeconds != null) walkDurationLabel(walk.durationSeconds),
-      if (walk.stepCountEstimate != null) '~${walk.stepCountEstimate} passi',
+      if (walk.stepCountEstimate != null)
+        context.l10n.petsDetailWalkSteps(walk.stepCountEstimate!),
     ];
     return Material(
       color: AppColors.surface,
@@ -1769,7 +1772,7 @@ class _UnsyncedPetBannerState extends State<_UnsyncedPetBanner> {
     setState(() => _retrying = false);
     if (!ok) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Ancora nessun collegamento al server. Riprova più tardi.')),
+        SnackBar(content: Text(context.l10n.petsDetailUnsyncedRetryFailed)),
       );
     }
   }
@@ -1787,14 +1790,14 @@ class _UnsyncedPetBannerState extends State<_UnsyncedPetBanner> {
         children: [
           Expanded(
             child: Text(
-              'Non sincronizzato: le modifiche sono solo su questo telefono.',
+              context.l10n.petsDetailUnsyncedBanner,
               style: AppTextStyles.caption.copyWith(color: AppColors.danger, fontWeight: FontWeight.w700),
             ),
           ),
           const SizedBox(width: AppSpacing.sm),
           _retrying
               ? const PetLoader.small()
-              : TextButton(onPressed: _retry, child: const Text('Riprova')),
+              : TextButton(onPressed: _retry, child: Text(context.l10n.commonRetry)),
         ],
       ),
     );
@@ -1821,15 +1824,15 @@ class _SelectionBar extends StatelessWidget {
         children: [
           Expanded(
             child: Text(
-              '$count selezionat${count == 1 ? 'o' : 'i'}',
+              context.l10n.petsDetailSelectedCount(count),
               style: AppTextStyles.bodySmall.copyWith(fontWeight: FontWeight.w700),
             ),
           ),
-          TextButton(onPressed: onCancel, child: const Text('Annulla')),
+          TextButton(onPressed: onCancel, child: Text(context.l10n.commonCancel)),
           FilledButton.icon(
             onPressed: onSend,
             icon: const Icon(Icons.ios_share_rounded, size: 18),
-            label: const Text('Invia'),
+            label: Text(context.l10n.petsDetailRecordsSend),
           ),
         ],
       ),
@@ -1850,12 +1853,12 @@ class _RecordsLoadError extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         children: [
           Text(
-            'Non riesco a leggere i referti. Controlla la connessione e riprova.',
+            context.l10n.petsDetailRecordsLoadError,
             textAlign: TextAlign.center,
             style: AppTextStyles.bodySmall,
           ),
           const SizedBox(height: AppSpacing.sm),
-          TextButton(onPressed: onRetry, child: const Text('Riprova')),
+          TextButton(onPressed: onRetry, child: Text(context.l10n.commonRetry)),
         ],
       ),
     );

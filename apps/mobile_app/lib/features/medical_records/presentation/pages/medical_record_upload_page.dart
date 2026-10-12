@@ -1,6 +1,8 @@
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 
+import '../../../../l10n/date_formats.dart';
+import '../../../../l10n/l10n.dart';
 import '../../../../shared/files/attachment_media_type.dart';
 import '../../../../shared/widgets/pet_loader.dart';
 
@@ -144,6 +146,7 @@ class _MedicalRecordUploadPageState extends State<MedicalRecordUploadPage> {
     if (picked == null) return;
     setState(() => _saving = true);
 
+    final l10n = context.l10n;
     final now = DateTime.now();
     final id = 'upload-${now.microsecondsSinceEpoch}';
     final bytes = picked.bytes;
@@ -153,22 +156,28 @@ class _MedicalRecordUploadPageState extends State<MedicalRecordUploadPage> {
       petName: widget.petName,
       title: picked.name,
       subtitle: '${_extensionLabel(picked.extension)} · ${_formatSize(picked.size)}',
+      // These texts are stored with the record, so they are written in the
+      // language the owner is using at upload time.
       meta: uploadFailed
-          ? 'File non caricato sul server'
+          ? l10n.medicalRecordMetaNotUploaded
           : analysisFailed
-              ? 'File salvato, lettura automatica non riuscita'
-              : 'Caricato adesso da te',
-      badge: uploadFailed ? 'Non caricato' : 'Nuovo',
-      detailSource: uploadFailed ? 'Solo su questo telefono' : 'Caricato da te',
+              ? l10n.medicalRecordMetaAnalysisFailed
+              : l10n.medicalRecordMetaUploadedNow,
+      badge: uploadFailed ? l10n.medicalRecordBadgeNotUploaded : l10n.medicalRecordBadgeNew,
+      detailSource:
+          uploadFailed ? l10n.medicalRecordSourceLocalOnly : l10n.medicalRecordSourceUploadedByYou,
       createdAt: _formatDate(now),
       attachmentId: attachmentId,
       timeline: [
-        MedicalRecordTimelineEntry(label: 'Importato', value: _formatDate(now)),
+        MedicalRecordTimelineEntry(label: l10n.medicalTimelineImported, value: _formatDate(now)),
         MedicalRecordTimelineEntry(
-          label: 'Caricamento',
-          value: uploadFailed ? 'Non riuscito' : 'Completato',
+          label: l10n.medicalTimelineUpload,
+          value: uploadFailed ? l10n.medicalTimelineFailed : l10n.medicalTimelineCompleted,
         ),
-        const MedicalRecordTimelineEntry(label: "Pronto per l'invio", value: 'Disponibile'),
+        MedicalRecordTimelineEntry(
+          label: l10n.medicalTimelineReadyToSend,
+          value: l10n.medicalTimelineAvailable,
+        ),
       ],
     );
 
@@ -202,24 +211,24 @@ class _MedicalRecordUploadPageState extends State<MedicalRecordUploadPage> {
     final choice = await showDialog<_UploadFailedChoice>(
       context: context,
       builder: (dialogContext) => AlertDialog(
-        title: const Text('Il file non è stato caricato'),
+        title: Text(dialogContext.l10n.medicalUploadFailedTitle),
         content: Text(
-          '${reason ?? 'Controlla la connessione e riprova.'} '
-          'In alternativa puoi salvare il referto solo su questo telefono: sarà marcato '
-          'come «Non caricato» e non sarà disponibile sugli altri dispositivi.',
+          dialogContext.l10n.medicalUploadFailedBody(
+            reason ?? dialogContext.l10n.medicalUploadFailedDefaultReason,
+          ),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(dialogContext).pop(_UploadFailedChoice.cancel),
-            child: const Text('Annulla'),
+            child: Text(dialogContext.l10n.commonCancel),
           ),
           TextButton(
             onPressed: () => Navigator.of(dialogContext).pop(_UploadFailedChoice.saveLocalOnly),
-            child: const Text('Salva solo sul telefono'),
+            child: Text(dialogContext.l10n.medicalUploadSaveLocalOnly),
           ),
           FilledButton(
             onPressed: () => Navigator.of(dialogContext).pop(_UploadFailedChoice.retry),
-            child: const Text('Riprova'),
+            child: Text(dialogContext.l10n.commonRetry),
           ),
         ],
       ),
@@ -241,7 +250,7 @@ class _MedicalRecordUploadPageState extends State<MedicalRecordUploadPage> {
         backgroundColor: AppColors.background,
         elevation: 0,
         foregroundColor: AppColors.text,
-        title: const Text('Carica documento'),
+        title: Text(context.l10n.medicalUploadTitle),
       ),
       body: SafeArea(
         child: Padding(
@@ -255,7 +264,7 @@ class _MedicalRecordUploadPageState extends State<MedicalRecordUploadPage> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                'Per ${widget.petName} · PDF, JPG o PNG',
+                context.l10n.medicalUploadForPet(widget.petName),
                 style: AppTextStyles.bodySmall,
               ),
               const SizedBox(height: AppSpacing.xl),
@@ -274,7 +283,7 @@ class _MedicalRecordUploadPageState extends State<MedicalRecordUploadPage> {
                           height: 20,
                           child: PetLoader.small(color: AppColors.onPrimary),
                         )
-                      : const Text('Carica'),
+                      : Text(context.l10n.medicalUploadAction),
                 ),
               ),
             ],
@@ -317,9 +326,9 @@ class _PickArea extends StatelessWidget {
                 child: const Icon(Icons.upload_file_outlined, size: 26, color: AppColors.primary),
               ),
               const SizedBox(height: AppSpacing.lg),
-              Text('Tocca per scegliere un file', style: AppTextStyles.title.copyWith(fontSize: 16)),
+              Text(context.l10n.medicalUploadPickPrompt, style: AppTextStyles.title.copyWith(fontSize: 16)),
               const SizedBox(height: AppSpacing.xs),
-              Text('PDF, JPG o PNG dal tuo dispositivo', style: AppTextStyles.bodySmall),
+              Text(context.l10n.medicalUploadPickHint, style: AppTextStyles.bodySmall),
             ],
           ),
         ),
@@ -374,7 +383,7 @@ class _PickedFileCard extends StatelessWidget {
               ],
             ),
           ),
-          TextButton(onPressed: onChangeFile, child: const Text('Cambia')),
+          TextButton(onPressed: onChangeFile, child: Text(context.l10n.medicalUploadChange)),
         ],
       ),
     );
@@ -392,10 +401,7 @@ String _formatSize(int bytes) {
 }
 
 String _formatDate(DateTime date) {
-  const months = [
-    'gen', 'feb', 'mar', 'apr', 'mag', 'giu',
-    'lug', 'ago', 'set', 'ott', 'nov', 'dic',
-  ];
+  final months = appShortMonths();
   final hour = date.hour.toString().padLeft(2, '0');
   final minute = date.minute.toString().padLeft(2, '0');
   return '${date.day} ${months[date.month - 1]} ${date.year}, $hour:$minute';

@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:permission_handler/permission_handler.dart';
 
+import '../../../l10n/l10n.dart';
 import '../domain/notification_plan.dart';
 import '../domain/notification_time_zone.dart';
 
@@ -108,21 +109,25 @@ class FlutterLocalNotificationsGateway implements LocalNotificationsGateway {
 
   /// One Android channel per category, so the owner can also silence one
   /// kind from the phone's own settings.
-  static const _channels = {
-    NotificationCategory.reminders: (
-      id: 'reminders',
-      name: 'Promemoria',
-      description: 'Visite, vaccini e altri promemoria',
-    ),
-    NotificationCategory.medicines: (
-      id: 'medicines',
-      name: 'Farmaci',
-      description: 'Orari dei farmaci',
-    ),
-    NotificationCategory.birthdays: (
-      id: 'birthdays',
-      name: 'Compleanni',
-      description: 'Compleanni degli animali',
-    ),
-  };
+  static Map<NotificationCategory, ({String id, String name, String description})>
+      get _channels {
+    final l10n = appL10n;
+    return {
+      NotificationCategory.reminders: (
+        id: 'reminders',
+        name: l10n.notificationsChannelRemindersName,
+        description: l10n.notificationsChannelRemindersDescription,
+      ),
+      NotificationCategory.medicines: (
+        id: 'medicines',
+        name: l10n.notificationsChannelMedicinesName,
+        description: l10n.notificationsCategoryMedicines,
+      ),
+      NotificationCategory.birthdays: (
+        id: 'birthdays',
+        name: l10n.notificationsCategoryBirthdays,
+        description: l10n.notificationsChannelBirthdaysDescription,
+      ),
+    };
+  }
 }

@@ -5,6 +5,7 @@ import '../../../../shared/widgets/pet_loader.dart';
 
 import '../../../../app/router/app_router.dart';
 import '../../../../design_system/tokens/app_spacing.dart';
+import '../../../../l10n/l10n.dart';
 import '../../../billing/data/subscription_gate.dart';
 import '../../data/auth_repository_factory.dart';
 import '../../domain/auth_error_messages.dart';
@@ -51,8 +52,8 @@ class _SetNewPasswordPageState extends State<SetNewPasswordPage> {
     setState(() {
       _isLoading = true;
       _status = AuthBannerStatus.loading;
-      _title = 'Aggiornamento in corso';
-      _message = 'Sto salvando la nuova password.';
+      _title = context.l10n.authSetPasswordLoadingTitle;
+      _message = context.l10n.authSetPasswordLoadingMessage;
     });
 
     final result = await _authRepository.updatePassword(
@@ -80,7 +81,7 @@ class _SetNewPasswordPageState extends State<SetNewPasswordPage> {
         setState(() {
           _isLoading = false;
           _status = AuthBannerStatus.error;
-          _title = 'Aggiornamento non riuscito';
+          _title = context.l10n.authSetPasswordFailureTitle;
           _message = presented.message;
         });
       },
@@ -90,8 +91,8 @@ class _SetNewPasswordPageState extends State<SetNewPasswordPage> {
   @override
   Widget build(BuildContext context) {
     return AuthScreenScaffold(
-      title: 'Imposta una nuova password.',
-      subtitle: 'Scegli una nuova password per il tuo account.',
+      title: context.l10n.authSetPasswordTitle,
+      subtitle: context.l10n.authSetPasswordSubtitle,
       child: Form(
         key: _formKey,
         child: Column(
@@ -101,26 +102,26 @@ class _SetNewPasswordPageState extends State<SetNewPasswordPage> {
               AuthStateBanner(status: _status!, title: _title, message: _message),
             AuthInputField(
               controller: _passwordController,
-              label: 'Nuova password',
-              hintText: 'Almeno 6 caratteri',
+              label: context.l10n.authNewPasswordLabel,
+              hintText: context.l10n.authPasswordHint,
               obscureText: true,
               autofillHints: const [AutofillHints.newPassword],
               validator: (value) {
                 final text = value ?? '';
-                if (text.isEmpty) return 'Inserisci una password.';
-                if (text.length < 6) return 'Minimo 6 caratteri.';
+                if (text.isEmpty) return context.l10n.authPasswordRequiredNew;
+                if (text.length < 6) return context.l10n.authPasswordMinLength;
                 return null;
               },
             ),
             const SizedBox(height: AppSpacing.md),
             AuthInputField(
               controller: _confirmController,
-              label: 'Conferma password',
-              hintText: 'Ripeti la password',
+              label: context.l10n.authConfirmPasswordLabel,
+              hintText: context.l10n.authConfirmPasswordHint,
               obscureText: true,
               autofillHints: const [AutofillHints.newPassword],
               validator: (value) {
-                if (value != _passwordController.text) return 'Le password non coincidono.';
+                if (value != _passwordController.text) return context.l10n.authPasswordsMismatch;
                 return null;
               },
             ),
@@ -135,7 +136,7 @@ class _SetNewPasswordPageState extends State<SetNewPasswordPage> {
                         height: 20,
                         child: PetLoader.small(),
                       )
-                    : const Text('Salva nuova password'),
+                    : Text(context.l10n.authSetPasswordSaveButton),
               ),
             ),
           ],

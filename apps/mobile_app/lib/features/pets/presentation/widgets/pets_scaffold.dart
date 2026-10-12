@@ -4,6 +4,7 @@ import '../../../../design_system/tokens/app_colors.dart';
 import '../../../../design_system/tokens/app_radii.dart';
 import '../../../../design_system/tokens/app_spacing.dart';
 import '../../../../design_system/tokens/app_text_styles.dart';
+import '../../../../l10n/l10n.dart';
 
 class PetsScaffold extends StatelessWidget {
   const PetsScaffold({
@@ -66,7 +67,7 @@ class PetsScaffold extends StatelessWidget {
                       ),
                       const SizedBox(width: AppSpacing.sm),
                     ],
-                    badge ?? _defaultBadge(),
+                    badge ?? _defaultBadge(context),
                     const Spacer(),
                     if (actions != null) ...actions!,
                   ],
@@ -87,21 +88,21 @@ class PetsScaffold extends StatelessWidget {
     );
   }
 
-  Widget _defaultBadge() {
+  Widget _defaultBadge(BuildContext context) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
       decoration: BoxDecoration(
         color: AppColors.primary,
         borderRadius: BorderRadius.circular(16),
       ),
-      child: const Row(
+      child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(Icons.pets, size: 14, color: AppColors.accent),
-          SizedBox(width: AppSpacing.sm),
+          const Icon(Icons.pets, size: 14, color: AppColors.accent),
+          const SizedBox(width: AppSpacing.sm),
           Text(
-            'Pet',
-            style: TextStyle(
+            context.l10n.petsScaffoldBadge,
+            style: const TextStyle(
               color: AppColors.onPrimary,
               fontSize: 12,
               fontWeight: FontWeight.w800,

@@ -1,11 +1,9 @@
-import 'package:intl/intl.dart';
-
+import '../../../l10n/date_formats.dart';
+import '../../../l10n/l10n.dart';
 import '../../settings/data/unit_settings_store.dart';
 import '../../settings/domain/unit_conversion.dart';
 
-final _dateFormat = DateFormat('d MMM y', 'it_IT');
-
-String walkDateLabel(DateTime startedAt) => _dateFormat.format(startedAt);
+String walkDateLabel(DateTime startedAt) => formatAppDate(startedAt, 'd MMM y');
 
 String walkDistanceLabel(double distanceMeters) =>
     formatDistanceIn(distanceMeters, UnitSettingsStore.instance.system);
@@ -13,10 +11,10 @@ String walkDistanceLabel(double distanceMeters) =>
 String walkDurationLabel(int? durationSeconds) {
   if (durationSeconds == null) return '';
   final minutes = durationSeconds ~/ 60;
-  if (minutes < 60) return '$minutes min';
+  if (minutes < 60) return appL10n.walksDurationMinutes(minutes);
   final hours = minutes ~/ 60;
   final remainingMinutes = minutes % 60;
-  return '${hours}h ${remainingMinutes}min';
+  return appL10n.walksDurationHoursMinutes(hours, remainingMinutes);
 }
 
 /// Ticking mm:ss (or h:mm:ss past an hour) for the live walk in progress.
@@ -39,34 +37,35 @@ String walkElapsedLabel(int elapsedSeconds) {
 }
 
 /// Turns a raw badge id (e.g. "distance_50km_pet_<id>") into a short
-/// Italian label. The caller already scopes badges to one pet, so the
+/// label. The caller already scopes badges to one pet, so the
 /// trailing pet id is never shown.
 String badgeLabel(String badgeId) {
+  final l10n = appL10n;
   if (badgeId.startsWith('first_walk_pet_')) {
-    return 'Prima passeggiata 🐾';
+    return l10n.walksBadgeLabelFirstWalk;
   }
   final distanceMatch = RegExp(r'^distance_(\d+)km_pet_').firstMatch(badgeId);
   if (distanceMatch != null) {
-    return '${distanceMatch.group(1)} km percorsi 🏃';
+    return l10n.walksBadgeLabelDistance(distanceMatch.group(1)!);
   }
   final walksMatch = RegExp(r'^walks_(\d+)_pet_').firstMatch(badgeId);
   if (walksMatch != null) {
-    return '${walksMatch.group(1)} uscite 🎖️';
+    return l10n.walksBadgeLabelWalkCount(walksMatch.group(1)!);
   }
   if (badgeId.startsWith('duration_30min_pet_')) {
-    return '30 minuti in una passeggiata ⏱️';
+    return l10n.walksBadgeLabel30Min;
   }
   if (badgeId.startsWith('duration_1h_pet_')) {
-    return '1 ora in una passeggiata ⏱️';
+    return l10n.walksBadgeLabel1Hour;
   }
   if (badgeId.startsWith('streak_7days_pet_')) {
-    return '7 giorni di fila 🔥';
+    return l10n.walksBadgeLabelStreak;
   }
   if (badgeId.startsWith('dawn_walk_pet_')) {
-    return 'Passeggiata all\'alba 🌅';
+    return l10n.walksBadgeLabelDawn;
   }
   if (badgeId.startsWith('night_walk_pet_')) {
-    return 'Passeggiata notturna 🌙';
+    return l10n.walksBadgeLabelNight;
   }
   return badgeId;
 }

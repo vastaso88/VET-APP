@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Response
+from fastapi import APIRouter, Header, Response
 
 from apps.api.dependencies.container import get_container
 from apps.api.schemas.conversations import EditChatMessageRequest, RenameConversationRequest
@@ -8,6 +8,7 @@ from packages.core.application.services.list_conversations import ListConversati
 from packages.core.application.services.rename_conversation import RenameConversationInput
 from packages.core.application.services.send_chat_message import owner_names_for_anonymization
 from packages.core.application.services.vet_summary import VetSummaryInput
+from packages.core.domain.common.language import resolve_language
 
 router = APIRouter(prefix="/conversations", tags=["conversations"])
 
@@ -39,7 +40,10 @@ def rename_conversation(
 
 @router.put("/{conversation_id}/messages/{message_id}")
 def edit_message(
-    conversation_id: str, message_id: str, request: EditChatMessageRequest
+    conversation_id: str,
+    message_id: str,
+    request: EditChatMessageRequest,
+    accept_language: str | None = Header(default=None),
 ) -> dict[str, object]:
     """Replaces one of the owner's messages and everything after it, then
     answers again. Same response body as POST /chat."""
@@ -53,6 +57,7 @@ def edit_message(
             user_message=request.user_message,
             client_message_id=request.client_message_id,
             owner_display_name=user.display_name,
+            language=resolve_language(request.language, accept_language),
         )
     )
     return result.model_dump()

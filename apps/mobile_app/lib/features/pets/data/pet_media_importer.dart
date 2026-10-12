@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:video_player/video_player.dart';
 
+import '../../../l10n/l10n.dart';
 import '../domain/pet_video_rules.dart';
 import '../domain/video_metadata_scrubber.dart';
 import 'pet_photo_repository.dart';
@@ -50,15 +51,28 @@ class PetMediaImportResult {
 
   /// "Caricati: 2 foto e 1 video" plus the first problem, ready for a SnackBar.
   String summary() {
+    final l10n = appL10n;
     final parts = <String>[
-      if (photos > 0) '$photos foto',
-      if (videos > 0) '$videos video',
+      if (photos > 0) l10n.petsMediaCountPhotos(photos),
+      if (videos > 0) l10n.petsMediaCountVideos(videos),
     ];
-    final done = parts.isEmpty ? null : 'Caricati: ${parts.join(' e ')}';
-    if (cancelled) return done == null ? 'Caricamento annullato.' : 'Caricamento annullato. $done.';
-    if (problems.isEmpty) return done ?? 'Niente da aggiungere.';
-    final extra = problems.length > 1 ? ' (altri ${problems.length - 1} non aggiunti)' : '';
-    return done == null ? '${problems.first}$extra' : '$done. ${problems.first}$extra';
+    final String? done;
+    if (parts.isEmpty) {
+      done = null;
+    } else {
+      final list = parts.length == 2 ? l10n.petsMediaImportJoin(parts[0], parts[1]) : parts.first;
+      done = l10n.petsMediaImportDone(list);
+    }
+    if (cancelled) {
+      return done == null
+          ? l10n.petsMediaImportCancelled
+          : l10n.petsMediaImportCancelledWith(done);
+    }
+    if (problems.isEmpty) return done ?? l10n.petsMediaImportNothingToAdd;
+    final problem = problems.length > 1
+        ? l10n.petsMediaImportProblemMore(problems.first, problems.length - 1)
+        : problems.first;
+    return done == null ? problem : l10n.petsMediaImportDoneWithProblem(done, problem);
   }
 
   /// "Foto aggiunta alla galleria di Thor" after one clean upload; anything
@@ -66,8 +80,8 @@ class PetMediaImportResult {
   String confirmation(String petName) {
     if (problems.isEmpty && !cancelled && added == 1) {
       return photos == 1
-          ? 'Foto aggiunta alla galleria di $petName'
-          : 'Video aggiunto alla galleria di $petName';
+          ? appL10n.petsMediaPhotoAddedTo(petName)
+          : appL10n.petsMediaVideoAddedTo(petName);
     }
     return summary();
   }
@@ -136,7 +150,7 @@ class PetMediaImporter {
           photos++;
         }
       } catch (_) {
-        problems.add('Non sono riuscito a caricare ${_label(file)}.');
+        problems.add(appL10n.petsMediaImportFileFailed(_label(file)));
       } finally {
         await _compressor.discardPickedCopy(file);
       }
@@ -149,7 +163,8 @@ class PetMediaImporter {
     );
   }
 
-  static String _label(XFile file) => file.name.isEmpty ? 'un file' : '"${file.name}"';
+  static String _label(XFile file) =>
+      file.name.isEmpty ? appL10n.petsMediaImportUnnamedFile : '"${file.name}"';
 
   Future<String?> _importPhoto(String petId, XFile file, DateTime? capturedAt) async {
     final raw = await file.readAsBytes();
@@ -163,13 +178,13 @@ class PetMediaImporter {
       isProfile: false,
       takenAt: takenAt,
     );
-    return entry == null ? 'Il salvataggio delle foto non è disponibile senza connessione.' : null;
+    return entry == null ? appL10n.petsMediaPhotoSaveOffline : null;
   }
 
   static _Outcome _uploaded(String? problem) => (uploaded: problem == null, problem: problem);
 
   static _Outcome _refused(XFile file, PetVideoCheck check) =>
-      (uploaded: false, problem: '${_label(file)}: ${check.message}');
+      (uploaded: false, problem: appL10n.petsMediaImportRefused(_label(file), check.message ?? ''));
 
   static const _Outcome _stopped = (uploaded: false, problem: null);
 
@@ -231,7 +246,7 @@ class PetMediaImporter {
         takenAt: capturedAt,
       );
       return _uploaded(
-        entry == null ? 'Il salvataggio dei video non è disponibile senza connessione.' : null,
+        entry == null ? appL10n.petsMediaVideoSaveOffline : null,
       );
     } finally {
       // Re-encoded copies are only needed until the upload is over.

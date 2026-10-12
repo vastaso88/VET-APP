@@ -15,6 +15,7 @@ import 'package:record/record.dart';
 import '../../../../design_system/tokens/app_colors.dart';
 import '../../../../design_system/tokens/app_radii.dart';
 import '../../../../design_system/tokens/app_spacing.dart';
+import '../../../../l10n/l10n.dart';
 import '../../../settings/data/layout_settings_store.dart';
 import '../../data/chat_demo_store.dart';
 import '../../data/speech_to_text_remote_data_source.dart';
@@ -57,9 +58,9 @@ class ChatComposer extends StatefulWidget {
   /// photo.
   final bool allowEmptySend;
 
-  static const listeningText = 'Sto ascoltando… tocca per fermare';
-  static const transcribingText = 'Trascrivo…';
-  static const editingLabel = 'Modifica del messaggio';
+  static String get listeningText => appL10n.chatListeningText;
+  static String get transcribingText => appL10n.chatTranscribingText;
+  static String get editingLabel => appL10n.chatEditingLabel;
 
   @override
   State<ChatComposer> createState() => _ChatComposerState();
@@ -211,9 +212,9 @@ class _ChatComposerState extends State<ChatComposer> with SingleTickerProviderSt
                 ),
                 decoration: InputDecoration(
                   hintText: _voiceState == _VoiceState.recording
-                      ? 'Sto ascoltando...'
+                      ? context.l10n.chatListeningHint
                       : _voiceState == _VoiceState.transcribing
-                          ? 'Trascrivo il messaggio...'
+                          ? context.l10n.chatTranscribingHint
                           : widget.hintText,
                   border: InputBorder.none,
                   isCollapsed: true,
@@ -227,7 +228,7 @@ class _ChatComposerState extends State<ChatComposer> with SingleTickerProviderSt
             children: [
               _ComposerIconButton(
                 icon: Icons.add_rounded,
-                tooltip: 'Aggiungi una foto',
+                tooltip: context.l10n.chatAddPhotoTooltip,
                 // An edited message keeps its original photo.
                 onPressed: _uploadingAttachment || isEditing ? null : _pickAndUploadImage,
               ),
@@ -251,8 +252,8 @@ class _ChatComposerState extends State<ChatComposer> with SingleTickerProviderSt
                         ? Icons.stop_circle_rounded
                         : Icons.mic_none_rounded,
                     tooltip: _voiceState == _VoiceState.recording
-                        ? 'Ferma e trascrivi'
-                        : 'Messaggio vocale',
+                        ? context.l10n.chatStopRecordingTooltip
+                        : context.l10n.chatVoiceMessageTooltip,
                     color: _voiceState == _VoiceState.recording ? AppColors.danger : null,
                     onPressed: _toggleRecording,
                   ),
@@ -343,6 +344,7 @@ class _ChatComposerState extends State<ChatComposer> with SingleTickerProviderSt
       return;
     }
     if (_voiceState != _VoiceState.idle) return;
+    final l10n = context.l10n;
 
     var hasPermission = false;
     try {
@@ -353,7 +355,7 @@ class _ChatComposerState extends State<ChatComposer> with SingleTickerProviderSt
     if (!hasPermission) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Serve il permesso per usare il microfono.')),
+        SnackBar(content: Text(l10n.chatMicPermissionNeeded)),
       );
       return;
     }
@@ -365,7 +367,7 @@ class _ChatComposerState extends State<ChatComposer> with SingleTickerProviderSt
       final path = await (widget.recordingPathProvider ?? _defaultRecordingPath)();
       await _recorder.start(_recordConfig, path: path);
     } catch (_) {
-      _showMessage('Non riesco ad avviare il microfono. Riprova.');
+      _showMessage(l10n.chatMicStartFailed);
       return;
     }
     if (!mounted) return;
@@ -392,13 +394,14 @@ class _ChatComposerState extends State<ChatComposer> with SingleTickerProviderSt
   }
 
   Future<void> _stopAndTranscribe() async {
+    final l10n = context.l10n;
     _stopRecordingFeedback();
     String? path;
     try {
       path = await _recorder.stop();
     } catch (_) {
       if (mounted) setState(() => _voiceState = _VoiceState.idle);
-      _showMessage('La registrazione non è andata a buon fine. Riprova.');
+      _showMessage(l10n.chatRecordingFailed);
       return;
     }
     if (!mounted) return;
@@ -438,7 +441,7 @@ class _ChatComposerState extends State<ChatComposer> with SingleTickerProviderSt
     } catch (_) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Non sono riuscito a leggere la registrazione. Riprova.')),
+        SnackBar(content: Text(l10n.chatRecordingReadFailed)),
       );
     } finally {
       if (!kIsWeb) {
@@ -491,14 +494,14 @@ class _PendingAttachmentChip extends StatelessWidget {
         const SizedBox(width: AppSpacing.sm),
         Expanded(
           child: Text(
-            isUploading ? 'Sto guardando la foto...' : 'Foto pronta da inviare',
+            isUploading ? context.l10n.chatPhotoAnalyzing : context.l10n.chatPhotoReady,
             style: const TextStyle(color: AppColors.secondaryText, fontSize: 12),
           ),
         ),
         IconButton(
           onPressed: onRemove,
           icon: const Icon(Icons.close_rounded, size: 18),
-          tooltip: 'Rimuovi foto',
+          tooltip: context.l10n.chatRemovePhotoTooltip,
           visualDensity: VisualDensity.compact,
           constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
         ),
@@ -526,7 +529,11 @@ class _RecordingBanner extends StatelessWidget {
     final seconds = (elapsedSeconds % 60).toString().padLeft(2, '0');
     return Semantics(
       button: true,
-      label: '${ChatComposer.listeningText}, $minutes minuti e $seconds secondi',
+      label: context.l10n.chatRecordingSemantics(
+        context.l10n.chatListeningText,
+        minutes,
+        seconds,
+      ),
       child: InkWell(
         onTap: onTap,
         borderRadius: BorderRadius.circular(14),
@@ -550,10 +557,10 @@ class _RecordingBanner extends StatelessWidget {
                 ),
               ),
               const SizedBox(width: AppSpacing.sm),
-              const Expanded(
+              Expanded(
                 child: Text(
-                  ChatComposer.listeningText,
-                  style: TextStyle(
+                  context.l10n.chatListeningText,
+                  style: const TextStyle(
                     color: AppColors.text,
                     fontSize: 13,
                     fontWeight: FontWeight.w600,
@@ -588,13 +595,14 @@ class _TranscribingBanner extends StatelessWidget {
         color: AppColors.accentSoft,
         borderRadius: BorderRadius.circular(14),
       ),
-      child: const Row(
+      child: Row(
         children: [
-          PetLoader.small(),
-          SizedBox(width: AppSpacing.sm),
+          const PetLoader.small(),
+          const SizedBox(width: AppSpacing.sm),
           Text(
-            ChatComposer.transcribingText,
-            style: TextStyle(color: AppColors.text, fontSize: 13, fontWeight: FontWeight.w600),
+            context.l10n.chatTranscribingText,
+            style: const TextStyle(
+                color: AppColors.text, fontSize: 13, fontWeight: FontWeight.w600),
           ),
         ],
       ),
@@ -613,15 +621,15 @@ class _EditingBanner extends StatelessWidget {
       children: [
         const Icon(Icons.edit_outlined, size: 16, color: AppColors.primary),
         const SizedBox(width: AppSpacing.xs),
-        const Expanded(
+        Expanded(
           child: Text(
-            ChatComposer.editingLabel,
-            style: TextStyle(color: AppColors.primary, fontSize: 13, fontWeight: FontWeight.w700),
+            context.l10n.chatEditingLabel,
+            style: const TextStyle(color: AppColors.primary, fontSize: 13, fontWeight: FontWeight.w700),
           ),
         ),
         IconButton(
           onPressed: onCancel,
-          tooltip: 'Annulla modifica',
+          tooltip: context.l10n.chatCancelEditTooltip,
           icon: const Icon(Icons.close_rounded, size: 18, color: AppColors.secondaryText),
           visualDensity: VisualDensity.compact,
           constraints: const BoxConstraints(minWidth: 32, minHeight: 32),

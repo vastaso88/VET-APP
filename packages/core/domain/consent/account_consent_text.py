@@ -83,8 +83,25 @@ CONSENT_TEXT_IT: dict[str, str] = {
 }
 
 
-def build_consent_catalog() -> dict[str, ConsentCatalogEntry]:
+# One entry per language with a reviewed translation. Only Italian exists
+# today; a translation is added here (and only here) once legal has approved
+# it. Versions in CURRENT_VERSIONS are shared by all languages: a change to
+# any translation's meaning bumps the version for everyone.
+CONSENT_TEXTS_BY_LANGUAGE: dict[str, dict[str, str]] = {
+    "it": CONSENT_TEXT_IT,
+}
+
+
+def served_consent_language(language: str | None) -> str:
+    """The language the catalog is actually served in for [language]: the
+    requested one when a reviewed translation exists, else Italian."""
+    code = (language or "").strip().lower().replace("_", "-").split("-")[0]
+    return code if code in CONSENT_TEXTS_BY_LANGUAGE else "it"
+
+
+def build_consent_catalog(language: str | None = None) -> dict[str, ConsentCatalogEntry]:
+    texts = CONSENT_TEXTS_BY_LANGUAGE[served_consent_language(language)]
     return {
-        key: ConsentCatalogEntry(version=CURRENT_VERSIONS[key], text=CONSENT_TEXT_IT[key])
+        key: ConsentCatalogEntry(version=CURRENT_VERSIONS[key], text=texts[key])
         for key in AccountConsentType.ALL
     }

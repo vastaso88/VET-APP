@@ -11,6 +11,7 @@ import 'package:latlong2/latlong.dart' as latlong;
 import '../../../../design_system/tokens/app_colors.dart';
 import '../../../../design_system/tokens/app_spacing.dart';
 import '../../../../design_system/tokens/app_text_styles.dart';
+import '../../../../l10n/l10n.dart';
 import '../../../../shared/auth/current_owner.dart';
 import '../../../pets/data/pet_media_capture.dart';
 import '../../../pets/data/pet_photo_repository.dart';
@@ -193,13 +194,13 @@ class _ActiveWalkPageState extends State<ActiveWalkPage> {
           children: [
             ListTile(
               leading: const Icon(Icons.photo_camera_outlined),
-              title: const Text('Scatta foto'),
+              title: Text(context.l10n.walksCaptureTakePhoto),
               onTap: () => Navigator.of(sheetContext).pop(WalkCaptureKind.photo),
             ),
             ListTile(
               leading: const Icon(Icons.videocam_outlined),
-              title: const Text('Registra video'),
-              subtitle: const Text('Fino a $petVideoMaxSeconds secondi'),
+              title: Text(context.l10n.walksCaptureRecordVideo),
+              subtitle: Text(context.l10n.walksCaptureVideoLimit(petVideoMaxSeconds)),
               onTap: () => Navigator.of(sheetContext).pop(WalkCaptureKind.video),
             ),
           ],
@@ -250,8 +251,7 @@ class _ActiveWalkPageState extends State<ActiveWalkPage> {
   Future<void> _start() async {
     if (_controller.isActive && _controller.walk?.petId != widget.pet.id) {
       setState(() {
-        _locationError =
-            'C\'è già una passeggiata in corso con un altro pet: terminala prima di iniziarne una nuova.';
+        _locationError = context.l10n.walksErrorOtherPetActive;
       });
       return;
     }
@@ -266,8 +266,7 @@ class _ActiveWalkPageState extends State<ActiveWalkPage> {
       if (!mounted) return;
       setState(() {
         _starting = false;
-        _locationError =
-            'Non riesco a rilevare la tua posizione: serve per tracciare il percorso. Controlla i permessi di localizzazione e riprova.';
+        _locationError = context.l10n.walksErrorLocationUnavailable;
       });
       return;
     }
@@ -325,7 +324,7 @@ class _ActiveWalkPageState extends State<ActiveWalkPage> {
         backgroundColor: AppColors.background,
         elevation: 0,
         foregroundColor: AppColors.text,
-        title: Text('Passeggiata di ${widget.pet.name}', style: AppTextStyles.title),
+        title: Text(context.l10n.walksPageTitle(widget.pet.name), style: AppTextStyles.title),
       ),
       body: SafeArea(
         child: AnimatedBuilder(
@@ -358,16 +357,16 @@ class _ActiveWalkPageState extends State<ActiveWalkPage> {
                                 child: _HeadingIndicator(headingDegrees: _controller.headingDegrees!),
                               ),
                             if (_controller.isAwaitingAccurateFix)
-                              const Positioned(
+                              Positioned(
                                 top: AppSpacing.md,
                                 left: AppSpacing.md,
-                                child: _InfoPill(text: 'In attesa di un segnale GPS preciso…'),
+                                child: _InfoPill(text: context.l10n.walksWaitingForGps),
                               )
                             else if (walk?.isPaused ?? false)
-                              const Positioned(
+                              Positioned(
                                 top: AppSpacing.md,
                                 left: AppSpacing.md,
-                                child: _InfoPill(text: 'Passeggiata in pausa'),
+                                child: _InfoPill(text: context.l10n.walksStatusPaused),
                               ),
                             if (_controller.isActive && !_stopping)
                               Positioned(
@@ -375,7 +374,7 @@ class _ActiveWalkPageState extends State<ActiveWalkPage> {
                                 right: AppSpacing.md,
                                 child: FloatingActionButton.small(
                                   heroTag: 'walk-camera',
-                                  tooltip: 'Foto o video',
+                                  tooltip: context.l10n.walksCameraTooltip,
                                   onPressed: _capture.busy ? null : _showCaptureSheet,
                                   backgroundColor: AppColors.surface,
                                   foregroundColor: AppColors.primary,
@@ -408,8 +407,14 @@ class _ActiveWalkPageState extends State<ActiveWalkPage> {
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceAround,
                           children: [
-                            _StatColumn(label: 'Distanza', value: walkDistanceLabel(walk.distanceMeters)),
-                            _StatColumn(label: 'Durata', value: walkElapsedLabel(activeSeconds!)),
+                            _StatColumn(
+                              label: context.l10n.walksStatDistance,
+                              value: walkDistanceLabel(walk.distanceMeters),
+                            ),
+                            _StatColumn(
+                              label: context.l10n.walksStatDuration,
+                              value: walkElapsedLabel(activeSeconds!),
+                            ),
                           ],
                         ),
                       if (_locationError != null) ...[
@@ -434,7 +439,11 @@ class _ActiveWalkPageState extends State<ActiveWalkPage> {
                                             ? Icons.play_arrow_rounded
                                             : Icons.pause_rounded,
                                       ),
-                                label: Text(walk!.isPaused ? 'Riavvia' : 'Pausa'),
+                                label: Text(
+                                  walk!.isPaused
+                                      ? context.l10n.walksActionResume
+                                      : context.l10n.walksActionPause,
+                                ),
                               ),
                             ),
                             const SizedBox(width: AppSpacing.sm),
@@ -445,7 +454,11 @@ class _ActiveWalkPageState extends State<ActiveWalkPage> {
                                 icon: _stopping
                                     ? const PetLoader.small()
                                     : const Icon(Icons.stop_rounded),
-                                label: Text(_stopping ? 'Salvataggio...' : 'Termina'),
+                                label: Text(
+                                  _stopping
+                                      ? context.l10n.walksActionSaving
+                                      : context.l10n.walksActionFinish,
+                                ),
                               ),
                             ),
                           ],
@@ -458,7 +471,11 @@ class _ActiveWalkPageState extends State<ActiveWalkPage> {
                             icon: _starting
                                 ? const PetLoader.small()
                                 : const Icon(Icons.play_arrow_rounded),
-                            label: Text(_starting ? 'Avvio...' : 'Avvia passeggiata'),
+                            label: Text(
+                              _starting
+                                  ? context.l10n.walksActionStarting
+                                  : context.l10n.walksActionStart,
+                            ),
                           ),
                         ),
                     ],
@@ -571,7 +588,7 @@ class _CaptureOverlay extends StatelessWidget {
                   foregroundColor: Colors.white,
                   side: const BorderSide(color: Colors.white70),
                 ),
-                child: const Text('Annulla'),
+                child: Text(context.l10n.commonCancel),
               ),
             ],
           ],

@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../../shared/auth/current_user.dart';
+import '../../../l10n/l10n.dart';
 import '../../../shared/config/app_runtime_config_loader.dart';
 import '../domain/fish_species.dart';
 import '../domain/pet_breeds.dart';
@@ -274,7 +275,7 @@ class PetDemoStore {
     try {
       await client.from('pet_profiles').delete().eq('id', id);
     } catch (_) {
-      throw const PetSyncException('Non sono riuscito a eliminare il profilo. Riprova.');
+      throw PetSyncException(appL10n.petsDemoDeleteFailed);
     }
   }
 
@@ -533,10 +534,10 @@ class PetDemoStore {
       sex: sex,
       weightLabel: weightKg == null ? '' : formatPetWeight(weightKg),
       medicalNote: medicalNote.trim().isEmpty
-          ? 'Profilo creato da poco, pronto per la prossima visita.'
+          ? appL10n.petsDemoNewProfileNote
           : medicalNote.trim(),
       healthBadge: '',
-      nextVisitLabel: 'Da pianificare',
+      nextVisitLabel: appL10n.petsDemoNextVisitToPlan,
       avatarEmoji: name.trim().isEmpty ? option.avatarEmoji : name.trim()[0].toUpperCase(),
       accentColor: option.accentColor,
       identityColor: identityColor,

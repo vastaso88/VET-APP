@@ -7,6 +7,7 @@ import '../../../../design_system/tokens/app_spacing.dart';
 import '../../../../design_system/tokens/app_text_styles.dart';
 import '../../../location/domain/coordinates.dart';
 import '../radar_category.dart';
+import '../../../../l10n/l10n.dart';
 
 /// One marker on the radar map, whatever it stands for (an OpenStreetMap
 /// place, an event, a user-submitted service).
@@ -137,7 +138,7 @@ class _ClusteredMarkers extends StatelessWidget {
     return MarkerLayer(
       markers: cells.values.map((group) {
         if (group.length == 1) {
-          return _itemMarker(group.single);
+          return _itemMarker(context, group.single);
         }
         final center = latlong.LatLng(
           group.map((item) => item.location.latitude).reduce((a, b) => a + b) / group.length,
@@ -148,7 +149,7 @@ class _ClusteredMarkers extends StatelessWidget {
           width: 36,
           height: 36,
           child: Semantics(
-            label: '${group.length} luoghi vicini tra loro',
+            label: context.l10n.placesMapClusterSemantics(group.length),
             button: true,
             child: GestureDetector(
               onTap: interactive ? () => controller.move(center, camera.zoom + 2) : null,
@@ -174,15 +175,15 @@ class _ClusteredMarkers extends StatelessWidget {
     );
   }
 
-  Marker _itemMarker(RadarMapItem item) {
+  Marker _itemMarker(BuildContext context, RadarMapItem item) {
     return Marker(
       point: latlong.LatLng(item.location.latitude, item.location.longitude),
       width: 30,
       height: 30,
       child: Semantics(
         label: item.pending
-            ? '${item.category.label}, in attesa di conferma: ${item.label}'
-            : '${item.category.label}: ${item.label}',
+            ? context.l10n.placesMapMarkerPending(item.category.label, item.label)
+            : context.l10n.placesMapMarker(item.category.label, item.label),
         button: true,
         child: GestureDetector(
           onTap: interactive ? item.onTap : null,

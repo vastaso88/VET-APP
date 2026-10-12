@@ -10,11 +10,14 @@ import '../../domain/fish_species.dart';
 import '../../domain/pet_breeds.dart';
 import '../../domain/pet_species_breeds.dart';
 import '../../domain/pet_identity_colors.dart';
+import '../../domain/pet_format.dart';
 import '../../domain/pet_models.dart';
+import '../../domain/pet_value_labels.dart';
 import '../../../../design_system/tokens/app_colors.dart';
 import '../../../../design_system/tokens/app_radii.dart';
 import '../../../../design_system/tokens/app_spacing.dart';
 import '../../../../design_system/tokens/app_text_styles.dart';
+import '../../../../l10n/l10n.dart';
 import '../../../../shared/formatters/date_input_formatter.dart';
 import '../../../../shared/widgets/typed_date_field.dart';
 import '../../../../shared/widgets/pet_loader.dart';
@@ -63,13 +66,6 @@ class PetProfileDraft {
 /// substrate, equipment) rather than roaming free in the house.
 bool _speciesHasHabitat(String? species) =>
     species == 'Pesce' || species == 'Rettili e anfibi' || species == 'Uccello';
-
-String _habitatLabel(String? species) => switch (species) {
-      'Pesce' => 'Acquario',
-      'Rettili e anfibi' => 'Terrario',
-      'Uccello' => 'Voliera',
-      _ => 'Habitat',
-    };
 
 class PetProfileForm extends StatefulWidget {
   const PetProfileForm({
@@ -247,7 +243,7 @@ class _PetProfileFormState extends State<PetProfileForm> {
             ? Padding(
                 padding: const EdgeInsets.all(AppSpacing.xl),
                 child: Text(
-                  'Hai già aggiunto tutte le specie disponibili.',
+                  sheetContext.l10n.petsFormAllSpeciesAdded,
                   style: AppTextStyles.bodySmall,
                 ),
               )
@@ -260,7 +256,7 @@ class _PetProfileFormState extends State<PetProfileForm> {
                       horizontal: AppSpacing.lg,
                       vertical: AppSpacing.sm,
                     ),
-                    child: Text('Aggiungi specie', style: AppTextStyles.title),
+                    child: Text(sheetContext.l10n.petsFormAddSpecies, style: AppTextStyles.title),
                   ),
                   for (final species in available)
                     ListTile(
@@ -371,7 +367,7 @@ class _PetProfileFormState extends State<PetProfileForm> {
                   },
                 ),
                 const SizedBox(height: AppSpacing.md),
-                Text('Colore identificativo', style: AppTextStyles.caption),
+                Text(context.l10n.petsFormIdentityColor, style: AppTextStyles.caption),
                 const SizedBox(height: AppSpacing.xs),
                 _IdentityColorPicker(
                   value: _identityColor,
@@ -381,10 +377,10 @@ class _PetProfileFormState extends State<PetProfileForm> {
                 TextFormField(
                   controller: _nameController,
                   textInputAction: TextInputAction.next,
-                  decoration: _inputDecoration('Nome', 'Moka'),
+                  decoration: _inputDecoration(context.l10n.petsFormNameLabel, context.l10n.petsFormNameHint),
                   validator: (value) {
                     if ((value ?? '').trim().isEmpty) {
-                      return 'Inserisci il nome del pet.';
+                      return context.l10n.petsFormNameError;
                     }
                     return null;
                   },
@@ -392,12 +388,15 @@ class _PetProfileFormState extends State<PetProfileForm> {
                 const SizedBox(height: AppSpacing.md),
                 DropdownButtonFormField<String>(
                   initialValue: _species,
-                  decoration: _inputDecoration('Specie', 'Seleziona una specie'),
+                  decoration: _inputDecoration(
+                    context.l10n.petsFormSpeciesLabel,
+                    context.l10n.petsFormSpeciesHint,
+                  ),
                   items: PetDemoStore.speciesOptions
                       .map(
                         (option) => DropdownMenuItem<String>(
                           value: option.label,
-                          child: Text(option.label),
+                          child: Text(localizedSpeciesLabel(option.label)),
                         ),
                       )
                       .toList(growable: false),
@@ -421,14 +420,14 @@ class _PetProfileFormState extends State<PetProfileForm> {
                   },
                   validator: (value) {
                     if (value == null || value.trim().isEmpty) {
-                      return 'Seleziona una specie.';
+                      return context.l10n.petsFormSpeciesError;
                     }
                     return null;
                   },
                 ),
                 if (_species == 'Pesce') ...[
                   const SizedBox(height: AppSpacing.md),
-                  Text('Tipo di profilo', style: AppTextStyles.caption),
+                  Text(context.l10n.petsFormProfileType, style: AppTextStyles.caption),
                   const SizedBox(height: AppSpacing.xs),
                   _AquariumModeToggle(
                     value: _isAquarium,
@@ -437,7 +436,7 @@ class _PetProfileFormState extends State<PetProfileForm> {
                 ],
                 const SizedBox(height: AppSpacing.md),
                 if (_species == 'Pesce' && _isAquarium) ...[
-                  Text('Popolazione dell\'acquario', style: AppTextStyles.caption),
+                  Text(context.l10n.petsFormAquariumPopulation, style: AppTextStyles.caption),
                   const SizedBox(height: AppSpacing.xs),
                   _AquariumStockEditor(
                     stock: _aquariumStock,
@@ -468,16 +467,18 @@ class _PetProfileFormState extends State<PetProfileForm> {
                     borderRadius: BorderRadius.circular(18),
                     child: InputDecorator(
                       decoration: _inputDecoration(
-                        'Razza',
-                        _species == null ? 'Seleziona prima la specie' : 'Facoltativa',
+                        context.l10n.petsFormBreedLabel,
+                        _species == null
+                            ? context.l10n.petsFormBreedSelectSpeciesFirst
+                            : context.l10n.petsFormBreedOptional,
                       ),
                       child: Row(
                         children: [
                           Expanded(
                             child: Text(
-                              _breedDisplay(),
+                              _breedDisplay(context.l10n),
                               style: AppTextStyles.bodySmall.copyWith(
-                                color: _breedDisplay() == _breedPlaceholder
+                                color: _breedIsPlaceholder
                                     ? AppColors.mutedText
                                     : AppColors.text,
                               ),
@@ -494,8 +495,14 @@ class _PetProfileFormState extends State<PetProfileForm> {
                     controller: _otherBreedController,
                     textCapitalization: TextCapitalization.sentences,
                     decoration: _species == 'Cane' || _species == 'Gatto'
-                        ? _inputDecoration('Quale razza? (facoltativo)', 'Es. incrocio di barboncino')
-                        : _inputDecoration('Quale specie o razza? (facoltativo)', 'Es. nome comune o varietà'),
+                        ? _inputDecoration(
+                            context.l10n.petsFormOtherBreedLabel,
+                            context.l10n.petsFormOtherBreedHint,
+                          )
+                        : _inputDecoration(
+                            context.l10n.petsFormOtherSpeciesLabel,
+                            context.l10n.petsFormOtherSpeciesHint,
+                          ),
                     onChanged: (value) => setState(() {
                       _breed = value.trim().isEmpty ? 'Altro' : value.trim();
                     }),
@@ -505,10 +512,16 @@ class _PetProfileFormState extends State<PetProfileForm> {
                   const SizedBox(height: AppSpacing.md),
                   DropdownButtonFormField<String>(
                     initialValue: _dogSizeCategory,
-                    decoration: _inputDecoration('Taglia (facoltativa)', 'Seleziona una taglia'),
+                    decoration: _inputDecoration(
+                      context.l10n.petsFormDogSizeLabel,
+                      context.l10n.petsFormDogSizeHint,
+                    ),
                     items: PetDemoStore.dogSizeCategories
                         .map(
-                          (size) => DropdownMenuItem<String>(value: size, child: Text(size)),
+                          (size) => DropdownMenuItem<String>(
+                            value: size,
+                            child: Text(localizedDogSizeLabel(size)),
+                          ),
                         )
                         .toList(growable: false),
                     onChanged: (value) => setState(() => _dogSizeCategory = value),
@@ -516,7 +529,7 @@ class _PetProfileFormState extends State<PetProfileForm> {
                 ],
                 if (_speciesHasHabitat(_species)) ...[
                   const SizedBox(height: AppSpacing.lg),
-                  Text(_habitatLabel(_species), style: AppTextStyles.caption),
+                  Text(petHabitatLabel(_species, context.l10n), style: AppTextStyles.caption),
                   const SizedBox(height: AppSpacing.xs),
                   _HabitatFields(
                     showVolume: _species == 'Pesce',
@@ -539,18 +552,21 @@ class _PetProfileFormState extends State<PetProfileForm> {
                     controller: _birthDateController,
                     onPick: _pickBirthDate,
                     pickIcon: const Icon(Icons.calendar_month_rounded, color: AppColors.primary),
-                    decoration: _inputDecoration('Data di nascita', 'gg/mm/aaaa'),
+                    decoration: _inputDecoration(
+                      context.l10n.petsFormBirthDateLabel,
+                      context.l10n.petsFormBirthDateHint,
+                    ),
                     validator: (value) {
                       final raw = (value ?? '').trim();
                       if (raw.isEmpty) {
-                        return 'Seleziona la data di nascita.';
+                        return context.l10n.petsFormBirthDateRequired;
                       }
                       final parsed = parseStrictDate(raw);
                       if (parsed == null) {
-                        return 'Data non valida (gg/mm/aaaa).';
+                        return context.l10n.petsFormBirthDateInvalid;
                       }
                       if (parsed.isAfter(DateTime.now())) {
-                        return 'La data di nascita non può essere nel futuro.';
+                        return context.l10n.petsFormBirthDateFuture;
                       }
                       return null;
                     },
@@ -564,7 +580,7 @@ class _PetProfileFormState extends State<PetProfileForm> {
                   const SizedBox(height: AppSpacing.md),
                   DropdownButtonFormField<String>(
                     initialValue: _sex,
-                    decoration: _inputDecoration('Sesso', 'Seleziona'),
+                    decoration: _inputDecoration(context.l10n.petsFormSexLabel, context.l10n.petsFormSexHint),
                     items: [
                       ...PetDemoStore.sexOptions,
                       // A pet saved with an older value (e.g. "Sconosciuto") must
@@ -574,7 +590,11 @@ class _PetProfileFormState extends State<PetProfileForm> {
                         .map(
                           (sex) => DropdownMenuItem<String>(
                             value: sex,
-                            child: Text(sex),
+                            child: Text(
+                              sex == 'Sconosciuto'
+                                  ? context.l10n.petsFormSexUnknown
+                                  : localizedSexLabel(sex),
+                            ),
                           ),
                         )
                         .toList(growable: false),
@@ -585,7 +605,7 @@ class _PetProfileFormState extends State<PetProfileForm> {
                     },
                     validator: (value) {
                       if (value == null || value.trim().isEmpty) {
-                        return 'Seleziona il sesso.';
+                        return context.l10n.petsFormSexError;
                       }
                       return null;
                     },
@@ -600,8 +620,12 @@ class _PetProfileFormState extends State<PetProfileForm> {
                     FilteringTextInputFormatter.allow(RegExp(r'[0-9,.\s]')),
                   ],
                   decoration: _inputDecoration(
-                    'Peso (facoltativo, ${_units.usesPounds ? 'lb' : 'kg'})',
-                    _units.usesPounds ? 'Es. 40,5' : 'Es. 18,4',
+                    _units.usesPounds
+                        ? context.l10n.petsFormWeightLabelLb
+                        : context.l10n.petsFormWeightLabelKg,
+                    _units.usesPounds
+                        ? context.l10n.petsFormWeightHintLb
+                        : context.l10n.petsFormWeightHintKg,
                   ),
                   validator: (value) {
                     if ((value ?? '').trim().isEmpty) {
@@ -609,10 +633,10 @@ class _PetProfileFormState extends State<PetProfileForm> {
                     }
                     final parsed = _parseWeight(value);
                     if (parsed == null) {
-                      return 'Inserisci un peso valido.';
+                      return context.l10n.petsFormWeightInvalid;
                     }
                     if (parsed <= 0) {
-                      return 'Il peso deve essere maggiore di zero.';
+                      return context.l10n.petsFormWeightPositive;
                     }
                     return null;
                   },
@@ -622,8 +646,8 @@ class _PetProfileFormState extends State<PetProfileForm> {
                   controller: _notesController,
                   maxLines: 4,
                   decoration: _inputDecoration(
-                    'Note',
-                    'Aggiungi note brevi su dieta, farmaci o comportamento.',
+                    context.l10n.petsFormNotesLabel,
+                    context.l10n.petsFormNotesHint,
                   ),
                 ),
               ],
@@ -636,7 +660,7 @@ class _PetProfileFormState extends State<PetProfileForm> {
                 icon: _submitting
                     ? const PetLoader.small(color: AppColors.onPrimary)
                     : const Icon(Icons.save_rounded),
-                label: Text(_submitting ? 'Salvataggio in corso…' : widget.submitLabel),
+                label: Text(_submitting ? context.l10n.petsFormSaving : widget.submitLabel),
               ),
             ),
             if (widget.footerActions != null) widget.footerActions!,
@@ -668,15 +692,20 @@ class _PetProfileFormState extends State<PetProfileForm> {
     );
   }
 
-  static const _breedPlaceholder = 'Seleziona una razza';
+  /// True while the breed row shows a hint ("Seleziona una razza") rather than a value.
+  bool get _breedIsPlaceholder {
+    if (_species == null || _otherBreed) return false;
+    final breed = _breed;
+    return breed == null || breed.isEmpty;
+  }
 
-  String _breedDisplay() {
-    if (_species == null) return 'Seleziona prima la specie';
+  String _breedDisplay(AppLocalizations t) {
+    if (_species == null) return t.petsFormBreedSelectSpeciesFirst;
     if (_otherBreed) {
       return _species == 'Cane' || _species == 'Gatto' ? otherBreedLabel : otherEntryLabel;
     }
     final breed = _breed;
-    return breed == null || breed.isEmpty ? _breedPlaceholder : breed;
+    return breed == null || breed.isEmpty ? t.petsFormBreedPlaceholder : breed;
   }
 
   Future<String?> _pickBreed(List<String> options) {
@@ -716,7 +745,7 @@ class _PetProfileFormState extends State<PetProfileForm> {
 
     if (isAquariumProfile && _aquariumStock.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Aggiungi almeno una specie all\'acquario.')),
+        SnackBar(content: Text(context.l10n.petsFormAquariumNeedsSpecies)),
       );
       return;
     }
@@ -830,7 +859,8 @@ class _PetProfileFormState extends State<PetProfileForm> {
       'dic': 12,
     };
 
-    // Saved labels may still use the old capitalised form ("05 Mag 2021").
+    // formato salvato: sempre italiano. Saved labels may still use the old
+    // capitalised form ("05 Mag 2021").
     return months[label.toLowerCase()];
   }
 
@@ -878,14 +908,16 @@ class _PhotoPicker extends StatelessWidget {
                 onPressed: onPick,
                 icon: const Icon(Icons.add_a_photo_outlined, size: 16),
                 label: Text(
-                  photoBytes == null && photoPath == null ? 'Aggiungi foto' : 'Cambia foto',
+                  photoBytes == null && photoPath == null
+                      ? context.l10n.petsFormPhotoAdd
+                      : context.l10n.petsFormPhotoChange,
                 ),
               ),
               if (onRemove != null)
                 TextButton.icon(
                   onPressed: onRemove,
                   icon: const Icon(Icons.delete_outline, size: 16),
-                  label: const Text('Rimuovi'),
+                  label: Text(context.l10n.petsFormPhotoRemove),
                 ),
             ],
           ),
@@ -904,16 +936,16 @@ class _AquariumModeToggle extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SegmentedButton<bool>(
-      segments: const [
+      segments: [
         ButtonSegment(
           value: false,
-          icon: Icon(Icons.set_meal_outlined, size: 16),
-          label: Text('Un pesce'),
+          icon: const Icon(Icons.set_meal_outlined, size: 16),
+          label: Text(context.l10n.petsFormSingleFish),
         ),
         ButtonSegment(
           value: true,
-          icon: Icon(Icons.water_outlined, size: 16),
-          label: Text('Acquario'),
+          icon: const Icon(Icons.water_outlined, size: 16),
+          label: Text(context.l10n.petsHabitatAquarium),
         ),
       ],
       selected: {value},
@@ -950,7 +982,7 @@ class _AquariumStockEditor extends StatelessWidget {
         if (stock.isEmpty)
           Padding(
             padding: const EdgeInsets.only(bottom: AppSpacing.sm),
-            child: Text('Nessuna specie aggiunta ancora.', style: AppTextStyles.bodySmall),
+            child: Text(context.l10n.petsFormNoSpeciesYet, style: AppTextStyles.bodySmall),
           )
         else
           ...stock.asMap().entries.map(
@@ -967,7 +999,7 @@ class _AquariumStockEditor extends StatelessWidget {
         OutlinedButton.icon(
           onPressed: onAdd,
           icon: const Icon(Icons.add_rounded, size: 18),
-          label: const Text('Aggiungi specie'),
+          label: Text(context.l10n.petsFormAddSpecies),
         ),
       ],
     );
@@ -1160,7 +1192,7 @@ class _HabitatFields extends StatelessWidget {
                 controller: lengthController,
                 keyboardType: const TextInputType.numberWithOptions(decimal: true),
                 inputFormatters: dimensionFormatters,
-                decoration: inputDecoration('Lunghezza', lengthUnit),
+                decoration: inputDecoration(context.l10n.petsFormHabitatLength, lengthUnit),
                 onChanged: (_) => onDimensionChanged(),
               ),
             ),
@@ -1170,7 +1202,7 @@ class _HabitatFields extends StatelessWidget {
                 controller: widthController,
                 keyboardType: const TextInputType.numberWithOptions(decimal: true),
                 inputFormatters: dimensionFormatters,
-                decoration: inputDecoration('Larghezza', lengthUnit),
+                decoration: inputDecoration(context.l10n.petsFormHabitatWidth, lengthUnit),
                 onChanged: (_) => onDimensionChanged(),
               ),
             ),
@@ -1180,7 +1212,7 @@ class _HabitatFields extends StatelessWidget {
                 controller: heightController,
                 keyboardType: const TextInputType.numberWithOptions(decimal: true),
                 inputFormatters: dimensionFormatters,
-                decoration: inputDecoration('Altezza', lengthUnit),
+                decoration: inputDecoration(context.l10n.petsFormHabitatHeight, lengthUnit),
                 onChanged: (_) => onDimensionChanged(),
               ),
             ),
@@ -1197,28 +1229,38 @@ class _HabitatFields extends StatelessWidget {
                   : FilteringTextInputFormatter.digitsOnly,
             ],
             decoration: inputDecoration(
-              system.usesUsGallons ? 'Galloni USA' : 'Litri',
-              'Calcolati dalle dimensioni, modificabili',
+              system.usesUsGallons
+                  ? context.l10n.petsFormHabitatUsGallons
+                  : context.l10n.petsFormHabitatLiters,
+              context.l10n.petsFormHabitatVolumeHint,
             ),
           ),
         ],
         const SizedBox(height: AppSpacing.md),
         TextFormField(
           controller: temperatureController,
-          decoration: inputDecoration('Temperatura', system.usesFahrenheit ? 'Es. 75-79°F' : 'Es. 24-26°C'),
+          decoration: inputDecoration(
+            context.l10n.petsFormHabitatTemperature,
+            system.usesFahrenheit
+                ? context.l10n.petsFormHabitatTemperatureHintF
+                : context.l10n.petsFormHabitatTemperatureHintC,
+          ),
         ),
         const SizedBox(height: AppSpacing.md),
         TextFormField(
           controller: substrateController,
-          decoration: inputDecoration('Substrato', 'Es. ghiaia fine, fibra di cocco'),
+          decoration: inputDecoration(
+            context.l10n.petsFormHabitatSubstrate,
+            context.l10n.petsFormHabitatSubstrateHint,
+          ),
         ),
         const SizedBox(height: AppSpacing.md),
         TextFormField(
           controller: notesController,
           maxLines: 3,
           decoration: inputDecoration(
-            'Attrezzatura',
-            'Filtro, illuminazione, riscaldatore, piante, lampada UVB, posatoi...',
+            context.l10n.petsFormHabitatEquipment,
+            context.l10n.petsFormHabitatEquipmentHint,
           ),
         ),
       ],
@@ -1305,7 +1347,9 @@ class _BreedPickerSheetState extends State<_BreedPickerSheet> {
                 autofocus: true,
                 onChanged: (value) => setState(() => _query = value),
                 decoration: InputDecoration(
-                  hintText: dogOrCat ? 'Cerca una razza' : 'Cerca (anche per nome scientifico)',
+                  hintText: dogOrCat
+                      ? context.l10n.petsFormBreedSearchHint
+                      : context.l10n.petsFormBreedSearchHintScientific,
                   prefixIcon: const Icon(Icons.search_rounded),
                   border: OutlineInputBorder(borderRadius: BorderRadius.circular(18)),
                 ),
@@ -1323,7 +1367,9 @@ class _BreedPickerSheetState extends State<_BreedPickerSheet> {
                           tileColor: pinned ? AppColors.accentSoft.withValues(alpha: 0.35) : null,
                           leading: pinned ? const Icon(Icons.pets_outlined, color: AppColors.primary) : null,
                           title: Text(
-                            breed,
+                            breed == 'Razza non specificata'
+                                ? context.l10n.petsBreedUnspecified
+                                : breed,
                             style: pinned ? const TextStyle(fontWeight: FontWeight.w600) : null,
                           ),
                           onTap: () => Navigator.of(context).pop(breed),

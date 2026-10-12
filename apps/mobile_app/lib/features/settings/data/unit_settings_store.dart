@@ -21,12 +21,17 @@ class UnitSettingsStore extends ChangeNotifier {
 
   bool _loaded = false;
 
+  /// The owner picked units by hand (now or in an earlier session): the
+  /// language/country defaults must not overwrite that.
+  bool _chosenByOwner = false;
+
   Future<void> ensureLoaded() async {
     if (_loaded) return;
     _loaded = true;
     try {
       final preferences = await SharedPreferences.getInstance();
       final stored = UnitSystem.fromName(preferences.getString(_storageKey));
+      if (stored != null) _chosenByOwner = true;
       if (stored != null && stored != _system) {
         _system = stored;
         notifyListeners();
@@ -36,8 +41,18 @@ class UnitSettingsStore extends ChangeNotifier {
     }
   }
 
+  /// The units that fit the chosen language/country (UK → miles and pounds…).
+  /// Ignored once the owner has picked units by hand. Not saved: it is a
+  /// default, recomputed whenever the language changes.
+  void applyLocaleDefault(UnitSystem system) {
+    if (_chosenByOwner || system == _system) return;
+    _system = system;
+    notifyListeners();
+  }
+
   Future<void> setSystem(UnitSystem system) async {
     _loaded = true;
+    _chosenByOwner = true;
     if (system == _system) return;
     _system = system;
     notifyListeners();
@@ -47,5 +62,12 @@ class UnitSettingsStore extends ChangeNotifier {
     } catch (_) {
       // Best-effort: the in-memory value already applies for this session.
     }
+  }
+
+  @visibleForTesting
+  void resetForTest() {
+    _system = defaultUnitsForLocale(null);
+    _loaded = false;
+    _chosenByOwner = false;
   }
 }

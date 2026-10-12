@@ -1,3 +1,7 @@
+import '../../../l10n/date_formats.dart';
+import '../../../l10n/l10n.dart';
+
+// formato salvato: sempre italiano ("05 mag 2021"), mai tradotto.
 const _kMonthAbbreviations = [
   'gen',
   'feb',
@@ -13,7 +17,9 @@ const _kMonthAbbreviations = [
   'dic',
 ];
 
-/// e.g. "05 mag 2021" — the display format for [PetProfile.birthDateLabel].
+/// e.g. "05 mag 2021" — the SAVED format of [PetProfile.birthDateLabel]
+/// (always Italian, whatever the app language). To show it to the owner use
+/// [petBirthDateDisplayLabel].
 String formatPetBirthDate(DateTime date) {
   return '${date.day.toString().padLeft(2, '0')} ${_kMonthAbbreviations[date.month - 1]} ${date.year}';
 }
@@ -24,6 +30,7 @@ String formatPetWeight(double weightKg) {
   return '${normalized.replaceAll('.', ',')} kg';
 }
 
+// formato salvato: sempre italiano
 const _kMonthNumbers = {
   'gen': 1,
   'feb': 2,
@@ -68,19 +75,47 @@ DateTime? parsePetBirthdayLabel(String? label) {
 /// "3 anni", "1 anno", "8 mesi", "1 mese" or "Meno di un mese" - the age at
 /// [now] for a birth date label. Null when the label is empty, unreadable or
 /// in the future.
-String? petAgeLabel(String? birthDateLabel, {DateTime? now}) {
+String? petAgeLabel(String? birthDateLabel, {DateTime? now, AppLocalizations? l10n}) {
   final birth = parsePetBirthDateLabel(birthDateLabel);
   if (birth == null) return null;
   final today = now ?? DateTime.now();
   if (birth.isAfter(today)) return null;
 
+  final t = l10n ?? appL10n;
   var months = (today.year - birth.year) * 12 + today.month - birth.month;
   if (today.day < birth.day) months -= 1;
-  if (months < 1) return 'Meno di un mese';
-  if (months < 12) return months == 1 ? '1 mese' : '$months mesi';
-  final years = months ~/ 12;
-  return years == 1 ? '1 anno' : '$years anni';
+  if (months < 1) return t.petsAgeLessThanMonth;
+  if (months < 12) return t.petsAgeMonths(months);
+  return t.petsAgeYears(months ~/ 12);
+}
+
+/// The saved birth date label ("05 mag 2021", "mag 2021" or "2021") as the
+/// owner reads it in the app language. An unreadable label is returned as is.
+String petBirthDateDisplayLabel(String? label) {
+  final raw = (label ?? '').trim();
+  final date = parsePetBirthDateLabel(raw);
+  if (date == null) return raw;
+  final partCount = raw.split(RegExp(r'\s+')).length;
+  final pattern = switch (partCount) {
+    3 => 'dd MMM y',
+    2 => 'MMM y',
+    _ => 'y',
+  };
+  return formatAppDate(date, pattern);
 }
 
 /// "1 profilo", "2 profili".
-String petProfilesCountLabel(int count) => count == 1 ? '1 profilo' : '$count profili';
+String petProfilesCountLabel(int count, {AppLocalizations? l10n}) =>
+    (l10n ?? appL10n).petsProfilesCount(count);
+
+/// What an enclosure is called for [species]: "Acquario", "Terrario",
+/// "Voliera" or the generic "Habitat".
+String petHabitatLabel(String? species, [AppLocalizations? l10n]) {
+  final t = l10n ?? appL10n;
+  return switch (species) {
+    'Pesce' => t.petsHabitatAquarium,
+    'Rettili e anfibi' => t.petsHabitatTerrarium,
+    'Uccello' => t.petsHabitatAviary,
+    _ => t.petsHabitatGeneric,
+  };
+}

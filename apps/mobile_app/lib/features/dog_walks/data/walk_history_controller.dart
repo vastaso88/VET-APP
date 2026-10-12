@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 
 import '../../../app/router/app_router.dart';
+import '../../../l10n/l10n.dart';
 import '../../../shared/auth/current_owner.dart';
 import '../domain/walk_session.dart';
 import 'dog_walks_repository.dart';
@@ -83,8 +84,8 @@ class WalkHistoryController extends ChangeNotifier {
     _repository.restoreWalk(walk);
     _onMessage(
       isFavorite
-          ? 'Non sono riuscito a salvare la preferita: riprova.'
-          : 'Non sono riuscito a togliere la preferita: riprova.',
+          ? appL10n.walksFavoriteSaveFailed
+          : appL10n.walksFavoriteRemoveFailed,
     );
   }
 
@@ -100,7 +101,7 @@ class WalkHistoryController extends ChangeNotifier {
 
     _replace(walk);
     _repository.restoreWalk(walk);
-    _onMessage('Non sono riuscito a eliminare la passeggiata: riprova.');
+    _onMessage(appL10n.walksDeleteFailed);
   }
 
   void _replace(WalkSession walk) {

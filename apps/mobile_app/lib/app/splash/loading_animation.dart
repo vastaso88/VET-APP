@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 
 import '../../design_system/tokens/app_spacing.dart';
 import '../../design_system/tokens/app_text_styles.dart';
+import '../../l10n/l10n.dart';
 import 'splash_messages.dart';
 
 /// How often the feature teaser under the animation changes.
@@ -135,7 +136,7 @@ class _SplashRotatingMessagesState extends State<SplashRotatingMessages> {
     super.initState();
     _timer = Timer.periodic(splashMessageInterval, (_) {
       if (mounted) {
-        setState(() => _index = (_index + 1) % splashMessages.length);
+        setState(() => _index = (_index + 1) % splashMessagesFor(context.l10n).length);
       }
     });
   }
@@ -164,7 +165,7 @@ class _SplashRotatingMessagesState extends State<SplashRotatingMessages> {
           ),
         ),
         child: Text(
-          splashMessages[_index],
+          splashMessagesFor(context.l10n)[_index],
           key: ValueKey<int>(_index),
           textAlign: TextAlign.center,
           style: AppTextStyles.bodySmall,

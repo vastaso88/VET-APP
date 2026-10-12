@@ -19,6 +19,7 @@ import '../../features/home/presentation/pages/home_dashboard_page.dart';
 import '../../features/pets/data/pet_demo_store.dart';
 import '../../features/pets/pets.dart';
 import '../../features/settings/presentation/pages/settings_page.dart';
+import '../../l10n/l10n.dart';
 
 class HomeShellPage extends StatefulWidget {
   const HomeShellPage({super.key, this.initialIndex = 0});
@@ -95,19 +96,18 @@ class _HomeShellPageState extends State<HomeShellPage> {
       context: context,
       barrierDismissible: false,
       builder: (context) => AlertDialog(
-        title: const Text('Passeggiata interrotta'),
+        title: Text(context.l10n.shellInterruptedWalkTitle),
         content: Text(
-          'È rimasta una passeggiata in corso (${walkDistanceLabel(recovered.distanceMeters)} '
-          'finora). Vuoi riprenderla?',
+          context.l10n.shellInterruptedWalkBody(walkDistanceLabel(recovered.distanceMeters)),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(false),
-            child: const Text('Scarta'),
+            child: Text(context.l10n.shellInterruptedWalkDiscard),
           ),
           FilledButton(
             onPressed: () => Navigator.of(context).pop(true),
-            child: const Text('Riprendi'),
+            child: Text(context.l10n.shellInterruptedWalkResume),
           ),
         ],
       ),
@@ -291,49 +291,49 @@ class _HomeShellPageState extends State<HomeShellPage> {
     });
   }
 
-  List<NavigationRailDestination> get _destinations => const [
+  List<NavigationRailDestination> get _destinations => [
         NavigationRailDestination(
-          icon: Icon(Icons.home_outlined),
-          selectedIcon: Icon(Icons.home_rounded),
-          label: Text('Home'),
+          icon: const Icon(Icons.home_outlined),
+          selectedIcon: const Icon(Icons.home_rounded),
+          label: Text(context.l10n.shellTabHome),
         ),
         NavigationRailDestination(
-          icon: Icon(Icons.pets_outlined),
-          selectedIcon: Icon(Icons.pets_rounded),
-          label: Text('Animali'),
+          icon: const Icon(Icons.pets_outlined),
+          selectedIcon: const Icon(Icons.pets_rounded),
+          label: Text(context.l10n.shellTabPets),
         ),
         NavigationRailDestination(
-          icon: Icon(Icons.explore_outlined),
-          selectedIcon: Icon(Icons.explore_rounded),
-          label: Text('Attività'),
+          icon: const Icon(Icons.explore_outlined),
+          selectedIcon: const Icon(Icons.explore_rounded),
+          label: Text(context.l10n.shellTabActivities),
         ),
         NavigationRailDestination(
-          icon: Icon(Icons.settings_outlined),
-          selectedIcon: Icon(Icons.settings_rounded),
-          label: Text('Impostazioni'),
+          icon: const Icon(Icons.settings_outlined),
+          selectedIcon: const Icon(Icons.settings_rounded),
+          label: Text(context.l10n.shellTabSettings),
         ),
       ];
 
-  List<NavigationDestination> get _bottomDestinations => const [
+  List<NavigationDestination> get _bottomDestinations => [
         NavigationDestination(
-          icon: Icon(Icons.home_outlined),
-          selectedIcon: Icon(Icons.home_rounded),
-          label: 'Home',
+          icon: const Icon(Icons.home_outlined),
+          selectedIcon: const Icon(Icons.home_rounded),
+          label: context.l10n.shellTabHome,
         ),
         NavigationDestination(
-          icon: Icon(Icons.pets_outlined),
-          selectedIcon: Icon(Icons.pets_rounded),
-          label: 'Animali',
+          icon: const Icon(Icons.pets_outlined),
+          selectedIcon: const Icon(Icons.pets_rounded),
+          label: context.l10n.shellTabPets,
         ),
         NavigationDestination(
-          icon: Icon(Icons.explore_outlined),
-          selectedIcon: Icon(Icons.explore_rounded),
-          label: 'Attività',
+          icon: const Icon(Icons.explore_outlined),
+          selectedIcon: const Icon(Icons.explore_rounded),
+          label: context.l10n.shellTabActivities,
         ),
         NavigationDestination(
-          icon: Icon(Icons.settings_outlined),
-          selectedIcon: Icon(Icons.settings_rounded),
-          label: 'Impostazioni',
+          icon: const Icon(Icons.settings_outlined),
+          selectedIcon: const Icon(Icons.settings_rounded),
+          label: context.l10n.shellTabSettings,
         ),
       ];
 }
@@ -417,7 +417,7 @@ class _RailFooter extends StatelessWidget {
     return Align(
       alignment: Alignment.centerLeft,
       child: Text(
-        'Spazio clinico caldo',
+        context.l10n.shellRailFooter,
         style: Theme.of(context).textTheme.bodySmall?.copyWith(
               color: const Color(0xFFCEE0D8),
             ),
@@ -481,9 +481,11 @@ class _ActiveWalkBannerState extends State<_ActiveWalkBanner> {
 
         final activeSeconds = walkActiveDurationSeconds(walk);
         final label = walk.isPaused
-            ? 'Passeggiata in pausa · ${walkDistanceLabel(walk.distanceMeters)}'
-            : 'Passeggiata in corso · ${walkElapsedLabel(activeSeconds)} · '
-                '${walkDistanceLabel(walk.distanceMeters)}';
+            ? context.l10n.shellWalkPausedBanner(walkDistanceLabel(walk.distanceMeters))
+            : context.l10n.shellWalkActiveBanner(
+                walkElapsedLabel(activeSeconds),
+                walkDistanceLabel(walk.distanceMeters),
+              );
         return Material(
           color: AppColors.primary,
           child: InkWell(

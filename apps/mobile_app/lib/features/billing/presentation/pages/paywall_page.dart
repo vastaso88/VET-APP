@@ -2,13 +2,12 @@ import 'package:flutter/material.dart';
 
 import '../../../../shared/widgets/pet_loader.dart';
 
-import 'package:intl/intl.dart';
-
 import '../../../../app/router/app_router.dart';
 import '../../../../design_system/tokens/app_colors.dart';
 import '../../../../design_system/tokens/app_radii.dart';
 import '../../../../design_system/tokens/app_spacing.dart';
 import '../../../../design_system/tokens/app_text_styles.dart';
+import '../../../../l10n/l10n.dart';
 import '../../data/billing_demo_store.dart';
 import '../../data/subscription_remote_data_source.dart';
 import '../../domain/billing_models.dart';
@@ -61,10 +60,10 @@ class _PaywallPageState extends State<PaywallPage> {
               AppSpacing.xxxl,
             ),
             children: [
-              Text('La tua prova gratuita è terminata.', style: AppTextStyles.display.copyWith(fontSize: 26)),
+              Text(context.l10n.billingPaywallTitle, style: AppTextStyles.display.copyWith(fontSize: 26)),
               const SizedBox(height: AppSpacing.sm),
               Text(
-                'Scegli come continuare con VetApp. Puoi cambiare piano quando vuoi da Impostazioni.',
+                context.l10n.billingPaywallSubtitle,
                 style: AppTextStyles.body,
               ),
               const SizedBox(height: AppSpacing.lg),
@@ -101,8 +100,8 @@ class _PaywallPlanCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final price = plan.priceFor(BillingCycle.monthly);
     final priceLabel = price == 0
-        ? 'Gratis'
-        : '${NumberFormat.currency(locale: 'it_IT', symbol: '€').format(price)}/mese';
+        ? context.l10n.billingPriceFree
+        : context.l10n.billingPricePerMonth(formatPlanAmount(price));
 
     return Container(
       padding: const EdgeInsets.all(AppSpacing.lg),
@@ -152,7 +151,7 @@ class _PaywallPlanCard extends StatelessWidget {
                       height: 18,
                       child: PetLoader.small(),
                     )
-                  : Text('Scegli ${plan.displayName}'),
+                  : Text(context.l10n.billingChoosePlan(plan.displayName)),
             ),
           ),
         ],

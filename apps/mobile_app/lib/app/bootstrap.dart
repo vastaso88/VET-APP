@@ -4,14 +4,15 @@ import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_web_plugins/url_strategy.dart';
-import 'package:intl/date_symbol_data_local.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'app.dart';
 import 'config/app_bootstrap_state.dart';
 import 'router/app_router.dart';
 import '../features/dog_walks/data/walk_home_widget.dart';
+import '../features/language/data/language_store.dart';
 import '../features/notifications/application/notification_scheduler.dart';
+import '../features/notifications/domain/notification_time_zone.dart';
 import '../features/pets/data/pet_photo_repository.dart';
 import '../features/settings/data/layout_settings_store.dart';
 import '../features/settings/data/unit_settings_store.dart';
@@ -19,9 +20,11 @@ import '../shared/config/app_runtime_config_loader.dart';
 
 Future<void> bootstrap() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await initializeDateFormatting('it_IT');
   // Measurement units and chat text size are read synchronously by display code.
-  unawaited(UnitSettingsStore.instance.ensureLoaded());
+  // Units load first: the language's default units must not overwrite them.
+  await UnitSettingsStore.instance.ensureLoaded();
+  // Saved (or suggested) language; also loads the date symbols for it.
+  await LanguageStore.instance.ensureLoaded();
   unawaited(LayoutSettingsStore.instance.ensureLoaded());
 
   // The app has no landscape layouts anywhere; rotating breaks several
@@ -88,9 +91,13 @@ Future<void> bootstrap() async {
     ),
   );
 
+  // Scheduled notifications carry their text already translated: reschedule
+  // them when the language changes.
+  LanguageStore.instance.addListener(NotificationScheduler.instance.requestResync);
+
   initWalkHomeWidgetLaunchHandling();
   // Reminder, medicine and birthday notifications on the phone (no-op on web).
-  NotificationScheduler.instance.start();
+  unawaited(initNotificationTimeZone().then((_) => NotificationScheduler.instance.start()));
 }
 
 /// On a cold start the recovery link can arrive before the first frame, when

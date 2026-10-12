@@ -4,6 +4,7 @@ import '../../../../design_system/tokens/app_colors.dart';
 import '../../../../design_system/tokens/app_radii.dart';
 import '../../../../design_system/tokens/app_spacing.dart';
 import '../../../../design_system/tokens/app_text_styles.dart';
+import '../../../../l10n/l10n.dart';
 import '../../../../shared/widgets/coming_soon_page.dart';
 import '../../../events/presentation/pages/events_page.dart';
 import '../../../local_events/presentation/pages/local_events_page.dart';
@@ -27,18 +28,18 @@ class ActivitiesPage extends StatelessWidget {
             AppSpacing.xxxl,
           ),
           children: [
-            Text('Attività', style: AppTextStyles.display.copyWith(fontSize: 28)),
+            Text(context.l10n.activitiesTitle, style: AppTextStyles.display.copyWith(fontSize: 28)),
             const SizedBox(height: AppSpacing.xs),
             Text(
-              'Tutto quello che ruota attorno alla vita con i tuoi animali.',
+              context.l10n.activitiesSubtitle,
               style: AppTextStyles.bodySmall,
             ),
             const SizedBox(height: AppSpacing.xl),
             _ActivityRow(
               icon: Icons.newspaper_outlined,
               iconTone: AppColors.primary,
-              title: 'Notizie',
-              subtitle: 'Curiosità e attualità sugli animali domestici.',
+              title: context.l10n.petNewsTitle,
+              subtitle: context.l10n.activitiesNewsSubtitle,
               onTap: () => Navigator.of(context).push(
                 MaterialPageRoute<void>(builder: (_) => const NewsFeedPage()),
               ),
@@ -46,8 +47,8 @@ class ActivitiesPage extends StatelessWidget {
             _ActivityRow(
               icon: Icons.map_outlined,
               iconTone: AppColors.info,
-              title: 'Vicino a me',
-              subtitle: 'Veterinari, negozi e aree cani vicino a te.',
+              title: context.l10n.activitiesNearbyTitle,
+              subtitle: context.l10n.activitiesNearbySubtitle,
               onTap: () => Navigator.of(context).push(
                 MaterialPageRoute<void>(builder: (_) => const LocalEventsPage()),
               ),
@@ -55,8 +56,8 @@ class ActivitiesPage extends StatelessWidget {
             _ActivityRow(
               icon: Icons.event_outlined,
               iconTone: AppColors.accent,
-              title: 'Eventi',
-              subtitle: 'Fiere, esposizioni e iniziative per animali in tutta Italia.',
+              title: context.l10n.activitiesEventsTitle,
+              subtitle: context.l10n.activitiesEventsSubtitle,
               onTap: () => Navigator.of(context).push(
                 MaterialPageRoute<void>(builder: (_) => const EventsPage()),
               ),
@@ -64,8 +65,8 @@ class ActivitiesPage extends StatelessWidget {
             _ActivityRow(
               icon: Icons.photo_library_outlined,
               iconTone: AppColors.info,
-              title: 'Galleria',
-              subtitle: 'Raccogli foto e ricordi dei tuoi animali.',
+              title: context.l10n.activitiesGalleryTitle,
+              subtitle: context.l10n.activitiesGallerySubtitle,
               onTap: () => Navigator.of(context).push(
                 MaterialPageRoute<void>(builder: (_) => const GalleryFoldersPage()),
               ),
@@ -73,8 +74,8 @@ class ActivitiesPage extends StatelessWidget {
             _ActivityRow(
               icon: Icons.storefront_outlined,
               iconTone: AppColors.warning,
-              title: 'Mercatino dell\'usato',
-              subtitle: 'Compra, vendi e scambia articoli per animali.',
+              title: context.l10n.activitiesMarketplaceTitle,
+              subtitle: context.l10n.activitiesMarketplaceSubtitle,
               onTap: () => Navigator.of(context).push(
                 MaterialPageRoute<void>(builder: (_) => const MarketplacePage()),
               ),
@@ -82,16 +83,15 @@ class ActivitiesPage extends StatelessWidget {
             _ActivityRow(
               icon: Icons.favorite_outline,
               iconTone: AppColors.accent,
-              title: 'Pet friend',
-              subtitle: 'Incontri e compagnia tra animali e proprietari.',
-              badge: 'In arrivo',
+              title: context.l10n.activitiesPetFriendTitle,
+              subtitle: context.l10n.activitiesPetFriendSubtitle,
+              badge: context.l10n.activitiesComingSoonBadge,
               onTap: () => Navigator.of(context).push(
                 MaterialPageRoute<void>(
-                  builder: (_) => const ComingSoonPage(
-                    title: 'Pet friend',
+                  builder: (_) => ComingSoonPage(
+                    title: context.l10n.activitiesPetFriendTitle,
                     icon: Icons.favorite_outline,
-                    description:
-                        'Incontra altri proprietari e organizza uscite tra animali con affinità simili.',
+                    description: context.l10n.activitiesPetFriendDescription,
                   ),
                 ),
               ),

@@ -6,10 +6,12 @@ import '../../../../design_system/tokens/app_colors.dart';
 import '../../../../design_system/tokens/app_radii.dart';
 import '../../../../design_system/tokens/app_spacing.dart';
 import '../../../../design_system/tokens/app_text_styles.dart';
+import '../../../../l10n/l10n.dart';
 import '../../../dog_walks/data/walk_home_widget.dart';
 import '../../data/pet_demo_store.dart';
 import '../../domain/pet_format.dart';
 import '../../domain/pet_models.dart';
+import '../../domain/pet_value_labels.dart';
 import '../widgets/pet_avatar.dart';
 import '../widgets/pets_scaffold.dart';
 import '../widgets/pets_state_views.dart';
@@ -21,11 +23,11 @@ class PetsListPage extends StatefulWidget {
   const PetsListPage({
     super.key,
     this.state = PetsScreenStatus.success,
-    this.errorMessage = 'Al momento non riesco a caricare i profili pet.',
+    this.errorMessage,
   });
 
   final PetsScreenStatus state;
-  final String errorMessage;
+  final String? errorMessage;
 
   @override
   State<PetsListPage> createState() => _PetsListPageState();
@@ -69,7 +71,7 @@ class _PetsListPageState extends State<PetsListPage> {
     final state = widget.state;
 
     return PetsScaffold(
-      title: 'Animali',
+      title: context.l10n.petsListTitle,
       subtitle: petProfilesCountLabel(PetDemoStore.instance.list().length),
       actions: [
         if (PetDemoStore.instance.memorialPets().isNotEmpty)
@@ -78,7 +80,7 @@ class _PetsListPageState extends State<PetsListPage> {
             icon: const Icon(Icons.auto_awesome_outlined),
             color: Colors.white,
             style: IconButton.styleFrom(backgroundColor: AppColors.secondary),
-            tooltip: 'Ricordi',
+            tooltip: context.l10n.petsListMemoriesTooltip,
           ),
         IconButton(
           onPressed: () => _openCreate(context),
@@ -89,17 +91,17 @@ class _PetsListPageState extends State<PetsListPage> {
       ],
       body: switch (state) {
         PetsScreenStatus.loading =>
-          const PetsLoadingView(label: 'Carico la lista pet...'),
+          PetsLoadingView(label: context.l10n.petsListLoading),
         PetsScreenStatus.error => PetsErrorView(
-            title: 'Pet non disponibili',
-            subtitle: widget.errorMessage,
-            actionLabel: 'Indietro',
+            title: context.l10n.petsListErrorTitle,
+            subtitle: widget.errorMessage ?? context.l10n.petsListErrorDefault,
+            actionLabel: context.l10n.commonBack,
             onRetry: () => Navigator.of(context).maybePop(),
           ),
         PetsScreenStatus.empty => PetsEmptyView(
-            title: 'Nessun pet ancora',
-            subtitle: 'Crea il primo profilo per tenere sotto controllo salute, note e scadenze.',
-            actionLabel: 'Crea pet',
+            title: context.l10n.petsListEmptyTitle,
+            subtitle: context.l10n.petsListEmptySubtitle,
+            actionLabel: context.l10n.petsListEmptyAction,
             onAction: () => _openCreate(context),
           ),
         PetsScreenStatus.success => _PetsListContent(
@@ -165,7 +167,7 @@ class _PetsListContent extends StatelessWidget {
           child: Row(
             children: [
               _SpeciesChip(
-                label: 'Tutti',
+                label: localizedSpeciesLabel('Tutti'),
                 selected: selectedSpecies == 'Tutti',
                 onTap: () => onSpeciesChanged('Tutti'),
               ),
@@ -174,7 +176,7 @@ class _PetsListContent extends StatelessWidget {
                 (option) => Padding(
                   padding: const EdgeInsets.only(right: AppSpacing.sm),
                   child: _SpeciesChip(
-                    label: option.label,
+                    label: localizedSpeciesLabel(option.label),
                     selected: selectedSpecies == option.label,
                     onTap: () => onSpeciesChanged(option.label),
                   ),
@@ -188,7 +190,7 @@ class _PetsListContent extends StatelessWidget {
           child: pets.isEmpty
               ? Center(
                   child: Text(
-                    'Nessun pet per questo filtro.',
+                    context.l10n.petsListFilterEmpty,
                     style: AppTextStyles.body,
                   ),
                 )
@@ -243,7 +245,7 @@ class _PetRow extends StatelessWidget {
                     ),
                     const SizedBox(height: 2),
                     Text(
-                      '${pet.species} · ${pet.breedLabel}',
+                      '${localizedSpeciesLabel(pet.species)} · ${pet.breedLabel}',
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: AppTextStyles.bodySmall,

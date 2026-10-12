@@ -1,3 +1,5 @@
+import '../../../l10n/l10n.dart';
+
 /// An imported dataset as reported by the backend (`/local-services/sources`).
 class RadarDataSource {
   const RadarDataSource({required this.source, required this.release, required this.importedAt});
@@ -22,71 +24,97 @@ class RadarDataSource {
 
 /// What the app says about a source wherever its data is shown. Kept in
 /// the app, not fetched: the attribution must be right even when the
-/// backend is unreachable.
+/// backend is unreachable. Names are proper nouns and stay as they are;
+/// descriptions, attributions and license names follow the app language.
 class RadarSourceInfo {
-  const RadarSourceInfo({
-    required this.source,
-    required this.name,
-    required this.description,
-    required this.attribution,
-    required this.license,
-    required this.url,
-  });
+  const RadarSourceInfo({required this.source, required String name, required this.url})
+      : _name = name;
 
   /// Backend `source_name` of the places that come from this source.
   final String source;
-  final String name;
-  final String description;
-  final String attribution;
-  final String license;
+  final String _name;
   final String url;
+
+  String get name => source == _userSource ? appL10n.placesSourceUsersName : _name;
+
+  String get description {
+    final l10n = appL10n;
+    switch (source) {
+      case 'openstreetmap_overpass':
+        return l10n.placesSourceOsmDescription;
+      case 'overture':
+        return l10n.placesSourceOvertureDescription;
+      case 'comune_bologna':
+        return l10n.placesSourceBolognaDescription;
+      case 'comune_torino':
+        return l10n.placesSourceTorinoDescription;
+      case 'comune_milano':
+        return l10n.placesSourceMilanoDescription;
+      default:
+        return l10n.placesSourceUsersDescription;
+    }
+  }
+
+  String get attribution {
+    final l10n = appL10n;
+    switch (source) {
+      case 'openstreetmap_overpass':
+        return '© OpenStreetMap contributors';
+      case 'overture':
+        return '© Overture Maps Foundation — Places';
+      case 'comune_bologna':
+        return l10n.placesSourceBolognaAttribution;
+      case 'comune_torino':
+        return l10n.placesSourceTorinoAttribution;
+      case 'comune_milano':
+        return l10n.placesSourceMilanoAttribution;
+      default:
+        return l10n.placesSourceUsersAttribution;
+    }
+  }
+
+  String get license {
+    switch (source) {
+      case 'openstreetmap_overpass':
+        return 'Open Database License (ODbL) 1.0';
+      case 'overture':
+        return 'Community Data License Agreement – Permissive 2.0';
+      case 'comune_bologna':
+      case 'comune_torino':
+      case 'comune_milano':
+        return appL10n.placesSourceLicenseCcBy;
+      default:
+        return '';
+    }
+  }
 }
+
+const _userSource = 'vetapp_users';
 
 const radarSourceCatalog = [
   RadarSourceInfo(
     source: 'openstreetmap_overpass',
     name: 'OpenStreetMap',
-    description: 'Mappa libera curata da volontari. Fonte delle aree cani e di parte di '
-        'veterinari, negozi e altri servizi, con i dettagli che i volontari hanno indicato.',
-    attribution: '© OpenStreetMap contributors',
-    license: 'Open Database License (ODbL) 1.0',
     url: 'https://www.openstreetmap.org/copyright',
   ),
   RadarSourceInfo(
     source: 'overture',
     name: 'Overture Maps',
-    description: 'Archivio aperto di attività commerciali. Fonte di veterinari, toelettature, '
-        'negozi, pensioni e addestratori che OpenStreetMap non conosce.',
-    attribution: '© Overture Maps Foundation — Places',
-    license: 'Community Data License Agreement – Permissive 2.0',
     url: 'https://docs.overturemaps.org/attribution/',
   ),
   RadarSourceInfo(
     source: 'comune_bologna',
     name: 'Comune di Bologna',
-    description: 'Elenco ufficiale delle aree di sgambatura per cani del Comune di Bologna.',
-    attribution: 'Comune di Bologna, Aree sgambatura cani '
-        '(opendata.comune.bologna.it), licenza CC BY 4.0',
-    license: 'Creative Commons Attribuzione 4.0 (CC BY 4.0)',
     url: 'https://opendata.comune.bologna.it/explore/dataset/sgambatura_cani/',
   ),
   RadarSourceInfo(
     source: 'comune_torino',
     name: 'Città di Torino',
-    description: 'Elenco ufficiale delle aree cani della Città di Torino.',
-    attribution: 'Comune di Torino, Aree Cani (aperto.comune.torino.it), '
-        'licenza CC BY 4.0, dati del 2019',
-    license: 'Creative Commons Attribuzione 4.0 (CC BY 4.0)',
     url: 'https://aperto.comune.torino.it/dataset/aree-cani',
   ),
   RadarSourceInfo(
     source: 'comune_milano',
     name: 'Comune di Milano',
-    description: 'Elenco ufficiale delle aree cani del Comune di Milano.',
-    attribution: 'Comune di Milano, Territorio: localizzazione delle aree cani '
-        '(dati.comune.milano.it), licenza CC BY 4.0. Contiene elaborazioni di dati CC BY 3.0 '
-        'da dati.gov.it',
-    license: 'Creative Commons Attribuzione 4.0 (CC BY 4.0)',
     url: 'https://dati.comune.milano.it/dataset/ds52_infogeo_aree_cani_localizzazione',
   ),
 ];
@@ -94,14 +122,8 @@ const radarSourceCatalog = [
 /// Places added through "Segnala!". Not an imported dataset, so not part
 /// of [radarSourceCatalog] (the "Fonti dati" list), but still a source a
 /// place card must name.
-const radarUserSourceInfo = RadarSourceInfo(
-  source: 'vetapp_users',
-  name: 'Utenti VetApp',
-  description: 'Luoghi segnalati dagli utenti e confermati da altri utenti.',
-  attribution: 'Segnalato dagli utenti VetApp',
-  license: '',
-  url: '',
-);
+// The name is localized by [RadarSourceInfo.name].
+const radarUserSourceInfo = RadarSourceInfo(source: _userSource, name: '', url: '');
 
 RadarSourceInfo? radarSourceInfo(String source) {
   if (source == radarUserSourceInfo.source) {

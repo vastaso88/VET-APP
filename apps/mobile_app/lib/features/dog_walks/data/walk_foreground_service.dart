@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:geolocator/geolocator.dart' as geolocator;
 
+import '../../../l10n/l10n.dart';
 import '../../pets/data/pet_demo_store.dart';
 import '../domain/walk_session.dart';
 import '../presentation/walk_labels.dart';
@@ -29,18 +30,20 @@ class WalkNotificationContent {
     final at = now ?? DateTime.now();
     final activeSeconds = walkActiveDurationSeconds(walk, now: at);
     final name = petName?.trim() ?? '';
-    final baseTitle = name.isEmpty ? 'Passeggiata in corso' : 'Passeggiata con $name';
+    final l10n = appL10n;
     final distance = walkDistanceLabel(walk.distanceMeters);
     if (walk.isPaused) {
       return WalkNotificationContent(
-        title: '$baseTitle · in pausa',
+        title: name.isEmpty
+            ? l10n.walksNotifTitleNoPetPaused
+            : l10n.walksNotifTitleWithPetPaused(name),
         text: '${walkDurationLabel(activeSeconds)} · $distance',
         isPaused: true,
       );
     }
     return WalkNotificationContent(
-      title: baseTitle,
-      text: '$distance percorsi',
+      title: name.isEmpty ? l10n.walksStatusInProgress : l10n.walksNotifTitleWithPet(name),
+      text: l10n.walksNotifRunningText(distance),
       isPaused: false,
       chronometerBase: at.subtract(Duration(seconds: activeSeconds)),
     );

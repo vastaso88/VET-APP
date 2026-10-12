@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../../../l10n/l10n.dart';
 import '../../../../shared/widgets/pet_loader.dart';
 import '../../../pets/domain/pet_models.dart';
 import '../../data/active_walk_controller.dart';
@@ -23,29 +24,31 @@ Future<void> showWalkControlSheet(BuildContext context, {required PetProfile pet
         children: [
           ListTile(
             leading: const Icon(Icons.map_outlined),
-            title: const Text('Apri passeggiata'),
+            title: Text(context.l10n.walksSheetOpen),
             onTap: () => Navigator.of(context).pop('open'),
           ),
           ListTile(
             leading: const Icon(Icons.photo_camera_outlined),
-            title: const Text('Scatta foto'),
+            title: Text(context.l10n.walksCaptureTakePhoto),
             onTap: () => Navigator.of(context).pop('photo'),
           ),
           ListTile(
             leading: const Icon(Icons.videocam_outlined),
-            title: const Text('Registra video'),
+            title: Text(context.l10n.walksCaptureRecordVideo),
             onTap: () => Navigator.of(context).pop('video'),
           ),
           ListTile(
             leading: Icon(
               walk.isPaused ? Icons.play_circle_outline : Icons.pause_circle_outline,
             ),
-            title: Text(walk.isPaused ? 'Riavvia' : 'Pausa'),
+            title: Text(
+              walk.isPaused ? context.l10n.walksActionResume : context.l10n.walksActionPause,
+            ),
             onTap: () => Navigator.of(context).pop(walk.isPaused ? 'resume' : 'pause'),
           ),
           ListTile(
             leading: const Icon(Icons.stop_circle_outlined),
-            title: const Text('Fine passeggiata'),
+            title: Text(context.l10n.walksSheetFinish),
             onTap: () => Navigator.of(context).pop('finish'),
           ),
         ],
@@ -86,16 +89,16 @@ Future<void> confirmAndFinishWalk(BuildContext context, {required PetProfile pet
   final confirmed = await showDialog<bool>(
     context: context,
     builder: (dialogContext) => AlertDialog(
-      title: Text('Terminare la passeggiata con ${pet.name}?'),
-      content: const Text('Il percorso registrato finora verrà salvato.'),
+      title: Text(dialogContext.l10n.walksConfirmFinishTitle(pet.name)),
+      content: Text(dialogContext.l10n.walksConfirmFinishBody),
       actions: [
         TextButton(
           onPressed: () => Navigator.of(dialogContext).pop(false),
-          child: const Text('Continua'),
+          child: Text(dialogContext.l10n.commonContinue),
         ),
         FilledButton(
           onPressed: () => Navigator.of(dialogContext).pop(true),
-          child: const Text('Termina'),
+          child: Text(dialogContext.l10n.walksActionFinish),
         ),
       ],
     ),
@@ -108,13 +111,13 @@ Future<void> _finishWithProgress(BuildContext context, PetProfile pet) async {
   // The sheet is gone and saving can take seconds: say so meanwhile.
   final messenger = ScaffoldMessenger.of(context);
   messenger.showSnackBar(
-    const SnackBar(
-      duration: Duration(minutes: 1),
+    SnackBar(
+      duration: const Duration(minutes: 1),
       content: Row(
         children: [
-          PetLoader.small(),
-          SizedBox(width: 12),
-          Text('Salvo la passeggiata...'),
+          const PetLoader.small(),
+          const SizedBox(width: 12),
+          Text(context.l10n.walksSavingSnackbar),
         ],
       ),
     ),

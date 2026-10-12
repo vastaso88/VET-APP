@@ -6,8 +6,10 @@ import '../../../../shared/widgets/pet_loader.dart';
 
 
 import '../../../../design_system/tokens/app_spacing.dart';
+import '../../../../l10n/l10n.dart';
 import '../../../../shared/config/app_runtime_config_loader.dart';
 import '../../data/auth_repository_factory.dart';
+import '../../domain/auth_error_messages.dart';
 import '../widgets/auth_widgets.dart';
 import 'login_page.dart';
 import 'set_new_password_page.dart';
@@ -40,8 +42,8 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
     if (!isValid) {
       setState(() {
         _status = AuthBannerStatus.error;
-        _title = 'Email non valida';
-        _message = 'Inserisci un indirizzo email corretto per continuare.';
+        _title = context.l10n.authResetInvalidTitle;
+        _message = context.l10n.authResetInvalidMessage;
       });
       return;
     }
@@ -49,8 +51,8 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
     setState(() {
       _isLoading = true;
       _status = AuthBannerStatus.loading;
-      _title = 'Invio in corso';
-      _message = 'Sto preparando la richiesta di recupero password.';
+      _title = context.l10n.authResetLoadingTitle;
+      _message = context.l10n.authResetLoadingMessage;
     });
 
     final email = _emailController.text.trim();
@@ -72,16 +74,16 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
         setState(() {
           _isLoading = false;
           _status = AuthBannerStatus.success;
-          _title = 'Email inviata';
-          _message = 'Se l account esiste, riceverai il link per il recupero accesso.';
+          _title = context.l10n.authResetSuccessTitle;
+          _message = context.l10n.authResetSuccessMessage;
         });
       },
       onFailure: (error) {
         setState(() {
           _isLoading = false;
           _status = AuthBannerStatus.error;
-          _title = 'Invio non riuscito';
-          _message = error.message;
+          _title = context.l10n.authResetFailureTitle;
+          _message = localizedAuthMessage(error);
         });
       },
     );
@@ -90,8 +92,8 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
   @override
   Widget build(BuildContext context) {
     return AuthScreenScaffold(
-      title: 'Recupera l accesso.',
-      subtitle: 'Inserisci la tua email: ti mandiamo un link per reimpostare la password.',
+      title: context.l10n.authResetTitle,
+      subtitle: context.l10n.authResetSubtitle,
       child: Form(
         key: _formKey,
         child: Column(
@@ -101,14 +103,14 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
               AuthStateBanner(status: _status!, title: _title, message: _message),
             AuthInputField(
               controller: _emailController,
-              label: 'Email',
-              hintText: 'nome@dominio.it',
+              label: context.l10n.authEmailLabel,
+              hintText: context.l10n.authEmailHint,
               keyboardType: TextInputType.emailAddress,
               autofillHints: const [AutofillHints.email],
               validator: (value) {
                 final text = value?.trim() ?? '';
-                if (text.isEmpty) return 'Inserisci la tua email.';
-                if (!text.contains('@')) return 'Email non valida.';
+                if (text.isEmpty) return context.l10n.authEmailRequired;
+                if (!text.contains('@')) return context.l10n.authEmailInvalid;
                 return null;
               },
             ),
@@ -123,12 +125,12 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
                         height: 20,
                         child: PetLoader.small(),
                       )
-                    : const Text('Invia link'),
+                    : Text(context.l10n.authResetSendButton),
               ),
             ),
             const SizedBox(height: AppSpacing.md),
             AuthFooterLink(
-              label: 'Torna all accesso',
+              label: context.l10n.authBackToLoginLink,
               onTap: () => Navigator.of(context).push(
                 MaterialPageRoute<void>(builder: (_) => const LoginPage()),
               ),

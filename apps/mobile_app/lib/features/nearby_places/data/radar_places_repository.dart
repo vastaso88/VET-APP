@@ -10,6 +10,7 @@ import '../../../shared/types/result.dart';
 import '../../location/domain/coordinates.dart';
 import '../domain/radar_data_source.dart';
 import '../domain/radar_place.dart';
+import '../../../l10n/l10n.dart';
 
 /// Pet services around a point, from the backend's `/local-services/places`.
 /// The radius is honored by the backend up to its configured maximum
@@ -92,19 +93,13 @@ class RadarPlacesRepository {
     // per vedere..."), which was wrong for a build without a backend.
     if (baseUrl.isEmpty) {
       return Result.failure(
-        const AppNetworkError(
-          code: notConfiguredErrorCode,
-          message: 'Anteprima senza backend: i luoghi mostrati sono dati di esempio.',
-        ),
+        AppNetworkError(code: notConfiguredErrorCode, message: appL10n.placesErrNotConfigured),
       );
     }
     final token = CurrentUser.accessToken();
     if (token == null || token.isEmpty) {
       return Result.failure(
-        const AppNetworkError(
-          code: signedOutErrorCode,
-          message: 'Accedi per vedere i servizi per animali vicino a te.',
-        ),
+        AppNetworkError(code: signedOutErrorCode, message: appL10n.placesErrSignedOut),
       );
     }
 
@@ -125,18 +120,14 @@ class RadarPlacesRepository {
         // The backend could not import this area from OpenStreetMap right
         // now (busy or rate-limited provider). Usually clears on its own.
         return Result.failure(
-          const AppNetworkError(
-            code: preparingErrorCode,
-            message: 'Sto ancora preparando i servizi di questa zona. Riprova tra poco.',
-          ),
+          AppNetworkError(code: preparingErrorCode, message: appL10n.placesErrPreparing),
         );
       }
       if (response.statusCode == 401 || response.statusCode == 403) {
         return Result.failure(
-          const AppNetworkError(
+          AppNetworkError(
             code: sessionExpiredErrorCode,
-            message: 'La sessione non è più valida: esci e accedi di nuovo per vedere i '
-                'servizi vicini.',
+            message: appL10n.placesErrSessionExpired,
           ),
         );
       }
@@ -144,7 +135,7 @@ class RadarPlacesRepository {
         return Result.failure(
           AppNetworkError(
             code: 'radar_places_http_${response.statusCode}',
-            message: 'Non sono riuscito a caricare i servizi vicini. Riprova.',
+            message: appL10n.placesErrLoadFailed,
           ),
         );
       }
@@ -168,16 +159,13 @@ class RadarPlacesRepository {
       );
     } on TimeoutException {
       return Result.failure<RadarPlacesResult>(
-        const AppNetworkError(
-          code: preparingErrorCode,
-          message: 'Sto ancora preparando i servizi di questa zona. Riprova tra poco.',
-        ),
+        AppNetworkError(code: preparingErrorCode, message: appL10n.placesErrPreparing),
       );
     } catch (e) {
       return Result.failure<RadarPlacesResult>(
         AppNetworkError(
           code: 'radar_places_unexpected_error',
-          message: 'Non sono riuscito a caricare i servizi vicini. Riprova.',
+          message: appL10n.placesErrLoadFailed,
           details: e,
         ),
       );

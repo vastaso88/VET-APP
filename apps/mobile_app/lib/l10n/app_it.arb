@@ -1,0 +1,2821 @@
+{
+  "@@locale": "it",
+  "appTitle": "VET APP",
+  "commonCancel": "Annulla",
+  "commonSave": "Salva",
+  "commonDelete": "Elimina",
+  "commonClose": "Chiudi",
+  "commonConfirm": "Conferma",
+  "commonOk": "OK",
+  "commonRetry": "Riprova",
+  "commonBack": "Indietro",
+  "commonNext": "Avanti",
+  "commonSkip": "Salta",
+  "commonEdit": "Modifica",
+  "commonAdd": "Aggiungi",
+  "commonYes": "Sì",
+  "commonNo": "No",
+  "commonLoading": "Caricamento…",
+  "commonDone": "Fatto",
+  "commonContinue": "Continua",
+  "commonSearch": "Cerca",
+  "commonShare": "Condividi",
+  "languagePickerTitle": "Scegli la tua lingua",
+  "languagePickerSubtitle": "Potrai cambiarla in qualsiasi momento da Impostazioni.",
+  "languageSectionTitle": "Lingua",
+  "languageSectionHint": "Cambiando lingua cambiano anche le unità di misura predefinite, se non le hai già scelte tu.",
+  "authBannerCheckFieldsTitle": "Controlla i campi",
+  "authLoginFieldsInvalidMessage": "Servono una email valida e una password di almeno 6 caratteri.",
+  "authLoginLoadingTitle": "Accesso in corso",
+  "authLoginLoadingMessage": "Sto verificando le credenziali.",
+  "authLoginSuccessTitle": "Accesso completato",
+  "authLoginSuccessMessage": "La sessione e pronta. Ti porto nel flusso principale.",
+  "authLoginFailureTitle": "Accesso non riuscito",
+  "authLoginTitle": "Bentornato.",
+  "authLoginSubtitle": "Accedi per ritrovare i tuoi animali, promemoria e documenti.",
+  "authEmailLabel": "Email",
+  "authEmailHint": "nome@dominio.it",
+  "authEmailRequired": "Inserisci la tua email.",
+  "authEmailInvalid": "Email non valida.",
+  "authPasswordLabel": "Password",
+  "authPasswordHint": "Almeno 6 caratteri",
+  "authPasswordRequiredLogin": "Inserisci la password.",
+  "authPasswordRequiredNew": "Inserisci una password.",
+  "authPasswordMinLength": "Minimo 6 caratteri.",
+  "authPasswordShow": "Mostra password",
+  "authPasswordHide": "Nascondi password",
+  "authRememberMe": "Resta connesso",
+  "authForgotPasswordLink": "Password dimenticata?",
+  "authLoginButton": "Accedi",
+  "authNoAccountRegisterLink": "Non hai un account? Registrati",
+  "authTermsOfServiceLabel": "Termini di Servizio",
+  "authPrivacyPolicyLabel": "Informativa Privacy",
+  "authTermsAcceptance": "Accetto i {terms} e l'{privacy}",
+  "@authTermsAcceptance": {
+    "placeholders": {
+      "terms": {
+        "type": "String"
+      },
+      "privacy": {
+        "type": "String"
+      }
+    }
+  },
+  "authRegisterCheckTitle": "Serve un ultimo controllo",
+  "authRegisterTermsRequired": "Devi accettare privacy e disclaimer per continuare.",
+  "authRegisterFieldsInvalid": "Controlla i campi: nome, email e password devono essere validi.",
+  "authRegisterLoadingTitle": "Creazione account",
+  "authRegisterLoadingMessage": "Sto creando l account e preparando la sessione iniziale.",
+  "authRegisterSuccessTitle": "Account pronto",
+  "authRegisterSuccessMessage": "Registrazione completata. Ti porto nella home.",
+  "authRegisterFailureTitle": "Account non creato",
+  "authRegisterTitle": "Crea il tuo profilo.",
+  "authRegisterSubtitle": "Pochi campi per iniziare a gestire salute e documenti dei tuoi animali.",
+  "authNameLabel": "Nome",
+  "authNameHint": "Il tuo nome",
+  "authNameRequired": "Inserisci il tuo nome.",
+  "authConfirmPasswordLabel": "Conferma password",
+  "authConfirmPasswordHint": "Ripeti la password",
+  "authPasswordsMismatch": "Le password non coincidono.",
+  "authRegisterButton": "Crea account",
+  "authHaveAccountLoginLink": "Hai già un account? Accedi",
+  "authResetInvalidTitle": "Email non valida",
+  "authResetInvalidMessage": "Inserisci un indirizzo email corretto per continuare.",
+  "authResetLoadingTitle": "Invio in corso",
+  "authResetLoadingMessage": "Sto preparando la richiesta di recupero password.",
+  "authResetSuccessTitle": "Email inviata",
+  "authResetSuccessMessage": "Se l account esiste, riceverai il link per il recupero accesso.",
+  "authResetFailureTitle": "Invio non riuscito",
+  "authResetTitle": "Recupera l accesso.",
+  "authResetSubtitle": "Inserisci la tua email: ti mandiamo un link per reimpostare la password.",
+  "authResetSendButton": "Invia link",
+  "authBackToLoginLink": "Torna all accesso",
+  "authSetPasswordLoadingTitle": "Aggiornamento in corso",
+  "authSetPasswordLoadingMessage": "Sto salvando la nuova password.",
+  "authSetPasswordFailureTitle": "Aggiornamento non riuscito",
+  "authSetPasswordTitle": "Imposta una nuova password.",
+  "authSetPasswordSubtitle": "Scegli una nuova password per il tuo account.",
+  "authNewPasswordLabel": "Nuova password",
+  "authSetPasswordSaveButton": "Salva nuova password",
+  "authLegalShareTooltip": "Condividi o scarica",
+  "authLegalLoadError": "Non riesco a caricare il testo adesso. Riprova tra poco.",
+  "authLegalPreparingNotice": "Il testo completo dell'informativa è in preparazione e sarà disponibile qui a breve, con la possibilità di scaricarlo.",
+  "authHubTitle": "VetApp: i tuoi pet a portata di zampa",
+  "authHubSubtitle": "Accedi al tuo account oppure creane uno nuovo in pochi secondi.",
+  "authHubCreateAccount": "Crea un account",
+  "authHubPrivacyNote": "I tuoi dati restano privati e li usiamo solo per gestire il profilo del tuo pet.",
+  "authErrorEmailExists": "Esiste già un account con questa email. Prova ad accedere.",
+  "authErrorWeakPassword": "La password è troppo debole: usa almeno 6 caratteri, meglio se con numeri o lettere maiuscole.",
+  "authErrorEmailInvalid": "L'indirizzo email non sembra valido.",
+  "authErrorNoConnection": "Nessuna connessione. Controlla la rete e riprova.",
+  "authErrorLinkExpired": "Il link non è più valido o è già stato usato. Richiedine uno nuovo dalla schermata di recupero.",
+  "authErrorRateLimit": "Hai richiesto troppe email in poco tempo. Aspetta qualche minuto e riprova.",
+  "authErrorInvalidCredentials": "Email o password non corrette.",
+  "authErrorEmailNotConfirmed": "Devi prima confermare la tua email: controlla la posta e apri il link che ti abbiamo mandato.",
+  "authErrorEmailNotFound": "Non esiste un account con questa email.",
+  "authErrorGeneric": "Qualcosa non è andato come previsto. Riprova tra poco.",
+  "authNetworkTimeout": "La richiesta ha impiegato troppo tempo. Riprova.",
+  "authNetworkUnexpected": "Qualcosa e' andato storto. Riprova.",
+  "consentsErrorLoad": "Non sono riuscito a leggere i tuoi consensi. Riprova.",
+  "consentsErrorSave": "Non sono riuscito a salvare la tua scelta. Riprova.",
+  "billingErrorStatus": "Non sono riuscito a verificare il tuo abbonamento. Riprova.",
+  "billingErrorSelectPlan": "Non sono riuscito a salvare il piano scelto. Riprova.",
+  "billingIncludedPets": "Profili dei tuoi animali",
+  "billingIncludedAssistant": "Assistente per dubbi su salute, comportamento e routine",
+  "billingIncludedChatMedia": "Foto, PDF e dettatura vocale nella chat",
+  "billingIncludedReminders": "Promemoria",
+  "billingIncludedNearbyServices": "Servizi per animali nei dintorni",
+  "billingFreePlaceholder": "Limiti del piano Free: da definire",
+  "billingPlusPlaceholder": "Funzioni extra del piano Plus: da definire",
+  "billingProPlaceholder": "Funzioni extra del piano Pro: da definire",
+  "billingPlanBadgeRecommended": "Consigliato",
+  "billingIncludedInAllPlans": "Incluso in tutti i piani",
+  "billingPriceFree": "Gratis",
+  "billingPricePerMonth": "{amount}/mese",
+  "@billingPricePerMonth": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "billingPricePerMonthYearly": "{amount}/mese, fatturato annualmente",
+  "@billingPricePerMonthYearly": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "billingTitle": "Abbonamento e pagamenti",
+  "billingPlanSwitched": "Ora sei sul piano {plan}.",
+  "@billingPlanSwitched": {
+    "placeholders": {
+      "plan": {
+        "type": "String"
+      }
+    }
+  },
+  "billingPaymentHistory": "Cronologia pagamenti",
+  "billingPaymentHistoryComingSoon": "Le tue fatture e ricevute saranno consultabili qui.",
+  "billingComparePlans": "Confronta i piani",
+  "billingPaymentMethodsSection": "Metodi di pagamento",
+  "billingInvoicingSection": "Fatturazione",
+  "billingTrialBannerTitle": "Prova gratuita in corso",
+  "billingTrialBannerDaysLeft": "Ti restano {days} giorni gratis, nessuna carta richiesta. Scegli un piano quando vuoi, o alla scadenza.",
+  "@billingTrialBannerDaysLeft": {
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+  "billingTrialBannerEnding": "La prova gratuita sta per terminare: scegli un piano per continuare a usare VetApp.",
+  "billingDeveloperBanner": "Account sviluppatore: accesso illimitato, nessun piano richiesto.",
+  "billingCurrentPlanLabel": "Il tuo piano",
+  "billingRenewalOn": "Rinnovo il {date}",
+  "@billingRenewalOn": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "billingCycleMonthly": "Mensile",
+  "billingCycleYearly": "Annuale",
+  "billingCurrentPlanButton": "Piano attuale",
+  "billingBackToFree": "Torna a Free",
+  "billingSwitchToPlan": "Passa a {plan}",
+  "@billingSwitchToPlan": {
+    "placeholders": {
+      "plan": {
+        "type": "String"
+      }
+    }
+  },
+  "billingCardExpires": "Scade {expiry}",
+  "@billingCardExpires": {
+    "placeholders": {
+      "expiry": {
+        "type": "String"
+      }
+    }
+  },
+  "billingCardExpiresDefault": "Scade {expiry} · Predefinita",
+  "@billingCardExpiresDefault": {
+    "placeholders": {
+      "expiry": {
+        "type": "String"
+      }
+    }
+  },
+  "billingSetDefault": "Imposta come predefinita",
+  "billingRemove": "Rimuovi",
+  "billingAddPaymentMethod": "Aggiungi metodo di pagamento",
+  "billingCardBrandLabel": "Circuito",
+  "billingCardLast4Label": "Ultime 4 cifre",
+  "billingCardLast4Error": "Inserisci 4 cifre",
+  "billingExpiryMonthLabel": "Mese",
+  "billingExpiryYearLabel": "Anno",
+  "billingPaywallTitle": "La tua prova gratuita è terminata.",
+  "billingPaywallSubtitle": "Scegli come continuare con VetApp. Puoi cambiare piano quando vuoi da Impostazioni.",
+  "billingChoosePlan": "Scegli {plan}",
+  "@billingChoosePlan": {
+    "placeholders": {
+      "plan": {
+        "type": "String"
+      }
+    }
+  },
+  "billingTrialDialogTitle": "{daysLeft, plural, =1{Ultimo giorno di prova} other{Ti restano {daysLeft} giorni di prova}}",
+  "@billingTrialDialogTitle": {
+    "placeholders": {
+      "daysLeft": {
+        "type": "int"
+      }
+    }
+  },
+  "billingTrialDialogBody": "Con il piano Free alcune funzioni sono limitate. Passa a Plus o Pro per avere tutto senza limiti quando la prova finisce.",
+  "billingTrialDialogLater": "Più tardi",
+  "billingTrialDialogSeePlans": "Vedi i piani",
+  "firstRunWelcomeTitle": "Benvenuto in VetApp.",
+  "firstRunPlanIntroSubtitle": "Scegli come iniziare: puoi provare tutto gratis per 10 giorni, senza carta, oppure scegliere subito un piano.",
+  "firstRunPlanOrChoose": "OPPURE SCEGLI SUBITO UN PIANO",
+  "firstRunTrialCardTitle": "Prova gratuita — 10 giorni",
+  "firstRunTrialCardBody": "Nessuna carta richiesta. Alla scadenza dei 10 giorni ti chiederemo di scegliere un piano per continuare.",
+  "firstRunTrialStartButton": "Inizia la prova gratuita",
+  "firstRunPlanSelectButton": "Scegli",
+  "firstRunAddPetTitle": "Aggiungi il tuo primo animale",
+  "firstRunAddPetBody": "Bastano un paio di minuti: nome, specie e qualche dettaglio. Puoi farlo anche più tardi da Animali.",
+  "firstRunAddPetNow": "Aggiungi ora",
+  "firstRunAddPetLater": "Salta per ora",
+  "firstRunNotificationsTitle": "Non perderti i promemoria",
+  "firstRunNotificationsBody": "Attiva le notifiche per essere avvisato su vaccini, farmaci e visite in scadenza. Puoi cambiare idea in qualsiasi momento da Impostazioni.",
+  "firstRunNotificationsEnable": "Attiva notifiche",
+  "firstRunNotificationsLater": "Non ora",
+  "firstRunTutorialPetsTitle": "Un profilo per ogni animale",
+  "firstRunTutorialPetsBody": "Razza, peso, note mediche e documenti: tutto organizzato per ciascun pet, sempre a portata di mano.",
+  "firstRunTutorialAssistantTitle": "Chiedi al tuo assistente",
+  "firstRunTutorialAssistantBody": "Fai domande sulla salute dei tuoi animali e ricevi risposte pensate per la loro situazione specifica.",
+  "firstRunTutorialRemindersTitle": "Niente più scadenze dimenticate",
+  "firstRunTutorialRemindersBody": "Vaccini, farmaci e visite: imposta un promemoria e VetApp ti avvisa al momento giusto.",
+  "firstRunTutorialStart": "Inizia",
+  "chatLoadingTitle": "Apriamo la conversazione",
+  "chatLoadingSubtitle": "Stiamo caricando il thread e l ultimo contesto disponibile.",
+  "chatEmptyTitle": "La conversazione e vuota",
+  "chatEmptySubtitle": "Scrivi il primo messaggio per iniziare il dialogo con l assistente.",
+  "chatEmptyAction": "Scrivi ora",
+  "chatEmptyGreeting": "Ciao, ho una domanda per {pet}.",
+  "@chatEmptyGreeting": {
+    "placeholders": {
+      "pet": {
+        "type": "String"
+      }
+    }
+  },
+  "chatErrorTitle": "Conversazione non disponibile",
+  "chatErrorSubtitle": "Qualcosa e andato storto nel recupero del thread.",
+  "chatErrorAction": "Torna alle chat",
+  "chatMessageEditAction": "Modifica messaggio",
+  "chatMessageEditHint": "La risposta e i messaggi successivi verranno sostituiti.",
+  "chatComposerHint": "Scrivi una domanda su {pet}",
+  "@chatComposerHint": {
+    "placeholders": {
+      "pet": {
+        "type": "String"
+      }
+    }
+  },
+  "chatNewConversationOnPet": "Nuova conversazione su {pet}",
+  "@chatNewConversationOnPet": {
+    "placeholders": {
+      "pet": {
+        "type": "String"
+      }
+    }
+  },
+  "chatNewConversationPrompt": "Scrivi qui sotto cosa stai osservando: ti rispondo subito.",
+  "chatTypingText": "Sta scrivendo una risposta...",
+  "chatTypingSlowText": "Ci sto mettendo più del solito, la risposta arriva tra poco...",
+  "chatDefaultTitle": "Chat con {pet}",
+  "@chatDefaultTitle": {
+    "placeholders": {
+      "pet": {
+        "type": "String"
+      }
+    }
+  },
+  "chatListeningText": "Sto ascoltando… tocca per fermare",
+  "chatTranscribingText": "Trascrivo…",
+  "chatEditingLabel": "Modifica del messaggio",
+  "chatListeningHint": "Sto ascoltando...",
+  "chatTranscribingHint": "Trascrivo il messaggio...",
+  "chatAddPhotoTooltip": "Aggiungi una foto",
+  "chatStopRecordingTooltip": "Ferma e trascrivi",
+  "chatVoiceMessageTooltip": "Messaggio vocale",
+  "chatMicPermissionNeeded": "Serve il permesso per usare il microfono.",
+  "chatMicStartFailed": "Non riesco ad avviare il microfono. Riprova.",
+  "chatRecordingFailed": "La registrazione non è andata a buon fine. Riprova.",
+  "chatRecordingReadFailed": "Non sono riuscito a leggere la registrazione. Riprova.",
+  "chatPhotoAnalyzing": "Sto guardando la foto...",
+  "chatPhotoReady": "Foto pronta da inviare",
+  "chatRemovePhotoTooltip": "Rimuovi foto",
+  "chatRecordingSemantics": "{listening}, {minutes} minuti e {seconds} secondi",
+  "@chatRecordingSemantics": {
+    "placeholders": {
+      "listening": {
+        "type": "String"
+      },
+      "minutes": {
+        "type": "int"
+      },
+      "seconds": {
+        "type": "String"
+      }
+    }
+  },
+  "chatCancelEditTooltip": "Annulla modifica",
+  "chatMenuTooltip": "Opzioni chat",
+  "chatMenuRename": "Rinomina",
+  "chatMenuExport": "Esporta chat",
+  "chatMenuSummary": "Riassunto",
+  "chatExportOpenFirst": "Apri la chat per esportarla.",
+  "chatSenderYou": "Tu",
+  "chatSenderAssistant": "Assistente",
+  "chatRenameTitle": "Rinomina chat",
+  "chatRenameFieldLabel": "Titolo",
+  "chatSummaryLoading": "Preparo il riassunto…",
+  "chatSummaryTitle": "Riassunto per il veterinario",
+  "chatSummaryDisclaimer": "Questo riassunto è generato automaticamente e non è una diagnosi. Per decisioni cliniche consulta il veterinario.",
+  "chatSummaryEmpty": "Nessun riassunto disponibile.",
+  "chatDeleteTitle": "Eliminare questa chat?",
+  "chatDeleteBody": "La conversazione e i suoi messaggi verranno eliminati.",
+  "chatFallbackPetName": "il tuo pet",
+  "chatNewConversation": "Nuova conversazione",
+  "chatNewConversationTitle": "{pet} - nuova conversazione",
+  "@chatNewConversationTitle": {
+    "placeholders": {
+      "pet": {
+        "type": "String"
+      }
+    }
+  },
+  "chatSavedConversationTitle": "{pet} - conversazione",
+  "@chatSavedConversationTitle": {
+    "placeholders": {
+      "pet": {
+        "type": "String"
+      }
+    }
+  },
+  "chatRetitled": "Chat - {subject}",
+  "@chatRetitled": {
+    "placeholders": {
+      "subject": {
+        "type": "String"
+      }
+    }
+  },
+  "chatStatusSaved": "Conversazione salvata",
+  "chatStatusSent": "Messaggio inviato",
+  "chatStatusEdited": "Messaggio modificato",
+  "chatStatusReplyReady": "Risposta pronta",
+  "chatTimeYesterday": "ieri",
+  "chatTimeNow": "adesso",
+  "chatSummaryNotYet": "Il riassunto sarà disponibile dopo il primo messaggio.",
+  "chatEditMessageMissing": "Questo messaggio non è più nella conversazione.",
+  "chatEmptyThreadPreview": "Nuovo thread pronto per essere usato.",
+  "chatDemoReplyAppetite": "Per {pet} terrei sotto osservazione appetito, acqua e livello di energia per le prossime 24 ore. Se peggiora, meglio sentire il veterinario.",
+  "@chatDemoReplyAppetite": {
+    "placeholders": {
+      "pet": {
+        "type": "String"
+      }
+    }
+  },
+  "chatDemoReplyVomiting": "Se ci sono vomito o diarrea, conviene monitorare idratazione e contattare il veterinario se i sintomi si ripetono o diventano intensi.",
+  "chatDemoReplyVaccine": "Posso aiutarti a mettere il richiamo di {pet} in agenda e aggiungere un reminder chiaro nella home.",
+  "@chatDemoReplyVaccine": {
+    "placeholders": {
+      "pet": {
+        "type": "String"
+      }
+    }
+  },
+  "chatDemoReplyWeight": "Sul peso di {pet} possiamo fissare un controllo periodico e confrontarlo con l ultima visita per capire se il trend cambia davvero.",
+  "@chatDemoReplyWeight": {
+    "placeholders": {
+      "pet": {
+        "type": "String"
+      }
+    }
+  },
+  "chatDemoReplyDefault": "Ho preso nota: per {pet} ti preparo un riepilogo breve, cosi hai subito un piano pratico e leggibile.",
+  "@chatDemoReplyDefault": {
+    "placeholders": {
+      "pet": {
+        "type": "String"
+      }
+    }
+  },
+  "chatErrorContactAssistant": "Non sono riuscito a contattare l'assistente. Riprova.",
+  "chatErrorAssistantTimeout": "L'assistente non ha risposto in tempo. Tocca Riprova: se la risposta è già pronta, la recupero.",
+  "chatErrorGeneric": "Qualcosa e' andato storto. Riprova.",
+  "chatErrorRequestTimeout": "Richiesta scaduta. Riprova.",
+  "chatErrorEditFailed": "Non sono riuscito a modificare il messaggio. Riprova.",
+  "chatErrorEditNetwork": "Non sono riuscito a modificare il messaggio. Controlla la connessione.",
+  "chatErrorPetBootstrap": "Non sono riuscito a preparare il profilo del pet.",
+  "chatErrorTitleEmpty": "Il titolo non può essere vuoto.",
+  "chatErrorRenameFailed": "Non sono riuscito a rinominare la chat. Riprova.",
+  "chatErrorRenameNetwork": "Non sono riuscito a rinominare la chat. Controlla la connessione.",
+  "chatErrorSummaryEmpty": "Scrivi almeno un messaggio per avere un riassunto.",
+  "chatErrorSummaryModel": "Il modello non ha risposto. Riprova tra poco.",
+  "chatErrorSummaryFailed": "Non sono riuscito a preparare il riassunto. Riprova.",
+  "chatErrorSummaryNetwork": "Non sono riuscito a preparare il riassunto. Controlla la connessione.",
+  "chatErrorDeleteFailed": "Non sono riuscito a eliminare la chat sul server.",
+  "chatErrorListChats": "Non sono riuscito a caricare le tue chat.",
+  "chatErrorListPets": "Non sono riuscito a caricare i tuoi pet.",
+  "chatErrorConversationLimit": "hai raggiunto il numero massimo di conversazioni ({max}) per questo animale. Chiudine una per crearne una nuova.",
+  "@chatErrorConversationLimit": {
+    "placeholders": {
+      "max": {
+        "type": "String"
+      }
+    }
+  },
+  "chatErrorConversationNotFound": "Questa conversazione non esiste più.",
+  "chatErrorAttachmentOffline": "Sei offline o la connessione non è stabile. Riprova quando torni online.",
+  "chatErrorAttachmentDownload": "Non sono riuscito a scaricare il file.",
+  "chatErrorAttachmentTooLarge": "Il file è troppo grande (max 4 MB).",
+  "chatErrorAttachmentUnsupported": "Questo tipo di file non è supportato. Puoi caricare foto (JPG, PNG, WEBP) o PDF.",
+  "chatErrorPdfTooManyPages": "Il PDF supera le 30 pagine consentite.",
+  "chatErrorPdfUnreadable": "Non riesco a leggere questo PDF: potrebbe essere danneggiato o protetto da password.",
+  "chatErrorAttachmentUpload": "Non sono riuscito a caricare il file. Riprova.",
+  "chatErrorTranscribe": "Non sono riuscito a trascrivere il messaggio vocale.",
+  "chatSeedConv1Title": "Moka - appetito e controllo",
+  "chatSeedConv1Subtitle": "Piccolo calo dell appetito, monitoraggio e piano d azione.",
+  "chatSeedConv1Preview": "Se resta vivace possiamo osservare fino a domani, ma tieni nota di appetito e acqua.",
+  "chatSeedConv1Status": "Contesto attivo del pet",
+  "chatSeedConv1Msg1": "Raccontami pure cosa stai osservando: appetito, energia, acqua e feci ci aiutano a capire subito se serve una visita o basta monitorare.",
+  "chatSeedConv1Msg2": "Da ieri mangia meno del solito ma resta vivace. Devo preoccuparmi subito?",
+  "chatSeedConv1Msg3": "Se non ci sono vomito, abbattimento o dolore evidente, in genere conviene monitorare 24 ore e tenere nota di appetito, acqua e feci. Se qualcosa peggiora, contatta il veterinario.",
+  "chatSeedConv1Msg4": "Per sicurezza ti lascio anche un mini piano: pasti piccoli, acqua sempre disponibile e controllo della temperatura se ti sembra piu fiacco del solito.",
+  "chatSeedConv2Title": "Moka - promemoria vaccino",
+  "chatSeedConv2Subtitle": "Richiamo annuale con nota sul richiamo antiparassitario.",
+  "chatSeedConv2Preview": "Ho già messo il richiamo e il promemoria di follow-up per la prossima settimana.",
+  "chatSeedConv2Status": "Promemoria attivo",
+  "chatSeedConv2Msg1": "Ho impostato il richiamo e aggiunto una nota sull antiparassitario. Se vuoi, possiamo allineare anche la prossima visita di controllo.",
+  "chatSeedConv2Msg2": "Perfetto, mi avvisi anche quando manca una settimana?",
+  "chatSeedConv2Msg3": "Certo. Ti preparo anche una nota visiva con la scadenza piu vicina, cosi la trovi subito nella home.",
+  "chatSeedConv3Title": "Moka - referto visita",
+  "chatSeedConv3Subtitle": "Sintesi del controllo, terapia leggera e prossima azione.",
+  "chatSeedConv3Preview": "Posso riassumere il referto in tre punti: quadro, terapia e prossimo controllo.",
+  "chatSeedConv3Status": "Referto caricato",
+  "chatSeedConv3Msg1": "Posso sintetizzare il referto in tre punti: quadro clinico, terapia e prossimi controlli. Se vuoi, preparo anche una versione breve da condividere.",
+  "chatSeedConv3Msg2": "Sì, dammi la versione breve.",
+  "chatSeedConv3Msg3": "In breve: quadro stabile, terapia leggera per pochi giorni e controllo di follow-up gia programmato.",
+  "chatSeedAgo2Min": "2 min fa",
+  "chatSeedAgo3Days": "3 gg fa",
+  "marketplacePermissionDenied": "Solo chi ha pubblicato l'annuncio può modificarlo o eliminarlo.",
+  "marketplaceCategoryKennelsCarriers": "Cucce, lettini e trasportini",
+  "marketplaceCategoryLeashesCollars": "Guinzagli, collari e pettorine",
+  "marketplaceCategoryToys": "Giochi",
+  "marketplaceCategoryClothing": "Abbigliamento",
+  "marketplaceCategoryFeeding": "Ciotole e alimentazione",
+  "marketplaceCategoryHygieneGrooming": "Igiene e toelettatura",
+  "marketplaceCategoryAquariumsTerrariums": "Acquari e terrari",
+  "marketplaceCategoryCagesAviaries": "Gabbie e voliere",
+  "marketplaceOther": "Altro",
+  "marketplaceConditionNew": "Nuovo",
+  "marketplaceConditionLikeNew": "Come nuovo",
+  "marketplaceConditionGood": "Buono",
+  "marketplaceConditionWorn": "Usato",
+  "marketplaceSpeciesAll": "Tutte le specie",
+  "marketplaceSpeciesDog": "Cane",
+  "marketplaceSpeciesCat": "Gatto",
+  "marketplaceSpeciesSmallMammal": "Piccoli mammiferi",
+  "marketplaceSpeciesBird": "Uccello",
+  "marketplaceSpeciesReptileAmphibian": "Rettili e anfibi",
+  "marketplaceSpeciesFish": "Pesce",
+  "marketplacePriceGift": "In regalo",
+  "marketplaceDistanceAnywhere": "Ovunque",
+  "marketplaceDemoBedTitle": "Cuccia imbottita (demo)",
+  "marketplaceDemoBedDescription": "Poco usata, taglia media.",
+  "marketplaceDemoBedArea": "Centro, Milano",
+  "marketplaceDemoScratcherTitle": "Tiragraffi a due piani (demo)",
+  "marketplaceDemoScratcherArea": "Città Studi, Milano",
+  "marketplacePageTitle": "Mercatino dell'usato",
+  "marketplaceMapAction": "Mappa",
+  "marketplaceNewListing": "Nuovo annuncio",
+  "marketplaceIntro": "Compra, vendi e regala articoli per animali con altri proprietari.",
+  "marketplaceDistanceNeedsLocation": "Per filtrare per distanza imposta la tua posizione in Impostazioni → Località.",
+  "marketplaceEmptyFiltered": "Nessun annuncio con questi filtri per ora.",
+  "marketplaceLoadError": "Non riesco a caricare gli annunci. Controlla la connessione.",
+  "marketplaceFilterAllCategories": "Tutte",
+  "marketplaceFilterAllSpecies": "Tutti gli animali",
+  "marketplaceReportListing": "Segnala annuncio",
+  "marketplaceReasonSpam": "Spam",
+  "marketplaceReasonScam": "Truffa",
+  "marketplaceReasonProhibitedItem": "Articolo non consentito",
+  "marketplaceReasonInappropriate": "Contenuto inappropriato",
+  "marketplaceReportRemoved": "Grazie, l'annuncio è stato rimosso dopo le segnalazioni ricevute.",
+  "marketplaceReportSent": "Segnalazione inviata, grazie.",
+  "marketplaceDeleteConfirmTitle": "Eliminare l'annuncio?",
+  "marketplaceDeleteConfirmBody": "\"{title}\" e le sue foto verranno cancellati. Non si può annullare.",
+  "@marketplaceDeleteConfirmBody": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "marketplaceDeleteFailed": "Non sono riuscito a eliminare l'annuncio. Riprova.",
+  "marketplaceDeleted": "Annuncio eliminato.",
+  "marketplaceDetailApproxZone": "{city} · zona approssimata",
+  "@marketplaceDetailApproxZone": {
+    "placeholders": {
+      "city": {
+        "type": "String"
+      }
+    }
+  },
+  "marketplaceDetailForSpecies": "Per: {species}",
+  "@marketplaceDetailForSpecies": {
+    "placeholders": {
+      "species": {
+        "type": "String"
+      }
+    }
+  },
+  "marketplaceEditListing": "Modifica annuncio",
+  "marketplaceDeleting": "Eliminazione...",
+  "marketplaceDeleteListing": "Elimina annuncio",
+  "marketplaceReporting": "Invio segnalazione...",
+  "marketplaceMapTitle": "Mappa del mercatino",
+  "marketplaceListingsCount": "{count} annunci",
+  "@marketplaceListingsCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "marketplaceMapClusterTitle": "{count} annunci in questa zona",
+  "@marketplaceMapClusterTitle": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "marketplaceMapEmpty": "Nessun annuncio con questi filtri.",
+  "marketplaceMapSummary": "{count} annunci · posizioni approssimate (circa 1 km)",
+  "@marketplaceMapSummary": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "marketplaceLocationErrorWithHome": "Non riesco a rilevare la tua posizione. Controlla i permessi di localizzazione oppure usa la residenza.",
+  "marketplaceLocationErrorNoHome": "Non riesco a rilevare la tua posizione: serve per mostrare l'annuncio nella zona giusta (in forma approssimata). Controlla i permessi di localizzazione e riprova.",
+  "marketplaceCameraOpenError": "Non riesco ad aprire la fotocamera.",
+  "marketplaceGalleryOpenError": "Non riesco ad aprire la galleria.",
+  "marketplacePhotosSkipped": "{count} foto non leggibili sono state saltate.",
+  "@marketplacePhotosSkipped": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "marketplacePhotosMaxReached": "Puoi aggiungere al massimo {max} foto.",
+  "@marketplacePhotosMaxReached": {
+    "placeholders": {
+      "max": {
+        "type": "int"
+      }
+    }
+  },
+  "marketplaceZoneWait": "Aspetta che la zona sia stata trovata, poi riprova.",
+  "marketplaceSaveFailed": "Non sono riuscito a salvare l'annuncio. Controlla la connessione e riprova.",
+  "marketplacePriceRequired": "Inserisci un prezzo, oppure scegli \"In regalo\"",
+  "marketplacePriceInvalid": "Inserisci un prezzo valido",
+  "marketplacePriceNegative": "Il prezzo non può essere negativo",
+  "marketplacePriceZero": "Per regalarlo scegli \"In regalo\"",
+  "marketplacePriceTooHigh": "Prezzo troppo alto",
+  "marketplaceFieldTitle": "Titolo",
+  "marketplaceTitleRequired": "Inserisci un titolo",
+  "marketplaceFieldDescription": "Descrizione (facoltativa)",
+  "marketplaceFieldCategory": "Categoria",
+  "marketplaceCategoryRequired": "Scegli una categoria",
+  "marketplaceConditionLabel": "Condizione",
+  "marketplaceSpeciesLabel": "Per quali animali",
+  "marketplaceSpeciesRequired": "Indica per quali animali è, oppure \"Tutte le specie\"",
+  "marketplaceGiftSubtitle": "Lo regali a chi ne ha bisogno",
+  "marketplaceFieldPrice": "Prezzo in €",
+  "marketplaceSaving": "Salvataggio...",
+  "marketplaceSaveChanges": "Salva modifiche",
+  "marketplacePublish": "Pubblica annuncio",
+  "marketplacePhotosTitle": "Foto ({count}/{max})",
+  "@marketplacePhotosTitle": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "max": {
+        "type": "int"
+      }
+    }
+  },
+  "marketplaceTakePhoto": "Scatta foto",
+  "marketplaceFromGallery": "Dalla galleria",
+  "marketplacePhotosPrivacy": "Prima dell'invio togliamo dalle foto i dati nascosti (posizione, dispositivo, data).",
+  "marketplaceLocationTitle": "Dove si trova",
+  "marketplaceLocationKeep": "Zona attuale dell'annuncio",
+  "marketplaceLocationNow": "Dove sono ora",
+  "marketplaceLocationHome": "Residenza",
+  "marketplaceLocationHomeHint": "Per usare la residenza impostala in Impostazioni → Località.",
+  "marketplaceLocationSearching": "Cerco la tua zona...",
+  "marketplaceZoneLabel": "Zona mostrata (quartiere o comune)",
+  "marketplaceZoneHelper": "Niente via o numero civico",
+  "marketplacePrivacyApproxOnMap": "Sulla mappa l'annuncio appare in un punto approssimato (circa 1 km), mai al tuo indirizzo.",
+  "marketplacePrivacyApproxAlways": "Per la tua privacy, la posizione dell'annuncio è sempre approssimata (circa 1 km), mai il tuo indirizzo esatto.",
+  "medicalActionOpen": "Apri",
+  "medicalActionSend": "Invia",
+  "medicalActionRename": "Rinomina",
+  "medicalFileUnavailable": "Il file non è disponibile ora. Controlla la connessione e riprova.",
+  "medicalPdfOpenFailed": "Non sono riuscito ad aprire il PDF. Riprova oppure usa Invia.",
+  "medicalNoPdfAppTitle": "Nessuna app per aprire il PDF",
+  "medicalNoPdfAppBody": "Su questo dispositivo non c'è un'app che apre i PDF. Puoi inviare il file a un'app che lo apre.",
+  "medicalPreparingFiles": "Preparo i file da inviare…",
+  "medicalNoFilesToSend": "Nessun file disponibile da inviare. Controlla la connessione e riprova.",
+  "medicalFilesMissing": "{count} file non disponibili non sono stati inclusi.",
+  "@medicalFilesMissing": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "medicalDeleteConfirmTitle": "Eliminare questo documento?",
+  "medicalDeleteConfirmBody": "\"{title}\" verrà eliminato definitivamente.",
+  "@medicalDeleteConfirmBody": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "medicalDeleting": "Elimino il referto…",
+  "medicalRenameTitle": "Rinomina referto",
+  "medicalRenameFieldLabel": "Nome del file",
+  "medicalDefaultRecordTitle": "Referto clinico",
+  "medicalSaveNoSession": "Accesso non disponibile: riprova dopo aver effettuato di nuovo il login.",
+  "medicalSavePetNotSynced": "Il profilo di {petName} non è sincronizzato sul server: sistemalo prima di caricare referti.",
+  "@medicalSavePetNotSynced": {
+    "placeholders": {
+      "petName": {
+        "type": "String"
+      }
+    }
+  },
+  "medicalSaveFailed": "Non sono riuscito a salvare il referto sul server. Controlla la connessione e riprova.",
+  "medicalRenameFailed": "Non sono riuscito a rinominare il referto. Riprova.",
+  "medicalDeleteFailed": "Non sono riuscito a eliminare il referto. Riprova.",
+  "medicalRecordMetaNotUploaded": "File non caricato sul server",
+  "medicalRecordMetaAnalysisFailed": "File salvato, lettura automatica non riuscita",
+  "medicalRecordMetaUploadedNow": "Caricato adesso da te",
+  "medicalRecordBadgeNotUploaded": "Non caricato",
+  "medicalRecordBadgeNew": "Nuovo",
+  "medicalRecordSourceLocalOnly": "Solo su questo telefono",
+  "medicalRecordSourceUploadedByYou": "Caricato da te",
+  "medicalTimelineImported": "Importato",
+  "medicalTimelineUpload": "Caricamento",
+  "medicalTimelineFailed": "Non riuscito",
+  "medicalTimelineCompleted": "Completato",
+  "medicalTimelineReadyToSend": "Pronto per l'invio",
+  "medicalTimelineAvailable": "Disponibile",
+  "medicalUploadTitle": "Carica documento",
+  "medicalUploadForPet": "Per {petName} · PDF, JPG o PNG",
+  "@medicalUploadForPet": {
+    "placeholders": {
+      "petName": {
+        "type": "String"
+      }
+    }
+  },
+  "medicalUploadAction": "Carica",
+  "medicalUploadPickPrompt": "Tocca per scegliere un file",
+  "medicalUploadPickHint": "PDF, JPG o PNG dal tuo dispositivo",
+  "medicalUploadChange": "Cambia",
+  "medicalUploadFailedTitle": "Il file non è stato caricato",
+  "medicalUploadFailedBody": "{reason} In alternativa puoi salvare il referto solo su questo telefono: sarà marcato come «Non caricato» e non sarà disponibile sugli altri dispositivi.",
+  "@medicalUploadFailedBody": {
+    "placeholders": {
+      "reason": {
+        "type": "String"
+      }
+    }
+  },
+  "medicalUploadFailedDefaultReason": "Controlla la connessione e riprova.",
+  "medicalUploadSaveLocalOnly": "Salva solo sul telefono",
+  "medicalUploadDemoSubtitle": "Carica PDF, JPG o PNG e completa i metadati.",
+  "medicalUploadDemoAction": "Dettaglio",
+  "medicalUploadDemoCardBody": "Caricato con successo e pronto per la revisione dei metadati.",
+  "medicalListTitle": "Referti",
+  "medicalListSubtitle": "Referti, note e allegati di Moka in un archivio chiaro.",
+  "medicalListSyncTitle": "Sincronizzazione referti",
+  "medicalListSyncBody": "Sto recuperando documenti e metadati da Supabase o dalla sorgente demo.",
+  "medicalListLoadErrorTitle": "Impossibile caricare l archivio",
+  "medicalListLoadErrorBody": "Riprova dopo aver controllato la connessione o continua con il fallback demo.",
+  "medicalListEmptyTitle": "Nessun documento ancora",
+  "medicalListEmptyBody": "Carica il primo referto per costruire l archivio documenti.",
+  "medicalListUploadFirst": "Carica il primo file",
+  "medicalListSummaryAllTitle": "{count} documenti attivi",
+  "@medicalListSummaryAllTitle": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "medicalListSummaryPetTitle": "{count} documenti di {petName}",
+  "@medicalListSummaryPetTitle": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "petName": {
+        "type": "String"
+      }
+    }
+  },
+  "medicalListSummaryAllBody": "1 referto pronto da condividere, 1 esame da rivedere e 1 nota archiviata.",
+  "medicalListSummaryPetBody": "Filtri attivi sul profilo di {petName}. Apri i documenti piu utili senza rumore.",
+  "@medicalListSummaryPetBody": {
+    "placeholders": {
+      "petName": {
+        "type": "String"
+      }
+    }
+  },
+  "medicalListNextActionTitle": "Prossima azione",
+  "medicalListNextActionAllBody": "Apri il referto vaccinale di Moka e condividilo con Francesco.",
+  "medicalListNextActionPetBody": "Condividi il documento piu recente di {petName} e conserva la nota nel profilo.",
+  "@medicalListNextActionPetBody": {
+    "placeholders": {
+      "petName": {
+        "type": "String"
+      }
+    }
+  },
+  "medicalListEmptyPetTitle": "Nessun documento per {petName}",
+  "@medicalListEmptyPetTitle": {
+    "placeholders": {
+      "petName": {
+        "type": "String"
+      }
+    }
+  },
+  "medicalListEmptyPetBody": "Cambia filtro oppure carica un nuovo documento per questo pet.",
+  "medicalListRemoveFilter": "Rimuovi filtro",
+  "medicalFilterAll": "Tutti ({count})",
+  "@medicalFilterAll": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "medicalMetaType": "Tipo",
+  "medicalMetaDate": "Data",
+  "medicalMetaSource": "Fonte",
+  "medicalMetaFormat": "Formato",
+  "medicalStatePreviewPill": "Stato anteprima",
+  "medicalStateLoadingPill": "Caricamento",
+  "medicalChecklistFormat": "Formato file supportato",
+  "medicalChecklistMetadata": "Metadati estratti",
+  "medicalChecklistLinkedPet": "Collegato al pet attivo",
+  "homeGreeting": "Buongiorno",
+  "homeAgendaTitle": "Prossime attività",
+  "homeAgendaLoadingSubtitle": "Spot e cicli, per tutti gli animali.",
+  "homeAgendaSummary": "{count} attività nei prossimi 10 giorni",
+  "@homeAgendaSummary": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "homeNewsTitle": "Curiosità per i tuoi animali",
+  "homeNewsSubtitle": "Notizie dal mondo dei pet selezionate per te.",
+  "homeNewsUnavailable": "Curiosità non disponibili al momento. Riprova più tardi.",
+  "homeNewsMore": "Scopri altre notizie",
+  "homeNearbyTitle": "Vicino a me",
+  "homeSponsorBanner": "Spazio riservato ai nostri partner.",
+  "homeSectionLoading": "Caricamento...",
+  "shellTabHome": "Home",
+  "shellTabPets": "Animali",
+  "shellTabActivities": "Attività",
+  "shellTabSettings": "Impostazioni",
+  "shellRailFooter": "Spazio clinico caldo",
+  "shellInterruptedWalkTitle": "Passeggiata interrotta",
+  "shellInterruptedWalkBody": "È rimasta una passeggiata in corso ({distance} finora). Vuoi riprenderla?",
+  "@shellInterruptedWalkBody": {
+    "placeholders": {
+      "distance": {
+        "type": "String"
+      }
+    }
+  },
+  "shellInterruptedWalkDiscard": "Scarta",
+  "shellInterruptedWalkResume": "Riprendi",
+  "shellWalkPausedBanner": "Passeggiata in pausa · {distance}",
+  "@shellWalkPausedBanner": {
+    "placeholders": {
+      "distance": {
+        "type": "String"
+      }
+    }
+  },
+  "shellWalkActiveBanner": "Passeggiata in corso · {elapsed} · {distance}",
+  "@shellWalkActiveBanner": {
+    "placeholders": {
+      "elapsed": {
+        "type": "String"
+      },
+      "distance": {
+        "type": "String"
+      }
+    }
+  },
+  "splashMessageWalks": "Registra le passeggiate con il tuo cane!",
+  "splashMessageVet": "Chiedi al veterinario virtuale, 24 ore su 24",
+  "splashMessageReminders": "Non dimenticare più una scadenza: promemoria e calendario",
+  "splashMessageRecords": "Tieni i referti sempre a portata di mano",
+  "splashMessageNearby": "Scopri le attività pet-friendly vicino a te",
+  "splashMessageNews": "Segui le novità sul mondo degli animali",
+  "splashMessageProfiles": "Un profilo per ogni amico a quattro zampe (o con le pinne!)",
+  "splashMessageHealthBook": "Il libretto sanitario nel taschino, senza più carte sparse",
+  "splashMessageVaccines": "Vaccini, vermifughi, visite: ci pensiamo noi a ricordarteli",
+  "splashMessageSpecies": "Cane, gatto, coniglio, pappagallo o pesciolino: qui c'è posto per tutti",
+  "sharedGuestName": "Ospite",
+  "sharedComingSoon": "In arrivo",
+  "sharedLoadingLabel": "Caricamento",
+  "sharedAttachmentTooLarge": "Il file è troppo grande (max 4 MB).",
+  "sharedAttachmentInvalidPdf": "Questo file non sembra un PDF valido.",
+  "sharedAiGenerated": "Generato da IA",
+  "sharedAiNotReviewed": "Risposta automatica, non revisionata",
+  "petsAgeLessThanMonth": "Meno di un mese",
+  "petsAgeMonths": "{count, plural, =1{1 mese} other{{count} mesi}}",
+  "@petsAgeMonths": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "petsAgeYears": "{count, plural, =1{1 anno} other{{count} anni}}",
+  "@petsAgeYears": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "petsProfilesCount": "{count, plural, =1{1 profilo} other{{count} profili}}",
+  "@petsProfilesCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "petsSpeciesCount": "{count, plural, =1{1 specie} other{{count} specie}}",
+  "@petsSpeciesCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "petsFishCount": "{count, plural, =1{1 pesce} other{{count} pesci}}",
+  "@petsFishCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "petsAquariumSummary": "{species} · {fish}",
+  "@petsAquariumSummary": {
+    "placeholders": {
+      "species": {
+        "type": "String"
+      },
+      "fish": {
+        "type": "String"
+      }
+    }
+  },
+  "petsBreedUnspecified": "Razza non specificata",
+  "petsBreedOtherWithSize": "Altro · Taglia {size}",
+  "@petsBreedOtherWithSize": {
+    "placeholders": {
+      "size": {
+        "type": "String"
+      }
+    }
+  },
+  "petsHabitatAquarium": "Acquario",
+  "petsHabitatTerrarium": "Terrario",
+  "petsHabitatAviary": "Voliera",
+  "petsHabitatGeneric": "Habitat",
+  "petsCreateTitle": "Crea un profilo pet",
+  "petsCreateLoading": "Preparo il form di creazione...",
+  "petsCreateErrorTitle": "Form di creazione non disponibile",
+  "petsCreateErrorDefault": "Al momento non riesco a creare un nuovo profilo pet.",
+  "petsCreateFormTitle": "Nuovo profilo",
+  "petsCreateSubmit": "Salva profilo pet",
+  "petsCreateUnsyncedSnack": "Profilo salvato sul telefono ma non sul server. Aprilo dalla lista e tocca Riprova.",
+  "petsEditTitle": "Modifica {name}",
+  "@petsEditTitle": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "petsEditLoading": "Carico il form di modifica...",
+  "petsEditErrorTitle": "Modifica non disponibile",
+  "petsEditErrorDefault": "Non riesco ad aprire questo profilo pet per la modifica.",
+  "petsEditFormTitle": "Bozza profilo",
+  "petsEditSubmit": "Salva modifiche",
+  "petsEditUnsyncedSnack": "Modifiche salvate sul telefono ma non sul server. Apri il profilo e tocca Riprova.",
+  "petsEditDeleteTitle": "Rimuovere questo profilo?",
+  "petsEditDeleteMessage": "Il profilo di \"{name}\" verrà eliminato definitivamente, insieme ai suoi dati.",
+  "@petsEditDeleteMessage": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "petsEditDeleteConfirm": "Rimuovi",
+  "petsEditDeleteAction": "Rimuovi profilo",
+  "petsEditMemorialTitle": "Spostare nei ricordi?",
+  "petsEditMemorialMessage": "\"{name}\" uscirà dalla lista Animali e sarà conservato nella sezione Ricordi, con il suo profilo e le sue foto.",
+  "@petsEditMemorialMessage": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "petsEditMemorialConfirm": "Sposta",
+  "petsEditMemorialAction": "Sposta nei ricordi",
+  "petsFormAllSpeciesAdded": "Hai già aggiunto tutte le specie disponibili.",
+  "petsFormAddSpecies": "Aggiungi specie",
+  "petsFormIdentityColor": "Colore identificativo",
+  "petsFormNameLabel": "Nome",
+  "petsFormNameHint": "Moka",
+  "petsFormNameError": "Inserisci il nome del pet.",
+  "petsFormSpeciesLabel": "Specie",
+  "petsFormSpeciesHint": "Seleziona una specie",
+  "petsFormSpeciesError": "Seleziona una specie.",
+  "petsFormProfileType": "Tipo di profilo",
+  "petsFormSingleFish": "Un pesce",
+  "petsFormAquariumPopulation": "Popolazione dell'acquario",
+  "petsFormNoSpeciesYet": "Nessuna specie aggiunta ancora.",
+  "petsFormAquariumNeedsSpecies": "Aggiungi almeno una specie all'acquario.",
+  "petsFormBreedLabel": "Razza",
+  "petsFormBreedSelectSpeciesFirst": "Seleziona prima la specie",
+  "petsFormBreedOptional": "Facoltativa",
+  "petsFormBreedPlaceholder": "Seleziona una razza",
+  "petsFormBreedSearchHint": "Cerca una razza",
+  "petsFormBreedSearchHintScientific": "Cerca (anche per nome scientifico)",
+  "petsFormOtherBreedLabel": "Quale razza? (facoltativo)",
+  "petsFormOtherBreedHint": "Es. incrocio di barboncino",
+  "petsFormOtherSpeciesLabel": "Quale specie o razza? (facoltativo)",
+  "petsFormOtherSpeciesHint": "Es. nome comune o varietà",
+  "petsFormDogSizeLabel": "Taglia (facoltativa)",
+  "petsFormDogSizeHint": "Seleziona una taglia",
+  "petsFormBirthDateLabel": "Data di nascita",
+  "petsFormBirthDateHint": "gg/mm/aaaa",
+  "petsFormBirthDateRequired": "Seleziona la data di nascita.",
+  "petsFormBirthDateInvalid": "Data non valida (gg/mm/aaaa).",
+  "petsFormBirthDateFuture": "La data di nascita non può essere nel futuro.",
+  "petsFormSexLabel": "Sesso",
+  "petsFormSexHint": "Seleziona",
+  "petsFormSexError": "Seleziona il sesso.",
+  "petsFormSexUnknown": "Sconosciuto",
+  "petsFormWeightLabelKg": "Peso (facoltativo, kg)",
+  "petsFormWeightLabelLb": "Peso (facoltativo, lb)",
+  "petsFormWeightHintKg": "Es. 18,4",
+  "petsFormWeightHintLb": "Es. 40,5",
+  "petsFormWeightInvalid": "Inserisci un peso valido.",
+  "petsFormWeightPositive": "Il peso deve essere maggiore di zero.",
+  "petsFormNotesLabel": "Note",
+  "petsFormNotesHint": "Aggiungi note brevi su dieta, farmaci o comportamento.",
+  "petsFormSaving": "Salvataggio in corso…",
+  "petsFormPhotoAdd": "Aggiungi foto",
+  "petsFormPhotoChange": "Cambia foto",
+  "petsFormPhotoRemove": "Rimuovi",
+  "petsFormHabitatLength": "Lunghezza",
+  "petsFormHabitatWidth": "Larghezza",
+  "petsFormHabitatHeight": "Altezza",
+  "petsFormHabitatUsGallons": "Galloni USA",
+  "petsFormHabitatLiters": "Litri",
+  "petsFormHabitatVolumeHint": "Calcolati dalle dimensioni, modificabili",
+  "petsFormHabitatTemperature": "Temperatura",
+  "petsFormHabitatTemperatureHintF": "Es. 75-79°F",
+  "petsFormHabitatTemperatureHintC": "Es. 24-26°C",
+  "petsFormHabitatSubstrate": "Substrato",
+  "petsFormHabitatSubstrateHint": "Es. ghiaia fine, fibra di cocco",
+  "petsFormHabitatEquipment": "Attrezzatura",
+  "petsFormHabitatEquipmentHint": "Filtro, illuminazione, riscaldatore, piante, lampada UVB, posatoi...",
+  "petsDetailTitleFallback": "Dettaglio pet",
+  "petsDetailGalleryTooltip": "Galleria foto",
+  "petsDetailLoading": "Carico il dettaglio pet...",
+  "petsDetailErrorTitle": "Dettaglio pet non disponibile",
+  "petsDetailErrorDefault": "Questo profilo pet non e disponibile al momento.",
+  "petsDetailBackToList": "Torna alla lista",
+  "petsDetailEmptyTitle": "Nessun pet selezionato",
+  "petsDetailEmptySubtitle": "Scegli un profilo dalla lista per vedere dettagli, chat e referti.",
+  "petsDetailTabReminders": "Promemoria",
+  "petsDetailTabChat": "Chat",
+  "petsDetailTabRecords": "Referti",
+  "petsDetailTabWalks": "Passeggiate",
+  "petsDetailHabitatTapForDetails": "Tocca per i dettagli",
+  "petsDetailHabitatDimensions": "Dimensioni",
+  "petsDetailHabitatVolume": "Volume",
+  "petsDetailPopulation": "Popolazione",
+  "petsDetailRemindersNew": "Nuovo promemoria",
+  "petsDetailRemindersEmpty": "Nessun promemoria ancora per {petName}.",
+  "@petsDetailRemindersEmpty": {
+    "placeholders": {
+      "petName": {
+        "type": "String"
+      }
+    }
+  },
+  "petsDetailChatNew": "Nuova chat",
+  "petsDetailChatEmpty": "Nessuna conversazione ancora per {petName}.",
+  "@petsDetailChatEmpty": {
+    "placeholders": {
+      "petName": {
+        "type": "String"
+      }
+    }
+  },
+  "petsDetailChatDeleteFailed": "Chat rimossa qui, ma non sul server: {error}",
+  "@petsDetailChatDeleteFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "petsDetailChatDeleteTitle": "Eliminare questa chat?",
+  "petsDetailChatDeleteMessage": "\"{title}\" verrà eliminata definitivamente.",
+  "@petsDetailChatDeleteMessage": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "petsDetailChatLimitTitle": "Limite chat raggiunto",
+  "petsDetailChatLimitMessage": "Puoi avere al massimo {max} conversazioni attive per {petName}. Elimina una chat esistente per aprirne una nuova.",
+  "@petsDetailChatLimitMessage": {
+    "placeholders": {
+      "max": {
+        "type": "int"
+      },
+      "petName": {
+        "type": "String"
+      }
+    }
+  },
+  "petsDetailChatLimitOk": "Ho capito",
+  "petsDetailRecordsSendTitle": "Invia file",
+  "petsDetailRecordsSendSubtitle": "Scegli un documento da inviare via email, WhatsApp e altro.",
+  "petsDetailRecordShareText": "📄 {title}\n{source} · {date}\n\nCondiviso da VetApp",
+  "@petsDetailRecordShareText": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      },
+      "source": {
+        "type": "String"
+      },
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "petsDetailShareUnavailable": "Condivisione non disponibile su questo dispositivo.",
+  "petsDetailRecordsUpload": "Carica file",
+  "petsDetailRecordsSend": "Invia",
+  "petsDetailRecordsEmpty": "Nessun documento ancora per {petName}.",
+  "@petsDetailRecordsEmpty": {
+    "placeholders": {
+      "petName": {
+        "type": "String"
+      }
+    }
+  },
+  "petsDetailRecordsLoadError": "Non riesco a leggere i referti. Controlla la connessione e riprova.",
+  "petsDetailSelectedCount": "{count, plural, =1{1 selezionato} other{{count} selezionati}}",
+  "@petsDetailSelectedCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "petsDetailWalksStart": "Avvia passeggiata",
+  "petsDetailWalksBadges": "Badge",
+  "petsDetailWalksEmpty": "Nessuna passeggiata ancora per {petName}.",
+  "@petsDetailWalksEmpty": {
+    "placeholders": {
+      "petName": {
+        "type": "String"
+      }
+    }
+  },
+  "petsDetailWalksRecords": "Record 🏆",
+  "petsDetailWalksFavorites": "Preferite ⭐",
+  "petsDetailWalksRecent": "Recenti",
+  "petsDetailWalkLongest": "Più lunga",
+  "petsDetailWalkLongestDuration": "Più duratura",
+  "petsDetailWalkLongestAndDuration": "Più lunga · Più duratura",
+  "petsDetailWalkStatusActive": "Passeggiata in corso · {distance} · {elapsed}",
+  "@petsDetailWalkStatusActive": {
+    "placeholders": {
+      "distance": {
+        "type": "String"
+      },
+      "elapsed": {
+        "type": "String"
+      }
+    }
+  },
+  "petsDetailWalkStatusPaused": "In pausa · {distance} · {elapsed}",
+  "@petsDetailWalkStatusPaused": {
+    "placeholders": {
+      "distance": {
+        "type": "String"
+      },
+      "elapsed": {
+        "type": "String"
+      }
+    }
+  },
+  "petsDetailWalkUnfavoriteTitle": "Togliere dai preferiti?",
+  "petsDetailWalkUnfavoriteMessage": "Se non è anche il record o tra le ultime 3 passeggiate, potrà perdere la mappa alla prossima pulizia automatica.",
+  "petsDetailWalkUnfavoriteConfirm": "Togli dai preferiti",
+  "petsDetailWalkDeleteTitle": "Eliminare questa passeggiata?",
+  "petsDetailWalkDeleteMessage": "La passeggiata del {date} ({distance}) verrà eliminata definitivamente.",
+  "@petsDetailWalkDeleteMessage": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      },
+      "distance": {
+        "type": "String"
+      }
+    }
+  },
+  "petsDetailWalkSteps": "~{count} passi",
+  "@petsDetailWalkSteps": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "petsDetailUnsyncedBanner": "Non sincronizzato: le modifiche sono solo su questo telefono.",
+  "petsDetailUnsyncedRetryFailed": "Ancora nessun collegamento al server. Riprova più tardi.",
+  "petsScaffoldBadge": "Pet",
+  "petsLoadingDefaultLabel": "Caricamento pet...",
+  "petsLoadingSubtitle": "Attendi un istante mentre prepariamo la schermata.",
+  "petsDemoDeleteFailed": "Non sono riuscito a eliminare il profilo. Riprova.",
+  "petsDemoNewProfileNote": "Profilo creato da poco, pronto per la prossima visita.",
+  "petsDemoNextVisitToPlan": "Da pianificare",
+  "petsValueSpeciesDog": "Cane",
+  "petsValueSpeciesCat": "Gatto",
+  "petsValueSpeciesSmallMammals": "Piccoli mammiferi",
+  "petsValueSpeciesBird": "Uccello",
+  "petsValueSpeciesReptiles": "Rettili e anfibi",
+  "petsValueSpeciesFish": "Pesce",
+  "petsValueSpeciesOther": "Altro",
+  "petsValueSpeciesAll": "Tutti",
+  "petsValueSexMale": "Maschio",
+  "petsValueSexFemale": "Femmina",
+  "petsValueSexMaleIntact": "Maschio intero",
+  "petsValueSexMaleNeutered": "Maschio castrato",
+  "petsValueSexFemaleIntact": "Femmina intera",
+  "petsValueSexFemaleSpayed": "Femmina sterilizzata",
+  "petsValueDogSizeToy": "Toy",
+  "petsValueDogSizeSmall": "Piccola",
+  "petsValueDogSizeMedium": "Media",
+  "petsValueDogSizeLarge": "Grande",
+  "petsValueDogSizeGiant": "Gigante",
+  "petsListTitle": "Animali",
+  "petsListMemoriesTooltip": "Ricordi",
+  "petsListLoading": "Carico la lista pet...",
+  "petsListErrorTitle": "Pet non disponibili",
+  "petsListErrorDefault": "Al momento non riesco a caricare i profili pet.",
+  "petsListEmptyTitle": "Nessun pet ancora",
+  "petsListEmptySubtitle": "Crea il primo profilo per tenere sotto controllo salute, note e scadenze.",
+  "petsListEmptyAction": "Crea pet",
+  "petsListFilterEmpty": "Nessun pet per questo filtro.",
+  "petsMemoriesRemoveTitle": "Rimuovere definitivamente?",
+  "petsMemoriesRemoveBody": "Il ricordo di \"{name}\" verrà eliminato, senza possibilità di recupero.",
+  "@petsMemoriesRemoveBody": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "petsMemoriesRemoveConfirm": "Rimuovi",
+  "petsMemoriesTitle": "Ricordi",
+  "petsMemoriesSubtitle": "I profili dei pet che hanno condiviso la vostra strada.",
+  "petsMemoriesEmpty": "Nessun ricordo conservato ancora.",
+  "petsMemoriesWithUsUntil": "Con noi fino al {date}",
+  "@petsMemoriesWithUsUntil": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "petsMemoriesWithUsRange": "Con noi dal {from} al {to}",
+  "@petsMemoriesWithUsRange": {
+    "placeholders": {
+      "from": {
+        "type": "String"
+      },
+      "to": {
+        "type": "String"
+      }
+    }
+  },
+  "petsMemoriesComingSoon": "Presto: i vostri momenti più belli insieme, come le passeggiate più lunghe o i traguardi raggiunti, raccolti qui.",
+  "petsMediaGalleryTitle": "Galleria",
+  "petsMediaFoldersLoading": "Carico le cartelle…",
+  "petsMediaFoldersEmpty": "Aggiungi un animale per creare la sua cartella di foto.",
+  "petsMediaFolderCounting": "Conto le foto…",
+  "petsMediaCountPhotos": "{count, plural, other{{count} foto}}",
+  "@petsMediaCountPhotos": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "petsMediaCountVideos": "{count, plural, other{{count} video}}",
+  "@petsMediaCountVideos": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "petsMediaCountPhotosAndVideos": "{photos} · {videos}",
+  "@petsMediaCountPhotosAndVideos": {
+    "placeholders": {
+      "photos": {
+        "type": "String"
+      },
+      "videos": {
+        "type": "String"
+      }
+    }
+  },
+  "petsMediaVideoSemantics": "Video",
+  "petsMediaDeleteVideoTitle": "Eliminare questo video?",
+  "petsMediaDeletePhotoTitle": "Eliminare questa foto?",
+  "petsMediaDeleteVideoBody": "Il video verrà rimosso definitivamente dalla galleria.",
+  "petsMediaDeletePhotoBody": "La foto verrà rimossa definitivamente dalla galleria.",
+  "petsMediaOperationFailed": "Non sono riuscito a completare l'operazione. Riprova.",
+  "petsMediaSetAsProfile": "Imposta come foto profilo",
+  "petsMediaDeleteVideoAction": "Elimina video",
+  "petsMediaDeletePhotoAction": "Elimina foto",
+  "petsMediaImportFromGallery": "Importa dalla galleria",
+  "petsMediaImportFromGalleryHint": "Foto e video, anche più di uno",
+  "petsMediaTakePhoto": "Scatta foto",
+  "petsMediaRecordVideo": "Registra video",
+  "petsMediaRecordVideoLimit": "Fino a {seconds} secondi",
+  "@petsMediaRecordVideoLimit": {
+    "placeholders": {
+      "seconds": {
+        "type": "int"
+      }
+    }
+  },
+  "petsMediaGalleryOf": "Galleria di {name}",
+  "@petsMediaGalleryOf": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "petsMediaGalleryEmpty": "Nessuna foto o video ancora. Usa il pulsante \"Aggiungi\" qui sotto.",
+  "petsMediaVideoPlaybackFailed": "Non riesco a riprodurre questo video.",
+  "petsMediaVideoLoading": "Carico il video...",
+  "petsMediaCancelling": "Annullo...",
+  "petsMediaPreparingFile": "Preparo il file...",
+  "petsMediaPreparingFiles": "{count, plural, =1{Preparo il file...} other{Preparo {count} file...}}",
+  "@petsMediaPreparingFiles": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "petsMediaUploadingFile": "Carico il file...",
+  "petsMediaUploadingProgress": "Carico {current} di {total}...",
+  "@petsMediaUploadingProgress": {
+    "placeholders": {
+      "current": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "petsMediaUploadingVideo": "Carico il video...",
+  "petsMediaUploadingVideoOf": "Carico il video {current} di {total}...",
+  "@petsMediaUploadingVideoOf": {
+    "placeholders": {
+      "current": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "petsMediaReducingVideo": "Riduco il video... {percent}%",
+  "@petsMediaReducingVideo": {
+    "placeholders": {
+      "percent": {
+        "type": "int"
+      }
+    }
+  },
+  "petsMediaReducingVideoOf": "Riduco il video {current} di {total}... {percent}%",
+  "@petsMediaReducingVideoOf": {
+    "placeholders": {
+      "current": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      },
+      "percent": {
+        "type": "int"
+      }
+    }
+  },
+  "petsMediaImportJoin": "{first} e {second}",
+  "@petsMediaImportJoin": {
+    "placeholders": {
+      "first": {
+        "type": "String"
+      },
+      "second": {
+        "type": "String"
+      }
+    }
+  },
+  "petsMediaImportDone": "Caricati: {list}",
+  "@petsMediaImportDone": {
+    "placeholders": {
+      "list": {
+        "type": "String"
+      }
+    }
+  },
+  "petsMediaImportCancelled": "Caricamento annullato.",
+  "petsMediaImportCancelledWith": "Caricamento annullato. {done}.",
+  "@petsMediaImportCancelledWith": {
+    "placeholders": {
+      "done": {
+        "type": "String"
+      }
+    }
+  },
+  "petsMediaImportNothingToAdd": "Niente da aggiungere.",
+  "petsMediaImportProblemMore": "{problem} (altri {count} non aggiunti)",
+  "@petsMediaImportProblemMore": {
+    "placeholders": {
+      "problem": {
+        "type": "String"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "petsMediaImportDoneWithProblem": "{done}. {problem}",
+  "@petsMediaImportDoneWithProblem": {
+    "placeholders": {
+      "done": {
+        "type": "String"
+      },
+      "problem": {
+        "type": "String"
+      }
+    }
+  },
+  "petsMediaPhotoAddedTo": "Foto aggiunta alla galleria di {name}",
+  "@petsMediaPhotoAddedTo": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "petsMediaVideoAddedTo": "Video aggiunto alla galleria di {name}",
+  "@petsMediaVideoAddedTo": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "petsMediaImportFileFailed": "Non sono riuscito a caricare {file}.",
+  "@petsMediaImportFileFailed": {
+    "placeholders": {
+      "file": {
+        "type": "String"
+      }
+    }
+  },
+  "petsMediaImportUnnamedFile": "un file",
+  "petsMediaPhotoSaveOffline": "Il salvataggio delle foto non è disponibile senza connessione.",
+  "petsMediaVideoSaveOffline": "Il salvataggio dei video non è disponibile senza connessione.",
+  "petsMediaImportRefused": "{file}: {message}",
+  "@petsMediaImportRefused": {
+    "placeholders": {
+      "file": {
+        "type": "String"
+      },
+      "message": {
+        "type": "String"
+      }
+    }
+  },
+  "petsMediaVideoUnsupportedFormat": "Formato video non supportato: usa un file MP4 o MOV.",
+  "petsMediaVideoTooBigSource": "Video troppo pesante ({size} MB): il massimo è {max} MB.",
+  "@petsMediaVideoTooBigSource": {
+    "placeholders": {
+      "size": {
+        "type": "int"
+      },
+      "max": {
+        "type": "int"
+      }
+    }
+  },
+  "petsMediaVideoTooBigBrowser": "Video troppo pesante ({size} MB): dal browser il massimo è {max} MB. Dall'app sul telefono i video vengono ridotti in automatico.",
+  "@petsMediaVideoTooBigBrowser": {
+    "placeholders": {
+      "size": {
+        "type": "int"
+      },
+      "max": {
+        "type": "int"
+      }
+    }
+  },
+  "petsMediaVideoUnreadable": "Non riesco a leggere questo video.",
+  "petsMediaVideoTooLong": "Video troppo lungo: il massimo è {seconds} secondi.",
+  "@petsMediaVideoTooLong": {
+    "placeholders": {
+      "seconds": {
+        "type": "int"
+      }
+    }
+  },
+  "petsMediaVideoTooBigReduced": "Anche ridotto il video pesa {size} MB (massimo {max} MB): prova con un clip più breve.",
+  "@petsMediaVideoTooBigReduced": {
+    "placeholders": {
+      "size": {
+        "type": "int"
+      },
+      "max": {
+        "type": "int"
+      }
+    }
+  },
+  "petsMediaVideoTooBigNotReduced": "Non sono riuscito a ridurre il video e pesa {size} MB (massimo {max} MB): prova con un clip più breve.",
+  "@petsMediaVideoTooBigNotReduced": {
+    "placeholders": {
+      "size": {
+        "type": "int"
+      },
+      "max": {
+        "type": "int"
+      }
+    }
+  },
+  "petsConsentSemanticsExpanded": "Consenso alla lettura della cartella clinica di {name}. Tocca per chiudere il testo completo",
+  "@petsConsentSemanticsExpanded": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "petsConsentSemanticsCollapsed": "Consenso alla lettura della cartella clinica di {name}. Tocca per leggere il testo completo",
+  "@petsConsentSemanticsCollapsed": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "petsConsentCardTitle": "Cartella clinica di {name}",
+  "@petsConsentCardTitle": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "petsConsentReadHow": "Leggi come viene usata",
+  "petsConsentSwitchSemantics": "Consenti all'assistente di leggere la cartella clinica di {name}",
+  "@petsConsentSwitchSemantics": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "petsConsentWithoutConsent": "Senza consenso l'assistente non vede né i titoli né il contenuto dei referti.",
+  "petsConsentSaveFailed": "Non sono riuscito a salvare il consenso. Riprova.",
+  "petsConsentStatusUnavailable": "Stato del consenso non disponibile: controlla la connessione.",
+  "petsConsentSlowConnection": "Connessione lenta. Il consenso non è stato salvato, riprova.",
+  "petsConsentOffline": "Sei offline: il consenso non è stato salvato. Riprova con la connessione.",
+  "placesDetailBarrierFence": "Recintata",
+  "placesDetailBarrierWall": "Recintata da un muro",
+  "placesDetailBarrierHedge": "Delimitata da una siepe",
+  "placesDetailSurfaceGrass": "Fondo in erba",
+  "placesDetailSurfaceGround": "Fondo in terra",
+  "placesDetailSurfaceSand": "Fondo in sabbia",
+  "placesDetailSurfaceGravel": "Fondo in ghiaia",
+  "placesDetailSurfaceAsphalt": "Fondo asfaltato",
+  "placesDetailSurfacePaved": "Fondo pavimentato",
+  "placesDetailAccessFree": "Accesso libero",
+  "placesDetailAccessPermissive": "Accesso consentito",
+  "placesDetailAccessCustomers": "Solo per i clienti",
+  "placesDetailAccessPrivate": "Area privata",
+  "placesDetailWheelchairYes": "Accessibile in sedia a rotelle",
+  "placesDetailWheelchairLimited": "Accessibilità parziale in sedia a rotelle",
+  "placesDetailWheelchairNo": "Non accessibile in sedia a rotelle",
+  "placesDetailDrinkingWaterYes": "Acqua potabile",
+  "placesDetailDrinkingWaterNo": "Senza acqua potabile",
+  "placesDetailLitYes": "Illuminata",
+  "placesDetailLitNo": "Non illuminata",
+  "placesDetailDogUnleashed": "Cani liberi senza guinzaglio",
+  "placesDetailAdoptionYes": "Adozioni possibili",
+  "placesDetailAdoptionNo": "Non dà in adozione",
+  "placesPendingDogPark": "Segnalata dagli utenti, verifica che sia un’area pubblica ({progress})",
+  "@placesPendingDogPark": {
+    "placeholders": {
+      "progress": {
+        "type": "String"
+      }
+    }
+  },
+  "placesPendingPlace": "Segnalato dagli utenti · in attesa di conferma ({progress})",
+  "@placesPendingPlace": {
+    "placeholders": {
+      "progress": {
+        "type": "String"
+      }
+    }
+  },
+  "placesMailRemoveSubject": "Area cani da rimuovere dal radar ({id})",
+  "@placesMailRemoveSubject": {
+    "placeholders": {
+      "id": {
+        "type": "String"
+      }
+    }
+  },
+  "placesMailRemoveBody": "Questa area segnalata dagli utenti non è un’area cani pubblica.\n\nNome: {name}\nPosizione: {position}\nIdentificativo: {id}\n\nMotivo: ",
+  "@placesMailRemoveBody": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "position": {
+        "type": "String"
+      },
+      "id": {
+        "type": "String"
+      }
+    }
+  },
+  "placesWithdrawTitle": "Ritirare la segnalazione?",
+  "placesWithdrawBody": "La segnalazione viene cancellata e non sarà più visibile a nessuno.",
+  "placesWithdrawConfirm": "Ritira",
+  "placesWithdrawnSnack": "Segnalazione ritirata.",
+  "placesVoteConfirmedSnack": "Grazie, conferma registrata.",
+  "placesVoteDeniedSnack": "Grazie, registrato.",
+  "placesRatedSnack": "Voto registrato: {stars} su 5.",
+  "@placesRatedSnack": {
+    "placeholders": {
+      "stars": {
+        "type": "int"
+      }
+    }
+  },
+  "placesReportsInactiveSnack": "Le segnalazioni non sono attive in questo momento.",
+  "placesReportProblemTitle": "Cosa non va in questo luogo?",
+  "placesReportAlreadyKnown": "Era già stato segnalato: la tua segnalazione vale come conferma.",
+  "placesReportSent": "Segnalazione inviata. Sarà applicata quando altri utenti la confermano.",
+  "placesSheetPendingQuestion": "Questo luogo esiste davvero qui?",
+  "placesSheetNotPublicWrite": "Non è un’area pubblica? Scrivici",
+  "placesSheetClosedReported": "Segnalato come chiuso ({progress})",
+  "@placesSheetClosedReported": {
+    "placeholders": {
+      "progress": {
+        "type": "String"
+      }
+    }
+  },
+  "placesSheetClosedQuestion": "Ha chiuso davvero?",
+  "placesSheetOpeningHours": "Orari indicati: {hours}",
+  "@placesSheetOpeningHours": {
+    "placeholders": {
+      "hours": {
+        "type": "String"
+      }
+    }
+  },
+  "placesActionCall": "Chiama",
+  "placesActionDirections": "Indicazioni",
+  "placesActionWebsite": "Sito web",
+  "placesDisclaimerCommunity": "Luogo segnalato dagli utenti: non è una garanzia, verifica prima di andarci.",
+  "placesDisclaimerClinic": "In caso di urgenza telefona prima di partire: orari e recapiti arrivano da archivi aperti e non sono verificati da VetApp.",
+  "placesDisclaimerGeneric": "Orari e recapiti arrivano da archivi aperti e non sono verificati da VetApp.",
+  "placesSourceLine": "Fonte: {source}",
+  "@placesSourceLine": {
+    "placeholders": {
+      "source": {
+        "type": "String"
+      }
+    }
+  },
+  "placesAlsoIn": "Presente anche in: {sources}",
+  "@placesAlsoIn": {
+    "placeholders": {
+      "sources": {
+        "type": "String"
+      }
+    }
+  },
+  "placesReportProblemAction": "Segnala un problema",
+  "placesBannerWithdrawing": "Ritiro la segnalazione…",
+  "placesBannerYouReported": "L’hai segnalato tu: servono le conferme di altri utenti.",
+  "placesBannerConfirmedSaving": "Hai confermato. Salvataggio…",
+  "placesBannerConfirmedChange": "Hai confermato. Puoi cambiare idea.",
+  "placesBannerDeniedSaving": "Hai indicato che non è così. Salvataggio…",
+  "placesBannerDeniedChange": "Hai indicato che non è così. Puoi cambiare idea.",
+  "placesBannerWithdrawButton": "Ritira la mia segnalazione",
+  "placesBannerConfirm": "Confermo",
+  "placesBannerDeny": "Non è così",
+  "placesVotesCount": "{count, plural, =1{1 voto} other{{count} voti}}",
+  "@placesVotesCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "placesRatingAverage": "Voto della community: {average} su 5 · {votes}",
+  "@placesRatingAverage": {
+    "placeholders": {
+      "average": {
+        "type": "String"
+      },
+      "votes": {
+        "type": "String"
+      }
+    }
+  },
+  "placesRatingNone": "Voto della community: nessun voto ancora",
+  "placesRatingBelowThreshold": "Voto della community: {votes} · la media compare da 3 voti",
+  "@placesRatingBelowThreshold": {
+    "placeholders": {
+      "votes": {
+        "type": "String"
+      }
+    }
+  },
+  "placesRateStarTooltip": "{count, plural, =1{Dai 1 stella} other{Dai {count} stelle}}",
+  "@placesRateStarTooltip": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "placesRatingSaving": "Il tuo voto: {stars} su 5. Salvataggio…",
+  "@placesRatingSaving": {
+    "placeholders": {
+      "stars": {
+        "type": "int"
+      }
+    }
+  },
+  "placesRatingYours": "Il tuo voto: {stars} su 5. Tocca una stella per cambiarlo.",
+  "@placesRatingYours": {
+    "placeholders": {
+      "stars": {
+        "type": "int"
+      }
+    }
+  },
+  "placesRatingPrompt": "Com’è quest’area cani? Tocca una stella per dare il tuo voto.",
+  "placesExpiryToday": "Scade oggi se nessuno conferma.",
+  "placesExpiryDays": "{days, plural, =1{Scade tra 1 giorno se nessuno conferma.} other{Scade tra {days} giorni se nessuno conferma.}}",
+  "@placesExpiryDays": {
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+  "placesProblemClosed": "Ha chiuso o non esiste più",
+  "placesProblemDuplicate": "È un doppione di un altro luogo",
+  "placesProblemWrongPosition": "La posizione è sbagliata",
+  "placesCategoryVeterinary": "Veterinari",
+  "placesCategoryShop": "Negozi",
+  "placesCategoryDogPark": "Aree cani",
+  "placesCategoryShelter": "Rifugi e adozioni",
+  "placesCategoryGrooming": "Toelettature",
+  "placesCategoryHotel": "Pensioni",
+  "placesCategorySchool": "Addestramento",
+  "placesCategoryPetSitting": "Pet sitter",
+  "placesCategoryBreeder": "Allevamenti",
+  "placesCategoryOther": "Altri servizi",
+  "placesTypeVeterinary": "Veterinario",
+  "placesTypeGrooming": "Toelettatura",
+  "placesTypeShop": "Negozio per animali",
+  "placesTypeSchool": "Addestramento",
+  "placesTypePetSitting": "Pet sitter",
+  "placesTypeBreeder": "Allevamento",
+  "placesTypeHotel": "Pensione per animali",
+  "placesTypeDogPark": "Area cani",
+  "placesTypeShelter": "Rifugio per animali",
+  "placesTypeOther": "Servizio per animali",
+  "placesHours247": "Indicato come aperto 24 ore su 24",
+  "placesHoursHolidays": "Festivi",
+  "placesHoursClosed": "chiuso",
+  "placesSourcesTitle": "Fonti dati",
+  "placesSourcesIntro": "I luoghi del radar arrivano da archivi aperti, non da VetApp. Ogni scheda indica la sua fonte. Orari e recapiti possono non essere aggiornati.",
+  "placesSourcesNoContact": "Hai trovato un dato sbagliato? Usa \"Segnala un problema\" nella scheda del luogo.",
+  "placesSourcesContact": "Hai trovato un dato sbagliato, o sei il titolare e vuoi che una scheda venga corretta o rimossa? Scrivi a {email}.",
+  "@placesSourcesContact": {
+    "placeholders": {
+      "email": {
+        "type": "String"
+      }
+    }
+  },
+  "placesSourceLicense": "Licenza: {license}",
+  "@placesSourceLicense": {
+    "placeholders": {
+      "license": {
+        "type": "String"
+      }
+    }
+  },
+  "placesSourceVersion": "Versione {release}, importata il {date}",
+  "@placesSourceVersion": {
+    "placeholders": {
+      "release": {
+        "type": "String"
+      },
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "placesSourceLicenseLink": "Licenza e condizioni",
+  "placesSourceOsmDescription": "Mappa libera curata da volontari. Fonte delle aree cani e di parte di veterinari, negozi e altri servizi, con i dettagli che i volontari hanno indicato.",
+  "placesSourceOvertureDescription": "Archivio aperto di attività commerciali. Fonte di veterinari, toelettature, negozi, pensioni e addestratori che OpenStreetMap non conosce.",
+  "placesSourceBolognaDescription": "Elenco ufficiale delle aree di sgambatura per cani del Comune di Bologna.",
+  "placesSourceTorinoDescription": "Elenco ufficiale delle aree cani della Città di Torino.",
+  "placesSourceMilanoDescription": "Elenco ufficiale delle aree cani del Comune di Milano.",
+  "placesSourceBolognaAttribution": "Comune di Bologna, Aree sgambatura cani (opendata.comune.bologna.it), licenza CC BY 4.0",
+  "placesSourceTorinoAttribution": "Comune di Torino, Aree Cani (aperto.comune.torino.it), licenza CC BY 4.0, dati del 2019",
+  "placesSourceMilanoAttribution": "Comune di Milano, Territorio: localizzazione delle aree cani (dati.comune.milano.it), licenza CC BY 4.0. Contiene elaborazioni di dati CC BY 3.0 da dati.gov.it",
+  "placesSourceLicenseCcBy": "Creative Commons Attribuzione 4.0 (CC BY 4.0)",
+  "placesSourceUsersName": "Utenti VetApp",
+  "placesSourceUsersDescription": "Luoghi segnalati dagli utenti e confermati da altri utenti.",
+  "placesSourceUsersAttribution": "Segnalato dagli utenti VetApp",
+  "placesMapTitle": "Mappa · {radius}",
+  "@placesMapTitle": {
+    "placeholders": {
+      "radius": {
+        "type": "String"
+      }
+    }
+  },
+  "placesMapClusterSemantics": "{count} luoghi vicini tra loro",
+  "@placesMapClusterSemantics": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "placesMapMarkerPending": "{category}, in attesa di conferma: {label}",
+  "@placesMapMarkerPending": {
+    "placeholders": {
+      "category": {
+        "type": "String"
+      },
+      "label": {
+        "type": "String"
+      }
+    }
+  },
+  "placesMapMarker": "{category}: {label}",
+  "@placesMapMarker": {
+    "placeholders": {
+      "category": {
+        "type": "String"
+      },
+      "label": {
+        "type": "String"
+      }
+    }
+  },
+  "placesReportTitle": "Segnala un luogo mancante",
+  "placesReportUnavailable": "Le segnalazioni non sono disponibili in questo momento. Riprova più tardi.",
+  "placesReportWhatIs": "Che cos’è?",
+  "placesReportNameOptional": "Nome (facoltativo)",
+  "placesReportNameLabel": "Nome sull’insegna",
+  "placesReportNameHelper": "Solo il nome: niente telefoni, indirizzi o nomi di persone.",
+  "placesReportWhere": "Dove si trova?",
+  "placesReportMapHint": "Sposta la mappa finché il segnaposto è sul luogo. L’indirizzo viene ricavato dalla posizione.",
+  "placesReportSubmit": "Invia segnalazione",
+  "placesReportFootnote": "La segnalazione sarà visibile a tutti come \"in attesa di conferma\" e diventerà definitiva quando altri utenti la confermano. Se entro {days} giorni nessuno la conferma, viene cancellata in automatico. Puoi ritirarla in ogni momento dalla sua scheda. Il tuo nome non compare.",
+  "@placesReportFootnote": {
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+  "placesReportSentExpiry": "Segnalazione inviata. Se entro {days} giorni nessuno la conferma, viene cancellata.",
+  "@placesReportSentExpiry": {
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+  "placesRulesTitle": "Prima di segnalare o votare",
+  "placesRulesCheckbox": "Ho letto le regole e segnalo o voto in buona fede.",
+  "placesRulesAccept": "Accetto",
+  "placesRulesFallback": "Segnala solo ciò che hai verificato di persona. Per le attività scrivi solo il nome dell’insegna, senza telefoni, indirizzi privati o dati di altre persone. Le segnalazioni restano in attesa finché altri utenti non le confermano. Segnalazioni false o ripetute possono portare alla sospensione dell’account. Segnalazioni e voti sono pubblicati senza il tuo nome.",
+  "placesErrSignedOutContribute": "Accedi per segnalare o votare.",
+  "placesErrOperationFailed": "Non sono riuscito a completare l’operazione. Riprova.",
+  "placesErrTimeout": "La richiesta ha impiegato troppo tempo. Riprova.",
+  "placesErrNotConfigured": "Anteprima senza backend: i luoghi mostrati sono dati di esempio.",
+  "placesErrSignedOut": "Accedi per vedere i servizi per animali vicino a te.",
+  "placesErrPreparing": "Sto ancora preparando i servizi di questa zona. Riprova tra poco.",
+  "placesErrSessionExpired": "La sessione non è più valida: esci e accedi di nuovo per vedere i servizi vicini.",
+  "placesErrLoadFailed": "Non sono riuscito a caricare i servizi vicini. Riprova.",
+  "placesBackendRulesRequired": "Per segnalare o votare accetta prima le regole per segnalazioni e voti.",
+  "placesBackendReportClosed": "Questa segnalazione è già stata chiusa.",
+  "placesBackendReportExpired": "Questa segnalazione è scaduta: nessuno l'ha confermata.",
+  "placesBackendOwnReportVote": "Non puoi confermare una tua segnalazione.",
+  "placesBackendKindNotActive": "Questo tipo di segnalazione non è attivo.",
+  "placesBackendCategoryNotReportable": "Questa categoria non può essere segnalata.",
+  "placesBackendTargetRequired": "Indica il luogo a cui si riferisce la segnalazione.",
+  "placesBackendPendingUseDeny": "Per un luogo in attesa di conferma usa \"Non è così\" sulla sua scheda.",
+  "placesBackendAlreadyReported": "Hai già fatto questa segnalazione.",
+  "placesBackendDailyLimit": "Puoi fare al massimo {count} segnalazioni al giorno.",
+  "@placesBackendDailyLimit": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "placesBackendReportNotFound": "Segnalazione non trovata.",
+  "placesBackendWithdrawOwnOnly": "Puoi ritirare solo una tua segnalazione.",
+  "placesBackendWithdrawClosed": "Questa segnalazione è già chiusa: non si può più ritirare.",
+  "placesBackendRatingsOff": "Le valutazioni non sono attive.",
+  "placesBackendRatePublicOnly": "Si possono valutare solo le aree cani pubbliche.",
+  "placesBackendDogParkNotFound": "Area cani non trovata.",
+  "placesBackendContributionsOff": "Segnalazioni e voti non sono ancora attivi.",
+  "placesBackendNameRequired": "Scrivi il nome dell'attività, come appare sull'insegna.",
+  "placesBackendNameTooLong": "Il nome può avere al massimo {count} caratteri.",
+  "@placesBackendNameTooLong": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "placesBackendNameNoContacts": "Nel nome non inserire telefoni, email o siti web.",
+  "placesBackendNameBlockedWords": "Il nome contiene parole non ammesse.",
+  "eventsTitle": "Eventi",
+  "eventsSearching": "Cerco gli eventi...",
+  "eventsAllRegions": "Tutte le regioni",
+  "eventsAllTypes": "Tutti i tipi",
+  "eventsReset": "Reimposta",
+  "eventsDisclaimer": "Date e luoghi possono cambiare: verifica sempre sul sito dell'organizzatore.",
+  "eventsPickRegionTitle": "Regione",
+  "eventsPickTypeTitle": "Tipo di evento",
+  "eventsPickDatesHelp": "Scegli il periodo",
+  "eventsPickDatesSave": "Applica",
+  "eventsStatusCancelled": "Annullato",
+  "eventsStatusPostponed": "Rinviato",
+  "eventsOrganizedBy": "Organizzato da {name}",
+  "@eventsOrganizedBy": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "eventsLoadError": "Non riesco a caricare gli eventi. Controlla la connessione e riprova.",
+  "eventsWindowDefault": "Prossimi {days} giorni",
+  "@eventsWindowDefault": {
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+  "eventsEmptyFiltered": "Nessun evento con questi filtri nel periodo scelto",
+  "eventsEmptyDefault": "Nessun evento nei prossimi {days} giorni",
+  "@eventsEmptyDefault": {
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+  "eventsEmptyPeriod": "Nessun evento nel periodo scelto",
+  "eventsLevelLocal": "Locale",
+  "eventsLevelProvincial": "Provinciale",
+  "eventsLevelRegional": "Regionale",
+  "eventsLevelNational": "Nazionale",
+  "eventsLevelInternational": "Internazionale",
+  "eventsTypePetFair": "Fiera per animali",
+  "eventsTypeDogShow": "Esposizione canina",
+  "eventsTypeBreedGathering": "Raduno di razza",
+  "eventsTypeCatShow": "Esposizione felina",
+  "eventsTypeWorkTrial": "Prova di lavoro",
+  "eventsTypeDogSport": "Sport cinofili",
+  "eventsTypeAdoptionDay": "Giornata di adozione",
+  "eventsTypeShelterOpenDay": "Open day rifugio",
+  "eventsTypeMicrochipDay": "Microchip day",
+  "eventsTypeVaccinationCampaign": "Campagna vaccinale",
+  "eventsTypeGroupWalk": "Passeggiata di gruppo",
+  "eventsTypeCourseSeminar": "Corso o seminario",
+  "eventsTypeMarket": "Mercatino",
+  "eventsTypeCharityEvent": "Evento benefico",
+  "eventsTypeAquariumExpo": "Acquariofilia",
+  "eventsTypeReptileExpo": "Terraristica",
+  "eventsTypeBirdShow": "Ornitologia",
+  "eventsTypeEquestrian": "Equestre",
+  "eventsTypeOther": "Altro",
+  "localActivitiesKindEvent": "Evento",
+  "localActivitiesKindService": "Servizio",
+  "localEventsTitle": "Vicino a me",
+  "localEventsLocating": "Cerco la tua posizione…",
+  "localEventsSearchingAround": "Cerco cosa c’è attorno a te. La prima volta in una zona può richiedere fino a un minuto.",
+  "localEventsConsentTitle": "Usare la tua posizione?",
+  "localEventsConsentBody": "Per mostrarti cosa c’è vicino a te VetApp usa la posizione del telefono solo mentre usi l’app. In alternativa puoi indicare un indirizzo.",
+  "localEventsConsentChooseAddress": "Scegli un indirizzo",
+  "localEventsConsentAllow": "Consenti",
+  "localEventsReportMissing": "Segnala! Manca un luogo",
+  "localEventsServicesHeader": "Servizi nella zona",
+  "localEventsClinicsHeader": "Cliniche e ambulatori",
+  "localEventsNoClinics": "Nessuna clinica trovata con questi filtri.",
+  "localEventsNoServices": "Nessun servizio trovato con questi filtri.",
+  "localEventsAll": "Tutti",
+  "localEventsMapFullscreen": "Apri la mappa a tutto schermo",
+  "localEventsNoLocationTitle": "Imposta una località",
+  "localEventsNoLocationBody": "Per mostrarti cosa c’è attorno a te serve la tua posizione. Consenti l’accesso alla posizione oppure indica la tua residenza in Impostazioni → Località.",
+  "localEventsOpenSettings": "Apri Impostazioni",
+  "localEventsSearchingRadius": "Cerco i servizi entro {radius}. La prima volta in una zona può richiedere fino a un minuto.",
+  "@localEventsSearchingRadius": {
+    "placeholders": {
+      "radius": {
+        "type": "String"
+      }
+    }
+  },
+  "localEventsSearchingNearby": "Cerco i servizi nella tua zona. La prima volta può richiedere qualche secondo.",
+  "localEventsStale": "Non sono riuscito ad aggiornare i servizi di questa zona: vedi gli ultimi dati disponibili, che potrebbero non essere recenti.",
+  "localEventsPartialRadius": "Per ora i servizi sono disponibili entro {radius}: riprova tra poco per il raggio completo.",
+  "@localEventsPartialRadius": {
+    "placeholders": {
+      "radius": {
+        "type": "String"
+      }
+    }
+  },
+  "localEventsShowLess": "Mostra meno",
+  "localEventsShowAllCount": "Mostra tutti ({count})",
+  "@localEventsShowAllCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "localEventsShowAllCategory": "Mostra tutti: {category} ({count})",
+  "@localEventsShowAllCategory": {
+    "placeholders": {
+      "category": {
+        "type": "String"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "localEventsCategoryNone": "{category}: nessuno entro {radius}",
+  "@localEventsCategoryNone": {
+    "placeholders": {
+      "category": {
+        "type": "String"
+      },
+      "radius": {
+        "type": "String"
+      }
+    }
+  },
+  "localEventsCategoryCount": "{category} ({count})",
+  "@localEventsCategoryCount": {
+    "placeholders": {
+      "category": {
+        "type": "String"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "localEventsCallTooltip": "Chiama {name}",
+  "@localEventsCallTooltip": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "localEventsDirectionsTooltip": "Indicazioni per {name}",
+  "@localEventsDirectionsTooltip": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "remindersRelativeToday": "oggi",
+  "remindersRelativeTomorrow": "domani",
+  "remindersRelativeYesterday": "ieri",
+  "remindersRelativeInDays": "tra {days} giorni",
+  "remindersRelativeDaysAgo": "{days} giorni fa",
+  "remindersKindEvent": "Evento",
+  "remindersKindRecurring": "Ricorrente · {interval}{end}",
+  "remindersCourseStarts": "Inizia {day}",
+  "remindersCourseCompleted": "Completato",
+  "remindersCourseDayOf": "Giorno {day} di {total}",
+  "remindersKindCourse": "Ciclo · {days} giorni",
+  "remindersKindCourseWithTimes": "Ciclo · {days} giorni · {times}",
+  "remindersIntervalEveryDays": "ogni {value, plural, =1{1 giorno} other{{value} giorni}}",
+  "remindersIntervalEveryMonths": "ogni {value, plural, =1{1 mese} other{{value} mesi}}",
+  "remindersEndAfterTimes": " · per {count, plural, =1{1 volta} other{{count} volte}}",
+  "remindersEndUntilDate": " · fino al {date}",
+  "remindersMenuTooltip": "Opzioni promemoria",
+  "remindersMenuMarkDone": "Segna come fatto",
+  "remindersDeleteConfirmTitle": "Eliminare questo promemoria?",
+  "remindersDeleteConfirmBody": "\"{title}\" verrà eliminato definitivamente.",
+  "remindersErrorPetNotSynced": "Il profilo dell'animale non è sincronizzato sul server: sistemalo prima di creare promemoria.",
+  "remindersErrorSaveFailed": "Non sono riuscito a salvare il promemoria. Riprova.",
+  "remindersErrorDeleteFailed": "Non sono riuscito a eliminare il promemoria. Riprova.",
+  "petNewsTitle": "Notizie",
+  "petNewsLoading": "Carico le News...",
+  "petNewsEmpty": "Nessuna notizia disponibile per questa categoria al momento.",
+  "petNewsCategoryAll": "Tutti",
+  "petNewsCategoryDog": "Cane",
+  "petNewsCategoryCat": "Gatto",
+  "petNewsCategorySmallMammals": "Piccoli mammiferi",
+  "petNewsCategoryBird": "Uccello",
+  "petNewsCategoryReptiles": "Rettili e anfibi",
+  "petNewsCategoryFish": "Pesce",
+  "petNewsCategoryOther": "Altro",
+  "petNewsCategoryGeneral": "Generale",
+  "profileLogoutDialogTitle": "Esci",
+  "profileLogoutDialogBody": "Vuoi disconnetterti da questo account?",
+  "profileGuestName": "Ospite",
+  "profileNoActiveSession": "Nessuna sessione attiva",
+  "profileSummaryBody": "Profilo owner collegato a {pets} e pronto per la web app responsive.",
+  "profilePetCount": "{count} pet",
+  "profileContactsTitle": "Contatti",
+  "profileEmailLabel": "Email",
+  "profilePhoneLabel": "Telefono",
+  "profilePhoneNotSet": "Non specificato",
+  "profileCityLabel": "Città",
+  "profileCityNotSet": "Non specificata",
+  "profileEveningThemeTitle": "Tema serale",
+  "profileEveningThemeBody": "Anteprima di una palette piu soft per l uso serale.",
+  "profileAccountStatusTitle": "Stato account",
+  "profileSessionLabel": "Sessione",
+  "profileSessionActive": "Attiva",
+  "profilePrivacyLabel": "Privacy",
+  "profilePrivacyUpdated": "Aggiornata",
+  "profileSupportLabel": "Supporto",
+  "profileSupportAvailable": "Disponibile",
+  "profileSettingsButton": "Impostazioni",
+  "profileLogoutButton": "Logout",
+  "profileTitle": "Profilo",
+  "profileIntro": "Dati owner, preferenze e dettagli account in un unico posto per la web app responsive.",
+  "profileRoadmapTitle": "Prossimi step",
+  "profileRoadmapBody": "Qui possiamo far evolvere consensi, preferenze e collegamento account senza cambiare il flusso web.",
+  "activitiesTitle": "Attività",
+  "activitiesSubtitle": "Tutto quello che ruota attorno alla vita con i tuoi animali.",
+  "activitiesNewsSubtitle": "Curiosità e attualità sugli animali domestici.",
+  "activitiesNearbyTitle": "Vicino a me",
+  "activitiesNearbySubtitle": "Veterinari, negozi e aree cani vicino a te.",
+  "activitiesEventsTitle": "Eventi",
+  "activitiesEventsSubtitle": "Fiere, esposizioni e iniziative per animali in tutta Italia.",
+  "activitiesGalleryTitle": "Galleria",
+  "activitiesGallerySubtitle": "Raccogli foto e ricordi dei tuoi animali.",
+  "activitiesMarketplaceTitle": "Mercatino dell'usato",
+  "activitiesMarketplaceSubtitle": "Compra, vendi e scambia articoli per animali.",
+  "activitiesPetFriendTitle": "Pet friend",
+  "activitiesPetFriendSubtitle": "Incontri e compagnia tra animali e proprietari.",
+  "activitiesComingSoonBadge": "In arrivo",
+  "activitiesPetFriendDescription": "Incontra altri proprietari e organizza uscite tra animali con affinità simili.",
+  "@remindersRelativeInDays": {
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+  "@remindersRelativeDaysAgo": {
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+  "@remindersKindRecurring": {
+    "placeholders": {
+      "interval": {
+        "type": "String"
+      },
+      "end": {
+        "type": "String"
+      }
+    }
+  },
+  "@remindersCourseStarts": {
+    "placeholders": {
+      "day": {
+        "type": "String"
+      }
+    }
+  },
+  "@remindersCourseDayOf": {
+    "placeholders": {
+      "day": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "@remindersKindCourse": {
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+  "@remindersKindCourseWithTimes": {
+    "placeholders": {
+      "days": {
+        "type": "int"
+      },
+      "times": {
+        "type": "String"
+      }
+    }
+  },
+  "@remindersIntervalEveryDays": {
+    "placeholders": {
+      "value": {
+        "type": "int"
+      }
+    }
+  },
+  "@remindersIntervalEveryMonths": {
+    "placeholders": {
+      "value": {
+        "type": "int"
+      }
+    }
+  },
+  "@remindersEndAfterTimes": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "@remindersEndUntilDate": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "@remindersDeleteConfirmBody": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "@profileSummaryBody": {
+    "placeholders": {
+      "pets": {
+        "type": "String"
+      }
+    }
+  },
+  "@profilePetCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "remindersTitle": "Promemoria",
+  "remindersSubtitle": "Vaccini, trattamenti e visite da tenere sotto controllo.",
+  "remindersCreateButton": "Crea",
+  "remindersLoadingTitle": "Caricamento promemoria",
+  "remindersLoadingBody": "Sto leggendo date, ricorrenze e note del proprietario.",
+  "remindersSyncErrorLabel": "Errore sync",
+  "remindersSyncErrorTitle": "Sincronizzazione promemoria fallita.",
+  "remindersSyncErrorBody": "La sorgente demo e ancora disponibile. Riprova quando la rete torna su.",
+  "remindersEmptyLabel": "Nessun promemoria",
+  "remindersEmptyTitle": "La lista dei promemoria e vuota.",
+  "remindersEmptyBody": "Crea il primo promemoria per vaccino o trattamento e resta in carreggiata.",
+  "remindersNoMatchForFilters": "Nessun promemoria per questi filtri.",
+  "remindersFilterAll": "Tutti",
+  "remindersFilterEvents": "Eventi",
+  "remindersFilterCourses": "Cicli",
+  "remindersViewList": "Lista",
+  "remindersViewCalendar": "Calendario",
+  "remindersNothingThisDay": "Nessuna attività in questo giorno.",
+  "remindersTodayCapitalized": "Oggi",
+  "remindersEditTitle": "Modifica promemoria",
+  "remindersEditSubtitle": "Aggiorna tipo, data e note.",
+  "remindersDosePickerHelp": "Orario della dose",
+  "remindersDateRequired": "Inserisci una data.",
+  "remindersDateInvalid": "Data non valida (gg/mm/aaaa).",
+  "remindersFormKind": "Tipo",
+  "remindersFormTitleLabel": "Titolo",
+  "remindersFormTitleHint": "Es. Richiamo vaccinale",
+  "remindersFormTitleHintWithPet": "Es. Richiamo vaccinale di {petName}",
+  "remindersTitleRequired": "Inserisci un titolo.",
+  "remindersFieldDate": "Data",
+  "remindersFieldNextDue": "Prossima scadenza",
+  "remindersFieldStartDate": "Data di inizio",
+  "remindersFieldTime": "Ora",
+  "remindersRepeats": "Si ripete",
+  "remindersCustomNumberHint": "Numero",
+  "remindersRecurrenceEndLabel": "Fine ricorrenza",
+  "remindersOccurrenceCountHint": "Numero di volte",
+  "remindersLastDate": "Ultima data",
+  "remindersCourseDuration": "Durata del ciclo",
+  "remindersDoseTimes": "Orari delle dosi",
+  "remindersAddDoseTime": "Aggiungi orario",
+  "remindersNoDoseTimesNote": "Senza orari ricevi un avviso al giorno, alle 9:00.",
+  "remindersFormNote": "Nota",
+  "@remindersFormTitleHintWithPet": {
+    "placeholders": {
+      "petName": {
+        "type": "String"
+      }
+    }
+  },
+  "remindersFormNoteHint": "Es. Porta il libretto sanitario",
+  "remindersKindOptionRecurring": "Ricorrente",
+  "remindersKindOptionCourse": "Ciclo",
+  "remindersDatePlaceholder": "gg/mm/aaaa",
+  "remindersPreset7Days": "7 gg",
+  "remindersPreset30Days": "30 gg",
+  "remindersPreset6Months": "6 mesi",
+  "remindersPreset12Months": "12 mesi",
+  "remindersPresetCustom": "Personalizzato",
+  "remindersEndAlways": "Sempre",
+  "remindersEndAfterN": "Per N volte",
+  "remindersEndUntil": "Fino a una data",
+  "remindersUnitDays": "Giorni",
+  "remindersUnitMonths": "Mesi",
+  "remindersOneDayLess": "Un giorno in meno",
+  "remindersDurationRange": "Da {min} a {max} giorni.",
+  "remindersDurationUnit": "{days, plural, =1{giorno} other{giorni}}",
+  "@remindersDurationRange": {
+    "placeholders": {
+      "min": {
+        "type": "int"
+      },
+      "max": {
+        "type": "int"
+      }
+    }
+  },
+  "@remindersDurationUnit": {
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+  "remindersOneDayMore": "Un giorno in più",
+  "remindersNotFoundTitle": "Promemoria non trovato",
+  "remindersNotFoundSubtitle": "Questo promemoria non è più disponibile.",
+  "remindersNotFoundLabel": "Non trovato",
+  "remindersNotFoundPanelTitle": "Nessun promemoria da mostrare.",
+  "remindersNotFoundBody": "Potrebbe essere stato eliminato o non essere ancora sincronizzato.",
+  "remindersBackToList": "Torna alla lista",
+  "remindersDetailTitle": "Dettaglio promemoria",
+  "remindersDetailSubtitle": "Tipo, data e nota del promemoria.",
+  "remindersNoNote": "Nessuna nota aggiunta.",
+  "remindersSummaryTitle": "Riepilogo promemoria",
+  "remindersSummaryPet": "Animale",
+  "remindersSummaryStatus": "Stato",
+  "remindersDeleteButton": "Elimina promemoria",
+  "remindersLoadingLabel": "Caricamento",
+  "remindersWait": "Attendi",
+  "remindersCreateTitle": "Crea promemoria",
+  "remindersCreateTitleForPet": "Nuovo promemoria per {petName}",
+  "remindersCreateSubtitle": "Scegli il tipo, la data e i dettagli.",
+  "@remindersCreateTitleForPet": {
+    "placeholders": {
+      "petName": {
+        "type": "String"
+      }
+    }
+  },
+  "settingsUnitSystemMetricLabel": "Metrico",
+  "settingsUnitSystemUkLabel": "Regno Unito",
+  "settingsUnitSystemUsLabel": "USA",
+  "settingsUnitSystemMetricDescription": "km, kg, °C, litri",
+  "settingsUnitSystemUkDescription": "miglia, libbre, °C, litri",
+  "settingsUnitSystemUsDescription": "miglia, libbre, °F, galloni USA",
+  "settingsVolumeLiters": "{liters} litri",
+  "@settingsVolumeLiters": {
+    "placeholders": {
+      "liters": {
+        "type": "int"
+      }
+    }
+  },
+  "settingsUnitLitersName": "litri",
+  "settingsTextSizeSmall": "Piccolo",
+  "settingsTextSizeNormal": "Normale",
+  "settingsTextSizeLarge": "Grande",
+  "settingsTextSizeExtraLarge": "Molto grande",
+  "settingsLocationPickerTitle": "Scegli sulla mappa",
+  "settingsLocationPickerHint": "Sposta la mappa finché il segnaposto è sul punto giusto, poi conferma.",
+  "settingsLocationPickerConfirm": "Conferma questo punto",
+  "settingsTitle": "Impostazioni",
+  "settingsNumericDatePattern": "dd/MM/yyyy",
+  "settingsGuestInitial": "O",
+  "settingsGuestName": "Ospite",
+  "settingsNoActiveSession": "Nessuna sessione attiva",
+  "settingsSectionSubscription": "Abbonamento",
+  "settingsSubscriptionAndPayments": "Abbonamento e pagamenti",
+  "settingsTrialExpiresOn": "Prova · scade il {date}",
+  "@settingsTrialExpiresOn": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "settingsSectionPushNotifications": "Notifiche push",
+  "settingsNotificationsToggle": "Notifiche",
+  "settingsSectionLayout": "Layout",
+  "settingsLayoutWeeksTitle": "Settimane visualizzate in Home",
+  "settingsLayoutWeeksSubtitle": "Quante settimane mostrare nel calendario della Home.",
+  "settingsLayoutWeekStartTitle": "Inizio settimana",
+  "settingsLayoutChatTextSizeTitle": "Dimensione del testo in chat",
+  "settingsLayoutChatTextSizePreview": "Così vedrai i messaggi della chat.",
+  "settingsLayoutUnitsTitle": "Unità di misura",
+  "settingsSectionPhotosVideos": "Foto e video",
+  "settingsGallerySaveTitle": "Salva le foto nella galleria",
+  "settingsGallerySaveSubtitle": "Le foto e i video scattati con la fotocamera dell'app vengono copiati nell'album \"VetApp\" del telefono.",
+  "settingsSectionLocation": "Località",
+  "settingsLocationIntro": "Usata per personalizzare eventi e news in base alla zona.",
+  "settingsLocationReferenceTitle": "Posizione di riferimento",
+  "settingsLocationModeCurrent": "Attuale",
+  "settingsLocationModeHome": "Residenza",
+  "settingsLocationCurrentTitle": "Posizione attuale",
+  "settingsLocationDetecting": "Rilevamento in corso…",
+  "settingsLocationCurrentNotSet": "Non ancora impostata",
+  "settingsLocationRefresh": "Aggiorna",
+  "settingsLocationHomeTitle": "Residenza abituale",
+  "settingsLocationHomeNotSet": "Non impostata",
+  "settingsLocationSet": "Imposta",
+  "settingsLocationErrorPermissionDenied": "Permesso di localizzazione negato: abilitalo dalle impostazioni del dispositivo per usare la posizione attuale.",
+  "settingsLocationErrorServiceDisabled": "La localizzazione è disattivata sul dispositivo.",
+  "settingsLocationErrorTimeout": "Non sono riuscito a rilevare la posizione in tempo, riprova.",
+  "settingsLocationErrorUnsupported": "Localizzazione non disponibile su questo dispositivo/browser.",
+  "settingsSectionPermissions": "Permessi e consensi",
+  "settingsConsentsUnavailable": "Non disponibili al momento",
+  "settingsConsentsTapToRetry": "Tocca per riprovare",
+  "settingsConsentTerms": "Termini di servizio",
+  "settingsConsentPrivacy": "Informativa privacy",
+  "settingsConsentMarketingEmail": "Email di marketing",
+  "settingsConsentAnalytics": "Analisi d'uso",
+  "settingsConsentAccepted": "Accettati v{version} il {date}",
+  "@settingsConsentAccepted": {
+    "placeholders": {
+      "version": {
+        "type": "String"
+      },
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "settingsConsentToConfirm": "Da confermare",
+  "settingsClinicalConsentSection": "Cartella clinica e assistente",
+  "settingsPrivacyPolicyFullTitle": "Informativa privacy completa",
+  "settingsPrivacyPolicyFullSubtitle": "Leggi, scarica o condividi il testo",
+  "settingsSectionSupport": "Assistenza",
+  "settingsHelpCenterTitle": "Centro assistenza",
+  "settingsHelpCenterComingSoon": "Domande frequenti e guide rapide, presto disponibili direttamente qui.",
+  "settingsContactUs": "Contattaci",
+  "settingsContactUnavailable": "Il contatto dell’assistenza non è disponibile in questo momento. Riprova più tardi.",
+  "settingsContactWriteTo": "Scrivi a {email} per qualsiasi domanda.",
+  "@settingsContactWriteTo": {
+    "placeholders": {
+      "email": {
+        "type": "String"
+      }
+    }
+  },
+  "settingsRateApp": "Valuta l'app",
+  "settingsRateAppThanks": "Grazie per il supporto! ⭐",
+  "settingsSectionInfo": "Info",
+  "settingsDataSourcesTitle": "Fonti dati",
+  "settingsDataSourcesSubtitle": "Da dove arrivano i luoghi del radar",
+  "settingsAppVersion": "Versione app",
+  "settingsSectionAccount": "Account",
+  "settingsLogout": "Esci",
+  "settingsLogoutConfirmBody": "Vuoi disconnetterti da questo account?",
+  "settingsHomeCountryDefault": "Italia",
+  "settingsHomeAddressNotFound": "Non trovo questo indirizzo. Controlla i dati e riprova.",
+  "settingsHomeAddressOrType": "Oppure scrivi l'indirizzo:",
+  "settingsHomeAddressStreet": "Indirizzo",
+  "settingsHomeAddressStreetRequired": "Inserisci l'indirizzo",
+  "settingsHomeAddressPostalCode": "CAP",
+  "settingsHomeAddressPostalCodeRequired": "Inserisci il CAP",
+  "settingsHomeAddressCity": "Città",
+  "settingsHomeAddressCityRequired": "Inserisci la città",
+  "settingsHomeAddressCountry": "Nazione",
+  "settingsHomeAddressCountryRequired": "Inserisci la nazione",
+  "settingsHomeAddressSearching": "Ricerca…",
+  "notificationsCategoryReminders": "Visite e vaccini",
+  "notificationsCategoryMedicines": "Orari dei farmaci",
+  "notificationsCategoryBirthdays": "Compleanni",
+  "notificationsChannelRemindersName": "Promemoria",
+  "notificationsChannelRemindersDescription": "Visite, vaccini e altri promemoria",
+  "notificationsChannelMedicinesName": "Farmaci",
+  "notificationsChannelBirthdaysDescription": "Compleanni degli animali",
+  "notificationsReminderTodayBody": "{petName} · oggi alle {time}",
+  "@notificationsReminderTodayBody": {
+    "placeholders": {
+      "petName": {
+        "type": "String"
+      },
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "notificationsReminderTomorrowTitle": "Domani: {title}",
+  "@notificationsReminderTomorrowTitle": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "notificationsReminderTomorrowBody": "{petName} · alle {time}",
+  "@notificationsReminderTomorrowBody": {
+    "placeholders": {
+      "petName": {
+        "type": "String"
+      },
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "notificationsMedicineTitle": "Farmaco per {petName}",
+  "@notificationsMedicineTitle": {
+    "placeholders": {
+      "petName": {
+        "type": "String"
+      }
+    }
+  },
+  "notificationsMedicineDayBody": "{title} · giorno {day} di {total}",
+  "@notificationsMedicineDayBody": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      },
+      "day": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "notificationsMedicineDoseBody": "{title} · dose delle {time}",
+  "@notificationsMedicineDoseBody": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      },
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "notificationsBirthdayTitle": "Buon compleanno, {petName}!",
+  "@notificationsBirthdayTitle": {
+    "placeholders": {
+      "petName": {
+        "type": "String"
+      }
+    }
+  },
+  "notificationsBirthdayBody": "{count, plural, =1{Oggi compie 1 anno.} other{Oggi compie {count} anni.}}",
+  "@notificationsBirthdayBody": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "notificationsBirthdayUpcomingTitle": "Compleanno in arrivo",
+  "notificationsBirthdayUpcomingBody": "Tra una settimana è il compleanno di {petName}: pensa a un regalo.",
+  "@notificationsBirthdayUpcomingBody": {
+    "placeholders": {
+      "petName": {
+        "type": "String"
+      }
+    }
+  },
+  "walksPageTitle": "Passeggiata di {petName}",
+  "@walksPageTitle": {
+    "placeholders": {
+      "petName": {
+        "type": "String"
+      }
+    }
+  },
+  "walksStatusInProgress": "Passeggiata in corso",
+  "walksStatusPaused": "Passeggiata in pausa",
+  "walksStatDistance": "Distanza",
+  "walksStatDuration": "Durata",
+  "walksStatPhotos": "Foto",
+  "walksStatPauses": "{count, plural, =1{Pausa} other{Pause}}",
+  "@walksStatPauses": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "walksActionPause": "Pausa",
+  "walksActionResume": "Riavvia",
+  "walksActionFinish": "Termina",
+  "walksActionSaving": "Salvataggio...",
+  "walksActionStarting": "Avvio...",
+  "walksActionStart": "Avvia passeggiata",
+  "walksWaitingForGps": "In attesa di un segnale GPS preciso…",
+  "walksCameraTooltip": "Foto o video",
+  "walksCaptureTakePhoto": "Scatta foto",
+  "walksCaptureRecordVideo": "Registra video",
+  "walksCaptureVideoLimit": "Fino a {seconds} secondi",
+  "@walksCaptureVideoLimit": {
+    "placeholders": {
+      "seconds": {
+        "type": "int"
+      }
+    }
+  },
+  "walksErrorOtherPetActive": "C'è già una passeggiata in corso con un altro pet: terminala prima di iniziarne una nuova.",
+  "walksErrorLocationUnavailable": "Non riesco a rilevare la tua posizione: serve per tracciare il percorso. Controlla i permessi di localizzazione e riprova.",
+  "walksPhotoPinSemantics": "Foto scattata durante la passeggiata",
+  "walksPhotoCaption": "Passeggiata del {date}",
+  "@walksPhotoCaption": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "walksMapUnavailable": "Percorso non disponibile",
+  "walksNoMoveTitle": "Passeggiata senza spostamento",
+  "walksNoMoveBody": "Non è stato registrato alcuno spostamento: la passeggiata non è stata salvata.",
+  "walksNoMoveAck": "Ho capito",
+  "walksFavoritePromptTitle": "Salva tra le preferite?",
+  "walksFavoritePromptBody": "Vuoi aggiungere questa passeggiata ({distance}) alle tue preferite ⭐?",
+  "@walksFavoritePromptBody": {
+    "placeholders": {
+      "distance": {
+        "type": "String"
+      }
+    }
+  },
+  "walksFavoriteNoThanks": "No, grazie",
+  "walksFavoriteSave": "Salva ⭐",
+  "walksFavoriteEvictTitle": "Hai già 5 preferite",
+  "walksFavoriteEvictBody": "Scegli quale togliere dalle preferite per fare posto a quella appena conclusa.",
+  "walksSheetOpen": "Apri passeggiata",
+  "walksSheetFinish": "Fine passeggiata",
+  "walksConfirmFinishTitle": "Terminare la passeggiata con {petName}?",
+  "@walksConfirmFinishTitle": {
+    "placeholders": {
+      "petName": {
+        "type": "String"
+      }
+    }
+  },
+  "walksConfirmFinishBody": "Il percorso registrato finora verrà salvato.",
+  "walksSavingSnackbar": "Salvo la passeggiata...",
+  "walksNotifPermTitle": "Vedi la passeggiata nelle notifiche",
+  "walksNotifPermBody": "Durante la passeggiata VetApp mostra una notifica fissa con tempo e distanza: da lì puoi metterla in pausa o terminarla anche con il telefono in tasca. Per vederla serve il permesso per le notifiche.\n\nLa passeggiata viene registrata comunque, anche se scegli \"Non ora\".",
+  "walksNotifPermNotNow": "Non ora",
+  "walksNotifPermAllow": "Consenti",
+  "walksNotifTitleWithPet": "Passeggiata con {petName}",
+  "@walksNotifTitleWithPet": {
+    "placeholders": {
+      "petName": {
+        "type": "String"
+      }
+    }
+  },
+  "walksNotifTitleWithPetPaused": "Passeggiata con {petName} · in pausa",
+  "@walksNotifTitleWithPetPaused": {
+    "placeholders": {
+      "petName": {
+        "type": "String"
+      }
+    }
+  },
+  "walksNotifTitleNoPetPaused": "Passeggiata in corso · in pausa",
+  "walksNotifRunningText": "{distance} percorsi",
+  "@walksNotifRunningText": {
+    "placeholders": {
+      "distance": {
+        "type": "String"
+      }
+    }
+  },
+  "walksNotifFallbackPausedText": "Il tracciamento è in pausa. Riprendi dall'app quando vuoi.",
+  "walksNotifFallbackRunningText": "VetApp sta tracciando il percorso della passeggiata.",
+  "walksNotifChannelName": "Tracciamento passeggiata",
+  "walksSyncFailed": "Sincronizzazione non riuscita: modifica salvata solo sul telefono",
+  "walksFavoriteSaveFailed": "Non sono riuscito a salvare la preferita: riprova.",
+  "walksFavoriteRemoveFailed": "Non sono riuscito a togliere la preferita: riprova.",
+  "walksDeleteFailed": "Non sono riuscito a eliminare la passeggiata: riprova.",
+  "walksHighlightLongest": "Più lunga",
+  "walksHighlightMostDurable": "Più duratura",
+  "walksHighlightFavorite": "Preferita",
+  "walksDurationMinutes": "{minutes} min",
+  "@walksDurationMinutes": {
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "walksDurationHoursMinutes": "{hours}h {minutes}min",
+  "@walksDurationHoursMinutes": {
+    "placeholders": {
+      "hours": {
+        "type": "int"
+      },
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "walksBadgeLabelFirstWalk": "Prima passeggiata 🐾",
+  "walksBadgeLabelDistance": "{km} km percorsi 🏃",
+  "@walksBadgeLabelDistance": {
+    "placeholders": {
+      "km": {
+        "type": "String"
+      }
+    }
+  },
+  "walksBadgeLabelWalkCount": "{count} uscite 🎖️",
+  "@walksBadgeLabelWalkCount": {
+    "placeholders": {
+      "count": {
+        "type": "String"
+      }
+    }
+  },
+  "walksBadgeLabel30Min": "30 minuti in una passeggiata ⏱️",
+  "walksBadgeLabel1Hour": "1 ora in una passeggiata ⏱️",
+  "walksBadgeLabelStreak": "7 giorni di fila 🔥",
+  "walksBadgeLabelDawn": "Passeggiata all'alba 🌅",
+  "walksBadgeLabelNight": "Passeggiata notturna 🌙",
+  "walksBadgeEarnedBarrier": "Badge sbloccato",
+  "walksBadgeEarnedTitle": "{count, plural, =1{Nuovo badge sbloccato!} other{Nuovi badge sbloccati!}}",
+  "@walksBadgeEarnedTitle": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "walksBadgeEarnedAction": "Evviva!",
+  "walksBadgeGalleryTitle": "Badge",
+  "walksBadgeNameFirstWalk": "Prima passeggiata",
+  "walksBadgeDescFirstWalk": "Completa la tua prima passeggiata con questo pet.",
+  "walksBadgeNameKm": "{km} km",
+  "@walksBadgeNameKm": {
+    "placeholders": {
+      "km": {
+        "type": "String"
+      }
+    }
+  },
+  "walksBadgeDescKm": "Percorri {km} km in totale.",
+  "@walksBadgeDescKm": {
+    "placeholders": {
+      "km": {
+        "type": "String"
+      }
+    }
+  },
+  "walksBadgeName30Min": "30 minuti",
+  "walksBadgeDesc30Min": "Fai una passeggiata di almeno 30 minuti.",
+  "walksBadgeName1Hour": "1 ora",
+  "walksBadgeDesc1Hour": "Fai una passeggiata di almeno un'ora.",
+  "walksBadgeNameStreak": "7 giorni di fila",
+  "walksBadgeDescStreak": "Esci a passeggio per 7 giorni consecutivi.",
+  "walksBadgeNameDawn": "Passeggiata all'alba",
+  "walksBadgeDescDawn": "Fai una passeggiata tra le 5 e le 7 del mattino.",
+  "walksBadgeNameNight": "Passeggiata notturna",
+  "walksBadgeDescNight": "Fai una passeggiata dopo le 21 o prima delle 5.",
+  "walksBadgeNameWalkCount": "{count} uscite",
+  "@walksBadgeNameWalkCount": {
+    "placeholders": {
+      "count": {
+        "type": "String"
+      }
+    }
+  },
+  "walksBadgeDescWalkCount": "Completa {count} passeggiate in totale.",
+  "@walksBadgeDescWalkCount": {
+    "placeholders": {
+      "count": {
+        "type": "String"
+      }
+    }
+  }
+}

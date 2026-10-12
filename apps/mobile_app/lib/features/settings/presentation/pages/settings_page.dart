@@ -2,7 +2,6 @@ import 'dart:async';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
 
 import '../../../../app/router/app_router.dart';
 import '../../../../app/shell/home_shell_page.dart';
@@ -10,6 +9,8 @@ import '../../../../design_system/tokens/app_colors.dart';
 import '../../../../design_system/tokens/app_radii.dart';
 import '../../../../design_system/tokens/app_spacing.dart';
 import '../../../../design_system/tokens/app_text_styles.dart';
+import '../../../../l10n/date_formats.dart';
+import '../../../../l10n/l10n.dart';
 import '../../../../shared/auth/current_owner.dart';
 import '../../../../shared/auth/current_user.dart';
 import '../../../../shared/widgets/coming_soon_page.dart';
@@ -20,6 +21,7 @@ import 'package:permission_handler/permission_handler.dart';
 
 import '../../../billing/data/billing_demo_store.dart';
 import '../../../billing/presentation/pages/billing_page.dart';
+import '../../../language/presentation/widgets/language_settings_section.dart';
 import '../../../location/data/address_geocoder.dart';
 import '../../../location/data/device_location_service.dart';
 import '../../../location/data/location_preference_store.dart';
@@ -90,9 +92,9 @@ class _SettingsPageState extends State<SettingsPage> {
   void _openFullPrivacyPolicy() {
     Navigator.of(context).push(
       MaterialPageRoute<void>(
-        builder: (_) => const LegalTextPage(
+        builder: (_) => LegalTextPage(
           consentKey: AccountConsentKeys.privacyPolicy,
-          title: 'Informativa privacy completa',
+          title: context.l10n.settingsPrivacyPolicyFullTitle,
           shareable: true,
         ),
       ),
@@ -198,7 +200,7 @@ class _SettingsPageState extends State<SettingsPage> {
     _updateLocation(
       preference.copyWith(
         current: result.coordinates,
-        currentLabel: 'Posizione GPS',
+        currentLabel: 'Posizione GPS', // valore salvato: sempre italiano
         currentSource: LocationSource.deviceGps,
         currentCapturedAt: DateTime.now(),
       ),
@@ -209,13 +211,13 @@ class _SettingsPageState extends State<SettingsPage> {
     switch (failure) {
       case LocationRequestFailure.permissionDenied:
       case LocationRequestFailure.permissionDeniedForever:
-        return 'Permesso di localizzazione negato: abilitalo dalle impostazioni del dispositivo per usare la posizione attuale.';
+        return context.l10n.settingsLocationErrorPermissionDenied;
       case LocationRequestFailure.serviceDisabled:
-        return 'La localizzazione è disattivata sul dispositivo.';
+        return context.l10n.settingsLocationErrorServiceDisabled;
       case LocationRequestFailure.timeout:
-        return 'Non sono riuscito a rilevare la posizione in tempo, riprova.';
+        return context.l10n.settingsLocationErrorTimeout;
       case LocationRequestFailure.unsupported:
-        return 'Localizzazione non disponibile su questo dispositivo/browser.';
+        return context.l10n.settingsLocationErrorUnsupported;
     }
   }
 
@@ -296,10 +298,10 @@ class _SettingsPageState extends State<SettingsPage> {
   void _openHelpCenter() {
     Navigator.of(context).push(
       MaterialPageRoute<void>(
-        builder: (_) => const ComingSoonPage(
-          title: 'Centro assistenza',
+        builder: (_) => ComingSoonPage(
+          title: context.l10n.settingsHelpCenterTitle,
           icon: Icons.help_outline_rounded,
-          description: 'Domande frequenti e guide rapide, presto disponibili direttamente qui.',
+          description: context.l10n.settingsHelpCenterComingSoon,
         ),
       ),
     );
@@ -316,7 +318,7 @@ class _SettingsPageState extends State<SettingsPage> {
         actions: [
           TextButton(
             onPressed: () => Navigator.of(dialogContext).pop(),
-            child: const Text('Chiudi'),
+            child: Text(context.l10n.commonClose),
           ),
           if (onConfirm != null)
             TextButton(
@@ -324,7 +326,7 @@ class _SettingsPageState extends State<SettingsPage> {
                 Navigator.of(dialogContext).pop();
                 onConfirm();
               },
-              child: const Text('Conferma'),
+              child: Text(context.l10n.commonConfirm),
             ),
         ],
       ),
@@ -333,14 +335,14 @@ class _SettingsPageState extends State<SettingsPage> {
 
   void _rateApp() {
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Grazie per il supporto! ⭐')),
+      SnackBar(content: Text(context.l10n.settingsRateAppThanks)),
     );
   }
 
   void _logout() {
     _showInfoDialog(
-      'Esci',
-      'Vuoi disconnetterti da questo account?',
+      context.l10n.settingsLogout,
+      context.l10n.settingsLogoutConfirmBody,
       onConfirm: () => unawaited(_performLogout()),
     );
   }
@@ -363,11 +365,11 @@ class _SettingsPageState extends State<SettingsPage> {
 
   List<Widget> _buildConsentRows() {
     if (_loadingConsents) {
-      return const [
+      return [
         _Row(
           icon: Icons.hourglass_empty_rounded,
           iconColor: AppColors.mutedText,
-          title: 'Caricamento…',
+          title: context.l10n.commonLoading,
         ),
       ];
     }
@@ -376,8 +378,8 @@ class _SettingsPageState extends State<SettingsPage> {
         _Row(
           icon: Icons.error_outline_rounded,
           iconColor: AppColors.danger,
-          title: 'Non disponibili al momento',
-          subtitle: 'Tocca per riprovare',
+          title: context.l10n.settingsConsentsUnavailable,
+          subtitle: context.l10n.settingsConsentsTapToRetry,
           onTap: _loadConsents,
         ),
       ];
@@ -387,25 +389,25 @@ class _SettingsPageState extends State<SettingsPage> {
     return [
       _buildMandatoryConsentRow(
         key: AccountConsentKeys.termsOfService,
-        title: 'Termini di servizio',
+        title: context.l10n.settingsConsentTerms,
         icon: Icons.description_outlined,
       ),
       _buildMandatoryConsentRow(
         key: AccountConsentKeys.privacyPolicy,
-        title: 'Informativa privacy',
+        title: context.l10n.settingsConsentPrivacy,
         icon: Icons.shield_outlined,
       ),
       _ToggleRow(
         icon: Icons.mail_outline_rounded,
         iconColor: AppColors.accent,
-        title: 'Email di marketing',
+        title: context.l10n.settingsConsentMarketingEmail,
         value: consents.decisions[AccountConsentKeys.marketingEmail]?.granted ?? false,
         onChanged: (value) => _setConsent(AccountConsentKeys.marketingEmail, value),
       ),
       _ToggleRow(
         icon: Icons.insights_outlined,
         iconColor: AppColors.info,
-        title: "Analisi d'uso",
+        title: context.l10n.settingsConsentAnalytics,
         value: consents.decisions[AccountConsentKeys.analytics]?.granted ?? false,
         onChanged: (value) => _setConsent(AccountConsentKeys.analytics, value),
       ),
@@ -433,8 +435,11 @@ class _SettingsPageState extends State<SettingsPage> {
       iconColor: AppColors.mutedText,
       title: title,
       subtitle: decision != null
-          ? 'Accettati v${decision.version} il ${DateFormat('dd/MM/yyyy').format(decision.decidedAt)}'
-          : 'Da confermare',
+          ? context.l10n.settingsConsentAccepted(
+              decision.version,
+              _numericDate(decision.decidedAt),
+            )
+          : context.l10n.settingsConsentToConfirm,
       onTap: () => _showInfoDialog(
         title,
         text,
@@ -442,6 +447,12 @@ class _SettingsPageState extends State<SettingsPage> {
       ),
     );
   }
+
+  String _numericDate(DateTime date) =>
+      formatAppDate(date, context.l10n.settingsNumericDatePattern);
+
+  String _capitalized(String text) =>
+      text.isEmpty ? text : '${text[0].toUpperCase()}${text.substring(1)}';
 
   @override
   Widget build(BuildContext context) {
@@ -468,29 +479,31 @@ class _SettingsPageState extends State<SettingsPage> {
                 AppSpacing.xxxl,
               ),
               children: [
-                Text('Impostazioni', style: AppTextStyles.display.copyWith(fontSize: 28)),
+                Text(context.l10n.settingsTitle, style: AppTextStyles.display.copyWith(fontSize: 28)),
                 const SizedBox(height: AppSpacing.xl),
                 _Row(
                   leading: _Avatar(
-                      letter: CurrentUser.firstName(fallback: 'O').substring(0, 1).toUpperCase()),
-                  title: CurrentUser.fullName(fallback: 'Ospite'),
-                  subtitle: user?.email ?? 'Nessuna sessione attiva',
+                      letter: CurrentUser.firstName(fallback: context.l10n.settingsGuestInitial).substring(0, 1).toUpperCase()),
+                  title: CurrentUser.fullName(fallback: context.l10n.settingsGuestName),
+                  subtitle: user?.email ?? context.l10n.settingsNoActiveSession,
                   onTap: _openProfile,
                 ),
                 CollapsibleSection(
                   sectionId: 'abbonamento',
                   expanded: _openSection == 'abbonamento',
                   onToggle: _toggleSection,
-                  title: 'Abbonamento',
+                  title: context.l10n.settingsSectionSubscription,
                   children: [
                     ListenableBuilder(
                       listenable: BillingDemoStore.instance,
                       builder: (context, _) => _Row(
                         icon: Icons.workspace_premium_outlined,
                         iconColor: AppColors.accent,
-                        title: 'Abbonamento e pagamenti',
+                        title: context.l10n.settingsSubscriptionAndPayments,
                         trailingText: BillingDemoStore.instance.isOnTrial
-                            ? 'Prova · scade il ${DateFormat('dd/MM/yyyy').format(BillingDemoStore.instance.trialEndsAt!)}'
+                            ? context.l10n.settingsTrialExpiresOn(
+                                _numericDate(BillingDemoStore.instance.trialEndsAt!),
+                              )
                             : BillingDemoStore.instance.currentPlan.displayName,
                         onTap: _openBilling,
                       ),
@@ -501,12 +514,12 @@ class _SettingsPageState extends State<SettingsPage> {
                   sectionId: 'notifiche',
                   expanded: _openSection == 'notifiche',
                   onToggle: _toggleSection,
-                  title: 'Notifiche push',
+                  title: context.l10n.settingsSectionPushNotifications,
                   children: [
                     _ToggleRow(
                       icon: Icons.notifications_active_outlined,
                       iconColor: AppColors.primary,
-                      title: 'Notifiche',
+                      title: context.l10n.settingsNotificationsToggle,
                       value: _notifications,
                       onChanged: (value) => unawaited(_setNotifications(value)),
                     ),
@@ -514,17 +527,21 @@ class _SettingsPageState extends State<SettingsPage> {
                     if (!kIsWeb) const _NotificationCategoryToggles(),
                   ],
                 ),
+                LanguageSettingsSection(
+                  expanded: _openSection == LanguageSettingsSection.sectionId,
+                  onToggle: _toggleSection,
+                ),
                 CollapsibleSection(
                   sectionId: 'layout',
                   expanded: _openSection == 'layout',
                   onToggle: _toggleSection,
-                  title: 'Layout',
+                  title: context.l10n.settingsSectionLayout,
                   children: [
                     _StepperRow(
                       icon: Icons.view_week_outlined,
                       iconColor: AppColors.primary,
-                      title: 'Settimane visualizzate in Home',
-                      subtitle: 'Quante settimane mostrare nel calendario della Home.',
+                      title: context.l10n.settingsLayoutWeeksTitle,
+                      subtitle: context.l10n.settingsLayoutWeeksSubtitle,
                       value: layout.weeksShown,
                       minValue: 1,
                       maxValue: 4,
@@ -533,9 +550,9 @@ class _SettingsPageState extends State<SettingsPage> {
                     _ChoiceRow(
                       icon: Icons.calendar_view_week_outlined,
                       iconColor: AppColors.info,
-                      title: 'Inizio settimana',
-                      leftLabel: 'Lunedì',
-                      rightLabel: 'Domenica',
+                      title: context.l10n.settingsLayoutWeekStartTitle,
+                      leftLabel: _capitalized(appLongWeekdaysMondayFirst()[0]),
+                      rightLabel: _capitalized(appLongWeekdaysMondayFirst()[6]),
                       isLeftSelected: layout.weekStartDay == WeekStartDay.monday,
                       onSelectLeft: () =>
                           _updateLayout(layout.copyWith(weekStartDay: WeekStartDay.monday)),
@@ -545,14 +562,14 @@ class _SettingsPageState extends State<SettingsPage> {
                     _OptionsRow<ChatTextSize>(
                       icon: Icons.text_fields_rounded,
                       iconColor: AppColors.accent,
-                      title: 'Dimensione del testo in chat',
+                      title: context.l10n.settingsLayoutChatTextSizeTitle,
                       options: [
                         for (final size in ChatTextSize.values) (value: size, label: size.label),
                       ],
                       selected: layout.chatTextSize,
                       onSelected: (size) => _updateLayout(layout.copyWith(chatTextSize: size)),
                       preview: Text(
-                        'Così vedrai i messaggi della chat.',
+                        context.l10n.settingsLayoutChatTextSizePreview,
                         style: AppTextStyles.bodySmall.copyWith(
                           fontSize:
                               (AppTextStyles.bodySmall.fontSize ?? 14) * layout.chatTextSize.scale,
@@ -564,7 +581,7 @@ class _SettingsPageState extends State<SettingsPage> {
                       builder: (context, _) => _OptionsRow<UnitSystem>(
                         icon: Icons.straighten_rounded,
                         iconColor: AppColors.info,
-                        title: 'Unità di misura',
+                        title: context.l10n.settingsLayoutUnitsTitle,
                         options: [
                           for (final system in UnitSystem.values)
                             (value: system, label: system.label),
@@ -584,14 +601,13 @@ class _SettingsPageState extends State<SettingsPage> {
                   sectionId: 'foto_e_video',
                   expanded: _openSection == 'foto_e_video',
                   onToggle: _toggleSection,
-                  title: 'Foto e video',
+                  title: context.l10n.settingsSectionPhotosVideos,
                   children: [
                     _ToggleRow(
                       icon: Icons.photo_library_outlined,
                       iconColor: AppColors.primary,
-                      title: 'Salva le foto nella galleria',
-                      subtitle: 'Le foto e i video scattati con la fotocamera dell\'app vengono '
-                          'copiati nell\'album "VetApp" del telefono.',
+                      title: context.l10n.settingsGallerySaveTitle,
+                      subtitle: context.l10n.settingsGallerySaveSubtitle,
                       value: GallerySaveSettingsStore.instance.enabled,
                       onChanged: (value) =>
                           unawaited(GallerySaveSettingsStore.instance.setEnabled(value)),
@@ -602,19 +618,19 @@ class _SettingsPageState extends State<SettingsPage> {
                   sectionId: 'localita',
                   expanded: _openSection == 'localita',
                   onToggle: _toggleSection,
-                  title: 'Località',
+                  title: context.l10n.settingsSectionLocation,
                   children: [
                     Text(
-                      'Usata per personalizzare eventi e news in base alla zona.',
+                      context.l10n.settingsLocationIntro,
                       style: AppTextStyles.bodySmall,
                     ),
                     const SizedBox(height: AppSpacing.sm),
                     _ChoiceRow(
                       icon: Icons.my_location_outlined,
                       iconColor: AppColors.info,
-                      title: 'Posizione di riferimento',
-                      leftLabel: 'Attuale',
-                      rightLabel: 'Residenza',
+                      title: context.l10n.settingsLocationReferenceTitle,
+                      leftLabel: context.l10n.settingsLocationModeCurrent,
+                      rightLabel: context.l10n.settingsLocationModeHome,
                       isLeftSelected: location.mode == LocationMode.currentPosition,
                       onSelectLeft: () =>
                           _updateLocation(location.copyWith(mode: LocationMode.currentPosition)),
@@ -624,24 +640,24 @@ class _SettingsPageState extends State<SettingsPage> {
                     _Row(
                       icon: Icons.gps_fixed_rounded,
                       iconColor: AppColors.primary,
-                      title: 'Posizione attuale',
+                      title: context.l10n.settingsLocationCurrentTitle,
                       subtitle: _capturingLocation
-                          ? 'Rilevamento in corso…'
+                          ? context.l10n.settingsLocationDetecting
                           : location.current != null
                               ? _formatCoordinates(location.current!)
-                              : 'Non ancora impostata',
-                      trailingText: _capturingLocation ? null : 'Aggiorna',
+                              : context.l10n.settingsLocationCurrentNotSet,
+                      trailingText: _capturingLocation ? null : context.l10n.settingsLocationRefresh,
                       onTap: _captureCurrentPosition,
                     ),
                     _Row(
                       icon: Icons.home_outlined,
                       iconColor: AppColors.accent,
-                      title: 'Residenza abituale',
+                      title: context.l10n.settingsLocationHomeTitle,
                       subtitle: location.home != null
                           ? _shortPlaceLabel(
                               location.homeLabel ?? _formatCoordinates(location.home!))
-                          : 'Non impostata',
-                      trailingText: location.home != null ? 'Modifica' : 'Imposta',
+                          : context.l10n.settingsLocationHomeNotSet,
+                      trailingText: location.home != null ? context.l10n.commonEdit : context.l10n.settingsLocationSet,
                       onTap: () => _showSetHomeLocationDialog(location),
                     ),
                     if (_locationError != null) ...[
@@ -655,14 +671,14 @@ class _SettingsPageState extends State<SettingsPage> {
                   sectionId: 'permessi',
                   expanded: _openSection == 'permessi',
                   onToggle: _toggleSection,
-                  title: 'Permessi e consensi',
+                  title: context.l10n.settingsSectionPermissions,
                   children: [
                     ..._buildConsentRows(),
                     _Row(
                       icon: Icons.description_outlined,
                       iconColor: AppColors.info,
-                      title: 'Informativa privacy completa',
-                      subtitle: 'Leggi, scarica o condividi il testo',
+                      title: context.l10n.settingsPrivacyPolicyFullTitle,
+                      subtitle: context.l10n.settingsPrivacyPolicyFullSubtitle,
                       onTap: _openFullPrivacyPolicy,
                     ),
                   ],
@@ -671,33 +687,33 @@ class _SettingsPageState extends State<SettingsPage> {
                   sectionId: 'assistenza',
                   expanded: _openSection == 'assistenza',
                   onToggle: _toggleSection,
-                  title: 'Assistenza',
+                  title: context.l10n.settingsSectionSupport,
                   children: [
                     _Row(
                       icon: Icons.help_outline_rounded,
                       iconColor: AppColors.primary,
-                      title: 'Centro assistenza',
+                      title: context.l10n.settingsHelpCenterTitle,
                       onTap: _openHelpCenter,
                     ),
                     _Row(
                       icon: Icons.mail_outline_rounded,
                       iconColor: AppColors.accent,
-                      title: 'Contattaci',
+                      title: context.l10n.settingsContactUs,
                       // The address comes from the backend (SUPPORT_CONTACT_EMAIL):
                       // none is shown until it is known, rather than a hardcoded
                       // one on a domain that may not be ours.
                       subtitle: _supportContactEmail,
                       onTap: () => _showInfoDialog(
-                        'Contattaci',
+                        context.l10n.settingsContactUs,
                         _supportContactEmail == null
-                            ? 'Il contatto dell’assistenza non è disponibile in questo momento. Riprova più tardi.'
-                            : 'Scrivi a $_supportContactEmail per qualsiasi domanda.',
+                            ? context.l10n.settingsContactUnavailable
+                            : context.l10n.settingsContactWriteTo(_supportContactEmail!),
                       ),
                     ),
                     _Row(
                       icon: Icons.star_outline_rounded,
                       iconColor: AppColors.warning,
-                      title: "Valuta l'app",
+                      title: context.l10n.settingsRateApp,
                       onTap: _rateApp,
                     ),
                   ],
@@ -706,19 +722,19 @@ class _SettingsPageState extends State<SettingsPage> {
                   sectionId: 'info',
                   expanded: _openSection == 'info',
                   onToggle: _toggleSection,
-                  title: 'Info',
+                  title: context.l10n.settingsSectionInfo,
                   children: [
                     _Row(
                       icon: Icons.dataset_outlined,
                       iconColor: AppColors.info,
-                      title: 'Fonti dati',
-                      subtitle: 'Da dove arrivano i luoghi del radar',
+                      title: context.l10n.settingsDataSourcesTitle,
+                      subtitle: context.l10n.settingsDataSourcesSubtitle,
                       onTap: _openDataSources,
                     ),
-                    const _Row(
+                    _Row(
                       icon: Icons.info_outline_rounded,
                       iconColor: AppColors.mutedText,
-                      title: 'Versione app',
+                      title: context.l10n.settingsAppVersion,
                       trailingText: '1.0.0',
                     ),
                   ],
@@ -727,12 +743,12 @@ class _SettingsPageState extends State<SettingsPage> {
                   sectionId: 'account',
                   expanded: _openSection == 'account',
                   onToggle: _toggleSection,
-                  title: 'Account',
+                  title: context.l10n.settingsSectionAccount,
                   children: [
                     _Row(
                       icon: Icons.logout_rounded,
                       iconColor: AppColors.danger,
-                      title: 'Esci',
+                      title: context.l10n.settingsLogout,
                       titleColor: AppColors.danger,
                       onTap: _logout,
                     ),
@@ -760,7 +776,7 @@ class _PetClinicalConsentSection extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        const _SectionLabel('Cartella clinica e assistente'),
+        _SectionLabel(context.l10n.settingsClinicalConsentSection),
         for (final pet in pets)
           Padding(
             padding: const EdgeInsets.fromLTRB(AppSpacing.lg, 0, AppSpacing.lg, AppSpacing.sm),
@@ -951,21 +967,21 @@ class _NotificationCategoryToggles extends StatelessWidget {
             _ToggleRow(
               icon: Icons.event_available_outlined,
               iconColor: AppColors.success,
-              title: 'Visite e vaccini',
+              title: context.l10n.notificationsCategoryReminders,
               value: preferences.reminders,
               onChanged: (value) => unawaited(store.update(preferences.copyWith(reminders: value))),
             ),
             _ToggleRow(
               icon: Icons.medication_outlined,
               iconColor: AppColors.info,
-              title: 'Orari dei farmaci',
+              title: context.l10n.notificationsCategoryMedicines,
               value: preferences.medicines,
               onChanged: (value) => unawaited(store.update(preferences.copyWith(medicines: value))),
             ),
             _ToggleRow(
               icon: Icons.cake_outlined,
               iconColor: AppColors.accent,
-              title: 'Compleanni',
+              title: context.l10n.notificationsCategoryBirthdays,
               value: preferences.birthdays,
               onChanged: (value) => unawaited(store.update(preferences.copyWith(birthdays: value))),
             ),
@@ -1217,7 +1233,7 @@ class _HomeAddressDialogState extends State<_HomeAddressDialog> {
   final _streetController = TextEditingController();
   final _postalCodeController = TextEditingController();
   final _cityController = TextEditingController();
-  final _countryController = TextEditingController(text: 'Italia');
+  final _countryController = TextEditingController(text: appL10n.settingsHomeCountryDefault);
 
   bool _submitting = false;
   String? _error;
@@ -1252,7 +1268,7 @@ class _HomeAddressDialogState extends State<_HomeAddressDialog> {
     if (result == null) {
       setState(() {
         _submitting = false;
-        _error = 'Non trovo questo indirizzo. Controlla i dati e riprova.';
+        _error = context.l10n.settingsHomeAddressNotFound;
       });
       return;
     }
@@ -1279,7 +1295,7 @@ class _HomeAddressDialogState extends State<_HomeAddressDialog> {
     return AlertDialog(
       backgroundColor: AppColors.surface,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadii.large)),
-      title: Text('Residenza abituale', style: AppTextStyles.title.copyWith(fontSize: 17)),
+      title: Text(context.l10n.settingsLocationHomeTitle, style: AppTextStyles.title.copyWith(fontSize: 17)),
       content: Form(
         key: _formKey,
         child: SingleChildScrollView(
@@ -1290,34 +1306,37 @@ class _HomeAddressDialogState extends State<_HomeAddressDialog> {
               OutlinedButton.icon(
                 onPressed: _submitting ? null : _pickOnMap,
                 icon: const Icon(Icons.map_outlined, size: 18),
-                label: const Text('Scegli sulla mappa'),
+                label: Text(context.l10n.settingsLocationPickerTitle),
                 style: OutlinedButton.styleFrom(minimumSize: Size.zero),
               ),
               const SizedBox(height: AppSpacing.md),
-              Text('Oppure scrivi l\'indirizzo:', style: AppTextStyles.bodySmall),
+              Text(context.l10n.settingsHomeAddressOrType, style: AppTextStyles.bodySmall),
               const SizedBox(height: AppSpacing.sm),
               TextFormField(
                 controller: _streetController,
-                decoration: const InputDecoration(labelText: 'Indirizzo'),
-                validator: (value) => _required(value, "Inserisci l'indirizzo"),
+                decoration: InputDecoration(labelText: context.l10n.settingsHomeAddressStreet),
+                validator: (value) =>
+                    _required(value, context.l10n.settingsHomeAddressStreetRequired),
               ),
               const SizedBox(height: AppSpacing.md),
               TextFormField(
                 controller: _postalCodeController,
-                decoration: const InputDecoration(labelText: 'CAP'),
-                validator: (value) => _required(value, 'Inserisci il CAP'),
+                decoration: InputDecoration(labelText: context.l10n.settingsHomeAddressPostalCode),
+                validator: (value) =>
+                    _required(value, context.l10n.settingsHomeAddressPostalCodeRequired),
               ),
               const SizedBox(height: AppSpacing.md),
               TextFormField(
                 controller: _cityController,
-                decoration: const InputDecoration(labelText: 'Città'),
-                validator: (value) => _required(value, 'Inserisci la città'),
+                decoration: InputDecoration(labelText: context.l10n.settingsHomeAddressCity),
+                validator: (value) => _required(value, context.l10n.settingsHomeAddressCityRequired),
               ),
               const SizedBox(height: AppSpacing.md),
               TextFormField(
                 controller: _countryController,
-                decoration: const InputDecoration(labelText: 'Nazione'),
-                validator: (value) => _required(value, 'Inserisci la nazione'),
+                decoration: InputDecoration(labelText: context.l10n.settingsHomeAddressCountry),
+                validator: (value) =>
+                    _required(value, context.l10n.settingsHomeAddressCountryRequired),
               ),
               if (_error != null) ...[
                 const SizedBox(height: AppSpacing.md),
@@ -1330,11 +1349,13 @@ class _HomeAddressDialogState extends State<_HomeAddressDialog> {
       actions: [
         TextButton(
           onPressed: _submitting ? null : () => Navigator.of(context).pop(),
-          child: const Text('Annulla'),
+          child: Text(context.l10n.commonCancel),
         ),
         TextButton(
           onPressed: _submitting ? null : _submit,
-          child: Text(_submitting ? 'Ricerca…' : 'Salva'),
+          child: Text(
+            _submitting ? context.l10n.settingsHomeAddressSearching : context.l10n.commonSave,
+          ),
         ),
       ],
     );

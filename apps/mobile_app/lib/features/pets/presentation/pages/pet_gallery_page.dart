@@ -12,6 +12,7 @@ import 'package:video_player/video_player.dart';
 import '../../../../design_system/tokens/app_colors.dart';
 import '../../../../design_system/tokens/app_spacing.dart';
 import '../../../../design_system/tokens/app_text_styles.dart';
+import '../../../../l10n/l10n.dart';
 import '../../../../shared/auth/current_owner.dart';
 import '../../../dog_walks/data/dog_walks_repository.dart';
 import '../../../dog_walks/domain/photo_walk_match.dart';
@@ -142,20 +143,22 @@ class _PetGalleryPageState extends State<PetGalleryPage> {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (dialogContext) => AlertDialog(
-        title: Text(photo.isVideo ? 'Eliminare questo video?' : 'Eliminare questa foto?'),
+        title: Text(photo.isVideo
+            ? context.l10n.petsMediaDeleteVideoTitle
+            : context.l10n.petsMediaDeletePhotoTitle),
         content: Text(
           photo.isVideo
-              ? 'Il video verrà rimosso definitivamente dalla galleria.'
-              : 'La foto verrà rimossa definitivamente dalla galleria.',
+              ? context.l10n.petsMediaDeleteVideoBody
+              : context.l10n.petsMediaDeletePhotoBody,
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(dialogContext).pop(false),
-            child: const Text('Annulla'),
+            child: Text(context.l10n.commonCancel),
           ),
           FilledButton(
             onPressed: () => Navigator.of(dialogContext).pop(true),
-            child: const Text('Elimina'),
+            child: Text(context.l10n.commonDelete),
           ),
         ],
       ),
@@ -176,7 +179,7 @@ class _PetGalleryPageState extends State<PetGalleryPage> {
     } catch (_) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Non sono riuscito a completare l\'operazione. Riprova.')),
+          SnackBar(content: Text(context.l10n.petsMediaOperationFailed)),
         );
       }
     } finally {
@@ -208,7 +211,7 @@ class _PetGalleryPageState extends State<PetGalleryPage> {
             if (!photo.isProfile && !photo.isVideo)
               ListTile(
                 leading: const Icon(Icons.account_circle_outlined),
-                title: const Text('Imposta come foto profilo'),
+                title: Text(context.l10n.petsMediaSetAsProfile),
                 onTap: () {
                   Navigator.of(sheetContext).pop();
                   _setProfile(photo);
@@ -216,7 +219,9 @@ class _PetGalleryPageState extends State<PetGalleryPage> {
               ),
             ListTile(
               leading: const Icon(Icons.delete_outline, color: Colors.red),
-              title: Text(photo.isVideo ? 'Elimina video' : 'Elimina foto'),
+              title: Text(photo.isVideo
+                  ? context.l10n.petsMediaDeleteVideoAction
+                  : context.l10n.petsMediaDeletePhotoAction),
               onTap: () {
                 Navigator.of(sheetContext).pop();
                 _delete(photo);
@@ -238,8 +243,8 @@ class _PetGalleryPageState extends State<PetGalleryPage> {
           children: [
             ListTile(
               leading: const Icon(Icons.photo_library_outlined),
-              title: const Text('Importa dalla galleria'),
-              subtitle: const Text('Foto e video, anche più di uno'),
+              title: Text(context.l10n.petsMediaImportFromGallery),
+              subtitle: Text(context.l10n.petsMediaImportFromGalleryHint),
               onTap: () {
                 Navigator.of(sheetContext).pop();
                 _importFromGallery();
@@ -247,7 +252,7 @@ class _PetGalleryPageState extends State<PetGalleryPage> {
             ),
             ListTile(
               leading: const Icon(Icons.photo_camera_outlined),
-              title: const Text('Scatta foto'),
+              title: Text(context.l10n.petsMediaTakePhoto),
               onTap: () {
                 Navigator.of(sheetContext).pop();
                 _takePhoto();
@@ -255,8 +260,8 @@ class _PetGalleryPageState extends State<PetGalleryPage> {
             ),
             ListTile(
               leading: const Icon(Icons.videocam_outlined),
-              title: const Text('Registra video'),
-              subtitle: const Text('Fino a $petVideoMaxSeconds secondi'),
+              title: Text(context.l10n.petsMediaRecordVideo),
+              subtitle: Text(context.l10n.petsMediaRecordVideoLimit(petVideoMaxSeconds)),
               onTap: () {
                 Navigator.of(sheetContext).pop();
                 _recordVideo();
@@ -272,7 +277,7 @@ class _PetGalleryPageState extends State<PetGalleryPage> {
   Widget build(BuildContext context) {
     final pet = _pet;
     return PetsScaffold(
-      title: 'Galleria di ${pet.name}',
+      title: context.l10n.petsMediaGalleryOf(pet.name),
       onBack: () => Navigator.of(context).maybePop(),
       body: Stack(
         children: [
@@ -288,7 +293,7 @@ class _PetGalleryPageState extends State<PetGalleryPage> {
                   padding: const EdgeInsets.all(AppSpacing.xl),
                   child: Center(
                     child: Text(
-                      'Nessuna foto o video ancora. Usa il pulsante "Aggiungi" qui sotto.',
+                      context.l10n.petsMediaGalleryEmpty,
                       textAlign: TextAlign.center,
                       style: AppTextStyles.bodySmall,
                     ),
@@ -312,7 +317,7 @@ class _PetGalleryPageState extends State<PetGalleryPage> {
               backgroundColor: AppColors.primary,
               foregroundColor: AppColors.onPrimary,
               icon: const Icon(Icons.add_a_photo_outlined),
-              label: const Text('Aggiungi'),
+              label: Text(context.l10n.commonAdd),
             ),
           ),
           if (_busy || _capture.busy)
@@ -343,7 +348,7 @@ class _PetGalleryPageState extends State<PetGalleryPage> {
                             foregroundColor: Colors.white,
                             side: const BorderSide(color: Colors.white70),
                           ),
-                          child: const Text('Annulla'),
+                          child: Text(context.l10n.commonCancel),
                         ),
                       ],
                     ],
@@ -510,14 +515,14 @@ class _VideoViewerPageState extends State<_VideoViewerPage> {
         elevation: 0,
       ),
       body: _failed
-          ? const Center(
+          ? Center(
               child: Text(
-                'Non riesco a riprodurre questo video.',
-                style: TextStyle(color: Colors.white),
+                context.l10n.petsMediaVideoPlaybackFailed,
+                style: const TextStyle(color: Colors.white),
               ),
             )
           : controller == null
-              ? const Center(child: PetLoader(label: 'Carico il video...', color: Colors.white))
+              ? Center(child: PetLoader(label: context.l10n.petsMediaVideoLoading, color: Colors.white))
               : Column(
                   children: [
                     Expanded(

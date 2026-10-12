@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../features/auth/presentation/pages/auth_placeholder_page.dart';
 import '../../features/auth/presentation/pages/set_new_password_page.dart';
 import '../../features/billing/presentation/pages/paywall_page.dart';
+import '../../features/language/presentation/widgets/first_run_language_gate.dart';
 import '../preview/maps_demo_page.dart';
 import '../shell/home_shell_page.dart';
 import '../splash/splash_page.dart';
@@ -39,7 +40,7 @@ class AppRouter {
         );
       case auth:
         return MaterialPageRoute<void>(
-          builder: (_) => const AuthPlaceholderPage(),
+          builder: (_) => const FirstRunLanguageGate(child: AuthPlaceholderPage()),
           settings: settings,
         );
       case home:

@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../../../l10n/l10n.dart';
+
 const _askedKey = 'vet_app.walk_notification_permission_asked';
 
 /// Asks once, at the first walk, for the notification permission (Android
@@ -34,21 +36,16 @@ Future<void> maybeAskWalkNotificationPermission(
     final allow = await showDialog<bool>(
       context: context,
       builder: (dialogContext) => AlertDialog(
-        title: const Text('Vedi la passeggiata nelle notifiche'),
-        content: const Text(
-          'Durante la passeggiata VetApp mostra una notifica fissa con tempo e '
-          'distanza: da lì puoi metterla in pausa o terminarla anche con il '
-          'telefono in tasca. Per vederla serve il permesso per le notifiche.\n\n'
-          'La passeggiata viene registrata comunque, anche se scegli "Non ora".',
-        ),
+        title: Text(dialogContext.l10n.walksNotifPermTitle),
+        content: Text(dialogContext.l10n.walksNotifPermBody),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(dialogContext).pop(false),
-            child: const Text('Non ora'),
+            child: Text(dialogContext.l10n.walksNotifPermNotNow),
           ),
           FilledButton(
             onPressed: () => Navigator.of(dialogContext).pop(true),
-            child: const Text('Consenti'),
+            child: Text(dialogContext.l10n.walksNotifPermAllow),
           ),
         ],
       ),

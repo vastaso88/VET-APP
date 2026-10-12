@@ -1,3 +1,6 @@
+import '../../../l10n/date_formats.dart';
+import '../../../l10n/l10n.dart';
+
 /// State of a "Segnala!" report as the backend shows it to this viewer.
 /// Never says who reported or voted: only what the viewer themself did.
 class RadarReportInfo {
@@ -31,9 +34,8 @@ class RadarReportInfo {
   /// "Scade tra N giorni se nessuno conferma", or null when it does not expire.
   String? get expiryLabel => switch (expiresInDays) {
         null => null,
-        0 => 'Scade oggi se nessuno conferma.',
-        1 => 'Scade tra 1 giorno se nessuno conferma.',
-        final days => 'Scade tra $days giorni se nessuno conferma.',
+        0 => appL10n.placesExpiryToday,
+        final days => appL10n.placesExpiryDays(days),
       };
 
   static RadarReportInfo? tryFromJson(Object? json) {
@@ -78,14 +80,16 @@ class RadarRating {
   /// The community's vote in words. Below the threshold only how many
   /// voted is said, never what a single person gave.
   String get communityLabel {
-    final votes = count == 1 ? '1 voto' : '$count voti';
+    final l10n = appL10n;
+    final votes = l10n.placesVotesCount(count);
     final average = this.average;
     if (average != null) {
-      return 'Voto della community: ${average.toStringAsFixed(1).replaceAll('.', ',')} su 5 · $votes';
+      return l10n.placesRatingAverage(
+        average.toStringAsFixed(1).replaceAll('.', appDecimalSeparator()),
+        votes,
+      );
     }
-    return count == 0
-        ? 'Voto della community: nessun voto ancora'
-        : 'Voto della community: $votes · la media compare da 3 voti';
+    return count == 0 ? l10n.placesRatingNone : l10n.placesRatingBelowThreshold(votes);
   }
 
   static RadarRating? tryFromJson(Object? json) {
@@ -102,12 +106,23 @@ class RadarRating {
 
 /// What can be reported about an existing place.
 enum RadarProblem {
-  closed('closed', 'Ha chiuso o non esiste più'),
-  duplicate('duplicate', 'È un doppione di un altro luogo'),
-  wrongPosition('wrong_position', 'La posizione è sbagliata');
+  closed('closed'),
+  duplicate('duplicate'),
+  wrongPosition('wrong_position');
 
-  const RadarProblem(this.apiValue, this.label);
+  const RadarProblem(this.apiValue);
 
   final String apiValue;
-  final String label;
+
+  String get label {
+    final l10n = appL10n;
+    switch (this) {
+      case RadarProblem.closed:
+        return l10n.placesProblemClosed;
+      case RadarProblem.duplicate:
+        return l10n.placesProblemDuplicate;
+      case RadarProblem.wrongPosition:
+        return l10n.placesProblemWrongPosition;
+    }
+  }
 }

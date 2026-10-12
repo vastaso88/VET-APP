@@ -6,9 +6,11 @@ import '../../../../shared/widgets/pet_loader.dart';
 
 
 import '../../../../design_system/tokens/app_spacing.dart';
+import '../../../../l10n/l10n.dart';
 import '../../../../features/billing/data/subscription_gate.dart';
 import '../../../../shared/auth/auth.dart';
 import '../../data/auth_repository_factory.dart';
+import '../../domain/auth_error_messages.dart';
 import '../widgets/auth_widgets.dart';
 import 'register_page.dart';
 import 'reset_password_page.dart';
@@ -44,8 +46,8 @@ class _LoginPageState extends State<LoginPage> {
     if (!isValid) {
       setState(() {
         _status = AuthBannerStatus.error;
-        _title = 'Controlla i campi';
-        _message = 'Servono una email valida e una password di almeno 6 caratteri.';
+        _title = context.l10n.authBannerCheckFieldsTitle;
+        _message = context.l10n.authLoginFieldsInvalidMessage;
       });
       return;
     }
@@ -53,8 +55,8 @@ class _LoginPageState extends State<LoginPage> {
     setState(() {
       _isLoading = true;
       _status = AuthBannerStatus.loading;
-      _title = 'Accesso in corso';
-      _message = 'Sto verificando le credenziali.';
+      _title = context.l10n.authLoginLoadingTitle;
+      _message = context.l10n.authLoginLoadingMessage;
     });
 
     final result = await _authRepository.signInWithPassword(
@@ -71,8 +73,8 @@ class _LoginPageState extends State<LoginPage> {
         setState(() {
           _isLoading = false;
           _status = AuthBannerStatus.success;
-          _title = 'Accesso completato';
-          _message = 'La sessione e pronta. Ti porto nel flusso principale.';
+          _title = context.l10n.authLoginSuccessTitle;
+          _message = context.l10n.authLoginSuccessMessage;
         });
         return true;
       },
@@ -80,8 +82,8 @@ class _LoginPageState extends State<LoginPage> {
         setState(() {
           _isLoading = false;
           _status = AuthBannerStatus.error;
-          _title = 'Accesso non riuscito';
-          _message = error.message;
+          _title = context.l10n.authLoginFailureTitle;
+          _message = localizedAuthMessage(error);
         });
         return false;
       },
@@ -102,8 +104,8 @@ class _LoginPageState extends State<LoginPage> {
   @override
   Widget build(BuildContext context) {
     return AuthScreenScaffold(
-      title: 'Bentornato.',
-      subtitle: 'Accedi per ritrovare i tuoi animali, promemoria e documenti.',
+      title: context.l10n.authLoginTitle,
+      subtitle: context.l10n.authLoginSubtitle,
       child: Form(
         key: _formKey,
         child: Column(
@@ -113,28 +115,28 @@ class _LoginPageState extends State<LoginPage> {
               AuthStateBanner(status: _status!, title: _title, message: _message),
             AuthInputField(
               controller: _emailController,
-              label: 'Email',
-              hintText: 'nome@dominio.it',
+              label: context.l10n.authEmailLabel,
+              hintText: context.l10n.authEmailHint,
               keyboardType: TextInputType.emailAddress,
               autofillHints: const [AutofillHints.email],
               validator: (value) {
                 final text = value?.trim() ?? '';
-                if (text.isEmpty) return 'Inserisci la tua email.';
-                if (!text.contains('@')) return 'Email non valida.';
+                if (text.isEmpty) return context.l10n.authEmailRequired;
+                if (!text.contains('@')) return context.l10n.authEmailInvalid;
                 return null;
               },
             ),
             const SizedBox(height: AppSpacing.md),
             AuthInputField(
               controller: _passwordController,
-              label: 'Password',
-              hintText: 'Almeno 6 caratteri',
+              label: context.l10n.authPasswordLabel,
+              hintText: context.l10n.authPasswordHint,
               obscureText: true,
               autofillHints: const [AutofillHints.password],
               validator: (value) {
                 final text = value ?? '';
-                if (text.isEmpty) return 'Inserisci la password.';
-                if (text.length < 6) return 'Minimo 6 caratteri.';
+                if (text.isEmpty) return context.l10n.authPasswordRequiredLogin;
+                if (text.length < 6) return context.l10n.authPasswordMinLength;
                 return null;
               },
             ),
@@ -148,13 +150,13 @@ class _LoginPageState extends State<LoginPage> {
                 ),
                 GestureDetector(
                   onTap: () => setState(() => _rememberMe = !_rememberMe),
-                  child: const Text('Resta connesso'),
+                  child: Text(context.l10n.authRememberMe),
                 ),
               ],
             ),
             const SizedBox(height: AppSpacing.sm),
             AuthFooterLink(
-              label: 'Password dimenticata?',
+              label: context.l10n.authForgotPasswordLink,
               onTap: () => Navigator.of(context).push(
                 MaterialPageRoute<void>(builder: (_) => const ResetPasswordPage()),
               ),
@@ -170,12 +172,12 @@ class _LoginPageState extends State<LoginPage> {
                         height: 20,
                         child: PetLoader.small(),
                       )
-                    : const Text('Accedi'),
+                    : Text(context.l10n.authLoginButton),
               ),
             ),
             const SizedBox(height: AppSpacing.md),
             AuthFooterLink(
-              label: 'Non hai un account? Registrati',
+              label: context.l10n.authNoAccountRegisterLink,
               onTap: () => Navigator.of(context).push(
                 MaterialPageRoute<void>(builder: (_) => const RegisterPage()),
               ),
