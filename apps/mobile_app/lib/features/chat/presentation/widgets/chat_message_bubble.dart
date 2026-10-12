@@ -6,6 +6,7 @@ import '../../../../design_system/tokens/app_radii.dart';
 import '../../../../design_system/tokens/app_spacing.dart';
 import '../../../../design_system/tokens/app_text_styles.dart';
 import '../../domain/chat_models.dart';
+import '../../../settings/data/layout_settings_store.dart';
 
 class ChatMessageBubble extends StatelessWidget {
   const ChatMessageBubble({
@@ -21,6 +22,16 @@ class ChatMessageBubble extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    return ListenableBuilder(
+      listenable: LayoutSettingsStore.instance,
+      builder: (context, _) => _build(context, LayoutSettingsStore.instance.settings.chatTextSize),
+    );
+  }
+
+  Widget _build(BuildContext context, ChatTextSize textSize) {
+    final bodyStyle = AppTextStyles.bodySmall.copyWith(
+      fontSize: (AppTextStyles.bodySmall.fontSize ?? 14) * textSize.scale,
+    );
     final isUser = message.author == ChatMessageAuthor.user;
     final backgroundColor = isUser ? AppColors.primary : AppColors.surface;
     final foregroundColor = isUser ? AppColors.onPrimary : AppColors.text;
@@ -58,13 +69,13 @@ class ChatMessageBubble extends StatelessWidget {
                   isUser
                       ? Text(
                           message.text,
-                          style: AppTextStyles.bodySmall.copyWith(
+                          style: bodyStyle.copyWith(
                             color: foregroundColor,
                           ),
                         )
                       : _MarkdownLiteText(
                           text: message.text,
-                          style: AppTextStyles.bodySmall.copyWith(
+                          style: bodyStyle.copyWith(
                             color: foregroundColor,
                           ),
                         ),

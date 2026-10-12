@@ -33,6 +33,7 @@ from packages.core.application.services.response_generator import ResponseGenera
 from packages.core.application.services.safety_gate import SafetyGate
 from packages.core.application.services.situation_model_builder import SituationModelBuilder
 from packages.core.domain.conversation.models import ChatMessage
+from packages.core.domain.conversation.referral_style import strip_ritual_referral
 from packages.core.domain.conversation.request_kind import (
     RequestKind,
     asks_to_stop_questions,
@@ -1312,8 +1313,12 @@ class ChatOrchestrator:
             response = self._llm_client.generate(
                 LLMGenerationRequest(
                     system_prompt=(
-                        "You are a veterinary app assistant. Answer clearly, avoid diagnosis, "
-                        "and encourage professional care when symptoms worsen. There is no "
+                        # Greetings, thanks, short small talk (see _classify_intent):
+                        # a warm short reply, never a ritual referral (build 29).
+                        "You are the assistant inside a pet-care app, chatting in Italian "
+                        "with a pet owner. Reply briefly and warmly, in plain everyday "
+                        "Italian. Do not mention the vet or add any disclaimer: nothing "
+                        "here calls for it. There is no "
                         "retrieved evidence for this turn, so never include a [n] citation. "
                         "Always refer to the animal consistent with the Species given below — "
                         "never assume or default to a different species (e.g. never call it a "
@@ -1361,7 +1366,7 @@ class ChatOrchestrator:
                 mode="general",
             )
         return ChatOrchestratorResult(
-            answer=response.content,
+            answer=strip_ritual_referral(response.content),
             mode="general",
             confidence="medium",
             ai_generated=True,
@@ -1672,7 +1677,9 @@ class ChatOrchestrator:
         return ChatOrchestratorResult(
             answer=(
                 self._report_reading_line(data, kind, documents_read)
-                + response.content
+                # The habit the instructions do not fully remove: a closing
+                # "consulta il veterinario" with no reason in it (build 29).
+                + strip_ritual_referral(response.content)
                 + self._medical_record_notice(data, intent)
             ),
             mode="natural",

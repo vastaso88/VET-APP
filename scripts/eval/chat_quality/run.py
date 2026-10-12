@@ -868,6 +868,10 @@ def _eval_settings(arguments: argparse.Namespace) -> Settings:
 def command_run(arguments: argparse.Namespace) -> int:
     settings = _eval_settings(arguments)
     wanted = set(arguments.only.split(",")) if arguments.only else None
+    if arguments.category:
+        categories = set(arguments.category.split(","))
+        by_category = {s.id for s in SCENARIOS if s.category in categories}
+        wanted = by_category | (wanted or set())
     scenarios = [s for s in SCENARIOS if wanted is None or s.id in wanted]
     cache = _load_cache()
     judge_container = None if arguments.no_judge else ApplicationContainer(settings)
@@ -957,6 +961,11 @@ def main() -> int:
     run = commands.add_parser("run", help="esegue gli scenari e li valuta")
     run.add_argument("--label", required=True)
     run.add_argument("--only", default="")
+    run.add_argument(
+        "--category",
+        default="",
+        help="solo gli scenari di queste categorie (es. caso,curiosita,sintomo)",
+    )
     run.add_argument("--no-judge", action="store_true")
     run.add_argument("--resume", action="store_true", help="salta gli scenari già eseguiti")
     run.add_argument("--evidence", default="", help="es. in_memory")

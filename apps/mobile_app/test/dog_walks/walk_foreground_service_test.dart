@@ -77,7 +77,7 @@ void main() {
         now: now,
       );
       expect(content.title, 'Passeggiata con Fido · in pausa');
-      expect(content.text, '12 min · 1.3 km');
+      expect(content.text, '12 min · 1,3 km');
       expect(content.chronometerBase, isNull);
     });
 
