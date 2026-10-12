@@ -19,11 +19,13 @@ import '../../../dog_walks/data/active_walk_controller.dart';
 import '../../../dog_walks/data/dog_walks_repository.dart';
 import '../../../dog_walks/data/walk_history_controller.dart';
 import '../../../dog_walks/domain/walk_eligibility.dart';
+import '../../../dog_walks/domain/walk_photo_pins.dart';
 import '../../../dog_walks/domain/walk_retention.dart';
 import '../../../dog_walks/domain/walk_session.dart';
 import '../../../dog_walks/presentation/pages/active_walk_page.dart';
 import '../../../dog_walks/presentation/pages/walk_detail_page.dart';
 import '../../../dog_walks/presentation/walk_labels.dart';
+import '../../../location/domain/coordinates.dart';
 import '../../../dog_walks/presentation/widgets/badge_gallery_dialog.dart';
 import '../../../dog_walks/presentation/widgets/walk_mini_map.dart';
 import '../../../medical_records/data/medical_record_file_cache.dart';
@@ -35,6 +37,7 @@ import '../../../reminders/domain/reminder_presentation.dart';
 import '../../../reminders/presentation/pages/reminders_pages.dart';
 import '../../../reminders/presentation/widgets/reminder_menu_button.dart';
 import '../../data/pet_demo_store.dart';
+import '../../data/pet_photo_repository.dart';
 import '../../domain/pet_format.dart';
 import '../../domain/pet_models.dart';
 import '../widgets/medical_record_consent_card.dart';
@@ -1131,11 +1134,41 @@ class _WalksTabState extends State<_WalksTab> {
     repository: widget.repository,
   )..refresh();
 
+  /// This pet photos (rows only, no image bytes): the places they were taken
+  /// on each walk show as dots on the history thumbnails.
+  List<PetPhotoEntry> _photos = const [];
+
+  @override
+  void initState() {
+    super.initState();
+    PetPhotoRepository.changes.addListener(_loadPhotos);
+    _loadPhotos();
+  }
+
   @override
   void dispose() {
+    PetPhotoRepository.changes.removeListener(_loadPhotos);
     _history.dispose();
     super.dispose();
   }
+
+  Future<void> _loadPhotos() async {
+    try {
+      final photos = await PetPhotoRepository().list(widget.pet.id);
+      if (!mounted) return;
+      setState(() => _photos = [for (final photo in photos) if (!photo.isVideo) photo]);
+    } catch (_) {
+      // Dots are an extra: the thumbnails are the same without them.
+    }
+  }
+
+  List<Coordinates> _photoPointsFor(WalkSession walk) => [
+        for (final pin in walkPhotoPins(
+          walk,
+          [for (final photo in _photos) (id: photo.id, takenAt: photo.takenAt)],
+        ))
+          pin.at,
+      ];
 
   /// Pushes the live/paused/fresh-start page - ActiveWalkPage itself already
   /// knows whether to resume the singleton's in-progress walk or start a
@@ -1228,6 +1261,7 @@ class _WalksTabState extends State<_WalksTab> {
                         walk: history.longestDistance!,
                         petName: widget.pet.name,
                         history: _history,
+                        photoPoints: _photoPointsFor(history.longestDistance!),
                         recordLabel: history.longestDuration?.id == history.longestDistance!.id
                             ? 'Più lunga · Più duratura'
                             : 'Più lunga',
@@ -1240,6 +1274,7 @@ class _WalksTabState extends State<_WalksTab> {
                         walk: history.longestDuration!,
                         petName: widget.pet.name,
                         history: _history,
+                        photoPoints: _photoPointsFor(history.longestDuration!),
                         recordLabel: 'Più duratura',
                       ),
                     ],
@@ -1252,7 +1287,8 @@ class _WalksTabState extends State<_WalksTab> {
                           key: ValueKey('favorite-${walk.id}'),
                           walk: walk,
                           petName: widget.pet.name,
-                          history: _history),
+                          history: _history,
+                          photoPoints: _photoPointsFor(walk)),
                       const SizedBox(height: AppSpacing.sm),
                     ],
                     const SizedBox(height: AppSpacing.sm),
@@ -1265,6 +1301,7 @@ class _WalksTabState extends State<_WalksTab> {
                           walk: walk,
                           petName: widget.pet.name,
                           history: _history,
+                          photoPoints: _photoPointsFor(walk),
                           recordLabel: history.highlightLabelFor(walk)),
                       const SizedBox(height: AppSpacing.sm),
                     ],
@@ -1378,6 +1415,7 @@ class _WalkCard extends StatelessWidget {
     required this.walk,
     required this.petName,
     required this.history,
+    this.photoPoints = const [],
     this.recordLabel,
   });
 
@@ -1387,6 +1425,9 @@ class _WalkCard extends StatelessWidget {
   /// Star and trash go through it: the card changes at once, the write
   /// follows behind and is undone with a message if it is refused.
   final WalkHistoryController history;
+
+  /// Where photos were taken on this walk, for the thumbnail dots.
+  final List<Coordinates> photoPoints;
 
   /// "Più lunga" / "Più duratura" / both, when this card is shown under the
   /// Record section (owner request, 2026-09-30: distance and duration are
@@ -1479,7 +1520,7 @@ class _WalkCard extends StatelessWidget {
           children: [
             SizedBox(
               height: 150,
-              child: WalkMiniMap(walk: walk),
+              child: WalkMiniMap(walk: walk, photoPoints: photoPoints),
             ),
             Padding(
               padding: const EdgeInsets.all(AppSpacing.md),

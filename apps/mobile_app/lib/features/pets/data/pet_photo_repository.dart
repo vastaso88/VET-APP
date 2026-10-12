@@ -135,6 +135,10 @@ class PetPhotoRepository {
   static const bucket = 'pet-photos';
   static final Map<String, Uint8List> _memoryCache = {};
 
+  /// Ticks when a photo is added or removed, so screens that show a pet's
+  /// photos beside something else (the walk history's photo dots) can reload.
+  static final ValueNotifier<int> changes = ValueNotifier<int>(0);
+
   /// Forgets every photo held on this device (memory and disk) - the next
   /// account to sign in must not see the previous one's pets.
   static Future<void> clearLocalCaches() async {
@@ -188,6 +192,7 @@ class PetPhotoRepository {
     );
     _memoryCache[path] = compressedJpeg;
     await _disk.write(path, compressedJpeg);
+    changes.value++;
     return PetPhotoEntry(
       id: photoId,
       petId: petId,
@@ -239,6 +244,7 @@ class PetPhotoRepository {
         if (takenAt != null) 'taken_at': takenAt.toUtc().toIso8601String(),
       },
     );
+    changes.value++;
     return PetPhotoEntry(
       id: photoId,
       petId: petId,
@@ -341,6 +347,7 @@ class PetPhotoRepository {
     await client.from('pet_photos').delete().eq('id', photo.id);
     _memoryCache.remove(photo.storagePath);
     await _disk.remove(photo.storagePath);
+    changes.value++;
   }
 
   /// Removes every file under `<owner>/<pet>/` — called when the pet itself is

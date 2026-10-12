@@ -4,6 +4,7 @@ import 'package:latlong2/latlong.dart' as latlong;
 
 import '../../../../design_system/tokens/app_colors.dart';
 import '../../../../design_system/tokens/app_text_styles.dart';
+import '../../../location/domain/coordinates.dart';
 import '../../domain/walk_map_framing.dart';
 import '../../domain/walk_route_markers.dart';
 import '../../domain/walk_route_segments.dart';
@@ -14,16 +15,20 @@ import 'walk_route_markers_layer.dart';
 /// Static preview of one walk's route for the history cards: framed on that
 /// walk's own bounds (never fewer than ~250 m across, so a short walk is still
 /// a readable line), a white-cased route line that stands out from the basemap,
-/// and small start/finish dots that do not hide the path.
+/// and small start/finish dots that do not hide the path. [photoPoints] are
+/// the places photos were taken on this walk (walk_photo_pins.dart), shown as
+/// small coral dots.
 ///
 /// FlutterMap reads its initial camera only once, when its State is created.
 /// A list that reorders or drops cards reuses States by position, so the key
 /// below carries the walk id and the route length: another walk (or the same
 /// walk after its route changed) always builds a fresh map and frames itself.
 class WalkMiniMap extends StatelessWidget {
-  WalkMiniMap({required this.walk, super.key}) : _route = walk.route;
+  WalkMiniMap({required this.walk, this.photoPoints = const [], super.key})
+      : _route = walk.route;
 
   final WalkSession walk;
+  final List<Coordinates> photoPoints;
   final List<RoutePoint> _route;
 
   @override
@@ -68,6 +73,25 @@ class WalkMiniMap extends StatelessWidget {
                   ),
             ],
           ),
+          if (photoPoints.isNotEmpty)
+            MarkerLayer(
+              markers: [
+                for (final point in photoPoints)
+                  Marker(
+                    point: latlong.LatLng(point.latitude, point.longitude),
+                    width: 14,
+                    height: 14,
+                    child: const DecoratedBox(
+                      key: ValueKey('walk-mini-photo-dot'),
+                      decoration: BoxDecoration(
+                        color: AppColors.accent,
+                        shape: BoxShape.circle,
+                        border: Border.fromBorderSide(BorderSide(color: Colors.white, width: 2)),
+                      ),
+                    ),
+                  ),
+              ],
+            ),
           buildWalkRouteMarkersLayer(
             computeWalkRouteMarkers(_route, isFinished: true),
             compact: true,
