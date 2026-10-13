@@ -22,19 +22,36 @@ class LanguageSelector extends StatelessWidget {
               in store.available.map((variant) => variant.languageCode).toSet())
             PopupMenuItem(
               value: store.variantForLanguage(code),
-              child: Text(store.available
-                  .firstWhere((variant) => variant.languageCode == code)
-                  .nativeName
-                  .split(' (')
-                  .first),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(store.variantForLanguage(code).flag,
+                      style: const TextStyle(fontSize: 24)),
+                  const SizedBox(width: 12),
+                  Text(store
+                      .variantForLanguage(code)
+                      .nativeName
+                      .split(' (')
+                      .first),
+                ],
+              ),
             ),
         ],
-        child: Padding(
-          padding: const EdgeInsets.all(12),
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+          decoration: BoxDecoration(
+            color: Theme.of(context).colorScheme.surface,
+            borderRadius: BorderRadius.circular(24),
+            border:
+                Border.all(color: Theme.of(context).colorScheme.outlineVariant),
+          ),
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Icon(Icons.language_rounded, size: 20),
+              ExcludeSemantics(
+                child: Text(store.variant.flag,
+                    style: const TextStyle(fontSize: 24)),
+              ),
               const SizedBox(width: 8),
               Flexible(
                 child: Text(store.variant.nativeName.split(' (').first,

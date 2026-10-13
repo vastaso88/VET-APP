@@ -1,0 +1,54 @@
+name: Translation drafts IT to EN ES
+
+on:
+  push:
+    branches: [main, MULTILANG]
+    paths:
+      - 'apps/mobile_app/lib/l10n/app_it.arb'
+      - 'packages/core/domain/localization.py'
+      - 'apps/mobile_app/android/app/src/main/res/values/strings.xml'
+      - 'scripts/i18n/auto_translate.py'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: translation-drafts-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  draft:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Detect changed source messages
+        id: changes
+        shell: bash
+        run: |
+          if python scripts/i18n/auto_translate.py check; then
+            echo 'pending=false' >> "$GITHUB_OUTPUT"
+          else
+            echo 'pending=true' >> "$GITHUB_OUTPUT"
+          fi
+      - name: Generate isolated draft catalogs
+        if: steps.changes.outputs.pending == 'true'
+        env:
+          DEEPL_API_KEY: ${{ secrets.DEEPL_API_KEY }}
+          DEEPL_GLOSSARY_EN: ${{ vars.DEEPL_GLOSSARY_EN }}
+          DEEPL_GLOSSARY_ES: ${{ vars.DEEPL_GLOSSARY_ES }}
+        run: >-
+          python scripts/i18n/auto_translate.py draft
+          --output "$RUNNER_TEMP/translation-drafts" --max-messages 100
+      - name: Downloadable drafts for human review
+        if: steps.changes.outputs.pending == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: translation-drafts-${{ github.sha }}
+          path: ${{ runner.temp }}/translation-drafts
+          if-no-files-found: error
+          retention-days: 14

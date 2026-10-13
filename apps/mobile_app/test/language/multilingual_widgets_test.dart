@@ -28,6 +28,23 @@ void main() {
   });
   tearDown(LanguageStore.instance.resetForTest);
 
+  testWidgets('settings header shows flag and language even when collapsed',
+      (tester) async {
+    await tester.pumpWidget(_app(Scaffold(
+      body: LanguageSettingsSection(expanded: false, onToggle: (_) {}),
+    )));
+    await tester.pumpAndSettle();
+    expect(find.text('🇮🇹 LINGUA · ITALIANO'), findsOneWidget);
+    await LanguageStore.instance.choose(languageVariantById('es')!);
+    await tester.pumpAndSettle();
+    final context = tester.element(find.byType(LanguageSettingsSection));
+    expect(
+        find.text(
+            '🇪🇸 ${context.l10n.languageSectionTitle.toUpperCase()} · ESPAÑOL'),
+        findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
+
   testWidgets('existing validation errors and banner change language too',
       (tester) async {
     await tester.pumpWidget(_app(const LoginPage()));
@@ -66,11 +83,20 @@ void main() {
         await tester.pumpWidget(_app(entry.value));
         await tester.pumpAndSettle();
         expect(find.byType(LanguageSelector), findsOneWidget);
+        expect(
+            find.descendant(
+                of: find.byType(LanguageSelector),
+                matching: find.text(LanguageStore.instance.variant.flag)),
+            findsOneWidget);
         await tester.tap(find.byType(LanguageSelector));
         await tester.pumpAndSettle();
         expect(find.text('Italiano'), findsWidgets);
         expect(find.text('English'), findsWidgets);
         expect(find.text('Español'), findsWidgets);
+        expect(find.text('🇮🇹'), findsWidgets);
+        expect(find.text(LanguageStore.instance.variantForLanguage('en').flag),
+            findsWidgets);
+        expect(find.text('🇪🇸'), findsWidgets);
         expect(tester.takeException(), isNull);
         await tester.pumpWidget(const SizedBox());
       });

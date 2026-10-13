@@ -42,6 +42,8 @@ jobs:
       - run: flutter gen-l10n
       - name: Validate catalogs and hard-coded UI text
         run: python ../../scripts/i18n/check_i18n.py
+      - name: Detect outdated translations after source text changes
+        run: python ../../scripts/i18n/auto_translate.py check
       - run: flutter analyze
       - run: flutter test
       - uses: actions/setup-java@v4

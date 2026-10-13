@@ -35,7 +35,8 @@ class LanguageSettingsSection extends StatelessWidget {
           sectionId: sectionId,
           expanded: expanded,
           onToggle: onToggle,
-          title: l10n.languageSectionTitle,
+          title: '${store.variant.flag} ${l10n.languageSectionTitle} · '
+              '${store.variant.nativeName.split(' (').first}',
           children: [
             const Align(
                 alignment: Alignment.centerLeft, child: LanguageSelector()),

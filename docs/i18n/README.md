@@ -4,6 +4,12 @@ IT, EN ed ES sono disponibili per tutta l'app (1.355 chiavi ciascuna).
 Vedi [integrazione MULTILANG](MULTILANG_IMPLEMENTATION.md) per preferenze account,
 chat, testi legali, controlli e prova della branch.
 
+Il workflow di [traduzione automatica assistita](AUTOMATIC_TRANSLATION.md)
+prepara bozze EN/ES da revisionare per testi italiani nuovi o modificati.
+La CI verifica anche che le traduzioni non siano obsolete tramite il manifest
+delle sorgenti. Dopo una revisione manuale eseguire
+`python scripts/i18n/auto_translate.py acknowledge` e committare il manifest.
+
 L'italiano è la lingua **sorgente**: tutte le frasi visibili stanno in `apps/mobile_app/lib/l10n/app_it.arb` (template). Le altre lingue sono file `app_xx.arb` accanto. Le classi `AppLocalizations*` in `lib/l10n/` sono **generate** da `flutter gen-l10n` (config: `apps/mobile_app/l10n.yaml`; si rigenerano da sole con `flutter pub get`/`flutter run`/`flutter build`, ma sono tenute nel repo).
 
 ## Come si usa una frase nel codice
