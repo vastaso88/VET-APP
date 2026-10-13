@@ -58,6 +58,7 @@ from packages.core.domain.pet_profile.weight import (
     is_weight_relevant,
     weight_suggestion,
 )
+from packages.core.domain.safety.dosage_request import is_dosage_request
 from packages.core.domain.safety.triage_clarification import (
     CLARIFYING_QUESTIONS,
     requires_immediate_escalation,
@@ -862,7 +863,11 @@ class ChatOrchestrator:
 
     @staticmethod
     def _is_dosage_request(message: str) -> bool:
-        return any(marker in message for marker in DOSAGE_REQUEST_MARKERS)
+        # The fixed phrases, plus the general rule (dosage_request.py):
+        # the phrases alone stopped 6 of 15 realistic requests (2026-10-14).
+        return any(marker in message for marker in DOSAGE_REQUEST_MARKERS) or (
+            is_dosage_request(message)
+        )
 
     @staticmethod
     def _describes_independent_multi_pet_complaint(message: str) -> bool:
