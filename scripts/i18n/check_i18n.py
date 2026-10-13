@@ -205,19 +205,38 @@ def italian_score(text: str) -> bool:
 
 
 UI_ARGUMENT = re.compile(
-    r"(?:Text\(|TextSpan\(text:\s*|(?:title|subtitle|label|labelText|hintText|helperText|"
+    r"(?:\bText\(\s*|\bTextSpan\(\s*text:\s*|(?:title|subtitle|label|labelText|hintText|helperText|"
     r"errorText|tooltip|semanticsLabel|semanticLabel|message|buttonText|actionLabel|"
     r"placeholder|description)\s*:\s*)(?:const\s+Text\(\s*)?"
-    r"(?:'((?:[^'\
-]|\.)*)'|\"((?:[^\"\
-]|\.)*)\")",
+    r"""(?:'((?:[^'\\\n]|\\.)*)'|"((?:[^"\\\n]|\\.)*)")""",
 )
-WORDLIKE = re.compile(r"^[A-ZÀ-Ý][\w'’ ,.!?:;()/&-]*[a-zà-ÿ][\w'’ ,.!?:;()/&%-]*$")
 
 
 def looks_like_ui_text(text: str) -> bool:
-    """A capitalised, sentence-like literal handed straight to a UI argument."""
-    return len(text) >= 3 and bool(WORDLIKE.match(text)) and "$" not in text
+    """Human-readable text in UI arguments, regardless of language/casing."""
+    technical = {
+        "VetApp",
+        "VET APP",
+        "OSM",
+        "OpenStreetMap",
+        "PDF",
+        "GPS",
+        "km",
+        "m",
+        "kg",
+        "g",
+        "cm",
+        "ml",
+        "L",
+        "min",
+        "s",
+        "°C",
+        "°F",
+    }
+    if text in technical:
+        return False
+    without_variables = re.sub(r"\$\{[^}]*\}|\$\w+", "", text)
+    return bool(re.search(r"[A-Za-zÀ-ÿ]{2,}", without_variables))
 
 
 def strip_comment(line: str) -> str:
@@ -243,7 +262,9 @@ def find_hardcoded() -> list[tuple[str, int, str]]:
         if any(fnmatch.fnmatch(rel, g) for g in file_globs):
             continue
         in_block = False
-        for number, raw in enumerate(path.read_text(encoding="utf-8").splitlines(), 1):
+        raw_lines = path.read_text(encoding="utf-8").splitlines()
+        code_lines = [""] * len(raw_lines)
+        for number, raw in enumerate(raw_lines, 1):
             stripped = raw.strip()
             if in_block:
                 if "*/" in stripped:
@@ -257,6 +278,7 @@ def find_hardcoded() -> list[tuple[str, int, str]]:
             line = strip_comment(raw)
             if SKIP_CONTEXT.search(line):
                 continue
+            code_lines[number - 1] = line
             ui_literals = {
                 (m.group(1) if m.group(1) is not None else m.group(2))
                 for m in UI_ARGUMENT.finditer(line)
@@ -270,10 +292,29 @@ def find_hardcoded() -> list[tuple[str, int, str]]:
                 if any(fnmatch.fnmatch(rel, g) and needle in raw for g, needle in line_rules):
                     continue
                 found.append((rel, number, text))
+        # Also match widgets whose literal begins on the following line.
+        code = "\n".join(code_lines)
+        for match in UI_ARGUMENT.finditer(code):
+            text = match.group(1) if match.group(1) is not None else match.group(2)
+            if not looks_like_ui_text(text):
+                continue
+            number = code.count("\n", 0, match.start()) + 1
+            raw = match.group(0)
+            if any(fnmatch.fnmatch(rel, g) and needle in raw for g, needle in line_rules):
+                continue
+            entry = (rel, number, text)
+            if entry not in found:
+                found.append(entry)
     return found
 
 
 def arb_placeholders(message: str) -> set[str]:
+    # A plural branch such as =1{day} contains text, not a {day} variable.
+    message = re.sub(
+        r"(?<!\w)(?:=\d+|zero|one|two|few|many|other)\s*\{([^{}]*)\}",
+        lambda match: match.group(1),
+        message,
+    )
     return set(re.findall(r"\{(\w+)(?:,|\})", message))
 
 
@@ -287,6 +328,18 @@ def compare_arbs() -> tuple[dict[str, list[str]], dict[str, list[str]], dict[str
     missing: dict[str, list[str]] = {}
     extra: dict[str, list[str]] = {}
     mismatched: dict[str, list[str]] = {}
+    invalid_source = [
+        key for key, value in template.items() if not isinstance(value, str) or not value.strip()
+    ]
+    if invalid_source:
+        missing["it"] = []
+        extra["it"] = []
+        mismatched["it"] = invalid_source
+    for language in ("en", "es"):
+        if not (L10N / f"app_{language}.arb").exists():
+            missing[language] = list(template)
+            extra[language] = []
+            mismatched[language] = []
     for path in sorted(L10N.glob("app_*.arb")):
         if path == TEMPLATE:
             continue
@@ -297,7 +350,12 @@ def compare_arbs() -> tuple[dict[str, list[str]], dict[str, list[str]], dict[str
         mismatched[lang] = [
             k
             for k in template
-            if k in other and arb_placeholders(template[k]) != arb_placeholders(other[k])
+            if k in other
+            and (
+                not isinstance(other[k], str)
+                or not other[k].strip()
+                or arb_placeholders(template[k]) != arb_placeholders(other[k])
+            )
         ]
     return missing, extra, mismatched
 
@@ -326,12 +384,12 @@ def main() -> int:
         found = find_hardcoded()
         if found:
             problems += len(found)
-            print(f"Hard-coded Italian strings outside lib/l10n: {len(found)}")
+            print(f"Hard-coded UI strings outside lib/l10n: {len(found)}")
             for rel, number, text in found:
                 print(f"  {rel}:{number}: {text[:90]!r}")
             print("  -> move them to app_it.arb, or justify them in scripts/i18n/allowlist.txt")
         else:
-            print("No hard-coded Italian strings found.")
+            print("No hard-coded UI strings found.")
     if not args.hardcoded_only:
         missing, extra, mismatched = compare_arbs()
         if not missing:
@@ -345,13 +403,15 @@ def main() -> int:
             if mismatched[lang]:
                 problems += len(mismatched[lang])
                 print(
-                    f"app_{lang}.arb has different placeholders for: {', '.join(mismatched[lang])}"
+                    f"app_{lang}.arb has empty/invalid values or different placeholders for: "
+                    + ", ".join(mismatched[lang])
                 )
             if extra[lang]:
-                print(f"app_{lang}.arb has {len(extra[lang])} keys not in the template (warning):")
+                problems += len(extra[lang])
+                print(f"app_{lang}.arb has {len(extra[lang])} keys not in the template:")
                 for key in extra[lang]:
                     print(f"  {key}")
-            if not missing[lang] and not mismatched[lang]:
+            if not missing[lang] and not mismatched[lang] and not extra[lang]:
                 print(f"app_{lang}.arb: complete.")
     return 1 if problems else 0
 

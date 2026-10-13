@@ -7,6 +7,7 @@ from packages.core.domain.consent.models import AccountConsents, ConsentCatalogE
 
 class GetAccountConsentsInput(BaseModel):
     owner_id: str
+    language: str = "it"
 
 
 class GetAccountConsentsOutput(BaseModel):
@@ -23,5 +24,5 @@ class GetAccountConsentsService:
             owner_id=data.owner_id
         )
         return GetAccountConsentsOutput(
-            account_consents=account_consents, catalog=build_consent_catalog()
+            account_consents=account_consents, catalog=build_consent_catalog(data.language)
         )

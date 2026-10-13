@@ -4,6 +4,19 @@ plugins {
     id("dev.flutter.flutter-gradle-plugin")
 }
 
+// CI supplies a persistent key so tester APKs can update an existing installation.
+val releaseStorePath = System.getenv("ANDROID_KEYSTORE_PATH")
+val releaseSigningVariables = listOf(
+    "ANDROID_KEYSTORE_PATH", "ANDROID_KEYSTORE_PASSWORD", "ANDROID_KEY_ALIAS", "ANDROID_KEY_PASSWORD",
+)
+val hasReleaseSigning = releaseSigningVariables.any { !System.getenv(it).isNullOrBlank() }
+if (hasReleaseSigning) {
+    require(releaseSigningVariables.all { !System.getenv(it).isNullOrBlank() }) {
+        "All ANDROID_KEYSTORE signing variables must be provided together."
+    }
+    require(file(releaseStorePath!!).isFile) { "ANDROID_KEYSTORE_PATH must point to a keystore." }
+}
+
 android {
     namespace = "com.vetapp.vetapp"
     compileSdk = 36
@@ -27,11 +40,21 @@ android {
         versionName = flutter.versionName
     }
 
+    signingConfigs {
+        if (hasReleaseSigning) {
+            create("distribution") {
+                storeFile = file(releaseStorePath!!)
+                storePassword = System.getenv("ANDROID_KEYSTORE_PASSWORD")
+                keyAlias = System.getenv("ANDROID_KEY_ALIAS")
+                keyPassword = System.getenv("ANDROID_KEY_PASSWORD")
+            }
+        }
+    }
+
     buildTypes {
         release {
-            // TODO: Add your own signing config for the release build.
-            // Signing with the debug keys for now, so `flutter run --release` works.
-            signingConfig = signingConfigs.getByName("debug")
+            // Preserve local development builds; distribution CI always supplies its key.
+            signingConfig = signingConfigs.getByName(if (hasReleaseSigning) "distribution" else "debug")
         }
     }
 }

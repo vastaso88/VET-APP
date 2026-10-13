@@ -7,6 +7,7 @@ import '../../../../l10n/l10n.dart';
 import '../../../settings/presentation/widgets/collapsible_section.dart';
 import '../../data/language_store.dart';
 import '../pages/language_picker_page.dart';
+import 'language_selector.dart';
 
 /// "Lingua" section of Impostazioni. Renders nothing while only one
 /// translation exists, so today the Settings page is unchanged.
@@ -36,11 +37,14 @@ class LanguageSettingsSection extends StatelessWidget {
           onToggle: onToggle,
           title: l10n.languageSectionTitle,
           children: [
+            const Align(
+                alignment: Alignment.centerLeft, child: LanguageSelector()),
             Padding(
               padding: const EdgeInsets.only(bottom: AppSpacing.sm),
               child: Text(
                 l10n.languageSectionHint,
-                style: AppTextStyles.caption.copyWith(color: AppColors.secondaryText),
+                style: AppTextStyles.caption
+                    .copyWith(color: AppColors.secondaryText),
               ),
             ),
             for (final variant in store.available)

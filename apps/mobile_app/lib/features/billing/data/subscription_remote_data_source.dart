@@ -95,7 +95,7 @@ class HttpSubscriptionRemoteDataSource implements SubscriptionRemoteDataSource {
         );
       }
 
-      return fetchStatus();
+      return await fetchStatus();
     } on TimeoutException {
       return Result.failure<SubscriptionStatus>(
         AppNetworkError(

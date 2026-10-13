@@ -7,6 +7,7 @@ to the limits the code applies, so changing one forces a look at the other
 (and at the version number).
 """
 
+import json
 import re
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
@@ -75,14 +76,9 @@ def test_medical_record_version_moved_past_the_wording_that_over_promised() -> N
 
 def test_the_card_in_the_app_shows_the_wording_on_record() -> None:
     source = _CONSENT_CARD.read_text(encoding="utf-8")
-    declaration = re.search(
-        r"const _approvedConsentText =((?:\s*(?:\"[^\"]*\"|'[^']*'))+)\s*;", source
-    )
-    assert declaration is not None, "the card no longer declares _approvedConsentText"
-
-    segments = re.findall(r"\"([^\"]*)\"|'([^']*)'", declaration.group(1))
-
-    assert "".join(double or single for double, single in segments) == CONSENT_TEXT_IT
+    assert "context.l10n.petsConsentFullText" in source
+    catalog = _CONSENT_CARD.parents[4] / "l10n/app_it.arb"
+    assert json.loads(catalog.read_text(encoding="utf-8"))["petsConsentFullText"] == CONSENT_TEXT_IT
 
 
 def test_privacy_text_does_not_promise_a_page_that_does_not_exist() -> None:

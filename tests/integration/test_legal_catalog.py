@@ -31,13 +31,25 @@ def test_catalog_is_unchanged_without_lang() -> None:
     assert body["catalog"] == {k: v.model_dump() for k, v in build_consent_catalog().items()}
 
 
-def test_other_languages_are_served_the_italian_catalog_for_now() -> None:
+def test_unknown_languages_fall_back_to_italian() -> None:
     client = TestClient(app)
     baseline = client.get("/legal/consents").json()
 
-    for lang in ("en", "fr", "xx", "it", "EN-gb"):
+    for lang in ("fr", "xx", "it"):
         response = client.get("/legal/consents", params={"lang": lang})
         assert response.status_code == 200
         body = response.json()
         assert body["language"] == "it", lang
         assert body["catalog"] == baseline["catalog"], lang
+
+
+def test_english_and_spanish_catalogs_have_the_same_keys_and_versions() -> None:
+    client = TestClient(app)
+    baseline = client.get("/legal/consents").json()["catalog"]
+    for lang in ("en", "es", "EN-gb"):
+        body = client.get("/legal/consents", params={"lang": lang}).json()
+        assert body["language"] == lang.lower().split("-")[0]
+        assert set(body["catalog"]) == set(baseline)
+        for key, entry in body["catalog"].items():
+            assert entry["text"].strip()
+            assert entry["version"] == baseline[key]["version"]

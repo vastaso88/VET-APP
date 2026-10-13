@@ -47,6 +47,10 @@ def test_placeholders_are_extracted_from_icu_messages() -> None:
     assert check_i18n.arb_placeholders(message) == {"count", "name"}
 
 
+def test_plural_branch_words_are_not_placeholders() -> None:
+    assert check_i18n.arb_placeholders("{days, plural, =1{day} other{days}}") == {"days"}
+
+
 def test_missing_keys_and_placeholder_mismatches_are_reported(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
@@ -62,9 +66,9 @@ def test_missing_keys_and_placeholder_mismatches_are_reported(
 
     missing, extra, mismatched = check_i18n.compare_arbs()
 
-    assert missing == {"en": ["bye"]}
-    assert extra == {"en": ["extra"]}
-    assert mismatched == {"en": ["hello"]}
+    assert missing == {"en": ["bye"], "es": ["hello", "bye"]}
+    assert extra == {"en": ["extra"], "es": []}
+    assert mismatched == {"en": ["hello"], "es": []}
 
 
 def test_repository_has_no_hardcoded_italian_strings() -> None:
@@ -73,6 +77,24 @@ def test_repository_has_no_hardcoded_italian_strings() -> None:
 
 
 def test_every_language_file_has_all_template_keys() -> None:
-    missing, _extra, mismatched = check_i18n.compare_arbs()
+    missing, extra, mismatched = check_i18n.compare_arbs()
     assert {lang: keys for lang, keys in missing.items() if keys} == {}
     assert {lang: keys for lang, keys in mismatched.items() if keys} == {}
+    assert {lang: keys for lang, keys in extra.items() if keys} == {}
+
+
+@pytest.mark.parametrize("text", ["save", "hello $name", "Guardar", "Account"])
+def test_ui_literals_are_detected_independently_of_language(text: str) -> None:
+    assert check_i18n.looks_like_ui_text(text)
+
+
+def test_multiline_widget_literal_is_detected(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    library = tmp_path / "lib"
+    library.mkdir()
+    (library / "page.dart").write_text("Text(\n  'save changes',\n);", encoding="utf-8")
+    monkeypatch.setattr(check_i18n, "LIB", library)
+    monkeypatch.setattr(check_i18n, "APP", tmp_path)
+    monkeypatch.setattr(check_i18n, "ALLOWLIST", tmp_path / "nonexistent")
+    assert check_i18n.find_hardcoded() == [("lib/page.dart", 1, "save changes")]

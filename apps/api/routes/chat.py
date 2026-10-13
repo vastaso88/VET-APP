@@ -15,12 +15,12 @@ def send_chat_message(
 ) -> dict[str, object]:
     container = get_container()
     user = container.auth_provider.get_current_user()
-    fields = request.model_dump(exclude={"language"})
+    fields = request.model_dump(exclude={"language", "response_locale"})
     result = container.send_chat_message_service().execute(
         SendChatMessageInput(
             owner_id=user.id,
             owner_display_name=user.display_name,
-            language=resolve_language(request.language, accept_language),
+            language=resolve_language(request.response_locale or request.language, accept_language),
             **fields,
         )
     )

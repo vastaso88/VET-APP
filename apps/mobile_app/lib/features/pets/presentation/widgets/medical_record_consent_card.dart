@@ -22,20 +22,6 @@ class MedicalRecordConsentCard extends StatefulWidget {
   State<MedicalRecordConsentCard> createState() => _MedicalRecordConsentCardState();
 }
 
-/// The approved consent wording (packages/core/domain/medical_record/consent_text.py,
-/// version v2). Kept verbatim so the copy the owner reads is the copy on record:
-/// tests/unit/test_consent_texts_match_behaviour.py checks that the two match.
-const _approvedConsentText =
-    "Per darti un consiglio più preciso, l'assistente può leggere la "
-    'cartella clinica del tuo animale. Quando fai una domanda può leggere '
-    'le tre voci più recenti, con titolo, data, descrizione e testo dei '
-    "documenti allegati, anche se non c'entrano con la domanda. Se chiedi "
-    'di spiegare un esame, può leggere i documenti che lo riguardano, al '
-    "massimo due. Di un documento molto lungo legge solo l'inizio. Ciò che "
-    'legge viene inviato al fornitore esterno di intelligenza artificiale '
-    'che scrive la risposta. VetApp lo usa solo per risponderti. Puoi '
-    "revocare il consenso in qualsiasi momento dalla scheda dell'animale o "
-    'dalle Impostazioni: vale per le richieste successive.';
 
 class _MedicalRecordConsentCardState extends State<MedicalRecordConsentCard> {
   final _remote = MedicalRecordConsentRemoteDataSource();
@@ -187,7 +173,7 @@ class _MedicalRecordConsentCardState extends State<MedicalRecordConsentCard> {
           titleRow,
           if (_expanded) ...[
             const SizedBox(height: AppSpacing.xs),
-            Text(_approvedConsentText, style: AppTextStyles.caption),
+            Text(context.l10n.petsConsentFullText, style: AppTextStyles.caption),
             const SizedBox(height: AppSpacing.xs),
             Text(
               context.l10n.petsConsentWithoutConsent,

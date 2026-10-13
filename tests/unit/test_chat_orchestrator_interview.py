@@ -65,7 +65,9 @@ class FixedInterviewPlanner(InterviewPlanner):
         super().__init__(None)
         self.question = question
 
-    def next_question(self, situation: SituationModel) -> str | None:
+    def next_question(
+        self, situation: SituationModel, *, response_locale: str = "it"
+    ) -> str | None:
         return self.question
 
 

@@ -168,6 +168,7 @@ class HttpChatRemoteDataSource implements ChatRemoteDataSource {
               if (attachmentId != null) 'attachment_id': attachmentId,
               if (clientMessageId != null) 'client_message_id': clientMessageId,
               'language': AppLocaleHolder.current.languageCode,
+              'response_locale': AppLocaleHolder.current.languageCode,
             }),
           )
           .timeout(_chatTimeout);

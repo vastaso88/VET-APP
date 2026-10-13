@@ -5,6 +5,7 @@ import '../../../../design_system/tokens/app_radii.dart';
 import '../../../../design_system/tokens/app_spacing.dart';
 import '../../../../design_system/tokens/app_text_styles.dart';
 import '../../../../l10n/l10n.dart';
+import '../../../language/presentation/widgets/language_selector.dart';
 
 const _kAuthContentMaxWidth = 520.0;
 
@@ -37,7 +38,7 @@ class AuthScreenScaffold extends StatelessWidget {
     return Scaffold(
       backgroundColor: AppColors.background,
       body: SafeArea(
-          child: LayoutBuilder(
+        child: LayoutBuilder(
           builder: (ctx, viewport) => SingleChildScrollView(
             padding: const EdgeInsets.fromLTRB(
               AppSpacing.lg,
@@ -50,50 +51,53 @@ class AuthScreenScaffold extends StatelessWidget {
                 minHeight: viewport.maxHeight - AppSpacing.lg - AppSpacing.xxl,
               ),
               child: Center(
-              child: ConstrainedBox(
-                constraints: const BoxConstraints(maxWidth: _kAuthContentMaxWidth),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    _BrandRow(
-                      onBack: allowBack && Navigator.of(context).canPop()
-                          ? () => Navigator.of(context).pop()
-                          : null,
-                    ),
-                    const SizedBox(height: AppSpacing.xl),
-                    Container(
-                      width: double.infinity,
-                      padding: const EdgeInsets.all(AppSpacing.xl),
-                      decoration: BoxDecoration(
-                        color: AppColors.surface,
-                        borderRadius: BorderRadius.circular(AppRadii.xl),
-                        border: Border.all(color: AppColors.border),
-                        boxShadow: const [
-                          BoxShadow(
-                            color: Color(0x1A163A35),
-                            blurRadius: 28,
-                            offset: Offset(0, 16),
-                          ),
-                        ],
+                child: ConstrainedBox(
+                  constraints:
+                      const BoxConstraints(maxWidth: _kAuthContentMaxWidth),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      _BrandRow(
+                        onBack: allowBack && Navigator.of(context).canPop()
+                            ? () => Navigator.of(context).pop()
+                            : null,
                       ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(title, style: AppTextStyles.display.copyWith(fontSize: 28)),
-                          const SizedBox(height: AppSpacing.sm),
-                          Text(subtitle, style: AppTextStyles.body),
-                          const SizedBox(height: AppSpacing.xl),
-                          child,
-                        ],
+                      const SizedBox(height: AppSpacing.xl),
+                      Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.all(AppSpacing.xl),
+                        decoration: BoxDecoration(
+                          color: AppColors.surface,
+                          borderRadius: BorderRadius.circular(AppRadii.xl),
+                          border: Border.all(color: AppColors.border),
+                          boxShadow: const [
+                            BoxShadow(
+                              color: Color(0x1A163A35),
+                              blurRadius: 28,
+                              offset: Offset(0, 16),
+                            ),
+                          ],
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(title,
+                                style: AppTextStyles.display
+                                    .copyWith(fontSize: 28)),
+                            const SizedBox(height: AppSpacing.sm),
+                            Text(subtitle, style: AppTextStyles.body),
+                            const SizedBox(height: AppSpacing.xl),
+                            child,
+                          ],
+                        ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
             ),
-              ),
-            ),
           ),
+        ),
       ),
     );
   }
@@ -193,6 +197,7 @@ class AuthInputField extends StatefulWidget {
   final bool obscureText;
   final List<String>? autofillHints;
   final FormFieldValidator<String>? validator;
+
   /// Error coming from the server (e.g. email already registered), shown
   /// under this field until the owner edits it.
   final String? serverError;
@@ -237,7 +242,9 @@ class _AuthInputFieldState extends State<AuthInputField> {
         suffixIcon: widget.obscureText
             ? IconButton(
                 icon: Icon(_obscured ? Icons.visibility_off : Icons.visibility),
-                tooltip: _obscured ? context.l10n.authPasswordShow : context.l10n.authPasswordHide,
+                tooltip: _obscured
+                    ? context.l10n.authPasswordShow
+                    : context.l10n.authPasswordHide,
                 onPressed: () => setState(() => _obscured = !_obscured),
               )
             : null,
@@ -261,7 +268,8 @@ class AuthFooterLink extends StatelessWidget {
     return Align(
       alignment: Alignment.centerLeft,
       child: TextButton(
-        style: TextButton.styleFrom(padding: EdgeInsets.zero, minimumSize: Size.zero),
+        style: TextButton.styleFrom(
+            padding: EdgeInsets.zero, minimumSize: Size.zero),
         onPressed: onTap,
         child: Text(
           label,
@@ -282,15 +290,18 @@ class _BrandRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    if (onBack == null) return const SizedBox.shrink();
-    return Align(
-      alignment: Alignment.centerLeft,
-      child: TextButton.icon(
-        style: TextButton.styleFrom(minimumSize: const Size(0, 44)),
-        onPressed: onBack,
-        icon: const Icon(Icons.arrow_back_rounded, size: 18),
-        label: Text(context.l10n.commonBack),
-      ),
+    return Row(
+      children: [
+        if (onBack != null)
+          TextButton.icon(
+            style: TextButton.styleFrom(minimumSize: const Size(0, 44)),
+            onPressed: onBack,
+            icon: const Icon(Icons.arrow_back_rounded, size: 18),
+            label: Text(context.l10n.commonBack),
+          ),
+        const Spacer(),
+        const Flexible(flex: 3, child: LanguageSelector()),
+      ],
     );
   }
 }

@@ -55,9 +55,10 @@ Future<void> bootstrap() async {
     try {
       await Supabase.initialize(
         url: runtimeConfig.supabaseUrl,
-        anonKey: runtimeConfig.supabaseAnonKey,
+        publishableKey: runtimeConfig.supabaseAnonKey,
       );
       supabaseEnabled = true;
+      await LanguageStore.instance.syncAfterAuthentication();
 
       // Supabase parses a password-recovery link's URL fragment during
       // initialize() above and fires this event once the resulting
@@ -74,7 +75,11 @@ Future<void> bootstrap() async {
         // Any sign-out (button, expired session): pet photos kept on this
         // device go with it.
         if (state.event == AuthChangeEvent.signedOut) {
+          LanguageStore.instance.resetSessionChoice();
           unawaited(PetPhotoRepository.clearLocalCaches());
+        }
+        if (state.event == AuthChangeEvent.signedIn) {
+          unawaited(LanguageStore.instance.syncAfterAuthentication());
         }
       });
     } catch (_) {

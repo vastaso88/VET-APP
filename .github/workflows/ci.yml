@@ -2,10 +2,59 @@ name: CI
 
 on:
   push:
-    branches: ["main"]
+    branches: ["main", "MULTILANG"]
   pull_request:
+  workflow_dispatch:
+    inputs:
+      distribute_firebase:
+        description: 'Distribuisci MULTILANG ai tester Firebase dopo i controlli'
+        type: boolean
+        default: false
+      build_number:
+        description: 'Version code Android superiore a quello gia installato'
+        type: string
+        required: true
+      release_notes:
+        description: 'Note per i tester'
+        type: string
+        default: 'Test multilingua IT / EN / ES'
+
+permissions:
+  contents: read
 
 jobs:
+  flutter:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: apps/mobile_app
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.47.6'
+          channel: stable
+          cache: true
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: flutter pub get
+      - run: flutter gen-l10n
+      - name: Validate catalogs and hard-coded UI text
+        run: python ../../scripts/i18n/check_i18n.py
+      - run: flutter analyze
+      - run: flutter test
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - name: Compile Android native localization
+        run: flutter build apk --debug
+      - uses: actions/upload-artifact@v4
+        with:
+          name: vetapp-test-apk
+          path: apps/mobile_app/build/app/outputs/flutter-apk/app-debug.apk
+
   quality:
     runs-on: ubuntu-latest
     steps:
@@ -41,3 +90,82 @@ jobs:
         run: npm run typecheck
       - name: Admin build
         run: npm run build
+
+  firebase_distribution:
+    name: MULTILANG APK to Firebase testers
+    if: >-
+      github.event_name == 'workflow_dispatch' &&
+      inputs.distribute_firebase && github.ref == 'refs/heads/MULTILANG'
+    needs: [flutter, quality, admin_portal]
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    environment: firebase-testing
+    concurrency:
+      group: firebase-multilang
+      cancel-in-progress: false
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Validate configuration and prepare private build files
+        env:
+          API_BASE_URL: ${{ vars.TEST_API_BASE_URL }}
+          SUPABASE_URL: ${{ vars.TEST_SUPABASE_URL }}
+          SUPABASE_ANON_KEY: ${{ secrets.TEST_SUPABASE_PUBLISHABLE_KEY }}
+          FIREBASE_ANDROID_APP_ID: ${{ vars.FIREBASE_ANDROID_APP_ID }}
+          FIREBASE_TESTER_GROUPS: ${{ vars.FIREBASE_TESTER_GROUPS }}
+          FIREBASE_SERVICE_ACCOUNT_JSON: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_JSON }}
+          ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+          ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+          ANDROID_BUILD_NUMBER: ${{ inputs.build_number }}
+          TEST_RELEASE_NOTES: ${{ inputs.release_notes }}
+        run: python scripts/ci/prepare_firebase_build.py
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.47.6'
+          channel: stable
+          cache: true
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - name: Build APK with persistent signing key
+        working-directory: apps/mobile_app
+        env:
+          ANDROID_KEYSTORE_PATH: ${{ runner.temp }}/vetapp-distribution/signing.jks
+          ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+          ANDROID_BUILD_NUMBER: ${{ inputs.build_number }}
+        run: |
+          flutter pub get
+          flutter gen-l10n
+          flutter build apk --release --build-number="$ANDROID_BUILD_NUMBER" \
+            --dart-define-from-file="$RUNNER_TEMP/vetapp-distribution/dart-defines.json"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: vetapp-multilang-release-${{ inputs.build_number }}
+          path: apps/mobile_app/build/app/outputs/flutter-apk/app-release.apk
+          if-no-files-found: error
+          retention-days: 7
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Upload and notify Firebase tester group
+        env:
+          GOOGLE_APPLICATION_CREDENTIALS: ${{ runner.temp }}/vetapp-distribution/firebase-service-account.json
+          FIREBASE_ANDROID_APP_ID: ${{ vars.FIREBASE_ANDROID_APP_ID }}
+          FIREBASE_TESTER_GROUPS: ${{ vars.FIREBASE_TESTER_GROUPS }}
+        run: |
+          npx --yes --package firebase-tools@15.33.0 firebase appdistribution:distribute \
+            apps/mobile_app/build/app/outputs/flutter-apk/app-release.apk \
+            --app "$FIREBASE_ANDROID_APP_ID" \
+            --groups "$FIREBASE_TESTER_GROUPS" \
+            --release-notes-file "$RUNNER_TEMP/vetapp-distribution/release-notes.txt" \
+            --non-interactive
+      - name: Remove private build files
+        if: always()
+        run: python scripts/ci/prepare_firebase_build.py --cleanup

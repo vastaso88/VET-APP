@@ -7,6 +7,7 @@ from packages.core.application.ports.auth_provider import (
     AuthProvider,
     AuthSession,
 )
+from packages.core.domain.localization import SupportedLocale, normalize_locale
 from packages.shared.auth_context import get_access_token
 from packages.shared.errors.base import AuthenticationError
 
@@ -58,12 +59,31 @@ class SupabaseAuthProvider(AuthProvider):
             raise AuthenticationError("Invalid access token")
 
         metadata = getattr(user, "user_metadata", None) or {}
+        if not isinstance(metadata, dict):
+            metadata = {}
         display_name = metadata.get("display_name") if isinstance(metadata, dict) else None
         return AuthenticatedUser(
             id=user.id,
             email=user.email or "",
             display_name=display_name if isinstance(display_name, str) else None,
+            preferred_locale=normalize_locale(metadata.get("preferred_locale")),
         )
+
+    def update_preferred_locale(self, locale: SupportedLocale) -> AuthenticatedUser:
+        # Authenticate first; callers never supply the target user's identity.
+        current = self.get_current_user()
+        response = self._admin_client.auth.admin.get_user_by_id(current.id)
+        user = getattr(response, "user", None)
+        if user is None:
+            raise AuthenticationError("Invalid account")
+        metadata = dict(getattr(user, "user_metadata", None) or {})
+        metadata["preferred_locale"] = locale
+        # A stale regional variant must not override the new generic preference.
+        metadata.pop("preferred_locale_variant", None)
+        self._admin_client.auth.admin.update_user_by_id(
+            current.id, {"user_metadata": metadata}
+        )
+        return current.model_copy(update={"preferred_locale": locale})
 
     def sign_in_with_password(self, email: str, password: str) -> AuthSession:
         response = self._public_client.auth.sign_in_with_password(

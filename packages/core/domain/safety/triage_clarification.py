@@ -11,8 +11,20 @@ reassurance. Every branch here defaults to the more cautious outcome
 unless the reply gives a clear, specific, benign explanation.
 """
 
+from packages.core.domain.localization import normalize_locale
+
 RED_FLAG_CATEGORIES: dict[str, tuple[str, ...]] = {
     "respiratory": (
+        "cannot breathe",
+        "can't breathe",
+        "not breathing",
+        "difficulty breathing",
+        "struggling to breathe",
+        "open mouth breathing",
+        "no puede respirar",
+        "no respira",
+        "dificultad para respirar",
+        "respira con la boca abierta",
         "non respira",
         "respira male",
         "dispnea",
@@ -23,15 +35,46 @@ RED_FLAG_CATEGORIES: dict[str, tuple[str, ...]] = {
         "respira con la bocca aperta",
         "non riesce a respirare",
     ),
-    "collapse": ("collasso", "collapse"),
+    "collapse": ("collasso", "collapse", "colapso"),
     "seizure": ("convuls", "seizure"),
-    "bleeding_trauma": ("emorrag", "sanguina", "trauma", "incidente"),
-    "urinary": ("anuria", "non urina"),
+    "bleeding_trauma": (
+        "emorrag",
+        "sanguina",
+        "trauma",
+        "incidente",
+        "bleeding",
+        "hemorrhage",
+        "blood in vomit",
+        "vomiting blood",
+        "blood in stool",
+        "blood in urine",
+        "sangra",
+        "sangre en",
+        "vomita sangre",
+        "accident",
+        "accidente",
+    ),
+    "urinary": (
+        "anuria",
+        "non urina",
+        "cannot urinate",
+        "can't urinate",
+        "not urinating",
+        "no orina",
+        "no puede orinar",
+    ),
     # Small-mammal-specific (spec: species safety calibration) — unlike
     # the categories above, duration genuinely changes the picture here
     # (a couple of hours vs. a full day), so it's worth one clarifying
     # question rather than treating every mention as equally urgent.
     "gi_stasis": (
+        "not eaten for a day",
+        "not eating since yesterday",
+        "not passing stool",
+        "stopped eating",
+        "no come desde ayer",
+        "no defeca",
+        "ha dejado de comer",
         "non mangia da un giorno",
         "non mangia da ieri",
         "non mangia da 24 ore",
@@ -63,6 +106,24 @@ RED_FLAG_CATEGORIES: dict[str, tuple[str, ...]] = {
     # first. ChatOrchestrator._urgent_triage_result uses this category
     # only to pick substance-appropriate phrasing, not to gate on a reply.
     "toxin_medication": (
+        "ibuprofen",
+        "paracetamol",
+        "acetaminophen",
+        "aspirin",
+        "aspirina",
+        "permethrin",
+        "permetrina",
+        "chocolate",
+        "grapes",
+        "raisins",
+        "xylitol",
+        "onion",
+        "garlic",
+        "uvas",
+        "pasas",
+        "xilitol",
+        "cebolla",
+        "ajo",
         "amoxicillina",
         "penicillina",
         "clindamicina",
@@ -99,6 +160,19 @@ RED_FLAG_CATEGORIES: dict[str, tuple[str, ...]] = {
 # severe presentation, asking a clarifying question would only delay real
 # emergency care — skip straight to escalation.
 IMMEDIATE_ESCALATION_MARKERS: tuple[str, ...] = (
+    "cannot breathe",
+    "can't breathe",
+    "not breathing",
+    "unconscious",
+    "blue gums",
+    "white gums",
+    "severe bleeding",
+    "no puede respirar",
+    "no respira",
+    "inconsciente",
+    "encías azules",
+    "encías blancas",
+    "hemorragia grave",
     "incosciente",
     "non si sveglia",
     "non risponde più",
@@ -158,12 +232,90 @@ CLARIFYING_QUESTIONS: dict[str, str] = {
     # documented exception.
 }
 
+_CLARIFYING_QUESTIONS_EN: dict[str, str] = {
+    "respiratory": (
+        "Two quick questions before I guide you: did the heavy breathing start after "
+        "running, intense play or heat, or while resting without an obvious reason? "
+        "Right now, is it settling, staying the same or getting worse?"
+    ),
+    "collapse": (
+        "Two quick questions: is your pet awake, responsive and moving normally now, "
+        "or still down and poorly responsive? Did the episode last seconds or longer?"
+    ),
+    "seizure": (
+        "Two quick questions: have the seizures stopped and is your pet alert again, "
+        "or are they still happening now? Is this the first episode?"
+    ),
+    "bleeding_trauma": (
+        "Two quick questions: is the bleeding continuing now, or has it stopped or slowed? "
+        "Was it a few drops or an amount that worries you?"
+    ),
+    "urinary": (
+        "Two quick questions: how many hours has it been since your pet urinated? "
+        "Are they trying without success or showing pain?"
+    ),
+    "gi_stasis": (
+        "Two quick questions: exactly how many hours has your pet gone without eating or "
+        "passing stool? Have they approached food or passed even a few small stools?"
+    ),
+}
+
+_CLARIFYING_QUESTIONS_ES: dict[str, str] = {
+    "respiratory": (
+        "Dos preguntas rápidas antes de orientarte: ¿la respiración agitada empezó después "
+        "de correr, jugar o pasar calor, o estando en reposo? ¿Ahora se está calmando, "
+        "sigue igual o empeora?"
+    ),
+    "collapse": (
+        "Dos preguntas rápidas: ¿ahora está despierto, responde y se mueve con normalidad, "
+        "o sigue en el suelo y poco reactivo? ¿El episodio duró segundos o más tiempo?"
+    ),
+    "seizure": (
+        "Dos preguntas rápidas: ¿las convulsiones han terminado y vuelve a estar alerta, "
+        "o siguen ocurriendo ahora? ¿Es la primera vez?"
+    ),
+    "bleeding_trauma": (
+        "Dos preguntas rápidas: ¿sigue sangrando ahora o se ha detenido o reducido? "
+        "¿Fueron unas gotas o una cantidad que te preocupa?"
+    ),
+    "urinary": (
+        "Dos preguntas rápidas: ¿cuántas horas lleva sin orinar? "
+        "¿Intenta hacerlo sin conseguirlo o muestra dolor?"
+    ),
+    "gi_stasis": (
+        "Dos preguntas rápidas: ¿cuántas horas exactas lleva sin comer ni defecar? "
+        "¿Se ha acercado a la comida o ha producido aunque sea unas pocas heces?"
+    ),
+}
+
+
+def clarifying_question(category: str | None, locale: str) -> str | None:
+    if category is None:
+        return None
+    catalogs = {
+        "it": CLARIFYING_QUESTIONS,
+        "en": _CLARIFYING_QUESTIONS_EN,
+        "es": _CLARIFYING_QUESTIONS_ES,
+    }
+    return catalogs[normalize_locale(locale)].get(category)
+
+
 # Category-specific phrases that, if present, point to the kind of benign
 # explanation vets rule out first for that presentation. Deliberately
 # empty for "seizure": there is no benign explanation for a seizure, so
 # that category always escalates regardless of the reply.
 REASSURING_MARKERS: dict[str, tuple[str, ...]] = {
     "respiratory": (
+        "after running",
+        "after playing",
+        "hot weather",
+        "settling down",
+        "breathing normally",
+        "después de correr",
+        "después de jugar",
+        "hace calor",
+        "se está calmando",
+        "respira normal",
         "dopo la corsa",
         "ha corso",
         "giocato",
@@ -176,6 +328,14 @@ REASSURING_MARKERS: dict[str, tuple[str, ...]] = {
         "sta meglio",
     ),
     "collapse": (
+        "awake now",
+        "recovered",
+        "few seconds",
+        "walking normally",
+        "despierto ahora",
+        "se ha recuperado",
+        "pocos segundos",
+        "camina normal",
         "sveglio",
         "normale ora",
         "si è ripreso",
@@ -186,6 +346,12 @@ REASSURING_MARKERS: dict[str, tuple[str, ...]] = {
     ),
     "seizure": (),
     "bleeding_trauma": (
+        "bleeding stopped",
+        "few drops",
+        "a scratch",
+        "dejó de sangrar",
+        "pocas gotas",
+        "un arañazo",
         "si è fermato",
         "si è rallentato",
         "poche gocce",
@@ -193,6 +359,10 @@ REASSURING_MARKERS: dict[str, tuple[str, ...]] = {
         "un graffio",
     ),
     "urinary": (
+        "just urinated",
+        "only a couple of hours",
+        "acaba de orinar",
+        "solo un par de horas",
         "ha appena urinato",
         "non ne ha avuto occasione",
         "solo un paio d'ore",
@@ -208,6 +378,14 @@ REASSURING_MARKERS: dict[str, tuple[str, ...]] = {
 # Category-independent: any of these in the reply means "still bad or
 # getting worse" and must override any reassuring marker.
 WORSENING_MARKERS: tuple[str, ...] = (
+    "getting worse",
+    "not improving",
+    "still down",
+    "still bleeding",
+    "empeora",
+    "no mejora",
+    "sigue en el suelo",
+    "sigue sangrando",
     "peggiora",
     "sempre uguale",
     "non migliora",
