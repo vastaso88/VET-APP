@@ -40,6 +40,34 @@ android {
         versionName = flutter.versionName
     }
 
+    // Three apps that live side by side on one phone, one per track. `prod`
+    // keeps the original application id (the future Play Store listing); the
+    // others add a suffix so they install next to it. Not called "main": that
+    // would collide with the `main` source set. Always build with --flavor,
+    // see docs/runbooks/android_flavors.md.
+    buildFeatures {
+        // Per-flavor app_name (see productFlavors below).
+        resValues = true
+    }
+
+    flavorDimensions += "track"
+    productFlavors {
+        create("prod") {
+            dimension = "track"
+            resValue("string", "app_name", "VetApp")
+        }
+        create("francesco") {
+            dimension = "track"
+            applicationIdSuffix = ".francesco"
+            resValue("string", "app_name", "VetApp Francesco")
+        }
+        create("roberto") {
+            dimension = "track"
+            applicationIdSuffix = ".roberto"
+            resValue("string", "app_name", "VetApp Roberto")
+        }
+    }
+
     signingConfigs {
         if (hasReleaseSigning) {
             create("distribution") {
