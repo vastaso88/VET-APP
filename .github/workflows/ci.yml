@@ -4,6 +4,20 @@ on:
   push:
     branches: ["main"]
   pull_request:
+  workflow_dispatch:
+    inputs:
+      distribute_firebase:
+        description: 'Distribuisci MULTILANG ai tester Firebase dopo i controlli'
+        type: boolean
+        default: false
+      build_number:
+        description: 'Version code Android superiore a quello gia installato'
+        type: string
+        required: true
+      release_notes:
+        description: 'Note per i tester'
+        type: string
+        default: 'Test multilingua IT / EN / ES'
 
 jobs:
   quality:
