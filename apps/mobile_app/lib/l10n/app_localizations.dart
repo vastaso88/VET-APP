@@ -1618,6 +1618,18 @@ abstract class AppLocalizations {
   /// **'Non sono riuscito a modificare il messaggio. Controlla la connessione.'**
   String get chatErrorEditNetwork;
 
+  /// No description provided for @chatErrorMessageTooLong.
+  ///
+  /// In it, this message translates to:
+  /// **'Il messaggio è troppo lungo: puoi scrivere al massimo {max} caratteri. Accorcialo e invialo di nuovo.'**
+  String chatErrorMessageTooLong(int max);
+
+  /// No description provided for @chatInputLimitReached.
+  ///
+  /// In it, this message translates to:
+  /// **'Hai raggiunto il limite di {max} caratteri.'**
+  String chatInputLimitReached(int max);
+
   /// No description provided for @chatErrorPetBootstrap.
   ///
   /// In it, this message translates to:

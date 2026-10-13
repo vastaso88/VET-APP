@@ -13,6 +13,10 @@ import '../../../shared/types/result.dart';
 /// feature actually needs — see `SendChatMessageOutput`
 /// (packages/core/application/services/send_chat_message.py) for the full
 /// contract.
+/// The longest message the backend accepts (apps/api/schemas/chat.py,
+/// MAX_USER_MESSAGE_CHARS — a test keeps the two equal).
+const chatMaxMessageLength = 8000;
+
 class ChatSendResult {
   const ChatSendResult({
     required this.content,
@@ -178,6 +182,9 @@ class HttpChatRemoteDataSource implements ChatRemoteDataSource {
         // detail — a normal, expected outcome (not a real failure), so it's
         // surfaced with its own code and the backend's own user-facing
         // message instead of the generic network-error copy below.
+        if (_isMessageTooLong(response)) {
+          return Result.failure(_messageTooLong());
+        }
         final detail = _extractDetail(response.body);
         if (detail != null && detail.startsWith('conversation_limit_reached')) {
           final colonIndex = detail.indexOf(':');
@@ -253,6 +260,9 @@ class HttpChatRemoteDataSource implements ChatRemoteDataSource {
           )
           .timeout(_chatTimeout);
       if (response.statusCode < 200 || response.statusCode >= 300) {
+        if (_isMessageTooLong(response)) {
+          return Result.failure(_messageTooLong());
+        }
         return Result.failure(
           AppNetworkError(
             code: 'chat_edit_http_${response.statusCode}',
@@ -546,6 +556,32 @@ class HttpChatRemoteDataSource implements ChatRemoteDataSource {
       );
     }
   }
+
+  /// The backend's 422 for a `user_message` over its length limit
+  /// (`MAX_USER_MESSAGE_CHARS`): not worth a "Riprova", the same text would
+  /// be refused again.
+  static bool _isMessageTooLong(http.Response response) {
+    if (response.statusCode != 422) return false;
+    try {
+      final decoded = jsonDecode(response.body);
+      final errors = decoded is Map<String, dynamic> ? decoded['detail'] : null;
+      if (errors is! List) return false;
+      return errors.any(
+        (error) =>
+            error is Map &&
+            error['type'] == 'string_too_long' &&
+            error['loc'] is List &&
+            (error['loc'] as List).contains('user_message'),
+      );
+    } catch (_) {
+      return false;
+    }
+  }
+
+  static AppNetworkError _messageTooLong() => AppNetworkError(
+        code: 'chat_message_too_long',
+        message: appL10n.chatErrorMessageTooLong(chatMaxMessageLength),
+      );
 
   String? _extractDetail(String body) {
     try {
