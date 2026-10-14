@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="dog_walks_widget_description">Neue Erinnerung und Spaziergang mit einem Tipp für Ihre Tiere</string>
+    <string name="dog_walks_widget_title">VetApp</string>
+    <string name="dog_walks_widget_subtitle">Ihre Tiere</string>
+    <string name="dog_walks_widget_empty">Fügen Sie in der App Ihr erstes Tier hinzu, um loszulegen</string>
+    <string name="dog_walks_widget_more">+%1$d weitere</string>
+    <string name="dog_walks_widget_reminder_cd">Neue Erinnerung</string>
+    <string name="dog_walks_widget_walk_cd">Spaziergang</string>
+    <string name="dog_walks_widget_pause_cd">Spaziergang pausieren</string>
+    <string name="dog_walks_widget_resume_cd">Spaziergang fortsetzen</string>
+    <string name="dog_walks_widget_open_walk_cd">Laufenden Spaziergang öffnen</string>
+    <string name="dog_walks_widget_walk_running">Aktiv · %1$s · %%s</string>
+    <string name="dog_walks_widget_walk_paused">Pausiert · %1$s · %%s</string>
+    <string name="walk_notif_channel_name">Spaziergang läuft</string>
+    <string name="walk_notif_channel_description">Zeigt den laufenden Spaziergang: Zeit, Strecke, Pause und Ende.</string>
+    <string name="walk_notif_title_default">Spaziergang läuft</string>
+    <string name="walk_notif_action_pause">Pause</string>
+    <string name="walk_notif_action_resume">Fortsetzen</string>
+    <string name="walk_notif_action_finish">Beenden</string>
+</resources>

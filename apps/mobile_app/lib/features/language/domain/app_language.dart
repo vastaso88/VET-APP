@@ -16,7 +16,7 @@ class AppLanguageVariant {
     required this.nativeName,
   });
 
-  /// Stable id saved on the phone: 'it', 'en-GB', 'en-US', 'en-AU', 'de', ...
+  /// Stable id saved on the phone: 'it', 'en-GB', 'en-US', 'en-AU', 'de', 'de-AT', 'de-CH', ...
   final String id;
 
   /// Language of the translation: it, en, de, fr, es.
@@ -70,7 +70,21 @@ const allLanguageVariants = <AppLanguageVariant>[
     languageCode: 'de',
     countryCode: 'DE',
     flag: '🇩🇪',
-    nativeName: 'Deutsch',
+    nativeName: 'Deutsch (Deutschland)',
+  ),
+  AppLanguageVariant(
+    id: 'de-AT',
+    languageCode: 'de',
+    countryCode: 'AT',
+    flag: '🇦🇹',
+    nativeName: 'Deutsch (Österreich)',
+  ),
+  AppLanguageVariant(
+    id: 'de-CH',
+    languageCode: 'de',
+    countryCode: 'CH',
+    flag: '🇨🇭',
+    nativeName: 'Deutsch (Schweiz)',
   ),
   AppLanguageVariant(
     id: 'fr',
