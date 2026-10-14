@@ -129,10 +129,85 @@ class FakeAuthRemoteDataSource implements AuthRemoteDataSource {
       displayName: user.displayName,
       createdAt: user.createdAt,
       onboardingCompleted: user.onboardingCompleted,
+      firstName: user.firstName,
+      lastName: user.lastName,
+      phone: user.phone,
+      avatarPath: user.avatarPath,
     );
     await _persistUsers();
     return Result.success(null);
   }
+
+  @override
+  Future<Result<AppUser>> updateProfile({String? email, required ProfileUpdate update}) async {
+    await _restorePersistedUsers();
+    final key = email?.trim().toLowerCase();
+    final record = key == null ? null : _users[key];
+    if (record == null) return Result.failure(_noAccount());
+
+    final phone = update.phone?.trim();
+    final updated = record.copyWith(
+      firstName: update.firstName.trim(),
+      lastName: update.lastName.trim(),
+      phone: phone == null || phone.isEmpty ? null : phone,
+      avatarPath: update.avatarPath,
+      clearPhone: phone == null || phone.isEmpty,
+      clearAvatar: update.avatarPath == null,
+      displayName: [update.firstName.trim(), update.lastName.trim()]
+          .where((part) => part.isNotEmpty)
+          .join(' '),
+    );
+    _users[key!] = updated;
+    await _persistUsers();
+    return Result.success(updated.toAppUser());
+  }
+
+  @override
+  Future<Result<EmailChangeStatus>> changeEmail({String? email, required String newEmail}) async {
+    await _restorePersistedUsers();
+    final key = email?.trim().toLowerCase();
+    final record = key == null ? null : _users[key];
+    if (record == null) return Result.failure(_noAccount());
+
+    final target = newEmail.trim().toLowerCase();
+    if (_users.containsKey(target)) {
+      return Result.failure(
+        const AppAuthError(code: 'email_exists', message: 'This email is already registered'),
+      );
+    }
+    _users.remove(key);
+    _users[target] = record.copyWith(email: target);
+    await _persistUsers();
+    // No mailbox offline: the new address applies at once.
+    return Result.success(EmailChangeStatus.applied);
+  }
+
+  @override
+  Future<Result<void>> verifyPassword({required String email, required String password}) async {
+    await _restorePersistedUsers();
+    final record = _users[email.trim().toLowerCase()];
+    if (record == null || record.password != password) {
+      return Result.failure(
+        const AppAuthError(
+          code: 'invalid_credentials',
+          message: 'Email or password is incorrect',
+        ),
+      );
+    }
+    return Result.success(null);
+  }
+
+  @override
+  Future<Result<void>> deleteAccount({String? email}) async {
+    await _restorePersistedUsers();
+    final key = email?.trim().toLowerCase();
+    if (key == null || _users.remove(key) == null) return Result.failure(_noAccount());
+    await _persistUsers();
+    return Result.success(null);
+  }
+
+  AppAuthError _noAccount() =>
+      const AppAuthError(code: 'no_active_session', message: 'No account found');
 
   @override
   Future<Result<void>> signOut() async {
@@ -199,6 +274,10 @@ class FakeUserRecord {
     required this.createdAt,
     required this.onboardingCompleted,
     this.displayName,
+    this.firstName,
+    this.lastName,
+    this.phone,
+    this.avatarPath,
   });
 
   final String id;
@@ -207,6 +286,34 @@ class FakeUserRecord {
   final String? displayName;
   final DateTime createdAt;
   final bool onboardingCompleted;
+  final String? firstName;
+  final String? lastName;
+  final String? phone;
+  final String? avatarPath;
+
+  FakeUserRecord copyWith({
+    String? email,
+    String? displayName,
+    String? firstName,
+    String? lastName,
+    String? phone,
+    String? avatarPath,
+    bool clearPhone = false,
+    bool clearAvatar = false,
+  }) {
+    return FakeUserRecord(
+      id: id,
+      email: email ?? this.email,
+      password: password,
+      displayName: displayName ?? this.displayName,
+      createdAt: createdAt,
+      onboardingCompleted: onboardingCompleted,
+      firstName: firstName ?? this.firstName,
+      lastName: lastName ?? this.lastName,
+      phone: clearPhone ? null : (phone ?? this.phone),
+      avatarPath: clearAvatar ? null : (avatarPath ?? this.avatarPath),
+    );
+  }
 
   AppUser toAppUser() {
     return AppUser(
@@ -215,6 +322,10 @@ class FakeUserRecord {
       displayName: displayName,
       createdAt: createdAt,
       onboardingCompleted: onboardingCompleted,
+      firstName: firstName,
+      lastName: lastName,
+      phone: phone,
+      avatarPath: avatarPath,
     );
   }
 
@@ -226,6 +337,10 @@ class FakeUserRecord {
       'display_name': displayName,
       'created_at': createdAt.toIso8601String(),
       'onboarding_completed': onboardingCompleted,
+      'first_name': firstName,
+      'last_name': lastName,
+      'phone': phone,
+      'avatar_path': avatarPath,
     };
   }
 
@@ -238,6 +353,10 @@ class FakeUserRecord {
       createdAt: DateTime.tryParse(map['created_at'] as String? ?? '') ??
           DateTime.fromMillisecondsSinceEpoch(0),
       onboardingCompleted: map['onboarding_completed'] as bool? ?? false,
+      firstName: map['first_name'] as String?,
+      lastName: map['last_name'] as String?,
+      phone: map['phone'] as String?,
+      avatarPath: map['avatar_path'] as String?,
     );
   }
 }

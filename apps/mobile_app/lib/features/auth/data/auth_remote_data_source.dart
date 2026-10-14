@@ -19,5 +19,21 @@ abstract interface class AuthRemoteDataSource {
   /// after the owner opens the password-recovery email link).
   Future<Result<void>> updatePassword({String? email, required String newPassword});
 
+  /// Saves the profile fields in the account. [email] only identifies the
+  /// account for the fake/offline source (Supabase uses its own session).
+  Future<Result<AppUser>> updateProfile({String? email, required ProfileUpdate update});
+
+  /// Asks to change the sign-in email. Whether it applies at once or needs a
+  /// confirmation link depends on the project's email settings; the result
+  /// says which happened.
+  Future<Result<EmailChangeStatus>> changeEmail({String? email, required String newEmail});
+
+  /// Checks [password] against the account by signing in again, without
+  /// changing who is signed in.
+  Future<Result<void>> verifyPassword({required String email, required String password});
+
+  /// Deletes the signed-in account and all its data (right to erasure).
+  Future<Result<void>> deleteAccount({String? email});
+
   Future<Result<void>> signOut();
 }

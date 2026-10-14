@@ -4,6 +4,7 @@ import logging
 from functools import lru_cache
 
 from packages.core.application.ports.account_consents_repository import AccountConsentsRepository
+from packages.core.application.ports.account_eraser import AccountEraser
 from packages.core.application.ports.answer_cache_repository import AnswerCacheRepository
 from packages.core.application.ports.auth_provider import AuthProvider
 from packages.core.application.ports.chat_attachment_repository import ChatAttachmentRepository
@@ -39,6 +40,7 @@ from packages.core.application.services.create_listing import CreateListingServi
 from packages.core.application.services.create_local_activity import CreateLocalActivityService
 from packages.core.application.services.create_pet_profile import CreatePetProfileService
 from packages.core.application.services.create_reminder import CreateReminderService
+from packages.core.application.services.delete_account import DeleteAccountService
 from packages.core.application.services.delete_conversation import DeleteConversationService
 from packages.core.application.services.document_summarizer import DocumentSummarizer
 from packages.core.application.services.edit_chat_message import EditChatMessageService
@@ -145,6 +147,7 @@ from packages.infrastructure.llm.retrieval.openalex_evidence_retriever import (
 from packages.infrastructure.llm.retrieval.pubmed_evidence_retriever import (
     PubMedEvidenceRetriever,
 )
+from packages.infrastructure.persistence.in_memory_account_eraser import InMemoryAccountEraser
 from packages.infrastructure.persistence.in_memory_repositories import (
     InMemoryAccountConsentsRepository,
     InMemoryAnswerCacheRepository,
@@ -297,6 +300,31 @@ class ApplicationContainer:
 
     def get_or_create_subscription_service(self) -> GetOrCreateSubscriptionService:
         return GetOrCreateSubscriptionService(self.subscription_repository, self.developer_emails)
+
+    def delete_account_service(self) -> DeleteAccountService:
+        return DeleteAccountService(self._build_account_eraser())
+
+    def _build_account_eraser(self) -> AccountEraser:
+        if self.settings.persistence_backend == "supabase":
+            try:
+                from packages.infrastructure.persistence.supabase.client import (
+                    build_supabase_client,
+                )
+                from packages.infrastructure.persistence.supabase.supabase_account_eraser import (
+                    SupabaseAccountEraser,
+                )
+
+                radar = self.radar_report_settings()
+                return SupabaseAccountEraser(
+                    build_supabase_client(self.settings),
+                    media_bucket=self.settings.media_storage_bucket,
+                    chat_reporter_secret=self.settings.reporter_pseudonym_secret(),
+                    radar_pseudonym_key=radar.pseudonym_key if radar else None,
+                )
+            except ModuleNotFoundError:
+                if self.settings.environment == "production":
+                    raise
+        return InMemoryAccountEraser()
 
     def select_plan_service(self) -> SelectPlanService:
         return SelectPlanService(self.subscription_repository)
