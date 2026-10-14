@@ -1784,6 +1784,20 @@
       "es": "07fdb86da760e0458a04f7c150d45315773824bee11a8f10e81592e6660ced9e"
     }
   },
+  "ui:chatErrorMessageTooLong": {
+    "source": "43e3f65a3febbc9e60a6b64462778b07e3470cbf3b84bcb75c1181f64b436bbb",
+    "targets": {
+      "en": "9f048d23c25ae31450b23ea54ae15436d650db09a84157ee9f39f873b4e18c31",
+      "es": "21939f4ec543e42d82e5af1379134677316629c5d3fc291b3bc2ea19737a48d0"
+    }
+  },
+  "ui:chatInputLimitReached": {
+    "source": "6a1be1ab5cbe5ad5f09414d7f9ccfdc6225bb60ba5d646eae8614bf5f3bfc88c",
+    "targets": {
+      "en": "b122743a644218408fa4ea9eb51a83ae90225e13d7317869d98318e038ac80d5",
+      "es": "3c00fae92e71f20503a6e2333e0d838fa5fdb7ca963edece6cb2a3a2542c984b"
+    }
+  },
   "ui:chatErrorPetBootstrap": {
     "source": "a3d50421723d0e45eb14c7df1533d27da8386c0bd3acd0a6b4570021a5147f6d",
     "targets": {
@@ -9884,7 +9898,7 @@
     }
   },
   "android:dog_walks_widget_title": {
-    "source": "7ee365f3fc3a37fb12d31937323445d6a13c67606e25c81423f3bf63b97763c5",
+    "source": "5100c97aad58df0b3f23c93036a42479a1ee9c6258c4df0b462e7f91a5484f2c",
     "targets": {
       "en": "7ee365f3fc3a37fb12d31937323445d6a13c67606e25c81423f3bf63b97763c5",
       "es": "7ee365f3fc3a37fb12d31937323445d6a13c67606e25c81423f3bf63b97763c5"

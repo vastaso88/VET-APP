@@ -1867,7 +1867,7 @@ class _Header extends StatelessWidget {
                       size: 36,
                     )
                   else
-                    const _BrandPill(),
+                    const Flexible(child: _BrandPill()),
                 ],
               ),
               const SizedBox(height: AppSpacing.lg),
@@ -1907,12 +1907,16 @@ class _BrandPill extends StatelessWidget {
           const Icon(Icons.notifications_active_outlined,
               size: 14, color: AppColors.accent),
           const SizedBox(width: AppSpacing.sm),
-          Text(
-            context.l10n.appTitle,
-            style: const TextStyle(
-                color: AppColors.onPrimary,
-                fontSize: 12,
-                fontWeight: FontWeight.w800),
+          Flexible(
+            child: Text(
+              context.l10n.appTitle,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: const TextStyle(
+                  color: AppColors.onPrimary,
+                  fontSize: 12,
+                  fontWeight: FontWeight.w800),
+            ),
           ),
         ],
       ),
@@ -2207,13 +2211,19 @@ class _ReminderTile extends StatelessWidget {
                 ),
               ),
               const SizedBox(width: AppSpacing.md),
-              Column(
+              Flexible(child: Column(
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
-                  DashboardBadge(
-                      label: presentation.dateLabel,
-                      tone: presentation.tone,
-                      compact: true),
+                  // Scales down instead of pushing the row past the card edge
+                  // when the date label is long or the text size is large.
+                  FittedBox(
+                    fit: BoxFit.scaleDown,
+                    alignment: Alignment.centerRight,
+                    child: DashboardBadge(
+                        label: presentation.dateLabel,
+                        tone: presentation.tone,
+                        compact: true),
+                  ),
                   if (onMarkDone != null) ...[
                     const SizedBox(height: AppSpacing.xs),
                     InkWell(
@@ -2227,7 +2237,7 @@ class _ReminderTile extends StatelessWidget {
                     ),
                   ],
                 ],
-              ),
+              )),
             ],
           ),
         ),

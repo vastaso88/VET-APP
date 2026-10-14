@@ -92,6 +92,7 @@ class EvidenceSynthesizer:
                 # even with reasoning_effort=low at 1200 tokens is the
                 # reason for this extra headroom, not a theoretical margin.
                 max_tokens=2000,
+                purpose="evidence_synthesis",
             )
         )
         return self._parse(response.content), response

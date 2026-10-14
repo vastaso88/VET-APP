@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 
+import '../design_system/app_text_scaler.dart';
 import '../design_system/responsive.dart';
 import '../features/language/data/language_store.dart';
 import '../l10n/l10n.dart';
@@ -67,15 +68,17 @@ class _VetAppState extends State<VetApp> {
       builder: (context, child) {
         final rawBody = child ?? const SizedBox.shrink();
 
-        // All app text is sized via AppTextStyles' fixed fontSizes, tuned
-        // against `referenceScreenWidth`. Scaling the ambient TextScaler by
-        // the real screen width keeps that same proportion on narrower or
-        // wider phones instead of leaving font sizes fixed regardless of
-        // screen size (see design_system/responsive.dart).
+        // App text is sized via AppTextStyles' fixed fontSizes, tuned against
+        // `referenceScreenWidth`, so it follows the screen width (see
+        // design_system/responsive.dart). The text size the owner chose in the
+        // phone's settings is kept, not replaced: the two multiply, up to
+        // maxTextScaleFactor.
         final mediaQuery = MediaQuery.of(context);
-        final scale = (mediaQuery.size.width / referenceScreenWidth).clamp(0.85, 1.35);
+        final widthFactor = (mediaQuery.size.width / referenceScreenWidth).clamp(0.85, 1.35);
         final body = MediaQuery(
-          data: mediaQuery.copyWith(textScaler: TextScaler.linear(scale)),
+          data: mediaQuery.copyWith(
+            textScaler: AppTextScaler(system: mediaQuery.textScaler, appFactor: widthFactor),
+          ),
           child: rawBody,
         );
 

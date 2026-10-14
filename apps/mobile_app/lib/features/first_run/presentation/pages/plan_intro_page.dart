@@ -113,9 +113,13 @@ class _TrialCard extends StatelessWidget {
             children: [
               const Icon(Icons.celebration_outlined, color: AppColors.onPrimary),
               const SizedBox(width: AppSpacing.sm),
-              Text(
-                context.l10n.firstRunTrialCardTitle,
-                style: AppTextStyles.title.copyWith(color: AppColors.onPrimary, fontSize: 18),
+              Expanded(
+                child: Text(
+                  context.l10n.firstRunTrialCardTitle,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: AppTextStyles.title.copyWith(color: AppColors.onPrimary, fontSize: 18),
+                ),
               ),
             ],
           ),
