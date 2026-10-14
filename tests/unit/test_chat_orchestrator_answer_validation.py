@@ -235,27 +235,16 @@ def test_llm_provider_failure_during_synthesis_degrades_gracefully() -> None:
     assert result.sources  # still surfaced even though the answer call itself failed
 
 
-def test_general_answer_with_hallucinated_citation_is_rejected() -> None:
-    # general_info never provides sources, so any [n] citation the LLM
-    # produces there is by definition invented (spec v3 §28).
-    class HallucinatingGeneralClient(ScriptedLLMClient):
-        def generate(self, request: LLMGenerationRequest) -> LLMResponse:
-            if "never include a [n] citation" in request.system_prompt:
-                return LLMResponse(
-                    content="Come indicato in [1], è tutto ok.",
-                    provider="fake",
-                    model="fake-model",
-                    token_count=5,
-                )
-            return super().generate(request)
-
-    orchestrator = ChatOrchestrator(
-        HallucinatingGeneralClient(), InMemoryEvidenceRetriever(), NoopPiiAnonymizer()
-    )
+def test_small_talk_is_fixed_text_so_no_citation_can_be_invented_there() -> None:
+    # general_info never provides sources; since build 33 it never asks
+    # the model either, so an invented [n] citation cannot happen here.
+    client = ScriptedLLMClient()
+    orchestrator = ChatOrchestrator(client, InMemoryEvidenceRetriever(), NoopPiiAnonymizer())
 
     result = orchestrator.answer(
         ChatOrchestratorInput(user_message="Ciao, come va oggi?", species="dog", pet_name="Milo")
     )
 
     assert result.mode == "general"
-    assert result.state == ConversationState.SOURCE_VALIDATION_FAILURE
+    assert "[1]" not in result.answer
+    assert client.requests == []

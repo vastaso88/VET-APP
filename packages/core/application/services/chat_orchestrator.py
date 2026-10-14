@@ -1,5 +1,6 @@
 import logging
-from collections.abc import Iterable
+from collections.abc import Callable, Iterable
+from concurrent.futures import Future, ThreadPoolExecutor
 from datetime import UTC, date, datetime, timedelta
 
 from pydantic import BaseModel, Field
@@ -45,8 +46,11 @@ from packages.core.application.services.natural_answer_prompt import (
 from packages.core.application.services.response_generator import ResponseGenerator
 from packages.core.application.services.safety_gate import SafetyGate
 from packages.core.application.services.situation_model_builder import SituationModelBuilder
-from packages.core.application.services.urgency_classifier import UrgencyClassifier
-from packages.core.domain.common.language import response_language_instruction
+from packages.core.application.services.urgency_classifier import (
+    UrgencyClassifier,
+    UrgencyVerdict,
+)
+from packages.core.domain.common.language import normalize_language
 from packages.core.domain.conversation.answer_cache import (
     cache_key,
     is_cacheable_question,
@@ -350,10 +354,67 @@ MULTI_PET_INTERACTION_MARKERS: tuple[str, ...] = (
 )
 
 
-def _language_suffix(language: str) -> str:
-    """The reply-language line to append to a system prompt ("" for Italian)."""
-    line = response_language_instruction(language)
-    return f"\n\n{line}" if line else ""
+class _Prefetch:
+    """The light-model helpers and the literature search, started together
+    as soon as a turn is allowed to call a model (build 33): the urgency
+    verdict and the English keywords used to run one after the other,
+    before the answer, each a network round trip. Every job is guarded:
+    an exception becomes its neutral result, logged, never the turn's."""
+
+    def __init__(
+        self,
+        *,
+        urgency_job: Callable[[], UrgencyVerdict | None] | None,
+        evidence_job: Callable[[], list[EvidenceSource]] | None,
+        evidence_key: tuple[str, str, str],
+    ) -> None:
+        self._evidence_key = evidence_key
+        self._executor: ThreadPoolExecutor | None = None
+        self._urgency: Future[UrgencyVerdict | None] | None = None
+        self._evidence: Future[list[EvidenceSource]] | None = None
+        if urgency_job is None and evidence_job is None:
+            return
+        self._executor = ThreadPoolExecutor(max_workers=2, thread_name_prefix="chat-prefetch")
+        if urgency_job is not None:
+            self._urgency = self._executor.submit(self._guarded_urgency, urgency_job)
+        if evidence_job is not None:
+            self._evidence = self._executor.submit(self._guarded_evidence, evidence_job)
+
+    @staticmethod
+    def _guarded_urgency(job: Callable[[], UrgencyVerdict | None]) -> UrgencyVerdict | None:
+        try:
+            return job()
+        except Exception:  # noqa: BLE001 - a helper must never cost the answer
+            logger.exception("chat prefetch: urgency verdict failed; answering normally")
+            return None
+
+    @staticmethod
+    def _guarded_evidence(job: Callable[[], list[EvidenceSource]]) -> list[EvidenceSource]:
+        try:
+            return job()
+        except Exception:  # noqa: BLE001 - see above
+            logger.exception("chat prefetch: literature search failed; answering without it")
+            return []
+
+    def urgency(self) -> UrgencyVerdict | None:
+        if self._urgency is None:
+            return None
+        verdict = self._urgency.result()
+        return verdict if isinstance(verdict, UrgencyVerdict) else None
+
+    def evidence(self, key: tuple[str, str, str]) -> list[EvidenceSource] | None:
+        """The prefetched sources, only for the same query, intent and
+        species they were fetched for; None means "fetch now"."""
+        if self._evidence is None or key != self._evidence_key:
+            return None
+        sources = self._evidence.result()
+        return list(sources) if isinstance(sources, list) else []
+
+    def close(self) -> None:
+        if self._executor is not None:
+            # Jobs not yet started are dropped; a running one finishes on
+            # its own thread without holding the reply.
+            self._executor.shutdown(wait=False, cancel_futures=True)
 
 
 class ChatOrchestratorInput(BaseModel):
@@ -666,6 +727,24 @@ class ChatOrchestrator:
         if self._describes_independent_multi_pet_complaint(lowered):
             return self._multi_pet_redirect_result(data.pet_name)
 
+        # Greetings, thanks, "chi sei": a fixed reply, no model, no quota,
+        # not counted against the owner's allowance (build 33). Mid-interview
+        # a short "va bene" is an answer to a question, not small talk.
+        resolving_consent_now = (
+            self._enable_interview_loop
+            and data.awaiting_medical_record_consent
+            and data.medical_record_consent is None
+        )
+        if (
+            self._classify_intent(lowered) == "general_info"
+            and not resolving_consent_now
+            and not (
+                self._enable_interview_loop
+                and (data.situation_model or SituationModel()).working_domains
+            )
+        ):
+            return self._small_talk_result(data, lowered)
+
         # From here on a model may be called: the shared daily budget and
         # the owner's own allowance decide whether this turn goes on. The
         # fixed replies above (emergencies, dosages, two pets) never reach
@@ -689,9 +768,72 @@ class ChatOrchestrator:
         if resolving_consent:
             return self._resolve_medical_record_consent(data, message, situation, turns_used)
 
+        prefetch = self._start_prefetch(data, message, lowered, effective_species)
+        try:
+            return self._answer_after_guards(
+                data,
+                message,
+                lowered,
+                effective_species,
+                situation,
+                turns_used,
+                medical_record_consent,
+                prefetch,
+            )
+        finally:
+            prefetch.close()
+
+    def _start_prefetch(
+        self,
+        data: ChatOrchestratorInput,
+        message: str,
+        lowered: str,
+        effective_species: str,
+    ) -> _Prefetch:
+        """What can start before the routing decides: the urgency verdict
+        (unless nothing will use it) and the literature search for the
+        natural-answer path, keyed by query, intent and species so a later
+        change of either simply fetches again."""
+        intent = self._classify_intent(lowered)
+        run_urgency = self._urgency_classifier is not None and intent != "general_info"
+        run_evidence = (
+            intent != "general_info"
+            and intent not in self._strict_evidence_intents
+            and self._request_kind(data) is not RequestKind.REPORT
+        )
+        query = self._case_context_text(data.situation_model or SituationModel(), message)
+        anonymized = self._anonymize_for_provider(message, data) if run_urgency else ""
+        classifier = self._urgency_classifier
+        return _Prefetch(
+            urgency_job=(
+                (lambda: classifier.classify(anonymized, effective_species))
+                if run_urgency and classifier is not None
+                else None
+            ),
+            evidence_job=(
+                (lambda: self._retrieve_optional_evidence(query, intent, effective_species))
+                if run_evidence
+                else None
+            ),
+            evidence_key=(query, intent, effective_species),
+        )
+
+    def _answer_after_guards(
+        self,
+        data: ChatOrchestratorInput,
+        message: str,
+        lowered: str,
+        effective_species: str,
+        situation: SituationModel,
+        turns_used: int,
+        medical_record_consent: bool | None,
+        prefetch: _Prefetch,
+    ) -> ChatOrchestratorResult:
         # The second guardian: a small model reads the message for an
         # emergency the fixed lists did not catch (build 32).
-        second_opinion = self._second_opinion_on_urgency(data, message, lowered, effective_species)
+        second_opinion = self._second_opinion_on_urgency(
+            data, message, lowered, effective_species, prefetch
+        )
         if second_opinion is not None:
             return second_opinion
 
@@ -742,7 +884,7 @@ class ChatOrchestrator:
             if known_domain is not None:
                 intent = known_domain
         if intent == "general_info":
-            return self._generate_general_answer(data, message, effective_species)
+            return self._small_talk_result(data, lowered)
 
         coverage: float | None = None
 
@@ -880,7 +1022,7 @@ class ChatOrchestrator:
             )
         else:
             result = self._generate_natural_answer(
-                data, message, intent, situation, effective_species
+                data, message, intent, situation, effective_species, prefetch=prefetch
             )
         result.situation_model = situation
         result.coverage_score = coverage
@@ -888,12 +1030,116 @@ class ChatOrchestrator:
         result.medical_record_consent = medical_record_consent
         return result
 
+    _SMALL_TALK_IDENTITY = (
+        "chi sei",
+        "cosa sei",
+        "cosa sai fare",
+        "come funzioni",
+        "cosa puoi fare",
+    )
+    _SMALL_TALK_GREETINGS = ("ciao", "buongiorno", "buonasera", "buondì", "salve", "hey")
+    # {name} is the pet's name. Unknown languages fall back to Italian
+    # (normalize_language), like every other fixed reply today.
+    _SMALL_TALK_TEXTS: dict[str, dict[str, str]] = {
+        "it": {
+            "greeting": (
+                "Ciao! Sono qui per {name}: raccontami cosa succede o chiedimi quello che vuoi."
+            ),
+            "thanks": "Di niente! Se ti serve altro per {name}, sono qui.",
+            "ack": "Perfetto. Quando vuoi, sono qui per {name}.",
+            "identity": (
+                "Sono l'assistente dell'app: rispondo alle domande su {name}, spiego referti "
+                "ed esami con parole semplici e ti dico quando è il caso di sentire il "
+                "veterinario. Non faccio diagnosi e non do dosaggi."
+            ),
+        },
+        "en": {
+            "greeting": "Hi! I'm here for {name}: tell me what's going on, or ask me anything.",
+            "thanks": "You're welcome! If you need anything else for {name}, I'm here.",
+            "ack": "Great. Whenever you want, I'm here for {name}.",
+            "identity": (
+                "I'm the app's assistant: I answer questions about {name}, explain reports "
+                "and test results in plain words, and tell you when it's time to see the "
+                "vet. I don't diagnose and I don't give dosages."
+            ),
+        },
+        "de": {
+            "greeting": (
+                "Hallo! Ich bin für {name} da: erzähl mir, was los ist, oder frag mich, was "
+                "du möchtest."
+            ),
+            "thanks": "Gern geschehen! Wenn du noch etwas für {name} brauchst, bin ich da.",
+            "ack": "Gut. Wann immer du willst, ich bin für {name} da.",
+            "identity": (
+                "Ich bin der Assistent der App: Ich beantworte Fragen zu {name}, erkläre "
+                "Befunde und Untersuchungen in einfachen Worten und sage dir, wann es Zeit "
+                "für den Tierarzt ist. Ich stelle keine Diagnosen und nenne keine Dosierungen."
+            ),
+        },
+        "fr": {
+            "greeting": (
+                "Bonjour ! Je suis là pour {name} : raconte-moi ce qui se passe ou pose-moi "
+                "ta question."
+            ),
+            "thanks": "Avec plaisir ! S'il te faut autre chose pour {name}, je suis là.",
+            "ack": "Parfait. Quand tu veux, je suis là pour {name}.",
+            "identity": (
+                "Je suis l'assistant de l'appli : je réponds aux questions sur {name}, "
+                "j'explique les comptes rendus et les examens avec des mots simples et je te "
+                "dis quand il faut voir le vétérinaire. Je ne pose pas de diagnostic et je ne "
+                "donne pas de dosages."
+            ),
+        },
+        "es": {
+            "greeting": (
+                "¡Hola! Estoy aquí para {name}: cuéntame qué pasa o pregúntame lo que quieras."
+            ),
+            "thanks": "¡De nada! Si necesitas algo más para {name}, aquí estoy.",
+            "ack": "Perfecto. Cuando quieras, aquí estoy para {name}.",
+            "identity": (
+                "Soy el asistente de la app: respondo a preguntas sobre {name}, explico "
+                "informes y análisis con palabras sencillas y te digo cuándo conviene ver al "
+                "veterinario. No hago diagnósticos ni doy dosis."
+            ),
+        },
+    }
+
+    @classmethod
+    def _small_talk_result(
+        cls, data: ChatOrchestratorInput, lowered: str
+    ) -> ChatOrchestratorResult:
+        """Greetings, thanks, acknowledgements and "chi sei" answered by fixed
+        text in the reply's language (build 33): until then they cost a model
+        call and one of the owner's daily messages for a reply of one line."""
+        normalized = lowered.strip().rstrip("!.?").strip()
+        if any(marker in normalized for marker in cls._SMALL_TALK_IDENTITY):
+            kind = "identity"
+        elif "grazie" in normalized:
+            kind = "thanks"
+        elif normalized.startswith(cls._SMALL_TALK_GREETINGS):
+            kind = "greeting"
+        else:
+            kind = "ack"
+        texts = cls._SMALL_TALK_TEXTS.get(
+            normalize_language(data.language), cls._SMALL_TALK_TEXTS["it"]
+        )
+        return ChatOrchestratorResult(
+            answer=texts[kind].format(name=data.pet_name),
+            mode="general",
+            confidence="high",
+            ai_generated=False,
+            provider="rule-based",
+            model="small-talk",
+            state=ConversationState.ADEQUATE_EVIDENCE_FOUND,
+        )
+
     def _second_opinion_on_urgency(
         self,
         data: ChatOrchestratorInput,
         message: str,
         lowered: str,
         effective_species: str,
+        prefetch: _Prefetch,
     ) -> ChatOrchestratorResult | None:
         """The light model's verdict on urgency, after the fixed lists said
         nothing: an emergency gets the same fixed triage reply as theirs, a
@@ -903,9 +1149,7 @@ class ChatOrchestrator:
             return None
         if self._classify_intent(lowered) == "general_info":
             return None
-        verdict = self._urgency_classifier.classify(
-            self._anonymize_for_provider(message, data), effective_species
-        )
+        verdict = prefetch.urgency()
         if verdict is None or verdict.level == "normal":
             return None
         category = verdict.category or "other"
@@ -1461,87 +1705,6 @@ class ChatOrchestrator:
             medical_record_consent=consent,
         )
 
-    def _generate_general_answer(
-        self,
-        data: ChatOrchestratorInput,
-        message: str,
-        effective_species: str,
-    ) -> ChatOrchestratorResult:
-        anonymized_message = self._anonymize_for_provider(message, data)
-        try:
-            response = self._llm_client.generate(
-                LLMGenerationRequest(
-                    system_prompt=(
-                        # Greetings, thanks, short small talk (see _classify_intent):
-                        # a warm short reply, never a ritual referral (build 29).
-                        "You are the assistant inside a pet-care app, chatting in Italian "
-                        "with a pet owner. Reply briefly and warmly, in plain everyday "
-                        "Italian. Do not mention the vet or add any disclaimer: nothing "
-                        "here calls for it. There is no "
-                        "retrieved evidence for this turn, so never include a [n] citation. "
-                        "Always refer to the animal consistent with the Species given below — "
-                        "never assume or default to a different species (e.g. never call it a "
-                        "dog/cane unless Species really is a dog), even if the pet's name is "
-                        "unusual or describes an object or place rather than a typical name."
-                    )
-                    + _language_suffix(data.language),
-                    user_prompt=(
-                        f"{self._pet_context_block(data)}\nUser request: {anonymized_message}"
-                    ),
-                    # See EvidenceSynthesizer/SituationModelBuilder for why:
-                    # a reasoning model can burn the whole 600-token default
-                    # on internal reasoning and return nothing, or (as
-                    # observed live) a genuinely detailed, appropriate
-                    # answer (e.g. a decontamination protocol) gets cut off
-                    # mid-sentence instead. Build 32: small talk gets a
-                    # short budget; the provider adds reasoning headroom.
-                    max_tokens=min(300, self._answer_max_tokens),
-                    purpose="general_answer",
-                )
-            )
-        except QuotaExhausted as exc:
-            return self._quota_result(
-                data.pet_name,
-                QuotaDenial(reason="models_exhausted", retry_after_seconds=exc.retry_after_seconds),
-            )
-        except ProviderError:
-            return ChatOrchestratorResult(
-                answer=(
-                    "In questo momento non riesco a elaborare una risposta (il servizio è "
-                    "temporaneamente non disponibile). Riprova tra poco, oppure consulta il "
-                    "veterinario se la situazione richiede attenzione ora."
-                ),
-                mode="general",
-                confidence="low",
-                ai_generated=False,
-                limitations=["Risposta non disponibile: provider LLM non raggiungibile."],
-                provider="rule-based",
-                model="general-answer-guard",
-                state=ConversationState.RETRIEVAL_FAILURE,
-            )
-        # No sources exist in this path, so ANY [n] citation the model
-        # produces is by definition invented (spec v3 §28).
-        validation = validate_answer(response.content, sources_count=0)
-        if not validation.is_valid:
-            return self._validation_failure_result(
-                sources=[], violations=validation.violations, mode="general"
-            )
-        if self._mentions_wrong_species(response.content, effective_species):
-            return self._validation_failure_result(
-                sources=[],
-                violations=["wrong_species_reference"],
-                mode="general",
-            )
-        return ChatOrchestratorResult(
-            answer=strip_ritual_referral(response.content),
-            mode="general",
-            confidence="medium",
-            ai_generated=True,
-            limitations=["General guidance without evidence retrieval."],
-            provider=response.provider,
-            model=response.model,
-        )
-
     def _generate_evidence_answer(
         self,
         data: ChatOrchestratorInput,
@@ -1699,6 +1862,7 @@ class ChatOrchestrator:
         *,
         sources: list[EvidenceSource] | None = None,
         request_kind: RequestKind | None = None,
+        prefetch: _Prefetch | None = None,
     ) -> ChatOrchestratorResult:
         """Default answer path (2026-09-21 product realignment) for every
         non-emergency, non-dosage, non-small-talk question whose intent
@@ -1731,12 +1895,20 @@ class ChatOrchestrator:
         # same species for a day (build 32). Personal cases never do.
         kind = request_kind or self._request_kind(data)
         cache_id: str | None = None
-        if self._answer_cache is not None and is_cacheable_question(
-            message,
-            kind=kind,
-            pet_name=data.pet_name,
-            has_attachment=bool(data.photo_context) or data.attachment_unreadable,
-            has_history=bool(data.conversation_history),
+        if (
+            self._answer_cache is not None
+            and is_cacheable_question(
+                message,
+                kind=kind,
+                pet_name=data.pet_name,
+                has_attachment=bool(data.photo_context) or data.attachment_unreadable,
+                has_history=bool(data.conversation_history),
+            )
+            # A question the anonymizer would change carries a name or
+            # another personal detail: it is not a general curiosity, and
+            # nothing of it may be stored (build 33).
+            and normalize_question(self._anonymize_for_provider(message, data))
+            == normalize_question(message)
         ):
             cache_id = cache_key(
                 message, species=normalize_species(effective_species), language=data.language
@@ -1755,7 +1927,16 @@ class ChatOrchestrator:
             # turn's. Degrades to plain `message` when situation is empty
             # (the default now that the interview loop itself is opt-in).
             query = self._case_context_text(situation, message)
-            sources = self._retrieve_optional_evidence(query, intent, effective_species)
+            prefetched = (
+                prefetch.evidence((query, intent, effective_species))
+                if prefetch is not None
+                else None
+            )
+            sources = (
+                prefetched
+                if prefetched is not None
+                else self._retrieve_optional_evidence(query, intent, effective_species)
+            )
         # Two sources at most go into the prompt (build 32): the model uses
         # one or two at best, and each one costs a few hundred tokens.
         sources = list(sources)[: self._prompt_max_sources]
@@ -1970,7 +2151,7 @@ class ChatOrchestrator:
                     key=cache_id,
                     species=normalize_species(effective_species),
                     language=data.language,
-                    question=normalize_question(message),
+                    question=normalize_question(self._anonymize_for_provider(message, data)),
                     answer=answer,
                     provider=response.provider,
                     model=response.model,

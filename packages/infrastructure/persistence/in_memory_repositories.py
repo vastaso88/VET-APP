@@ -398,6 +398,15 @@ class InMemoryLlmUsageRepository(LlmUsageRepository):
         self._user_messages[key] = self._user_messages.get(key, 0) + 1
         return self._user_messages[key]
 
+    def cleanup(self, today: date, *, usage_days: int, user_days: int) -> dict[str, int]:
+        kept = [e for e in self.events if (today - e.day).days < usage_days]
+        removed_events = len(self.events) - len(kept)
+        self.events = kept
+        old_users = [k for k in self._user_messages if (today - k[1]).days >= user_days]
+        for key in old_users:
+            del self._user_messages[key]
+        return {"llm_usage": removed_events, "chat_user_daily_usage": len(old_users)}
+
 
 class InMemoryAnswerCacheRepository(AnswerCacheRepository):
     def __init__(self) -> None:
@@ -413,3 +422,9 @@ class InMemoryAnswerCacheRepository(AnswerCacheRepository):
         cached = self._items.get(key)
         if cached is not None:
             cached.hits += 1
+
+    def purge_expired(self, now: datetime) -> int:
+        expired = [key for key, cached in self._items.items() if cached.is_expired(now)]
+        for key in expired:
+            del self._items[key]
+        return len(expired)

@@ -152,6 +152,56 @@ Nuove variabili (tutte con default): `LLM_MODEL_LIGHT`, `LLM_LIGHT_FALLBACK_MODE
 `URGENCY_CLASSIFIER_TIMEOUT_SECONDS`, `EVIDENCE_QUERY_NORMALIZER_ENABLED`,
 `CHAT_ANSWER_CACHE_ENABLED`, `CHAT_ANSWER_CACHE_TTL_HOURS`.
 
+## Build 33: le correzioni del controllo del gestore git
+
+- **Funzioni SQL `security definer`**: ognuna è revocata a public/anon/authenticated e
+  concessa solo a service_role; il test `test_schema_function_grants.py` legge lo schema e
+  lo pretende per ogni funzione futura che non sia un trigger.
+- **Cache delle risposte**: una domanda che l'anonimizzatore cambierebbe (un nome, un
+  numero di telefono) è personale e non entra in cache; il testo salvato in
+  `chat_answer_cache.question` passa comunque dall'anonimizzatore.
+- **Retention**: funzione SQL `chat_usage_cleanup()` (llm_usage > 90 giorni,
+  chat_user_daily_usage > 30 giorni, cache scaduta), schedulata da pg_cron alle 03:15 UTC
+  se l'estensione è attiva (Database > Extensions > pg_cron nel pannello Supabase, una
+  volta sola, poi rieseguire lo script), oppure `POST /chat/maintenance` (solo account
+  sviluppatore) da uno scheduler esterno. Servizio `ChatUsageMaintenanceService`.
+- **Convenevoli** ("ciao", "grazie", "ok", "chi sei"): risposta fissa nella lingua
+  dell'utente (it/en/de/fr/es), nessuna chiamata al modello, non contati nel limite
+  giornaliero. Durante la risposta al consenso ("No grazie") la regola non scatta.
+
+### Latenza: le chiamate leggere in parallelo
+
+Appena un turno può chiamare un modello, partono insieme su due thread il classificatore
+d'urgenza e la ricerca delle fonti (parole chiave inglesi dal modello leggero, poi i
+retriever); la risposta aspetta il verdetto e, se la domanda e l'intento sono gli stessi,
+usa le fonti già pronte. Le risposte fisse (emergenze, dosaggi, convenevoli, consenso) non
+avviano nulla. Una catena di modelli tutti assenti sull'account (404) fallisce subito,
+senza un altro giro di rete. Misura con `scripts/eval/chat_quality/latency_probe.py`
+(modello finto con latenze fisse: risposta 1,2 s, chiamata leggera 0,4 s, ricerca 0,3 s):
+
+| per turno (mediana) | secondi |
+|---|---|
+| solo risposta (prima della build 32) | 1,50 |
+| chiamate in serie (build 32) | 2,30 |
+| in parallelo (build 33) | 1,90 |
+
+Il +0,4 s che resta è la chiamata delle parole chiave, che precede la ricerca; il
+classificatore è interamente coperto. Quote condivise: un modello che fa anche da
+leggero va per ultimo nella catena di riserva del principale (con i default:
+120b → qwen → 20b), così le risposte di un giorno limitato cadono su una quota che le
+chiamate leggere non consumano.
+
+### Perché il classificatore non usa `openai/gpt-oss-safeguard-20b`
+
+Valutato il 2026-10-14 (console.groq.com/docs/model/openai/gpt-oss-safeguard-20b e
+rate-limits). È il modello giusto sulla carta: nato per classificare un testo contro una
+policy scritta nel prompt di sistema, JSON mode, quota propria da 200k token/giorno. Ma
+sul piano gratuito ha **3 richieste al minuto e 2.000 token al minuto** per tutta
+l'organizzazione: un classificatore che gira a ogni messaggio della chat lo saturerebbe
+al quarto utente nello stesso minuto, e ogni 429 farebbe scattare la riserva (cioè il
+modello generico), senza guadagno. Resta `openai/gpt-oss-20b` (30 richieste/minuto); da
+riconsiderare se i limiti del safeguard salgono o se si passa a un piano a pagamento.
+
 ## Aperto
 
 - Le cifre dei budget sono quelle pubbliche: vanno confermate nella console e, se diverse,

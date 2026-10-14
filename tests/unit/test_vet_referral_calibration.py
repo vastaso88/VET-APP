@@ -179,11 +179,13 @@ def test_greetings_get_no_referral_instruction() -> None:
     client = ScriptedContentLLMClient("Prego, a presto!")
     orchestrator = ChatOrchestrator(client, InMemoryEvidenceRetriever(), NoopPiiAnonymizer())
 
-    orchestrator.answer(ChatOrchestratorInput(user_message="grazie!", species="Cane", pet_name="X"))
+    result = orchestrator.answer(
+        ChatOrchestratorInput(user_message="grazie!", species="Cane", pet_name="X")
+    )
 
-    prompt = client.requests[-1].system_prompt
-    assert "encourage professional care" not in prompt
-    assert "Do not mention the vet" in prompt
+    # Build 33: fixed text, no model call, and no vet in it.
+    assert client.requests == []
+    assert "veterinario" not in result.answer
 
 
 @pytest.mark.parametrize(

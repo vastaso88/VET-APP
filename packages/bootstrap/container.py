@@ -72,6 +72,9 @@ from packages.core.application.services.llm_usage_recorder import InstrumentedLL
 from packages.core.application.services.maintain_chat_response_reports import (
     ChatResponseReportMaintenanceService,
 )
+from packages.core.application.services.maintain_chat_usage import (
+    ChatUsageMaintenanceService,
+)
 from packages.core.application.services.medical_record_context_retriever import (
     MedicalRecordContextRetriever,
 )
@@ -356,6 +359,9 @@ class ApplicationContainer:
             max_active_conversations_per_pet=self.settings.max_active_conversations_per_pet,
             quota_exempt_emails=self.developer_emails,
         )
+
+    def chat_usage_maintenance_service(self) -> ChatUsageMaintenanceService:
+        return ChatUsageMaintenanceService(self.llm_usage_repository, self.answer_cache_repository)
 
     def list_conversations_service(self) -> ListConversationsService:
         return ListConversationsService(self.conversation_repository)

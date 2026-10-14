@@ -227,6 +227,22 @@ def test_a_light_model_missing_on_the_account_falls_through_to_its_reserve() -> 
     assert fake.asked == [LIGHT, RESERVE, RESERVE]
 
 
+def test_a_chain_of_only_missing_models_fails_at_once_without_a_round_trip() -> None:
+    missing = (404, '{"error":{"message":"The model does not exist","code":"model_not_found"}}')
+    fake = FakeGroq({LIGHT: missing, RESERVE: missing})
+    client = GroqLLMClient(_settings(), transport=fake)
+    request = LLMGenerationRequest(system_prompt="s", user_prompt="u", model_class="light")
+
+    with pytest.raises(ProviderError):
+        client.generate(request)
+    asked_once = list(fake.asked)
+    with pytest.raises(ProviderError, match="available on this account"):
+        client.generate(request)
+
+    assert asked_once == [LIGHT, RESERVE]
+    assert fake.asked == asked_once  # the second call asked nothing
+
+
 def test_without_a_light_model_everything_goes_to_the_main_chain() -> None:
     fake = FakeGroq({MAIN: "answer"})
 

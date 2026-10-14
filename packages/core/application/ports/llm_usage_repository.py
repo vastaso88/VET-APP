@@ -20,3 +20,8 @@ class LlmUsageRepository(Protocol):
         """Counts one more message for [owner_id] today and returns the
         new total."""
         ...
+
+    def cleanup(self, today: date, *, usage_days: int, user_days: int) -> dict[str, int]:
+        """Deletes call rows older than [usage_days] and owner counters
+        older than [user_days]; returns how many rows went, per table."""
+        ...

@@ -283,9 +283,7 @@ def summarize(results: list[dict[str, Any]], tpd: dict[str, int]) -> dict[str, A
         "cost_per_answer_main_tokens": cost_per_answer,
         "answers_per_day_main_model": int(main_tpd // cost_per_answer) if cost_per_answer else 0,
         "answers_per_day_with_reserves": (
-            int(sum(tpd.values()) // cost_per_answer)
-            if cost_per_answer
-            else 0
+            int(sum(tpd.values()) // cost_per_answer) if cost_per_answer else 0
         ),
         "by_purpose": {
             purpose: {

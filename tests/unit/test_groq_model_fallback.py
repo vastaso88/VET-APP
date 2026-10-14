@@ -81,6 +81,10 @@ def _settings(**overrides: str) -> Settings:
         "llm_api_key": "test-key",
         "llm_fallback_models": f"{RESERVE}, {LAST}",
         "vision_model": LAST,
+        # These tests are about the reserve chain itself; without a light
+        # model its configured order is kept as written (build 33 moves a
+        # reserve that doubles as the light model to the end).
+        "llm_model_light": "",
         **overrides,
     }
     return Settings().model_copy(update=values)

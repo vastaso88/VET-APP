@@ -751,6 +751,13 @@ class SupabaseLlmUsageRepository(LlmUsageRepository):
         data = response.data
         return int(data) if isinstance(data, (int, float, str)) else 0
 
+    def cleanup(self, today: date, *, usage_days: int, user_days: int) -> dict[str, int]:
+        # The SQL function applies the same retention (90/30 days and the
+        # expired cache rows) and is also what pg_cron runs at night.
+        response = self._client.rpc("chat_usage_cleanup", {}).execute()
+        data = response.data if isinstance(response.data, dict) else {}
+        return {str(key): int(value) for key, value in data.items()}
+
 
 class SupabaseAnswerCacheRepository(AnswerCacheRepository):
     def __init__(self, client: Client) -> None:
@@ -772,3 +779,9 @@ class SupabaseAnswerCacheRepository(AnswerCacheRepository):
             self._client.rpc("chat_answer_cache_hit", {"p_key": key}).execute()
         except Exception:  # noqa: BLE001 - a missing counter is not worth an error
             _logger.debug("chat_answer_cache_hit unavailable", exc_info=True)
+
+    def purge_expired(self, now: datetime) -> int:
+        response = (
+            self._client.table(self._table).delete().lt("expires_at", now.isoformat()).execute()
+        )
+        return len(response.data or [])
