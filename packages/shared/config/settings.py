@@ -77,6 +77,74 @@ class Settings(BaseSettings):
     llm_api_key: str = Field(default="", alias="LLM_API_KEY")
     llm_base_url: str = Field(default="https://api.groq.com/openai/v1", alias="LLM_BASE_URL")
     llm_timeout_seconds: int = Field(default=30, alias="LLM_TIMEOUT_SECONDS")
+    # --- Free-tier economy (build 32, 2026-10-14) -------------------------------
+    # A smaller model with its own daily quota for mechanical work: case
+    # extraction, interview phrasing, English search keywords, the urgency
+    # classifier. Empty = everything on LLM_MODEL. Its own reserve, tried in
+    # order when it is rate limited. Default: the small gpt-oss, which the
+    # free accounts have (2026-10-14: llama-3.1-8b-instant was not in the
+    # catalogue of a new free account; a missing model is skipped for the
+    # day and the reserve takes over).
+    llm_model_light: str = Field(default="openai/gpt-oss-20b", alias="LLM_MODEL_LIGHT")
+    llm_light_fallback_models: str = Field(
+        default="qwen/qwen3.8-27b", alias="LLM_LIGHT_FALLBACK_MODELS"
+    )
+    # Visible-reply budget of an ordinary answer (about 1300 characters of
+    # Italian); reports get a little more. Reasoning models (openai/gpt-oss)
+    # spend extra tokens thinking before writing: that headroom is added
+    # to every call to them, on top of the visible budget.
+    llm_answer_max_tokens: int = Field(default=450, ge=100, alias="LLM_ANSWER_MAX_TOKENS")
+    llm_reasoning_headroom_tokens: int = Field(
+        default=350, ge=0, alias="LLM_REASONING_HEADROOM_TOKENS"
+    )
+    # What goes into the answer prompt: at most this many sources, each
+    # snippet cut at this many characters; the last N messages of the
+    # conversation verbatim (each cut at M characters), older ones as a
+    # one-line list of topics.
+    llm_prompt_max_sources: int = Field(default=2, ge=0, alias="LLM_PROMPT_MAX_SOURCES")
+    llm_prompt_source_chars: int = Field(default=300, ge=50, alias="LLM_PROMPT_SOURCE_CHARS")
+    llm_history_recent_messages: int = Field(default=6, ge=0, alias="LLM_HISTORY_RECENT_MESSAGES")
+    llm_history_message_chars: int = Field(default=400, ge=50, alias="LLM_HISTORY_MESSAGE_CHARS")
+    # Daily token budgets per model ("model=tokens,..."): the free-tier
+    # figures published by Groq (2026-10), to confirm in the console. From
+    # LLM_BUDGET_RESERVE_SHARE of a budget the reserve models go first; at
+    # 100% the model is left alone until the day resets.
+    llm_daily_token_budgets: str = Field(
+        default=(
+            "openai/gpt-oss-120b=200000,openai/gpt-oss-20b=200000,"
+            "qwen/qwen3.8-27b=200000,openai/gpt-oss-safeguard-20b=200000"
+        ),
+        alias="LLM_DAILY_TOKEN_BUDGETS",
+    )
+    llm_default_daily_token_budget: int = Field(
+        default=200_000, ge=1, alias="LLM_DEFAULT_DAILY_TOKEN_BUDGET"
+    )
+    llm_budget_reserve_share: float = Field(
+        default=0.8, ge=0.1, le=1.0, alias="LLM_BUDGET_RESERVE_SHARE"
+    )
+    # Messages per owner per day that may reach the model (0 = no limit);
+    # the fixed emergency replies are never counted. DEVELOPER_EMAILS are
+    # exempt.
+    chat_daily_message_limit_per_user: int = Field(
+        default=20, ge=0, alias="CHAT_DAILY_MESSAGE_LIMIT_PER_USER"
+    )
+    # The second guardian: the light model reads every ordinary message for
+    # an emergency the fixed lists missed (any language). Fail-open on a
+    # deadline or an outage.
+    urgency_classifier_enabled: bool = Field(default=True, alias="URGENCY_CLASSIFIER_ENABLED")
+    urgency_classifier_timeout_seconds: int = Field(
+        default=6, ge=1, le=30, alias="URGENCY_CLASSIFIER_TIMEOUT_SECONDS"
+    )
+    # English keywords (light model) as the literature search query.
+    evidence_query_normalizer_enabled: bool = Field(
+        default=True, alias="EVIDENCE_QUERY_NORMALIZER_ENABLED"
+    )
+    # Answers to general curiosities ("i cani possono mangiare le fragole?")
+    # are kept for this long and shared between owners of the same species.
+    chat_answer_cache_enabled: bool = Field(default=True, alias="CHAT_ANSWER_CACHE_ENABLED")
+    chat_answer_cache_ttl_hours: int = Field(
+        default=24, ge=1, le=168, alias="CHAT_ANSWER_CACHE_TTL_HOURS"
+    )
     # Voice dictation (speech-to-text): reuses LLM_API_KEY/LLM_BASE_URL
     # rather than a separate key — Groq's Whisper transcription endpoint
     # is the same account/base URL family as chat completions, so this

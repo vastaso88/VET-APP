@@ -83,6 +83,7 @@ class VetSummaryService:
                 user_prompt=self._user_prompt(conversation, pet, data.owner_names),
                 temperature=0.1,
                 max_tokens=1200,
+                purpose="vet_summary",
             )
         )
         body = response.content.strip()

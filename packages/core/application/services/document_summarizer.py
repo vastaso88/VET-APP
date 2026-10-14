@@ -48,6 +48,7 @@ class DocumentSummarizer:
                 ),
                 user_prompt=f"Species: {species}\nDocument text:\n{outbound}",
                 max_tokens=900,
+                purpose="document_summary",
             )
         )
         return response.content.strip()

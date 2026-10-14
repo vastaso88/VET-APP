@@ -162,6 +162,8 @@ class InterviewPlanner:
                         f"copy it): {template}"
                     ),
                     max_tokens=120,
+                    purpose="interview_question",
+                    model_class="light",
                 )
             )
         except ProviderError:
