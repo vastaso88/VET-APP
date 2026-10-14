@@ -22,8 +22,9 @@ ARB = Path("apps/mobile_app/lib/l10n")
 BACKEND = Path("packages/core/domain/localization.py")
 NATIVE = Path("apps/mobile_app/android/app/src/main/res")
 LANGUAGES = ("en", "es", "de")
-# DeepL target code per catalog language (EN-GB/ES/DE; add one line per language).
-DEEPL_TARGETS = {"en": "EN-GB", "es": "ES", "de": "DE"}
+# DeepL target code per catalog language (EN-GB/ES/DE/FR; add one line per language).
+# "fr" joins LANGUAGES once localization.py has its _MESSAGES (docs/i18n/FRENCH_BACKEND_WIRING.md).
+DEEPL_TARGETS = {"en": "EN-GB", "es": "ES", "de": "DE", "fr": "FR"}
 
 
 def digest(value: object) -> str:

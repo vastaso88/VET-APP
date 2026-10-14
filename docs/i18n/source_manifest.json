@@ -2043,14 +2043,16 @@
     "source": "43e3f65a3febbc9e60a6b64462778b07e3470cbf3b84bcb75c1181f64b436bbb",
     "targets": {
       "en": "9f048d23c25ae31450b23ea54ae15436d650db09a84157ee9f39f873b4e18c31",
-      "es": "21939f4ec543e42d82e5af1379134677316629c5d3fc291b3bc2ea19737a48d0"
+      "es": "21939f4ec543e42d82e5af1379134677316629c5d3fc291b3bc2ea19737a48d0",
+      "de": "14a90ee62b093382ed1195a274df05b42c242751a55c168b1dea6f484aa0b38a"
     }
   },
   "ui:chatInputLimitReached": {
     "source": "6a1be1ab5cbe5ad5f09414d7f9ccfdc6225bb60ba5d646eae8614bf5f3bfc88c",
     "targets": {
       "en": "b122743a644218408fa4ea9eb51a83ae90225e13d7317869d98318e038ac80d5",
-      "es": "3c00fae92e71f20503a6e2333e0d838fa5fdb7ca963edece6cb2a3a2542c984b"
+      "es": "3c00fae92e71f20503a6e2333e0d838fa5fdb7ca963edece6cb2a3a2542c984b",
+      "de": "bc6431522227e6b6d94a168ad446ff72ceed99004b7abcc4ee890984041f8caa"
     }
   },
   "ui:chatErrorPetBootstrap": {
@@ -9946,7 +9948,7 @@
     "targets": {
       "en": "9f3f8e317508fe1ac49b5a5cce6075a73b6faee2a604d15f0a36a74aaf812637",
       "es": "97e53464fdc63cede53ae12551cb9e25bc4149088ea70827213a37d22fd4cba8",
-      "de": "47359252b64c4bc44c6542f8b869210916572a1a1e7c6210ac253fc6552bed4f"
+      "de": "fcece7dc0c4ecac108c92ec390beebf8d569f8ef0829dbade7f78b928c9a5f87"
     }
   },
   "ui:settingsHomeAddressNotFound": {

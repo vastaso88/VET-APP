@@ -901,6 +901,16 @@ class AppLocalizationsDe extends AppLocalizations {
       'Ich konnte die Nachricht nicht bearbeiten. Prüfen Sie Ihre Verbindung.';
 
   @override
+  String chatErrorMessageTooLong(int max) {
+    return 'Die Nachricht ist zu lang: Sie können höchstens $max Zeichen schreiben. Kürzen Sie sie und senden Sie sie erneut.';
+  }
+
+  @override
+  String chatInputLimitReached(int max) {
+    return 'Sie haben das Limit von $max Zeichen erreicht.';
+  }
+
+  @override
   String get chatErrorPetBootstrap =>
       'Ich konnte das Tierprofil nicht vorbereiten.';
 
@@ -4465,7 +4475,7 @@ class AppLocalizationsDe extends AppLocalizations {
       'Möchten Sie sich von diesem Konto abmelden?';
 
   @override
-  String get settingsHomeCountryDefault => 'Italien';
+  String get settingsHomeCountryDefault => 'Deutschland';
 
   @override
   String get settingsHomeAddressNotFound =>

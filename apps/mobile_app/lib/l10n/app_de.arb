@@ -425,6 +425,22 @@
   "chatErrorRequestTimeout": "Zeitüberschreitung bei der Anfrage. Versuchen Sie es erneut.",
   "chatErrorEditFailed": "Ich konnte die Nachricht nicht bearbeiten. Versuchen Sie es erneut.",
   "chatErrorEditNetwork": "Ich konnte die Nachricht nicht bearbeiten. Prüfen Sie Ihre Verbindung.",
+  "chatErrorMessageTooLong": "Die Nachricht ist zu lang: Sie können höchstens {max} Zeichen schreiben. Kürzen Sie sie und senden Sie sie erneut.",
+  "@chatErrorMessageTooLong": {
+    "placeholders": {
+      "max": {
+        "type": "int"
+      }
+    }
+  },
+  "chatInputLimitReached": "Sie haben das Limit von {max} Zeichen erreicht.",
+  "@chatInputLimitReached": {
+    "placeholders": {
+      "max": {
+        "type": "int"
+      }
+    }
+  },
   "chatErrorPetBootstrap": "Ich konnte das Tierprofil nicht vorbereiten.",
   "chatErrorTitleEmpty": "Der Titel darf nicht leer sein.",
   "chatErrorRenameFailed": "Ich konnte den Chat nicht umbenennen. Versuchen Sie es erneut.",
@@ -2498,7 +2514,7 @@
   "settingsSectionAccount": "Konto",
   "settingsLogout": "Abmelden",
   "settingsLogoutConfirmBody": "Möchten Sie sich von diesem Konto abmelden?",
-  "settingsHomeCountryDefault": "Italien",
+  "settingsHomeCountryDefault": "Deutschland",
   "settingsHomeAddressNotFound": "Diese Adresse wurde nicht gefunden. Prüfen Sie die Angaben und versuchen Sie es erneut.",
   "settingsHomeAddressOrType": "Oder Adresse eingeben:",
   "settingsHomeAddressStreet": "Adresse",

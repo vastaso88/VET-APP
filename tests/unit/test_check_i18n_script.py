@@ -66,9 +66,9 @@ def test_missing_keys_and_placeholder_mismatches_are_reported(
 
     missing, extra, mismatched = check_i18n.compare_arbs()
 
-    assert missing == {"en": ["bye"], "es": ["hello", "bye"]}
-    assert extra == {"en": ["extra"], "es": []}
-    assert mismatched == {"en": ["hello"], "es": []}
+    assert missing == {"en": ["bye"], "es": ["hello", "bye"], "fr": ["hello", "bye"]}
+    assert extra == {"en": ["extra"], "es": [], "fr": []}
+    assert mismatched == {"en": ["hello"], "es": [], "fr": []}
 
 
 def test_repository_has_no_hardcoded_italian_strings() -> None:

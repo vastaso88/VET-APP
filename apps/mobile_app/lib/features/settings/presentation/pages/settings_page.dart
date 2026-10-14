@@ -43,6 +43,7 @@ import '../../domain/unit_system.dart';
 import '../../../auth/presentation/pages/legal_text_page.dart';
 import '../widgets/collapsible_section.dart';
 import 'location_picker_page.dart';
+import '../../../../l10n/regional_defaults.dart';
 
 class SettingsPage extends StatefulWidget {
   const SettingsPage({super.key});
@@ -449,7 +450,7 @@ class _SettingsPageState extends State<SettingsPage> {
   }
 
   String _numericDate(DateTime date) =>
-      formatAppDate(date, context.l10n.settingsNumericDatePattern);
+      formatAppDate(date, appNumericDatePattern(context.l10n.settingsNumericDatePattern));
 
   String _capitalized(String text) =>
       text.isEmpty ? text : '${text[0].toUpperCase()}${text.substring(1)}';
@@ -1233,7 +1234,7 @@ class _HomeAddressDialogState extends State<_HomeAddressDialog> {
   final _streetController = TextEditingController();
   final _postalCodeController = TextEditingController();
   final _cityController = TextEditingController();
-  final _countryController = TextEditingController(text: appL10n.settingsHomeCountryDefault);
+  final _countryController = TextEditingController(text: appHomeCountryDefault());
 
   bool _submitting = false;
   String? _error;

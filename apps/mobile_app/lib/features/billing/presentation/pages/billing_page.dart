@@ -14,6 +14,7 @@ import '../../data/billing_demo_store.dart';
 import '../../data/subscription_remote_data_source.dart';
 import '../../domain/billing_models.dart';
 import '../widgets/plan_feature_list.dart';
+import '../../../../l10n/regional_defaults.dart';
 
 /// "Abbonamento e metodi di pagamento" — reached from Impostazioni.
 /// Structured like the subscription/billing screen of most consumer apps:
@@ -269,7 +270,10 @@ class _CurrentPlanCard extends StatelessWidget {
                   const SizedBox(height: 4),
                   Text(
                     context.l10n.billingRenewalOn(
-                      formatAppDate(renewal, context.l10n.settingsNumericDatePattern),
+                      formatAppDate(
+                        renewal,
+                        appNumericDatePattern(context.l10n.settingsNumericDatePattern),
+                      ),
                     ),
                     style: AppTextStyles.bodySmall.copyWith(color: AppColors.onPrimary.withValues(alpha: 0.85)),
                   ),
