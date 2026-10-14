@@ -51,11 +51,11 @@ jobs:
           distribution: temurin
           java-version: '17'
       - name: Compile Android native localization
-        run: flutter build apk --debug
+        run: flutter build apk --debug --flavor prod
       - uses: actions/upload-artifact@v4
         with:
           name: vetapp-test-apk
-          path: apps/mobile_app/build/app/outputs/flutter-apk/app-debug.apk
+          path: apps/mobile_app/build/app/outputs/flutter-apk/app-prod-debug.apk
 
   quality:
     runs-on: ubuntu-latest
@@ -145,12 +145,12 @@ jobs:
         run: |
           flutter pub get
           flutter gen-l10n
-          flutter build apk --release --build-number="$ANDROID_BUILD_NUMBER" \
+          flutter build apk --release --flavor prod --build-number="$ANDROID_BUILD_NUMBER" \
             --dart-define-from-file="$RUNNER_TEMP/vetapp-distribution/dart-defines.json"
       - uses: actions/upload-artifact@v4
         with:
           name: vetapp-multilang-release-${{ inputs.build_number }}
-          path: apps/mobile_app/build/app/outputs/flutter-apk/app-release.apk
+          path: apps/mobile_app/build/app/outputs/flutter-apk/app-prod-release.apk
           if-no-files-found: error
           retention-days: 7
       - uses: actions/setup-node@v4
@@ -163,7 +163,7 @@ jobs:
           FIREBASE_TESTER_GROUPS: ${{ vars.FIREBASE_TESTER_GROUPS }}
         run: |
           npx --yes --package firebase-tools@15.33.0 firebase appdistribution:distribute \
-            apps/mobile_app/build/app/outputs/flutter-apk/app-release.apk \
+            apps/mobile_app/build/app/outputs/flutter-apk/app-prod-release.apk \
             --app "$FIREBASE_ANDROID_APP_ID" \
             --groups "$FIREBASE_TESTER_GROUPS" \
             --release-notes-file "$RUNNER_TEMP/vetapp-distribution/release-notes.txt" \

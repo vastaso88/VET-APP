@@ -4,6 +4,7 @@ import logging
 from functools import lru_cache
 
 from packages.core.application.ports.account_consents_repository import AccountConsentsRepository
+from packages.core.application.ports.answer_cache_repository import AnswerCacheRepository
 from packages.core.application.ports.auth_provider import AuthProvider
 from packages.core.application.ports.chat_attachment_repository import ChatAttachmentRepository
 from packages.core.application.ports.chat_response_report_repository import (
@@ -15,6 +16,8 @@ from packages.core.application.ports.dog_walk_repository import DogWalkRepositor
 from packages.core.application.ports.evidence_retriever import EvidenceRetriever
 from packages.core.application.ports.image_analyzer import ImageAnalyzer
 from packages.core.application.ports.listing_report_repository import ListingReportRepository
+from packages.core.application.ports.llm_client import LLMClient
+from packages.core.application.ports.llm_usage_repository import LlmUsageRepository
 from packages.core.application.ports.local_activity_repository import LocalActivityRepository
 from packages.core.application.ports.marketplace_listing_repository import (
     MarketplaceListingRepository,
@@ -40,6 +43,9 @@ from packages.core.application.services.delete_conversation import DeleteConvers
 from packages.core.application.services.document_summarizer import DocumentSummarizer
 from packages.core.application.services.edit_chat_message import EditChatMessageService
 from packages.core.application.services.end_walk import EndWalkService
+from packages.core.application.services.evidence_query_normalizer import (
+    EvidenceQueryNormalizer,
+)
 from packages.core.application.services.get_account_consents import GetAccountConsentsService
 from packages.core.application.services.get_or_create_subscription import (
     GetOrCreateSubscriptionService,
@@ -61,6 +67,8 @@ from packages.core.application.services.list_nearby_radar_places import (
 from packages.core.application.services.list_pet_profiles import ListPetProfilesService
 from packages.core.application.services.list_reminders import ListRemindersService
 from packages.core.application.services.list_walks import ListWalksService
+from packages.core.application.services.llm_budget import LlmBudget, parse_budgets
+from packages.core.application.services.llm_usage_recorder import InstrumentedLLMClient
 from packages.core.application.services.maintain_chat_response_reports import (
     ChatResponseReportMaintenanceService,
 )
@@ -103,10 +111,12 @@ from packages.core.application.services.start_walk import StartWalkService
 from packages.core.application.services.transcribe_audio import TranscribeAudioService
 from packages.core.application.services.update_pet_profile import UpdatePetProfileService
 from packages.core.application.services.upload_chat_attachment import UploadChatAttachmentService
+from packages.core.application.services.urgency_classifier import UrgencyClassifier
 from packages.core.application.services.vet_summary import VetSummaryService
 from packages.infrastructure.auth.bootstrap_auth_provider import BootstrapAuthProvider
 from packages.infrastructure.documents.pypdf_reader import PypdfReader
 from packages.infrastructure.llm.providers.echo_llm_client import EchoLLMClient
+from packages.infrastructure.llm.providers.groq_chat_api import split_models
 from packages.infrastructure.llm.providers.groq_llm_client import GroqLLMClient
 from packages.infrastructure.llm.retrieval.crossref_evidence_retriever import (
     CrossrefEvidenceRetriever,
@@ -134,12 +144,14 @@ from packages.infrastructure.llm.retrieval.pubmed_evidence_retriever import (
 )
 from packages.infrastructure.persistence.in_memory_repositories import (
     InMemoryAccountConsentsRepository,
+    InMemoryAnswerCacheRepository,
     InMemoryChatAttachmentRepository,
     InMemoryChatResponseReportRepository,
     InMemoryClinicalEventRepository,
     InMemoryConversationRepository,
     InMemoryDogWalkRepository,
     InMemoryListingReportRepository,
+    InMemoryLlmUsageRepository,
     InMemoryLocalActivityRepository,
     InMemoryMarketplaceListingRepository,
     InMemoryPetProfileRepository,
@@ -178,7 +190,23 @@ class ApplicationContainer:
             self.conversation_repository,
             self.reminder_repository,
         ) = self._build_repositories()
-        self.llm_client = self._build_llm_client()
+        # The usage ledger and the daily budget come before the model client:
+        # the client reports every call to them and asks the budget which
+        # model may answer (build 32, free-tier economy).
+        self.llm_usage_repository = self._build_llm_usage_repository()
+        self.answer_cache_repository = self._build_answer_cache_repository()
+        self.llm_budget = LlmBudget(
+            self.llm_usage_repository,
+            budgets=parse_budgets(settings.llm_daily_token_budgets),
+            default_budget=settings.llm_default_daily_token_budget,
+            reserve_share=settings.llm_budget_reserve_share,
+            user_daily_limit=settings.chat_daily_message_limit_per_user,
+        )
+        self.llm_client: LLMClient = InstrumentedLLMClient(
+            self._build_llm_client(),
+            repository=self.llm_usage_repository,
+            budget=self.llm_budget,
+        )
         self.speech_to_text_provider = self._build_speech_to_text_provider()
         self.evidence_retriever = self._build_evidence_retriever()
         self.pii_anonymizer = self._build_pii_anonymizer()
@@ -212,11 +240,35 @@ class ApplicationContainer:
                 self.clinical_event_repository,
                 attachment_repository=self.chat_attachment_repository,
             ),
-            consent_interpreter=ConsentInterpreter(),
+            consent_interpreter=ConsentInterpreter(self.llm_client),
             enable_interview_loop=settings.enable_interview_loop,
             coverage_target=settings.situation_coverage_target,
             max_interview_questions=settings.interview_max_questions,
             response_language=settings.response_language,
+            usage_budget=self.llm_budget,
+            answer_models=[settings.llm_model, *split_models(settings.llm_fallback_models)],
+            urgency_classifier=(
+                UrgencyClassifier(
+                    self.llm_client,
+                    timeout_seconds=settings.urgency_classifier_timeout_seconds,
+                )
+                if settings.urgency_classifier_enabled
+                else None
+            ),
+            evidence_query_normalizer=(
+                EvidenceQueryNormalizer(self.llm_client)
+                if settings.evidence_query_normalizer_enabled
+                else None
+            ),
+            answer_cache=(
+                self.answer_cache_repository if settings.chat_answer_cache_enabled else None
+            ),
+            answer_cache_ttl_hours=settings.chat_answer_cache_ttl_hours,
+            answer_max_tokens=settings.llm_answer_max_tokens,
+            prompt_max_sources=settings.llm_prompt_max_sources,
+            prompt_source_chars=settings.llm_prompt_source_chars,
+            history_recent_messages=settings.llm_history_recent_messages,
+            history_message_chars=settings.llm_history_message_chars,
         )
 
     def create_pet_profile_service(self) -> CreatePetProfileService:
@@ -302,6 +354,7 @@ class ApplicationContainer:
             attachment_repository=self.chat_attachment_repository,
             reminder_context_retriever=ReminderContextRetriever(self.reminder_repository),
             max_active_conversations_per_pet=self.settings.max_active_conversations_per_pet,
+            quota_exempt_emails=self.developer_emails,
         )
 
     def list_conversations_service(self) -> ListConversationsService:
@@ -422,8 +475,42 @@ class ApplicationContainer:
 
     def _build_llm_client(self) -> EchoLLMClient | GroqLLMClient:
         if self.settings.llm_provider == "groq":
-            return GroqLLMClient(self.settings)
+            return GroqLLMClient(self.settings, availability=self.llm_budget)
         return EchoLLMClient(self.settings)
+
+    def _build_llm_usage_repository(self) -> LlmUsageRepository:
+        if self.settings.persistence_backend == "supabase":
+            try:
+                from packages.infrastructure.persistence.supabase.client import (
+                    build_supabase_client,
+                )
+                from packages.infrastructure.persistence.supabase.supabase_repositories import (
+                    SupabaseLlmUsageRepository,
+                )
+
+                return SupabaseLlmUsageRepository(build_supabase_client(self.settings))
+            except ModuleNotFoundError:
+                if self.settings.environment != "production":
+                    return InMemoryLlmUsageRepository()
+                raise
+        return InMemoryLlmUsageRepository()
+
+    def _build_answer_cache_repository(self) -> AnswerCacheRepository:
+        if self.settings.persistence_backend == "supabase":
+            try:
+                from packages.infrastructure.persistence.supabase.client import (
+                    build_supabase_client,
+                )
+                from packages.infrastructure.persistence.supabase.supabase_repositories import (
+                    SupabaseAnswerCacheRepository,
+                )
+
+                return SupabaseAnswerCacheRepository(build_supabase_client(self.settings))
+            except ModuleNotFoundError:
+                if self.settings.environment != "production":
+                    return InMemoryAnswerCacheRepository()
+                raise
+        return InMemoryAnswerCacheRepository()
 
     def _build_speech_to_text_provider(self) -> SpeechToTextProvider:
         if self.settings.stt_provider == "groq":

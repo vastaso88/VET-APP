@@ -1,6 +1,10 @@
-from datetime import datetime
+from datetime import date, datetime
 
 from packages.core.application.ports.account_consents_repository import AccountConsentsRepository
+from packages.core.application.ports.answer_cache_repository import (
+    AnswerCacheRepository,
+    CachedAnswer,
+)
 from packages.core.application.ports.chat_attachment_repository import ChatAttachmentRepository
 from packages.core.application.ports.chat_response_report_repository import (
     ChatResponseReportRepository,
@@ -9,6 +13,7 @@ from packages.core.application.ports.clinical_event_repository import ClinicalEv
 from packages.core.application.ports.conversation_repository import ConversationRepository
 from packages.core.application.ports.dog_walk_repository import DogWalkRepository
 from packages.core.application.ports.listing_report_repository import ListingReportRepository
+from packages.core.application.ports.llm_usage_repository import LlmUsageRepository
 from packages.core.application.ports.local_activity_repository import LocalActivityRepository
 from packages.core.application.ports.marketplace_listing_repository import (
     MarketplaceListingRepository,
@@ -30,6 +35,7 @@ from packages.core.domain.coverage.models import RadarCoverage
 from packages.core.domain.dog_walk.models import WalkSession
 from packages.core.domain.feedback.models import ChatResponseReport, ChatResponseReportCounter
 from packages.core.domain.geo.models import UserLocation
+from packages.core.domain.llm_usage.models import LlmUsageEvent, ModelDailyUsage
 from packages.core.domain.local_activity.models import LocalActivity
 from packages.core.domain.marketplace.models import ListingReport, MarketplaceListing
 from packages.core.domain.medical_record.models import ClinicalEvent
@@ -359,3 +365,51 @@ class InMemoryLocalActivityRepository(LocalActivityRepository):
 
     def list_active(self) -> list[LocalActivity]:
         return [item for item in self._items if item.status == "active"]
+
+
+class InMemoryLlmUsageRepository(LlmUsageRepository):
+    """The usage ledger of one process: tests, local runs, the stand-in
+    model. Production shares it through Supabase."""
+
+    def __init__(self) -> None:
+        self.events: list[LlmUsageEvent] = []
+        self._daily: dict[tuple[date, str], ModelDailyUsage] = {}
+        self._user_messages: dict[tuple[str, date], int] = {}
+
+    def record(self, event: LlmUsageEvent) -> None:
+        self.events.append(event)
+        key = (event.day, event.model)
+        usage = self._daily.setdefault(key, ModelDailyUsage(day=event.day, model=event.model))
+        usage.calls += 1
+        usage.prompt_tokens += event.prompt_tokens
+        usage.completion_tokens += event.completion_tokens
+        usage.cached_prompt_tokens += event.cached_prompt_tokens
+        usage.total_tokens += event.total_tokens
+
+    def usage_for_day(self, day: date) -> list[ModelDailyUsage]:
+        return [usage.model_copy() for (d, _), usage in self._daily.items() if d == day]
+
+    def mark_exhausted(self, model: str, day: date, until: datetime) -> None:
+        usage = self._daily.setdefault((day, model), ModelDailyUsage(day=day, model=model))
+        usage.exhausted_until = until
+
+    def add_user_message(self, owner_id: str, day: date) -> int:
+        key = (owner_id, day)
+        self._user_messages[key] = self._user_messages.get(key, 0) + 1
+        return self._user_messages[key]
+
+
+class InMemoryAnswerCacheRepository(AnswerCacheRepository):
+    def __init__(self) -> None:
+        self._items: dict[str, CachedAnswer] = {}
+
+    def get(self, key: str) -> CachedAnswer | None:
+        return self._items.get(key)
+
+    def put(self, answer: CachedAnswer) -> None:
+        self._items[answer.key] = answer
+
+    def count_hit(self, key: str) -> None:
+        cached = self._items.get(key)
+        if cached is not None:
+            cached.hits += 1

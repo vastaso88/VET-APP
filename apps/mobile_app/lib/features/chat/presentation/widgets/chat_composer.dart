@@ -1,10 +1,10 @@
 import 'dart:async';
 import 'dart:io' show File;
-import 'dart:typed_data';
 
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 import '../../../../shared/widgets/pet_loader.dart';
 
@@ -18,6 +18,7 @@ import '../../../../design_system/tokens/app_spacing.dart';
 import '../../../../l10n/l10n.dart';
 import '../../../settings/data/layout_settings_store.dart';
 import '../../data/chat_demo_store.dart';
+import '../../data/chat_remote_data_source.dart' show chatMaxMessageLength;
 import '../../data/speech_to_text_remote_data_source.dart';
 
 enum _VoiceState { idle, recording, transcribing }
@@ -83,6 +84,10 @@ class _ChatComposerState extends State<ChatComposer> with SingleTickerProviderSt
       widget.speechToText ?? HttpSpeechToTextRemoteDataSource();
 
   bool _hasText = false;
+
+  /// The field holds as many characters as the backend accepts: typing or
+  /// pasting stops there, and a line says why.
+  bool _atLimit = false;
   _VoiceState _voiceState = _VoiceState.idle;
 
   Uint8List? _pendingImageBytes;
@@ -94,8 +99,12 @@ class _ChatComposerState extends State<ChatComposer> with SingleTickerProviderSt
     super.initState();
     _controller.addListener(() {
       final hasText = _controller.text.trim().isNotEmpty;
-      if (hasText != _hasText) {
-        setState(() => _hasText = hasText);
+      final atLimit = _controller.text.length >= chatMaxMessageLength;
+      if (hasText != _hasText || atLimit != _atLimit) {
+        setState(() {
+          _hasText = hasText;
+          _atLimit = atLimit;
+        });
       }
     });
   }
@@ -202,6 +211,7 @@ class _ChatComposerState extends State<ChatComposer> with SingleTickerProviderSt
               builder: (context, _) => TextField(
                 controller: _controller,
                 focusNode: _focusNode,
+                inputFormatters: [LengthLimitingTextInputFormatter(chatMaxMessageLength)],
                 minLines: 1,
                 maxLines: 8,
                 textInputAction: TextInputAction.newline,
@@ -223,6 +233,13 @@ class _ChatComposerState extends State<ChatComposer> with SingleTickerProviderSt
               ),
             ),
           ),
+          if (_atLimit) ...[
+            const SizedBox(height: AppSpacing.xs),
+            Text(
+              context.l10n.chatInputLimitReached(chatMaxMessageLength),
+              style: const TextStyle(color: AppColors.danger, fontSize: 12),
+            ),
+          ],
           const SizedBox(height: AppSpacing.sm),
           Row(
             children: [
@@ -428,7 +445,11 @@ class _ChatComposerState extends State<ChatComposer> with SingleTickerProviderSt
           final transcribed = text.trim();
           if (transcribed.isEmpty) return;
           final current = _controller.text;
-          final merged = current.trim().isEmpty ? transcribed : '$current $transcribed';
+          final joined = current.trim().isEmpty ? transcribed : '$current $transcribed';
+          // Set directly, so the field's length limit has to be applied here.
+          final merged = joined.length > chatMaxMessageLength
+              ? joined.substring(0, chatMaxMessageLength)
+              : joined;
           _controller.value = TextEditingValue(
             text: merged,
             selection: TextSelection.collapsed(offset: merged.length),

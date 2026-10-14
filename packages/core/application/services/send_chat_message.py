@@ -69,6 +69,9 @@ class SendChatMessageInput(BaseModel):
     attachment_id: str | None = None
     # The signed-in owner's display name, when the account has one.
     owner_display_name: str | None = None
+    # The account's e-mail, only to recognise developer accounts (exempt
+    # from the daily message allowance); never sent to the provider.
+    owner_email: str | None = None
     # The app's id for this message; the same on a retry.
     client_message_id: str | None = None
     # Language of the reply (see packages.core.domain.common.language).
@@ -105,6 +108,7 @@ class SendChatMessageService:
         attachment_repository: ChatAttachmentRepository | None = None,
         reminder_context_retriever: ReminderContextRetriever | None = None,
         max_active_conversations_per_pet: int = 4,
+        quota_exempt_emails: frozenset[str] = frozenset(),
     ) -> None:
         self._repository = repository
         self._orchestrator = orchestrator
@@ -117,6 +121,8 @@ class SendChatMessageService:
         # optional-collaborator convention as above).
         self._reminder_context_retriever = reminder_context_retriever
         self._max_active_conversations_per_pet = max_active_conversations_per_pet
+        # Developer accounts are not held to the daily message allowance.
+        self._quota_exempt_emails = frozenset(e.strip().lower() for e in quota_exempt_emails)
 
     def execute(self, data: SendChatMessageInput) -> SendChatMessageOutput:
         # A photo alone is a message (an edited message may keep only its
@@ -194,6 +200,9 @@ class SendChatMessageService:
                 dog_size_category=pet_profile.dog_size_category,
                 reminders_context=reminders_context,
                 language=normalize_language(data.language),
+                owner_id=data.owner_id,
+                quota_exempt=(getattr(data, "owner_email", None) or "").strip().lower()
+                in self._quota_exempt_emails,
                 owner_names=owner_names_for_anonymization(
                     data.owner_display_name, pet_name=pet_profile.name
                 ),

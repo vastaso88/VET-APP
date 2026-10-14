@@ -153,7 +153,18 @@ RED_FLAG_CATEGORIES: dict[str, tuple[str, ...]] = {
         "xilitolo",
         "cipolla",
         "aglio",
+        # emergency_patterns.py (2026-10-14)
+        "rodenticida",
+        "antigelo",
+        "giglio",
     ),
+    # Gastric dilatation-volvulus: torsion, unproductive retching, a belly
+    # swelling hard — kills within hours. No clarifying question, like
+    # toxin_medication: asking first would only cost time.
+    "gastric_bloat": ("torsione gastrica",),
+    # Pale, white, grey or blue gums or tongue: shock, bleeding inside,
+    # no oxygen. No clarifying question either.
+    "circulatory": ("gengive pallide",),
 }
 
 # If the very first message already describes an unambiguous, ongoing

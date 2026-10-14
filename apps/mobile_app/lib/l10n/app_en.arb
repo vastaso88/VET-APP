@@ -425,6 +425,22 @@
   "chatErrorRequestTimeout": "The request timed out. Try again.",
   "chatErrorEditFailed": "I couldn't edit the message. Try again.",
   "chatErrorEditNetwork": "I couldn't edit the message. Check your connection.",
+  "chatErrorMessageTooLong": "That message is too long: you can write up to {max} characters. Shorten it and send it again.",
+  "@chatErrorMessageTooLong": {
+    "placeholders": {
+      "max": {
+        "type": "int"
+      }
+    }
+  },
+  "chatInputLimitReached": "You have reached the limit of {max} characters.",
+  "@chatInputLimitReached": {
+    "placeholders": {
+      "max": {
+        "type": "int"
+      }
+    }
+  },
   "chatErrorPetBootstrap": "I couldn't prepare the pet profile.",
   "chatErrorTitleEmpty": "The title cannot be empty.",
   "chatErrorRenameFailed": "I couldn't rename the chat. Try again.",

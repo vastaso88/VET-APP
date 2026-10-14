@@ -718,7 +718,14 @@ class _SectionSkeleton extends StatelessWidget {
             child: CircularProgressIndicator(strokeWidth: 2),
           ),
           const SizedBox(width: AppSpacing.md),
-          Text(context.l10n.homeSectionLoading, style: AppTextStyles.bodySmall),
+          Flexible(
+            child: Text(
+              context.l10n.homeSectionLoading,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: AppTextStyles.bodySmall,
+            ),
+          ),
         ],
       ),
     );

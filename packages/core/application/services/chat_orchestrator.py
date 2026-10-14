@@ -1,9 +1,14 @@
 import logging
+import re
 from collections.abc import Iterable
-from datetime import UTC, date, datetime
+from datetime import UTC, date, datetime, timedelta
 
 from pydantic import BaseModel, Field
 
+from packages.core.application.ports.answer_cache_repository import (
+    AnswerCacheRepository,
+    CachedAnswer,
+)
 from packages.core.application.ports.evidence_retriever import (
     EvidenceRetrievalRequest,
     EvidenceRetriever,
@@ -19,8 +24,17 @@ from packages.core.application.services.evidence_quality_engine import (
     EvidenceQualityEngine,
     RankedEvidence,
 )
+from packages.core.application.services.evidence_query_normalizer import (
+    EvidenceQueryNormalizer,
+)
 from packages.core.application.services.evidence_synthesizer import EvidenceSynthesizer
 from packages.core.application.services.interview_planner import InterviewPlanner
+from packages.core.application.services.llm_budget import (
+    LlmBudget,
+    QuotaDenial,
+    QuotaExhausted,
+    format_wait_it,
+)
 from packages.core.application.services.medical_record_context_retriever import (
     MedicalRecordContextRetriever,
     RecordDocument,
@@ -32,7 +46,13 @@ from packages.core.application.services.natural_answer_prompt import (
 from packages.core.application.services.response_generator import ResponseGenerator
 from packages.core.application.services.safety_gate import SafetyGate
 from packages.core.application.services.situation_model_builder import SituationModelBuilder
+from packages.core.application.services.urgency_classifier import UrgencyClassifier
 from packages.core.domain.common.language import response_language_instruction
+from packages.core.domain.conversation.answer_cache import (
+    cache_key,
+    is_cacheable_question,
+    normalize_question,
+)
 from packages.core.domain.conversation.models import ChatMessage
 from packages.core.domain.conversation.referral_style import strip_ritual_referral
 from packages.core.domain.conversation.request_kind import (
@@ -56,6 +76,7 @@ from packages.core.domain.pet_profile.species_facts import species_facts
 from packages.core.domain.pet_profile.weight import (
     is_weight_relevant,
 )
+from packages.core.domain.safety.dosage_request import is_dosage_request
 from packages.core.domain.safety.triage_clarification import (
     categorize as categorize_safety_flags,
 )
@@ -437,12 +458,25 @@ SPECIES_WORD_TO_FAMILY: dict[str, str] = {
     "hámster": "small_mammal",
     "pájaro": "bird",
     "pájaros": "bird",
-    "loro": "bird",
     "tortuga": "reptile_amphibian",
     "reptil": "reptile_amphibian",
     "pez": "fish",
     "peces": "fish",
 }
+
+
+def _families_named_in(message: str) -> set[str]:
+    """The species families a message names, matching WHOLE words only: as a
+    substring "pez" sat inside "pezzo" and "cat" inside "cattivo", which
+    silently swapped the pet's species (and lost the toxin alarm for "ha
+    mangiato un pezzo di cioccolato")."""
+    return {
+        family
+        for word, family in SPECIES_WORD_TO_FAMILY.items()
+        if re.search(rf"(?<!\w){re.escape(word)}(?!\w)", message)
+    }
+
+
 MULTI_PET_INDEPENDENT_MARKERS: tuple[str, ...] = (
     "entrambi",
     "entrambe",
@@ -528,6 +562,10 @@ class ChatOrchestratorInput(BaseModel):
     safety_clarification_category: str | None = None
     # Language of the reply: "it" leaves every prompt as it always was.
     language: str = "it"
+    # Who is asking, for the per-owner daily allowance (llm_budget.py);
+    # developer accounts are exempt.
+    owner_id: str = ""
+    quota_exempt: bool = False
 
 
 class ChatOrchestratorResult(BaseModel):
@@ -576,6 +614,17 @@ class ChatOrchestrator:
         coverage_target: float = 0.85,
         max_interview_questions: int = 3,
         strict_evidence_intents: frozenset[str] = frozenset({"husbandry_question"}),
+        usage_budget: LlmBudget | None = None,
+        answer_models: list[str] | None = None,
+        urgency_classifier: UrgencyClassifier | None = None,
+        evidence_query_normalizer: EvidenceQueryNormalizer | None = None,
+        answer_cache: AnswerCacheRepository | None = None,
+        answer_cache_ttl_hours: int = 24,
+        answer_max_tokens: int = 450,
+        prompt_max_sources: int = 2,
+        prompt_source_chars: int = 300,
+        history_recent_messages: int = 6,
+        history_message_chars: int = 400,
     ) -> None:
         self._llm_client = llm_client
         self._evidence_retriever = evidence_retriever
@@ -615,6 +664,21 @@ class ChatOrchestrator:
         # intent here only for a claim narrow and high-risk enough that
         # citation-checking earns back its cost in fluency.
         self._strict_evidence_intents = strict_evidence_intents
+        # Free-tier economy (build 32): the shared daily budget and the
+        # owner's allowance, the light-model helpers, the answer cache and
+        # the size limits of what goes into a prompt. Every one optional:
+        # None/zero leaves the behaviour as before.
+        self._usage_budget = usage_budget
+        self._answer_models = list(answer_models or [])
+        self._urgency_classifier = urgency_classifier
+        self._evidence_query_normalizer = evidence_query_normalizer
+        self._answer_cache = answer_cache
+        self._answer_cache_ttl = timedelta(hours=max(1, answer_cache_ttl_hours))
+        self._answer_max_tokens = max(100, answer_max_tokens)
+        self._prompt_max_sources = max(0, prompt_max_sources)
+        self._prompt_source_chars = max(50, prompt_source_chars)
+        self._history_recent_messages = max(0, history_recent_messages)
+        self._history_message_chars = max(50, history_message_chars)
 
     def answer(self, data: ChatOrchestratorInput) -> ChatOrchestratorResult:
         result = self._with_weight_suggestion(data, self._answer(data))
@@ -774,6 +838,17 @@ class ChatOrchestrator:
         if self._describes_independent_multi_pet_complaint(lowered):
             return self._multi_pet_redirect_result(data.pet_name, data.language)
 
+        # From here on a model may be called: the shared daily budget and
+        # the owner's own allowance decide whether this turn goes on. The
+        # fixed replies above (emergencies, dosages, two pets) never reach
+        # this point, so they are never refused (build 32).
+        if self._usage_budget is not None:
+            denial = self._usage_budget.admit(
+                owner_id=data.owner_id, models=self._answer_models, exempt=data.quota_exempt
+            )
+            if denial is not None:
+                return self._quota_result(data.pet_name, denial)
+
         situation = data.situation_model or SituationModel()
         turns_used = data.interview_turns_used
         medical_record_consent = data.medical_record_consent
@@ -785,6 +860,12 @@ class ChatOrchestrator:
         )
         if resolving_consent:
             return self._resolve_medical_record_consent(data, message, situation, turns_used)
+
+        # The second guardian: a small model reads the message for an
+        # emergency the fixed lists did not catch (build 32).
+        second_opinion = self._second_opinion_on_urgency(data, message, lowered, effective_species)
+        if second_opinion is not None:
+            return second_opinion
 
         # What the owner asked for comes before any anamnesis (build 22
         # feedback: "spiegami il referto" was answered by asking for
@@ -976,6 +1057,87 @@ class ChatOrchestrator:
         result.medical_record_consent = medical_record_consent
         return result
 
+    def _second_opinion_on_urgency(
+        self,
+        data: ChatOrchestratorInput,
+        message: str,
+        lowered: str,
+        effective_species: str,
+    ) -> ChatOrchestratorResult | None:
+        """The light model's verdict on urgency, after the fixed lists said
+        nothing: an emergency gets the same fixed triage reply as theirs, a
+        possible one the clarifying question of its category. Anything
+        unclear, late or unavailable lets the ordinary answer go ahead."""
+        if self._urgency_classifier is None:
+            return None
+        if self._classify_intent(lowered) == "general_info":
+            return None
+        verdict = self._urgency_classifier.classify(
+            self._anonymize_for_provider(message, data), effective_species
+        )
+        if verdict is None or verdict.level == "normal":
+            return None
+        category = verdict.category or "other"
+        flag = f"classifier:{category}"
+        if verdict.level == "emergency":
+            logger.warning("urgency classifier: emergency (%s) the fixed lists missed", category)
+            return self._urgent_triage_result(
+                data.pet_name, [flag], category, response_locale=data.language
+            )
+        question = clarifying_question(category, data.language)
+        if question is None:
+            # "maybe" with nothing specific to ask: the answer itself, with
+            # its own rule on when to see the vet, serves better than a
+            # generic question that would then escalate on any reply.
+            logger.info("urgency classifier: unsure (%s), answering normally", category)
+            return None
+        logger.warning("urgency classifier: possible emergency (%s), asking first", category)
+        return ChatOrchestratorResult(
+            answer=question,
+            mode="safety_clarification",
+            confidence="low",
+            ai_generated=False,
+            safety_flags=[flag],
+            provider="rule-based",
+            model="urgency-classifier",
+            state=ConversationState.NEED_MORE_INFORMATION,
+            awaiting_safety_clarification=True,
+            safety_clarification_category=category,
+        )
+
+    @staticmethod
+    def _quota_result(pet_name: str, denial: QuotaDenial) -> ChatOrchestratorResult:
+        """The kind refusal of a turn that cannot be answered today: the
+        owner's allowance is used up, or every model's daily quota is. With
+        the time to wait, never a generic error (build 32)."""
+        wait = format_wait_it(denial.retry_after_seconds)
+        if denial.reason == "user_limit":
+            answer = (
+                f"Per oggi hai usato tutti i {denial.daily_limit} messaggi disponibili con "
+                f"l'assistente: potrai scrivergli di nuovo tra circa {wait}. Se {pet_name} "
+                "sta male adesso, non aspettare: chiama il veterinario."
+            )
+            mode = "user_limit_reached"
+            limitation = "Risposta non generata: limite giornaliero di messaggi raggiunto."
+        else:
+            answer = (
+                "In questo momento l'assistente è molto richiesto e ha esaurito le risposte "
+                f"disponibili per oggi. Riprova tra circa {wait}. Se {pet_name} sta male "
+                "adesso, non aspettare: chiama il veterinario."
+            )
+            mode = "quota_exhausted"
+            limitation = "Risposta non generata: quota giornaliera del modello esaurita."
+        return ChatOrchestratorResult(
+            answer=answer,
+            mode=mode,
+            confidence="low",
+            ai_generated=False,
+            limitations=[limitation],
+            provider="rule-based",
+            model="usage-budget",
+            state=ConversationState.RETRIEVAL_FAILURE,
+        )
+
     @staticmethod
     def _urgent_triage_result(
         pet_name: str,
@@ -1006,7 +1168,11 @@ class ChatOrchestrator:
 
     @staticmethod
     def _is_dosage_request(message: str) -> bool:
-        return any(marker in message for marker in DOSAGE_REQUEST_MARKERS)
+        # The fixed phrases, plus the general rule (dosage_request.py):
+        # the phrases alone stopped 6 of 15 realistic requests (2026-10-14).
+        return any(marker in message for marker in DOSAGE_REQUEST_MARKERS) or (
+            is_dosage_request(message)
+        )
 
     @staticmethod
     def _describes_independent_multi_pet_complaint(message: str) -> bool:
@@ -1014,9 +1180,7 @@ class ChatOrchestrator:
             return False
         if not any(marker in message for marker in MULTI_PET_INDEPENDENT_MARKERS):
             return False
-        mentioned_families = {
-            family for word, family in SPECIES_WORD_TO_FAMILY.items() if word in message
-        }
+        mentioned_families = _families_named_in(message)
         return len(mentioned_families) >= 2
 
     @staticmethod
@@ -1033,9 +1197,7 @@ class ChatOrchestrator:
         the profile.
         """
         profile_family = normalize_species(profile_species)
-        mentioned_families = {
-            family for word, family in SPECIES_WORD_TO_FAMILY.items() if word in message
-        }
+        mentioned_families = _families_named_in(message)
         if len(mentioned_families) == 1:
             (mentioned_family,) = mentioned_families
             if mentioned_family != profile_family:
@@ -1059,10 +1221,7 @@ class ChatOrchestrator:
         family = normalize_species(effective_species)
         lowered = text.lower()
         return any(
-            f"tuo {word}" in lowered
-            or f"tua {word}" in lowered
-            or f"your {word}" in lowered
-            or f"tu {word}" in lowered
+            re.search(rf"(?<!\w)(?:tuo|tua|your|tu) {re.escape(word)}(?!\w)", lowered)
             for word, mentioned_family in SPECIES_WORD_TO_FAMILY.items()
             if mentioned_family != family
         )
@@ -1466,9 +1625,16 @@ class ChatOrchestrator:
                     # on internal reasoning and return nothing, or (as
                     # observed live) a genuinely detailed, appropriate
                     # answer (e.g. a decontamination protocol) gets cut off
-                    # mid-sentence instead.
-                    max_tokens=1200,
+                    # mid-sentence instead. Build 32: small talk gets a
+                    # short budget; the provider adds reasoning headroom.
+                    max_tokens=min(300, self._answer_max_tokens),
+                    purpose="general_answer",
                 )
+            )
+        except QuotaExhausted as exc:
+            return self._quota_result(
+                data.pet_name,
+                QuotaDenial(reason="models_exhausted", retry_after_seconds=exc.retry_after_seconds),
             )
         except ProviderError:
             return ChatOrchestratorResult(
@@ -1545,6 +1711,11 @@ class ChatOrchestrator:
                 f"Question: {anonymized_message}\n"
                 f"Evidence:\n{evidence_block}",
                 response_language=data.language,
+            )
+        except QuotaExhausted as exc:
+            return self._quota_result(
+                data.pet_name,
+                QuotaDenial(reason="models_exhausted", retry_after_seconds=exc.retry_after_seconds),
             )
         except ProviderError:
             # The retrieval-side adapters all degrade to "no results" on a
@@ -1671,6 +1842,26 @@ class ChatOrchestrator:
         same way it already does for any species/topic with no
         literature coverage at all.
         """
+        # A general curiosity (no history, no document, nothing about this
+        # animal in particular) may share its answer with every owner of the
+        # same species for a day (build 32). Personal cases never do.
+        kind = request_kind or self._request_kind(data)
+        cache_id: str | None = None
+        if self._answer_cache is not None and is_cacheable_question(
+            message,
+            kind=kind,
+            pet_name=data.pet_name,
+            has_attachment=bool(data.photo_context) or data.attachment_unreadable,
+            has_history=bool(data.conversation_history),
+        ):
+            cache_id = cache_key(
+                message, species=normalize_species(effective_species), language=data.language
+            )
+            cached = self._cached_answer_result(cache_id)
+            if cached is not None:
+                return cached
+        generic_context = cache_id is not None
+
         if sources is None:
             # Real-world finding (kept from the earlier interview-loop
             # work): the raw current message can be a context-only reply
@@ -1681,6 +1872,9 @@ class ChatOrchestrator:
             # (the default now that the interview loop itself is opt-in).
             query = self._case_context_text(situation, message)
             sources = self._retrieve_optional_evidence(query, intent, effective_species)
+        # Two sources at most go into the prompt (build 32): the model uses
+        # one or two at best, and each one costs a few hundred tokens.
+        sources = list(sources)[: self._prompt_max_sources]
         evidence_block = self._format_sources_for_prompt(sources) if sources else ""
         anonymized_message = self._anonymize_for_provider(message, data)
 
@@ -1702,10 +1896,11 @@ class ChatOrchestrator:
         # decision, or granted earlier this conversation) — this does
         # NOT yet ask for consent on its own when it's still unknown;
         # that's a separate, still-open piece of work.
-        kind = request_kind or self._request_kind(data)
-        medical_context, documents_read = self._medical_context_for_prompt(data, kind)
+        medical_context, documents_read = (
+            ("", []) if generic_context else self._medical_context_for_prompt(data, kind)
+        )
         reminders_context = ""
-        if data.reminders_context:
+        if data.reminders_context and not generic_context:
             reminders_context = (
                 "\n\nActive reminders the owner set for this pet (take them into "
                 "account when relevant, e.g. an ongoing therapy):\n"
@@ -1731,7 +1926,7 @@ class ChatOrchestrator:
             language=data.language,
         )
         user_prompt = (
-            f"{self._pet_context_block(data)}\n"
+            f"{self._pet_context_block(data, generic=generic_context)}\n"
             f"{history_block}"
             f"User message: {anonymized_message}"
             f"{medical_context}"
@@ -1746,15 +1941,19 @@ class ChatOrchestrator:
             )
         )
 
-        def generate(prompt: str) -> LLMResponse:
+        # A report is explained in four or five paragraphs; anything else
+        # fits the prompt's own ceiling of about 1000 characters (build 32:
+        # 2000 tokens of budget were never needed). The provider adds the
+        # reasoning headroom for the models that think before writing.
+        max_tokens = self._answer_max_tokens + (150 if kind is RequestKind.REPORT else 0)
+
+        def generate(prompt: str, purpose: str = "answer") -> LLMResponse:
             return self._llm_client.generate(
                 LLMGenerationRequest(
                     system_prompt=prompt,
                     user_prompt=user_prompt,
-                    # Real-world finding (2026-09-21 live test): the model
-                    # spends part of the budget on reasoning, and a reply
-                    # was getting cut off mid-sentence — hence the headroom.
-                    max_tokens=2000,
+                    max_tokens=max_tokens,
+                    purpose=purpose,
                 )
             )
 
@@ -1765,7 +1964,12 @@ class ChatOrchestrator:
                 # has already answered two rounds of questions: a reply of
                 # questions only is not acceptable. One more attempt, told
                 # so in as many words.
-                response = generate(system_prompt + ANSWER_NOW_REMINDER)
+                response = generate(system_prompt + ANSWER_NOW_REMINDER, "answer_retry")
+        except QuotaExhausted as exc:
+            return self._quota_result(
+                data.pet_name,
+                QuotaDenial(reason="models_exhausted", retry_after_seconds=exc.retry_after_seconds),
+            )
         except ProviderError:
             return ChatOrchestratorResult(
                 answer=translate("provider_failure", data.language),
@@ -1794,12 +1998,17 @@ class ChatOrchestrator:
                 mode="natural",
                 response_locale=data.language,
             )
+        # The habit the instructions do not fully remove: a closing
+        # "consulta il veterinario" with no reason in it (build 29).
+        answer_text = strip_ritual_referral(response.content)
+        if cache_id is not None and response.finish_reason != "length":
+            self._store_cached_answer(
+                cache_id, message, answer_text, response, sources, data, effective_species
+            )
         return ChatOrchestratorResult(
             answer=(
                 self._report_reading_line(data, kind, documents_read)
-                # The habit the instructions do not fully remove: a closing
-                # "consulta il veterinario" with no reason in it (build 29).
-                + strip_ritual_referral(response.content)
+                + answer_text
                 + self._medical_record_notice(data, intent)
             ),
             mode="natural",
@@ -1816,6 +2025,69 @@ class ChatOrchestrator:
             provider=response.provider,
             model=response.model,
         )
+
+    def _cached_answer_result(self, cache_id: str) -> ChatOrchestratorResult | None:
+        if self._answer_cache is None:
+            return None
+        try:
+            cached = self._answer_cache.get(cache_id)
+        except Exception:  # noqa: BLE001 - the cache is an economy, never a dependency
+            logger.exception("answer cache unavailable")
+            return None
+        if cached is None or cached.is_expired(datetime.now(UTC)):
+            return None
+        try:
+            self._answer_cache.count_hit(cache_id)
+        except Exception:  # noqa: BLE001
+            logger.debug("answer cache: hit not counted", exc_info=True)
+        logger.info("answer_cache hit species=%s", cached.species)
+        return ChatOrchestratorResult(
+            answer=cached.answer,
+            mode="natural",
+            confidence="medium",
+            ai_generated=True,
+            sources=cached.sources,
+            state=(
+                ConversationState.ADEQUATE_EVIDENCE_FOUND
+                if cached.sources
+                else ConversationState.NO_RELEVANT_SOURCES
+            ),
+            limitations=[translate("natural_limit", cached.language)],
+            recommended_action=translate("worsening_action", cached.language),
+            provider=cached.provider,
+            model=cached.model,
+        )
+
+    def _store_cached_answer(
+        self,
+        cache_id: str,
+        message: str,
+        answer: str,
+        response: LLMResponse,
+        sources: list[EvidenceSource],
+        data: ChatOrchestratorInput,
+        effective_species: str,
+    ) -> None:
+        if self._answer_cache is None:
+            return
+        now = datetime.now(UTC)
+        try:
+            self._answer_cache.put(
+                CachedAnswer(
+                    key=cache_id,
+                    species=normalize_species(effective_species),
+                    language=data.language,
+                    question=normalize_question(message),
+                    answer=answer,
+                    provider=response.provider,
+                    model=response.model,
+                    sources=list(sources),
+                    created_at=now,
+                    expires_at=now + self._answer_cache_ttl,
+                )
+            )
+        except Exception:  # noqa: BLE001 - see _cached_answer_result
+            logger.exception("answer cache: could not store the answer")
 
     def _retrieve_optional_evidence(
         self, message: str, intent: str, effective_species: str
@@ -1841,8 +2113,19 @@ class ChatOrchestrator:
         §3-5 — instead of just re-sorting whatever the retriever's own
         default cap happened to return)."""
         canonical_species = normalize_species(species)
+        # English keywords from the light model as the search query (the
+        # literature is indexed in English); the owner's words stay in the
+        # relevance check, so a source matching either is kept (build 32).
+        keywords = (
+            self._evidence_query_normalizer.keywords(query, canonical_species)
+            if self._evidence_query_normalizer is not None
+            else None
+        )
         request = EvidenceRetrievalRequest(
-            query=query, species=canonical_species, intent=intent, max_results=max_results
+            query=keywords or query,
+            species=canonical_species,
+            intent=intent,
+            max_results=max_results,
         )
         pool_size = max(request.max_results * EVIDENCE_POOL_MULTIPLIER, EVIDENCE_MIN_POOL_SIZE)
         pool_request = request.model_copy(update={"max_results": pool_size})
@@ -1852,7 +2135,7 @@ class ChatOrchestrator:
         # papers (2026-10-06). Only sources that concern the question are
         # ranked; with none left, the answer goes on without sources.
         return self._evidence_quality_engine.rank_and_select(
-            relevant_sources(raw_sources, query),
+            relevant_sources(raw_sources, f"{query} {keywords}" if keywords else query),
             species=canonical_species,
             intent=intent,
             max_results=request.max_results,
@@ -1921,7 +2204,7 @@ class ChatOrchestrator:
             PiiAnonymizationRequest(text=text, known_person_names=data.owner_names)
         ).anonymized_text
 
-    def _pet_context_block(self, data: ChatOrchestratorInput) -> str:
+    def _pet_context_block(self, data: ChatOrchestratorInput, *, generic: bool = False) -> str:
         """Every field PetProfile actually has today, not just name/species
         — several of these existed on the profile already but were never
         forwarded into a prompt before this. Optional fields are omitted
@@ -1934,6 +2217,10 @@ class ChatOrchestrator:
         context closes exactly that gap once the mobile pets feature
         starts sending it (still local-only as of this finding).
         """
+        if generic:
+            # A cacheable general question: the answer must hold for every
+            # owner of this species, so nothing of this pet goes in.
+            return f"Species: {data.species}"
         lines = [
             f"Pet name: {self._anonymize_for_provider(data.pet_name, data)}",
             f"Species: {data.species}",
@@ -2007,20 +2294,49 @@ class ChatOrchestrator:
         # Earlier turns leave for the provider too, so they get the same
         # anonymization as the current message (2026-10-04: they used to
         # be sent as typed).
-        lines = [
-            f"{m.role}: {self._anonymize_for_provider(m.content, data)}"
-            for m in data.conversation_history
-        ]
-        return "Earlier in this conversation:\n" + "\n".join(lines) + "\n\n"
+        history = data.conversation_history
+        recent = history[-self._history_recent_messages :] if self._history_recent_messages else []
+        older = history[: len(history) - len(recent)]
+        parts: list[str] = []
+        if older:
+            # Build 32: the older part of a long conversation as a line of
+            # topics (the owner's words, cut short), not verbatim: by the
+            # eighth turn the history alone had grown past 1500 tokens.
+            topics = [
+                self._shorten(self._anonymize_for_provider(m.content, data), 80)
+                for m in older
+                if m.role == "user"
+            ]
+            if topics:
+                parts.append("Earlier topics in this conversation: " + " | ".join(topics))
+        if recent:
+            lines = [
+                f"{m.role}: "
+                + self._shorten(
+                    self._anonymize_for_provider(m.content, data), self._history_message_chars
+                )
+                for m in recent
+            ]
+            parts.append("Earlier in this conversation:\n" + "\n".join(lines))
+        return "\n\n".join(parts) + "\n\n" if parts else ""
 
     @staticmethod
-    def _format_sources_for_prompt(sources: Iterable[EvidenceSource]) -> str:
+    def _shorten(text: str, limit: int) -> str:
+        text = " ".join(text.split())
+        if len(text) <= limit:
+            return text
+        return text[: max(1, limit - 3)].rstrip() + "..."
+
+    def _format_sources_for_prompt(self, sources: Iterable[EvidenceSource]) -> str:
         lines: list[str] = []
         for index, source in enumerate(sources, start=1):
+            snippet = self._shorten(
+                source.snippet or "No snippet available.", self._prompt_source_chars
+            )
             lines.append(
                 f"[{index}] {source.title} | {source.journal or 'Unknown journal'} | "
                 f"{source.year or 'n.d.'} | Tier {source.tier}\n"
-                f"Snippet: {source.snippet or 'No snippet available.'}"
+                f"Snippet: {snippet}"
             )
         return "\n".join(lines)
 
