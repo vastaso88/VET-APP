@@ -16,14 +16,16 @@ Coordinatrice: sessione "Multilingua: estensioni su MULTILANG". Ultimo aggiornam
 
 | # | Tema | Stato |
 |---|------|-------|
-| 0 | Revisione di MULTILANG | **Fatta** → `REVISIONE_MULTILANG.md` (1 bloccante, 10 alti). Inviata all'Orchestratore |
-| 0b | Portare il worktree su origin/MULTILANG | **Bloccato**: il sistema dei permessi ha negato `git reset --hard`/`switch -C`/`switch --detach`. La revisione è stata fatta su copia di sola lettura. Serve che lo faccia il gestore git o che il proprietario autorizzi |
-| 1-3 | Legale EN-UK / EN-US / EN-AU | Proposte come sessioni da avviare con un clic |
-| 4-5 | Traduzione DE / FR | Da avviare dopo 1-3 (dipende dalla correzione di `auto_translate.py:129` e da `response_locale`) |
-| 6-8 | Legale DE / FR / ES | Da avviare |
-| 9 | Mappe per paese | Da avviare |
-| 10 | Notizie, eventi, Mercatino per territorio | Da avviare |
-| 11 | Formati e store | Da avviare |
+| 0 | Revisione di MULTILANG | **Fatta** → `REVISIONE_MULTILANG.md` (1 bloccante, 10 alti), messaggio per erykwest inviato |
+| 0b | Stress test it/en/es | **Fatto** → `STRESS_TEST_MULTILANG.md` (+ 1.440 screenshot in side-session-notes) |
+| 0c | PR di allineamento main → MULTILANG | **Aperta** [#17](https://github.com/vastaso88/VET-APP/pull/17) (conflitti risolti, specie per parola intera, CI con `--flavor prod`) |
+| 1-3 | Legale EN-UK / EN-US / EN-AU | **Bozze consegnate** in `docs/compliance/uk|us|au/` (8 file ciascuna); da committare in PR |
+| 4-5 | Traduzione DE / FR | In corso (sessioni `traduzione-de`, `traduzione-fr`); integrazione con il backend dopo la correzione del 422 |
+| 6 | Legale DE (DE/AT/CH) | **Bozze consegnate** in `docs/compliance/de|at|ch/` (24 file, verificati: BOZZA in testa); PR `ml/legale-de` richiesta al gestore git |
+| 7-8 | Legale FR / ES | Da proporre |
+| 9 | Mappe per paese | Da proporre |
+| 10 | Notizie, eventi, Mercatino per territorio | Da proporre |
+| 11 | Formati e store | Da proporre |
 
 ## Risposte dell'Orchestratore (2026-10-13, opzioni consigliate; il proprietario può correggere)
 
