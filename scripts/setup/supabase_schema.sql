@@ -171,6 +171,40 @@ alter table public.clinical_events alter column event_date set default current_d
 -- definition; the chat does not need it and old rows do not have it.
 alter table public.clinical_events alter column pet_name drop not null;
 
+-- Cartella clinica per categorie (2026-10-14). Every entry has a category
+-- (visit / exam / vaccine / therapy / document), an optional finer type for
+-- visits, exams and therapies, and the owner's own notes. `event_date`
+-- (above) is the date of the event, which the owner can now set apart from
+-- the day the file was uploaded. Rows written before the categories existed
+-- become "document"; re-running only touches rows still without a valid one.
+alter table public.clinical_events add column if not exists category text;
+alter table public.clinical_events add column if not exists subtype text;
+alter table public.clinical_events add column if not exists notes text;
+update public.clinical_events
+    set category = 'document'
+    where category is null
+       or category not in ('visit', 'exam', 'vaccine', 'therapy', 'document');
+alter table public.clinical_events alter column category set default 'document';
+alter table public.clinical_events alter column category set not null;
+
+-- Patologie (2026-10-14): one row per illness of a pet. `status` is
+-- 'ongoing' or 'resolved'; `ended_on` only when resolved. An optional file
+-- goes through the same chat-attachments upload as the referti.
+create table if not exists public.pet_conditions (
+    id text primary key,
+    owner_id text not null default auth.uid()::text,
+    pet_id text not null references public.pet_profiles(id) on delete cascade,
+    name text not null,
+    started_on date,
+    status text not null default 'ongoing',
+    ended_on date,
+    therapy text,
+    notes text,
+    attachment_id text,
+    attachment_name text,
+    created_at timestamptz not null default now()
+);
+
 create table if not exists public.reminders (
     id text primary key,
     owner_id text not null,
@@ -220,12 +254,15 @@ create index if not exists idx_pet_profiles_owner_id on public.pet_profiles(owne
 create index if not exists idx_conversations_owner_id on public.conversations(owner_id);
 create index if not exists idx_conversations_pet_id on public.conversations(pet_id);
 create index if not exists idx_clinical_events_pet_id on public.clinical_events(pet_id);
+create index if not exists idx_pet_conditions_pet_id on public.pet_conditions(pet_id);
+create index if not exists idx_pet_conditions_owner_id on public.pet_conditions(owner_id);
 create index if not exists idx_reminders_owner_id on public.reminders(owner_id);
 create index if not exists idx_reminders_pet_id on public.reminders(pet_id);
 
 alter table public.pet_profiles enable row level security;
 alter table public.conversations enable row level security;
 alter table public.clinical_events enable row level security;
+alter table public.pet_conditions enable row level security;
 alter table public.reminders enable row level security;
 alter table public.account_consents enable row level security;
 alter table public.subscriptions enable row level security;
@@ -323,6 +360,90 @@ with check (
           and public.pet_profiles.owner_id = auth.uid()::text
     )
 );
+
+-- The app renames, recategorizes and deletes its own entries: policies are
+-- permissive (OR-ed), so these add to whatever the live table already has.
+drop policy if exists clinical_events_update_own on public.clinical_events;
+create policy clinical_events_update_own
+on public.clinical_events
+for update
+using (
+    pet_id is not null
+    and exists (
+        select 1
+        from public.pet_profiles
+        where public.pet_profiles.id = public.clinical_events.pet_id
+          and public.pet_profiles.owner_id = auth.uid()::text
+    )
+)
+with check (
+    exists (
+        select 1
+        from public.pet_profiles
+        where public.pet_profiles.id = public.clinical_events.pet_id
+          and public.pet_profiles.owner_id = auth.uid()::text
+    )
+);
+
+drop policy if exists clinical_events_delete_own on public.clinical_events;
+create policy clinical_events_delete_own
+on public.clinical_events
+for delete
+using (
+    pet_id is not null
+    and exists (
+        select 1
+        from public.pet_profiles
+        where public.pet_profiles.id = public.clinical_events.pet_id
+          and public.pet_profiles.owner_id = auth.uid()::text
+    )
+);
+
+-- pet_conditions: the owner's own list of a pet's past and current illnesses
+-- (the "Patologie" tile of the cartella clinica). Owner only: every policy
+-- checks both the row's owner and that the pet is theirs. The chat reads the
+-- ongoing ones (name and start date only), with the owner's consent, through
+-- the backend's service role.
+drop policy if exists pet_conditions_select_own on public.pet_conditions;
+create policy pet_conditions_select_own
+on public.pet_conditions
+for select
+using (owner_id = auth.uid()::text);
+
+drop policy if exists pet_conditions_insert_own on public.pet_conditions;
+create policy pet_conditions_insert_own
+on public.pet_conditions
+for insert
+with check (
+    owner_id = auth.uid()::text
+    and exists (
+        select 1
+        from public.pet_profiles
+        where public.pet_profiles.id = public.pet_conditions.pet_id
+          and public.pet_profiles.owner_id = auth.uid()::text
+    )
+);
+
+drop policy if exists pet_conditions_update_own on public.pet_conditions;
+create policy pet_conditions_update_own
+on public.pet_conditions
+for update
+using (owner_id = auth.uid()::text)
+with check (
+    owner_id = auth.uid()::text
+    and exists (
+        select 1
+        from public.pet_profiles
+        where public.pet_profiles.id = public.pet_conditions.pet_id
+          and public.pet_profiles.owner_id = auth.uid()::text
+    )
+);
+
+drop policy if exists pet_conditions_delete_own on public.pet_conditions;
+create policy pet_conditions_delete_own
+on public.pet_conditions
+for delete
+using (owner_id = auth.uid()::text);
 
 drop policy if exists reminders_select_own on public.reminders;
 create policy reminders_select_own

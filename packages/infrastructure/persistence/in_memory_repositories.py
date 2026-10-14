@@ -18,6 +18,7 @@ from packages.core.application.ports.local_activity_repository import LocalActiv
 from packages.core.application.ports.marketplace_listing_repository import (
     MarketplaceListingRepository,
 )
+from packages.core.application.ports.pet_condition_repository import PetConditionRepository
 from packages.core.application.ports.pet_profile_repository import PetProfileRepository
 from packages.core.application.ports.radar_catalog_repository import (
     BoundingBox,
@@ -41,7 +42,7 @@ from packages.core.domain.geo.models import UserLocation
 from packages.core.domain.llm_usage.models import LlmUsageEvent, ModelDailyUsage
 from packages.core.domain.local_activity.models import LocalActivity
 from packages.core.domain.marketplace.models import ListingReport, MarketplaceListing
-from packages.core.domain.medical_record.models import ClinicalEvent
+from packages.core.domain.medical_record.models import ClinicalEvent, PetCondition
 from packages.core.domain.pet_profile.models import PetProfile
 from packages.core.domain.pet_profile.weight_measurement import WeightMeasurement
 from packages.core.domain.radar_places.models import RadarDataSource, RadarPlace
@@ -136,6 +137,18 @@ class InMemoryClinicalEventRepository(ClinicalEventRepository):
         return event
 
     def list_by_pet(self, pet_id: str) -> list[ClinicalEvent]:
+        return [item for item in self._items if item.pet_id == pet_id]
+
+
+class InMemoryPetConditionRepository(PetConditionRepository):
+    def __init__(self, seed: list[PetCondition] | None = None) -> None:
+        self._items: list[PetCondition] = list(seed or [])
+
+    def save(self, condition: PetCondition) -> PetCondition:
+        self._items.append(condition)
+        return condition
+
+    def list_by_pet(self, pet_id: str) -> list[PetCondition]:
         return [item for item in self._items if item.pet_id == pet_id]
 
 

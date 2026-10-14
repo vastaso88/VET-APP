@@ -5395,4 +5395,311 @@ class AppLocalizationsIt extends AppLocalizations {
     );
     return '$_temp0';
   }
+
+  @override
+  String get medCatVisit => 'Visite';
+
+  @override
+  String get medCatExam => 'Esami';
+
+  @override
+  String get medCatVaccine => 'Vaccini';
+
+  @override
+  String get medCatTherapy => 'Terapie';
+
+  @override
+  String get medCatDocument => 'Documenti';
+
+  @override
+  String get medCatCondition => 'Patologie';
+
+  @override
+  String get medCatVisitOne => 'Visita';
+
+  @override
+  String get medCatExamOne => 'Esame';
+
+  @override
+  String get medCatVaccineOne => 'Vaccino';
+
+  @override
+  String get medCatTherapyOne => 'Terapia';
+
+  @override
+  String get medCatDocumentOne => 'Documento';
+
+  @override
+  String medCatCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count registrati',
+      one: '1 registrato',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get medSubCheckup => 'Visita di controllo';
+
+  @override
+  String get medSubSpecialist => 'Visita specialistica';
+
+  @override
+  String get medSubFirstVisit => 'Prima visita';
+
+  @override
+  String get medSubEmergency => 'Urgenza';
+
+  @override
+  String get medSubPostSurgery => 'Controllo post-operatorio';
+
+  @override
+  String get medSubBlood => 'Analisi del sangue';
+
+  @override
+  String get medSubUrine => 'Esame delle urine';
+
+  @override
+  String get medSubStool => 'Esame delle feci';
+
+  @override
+  String get medSubXray => 'Radiografia';
+
+  @override
+  String get medSubUltrasound => 'Ecografia';
+
+  @override
+  String get medSubAntiparasitic => 'Antiparassitario';
+
+  @override
+  String get medSubMedication => 'Farmaco';
+
+  @override
+  String get medSubOther => 'Altro';
+
+  @override
+  String get medAddTitle => 'Cosa vuoi aggiungere?';
+
+  @override
+  String get medAddAction => 'Aggiungi';
+
+  @override
+  String get medNewVisit => 'Nuova visita';
+
+  @override
+  String get medNewExam => 'Nuovo esame';
+
+  @override
+  String get medNewVaccine => 'Nuovo vaccino';
+
+  @override
+  String get medNewTherapy => 'Nuova terapia';
+
+  @override
+  String get medNewDocument => 'Nuovo documento';
+
+  @override
+  String get medNewCondition => 'Nuova patologia';
+
+  @override
+  String get medEmptyVisitTitle => 'Nessuna visita registrata';
+
+  @override
+  String medEmptyVisitBody(String petName) {
+    return 'Aggiungi le visite di $petName per ritrovare controlli e indicazioni del veterinario in un posto solo.';
+  }
+
+  @override
+  String get medEmptyVisitAction => 'Aggiungi la prima visita';
+
+  @override
+  String get medEmptyExamTitle => 'Nessun esame registrato';
+
+  @override
+  String medEmptyExamBody(String petName) {
+    return 'Carica gli esami di $petName, come analisi del sangue o radiografie, per averli sempre a portata di mano.';
+  }
+
+  @override
+  String get medEmptyExamAction => 'Aggiungi il primo esame';
+
+  @override
+  String get medEmptyVaccineTitle => 'Nessun vaccino registrato';
+
+  @override
+  String medEmptyVaccineBody(String petName) {
+    return 'Tieni qui i vaccini e i richiami di $petName, con la data di ogni somministrazione.';
+  }
+
+  @override
+  String get medEmptyVaccineAction => 'Aggiungi il primo vaccino';
+
+  @override
+  String get medEmptyTherapyTitle => 'Nessuna terapia registrata';
+
+  @override
+  String medEmptyTherapyBody(String petName) {
+    return 'Annota le terapie di $petName: farmaci, antiparassitari e cure in corso o passate.';
+  }
+
+  @override
+  String get medEmptyTherapyAction => 'Aggiungi la prima terapia';
+
+  @override
+  String get medEmptyDocumentTitle => 'Nessun documento caricato';
+
+  @override
+  String medEmptyDocumentBody(String petName) {
+    return 'Carica referti, certificati e altri documenti di $petName per condividerli con il veterinario.';
+  }
+
+  @override
+  String get medEmptyDocumentAction => 'Aggiungi il primo documento';
+
+  @override
+  String get medEmptyConditionTitle => 'Nessuna patologia registrata';
+
+  @override
+  String medEmptyConditionBody(String petName) {
+    return 'Annota le malattie di $petName, in corso o già risolte, con date e terapia.';
+  }
+
+  @override
+  String get medEmptyConditionAction => 'Aggiungi la prima patologia';
+
+  @override
+  String get medFieldTitle => 'Titolo';
+
+  @override
+  String get medFieldCategory => 'Categoria';
+
+  @override
+  String get medFieldType => 'Tipo';
+
+  @override
+  String get medFieldTypeNone => 'Non specificato';
+
+  @override
+  String get medFieldEventDate => 'Data';
+
+  @override
+  String get medFieldNotes => 'Note';
+
+  @override
+  String get medFieldNotesHint => 'Scrivi una nota facoltativa.';
+
+  @override
+  String get medFieldFile => 'Allegato';
+
+  @override
+  String get medAttachAdd => 'Aggiungi file';
+
+  @override
+  String get medAttachChange => 'Cambia file';
+
+  @override
+  String get medEditDetailsTitle => 'Modifica dettagli';
+
+  @override
+  String get medTitleRequired => 'Scrivi un titolo o allega un file.';
+
+  @override
+  String get medDateInvalid => 'Data non valida (gg/mm/aaaa).';
+
+  @override
+  String get medDatePlaceholder => 'gg/mm/aaaa';
+
+  @override
+  String medSuggestHint(String category) {
+    return 'Dal titolo sembra: $category. Vuoi classificarlo così?';
+  }
+
+  @override
+  String get medSuggestApply => 'Sì, classifica';
+
+  @override
+  String medSuggestPill(String category) {
+    return 'Forse: $category';
+  }
+
+  @override
+  String medActionClassifyAs(String category) {
+    return 'Classifica come $category';
+  }
+
+  @override
+  String get medActionEditDetails => 'Modifica dettagli';
+
+  @override
+  String get medCondName => 'Nome della patologia';
+
+  @override
+  String get medCondNameRequired => 'Scrivi il nome della patologia.';
+
+  @override
+  String get medCondStarted => 'Data di inizio';
+
+  @override
+  String get medCondStatus => 'Stato';
+
+  @override
+  String get medCondOngoing => 'In corso';
+
+  @override
+  String get medCondResolved => 'Risolta';
+
+  @override
+  String get medCondEnded => 'Data di fine';
+
+  @override
+  String get medCondEndBeforeStart =>
+      'La data di fine è precedente a quella di inizio.';
+
+  @override
+  String get medCondTherapy => 'Terapia';
+
+  @override
+  String get medCondTherapyHint => 'Farmaci, dosi, durata…';
+
+  @override
+  String get medCondAttachment => 'Ricetta o documenti';
+
+  @override
+  String medCondSince(String date) {
+    return 'Dal $date';
+  }
+
+  @override
+  String medCondPeriod(String start, String end) {
+    return '$start – $end';
+  }
+
+  @override
+  String get medCondSaveFailed =>
+      'Non sono riuscito a salvare la patologia. Riprova.';
+
+  @override
+  String get medCondDeleteFailed =>
+      'Non sono riuscito a eliminare la patologia. Riprova.';
+
+  @override
+  String get medCondDeleteTitle => 'Eliminare questa patologia?';
+
+  @override
+  String medCondDeleteBody(String name) {
+    return '«$name» verrà eliminata.';
+  }
+
+  @override
+  String get medCondLoadError =>
+      'Non riesco a leggere le patologie. Controlla la connessione e riprova.';
+
+  @override
+  String get medCondUploadFailed =>
+      'Non sono riuscito a caricare il file. Riprova.';
+
+  @override
+  String get medCondOpenFile => 'Apri allegato';
 }

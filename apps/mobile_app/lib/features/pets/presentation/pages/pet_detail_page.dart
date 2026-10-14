@@ -6,15 +6,11 @@ import '../../../settings/data/unit_settings_store.dart';
 import '../../../settings/domain/unit_conversion.dart';
 import '../../../../shared/widgets/pet_loader.dart';
 
-import 'package:share_plus/share_plus.dart';
-
 import '../../../../design_system/tokens/app_colors.dart';
-import '../../../../shared/files/attachment_media_type.dart';
 import '../../../../design_system/tokens/app_radii.dart';
 import '../../../../design_system/tokens/app_spacing.dart';
 import '../../../../design_system/tokens/app_text_styles.dart';
 import '../../../../l10n/l10n.dart';
-import '../../../chat/data/chat_attachment_remote_data_source.dart';
 import '../../../chat/data/chat_demo_store.dart';
 import '../../../chat/domain/chat_models.dart';
 import '../../../chat/presentation/pages/chat_conversation_detail_page.dart';
@@ -31,11 +27,8 @@ import '../../../dog_walks/presentation/walk_labels.dart';
 import '../../../location/domain/coordinates.dart';
 import '../../../dog_walks/presentation/widgets/badge_gallery_dialog.dart';
 import '../../../dog_walks/presentation/widgets/walk_mini_map.dart';
-import '../../../monitoring/presentation/widgets/monitoring_entry_card.dart';
-import '../../../medical_records/data/medical_record_file_cache.dart';
 import '../../../medical_records/data/medical_records_repository.dart';
-import '../../../medical_records/presentation/pages/medical_record_upload_page.dart';
-import '../../../medical_records/presentation/record_file_actions.dart';
+import '../../../medical_records/presentation/pet_medical_records_tab.dart';
 import '../../../reminders/data/reminders_repository.dart';
 import '../../../reminders/domain/reminder_presentation.dart';
 import '../../../reminders/presentation/pages/reminders_pages.dart';
@@ -45,7 +38,6 @@ import '../../data/pet_photo_repository.dart';
 import '../../domain/pet_format.dart';
 import '../../domain/pet_models.dart';
 import '../../domain/pet_value_labels.dart';
-import '../widgets/medical_record_consent_card.dart';
 import '../../../chat/presentation/widgets/chat_conversation_menu.dart';
 import '../widgets/pet_avatar.dart';
 import '../widgets/pets_scaffold.dart';
@@ -300,7 +292,7 @@ class _PetDetailContentState extends State<_PetDetailContent>
               _RemindersTab(
                   pet: widget.pet, repository: widget.remindersRepository),
               _ChatTab(pet: widget.pet),
-              _RecordsTab(
+              PetMedicalRecordsTab(
                   pet: widget.pet, repository: widget.recordsRepository),
               if (_showsWalks)
                 _WalksTab(pet: widget.pet, repository: widget.walksRepository),
@@ -850,279 +842,6 @@ class _DeleteSwipeBackground extends StatelessWidget {
 }
 
 // ---------------------------------------------------------------------------
-// Referti tab
-// ---------------------------------------------------------------------------
-
-class _RecordsTab extends StatefulWidget {
-  const _RecordsTab({required this.pet, required this.repository});
-
-  final PetProfile pet;
-  final MedicalRecordsRepository repository;
-
-  @override
-  State<_RecordsTab> createState() => _RecordsTabState();
-}
-
-class _RecordsTabState extends State<_RecordsTab> {
-  late Future<List<MedicalRecordEntry>> _future =
-      widget.repository.loadRecords();
-
-  @override
-  void initState() {
-    super.initState();
-    MedicalRecordsRepository.changes.addListener(_onRecordsChanged);
-  }
-
-  @override
-  void dispose() {
-    MedicalRecordsRepository.changes.removeListener(_onRecordsChanged);
-    super.dispose();
-  }
-
-  void _onRecordsChanged() {
-    if (!mounted) return;
-    setState(() => _future = widget.repository.loadRecords());
-  }
-
-  Future<void> _reload() async {
-    setState(() => _future = widget.repository.loadRecords());
-    await _future;
-  }
-
-  Future<void> _openUpload() async {
-    await Navigator.of(context).push(
-      MaterialPageRoute<MedicalRecordEntry>(
-        builder: (_) => MedicalRecordUploadPage(petName: widget.pet.name),
-      ),
-    );
-    if (!mounted) return;
-    await _reload();
-  }
-
-  /// Records picked for a group share. A non-empty set means selection mode:
-  /// taps toggle instead of opening the actions sheet.
-  final Set<String> _selectedIds = {};
-
-  void _onRecordTap(MedicalRecordEntry record) {
-    if (_selectedIds.isNotEmpty) {
-      _toggleSelected(record);
-      return;
-    }
-    showRecordActions(context, record: record, onChanged: () => unawaited(_reload()));
-  }
-
-  void _toggleSelected(MedicalRecordEntry record) {
-    setState(() {
-      if (!_selectedIds.remove(record.id)) _selectedIds.add(record.id);
-    });
-  }
-
-  void _clearSelection() => setState(_selectedIds.clear);
-
-
-  Future<void> _openSendSheet(List<MedicalRecordEntry> records) async {
-    await showModalBottomSheet<void>(
-      context: context,
-      backgroundColor: AppColors.surface,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(AppRadii.xl)),
-      ),
-      builder: (sheetContext) => SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(AppSpacing.lg),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(sheetContext.l10n.petsDetailRecordsSendTitle, style: AppTextStyles.title),
-              const SizedBox(height: AppSpacing.xs),
-              Text(
-                sheetContext.l10n.petsDetailRecordsSendSubtitle,
-                style: AppTextStyles.bodySmall,
-              ),
-              const SizedBox(height: AppSpacing.md),
-              for (final record in records) ...[
-                _CompactRow(
-                  leading: const _RowIcon(icon: Icons.description_outlined),
-                  title: record.title,
-                  subtitle: record.subtitle,
-                  onTap: () {
-                    Navigator.of(sheetContext).pop();
-                    _shareRecord(record);
-                  },
-                ),
-                if (record != records.last)
-                  const SizedBox(height: AppSpacing.sm),
-              ],
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  Future<void> _shareRecord(MedicalRecordEntry record) async {
-    final l10n = context.l10n;
-    try {
-      var cached = MedicalRecordFileCache.instance.get(record.id);
-      if (cached == null && record.attachmentId != null) {
-        // Not in this session's cache (e.g. app was reopened) but a real
-        // upload exists remotely — fetch it instead of falling back to a
-        // text summary.
-        final result = await HttpChatAttachmentRemoteDataSource()
-            .download(record.attachmentId!);
-        final bytes =
-            result.fold(onSuccess: (bytes) => bytes, onFailure: (_) => null);
-        if (bytes != null) {
-          cached = (
-            bytes: bytes,
-            fileName: record.title,
-            mimeType: attachmentMediaType(bytes, record.title).toString(),
-          );
-        }
-      }
-
-      if (cached != null) {
-        await Share.shareXFiles(
-          [
-            XFile.fromData(cached.bytes,
-                name: cached.fileName, mimeType: cached.mimeType)
-          ],
-          text: record.title,
-        );
-      } else {
-        // No real bytes behind this demo record (it's seed data, not
-        // something uploaded this session) — share a text summary instead
-        // of pretending there's a file attached.
-        await Share.share(
-          l10n.petsDetailRecordShareText(
-            record.title,
-            record.detailSource,
-            record.createdAt,
-          ),
-        );
-      }
-    } catch (_) {
-      // The share sheet isn't available on every browser/device (e.g. no
-      // Web Share API support) — fail quietly with a clear message rather
-      // than letting the exception surface as a broken interaction.
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(context.l10n.petsDetailShareUnavailable)),
-      );
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return FutureBuilder<List<MedicalRecordEntry>>(
-      future: _future,
-      builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return const Center(child: PetLoader());
-        }
-        if (snapshot.hasError) {
-          return _RecordsLoadError(onRetry: () => unawaited(_reload()));
-        }
-
-        final records = (snapshot.data ?? const <MedicalRecordEntry>[])
-            .where((record) => record.petName == widget.pet.name)
-            .toList(growable: false);
-
-        // One scrollable list: the consent card, the actions and the records
-        // scroll together, so nothing can overflow a fixed-height tab body.
-        return ListView(
-          padding: const EdgeInsets.only(bottom: AppSpacing.xl),
-          children: [
-            MonitoringEntryCard(pet: widget.pet),
-            MedicalRecordConsentCard(pet: widget.pet),
-            const SizedBox(height: AppSpacing.md),
-            Row(
-              children: [
-                Expanded(
-                  child: OutlinedButton.icon(
-                    onPressed: _openUpload,
-                    icon: const Icon(Icons.upload_file_outlined, size: 18),
-                    label: Text(context.l10n.petsDetailRecordsUpload),
-                  ),
-                ),
-                const SizedBox(width: AppSpacing.sm),
-                Expanded(
-                  child: FilledButton.icon(
-                    onPressed: records.isEmpty ? null : () => _openSendSheet(records),
-                    icon: const Icon(Icons.ios_share_rounded, size: 18),
-                    label: Text(context.l10n.petsDetailRecordsSend),
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: AppSpacing.md),
-            if (_selectedIds.isNotEmpty) ...[
-              _SelectionBar(
-                count: _selectedIds.length,
-                onCancel: _clearSelection,
-                onSend: () => shareRecords(
-                  context,
-                  records.where((r) => _selectedIds.contains(r.id)).toList(),
-                ),
-              ),
-              const SizedBox(height: AppSpacing.md),
-            ],
-            if (records.isEmpty)
-              _EmptyTabState(
-                icon: Icons.folder_open_outlined,
-                text: context.l10n.petsDetailRecordsEmpty(widget.pet.name),
-              )
-            else
-              for (final record in records) ...[
-                _RecordRow(
-                  record: record,
-                  selected: _selectedIds.contains(record.id),
-                  onTap: () => _onRecordTap(record),
-                  onLongPress: () => _toggleSelected(record),
-                ),
-                const SizedBox(height: AppSpacing.sm),
-              ],
-          ],
-        );
-      },
-    );
-  }
-}
-
-class _RecordRow extends StatelessWidget {
-  const _RecordRow({
-    required this.record,
-    required this.onTap,
-    required this.onLongPress,
-    required this.selected,
-  });
-
-  final MedicalRecordEntry record;
-  final VoidCallback onTap;
-  final VoidCallback onLongPress;
-  final bool selected;
-
-  @override
-  Widget build(BuildContext context) {
-    return _CompactRow(
-      onTap: onTap,
-      onLongPress: onLongPress,
-      selected: selected,
-      leading: _RowIcon(
-        icon: selected
-            ? Icons.check_circle_rounded
-            : isPdfFileName(record.title)
-                ? Icons.picture_as_pdf_outlined
-                : Icons.description_outlined,
-      ),
-      title: record.title,
-      subtitle: record.subtitle,
-    );
-  }
-}
-
-// ---------------------------------------------------------------------------
 // Passeggiate tab
 // ---------------------------------------------------------------------------
 
@@ -1623,19 +1342,15 @@ class _CompactRow extends StatelessWidget {
     required this.title,
     required this.subtitle,
     this.onTap,
-    this.onLongPress,
     this.trailingText,
     this.trailingAction,
     this.badgeCount = 0,
-    this.selected = false,
   });
 
   final Widget leading;
   final String title;
   final String subtitle;
   final VoidCallback? onTap;
-  final VoidCallback? onLongPress;
-  final bool selected;
   final String? trailingText;
   final Widget? trailingAction;
   final int badgeCount;
@@ -1648,16 +1363,12 @@ class _CompactRow extends StatelessWidget {
       child: InkWell(
         borderRadius: BorderRadius.circular(AppRadii.large),
         onTap: onTap,
-        onLongPress: onLongPress,
         child: Container(
           padding: const EdgeInsets.symmetric(
               horizontal: AppSpacing.md, vertical: AppSpacing.sm),
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(AppRadii.large),
-            border: Border.all(
-              color: selected ? AppColors.primary : AppColors.border,
-              width: selected ? 2 : 1,
-            ),
+            border: Border.all(color: AppColors.border),
           ),
           child: Row(
             children: [
@@ -1803,67 +1514,6 @@ class _UnsyncedPetBannerState extends State<_UnsyncedPetBanner> {
           _retrying
               ? const PetLoader.small()
               : TextButton(onPressed: _retry, child: Text(context.l10n.commonRetry)),
-        ],
-      ),
-    );
-  }
-}
-
-/// Shown while records are selected for a group share.
-class _SelectionBar extends StatelessWidget {
-  const _SelectionBar({required this.count, required this.onCancel, required this.onSend});
-
-  final int count;
-  final VoidCallback onCancel;
-  final VoidCallback onSend;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md, vertical: AppSpacing.xs),
-      decoration: BoxDecoration(
-        color: AppColors.accentSoft,
-        borderRadius: BorderRadius.circular(AppRadii.medium),
-      ),
-      child: Row(
-        children: [
-          Expanded(
-            child: Text(
-              context.l10n.petsDetailSelectedCount(count),
-              style: AppTextStyles.bodySmall.copyWith(fontWeight: FontWeight.w700),
-            ),
-          ),
-          TextButton(onPressed: onCancel, child: Text(context.l10n.commonCancel)),
-          FilledButton.icon(
-            onPressed: onSend,
-            icon: const Icon(Icons.ios_share_rounded, size: 18),
-            label: Text(context.l10n.petsDetailRecordsSend),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _RecordsLoadError extends StatelessWidget {
-  const _RecordsLoadError({required this.onRetry});
-
-  final VoidCallback onRetry;
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.all(AppSpacing.lg),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Text(
-            context.l10n.petsDetailRecordsLoadError,
-            textAlign: TextAlign.center,
-            style: AppTextStyles.bodySmall,
-          ),
-          const SizedBox(height: AppSpacing.sm),
-          TextButton(onPressed: onRetry, child: Text(context.l10n.commonRetry)),
         ],
       ),
     );

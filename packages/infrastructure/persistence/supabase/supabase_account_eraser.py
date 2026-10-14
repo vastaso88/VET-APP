@@ -32,6 +32,7 @@ OWNER_TABLES: tuple[tuple[str, str], ...] = (
     ("chat_attachments", "owner_id"),
     ("pet_photos", "owner_id"),
     ("pet_weight_measurements", "owner_id"),
+    ("pet_conditions", "owner_id"),
     ("dog_walks", "owner_id"),
     ("reminders", "owner_id"),
     ("conversations", "owner_id"),

@@ -23,6 +23,7 @@ from packages.core.application.ports.local_activity_repository import LocalActiv
 from packages.core.application.ports.marketplace_listing_repository import (
     MarketplaceListingRepository,
 )
+from packages.core.application.ports.pet_condition_repository import PetConditionRepository
 from packages.core.application.ports.pet_profile_repository import PetProfileRepository
 from packages.core.application.ports.radar_catalog_repository import (
     BoundingBox,
@@ -46,7 +47,7 @@ from packages.core.domain.geo.models import Coordinates, UserLocation
 from packages.core.domain.llm_usage.models import LlmUsageEvent, ModelDailyUsage
 from packages.core.domain.local_activity.models import LocalActivity
 from packages.core.domain.marketplace.models import ListingReport, MarketplaceListing
-from packages.core.domain.medical_record.models import ClinicalEvent
+from packages.core.domain.medical_record.models import ClinicalEvent, PetCondition
 from packages.core.domain.pet_profile.models import PetProfile
 from packages.core.domain.pet_profile.weight_measurement import WeightMeasurement
 from packages.core.domain.radar_places.models import (
@@ -154,6 +155,16 @@ class SupabaseClinicalEventRepository(ClinicalEventRepository):
     def list_by_pet(self, pet_id: str) -> list[ClinicalEvent]:
         response = self._client.table(self._table).select("*").eq("pet_id", pet_id).execute()
         return [ClinicalEvent.model_validate(item) for item in response.data or []]
+
+
+class SupabasePetConditionRepository(PetConditionRepository):
+    def __init__(self, client: Client) -> None:
+        self._client = client
+        self._table = "pet_conditions"
+
+    def list_by_pet(self, pet_id: str) -> list[PetCondition]:
+        response = self._client.table(self._table).select("*").eq("pet_id", pet_id).execute()
+        return [PetCondition.model_validate(item) for item in response.data or []]
 
 
 class SupabaseAccountConsentsRepository(AccountConsentsRepository):

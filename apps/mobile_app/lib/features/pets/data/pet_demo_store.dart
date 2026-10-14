@@ -518,7 +518,7 @@ class PetDemoStore {
   /// The consent text version the app shows today (see
   /// medical_record_consent_card.dart and, on the backend,
   /// packages/core/domain/medical_record/consent_text.py).
-  static const _currentConsentVersion = 'v2';
+  static const _currentConsentVersion = 'v3';
 
   /// A decision taken under an earlier consent text counts as no decision
   /// (2026-10-06): the switch shows "off / not decided" and the owner

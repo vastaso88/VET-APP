@@ -24,6 +24,7 @@ from packages.core.application.ports.marketplace_listing_repository import (
     MarketplaceListingRepository,
 )
 from packages.core.application.ports.media_storage import MediaStorage
+from packages.core.application.ports.pet_condition_repository import PetConditionRepository
 from packages.core.application.ports.pet_profile_repository import PetProfileRepository
 from packages.core.application.ports.pii_anonymizer import PiiAnonymizer
 from packages.core.application.ports.radar_catalog_repository import RadarCatalogRepository
@@ -163,6 +164,7 @@ from packages.infrastructure.persistence.in_memory_repositories import (
     InMemoryLlmUsageRepository,
     InMemoryLocalActivityRepository,
     InMemoryMarketplaceListingRepository,
+    InMemoryPetConditionRepository,
     InMemoryPetProfileRepository,
     InMemoryRadarCatalogRepository,
     InMemoryRadarPlacesRepository,
@@ -221,6 +223,7 @@ class ApplicationContainer:
         self.evidence_retriever = self._build_evidence_retriever()
         self.pii_anonymizer = self._build_pii_anonymizer()
         self.clinical_event_repository = self._build_clinical_event_repository()
+        self.pet_condition_repository = self._build_pet_condition_repository()
         self.account_consents_repository = self._build_account_consents_repository()
         self.subscription_repository = self._build_subscription_repository()
         self.developer_emails = frozenset(
@@ -250,6 +253,7 @@ class ApplicationContainer:
             medical_record_context_retriever=MedicalRecordContextRetriever(
                 self.clinical_event_repository,
                 attachment_repository=self.chat_attachment_repository,
+                condition_repository=self.pet_condition_repository,
             ),
             consent_interpreter=ConsentInterpreter(self.llm_client),
             enable_interview_loop=settings.enable_interview_loop,
@@ -600,6 +604,23 @@ class ApplicationContainer:
                     return InMemoryClinicalEventRepository()
                 raise
         return InMemoryClinicalEventRepository()
+
+    def _build_pet_condition_repository(self) -> PetConditionRepository:
+        if self.settings.persistence_backend == "supabase":
+            try:
+                from packages.infrastructure.persistence.supabase.client import (
+                    build_supabase_client,
+                )
+                from packages.infrastructure.persistence.supabase.supabase_repositories import (
+                    SupabasePetConditionRepository,
+                )
+
+                return SupabasePetConditionRepository(build_supabase_client(self.settings))
+            except ModuleNotFoundError:
+                if self.settings.environment != "production":
+                    return InMemoryPetConditionRepository()
+                raise
+        return InMemoryPetConditionRepository()
 
     def _build_account_consents_repository(self) -> AccountConsentsRepository:
         if self.settings.persistence_backend == "supabase":

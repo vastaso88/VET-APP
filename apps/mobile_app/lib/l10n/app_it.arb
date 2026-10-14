@@ -3096,5 +3096,189 @@
         "type": "int"
       }
     }
-  }
+  },
+  "medCatVisit": "Visite",
+  "medCatExam": "Esami",
+  "medCatVaccine": "Vaccini",
+  "medCatTherapy": "Terapie",
+  "medCatDocument": "Documenti",
+  "medCatCondition": "Patologie",
+  "medCatVisitOne": "Visita",
+  "medCatExamOne": "Esame",
+  "medCatVaccineOne": "Vaccino",
+  "medCatTherapyOne": "Terapia",
+  "medCatDocumentOne": "Documento",
+  "medCatCount": "{count, plural, =1{1 registrato} other{{count} registrati}}",
+  "@medCatCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "medSubCheckup": "Visita di controllo",
+  "medSubSpecialist": "Visita specialistica",
+  "medSubFirstVisit": "Prima visita",
+  "medSubEmergency": "Urgenza",
+  "medSubPostSurgery": "Controllo post-operatorio",
+  "medSubBlood": "Analisi del sangue",
+  "medSubUrine": "Esame delle urine",
+  "medSubStool": "Esame delle feci",
+  "medSubXray": "Radiografia",
+  "medSubUltrasound": "Ecografia",
+  "medSubAntiparasitic": "Antiparassitario",
+  "medSubMedication": "Farmaco",
+  "medSubOther": "Altro",
+  "medAddTitle": "Cosa vuoi aggiungere?",
+  "medAddAction": "Aggiungi",
+  "medNewVisit": "Nuova visita",
+  "medNewExam": "Nuovo esame",
+  "medNewVaccine": "Nuovo vaccino",
+  "medNewTherapy": "Nuova terapia",
+  "medNewDocument": "Nuovo documento",
+  "medNewCondition": "Nuova patologia",
+  "medEmptyVisitTitle": "Nessuna visita registrata",
+  "medEmptyVisitBody": "Aggiungi le visite di {petName} per ritrovare controlli e indicazioni del veterinario in un posto solo.",
+  "@medEmptyVisitBody": {
+    "placeholders": {
+      "petName": {
+        "type": "String"
+      }
+    }
+  },
+  "medEmptyVisitAction": "Aggiungi la prima visita",
+  "medEmptyExamTitle": "Nessun esame registrato",
+  "medEmptyExamBody": "Carica gli esami di {petName}, come analisi del sangue o radiografie, per averli sempre a portata di mano.",
+  "@medEmptyExamBody": {
+    "placeholders": {
+      "petName": {
+        "type": "String"
+      }
+    }
+  },
+  "medEmptyExamAction": "Aggiungi il primo esame",
+  "medEmptyVaccineTitle": "Nessun vaccino registrato",
+  "medEmptyVaccineBody": "Tieni qui i vaccini e i richiami di {petName}, con la data di ogni somministrazione.",
+  "@medEmptyVaccineBody": {
+    "placeholders": {
+      "petName": {
+        "type": "String"
+      }
+    }
+  },
+  "medEmptyVaccineAction": "Aggiungi il primo vaccino",
+  "medEmptyTherapyTitle": "Nessuna terapia registrata",
+  "medEmptyTherapyBody": "Annota le terapie di {petName}: farmaci, antiparassitari e cure in corso o passate.",
+  "@medEmptyTherapyBody": {
+    "placeholders": {
+      "petName": {
+        "type": "String"
+      }
+    }
+  },
+  "medEmptyTherapyAction": "Aggiungi la prima terapia",
+  "medEmptyDocumentTitle": "Nessun documento caricato",
+  "medEmptyDocumentBody": "Carica referti, certificati e altri documenti di {petName} per condividerli con il veterinario.",
+  "@medEmptyDocumentBody": {
+    "placeholders": {
+      "petName": {
+        "type": "String"
+      }
+    }
+  },
+  "medEmptyDocumentAction": "Aggiungi il primo documento",
+  "medEmptyConditionTitle": "Nessuna patologia registrata",
+  "medEmptyConditionBody": "Annota le malattie di {petName}, in corso o già risolte, con date e terapia.",
+  "@medEmptyConditionBody": {
+    "placeholders": {
+      "petName": {
+        "type": "String"
+      }
+    }
+  },
+  "medEmptyConditionAction": "Aggiungi la prima patologia",
+  "medFieldTitle": "Titolo",
+  "medFieldCategory": "Categoria",
+  "medFieldType": "Tipo",
+  "medFieldTypeNone": "Non specificato",
+  "medFieldEventDate": "Data",
+  "medFieldNotes": "Note",
+  "medFieldNotesHint": "Scrivi una nota facoltativa.",
+  "medFieldFile": "Allegato",
+  "medAttachAdd": "Aggiungi file",
+  "medAttachChange": "Cambia file",
+  "medEditDetailsTitle": "Modifica dettagli",
+  "medTitleRequired": "Scrivi un titolo o allega un file.",
+  "medDateInvalid": "Data non valida (gg/mm/aaaa).",
+  "medDatePlaceholder": "gg/mm/aaaa",
+  "medSuggestHint": "Dal titolo sembra: {category}. Vuoi classificarlo così?",
+  "@medSuggestHint": {
+    "placeholders": {
+      "category": {
+        "type": "String"
+      }
+    }
+  },
+  "medSuggestApply": "Sì, classifica",
+  "medSuggestPill": "Forse: {category}",
+  "@medSuggestPill": {
+    "placeholders": {
+      "category": {
+        "type": "String"
+      }
+    }
+  },
+  "medActionClassifyAs": "Classifica come {category}",
+  "@medActionClassifyAs": {
+    "placeholders": {
+      "category": {
+        "type": "String"
+      }
+    }
+  },
+  "medActionEditDetails": "Modifica dettagli",
+  "medCondName": "Nome della patologia",
+  "medCondNameRequired": "Scrivi il nome della patologia.",
+  "medCondStarted": "Data di inizio",
+  "medCondStatus": "Stato",
+  "medCondOngoing": "In corso",
+  "medCondResolved": "Risolta",
+  "medCondEnded": "Data di fine",
+  "medCondEndBeforeStart": "La data di fine è precedente a quella di inizio.",
+  "medCondTherapy": "Terapia",
+  "medCondTherapyHint": "Farmaci, dosi, durata…",
+  "medCondAttachment": "Ricetta o documenti",
+  "medCondSince": "Dal {date}",
+  "@medCondSince": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "medCondPeriod": "{start} – {end}",
+  "@medCondPeriod": {
+    "placeholders": {
+      "start": {
+        "type": "String"
+      },
+      "end": {
+        "type": "String"
+      }
+    }
+  },
+  "medCondSaveFailed": "Non sono riuscito a salvare la patologia. Riprova.",
+  "medCondDeleteFailed": "Non sono riuscito a eliminare la patologia. Riprova.",
+  "medCondDeleteTitle": "Eliminare questa patologia?",
+  "medCondDeleteBody": "«{name}» verrà eliminata.",
+  "@medCondDeleteBody": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "medCondLoadError": "Non riesco a leggere le patologie. Controlla la connessione e riprova.",
+  "medCondUploadFailed": "Non sono riuscito a caricare il file. Riprova.",
+  "medCondOpenFile": "Apri allegato"
 }
