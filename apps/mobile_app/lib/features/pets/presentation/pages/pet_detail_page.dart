@@ -49,6 +49,7 @@ import '../../../chat/presentation/widgets/chat_conversation_menu.dart';
 import '../widgets/pet_avatar.dart';
 import '../widgets/pets_scaffold.dart';
 import '../widgets/pets_state_views.dart';
+import 'pet_data_page.dart';
 import 'pet_edit_page.dart';
 import 'pet_gallery_page.dart';
 
@@ -260,6 +261,8 @@ class _PetDetailContentState extends State<_PetDetailContent>
                 )
               : const SizedBox.shrink(),
         ),
+        PetDataSummaryRow(pet: widget.pet),
+        const SizedBox(height: AppSpacing.sm),
         if (habitat != null && !habitat.isEmpty) ...[
           _HabitatSummaryRow(pet: widget.pet, habitat: habitat),
           const SizedBox(height: AppSpacing.sm),

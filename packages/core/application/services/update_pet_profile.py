@@ -1,4 +1,5 @@
 from pydantic import BaseModel, Field
+from pydantic import ValidationError as PydanticValidationError
 
 from packages.core.application.ports.pet_profile_repository import PetProfileRepository
 from packages.core.domain.pet_profile.models import FishStock, HabitatDetails, PetProfile
@@ -16,6 +17,11 @@ class UpdatePetProfileInput(BaseModel):
     sex: str | None = None
     weight_label: str | None = None
     dog_size_category: str | None = None
+    is_sterilized: bool | None = None
+    microchip_number: str | None = None
+    coat_color: str | None = None
+    body_condition: str | None = None
+    activity_level: str | None = None
     habitat: HabitatDetails | None = None
     aquarium_stock: list[FishStock] = Field(default_factory=list)
 
@@ -41,4 +47,10 @@ class UpdatePetProfileService:
         # the fields directly off `data` keeps nested model instances intact.
         fields = {name: getattr(data, name) for name in type(data).model_fields if name != "pet_id"}
         updated = pet_profile.model_copy(update=fields)
+        # model_copy skips validation: run it, so the legacy sex split and the
+        # microchip/body-condition checks apply to updates as well.
+        try:
+            updated = PetProfile.model_validate(updated.model_dump())
+        except PydanticValidationError as error:
+            raise ValidationError(str(error)) from error
         return UpdatePetProfileOutput(pet_profile=self._repository.save(updated))

@@ -9,6 +9,7 @@ import '../../../../design_system/tokens/app_text_styles.dart';
 import '../../../../l10n/l10n.dart';
 import '../../../dog_walks/data/walk_home_widget.dart';
 import '../../data/pet_demo_store.dart';
+import '../../domain/pet_details.dart';
 import '../../domain/pet_format.dart';
 import '../../domain/pet_models.dart';
 import '../../domain/pet_value_labels.dart';
@@ -250,6 +251,10 @@ class _PetRow extends StatelessWidget {
                       overflow: TextOverflow.ellipsis,
                       style: AppTextStyles.bodySmall,
                     ),
+                    if (isMicrochipMissingForDog(pet)) ...[
+                      const SizedBox(height: AppSpacing.xs),
+                      const _MicrochipMissingTag(),
+                    ],
                   ],
                 ),
               ),
@@ -258,6 +263,34 @@ class _PetRow extends StatelessWidget {
             ],
           ),
         ),
+      ),
+    );
+  }
+}
+
+/// A small, quiet reminder under a dog without a microchip number (the
+/// microchip is mandatory for dogs in Italy).
+class _MicrochipMissingTag extends StatelessWidget {
+  const _MicrochipMissingTag();
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.sm, vertical: 2),
+      decoration: BoxDecoration(
+        color: AppColors.warning.withValues(alpha: 0.14),
+        borderRadius: BorderRadius.circular(AppRadii.pill),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const Icon(Icons.info_outline_rounded, size: 12, color: AppColors.warning),
+          const SizedBox(width: 4),
+          Text(
+            context.l10n.petsListMicrochipMissing,
+            style: AppTextStyles.caption.copyWith(fontSize: 11, color: AppColors.secondaryText),
+          ),
+        ],
       ),
     );
   }

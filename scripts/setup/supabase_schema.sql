@@ -47,6 +47,45 @@ alter table public.pet_profiles add column if not exists habitat jsonb;
 alter table public.pet_profiles
     add column if not exists aquarium_stock jsonb not null default '[]'::jsonb;
 
+-- Profilo animale v2 (2026-10-14): optional details, all nullable.
+-- `is_sterilized` is separate from `sex`; body_condition and activity_level
+-- hold language-independent codes (the app translates them).
+alter table public.pet_profiles add column if not exists is_sterilized boolean;
+alter table public.pet_profiles add column if not exists microchip_number text;
+alter table public.pet_profiles add column if not exists coat_color text;
+alter table public.pet_profiles add column if not exists body_condition text;
+alter table public.pet_profiles add column if not exists activity_level text;
+
+alter table public.pet_profiles drop constraint if exists pet_profiles_microchip_number_check;
+alter table public.pet_profiles add constraint pet_profiles_microchip_number_check
+    check (microchip_number is null or microchip_number ~ '^[0-9]{15}$');
+alter table public.pet_profiles drop constraint if exists pet_profiles_body_condition_check;
+alter table public.pet_profiles add constraint pet_profiles_body_condition_check
+    check (body_condition is null or body_condition in
+        ('very_thin', 'thin', 'normal', 'slightly_overweight', 'overweight'));
+alter table public.pet_profiles drop constraint if exists pet_profiles_activity_level_check;
+alter table public.pet_profiles add constraint pet_profiles_activity_level_check
+    check (activity_level is null or activity_level in ('sedentary', 'normal', 'active'));
+
+-- Sex is now Maschio / Femmina / Sconosciuto; the old combined values are
+-- split into sex + is_sterilized. Idempotent: once converted, no row matches.
+-- (tests/unit/test_pet_sex_migration.py runs this exact statement.)
+-- migrate-sex:begin
+update public.pet_profiles
+set is_sterilized = case sex
+        when 'Maschio castrato' then true
+        when 'Femmina sterilizzata' then true
+        else false
+    end,
+    sex = case sex
+        when 'Maschio castrato' then 'Maschio'
+        when 'Maschio intero' then 'Maschio'
+        when 'Femmina sterilizzata' then 'Femmina'
+        when 'Femmina intera' then 'Femmina'
+    end
+where sex in ('Maschio castrato', 'Maschio intero', 'Femmina sterilizzata', 'Femmina intera');
+-- migrate-sex:end
+
 create table if not exists public.conversations (
     id text primary key,
     owner_id text not null,

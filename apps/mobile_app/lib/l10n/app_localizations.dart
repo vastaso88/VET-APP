@@ -3592,12 +3592,6 @@ abstract class AppLocalizations {
   /// **'Seleziona'**
   String get petsFormSexHint;
 
-  /// No description provided for @petsFormSexError.
-  ///
-  /// In it, this message translates to:
-  /// **'Seleziona il sesso.'**
-  String get petsFormSexError;
-
   /// No description provided for @petsFormSexUnknown.
   ///
   /// In it, this message translates to:
@@ -4197,6 +4191,312 @@ abstract class AppLocalizations {
   /// In it, this message translates to:
   /// **'Femmina sterilizzata'**
   String get petsValueSexFemaleSpayed;
+
+  /// No description provided for @petsValueSexUnknownShort.
+  ///
+  /// In it, this message translates to:
+  /// **'Non so'**
+  String get petsValueSexUnknownShort;
+
+  /// No description provided for @petsValueBodyVeryThin.
+  ///
+  /// In it, this message translates to:
+  /// **'Molto magro'**
+  String get petsValueBodyVeryThin;
+
+  /// No description provided for @petsValueBodyThin.
+  ///
+  /// In it, this message translates to:
+  /// **'Magro'**
+  String get petsValueBodyThin;
+
+  /// No description provided for @petsValueBodyNormal.
+  ///
+  /// In it, this message translates to:
+  /// **'Normale'**
+  String get petsValueBodyNormal;
+
+  /// No description provided for @petsValueBodySlightlyOverweight.
+  ///
+  /// In it, this message translates to:
+  /// **'Leggermente sovrappeso'**
+  String get petsValueBodySlightlyOverweight;
+
+  /// No description provided for @petsValueBodyOverweight.
+  ///
+  /// In it, this message translates to:
+  /// **'Sovrappeso'**
+  String get petsValueBodyOverweight;
+
+  /// No description provided for @petsValueActivitySedentary.
+  ///
+  /// In it, this message translates to:
+  /// **'Sedentario'**
+  String get petsValueActivitySedentary;
+
+  /// No description provided for @petsValueActivityNormal.
+  ///
+  /// In it, this message translates to:
+  /// **'Normale'**
+  String get petsValueActivityNormal;
+
+  /// No description provided for @petsValueActivityActive.
+  ///
+  /// In it, this message translates to:
+  /// **'Attivo'**
+  String get petsValueActivityActive;
+
+  /// No description provided for @petsFormSterilized.
+  ///
+  /// In it, this message translates to:
+  /// **'Sterilizzato / castrato'**
+  String get petsFormSterilized;
+
+  /// No description provided for @petsFormMicrochipLabel.
+  ///
+  /// In it, this message translates to:
+  /// **'N. microchip'**
+  String get petsFormMicrochipLabel;
+
+  /// No description provided for @petsFormMicrochipHint.
+  ///
+  /// In it, this message translates to:
+  /// **'15 cifre'**
+  String get petsFormMicrochipHint;
+
+  /// No description provided for @petsFormMicrochipInvalid.
+  ///
+  /// In it, this message translates to:
+  /// **'Il microchip ha 15 cifre.'**
+  String get petsFormMicrochipInvalid;
+
+  /// No description provided for @petsFormCoatColorLabel.
+  ///
+  /// In it, this message translates to:
+  /// **'Colore del mantello'**
+  String get petsFormCoatColorLabel;
+
+  /// No description provided for @petsFormCoatColorHint.
+  ///
+  /// In it, this message translates to:
+  /// **'Es. nero, marrone'**
+  String get petsFormCoatColorHint;
+
+  /// No description provided for @petsFormColorLabel.
+  ///
+  /// In it, this message translates to:
+  /// **'Colore'**
+  String get petsFormColorLabel;
+
+  /// No description provided for @petsFormColorHint.
+  ///
+  /// In it, this message translates to:
+  /// **'Es. verde, giallo'**
+  String get petsFormColorHint;
+
+  /// No description provided for @petsFormBodyConditionLabel.
+  ///
+  /// In it, this message translates to:
+  /// **'Corporatura'**
+  String get petsFormBodyConditionLabel;
+
+  /// No description provided for @petsFormBodyConditionHint.
+  ///
+  /// In it, this message translates to:
+  /// **'Seleziona corporatura'**
+  String get petsFormBodyConditionHint;
+
+  /// No description provided for @petsFormActivityLabel.
+  ///
+  /// In it, this message translates to:
+  /// **'Attività'**
+  String get petsFormActivityLabel;
+
+  /// No description provided for @petsFormActivityHint.
+  ///
+  /// In it, this message translates to:
+  /// **'Seleziona attività'**
+  String get petsFormActivityHint;
+
+  /// No description provided for @petsFormDogSizeLabelShort.
+  ///
+  /// In it, this message translates to:
+  /// **'Taglia'**
+  String get petsFormDogSizeLabelShort;
+
+  /// No description provided for @petsWizardNext.
+  ///
+  /// In it, this message translates to:
+  /// **'Prosegui'**
+  String get petsWizardNext;
+
+  /// No description provided for @petsWizardConfirm.
+  ///
+  /// In it, this message translates to:
+  /// **'Conferma'**
+  String get petsWizardConfirm;
+
+  /// No description provided for @petsWizardBack.
+  ///
+  /// In it, this message translates to:
+  /// **'Indietro'**
+  String get petsWizardBack;
+
+  /// No description provided for @petsWizardStepSemantics.
+  ///
+  /// In it, this message translates to:
+  /// **'Passo {current} di {total}'**
+  String petsWizardStepSemantics(int current, int total);
+
+  /// No description provided for @petsWizardStep1Title.
+  ///
+  /// In it, this message translates to:
+  /// **'Parlaci del tuo animale'**
+  String get petsWizardStep1Title;
+
+  /// No description provided for @petsWizardStep1Subtitle.
+  ///
+  /// In it, this message translates to:
+  /// **'Come si chiama?'**
+  String get petsWizardStep1Subtitle;
+
+  /// No description provided for @petsWizardStep2Title.
+  ///
+  /// In it, this message translates to:
+  /// **'Specie e razza'**
+  String get petsWizardStep2Title;
+
+  /// No description provided for @petsWizardStep2Subtitle.
+  ///
+  /// In it, this message translates to:
+  /// **'Seleziona la specie del tuo animale'**
+  String get petsWizardStep2Subtitle;
+
+  /// No description provided for @petsWizardStep3Title.
+  ///
+  /// In it, this message translates to:
+  /// **'Informazioni generali'**
+  String get petsWizardStep3Title;
+
+  /// No description provided for @petsWizardStep3Subtitle.
+  ///
+  /// In it, this message translates to:
+  /// **'Dicci qualcosa in più sul tuo animale'**
+  String get petsWizardStep3Subtitle;
+
+  /// No description provided for @petsWizardStep4Title.
+  ///
+  /// In it, this message translates to:
+  /// **'Informazioni finali'**
+  String get petsWizardStep4Title;
+
+  /// No description provided for @petsWizardStep4Subtitle.
+  ///
+  /// In it, this message translates to:
+  /// **'Quasi finito!'**
+  String get petsWizardStep4Subtitle;
+
+  /// No description provided for @petsWizardPureBred.
+  ///
+  /// In it, this message translates to:
+  /// **'Di razza'**
+  String get petsWizardPureBred;
+
+  /// No description provided for @petsWizardMixedBreed.
+  ///
+  /// In it, this message translates to:
+  /// **'Meticcio'**
+  String get petsWizardMixedBreed;
+
+  /// No description provided for @petsWizardDoneTitle.
+  ///
+  /// In it, this message translates to:
+  /// **'Profilo creato!'**
+  String get petsWizardDoneTitle;
+
+  /// No description provided for @petsWizardDoneMessage.
+  ///
+  /// In it, this message translates to:
+  /// **'Complimenti, {name} è stato aggiunto ai tuoi animali.'**
+  String petsWizardDoneMessage(String name);
+
+  /// No description provided for @petsWizardAddAnother.
+  ///
+  /// In it, this message translates to:
+  /// **'Aggiungi un altro animale'**
+  String get petsWizardAddAnother;
+
+  /// No description provided for @petsWizardFinish.
+  ///
+  /// In it, this message translates to:
+  /// **'Fine'**
+  String get petsWizardFinish;
+
+  /// No description provided for @petsDataTitle.
+  ///
+  /// In it, this message translates to:
+  /// **'Dati animale'**
+  String get petsDataTitle;
+
+  /// No description provided for @petsDataSectionIdentity.
+  ///
+  /// In it, this message translates to:
+  /// **'Anagrafica'**
+  String get petsDataSectionIdentity;
+
+  /// No description provided for @petsDataSectionPhysical.
+  ///
+  /// In it, this message translates to:
+  /// **'Caratteristiche fisiche'**
+  String get petsDataSectionPhysical;
+
+  /// No description provided for @petsDataSectionDocuments.
+  ///
+  /// In it, this message translates to:
+  /// **'Documenti'**
+  String get petsDataSectionDocuments;
+
+  /// No description provided for @petsDataNotProvided.
+  ///
+  /// In it, this message translates to:
+  /// **'Non indicato'**
+  String get petsDataNotProvided;
+
+  /// No description provided for @petsDataMicrochipMissing.
+  ///
+  /// In it, this message translates to:
+  /// **'Mancante'**
+  String get petsDataMicrochipMissing;
+
+  /// No description provided for @petsDataMicrochipMissingDogHint.
+  ///
+  /// In it, this message translates to:
+  /// **'Per i cani il microchip è obbligatorio.'**
+  String get petsDataMicrochipMissingDogHint;
+
+  /// No description provided for @petsDataAddMicrochip.
+  ///
+  /// In it, this message translates to:
+  /// **'Aggiungi microchip'**
+  String get petsDataAddMicrochip;
+
+  /// No description provided for @petsDataWeightLabel.
+  ///
+  /// In it, this message translates to:
+  /// **'Peso'**
+  String get petsDataWeightLabel;
+
+  /// No description provided for @petsDataSummarySterilized.
+  ///
+  /// In it, this message translates to:
+  /// **'sterilizzato'**
+  String get petsDataSummarySterilized;
+
+  /// No description provided for @petsListMicrochipMissing.
+  ///
+  /// In it, this message translates to:
+  /// **'Microchip mancante'**
+  String get petsListMicrochipMissing;
 
   /// No description provided for @petsValueDogSizeToy.
   ///

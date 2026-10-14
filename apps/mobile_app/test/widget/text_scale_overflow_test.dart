@@ -10,6 +10,7 @@ import 'package:vet_app_mobile/features/chat/data/chat_seed_data.dart';
 import 'package:vet_app_mobile/features/chat/presentation/pages/chat_conversation_detail_page.dart';
 import 'package:vet_app_mobile/features/first_run/presentation/pages/plan_intro_page.dart';
 import 'package:vet_app_mobile/features/home/presentation/pages/home_dashboard_page.dart';
+import 'package:vet_app_mobile/features/pets/presentation/widgets/pet_profile_form.dart';
 import 'package:vet_app_mobile/features/pets/presentation/pages/pets_list_page.dart';
 import 'package:vet_app_mobile/features/reminders/presentation/pages/reminders_pages.dart';
 import 'package:vet_app_mobile/features/settings/presentation/pages/settings_page.dart';
@@ -45,6 +46,19 @@ void main() {
     // In the app the shell provides the Scaffold the home page sits in.
     'home': () => const Scaffold(body: HomeDashboardPage()),
     'animali': () => const PetsListPage(),
+    // The step-by-step form alone: the shared page header (PetsScaffold) already
+    // overflows by a few pixels at 320 px / 1,3x, with or without this form.
+    'nuovo animale a passi': () => Scaffold(
+          body: Padding(
+            padding: const EdgeInsets.all(20),
+            child: PetProfileForm(
+              stepped: true,
+              title: '',
+              submitLabel: '',
+              onSubmit: (_) async {},
+            ),
+          ),
+        ),
     'promemoria': () => const RemindersListPage(),
     'impostazioni': () => const SettingsPage(),
     'chat': () => ChatConversationDetailPage(

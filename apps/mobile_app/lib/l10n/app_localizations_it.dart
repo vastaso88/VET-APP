@@ -2072,9 +2072,6 @@ class AppLocalizationsIt extends AppLocalizations {
   String get petsFormSexHint => 'Seleziona';
 
   @override
-  String get petsFormSexError => 'Seleziona il sesso.';
-
-  @override
   String get petsFormSexUnknown => 'Sconosciuto';
 
   @override
@@ -2419,6 +2416,164 @@ class AppLocalizationsIt extends AppLocalizations {
 
   @override
   String get petsValueSexFemaleSpayed => 'Femmina sterilizzata';
+
+  @override
+  String get petsValueSexUnknownShort => 'Non so';
+
+  @override
+  String get petsValueBodyVeryThin => 'Molto magro';
+
+  @override
+  String get petsValueBodyThin => 'Magro';
+
+  @override
+  String get petsValueBodyNormal => 'Normale';
+
+  @override
+  String get petsValueBodySlightlyOverweight => 'Leggermente sovrappeso';
+
+  @override
+  String get petsValueBodyOverweight => 'Sovrappeso';
+
+  @override
+  String get petsValueActivitySedentary => 'Sedentario';
+
+  @override
+  String get petsValueActivityNormal => 'Normale';
+
+  @override
+  String get petsValueActivityActive => 'Attivo';
+
+  @override
+  String get petsFormSterilized => 'Sterilizzato / castrato';
+
+  @override
+  String get petsFormMicrochipLabel => 'N. microchip';
+
+  @override
+  String get petsFormMicrochipHint => '15 cifre';
+
+  @override
+  String get petsFormMicrochipInvalid => 'Il microchip ha 15 cifre.';
+
+  @override
+  String get petsFormCoatColorLabel => 'Colore del mantello';
+
+  @override
+  String get petsFormCoatColorHint => 'Es. nero, marrone';
+
+  @override
+  String get petsFormColorLabel => 'Colore';
+
+  @override
+  String get petsFormColorHint => 'Es. verde, giallo';
+
+  @override
+  String get petsFormBodyConditionLabel => 'Corporatura';
+
+  @override
+  String get petsFormBodyConditionHint => 'Seleziona corporatura';
+
+  @override
+  String get petsFormActivityLabel => 'Attività';
+
+  @override
+  String get petsFormActivityHint => 'Seleziona attività';
+
+  @override
+  String get petsFormDogSizeLabelShort => 'Taglia';
+
+  @override
+  String get petsWizardNext => 'Prosegui';
+
+  @override
+  String get petsWizardConfirm => 'Conferma';
+
+  @override
+  String get petsWizardBack => 'Indietro';
+
+  @override
+  String petsWizardStepSemantics(int current, int total) {
+    return 'Passo $current di $total';
+  }
+
+  @override
+  String get petsWizardStep1Title => 'Parlaci del tuo animale';
+
+  @override
+  String get petsWizardStep1Subtitle => 'Come si chiama?';
+
+  @override
+  String get petsWizardStep2Title => 'Specie e razza';
+
+  @override
+  String get petsWizardStep2Subtitle => 'Seleziona la specie del tuo animale';
+
+  @override
+  String get petsWizardStep3Title => 'Informazioni generali';
+
+  @override
+  String get petsWizardStep3Subtitle => 'Dicci qualcosa in più sul tuo animale';
+
+  @override
+  String get petsWizardStep4Title => 'Informazioni finali';
+
+  @override
+  String get petsWizardStep4Subtitle => 'Quasi finito!';
+
+  @override
+  String get petsWizardPureBred => 'Di razza';
+
+  @override
+  String get petsWizardMixedBreed => 'Meticcio';
+
+  @override
+  String get petsWizardDoneTitle => 'Profilo creato!';
+
+  @override
+  String petsWizardDoneMessage(String name) {
+    return 'Complimenti, $name è stato aggiunto ai tuoi animali.';
+  }
+
+  @override
+  String get petsWizardAddAnother => 'Aggiungi un altro animale';
+
+  @override
+  String get petsWizardFinish => 'Fine';
+
+  @override
+  String get petsDataTitle => 'Dati animale';
+
+  @override
+  String get petsDataSectionIdentity => 'Anagrafica';
+
+  @override
+  String get petsDataSectionPhysical => 'Caratteristiche fisiche';
+
+  @override
+  String get petsDataSectionDocuments => 'Documenti';
+
+  @override
+  String get petsDataNotProvided => 'Non indicato';
+
+  @override
+  String get petsDataMicrochipMissing => 'Mancante';
+
+  @override
+  String get petsDataMicrochipMissingDogHint =>
+      'Per i cani il microchip è obbligatorio.';
+
+  @override
+  String get petsDataAddMicrochip => 'Aggiungi microchip';
+
+  @override
+  String get petsDataWeightLabel => 'Peso';
+
+  @override
+  String get petsDataSummarySterilized => 'sterilizzato';
+
+  @override
+  String get petsListMicrochipMissing => 'Microchip mancante';
 
   @override
   String get petsValueDogSizeToy => 'Toy';

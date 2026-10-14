@@ -8,6 +8,7 @@ import '../../../l10n/l10n.dart';
 import '../../../shared/config/app_runtime_config_loader.dart';
 import '../domain/fish_species.dart';
 import '../domain/pet_breeds.dart';
+import '../domain/pet_details.dart';
 import '../domain/pet_format.dart';
 import '../domain/pet_species_breeds.dart';
 import 'pet_photo_repository.dart';
@@ -148,16 +149,10 @@ class PetDemoStore {
     ),
   ];
 
-  /// Values stored in pet_profiles.sex and read by the chat backend (which
-  /// echoes them as text, so changing them needs its prompt side aligned).
-  static const List<String> sexOptions = [
-    'Maschio',
-    'Femmina',
-    'Maschio intero',
-    'Maschio castrato',
-    'Femmina intera',
-    'Femmina sterilizzata',
-  ];
+  /// Values stored in pet_profiles.sex and read by the chat backend. Neutering
+  /// is its own flag (`is_sterilized`); pets saved with the older combined
+  /// values ("Femmina sterilizzata") are split when read, see [splitLegacySex].
+  static const List<String> sexOptions = petSexValues;
 
   /// Size classes for a dog whose breed isn't in the list ("Altro") — there's
   /// no specific breed to infer a size range from, so the owner picks one
@@ -248,7 +243,18 @@ class PetDemoStore {
     }
 
     try {
-      await client.from('pet_profiles').upsert(_petToRow(pet, ownerId));
+      final row = _petToRow(pet, ownerId);
+      try {
+        await client.from('pet_profiles').upsert(row);
+      } on PostgrestException catch (error) {
+        // Profile v2 columns not on the server yet (SQL not run): save the
+        // rest rather than losing the whole pet. PGRST204 = column not in the
+        // schema cache; 42703 = undefined column.
+        if (error.code != 'PGRST204' && error.code != '42703') rethrow;
+        await client.from('pet_profiles').upsert(
+              Map<String, dynamic>.of(row)..removeWhere((key, _) => profileV2Columns.contains(key)),
+            );
+      }
       _unsynced.remove(pet.id);
       changes.value++;
       return true;
@@ -292,6 +298,21 @@ class PetDemoStore {
     }
   }
 
+  /// Columns added by the profile v2 SQL (2026-10-14).
+  static const profileV2Columns = {
+    'is_sterilized',
+    'microchip_number',
+    'coat_color',
+    'body_condition',
+    'activity_level',
+  };
+
+  @visibleForTesting
+  Map<String, dynamic> petToRow(PetProfile pet, String ownerId) => _petToRow(pet, ownerId);
+
+  @visibleForTesting
+  PetProfile? petFromRow(Map<String, dynamic> row) => _petFromRow(row);
+
   Map<String, dynamic> _petToRow(PetProfile pet, String ownerId) => {
         'id': pet.id,
         'owner_id': ownerId,
@@ -309,6 +330,11 @@ class PetDemoStore {
         'accent_color_value': pet.accentColor.toARGB32(),
         'identity_color_value': pet.identityColor.toARGB32(),
         'dog_size_category': pet.dogSizeCategory,
+        'is_sterilized': pet.isSterilized,
+        'microchip_number': pet.microchipNumber,
+        'coat_color': pet.coatColor,
+        'body_condition': pet.bodyCondition,
+        'activity_level': pet.activityLevel,
         'is_memorial': pet.isMemorial,
         'memorial_date_label':
             pet.memorialDate == null ? null : formatPetBirthDate(pet.memorialDate!),
@@ -325,13 +351,19 @@ class PetDemoStore {
     }
 
     final option = optionForSpecies(species);
+    final legacySex = splitLegacySex((row['sex'] ?? '').toString());
     return PetProfile(
       id: id,
       name: name,
       species: species,
       breed: (row['breed'] ?? '').toString(),
       birthDateLabel: (row['birth_date_label'] ?? '').toString(),
-      sex: (row['sex'] ?? '').toString(),
+      sex: legacySex.sex ?? '',
+      isSterilized: row['is_sterilized'] as bool? ?? legacySex.sterilized,
+      microchipNumber: _nonEmpty(row['microchip_number']),
+      coatColor: _nonEmpty(row['coat_color']),
+      bodyCondition: _nonEmpty(row['body_condition']),
+      activityLevel: _nonEmpty(row['activity_level']),
       weightLabel: (row['weight_label'] ?? '').toString(),
       photoPath: (row['photo_path'] as String?)?.isNotEmpty == true ? row['photo_path'] as String : null,
       medicalRecordConsentGranted: _grantedFromConsentJson(row['medical_record_consent']),
@@ -348,6 +380,11 @@ class PetDemoStore {
           .map((item) => _fishStockFromJson(item as Map<String, dynamic>))
           .toList(),
     );
+  }
+
+  static String? _nonEmpty(Object? value) {
+    final text = value?.toString().trim() ?? '';
+    return text.isEmpty ? null : text;
   }
 
   static Color? _colorFromValue(dynamic value) {
@@ -522,14 +559,24 @@ class PetDemoStore {
     List<FishStock> aquariumStock = const [],
     HabitatDetails? habitat,
     String? dogSizeCategory,
+    bool? isSterilized,
+    String? microchipNumber,
+    String? coatColor,
+    String? bodyCondition,
+    String? activityLevel,
   }) {
     final option = optionForSpecies(species);
     final pet = PetProfile(
-      id: 'pet-${DateTime.now().microsecondsSinceEpoch}',
+      id: _newPetId(),
       name: name.trim(),
       species: species,
       breed: breed?.trim() ?? '',
       dogSizeCategory: dogSizeCategory,
+      isSterilized: isSterilized,
+      microchipNumber: microchipNumber,
+      coatColor: coatColor,
+      bodyCondition: bodyCondition,
+      activityLevel: activityLevel,
       birthDateLabel: birthDate == null ? '' : formatPetBirthDate(birthDate),
       sex: sex,
       weightLabel: weightKg == null ? '' : formatPetWeight(weightKg),
@@ -547,6 +594,17 @@ class PetDemoStore {
     );
 
     return upsert(pet);
+  }
+
+  int _lastIdMicros = 0;
+
+  /// 'pet-<microseconds>', strictly increasing: on a coarse clock (Windows) two
+  /// pets created in the same tick would otherwise get the same id and the
+  /// second would overwrite the first.
+  String _newPetId() {
+    final now = DateTime.now().microsecondsSinceEpoch;
+    _lastIdMicros = now > _lastIdMicros ? now : _lastIdMicros + 1;
+    return 'pet-$_lastIdMicros';
   }
 
   /// A default identity color for a new pet, distinct from as many

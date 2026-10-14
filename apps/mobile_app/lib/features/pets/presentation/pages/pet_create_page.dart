@@ -51,14 +51,26 @@ class PetCreatePage extends StatelessWidget {
   }
 }
 
-class _CreateForm extends StatelessWidget {
+/// The step-by-step creation flow. The form saves through [onSubmit] and shows
+/// its own "Profilo creato!" screen; "Fine" closes the page with the last pet
+/// created (several can be added in a row with "Aggiungi un altro animale").
+class _CreateForm extends StatefulWidget {
   const _CreateForm();
+
+  @override
+  State<_CreateForm> createState() => _CreateFormState();
+}
+
+class _CreateFormState extends State<_CreateForm> {
+  PetProfile? _lastSaved;
 
   @override
   Widget build(BuildContext context) {
     return PetProfileForm(
+      stepped: true,
       title: context.l10n.petsCreateFormTitle,
       submitLabel: context.l10n.petsCreateSubmit,
+      onFinish: () => Navigator.of(context).pop(_lastSaved),
       onSubmit: (draft) async {
         final pet = await PetDemoStore.instance.create(
           name: draft.name,
@@ -73,19 +85,24 @@ class _CreateForm extends StatelessWidget {
           aquariumStock: draft.aquariumStock,
           habitat: draft.habitat,
           dogSizeCategory: draft.dogSizeCategory,
+          isSterilized: draft.isSterilized,
+          microchipNumber: draft.microchipNumber,
+          coatColor: draft.coatColor,
+          bodyCondition: draft.bodyCondition,
+          activityLevel: draft.activityLevel,
         );
         final raw = draft.photoBytes;
         final photoPath = raw == null ? null : await saveProfilePhoto(petId: pet.id, raw: raw);
         final saved = photoPath == null
             ? pet
             : await PetDemoStore.instance.upsert(pet.copyWith(photoPath: photoPath));
+        _lastSaved = saved;
         if (!context.mounted) return;
         if (PetDemoStore.instance.isUnsynced(saved.id)) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(content: Text(context.l10n.petsCreateUnsyncedSnack)),
           );
         }
-        Navigator.of(context).pop(saved);
       },
     );
   }

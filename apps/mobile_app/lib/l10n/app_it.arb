@@ -1024,7 +1024,6 @@
   "petsFormBirthDateFuture": "La data di nascita non può essere nel futuro.",
   "petsFormSexLabel": "Sesso",
   "petsFormSexHint": "Seleziona",
-  "petsFormSexError": "Seleziona il sesso.",
   "petsFormSexUnknown": "Sconosciuto",
   "petsFormWeightLabelKg": "Peso (facoltativo, kg)",
   "petsFormWeightLabelLb": "Peso (facoltativo, lb)",
@@ -1234,6 +1233,74 @@
   "petsValueSexMaleNeutered": "Maschio castrato",
   "petsValueSexFemaleIntact": "Femmina intera",
   "petsValueSexFemaleSpayed": "Femmina sterilizzata",
+  "petsValueSexUnknownShort": "Non so",
+  "petsValueBodyVeryThin": "Molto magro",
+  "petsValueBodyThin": "Magro",
+  "petsValueBodyNormal": "Normale",
+  "petsValueBodySlightlyOverweight": "Leggermente sovrappeso",
+  "petsValueBodyOverweight": "Sovrappeso",
+  "petsValueActivitySedentary": "Sedentario",
+  "petsValueActivityNormal": "Normale",
+  "petsValueActivityActive": "Attivo",
+  "petsFormSterilized": "Sterilizzato / castrato",
+  "petsFormMicrochipLabel": "N. microchip",
+  "petsFormMicrochipHint": "15 cifre",
+  "petsFormMicrochipInvalid": "Il microchip ha 15 cifre.",
+  "petsFormCoatColorLabel": "Colore del mantello",
+  "petsFormCoatColorHint": "Es. nero, marrone",
+  "petsFormColorLabel": "Colore",
+  "petsFormColorHint": "Es. verde, giallo",
+  "petsFormBodyConditionLabel": "Corporatura",
+  "petsFormBodyConditionHint": "Seleziona corporatura",
+  "petsFormActivityLabel": "Attività",
+  "petsFormActivityHint": "Seleziona attività",
+  "petsFormDogSizeLabelShort": "Taglia",
+  "petsWizardNext": "Prosegui",
+  "petsWizardConfirm": "Conferma",
+  "petsWizardBack": "Indietro",
+  "petsWizardStepSemantics": "Passo {current} di {total}",
+  "@petsWizardStepSemantics": {
+    "placeholders": {
+      "current": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "petsWizardStep1Title": "Parlaci del tuo animale",
+  "petsWizardStep1Subtitle": "Come si chiama?",
+  "petsWizardStep2Title": "Specie e razza",
+  "petsWizardStep2Subtitle": "Seleziona la specie del tuo animale",
+  "petsWizardStep3Title": "Informazioni generali",
+  "petsWizardStep3Subtitle": "Dicci qualcosa in più sul tuo animale",
+  "petsWizardStep4Title": "Informazioni finali",
+  "petsWizardStep4Subtitle": "Quasi finito!",
+  "petsWizardPureBred": "Di razza",
+  "petsWizardMixedBreed": "Meticcio",
+  "petsWizardDoneTitle": "Profilo creato!",
+  "petsWizardDoneMessage": "Complimenti, {name} è stato aggiunto ai tuoi animali.",
+  "@petsWizardDoneMessage": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "petsWizardAddAnother": "Aggiungi un altro animale",
+  "petsWizardFinish": "Fine",
+  "petsDataTitle": "Dati animale",
+  "petsDataSectionIdentity": "Anagrafica",
+  "petsDataSectionPhysical": "Caratteristiche fisiche",
+  "petsDataSectionDocuments": "Documenti",
+  "petsDataNotProvided": "Non indicato",
+  "petsDataMicrochipMissing": "Mancante",
+  "petsDataMicrochipMissingDogHint": "Per i cani il microchip è obbligatorio.",
+  "petsDataAddMicrochip": "Aggiungi microchip",
+  "petsDataWeightLabel": "Peso",
+  "petsDataSummarySterilized": "sterilizzato",
+  "petsListMicrochipMissing": "Microchip mancante",
   "petsValueDogSizeToy": "Toy",
   "petsValueDogSizeSmall": "Piccola",
   "petsValueDogSizeMedium": "Media",

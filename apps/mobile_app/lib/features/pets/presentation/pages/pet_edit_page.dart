@@ -103,6 +103,16 @@ class _EditForm extends StatelessWidget {
           habitat: draft.habitat,
           dogSizeCategory: draft.dogSizeCategory,
           clearDogSizeCategory: draft.dogSizeCategory == null,
+          isSterilized: draft.isSterilized,
+          clearIsSterilized: draft.isSterilized == null,
+          microchipNumber: draft.microchipNumber,
+          clearMicrochipNumber: draft.microchipNumber == null,
+          coatColor: draft.coatColor,
+          clearCoatColor: draft.coatColor == null,
+          bodyCondition: draft.bodyCondition,
+          clearBodyCondition: draft.bodyCondition == null,
+          activityLevel: draft.activityLevel,
+          clearActivityLevel: draft.activityLevel == null,
         );
         await PetDemoStore.instance.upsert(updated);
         if (!context.mounted) return;
