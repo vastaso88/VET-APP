@@ -3592,12 +3592,6 @@ abstract class AppLocalizations {
   /// **'Seleziona'**
   String get petsFormSexHint;
 
-  /// No description provided for @petsFormSexError.
-  ///
-  /// In it, this message translates to:
-  /// **'Seleziona il sesso.'**
-  String get petsFormSexError;
-
   /// No description provided for @petsFormSexUnknown.
   ///
   /// In it, this message translates to:
@@ -8529,6 +8523,1146 @@ abstract class AppLocalizations {
   /// In it, this message translates to:
   /// **'Per sicurezza serve una conferma recente: riscrivi la password e riprova.'**
   String get accountDeleteReauth;
+
+  /// No description provided for @petsValueSexUnknownShort.
+  ///
+  /// In it, this message translates to:
+  /// **'Non so'**
+  String get petsValueSexUnknownShort;
+
+  /// No description provided for @petsValueBodyVeryThin.
+  ///
+  /// In it, this message translates to:
+  /// **'Molto magro'**
+  String get petsValueBodyVeryThin;
+
+  /// No description provided for @petsValueBodyThin.
+  ///
+  /// In it, this message translates to:
+  /// **'Magro'**
+  String get petsValueBodyThin;
+
+  /// No description provided for @petsValueBodyNormal.
+  ///
+  /// In it, this message translates to:
+  /// **'Normale'**
+  String get petsValueBodyNormal;
+
+  /// No description provided for @petsValueBodySlightlyOverweight.
+  ///
+  /// In it, this message translates to:
+  /// **'Leggermente sovrappeso'**
+  String get petsValueBodySlightlyOverweight;
+
+  /// No description provided for @petsValueBodyOverweight.
+  ///
+  /// In it, this message translates to:
+  /// **'Sovrappeso'**
+  String get petsValueBodyOverweight;
+
+  /// No description provided for @petsValueActivitySedentary.
+  ///
+  /// In it, this message translates to:
+  /// **'Sedentario'**
+  String get petsValueActivitySedentary;
+
+  /// No description provided for @petsValueActivityNormal.
+  ///
+  /// In it, this message translates to:
+  /// **'Normale'**
+  String get petsValueActivityNormal;
+
+  /// No description provided for @petsValueActivityActive.
+  ///
+  /// In it, this message translates to:
+  /// **'Attivo'**
+  String get petsValueActivityActive;
+
+  /// No description provided for @petsFormSterilized.
+  ///
+  /// In it, this message translates to:
+  /// **'Sterilizzato / castrato'**
+  String get petsFormSterilized;
+
+  /// No description provided for @petsFormMicrochipLabel.
+  ///
+  /// In it, this message translates to:
+  /// **'N. microchip'**
+  String get petsFormMicrochipLabel;
+
+  /// No description provided for @petsFormMicrochipHint.
+  ///
+  /// In it, this message translates to:
+  /// **'15 cifre'**
+  String get petsFormMicrochipHint;
+
+  /// No description provided for @petsFormMicrochipInvalid.
+  ///
+  /// In it, this message translates to:
+  /// **'Il microchip ha 15 cifre.'**
+  String get petsFormMicrochipInvalid;
+
+  /// No description provided for @petsFormCoatColorLabel.
+  ///
+  /// In it, this message translates to:
+  /// **'Colore del mantello'**
+  String get petsFormCoatColorLabel;
+
+  /// No description provided for @petsFormCoatColorHint.
+  ///
+  /// In it, this message translates to:
+  /// **'Es. nero, marrone'**
+  String get petsFormCoatColorHint;
+
+  /// No description provided for @petsFormColorLabel.
+  ///
+  /// In it, this message translates to:
+  /// **'Colore'**
+  String get petsFormColorLabel;
+
+  /// No description provided for @petsFormColorHint.
+  ///
+  /// In it, this message translates to:
+  /// **'Es. verde, giallo'**
+  String get petsFormColorHint;
+
+  /// No description provided for @petsFormBodyConditionLabel.
+  ///
+  /// In it, this message translates to:
+  /// **'Corporatura'**
+  String get petsFormBodyConditionLabel;
+
+  /// No description provided for @petsFormBodyConditionHint.
+  ///
+  /// In it, this message translates to:
+  /// **'Seleziona corporatura'**
+  String get petsFormBodyConditionHint;
+
+  /// No description provided for @petsFormActivityLabel.
+  ///
+  /// In it, this message translates to:
+  /// **'Attività'**
+  String get petsFormActivityLabel;
+
+  /// No description provided for @petsFormActivityHint.
+  ///
+  /// In it, this message translates to:
+  /// **'Seleziona attività'**
+  String get petsFormActivityHint;
+
+  /// No description provided for @petsFormDogSizeLabelShort.
+  ///
+  /// In it, this message translates to:
+  /// **'Taglia'**
+  String get petsFormDogSizeLabelShort;
+
+  /// No description provided for @petsWizardNext.
+  ///
+  /// In it, this message translates to:
+  /// **'Prosegui'**
+  String get petsWizardNext;
+
+  /// No description provided for @petsWizardConfirm.
+  ///
+  /// In it, this message translates to:
+  /// **'Conferma'**
+  String get petsWizardConfirm;
+
+  /// No description provided for @petsWizardBack.
+  ///
+  /// In it, this message translates to:
+  /// **'Indietro'**
+  String get petsWizardBack;
+
+  /// No description provided for @petsWizardStepSemantics.
+  ///
+  /// In it, this message translates to:
+  /// **'Passo {current} di {total}'**
+  String petsWizardStepSemantics(int current, int total);
+
+  /// No description provided for @petsWizardStep1Title.
+  ///
+  /// In it, this message translates to:
+  /// **'Parlaci del tuo animale'**
+  String get petsWizardStep1Title;
+
+  /// No description provided for @petsWizardStep1Subtitle.
+  ///
+  /// In it, this message translates to:
+  /// **'Come si chiama?'**
+  String get petsWizardStep1Subtitle;
+
+  /// No description provided for @petsWizardStep2Title.
+  ///
+  /// In it, this message translates to:
+  /// **'Specie e razza'**
+  String get petsWizardStep2Title;
+
+  /// No description provided for @petsWizardStep2Subtitle.
+  ///
+  /// In it, this message translates to:
+  /// **'Seleziona la specie del tuo animale'**
+  String get petsWizardStep2Subtitle;
+
+  /// No description provided for @petsWizardStep3Title.
+  ///
+  /// In it, this message translates to:
+  /// **'Informazioni generali'**
+  String get petsWizardStep3Title;
+
+  /// No description provided for @petsWizardStep3Subtitle.
+  ///
+  /// In it, this message translates to:
+  /// **'Dicci qualcosa in più sul tuo animale'**
+  String get petsWizardStep3Subtitle;
+
+  /// No description provided for @petsWizardStep4Title.
+  ///
+  /// In it, this message translates to:
+  /// **'Informazioni finali'**
+  String get petsWizardStep4Title;
+
+  /// No description provided for @petsWizardStep4Subtitle.
+  ///
+  /// In it, this message translates to:
+  /// **'Quasi finito!'**
+  String get petsWizardStep4Subtitle;
+
+  /// No description provided for @petsWizardPureBred.
+  ///
+  /// In it, this message translates to:
+  /// **'Di razza'**
+  String get petsWizardPureBred;
+
+  /// No description provided for @petsWizardMixedBreed.
+  ///
+  /// In it, this message translates to:
+  /// **'Meticcio'**
+  String get petsWizardMixedBreed;
+
+  /// No description provided for @petsWizardDoneTitle.
+  ///
+  /// In it, this message translates to:
+  /// **'Profilo creato!'**
+  String get petsWizardDoneTitle;
+
+  /// No description provided for @petsWizardDoneMessage.
+  ///
+  /// In it, this message translates to:
+  /// **'Complimenti, {name} è stato aggiunto ai tuoi animali.'**
+  String petsWizardDoneMessage(String name);
+
+  /// No description provided for @petsWizardAddAnother.
+  ///
+  /// In it, this message translates to:
+  /// **'Aggiungi un altro animale'**
+  String get petsWizardAddAnother;
+
+  /// No description provided for @petsWizardFinish.
+  ///
+  /// In it, this message translates to:
+  /// **'Fine'**
+  String get petsWizardFinish;
+
+  /// No description provided for @petsDataTitle.
+  ///
+  /// In it, this message translates to:
+  /// **'Dati animale'**
+  String get petsDataTitle;
+
+  /// No description provided for @petsDataSectionIdentity.
+  ///
+  /// In it, this message translates to:
+  /// **'Anagrafica'**
+  String get petsDataSectionIdentity;
+
+  /// No description provided for @petsDataSectionPhysical.
+  ///
+  /// In it, this message translates to:
+  /// **'Caratteristiche fisiche'**
+  String get petsDataSectionPhysical;
+
+  /// No description provided for @petsDataSectionDocuments.
+  ///
+  /// In it, this message translates to:
+  /// **'Documenti'**
+  String get petsDataSectionDocuments;
+
+  /// No description provided for @petsDataNotProvided.
+  ///
+  /// In it, this message translates to:
+  /// **'Non indicato'**
+  String get petsDataNotProvided;
+
+  /// No description provided for @petsDataMicrochipMissing.
+  ///
+  /// In it, this message translates to:
+  /// **'Mancante'**
+  String get petsDataMicrochipMissing;
+
+  /// No description provided for @petsDataMicrochipMissingDogHint.
+  ///
+  /// In it, this message translates to:
+  /// **'Per i cani il microchip è obbligatorio.'**
+  String get petsDataMicrochipMissingDogHint;
+
+  /// No description provided for @petsDataAddMicrochip.
+  ///
+  /// In it, this message translates to:
+  /// **'Aggiungi microchip'**
+  String get petsDataAddMicrochip;
+
+  /// No description provided for @petsDataWeightLabel.
+  ///
+  /// In it, this message translates to:
+  /// **'Peso'**
+  String get petsDataWeightLabel;
+
+  /// No description provided for @petsDataSummarySterilized.
+  ///
+  /// In it, this message translates to:
+  /// **'sterilizzato'**
+  String get petsDataSummarySterilized;
+
+  /// No description provided for @petsListMicrochipMissing.
+  ///
+  /// In it, this message translates to:
+  /// **'Microchip mancante'**
+  String get petsListMicrochipMissing;
+
+  /// No description provided for @monitoringTitle.
+  ///
+  /// In it, this message translates to:
+  /// **'Monitoraggio'**
+  String get monitoringTitle;
+
+  /// No description provided for @monitoringEntrySubtitleWeight.
+  ///
+  /// In it, this message translates to:
+  /// **'Peso e corporatura'**
+  String get monitoringEntrySubtitleWeight;
+
+  /// No description provided for @monitoringEntrySubtitleWithActivity.
+  ///
+  /// In it, this message translates to:
+  /// **'Peso, corporatura e attività'**
+  String get monitoringEntrySubtitleWithActivity;
+
+  /// No description provided for @monitoringAddMeasurement.
+  ///
+  /// In it, this message translates to:
+  /// **'Nuova misurazione'**
+  String get monitoringAddMeasurement;
+
+  /// No description provided for @monitoringCurrentWeight.
+  ///
+  /// In it, this message translates to:
+  /// **'Peso attuale'**
+  String get monitoringCurrentWeight;
+
+  /// No description provided for @monitoringMeasuredOn.
+  ///
+  /// In it, this message translates to:
+  /// **'Misurato il {date}'**
+  String monitoringMeasuredOn(String date);
+
+  /// No description provided for @monitoringChangeSince.
+  ///
+  /// In it, this message translates to:
+  /// **'{change} dal {date}'**
+  String monitoringChangeSince(String change, String date);
+
+  /// No description provided for @monitoringEmptyTitle.
+  ///
+  /// In it, this message translates to:
+  /// **'Nessuna misurazione ancora'**
+  String get monitoringEmptyTitle;
+
+  /// No description provided for @monitoringEmptyBody.
+  ///
+  /// In it, this message translates to:
+  /// **'Registra il peso di {petName} per seguirne l\'andamento nel tempo.'**
+  String monitoringEmptyBody(String petName);
+
+  /// No description provided for @monitoringBcsTitle.
+  ///
+  /// In it, this message translates to:
+  /// **'Corporatura'**
+  String get monitoringBcsTitle;
+
+  /// No description provided for @monitoringBcsAsOf.
+  ///
+  /// In it, this message translates to:
+  /// **'Dalla misurazione del {date}'**
+  String monitoringBcsAsOf(String date);
+
+  /// No description provided for @monitoringBcsNone.
+  ///
+  /// In it, this message translates to:
+  /// **'Indica la corporatura in una misurazione per vederla qui.'**
+  String get monitoringBcsNone;
+
+  /// No description provided for @monitoringBcsVeryThin.
+  ///
+  /// In it, this message translates to:
+  /// **'Molto magro'**
+  String get monitoringBcsVeryThin;
+
+  /// No description provided for @monitoringBcsThin.
+  ///
+  /// In it, this message translates to:
+  /// **'Magro'**
+  String get monitoringBcsThin;
+
+  /// No description provided for @monitoringBcsNormal.
+  ///
+  /// In it, this message translates to:
+  /// **'Normale'**
+  String get monitoringBcsNormal;
+
+  /// No description provided for @monitoringBcsSlightlyOverweight.
+  ///
+  /// In it, this message translates to:
+  /// **'Leggermente sovrappeso'**
+  String get monitoringBcsSlightlyOverweight;
+
+  /// No description provided for @monitoringBcsOverweight.
+  ///
+  /// In it, this message translates to:
+  /// **'Sovrappeso'**
+  String get monitoringBcsOverweight;
+
+  /// No description provided for @monitoringChartTitleWeight.
+  ///
+  /// In it, this message translates to:
+  /// **'Andamento peso'**
+  String get monitoringChartTitleWeight;
+
+  /// No description provided for @monitoringChartTitleGrowth.
+  ///
+  /// In it, this message translates to:
+  /// **'Curva di crescita'**
+  String get monitoringChartTitleGrowth;
+
+  /// No description provided for @monitoringChartGrowthHint.
+  ///
+  /// In it, this message translates to:
+  /// **'Il peso di {petName} in base all\'età, senza curve di riferimento: solo le sue misurazioni.'**
+  String monitoringChartGrowthHint(String petName);
+
+  /// No description provided for @monitoringChartSinglePoint.
+  ///
+  /// In it, this message translates to:
+  /// **'Aggiungi un\'altra misurazione per vedere l\'andamento.'**
+  String get monitoringChartSinglePoint;
+
+  /// No description provided for @monitoringAxisAgeMonths.
+  ///
+  /// In it, this message translates to:
+  /// **'Età (mesi)'**
+  String get monitoringAxisAgeMonths;
+
+  /// No description provided for @monitoringAxisWeight.
+  ///
+  /// In it, this message translates to:
+  /// **'Peso ({unit})'**
+  String monitoringAxisWeight(String unit);
+
+  /// No description provided for @monitoringTooltipAge.
+  ///
+  /// In it, this message translates to:
+  /// **'{months, plural, =1{1 mese} other{{months} mesi}}'**
+  String monitoringTooltipAge(int months);
+
+  /// No description provided for @monitoringHistoryTitle.
+  ///
+  /// In it, this message translates to:
+  /// **'Storico'**
+  String get monitoringHistoryTitle;
+
+  /// No description provided for @monitoringDeleteTitle.
+  ///
+  /// In it, this message translates to:
+  /// **'Eliminare la misurazione?'**
+  String get monitoringDeleteTitle;
+
+  /// No description provided for @monitoringDeleteMessage.
+  ///
+  /// In it, this message translates to:
+  /// **'Il peso del {date} verrà tolto dallo storico.'**
+  String monitoringDeleteMessage(String date);
+
+  /// No description provided for @monitoringSheetTitleNew.
+  ///
+  /// In it, this message translates to:
+  /// **'Nuova misurazione'**
+  String get monitoringSheetTitleNew;
+
+  /// No description provided for @monitoringSheetTitleEdit.
+  ///
+  /// In it, this message translates to:
+  /// **'Modifica misurazione'**
+  String get monitoringSheetTitleEdit;
+
+  /// No description provided for @monitoringFieldDate.
+  ///
+  /// In it, this message translates to:
+  /// **'Data'**
+  String get monitoringFieldDate;
+
+  /// No description provided for @monitoringFieldWeightKg.
+  ///
+  /// In it, this message translates to:
+  /// **'Peso (kg)'**
+  String get monitoringFieldWeightKg;
+
+  /// No description provided for @monitoringFieldWeightLb.
+  ///
+  /// In it, this message translates to:
+  /// **'Peso (lb)'**
+  String get monitoringFieldWeightLb;
+
+  /// No description provided for @monitoringFieldWeightHintKg.
+  ///
+  /// In it, this message translates to:
+  /// **'Es. 10,5'**
+  String get monitoringFieldWeightHintKg;
+
+  /// No description provided for @monitoringFieldWeightHintLb.
+  ///
+  /// In it, this message translates to:
+  /// **'Es. 22,5'**
+  String get monitoringFieldWeightHintLb;
+
+  /// No description provided for @monitoringFieldBcs.
+  ///
+  /// In it, this message translates to:
+  /// **'Corporatura (facoltativa)'**
+  String get monitoringFieldBcs;
+
+  /// No description provided for @monitoringFieldNote.
+  ///
+  /// In it, this message translates to:
+  /// **'Nota (facoltativa)'**
+  String get monitoringFieldNote;
+
+  /// No description provided for @monitoringErrorWeight.
+  ///
+  /// In it, this message translates to:
+  /// **'Inserisci un peso valido, maggiore di zero.'**
+  String get monitoringErrorWeight;
+
+  /// No description provided for @monitoringErrorDateFuture.
+  ///
+  /// In it, this message translates to:
+  /// **'La data non può essere nel futuro.'**
+  String get monitoringErrorDateFuture;
+
+  /// No description provided for @monitoringErrorDateBirth.
+  ///
+  /// In it, this message translates to:
+  /// **'La data è precedente alla nascita di {petName}.'**
+  String monitoringErrorDateBirth(String petName);
+
+  /// No description provided for @monitoringSaveFailed.
+  ///
+  /// In it, this message translates to:
+  /// **'Non sono riuscito a salvare la misurazione: riprova.'**
+  String get monitoringSaveFailed;
+
+  /// No description provided for @monitoringDeleteFailed.
+  ///
+  /// In it, this message translates to:
+  /// **'Non sono riuscito a eliminare la misurazione: riprova.'**
+  String get monitoringDeleteFailed;
+
+  /// No description provided for @monitoringActivityTitle.
+  ///
+  /// In it, this message translates to:
+  /// **'Attività'**
+  String get monitoringActivityTitle;
+
+  /// No description provided for @monitoringActivitySubtitle.
+  ///
+  /// In it, this message translates to:
+  /// **'Le passeggiate di {petName} nelle ultime settimane.'**
+  String monitoringActivitySubtitle(String petName);
+
+  /// No description provided for @monitoringActivityDistance.
+  ///
+  /// In it, this message translates to:
+  /// **'Distanza'**
+  String get monitoringActivityDistance;
+
+  /// No description provided for @monitoringActivityTime.
+  ///
+  /// In it, this message translates to:
+  /// **'Tempo'**
+  String get monitoringActivityTime;
+
+  /// No description provided for @monitoringActivityStatWalks.
+  ///
+  /// In it, this message translates to:
+  /// **'Passeggiate'**
+  String get monitoringActivityStatWalks;
+
+  /// No description provided for @monitoringActivityEmpty.
+  ///
+  /// In it, this message translates to:
+  /// **'Nessuna passeggiata negli ultimi 3 mesi. Registra una passeggiata dalla scheda Passeggiate per vedere qui l\'attività di {petName}.'**
+  String monitoringActivityEmpty(String petName);
+
+  /// No description provided for @monitoringActivityWeekOf.
+  ///
+  /// In it, this message translates to:
+  /// **'Settimana dal {date}'**
+  String monitoringActivityWeekOf(String date);
+
+  /// No description provided for @monitoringActivityWalkCount.
+  ///
+  /// In it, this message translates to:
+  /// **'{count, plural, =1{1 passeggiata} other{{count} passeggiate}}'**
+  String monitoringActivityWalkCount(int count);
+
+  /// No description provided for @medCatVisit.
+  ///
+  /// In it, this message translates to:
+  /// **'Visite'**
+  String get medCatVisit;
+
+  /// No description provided for @medCatExam.
+  ///
+  /// In it, this message translates to:
+  /// **'Esami'**
+  String get medCatExam;
+
+  /// No description provided for @medCatVaccine.
+  ///
+  /// In it, this message translates to:
+  /// **'Vaccini'**
+  String get medCatVaccine;
+
+  /// No description provided for @medCatTherapy.
+  ///
+  /// In it, this message translates to:
+  /// **'Terapie'**
+  String get medCatTherapy;
+
+  /// No description provided for @medCatDocument.
+  ///
+  /// In it, this message translates to:
+  /// **'Documenti'**
+  String get medCatDocument;
+
+  /// No description provided for @medCatCondition.
+  ///
+  /// In it, this message translates to:
+  /// **'Patologie'**
+  String get medCatCondition;
+
+  /// No description provided for @medCatVisitOne.
+  ///
+  /// In it, this message translates to:
+  /// **'Visita'**
+  String get medCatVisitOne;
+
+  /// No description provided for @medCatExamOne.
+  ///
+  /// In it, this message translates to:
+  /// **'Esame'**
+  String get medCatExamOne;
+
+  /// No description provided for @medCatVaccineOne.
+  ///
+  /// In it, this message translates to:
+  /// **'Vaccino'**
+  String get medCatVaccineOne;
+
+  /// No description provided for @medCatTherapyOne.
+  ///
+  /// In it, this message translates to:
+  /// **'Terapia'**
+  String get medCatTherapyOne;
+
+  /// No description provided for @medCatDocumentOne.
+  ///
+  /// In it, this message translates to:
+  /// **'Documento'**
+  String get medCatDocumentOne;
+
+  /// No description provided for @medCatCount.
+  ///
+  /// In it, this message translates to:
+  /// **'{count, plural, =1{1 registrato} other{{count} registrati}}'**
+  String medCatCount(int count);
+
+  /// No description provided for @medSubCheckup.
+  ///
+  /// In it, this message translates to:
+  /// **'Visita di controllo'**
+  String get medSubCheckup;
+
+  /// No description provided for @medSubSpecialist.
+  ///
+  /// In it, this message translates to:
+  /// **'Visita specialistica'**
+  String get medSubSpecialist;
+
+  /// No description provided for @medSubFirstVisit.
+  ///
+  /// In it, this message translates to:
+  /// **'Prima visita'**
+  String get medSubFirstVisit;
+
+  /// No description provided for @medSubEmergency.
+  ///
+  /// In it, this message translates to:
+  /// **'Urgenza'**
+  String get medSubEmergency;
+
+  /// No description provided for @medSubPostSurgery.
+  ///
+  /// In it, this message translates to:
+  /// **'Controllo post-operatorio'**
+  String get medSubPostSurgery;
+
+  /// No description provided for @medSubBlood.
+  ///
+  /// In it, this message translates to:
+  /// **'Analisi del sangue'**
+  String get medSubBlood;
+
+  /// No description provided for @medSubUrine.
+  ///
+  /// In it, this message translates to:
+  /// **'Esame delle urine'**
+  String get medSubUrine;
+
+  /// No description provided for @medSubStool.
+  ///
+  /// In it, this message translates to:
+  /// **'Esame delle feci'**
+  String get medSubStool;
+
+  /// No description provided for @medSubXray.
+  ///
+  /// In it, this message translates to:
+  /// **'Radiografia'**
+  String get medSubXray;
+
+  /// No description provided for @medSubUltrasound.
+  ///
+  /// In it, this message translates to:
+  /// **'Ecografia'**
+  String get medSubUltrasound;
+
+  /// No description provided for @medSubAntiparasitic.
+  ///
+  /// In it, this message translates to:
+  /// **'Antiparassitario'**
+  String get medSubAntiparasitic;
+
+  /// No description provided for @medSubMedication.
+  ///
+  /// In it, this message translates to:
+  /// **'Farmaco'**
+  String get medSubMedication;
+
+  /// No description provided for @medSubOther.
+  ///
+  /// In it, this message translates to:
+  /// **'Altro'**
+  String get medSubOther;
+
+  /// No description provided for @medAddTitle.
+  ///
+  /// In it, this message translates to:
+  /// **'Cosa vuoi aggiungere?'**
+  String get medAddTitle;
+
+  /// No description provided for @medAddAction.
+  ///
+  /// In it, this message translates to:
+  /// **'Aggiungi'**
+  String get medAddAction;
+
+  /// No description provided for @medNewVisit.
+  ///
+  /// In it, this message translates to:
+  /// **'Nuova visita'**
+  String get medNewVisit;
+
+  /// No description provided for @medNewExam.
+  ///
+  /// In it, this message translates to:
+  /// **'Nuovo esame'**
+  String get medNewExam;
+
+  /// No description provided for @medNewVaccine.
+  ///
+  /// In it, this message translates to:
+  /// **'Nuovo vaccino'**
+  String get medNewVaccine;
+
+  /// No description provided for @medNewTherapy.
+  ///
+  /// In it, this message translates to:
+  /// **'Nuova terapia'**
+  String get medNewTherapy;
+
+  /// No description provided for @medNewDocument.
+  ///
+  /// In it, this message translates to:
+  /// **'Nuovo documento'**
+  String get medNewDocument;
+
+  /// No description provided for @medNewCondition.
+  ///
+  /// In it, this message translates to:
+  /// **'Nuova patologia'**
+  String get medNewCondition;
+
+  /// No description provided for @medEmptyVisitTitle.
+  ///
+  /// In it, this message translates to:
+  /// **'Nessuna visita registrata'**
+  String get medEmptyVisitTitle;
+
+  /// No description provided for @medEmptyVisitBody.
+  ///
+  /// In it, this message translates to:
+  /// **'Aggiungi le visite di {petName} per ritrovare controlli e indicazioni del veterinario in un posto solo.'**
+  String medEmptyVisitBody(String petName);
+
+  /// No description provided for @medEmptyVisitAction.
+  ///
+  /// In it, this message translates to:
+  /// **'Aggiungi la prima visita'**
+  String get medEmptyVisitAction;
+
+  /// No description provided for @medEmptyExamTitle.
+  ///
+  /// In it, this message translates to:
+  /// **'Nessun esame registrato'**
+  String get medEmptyExamTitle;
+
+  /// No description provided for @medEmptyExamBody.
+  ///
+  /// In it, this message translates to:
+  /// **'Carica gli esami di {petName}, come analisi del sangue o radiografie, per averli sempre a portata di mano.'**
+  String medEmptyExamBody(String petName);
+
+  /// No description provided for @medEmptyExamAction.
+  ///
+  /// In it, this message translates to:
+  /// **'Aggiungi il primo esame'**
+  String get medEmptyExamAction;
+
+  /// No description provided for @medEmptyVaccineTitle.
+  ///
+  /// In it, this message translates to:
+  /// **'Nessun vaccino registrato'**
+  String get medEmptyVaccineTitle;
+
+  /// No description provided for @medEmptyVaccineBody.
+  ///
+  /// In it, this message translates to:
+  /// **'Tieni qui i vaccini e i richiami di {petName}, con la data di ogni somministrazione.'**
+  String medEmptyVaccineBody(String petName);
+
+  /// No description provided for @medEmptyVaccineAction.
+  ///
+  /// In it, this message translates to:
+  /// **'Aggiungi il primo vaccino'**
+  String get medEmptyVaccineAction;
+
+  /// No description provided for @medEmptyTherapyTitle.
+  ///
+  /// In it, this message translates to:
+  /// **'Nessuna terapia registrata'**
+  String get medEmptyTherapyTitle;
+
+  /// No description provided for @medEmptyTherapyBody.
+  ///
+  /// In it, this message translates to:
+  /// **'Annota le terapie di {petName}: farmaci, antiparassitari e cure in corso o passate.'**
+  String medEmptyTherapyBody(String petName);
+
+  /// No description provided for @medEmptyTherapyAction.
+  ///
+  /// In it, this message translates to:
+  /// **'Aggiungi la prima terapia'**
+  String get medEmptyTherapyAction;
+
+  /// No description provided for @medEmptyDocumentTitle.
+  ///
+  /// In it, this message translates to:
+  /// **'Nessun documento caricato'**
+  String get medEmptyDocumentTitle;
+
+  /// No description provided for @medEmptyDocumentBody.
+  ///
+  /// In it, this message translates to:
+  /// **'Carica referti, certificati e altri documenti di {petName} per condividerli con il veterinario.'**
+  String medEmptyDocumentBody(String petName);
+
+  /// No description provided for @medEmptyDocumentAction.
+  ///
+  /// In it, this message translates to:
+  /// **'Aggiungi il primo documento'**
+  String get medEmptyDocumentAction;
+
+  /// No description provided for @medEmptyConditionTitle.
+  ///
+  /// In it, this message translates to:
+  /// **'Nessuna patologia registrata'**
+  String get medEmptyConditionTitle;
+
+  /// No description provided for @medEmptyConditionBody.
+  ///
+  /// In it, this message translates to:
+  /// **'Annota le malattie di {petName}, in corso o già risolte, con date e terapia.'**
+  String medEmptyConditionBody(String petName);
+
+  /// No description provided for @medEmptyConditionAction.
+  ///
+  /// In it, this message translates to:
+  /// **'Aggiungi la prima patologia'**
+  String get medEmptyConditionAction;
+
+  /// No description provided for @medFieldTitle.
+  ///
+  /// In it, this message translates to:
+  /// **'Titolo'**
+  String get medFieldTitle;
+
+  /// No description provided for @medFieldCategory.
+  ///
+  /// In it, this message translates to:
+  /// **'Categoria'**
+  String get medFieldCategory;
+
+  /// No description provided for @medFieldType.
+  ///
+  /// In it, this message translates to:
+  /// **'Tipo'**
+  String get medFieldType;
+
+  /// No description provided for @medFieldTypeNone.
+  ///
+  /// In it, this message translates to:
+  /// **'Non specificato'**
+  String get medFieldTypeNone;
+
+  /// No description provided for @medFieldEventDate.
+  ///
+  /// In it, this message translates to:
+  /// **'Data'**
+  String get medFieldEventDate;
+
+  /// No description provided for @medFieldNotes.
+  ///
+  /// In it, this message translates to:
+  /// **'Note'**
+  String get medFieldNotes;
+
+  /// No description provided for @medFieldNotesHint.
+  ///
+  /// In it, this message translates to:
+  /// **'Scrivi una nota facoltativa.'**
+  String get medFieldNotesHint;
+
+  /// No description provided for @medFieldFile.
+  ///
+  /// In it, this message translates to:
+  /// **'Allegato'**
+  String get medFieldFile;
+
+  /// No description provided for @medAttachAdd.
+  ///
+  /// In it, this message translates to:
+  /// **'Aggiungi file'**
+  String get medAttachAdd;
+
+  /// No description provided for @medAttachChange.
+  ///
+  /// In it, this message translates to:
+  /// **'Cambia file'**
+  String get medAttachChange;
+
+  /// No description provided for @medEditDetailsTitle.
+  ///
+  /// In it, this message translates to:
+  /// **'Modifica dettagli'**
+  String get medEditDetailsTitle;
+
+  /// No description provided for @medTitleRequired.
+  ///
+  /// In it, this message translates to:
+  /// **'Scrivi un titolo o allega un file.'**
+  String get medTitleRequired;
+
+  /// No description provided for @medDateInvalid.
+  ///
+  /// In it, this message translates to:
+  /// **'Data non valida (gg/mm/aaaa).'**
+  String get medDateInvalid;
+
+  /// No description provided for @medDatePlaceholder.
+  ///
+  /// In it, this message translates to:
+  /// **'gg/mm/aaaa'**
+  String get medDatePlaceholder;
+
+  /// No description provided for @medSuggestHint.
+  ///
+  /// In it, this message translates to:
+  /// **'Dal titolo sembra: {category}. Vuoi classificarlo così?'**
+  String medSuggestHint(String category);
+
+  /// No description provided for @medSuggestApply.
+  ///
+  /// In it, this message translates to:
+  /// **'Sì, classifica'**
+  String get medSuggestApply;
+
+  /// No description provided for @medSuggestPill.
+  ///
+  /// In it, this message translates to:
+  /// **'Forse: {category}'**
+  String medSuggestPill(String category);
+
+  /// No description provided for @medActionClassifyAs.
+  ///
+  /// In it, this message translates to:
+  /// **'Classifica come {category}'**
+  String medActionClassifyAs(String category);
+
+  /// No description provided for @medActionEditDetails.
+  ///
+  /// In it, this message translates to:
+  /// **'Modifica dettagli'**
+  String get medActionEditDetails;
+
+  /// No description provided for @medCondName.
+  ///
+  /// In it, this message translates to:
+  /// **'Nome della patologia'**
+  String get medCondName;
+
+  /// No description provided for @medCondNameRequired.
+  ///
+  /// In it, this message translates to:
+  /// **'Scrivi il nome della patologia.'**
+  String get medCondNameRequired;
+
+  /// No description provided for @medCondStarted.
+  ///
+  /// In it, this message translates to:
+  /// **'Data di inizio'**
+  String get medCondStarted;
+
+  /// No description provided for @medCondStatus.
+  ///
+  /// In it, this message translates to:
+  /// **'Stato'**
+  String get medCondStatus;
+
+  /// No description provided for @medCondOngoing.
+  ///
+  /// In it, this message translates to:
+  /// **'In corso'**
+  String get medCondOngoing;
+
+  /// No description provided for @medCondResolved.
+  ///
+  /// In it, this message translates to:
+  /// **'Risolta'**
+  String get medCondResolved;
+
+  /// No description provided for @medCondEnded.
+  ///
+  /// In it, this message translates to:
+  /// **'Data di fine'**
+  String get medCondEnded;
+
+  /// No description provided for @medCondEndBeforeStart.
+  ///
+  /// In it, this message translates to:
+  /// **'La data di fine è precedente a quella di inizio.'**
+  String get medCondEndBeforeStart;
+
+  /// No description provided for @medCondTherapy.
+  ///
+  /// In it, this message translates to:
+  /// **'Terapia'**
+  String get medCondTherapy;
+
+  /// No description provided for @medCondTherapyHint.
+  ///
+  /// In it, this message translates to:
+  /// **'Farmaci, dosi, durata…'**
+  String get medCondTherapyHint;
+
+  /// No description provided for @medCondAttachment.
+  ///
+  /// In it, this message translates to:
+  /// **'Ricetta o documenti'**
+  String get medCondAttachment;
+
+  /// No description provided for @medCondSince.
+  ///
+  /// In it, this message translates to:
+  /// **'Dal {date}'**
+  String medCondSince(String date);
+
+  /// No description provided for @medCondPeriod.
+  ///
+  /// In it, this message translates to:
+  /// **'{start} – {end}'**
+  String medCondPeriod(String start, String end);
+
+  /// No description provided for @medCondSaveFailed.
+  ///
+  /// In it, this message translates to:
+  /// **'Non sono riuscito a salvare la patologia. Riprova.'**
+  String get medCondSaveFailed;
+
+  /// No description provided for @medCondDeleteFailed.
+  ///
+  /// In it, this message translates to:
+  /// **'Non sono riuscito a eliminare la patologia. Riprova.'**
+  String get medCondDeleteFailed;
+
+  /// No description provided for @medCondDeleteTitle.
+  ///
+  /// In it, this message translates to:
+  /// **'Eliminare questa patologia?'**
+  String get medCondDeleteTitle;
+
+  /// No description provided for @medCondDeleteBody.
+  ///
+  /// In it, this message translates to:
+  /// **'«{name}» verrà eliminata.'**
+  String medCondDeleteBody(String name);
+
+  /// No description provided for @medCondLoadError.
+  ///
+  /// In it, this message translates to:
+  /// **'Non riesco a leggere le patologie. Controlla la connessione e riprova.'**
+  String get medCondLoadError;
+
+  /// No description provided for @medCondUploadFailed.
+  ///
+  /// In it, this message translates to:
+  /// **'Non sono riuscito a caricare il file. Riprova.'**
+  String get medCondUploadFailed;
+
+  /// No description provided for @medCondOpenFile.
+  ///
+  /// In it, this message translates to:
+  /// **'Apri allegato'**
+  String get medCondOpenFile;
 }
 
 class _AppLocalizationsDelegate

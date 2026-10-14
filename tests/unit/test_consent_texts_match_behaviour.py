@@ -8,26 +8,29 @@ to the limits the code applies, so changing one forces a look at the other
 """
 
 import re
-from datetime import UTC, datetime, timedelta
+from datetime import UTC, date, datetime, timedelta
 from pathlib import Path
 
 from packages.core.application.services.medical_record_context_retriever import (
     MAX_EXPLAINED_DOCUMENTS,
+    MAX_ONGOING_CONDITIONS,
     MedicalRecordContextRetriever,
 )
 from packages.core.domain.consent.account_consent_text import (
     CONSENT_TEXT_IT as ACCOUNT_CONSENT_TEXT_IT,
 )
 from packages.core.domain.consent.account_consent_text import CURRENT_VERSIONS
-from packages.core.domain.consent.models import AccountConsentType
+from packages.core.domain.consent.models import AccountConsentType, ConsentRecord
 from packages.core.domain.medical_record.consent_text import (
     CONSENT_TEXT_IT,
     CURRENT_VERSION,
     INLINE_QUESTION_IT,
+    effective_decision,
 )
-from packages.core.domain.medical_record.models import ClinicalEvent
+from packages.core.domain.medical_record.models import ClinicalEvent, PetCondition
 from packages.infrastructure.persistence.in_memory_repositories import (
     InMemoryClinicalEventRepository,
+    InMemoryPetConditionRepository,
 )
 
 _CONSENT_CARD = (
@@ -62,6 +65,50 @@ def test_medical_record_wording_states_how_much_the_chat_reads() -> None:
     assert "tre voci" in INLINE_QUESTION_IT
     assert MAX_EXPLAINED_DOCUMENTS == 2
     assert "al massimo due" in CONSENT_TEXT_IT
+
+
+def test_medical_record_wording_states_the_categories_dates_and_ongoing_conditions() -> None:
+    # v3: the chat reads the category and the event date of each entry, and
+    # the illnesses still ongoing (name and start date, at most five).
+    repository = InMemoryClinicalEventRepository(
+        seed=[
+            ClinicalEvent(
+                pet_id="pet-1",
+                title="Emocromo",
+                category="exam",
+                subtype="blood",
+                event_date=date(2026, 3, 12),
+            )
+        ]
+    )
+    conditions = InMemoryPetConditionRepository(
+        seed=[
+            PetCondition(pet_id="pet-1", name=f"Malattia {number}", started_on=date(2026, 1, 1))
+            for number in range(MAX_ONGOING_CONDITIONS + 3)
+        ]
+    )
+
+    summary = MedicalRecordContextRetriever(
+        repository, condition_repository=conditions
+    ).summarize_for_pet("pet-1")
+
+    assert summary is not None
+    assert "Emocromo (esame: analisi del sangue, 12/03/2026)" in summary
+    condition_lines = summary.split("Malattie in corso:\n")[1].splitlines()
+    assert len(condition_lines) == MAX_ONGOING_CONDITIONS == 5
+    assert "dal 01/01/2026" in summary
+    for text in (CONSENT_TEXT_IT, INLINE_QUESTION_IT):
+        assert "malattie pregresse ancora in corso" in text
+    assert "al massimo cinque" in CONSENT_TEXT_IT
+    for words in ("categoria", "visita", "esame", "vaccino", "terapia", "data dell'evento"):
+        assert words in CONSENT_TEXT_IT
+
+
+def test_a_decision_taken_under_the_previous_wording_no_longer_counts() -> None:
+    assert CURRENT_VERSION == "v3"
+    assert effective_decision(ConsentRecord(granted=True, version="v2")) is None
+    assert effective_decision(ConsentRecord(granted=False, version="v2")) is None
+    assert effective_decision(ConsentRecord(granted=True, version=CURRENT_VERSION)) is True
 
 
 def test_medical_record_wording_names_the_external_ai_provider_as_recipient() -> None:

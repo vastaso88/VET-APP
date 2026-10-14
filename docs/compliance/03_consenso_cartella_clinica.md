@@ -27,6 +27,10 @@ Destinatario: il fornitore esterno di IA che scrive la risposta (oggi Groq). Il 
 
 Quanti documenti legge e quali dati (titolo, data, descrizione, testo dei documenti, solo l'inizio di quelli molto lunghi), che non sceglie solo ciò che serve alla domanda, che il testo va al fornitore esterno di IA, che VetApp lo usa solo per rispondere, e che la revoca vale per le richieste successive. Non dichiara anonimizzazione: non è garantita (vedi sotto e [02](02_pii_anonymization.md)). La v2 vale per i consensi dati da ora in poi: `SetMedicalRecordConsentService` registra la versione corrente a ogni decisione.
 
+### Che cosa dice la v3 (2026-10-14, «Cartella clinica per categorie»)
+
+Ogni voce ha una categoria (visita, esame, vaccino, terapia, documento) e la data dell'evento; la chat le riceve entrambe insieme al titolo. In più la chat legge le malattie pregresse ancora in corso (solo nome e data di inizio, al massimo cinque: `MAX_ONGOING_CONDITIONS`); terapia, note e allegati delle patologie, e le note delle voci, non partono. Le «Domande di chiarimento» ricevono lo stesso riepilogo esteso. Un consenso dato con la v2 non vale più (`effective_decision`: versione diversa = «non deciso»): l'interruttore della scheda risulta spento e la chat richiede la decisione sul testo nuovo prima di leggere qualcosa; nel frattempo vede solo il numero dei documenti.
+
 ## Punti aperti
 
 Registro [08](08_punti_aperti_prima_del_lancio.md), punti 27 e 28.

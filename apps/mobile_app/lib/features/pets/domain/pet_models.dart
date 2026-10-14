@@ -120,6 +120,11 @@ class PetProfile {
     this.memorialDate,
     this.habitat,
     this.dogSizeCategory,
+    this.isSterilized,
+    this.microchipNumber,
+    this.coatColor,
+    this.bodyCondition,
+    this.activityLevel,
   });
 
   final String id;
@@ -176,6 +181,21 @@ class PetProfile {
   /// breed to infer a size range from.
   final String? dogSizeCategory;
 
+  /// Neutering, separate from [sex] (profile v2, 2026-10-14). Null = not said.
+  final bool? isSterilized;
+
+  /// 15-digit ISO 11784 microchip number, digits only. Null/empty = none given.
+  final String? microchipNumber;
+
+  /// Free text, e.g. "nero e focato".
+  final String? coatColor;
+
+  /// One of [petBodyConditions] ("very_thin" ... "overweight"). Null = not said.
+  final String? bodyCondition;
+
+  /// One of [petActivityLevels]. Null = not said.
+  final String? activityLevel;
+
   String get title => '$name - ${localizedSpeciesLabel(species)}';
 
   String get breedLabel {
@@ -219,6 +239,16 @@ class PetProfile {
     HabitatDetails? habitat,
     String? dogSizeCategory,
     bool clearDogSizeCategory = false,
+    bool? isSterilized,
+    String? microchipNumber,
+    String? coatColor,
+    String? bodyCondition,
+    String? activityLevel,
+    bool clearIsSterilized = false,
+    bool clearMicrochipNumber = false,
+    bool clearCoatColor = false,
+    bool clearBodyCondition = false,
+    bool clearActivityLevel = false,
   }) {
     return PetProfile(
       id: id ?? this.id,
@@ -243,6 +273,11 @@ class PetProfile {
       habitat: habitat ?? this.habitat,
       dogSizeCategory:
           clearDogSizeCategory ? null : (dogSizeCategory ?? this.dogSizeCategory),
+      isSterilized: clearIsSterilized ? null : (isSterilized ?? this.isSterilized),
+      microchipNumber: clearMicrochipNumber ? null : (microchipNumber ?? this.microchipNumber),
+      coatColor: clearCoatColor ? null : (coatColor ?? this.coatColor),
+      bodyCondition: clearBodyCondition ? null : (bodyCondition ?? this.bodyCondition),
+      activityLevel: clearActivityLevel ? null : (activityLevel ?? this.activityLevel),
     );
   }
 }

@@ -1,11 +1,20 @@
+import logging
 import re
 from dataclasses import dataclass
 from datetime import date
 
 from packages.core.application.ports.chat_attachment_repository import ChatAttachmentRepository
 from packages.core.application.ports.clinical_event_repository import ClinicalEventRepository
+from packages.core.application.ports.pet_condition_repository import PetConditionRepository
 from packages.core.domain.conversation.request_kind import ANALYTES
-from packages.core.domain.medical_record.models import ClinicalEvent
+from packages.core.domain.medical_record.models import ClinicalEvent, PetCondition
+
+logger = logging.getLogger(__name__)
+
+# How many ongoing conditions the chat reads, most recently started first.
+# The consent text says "al massimo cinque": tests/unit/test_consent_texts_match_behaviour.py
+# ties the two together.
+MAX_ONGOING_CONDITIONS = 5
 
 # A document's cached text summary is clipped to this many characters per
 # record, so a long lab report can't crowd everything else out of the
@@ -93,10 +102,12 @@ class MedicalRecordContextRetriever:
         repository: ClinicalEventRepository,
         *,
         attachment_repository: ChatAttachmentRepository | None = None,
+        condition_repository: PetConditionRepository | None = None,
         max_entries: int = 3,
     ) -> None:
         self._repository = repository
         self._attachment_repository = attachment_repository
+        self._condition_repository = condition_repository
         self._max_entries = max_entries
 
     def count_for_pet(self, pet_id: str) -> int:
@@ -106,11 +117,15 @@ class MedicalRecordContextRetriever:
         return len(self._repository.list_by_pet(pet_id))
 
     def summarize_for_pet(self, pet_id: str) -> str | None:
+        """The most recent entries (with category and event date), then the
+        illnesses still ongoing (name and start date only)."""
         events = self._sorted_events(pet_id)
-        if not events:
-            return None
         lines = [self._format_event(event) for event in events[: self._max_entries]]
-        return "\n".join(lines)
+        conditions = self._ongoing_conditions(pet_id)
+        if conditions:
+            lines.append("Malattie in corso:")
+            lines.extend(self._format_condition(condition) for condition in conditions)
+        return "\n".join(lines) if lines else None
 
     def documents_for_pet(self, pet_id: str) -> list[RecordDocument]:
         """Every record, most recent first, with the full text read from
@@ -170,13 +185,35 @@ class MedicalRecordContextRetriever:
             has_file=bool(event.attachment_id),
         )
 
+    def _ongoing_conditions(self, pet_id: str) -> list[PetCondition]:
+        if self._condition_repository is None:
+            return []
+        try:
+            conditions = self._condition_repository.list_by_pet(pet_id)
+        except Exception:
+            # The table may not exist yet (schema script not run): the chat
+            # then simply reads the entries, as before the conditions.
+            logger.warning("Could not read the pet's conditions", exc_info=True)
+            return []
+        ongoing = [c for c in conditions if c.is_ongoing and c.name.strip()]
+        ongoing.sort(
+            key=lambda c: (c.started_on or c.created_at.date(), c.created_at), reverse=True
+        )
+        return ongoing[:MAX_ONGOING_CONDITIONS]
+
+    @staticmethod
+    def _format_condition(condition: PetCondition) -> str:
+        since = (
+            f" (dal {condition.started_on.strftime('%d/%m/%Y')})" if condition.started_on else ""
+        )
+        return f"- {condition.name.strip()}{since}"
+
     def _format_event(self, event: ClinicalEvent) -> str:
         # `subtitle` is what the app writes; `summary` is the column the
         # live table already had — either one describes the record.
         description = event.subtitle or event.summary
         detail = f": {description}" if description else ""
-        dated = f" ({event.event_date.strftime('%d/%m/%Y')})" if event.event_date else ""
-        line = f"- {event.title or 'Documento'}{dated}{detail}"
+        line = f"- {event.title or 'Documento'}{self._event_tags(event)}{detail}"
         content = self._document_summary(event)
         if content:
             line += f"\n  Contenuto del documento: {content}"
@@ -185,6 +222,20 @@ class MedicalRecordContextRetriever:
             # what an unread file contains.
             line += "\n  (file allegato, ma il suo contenuto non è stato letto)"
         return line
+
+    @staticmethod
+    def _event_tags(event: ClinicalEvent) -> str:
+        """ " (esame: analisi del sangue, 12/03/2026)": what kind of entry it
+        is and when it happened, each only when known."""
+        kind = event.category_label
+        if kind and event.subtype_label and event.subtype_label != kind:
+            kind = f"{kind}: {event.subtype_label}"
+        tags = [
+            tag
+            for tag in (kind, event.event_date.strftime("%d/%m/%Y") if event.event_date else None)
+            if tag
+        ]
+        return f" ({', '.join(tags)})" if tags else ""
 
     def _document_text(self, event: ClinicalEvent) -> str | None:
         if self._attachment_repository is None or not event.attachment_id:

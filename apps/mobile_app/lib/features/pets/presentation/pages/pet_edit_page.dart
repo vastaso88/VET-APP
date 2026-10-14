@@ -4,6 +4,9 @@ import '../../../../design_system/tokens/app_colors.dart';
 import '../../../../design_system/tokens/app_radii.dart';
 import '../../../../design_system/tokens/app_spacing.dart';
 import '../../../../l10n/l10n.dart';
+import '../../../monitoring/data/weight_measurements_repository.dart';
+import '../../../monitoring/domain/weight_measurement.dart';
+import '../../../settings/domain/unit_conversion.dart';
 import '../../data/pet_demo_store.dart';
 import '../../data/pet_photo_repository.dart';
 import '../../domain/pet_format.dart';
@@ -103,8 +106,29 @@ class _EditForm extends StatelessWidget {
           habitat: draft.habitat,
           dogSizeCategory: draft.dogSizeCategory,
           clearDogSizeCategory: draft.dogSizeCategory == null,
+          isSterilized: draft.isSterilized,
+          clearIsSterilized: draft.isSterilized == null,
+          microchipNumber: draft.microchipNumber,
+          clearMicrochipNumber: draft.microchipNumber == null,
+          coatColor: draft.coatColor,
+          clearCoatColor: draft.coatColor == null,
+          bodyCondition: draft.bodyCondition,
+          clearBodyCondition: draft.bodyCondition == null,
+          activityLevel: draft.activityLevel,
+          clearActivityLevel: draft.activityLevel == null,
         );
         await PetDemoStore.instance.upsert(updated);
+        final newWeightKg = draft.weightKg;
+        if (newWeightKg != null &&
+            parseWeightLabelKg(formatPetWeight(newWeightKg)) !=
+                parseWeightLabelKg(pet.weightLabel) &&
+            supportsWeightMonitoring(updated)) {
+          // A weight typed into the profile is a new weighing, today.
+          final weighings = WeightMeasurementsRepository();
+          await weighings.add(
+            weighings.create(petId: updated.id, measuredOn: DateTime.now(), weightKg: newWeightKg),
+          );
+        }
         if (!context.mounted) return;
         if (PetDemoStore.instance.isUnsynced(updated.id)) {
           ScaffoldMessenger.of(context).showSnackBar(

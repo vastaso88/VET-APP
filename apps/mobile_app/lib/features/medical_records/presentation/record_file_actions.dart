@@ -11,6 +11,9 @@ import '../../../shared/files/attachment_media_type.dart';
 import '../../chat/data/chat_attachment_remote_data_source.dart';
 import '../data/medical_record_file_cache.dart';
 import '../data/medical_records_repository.dart';
+import '../domain/record_category.dart';
+import 'pages/medical_record_upload_page.dart';
+import 'record_category_labels.dart';
 import 'native_pdf_opener_stub.dart' if (dart.library.io) 'native_pdf_opener.dart';
 import 'pdf_open_outcome.dart';
 
@@ -27,60 +30,124 @@ Future<Uint8List?> loadRecordBytes(MedicalRecordEntry record) async {
 
 String _mimeFor(Uint8List bytes, String name) => attachmentMediaType(bytes, name).toString();
 
-/// Opens the sheet with the actions for one record: Apri, Invia, Elimina.
+/// Whether there is a file behind [record] to open or send: an upload on the
+/// server, or one still in this session's cache. An entry added without a
+/// file (a visit with just a date and notes) has none.
+bool recordHasFile(MedicalRecordEntry record) =>
+    record.attachmentId != null || MedicalRecordFileCache.instance.get(record.id) != null;
+
+/// Opens the sheet with the actions for one record: Apri, Invia, modifica
+/// dettagli, Rinomina, Elimina.
 Future<void> showRecordActions(
   BuildContext context, {
   required MedicalRecordEntry record,
   required VoidCallback onChanged,
 }) {
+  // What the title suggests, offered only for an entry still filed as a
+  // plain document and only as a tap: never applied on its own.
+  final suggestion =
+      record.category == RecordCategory.document ? suggestCategoryFromTitle(record.title) : null;
+  final hasFile = recordHasFile(record);
   return showModalBottomSheet<void>(
     context: context,
     backgroundColor: AppColors.surface,
+    isScrollControlled: true,
     builder: (sheetContext) => SafeArea(
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Padding(
-            padding: const EdgeInsets.fromLTRB(AppSpacing.lg, AppSpacing.md, AppSpacing.lg, AppSpacing.sm),
-            child: Text(record.title, style: AppTextStyles.title, maxLines: 2, overflow: TextOverflow.ellipsis),
-          ),
-          ListTile(
-            leading: const Icon(Icons.open_in_new_rounded),
-            title: Text(sheetContext.l10n.medicalActionOpen),
-            onTap: () {
-              Navigator.of(sheetContext).pop();
-              openRecordFile(context, record);
-            },
-          ),
-          ListTile(
-            leading: const Icon(Icons.ios_share_rounded),
-            title: Text(sheetContext.l10n.medicalActionSend),
-            onTap: () {
-              Navigator.of(sheetContext).pop();
-              shareRecords(context, [record]);
-            },
-          ),
-          ListTile(
-            leading: const Icon(Icons.drive_file_rename_outline_rounded),
-            title: Text(sheetContext.l10n.medicalActionRename),
-            onTap: () {
-              Navigator.of(sheetContext).pop();
-              renameRecordWithDialog(context, record: record, onRenamed: onChanged);
-            },
-          ),
-          ListTile(
-            leading: const Icon(Icons.delete_outline, color: Colors.red),
-            title: Text(sheetContext.l10n.commonDelete),
-            onTap: () {
-              Navigator.of(sheetContext).pop();
-              deleteRecordWithConfirm(context, record: record, onDeleted: onChanged);
-            },
-          ),
-        ],
+      child: SingleChildScrollView(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Padding(
+              padding: const EdgeInsets.fromLTRB(AppSpacing.lg, AppSpacing.md, AppSpacing.lg, AppSpacing.sm),
+              child: Text(record.title, style: AppTextStyles.title, maxLines: 2, overflow: TextOverflow.ellipsis),
+            ),
+            if (hasFile)
+              ListTile(
+                leading: const Icon(Icons.open_in_new_rounded),
+                title: Text(sheetContext.l10n.medicalActionOpen),
+                onTap: () {
+                  Navigator.of(sheetContext).pop();
+                  openRecordFile(context, record);
+                },
+              ),
+            if (hasFile)
+              ListTile(
+                leading: const Icon(Icons.ios_share_rounded),
+                title: Text(sheetContext.l10n.medicalActionSend),
+                onTap: () {
+                  Navigator.of(sheetContext).pop();
+                  shareRecords(context, [record]);
+                },
+              ),
+            if (suggestion != null)
+              ListTile(
+                leading: Icon(suggestion.icon),
+                title: Text(
+                  sheetContext.l10n.medActionClassifyAs(suggestion.singularLabel(sheetContext.l10n)),
+                ),
+                onTap: () {
+                  Navigator.of(sheetContext).pop();
+                  _classifyAs(context, record, suggestion, onChanged);
+                },
+              ),
+            ListTile(
+              leading: const Icon(Icons.tune_rounded),
+              title: Text(sheetContext.l10n.medActionEditDetails),
+              onTap: () {
+                Navigator.of(sheetContext).pop();
+                _editDetails(context, record, onChanged);
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.drive_file_rename_outline_rounded),
+              title: Text(sheetContext.l10n.medicalActionRename),
+              onTap: () {
+                Navigator.of(sheetContext).pop();
+                renameRecordWithDialog(context, record: record, onRenamed: onChanged);
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.delete_outline, color: Colors.red),
+              title: Text(sheetContext.l10n.commonDelete),
+              onTap: () {
+                Navigator.of(sheetContext).pop();
+                deleteRecordWithConfirm(context, record: record, onDeleted: onChanged);
+              },
+            ),
+          ],
+        ),
       ),
     ),
   );
+}
+
+Future<void> _editDetails(
+  BuildContext context,
+  MedicalRecordEntry record,
+  VoidCallback onChanged,
+) async {
+  await Navigator.of(context).push<MedicalRecordEntry>(
+    MaterialPageRoute(
+      builder: (_) => MedicalRecordUploadPage(petName: record.petName, existing: record),
+    ),
+  );
+  onChanged();
+}
+
+Future<void> _classifyAs(
+  BuildContext context,
+  MedicalRecordEntry record,
+  RecordCategory category,
+  VoidCallback onChanged,
+) async {
+  try {
+    await MedicalRecordsRepository().updateRecordDetails(record.copyWith(category: category));
+  } on MedicalRecordSaveException catch (error) {
+    if (context.mounted) _showMessage(context, error.message);
+    return;
+  }
+  onChanged();
 }
 
 /// Images open full-screen. A PDF has no in-app viewer here, so "Apri" hands

@@ -2072,9 +2072,6 @@ class AppLocalizationsIt extends AppLocalizations {
   String get petsFormSexHint => 'Seleziona';
 
   @override
-  String get petsFormSexError => 'Seleziona il sesso.';
-
-  @override
   String get petsFormSexUnknown => 'Sconosciuto';
 
   @override
@@ -5053,4 +5050,660 @@ class AppLocalizationsIt extends AppLocalizations {
   @override
   String get accountDeleteReauth =>
       'Per sicurezza serve una conferma recente: riscrivi la password e riprova.';
+
+  @override
+  String get petsValueSexUnknownShort => 'Non so';
+
+  @override
+  String get petsValueBodyVeryThin => 'Molto magro';
+
+  @override
+  String get petsValueBodyThin => 'Magro';
+
+  @override
+  String get petsValueBodyNormal => 'Normale';
+
+  @override
+  String get petsValueBodySlightlyOverweight => 'Leggermente sovrappeso';
+
+  @override
+  String get petsValueBodyOverweight => 'Sovrappeso';
+
+  @override
+  String get petsValueActivitySedentary => 'Sedentario';
+
+  @override
+  String get petsValueActivityNormal => 'Normale';
+
+  @override
+  String get petsValueActivityActive => 'Attivo';
+
+  @override
+  String get petsFormSterilized => 'Sterilizzato / castrato';
+
+  @override
+  String get petsFormMicrochipLabel => 'N. microchip';
+
+  @override
+  String get petsFormMicrochipHint => '15 cifre';
+
+  @override
+  String get petsFormMicrochipInvalid => 'Il microchip ha 15 cifre.';
+
+  @override
+  String get petsFormCoatColorLabel => 'Colore del mantello';
+
+  @override
+  String get petsFormCoatColorHint => 'Es. nero, marrone';
+
+  @override
+  String get petsFormColorLabel => 'Colore';
+
+  @override
+  String get petsFormColorHint => 'Es. verde, giallo';
+
+  @override
+  String get petsFormBodyConditionLabel => 'Corporatura';
+
+  @override
+  String get petsFormBodyConditionHint => 'Seleziona corporatura';
+
+  @override
+  String get petsFormActivityLabel => 'Attività';
+
+  @override
+  String get petsFormActivityHint => 'Seleziona attività';
+
+  @override
+  String get petsFormDogSizeLabelShort => 'Taglia';
+
+  @override
+  String get petsWizardNext => 'Prosegui';
+
+  @override
+  String get petsWizardConfirm => 'Conferma';
+
+  @override
+  String get petsWizardBack => 'Indietro';
+
+  @override
+  String petsWizardStepSemantics(int current, int total) {
+    return 'Passo $current di $total';
+  }
+
+  @override
+  String get petsWizardStep1Title => 'Parlaci del tuo animale';
+
+  @override
+  String get petsWizardStep1Subtitle => 'Come si chiama?';
+
+  @override
+  String get petsWizardStep2Title => 'Specie e razza';
+
+  @override
+  String get petsWizardStep2Subtitle => 'Seleziona la specie del tuo animale';
+
+  @override
+  String get petsWizardStep3Title => 'Informazioni generali';
+
+  @override
+  String get petsWizardStep3Subtitle => 'Dicci qualcosa in più sul tuo animale';
+
+  @override
+  String get petsWizardStep4Title => 'Informazioni finali';
+
+  @override
+  String get petsWizardStep4Subtitle => 'Quasi finito!';
+
+  @override
+  String get petsWizardPureBred => 'Di razza';
+
+  @override
+  String get petsWizardMixedBreed => 'Meticcio';
+
+  @override
+  String get petsWizardDoneTitle => 'Profilo creato!';
+
+  @override
+  String petsWizardDoneMessage(String name) {
+    return 'Complimenti, $name è stato aggiunto ai tuoi animali.';
+  }
+
+  @override
+  String get petsWizardAddAnother => 'Aggiungi un altro animale';
+
+  @override
+  String get petsWizardFinish => 'Fine';
+
+  @override
+  String get petsDataTitle => 'Dati animale';
+
+  @override
+  String get petsDataSectionIdentity => 'Anagrafica';
+
+  @override
+  String get petsDataSectionPhysical => 'Caratteristiche fisiche';
+
+  @override
+  String get petsDataSectionDocuments => 'Documenti';
+
+  @override
+  String get petsDataNotProvided => 'Non indicato';
+
+  @override
+  String get petsDataMicrochipMissing => 'Mancante';
+
+  @override
+  String get petsDataMicrochipMissingDogHint =>
+      'Per i cani il microchip è obbligatorio.';
+
+  @override
+  String get petsDataAddMicrochip => 'Aggiungi microchip';
+
+  @override
+  String get petsDataWeightLabel => 'Peso';
+
+  @override
+  String get petsDataSummarySterilized => 'sterilizzato';
+
+  @override
+  String get petsListMicrochipMissing => 'Microchip mancante';
+
+  @override
+  String get monitoringTitle => 'Monitoraggio';
+
+  @override
+  String get monitoringEntrySubtitleWeight => 'Peso e corporatura';
+
+  @override
+  String get monitoringEntrySubtitleWithActivity =>
+      'Peso, corporatura e attività';
+
+  @override
+  String get monitoringAddMeasurement => 'Nuova misurazione';
+
+  @override
+  String get monitoringCurrentWeight => 'Peso attuale';
+
+  @override
+  String monitoringMeasuredOn(String date) {
+    return 'Misurato il $date';
+  }
+
+  @override
+  String monitoringChangeSince(String change, String date) {
+    return '$change dal $date';
+  }
+
+  @override
+  String get monitoringEmptyTitle => 'Nessuna misurazione ancora';
+
+  @override
+  String monitoringEmptyBody(String petName) {
+    return 'Registra il peso di $petName per seguirne l\'andamento nel tempo.';
+  }
+
+  @override
+  String get monitoringBcsTitle => 'Corporatura';
+
+  @override
+  String monitoringBcsAsOf(String date) {
+    return 'Dalla misurazione del $date';
+  }
+
+  @override
+  String get monitoringBcsNone =>
+      'Indica la corporatura in una misurazione per vederla qui.';
+
+  @override
+  String get monitoringBcsVeryThin => 'Molto magro';
+
+  @override
+  String get monitoringBcsThin => 'Magro';
+
+  @override
+  String get monitoringBcsNormal => 'Normale';
+
+  @override
+  String get monitoringBcsSlightlyOverweight => 'Leggermente sovrappeso';
+
+  @override
+  String get monitoringBcsOverweight => 'Sovrappeso';
+
+  @override
+  String get monitoringChartTitleWeight => 'Andamento peso';
+
+  @override
+  String get monitoringChartTitleGrowth => 'Curva di crescita';
+
+  @override
+  String monitoringChartGrowthHint(String petName) {
+    return 'Il peso di $petName in base all\'età, senza curve di riferimento: solo le sue misurazioni.';
+  }
+
+  @override
+  String get monitoringChartSinglePoint =>
+      'Aggiungi un\'altra misurazione per vedere l\'andamento.';
+
+  @override
+  String get monitoringAxisAgeMonths => 'Età (mesi)';
+
+  @override
+  String monitoringAxisWeight(String unit) {
+    return 'Peso ($unit)';
+  }
+
+  @override
+  String monitoringTooltipAge(int months) {
+    String _temp0 = intl.Intl.pluralLogic(
+      months,
+      locale: localeName,
+      other: '$months mesi',
+      one: '1 mese',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get monitoringHistoryTitle => 'Storico';
+
+  @override
+  String get monitoringDeleteTitle => 'Eliminare la misurazione?';
+
+  @override
+  String monitoringDeleteMessage(String date) {
+    return 'Il peso del $date verrà tolto dallo storico.';
+  }
+
+  @override
+  String get monitoringSheetTitleNew => 'Nuova misurazione';
+
+  @override
+  String get monitoringSheetTitleEdit => 'Modifica misurazione';
+
+  @override
+  String get monitoringFieldDate => 'Data';
+
+  @override
+  String get monitoringFieldWeightKg => 'Peso (kg)';
+
+  @override
+  String get monitoringFieldWeightLb => 'Peso (lb)';
+
+  @override
+  String get monitoringFieldWeightHintKg => 'Es. 10,5';
+
+  @override
+  String get monitoringFieldWeightHintLb => 'Es. 22,5';
+
+  @override
+  String get monitoringFieldBcs => 'Corporatura (facoltativa)';
+
+  @override
+  String get monitoringFieldNote => 'Nota (facoltativa)';
+
+  @override
+  String get monitoringErrorWeight =>
+      'Inserisci un peso valido, maggiore di zero.';
+
+  @override
+  String get monitoringErrorDateFuture => 'La data non può essere nel futuro.';
+
+  @override
+  String monitoringErrorDateBirth(String petName) {
+    return 'La data è precedente alla nascita di $petName.';
+  }
+
+  @override
+  String get monitoringSaveFailed =>
+      'Non sono riuscito a salvare la misurazione: riprova.';
+
+  @override
+  String get monitoringDeleteFailed =>
+      'Non sono riuscito a eliminare la misurazione: riprova.';
+
+  @override
+  String get monitoringActivityTitle => 'Attività';
+
+  @override
+  String monitoringActivitySubtitle(String petName) {
+    return 'Le passeggiate di $petName nelle ultime settimane.';
+  }
+
+  @override
+  String get monitoringActivityDistance => 'Distanza';
+
+  @override
+  String get monitoringActivityTime => 'Tempo';
+
+  @override
+  String get monitoringActivityStatWalks => 'Passeggiate';
+
+  @override
+  String monitoringActivityEmpty(String petName) {
+    return 'Nessuna passeggiata negli ultimi 3 mesi. Registra una passeggiata dalla scheda Passeggiate per vedere qui l\'attività di $petName.';
+  }
+
+  @override
+  String monitoringActivityWeekOf(String date) {
+    return 'Settimana dal $date';
+  }
+
+  @override
+  String monitoringActivityWalkCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count passeggiate',
+      one: '1 passeggiata',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get medCatVisit => 'Visite';
+
+  @override
+  String get medCatExam => 'Esami';
+
+  @override
+  String get medCatVaccine => 'Vaccini';
+
+  @override
+  String get medCatTherapy => 'Terapie';
+
+  @override
+  String get medCatDocument => 'Documenti';
+
+  @override
+  String get medCatCondition => 'Patologie';
+
+  @override
+  String get medCatVisitOne => 'Visita';
+
+  @override
+  String get medCatExamOne => 'Esame';
+
+  @override
+  String get medCatVaccineOne => 'Vaccino';
+
+  @override
+  String get medCatTherapyOne => 'Terapia';
+
+  @override
+  String get medCatDocumentOne => 'Documento';
+
+  @override
+  String medCatCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count registrati',
+      one: '1 registrato',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get medSubCheckup => 'Visita di controllo';
+
+  @override
+  String get medSubSpecialist => 'Visita specialistica';
+
+  @override
+  String get medSubFirstVisit => 'Prima visita';
+
+  @override
+  String get medSubEmergency => 'Urgenza';
+
+  @override
+  String get medSubPostSurgery => 'Controllo post-operatorio';
+
+  @override
+  String get medSubBlood => 'Analisi del sangue';
+
+  @override
+  String get medSubUrine => 'Esame delle urine';
+
+  @override
+  String get medSubStool => 'Esame delle feci';
+
+  @override
+  String get medSubXray => 'Radiografia';
+
+  @override
+  String get medSubUltrasound => 'Ecografia';
+
+  @override
+  String get medSubAntiparasitic => 'Antiparassitario';
+
+  @override
+  String get medSubMedication => 'Farmaco';
+
+  @override
+  String get medSubOther => 'Altro';
+
+  @override
+  String get medAddTitle => 'Cosa vuoi aggiungere?';
+
+  @override
+  String get medAddAction => 'Aggiungi';
+
+  @override
+  String get medNewVisit => 'Nuova visita';
+
+  @override
+  String get medNewExam => 'Nuovo esame';
+
+  @override
+  String get medNewVaccine => 'Nuovo vaccino';
+
+  @override
+  String get medNewTherapy => 'Nuova terapia';
+
+  @override
+  String get medNewDocument => 'Nuovo documento';
+
+  @override
+  String get medNewCondition => 'Nuova patologia';
+
+  @override
+  String get medEmptyVisitTitle => 'Nessuna visita registrata';
+
+  @override
+  String medEmptyVisitBody(String petName) {
+    return 'Aggiungi le visite di $petName per ritrovare controlli e indicazioni del veterinario in un posto solo.';
+  }
+
+  @override
+  String get medEmptyVisitAction => 'Aggiungi la prima visita';
+
+  @override
+  String get medEmptyExamTitle => 'Nessun esame registrato';
+
+  @override
+  String medEmptyExamBody(String petName) {
+    return 'Carica gli esami di $petName, come analisi del sangue o radiografie, per averli sempre a portata di mano.';
+  }
+
+  @override
+  String get medEmptyExamAction => 'Aggiungi il primo esame';
+
+  @override
+  String get medEmptyVaccineTitle => 'Nessun vaccino registrato';
+
+  @override
+  String medEmptyVaccineBody(String petName) {
+    return 'Tieni qui i vaccini e i richiami di $petName, con la data di ogni somministrazione.';
+  }
+
+  @override
+  String get medEmptyVaccineAction => 'Aggiungi il primo vaccino';
+
+  @override
+  String get medEmptyTherapyTitle => 'Nessuna terapia registrata';
+
+  @override
+  String medEmptyTherapyBody(String petName) {
+    return 'Annota le terapie di $petName: farmaci, antiparassitari e cure in corso o passate.';
+  }
+
+  @override
+  String get medEmptyTherapyAction => 'Aggiungi la prima terapia';
+
+  @override
+  String get medEmptyDocumentTitle => 'Nessun documento caricato';
+
+  @override
+  String medEmptyDocumentBody(String petName) {
+    return 'Carica referti, certificati e altri documenti di $petName per condividerli con il veterinario.';
+  }
+
+  @override
+  String get medEmptyDocumentAction => 'Aggiungi il primo documento';
+
+  @override
+  String get medEmptyConditionTitle => 'Nessuna patologia registrata';
+
+  @override
+  String medEmptyConditionBody(String petName) {
+    return 'Annota le malattie di $petName, in corso o già risolte, con date e terapia.';
+  }
+
+  @override
+  String get medEmptyConditionAction => 'Aggiungi la prima patologia';
+
+  @override
+  String get medFieldTitle => 'Titolo';
+
+  @override
+  String get medFieldCategory => 'Categoria';
+
+  @override
+  String get medFieldType => 'Tipo';
+
+  @override
+  String get medFieldTypeNone => 'Non specificato';
+
+  @override
+  String get medFieldEventDate => 'Data';
+
+  @override
+  String get medFieldNotes => 'Note';
+
+  @override
+  String get medFieldNotesHint => 'Scrivi una nota facoltativa.';
+
+  @override
+  String get medFieldFile => 'Allegato';
+
+  @override
+  String get medAttachAdd => 'Aggiungi file';
+
+  @override
+  String get medAttachChange => 'Cambia file';
+
+  @override
+  String get medEditDetailsTitle => 'Modifica dettagli';
+
+  @override
+  String get medTitleRequired => 'Scrivi un titolo o allega un file.';
+
+  @override
+  String get medDateInvalid => 'Data non valida (gg/mm/aaaa).';
+
+  @override
+  String get medDatePlaceholder => 'gg/mm/aaaa';
+
+  @override
+  String medSuggestHint(String category) {
+    return 'Dal titolo sembra: $category. Vuoi classificarlo così?';
+  }
+
+  @override
+  String get medSuggestApply => 'Sì, classifica';
+
+  @override
+  String medSuggestPill(String category) {
+    return 'Forse: $category';
+  }
+
+  @override
+  String medActionClassifyAs(String category) {
+    return 'Classifica come $category';
+  }
+
+  @override
+  String get medActionEditDetails => 'Modifica dettagli';
+
+  @override
+  String get medCondName => 'Nome della patologia';
+
+  @override
+  String get medCondNameRequired => 'Scrivi il nome della patologia.';
+
+  @override
+  String get medCondStarted => 'Data di inizio';
+
+  @override
+  String get medCondStatus => 'Stato';
+
+  @override
+  String get medCondOngoing => 'In corso';
+
+  @override
+  String get medCondResolved => 'Risolta';
+
+  @override
+  String get medCondEnded => 'Data di fine';
+
+  @override
+  String get medCondEndBeforeStart =>
+      'La data di fine è precedente a quella di inizio.';
+
+  @override
+  String get medCondTherapy => 'Terapia';
+
+  @override
+  String get medCondTherapyHint => 'Farmaci, dosi, durata…';
+
+  @override
+  String get medCondAttachment => 'Ricetta o documenti';
+
+  @override
+  String medCondSince(String date) {
+    return 'Dal $date';
+  }
+
+  @override
+  String medCondPeriod(String start, String end) {
+    return '$start – $end';
+  }
+
+  @override
+  String get medCondSaveFailed =>
+      'Non sono riuscito a salvare la patologia. Riprova.';
+
+  @override
+  String get medCondDeleteFailed =>
+      'Non sono riuscito a eliminare la patologia. Riprova.';
+
+  @override
+  String get medCondDeleteTitle => 'Eliminare questa patologia?';
+
+  @override
+  String medCondDeleteBody(String name) {
+    return '«$name» verrà eliminata.';
+  }
+
+  @override
+  String get medCondLoadError =>
+      'Non riesco a leggere le patologie. Controlla la connessione e riprova.';
+
+  @override
+  String get medCondUploadFailed =>
+      'Non sono riuscito a caricare il file. Riprova.';
+
+  @override
+  String get medCondOpenFile => 'Apri allegato';
 }

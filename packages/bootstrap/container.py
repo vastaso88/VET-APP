@@ -24,6 +24,7 @@ from packages.core.application.ports.marketplace_listing_repository import (
     MarketplaceListingRepository,
 )
 from packages.core.application.ports.media_storage import MediaStorage
+from packages.core.application.ports.pet_condition_repository import PetConditionRepository
 from packages.core.application.ports.pet_profile_repository import PetProfileRepository
 from packages.core.application.ports.pii_anonymizer import PiiAnonymizer
 from packages.core.application.ports.radar_catalog_repository import RadarCatalogRepository
@@ -34,6 +35,9 @@ from packages.core.application.ports.reminder_repository import ReminderReposito
 from packages.core.application.ports.speech_to_text_provider import SpeechToTextProvider
 from packages.core.application.ports.subscription_repository import SubscriptionRepository
 from packages.core.application.ports.user_location_repository import UserLocationRepository
+from packages.core.application.ports.weight_measurement_repository import (
+    WeightMeasurementRepository,
+)
 from packages.core.application.services.chat_orchestrator import ChatOrchestrator
 from packages.core.application.services.consent_interpreter import ConsentInterpreter
 from packages.core.application.services.create_listing import CreateListingService
@@ -160,6 +164,7 @@ from packages.infrastructure.persistence.in_memory_repositories import (
     InMemoryLlmUsageRepository,
     InMemoryLocalActivityRepository,
     InMemoryMarketplaceListingRepository,
+    InMemoryPetConditionRepository,
     InMemoryPetProfileRepository,
     InMemoryRadarCatalogRepository,
     InMemoryRadarPlacesRepository,
@@ -167,6 +172,7 @@ from packages.infrastructure.persistence.in_memory_repositories import (
     InMemoryReminderRepository,
     InMemorySubscriptionRepository,
     InMemoryUserLocationRepository,
+    InMemoryWeightMeasurementRepository,
 )
 from packages.infrastructure.privacy.noop_pii_anonymizer import NoopPiiAnonymizer
 from packages.infrastructure.privacy.rule_based_pii_anonymizer import RuleBasedPiiAnonymizer
@@ -217,6 +223,7 @@ class ApplicationContainer:
         self.evidence_retriever = self._build_evidence_retriever()
         self.pii_anonymizer = self._build_pii_anonymizer()
         self.clinical_event_repository = self._build_clinical_event_repository()
+        self.pet_condition_repository = self._build_pet_condition_repository()
         self.account_consents_repository = self._build_account_consents_repository()
         self.subscription_repository = self._build_subscription_repository()
         self.developer_emails = frozenset(
@@ -224,6 +231,7 @@ class ApplicationContainer:
         )
         self.user_location_repository = self._build_user_location_repository()
         self.dog_walk_repository = self._build_dog_walk_repository()
+        self.weight_measurement_repository = self._build_weight_measurement_repository()
         self.radar_places_repository = self._build_radar_places_repository()
         self.radar_catalog_repository = self._build_radar_catalog_repository()
         self.radar_reports_repository = self._build_radar_reports_repository()
@@ -245,6 +253,7 @@ class ApplicationContainer:
             medical_record_context_retriever=MedicalRecordContextRetriever(
                 self.clinical_event_repository,
                 attachment_repository=self.chat_attachment_repository,
+                condition_repository=self.pet_condition_repository,
             ),
             consent_interpreter=ConsentInterpreter(self.llm_client),
             enable_interview_loop=settings.enable_interview_loop,
@@ -384,6 +393,7 @@ class ApplicationContainer:
             self.pet_profile_repository,
             attachment_repository=self.chat_attachment_repository,
             reminder_context_retriever=ReminderContextRetriever(self.reminder_repository),
+            weight_measurement_repository=self.weight_measurement_repository,
             max_active_conversations_per_pet=self.settings.max_active_conversations_per_pet,
             quota_exempt_emails=self.developer_emails,
         )
@@ -595,6 +605,23 @@ class ApplicationContainer:
                 raise
         return InMemoryClinicalEventRepository()
 
+    def _build_pet_condition_repository(self) -> PetConditionRepository:
+        if self.settings.persistence_backend == "supabase":
+            try:
+                from packages.infrastructure.persistence.supabase.client import (
+                    build_supabase_client,
+                )
+                from packages.infrastructure.persistence.supabase.supabase_repositories import (
+                    SupabasePetConditionRepository,
+                )
+
+                return SupabasePetConditionRepository(build_supabase_client(self.settings))
+            except ModuleNotFoundError:
+                if self.settings.environment != "production":
+                    return InMemoryPetConditionRepository()
+                raise
+        return InMemoryPetConditionRepository()
+
     def _build_account_consents_repository(self) -> AccountConsentsRepository:
         if self.settings.persistence_backend == "supabase":
             try:
@@ -789,6 +816,23 @@ class ApplicationContainer:
                     return InMemoryDogWalkRepository()
                 raise
         return InMemoryDogWalkRepository()
+
+    def _build_weight_measurement_repository(self) -> WeightMeasurementRepository:
+        if self.settings.persistence_backend == "supabase":
+            try:
+                from packages.infrastructure.persistence.supabase.client import (
+                    build_supabase_client,
+                )
+                from packages.infrastructure.persistence.supabase.supabase_repositories import (
+                    SupabaseWeightMeasurementRepository,
+                )
+
+                return SupabaseWeightMeasurementRepository(build_supabase_client(self.settings))
+            except ModuleNotFoundError:
+                if self.settings.environment != "production":
+                    return InMemoryWeightMeasurementRepository()
+                raise
+        return InMemoryWeightMeasurementRepository()
 
     def _build_marketplace_listing_repository(self) -> MarketplaceListingRepository:
         if self.settings.persistence_backend == "supabase":

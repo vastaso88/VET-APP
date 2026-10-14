@@ -1024,7 +1024,6 @@
   "petsFormBirthDateFuture": "La data di nascita non può essere nel futuro.",
   "petsFormSexLabel": "Sesso",
   "petsFormSexHint": "Seleziona",
-  "petsFormSexError": "Seleziona il sesso.",
   "petsFormSexUnknown": "Sconosciuto",
   "petsFormWeightLabelKg": "Peso (facoltativo, kg)",
   "petsFormWeightLabelLb": "Peso (facoltativo, lb)",
@@ -2887,5 +2886,400 @@
   "accountDeleteSubmit": "Elimina definitivamente il mio account",
   "accountDeleteFailed": "Non sono riuscito a eliminare l'account. Riprova tra poco; se il problema continua, scrivi all'assistenza.",
   "accountDeleteDone": "Il tuo account è stato eliminato.",
-  "accountDeleteReauth": "Per sicurezza serve una conferma recente: riscrivi la password e riprova."
+  "accountDeleteReauth": "Per sicurezza serve una conferma recente: riscrivi la password e riprova.",
+  "petsValueSexUnknownShort": "Non so",
+  "petsValueBodyVeryThin": "Molto magro",
+  "petsValueBodyThin": "Magro",
+  "petsValueBodyNormal": "Normale",
+  "petsValueBodySlightlyOverweight": "Leggermente sovrappeso",
+  "petsValueBodyOverweight": "Sovrappeso",
+  "petsValueActivitySedentary": "Sedentario",
+  "petsValueActivityNormal": "Normale",
+  "petsValueActivityActive": "Attivo",
+  "petsFormSterilized": "Sterilizzato / castrato",
+  "petsFormMicrochipLabel": "N. microchip",
+  "petsFormMicrochipHint": "15 cifre",
+  "petsFormMicrochipInvalid": "Il microchip ha 15 cifre.",
+  "petsFormCoatColorLabel": "Colore del mantello",
+  "petsFormCoatColorHint": "Es. nero, marrone",
+  "petsFormColorLabel": "Colore",
+  "petsFormColorHint": "Es. verde, giallo",
+  "petsFormBodyConditionLabel": "Corporatura",
+  "petsFormBodyConditionHint": "Seleziona corporatura",
+  "petsFormActivityLabel": "Attività",
+  "petsFormActivityHint": "Seleziona attività",
+  "petsFormDogSizeLabelShort": "Taglia",
+  "petsWizardNext": "Prosegui",
+  "petsWizardConfirm": "Conferma",
+  "petsWizardBack": "Indietro",
+  "petsWizardStepSemantics": "Passo {current} di {total}",
+  "@petsWizardStepSemantics": {
+    "placeholders": {
+      "current": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "petsWizardStep1Title": "Parlaci del tuo animale",
+  "petsWizardStep1Subtitle": "Come si chiama?",
+  "petsWizardStep2Title": "Specie e razza",
+  "petsWizardStep2Subtitle": "Seleziona la specie del tuo animale",
+  "petsWizardStep3Title": "Informazioni generali",
+  "petsWizardStep3Subtitle": "Dicci qualcosa in più sul tuo animale",
+  "petsWizardStep4Title": "Informazioni finali",
+  "petsWizardStep4Subtitle": "Quasi finito!",
+  "petsWizardPureBred": "Di razza",
+  "petsWizardMixedBreed": "Meticcio",
+  "petsWizardDoneTitle": "Profilo creato!",
+  "petsWizardDoneMessage": "Complimenti, {name} è stato aggiunto ai tuoi animali.",
+  "@petsWizardDoneMessage": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "petsWizardAddAnother": "Aggiungi un altro animale",
+  "petsWizardFinish": "Fine",
+  "petsDataTitle": "Dati animale",
+  "petsDataSectionIdentity": "Anagrafica",
+  "petsDataSectionPhysical": "Caratteristiche fisiche",
+  "petsDataSectionDocuments": "Documenti",
+  "petsDataNotProvided": "Non indicato",
+  "petsDataMicrochipMissing": "Mancante",
+  "petsDataMicrochipMissingDogHint": "Per i cani il microchip è obbligatorio.",
+  "petsDataAddMicrochip": "Aggiungi microchip",
+  "petsDataWeightLabel": "Peso",
+  "petsDataSummarySterilized": "sterilizzato",
+  "petsListMicrochipMissing": "Microchip mancante",
+  "monitoringTitle": "Monitoraggio",
+  "monitoringEntrySubtitleWeight": "Peso e corporatura",
+  "monitoringEntrySubtitleWithActivity": "Peso, corporatura e attività",
+  "monitoringAddMeasurement": "Nuova misurazione",
+  "monitoringCurrentWeight": "Peso attuale",
+  "monitoringMeasuredOn": "Misurato il {date}",
+  "@monitoringMeasuredOn": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "monitoringChangeSince": "{change} dal {date}",
+  "@monitoringChangeSince": {
+    "placeholders": {
+      "change": {
+        "type": "String"
+      },
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "monitoringEmptyTitle": "Nessuna misurazione ancora",
+  "monitoringEmptyBody": "Registra il peso di {petName} per seguirne l'andamento nel tempo.",
+  "@monitoringEmptyBody": {
+    "placeholders": {
+      "petName": {
+        "type": "String"
+      }
+    }
+  },
+  "monitoringBcsTitle": "Corporatura",
+  "monitoringBcsAsOf": "Dalla misurazione del {date}",
+  "@monitoringBcsAsOf": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "monitoringBcsNone": "Indica la corporatura in una misurazione per vederla qui.",
+  "monitoringBcsVeryThin": "Molto magro",
+  "monitoringBcsThin": "Magro",
+  "monitoringBcsNormal": "Normale",
+  "monitoringBcsSlightlyOverweight": "Leggermente sovrappeso",
+  "monitoringBcsOverweight": "Sovrappeso",
+  "monitoringChartTitleWeight": "Andamento peso",
+  "monitoringChartTitleGrowth": "Curva di crescita",
+  "monitoringChartGrowthHint": "Il peso di {petName} in base all'età, senza curve di riferimento: solo le sue misurazioni.",
+  "@monitoringChartGrowthHint": {
+    "placeholders": {
+      "petName": {
+        "type": "String"
+      }
+    }
+  },
+  "monitoringChartSinglePoint": "Aggiungi un'altra misurazione per vedere l'andamento.",
+  "monitoringAxisAgeMonths": "Età (mesi)",
+  "monitoringAxisWeight": "Peso ({unit})",
+  "@monitoringAxisWeight": {
+    "placeholders": {
+      "unit": {
+        "type": "String"
+      }
+    }
+  },
+  "monitoringTooltipAge": "{months, plural, =1{1 mese} other{{months} mesi}}",
+  "@monitoringTooltipAge": {
+    "placeholders": {
+      "months": {
+        "type": "int"
+      }
+    }
+  },
+  "monitoringHistoryTitle": "Storico",
+  "monitoringDeleteTitle": "Eliminare la misurazione?",
+  "monitoringDeleteMessage": "Il peso del {date} verrà tolto dallo storico.",
+  "@monitoringDeleteMessage": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "monitoringSheetTitleNew": "Nuova misurazione",
+  "monitoringSheetTitleEdit": "Modifica misurazione",
+  "monitoringFieldDate": "Data",
+  "monitoringFieldWeightKg": "Peso (kg)",
+  "monitoringFieldWeightLb": "Peso (lb)",
+  "monitoringFieldWeightHintKg": "Es. 10,5",
+  "monitoringFieldWeightHintLb": "Es. 22,5",
+  "monitoringFieldBcs": "Corporatura (facoltativa)",
+  "monitoringFieldNote": "Nota (facoltativa)",
+  "monitoringErrorWeight": "Inserisci un peso valido, maggiore di zero.",
+  "monitoringErrorDateFuture": "La data non può essere nel futuro.",
+  "monitoringErrorDateBirth": "La data è precedente alla nascita di {petName}.",
+  "@monitoringErrorDateBirth": {
+    "placeholders": {
+      "petName": {
+        "type": "String"
+      }
+    }
+  },
+  "monitoringSaveFailed": "Non sono riuscito a salvare la misurazione: riprova.",
+  "monitoringDeleteFailed": "Non sono riuscito a eliminare la misurazione: riprova.",
+  "monitoringActivityTitle": "Attività",
+  "monitoringActivitySubtitle": "Le passeggiate di {petName} nelle ultime settimane.",
+  "@monitoringActivitySubtitle": {
+    "placeholders": {
+      "petName": {
+        "type": "String"
+      }
+    }
+  },
+  "monitoringActivityDistance": "Distanza",
+  "monitoringActivityTime": "Tempo",
+  "monitoringActivityStatWalks": "Passeggiate",
+  "monitoringActivityEmpty": "Nessuna passeggiata negli ultimi 3 mesi. Registra una passeggiata dalla scheda Passeggiate per vedere qui l'attività di {petName}.",
+  "@monitoringActivityEmpty": {
+    "placeholders": {
+      "petName": {
+        "type": "String"
+      }
+    }
+  },
+  "monitoringActivityWeekOf": "Settimana dal {date}",
+  "@monitoringActivityWeekOf": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "monitoringActivityWalkCount": "{count, plural, =1{1 passeggiata} other{{count} passeggiate}}",
+  "@monitoringActivityWalkCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "medCatVisit": "Visite",
+  "medCatExam": "Esami",
+  "medCatVaccine": "Vaccini",
+  "medCatTherapy": "Terapie",
+  "medCatDocument": "Documenti",
+  "medCatCondition": "Patologie",
+  "medCatVisitOne": "Visita",
+  "medCatExamOne": "Esame",
+  "medCatVaccineOne": "Vaccino",
+  "medCatTherapyOne": "Terapia",
+  "medCatDocumentOne": "Documento",
+  "medCatCount": "{count, plural, =1{1 registrato} other{{count} registrati}}",
+  "@medCatCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "medSubCheckup": "Visita di controllo",
+  "medSubSpecialist": "Visita specialistica",
+  "medSubFirstVisit": "Prima visita",
+  "medSubEmergency": "Urgenza",
+  "medSubPostSurgery": "Controllo post-operatorio",
+  "medSubBlood": "Analisi del sangue",
+  "medSubUrine": "Esame delle urine",
+  "medSubStool": "Esame delle feci",
+  "medSubXray": "Radiografia",
+  "medSubUltrasound": "Ecografia",
+  "medSubAntiparasitic": "Antiparassitario",
+  "medSubMedication": "Farmaco",
+  "medSubOther": "Altro",
+  "medAddTitle": "Cosa vuoi aggiungere?",
+  "medAddAction": "Aggiungi",
+  "medNewVisit": "Nuova visita",
+  "medNewExam": "Nuovo esame",
+  "medNewVaccine": "Nuovo vaccino",
+  "medNewTherapy": "Nuova terapia",
+  "medNewDocument": "Nuovo documento",
+  "medNewCondition": "Nuova patologia",
+  "medEmptyVisitTitle": "Nessuna visita registrata",
+  "medEmptyVisitBody": "Aggiungi le visite di {petName} per ritrovare controlli e indicazioni del veterinario in un posto solo.",
+  "@medEmptyVisitBody": {
+    "placeholders": {
+      "petName": {
+        "type": "String"
+      }
+    }
+  },
+  "medEmptyVisitAction": "Aggiungi la prima visita",
+  "medEmptyExamTitle": "Nessun esame registrato",
+  "medEmptyExamBody": "Carica gli esami di {petName}, come analisi del sangue o radiografie, per averli sempre a portata di mano.",
+  "@medEmptyExamBody": {
+    "placeholders": {
+      "petName": {
+        "type": "String"
+      }
+    }
+  },
+  "medEmptyExamAction": "Aggiungi il primo esame",
+  "medEmptyVaccineTitle": "Nessun vaccino registrato",
+  "medEmptyVaccineBody": "Tieni qui i vaccini e i richiami di {petName}, con la data di ogni somministrazione.",
+  "@medEmptyVaccineBody": {
+    "placeholders": {
+      "petName": {
+        "type": "String"
+      }
+    }
+  },
+  "medEmptyVaccineAction": "Aggiungi il primo vaccino",
+  "medEmptyTherapyTitle": "Nessuna terapia registrata",
+  "medEmptyTherapyBody": "Annota le terapie di {petName}: farmaci, antiparassitari e cure in corso o passate.",
+  "@medEmptyTherapyBody": {
+    "placeholders": {
+      "petName": {
+        "type": "String"
+      }
+    }
+  },
+  "medEmptyTherapyAction": "Aggiungi la prima terapia",
+  "medEmptyDocumentTitle": "Nessun documento caricato",
+  "medEmptyDocumentBody": "Carica referti, certificati e altri documenti di {petName} per condividerli con il veterinario.",
+  "@medEmptyDocumentBody": {
+    "placeholders": {
+      "petName": {
+        "type": "String"
+      }
+    }
+  },
+  "medEmptyDocumentAction": "Aggiungi il primo documento",
+  "medEmptyConditionTitle": "Nessuna patologia registrata",
+  "medEmptyConditionBody": "Annota le malattie di {petName}, in corso o già risolte, con date e terapia.",
+  "@medEmptyConditionBody": {
+    "placeholders": {
+      "petName": {
+        "type": "String"
+      }
+    }
+  },
+  "medEmptyConditionAction": "Aggiungi la prima patologia",
+  "medFieldTitle": "Titolo",
+  "medFieldCategory": "Categoria",
+  "medFieldType": "Tipo",
+  "medFieldTypeNone": "Non specificato",
+  "medFieldEventDate": "Data",
+  "medFieldNotes": "Note",
+  "medFieldNotesHint": "Scrivi una nota facoltativa.",
+  "medFieldFile": "Allegato",
+  "medAttachAdd": "Aggiungi file",
+  "medAttachChange": "Cambia file",
+  "medEditDetailsTitle": "Modifica dettagli",
+  "medTitleRequired": "Scrivi un titolo o allega un file.",
+  "medDateInvalid": "Data non valida (gg/mm/aaaa).",
+  "medDatePlaceholder": "gg/mm/aaaa",
+  "medSuggestHint": "Dal titolo sembra: {category}. Vuoi classificarlo così?",
+  "@medSuggestHint": {
+    "placeholders": {
+      "category": {
+        "type": "String"
+      }
+    }
+  },
+  "medSuggestApply": "Sì, classifica",
+  "medSuggestPill": "Forse: {category}",
+  "@medSuggestPill": {
+    "placeholders": {
+      "category": {
+        "type": "String"
+      }
+    }
+  },
+  "medActionClassifyAs": "Classifica come {category}",
+  "@medActionClassifyAs": {
+    "placeholders": {
+      "category": {
+        "type": "String"
+      }
+    }
+  },
+  "medActionEditDetails": "Modifica dettagli",
+  "medCondName": "Nome della patologia",
+  "medCondNameRequired": "Scrivi il nome della patologia.",
+  "medCondStarted": "Data di inizio",
+  "medCondStatus": "Stato",
+  "medCondOngoing": "In corso",
+  "medCondResolved": "Risolta",
+  "medCondEnded": "Data di fine",
+  "medCondEndBeforeStart": "La data di fine è precedente a quella di inizio.",
+  "medCondTherapy": "Terapia",
+  "medCondTherapyHint": "Farmaci, dosi, durata…",
+  "medCondAttachment": "Ricetta o documenti",
+  "medCondSince": "Dal {date}",
+  "@medCondSince": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "medCondPeriod": "{start} – {end}",
+  "@medCondPeriod": {
+    "placeholders": {
+      "start": {
+        "type": "String"
+      },
+      "end": {
+        "type": "String"
+      }
+    }
+  },
+  "medCondSaveFailed": "Non sono riuscito a salvare la patologia. Riprova.",
+  "medCondDeleteFailed": "Non sono riuscito a eliminare la patologia. Riprova.",
+  "medCondDeleteTitle": "Eliminare questa patologia?",
+  "medCondDeleteBody": "«{name}» verrà eliminata.",
+  "@medCondDeleteBody": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "medCondLoadError": "Non riesco a leggere le patologie. Controlla la connessione e riprova.",
+  "medCondUploadFailed": "Non sono riuscito a caricare il file. Riprova.",
+  "medCondOpenFile": "Apri allegato"
 }

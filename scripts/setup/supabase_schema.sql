@@ -47,6 +47,45 @@ alter table public.pet_profiles add column if not exists habitat jsonb;
 alter table public.pet_profiles
     add column if not exists aquarium_stock jsonb not null default '[]'::jsonb;
 
+-- Profilo animale v2 (2026-10-14): optional details, all nullable.
+-- `is_sterilized` is separate from `sex`; body_condition and activity_level
+-- hold language-independent codes (the app translates them).
+alter table public.pet_profiles add column if not exists is_sterilized boolean;
+alter table public.pet_profiles add column if not exists microchip_number text;
+alter table public.pet_profiles add column if not exists coat_color text;
+alter table public.pet_profiles add column if not exists body_condition text;
+alter table public.pet_profiles add column if not exists activity_level text;
+
+alter table public.pet_profiles drop constraint if exists pet_profiles_microchip_number_check;
+alter table public.pet_profiles add constraint pet_profiles_microchip_number_check
+    check (microchip_number is null or microchip_number ~ '^[0-9]{15}$');
+alter table public.pet_profiles drop constraint if exists pet_profiles_body_condition_check;
+alter table public.pet_profiles add constraint pet_profiles_body_condition_check
+    check (body_condition is null or body_condition in
+        ('very_thin', 'thin', 'normal', 'slightly_overweight', 'overweight'));
+alter table public.pet_profiles drop constraint if exists pet_profiles_activity_level_check;
+alter table public.pet_profiles add constraint pet_profiles_activity_level_check
+    check (activity_level is null or activity_level in ('sedentary', 'normal', 'active'));
+
+-- Sex is now Maschio / Femmina / Sconosciuto; the old combined values are
+-- split into sex + is_sterilized. Idempotent: once converted, no row matches.
+-- (tests/unit/test_pet_sex_migration.py runs this exact statement.)
+-- migrate-sex:begin
+update public.pet_profiles
+set is_sterilized = case sex
+        when 'Maschio castrato' then true
+        when 'Femmina sterilizzata' then true
+        else false
+    end,
+    sex = case sex
+        when 'Maschio castrato' then 'Maschio'
+        when 'Maschio intero' then 'Maschio'
+        when 'Femmina sterilizzata' then 'Femmina'
+        when 'Femmina intera' then 'Femmina'
+    end
+where sex in ('Maschio castrato', 'Maschio intero', 'Femmina sterilizzata', 'Femmina intera');
+-- migrate-sex:end
+
 create table if not exists public.conversations (
     id text primary key,
     owner_id text not null,
@@ -132,6 +171,40 @@ alter table public.clinical_events alter column event_date set default current_d
 -- definition; the chat does not need it and old rows do not have it.
 alter table public.clinical_events alter column pet_name drop not null;
 
+-- Cartella clinica per categorie (2026-10-14). Every entry has a category
+-- (visit / exam / vaccine / therapy / document), an optional finer type for
+-- visits, exams and therapies, and the owner's own notes. `event_date`
+-- (above) is the date of the event, which the owner can now set apart from
+-- the day the file was uploaded. Rows written before the categories existed
+-- become "document"; re-running only touches rows still without a valid one.
+alter table public.clinical_events add column if not exists category text;
+alter table public.clinical_events add column if not exists subtype text;
+alter table public.clinical_events add column if not exists notes text;
+update public.clinical_events
+    set category = 'document'
+    where category is null
+       or category not in ('visit', 'exam', 'vaccine', 'therapy', 'document');
+alter table public.clinical_events alter column category set default 'document';
+alter table public.clinical_events alter column category set not null;
+
+-- Patologie (2026-10-14): one row per illness of a pet. `status` is
+-- 'ongoing' or 'resolved'; `ended_on` only when resolved. An optional file
+-- goes through the same chat-attachments upload as the referti.
+create table if not exists public.pet_conditions (
+    id text primary key,
+    owner_id text not null default auth.uid()::text,
+    pet_id text not null references public.pet_profiles(id) on delete cascade,
+    name text not null,
+    started_on date,
+    status text not null default 'ongoing',
+    ended_on date,
+    therapy text,
+    notes text,
+    attachment_id text,
+    attachment_name text,
+    created_at timestamptz not null default now()
+);
+
 create table if not exists public.reminders (
     id text primary key,
     owner_id text not null,
@@ -181,12 +254,15 @@ create index if not exists idx_pet_profiles_owner_id on public.pet_profiles(owne
 create index if not exists idx_conversations_owner_id on public.conversations(owner_id);
 create index if not exists idx_conversations_pet_id on public.conversations(pet_id);
 create index if not exists idx_clinical_events_pet_id on public.clinical_events(pet_id);
+create index if not exists idx_pet_conditions_pet_id on public.pet_conditions(pet_id);
+create index if not exists idx_pet_conditions_owner_id on public.pet_conditions(owner_id);
 create index if not exists idx_reminders_owner_id on public.reminders(owner_id);
 create index if not exists idx_reminders_pet_id on public.reminders(pet_id);
 
 alter table public.pet_profiles enable row level security;
 alter table public.conversations enable row level security;
 alter table public.clinical_events enable row level security;
+alter table public.pet_conditions enable row level security;
 alter table public.reminders enable row level security;
 alter table public.account_consents enable row level security;
 alter table public.subscriptions enable row level security;
@@ -284,6 +360,90 @@ with check (
           and public.pet_profiles.owner_id = auth.uid()::text
     )
 );
+
+-- The app renames, recategorizes and deletes its own entries: policies are
+-- permissive (OR-ed), so these add to whatever the live table already has.
+drop policy if exists clinical_events_update_own on public.clinical_events;
+create policy clinical_events_update_own
+on public.clinical_events
+for update
+using (
+    pet_id is not null
+    and exists (
+        select 1
+        from public.pet_profiles
+        where public.pet_profiles.id = public.clinical_events.pet_id
+          and public.pet_profiles.owner_id = auth.uid()::text
+    )
+)
+with check (
+    exists (
+        select 1
+        from public.pet_profiles
+        where public.pet_profiles.id = public.clinical_events.pet_id
+          and public.pet_profiles.owner_id = auth.uid()::text
+    )
+);
+
+drop policy if exists clinical_events_delete_own on public.clinical_events;
+create policy clinical_events_delete_own
+on public.clinical_events
+for delete
+using (
+    pet_id is not null
+    and exists (
+        select 1
+        from public.pet_profiles
+        where public.pet_profiles.id = public.clinical_events.pet_id
+          and public.pet_profiles.owner_id = auth.uid()::text
+    )
+);
+
+-- pet_conditions: the owner's own list of a pet's past and current illnesses
+-- (the "Patologie" tile of the cartella clinica). Owner only: every policy
+-- checks both the row's owner and that the pet is theirs. The chat reads the
+-- ongoing ones (name and start date only), with the owner's consent, through
+-- the backend's service role.
+drop policy if exists pet_conditions_select_own on public.pet_conditions;
+create policy pet_conditions_select_own
+on public.pet_conditions
+for select
+using (owner_id = auth.uid()::text);
+
+drop policy if exists pet_conditions_insert_own on public.pet_conditions;
+create policy pet_conditions_insert_own
+on public.pet_conditions
+for insert
+with check (
+    owner_id = auth.uid()::text
+    and exists (
+        select 1
+        from public.pet_profiles
+        where public.pet_profiles.id = public.pet_conditions.pet_id
+          and public.pet_profiles.owner_id = auth.uid()::text
+    )
+);
+
+drop policy if exists pet_conditions_update_own on public.pet_conditions;
+create policy pet_conditions_update_own
+on public.pet_conditions
+for update
+using (owner_id = auth.uid()::text)
+with check (
+    owner_id = auth.uid()::text
+    and exists (
+        select 1
+        from public.pet_profiles
+        where public.pet_profiles.id = public.pet_conditions.pet_id
+          and public.pet_profiles.owner_id = auth.uid()::text
+    )
+);
+
+drop policy if exists pet_conditions_delete_own on public.pet_conditions;
+create policy pet_conditions_delete_own
+on public.pet_conditions
+for delete
+using (owner_id = auth.uid()::text);
 
 drop policy if exists reminders_select_own on public.reminders;
 create policy reminders_select_own
@@ -1523,3 +1683,62 @@ begin
     end if;
 end
 $$;
+
+-- Misurazioni del peso (pagina "Monitoraggio" del pet, 2026-10-14). Una riga
+-- per pesata: data, peso SEMPRE in kg (l'app converte da/verso lb nella
+-- visualizzazione), corporatura facoltativa a 5 livelli (1 molto magro ...
+-- 5 sovrappeso) e nota. L'app legge/scrive direttamente da Supabase (come
+-- pet_profiles e dog_walks); il backend della chat legge l'ultima riga con la
+-- service key. Non per i pesci/acquari (filtro lato app).
+create table if not exists public.pet_weight_measurements (
+    id text primary key,
+    pet_id text not null references public.pet_profiles(id) on delete cascade,
+    owner_id text not null,
+    measured_at date not null,
+    weight_kg numeric(7, 3) not null check (weight_kg > 0 and weight_kg <= 2000),
+    body_condition smallint check (body_condition between 1 and 5),
+    note text check (note is null or char_length(note) <= 500),
+    created_at timestamptz not null default now()
+);
+
+create index if not exists idx_pet_weight_measurements_pet_date
+    on public.pet_weight_measurements(pet_id, measured_at desc);
+create index if not exists idx_pet_weight_measurements_owner_id
+    on public.pet_weight_measurements(owner_id);
+
+alter table public.pet_weight_measurements enable row level security;
+
+-- Solo il proprietario: stessa forma di dog_walks (insert verifica anche che
+-- il pet sia suo).
+drop policy if exists pet_weight_measurements_select_own on public.pet_weight_measurements;
+create policy pet_weight_measurements_select_own
+on public.pet_weight_measurements
+for select
+using (owner_id = auth.uid()::text);
+
+drop policy if exists pet_weight_measurements_insert_own on public.pet_weight_measurements;
+create policy pet_weight_measurements_insert_own
+on public.pet_weight_measurements
+for insert
+with check (
+    owner_id = auth.uid()::text
+    and exists (
+        select 1
+        from public.pet_profiles
+        where public.pet_profiles.id = public.pet_weight_measurements.pet_id
+          and public.pet_profiles.owner_id = auth.uid()::text
+    )
+);
+
+drop policy if exists pet_weight_measurements_update_own on public.pet_weight_measurements;
+create policy pet_weight_measurements_update_own
+on public.pet_weight_measurements
+for update
+using (owner_id = auth.uid()::text)
+with check (owner_id = auth.uid()::text);
+
+drop policy if exists pet_weight_measurements_delete_own on public.pet_weight_measurements;
+create policy pet_weight_measurements_delete_own
+on public.pet_weight_measurements
+for delete
+using (owner_id = auth.uid()::text);
