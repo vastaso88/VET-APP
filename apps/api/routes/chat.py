@@ -19,6 +19,7 @@ def send_chat_message(
     result = container.send_chat_message_service().execute(
         SendChatMessageInput(
             owner_id=user.id,
+            owner_email=user.email,
             owner_display_name=user.display_name,
             language=resolve_language(request.language, accept_language),
             **fields,

@@ -43,7 +43,8 @@ from packages.bootstrap.container import ApplicationContainer
 from packages.shared.config.settings import Settings
 
 container = ApplicationContainer(Settings())
-print(container.llm_client.__class__.__name__)
+client = container.llm_client
+print(getattr(client, 'inner', client).__class__.__name__)
 """
     result = subprocess.run(
         [sys.executable, "-c", code],
