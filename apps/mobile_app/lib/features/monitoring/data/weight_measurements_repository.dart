@@ -5,6 +5,8 @@ import '../../../shared/auth/current_owner.dart';
 import '../../../shared/config/app_runtime_config_loader.dart';
 import '../../pets/data/pet_demo_store.dart';
 import '../../pets/domain/pet_format.dart';
+import '../../pets/domain/pet_models.dart';
+import '../../settings/domain/unit_conversion.dart';
 import '../domain/body_condition.dart';
 import '../domain/weight_measurement.dart';
 
@@ -152,18 +154,62 @@ class WeightMeasurementsRepository {
     _known[petId] =
         apply(List.of(_known[petId] ?? const <WeightMeasurement>[]));
     changes.value++;
-    await _syncProfileWeight(petId);
+    await _syncProfile(petId);
     return true;
   }
 
-  /// Makes the latest weighing the weight shown in the pet profile.
-  Future<void> _syncProfileWeight(String petId) async {
+  /// Makes the latest weighing the weight shown in the pet profile, and the
+  /// latest recorded body condition its "corporatura" (one value, not two).
+  /// A profile corporatura is never cleared: with no weighing carrying one,
+  /// the owner's own estimate stays.
+  Future<void> _syncProfile(String petId) async {
     final pet = PetDemoStore.instance.byId(petId);
     if (pet == null) return;
-    final latest =
-        latestMeasurement(_known[petId] ?? const <WeightMeasurement>[]);
+    final known = _known[petId] ?? const <WeightMeasurement>[];
+    final latest = latestMeasurement(known);
     final label = latest == null ? '' : formatPetWeight(latest.weightKg);
-    if (label == pet.weightLabel) return;
-    await PetDemoStore.instance.upsert(pet.copyWith(weightLabel: label));
+    final condition = latestWithBodyCondition(known)?.bodyCondition?.code;
+    final weightChanged = label != pet.weightLabel;
+    final conditionChanged =
+        condition != null && condition != pet.bodyCondition;
+    if (!weightChanged && !conditionChanged) return;
+    await PetDemoStore.instance.upsert(pet.copyWith(
+      weightLabel: weightChanged ? label : null,
+      bodyCondition: conditionChanged ? condition : null,
+    ));
+  }
+
+  /// The body condition of the latest weighing that recorded one, or null.
+  Future<WeightMeasurement?> latestWithCondition(String petId) async =>
+      latestWithBodyCondition(await load(petId));
+
+  /// A weight or a corporatura changed in the profile edit form is a new
+  /// weighing, today: ONE weighing even when both changed, so what the owner
+  /// sets is what the app shows and the chat reads. A weighing needs a
+  /// weight: when only the corporatura changed, the weight already in the
+  /// profile is used; with none, nothing is recorded (the profile alone is
+  /// updated). Fish and aquariums have no weighings. Returns whether one was
+  /// recorded.
+  Future<bool> recordProfileEdit({
+    required PetProfile before,
+    required PetProfile after,
+    double? newWeightKg,
+  }) async {
+    if (!supportsWeightMonitoring(after)) return false;
+    final weightChanged = newWeightKg != null &&
+        parseWeightLabelKg(formatPetWeight(newWeightKg)) !=
+            parseWeightLabelKg(before.weightLabel);
+    final condition = BodyCondition.fromCode(after.bodyCondition);
+    final conditionChanged =
+        condition != null && after.bodyCondition != before.bodyCondition;
+    if (!weightChanged && !conditionChanged) return false;
+    final weightKg = newWeightKg ?? parseWeightLabelKg(after.weightLabel);
+    if (weightKg == null) return false;
+    return add(create(
+      petId: after.id,
+      measuredOn: DateTime.now(),
+      weightKg: weightKg,
+      bodyCondition: conditionChanged ? condition : null,
+    ));
   }
 }

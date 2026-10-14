@@ -5,6 +5,8 @@ import '../../../../design_system/tokens/app_radii.dart';
 import '../../../../design_system/tokens/app_spacing.dart';
 import '../../../../design_system/tokens/app_text_styles.dart';
 import '../../../../l10n/l10n.dart';
+import '../../../monitoring/data/weight_measurements_repository.dart';
+import '../../../monitoring/domain/body_condition.dart';
 import '../../../settings/data/unit_settings_store.dart';
 import '../../../settings/domain/unit_conversion.dart';
 import '../../data/pet_demo_store.dart';
@@ -100,16 +102,29 @@ class PetDataPage extends StatefulWidget {
 class _PetDataPageState extends State<PetDataPage> {
   late PetProfile _pet = widget.initialPet;
 
+  /// Body condition of the latest weighing that recorded one: it wins over
+  /// the profile's own value, so the app shows a single corporatura.
+  BodyCondition? _measuredCondition;
+
   @override
   void initState() {
     super.initState();
     PetDemoStore.changes.addListener(_refresh);
+    WeightMeasurementsRepository.changes.addListener(_loadMeasuredCondition);
+    _loadMeasuredCondition();
   }
 
   @override
   void dispose() {
     PetDemoStore.changes.removeListener(_refresh);
+    WeightMeasurementsRepository.changes.removeListener(_loadMeasuredCondition);
     super.dispose();
+  }
+
+  Future<void> _loadMeasuredCondition() async {
+    final latest = await WeightMeasurementsRepository().latestWithCondition(widget.petId);
+    if (!mounted) return;
+    setState(() => _measuredCondition = latest?.bodyCondition);
   }
 
   void _refresh() {
@@ -193,7 +208,7 @@ class _PetDataPageState extends State<PetDataPage> {
   List<Widget> _physicalRows(BuildContext context, PetProfile pet) {
     final t = context.l10n;
     final weight = pet.weightLabel.trim();
-    final bodyCondition = pet.bodyCondition;
+    final bodyCondition = _measuredCondition ?? BodyCondition.fromCode(pet.bodyCondition);
     final activity = pet.activityLevel;
     return [
       if (speciesHasSize(pet.species))
@@ -216,7 +231,7 @@ class _PetDataPageState extends State<PetDataPage> {
           label: t.petsFormBodyConditionLabel,
           value: _orNotProvided(
             context,
-            bodyCondition == null ? null : localizedBodyConditionLabel(bodyCondition),
+            bodyCondition?.label,
           ),
         ),
         PetInfoRow(

@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:vet_app_mobile/app/theme/app_theme.dart';
+import 'package:vet_app_mobile/features/monitoring/data/weight_measurements_repository.dart';
+import 'package:vet_app_mobile/features/monitoring/domain/body_condition.dart';
 import 'package:vet_app_mobile/features/pets/domain/pet_models.dart';
 import 'package:vet_app_mobile/features/pets/presentation/pages/pet_data_page.dart';
 import 'package:vet_app_mobile/features/pets/presentation/pages/pet_edit_page.dart';
@@ -88,6 +90,29 @@ void main() {
       expect(find.text(text), findsOneWidget, reason: text);
     }
     expect(find.text('Mancante'), findsNothing);
+  });
+
+  testWidgets('Dati animale shows the corporatura of the latest weighing over the profile one',
+      (tester) async {
+    _tallView(tester);
+    WeightMeasurementsRepository.resetForTest();
+    final pet = _pet(bodyCondition: 'thin');
+    final repository = WeightMeasurementsRepository(ownerIdResolver: () => 'owner-1');
+    await tester.runAsync(() async {
+      await repository.add(repository.create(
+        petId: pet.id,
+        measuredOn: DateTime(2026, 10, 1),
+        weightKg: 23,
+        bodyCondition: BodyCondition.overweight,
+      ));
+    });
+
+    await tester.pumpWidget(_app(PetDataPage(petId: pet.id, initialPet: pet)));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Sovrappeso'), findsOneWidget);
+    expect(find.text('Magro'), findsNothing);
+    WeightMeasurementsRepository.resetForTest();
   });
 
   testWidgets('a dog without microchip is flagged with a way to add it', (tester) async {

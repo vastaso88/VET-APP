@@ -1,3 +1,4 @@
+import '../../monitoring/domain/body_condition.dart';
 import 'pet_models.dart';
 
 /// Optional pet details (profile v2, 2026-10-14): sex vs neutering, microchip,
@@ -12,14 +13,8 @@ const sexUnknown = 'Sconosciuto';
 /// The three stored sex values (neutering is a separate flag).
 const petSexValues = [sexMale, sexFemale, sexUnknown];
 
-/// Body condition, thinnest to heaviest.
-const petBodyConditions = [
-  'very_thin',
-  'thin',
-  'normal',
-  'slightly_overweight',
-  'overweight',
-];
+/// Body condition codes, thinnest to heaviest (see [BodyCondition]).
+final petBodyConditions = BodyCondition.codes;
 
 const petActivityLevels = ['sedentary', 'normal', 'active'];
 

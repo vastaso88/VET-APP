@@ -440,6 +440,9 @@ class ChatOrchestratorInput(BaseModel):
     # microchip number and coat colour are deliberately not part of the input.
     is_sterilized: bool | None = None
     body_condition: str | None = None
+    # Date ("14 ottobre") of the weighing `body_condition` comes from; None
+    # when it is the owner's own estimate from the profile.
+    body_condition_as_of: str | None = None
     activity_level: str | None = None
     # The pet's active, relevant reminders as plain text (see
     # ReminderContextRetriever) — e.g. an ongoing therapy course.
@@ -2329,6 +2332,7 @@ class ChatOrchestrator:
                 neutered=data.is_sterilized,
                 body_condition=data.body_condition,
                 activity_level=data.activity_level,
+                body_condition_as_of=data.body_condition_as_of,
             )
         )
         if data.notes:

@@ -28,8 +28,12 @@ from packages.core.domain.medical_record.consent_text import (
     effective_decision,
 )
 from packages.core.domain.medical_record.models import MedicalRecordConsentRecord
+from packages.core.domain.pet_profile.body_condition import body_condition_code
 from packages.core.domain.pet_profile.models import PetProfile
-from packages.core.domain.pet_profile.weight_measurement import weight_label_with_date
+from packages.core.domain.pet_profile.weight_measurement import (
+    format_date_it,
+    weight_label_with_date,
+)
 from packages.shared.errors.base import ValidationError
 
 # How many recent messages cross into the orchestrator (spec v3 §38: never
@@ -145,6 +149,24 @@ class SendChatMessageService:
                 return weight_label_with_date(latest, today)
         return pet_profile.weight_label
 
+    def _body_condition_context(
+        self, owner_id: str, pet_profile: PetProfile, today: date
+    ) -> tuple[str | None, str | None]:
+        """(code, date) of the pet's one body condition: the latest weighing
+        that recorded it (with its date), else the owner's estimate on the
+        profile (no date). Never two different values."""
+        if self._weight_measurement_repository is not None:
+            try:
+                latest = self._weight_measurement_repository.latest_with_body_condition_for_pet(
+                    owner_id, pet_profile.id
+                )
+            except Exception:
+                latest = None
+            code = body_condition_code(latest.body_condition) if latest is not None else None
+            if latest is not None and code is not None:
+                return code, format_date_it(latest.measured_at, today)
+        return pet_profile.body_condition, None
+
     def execute(self, data: SendChatMessageInput) -> SendChatMessageOutput:
         # A photo alone is a message (an edited message may keep only its
         # attachment); no text and no attachment is not.
@@ -200,6 +222,9 @@ class SendChatMessageService:
             awaiting_medical_record_consent = False
 
         today = datetime.now(UTC).date()
+        body_condition, body_condition_as_of = self._body_condition_context(
+            data.owner_id, pet_profile, today
+        )
         reminders_context = (
             self._reminder_context_retriever.summarize_for_pet(data.owner_id, pet_profile.id, today)
             if self._reminder_context_retriever is not None
@@ -220,7 +245,8 @@ class SendChatMessageService:
                 weight_label=self._weight_label(data.owner_id, pet_profile, today),
                 dog_size_category=pet_profile.dog_size_category,
                 is_sterilized=pet_profile.is_sterilized,
-                body_condition=pet_profile.body_condition,
+                body_condition=body_condition,
+                body_condition_as_of=body_condition_as_of,
                 activity_level=pet_profile.activity_level,
                 reminders_context=reminders_context,
                 language=normalize_language(data.language),

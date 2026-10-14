@@ -23,15 +23,6 @@ _MONTHS_IT = (
     "dicembre",
 )
 
-# Body condition levels as the app stores them (1..5).
-_BODY_CONDITION_IT = {
-    1: "molto magro",
-    2: "magro",
-    3: "normale",
-    4: "leggermente sovrappeso",
-    5: "sovrappeso",
-}
-
 
 class WeightMeasurement(BaseModel):
     pet_id: str
@@ -48,15 +39,16 @@ def format_weight_kg(weight_kg: float) -> str:
     return f"{text.replace('.', ',')} kg"
 
 
-def weight_label_with_date(measurement: WeightMeasurement, today: date) -> str:
-    """ "23 kg al 14 ottobre" (with the year when it is not the current one),
-    followed by the body condition when the weighing recorded it."""
-    measured = measurement.measured_at
+def format_date_it(measured: date, today: date) -> str:
+    """ "14 ottobre", with the year when it is not the current one."""
     when = f"{measured.day} {_MONTHS_IT[measured.month - 1]}"
-    if measured.year != today.year:
-        when = f"{when} {measured.year}"
-    label = f"{format_weight_kg(measurement.weight_kg)} al {when}"
-    condition = _BODY_CONDITION_IT.get(measurement.body_condition or 0)
-    if condition:
-        label = f"{label}, corporatura: {condition}"
-    return label
+    return when if measured.year == today.year else f"{when} {measured.year}"
+
+
+def weight_label_with_date(measurement: WeightMeasurement, today: date) -> str:
+    """ "23 kg al 14 ottobre" (with the year when it is not the current one).
+
+    The body condition is not part of it: the chat states it once, see
+    `SendChatMessageService._body_condition_context`."""
+    when = format_date_it(measurement.measured_at, today)
+    return f"{format_weight_kg(measurement.weight_kg)} al {when}"

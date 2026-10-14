@@ -69,17 +69,10 @@ def test_label_carries_the_year_when_it_is_not_the_current_one() -> None:
     assert label == "23 kg al 1 dicembre 2025"
 
 
-def test_label_adds_the_body_condition_when_recorded() -> None:
+def test_weight_label_never_carries_the_body_condition() -> None:
+    """The chat states the corporatura once, in its own line (see below)."""
     label = weight_label_with_date(
         _measurement(date(2026, 10, 14), 23, body_condition=4), today=date(2026, 10, 14)
-    )
-
-    assert label == "23 kg al 14 ottobre, corporatura: leggermente sovrappeso"
-
-
-def test_an_unknown_body_condition_level_is_left_out() -> None:
-    label = weight_label_with_date(
-        _measurement(date(2026, 10, 14), 23, body_condition=9), today=date(2026, 10, 14)
     )
 
     assert label == "23 kg al 14 ottobre"
@@ -213,3 +206,98 @@ def test_a_pet_with_only_weighings_no_longer_gets_the_missing_weight_hint() -> N
 
     assert "manca il peso" not in output.reply.content
     assert "Weight: 23 kg al 14 ottobre" in client.requests[-1].user_prompt
+
+
+# --- one body condition in the chat -------------------------------------------
+
+
+def _service_with_profile_condition(
+    client: RecordingLLMClient,
+    weights: InMemoryWeightMeasurementRepository | None,
+    profile_condition: str | None,
+) -> SendChatMessageService:
+    pets = InMemoryPetProfileRepository()
+    pets.save(
+        PetProfile(
+            id="pet-1",
+            owner_id="owner-1",
+            name="Rex",
+            species="Cane",
+            sex="Maschio",
+            weight_label="30 kg",
+            body_condition=profile_condition,
+        )
+    )
+    return SendChatMessageService(
+        InMemoryConversationRepository(),
+        ChatOrchestrator(client, InMemoryEvidenceRetriever(), NoopPiiAnonymizer()),
+        pets,
+        weight_measurement_repository=weights,
+    )
+
+
+def _condition_lines(client: RecordingLLMClient) -> list[str]:
+    return [
+        line for line in client.requests[-1].user_prompt.splitlines() if "Body condition" in line
+    ]
+
+
+def test_chat_states_the_latest_weighing_condition_with_its_date_over_the_profile() -> None:
+    client = RecordingLLMClient()
+    weights = InMemoryWeightMeasurementRepository()
+    weights.add("owner-1", _measurement(date(THIS_YEAR, 8, 1), 21, body_condition=2))
+    weights.add("owner-1", _measurement(date(THIS_YEAR, 10, 14), 23, body_condition=4))
+
+    _ask(_service_with_profile_condition(client, weights, "thin"))
+
+    assert _condition_lines(client) == [
+        "Body condition (weighed on 14 ottobre): slightly overweight"
+    ]
+
+
+def test_chat_uses_the_latest_weighing_that_recorded_a_condition() -> None:
+    client = RecordingLLMClient()
+    weights = InMemoryWeightMeasurementRepository()
+    weights.add("owner-1", _measurement(date(THIS_YEAR, 8, 1), 21, body_condition=5))
+    weights.add("owner-1", _measurement(date(THIS_YEAR, 10, 14), 23))  # no condition
+
+    _ask(_service_with_profile_condition(client, weights, "thin"))
+
+    prompt = client.requests[-1].user_prompt
+    assert _condition_lines(client) == ["Body condition (weighed on 1 agosto): overweight"]
+    assert "Weight: 23 kg al 14 ottobre" in prompt
+
+
+def test_chat_falls_back_to_the_profile_condition_without_a_weighed_one() -> None:
+    client = RecordingLLMClient()
+    weights = InMemoryWeightMeasurementRepository()
+    weights.add("owner-1", _measurement(date(THIS_YEAR, 10, 14), 23))  # no condition
+
+    _ask(_service_with_profile_condition(client, weights, "thin"))
+
+    assert _condition_lines(client) == ["Body condition (owner's estimate): thin"]
+
+
+def test_chat_condition_survives_an_unreadable_weighing_source() -> None:
+    class Broken:
+        def latest_for_pet(self, owner_id: str, pet_id: str) -> WeightMeasurement | None:
+            raise RuntimeError("table missing")
+
+        def latest_with_body_condition_for_pet(
+            self, owner_id: str, pet_id: str
+        ) -> WeightMeasurement | None:
+            raise RuntimeError("table missing")
+
+    client = RecordingLLMClient()
+
+    _ask(_service_with_profile_condition(client, Broken(), "normal"))  # type: ignore[arg-type]
+
+    assert _condition_lines(client) == ["Body condition (owner's estimate): normal"]
+
+
+def test_chat_has_no_condition_line_when_nobody_recorded_one() -> None:
+    client = RecordingLLMClient()
+
+    _ask(_service_with_profile_condition(client, InMemoryWeightMeasurementRepository(), None))
+
+    assert _condition_lines(client) == []

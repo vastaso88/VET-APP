@@ -8530,36 +8530,6 @@ abstract class AppLocalizations {
   /// **'Non so'**
   String get petsValueSexUnknownShort;
 
-  /// No description provided for @petsValueBodyVeryThin.
-  ///
-  /// In it, this message translates to:
-  /// **'Molto magro'**
-  String get petsValueBodyVeryThin;
-
-  /// No description provided for @petsValueBodyThin.
-  ///
-  /// In it, this message translates to:
-  /// **'Magro'**
-  String get petsValueBodyThin;
-
-  /// No description provided for @petsValueBodyNormal.
-  ///
-  /// In it, this message translates to:
-  /// **'Normale'**
-  String get petsValueBodyNormal;
-
-  /// No description provided for @petsValueBodySlightlyOverweight.
-  ///
-  /// In it, this message translates to:
-  /// **'Leggermente sovrappeso'**
-  String get petsValueBodySlightlyOverweight;
-
-  /// No description provided for @petsValueBodyOverweight.
-  ///
-  /// In it, this message translates to:
-  /// **'Sovrappeso'**
-  String get petsValueBodyOverweight;
-
   /// No description provided for @petsValueActivitySedentary.
   ///
   /// In it, this message translates to:

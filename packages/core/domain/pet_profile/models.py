@@ -4,11 +4,8 @@ from pydantic import BaseModel, Field, field_validator, model_validator
 
 from packages.core.domain.common.entity import new_id
 from packages.core.domain.medical_record.models import MedicalRecordConsentRecord
-from packages.core.domain.pet_profile.details import (
-    ACTIVITY_LEVELS,
-    BODY_CONDITIONS,
-    validated_microchip,
-)
+from packages.core.domain.pet_profile.body_condition import BODY_CONDITIONS
+from packages.core.domain.pet_profile.details import ACTIVITY_LEVELS, validated_microchip
 from packages.core.domain.pet_profile.sex import split_legacy_sex
 
 

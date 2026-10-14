@@ -8,16 +8,10 @@ colour adds nothing to health advice, so neither goes to the LLM.
 
 import re
 
-BODY_CONDITIONS = ("very_thin", "thin", "normal", "slightly_overweight", "overweight")
+from packages.core.domain.pet_profile.body_condition import body_condition_prompt_label
+
 ACTIVITY_LEVELS = ("sedentary", "normal", "active")
 
-_BODY_CONDITION_PROMPT = {
-    "very_thin": "very thin",
-    "thin": "thin",
-    "normal": "normal",
-    "slightly_overweight": "slightly overweight",
-    "overweight": "overweight",
-}
 _ACTIVITY_PROMPT = {"sedentary": "sedentary", "normal": "normal", "active": "active"}
 
 # ISO 11784/11785 microchips are 15 digits.
@@ -46,15 +40,26 @@ def validated_microchip(value: str | None) -> str | None:
 
 
 def describe_for_prompt(
-    *, neutered: bool | None, body_condition: str | None, activity_level: str | None
+    *,
+    neutered: bool | None,
+    body_condition: str | None,
+    activity_level: str | None,
+    body_condition_as_of: str | None = None,
 ) -> list[str]:
-    """Prompt lines for the details the owner filled in (none for unknown values)."""
+    """Prompt lines for the details the owner filled in (none for unknown values).
+
+    One body condition only: when it comes from a weighing, `body_condition_as_of`
+    is that weighing's date ("14 ottobre") and the line says so; otherwise it is
+    the owner's own estimate from the profile."""
     lines = []
     if neutered is not None:
         lines.append(f"Neutered/spayed: {'yes' if neutered else 'no'}")
-    condition = _BODY_CONDITION_PROMPT.get(body_condition or "")
+    condition = body_condition_prompt_label(body_condition)
     if condition:
-        lines.append(f"Body condition (owner's estimate): {condition}")
+        source = (
+            f"weighed on {body_condition_as_of}" if body_condition_as_of else "owner's estimate"
+        )
+        lines.append(f"Body condition ({source}): {condition}")
     activity = _ACTIVITY_PROMPT.get(activity_level or "")
     if activity:
         lines.append(f"Activity level: {activity}")

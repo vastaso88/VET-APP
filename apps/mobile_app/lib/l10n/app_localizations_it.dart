@@ -5055,21 +5055,6 @@ class AppLocalizationsIt extends AppLocalizations {
   String get petsValueSexUnknownShort => 'Non so';
 
   @override
-  String get petsValueBodyVeryThin => 'Molto magro';
-
-  @override
-  String get petsValueBodyThin => 'Magro';
-
-  @override
-  String get petsValueBodyNormal => 'Normale';
-
-  @override
-  String get petsValueBodySlightlyOverweight => 'Leggermente sovrappeso';
-
-  @override
-  String get petsValueBodyOverweight => 'Sovrappeso';
-
-  @override
   String get petsValueActivitySedentary => 'Sedentario';
 
   @override

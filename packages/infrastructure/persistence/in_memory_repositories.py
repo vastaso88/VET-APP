@@ -116,10 +116,22 @@ class InMemoryWeightMeasurementRepository(WeightMeasurementRepository):
         return measurement
 
     def latest_for_pet(self, owner_id: str, pet_id: str) -> WeightMeasurement | None:
+        return self._latest(owner_id, pet_id, with_body_condition=False)
+
+    def latest_with_body_condition_for_pet(
+        self, owner_id: str, pet_id: str
+    ) -> WeightMeasurement | None:
+        return self._latest(owner_id, pet_id, with_body_condition=True)
+
+    def _latest(
+        self, owner_id: str, pet_id: str, *, with_body_condition: bool
+    ) -> WeightMeasurement | None:
         own = [
             measurement
             for owner, measurement in self._items
-            if owner == owner_id and measurement.pet_id == pet_id
+            if owner == owner_id
+            and measurement.pet_id == pet_id
+            and (not with_body_condition or measurement.body_condition is not None)
         ]
         if not own:
             return None

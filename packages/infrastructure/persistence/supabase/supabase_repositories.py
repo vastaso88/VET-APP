@@ -574,13 +574,28 @@ class SupabaseWeightMeasurementRepository(WeightMeasurementRepository):
         self._table = "pet_weight_measurements"
 
     def latest_for_pet(self, owner_id: str, pet_id: str) -> WeightMeasurement | None:
+        return self._latest(owner_id, pet_id, with_body_condition=False)
+
+    def latest_with_body_condition_for_pet(
+        self, owner_id: str, pet_id: str
+    ) -> WeightMeasurement | None:
+        return self._latest(owner_id, pet_id, with_body_condition=True)
+
+    def _latest(
+        self, owner_id: str, pet_id: str, *, with_body_condition: bool
+    ) -> WeightMeasurement | None:
         try:
-            response = (
+            query = (
                 self._client.table(self._table)
                 .select("pet_id,measured_at,weight_kg,body_condition")
                 .eq("owner_id", owner_id)
                 .eq("pet_id", pet_id)
-                .order("measured_at", desc=True)
+            )
+            if with_body_condition:
+                # The column holds 1..5 or null: "> 0" keeps only the filled ones.
+                query = query.gt("body_condition", 0)
+            response = (
+                query.order("measured_at", desc=True)
                 .order("created_at", desc=True)
                 .limit(1)
                 .execute()
