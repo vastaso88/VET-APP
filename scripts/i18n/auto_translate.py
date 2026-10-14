@@ -22,6 +22,8 @@ ARB = Path("apps/mobile_app/lib/l10n")
 BACKEND = Path("packages/core/domain/localization.py")
 NATIVE = Path("apps/mobile_app/android/app/src/main/res")
 LANGUAGES = ("en", "es")
+# DeepL target codes; add a row here when a language joins LANGUAGES.
+DEEPL_TARGETS = {"en": "EN-GB", "es": "ES", "fr": "FR"}
 
 
 def digest(value: object) -> str:
@@ -126,7 +128,7 @@ def deepl(message: str, language: str) -> str:
     body: dict[str, Any] = {
         "text": [xml],
         "source_lang": "IT",
-        "target_lang": "EN-GB" if language == "en" else "ES",
+        "target_lang": DEEPL_TARGETS[language],
         "tag_handling": "xml",
         "ignore_tags": ["x"],
         "preserve_formatting": True,

@@ -1,6 +1,9 @@
 # Traduzioni (i18n) dell'app Flutter
 
-IT, EN ed ES sono disponibili per tutta l'app (1.355 chiavi ciascuna).
+IT, EN, ES e FR sono disponibili per tutta l'app (1.355 chiavi ciascuna). I testi fissi
+del backend in francese sono pronti ma non ancora collegati: vedi
+[FRENCH_BACKEND_WIRING.md](FRENCH_BACKEND_WIRING.md); controllo di layout in
+[STRESS_TEST_FR.md](STRESS_TEST_FR.md).
 Vedi [integrazione MULTILANG](MULTILANG_IMPLEMENTATION.md) per preferenze account,
 chat, testi legali, controlli e prova della branch.
 
@@ -54,7 +57,7 @@ cd apps/mobile_app && flutter gen-l10n && flutter test
 ## Guardie automatiche
 `python scripts/i18n/check_i18n.py` (o `make i18n-check`; è anche in `tests/unit/test_check_i18n_script.py`, quindi in `uv run pytest`):
 1. segnala le stringhe italiane scritte direttamente nel codice Dart fuori da `lib/l10n` (euristica: lettere accentate o parole italiane frequenti dentro un literal). Le eccezioni giustificate stanno in `scripts/i18n/allowlist.txt` (riga `percorso :: sottostringa`, oppure un file intero); **scrivi sempre il motivo**.
-2. richiede EN/ES e confronta ogni `app_xx.arb` con il template: **fallisce** per chiavi mancanti o aggiuntive, valori vuoti e segnaposto incompatibili.
+2. richiede EN/ES/FR e confronta ogni `app_xx.arb` con il template: **fallisce** per chiavi mancanti o aggiuntive, valori vuoti e segnaposto incompatibili.
 3. segnala anche testi passati direttamente ai widget in altre lingue o su più righe. Resta un controllo euristico: la revisione del codice deve verificare i testi costruiti dinamicamente.
 
 ## Cosa NON tradurre
