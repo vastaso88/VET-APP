@@ -1,0 +1,19 @@
+> **BOZZA — non è consulenza legale, da far rivedere a un legale locale**
+
+# Domande per il proprietario — Spagna
+
+Data: 2026-10-14. Massimo 8 domande, raggruppate. Per ognuna: la mia raccomandazione prudente. Le prime 5 sono le principali. Quelle sull'America Latina sono in `09_america_latina.md` (sezione «Cosa servirebbe»).
+
+## Principali
+
+1. **Dati del titolare e legge applicabile.** Forma giuridica, sede, registro (REA), P.IVA, e-mail e telefono, e se esiste un DPO. Servono per «Información legal» (LSSI art. 10), l'informativa e i termini. Decidere anche la legge applicabile ai contratti con consumatori spagnoli (variante A spagnola / B italiana con norme cogenti locali, doc 03 §15) e se aderire alla Junta Arbitral de Consumo. Raccomando: legge italiana con salvezza delle norme cogenti del paese dell'utente e dichiarare che non si aderisce all'arbitrato finché il volume non lo giustifica. *Impatto: doc 01 §3, doc 02 §1, doc 03 §14–15.*
+2. **Groq (USA): è certificato DPF?** Chiederlo al fornitore e leggerlo sulla lista ufficiale. Se no, SCC con valutazione del rischio. Raccomando di verificare **prima** del lancio in Spagna. *Impatto: doc 02 §5; vale per tutta l'UE.*
+3. **Prezzi, pagamenti e abbonamenti.** Prezzi in € di Plus/Pro (mensile/annuale), IVA inclusa; quando partono i pagamenti reali e **dove** si comprano (store o web app, dove valgono pulsante d'ordine, desistimiento e disdetta); cosa distingue i piani (oggi nulla). In più: la **Ley 10/2025** (preavviso di rinnovo a 15 giorni, disdetta semplice, adeguamento entro il 28/12/2026) si applica o no a un'app piccola? Raccomando di partire con il solo Free + prova e di attivare i pagamenti dopo aver chiuso pulsanti, avviso di rinnovo e disdetta. *Impatto: doc 03 §4–5.*
+4. **Mercatino: animali vivi.** In Spagna la vendita online di animali da compagnia è vietata (Ley 7/2023 art. 57.1) e gli annunci richiedono registro dell'allevatore con verifica della piattaforma. Raccomando di **vietarli** (solo prodotti e servizi). *Impatto: doc 03 §8.*
+5. **Linea dell'assistente.** «Informazioni generali e triage», senza ipotesi diagnostiche e senza farmaci Rx (RD 666/2023 art. 32.2; Código Deontológico non letto). Raccomando: niente «probabilmente è X», nessun dosaggio, nessun farmaco, nessun «veterinario virtuale». *Impatto: prompt dell'assistente, doc 05, schede store; stessa decisione di UK/US/AU/DACH.*
+
+## Secondarie
+
+6. **Lingua e registro dei testi legali.** Un utente in Spagna con app in inglese o italiano: i testi legali seguono la **regione** (`es-ES`) in spagnolo con UI nella lingua scelta? Raccomando sì. E il registro: i testi legali sono in «usted», la UI su MULTILANG (`app_es.arb`) è in «tú»: uniformare o accettare la differenza? Il testo del consenso per animale in `app_es.arb` (tú) coincide nel contenuto con doc 04 §6 (usted): quale vale come testo legale? *Impatto: doc 04 regole 5–6.*
+7. **Numeri utili.** Il SIT (91 562 04 20) risponde anche a chi ha animali (✅ verificato): lo mostro nel banner di emergenza dopo il veterinario, con la frase «orienta, no sustituye al veterinario»? Chiedi tu, o una persona, di telefonare per confermare costo e orari e per sapere se SEVEMUR copre solo Madrid? Raccomando di sì prima del lancio. *Impatto: doc 05 §4, doc 06.*
+8. **Dimensioni, strumenti e America Latina.** Quanti addetti e che fatturato (accessibilità, DSA per micro/piccole imprese)? Si attiva uno strumento di analisi (oggi nessuno)? Raccomando di togliere `analytics` dal catalogo finché non c'è. E: l'espansione in America Latina è un obiettivo a 6–12 mesi o solo un'ipotesi? Raccomando di non servire `es-MX`/`es-AR` ecc. con i testi `es-ES` (autorità e diritti diversi, doc 09) e di aprire un paese alla volta, partendo da quello con maggiore interesse commerciale. *Impatto: doc 01 §7, doc 04 §4, doc 09.*
