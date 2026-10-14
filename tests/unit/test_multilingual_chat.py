@@ -1,3 +1,5 @@
+from typing import Literal, cast
+
 import pytest
 from pydantic import ValidationError
 
@@ -26,7 +28,8 @@ def test_chat_request_accepts_supported_response_locales(locale: str) -> None:
     request = SendChatMessageRequest(
         pet_id="pet-1",
         user_message="hello",
-        response_locale=normalize_locale(locale),
+        # "de" is served by the backend but not yet accepted by the request schema.
+        response_locale=cast(Literal["it", "en", "es"], normalize_locale(locale)),
     )
 
     assert request.response_locale == locale
@@ -95,7 +98,12 @@ def test_natural_answer_prompt_has_unambiguous_selected_language_rule(
 
 @pytest.mark.parametrize(
     ("locale", "expected"),
-    [("it", "Nel frattempo puoi"), ("en", "Meanwhile, you can"), ("es", "Mientras tanto")],
+    [
+        ("it", "Nel frattempo puoi"),
+        ("en", "Meanwhile, you can"),
+        ("es", "Mientras tanto"),
+        ("de", "In der Zwischenzeit"),
+    ],
 )
 def test_evidence_response_connectors_use_selected_language(locale: str, expected: str) -> None:
     synthesis = EvidenceSynthesis(safe_owner_actions=["action"])
@@ -105,7 +113,7 @@ def test_evidence_response_connectors_use_selected_language(locale: str, expecte
     assert expected in answer
 
 
-@pytest.mark.parametrize("selected_locale", ["it", "en", "es"])
+@pytest.mark.parametrize("selected_locale", ["it", "en", "es", "de"])
 @pytest.mark.parametrize(
     "message", ["non riesce a respirare", "cannot breathe", "no puede respirar"]
 )
@@ -119,7 +127,12 @@ def test_urgent_signal_matrix(selected_locale: str, message: str) -> None:
         )
     )
     assert result.mode == "triage"
-    expected = {"it": "contatta subito", "en": "contact your", "es": "contacta de inmediato"}
+    expected = {
+        "it": "contatta subito",
+        "en": "contact your",
+        "es": "contacta de inmediato",
+        "de": "Wenden Sie sich sofort",
+    }
     assert expected[selected_locale] in result.answer
 
 
@@ -128,17 +141,18 @@ def test_backend_catalog_has_complete_locales_and_compatible_placeholders() -> N
 
     formatter = Formatter()
     for key, messages in _MESSAGES.items():
-        assert set(messages) == {"it", "en", "es"}, key
+        assert set(messages) == {"it", "en", "es", "de"}, key
         placeholders = [
             {field for _, field, _, _ in formatter.parse(message) if field}
             for message in messages.values()
         ]
         assert all(message.strip() for message in messages.values()), key
-        assert placeholders[0] == placeholders[1] == placeholders[2], key
+        assert all(item == placeholders[0] for item in placeholders), key
 
 
 @pytest.mark.parametrize(
-    ("locale", "name"), [("it", "Italian"), ("en", "English"), ("es", "Spanish")]
+    ("locale", "name"),
+    [("it", "Italian"), ("en", "English"), ("es", "Spanish"), ("de", "German")],
 )
 def test_evidence_synthesis_also_obeys_selected_language(locale: str, name: str) -> None:
     assert f"entirely in {name}" in _build_system_prompt(locale)

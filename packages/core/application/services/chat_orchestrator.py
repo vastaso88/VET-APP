@@ -658,7 +658,7 @@ class ChatOrchestrator:
             message.role == "assistant"
             and any(
                 translate("weight_marker", locale) in message.content
-                for locale in ("it", "en", "es")
+                for locale in ("it", "en", "es", "de")
             )
             for message in data.conversation_history
         )
@@ -1355,7 +1355,7 @@ class ChatOrchestrator:
             message.role == "assistant"
             and any(
                 translate("record_marker", locale) in message.content
-                for locale in ("it", "en", "es")
+                for locale in ("it", "en", "es", "de")
             )
             for message in data.conversation_history
         ):
