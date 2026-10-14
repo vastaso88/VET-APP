@@ -268,7 +268,9 @@ class _CurrentPlanCard extends StatelessWidget {
                 if (renewal != null) ...[
                   const SizedBox(height: 4),
                   Text(
-                    context.l10n.billingRenewalOn(formatAppDate(renewal, 'dd/MM/yyyy')),
+                    context.l10n.billingRenewalOn(
+                      formatAppDate(renewal, context.l10n.settingsNumericDatePattern),
+                    ),
                     style: AppTextStyles.bodySmall.copyWith(color: AppColors.onPrimary.withValues(alpha: 0.85)),
                   ),
                 ],
