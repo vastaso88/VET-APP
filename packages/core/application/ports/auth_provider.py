@@ -1,3 +1,4 @@
+from datetime import datetime
 from typing import Protocol
 
 from pydantic import BaseModel
@@ -22,3 +23,9 @@ class AuthProvider(Protocol):
     def sign_in_with_password(self, email: str, password: str) -> AuthSession: ...
 
     def sign_up(self, email: str, password: str) -> AuthSession | None: ...
+
+    def last_sign_in_at(self) -> datetime | None:
+        """When the caller last proved who they are with their credentials
+        (not merely when the token was refreshed), or None when unknown.
+        Used to ask for a recent sign-in before irreversible actions."""
+        ...

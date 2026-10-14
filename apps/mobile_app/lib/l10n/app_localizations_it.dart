@@ -5049,4 +5049,8 @@ class AppLocalizationsIt extends AppLocalizations {
 
   @override
   String get accountDeleteDone => 'Il tuo account è stato eliminato.';
+
+  @override
+  String get accountDeleteReauth =>
+      'Per sicurezza serve una conferma recente: riscrivi la password e riprova.';
 }

@@ -8523,6 +8523,12 @@ abstract class AppLocalizations {
   /// In it, this message translates to:
   /// **'Il tuo account è stato eliminato.'**
   String get accountDeleteDone;
+
+  /// No description provided for @accountDeleteReauth.
+  ///
+  /// In it, this message translates to:
+  /// **'Per sicurezza serve una conferma recente: riscrivi la password e riprova.'**
+  String get accountDeleteReauth;
 }
 
 class _AppLocalizationsDelegate

@@ -1,5 +1,8 @@
 from __future__ import annotations
 
+import base64
+import json
+from datetime import UTC, datetime
 from typing import TYPE_CHECKING, Any
 
 from packages.core.application.ports.auth_provider import (
@@ -28,6 +31,43 @@ except ModuleNotFoundError as exc:  # pragma: no cover - exercised by local runt
         codepath already raises before reaching this class."""
 else:
     _SUPABASE_IMPORT_ERROR = None
+
+
+def sign_in_time_from_token(token: str) -> datetime | None:
+    """When the session behind a Supabase access token last authenticated.
+
+    GoTrue puts an `amr` list in the token ([{"method": "password",
+    "timestamp": <unix>}]); its newest timestamp is the real sign-in and does
+    not move when the token is refreshed, so a stolen session that was
+    refreshed for days still reads as old. Tokens without `amr` fall back to
+    `iat` (refresh time): weaker, but the app signs in again right before the
+    sensitive call, so a legitimate caller is always fresh either way.
+
+    The signature is not checked here: the token was already validated by
+    Supabase in [SupabaseAuthProvider.get_current_user] on the same request.
+    """
+    try:
+        payload_part = token.split(".")[1]
+        payload = json.loads(
+            base64.urlsafe_b64decode(payload_part + "=" * (-len(payload_part) % 4))
+        )
+    except (IndexError, ValueError):
+        return None
+    if not isinstance(payload, dict):
+        return None
+
+    stamps: list[float] = []
+    amr = payload.get("amr")
+    if isinstance(amr, list):
+        for entry in amr:
+            stamp = entry.get("timestamp") if isinstance(entry, dict) else None
+            if isinstance(stamp, int | float):
+                stamps.append(float(stamp))
+    if not stamps:
+        issued_at = payload.get("iat")
+        if isinstance(issued_at, int | float):
+            stamps.append(float(issued_at))
+    return datetime.fromtimestamp(max(stamps), UTC) if stamps else None
 
 
 class SupabaseAuthProvider(AuthProvider):
@@ -64,6 +104,10 @@ class SupabaseAuthProvider(AuthProvider):
             email=user.email or "",
             display_name=display_name if isinstance(display_name, str) else None,
         )
+
+    def last_sign_in_at(self) -> datetime | None:
+        token = get_access_token()
+        return sign_in_time_from_token(token) if token else None
 
     def sign_in_with_password(self, email: str, password: str) -> AuthSession:
         response = self._public_client.auth.sign_in_with_password(

@@ -71,6 +71,10 @@ class _DeleteAccountPageState extends State<DeleteAccountPage> {
         _deleting = false;
         if (isWrongPasswordError(error)) {
           _passwordError = l10n.accountPasswordCurrentWrong;
+        } else if (error.code == 'reauth_required') {
+          // The server found the sign-in too old: ask for the password again.
+          _password.clear();
+          _passwordError = l10n.accountDeleteReauth;
         } else {
           _failure = l10n.accountDeleteFailed;
         }

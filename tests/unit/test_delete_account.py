@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import re
 from collections.abc import Callable
+from datetime import UTC, datetime, timedelta
 from pathlib import Path
 from typing import Any
 
@@ -13,6 +14,7 @@ from packages.core.application.ports.account_eraser import ErasureReport
 from packages.core.application.services.delete_account import (
     DeleteAccountInput,
     DeleteAccountService,
+    RecentSignInRequired,
 )
 from packages.core.domain.feedback.pseudonym import reporter_ref
 from packages.core.domain.radar_reports.models import contributor_pseudonym
@@ -161,28 +163,40 @@ def _snapshot(client: FakeSupabase) -> tuple[Any, Any]:
     return rows, files
 
 
+def _fresh_request(owner_id: str) -> DeleteAccountInput:
+    return DeleteAccountInput(owner_id=owner_id, signed_in_at=datetime.now(UTC))
+
+
 def test_deleting_an_account_leaves_no_data_of_that_owner_and_none_of_others_touched() -> None:
     client = FakeSupabase()
-    _seed(client, "user-a", tag="a")
-    _seed(client, "user-b", tag="b")
+    _seed(client, "11111111-1111-4111-8111-111111111111", tag="a")
+    _seed(client, "22222222-2222-4222-8222-222222222222", tag="b")
     client.db["data_sources"] = [{"id": "shared-source"}]
     client.db["events"] = [{"id": "shared-event"}]
 
     before_rows, before_files = _snapshot(client)
-    report = DeleteAccountService(_eraser(client)).execute(DeleteAccountInput(owner_id="user-a"))
+    report = DeleteAccountService(_eraser(client)).execute(
+        _fresh_request("11111111-1111-4111-8111-111111111111")
+    )
 
     # Nothing that mentions user A (by id, pseudonym or storage path) is left.
     pseudonyms = {
-        contributor_pseudonym("user-a", key=RADAR_KEY),
-        reporter_ref("user-a", CHAT_SECRET),
+        contributor_pseudonym("11111111-1111-4111-8111-111111111111", key=RADAR_KEY),
+        reporter_ref("11111111-1111-4111-8111-111111111111", CHAT_SECRET),
     }
     for table, rows in client.db.items():
         for row in rows:
-            assert "user-a" not in row.values(), (table, row)
+            assert "11111111-1111-4111-8111-111111111111" not in row.values(), (table, row)
             assert pseudonyms.isdisjoint(row.values()), (table, row)
             assert row.get("pet_id") != "a-pet", (table, row)
-    assert all(not path.startswith("user-a/") for path in client.buckets["pet-photos"])
-    assert all(not path.startswith("user-a/") for path in client.buckets["marketplace-photos"])
+    assert all(
+        not path.startswith("11111111-1111-4111-8111-111111111111/")
+        for path in client.buckets["pet-photos"]
+    )
+    assert all(
+        not path.startswith("11111111-1111-4111-8111-111111111111/")
+        for path in client.buckets["marketplace-photos"]
+    )
     assert "a-attachment-key" not in client.buckets[MEDIA_BUCKET]
 
     # Every row and file of user B and the shared catalogues is exactly as before.
@@ -191,10 +205,12 @@ def test_deleting_an_account_leaves_no_data_of_that_owner_and_none_of_others_tou
         assert client.db[table] == kept, table
     for bucket, paths in before_files.items():
         assert client.buckets[bucket] == {
-            p for p in paths if "user-a" not in p and p != "a-attachment-key"
+            p
+            for p in paths
+            if "11111111-1111-4111-8111-111111111111" not in p and p != "a-attachment-key"
         }
 
-    assert client.auth.admin.deleted_users == ["user-a"]
+    assert client.auth.admin.deleted_users == ["11111111-1111-4111-8111-111111111111"]
     assert report.files_removed == 4
     assert report.rows_deleted["pet_profiles"] == 1
     assert report.rows_deleted["clinical_events"] == 1
@@ -203,39 +219,43 @@ def test_deleting_an_account_leaves_no_data_of_that_owner_and_none_of_others_tou
 def _mentions_a(row: dict[str, Any]) -> bool:
     values = set(row.values())
     return (
-        "user-a" in values
+        "11111111-1111-4111-8111-111111111111" in values
         or row.get("pet_id") == "a-pet"
-        or contributor_pseudonym("user-a", key=RADAR_KEY) in values
-        or reporter_ref("user-a", CHAT_SECRET) in values
+        or contributor_pseudonym("11111111-1111-4111-8111-111111111111", key=RADAR_KEY) in values
+        or reporter_ref("11111111-1111-4111-8111-111111111111", CHAT_SECRET) in values
     )
 
 
 def test_a_gallery_bigger_than_one_storage_page_is_fully_removed() -> None:
     client = FakeSupabase()
-    _seed(client, "user-a", tag="a")
-    client.buckets["pet-photos"].update({f"user-a/pets/a-pet/{n:04d}.jpg" for n in range(250)})
-    client.buckets["pet-photos"].add("user-b/pets/b-pet/keep.jpg")
+    _seed(client, "11111111-1111-4111-8111-111111111111", tag="a")
+    client.buckets["pet-photos"].update(
+        {f"11111111-1111-4111-8111-111111111111/pets/a-pet/{n:04d}.jpg" for n in range(250)}
+    )
+    client.buckets["pet-photos"].add("22222222-2222-4222-8222-222222222222/pets/b-pet/keep.jpg")
 
-    report = _eraser(client).erase_data("user-a")
+    report = _eraser(client).erase_data("11111111-1111-4111-8111-111111111111")
 
-    assert client.buckets["pet-photos"] == {"user-b/pets/b-pet/keep.jpg"}
+    assert client.buckets["pet-photos"] == {
+        "22222222-2222-4222-8222-222222222222/pets/b-pet/keep.jpg"
+    }
     assert report.files_removed == 1 + 2 + 250 + 1
 
 
 def test_deleting_twice_is_harmless() -> None:
     client = FakeSupabase()
-    _seed(client, "user-a", tag="a")
+    _seed(client, "11111111-1111-4111-8111-111111111111", tag="a")
     service = DeleteAccountService(_eraser(client))
-    service.execute(DeleteAccountInput(owner_id="user-a"))
-    second = service.execute(DeleteAccountInput(owner_id="user-a"))
+    service.execute(_fresh_request("11111111-1111-4111-8111-111111111111"))
+    second = service.execute(_fresh_request("11111111-1111-4111-8111-111111111111"))
     assert sum(second.rows_deleted.values()) == 0
     assert second.files_removed == 0
 
 
 def test_without_a_radar_key_the_other_tables_are_still_erased() -> None:
     client = FakeSupabase()
-    _seed(client, "user-a", tag="a")
-    _eraser(client, radar_key=None).erase_data("user-a")
+    _seed(client, "11111111-1111-4111-8111-111111111111", tag="a")
+    _eraser(client, radar_key=None).erase_data("11111111-1111-4111-8111-111111111111")
     assert client.db["pet_profiles"] == []
 
 
@@ -251,7 +271,7 @@ def test_the_identity_is_kept_when_erasing_the_data_fails() -> None:
 
     eraser = Failing()
     with pytest.raises(RuntimeError):
-        DeleteAccountService(eraser).execute(DeleteAccountInput(owner_id="user-a"))
+        DeleteAccountService(eraser).execute(_fresh_request("11111111-1111-4111-8111-111111111111"))
     assert eraser.deleted == []
 
 
@@ -269,3 +289,49 @@ def test_every_table_of_the_schema_is_either_erased_or_declared_not_personal() -
         "or to NOT_PERSONAL_TABLES with the reason"
     )
     assert covered - tables == set(), "Account deletion lists a table the schema does not have"
+
+
+@pytest.mark.parametrize("bad_id", ["", "   ", "user-a", "../etc", "11111111-1111-4111-8111"])
+def test_an_empty_or_malformed_owner_id_deletes_nothing(bad_id: str) -> None:
+    client = FakeSupabase()
+    _seed(client, "11111111-1111-4111-8111-111111111111", tag="a")
+    before = _snapshot(client)
+
+    with pytest.raises(ValueError):
+        _eraser(client).erase_data(bad_id)
+    with pytest.raises(ValueError):
+        _eraser(client).delete_identity(bad_id)
+
+    assert _snapshot(client) == before
+    assert client.auth.admin.deleted_users == []
+
+
+def _service_with_spy() -> tuple[DeleteAccountService, FakeSupabase]:
+    client = FakeSupabase()
+    _seed(client, "11111111-1111-4111-8111-111111111111", tag="a")
+    return DeleteAccountService(_eraser(client)), client
+
+
+def test_an_old_sign_in_cannot_delete_the_account() -> None:
+    service, client = _service_with_spy()
+    owner = "11111111-1111-4111-8111-111111111111"
+    stale = datetime.now(UTC) - timedelta(minutes=6)
+
+    with pytest.raises(RecentSignInRequired):
+        service.execute(DeleteAccountInput(owner_id=owner, signed_in_at=stale))
+    with pytest.raises(RecentSignInRequired):
+        service.execute(DeleteAccountInput(owner_id=owner, signed_in_at=None))
+
+    assert client.db["pet_profiles"] != []
+    assert client.auth.admin.deleted_users == []
+
+
+def test_a_fresh_sign_in_can_delete_the_account() -> None:
+    service, client = _service_with_spy()
+    owner = "11111111-1111-4111-8111-111111111111"
+    fresh = datetime.now(UTC) - timedelta(minutes=4)
+
+    service.execute(DeleteAccountInput(owner_id=owner, signed_in_at=fresh))
+
+    assert client.db["pet_profiles"] == []
+    assert client.auth.admin.deleted_users == [owner]

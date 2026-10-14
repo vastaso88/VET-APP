@@ -9,6 +9,7 @@ so a new table cannot silently escape the deletion."""
 from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any, cast
+from uuid import UUID
 
 from packages.core.application.ports.account_eraser import ErasureReport
 from packages.core.domain.feedback.pseudonym import reporter_ref
@@ -84,7 +85,17 @@ class SupabaseAccountEraser:
         self._chat_reporter_secret = chat_reporter_secret
         self._radar_pseudonym_key = radar_pseudonym_key
 
+    @staticmethod
+    def _require_user_id(owner_id: str) -> None:
+        """An empty id would list the whole bucket as "the owner's folder" and
+        delete every user's files; anything that is not a UUID is not a user."""
+        try:
+            UUID(owner_id)
+        except (ValueError, AttributeError, TypeError) as exc:
+            raise ValueError("owner_id must be a valid user UUID") from exc
+
     def erase_data(self, owner_id: str) -> ErasureReport:
+        self._require_user_id(owner_id)
         report = ErasureReport()
         self._remove_files(owner_id, report)
 
@@ -112,6 +123,7 @@ class SupabaseAccountEraser:
         return report
 
     def delete_identity(self, owner_id: str) -> None:
+        self._require_user_id(owner_id)
         self._client.auth.admin.delete_user(owner_id)
 
     # -- files -----------------------------------------------------------

@@ -2886,5 +2886,6 @@
   "accountDeleteUnderstood": "Ho capito: il mio account e tutti i miei dati verranno cancellati per sempre.",
   "accountDeleteSubmit": "Elimina definitivamente il mio account",
   "accountDeleteFailed": "Non sono riuscito a eliminare l'account. Riprova tra poco; se il problema continua, scrivi all'assistenza.",
-  "accountDeleteDone": "Il tuo account è stato eliminato."
+  "accountDeleteDone": "Il tuo account è stato eliminato.",
+  "accountDeleteReauth": "Per sicurezza serve una conferma recente: riscrivi la password e riprova."
 }
