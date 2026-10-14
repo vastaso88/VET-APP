@@ -48,5 +48,4 @@ IT/EN/ES. Modifiche in `app_fr.arb`:
 - Plurali: in francese 0 e 1 sono singolari e l'ICU `=1{…}` viene scelto anche per 0.
   Per questo i rami `=1` usano `{count}` e non il numero "1" scritto (altrimenti "0 profil"
   verrebbe mostrato come "1 profil").
-- Date numeriche `dd/MM/yyyy`, virgola decimale (`NumberFormat` con locale `fr`), unità
-  metriche (`defaultUnitsForLocale`: FR/BE/CH → metrico).
+- Varianti 🇫🇷 `fr`, 🇧🇪 `fr-BE`, 🇨🇭 `fr-CH` con la stessa traduzione: virgola decimale, unità metriche, data numerica `dd/MM/yyyy` (`dd.MM.yyyy` per CH, solo nei punti che la visualizzano: impostazioni e rinnovo abbonamento; i campi di inserimento data restano `jj/mm/aaaa`). Paese precompilato nell'indirizzo di residenza: France / Belgique / Suisse secondo la variante (`lib/l10n/regional_defaults.dart`); la variante è proposta dal paese del telefono. Per le altre lingue il paese precompilato resta quello fisso dell'ARB.

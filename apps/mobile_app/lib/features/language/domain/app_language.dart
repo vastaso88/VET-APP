@@ -80,6 +80,20 @@ const allLanguageVariants = <AppLanguageVariant>[
     nativeName: 'Français',
   ),
   AppLanguageVariant(
+    id: 'fr-BE',
+    languageCode: 'fr',
+    countryCode: 'BE',
+    flag: '🇧🇪',
+    nativeName: 'Français (Belgique)',
+  ),
+  AppLanguageVariant(
+    id: 'fr-CH',
+    languageCode: 'fr',
+    countryCode: 'CH',
+    flag: '🇨🇭',
+    nativeName: 'Français (Suisse)',
+  ),
+  AppLanguageVariant(
     id: 'es',
     languageCode: 'es',
     countryCode: 'ES',
@@ -116,7 +130,8 @@ AppLanguageVariant suggestLanguageVariant(
   Locale device,
   List<AppLanguageVariant> available,
 ) {
-  final sameLanguage = available.where((v) => v.languageCode == device.languageCode).toList();
+  final sameLanguage =
+      available.where((v) => v.languageCode == device.languageCode).toList();
   if (sameLanguage.isEmpty) {
     return available.firstWhere(
       (v) => v.id == sourceLanguageVariantId,
