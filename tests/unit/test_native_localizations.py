@@ -12,7 +12,7 @@ def _messages(folder: str) -> dict[str, str]:
     return {node.attrib["name"]: node.text or "" for node in root.findall("string")}
 
 
-@pytest.mark.parametrize("language", ["it", "en", "es"])
+@pytest.mark.parametrize("language", ["it", "en", "es", "fr"])
 def test_android_strings_have_complete_keys_and_format_tokens(language: str) -> None:
     source = _messages("values")
     translated = _messages(f"values-{language}")
