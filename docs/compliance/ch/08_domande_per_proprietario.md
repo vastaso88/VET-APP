@@ -1,0 +1,11 @@
+> **BOZZA — non è consulenza legale; da rivedere da un avvocato locale prima della pubblicazione**
+
+# Domande per il proprietario — Svizzera (solo ciò che si aggiunge a Germania)
+
+Data: 2026-10-14. Le decisioni comuni (dati del titolare, Groq/DPF, prezzi e pagamenti, Mercatino con animali vivi, linea dell'assistente, lingua dei testi legali) sono nelle domande 1–8 di `../de/08_domande_per_proprietario.md`. Qui solo le domande **specifiche della Svizzera** (non UE): massimo 8, qui 5.
+
+1. **Quanto vuoi puntare sulla Svizzera?** Servono tre cose in più rispetto a DE/AT: una **rappresentanza in Svizzera** (art. 14 nDSG) se il trattamento di dati svizzeri è esteso, regolare e ad alto rischio; la **registrazione MWST** per fornitori esteri oltre una soglia (❓ CHF 100.000, da verificare); e un **avvocato svizzero**. Per un lancio piccolo raccomando di aprire la CH solo dopo DE e AT, oppure di aprirla subito ma con una valutazione scritta dell'avvocato sulle tre cose. Quanti utenti svizzeri ti aspetti? *Impatto: doc 02 §1, 01 §1 e §4.*
+2. **Recesso di 14 giorni su base volontaria?** In Svizzera non c'è un recesso legale per gli acquisti online. Offrirlo comunque (Variante A in doc 03 §5) rende l'offerta uniforme con DE/AT e riduce il rischio di contestazioni; non offrirlo è lecito ma è un punto debole per la fiducia. Raccomando la Variante A (volontario, con rimborso proporzionale). *Impatto: doc 03 §5.*
+3. **Swiss–US DPF di Groq.** Oltre alla certificazione UE–USA, Groq deve aver aderito all'**estensione svizzera** del DPF; altrimenti servono le SCC con addendum svizzero. Va chiesto al fornitore (stessa domanda 2 di DE, ma con requisito aggiuntivo). *Impatto: doc 02 §5.*
+4. **Tox Info Suisse (145).** Il servizio nazionale per avvelenamenti risponde alle persone; non è confermato che risponda ai proprietari di animali. Vuoi che si telefoni per chiederlo prima di mostrare il 145 nel banner di emergenza? Raccomando di sì. *Impatto: doc 05 §4, doc 06.*
+5. **Lingue della Svizzera.** Un utente CH con app in francese o italiano vede i testi legali `de-CH` (tedeschi) o servono `fr-CH`/`it-CH`? Raccomando di non aprire la CH francofona/italofona finché non ci sono testi legali nella lingua dell'utente (scelta dell'avvocato). *Impatto: regola 5 di `de/04`; ripresa dalla domanda 6 di `de/08`.*
