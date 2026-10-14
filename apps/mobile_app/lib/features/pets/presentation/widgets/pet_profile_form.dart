@@ -1231,7 +1231,9 @@ class _PetProfileFormState extends State<PetProfileForm> {
   String _weightFromLabel(String? label) {
     final kg = parseWeightLabelKg(label ?? '');
     if (kg == null) return '';
-    return formatDecimal(kgToDisplay(kg, _units));
+    // Three decimals so a saved label ("32 g", "10,21 kg") comes back to the same
+    // label when the profile is saved untouched.
+    return formatDecimal(kgToDisplay(kg, _units), digits: 3);
   }
 
   DateTime? _parseBirthDate(String? label) {

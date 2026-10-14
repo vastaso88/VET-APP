@@ -8823,6 +8823,300 @@ abstract class AppLocalizations {
   /// In it, this message translates to:
   /// **'Il tuo account è stato eliminato.'**
   String get accountDeleteDone;
+
+  /// No description provided for @monitoringTitle.
+  ///
+  /// In it, this message translates to:
+  /// **'Monitoraggio'**
+  String get monitoringTitle;
+
+  /// No description provided for @monitoringEntrySubtitleWeight.
+  ///
+  /// In it, this message translates to:
+  /// **'Peso e corporatura'**
+  String get monitoringEntrySubtitleWeight;
+
+  /// No description provided for @monitoringEntrySubtitleWithActivity.
+  ///
+  /// In it, this message translates to:
+  /// **'Peso, corporatura e attività'**
+  String get monitoringEntrySubtitleWithActivity;
+
+  /// No description provided for @monitoringAddMeasurement.
+  ///
+  /// In it, this message translates to:
+  /// **'Nuova misurazione'**
+  String get monitoringAddMeasurement;
+
+  /// No description provided for @monitoringCurrentWeight.
+  ///
+  /// In it, this message translates to:
+  /// **'Peso attuale'**
+  String get monitoringCurrentWeight;
+
+  /// No description provided for @monitoringMeasuredOn.
+  ///
+  /// In it, this message translates to:
+  /// **'Misurato il {date}'**
+  String monitoringMeasuredOn(String date);
+
+  /// No description provided for @monitoringChangeSince.
+  ///
+  /// In it, this message translates to:
+  /// **'{change} dal {date}'**
+  String monitoringChangeSince(String change, String date);
+
+  /// No description provided for @monitoringEmptyTitle.
+  ///
+  /// In it, this message translates to:
+  /// **'Nessuna misurazione ancora'**
+  String get monitoringEmptyTitle;
+
+  /// No description provided for @monitoringEmptyBody.
+  ///
+  /// In it, this message translates to:
+  /// **'Registra il peso di {petName} per seguirne l\'andamento nel tempo.'**
+  String monitoringEmptyBody(String petName);
+
+  /// No description provided for @monitoringBcsTitle.
+  ///
+  /// In it, this message translates to:
+  /// **'Corporatura'**
+  String get monitoringBcsTitle;
+
+  /// No description provided for @monitoringBcsAsOf.
+  ///
+  /// In it, this message translates to:
+  /// **'Dalla misurazione del {date}'**
+  String monitoringBcsAsOf(String date);
+
+  /// No description provided for @monitoringBcsNone.
+  ///
+  /// In it, this message translates to:
+  /// **'Indica la corporatura in una misurazione per vederla qui.'**
+  String get monitoringBcsNone;
+
+  /// No description provided for @monitoringBcsVeryThin.
+  ///
+  /// In it, this message translates to:
+  /// **'Molto magro'**
+  String get monitoringBcsVeryThin;
+
+  /// No description provided for @monitoringBcsThin.
+  ///
+  /// In it, this message translates to:
+  /// **'Magro'**
+  String get monitoringBcsThin;
+
+  /// No description provided for @monitoringBcsNormal.
+  ///
+  /// In it, this message translates to:
+  /// **'Normale'**
+  String get monitoringBcsNormal;
+
+  /// No description provided for @monitoringBcsSlightlyOverweight.
+  ///
+  /// In it, this message translates to:
+  /// **'Leggermente sovrappeso'**
+  String get monitoringBcsSlightlyOverweight;
+
+  /// No description provided for @monitoringBcsOverweight.
+  ///
+  /// In it, this message translates to:
+  /// **'Sovrappeso'**
+  String get monitoringBcsOverweight;
+
+  /// No description provided for @monitoringChartTitleWeight.
+  ///
+  /// In it, this message translates to:
+  /// **'Andamento peso'**
+  String get monitoringChartTitleWeight;
+
+  /// No description provided for @monitoringChartTitleGrowth.
+  ///
+  /// In it, this message translates to:
+  /// **'Curva di crescita'**
+  String get monitoringChartTitleGrowth;
+
+  /// No description provided for @monitoringChartGrowthHint.
+  ///
+  /// In it, this message translates to:
+  /// **'Il peso di {petName} in base all\'età, senza curve di riferimento: solo le sue misurazioni.'**
+  String monitoringChartGrowthHint(String petName);
+
+  /// No description provided for @monitoringChartSinglePoint.
+  ///
+  /// In it, this message translates to:
+  /// **'Aggiungi un\'altra misurazione per vedere l\'andamento.'**
+  String get monitoringChartSinglePoint;
+
+  /// No description provided for @monitoringAxisAgeMonths.
+  ///
+  /// In it, this message translates to:
+  /// **'Età (mesi)'**
+  String get monitoringAxisAgeMonths;
+
+  /// No description provided for @monitoringAxisWeight.
+  ///
+  /// In it, this message translates to:
+  /// **'Peso ({unit})'**
+  String monitoringAxisWeight(String unit);
+
+  /// No description provided for @monitoringTooltipAge.
+  ///
+  /// In it, this message translates to:
+  /// **'{months, plural, =1{1 mese} other{{months} mesi}}'**
+  String monitoringTooltipAge(int months);
+
+  /// No description provided for @monitoringHistoryTitle.
+  ///
+  /// In it, this message translates to:
+  /// **'Storico'**
+  String get monitoringHistoryTitle;
+
+  /// No description provided for @monitoringDeleteTitle.
+  ///
+  /// In it, this message translates to:
+  /// **'Eliminare la misurazione?'**
+  String get monitoringDeleteTitle;
+
+  /// No description provided for @monitoringDeleteMessage.
+  ///
+  /// In it, this message translates to:
+  /// **'Il peso del {date} verrà tolto dallo storico.'**
+  String monitoringDeleteMessage(String date);
+
+  /// No description provided for @monitoringSheetTitleNew.
+  ///
+  /// In it, this message translates to:
+  /// **'Nuova misurazione'**
+  String get monitoringSheetTitleNew;
+
+  /// No description provided for @monitoringSheetTitleEdit.
+  ///
+  /// In it, this message translates to:
+  /// **'Modifica misurazione'**
+  String get monitoringSheetTitleEdit;
+
+  /// No description provided for @monitoringFieldDate.
+  ///
+  /// In it, this message translates to:
+  /// **'Data'**
+  String get monitoringFieldDate;
+
+  /// No description provided for @monitoringFieldWeightKg.
+  ///
+  /// In it, this message translates to:
+  /// **'Peso (kg)'**
+  String get monitoringFieldWeightKg;
+
+  /// No description provided for @monitoringFieldWeightLb.
+  ///
+  /// In it, this message translates to:
+  /// **'Peso (lb)'**
+  String get monitoringFieldWeightLb;
+
+  /// No description provided for @monitoringFieldWeightHintKg.
+  ///
+  /// In it, this message translates to:
+  /// **'Es. 10,5'**
+  String get monitoringFieldWeightHintKg;
+
+  /// No description provided for @monitoringFieldWeightHintLb.
+  ///
+  /// In it, this message translates to:
+  /// **'Es. 22,5'**
+  String get monitoringFieldWeightHintLb;
+
+  /// No description provided for @monitoringFieldBcs.
+  ///
+  /// In it, this message translates to:
+  /// **'Corporatura (facoltativa)'**
+  String get monitoringFieldBcs;
+
+  /// No description provided for @monitoringFieldNote.
+  ///
+  /// In it, this message translates to:
+  /// **'Nota (facoltativa)'**
+  String get monitoringFieldNote;
+
+  /// No description provided for @monitoringErrorWeight.
+  ///
+  /// In it, this message translates to:
+  /// **'Inserisci un peso valido, maggiore di zero.'**
+  String get monitoringErrorWeight;
+
+  /// No description provided for @monitoringErrorDateFuture.
+  ///
+  /// In it, this message translates to:
+  /// **'La data non può essere nel futuro.'**
+  String get monitoringErrorDateFuture;
+
+  /// No description provided for @monitoringErrorDateBirth.
+  ///
+  /// In it, this message translates to:
+  /// **'La data è precedente alla nascita di {petName}.'**
+  String monitoringErrorDateBirth(String petName);
+
+  /// No description provided for @monitoringSaveFailed.
+  ///
+  /// In it, this message translates to:
+  /// **'Non sono riuscito a salvare la misurazione: riprova.'**
+  String get monitoringSaveFailed;
+
+  /// No description provided for @monitoringDeleteFailed.
+  ///
+  /// In it, this message translates to:
+  /// **'Non sono riuscito a eliminare la misurazione: riprova.'**
+  String get monitoringDeleteFailed;
+
+  /// No description provided for @monitoringActivityTitle.
+  ///
+  /// In it, this message translates to:
+  /// **'Attività'**
+  String get monitoringActivityTitle;
+
+  /// No description provided for @monitoringActivitySubtitle.
+  ///
+  /// In it, this message translates to:
+  /// **'Le passeggiate di {petName} nelle ultime settimane.'**
+  String monitoringActivitySubtitle(String petName);
+
+  /// No description provided for @monitoringActivityDistance.
+  ///
+  /// In it, this message translates to:
+  /// **'Distanza'**
+  String get monitoringActivityDistance;
+
+  /// No description provided for @monitoringActivityTime.
+  ///
+  /// In it, this message translates to:
+  /// **'Tempo'**
+  String get monitoringActivityTime;
+
+  /// No description provided for @monitoringActivityStatWalks.
+  ///
+  /// In it, this message translates to:
+  /// **'Passeggiate'**
+  String get monitoringActivityStatWalks;
+
+  /// No description provided for @monitoringActivityEmpty.
+  ///
+  /// In it, this message translates to:
+  /// **'Nessuna passeggiata negli ultimi 3 mesi. Registra una passeggiata dalla scheda Passeggiate per vedere qui l\'attività di {petName}.'**
+  String monitoringActivityEmpty(String petName);
+
+  /// No description provided for @monitoringActivityWeekOf.
+  ///
+  /// In it, this message translates to:
+  /// **'Settimana dal {date}'**
+  String monitoringActivityWeekOf(String date);
+
+  /// No description provided for @monitoringActivityWalkCount.
+  ///
+  /// In it, this message translates to:
+  /// **'{count, plural, =1{1 passeggiata} other{{count} passeggiate}}'**
+  String monitoringActivityWalkCount(int count);
 }
 
 class _AppLocalizationsDelegate

@@ -31,6 +31,7 @@ import '../../../dog_walks/presentation/walk_labels.dart';
 import '../../../location/domain/coordinates.dart';
 import '../../../dog_walks/presentation/widgets/badge_gallery_dialog.dart';
 import '../../../dog_walks/presentation/widgets/walk_mini_map.dart';
+import '../../../monitoring/presentation/widgets/monitoring_entry_card.dart';
 import '../../../medical_records/data/medical_record_file_cache.dart';
 import '../../../medical_records/data/medical_records_repository.dart';
 import '../../../medical_records/presentation/pages/medical_record_upload_page.dart';
@@ -1033,6 +1034,7 @@ class _RecordsTabState extends State<_RecordsTab> {
         return ListView(
           padding: const EdgeInsets.only(bottom: AppSpacing.xl),
           children: [
+            MonitoringEntryCard(pet: widget.pet),
             MedicalRecordConsentCard(pet: widget.pet),
             const SizedBox(height: AppSpacing.md),
             Row(

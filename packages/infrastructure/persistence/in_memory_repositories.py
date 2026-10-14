@@ -28,6 +28,9 @@ from packages.core.application.ports.radar_reports_repository import RadarReport
 from packages.core.application.ports.reminder_repository import ReminderRepository
 from packages.core.application.ports.subscription_repository import SubscriptionRepository
 from packages.core.application.ports.user_location_repository import UserLocationRepository
+from packages.core.application.ports.weight_measurement_repository import (
+    WeightMeasurementRepository,
+)
 from packages.core.domain.consent.models import AccountConsents
 from packages.core.domain.conversation.attachment import ChatAttachment
 from packages.core.domain.conversation.models import Conversation
@@ -40,6 +43,7 @@ from packages.core.domain.local_activity.models import LocalActivity
 from packages.core.domain.marketplace.models import ListingReport, MarketplaceListing
 from packages.core.domain.medical_record.models import ClinicalEvent
 from packages.core.domain.pet_profile.models import PetProfile
+from packages.core.domain.pet_profile.weight_measurement import WeightMeasurement
 from packages.core.domain.radar_places.models import RadarDataSource, RadarPlace
 from packages.core.domain.radar_reports.models import (
     RadarPlaceOverride,
@@ -97,6 +101,30 @@ class InMemoryReminderRepository(ReminderRepository):
 
     def list_by_owner(self, owner_id: str) -> list[Reminder]:
         return [item for item in self._items if item.owner_id == owner_id]
+
+
+class InMemoryWeightMeasurementRepository(WeightMeasurementRepository):
+    """Weighings kept in memory (tests, demo): the app writes them to Supabase
+    directly, so this one only needs to be filled by hand."""
+
+    def __init__(self) -> None:
+        self._items: list[tuple[str, WeightMeasurement]] = []
+
+    def add(self, owner_id: str, measurement: WeightMeasurement) -> WeightMeasurement:
+        self._items.append((owner_id, measurement))
+        return measurement
+
+    def latest_for_pet(self, owner_id: str, pet_id: str) -> WeightMeasurement | None:
+        own = [
+            measurement
+            for owner, measurement in self._items
+            if owner == owner_id and measurement.pet_id == pet_id
+        ]
+        if not own:
+            return None
+        # Same day: the one added last is the latest (max keeps the first of
+        # equals, so walk the list backwards).
+        return max(reversed(own), key=lambda measurement: measurement.measured_at)
 
 
 class InMemoryClinicalEventRepository(ClinicalEventRepository):

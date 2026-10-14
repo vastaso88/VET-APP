@@ -34,6 +34,9 @@ from packages.core.application.ports.reminder_repository import ReminderReposito
 from packages.core.application.ports.speech_to_text_provider import SpeechToTextProvider
 from packages.core.application.ports.subscription_repository import SubscriptionRepository
 from packages.core.application.ports.user_location_repository import UserLocationRepository
+from packages.core.application.ports.weight_measurement_repository import (
+    WeightMeasurementRepository,
+)
 from packages.core.application.services.chat_orchestrator import ChatOrchestrator
 from packages.core.application.services.consent_interpreter import ConsentInterpreter
 from packages.core.application.services.create_listing import CreateListingService
@@ -167,6 +170,7 @@ from packages.infrastructure.persistence.in_memory_repositories import (
     InMemoryReminderRepository,
     InMemorySubscriptionRepository,
     InMemoryUserLocationRepository,
+    InMemoryWeightMeasurementRepository,
 )
 from packages.infrastructure.privacy.noop_pii_anonymizer import NoopPiiAnonymizer
 from packages.infrastructure.privacy.rule_based_pii_anonymizer import RuleBasedPiiAnonymizer
@@ -224,6 +228,7 @@ class ApplicationContainer:
         )
         self.user_location_repository = self._build_user_location_repository()
         self.dog_walk_repository = self._build_dog_walk_repository()
+        self.weight_measurement_repository = self._build_weight_measurement_repository()
         self.radar_places_repository = self._build_radar_places_repository()
         self.radar_catalog_repository = self._build_radar_catalog_repository()
         self.radar_reports_repository = self._build_radar_reports_repository()
@@ -384,6 +389,7 @@ class ApplicationContainer:
             self.pet_profile_repository,
             attachment_repository=self.chat_attachment_repository,
             reminder_context_retriever=ReminderContextRetriever(self.reminder_repository),
+            weight_measurement_repository=self.weight_measurement_repository,
             max_active_conversations_per_pet=self.settings.max_active_conversations_per_pet,
             quota_exempt_emails=self.developer_emails,
         )
@@ -789,6 +795,23 @@ class ApplicationContainer:
                     return InMemoryDogWalkRepository()
                 raise
         return InMemoryDogWalkRepository()
+
+    def _build_weight_measurement_repository(self) -> WeightMeasurementRepository:
+        if self.settings.persistence_backend == "supabase":
+            try:
+                from packages.infrastructure.persistence.supabase.client import (
+                    build_supabase_client,
+                )
+                from packages.infrastructure.persistence.supabase.supabase_repositories import (
+                    SupabaseWeightMeasurementRepository,
+                )
+
+                return SupabaseWeightMeasurementRepository(build_supabase_client(self.settings))
+            except ModuleNotFoundError:
+                if self.settings.environment != "production":
+                    return InMemoryWeightMeasurementRepository()
+                raise
+        return InMemoryWeightMeasurementRepository()
 
     def _build_marketplace_listing_repository(self) -> MarketplaceListingRepository:
         if self.settings.persistence_backend == "supabase":

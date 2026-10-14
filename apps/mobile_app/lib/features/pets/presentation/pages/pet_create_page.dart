@@ -4,6 +4,8 @@ import '../../../../design_system/tokens/app_colors.dart';
 import '../../../../l10n/l10n.dart';
 
 import '../../data/pet_demo_store.dart';
+import '../../../monitoring/data/weight_measurements_repository.dart';
+import '../../../monitoring/domain/weight_measurement.dart';
 import '../../data/pet_photo_repository.dart';
 import '../../domain/pet_models.dart';
 import '../widgets/pet_profile_form.dart';
@@ -91,6 +93,14 @@ class _CreateFormState extends State<_CreateForm> {
           bodyCondition: draft.bodyCondition,
           activityLevel: draft.activityLevel,
         );
+        final weightKg = draft.weightKg;
+        if (weightKg != null && supportsWeightMonitoring(pet)) {
+          // The weight given at creation is the first weighing of the pet.
+          final weighings = WeightMeasurementsRepository();
+          await weighings.add(
+            weighings.create(petId: pet.id, measuredOn: DateTime.now(), weightKg: weightKg),
+          );
+        }
         final raw = draft.photoBytes;
         final photoPath = raw == null ? null : await saveProfilePhoto(petId: pet.id, raw: raw);
         final saved = photoPath == null

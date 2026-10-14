@@ -24,9 +24,14 @@ String formatPetBirthDate(DateTime date) {
   return '${date.day.toString().padLeft(2, '0')} ${_kMonthAbbreviations[date.month - 1]} ${date.year}';
 }
 
-/// e.g. "17,8 kg" — the display format for [PetProfile.weightLabel].
+/// e.g. "17,8 kg" or "420 g" — the display format for [PetProfile.weightLabel]
+/// (below one kilogram the weight is written in grams).
 String formatPetWeight(double weightKg) {
-  final normalized = weightKg.toStringAsFixed(weightKg.truncateToDouble() == weightKg ? 0 : 1);
+  if (weightKg < 1) return '${(weightKg * 1000).round()} g';
+  final rounded = double.parse(weightKg.toStringAsFixed(2));
+  final normalized = rounded.truncateToDouble() == rounded
+      ? rounded.toStringAsFixed(0)
+      : rounded.toString();
   return '${normalized.replaceAll('.', ',')} kg';
 }
 

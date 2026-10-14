@@ -33,6 +33,9 @@ from packages.core.application.ports.radar_reports_repository import RadarReport
 from packages.core.application.ports.reminder_repository import ReminderRepository
 from packages.core.application.ports.subscription_repository import SubscriptionRepository
 from packages.core.application.ports.user_location_repository import UserLocationRepository
+from packages.core.application.ports.weight_measurement_repository import (
+    WeightMeasurementRepository,
+)
 from packages.core.domain.consent.models import AccountConsents
 from packages.core.domain.conversation.attachment import ChatAttachment
 from packages.core.domain.conversation.models import Conversation
@@ -45,6 +48,7 @@ from packages.core.domain.local_activity.models import LocalActivity
 from packages.core.domain.marketplace.models import ListingReport, MarketplaceListing
 from packages.core.domain.medical_record.models import ClinicalEvent
 from packages.core.domain.pet_profile.models import PetProfile
+from packages.core.domain.pet_profile.weight_measurement import WeightMeasurement
 from packages.core.domain.radar_places.models import (
     OSM_SOURCE_NAME,
     RADAR_PLACE_TRANSIENT_FIELDS,
@@ -545,6 +549,36 @@ class SupabaseDogWalkRepository(DogWalkRepository):
     def list_by_owner(self, owner_id: str) -> list[WalkSession]:
         response = self._client.table(self._table).select("*").eq("owner_id", owner_id).execute()
         return [WalkSession.model_validate(item) for item in response.data or []]
+
+
+class SupabaseWeightMeasurementRepository(WeightMeasurementRepository):
+    """Reads the weighings the app saves in `pet_weight_measurements`.
+
+    Never raises: the chat must keep answering on the profile weight when the
+    table does not exist yet (the schema script not run) or cannot be read.
+    """
+
+    def __init__(self, client: Client) -> None:
+        self._client = client
+        self._table = "pet_weight_measurements"
+
+    def latest_for_pet(self, owner_id: str, pet_id: str) -> WeightMeasurement | None:
+        try:
+            response = (
+                self._client.table(self._table)
+                .select("pet_id,measured_at,weight_kg,body_condition")
+                .eq("owner_id", owner_id)
+                .eq("pet_id", pet_id)
+                .order("measured_at", desc=True)
+                .order("created_at", desc=True)
+                .limit(1)
+                .execute()
+            )
+            rows = response.data or []
+            return WeightMeasurement.model_validate(rows[0]) if rows else None
+        except Exception:
+            _logger.warning("weight measurements unavailable: pet_weight_measurements not read")
+            return None
 
 
 def _listing_to_row(listing: MarketplaceListing) -> dict[str, Any]:

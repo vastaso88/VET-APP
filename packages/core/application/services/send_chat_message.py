@@ -1,10 +1,13 @@
-from datetime import UTC, datetime
+from datetime import UTC, date, datetime
 
 from pydantic import BaseModel
 
 from packages.core.application.ports.chat_attachment_repository import ChatAttachmentRepository
 from packages.core.application.ports.conversation_repository import ConversationRepository
 from packages.core.application.ports.pet_profile_repository import PetProfileRepository
+from packages.core.application.ports.weight_measurement_repository import (
+    WeightMeasurementRepository,
+)
 from packages.core.application.services.chat_orchestrator import (
     ChatOrchestrator,
     ChatOrchestratorInput,
@@ -26,6 +29,7 @@ from packages.core.domain.medical_record.consent_text import (
 )
 from packages.core.domain.medical_record.models import MedicalRecordConsentRecord
 from packages.core.domain.pet_profile.models import PetProfile
+from packages.core.domain.pet_profile.weight_measurement import weight_label_with_date
 from packages.shared.errors.base import ValidationError
 
 # How many recent messages cross into the orchestrator (spec v3 §38: never
@@ -107,6 +111,7 @@ class SendChatMessageService:
         *,
         attachment_repository: ChatAttachmentRepository | None = None,
         reminder_context_retriever: ReminderContextRetriever | None = None,
+        weight_measurement_repository: WeightMeasurementRepository | None = None,
         max_active_conversations_per_pet: int = 4,
         quota_exempt_emails: frozenset[str] = frozenset(),
     ) -> None:
@@ -120,9 +125,25 @@ class SendChatMessageService:
         # None: this deployment's chat doesn't see reminders (same
         # optional-collaborator convention as above).
         self._reminder_context_retriever = reminder_context_retriever
+        # None: the chat only knows the free-text weight of the profile.
+        self._weight_measurement_repository = weight_measurement_repository
         self._max_active_conversations_per_pet = max_active_conversations_per_pet
         # Developer accounts are not held to the daily message allowance.
         self._quota_exempt_emails = frozenset(e.strip().lower() for e in quota_exempt_emails)
+
+    def _weight_label(self, owner_id: str, pet_profile: PetProfile, today: date) -> str | None:
+        """The latest weighing with its date ("23 kg al 14 ottobre") when the
+        owner records them, else the free-text weight of the profile."""
+        if self._weight_measurement_repository is not None:
+            try:
+                latest = self._weight_measurement_repository.latest_for_pet(
+                    owner_id, pet_profile.id
+                )
+            except Exception:
+                latest = None
+            if latest is not None:
+                return weight_label_with_date(latest, today)
+        return pet_profile.weight_label
 
     def execute(self, data: SendChatMessageInput) -> SendChatMessageOutput:
         # A photo alone is a message (an edited message may keep only its
@@ -196,7 +217,7 @@ class SendChatMessageService:
                 notes=pet_profile.notes,
                 birth_date_label=pet_profile.birth_date_label,
                 sex=pet_profile.sex,
-                weight_label=pet_profile.weight_label,
+                weight_label=self._weight_label(data.owner_id, pet_profile, today),
                 dog_size_category=pet_profile.dog_size_category,
                 is_sterilized=pet_profile.is_sterilized,
                 body_condition=pet_profile.body_condition,

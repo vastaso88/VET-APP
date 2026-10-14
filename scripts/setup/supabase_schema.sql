@@ -1562,3 +1562,62 @@ begin
     end if;
 end
 $$;
+
+-- Misurazioni del peso (pagina "Monitoraggio" del pet, 2026-10-14). Una riga
+-- per pesata: data, peso SEMPRE in kg (l'app converte da/verso lb nella
+-- visualizzazione), corporatura facoltativa a 5 livelli (1 molto magro ...
+-- 5 sovrappeso) e nota. L'app legge/scrive direttamente da Supabase (come
+-- pet_profiles e dog_walks); il backend della chat legge l'ultima riga con la
+-- service key. Non per i pesci/acquari (filtro lato app).
+create table if not exists public.pet_weight_measurements (
+    id text primary key,
+    pet_id text not null references public.pet_profiles(id) on delete cascade,
+    owner_id text not null,
+    measured_at date not null,
+    weight_kg numeric(7, 3) not null check (weight_kg > 0 and weight_kg <= 2000),
+    body_condition smallint check (body_condition between 1 and 5),
+    note text check (note is null or char_length(note) <= 500),
+    created_at timestamptz not null default now()
+);
+
+create index if not exists idx_pet_weight_measurements_pet_date
+    on public.pet_weight_measurements(pet_id, measured_at desc);
+create index if not exists idx_pet_weight_measurements_owner_id
+    on public.pet_weight_measurements(owner_id);
+
+alter table public.pet_weight_measurements enable row level security;
+
+-- Solo il proprietario: stessa forma di dog_walks (insert verifica anche che
+-- il pet sia suo).
+drop policy if exists pet_weight_measurements_select_own on public.pet_weight_measurements;
+create policy pet_weight_measurements_select_own
+on public.pet_weight_measurements
+for select
+using (owner_id = auth.uid()::text);
+
+drop policy if exists pet_weight_measurements_insert_own on public.pet_weight_measurements;
+create policy pet_weight_measurements_insert_own
+on public.pet_weight_measurements
+for insert
+with check (
+    owner_id = auth.uid()::text
+    and exists (
+        select 1
+        from public.pet_profiles
+        where public.pet_profiles.id = public.pet_weight_measurements.pet_id
+          and public.pet_profiles.owner_id = auth.uid()::text
+    )
+);
+
+drop policy if exists pet_weight_measurements_update_own on public.pet_weight_measurements;
+create policy pet_weight_measurements_update_own
+on public.pet_weight_measurements
+for update
+using (owner_id = auth.uid()::text)
+with check (owner_id = auth.uid()::text);
+
+drop policy if exists pet_weight_measurements_delete_own on public.pet_weight_measurements;
+create policy pet_weight_measurements_delete_own
+on public.pet_weight_measurements
+for delete
+using (owner_id = auth.uid()::text);

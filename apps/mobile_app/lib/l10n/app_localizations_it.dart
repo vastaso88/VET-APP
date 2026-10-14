@@ -5204,4 +5204,195 @@ class AppLocalizationsIt extends AppLocalizations {
 
   @override
   String get accountDeleteDone => 'Il tuo account è stato eliminato.';
+
+  @override
+  String get monitoringTitle => 'Monitoraggio';
+
+  @override
+  String get monitoringEntrySubtitleWeight => 'Peso e corporatura';
+
+  @override
+  String get monitoringEntrySubtitleWithActivity =>
+      'Peso, corporatura e attività';
+
+  @override
+  String get monitoringAddMeasurement => 'Nuova misurazione';
+
+  @override
+  String get monitoringCurrentWeight => 'Peso attuale';
+
+  @override
+  String monitoringMeasuredOn(String date) {
+    return 'Misurato il $date';
+  }
+
+  @override
+  String monitoringChangeSince(String change, String date) {
+    return '$change dal $date';
+  }
+
+  @override
+  String get monitoringEmptyTitle => 'Nessuna misurazione ancora';
+
+  @override
+  String monitoringEmptyBody(String petName) {
+    return 'Registra il peso di $petName per seguirne l\'andamento nel tempo.';
+  }
+
+  @override
+  String get monitoringBcsTitle => 'Corporatura';
+
+  @override
+  String monitoringBcsAsOf(String date) {
+    return 'Dalla misurazione del $date';
+  }
+
+  @override
+  String get monitoringBcsNone =>
+      'Indica la corporatura in una misurazione per vederla qui.';
+
+  @override
+  String get monitoringBcsVeryThin => 'Molto magro';
+
+  @override
+  String get monitoringBcsThin => 'Magro';
+
+  @override
+  String get monitoringBcsNormal => 'Normale';
+
+  @override
+  String get monitoringBcsSlightlyOverweight => 'Leggermente sovrappeso';
+
+  @override
+  String get monitoringBcsOverweight => 'Sovrappeso';
+
+  @override
+  String get monitoringChartTitleWeight => 'Andamento peso';
+
+  @override
+  String get monitoringChartTitleGrowth => 'Curva di crescita';
+
+  @override
+  String monitoringChartGrowthHint(String petName) {
+    return 'Il peso di $petName in base all\'età, senza curve di riferimento: solo le sue misurazioni.';
+  }
+
+  @override
+  String get monitoringChartSinglePoint =>
+      'Aggiungi un\'altra misurazione per vedere l\'andamento.';
+
+  @override
+  String get monitoringAxisAgeMonths => 'Età (mesi)';
+
+  @override
+  String monitoringAxisWeight(String unit) {
+    return 'Peso ($unit)';
+  }
+
+  @override
+  String monitoringTooltipAge(int months) {
+    String _temp0 = intl.Intl.pluralLogic(
+      months,
+      locale: localeName,
+      other: '$months mesi',
+      one: '1 mese',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get monitoringHistoryTitle => 'Storico';
+
+  @override
+  String get monitoringDeleteTitle => 'Eliminare la misurazione?';
+
+  @override
+  String monitoringDeleteMessage(String date) {
+    return 'Il peso del $date verrà tolto dallo storico.';
+  }
+
+  @override
+  String get monitoringSheetTitleNew => 'Nuova misurazione';
+
+  @override
+  String get monitoringSheetTitleEdit => 'Modifica misurazione';
+
+  @override
+  String get monitoringFieldDate => 'Data';
+
+  @override
+  String get monitoringFieldWeightKg => 'Peso (kg)';
+
+  @override
+  String get monitoringFieldWeightLb => 'Peso (lb)';
+
+  @override
+  String get monitoringFieldWeightHintKg => 'Es. 10,5';
+
+  @override
+  String get monitoringFieldWeightHintLb => 'Es. 22,5';
+
+  @override
+  String get monitoringFieldBcs => 'Corporatura (facoltativa)';
+
+  @override
+  String get monitoringFieldNote => 'Nota (facoltativa)';
+
+  @override
+  String get monitoringErrorWeight =>
+      'Inserisci un peso valido, maggiore di zero.';
+
+  @override
+  String get monitoringErrorDateFuture => 'La data non può essere nel futuro.';
+
+  @override
+  String monitoringErrorDateBirth(String petName) {
+    return 'La data è precedente alla nascita di $petName.';
+  }
+
+  @override
+  String get monitoringSaveFailed =>
+      'Non sono riuscito a salvare la misurazione: riprova.';
+
+  @override
+  String get monitoringDeleteFailed =>
+      'Non sono riuscito a eliminare la misurazione: riprova.';
+
+  @override
+  String get monitoringActivityTitle => 'Attività';
+
+  @override
+  String monitoringActivitySubtitle(String petName) {
+    return 'Le passeggiate di $petName nelle ultime settimane.';
+  }
+
+  @override
+  String get monitoringActivityDistance => 'Distanza';
+
+  @override
+  String get monitoringActivityTime => 'Tempo';
+
+  @override
+  String get monitoringActivityStatWalks => 'Passeggiate';
+
+  @override
+  String monitoringActivityEmpty(String petName) {
+    return 'Nessuna passeggiata negli ultimi 3 mesi. Registra una passeggiata dalla scheda Passeggiate per vedere qui l\'attività di $petName.';
+  }
+
+  @override
+  String monitoringActivityWeekOf(String date) {
+    return 'Settimana dal $date';
+  }
+
+  @override
+  String monitoringActivityWalkCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count passeggiate',
+      one: '1 passeggiata',
+    );
+    return '$_temp0';
+  }
 }

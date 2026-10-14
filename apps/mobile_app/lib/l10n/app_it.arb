@@ -2953,5 +2953,148 @@
   "accountDeleteUnderstood": "Ho capito: il mio account e tutti i miei dati verranno cancellati per sempre.",
   "accountDeleteSubmit": "Elimina definitivamente il mio account",
   "accountDeleteFailed": "Non sono riuscito a eliminare l'account. Riprova tra poco; se il problema continua, scrivi all'assistenza.",
-  "accountDeleteDone": "Il tuo account è stato eliminato."
+  "accountDeleteDone": "Il tuo account è stato eliminato.",
+  "monitoringTitle": "Monitoraggio",
+  "monitoringEntrySubtitleWeight": "Peso e corporatura",
+  "monitoringEntrySubtitleWithActivity": "Peso, corporatura e attività",
+  "monitoringAddMeasurement": "Nuova misurazione",
+  "monitoringCurrentWeight": "Peso attuale",
+  "monitoringMeasuredOn": "Misurato il {date}",
+  "@monitoringMeasuredOn": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "monitoringChangeSince": "{change} dal {date}",
+  "@monitoringChangeSince": {
+    "placeholders": {
+      "change": {
+        "type": "String"
+      },
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "monitoringEmptyTitle": "Nessuna misurazione ancora",
+  "monitoringEmptyBody": "Registra il peso di {petName} per seguirne l'andamento nel tempo.",
+  "@monitoringEmptyBody": {
+    "placeholders": {
+      "petName": {
+        "type": "String"
+      }
+    }
+  },
+  "monitoringBcsTitle": "Corporatura",
+  "monitoringBcsAsOf": "Dalla misurazione del {date}",
+  "@monitoringBcsAsOf": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "monitoringBcsNone": "Indica la corporatura in una misurazione per vederla qui.",
+  "monitoringBcsVeryThin": "Molto magro",
+  "monitoringBcsThin": "Magro",
+  "monitoringBcsNormal": "Normale",
+  "monitoringBcsSlightlyOverweight": "Leggermente sovrappeso",
+  "monitoringBcsOverweight": "Sovrappeso",
+  "monitoringChartTitleWeight": "Andamento peso",
+  "monitoringChartTitleGrowth": "Curva di crescita",
+  "monitoringChartGrowthHint": "Il peso di {petName} in base all'età, senza curve di riferimento: solo le sue misurazioni.",
+  "@monitoringChartGrowthHint": {
+    "placeholders": {
+      "petName": {
+        "type": "String"
+      }
+    }
+  },
+  "monitoringChartSinglePoint": "Aggiungi un'altra misurazione per vedere l'andamento.",
+  "monitoringAxisAgeMonths": "Età (mesi)",
+  "monitoringAxisWeight": "Peso ({unit})",
+  "@monitoringAxisWeight": {
+    "placeholders": {
+      "unit": {
+        "type": "String"
+      }
+    }
+  },
+  "monitoringTooltipAge": "{months, plural, =1{1 mese} other{{months} mesi}}",
+  "@monitoringTooltipAge": {
+    "placeholders": {
+      "months": {
+        "type": "int"
+      }
+    }
+  },
+  "monitoringHistoryTitle": "Storico",
+  "monitoringDeleteTitle": "Eliminare la misurazione?",
+  "monitoringDeleteMessage": "Il peso del {date} verrà tolto dallo storico.",
+  "@monitoringDeleteMessage": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "monitoringSheetTitleNew": "Nuova misurazione",
+  "monitoringSheetTitleEdit": "Modifica misurazione",
+  "monitoringFieldDate": "Data",
+  "monitoringFieldWeightKg": "Peso (kg)",
+  "monitoringFieldWeightLb": "Peso (lb)",
+  "monitoringFieldWeightHintKg": "Es. 10,5",
+  "monitoringFieldWeightHintLb": "Es. 22,5",
+  "monitoringFieldBcs": "Corporatura (facoltativa)",
+  "monitoringFieldNote": "Nota (facoltativa)",
+  "monitoringErrorWeight": "Inserisci un peso valido, maggiore di zero.",
+  "monitoringErrorDateFuture": "La data non può essere nel futuro.",
+  "monitoringErrorDateBirth": "La data è precedente alla nascita di {petName}.",
+  "@monitoringErrorDateBirth": {
+    "placeholders": {
+      "petName": {
+        "type": "String"
+      }
+    }
+  },
+  "monitoringSaveFailed": "Non sono riuscito a salvare la misurazione: riprova.",
+  "monitoringDeleteFailed": "Non sono riuscito a eliminare la misurazione: riprova.",
+  "monitoringActivityTitle": "Attività",
+  "monitoringActivitySubtitle": "Le passeggiate di {petName} nelle ultime settimane.",
+  "@monitoringActivitySubtitle": {
+    "placeholders": {
+      "petName": {
+        "type": "String"
+      }
+    }
+  },
+  "monitoringActivityDistance": "Distanza",
+  "monitoringActivityTime": "Tempo",
+  "monitoringActivityStatWalks": "Passeggiate",
+  "monitoringActivityEmpty": "Nessuna passeggiata negli ultimi 3 mesi. Registra una passeggiata dalla scheda Passeggiate per vedere qui l'attività di {petName}.",
+  "@monitoringActivityEmpty": {
+    "placeholders": {
+      "petName": {
+        "type": "String"
+      }
+    }
+  },
+  "monitoringActivityWeekOf": "Settimana dal {date}",
+  "@monitoringActivityWeekOf": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "monitoringActivityWalkCount": "{count, plural, =1{1 passeggiata} other{{count} passeggiate}}",
+  "@monitoringActivityWalkCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  }
 }
