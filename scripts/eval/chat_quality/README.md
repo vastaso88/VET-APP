@@ -135,3 +135,18 @@ scenario dichiara (`vet_referral`): non dipende dal giudice.
 
 Tutto è inventato: nessuna persona reale, clinica dichiaratamente fittizia. Chi aggiunge
 dati deve mantenere questa regola.
+
+## Quanto costa una risposta (senza chiave)
+
+`token_budget.py` fa girare gli stessi scenari con un modello finto e conta i token di
+ogni prompt che la chat avrebbe mandato, per scopo e per classe di modello, e stima le
+risposte al giorno che la quota regge. Nessuna chiamata al provider. Con tiktoken il
+conteggio è esatto (`o200k_base`, la famiglia dei modelli gpt-oss), altrimenti è una
+stima a caratteri, dichiarata nell'output:
+
+```bash
+uv run --system-certs --with tiktoken --with truststore python -c "import truststore; truststore.inject_into_ssl(); import runpy, sys; sys.argv=['token_budget.py','--label','dopo']; runpy.run_path('scripts/eval/chat_quality/token_budget.py', run_name='__main__')"
+```
+
+`--compare prima dopo` mette a confronto due etichette. Vedi
+`docs/features/chat_free_tier_budget.md`.

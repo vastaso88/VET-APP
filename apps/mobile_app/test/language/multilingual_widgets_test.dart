@@ -61,7 +61,7 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
-  for (final locale in ['it', 'en', 'es']) {
+  for (final locale in ['it', 'en', 'es', 'de']) {
     for (final entry in <String, Widget>{
       'login': const LoginPage(),
       'register': const RegisterPage(),

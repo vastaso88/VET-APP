@@ -335,7 +335,7 @@ def compare_arbs() -> tuple[dict[str, list[str]], dict[str, list[str]], dict[str
         missing["it"] = []
         extra["it"] = []
         mismatched["it"] = invalid_source
-    for language in ("en", "es"):
+    for language in ("en", "es", "fr"):
         if not (L10N / f"app_{language}.arb").exists():
             missing[language] = list(template)
             extra[language] = []

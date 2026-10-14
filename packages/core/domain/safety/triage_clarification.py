@@ -153,7 +153,18 @@ RED_FLAG_CATEGORIES: dict[str, tuple[str, ...]] = {
         "xilitolo",
         "cipolla",
         "aglio",
+        # emergency_patterns.py (2026-10-14)
+        "rodenticida",
+        "antigelo",
+        "giglio",
     ),
+    # Gastric dilatation-volvulus: torsion, unproductive retching, a belly
+    # swelling hard — kills within hours. No clarifying question, like
+    # toxin_medication: asking first would only cost time.
+    "gastric_bloat": ("torsione gastrica",),
+    # Pale, white, grey or blue gums or tongue: shock, bleeding inside,
+    # no oxygen. No clarifying question either.
+    "circulatory": ("gengive pallide",),
 }
 
 # If the very first message already describes an unambiguous, ongoing
@@ -289,6 +300,38 @@ _CLARIFYING_QUESTIONS_ES: dict[str, str] = {
 }
 
 
+_CLARIFYING_QUESTIONS_DE: dict[str, str] = {
+    "respiratory": (
+        "Zwei kurze Fragen, bevor ich Ihnen Hinweise gebe: Hat die schwere Atmung nach "
+        "Rennen, wildem Spiel oder bei Hitze begonnen oder in Ruhe ohne erkennbaren Grund? "
+        "Beruhigt sie sich gerade, bleibt sie gleich oder wird sie schlimmer?"
+    ),
+    "collapse": (
+        "Zwei kurze Fragen: Ist Ihr Tier jetzt wach, reagiert es und bewegt es sich normal, "
+        "oder liegt es noch am Boden und reagiert kaum? "
+        "Hat die Episode Sekunden oder länger gedauert?"
+    ),
+    "seizure": (
+        "Zwei kurze Fragen: Sind die Krampfanfälle vorbei und ist Ihr Tier wieder wach, "
+        "oder passieren sie gerade noch? Ist es das erste Mal?"
+    ),
+    "bleeding_trauma": (
+        "Zwei kurze Fragen: Blutet es gerade noch oder hat die Blutung aufgehört "
+        "bzw. nachgelassen? "
+        "Waren es ein paar Tropfen oder eine Menge, die Sie beunruhigt?"
+    ),
+    "urinary": (
+        "Zwei kurze Fragen: Seit wie vielen Stunden hat Ihr Tier nicht mehr uriniert? "
+        "Versucht es vergeblich zu urinieren oder zeigt es Schmerzen?"
+    ),
+    "gi_stasis": (
+        "Zwei kurze Fragen: Seit genau wie vielen Stunden frisst Ihr Tier nicht und setzt "
+        "keinen Kot ab? Hat es sich dem Futter genähert oder wenigstens ein paar "
+        "kleine Kotstücke abgesetzt?"
+    ),
+}
+
+
 def clarifying_question(category: str | None, locale: str) -> str | None:
     if category is None:
         return None
@@ -296,6 +339,7 @@ def clarifying_question(category: str | None, locale: str) -> str | None:
         "it": CLARIFYING_QUESTIONS,
         "en": _CLARIFYING_QUESTIONS_EN,
         "es": _CLARIFYING_QUESTIONS_ES,
+        "de": _CLARIFYING_QUESTIONS_DE,
     }
     return catalogs[normalize_locale(locale)].get(category)
 

@@ -116,6 +116,30 @@ class InterviewPlanner:
                 "¿Hay enfermedades conocidas o tratamientos actuales que deba conocer?"
             ),
         },
+        "de": {
+            "safety_critical_unknowns": (
+                "Können Sie mir noch ein Detail nennen? Es hilft mir einzuschätzen, "
+                "wie dringend die Situation ist."
+            ),
+            "presenting_problem": (
+                "Was genau haben Sie beobachtet? Erzählen Sie mir mit Ihren eigenen Worten, "
+                "was passiert."
+            ),
+            "onset": "Seit wann beobachten Sie das?",
+            "observed_behaviours": "Können Sie genau beschreiben, was in diesen Momenten passiert?",
+            "associated_signs": (
+                "Haben Sie außerdem Veränderungen bei Appetit, Durst, Energie, "
+                "Urin oder Kot bemerkt?"
+            ),
+            "environmental_changes": (
+                "Hat sich zuletzt etwas verändert, zum Beispiel Futter, Wohnung, "
+                "ein anderes Tier oder eine Reise?"
+            ),
+            "contexts": "In welchen Situationen passiert es am häufigsten?",
+            "known_medical_context": (
+                "Gibt es bekannte Erkrankungen oder laufende Behandlungen, die ich kennen sollte?"
+            ),
+        },
     }
 
     # Priority order for the still-missing fields (safety_critical_unknowns is
@@ -221,6 +245,8 @@ class InterviewPlanner:
                         f"copy it): {template}"
                     ),
                     max_tokens=120,
+                    purpose="interview_question",
+                    model_class="light",
                 )
             )
         except ProviderError:

@@ -90,4 +90,12 @@ _CONNECTORS: dict[str, dict[str, str]] = {
         "monitoring_prefix": "Vigila: ",
         "referral_prefix": "Contacta con el veterinario si: ",
     },
+    "de": {
+        "uncertain_prefix": "Einige Quellen deuten auch darauf hin, dass ",
+        "uncertain_suffix": ", wobei das nicht ganz sicher ist.",
+        "conflicting_prefix": "Die Quellen sind sich in diesem Punkt nicht einig: ",
+        "actions_prefix": "In der Zwischenzeit können Sie: ",
+        "monitoring_prefix": "Behalten Sie im Auge: ",
+        "referral_prefix": "Wenden Sie sich an die Tierärztin bzw. den Tierarzt, wenn: ",
+    },
 }

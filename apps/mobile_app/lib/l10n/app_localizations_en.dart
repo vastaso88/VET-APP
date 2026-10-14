@@ -885,6 +885,16 @@ class AppLocalizationsEn extends AppLocalizations {
       'I couldn\'t edit the message. Check your connection.';
 
   @override
+  String chatErrorMessageTooLong(int max) {
+    return 'That message is too long: you can write up to $max characters. Shorten it and send it again.';
+  }
+
+  @override
+  String chatInputLimitReached(int max) {
+    return 'You have reached the limit of $max characters.';
+  }
+
+  @override
   String get chatErrorPetBootstrap => 'I couldn\'t prepare the pet profile.';
 
   @override
