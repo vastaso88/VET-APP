@@ -50,19 +50,35 @@ class GroqLLMClient(LLMClient):
     ) -> None:
         self._settings = settings
         self._reasoning_headroom = max(0, settings.llm_reasoning_headroom_tokens)
-        self._main = GroqChatApi(
-            base_url=settings.llm_base_url,
-            api_key=settings.llm_api_key,
-            timeout_seconds=settings.llm_timeout_seconds,
-            models=[settings.llm_model, *split_models(settings.llm_fallback_models)],
-            purpose="chat",
-            transport=transport,
-            availability=availability,
-        )
         light_models = [
             settings.llm_model_light,
             *split_models(settings.llm_light_fallback_models),
         ]
+        main_models = [settings.llm_model, *split_models(settings.llm_fallback_models)]
+        if settings.llm_model_light.strip():
+            # A reserve that also serves as the light model shares its daily
+            # quota with every light call: it goes last among the reserves,
+            # so the answers of a limited day fall on a quota nothing else
+            # draws from (build 33). The configured main model keeps its place.
+            head, reserves = main_models[0], main_models[1:]
+
+            def shared_quota_last(model: str) -> tuple[bool, int]:
+                # Reserves no light call uses first (configured order kept);
+                # then the light chain's own reserves; the light model last.
+                if model not in light_models:
+                    return (False, 0)
+                return (True, -light_models.index(model))
+
+            main_models = [head, *sorted(reserves, key=shared_quota_last)]
+        self._main = GroqChatApi(
+            base_url=settings.llm_base_url,
+            api_key=settings.llm_api_key,
+            timeout_seconds=settings.llm_timeout_seconds,
+            models=main_models,
+            purpose="chat",
+            transport=transport,
+            availability=availability,
+        )
         if settings.llm_model_light.strip():
             self._light: GroqChatApi | None = GroqChatApi(
                 base_url=settings.llm_base_url,

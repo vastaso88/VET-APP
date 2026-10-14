@@ -131,12 +131,11 @@ def test_the_reply_budget_is_calibrated_per_kind_of_request() -> None:
     orchestrator = ChatOrchestrator(client, InMemoryEvidenceRetriever(), NoopPiiAnonymizer())
 
     _ask(orchestrator, QUESTION)
-    _ask(orchestrator, "grazie!")
+    _ask(orchestrator, "grazie!")  # small talk: fixed text, no call at all (build 33)
 
     [answer] = client.requests_for("answer")
-    [small_talk] = client.requests_for("general_answer")
     assert answer.max_tokens == 450
-    assert small_talk.max_tokens == 300
+    assert client.requests_for("general_answer") == []
 
     custom = RecordingLLMClient()
     ChatOrchestrator(

@@ -121,13 +121,24 @@ def test_orchestrator_puts_the_language_in_the_system_prompt() -> None:
     assert "English (en)" in english.requests[-1].system_prompt
 
 
-def test_the_small_talk_prompt_follows_the_language_too() -> None:
-    italian = _ask("it", "ciao")
-    french = _ask("fr", "ciao")
+def test_small_talk_is_fixed_text_in_the_users_language() -> None:
+    # Build 33: no model call for greetings; the text itself is chosen by
+    # language, Italian for anything unknown.
+    replies = {}
+    for language in ("it", "fr", "en", "xx"):
+        client = RecordingLLM()
+        result = ChatOrchestrator(client, InMemoryEvidenceRetriever(), NoopPiiAnonymizer()).answer(
+            ChatOrchestratorInput(
+                user_message="ciao", species="Cane", pet_name="Birba", language=language
+            )
+        )
+        assert client.requests == []
+        replies[language] = result.answer
 
-    assert INSTRUCTION_MARKER not in italian.requests[-1].system_prompt
-    assert "French (fr)" in french.requests[-1].system_prompt
-    assert french.requests[-1].system_prompt.startswith(italian.requests[-1].system_prompt)
+    assert replies["it"].startswith("Ciao!")
+    assert replies["xx"] == replies["it"]
+    assert replies["fr"].startswith("Bonjour")
+    assert replies["en"].startswith("Hi!")
 
 
 Seen = dict[str, list[Any]]

@@ -223,7 +223,9 @@ def test_chat_orchestrator_rejects_an_evidence_answer_that_calls_the_pet_the_wro
     assert any("wrong_species_reference" in violation for violation in result.limitations)
 
 
-def test_chat_orchestrator_rejects_a_general_answer_that_calls_the_pet_the_wrong_species() -> None:
+def test_small_talk_never_reaches_the_model_so_it_can_never_name_the_wrong_species() -> None:
+    # Build 33: greetings are answered by fixed text (before that, a
+    # model reply "come sta il tuo cane" to an aquarium was a real finding).
     client = ScriptedContentLLMClient("Ciao! Come sta il tuo cane oggi?")
     orchestrator = ChatOrchestrator(client, InMemoryEvidenceRetriever(), NoopPiiAnonymizer())
 
@@ -233,7 +235,9 @@ def test_chat_orchestrator_rejects_a_general_answer_that_calls_the_pet_the_wrong
 
     assert result.mode == "general"
     assert result.ai_generated is False
-    assert any("wrong_species_reference" in violation for violation in result.limitations)
+    assert "cane" not in result.answer.lower()
+    assert "Acquario del salotto" in result.answer
+    assert client.requests == []
 
 
 def test_chat_orchestrator_allows_a_legitimate_comparison_mentioning_another_species() -> None:

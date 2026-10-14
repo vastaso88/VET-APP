@@ -1472,3 +1472,54 @@ revoke all on function public.chat_answer_cache_hit(text)
     from public, anon, authenticated;
 grant execute on function public.chat_answer_cache_hit(text)
     to service_role;
+
+-- Retention for the usage ledger and the answer cache (build 33). One
+-- function deletes what has aged out: llm_usage rows after 90 days,
+-- chat_user_daily_usage after 30 days, expired chat_answer_cache rows; the
+-- per-day totals in llm_usage_daily stay (a few rows a day, no personal
+-- data). Two ways to run it, either is enough:
+--   * pg_cron (enable the extension once in the Supabase dashboard,
+--     Database > Extensions > pg_cron): the block below then schedules it
+--     every night at 03:15 UTC; re-running this script keeps one schedule;
+--   * the backend route POST /chat/maintenance (developer accounts only),
+--     from any external scheduler.
+create or replace function public.chat_usage_cleanup()
+returns jsonb
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+    usage_rows integer;
+    user_rows integer;
+    cache_rows integer;
+begin
+    delete from public.llm_usage where day < current_date - 90;
+    get diagnostics usage_rows = row_count;
+    delete from public.chat_user_daily_usage where day < current_date - 30;
+    get diagnostics user_rows = row_count;
+    delete from public.chat_answer_cache where expires_at < now();
+    get diagnostics cache_rows = row_count;
+    return jsonb_build_object(
+        'llm_usage', usage_rows,
+        'chat_user_daily_usage', user_rows,
+        'chat_answer_cache', cache_rows
+    );
+end;
+$$;
+revoke all on function public.chat_usage_cleanup()
+    from public, anon, authenticated;
+grant execute on function public.chat_usage_cleanup()
+    to service_role;
+
+do $$
+begin
+    if exists (select 1 from pg_extension where extname = 'pg_cron') then
+        perform cron.unschedule(jobid)
+            from cron.job where jobname = 'vetapp-chat-usage-cleanup';
+        perform cron.schedule(
+            'vetapp-chat-usage-cleanup', '15 3 * * *', 'select public.chat_usage_cleanup()'
+        );
+    end if;
+end
+$$;

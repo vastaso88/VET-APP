@@ -124,6 +124,8 @@ class GroqChatApi:
         self._clock = clock
         self._availability = availability
         self._resting_until: dict[str, float] = {}
+        # Models this account does not have (404): remembered for the day.
+        self._missing: set[str] = set()
 
     @property
     def models(self) -> list[str]:
@@ -166,8 +168,16 @@ class GroqChatApi:
             models = self._availability.order(models)
         now = self._clock()
         available = [m for m in models if self._resting_until.get(m, 0.0) <= now]
+        if available:
+            return available
+        if all(m in self._missing for m in models):
+            # Nothing to wait for: no model of this chain exists on the
+            # account. Said at once, without another round trip.
+            raise ProviderError(
+                f"Groq {self._purpose}: none of {', '.join(models)} is available on this account"
+            )
         # All resting: a real attempt beats a certain failure.
-        return available or list(models)
+        return list(models)
 
     def _post(self, model: str, payload: dict[str, Any], timeout: int) -> dict[str, Any]:
         http_request = request.Request(
@@ -214,6 +224,7 @@ class GroqChatApi:
                 raise _ModelUnavailable(failure) from exc
             if exc.code == _MISSING_MODEL_STATUS:
                 self._resting_until[model] = self._clock() + MAX_COOLDOWN_SECONDS
+                self._missing.add(model)
                 logger.warning(
                     "groq %s: model %s is not available on this account (404)",
                     self._purpose,
