@@ -18,15 +18,16 @@ Coordinatrice: sessione "Multilingua: estensioni su MULTILANG". Ultimo aggiornam
 |---|------|-------|
 | 0 | Revisione di MULTILANG | **Fatta** → `REVISIONE_MULTILANG.md` (1 bloccante, 10 alti), messaggio per erykwest inviato |
 | 0b | Stress test it/en/es | **Fatto** → `STRESS_TEST_MULTILANG.md` (+ 1.440 screenshot in side-session-notes) |
-| PR | Aperte verso MULTILANG | #15 flavor Android (superata da #17, che li contiene già: chiudere o unire per prima) · #16 revisione + stress test + piano + legali UK/US/AU · #17 allineamento main→MULTILANG (conflitti risolti) · #18 legali DE/AT/CH · #19 traduzione FR (con fr-BE/fr-CH) · #20 traduzione DE (con de-AT/de-CH) |
+| PR | Aperte verso MULTILANG | #15 flavor Android (superata da #17, che li contiene già: chiudere o unire per prima) · #16 revisione + stress test + piano + legali UK/US/AU · #17 allineamento main→MULTILANG (conflitti risolti) · #18 legali DE/AT/CH · #19 traduzione FR (con fr-BE/fr-CH) · #20 traduzione DE (con de-AT/de-CH) · #21 integrazione DE+FR sopra #17 · #22 legale ES · #23 legale FR/BE/CH-fr (dipende da #18) |
 | 1-3 | Legale EN-UK / EN-US / EN-AU | **Bozze consegnate** (8 file ciascuna), in PR #16 |
 | 4 | Traduzione DE | **Consegnata** (1.355 chiavi, `values-de`, backend `de` dietro, test, `STRESS_TEST_DE.md`); registro **Sie** (decisione Orchestratore); PR #20 |
 | 5 | Traduzione FR | **Consegnata** (1.355 chiavi, `values-fr`, varianti fr-BE/fr-CH, `STRESS_TEST_FR.md`, `FRENCH_BACKEND_WIRING.md`); registro **vous**; PR #19 |
 | 6 | Legale DE (DE/AT/CH) | **Bozze consegnate** (24 file), in PR #18 |
-| 7-8 | Legale FR / ES | Card proposte all'utente (Francia/Belgio/Svizzera romanda; Spagna + nota America Latina) |
-| 9 | Mappe per paese | Da proporre |
-| 10 | Notizie, eventi, Mercatino per territorio | Da proporre |
-| 11 | Formati e store | Da proporre |
+| 7 | Legale FR (FR/BE/CH romanda) | **Bozze consegnate** (24 file: `fr`, `be`, `ch-fr`; `ch-fr` rimanda a `docs/compliance/ch/` della PR #18: unire #18 prima); PR #23 |
+| 8 | Legale ES (Spagna + nota America Latina) | **Bozze consegnate** (9 file, testi in «usted»); PR #22 (nota tú/usted in un secondo commit) |
+| 9 | Mappe per paese | Card proposta all'utente |
+| 10 | Notizie, eventi, Mercatino per territorio | Card proposta all'utente |
+| 11 | Formati e store | Card proposta all'utente (parte da `ml/sync-de-fr`) |
 
 ### Note di integrazione DE + FR (verificate 2026-10-14)
 
@@ -68,6 +69,16 @@ Coordinatrice: sessione "Multilingua: estensioni su MULTILANG". Ultimo aggiornam
 
 Tedesco in **Sie** (formale), come da brief dell'Orchestratore; passare a "du" costerebbe una passata su ~270 testi (e sul backend). Possibile rifinitura futura. Francese in **vous**. Varianti bandiera: fr-BE / fr-CH (stessa traduzione fr), de-AT / de-CH (stessa traduzione de); paese predefinito dedotto dal dispositivo.
 
-## Ordine di merge consigliato (2026-10-14)
+## Ordine di merge consigliato (aggiornato 2026-10-14)
 
-#17 allineamento (contiene anche i flavor di #15) → #20 DE → #19 FR → #16 documenti → #18 legali DACH. Per evitare conflitti manuali a erykwest è in preparazione il ramo di integrazione `ml/sync-de-fr` (#20 e #19 applicati sopra #17, `gen-l10n` rigenerato): si può prendere quello dopo il merge di #17, o usarlo come guida.
+**#17 → #21 → #16 → #18 → #23 → #22** (#15, #19 e #20 sono contenute in #17 e #21). La #21 mette già insieme tedesco e francese sopra la #17, con i conflitti risolti.
+
+## Decisioni di prodotto emerse dalle sessioni legali (da confermare dal proprietario)
+
+1. **Mercatino senza animali vivi** in Germania/Austria/Svizzera, Francia/Belgio e Spagna (norme locali sulla vendita di animali): regola per paese nel Mercatino, oltre al raggio obbligatorio.
+2. **Linea dell'assistente senza diagnosi né prescrizioni**: in Francia la telemedicina veterinaria non ha base legale (Ordre des vétérinaires, 2023) e il consiglio personalizzato rischia l'esercizio abusivo; in DE/ES la telemedicina veterinaria è da verificare. Proposta: informazioni generali e triage, mai diagnosi/prescrizione, in tutti i paesi.
+3. **Registro legale**: spagnolo legale in «usted» e interfaccia in «tú»; tedesco in «Sie»; francese in «vous».
+4. **Consensi**: il testo legale segue la REGIONE (mai ripiego silenzioso fr-BE/fr-CH→fr-FR o es-XX→es-ES); versione propria v1 e locale mostrata salvata.
+5. **Bottone di recesso/disdetta** (obbligo UE): DE dal 19/06/2026, FR dal 19/06/2026, BE dal 14/08/2026, AT dal 01/10/2026 (date da verificare con il legale locale).
+6. **Groq e Data Privacy Framework**: Groq non risulta nel DPF; servono SCC o altra base per i trasferimenti verso gli USA (tutte le regioni UE/UK/CH).
+7. **Titolare, DPO e mediatore del consumo**: dati da fornire per le informative (domanda comune a tutte le regioni).
