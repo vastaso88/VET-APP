@@ -2,6 +2,8 @@ import 'dart:async';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:package_info_plus/package_info_plus.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../../../../app/router/app_router.dart';
 import '../../../../app/shell/home_shell_page.dart';
@@ -35,7 +37,11 @@ import '../../../nearby_places/presentation/pages/data_sources_page.dart';
 import '../../../pets/data/pet_demo_store.dart';
 import '../../../pets/domain/pet_models.dart';
 import '../../../pets/presentation/widgets/medical_record_consent_card.dart';
-import '../../../profile/presentation/pages/profile_page.dart';
+import '../../../account/presentation/pages/change_email_page.dart';
+import '../../../account/presentation/pages/change_password_page.dart';
+import '../../../account/presentation/pages/delete_account_page.dart';
+import '../../../account/presentation/pages/profile_edit_page.dart';
+import '../../../account/presentation/widgets/profile_avatar.dart';
 import '../../data/gallery_save_settings_store.dart';
 import '../../data/layout_settings_store.dart';
 import '../../data/unit_settings_store.dart';
@@ -70,6 +76,7 @@ class _SettingsPageState extends State<SettingsPage> {
     unawaited(GallerySaveSettingsStore.instance.ensureLoaded());
     unawaited(_loadLocation());
     unawaited(_loadSupportContact());
+    unawaited(_loadAppVersion());
     unawaited(_loadNotificationPermission());
     unawaited(BillingDemoStore.instance.syncFromBackend());
     if (HomeShellNavigation.consumeLocationScroll()) {
@@ -277,10 +284,49 @@ class _SettingsPageState extends State<SettingsPage> {
     );
   }
 
-  void _openProfile() {
-    Navigator.of(context).push(
-      MaterialPageRoute<void>(builder: (_) => const ProfilePage()),
+  Future<void> _openProfile() async {
+    await Navigator.of(context).push(
+      MaterialPageRoute<void>(builder: (_) => const ProfileEditPage()),
     );
+    if (mounted) setState(() {});
+  }
+
+  void _openPage(Widget page) {
+    Navigator.of(context).push(MaterialPageRoute<void>(builder: (_) => page));
+  }
+
+  String _appVersion = '';
+
+  Future<void> _loadAppVersion() async {
+    try {
+      final info = await PackageInfo.fromPlatform();
+      if (mounted) setState(() => _appVersion = info.version);
+    } catch (_) {}
+  }
+
+  /// Opens the mail app with the support address, a subject and the app
+  /// version already filled in. The address comes from the backend
+  /// (SUPPORT_CONTACT_EMAIL).
+  Future<void> _contactSupport() async {
+    final l10n = context.l10n;
+    final email = _supportContactEmail;
+    if (email == null) {
+      _showInfoDialog(l10n.settingsAccountSupport, l10n.settingsContactUnavailable);
+      return;
+    }
+    final version = _appVersion.isEmpty ? '?' : _appVersion;
+    final uri = Uri.parse(
+      'mailto:$email'
+      '?subject=${Uri.encodeComponent(l10n.accountSupportSubject(version))}'
+      '&body=${Uri.encodeComponent(l10n.accountSupportBody(version))}',
+    );
+    var opened = false;
+    try {
+      opened = await launchUrl(uri);
+    } catch (_) {}
+    if (!opened && mounted) {
+      _showInfoDialog(l10n.settingsAccountSupport, l10n.settingsContactWriteTo(email));
+    }
   }
 
   void _openBilling() {
@@ -482,8 +528,12 @@ class _SettingsPageState extends State<SettingsPage> {
                 Text(context.l10n.settingsTitle, style: AppTextStyles.display.copyWith(fontSize: 28)),
                 const SizedBox(height: AppSpacing.xl),
                 _Row(
-                  leading: _Avatar(
-                      letter: CurrentUser.firstName(fallback: context.l10n.settingsGuestInitial).substring(0, 1).toUpperCase()),
+                  leading: ProfileAvatar(
+                    letter: CurrentUser.firstName(fallback: context.l10n.settingsGuestInitial)
+                        .substring(0, 1)
+                        .toUpperCase(),
+                    avatarPath: user?.avatarPath,
+                  ),
                   title: CurrentUser.fullName(fallback: context.l10n.settingsGuestName),
                   subtitle: user?.email ?? context.l10n.settingsNoActiveSession,
                   onTap: _openProfile,
@@ -703,12 +753,7 @@ class _SettingsPageState extends State<SettingsPage> {
                       // none is shown until it is known, rather than a hardcoded
                       // one on a domain that may not be ours.
                       subtitle: _supportContactEmail,
-                      onTap: () => _showInfoDialog(
-                        context.l10n.settingsContactUs,
-                        _supportContactEmail == null
-                            ? context.l10n.settingsContactUnavailable
-                            : context.l10n.settingsContactWriteTo(_supportContactEmail!),
-                      ),
+                      onTap: () => unawaited(_contactSupport()),
                     ),
                     _Row(
                       icon: Icons.star_outline_rounded,
@@ -735,7 +780,7 @@ class _SettingsPageState extends State<SettingsPage> {
                       icon: Icons.info_outline_rounded,
                       iconColor: AppColors.mutedText,
                       title: context.l10n.settingsAppVersion,
-                      trailingText: '1.0.0',
+                      trailingText: _appVersion.isEmpty ? null : _appVersion,
                     ),
                   ],
                 ),
@@ -746,11 +791,44 @@ class _SettingsPageState extends State<SettingsPage> {
                   title: context.l10n.settingsSectionAccount,
                   children: [
                     _Row(
+                      icon: Icons.person_outline_rounded,
+                      iconColor: AppColors.primary,
+                      title: context.l10n.settingsAccountProfile,
+                      onTap: _openProfile,
+                    ),
+                    _Row(
+                      icon: Icons.alternate_email_rounded,
+                      iconColor: AppColors.info,
+                      title: context.l10n.settingsAccountChangeEmail,
+                      onTap: () => _openPage(const ChangeEmailPage()),
+                    ),
+                    _Row(
+                      icon: Icons.lock_outline_rounded,
+                      iconColor: AppColors.accent,
+                      title: context.l10n.settingsAccountChangePassword,
+                      onTap: () => _openPage(const ChangePasswordPage()),
+                    ),
+                    _Row(
+                      icon: Icons.support_agent_rounded,
+                      iconColor: AppColors.primary,
+                      title: context.l10n.settingsAccountSupport,
+                      subtitle: context.l10n.settingsAccountSupportSubtitle,
+                      onTap: () => unawaited(_contactSupport()),
+                    ),
+                    _Row(
                       icon: Icons.logout_rounded,
                       iconColor: AppColors.danger,
                       title: context.l10n.settingsLogout,
                       titleColor: AppColors.danger,
                       onTap: _logout,
+                    ),
+                    _Row(
+                      icon: Icons.delete_forever_outlined,
+                      iconColor: AppColors.danger,
+                      title: context.l10n.settingsAccountDelete,
+                      subtitle: context.l10n.settingsAccountDeleteSubtitle,
+                      titleColor: AppColors.danger,
+                      onTap: () => _openPage(const DeleteAccountPage()),
                     ),
                   ],
                 ),
@@ -1358,30 +1436,6 @@ class _HomeAddressDialogState extends State<_HomeAddressDialog> {
           ),
         ),
       ],
-    );
-  }
-}
-
-class _Avatar extends StatelessWidget {
-  const _Avatar({required this.letter});
-
-  final String letter;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: 40,
-      height: 40,
-      decoration: const BoxDecoration(
-        color: AppColors.primaryStrong,
-        shape: BoxShape.circle,
-      ),
-      child: Center(
-        child: Text(
-          letter,
-          style: AppTextStyles.title.copyWith(color: AppColors.onPrimary, fontSize: 16),
-        ),
-      ),
     );
   }
 }

@@ -8229,6 +8229,300 @@ abstract class AppLocalizations {
   /// In it, this message translates to:
   /// **'Completa {count} passeggiate in totale.'**
   String walksBadgeDescWalkCount(String count);
+
+  /// No description provided for @settingsAccountProfile.
+  ///
+  /// In it, this message translates to:
+  /// **'Il tuo profilo'**
+  String get settingsAccountProfile;
+
+  /// No description provided for @settingsAccountChangeEmail.
+  ///
+  /// In it, this message translates to:
+  /// **'Cambia email'**
+  String get settingsAccountChangeEmail;
+
+  /// No description provided for @settingsAccountChangePassword.
+  ///
+  /// In it, this message translates to:
+  /// **'Cambia password'**
+  String get settingsAccountChangePassword;
+
+  /// No description provided for @settingsAccountSupport.
+  ///
+  /// In it, this message translates to:
+  /// **'Assistenza'**
+  String get settingsAccountSupport;
+
+  /// No description provided for @settingsAccountSupportSubtitle.
+  ///
+  /// In it, this message translates to:
+  /// **'Scrivici una email'**
+  String get settingsAccountSupportSubtitle;
+
+  /// No description provided for @settingsAccountDelete.
+  ///
+  /// In it, this message translates to:
+  /// **'Elimina account'**
+  String get settingsAccountDelete;
+
+  /// No description provided for @settingsAccountDeleteSubtitle.
+  ///
+  /// In it, this message translates to:
+  /// **'Cancella il tuo account e tutti i tuoi dati'**
+  String get settingsAccountDeleteSubtitle;
+
+  /// No description provided for @accountSupportSubject.
+  ///
+  /// In it, this message translates to:
+  /// **'Assistenza VetApp (versione {version})'**
+  String accountSupportSubject(String version);
+
+  /// No description provided for @accountSupportBody.
+  ///
+  /// In it, this message translates to:
+  /// **'Scrivi qui il tuo messaggio:\n\n\n\n—\nVersione app: {version}'**
+  String accountSupportBody(String version);
+
+  /// No description provided for @accountProfileTitle.
+  ///
+  /// In it, this message translates to:
+  /// **'Il tuo profilo'**
+  String get accountProfileTitle;
+
+  /// No description provided for @accountProfileFirstName.
+  ///
+  /// In it, this message translates to:
+  /// **'Nome'**
+  String get accountProfileFirstName;
+
+  /// No description provided for @accountProfileLastName.
+  ///
+  /// In it, this message translates to:
+  /// **'Cognome'**
+  String get accountProfileLastName;
+
+  /// No description provided for @accountProfilePhone.
+  ///
+  /// In it, this message translates to:
+  /// **'Telefono (facoltativo)'**
+  String get accountProfilePhone;
+
+  /// No description provided for @accountProfilePhoneHint.
+  ///
+  /// In it, this message translates to:
+  /// **'+39 333 1234567'**
+  String get accountProfilePhoneHint;
+
+  /// No description provided for @accountProfileFirstNameRequired.
+  ///
+  /// In it, this message translates to:
+  /// **'Inserisci il tuo nome.'**
+  String get accountProfileFirstNameRequired;
+
+  /// No description provided for @accountProfileLastNameRequired.
+  ///
+  /// In it, this message translates to:
+  /// **'Inserisci il tuo cognome.'**
+  String get accountProfileLastNameRequired;
+
+  /// No description provided for @accountProfilePhoneInvalid.
+  ///
+  /// In it, this message translates to:
+  /// **'Numero di telefono non valido.'**
+  String get accountProfilePhoneInvalid;
+
+  /// No description provided for @accountProfilePhotoAdd.
+  ///
+  /// In it, this message translates to:
+  /// **'Aggiungi foto'**
+  String get accountProfilePhotoAdd;
+
+  /// No description provided for @accountProfilePhotoChange.
+  ///
+  /// In it, this message translates to:
+  /// **'Cambia foto'**
+  String get accountProfilePhotoChange;
+
+  /// No description provided for @accountProfilePhotoRemove.
+  ///
+  /// In it, this message translates to:
+  /// **'Rimuovi foto'**
+  String get accountProfilePhotoRemove;
+
+  /// No description provided for @accountProfilePhotoFailed.
+  ///
+  /// In it, this message translates to:
+  /// **'Non sono riuscito a caricare la foto. Riprova.'**
+  String get accountProfilePhotoFailed;
+
+  /// No description provided for @accountProfileSaved.
+  ///
+  /// In it, this message translates to:
+  /// **'Profilo salvato.'**
+  String get accountProfileSaved;
+
+  /// No description provided for @accountProfileEmailLabel.
+  ///
+  /// In it, this message translates to:
+  /// **'Email'**
+  String get accountProfileEmailLabel;
+
+  /// No description provided for @accountProfileEmailChange.
+  ///
+  /// In it, this message translates to:
+  /// **'Cambia'**
+  String get accountProfileEmailChange;
+
+  /// No description provided for @accountEmailTitle.
+  ///
+  /// In it, this message translates to:
+  /// **'Cambia email'**
+  String get accountEmailTitle;
+
+  /// No description provided for @accountEmailCurrent.
+  ///
+  /// In it, this message translates to:
+  /// **'Email attuale'**
+  String get accountEmailCurrent;
+
+  /// No description provided for @accountEmailNew.
+  ///
+  /// In it, this message translates to:
+  /// **'Nuova email'**
+  String get accountEmailNew;
+
+  /// No description provided for @accountEmailSame.
+  ///
+  /// In it, this message translates to:
+  /// **'È la tua email attuale.'**
+  String get accountEmailSame;
+
+  /// No description provided for @accountEmailSubmit.
+  ///
+  /// In it, this message translates to:
+  /// **'Cambia email'**
+  String get accountEmailSubmit;
+
+  /// No description provided for @accountEmailApplied.
+  ///
+  /// In it, this message translates to:
+  /// **'Email aggiornata: da ora accedi con {email}.'**
+  String accountEmailApplied(String email);
+
+  /// No description provided for @accountEmailConfirmationSent.
+  ///
+  /// In it, this message translates to:
+  /// **'Ti abbiamo mandato un link di conferma al nuovo indirizzo ({email}). Aprilo per completare il cambio: fino ad allora continui ad accedere con l\'email attuale.'**
+  String accountEmailConfirmationSent(String email);
+
+  /// No description provided for @accountPasswordTitle.
+  ///
+  /// In it, this message translates to:
+  /// **'Cambia password'**
+  String get accountPasswordTitle;
+
+  /// No description provided for @accountPasswordCurrent.
+  ///
+  /// In it, this message translates to:
+  /// **'Password attuale'**
+  String get accountPasswordCurrent;
+
+  /// No description provided for @accountPasswordCurrentRequired.
+  ///
+  /// In it, this message translates to:
+  /// **'Inserisci la password attuale.'**
+  String get accountPasswordCurrentRequired;
+
+  /// No description provided for @accountPasswordCurrentWrong.
+  ///
+  /// In it, this message translates to:
+  /// **'La password attuale non è corretta.'**
+  String get accountPasswordCurrentWrong;
+
+  /// No description provided for @accountPasswordNew.
+  ///
+  /// In it, this message translates to:
+  /// **'Nuova password'**
+  String get accountPasswordNew;
+
+  /// No description provided for @accountPasswordRepeat.
+  ///
+  /// In it, this message translates to:
+  /// **'Ripeti la nuova password'**
+  String get accountPasswordRepeat;
+
+  /// No description provided for @accountPasswordSameAsOld.
+  ///
+  /// In it, this message translates to:
+  /// **'La nuova password deve essere diversa da quella attuale.'**
+  String get accountPasswordSameAsOld;
+
+  /// No description provided for @accountPasswordSubmit.
+  ///
+  /// In it, this message translates to:
+  /// **'Cambia password'**
+  String get accountPasswordSubmit;
+
+  /// No description provided for @accountPasswordChanged.
+  ///
+  /// In it, this message translates to:
+  /// **'Password cambiata.'**
+  String get accountPasswordChanged;
+
+  /// No description provided for @accountDeleteTitle.
+  ///
+  /// In it, this message translates to:
+  /// **'Elimina account'**
+  String get accountDeleteTitle;
+
+  /// No description provided for @accountDeleteWarningTitle.
+  ///
+  /// In it, this message translates to:
+  /// **'Questa azione è definitiva'**
+  String get accountDeleteWarningTitle;
+
+  /// No description provided for @accountDeleteWarningBody.
+  ///
+  /// In it, this message translates to:
+  /// **'Verranno cancellati per sempre: i profili dei tuoi animali, le chat con l\'assistente, i promemoria, le passeggiate, le foto e i video, i referti e i documenti caricati, le misurazioni, i consensi, la posizione salvata e gli annunci che hai pubblicato nel mercatino. Non potremo recuperarli.'**
+  String get accountDeleteWarningBody;
+
+  /// No description provided for @accountDeletePasswordLabel.
+  ///
+  /// In it, this message translates to:
+  /// **'Scrivi la tua password per confermare'**
+  String get accountDeletePasswordLabel;
+
+  /// No description provided for @accountDeletePasswordRequired.
+  ///
+  /// In it, this message translates to:
+  /// **'Inserisci la tua password.'**
+  String get accountDeletePasswordRequired;
+
+  /// No description provided for @accountDeleteUnderstood.
+  ///
+  /// In it, this message translates to:
+  /// **'Ho capito: il mio account e tutti i miei dati verranno cancellati per sempre.'**
+  String get accountDeleteUnderstood;
+
+  /// No description provided for @accountDeleteSubmit.
+  ///
+  /// In it, this message translates to:
+  /// **'Elimina definitivamente il mio account'**
+  String get accountDeleteSubmit;
+
+  /// No description provided for @accountDeleteFailed.
+  ///
+  /// In it, this message translates to:
+  /// **'Non sono riuscito a eliminare l\'account. Riprova tra poco; se il problema continua, scrivi all\'assistenza.'**
+  String get accountDeleteFailed;
+
+  /// No description provided for @accountDeleteDone.
+  ///
+  /// In it, this message translates to:
+  /// **'Il tuo account è stato eliminato.'**
+  String get accountDeleteDone;
 }
 
 class _AppLocalizationsDelegate

@@ -4886,4 +4886,167 @@ class AppLocalizationsIt extends AppLocalizations {
   String walksBadgeDescWalkCount(String count) {
     return 'Completa $count passeggiate in totale.';
   }
+
+  @override
+  String get settingsAccountProfile => 'Il tuo profilo';
+
+  @override
+  String get settingsAccountChangeEmail => 'Cambia email';
+
+  @override
+  String get settingsAccountChangePassword => 'Cambia password';
+
+  @override
+  String get settingsAccountSupport => 'Assistenza';
+
+  @override
+  String get settingsAccountSupportSubtitle => 'Scrivici una email';
+
+  @override
+  String get settingsAccountDelete => 'Elimina account';
+
+  @override
+  String get settingsAccountDeleteSubtitle =>
+      'Cancella il tuo account e tutti i tuoi dati';
+
+  @override
+  String accountSupportSubject(String version) {
+    return 'Assistenza VetApp (versione $version)';
+  }
+
+  @override
+  String accountSupportBody(String version) {
+    return 'Scrivi qui il tuo messaggio:\n\n\n\n—\nVersione app: $version';
+  }
+
+  @override
+  String get accountProfileTitle => 'Il tuo profilo';
+
+  @override
+  String get accountProfileFirstName => 'Nome';
+
+  @override
+  String get accountProfileLastName => 'Cognome';
+
+  @override
+  String get accountProfilePhone => 'Telefono (facoltativo)';
+
+  @override
+  String get accountProfilePhoneHint => '+39 333 1234567';
+
+  @override
+  String get accountProfileFirstNameRequired => 'Inserisci il tuo nome.';
+
+  @override
+  String get accountProfileLastNameRequired => 'Inserisci il tuo cognome.';
+
+  @override
+  String get accountProfilePhoneInvalid => 'Numero di telefono non valido.';
+
+  @override
+  String get accountProfilePhotoAdd => 'Aggiungi foto';
+
+  @override
+  String get accountProfilePhotoChange => 'Cambia foto';
+
+  @override
+  String get accountProfilePhotoRemove => 'Rimuovi foto';
+
+  @override
+  String get accountProfilePhotoFailed =>
+      'Non sono riuscito a caricare la foto. Riprova.';
+
+  @override
+  String get accountProfileSaved => 'Profilo salvato.';
+
+  @override
+  String get accountProfileEmailLabel => 'Email';
+
+  @override
+  String get accountProfileEmailChange => 'Cambia';
+
+  @override
+  String get accountEmailTitle => 'Cambia email';
+
+  @override
+  String get accountEmailCurrent => 'Email attuale';
+
+  @override
+  String get accountEmailNew => 'Nuova email';
+
+  @override
+  String get accountEmailSame => 'È la tua email attuale.';
+
+  @override
+  String get accountEmailSubmit => 'Cambia email';
+
+  @override
+  String accountEmailApplied(String email) {
+    return 'Email aggiornata: da ora accedi con $email.';
+  }
+
+  @override
+  String accountEmailConfirmationSent(String email) {
+    return 'Ti abbiamo mandato un link di conferma al nuovo indirizzo ($email). Aprilo per completare il cambio: fino ad allora continui ad accedere con l\'email attuale.';
+  }
+
+  @override
+  String get accountPasswordTitle => 'Cambia password';
+
+  @override
+  String get accountPasswordCurrent => 'Password attuale';
+
+  @override
+  String get accountPasswordCurrentRequired => 'Inserisci la password attuale.';
+
+  @override
+  String get accountPasswordCurrentWrong =>
+      'La password attuale non è corretta.';
+
+  @override
+  String get accountPasswordNew => 'Nuova password';
+
+  @override
+  String get accountPasswordRepeat => 'Ripeti la nuova password';
+
+  @override
+  String get accountPasswordSameAsOld =>
+      'La nuova password deve essere diversa da quella attuale.';
+
+  @override
+  String get accountPasswordSubmit => 'Cambia password';
+
+  @override
+  String get accountPasswordChanged => 'Password cambiata.';
+
+  @override
+  String get accountDeleteTitle => 'Elimina account';
+
+  @override
+  String get accountDeleteWarningTitle => 'Questa azione è definitiva';
+
+  @override
+  String get accountDeleteWarningBody =>
+      'Verranno cancellati per sempre: i profili dei tuoi animali, le chat con l\'assistente, i promemoria, le passeggiate, le foto e i video, i referti e i documenti caricati, le misurazioni, i consensi, la posizione salvata e gli annunci che hai pubblicato nel mercatino. Non potremo recuperarli.';
+
+  @override
+  String get accountDeletePasswordLabel =>
+      'Scrivi la tua password per confermare';
+
+  @override
+  String get accountDeletePasswordRequired => 'Inserisci la tua password.';
+
+  @override
+  String get accountDeleteUnderstood =>
+      'Ho capito: il mio account e tutti i miei dati verranno cancellati per sempre.';
+
+  @override
+  String get accountDeleteSubmit => 'Elimina definitivamente il mio account';
+
+  @override
+  String get accountDeleteFailed =>
+      'Non sono riuscito a eliminare l\'account. Riprova tra poco; se il problema continua, scrivi all\'assistenza.';
+
+  @override
+  String get accountDeleteDone => 'Il tuo account è stato eliminato.';
 }
