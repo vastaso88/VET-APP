@@ -2,6 +2,8 @@ import 'dart:convert';
 
 import 'package:http/http.dart' as http;
 
+import '../../language/data/language_store.dart';
+import '../domain/pet_news_edition.dart';
 import '../domain/pet_news_item.dart';
 
 abstract class PetNewsRepository {
@@ -31,105 +33,31 @@ const allPetNewsCategories = <String>[
 /// request.
 const petNewsPoolLimitPerCategory = 4;
 
+/// The edition the owner reads right now: app language x country of the
+/// chosen variant (🇬🇧 → en-GB edition, 🇩🇪 → de-DE, ...).
+PetNewsEdition currentPetNewsEdition() {
+  final variant = LanguageStore.instance.variant;
+  return petNewsEditionFor(variant.languageCode, variant.countryCode ?? 'IT');
+}
+
 /// Free, keyless "curiosita" source: real headlines from real newspapers,
 /// via Google News' public RSS search, bridged through rss2json.com (a
 /// free CORS-friendly RSS-to-JSON proxy — Google News' own RSS endpoint
 /// blocks direct browser fetches). Swappable behind [PetNewsRepository]
 /// for a paid/higher-quality provider later.
+///
+/// Only the owner's country and language are ever asked for: the edition
+/// (`hl`/`gl`/`ceid`) and the search words come from [PetNewsEdition], and a
+/// headline written in another language than the app's is dropped. There is
+/// no fallback to another country's news: when nothing local comes back the
+/// list is empty and the page says so (docs/i18n/NOTIZIE_EVENTI_MERCATINO.md).
 class GoogleNewsPetNewsRepository implements PetNewsRepository {
-  GoogleNewsPetNewsRepository({http.Client? client}) : _client = client ?? http.Client();
+  GoogleNewsPetNewsRepository({http.Client? client, PetNewsEdition Function()? editionProvider})
+      : _client = client ?? http.Client(),
+        _editionProvider = editionProvider ?? currentPetNewsEdition;
 
   final http.Client _client;
-
-  // Every query excludes recipe/cooking terms: several of these species are
-  // also common food ingredients (coniglio, pesce...), and unfiltered
-  // searches surface "coniglio alla cacciatora"-style recipes alongside
-  // real animal news — a bad look for a pet-care app with an
-  // animal-loving audience. This is a best-effort keyword exclusion at the
-  // query level; `_isBlocked` below is a second, client-side pass over the
-  // actual results as a safety net for whatever slips through.
-  static const _recipeExclusions =
-      '-ricetta -ricette -cucina -cucinare -forno -sagra -caccia -cacciatore -cacciatori -oroscopo';
-
-  static const _queryBySpecies = {
-    'Cane': 'cane $_recipeExclusions',
-    'Gatto': 'gatto $_recipeExclusions',
-    // "Piccoli mammiferi" groups rabbit (a lagomorph, not technically a
-    // rodent, but grouped here for the same "pocket pet" audience) with
-    // hamster/guinea pig/chinchilla/gerbil/ferret. "Coniglio" collides with
-    // the common Italian surname; "cavia" also means "human guinea pig"
-    // (clinical trials/experiments) in everyday Italian — both need the
-    // same positive-bias + exclusion treatment as before, just widened.
-    'Piccoli mammiferi':
-        '(coniglio OR cavia OR criceto OR furetto) (domestico OR animale OR veterinario OR appartamento) $_recipeExclusions -esperimento -esperimenti -sperimentazione',
-    // "Uccello" alone pulls hunting/cooking pieces ("uccellagione", game birds
-    // on a menu); anchoring on pet-bird vocabulary keeps it on companion birds.
-    'Uccello':
-        '(uccello OR pappagallo OR canarino OR cocorita) (domestico OR gabbia OR veterinario) $_recipeExclusions',
-    // "Rettili e anfibi" adds amphibians to the old "Rettile" category.
-    // "Rana" collides constantly with "rana pescatrice" (monkfish — a very
-    // common Italian fish dish with nothing to do with frogs) and with
-    // actual frog-leg recipes, so it gets its own exclusion on top of the
-    // generic recipe terms.
-    'Rettili e anfibi':
-        '(rettile OR anfibio OR rana OR salamandra OR tartaruga) (domestico OR terrario OR veterinario) $_recipeExclusions -pescatrice',
-    // Bare "pesce" is almost all food/fishing content in Italian news, so the
-    // fish query is anchored on aquarium vocabulary only — no "pesce" term.
-    'Pesce':
-        '(acquario OR acquariofilia OR "pesci d\'acquario" OR "pesce rosso") $_recipeExclusions',
-    'Altro': 'animali domestici $_recipeExclusions',
-    'Generale': 'animali domestici (fiera OR legge OR normativa) $_recipeExclusions',
-  };
-
-  // Client-side safety net: titles/sources containing any of these are
-  // dropped even if they slipped past the query-level exclusion above —
-  // food/recipe content (animals as ingredients) and known off-topic
-  // sources (e.g. a virtual-pet game, not real animals).
-  static const _blockedKeywords = [
-    'ricetta',
-    'ricette',
-    'cucina',
-    'cucinare',
-    'cotto',
-    'cottura',
-    'arrosto',
-    'spezzatino',
-    'stufato',
-    'brasato',
-    'padella',
-    'in forno',
-    'al forno',
-    'fritto',
-    'fritti',
-    'frittura',
-    'bollit',
-    'filetti',
-    'selvaggina',
-    'uccellagione',
-    'chef',
-    'piatto',
-    'ricettar',
-    'ingredienti',
-    'gustoso',
-    'sagra',
-    'porchetta',
-    'grigliata',
-    'grigliato',
-    'caccia',
-    'cacciatore',
-    'cacciatori',
-    'cacciatora',
-    'oroscopo',
-    'tamagotchi',
-    'tamaverse',
-    // "Piccoli mammiferi" / "Rettili e anfibi" additions.
-    'pescatrice',
-    'cosce di rana',
-    'rane fritte',
-    'esperimento',
-    'esperimenti',
-    'sperimentazione',
-  ];
+  final PetNewsEdition Function() _editionProvider;
 
   // rss2json's free/keyless tier has a low, shared burst-rate limit (it
   // actively refuses requests with "converting new feeds in a very short
@@ -137,11 +65,15 @@ class GoogleNewsPetNewsRepository implements PetNewsRepository {
   // categories in quick succession can trip it. A simple in-memory cache,
   // shared across every repository instance for the lifetime of the app,
   // means repeat navigation within the TTL reuses the same response
-  // instead of re-hitting the API. Cached per species, uncapped by
-  // `limit`, so a later call asking for more items than an earlier one can
-  // still be served entirely from cache.
+  // instead of re-hitting the API. Cached per edition and species (a
+  // language switch must never show the previous country's headlines),
+  // uncapped by `limit`, so a later call asking for more items than an
+  // earlier one can still be served entirely from cache.
   static final Map<String, _CacheEntry> _cache = {};
   static const _cacheTtl = Duration(minutes: 20);
+
+  /// Empties the shared cache (tests).
+  static void clearCache() => _cache.clear();
 
   // One retry after a short backoff for a transient failure (429, or a 5xx
   // — measured against the live endpoint on 2026-09-30 firing several
@@ -153,12 +85,14 @@ class GoogleNewsPetNewsRepository implements PetNewsRepository {
 
   @override
   Future<List<PetNewsItem>> fetchForSpecies(String species, {int limit = 2}) async {
-    final cached = _cache[species];
+    final edition = _editionProvider();
+    final cacheKey = '${edition.cacheKey}|$species';
+    final cached = _cache[cacheKey];
     if (cached != null && DateTime.now().difference(cached.fetchedAt) < _cacheTtl) {
       return cached.items.take(limit).toList(growable: false);
     }
 
-    final query = _queryBySpecies[species] ?? _queryBySpecies['Altro']!;
+    final query = edition.queryFor(species);
     // The query term is percent-encoded on its own (spaces/parens as %20
     // etc) BEFORE being embedded in the (otherwise literal) Google News
     // URL string. rss2json's own URL validator decodes `rss_url` once
@@ -166,8 +100,8 @@ class GoogleNewsPetNewsRepository implements PetNewsRepository {
     // still read as `%20` after that single decode — passing a literal,
     // un-pre-encoded space (or double-encoding everything, including
     // `://`) both make it reject the value with a 422.
-    final rssUrl =
-        'https://news.google.com/rss/search?q=${Uri.encodeComponent(query)}&hl=it&gl=IT&ceid=IT:it';
+    final rssUrl = 'https://news.google.com/rss/search?q=${Uri.encodeComponent(query)}'
+        '&hl=${edition.hl}&gl=${edition.gl}&ceid=${edition.ceid}';
     // Note: rss2json's `count` param requires an API key even on the free
     // tier, so items are capped client-side instead (see `.take` below).
     final proxyUrl = Uri.parse(
@@ -194,11 +128,11 @@ class GoogleNewsPetNewsRepository implements PetNewsRepository {
         }
 
         final items = (json['items'] as List<dynamic>? ?? const [])
-            .map((raw) => _toNewsItem(species, raw as Map<String, dynamic>))
+            .map((raw) => _toNewsItem(edition, species, raw as Map<String, dynamic>))
             .whereType<PetNewsItem>()
             .toList(growable: false);
 
-        _cache[species] = _CacheEntry(items, DateTime.now());
+        _cache[cacheKey] = _CacheEntry(items, DateTime.now());
         return items.take(limit).toList(growable: false);
       } catch (_) {
         if (attempt < _maxAttempts) {
@@ -211,7 +145,7 @@ class GoogleNewsPetNewsRepository implements PetNewsRepository {
     return cached?.items.take(limit).toList(growable: false) ?? const [];
   }
 
-  PetNewsItem? _toNewsItem(String species, Map<String, dynamic> item) {
+  PetNewsItem? _toNewsItem(PetNewsEdition edition, String species, Map<String, dynamic> item) {
     final rawTitle = (item['title'] ?? '').toString().trim();
     final link = (item['link'] ?? '').toString();
     if (rawTitle.isEmpty || link.isEmpty) {
@@ -219,13 +153,19 @@ class GoogleNewsPetNewsRepository implements PetNewsRepository {
     }
 
     final normalizedTitle = rawTitle.toLowerCase();
-    if (_blockedKeywords.any(normalizedTitle.contains)) {
+    if (edition.blockedKeywords.any(normalizedTitle.contains)) {
       return null;
     }
 
     final separatorIndex = rawTitle.lastIndexOf(' - ');
     final headline = separatorIndex == -1 ? rawTitle : rawTitle.substring(0, separatorIndex);
     final source = separatorIndex == -1 ? 'Google News' : rawTitle.substring(separatorIndex + 3);
+
+    // A headline in another language than the app's is another country's
+    // content that slipped through the edition: dropped, never translated.
+    if (!headlineMatchesLanguage(headline, edition.languageCode)) {
+      return null;
+    }
 
     return PetNewsItem(
       species: species,

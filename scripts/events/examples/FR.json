@@ -1,0 +1,39 @@
+{
+  "events": [
+    {
+      "slug": "example-fr-salon-animaux",
+      "title": "Salon des animaux d'exemple (événement FICTIF)",
+      "event_type": "pet_fair",
+      "level": "regional",
+      "level_basis": "curated",
+      "country": "FR",
+      "starts_on": "2026-11-14",
+      "ends_on": "2026-11-15",
+      "region": "Île-de-France",
+      "city": "Exempleville",
+      "province_code": "75",
+      "venue_name": "Parc des expositions d'exemple",
+      "organizer_name": "Association d'exemple",
+      "description": "Événement inventé pour essayer la liste : il n'existe pas.",
+      "source_url": "https://www.example.org/fr/salon-animaux",
+      "verified_on": "2026-10-14"
+    },
+    {
+      "slug": "example-fr-journee-adoption",
+      "title": "Journée d'adoption d'exemple (événement FICTIF)",
+      "event_type": "adoption_day",
+      "level": "local",
+      "level_basis": "default",
+      "country": "FR",
+      "starts_on": "2026-12-05",
+      "ends_on": "2026-12-05",
+      "region": "Bretagne",
+      "city": "Exempleville-sur-Mer",
+      "province_code": "35",
+      "organizer_name": "Refuge d'exemple",
+      "description": "Événement inventé pour essayer la liste : il n'existe pas.",
+      "source_url": "https://www.example.org/fr/adoption",
+      "verified_on": "2026-10-14"
+    }
+  ]
+}

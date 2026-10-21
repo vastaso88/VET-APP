@@ -175,7 +175,9 @@ class _NewsFeedPageState extends State<NewsFeedPage> {
                               children: [
                                 const SizedBox(height: AppSpacing.xxxl),
                                 Text(
-                                  context.l10n.petNewsEmpty,
+                                  _selectedCategory == null
+                                      ? context.l10n.petNewsEmptyLocal
+                                      : context.l10n.petNewsEmpty,
                                   textAlign: TextAlign.center,
                                   style: AppTextStyles.bodySmall,
                                 ),

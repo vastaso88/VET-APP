@@ -7,6 +7,9 @@
 lib/features/pets/domain/pet_breeds.dart
 lib/features/pets/domain/pet_species_breeds.dart
 lib/features/pets/domain/fish_species.dart
+# News search words and off-topic filters per language (it, en, es, de, fr): they are
+# queries sent to Google News in the language of the edition, never shown to the owner.
+lib/features/pet_news/domain/pet_news_edition.dart
 # Language names are written in their own language, never translated.
 lib/features/language/domain/app_language.dart
 # Brand and required map attribution are proper names, not translated copy.

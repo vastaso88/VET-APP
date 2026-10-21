@@ -10,6 +10,8 @@ import '../../../home/presentation/widgets/home_dashboard_primitives.dart';
 import '../../../location/data/location_preference_store.dart';
 import '../../../location/domain/coordinates.dart';
 import '../../../location/presentation/reference_location.dart';
+import '../../../settings/data/unit_settings_store.dart';
+import '../../../territory/domain/territory.dart';
 import '../../data/marketplace_repository.dart';
 import '../../domain/listing_filters.dart';
 import '../../domain/marketplace_listing.dart';
@@ -21,8 +23,8 @@ import 'marketplace_map_page.dart';
 
 /// The user's position for distances: the Località preference (its mode
 /// decides between current position and residence), or null when neither
-/// was ever set - then the distance filter is off rather than measuring
-/// from an arbitrary city.
+/// was ever set - then the Mercatino shows no ads at all (it is local: no
+/// search without a centre) rather than measuring from an arbitrary city.
 Future<Coordinates?> loadMarketplaceReferenceLocation() async {
   await LocationPreferenceStore.instance.ensureLoaded();
   final preference = LocationPreferenceStore.instance.preference;
@@ -43,8 +45,11 @@ class MarketplacePage extends StatefulWidget {
 
 class _MarketplacePageState extends State<MarketplacePage> {
   late final MarketplaceRepository _repository = widget.repository ?? MarketplaceRepository();
-  ListingFilter _filter = const ListingFilter();
-  bool _distanceInitialized = false;
+  // 25 km (15 mi for owners who read miles) until the owner picks another
+  // radius; there is no "everywhere".
+  late ListingFilter _filter = ListingFilter(
+    maxDistanceKm: defaultMarketplaceRadiusKm(miles: UnitSettingsStore.instance.system.usesMiles),
+  );
   late Future<_MarketplaceViewData> _dataFuture;
 
   @override
@@ -55,13 +60,13 @@ class _MarketplacePageState extends State<MarketplacePage> {
 
   Future<_MarketplaceViewData> _loadData() async {
     final reference = await (widget.referenceLoader ?? loadMarketplaceReferenceLocation)();
-    final listings = await _repository.loadActiveListings();
-    if (!_distanceInitialized) {
-      _distanceInitialized = true;
-      // 25 km by default, "Ovunque" for users without a position (owner
-      // decision, 2026-10-07).
-      _filter = _filter.withMaxDistance(reference != null ? defaultListingDistanceKm : null);
-    }
+    // Without a position nothing is asked of the backend or the table.
+    final listings = reference == null
+        ? const <MarketplaceListing>[]
+        : await _repository.loadNearbyListings(
+            center: reference,
+            radiusKm: clampMarketplaceRadiusKm(_filter.maxDistanceKm),
+          );
     return _MarketplaceViewData(referenceLocation: reference, listings: listings);
   }
 
@@ -70,6 +75,14 @@ class _MarketplacePageState extends State<MarketplacePage> {
       _dataFuture = _loadData();
     });
     await _dataFuture;
+  }
+
+  /// A new radius asks again: the backend only returns what is inside it.
+  void _selectRadius(double km) {
+    setState(() {
+      _filter = _filter.withMaxDistance(km);
+      _dataFuture = _loadData();
+    });
   }
 
   Future<void> _openCreateListing() async {
@@ -180,21 +193,16 @@ class _MarketplacePageState extends State<MarketplacePage> {
                   _DistanceFilterRow(
                     selected: _filter.maxDistanceKm,
                     enabled: data.referenceLocation != null,
-                    onSelected: (km) => setState(() => _filter = _filter.withMaxDistance(km)),
+                    onSelected: _selectRadius,
                   ),
-                  if (data.referenceLocation == null) ...[
-                    const SizedBox(height: AppSpacing.xs),
-                    Text(
-                      context.l10n.marketplaceDistanceNeedsLocation,
-                      style: AppTextStyles.caption,
-                    ),
-                  ],
                   const SizedBox(height: AppSpacing.lg),
                   if (matches.isEmpty)
                     Padding(
                       padding: const EdgeInsets.symmetric(vertical: AppSpacing.xxl),
                       child: Text(
-                        context.l10n.marketplaceEmptyFiltered,
+                        data.referenceLocation == null
+                            ? context.l10n.marketplaceNeedsLocation
+                            : context.l10n.marketplaceEmptyFiltered,
                         style: AppTextStyles.bodySmall,
                         textAlign: TextAlign.center,
                       ),
@@ -234,8 +242,8 @@ class _ListingRow extends StatelessWidget {
     final listing = match.listing;
     final details = [
       listingConditionLabel(listing.condition),
-      listingPriceLabel(listing.priceCents),
-      if (match.distanceMeters != null) listingDistanceLabel(match.distanceMeters),
+      listingPriceLabel(listing.priceCents, country: listing.country),
+      listingDistanceLabel(match.distanceMeters),
       if (listing.cityLabel != null) listing.cityLabel!,
     ];
     return DashboardListRow(
@@ -370,9 +378,9 @@ class _DistanceFilterRow extends StatelessWidget {
     required this.onSelected,
   });
 
-  final double? selected;
+  final double selected;
   final bool enabled;
-  final ValueChanged<double?> onSelected;
+  final ValueChanged<double> onSelected;
 
   @override
   Widget build(BuildContext context) {
@@ -389,7 +397,7 @@ class _DistanceFilterRow extends StatelessWidget {
               color: enabled ? AppColors.secondaryText : AppColors.mutedText,
             ),
           ),
-          ...listingDistanceOptionsKm.map(
+          ...marketplaceRadiusOptionsKm(miles: UnitSettingsStore.instance.system.usesMiles).map(
             (km) => Padding(
               padding: const EdgeInsets.only(right: AppSpacing.sm),
               child: ChoiceChip(

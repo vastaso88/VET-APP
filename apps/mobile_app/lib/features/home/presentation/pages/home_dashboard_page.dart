@@ -579,7 +579,7 @@ class _PetNewsSection extends StatelessWidget {
             if (items.isEmpty) {
               return DashboardSurfaceCard(
                 child: Text(
-                  context.l10n.homeNewsUnavailable,
+                  context.l10n.petNewsEmptyLocal,
                   style: AppTextStyles.bodySmall,
                 ),
               );

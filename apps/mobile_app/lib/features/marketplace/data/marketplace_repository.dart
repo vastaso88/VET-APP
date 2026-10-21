@@ -1,10 +1,29 @@
+import 'dart:convert';
+import 'dart:math' as math;
+
+import 'package:http/http.dart' as http;
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+import '../../../shared/auth/current_user.dart';
 import '../../../shared/config/app_runtime_config_loader.dart';
 import '../../../l10n/l10n.dart';
 import '../../location/domain/coordinates.dart';
+import '../../territory/domain/territory.dart';
 import '../domain/marketplace_listing.dart';
 import 'listing_photo_store.dart';
+
+/// The search radius was missing, not positive or above the maximum
+/// ([marketplaceMaxRadiusKm]). The backend refuses such a request too; this
+/// is the same rule checked before anything is asked.
+class InvalidListingRadiusException implements Exception {
+  const InvalidListingRadiusException(this.radiusKm);
+
+  final double? radiusKm;
+
+  @override
+  String toString() => 'Invalid marketplace radius: $radiusKm km '
+      '(1 m to $marketplaceMaxRadiusKm km)';
+}
 
 /// Thrown when someone other than the author tries to change or delete a
 /// listing, or the database refused the change for that reason.
@@ -26,18 +45,26 @@ bool canManageListing(MarketplaceListing listing, String requesterId) =>
 /// With one, the database is the only source: no seed, and write errors
 /// reach the caller instead of being swallowed.
 class MarketplaceRepository {
-  MarketplaceRepository({SupabaseClient? client, ListingPhotoStore? photoStore})
-      : _client = client,
+  MarketplaceRepository({
+    SupabaseClient? client,
+    ListingPhotoStore? photoStore,
+    http.Client? httpClient,
+    AppRuntimeConfigLoader? configLoader,
+  })  : _client = client,
         _localOnly = false,
         _local = _sharedLocal,
-        _photoStore = photoStore ?? ListingPhotoStore(client: client);
+        _photoStore = photoStore ?? ListingPhotoStore(client: client),
+        _http = httpClient,
+        _configLoader = configLoader ?? const AppRuntimeConfigLoader();
 
   /// Isolated local store (tests, previews): never talks to Supabase.
   MarketplaceRepository.inMemory(List<MarketplaceListing> listings)
       : _client = null,
         _localOnly = true,
         _local = List<MarketplaceListing>.of(listings),
-        _photoStore = ListingPhotoStore(localOnly: true);
+        _photoStore = ListingPhotoStore(localOnly: true),
+        _http = null,
+        _configLoader = const AppRuntimeConfigLoader();
 
   static const _table = 'marketplace_listings';
   static final List<MarketplaceListing> _sharedLocal = List<MarketplaceListing>.of(_seedListings);
@@ -46,8 +73,111 @@ class MarketplaceRepository {
   final bool _localOnly;
   final List<MarketplaceListing> _local;
   final ListingPhotoStore _photoStore;
+  final http.Client? _http;
+  final AppRuntimeConfigLoader _configLoader;
 
   ListingPhotoStore get photoStore => _photoStore;
+
+  /// How long the backend gets to answer before the direct read is tried.
+  static const _apiTimeout = Duration(seconds: 20);
+
+  /// The ads a search can show: those of [country] (default: the owner's)
+  /// within [radiusKm] of [center], at most [marketplaceMaxRadiusKm]. A
+  /// radius outside (0, max] is refused ([InvalidListingRadiusException]) -
+  /// there is no unlimited search. In production the backend answers
+  /// (`GET /marketplace/listings`, which enforces the same rules); without a
+  /// backend address or session the table is read directly with the same
+  /// country filter and a bounding box around the radius. The result is a
+  /// candidate set: `applyListingFilter` makes the exact cut.
+  Future<List<MarketplaceListing>> loadNearbyListings({
+    required Coordinates center,
+    required double radiusKm,
+    String? country,
+  }) async {
+    if (radiusKm.isNaN || radiusKm <= 0 || radiusKm > marketplaceMaxRadiusKm) {
+      throw InvalidListingRadiusException(radiusKm);
+    }
+    final countryCode = (country ?? currentTerritory().countryCode).toUpperCase();
+
+    if (_localOnly) {
+      return _localNearby(center, radiusKm, countryCode);
+    }
+
+    final fromApi = await _loadNearbyFromApi(center, radiusKm, countryCode);
+    if (fromApi != null) return fromApi;
+
+    final client = _resolveClient();
+    if (client == null) {
+      return _localNearby(center, radiusKm, countryCode);
+    }
+
+    // ~111 km per degree of latitude; longitude degrees shrink with latitude.
+    final latSpan = radiusKm / 111.0;
+    final cosLat = math.max(0.01, math.cos(center.latitude * math.pi / 180));
+    final lonSpan = radiusKm / (111.0 * cosLat);
+    final response = await client
+        .from(_table)
+        .select('*')
+        .eq('status', 'active')
+        .eq('country', countryCode)
+        .gte('latitude', center.latitude - latSpan)
+        .lte('latitude', center.latitude + latSpan)
+        .gte('longitude', center.longitude - lonSpan)
+        .lte('longitude', center.longitude + lonSpan);
+    return _parseRows(response as List<dynamic>);
+  }
+
+  List<MarketplaceListing> _localNearby(Coordinates center, double radiusKm, String country) {
+    return _local
+        .where((listing) => listing.status == ListingStatus.active && listing.country == country)
+        .toList(growable: false);
+  }
+
+  /// Null when the backend can't be asked (no address or session) or didn't
+  /// answer usefully (unreachable, not deployed yet, server error): the
+  /// caller then reads the table directly. A refusal of the request itself
+  /// (400/422) is not retried elsewhere.
+  Future<List<MarketplaceListing>?> _loadNearbyFromApi(
+    Coordinates center,
+    double radiusKm,
+    String country,
+  ) async {
+    final baseUrl = _configLoader.load().apiBaseUrl.trim();
+    final token = CurrentUser.accessToken();
+    if (baseUrl.isEmpty || token == null || token.isEmpty) return null;
+
+    final uri = Uri.parse('$baseUrl/marketplace/listings').replace(
+      queryParameters: {
+        'latitude': center.latitude.toString(),
+        'longitude': center.longitude.toString(),
+        'radius_km': radiusKm.toString(),
+        'country': country,
+      },
+    );
+    try {
+      final response = await (_http ?? http.Client())
+          .get(uri, headers: {'Authorization': 'Bearer $token'}).timeout(_apiTimeout);
+      if (response.statusCode == 400 || response.statusCode == 422) {
+        throw InvalidListingRadiusException(radiusKm);
+      }
+      if (response.statusCode != 200) return null;
+      final json = jsonDecode(utf8.decode(response.bodyBytes)) as Map<String, dynamic>;
+      return _parseRows(json['listings'] as List<dynamic>? ?? const []);
+    } on InvalidListingRadiusException {
+      rethrow;
+    } catch (_) {
+      return null;
+    }
+  }
+
+  List<MarketplaceListing> _parseRows(List<dynamic> rows) {
+    final listings = <MarketplaceListing>[];
+    for (final row in rows) {
+      final listing = _parseRow(row as Map<String, dynamic>);
+      if (listing != null) listings.add(listing);
+    }
+    return listings;
+  }
 
   Future<List<MarketplaceListing>> loadActiveListings() async {
     final client = _resolveClient();
@@ -58,12 +188,7 @@ class MarketplaceRepository {
     }
 
     final response = await client.from(_table).select('*').eq('status', 'active');
-    final listings = <MarketplaceListing>[];
-    for (final row in response as List<dynamic>) {
-      final listing = _parseRow(row as Map<String, dynamic>);
-      if (listing != null) listings.add(listing);
-    }
-    return listings;
+    return _parseRows(response as List<dynamic>);
   }
 
   Future<void> createListing(MarketplaceListing listing) async {
@@ -157,6 +282,7 @@ class MarketplaceRepository {
       'latitude': listing.location.latitude,
       'longitude': listing.location.longitude,
       'city_label': listing.cityLabel,
+      'country': listing.country,
       'status': _statusToString(listing.status),
       'report_count': listing.reportCount,
       'created_at': listing.createdAt.toIso8601String(),
@@ -200,6 +326,10 @@ class MarketplaceRepository {
           const [],
       location: Coordinates(latitude: latitude, longitude: longitude),
       cityLabel: row['city_label'] as String?,
+      // Missing until scripts/setup/marketplace_country.sql has run: Italian.
+      country: ((row['country'] as String?)?.trim().isNotEmpty ?? false)
+          ? (row['country'] as String).trim().toUpperCase()
+          : 'IT',
       status: status,
       reportCount: (row['report_count'] as num?)?.toInt() ?? 0,
       createdAt: createdAt,

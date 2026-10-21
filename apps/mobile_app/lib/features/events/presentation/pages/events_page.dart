@@ -205,9 +205,14 @@ class _EventsPageState extends State<EventsPage> {
                     onReset: _isDefaultView ? null : _resetFilters,
                   ),
                   const SizedBox(height: AppSpacing.md),
-                  if (visible.isEmpty)
-                    _EmptyState(message: eventsEmptyMessage(_filter, today))
-                  else
+                  if (visible.isEmpty) ...[
+                    _EmptyState(message: eventsEmptyMessage(_filter, today)),
+                    Text(
+                      context.l10n.eventsCountryOnlyNote,
+                      style: AppTextStyles.caption,
+                      textAlign: TextAlign.center,
+                    ),
+                  ] else
                     for (final event in visible) ...[
                       _EventCard(event: event, launcher: widget.launcher),
                       const SizedBox(height: AppSpacing.md),
