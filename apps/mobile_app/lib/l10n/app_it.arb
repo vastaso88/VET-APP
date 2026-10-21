@@ -425,6 +425,22 @@
   "chatErrorRequestTimeout": "Richiesta scaduta. Riprova.",
   "chatErrorEditFailed": "Non sono riuscito a modificare il messaggio. Riprova.",
   "chatErrorEditNetwork": "Non sono riuscito a modificare il messaggio. Controlla la connessione.",
+  "chatErrorMessageTooLong": "Il messaggio è troppo lungo: puoi scrivere al massimo {max} caratteri. Accorcialo e invialo di nuovo.",
+  "@chatErrorMessageTooLong": {
+    "placeholders": {
+      "max": {
+        "type": "int"
+      }
+    }
+  },
+  "chatInputLimitReached": "Hai raggiunto il limite di {max} caratteri.",
+  "@chatInputLimitReached": {
+    "placeholders": {
+      "max": {
+        "type": "int"
+      }
+    }
+  },
   "chatErrorPetBootstrap": "Non sono riuscito a preparare il profilo del pet.",
   "chatErrorTitleEmpty": "Il titolo non può essere vuoto.",
   "chatErrorRenameFailed": "Non sono riuscito a rinominare la chat. Riprova.",

@@ -9,6 +9,7 @@ from unittest.mock import patch
 from scripts.i18n.auto_translate import (
     ARB,
     BACKEND,
+    LANGUAGES,
     NATIVE,
     ROOT,
     Catalogs,
@@ -38,7 +39,7 @@ class AutoTranslateTest(unittest.TestCase):
                 self.assertEqual(main(), 0)
             self.assertEqual(catalogs.entries[name]["en"], "Manually revised title")
             self.assertEqual(catalogs.entries[name]["es"], "Translated title")
-            translator.assert_called_once()
+            self.assertEqual(translator.call_count, len(LANGUAGES) - 1)
             self.assertIn("MANUAL REVIEW", (Path(temporary) / "TRANSLATION_REVIEW.txt").read_text())
 
     def test_cost_limit_prevents_any_network_calls(self) -> None:
@@ -154,7 +155,7 @@ class AutoTranslateTest(unittest.TestCase):
         self.assertFalse(pending(catalogs, manifest))
         name = next(iter(catalogs.entries))
         catalogs.sources[name] = digest("Changed Italian text")
-        self.assertEqual(pending(catalogs, manifest), [(name, "en"), (name, "es")])
+        self.assertEqual(pending(catalogs, manifest), [(name, lang) for lang in LANGUAGES])
 
     def test_missing_translation_detected_even_without_source_changes(self) -> None:
         catalogs = Catalogs(ROOT)

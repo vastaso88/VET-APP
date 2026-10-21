@@ -1329,3 +1329,146 @@ create policy marketplace_photos_objects_delete_own on storage.objects
 for delete using (
     bucket_id = 'marketplace-photos' and (storage.foldername(name))[1] = auth.uid()::text
 );
+
+-- ---------------------------------------------------------------------------
+-- Model usage ledger and daily budget (build 32, 2026-10-14).
+-- Groq's free tier counts tokens per day and per model for the whole
+-- organization. The backend records every model call (counts only: never
+-- the owner's words), keeps the day's totals per model so every serverless
+-- instance sees the same figures, counts each owner's messages per day, and
+-- caches answers to general curiosities. Retention: llm_usage rows have no
+-- personal data (keep 90 days for analysis); chat_user_daily_usage links an
+-- owner id to a count only (keep 30 days). Cleanup, to run periodically:
+--   delete from public.llm_usage where day < current_date - 90;
+--   delete from public.chat_user_daily_usage where day < current_date - 30;
+--   delete from public.chat_answer_cache where expires_at < now();
+create table if not exists public.llm_usage (
+    id text primary key,
+    occurred_at timestamptz not null default now(),
+    day date not null,
+    model text not null,
+    model_class text not null default 'main',
+    purpose text not null,
+    prompt_tokens integer not null default 0,
+    completion_tokens integer not null default 0,
+    cached_prompt_tokens integer not null default 0,
+    total_tokens integer not null default 0,
+    duration_ms integer not null default 0,
+    outcome text not null default 'ok'
+);
+create index if not exists idx_llm_usage_day_model on public.llm_usage(day, model);
+create index if not exists idx_llm_usage_day_purpose on public.llm_usage(day, purpose);
+alter table public.llm_usage enable row level security;
+
+create table if not exists public.llm_usage_daily (
+    day date not null,
+    model text not null,
+    calls integer not null default 0,
+    prompt_tokens integer not null default 0,
+    completion_tokens integer not null default 0,
+    cached_prompt_tokens integer not null default 0,
+    total_tokens integer not null default 0,
+    exhausted_until timestamptz,
+    primary key (day, model)
+);
+alter table public.llm_usage_daily enable row level security;
+
+-- Atomic add: concurrent instances never lose each other's tokens.
+create or replace function public.llm_usage_add(
+    p_day date,
+    p_model text,
+    p_prompt_tokens integer,
+    p_completion_tokens integer,
+    p_cached_tokens integer,
+    p_total_tokens integer
+)
+returns void
+language sql
+security definer
+set search_path = public
+as $$
+    insert into public.llm_usage_daily (
+        day, model, calls, prompt_tokens, completion_tokens, cached_prompt_tokens, total_tokens
+    )
+    values (
+        p_day, p_model, 1, p_prompt_tokens, p_completion_tokens, p_cached_tokens, p_total_tokens
+    )
+    on conflict (day, model) do update set
+        calls = public.llm_usage_daily.calls + 1,
+        prompt_tokens = public.llm_usage_daily.prompt_tokens + excluded.prompt_tokens,
+        completion_tokens = public.llm_usage_daily.completion_tokens + excluded.completion_tokens,
+        cached_prompt_tokens =
+            public.llm_usage_daily.cached_prompt_tokens + excluded.cached_prompt_tokens,
+        total_tokens = public.llm_usage_daily.total_tokens + excluded.total_tokens;
+$$;
+
+create table if not exists public.chat_user_daily_usage (
+    owner_id text not null,
+    day date not null,
+    messages integer not null default 0,
+    primary key (owner_id, day)
+);
+alter table public.chat_user_daily_usage enable row level security;
+
+-- Counts one more message for the owner today and returns the new total.
+create or replace function public.chat_user_daily_usage_add(p_owner_id text, p_day date)
+returns integer
+language sql
+security definer
+set search_path = public
+as $$
+    insert into public.chat_user_daily_usage (owner_id, day, messages)
+    values (p_owner_id, p_day, 1)
+    on conflict (owner_id, day) do update set
+        messages = public.chat_user_daily_usage.messages + 1
+    returning messages;
+$$;
+
+-- Answers to general questions about a kind of animal, shared for a day.
+-- `question` is the normalized question (no names, no personal case: the
+-- backend only caches questions that pass answer_cache.py's rules).
+create table if not exists public.chat_answer_cache (
+    key text primary key,
+    species text not null,
+    language text not null default 'it',
+    question text not null,
+    answer text not null,
+    provider text not null,
+    model text not null,
+    sources jsonb not null default '[]'::jsonb,
+    created_at timestamptz not null default now(),
+    expires_at timestamptz not null,
+    hits integer not null default 0
+);
+create index if not exists idx_chat_answer_cache_expires_at on public.chat_answer_cache(expires_at);
+alter table public.chat_answer_cache enable row level security;
+
+create or replace function public.chat_answer_cache_hit(p_key text)
+returns void
+language sql
+security definer
+set search_path = public
+as $$
+    update public.chat_answer_cache set hits = hits + 1 where key = p_key;
+$$;
+
+-- These three functions run as their owner (security definer) and are the
+-- only way the backend moves the shared counters. They must not be callable
+-- from the app's own key: otherwise anyone could add tokens to the day's
+-- total (switching the whole chat to degraded mode) or add messages to
+-- another owner's daily count (locking them out). Only the backend, with
+-- the service role, may call them.
+revoke all on function public.llm_usage_add(date, text, integer, integer, integer, integer)
+    from public, anon, authenticated;
+grant execute on function public.llm_usage_add(date, text, integer, integer, integer, integer)
+    to service_role;
+
+revoke all on function public.chat_user_daily_usage_add(text, date)
+    from public, anon, authenticated;
+grant execute on function public.chat_user_daily_usage_add(text, date)
+    to service_role;
+
+revoke all on function public.chat_answer_cache_hit(text)
+    from public, anon, authenticated;
+grant execute on function public.chat_answer_cache_hit(text)
+    to service_role;

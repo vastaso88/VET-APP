@@ -6,6 +6,10 @@ from datetime import date, datetime
 from typing import TYPE_CHECKING, Any, cast
 
 from packages.core.application.ports.account_consents_repository import AccountConsentsRepository
+from packages.core.application.ports.answer_cache_repository import (
+    AnswerCacheRepository,
+    CachedAnswer,
+)
 from packages.core.application.ports.chat_attachment_repository import ChatAttachmentRepository
 from packages.core.application.ports.chat_response_report_repository import (
     ChatResponseReportRepository,
@@ -14,6 +18,7 @@ from packages.core.application.ports.clinical_event_repository import ClinicalEv
 from packages.core.application.ports.conversation_repository import ConversationRepository
 from packages.core.application.ports.dog_walk_repository import DogWalkRepository
 from packages.core.application.ports.listing_report_repository import ListingReportRepository
+from packages.core.application.ports.llm_usage_repository import LlmUsageRepository
 from packages.core.application.ports.local_activity_repository import LocalActivityRepository
 from packages.core.application.ports.marketplace_listing_repository import (
     MarketplaceListingRepository,
@@ -35,6 +40,7 @@ from packages.core.domain.coverage.models import RadarCoverage
 from packages.core.domain.dog_walk.models import WalkSession
 from packages.core.domain.feedback.models import ChatResponseReport, ChatResponseReportCounter
 from packages.core.domain.geo.models import Coordinates, UserLocation
+from packages.core.domain.llm_usage.models import LlmUsageEvent, ModelDailyUsage
 from packages.core.domain.local_activity.models import LocalActivity
 from packages.core.domain.marketplace.models import ListingReport, MarketplaceListing
 from packages.core.domain.medical_record.models import ClinicalEvent
@@ -699,3 +705,70 @@ class SupabaseLocalActivityRepository(LocalActivityRepository):
     def list_active(self) -> list[LocalActivity]:
         response = self._client.table(self._table).select("*").eq("status", "active").execute()
         return [_row_to_activity(cast(dict[str, Any], item)) for item in response.data or []]
+
+
+class SupabaseLlmUsageRepository(LlmUsageRepository):
+    """llm_usage (one row per call), llm_usage_daily (totals per model and
+    day, kept by the llm_usage_add function so concurrent instances add up
+    correctly) and chat_user_daily_usage (messages per owner and day).
+    Schema: scripts/setup/supabase_schema.sql."""
+
+    def __init__(self, client: Client) -> None:
+        self._client = client
+
+    def record(self, event: LlmUsageEvent) -> None:
+        row = event.model_dump(mode="json")
+        row["day"] = event.day.isoformat()
+        self._client.table("llm_usage").insert(row).execute()
+        self._client.rpc(
+            "llm_usage_add",
+            {
+                "p_day": event.day.isoformat(),
+                "p_model": event.model,
+                "p_prompt_tokens": event.prompt_tokens,
+                "p_completion_tokens": event.completion_tokens,
+                "p_cached_tokens": event.cached_prompt_tokens,
+                "p_total_tokens": event.total_tokens,
+            },
+        ).execute()
+
+    def usage_for_day(self, day: date) -> list[ModelDailyUsage]:
+        response = (
+            self._client.table("llm_usage_daily").select("*").eq("day", day.isoformat()).execute()
+        )
+        return [ModelDailyUsage.model_validate(item) for item in response.data or []]
+
+    def mark_exhausted(self, model: str, day: date, until: datetime) -> None:
+        self._client.table("llm_usage_daily").upsert(
+            {"day": day.isoformat(), "model": model, "exhausted_until": until.isoformat()},
+            on_conflict="day,model",
+        ).execute()
+
+    def add_user_message(self, owner_id: str, day: date) -> int:
+        response = self._client.rpc(
+            "chat_user_daily_usage_add", {"p_owner_id": owner_id, "p_day": day.isoformat()}
+        ).execute()
+        data = response.data
+        return int(data) if isinstance(data, (int, float, str)) else 0
+
+
+class SupabaseAnswerCacheRepository(AnswerCacheRepository):
+    def __init__(self, client: Client) -> None:
+        self._client = client
+        self._table = "chat_answer_cache"
+
+    def get(self, key: str) -> CachedAnswer | None:
+        response = self._client.table(self._table).select("*").eq("key", key).limit(1).execute()
+        if not response.data:
+            return None
+        return CachedAnswer.model_validate(response.data[0])
+
+    def put(self, answer: CachedAnswer) -> None:
+        payload = _serialize_payload(answer.model_dump(mode="json"))
+        self._client.table(self._table).upsert(payload).execute()
+
+    def count_hit(self, key: str) -> None:
+        try:
+            self._client.rpc("chat_answer_cache_hit", {"p_key": key}).execute()
+        except Exception:  # noqa: BLE001 - a missing counter is not worth an error
+            _logger.debug("chat_answer_cache_hit unavailable", exc_info=True)

@@ -12,6 +12,7 @@ import '../../../../../design_system/tokens/app_spacing.dart';
 import '../../../../../design_system/tokens/app_text_styles.dart';
 import '../../../../../l10n/date_formats.dart';
 import '../../../../../l10n/l10n.dart';
+import '../../../../../l10n/regional_defaults.dart';
 import '../../../home/presentation/widgets/home_dashboard_primitives.dart';
 import '../../../pets/data/pet_demo_store.dart';
 import '../../../pets/domain/pet_models.dart';
@@ -907,7 +908,7 @@ class _ReminderFormState extends State<_ReminderForm> {
   String? _validateDate(String? value) {
     final raw = (value ?? '').trim();
     if (raw.isEmpty) return context.l10n.remindersDateRequired;
-    if (parseStrictDate(raw) == null) return context.l10n.remindersDateInvalid;
+    if (parseStrictDate(raw) == null) return appDateInputText(context.l10n.remindersDateInvalid);
     return null;
   }
 
@@ -1256,7 +1257,7 @@ class _KindOption extends StatelessWidget {
   }
 }
 
-/// A typed `gg/mm/aaaa` field: digits format themselves as the owner types
+/// A typed date field (`gg/mm/aaaa` or the country's order): digits format themselves as the owner types
 /// (see [TypedDateField]), and the trailing calendar icon still opens the
 /// native picker and fills the field for those who'd rather tap than type.
 class _DatePickerField extends StatelessWidget {
@@ -1287,7 +1288,7 @@ class _DatePickerField extends StatelessWidget {
               size: 18, color: AppColors.primary),
           style: AppTextStyles.bodySmall.copyWith(color: AppColors.text),
           decoration: InputDecoration(
-            hintText: context.l10n.remindersDatePlaceholder,
+            hintText: appDateInputText(context.l10n.remindersDatePlaceholder),
             filled: true,
             fillColor: AppColors.background,
             contentPadding: const EdgeInsets.symmetric(
@@ -1867,7 +1868,7 @@ class _Header extends StatelessWidget {
                       size: 36,
                     )
                   else
-                    const _BrandPill(),
+                    const Flexible(child: _BrandPill()),
                 ],
               ),
               const SizedBox(height: AppSpacing.lg),
@@ -1907,12 +1908,16 @@ class _BrandPill extends StatelessWidget {
           const Icon(Icons.notifications_active_outlined,
               size: 14, color: AppColors.accent),
           const SizedBox(width: AppSpacing.sm),
-          Text(
-            context.l10n.appTitle,
-            style: const TextStyle(
-                color: AppColors.onPrimary,
-                fontSize: 12,
-                fontWeight: FontWeight.w800),
+          Flexible(
+            child: Text(
+              context.l10n.appTitle,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: const TextStyle(
+                  color: AppColors.onPrimary,
+                  fontSize: 12,
+                  fontWeight: FontWeight.w800),
+            ),
           ),
         ],
       ),
@@ -2207,13 +2212,19 @@ class _ReminderTile extends StatelessWidget {
                 ),
               ),
               const SizedBox(width: AppSpacing.md),
-              Column(
+              Flexible(child: Column(
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
-                  DashboardBadge(
-                      label: presentation.dateLabel,
-                      tone: presentation.tone,
-                      compact: true),
+                  // Scales down instead of pushing the row past the card edge
+                  // when the date label is long or the text size is large.
+                  FittedBox(
+                    fit: BoxFit.scaleDown,
+                    alignment: Alignment.centerRight,
+                    child: DashboardBadge(
+                        label: presentation.dateLabel,
+                        tone: presentation.tone,
+                        compact: true),
+                  ),
                   if (onMarkDone != null) ...[
                     const SizedBox(height: AppSpacing.xs),
                     InkWell(
@@ -2227,7 +2238,7 @@ class _ReminderTile extends StatelessWidget {
                     ),
                   ],
                 ],
-              ),
+              )),
             ],
           ),
         ),

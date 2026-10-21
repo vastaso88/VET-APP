@@ -11,7 +11,7 @@ SYNTHESIS_MARKER = "performing evidence synthesis"
 
 # spec v3 §31: the core engine reads this instead of hardcoding "Italian",
 # so a future locale is a config change — see Settings.response_language.
-LANGUAGE_NAMES: dict[str, str] = {"it": "Italian", "en": "English", "es": "Spanish"}
+LANGUAGE_NAMES: dict[str, str] = {"it": "Italian", "en": "English", "es": "Spanish", "de": "German"}
 
 
 def _build_system_prompt(response_language: str) -> str:
@@ -92,6 +92,7 @@ class EvidenceSynthesizer:
                 # even with reasoning_effort=low at 1200 tokens is the
                 # reason for this extra headroom, not a theoretical margin.
                 max_tokens=2000,
+                purpose="evidence_synthesis",
             )
         )
         return self._parse(response.content), response

@@ -180,7 +180,9 @@ class _ChatConversationDetailPageState extends State<ChatConversationDetailPage>
         _scrollToBottom();
         // A reached conversation limit is expected, not a failure to
         // retry — retrying would just hit the same 400 again.
-        final isLimitReached = error.code == 'chat_conversation_limit_reached';
+        // Same for a message over the length limit: it would be refused again.
+        final isLimitReached = error.code == 'chat_conversation_limit_reached' ||
+            error.code == 'chat_message_too_long';
         // A retry reuses the message already shown (and its attachment):
         // the backend recognises it and returns the answer it may already
         // have produced, so nothing is sent or shown twice.
@@ -264,7 +266,8 @@ class _ChatConversationDetailPageState extends State<ChatConversationDetailPage>
       onSuccess: (_) {},
       onFailure: (error) {
         _scrollToBottom();
-        final canRetry = error.code != 'chat_edit_message_missing';
+        final canRetry = error.code != 'chat_edit_message_missing' &&
+            error.code != 'chat_message_too_long';
         final edited = _store.lastUserMessage(widget.conversationId);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(

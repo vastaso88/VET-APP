@@ -3,6 +3,7 @@ from packages.core.domain.knowledge.fuzzy_match import (
     find_fuzzy_keyword_matches,
 )
 from packages.core.domain.pet_profile.species import normalize_species
+from packages.core.domain.safety.emergency_patterns import emergency_flags
 
 URGENT_RED_FLAG_KEYWORDS = {
     "cannot breathe",
@@ -328,4 +329,8 @@ class SafetyGate:
         matches += list(
             find_fuzzy_keyword_matches(lowered, SPECIES_SPECIFIC_RED_FLAGS.get(family, ()))
         )
+        # Poisons and emergencies no keyword above caught (2026-10-14: rat
+        # poison, antifreeze, lilies, torsion, pale gums), matched as whole
+        # words on normalised text — see emergency_patterns.py.
+        matches += [flag for flag in emergency_flags(message, family) if flag not in matches]
         return matches

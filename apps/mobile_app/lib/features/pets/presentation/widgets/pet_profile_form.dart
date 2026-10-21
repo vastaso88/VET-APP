@@ -18,6 +18,7 @@ import '../../../../design_system/tokens/app_radii.dart';
 import '../../../../design_system/tokens/app_spacing.dart';
 import '../../../../design_system/tokens/app_text_styles.dart';
 import '../../../../l10n/l10n.dart';
+import '../../../../l10n/regional_defaults.dart';
 import '../../../../shared/formatters/date_input_formatter.dart';
 import '../../../../shared/widgets/typed_date_field.dart';
 import '../../../../shared/widgets/pet_loader.dart';
@@ -554,7 +555,7 @@ class _PetProfileFormState extends State<PetProfileForm> {
                     pickIcon: const Icon(Icons.calendar_month_rounded, color: AppColors.primary),
                     decoration: _inputDecoration(
                       context.l10n.petsFormBirthDateLabel,
-                      context.l10n.petsFormBirthDateHint,
+                      appDateInputText(context.l10n.petsFormBirthDateHint),
                     ),
                     validator: (value) {
                       final raw = (value ?? '').trim();
@@ -563,7 +564,7 @@ class _PetProfileFormState extends State<PetProfileForm> {
                       }
                       final parsed = parseStrictDate(raw);
                       if (parsed == null) {
-                        return context.l10n.petsFormBirthDateInvalid;
+                        return appDateInputText(context.l10n.petsFormBirthDateInvalid);
                       }
                       if (parsed.isAfter(DateTime.now())) {
                         return context.l10n.petsFormBirthDateFuture;

@@ -55,7 +55,7 @@ class RecordDocument:
     def label(self, language: str = "it") -> str:
         if language == "it":
             return f"«{self.title}» del {italian_date(self.occurred_on)}"
-        connector = "of" if language == "en" else "de"
+        connector = {"en": "of", "de": "vom"}.get(language, "de")
         return f"«{self.title}» {connector} {self.occurred_on.isoformat()}"
 
 
