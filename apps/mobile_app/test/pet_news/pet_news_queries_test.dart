@@ -4,78 +4,96 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
 import 'package:vet_app_mobile/features/pet_news/data/pet_news_repository.dart';
+import 'package:vet_app_mobile/shared/config/app_runtime_config_loader.dart';
 
-http.Response _feed(List<Map<String, String>> items) {
+http.Response _news(Map<String, List<Map<String, String?>>> categories) {
   return http.Response(
     jsonEncode({
-      'status': 'ok',
-      'items': [
-        for (final item in items)
-          {
-            'title': item['title'],
-            'link': item['link'],
-            'pubDate': '2026-10-01 10:00:00',
-            'thumbnail': '',
-          },
-      ],
+      'categories': categories,
+      'available_categories': categories.keys.toList(),
+      'updated_at': '2026-10-21T10:00:00+00:00',
+      'stale': false,
     }),
     200,
   );
 }
 
-String _decodedRssQuery(Uri proxyUri) {
-  final rssUrl = Uri.parse(proxyUri.queryParameters['rss_url']!);
-  return rssUrl.queryParameters['q']!;
-}
-
 void main() {
-  group('GoogleNewsPetNewsRepository queries', () {
-    test('Pesce query is aquarium-anchored and excludes culinary terms', () async {
+  setUp(BackendPetNewsRepository.resetCache);
+
+  group('BackendPetNewsRepository', () {
+    test('reads /news once for every category and maps the items', () async {
+      var calls = 0;
       Uri? requested;
       final client = MockClient((request) async {
+        calls++;
         requested = request.url;
-        return _feed(const []);
+        return _news({
+          'Cane': [
+            {
+              'title': 'Il cane corre',
+              'source': 'Petsblog',
+              'url': 'https://a.example/1',
+              'published_at': '2026-10-20T08:00:00+00:00',
+            },
+            {'title': 'Senza link', 'source': 'X', 'url': ''},
+          ],
+          'Gatto': [
+            {'title': 'Il gatto dorme', 'source': 'Dogalize', 'url': 'https://a.example/2'},
+          ],
+        });
       });
-      await GoogleNewsPetNewsRepository(client: client).fetchForSpecies('Pesce', limit: 4);
+      final repository = BackendPetNewsRepository(
+        client: client,
+        configLoader: const AppRuntimeConfigLoader(),
+      );
 
-      final query = _decodedRssQuery(requested!);
-      expect(query, contains('acquario'));
-      expect(query, contains('acquariofilia'));
-      expect(query, contains('-ricetta'));
-      expect(query, contains('-cucina'));
-      expect(query, contains('-forno'));
-      expect(query, isNot(contains(' pesce (')), reason: 'bare "pesce" term must not lead the query');
+      final dogs = await repository.fetchForSpecies('Cane', limit: 4);
+      final cats = await repository.fetchForSpecies('Gatto', limit: 4);
+      final unknown = await repository.fetchForSpecies('Pesce', limit: 4);
+
+      expect(requested!.path, endsWith('/news'));
+      expect(calls, 1, reason: 'categories share one request and one cache entry');
+      expect(dogs.map((i) => i.title), ['Il cane corre']);
+      expect(dogs.single.extract, 'Petsblog');
+      expect(dogs.single.sourceUrl, 'https://a.example/1');
+      expect(dogs.single.publishedAt, isNotNull);
+      expect(cats.single.publishedAt, isNull);
+      expect(unknown, isEmpty);
     });
 
-    test('Uccello query stays on companion birds and excludes hunting/cooking', () async {
-      Uri? requested;
+    test('limit caps the items of a category', () async {
       final client = MockClient((request) async {
-        requested = request.url;
-        return _feed(const []);
+        return _news({
+          'Cane': [
+            for (var i = 0; i < 5; i++)
+              {'title': 'Cane $i', 'source': 'S', 'url': 'https://a.example/$i'},
+          ],
+        });
       });
-      await GoogleNewsPetNewsRepository(client: client).fetchForSpecies('Uccello', limit: 4);
 
-      final query = _decodedRssQuery(requested!);
-      expect(query, contains('pappagallo'));
-      expect(query, contains('-caccia'));
-      expect(query, contains('-cucina'));
+      final items = await BackendPetNewsRepository(client: client)
+          .fetchForSpecies('Cane', limit: 2);
+
+      expect(items, hasLength(2));
     });
 
-    test('culinary headlines are dropped client-side, aquarium headlines kept', () async {
-      final client = MockClient((request) async {
-        return _feed([
-          {'title': 'Ricetta del pesce al forno - Cucina Oggi', 'link': 'https://a.example/1'},
-          {'title': 'Filetti fritti di pesce - Gusto', 'link': 'https://a.example/2'},
-          {'title': 'Acquario: come curare il pesce rosso - Pet News', 'link': 'https://a.example/3'},
-        ]);
-      });
+    test('an error from the backend gives an empty list, not an exception', () async {
+      final client = MockClient((request) async => http.Response('boom', 502));
 
-      // A distinct species key: the repository's cache is process-wide, so
-      // reusing 'Pesce' would return the empty result cached by the first test.
-      final items = await GoogleNewsPetNewsRepository(client: client)
-          .fetchForSpecies('Altro', limit: 10);
+      final items = await BackendPetNewsRepository(client: client)
+          .fetchForSpecies('Cane', limit: 2);
 
-      expect(items.map((i) => i.title), ['Acquario: come curare il pesce rosso']);
+      expect(items, isEmpty);
+    });
+
+    test('an unreadable body gives an empty list', () async {
+      final client = MockClient((request) async => http.Response('<html>', 200));
+
+      final items = await BackendPetNewsRepository(client: client)
+          .fetchForSpecies('Cane', limit: 2);
+
+      expect(items, isEmpty);
     });
   });
 }

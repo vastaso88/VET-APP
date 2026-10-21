@@ -10,6 +10,7 @@ import '../../data/events_repository.dart';
 import '../../domain/event_entry.dart';
 import '../../domain/event_filter.dart';
 import '../event_labels.dart';
+import 'submit_event_page.dart';
 import '../../../../l10n/l10n.dart';
 
 typedef EventLinkLauncher = Future<void> Function(Uri url);
@@ -52,6 +53,12 @@ class _EventsPageState extends State<EventsPage> {
     setState(() {
       _future = _load();
     });
+  }
+
+  Future<void> _openSuggest() async {
+    await Navigator.of(context).push<bool>(
+      MaterialPageRoute(builder: (_) => const SubmitEventPage()),
+    );
   }
 
   bool get _isDefaultView => _filter.isDefaultWindow(widget.now()) && !_filter.hasExtraFilters;
@@ -160,6 +167,13 @@ class _EventsPageState extends State<EventsPage> {
         elevation: 0,
         foregroundColor: AppColors.text,
         title: Text(context.l10n.eventsTitle, style: AppTextStyles.title),
+        actions: [
+          IconButton(
+            tooltip: context.l10n.eventsSuggestAction,
+            icon: const Icon(Icons.add_circle_outline_rounded),
+            onPressed: _openSuggest,
+          ),
+        ],
       ),
       body: SafeArea(
         child: FutureBuilder<EventsLoadResult>(
@@ -216,6 +230,15 @@ class _EventsPageState extends State<EventsPage> {
                   Text(
                     context.l10n.eventsDisclaimer,
                     style: AppTextStyles.caption,
+                  ),
+                  const SizedBox(height: AppSpacing.md),
+                  Align(
+                    alignment: Alignment.centerLeft,
+                    child: TextButton.icon(
+                      onPressed: _openSuggest,
+                      icon: const Icon(Icons.add_circle_outline_rounded),
+                      label: Text(context.l10n.eventsSuggestAction),
+                    ),
                   ),
                 ],
               ),

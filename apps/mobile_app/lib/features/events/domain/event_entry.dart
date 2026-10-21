@@ -53,6 +53,30 @@ enum EventStatus {
   }
 }
 
+/// I codici `event_type` che l'app sa nominare, nell'ordine in cui si offrono
+/// nel modulo "Segnala un evento" ("other" in fondo).
+const eventTypeCodes = <String>[
+  'pet_fair',
+  'dog_show',
+  'cat_show',
+  'breed_gathering',
+  'work_trial',
+  'dog_sport',
+  'adoption_day',
+  'shelter_open_day',
+  'microchip_day',
+  'vaccination_campaign',
+  'group_walk',
+  'course_seminar',
+  'market',
+  'charity_event',
+  'aquarium_expo',
+  'reptile_expo',
+  'bird_show',
+  'equestrian',
+  'other',
+];
+
 /// Codici `event_type` (tassonomia della sezione 1 del documento) con
 /// l'etichetta mostrata in app nella lingua dell'utente. Un codice
 /// sconosciuto non rompe nulla: si mostra come "Altro".

@@ -3437,6 +3437,73 @@ class AppLocalizationsIt extends AppLocalizations {
   }
 
   @override
+  String get eventsSuggestAction => 'Segnala un evento';
+
+  @override
+  String get eventsSuggestTitle => 'Segnala un evento';
+
+  @override
+  String get eventsSuggestIntro =>
+      'Conosci una fiera o un evento per animali che non trovi qui? Compila i dati: lo controlliamo sul sito dell\'organizzatore prima di pubblicarlo.';
+
+  @override
+  String get eventsSuggestPrivacy =>
+      'Scrivi solo informazioni sull\'evento: niente nomi di persone, email o telefoni.';
+
+  @override
+  String get eventsSuggestFieldTitle => 'Nome dell\'evento';
+
+  @override
+  String get eventsSuggestFieldType => 'Tipo di evento';
+
+  @override
+  String get eventsSuggestFieldDates => 'Date';
+
+  @override
+  String get eventsSuggestPickDates => 'Scegli le date';
+
+  @override
+  String get eventsSuggestFieldCity => 'Città';
+
+  @override
+  String get eventsSuggestFieldProvince => 'Provincia (sigla, es. MO)';
+
+  @override
+  String get eventsSuggestFieldVenue =>
+      'Luogo, ad esempio la fiera (facoltativo)';
+
+  @override
+  String get eventsSuggestFieldLink => 'Link alla pagina dell\'evento';
+
+  @override
+  String get eventsSuggestRequired => 'Campo obbligatorio';
+
+  @override
+  String get eventsSuggestInvalidLink =>
+      'Inserisci un indirizzo che inizi con http:// o https://';
+
+  @override
+  String get eventsSuggestInvalidProvince => 'Usa la sigla di due lettere';
+
+  @override
+  String get eventsSuggestSend => 'Invia segnalazione';
+
+  @override
+  String get eventsSuggestThanks =>
+      'Grazie! Controlleremo l\'evento prima di pubblicarlo.';
+
+  @override
+  String get eventsSuggestNeedLogin => 'Accedi per segnalare un evento.';
+
+  @override
+  String get eventsSuggestLimit =>
+      'Hai già inviato le segnalazioni di oggi: riprova domani.';
+
+  @override
+  String get eventsSuggestError =>
+      'Non sono riuscito a inviare la segnalazione. Riprova più tardi.';
+
+  @override
   String get eventsLoadError =>
       'Non riesco a caricare gli eventi. Controlla la connessione e riprova.';
 
