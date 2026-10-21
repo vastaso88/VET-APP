@@ -5760,6 +5760,122 @@ class AppLocalizationsIt extends AppLocalizations {
   String get medAddAction => 'Aggiungi';
 
   @override
+  String get medCatConditionOne => 'Patologia';
+
+  @override
+  String get medHistoryTitle => 'Storico';
+
+  @override
+  String get medHistorySubtitle =>
+      'Tutti gli eventi registrati, mese per mese.';
+
+  @override
+  String get medHistoryEmpty => 'Nessun evento registrato';
+
+  @override
+  String get medHistoryPrevMonth => 'Mese precedente';
+
+  @override
+  String get medHistoryNextMonth => 'Mese successivo';
+
+  @override
+  String medHistoryDayTitle(String date) {
+    return 'Eventi del $date';
+  }
+
+  @override
+  String get medHistoryDayEmpty => 'Nessun evento in questo giorno';
+
+  @override
+  String medHistoryDayA11y(String date, int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count eventi',
+      one: '1 evento',
+      zero: 'nessun evento',
+    );
+    return '$date: $_temp0';
+  }
+
+  @override
+  String get medHistorySend => 'Invia storico';
+
+  @override
+  String get medHistorySendAll => 'Tutto lo storico (PDF)';
+
+  @override
+  String get medHistorySendAllSubtitle =>
+      'Un PDF con tutti gli eventi in ordine di data';
+
+  @override
+  String get medHistorySendFiles => 'Singoli file';
+
+  @override
+  String get medHistoryPreparing => 'Preparo il PDF…';
+
+  @override
+  String get medHistoryExportFailed =>
+      'Non sono riuscito a preparare il PDF. Riprova.';
+
+  @override
+  String get medHistoryConditionsMissing =>
+      'Non sono riuscito a leggere le patologie: nel PDF non ci sono.';
+
+  @override
+  String medPdfTitle(String petName) {
+    return 'Storico clinico di $petName';
+  }
+
+  @override
+  String get medPdfSpeciesBreed => 'Specie e razza';
+
+  @override
+  String get medPdfBirthDate => 'Data di nascita';
+
+  @override
+  String get medPdfExportDate => 'Data di esportazione';
+
+  @override
+  String get medPdfColDate => 'Data';
+
+  @override
+  String get medPdfColCategory => 'Categoria';
+
+  @override
+  String get medPdfColTitle => 'Titolo';
+
+  @override
+  String get medPdfColNotes => 'Note';
+
+  @override
+  String get medPdfNoDate => 'Senza data';
+
+  @override
+  String get medPdfEmpty => 'Nessun evento registrato.';
+
+  @override
+  String medPdfPage(int page, int pages) {
+    return 'Pagina $page di $pages';
+  }
+
+  @override
+  String get medPdfConditionOngoing => 'In corso';
+
+  @override
+  String get medPdfConditionResolved => 'Risolta';
+
+  @override
+  String medPdfConditionResolvedOn(String date) {
+    return 'Risolta il $date';
+  }
+
+  @override
+  String medPdfConditionTherapy(String therapy) {
+    return 'Terapia: $therapy';
+  }
+
+  @override
   String get medNewVisit => 'Nuova visita';
 
   @override

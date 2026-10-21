@@ -9712,6 +9712,192 @@ abstract class AppLocalizations {
   /// **'Aggiungi'**
   String get medAddAction;
 
+  /// No description provided for @medCatConditionOne.
+  ///
+  /// In it, this message translates to:
+  /// **'Patologia'**
+  String get medCatConditionOne;
+
+  /// No description provided for @medHistoryTitle.
+  ///
+  /// In it, this message translates to:
+  /// **'Storico'**
+  String get medHistoryTitle;
+
+  /// No description provided for @medHistorySubtitle.
+  ///
+  /// In it, this message translates to:
+  /// **'Tutti gli eventi registrati, mese per mese.'**
+  String get medHistorySubtitle;
+
+  /// No description provided for @medHistoryEmpty.
+  ///
+  /// In it, this message translates to:
+  /// **'Nessun evento registrato'**
+  String get medHistoryEmpty;
+
+  /// No description provided for @medHistoryPrevMonth.
+  ///
+  /// In it, this message translates to:
+  /// **'Mese precedente'**
+  String get medHistoryPrevMonth;
+
+  /// No description provided for @medHistoryNextMonth.
+  ///
+  /// In it, this message translates to:
+  /// **'Mese successivo'**
+  String get medHistoryNextMonth;
+
+  /// No description provided for @medHistoryDayTitle.
+  ///
+  /// In it, this message translates to:
+  /// **'Eventi del {date}'**
+  String medHistoryDayTitle(String date);
+
+  /// No description provided for @medHistoryDayEmpty.
+  ///
+  /// In it, this message translates to:
+  /// **'Nessun evento in questo giorno'**
+  String get medHistoryDayEmpty;
+
+  /// No description provided for @medHistoryDayA11y.
+  ///
+  /// In it, this message translates to:
+  /// **'{date}: {count, plural, =0{nessun evento} =1{1 evento} other{{count} eventi}}'**
+  String medHistoryDayA11y(String date, int count);
+
+  /// No description provided for @medHistorySend.
+  ///
+  /// In it, this message translates to:
+  /// **'Invia storico'**
+  String get medHistorySend;
+
+  /// No description provided for @medHistorySendAll.
+  ///
+  /// In it, this message translates to:
+  /// **'Tutto lo storico (PDF)'**
+  String get medHistorySendAll;
+
+  /// No description provided for @medHistorySendAllSubtitle.
+  ///
+  /// In it, this message translates to:
+  /// **'Un PDF con tutti gli eventi in ordine di data'**
+  String get medHistorySendAllSubtitle;
+
+  /// No description provided for @medHistorySendFiles.
+  ///
+  /// In it, this message translates to:
+  /// **'Singoli file'**
+  String get medHistorySendFiles;
+
+  /// No description provided for @medHistoryPreparing.
+  ///
+  /// In it, this message translates to:
+  /// **'Preparo il PDF…'**
+  String get medHistoryPreparing;
+
+  /// No description provided for @medHistoryExportFailed.
+  ///
+  /// In it, this message translates to:
+  /// **'Non sono riuscito a preparare il PDF. Riprova.'**
+  String get medHistoryExportFailed;
+
+  /// No description provided for @medHistoryConditionsMissing.
+  ///
+  /// In it, this message translates to:
+  /// **'Non sono riuscito a leggere le patologie: nel PDF non ci sono.'**
+  String get medHistoryConditionsMissing;
+
+  /// No description provided for @medPdfTitle.
+  ///
+  /// In it, this message translates to:
+  /// **'Storico clinico di {petName}'**
+  String medPdfTitle(String petName);
+
+  /// No description provided for @medPdfSpeciesBreed.
+  ///
+  /// In it, this message translates to:
+  /// **'Specie e razza'**
+  String get medPdfSpeciesBreed;
+
+  /// No description provided for @medPdfBirthDate.
+  ///
+  /// In it, this message translates to:
+  /// **'Data di nascita'**
+  String get medPdfBirthDate;
+
+  /// No description provided for @medPdfExportDate.
+  ///
+  /// In it, this message translates to:
+  /// **'Data di esportazione'**
+  String get medPdfExportDate;
+
+  /// No description provided for @medPdfColDate.
+  ///
+  /// In it, this message translates to:
+  /// **'Data'**
+  String get medPdfColDate;
+
+  /// No description provided for @medPdfColCategory.
+  ///
+  /// In it, this message translates to:
+  /// **'Categoria'**
+  String get medPdfColCategory;
+
+  /// No description provided for @medPdfColTitle.
+  ///
+  /// In it, this message translates to:
+  /// **'Titolo'**
+  String get medPdfColTitle;
+
+  /// No description provided for @medPdfColNotes.
+  ///
+  /// In it, this message translates to:
+  /// **'Note'**
+  String get medPdfColNotes;
+
+  /// No description provided for @medPdfNoDate.
+  ///
+  /// In it, this message translates to:
+  /// **'Senza data'**
+  String get medPdfNoDate;
+
+  /// No description provided for @medPdfEmpty.
+  ///
+  /// In it, this message translates to:
+  /// **'Nessun evento registrato.'**
+  String get medPdfEmpty;
+
+  /// No description provided for @medPdfPage.
+  ///
+  /// In it, this message translates to:
+  /// **'Pagina {page} di {pages}'**
+  String medPdfPage(int page, int pages);
+
+  /// No description provided for @medPdfConditionOngoing.
+  ///
+  /// In it, this message translates to:
+  /// **'In corso'**
+  String get medPdfConditionOngoing;
+
+  /// No description provided for @medPdfConditionResolved.
+  ///
+  /// In it, this message translates to:
+  /// **'Risolta'**
+  String get medPdfConditionResolved;
+
+  /// No description provided for @medPdfConditionResolvedOn.
+  ///
+  /// In it, this message translates to:
+  /// **'Risolta il {date}'**
+  String medPdfConditionResolvedOn(String date);
+
+  /// No description provided for @medPdfConditionTherapy.
+  ///
+  /// In it, this message translates to:
+  /// **'Terapia: {therapy}'**
+  String medPdfConditionTherapy(String therapy);
+
   /// No description provided for @medNewVisit.
   ///
   /// In it, this message translates to:

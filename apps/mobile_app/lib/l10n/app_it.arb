@@ -3234,6 +3234,85 @@
   "medSubOther": "Altro",
   "medAddTitle": "Cosa vuoi aggiungere?",
   "medAddAction": "Aggiungi",
+  "medCatConditionOne": "Patologia",
+  "medHistoryTitle": "Storico",
+  "medHistorySubtitle": "Tutti gli eventi registrati, mese per mese.",
+  "medHistoryEmpty": "Nessun evento registrato",
+  "medHistoryPrevMonth": "Mese precedente",
+  "medHistoryNextMonth": "Mese successivo",
+  "medHistoryDayTitle": "Eventi del {date}",
+  "@medHistoryDayTitle": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "medHistoryDayEmpty": "Nessun evento in questo giorno",
+  "medHistoryDayA11y": "{date}: {count, plural, =0{nessun evento} =1{1 evento} other{{count} eventi}}",
+  "@medHistoryDayA11y": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "medHistorySend": "Invia storico",
+  "medHistorySendAll": "Tutto lo storico (PDF)",
+  "medHistorySendAllSubtitle": "Un PDF con tutti gli eventi in ordine di data",
+  "medHistorySendFiles": "Singoli file",
+  "medHistoryPreparing": "Preparo il PDF…",
+  "medHistoryExportFailed": "Non sono riuscito a preparare il PDF. Riprova.",
+  "medHistoryConditionsMissing": "Non sono riuscito a leggere le patologie: nel PDF non ci sono.",
+  "medPdfTitle": "Storico clinico di {petName}",
+  "@medPdfTitle": {
+    "placeholders": {
+      "petName": {
+        "type": "String"
+      }
+    }
+  },
+  "medPdfSpeciesBreed": "Specie e razza",
+  "medPdfBirthDate": "Data di nascita",
+  "medPdfExportDate": "Data di esportazione",
+  "medPdfColDate": "Data",
+  "medPdfColCategory": "Categoria",
+  "medPdfColTitle": "Titolo",
+  "medPdfColNotes": "Note",
+  "medPdfNoDate": "Senza data",
+  "medPdfEmpty": "Nessun evento registrato.",
+  "medPdfPage": "Pagina {page} di {pages}",
+  "@medPdfPage": {
+    "placeholders": {
+      "page": {
+        "type": "int"
+      },
+      "pages": {
+        "type": "int"
+      }
+    }
+  },
+  "medPdfConditionOngoing": "In corso",
+  "medPdfConditionResolved": "Risolta",
+  "medPdfConditionResolvedOn": "Risolta il {date}",
+  "@medPdfConditionResolvedOn": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "medPdfConditionTherapy": "Terapia: {therapy}",
+  "@medPdfConditionTherapy": {
+    "placeholders": {
+      "therapy": {
+        "type": "String"
+      }
+    }
+  },
   "medNewVisit": "Nuova visita",
   "medNewExam": "Nuovo esame",
   "medNewVaccine": "Nuovo vaccino",

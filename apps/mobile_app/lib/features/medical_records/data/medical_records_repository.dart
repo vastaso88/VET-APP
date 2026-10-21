@@ -122,25 +122,7 @@ class MedicalRecordsRepository {
     try {
       final rows = await _selectRows(client);
       final fromServer = rows
-          .map(
-            (row) => MedicalRecordEntry(
-              id: (row['id'] ?? '').toString(),
-              petName: (row['pet_name'] ?? '').toString(),
-              title: (row['title'] ?? appL10n.medicalDefaultRecordTitle).toString(),
-              subtitle: (row['subtitle'] ?? '').toString(),
-              meta: (row['meta'] ?? '').toString(),
-              badge: (row['badge'] ?? '').toString(),
-              detailSource: (row['detail_source'] ?? '').toString(),
-              createdAt: formatStoredRecordDate(row['created_at']),
-              attachmentId: row['attachment_id'] as String?,
-              category: RecordCategory.fromKey(row['category']),
-              subtype: row['subtype'] as String?,
-              eventDate: _parseDay(row['event_date']),
-              notes: (row['notes'] ?? '').toString(),
-              createdOn: DateTime.tryParse((row['created_at'] ?? '').toString())?.toLocal(),
-              timeline: const [],
-            ),
-          )
+          .map((row) => medicalRecordFromRow(row as Map<String, dynamic>))
           .toList(growable: false);
       return mergeRecentRecords(fromServer, _savedThisSession);
     } catch (_) {
@@ -183,7 +165,10 @@ class MedicalRecordsRepository {
       'id': record.id,
       'owner_id': ownerId,
       'pet_id': petId,
-      'event_type': 'document',
+      // The category also travels in event_type (a plain text column the live
+      // table always had), so even before the category columns exist an
+      // entry keeps its category after a reload instead of becoming a document.
+      'event_type': record.category.key,
       'event_date': _isoDate(record.eventDate ?? now),
       'created_at': now.toIso8601String(),
       'title': record.title,
@@ -229,15 +214,28 @@ class MedicalRecordsRepository {
       return;
     }
 
+    // event_date is NOT NULL on the live table: only written when there is one.
+    final legacyChanges = <String, Object?>{
+      'title': updated.title,
+      'event_type': updated.category.key,
+      if (updated.eventDate != null) 'event_date': _isoDate(updated.eventDate!),
+    };
     try {
-      await client.from('clinical_events').update({
-        'title': updated.title,
-        'event_type': updated.category.key,
-        'category': updated.category.key,
-        'subtype': updated.subtype,
-        'event_date': updated.eventDate == null ? null : _isoDate(updated.eventDate!),
-        'notes': updated.notes.isEmpty ? null : updated.notes,
-      }).eq('id', updated.id);
+      try {
+        await client
+            .from('clinical_events')
+            .update({
+              ...legacyChanges,
+              'category': updated.category.key,
+              'subtype': updated.subtype,
+              'notes': updated.notes.isEmpty ? null : updated.notes,
+            })
+            .eq('id', updated.id);
+      } catch (error) {
+        // The schema script not run yet: keep at least the title, type and date.
+        if (!_isMissingColumn(error)) rethrow;
+        await client.from('clinical_events').update(legacyChanges).eq('id', updated.id);
+      }
     } catch (_) {
       throw MedicalRecordSaveException(appL10n.medicalSaveFailed);
     }
@@ -313,8 +311,9 @@ class MedicalRecordsRepository {
   }
 
   static final List<MedicalRecordEntry> _previewRecords = [
-    const MedicalRecordEntry(
+    MedicalRecordEntry(
       id: 'moka-richiamo-vaccinale',
+      eventDate: DateTime(2026, 3, 25),
       category: RecordCategory.vaccine,
       petName: 'Moka',
       title: 'Richiamo vaccinale di Moka',
@@ -323,7 +322,7 @@ class MedicalRecordsRepository {
       badge: 'Da condividere',
       detailSource: 'Clinica Vet Roma',
       createdAt: '25 Mar 2026, 09:32',
-      timeline: [
+      timeline: const [
         MedicalRecordTimelineEntry(label: 'Importato', value: '25 Mar 2026'),
         MedicalRecordTimelineEntry(
             label: 'Revisionato', value: '25 Mar 2026, 09:45'),
@@ -331,8 +330,9 @@ class MedicalRecordsRepository {
             label: "Pronto per l'invio", value: 'Disponibile'),
       ],
     ),
-    const MedicalRecordEntry(
+    MedicalRecordEntry(
       id: 'moka-esame-ematico',
+      eventDate: DateTime(2026, 3, 24),
       category: RecordCategory.exam,
       petName: 'Moka',
       title: 'Esame ematico di Moka',
@@ -341,7 +341,7 @@ class MedicalRecordsRepository {
       badge: 'Da rivedere',
       detailSource: 'Laboratorio Vet',
       createdAt: '24 Mar 2026, 17:08',
-      timeline: [
+      timeline: const [
         MedicalRecordTimelineEntry(label: 'Importato', value: '24 Mar 2026'),
         MedicalRecordTimelineEntry(
             label: 'Revisionato', value: '24 Mar 2026, 18:20'),
@@ -349,8 +349,9 @@ class MedicalRecordsRepository {
             label: "Pronto per l'invio", value: 'In attesa di nota'),
       ],
     ),
-    const MedicalRecordEntry(
+    MedicalRecordEntry(
       id: 'moka-controllo-peso',
+      eventDate: DateTime(2026, 3, 12),
       category: RecordCategory.visit,
       petName: 'Moka',
       title: 'Nota clinica controllo peso',
@@ -359,7 +360,7 @@ class MedicalRecordsRepository {
       badge: 'Archivio',
       detailSource: 'Ambulatorio San Marco',
       createdAt: '12 Mar 2026, 14:10',
-      timeline: [
+      timeline: const [
         MedicalRecordTimelineEntry(label: 'Importato', value: '12 Mar 2026'),
         MedicalRecordTimelineEntry(
             label: 'Revisionato', value: '13 Mar 2026, 10:00'),
@@ -367,8 +368,9 @@ class MedicalRecordsRepository {
             label: "Pronto per l'invio", value: 'Archiviato'),
       ],
     ),
-    const MedicalRecordEntry(
+    MedicalRecordEntry(
       id: 'oliver-dentale',
+      eventDate: DateTime(2026, 3, 18),
       category: RecordCategory.visit,
       petName: 'Oliver',
       title: 'Controllo dentale di Oliver',
@@ -377,7 +379,7 @@ class MedicalRecordsRepository {
       badge: 'In revisione',
       detailSource: 'Ambulatorio San Marco',
       createdAt: '18 Mar 2026, 11:20',
-      timeline: [
+      timeline: const [
         MedicalRecordTimelineEntry(label: 'Importato', value: '18 Mar 2026'),
         MedicalRecordTimelineEntry(
             label: 'Revisionato', value: '18 Mar 2026, 12:05'),
@@ -385,8 +387,9 @@ class MedicalRecordsRepository {
             label: "Pronto per l'invio", value: 'Da controllare'),
       ],
     ),
-    const MedicalRecordEntry(
+    MedicalRecordEntry(
       id: 'oliver-esami-sangue',
+      eventDate: DateTime(2026, 3, 2),
       category: RecordCategory.exam,
       petName: 'Oliver',
       title: 'Esami del sangue di Oliver',
@@ -395,7 +398,7 @@ class MedicalRecordsRepository {
       badge: 'Archivio',
       detailSource: 'Laboratorio Vet',
       createdAt: '02 Mar 2026, 10:15',
-      timeline: [
+      timeline: const [
         MedicalRecordTimelineEntry(label: 'Importato', value: '02 Mar 2026'),
         MedicalRecordTimelineEntry(
             label: 'Revisionato', value: '02 Mar 2026, 16:40'),
@@ -427,7 +430,7 @@ class MedicalRecordSaveException implements Exception {
 }
 
 const _legacyColumns =
-    'id,pet_id,pet_name,title,subtitle,meta,badge,detail_source,created_at,attachment_id,event_date';
+    'id,pet_id,pet_name,title,subtitle,meta,badge,detail_source,created_at,attachment_id,event_date,event_type';
 const _fullColumns = '$_legacyColumns,category,subtype,notes';
 
 /// The rows, with the category columns when the table has them and without
@@ -444,6 +447,30 @@ Future<List<dynamic>> _selectRows(SupabaseClient client) async {
 /// Postgres 42703 / PostgREST PGRST204: a column of the request is not in the table.
 bool _isMissingColumn(Object error) =>
     error is PostgrestException && (error.code == '42703' || error.code == 'PGRST204');
+
+/// One `clinical_events` row as an entry. The category is the `category` column
+/// when the table has it, else the `event_type` the app also writes (any other
+/// value, such as the old catch-all, is a document).
+MedicalRecordEntry medicalRecordFromRow(Map<String, dynamic> row) {
+  final storedCategory = row['category'] ?? row['event_type'];
+  return MedicalRecordEntry(
+    id: (row['id'] ?? '').toString(),
+    petName: (row['pet_name'] ?? '').toString(),
+    title: (row['title'] ?? appL10n.medicalDefaultRecordTitle).toString(),
+    subtitle: (row['subtitle'] ?? '').toString(),
+    meta: (row['meta'] ?? '').toString(),
+    badge: (row['badge'] ?? '').toString(),
+    detailSource: (row['detail_source'] ?? '').toString(),
+    createdAt: formatStoredRecordDate(row['created_at']),
+    attachmentId: row['attachment_id'] as String?,
+    category: RecordCategory.fromKey(storedCategory),
+    subtype: row['subtype'] as String?,
+    eventDate: _parseDay(row['event_date']),
+    notes: (row['notes'] ?? '').toString(),
+    createdOn: DateTime.tryParse((row['created_at'] ?? '').toString())?.toLocal(),
+    timeline: const [],
+  );
+}
 
 /// A `date` column ("2026-03-12") as a local calendar day.
 DateTime? _parseDay(Object? value) {
@@ -471,13 +498,18 @@ String formatStoredRecordDate(Object? stored) {
 final List<MedicalRecordEntry> _savedThisSession = [];
 
 /// [recent] first (newest), then the server's records, without repeating an id.
+/// For an id in both, the copy saved in this session wins: it is exactly what
+/// the owner entered, while the server's row may lack the fields an older
+/// schema cannot store (category, type, notes) and would bring them back as
+/// "document" until the app is reopened.
 List<MedicalRecordEntry> mergeRecentRecords(
   List<MedicalRecordEntry> fromServer,
   List<MedicalRecordEntry> recent,
 ) {
+  final recentById = {for (final record in recent) record.id: record};
   final serverIds = fromServer.map((record) => record.id).toSet();
   return [
     ...recent.where((record) => !serverIds.contains(record.id)),
-    ...fromServer,
+    for (final record in fromServer) recentById[record.id] ?? record,
   ];
 }
