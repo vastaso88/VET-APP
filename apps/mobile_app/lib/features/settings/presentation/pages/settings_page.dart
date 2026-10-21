@@ -1283,7 +1283,10 @@ class _HomeAddressDialogState extends State<_HomeAddressDialog> {
         builder: (_) => LocationPickerPage(
           initialPosition: current.home ??
               current.current ??
-              const Coordinates(latitude: 41.9028, longitude: 12.4964),
+              Coordinates(
+                latitude: appRegionalFormat().mapLatitude,
+                longitude: appRegionalFormat().mapLongitude,
+              ),
         ),
       ),
     );
@@ -1293,6 +1296,22 @@ class _HomeAddressDialogState extends State<_HomeAddressDialog> {
 
   @override
   Widget build(BuildContext context) {
+    final format = appRegionalFormat();
+    final postalCodeField = TextFormField(
+      controller: _postalCodeController,
+      keyboardType: format.postalCodeNumeric ? TextInputType.number : TextInputType.text,
+      textCapitalization: TextCapitalization.characters,
+      decoration: InputDecoration(
+        labelText: context.l10n.settingsHomeAddressPostalCode,
+        hintText: format.postalCodeExample,
+      ),
+      validator: (value) => _required(value, context.l10n.settingsHomeAddressPostalCodeRequired),
+    );
+    final cityField = TextFormField(
+      controller: _cityController,
+      decoration: InputDecoration(labelText: context.l10n.settingsHomeAddressCity),
+      validator: (value) => _required(value, context.l10n.settingsHomeAddressCityRequired),
+    );
     return AlertDialog(
       backgroundColor: AppColors.surface,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadii.large)),
@@ -1320,18 +1339,11 @@ class _HomeAddressDialogState extends State<_HomeAddressDialog> {
                     _required(value, context.l10n.settingsHomeAddressStreetRequired),
               ),
               const SizedBox(height: AppSpacing.md),
-              TextFormField(
-                controller: _postalCodeController,
-                decoration: InputDecoration(labelText: context.l10n.settingsHomeAddressPostalCode),
-                validator: (value) =>
-                    _required(value, context.l10n.settingsHomeAddressPostalCodeRequired),
-              ),
-              const SizedBox(height: AppSpacing.md),
-              TextFormField(
-                controller: _cityController,
-                decoration: InputDecoration(labelText: context.l10n.settingsHomeAddressCity),
-                validator: (value) => _required(value, context.l10n.settingsHomeAddressCityRequired),
-              ),
+              // Germany/France/Spain/Italy/... write "10115 Berlin"; UK, US and
+              // Australia write the city first and the code last.
+              ...(format.postalCodeBeforeCity
+                  ? [postalCodeField, const SizedBox(height: AppSpacing.md), cityField]
+                  : [cityField, const SizedBox(height: AppSpacing.md), postalCodeField]),
               const SizedBox(height: AppSpacing.md),
               TextFormField(
                 controller: _countryController,

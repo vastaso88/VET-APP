@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
 
-import '../../../l10n/date_formats.dart';
 import '../../../l10n/l10n.dart';
+import '../../../l10n/regional_defaults.dart';
 import '../../location/presentation/distance_label.dart';
 import '../../settings/data/unit_settings_store.dart';
 import '../../settings/domain/unit_conversion.dart';
@@ -88,9 +87,11 @@ String listingSpeciesLabel(ListingSpecies species) {
   }
 }
 
-String listingPriceLabel(int? priceCents) {
+/// "Gift" or the price; [currencyCode] is the currency the listing is quoted
+/// in (default: the viewer's own currency).
+String listingPriceLabel(int? priceCents, [String? currencyCode]) {
   if (priceCents == null) return appL10n.marketplacePriceGift;
-  return NumberFormat.currency(locale: appIntlLocale, symbol: '€').format(priceCents / 100);
+  return formatAppMoneyCents(priceCents, currencyCode);
 }
 
 String listingDistanceLabel(double? distanceMeters) {

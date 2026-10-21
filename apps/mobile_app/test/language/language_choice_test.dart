@@ -80,12 +80,12 @@ void main() {
   testWidgets('the Settings section exists only with two translations', (tester) async {
     LanguageStore.availableOverride = () => _only(['it']);
     await tester.pumpWidget(_settingsSection());
-    expect(find.text('LINGUA'), findsNothing);
+    expect(find.text('🇮🇹 LINGUA · ITALIANO'), findsNothing);
 
     LanguageStore.availableOverride = () => _only(['it', 'en']);
     await tester.pumpWidget(_settingsSection());
     await tester.pump();
-    expect(find.text('LINGUA'), findsOneWidget);
+    expect(find.text('🇮🇹 LINGUA · ITALIANO'), findsOneWidget);
     expect(find.text('English (US)'), findsOneWidget);
     // The open section scrolls itself into view after a short delay.
     await tester.pump(const Duration(seconds: 1));

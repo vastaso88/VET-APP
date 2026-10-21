@@ -165,3 +165,31 @@ AppLanguageVariant suggestLanguageVariant(
   }
   return sameLanguage.first;
 }
+
+/// Phone countries that are not a variant's own but have an obvious one:
+/// Ireland reads like the UK, New Zealand like Australia, Liechtenstein like
+/// Switzerland, Monaco like France.
+const _neighbourCountry = {
+  'en': {'IE': 'GB', 'NZ': 'AU'},
+  'de': {'LI': 'CH'},
+  'fr': {'MC': 'FR'},
+};
+
+/// The variant of [language] that the phone's country *unambiguously* points
+/// to, or null when the owner has to say which one they mean: an Italian or
+/// Spanish phone picking "English" does not tell us UK, US or Australia, and
+/// guessing (the old behaviour fell back to the US) quietly sets the wrong
+/// units, currency and date order. [variants] are the variants of one language;
+/// with a single one there is nothing to ask.
+AppLanguageVariant? knownVariantForDevice(Locale device, List<AppLanguageVariant> variants) {
+  if (variants.isEmpty) return null;
+  if (variants.length == 1) return variants.first;
+  final language = variants.first.languageCode;
+  final country = device.countryCode?.toUpperCase();
+  if (country == null || country.isEmpty) return null;
+  final target = _neighbourCountry[language]?[country] ?? country;
+  for (final variant in variants) {
+    if (variant.countryCode == target) return variant;
+  }
+  return null;
+}

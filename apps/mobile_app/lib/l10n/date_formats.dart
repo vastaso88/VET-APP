@@ -2,6 +2,7 @@ import 'package:intl/date_symbol_data_local.dart';
 import 'package:intl/intl.dart';
 
 import 'l10n.dart';
+import 'regional_defaults.dart';
 
 /// intl locale name of the app language ("it", "en", "en_GB", ...).
 String get appIntlLocale => Intl.canonicalizedLocale(AppLocaleHolder.current.toString());
@@ -22,7 +23,7 @@ DateFormat appDateFormat(String pattern) {
   if (!loaded) {
     initializeDateFormatting(name);
   }
-  return DateFormat(pattern, name);
+  return DateFormat(appLocalizeDatePattern(pattern), name);
 }
 
 /// `formatAppDate(date, 'd MMM y')` → "5 mag 2021".

@@ -36,15 +36,37 @@ class LanguageStore extends ChangeNotifier {
   static Locale Function() deviceLocale =
       () => PlatformDispatcher.instance.locale;
 
+  static const _rememberedKey = 'vet_app.language_variant_by_language';
+
+  /// The last variant used for each language ({'en': 'en-AU'}): switching
+  /// en-AU → Español → English brings back en-AU, not a guess.
+  final Map<String, String> _lastVariantByLanguage = {};
+
   List<AppLanguageVariant> get available => availableOverride();
 
-  AppLanguageVariant variantForLanguage(String code) {
+  /// Variants of [code] the owner can pick from (the question to ask when
+  /// [knownVariantForLanguage] has no answer).
+  List<AppLanguageVariant> variantsOfLanguage(String code) =>
+      available.where((variant) => variant.languageCode == code).toList();
+
+  /// The variant to apply when the owner taps a *language* (compact selector),
+  /// or null when it has to be asked: the current variant if it is of that
+  /// language, else the last one used for it, else the one the phone's country
+  /// points to, else (several variants, unknown country) nothing: no default
+  /// UK, US or Australia is imposed.
+  AppLanguageVariant? knownVariantForLanguage(String code) {
     if (_variant.languageCode == code) return _variant;
-    return suggestLanguageVariant(
-      deviceLocale(),
-      available.where((variant) => variant.languageCode == code).toList(),
-    );
+    final candidates = variantsOfLanguage(code);
+    final remembered = languageVariantById(_lastVariantByLanguage[code]);
+    if (remembered != null && candidates.any((variant) => variant.id == remembered.id)) {
+      return remembered;
+    }
+    return knownVariantForDevice(deviceLocale(), candidates);
   }
+
+  /// A variant of [code] to show as its label: the known one, else the first.
+  AppLanguageVariant variantForLanguage(String code) =>
+      knownVariantForLanguage(code) ?? variantsOfLanguage(code).first;
 
   /// More than one translation exists: the first-run page and the Settings
   /// section only appear then.
@@ -79,6 +101,7 @@ class LanguageStore extends ChangeNotifier {
     } catch (_) {
       // No readable preference: fall through to the suggestion.
     }
+    await _loadRemembered();
     final options = available;
     final storedId = stored?.id;
     if (stored != null && options.any((v) => v.id == storedId)) {
@@ -140,10 +163,25 @@ class LanguageStore extends ChangeNotifier {
     }
   }
 
+  Future<void> _loadRemembered() async {
+    try {
+      final preferences = await SharedPreferences.getInstance();
+      for (final id in preferences.getStringList(_rememberedKey) ?? const <String>[]) {
+        final variant = languageVariantById(id);
+        if (variant != null) {
+          _lastVariantByLanguage.putIfAbsent(variant.languageCode, () => variant.id);
+        }
+      }
+    } catch (_) {
+      // Nothing remembered: variants are inferred or asked again.
+    }
+  }
+
   Future<void> _persistDevicePreference() async {
     try {
       final preferences = await SharedPreferences.getInstance();
       await preferences.setString(_storageKey, _variant.id);
+      await preferences.setStringList(_rememberedKey, _lastVariantByLanguage.values.toList());
       unawaited(_refreshNativeWidget());
     } catch (_) {
       // Preference and widget refresh are best-effort; UI already changed.
@@ -168,6 +206,7 @@ class LanguageStore extends ChangeNotifier {
       {required bool announce}) async {
     final changed = variant.id != _variant.id;
     _variant = variant;
+    _lastVariantByLanguage[variant.languageCode] = variant.id;
     AppLocaleHolder.current = variant.locale;
     try {
       await initializeDateFormatting(appIntlLocale);
@@ -186,6 +225,7 @@ class LanguageStore extends ChangeNotifier {
     _selectionRevision = 0;
     accountStore = const SupabaseAccountLanguageStore();
     _chosen = false;
+    _lastVariantByLanguage.clear();
     _variant = allLanguageVariants.first;
     AppLocaleHolder.current = _variant.locale;
     availableOverride =
