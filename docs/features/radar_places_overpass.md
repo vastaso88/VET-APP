@@ -220,10 +220,11 @@ Anche il primo risultato si attende con il caricamento a tutta pagina: mappa ed 
 ## Controlli della pagina
 
 - **Raggio** (5, 10, 25, 50 km): comanda sia la mappa sia la ricerca sul backend. Ogni raggio fa una richiesta, tenuta in memoria finché la pagina è aperta.
-- **Categorie** a un tocco (Veterinari, Negozi, Aree cani, Toelettature, Pensioni): filtrano i dati già caricati, senza nuove richieste. Il pulsante "Filtri" con il suo pannello è stato tolto il 2026-10-04 (sul dispositivo non funzionava), e con lui il filtro per specie, che esisteva solo lì.
+- **Categorie** a un tocco (Veterinari, Negozi, Aree cani, Toelettature, Pensioni, Rifugi e adozioni, Associazioni), una alla volta: filtrano i dati già caricati, senza nuove richieste, e aprono la sezione della categoria scelta. Il pulsante "Filtri" con il suo pannello è stato tolto il 2026-10-04 (sul dispositivo non funzionava), e con lui il filtro per specie, che esisteva solo lì.
 - **Categorie**: etichetta, icona e colore di ogni categoria sono definiti una sola volta in `radar_category.dart` e usati da liste, marker, filtri e legenda.
 - **Mappa**: anteprima con cerchio del raggio e legenda; il pulsante in alto a destra apre la mappa a tutto schermo. Tutti i luoghi del raggio sono sulla mappa: quelli che si sovrapporrebbero diventano un marker numerato, che al tocco ingrandisce.
 - **Servizi nella zona** è divisa per categoria, ognuna con il suo conteggio e i 3 più vicini. Un elenco unico per distanza nascondeva le categorie scarse (poche toelettature) sotto quelle abbondanti (centinaia di aree cani).
+- **Sezioni richiudibili** (dal 2026-10-21): ogni categoria, cliniche comprese, è una sezione con titolo e conteggio ("Negozi (12)") e una freccia a destra che la apre e la chiude. All'apertura della pagina sono tutte chiuse; se ne apre una alla volta (aprirne un'altra chiude quella aperta, ritoccare quella aperta la chiude). L'avviso sulle urgenze sta dentro la sezione delle cliniche. Una categoria scelta senza luoghi nel raggio resta una riga semplice ("Associazioni: nessuno entro 10 km").
 
 ## Eventi
 
@@ -285,8 +286,20 @@ Su Vercel l'indirizzo IP è condiviso con altri clienti, quindi i 429 possono es
 | `office=pet_sitting`, `craft=dog_walker` | `pet_sitting` | Pet sitter |
 | `amenity=animal_breeding` | `breeder` | Allevamenti |
 | `amenity=animal_shelter` (anche da Overture: `animal_shelter`, `pet_adoption`, `animal_rescue_service`) | `shelter` | Rifugi e adozioni (nome predefinito "Rifugio per animali"; specie da `animal_shelter=dog;cat`; dettaglio "Adozioni possibili" da `animal_shelter:adoption=yes`) |
+| `office=association`, `ngo`, `charity`, `foundation` o `club=*` con nome da associazione animalista; `association=animal*`; `club=dog`, `cat`, `animal` | `association` | Associazioni (nessun nome predefinito: senza nome non compare) |
 
 La categoria `shelter` è del 2026-10-07 e compare dopo il prossimo import OSM e Overture (`import_osm_places.py`, `import_overture_places.py`); fino ad allora le mostra solo la cache per celle delle zone non coperte dal catalogo. Numeri trovati prima di aggiungerle: vedi "Tre categorie chieste il 2026-10-07".
+
+### Associazioni (2026-10-21)
+
+OpenStreetMap non ha un tag specifico per le associazioni del mondo animale: in Italia `office=association` c'è su 3.743 luoghi ma il tipo (`association=*`) è quasi sempre assente o di altro genere (223 `rescue`, cioè soccorso alpino e protezione civile; nessun valore animale); `club=dog` è su 3 luoghi (conteggi Geofabrik taginfo del 2026-10-21). Quindi un'associazione, ONG, fondazione o club entra nella sezione quando:
+
+- il suo tipo dichiarato contiene "animal", oppure è `club=dog`, `cat` o `animal`;
+- oppure il nome contiene una delle parole di `ASSOCIATION_NAME_PATTERN` (`overpass_places_source.py`): le sigle ENPA, LAV, OIPA, LIDA come parole intere, e "animal", "cinofil", "felin", "zoofil", "protezione animali", "difesa del cane", "kennel", "canil", "gattil", "randagi".
+
+Esclusi di proposito: "rifugio" (in Italia quasi sempre rifugi alpini) e le sigle dentro altre parole ("lida" sta in "solidarietà", "lav" in "lavoratori"); i casi sono nei test. Un canile o rifugio gestito da un'associazione resta in "Rifugi e adozioni": un luogo compare in una sola sezione. Nessun dato da Overture e nessuno scraping di siti: solo OpenStreetMap, con la stessa cache per cella e la stessa deduplica delle altre categorie. Le associazioni non si possono segnalare come mancanti con Segnala!.
+
+Compaiono dopo il prossimo import OSM (`import_osm_places.py`); fino ad allora solo nelle zone servite dalla cache per celle.
 
 ### Tre categorie chieste il 2026-10-07: cosa c'è nelle fonti
 

@@ -22,7 +22,6 @@ import '../../../auth/data/auth_repository_factory.dart';
 import 'package:permission_handler/permission_handler.dart';
 
 import '../../../billing/data/billing_demo_store.dart';
-import '../../../billing/presentation/pages/billing_page.dart';
 import '../../../language/presentation/widgets/language_settings_section.dart';
 import '../../../location/data/address_geocoder.dart';
 import '../../../location/data/device_location_service.dart';
@@ -33,14 +32,14 @@ import '../../../notifications/application/notification_scheduler.dart';
 import '../../../notifications/data/notification_preferences_store.dart';
 import '../../../nearby_places/data/radar_places_repository.dart';
 import '../../../nearby_places/data/reverse_geocoder.dart';
-import '../../../nearby_places/presentation/pages/data_sources_page.dart';
 import '../../../pets/data/pet_demo_store.dart';
 import '../../../pets/domain/pet_models.dart';
 import '../../../pets/presentation/widgets/medical_record_consent_card.dart';
 import '../../../account/presentation/pages/change_email_page.dart';
 import '../../../account/presentation/pages/change_password_page.dart';
 import '../../../account/presentation/pages/delete_account_page.dart';
-import '../../../account/presentation/pages/profile_edit_page.dart';
+import '../../../../app/launch/restorable_pages.dart';
+import '../../../../app/launch/warm_start_store.dart';
 import '../../../account/presentation/widgets/profile_avatar.dart';
 import '../../data/gallery_save_settings_store.dart';
 import '../../data/layout_settings_store.dart';
@@ -74,6 +73,7 @@ class _SettingsPageState extends State<SettingsPage> {
     _loadConsents();
     unawaited(LayoutSettingsStore.instance.ensureLoaded());
     unawaited(GallerySaveSettingsStore.instance.ensureLoaded());
+    unawaited(_restoreOpenSection());
     unawaited(_loadLocation());
     unawaited(_loadSupportContact());
     unawaited(_loadAppVersion());
@@ -94,7 +94,20 @@ class _SettingsPageState extends State<SettingsPage> {
   /// Accordion: at most one section is open, and all start closed.
   String? _openSection;
 
-  void _toggleSection(String id) => setState(() => _openSection = _openSection == id ? null : id);
+  void _toggleSection(String id) {
+    setState(() => _openSection = _openSection == id ? null : id);
+    // Remembered so a restart (app killed in the background) reopens it.
+    unawaited(const WarmStartStore().saveDraft(_openSectionDraftKey, _openSection ?? ''));
+  }
+
+  static const _openSectionDraftKey = 'settings.open_section';
+
+  Future<void> _restoreOpenSection() async {
+    final id = await const WarmStartStore().loadDraft(_openSectionDraftKey);
+    if (mounted && _openSection == null && id != null && id.isNotEmpty) {
+      setState(() => _openSection = id);
+    }
+  }
 
   void _openFullPrivacyPolicy() {
     Navigator.of(context).push(
@@ -285,9 +298,7 @@ class _SettingsPageState extends State<SettingsPage> {
   }
 
   Future<void> _openProfile() async {
-    await Navigator.of(context).push(
-      MaterialPageRoute<void>(builder: (_) => const ProfileEditPage()),
-    );
+    await Navigator.of(context).push(restorableRoute<void>('profile_edit'));
     if (mounted) setState(() {});
   }
 
@@ -330,15 +341,11 @@ class _SettingsPageState extends State<SettingsPage> {
   }
 
   void _openBilling() {
-    Navigator.of(context).push(
-      MaterialPageRoute<void>(builder: (_) => const BillingPage()),
-    );
+    Navigator.of(context).push(restorableRoute<void>('billing'));
   }
 
   void _openDataSources() {
-    Navigator.of(context).push(
-      MaterialPageRoute<void>(builder: (_) => const DataSourcesPage()),
-    );
+    Navigator.of(context).push(restorableRoute<void>('data_sources'));
   }
 
   void _openHelpCenter() {

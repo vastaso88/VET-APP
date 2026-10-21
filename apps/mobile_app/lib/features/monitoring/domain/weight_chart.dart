@@ -1,6 +1,7 @@
 import 'dart:math' as math;
 
 import '../../settings/domain/unit_system.dart';
+import 'growth_reference.dart';
 import 'weight_measurement.dart';
 import 'weight_units.dart';
 
@@ -24,11 +25,16 @@ double ageInMonths(DateTime birth, DateTime date) =>
 /// True when the pet is under a year old today (by the calendar: the day it
 /// turns one it is no longer a growth curve): its chart plots the weight
 /// against its age. An unknown birth date (or one in the future) is not.
-bool isGrowthCurvePet(DateTime? birthDate, DateTime now) {
+/// [months] raises the limit for a pet that has reference bands.
+bool isGrowthCurvePet(
+  DateTime? birthDate,
+  DateTime now, {
+  int months = growthCurveMonths,
+}) {
   if (birthDate == null || birthDate.isAfter(now)) return false;
-  var months = (now.year - birthDate.year) * 12 + now.month - birthDate.month;
-  if (now.day < birthDate.day) months -= 1;
-  return months < growthCurveMonths;
+  var age = (now.year - birthDate.year) * 12 + now.month - birthDate.month;
+  if (now.day < birthDate.day) age -= 1;
+  return age < months;
 }
 
 enum WeightChartMode {
@@ -51,6 +57,15 @@ class WeightChartPoint {
   final WeightMeasurement measurement;
 }
 
+/// The reference bands of a growth curve, in the unit of the chart: age in
+/// months against the 3rd, 25th, 50th, 75th and 97th percentile weights.
+class ChartReference {
+  const ChartReference({required this.xs, required this.ys});
+
+  final List<double> xs;
+  final Map<int, List<double>> ys;
+}
+
 class WeightChartData {
   const WeightChartData({
     required this.mode,
@@ -63,9 +78,13 @@ class WeightChartData {
     required this.maxY,
     required this.xInterval,
     required this.yInterval,
+    this.reference,
   });
 
   final WeightChartMode mode;
+
+  /// Reference bands behind the points; only in [WeightChartMode.byAge].
+  final ChartReference? reference;
   final WeightUnit unit;
 
   /// Oldest first.
@@ -86,17 +105,26 @@ class WeightChartData {
 }
 
 /// The points of the weight chart. Over time unless the pet is under a year
-/// old and its birth date is known: then the x axis is the age. No reference
-/// curve is drawn, only the pet's own weighings. Null when there is nothing
-/// to draw.
+/// old and its birth date is known: then the x axis is the age. Reference
+/// bands are drawn only when [reference] is given (a dog or kitten with
+/// bands, see growth_reference.dart): the chart is then an age chart for as
+/// long as the bands go. Null when there is nothing to draw.
 WeightChartData? buildWeightChart({
   required List<WeightMeasurement> measurements,
   required DateTime? birthDate,
   required DateTime now,
   required UnitSystem system,
+  GrowthReference? reference,
 }) {
   var sorted = sortedByDate(measurements);
-  final byAge = isGrowthCurvePet(birthDate, now);
+  final bandMonths = reference == null
+      ? growthCurveMonths
+      : (reference.isPuppy ? puppyBandsMonths : kittenBandsMonths);
+  final byAge = isGrowthCurvePet(
+    birthDate,
+    now,
+    months: bandMonths > growthCurveMonths ? bandMonths : growthCurveMonths,
+  );
   if (byAge) {
     // A weighing dated before the birth has no age to sit at.
     sorted = sorted.where((m) => !m.measuredOn.isBefore(birthDate!)).toList();
@@ -117,21 +145,34 @@ WeightChartData? buildWeightChart({
 
   final xs = points.map((p) => p.x);
   final ys = points.map((p) => p.y);
-  final lowY = ys.reduce(math.min);
-  final highY = ys.reduce(math.max);
-  final pad = math.max((highY - lowY) * 0.25, highY * 0.08);
-  final yInterval = niceInterval((highY - lowY + 2 * pad) / 4);
-  final minY = math.max(0.0, ((lowY - pad) / yInterval).floor() * yInterval);
-  final maxY = ((highY + pad) / yInterval).ceil() * yInterval;
-
   final lowX = xs.reduce(math.min);
   final highX = xs.reduce(math.max);
   final double minX;
   final double maxX;
   final double xInterval;
+  ChartReference? chartReference;
   if (byAge) {
-    minX = math.max(0, lowX.floorToDouble() - 1);
-    maxX = math.max(highX.ceilToDouble() + 1, minX + 3);
+    var low = math.max(0, lowX.floorToDouble() - 1);
+    var high = math.max(highX.ceilToDouble() + 1, low + 3);
+    if (reference != null) {
+      // Show the bands from where they start, as far ahead as the pet's age
+      // needs (at least a year), never past their end.
+      low = math.min(low, reference.curves.months.first.floorToDouble());
+      high = math.min(
+        reference.maxMonths.floorToDouble(),
+        math.max(high, math.max(highX + 6, 12).ceilToDouble()),
+      );
+      high = math.max(high, low + 3);
+      chartReference = ChartReference(
+        xs: reference.curves.months,
+        ys: {
+          for (final p in const [3, 25, 50, 75, 97])
+            p: [for (final kg in reference.curves[p]) unit.fromKg(kg)],
+        },
+      );
+    }
+    minX = low.toDouble();
+    maxX = high.toDouble();
     xInterval = math.max(1, niceInterval((maxX - minX) / 4).roundToDouble());
   } else {
     // A little air on both sides; a single point gets two weeks of span.
@@ -141,6 +182,22 @@ WeightChartData? buildWeightChart({
     maxX = math.max(highX, lowX + 14) + margin;
     xInterval = math.max(1, niceInterval((maxX - minX) / 4).roundToDouble());
   }
+
+  // The y range holds the points and the part of the bands that is on view.
+  var lowY = ys.reduce(math.min);
+  var highY = ys.reduce(math.max);
+  if (chartReference != null) {
+    for (var i = 0; i < chartReference.xs.length; i++) {
+      final x = chartReference.xs[i];
+      if (x < minX || x > maxX) continue;
+      lowY = math.min(lowY, chartReference.ys[3]![i]);
+      highY = math.max(highY, chartReference.ys[97]![i]);
+    }
+  }
+  final pad = math.max((highY - lowY) * 0.25, highY * 0.08);
+  final yInterval = niceInterval((highY - lowY + 2 * pad) / 4);
+  final minY = math.max(0.0, ((lowY - pad) / yInterval).floor() * yInterval);
+  final maxY = ((highY + pad) / yInterval).ceil() * yInterval;
 
   return WeightChartData(
     mode: byAge ? WeightChartMode.byAge : WeightChartMode.overTime,
@@ -153,6 +210,7 @@ WeightChartData? buildWeightChart({
     maxY: maxY,
     xInterval: xInterval,
     yInterval: yInterval,
+    reference: chartReference,
   );
 }
 

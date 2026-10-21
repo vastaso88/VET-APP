@@ -27,7 +27,7 @@ class _NewsFeedPageState extends State<NewsFeedPage> {
   static const _categories = allPetNewsCategories;
   static const _cardsPerRefresh = 6;
 
-  final _repository = GoogleNewsPetNewsRepository();
+  final _repository = BackendPetNewsRepository();
   final _random = Random();
 
   bool _loading = true;

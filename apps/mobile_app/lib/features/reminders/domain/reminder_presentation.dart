@@ -2,8 +2,10 @@ import 'package:flutter/material.dart';
 
 import '../../../l10n/date_formats.dart';
 import '../../../l10n/l10n.dart';
+import '../../../shared/date/calendar_days.dart';
 import '../../home/presentation/widgets/home_dashboard_primitives.dart';
 import '../data/reminders_repository.dart';
+import '../presentation/reminder_category_labels.dart';
 import 'clock_time.dart';
 import 'relative_date.dart';
 
@@ -31,14 +33,14 @@ class ReminderPresentation {
     switch (reminder.kind) {
       case EventKind.spot:
         return ReminderPresentation(
-          icon: Icons.event_outlined,
+          icon: reminder.effectiveCategory.icon,
           kindLabel: appL10n.remindersKindEvent,
           dateLabel: _withTime(relativeDayLabel(reminder.dueAt), reminder.dueAt),
           tone: _urgencyTone(reminder.dueAt, startOfToday),
         );
       case EventKind.recurring:
         return ReminderPresentation(
-          icon: Icons.autorenew_rounded,
+          icon: reminder.effectiveCategory.icon,
           kindLabel: appL10n.remindersKindRecurring(
             _intervalLabel(reminder),
             _recurrenceEndLabel(reminder),
@@ -54,7 +56,7 @@ class ReminderPresentation {
   static ReminderPresentation _coursePresentation(ReminderEntry reminder, DateTime startOfToday) {
     final duration = reminder.courseDurationDays ?? 1;
     final startOfCourse = DateTime(reminder.dueAt.year, reminder.dueAt.month, reminder.dueAt.day);
-    final dayNumber = startOfToday.difference(startOfCourse).inDays + 1;
+    final dayNumber = calendarDaysBetween(startOfCourse, startOfToday) + 1;
 
     final String dateLabel;
     final DashboardTone tone;
@@ -70,7 +72,7 @@ class ReminderPresentation {
     }
 
     return ReminderPresentation(
-      icon: Icons.medication_outlined,
+      icon: reminder.effectiveCategory.icon,
       kindLabel: reminder.doseTimes.isEmpty
           ? appL10n.remindersKindCourse(duration)
           : appL10n.remindersKindCourseWithTimes(duration, reminder.doseTimes.join(', ')),
@@ -87,7 +89,7 @@ class ReminderPresentation {
 
   static DashboardTone _urgencyTone(DateTime dueAt, DateTime startOfToday) {
     final startOfDue = DateTime(dueAt.year, dueAt.month, dueAt.day);
-    final daysUntil = startOfDue.difference(startOfToday).inDays;
+    final daysUntil = calendarDaysBetween(startOfToday, startOfDue);
     if (daysUntil <= 0) return DashboardTone.danger;
     if (daysUntil <= 3) return DashboardTone.warning;
     return DashboardTone.neutral;

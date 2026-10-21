@@ -1141,7 +1141,7 @@ abstract class AppLocalizations {
   /// No description provided for @firstRunTutorialPetsBody.
   ///
   /// In it, this message translates to:
-  /// **'Razza, peso, note mediche e documenti: tutto organizzato per ciascun pet, sempre a portata di mano.'**
+  /// **'Specie e razza, peso, note mediche e documenti: tutto organizzato per ciascun pet, sempre a portata di mano.'**
   String get firstRunTutorialPetsBody;
 
   /// No description provided for @firstRunTutorialAssistantTitle.
@@ -3232,6 +3232,12 @@ abstract class AppLocalizations {
   /// **'Razza non specificata'**
   String get petsBreedUnspecified;
 
+  /// No description provided for @petsSpeciesUnspecified.
+  ///
+  /// In it, this message translates to:
+  /// **'Specie non specificata'**
+  String get petsSpeciesUnspecified;
+
   /// No description provided for @petsBreedOtherWithSize.
   ///
   /// In it, this message translates to:
@@ -3394,12 +3400,6 @@ abstract class AppLocalizations {
   /// **'Sposta nei ricordi'**
   String get petsEditMemorialAction;
 
-  /// No description provided for @petsFormAllSpeciesAdded.
-  ///
-  /// In it, this message translates to:
-  /// **'Hai già aggiunto tutte le specie disponibili.'**
-  String get petsFormAllSpeciesAdded;
-
   /// No description provided for @petsFormAddSpecies.
   ///
   /// In it, this message translates to:
@@ -3433,32 +3433,44 @@ abstract class AppLocalizations {
   /// No description provided for @petsFormSpeciesLabel.
   ///
   /// In it, this message translates to:
-  /// **'Specie'**
+  /// **'Tipo di animale'**
   String get petsFormSpeciesLabel;
 
   /// No description provided for @petsFormSpeciesHint.
   ///
   /// In it, this message translates to:
-  /// **'Seleziona una specie'**
+  /// **'Seleziona il tipo di animale'**
   String get petsFormSpeciesHint;
 
   /// No description provided for @petsFormSpeciesError.
   ///
   /// In it, this message translates to:
-  /// **'Seleziona una specie.'**
+  /// **'Seleziona il tipo di animale.'**
   String get petsFormSpeciesError;
 
   /// No description provided for @petsFormProfileType.
   ///
   /// In it, this message translates to:
-  /// **'Tipo di profilo'**
+  /// **'Cosa vuoi registrare?'**
   String get petsFormProfileType;
 
-  /// No description provided for @petsFormSingleFish.
+  /// No description provided for @petsFormFishSingleTitle.
   ///
   /// In it, this message translates to:
-  /// **'Un pesce'**
-  String get petsFormSingleFish;
+  /// **'Pesce'**
+  String get petsFormFishSingleTitle;
+
+  /// No description provided for @petsFormFishSingleBody.
+  ///
+  /// In it, this message translates to:
+  /// **'Un solo pesce, scelto per specie (es. Betta, pesce rosso)'**
+  String get petsFormFishSingleBody;
+
+  /// No description provided for @petsFormFishAquariumBody.
+  ///
+  /// In it, this message translates to:
+  /// **'Una vasca con più specie e più esemplari, maschi e femmine'**
+  String get petsFormFishAquariumBody;
 
   /// No description provided for @petsFormAquariumPopulation.
   ///
@@ -3487,14 +3499,50 @@ abstract class AppLocalizations {
   /// No description provided for @petsFormBreedSelectSpeciesFirst.
   ///
   /// In it, this message translates to:
-  /// **'Seleziona prima la specie'**
+  /// **'Seleziona prima il tipo di animale'**
   String get petsFormBreedSelectSpeciesFirst;
 
-  /// No description provided for @petsFormBreedOptional.
+  /// No description provided for @petsFormBreedSpeciesLabel.
   ///
   /// In it, this message translates to:
-  /// **'Facoltativa'**
-  String get petsFormBreedOptional;
+  /// **'Specie'**
+  String get petsFormBreedSpeciesLabel;
+
+  /// No description provided for @petsFormBreedRequired.
+  ///
+  /// In it, this message translates to:
+  /// **'Scegli la razza.'**
+  String get petsFormBreedRequired;
+
+  /// No description provided for @petsFormBreedSpeciesRequired.
+  ///
+  /// In it, this message translates to:
+  /// **'Scegli la specie.'**
+  String get petsFormBreedSpeciesRequired;
+
+  /// No description provided for @petsFormBreedTextRequired.
+  ///
+  /// In it, this message translates to:
+  /// **'Scrivi la razza.'**
+  String get petsFormBreedTextRequired;
+
+  /// No description provided for @petsFormBreedSpeciesTextRequired.
+  ///
+  /// In it, this message translates to:
+  /// **'Scrivi la specie.'**
+  String get petsFormBreedSpeciesTextRequired;
+
+  /// No description provided for @petsFormBreedSpeciesPlaceholder.
+  ///
+  /// In it, this message translates to:
+  /// **'Seleziona una specie'**
+  String get petsFormBreedSpeciesPlaceholder;
+
+  /// No description provided for @petsFormOtherSpeciesDialogTitle.
+  ///
+  /// In it, this message translates to:
+  /// **'Quale specie?'**
+  String get petsFormOtherSpeciesDialogTitle;
 
   /// No description provided for @petsFormBreedPlaceholder.
   ///
@@ -3517,7 +3565,7 @@ abstract class AppLocalizations {
   /// No description provided for @petsFormOtherBreedLabel.
   ///
   /// In it, this message translates to:
-  /// **'Quale razza? (facoltativo)'**
+  /// **'Quale razza?'**
   String get petsFormOtherBreedLabel;
 
   /// No description provided for @petsFormOtherBreedHint.
@@ -3529,13 +3577,13 @@ abstract class AppLocalizations {
   /// No description provided for @petsFormOtherSpeciesLabel.
   ///
   /// In it, this message translates to:
-  /// **'Quale specie o razza? (facoltativo)'**
+  /// **'Quale specie?'**
   String get petsFormOtherSpeciesLabel;
 
   /// No description provided for @petsFormOtherSpeciesHint.
   ///
   /// In it, this message translates to:
-  /// **'Es. nome comune o varietà'**
+  /// **'Es. nome comune o scientifico'**
   String get petsFormOtherSpeciesHint;
 
   /// No description provided for @petsFormDogSizeLabel.
@@ -3615,6 +3663,18 @@ abstract class AppLocalizations {
   /// In it, this message translates to:
   /// **'Es. 18,4'**
   String get petsFormWeightHintKg;
+
+  /// No description provided for @petsFormWeightLabelG.
+  ///
+  /// In it, this message translates to:
+  /// **'Peso (facoltativo, g)'**
+  String get petsFormWeightLabelG;
+
+  /// No description provided for @petsFormWeightHintG.
+  ///
+  /// In it, this message translates to:
+  /// **'Es. 35'**
+  String get petsFormWeightHintG;
 
   /// No description provided for @petsFormWeightHintLb.
   ///
@@ -5188,6 +5248,12 @@ abstract class AppLocalizations {
   /// **'Rifugi e adozioni'**
   String get placesCategoryShelter;
 
+  /// No description provided for @placesCategoryAssociation.
+  ///
+  /// In it, this message translates to:
+  /// **'Associazioni'**
+  String get placesCategoryAssociation;
+
   /// No description provided for @placesCategoryGrooming.
   ///
   /// In it, this message translates to:
@@ -5277,6 +5343,12 @@ abstract class AppLocalizations {
   /// In it, this message translates to:
   /// **'Rifugio per animali'**
   String get placesTypeShelter;
+
+  /// No description provided for @placesTypeAssociation.
+  ///
+  /// In it, this message translates to:
+  /// **'Associazione per animali'**
+  String get placesTypeAssociation;
 
   /// No description provided for @placesTypeOther.
   ///
@@ -5782,6 +5854,126 @@ abstract class AppLocalizations {
   /// **'Organizzato da {name}'**
   String eventsOrganizedBy(String name);
 
+  /// No description provided for @eventsSuggestAction.
+  ///
+  /// In it, this message translates to:
+  /// **'Segnala un evento'**
+  String get eventsSuggestAction;
+
+  /// No description provided for @eventsSuggestTitle.
+  ///
+  /// In it, this message translates to:
+  /// **'Segnala un evento'**
+  String get eventsSuggestTitle;
+
+  /// No description provided for @eventsSuggestIntro.
+  ///
+  /// In it, this message translates to:
+  /// **'Conosci una fiera o un evento per animali che non trovi qui? Compila i dati: lo controlliamo sul sito dell\'organizzatore prima di pubblicarlo.'**
+  String get eventsSuggestIntro;
+
+  /// No description provided for @eventsSuggestPrivacy.
+  ///
+  /// In it, this message translates to:
+  /// **'Scrivi solo informazioni sull\'evento: niente nomi di persone, email o telefoni.'**
+  String get eventsSuggestPrivacy;
+
+  /// No description provided for @eventsSuggestFieldTitle.
+  ///
+  /// In it, this message translates to:
+  /// **'Nome dell\'evento'**
+  String get eventsSuggestFieldTitle;
+
+  /// No description provided for @eventsSuggestFieldType.
+  ///
+  /// In it, this message translates to:
+  /// **'Tipo di evento'**
+  String get eventsSuggestFieldType;
+
+  /// No description provided for @eventsSuggestFieldDates.
+  ///
+  /// In it, this message translates to:
+  /// **'Date'**
+  String get eventsSuggestFieldDates;
+
+  /// No description provided for @eventsSuggestPickDates.
+  ///
+  /// In it, this message translates to:
+  /// **'Scegli le date'**
+  String get eventsSuggestPickDates;
+
+  /// No description provided for @eventsSuggestFieldCity.
+  ///
+  /// In it, this message translates to:
+  /// **'Città'**
+  String get eventsSuggestFieldCity;
+
+  /// No description provided for @eventsSuggestFieldProvince.
+  ///
+  /// In it, this message translates to:
+  /// **'Provincia (sigla, es. MO)'**
+  String get eventsSuggestFieldProvince;
+
+  /// No description provided for @eventsSuggestFieldVenue.
+  ///
+  /// In it, this message translates to:
+  /// **'Luogo, ad esempio la fiera (facoltativo)'**
+  String get eventsSuggestFieldVenue;
+
+  /// No description provided for @eventsSuggestFieldLink.
+  ///
+  /// In it, this message translates to:
+  /// **'Link alla pagina dell\'evento'**
+  String get eventsSuggestFieldLink;
+
+  /// No description provided for @eventsSuggestRequired.
+  ///
+  /// In it, this message translates to:
+  /// **'Campo obbligatorio'**
+  String get eventsSuggestRequired;
+
+  /// No description provided for @eventsSuggestInvalidLink.
+  ///
+  /// In it, this message translates to:
+  /// **'Inserisci un indirizzo che inizi con http:// o https://'**
+  String get eventsSuggestInvalidLink;
+
+  /// No description provided for @eventsSuggestInvalidProvince.
+  ///
+  /// In it, this message translates to:
+  /// **'Usa la sigla di due lettere'**
+  String get eventsSuggestInvalidProvince;
+
+  /// No description provided for @eventsSuggestSend.
+  ///
+  /// In it, this message translates to:
+  /// **'Invia segnalazione'**
+  String get eventsSuggestSend;
+
+  /// No description provided for @eventsSuggestThanks.
+  ///
+  /// In it, this message translates to:
+  /// **'Grazie! Controlleremo l\'evento prima di pubblicarlo.'**
+  String get eventsSuggestThanks;
+
+  /// No description provided for @eventsSuggestNeedLogin.
+  ///
+  /// In it, this message translates to:
+  /// **'Accedi per segnalare un evento.'**
+  String get eventsSuggestNeedLogin;
+
+  /// No description provided for @eventsSuggestLimit.
+  ///
+  /// In it, this message translates to:
+  /// **'Hai già inviato le segnalazioni di oggi: riprova domani.'**
+  String get eventsSuggestLimit;
+
+  /// No description provided for @eventsSuggestError.
+  ///
+  /// In it, this message translates to:
+  /// **'Non sono riuscito a inviare la segnalazione. Riprova più tardi.'**
+  String get eventsSuggestError;
+
   /// No description provided for @eventsLoadError.
   ///
   /// In it, this message translates to:
@@ -6123,6 +6315,18 @@ abstract class AppLocalizations {
   /// In it, this message translates to:
   /// **'{category} ({count})'**
   String localEventsCategoryCount(String category, int count);
+
+  /// No description provided for @localEventsSectionExpand.
+  ///
+  /// In it, this message translates to:
+  /// **'Apri {section}'**
+  String localEventsSectionExpand(String section);
+
+  /// No description provided for @localEventsSectionCollapse.
+  ///
+  /// In it, this message translates to:
+  /// **'Chiudi {section}'**
+  String localEventsSectionCollapse(String section);
 
   /// No description provided for @localEventsCallTooltip.
   ///
@@ -8653,25 +8857,25 @@ abstract class AppLocalizations {
   /// No description provided for @petsWizardStep1Title.
   ///
   /// In it, this message translates to:
-  /// **'Parlaci del tuo animale'**
+  /// **'Che animale è?'**
   String get petsWizardStep1Title;
 
   /// No description provided for @petsWizardStep1Subtitle.
   ///
   /// In it, this message translates to:
-  /// **'Come si chiama?'**
+  /// **'Scegli il tipo di animale e la sua razza o specie'**
   String get petsWizardStep1Subtitle;
 
   /// No description provided for @petsWizardStep2Title.
   ///
   /// In it, this message translates to:
-  /// **'Specie e razza'**
+  /// **'Parlaci del tuo animale'**
   String get petsWizardStep2Title;
 
   /// No description provided for @petsWizardStep2Subtitle.
   ///
   /// In it, this message translates to:
-  /// **'Seleziona la specie del tuo animale'**
+  /// **'Come si chiama?'**
   String get petsWizardStep2Subtitle;
 
   /// No description provided for @petsWizardStep3Title.
@@ -8794,29 +8998,455 @@ abstract class AppLocalizations {
   /// **'sterilizzato'**
   String get petsDataSummarySterilized;
 
-  /// No description provided for @petsListMicrochipMissing.
-  ///
-  /// In it, this message translates to:
-  /// **'Microchip mancante'**
-  String get petsListMicrochipMissing;
-
   /// No description provided for @monitoringTitle.
   ///
   /// In it, this message translates to:
   /// **'Monitoraggio'**
   String get monitoringTitle;
 
-  /// No description provided for @monitoringEntrySubtitleWeight.
+  /// No description provided for @petsDetailTabMonitoring.
   ///
   /// In it, this message translates to:
-  /// **'Peso e corporatura'**
-  String get monitoringEntrySubtitleWeight;
+  /// **'Monitoraggio'**
+  String get petsDetailTabMonitoring;
 
-  /// No description provided for @monitoringEntrySubtitleWithActivity.
+  /// No description provided for @monitoringBcsGuideTitle.
   ///
   /// In it, this message translates to:
-  /// **'Peso, corporatura e attività'**
-  String get monitoringEntrySubtitleWithActivity;
+  /// **'Valuta la corporatura'**
+  String get monitoringBcsGuideTitle;
+
+  /// No description provided for @monitoringBcsGuideIntro.
+  ///
+  /// In it, this message translates to:
+  /// **'Il peso da solo non basta a dire se un animale è magro o in carne: bisogna toccarlo e guardarlo. Segui i tre passaggi e scegli la descrizione che assomiglia di più a {petName}.'**
+  String monitoringBcsGuideIntro(String petName);
+
+  /// No description provided for @monitoringBcsStepTouch.
+  ///
+  /// In it, this message translates to:
+  /// **'Tocca le costole'**
+  String get monitoringBcsStepTouch;
+
+  /// No description provided for @monitoringBcsStepAbove.
+  ///
+  /// In it, this message translates to:
+  /// **'Guarda dall’alto'**
+  String get monitoringBcsStepAbove;
+
+  /// No description provided for @monitoringBcsStepSide.
+  ///
+  /// In it, this message translates to:
+  /// **'Guarda di lato'**
+  String get monitoringBcsStepSide;
+
+  /// No description provided for @monitoringBcsViewAbove.
+  ///
+  /// In it, this message translates to:
+  /// **'Dall’alto'**
+  String get monitoringBcsViewAbove;
+
+  /// No description provided for @monitoringBcsViewSide.
+  ///
+  /// In it, this message translates to:
+  /// **'Di lato'**
+  String get monitoringBcsViewSide;
+
+  /// No description provided for @monitoringBcsRowTouch.
+  ///
+  /// In it, this message translates to:
+  /// **'Al tatto'**
+  String get monitoringBcsRowTouch;
+
+  /// No description provided for @monitoringBcsRowAbove.
+  ///
+  /// In it, this message translates to:
+  /// **'Dall’alto'**
+  String get monitoringBcsRowAbove;
+
+  /// No description provided for @monitoringBcsRowSide.
+  ///
+  /// In it, this message translates to:
+  /// **'Di lato'**
+  String get monitoringBcsRowSide;
+
+  /// No description provided for @monitoringBcsGuideScale.
+  ///
+  /// In it, this message translates to:
+  /// **'Nella scala della fonte: {range} su {max}'**
+  String monitoringBcsGuideScale(String range, String max);
+
+  /// No description provided for @monitoringBcsGuideChoose.
+  ///
+  /// In it, this message translates to:
+  /// **'Scegli: {level}'**
+  String monitoringBcsGuideChoose(String level);
+
+  /// No description provided for @monitoringBcsGuideClear.
+  ///
+  /// In it, this message translates to:
+  /// **'Rimuovi la valutazione'**
+  String get monitoringBcsGuideClear;
+
+  /// No description provided for @monitoringBcsGuideDisclaimer.
+  ///
+  /// In it, this message translates to:
+  /// **'È un’indicazione orientativa che non sostituisce la visita del veterinario. Le illustrazioni sono schematiche e originali di VetApp.'**
+  String get monitoringBcsGuideDisclaimer;
+
+  /// No description provided for @monitoringBcsGuideSource.
+  ///
+  /// In it, this message translates to:
+  /// **'Fonte: {source}'**
+  String monitoringBcsGuideSource(String source);
+
+  /// No description provided for @monitoringBcsGuideTipFurry.
+  ///
+  /// In it, this message translates to:
+  /// **'Nei cani e nei gatti col pelo lungo o folto la vista inganna: tocca sempre le costole. Per esempio, un cane peloso può sembrare in carne anche se sotto è magro, mentre un cucciolo o un cane molto muscoloso può sembrare «troppo in forma» ma avere un peso corretto.'**
+  String get monitoringBcsGuideTipFurry;
+
+  /// No description provided for @monitoringBcsGuideTipRabbit.
+  ///
+  /// In it, this message translates to:
+  /// **'Nei conigli il pelo nasconde le ossa: tocca sempre schiena, costole e anca, la sola vista non basta. Un pelo folto può far sembrare grasso un coniglio normale, o normale uno magro.'**
+  String get monitoringBcsGuideTipRabbit;
+
+  /// No description provided for @monitoringBcsGuideAdviceTitle.
+  ///
+  /// In it, this message translates to:
+  /// **'Consigli'**
+  String get monitoringBcsGuideAdviceTitle;
+
+  /// No description provided for @monitoringBcsGuideAdvice1.
+  ///
+  /// In it, this message translates to:
+  /// **'Pesa {petName} ogni 2-4 settimane e annota il peso: le variazioni lente si notano più nei numeri che a occhio.'**
+  String monitoringBcsGuideAdvice1(String petName);
+
+  /// No description provided for @monitoringBcsGuideAdvice2.
+  ///
+  /// In it, this message translates to:
+  /// **'Valuta sempre allo stesso modo: stesso posto, animale in piedi e tranquillo, stesse tre mosse (tatto, vista dall\'alto, vista di lato).'**
+  String get monitoringBcsGuideAdvice2;
+
+  /// No description provided for @monitoringBcsGuideAdvice3.
+  ///
+  /// In it, this message translates to:
+  /// **'Nel dubbio, chiedi al veterinario: la corporatura si impara meglio con qualcuno che ti mostra come toccare.'**
+  String get monitoringBcsGuideAdvice3;
+
+  /// No description provided for @monitoringBcsGuideCaveatRabbit.
+  ///
+  /// In it, this message translates to:
+  /// **'Per i conigli questa scala è meno affidabile: due persone possono dare punteggi diversi allo stesso coniglio. Se hai dubbi, chiedi al veterinario.'**
+  String get monitoringBcsGuideCaveatRabbit;
+
+  /// No description provided for @monitoringBcsSourceDog.
+  ///
+  /// In it, this message translates to:
+  /// **'criteri della scala a 9 punti del WSAVA Global Nutrition Committee per i cani (Laflamme, 1997), riassunti con parole nostre e ridotti a 5 livelli da VetApp. Non è materiale ufficiale WSAVA.'**
+  String get monitoringBcsSourceDog;
+
+  /// No description provided for @monitoringBcsSourceCat.
+  ///
+  /// In it, this message translates to:
+  /// **'criteri della scala a 9 punti del WSAVA Global Nutrition Committee per i gatti (Laflamme, 1997; validata da Bjornvad e colleghi, 2011), riassunti con parole nostre e ridotti a 5 livelli da VetApp. Non è materiale ufficiale WSAVA.'**
+  String get monitoringBcsSourceCat;
+
+  /// No description provided for @monitoringBcsSourceRabbit.
+  ///
+  /// In it, this message translates to:
+  /// **'Rabbit Size-O-Meter a 5 livelli della PFMA (Pet Food Manufacturers’ Association), riassunto con parole nostre. L’affidabilità tra chi valuta è limitata (Halck e colleghi, Veterinary Record, 2025).'**
+  String get monitoringBcsSourceRabbit;
+
+  /// No description provided for @monitoringBcsNotAssessed.
+  ///
+  /// In it, this message translates to:
+  /// **'Non valutata'**
+  String get monitoringBcsNotAssessed;
+
+  /// No description provided for @monitoringBcsAssess.
+  ///
+  /// In it, this message translates to:
+  /// **'Valuta la corporatura'**
+  String get monitoringBcsAssess;
+
+  /// No description provided for @monitoringBcsReassess.
+  ///
+  /// In it, this message translates to:
+  /// **'Rivaluta la corporatura'**
+  String get monitoringBcsReassess;
+
+  /// No description provided for @monitoringBcsGuideDog1Touch.
+  ///
+  /// In it, this message translates to:
+  /// **'Costole, colonna e ossa del bacino si sentono subito sotto la pelle: non c\'è praticamente grasso e i muscoli sembrano ridotti. Un esempio: è come toccare le nocche di una mano chiusa a pugno, dove l\'osso è subito sotto la pelle e non c\'è nulla in mezzo.'**
+  String get monitoringBcsGuideDog1Touch;
+
+  /// No description provided for @monitoringBcsGuideDog1Above.
+  ///
+  /// In it, this message translates to:
+  /// **'Vita molto stretta e scavata dietro le costole; le ossa dell\'anca e della schiena sporgono. Guardandolo dall\'alto il corpo ricorda una clessidra molto sottile.'**
+  String get monitoringBcsGuideDog1Above;
+
+  /// No description provided for @monitoringBcsGuideDog1Side.
+  ///
+  /// In it, this message translates to:
+  /// **'Pancia molto rientrata, il profilo sale deciso verso le zampe posteriori. Le costole possono vedersi anche da lontano, soprattutto nei cani a pelo corto.'**
+  String get monitoringBcsGuideDog1Side;
+
+  /// No description provided for @monitoringBcsGuideDog2Touch.
+  ///
+  /// In it, this message translates to:
+  /// **'Le costole si sentono senza premere, con pochissimo grasso sopra, e a volte si vedono. Un esempio: passando la mano sul fianco senti ogni costola come un gradino distinto, senza lo strato morbido che c\'è in un cane in forma.'**
+  String get monitoringBcsGuideDog2Touch;
+
+  /// No description provided for @monitoringBcsGuideDog2Above.
+  ///
+  /// In it, this message translates to:
+  /// **'Vita ben marcata dietro le costole; le ossa del bacino cominciano a notarsi. Per trovarla, guarda il cane in piedi dall\'alto: il corpo si restringe in modo evidente dopo l\'ultima costola.'**
+  String get monitoringBcsGuideDog2Above;
+
+  /// No description provided for @monitoringBcsGuideDog2Side.
+  ///
+  /// In it, this message translates to:
+  /// **'Pancia chiaramente rientrata. Nei cuccioli in crescita e nei cani molto atletici questo aspetto può essere normale: confrontalo con le costole al tatto.'**
+  String get monitoringBcsGuideDog2Side;
+
+  /// No description provided for @monitoringBcsGuideDog3Touch.
+  ///
+  /// In it, this message translates to:
+  /// **'Le costole si sentono bene sotto un sottile strato di grasso, senza dover premere. Un esempio: è come toccare il dorso della mano aperta e distesa, dove senti i tendini sotto la pelle ma non l\'osso tagliente.'**
+  String get monitoringBcsGuideDog3Touch;
+
+  /// No description provided for @monitoringBcsGuideDog3Above.
+  ///
+  /// In it, this message translates to:
+  /// **'Si vede una vita dietro le costole. Per trovarla, guarda il cane in piedi dall\'alto: tra il torace e il bacino il corpo si restringe leggermente, senza sporgere ai lati.'**
+  String get monitoringBcsGuideDog3Above;
+
+  /// No description provided for @monitoringBcsGuideDog3Side.
+  ///
+  /// In it, this message translates to:
+  /// **'Il ventre sale con dolcezza dal petto verso le zampe posteriori. Nei cani a pelo lungo o folto la sagoma si capisce meglio passando le mani sul corpo che guardando.'**
+  String get monitoringBcsGuideDog3Side;
+
+  /// No description provided for @monitoringBcsGuideDog4Touch.
+  ///
+  /// In it, this message translates to:
+  /// **'Le costole si sentono con un po\' di fatica: lo strato di grasso è più spesso, soprattutto sulla schiena vicino alla coda. Un esempio: è come toccare il dorso della mano quando le dita sono chiuse a pugno morbido, con più carne sopra le ossa.'**
+  String get monitoringBcsGuideDog4Touch;
+
+  /// No description provided for @monitoringBcsGuideDog4Above.
+  ///
+  /// In it, this message translates to:
+  /// **'La vita si intravede appena oppure non si vede più. Dall\'alto il corpo appare quasi rettangolare, senza il restringimento dietro le costole.'**
+  String get monitoringBcsGuideDog4Above;
+
+  /// No description provided for @monitoringBcsGuideDog4Side.
+  ///
+  /// In it, this message translates to:
+  /// **'Il rientro della pancia è poco evidente. Attenzione a non confondere il pelo folto con il grasso: tocca sempre le costole prima di decidere.'**
+  String get monitoringBcsGuideDog4Side;
+
+  /// No description provided for @monitoringBcsGuideDog5Touch.
+  ///
+  /// In it, this message translates to:
+  /// **'Le costole non si sentono, o solo premendo forte, sotto un grosso strato di grasso; si accumula su schiena e base della coda. Un esempio: è come cercare le ossa sul palmo della mano, dove sotto la pelle c\'è solo uno spesso cuscinetto morbido.'**
+  String get monitoringBcsGuideDog5Touch;
+
+  /// No description provided for @monitoringBcsGuideDog5Above.
+  ///
+  /// In it, this message translates to:
+  /// **'Nessuna vita: il corpo è largo e tondeggiante, la pancia può sembrare gonfia. Dall\'alto il cane appare più largo sui fianchi che sul torace.'**
+  String get monitoringBcsGuideDog5Above;
+
+  /// No description provided for @monitoringBcsGuideDog5Side.
+  ///
+  /// In it, this message translates to:
+  /// **'Nessun rientro: la pancia è tonda o scende verso il basso. Un cane così si stanca presto e fa fatica a muoversi: parlane con il veterinario.'**
+  String get monitoringBcsGuideDog5Side;
+
+  /// No description provided for @monitoringBcsGuideCat1Touch.
+  ///
+  /// In it, this message translates to:
+  /// **'Costole e vertebre della schiena si sentono senza alcuno strato di grasso; nei gatti a pelo corto le costole si vedono. Un esempio: è come toccare le nocche di una mano chiusa a pugno, ossa subito sotto la pelle.'**
+  String get monitoringBcsGuideCat1Touch;
+
+  /// No description provided for @monitoringBcsGuideCat1Above.
+  ///
+  /// In it, this message translates to:
+  /// **'Vita molto stretta dietro le costole. Guardandolo dall\'alto il corpo è sottile come una clessidra molto stretta.'**
+  String get monitoringBcsGuideCat1Above;
+
+  /// No description provided for @monitoringBcsGuideCat1Side.
+  ///
+  /// In it, this message translates to:
+  /// **'Pancia molto rientrata, nessun cuscinetto di grasso sotto il ventre. Anche i muscoli ai lati della colonna sembrano ridotti.'**
+  String get monitoringBcsGuideCat1Side;
+
+  /// No description provided for @monitoringBcsGuideCat2Touch.
+  ///
+  /// In it, this message translates to:
+  /// **'Le costole si sentono facilmente con pochissimo grasso e le vertebre della schiena si notano. Un esempio: passando la mano sul fianco senti ogni costola distinta, senza il velo morbido che c\'è in un gatto in forma.'**
+  String get monitoringBcsGuideCat2Touch;
+
+  /// No description provided for @monitoringBcsGuideCat2Above.
+  ///
+  /// In it, this message translates to:
+  /// **'Vita ben visibile dietro le costole. Guardalo dall\'alto mentre sta in piedi: il corpo si restringe in modo evidente dopo la gabbia toracica.'**
+  String get monitoringBcsGuideCat2Above;
+
+  /// No description provided for @monitoringBcsGuideCat2Side.
+  ///
+  /// In it, this message translates to:
+  /// **'Pancia un po\' rientrata, con poco o nessun cuscinetto di grasso. Nei gatti anziani la magrezza può nascondere un problema di salute: se è recente, chiedi al veterinario.'**
+  String get monitoringBcsGuideCat2Side;
+
+  /// No description provided for @monitoringBcsGuideCat3Touch.
+  ///
+  /// In it, this message translates to:
+  /// **'Le costole si sentono con un velo di grasso sopra. Un esempio: è come toccare il dorso della mano aperta e distesa, dove senti i tendini sotto la pelle ma non l\'osso tagliente.'**
+  String get monitoringBcsGuideCat3Touch;
+
+  /// No description provided for @monitoringBcsGuideCat3Above.
+  ///
+  /// In it, this message translates to:
+  /// **'Corpo ben proporzionato, con una vita visibile dietro le costole. Dall\'alto il gatto ha una leggera clessidra, senza sporgere ai lati.'**
+  String get monitoringBcsGuideCat3Above;
+
+  /// No description provided for @monitoringBcsGuideCat3Side.
+  ///
+  /// In it, this message translates to:
+  /// **'Il profilo del ventre è morbido, con un cuscinetto di grasso appena accennato. Nei gatti a pelo lungo la sagoma si capisce meglio con le mani che con gli occhi.'**
+  String get monitoringBcsGuideCat3Side;
+
+  /// No description provided for @monitoringBcsGuideCat4Touch.
+  ///
+  /// In it, this message translates to:
+  /// **'Le costole sono più difficili da sentire: bisogna premere un po\', perché c\'è più grasso. Un esempio: è come toccare il dorso della mano quando le dita sono chiuse a pugno morbido, con più carne sopra le ossa.'**
+  String get monitoringBcsGuideCat4Touch;
+
+  /// No description provided for @monitoringBcsGuideCat4Above.
+  ///
+  /// In it, this message translates to:
+  /// **'La vita si vede poco o non si vede. Dall\'alto il corpo appare quasi rettangolare, senza il restringimento dietro le costole.'**
+  String get monitoringBcsGuideCat4Above;
+
+  /// No description provided for @monitoringBcsGuideCat4Side.
+  ///
+  /// In it, this message translates to:
+  /// **'Pancia arrotondata, con un cuscinetto di grasso moderato sotto il ventre. Quando cammina il cuscinetto oscilla leggermente: nei gatti in forma è appena accennato.'**
+  String get monitoringBcsGuideCat4Side;
+
+  /// No description provided for @monitoringBcsGuideCat5Touch.
+  ///
+  /// In it, this message translates to:
+  /// **'Le costole non si sentono sotto un grosso strato di grasso, che si accumula anche sulla schiena e, nei casi estremi, su muso e zampe. Un esempio: è come cercare le ossa sul palmo della mano, dove c\'è solo un cuscinetto morbido.'**
+  String get monitoringBcsGuideCat5Touch;
+
+  /// No description provided for @monitoringBcsGuideCat5Above.
+  ///
+  /// In it, this message translates to:
+  /// **'Nessuna vita: il corpo è largo. Dall\'alto appare più largo sui fianchi che sul torace.'**
+  String get monitoringBcsGuideCat5Above;
+
+  /// No description provided for @monitoringBcsGuideCat5Side.
+  ///
+  /// In it, this message translates to:
+  /// **'Pancia tonda o penzolante, con un cuscinetto di grasso evidente. Il gatto fatica a curarsi il pelo sulla schiena e sul posteriore: parlane con il veterinario.'**
+  String get monitoringBcsGuideCat5Side;
+
+  /// No description provided for @monitoringBcsGuideRabbit1Touch.
+  ///
+  /// In it, this message translates to:
+  /// **'Colonna, costole e ossa dell\'anca sporgono e sono taglienti sotto la pelle: non c\'è grasso e i muscoli sono ridotti. Un esempio: è come toccare le nocche di una mano chiusa a pugno, con l\'osso subito sotto la pelle.'**
+  String get monitoringBcsGuideRabbit1Touch;
+
+  /// No description provided for @monitoringBcsGuideRabbit1Above.
+  ///
+  /// In it, this message translates to:
+  /// **'Schiena e fianchi scavati, le ossa dell\'anca si notano. Dall\'alto il corpo sembra stretto e spigoloso.'**
+  String get monitoringBcsGuideRabbit1Above;
+
+  /// No description provided for @monitoringBcsGuideRabbit1Side.
+  ///
+  /// In it, this message translates to:
+  /// **'Il posteriore (la groppa) è incavato, curva verso l\'interno. Un coniglio così magro va fatto vedere presto al veterinario.'**
+  String get monitoringBcsGuideRabbit1Side;
+
+  /// No description provided for @monitoringBcsGuideRabbit2Touch.
+  ///
+  /// In it, this message translates to:
+  /// **'Costole, colonna e anca si sentono facilmente, con poco grasso sopra. Un esempio: passando la mano sulla schiena senti le vertebre come una fila di piccole sporgenze ben distinte.'**
+  String get monitoringBcsGuideRabbit2Touch;
+
+  /// No description provided for @monitoringBcsGuideRabbit2Above.
+  ///
+  /// In it, this message translates to:
+  /// **'Fianchi sottili, con la colonna poco coperta. Dall\'alto il corpo è più stretto di quanto ti aspetteresti.'**
+  String get monitoringBcsGuideRabbit2Above;
+
+  /// No description provided for @monitoringBcsGuideRabbit2Side.
+  ///
+  /// In it, this message translates to:
+  /// **'Il posteriore è piatto. Nei conigli a pelo lungo il pelo nasconde la magrezza: tocca sempre schiena e anca.'**
+  String get monitoringBcsGuideRabbit2Side;
+
+  /// No description provided for @monitoringBcsGuideRabbit3Touch.
+  ///
+  /// In it, this message translates to:
+  /// **'Costole e colonna si sentono con facilità ma hanno contorni morbidi e arrotondati, non taglienti. Un esempio: è come toccare il dorso della mano aperta e distesa, dove senti le ossa sotto una pelle morbida.'**
+  String get monitoringBcsGuideRabbit3Touch;
+
+  /// No description provided for @monitoringBcsGuideRabbit3Above.
+  ///
+  /// In it, this message translates to:
+  /// **'Corpo ben proporzionato, senza rigonfiamenti ai fianchi. Dall\'alto la sagoma è uniforme, dal collo alla coda.'**
+  String get monitoringBcsGuideRabbit3Above;
+
+  /// No description provided for @monitoringBcsGuideRabbit3Side.
+  ///
+  /// In it, this message translates to:
+  /// **'Il posteriore è piatto e la pancia non sporge. La schiena forma una curva regolare e non appare né incavata né rigonfia.'**
+  String get monitoringBcsGuideRabbit3Side;
+
+  /// No description provided for @monitoringBcsGuideRabbit4Touch.
+  ///
+  /// In it, this message translates to:
+  /// **'Per sentire costole, colonna e anca bisogna premere: ci sono strati di grasso. Un esempio: è come toccare il dorso della mano quando le dita sono chiuse a pugno morbido, con più carne sopra le ossa.'**
+  String get monitoringBcsGuideRabbit4Touch;
+
+  /// No description provided for @monitoringBcsGuideRabbit4Above.
+  ///
+  /// In it, this message translates to:
+  /// **'Fianchi pieni e arrotondati. Dall\'alto il corpo appare più largo di quanto ti aspetteresti.'**
+  String get monitoringBcsGuideRabbit4Above;
+
+  /// No description provided for @monitoringBcsGuideRabbit4Side.
+  ///
+  /// In it, this message translates to:
+  /// **'Il posteriore è arrotondato. Spesso si nota anche un leggero rigonfiamento sotto il mento, soprattutto nelle femmine.'**
+  String get monitoringBcsGuideRabbit4Side;
+
+  /// No description provided for @monitoringBcsGuideRabbit5Touch.
+  ///
+  /// In it, this message translates to:
+  /// **'Colonna e anca si sentono a fatica e le costole per niente, sotto un grosso strato di grasso. Un esempio: è come cercare le ossa sul palmo della mano, dove c\'è solo un cuscinetto morbido.'**
+  String get monitoringBcsGuideRabbit5Touch;
+
+  /// No description provided for @monitoringBcsGuideRabbit5Above.
+  ///
+  /// In it, this message translates to:
+  /// **'Corpo largo e pieno, con il posteriore che sporge. Dall\'alto la sagoma è molto tondeggiante.'**
+  String get monitoringBcsGuideRabbit5Above;
+
+  /// No description provided for @monitoringBcsGuideRabbit5Side.
+  ///
+  /// In it, this message translates to:
+  /// **'La pancia scende e forma un cuscinetto di grasso sotto il ventre. Un coniglio così in carne fatica a pulirsi e può avere problemi di pelle sotto la coda: chiedi al veterinario.'**
+  String get monitoringBcsGuideRabbit5Side;
 
   /// No description provided for @monitoringAddMeasurement.
   ///
@@ -8869,7 +9499,7 @@ abstract class AppLocalizations {
   /// No description provided for @monitoringBcsNone.
   ///
   /// In it, this message translates to:
-  /// **'Indica la corporatura in una misurazione per vederla qui.'**
+  /// **'Tocca «Valuta la corporatura» per vederla qui.'**
   String get monitoringBcsNone;
 
   /// No description provided for @monitoringBcsVeryThin.
@@ -8925,6 +9555,102 @@ abstract class AppLocalizations {
   /// In it, this message translates to:
   /// **'Aggiungi un\'altra misurazione per vedere l\'andamento.'**
   String get monitoringChartSinglePoint;
+
+  /// No description provided for @monitoringChartGrowthHintReference.
+  ///
+  /// In it, this message translates to:
+  /// **'Il peso di {petName} in base all’età, confrontato con l’area di riferimento.'**
+  String monitoringChartGrowthHintReference(String petName);
+
+  /// No description provided for @monitoringGrowthLegend.
+  ///
+  /// In it, this message translates to:
+  /// **'Area scura: dal 25° al 75° percentile (la metà centrale). Area chiara: dal 3° al 97°. Linea tratteggiata: mediana.'**
+  String get monitoringGrowthLegend;
+
+  /// No description provided for @monitoringGrowthSourcePuppy.
+  ///
+  /// In it, this message translates to:
+  /// **'Riferimento: cani sani con peso adulto {sizeLabel}. Derivato da dati CC BY 4.0 di Salt C. et al., PLOS ONE 2017; non sono le curve ufficiali WALTHAM.'**
+  String monitoringGrowthSourcePuppy(String sizeLabel);
+
+  /// No description provided for @monitoringGrowthSourceKitten.
+  ///
+  /// In it, this message translates to:
+  /// **'Riferimento: gattini domestici a pelo corto non sterilizzati (USA). Derivato da dati CC BY 3.0 di Salt C. et al., PLOS ONE 2022; non sono le curve ufficiali WALTHAM.'**
+  String get monitoringGrowthSourceKitten;
+
+  /// No description provided for @monitoringGrowthDisclaimer.
+  ///
+  /// In it, this message translates to:
+  /// **'È un riferimento, non una diagnosi: ogni animale cresce con il suo ritmo. Se il peso di {petName} esce spesso dall’area o cambia all’improvviso, parlane con il veterinario.'**
+  String monitoringGrowthDisclaimer(String petName);
+
+  /// No description provided for @monitoringGrowthExpectedAdult.
+  ///
+  /// In it, this message translates to:
+  /// **'Peso adulto atteso: {range}'**
+  String monitoringGrowthExpectedAdult(String range);
+
+  /// No description provided for @monitoringGrowthChange.
+  ///
+  /// In it, this message translates to:
+  /// **'Cambia'**
+  String get monitoringGrowthChange;
+
+  /// No description provided for @monitoringGrowthPromptTitle.
+  ///
+  /// In it, this message translates to:
+  /// **'Mostra l’area di riferimento'**
+  String get monitoringGrowthPromptTitle;
+
+  /// No description provided for @monitoringGrowthPromptBody.
+  ///
+  /// In it, this message translates to:
+  /// **'Per confrontare {petName} con cuccioli sani serve il peso che avrà da adulto: scegli la fascia più probabile (razza, genitori, veterinario).'**
+  String monitoringGrowthPromptBody(String petName);
+
+  /// No description provided for @monitoringGrowthPromptButton.
+  ///
+  /// In it, this message translates to:
+  /// **'Scegli il peso adulto'**
+  String get monitoringGrowthPromptButton;
+
+  /// No description provided for @monitoringGrowthNoReferenceHeavy.
+  ///
+  /// In it, this message translates to:
+  /// **'Per i cani sopra i 40 kg non ci sono curve di riferimento affidabili: le razze molto grandi crescono in modi molto diversi.'**
+  String get monitoringGrowthNoReferenceHeavy;
+
+  /// No description provided for @monitoringGrowthSheetTitle.
+  ///
+  /// In it, this message translates to:
+  /// **'Peso adulto atteso di {petName}'**
+  String monitoringGrowthSheetTitle(String petName);
+
+  /// No description provided for @monitoringGrowthClassUnder.
+  ///
+  /// In it, this message translates to:
+  /// **'Meno di {max}'**
+  String monitoringGrowthClassUnder(String max);
+
+  /// No description provided for @monitoringGrowthClassBetween.
+  ///
+  /// In it, this message translates to:
+  /// **'Da {min} a {max}'**
+  String monitoringGrowthClassBetween(String min, String max);
+
+  /// No description provided for @monitoringGrowthClassOver.
+  ///
+  /// In it, this message translates to:
+  /// **'Più di {min}'**
+  String monitoringGrowthClassOver(String min);
+
+  /// No description provided for @monitoringGrowthClassUnknown.
+  ///
+  /// In it, this message translates to:
+  /// **'Non lo so: nessuna area di riferimento'**
+  String get monitoringGrowthClassUnknown;
 
   /// No description provided for @monitoringAxisAgeMonths.
   ///
@@ -9003,12 +9729,6 @@ abstract class AppLocalizations {
   /// In it, this message translates to:
   /// **'Es. 22,5'**
   String get monitoringFieldWeightHintLb;
-
-  /// No description provided for @monitoringFieldBcs.
-  ///
-  /// In it, this message translates to:
-  /// **'Corporatura (facoltativa)'**
-  String get monitoringFieldBcs;
 
   /// No description provided for @monitoringFieldNote.
   ///
@@ -9255,6 +9975,192 @@ abstract class AppLocalizations {
   /// In it, this message translates to:
   /// **'Aggiungi'**
   String get medAddAction;
+
+  /// No description provided for @medCatConditionOne.
+  ///
+  /// In it, this message translates to:
+  /// **'Patologia'**
+  String get medCatConditionOne;
+
+  /// No description provided for @medHistoryTitle.
+  ///
+  /// In it, this message translates to:
+  /// **'Storico'**
+  String get medHistoryTitle;
+
+  /// No description provided for @medHistorySubtitle.
+  ///
+  /// In it, this message translates to:
+  /// **'Tutti gli eventi registrati, mese per mese.'**
+  String get medHistorySubtitle;
+
+  /// No description provided for @medHistoryEmpty.
+  ///
+  /// In it, this message translates to:
+  /// **'Nessun evento registrato'**
+  String get medHistoryEmpty;
+
+  /// No description provided for @medHistoryPrevMonth.
+  ///
+  /// In it, this message translates to:
+  /// **'Mese precedente'**
+  String get medHistoryPrevMonth;
+
+  /// No description provided for @medHistoryNextMonth.
+  ///
+  /// In it, this message translates to:
+  /// **'Mese successivo'**
+  String get medHistoryNextMonth;
+
+  /// No description provided for @medHistoryDayTitle.
+  ///
+  /// In it, this message translates to:
+  /// **'Eventi del {date}'**
+  String medHistoryDayTitle(String date);
+
+  /// No description provided for @medHistoryDayEmpty.
+  ///
+  /// In it, this message translates to:
+  /// **'Nessun evento in questo giorno'**
+  String get medHistoryDayEmpty;
+
+  /// No description provided for @medHistoryDayA11y.
+  ///
+  /// In it, this message translates to:
+  /// **'{date}: {count, plural, =0{nessun evento} =1{1 evento} other{{count} eventi}}'**
+  String medHistoryDayA11y(String date, int count);
+
+  /// No description provided for @medHistorySend.
+  ///
+  /// In it, this message translates to:
+  /// **'Invia storico'**
+  String get medHistorySend;
+
+  /// No description provided for @medHistorySendAll.
+  ///
+  /// In it, this message translates to:
+  /// **'Tutto lo storico (PDF)'**
+  String get medHistorySendAll;
+
+  /// No description provided for @medHistorySendAllSubtitle.
+  ///
+  /// In it, this message translates to:
+  /// **'Un PDF con tutti gli eventi in ordine di data'**
+  String get medHistorySendAllSubtitle;
+
+  /// No description provided for @medHistorySendFiles.
+  ///
+  /// In it, this message translates to:
+  /// **'Singoli file'**
+  String get medHistorySendFiles;
+
+  /// No description provided for @medHistoryPreparing.
+  ///
+  /// In it, this message translates to:
+  /// **'Preparo il PDF…'**
+  String get medHistoryPreparing;
+
+  /// No description provided for @medHistoryExportFailed.
+  ///
+  /// In it, this message translates to:
+  /// **'Non sono riuscito a preparare il PDF. Riprova.'**
+  String get medHistoryExportFailed;
+
+  /// No description provided for @medHistoryConditionsMissing.
+  ///
+  /// In it, this message translates to:
+  /// **'Non sono riuscito a leggere le patologie: nel PDF non ci sono.'**
+  String get medHistoryConditionsMissing;
+
+  /// No description provided for @medPdfTitle.
+  ///
+  /// In it, this message translates to:
+  /// **'Storico clinico di {petName}'**
+  String medPdfTitle(String petName);
+
+  /// No description provided for @medPdfSpeciesBreed.
+  ///
+  /// In it, this message translates to:
+  /// **'Specie e razza'**
+  String get medPdfSpeciesBreed;
+
+  /// No description provided for @medPdfBirthDate.
+  ///
+  /// In it, this message translates to:
+  /// **'Data di nascita'**
+  String get medPdfBirthDate;
+
+  /// No description provided for @medPdfExportDate.
+  ///
+  /// In it, this message translates to:
+  /// **'Data di esportazione'**
+  String get medPdfExportDate;
+
+  /// No description provided for @medPdfColDate.
+  ///
+  /// In it, this message translates to:
+  /// **'Data'**
+  String get medPdfColDate;
+
+  /// No description provided for @medPdfColCategory.
+  ///
+  /// In it, this message translates to:
+  /// **'Categoria'**
+  String get medPdfColCategory;
+
+  /// No description provided for @medPdfColTitle.
+  ///
+  /// In it, this message translates to:
+  /// **'Titolo'**
+  String get medPdfColTitle;
+
+  /// No description provided for @medPdfColNotes.
+  ///
+  /// In it, this message translates to:
+  /// **'Note'**
+  String get medPdfColNotes;
+
+  /// No description provided for @medPdfNoDate.
+  ///
+  /// In it, this message translates to:
+  /// **'Senza data'**
+  String get medPdfNoDate;
+
+  /// No description provided for @medPdfEmpty.
+  ///
+  /// In it, this message translates to:
+  /// **'Nessun evento registrato.'**
+  String get medPdfEmpty;
+
+  /// No description provided for @medPdfPage.
+  ///
+  /// In it, this message translates to:
+  /// **'Pagina {page} di {pages}'**
+  String medPdfPage(int page, int pages);
+
+  /// No description provided for @medPdfConditionOngoing.
+  ///
+  /// In it, this message translates to:
+  /// **'In corso'**
+  String get medPdfConditionOngoing;
+
+  /// No description provided for @medPdfConditionResolved.
+  ///
+  /// In it, this message translates to:
+  /// **'Risolta'**
+  String get medPdfConditionResolved;
+
+  /// No description provided for @medPdfConditionResolvedOn.
+  ///
+  /// In it, this message translates to:
+  /// **'Risolta il {date}'**
+  String medPdfConditionResolvedOn(String date);
+
+  /// No description provided for @medPdfConditionTherapy.
+  ///
+  /// In it, this message translates to:
+  /// **'Terapia: {therapy}'**
+  String medPdfConditionTherapy(String therapy);
 
   /// No description provided for @medNewVisit.
   ///
@@ -9633,6 +10539,132 @@ abstract class AppLocalizations {
   /// In it, this message translates to:
   /// **'Apri allegato'**
   String get medCondOpenFile;
+
+  /// No description provided for @medicalRecordSourceFromReminder.
+  ///
+  /// In it, this message translates to:
+  /// **'Da un promemoria'**
+  String get medicalRecordSourceFromReminder;
+
+  /// No description provided for @reminderCatGrooming.
+  ///
+  /// In it, this message translates to:
+  /// **'Toelettatura'**
+  String get reminderCatGrooming;
+
+  /// No description provided for @reminderCatOther.
+  ///
+  /// In it, this message translates to:
+  /// **'Altro'**
+  String get reminderCatOther;
+
+  /// No description provided for @remindersFormCategory.
+  ///
+  /// In it, this message translates to:
+  /// **'Categoria'**
+  String get remindersFormCategory;
+
+  /// No description provided for @remindersFormSubtype.
+  ///
+  /// In it, this message translates to:
+  /// **'Tipo'**
+  String get remindersFormSubtype;
+
+  /// No description provided for @remindersFormSubtypeNone.
+  ///
+  /// In it, this message translates to:
+  /// **'Nessuno'**
+  String get remindersFormSubtypeNone;
+
+  /// No description provided for @remindersDoneTitle.
+  ///
+  /// In it, this message translates to:
+  /// **'Fatto?'**
+  String get remindersDoneTitle;
+
+  /// No description provided for @remindersDoneRecordHint.
+  ///
+  /// In it, this message translates to:
+  /// **'Registralo nello storico di {pet}.'**
+  String remindersDoneRecordHint(String pet);
+
+  /// No description provided for @remindersDonePlainHint.
+  ///
+  /// In it, this message translates to:
+  /// **'Lo segno come fatto?'**
+  String get remindersDonePlainHint;
+
+  /// No description provided for @remindersDoneFieldTitle.
+  ///
+  /// In it, this message translates to:
+  /// **'Titolo'**
+  String get remindersDoneFieldTitle;
+
+  /// No description provided for @remindersDoneFieldDate.
+  ///
+  /// In it, this message translates to:
+  /// **'Quando è successo'**
+  String get remindersDoneFieldDate;
+
+  /// No description provided for @remindersDoneFieldNotes.
+  ///
+  /// In it, this message translates to:
+  /// **'Note (facoltative)'**
+  String get remindersDoneFieldNotes;
+
+  /// No description provided for @remindersDoneConfirmRecord.
+  ///
+  /// In it, this message translates to:
+  /// **'Sì, registra'**
+  String get remindersDoneConfirmRecord;
+
+  /// No description provided for @remindersDoneConfirmPlain.
+  ///
+  /// In it, this message translates to:
+  /// **'Sì, fatto'**
+  String get remindersDoneConfirmPlain;
+
+  /// No description provided for @remindersDonePostpone.
+  ///
+  /// In it, this message translates to:
+  /// **'Rimanda'**
+  String get remindersDonePostpone;
+
+  /// No description provided for @remindersDoneNotDone.
+  ///
+  /// In it, this message translates to:
+  /// **'Non fatto'**
+  String get remindersDoneNotDone;
+
+  /// No description provided for @remindersDoneRecorded.
+  ///
+  /// In it, this message translates to:
+  /// **'Registrato nello storico di {pet}.'**
+  String remindersDoneRecorded(String pet);
+
+  /// No description provided for @remindersDoneMarked.
+  ///
+  /// In it, this message translates to:
+  /// **'Segnato come fatto.'**
+  String get remindersDoneMarked;
+
+  /// No description provided for @remindersDoneDismissed.
+  ///
+  /// In it, this message translates to:
+  /// **'Segnato come non fatto.'**
+  String get remindersDoneDismissed;
+
+  /// No description provided for @remindersDonePostponed.
+  ///
+  /// In it, this message translates to:
+  /// **'Te lo richiedo domani.'**
+  String get remindersDonePostponed;
+
+  /// No description provided for @remindersDoneTooltip.
+  ///
+  /// In it, this message translates to:
+  /// **'Segna come fatto'**
+  String get remindersDoneTooltip;
 }
 
 class _AppLocalizationsDelegate

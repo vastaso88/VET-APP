@@ -2,6 +2,7 @@ import '../../../l10n/l10n.dart';
 import '../../pets/domain/pet_format.dart';
 import '../../pets/domain/pet_models.dart';
 import '../../reminders/data/reminders_repository.dart';
+import '../../../shared/date/calendar_days.dart';
 import '../../reminders/domain/clock_time.dart';
 
 /// The three kinds of phone notification, each with its own switch in
@@ -43,6 +44,7 @@ class PlannedNotification {
     required this.title,
     required this.body,
     required this.category,
+    this.payload,
   });
 
   final DateTime at;
@@ -50,9 +52,16 @@ class PlannedNotification {
   final String body;
   final NotificationCategory category;
 
+  /// What tapping the notification opens: `reminder:<id>` on the one that
+  /// arrives when a reminder is due (it asks "Fatto?"), nothing otherwise.
+  final String? payload;
+
   @override
   String toString() => '$at · $title · $body';
 }
+
+/// Start of the payload of a notification that belongs to a reminder.
+const kReminderPayloadPrefix = 'reminder:';
 
 /// Time used for a reminder saved before a time could be picked (midnight),
 /// a course without dose times, and birthdays.
@@ -81,7 +90,9 @@ List<PlannedNotification> planNotifications({
   Duration horizon = kPlanHorizon,
   int maxCount = kMaxPlannedNotifications,
 }) {
-  final until = now.add(horizon);
+  // A calendar horizon: `now.add(Duration)` would count 24-hour days and slip an
+  // hour across the summer-time change.
+  final until = addCalendarDays(now, horizon.inDays);
   final memorialNames = {for (final pet in pets) if (pet.isMemorial) pet.name};
   final planned = <PlannedNotification>[];
 
@@ -163,6 +174,7 @@ Iterable<PlannedNotification> _eventNotifications(
       title: reminder.title,
       body: l10n.notificationsReminderTodayBody(reminder.petName, time),
       category: NotificationCategory.reminders,
+      payload: '$kReminderPayloadPrefix${reminder.id}',
     );
     yield PlannedNotification(
       at: DateTime(at.year, at.month, at.day - 1, kDayBeforeHour),

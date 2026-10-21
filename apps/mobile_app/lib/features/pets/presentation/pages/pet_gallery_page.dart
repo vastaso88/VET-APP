@@ -3,6 +3,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 
+import '../../../../app/launch/route_restoration.dart';
 import '../../../../shared/widgets/pet_loader.dart';
 import '../widgets/photo_timeline_view.dart';
 
@@ -49,10 +50,12 @@ class _PetGalleryPageState extends State<PetGalleryPage> {
   void initState() {
     super.initState();
     _loadWalks();
+    PetPhotoRepository.changes.addListener(_onPhotosChanged);
   }
 
   @override
   void dispose() {
+    PetPhotoRepository.changes.removeListener(_onPhotosChanged);
     _capture.dispose();
     super.dispose();
   }
@@ -112,7 +115,17 @@ class _PetGalleryPageState extends State<PetGalleryPage> {
     return photos;
   }
 
-  void _reload() => setState(() => _photosFuture = _load());
+  /// A photo added, removed or changed anywhere (the walk's camera, another
+  /// screen) shows here at once.
+  void _onPhotosChanged() {
+    if (mounted) _reload();
+  }
+
+  void _reload() {
+    setState(() {
+      _photosFuture = _load();
+    });
+  }
 
   /// Runs one of the capture actions, then confirms it and refreshes the grid.
   Future<void> _runCapture(Future<PetMediaImportResult?> Function() action) async {
@@ -273,8 +286,17 @@ class _PetGalleryPageState extends State<PetGalleryPage> {
     );
   }
 
+  // Remembered while open, so it can be reopened after a restart (restoration).
   @override
   Widget build(BuildContext context) {
+    return RestorationMarker(
+      kind: 'pet_gallery',
+      args: () => {'petId': widget.pet.id},
+      child: _buildPage(context),
+    );
+  }
+
+  Widget _buildPage(BuildContext context) {
     final pet = _pet;
     return PetsScaffold(
       title: context.l10n.petsMediaGalleryOf(pet.name),

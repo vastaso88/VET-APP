@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 
 import '../../../../l10n/l10n.dart';
+import '../../../../app/launch/route_restoration.dart';
 import '../../../../shared/widgets/pet_loader.dart';
 
 
@@ -74,8 +75,22 @@ class _ChatConversationDetailPageState extends State<ChatConversationDetailPage>
     super.dispose();
   }
 
+  /// Remembered while open: after a restart only conversations the server
+  /// knows can be reopened, so the backend id is what is saved when there is one.
   @override
   Widget build(BuildContext context) {
+    return RestorationMarker(
+      kind: 'chat_conversation',
+      args: () => {
+        'conversationId':
+            _store.conversationById(widget.conversationId)?.backendConversationId ??
+                widget.conversationId,
+      },
+      child: _buildPage(context),
+    );
+  }
+
+  Widget _buildPage(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.background,
       body: SafeArea(
@@ -472,6 +487,7 @@ class _SuccessConversationView extends StatelessWidget {
                 hintText: context.l10n.chatComposerHint(conversation.petName),
                 petName: conversation.petName,
                 onSend: onSendMessage,
+                draftKey: conversation.backendConversationId ?? conversation.id,
                 editingText: editingMessage?.text,
                 onCancelEditing: onCancelEditing,
                 // An edited message keeps its photo; the text may go.

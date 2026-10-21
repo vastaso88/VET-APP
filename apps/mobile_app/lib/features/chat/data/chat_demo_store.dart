@@ -3,6 +3,7 @@ import 'dart:collection';
 import 'package:flutter/foundation.dart';
 
 import '../../../l10n/l10n.dart';
+import '../../../shared/date/calendar_days.dart';
 import '../../../shared/errors/app_network_error.dart';
 import '../../../shared/auth/current_user.dart';
 import '../../../shared/config/app_runtime_config_loader.dart';
@@ -173,7 +174,7 @@ class ChatDemoStore extends ChangeNotifier {
     final now = DateTime.now();
     final today = DateTime(now.year, now.month, now.day);
     final day = DateTime(local.year, local.month, local.day);
-    final daysAgo = today.difference(day).inDays;
+    final daysAgo = calendarDaysBetween(day, today);
     if (daysAgo <= 0) {
       return '${local.hour.toString().padLeft(2, '0')}:${local.minute.toString().padLeft(2, '0')}';
     }

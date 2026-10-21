@@ -55,4 +55,26 @@ void main() {
     expect(find.text('Esame ematico di Moka'), findsOneWidget);
     expect(find.text('Richiamo vaccinale di Moka'), findsNothing);
   });
+
+  testWidgets('"Invia" offers the whole history as a PDF even when no entry has a file', (
+    tester,
+  ) async {
+    await pumpTab(tester);
+
+    await tester.tap(find.text('Invia'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Tutto lo storico (PDF)'), findsOneWidget);
+    expect(find.text('Un PDF con tutti gli eventi in ordine di data'), findsOneWidget);
+  });
+
+  testWidgets('the Storico calendar closes the page, with its own send button', (tester) async {
+    await pumpTab(tester);
+
+    await tester.scrollUntilVisible(find.text('Storico'), 300, scrollable: find.byType(Scrollable).first);
+
+    expect(find.text('Storico'), findsOneWidget);
+    expect(find.text('Invia storico'), findsOneWidget);
+    expect(find.byTooltip('Mese precedente'), findsOneWidget);
+  });
 }

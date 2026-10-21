@@ -20,6 +20,10 @@ import '../../features/pets/data/pet_demo_store.dart';
 import '../../features/pets/pets.dart';
 import '../../features/settings/presentation/pages/settings_page.dart';
 import '../../l10n/l10n.dart';
+import '../../features/notifications/application/notification_taps.dart';
+import '../../features/reminders/presentation/reminder_completion_prompter.dart';
+import '../launch/route_restoration.dart';
+import '../launch/warm_start_store.dart';
 
 class HomeShellPage extends StatefulWidget {
   const HomeShellPage({super.key, this.initialIndex = 0});
@@ -40,20 +44,26 @@ class _HomeShellPageState extends State<HomeShellPage> {
 
   late final List<_ShellTabNavigator> _pages = [
     _ShellTabNavigator(
-        navigatorKey: _navigatorKeys[0], rootPage: const HomeDashboardPage()),
+        tab: 0, navigatorKey: _navigatorKeys[0], rootPage: const HomeDashboardPage()),
     _ShellTabNavigator(
-        navigatorKey: _navigatorKeys[1], rootPage: const PetsListPage()),
+        tab: 1, navigatorKey: _navigatorKeys[1], rootPage: const PetsListPage()),
     _ShellTabNavigator(
-        navigatorKey: _navigatorKeys[2], rootPage: const ActivitiesPage()),
+        tab: 2, navigatorKey: _navigatorKeys[2], rootPage: const ActivitiesPage()),
     _ShellTabNavigator(
-        navigatorKey: _navigatorKeys[3], rootPage: const SettingsPage()),
+        tab: 3, navigatorKey: _navigatorKeys[3], rootPage: const SettingsPage()),
   ];
 
   @override
   void initState() {
     super.initState();
     HomeShellNavigation._requests.addListener(_onTabRequested);
+    NotificationTaps.instance.pendingReminderId.addListener(_askAboutTappedReminder);
+    // Back from the background: a reminder may have fallen due meanwhile.
+    _lifecycle = AppLifecycleListener(onResume: () {
+      if (_ready) unawaited(ReminderCompletionPrompter.instance.checkDue());
+    });
     WidgetsBinding.instance.addPostFrameCallback((_) {
+      unawaited(_restoreOpenPages());
       // The shell being up means signed in and past splash/paywall: only now
       // may a tapped home-screen widget shortcut (reminder / walk) be opened,
       // and after the interrupted-walk prompt, so the two never stack.
@@ -61,15 +71,68 @@ class _HomeShellPageState extends State<HomeShellPage> {
         if (!mounted) return;
         HomeWidgetActionStore.instance.shellReady();
         unawaited(_maybeShowTrialCountdown());
+        _ready = true;
+        // A notification tap that launched the app, then the reminders that
+        // fell due while it was closed.
+        _askAboutTappedReminder();
+        unawaited(ReminderCompletionPrompter.instance.checkDue());
       });
     });
+  }
+
+  AppLifecycleListener? _lifecycle;
+  bool _ready = false;
+
+  /// The owner tapped a reminder's notification: "Fatto? Registralo nello storico".
+  void _askAboutTappedReminder() {
+    if (!_ready || !mounted) return;
+    final id = NotificationTaps.instance.take();
+    if (id != null) unawaited(ReminderCompletionPrompter.instance.promptFor(id));
   }
 
   @override
   void dispose() {
     HomeShellNavigation._requests.removeListener(_onTabRequested);
+    NotificationTaps.instance.pendingReminderId.removeListener(_askAboutTappedReminder);
+    _lifecycle?.dispose();
     HomeWidgetActionStore.instance.shellGone();
     super.dispose();
+  }
+
+  /// After the app was killed in the background: opens again the pages that
+  /// were open inside the tabs (pet, chat, records...), then starts saving the
+  /// stack again. Once per run.
+  Future<void> _restoreOpenPages() async {
+    final restoration = RouteRestoration.instance;
+    if (restoration.planConsumed) {
+      // A rebuilt shell in the same run: nothing to reopen.
+      _restoreDone.complete();
+      return;
+    }
+    restoration.planConsumed = true;
+    try {
+      final plan = await restoration.loadPlan();
+      if (plan.isEmpty || !mounted) return;
+      // The walk page waits until the interrupted walk has been resumed (the
+      // owner answers a dialog first); see _checkForInterruptedWalk.
+      _deferredWalkPages = [for (final entry in plan) if (entry.kind == 'active_walk') entry];
+      await _replay([for (final entry in plan) if (entry.kind != 'active_walk') entry]);
+    } finally {
+      _restoreDone.complete();
+      restoration.enablePersistence();
+    }
+  }
+
+  final Completer<void> _restoreDone = Completer<void>();
+  List<RestorableRouteEntry> _deferredWalkPages = const [];
+
+  Future<void> _replay(List<RestorableRouteEntry> plan) {
+    return RouteReplayer(pages: RestorablePages.instance).replay(
+      plan: plan,
+      navigatorFor: (tab) =>
+          tab >= 0 && tab < _navigatorKeys.length ? _navigatorKeys[tab].currentState : null,
+      isAlive: () => mounted,
+    );
   }
 
   Future<void> _maybeShowTrialCountdown() async {
@@ -115,6 +178,13 @@ class _HomeShellPageState extends State<HomeShellPage> {
 
     if (shouldResume == true) {
       await ActiveWalkController.instance.recoverInterrupted(recovered);
+      // The walk page was open when the app died: put it back on the walk.
+      await _restoreDone.future;
+      if (mounted && _deferredWalkPages.isNotEmpty) {
+        final pages = _deferredWalkPages;
+        _deferredWalkPages = const [];
+        await _replay(pages);
+      }
     } else {
       await DogWalksRepository()
           .saveWalk(recovered.copyWith(status: WalkStatus.discarded));
@@ -289,6 +359,8 @@ class _HomeShellPageState extends State<HomeShellPage> {
     setState(() {
       _currentIndex = value;
     });
+    // So the next launch can reopen this tab (see WarmStartStore).
+    unawaited(const WarmStartStore().saveTab(value));
   }
 
   List<NavigationRailDestination> get _destinations => [
@@ -340,22 +412,29 @@ class _HomeShellPageState extends State<HomeShellPage> {
 
 class _ShellTabNavigator extends StatelessWidget {
   const _ShellTabNavigator({
+    required this.tab,
     required this.navigatorKey,
     required this.rootPage,
   });
 
+  final int tab;
   final GlobalKey<NavigatorState> navigatorKey;
   final Widget rootPage;
 
   @override
   Widget build(BuildContext context) {
-    return Navigator(
-      key: navigatorKey,
-      onGenerateRoute: (_) {
-        return MaterialPageRoute<void>(
-          builder: (_) => rootPage,
-        );
-      },
+    // The scope tells pages pushed in this tab which tab they belong to, so
+    // they can be restored there (see RouteRestoration).
+    return ShellTabScope(
+      index: tab,
+      child: Navigator(
+        key: navigatorKey,
+        onGenerateRoute: (_) {
+          return MaterialPageRoute<void>(
+            builder: (_) => rootPage,
+          );
+        },
+      ),
     );
   }
 }

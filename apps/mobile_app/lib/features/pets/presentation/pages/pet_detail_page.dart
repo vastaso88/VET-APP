@@ -29,6 +29,8 @@ import '../../../dog_walks/presentation/widgets/badge_gallery_dialog.dart';
 import '../../../dog_walks/presentation/widgets/walk_mini_map.dart';
 import '../../../medical_records/data/medical_records_repository.dart';
 import '../../../medical_records/presentation/pet_medical_records_tab.dart';
+import '../../../monitoring/domain/weight_measurement.dart';
+import '../../../monitoring/presentation/pages/monitoring_tab.dart';
 import '../../../reminders/data/reminders_repository.dart';
 import '../../../reminders/domain/reminder_presentation.dart';
 import '../../../reminders/presentation/pages/reminders_pages.dart';
@@ -37,8 +39,8 @@ import '../../data/pet_demo_store.dart';
 import '../../data/pet_photo_repository.dart';
 import '../../domain/pet_format.dart';
 import '../../domain/pet_models.dart';
-import '../../domain/pet_value_labels.dart';
 import '../../../chat/presentation/widgets/chat_conversation_menu.dart';
+import '../../../../app/launch/route_restoration.dart';
 import '../widgets/pet_avatar.dart';
 import '../widgets/pets_scaffold.dart';
 import '../widgets/pets_state_views.dart';
@@ -52,11 +54,16 @@ class PetDetailPage extends StatefulWidget {
     this.pet,
     this.state = PetsScreenStatus.success,
     this.errorMessage,
+    this.initialTab = 0,
   });
 
   final PetProfile? pet;
   final PetsScreenStatus state;
   final String? errorMessage;
+
+  /// Which card opens first (reminders, chat, records...): used when the page
+  /// is restored after the app was killed in the background.
+  final int initialTab;
 
   @override
   State<PetDetailPage> createState() => _PetDetailPageState();
@@ -69,14 +76,28 @@ class _PetDetailPageState extends State<PetDetailPage> {
   final RemindersRepository _remindersRepository = RemindersRepository();
   final DogWalksRepository _walksRepository = DogWalksRepository();
 
+  late int _openTab = widget.initialTab;
+
   @override
   void initState() {
     super.initState();
     _pet = widget.pet ?? PetDemoStore.instance.list().firstOrNull;
   }
 
+  // Remembered while open, so it can be reopened on the same card (restoration).
   @override
   Widget build(BuildContext context) {
+    return RestorationMarker(
+      kind: 'pet_detail',
+      args: () => {
+        'petId': (_pet ?? widget.pet)?.id,
+        'tab': _openTab,
+      },
+      child: _buildPage(context),
+    );
+  }
+
+  Widget _buildPage(BuildContext context) {
     final pet = _pet ?? widget.pet ?? PetDemoStore.instance.list().firstOrNull;
 
     return PetsScaffold(
@@ -134,6 +155,11 @@ class _PetDetailPageState extends State<PetDetailPage> {
             recordsRepository: _recordsRepository,
             remindersRepository: _remindersRepository,
             walksRepository: _walksRepository,
+            initialTab: _openTab,
+            onTabChanged: (index) {
+              _openTab = index;
+              RouteRestoration.instance.touch();
+            },
           ),
       },
     );
@@ -159,7 +185,7 @@ String petHeaderSubtitle(PetProfile pet, {DateTime? now}) {
   final breed = pet.breed.trim();
   final age = pet.isAquarium ? null : petAgeLabel(pet.birthDateLabel, now: now);
   final parts = <String>[
-    localizedSpeciesLabel(pet.species),
+    pet.speciesDisplayLabel,
     if (pet.isAquarium)
       pet.breedLabel
     else if (breed.isNotEmpty && breed != 'Altro')
@@ -171,8 +197,8 @@ String petHeaderSubtitle(PetProfile pet, {DateTime? now}) {
   return parts.join(' · ');
 }
 
-/// One tab title that always fits: it scales down to the width its tab gets
-/// instead of being truncated with an ellipsis.
+/// One tab title, always at the same readable size: the bar scrolls sideways
+/// when the titles do not all fit, instead of shrinking each one differently.
 class PetTabLabel extends StatelessWidget {
   const PetTabLabel(this.label, {super.key});
 
@@ -180,12 +206,7 @@ class PetTabLabel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Tab(
-      child: FittedBox(
-        fit: BoxFit.scaleDown,
-        child: Text(label, maxLines: 1, softWrap: false),
-      ),
-    );
+    return Tab(child: Text(label, maxLines: 1, softWrap: false));
   }
 }
 
@@ -195,12 +216,16 @@ class _PetDetailContent extends StatefulWidget {
     required this.recordsRepository,
     required this.remindersRepository,
     required this.walksRepository,
+    this.initialTab = 0,
+    this.onTabChanged,
   });
 
   final PetProfile pet;
   final MedicalRecordsRepository recordsRepository;
   final RemindersRepository remindersRepository;
   final DogWalksRepository walksRepository;
+  final int initialTab;
+  final ValueChanged<int>? onTabChanged;
 
   @override
   State<_PetDetailContent> createState() => _PetDetailContentState();
@@ -214,15 +239,36 @@ class _PetDetailContentState extends State<_PetDetailContent>
   /// stored just never loads them.
   bool get _showsWalks => isDogSpecies(widget.pet.species);
 
-  late TabController _tabController =
-      TabController(length: _showsWalks ? 4 : 3, vsync: this);
+  /// "Monitoraggio" (weight, growth, activity) has its own tab for every
+  /// species but fish and aquariums.
+  bool get _showsMonitoring => supportsWeightMonitoring(widget.pet);
+
+  int get _tabCount =>
+      3 + (_showsMonitoring ? 1 : 0) + (_showsWalks ? 1 : 0);
+
+  // The restored tab index is clamped to the tabs this pet actually has.
+  late TabController _tabController = TabController(
+    length: _tabCount,
+    vsync: this,
+    initialIndex: widget.initialTab.clamp(0, _tabCount - 1),
+  );
+
+  void _reportTab() {
+    if (!_tabController.indexIsChanging) widget.onTabChanged?.call(_tabController.index);
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _tabController.addListener(_reportTab);
+  }
 
   @override
   void didUpdateWidget(covariant _PetDetailContent oldWidget) {
     super.didUpdateWidget(oldWidget);
-    // Editing the species while this page is open can add/remove the tab;
+    // Editing the species while this page is open can add/remove a tab;
     // a TabController's length is fixed, so it has to be rebuilt.
-    final expectedLength = _showsWalks ? 4 : 3;
+    final expectedLength = _tabCount;
     if (_tabController.length != expectedLength) {
       final previousIndex = _tabController.index;
       _tabController.dispose();
@@ -230,7 +276,7 @@ class _PetDetailContentState extends State<_PetDetailContent>
         length: expectedLength,
         vsync: this,
         initialIndex: previousIndex < expectedLength ? previousIndex : 0,
-      );
+      )..addListener(_reportTab);
     }
   }
 
@@ -272,15 +318,19 @@ class _PetDetailContentState extends State<_PetDetailContent>
           labelStyle:
               AppTextStyles.bodySmall.copyWith(fontWeight: FontWeight.w700),
           unselectedLabelStyle: AppTextStyles.bodySmall,
-          // Not scrollable: all the labels are on screen at once and each
-          // shrinks to its share of the width rather than being cut off or
-          // pushed past the edge (owner report, 2026-10-06: "Passeggi...").
-          isScrollable: false,
-          labelPadding: const EdgeInsets.symmetric(horizontal: 2),
+          // Scrollable from the left, every title at the same size (owner
+          // report, build 34: some titles came out much smaller than others).
+          // The TabBar scrolls the selected tab into view by itself. Tab order
+          // and count are unchanged: the restored tab is saved by index.
+          isScrollable: true,
+          tabAlignment: TabAlignment.start,
+          labelPadding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
           tabs: [
             PetTabLabel(context.l10n.petsDetailTabReminders),
             PetTabLabel(context.l10n.petsDetailTabChat),
             PetTabLabel(context.l10n.petsDetailTabRecords),
+            if (_showsMonitoring)
+              PetTabLabel(context.l10n.petsDetailTabMonitoring),
             if (_showsWalks) PetTabLabel(context.l10n.petsDetailTabWalks),
           ],
         ),
@@ -294,6 +344,7 @@ class _PetDetailContentState extends State<_PetDetailContent>
               _ChatTab(pet: widget.pet),
               PetMedicalRecordsTab(
                   pet: widget.pet, repository: widget.recordsRepository),
+              if (_showsMonitoring) MonitoringTab(pet: widget.pet),
               if (_showsWalks)
                 _WalksTab(pet: widget.pet, repository: widget.walksRepository),
             ],

@@ -241,9 +241,8 @@ class _RadarPlaceSheetState extends State<_RadarPlaceSheet> {
       (contributions) => contributions.run<void>(
         context,
         () => contributions.repository.vote(report.reportId, confirm: confirm),
-        successMessage: (_) => confirm
-            ? context.l10n.placesVoteConfirmedSnack
-            : context.l10n.placesVoteDeniedSnack,
+        successMessage: (_) =>
+            confirm ? context.l10n.placesVoteConfirmedSnack : context.l10n.placesVoteDeniedSnack,
       ),
     );
   }

@@ -18,8 +18,8 @@ import 'fish_species.dart';
 // entries and by free text.
 
 /// The free-text escape hatch for every category except dogs and cats
-/// (those keep "Altra razza (scrivi)").
-const otherEntryLabel = 'Altra (scrivi)';
+/// (those keep "Altra razza (scrivi)"): for them the choice is a species.
+const otherEntryLabel = 'Altra specie (scrivi)';
 
 const _rabbitGeneric = 'Coniglio comune / meticcio';
 const _rodentGeneric = 'Altro roditore';
@@ -27,7 +27,8 @@ const _smallMammalGeneric = 'Altro piccolo mammifero';
 const _birdGeneric = 'Altro uccello';
 const _reptileGeneric = 'Altro rettile';
 const _amphibianGeneric = 'Altro anfibio';
-const _fishGeneric = 'Altro pesce';
+/// A fish whose species is not known (single fish and aquarium alike).
+const fishGenericLabel = 'Pesce generico (specie non nota)';
 const _animalGeneric = 'Altro animale';
 
 /// Pinned at the top of each category's picker, in this order, styled like
@@ -36,7 +37,7 @@ const speciesPinnedBreeds = <String, List<String>>{
   'piccoli mammiferi': [_rabbitGeneric, _rodentGeneric, _smallMammalGeneric],
   'uccello': [_birdGeneric],
   'rettili e anfibi': [_reptileGeneric, _amphibianGeneric],
-  'pesce': [_fishGeneric],
+  'pesce': [fishGenericLabel],
   'altro': [_animalGeneric],
 };
 

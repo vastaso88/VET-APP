@@ -1,10 +1,14 @@
+import 'dart:async';
+
 import 'package:flutter/foundation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../../../l10n/l10n.dart';
 import '../../../../shared/auth/current_user.dart';
+import '../../../../shared/cache/owner_json_cache.dart';
 import '../../../../shared/config/app_runtime_config_loader.dart';
 import '../../pets/data/pet_demo_store.dart';
+import '../domain/reminder_category.dart';
 
 enum EventKind { spot, recurring, course }
 
@@ -30,6 +34,8 @@ class ReminderEntry {
     this.courseDurationDays,
     this.doseTimes = const [],
     this.isDone = false,
+    this.category,
+    this.subtype,
   });
 
   final String id;
@@ -64,22 +70,42 @@ class ReminderEntry {
 
   final bool isDone;
 
-  ReminderEntry copyWith({bool? isDone}) {
+  /// What the reminder is about; null on one saved before categories existed
+  /// (see [effectiveCategory]).
+  final ReminderCategory? category;
+
+  /// The finer type of a clinical category (a record category's subtype key).
+  final String? subtype;
+
+  /// The saved category, or a prudent guess from the title for older reminders.
+  ReminderCategory get effectiveCategory =>
+      category ?? legacyReminderCategory(title: title, kind: kind);
+
+  ReminderEntry copyWith({
+    bool? isDone,
+    DateTime? dueAt,
+    int? occurrenceCount,
+    ReminderCategory? category,
+    String? subtype,
+    bool clearSubtype = false,
+  }) {
     return ReminderEntry(
       id: id,
       petName: petName,
       title: title,
       kind: kind,
-      dueAt: dueAt,
+      dueAt: dueAt ?? this.dueAt,
       note: note,
       intervalUnit: intervalUnit,
       intervalValue: intervalValue,
       recurrenceEnd: recurrenceEnd,
-      occurrenceCount: occurrenceCount,
+      occurrenceCount: occurrenceCount ?? this.occurrenceCount,
       recurrenceEndDate: recurrenceEndDate,
       courseDurationDays: courseDurationDays,
       doseTimes: doseTimes,
       isDone: isDone ?? this.isDone,
+      category: category ?? this.category,
+      subtype: clearSubtype ? null : subtype ?? this.subtype,
     );
   }
 }
@@ -114,6 +140,27 @@ class RemindersRepository {
 
   static Future<void>? _hydrating;
 
+  static const _cache = OwnerJsonCache('reminders');
+
+  /// Shows the reminders saved by the last run at once (no network); the next
+  /// [ensureHydrated] refreshes them from the server. Does nothing when the
+  /// store already holds data or no owner is signed in.
+  Future<void> restoreFromCache() async {
+    final ownerId = CurrentUser.get()?.id;
+    if (ownerId == null || _localReminders.isNotEmpty || _hydratedOwnerId == ownerId) return;
+    final rows = await _cache.read(ownerId);
+    // Re-check: the server answer may have landed while the disk was read.
+    if (rows == null || _localReminders.isNotEmpty || _hydratedOwnerId == ownerId) return;
+    final cached = <ReminderEntry>[];
+    for (final row in rows) {
+      final item = _parseRow(row);
+      if (item != null) cached.add(item);
+    }
+    if (cached.isEmpty) return;
+    _localReminders = cached;
+    changes.value++;
+  }
+
   Future<void> ensureHydrated() {
     final ownerId = CurrentUser.get()?.id;
     if (ownerId == null || ownerId == _hydratedOwnerId) {
@@ -147,6 +194,9 @@ class RemindersRepository {
       _localReminders = loaded;
       _hydratedOwnerId = ownerId;
       changes.value++;
+      unawaited(_cache.write(ownerId, [
+        for (final row in rows) Map<String, dynamic>.from(row as Map),
+      ]));
     } catch (_) {
       // Leave current contents in place; retried next call since
       // _hydratedOwnerId wasn't set.
@@ -204,7 +254,7 @@ class RemindersRepository {
       if (petId == null) {
         throw ReminderSyncException(appL10n.remindersErrorPetNotSynced);
       }
-      await client.from('reminders').upsert({
+      final row = <String, Object?>{
         'id': reminder.id,
         'owner_id': ownerId,
         'pet_id': petId,
@@ -225,7 +275,21 @@ class RemindersRepository {
         // database where scripts/setup/supabase_schema.sql's dose_times column
         // hasn't been added yet.
         if (reminder.doseTimes.isNotEmpty) 'dose_times': reminder.doseTimes,
-      });
+      };
+      final categoryColumns = <String, Object?>{
+        if (reminder.category != null) 'category': reminder.category!.key,
+        if (reminder.subtype != null) 'subtype': reminder.subtype,
+      };
+      try {
+        await client.from('reminders').upsert({...row, ...categoryColumns});
+      } on PostgrestException catch (error) {
+        // The category columns are not on the table yet (SQL not run): save the
+        // reminder without them rather than losing it. 42703 = undefined column,
+        // PGRST204 = column not in the schema cache.
+        final missingColumn = error.code == '42703' || error.code == 'PGRST204';
+        if (!missingColumn || categoryColumns.isEmpty) rethrow;
+        await client.from('reminders').upsert(row);
+      }
     } catch (error) {
       _restore(reminder.id, previous);
       if (error is ReminderSyncException) rethrow;
@@ -293,6 +357,8 @@ class RemindersRepository {
           time.toString(),
       ],
       isDone: row['is_done'] as bool? ?? false,
+      category: ReminderCategory.tryFromKey(row['category']),
+      subtype: row['subtype'] as String?,
     );
   }
 

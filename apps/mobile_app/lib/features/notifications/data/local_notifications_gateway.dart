@@ -3,6 +3,7 @@ import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:permission_handler/permission_handler.dart';
 
 import '../../../l10n/l10n.dart';
+import '../application/notification_taps.dart';
 import '../domain/notification_plan.dart';
 import '../domain/notification_time_zone.dart';
 
@@ -43,7 +44,9 @@ LocalNotificationsGateway createPlatformNotificationsGateway() {
   if (kIsWeb || defaultTargetPlatform != TargetPlatform.android) {
     return const NoopNotificationsGateway();
   }
-  return FlutterLocalNotificationsGateway();
+  // Initialised at once, not at the first schedule: a tap on a notification
+  // that launched the app must be seen even if nothing gets scheduled.
+  return FlutterLocalNotificationsGateway()..ensureInitialized();
 }
 
 /// Android, through flutter_local_notifications. Inexact alarms on purpose
@@ -56,12 +59,26 @@ class FlutterLocalNotificationsGateway implements LocalNotificationsGateway {
   final FlutterLocalNotificationsPlugin _plugin;
   Future<void>? _initializing;
 
+  Future<void> ensureInitialized() => _ensureInitialized();
+
   Future<void> _ensureInitialized() {
-    return _initializing ??= _plugin.initialize(
+    return _initializing ??= _initialize();
+  }
+
+  Future<void> _initialize() async {
+    await _plugin.initialize(
       settings: const InitializationSettings(
         android: AndroidInitializationSettings('@mipmap/ic_launcher'),
       ),
+      onDidReceiveNotificationResponse: (response) =>
+          NotificationTaps.instance.add(response.payload),
     );
+    // The tap that started the app (it was closed): the callback above only
+    // covers taps while it runs.
+    final launch = await _plugin.getNotificationAppLaunchDetails();
+    if (launch?.didNotificationLaunchApp ?? false) {
+      NotificationTaps.instance.add(launch!.notificationResponse?.payload);
+    }
   }
 
   @override
@@ -94,6 +111,7 @@ class FlutterLocalNotificationsGateway implements LocalNotificationsGateway {
       scheduledDate: notificationInstant(notification.at),
       title: notification.title,
       body: notification.body,
+      payload: notification.payload,
       androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
       notificationDetails: NotificationDetails(
         android: AndroidNotificationDetails(

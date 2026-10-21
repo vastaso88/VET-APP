@@ -24,7 +24,10 @@ export '../domain/walk_eligibility.dart' show isDogSpecies;
 const _petsDataKey = 'dog_walks_widget_pets';
 const _petsTotalKey = 'dog_walks_widget_total';
 const _activeWalkKey = 'dog_walks_widget_active_walk';
-const _androidProviderName = 'DogWalksWidgetProvider';
+// Fully qualified on purpose: home_widget resolves a bare name against the
+// application id, which carries a suffix in the francesco/roberto flavors,
+// while the Kotlin package (namespace) is the same for every flavor.
+const _androidProviderName = 'com.vetapp.vetapp.DogWalksWidgetProvider';
 const _activeWalkRouteName = 'active_walk_from_widget';
 
 /// Native side: WalkWidgetBridge in MainActivity.kt. The widget's
@@ -78,7 +81,7 @@ Future<void> syncPetsToHomeWidget(List<PetProfile> pets) async {
   try {
     await HomeWidget.saveWidgetData<String>(_petsDataKey, payload);
     await HomeWidget.saveWidgetData<String>(_petsTotalKey, '${pets.length}');
-    await HomeWidget.updateWidget(androidName: _androidProviderName);
+    await HomeWidget.updateWidget(qualifiedAndroidName: _androidProviderName);
   } catch (_) {
     // Best-effort - see doc comment above.
   }
@@ -229,7 +232,7 @@ Future<void> _publishActiveWalkToWidget(
         jsonEncode(snapshot.toJson()),
       );
     }
-    await HomeWidget.updateWidget(androidName: _androidProviderName);
+    await HomeWidget.updateWidget(qualifiedAndroidName: _androidProviderName);
   } catch (_) {
     // Best-effort, like the pets sync above.
   }

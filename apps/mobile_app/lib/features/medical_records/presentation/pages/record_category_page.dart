@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 
+import '../../../../app/launch/route_restoration.dart';
 import '../../../../design_system/tokens/app_colors.dart';
 import '../../../../design_system/tokens/app_radii.dart';
 import '../../../../design_system/tokens/app_spacing.dart';
@@ -13,6 +14,7 @@ import '../../../../shared/widgets/pet_loader.dart';
 import '../../../pets/domain/pet_models.dart';
 import '../../data/medical_records_repository.dart';
 import '../../domain/record_category.dart';
+import '../medical_records_controller.dart';
 import '../record_category_labels.dart';
 import '../record_file_actions.dart';
 import 'medical_record_upload_page.dart';
@@ -38,33 +40,20 @@ class RecordCategoryPage extends StatefulWidget {
 }
 
 class _RecordCategoryPageState extends State<RecordCategoryPage> {
-  late Future<List<MedicalRecordEntry>> _future = widget.repository
-      .loadRecords();
+  /// Reloads by itself on every save/edit/delete, so an entry added from
+  /// here (or from the tab behind) shows up at once.
+  late final MedicalRecordsController _controller = MedicalRecordsController(
+    repository: widget.repository,
+  );
 
   /// Entries picked for a group share. A non-empty set means selection mode:
   /// taps toggle instead of opening the actions sheet.
   final Set<String> _selectedIds = {};
 
   @override
-  void initState() {
-    super.initState();
-    MedicalRecordsRepository.changes.addListener(_onRecordsChanged);
-  }
-
-  @override
   void dispose() {
-    MedicalRecordsRepository.changes.removeListener(_onRecordsChanged);
+    _controller.dispose();
     super.dispose();
-  }
-
-  void _onRecordsChanged() {
-    if (!mounted) return;
-    setState(() => _future = widget.repository.loadRecords());
-  }
-
-  Future<void> _reload() async {
-    setState(() => _future = widget.repository.loadRecords());
-    await _future;
   }
 
   Future<void> _add() async {
@@ -76,8 +65,6 @@ class _RecordCategoryPageState extends State<RecordCategoryPage> {
         ),
       ),
     );
-    if (!mounted) return;
-    await _reload();
   }
 
   void _onTap(MedicalRecordEntry record) {
@@ -88,7 +75,7 @@ class _RecordCategoryPageState extends State<RecordCategoryPage> {
     showRecordActions(
       context,
       record: record,
-      onChanged: () => unawaited(_reload()),
+      onChanged: () => unawaited(_controller.reload()),
     );
   }
 
@@ -98,8 +85,17 @@ class _RecordCategoryPageState extends State<RecordCategoryPage> {
     });
   }
 
+  // Remembered while open, so it can be reopened after a restart (restoration).
   @override
   Widget build(BuildContext context) {
+    return RestorationMarker(
+      kind: 'record_category',
+      args: () => {'petId': widget.pet.id, 'category': widget.category.key},
+      child: _buildPage(context),
+    );
+  }
+
+  Widget _buildPage(BuildContext context) {
     final l10n = context.l10n;
     final category = widget.category;
     return Scaffold(
@@ -116,13 +112,13 @@ class _RecordCategoryPageState extends State<RecordCategoryPage> {
         label: Text(l10n.medAddAction),
       ),
       body: SafeArea(
-        child: FutureBuilder<List<MedicalRecordEntry>>(
-          future: _future,
-          builder: (context, snapshot) {
-            if (snapshot.connectionState == ConnectionState.waiting) {
+        child: ListenableBuilder(
+          listenable: _controller,
+          builder: (context, _) {
+            if (_controller.records == null && !_controller.recordsFailed) {
               return const Center(child: PetLoader());
             }
-            if (snapshot.hasError) {
+            if (_controller.recordsFailed) {
               return Center(
                 child: Padding(
                   padding: const EdgeInsets.all(AppSpacing.lg),
@@ -136,7 +132,7 @@ class _RecordCategoryPageState extends State<RecordCategoryPage> {
                       ),
                       const SizedBox(height: AppSpacing.sm),
                       TextButton(
-                        onPressed: () => unawaited(_reload()),
+                        onPressed: () => unawaited(_controller.retry()),
                         child: Text(l10n.commonRetry),
                       ),
                     ],
@@ -146,7 +142,7 @@ class _RecordCategoryPageState extends State<RecordCategoryPage> {
             }
 
             final records =
-                (snapshot.data ?? const <MedicalRecordEntry>[])
+                (_controller.records ?? const <MedicalRecordEntry>[])
                     .where(
                       (record) =>
                           record.petName == widget.pet.name &&

@@ -13,6 +13,7 @@ enum RadarCategory {
   shop(Icons.storefront, Color(0xFF8A5A00)),
   dogPark(Icons.park, Color(0xFF2E7D32)),
   shelter(Icons.cottage, Color(0xFF3949AB)),
+  association(Icons.groups, Color(0xFFBF360C)),
   grooming(Icons.content_cut, Color(0xFF7B4FA3)),
   hotel(Icons.night_shelter, Color(0xFF1F6FA5)),
   school(Icons.school, Color(0xFF00796B)),
@@ -40,6 +41,8 @@ enum RadarCategory {
         return l10n.placesCategoryDogPark;
       case RadarCategory.shelter:
         return l10n.placesCategoryShelter;
+      case RadarCategory.association:
+        return l10n.placesCategoryAssociation;
       case RadarCategory.grooming:
         return l10n.placesCategoryGrooming;
       case RadarCategory.hotel:
@@ -76,6 +79,8 @@ RadarCategory radarCategoryForPlace(RadarPlaceType type) {
       return RadarCategory.dogPark;
     case RadarPlaceType.shelter:
       return RadarCategory.shelter;
+    case RadarPlaceType.association:
+      return RadarCategory.association;
     case RadarPlaceType.other:
       return RadarCategory.other;
   }
@@ -112,6 +117,8 @@ String radarPlaceTypeLabel(RadarPlaceType type) {
       return l10n.placesTypeDogPark;
     case RadarPlaceType.shelter:
       return l10n.placesTypeShelter;
+    case RadarPlaceType.association:
+      return l10n.placesTypeAssociation;
     case RadarPlaceType.other:
       return l10n.placesTypeOther;
   }

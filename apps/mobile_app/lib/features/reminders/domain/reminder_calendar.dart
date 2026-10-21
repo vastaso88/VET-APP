@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../../../design_system/responsive.dart';
 import '../../../../design_system/tokens/app_colors.dart';
+import '../../../shared/date/calendar_days.dart';
 import '../../pets/domain/pet_models.dart';
 import '../data/reminders_repository.dart';
 
@@ -22,7 +23,7 @@ PetProfile? petByName(List<PetProfile> pets, String name) {
 bool reminderActiveOnDay(ReminderEntry reminder, DateTime day) {
   if (reminder.kind == EventKind.course) {
     final start = DateTime(reminder.dueAt.year, reminder.dueAt.month, reminder.dueAt.day);
-    final end = start.add(Duration(days: (reminder.courseDurationDays ?? 1) - 1));
+    final end = addCalendarDays(start, (reminder.courseDurationDays ?? 1) - 1);
     return !day.isBefore(start) && !day.isAfter(end);
   }
   return isSameDay(reminder.dueAt, day);

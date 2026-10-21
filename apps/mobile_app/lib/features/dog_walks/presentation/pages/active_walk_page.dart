@@ -8,6 +8,7 @@ import '../../../../shared/widgets/pet_loader.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart' as latlong;
 
+import '../../../../app/launch/route_restoration.dart';
 import '../../../../design_system/tokens/app_colors.dart';
 import '../../../../design_system/tokens/app_spacing.dart';
 import '../../../../design_system/tokens/app_text_styles.dart';
@@ -316,8 +317,18 @@ class _ActiveWalkPageState extends State<ActiveWalkPage> {
     Navigator.of(context).pop(true);
   }
 
+  // Remembered while open: after a restart the walk is recovered first, then
+  // this page is reopened on it (see the shell's restoration).
   @override
   Widget build(BuildContext context) {
+    return RestorationMarker(
+      kind: 'active_walk',
+      args: () => {'petId': widget.pet.id},
+      child: _buildPage(context),
+    );
+  }
+
+  Widget _buildPage(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(

@@ -254,7 +254,7 @@
   "firstRunNotificationsEnable": "Attiva notifiche",
   "firstRunNotificationsLater": "Non ora",
   "firstRunTutorialPetsTitle": "Un profilo per ogni animale",
-  "firstRunTutorialPetsBody": "Razza, peso, note mediche e documenti: tutto organizzato per ciascun pet, sempre a portata di mano.",
+  "firstRunTutorialPetsBody": "Specie e razza, peso, note mediche e documenti: tutto organizzato per ciascun pet, sempre a portata di mano.",
   "firstRunTutorialAssistantTitle": "Chiedi al tuo assistente",
   "firstRunTutorialAssistantBody": "Fai domande sulla salute dei tuoi animali e ricevi risposte pensate per la loro situazione specifica.",
   "firstRunTutorialRemindersTitle": "Niente più scadenze dimenticate",
@@ -936,6 +936,7 @@
     }
   },
   "petsBreedUnspecified": "Razza non specificata",
+  "petsSpeciesUnspecified": "Specie non specificata",
   "petsBreedOtherWithSize": "Altro · Taglia {size}",
   "@petsBreedOtherWithSize": {
     "placeholders": {
@@ -991,30 +992,37 @@
   },
   "petsEditMemorialConfirm": "Sposta",
   "petsEditMemorialAction": "Sposta nei ricordi",
-  "petsFormAllSpeciesAdded": "Hai già aggiunto tutte le specie disponibili.",
   "petsFormAddSpecies": "Aggiungi specie",
   "petsFormIdentityColor": "Colore identificativo",
   "petsFormNameLabel": "Nome",
   "petsFormNameHint": "Moka",
   "petsFormNameError": "Inserisci il nome del pet.",
-  "petsFormSpeciesLabel": "Specie",
-  "petsFormSpeciesHint": "Seleziona una specie",
-  "petsFormSpeciesError": "Seleziona una specie.",
-  "petsFormProfileType": "Tipo di profilo",
-  "petsFormSingleFish": "Un pesce",
+  "petsFormSpeciesLabel": "Tipo di animale",
+  "petsFormSpeciesHint": "Seleziona il tipo di animale",
+  "petsFormSpeciesError": "Seleziona il tipo di animale.",
+  "petsFormProfileType": "Cosa vuoi registrare?",
+  "petsFormFishSingleTitle": "Pesce",
+  "petsFormFishSingleBody": "Un solo pesce, scelto per specie (es. Betta, pesce rosso)",
+  "petsFormFishAquariumBody": "Una vasca con più specie e più esemplari, maschi e femmine",
   "petsFormAquariumPopulation": "Popolazione dell'acquario",
   "petsFormNoSpeciesYet": "Nessuna specie aggiunta ancora.",
   "petsFormAquariumNeedsSpecies": "Aggiungi almeno una specie all'acquario.",
   "petsFormBreedLabel": "Razza",
-  "petsFormBreedSelectSpeciesFirst": "Seleziona prima la specie",
-  "petsFormBreedOptional": "Facoltativa",
+  "petsFormBreedSelectSpeciesFirst": "Seleziona prima il tipo di animale",
+  "petsFormBreedSpeciesLabel": "Specie",
+  "petsFormBreedRequired": "Scegli la razza.",
+  "petsFormBreedSpeciesRequired": "Scegli la specie.",
+  "petsFormBreedTextRequired": "Scrivi la razza.",
+  "petsFormBreedSpeciesTextRequired": "Scrivi la specie.",
+  "petsFormBreedSpeciesPlaceholder": "Seleziona una specie",
+  "petsFormOtherSpeciesDialogTitle": "Quale specie?",
   "petsFormBreedPlaceholder": "Seleziona una razza",
   "petsFormBreedSearchHint": "Cerca una razza",
   "petsFormBreedSearchHintScientific": "Cerca (anche per nome scientifico)",
-  "petsFormOtherBreedLabel": "Quale razza? (facoltativo)",
+  "petsFormOtherBreedLabel": "Quale razza?",
   "petsFormOtherBreedHint": "Es. incrocio di barboncino",
-  "petsFormOtherSpeciesLabel": "Quale specie o razza? (facoltativo)",
-  "petsFormOtherSpeciesHint": "Es. nome comune o varietà",
+  "petsFormOtherSpeciesLabel": "Quale specie?",
+  "petsFormOtherSpeciesHint": "Es. nome comune o scientifico",
   "petsFormDogSizeLabel": "Taglia (facoltativa)",
   "petsFormDogSizeHint": "Seleziona una taglia",
   "petsFormBirthDateLabel": "Data di nascita",
@@ -1028,6 +1036,8 @@
   "petsFormWeightLabelKg": "Peso (facoltativo, kg)",
   "petsFormWeightLabelLb": "Peso (facoltativo, lb)",
   "petsFormWeightHintKg": "Es. 18,4",
+  "petsFormWeightLabelG": "Peso (facoltativo, g)",
+  "petsFormWeightHintG": "Es. 35",
   "petsFormWeightHintLb": "Es. 40,5",
   "petsFormWeightInvalid": "Inserisci un peso valido.",
   "petsFormWeightPositive": "Il peso deve essere maggiore di zero.",
@@ -1779,6 +1789,7 @@
   "placesCategoryShop": "Negozi",
   "placesCategoryDogPark": "Aree cani",
   "placesCategoryShelter": "Rifugi e adozioni",
+  "placesCategoryAssociation": "Associazioni",
   "placesCategoryGrooming": "Toelettature",
   "placesCategoryHotel": "Pensioni",
   "placesCategorySchool": "Addestramento",
@@ -1794,6 +1805,7 @@
   "placesTypeHotel": "Pensione per animali",
   "placesTypeDogPark": "Area cani",
   "placesTypeShelter": "Rifugio per animali",
+  "placesTypeAssociation": "Associazione per animali",
   "placesTypeOther": "Servizio per animali",
   "placesHours247": "Indicato come aperto 24 ore su 24",
   "placesHoursHolidays": "Festivi",
@@ -1971,6 +1983,26 @@
       }
     }
   },
+  "eventsSuggestAction": "Segnala un evento",
+  "eventsSuggestTitle": "Segnala un evento",
+  "eventsSuggestIntro": "Conosci una fiera o un evento per animali che non trovi qui? Compila i dati: lo controlliamo sul sito dell'organizzatore prima di pubblicarlo.",
+  "eventsSuggestPrivacy": "Scrivi solo informazioni sull'evento: niente nomi di persone, email o telefoni.",
+  "eventsSuggestFieldTitle": "Nome dell'evento",
+  "eventsSuggestFieldType": "Tipo di evento",
+  "eventsSuggestFieldDates": "Date",
+  "eventsSuggestPickDates": "Scegli le date",
+  "eventsSuggestFieldCity": "Città",
+  "eventsSuggestFieldProvince": "Provincia (sigla, es. MO)",
+  "eventsSuggestFieldVenue": "Luogo, ad esempio la fiera (facoltativo)",
+  "eventsSuggestFieldLink": "Link alla pagina dell'evento",
+  "eventsSuggestRequired": "Campo obbligatorio",
+  "eventsSuggestInvalidLink": "Inserisci un indirizzo che inizi con http:// o https://",
+  "eventsSuggestInvalidProvince": "Usa la sigla di due lettere",
+  "eventsSuggestSend": "Invia segnalazione",
+  "eventsSuggestThanks": "Grazie! Controlleremo l'evento prima di pubblicarlo.",
+  "eventsSuggestNeedLogin": "Accedi per segnalare un evento.",
+  "eventsSuggestLimit": "Hai già inviato le segnalazioni di oggi: riprova domani.",
+  "eventsSuggestError": "Non sono riuscito a inviare la segnalazione. Riprova più tardi.",
   "eventsLoadError": "Non riesco a caricare gli eventi. Controlla la connessione e riprova.",
   "eventsWindowDefault": "Prossimi {days} giorni",
   "@eventsWindowDefault": {
@@ -2090,6 +2122,22 @@
       },
       "count": {
         "type": "int"
+      }
+    }
+  },
+  "localEventsSectionExpand": "Apri {section}",
+  "@localEventsSectionExpand": {
+    "placeholders": {
+      "section": {
+        "type": "String"
+      }
+    }
+  },
+  "localEventsSectionCollapse": "Chiudi {section}",
+  "@localEventsSectionCollapse": {
+    "placeholders": {
+      "section": {
+        "type": "String"
       }
     }
   },
@@ -2918,10 +2966,10 @@
       }
     }
   },
-  "petsWizardStep1Title": "Parlaci del tuo animale",
-  "petsWizardStep1Subtitle": "Come si chiama?",
-  "petsWizardStep2Title": "Specie e razza",
-  "petsWizardStep2Subtitle": "Seleziona la specie del tuo animale",
+  "petsWizardStep1Title": "Che animale è?",
+  "petsWizardStep1Subtitle": "Scegli il tipo di animale e la sua razza o specie",
+  "petsWizardStep2Title": "Parlaci del tuo animale",
+  "petsWizardStep2Subtitle": "Come si chiama?",
   "petsWizardStep3Title": "Informazioni generali",
   "petsWizardStep3Subtitle": "Dicci qualcosa in più sul tuo animale",
   "petsWizardStep4Title": "Informazioni finali",
@@ -2949,10 +2997,119 @@
   "petsDataAddMicrochip": "Aggiungi microchip",
   "petsDataWeightLabel": "Peso",
   "petsDataSummarySterilized": "sterilizzato",
-  "petsListMicrochipMissing": "Microchip mancante",
   "monitoringTitle": "Monitoraggio",
-  "monitoringEntrySubtitleWeight": "Peso e corporatura",
-  "monitoringEntrySubtitleWithActivity": "Peso, corporatura e attività",
+  "petsDetailTabMonitoring": "Monitoraggio",
+  "monitoringBcsGuideTitle": "Valuta la corporatura",
+  "monitoringBcsGuideIntro": "Il peso da solo non basta a dire se un animale è magro o in carne: bisogna toccarlo e guardarlo. Segui i tre passaggi e scegli la descrizione che assomiglia di più a {petName}.",
+  "@monitoringBcsGuideIntro": {
+    "placeholders": {
+      "petName": {
+        "type": "String"
+      }
+    }
+  },
+  "monitoringBcsStepTouch": "Tocca le costole",
+  "monitoringBcsStepAbove": "Guarda dall’alto",
+  "monitoringBcsStepSide": "Guarda di lato",
+  "monitoringBcsViewAbove": "Dall’alto",
+  "monitoringBcsViewSide": "Di lato",
+  "monitoringBcsRowTouch": "Al tatto",
+  "monitoringBcsRowAbove": "Dall’alto",
+  "monitoringBcsRowSide": "Di lato",
+  "monitoringBcsGuideScale": "Nella scala della fonte: {range} su {max}",
+  "@monitoringBcsGuideScale": {
+    "placeholders": {
+      "range": {
+        "type": "String"
+      },
+      "max": {
+        "type": "String"
+      }
+    }
+  },
+  "monitoringBcsGuideChoose": "Scegli: {level}",
+  "@monitoringBcsGuideChoose": {
+    "placeholders": {
+      "level": {
+        "type": "String"
+      }
+    }
+  },
+  "monitoringBcsGuideClear": "Rimuovi la valutazione",
+  "monitoringBcsGuideDisclaimer": "È un’indicazione orientativa che non sostituisce la visita del veterinario. Le illustrazioni sono schematiche e originali di VetApp.",
+  "monitoringBcsGuideSource": "Fonte: {source}",
+  "@monitoringBcsGuideSource": {
+    "placeholders": {
+      "source": {
+        "type": "String"
+      }
+    }
+  },
+  "monitoringBcsGuideTipFurry": "Nei cani e nei gatti col pelo lungo o folto la vista inganna: tocca sempre le costole. Per esempio, un cane peloso può sembrare in carne anche se sotto è magro, mentre un cucciolo o un cane molto muscoloso può sembrare «troppo in forma» ma avere un peso corretto.",
+  "monitoringBcsGuideTipRabbit": "Nei conigli il pelo nasconde le ossa: tocca sempre schiena, costole e anca, la sola vista non basta. Un pelo folto può far sembrare grasso un coniglio normale, o normale uno magro.",
+  "monitoringBcsGuideAdviceTitle": "Consigli",
+  "monitoringBcsGuideAdvice1": "Pesa {petName} ogni 2-4 settimane e annota il peso: le variazioni lente si notano più nei numeri che a occhio.",
+  "@monitoringBcsGuideAdvice1": {
+    "placeholders": {
+      "petName": {
+        "type": "String"
+      }
+    }
+  },
+  "monitoringBcsGuideAdvice2": "Valuta sempre allo stesso modo: stesso posto, animale in piedi e tranquillo, stesse tre mosse (tatto, vista dall'alto, vista di lato).",
+  "monitoringBcsGuideAdvice3": "Nel dubbio, chiedi al veterinario: la corporatura si impara meglio con qualcuno che ti mostra come toccare.",
+  "monitoringBcsGuideCaveatRabbit": "Per i conigli questa scala è meno affidabile: due persone possono dare punteggi diversi allo stesso coniglio. Se hai dubbi, chiedi al veterinario.",
+  "monitoringBcsSourceDog": "criteri della scala a 9 punti del WSAVA Global Nutrition Committee per i cani (Laflamme, 1997), riassunti con parole nostre e ridotti a 5 livelli da VetApp. Non è materiale ufficiale WSAVA.",
+  "monitoringBcsSourceCat": "criteri della scala a 9 punti del WSAVA Global Nutrition Committee per i gatti (Laflamme, 1997; validata da Bjornvad e colleghi, 2011), riassunti con parole nostre e ridotti a 5 livelli da VetApp. Non è materiale ufficiale WSAVA.",
+  "monitoringBcsSourceRabbit": "Rabbit Size-O-Meter a 5 livelli della PFMA (Pet Food Manufacturers’ Association), riassunto con parole nostre. L’affidabilità tra chi valuta è limitata (Halck e colleghi, Veterinary Record, 2025).",
+  "monitoringBcsNotAssessed": "Non valutata",
+  "monitoringBcsAssess": "Valuta la corporatura",
+  "monitoringBcsReassess": "Rivaluta la corporatura",
+  "monitoringBcsGuideDog1Touch": "Costole, colonna e ossa del bacino si sentono subito sotto la pelle: non c'è praticamente grasso e i muscoli sembrano ridotti. Un esempio: è come toccare le nocche di una mano chiusa a pugno, dove l'osso è subito sotto la pelle e non c'è nulla in mezzo.",
+  "monitoringBcsGuideDog1Above": "Vita molto stretta e scavata dietro le costole; le ossa dell'anca e della schiena sporgono. Guardandolo dall'alto il corpo ricorda una clessidra molto sottile.",
+  "monitoringBcsGuideDog1Side": "Pancia molto rientrata, il profilo sale deciso verso le zampe posteriori. Le costole possono vedersi anche da lontano, soprattutto nei cani a pelo corto.",
+  "monitoringBcsGuideDog2Touch": "Le costole si sentono senza premere, con pochissimo grasso sopra, e a volte si vedono. Un esempio: passando la mano sul fianco senti ogni costola come un gradino distinto, senza lo strato morbido che c'è in un cane in forma.",
+  "monitoringBcsGuideDog2Above": "Vita ben marcata dietro le costole; le ossa del bacino cominciano a notarsi. Per trovarla, guarda il cane in piedi dall'alto: il corpo si restringe in modo evidente dopo l'ultima costola.",
+  "monitoringBcsGuideDog2Side": "Pancia chiaramente rientrata. Nei cuccioli in crescita e nei cani molto atletici questo aspetto può essere normale: confrontalo con le costole al tatto.",
+  "monitoringBcsGuideDog3Touch": "Le costole si sentono bene sotto un sottile strato di grasso, senza dover premere. Un esempio: è come toccare il dorso della mano aperta e distesa, dove senti i tendini sotto la pelle ma non l'osso tagliente.",
+  "monitoringBcsGuideDog3Above": "Si vede una vita dietro le costole. Per trovarla, guarda il cane in piedi dall'alto: tra il torace e il bacino il corpo si restringe leggermente, senza sporgere ai lati.",
+  "monitoringBcsGuideDog3Side": "Il ventre sale con dolcezza dal petto verso le zampe posteriori. Nei cani a pelo lungo o folto la sagoma si capisce meglio passando le mani sul corpo che guardando.",
+  "monitoringBcsGuideDog4Touch": "Le costole si sentono con un po' di fatica: lo strato di grasso è più spesso, soprattutto sulla schiena vicino alla coda. Un esempio: è come toccare il dorso della mano quando le dita sono chiuse a pugno morbido, con più carne sopra le ossa.",
+  "monitoringBcsGuideDog4Above": "La vita si intravede appena oppure non si vede più. Dall'alto il corpo appare quasi rettangolare, senza il restringimento dietro le costole.",
+  "monitoringBcsGuideDog4Side": "Il rientro della pancia è poco evidente. Attenzione a non confondere il pelo folto con il grasso: tocca sempre le costole prima di decidere.",
+  "monitoringBcsGuideDog5Touch": "Le costole non si sentono, o solo premendo forte, sotto un grosso strato di grasso; si accumula su schiena e base della coda. Un esempio: è come cercare le ossa sul palmo della mano, dove sotto la pelle c'è solo uno spesso cuscinetto morbido.",
+  "monitoringBcsGuideDog5Above": "Nessuna vita: il corpo è largo e tondeggiante, la pancia può sembrare gonfia. Dall'alto il cane appare più largo sui fianchi che sul torace.",
+  "monitoringBcsGuideDog5Side": "Nessun rientro: la pancia è tonda o scende verso il basso. Un cane così si stanca presto e fa fatica a muoversi: parlane con il veterinario.",
+  "monitoringBcsGuideCat1Touch": "Costole e vertebre della schiena si sentono senza alcuno strato di grasso; nei gatti a pelo corto le costole si vedono. Un esempio: è come toccare le nocche di una mano chiusa a pugno, ossa subito sotto la pelle.",
+  "monitoringBcsGuideCat1Above": "Vita molto stretta dietro le costole. Guardandolo dall'alto il corpo è sottile come una clessidra molto stretta.",
+  "monitoringBcsGuideCat1Side": "Pancia molto rientrata, nessun cuscinetto di grasso sotto il ventre. Anche i muscoli ai lati della colonna sembrano ridotti.",
+  "monitoringBcsGuideCat2Touch": "Le costole si sentono facilmente con pochissimo grasso e le vertebre della schiena si notano. Un esempio: passando la mano sul fianco senti ogni costola distinta, senza il velo morbido che c'è in un gatto in forma.",
+  "monitoringBcsGuideCat2Above": "Vita ben visibile dietro le costole. Guardalo dall'alto mentre sta in piedi: il corpo si restringe in modo evidente dopo la gabbia toracica.",
+  "monitoringBcsGuideCat2Side": "Pancia un po' rientrata, con poco o nessun cuscinetto di grasso. Nei gatti anziani la magrezza può nascondere un problema di salute: se è recente, chiedi al veterinario.",
+  "monitoringBcsGuideCat3Touch": "Le costole si sentono con un velo di grasso sopra. Un esempio: è come toccare il dorso della mano aperta e distesa, dove senti i tendini sotto la pelle ma non l'osso tagliente.",
+  "monitoringBcsGuideCat3Above": "Corpo ben proporzionato, con una vita visibile dietro le costole. Dall'alto il gatto ha una leggera clessidra, senza sporgere ai lati.",
+  "monitoringBcsGuideCat3Side": "Il profilo del ventre è morbido, con un cuscinetto di grasso appena accennato. Nei gatti a pelo lungo la sagoma si capisce meglio con le mani che con gli occhi.",
+  "monitoringBcsGuideCat4Touch": "Le costole sono più difficili da sentire: bisogna premere un po', perché c'è più grasso. Un esempio: è come toccare il dorso della mano quando le dita sono chiuse a pugno morbido, con più carne sopra le ossa.",
+  "monitoringBcsGuideCat4Above": "La vita si vede poco o non si vede. Dall'alto il corpo appare quasi rettangolare, senza il restringimento dietro le costole.",
+  "monitoringBcsGuideCat4Side": "Pancia arrotondata, con un cuscinetto di grasso moderato sotto il ventre. Quando cammina il cuscinetto oscilla leggermente: nei gatti in forma è appena accennato.",
+  "monitoringBcsGuideCat5Touch": "Le costole non si sentono sotto un grosso strato di grasso, che si accumula anche sulla schiena e, nei casi estremi, su muso e zampe. Un esempio: è come cercare le ossa sul palmo della mano, dove c'è solo un cuscinetto morbido.",
+  "monitoringBcsGuideCat5Above": "Nessuna vita: il corpo è largo. Dall'alto appare più largo sui fianchi che sul torace.",
+  "monitoringBcsGuideCat5Side": "Pancia tonda o penzolante, con un cuscinetto di grasso evidente. Il gatto fatica a curarsi il pelo sulla schiena e sul posteriore: parlane con il veterinario.",
+  "monitoringBcsGuideRabbit1Touch": "Colonna, costole e ossa dell'anca sporgono e sono taglienti sotto la pelle: non c'è grasso e i muscoli sono ridotti. Un esempio: è come toccare le nocche di una mano chiusa a pugno, con l'osso subito sotto la pelle.",
+  "monitoringBcsGuideRabbit1Above": "Schiena e fianchi scavati, le ossa dell'anca si notano. Dall'alto il corpo sembra stretto e spigoloso.",
+  "monitoringBcsGuideRabbit1Side": "Il posteriore (la groppa) è incavato, curva verso l'interno. Un coniglio così magro va fatto vedere presto al veterinario.",
+  "monitoringBcsGuideRabbit2Touch": "Costole, colonna e anca si sentono facilmente, con poco grasso sopra. Un esempio: passando la mano sulla schiena senti le vertebre come una fila di piccole sporgenze ben distinte.",
+  "monitoringBcsGuideRabbit2Above": "Fianchi sottili, con la colonna poco coperta. Dall'alto il corpo è più stretto di quanto ti aspetteresti.",
+  "monitoringBcsGuideRabbit2Side": "Il posteriore è piatto. Nei conigli a pelo lungo il pelo nasconde la magrezza: tocca sempre schiena e anca.",
+  "monitoringBcsGuideRabbit3Touch": "Costole e colonna si sentono con facilità ma hanno contorni morbidi e arrotondati, non taglienti. Un esempio: è come toccare il dorso della mano aperta e distesa, dove senti le ossa sotto una pelle morbida.",
+  "monitoringBcsGuideRabbit3Above": "Corpo ben proporzionato, senza rigonfiamenti ai fianchi. Dall'alto la sagoma è uniforme, dal collo alla coda.",
+  "monitoringBcsGuideRabbit3Side": "Il posteriore è piatto e la pancia non sporge. La schiena forma una curva regolare e non appare né incavata né rigonfia.",
+  "monitoringBcsGuideRabbit4Touch": "Per sentire costole, colonna e anca bisogna premere: ci sono strati di grasso. Un esempio: è come toccare il dorso della mano quando le dita sono chiuse a pugno morbido, con più carne sopra le ossa.",
+  "monitoringBcsGuideRabbit4Above": "Fianchi pieni e arrotondati. Dall'alto il corpo appare più largo di quanto ti aspetteresti.",
+  "monitoringBcsGuideRabbit4Side": "Il posteriore è arrotondato. Spesso si nota anche un leggero rigonfiamento sotto il mento, soprattutto nelle femmine.",
+  "monitoringBcsGuideRabbit5Touch": "Colonna e anca si sentono a fatica e le costole per niente, sotto un grosso strato di grasso. Un esempio: è come cercare le ossa sul palmo della mano, dove c'è solo un cuscinetto morbido.",
+  "monitoringBcsGuideRabbit5Above": "Corpo largo e pieno, con il posteriore che sporge. Dall'alto la sagoma è molto tondeggiante.",
+  "monitoringBcsGuideRabbit5Side": "La pancia scende e forma un cuscinetto di grasso sotto il ventre. Un coniglio così in carne fatica a pulirsi e può avere problemi di pelle sotto la coda: chiedi al veterinario.",
   "monitoringAddMeasurement": "Nuova misurazione",
   "monitoringCurrentWeight": "Peso attuale",
   "monitoringMeasuredOn": "Misurato il {date}",
@@ -2992,7 +3149,7 @@
       }
     }
   },
-  "monitoringBcsNone": "Indica la corporatura in una misurazione per vederla qui.",
+  "monitoringBcsNone": "Tocca «Valuta la corporatura» per vederla qui.",
   "monitoringBcsVeryThin": "Molto magro",
   "monitoringBcsThin": "Magro",
   "monitoringBcsNormal": "Normale",
@@ -3009,6 +3166,88 @@
     }
   },
   "monitoringChartSinglePoint": "Aggiungi un'altra misurazione per vedere l'andamento.",
+  "monitoringChartGrowthHintReference": "Il peso di {petName} in base all’età, confrontato con l’area di riferimento.",
+  "@monitoringChartGrowthHintReference": {
+    "placeholders": {
+      "petName": {
+        "type": "String"
+      }
+    }
+  },
+  "monitoringGrowthLegend": "Area scura: dal 25° al 75° percentile (la metà centrale). Area chiara: dal 3° al 97°. Linea tratteggiata: mediana.",
+  "monitoringGrowthSourcePuppy": "Riferimento: cani sani con peso adulto {sizeLabel}. Derivato da dati CC BY 4.0 di Salt C. et al., PLOS ONE 2017; non sono le curve ufficiali WALTHAM.",
+  "@monitoringGrowthSourcePuppy": {
+    "placeholders": {
+      "sizeLabel": {
+        "type": "String"
+      }
+    }
+  },
+  "monitoringGrowthSourceKitten": "Riferimento: gattini domestici a pelo corto non sterilizzati (USA). Derivato da dati CC BY 3.0 di Salt C. et al., PLOS ONE 2022; non sono le curve ufficiali WALTHAM.",
+  "monitoringGrowthDisclaimer": "È un riferimento, non una diagnosi: ogni animale cresce con il suo ritmo. Se il peso di {petName} esce spesso dall’area o cambia all’improvviso, parlane con il veterinario.",
+  "@monitoringGrowthDisclaimer": {
+    "placeholders": {
+      "petName": {
+        "type": "String"
+      }
+    }
+  },
+  "monitoringGrowthExpectedAdult": "Peso adulto atteso: {range}",
+  "@monitoringGrowthExpectedAdult": {
+    "placeholders": {
+      "range": {
+        "type": "String"
+      }
+    }
+  },
+  "monitoringGrowthChange": "Cambia",
+  "monitoringGrowthPromptTitle": "Mostra l’area di riferimento",
+  "monitoringGrowthPromptBody": "Per confrontare {petName} con cuccioli sani serve il peso che avrà da adulto: scegli la fascia più probabile (razza, genitori, veterinario).",
+  "@monitoringGrowthPromptBody": {
+    "placeholders": {
+      "petName": {
+        "type": "String"
+      }
+    }
+  },
+  "monitoringGrowthPromptButton": "Scegli il peso adulto",
+  "monitoringGrowthNoReferenceHeavy": "Per i cani sopra i 40 kg non ci sono curve di riferimento affidabili: le razze molto grandi crescono in modi molto diversi.",
+  "monitoringGrowthSheetTitle": "Peso adulto atteso di {petName}",
+  "@monitoringGrowthSheetTitle": {
+    "placeholders": {
+      "petName": {
+        "type": "String"
+      }
+    }
+  },
+  "monitoringGrowthClassUnder": "Meno di {max}",
+  "@monitoringGrowthClassUnder": {
+    "placeholders": {
+      "max": {
+        "type": "String"
+      }
+    }
+  },
+  "monitoringGrowthClassBetween": "Da {min} a {max}",
+  "@monitoringGrowthClassBetween": {
+    "placeholders": {
+      "min": {
+        "type": "String"
+      },
+      "max": {
+        "type": "String"
+      }
+    }
+  },
+  "monitoringGrowthClassOver": "Più di {min}",
+  "@monitoringGrowthClassOver": {
+    "placeholders": {
+      "min": {
+        "type": "String"
+      }
+    }
+  },
+  "monitoringGrowthClassUnknown": "Non lo so: nessuna area di riferimento",
   "monitoringAxisAgeMonths": "Età (mesi)",
   "monitoringAxisWeight": "Peso ({unit})",
   "@monitoringAxisWeight": {
@@ -3043,7 +3282,6 @@
   "monitoringFieldWeightLb": "Peso (lb)",
   "monitoringFieldWeightHintKg": "Es. 10,5",
   "monitoringFieldWeightHintLb": "Es. 22,5",
-  "monitoringFieldBcs": "Corporatura (facoltativa)",
   "monitoringFieldNote": "Nota (facoltativa)",
   "monitoringErrorWeight": "Inserisci un peso valido, maggiore di zero.",
   "monitoringErrorDateFuture": "La data non può essere nel futuro.",
@@ -3127,6 +3365,85 @@
   "medSubOther": "Altro",
   "medAddTitle": "Cosa vuoi aggiungere?",
   "medAddAction": "Aggiungi",
+  "medCatConditionOne": "Patologia",
+  "medHistoryTitle": "Storico",
+  "medHistorySubtitle": "Tutti gli eventi registrati, mese per mese.",
+  "medHistoryEmpty": "Nessun evento registrato",
+  "medHistoryPrevMonth": "Mese precedente",
+  "medHistoryNextMonth": "Mese successivo",
+  "medHistoryDayTitle": "Eventi del {date}",
+  "@medHistoryDayTitle": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "medHistoryDayEmpty": "Nessun evento in questo giorno",
+  "medHistoryDayA11y": "{date}: {count, plural, =0{nessun evento} =1{1 evento} other{{count} eventi}}",
+  "@medHistoryDayA11y": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "medHistorySend": "Invia storico",
+  "medHistorySendAll": "Tutto lo storico (PDF)",
+  "medHistorySendAllSubtitle": "Un PDF con tutti gli eventi in ordine di data",
+  "medHistorySendFiles": "Singoli file",
+  "medHistoryPreparing": "Preparo il PDF…",
+  "medHistoryExportFailed": "Non sono riuscito a preparare il PDF. Riprova.",
+  "medHistoryConditionsMissing": "Non sono riuscito a leggere le patologie: nel PDF non ci sono.",
+  "medPdfTitle": "Storico clinico di {petName}",
+  "@medPdfTitle": {
+    "placeholders": {
+      "petName": {
+        "type": "String"
+      }
+    }
+  },
+  "medPdfSpeciesBreed": "Specie e razza",
+  "medPdfBirthDate": "Data di nascita",
+  "medPdfExportDate": "Data di esportazione",
+  "medPdfColDate": "Data",
+  "medPdfColCategory": "Categoria",
+  "medPdfColTitle": "Titolo",
+  "medPdfColNotes": "Note",
+  "medPdfNoDate": "Senza data",
+  "medPdfEmpty": "Nessun evento registrato.",
+  "medPdfPage": "Pagina {page} di {pages}",
+  "@medPdfPage": {
+    "placeholders": {
+      "page": {
+        "type": "int"
+      },
+      "pages": {
+        "type": "int"
+      }
+    }
+  },
+  "medPdfConditionOngoing": "In corso",
+  "medPdfConditionResolved": "Risolta",
+  "medPdfConditionResolvedOn": "Risolta il {date}",
+  "@medPdfConditionResolvedOn": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "medPdfConditionTherapy": "Terapia: {therapy}",
+  "@medPdfConditionTherapy": {
+    "placeholders": {
+      "therapy": {
+        "type": "String"
+      }
+    }
+  },
   "medNewVisit": "Nuova visita",
   "medNewExam": "Nuovo esame",
   "medNewVaccine": "Nuovo vaccino",
@@ -3276,5 +3593,40 @@
   },
   "medCondLoadError": "Non riesco a leggere le patologie. Controlla la connessione e riprova.",
   "medCondUploadFailed": "Non sono riuscito a caricare il file. Riprova.",
-  "medCondOpenFile": "Apri allegato"
+  "medCondOpenFile": "Apri allegato",
+  "medicalRecordSourceFromReminder": "Da un promemoria",
+  "reminderCatGrooming": "Toelettatura",
+  "reminderCatOther": "Altro",
+  "remindersFormCategory": "Categoria",
+  "remindersFormSubtype": "Tipo",
+  "remindersFormSubtypeNone": "Nessuno",
+  "remindersDoneTitle": "Fatto?",
+  "remindersDoneRecordHint": "Registralo nello storico di {pet}.",
+  "@remindersDoneRecordHint": {
+    "placeholders": {
+      "pet": {
+        "type": "String"
+      }
+    }
+  },
+  "remindersDonePlainHint": "Lo segno come fatto?",
+  "remindersDoneFieldTitle": "Titolo",
+  "remindersDoneFieldDate": "Quando è successo",
+  "remindersDoneFieldNotes": "Note (facoltative)",
+  "remindersDoneConfirmRecord": "Sì, registra",
+  "remindersDoneConfirmPlain": "Sì, fatto",
+  "remindersDonePostpone": "Rimanda",
+  "remindersDoneNotDone": "Non fatto",
+  "remindersDoneRecorded": "Registrato nello storico di {pet}.",
+  "@remindersDoneRecorded": {
+    "placeholders": {
+      "pet": {
+        "type": "String"
+      }
+    }
+  },
+  "remindersDoneMarked": "Segnato come fatto.",
+  "remindersDoneDismissed": "Segnato come non fatto.",
+  "remindersDonePostponed": "Te lo richiedo domani.",
+  "remindersDoneTooltip": "Segna come fatto"
 }

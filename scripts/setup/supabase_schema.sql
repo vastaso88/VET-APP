@@ -232,6 +232,15 @@ alter table public.reminders add column if not exists is_done boolean not null d
 -- notification each per day (apps/mobile_app/lib/features/notifications/).
 alter table public.reminders add column if not exists dose_times text[];
 
+-- Categoria dei promemoria (2026-10-21): the same keys as the cartella clinica
+-- (visit / exam / vaccine / therapy) plus grooming and other, and the finer
+-- type of a clinical one (clinical_events.subtype). Completing a clinical
+-- reminder writes a clinical_events row with the id reminder-<reminder id>-
+-- <yyyymmdd>, so no link column is needed. Reminders saved before this stay
+-- NULL: the app guesses their category from the title and never writes the guess.
+alter table public.reminders add column if not exists category text;
+alter table public.reminders add column if not exists subtype text;
+
 -- Account-level consents (docs/compliance/04_termini_e_consensi.md): ToS,
 -- privacy policy, marketing email, analytics. One row per owner; each key
 -- maps to {granted: bool, version: text, decided_at: timestamptz}.
@@ -1742,3 +1751,52 @@ create policy pet_weight_measurements_delete_own
 on public.pet_weight_measurements
 for delete
 using (owner_id = auth.uid()::text);
+
+-- ---------------------------------------------------------------------------
+-- Curiosità per i tuoi animali (GET /news). Il backend legge i feed RSS e tiene
+-- qui l'ultima copia valida (una riga per pubblico, oggi 'it'): se le fonti non
+-- rispondono si serve questa. Solo service role (RLS attiva, nessuna policy).
+-- ---------------------------------------------------------------------------
+create table if not exists public.pet_news_snapshots (
+    key text primary key,
+    fetched_at timestamptz not null,
+    items jsonb not null default '[]'::jsonb
+);
+alter table public.pet_news_snapshots enable row level security;
+
+-- ---------------------------------------------------------------------------
+-- "Segnala un evento": proposte degli utenti per la sezione Eventi (POST
+-- /events/submissions). Restano qui in moderazione: il team le controlla con
+-- scripts/events/moderate_submissions.py e solo allora diventano righe di
+-- public.events. `submitted_by` serve solo a limitare gli abusi, non si mostra
+-- mai. Solo service role (RLS attiva, nessuna policy); cancellata con l'account.
+-- ---------------------------------------------------------------------------
+create table if not exists public.event_submissions (
+    id text primary key,
+    submitted_by text not null,
+    title text not null,
+    event_type text not null,
+    starts_on date not null,
+    ends_on date not null,
+    city text not null,
+    province_code text,
+    region text,
+    venue_name text,
+    source_url text not null,
+    status text not null default 'pending'
+        check (status in ('pending', 'approved', 'rejected')),
+    review_note text,
+    event_slug text,
+    created_at timestamptz not null default now(),
+    reviewed_at timestamptz,
+    check (ends_on >= starts_on)
+);
+create index if not exists event_submissions_status_idx
+    on public.event_submissions (status, created_at);
+create index if not exists event_submissions_owner_idx
+    on public.event_submissions (submitted_by, created_at);
+alter table public.event_submissions enable row level security;
+
+-- Origine e licenza delle righe di public.events non curate a mano (feed
+-- importati, segnalazioni approvate). Le colonne `source` e `license` esistono
+-- già: qui si documenta soltanto che i valori possono essere altri.

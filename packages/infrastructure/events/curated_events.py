@@ -12,34 +12,18 @@ from __future__ import annotations
 
 import json
 import re
+from collections.abc import Sequence
 from dataclasses import dataclass
 from datetime import UTC, date, datetime
 from pathlib import Path
 from typing import Any
 from urllib.parse import urlparse
 
-EVENT_TYPES = frozenset(
-    {
-        "pet_fair",
-        "dog_show",
-        "breed_gathering",
-        "cat_show",
-        "work_trial",
-        "dog_sport",
-        "adoption_day",
-        "shelter_open_day",
-        "microchip_day",
-        "vaccination_campaign",
-        "group_walk",
-        "course_seminar",
-        "market",
-        "charity_event",
-        "aquarium_expo",
-        "reptile_expo",
-        "bird_show",
-        "equestrian",
-        "other",
-    }
+from packages.core.domain.events.rules import (
+    BLOCKED_SOURCE_DOMAINS,
+    EVENT_TYPES,
+    REGIONS,
+    contains_personal_data,
 )
 
 LEVELS = ("local", "provincial", "regional", "national", "international")
@@ -63,50 +47,8 @@ _LEVEL_CAP_WITHOUT_DOCUMENT = {"organizer_claim": "regional", "default": "local"
 
 STATUSES = frozenset({"published", "cancelled", "postponed", "rejected", "draft"})
 
-REGIONS = frozenset(
-    {
-        "Abruzzo",
-        "Basilicata",
-        "Calabria",
-        "Campania",
-        "Emilia-Romagna",
-        "Friuli-Venezia Giulia",
-        "Lazio",
-        "Liguria",
-        "Lombardia",
-        "Marche",
-        "Molise",
-        "Piemonte",
-        "Puglia",
-        "Sardegna",
-        "Sicilia",
-        "Toscana",
-        "Trentino-Alto Adige",
-        "Umbria",
-        "Valle d'Aosta",
-        "Veneto",
-    }
-)
-
-# Social networks and commercial aggregators: never an acceptable source
-# (terms of use, no reuse, no way to tell who wrote what).
-_BLOCKED_SOURCE_DOMAINS = (
-    "facebook.com",
-    "fb.com",
-    "instagram.com",
-    "eventbrite.",
-    "meetup.com",
-    "tiktok.com",
-    "x.com",
-    "twitter.com",
-)
-
 _SLUG = re.compile(r"^[a-z0-9]+(-[a-z0-9]+)*$")
 _PROVINCE = re.compile(r"^[A-Z]{2}$")
-_EMAIL = re.compile(r"\S+@\S+")
-# Seven or more digits, allowing the usual separators: a telephone number.
-_PHONE = re.compile(r"(?:\+?\d[\s./-]?){7,}")
-
 DEFAULT_LICENSE = "fatti pubblici verificati sul sito dell'organizzatore"
 SOURCE_KEY = "curated"
 
@@ -158,7 +100,7 @@ def _date(raw: dict[str, Any], key: str) -> date:
 def _reject_personal_data(key: str, value: str | None) -> None:
     if value is None:
         return
-    if _EMAIL.search(value) or _PHONE.search(value):
+    if contains_personal_data(value):
         raise CuratedEventError(
             f"{key} contiene un indirizzo email o un numero di telefono: "
             "nel repository pubblico vanno solo fatti sull'ente, mai contatti"
@@ -170,7 +112,7 @@ def _validate_source_url(url: str) -> None:
     if parsed.scheme not in ("http", "https") or not parsed.hostname:
         raise CuratedEventError(f"source_url non è un indirizzo http(s) valido: {url!r}")
     host = parsed.hostname.lower()
-    if any(blocked in host for blocked in _BLOCKED_SOURCE_DOMAINS):
+    if any(blocked in host for blocked in BLOCKED_SOURCE_DOMAINS):
         raise CuratedEventError(
             f"source_url punta a {host}: social network e aggregatori non sono fonti ammesse; "
             "serve la pagina ufficiale dell'organizzatore"
@@ -264,10 +206,18 @@ def validate_curated_event(raw: object, *, today: date | None = None) -> Curated
     )
 
 
-def curated_event_to_row(event: CuratedEvent, *, now_iso: str) -> dict[str, Any]:
+def curated_event_to_row(
+    event: CuratedEvent,
+    *,
+    now_iso: str,
+    source: str = SOURCE_KEY,
+    license_text: str = DEFAULT_LICENSE,
+) -> dict[str, Any]:
     """The `events` row for an event. The verification date is the curator's
     (`verified_on`, the day the date and link were checked on the official
-    site), not the day the import ran."""
+    site), not the day the import ran. `source` and `license_text` name where
+    the event came from when it is not a hand-curated file (feed importers,
+    suggestions of the users)."""
     return {
         "slug": event.slug,
         "title": event.title,
@@ -284,8 +234,8 @@ def curated_event_to_row(event: CuratedEvent, *, now_iso: str) -> dict[str, Any]
         "venue_name": event.venue_name,
         "organizer_name": event.organizer_name,
         "source_url": event.source_url,
-        "source": SOURCE_KEY,
-        "license": DEFAULT_LICENSE,
+        "source": source,
+        "license": license_text,
         "status": event.status,
         "verification_status": "verified",
         "last_verified_at": datetime.combine(
@@ -296,9 +246,10 @@ def curated_event_to_row(event: CuratedEvent, *, now_iso: str) -> dict[str, Any]
 
 
 def load_curated_events(
-    directory: Path, *, today: date | None = None
+    directory: Path | Sequence[Path], *, today: date | None = None
 ) -> tuple[list[CuratedEvent], list[str]]:
-    """Reads every `*.json` file in `directory` (each an object with an
+    """Reads every `*.json` file in `directory` (one folder or several; a
+    folder that does not exist is skipped; each file an object with an
     `events` list, or a bare list). Returns the valid events and a readable
     problem per rejected event: one bad entry never hides the others, but the
     caller decides whether any problem stops the import."""
@@ -306,7 +257,9 @@ def load_curated_events(
     problems: list[str] = []
     seen_slugs: dict[str, str] = {}
 
-    for path in sorted(directory.glob("*.json")):
+    directories = [directory] if isinstance(directory, Path) else list(directory)
+    paths = [path for folder in directories for path in sorted(folder.glob("*.json"))]
+    for path in paths:
         try:
             document = json.loads(path.read_text(encoding="utf-8"))
         except (OSError, json.JSONDecodeError) as exc:

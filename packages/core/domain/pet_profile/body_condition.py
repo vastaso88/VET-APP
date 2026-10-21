@@ -7,6 +7,8 @@ thinnest to heaviest; the app mirrors it in `BodyCondition`
 (apps/mobile_app/lib/features/monitoring/domain/body_condition.dart).
 """
 
+from packages.core.domain.pet_profile.species_rules import has_body_condition
+
 BODY_CONDITIONS = ("very_thin", "thin", "normal", "slightly_overweight", "overweight")
 
 # What the chat model reads for each code.
@@ -36,3 +38,15 @@ def body_condition_score(code: str | None) -> int | None:
 def body_condition_prompt_label(code: str | None) -> str | None:
     """The wording the chat model reads, None for a missing or unknown code."""
     return _PROMPT_LABEL.get(code or "")
+
+
+def species_has_body_condition(species: str | None, breed: str | None = None) -> bool:
+    """Whether a species has a body condition at all.
+
+    Only the species with a published assessment guide do (dogs and cats:
+    WSAVA; rabbits, a breed of "Piccoli mammiferi"): for every other one the
+    app neither asks for nor shows a "corporatura", so the chat must not read
+    an old value either. The one rule is `has_body_condition` in species_rules;
+    the app mirrors it in `speciesHasBodyCondition` (pets/domain/pet_details.dart).
+    """
+    return has_body_condition(species, breed)

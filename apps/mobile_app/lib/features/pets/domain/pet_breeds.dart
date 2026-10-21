@@ -342,6 +342,7 @@ const _knownAliases = <String, Set<String>>{
   meticcioBreedLabel: {'Meticcio / altra razza', 'Meticcio'},
   catMeticcioBreedLabel: {'Meticcio'},
   'Criceto di Roborovski (Phodopus roborovskii)': {'Criceto Roborovski'},
+  'Pesce generico (specie non nota)': {'Altro pesce'},
 };
 
 /// Lowercase and without accents, for tolerant search and comparison.

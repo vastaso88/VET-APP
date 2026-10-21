@@ -135,7 +135,7 @@ class _MemoryRow extends StatelessWidget {
                 ),
                 const SizedBox(height: 2),
                 Text(
-                  '${localizedSpeciesLabel(pet.species)} · ${pet.breedLabel}',
+                  '${pet.speciesDisplayLabel} · ${pet.breedLabel}',
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: AppTextStyles.caption,

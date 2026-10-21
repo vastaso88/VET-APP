@@ -21,6 +21,7 @@ import '../../../pets/presentation/widgets/pet_avatar.dart';
 import '../../../reminders/data/reminders_repository.dart';
 import '../../../reminders/domain/reminder_calendar.dart';
 import '../../../reminders/presentation/pages/reminders_pages.dart';
+import '../../../../shared/date/calendar_days.dart';
 import '../../../settings/data/layout_settings_store.dart';
 import '../widgets/home_dashboard_primitives.dart';
 
@@ -33,7 +34,7 @@ class HomeDashboardPage extends StatefulWidget {
 
 class _HomeDashboardPageState extends State<HomeDashboardPage> {
   final _remindersRepository = RemindersRepository();
-  final _petNewsRepository = GoogleNewsPetNewsRepository();
+  final _petNewsRepository = BackendPetNewsRepository();
 
   late Future<List<PetNewsItem>> _petNewsFuture;
 
@@ -210,12 +211,22 @@ List<PetNewsItem> selectHomeNewsSlots({
   return result;
 }
 
+/// The days of the home calendar strip: [weeksShown] full weeks starting from
+/// the week of [today]. Calendar arithmetic, so the clock change of 29/03 and
+/// 25/10 never repeats or skips a date.
+@visibleForTesting
+List<DateTime> homeCalendarDays(
+    DateTime today, int weeksShown, WeekStartDay weekStartDay) {
+  final weekStart = _startOfWeek(today, weekStartDay);
+  return List.generate(weeksShown * 7, (i) => addCalendarDays(weekStart, i));
+}
+
 DateTime _startOfWeek(DateTime day, WeekStartDay weekStartDay) {
   final startOfDay = DateTime(day.year, day.month, day.day);
   final offset = weekStartDay == WeekStartDay.monday
       ? startOfDay.weekday - 1
       : startOfDay.weekday % 7;
-  return startOfDay.subtract(Duration(days: offset));
+  return addCalendarDays(startOfDay, -offset);
 }
 
 class _AgendaSection extends StatelessWidget {
@@ -322,7 +333,7 @@ class _AgendaSection extends StatelessWidget {
   String _summaryLine(BuildContext context, List<ReminderEntry> reminders) {
     final today = DateTime.now();
     final startOfToday = DateTime(today.year, today.month, today.day);
-    final endOfWindow = startOfToday.add(const Duration(days: 10));
+    final endOfWindow = addCalendarDays(startOfToday, 10);
 
     final count = reminders.where((r) {
       if (r.kind == EventKind.course) return false;
@@ -347,7 +358,7 @@ List<PetProfile> _petsWithVisibleActivity(
       _startOfWeek(DateTime(today.year, today.month, today.day), weekStartDay);
   final activeIds = <String>{};
   for (var i = 0; i < weeksShown * 7; i++) {
-    final day = weekStart.add(Duration(days: i));
+    final day = addCalendarDays(weekStart, i);
     for (final reminder in reminders) {
       if (!reminderActiveOnDay(reminder, day)) continue;
       final pet = petByName(pets, reminder.petName);
@@ -390,13 +401,10 @@ class _WeekStrip extends StatelessWidget {
   Widget build(BuildContext context) {
     final today = DateTime.now();
     final startOfToday = DateTime(today.year, today.month, today.day);
-    final weekStart = _startOfWeek(startOfToday, weekStartDay);
     final labels = weekStartDay == WeekStartDay.monday
         ? _mondayFirstLabels()
         : _sundayFirstLabels();
-    final totalDays = weeksShown * 7;
-    final days =
-        List.generate(totalDays, (i) => weekStart.add(Duration(days: i)));
+    final days = homeCalendarDays(startOfToday, weeksShown, weekStartDay);
 
     return Column(
       children: [

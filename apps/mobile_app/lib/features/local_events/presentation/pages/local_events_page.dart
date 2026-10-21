@@ -81,6 +81,7 @@ class _LocalEventsPageState extends State<LocalEventsPage> {
     RadarCategory.grooming,
     RadarCategory.hotel,
     RadarCategory.shelter,
+    RadarCategory.association,
   ];
 
   double _radiusKm = 10;
@@ -91,6 +92,10 @@ class _LocalEventsPageState extends State<LocalEventsPage> {
 
   bool _showsCategory(RadarCategory category) =>
       _categories.isEmpty || _categories.contains(category);
+
+  /// The one list section open below the map (clinics are the
+  /// veterinary one); null when all are closed, as they are at first.
+  RadarCategory? _openSection;
 
   /// Service categories whose list is expanded past the first rows.
   final Set<RadarCategory> _expandedCategories = {};
@@ -345,7 +350,16 @@ class _LocalEventsPageState extends State<LocalEventsPage> {
   /// Tapping a category shows only that one, replacing the previous
   /// choice; tapping the active one again goes back to all of them.
   void _toggleQuickCategory(RadarCategory category) {
-    _setFilters(categories: _categories.contains(category) ? const {} : {category});
+    final cleared = _categories.contains(category);
+    _setFilters(categories: cleared ? const {} : {category});
+    // The chip's own section opens with it: that is where its places are.
+    setState(() => _openSection = cleared ? null : category);
+  }
+
+  /// Opens [category]'s section and closes the one that was open; tapping
+  /// the open one closes it.
+  void _toggleSection(RadarCategory category) {
+    setState(() => _openSection = _openSection == category ? null : category);
   }
 
   Future<void> _openActivity(LocalActivity activity, double distanceMeters) async {
@@ -509,11 +523,13 @@ class _LocalEventsPageState extends State<LocalEventsPage> {
           ),
           const SizedBox(height: AppSpacing.xxl),
           DashboardSectionHeader(title: context.l10n.localEventsServicesHeader),
-          const SizedBox(height: AppSpacing.lg),
+          const SizedBox(height: AppSpacing.md),
           _ServicesByCategory(
             entries: services,
             selected: _categories.difference({RadarCategory.veterinary}),
             radiusKm: _radiusKm,
+            openSection: _openSection,
+            onToggleSection: _toggleSection,
             expanded: _expandedCategories,
             collapsedRows: _collapsedRowsPerCategory,
             onToggleExpanded: (category) => setState(
@@ -523,22 +539,31 @@ class _LocalEventsPageState extends State<LocalEventsPage> {
             ),
             onOpen: _openEntry,
           ),
-          const SizedBox(height: AppSpacing.xxl),
-          DashboardSectionHeader(title: context.l10n.localEventsClinicsHeader),
-          const SizedBox(height: AppSpacing.sm),
-          Text(
-            context.l10n.placesDisclaimerClinic,
-            style: AppTextStyles.caption,
-          ),
-          const SizedBox(height: AppSpacing.md),
-          _EntryList(
-            entries: clinics,
-            expanded: _showAllClinics,
-            collapsedRows: _collapsedRows,
-            emptyLabel: context.l10n.localEventsNoClinics,
-            onToggleExpanded: () => setState(() => _showAllClinics = !_showAllClinics),
-            rowBuilder: (entry) => _ClinicRow(entry: entry, onTap: () => _openEntry(entry)),
-          ),
+          if (_showsCategory(RadarCategory.veterinary))
+            _CollapsibleSection(
+              category: RadarCategory.veterinary,
+              title: context.l10n.localEventsCategoryCount(
+                context.l10n.localEventsClinicsHeader,
+                clinics.length,
+              ),
+              open: _openSection == RadarCategory.veterinary,
+              onToggle: () => _toggleSection(RadarCategory.veterinary),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(context.l10n.placesDisclaimerClinic, style: AppTextStyles.caption),
+                  const SizedBox(height: AppSpacing.md),
+                  _EntryList(
+                    entries: clinics,
+                    expanded: _showAllClinics,
+                    collapsedRows: _collapsedRows,
+                    emptyLabel: context.l10n.localEventsNoClinics,
+                    onToggleExpanded: () => setState(() => _showAllClinics = !_showAllClinics),
+                    rowBuilder: (entry) => _ClinicRow(entry: entry, onTap: () => _openEntry(entry)),
+                  ),
+                ],
+              ),
+            ),
         ],
       ),
     );
@@ -871,6 +896,8 @@ class _ServicesByCategory extends StatelessWidget {
     required this.entries,
     required this.selected,
     required this.radiusKm,
+    required this.openSection,
+    required this.onToggleSection,
     required this.expanded,
     required this.collapsedRows,
     required this.onToggleExpanded,
@@ -885,6 +912,8 @@ class _ServicesByCategory extends StatelessWidget {
   /// it is clear the selection was applied rather than ignored.
   final Set<RadarCategory> selected;
   final double radiusKm;
+  final RadarCategory? openSection;
+  final ValueChanged<RadarCategory> onToggleSection;
   final Set<RadarCategory> expanded;
   final int collapsedRows;
   final ValueChanged<RadarCategory> onToggleExpanded;
@@ -925,22 +954,14 @@ class _ServicesByCategory extends StatelessWidget {
       }
       final isExpanded = expanded.contains(category);
       groups.add(
-        Padding(
-          padding: const EdgeInsets.only(bottom: AppSpacing.lg),
+        _CollapsibleSection(
+          category: category,
+          title: context.l10n.localEventsCategoryCount(category.label, group.length),
+          open: openSection == category,
+          onToggle: () => onToggleSection(category),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Row(
-                children: [
-                  Icon(category.icon, color: category.color, size: 18),
-                  const SizedBox(width: AppSpacing.sm),
-                  Text(
-                    context.l10n.localEventsCategoryCount(category.label, group.length),
-                    style: AppTextStyles.body.copyWith(fontWeight: FontWeight.w700),
-                  ),
-                ],
-              ),
-              const SizedBox(height: AppSpacing.sm),
               ...(isExpanded ? group : group.take(collapsedRows)).map(
                 (entry) => Padding(
                   padding: const EdgeInsets.only(bottom: AppSpacing.sm),
@@ -965,6 +986,82 @@ class _ServicesByCategory extends StatelessWidget {
       );
     }
     return Column(crossAxisAlignment: CrossAxisAlignment.start, children: groups);
+  }
+}
+
+/// One list section below the map: a header row with the category's
+/// icon, its title with the count, and an arrow that opens and closes it.
+/// The page keeps at most one open at a time.
+class _CollapsibleSection extends StatelessWidget {
+  const _CollapsibleSection({
+    required this.category,
+    required this.title,
+    required this.open,
+    required this.onToggle,
+    required this.child,
+  });
+
+  final RadarCategory category;
+  final String title;
+  final bool open;
+  final VoidCallback onToggle;
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: AppSpacing.sm),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Semantics(
+            button: true,
+            expanded: open,
+            child: InkWell(
+              key: ValueKey('radar-section-${category.name}'),
+              onTap: onToggle,
+              borderRadius: BorderRadius.circular(AppRadii.medium),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(vertical: AppSpacing.sm),
+                child: Row(
+                  children: [
+                    Icon(category.icon, color: category.color, size: 18),
+                    const SizedBox(width: AppSpacing.sm),
+                    Expanded(
+                      child: Text(
+                        title,
+                        style: AppTextStyles.body.copyWith(fontWeight: FontWeight.w700),
+                      ),
+                    ),
+                    AnimatedRotation(
+                      turns: open ? 0.5 : 0,
+                      duration: const Duration(milliseconds: 200),
+                      child: Icon(
+                        Icons.expand_more,
+                        color: AppColors.mutedText,
+                        semanticLabel: open
+                            ? context.l10n.localEventsSectionCollapse(title)
+                            : context.l10n.localEventsSectionExpand(title),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+          AnimatedSize(
+            duration: const Duration(milliseconds: 200),
+            alignment: Alignment.topCenter,
+            child: open
+                ? Padding(
+                    padding: const EdgeInsets.only(top: AppSpacing.xs),
+                    child: child,
+                  )
+                : const SizedBox(width: double.infinity),
+          ),
+        ],
+      ),
+    );
   }
 }
 

@@ -16,6 +16,7 @@ import 'package:vet_app_mobile/features/nearby_places/data/reverse_geocoder.dart
 import 'package:vet_app_mobile/features/nearby_places/domain/radar_community.dart';
 import 'package:vet_app_mobile/features/nearby_places/domain/radar_place.dart';
 import 'package:vet_app_mobile/features/nearby_places/presentation/pages/report_missing_place_page.dart';
+import 'package:vet_app_mobile/features/nearby_places/presentation/radar_category.dart';
 import 'package:vet_app_mobile/features/nearby_places/presentation/radar_contributions.dart';
 import 'package:vet_app_mobile/features/nearby_places/presentation/widgets/radar_chip.dart';
 import 'package:vet_app_mobile/shared/errors/app_network_error.dart';
@@ -259,7 +260,20 @@ Future<(_FakePlaces, _FakeContributions)> _pumpRadar(
     ),
   );
   await _settle(tester);
+  // The list sections start closed: open the one these places are in.
+  if (places.isNotEmpty) {
+    await _openSection(tester, radarCategoryForPlace(places.first.type));
+  }
   return (placesRepository, contributions);
+}
+
+/// Opens the list section of [category] below the map: they all start
+/// closed.
+Future<void> _openSection(WidgetTester tester, RadarCategory category) async {
+  final header = find.byKey(ValueKey('radar-section-${category.name}'));
+  await tester.ensureVisible(header);
+  await tester.tap(header);
+  await tester.pumpAndSettle();
 }
 
 void main() {

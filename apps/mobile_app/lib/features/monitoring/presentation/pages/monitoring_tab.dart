@@ -15,30 +15,34 @@ import '../../../dog_walks/presentation/walk_labels.dart';
 import '../../../pets/data/pet_demo_store.dart';
 import '../../../pets/domain/pet_format.dart';
 import '../../../pets/domain/pet_models.dart';
-import '../../../pets/presentation/widgets/pet_avatar.dart';
 import '../../../pets/presentation/widgets/pet_sections.dart';
-import '../../../pets/presentation/widgets/pets_scaffold.dart';
 import '../../../settings/data/unit_settings_store.dart';
 import '../../../settings/domain/unit_conversion.dart';
 import '../../../settings/domain/unit_system.dart';
+import '../../data/growth_reference_repository.dart';
 import '../../data/weight_measurements_repository.dart';
+import '../../domain/body_condition_guide.dart';
+import '../../domain/growth_reference.dart';
 import '../../domain/weekly_activity.dart';
 import '../../domain/weight_chart.dart';
 import '../../domain/weight_measurement.dart';
 import '../../domain/weight_units.dart';
 import '../widgets/activity_chart_view.dart';
 import '../widgets/body_condition_bar.dart';
+import '../widgets/body_condition_guide_dialog.dart';
+import '../widgets/growth_reference_notes.dart';
 import '../widgets/measurement_sheet.dart';
 import '../widgets/weight_chart_view.dart';
 
-/// "Monitoraggio" of one pet: current weight and body condition, the weight
-/// chart (a growth curve for a pet under a year), the history of weighings
-/// and, for a dog, the weekly activity drawn from its saved walks.
-class MonitoringPage extends StatefulWidget {
-  const MonitoringPage({
+/// "Monitoraggio" tab of one pet: current weight and body condition, the
+/// weight chart (a growth curve for a pet under a year), the history of
+/// weighings and, for a dog, the weekly activity drawn from its saved walks.
+class MonitoringTab extends StatefulWidget {
+  const MonitoringTab({
     required this.pet,
     this.repository,
     this.walksRepository,
+    this.growthRepository,
     this.now,
     super.key,
   });
@@ -46,19 +50,28 @@ class MonitoringPage extends StatefulWidget {
   final PetProfile pet;
   final WeightMeasurementsRepository? repository;
   final DogWalksRepository? walksRepository;
+  final GrowthReferenceRepository? growthRepository;
 
   /// Today, for tests.
   final DateTime Function()? now;
 
   @override
-  State<MonitoringPage> createState() => _MonitoringPageState();
+  State<MonitoringTab> createState() => _MonitoringTabState();
 }
 
-class _MonitoringPageState extends State<MonitoringPage> {
+class _MonitoringTabState extends State<MonitoringTab> {
   late final WeightMeasurementsRepository _repository =
       widget.repository ?? WeightMeasurementsRepository();
   late final DogWalksRepository _walksRepository =
       widget.walksRepository ?? DogWalksRepository();
+
+  late final GrowthReferenceRepository _growthRepository =
+      widget.growthRepository ?? GrowthReferenceRepository();
+
+  GrowthBands? _bands;
+
+  /// The expected adult size class the owner chose for this dog.
+  AdultSizeClass? _chosenSizeClass;
 
   List<WeightMeasurement>? _measurements;
   List<WeeklyActivity>? _activity;
@@ -92,7 +105,15 @@ class _MonitoringPageState extends State<MonitoringPage> {
 
   Future<void> _load() async {
     final token = ++_loadToken;
-    final measurements = await _repository.load(widget.pet.id);
+    var measurements = await _repository.load(widget.pet.id);
+    if (!supportsBodyCondition(_pet)) {
+      // No published guide for this species: no body condition, whatever an
+      // older version of the app stored.
+      measurements = [
+        for (final m in measurements)
+          m.bodyCondition == null ? m : m.copyWith(clearBodyCondition: true),
+      ];
+    }
     List<WeeklyActivity>? activity;
     if (_showsActivity) {
       final walks = await _walksRepository.loadWalks(resolveCurrentOwnerId());
@@ -101,10 +122,14 @@ class _MonitoringPageState extends State<MonitoringPage> {
         now: _now,
       );
     }
+    final bands = await _growthRepository.loadBands();
+    final sizeClass = await _growthRepository.loadSizeClass(widget.pet.id);
     if (!mounted || token != _loadToken) return;
     setState(() {
       _measurements = measurements;
       _activity = activity;
+      _bands = bands;
+      _chosenSizeClass = sizeClass;
     });
   }
 
@@ -154,6 +179,62 @@ class _MonitoringPageState extends State<MonitoringPage> {
     if (!saved && mounted) _showMessage(context.l10n.monitoringSaveFailed);
   }
 
+  /// "Valuta la corporatura" from the weight card: the guide, then the level
+  /// goes on today's weighing (or on a new one, with the latest weight).
+  Future<void> _assessBodyCondition() async {
+    final guide = bodyConditionGuideFor(_pet);
+    final measurements = _measurements;
+    final latest = measurements == null ? null : latestMeasurement(measurements);
+    if (guide == null || latest == null) return;
+    final withCondition = latestWithBodyCondition(measurements!);
+    final choice = await showBodyConditionGuide(
+      context,
+      kind: guide,
+      petName: _pet.name,
+      current: withCondition?.bodyCondition,
+    );
+    if (choice == null || !mounted) return;
+    final level = choice.condition;
+    final now = _now;
+    final today = DateTime(now.year, now.month, now.day);
+    bool saved;
+    if (level == null) {
+      if (withCondition == null) return;
+      saved = await _repository
+          .update(withCondition.copyWith(clearBodyCondition: true));
+    } else if (latest.measuredOn == today) {
+      saved = await _repository.update(latest.copyWith(bodyCondition: level));
+    } else {
+      saved = await _repository.add(
+        _repository.create(
+          petId: widget.pet.id,
+          measuredOn: today,
+          weightKg: latest.weightKg,
+          bodyCondition: level,
+        ),
+      );
+    }
+    if (!saved && mounted) _showMessage(context.l10n.monitoringSaveFailed);
+  }
+
+  Future<void> _chooseSizeClass() async {
+    final pet = _pet;
+    final choice = await showAdultSizeSheet(
+      context,
+      petName: pet.name,
+      system: UnitSettingsStore.instance.system,
+      current: _sizeClassOf(pet),
+    );
+    if (choice == null || !mounted) return;
+    await _growthRepository.saveSizeClass(pet.id, choice.sizeClass);
+    if (mounted) setState(() => _chosenSizeClass = choice.sizeClass);
+  }
+
+  /// The adult size class of a dog: the owner's choice, else the one a "Toy"
+  /// size implies, else unknown.
+  AdultSizeClass? _sizeClassOf(PetProfile pet) =>
+      _chosenSizeClass ?? AdultSizeClass.impliedBy(pet.dogSizeCategory);
+
   Future<void> _deleteMeasurement(WeightMeasurement measurement) async {
     final l10n = context.l10n;
     final confirmed = await showDialog<bool>(
@@ -187,36 +268,36 @@ class _MonitoringPageState extends State<MonitoringPage> {
 
   @override
   Widget build(BuildContext context) {
-    final pet = _pet;
-    return PetsScaffold(
-      title: context.l10n.monitoringTitle,
-      subtitle: pet.name,
-      onBack: () => Navigator.of(context).maybePop(),
-      badge: PetAvatar(
-        label: pet.avatarEmoji,
-        backgroundColor: pet.accentColor,
-        photoBytes: pet.photoBytes,
-        photoPath: pet.photoPath,
-        identityColor: pet.identityColor,
-        size: 36,
-      ),
-      body: _measurements == null
-          ? const Center(child: CircularProgressIndicator())
-          : ListenableBuilder(
-              listenable: UnitSettingsStore.instance,
-              builder: (context, _) =>
-                  _buildBody(context, pet, UnitSettingsStore.instance.system),
-            ),
+    if (_measurements == null) {
+      return const Center(child: CircularProgressIndicator());
+    }
+    return ListenableBuilder(
+      listenable: UnitSettingsStore.instance,
+      builder: (context, _) =>
+          _buildBody(context, _pet, UnitSettingsStore.instance.system),
     );
   }
 
   Widget _buildBody(BuildContext context, PetProfile pet, UnitSystem system) {
     final measurements = _measurements!;
+    final birthDate = parsePetBirthDateLabel(pet.birthDateLabel);
+    final reference = _bands?.forPet(
+      pet,
+      birthDate: birthDate,
+      now: _now,
+      sizeClass: _sizeClassOf(pet),
+    );
+    // A young dog may be given bands by choosing its expected adult weight.
+    final canChooseSize = _bands != null &&
+        isDogSpecies(pet.species) &&
+        birthDate != null &&
+        isGrowthCurvePet(birthDate, _now, months: puppyBandsMonths);
     final chart = buildWeightChart(
       measurements: measurements,
-      birthDate: parsePetBirthDateLabel(pet.birthDateLabel),
+      birthDate: birthDate,
       now: _now,
       system: system,
+      reference: reference,
     );
     final byAge = chart?.mode == WeightChartMode.byAge;
     final l10n = context.l10n;
@@ -232,19 +313,35 @@ class _MonitoringPageState extends State<MonitoringPage> {
         ),
         const SizedBox(height: AppSpacing.md),
         _CurrentWeightCard(
-            pet: pet, measurements: measurements, system: system),
+          pet: pet,
+          measurements: measurements,
+          system: system,
+          onAssess: _assessBodyCondition,
+        ),
         if (chart != null) ...[
           const SizedBox(height: AppSpacing.md),
           PetSection(
             title: byAge
                 ? l10n.monitoringChartTitleGrowth
                 : l10n.monitoringChartTitleWeight,
-            subtitle: byAge ? l10n.monitoringChartGrowthHint(pet.name) : null,
+            subtitle: byAge
+                ? (reference != null
+                    ? l10n.monitoringChartGrowthHintReference(pet.name)
+                    : l10n.monitoringChartGrowthHint(pet.name))
+                : null,
             children: [
               WeightChartView(
                   key: const ValueKey('weight-chart'),
                   data: chart,
                   system: system),
+              GrowthReferenceNotes(
+                petName: pet.name,
+                system: system,
+                reference: reference,
+                sizeClass: _sizeClassOf(pet),
+                canChooseSize: canChooseSize,
+                onChooseSize: _chooseSizeClass,
+              ),
               if (chart.points.length == 1) ...[
                 const SizedBox(height: AppSpacing.sm),
                 Text(l10n.monitoringChartSinglePoint,
@@ -290,15 +387,18 @@ class _CurrentWeightCard extends StatelessWidget {
     required this.pet,
     required this.measurements,
     required this.system,
+    required this.onAssess,
   });
 
   final PetProfile pet;
   final List<WeightMeasurement> measurements;
   final UnitSystem system;
+  final VoidCallback onAssess;
 
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
+    final hasBodyCondition = supportsBodyCondition(pet);
     final latest = latestMeasurement(measurements);
     final withCondition = latestWithBodyCondition(measurements);
     final change = weightChangeKg(measurements);
@@ -350,40 +450,49 @@ class _CurrentWeightCard extends StatelessWidget {
                       style: AppTextStyles.bodySmall,
                     ),
                   ),
-                const SizedBox(height: AppSpacing.lg),
-                Row(
-                  children: [
-                    Flexible(
-                      child: Text(l10n.monitoringBcsTitle.toUpperCase(),
-                          style: AppTextStyles.caption),
-                    ),
-                    if (withCondition != null) ...[
-                      const SizedBox(width: AppSpacing.sm),
+                if (hasBodyCondition) ...[
+                  const SizedBox(height: AppSpacing.lg),
+                  Row(
+                    children: [
                       Flexible(
-                        child: Text(
-                          '${withCondition.bodyCondition!.score}/5 · ${withCondition.bodyCondition!.label}',
-                          key: const ValueKey('current-bcs'),
-                          textAlign: TextAlign.end,
-                          style: AppTextStyles.bodySmall.copyWith(
-                            color: withCondition.bodyCondition!.color,
-                            fontWeight: FontWeight.w800,
+                        child: Text(l10n.monitoringBcsTitle.toUpperCase(),
+                            style: AppTextStyles.caption),
+                      ),
+                      if (withCondition != null) ...[
+                        const SizedBox(width: AppSpacing.sm),
+                        Flexible(
+                          child: Text(
+                            '${withCondition.bodyCondition!.score}/5 · ${withCondition.bodyCondition!.label}',
+                            key: const ValueKey('current-bcs'),
+                            textAlign: TextAlign.end,
+                            style: AppTextStyles.bodySmall.copyWith(
+                              color: withCondition.bodyCondition!.color,
+                              fontWeight: FontWeight.w800,
+                            ),
                           ),
                         ),
-                      ),
+                      ],
                     ],
-                  ],
-                ),
-                const SizedBox(height: AppSpacing.sm),
-                BodyConditionBar(selected: withCondition?.bodyCondition),
-                const SizedBox(height: AppSpacing.sm),
-                Text(
-                  withCondition == null
-                      ? l10n.monitoringBcsNone
-                      : l10n.monitoringBcsAsOf(
-                          formatAppDate(withCondition.measuredOn, 'd MMM y')),
-                  style: AppTextStyles.caption
-                      .copyWith(fontWeight: FontWeight.w500),
-                ),
+                  ),
+                  const SizedBox(height: AppSpacing.sm),
+                  BodyConditionBar(selected: withCondition?.bodyCondition),
+                  const SizedBox(height: AppSpacing.sm),
+                  Text(
+                    withCondition == null
+                        ? l10n.monitoringBcsNone
+                        : l10n.monitoringBcsAsOf(
+                            formatAppDate(withCondition.measuredOn, 'd MMM y')),
+                    style: AppTextStyles.caption
+                        .copyWith(fontWeight: FontWeight.w500),
+                  ),
+                  const SizedBox(height: AppSpacing.md),
+                  OutlinedButton.icon(
+                    key: const ValueKey('monitoring-assess-bcs'),
+                    onPressed: onAssess,
+                    icon: const Icon(Icons.straighten_rounded, size: 18),
+                    label: Text(l10n.monitoringBcsAssess),
+                  ),
+                ],
               ],
             ),
     );

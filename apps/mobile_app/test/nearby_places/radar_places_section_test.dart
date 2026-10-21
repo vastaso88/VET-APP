@@ -114,6 +114,15 @@ Future<void> _useHome(Coordinates? home) {
   );
 }
 
+/// Opens the list section of [category] below the map: they all start
+/// closed.
+Future<void> _openSection(WidgetTester tester, RadarCategory category) async {
+  final header = find.byKey(ValueKey('radar-section-${category.name}'));
+  await tester.ensureVisible(header);
+  await tester.tap(header);
+  await tester.pumpAndSettle();
+}
+
 Future<void> _pumpPage(
   WidgetTester tester,
   RadarPlacesRepository repository, {
@@ -257,13 +266,14 @@ void main() {
       (tester) async {
     await _pumpPage(tester, _repositoryWith([_clinic, _dogPark]));
 
-    expect(find.text('Cliniche e ambulatori'), findsOneWidget);
+    expect(find.textContaining('Cliniche e ambulatori ('), findsOneWidget);
+    expect(find.text('Aree cani (1)'), findsOneWidget);
+    await _openSection(tester, RadarCategory.veterinary);
     expect(find.text('Clinica Veterinaria Duomo'), findsOneWidget);
     expect(find.textContaining('Lun-Ven 09:00-19:00'), findsOneWidget);
     expect(find.byTooltip('Chiama Clinica Veterinaria Duomo'), findsOneWidget);
     expect(find.byTooltip('Indicazioni per Clinica Veterinaria Duomo'), findsOneWidget);
     expect(find.textContaining('telefona prima di partire'), findsOneWidget);
-    expect(find.text('Area cani'), findsOneWidget);
 
     await tester.tap(find.text('Clinica Veterinaria Duomo'));
     await tester.pumpAndSettle();
@@ -296,7 +306,10 @@ void main() {
     // 30 dog parks are all closer, yet the one groomer has its own group.
     expect(find.text('Aree cani (30)'), findsOneWidget);
     expect(find.text('Toelettature (1)'), findsOneWidget);
+    await _openSection(tester, RadarCategory.grooming);
     expect(find.text('Toelettatura Lontana'), findsOneWidget);
+    await _openSection(tester, RadarCategory.dogPark);
+    expect(find.text('Area cani 0'), findsOneWidget);
     expect(find.text('Area cani 5'), findsNothing);
 
     await tester.tap(find.text('Mostra tutti: aree cani (30)'));
@@ -325,6 +338,7 @@ void main() {
     );
     await _pumpPage(tester, _repositoryWith([overturePlace, park]));
 
+    await _openSection(tester, RadarCategory.grooming);
     await tester.tap(find.text('Toelettatura Bau'));
     await tester.pumpAndSettle();
     expect(find.textContaining('Fonte: © Overture Maps Foundation'), findsOneWidget);
@@ -332,6 +346,7 @@ void main() {
     Navigator.of(tester.element(find.text('Indicazioni'))).pop();
     await tester.pumpAndSettle();
 
+    await _openSection(tester, RadarCategory.dogPark);
     await tester.tap(find.text('Area cani Sempione'));
     await tester.pumpAndSettle();
     expect(find.text('Recintata'), findsOneWidget);
@@ -400,7 +415,8 @@ void main() {
     await tapChip('Veterinari');
     await tapChip('Aree cani');
 
-    // Only the last one is on.
+    // Only the last one is on, and its section opened with it.
+    expect(find.text('Area cani'), findsWidgets);
     expect(isSelected('Aree cani'), isTrue);
     expect(isSelected('Veterinari'), isFalse);
     expect(find.text('Clinica Veterinaria Duomo'), findsNothing);
@@ -411,11 +427,12 @@ void main() {
     expect(find.textContaining('Mostro:'), findsNothing);
     expect(find.text('Togli tutti'), findsNothing);
 
-    // Tapping the active one again goes back to everything.
+    // Tapping the active one again goes back to everything, sections closed.
     await tapChip('Aree cani');
     expect(isSelected('Tutti'), isTrue);
-    expect(find.text('Clinica Veterinaria Duomo'), findsOneWidget);
-    expect(find.text('Negozio Esempio'), findsOneWidget);
+    expect(find.textContaining('Cliniche e ambulatori ('), findsOneWidget);
+    expect(find.text('Negozi (1)'), findsOneWidget);
+    expect(find.text('Negozio Esempio'), findsNothing);
     expect(repository.requestedRadii, [10]);
   });
 
@@ -429,10 +446,71 @@ void main() {
     expect(find.text('Rifugi e adozioni: nessuno entro 10 km'), findsOneWidget);
   });
 
+  testWidgets('list sections start closed, open one at a time and show their count',
+      (tester) async {
+    final semantics = tester.ensureSemantics();
+    await _pumpPage(tester, _repositoryWith([_clinic, _dogPark, _shop]));
+
+    // Closed: titles with counts, no places.
+    expect(find.textContaining('Cliniche e ambulatori ('), findsOneWidget);
+    expect(find.text('Aree cani (1)'), findsOneWidget);
+    expect(find.text('Negozi (1)'), findsOneWidget);
+    expect(find.text('Clinica Veterinaria Duomo'), findsNothing);
+    expect(find.text('Negozio Esempio'), findsNothing);
+    expect(find.bySemanticsLabel(RegExp(r'Apri Negozi \(1\)')), findsOneWidget);
+
+    await _openSection(tester, RadarCategory.shop);
+    expect(find.text('Negozio Esempio'), findsOneWidget);
+    expect(find.bySemanticsLabel(RegExp(r'Chiudi Negozi \(1\)')), findsOneWidget);
+
+    // Opening another closes the first.
+    await _openSection(tester, RadarCategory.veterinary);
+    expect(find.text('Clinica Veterinaria Duomo'), findsOneWidget);
+    expect(find.text('Negozio Esempio'), findsNothing);
+
+    // Tapping the open one closes it.
+    await _openSection(tester, RadarCategory.veterinary);
+    expect(find.text('Clinica Veterinaria Duomo'), findsNothing);
+    semantics.dispose();
+  });
+
+  testWidgets('associations have their own section, chip and label', (tester) async {
+    const association = RadarPlace(
+      id: 'assoc',
+      type: RadarPlaceType.association,
+      name: 'Gruppo Cinofilo Esempio',
+      location: Coordinates(latitude: 45.466, longitude: 9.191),
+      distanceMeters: 400,
+    );
+    await _pumpPage(tester, _repositoryWith([_clinic, association]));
+
+    expect(find.text('Associazioni (1)'), findsOneWidget);
+    expect(find.widgetWithText(RadarChip, 'Associazioni'), findsOneWidget);
+    await _openSection(tester, RadarCategory.association);
+    expect(find.text('Gruppo Cinofilo Esempio'), findsOneWidget);
+    expect(find.textContaining('Associazione per animali'), findsOneWidget);
+  });
+
+  test('associations arrive from the API with their own type', () {
+    final place = RadarPlace.tryFromJson({
+      'id': 'a1',
+      'place_type': 'association',
+      'name': 'ENPA Esempio',
+      'latitude': 45.47,
+      'longitude': 9.19,
+      'distance_km': 1.0,
+    });
+
+    expect(place!.type, RadarPlaceType.association);
+    expect(radarCategoryForPlace(place.type), RadarCategory.association);
+    expect(radarPlaceTypeToApi(place.type), 'association');
+  });
+
   testWidgets('the clinics section has no descriptive subtitle', (tester) async {
     await _pumpPage(tester, _repositoryWith([_clinic]));
 
-    expect(find.text('Cliniche e ambulatori'), findsOneWidget);
+    expect(find.textContaining('Cliniche e ambulatori ('), findsOneWidget);
+    await _openSection(tester, RadarCategory.veterinary);
     expect(find.textContaining('I veterinari più vicini'), findsNothing);
   });
 
@@ -615,7 +693,7 @@ void main() {
     expect(repository.requestedCenters, [_turin]);
     expect(LocationPreferenceStore.instance.preference.mode, LocationMode.currentPosition);
     expect(LocationPreferenceStore.instance.preference.current, _turin);
-    expect(find.text('Clinica Veterinaria Duomo'), findsOneWidget);
+    expect(find.textContaining('Cliniche e ambulatori ('), findsOneWidget);
   });
 
   testWidgets('shows a full-page loader, then retries on its own while the area is prepared',
@@ -637,6 +715,6 @@ void main() {
     await tester.pump(const Duration(milliseconds: 50));
 
     expect(repository.requestedRadii, [10, 10]);
-    expect(find.text('Clinica Veterinaria Duomo'), findsOneWidget);
+    expect(find.textContaining('Cliniche e ambulatori ('), findsOneWidget);
   });
 }
