@@ -3155,6 +3155,88 @@
     }
   },
   "monitoringChartSinglePoint": "Aggiungi un'altra misurazione per vedere l'andamento.",
+  "monitoringChartGrowthHintReference": "Il peso di {petName} in base all’età, confrontato con l’area di riferimento.",
+  "@monitoringChartGrowthHintReference": {
+    "placeholders": {
+      "petName": {
+        "type": "String"
+      }
+    }
+  },
+  "monitoringGrowthLegend": "Area scura: dal 25° al 75° percentile (la metà centrale). Area chiara: dal 3° al 97°. Linea tratteggiata: mediana.",
+  "monitoringGrowthSourcePuppy": "Riferimento: cani sani con peso adulto {sizeLabel}. Derivato da dati CC BY 4.0 di Salt C. et al., PLOS ONE 2017; non sono le curve ufficiali WALTHAM.",
+  "@monitoringGrowthSourcePuppy": {
+    "placeholders": {
+      "sizeLabel": {
+        "type": "String"
+      }
+    }
+  },
+  "monitoringGrowthSourceKitten": "Riferimento: gattini domestici a pelo corto non sterilizzati (USA). Derivato da dati CC BY 3.0 di Salt C. et al., PLOS ONE 2022; non sono le curve ufficiali WALTHAM.",
+  "monitoringGrowthDisclaimer": "È un riferimento, non una diagnosi: ogni animale cresce con il suo ritmo. Se il peso di {petName} esce spesso dall’area o cambia all’improvviso, parlane con il veterinario.",
+  "@monitoringGrowthDisclaimer": {
+    "placeholders": {
+      "petName": {
+        "type": "String"
+      }
+    }
+  },
+  "monitoringGrowthExpectedAdult": "Peso adulto atteso: {range}",
+  "@monitoringGrowthExpectedAdult": {
+    "placeholders": {
+      "range": {
+        "type": "String"
+      }
+    }
+  },
+  "monitoringGrowthChange": "Cambia",
+  "monitoringGrowthPromptTitle": "Mostra l’area di riferimento",
+  "monitoringGrowthPromptBody": "Per confrontare {petName} con cuccioli sani serve il peso che avrà da adulto: scegli la fascia più probabile (razza, genitori, veterinario).",
+  "@monitoringGrowthPromptBody": {
+    "placeholders": {
+      "petName": {
+        "type": "String"
+      }
+    }
+  },
+  "monitoringGrowthPromptButton": "Scegli il peso adulto",
+  "monitoringGrowthNoReferenceHeavy": "Per i cani sopra i 40 kg non ci sono curve di riferimento affidabili: le razze molto grandi crescono in modi molto diversi.",
+  "monitoringGrowthSheetTitle": "Peso adulto atteso di {petName}",
+  "@monitoringGrowthSheetTitle": {
+    "placeholders": {
+      "petName": {
+        "type": "String"
+      }
+    }
+  },
+  "monitoringGrowthClassUnder": "Meno di {max}",
+  "@monitoringGrowthClassUnder": {
+    "placeholders": {
+      "max": {
+        "type": "String"
+      }
+    }
+  },
+  "monitoringGrowthClassBetween": "Da {min} a {max}",
+  "@monitoringGrowthClassBetween": {
+    "placeholders": {
+      "min": {
+        "type": "String"
+      },
+      "max": {
+        "type": "String"
+      }
+    }
+  },
+  "monitoringGrowthClassOver": "Più di {min}",
+  "@monitoringGrowthClassOver": {
+    "placeholders": {
+      "min": {
+        "type": "String"
+      }
+    }
+  },
+  "monitoringGrowthClassUnknown": "Non lo so: nessuna area di riferimento",
   "monitoringAxisAgeMonths": "Età (mesi)",
   "monitoringAxisWeight": "Peso ({unit})",
   "@monitoringAxisWeight": {

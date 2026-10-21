@@ -9532,6 +9532,102 @@ abstract class AppLocalizations {
   /// **'Aggiungi un\'altra misurazione per vedere l\'andamento.'**
   String get monitoringChartSinglePoint;
 
+  /// No description provided for @monitoringChartGrowthHintReference.
+  ///
+  /// In it, this message translates to:
+  /// **'Il peso di {petName} in base all’età, confrontato con l’area di riferimento.'**
+  String monitoringChartGrowthHintReference(String petName);
+
+  /// No description provided for @monitoringGrowthLegend.
+  ///
+  /// In it, this message translates to:
+  /// **'Area scura: dal 25° al 75° percentile (la metà centrale). Area chiara: dal 3° al 97°. Linea tratteggiata: mediana.'**
+  String get monitoringGrowthLegend;
+
+  /// No description provided for @monitoringGrowthSourcePuppy.
+  ///
+  /// In it, this message translates to:
+  /// **'Riferimento: cani sani con peso adulto {sizeLabel}. Derivato da dati CC BY 4.0 di Salt C. et al., PLOS ONE 2017; non sono le curve ufficiali WALTHAM.'**
+  String monitoringGrowthSourcePuppy(String sizeLabel);
+
+  /// No description provided for @monitoringGrowthSourceKitten.
+  ///
+  /// In it, this message translates to:
+  /// **'Riferimento: gattini domestici a pelo corto non sterilizzati (USA). Derivato da dati CC BY 3.0 di Salt C. et al., PLOS ONE 2022; non sono le curve ufficiali WALTHAM.'**
+  String get monitoringGrowthSourceKitten;
+
+  /// No description provided for @monitoringGrowthDisclaimer.
+  ///
+  /// In it, this message translates to:
+  /// **'È un riferimento, non una diagnosi: ogni animale cresce con il suo ritmo. Se il peso di {petName} esce spesso dall’area o cambia all’improvviso, parlane con il veterinario.'**
+  String monitoringGrowthDisclaimer(String petName);
+
+  /// No description provided for @monitoringGrowthExpectedAdult.
+  ///
+  /// In it, this message translates to:
+  /// **'Peso adulto atteso: {range}'**
+  String monitoringGrowthExpectedAdult(String range);
+
+  /// No description provided for @monitoringGrowthChange.
+  ///
+  /// In it, this message translates to:
+  /// **'Cambia'**
+  String get monitoringGrowthChange;
+
+  /// No description provided for @monitoringGrowthPromptTitle.
+  ///
+  /// In it, this message translates to:
+  /// **'Mostra l’area di riferimento'**
+  String get monitoringGrowthPromptTitle;
+
+  /// No description provided for @monitoringGrowthPromptBody.
+  ///
+  /// In it, this message translates to:
+  /// **'Per confrontare {petName} con cuccioli sani serve il peso che avrà da adulto: scegli la fascia più probabile (razza, genitori, veterinario).'**
+  String monitoringGrowthPromptBody(String petName);
+
+  /// No description provided for @monitoringGrowthPromptButton.
+  ///
+  /// In it, this message translates to:
+  /// **'Scegli il peso adulto'**
+  String get monitoringGrowthPromptButton;
+
+  /// No description provided for @monitoringGrowthNoReferenceHeavy.
+  ///
+  /// In it, this message translates to:
+  /// **'Per i cani sopra i 40 kg non ci sono curve di riferimento affidabili: le razze molto grandi crescono in modi molto diversi.'**
+  String get monitoringGrowthNoReferenceHeavy;
+
+  /// No description provided for @monitoringGrowthSheetTitle.
+  ///
+  /// In it, this message translates to:
+  /// **'Peso adulto atteso di {petName}'**
+  String monitoringGrowthSheetTitle(String petName);
+
+  /// No description provided for @monitoringGrowthClassUnder.
+  ///
+  /// In it, this message translates to:
+  /// **'Meno di {max}'**
+  String monitoringGrowthClassUnder(String max);
+
+  /// No description provided for @monitoringGrowthClassBetween.
+  ///
+  /// In it, this message translates to:
+  /// **'Da {min} a {max}'**
+  String monitoringGrowthClassBetween(String min, String max);
+
+  /// No description provided for @monitoringGrowthClassOver.
+  ///
+  /// In it, this message translates to:
+  /// **'Più di {min}'**
+  String monitoringGrowthClassOver(String min);
+
+  /// No description provided for @monitoringGrowthClassUnknown.
+  ///
+  /// In it, this message translates to:
+  /// **'Non lo so: nessuna area di riferimento'**
+  String get monitoringGrowthClassUnknown;
+
   /// No description provided for @monitoringAxisAgeMonths.
   ///
   /// In it, this message translates to:

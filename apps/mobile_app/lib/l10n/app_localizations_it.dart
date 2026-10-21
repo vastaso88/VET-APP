@@ -5642,6 +5642,76 @@ class AppLocalizationsIt extends AppLocalizations {
       'Aggiungi un\'altra misurazione per vedere l\'andamento.';
 
   @override
+  String monitoringChartGrowthHintReference(String petName) {
+    return 'Il peso di $petName in base all’età, confrontato con l’area di riferimento.';
+  }
+
+  @override
+  String get monitoringGrowthLegend =>
+      'Area scura: dal 25° al 75° percentile (la metà centrale). Area chiara: dal 3° al 97°. Linea tratteggiata: mediana.';
+
+  @override
+  String monitoringGrowthSourcePuppy(String sizeLabel) {
+    return 'Riferimento: cani sani con peso adulto $sizeLabel. Derivato da dati CC BY 4.0 di Salt C. et al., PLOS ONE 2017; non sono le curve ufficiali WALTHAM.';
+  }
+
+  @override
+  String get monitoringGrowthSourceKitten =>
+      'Riferimento: gattini domestici a pelo corto non sterilizzati (USA). Derivato da dati CC BY 3.0 di Salt C. et al., PLOS ONE 2022; non sono le curve ufficiali WALTHAM.';
+
+  @override
+  String monitoringGrowthDisclaimer(String petName) {
+    return 'È un riferimento, non una diagnosi: ogni animale cresce con il suo ritmo. Se il peso di $petName esce spesso dall’area o cambia all’improvviso, parlane con il veterinario.';
+  }
+
+  @override
+  String monitoringGrowthExpectedAdult(String range) {
+    return 'Peso adulto atteso: $range';
+  }
+
+  @override
+  String get monitoringGrowthChange => 'Cambia';
+
+  @override
+  String get monitoringGrowthPromptTitle => 'Mostra l’area di riferimento';
+
+  @override
+  String monitoringGrowthPromptBody(String petName) {
+    return 'Per confrontare $petName con cuccioli sani serve il peso che avrà da adulto: scegli la fascia più probabile (razza, genitori, veterinario).';
+  }
+
+  @override
+  String get monitoringGrowthPromptButton => 'Scegli il peso adulto';
+
+  @override
+  String get monitoringGrowthNoReferenceHeavy =>
+      'Per i cani sopra i 40 kg non ci sono curve di riferimento affidabili: le razze molto grandi crescono in modi molto diversi.';
+
+  @override
+  String monitoringGrowthSheetTitle(String petName) {
+    return 'Peso adulto atteso di $petName';
+  }
+
+  @override
+  String monitoringGrowthClassUnder(String max) {
+    return 'Meno di $max';
+  }
+
+  @override
+  String monitoringGrowthClassBetween(String min, String max) {
+    return 'Da $min a $max';
+  }
+
+  @override
+  String monitoringGrowthClassOver(String min) {
+    return 'Più di $min';
+  }
+
+  @override
+  String get monitoringGrowthClassUnknown =>
+      'Non lo so: nessuna area di riferimento';
+
+  @override
   String get monitoringAxisAgeMonths => 'Età (mesi)';
 
   @override

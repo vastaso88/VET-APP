@@ -28,6 +28,11 @@ I grafici e i testi WSAVA sono protetti (la SOP del GNC ammette l'uso solo integ
 - La regola "~10% di peso per punto sopra 5" non è confermata da una fonte primaria (non presente in German 2006): non usata.
 - Gli standard di razza FCI non hanno copertura uniforme del peso e riguardano solo i cani di razza.
 
-## Curve di crescita dei cuccioli
+## Bande di crescita (cuccioli e gattini)
 
-Salt et al. 2017, PLoS ONE 12(9):e0182064: licenza CC BY 4.0, ma i valori numerici dei centili (classi di taglia adulta I <6,5 kg … V 30–<40 kg, maschi/femmine) non sono pubblicati in tabella: solo figure. Il repository Liverpool (DOI 10.17638/datacat.liverpool.ac.uk/377, CC BY 4.0) ha solo i dati grezzi (146 MB). Le bande di riferimento non sono quindi mostrate; la curva sotto i 12 mesi resta senza riferimenti. Per averle: chiedere centili/parametri agli autori (contatto nel DataCat) oppure ricalcolarli dai dati grezzi dichiarandoli "derivati da Salt et al.". Gattini: Salt et al. 2022 (PLoS ONE, CC BY 4.0), stesso limite.
+Salt et al. 2017 (PLoS ONE 12(9):e0182064, CC BY 4.0) non pubblica i valori delle curve, solo figure. Le bande nell'app sono quindi **centili empirici calcolati da noi** sui dati grezzi rilasciati dagli autori (Liverpool DataCat 377, CC BY 4.0), non le curve ufficiali WALTHAM; sotto il grafico lo dichiariamo ("derivato da") e avvisiamo che è un riferimento e non una diagnosi.
+
+- Cani: `scripts/growth/build_puppy_growth_bands.py` → `apps/mobile_app/assets/growth/puppy_growth_bands.json`. Classi di peso adulto I–V dell'articolo (<6,5 / 6,5–<9 / 9–<15 / 15–<30 / 30–<40 kg), maschi e femmine, 12–104 settimane, centili 3-10-25-50-75-90-97. Classe VI (≥40 kg) non modellata. Metodo e limiti (cani "ideali" ricostruiti dalla condizione registrata, outlier, finestre) nel campo `method` del JSON e nella docstring dello script.
+- Gattini: `scripts/growth/build_kitten_growth_bands.py` → `kitten_growth_bands.json`, da Salt et al. 2022 (dataset DataCat 1456, CC BY 3.0), dataset "Modelling" (sani, condizione ideale), gattini domestici a pelo corto non sterilizzati (USA), 8–78 settimane.
+- Mostrate solo sotto i 24 mesi (cani con classe nota) e i 18 mesi (gatti meticci o europei). La classe di un cane non è nel profilo: la sceglie il proprietario ("Peso adulto atteso"), salvata solo sul dispositivo; "Toy" implica la classe I. Se non la sceglie, nessuna banda.
+- I dati grezzi non sono nel repository (cartella `.local/`, ignorata): per rigenerare, scaricare gli zip/CSV e lanciare gli script con i percorsi come argomenti.
