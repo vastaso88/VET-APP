@@ -109,7 +109,7 @@ void main() {
         aquariumStock: const [FishStock(species: 'Guppy', maleCount: 3, femaleCount: 2)],
       );
 
-      expect(petHeaderSubtitle(aquarium, now: _now), 'Pesce · 1 specie · 5 pesci');
+      expect(petHeaderSubtitle(aquarium, now: _now), 'Acquario · 1 specie · 5 pesci');
     });
   });
 

@@ -1,6 +1,7 @@
 import '../../../l10n/date_formats.dart';
 import '../../../l10n/l10n.dart';
 import '../../monitoring/domain/body_condition.dart';
+import 'pet_details.dart';
 import 'pet_format.dart';
 
 /// Display labels for pet values that are STORED (and sent to the backend)
@@ -20,6 +21,11 @@ String localizedSpeciesLabel(String stored) {
     _ => stored,
   };
 }
+
+/// "Razza" for dogs and cats, "Specie" for every other animal (a budgerigar is
+/// a species of bird, not a breed of it).
+String petBreedFieldLabel(AppLocalizations t, String? species) =>
+    speciesUsesBreedWord(species) ? t.petsFormBreedLabel : t.petsFormBreedSpeciesLabel;
 
 /// Display label for a stored sex value (see `PetDemoStore.sexOptions`).
 String localizedSexLabel(String stored) {

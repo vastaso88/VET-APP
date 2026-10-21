@@ -49,19 +49,50 @@ Future<void> _tapNext(WidgetTester tester, [String label = 'Prosegui']) async {
 
 Finder _nameField() => find.widgetWithText(TextFormField, 'Nome');
 
+/// The fish chip of step 1 (the word "Pesce" also titles a card below it).
+Finder _fishChip() => find.widgetWithText(InkWell, 'Pesce').first;
+
+/// Step 1 (species and breed) for a dog or a cat, mixed breed, then step 2.
+Future<void> _speciesStepMixed(WidgetTester tester, String species) async {
+  await tester.tap(find.text(species));
+  await tester.pump();
+  await tester.tap(find.text('Meticcio'));
+  await tester.pump();
+  await _tapNext(tester);
+}
+
+/// Step 2 (name, sex), then step 3.
+Future<void> _nameStep(WidgetTester tester, String name, [String sex = 'Maschio']) async {
+  await tester.enterText(_nameField(), name);
+  await tester.tap(find.text(sex));
+  await tester.pump();
+  await _tapNext(tester);
+}
+
+/// In the open search sheet: types [entry] in the search box (the list is
+/// long and lazy) and picks it.
+Future<void> _searchAndPick(WidgetTester tester, String entry) async {
+  await tester.enterText(find.byType(TextField).last, entry);
+  await tester.pumpAndSettle();
+  await tester.tap(find.widgetWithText(ListTile, entry));
+  await tester.pumpAndSettle();
+}
+
+/// Opens the breed/species search sheet of step 1 and picks [entry].
+Future<void> _pickFromSheet(WidgetTester tester, String openLabel, String entry) async {
+  await tester.tap(find.text(openLabel));
+  await tester.pumpAndSettle();
+  await _searchAndPick(tester, entry);
+}
+
 void main() {
-  testWidgets('the creation flow has four steps, then "Profilo creato!"', (tester) async {
+  testWidgets('the creation flow has four steps, species first, then "Profilo creato!"',
+      (tester) async {
     await _openWizard(tester);
 
-    // 1 - name, photo, sex
-    expect(find.text('Parlaci del tuo animale'), findsOneWidget);
-    await tester.enterText(_nameField(), 'Thor');
-    await tester.tap(find.text('Maschio'));
-    await tester.pump();
-    await _tapNext(tester);
-
-    // 2 - species chip, then Di razza / Meticcio
-    expect(find.text('Specie e razza'), findsOneWidget);
+    // 1 - species and breed
+    expect(find.text('Che animale è?'), findsOneWidget);
+    expect(find.text('Parlaci del tuo animale'), findsNothing);
     await tester.tap(find.text('Cane'));
     await tester.pump();
     expect(find.text('Di razza'), findsOneWidget);
@@ -69,6 +100,13 @@ void main() {
     await tester.tap(find.text('Meticcio'));
     await tester.pump();
     expect(find.text('Razza'), findsNothing, reason: 'a mixed breed needs no breed picker');
+    await _tapNext(tester);
+
+    // 2 - name, photo, sex
+    expect(find.text('Parlaci del tuo animale'), findsOneWidget);
+    await tester.enterText(_nameField(), 'Thor');
+    await tester.tap(find.text('Maschio'));
+    await tester.pump();
     await _tapNext(tester);
 
     // 3 - general information
@@ -81,7 +119,8 @@ void main() {
     // 4 - final information
     expect(find.text('Informazioni finali'), findsOneWidget);
     expect(find.text('Conferma'), findsOneWidget);
-    await tester.enterText(find.widgetWithText(TextFormField, 'N. microchip'), '380 2600 0012 3456');
+    await tester.enterText(
+        find.widgetWithText(TextFormField, 'N. microchip'), '380 2600 0012 3456');
     await tester.tap(find.byType(Switch));
     await tester.pump();
     await _tapNext(tester, 'Conferma');
@@ -105,8 +144,18 @@ void main() {
     expect(find.text('apri'), findsOneWidget, reason: 'Fine closes the creation page');
   });
 
-  testWidgets('a step does not advance while its required field is empty', (tester) async {
+  testWidgets('the first step does not advance without a species', (tester) async {
     await _openWizard(tester);
+
+    await _tapNext(tester);
+
+    expect(find.text('Che animale è?'), findsOneWidget);
+    expect(find.text('Seleziona il tipo di animale.'), findsOneWidget);
+  });
+
+  testWidgets('the name step does not advance while the name is empty', (tester) async {
+    await _openWizard(tester);
+    await _speciesStepMixed(tester, 'Gatto');
 
     await _tapNext(tester);
 
@@ -114,53 +163,104 @@ void main() {
     expect(find.text('Inserisci il nome del pet.'), findsOneWidget);
   });
 
+  testWidgets('a dog needs a breed: "Razza", mandatory, with Meticcio as the way out',
+      (tester) async {
+    await _openWizard(tester);
+    await tester.tap(find.text('Cane'));
+    await tester.pump();
+
+    expect(find.text('Razza'), findsOneWidget);
+    expect(find.text('Specie'), findsNothing);
+    await _tapNext(tester);
+
+    expect(find.text('Scegli la razza.'), findsOneWidget);
+    expect(find.text('Che animale è?'), findsOneWidget);
+
+    await _pickFromSheet(tester, 'Seleziona una razza', 'Boxer');
+    await _tapNext(tester);
+
+    expect(find.text('Parlaci del tuo animale'), findsOneWidget);
+  });
+
+  testWidgets('"Altra razza (scrivi)" needs the breed written', (tester) async {
+    await _openWizard(tester);
+    await tester.tap(find.text('Cane'));
+    await tester.pump();
+    await _pickFromSheet(tester, 'Seleziona una razza', 'Altra razza (scrivi)');
+
+    await _tapNext(tester);
+
+    expect(find.text('Scrivi la razza.'), findsOneWidget);
+    await tester.enterText(
+        find.widgetWithText(TextFormField, 'Quale razza?'), 'Incrocio di barboncino');
+    await _tapNext(tester);
+    expect(find.text('Parlaci del tuo animale'), findsOneWidget);
+  });
+
+  testWidgets('a bird has a species, not a breed, and it is mandatory', (tester) async {
+    await _openWizard(tester);
+    await tester.tap(find.text('Uccello'));
+    await tester.pump();
+
+    expect(find.text('Specie'), findsOneWidget);
+    expect(find.text('Razza'), findsNothing);
+    expect(find.text('Di razza'), findsNothing);
+    await _tapNext(tester);
+    expect(find.text('Scegli la specie.'), findsOneWidget);
+
+    await _pickFromSheet(tester, 'Seleziona una specie', 'Cocorita (Melopsittacus undulatus)');
+    await _tapNext(tester);
+    expect(find.text('Parlaci del tuo animale'), findsOneWidget);
+  });
+
+  testWidgets('a reptile is searched by species, scientific name included', (tester) async {
+    await _openWizard(tester);
+    await tester.tap(find.text('Rettili e anfibi'));
+    await tester.pump();
+    await tester.tap(find.text('Seleziona una specie'));
+    await tester.pumpAndSettle();
+
+    await tester.enterText(find.byType(TextField).last, 'pogona');
+    await tester.pumpAndSettle();
+
+    expect(find.text('Drago barbuto (Pogona vitticeps)'), findsOneWidget);
+    expect(find.text('Gecko crestato'), findsNothing);
+  });
+
   testWidgets('back keeps everything typed on the earlier steps', (tester) async {
     await _openWizard(tester);
+    await _speciesStepMixed(tester, 'Gatto');
     await tester.enterText(_nameField(), 'Luna');
     await tester.tap(find.text('Femmina'));
-    await tester.pump();
-    await _tapNext(tester);
-    await tester.tap(find.text('Gatto'));
     await tester.pump();
 
     await tester.tap(find.text('Indietro'));
     await tester.pumpAndSettle();
 
-    expect(find.text('Parlaci del tuo animale'), findsOneWidget);
-    expect(find.widgetWithText(TextFormField, 'Luna'), findsOneWidget);
+    // The species and the mixed breed picked before are still there.
+    expect(find.text('Che animale è?'), findsOneWidget);
+    expect(find.text('Di razza'), findsOneWidget);
 
     await _tapNext(tester);
-    // The species picked before going back is still selected: the breed
-    // choice for cats is offered without choosing the species again.
-    expect(find.text('Di razza'), findsOneWidget);
+    expect(find.widgetWithText(TextFormField, 'Luna'), findsOneWidget);
   });
 
   testWidgets('the system back button goes to the previous step before leaving', (tester) async {
     await _openWizard(tester);
-    await tester.enterText(_nameField(), 'Luna');
-    await tester.tap(find.text('Femmina'));
-    await tester.pump();
-    await _tapNext(tester);
-    expect(find.text('Specie e razza'), findsOneWidget);
+    await _speciesStepMixed(tester, 'Gatto');
+    expect(find.text('Parlaci del tuo animale'), findsOneWidget);
 
     await tester.binding.handlePopRoute();
     await tester.pumpAndSettle();
 
-    expect(find.text('Parlaci del tuo animale'), findsOneWidget);
+    expect(find.text('Che animale è?'), findsOneWidget);
     expect(find.byType(PetCreatePage), findsOneWidget);
   });
 
   testWidgets('a microchip that is not 15 digits stops the last step', (tester) async {
     await _openWizard(tester);
-    await tester.enterText(_nameField(), 'Micio');
-    await tester.tap(find.text('Maschio'));
-    await tester.pump();
-    await _tapNext(tester);
-    await tester.tap(find.text('Gatto'));
-    await tester.pump();
-    await tester.tap(find.text('Meticcio'));
-    await tester.pump();
-    await _tapNext(tester);
+    await _speciesStepMixed(tester, 'Gatto');
+    await _nameStep(tester, 'Micio');
     await tester.enterText(find.widgetWithText(TextFormField, 'Data di nascita'), '01012021');
     await _tapNext(tester);
 
@@ -174,15 +274,8 @@ void main() {
 
   testWidgets('"Aggiungi un altro animale" restarts from an empty first step', (tester) async {
     await _openWizard(tester);
-    await tester.enterText(_nameField(), 'Primo');
-    await tester.tap(find.text('Maschio'));
-    await tester.pump();
-    await _tapNext(tester);
-    await tester.tap(find.text('Gatto'));
-    await tester.pump();
-    await tester.tap(find.text('Meticcio'));
-    await tester.pump();
-    await _tapNext(tester);
+    await _speciesStepMixed(tester, 'Gatto');
+    await _nameStep(tester, 'Primo');
     await tester.enterText(find.widgetWithText(TextFormField, 'Data di nascita'), '01012021');
     await _tapNext(tester);
     await _tapNext(tester, 'Conferma');
@@ -191,31 +284,233 @@ void main() {
     await tester.tap(find.text('Aggiungi un altro animale'));
     await tester.pumpAndSettle();
 
-    expect(find.text('Parlaci del tuo animale'), findsOneWidget);
-    expect(find.widgetWithText(TextFormField, 'Primo'), findsNothing);
+    expect(find.text('Che animale è?'), findsOneWidget);
+    expect(find.text('Di razza'), findsNothing, reason: 'no species is selected yet');
     expect(PetDemoStore.instance.byName('Primo'), isNotNull);
   });
 
-  testWidgets('fish get no sex, microchip or body condition fields', (tester) async {
-    await _openWizard(tester);
-    await tester.enterText(_nameField(), 'Nemo');
-    await _tapNext(tester);
-    await tester.tap(find.text('Pesce'));
-    await tester.pump();
-    await tester.tap(find.text('Un pesce'));
-    await tester.pump();
-    await _tapNext(tester);
-    await tester.enterText(find.widgetWithText(TextFormField, 'Data di nascita'), '01012024');
-    expect(find.text('Corporatura'), findsNothing);
-    expect(find.text('Attività'), findsNothing);
-    await _tapNext(tester);
+  group('fish', () {
+    testWidgets('two clear choices next to the fish: Pesce and Acquario', (tester) async {
+      await _openWizard(tester);
+      await tester.tap(_fishChip());
+      await tester.pump();
 
-    expect(find.text('Informazioni finali'), findsOneWidget);
-    expect(find.text('N. microchip'), findsNothing);
-    expect(find.byType(Switch), findsNothing);
+      expect(find.text('Cosa vuoi registrare?'), findsOneWidget);
+      expect(find.textContaining('Un solo pesce'), findsOneWidget);
+      expect(find.textContaining('più specie e più esemplari'), findsOneWidget);
+      expect(find.text('Acquario'), findsOneWidget);
+    });
+
+    testWidgets('a single fish: species mandatory, searchable, with a generic entry',
+        (tester) async {
+      await _openWizard(tester);
+      await tester.tap(_fishChip());
+      await tester.pump();
+
+      expect(find.text('Specie'), findsOneWidget);
+      await _tapNext(tester);
+      expect(find.text('Scegli la specie.'), findsOneWidget);
+
+      await tester.tap(find.text('Seleziona una specie'));
+      await tester.pumpAndSettle();
+      expect(find.text('Pesce generico (specie non nota)'), findsOneWidget);
+      await tester.enterText(find.byType(TextField).last, 'betta');
+      await tester.pumpAndSettle();
+      expect(find.text('Betta (pesce combattente)'), findsOneWidget);
+      expect(find.text('Guppy'), findsNothing);
+      expect(find.text('Altra specie (scrivi)'), findsOneWidget,
+          reason: 'free text is always offered');
+    });
+
+    testWidgets('an aquarium: species are searched, generic and written ones can be added',
+        (tester) async {
+      await _openWizard(tester);
+      await tester.tap(_fishChip());
+      await tester.pump();
+      await tester.tap(find.text('Acquario'));
+      await tester.pump();
+
+      await tester.tap(find.text('Aggiungi specie'));
+      await tester.pumpAndSettle();
+      await tester.enterText(find.byType(TextField).last, 'neon');
+      await tester.pumpAndSettle();
+      expect(find.text('Neon tetra'), findsOneWidget);
+      expect(find.text('Guppy'), findsNothing);
+      await tester.tap(find.text('Neon tetra'));
+      await tester.pumpAndSettle();
+      expect(find.text('Neon tetra'), findsOneWidget);
+
+      await tester.tap(find.text('Aggiungi specie'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Pesce generico (specie non nota)'));
+      await tester.pumpAndSettle();
+      expect(find.text('Pesce generico (specie non nota)'), findsOneWidget);
+
+      await tester.tap(find.text('Aggiungi specie'));
+      await tester.pumpAndSettle();
+      await _searchAndPick(tester, 'Altra specie (scrivi)');
+      await tester.enterText(find.byType(TextField).last, 'Pesce ghiaccio');
+      await tester.tap(find.text('Aggiungi'));
+      await tester.pumpAndSettle();
+      expect(find.text('Pesce ghiaccio'), findsOneWidget);
+
+      // A species already in the tank is not offered again.
+      await tester.tap(find.text('Aggiungi specie'));
+      await tester.pumpAndSettle();
+      await tester.enterText(find.byType(TextField).last, 'neon');
+      await tester.pumpAndSettle();
+      expect(find.widgetWithText(ListTile, 'Neon tetra'), findsNothing);
+      expect(find.widgetWithText(ListTile, 'Neon cardinale (Paracheirodon axelrodi)'), findsOneWidget);
+    });
+
+    testWidgets('an empty aquarium does not leave the first step', (tester) async {
+      await _openWizard(tester);
+      await tester.tap(_fishChip());
+      await tester.pump();
+      await tester.tap(find.text('Acquario'));
+      await tester.pump();
+
+      await _tapNext(tester);
+
+      expect(find.text('Che animale è?'), findsOneWidget);
+      expect(find.text("Aggiungi almeno una specie all'acquario."), findsOneWidget);
+    });
+
+    testWidgets('a fish gets no sex, weight, activity, body condition or microchip',
+        (tester) async {
+      await _openWizard(tester);
+      await tester.tap(_fishChip());
+      await tester.pump();
+      await _pickFromSheet(tester, 'Seleziona una specie', 'Pesce rosso');
+      await _tapNext(tester);
+      expect(find.text('Sesso'), findsNothing);
+      await tester.enterText(_nameField(), 'Nemo');
+      await _tapNext(tester);
+
+      await tester.enterText(find.widgetWithText(TextFormField, 'Data di nascita'), '01012024');
+      expect(find.text('Corporatura'), findsNothing);
+      expect(find.text('Attività'), findsNothing);
+      expect(find.textContaining('Peso'), findsNothing);
+      await _tapNext(tester);
+
+      expect(find.text('Informazioni finali'), findsOneWidget);
+      expect(find.text('N. microchip'), findsNothing);
+      expect(find.byType(Switch), findsNothing);
+    });
   });
 
-  testWidgets('the Animali list flags a dog without microchip, not one that has it', (tester) async {
+  group('which fields each animal sees on the general-information step', () {
+    Future<void> toGeneralStep(
+      WidgetTester tester, {
+      required String category,
+      required String entry,
+    }) async {
+      await _openWizard(tester);
+      await tester.tap(find.text(category));
+      await tester.pump();
+      await _pickFromSheet(tester, 'Seleziona una specie', entry);
+      await _tapNext(tester);
+      await _nameStep(tester, 'Pippo', 'Femmina');
+      expect(find.text('Informazioni generali'), findsOneWidget);
+    }
+
+    testWidgets('a bird: no activity or body condition, weight in grams', (tester) async {
+      await toGeneralStep(
+        tester,
+        category: 'Uccello',
+        entry: 'Cocorita (Melopsittacus undulatus)',
+      );
+
+      expect(find.text('Corporatura'), findsNothing);
+      expect(find.text('Attività'), findsNothing);
+      expect(find.widgetWithText(TextFormField, 'Peso (facoltativo, g)'), findsOneWidget);
+      expect(find.widgetWithText(TextFormField, 'Colore'), findsOneWidget);
+    });
+
+    testWidgets('a reptile: no activity or body condition', (tester) async {
+      await toGeneralStep(
+        tester,
+        category: 'Rettili e anfibi',
+        entry: 'Drago barbuto (Pogona vitticeps)',
+      );
+
+      expect(find.text('Corporatura'), findsNothing);
+      expect(find.text('Attività'), findsNothing);
+    });
+
+    testWidgets('a rabbit has a body condition, no activity, weight in kg', (tester) async {
+      await toGeneralStep(tester, category: 'Piccoli mammiferi', entry: 'Coniglio nano');
+
+      expect(find.text('Corporatura'), findsOneWidget);
+      expect(find.text('Attività'), findsNothing);
+      expect(find.widgetWithText(TextFormField, 'Peso (facoltativo, kg)'), findsOneWidget);
+    });
+
+    testWidgets('a hamster: no body condition, weight in grams', (tester) async {
+      await toGeneralStep(
+        tester,
+        category: 'Piccoli mammiferi',
+        entry: 'Criceto siriano (Mesocricetus auratus)',
+      );
+
+      expect(find.text('Corporatura'), findsNothing);
+      expect(find.text('Attività'), findsNothing);
+      expect(find.widgetWithText(TextFormField, 'Peso (facoltativo, g)'), findsOneWidget);
+    });
+
+    testWidgets('a cat has both', (tester) async {
+      await _openWizard(tester);
+      await _speciesStepMixed(tester, 'Gatto');
+      await _nameStep(tester, 'Micio');
+
+      expect(find.text('Corporatura'), findsOneWidget);
+      expect(find.text('Attività'), findsOneWidget);
+    });
+
+    testWidgets('neutering is asked of a rabbit', (tester) async {
+      await toGeneralStep(tester, category: 'Piccoli mammiferi', entry: 'Coniglio nano');
+      await tester.enterText(find.widgetWithText(TextFormField, 'Data di nascita'), '01012023');
+      await _tapNext(tester);
+
+      expect(find.byType(Switch), findsOneWidget);
+    });
+
+    testWidgets('neutering is not asked of a parrot', (tester) async {
+      await toGeneralStep(
+        tester,
+        category: 'Uccello',
+        entry: 'Cocorita (Melopsittacus undulatus)',
+      );
+      await tester.enterText(find.widgetWithText(TextFormField, 'Data di nascita'), '01012023');
+      await _tapNext(tester);
+
+      expect(find.byType(Switch), findsNothing);
+    });
+  });
+
+  testWidgets('a bird is saved with its species, in grams, without activity or body condition',
+      (tester) async {
+    await _openWizard(tester);
+    await tester.tap(find.text('Uccello'));
+    await tester.pump();
+    await _pickFromSheet(tester, 'Seleziona una specie', 'Cocorita (Melopsittacus undulatus)');
+    await _tapNext(tester);
+    await _nameStep(tester, 'Pico');
+    await tester.enterText(find.widgetWithText(TextFormField, 'Data di nascita'), '01012023');
+    await tester.enterText(find.widgetWithText(TextFormField, 'Peso (facoltativo, g)'), '35');
+    await _tapNext(tester);
+    await _tapNext(tester, 'Conferma');
+
+    final pet = PetDemoStore.instance.byName('Pico')!;
+    expect(pet.breed, 'Cocorita (Melopsittacus undulatus)');
+    expect(pet.weightLabel, '35 g');
+    expect(pet.bodyCondition, isNull);
+    expect(pet.activityLevel, isNull);
+    expect(pet.isSterilized, isNull);
+  });
+
+  testWidgets('the Animali list shows no microchip label, even for a dog without one',
+      (tester) async {
     tester.view.physicalSize = const Size(800, 2400);
     tester.view.devicePixelRatio = 1.0;
     addTearDown(() {
@@ -230,30 +525,11 @@ void main() {
       sex: 'Maschio',
       identityColor: Colors.green,
     );
-    await PetDemoStore.instance.create(
-      name: 'Conchip',
-      species: 'Cane',
-      breed: null,
-      birthDate: DateTime(2020, 1, 1),
-      sex: 'Maschio',
-      identityColor: Colors.blue,
-      microchipNumber: '380260000123456',
-    );
-    await PetDemoStore.instance.create(
-      name: 'Gattino',
-      species: 'Gatto',
-      breed: null,
-      birthDate: DateTime(2020, 1, 1),
-      sex: 'Maschio',
-      identityColor: Colors.red,
-    );
 
     await tester.pumpWidget(_app(const PetsListPage()));
     await tester.pumpAndSettle();
 
-    expect(find.text('Microchip mancante'), findsOneWidget);
-    final tagY = tester.getCenter(find.text('Microchip mancante')).dy;
-    final dogY = tester.getCenter(find.text('Senzachip')).dy;
-    expect(tagY - dogY, inInclusiveRange(10, 60), reason: 'the tag sits under the dog without chip');
+    expect(find.text('Senzachip'), findsOneWidget);
+    expect(find.text('Microchip mancante'), findsNothing);
   });
 }

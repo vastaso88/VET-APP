@@ -626,7 +626,7 @@ class PetDemoStore {
     if (key == 'cane') return [meticcioBreedLabel, ...fciDogBreeds, otherBreedLabel];
     if (key == 'gatto') return [catMeticcioBreedLabel, ...fifeCatBreeds, otherBreedLabel];
     // Every other category: its generic entries first (styled like
-    // "Meticcio / incrocio"), then the list, then "Altra (scrivi)".
+    // "Meticcio / incrocio"), then the list, then "Altra specie (scrivi)".
     return otherSpeciesBreedOptions(key) ?? ['Razza non specificata', ...optionForSpecies(species).breeds];
   }
 

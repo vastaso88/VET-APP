@@ -42,56 +42,56 @@ class PetSexField extends FormField<String> {
     required ValueChanged<String> onChanged,
     super.key,
   }) : super(
-         initialValue: value,
-         builder: (state) {
-           final context = state.context;
-           final labels = {
-             sexMale: localizedSexLabel(sexMale),
-             sexFemale: localizedSexLabel(sexFemale),
-             sexUnknown: context.l10n.petsValueSexUnknownShort,
-           };
-           return Column(
-             crossAxisAlignment: CrossAxisAlignment.start,
-             children: [
-               Text(
-                 context.l10n.petsFormSexLabel,
-                 style: AppTextStyles.caption,
-               ),
-               const SizedBox(height: AppSpacing.xs),
-               SizedBox(
-                 width: double.infinity,
-                 child: SegmentedButton<String>(
-                   emptySelectionAllowed: true,
-                   showSelectedIcon: false,
-                   segments: [
-                     for (final sex in petSexValues)
-                       ButtonSegment<String>(
-                         value: sex,
-                         label: FittedBox(
-                           fit: BoxFit.scaleDown,
-                           child: Text(labels[sex]!, maxLines: 1),
-                         ),
-                       ),
-                   ],
-                   selected: {if (state.value != null) state.value!},
-                   onSelectionChanged: (selection) {
-                     if (selection.isEmpty) return;
-                     state.didChange(selection.first);
-                     onChanged(selection.first);
-                   },
-                   style: ButtonStyle(
-                     textStyle: WidgetStatePropertyAll(
-                       AppTextStyles.bodySmall.copyWith(
-                         fontWeight: FontWeight.w700,
-                       ),
-                     ),
-                   ),
-                 ),
-               ),
-             ],
-           );
-         },
-       );
+          initialValue: value,
+          builder: (state) {
+            final context = state.context;
+            final labels = {
+              sexMale: localizedSexLabel(sexMale),
+              sexFemale: localizedSexLabel(sexFemale),
+              sexUnknown: context.l10n.petsValueSexUnknownShort,
+            };
+            return Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  context.l10n.petsFormSexLabel,
+                  style: AppTextStyles.caption,
+                ),
+                const SizedBox(height: AppSpacing.xs),
+                SizedBox(
+                  width: double.infinity,
+                  child: SegmentedButton<String>(
+                    emptySelectionAllowed: true,
+                    showSelectedIcon: false,
+                    segments: [
+                      for (final sex in petSexValues)
+                        ButtonSegment<String>(
+                          value: sex,
+                          label: FittedBox(
+                            fit: BoxFit.scaleDown,
+                            child: Text(labels[sex]!, maxLines: 1),
+                          ),
+                        ),
+                    ],
+                    selected: {if (state.value != null) state.value!},
+                    onSelectionChanged: (selection) {
+                      if (selection.isEmpty) return;
+                      state.didChange(selection.first);
+                      onChanged(selection.first);
+                    },
+                    style: ButtonStyle(
+                      textStyle: WidgetStatePropertyAll(
+                        AppTextStyles.bodySmall.copyWith(
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            );
+          },
+        );
 }
 
 /// One chip per species, each with its emoji (the same one the pet's avatar
@@ -103,45 +103,45 @@ class PetSpeciesChips extends FormField<String> {
     required String? Function(String?) validator,
     super.key,
   }) : super(
-         initialValue: value,
-         validator: validator,
-         builder: (state) {
-           return Column(
-             crossAxisAlignment: CrossAxisAlignment.start,
-             children: [
-               Wrap(
-                 spacing: AppSpacing.sm,
-                 runSpacing: AppSpacing.sm,
-                 children: [
-                   for (final option in PetDemoStore.speciesOptions)
-                     _SpeciesChoiceChip(
-                       emoji: option.avatarEmoji,
-                       label: localizedSpeciesLabel(option.label),
-                       selected: state.value == option.label,
-                       onTap: () {
-                         state.didChange(option.label);
-                         onChanged(option.label);
-                       },
-                     ),
-                 ],
-               ),
-               if (state.hasError)
-                 Padding(
-                   padding: const EdgeInsets.only(
-                     top: AppSpacing.xs,
-                     left: AppSpacing.xs,
-                   ),
-                   child: Text(
-                     state.errorText!,
-                     style: AppTextStyles.caption.copyWith(
-                       color: AppColors.danger,
-                     ),
-                   ),
-                 ),
-             ],
-           );
-         },
-       );
+          initialValue: value,
+          validator: validator,
+          builder: (state) {
+            return Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Wrap(
+                  spacing: AppSpacing.sm,
+                  runSpacing: AppSpacing.sm,
+                  children: [
+                    for (final option in PetDemoStore.speciesOptions)
+                      _SpeciesChoiceChip(
+                        emoji: option.avatarEmoji,
+                        label: localizedSpeciesLabel(option.label),
+                        selected: state.value == option.label,
+                        onTap: () {
+                          state.didChange(option.label);
+                          onChanged(option.label);
+                        },
+                      ),
+                  ],
+                ),
+                if (state.hasError)
+                  Padding(
+                    padding: const EdgeInsets.only(
+                      top: AppSpacing.xs,
+                      left: AppSpacing.xs,
+                    ),
+                    child: Text(
+                      state.errorText!,
+                      style: AppTextStyles.caption.copyWith(
+                        color: AppColors.danger,
+                      ),
+                    ),
+                  ),
+              ],
+            );
+          },
+        );
 }
 
 class _SpeciesChoiceChip extends StatelessWidget {
@@ -186,13 +186,17 @@ class _SpeciesChoiceChip extends StatelessWidget {
               children: [
                 Text(emoji, style: const TextStyle(fontSize: 16)),
                 const SizedBox(width: AppSpacing.xs),
-                Text(
-                  label,
-                  style: AppTextStyles.caption.copyWith(
-                    color: selected
-                        ? AppColors.onPrimary
-                        : AppColors.secondaryText,
-                    fontWeight: FontWeight.w700,
+                Flexible(
+                  child: Text(
+                    label,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: AppTextStyles.caption.copyWith(
+                      color: selected
+                          ? AppColors.onPrimary
+                          : AppColors.secondaryText,
+                      fontWeight: FontWeight.w700,
+                    ),
                   ),
                 ),
               ],
@@ -334,9 +338,8 @@ class PetStepDots extends StatelessWidget {
               width: i == current ? 24 : 8,
               height: 8,
               decoration: BoxDecoration(
-                color: i <= current
-                    ? AppColors.primary
-                    : AppColors.borderStrong,
+                color:
+                    i <= current ? AppColors.primary : AppColors.borderStrong,
                 borderRadius: BorderRadius.circular(AppRadii.pill),
               ),
             ),

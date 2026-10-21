@@ -606,7 +606,7 @@ class AppLocalizationsIt extends AppLocalizations {
 
   @override
   String get firstRunTutorialPetsBody =>
-      'Razza, peso, note mediche e documenti: tutto organizzato per ciascun pet, sempre a portata di mano.';
+      'Specie e razza, peso, note mediche e documenti: tutto organizzato per ciascun pet, sempre a portata di mano.';
 
   @override
   String get firstRunTutorialAssistantTitle => 'Chiedi al tuo assistente';
@@ -1876,6 +1876,9 @@ class AppLocalizationsIt extends AppLocalizations {
   String get petsBreedUnspecified => 'Razza non specificata';
 
   @override
+  String get petsSpeciesUnspecified => 'Specie non specificata';
+
+  @override
   String petsBreedOtherWithSize(String size) {
     return 'Altro · Taglia $size';
   }
@@ -1969,10 +1972,6 @@ class AppLocalizationsIt extends AppLocalizations {
   String get petsEditMemorialAction => 'Sposta nei ricordi';
 
   @override
-  String get petsFormAllSpeciesAdded =>
-      'Hai già aggiunto tutte le specie disponibili.';
-
-  @override
   String get petsFormAddSpecies => 'Aggiungi specie';
 
   @override
@@ -1988,19 +1987,27 @@ class AppLocalizationsIt extends AppLocalizations {
   String get petsFormNameError => 'Inserisci il nome del pet.';
 
   @override
-  String get petsFormSpeciesLabel => 'Specie';
+  String get petsFormSpeciesLabel => 'Tipo di animale';
 
   @override
-  String get petsFormSpeciesHint => 'Seleziona una specie';
+  String get petsFormSpeciesHint => 'Seleziona il tipo di animale';
 
   @override
-  String get petsFormSpeciesError => 'Seleziona una specie.';
+  String get petsFormSpeciesError => 'Seleziona il tipo di animale.';
 
   @override
-  String get petsFormProfileType => 'Tipo di profilo';
+  String get petsFormProfileType => 'Cosa vuoi registrare?';
 
   @override
-  String get petsFormSingleFish => 'Un pesce';
+  String get petsFormFishSingleTitle => 'Pesce';
+
+  @override
+  String get petsFormFishSingleBody =>
+      'Un solo pesce, scelto per specie (es. Betta, pesce rosso)';
+
+  @override
+  String get petsFormFishAquariumBody =>
+      'Una vasca con più specie e più esemplari, maschi e femmine';
 
   @override
   String get petsFormAquariumPopulation => 'Popolazione dell\'acquario';
@@ -2016,10 +2023,29 @@ class AppLocalizationsIt extends AppLocalizations {
   String get petsFormBreedLabel => 'Razza';
 
   @override
-  String get petsFormBreedSelectSpeciesFirst => 'Seleziona prima la specie';
+  String get petsFormBreedSelectSpeciesFirst =>
+      'Seleziona prima il tipo di animale';
 
   @override
-  String get petsFormBreedOptional => 'Facoltativa';
+  String get petsFormBreedSpeciesLabel => 'Specie';
+
+  @override
+  String get petsFormBreedRequired => 'Scegli la razza.';
+
+  @override
+  String get petsFormBreedSpeciesRequired => 'Scegli la specie.';
+
+  @override
+  String get petsFormBreedTextRequired => 'Scrivi la razza.';
+
+  @override
+  String get petsFormBreedSpeciesTextRequired => 'Scrivi la specie.';
+
+  @override
+  String get petsFormBreedSpeciesPlaceholder => 'Seleziona una specie';
+
+  @override
+  String get petsFormOtherSpeciesDialogTitle => 'Quale specie?';
 
   @override
   String get petsFormBreedPlaceholder => 'Seleziona una razza';
@@ -2032,16 +2058,16 @@ class AppLocalizationsIt extends AppLocalizations {
       'Cerca (anche per nome scientifico)';
 
   @override
-  String get petsFormOtherBreedLabel => 'Quale razza? (facoltativo)';
+  String get petsFormOtherBreedLabel => 'Quale razza?';
 
   @override
   String get petsFormOtherBreedHint => 'Es. incrocio di barboncino';
 
   @override
-  String get petsFormOtherSpeciesLabel => 'Quale specie o razza? (facoltativo)';
+  String get petsFormOtherSpeciesLabel => 'Quale specie?';
 
   @override
-  String get petsFormOtherSpeciesHint => 'Es. nome comune o varietà';
+  String get petsFormOtherSpeciesHint => 'Es. nome comune o scientifico';
 
   @override
   String get petsFormDogSizeLabel => 'Taglia (facoltativa)';
@@ -2082,6 +2108,12 @@ class AppLocalizationsIt extends AppLocalizations {
 
   @override
   String get petsFormWeightHintKg => 'Es. 18,4';
+
+  @override
+  String get petsFormWeightLabelG => 'Peso (facoltativo, g)';
+
+  @override
+  String get petsFormWeightHintG => 'Es. 35';
 
   @override
   String get petsFormWeightHintLb => 'Es. 40,5';
@@ -5117,16 +5149,17 @@ class AppLocalizationsIt extends AppLocalizations {
   }
 
   @override
-  String get petsWizardStep1Title => 'Parlaci del tuo animale';
+  String get petsWizardStep1Title => 'Che animale è?';
 
   @override
-  String get petsWizardStep1Subtitle => 'Come si chiama?';
+  String get petsWizardStep1Subtitle =>
+      'Scegli il tipo di animale e la sua razza o specie';
 
   @override
-  String get petsWizardStep2Title => 'Specie e razza';
+  String get petsWizardStep2Title => 'Parlaci del tuo animale';
 
   @override
-  String get petsWizardStep2Subtitle => 'Seleziona la specie del tuo animale';
+  String get petsWizardStep2Subtitle => 'Come si chiama?';
 
   @override
   String get petsWizardStep3Title => 'Informazioni generali';
@@ -5190,9 +5223,6 @@ class AppLocalizationsIt extends AppLocalizations {
 
   @override
   String get petsDataSummarySterilized => 'sterilizzato';
-
-  @override
-  String get petsListMicrochipMissing => 'Microchip mancante';
 
   @override
   String get monitoringTitle => 'Monitoraggio';

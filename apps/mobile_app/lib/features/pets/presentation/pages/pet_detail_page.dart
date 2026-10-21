@@ -37,7 +37,6 @@ import '../../data/pet_demo_store.dart';
 import '../../data/pet_photo_repository.dart';
 import '../../domain/pet_format.dart';
 import '../../domain/pet_models.dart';
-import '../../domain/pet_value_labels.dart';
 import '../../../chat/presentation/widgets/chat_conversation_menu.dart';
 import '../widgets/pet_avatar.dart';
 import '../widgets/pets_scaffold.dart';
@@ -159,7 +158,7 @@ String petHeaderSubtitle(PetProfile pet, {DateTime? now}) {
   final breed = pet.breed.trim();
   final age = pet.isAquarium ? null : petAgeLabel(pet.birthDateLabel, now: now);
   final parts = <String>[
-    localizedSpeciesLabel(pet.species),
+    pet.speciesDisplayLabel,
     if (pet.isAquarium)
       pet.breedLabel
     else if (breed.isNotEmpty && breed != 'Altro')

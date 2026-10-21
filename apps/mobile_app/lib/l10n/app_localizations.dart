@@ -1141,7 +1141,7 @@ abstract class AppLocalizations {
   /// No description provided for @firstRunTutorialPetsBody.
   ///
   /// In it, this message translates to:
-  /// **'Razza, peso, note mediche e documenti: tutto organizzato per ciascun pet, sempre a portata di mano.'**
+  /// **'Specie e razza, peso, note mediche e documenti: tutto organizzato per ciascun pet, sempre a portata di mano.'**
   String get firstRunTutorialPetsBody;
 
   /// No description provided for @firstRunTutorialAssistantTitle.
@@ -3232,6 +3232,12 @@ abstract class AppLocalizations {
   /// **'Razza non specificata'**
   String get petsBreedUnspecified;
 
+  /// No description provided for @petsSpeciesUnspecified.
+  ///
+  /// In it, this message translates to:
+  /// **'Specie non specificata'**
+  String get petsSpeciesUnspecified;
+
   /// No description provided for @petsBreedOtherWithSize.
   ///
   /// In it, this message translates to:
@@ -3394,12 +3400,6 @@ abstract class AppLocalizations {
   /// **'Sposta nei ricordi'**
   String get petsEditMemorialAction;
 
-  /// No description provided for @petsFormAllSpeciesAdded.
-  ///
-  /// In it, this message translates to:
-  /// **'Hai già aggiunto tutte le specie disponibili.'**
-  String get petsFormAllSpeciesAdded;
-
   /// No description provided for @petsFormAddSpecies.
   ///
   /// In it, this message translates to:
@@ -3433,32 +3433,44 @@ abstract class AppLocalizations {
   /// No description provided for @petsFormSpeciesLabel.
   ///
   /// In it, this message translates to:
-  /// **'Specie'**
+  /// **'Tipo di animale'**
   String get petsFormSpeciesLabel;
 
   /// No description provided for @petsFormSpeciesHint.
   ///
   /// In it, this message translates to:
-  /// **'Seleziona una specie'**
+  /// **'Seleziona il tipo di animale'**
   String get petsFormSpeciesHint;
 
   /// No description provided for @petsFormSpeciesError.
   ///
   /// In it, this message translates to:
-  /// **'Seleziona una specie.'**
+  /// **'Seleziona il tipo di animale.'**
   String get petsFormSpeciesError;
 
   /// No description provided for @petsFormProfileType.
   ///
   /// In it, this message translates to:
-  /// **'Tipo di profilo'**
+  /// **'Cosa vuoi registrare?'**
   String get petsFormProfileType;
 
-  /// No description provided for @petsFormSingleFish.
+  /// No description provided for @petsFormFishSingleTitle.
   ///
   /// In it, this message translates to:
-  /// **'Un pesce'**
-  String get petsFormSingleFish;
+  /// **'Pesce'**
+  String get petsFormFishSingleTitle;
+
+  /// No description provided for @petsFormFishSingleBody.
+  ///
+  /// In it, this message translates to:
+  /// **'Un solo pesce, scelto per specie (es. Betta, pesce rosso)'**
+  String get petsFormFishSingleBody;
+
+  /// No description provided for @petsFormFishAquariumBody.
+  ///
+  /// In it, this message translates to:
+  /// **'Una vasca con più specie e più esemplari, maschi e femmine'**
+  String get petsFormFishAquariumBody;
 
   /// No description provided for @petsFormAquariumPopulation.
   ///
@@ -3487,14 +3499,50 @@ abstract class AppLocalizations {
   /// No description provided for @petsFormBreedSelectSpeciesFirst.
   ///
   /// In it, this message translates to:
-  /// **'Seleziona prima la specie'**
+  /// **'Seleziona prima il tipo di animale'**
   String get petsFormBreedSelectSpeciesFirst;
 
-  /// No description provided for @petsFormBreedOptional.
+  /// No description provided for @petsFormBreedSpeciesLabel.
   ///
   /// In it, this message translates to:
-  /// **'Facoltativa'**
-  String get petsFormBreedOptional;
+  /// **'Specie'**
+  String get petsFormBreedSpeciesLabel;
+
+  /// No description provided for @petsFormBreedRequired.
+  ///
+  /// In it, this message translates to:
+  /// **'Scegli la razza.'**
+  String get petsFormBreedRequired;
+
+  /// No description provided for @petsFormBreedSpeciesRequired.
+  ///
+  /// In it, this message translates to:
+  /// **'Scegli la specie.'**
+  String get petsFormBreedSpeciesRequired;
+
+  /// No description provided for @petsFormBreedTextRequired.
+  ///
+  /// In it, this message translates to:
+  /// **'Scrivi la razza.'**
+  String get petsFormBreedTextRequired;
+
+  /// No description provided for @petsFormBreedSpeciesTextRequired.
+  ///
+  /// In it, this message translates to:
+  /// **'Scrivi la specie.'**
+  String get petsFormBreedSpeciesTextRequired;
+
+  /// No description provided for @petsFormBreedSpeciesPlaceholder.
+  ///
+  /// In it, this message translates to:
+  /// **'Seleziona una specie'**
+  String get petsFormBreedSpeciesPlaceholder;
+
+  /// No description provided for @petsFormOtherSpeciesDialogTitle.
+  ///
+  /// In it, this message translates to:
+  /// **'Quale specie?'**
+  String get petsFormOtherSpeciesDialogTitle;
 
   /// No description provided for @petsFormBreedPlaceholder.
   ///
@@ -3517,7 +3565,7 @@ abstract class AppLocalizations {
   /// No description provided for @petsFormOtherBreedLabel.
   ///
   /// In it, this message translates to:
-  /// **'Quale razza? (facoltativo)'**
+  /// **'Quale razza?'**
   String get petsFormOtherBreedLabel;
 
   /// No description provided for @petsFormOtherBreedHint.
@@ -3529,13 +3577,13 @@ abstract class AppLocalizations {
   /// No description provided for @petsFormOtherSpeciesLabel.
   ///
   /// In it, this message translates to:
-  /// **'Quale specie o razza? (facoltativo)'**
+  /// **'Quale specie?'**
   String get petsFormOtherSpeciesLabel;
 
   /// No description provided for @petsFormOtherSpeciesHint.
   ///
   /// In it, this message translates to:
-  /// **'Es. nome comune o varietà'**
+  /// **'Es. nome comune o scientifico'**
   String get petsFormOtherSpeciesHint;
 
   /// No description provided for @petsFormDogSizeLabel.
@@ -3615,6 +3663,18 @@ abstract class AppLocalizations {
   /// In it, this message translates to:
   /// **'Es. 18,4'**
   String get petsFormWeightHintKg;
+
+  /// No description provided for @petsFormWeightLabelG.
+  ///
+  /// In it, this message translates to:
+  /// **'Peso (facoltativo, g)'**
+  String get petsFormWeightLabelG;
+
+  /// No description provided for @petsFormWeightHintG.
+  ///
+  /// In it, this message translates to:
+  /// **'Es. 35'**
+  String get petsFormWeightHintG;
 
   /// No description provided for @petsFormWeightHintLb.
   ///
@@ -8653,25 +8713,25 @@ abstract class AppLocalizations {
   /// No description provided for @petsWizardStep1Title.
   ///
   /// In it, this message translates to:
-  /// **'Parlaci del tuo animale'**
+  /// **'Che animale è?'**
   String get petsWizardStep1Title;
 
   /// No description provided for @petsWizardStep1Subtitle.
   ///
   /// In it, this message translates to:
-  /// **'Come si chiama?'**
+  /// **'Scegli il tipo di animale e la sua razza o specie'**
   String get petsWizardStep1Subtitle;
 
   /// No description provided for @petsWizardStep2Title.
   ///
   /// In it, this message translates to:
-  /// **'Specie e razza'**
+  /// **'Parlaci del tuo animale'**
   String get petsWizardStep2Title;
 
   /// No description provided for @petsWizardStep2Subtitle.
   ///
   /// In it, this message translates to:
-  /// **'Seleziona la specie del tuo animale'**
+  /// **'Come si chiama?'**
   String get petsWizardStep2Subtitle;
 
   /// No description provided for @petsWizardStep3Title.
@@ -8793,12 +8853,6 @@ abstract class AppLocalizations {
   /// In it, this message translates to:
   /// **'sterilizzato'**
   String get petsDataSummarySterilized;
-
-  /// No description provided for @petsListMicrochipMissing.
-  ///
-  /// In it, this message translates to:
-  /// **'Microchip mancante'**
-  String get petsListMicrochipMissing;
 
   /// No description provided for @monitoringTitle.
   ///
