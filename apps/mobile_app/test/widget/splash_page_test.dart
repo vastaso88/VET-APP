@@ -94,6 +94,36 @@ void main() {
     expect(find.text('ROUTE:${AppRouter.paywall}'), findsOneWidget);
   });
 
+  testWidgets('warm start: opens the saved tab after a short splash, refreshing in background',
+      (tester) async {
+    var preloadCalls = 0;
+    var gateCalls = 0;
+    final harness = MaterialApp(
+      home: SplashPage(
+        restoreSignedIn: () async => true,
+        warmTab: () async => 2,
+        preload: () async => preloadCalls++,
+        resolveDestination: () async {
+          gateCalls++;
+          return AppRouter.homeShell;
+        },
+      ),
+      onGenerateRoute: (settings) => MaterialPageRoute<void>(
+        settings: settings,
+        builder: (_) => Scaffold(body: Text('ROUTE:${settings.name}:${settings.arguments}')),
+      ),
+    );
+    await tester.pumpWidget(harness);
+
+    // Far less than the 4 s splash.
+    await tester.pump(splashWarmMinDisplay + const Duration(milliseconds: 100));
+    await tester.pumpAndSettle(const Duration(milliseconds: 100));
+
+    expect(find.text('ROUTE:${AppRouter.homeShell}:2'), findsOneWidget);
+    expect(preloadCalls, 1);
+    expect(gateCalls, 1);
+  });
+
   testWidgets('signed out: skips preload, goes to login after min display', (tester) async {
     var preloadCalls = 0;
     await tester.pumpWidget(

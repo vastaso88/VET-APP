@@ -1,8 +1,11 @@
+import 'dart:async';
+
 import 'package:flutter/foundation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../../../l10n/l10n.dart';
 import '../../../../shared/auth/current_user.dart';
+import '../../../../shared/cache/owner_json_cache.dart';
 import '../../../../shared/config/app_runtime_config_loader.dart';
 import '../../pets/data/pet_demo_store.dart';
 
@@ -114,6 +117,27 @@ class RemindersRepository {
 
   static Future<void>? _hydrating;
 
+  static const _cache = OwnerJsonCache('reminders');
+
+  /// Shows the reminders saved by the last run at once (no network); the next
+  /// [ensureHydrated] refreshes them from the server. Does nothing when the
+  /// store already holds data or no owner is signed in.
+  Future<void> restoreFromCache() async {
+    final ownerId = CurrentUser.get()?.id;
+    if (ownerId == null || _localReminders.isNotEmpty || _hydratedOwnerId == ownerId) return;
+    final rows = await _cache.read(ownerId);
+    // Re-check: the server answer may have landed while the disk was read.
+    if (rows == null || _localReminders.isNotEmpty || _hydratedOwnerId == ownerId) return;
+    final cached = <ReminderEntry>[];
+    for (final row in rows) {
+      final item = _parseRow(row);
+      if (item != null) cached.add(item);
+    }
+    if (cached.isEmpty) return;
+    _localReminders = cached;
+    changes.value++;
+  }
+
   Future<void> ensureHydrated() {
     final ownerId = CurrentUser.get()?.id;
     if (ownerId == null || ownerId == _hydratedOwnerId) {
@@ -147,6 +171,9 @@ class RemindersRepository {
       _localReminders = loaded;
       _hydratedOwnerId = ownerId;
       changes.value++;
+      unawaited(_cache.write(ownerId, [
+        for (final row in rows) Map<String, dynamic>.from(row as Map),
+      ]));
     } catch (_) {
       // Leave current contents in place; retried next call since
       // _hydratedOwnerId wasn't set.

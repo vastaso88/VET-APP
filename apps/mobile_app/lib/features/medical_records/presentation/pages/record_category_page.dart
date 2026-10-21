@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 
+import '../../../../app/launch/route_restoration.dart';
 import '../../../../design_system/tokens/app_colors.dart';
 import '../../../../design_system/tokens/app_radii.dart';
 import '../../../../design_system/tokens/app_spacing.dart';
@@ -98,8 +99,17 @@ class _RecordCategoryPageState extends State<RecordCategoryPage> {
     });
   }
 
+  // Remembered while open, so it can be reopened after a restart (restoration).
   @override
   Widget build(BuildContext context) {
+    return RestorationMarker(
+      kind: 'record_category',
+      args: () => {'petId': widget.pet.id, 'category': widget.category.key},
+      child: _buildPage(context),
+    );
+  }
+
+  Widget _buildPage(BuildContext context) {
     final l10n = context.l10n;
     final category = widget.category;
     return Scaffold(

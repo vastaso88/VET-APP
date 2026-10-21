@@ -1,9 +1,11 @@
+import 'dart:async';
 import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../../shared/auth/current_user.dart';
+import '../../../shared/cache/owner_json_cache.dart';
 import '../../../l10n/l10n.dart';
 import '../../../shared/config/app_runtime_config_loader.dart';
 import '../domain/fish_species.dart';
@@ -177,6 +179,34 @@ class PetDemoStore {
   /// list page kept alive under the bottom-nav IndexedStack re-reads it.
   static final ValueNotifier<int> changes = ValueNotifier<int>(0);
 
+  static const _cache = OwnerJsonCache('pets');
+
+  /// Shows the pets saved by the last run at once (no network): the next
+  /// [ensureHydrated] then refreshes them from the server. Does nothing when
+  /// the store already holds pets or no owner is signed in.
+  Future<void> restoreFromCache() async {
+    final ownerId = CurrentUser.get()?.id;
+    if (ownerId == null || _pets.isNotEmpty || _hydratedOwnerId == ownerId) return;
+    final rows = await _cache.read(ownerId);
+    // Re-check: the server answer may have landed while the disk was read.
+    if (rows == null || _pets.isNotEmpty || _hydratedOwnerId == ownerId) return;
+    final cached = <PetProfile>[];
+    for (final row in rows) {
+      final item = _petFromRow(row);
+      if (item != null) cached.add(item);
+    }
+    if (cached.isEmpty) return;
+    _pets = cached;
+    changes.value++;
+  }
+
+  /// Keeps the cache equal to what the owner sees after a local edit.
+  void _saveToCache() {
+    final ownerId = CurrentUser.get()?.id;
+    if (ownerId == null) return;
+    _cache.write(ownerId, [for (final pet in _pets) _petToRow(pet, ownerId)]);
+  }
+
   /// Loads this owner's pets from Supabase into the in-memory store, once
   /// per owner id. No-ops (and leaves the store as-is) when Supabase isn't
   /// configured or the request fails — same best-effort-remote pattern as
@@ -221,6 +251,9 @@ class PetDemoStore {
       _pets = loaded;
       _hydratedOwnerId = ownerId;
       changes.value++;
+      unawaited(_cache.write(ownerId, [
+        for (final row in rows) Map<String, dynamic>.from(row as Map),
+      ]));
     } catch (_) {
       // Leave the local/demo contents in place; retried next call since
       // _hydratedOwnerId wasn't set.
@@ -484,6 +517,7 @@ class PetDemoStore {
     }
 
     changes.value++;
+    _saveToCache();
     await _persistRemote(pet);
     return pet;
   }
@@ -543,6 +577,7 @@ class PetDemoStore {
       rethrow;
     }
     _unsynced.remove(id);
+    _saveToCache();
     await PetPhotoRepository().deleteAllForPet(id);
   }
 

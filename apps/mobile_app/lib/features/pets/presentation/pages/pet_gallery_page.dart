@@ -3,6 +3,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 
+import '../../../../app/launch/route_restoration.dart';
 import '../../../../shared/widgets/pet_loader.dart';
 import '../widgets/photo_timeline_view.dart';
 
@@ -273,8 +274,17 @@ class _PetGalleryPageState extends State<PetGalleryPage> {
     );
   }
 
+  // Remembered while open, so it can be reopened after a restart (restoration).
   @override
   Widget build(BuildContext context) {
+    return RestorationMarker(
+      kind: 'pet_gallery',
+      args: () => {'petId': widget.pet.id},
+      child: _buildPage(context),
+    );
+  }
+
+  Widget _buildPage(BuildContext context) {
     final pet = _pet;
     return PetsScaffold(
       title: context.l10n.petsMediaGalleryOf(pet.name),

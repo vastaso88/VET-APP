@@ -39,6 +39,7 @@ import '../../domain/pet_format.dart';
 import '../../domain/pet_models.dart';
 import '../../domain/pet_value_labels.dart';
 import '../../../chat/presentation/widgets/chat_conversation_menu.dart';
+import '../../../../app/launch/route_restoration.dart';
 import '../widgets/pet_avatar.dart';
 import '../widgets/pets_scaffold.dart';
 import '../widgets/pets_state_views.dart';
@@ -52,11 +53,16 @@ class PetDetailPage extends StatefulWidget {
     this.pet,
     this.state = PetsScreenStatus.success,
     this.errorMessage,
+    this.initialTab = 0,
   });
 
   final PetProfile? pet;
   final PetsScreenStatus state;
   final String? errorMessage;
+
+  /// Which card opens first (reminders, chat, records...): used when the page
+  /// is restored after the app was killed in the background.
+  final int initialTab;
 
   @override
   State<PetDetailPage> createState() => _PetDetailPageState();
@@ -69,14 +75,28 @@ class _PetDetailPageState extends State<PetDetailPage> {
   final RemindersRepository _remindersRepository = RemindersRepository();
   final DogWalksRepository _walksRepository = DogWalksRepository();
 
+  late int _openTab = widget.initialTab;
+
   @override
   void initState() {
     super.initState();
     _pet = widget.pet ?? PetDemoStore.instance.list().firstOrNull;
   }
 
+  // Remembered while open, so it can be reopened on the same card (restoration).
   @override
   Widget build(BuildContext context) {
+    return RestorationMarker(
+      kind: 'pet_detail',
+      args: () => {
+        'petId': (_pet ?? widget.pet)?.id,
+        'tab': _openTab,
+      },
+      child: _buildPage(context),
+    );
+  }
+
+  Widget _buildPage(BuildContext context) {
     final pet = _pet ?? widget.pet ?? PetDemoStore.instance.list().firstOrNull;
 
     return PetsScaffold(
@@ -134,6 +154,11 @@ class _PetDetailPageState extends State<PetDetailPage> {
             recordsRepository: _recordsRepository,
             remindersRepository: _remindersRepository,
             walksRepository: _walksRepository,
+            initialTab: _openTab,
+            onTabChanged: (index) {
+              _openTab = index;
+              RouteRestoration.instance.touch();
+            },
           ),
       },
     );
@@ -195,12 +220,16 @@ class _PetDetailContent extends StatefulWidget {
     required this.recordsRepository,
     required this.remindersRepository,
     required this.walksRepository,
+    this.initialTab = 0,
+    this.onTabChanged,
   });
 
   final PetProfile pet;
   final MedicalRecordsRepository recordsRepository;
   final RemindersRepository remindersRepository;
   final DogWalksRepository walksRepository;
+  final int initialTab;
+  final ValueChanged<int>? onTabChanged;
 
   @override
   State<_PetDetailContent> createState() => _PetDetailContentState();
@@ -214,8 +243,21 @@ class _PetDetailContentState extends State<_PetDetailContent>
   /// stored just never loads them.
   bool get _showsWalks => isDogSpecies(widget.pet.species);
 
-  late TabController _tabController =
-      TabController(length: _showsWalks ? 4 : 3, vsync: this);
+  late TabController _tabController = TabController(
+    length: _showsWalks ? 4 : 3,
+    vsync: this,
+    initialIndex: widget.initialTab.clamp(0, _showsWalks ? 3 : 2),
+  );
+
+  void _reportTab() {
+    if (!_tabController.indexIsChanging) widget.onTabChanged?.call(_tabController.index);
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _tabController.addListener(_reportTab);
+  }
 
   @override
   void didUpdateWidget(covariant _PetDetailContent oldWidget) {
@@ -230,7 +272,7 @@ class _PetDetailContentState extends State<_PetDetailContent>
         length: expectedLength,
         vsync: this,
         initialIndex: previousIndex < expectedLength ? previousIndex : 0,
-      );
+      )..addListener(_reportTab);
     }
   }
 

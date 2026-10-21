@@ -46,7 +46,10 @@ class AppRouter {
       case home:
       case homeShell:
         return MaterialPageRoute<void>(
-          builder: (_) => const HomeShellPage(),
+          // `arguments` carries the tab to reopen (warm start, see SplashPage).
+          builder: (_) => HomeShellPage(
+            initialIndex: settings.arguments is int ? settings.arguments! as int : 0,
+          ),
           settings: settings,
         );
       case paywall:

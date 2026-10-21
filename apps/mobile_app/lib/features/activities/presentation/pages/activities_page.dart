@@ -6,11 +6,7 @@ import '../../../../design_system/tokens/app_spacing.dart';
 import '../../../../design_system/tokens/app_text_styles.dart';
 import '../../../../l10n/l10n.dart';
 import '../../../../shared/widgets/coming_soon_page.dart';
-import '../../../events/presentation/pages/events_page.dart';
-import '../../../local_events/presentation/pages/local_events_page.dart';
-import '../../../marketplace/presentation/pages/marketplace_page.dart';
-import '../../../pet_news/presentation/pages/news_feed_page.dart';
-import '../../../pets/presentation/pages/gallery_folders_page.dart';
+import '../../../../app/launch/restorable_pages.dart';
 
 class ActivitiesPage extends StatelessWidget {
   const ActivitiesPage({super.key});
@@ -40,45 +36,40 @@ class ActivitiesPage extends StatelessWidget {
               iconTone: AppColors.primary,
               title: context.l10n.petNewsTitle,
               subtitle: context.l10n.activitiesNewsSubtitle,
-              onTap: () => Navigator.of(context).push(
-                MaterialPageRoute<void>(builder: (_) => const NewsFeedPage()),
-              ),
+              onTap: () => Navigator.of(context)
+                  .push(restorableRoute<void>('news_feed')),
             ),
             _ActivityRow(
               icon: Icons.map_outlined,
               iconTone: AppColors.info,
               title: context.l10n.activitiesNearbyTitle,
               subtitle: context.l10n.activitiesNearbySubtitle,
-              onTap: () => Navigator.of(context).push(
-                MaterialPageRoute<void>(builder: (_) => const LocalEventsPage()),
-              ),
+              onTap: () => Navigator.of(context)
+                  .push(restorableRoute<void>('local_events')),
             ),
             _ActivityRow(
               icon: Icons.event_outlined,
               iconTone: AppColors.accent,
               title: context.l10n.activitiesEventsTitle,
               subtitle: context.l10n.activitiesEventsSubtitle,
-              onTap: () => Navigator.of(context).push(
-                MaterialPageRoute<void>(builder: (_) => const EventsPage()),
-              ),
+              onTap: () => Navigator.of(context)
+                  .push(restorableRoute<void>('events')),
             ),
             _ActivityRow(
               icon: Icons.photo_library_outlined,
               iconTone: AppColors.info,
               title: context.l10n.activitiesGalleryTitle,
               subtitle: context.l10n.activitiesGallerySubtitle,
-              onTap: () => Navigator.of(context).push(
-                MaterialPageRoute<void>(builder: (_) => const GalleryFoldersPage()),
-              ),
+              onTap: () => Navigator.of(context)
+                  .push(restorableRoute<void>('gallery_folders')),
             ),
             _ActivityRow(
               icon: Icons.storefront_outlined,
               iconTone: AppColors.warning,
               title: context.l10n.activitiesMarketplaceTitle,
               subtitle: context.l10n.activitiesMarketplaceSubtitle,
-              onTap: () => Navigator.of(context).push(
-                MaterialPageRoute<void>(builder: (_) => const MarketplacePage()),
-              ),
+              onTap: () => Navigator.of(context)
+                  .push(restorableRoute<void>('marketplace')),
             ),
             _ActivityRow(
               icon: Icons.favorite_outline,

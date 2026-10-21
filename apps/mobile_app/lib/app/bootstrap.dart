@@ -13,10 +13,15 @@ import '../features/dog_walks/data/walk_home_widget.dart';
 import '../features/language/data/language_store.dart';
 import '../features/notifications/application/notification_scheduler.dart';
 import '../features/notifications/domain/notification_time_zone.dart';
+import '../features/pets/data/pet_demo_store.dart';
 import '../features/pets/data/pet_photo_repository.dart';
+import '../features/reminders/data/reminders_repository.dart';
 import '../features/settings/data/layout_settings_store.dart';
 import '../features/settings/data/unit_settings_store.dart';
+import '../shared/cache/owner_json_cache.dart';
 import '../shared/config/app_runtime_config_loader.dart';
+import 'launch/route_restoration.dart';
+import 'launch/restorable_pages.dart';
 
 Future<void> bootstrap() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -75,12 +80,17 @@ Future<void> bootstrap() async {
         // device go with it.
         if (state.event == AuthChangeEvent.signedOut) {
           unawaited(PetPhotoRepository.clearLocalCaches());
+          unawaited(OwnerJsonCache.clearAll());
+          unawaited(RouteRestoration.instance.forget());
         }
       });
     } catch (_) {
       supabaseEnabled = false;
     }
   }
+
+  // Pages that can be reopened after the app was killed in the background.
+  registerRestorablePages();
 
   runApp(
     VetApp(
@@ -90,6 +100,14 @@ Future<void> bootstrap() async {
       ),
     ),
   );
+
+  // The session is already restored from disk at this point: put the pets and
+  // reminders saved by the last run on screen now; the splash preload (or the
+  // first page to open) then refreshes them from the server.
+  if (supabaseEnabled) {
+    unawaited(PetDemoStore.instance.restoreFromCache());
+    unawaited(RemindersRepository().restoreFromCache());
+  }
 
   // Scheduled notifications carry their text already translated: reschedule
   // them when the language changes.

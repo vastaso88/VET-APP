@@ -16,6 +16,7 @@ import '../../../../design_system/tokens/app_colors.dart';
 import '../../../../design_system/tokens/app_radii.dart';
 import '../../../../design_system/tokens/app_spacing.dart';
 import '../../../../l10n/l10n.dart';
+import '../../../../app/launch/warm_start_store.dart';
 import '../../../settings/data/layout_settings_store.dart';
 import '../../data/chat_demo_store.dart';
 import '../../data/chat_remote_data_source.dart' show chatMaxMessageLength;
@@ -35,6 +36,7 @@ class ChatComposer extends StatefulWidget {
     this.editingText,
     this.onCancelEditing,
     this.allowEmptySend = false,
+    this.draftKey,
   });
 
   final String hintText;
@@ -58,6 +60,10 @@ class ChatComposer extends StatefulWidget {
   /// Lets an empty field be sent: an edited message that keeps only its
   /// photo.
   final bool allowEmptySend;
+
+  /// Identifies the conversation, so the text typed and not sent survives the
+  /// app being killed in the background (saved on this phone, put back here).
+  final String? draftKey;
 
   static String get listeningText => appL10n.chatListeningText;
   static String get transcribingText => appL10n.chatTranscribingText;
@@ -94,9 +100,39 @@ class _ChatComposerState extends State<ChatComposer> with SingleTickerProviderSt
   String? _pendingAttachmentId;
   bool _uploadingAttachment = false;
 
+  Timer? _draftTimer;
+
+  Future<void> _restoreDraft() async {
+    final key = widget.draftKey;
+    if (key == null) return;
+    final draft = await const WarmStartStore().loadDraft(key);
+    // Only into an untouched field: never over what is being typed or edited.
+    if (!mounted || draft == null || _controller.text.isNotEmpty || widget.editingText != null) {
+      return;
+    }
+    _controller.value = TextEditingValue(
+      text: draft,
+      selection: TextSelection.collapsed(offset: draft.length),
+    );
+  }
+
+  void _scheduleDraftSave() {
+    final key = widget.draftKey;
+    // An edited sent message is not a draft.
+    if (key == null || widget.editingText != null) return;
+    _draftTimer?.cancel();
+    final text = _controller.text;
+    _draftTimer = Timer(
+      const Duration(milliseconds: 400),
+      () => const WarmStartStore().saveDraft(key, text),
+    );
+  }
+
   @override
   void initState() {
     super.initState();
+    unawaited(_restoreDraft());
+    _controller.addListener(_scheduleDraftSave);
     _controller.addListener(() {
       final hasText = _controller.text.trim().isNotEmpty;
       final atLimit = _controller.text.length >= chatMaxMessageLength;
@@ -124,6 +160,7 @@ class _ChatComposerState extends State<ChatComposer> with SingleTickerProviderSt
 
   @override
   void dispose() {
+    _draftTimer?.cancel();
     _elapsedTimer?.cancel();
     _pulse.dispose();
     _focusNode.dispose();
