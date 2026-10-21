@@ -135,7 +135,8 @@ class _ReportMissingPlacePageState extends State<ReportMissingPlacePage> {
     return ListView(
       padding: const EdgeInsets.all(AppSpacing.xl),
       children: [
-        Text(context.l10n.placesReportWhatIs, style: AppTextStyles.body.copyWith(fontWeight: FontWeight.w700)),
+        Text(context.l10n.placesReportWhatIs,
+            style: AppTextStyles.body.copyWith(fontWeight: FontWeight.w700)),
         const SizedBox(height: AppSpacing.sm),
         Wrap(
           spacing: AppSpacing.sm,
@@ -165,7 +166,8 @@ class _ReportMissingPlacePageState extends State<ReportMissingPlacePage> {
           ),
         ),
         const SizedBox(height: AppSpacing.lg),
-        Text(context.l10n.placesReportWhere, style: AppTextStyles.body.copyWith(fontWeight: FontWeight.w700)),
+        Text(context.l10n.placesReportWhere,
+            style: AppTextStyles.body.copyWith(fontWeight: FontWeight.w700)),
         const SizedBox(height: AppSpacing.xs),
         Text(
           context.l10n.placesReportMapHint,

@@ -14,6 +14,14 @@ Future<void> _useTallSurface(WidgetTester tester) async {
   addTearDown(() => tester.binding.setSurfaceSize(null));
 }
 
+/// The list sections start closed; the seeded clinic is in the clinics one.
+Future<void> _openClinics(WidgetTester tester) async {
+  final header = find.byKey(const ValueKey('radar-section-veterinary'));
+  await tester.ensureVisible(header);
+  await tester.tap(header);
+  await tester.pumpAndSettle();
+}
+
 void main() {
   // Seeds the in-memory SharedPreferences implementation so
   // LocationPreferenceStore.ensureLoaded() resolves on its normal path
@@ -45,8 +53,9 @@ void main() {
     await tester.pump(const Duration(milliseconds: 50));
     await tester.pump(const Duration(milliseconds: 50));
 
-    expect(find.text('Ambulatorio veterinario Navigli'), findsOneWidget);
     expect(find.text('Servizi nella zona'), findsOneWidget);
+    await _openClinics(tester);
+    expect(find.text('Ambulatorio veterinario Navigli'), findsOneWidget);
     // No backend in this build: the page says so, and never asks to sign in.
     expect(find.text('Anteprima senza backend: i luoghi mostrati sono dati di esempio.'),
         findsOneWidget);
@@ -76,6 +85,7 @@ void main() {
     await tester.pump(const Duration(milliseconds: 50));
     await tester.pump(const Duration(milliseconds: 50));
 
+    await _openClinics(tester);
     await tester.tap(find.text('Ambulatorio veterinario Navigli'));
     await tester.pumpAndSettle();
 

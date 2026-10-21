@@ -5188,6 +5188,12 @@ abstract class AppLocalizations {
   /// **'Rifugi e adozioni'**
   String get placesCategoryShelter;
 
+  /// No description provided for @placesCategoryAssociation.
+  ///
+  /// In it, this message translates to:
+  /// **'Associazioni'**
+  String get placesCategoryAssociation;
+
   /// No description provided for @placesCategoryGrooming.
   ///
   /// In it, this message translates to:
@@ -5277,6 +5283,12 @@ abstract class AppLocalizations {
   /// In it, this message translates to:
   /// **'Rifugio per animali'**
   String get placesTypeShelter;
+
+  /// No description provided for @placesTypeAssociation.
+  ///
+  /// In it, this message translates to:
+  /// **'Associazione per animali'**
+  String get placesTypeAssociation;
 
   /// No description provided for @placesTypeOther.
   ///
@@ -6123,6 +6135,18 @@ abstract class AppLocalizations {
   /// In it, this message translates to:
   /// **'{category} ({count})'**
   String localEventsCategoryCount(String category, int count);
+
+  /// No description provided for @localEventsSectionExpand.
+  ///
+  /// In it, this message translates to:
+  /// **'Apri {section}'**
+  String localEventsSectionExpand(String section);
+
+  /// No description provided for @localEventsSectionCollapse.
+  ///
+  /// In it, this message translates to:
+  /// **'Chiudi {section}'**
+  String localEventsSectionCollapse(String section);
 
   /// No description provided for @localEventsCallTooltip.
   ///

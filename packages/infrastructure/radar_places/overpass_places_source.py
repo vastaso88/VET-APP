@@ -3,6 +3,7 @@ from __future__ import annotations
 import json
 import logging
 import math
+import re
 import time
 from datetime import UTC, datetime
 from urllib import error, parse, request
@@ -49,6 +50,17 @@ _OSM_SPECIES = {
 _logger = logging.getLogger(__name__)
 
 # Tag filters of the pet categories, one Overpass statement each.
+# Words that make an association, NGO or club one "of the animal world":
+# protection groups (ENPA, LAV, OIPA, LIDA as whole words: "lida" alone
+# is inside "solidarietà"), dog and cat clubs, shelter volunteers. POSIX
+# syntax, shared by the Overpass query and by `_classify_tags`. "Rifugio"
+# is left out on purpose: in Italy most associations named so run
+# mountain huts.
+ASSOCIATION_NAME_PATTERN = (
+    "(^|[^a-z])(enpa|lav|oipa|lida)([^a-z]|$)|animal|cinofil|felin|zoofil|"
+    "protezione animali|difesa del cane|kennel|canil|gattil|randagi"
+)
+
 OSM_SELECTORS = (
     '["amenity"="veterinary"]',
     '["shop"="pet"]',
@@ -60,6 +72,13 @@ OSM_SELECTORS = (
     '["craft"="dog_walker"]',
     '["leisure"="dog_park"]',
     '["amenity"="animal_shelter"]',
+    # Associations have no animal-specific tag of their own in OSM: an
+    # association, NGO or club counts when its `association` tag or its
+    # name says it is about animals (ASSOCIATION_NAME_PATTERN).
+    '["office"~"^(association|ngo|charity|foundation)$"]["association"~"animal",i]',
+    f'["office"~"^(association|ngo|charity|foundation)$"]["name"~"{ASSOCIATION_NAME_PATTERN}",i]',
+    f'["club"]["name"~"{ASSOCIATION_NAME_PATTERN}",i]',
+    '["club"~"^(dog|cat|animal)$"]',
 )
 
 # Tags worth showing on a place card when the mapper recorded them. Only
@@ -332,6 +351,9 @@ def _read_coordinates(element: dict[str, object]) -> tuple[float | None, float |
     return None, None
 
 
+_ASSOCIATION_NAME = re.compile(ASSOCIATION_NAME_PATTERN, re.IGNORECASE)
+
+
 def _classify_tags(tags: dict[str, str]) -> tuple[str, str] | None:
     amenity = tags.get("amenity", "").strip().lower()
     shop = tags.get("shop", "").strip().lower()
@@ -359,6 +381,15 @@ def _classify_tags(tags: dict[str, str]) -> tuple[str, str] | None:
         return "pet_sitting", "craft:dog_walker"
     if leisure == "dog_park":
         return "dog_park", "leisure:dog_park"
+    club = tags.get("club", "").strip().lower()
+    if office in {"association", "ngo", "charity", "foundation"} or club:
+        about_animals = (
+            "animal" in tags.get("association", "").lower()
+            or club in {"dog", "cat", "animal"}
+            or _ASSOCIATION_NAME.search(tags.get("name", "")) is not None
+        )
+        if about_animals:
+            return "association", f"office:{office}" if office else f"club:{club}"
     return None
 
 

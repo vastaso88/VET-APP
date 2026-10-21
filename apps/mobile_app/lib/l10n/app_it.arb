@@ -1779,6 +1779,7 @@
   "placesCategoryShop": "Negozi",
   "placesCategoryDogPark": "Aree cani",
   "placesCategoryShelter": "Rifugi e adozioni",
+  "placesCategoryAssociation": "Associazioni",
   "placesCategoryGrooming": "Toelettature",
   "placesCategoryHotel": "Pensioni",
   "placesCategorySchool": "Addestramento",
@@ -1794,6 +1795,7 @@
   "placesTypeHotel": "Pensione per animali",
   "placesTypeDogPark": "Area cani",
   "placesTypeShelter": "Rifugio per animali",
+  "placesTypeAssociation": "Associazione per animali",
   "placesTypeOther": "Servizio per animali",
   "placesHours247": "Indicato come aperto 24 ore su 24",
   "placesHoursHolidays": "Festivi",
@@ -2090,6 +2092,22 @@
       },
       "count": {
         "type": "int"
+      }
+    }
+  },
+  "localEventsSectionExpand": "Apri {section}",
+  "@localEventsSectionExpand": {
+    "placeholders": {
+      "section": {
+        "type": "String"
+      }
+    }
+  },
+  "localEventsSectionCollapse": "Chiudi {section}",
+  "@localEventsSectionCollapse": {
+    "placeholders": {
+      "section": {
+        "type": "String"
       }
     }
   },

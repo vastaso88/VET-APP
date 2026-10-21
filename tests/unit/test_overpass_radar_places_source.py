@@ -159,3 +159,55 @@ def test_shelters_are_classified_with_their_own_type() -> None:
     assert (shelter.place_type, shelter.name) == ("shelter", "Rifugio per animali")
     assert shelter.species == ["dog", "cat"]
     assert shelter.details == {"animal_shelter:adoption": "yes"}
+
+
+def test_animal_associations_are_classified_by_their_tag_or_name() -> None:
+    from datetime import UTC, datetime
+
+    from packages.infrastructure.radar_places.overpass_places_source import map_osm_element
+
+    def mapped(tags: dict[str, str]):  # type: ignore[no-untyped-def]
+        return map_osm_element(
+            {"type": "node", "id": 7, "lat": 45.0, "lon": 9.0, "tags": tags},
+            owner_id="",
+            coverage_key="catalog",
+            fetched_at=datetime(2026, 10, 21, tzinfo=UTC),
+        )
+
+    for tags in (
+        {"office": "association", "name": "ENPA Sezione di Esempio"},
+        {"office": "association", "name": "Gruppo Cinofilo Esempio"},
+        {"office": "ngo", "name": "Amici degli animali Esempio"},
+        {"office": "association", "association": "animal_welfare", "name": "Esempio"},
+        {"club": "sport", "name": "Club Felino Esempio"},
+        {"club": "dog", "name": "Esempio"},
+    ):
+        place = mapped(tags)
+        assert place is not None, tags
+        assert place.place_type == "association", tags
+
+    # Not about animals, or only by an accident of spelling: not listed.
+    for tags in (
+        {"office": "association", "name": "Associazione Solidarietà Esempio"},
+        {"office": "association", "name": "Rifugio Alpino Esempio"},
+        {"office": "association", "name": "Circolo Lavoratori Esempio"},
+        {"club": "sport", "name": "Tennis Club Esempio"},
+    ):
+        assert mapped(tags) is None, tags
+
+    # An association with no name is not shown: there would be nothing to call it.
+    assert mapped({"office": "association", "association": "animal_welfare"}) is None
+    # A shelter run by an association stays a shelter.
+    shelter = mapped({"amenity": "animal_shelter", "office": "association", "name": "ENPA Rifugio"})
+    assert shelter is not None and shelter.place_type == "shelter"
+
+
+def test_the_overpass_query_asks_for_associations() -> None:
+    from packages.infrastructure.radar_places.overpass_places_source import (
+        build_overpass_area_query,
+    )
+
+    query = build_overpass_area_query(iso_3166_2="IT-25", timeout_seconds=90)
+
+    assert '["club"]["name"~' in query
+    assert '["office"~"^(association|ngo|charity|foundation)$"]["association"~"animal",i]' in query

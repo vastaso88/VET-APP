@@ -16,6 +16,8 @@ RadarPlaceType = Literal[
     "dog_park",
     # Canili, gattili, rifugi, centri di adozione.
     "shelter",
+    # Associazioni: protezione animali, cinofile e feline, volontariato.
+    "association",
 ]
 
 OSM_SOURCE_NAME = "openstreetmap_overpass"

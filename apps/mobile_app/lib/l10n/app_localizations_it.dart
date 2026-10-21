@@ -3075,6 +3075,9 @@ class AppLocalizationsIt extends AppLocalizations {
   String get placesCategoryShelter => 'Rifugi e adozioni';
 
   @override
+  String get placesCategoryAssociation => 'Associazioni';
+
+  @override
   String get placesCategoryGrooming => 'Toelettature';
 
   @override
@@ -3118,6 +3121,9 @@ class AppLocalizationsIt extends AppLocalizations {
 
   @override
   String get placesTypeShelter => 'Rifugio per animali';
+
+  @override
+  String get placesTypeAssociation => 'Associazione per animali';
 
   @override
   String get placesTypeOther => 'Servizio per animali';
@@ -3630,6 +3636,16 @@ class AppLocalizationsIt extends AppLocalizations {
   @override
   String localEventsCategoryCount(String category, int count) {
     return '$category ($count)';
+  }
+
+  @override
+  String localEventsSectionExpand(String section) {
+    return 'Apri $section';
+  }
+
+  @override
+  String localEventsSectionCollapse(String section) {
+    return 'Chiudi $section';
   }
 
   @override

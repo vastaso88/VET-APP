@@ -18,8 +18,10 @@ void main() {
         'Voto della community: 1 voto · la media compare da 3 voti');
     expect(const RadarRating(count: 4, average: 4.25).communityLabel,
         'Voto della community: 4,3 su 5 · 4 voti');
-    expect(const RadarReportInfo(
-            reportId: 'r', isPending: true, confirmations: 0, required: 5, expiresInDays: 1)
-        .expiryLabel, 'Scade tra 1 giorno se nessuno conferma.');
+    expect(
+        const RadarReportInfo(
+                reportId: 'r', isPending: true, confirmations: 0, required: 5, expiresInDays: 1)
+            .expiryLabel,
+        'Scade tra 1 giorno se nessuno conferma.');
   });
 }

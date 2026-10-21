@@ -236,8 +236,7 @@ String localizedBackendMessage(String raw) {
     'hai già fatto questa segnalazione.': l10n.placesBackendAlreadyReported,
     'segnalazione non trovata.': l10n.placesBackendReportNotFound,
     'puoi ritirare solo una tua segnalazione.': l10n.placesBackendWithdrawOwnOnly,
-    'questa segnalazione è già chiusa: non si può più ritirare.':
-        l10n.placesBackendWithdrawClosed,
+    'questa segnalazione è già chiusa: non si può più ritirare.': l10n.placesBackendWithdrawClosed,
     'le valutazioni non sono attive.': l10n.placesBackendRatingsOff,
     'si possono valutare solo le aree cani pubbliche.': l10n.placesBackendRatePublicOnly,
     'area cani non trovata.': l10n.placesBackendDogParkNotFound,
