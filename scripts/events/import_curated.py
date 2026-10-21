@@ -3,11 +3,12 @@
     uv run --with truststore python scripts/events/import_curated.py --dry-run
     uv run --with truststore python scripts/events/import_curated.py
 
-Reads data/events/curated/*.json (see data/events/README.md), validates every
-event against the project rules (packages/infrastructure/events/curated_events.py)
-and upserts them by `slug`. Nothing is written if even one event is invalid:
-fix the file and run again. To take an event off the app set its "status" to
-"rejected" in the file (rows are never deleted by this script).
+Reads data/events/curated/*.json (one file per country, e.g. GB.json; see
+scripts/events/README.md), validates every event against the project rules
+(packages/infrastructure/events/curated_events.py) and upserts them by `slug`.
+Nothing is written if even one event is invalid: fix the file and run again.
+To take an event off the app set its "status" to "rejected" in the file
+(rows are never deleted by this script).
 """
 
 from __future__ import annotations
@@ -42,7 +43,20 @@ def main() -> int:
     parser.add_argument(
         "--path", type=Path, default=DEFAULT_DIRECTORY, help="directory of *.json files"
     )
+    parser.add_argument(
+        "--allow-examples",
+        action="store_true",
+        help="allow scripts/events/examples (FICTIONAL events, test database only)",
+    )
     args = parser.parse_args()
+
+    if "examples" in args.path.parts and not args.allow_examples and not args.dry_run:
+        print(
+            "ERRORE  scripts/events/examples ha eventi FITTIZI: non si importano in produzione. "
+            "Per un database di prova usa --allow-examples.",
+            file=sys.stderr,
+        )
+        return 1
 
     events, problems = load_curated_events(args.path)
     for problem in problems:

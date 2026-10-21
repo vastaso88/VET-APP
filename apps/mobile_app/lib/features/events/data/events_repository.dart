@@ -1,6 +1,7 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../../shared/config/app_runtime_config_loader.dart';
+import '../../territory/domain/territory.dart';
 import '../domain/event_entry.dart';
 import '../domain/event_filter.dart';
 
@@ -27,7 +28,16 @@ class EventsRepository {
   /// Eventi che toccano la finestra [from]-[to] (estremi inclusi), ordinati per
   /// data di inizio. Regione e tipo si filtrano dopo, sul risultato: i volumi
   /// sono di decine o centinaia di righe.
-  Future<EventsLoadResult> loadEvents({required DateTime from, required DateTime to}) async {
+  ///
+  /// Solo gli eventi di [country] (ISO alpha-2; predefinito: il paese
+  /// dell'utente, vedi `currentTerritory`): mai quelli di un altro paese, ne'
+  /// come ripiego quando il proprio e' vuoto.
+  Future<EventsLoadResult> loadEvents({
+    required DateTime from,
+    required DateTime to,
+    String? country,
+  }) async {
+    final countryCode = (country ?? currentTerritory().countryCode).toUpperCase();
     final client = _resolveClient();
     if (client == null) {
       return const EventsLoadResult(events: []);
@@ -39,6 +49,7 @@ class EventsRepository {
           .select('*')
           .inFilter('status', ['published', 'cancelled', 'postponed'])
           .eq('audience', 'public')
+          .eq('country', countryCode)
           .gte('ends_on', formatEventDate(from))
           .lte('starts_on', formatEventDate(to))
           .order('starts_on', ascending: true);
@@ -48,7 +59,9 @@ class EventsRepository {
         final event = parseEventRow(row as Map<String, dynamic>);
         if (event != null) events.add(event);
       }
-      return EventsLoadResult(events: events);
+      // The query already filters; this keeps a misconfigured policy from
+      // leaking another country's event into the list.
+      return EventsLoadResult(events: filterEventsByCountry(events, countryCode));
     } catch (_) {
       return const EventsLoadResult(events: [], failed: true);
     }
@@ -97,6 +110,7 @@ EventEntry? parseEventRow(Map<String, dynamic> row) {
     title: title,
     eventType: text('event_type') ?? 'other',
     level: EventLevel.parse(row['level'] as String?),
+    country: (text('country') ?? 'IT').toUpperCase(),
     startsOn: eventDay(startsOn),
     endsOn: eventDay(endsOn),
     description: text('description'),

@@ -13,6 +13,7 @@ import '../../../home/presentation/widgets/home_dashboard_primitives.dart';
 import '../../../location/data/device_location_service.dart';
 import '../../../location/data/location_preference_store.dart';
 import '../../../location/domain/coordinates.dart';
+import '../../../territory/domain/territory.dart';
 import '../../data/area_label_geocoder.dart';
 import '../../data/listing_photo_store.dart';
 import '../../data/marketplace_repository.dart';
@@ -76,6 +77,10 @@ class _CreateListingPageState extends State<CreateListingPage> {
   ListingCategory? _category;
   ListingCondition _condition = ListingCondition.good;
   bool _isGift = false;
+
+  /// Where the Mercatino does not allow ads for live animals the author
+  /// confirms, every time, that this ad offers none (Territory rule).
+  bool _noLiveAnimalsConfirmed = false;
   final Set<ListingSpecies> _species = {};
   final List<_DraftPhoto> _photos = [];
   bool _processingPhotos = false;
@@ -318,6 +323,7 @@ class _CreateListingPageState extends State<CreateListingPage> {
             species: species,
             location: _approxLocation!,
             cityLabel: zone.isEmpty ? null : zone,
+            country: currentTerritory().countryCode,
             createdAt: now,
             updatedAt: now,
           ),
@@ -496,10 +502,40 @@ class _CreateListingPageState extends State<CreateListingPage> {
               if (!_isGift)
                 TextFormField(
                   controller: _priceController,
-                  decoration: InputDecoration(labelText: context.l10n.marketplaceFieldPrice),
+                  decoration: InputDecoration(labelText: listingPriceFieldLabel()),
                   keyboardType: const TextInputType.numberWithOptions(decimal: true),
                   validator: _validatePrice,
                 ),
+              if (!currentTerritory().liveAnimalListingsAllowed) ...[
+                const SizedBox(height: AppSpacing.md),
+                Text(context.l10n.marketplaceNoLiveAnimalsNote, style: AppTextStyles.caption),
+                FormField<bool>(
+                  initialValue: _noLiveAnimalsConfirmed,
+                  validator: (_) => _noLiveAnimalsConfirmed
+                      ? null
+                      : context.l10n.marketplaceNoLiveAnimalsRequired,
+                  builder: (field) => Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      CheckboxListTile(
+                        contentPadding: EdgeInsets.zero,
+                        controlAffinity: ListTileControlAffinity.leading,
+                        title: Text(context.l10n.marketplaceNoLiveAnimalsConfirm),
+                        value: _noLiveAnimalsConfirmed,
+                        onChanged: (value) {
+                          setState(() => _noLiveAnimalsConfirmed = value ?? false);
+                          field.didChange(_noLiveAnimalsConfirmed);
+                        },
+                      ),
+                      if (field.hasError)
+                        Text(
+                          field.errorText!,
+                          style: AppTextStyles.caption.copyWith(color: AppColors.danger),
+                        ),
+                    ],
+                  ),
+                ),
+              ],
               const SizedBox(height: AppSpacing.xl),
               _LocationSection(
                 choice: _locationChoice,

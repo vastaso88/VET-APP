@@ -18,6 +18,13 @@ from pathlib import Path
 from typing import Any
 from urllib.parse import urlparse
 
+from packages.infrastructure.events.event_regions import (
+    COUNTRIES,
+    DEFAULT_COUNTRY,
+    ITALIAN_REGIONS,
+    REGIONS_BY_COUNTRY,
+)
+
 EVENT_TYPES = frozenset(
     {
         "pet_fair",
@@ -63,30 +70,8 @@ _LEVEL_CAP_WITHOUT_DOCUMENT = {"organizer_claim": "regional", "default": "local"
 
 STATUSES = frozenset({"published", "cancelled", "postponed", "rejected", "draft"})
 
-REGIONS = frozenset(
-    {
-        "Abruzzo",
-        "Basilicata",
-        "Calabria",
-        "Campania",
-        "Emilia-Romagna",
-        "Friuli-Venezia Giulia",
-        "Lazio",
-        "Liguria",
-        "Lombardia",
-        "Marche",
-        "Molise",
-        "Piemonte",
-        "Puglia",
-        "Sardegna",
-        "Sicilia",
-        "Toscana",
-        "Trentino-Alto Adige",
-        "Umbria",
-        "Valle d'Aosta",
-        "Veneto",
-    }
-)
+# Italian regions, kept under the old name for callers that only deal with Italy.
+REGIONS = ITALIAN_REGIONS
 
 # Social networks and commercial aggregators: never an acceptable source
 # (terms of use, no reuse, no way to tell who wrote what).
@@ -103,6 +88,9 @@ _BLOCKED_SOURCE_DOMAINS = (
 
 _SLUG = re.compile(r"^[a-z0-9]+(-[a-z0-9]+)*$")
 _PROVINCE = re.compile(r"^[A-Z]{2}$")
+# Subdivision code of the other countries (US/AU state, DE Land, FR département,
+# ES province): one to three upper-case letters or digits ("NSW", "BY", "75", "2A").
+_SUBDIVISION = re.compile(r"^[A-Z0-9]{1,3}$")
 _EMAIL = re.compile(r"\S+@\S+")
 # Seven or more digits, allowing the usual separators: a telephone number.
 _PHONE = re.compile(r"(?:\+?\d[\s./-]?){7,}")
@@ -127,6 +115,7 @@ class CuratedEvent:
     source_url: str
     verified_on: date
     status: str
+    country: str = DEFAULT_COUNTRY
     region: str | None = None
     city: str | None = None
     province_code: str | None = None
@@ -221,14 +210,28 @@ def validate_curated_event(raw: object, *, today: date | None = None) -> Curated
 
     _validate_source_url(source_url)
 
-    region = _text(raw, "region")
-    if region is not None and region not in REGIONS:
-        raise CuratedEventError(f"region non è una regione italiana nota: {region!r}")
-    province_code = _text(raw, "province_code")
-    if province_code is not None and not _PROVINCE.match(province_code):
+    # No "country" means Italy: files written before the column existed keep
+    # working unchanged.
+    country = (_text(raw, "country") or DEFAULT_COUNTRY).upper()
+    if country not in COUNTRIES:
         raise CuratedEventError(
-            f"province_code deve essere una sigla di due lettere maiuscole: {province_code!r}"
+            f"country non gestito: {country!r} (ammessi: {', '.join(sorted(COUNTRIES))})"
         )
+
+    region = _text(raw, "region")
+    if region is not None and region not in REGIONS_BY_COUNTRY[country]:
+        raise CuratedEventError(f"region non è una regione nota per il paese {country}: {region!r}")
+    province_code = _text(raw, "province_code")
+    if province_code is not None:
+        if country == DEFAULT_COUNTRY and not _PROVINCE.match(province_code):
+            raise CuratedEventError(
+                f"province_code deve essere una sigla di due lettere maiuscole: {province_code!r}"
+            )
+        if country != DEFAULT_COUNTRY and not _SUBDIVISION.match(province_code):
+            raise CuratedEventError(
+                f"province_code deve essere un codice di 1-3 lettere o cifre maiuscole: "
+                f"{province_code!r}"
+            )
     city = _text(raw, "city")
     if status in ("published", "cancelled", "postponed") and not (city or region):
         raise CuratedEventError("serve almeno city o region per mostrare dove si svolge")
@@ -255,6 +258,7 @@ def validate_curated_event(raw: object, *, today: date | None = None) -> Curated
         source_url=source_url,
         verified_on=verified_on,
         status=status,
+        country=country,
         region=region,
         city=city,
         province_code=province_code,
@@ -276,6 +280,7 @@ def curated_event_to_row(event: CuratedEvent, *, now_iso: str) -> dict[str, Any]
         "level": event.level,
         "level_basis": event.level_basis,
         "audience": "public",
+        "country": event.country,
         "starts_on": event.starts_on.isoformat(),
         "ends_on": event.ends_on.isoformat(),
         "city": event.city,

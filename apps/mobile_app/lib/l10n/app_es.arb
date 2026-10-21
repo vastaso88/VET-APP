@@ -499,7 +499,6 @@
   "marketplaceSpeciesReptileAmphibian": "Reptiles y anfibios",
   "marketplaceSpeciesFish": "Pez",
   "marketplacePriceGift": "En regalo",
-  "marketplaceDistanceAnywhere": "Cualquier lugar",
   "marketplaceDemoBedTitle": "Cama acolchada (demo)",
   "marketplaceDemoBedDescription": "Poco usada, tamaño mediano.",
   "marketplaceDemoBedArea": "Centro, Milán",
@@ -509,8 +508,11 @@
   "marketplaceMapAction": "Mapa",
   "marketplaceNewListing": "Nuevo anuncio",
   "marketplaceIntro": "Compra, vende y regala artículos para mascotas con otros propietarios.",
-  "marketplaceDistanceNeedsLocation": "Para filtrar por distancia, indica tu ubicación en Ajustes → Ubicación.",
   "marketplaceEmptyFiltered": "Todavía no hay anuncios con estos filtros.",
+  "marketplaceNeedsLocation": "El mercadillo solo muestra anuncios cerca de ti. Indica tu ubicación en Ajustes → Ubicación para verlos.",
+  "marketplaceNoLiveAnimalsNote": "En tu país el mercadillo no admite anuncios de animales vivos: solo productos y servicios para animales.",
+  "marketplaceNoLiveAnimalsConfirm": "Confirmo que este anuncio no ofrece un animal vivo (venta, regalo o cesión)",
+  "marketplaceNoLiveAnimalsRequired": "Confirma que el anuncio no ofrece un animal vivo",
   "marketplaceLoadError": "No puedo cargar los anuncios. Comprueba la conexión.",
   "marketplaceFilterAllCategories": "Todos",
   "marketplaceFilterAllSpecies": "Todas las mascotas",
@@ -614,7 +616,14 @@
   "marketplaceSpeciesLabel": "Para qué mascotas",
   "marketplaceSpeciesRequired": "Indica para qué mascotas es, o elige \"Todas las especies\"",
   "marketplaceGiftSubtitle": "Regálalo a quien lo necesite",
-  "marketplaceFieldPrice": "Precio en €",
+  "marketplaceFieldPrice": "Precio ({currency})",
+  "@marketplaceFieldPrice": {
+    "placeholders": {
+      "currency": {
+        "type": "String"
+      }
+    }
+  },
   "marketplaceSaving": "Guardando…",
   "marketplaceSaveChanges": "Guardar cambios",
   "marketplacePublish": "Publicar anuncio",
@@ -1976,6 +1985,7 @@
     }
   },
   "eventsEmptyPeriod": "No hay eventos en el período elegido",
+  "eventsCountryOnlyNote": "Solo mostramos eventos de tu país, el del idioma que elegiste en la app.",
   "eventsLevelLocal": "Local",
   "eventsLevelProvincial": "Provincial",
   "eventsLevelRegional": "Regional",
@@ -2121,6 +2131,7 @@
   "petNewsTitle": "Noticias",
   "petNewsLoading": "Cargando noticias...",
   "petNewsEmpty": "No hay noticias disponibles para esta categoría ahora.",
+  "petNewsEmptyLocal": "Ahora mismo no hay noticias en tu idioma y para tu país. No mostramos noticias de otros países.",
   "petNewsCategoryAll": "Todos",
   "petNewsCategoryDog": "Perro",
   "petNewsCategoryCat": "Gato",
@@ -2163,7 +2174,7 @@
   "activitiesNearbyTitle": "Cerca de mí",
   "activitiesNearbySubtitle": "Veterinarios, tiendas y parques caninos cerca de ti.",
   "activitiesEventsTitle": "Eventos",
-  "activitiesEventsSubtitle": "Ferias, exposiciones e iniciativas para animales en toda Italia.",
+  "activitiesEventsSubtitle": "Ferias, exposiciones e iniciativas para animales en tu país.",
   "activitiesGalleryTitle": "Galería",
   "activitiesGallerySubtitle": "Reúne fotos y recuerdos de tus animales.",
   "activitiesMarketplaceTitle": "Mercadillo de segunda mano",

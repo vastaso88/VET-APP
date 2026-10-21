@@ -1,0 +1,37 @@
+{
+  "events": [
+    {
+      "slug": "example-gb-pet-fair",
+      "title": "Example Pet Fair (FICTIONAL event)",
+      "event_type": "pet_fair",
+      "level": "regional",
+      "level_basis": "curated",
+      "country": "GB",
+      "starts_on": "2026-11-14",
+      "ends_on": "2026-11-15",
+      "region": "England",
+      "city": "Exampleton",
+      "venue_name": "Example Exhibition Centre",
+      "organizer_name": "Example Pet Society",
+      "description": "Made-up event to try the events list: it does not exist.",
+      "source_url": "https://www.example.org/gb/pet-fair",
+      "verified_on": "2026-10-14"
+    },
+    {
+      "slug": "example-gb-dog-show",
+      "title": "Example Dog Show (FICTIONAL event)",
+      "event_type": "dog_show",
+      "level": "national",
+      "level_basis": "federation_title",
+      "country": "GB",
+      "starts_on": "2026-12-12",
+      "ends_on": "2026-12-12",
+      "region": "Scotland",
+      "city": "Exampleburgh",
+      "organizer_name": "Example Kennel Club",
+      "description": "Made-up event to try the events list: it does not exist.",
+      "source_url": "https://www.example.org/gb/dog-show",
+      "verified_on": "2026-10-14"
+    }
+  ]
+}

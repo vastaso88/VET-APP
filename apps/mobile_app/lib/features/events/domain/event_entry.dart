@@ -110,6 +110,7 @@ class EventEntry {
     required this.level,
     required this.startsOn,
     required this.endsOn,
+    this.country = 'IT',
     this.description,
     this.city,
     this.provinceCode,
@@ -127,6 +128,11 @@ class EventEntry {
   final EventLevel level;
   final DateTime startsOn;
   final DateTime endsOn;
+
+  /// ISO 3166-1 alpha-2 of the country the event takes place in. The app only
+  /// ever shows the owner's country (EventsRepository.loadEvents); rows
+  /// written before the column existed are Italian.
+  final String country;
   final String? description;
   final String? city;
   final String? provinceCode;

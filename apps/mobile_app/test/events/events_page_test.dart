@@ -16,7 +16,11 @@ class _FakeRepository extends EventsRepository {
   final List<(DateTime, DateTime)> calls = [];
 
   @override
-  Future<EventsLoadResult> loadEvents({required DateTime from, required DateTime to}) {
+  Future<EventsLoadResult> loadEvents({
+    required DateTime from,
+    required DateTime to,
+    String? country,
+  }) {
     calls.add((from, to));
     return _handler(from, to);
   }
