@@ -9,7 +9,6 @@ import '../../../design_system/tokens/app_text_styles.dart';
 import '../../../l10n/l10n.dart';
 import '../../../shared/widgets/pet_loader.dart';
 import '../../pets/domain/pet_models.dart';
-import '../../monitoring/presentation/widgets/monitoring_entry_card.dart';
 import '../../pets/presentation/widgets/medical_record_consent_card.dart';
 import '../data/medical_records_repository.dart';
 import '../data/pet_conditions_repository.dart';
@@ -277,7 +276,6 @@ class _PetMedicalRecordsTabState extends State<PetMedicalRecordsTab> {
         return ListView(
           padding: const EdgeInsets.only(bottom: AppSpacing.xl),
           children: [
-            MonitoringEntryCard(pet: widget.pet),
             MedicalRecordConsentCard(pet: widget.pet),
             const SizedBox(height: AppSpacing.md),
             Row(

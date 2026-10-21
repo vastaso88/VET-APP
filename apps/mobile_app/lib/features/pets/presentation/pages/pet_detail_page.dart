@@ -29,6 +29,8 @@ import '../../../dog_walks/presentation/widgets/badge_gallery_dialog.dart';
 import '../../../dog_walks/presentation/widgets/walk_mini_map.dart';
 import '../../../medical_records/data/medical_records_repository.dart';
 import '../../../medical_records/presentation/pet_medical_records_tab.dart';
+import '../../../monitoring/domain/weight_measurement.dart';
+import '../../../monitoring/presentation/pages/monitoring_tab.dart';
 import '../../../reminders/data/reminders_repository.dart';
 import '../../../reminders/domain/reminder_presentation.dart';
 import '../../../reminders/presentation/pages/reminders_pages.dart';
@@ -214,15 +216,22 @@ class _PetDetailContentState extends State<_PetDetailContent>
   /// stored just never loads them.
   bool get _showsWalks => isDogSpecies(widget.pet.species);
 
+  /// "Monitoraggio" (weight, growth, activity) has its own tab for every
+  /// species but fish and aquariums.
+  bool get _showsMonitoring => supportsWeightMonitoring(widget.pet);
+
+  int get _tabCount =>
+      3 + (_showsMonitoring ? 1 : 0) + (_showsWalks ? 1 : 0);
+
   late TabController _tabController =
-      TabController(length: _showsWalks ? 4 : 3, vsync: this);
+      TabController(length: _tabCount, vsync: this);
 
   @override
   void didUpdateWidget(covariant _PetDetailContent oldWidget) {
     super.didUpdateWidget(oldWidget);
-    // Editing the species while this page is open can add/remove the tab;
+    // Editing the species while this page is open can add/remove a tab;
     // a TabController's length is fixed, so it has to be rebuilt.
-    final expectedLength = _showsWalks ? 4 : 3;
+    final expectedLength = _tabCount;
     if (_tabController.length != expectedLength) {
       final previousIndex = _tabController.index;
       _tabController.dispose();
@@ -281,6 +290,8 @@ class _PetDetailContentState extends State<_PetDetailContent>
             PetTabLabel(context.l10n.petsDetailTabReminders),
             PetTabLabel(context.l10n.petsDetailTabChat),
             PetTabLabel(context.l10n.petsDetailTabRecords),
+            if (_showsMonitoring)
+              PetTabLabel(context.l10n.petsDetailTabMonitoring),
             if (_showsWalks) PetTabLabel(context.l10n.petsDetailTabWalks),
           ],
         ),
@@ -294,6 +305,7 @@ class _PetDetailContentState extends State<_PetDetailContent>
               _ChatTab(pet: widget.pet),
               PetMedicalRecordsTab(
                   pet: widget.pet, repository: widget.recordsRepository),
+              if (_showsMonitoring) MonitoringTab(pet: widget.pet),
               if (_showsWalks)
                 _WalksTab(pet: widget.pet, repository: widget.walksRepository),
             ],

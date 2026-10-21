@@ -7,8 +7,7 @@ import 'package:vet_app_mobile/features/dog_walks/data/dog_walks_repository.dart
 import 'package:vet_app_mobile/features/dog_walks/domain/walk_session.dart';
 import 'package:vet_app_mobile/features/monitoring/data/weight_measurements_repository.dart';
 import 'package:vet_app_mobile/features/monitoring/domain/body_condition.dart';
-import 'package:vet_app_mobile/features/monitoring/presentation/pages/monitoring_page.dart';
-import 'package:vet_app_mobile/features/monitoring/presentation/widgets/monitoring_entry_card.dart';
+import 'package:vet_app_mobile/features/monitoring/presentation/pages/monitoring_tab.dart';
 import 'package:vet_app_mobile/features/pets/domain/pet_models.dart';
 import 'package:vet_app_mobile/features/settings/data/unit_settings_store.dart';
 import 'package:vet_app_mobile/features/settings/domain/unit_system.dart';
@@ -18,6 +17,7 @@ final _today = DateTime(2026, 10, 14);
 PetProfile _pet({
   String id = 'pet-test',
   String species = 'Gatto',
+  String breed = '',
   String birth = '03 mar 2020',
   List<FishStock> stock = const [],
 }) =>
@@ -25,7 +25,7 @@ PetProfile _pet({
       id: id,
       name: 'Micio',
       species: species,
-      breed: '',
+      breed: breed,
       birthDateLabel: birth,
       sex: 'Maschio',
       weightLabel: '',
@@ -73,6 +73,13 @@ Future<WeightMeasurementsRepository> _seed(
   return repository;
 }
 
+/// A screen of this size (logical pixels), seen by MediaQuery too.
+void _setScreen(WidgetTester tester, Size size) {
+  tester.view.devicePixelRatio = 1;
+  tester.view.physicalSize = size;
+  addTearDown(tester.view.reset);
+}
+
 Future<void> _open(
   WidgetTester tester,
   PetProfile pet, {
@@ -80,16 +87,17 @@ Future<void> _open(
   DogWalksRepository? walks,
 }) async {
   // Tall enough that the whole list is built.
-  await tester.binding.setSurfaceSize(const Size(420, 2600));
-  addTearDown(() => tester.binding.setSurfaceSize(null));
+  _setScreen(tester, const Size(420, 2600));
   await tester.pumpWidget(
     MaterialApp(
-      home: MonitoringPage(
-        pet: pet,
-        repository: repository ??
-            WeightMeasurementsRepository(ownerIdResolver: () => 'o'),
-        walksRepository: walks ?? _FakeWalks(),
-        now: () => _today,
+      home: Scaffold(
+        body: MonitoringTab(
+          pet: pet,
+          repository: repository ??
+              WeightMeasurementsRepository(ownerIdResolver: () => 'o'),
+          walksRepository: walks ?? _FakeWalks(),
+          now: () => _today,
+        ),
       ),
     ),
   );
@@ -252,8 +260,13 @@ void main() {
 
     await tester.enterText(
         find.byKey(const ValueKey('measurement-weight')), '9,5');
-    await tester.tap(find.byKey(const ValueKey('measurement-bcs-2')));
+    await tester.ensureVisible(find.byKey(const ValueKey('bcs-picker-open')));
+    await tester.tap(find.byKey(const ValueKey('bcs-picker-open')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const ValueKey('bcs-level-2')));
     await tester.pump();
+    await tester.tap(find.byKey(const ValueKey('bcs-guide-confirm')));
+    await tester.pumpAndSettle();
     await tester.tap(find.byKey(const ValueKey('measurement-save')));
     await tester.pumpAndSettle();
 
@@ -327,9 +340,12 @@ void main() {
 
     await tester.enterText(
         find.byKey(const ValueKey('measurement-weight')), '5,6');
-    // The same body condition chosen again is taken back.
-    await tester.tap(find.byKey(const ValueKey('measurement-bcs-3')));
-    await tester.pump();
+    // The assessment can be taken back from the guide.
+    await tester.ensureVisible(find.byKey(const ValueKey('bcs-picker-open')));
+    await tester.tap(find.byKey(const ValueKey('bcs-picker-open')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const ValueKey('bcs-guide-clear')));
+    await tester.pumpAndSettle();
     await tester.tap(find.byKey(const ValueKey('measurement-save')));
     await tester.pumpAndSettle();
 
@@ -379,8 +395,7 @@ void main() {
       (DateTime(2026, 9, 1), 22.4, BodyCondition.slightlyOverweight),
       (DateTime(2026, 10, 1), 23.1, BodyCondition.slightlyOverweight),
     ]);
-    await tester.binding.setSurfaceSize(const Size(320, 2600));
-    addTearDown(() => tester.binding.setSurfaceSize(null));
+    _setScreen(tester, const Size(320, 2600));
     await tester.pumpWidget(
       MaterialApp(
         builder: (context, child) => MediaQuery(
@@ -388,11 +403,14 @@ void main() {
               .copyWith(textScaler: const TextScaler.linear(1.4)),
           child: child!,
         ),
-        home: MonitoringPage(
-          pet: pet,
-          repository: repository,
-          walksRepository: _FakeWalks([_walk('a', DateTime(2026, 10, 13, 8))]),
-          now: () => _today,
+        home: Scaffold(
+          body: MonitoringTab(
+            pet: pet,
+            repository: repository,
+            walksRepository:
+                _FakeWalks([_walk('a', DateTime(2026, 10, 13, 8))]),
+            now: () => _today,
+          ),
         ),
       ),
     );
@@ -405,27 +423,5 @@ void main() {
     await tester.pumpAndSettle();
     expect(tester.takeException(), isNull);
     expect(find.byKey(const ValueKey('measurement-save')), findsOneWidget);
-  });
-
-  testWidgets('the entry row exists for every species but fish',
-      (tester) async {
-    Future<void> pumpCard(PetProfile pet) => tester.pumpWidget(
-          MaterialApp(home: Scaffold(body: MonitoringEntryCard(pet: pet))),
-        );
-
-    await pumpCard(_pet());
-    expect(find.byKey(const ValueKey('monitoring-entry')), findsOneWidget);
-    expect(find.text('Peso e corporatura'), findsOneWidget);
-
-    await pumpCard(_pet(species: 'Cane'));
-    expect(find.text('Peso, corporatura e attività'), findsOneWidget);
-
-    await pumpCard(_pet(species: 'Pesce'));
-    expect(find.byKey(const ValueKey('monitoring-entry')), findsNothing);
-
-    await pumpCard(_pet(
-        species: 'Pesce',
-        stock: const [FishStock(species: 'Guppy', maleCount: 1)]));
-    expect(find.byKey(const ValueKey('monitoring-entry')), findsNothing);
   });
 }

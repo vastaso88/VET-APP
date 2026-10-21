@@ -36,3 +36,18 @@ def body_condition_score(code: str | None) -> int | None:
 def body_condition_prompt_label(code: str | None) -> str | None:
     """The wording the chat model reads, None for a missing or unknown code."""
     return _PROMPT_LABEL.get(code or "")
+
+
+def species_has_body_condition(species: str | None, breed: str | None = None) -> bool:
+    """Whether a species has a body condition at all.
+
+    Only the species with a published assessment guide do (dogs and cats:
+    WSAVA; rabbits, a breed of "Piccoli mammiferi"): for every other one the
+    app neither asks for nor shows a "corporatura", so the chat must not read
+    an old value either. Mirrors `bodyConditionGuideForSpecies` in the app
+    (monitoring/domain/body_condition_guide.dart).
+    """
+    name = (species or "").strip().lower()
+    if name in ("cane", "gatto"):
+        return True
+    return name == "piccoli mammiferi" and (breed or "").strip().lower().startswith("coniglio")

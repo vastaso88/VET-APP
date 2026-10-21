@@ -7,6 +7,7 @@ import '../../../../design_system/tokens/app_text_styles.dart';
 import '../../../../l10n/l10n.dart';
 import '../../../monitoring/data/weight_measurements_repository.dart';
 import '../../../monitoring/domain/body_condition.dart';
+import '../../../monitoring/domain/body_condition_guide.dart';
 import '../../../settings/data/unit_settings_store.dart';
 import '../../../settings/domain/unit_conversion.dart';
 import '../../data/pet_demo_store.dart';
@@ -226,7 +227,8 @@ class _PetDataPageState extends State<PetDataPage> {
           weight.isEmpty ? null : weightLabelIn(weight, UnitSettingsStore.instance.system),
         ),
       ),
-      if (speciesHasBodyDetails(pet.species)) ...[
+      // Corporatura exists only for species with a published guide.
+      if (supportsBodyCondition(pet))
         PetInfoRow(
           label: t.petsFormBodyConditionLabel,
           value: _orNotProvided(
@@ -234,6 +236,7 @@ class _PetDataPageState extends State<PetDataPage> {
             bodyCondition?.label,
           ),
         ),
+      if (speciesHasBodyDetails(pet.species))
         PetInfoRow(
           label: t.petsFormActivityLabel,
           value: _orNotProvided(
@@ -241,7 +244,6 @@ class _PetDataPageState extends State<PetDataPage> {
             activity == null ? null : localizedActivityLevelLabel(activity),
           ),
         ),
-      ],
       if (speciesHasCoatColor(pet.species))
         PetInfoRow(
           label: speciesHasCoat(pet.species) ? t.petsFormCoatColorLabel : t.petsFormColorLabel,
