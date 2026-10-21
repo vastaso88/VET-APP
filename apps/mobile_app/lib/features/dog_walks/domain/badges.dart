@@ -1,3 +1,4 @@
+import '../../../shared/date/calendar_days.dart';
 import 'walk_session.dart';
 
 const firstWalkBadgePrefix = 'first_walk_pet_';
@@ -100,7 +101,7 @@ int _longestConsecutiveDayStreak(List<WalkSession> sessions) {
   var current = 0;
   DateTime? previousDay;
   for (final day in days) {
-    current = (previousDay != null && day.difference(previousDay).inDays == 1)
+    current = (previousDay != null && calendarDaysBetween(previousDay, day) == 1)
         ? current + 1
         : 1;
     if (current > longest) longest = current;

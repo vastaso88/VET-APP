@@ -61,6 +61,9 @@ void main() {
     expect(find.byType(PetMedicalRecordsTab), findsOneWidget);
     expect(find.byKey(const ValueKey('monitoring-entry')), findsNothing);
 
+    // The bar scrolls sideways: bring the tab into view before tapping it.
+    await tester.ensureVisible(find.widgetWithText(Tab, 'Monitoraggio'));
+    await tester.pumpAndSettle();
     await tester.tap(find.widgetWithText(Tab, 'Monitoraggio'));
     await tester.pumpAndSettle();
     expect(find.byType(MonitoringTab), findsOneWidget);
@@ -68,7 +71,7 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
-  testWidgets('a dog has five tabs and they all fit a small phone',
+  testWidgets('a dog has five tabs, the bar scrolls on a small phone',
       (tester) async {
     await open(tester, _pet('Cane'));
 

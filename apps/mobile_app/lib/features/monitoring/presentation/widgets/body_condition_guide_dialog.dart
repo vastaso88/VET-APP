@@ -139,6 +139,33 @@ class _BodyConditionGuideDialogState extends State<BodyConditionGuideDialog> {
                     ],
                     const SizedBox(height: AppSpacing.md),
                     Text(
+                      l10n.monitoringBcsGuideAdviceTitle,
+                      key: const ValueKey('bcs-guide-advice-title'),
+                      style: AppTextStyles.bodySmall.copyWith(
+                        color: AppColors.text,
+                        fontWeight: FontWeight.w800,
+                      ),
+                    ),
+                    const SizedBox(height: AppSpacing.xs),
+                    for (final advice in [
+                      l10n.monitoringBcsGuideAdvice1(widget.petName),
+                      l10n.monitoringBcsGuideAdvice2,
+                      l10n.monitoringBcsGuideAdvice3,
+                    ])
+                      Padding(
+                        padding: const EdgeInsets.only(bottom: AppSpacing.xs),
+                        child: Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text('• ', style: AppTextStyles.bodySmall),
+                            Expanded(
+                              child: Text(advice, style: AppTextStyles.bodySmall),
+                            ),
+                          ],
+                        ),
+                      ),
+                    const SizedBox(height: AppSpacing.sm),
+                    Text(
                       l10n.monitoringBcsGuideDisclaimer,
                       style: AppTextStyles.caption
                           .copyWith(fontWeight: FontWeight.w500),

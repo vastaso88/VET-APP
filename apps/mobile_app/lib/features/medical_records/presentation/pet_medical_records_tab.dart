@@ -142,14 +142,16 @@ class _PetMedicalRecordsTabState extends State<PetMedicalRecordsTab> {
                 child: Text(l10n.medAddTitle, style: AppTextStyles.title),
               ),
               for (final category in RecordCategory.values)
-                ListTile(
-                  leading: Icon(category.icon, color: AppColors.primary),
-                  title: Text(category.singularLabel(l10n)),
-                  onTap: () {
-                    Navigator.of(sheetContext).pop();
-                    unawaited(_addEntry(category));
-                  },
-                ),
+                if (category.isOfferedFor(widget.pet.species,
+                    breed: widget.pet.breed))
+                  ListTile(
+                    leading: Icon(category.icon, color: AppColors.primary),
+                    title: Text(category.singularLabel(l10n)),
+                    onTap: () {
+                      Navigator.of(sheetContext).pop();
+                      unawaited(_addEntry(category));
+                    },
+                  ),
               ListTile(
                 leading: const Icon(conditionIcon, color: AppColors.primary),
                 title: Text(l10n.medCatCondition),
@@ -277,13 +279,18 @@ class _PetMedicalRecordsTabState extends State<PetMedicalRecordsTab> {
         records.where((record) => record.category == category).length;
     final conditions = _controller.conditions;
     final tiles = <Widget>[
+      // A species that is never vaccinated has no Vaccini tile, unless it
+      // already has entries there (nothing saved is ever hidden).
       for (final category in RecordCategory.values)
-        _CategoryTile(
-          icon: category.icon,
-          label: category.tileLabel(l10n),
-          countText: l10n.medCatCount(countOf(category)),
-          onTap: () => _openCategory(category),
-        ),
+        if (category.isOfferedFor(widget.pet.species,
+                breed: widget.pet.breed) ||
+            countOf(category) > 0)
+          _CategoryTile(
+            icon: category.icon,
+            label: category.tileLabel(l10n),
+            countText: l10n.medCatCount(countOf(category)),
+            onTap: () => _openCategory(category),
+          ),
       _CategoryTile(
         icon: conditionIcon,
         label: l10n.medCatCondition,

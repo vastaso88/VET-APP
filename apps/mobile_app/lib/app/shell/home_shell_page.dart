@@ -20,6 +20,8 @@ import '../../features/pets/data/pet_demo_store.dart';
 import '../../features/pets/pets.dart';
 import '../../features/settings/presentation/pages/settings_page.dart';
 import '../../l10n/l10n.dart';
+import '../../features/notifications/application/notification_taps.dart';
+import '../../features/reminders/presentation/reminder_completion_prompter.dart';
 import '../launch/route_restoration.dart';
 import '../launch/warm_start_store.dart';
 
@@ -55,6 +57,11 @@ class _HomeShellPageState extends State<HomeShellPage> {
   void initState() {
     super.initState();
     HomeShellNavigation._requests.addListener(_onTabRequested);
+    NotificationTaps.instance.pendingReminderId.addListener(_askAboutTappedReminder);
+    // Back from the background: a reminder may have fallen due meanwhile.
+    _lifecycle = AppLifecycleListener(onResume: () {
+      if (_ready) unawaited(ReminderCompletionPrompter.instance.checkDue());
+    });
     WidgetsBinding.instance.addPostFrameCallback((_) {
       unawaited(_restoreOpenPages());
       // The shell being up means signed in and past splash/paywall: only now
@@ -64,13 +71,30 @@ class _HomeShellPageState extends State<HomeShellPage> {
         if (!mounted) return;
         HomeWidgetActionStore.instance.shellReady();
         unawaited(_maybeShowTrialCountdown());
+        _ready = true;
+        // A notification tap that launched the app, then the reminders that
+        // fell due while it was closed.
+        _askAboutTappedReminder();
+        unawaited(ReminderCompletionPrompter.instance.checkDue());
       });
     });
+  }
+
+  AppLifecycleListener? _lifecycle;
+  bool _ready = false;
+
+  /// The owner tapped a reminder's notification: "Fatto? Registralo nello storico".
+  void _askAboutTappedReminder() {
+    if (!_ready || !mounted) return;
+    final id = NotificationTaps.instance.take();
+    if (id != null) unawaited(ReminderCompletionPrompter.instance.promptFor(id));
   }
 
   @override
   void dispose() {
     HomeShellNavigation._requests.removeListener(_onTabRequested);
+    NotificationTaps.instance.pendingReminderId.removeListener(_askAboutTappedReminder);
+    _lifecycle?.dispose();
     HomeWidgetActionStore.instance.shellGone();
     super.dispose();
   }

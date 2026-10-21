@@ -232,6 +232,15 @@ alter table public.reminders add column if not exists is_done boolean not null d
 -- notification each per day (apps/mobile_app/lib/features/notifications/).
 alter table public.reminders add column if not exists dose_times text[];
 
+-- Categoria dei promemoria (2026-10-21): the same keys as the cartella clinica
+-- (visit / exam / vaccine / therapy) plus grooming and other, and the finer
+-- type of a clinical one (clinical_events.subtype). Completing a clinical
+-- reminder writes a clinical_events row with the id reminder-<reminder id>-
+-- <yyyymmdd>, so no link column is needed. Reminders saved before this stay
+-- NULL: the app guesses their category from the title and never writes the guess.
+alter table public.reminders add column if not exists category text;
+alter table public.reminders add column if not exists subtype text;
+
 -- Account-level consents (docs/compliance/04_termini_e_consensi.md): ToS,
 -- privacy policy, marketing email, analytics. One row per owner; each key
 -- maps to {granted: bool, version: text, decided_at: timestamptz}.

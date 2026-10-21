@@ -170,6 +170,12 @@ void main() {
               findsOneWidget);
         }
         expect(find.byKey(const ValueKey('bcs-guide-tip')), findsOneWidget);
+        // The "Consigli" block: weigh every 2-4 weeks, same way, ask the vet.
+        final advice = find.byKey(const ValueKey('bcs-guide-advice-title'));
+        await tester.ensureVisible(advice);
+        expect(find.text('Consigli'), findsOneWidget);
+        expect(find.textContaining('ogni 2-4 settimane'), findsOneWidget);
+        expect(find.textContaining('chiedi al veterinario'), findsWidgets);
         // Source cited, at the bottom of the scrollable card.
         final source = find.byKey(const ValueKey('bcs-guide-source'));
         await tester.ensureVisible(source);

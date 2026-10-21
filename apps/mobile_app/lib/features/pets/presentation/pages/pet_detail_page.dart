@@ -197,8 +197,8 @@ String petHeaderSubtitle(PetProfile pet, {DateTime? now}) {
   return parts.join(' · ');
 }
 
-/// One tab title that always fits: it scales down to the width its tab gets
-/// instead of being truncated with an ellipsis.
+/// One tab title, always at the same readable size: the bar scrolls sideways
+/// when the titles do not all fit, instead of shrinking each one differently.
 class PetTabLabel extends StatelessWidget {
   const PetTabLabel(this.label, {super.key});
 
@@ -206,12 +206,7 @@ class PetTabLabel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Tab(
-      child: FittedBox(
-        fit: BoxFit.scaleDown,
-        child: Text(label, maxLines: 1, softWrap: false),
-      ),
-    );
+    return Tab(child: Text(label, maxLines: 1, softWrap: false));
   }
 }
 
@@ -323,11 +318,13 @@ class _PetDetailContentState extends State<_PetDetailContent>
           labelStyle:
               AppTextStyles.bodySmall.copyWith(fontWeight: FontWeight.w700),
           unselectedLabelStyle: AppTextStyles.bodySmall,
-          // Not scrollable: all the labels are on screen at once and each
-          // shrinks to its share of the width rather than being cut off or
-          // pushed past the edge (owner report, 2026-10-06: "Passeggi...").
-          isScrollable: false,
-          labelPadding: const EdgeInsets.symmetric(horizontal: 2),
+          // Scrollable from the left, every title at the same size (owner
+          // report, build 34: some titles came out much smaller than others).
+          // The TabBar scrolls the selected tab into view by itself. Tab order
+          // and count are unchanged: the restored tab is saved by index.
+          isScrollable: true,
+          tabAlignment: TabAlignment.start,
+          labelPadding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
           tabs: [
             PetTabLabel(context.l10n.petsDetailTabReminders),
             PetTabLabel(context.l10n.petsDetailTabChat),

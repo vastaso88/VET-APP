@@ -157,6 +157,25 @@ bool speciesHasActivity(String? species, {String? breed}) =>
       _ => false,
     };
 
+/// Vaccines are offered for dogs, cats, rabbits, ferrets and the large
+/// mammals (horses, goats, pigs...). Never for fish, reptiles, amphibians,
+/// invertebrates, pet birds or the other small mammals (rodents, hedgehogs),
+/// for which no routine vaccination exists. An animal we cannot place
+/// ([PetKind.unknown], a free-text species) keeps the option: hiding it could
+/// stop an owner from recording a real vaccine.
+bool speciesHasVaccines(String? species, {String? breed}) {
+  return switch (petKindOf(species, breed)) {
+    PetKind.dog || PetKind.cat || PetKind.rabbit || PetKind.largeMammal || PetKind.unknown => true,
+    PetKind.smallMammal => foldBreedText(breed ?? '').startsWith('furetto'),
+    PetKind.bird ||
+    PetKind.reptile ||
+    PetKind.amphibian ||
+    PetKind.fish ||
+    PetKind.invertebrate =>
+      false,
+  };
+}
+
 /// A weight is asked for every animal except fish (see `supportsWeightMonitoring`).
 bool speciesHasWeight(String? species) => species != 'Pesce';
 

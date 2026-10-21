@@ -1,3 +1,5 @@
+import '../../pets/domain/pet_details.dart';
+
 /// The categories of the cartella clinica. [key] is what is stored in
 /// `clinical_events.category` and what the backend reads
 /// (packages/core/domain/medical_record/models.py): keep the two in step.
@@ -9,6 +11,13 @@ enum RecordCategory {
   document;
 
   String get key => name;
+
+  /// Whether to offer this category for the animal: no vaccines for fish,
+  /// reptiles or birds (the rule is `speciesHasVaccines`, in pet_details.dart).
+  /// Entries already stored under it stay visible: this only decides what a
+  /// form or a tile list proposes.
+  bool isOfferedFor(String? species, {String? breed}) =>
+      this != RecordCategory.vaccine || speciesHasVaccines(species, breed: breed);
 
   /// An unknown or missing value is a document: rows written before the
   /// categories existed have none.

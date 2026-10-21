@@ -5369,11 +5369,27 @@ class AppLocalizationsIt extends AppLocalizations {
 
   @override
   String get monitoringBcsGuideTipFurry =>
-      'Nei cani e nei gatti col pelo lungo o folto la vista inganna: tocca sempre le costole.';
+      'Nei cani e nei gatti col pelo lungo o folto la vista inganna: tocca sempre le costole. Per esempio, un cane peloso può sembrare in carne anche se sotto è magro, mentre un cucciolo o un cane molto muscoloso può sembrare «troppo in forma» ma avere un peso corretto.';
 
   @override
   String get monitoringBcsGuideTipRabbit =>
-      'Nei conigli il pelo nasconde le ossa: tocca sempre schiena, costole e anca, la sola vista non basta.';
+      'Nei conigli il pelo nasconde le ossa: tocca sempre schiena, costole e anca, la sola vista non basta. Un pelo folto può far sembrare grasso un coniglio normale, o normale uno magro.';
+
+  @override
+  String get monitoringBcsGuideAdviceTitle => 'Consigli';
+
+  @override
+  String monitoringBcsGuideAdvice1(String petName) {
+    return 'Pesa $petName ogni 2-4 settimane e annota il peso: le variazioni lente si notano più nei numeri che a occhio.';
+  }
+
+  @override
+  String get monitoringBcsGuideAdvice2 =>
+      'Valuta sempre allo stesso modo: stesso posto, animale in piedi e tranquillo, stesse tre mosse (tatto, vista dall\'alto, vista di lato).';
+
+  @override
+  String get monitoringBcsGuideAdvice3 =>
+      'Nel dubbio, chiedi al veterinario: la corporatura si impara meglio con qualcuno che ti mostra come toccare.';
 
   @override
   String get monitoringBcsGuideCaveatRabbit =>
@@ -5402,178 +5418,183 @@ class AppLocalizationsIt extends AppLocalizations {
 
   @override
   String get monitoringBcsGuideDog1Touch =>
-      'Costole, colonna e ossa del bacino si sentono subito sotto la pelle: non c\'è praticamente grasso e i muscoli sembrano ridotti.';
+      'Costole, colonna e ossa del bacino si sentono subito sotto la pelle: non c\'è praticamente grasso e i muscoli sembrano ridotti. Un esempio: è come toccare le nocche di una mano chiusa a pugno, dove l\'osso è subito sotto la pelle e non c\'è nulla in mezzo.';
 
   @override
   String get monitoringBcsGuideDog1Above =>
-      'Vita molto stretta e scavata dietro le costole; le ossa dell\'anca e della schiena sporgono.';
+      'Vita molto stretta e scavata dietro le costole; le ossa dell\'anca e della schiena sporgono. Guardandolo dall\'alto il corpo ricorda una clessidra molto sottile.';
 
   @override
   String get monitoringBcsGuideDog1Side =>
-      'Pancia molto rientrata, il profilo sale deciso verso le zampe posteriori.';
+      'Pancia molto rientrata, il profilo sale deciso verso le zampe posteriori. Le costole possono vedersi anche da lontano, soprattutto nei cani a pelo corto.';
 
   @override
   String get monitoringBcsGuideDog2Touch =>
-      'Le costole si sentono senza premere, con pochissimo grasso sopra, e a volte si vedono.';
+      'Le costole si sentono senza premere, con pochissimo grasso sopra, e a volte si vedono. Un esempio: passando la mano sul fianco senti ogni costola come un gradino distinto, senza lo strato morbido che c\'è in un cane in forma.';
 
   @override
   String get monitoringBcsGuideDog2Above =>
-      'Vita ben marcata dietro le costole; le ossa del bacino cominciano a notarsi.';
+      'Vita ben marcata dietro le costole; le ossa del bacino cominciano a notarsi. Per trovarla, guarda il cane in piedi dall\'alto: il corpo si restringe in modo evidente dopo l\'ultima costola.';
 
   @override
-  String get monitoringBcsGuideDog2Side => 'Pancia chiaramente rientrata.';
+  String get monitoringBcsGuideDog2Side =>
+      'Pancia chiaramente rientrata. Nei cuccioli in crescita e nei cani molto atletici questo aspetto può essere normale: confrontalo con le costole al tatto.';
 
   @override
   String get monitoringBcsGuideDog3Touch =>
-      'Le costole si sentono bene sotto un sottile strato di grasso, senza dover premere.';
+      'Le costole si sentono bene sotto un sottile strato di grasso, senza dover premere. Un esempio: è come toccare il dorso della mano aperta e distesa, dove senti i tendini sotto la pelle ma non l\'osso tagliente.';
 
   @override
   String get monitoringBcsGuideDog3Above =>
-      'Si vede una vita dietro le costole.';
+      'Si vede una vita dietro le costole. Per trovarla, guarda il cane in piedi dall\'alto: tra il torace e il bacino il corpo si restringe leggermente, senza sporgere ai lati.';
 
   @override
   String get monitoringBcsGuideDog3Side =>
-      'Il ventre sale con dolcezza dal petto verso le zampe posteriori.';
+      'Il ventre sale con dolcezza dal petto verso le zampe posteriori. Nei cani a pelo lungo o folto la sagoma si capisce meglio passando le mani sul corpo che guardando.';
 
   @override
   String get monitoringBcsGuideDog4Touch =>
-      'Le costole si sentono con un po\' di fatica: lo strato di grasso è più spesso, soprattutto sulla schiena vicino alla coda.';
+      'Le costole si sentono con un po\' di fatica: lo strato di grasso è più spesso, soprattutto sulla schiena vicino alla coda. Un esempio: è come toccare il dorso della mano quando le dita sono chiuse a pugno morbido, con più carne sopra le ossa.';
 
   @override
   String get monitoringBcsGuideDog4Above =>
-      'La vita si intravede appena oppure non si vede più.';
+      'La vita si intravede appena oppure non si vede più. Dall\'alto il corpo appare quasi rettangolare, senza il restringimento dietro le costole.';
 
   @override
   String get monitoringBcsGuideDog4Side =>
-      'Il rientro della pancia è poco evidente.';
+      'Il rientro della pancia è poco evidente. Attenzione a non confondere il pelo folto con il grasso: tocca sempre le costole prima di decidere.';
 
   @override
   String get monitoringBcsGuideDog5Touch =>
-      'Le costole non si sentono, o solo premendo forte, sotto un grosso strato di grasso; si accumula su schiena e base della coda.';
+      'Le costole non si sentono, o solo premendo forte, sotto un grosso strato di grasso; si accumula su schiena e base della coda. Un esempio: è come cercare le ossa sul palmo della mano, dove sotto la pelle c\'è solo uno spesso cuscinetto morbido.';
 
   @override
   String get monitoringBcsGuideDog5Above =>
-      'Nessuna vita: il corpo è largo e tondeggiante, la pancia può sembrare gonfia.';
+      'Nessuna vita: il corpo è largo e tondeggiante, la pancia può sembrare gonfia. Dall\'alto il cane appare più largo sui fianchi che sul torace.';
 
   @override
   String get monitoringBcsGuideDog5Side =>
-      'Nessun rientro: la pancia è tonda o scende verso il basso.';
+      'Nessun rientro: la pancia è tonda o scende verso il basso. Un cane così si stanca presto e fa fatica a muoversi: parlane con il veterinario.';
 
   @override
   String get monitoringBcsGuideCat1Touch =>
-      'Costole e vertebre della schiena si sentono senza alcuno strato di grasso; nei gatti a pelo corto le costole si vedono.';
+      'Costole e vertebre della schiena si sentono senza alcuno strato di grasso; nei gatti a pelo corto le costole si vedono. Un esempio: è come toccare le nocche di una mano chiusa a pugno, ossa subito sotto la pelle.';
 
   @override
   String get monitoringBcsGuideCat1Above =>
-      'Vita molto stretta dietro le costole.';
+      'Vita molto stretta dietro le costole. Guardandolo dall\'alto il corpo è sottile come una clessidra molto stretta.';
 
   @override
   String get monitoringBcsGuideCat1Side =>
-      'Pancia molto rientrata, nessun cuscinetto di grasso sotto il ventre.';
+      'Pancia molto rientrata, nessun cuscinetto di grasso sotto il ventre. Anche i muscoli ai lati della colonna sembrano ridotti.';
 
   @override
   String get monitoringBcsGuideCat2Touch =>
-      'Le costole si sentono facilmente con pochissimo grasso e le vertebre della schiena si notano.';
+      'Le costole si sentono facilmente con pochissimo grasso e le vertebre della schiena si notano. Un esempio: passando la mano sul fianco senti ogni costola distinta, senza il velo morbido che c\'è in un gatto in forma.';
 
   @override
   String get monitoringBcsGuideCat2Above =>
-      'Vita ben visibile dietro le costole.';
+      'Vita ben visibile dietro le costole. Guardalo dall\'alto mentre sta in piedi: il corpo si restringe in modo evidente dopo la gabbia toracica.';
 
   @override
   String get monitoringBcsGuideCat2Side =>
-      'Pancia un po\' rientrata, con poco o nessun cuscinetto di grasso.';
+      'Pancia un po\' rientrata, con poco o nessun cuscinetto di grasso. Nei gatti anziani la magrezza può nascondere un problema di salute: se è recente, chiedi al veterinario.';
 
   @override
   String get monitoringBcsGuideCat3Touch =>
-      'Le costole si sentono con un velo di grasso sopra.';
+      'Le costole si sentono con un velo di grasso sopra. Un esempio: è come toccare il dorso della mano aperta e distesa, dove senti i tendini sotto la pelle ma non l\'osso tagliente.';
 
   @override
   String get monitoringBcsGuideCat3Above =>
-      'Corpo ben proporzionato, con una vita visibile dietro le costole.';
+      'Corpo ben proporzionato, con una vita visibile dietro le costole. Dall\'alto il gatto ha una leggera clessidra, senza sporgere ai lati.';
 
   @override
   String get monitoringBcsGuideCat3Side =>
-      'Il profilo del ventre è morbido, con un cuscinetto di grasso appena accennato.';
+      'Il profilo del ventre è morbido, con un cuscinetto di grasso appena accennato. Nei gatti a pelo lungo la sagoma si capisce meglio con le mani che con gli occhi.';
 
   @override
   String get monitoringBcsGuideCat4Touch =>
-      'Le costole sono più difficili da sentire: bisogna premere un po\', perché c\'è più grasso.';
+      'Le costole sono più difficili da sentire: bisogna premere un po\', perché c\'è più grasso. Un esempio: è come toccare il dorso della mano quando le dita sono chiuse a pugno morbido, con più carne sopra le ossa.';
 
   @override
   String get monitoringBcsGuideCat4Above =>
-      'La vita si vede poco o non si vede.';
+      'La vita si vede poco o non si vede. Dall\'alto il corpo appare quasi rettangolare, senza il restringimento dietro le costole.';
 
   @override
   String get monitoringBcsGuideCat4Side =>
-      'Pancia arrotondata, con un cuscinetto di grasso moderato sotto il ventre.';
+      'Pancia arrotondata, con un cuscinetto di grasso moderato sotto il ventre. Quando cammina il cuscinetto oscilla leggermente: nei gatti in forma è appena accennato.';
 
   @override
   String get monitoringBcsGuideCat5Touch =>
-      'Le costole non si sentono sotto un grosso strato di grasso, che si accumula anche sulla schiena e, nei casi estremi, su muso e zampe.';
+      'Le costole non si sentono sotto un grosso strato di grasso, che si accumula anche sulla schiena e, nei casi estremi, su muso e zampe. Un esempio: è come cercare le ossa sul palmo della mano, dove c\'è solo un cuscinetto morbido.';
 
   @override
-  String get monitoringBcsGuideCat5Above => 'Nessuna vita: il corpo è largo.';
+  String get monitoringBcsGuideCat5Above =>
+      'Nessuna vita: il corpo è largo. Dall\'alto appare più largo sui fianchi che sul torace.';
 
   @override
   String get monitoringBcsGuideCat5Side =>
-      'Pancia tonda o penzolante, con un cuscinetto di grasso evidente.';
+      'Pancia tonda o penzolante, con un cuscinetto di grasso evidente. Il gatto fatica a curarsi il pelo sulla schiena e sul posteriore: parlane con il veterinario.';
 
   @override
   String get monitoringBcsGuideRabbit1Touch =>
-      'Colonna, costole e ossa dell\'anca sporgono e sono taglienti sotto la pelle: non c\'è grasso e i muscoli sono ridotti.';
+      'Colonna, costole e ossa dell\'anca sporgono e sono taglienti sotto la pelle: non c\'è grasso e i muscoli sono ridotti. Un esempio: è come toccare le nocche di una mano chiusa a pugno, con l\'osso subito sotto la pelle.';
 
   @override
   String get monitoringBcsGuideRabbit1Above =>
-      'Schiena e fianchi scavati, le ossa dell\'anca si notano.';
+      'Schiena e fianchi scavati, le ossa dell\'anca si notano. Dall\'alto il corpo sembra stretto e spigoloso.';
 
   @override
   String get monitoringBcsGuideRabbit1Side =>
-      'Il posteriore (la groppa) è incavato, curva verso l\'interno.';
+      'Il posteriore (la groppa) è incavato, curva verso l\'interno. Un coniglio così magro va fatto vedere presto al veterinario.';
 
   @override
   String get monitoringBcsGuideRabbit2Touch =>
-      'Costole, colonna e anca si sentono facilmente, con poco grasso sopra.';
+      'Costole, colonna e anca si sentono facilmente, con poco grasso sopra. Un esempio: passando la mano sulla schiena senti le vertebre come una fila di piccole sporgenze ben distinte.';
 
   @override
   String get monitoringBcsGuideRabbit2Above =>
-      'Fianchi sottili, con la colonna poco coperta.';
+      'Fianchi sottili, con la colonna poco coperta. Dall\'alto il corpo è più stretto di quanto ti aspetteresti.';
 
   @override
-  String get monitoringBcsGuideRabbit2Side => 'Il posteriore è piatto.';
+  String get monitoringBcsGuideRabbit2Side =>
+      'Il posteriore è piatto. Nei conigli a pelo lungo il pelo nasconde la magrezza: tocca sempre schiena e anca.';
 
   @override
   String get monitoringBcsGuideRabbit3Touch =>
-      'Costole e colonna si sentono con facilità ma hanno contorni morbidi e arrotondati, non taglienti.';
+      'Costole e colonna si sentono con facilità ma hanno contorni morbidi e arrotondati, non taglienti. Un esempio: è come toccare il dorso della mano aperta e distesa, dove senti le ossa sotto una pelle morbida.';
 
   @override
   String get monitoringBcsGuideRabbit3Above =>
-      'Corpo ben proporzionato, senza rigonfiamenti ai fianchi.';
+      'Corpo ben proporzionato, senza rigonfiamenti ai fianchi. Dall\'alto la sagoma è uniforme, dal collo alla coda.';
 
   @override
   String get monitoringBcsGuideRabbit3Side =>
-      'Il posteriore è piatto e la pancia non sporge.';
+      'Il posteriore è piatto e la pancia non sporge. La schiena forma una curva regolare e non appare né incavata né rigonfia.';
 
   @override
   String get monitoringBcsGuideRabbit4Touch =>
-      'Per sentire costole, colonna e anca bisogna premere: ci sono strati di grasso.';
+      'Per sentire costole, colonna e anca bisogna premere: ci sono strati di grasso. Un esempio: è come toccare il dorso della mano quando le dita sono chiuse a pugno morbido, con più carne sopra le ossa.';
 
   @override
-  String get monitoringBcsGuideRabbit4Above => 'Fianchi pieni e arrotondati.';
+  String get monitoringBcsGuideRabbit4Above =>
+      'Fianchi pieni e arrotondati. Dall\'alto il corpo appare più largo di quanto ti aspetteresti.';
 
   @override
-  String get monitoringBcsGuideRabbit4Side => 'Il posteriore è arrotondato.';
+  String get monitoringBcsGuideRabbit4Side =>
+      'Il posteriore è arrotondato. Spesso si nota anche un leggero rigonfiamento sotto il mento, soprattutto nelle femmine.';
 
   @override
   String get monitoringBcsGuideRabbit5Touch =>
-      'Colonna e anca si sentono a fatica e le costole per niente, sotto un grosso strato di grasso.';
+      'Colonna e anca si sentono a fatica e le costole per niente, sotto un grosso strato di grasso. Un esempio: è come cercare le ossa sul palmo della mano, dove c\'è solo un cuscinetto morbido.';
 
   @override
   String get monitoringBcsGuideRabbit5Above =>
-      'Corpo largo e pieno, con il posteriore che sporge.';
+      'Corpo largo e pieno, con il posteriore che sporge. Dall\'alto la sagoma è molto tondeggiante.';
 
   @override
   String get monitoringBcsGuideRabbit5Side =>
-      'La pancia scende e forma un cuscinetto di grasso sotto il ventre.';
+      'La pancia scende e forma un cuscinetto di grasso sotto il ventre. Un coniglio così in carne fatica a pulirsi e può avere problemi di pelle sotto la coda: chiedi al veterinario.';
 
   @override
   String get monitoringAddMeasurement => 'Nuova misurazione';
@@ -6245,4 +6266,71 @@ class AppLocalizationsIt extends AppLocalizations {
 
   @override
   String get medCondOpenFile => 'Apri allegato';
+
+  @override
+  String get medicalRecordSourceFromReminder => 'Da un promemoria';
+
+  @override
+  String get reminderCatGrooming => 'Toelettatura';
+
+  @override
+  String get reminderCatOther => 'Altro';
+
+  @override
+  String get remindersFormCategory => 'Categoria';
+
+  @override
+  String get remindersFormSubtype => 'Tipo';
+
+  @override
+  String get remindersFormSubtypeNone => 'Nessuno';
+
+  @override
+  String get remindersDoneTitle => 'Fatto?';
+
+  @override
+  String remindersDoneRecordHint(String pet) {
+    return 'Registralo nello storico di $pet.';
+  }
+
+  @override
+  String get remindersDonePlainHint => 'Lo segno come fatto?';
+
+  @override
+  String get remindersDoneFieldTitle => 'Titolo';
+
+  @override
+  String get remindersDoneFieldDate => 'Quando è successo';
+
+  @override
+  String get remindersDoneFieldNotes => 'Note (facoltative)';
+
+  @override
+  String get remindersDoneConfirmRecord => 'Sì, registra';
+
+  @override
+  String get remindersDoneConfirmPlain => 'Sì, fatto';
+
+  @override
+  String get remindersDonePostpone => 'Rimanda';
+
+  @override
+  String get remindersDoneNotDone => 'Non fatto';
+
+  @override
+  String remindersDoneRecorded(String pet) {
+    return 'Registrato nello storico di $pet.';
+  }
+
+  @override
+  String get remindersDoneMarked => 'Segnato come fatto.';
+
+  @override
+  String get remindersDoneDismissed => 'Segnato come non fatto.';
+
+  @override
+  String get remindersDonePostponed => 'Te lo richiedo domani.';
+
+  @override
+  String get remindersDoneTooltip => 'Segna come fatto';
 }

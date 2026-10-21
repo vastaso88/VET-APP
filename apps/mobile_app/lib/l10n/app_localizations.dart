@@ -9103,14 +9103,38 @@ abstract class AppLocalizations {
   /// No description provided for @monitoringBcsGuideTipFurry.
   ///
   /// In it, this message translates to:
-  /// **'Nei cani e nei gatti col pelo lungo o folto la vista inganna: tocca sempre le costole.'**
+  /// **'Nei cani e nei gatti col pelo lungo o folto la vista inganna: tocca sempre le costole. Per esempio, un cane peloso può sembrare in carne anche se sotto è magro, mentre un cucciolo o un cane molto muscoloso può sembrare «troppo in forma» ma avere un peso corretto.'**
   String get monitoringBcsGuideTipFurry;
 
   /// No description provided for @monitoringBcsGuideTipRabbit.
   ///
   /// In it, this message translates to:
-  /// **'Nei conigli il pelo nasconde le ossa: tocca sempre schiena, costole e anca, la sola vista non basta.'**
+  /// **'Nei conigli il pelo nasconde le ossa: tocca sempre schiena, costole e anca, la sola vista non basta. Un pelo folto può far sembrare grasso un coniglio normale, o normale uno magro.'**
   String get monitoringBcsGuideTipRabbit;
+
+  /// No description provided for @monitoringBcsGuideAdviceTitle.
+  ///
+  /// In it, this message translates to:
+  /// **'Consigli'**
+  String get monitoringBcsGuideAdviceTitle;
+
+  /// No description provided for @monitoringBcsGuideAdvice1.
+  ///
+  /// In it, this message translates to:
+  /// **'Pesa {petName} ogni 2-4 settimane e annota il peso: le variazioni lente si notano più nei numeri che a occhio.'**
+  String monitoringBcsGuideAdvice1(String petName);
+
+  /// No description provided for @monitoringBcsGuideAdvice2.
+  ///
+  /// In it, this message translates to:
+  /// **'Valuta sempre allo stesso modo: stesso posto, animale in piedi e tranquillo, stesse tre mosse (tatto, vista dall\'alto, vista di lato).'**
+  String get monitoringBcsGuideAdvice2;
+
+  /// No description provided for @monitoringBcsGuideAdvice3.
+  ///
+  /// In it, this message translates to:
+  /// **'Nel dubbio, chiedi al veterinario: la corporatura si impara meglio con qualcuno che ti mostra come toccare.'**
+  String get monitoringBcsGuideAdvice3;
 
   /// No description provided for @monitoringBcsGuideCaveatRabbit.
   ///
@@ -9157,271 +9181,271 @@ abstract class AppLocalizations {
   /// No description provided for @monitoringBcsGuideDog1Touch.
   ///
   /// In it, this message translates to:
-  /// **'Costole, colonna e ossa del bacino si sentono subito sotto la pelle: non c\'è praticamente grasso e i muscoli sembrano ridotti.'**
+  /// **'Costole, colonna e ossa del bacino si sentono subito sotto la pelle: non c\'è praticamente grasso e i muscoli sembrano ridotti. Un esempio: è come toccare le nocche di una mano chiusa a pugno, dove l\'osso è subito sotto la pelle e non c\'è nulla in mezzo.'**
   String get monitoringBcsGuideDog1Touch;
 
   /// No description provided for @monitoringBcsGuideDog1Above.
   ///
   /// In it, this message translates to:
-  /// **'Vita molto stretta e scavata dietro le costole; le ossa dell\'anca e della schiena sporgono.'**
+  /// **'Vita molto stretta e scavata dietro le costole; le ossa dell\'anca e della schiena sporgono. Guardandolo dall\'alto il corpo ricorda una clessidra molto sottile.'**
   String get monitoringBcsGuideDog1Above;
 
   /// No description provided for @monitoringBcsGuideDog1Side.
   ///
   /// In it, this message translates to:
-  /// **'Pancia molto rientrata, il profilo sale deciso verso le zampe posteriori.'**
+  /// **'Pancia molto rientrata, il profilo sale deciso verso le zampe posteriori. Le costole possono vedersi anche da lontano, soprattutto nei cani a pelo corto.'**
   String get monitoringBcsGuideDog1Side;
 
   /// No description provided for @monitoringBcsGuideDog2Touch.
   ///
   /// In it, this message translates to:
-  /// **'Le costole si sentono senza premere, con pochissimo grasso sopra, e a volte si vedono.'**
+  /// **'Le costole si sentono senza premere, con pochissimo grasso sopra, e a volte si vedono. Un esempio: passando la mano sul fianco senti ogni costola come un gradino distinto, senza lo strato morbido che c\'è in un cane in forma.'**
   String get monitoringBcsGuideDog2Touch;
 
   /// No description provided for @monitoringBcsGuideDog2Above.
   ///
   /// In it, this message translates to:
-  /// **'Vita ben marcata dietro le costole; le ossa del bacino cominciano a notarsi.'**
+  /// **'Vita ben marcata dietro le costole; le ossa del bacino cominciano a notarsi. Per trovarla, guarda il cane in piedi dall\'alto: il corpo si restringe in modo evidente dopo l\'ultima costola.'**
   String get monitoringBcsGuideDog2Above;
 
   /// No description provided for @monitoringBcsGuideDog2Side.
   ///
   /// In it, this message translates to:
-  /// **'Pancia chiaramente rientrata.'**
+  /// **'Pancia chiaramente rientrata. Nei cuccioli in crescita e nei cani molto atletici questo aspetto può essere normale: confrontalo con le costole al tatto.'**
   String get monitoringBcsGuideDog2Side;
 
   /// No description provided for @monitoringBcsGuideDog3Touch.
   ///
   /// In it, this message translates to:
-  /// **'Le costole si sentono bene sotto un sottile strato di grasso, senza dover premere.'**
+  /// **'Le costole si sentono bene sotto un sottile strato di grasso, senza dover premere. Un esempio: è come toccare il dorso della mano aperta e distesa, dove senti i tendini sotto la pelle ma non l\'osso tagliente.'**
   String get monitoringBcsGuideDog3Touch;
 
   /// No description provided for @monitoringBcsGuideDog3Above.
   ///
   /// In it, this message translates to:
-  /// **'Si vede una vita dietro le costole.'**
+  /// **'Si vede una vita dietro le costole. Per trovarla, guarda il cane in piedi dall\'alto: tra il torace e il bacino il corpo si restringe leggermente, senza sporgere ai lati.'**
   String get monitoringBcsGuideDog3Above;
 
   /// No description provided for @monitoringBcsGuideDog3Side.
   ///
   /// In it, this message translates to:
-  /// **'Il ventre sale con dolcezza dal petto verso le zampe posteriori.'**
+  /// **'Il ventre sale con dolcezza dal petto verso le zampe posteriori. Nei cani a pelo lungo o folto la sagoma si capisce meglio passando le mani sul corpo che guardando.'**
   String get monitoringBcsGuideDog3Side;
 
   /// No description provided for @monitoringBcsGuideDog4Touch.
   ///
   /// In it, this message translates to:
-  /// **'Le costole si sentono con un po\' di fatica: lo strato di grasso è più spesso, soprattutto sulla schiena vicino alla coda.'**
+  /// **'Le costole si sentono con un po\' di fatica: lo strato di grasso è più spesso, soprattutto sulla schiena vicino alla coda. Un esempio: è come toccare il dorso della mano quando le dita sono chiuse a pugno morbido, con più carne sopra le ossa.'**
   String get monitoringBcsGuideDog4Touch;
 
   /// No description provided for @monitoringBcsGuideDog4Above.
   ///
   /// In it, this message translates to:
-  /// **'La vita si intravede appena oppure non si vede più.'**
+  /// **'La vita si intravede appena oppure non si vede più. Dall\'alto il corpo appare quasi rettangolare, senza il restringimento dietro le costole.'**
   String get monitoringBcsGuideDog4Above;
 
   /// No description provided for @monitoringBcsGuideDog4Side.
   ///
   /// In it, this message translates to:
-  /// **'Il rientro della pancia è poco evidente.'**
+  /// **'Il rientro della pancia è poco evidente. Attenzione a non confondere il pelo folto con il grasso: tocca sempre le costole prima di decidere.'**
   String get monitoringBcsGuideDog4Side;
 
   /// No description provided for @monitoringBcsGuideDog5Touch.
   ///
   /// In it, this message translates to:
-  /// **'Le costole non si sentono, o solo premendo forte, sotto un grosso strato di grasso; si accumula su schiena e base della coda.'**
+  /// **'Le costole non si sentono, o solo premendo forte, sotto un grosso strato di grasso; si accumula su schiena e base della coda. Un esempio: è come cercare le ossa sul palmo della mano, dove sotto la pelle c\'è solo uno spesso cuscinetto morbido.'**
   String get monitoringBcsGuideDog5Touch;
 
   /// No description provided for @monitoringBcsGuideDog5Above.
   ///
   /// In it, this message translates to:
-  /// **'Nessuna vita: il corpo è largo e tondeggiante, la pancia può sembrare gonfia.'**
+  /// **'Nessuna vita: il corpo è largo e tondeggiante, la pancia può sembrare gonfia. Dall\'alto il cane appare più largo sui fianchi che sul torace.'**
   String get monitoringBcsGuideDog5Above;
 
   /// No description provided for @monitoringBcsGuideDog5Side.
   ///
   /// In it, this message translates to:
-  /// **'Nessun rientro: la pancia è tonda o scende verso il basso.'**
+  /// **'Nessun rientro: la pancia è tonda o scende verso il basso. Un cane così si stanca presto e fa fatica a muoversi: parlane con il veterinario.'**
   String get monitoringBcsGuideDog5Side;
 
   /// No description provided for @monitoringBcsGuideCat1Touch.
   ///
   /// In it, this message translates to:
-  /// **'Costole e vertebre della schiena si sentono senza alcuno strato di grasso; nei gatti a pelo corto le costole si vedono.'**
+  /// **'Costole e vertebre della schiena si sentono senza alcuno strato di grasso; nei gatti a pelo corto le costole si vedono. Un esempio: è come toccare le nocche di una mano chiusa a pugno, ossa subito sotto la pelle.'**
   String get monitoringBcsGuideCat1Touch;
 
   /// No description provided for @monitoringBcsGuideCat1Above.
   ///
   /// In it, this message translates to:
-  /// **'Vita molto stretta dietro le costole.'**
+  /// **'Vita molto stretta dietro le costole. Guardandolo dall\'alto il corpo è sottile come una clessidra molto stretta.'**
   String get monitoringBcsGuideCat1Above;
 
   /// No description provided for @monitoringBcsGuideCat1Side.
   ///
   /// In it, this message translates to:
-  /// **'Pancia molto rientrata, nessun cuscinetto di grasso sotto il ventre.'**
+  /// **'Pancia molto rientrata, nessun cuscinetto di grasso sotto il ventre. Anche i muscoli ai lati della colonna sembrano ridotti.'**
   String get monitoringBcsGuideCat1Side;
 
   /// No description provided for @monitoringBcsGuideCat2Touch.
   ///
   /// In it, this message translates to:
-  /// **'Le costole si sentono facilmente con pochissimo grasso e le vertebre della schiena si notano.'**
+  /// **'Le costole si sentono facilmente con pochissimo grasso e le vertebre della schiena si notano. Un esempio: passando la mano sul fianco senti ogni costola distinta, senza il velo morbido che c\'è in un gatto in forma.'**
   String get monitoringBcsGuideCat2Touch;
 
   /// No description provided for @monitoringBcsGuideCat2Above.
   ///
   /// In it, this message translates to:
-  /// **'Vita ben visibile dietro le costole.'**
+  /// **'Vita ben visibile dietro le costole. Guardalo dall\'alto mentre sta in piedi: il corpo si restringe in modo evidente dopo la gabbia toracica.'**
   String get monitoringBcsGuideCat2Above;
 
   /// No description provided for @monitoringBcsGuideCat2Side.
   ///
   /// In it, this message translates to:
-  /// **'Pancia un po\' rientrata, con poco o nessun cuscinetto di grasso.'**
+  /// **'Pancia un po\' rientrata, con poco o nessun cuscinetto di grasso. Nei gatti anziani la magrezza può nascondere un problema di salute: se è recente, chiedi al veterinario.'**
   String get monitoringBcsGuideCat2Side;
 
   /// No description provided for @monitoringBcsGuideCat3Touch.
   ///
   /// In it, this message translates to:
-  /// **'Le costole si sentono con un velo di grasso sopra.'**
+  /// **'Le costole si sentono con un velo di grasso sopra. Un esempio: è come toccare il dorso della mano aperta e distesa, dove senti i tendini sotto la pelle ma non l\'osso tagliente.'**
   String get monitoringBcsGuideCat3Touch;
 
   /// No description provided for @monitoringBcsGuideCat3Above.
   ///
   /// In it, this message translates to:
-  /// **'Corpo ben proporzionato, con una vita visibile dietro le costole.'**
+  /// **'Corpo ben proporzionato, con una vita visibile dietro le costole. Dall\'alto il gatto ha una leggera clessidra, senza sporgere ai lati.'**
   String get monitoringBcsGuideCat3Above;
 
   /// No description provided for @monitoringBcsGuideCat3Side.
   ///
   /// In it, this message translates to:
-  /// **'Il profilo del ventre è morbido, con un cuscinetto di grasso appena accennato.'**
+  /// **'Il profilo del ventre è morbido, con un cuscinetto di grasso appena accennato. Nei gatti a pelo lungo la sagoma si capisce meglio con le mani che con gli occhi.'**
   String get monitoringBcsGuideCat3Side;
 
   /// No description provided for @monitoringBcsGuideCat4Touch.
   ///
   /// In it, this message translates to:
-  /// **'Le costole sono più difficili da sentire: bisogna premere un po\', perché c\'è più grasso.'**
+  /// **'Le costole sono più difficili da sentire: bisogna premere un po\', perché c\'è più grasso. Un esempio: è come toccare il dorso della mano quando le dita sono chiuse a pugno morbido, con più carne sopra le ossa.'**
   String get monitoringBcsGuideCat4Touch;
 
   /// No description provided for @monitoringBcsGuideCat4Above.
   ///
   /// In it, this message translates to:
-  /// **'La vita si vede poco o non si vede.'**
+  /// **'La vita si vede poco o non si vede. Dall\'alto il corpo appare quasi rettangolare, senza il restringimento dietro le costole.'**
   String get monitoringBcsGuideCat4Above;
 
   /// No description provided for @monitoringBcsGuideCat4Side.
   ///
   /// In it, this message translates to:
-  /// **'Pancia arrotondata, con un cuscinetto di grasso moderato sotto il ventre.'**
+  /// **'Pancia arrotondata, con un cuscinetto di grasso moderato sotto il ventre. Quando cammina il cuscinetto oscilla leggermente: nei gatti in forma è appena accennato.'**
   String get monitoringBcsGuideCat4Side;
 
   /// No description provided for @monitoringBcsGuideCat5Touch.
   ///
   /// In it, this message translates to:
-  /// **'Le costole non si sentono sotto un grosso strato di grasso, che si accumula anche sulla schiena e, nei casi estremi, su muso e zampe.'**
+  /// **'Le costole non si sentono sotto un grosso strato di grasso, che si accumula anche sulla schiena e, nei casi estremi, su muso e zampe. Un esempio: è come cercare le ossa sul palmo della mano, dove c\'è solo un cuscinetto morbido.'**
   String get monitoringBcsGuideCat5Touch;
 
   /// No description provided for @monitoringBcsGuideCat5Above.
   ///
   /// In it, this message translates to:
-  /// **'Nessuna vita: il corpo è largo.'**
+  /// **'Nessuna vita: il corpo è largo. Dall\'alto appare più largo sui fianchi che sul torace.'**
   String get monitoringBcsGuideCat5Above;
 
   /// No description provided for @monitoringBcsGuideCat5Side.
   ///
   /// In it, this message translates to:
-  /// **'Pancia tonda o penzolante, con un cuscinetto di grasso evidente.'**
+  /// **'Pancia tonda o penzolante, con un cuscinetto di grasso evidente. Il gatto fatica a curarsi il pelo sulla schiena e sul posteriore: parlane con il veterinario.'**
   String get monitoringBcsGuideCat5Side;
 
   /// No description provided for @monitoringBcsGuideRabbit1Touch.
   ///
   /// In it, this message translates to:
-  /// **'Colonna, costole e ossa dell\'anca sporgono e sono taglienti sotto la pelle: non c\'è grasso e i muscoli sono ridotti.'**
+  /// **'Colonna, costole e ossa dell\'anca sporgono e sono taglienti sotto la pelle: non c\'è grasso e i muscoli sono ridotti. Un esempio: è come toccare le nocche di una mano chiusa a pugno, con l\'osso subito sotto la pelle.'**
   String get monitoringBcsGuideRabbit1Touch;
 
   /// No description provided for @monitoringBcsGuideRabbit1Above.
   ///
   /// In it, this message translates to:
-  /// **'Schiena e fianchi scavati, le ossa dell\'anca si notano.'**
+  /// **'Schiena e fianchi scavati, le ossa dell\'anca si notano. Dall\'alto il corpo sembra stretto e spigoloso.'**
   String get monitoringBcsGuideRabbit1Above;
 
   /// No description provided for @monitoringBcsGuideRabbit1Side.
   ///
   /// In it, this message translates to:
-  /// **'Il posteriore (la groppa) è incavato, curva verso l\'interno.'**
+  /// **'Il posteriore (la groppa) è incavato, curva verso l\'interno. Un coniglio così magro va fatto vedere presto al veterinario.'**
   String get monitoringBcsGuideRabbit1Side;
 
   /// No description provided for @monitoringBcsGuideRabbit2Touch.
   ///
   /// In it, this message translates to:
-  /// **'Costole, colonna e anca si sentono facilmente, con poco grasso sopra.'**
+  /// **'Costole, colonna e anca si sentono facilmente, con poco grasso sopra. Un esempio: passando la mano sulla schiena senti le vertebre come una fila di piccole sporgenze ben distinte.'**
   String get monitoringBcsGuideRabbit2Touch;
 
   /// No description provided for @monitoringBcsGuideRabbit2Above.
   ///
   /// In it, this message translates to:
-  /// **'Fianchi sottili, con la colonna poco coperta.'**
+  /// **'Fianchi sottili, con la colonna poco coperta. Dall\'alto il corpo è più stretto di quanto ti aspetteresti.'**
   String get monitoringBcsGuideRabbit2Above;
 
   /// No description provided for @monitoringBcsGuideRabbit2Side.
   ///
   /// In it, this message translates to:
-  /// **'Il posteriore è piatto.'**
+  /// **'Il posteriore è piatto. Nei conigli a pelo lungo il pelo nasconde la magrezza: tocca sempre schiena e anca.'**
   String get monitoringBcsGuideRabbit2Side;
 
   /// No description provided for @monitoringBcsGuideRabbit3Touch.
   ///
   /// In it, this message translates to:
-  /// **'Costole e colonna si sentono con facilità ma hanno contorni morbidi e arrotondati, non taglienti.'**
+  /// **'Costole e colonna si sentono con facilità ma hanno contorni morbidi e arrotondati, non taglienti. Un esempio: è come toccare il dorso della mano aperta e distesa, dove senti le ossa sotto una pelle morbida.'**
   String get monitoringBcsGuideRabbit3Touch;
 
   /// No description provided for @monitoringBcsGuideRabbit3Above.
   ///
   /// In it, this message translates to:
-  /// **'Corpo ben proporzionato, senza rigonfiamenti ai fianchi.'**
+  /// **'Corpo ben proporzionato, senza rigonfiamenti ai fianchi. Dall\'alto la sagoma è uniforme, dal collo alla coda.'**
   String get monitoringBcsGuideRabbit3Above;
 
   /// No description provided for @monitoringBcsGuideRabbit3Side.
   ///
   /// In it, this message translates to:
-  /// **'Il posteriore è piatto e la pancia non sporge.'**
+  /// **'Il posteriore è piatto e la pancia non sporge. La schiena forma una curva regolare e non appare né incavata né rigonfia.'**
   String get monitoringBcsGuideRabbit3Side;
 
   /// No description provided for @monitoringBcsGuideRabbit4Touch.
   ///
   /// In it, this message translates to:
-  /// **'Per sentire costole, colonna e anca bisogna premere: ci sono strati di grasso.'**
+  /// **'Per sentire costole, colonna e anca bisogna premere: ci sono strati di grasso. Un esempio: è come toccare il dorso della mano quando le dita sono chiuse a pugno morbido, con più carne sopra le ossa.'**
   String get monitoringBcsGuideRabbit4Touch;
 
   /// No description provided for @monitoringBcsGuideRabbit4Above.
   ///
   /// In it, this message translates to:
-  /// **'Fianchi pieni e arrotondati.'**
+  /// **'Fianchi pieni e arrotondati. Dall\'alto il corpo appare più largo di quanto ti aspetteresti.'**
   String get monitoringBcsGuideRabbit4Above;
 
   /// No description provided for @monitoringBcsGuideRabbit4Side.
   ///
   /// In it, this message translates to:
-  /// **'Il posteriore è arrotondato.'**
+  /// **'Il posteriore è arrotondato. Spesso si nota anche un leggero rigonfiamento sotto il mento, soprattutto nelle femmine.'**
   String get monitoringBcsGuideRabbit4Side;
 
   /// No description provided for @monitoringBcsGuideRabbit5Touch.
   ///
   /// In it, this message translates to:
-  /// **'Colonna e anca si sentono a fatica e le costole per niente, sotto un grosso strato di grasso.'**
+  /// **'Colonna e anca si sentono a fatica e le costole per niente, sotto un grosso strato di grasso. Un esempio: è come cercare le ossa sul palmo della mano, dove c\'è solo un cuscinetto morbido.'**
   String get monitoringBcsGuideRabbit5Touch;
 
   /// No description provided for @monitoringBcsGuideRabbit5Above.
   ///
   /// In it, this message translates to:
-  /// **'Corpo largo e pieno, con il posteriore che sporge.'**
+  /// **'Corpo largo e pieno, con il posteriore che sporge. Dall\'alto la sagoma è molto tondeggiante.'**
   String get monitoringBcsGuideRabbit5Above;
 
   /// No description provided for @monitoringBcsGuideRabbit5Side.
   ///
   /// In it, this message translates to:
-  /// **'La pancia scende e forma un cuscinetto di grasso sotto il ventre.'**
+  /// **'La pancia scende e forma un cuscinetto di grasso sotto il ventre. Un coniglio così in carne fatica a pulirsi e può avere problemi di pelle sotto la coda: chiedi al veterinario.'**
   String get monitoringBcsGuideRabbit5Side;
 
   /// No description provided for @monitoringAddMeasurement.
@@ -10515,6 +10539,132 @@ abstract class AppLocalizations {
   /// In it, this message translates to:
   /// **'Apri allegato'**
   String get medCondOpenFile;
+
+  /// No description provided for @medicalRecordSourceFromReminder.
+  ///
+  /// In it, this message translates to:
+  /// **'Da un promemoria'**
+  String get medicalRecordSourceFromReminder;
+
+  /// No description provided for @reminderCatGrooming.
+  ///
+  /// In it, this message translates to:
+  /// **'Toelettatura'**
+  String get reminderCatGrooming;
+
+  /// No description provided for @reminderCatOther.
+  ///
+  /// In it, this message translates to:
+  /// **'Altro'**
+  String get reminderCatOther;
+
+  /// No description provided for @remindersFormCategory.
+  ///
+  /// In it, this message translates to:
+  /// **'Categoria'**
+  String get remindersFormCategory;
+
+  /// No description provided for @remindersFormSubtype.
+  ///
+  /// In it, this message translates to:
+  /// **'Tipo'**
+  String get remindersFormSubtype;
+
+  /// No description provided for @remindersFormSubtypeNone.
+  ///
+  /// In it, this message translates to:
+  /// **'Nessuno'**
+  String get remindersFormSubtypeNone;
+
+  /// No description provided for @remindersDoneTitle.
+  ///
+  /// In it, this message translates to:
+  /// **'Fatto?'**
+  String get remindersDoneTitle;
+
+  /// No description provided for @remindersDoneRecordHint.
+  ///
+  /// In it, this message translates to:
+  /// **'Registralo nello storico di {pet}.'**
+  String remindersDoneRecordHint(String pet);
+
+  /// No description provided for @remindersDonePlainHint.
+  ///
+  /// In it, this message translates to:
+  /// **'Lo segno come fatto?'**
+  String get remindersDonePlainHint;
+
+  /// No description provided for @remindersDoneFieldTitle.
+  ///
+  /// In it, this message translates to:
+  /// **'Titolo'**
+  String get remindersDoneFieldTitle;
+
+  /// No description provided for @remindersDoneFieldDate.
+  ///
+  /// In it, this message translates to:
+  /// **'Quando è successo'**
+  String get remindersDoneFieldDate;
+
+  /// No description provided for @remindersDoneFieldNotes.
+  ///
+  /// In it, this message translates to:
+  /// **'Note (facoltative)'**
+  String get remindersDoneFieldNotes;
+
+  /// No description provided for @remindersDoneConfirmRecord.
+  ///
+  /// In it, this message translates to:
+  /// **'Sì, registra'**
+  String get remindersDoneConfirmRecord;
+
+  /// No description provided for @remindersDoneConfirmPlain.
+  ///
+  /// In it, this message translates to:
+  /// **'Sì, fatto'**
+  String get remindersDoneConfirmPlain;
+
+  /// No description provided for @remindersDonePostpone.
+  ///
+  /// In it, this message translates to:
+  /// **'Rimanda'**
+  String get remindersDonePostpone;
+
+  /// No description provided for @remindersDoneNotDone.
+  ///
+  /// In it, this message translates to:
+  /// **'Non fatto'**
+  String get remindersDoneNotDone;
+
+  /// No description provided for @remindersDoneRecorded.
+  ///
+  /// In it, this message translates to:
+  /// **'Registrato nello storico di {pet}.'**
+  String remindersDoneRecorded(String pet);
+
+  /// No description provided for @remindersDoneMarked.
+  ///
+  /// In it, this message translates to:
+  /// **'Segnato come fatto.'**
+  String get remindersDoneMarked;
+
+  /// No description provided for @remindersDoneDismissed.
+  ///
+  /// In it, this message translates to:
+  /// **'Segnato come non fatto.'**
+  String get remindersDoneDismissed;
+
+  /// No description provided for @remindersDonePostponed.
+  ///
+  /// In it, this message translates to:
+  /// **'Te lo richiedo domani.'**
+  String get remindersDonePostponed;
+
+  /// No description provided for @remindersDoneTooltip.
+  ///
+  /// In it, this message translates to:
+  /// **'Segna come fatto'**
+  String get remindersDoneTooltip;
 }
 
 class _AppLocalizationsDelegate

@@ -11,6 +11,7 @@ import '../../../../../design_system/tokens/app_radii.dart';
 import '../../../../../design_system/tokens/app_spacing.dart';
 import '../../../../../design_system/tokens/app_text_styles.dart';
 import '../../../../../l10n/date_formats.dart';
+import '../../../../../shared/date/calendar_days.dart';
 import '../../../../../l10n/l10n.dart';
 import '../../../home/presentation/widgets/home_dashboard_primitives.dart';
 import '../../../pets/data/pet_demo_store.dart';
@@ -21,7 +22,11 @@ import '../../../../app/router/app_router.dart';
 import '../../data/reminders_repository.dart';
 import '../../domain/clock_time.dart';
 import '../../domain/reminder_calendar.dart';
+import '../../domain/reminder_category.dart';
 import '../../domain/reminder_presentation.dart';
+import '../reminder_category_labels.dart';
+import '../widgets/reminder_category_picker.dart';
+import '../widgets/reminder_completion_sheet.dart';
 
 enum _ViewMode { list, calendar }
 
@@ -94,13 +99,9 @@ class _RemindersListPageState extends State<RemindersListPage> {
     );
   }
 
+  /// Asks "Fatto? Registralo nello storico" and does what the owner answers.
   Future<void> _markDone(ReminderEntry reminder) async {
-    try {
-      await _repository.saveReminder(reminder.copyWith(isDone: true));
-    } on ReminderSyncException catch (error) {
-      showReminderFailure(error.message);
-      return;
-    }
+    await askToCompleteReminder(context, reminder);
     if (!mounted) return;
     await _reload();
   }
@@ -202,9 +203,7 @@ class _RemindersListPageState extends State<RemindersListPage> {
                             _ReminderTile(
                               reminder: reminder,
                               onTap: () => _openDetail(reminder),
-                              onMarkDone: reminder.kind == EventKind.spot
-                                  ? () => _markDone(reminder)
-                                  : null,
+                              onMarkDone: () => _markDone(reminder),
                             ),
                             if (index != filtered.length - 1)
                               const SizedBox(height: AppSpacing.sm),
@@ -491,7 +490,7 @@ class _MonthCalendarViewState extends State<_MonthCalendarView> {
     final firstOffset = weekStartDay == WeekStartDay.monday
         ? firstOfMonth.weekday - 1
         : firstOfMonth.weekday % 7;
-    final gridStart = firstOfMonth.subtract(Duration(days: firstOffset));
+    final gridStart = addCalendarDays(firstOfMonth, -firstOffset);
     final daysInMonth =
         DateUtils.getDaysInMonth(_visibleMonth.year, _visibleMonth.month);
     final totalWeeks = ((firstOffset + daysInMonth) / 7).ceil();
@@ -557,7 +556,7 @@ class _MonthCalendarViewState extends State<_MonthCalendarView> {
                 for (var i = 0; i < 7; i++) ...[
                   Builder(
                     builder: (context) {
-                      final day = gridStart.add(Duration(days: week * 7 + i));
+                      final day = addCalendarDays(gridStart, week * 7 + i);
                       return Expanded(
                         child: _MonthDayCell(
                           day: day,
@@ -597,9 +596,7 @@ class _MonthCalendarViewState extends State<_MonthCalendarView> {
                     reminder: reminder,
                     compact: true,
                     onTap: () => widget.onOpenReminder(reminder),
-                    onMarkDone: reminder.kind == EventKind.spot
-                        ? () => widget.onMarkDone(reminder)
-                        : null,
+                    onMarkDone: () => widget.onMarkDone(reminder),
                   ),
                   if (index != selectedReminders.length - 1)
                     const SizedBox(height: AppSpacing.sm),
@@ -798,6 +795,35 @@ class _ReminderFormState extends State<_ReminderForm> {
       TextEditingController(text: widget.initial?.note ?? '');
 
   late EventKind _kind = widget.initial?.kind ?? EventKind.spot;
+
+  // The category follows the title and kind (a guess) until the owner picks
+  // one; a saved reminder keeps its own. Only what suits the animal is offered.
+  late final List<ReminderCategory> _offeredCategories = () {
+    final pet = PetDemoStore.instance.byName(widget.initial?.petName ?? widget.petName);
+    return ReminderCategory.offeredFor(pet?.species, breed: pet?.breed);
+  }();
+  late ReminderCategory _category = _initialCategory();
+  late String? _subtype = widget.initial?.subtype;
+  late bool _categoryChosen = widget.initial?.category != null;
+
+  ReminderCategory _initialCategory() {
+    final initial = widget.initial;
+    return _usable(initial?.effectiveCategory ?? ReminderCategory.other);
+  }
+
+  /// [category] when it suits the animal, else the neutral one.
+  ReminderCategory _usable(ReminderCategory category) =>
+      _offeredCategories.contains(category) ? category : ReminderCategory.other;
+
+  void _followGuess() {
+    if (_categoryChosen) return;
+    final guess = _usable(legacyReminderCategory(title: _titleController.text, kind: _kind));
+    if (guess == _category) return;
+    setState(() {
+      _category = guess;
+      if (!guess.subtypes.contains(_subtype)) _subtype = null;
+    });
+  }
   late final _dateController = TextEditingController(
     text: formatDateForInput(_initialDate()),
   );
@@ -839,8 +865,8 @@ class _ReminderFormState extends State<_ReminderForm> {
   DateTime _initialDate() {
     final initial = widget.initial?.dueAt;
     if (initial == null) {
-      final tomorrow = DateTime.now().add(const Duration(days: 1));
-      return DateTime(tomorrow.year, tomorrow.month, tomorrow.day, 9);
+      final today = DateTime.now();
+      return DateTime(today.year, today.month, today.day + 1, 9);
     }
     if (initial.hour == 0 && initial.minute == 0) {
       return DateTime(initial.year, initial.month, initial.day, 9);
@@ -942,6 +968,8 @@ class _ReminderFormState extends State<_ReminderForm> {
       courseDurationDays: _kind == EventKind.course ? _courseDuration : null,
       doseTimes: _kind == EventKind.course ? List.unmodifiable(_doseTimes) : const [],
       isDone: widget.initial?.isDone ?? false,
+      category: _category,
+      subtype: _category.subtypes.contains(_subtype) ? _subtype : null,
     );
 
     widget.onSave(reminder);
@@ -969,7 +997,10 @@ class _ReminderFormState extends State<_ReminderForm> {
             const SizedBox(height: AppSpacing.sm),
             _KindSelector(
                 value: _kind,
-                onChanged: (kind) => setState(() => _kind = kind)),
+                onChanged: (kind) {
+                  setState(() => _kind = kind);
+                  _followGuess();
+                }),
             const SizedBox(height: AppSpacing.lg),
             _FieldLabel(context.l10n.remindersFormTitleLabel),
             const SizedBox(height: AppSpacing.xs),
@@ -978,9 +1009,22 @@ class _ReminderFormState extends State<_ReminderForm> {
               hintText: widget.petName.isEmpty
                   ? context.l10n.remindersFormTitleHint
                   : context.l10n.remindersFormTitleHintWithPet(widget.petName),
+              onChanged: (_) => _followGuess(),
               validator: (value) => (value ?? '').trim().isEmpty
                   ? context.l10n.remindersTitleRequired
                   : null,
+            ),
+            const SizedBox(height: AppSpacing.lg),
+            ReminderCategoryPicker(
+              offered: _offeredCategories,
+              category: _category,
+              subtype: _subtype,
+              onCategory: (category) => setState(() {
+                _categoryChosen = true;
+                _category = category;
+                if (!category.subtypes.contains(_subtype)) _subtype = null;
+              }),
+              onSubtype: (subtype) => setState(() => _subtype = subtype),
             ),
             const SizedBox(height: AppSpacing.lg),
             Row(
@@ -1733,12 +1777,30 @@ class _ReminderDetailPageState extends State<ReminderDetailPage> {
                   label: context.l10n.remindersSummaryPet,
                   value: reminder.petName.isEmpty ? '—' : reminder.petName),
               _FormItem(label: context.l10n.remindersFormKind, value: presentation.kindLabel),
+              _FormItem(
+                  label: context.l10n.remindersFormCategory,
+                  value: reminder.effectiveCategory.label(context.l10n)),
               _FormItem(label: context.l10n.remindersSummaryStatus, value: presentation.dateLabel),
             ],
             onSave: _openEdit,
             onCancel: () => Navigator.of(context).pop(),
           ),
           const SizedBox(height: AppSpacing.md),
+          if (!reminder.isDone) ...[
+            SizedBox(
+              width: double.infinity,
+              child: FilledButton.icon(
+                onPressed: () async {
+                  final navigator = Navigator.of(context);
+                  final handled = await askToCompleteReminder(context, reminder);
+                  if (handled && mounted) navigator.pop();
+                },
+                icon: const Icon(Icons.check_circle_outline, size: 18),
+                label: Text(context.l10n.remindersDoneTitle),
+              ),
+            ),
+            const SizedBox(height: AppSpacing.xs),
+          ],
           SizedBox(
             width: double.infinity,
             child: TextButton.icon(

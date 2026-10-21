@@ -67,9 +67,13 @@ class PetSexField extends FormField<String> {
                       for (final sex in petSexValues)
                         ButtonSegment<String>(
                           value: sex,
-                          label: FittedBox(
-                            fit: BoxFit.scaleDown,
-                            child: Text(labels[sex]!, maxLines: 1),
+                          // Same size for every option; a long one breaks onto a
+                          // second line instead of shrinking.
+                          label: Text(
+                            labels[sex]!,
+                            maxLines: 2,
+                            textAlign: TextAlign.center,
+                            overflow: TextOverflow.visible,
                           ),
                         ),
                     ],

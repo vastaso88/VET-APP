@@ -114,24 +114,23 @@ void main() {
   });
 
   group('PetTabLabel', () {
-    Future<void> pumpTabs(WidgetTester tester, double width) async {
+    const labels = ['Promemoria', 'Chat', 'Referti', 'Monitoraggio', 'Passeggiate'];
+
+    Future<void> pumpTabs(WidgetTester tester, double width, {int selected = 0}) async {
       await tester.pumpWidget(
         MaterialApp(
           home: Scaffold(
             body: Center(
               child: SizedBox(
                 width: width,
-                child: const DefaultTabController(
-                  length: 4,
+                child: DefaultTabController(
+                  length: labels.length,
+                  initialIndex: selected,
                   child: TabBar(
-                    isScrollable: false,
-                    labelPadding: EdgeInsets.symmetric(horizontal: 2),
-                    tabs: [
-                      PetTabLabel('Promemoria'),
-                      PetTabLabel('Chat'),
-                      PetTabLabel('Referti'),
-                      PetTabLabel('Passeggiate'),
-                    ],
+                    isScrollable: true,
+                    tabAlignment: TabAlignment.start,
+                    labelPadding: const EdgeInsets.symmetric(horizontal: 16),
+                    tabs: [for (final label in labels) PetTabLabel(label)],
                   ),
                 ),
               ),
@@ -139,19 +138,34 @@ void main() {
           ),
         ),
       );
+      await tester.pumpAndSettle();
     }
 
-    testWidgets('every label fits inside its share of a narrow screen, whole', (tester) async {
+    testWidgets('every title has the same font size', (tester) async {
       await pumpTabs(tester, 300);
 
-      final bar = tester.getRect(find.byType(TabBar));
-      for (final label in ['Promemoria', 'Chat', 'Referti', 'Passeggiate']) {
-        final rect = tester.getRect(find.text(label));
-        expect(rect.width, lessThanOrEqualTo(300 / 4), reason: '"$label" must not spill over');
-        expect(rect.left, greaterThanOrEqualTo(bar.left));
-        expect(rect.right, lessThanOrEqualTo(bar.right));
-      }
+      final sizes = {
+        for (final label in labels)
+          DefaultTextStyle.of(tester.element(find.text(label))).style.fontSize,
+      };
+      expect(sizes, hasLength(1), reason: 'no title may be smaller than the others');
+    });
+
+    testWidgets('the bar scrolls sideways instead of shrinking the titles', (tester) async {
+      await pumpTabs(tester, 300);
+
+      final bar = tester.widget<TabBar>(find.byType(TabBar));
+      expect(bar.isScrollable, isTrue);
       expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('the selected tab is scrolled into view', (tester) async {
+      await pumpTabs(tester, 300, selected: 4);
+
+      final bar = tester.getRect(find.byType(TabBar));
+      final rect = tester.getRect(find.text('Passeggiate'));
+      expect(rect.left, greaterThanOrEqualTo(bar.left));
+      expect(rect.right, lessThanOrEqualTo(bar.right));
     });
 
     testWidgets('the label text is never truncated with an ellipsis', (tester) async {

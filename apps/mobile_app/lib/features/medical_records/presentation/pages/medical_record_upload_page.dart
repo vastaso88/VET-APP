@@ -63,6 +63,17 @@ class _MedicalRecordUploadPageState extends State<MedicalRecordUploadPage> {
       widget.existing?.category ?? widget.initialCategory;
   late String? _subtype = widget.existing?.subtype;
 
+  /// The categories that make sense for this animal (no vaccines for a fish),
+  /// plus the one already chosen, so editing an old entry never drops its category.
+  List<RecordCategory> get _offeredCategories {
+    final pet = PetDemoStore.instance.byName(widget.petName);
+    return [
+      for (final category in RecordCategory.values)
+        if (category == _category || category.isOfferedFor(pet?.species, breed: pet?.breed))
+          category,
+    ];
+  }
+
   /// True once the owner typed in the title: from then on the file name no
   /// longer overwrites it.
   bool _titleEdited = false;
@@ -428,7 +439,7 @@ class _MedicalRecordUploadPageState extends State<MedicalRecordUploadPage> {
                         spacing: AppSpacing.sm,
                         runSpacing: AppSpacing.sm,
                         children: [
-                          for (final category in RecordCategory.values)
+                          for (final category in _offeredCategories)
                             ChoiceChip(
                               label: Text(category.singularLabel(l10n)),
                               selected: _category == category,

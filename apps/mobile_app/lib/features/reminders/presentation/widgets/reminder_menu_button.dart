@@ -4,6 +4,7 @@ import '../../../../design_system/tokens/app_colors.dart';
 import '../../../../l10n/l10n.dart';
 import '../../data/reminders_repository.dart';
 import '../pages/reminders_pages.dart';
+import 'reminder_completion_sheet.dart';
 
 /// Three-dot menu of one reminder row (same pattern as the chat rows):
 /// Modifica, Segna come fatto, Elimina (red, with confirmation). Failures from
@@ -54,7 +55,9 @@ class ReminderMenuButton extends StatelessWidget {
         );
         onChanged?.call();
       case _Action.done:
-        await _guard(() => repository.saveReminder(reminder.copyWith(isDone: true)));
+        // "Fatto? Registralo nello storico": the answer decides what happens.
+        await askToCompleteReminder(context, reminder);
+        onChanged?.call();
       case _Action.delete:
         final confirmed = await showDialog<bool>(
           context: context,

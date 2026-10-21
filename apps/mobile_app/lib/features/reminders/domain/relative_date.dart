@@ -1,11 +1,10 @@
 import '../../../l10n/l10n.dart';
+import '../../../shared/date/calendar_days.dart';
 
 /// Formats [date] relative to today, in the app language, for short agenda rows.
 String relativeDayLabel(DateTime date) {
   final today = DateTime.now();
-  final startOfToday = DateTime(today.year, today.month, today.day);
-  final startOfDate = DateTime(date.year, date.month, date.day);
-  final dayDifference = startOfDate.difference(startOfToday).inDays;
+  final dayDifference = calendarDaysBetween(today, date);
 
   if (dayDifference == 0) return appL10n.remindersRelativeToday;
   if (dayDifference == 1) return appL10n.remindersRelativeTomorrow;
