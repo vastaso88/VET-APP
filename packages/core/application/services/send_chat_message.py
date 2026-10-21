@@ -28,7 +28,10 @@ from packages.core.domain.medical_record.consent_text import (
     effective_decision,
 )
 from packages.core.domain.medical_record.models import MedicalRecordConsentRecord
-from packages.core.domain.pet_profile.body_condition import body_condition_code
+from packages.core.domain.pet_profile.body_condition import (
+    body_condition_code,
+    species_has_body_condition,
+)
 from packages.core.domain.pet_profile.models import PetProfile
 from packages.core.domain.pet_profile.weight_measurement import (
     format_date_it,
@@ -154,7 +157,10 @@ class SendChatMessageService:
     ) -> tuple[str | None, str | None]:
         """(code, date) of the pet's one body condition: the latest weighing
         that recorded it (with its date), else the owner's estimate on the
-        profile (no date). Never two different values."""
+        profile (no date). Never two different values. None for a species with
+        no body condition guide."""
+        if not species_has_body_condition(pet_profile.species, pet_profile.breed):
+            return None, None
         if self._weight_measurement_repository is not None:
             try:
                 latest = self._weight_measurement_repository.latest_with_body_condition_for_pet(

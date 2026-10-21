@@ -12,8 +12,10 @@ import '../../../pets/domain/pet_format.dart';
 import '../../../pets/domain/pet_models.dart';
 import '../../../settings/domain/unit_system.dart';
 import '../../domain/body_condition.dart';
+import '../../domain/body_condition_guide.dart';
 import '../../domain/weight_measurement.dart';
 import '../../domain/weight_units.dart';
+import 'body_condition_picker.dart';
 
 /// What the owner entered in the "Nuova misurazione" sheet.
 class MeasurementDraft {
@@ -84,6 +86,9 @@ class _MeasurementSheetState extends State<MeasurementSheet> {
     return DateTime(now.year, now.month, now.day);
   }
 
+  /// The body condition is asked only for species with a published guide.
+  BodyConditionGuideKind? get _guide => bodyConditionGuideFor(widget.pet);
+
   /// The birth date, only when it is a full date (day, month, year).
   DateTime? get _birthDate => parsePetBirthdayLabel(widget.pet.birthDateLabel);
 
@@ -148,7 +153,7 @@ class _MeasurementSheetState extends State<MeasurementSheet> {
       MeasurementDraft(
         measuredOn: parseStrictDate(_dateController.text)!,
         weightKg: parseWeightInput(_weightController.text, widget.system)!,
-        bodyCondition: _bodyCondition,
+        bodyCondition: _guide == null ? null : _bodyCondition,
         note: _noteController.text.trim(),
       ),
     );
@@ -239,31 +244,15 @@ class _MeasurementSheetState extends State<MeasurementSheet> {
                 ),
               ),
               const SizedBox(height: AppSpacing.lg),
-              Text(l10n.monitoringFieldBcs, style: AppTextStyles.caption),
-              const SizedBox(height: AppSpacing.sm),
-              Wrap(
-                spacing: AppSpacing.sm,
-                runSpacing: AppSpacing.sm,
-                children: [
-                  for (final condition in BodyCondition.values)
-                    ChoiceChip(
-                      key: ValueKey('measurement-bcs-${condition.score}'),
-                      label: Text('${condition.score} · ${condition.label}'),
-                      selected: _bodyCondition == condition,
-                      showCheckmark: false,
-                      selectedColor: condition.color.withValues(alpha: 0.28),
-                      side: BorderSide(
-                        color: _bodyCondition == condition
-                            ? condition.color
-                            : AppColors.border,
-                      ),
-                      // Tapping the chosen level again takes it back.
-                      onSelected: (selected) => setState(
-                          () => _bodyCondition = selected ? condition : null),
-                    ),
-                ],
-              ),
-              const SizedBox(height: AppSpacing.lg),
+              if (_guide != null) ...[
+                BodyConditionPicker(
+                  kind: _guide!,
+                  petName: widget.pet.name,
+                  value: _bodyCondition,
+                  onChanged: (value) => setState(() => _bodyCondition = value),
+                ),
+                const SizedBox(height: AppSpacing.lg),
+              ],
               TextFormField(
                 key: const ValueKey('measurement-note'),
                 controller: _noteController,

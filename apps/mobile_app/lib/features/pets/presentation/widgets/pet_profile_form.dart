@@ -2,6 +2,9 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
+import '../../../monitoring/domain/body_condition.dart';
+import '../../../monitoring/domain/body_condition_guide.dart';
+import '../../../monitoring/presentation/widgets/body_condition_picker.dart';
 import '../../../settings/data/unit_settings_store.dart';
 import '../../../settings/domain/unit_conversion.dart';
 import '../../../settings/domain/unit_system.dart';
@@ -411,6 +414,8 @@ class _PetProfileFormState extends State<PetProfileForm> {
       _otherBreed = false;
       _otherBreedController.clear();
       _dogSizeCategory = null;
+      // The assessment belongs to the previous species' guide.
+      _bodyCondition = null;
       if (value != 'Pesce') {
         _isAquarium = false;
         _aquariumStock = [];
@@ -487,6 +492,7 @@ class _PetProfileFormState extends State<PetProfileForm> {
 
   Widget _speciesDropdown() {
     return DropdownButtonFormField<String>(
+      isExpanded: true,
       initialValue: _species,
       decoration: _inputDecoration(
         context.l10n.petsFormSpeciesLabel,
@@ -787,15 +793,19 @@ class _PetProfileFormState extends State<PetProfileForm> {
     );
   }
 
+  /// The reference-backed guide of the chosen species, or null: no guide, no
+  /// body condition (nothing to pick, nothing stored).
+  BodyConditionGuideKind? get _bodyConditionGuide =>
+      bodyConditionGuideForSpecies(_species, breed: _breed);
+
   Widget? _bodyConditionField() {
-    if (!speciesHasBodyCondition(_species, breed: _breed)) return null;
-    return PetCodeDropdown(
-      label: context.l10n.petsFormBodyConditionLabel,
-      hint: context.l10n.petsFormBodyConditionHint,
-      value: _bodyCondition,
-      codes: petBodyConditions,
-      labelOf: localizedBodyConditionLabel,
-      onChanged: (value) => setState(() => _bodyCondition = value),
+    final guide = _bodyConditionGuide;
+    if (guide == null) return null;
+    return BodyConditionPicker(
+      kind: guide,
+      petName: _nameController.text.trim(),
+      value: BodyCondition.fromCode(_bodyCondition),
+      onChanged: (value) => setState(() => _bodyCondition = value?.code),
     );
   }
 
@@ -1226,7 +1236,7 @@ class _PetProfileFormState extends State<PetProfileForm> {
       microchipNumber:
           speciesHasMicrochip(_species, breed: _breed) && microchip.isNotEmpty ? microchip : null,
       coatColor: speciesHasCoatColor(_species) && coatColor.isNotEmpty ? coatColor : null,
-      bodyCondition: speciesHasBodyCondition(_species, breed: _breed) ? _bodyCondition : null,
+      bodyCondition: _bodyConditionGuide == null ? null : _bodyCondition,
       activityLevel: speciesHasActivity(_species, breed: _breed) ? _activityLevel : null,
     );
 

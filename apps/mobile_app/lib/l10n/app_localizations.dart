@@ -8860,17 +8860,425 @@ abstract class AppLocalizations {
   /// **'Monitoraggio'**
   String get monitoringTitle;
 
-  /// No description provided for @monitoringEntrySubtitleWeight.
+  /// No description provided for @petsDetailTabMonitoring.
   ///
   /// In it, this message translates to:
-  /// **'Peso e corporatura'**
-  String get monitoringEntrySubtitleWeight;
+  /// **'Monitoraggio'**
+  String get petsDetailTabMonitoring;
 
-  /// No description provided for @monitoringEntrySubtitleWithActivity.
+  /// No description provided for @monitoringBcsGuideTitle.
   ///
   /// In it, this message translates to:
-  /// **'Peso, corporatura e attività'**
-  String get monitoringEntrySubtitleWithActivity;
+  /// **'Valuta la corporatura'**
+  String get monitoringBcsGuideTitle;
+
+  /// No description provided for @monitoringBcsGuideIntro.
+  ///
+  /// In it, this message translates to:
+  /// **'Il peso da solo non basta a dire se un animale è magro o in carne: bisogna toccarlo e guardarlo. Segui i tre passaggi e scegli la descrizione che assomiglia di più a {petName}.'**
+  String monitoringBcsGuideIntro(String petName);
+
+  /// No description provided for @monitoringBcsStepTouch.
+  ///
+  /// In it, this message translates to:
+  /// **'Tocca le costole'**
+  String get monitoringBcsStepTouch;
+
+  /// No description provided for @monitoringBcsStepAbove.
+  ///
+  /// In it, this message translates to:
+  /// **'Guarda dall’alto'**
+  String get monitoringBcsStepAbove;
+
+  /// No description provided for @monitoringBcsStepSide.
+  ///
+  /// In it, this message translates to:
+  /// **'Guarda di lato'**
+  String get monitoringBcsStepSide;
+
+  /// No description provided for @monitoringBcsViewAbove.
+  ///
+  /// In it, this message translates to:
+  /// **'Dall’alto'**
+  String get monitoringBcsViewAbove;
+
+  /// No description provided for @monitoringBcsViewSide.
+  ///
+  /// In it, this message translates to:
+  /// **'Di lato'**
+  String get monitoringBcsViewSide;
+
+  /// No description provided for @monitoringBcsRowTouch.
+  ///
+  /// In it, this message translates to:
+  /// **'Al tatto'**
+  String get monitoringBcsRowTouch;
+
+  /// No description provided for @monitoringBcsRowAbove.
+  ///
+  /// In it, this message translates to:
+  /// **'Dall’alto'**
+  String get monitoringBcsRowAbove;
+
+  /// No description provided for @monitoringBcsRowSide.
+  ///
+  /// In it, this message translates to:
+  /// **'Di lato'**
+  String get monitoringBcsRowSide;
+
+  /// No description provided for @monitoringBcsGuideScale.
+  ///
+  /// In it, this message translates to:
+  /// **'Nella scala della fonte: {range} su {max}'**
+  String monitoringBcsGuideScale(String range, String max);
+
+  /// No description provided for @monitoringBcsGuideChoose.
+  ///
+  /// In it, this message translates to:
+  /// **'Scegli: {level}'**
+  String monitoringBcsGuideChoose(String level);
+
+  /// No description provided for @monitoringBcsGuideClear.
+  ///
+  /// In it, this message translates to:
+  /// **'Rimuovi la valutazione'**
+  String get monitoringBcsGuideClear;
+
+  /// No description provided for @monitoringBcsGuideDisclaimer.
+  ///
+  /// In it, this message translates to:
+  /// **'È un’indicazione orientativa che non sostituisce la visita del veterinario. Le illustrazioni sono schematiche e originali di VetApp.'**
+  String get monitoringBcsGuideDisclaimer;
+
+  /// No description provided for @monitoringBcsGuideSource.
+  ///
+  /// In it, this message translates to:
+  /// **'Fonte: {source}'**
+  String monitoringBcsGuideSource(String source);
+
+  /// No description provided for @monitoringBcsGuideTipFurry.
+  ///
+  /// In it, this message translates to:
+  /// **'Nei cani e nei gatti col pelo lungo o folto la vista inganna: tocca sempre le costole.'**
+  String get monitoringBcsGuideTipFurry;
+
+  /// No description provided for @monitoringBcsGuideTipRabbit.
+  ///
+  /// In it, this message translates to:
+  /// **'Nei conigli il pelo nasconde le ossa: tocca sempre schiena, costole e anca, la sola vista non basta.'**
+  String get monitoringBcsGuideTipRabbit;
+
+  /// No description provided for @monitoringBcsGuideCaveatRabbit.
+  ///
+  /// In it, this message translates to:
+  /// **'Per i conigli questa scala è meno affidabile: due persone possono dare punteggi diversi allo stesso coniglio. Se hai dubbi, chiedi al veterinario.'**
+  String get monitoringBcsGuideCaveatRabbit;
+
+  /// No description provided for @monitoringBcsSourceDog.
+  ///
+  /// In it, this message translates to:
+  /// **'criteri della scala a 9 punti del WSAVA Global Nutrition Committee per i cani (Laflamme, 1997), riassunti con parole nostre e ridotti a 5 livelli da VetApp. Non è materiale ufficiale WSAVA.'**
+  String get monitoringBcsSourceDog;
+
+  /// No description provided for @monitoringBcsSourceCat.
+  ///
+  /// In it, this message translates to:
+  /// **'criteri della scala a 9 punti del WSAVA Global Nutrition Committee per i gatti (Laflamme, 1997; validata da Bjornvad e colleghi, 2011), riassunti con parole nostre e ridotti a 5 livelli da VetApp. Non è materiale ufficiale WSAVA.'**
+  String get monitoringBcsSourceCat;
+
+  /// No description provided for @monitoringBcsSourceRabbit.
+  ///
+  /// In it, this message translates to:
+  /// **'Rabbit Size-O-Meter a 5 livelli della PFMA (Pet Food Manufacturers’ Association), riassunto con parole nostre. L’affidabilità tra chi valuta è limitata (Halck e colleghi, Veterinary Record, 2025).'**
+  String get monitoringBcsSourceRabbit;
+
+  /// No description provided for @monitoringBcsNotAssessed.
+  ///
+  /// In it, this message translates to:
+  /// **'Non valutata'**
+  String get monitoringBcsNotAssessed;
+
+  /// No description provided for @monitoringBcsAssess.
+  ///
+  /// In it, this message translates to:
+  /// **'Valuta la corporatura'**
+  String get monitoringBcsAssess;
+
+  /// No description provided for @monitoringBcsReassess.
+  ///
+  /// In it, this message translates to:
+  /// **'Rivaluta la corporatura'**
+  String get monitoringBcsReassess;
+
+  /// No description provided for @monitoringBcsGuideDog1Touch.
+  ///
+  /// In it, this message translates to:
+  /// **'Costole, colonna e ossa del bacino si sentono subito sotto la pelle: non c\'è praticamente grasso e i muscoli sembrano ridotti.'**
+  String get monitoringBcsGuideDog1Touch;
+
+  /// No description provided for @monitoringBcsGuideDog1Above.
+  ///
+  /// In it, this message translates to:
+  /// **'Vita molto stretta e scavata dietro le costole; le ossa dell\'anca e della schiena sporgono.'**
+  String get monitoringBcsGuideDog1Above;
+
+  /// No description provided for @monitoringBcsGuideDog1Side.
+  ///
+  /// In it, this message translates to:
+  /// **'Pancia molto rientrata, il profilo sale deciso verso le zampe posteriori.'**
+  String get monitoringBcsGuideDog1Side;
+
+  /// No description provided for @monitoringBcsGuideDog2Touch.
+  ///
+  /// In it, this message translates to:
+  /// **'Le costole si sentono senza premere, con pochissimo grasso sopra, e a volte si vedono.'**
+  String get monitoringBcsGuideDog2Touch;
+
+  /// No description provided for @monitoringBcsGuideDog2Above.
+  ///
+  /// In it, this message translates to:
+  /// **'Vita ben marcata dietro le costole; le ossa del bacino cominciano a notarsi.'**
+  String get monitoringBcsGuideDog2Above;
+
+  /// No description provided for @monitoringBcsGuideDog2Side.
+  ///
+  /// In it, this message translates to:
+  /// **'Pancia chiaramente rientrata.'**
+  String get monitoringBcsGuideDog2Side;
+
+  /// No description provided for @monitoringBcsGuideDog3Touch.
+  ///
+  /// In it, this message translates to:
+  /// **'Le costole si sentono bene sotto un sottile strato di grasso, senza dover premere.'**
+  String get monitoringBcsGuideDog3Touch;
+
+  /// No description provided for @monitoringBcsGuideDog3Above.
+  ///
+  /// In it, this message translates to:
+  /// **'Si vede una vita dietro le costole.'**
+  String get monitoringBcsGuideDog3Above;
+
+  /// No description provided for @monitoringBcsGuideDog3Side.
+  ///
+  /// In it, this message translates to:
+  /// **'Il ventre sale con dolcezza dal petto verso le zampe posteriori.'**
+  String get monitoringBcsGuideDog3Side;
+
+  /// No description provided for @monitoringBcsGuideDog4Touch.
+  ///
+  /// In it, this message translates to:
+  /// **'Le costole si sentono con un po\' di fatica: lo strato di grasso è più spesso, soprattutto sulla schiena vicino alla coda.'**
+  String get monitoringBcsGuideDog4Touch;
+
+  /// No description provided for @monitoringBcsGuideDog4Above.
+  ///
+  /// In it, this message translates to:
+  /// **'La vita si intravede appena oppure non si vede più.'**
+  String get monitoringBcsGuideDog4Above;
+
+  /// No description provided for @monitoringBcsGuideDog4Side.
+  ///
+  /// In it, this message translates to:
+  /// **'Il rientro della pancia è poco evidente.'**
+  String get monitoringBcsGuideDog4Side;
+
+  /// No description provided for @monitoringBcsGuideDog5Touch.
+  ///
+  /// In it, this message translates to:
+  /// **'Le costole non si sentono, o solo premendo forte, sotto un grosso strato di grasso; si accumula su schiena e base della coda.'**
+  String get monitoringBcsGuideDog5Touch;
+
+  /// No description provided for @monitoringBcsGuideDog5Above.
+  ///
+  /// In it, this message translates to:
+  /// **'Nessuna vita: il corpo è largo e tondeggiante, la pancia può sembrare gonfia.'**
+  String get monitoringBcsGuideDog5Above;
+
+  /// No description provided for @monitoringBcsGuideDog5Side.
+  ///
+  /// In it, this message translates to:
+  /// **'Nessun rientro: la pancia è tonda o scende verso il basso.'**
+  String get monitoringBcsGuideDog5Side;
+
+  /// No description provided for @monitoringBcsGuideCat1Touch.
+  ///
+  /// In it, this message translates to:
+  /// **'Costole e vertebre della schiena si sentono senza alcuno strato di grasso; nei gatti a pelo corto le costole si vedono.'**
+  String get monitoringBcsGuideCat1Touch;
+
+  /// No description provided for @monitoringBcsGuideCat1Above.
+  ///
+  /// In it, this message translates to:
+  /// **'Vita molto stretta dietro le costole.'**
+  String get monitoringBcsGuideCat1Above;
+
+  /// No description provided for @monitoringBcsGuideCat1Side.
+  ///
+  /// In it, this message translates to:
+  /// **'Pancia molto rientrata, nessun cuscinetto di grasso sotto il ventre.'**
+  String get monitoringBcsGuideCat1Side;
+
+  /// No description provided for @monitoringBcsGuideCat2Touch.
+  ///
+  /// In it, this message translates to:
+  /// **'Le costole si sentono facilmente con pochissimo grasso e le vertebre della schiena si notano.'**
+  String get monitoringBcsGuideCat2Touch;
+
+  /// No description provided for @monitoringBcsGuideCat2Above.
+  ///
+  /// In it, this message translates to:
+  /// **'Vita ben visibile dietro le costole.'**
+  String get monitoringBcsGuideCat2Above;
+
+  /// No description provided for @monitoringBcsGuideCat2Side.
+  ///
+  /// In it, this message translates to:
+  /// **'Pancia un po\' rientrata, con poco o nessun cuscinetto di grasso.'**
+  String get monitoringBcsGuideCat2Side;
+
+  /// No description provided for @monitoringBcsGuideCat3Touch.
+  ///
+  /// In it, this message translates to:
+  /// **'Le costole si sentono con un velo di grasso sopra.'**
+  String get monitoringBcsGuideCat3Touch;
+
+  /// No description provided for @monitoringBcsGuideCat3Above.
+  ///
+  /// In it, this message translates to:
+  /// **'Corpo ben proporzionato, con una vita visibile dietro le costole.'**
+  String get monitoringBcsGuideCat3Above;
+
+  /// No description provided for @monitoringBcsGuideCat3Side.
+  ///
+  /// In it, this message translates to:
+  /// **'Il profilo del ventre è morbido, con un cuscinetto di grasso appena accennato.'**
+  String get monitoringBcsGuideCat3Side;
+
+  /// No description provided for @monitoringBcsGuideCat4Touch.
+  ///
+  /// In it, this message translates to:
+  /// **'Le costole sono più difficili da sentire: bisogna premere un po\', perché c\'è più grasso.'**
+  String get monitoringBcsGuideCat4Touch;
+
+  /// No description provided for @monitoringBcsGuideCat4Above.
+  ///
+  /// In it, this message translates to:
+  /// **'La vita si vede poco o non si vede.'**
+  String get monitoringBcsGuideCat4Above;
+
+  /// No description provided for @monitoringBcsGuideCat4Side.
+  ///
+  /// In it, this message translates to:
+  /// **'Pancia arrotondata, con un cuscinetto di grasso moderato sotto il ventre.'**
+  String get monitoringBcsGuideCat4Side;
+
+  /// No description provided for @monitoringBcsGuideCat5Touch.
+  ///
+  /// In it, this message translates to:
+  /// **'Le costole non si sentono sotto un grosso strato di grasso, che si accumula anche sulla schiena e, nei casi estremi, su muso e zampe.'**
+  String get monitoringBcsGuideCat5Touch;
+
+  /// No description provided for @monitoringBcsGuideCat5Above.
+  ///
+  /// In it, this message translates to:
+  /// **'Nessuna vita: il corpo è largo.'**
+  String get monitoringBcsGuideCat5Above;
+
+  /// No description provided for @monitoringBcsGuideCat5Side.
+  ///
+  /// In it, this message translates to:
+  /// **'Pancia tonda o penzolante, con un cuscinetto di grasso evidente.'**
+  String get monitoringBcsGuideCat5Side;
+
+  /// No description provided for @monitoringBcsGuideRabbit1Touch.
+  ///
+  /// In it, this message translates to:
+  /// **'Colonna, costole e ossa dell\'anca sporgono e sono taglienti sotto la pelle: non c\'è grasso e i muscoli sono ridotti.'**
+  String get monitoringBcsGuideRabbit1Touch;
+
+  /// No description provided for @monitoringBcsGuideRabbit1Above.
+  ///
+  /// In it, this message translates to:
+  /// **'Schiena e fianchi scavati, le ossa dell\'anca si notano.'**
+  String get monitoringBcsGuideRabbit1Above;
+
+  /// No description provided for @monitoringBcsGuideRabbit1Side.
+  ///
+  /// In it, this message translates to:
+  /// **'Il posteriore (la groppa) è incavato, curva verso l\'interno.'**
+  String get monitoringBcsGuideRabbit1Side;
+
+  /// No description provided for @monitoringBcsGuideRabbit2Touch.
+  ///
+  /// In it, this message translates to:
+  /// **'Costole, colonna e anca si sentono facilmente, con poco grasso sopra.'**
+  String get monitoringBcsGuideRabbit2Touch;
+
+  /// No description provided for @monitoringBcsGuideRabbit2Above.
+  ///
+  /// In it, this message translates to:
+  /// **'Fianchi sottili, con la colonna poco coperta.'**
+  String get monitoringBcsGuideRabbit2Above;
+
+  /// No description provided for @monitoringBcsGuideRabbit2Side.
+  ///
+  /// In it, this message translates to:
+  /// **'Il posteriore è piatto.'**
+  String get monitoringBcsGuideRabbit2Side;
+
+  /// No description provided for @monitoringBcsGuideRabbit3Touch.
+  ///
+  /// In it, this message translates to:
+  /// **'Costole e colonna si sentono con facilità ma hanno contorni morbidi e arrotondati, non taglienti.'**
+  String get monitoringBcsGuideRabbit3Touch;
+
+  /// No description provided for @monitoringBcsGuideRabbit3Above.
+  ///
+  /// In it, this message translates to:
+  /// **'Corpo ben proporzionato, senza rigonfiamenti ai fianchi.'**
+  String get monitoringBcsGuideRabbit3Above;
+
+  /// No description provided for @monitoringBcsGuideRabbit3Side.
+  ///
+  /// In it, this message translates to:
+  /// **'Il posteriore è piatto e la pancia non sporge.'**
+  String get monitoringBcsGuideRabbit3Side;
+
+  /// No description provided for @monitoringBcsGuideRabbit4Touch.
+  ///
+  /// In it, this message translates to:
+  /// **'Per sentire costole, colonna e anca bisogna premere: ci sono strati di grasso.'**
+  String get monitoringBcsGuideRabbit4Touch;
+
+  /// No description provided for @monitoringBcsGuideRabbit4Above.
+  ///
+  /// In it, this message translates to:
+  /// **'Fianchi pieni e arrotondati.'**
+  String get monitoringBcsGuideRabbit4Above;
+
+  /// No description provided for @monitoringBcsGuideRabbit4Side.
+  ///
+  /// In it, this message translates to:
+  /// **'Il posteriore è arrotondato.'**
+  String get monitoringBcsGuideRabbit4Side;
+
+  /// No description provided for @monitoringBcsGuideRabbit5Touch.
+  ///
+  /// In it, this message translates to:
+  /// **'Colonna e anca si sentono a fatica e le costole per niente, sotto un grosso strato di grasso.'**
+  String get monitoringBcsGuideRabbit5Touch;
+
+  /// No description provided for @monitoringBcsGuideRabbit5Above.
+  ///
+  /// In it, this message translates to:
+  /// **'Corpo largo e pieno, con il posteriore che sporge.'**
+  String get monitoringBcsGuideRabbit5Above;
+
+  /// No description provided for @monitoringBcsGuideRabbit5Side.
+  ///
+  /// In it, this message translates to:
+  /// **'La pancia scende e forma un cuscinetto di grasso sotto il ventre.'**
+  String get monitoringBcsGuideRabbit5Side;
 
   /// No description provided for @monitoringAddMeasurement.
   ///
@@ -8923,7 +9331,7 @@ abstract class AppLocalizations {
   /// No description provided for @monitoringBcsNone.
   ///
   /// In it, this message translates to:
-  /// **'Indica la corporatura in una misurazione per vederla qui.'**
+  /// **'Tocca «Valuta la corporatura» per vederla qui.'**
   String get monitoringBcsNone;
 
   /// No description provided for @monitoringBcsVeryThin.
@@ -9057,12 +9465,6 @@ abstract class AppLocalizations {
   /// In it, this message translates to:
   /// **'Es. 22,5'**
   String get monitoringFieldWeightHintLb;
-
-  /// No description provided for @monitoringFieldBcs.
-  ///
-  /// In it, this message translates to:
-  /// **'Corporatura (facoltativa)'**
-  String get monitoringFieldBcs;
 
   /// No description provided for @monitoringFieldNote.
   ///

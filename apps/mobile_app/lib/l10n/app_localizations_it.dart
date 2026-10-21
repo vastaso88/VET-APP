@@ -5228,11 +5228,269 @@ class AppLocalizationsIt extends AppLocalizations {
   String get monitoringTitle => 'Monitoraggio';
 
   @override
-  String get monitoringEntrySubtitleWeight => 'Peso e corporatura';
+  String get petsDetailTabMonitoring => 'Monitoraggio';
 
   @override
-  String get monitoringEntrySubtitleWithActivity =>
-      'Peso, corporatura e attività';
+  String get monitoringBcsGuideTitle => 'Valuta la corporatura';
+
+  @override
+  String monitoringBcsGuideIntro(String petName) {
+    return 'Il peso da solo non basta a dire se un animale è magro o in carne: bisogna toccarlo e guardarlo. Segui i tre passaggi e scegli la descrizione che assomiglia di più a $petName.';
+  }
+
+  @override
+  String get monitoringBcsStepTouch => 'Tocca le costole';
+
+  @override
+  String get monitoringBcsStepAbove => 'Guarda dall’alto';
+
+  @override
+  String get monitoringBcsStepSide => 'Guarda di lato';
+
+  @override
+  String get monitoringBcsViewAbove => 'Dall’alto';
+
+  @override
+  String get monitoringBcsViewSide => 'Di lato';
+
+  @override
+  String get monitoringBcsRowTouch => 'Al tatto';
+
+  @override
+  String get monitoringBcsRowAbove => 'Dall’alto';
+
+  @override
+  String get monitoringBcsRowSide => 'Di lato';
+
+  @override
+  String monitoringBcsGuideScale(String range, String max) {
+    return 'Nella scala della fonte: $range su $max';
+  }
+
+  @override
+  String monitoringBcsGuideChoose(String level) {
+    return 'Scegli: $level';
+  }
+
+  @override
+  String get monitoringBcsGuideClear => 'Rimuovi la valutazione';
+
+  @override
+  String get monitoringBcsGuideDisclaimer =>
+      'È un’indicazione orientativa che non sostituisce la visita del veterinario. Le illustrazioni sono schematiche e originali di VetApp.';
+
+  @override
+  String monitoringBcsGuideSource(String source) {
+    return 'Fonte: $source';
+  }
+
+  @override
+  String get monitoringBcsGuideTipFurry =>
+      'Nei cani e nei gatti col pelo lungo o folto la vista inganna: tocca sempre le costole.';
+
+  @override
+  String get monitoringBcsGuideTipRabbit =>
+      'Nei conigli il pelo nasconde le ossa: tocca sempre schiena, costole e anca, la sola vista non basta.';
+
+  @override
+  String get monitoringBcsGuideCaveatRabbit =>
+      'Per i conigli questa scala è meno affidabile: due persone possono dare punteggi diversi allo stesso coniglio. Se hai dubbi, chiedi al veterinario.';
+
+  @override
+  String get monitoringBcsSourceDog =>
+      'criteri della scala a 9 punti del WSAVA Global Nutrition Committee per i cani (Laflamme, 1997), riassunti con parole nostre e ridotti a 5 livelli da VetApp. Non è materiale ufficiale WSAVA.';
+
+  @override
+  String get monitoringBcsSourceCat =>
+      'criteri della scala a 9 punti del WSAVA Global Nutrition Committee per i gatti (Laflamme, 1997; validata da Bjornvad e colleghi, 2011), riassunti con parole nostre e ridotti a 5 livelli da VetApp. Non è materiale ufficiale WSAVA.';
+
+  @override
+  String get monitoringBcsSourceRabbit =>
+      'Rabbit Size-O-Meter a 5 livelli della PFMA (Pet Food Manufacturers’ Association), riassunto con parole nostre. L’affidabilità tra chi valuta è limitata (Halck e colleghi, Veterinary Record, 2025).';
+
+  @override
+  String get monitoringBcsNotAssessed => 'Non valutata';
+
+  @override
+  String get monitoringBcsAssess => 'Valuta la corporatura';
+
+  @override
+  String get monitoringBcsReassess => 'Rivaluta la corporatura';
+
+  @override
+  String get monitoringBcsGuideDog1Touch =>
+      'Costole, colonna e ossa del bacino si sentono subito sotto la pelle: non c\'è praticamente grasso e i muscoli sembrano ridotti.';
+
+  @override
+  String get monitoringBcsGuideDog1Above =>
+      'Vita molto stretta e scavata dietro le costole; le ossa dell\'anca e della schiena sporgono.';
+
+  @override
+  String get monitoringBcsGuideDog1Side =>
+      'Pancia molto rientrata, il profilo sale deciso verso le zampe posteriori.';
+
+  @override
+  String get monitoringBcsGuideDog2Touch =>
+      'Le costole si sentono senza premere, con pochissimo grasso sopra, e a volte si vedono.';
+
+  @override
+  String get monitoringBcsGuideDog2Above =>
+      'Vita ben marcata dietro le costole; le ossa del bacino cominciano a notarsi.';
+
+  @override
+  String get monitoringBcsGuideDog2Side => 'Pancia chiaramente rientrata.';
+
+  @override
+  String get monitoringBcsGuideDog3Touch =>
+      'Le costole si sentono bene sotto un sottile strato di grasso, senza dover premere.';
+
+  @override
+  String get monitoringBcsGuideDog3Above =>
+      'Si vede una vita dietro le costole.';
+
+  @override
+  String get monitoringBcsGuideDog3Side =>
+      'Il ventre sale con dolcezza dal petto verso le zampe posteriori.';
+
+  @override
+  String get monitoringBcsGuideDog4Touch =>
+      'Le costole si sentono con un po\' di fatica: lo strato di grasso è più spesso, soprattutto sulla schiena vicino alla coda.';
+
+  @override
+  String get monitoringBcsGuideDog4Above =>
+      'La vita si intravede appena oppure non si vede più.';
+
+  @override
+  String get monitoringBcsGuideDog4Side =>
+      'Il rientro della pancia è poco evidente.';
+
+  @override
+  String get monitoringBcsGuideDog5Touch =>
+      'Le costole non si sentono, o solo premendo forte, sotto un grosso strato di grasso; si accumula su schiena e base della coda.';
+
+  @override
+  String get monitoringBcsGuideDog5Above =>
+      'Nessuna vita: il corpo è largo e tondeggiante, la pancia può sembrare gonfia.';
+
+  @override
+  String get monitoringBcsGuideDog5Side =>
+      'Nessun rientro: la pancia è tonda o scende verso il basso.';
+
+  @override
+  String get monitoringBcsGuideCat1Touch =>
+      'Costole e vertebre della schiena si sentono senza alcuno strato di grasso; nei gatti a pelo corto le costole si vedono.';
+
+  @override
+  String get monitoringBcsGuideCat1Above =>
+      'Vita molto stretta dietro le costole.';
+
+  @override
+  String get monitoringBcsGuideCat1Side =>
+      'Pancia molto rientrata, nessun cuscinetto di grasso sotto il ventre.';
+
+  @override
+  String get monitoringBcsGuideCat2Touch =>
+      'Le costole si sentono facilmente con pochissimo grasso e le vertebre della schiena si notano.';
+
+  @override
+  String get monitoringBcsGuideCat2Above =>
+      'Vita ben visibile dietro le costole.';
+
+  @override
+  String get monitoringBcsGuideCat2Side =>
+      'Pancia un po\' rientrata, con poco o nessun cuscinetto di grasso.';
+
+  @override
+  String get monitoringBcsGuideCat3Touch =>
+      'Le costole si sentono con un velo di grasso sopra.';
+
+  @override
+  String get monitoringBcsGuideCat3Above =>
+      'Corpo ben proporzionato, con una vita visibile dietro le costole.';
+
+  @override
+  String get monitoringBcsGuideCat3Side =>
+      'Il profilo del ventre è morbido, con un cuscinetto di grasso appena accennato.';
+
+  @override
+  String get monitoringBcsGuideCat4Touch =>
+      'Le costole sono più difficili da sentire: bisogna premere un po\', perché c\'è più grasso.';
+
+  @override
+  String get monitoringBcsGuideCat4Above =>
+      'La vita si vede poco o non si vede.';
+
+  @override
+  String get monitoringBcsGuideCat4Side =>
+      'Pancia arrotondata, con un cuscinetto di grasso moderato sotto il ventre.';
+
+  @override
+  String get monitoringBcsGuideCat5Touch =>
+      'Le costole non si sentono sotto un grosso strato di grasso, che si accumula anche sulla schiena e, nei casi estremi, su muso e zampe.';
+
+  @override
+  String get monitoringBcsGuideCat5Above => 'Nessuna vita: il corpo è largo.';
+
+  @override
+  String get monitoringBcsGuideCat5Side =>
+      'Pancia tonda o penzolante, con un cuscinetto di grasso evidente.';
+
+  @override
+  String get monitoringBcsGuideRabbit1Touch =>
+      'Colonna, costole e ossa dell\'anca sporgono e sono taglienti sotto la pelle: non c\'è grasso e i muscoli sono ridotti.';
+
+  @override
+  String get monitoringBcsGuideRabbit1Above =>
+      'Schiena e fianchi scavati, le ossa dell\'anca si notano.';
+
+  @override
+  String get monitoringBcsGuideRabbit1Side =>
+      'Il posteriore (la groppa) è incavato, curva verso l\'interno.';
+
+  @override
+  String get monitoringBcsGuideRabbit2Touch =>
+      'Costole, colonna e anca si sentono facilmente, con poco grasso sopra.';
+
+  @override
+  String get monitoringBcsGuideRabbit2Above =>
+      'Fianchi sottili, con la colonna poco coperta.';
+
+  @override
+  String get monitoringBcsGuideRabbit2Side => 'Il posteriore è piatto.';
+
+  @override
+  String get monitoringBcsGuideRabbit3Touch =>
+      'Costole e colonna si sentono con facilità ma hanno contorni morbidi e arrotondati, non taglienti.';
+
+  @override
+  String get monitoringBcsGuideRabbit3Above =>
+      'Corpo ben proporzionato, senza rigonfiamenti ai fianchi.';
+
+  @override
+  String get monitoringBcsGuideRabbit3Side =>
+      'Il posteriore è piatto e la pancia non sporge.';
+
+  @override
+  String get monitoringBcsGuideRabbit4Touch =>
+      'Per sentire costole, colonna e anca bisogna premere: ci sono strati di grasso.';
+
+  @override
+  String get monitoringBcsGuideRabbit4Above => 'Fianchi pieni e arrotondati.';
+
+  @override
+  String get monitoringBcsGuideRabbit4Side => 'Il posteriore è arrotondato.';
+
+  @override
+  String get monitoringBcsGuideRabbit5Touch =>
+      'Colonna e anca si sentono a fatica e le costole per niente, sotto un grosso strato di grasso.';
+
+  @override
+  String get monitoringBcsGuideRabbit5Above =>
+      'Corpo largo e pieno, con il posteriore che sporge.';
+
+  @override
+  String get monitoringBcsGuideRabbit5Side =>
+      'La pancia scende e forma un cuscinetto di grasso sotto il ventre.';
 
   @override
   String get monitoringAddMeasurement => 'Nuova misurazione';
@@ -5268,7 +5526,7 @@ class AppLocalizationsIt extends AppLocalizations {
 
   @override
   String get monitoringBcsNone =>
-      'Indica la corporatura in una misurazione per vederla qui.';
+      'Tocca «Valuta la corporatura» per vederla qui.';
 
   @override
   String get monitoringBcsVeryThin => 'Molto magro';
@@ -5350,9 +5608,6 @@ class AppLocalizationsIt extends AppLocalizations {
 
   @override
   String get monitoringFieldWeightHintLb => 'Es. 22,5';
-
-  @override
-  String get monitoringFieldBcs => 'Corporatura (facoltativa)';
 
   @override
   String get monitoringFieldNote => 'Nota (facoltativa)';
