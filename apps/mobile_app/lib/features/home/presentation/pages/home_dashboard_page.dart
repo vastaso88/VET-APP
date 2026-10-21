@@ -33,7 +33,7 @@ class HomeDashboardPage extends StatefulWidget {
 
 class _HomeDashboardPageState extends State<HomeDashboardPage> {
   final _remindersRepository = RemindersRepository();
-  final _petNewsRepository = GoogleNewsPetNewsRepository();
+  final _petNewsRepository = BackendPetNewsRepository();
 
   late Future<List<PetNewsItem>> _petNewsFuture;
 

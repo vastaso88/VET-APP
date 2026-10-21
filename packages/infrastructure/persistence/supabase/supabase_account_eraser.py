@@ -43,6 +43,7 @@ OWNER_TABLES: tuple[tuple[str, str], ...] = (
     ("user_locations", "owner_id"),
     ("chat_user_daily_usage", "owner_id"),
     ("local_activities", "submitted_by_owner_id"),
+    ("event_submissions", "submitted_by"),
 )
 
 # Tables keyed by a keyed pseudonym of the owner instead of the id.
@@ -65,6 +66,7 @@ NOT_PERSONAL_TABLES: dict[str, str] = {
     "radar_places_open": "public open-data places",
     "radar_place_overrides": "moderation of public places by the team",
     "events": "public events catalogue",
+    "pet_news_snapshots": "cache of public headlines, no user data",
     "admin_ingestion_schedules": "team-only ingestion schedule",
     "llm_usage": "aggregate model usage, no owner column",
     "llm_usage_daily": "aggregate model usage, no owner column",

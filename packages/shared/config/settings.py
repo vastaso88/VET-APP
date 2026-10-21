@@ -145,6 +145,12 @@ class Settings(BaseSettings):
     chat_answer_cache_ttl_hours: int = Field(
         default=24, ge=1, le=168, alias="CHAT_ANSWER_CACHE_TTL_HOURS"
     )
+    # "Curiosità per i tuoi animali": headlines read from the RSS feeds
+    # listed in packages/infrastructure/news/feeds.py and kept in a shared
+    # snapshot for this long. A comma-separated list of feed keys switches
+    # single feeds off without a deploy (a publisher asking us to stop).
+    news_cache_ttl_minutes: int = Field(default=120, ge=10, le=720, alias="NEWS_CACHE_TTL_MINUTES")
+    news_disabled_feeds: str = Field(default="", alias="NEWS_DISABLED_FEEDS")
     # Voice dictation (speech-to-text): reuses LLM_API_KEY/LLM_BASE_URL
     # rather than a separate key — Groq's Whisper transcription endpoint
     # is the same account/base URL family as chat completions, so this

@@ -5842,6 +5842,126 @@ abstract class AppLocalizations {
   /// **'Organizzato da {name}'**
   String eventsOrganizedBy(String name);
 
+  /// No description provided for @eventsSuggestAction.
+  ///
+  /// In it, this message translates to:
+  /// **'Segnala un evento'**
+  String get eventsSuggestAction;
+
+  /// No description provided for @eventsSuggestTitle.
+  ///
+  /// In it, this message translates to:
+  /// **'Segnala un evento'**
+  String get eventsSuggestTitle;
+
+  /// No description provided for @eventsSuggestIntro.
+  ///
+  /// In it, this message translates to:
+  /// **'Conosci una fiera o un evento per animali che non trovi qui? Compila i dati: lo controlliamo sul sito dell\'organizzatore prima di pubblicarlo.'**
+  String get eventsSuggestIntro;
+
+  /// No description provided for @eventsSuggestPrivacy.
+  ///
+  /// In it, this message translates to:
+  /// **'Scrivi solo informazioni sull\'evento: niente nomi di persone, email o telefoni.'**
+  String get eventsSuggestPrivacy;
+
+  /// No description provided for @eventsSuggestFieldTitle.
+  ///
+  /// In it, this message translates to:
+  /// **'Nome dell\'evento'**
+  String get eventsSuggestFieldTitle;
+
+  /// No description provided for @eventsSuggestFieldType.
+  ///
+  /// In it, this message translates to:
+  /// **'Tipo di evento'**
+  String get eventsSuggestFieldType;
+
+  /// No description provided for @eventsSuggestFieldDates.
+  ///
+  /// In it, this message translates to:
+  /// **'Date'**
+  String get eventsSuggestFieldDates;
+
+  /// No description provided for @eventsSuggestPickDates.
+  ///
+  /// In it, this message translates to:
+  /// **'Scegli le date'**
+  String get eventsSuggestPickDates;
+
+  /// No description provided for @eventsSuggestFieldCity.
+  ///
+  /// In it, this message translates to:
+  /// **'Città'**
+  String get eventsSuggestFieldCity;
+
+  /// No description provided for @eventsSuggestFieldProvince.
+  ///
+  /// In it, this message translates to:
+  /// **'Provincia (sigla, es. MO)'**
+  String get eventsSuggestFieldProvince;
+
+  /// No description provided for @eventsSuggestFieldVenue.
+  ///
+  /// In it, this message translates to:
+  /// **'Luogo, ad esempio la fiera (facoltativo)'**
+  String get eventsSuggestFieldVenue;
+
+  /// No description provided for @eventsSuggestFieldLink.
+  ///
+  /// In it, this message translates to:
+  /// **'Link alla pagina dell\'evento'**
+  String get eventsSuggestFieldLink;
+
+  /// No description provided for @eventsSuggestRequired.
+  ///
+  /// In it, this message translates to:
+  /// **'Campo obbligatorio'**
+  String get eventsSuggestRequired;
+
+  /// No description provided for @eventsSuggestInvalidLink.
+  ///
+  /// In it, this message translates to:
+  /// **'Inserisci un indirizzo che inizi con http:// o https://'**
+  String get eventsSuggestInvalidLink;
+
+  /// No description provided for @eventsSuggestInvalidProvince.
+  ///
+  /// In it, this message translates to:
+  /// **'Usa la sigla di due lettere'**
+  String get eventsSuggestInvalidProvince;
+
+  /// No description provided for @eventsSuggestSend.
+  ///
+  /// In it, this message translates to:
+  /// **'Invia segnalazione'**
+  String get eventsSuggestSend;
+
+  /// No description provided for @eventsSuggestThanks.
+  ///
+  /// In it, this message translates to:
+  /// **'Grazie! Controlleremo l\'evento prima di pubblicarlo.'**
+  String get eventsSuggestThanks;
+
+  /// No description provided for @eventsSuggestNeedLogin.
+  ///
+  /// In it, this message translates to:
+  /// **'Accedi per segnalare un evento.'**
+  String get eventsSuggestNeedLogin;
+
+  /// No description provided for @eventsSuggestLimit.
+  ///
+  /// In it, this message translates to:
+  /// **'Hai già inviato le segnalazioni di oggi: riprova domani.'**
+  String get eventsSuggestLimit;
+
+  /// No description provided for @eventsSuggestError.
+  ///
+  /// In it, this message translates to:
+  /// **'Non sono riuscito a inviare la segnalazione. Riprova più tardi.'**
+  String get eventsSuggestError;
+
   /// No description provided for @eventsLoadError.
   ///
   /// In it, this message translates to:
