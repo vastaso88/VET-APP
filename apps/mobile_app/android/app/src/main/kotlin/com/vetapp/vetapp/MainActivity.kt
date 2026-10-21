@@ -1,9 +1,11 @@
 package com.vetapp.vetapp
 
 import android.content.Intent
+import android.os.Build
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
+import android.provider.Settings
 import es.antonborri.home_widget.HomeWidgetLaunchIntent
 import io.flutter.embedding.android.FlutterActivity
 import io.flutter.embedding.engine.FlutterEngine
@@ -86,10 +88,31 @@ class MainActivity : FlutterActivity() {
         .setMethodCallHandler { call, result ->
           if (call.method == "moveToBackground") {
             result.success(moveTaskToBack(true))
+          } else if (call.method == "openNotificationSettings") {
+            result.success(openNotificationSettings())
           } else {
             result.notImplemented()
           }
         }
+  }
+
+  /**
+   * Opens this app's notification settings page (Android 8+), where the owner
+   * can switch the notifications back on; false when the system has no such
+   * screen, so Dart falls back to the app's general settings.
+   */
+  private fun openNotificationSettings(): Boolean {
+    if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) return false
+    return try {
+      startActivity(
+          Intent(Settings.ACTION_APP_NOTIFICATION_SETTINGS)
+              .putExtra(Settings.EXTRA_APP_PACKAGE, packageName)
+              .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+      )
+      true
+    } catch (_: Exception) {
+      false
+    }
   }
 
   override fun cleanUpFlutterEngine(flutterEngine: FlutterEngine) {

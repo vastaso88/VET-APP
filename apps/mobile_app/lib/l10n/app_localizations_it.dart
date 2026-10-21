@@ -6333,4 +6333,24 @@ class AppLocalizationsIt extends AppLocalizations {
 
   @override
   String get remindersDoneTooltip => 'Segna come fatto';
+
+  @override
+  String get remindersNotifPermTitle => 'Vuoi ricevere gli avvisi?';
+
+  @override
+  String get remindersNotifPermBody =>
+      'Per avvisarti quando un promemoria scade, VetApp ha bisogno del permesso per le notifiche. Puoi cambiarlo in ogni momento da Impostazioni.';
+
+  @override
+  String get remindersNotifPermNotNow => 'Non ora';
+
+  @override
+  String get remindersNotifPermAllow => 'Consenti';
+
+  @override
+  String get remindersNotifOffBanner =>
+      'Le notifiche sono disattivate: i promemoria non suoneranno';
+
+  @override
+  String get remindersNotifOffAction => 'Attiva';
 }

@@ -62,7 +62,12 @@ class FlutterLocalNotificationsGateway implements LocalNotificationsGateway {
   Future<void> ensureInitialized() => _ensureInitialized();
 
   Future<void> _ensureInitialized() {
-    return _initializing ??= _initialize();
+    // A failed start-up is not kept: the next call tries again, instead of every
+    // later schedule() reusing the same failure for the rest of the run.
+    return _initializing ??= _initialize().catchError((Object error) {
+      _initializing = null;
+      throw error;
+    });
   }
 
   Future<void> _initialize() async {
@@ -74,10 +79,15 @@ class FlutterLocalNotificationsGateway implements LocalNotificationsGateway {
           NotificationTaps.instance.add(response.payload),
     );
     // The tap that started the app (it was closed): the callback above only
-    // covers taps while it runs.
-    final launch = await _plugin.getNotificationAppLaunchDetails();
-    if (launch?.didNotificationLaunchApp ?? false) {
-      NotificationTaps.instance.add(launch!.notificationResponse?.payload);
+    // covers taps while it runs. Best-effort: not being able to read it must
+    // never stop notifications from being scheduled.
+    try {
+      final launch = await _plugin.getNotificationAppLaunchDetails();
+      if (launch?.didNotificationLaunchApp ?? false) {
+        NotificationTaps.instance.add(launch!.notificationResponse?.payload);
+      }
+    } catch (error) {
+      debugPrint('Notification launch details unavailable: $error');
     }
   }
 

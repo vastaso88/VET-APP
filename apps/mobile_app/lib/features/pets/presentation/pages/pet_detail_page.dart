@@ -41,6 +41,7 @@ import '../../domain/pet_format.dart';
 import '../../domain/pet_models.dart';
 import '../../../chat/presentation/widgets/chat_conversation_menu.dart';
 import '../../../../app/launch/route_restoration.dart';
+import '../../../notifications/presentation/notifications_off_banner.dart';
 import '../widgets/pet_avatar.dart';
 import '../widgets/pets_scaffold.dart';
 import '../widgets/pets_state_views.dart';
@@ -625,6 +626,8 @@ class _RemindersTabState extends State<_RemindersTab> {
           ),
         ),
         const SizedBox(height: AppSpacing.md),
+        // Shown only while the phone does not let reminders ring.
+        const NotificationsOffBanner(),
         Expanded(
           child: ValueListenableBuilder<int>(
             valueListenable: RemindersRepository.changes,
