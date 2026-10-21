@@ -2,7 +2,9 @@ import 'dart:convert';
 
 import 'package:http/http.dart' as http;
 
+import '../domain/address_format.dart';
 import '../domain/coordinates.dart';
+import '../domain/supported_countries.dart';
 
 class GeocodedAddress {
   const GeocodedAddress({required this.coordinates, required this.displayLabel});
@@ -28,6 +30,14 @@ abstract class AddressGeocoder {
 /// docs/maps/01_localita_fondamenta_condivise.md, which picked flutter_map
 /// + OSM tiles over google_maps_flutter for this exact reason). Returns
 /// null on any network error or when no match is found; never throws.
+///
+/// Usage policy (https://operations.osmfoundation.org/policies/nominatim/):
+/// at most one request per second, a User-Agent that identifies the app, no
+/// autocomplete-as-you-type, results may be cached. A search runs only when
+/// the person submits an address, so a single device stays far below that.
+/// For a supported country the address is written in that country's order
+/// and the search is limited to it (`countrycodes`), so "Via Roma" typed
+/// for Italy is never resolved to a street of the same name elsewhere.
 class NominatimAddressGeocoder implements AddressGeocoder {
   NominatimAddressGeocoder({http.Client? client}) : _client = client ?? http.Client();
 
@@ -42,8 +52,11 @@ class NominatimAddressGeocoder implements AddressGeocoder {
     required String city,
     required String country,
   }) async {
-    final query =
-        [street, postalCode, city, country].where((part) => part.trim().isNotEmpty).join(', ');
+    final supported = supportedCountryForName(country);
+    final query = [
+      formatAddress(AddressParts(street: street, postcode: postalCode, city: city), supported?.code),
+      country,
+    ].where((part) => part.trim().isNotEmpty).join(', ');
     if (query.isEmpty) {
       return null;
     }
@@ -53,6 +66,7 @@ class NominatimAddressGeocoder implements AddressGeocoder {
       'format': 'json',
       'limit': '1',
       'addressdetails': '1',
+      if (supported != null) 'countrycodes': supported.nominatimCode,
     });
 
     try {
@@ -95,15 +109,13 @@ class NominatimAddressGeocoder implements AddressGeocoder {
 bool isLegacyLongAddressLabel(String label) =>
     ','.allMatches(label).length >= 3 || label.length > 60;
 
-/// "Piazza del Duomo 1, Milano" from Nominatim's structured address, falling
-/// back to the full display name when the street or city is missing.
+/// "Piazza del Duomo 1, Milano" from Nominatim's structured address, written
+/// in the order of the address's own country (see [formatAddress]), with the
+/// postcode when Nominatim gave one. Falls back to the full display name when
+/// the street or city is missing.
 String compactAddressLabel(Map<String, dynamic>? address, String fallback) {
   if (address == null) return fallback;
-  final road = (address['road'] ?? address['pedestrian'] ?? address['footway']) as String?;
-  final city = (address['city'] ?? address['town'] ?? address['village'] ?? address['municipality'])
-      as String?;
-  if (road == null || city == null) return fallback;
-  final number = address['house_number'] as String?;
-  final street = number == null ? road : '$road $number';
-  return '$street, $city';
+  final parts = AddressParts.fromNominatim(address);
+  if (parts.street == null || parts.city == null) return fallback;
+  return formatAddress(parts, address['country_code'] as String?);
 }

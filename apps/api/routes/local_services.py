@@ -17,6 +17,9 @@ from packages.core.application.services.radar_reports import (
     VoteRadarReportInput,
     WithdrawRadarReportInput,
 )
+from packages.core.domain.coverage.country_coverage import coverage_level
+from packages.core.domain.geo.countries import RADAR_COUNTRIES
+from packages.core.domain.geo.models import Coordinates
 from packages.core.domain.radar_places.models import (
     OSM_SOURCE_NAME,
     RADAR_PLACE_API_EXCLUDED_FIELDS,
@@ -132,6 +135,8 @@ def list_nearby_places(
         },
         "context": {
             "search_radius_km": result.search_radius_km,
+            "country": result.country,
+            "coverage_level": result.coverage_level,
         },
         "sources": [_source_payload(source) for source in result.sources],
         # Where to write about a place that should not be listed.
@@ -154,6 +159,42 @@ def list_data_sources() -> dict[str, object]:
         # Where to ask for a correction or removal; null when not configured.
         "support_contact_email": container.settings.support_contact_email.strip() or None,
     }
+
+
+@router.get("/countries")
+def list_countries() -> dict[str, object]:
+    """The countries the radar is built for and how far each is imported:
+    the table behind the app's "this area is not covered yet" notice."""
+    container = get_container()
+    container.auth_provider.get_current_user()
+    rows = {row.country: row for row in container.radar_catalog_repository.list_country_coverage()}
+    legacy = {
+        source.source: source for source in container.radar_catalog_repository.list_sources()
+    }.get(OSM_SOURCE_NAME)
+    countries = []
+    for country in RADAR_COUNTRIES:
+        row = rows.get(country.code)
+        centre = country.bounds[0]
+        legacy_covered = legacy is not None and legacy.covers(
+            Coordinates(
+                latitude=(centre.min_latitude + centre.max_latitude) / 2,
+                longitude=(centre.min_longitude + centre.max_longitude) / 2,
+            )
+        )
+        countries.append(
+            {
+                "code": country.code,
+                "name": country.name,
+                "flag": country.flag,
+                "language": country.language,
+                "coverage_level": coverage_level(country, row, legacy_osm_covers=legacy_covered),
+                "osm_regions_total": len(country.regions),
+                "osm_complete_at": (
+                    row.osm_complete_at.isoformat() if row and row.osm_complete_at else None
+                ),
+            }
+        )
+    return {"countries": countries}
 
 
 @router.get("/reports/options")

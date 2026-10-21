@@ -115,7 +115,7 @@ def test_overpass_source_posts_query_and_maps_osm_elements(
     assert veterinary.name == "Veterinario Milano"
     assert veterinary.place_type == "veterinary"
     assert veterinary.subtype == "amenity:veterinary"
-    assert veterinary.address_label == "Via Esempio 10, 20100, Milano"
+    assert veterinary.address_label == "Via Esempio 10, 20100 Milano"
     assert veterinary.city == "Milano"
     assert veterinary.latitude == 45.4629
     assert veterinary.longitude == 9.1882

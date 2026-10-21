@@ -502,6 +502,62 @@ void main() {
     expect(find.textContaining('potrebbero non essere recenti'), findsOneWidget);
   });
 
+  testWidgets('says so when the country is not imported yet, with its flag', (tester) async {
+    await _pumpPage(
+      tester,
+      _FakeRadarPlacesRepository([
+        Result.success(
+          const RadarPlacesResult(
+            places: [_clinic],
+            searchRadiusKm: 50,
+            countryCode: 'DE',
+            coverageLevel: RadarCoverageLevel.live,
+          ),
+        ),
+      ]),
+    );
+
+    expect(find.textContaining('🇩🇪 I dati dei servizi per questa zona'), findsOneWidget);
+  });
+
+  testWidgets('says the country is not covered at all, without a flag', (tester) async {
+    await _pumpPage(
+      tester,
+      _FakeRadarPlacesRepository([
+        Result.success(
+          const RadarPlacesResult(
+            places: [_clinic],
+            searchRadiusKm: 50,
+            coverageLevel: RadarCoverageLevel.unsupported,
+          ),
+        ),
+      ]),
+    );
+
+    expect(find.textContaining('Il radar non copre ancora questo paese'), findsOneWidget);
+  });
+
+  testWidgets('shows no coverage notice for a fully imported country', (tester) async {
+    await _pumpPage(
+      tester,
+      _FakeRadarPlacesRepository([
+        Result.success(
+          const RadarPlacesResult(places: [_clinic], searchRadiusKm: 50, countryCode: 'IT'),
+        ),
+      ]),
+    );
+
+    expect(find.textContaining('in preparazione'), findsNothing);
+    expect(find.textContaining('non copre ancora'), findsNothing);
+  });
+
+  test('parses the coverage level, treating a missing one as complete', () {
+    expect(RadarCoverageLevel.parse('partial'), RadarCoverageLevel.partial);
+    expect(RadarCoverageLevel.parse('unsupported'), RadarCoverageLevel.unsupported);
+    expect(RadarCoverageLevel.parse(null), RadarCoverageLevel.complete);
+    expect(RadarCoverageLevel.parse('something new'), RadarCoverageLevel.complete);
+  });
+
   testWidgets('shows the error with a retry action when the radar fails', (tester) async {
     await _pumpPage(
       tester,

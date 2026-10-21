@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:http/http.dart' as http;
 
+import '../../location/domain/address_format.dart';
 import '../../location/domain/coordinates.dart';
 import '../../../l10n/l10n.dart';
 
@@ -35,11 +36,11 @@ class ReverseGeocoder {
       if (address is! Map<String, dynamic>) {
         return null;
       }
-      final street = [address['road'], address['house_number']].whereType<String>().join(' ');
-      final town =
-          address['city'] ?? address['town'] ?? address['village'] ?? address['municipality'];
-      final parts = [if (street.isNotEmpty) street, if (town is String) town];
-      return parts.isEmpty ? null : parts.join(', ');
+      final label = formatAddress(
+        AddressParts.fromNominatim(address),
+        address['country_code'] as String?,
+      );
+      return label.isEmpty ? null : label;
     } catch (_) {
       return null;
     }

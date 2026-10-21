@@ -153,6 +153,8 @@ class RadarPlacesRepository {
           places: places,
           searchRadiusKm: (context['search_radius_km'] as num?)?.toDouble() ?? radiusKm,
           isStale: coverage['status'] == 'stale',
+          countryCode: _nonEmpty(context['country']),
+          coverageLevel: RadarCoverageLevel.parse(context['coverage_level']),
           supportContactEmail: _nonEmpty(json['support_contact_email']),
           refreshedAt: DateTime.tryParse(coverage['refreshed_at'] as String? ?? ''),
         ),
@@ -184,11 +186,30 @@ class RadarSourcesInfo {
   final String? supportContactEmail;
 }
 
+/// How well the backend covers the searched country (`context.coverage_level`).
+/// An answer from an older backend without the field counts as complete: the
+/// app then shows no notice, exactly as before.
+enum RadarCoverageLevel {
+  complete,
+  partial,
+  live,
+  unsupported;
+
+  static RadarCoverageLevel parse(Object? value) {
+    for (final level in RadarCoverageLevel.values) {
+      if (level.name == value) return level;
+    }
+    return RadarCoverageLevel.complete;
+  }
+}
+
 class RadarPlacesResult {
   const RadarPlacesResult({
     required this.places,
     required this.searchRadiusKm,
     this.isStale = false,
+    this.countryCode,
+    this.coverageLevel = RadarCoverageLevel.complete,
     this.refreshedAt,
     this.supportContactEmail,
   });
@@ -199,6 +220,11 @@ class RadarPlacesResult {
   /// True when the backend could not refresh an expired area and is
   /// serving its previous import.
   final bool isStale;
+
+  /// Supported country (ISO 3166-1 alpha-2) of the searched point, null
+  /// outside every one, and how much of it the backend has imported.
+  final String? countryCode;
+  final RadarCoverageLevel coverageLevel;
   final DateTime? refreshedAt;
 
   /// Where to write about a place that should not be listed, as
