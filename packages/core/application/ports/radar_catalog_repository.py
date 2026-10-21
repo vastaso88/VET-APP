@@ -1,6 +1,10 @@
 from typing import NamedTuple, Protocol
 
-from packages.core.domain.radar_places.models import RadarDataSource, RadarPlace
+from packages.core.domain.radar_places.models import (
+    RadarCountryCoverage,
+    RadarDataSource,
+    RadarPlace,
+)
 
 
 class BoundingBox(NamedTuple):
@@ -17,6 +21,10 @@ class RadarCatalogRepository(Protocol):
     sources are only ever combined in memory, per request."""
 
     def list_sources(self) -> list[RadarDataSource]: ...
+
+    def list_country_coverage(self) -> list[RadarCountryCoverage]:
+        """Which countries are imported, and how far."""
+        ...
 
     def list_osm_places(self, box: BoundingBox) -> list[RadarPlace]: ...
 

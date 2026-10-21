@@ -17,6 +17,7 @@ from packages.core.application.services.request_radar_places_ingestion import (
     RequestRadarPlacesIngestionInput,
     RequestRadarPlacesIngestionService,
 )
+from packages.core.domain.coverage.country_coverage import CoverageLevel, coverage_level
 from packages.core.domain.coverage.models import (
     KM_PER_DEGREE_LATITUDE,
     RADAR_COVERAGE_TIERS,
@@ -25,6 +26,7 @@ from packages.core.domain.coverage.models import (
     ingestion_radius_km,
     tier_for_radius,
 )
+from packages.core.domain.geo.countries import radar_country_for_point
 from packages.core.domain.geo.models import Coordinates, haversine_distance_km
 from packages.core.domain.radar_places.dedup import merge_radar_places
 from packages.core.domain.radar_places.models import (
@@ -75,6 +77,10 @@ class ListNearbyRadarPlacesOutput(BaseModel):
     refreshed_at: str | None
     search_radius_km: float
     sources: list[RadarDataSource] = Field(default_factory=list)
+    # Supported country of the searched point (ISO 3166-1 alpha-2) and how
+    # well it is covered; the app says so when the data is not complete.
+    country: str | None = None
+    coverage_level: CoverageLevel = "unsupported"
     # Community data per place id (pending report, rating): kept apart
     # from the place so open-data records stay as their source gave them.
     extras: dict[str, dict[str, Any]] = Field(default_factory=dict)
@@ -141,7 +147,20 @@ class ListNearbyRadarPlacesService:
         # datasets) shares one table.
         has_open_sources = any(name != OSM_SOURCE_NAME for name in sources)
         osm_source = sources.get(OSM_SOURCE_NAME)
-        osm_from_catalog = osm_source is not None and osm_source.covers(origin)
+        country = radar_country_for_point(origin)
+        country_row = next(
+            (
+                row
+                for row in self._catalog.list_country_coverage()
+                if country is not None and row.country == country.code
+            ),
+            None,
+        )
+        # Italy was imported before the country table existed and is
+        # recorded as an area in `data_sources`; both ways count.
+        legacy_covered = osm_source is not None and osm_source.covers(origin)
+        level = coverage_level(country, country_row, legacy_osm_covers=legacy_covered)
+        osm_from_catalog = osm_source is not None and level == "complete"
 
         # The reads that do not depend on each other go out together: from
         # a server far from the database each one is a long round trip.
@@ -156,6 +175,11 @@ class ListNearbyRadarPlacesService:
             for place in all_open_places
             if self._open_sources is None or place.source_name in self._open_sources
         ]
+        # A country's rectangle also holds bits of its neighbours (Dublin
+        # lies in the one of Great Britain), where its catalog has nothing:
+        # an area with no place at all is asked of the live provider instead.
+        if osm_from_catalog and not legacy_covered and not catalog_osm_places and not open_places:
+            osm_from_catalog = False
 
         if osm_source is not None and osm_from_catalog:
             osm = _OsmPlaces(
@@ -163,7 +187,11 @@ class ListNearbyRadarPlacesService:
                 status="fresh",
                 search_radius_km=search_radius_km,
                 coverage_key=f"catalog:{osm_source.release}",
-                refreshed_at=osm_source.imported_at.isoformat(),
+                refreshed_at=(
+                    country_row.osm_complete_at.isoformat()
+                    if country_row is not None and country_row.osm_complete_at is not None
+                    else osm_source.imported_at.isoformat()
+                ),
             )
         else:
             try:
@@ -207,6 +235,8 @@ class ListNearbyRadarPlacesService:
             # The open catalog always reaches the full radius; a narrower
             # OSM answer only means dog parks and the like stop earlier.
             search_radius_km=search_radius_km if open_places else osm.search_radius_km,
+            country=country.code if country is not None else None,
+            coverage_level=level,
             sources=[
                 source
                 for name, source in sources.items()

@@ -10,24 +10,13 @@ from urllib import error, parse, request
 from packages.core.application.services.request_radar_places_ingestion import (
     RequestRadarPlacesIngestionInput,
 )
+from packages.core.domain.geo.address_format import AddressParts, format_address
+from packages.core.domain.geo.countries import get_radar_country, radar_country_for_point
+from packages.core.domain.geo.models import Coordinates
+from packages.core.domain.radar_places.labels import FALLBACK_LANGUAGE, default_place_name
 from packages.core.domain.radar_places.models import OSM_SOURCE_NAME, RadarPlace
 from packages.shared.config.settings import Settings
 from packages.shared.errors.base import ProviderError
-
-# A place tagged with its category but no name is still a real place:
-# measured within 10 km of Milan, 22 of 108 veterinarians and 347 of 364
-# dog parks have no name in OSM. A generic label beats dropping them.
-_DEFAULT_NAMES = {
-    "veterinary": "Veterinario",
-    "grooming": "Toelettatura",
-    "shop": "Negozio per animali",
-    "school": "Addestramento",
-    "pet_sitting": "Pet sitter",
-    "breeder": "Allevamento",
-    "hotel": "Pensione per animali",
-    "dog_park": "Area cani",
-    "shelter": "Rifugio per animali",
-}
 
 _OSM_SPECIES = {
     "dog": "dog",
@@ -73,6 +62,7 @@ _DETAIL_TAGS = (
     "wheelchair",
     "dog",
     "fee",
+    "emergency",
     "animal_shelter:adoption",
 )
 
@@ -231,10 +221,14 @@ def map_osm_element(
     coverage_key: str,
     fetched_at: datetime,
     source_name: str = OSM_SOURCE_NAME,
+    country_code: str | None = None,
 ) -> RadarPlace | None:
     """One Overpass element as a radar place, or None when it is not one
     of the pet categories or has no usable position. Shared by the live
-    source and by the offline importer (scripts/radar/)."""
+    source and by the offline importer (scripts/radar/). `country_code`
+    (the importer knows it) decides the language of the generic name and
+    the order of the address; without it the `addr:country` tag, then the
+    position, tell."""
     element_type = _read_string(element.get("type"))
     element_id = element.get("id")
     if element_type not in {"node", "way", "relation"} or not isinstance(element_id, int):
@@ -255,7 +249,11 @@ def map_osm_element(
     if latitude is None or longitude is None:
         return None
 
-    name = _first_tag(tags, "name", "brand", "operator") or _DEFAULT_NAMES.get(place_type)
+    country = _country_code(tags, country_code, latitude, longitude)
+    radar_country = get_radar_country(country) if country else None
+    name = _first_tag(tags, "name", "brand", "operator") or default_place_name(
+        place_type, radar_country.language if radar_country else FALLBACK_LANGUAGE
+    )
     if not name:
         return None
 
@@ -272,7 +270,7 @@ def map_osm_element(
         species=_read_species(tags, place_type=place_type, subtype=subtype),
         details=_read_details(tags),
         city=_first_tag(tags, "addr:city", "addr:town", "addr:village"),
-        address_label=_build_address_label(tags),
+        address_label=_build_address_label(tags, country),
         latitude=latitude,
         longitude=longitude,
         source_name=source_name,
@@ -377,15 +375,31 @@ def _read_species(tags: dict[str, str], *, place_type: str, subtype: str) -> lis
     return found
 
 
-def _build_address_label(tags: dict[str, str]) -> str | None:
-    street = _first_tag(tags, "addr:street", "addr:place")
-    house_number = _first_tag(tags, "addr:housenumber")
-    locality = _first_tag(tags, "addr:city", "addr:town", "addr:village")
-    postcode = _first_tag(tags, "addr:postcode")
+def _country_code(
+    tags: dict[str, str], given: str | None, latitude: float, longitude: float
+) -> str | None:
+    if given:
+        return given.strip().upper()
+    tagged = tags.get("addr:country", "").strip().upper()
+    if tagged:
+        return tagged
+    country = radar_country_for_point(Coordinates(latitude=latitude, longitude=longitude))
+    return country.code if country else None
 
-    street_line = " ".join(item for item in (street, house_number) if item)
-    parts = [item for item in (street_line or None, postcode, locality) if item]
-    return ", ".join(parts) or None
+
+def _build_address_label(tags: dict[str, str], country_code: str | None = None) -> str | None:
+    """The address as the country writes it (see geo/address_format.py)."""
+    label = format_address(
+        AddressParts(
+            street=_first_tag(tags, "addr:street", "addr:place"),
+            house_number=_first_tag(tags, "addr:housenumber"),
+            postcode=_first_tag(tags, "addr:postcode"),
+            city=_first_tag(tags, "addr:city", "addr:town", "addr:village"),
+            state=_first_tag(tags, "addr:state"),
+        ),
+        country_code,
+    )
+    return label or None
 
 
 def _display_tags(tags: dict[str, str], *, subtype: str) -> list[str]:

@@ -70,7 +70,9 @@ def main() -> int:
         rows = [place_to_open_row(place, imported_at=imported_at) for place in places]
         upsert_rows(client, "radar_places_open", rows)
         # Parks the municipality no longer lists go away with this run.
-        delete_rows_not_imported_at(client, "radar_places_open", imported_at, source=dataset.source)
+        delete_rows_not_imported_at(
+            client, "radar_places_open", imported_at, country="IT", source=dataset.source
+        )
         save_source(
             client,
             {

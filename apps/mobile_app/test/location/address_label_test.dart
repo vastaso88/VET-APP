@@ -32,6 +32,40 @@ void main() {
     expect(label, 'Via Roma 10, Borgo Antico');
   });
 
+  test('writes each country in its own order, postcode included', () {
+    expect(
+      compactAddressLabel({
+        'road': 'Via Esempio',
+        'house_number': '12',
+        'postcode': '20100',
+        'city': 'Milano',
+        'country_code': 'it',
+      }, 'x'),
+      'Via Esempio 12, 20100 Milano',
+    );
+    expect(
+      compactAddressLabel({
+        'road': 'Example St',
+        'house_number': '12',
+        'postcode': '62704',
+        'city': 'Springfield',
+        'ISO3166-2-lvl4': 'US-IL',
+        'country_code': 'us',
+      }, 'x'),
+      '12 Example St, Springfield, IL 62704',
+    );
+    expect(
+      compactAddressLabel({
+        'road': 'Musterstraße',
+        'house_number': '12',
+        'postcode': '10115',
+        'city': 'Berlin',
+        'country_code': 'de',
+      }, 'x'),
+      'Musterstraße 12, 10115 Berlin',
+    );
+  });
+
   group('isLegacyLongAddressLabel', () {
     test('flags a raw Nominatim display_name (3+ commas)', () {
       expect(isLegacyLongAddressLabel('1, Piazza del Duomo, Duomo, Municipio 1, Milano'), isTrue);

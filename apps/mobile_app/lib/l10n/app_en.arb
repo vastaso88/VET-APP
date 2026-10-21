@@ -2028,6 +2028,8 @@
     }
   },
   "localEventsSearchingNearby": "Finding services in your area. The first search may take a few seconds.",
+  "localEventsCoverageLimited": "The data for services in this area is still being prepared: you may see few places or wait longer.",
+  "localEventsCoverageUnsupported": "The radar does not cover this country yet: you only see what OpenStreetMap knows, with no other checks.",
   "localEventsStale": "I couldn't update services in this area. You are seeing the last available data, which may be outdated.",
   "localEventsPartialRadius": "Services are currently available within {radius}. Try again shortly for the full radius.",
   "@localEventsPartialRadius": {

@@ -17,6 +17,7 @@ import '../../../location/data/device_location_service.dart';
 import '../../../location/data/location_preference_store.dart';
 import '../../../location/domain/coordinates.dart';
 import '../../../location/domain/geo_math.dart';
+import '../../../location/domain/supported_countries.dart';
 import '../../../location/presentation/distance_label.dart';
 import '../../../nearby_places/data/radar_places_repository.dart';
 import '../../../nearby_places/domain/radar_place.dart';
@@ -800,17 +801,29 @@ class _RadarStatus extends StatelessWidget {
         ],
       ),
       onSuccess: (value) {
-        if (!value.isStale && value.searchRadiusKm >= radiusKm) {
+        final coverage = value.coverageLevel;
+        if (!value.isStale &&
+            value.searchRadiusKm >= radiusKm &&
+            coverage == RadarCoverageLevel.complete) {
           return const SizedBox.shrink();
         }
-        return Text(
-          value.isStale
-              ? context.l10n.localEventsStale
-              : context.l10n.localEventsPartialRadius(
-                  formatKilometersIn(value.searchRadiusKm, UnitSettingsStore.instance.system),
-                ),
-          style: AppTextStyles.caption,
-        );
+        final flag = supportedCountries
+            .where((country) => country.code == value.countryCode)
+            .map((country) => country.flag)
+            .firstOrNull;
+        final String message;
+        if (value.isStale) {
+          message = context.l10n.localEventsStale;
+        } else if (value.searchRadiusKm < radiusKm) {
+          message = context.l10n.localEventsPartialRadius(
+            formatKilometersIn(value.searchRadiusKm, UnitSettingsStore.instance.system),
+          );
+        } else if (coverage == RadarCoverageLevel.unsupported) {
+          message = context.l10n.localEventsCoverageUnsupported;
+        } else {
+          message = context.l10n.localEventsCoverageLimited;
+        }
+        return Text(flag == null ? message : '$flag $message', style: AppTextStyles.caption);
       },
     );
   }
