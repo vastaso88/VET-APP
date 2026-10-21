@@ -56,17 +56,8 @@ void main() {
     expect(fifeCatBreeds, isNot(contains(otherBreedLabel)));
   });
 
-  test('sex options cover the agreed values', () {
-    expect(
-      PetDemoStore.sexOptions,
-      containsAll([
-        'Maschio',
-        'Femmina',
-        'Maschio intero',
-        'Maschio castrato',
-        'Femmina intera',
-        'Femmina sterilizzata',
-      ]),
-    );
+  test('sex options are the three values; neutering is a separate flag', () {
+    expect(PetDemoStore.sexOptions, ['Maschio', 'Femmina', 'Sconosciuto']);
   });
+
 }

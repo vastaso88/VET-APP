@@ -290,6 +290,15 @@ class SupabaseAuthRemoteDataSource implements AuthRemoteDataSource {
         Uri.parse('${config.apiBaseUrl}/account'),
         headers: {'Authorization': 'Bearer $token'},
       ).timeout(const Duration(seconds: 60));
+      if (response.statusCode == 401) {
+        // The server wants a sign-in from the last few minutes.
+        return Result.failure(
+          const AppAuthError(
+            code: 'reauth_required',
+            message: 'Sign in again to confirm the deletion',
+          ),
+        );
+      }
       if (response.statusCode < 200 || response.statusCode >= 300) {
         return Result.failure(
           AppAuthError(

@@ -1,7 +1,12 @@
-from pydantic import BaseModel, Field
+from typing import Any
+
+from pydantic import BaseModel, Field, field_validator, model_validator
 
 from packages.core.domain.common.entity import new_id
 from packages.core.domain.medical_record.models import MedicalRecordConsentRecord
+from packages.core.domain.pet_profile.body_condition import BODY_CONDITIONS
+from packages.core.domain.pet_profile.details import ACTIVITY_LEVELS, validated_microchip
+from packages.core.domain.pet_profile.sex import split_legacy_sex
 
 
 class HabitatDetails(BaseModel):
@@ -79,6 +84,48 @@ class PetProfile(BaseModel):
     sex: str | None = None
     weight_label: str | None = None
     dog_size_category: str | None = None
+    # Optional details (2026-10-14). `is_sterilized` is separate from `sex`;
+    # body condition / activity level are codes (see details.py).
+    is_sterilized: bool | None = None
+    microchip_number: str | None = None
+    coat_color: str | None = None
+    body_condition: str | None = None
+    activity_level: str | None = None
     medical_record_consent: MedicalRecordConsentRecord | None = None
     habitat: HabitatDetails | None = None
     aquarium_stock: list[FishStock] = Field(default_factory=list)
+
+    @model_validator(mode="before")
+    @classmethod
+    def _split_legacy_sex(cls, data: Any) -> Any:
+        """Rows written before 2026-10-14 hold "Femmina sterilizzata" etc. in
+        `sex`: read them as sex + neutering flag."""
+        if not isinstance(data, dict):
+            return data
+        sex, neutered = split_legacy_sex(data.get("sex"))
+        if neutered is None:
+            return data
+        updated = dict(data)
+        updated["sex"] = sex
+        if updated.get("is_sterilized") is None:
+            updated["is_sterilized"] = neutered
+        return updated
+
+    @field_validator("microchip_number")
+    @classmethod
+    def _valid_microchip(cls, value: str | None) -> str | None:
+        return validated_microchip(value)
+
+    @field_validator("body_condition")
+    @classmethod
+    def _known_body_condition(cls, value: str | None) -> str | None:
+        if value is not None and value not in BODY_CONDITIONS:
+            raise ValueError(f"body_condition must be one of {BODY_CONDITIONS}")
+        return value
+
+    @field_validator("activity_level")
+    @classmethod
+    def _known_activity_level(cls, value: str | None) -> str | None:
+        if value is not None and value not in ACTIVITY_LEVELS:
+            raise ValueError(f"activity_level must be one of {ACTIVITY_LEVELS}")
+        return value

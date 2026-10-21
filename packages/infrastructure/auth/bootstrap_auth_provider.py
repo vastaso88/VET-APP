@@ -1,3 +1,5 @@
+from datetime import UTC, datetime
+
 from packages.core.application.ports.auth_provider import (
     AuthenticatedUser,
     AuthProvider,
@@ -15,6 +17,9 @@ class BootstrapAuthProvider(AuthProvider):
             id=self._settings.bootstrap_user_id,
             email=self._settings.bootstrap_user_email,
         )
+
+    def last_sign_in_at(self) -> datetime | None:
+        return datetime.now(UTC)
 
     def sign_in_with_password(self, email: str, password: str) -> AuthSession:
         _ = password

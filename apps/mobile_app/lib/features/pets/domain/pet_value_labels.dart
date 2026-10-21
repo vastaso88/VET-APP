@@ -1,5 +1,6 @@
 import '../../../l10n/date_formats.dart';
 import '../../../l10n/l10n.dart';
+import '../../monitoring/domain/body_condition.dart';
 import 'pet_format.dart';
 
 /// Display labels for pet values that are STORED (and sent to the backend)
@@ -26,10 +27,26 @@ String localizedSexLabel(String stored) {
   return switch (stored) {
     'Maschio' => l10n.petsValueSexMale,
     'Femmina' => l10n.petsValueSexFemale,
+    'Sconosciuto' => l10n.petsFormSexUnknown,
     'Maschio intero' => l10n.petsValueSexMaleIntact,
     'Maschio castrato' => l10n.petsValueSexMaleNeutered,
     'Femmina intera' => l10n.petsValueSexFemaleIntact,
     'Femmina sterilizzata' => l10n.petsValueSexFemaleSpayed,
+    _ => stored,
+  };
+}
+
+/// Display label for a stored body condition code (see [BodyCondition]).
+String localizedBodyConditionLabel(String stored) =>
+    BodyCondition.fromCode(stored)?.label ?? stored;
+
+/// Display label for a stored activity level code (see `petActivityLevels`).
+String localizedActivityLevelLabel(String stored) {
+  final l10n = appL10n;
+  return switch (stored) {
+    'sedentary' => l10n.petsValueActivitySedentary,
+    'normal' => l10n.petsValueActivityNormal,
+    'active' => l10n.petsValueActivityActive,
     _ => stored,
   };
 }

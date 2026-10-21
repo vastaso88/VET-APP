@@ -18,6 +18,7 @@ from packages.core.application.ports.local_activity_repository import LocalActiv
 from packages.core.application.ports.marketplace_listing_repository import (
     MarketplaceListingRepository,
 )
+from packages.core.application.ports.pet_condition_repository import PetConditionRepository
 from packages.core.application.ports.pet_profile_repository import PetProfileRepository
 from packages.core.application.ports.radar_catalog_repository import (
     BoundingBox,
@@ -28,6 +29,9 @@ from packages.core.application.ports.radar_reports_repository import RadarReport
 from packages.core.application.ports.reminder_repository import ReminderRepository
 from packages.core.application.ports.subscription_repository import SubscriptionRepository
 from packages.core.application.ports.user_location_repository import UserLocationRepository
+from packages.core.application.ports.weight_measurement_repository import (
+    WeightMeasurementRepository,
+)
 from packages.core.domain.consent.models import AccountConsents
 from packages.core.domain.conversation.attachment import ChatAttachment
 from packages.core.domain.conversation.models import Conversation
@@ -38,8 +42,9 @@ from packages.core.domain.geo.models import UserLocation
 from packages.core.domain.llm_usage.models import LlmUsageEvent, ModelDailyUsage
 from packages.core.domain.local_activity.models import LocalActivity
 from packages.core.domain.marketplace.models import ListingReport, MarketplaceListing
-from packages.core.domain.medical_record.models import ClinicalEvent
+from packages.core.domain.medical_record.models import ClinicalEvent, PetCondition
 from packages.core.domain.pet_profile.models import PetProfile
+from packages.core.domain.pet_profile.weight_measurement import WeightMeasurement
 from packages.core.domain.radar_places.models import RadarDataSource, RadarPlace
 from packages.core.domain.radar_reports.models import (
     RadarPlaceOverride,
@@ -99,6 +104,42 @@ class InMemoryReminderRepository(ReminderRepository):
         return [item for item in self._items if item.owner_id == owner_id]
 
 
+class InMemoryWeightMeasurementRepository(WeightMeasurementRepository):
+    """Weighings kept in memory (tests, demo): the app writes them to Supabase
+    directly, so this one only needs to be filled by hand."""
+
+    def __init__(self) -> None:
+        self._items: list[tuple[str, WeightMeasurement]] = []
+
+    def add(self, owner_id: str, measurement: WeightMeasurement) -> WeightMeasurement:
+        self._items.append((owner_id, measurement))
+        return measurement
+
+    def latest_for_pet(self, owner_id: str, pet_id: str) -> WeightMeasurement | None:
+        return self._latest(owner_id, pet_id, with_body_condition=False)
+
+    def latest_with_body_condition_for_pet(
+        self, owner_id: str, pet_id: str
+    ) -> WeightMeasurement | None:
+        return self._latest(owner_id, pet_id, with_body_condition=True)
+
+    def _latest(
+        self, owner_id: str, pet_id: str, *, with_body_condition: bool
+    ) -> WeightMeasurement | None:
+        own = [
+            measurement
+            for owner, measurement in self._items
+            if owner == owner_id
+            and measurement.pet_id == pet_id
+            and (not with_body_condition or measurement.body_condition is not None)
+        ]
+        if not own:
+            return None
+        # Same day: the one added last is the latest (max keeps the first of
+        # equals, so walk the list backwards).
+        return max(reversed(own), key=lambda measurement: measurement.measured_at)
+
+
 class InMemoryClinicalEventRepository(ClinicalEventRepository):
     def __init__(self, seed: list[ClinicalEvent] | None = None) -> None:
         self._items: list[ClinicalEvent] = list(seed or [])
@@ -108,6 +149,18 @@ class InMemoryClinicalEventRepository(ClinicalEventRepository):
         return event
 
     def list_by_pet(self, pet_id: str) -> list[ClinicalEvent]:
+        return [item for item in self._items if item.pet_id == pet_id]
+
+
+class InMemoryPetConditionRepository(PetConditionRepository):
+    def __init__(self, seed: list[PetCondition] | None = None) -> None:
+        self._items: list[PetCondition] = list(seed or [])
+
+    def save(self, condition: PetCondition) -> PetCondition:
+        self._items.append(condition)
+        return condition
+
+    def list_by_pet(self, pet_id: str) -> list[PetCondition]:
         return [item for item in self._items if item.pet_id == pet_id]
 
 

@@ -73,6 +73,7 @@ from packages.core.domain.knowledge.evidence_synthesis import EvidenceSynthesis
 from packages.core.domain.knowledge.models import EvidenceSource
 from packages.core.domain.knowledge.relevance import relevant_sources
 from packages.core.domain.medical_record.consent_text import INLINE_QUESTION_IT
+from packages.core.domain.pet_profile.details import describe_for_prompt
 from packages.core.domain.pet_profile.models import FishStock, HabitatDetails
 from packages.core.domain.pet_profile.species import normalize_species
 from packages.core.domain.pet_profile.species_facts import species_facts
@@ -435,6 +436,14 @@ class ChatOrchestratorInput(BaseModel):
     sex: str | None = None
     weight_label: str | None = None
     dog_size_category: str | None = None
+    # Optional profile details (2026-10-14), sent as profile facts only; the
+    # microchip number and coat colour are deliberately not part of the input.
+    is_sterilized: bool | None = None
+    body_condition: str | None = None
+    # Date ("14 ottobre") of the weighing `body_condition` comes from; None
+    # when it is the owner's own estimate from the profile.
+    body_condition_as_of: str | None = None
+    activity_level: str | None = None
     # The pet's active, relevant reminders as plain text (see
     # ReminderContextRetriever) — e.g. an ongoing therapy course.
     reminders_context: str | None = None
@@ -2318,6 +2327,14 @@ class ChatOrchestrator:
             lines.append(f"Weight: {data.weight_label}")
         if data.dog_size_category:
             lines.append(f"Size category: {data.dog_size_category}")
+        lines.extend(
+            describe_for_prompt(
+                neutered=data.is_sterilized,
+                body_condition=data.body_condition,
+                activity_level=data.activity_level,
+                body_condition_as_of=data.body_condition_as_of,
+            )
+        )
         if data.notes:
             lines.append(f"Owner notes: {self._anonymize_for_provider(data.notes, data)}")
         if data.habitat is not None and not data.habitat.is_empty():

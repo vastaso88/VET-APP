@@ -70,11 +70,14 @@ String weightLabelIn(String storedLabel, UnitSystem system) {
   return kg == null ? storedLabel : formatWeightIn(kg, system);
 }
 
-/// The kilograms inside a stored label such as "17,8 kg".
+/// The kilograms inside a stored label such as "17,8 kg" (or "420 g", which
+/// is 0,42 kg).
 double? parseWeightLabelKg(String label) {
-  final match = RegExp(r'\d+(?:[.,]\d+)?').firstMatch(label);
+  final match = RegExp(r'(\d+(?:[.,]\d+)?)\s*(kg|g)?\b', caseSensitive: false).firstMatch(label);
   if (match == null) return null;
-  return double.tryParse(match.group(0)!.replaceAll(',', '.'));
+  final value = double.tryParse(match.group(1)!.replaceAll(',', '.'));
+  if (value == null) return null;
+  return (match.group(2) ?? '').toLowerCase() == 'g' ? value / 1000 : value;
 }
 
 double celsiusToFahrenheit(double celsius) => celsius * 9 / 5 + 32;

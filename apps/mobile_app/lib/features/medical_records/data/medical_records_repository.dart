@@ -6,6 +6,7 @@ import '../../../l10n/l10n.dart';
 import '../../../../shared/auth/current_user.dart';
 import '../../../../shared/config/app_runtime_config_loader.dart';
 import '../../pets/data/pet_demo_store.dart';
+import '../domain/record_category.dart';
 
 class MedicalRecordEntry {
   const MedicalRecordEntry({
@@ -19,6 +20,11 @@ class MedicalRecordEntry {
     required this.createdAt,
     required this.timeline,
     this.attachmentId,
+    this.category = RecordCategory.document,
+    this.subtype,
+    this.eventDate,
+    this.notes = '',
+    this.createdOn,
   });
 
   final String id;
@@ -36,6 +42,53 @@ class MedicalRecordEntry {
   /// records with no uploaded file (seed/demo entries, or a PDF, which
   /// that pipeline doesn't support yet).
   final String? attachmentId;
+
+  /// Visit, exam, vaccine, therapy or document (the default, and what every
+  /// record uploaded before the categories is).
+  final RecordCategory category;
+
+  /// The finer type from [RecordCategory.subtypes] (e.g. 'blood'), if chosen.
+  final String? subtype;
+
+  /// The day the visit/exam/vaccine happened, as the owner set it. Not the
+  /// upload day ([createdAt]).
+  final DateTime? eventDate;
+
+  /// The owner's own notes. Never sent to the chat.
+  final String notes;
+
+  /// When the record was created, kept raw for sorting ([createdAt] is text).
+  final DateTime? createdOn;
+
+  /// The day lists are ordered by: when it happened, else when it was added.
+  DateTime get sortDate => eventDate ?? createdOn ?? DateTime.fromMillisecondsSinceEpoch(0);
+
+  MedicalRecordEntry copyWith({
+    String? title,
+    RecordCategory? category,
+    String? subtype,
+    DateTime? eventDate,
+    String? notes,
+    bool clearSubtype = false,
+  }) {
+    return MedicalRecordEntry(
+      id: id,
+      petName: petName,
+      title: title ?? this.title,
+      subtitle: subtitle,
+      meta: meta,
+      badge: badge,
+      detailSource: detailSource,
+      createdAt: createdAt,
+      timeline: timeline,
+      attachmentId: attachmentId,
+      category: category ?? this.category,
+      subtype: clearSubtype ? null : subtype ?? this.subtype,
+      eventDate: eventDate ?? this.eventDate,
+      notes: notes ?? this.notes,
+      createdOn: createdOn,
+    );
+  }
 }
 
 class MedicalRecordTimelineEntry {
@@ -67,9 +120,7 @@ class MedicalRecordsRepository {
     // Errors are rethrown on purpose: an empty list would look like "no
     // records" and hide that the server could not be read.
     try {
-      final response = await client.from('clinical_events').select(
-          'id,pet_id,pet_name,title,subtitle,meta,badge,detail_source,created_at,attachment_id');
-      final rows = response as List<dynamic>;
+      final rows = await _selectRows(client);
       final fromServer = rows
           .map(
             (row) => MedicalRecordEntry(
@@ -82,6 +133,11 @@ class MedicalRecordsRepository {
               detailSource: (row['detail_source'] ?? '').toString(),
               createdAt: formatStoredRecordDate(row['created_at']),
               attachmentId: row['attachment_id'] as String?,
+              category: RecordCategory.fromKey(row['category']),
+              subtype: row['subtype'] as String?,
+              eventDate: _parseDay(row['event_date']),
+              notes: (row['notes'] ?? '').toString(),
+              createdOn: DateTime.tryParse((row['created_at'] ?? '').toString())?.toLocal(),
               timeline: const [],
             ),
           )
@@ -123,22 +179,37 @@ class MedicalRecordsRepository {
     }
 
     final now = DateTime.now().toUtc();
+    final legacyRow = <String, Object?>{
+      'id': record.id,
+      'owner_id': ownerId,
+      'pet_id': petId,
+      'event_type': 'document',
+      'event_date': _isoDate(record.eventDate ?? now),
+      'created_at': now.toIso8601String(),
+      'title': record.title,
+      'pet_name': record.petName,
+      'subtitle': record.subtitle,
+      'meta': record.meta,
+      'badge': record.badge,
+      'detail_source': record.detailSource,
+      'attachment_id': record.attachmentId,
+    };
+    final fullRow = <String, Object?>{
+      ...legacyRow,
+      'event_type': record.category.key,
+      'category': record.category.key,
+      'subtype': record.subtype,
+      'notes': record.notes.isEmpty ? null : record.notes,
+    };
     try {
-      await client.from('clinical_events').upsert({
-        'id': record.id,
-        'owner_id': ownerId,
-        'pet_id': petId,
-        'event_type': 'document',
-        'event_date': _isoDate(now),
-        'created_at': now.toIso8601String(),
-        'title': record.title,
-        'pet_name': record.petName,
-        'subtitle': record.subtitle,
-        'meta': record.meta,
-        'badge': record.badge,
-        'detail_source': record.detailSource,
-        'attachment_id': record.attachmentId,
-      });
+      try {
+        await client.from('clinical_events').upsert(fullRow);
+      } catch (error) {
+        // The schema script not run yet (no category columns): the file and
+        // its date are worth more than the label, so save without them.
+        if (!_isMissingColumn(error)) rethrow;
+        await client.from('clinical_events').upsert(legacyRow);
+      }
     } catch (_) {
       throw MedicalRecordSaveException(appL10n.medicalSaveFailed);
     }
@@ -147,12 +218,40 @@ class MedicalRecordsRepository {
     changes.value++;
   }
 
+  /// Saves what the owner can edit after the fact: title, category, type,
+  /// event date and notes. The file stays as it was.
+  Future<void> updateRecordDetails(MedicalRecordEntry updated) async {
+    final client = _resolveClient();
+    if (client == null) {
+      final index = _previewRecords.indexWhere((item) => item.id == updated.id);
+      if (index != -1) _previewRecords[index] = updated;
+      changes.value++;
+      return;
+    }
+
+    try {
+      await client.from('clinical_events').update({
+        'title': updated.title,
+        'event_type': updated.category.key,
+        'category': updated.category.key,
+        'subtype': updated.subtype,
+        'event_date': updated.eventDate == null ? null : _isoDate(updated.eventDate!),
+        'notes': updated.notes.isEmpty ? null : updated.notes,
+      }).eq('id', updated.id);
+    } catch (_) {
+      throw MedicalRecordSaveException(appL10n.medicalSaveFailed);
+    }
+    final sessionIndex = _savedThisSession.indexWhere((item) => item.id == updated.id);
+    if (sessionIndex != -1) _savedThisSession[sessionIndex] = updated;
+    changes.value++;
+  }
+
   /// Changes only the title: the date and the file stay as they were.
   Future<void> renameRecord(MedicalRecordEntry record, String title) async {
     final client = _resolveClient();
     if (client == null) {
       final index = _previewRecords.indexWhere((item) => item.id == record.id);
-      if (index != -1) _previewRecords[index] = _withTitle(record, title);
+      if (index != -1) _previewRecords[index] = record.copyWith(title: title);
       changes.value++;
       return;
     }
@@ -163,7 +262,7 @@ class MedicalRecordsRepository {
       throw MedicalRecordSaveException(appL10n.medicalRenameFailed);
     }
     final sessionIndex = _savedThisSession.indexWhere((item) => item.id == record.id);
-    if (sessionIndex != -1) _savedThisSession[sessionIndex] = _withTitle(record, title);
+    if (sessionIndex != -1) _savedThisSession[sessionIndex] = record.copyWith(title: title);
     changes.value++;
   }
 
@@ -216,6 +315,7 @@ class MedicalRecordsRepository {
   static final List<MedicalRecordEntry> _previewRecords = [
     const MedicalRecordEntry(
       id: 'moka-richiamo-vaccinale',
+      category: RecordCategory.vaccine,
       petName: 'Moka',
       title: 'Richiamo vaccinale di Moka',
       subtitle: 'PDF - 2 pagine - Clinica Vet Roma',
@@ -233,6 +333,7 @@ class MedicalRecordsRepository {
     ),
     const MedicalRecordEntry(
       id: 'moka-esame-ematico',
+      category: RecordCategory.exam,
       petName: 'Moka',
       title: 'Esame ematico di Moka',
       subtitle: 'PDF - 4 pagine - controlli di routine',
@@ -250,6 +351,7 @@ class MedicalRecordsRepository {
     ),
     const MedicalRecordEntry(
       id: 'moka-controllo-peso',
+      category: RecordCategory.visit,
       petName: 'Moka',
       title: 'Nota clinica controllo peso',
       subtitle: 'Immagine - follow-up breve',
@@ -267,6 +369,7 @@ class MedicalRecordsRepository {
     ),
     const MedicalRecordEntry(
       id: 'oliver-dentale',
+      category: RecordCategory.visit,
       petName: 'Oliver',
       title: 'Controllo dentale di Oliver',
       subtitle: 'PDF - 3 pagine - ambulatorio di fiducia',
@@ -284,6 +387,7 @@ class MedicalRecordsRepository {
     ),
     const MedicalRecordEntry(
       id: 'oliver-esami-sangue',
+      category: RecordCategory.exam,
       petName: 'Oliver',
       title: 'Esami del sangue di Oliver',
       subtitle: 'PDF - 2 pagine - profilo completo annuale',
@@ -322,6 +426,31 @@ class MedicalRecordSaveException implements Exception {
   String toString() => message;
 }
 
+const _legacyColumns =
+    'id,pet_id,pet_name,title,subtitle,meta,badge,detail_source,created_at,attachment_id,event_date';
+const _fullColumns = '$_legacyColumns,category,subtype,notes';
+
+/// The rows, with the category columns when the table has them and without
+/// when the schema script has not run yet, so the list never goes blank.
+Future<List<dynamic>> _selectRows(SupabaseClient client) async {
+  try {
+    return await client.from('clinical_events').select(_fullColumns) as List<dynamic>;
+  } catch (error) {
+    if (!_isMissingColumn(error)) rethrow;
+    return await client.from('clinical_events').select(_legacyColumns) as List<dynamic>;
+  }
+}
+
+/// Postgres 42703 / PostgREST PGRST204: a column of the request is not in the table.
+bool _isMissingColumn(Object error) =>
+    error is PostgrestException && (error.code == '42703' || error.code == 'PGRST204');
+
+/// A `date` column ("2026-03-12") as a local calendar day.
+DateTime? _parseDay(Object? value) {
+  final parsed = DateTime.tryParse(value?.toString() ?? '');
+  return parsed == null ? null : DateTime(parsed.year, parsed.month, parsed.day);
+}
+
 String _isoDate(DateTime utc) =>
     '${utc.year.toString().padLeft(4, '0')}-${utc.month.toString().padLeft(2, '0')}-${utc.day.toString().padLeft(2, '0')}';
 
@@ -352,16 +481,3 @@ List<MedicalRecordEntry> mergeRecentRecords(
     ...fromServer,
   ];
 }
-
-MedicalRecordEntry _withTitle(MedicalRecordEntry record, String title) => MedicalRecordEntry(
-      id: record.id,
-      petName: record.petName,
-      title: title,
-      subtitle: record.subtitle,
-      meta: record.meta,
-      badge: record.badge,
-      detailSource: record.detailSource,
-      createdAt: record.createdAt,
-      timeline: record.timeline,
-      attachmentId: record.attachmentId,
-    );
