@@ -121,27 +121,89 @@ void main() {
   });
 
   group('which details a species gets', () {
-    test('fish get no microchip, body condition, neutering or coat', () {
+    test('fish get no microchip, body condition, activity, neutering, coat or weight', () {
       expect(speciesHasMicrochip('Pesce'), isFalse);
-      expect(speciesHasBodyDetails('Pesce'), isFalse);
+      expect(speciesHasBodyCondition('Pesce'), isFalse);
+      expect(speciesHasActivity('Pesce'), isFalse);
       expect(speciesHasNeutering('Pesce'), isFalse);
       expect(speciesHasCoatColor('Pesce'), isFalse);
+      expect(speciesHasWeight('Pesce'), isFalse);
     });
 
     test('dogs and cats get all of them; size is for dogs only', () {
       for (final species in ['Cane', 'Gatto']) {
         expect(speciesHasMicrochip(species), isTrue);
-        expect(speciesHasBodyDetails(species), isTrue);
+        expect(speciesHasBodyCondition(species), isTrue);
+        expect(speciesHasActivity(species), isTrue);
         expect(speciesHasNeutering(species), isTrue);
+        expect(speciesHasWeight(species), isTrue);
       }
       expect(speciesHasSize('Cane'), isTrue);
       expect(speciesHasSize('Gatto'), isFalse);
     });
 
-    test('birds and reptiles are not asked about neutering', () {
-      expect(speciesHasNeutering('Uccello'), isFalse);
-      expect(speciesHasNeutering('Rettili e anfibi'), isFalse);
+    test('birds, reptiles and amphibians: no neutering, body condition or activity', () {
+      for (final species in ['Uccello', 'Rettili e anfibi']) {
+        expect(speciesHasNeutering(species), isFalse);
+        expect(speciesHasBodyCondition(species), isFalse);
+        expect(speciesHasActivity(species), isFalse);
+        expect(speciesHasWeight(species), isTrue, reason: 'weighing them is routine');
+      }
       expect(speciesHasMicrochip('Uccello'), isTrue);
+      expect(speciesHasMicrochip('Rettili e anfibi', breed: 'Testuggine di Hermann'), isTrue);
+    });
+
+    test('amphibians and invertebrates are not microchipped', () {
+      expect(speciesHasMicrochip('Rettili e anfibi', breed: 'Axolotl'), isFalse);
+      expect(speciesHasMicrochip('Rettili e anfibi', breed: 'Rana toro'), isFalse);
+      expect(speciesHasMicrochip('Altro', breed: 'Tarantola (Theraphosidae)'), isFalse);
+    });
+
+    test('small mammals: a body condition only for the rabbit, never activity', () {
+      expect(speciesHasBodyCondition('Piccoli mammiferi', breed: 'Coniglio nano'), isTrue);
+      expect(
+        speciesHasBodyCondition('Piccoli mammiferi', breed: 'Coniglio comune / meticcio'),
+        isTrue,
+      );
+      expect(
+        speciesHasBodyCondition('Piccoli mammiferi', breed: 'Criceto siriano (Mesocricetus auratus)'),
+        isFalse,
+      );
+      expect(speciesHasBodyCondition('Piccoli mammiferi'), isFalse);
+      expect(speciesHasActivity('Piccoli mammiferi', breed: 'Coniglio nano'), isFalse);
+      expect(speciesHasNeutering('Piccoli mammiferi', breed: 'Furetto (Mustela putorius furo)'), isTrue);
+    });
+
+    test('"Altro": only a mammal we recognise is asked about neutering', () {
+      expect(speciesHasNeutering('Altro', breed: 'Cavallo'), isTrue);
+      expect(speciesHasNeutering('Altro', breed: 'Maiale nano (mini pig)'), isTrue);
+      expect(speciesHasNeutering('Altro', breed: 'Oca domestica'), isFalse);
+      expect(speciesHasNeutering('Altro', breed: 'Mantide religiosa'), isFalse);
+      expect(speciesHasNeutering('Altro', breed: 'Un animale mai visto'), isFalse);
+      expect(speciesHasNeutering('Altro'), isFalse);
+    });
+
+    test('dogs and cats have a breed, everything else a species', () {
+      expect(speciesUsesBreedWord('Cane'), isTrue);
+      expect(speciesUsesBreedWord('Gatto'), isTrue);
+      for (final species in [
+        'Piccoli mammiferi',
+        'Uccello',
+        'Rettili e anfibi',
+        'Pesce',
+        'Altro',
+      ]) {
+        expect(speciesUsesBreedWord(species), isFalse, reason: species);
+      }
+    });
+
+    test('the kind of animal comes from the category and the chosen species', () {
+      expect(petKindOf('Cane'), PetKind.dog);
+      expect(petKindOf('Rettili e anfibi', 'Rana dagli occhi rossi (Agalychnis callidryas)'),
+          PetKind.amphibian);
+      expect(petKindOf('Rettili e anfibi', 'Drago barbuto (Pogona vitticeps)'), PetKind.reptile);
+      expect(petKindOf('Altro', 'Gallina ornamentale'), PetKind.bird);
+      expect(petKindOf('Altro', 'Altro animale'), PetKind.unknown);
     });
   });
 

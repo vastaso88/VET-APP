@@ -215,6 +215,8 @@ def _service_with_profile_condition(
     client: RecordingLLMClient,
     weights: InMemoryWeightMeasurementRepository | None,
     profile_condition: str | None,
+    species: str = "Cane",
+    breed: str | None = None,
 ) -> SendChatMessageService:
     pets = InMemoryPetProfileRepository()
     pets.save(
@@ -222,7 +224,8 @@ def _service_with_profile_condition(
             id="pet-1",
             owner_id="owner-1",
             name="Rex",
-            species="Cane",
+            species=species,
+            breed=breed,
             sex="Maschio",
             weight_label="30 kg",
             body_condition=profile_condition,
@@ -301,3 +304,28 @@ def test_chat_has_no_condition_line_when_nobody_recorded_one() -> None:
     _ask(_service_with_profile_condition(client, InMemoryWeightMeasurementRepository(), None))
 
     assert _condition_lines(client) == []
+
+
+@pytest.mark.parametrize(
+    ("species", "breed", "has_condition"),
+    [
+        ("Cane", None, True),
+        ("Gatto", None, True),
+        ("Piccoli mammiferi", "Coniglio ariete", True),
+        ("Piccoli mammiferi", "Criceto", False),
+        ("Piccoli mammiferi", None, False),
+        ("Uccello", None, False),
+        ("Rettili e anfibi", None, False),
+        ("Pesce", None, False),
+    ],
+)
+def test_chat_reads_a_body_condition_only_for_species_with_a_guide(
+    species: str, breed: str | None, has_condition: bool
+) -> None:
+    client = RecordingLLMClient()
+    weights = InMemoryWeightMeasurementRepository()
+    weights.add("owner-1", _measurement(date(THIS_YEAR, 10, 14), 23, body_condition=4))
+
+    _ask(_service_with_profile_condition(client, weights, "thin", species=species, breed=breed))
+
+    assert bool(_condition_lines(client)) is has_condition

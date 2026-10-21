@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:http/http.dart' as http;
 
+import '../../../shared/config/app_runtime_config_loader.dart';
 import '../domain/pet_news_item.dart';
 
 abstract class PetNewsRepository {
@@ -31,244 +32,116 @@ const allPetNewsCategories = <String>[
 /// request.
 const petNewsPoolLimitPerCategory = 4;
 
-/// Free, keyless "curiosita" source: real headlines from real newspapers,
-/// via Google News' public RSS search, bridged through rss2json.com (a
-/// free CORS-friendly RSS-to-JSON proxy — Google News' own RSS endpoint
-/// blocks direct browser fetches). Swappable behind [PetNewsRepository]
-/// for a paid/higher-quality provider later.
-class GoogleNewsPetNewsRepository implements PetNewsRepository {
-  GoogleNewsPetNewsRepository({http.Client? client}) : _client = client ?? http.Client();
+/// "Curiosità" read from our own backend (GET /news), which reads the RSS
+/// feeds of pet magazines and veterinary bodies, drops off-topic and
+/// recipe-like headlines, de-duplicates them and keeps a shared cache. The
+/// app no longer talks to any third-party feed or proxy. Swappable behind
+/// [PetNewsRepository].
+class BackendPetNewsRepository implements PetNewsRepository {
+  BackendPetNewsRepository({http.Client? client, AppRuntimeConfigLoader? configLoader})
+      : _client = client ?? http.Client(),
+        _configLoader = configLoader ?? const AppRuntimeConfigLoader();
 
   final http.Client _client;
+  final AppRuntimeConfigLoader _configLoader;
 
-  // Every query excludes recipe/cooking terms: several of these species are
-  // also common food ingredients (coniglio, pesce...), and unfiltered
-  // searches surface "coniglio alla cacciatora"-style recipes alongside
-  // real animal news — a bad look for a pet-care app with an
-  // animal-loving audience. This is a best-effort keyword exclusion at the
-  // query level; `_isBlocked` below is a second, client-side pass over the
-  // actual results as a safety net for whatever slips through.
-  static const _recipeExclusions =
-      '-ricetta -ricette -cucina -cucinare -forno -sagra -caccia -cacciatore -cacciatori -oroscopo';
-
-  static const _queryBySpecies = {
-    'Cane': 'cane $_recipeExclusions',
-    'Gatto': 'gatto $_recipeExclusions',
-    // "Piccoli mammiferi" groups rabbit (a lagomorph, not technically a
-    // rodent, but grouped here for the same "pocket pet" audience) with
-    // hamster/guinea pig/chinchilla/gerbil/ferret. "Coniglio" collides with
-    // the common Italian surname; "cavia" also means "human guinea pig"
-    // (clinical trials/experiments) in everyday Italian — both need the
-    // same positive-bias + exclusion treatment as before, just widened.
-    'Piccoli mammiferi':
-        '(coniglio OR cavia OR criceto OR furetto) (domestico OR animale OR veterinario OR appartamento) $_recipeExclusions -esperimento -esperimenti -sperimentazione',
-    // "Uccello" alone pulls hunting/cooking pieces ("uccellagione", game birds
-    // on a menu); anchoring on pet-bird vocabulary keeps it on companion birds.
-    'Uccello':
-        '(uccello OR pappagallo OR canarino OR cocorita) (domestico OR gabbia OR veterinario) $_recipeExclusions',
-    // "Rettili e anfibi" adds amphibians to the old "Rettile" category.
-    // "Rana" collides constantly with "rana pescatrice" (monkfish — a very
-    // common Italian fish dish with nothing to do with frogs) and with
-    // actual frog-leg recipes, so it gets its own exclusion on top of the
-    // generic recipe terms.
-    'Rettili e anfibi':
-        '(rettile OR anfibio OR rana OR salamandra OR tartaruga) (domestico OR terrario OR veterinario) $_recipeExclusions -pescatrice',
-    // Bare "pesce" is almost all food/fishing content in Italian news, so the
-    // fish query is anchored on aquarium vocabulary only — no "pesce" term.
-    'Pesce':
-        '(acquario OR acquariofilia OR "pesci d\'acquario" OR "pesce rosso") $_recipeExclusions',
-    'Altro': 'animali domestici $_recipeExclusions',
-    'Generale': 'animali domestici (fiera OR legge OR normativa) $_recipeExclusions',
-  };
-
-  // Client-side safety net: titles/sources containing any of these are
-  // dropped even if they slipped past the query-level exclusion above —
-  // food/recipe content (animals as ingredients) and known off-topic
-  // sources (e.g. a virtual-pet game, not real animals).
-  static const _blockedKeywords = [
-    'ricetta',
-    'ricette',
-    'cucina',
-    'cucinare',
-    'cotto',
-    'cottura',
-    'arrosto',
-    'spezzatino',
-    'stufato',
-    'brasato',
-    'padella',
-    'in forno',
-    'al forno',
-    'fritto',
-    'fritti',
-    'frittura',
-    'bollit',
-    'filetti',
-    'selvaggina',
-    'uccellagione',
-    'chef',
-    'piatto',
-    'ricettar',
-    'ingredienti',
-    'gustoso',
-    'sagra',
-    'porchetta',
-    'grigliata',
-    'grigliato',
-    'caccia',
-    'cacciatore',
-    'cacciatori',
-    'cacciatora',
-    'oroscopo',
-    'tamagotchi',
-    'tamaverse',
-    // "Piccoli mammiferi" / "Rettili e anfibi" additions.
-    'pescatrice',
-    'cosce di rana',
-    'rane fritte',
-    'esperimento',
-    'esperimenti',
-    'sperimentazione',
-  ];
-
-  // rss2json's free/keyless tier has a low, shared burst-rate limit (it
-  // actively refuses requests with "converting new feeds in a very short
-  // period" once exceeded) — both Home and the News page fetching several
-  // categories in quick succession can trip it. A simple in-memory cache,
-  // shared across every repository instance for the lifetime of the app,
-  // means repeat navigation within the TTL reuses the same response
-  // instead of re-hitting the API. Cached per species, uncapped by
-  // `limit`, so a later call asking for more items than an earlier one can
-  // still be served entirely from cache.
-  static final Map<String, _CacheEntry> _cache = {};
+  // One request returns every category, so the whole answer is kept for a
+  // while and shared by every repository instance (Home, News page, splash
+  // warm-up): repeat navigation costs nothing. The backend refreshes its own
+  // copy from the feeds every couple of hours.
+  static _CacheEntry? _cache;
+  static Future<Map<String, List<PetNewsItem>>?>? _inFlight;
   static const _cacheTtl = Duration(minutes: 20);
+  static const _timeout = Duration(seconds: 15);
+  static const _itemsPerCategory = 12;
 
-  // One retry after a short backoff for a transient failure (429, or a 5xx
-  // — measured against the live endpoint on 2026-09-30 firing several
-  // requests fully in parallel: failures came back as 500, not always a
-  // clean 429, so both are treated as "try again once" here) before
-  // falling back to a stale cache entry or an empty list.
-  static const _maxAttempts = 2;
-  static const _retryBackoff = Duration(milliseconds: 500);
+  /// Forgets the shared answer (tests).
+  static void resetCache() {
+    _cache = null;
+    _inFlight = null;
+  }
 
   @override
   Future<List<PetNewsItem>> fetchForSpecies(String species, {int limit = 2}) async {
-    final cached = _cache[species];
-    if (cached != null && DateTime.now().difference(cached.fetchedAt) < _cacheTtl) {
-      return cached.items.take(limit).toList(growable: false);
-    }
-
-    final query = _queryBySpecies[species] ?? _queryBySpecies['Altro']!;
-    // The query term is percent-encoded on its own (spaces/parens as %20
-    // etc) BEFORE being embedded in the (otherwise literal) Google News
-    // URL string. rss2json's own URL validator decodes `rss_url` once
-    // before checking it looks like a URL, so it needs a plain space to
-    // still read as `%20` after that single decode — passing a literal,
-    // un-pre-encoded space (or double-encoding everything, including
-    // `://`) both make it reject the value with a 422.
-    final rssUrl =
-        'https://news.google.com/rss/search?q=${Uri.encodeComponent(query)}&hl=it&gl=IT&ceid=IT:it';
-    // Note: rss2json's `count` param requires an API key even on the free
-    // tier, so items are capped client-side instead (see `.take` below).
-    final proxyUrl = Uri.parse(
-      'https://api.rss2json.com/v1/api.json?rss_url=${Uri.encodeComponent(rssUrl)}',
-    );
-
-    for (var attempt = 1; attempt <= _maxAttempts; attempt++) {
-      try {
-        final response = await _client.get(proxyUrl);
-        if (response.statusCode == 429 || response.statusCode >= 500) {
-          if (attempt < _maxAttempts) {
-            await Future<void>.delayed(_retryBackoff * attempt);
-            continue;
-          }
-          return cached?.items.take(limit).toList(growable: false) ?? const [];
-        }
-        if (response.statusCode != 200) {
-          return cached?.items.take(limit).toList(growable: false) ?? const [];
-        }
-
-        final json = jsonDecode(response.body) as Map<String, dynamic>;
-        if (json['status'] != 'ok') {
-          return cached?.items.take(limit).toList(growable: false) ?? const [];
-        }
-
-        final items = (json['items'] as List<dynamic>? ?? const [])
-            .map((raw) => _toNewsItem(species, raw as Map<String, dynamic>))
-            .whereType<PetNewsItem>()
-            .toList(growable: false);
-
-        _cache[species] = _CacheEntry(items, DateTime.now());
-        return items.take(limit).toList(growable: false);
-      } catch (_) {
-        if (attempt < _maxAttempts) {
-          await Future<void>.delayed(_retryBackoff * attempt);
-          continue;
-        }
-        return cached?.items.take(limit).toList(growable: false) ?? const [];
-      }
-    }
-    return cached?.items.take(limit).toList(growable: false) ?? const [];
+    final byCategory = await _load();
+    return (byCategory[species] ?? const <PetNewsItem>[]).take(limit).toList(growable: false);
   }
 
-  PetNewsItem? _toNewsItem(String species, Map<String, dynamic> item) {
-    final rawTitle = (item['title'] ?? '').toString().trim();
-    final link = (item['link'] ?? '').toString();
-    if (rawTitle.isEmpty || link.isEmpty) {
-      return null;
+  Future<Map<String, List<PetNewsItem>>> _load() async {
+    final cached = _cache;
+    if (cached != null && DateTime.now().difference(cached.fetchedAt) < _cacheTtl) {
+      return cached.byCategory;
     }
 
-    final normalizedTitle = rawTitle.toLowerCase();
-    if (_blockedKeywords.any(normalizedTitle.contains)) {
+    final pending = _inFlight ??= _fetchAll().whenComplete(() => _inFlight = null);
+    final fresh = await pending;
+    if (fresh != null) {
+      _cache = _CacheEntry(fresh, DateTime.now());
+      return fresh;
+    }
+    // The backend did not answer: an older answer beats an empty section.
+    return cached?.byCategory ?? const {};
+  }
+
+  Future<Map<String, List<PetNewsItem>>?> _fetchAll() async {
+    final baseUrl = _configLoader.load().apiBaseUrl;
+    try {
+      final response = await _client
+          .get(Uri.parse('$baseUrl/news').replace(queryParameters: {'limit': '$_itemsPerCategory'}))
+          .timeout(_timeout);
+      if (response.statusCode != 200) return null;
+
+      final json = jsonDecode(response.body) as Map<String, dynamic>;
+      final categories = json['categories'] as Map<String, dynamic>? ?? const {};
+      return {
+        for (final entry in categories.entries)
+          entry.key: [
+            for (final raw in entry.value as List<dynamic>)
+              if (_toNewsItem(entry.key, raw as Map<String, dynamic>) case final item?) item,
+          ],
+      };
+    } catch (_) {
       return null;
     }
+  }
 
-    final separatorIndex = rawTitle.lastIndexOf(' - ');
-    final headline = separatorIndex == -1 ? rawTitle : rawTitle.substring(0, separatorIndex);
-    final source = separatorIndex == -1 ? 'Google News' : rawTitle.substring(separatorIndex + 3);
+  PetNewsItem? _toNewsItem(String category, Map<String, dynamic> item) {
+    final title = (item['title'] ?? '').toString().trim();
+    final link = (item['url'] ?? '').toString();
+    if (title.isEmpty || link.isEmpty) return null;
 
     return PetNewsItem(
-      species: species,
-      title: headline,
-      extract: source,
+      species: category,
+      title: title,
+      extract: (item['source'] ?? '').toString(),
       sourceUrl: link,
-      imageUrl: (item['thumbnail'] as String?)?.isNotEmpty == true
-          ? item['thumbnail'] as String
-          : null,
-      // rss2json normalizes pubDate to "yyyy-MM-dd HH:mm:ss", which
-      // DateTime.tryParse accepts directly (space instead of the ISO "T").
-      publishedAt: DateTime.tryParse((item['pubDate'] ?? '').toString()),
+      publishedAt: DateTime.tryParse((item['published_at'] ?? '').toString()),
     );
   }
 }
 
 class _CacheEntry {
-  const _CacheEntry(this.items, this.fetchedAt);
+  const _CacheEntry(this.byCategory, this.fetchedAt);
 
-  final List<PetNewsItem> items;
+  final Map<String, List<PetNewsItem>> byCategory;
   final DateTime fetchedAt;
 }
 
 /// Runs [tasks] in small parallel batches — [batchSize] at a time, with a
 /// pause between batches — instead of either one at a time or all at once.
 ///
-/// Measured against the real rss2json endpoint (2026-09-30): 8 requests
-/// fired fully in parallel failed 2/8 (HTTP 500, the free tier's
-/// shared-bucket symptom — not always a clean 429); the previous one-at-
-/// a-time-with-4s-delay approach took ~32s for 8 categories. Batches of 3
-/// with a 600ms pause between batches completed all 8 with zero failures
-/// in under 3s total. `fetchForSpecies` also retries once on its own for
-/// whatever transient failure still gets through (the shared bucket's
-/// exact threshold moves with load from other callers, so no fixed pacing
-/// here can promise zero 429s).
+/// Historical note: this paced calls to the old third-party feed proxy, which
+/// refused bursts. [BackendPetNewsRepository] answers every category from one
+/// shared request, so the pause defaults to none; the batching stays so the
+/// first batch can be shown before the rest (the News page relies on it).
 Future<void> fetchManyWithLimitStreaming<T>(
   List<Future<T> Function()> tasks, {
   required void Function(List<T> batchResults) onBatch,
   int batchSize = 3,
-  Duration betweenBatches = const Duration(milliseconds: 600),
+  Duration betweenBatches = Duration.zero,
 }) async {
   for (var i = 0; i < tasks.length; i += batchSize) {
-    if (i > 0) {
+    if (i > 0 && betweenBatches > Duration.zero) {
       await Future<void>.delayed(betweenBatches);
     }
     final batch = tasks.skip(i).take(batchSize).map((task) => task());
@@ -281,7 +154,7 @@ Future<void> fetchManyWithLimitStreaming<T>(
 Future<List<T>> fetchManyWithLimit<T>(
   List<Future<T> Function()> tasks, {
   int batchSize = 3,
-  Duration betweenBatches = const Duration(milliseconds: 600),
+  Duration betweenBatches = Duration.zero,
 }) async {
   final results = <T>[];
   await fetchManyWithLimitStreaming<T>(

@@ -606,7 +606,7 @@ class AppLocalizationsIt extends AppLocalizations {
 
   @override
   String get firstRunTutorialPetsBody =>
-      'Razza, peso, note mediche e documenti: tutto organizzato per ciascun pet, sempre a portata di mano.';
+      'Specie e razza, peso, note mediche e documenti: tutto organizzato per ciascun pet, sempre a portata di mano.';
 
   @override
   String get firstRunTutorialAssistantTitle => 'Chiedi al tuo assistente';
@@ -1876,6 +1876,9 @@ class AppLocalizationsIt extends AppLocalizations {
   String get petsBreedUnspecified => 'Razza non specificata';
 
   @override
+  String get petsSpeciesUnspecified => 'Specie non specificata';
+
+  @override
   String petsBreedOtherWithSize(String size) {
     return 'Altro · Taglia $size';
   }
@@ -1969,10 +1972,6 @@ class AppLocalizationsIt extends AppLocalizations {
   String get petsEditMemorialAction => 'Sposta nei ricordi';
 
   @override
-  String get petsFormAllSpeciesAdded =>
-      'Hai già aggiunto tutte le specie disponibili.';
-
-  @override
   String get petsFormAddSpecies => 'Aggiungi specie';
 
   @override
@@ -1988,19 +1987,27 @@ class AppLocalizationsIt extends AppLocalizations {
   String get petsFormNameError => 'Inserisci il nome del pet.';
 
   @override
-  String get petsFormSpeciesLabel => 'Specie';
+  String get petsFormSpeciesLabel => 'Tipo di animale';
 
   @override
-  String get petsFormSpeciesHint => 'Seleziona una specie';
+  String get petsFormSpeciesHint => 'Seleziona il tipo di animale';
 
   @override
-  String get petsFormSpeciesError => 'Seleziona una specie.';
+  String get petsFormSpeciesError => 'Seleziona il tipo di animale.';
 
   @override
-  String get petsFormProfileType => 'Tipo di profilo';
+  String get petsFormProfileType => 'Cosa vuoi registrare?';
 
   @override
-  String get petsFormSingleFish => 'Un pesce';
+  String get petsFormFishSingleTitle => 'Pesce';
+
+  @override
+  String get petsFormFishSingleBody =>
+      'Un solo pesce, scelto per specie (es. Betta, pesce rosso)';
+
+  @override
+  String get petsFormFishAquariumBody =>
+      'Una vasca con più specie e più esemplari, maschi e femmine';
 
   @override
   String get petsFormAquariumPopulation => 'Popolazione dell\'acquario';
@@ -2016,10 +2023,29 @@ class AppLocalizationsIt extends AppLocalizations {
   String get petsFormBreedLabel => 'Razza';
 
   @override
-  String get petsFormBreedSelectSpeciesFirst => 'Seleziona prima la specie';
+  String get petsFormBreedSelectSpeciesFirst =>
+      'Seleziona prima il tipo di animale';
 
   @override
-  String get petsFormBreedOptional => 'Facoltativa';
+  String get petsFormBreedSpeciesLabel => 'Specie';
+
+  @override
+  String get petsFormBreedRequired => 'Scegli la razza.';
+
+  @override
+  String get petsFormBreedSpeciesRequired => 'Scegli la specie.';
+
+  @override
+  String get petsFormBreedTextRequired => 'Scrivi la razza.';
+
+  @override
+  String get petsFormBreedSpeciesTextRequired => 'Scrivi la specie.';
+
+  @override
+  String get petsFormBreedSpeciesPlaceholder => 'Seleziona una specie';
+
+  @override
+  String get petsFormOtherSpeciesDialogTitle => 'Quale specie?';
 
   @override
   String get petsFormBreedPlaceholder => 'Seleziona una razza';
@@ -2032,16 +2058,16 @@ class AppLocalizationsIt extends AppLocalizations {
       'Cerca (anche per nome scientifico)';
 
   @override
-  String get petsFormOtherBreedLabel => 'Quale razza? (facoltativo)';
+  String get petsFormOtherBreedLabel => 'Quale razza?';
 
   @override
   String get petsFormOtherBreedHint => 'Es. incrocio di barboncino';
 
   @override
-  String get petsFormOtherSpeciesLabel => 'Quale specie o razza? (facoltativo)';
+  String get petsFormOtherSpeciesLabel => 'Quale specie?';
 
   @override
-  String get petsFormOtherSpeciesHint => 'Es. nome comune o varietà';
+  String get petsFormOtherSpeciesHint => 'Es. nome comune o scientifico';
 
   @override
   String get petsFormDogSizeLabel => 'Taglia (facoltativa)';
@@ -2082,6 +2108,12 @@ class AppLocalizationsIt extends AppLocalizations {
 
   @override
   String get petsFormWeightHintKg => 'Es. 18,4';
+
+  @override
+  String get petsFormWeightLabelG => 'Peso (facoltativo, g)';
+
+  @override
+  String get petsFormWeightHintG => 'Es. 35';
 
   @override
   String get petsFormWeightHintLb => 'Es. 40,5';
@@ -3441,6 +3473,73 @@ class AppLocalizationsIt extends AppLocalizations {
   String eventsOrganizedBy(String name) {
     return 'Organizzato da $name';
   }
+
+  @override
+  String get eventsSuggestAction => 'Segnala un evento';
+
+  @override
+  String get eventsSuggestTitle => 'Segnala un evento';
+
+  @override
+  String get eventsSuggestIntro =>
+      'Conosci una fiera o un evento per animali che non trovi qui? Compila i dati: lo controlliamo sul sito dell\'organizzatore prima di pubblicarlo.';
+
+  @override
+  String get eventsSuggestPrivacy =>
+      'Scrivi solo informazioni sull\'evento: niente nomi di persone, email o telefoni.';
+
+  @override
+  String get eventsSuggestFieldTitle => 'Nome dell\'evento';
+
+  @override
+  String get eventsSuggestFieldType => 'Tipo di evento';
+
+  @override
+  String get eventsSuggestFieldDates => 'Date';
+
+  @override
+  String get eventsSuggestPickDates => 'Scegli le date';
+
+  @override
+  String get eventsSuggestFieldCity => 'Città';
+
+  @override
+  String get eventsSuggestFieldProvince => 'Provincia (sigla, es. MO)';
+
+  @override
+  String get eventsSuggestFieldVenue =>
+      'Luogo, ad esempio la fiera (facoltativo)';
+
+  @override
+  String get eventsSuggestFieldLink => 'Link alla pagina dell\'evento';
+
+  @override
+  String get eventsSuggestRequired => 'Campo obbligatorio';
+
+  @override
+  String get eventsSuggestInvalidLink =>
+      'Inserisci un indirizzo che inizi con http:// o https://';
+
+  @override
+  String get eventsSuggestInvalidProvince => 'Usa la sigla di due lettere';
+
+  @override
+  String get eventsSuggestSend => 'Invia segnalazione';
+
+  @override
+  String get eventsSuggestThanks =>
+      'Grazie! Controlleremo l\'evento prima di pubblicarlo.';
+
+  @override
+  String get eventsSuggestNeedLogin => 'Accedi per segnalare un evento.';
+
+  @override
+  String get eventsSuggestLimit =>
+      'Hai già inviato le segnalazioni di oggi: riprova domani.';
+
+  @override
+  String get eventsSuggestError =>
+      'Non sono riuscito a inviare la segnalazione. Riprova più tardi.';
 
   @override
   String get eventsLoadError =>
@@ -5133,16 +5232,17 @@ class AppLocalizationsIt extends AppLocalizations {
   }
 
   @override
-  String get petsWizardStep1Title => 'Parlaci del tuo animale';
+  String get petsWizardStep1Title => 'Che animale è?';
 
   @override
-  String get petsWizardStep1Subtitle => 'Come si chiama?';
+  String get petsWizardStep1Subtitle =>
+      'Scegli il tipo di animale e la sua razza o specie';
 
   @override
-  String get petsWizardStep2Title => 'Specie e razza';
+  String get petsWizardStep2Title => 'Parlaci del tuo animale';
 
   @override
-  String get petsWizardStep2Subtitle => 'Seleziona la specie del tuo animale';
+  String get petsWizardStep2Subtitle => 'Come si chiama?';
 
   @override
   String get petsWizardStep3Title => 'Informazioni generali';
@@ -5208,17 +5308,272 @@ class AppLocalizationsIt extends AppLocalizations {
   String get petsDataSummarySterilized => 'sterilizzato';
 
   @override
-  String get petsListMicrochipMissing => 'Microchip mancante';
-
-  @override
   String get monitoringTitle => 'Monitoraggio';
 
   @override
-  String get monitoringEntrySubtitleWeight => 'Peso e corporatura';
+  String get petsDetailTabMonitoring => 'Monitoraggio';
 
   @override
-  String get monitoringEntrySubtitleWithActivity =>
-      'Peso, corporatura e attività';
+  String get monitoringBcsGuideTitle => 'Valuta la corporatura';
+
+  @override
+  String monitoringBcsGuideIntro(String petName) {
+    return 'Il peso da solo non basta a dire se un animale è magro o in carne: bisogna toccarlo e guardarlo. Segui i tre passaggi e scegli la descrizione che assomiglia di più a $petName.';
+  }
+
+  @override
+  String get monitoringBcsStepTouch => 'Tocca le costole';
+
+  @override
+  String get monitoringBcsStepAbove => 'Guarda dall’alto';
+
+  @override
+  String get monitoringBcsStepSide => 'Guarda di lato';
+
+  @override
+  String get monitoringBcsViewAbove => 'Dall’alto';
+
+  @override
+  String get monitoringBcsViewSide => 'Di lato';
+
+  @override
+  String get monitoringBcsRowTouch => 'Al tatto';
+
+  @override
+  String get monitoringBcsRowAbove => 'Dall’alto';
+
+  @override
+  String get monitoringBcsRowSide => 'Di lato';
+
+  @override
+  String monitoringBcsGuideScale(String range, String max) {
+    return 'Nella scala della fonte: $range su $max';
+  }
+
+  @override
+  String monitoringBcsGuideChoose(String level) {
+    return 'Scegli: $level';
+  }
+
+  @override
+  String get monitoringBcsGuideClear => 'Rimuovi la valutazione';
+
+  @override
+  String get monitoringBcsGuideDisclaimer =>
+      'È un’indicazione orientativa che non sostituisce la visita del veterinario. Le illustrazioni sono schematiche e originali di VetApp.';
+
+  @override
+  String monitoringBcsGuideSource(String source) {
+    return 'Fonte: $source';
+  }
+
+  @override
+  String get monitoringBcsGuideTipFurry =>
+      'Nei cani e nei gatti col pelo lungo o folto la vista inganna: tocca sempre le costole.';
+
+  @override
+  String get monitoringBcsGuideTipRabbit =>
+      'Nei conigli il pelo nasconde le ossa: tocca sempre schiena, costole e anca, la sola vista non basta.';
+
+  @override
+  String get monitoringBcsGuideCaveatRabbit =>
+      'Per i conigli questa scala è meno affidabile: due persone possono dare punteggi diversi allo stesso coniglio. Se hai dubbi, chiedi al veterinario.';
+
+  @override
+  String get monitoringBcsSourceDog =>
+      'criteri della scala a 9 punti del WSAVA Global Nutrition Committee per i cani (Laflamme, 1997), riassunti con parole nostre e ridotti a 5 livelli da VetApp. Non è materiale ufficiale WSAVA.';
+
+  @override
+  String get monitoringBcsSourceCat =>
+      'criteri della scala a 9 punti del WSAVA Global Nutrition Committee per i gatti (Laflamme, 1997; validata da Bjornvad e colleghi, 2011), riassunti con parole nostre e ridotti a 5 livelli da VetApp. Non è materiale ufficiale WSAVA.';
+
+  @override
+  String get monitoringBcsSourceRabbit =>
+      'Rabbit Size-O-Meter a 5 livelli della PFMA (Pet Food Manufacturers’ Association), riassunto con parole nostre. L’affidabilità tra chi valuta è limitata (Halck e colleghi, Veterinary Record, 2025).';
+
+  @override
+  String get monitoringBcsNotAssessed => 'Non valutata';
+
+  @override
+  String get monitoringBcsAssess => 'Valuta la corporatura';
+
+  @override
+  String get monitoringBcsReassess => 'Rivaluta la corporatura';
+
+  @override
+  String get monitoringBcsGuideDog1Touch =>
+      'Costole, colonna e ossa del bacino si sentono subito sotto la pelle: non c\'è praticamente grasso e i muscoli sembrano ridotti.';
+
+  @override
+  String get monitoringBcsGuideDog1Above =>
+      'Vita molto stretta e scavata dietro le costole; le ossa dell\'anca e della schiena sporgono.';
+
+  @override
+  String get monitoringBcsGuideDog1Side =>
+      'Pancia molto rientrata, il profilo sale deciso verso le zampe posteriori.';
+
+  @override
+  String get monitoringBcsGuideDog2Touch =>
+      'Le costole si sentono senza premere, con pochissimo grasso sopra, e a volte si vedono.';
+
+  @override
+  String get monitoringBcsGuideDog2Above =>
+      'Vita ben marcata dietro le costole; le ossa del bacino cominciano a notarsi.';
+
+  @override
+  String get monitoringBcsGuideDog2Side => 'Pancia chiaramente rientrata.';
+
+  @override
+  String get monitoringBcsGuideDog3Touch =>
+      'Le costole si sentono bene sotto un sottile strato di grasso, senza dover premere.';
+
+  @override
+  String get monitoringBcsGuideDog3Above =>
+      'Si vede una vita dietro le costole.';
+
+  @override
+  String get monitoringBcsGuideDog3Side =>
+      'Il ventre sale con dolcezza dal petto verso le zampe posteriori.';
+
+  @override
+  String get monitoringBcsGuideDog4Touch =>
+      'Le costole si sentono con un po\' di fatica: lo strato di grasso è più spesso, soprattutto sulla schiena vicino alla coda.';
+
+  @override
+  String get monitoringBcsGuideDog4Above =>
+      'La vita si intravede appena oppure non si vede più.';
+
+  @override
+  String get monitoringBcsGuideDog4Side =>
+      'Il rientro della pancia è poco evidente.';
+
+  @override
+  String get monitoringBcsGuideDog5Touch =>
+      'Le costole non si sentono, o solo premendo forte, sotto un grosso strato di grasso; si accumula su schiena e base della coda.';
+
+  @override
+  String get monitoringBcsGuideDog5Above =>
+      'Nessuna vita: il corpo è largo e tondeggiante, la pancia può sembrare gonfia.';
+
+  @override
+  String get monitoringBcsGuideDog5Side =>
+      'Nessun rientro: la pancia è tonda o scende verso il basso.';
+
+  @override
+  String get monitoringBcsGuideCat1Touch =>
+      'Costole e vertebre della schiena si sentono senza alcuno strato di grasso; nei gatti a pelo corto le costole si vedono.';
+
+  @override
+  String get monitoringBcsGuideCat1Above =>
+      'Vita molto stretta dietro le costole.';
+
+  @override
+  String get monitoringBcsGuideCat1Side =>
+      'Pancia molto rientrata, nessun cuscinetto di grasso sotto il ventre.';
+
+  @override
+  String get monitoringBcsGuideCat2Touch =>
+      'Le costole si sentono facilmente con pochissimo grasso e le vertebre della schiena si notano.';
+
+  @override
+  String get monitoringBcsGuideCat2Above =>
+      'Vita ben visibile dietro le costole.';
+
+  @override
+  String get monitoringBcsGuideCat2Side =>
+      'Pancia un po\' rientrata, con poco o nessun cuscinetto di grasso.';
+
+  @override
+  String get monitoringBcsGuideCat3Touch =>
+      'Le costole si sentono con un velo di grasso sopra.';
+
+  @override
+  String get monitoringBcsGuideCat3Above =>
+      'Corpo ben proporzionato, con una vita visibile dietro le costole.';
+
+  @override
+  String get monitoringBcsGuideCat3Side =>
+      'Il profilo del ventre è morbido, con un cuscinetto di grasso appena accennato.';
+
+  @override
+  String get monitoringBcsGuideCat4Touch =>
+      'Le costole sono più difficili da sentire: bisogna premere un po\', perché c\'è più grasso.';
+
+  @override
+  String get monitoringBcsGuideCat4Above =>
+      'La vita si vede poco o non si vede.';
+
+  @override
+  String get monitoringBcsGuideCat4Side =>
+      'Pancia arrotondata, con un cuscinetto di grasso moderato sotto il ventre.';
+
+  @override
+  String get monitoringBcsGuideCat5Touch =>
+      'Le costole non si sentono sotto un grosso strato di grasso, che si accumula anche sulla schiena e, nei casi estremi, su muso e zampe.';
+
+  @override
+  String get monitoringBcsGuideCat5Above => 'Nessuna vita: il corpo è largo.';
+
+  @override
+  String get monitoringBcsGuideCat5Side =>
+      'Pancia tonda o penzolante, con un cuscinetto di grasso evidente.';
+
+  @override
+  String get monitoringBcsGuideRabbit1Touch =>
+      'Colonna, costole e ossa dell\'anca sporgono e sono taglienti sotto la pelle: non c\'è grasso e i muscoli sono ridotti.';
+
+  @override
+  String get monitoringBcsGuideRabbit1Above =>
+      'Schiena e fianchi scavati, le ossa dell\'anca si notano.';
+
+  @override
+  String get monitoringBcsGuideRabbit1Side =>
+      'Il posteriore (la groppa) è incavato, curva verso l\'interno.';
+
+  @override
+  String get monitoringBcsGuideRabbit2Touch =>
+      'Costole, colonna e anca si sentono facilmente, con poco grasso sopra.';
+
+  @override
+  String get monitoringBcsGuideRabbit2Above =>
+      'Fianchi sottili, con la colonna poco coperta.';
+
+  @override
+  String get monitoringBcsGuideRabbit2Side => 'Il posteriore è piatto.';
+
+  @override
+  String get monitoringBcsGuideRabbit3Touch =>
+      'Costole e colonna si sentono con facilità ma hanno contorni morbidi e arrotondati, non taglienti.';
+
+  @override
+  String get monitoringBcsGuideRabbit3Above =>
+      'Corpo ben proporzionato, senza rigonfiamenti ai fianchi.';
+
+  @override
+  String get monitoringBcsGuideRabbit3Side =>
+      'Il posteriore è piatto e la pancia non sporge.';
+
+  @override
+  String get monitoringBcsGuideRabbit4Touch =>
+      'Per sentire costole, colonna e anca bisogna premere: ci sono strati di grasso.';
+
+  @override
+  String get monitoringBcsGuideRabbit4Above => 'Fianchi pieni e arrotondati.';
+
+  @override
+  String get monitoringBcsGuideRabbit4Side => 'Il posteriore è arrotondato.';
+
+  @override
+  String get monitoringBcsGuideRabbit5Touch =>
+      'Colonna e anca si sentono a fatica e le costole per niente, sotto un grosso strato di grasso.';
+
+  @override
+  String get monitoringBcsGuideRabbit5Above =>
+      'Corpo largo e pieno, con il posteriore che sporge.';
+
+  @override
+  String get monitoringBcsGuideRabbit5Side =>
+      'La pancia scende e forma un cuscinetto di grasso sotto il ventre.';
 
   @override
   String get monitoringAddMeasurement => 'Nuova misurazione';
@@ -5254,7 +5609,7 @@ class AppLocalizationsIt extends AppLocalizations {
 
   @override
   String get monitoringBcsNone =>
-      'Indica la corporatura in una misurazione per vederla qui.';
+      'Tocca «Valuta la corporatura» per vederla qui.';
 
   @override
   String get monitoringBcsVeryThin => 'Molto magro';
@@ -5336,9 +5691,6 @@ class AppLocalizationsIt extends AppLocalizations {
 
   @override
   String get monitoringFieldWeightHintLb => 'Es. 22,5';
-
-  @override
-  String get monitoringFieldBcs => 'Corporatura (facoltativa)';
 
   @override
   String get monitoringFieldNote => 'Nota (facoltativa)';
@@ -5489,6 +5841,122 @@ class AppLocalizationsIt extends AppLocalizations {
 
   @override
   String get medAddAction => 'Aggiungi';
+
+  @override
+  String get medCatConditionOne => 'Patologia';
+
+  @override
+  String get medHistoryTitle => 'Storico';
+
+  @override
+  String get medHistorySubtitle =>
+      'Tutti gli eventi registrati, mese per mese.';
+
+  @override
+  String get medHistoryEmpty => 'Nessun evento registrato';
+
+  @override
+  String get medHistoryPrevMonth => 'Mese precedente';
+
+  @override
+  String get medHistoryNextMonth => 'Mese successivo';
+
+  @override
+  String medHistoryDayTitle(String date) {
+    return 'Eventi del $date';
+  }
+
+  @override
+  String get medHistoryDayEmpty => 'Nessun evento in questo giorno';
+
+  @override
+  String medHistoryDayA11y(String date, int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count eventi',
+      one: '1 evento',
+      zero: 'nessun evento',
+    );
+    return '$date: $_temp0';
+  }
+
+  @override
+  String get medHistorySend => 'Invia storico';
+
+  @override
+  String get medHistorySendAll => 'Tutto lo storico (PDF)';
+
+  @override
+  String get medHistorySendAllSubtitle =>
+      'Un PDF con tutti gli eventi in ordine di data';
+
+  @override
+  String get medHistorySendFiles => 'Singoli file';
+
+  @override
+  String get medHistoryPreparing => 'Preparo il PDF…';
+
+  @override
+  String get medHistoryExportFailed =>
+      'Non sono riuscito a preparare il PDF. Riprova.';
+
+  @override
+  String get medHistoryConditionsMissing =>
+      'Non sono riuscito a leggere le patologie: nel PDF non ci sono.';
+
+  @override
+  String medPdfTitle(String petName) {
+    return 'Storico clinico di $petName';
+  }
+
+  @override
+  String get medPdfSpeciesBreed => 'Specie e razza';
+
+  @override
+  String get medPdfBirthDate => 'Data di nascita';
+
+  @override
+  String get medPdfExportDate => 'Data di esportazione';
+
+  @override
+  String get medPdfColDate => 'Data';
+
+  @override
+  String get medPdfColCategory => 'Categoria';
+
+  @override
+  String get medPdfColTitle => 'Titolo';
+
+  @override
+  String get medPdfColNotes => 'Note';
+
+  @override
+  String get medPdfNoDate => 'Senza data';
+
+  @override
+  String get medPdfEmpty => 'Nessun evento registrato.';
+
+  @override
+  String medPdfPage(int page, int pages) {
+    return 'Pagina $page di $pages';
+  }
+
+  @override
+  String get medPdfConditionOngoing => 'In corso';
+
+  @override
+  String get medPdfConditionResolved => 'Risolta';
+
+  @override
+  String medPdfConditionResolvedOn(String date) {
+    return 'Risolta il $date';
+  }
+
+  @override
+  String medPdfConditionTherapy(String therapy) {
+    return 'Terapia: $therapy';
+  }
 
   @override
   String get medNewVisit => 'Nuova visita';

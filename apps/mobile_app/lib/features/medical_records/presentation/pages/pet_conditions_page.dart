@@ -46,7 +46,9 @@ class _PetConditionsPageState extends State<PetConditionsPage> {
 
   void _reload() {
     if (!mounted) return;
-    setState(() => _future = _repository.loadForPet(widget.pet.id));
+    setState(() {
+      _future = _repository.loadForPet(widget.pet.id);
+    });
   }
 
   Future<void> _openForm([PetConditionEntry? existing]) async {

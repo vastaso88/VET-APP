@@ -77,6 +77,16 @@ from packages.core.domain.pet_profile.details import describe_for_prompt
 from packages.core.domain.pet_profile.models import FishStock, HabitatDetails
 from packages.core.domain.pet_profile.species import normalize_species
 from packages.core.domain.pet_profile.species_facts import species_facts
+from packages.core.domain.pet_profile.species_rules import (
+    PetKind,
+    has_activity,
+    has_body_condition,
+    has_neutering,
+    has_sex,
+    has_weight,
+    pet_kind,
+    uses_breed_word,
+)
 from packages.core.domain.pet_profile.weight import (
     WEIGHT_SUGGESTION_MARKER,
     is_weight_relevant,
@@ -2316,22 +2326,30 @@ class ChatOrchestrator:
             f"Species: {data.species}",
         ]
         if data.breed:
-            lines.append(f"Breed: {data.breed}")
+            # A budgerigar is a species of bird, not a breed of it.
+            label = "Breed" if uses_breed_word(data.species) else "Specific species"
+            lines.append(f"{label}: {data.breed}")
         if data.age_years is not None:
             lines.append(f"Age: {data.age_years} years")
         if data.birth_date_label:
             lines.append(f"Born: {data.birth_date_label}")
-        if data.sex:
+        # Only what makes sense for this animal: an older app version may still
+        # hold a sex for an aquarium or a body condition for a parrot.
+        if data.sex and has_sex(data.species, data.breed):
             lines.append(f"Sex: {data.sex}")
-        if data.weight_label:
+        if data.weight_label and has_weight(data.species, data.breed):
             lines.append(f"Weight: {data.weight_label}")
-        if data.dog_size_category:
+        if data.dog_size_category and pet_kind(data.species, data.breed) is PetKind.DOG:
             lines.append(f"Size category: {data.dog_size_category}")
         lines.extend(
             describe_for_prompt(
-                neutered=data.is_sterilized,
-                body_condition=data.body_condition,
-                activity_level=data.activity_level,
+                neutered=data.is_sterilized if has_neutering(data.species, data.breed) else None,
+                body_condition=(
+                    data.body_condition if has_body_condition(data.species, data.breed) else None
+                ),
+                activity_level=(
+                    data.activity_level if has_activity(data.species, data.breed) else None
+                ),
                 body_condition_as_of=data.body_condition_as_of,
             )
         )

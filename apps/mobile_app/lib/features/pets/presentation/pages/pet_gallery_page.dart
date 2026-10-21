@@ -50,10 +50,12 @@ class _PetGalleryPageState extends State<PetGalleryPage> {
   void initState() {
     super.initState();
     _loadWalks();
+    PetPhotoRepository.changes.addListener(_onPhotosChanged);
   }
 
   @override
   void dispose() {
+    PetPhotoRepository.changes.removeListener(_onPhotosChanged);
     _capture.dispose();
     super.dispose();
   }
@@ -113,7 +115,17 @@ class _PetGalleryPageState extends State<PetGalleryPage> {
     return photos;
   }
 
-  void _reload() => setState(() => _photosFuture = _load());
+  /// A photo added, removed or changed anywhere (the walk's camera, another
+  /// screen) shows here at once.
+  void _onPhotosChanged() {
+    if (mounted) _reload();
+  }
+
+  void _reload() {
+    setState(() {
+      _photosFuture = _load();
+    });
+  }
 
   /// Runs one of the capture actions, then confirms it and refreshes the grid.
   Future<void> _runCapture(Future<PetMediaImportResult?> Function() action) async {

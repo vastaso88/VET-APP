@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import '../../../l10n/l10n.dart';
 import '../../settings/domain/unit_conversion.dart';
 import '../../settings/domain/unit_system.dart';
+import 'pet_details.dart';
 import 'pet_value_labels.dart';
 
 enum PetsScreenStatus {
@@ -196,7 +197,12 @@ class PetProfile {
   /// One of [petActivityLevels]. Null = not said.
   final String? activityLevel;
 
-  String get title => '$name - ${localizedSpeciesLabel(species)}';
+  /// The kind of animal as the owner reads it: an aquarium is an "Acquario",
+  /// not a "Pesce" (it holds many fish of several species).
+  String get speciesDisplayLabel =>
+      isAquarium ? appL10n.petsHabitatAquarium : localizedSpeciesLabel(species);
+
+  String get title => '$name - $speciesDisplayLabel';
 
   String get breedLabel {
     if (isAquarium) {
@@ -206,7 +212,9 @@ class PetProfile {
       return t.petsAquariumSummary(t.petsSpeciesCount(speciesCount), t.petsFishCount(totalFish));
     }
     if (breed.trim().isEmpty) {
-      return appL10n.petsBreedUnspecified;
+      return speciesUsesBreedWord(species)
+          ? appL10n.petsBreedUnspecified
+          : appL10n.petsSpeciesUnspecified;
     }
     final size = dogSizeCategory;
     if (breed.trim() == 'Altro' && size != null && size.isNotEmpty) {
@@ -368,7 +376,7 @@ const samplePets = <PetProfile>[
     breed: '',
     birthDateLabel: '',
     sex: 'Sconosciuto',
-    weightLabel: '0,4 kg',
+    weightLabel: '',
     medicalNote:
         'Filtro pulito ogni settimana, parametri dell\'acqua controllati regolarmente.',
     healthBadge: 'Stabile',

@@ -44,7 +44,7 @@ const _legacyNames = <String, List<String>>{
 void main() {
   group('every non dog/cat category', () {
     for (final category in _categories) {
-      test('$category: generic entries first, "Altra (scrivi)" last', () {
+      test('$category: generic entries first, "Altra specie (scrivi)" last', () {
         final options = PetDemoStore.breedsForSpecies(category);
         final pinned = speciesPinnedBreeds[category.toLowerCase()]!;
 
@@ -82,11 +82,11 @@ void main() {
       expect(PetDemoStore.breedsForSpecies('Uccello'), contains('Altro uccello'));
       expect(PetDemoStore.breedsForSpecies('Rettili e anfibi'),
           containsAll(['Altro rettile', 'Altro anfibio']));
-      expect(PetDemoStore.breedsForSpecies('Pesce'), contains('Altro pesce'));
+      expect(PetDemoStore.breedsForSpecies('Pesce'), contains(fishGenericLabel));
     });
 
     test('the aquarium population editor keeps its plain species list', () {
-      expect(aquariumFishSpecies, isNot(contains('Altro pesce')));
+      expect(aquariumFishSpecies, isNot(contains(fishGenericLabel)));
       expect(aquariumFishSpecies, isNot(contains(otherEntryLabel)));
     });
 

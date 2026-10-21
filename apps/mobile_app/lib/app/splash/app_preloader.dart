@@ -65,7 +65,7 @@ class AppPreloader {
       ];
 
   /// Fetches every "curiosità" category ahead of time so its 20-minute
-  /// cache (GoogleNewsPetNewsRepository) is already warm by the time the
+  /// cache (BackendPetNewsRepository) is already warm by the time the
   /// user opens Home or the News page — best-effort like every other task
   /// here, but worth calling out: unlike the others, this one can keep
   /// running in the background past the preload's own timeout (see
@@ -73,7 +73,7 @@ class AppPreloader {
   /// way to be cancelled mid-batch. That's fine — it only ever *adds*
   /// cache entries, never blocks anything downstream from proceeding.
   static Future<void> _warmPetNewsCache() async {
-    final repository = GoogleNewsPetNewsRepository();
+    final repository = BackendPetNewsRepository();
     await fetchManyWithLimit(
       allPetNewsCategories
           .map((c) => () => repository.fetchForSpecies(c, limit: petNewsPoolLimitPerCategory))

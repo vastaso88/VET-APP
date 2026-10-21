@@ -7,6 +7,7 @@ import '../../../../design_system/tokens/app_text_styles.dart';
 import '../../../../l10n/l10n.dart';
 import '../../../monitoring/data/weight_measurements_repository.dart';
 import '../../../monitoring/domain/body_condition.dart';
+import '../../../monitoring/domain/body_condition_guide.dart';
 import '../../../settings/data/unit_settings_store.dart';
 import '../../../settings/domain/unit_conversion.dart';
 import '../../data/pet_demo_store.dart';
@@ -32,8 +33,10 @@ class PetDataSummaryRow extends StatelessWidget {
     final parts = <String>[
       if (pet.species != 'Pesce' && pet.sex.trim().isNotEmpty)
         localizedSexLabel(pet.sex),
-      if (weight.isNotEmpty) weightLabelIn(weight, UnitSettingsStore.instance.system),
-      if (pet.isSterilized == true) t.petsDataSummarySterilized,
+      if (weight.isNotEmpty && speciesHasWeight(pet.species))
+        weightLabelIn(weight, UnitSettingsStore.instance.system),
+      if (pet.isSterilized == true && speciesHasNeutering(pet.species, breed: pet.breed))
+        t.petsDataSummarySterilized,
     ];
     return parts.join(' · ');
   }
@@ -190,8 +193,13 @@ class _PetDataPageState extends State<PetDataPage> {
     final fish = pet.species == 'Pesce';
     return [
       PetInfoRow(label: t.petsFormNameLabel, value: pet.name),
-      PetInfoRow(label: t.petsFormSpeciesLabel, value: localizedSpeciesLabel(pet.species)),
-      PetInfoRow(label: t.petsFormBreedLabel, value: pet.breedLabel),
+      PetInfoRow(label: t.petsFormSpeciesLabel, value: pet.speciesDisplayLabel),
+      PetInfoRow(
+        label: pet.isAquarium
+            ? t.petsFormAquariumPopulation
+            : petBreedFieldLabel(t, pet.species),
+        value: pet.breedLabel,
+      ),
       if (!fish)
         PetInfoRow(
           label: t.petsFormSexLabel,
@@ -219,14 +227,16 @@ class _PetDataPageState extends State<PetDataPage> {
             (pet.dogSizeCategory ?? '').isEmpty ? null : localizedDogSizeLabel(pet.dogSizeCategory!),
           ),
         ),
-      PetInfoRow(
-        label: t.petsDataWeightLabel,
-        value: _orNotProvided(
-          context,
-          weight.isEmpty ? null : weightLabelIn(weight, UnitSettingsStore.instance.system),
+      if (speciesHasWeight(pet.species))
+        PetInfoRow(
+          label: t.petsDataWeightLabel,
+          value: _orNotProvided(
+            context,
+            weight.isEmpty ? null : weightLabelIn(weight, UnitSettingsStore.instance.system),
+          ),
         ),
-      ),
-      if (speciesHasBodyDetails(pet.species)) ...[
+      // Corporatura exists only for species with a published guide.
+      if (supportsBodyCondition(pet))
         PetInfoRow(
           label: t.petsFormBodyConditionLabel,
           value: _orNotProvided(
@@ -234,6 +244,7 @@ class _PetDataPageState extends State<PetDataPage> {
             bodyCondition?.label,
           ),
         ),
+      if (speciesHasActivity(pet.species, breed: pet.breed))
         PetInfoRow(
           label: t.petsFormActivityLabel,
           value: _orNotProvided(
@@ -241,10 +252,9 @@ class _PetDataPageState extends State<PetDataPage> {
             activity == null ? null : localizedActivityLevelLabel(activity),
           ),
         ),
-      ],
       if (speciesHasCoatColor(pet.species))
         PetInfoRow(
-          label: speciesHasCoat(pet.species) ? t.petsFormCoatColorLabel : t.petsFormColorLabel,
+          label: speciesHasCoat(pet.species, breed: pet.breed) ? t.petsFormCoatColorLabel : t.petsFormColorLabel,
           value: _orNotProvided(context, pet.coatColor),
         ),
     ];
@@ -254,14 +264,14 @@ class _PetDataPageState extends State<PetDataPage> {
     final t = context.l10n;
     final chip = (pet.microchipNumber ?? '').trim();
     return [
-      if (speciesHasMicrochip(pet.species))
+      if (speciesHasMicrochip(pet.species, breed: pet.breed))
         chip.isNotEmpty
             ? PetInfoRow(label: t.petsFormMicrochipLabel, value: formatMicrochip(chip))
             : _MissingMicrochipRow(
                 dog: pet.species == 'Cane',
                 onAdd: _edit,
               ),
-      if (speciesHasNeutering(pet.species))
+      if (speciesHasNeutering(pet.species, breed: pet.breed))
         PetInfoRow(
           label: t.petsFormSterilized,
           value: switch (pet.isSterilized) {
