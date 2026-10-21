@@ -39,11 +39,15 @@ class _MedicalRecordsListPageState extends State<MedicalRecordsListPage> {
 
   void _onRecordsChanged() {
     if (!mounted) return;
-    setState(() => _recordsFuture = _repository.loadRecords());
+    setState(() {
+      _recordsFuture = _repository.loadRecords();
+    });
   }
 
   Future<void> _reload() async {
-    setState(() => _recordsFuture = _repository.loadRecords());
+    setState(() {
+      _recordsFuture = _repository.loadRecords();
+    });
     await _recordsFuture;
   }
 

@@ -12,13 +12,16 @@ import '../../pets/domain/pet_models.dart';
 import '../../monitoring/presentation/widgets/monitoring_entry_card.dart';
 import '../../pets/presentation/widgets/medical_record_consent_card.dart';
 import '../data/medical_records_repository.dart';
-import '../data/pet_conditions_repository.dart';
+import '../domain/history_event.dart';
 import '../domain/pet_condition.dart';
 import '../domain/record_category.dart';
+import 'history_export.dart';
+import 'medical_records_controller.dart';
 import 'pages/medical_record_upload_page.dart';
 import 'pages/pet_condition_form_page.dart';
 import 'pages/pet_conditions_page.dart';
 import 'pages/record_category_page.dart';
+import 'pet_history_section.dart';
 import 'record_category_labels.dart';
 import 'record_file_actions.dart';
 
@@ -41,49 +44,17 @@ class PetMedicalRecordsTab extends StatefulWidget {
 }
 
 class _PetMedicalRecordsTabState extends State<PetMedicalRecordsTab> {
-  final _conditionsRepository = PetConditionsRepository();
-  late Future<List<MedicalRecordEntry>> _future = widget.repository
-      .loadRecords();
-
-  /// Null while loading or when the illnesses cannot be read (the tile then
-  /// shows no number rather than a wrong zero).
-  List<PetConditionEntry>? _conditions;
-
-  @override
-  void initState() {
-    super.initState();
-    MedicalRecordsRepository.changes.addListener(_onRecordsChanged);
-    PetConditionsRepository.changes.addListener(_loadConditions);
-    unawaited(_loadConditions());
-  }
+  /// Records and illnesses, reloaded on every save/edit/delete anywhere in
+  /// the app, so the tiles, the lists and the Storico never show old numbers.
+  late final MedicalRecordsController _controller = MedicalRecordsController(
+    repository: widget.repository,
+    conditionsPetId: widget.pet.id,
+  );
 
   @override
   void dispose() {
-    MedicalRecordsRepository.changes.removeListener(_onRecordsChanged);
-    PetConditionsRepository.changes.removeListener(_loadConditions);
+    _controller.dispose();
     super.dispose();
-  }
-
-  void _onRecordsChanged() {
-    if (!mounted) return;
-    setState(() => _future = widget.repository.loadRecords());
-  }
-
-  Future<void> _loadConditions() async {
-    List<PetConditionEntry>? loaded;
-    try {
-      loaded = await _conditionsRepository.loadForPet(widget.pet.id);
-    } catch (_) {
-      loaded = null;
-    }
-    if (!mounted) return;
-    setState(() => _conditions = loaded);
-  }
-
-  Future<void> _reload() async {
-    setState(() => _future = widget.repository.loadRecords());
-    unawaited(_loadConditions());
-    await _future;
   }
 
   void _open(Widget page) {
@@ -93,15 +64,17 @@ class _PetMedicalRecordsTabState extends State<PetMedicalRecordsTab> {
   }
 
   void _openCategory(RecordCategory category) => _open(
-    RecordCategoryPage(
-      pet: widget.pet,
-      category: category,
-      repository: widget.repository,
-    ),
-  );
+        RecordCategoryPage(
+          pet: widget.pet,
+          category: category,
+          repository: widget.repository,
+        ),
+      );
 
   void _openConditions() => _open(PetConditionsPage(pet: widget.pet));
 
+  // Saving, editing or deleting anything bumps the repositories' `changes`,
+  // which the controller listens to: no reload is needed when coming back.
   Future<void> _addEntry(RecordCategory category) async {
     await Navigator.of(context).push(
       MaterialPageRoute<MedicalRecordEntry>(
@@ -111,9 +84,34 @@ class _PetMedicalRecordsTabState extends State<PetMedicalRecordsTab> {
         ),
       ),
     );
-    if (!mounted) return;
-    await _reload();
   }
+
+  void _openEvent(HistoryEvent event) {
+    final record = event.record;
+    if (record != null) {
+      unawaited(
+        showRecordActions(
+          context,
+          record: record,
+          onChanged: () => unawaited(_controller.reload()),
+        ),
+      );
+      return;
+    }
+    _open(PetConditionFormPage(pet: widget.pet, existing: event.condition));
+  }
+
+  List<MedicalRecordEntry> get _petRecords =>
+      (_controller.records ?? const <MedicalRecordEntry>[])
+          .where((record) => record.petName == widget.pet.name)
+          .toList(growable: false);
+
+  Future<void> _exportHistory() => exportPetHistory(
+        context,
+        pet: widget.pet,
+        records: _petRecords,
+        conditions: _controller.conditions,
+      );
 
   Future<void> _addCondition() async {
     await Navigator.of(context).push(
@@ -194,6 +192,29 @@ class _PetMedicalRecordsTabState extends State<PetMedicalRecordsTab> {
                 style: AppTextStyles.bodySmall,
               ),
               const SizedBox(height: AppSpacing.md),
+              ListTile(
+                contentPadding: EdgeInsets.zero,
+                leading: const Icon(
+                  Icons.picture_as_pdf_outlined,
+                  color: AppColors.primary,
+                ),
+                title: Text(sheetContext.l10n.medHistorySendAll),
+                subtitle: Text(sheetContext.l10n.medHistorySendAllSubtitle),
+                onTap: () {
+                  Navigator.of(sheetContext).pop();
+                  unawaited(_exportHistory());
+                },
+              ),
+              if (withFiles.isNotEmpty) ...[
+                const Divider(),
+                Padding(
+                  padding: const EdgeInsets.only(bottom: AppSpacing.xs),
+                  child: Text(
+                    sheetContext.l10n.medHistorySendFiles,
+                    style: AppTextStyles.caption,
+                  ),
+                ),
+              ],
               for (final record in withFiles)
                 ListTile(
                   contentPadding: EdgeInsets.zero,
@@ -220,106 +241,112 @@ class _PetMedicalRecordsTabState extends State<PetMedicalRecordsTab> {
 
   @override
   Widget build(BuildContext context) {
+    return ListenableBuilder(
+      listenable: _controller,
+      builder: (context, _) => _buildContent(context),
+    );
+  }
+
+  Widget _buildContent(BuildContext context) {
     final l10n = context.l10n;
-    return FutureBuilder<List<MedicalRecordEntry>>(
-      future: _future,
-      builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return const Center(child: PetLoader());
-        }
-        if (snapshot.hasError) {
-          return Padding(
-            padding: const EdgeInsets.all(AppSpacing.lg),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(
-                  l10n.petsDetailRecordsLoadError,
-                  textAlign: TextAlign.center,
-                  style: AppTextStyles.bodySmall,
-                ),
-                const SizedBox(height: AppSpacing.sm),
-                TextButton(
-                  onPressed: () => unawaited(_reload()),
-                  child: Text(l10n.commonRetry),
-                ),
-              ],
-            ),
-          );
-        }
-
-        final records = (snapshot.data ?? const <MedicalRecordEntry>[])
-            .where((record) => record.petName == widget.pet.name)
-            .toList(growable: false);
-        int countOf(RecordCategory category) =>
-            records.where((record) => record.category == category).length;
-        final conditions = _conditions;
-        final tiles = <Widget>[
-          for (final category in RecordCategory.values)
-            _CategoryTile(
-              icon: category.icon,
-              label: category.tileLabel(l10n),
-              countText: l10n.medCatCount(countOf(category)),
-              onTap: () => _openCategory(category),
-            ),
-          _CategoryTile(
-            icon: conditionIcon,
-            label: l10n.medCatCondition,
-            countText: conditions == null
-                ? '—'
-                : l10n.medCatCount(conditions.length),
-            onTap: _openConditions,
-          ),
-        ];
-
-        // One scrollable list: the consent card, the actions and the tiles
-        // scroll together, so nothing can overflow a fixed-height tab body.
-        return ListView(
-          padding: const EdgeInsets.only(bottom: AppSpacing.xl),
+    if (_controller.recordsFailed) {
+      return Padding(
+        padding: const EdgeInsets.all(AppSpacing.lg),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
           children: [
-            MonitoringEntryCard(pet: widget.pet),
-            MedicalRecordConsentCard(pet: widget.pet),
-            const SizedBox(height: AppSpacing.md),
-            Row(
+            Text(
+              l10n.petsDetailRecordsLoadError,
+              textAlign: TextAlign.center,
+              style: AppTextStyles.bodySmall,
+            ),
+            const SizedBox(height: AppSpacing.sm),
+            TextButton(
+              onPressed: () => unawaited(_controller.retry()),
+              child: Text(l10n.commonRetry),
+            ),
+          ],
+        ),
+      );
+    }
+    if (_controller.records == null) {
+      return const Center(child: PetLoader());
+    }
+
+    final records = _petRecords;
+    int countOf(RecordCategory category) =>
+        records.where((record) => record.category == category).length;
+    final conditions = _controller.conditions;
+    final tiles = <Widget>[
+      for (final category in RecordCategory.values)
+        _CategoryTile(
+          icon: category.icon,
+          label: category.tileLabel(l10n),
+          countText: l10n.medCatCount(countOf(category)),
+          onTap: () => _openCategory(category),
+        ),
+      _CategoryTile(
+        icon: conditionIcon,
+        label: l10n.medCatCondition,
+        countText:
+            conditions == null ? '—' : l10n.medCatCount(conditions.length),
+        onTap: _openConditions,
+      ),
+    ];
+
+    // One scrollable list: the consent card, the actions and the tiles
+    // scroll together, so nothing can overflow a fixed-height tab body.
+    return ListView(
+      padding: const EdgeInsets.only(bottom: AppSpacing.xl),
+      children: [
+        MonitoringEntryCard(pet: widget.pet),
+        MedicalRecordConsentCard(pet: widget.pet),
+        const SizedBox(height: AppSpacing.md),
+        Row(
+          children: [
+            Expanded(
+              child: FilledButton.icon(
+                onPressed: _showAddSheet,
+                icon: const Icon(Icons.add_rounded, size: 18),
+                label: Text(l10n.medAddAction),
+              ),
+            ),
+            const SizedBox(width: AppSpacing.sm),
+            Expanded(
+              child: OutlinedButton.icon(
+                onPressed: () => _showSendSheet(records),
+                icon: const Icon(Icons.ios_share_rounded, size: 18),
+                label: Text(l10n.petsDetailRecordsSend),
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: AppSpacing.md),
+        // Rows sized by their tallest tile (not a fixed ratio), so a
+        // larger text size makes the tiles taller instead of overflowing.
+        for (var i = 0; i < tiles.length; i += 2) ...[
+          if (i > 0) const SizedBox(height: AppSpacing.sm),
+          IntrinsicHeight(
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                Expanded(
-                  child: FilledButton.icon(
-                    onPressed: _showAddSheet,
-                    icon: const Icon(Icons.add_rounded, size: 18),
-                    label: Text(l10n.medAddAction),
-                  ),
-                ),
+                Expanded(child: tiles[i]),
                 const SizedBox(width: AppSpacing.sm),
-                Expanded(
-                  child: OutlinedButton.icon(
-                    onPressed: records.any(recordHasFile)
-                        ? () => _showSendSheet(records)
-                        : null,
-                    icon: const Icon(Icons.ios_share_rounded, size: 18),
-                    label: Text(l10n.petsDetailRecordsSend),
-                  ),
-                ),
+                Expanded(child: tiles[i + 1]),
               ],
             ),
-            const SizedBox(height: AppSpacing.md),
-            // Rows sized by their tallest tile (not a fixed ratio), so a
-            // larger text size makes the tiles taller instead of overflowing.
-            for (var i = 0; i < tiles.length; i += 2) ...[
-              if (i > 0) const SizedBox(height: AppSpacing.sm),
-              IntrinsicHeight(
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    Expanded(child: tiles[i]),
-                    const SizedBox(width: AppSpacing.sm),
-                    Expanded(child: tiles[i + 1]),
-                  ],
-                ),
-              ),
-            ],
-          ],
-        );
-      },
+          ),
+        ],
+        const SizedBox(height: AppSpacing.lg),
+        PetHistorySection(
+          events: buildHistoryEvents(
+            records: records,
+            conditions: conditions ?? const <PetConditionEntry>[],
+          ),
+          onOpenEvent: _openEvent,
+          onExport: _exportHistory,
+        ),
+      ],
     );
   }
 }
