@@ -13,6 +13,7 @@ import '../../../../../design_system/tokens/app_text_styles.dart';
 import '../../../../../l10n/date_formats.dart';
 import '../../../../../shared/date/calendar_days.dart';
 import '../../../../../l10n/l10n.dart';
+import '../../../../../l10n/regional_defaults.dart';
 import '../../../home/presentation/widgets/home_dashboard_primitives.dart';
 import '../../../pets/data/pet_demo_store.dart';
 import '../../../pets/domain/pet_models.dart';
@@ -933,7 +934,7 @@ class _ReminderFormState extends State<_ReminderForm> {
   String? _validateDate(String? value) {
     final raw = (value ?? '').trim();
     if (raw.isEmpty) return context.l10n.remindersDateRequired;
-    if (parseStrictDate(raw) == null) return context.l10n.remindersDateInvalid;
+    if (parseStrictDate(raw) == null) return appDateInputText(context.l10n.remindersDateInvalid);
     return null;
   }
 
@@ -1300,7 +1301,7 @@ class _KindOption extends StatelessWidget {
   }
 }
 
-/// A typed `gg/mm/aaaa` field: digits format themselves as the owner types
+/// A typed date field (`gg/mm/aaaa` or the country's order): digits format themselves as the owner types
 /// (see [TypedDateField]), and the trailing calendar icon still opens the
 /// native picker and fills the field for those who'd rather tap than type.
 class _DatePickerField extends StatelessWidget {
@@ -1331,7 +1332,7 @@ class _DatePickerField extends StatelessWidget {
               size: 18, color: AppColors.primary),
           style: AppTextStyles.bodySmall.copyWith(color: AppColors.text),
           decoration: InputDecoration(
-            hintText: context.l10n.remindersDatePlaceholder,
+            hintText: appDateInputText(context.l10n.remindersDatePlaceholder),
             filled: true,
             fillColor: AppColors.background,
             contentPadding: const EdgeInsets.symmetric(

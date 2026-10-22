@@ -275,11 +275,12 @@ class DogWalksWidgetProvider : HomeWidgetProvider() {
   }
 
   private fun render(
-      context: Context,
+      baseContext: Context,
       appWidgetManager: AppWidgetManager,
       widgetId: Int,
       widgetData: SharedPreferences,
   ) {
+    val context = AppLanguageContext.localized(baseContext)
     val heightDp = appWidgetManager
         .getAppWidgetOptions(widgetId)
         .getInt(AppWidgetManager.OPTION_APPWIDGET_MIN_HEIGHT, 0)
@@ -302,6 +303,10 @@ class DogWalksWidgetProvider : HomeWidgetProvider() {
     val hidden = total - pets.size
 
     val views = RemoteViews(context.packageName, spec.layout)
+    if (spec === TALL) {
+      views.setTextViewText(R.id.dog_walks_widget_subtitle, context.getString(R.string.dog_walks_widget_subtitle))
+    }
+    views.setTextViewText(spec.empty, context.getString(R.string.dog_walks_widget_empty))
 
     // Tapping anywhere that isn't a button (background, empty state, a
     // row's name/avatar, "+N altri") just opens the app.
@@ -337,6 +342,8 @@ class DogWalksWidgetProvider : HomeWidgetProvider() {
       }
 
       views.setViewVisibility(row.reminder, View.VISIBLE)
+      views.setContentDescription(row.reminder, context.getString(R.string.dog_walks_widget_reminder_cd))
+      views.setContentDescription(row.walk, context.getString(R.string.dog_walks_widget_walk_cd))
       views.setOnClickPendingIntent(row.reminder, actionIntent(context, "new_reminder", pet.id))
 
       // The walk shortcut only makes sense for dogs.

@@ -1,0 +1,79 @@
+name: Translation drafts from Italian
+
+# Italian is the source. When it changes, this job prepares machine drafts for every
+# other language (en, es, de, fr) with the shared glossary and the register of the
+# style guide (docs/i18n/GLOSSARIO_E_STILE.md). Nothing is committed or published:
+# the drafts are an artifact, every line marked "to review" (docs/i18n/NUOVE_FUNZIONI.md).
+# Needs the repository secret DEEPL_API_KEY (docs/i18n/AUTOMATIC_TRANSLATION.md).
+
+on:
+  push:
+    branches: [main, MULTILANG]
+    paths:
+      - 'apps/mobile_app/lib/l10n/app_it.arb'
+      - 'packages/core/domain/localization.py'
+      - 'apps/mobile_app/android/app/src/main/res/values/strings.xml'
+      - 'docs/i18n/glossary.json'
+      - 'scripts/i18n/auto_translate.py'
+      - 'scripts/i18n/glossary.py'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: translation-drafts-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  draft:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: The glossary and its table are consistent
+        run: |
+          python scripts/i18n/glossary.py check
+          python scripts/i18n/glossary.py render --check
+      - name: Detect changed source messages
+        id: changes
+        shell: bash
+        run: |
+          if python scripts/i18n/auto_translate.py check; then
+            echo 'pending=false' >> "$GITHUB_OUTPUT"
+          else
+            echo 'pending=true' >> "$GITHUB_OUTPUT"
+          fi
+      - name: Send the glossary to DeepL (one IT to xx glossary per language)
+        if: steps.changes.outputs.pending == 'true'
+        env:
+          DEEPL_API_KEY: ${{ secrets.DEEPL_API_KEY }}
+        run: python scripts/i18n/glossary.py deepl-sync --github-env "$GITHUB_ENV"
+      - name: Generate isolated draft catalogs
+        if: steps.changes.outputs.pending == 'true'
+        env:
+          DEEPL_API_KEY: ${{ secrets.DEEPL_API_KEY }}
+        run: >-
+          python scripts/i18n/auto_translate.py draft
+          --output "$RUNNER_TEMP/translation-drafts" --max-messages 100
+      - name: List of keys to review
+        if: steps.changes.outputs.pending == 'true'
+        run: |
+          {
+            echo '### Traduzioni da rivedere'
+            echo
+            echo 'Machine drafts, all to be reviewed: artifact `translation-drafts-${{ github.sha }}` (TRANSLATION_REVIEW.md / .json).'
+            echo
+            head -c 6000 "$RUNNER_TEMP/translation-drafts/TRANSLATION_REVIEW.md"
+          } >> "$GITHUB_STEP_SUMMARY"
+      - name: Downloadable drafts for human review
+        if: steps.changes.outputs.pending == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: translation-drafts-${{ github.sha }}
+          path: ${{ runner.temp }}/translation-drafts
+          if-no-files-found: error
+          retention-days: 14

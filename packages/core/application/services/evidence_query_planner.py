@@ -1,6 +1,6 @@
-"""Translates a case into a scientific retrieval query (spec v3 §23).
+"""Translates a multilingual case into an English scientific retrieval query (spec v3 §23).
 
-MVP implementation: deterministic Italian→English keyword substitution,
+MVP implementation: deterministic Italian/English/Spanish keyword substitution,
 because PubMed/Europe PMC content is overwhelmingly in English and
 searching with the untranslated Italian message would barely match
 anything. This is a stand-in for the fuller planner the spec describes
@@ -127,6 +127,38 @@ IT_EN_TERMS: dict[str, str] = {
     "aglio": "garlic toxicity",
     "xilitolo": "xylitol toxicity",
     "avocado": "avocado toxicity",
+    # English inputs already use retrieval-friendly concepts, but keeping
+    # them in the shared map ensures intent-specific context is not the
+    # only query when the app UI is set to English.
+    "cough": "cough",
+    "vomiting": "vomiting",
+    "diarrhea": "diarrhea",
+    "fever": "fever",
+    "pain": "pain",
+    "food": "food nutrition",
+    "appetite": "appetite",
+    "diet": "diet nutrition",
+    "anxiety": "anxiety behavior",
+    "barking": "barking behavior",
+    "aggression": "aggression behavior",
+    "vaccination": "vaccination",
+    "terrarium": "reptile terrarium husbandry",
+    "aquarium": "freshwater aquarium water quality",
+    "enrichment": "captive animal environmental enrichment welfare",
+    # Spanish to the same English retrieval vocabulary.
+    "vómit": "vomiting",
+    "tos": "cough",
+    "fiebre": "fever",
+    "dolor": "pain",
+    "comida": "food nutrition",
+    "apetito": "appetite",
+    "nutrición": "nutrition",
+    "ansiedad": "anxiety behavior",
+    "ladra": "barking behavior",
+    "agres": "aggression behavior",
+    "vacuna": "vaccination",
+    "acuario": "freshwater aquarium water quality",
+    "enriquecimiento": "captive animal environmental enrichment welfare",
 }
 
 INTENT_FALLBACK_TERMS: dict[str, str] = {

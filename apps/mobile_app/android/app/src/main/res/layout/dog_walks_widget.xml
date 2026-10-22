@@ -33,6 +33,7 @@
 
         <TextView
             android:layout_width="0dp"
+            android:id="@+id/dog_walks_widget_subtitle"
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:layout_marginStart="6dp"

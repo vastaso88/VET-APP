@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 
 import '../../../../shared/widgets/pet_loader.dart';
 
-
 import '../../../../design_system/tokens/app_spacing.dart';
 import '../../../../l10n/l10n.dart';
 import '../../../../features/billing/data/subscription_gate.dart';
@@ -29,10 +28,11 @@ class _LoginPageState extends State<LoginPage> {
   final _passwordController = TextEditingController();
 
   AuthBannerStatus? _status;
-  String _title = '';
-  String _message = '';
+  String Function(AppLocalizations) _title = (_) => '';
+  String Function(AppLocalizations) _message = (_) => '';
   bool _isLoading = false;
   bool _rememberMe = true;
+  bool _hasValidated = false;
 
   @override
   void dispose() {
@@ -42,12 +42,13 @@ class _LoginPageState extends State<LoginPage> {
   }
 
   Future<void> _submit() async {
+    setState(() => _hasValidated = true);
     final isValid = _formKey.currentState?.validate() ?? false;
     if (!isValid) {
       setState(() {
         _status = AuthBannerStatus.error;
-        _title = context.l10n.authBannerCheckFieldsTitle;
-        _message = context.l10n.authLoginFieldsInvalidMessage;
+        _title = (l10n) => l10n.authBannerCheckFieldsTitle;
+        _message = (l10n) => l10n.authLoginFieldsInvalidMessage;
       });
       return;
     }
@@ -55,8 +56,8 @@ class _LoginPageState extends State<LoginPage> {
     setState(() {
       _isLoading = true;
       _status = AuthBannerStatus.loading;
-      _title = context.l10n.authLoginLoadingTitle;
-      _message = context.l10n.authLoginLoadingMessage;
+      _title = (l10n) => l10n.authLoginLoadingTitle;
+      _message = (l10n) => l10n.authLoginLoadingMessage;
     });
 
     final result = await _authRepository.signInWithPassword(
@@ -73,8 +74,8 @@ class _LoginPageState extends State<LoginPage> {
         setState(() {
           _isLoading = false;
           _status = AuthBannerStatus.success;
-          _title = context.l10n.authLoginSuccessTitle;
-          _message = context.l10n.authLoginSuccessMessage;
+          _title = (l10n) => l10n.authLoginSuccessTitle;
+          _message = (l10n) => l10n.authLoginSuccessMessage;
         });
         return true;
       },
@@ -82,8 +83,8 @@ class _LoginPageState extends State<LoginPage> {
         setState(() {
           _isLoading = false;
           _status = AuthBannerStatus.error;
-          _title = context.l10n.authLoginFailureTitle;
-          _message = localizedAuthMessage(error);
+          _title = (l10n) => l10n.authLoginFailureTitle;
+          _message = (_) => localizedAuthMessage(error);
         });
         return false;
       },
@@ -108,11 +109,16 @@ class _LoginPageState extends State<LoginPage> {
       subtitle: context.l10n.authLoginSubtitle,
       child: Form(
         key: _formKey,
+        autovalidateMode:
+            _hasValidated ? AutovalidateMode.always : AutovalidateMode.disabled,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             if (_status != null)
-              AuthStateBanner(status: _status!, title: _title, message: _message),
+              AuthStateBanner(
+                  status: _status!,
+                  title: _title(context.l10n),
+                  message: _message(context.l10n)),
             AuthInputField(
               controller: _emailController,
               label: context.l10n.authEmailLabel,
@@ -146,11 +152,14 @@ class _LoginPageState extends State<LoginPage> {
               children: [
                 Checkbox(
                   value: _rememberMe,
-                  onChanged: (value) => setState(() => _rememberMe = value ?? true),
+                  onChanged: (value) =>
+                      setState(() => _rememberMe = value ?? true),
                 ),
-                GestureDetector(
-                  onTap: () => setState(() => _rememberMe = !_rememberMe),
-                  child: Text(context.l10n.authRememberMe),
+                Flexible(
+                  child: GestureDetector(
+                    onTap: () => setState(() => _rememberMe = !_rememberMe),
+                    child: Text(context.l10n.authRememberMe),
+                  ),
                 ),
               ],
             ),
@@ -158,7 +167,8 @@ class _LoginPageState extends State<LoginPage> {
             AuthFooterLink(
               label: context.l10n.authForgotPasswordLink,
               onTap: () => Navigator.of(context).push(
-                MaterialPageRoute<void>(builder: (_) => const ResetPasswordPage()),
+                MaterialPageRoute<void>(
+                    builder: (_) => const ResetPasswordPage()),
               ),
             ),
             const SizedBox(height: AppSpacing.lg),

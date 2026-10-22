@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import 'package:supabase_flutter/supabase_flutter.dart';
+import '../../language/data/language_store.dart';
 
 import '../../../shared/auth/auth.dart';
 import '../../../shared/config/app_runtime_config.dart';
@@ -44,6 +45,7 @@ class SupabaseAuthRemoteDataSource implements AuthRemoteDataSource {
         );
       }
 
+      await LanguageStore.instance.syncAfterAuthentication();
       return Result.success(_mapSession(session, user));
     } on AuthException catch (error) {
       return Result.failure(
@@ -79,6 +81,8 @@ class SupabaseAuthRemoteDataSource implements AuthRemoteDataSource {
           if (request.displayName != null && request.displayName!.trim().isNotEmpty)
             'display_name': request.displayName!.trim(),
           'onboarding_completed': false,
+          'preferred_locale': LanguageStore.instance.variant.languageCode,
+          'preferred_locale_variant': LanguageStore.instance.variant.id,
         },
       );
       final session = response.session;
@@ -145,7 +149,8 @@ class SupabaseAuthRemoteDataSource implements AuthRemoteDataSource {
   }
 
   @override
-  Future<Result<void>> updatePassword({String? email, required String newPassword}) async {
+  Future<Result<void>> updatePassword(
+      {String? email, required String newPassword}) async {
     if (!isConfigured) {
       return Result.failure(_missingConfigError());
     }

@@ -7,7 +7,6 @@ import '../../../../design_system/tokens/app_colors.dart';
 
 import '../../../../shared/widgets/pet_loader.dart';
 
-
 import '../../../../app/router/app_router.dart';
 import '../../../../design_system/tokens/app_spacing.dart';
 import '../../../../l10n/l10n.dart';
@@ -26,7 +25,8 @@ import 'legal_text_page.dart';
 import 'login_page.dart';
 
 class _TermsAcceptanceText extends StatefulWidget {
-  const _TermsAcceptanceText({required this.onTermsTap, required this.onPrivacyTap});
+  const _TermsAcceptanceText(
+      {required this.onTermsTap, required this.onPrivacyTap});
 
   final VoidCallback onTermsTap;
   final VoidCallback onPrivacyTap;
@@ -36,9 +36,10 @@ class _TermsAcceptanceText extends StatefulWidget {
 }
 
 class _TermsAcceptanceTextState extends State<_TermsAcceptanceText> {
-  late final TapGestureRecognizer _termsTap = TapGestureRecognizer()..onTap = widget.onTermsTap;
-  late final TapGestureRecognizer _privacyTap =
-      TapGestureRecognizer()..onTap = widget.onPrivacyTap;
+  late final TapGestureRecognizer _termsTap = TapGestureRecognizer()
+    ..onTap = widget.onTermsTap;
+  late final TapGestureRecognizer _privacyTap = TapGestureRecognizer()
+    ..onTap = widget.onPrivacyTap;
 
   @override
   void dispose() {
@@ -49,8 +50,10 @@ class _TermsAcceptanceTextState extends State<_TermsAcceptanceText> {
 
   @override
   Widget build(BuildContext context) {
-    const base = TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: AppColors.text);
-    final link = base.copyWith(color: AppColors.primary, decoration: TextDecoration.underline);
+    const base = TextStyle(
+        fontSize: 14, fontWeight: FontWeight.w700, color: AppColors.text);
+    final link = base.copyWith(
+        color: AppColors.primary, decoration: TextDecoration.underline);
     final l10n = context.l10n;
     // The sentence is one localized message; the two link names are swapped
     // in as markers so the surrounding words can move with the language.
@@ -64,7 +67,9 @@ class _TermsAcceptanceTextState extends State<_TermsAcceptanceText> {
         final isTerms = match[0] == termsMarker;
         spans.add(
           TextSpan(
-            text: isTerms ? l10n.authTermsOfServiceLabel : l10n.authPrivacyPolicyLabel,
+            text: isTerms
+                ? l10n.authTermsOfServiceLabel
+                : l10n.authPrivacyPolicyLabel,
             style: link,
             recognizer: isTerms ? _termsTap : _privacyTap,
           ),
@@ -98,10 +103,11 @@ class _RegisterPageState extends State<RegisterPage> {
   bool _acceptTerms = false;
   bool _isLoading = false;
   AuthBannerStatus? _status;
-  String _title = '';
-  String _message = '';
-  String? _emailServerError;
-  String? _passwordServerError;
+  String Function(AppLocalizations) _title = (_) => '';
+  String Function(AppLocalizations) _message = (_) => '';
+  bool _hasValidated = false;
+  String Function()? _emailServerError;
+  String Function()? _passwordServerError;
 
   @override
   void dispose() {
@@ -113,14 +119,15 @@ class _RegisterPageState extends State<RegisterPage> {
   }
 
   Future<void> _submit() async {
+    setState(() => _hasValidated = true);
     final isValid = _formKey.currentState?.validate() ?? false;
     if (!isValid || !_acceptTerms) {
       setState(() {
         _status = AuthBannerStatus.error;
-        _title = context.l10n.authRegisterCheckTitle;
-        _message = !_acceptTerms
-            ? context.l10n.authRegisterTermsRequired
-            : context.l10n.authRegisterFieldsInvalid;
+        _title = (l10n) => l10n.authRegisterCheckTitle;
+        _message = (l10n) => !_acceptTerms
+            ? l10n.authRegisterTermsRequired
+            : l10n.authRegisterFieldsInvalid;
       });
       return;
     }
@@ -130,8 +137,8 @@ class _RegisterPageState extends State<RegisterPage> {
       _emailServerError = null;
       _passwordServerError = null;
       _status = AuthBannerStatus.loading;
-      _title = context.l10n.authRegisterLoadingTitle;
-      _message = context.l10n.authRegisterLoadingMessage;
+      _title = (l10n) => l10n.authRegisterLoadingTitle;
+      _message = (l10n) => l10n.authRegisterLoadingMessage;
     });
 
     final result = await _authRepository.signUpWithPassword(
@@ -148,8 +155,8 @@ class _RegisterPageState extends State<RegisterPage> {
         setState(() {
           _isLoading = false;
           _status = AuthBannerStatus.success;
-          _title = context.l10n.authRegisterSuccessTitle;
-          _message = context.l10n.authRegisterSuccessMessage;
+          _title = (l10n) => l10n.authRegisterSuccessTitle;
+          _message = (l10n) => l10n.authRegisterSuccessMessage;
         });
         return true;
       },
@@ -158,10 +165,14 @@ class _RegisterPageState extends State<RegisterPage> {
         setState(() {
           _isLoading = false;
           _status = AuthBannerStatus.error;
-          _title = context.l10n.authRegisterFailureTitle;
-          _message = presented.message;
-          if (presented.field == AuthErrorField.email) _emailServerError = presented.message;
-          if (presented.field == AuthErrorField.password) _passwordServerError = presented.message;
+          _title = (l10n) => l10n.authRegisterFailureTitle;
+          _message = (_) => presentAuthError(error).message;
+          if (presented.field == AuthErrorField.email) {
+            _emailServerError = () => presentAuthError(error).message;
+          }
+          if (presented.field == AuthErrorField.password) {
+            _passwordServerError = () => presentAuthError(error).message;
+          }
         });
         return false;
       },
@@ -224,7 +235,8 @@ class _RegisterPageState extends State<RegisterPage> {
     );
     if (!mounted) return;
     await Navigator.of(context).push(
-      MaterialPageRoute<void>(builder: (_) => const NotificationPermissionPage()),
+      MaterialPageRoute<void>(
+          builder: (_) => const NotificationPermissionPage()),
     );
     if (!mounted) return;
     await Navigator.of(context).push(
@@ -239,11 +251,16 @@ class _RegisterPageState extends State<RegisterPage> {
       subtitle: context.l10n.authRegisterSubtitle,
       child: Form(
         key: _formKey,
+        autovalidateMode:
+            _hasValidated ? AutovalidateMode.always : AutovalidateMode.disabled,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             if (_status != null)
-              AuthStateBanner(status: _status!, title: _title, message: _message),
+              AuthStateBanner(
+                  status: _status!,
+                  title: _title(context.l10n),
+                  message: _message(context.l10n)),
             AuthInputField(
               controller: _nameController,
               label: context.l10n.authNameLabel,
@@ -262,7 +279,7 @@ class _RegisterPageState extends State<RegisterPage> {
               hintText: context.l10n.authEmailHint,
               keyboardType: TextInputType.emailAddress,
               autofillHints: const [AutofillHints.email],
-              serverError: _emailServerError,
+              serverError: _emailServerError?.call(),
               validator: (value) {
                 final text = value?.trim() ?? '';
                 if (text.isEmpty) return context.l10n.authEmailRequired;
@@ -274,7 +291,7 @@ class _RegisterPageState extends State<RegisterPage> {
             AuthInputField(
               controller: _passwordController,
               label: context.l10n.authPasswordLabel,
-              serverError: _passwordServerError,
+              serverError: _passwordServerError?.call(),
               hintText: context.l10n.authPasswordHint,
               obscureText: true,
               autofillHints: const [AutofillHints.newPassword],
@@ -293,7 +310,9 @@ class _RegisterPageState extends State<RegisterPage> {
               obscureText: true,
               autofillHints: const [AutofillHints.newPassword],
               validator: (value) {
-                if (value != _passwordController.text) return context.l10n.authPasswordsMismatch;
+                if (value != _passwordController.text) {
+                  return context.l10n.authPasswordsMismatch;
+                }
                 return null;
               },
             ),

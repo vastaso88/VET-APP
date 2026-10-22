@@ -7,7 +7,7 @@ from packages.shared.errors.base import ProviderError
 
 logger = logging.getLogger("vetgpt.consent")
 
-_SHORT_YES = {"si", "sì", "ok", "okay"}
+_SHORT_YES = {"si", "sì", "sí", "yes", "ok", "okay"}
 _SHORT_NO = {"no"}
 
 # Longer, distinctive phrases are safe to match anywhere in the message.
@@ -15,6 +15,13 @@ _SHORT_NO = {"no"}
 # on ordinary words ("nome", "nostro", "sicuro", ...), so they're only
 # checked as the reply's first word below.
 AFFIRMATIVE_PHRASES = (
+    "go ahead",
+    "i agree",
+    "please consult",
+    "of course",
+    "de acuerdo",
+    "consulta el historial",
+    "por supuesto",
     "certo",
     "va bene",
     "d'accordo",
@@ -28,6 +35,14 @@ AFFIRMATIVE_PHRASES = (
 )
 
 NEGATIVE_PHRASES = (
+    "do not consult",
+    "don't consult",
+    "i don't want",
+    "rather not",
+    "no quiero",
+    "prefiero que no",
+    "no consultes",
+    "no hace falta",
     "non voglio",
     "preferisco di no",
     "meglio di no",

@@ -1,3 +1,5 @@
+from typing import Literal
+
 from pydantic import BaseModel, Field
 
 # The longest message the chat accepts (also PUT …/messages/{id}, and the
@@ -16,3 +18,4 @@ class SendChatMessageRequest(BaseModel):
     # Language of the reply ("it", "en", "de", "fr", "es"; "en-GB" is read as
     # "en"). Missing: the Accept-Language header, then "it".
     language: str | None = Field(default=None, max_length=20)
+    response_locale: Literal["it", "en", "es", "de", "fr"] | None = None

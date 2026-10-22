@@ -15,6 +15,7 @@ void main() {
       MaterialApp(
         localizationsDelegates: AppLocalizations.localizationsDelegates,
         supportedLocales: AppLocalizations.supportedLocales,
+        locale: const Locale('it'),
         home: Scaffold(
           body: PetMedicalRecordsTab(pet: moka, repository: MedicalRecordsRepository()),
         ),

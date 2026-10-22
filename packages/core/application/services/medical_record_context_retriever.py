@@ -61,8 +61,11 @@ class RecordDocument:
     def explainable(self) -> bool:
         return bool(self.content or self.description)
 
-    def label(self) -> str:
-        return f"«{self.title}» del {italian_date(self.occurred_on)}"
+    def label(self, language: str = "it") -> str:
+        if language == "it":
+            return f"«{self.title}» del {italian_date(self.occurred_on)}"
+        connector = {"en": "of", "de": "vom"}.get(language, "de")
+        return f"«{self.title}» {connector} {self.occurred_on.isoformat()}"
 
 
 _MONTHS = (

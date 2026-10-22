@@ -21,6 +21,7 @@ from packages.core.application.ports.pet_profile_repository import PetProfileRep
 from packages.core.application.ports.pii_anonymizer import PiiAnonymizationRequest, PiiAnonymizer
 from packages.core.application.services.medical_record_context_retriever import italian_date
 from packages.core.domain.conversation.models import Conversation
+from packages.core.domain.localization import language_name, translate
 from packages.core.domain.pet_profile.models import PetProfile
 from packages.shared.errors.base import ValidationError
 
@@ -37,14 +38,15 @@ SECTIONS = (
 
 # The fixed line the chat writes when it reads a record: lists the
 # documents the conversation actually used.
-_READ_LINE = re.compile(r"Ho letto (.+?)\.(?:\n|$)")
-_DOCUMENT_LABEL = re.compile(r"«[^»]+» del [^«»]+?(?= e «|$)")
+_READ_LINE = re.compile(r"(?:Ho letto|I have read|He leído) (.+?)\.(?:\n|$)")
+_DOCUMENT_LABEL = re.compile(r"«[^»]+» (?:del|of|de) [^«»]+?(?= (?:e|and|y) «|$)")
 
 
 class VetSummaryInput(BaseModel):
     owner_id: str
     conversation_id: str
     owner_names: list[str] = []
+    language: str = "it"
 
 
 class VetSummaryOutput(BaseModel):
@@ -79,7 +81,7 @@ class VetSummaryService:
 
         response = self._llm_client.generate(
             LLMGenerationRequest(
-                system_prompt=self._system_prompt(),
+                system_prompt=self._system_prompt(data.language),
                 user_prompt=self._user_prompt(conversation, pet, data.owner_names),
                 temperature=0.1,
                 max_tokens=1200,
@@ -88,21 +90,31 @@ class VetSummaryService:
         )
         body = response.content.strip()
         return VetSummaryOutput(
-            summary=f"{self._header(pet, conversation, now)}\n\n{body}\n\n{self._footer()}",
+            summary=(
+                self._header(pet, conversation, now, data.language)
+                + "\n\n"
+                + body
+                + "\n\n"
+                + self._footer(data.language)
+            ),
             generated_at=now,
         )
 
     @staticmethod
-    def _system_prompt() -> str:
-        sections = "\n".join(f"## {section}" for section in SECTIONS)
+    def _system_prompt(language: str = "it") -> str:
+        sections = "\n".join(
+            f"## {section}" for section in translate("summary_sections", language).split("|")
+        )
         return (
-            f"You are writing, in Italian, a short structured summary for {VET_SUMMARY_MARKER}. "
+            f"You are writing, exclusively in {language_name(language)}, a short structured "
+            f"summary for {VET_SUMMARY_MARKER}, even when the conversation uses another language. "
             "The reader is a veterinarian: factual, compact, clinical register is fine, no "
             "advice to the vet and no diagnosis of your own. Report ONLY what the conversation "
             "and the profile contain; never add a symptom, a value or an observation that is "
             "not there. Keep the owner's time references ('da ieri', 'da una settimana') and "
             "turn them into dates when the conversation dates allow it. Where the "
-            "conversation says nothing for a section, write 'Non riferito'. Never mention the "
+            "conversation says nothing for a section, write "
+            f"'{translate('summary_unreported', language)}'. Never mention the "
             "owner's name or any contact detail. Under 'Documenti citati' list only documents "
             "the conversation actually referred to. Under 'Domande aperte' list what the "
             "owner asked that remained open or that the assistant deferred to the vet.\n\n"
@@ -164,22 +176,22 @@ class VetSummaryService:
         ).anonymized_text
 
     @staticmethod
-    def _header(pet: PetProfile | None, conversation: Conversation, now: datetime) -> str:
+    def _header(
+        pet: PetProfile | None, conversation: Conversation, now: datetime, language: str = "it"
+    ) -> str:
         first = next((m for m in conversation.messages if m.role == "user"), None)
         started = italian_date(first.created_at.date()) if first else italian_date(now.date())
-        subject = f"{pet.name} ({pet.species})" if pet else "l'animale"
-        return (
-            f"# Riassunto per il veterinario — {subject}\n\n"
-            f"Generato automaticamente dall'assistente dell'app il {italian_date(now.date())} "
-            f"da una conversazione iniziata il {started}. Non è una diagnosi né un parere "
-            "veterinario: riporta ciò che il proprietario ha scritto all'assistente."
+        subject = f"{pet.name} ({pet.species})" if pet else translate("summary_subject", language)
+        return translate(
+            "summary_header",
+            language,
+            subject=subject,
+            date=italian_date(now.date()) if language == "it" else now.date().isoformat(),
+            started=started
+            if language == "it"
+            else (first.created_at.date() if first else now.date()).isoformat(),
         )
 
     @staticmethod
-    def _footer() -> str:
-        return (
-            "---\n"
-            "Testo generato da un assistente automatico sulla base di quanto riferito dal "
-            "proprietario; da verificare con la visita. Nessun dato personale del "
-            "proprietario è incluso."
-        )
+    def _footer(language: str = "it") -> str:
+        return translate("summary_footer", language)

@@ -79,7 +79,8 @@ class WalkTrackingService : Service() {
       context.stopService(Intent(context, WalkTrackingService::class.java))
     }
 
-    private fun Intent.putArgs(context: Context, args: Map<*, *>) {
+    private fun Intent.putArgs(baseContext: Context, args: Map<*, *>) {
+      val context = AppLanguageContext.localized(baseContext)
       putExtra(EXTRA_PET_ID, args[EXTRA_PET_ID] as? String ?: "")
       putExtra(
           EXTRA_TITLE,
@@ -98,7 +99,8 @@ class WalkTrackingService : Service() {
      * instead of the silent section at the bottom; sound and vibration are
      * switched off on the channel, so posting and re-posting it is quiet.
      */
-    private fun ensureChannel(context: Context) {
+    private fun ensureChannel(baseContext: Context) {
+      val context = AppLanguageContext.localized(baseContext)
       if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) return
       val manager = notificationManager(context)
       val name = context.getString(R.string.walk_notif_channel_name)
@@ -124,7 +126,8 @@ class WalkTrackingService : Service() {
     private fun action(label: String, intent: PendingIntent): Notification.Action =
         Notification.Action.Builder(0, label, intent).build()
 
-    private fun buildNotification(context: Context, intent: Intent): Notification {
+    private fun buildNotification(baseContext: Context, intent: Intent): Notification {
+      val context = AppLanguageContext.localized(baseContext)
       ensureChannel(context)
       val petId = intent.getStringExtra(EXTRA_PET_ID) ?: ""
       val paused = intent.getBooleanExtra(EXTRA_PAUSED, false)

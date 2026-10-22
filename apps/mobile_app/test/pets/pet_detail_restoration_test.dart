@@ -34,6 +34,7 @@ void main() {
         MaterialApp(
           localizationsDelegates: AppLocalizations.localizationsDelegates,
           supportedLocales: AppLocalizations.supportedLocales,
+          locale: const Locale('it'),
           home: ShellTabScope(
             index: 1,
             child: Navigator(

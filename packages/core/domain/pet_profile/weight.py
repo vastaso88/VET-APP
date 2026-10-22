@@ -10,6 +10,23 @@ from packages.core.domain.knowledge.fuzzy_match import contains_keyword
 # Stems match every inflection (word-prefix matching, see contains_keyword);
 # multi-word entries match exactly.
 WEIGHT_RELEVANT_MARKERS: tuple[str, ...] = (
+    "dosage",
+    "feeding",
+    "diet",
+    "portion",
+    "weight",
+    "anaesthes",
+    "anesthes",
+    "flea",
+    "deworm",
+    "dosis",
+    "alimentación",
+    "dieta",
+    "ración",
+    "peso",
+    "anestesi",
+    "antipulgas",
+    "desparasit",
     # dosing
     "dosaggio",
     "dose",
