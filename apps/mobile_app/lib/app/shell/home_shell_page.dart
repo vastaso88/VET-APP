@@ -21,6 +21,8 @@ import '../../features/pets/pets.dart';
 import '../../features/settings/presentation/pages/settings_page.dart';
 import '../../l10n/l10n.dart';
 import '../../features/notifications/application/notification_taps.dart';
+import '../../features/notifications/presentation/reminder_notification_permission.dart';
+import '../../features/reminders/data/reminders_repository.dart';
 import '../../features/reminders/presentation/reminder_completion_prompter.dart';
 import '../launch/route_restoration.dart';
 import '../launch/warm_start_store.dart';
@@ -75,13 +77,22 @@ class _HomeShellPageState extends State<HomeShellPage> {
         // A notification tap that launched the app, then the reminders that
         // fell due while it was closed.
         _askAboutTappedReminder();
-        unawaited(ReminderCompletionPrompter.instance.checkDue());
+        unawaited(ReminderCompletionPrompter.instance.checkDue().whenComplete(_askNotificationPermission));
       });
     });
   }
 
   AppLifecycleListener? _lifecycle;
   bool _ready = false;
+
+  /// Reminders exist but the phone may not allow notifications (a fresh install,
+  /// a sign-in on another phone): ask, once or twice, so they can ring.
+  Future<void> _askNotificationPermission() async {
+    if (!mounted) return;
+    final reminders = await RemindersRepository().loadReminders();
+    if (!mounted || reminders.every((reminder) => reminder.isDone)) return;
+    await maybeAskReminderNotificationPermission(context);
+  }
 
   /// The owner tapped a reminder's notification: "Fatto? Registralo nello storico".
   void _askAboutTappedReminder() {

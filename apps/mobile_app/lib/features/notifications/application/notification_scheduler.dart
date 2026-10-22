@@ -141,8 +141,21 @@ class NotificationScheduler {
       preferences: await _loadPreferences(),
     );
     await _gateway.cancelPending();
+    lastScheduleFailures = 0;
     for (var index = 0; index < plan.length; index++) {
-      await _gateway.schedule(index, plan[index]);
+      // One notification the system refuses must not drop the ones after it.
+      try {
+        await _gateway.schedule(index, plan[index]);
+      } catch (error) {
+        lastScheduleFailures++;
+        lastScheduleError = error;
+        debugPrint('Could not schedule notification ${plan[index]}: $error');
+      }
     }
   }
+
+  /// How many notifications of the last re-plan the system refused, and the
+  /// last reason (null when it never happened). For diagnosis and tests.
+  int lastScheduleFailures = 0;
+  Object? lastScheduleError;
 }

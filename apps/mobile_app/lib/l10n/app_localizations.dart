@@ -10665,6 +10665,42 @@ abstract class AppLocalizations {
   /// In it, this message translates to:
   /// **'Segna come fatto'**
   String get remindersDoneTooltip;
+
+  /// No description provided for @remindersNotifPermTitle.
+  ///
+  /// In it, this message translates to:
+  /// **'Vuoi ricevere gli avvisi?'**
+  String get remindersNotifPermTitle;
+
+  /// No description provided for @remindersNotifPermBody.
+  ///
+  /// In it, this message translates to:
+  /// **'Per avvisarti quando un promemoria scade, VetApp ha bisogno del permesso per le notifiche. Puoi cambiarlo in ogni momento da Impostazioni.'**
+  String get remindersNotifPermBody;
+
+  /// No description provided for @remindersNotifPermNotNow.
+  ///
+  /// In it, this message translates to:
+  /// **'Non ora'**
+  String get remindersNotifPermNotNow;
+
+  /// No description provided for @remindersNotifPermAllow.
+  ///
+  /// In it, this message translates to:
+  /// **'Consenti'**
+  String get remindersNotifPermAllow;
+
+  /// No description provided for @remindersNotifOffBanner.
+  ///
+  /// In it, this message translates to:
+  /// **'Le notifiche sono disattivate: i promemoria non suoneranno'**
+  String get remindersNotifOffBanner;
+
+  /// No description provided for @remindersNotifOffAction.
+  ///
+  /// In it, this message translates to:
+  /// **'Attiva'**
+  String get remindersNotifOffAction;
 }
 
 class _AppLocalizationsDelegate

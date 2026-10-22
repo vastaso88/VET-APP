@@ -19,6 +19,8 @@ import '../../../pets/domain/pet_models.dart';
 import '../../../pets/presentation/widgets/pet_avatar.dart';
 import '../../../settings/data/layout_settings_store.dart';
 import '../../../../app/router/app_router.dart';
+import '../../../notifications/presentation/notifications_off_banner.dart';
+import '../../../notifications/presentation/reminder_notification_permission.dart';
 import '../../data/reminders_repository.dart';
 import '../../domain/clock_time.dart';
 import '../../domain/reminder_calendar.dart';
@@ -113,6 +115,7 @@ class _RemindersListPageState extends State<RemindersListPage> {
           subtitle: context.l10n.remindersSubtitle,
           actionLabel: context.l10n.remindersCreateButton,
           onAction: _openCreate,
+          showNotificationsBanner: true,
           child: ValueListenableBuilder<int>(
             valueListenable: RemindersRepository.changes,
             builder: (context, _, __) => FutureBuilder<List<ReminderEntry>>(
@@ -713,6 +716,9 @@ class _ReminderCreatePageState extends State<ReminderCreatePage> {
   void _save(ReminderEntry reminder) {
     saveReminderInBackground(_repository, reminder);
     Navigator.of(context).pop();
+    // A reminder that can never ring is worse than none: ask for the
+    // notification permission now if the phone has not allowed it yet.
+    unawaited(maybeAskReminderNotificationPermission(AppRouter.navigatorKey.currentContext));
   }
 
   @override
@@ -748,6 +754,7 @@ class _ReminderEditPageState extends State<ReminderEditPage> {
   void _save(ReminderEntry reminder) {
     saveReminderInBackground(_repository, reminder);
     Navigator.of(context).pop(reminder);
+    unawaited(maybeAskReminderNotificationPermission(AppRouter.navigatorKey.currentContext));
   }
 
   @override
@@ -1825,6 +1832,7 @@ class _Shell extends StatelessWidget {
     this.actionLabel,
     this.onAction,
     this.petName,
+    this.showNotificationsBanner = false,
   });
 
   final String title;
@@ -1832,6 +1840,7 @@ class _Shell extends StatelessWidget {
   final String? actionLabel;
   final VoidCallback? onAction;
   final Widget child;
+  final bool showNotificationsBanner;
 
   /// When set (and a matching pet exists), the header shows that pet's own
   /// avatar in place of the generic "VET APP" brand pill.
@@ -1871,6 +1880,9 @@ class _Shell extends StatelessWidget {
                   petName: petName,
                 ),
                 const SizedBox(height: AppSpacing.lg),
+                // Only on the reminders screens that list or edit them, where a
+                // reminder that cannot ring matters.
+                if (showNotificationsBanner) const NotificationsOffBanner(),
                 child,
               ],
             ),

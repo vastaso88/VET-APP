@@ -3628,5 +3628,11 @@
   "remindersDoneMarked": "Segnato come fatto.",
   "remindersDoneDismissed": "Segnato come non fatto.",
   "remindersDonePostponed": "Te lo richiedo domani.",
-  "remindersDoneTooltip": "Segna come fatto"
+  "remindersDoneTooltip": "Segna come fatto",
+  "remindersNotifPermTitle": "Vuoi ricevere gli avvisi?",
+  "remindersNotifPermBody": "Per avvisarti quando un promemoria scade, VetApp ha bisogno del permesso per le notifiche. Puoi cambiarlo in ogni momento da Impostazioni.",
+  "remindersNotifPermNotNow": "Non ora",
+  "remindersNotifPermAllow": "Consenti",
+  "remindersNotifOffBanner": "Le notifiche sono disattivate: i promemoria non suoneranno",
+  "remindersNotifOffAction": "Attiva"
 }
