@@ -54,10 +54,6 @@ jobs:
           java-version: '17'
       - name: Compile Android native localization
         run: flutter build apk --debug --flavor prod
-      - uses: actions/upload-artifact@v4
-        with:
-          name: vetapp-test-apk
-          path: apps/mobile_app/build/app/outputs/flutter-apk/app-prod-debug.apk
 
   quality:
     runs-on: ubuntu-latest

@@ -14,7 +14,6 @@ Thumbs.db
 .vscode/
 .idea/
 .vercel/
-uv.lock
 *.egg-info/
 
 # Locally stored chat attachment photos (MEDIA_STORAGE_DIR) — runtime
