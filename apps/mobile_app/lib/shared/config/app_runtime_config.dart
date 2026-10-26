@@ -13,7 +13,6 @@ class AppRuntimeConfig {
     required this.supabaseAnonKey,
     required this.logLevel,
     required this.enableTelemetry,
-    this.cartoApiKey = '',
     this.walkMapStyle = 'osm',
   });
 
@@ -24,13 +23,6 @@ class AppRuntimeConfig {
   final String supabaseAnonKey;
   final String logLevel;
   final bool enableTelemetry;
-
-  /// CARTO now watermarks its free raster basemaps ("API KEY REQUIRED")
-  /// without one - see walk_map_style.dart. Free tier is plenty for this
-  /// app's volume (carto.com/basemaps/apikey), just needs registering.
-  final String cartoApiKey;
-
-  bool get hasCartoApiKey => cartoApiKey.trim().isNotEmpty;
 
   /// "osm" (default, owner's preferred look, 2026-09-29) or "carto" - see
   /// walk_map_style.dart. Kept as a plain string rather than an enum here

@@ -46,10 +46,6 @@ class AppRuntimeConfigLoader {
         AppEnvKeys.enableTelemetry,
         defaultValue: false,
       ),
-      cartoApiKey: const String.fromEnvironment(
-        AppEnvKeys.cartoApiKey,
-        defaultValue: '',
-      ),
       walkMapStyle: const String.fromEnvironment(
         AppEnvKeys.walkMapStyle,
         defaultValue: 'osm',

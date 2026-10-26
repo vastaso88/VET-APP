@@ -1,48 +1,53 @@
-import 'dart:convert';
-
 import 'package:http/http.dart' as http;
 
+import '../../../shared/auth/current_user.dart';
+import '../../../shared/config/app_runtime_config_loader.dart';
+import '../../location/data/address_geocoder.dart';
 import '../../location/domain/address_format.dart';
 import '../../location/domain/coordinates.dart';
 import '../../../l10n/l10n.dart';
 
-/// Street address of a point, via OpenStreetMap's Nominatim (the same
-/// keyless provider the Località settings use to geocode an address). One
-/// request per report, well inside Nominatim's usage policy. Best-effort:
-/// null on any failure, and the report is sent without an address.
+/// Street address of a point, through VetApp's backend (POST
+/// /geocoding/reverse), which asks OpenStreetMap's Nominatim on the app's
+/// behalf: the user's position and IP address never reach a third party
+/// (security audit APP-6). One request per report or per chosen point.
+/// Best-effort: null without a backend or a session and on any failure,
+/// and the caller goes on without an address.
 class ReverseGeocoder {
-  ReverseGeocoder({http.Client? client}) : _client = client ?? http.Client();
+  ReverseGeocoder({
+    http.Client? client,
+    AppRuntimeConfigLoader? configLoader,
+    String? Function()? accessToken,
+  })  : _client = client ?? http.Client(),
+        _configLoader = configLoader ?? const AppRuntimeConfigLoader(),
+        _accessToken = accessToken ?? CurrentUser.accessToken;
 
   final http.Client _client;
+  final AppRuntimeConfigLoader _configLoader;
+  final String? Function() _accessToken;
 
   Future<String?> addressOf(Coordinates position) async {
-    final uri = Uri.https('nominatim.openstreetmap.org', '/reverse', {
-      'format': 'jsonv2',
-      'lat': position.latitude.toString(),
-      'lon': position.longitude.toString(),
-      'zoom': '18',
-      'accept-language': AppLocaleHolder.current.languageCode,
-    });
-    try {
-      final response = await _client.get(
-        uri,
-        headers: {'User-Agent': 'VetApp/1.0 (com.vetapp.mobile_app)'},
-      ).timeout(const Duration(seconds: 8));
-      if (response.statusCode != 200) {
-        return null;
-      }
-      final address =
-          (jsonDecode(utf8.decode(response.bodyBytes)) as Map<String, dynamic>)['address'];
-      if (address is! Map<String, dynamic>) {
-        return null;
-      }
-      final label = formatAddress(
-        AddressParts.fromNominatim(address),
-        address['country_code'] as String?,
-      );
-      return label.isEmpty ? null : label;
-    } catch (_) {
+    final json = await postToGeocodingBackend(
+      _client,
+      _configLoader,
+      _accessToken,
+      '/geocoding/reverse',
+      {
+        'latitude': position.latitude,
+        'longitude': position.longitude,
+        'zoom': 18,
+        'language': AppLocaleHolder.current.languageCode,
+      },
+    );
+    final result = json?['result'];
+    final address = result is Map<String, dynamic> ? result['address'] : null;
+    if (address is! Map<String, dynamic>) {
       return null;
     }
+    final label = formatAddress(
+      AddressParts.fromNominatim(address),
+      address['country_code'] as String?,
+    );
+    return label.isEmpty ? null : label;
   }
 }

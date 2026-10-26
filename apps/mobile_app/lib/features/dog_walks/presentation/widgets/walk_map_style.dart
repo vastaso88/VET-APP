@@ -20,14 +20,16 @@ WalkMapStyle _resolveStyle(AppRuntimeConfigLoader loader) {
 TileLayer buildWalkTileLayer() {
   const loader = AppRuntimeConfigLoader();
   if (_resolveStyle(loader) == WalkMapStyle.carto) {
-    // CARTO now watermarks its free raster basemaps ("API KEY REQUIRED")
-    // without one - free tier is plenty for this app's volume
-    // (carto.com/basemaps/apikey), just needs registering as CARTO_API_KEY.
-    final config = loader.load();
-    final keySuffix = config.hasCartoApiKey ? '?key=${config.cartoApiKey}' : '';
+    // Without a key CARTO's free raster tiles carry an "API KEY REQUIRED"
+    // watermark. The key is deliberately NOT supported in the app any more
+    // (security audit APP-9): anything compiled into the app can be read
+    // out of it, and a key in the tile URL travels with every request.
+    // OSM, the default, needs no key. If CARTO is ever wanted with a key,
+    // the tiles must come through a server that adds it (not the API on
+    // Vercel: a map view is dozens of tile requests, each one a function
+    // run) - see docs/maps/README.md.
     return TileLayer(
-      urlTemplate:
-          'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png$keySuffix',
+      urlTemplate: 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',
       subdomains: const ['a', 'b', 'c', 'd'],
       userAgentPackageName: 'com.vetapp.mobile_app',
     );
@@ -46,8 +48,7 @@ Widget buildWalkMapAttribution() {
   return RichAttributionWidget(
     attributions: [
       const TextSourceAttribution('OpenStreetMap contributors'),
-      if (_resolveStyle(loader) == WalkMapStyle.carto)
-        const TextSourceAttribution('CARTO'),
+      if (_resolveStyle(loader) == WalkMapStyle.carto) const TextSourceAttribution('CARTO'),
     ],
   );
 }
