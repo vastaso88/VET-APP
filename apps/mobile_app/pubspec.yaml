@@ -27,7 +27,7 @@ dependencies:
   geolocator: ^14.0.2
   record: ^7.1.1
   crypto: ^3.0.7
-  permission_handler: ^11.3.1
+  permission_handler: ^13.0.2
   home_widget: ^0.10.0
   image: 4.5.4
   image_picker: 1.1.2
