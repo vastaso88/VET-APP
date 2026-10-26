@@ -28,7 +28,11 @@ def list_pets() -> dict[str, object]:
 
 @router.get("/{pet_id}")
 def get_pet(pet_id: str) -> dict[str, object]:
-    result = get_container().get_pet_profile_service().execute(GetPetProfileInput(pet_id=pet_id))
+    container = get_container()
+    user = container.auth_provider.get_current_user()
+    result = container.get_pet_profile_service().execute(
+        GetPetProfileInput(pet_id=pet_id, owner_id=user.id)
+    )
     return result.model_dump()
 
 
@@ -44,10 +48,10 @@ def create_pet(request: CreatePetProfileRequest) -> dict[str, object]:
 
 @router.put("/{pet_id}")
 def update_pet(pet_id: str, request: CreatePetProfileRequest) -> dict[str, object]:
-    result = (
-        get_container()
-        .update_pet_profile_service()
-        .execute(UpdatePetProfileInput(pet_id=pet_id, **request.model_dump()))
+    container = get_container()
+    user = container.auth_provider.get_current_user()
+    result = container.update_pet_profile_service().execute(
+        UpdatePetProfileInput(pet_id=pet_id, owner_id=user.id, **request.model_dump())
     )
     return result.model_dump()
 

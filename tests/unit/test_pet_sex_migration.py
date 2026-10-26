@@ -165,6 +165,7 @@ def test_updating_a_pet_normalises_and_validates_the_new_fields() -> None:
     updated = service.execute(
         UpdatePetProfileInput(
             pet_id="p",
+            owner_id="o",
             name="Luna",
             species="Cane",
             sex="Maschio castrato",

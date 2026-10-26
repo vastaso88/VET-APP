@@ -3,6 +3,10 @@ name: Lint and Test
 on:
   workflow_dispatch:
 
+# Read-only token: this job only checks code (security audit 2026-10-26).
+permissions:
+  contents: read
+
 jobs:
   lint-and-test:
     runs-on: ubuntu-latest

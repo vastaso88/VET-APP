@@ -39,7 +39,10 @@ class FirebaseBuildConfigTest(unittest.TestCase):
     def test_prepare_writes_only_public_defines_and_release_identity(self) -> None:
         prepare(self.env, self.directory)
         defines = json.loads((self.directory / "dart-defines.json").read_text())
-        self.assertEqual(set(defines), {"API_BASE_URL", "SUPABASE_URL", "SUPABASE_ANON_KEY"})
+        self.assertEqual(
+            set(defines), {"API_BASE_URL", "SUPABASE_URL", "SUPABASE_ANON_KEY", "ENVIRONMENT"}
+        )
+        self.assertEqual(defines["ENVIRONMENT"], "production")
         self.assertNotIn("private_key", json.dumps(defines))
         self.assertEqual((self.directory / "signing.jks").read_bytes(), b"test-keystore")
         notes = (self.directory / "release-notes.txt").read_text()

@@ -1009,7 +1009,11 @@ class ChatOrchestrator:
                 else None
             ),
             evidence_job=(
-                (lambda: self._retrieve_optional_evidence(query, intent, effective_species))
+                (
+                    lambda: self._retrieve_optional_evidence(
+                        query, intent, effective_species, data.owner_names
+                    )
+                )
                 if run_evidence
                 else None
             ),
@@ -1877,7 +1881,9 @@ class ChatOrchestrator:
             if intent == "husbandry_question"
             else EvidenceRetrievalRequest.model_fields["max_results"].default
         )
-        ranked = self._rank_evidence(case_text, effective_species, intent, max_results)
+        ranked = self._rank_evidence(
+            case_text, effective_species, intent, max_results, data.owner_names
+        )
         sources = ranked.sources
         if not sources:
             return ChatOrchestratorResult(
@@ -2077,7 +2083,9 @@ class ChatOrchestrator:
             sources = (
                 prefetched
                 if prefetched is not None
-                else self._retrieve_optional_evidence(query, intent, effective_species)
+                else self._retrieve_optional_evidence(
+                    query, intent, effective_species, data.owner_names
+                )
             )
         # Two sources at most go into the prompt (build 32): the model uses
         # one or two at best, and each one costs a few hundred tokens.
@@ -2297,7 +2305,11 @@ class ChatOrchestrator:
             logger.exception("answer cache: could not store the answer")
 
     def _retrieve_optional_evidence(
-        self, message: str, intent: str, effective_species: str
+        self,
+        message: str,
+        intent: str,
+        effective_species: str,
+        owner_names: list[str] | None = None,
     ) -> list[EvidenceSource]:
         """Best-effort evidence lookup for `_generate_natural_answer` —
         never blocks the answer, so any failure here just means no
@@ -2305,13 +2317,18 @@ class ChatOrchestrator:
         try:
             default_max_results: int = EvidenceRetrievalRequest.model_fields["max_results"].default
             return self._rank_evidence(
-                message, effective_species, intent, default_max_results
+                message, effective_species, intent, default_max_results, owner_names
             ).sources
         except ProviderError:
             return []
 
     def _rank_evidence(
-        self, query: str, species: str, intent: str, max_results: int
+        self,
+        query: str,
+        species: str,
+        intent: str,
+        max_results: int,
+        owner_names: list[str] | None = None,
     ) -> RankedEvidence:
         """Retrieve and rank evidence for `query` — shared by the strict
         evidence path and the natural-answer path's optional lookup, so
@@ -2323,8 +2340,16 @@ class ChatOrchestrator:
         # English keywords from the light model as the search query (the
         # literature is indexed in English); the owner's words stay in the
         # relevance check, so a source matching either is kept (build 32).
+        # The normalizer is an external model call: like every other
+        # outbound prompt it only ever sees anonymized text (security audit
+        # 2026-10-26). The local retrievers below keep the original words.
         keywords = (
-            self._evidence_query_normalizer.keywords(query, canonical_species)
+            self._evidence_query_normalizer.keywords(
+                self._pii_anonymizer.anonymize(
+                    PiiAnonymizationRequest(text=query, known_person_names=owner_names or [])
+                ).anonymized_text,
+                canonical_species,
+            )
             if self._evidence_query_normalizer is not None
             else None
         )

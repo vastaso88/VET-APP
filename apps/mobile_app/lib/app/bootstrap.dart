@@ -9,7 +9,11 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'app.dart';
 import 'config/app_bootstrap_state.dart';
 import 'router/app_router.dart';
+import '../features/account/data/profile_photo_repository.dart';
+import '../features/auth/data/remember_me_store.dart';
+import '../features/dog_walks/data/active_walk_recovery_store.dart';
 import '../features/dog_walks/data/walk_home_widget.dart';
+import '../features/location/data/location_preference_store.dart';
 import '../features/language/data/language_store.dart';
 import '../features/notifications/application/notification_scheduler.dart';
 import '../features/notifications/domain/notification_time_zone.dart';
@@ -63,6 +67,18 @@ Future<void> bootstrap() async {
         publishableKey: runtimeConfig.supabaseAnonKey,
       );
       supabaseEnabled = true;
+      // "Resta connesso" unticked at the last sign-in: the SDK restored the
+      // session from disk anyway, so drop it here (locally: the refresh
+      // token stays valid elsewhere) before any screen can use it.
+      final auth = Supabase.instance.client.auth;
+      if (auth.currentSession != null && !(await RememberMeStore.read())) {
+        try {
+          await auth.signOut(scope: SignOutScope.local);
+        } catch (_) {
+          // Offline: the next launch retries; the session is not shown
+          // as "remembered" on purpose.
+        }
+      }
       // Network round-trips (up to two 5 s timeouts): never before the first
       // frame. The store notifies VetApp if the account's language differs.
       unawaited(LanguageStore.instance.syncAfterAuthentication());
@@ -86,6 +102,15 @@ Future<void> bootstrap() async {
           unawaited(PetPhotoRepository.clearLocalCaches());
           unawaited(OwnerJsonCache.clearAll());
           unawaited(RouteRestoration.instance.forget());
+          // Everything else the previous account left on this device
+          // (security audit 2026-10-26): home address and last position,
+          // pets held in memory, the interrupted-walk snapshot, the
+          // home-screen widget's pet list, the profile photo in memory.
+          unawaited(LocationPreferenceStore.instance.clear());
+          PetDemoStore.instance.reset();
+          unawaited(const ActiveWalkRecoveryStore().clear());
+          unawaited(syncPetsToHomeWidget(const []));
+          ProfilePhotoRepository.clearLocalCache();
         }
         if (state.event == AuthChangeEvent.signedIn) {
           unawaited(LanguageStore.instance.syncAfterAuthentication());

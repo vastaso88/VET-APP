@@ -260,6 +260,17 @@ class PetDemoStore {
     }
   }
 
+  /// Sign-out: forget the previous account's pets (in memory and the
+  /// unsynced set) so the next account never sees or inherits them, even
+  /// when its own hydration fails or is slow.
+  void reset() {
+    _pets = [];
+    _unsynced.clear();
+    _hydratedOwnerId = null;
+    _hydrating = null;
+    changes.value++;
+  }
+
   /// Pets whose last write to the server failed. They stay visible on this
   /// device, flagged for the owner, and are kept across reloads this session.
   final Set<String> _unsynced = {};

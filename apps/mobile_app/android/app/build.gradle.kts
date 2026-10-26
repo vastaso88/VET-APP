@@ -105,10 +105,22 @@ android {
 
     buildTypes {
         release {
-            // CI distribution key when supplied, else the owner's key.properties key,
-            // else the debug key (local `flutter run --release`).
-            signingConfig = signingConfigs.findByName(if (hasReleaseSigning) "distribution" else "release")
-                ?: signingConfigs.getByName("debug")
+            // CI distribution key when supplied, else the owner's key.properties key.
+            // The debug key is only used when explicitly asked for
+            // (`-PallowDebugSigning=true`, local `flutter run --release`): a
+            // release APK silently signed with the public debug key could be
+            // handed to testers and never updated afterwards.
+            val releaseSigning = signingConfigs.findByName(if (hasReleaseSigning) "distribution" else "release")
+            val allowDebugSigning = (project.findProperty("allowDebugSigning") as String?) == "true"
+            signingConfig = releaseSigning ?: if (allowDebugSigning) {
+                logger.warn("WARNING: release build signed with the DEBUG key (allowDebugSigning=true)")
+                signingConfigs.getByName("debug")
+            } else {
+                throw GradleException(
+                    "No release signing key: provide android/key.properties or the ANDROID_KEYSTORE_* " +
+                        "environment, or pass -PallowDebugSigning=true for a local test build."
+                )
+            }
             // R8 shrinks release builds: keep what plugins reach by reflection.
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
         }

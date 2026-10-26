@@ -8,6 +8,8 @@ from packages.shared.errors.base import ValidationError
 
 class UpdatePetProfileInput(BaseModel):
     pet_id: str
+    # The caller's identity; see GetPetProfileInput.
+    owner_id: str
     name: str
     species: str
     breed: str | None = None
@@ -36,7 +38,7 @@ class UpdatePetProfileService:
 
     def execute(self, data: UpdatePetProfileInput) -> UpdatePetProfileOutput:
         pet_profile = self._repository.get(data.pet_id)
-        if pet_profile is None:
+        if pet_profile is None or pet_profile.owner_id != data.owner_id:
             raise ValidationError("pet_profile not found")
 
         # Real-world finding: `data.model_dump()` recursively serializes
@@ -45,7 +47,11 @@ class UpdatePetProfileService:
         # re-validating — PetProfile.habitat silently became a dict, not a
         # HabitatDetails, breaking attribute access on the result. Reading
         # the fields directly off `data` keeps nested model instances intact.
-        fields = {name: getattr(data, name) for name in type(data).model_fields if name != "pet_id"}
+        fields = {
+            name: getattr(data, name)
+            for name in type(data).model_fields
+            if name not in {"pet_id", "owner_id"}
+        }
         updated = pet_profile.model_copy(update=fields)
         # model_copy skips validation: run it, so the legacy sex split and the
         # microchip/body-condition checks apply to updates as well.

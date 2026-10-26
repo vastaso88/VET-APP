@@ -19,6 +19,7 @@ def test_update_pet_profile_sets_habitat_and_aquarium_stock() -> None:
     result = service.execute(
         UpdatePetProfileInput(
             pet_id="pet-1",
+            owner_id="user-1",
             name="Acquario del salotto",
             species="Pesce",
             habitat=HabitatDetails(dimensions="60x30x36 cm", volume_liters=54),
@@ -35,4 +36,6 @@ def test_update_pet_profile_rejects_an_unknown_pet() -> None:
     service = UpdatePetProfileService(InMemoryPetProfileRepository())
 
     with pytest.raises(ValidationError):
-        service.execute(UpdatePetProfileInput(pet_id="missing", name="Milo", species="dog"))
+        service.execute(
+            UpdatePetProfileInput(pet_id="missing", owner_id="user-1", name="Milo", species="dog")
+        )

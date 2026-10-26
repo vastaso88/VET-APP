@@ -19,6 +19,12 @@ cd apps/mobile_app
 flutter build apk --debug --flavor prod --dart-define-from-file=.env.production.json
 flutter build apk --debug --flavor francesco --dart-define-from-file=.env.production.json
 flutter build apk --debug --flavor roberto --dart-define-from-file=.env.production.json
+
+> Sicurezza: un APK `--debug` è `debuggable`, non offuscato e con il VM service
+> attivo: chiunque abbia il telefono (o l'APK) legge sessione, posizione e cache
+> con `adb run-as`. Va installato **solo sul proprio telefono di sviluppo**. Ai
+> tester si distribuiscono solo build `--release` firmate (pipeline Firebase),
+> vedi `docs/security/05_checklist.md`.
 ```
 
 L'APK esce in `build/app/outputs/flutter-apk/app-<flavor>-debug.apk`. Il web non è coinvolto: `flutter run -d chrome` resta invariato.

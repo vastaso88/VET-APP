@@ -36,6 +36,6 @@ def run_chat_usage_maintenance() -> dict[str, object]:
     only, like the other maintenance route."""
     container = get_container()
     user = container.auth_provider.get_current_user()
-    if user.email.strip().lower() not in container.developer_emails:
+    if not user.email_verified or user.email.strip().lower() not in container.developer_emails:
         raise AuthenticationError("developer access required")
     return container.chat_usage_maintenance_service().run().model_dump()

@@ -101,6 +101,10 @@ def prepare(env: dict[str, str], directory: Path) -> None:
 
     directory.mkdir(parents=True, exist_ok=True, mode=0o700)
     defines = {name: env[name] for name in ("API_BASE_URL", "SUPABASE_URL", "SUPABASE_ANON_KEY")}
+    # The app refuses to start in demo mode when this is set and the
+    # Supabase defines are missing (bootstrap.dart), instead of silently
+    # running with the fake sign-in.
+    defines["ENVIRONMENT"] = "production"
     notes = (
         f"Branch: {env.get('GITHUB_REF_NAME', 'MULTILANG')}\n"
         f"Commit: {env.get('GITHUB_SHA', 'local')}\n"

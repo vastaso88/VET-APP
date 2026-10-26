@@ -84,7 +84,7 @@ def _require_admin() -> Any:
         )
 
     user = get_container().auth_provider.get_current_user()
-    if not user.email or user.email.strip().lower() not in emails:
+    if not user.email or not user.email_verified or user.email.strip().lower() not in emails:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Admin access required")
     return user
 
@@ -559,7 +559,14 @@ def admin_moderation_detail(queue: str, item_id: str) -> dict[str, object]:
         rows = getattr(response, "data", None) or []
         if not rows:
             raise HTTPException(status_code=404, detail="Chat report not found")
-        return {"queue": queue, "item": rows[0]}
+        # The reporter's pseudonym (and the legacy clear id) stay server-side:
+        # a reviewer needs the reported answer, not who reported it.
+        item = {
+            key: value
+            for key, value in rows[0].items()
+            if key not in {"reporter_ref", "reporter_owner_id"}
+        }
+        return {"queue": queue, "item": item}
 
     if queue == "marketplace":
         response = (
@@ -1097,10 +1104,18 @@ def admin_schedule_action(
 
 
 def _require_scheduler_token(value: str | None) -> None:
-    service_key = get_container().settings.supabase_service_role_key
-    if not service_key:
-        raise HTTPException(status_code=503, detail="Scheduler is not configured")
-    expected = hashlib.sha256(f"vetapp-admin-scheduler:{service_key}".encode()).hexdigest()
+    settings = get_container().settings
+    # Preferred: a dedicated secret (ADMIN_SCHEDULER_SECRET), rotatable on
+    # its own. Fallback for deployments that have not set it yet: the
+    # legacy digest of the service-role key.
+    dedicated = settings.admin_scheduler_secret.strip()
+    if dedicated:
+        expected = dedicated
+    else:
+        service_key = settings.supabase_service_role_key
+        if not service_key:
+            raise HTTPException(status_code=503, detail="Scheduler is not configured")
+        expected = hashlib.sha256(f"vetapp-admin-scheduler:{service_key}".encode()).hexdigest()
     if not value or not hmac.compare_digest(value, expected):
         raise HTTPException(status_code=403, detail="Invalid scheduler token")
 
