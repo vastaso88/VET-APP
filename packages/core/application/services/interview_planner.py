@@ -1,4 +1,6 @@
 from packages.core.application.ports.llm_client import LLMClient, LLMGenerationRequest
+from packages.core.domain.localization import language_name, normalize_locale
+from packages.core.domain.localization_fr import QUESTION_TEMPLATES_FR
 from packages.core.domain.situation.models import SituationModel
 from packages.shared.errors.base import ProviderError
 
@@ -69,6 +71,78 @@ class InterviewPlanner:
             "Ci sono condizioni di salute note o terapie in corso di cui dovrei sapere?"
         ),
     }
+    QUESTION_TEMPLATES_BY_LOCALE: dict[str, dict[str, str]] = {
+        "it": QUESTION_TEMPLATES,
+        "en": {
+            "safety_critical_unknowns": (
+                "Can you give me a little more detail about this? "
+                "It will help me understand how urgent the situation is."
+            ),
+            "presenting_problem": (
+                "What exactly have you noticed? Tell me in your own words what is happening."
+            ),
+            "onset": "How long have you been noticing it?",
+            "observed_behaviours": "Can you describe in detail what happens at those times?",
+            "associated_signs": (
+                "Besides this, have you noticed changes in appetite, thirst, energy, "
+                "urination or bowel movements?"
+            ),
+            "environmental_changes": (
+                "Has anything changed recently, such as food, home, another animal or travel?"
+            ),
+            "contexts": "In which situations does it happen most often?",
+            "known_medical_context": (
+                "Are there known health conditions or current treatments I should know about?"
+            ),
+        },
+        "es": {
+            "safety_critical_unknowns": (
+                "¿Puedes darme algún detalle más? Me ayudará a entender la urgencia "
+                "de la situación."
+            ),
+            "presenting_problem": (
+                "¿Qué has observado exactamente? Cuéntame con tus palabras qué está ocurriendo."
+            ),
+            "onset": "¿Desde cuándo lo observas?",
+            "observed_behaviours": "¿Puedes describir con detalle qué ocurre en esos momentos?",
+            "associated_signs": (
+                "Además de esto, ¿has notado cambios en el apetito, la sed, la energía, "
+                "la orina o las deposiciones?"
+            ),
+            "environmental_changes": (
+                "¿Ha cambiado algo recientemente, como la comida, la casa, otro animal o un viaje?"
+            ),
+            "contexts": "¿En qué situaciones ocurre con más frecuencia?",
+            "known_medical_context": (
+                "¿Hay enfermedades conocidas o tratamientos actuales que deba conocer?"
+            ),
+        },
+        "de": {
+            "safety_critical_unknowns": (
+                "Können Sie mir noch ein Detail nennen? Es hilft mir einzuschätzen, "
+                "wie dringend die Situation ist."
+            ),
+            "presenting_problem": (
+                "Was genau haben Sie beobachtet? Erzählen Sie mir mit Ihren eigenen Worten, "
+                "was passiert."
+            ),
+            "onset": "Seit wann beobachten Sie das?",
+            "observed_behaviours": "Können Sie genau beschreiben, was in diesen Momenten passiert?",
+            "associated_signs": (
+                "Haben Sie außerdem Veränderungen bei Appetit, Durst, Energie, "
+                "Urin oder Kot bemerkt?"
+            ),
+            "environmental_changes": (
+                "Hat sich zuletzt etwas verändert, zum Beispiel Futter, Wohnung, "
+                "ein anderes Tier oder eine Reise?"
+            ),
+            "contexts": "In welchen Situationen passiert es am häufigsten?",
+            "known_medical_context": (
+                "Gibt es bekannte Erkrankungen oder laufende Behandlungen, die ich kennen sollte?"
+            ),
+        },
+        "fr": QUESTION_TEMPLATES_FR,
+    }
 
     # Priority order for the still-missing fields (safety_critical_unknowns is
     # handled separately below, since it flips the "missing = ask" logic: a
@@ -103,16 +177,19 @@ class InterviewPlanner:
         self._llm_client = llm_client
         self._last_phrased: tuple[str, str] | None = None
 
-    def next_question(self, situation: SituationModel) -> str | None:
+    def next_question(
+        self, situation: SituationModel, *, response_locale: str = "it"
+    ) -> str | None:
         field = self._next_field(situation)
         if field is None:
             self._last_phrased = None
             return None
-        template = self.QUESTION_TEMPLATES[field]
+        locale = normalize_locale(response_locale)
+        template = self.QUESTION_TEMPLATES_BY_LOCALE[locale][field]
         if self._llm_client is None:
             self._last_phrased = None
             return template
-        phrased = self._phrase_for_case(field, template, situation)
+        phrased = self._phrase_for_case(field, template, situation, response_locale=locale)
         self._last_phrased = (phrased, field) if phrased != template else None
         return phrased
 
@@ -128,7 +205,14 @@ class InterviewPlanner:
                 return field
         return None
 
-    def _phrase_for_case(self, field: str, template: str, situation: SituationModel) -> str:
+    def _phrase_for_case(
+        self,
+        field: str,
+        template: str,
+        situation: SituationModel,
+        *,
+        response_locale: str,
+    ) -> str:
         case_context = self._case_summary(situation)
         if not case_context:
             # Nothing case-specific yet to adapt to (e.g. the very first
@@ -142,7 +226,8 @@ class InterviewPlanner:
                     system_prompt=(
                         f"You are a veterinary intake assistant {QUESTION_PHRASING_MARKER} "
                         "in an ongoing anamnesis (case history) conversation. Reply with "
-                        "ONLY the question itself, in Italian, one short sentence — no "
+                        f"ONLY the question itself, in {language_name(response_locale)}, "
+                        "one short sentence — no "
                         "preamble, no quotes, no numbering, no markdown.\n\n"
                         "You are told WHAT information is still missing (topic-agnostic) "
                         "and given a generic template as a rough starting point ONLY — "
@@ -200,7 +285,8 @@ class InterviewPlanner:
         """
         if self._last_phrased is not None and question == self._last_phrased[0]:
             return self._last_phrased[1]
-        for field, template in self.QUESTION_TEMPLATES.items():
-            if template == question:
-                return field
+        for templates in self.QUESTION_TEMPLATES_BY_LOCALE.values():
+            for field, template in templates.items():
+                if template == question:
+                    return field
         return None

@@ -83,6 +83,83 @@ _GENERIC_WORDS = frozenset(
         "delle",
         "the",
         "and",
+        # English
+        "veterinary",
+        "veterinarian",
+        "vet",
+        "vets",
+        "clinic",
+        "clinics",
+        "hospital",
+        "animal",
+        "animals",
+        "care",
+        "centre",
+        "center",
+        "practice",
+        "surgery",
+        "services",
+        "service",
+        "group",
+        "groomers",
+        "groomer",
+        "boarding",
+        "kennel",
+        "kennels",
+        "training",
+        "school",
+        "park",
+        "ltd",
+        "llc",
+        "inc",
+        # German
+        "tierarzt",
+        "tierarztpraxis",
+        "tierarzte",
+        "praxis",
+        "tierklinik",
+        "klinik",
+        "tierheim",
+        "tier",
+        "tiere",
+        "hunde",
+        "hundeschule",
+        "hundesalon",
+        "tierhandlung",
+        "gmbh",
+        "und",
+        "der",
+        "die",
+        "das",
+        "fur",
+        # French
+        "veterinaire",
+        "veterinaires",
+        "clinique",
+        "cabinet",
+        "animalerie",
+        "toilettage",
+        "chien",
+        "chiens",
+        "chat",
+        "chats",
+        "pension",
+        "refuge",
+        "sarl",
+        "les",
+        "des",
+        "du",
+        # Spanish
+        "mascotas",
+        "animales",
+        "peluqueria",
+        "canina",
+        "tienda",
+        "dra",
+        "perros",
+        "gatos",
+        "los",
+        "las",
     }
 )
 
@@ -96,16 +173,49 @@ _FREE_MAIL_AND_SOCIAL_DOMAINS = frozenset(
         "business.site",
         "paginegialle.it",
         "openstreetmap.org",
+        "linkedin.com",
+        "twitter.com",
+        "x.com",
+        "tiktok.com",
+        "yell.com",
+        "yelp.com",
+        "yellowpages.com",
+        "yellowpages.com.au",
+        "pagesjaunes.fr",
+        "gelbeseiten.de",
+        "paginasamarillas.es",
     }
 )
 
 
+# Calling code -> what the national form starts with: the trunk "0" that is
+# dropped when dialing from abroad ("+44 20 7946 0000" is "020 7946 0000" at
+# home). Italy keeps its leading 0 in both forms, so it has none to add.
+_INTERNATIONAL_PREFIXES = (
+    ("44", "0"),
+    ("49", "0"),
+    ("33", "0"),
+    ("61", "0"),
+    ("39", ""),
+    ("34", ""),
+    ("1", ""),
+)
+
+
 def normalize_phone(phone: str | None) -> str | None:
-    """Digits only, without the Italian country prefix, so "+39 02 0000 0001"
-    and "0200000001" compare equal. None when too short to identify."""
-    digits = re.sub(r"\D", "", phone or "")
-    if digits.startswith("0039"):
-        digits = digits[4:]
+    """Digits only, in the national form of the supported countries, so
+    "+39 02 0000 0001" and "0200000001", or "+44 20 7946 0000" and "020
+    7946 0000", compare equal. None when too short to identify."""
+    raw = (phone or "").strip()
+    digits = re.sub(r"\D", "", raw)
+    international = raw.startswith("+") or digits.startswith("00")
+    if digits.startswith("00"):
+        digits = digits[2:]
+    if international:
+        for prefix, trunk in _INTERNATIONAL_PREFIXES:
+            if digits.startswith(prefix):
+                digits = trunk + digits[len(prefix) :]
+                break
     elif digits.startswith("39") and len(digits) > 10:
         digits = digits[2:]
     return digits if len(digits) >= 6 else None

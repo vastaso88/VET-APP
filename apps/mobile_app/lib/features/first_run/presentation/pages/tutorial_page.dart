@@ -128,34 +128,40 @@ class _SlideView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xl),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Container(
-            width: 96,
-            height: 96,
-            alignment: Alignment.center,
-            decoration: BoxDecoration(
-              color: AppColors.primary.withValues(alpha: 0.12),
-              borderRadius: BorderRadius.circular(AppRadii.xxl),
-            ),
-            child: Icon(slide.icon, size: 44, color: AppColors.primary),
+    // Scrolls instead of overflowing on a small phone or a large system text scale.
+    return LayoutBuilder(
+      builder: (context, constraints) => SingleChildScrollView(
+        padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xl),
+        child: ConstrainedBox(
+          constraints: BoxConstraints(minHeight: constraints.maxHeight),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Container(
+                width: 96,
+                height: 96,
+                alignment: Alignment.center,
+                decoration: BoxDecoration(
+                  color: AppColors.primary.withValues(alpha: 0.12),
+                  borderRadius: BorderRadius.circular(AppRadii.xxl),
+                ),
+                child: Icon(slide.icon, size: 44, color: AppColors.primary),
+              ),
+              const SizedBox(height: AppSpacing.xl),
+              Text(
+                slide.title,
+                style: AppTextStyles.title.copyWith(fontSize: 22),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: AppSpacing.sm),
+              Text(
+                slide.description,
+                style: AppTextStyles.body,
+                textAlign: TextAlign.center,
+              ),
+            ],
           ),
-          const SizedBox(height: AppSpacing.xl),
-          Text(
-            slide.title,
-            style: AppTextStyles.title.copyWith(fontSize: 22),
-            textAlign: TextAlign.center,
-          ),
-          const SizedBox(height: AppSpacing.sm),
-          Text(
-            slide.description,
-            style: AppTextStyles.body,
-            textAlign: TextAlign.center,
-          ),
-        ],
+        ),
       ),
     );
   }

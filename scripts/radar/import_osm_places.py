@@ -1,25 +1,35 @@
-"""Imports pet-related places for Italy from OpenStreetMap into Supabase.
+"""Imports pet-related places for one country from OpenStreetMap into Supabase.
 
-    uv run --system-certs --with truststore python scripts/radar/import_osm_places.py
+    uv run --system-certs --with truststore python scripts/radar/import_osm_places.py --country DE
 
-Asks the public Overpass servers for one Italian region at a time (dog
-parks, veterinarians, shops, groomers, boarding, trainers, sitters,
-breeders) and replaces the content of `radar_places_osm`. With this table
-filled the API answers from our database and no longer calls Overpass
-while a user waits. OSM data stays in its own table: it is never merged
-into another.
+Countries and their regions (Italian regions, German Länder, US states, ...)
+are those of packages/core/domain/geo/countries.py; `--list-regions` prints
+them. Asks the public Overpass servers for one region at a time (dog parks,
+veterinarians, shops, groomers, boarding, trainers, sitters, breeders) and
+replaces the content of `radar_places_osm` for that country. With the
+country complete the API answers from our database and no longer calls
+Overpass while a user waits. OSM data stays in its own table: it is never
+merged into another. Only the rows of the country being imported are ever
+replaced or deleted.
 
 The public servers are slow and often busy, so the import is built to be
 run several times:
 
 - every region downloaded is kept under `.local/radar/osm/` (ignored by
-  git) and reused for 24 hours, so a new run only fetches what is missing;
+  git) and reused for 24 hours (`--cache-hours` for a country whose regions
+  take days, such as the United States), so a new run only fetches what is
+  missing;
 - the main server is waited for when it says it is busy (its status page
   tells for how long), the mirrors are a second chance, and a region that
   fails as a whole is fetched one category at a time;
 - `--max-seconds` stops the run cleanly before an outer time limit (exit
   code 3): when it prints "riprendi", launch the same command again;
-- nothing is written to Supabase until every region is present.
+- nothing is written to Supabase until every region is present;
+- politeness toward the public servers (Overpass usage policy): one
+  request at a time, `--pause-seconds` between regions, a User-Agent that
+  names the app, and the cache above so nothing is asked twice. A region
+  that answers with no element at all is treated as a wrong area code, not
+  as an empty region (`--allow-empty` for a region that really is).
 
 `--with truststore` is only needed where an antivirus intercepts HTTPS
 (see scripts/radar/common.py); it is harmless elsewhere.
@@ -39,16 +49,20 @@ from typing import Any
 from urllib import error, parse, request
 
 from common import (  # type: ignore[import-not-found]
-    ITALY_BOUNDS,
     ROOT_DIR,
     build_client,
     delete_rows_not_imported_at,
+    legacy_bounds_for,
     load_excluded_ids,
     now_iso,
+    parse_country,
+    save_country_coverage,
     save_source,
+    sum_country_counts,
     upsert_rows,
 )
 
+from packages.core.domain.geo.countries import RadarCountry  # noqa: E402
 from packages.core.domain.radar_places.models import OSM_SOURCE_NAME, RadarPlace  # noqa: E402
 from packages.infrastructure.radar_places.overpass_places_source import (  # noqa: E402
     OSM_SELECTORS,
@@ -68,39 +82,15 @@ BUSY_WAIT_SECONDS = 20
 MIRROR_TIMEOUT_SECONDS = 45
 USER_AGENT = "VET-APP/1.0 (+https://vet-app-psi-nine.vercel.app; import periodico)"
 CACHE_DIR = ROOT_DIR / ".local" / "radar" / "osm"
-CACHE_MAX_AGE = timedelta(hours=24)
+DEFAULT_CACHE_HOURS = 24
 QUERY_TIMEOUT_SECONDS = 90
 # Margin between the query's own timeout and the HTTP one, and the least
 # time worth starting a request with.
 HTTP_MARGIN_SECONDS = 15
 MIN_REQUEST_SECONDS = 20
-PAUSE_SECONDS = 5
+DEFAULT_PAUSE_SECONDS = 5
 DEFAULT_MAX_SECONDS = 480
 EXIT_RESUME = 3
-
-# ISO 3166-2 codes of the twenty Italian regions.
-ITALIAN_REGIONS = {
-    "IT-21": "Piemonte",
-    "IT-23": "Valle d'Aosta",
-    "IT-25": "Lombardia",
-    "IT-32": "Trentino-Alto Adige",
-    "IT-34": "Veneto",
-    "IT-36": "Friuli-Venezia Giulia",
-    "IT-42": "Liguria",
-    "IT-45": "Emilia-Romagna",
-    "IT-52": "Toscana",
-    "IT-55": "Umbria",
-    "IT-57": "Marche",
-    "IT-62": "Lazio",
-    "IT-65": "Abruzzo",
-    "IT-67": "Molise",
-    "IT-72": "Campania",
-    "IT-75": "Puglia",
-    "IT-77": "Basilicata",
-    "IT-78": "Calabria",
-    "IT-82": "Sicilia",
-    "IT-88": "Sardegna",
-}
 
 
 class OutOfTimeError(Exception):
@@ -117,16 +107,17 @@ class Fetcher:
     to know for how long; the mirrors are a second chance with a short
     timeout, and one that times out is not asked again in this run."""
 
-    def __init__(self, max_seconds: float) -> None:
+    def __init__(self, max_seconds: float, pause_seconds: float = DEFAULT_PAUSE_SECONDS) -> None:
         self._deadline = time.monotonic() + max_seconds
+        self._pause_seconds = pause_seconds
         self._dead_mirrors: set[str] = set()
 
     def remaining(self) -> float:
         return self._deadline - time.monotonic()
 
     def pause(self) -> None:
-        if self.remaining() > PAUSE_SECONDS + MIN_REQUEST_SECONDS:
-            time.sleep(PAUSE_SECONDS)
+        if self.remaining() > self._pause_seconds + MIN_REQUEST_SECONDS:
+            time.sleep(self._pause_seconds)
 
     def elements(self, query: str) -> list[dict[str, Any]] | None:
         """Elements of `query`, or None when no server would serve it now."""
@@ -206,13 +197,15 @@ def _cache_path(code: str, *, partial: bool = False) -> Path:
     return CACHE_DIR / f"{code}{'.partial' if partial else ''}.json"
 
 
-def load_cached_region(code: str) -> list[dict[str, Any]] | None:
+def load_cached_region(
+    code: str, *, max_age: timedelta = timedelta(hours=DEFAULT_CACHE_HOURS)
+) -> list[dict[str, Any]] | None:
     path = _cache_path(code)
     if not path.exists():
         return None
     saved = json.loads(path.read_text(encoding="utf-8"))
     fetched_at = datetime.fromisoformat(saved["fetched_at"])
-    if datetime.now(UTC) - fetched_at > CACHE_MAX_AGE:
+    if datetime.now(UTC) - fetched_at > max_age:
         return None
     return list(saved["elements"])
 
@@ -254,10 +247,11 @@ def fetch_region(code: str, fetcher: Fetcher) -> list[dict[str, Any]] | None:
     return elements
 
 
-def place_to_osm_row(place: RadarPlace, *, imported_at: str) -> dict[str, Any]:
+def place_to_osm_row(place: RadarPlace, *, imported_at: str, country: str) -> dict[str, Any]:
     """Row for the `radar_places_osm` table."""
     return {
         "id": f"{OSM_SOURCE_NAME}|{place.source_external_id}",
+        "country": country,
         "place_type": place.place_type,
         "subtype": place.subtype,
         "name": place.name,
@@ -277,41 +271,72 @@ def place_to_osm_row(place: RadarPlace, *, imported_at: str) -> dict[str, Any]:
     }
 
 
+def print_regions(country: RadarCountry) -> None:
+    print(f"{country.flag} {country.name} ({country.code}): {len(country.regions)} regioni")
+    for region in country.regions:
+        print(f"  {region.code}  {region.name}")
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
+    parser.add_argument("--country", default="IT", help="ISO code of the country (default IT)")
     parser.add_argument(
-        "--regions", nargs="*", help="ISO codes to import (default: all of Italy), e.g. IT-25"
+        "--regions", nargs="*", help="ISO 3166-2 codes to import (default: all), e.g. IT-25"
     )
+    parser.add_argument("--list-regions", action="store_true", help="print the regions and exit")
     parser.add_argument(
         "--max-seconds",
         type=float,
         default=DEFAULT_MAX_SECONDS,
         help=f"stop cleanly after this long and resume later (default {DEFAULT_MAX_SECONDS})",
     )
+    parser.add_argument(
+        "--pause-seconds",
+        type=float,
+        default=DEFAULT_PAUSE_SECONDS,
+        help=f"wait between two regions (default {DEFAULT_PAUSE_SECONDS})",
+    )
+    parser.add_argument(
+        "--cache-hours",
+        type=float,
+        default=DEFAULT_CACHE_HOURS,
+        help=f"reuse a downloaded region for this long (default {DEFAULT_CACHE_HOURS})",
+    )
     parser.add_argument("--refresh", action="store_true", help="ignore the local cache")
+    parser.add_argument(
+        "--allow-empty",
+        action="store_true",
+        help="accept regions that come back without any element",
+    )
     parser.add_argument("--dry-run", action="store_true", help="download and count, write nothing")
     args = parser.parse_args()
 
-    codes = args.regions or list(ITALIAN_REGIONS)
-    unknown = [code for code in codes if code not in ITALIAN_REGIONS]
+    country = parse_country(args.country)
+    if args.list_regions:
+        print_regions(country)
+        return 0
+    names = {region.code: region.name for region in country.regions}
+    codes = args.regions or list(names)
+    unknown = [code for code in codes if code not in names]
     if unknown:
-        parser.error(f"regioni sconosciute: {', '.join(unknown)}")
-    whole_country = set(codes) == set(ITALIAN_REGIONS)
+        parser.error(f"regioni sconosciute per {country.code}: {', '.join(unknown)}")
+    whole_country = set(codes) == set(names)
+    max_age = timedelta(hours=args.cache_hours)
 
-    fetcher = Fetcher(args.max_seconds)
+    fetcher = Fetcher(args.max_seconds, args.pause_seconds)
     regions: dict[str, list[dict[str, Any]]] = {}
     missing: list[str] = []
     out_of_time = False
     for code in codes:
-        cached = None if args.refresh else load_cached_region(code)
-        if cached is not None:
+        cached = None if args.refresh else load_cached_region(code, max_age=max_age)
+        if cached is not None and (cached or args.allow_empty):
             regions[code] = cached
-            print(f"{ITALIAN_REGIONS[code]} ({code}): {len(cached)} elementi, già scaricata")
+            print(f"{names[code]} ({code}): {len(cached)} elementi, già scaricata")
             continue
         if out_of_time:
             missing.append(code)
             continue
-        print(f"{ITALIAN_REGIONS[code]} ({code})...", flush=True)
+        print(f"{names[code]} ({code})...", flush=True)
         started = time.monotonic()
         try:
             elements = fetch_region(code, fetcher)
@@ -322,15 +347,22 @@ def main() -> int:
         if elements is None:
             print("    non disponibile ora: riprovo al prossimo lancio")
             missing.append(code)
+        elif not elements and not args.allow_empty:
+            # An area code that matches nothing answers 200 and no element.
+            print(
+                f"    nessun elemento: il codice area {code} potrebbe essere sbagliato "
+                "(se la regione è davvero vuota, rilancia con --allow-empty)"
+            )
+            missing.append(code)
         else:
             regions[code] = elements
             print(f"  {len(elements)} elementi in {time.monotonic() - started:.0f} s")
         fetcher.pause()
 
     if missing:
-        names = ", ".join(ITALIAN_REGIONS[code] for code in missing)
+        listed = ", ".join(names[code] for code in missing)
         print(
-            f"\nMancano {len(missing)} regioni su {len(codes)}: {names}.\n"
+            f"\nMancano {len(missing)} regioni su {len(codes)}: {listed}.\n"
             "Nulla è stato scritto. Riprendi rilanciando lo stesso comando: "
             "le regioni già scaricate non vengono richieste di nuovo."
         )
@@ -341,13 +373,17 @@ def main() -> int:
     for elements in regions.values():
         for element in elements:
             place = map_osm_element(
-                element, owner_id="", coverage_key="catalog", fetched_at=fetched_at
+                element,
+                owner_id="",
+                coverage_key="catalog",
+                fetched_at=fetched_at,
+                country_code=country.code,
             )
             # Border features can come back for two regions: keyed by id.
             if place is not None:
                 places[place.source_external_id] = place
 
-    print(f"\n{len(places)} luoghi in totale da {len(regions)} regioni")
+    print(f"\n{len(places)} luoghi in totale da {len(regions)} regioni ({country.code})")
     for place_type, count in Counter(place.place_type for place in places.values()).most_common():
         print(f"  {place_type}: {count}")
     if args.dry_run:
@@ -361,18 +397,29 @@ def main() -> int:
     excluded = load_excluded_ids(client, OSM_SOURCE_NAME)
     imported_at = now_iso()
     rows = [
-        place_to_osm_row(place, imported_at=imported_at)
+        place_to_osm_row(place, imported_at=imported_at, country=country.code)
         for place in places.values()
         if place.source_external_id not in excluded
     ]
     upsert_rows(client, "radar_places_osm", rows)
     if not whole_country:
-        print("Import parziale: righe aggiornate, copertura nazionale NON dichiarata.")
+        save_country_coverage(client, country.code, {"osm_regions": codes})
+        print("Import parziale: righe aggiornate, copertura del paese NON dichiarata.")
         return 0
 
     # Only a complete run may delete what it did not see and declare the
     # country covered: from then on the API stops calling Overpass for it.
-    delete_rows_not_imported_at(client, "radar_places_osm", imported_at)
+    delete_rows_not_imported_at(client, "radar_places_osm", imported_at, country=country.code)
+    save_country_coverage(
+        client,
+        country.code,
+        {
+            "osm_complete_at": imported_at,
+            "osm_release": imported_at[:10],
+            "osm_place_count": len(rows),
+            "osm_regions": codes,
+        },
+    )
     save_source(
         client,
         {
@@ -381,12 +428,12 @@ def main() -> int:
             "license": "ODbL-1.0",
             "attribution": "© OpenStreetMap contributors",
             "url": "https://www.openstreetmap.org/copyright",
-            "place_count": len(rows),
+            "place_count": sum_country_counts(client, "osm_place_count"),
             "imported_at": imported_at,
-            **ITALY_BOUNDS,
+            **legacy_bounds_for(country),
         },
     )
-    print(f"Fatto: {len(rows)} luoghi in radar_places_osm, Italia dichiarata coperta.")
+    print(f"Fatto: {len(rows)} luoghi in radar_places_osm, {country.name} dichiarato coperto.")
     return 0
 
 

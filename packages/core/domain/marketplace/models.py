@@ -53,6 +53,10 @@ class MarketplaceListing(BaseModel):
     # the exact seller address is never persisted here.
     location: Coordinates
     city_label: str | None = None
+    # ISO 3166-1 alpha-2 of the seller's country: prices are in its currency
+    # and only owners of the same country see the ad. Rows older than the
+    # column are Italian (scripts/setup/marketplace_country.sql).
+    country: str = "IT"
     status: ListingStatus = "active"
     report_count: int = 0
     created_at: datetime = Field(default_factory=utc_now)

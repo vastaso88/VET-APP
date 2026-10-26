@@ -7,8 +7,16 @@
 lib/features/pets/domain/pet_breeds.dart
 lib/features/pets/domain/pet_species_breeds.dart
 lib/features/pets/domain/fish_species.dart
+# News search words and off-topic filters per language (it, en, es, de, fr): they are
+# queries sent to Google News in the language of the edition, never shown to the owner.
+lib/features/pet_news/domain/pet_news_edition.dart
 # Language names are written in their own language, never translated.
 lib/features/language/domain/app_language.dart
+# Brand and required map attribution are proper names, not translated copy.
+lib/app/splash/splash_page.dart :: 'VET APP'
+lib/features/dog_walks/presentation/widgets/walk_mini_map.dart :: '© OpenStreetMap'
+# An existing demo attachment filename, not an app label or translated document.
+lib/features/medical_records/presentation/pages/medical_records_pages.dart :: 'richiamo_vaccinale_moka.pdf'
 
 # Demo/seed data shown only in builds without Supabase and in tests (never in production).
 lib/features/medical_records/data/medical_records_repository.dart :: _previewRecords
@@ -33,9 +41,6 @@ lib/features/reminders/presentation/pages/reminders_pages.dart :: 'promemoria-$
 lib/features/nearby_places/data/radar_contributions_repository.dart
 # Proper name of a municipality (data source).
 lib/features/nearby_places/domain/radar_data_source.dart :: 'Città di Torino'
-# Legal consent text: tests/unit/test_consent_texts_match_behaviour.py reads it from this Dart
-# source with a regex. Do not move it without updating that test (owned by the legal/consent work).
-lib/features/pets/presentation/widgets/medical_record_consent_card.dart
 
 # Demo seeds again (capitalised UI-style literals): only used without Supabase and in tests.
 lib/features/local_activities/data/local_activities_repository.dart

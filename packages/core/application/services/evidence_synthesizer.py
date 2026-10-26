@@ -11,7 +11,13 @@ SYNTHESIS_MARKER = "performing evidence synthesis"
 
 # spec v3 §31: the core engine reads this instead of hardcoding "Italian",
 # so a future locale is a config change — see Settings.response_language.
-LANGUAGE_NAMES: dict[str, str] = {"it": "Italian", "en": "English"}
+LANGUAGE_NAMES: dict[str, str] = {
+    "it": "Italian",
+    "en": "English",
+    "es": "Spanish",
+    "de": "German",
+    "fr": "French",
+}
 
 
 def _build_system_prompt(response_language: str) -> str:
@@ -67,12 +73,18 @@ class EvidenceSynthesizer:
         self._llm_client = llm_client
         self._system_prompt = _build_system_prompt(response_language)
 
-    def synthesize(self, user_prompt: str) -> tuple[EvidenceSynthesis, LLMResponse]:
+    def synthesize(
+        self, user_prompt: str, *, response_language: str | None = None
+    ) -> tuple[EvidenceSynthesis, LLMResponse]:
         """Returns the parsed synthesis alongside the raw LLMResponse, so
         the caller can still report which provider/model produced it."""
         response = self._llm_client.generate(
             LLMGenerationRequest(
-                system_prompt=self._system_prompt,
+                system_prompt=(
+                    _build_system_prompt(response_language)
+                    if response_language is not None
+                    else self._system_prompt
+                ),
                 user_prompt=user_prompt,
                 # The structured JSON (up to 7 populated lists) needs more
                 # room than the single free-text paragraph this replaced —

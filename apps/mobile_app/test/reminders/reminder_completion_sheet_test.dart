@@ -48,6 +48,7 @@ Future<bool?> _open(WidgetTester tester, ReminderEntry reminder) async {
       scaffoldMessengerKey: AppRouter.scaffoldMessengerKey,
       localizationsDelegates: AppLocalizations.localizationsDelegates,
       supportedLocales: AppLocalizations.supportedLocales,
+      locale: const Locale('it'),
       home: Builder(
         builder: (context) => Scaffold(
           body: Center(

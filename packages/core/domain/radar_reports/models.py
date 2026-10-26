@@ -18,6 +18,7 @@ from pydantic import BaseModel, Field
 
 from packages.core.domain.common.entity import new_id, utc_now
 from packages.core.domain.geo.models import Coordinates, haversine_distance_km
+from packages.core.domain.radar_places.labels import default_place_name, fold
 from packages.core.domain.radar_places.models import RadarPlace
 from packages.shared.errors.base import ValidationError
 
@@ -39,11 +40,12 @@ MAX_PLACE_NAME_LENGTH = 60
 HOME_BASED_PLACE_TYPES = frozenset({"hotel", "pet_sitting", "school"})
 _COARSE_GRID_DEGREES = 0.005
 
-_DEFAULT_REPORT_NAMES = {"dog_park": "Area cani"}
-
-# Deliberately short: a net for the obvious, not a moderation system.
+# Deliberately short: a net for the obvious, not a moderation system. One
+# list per language the radar's countries speak, matched on the accent-folded
+# words of the name.
 _BLOCKED_WORDS = frozenset(
     {
+        # it
         "cazzo",
         "merda",
         "stronzo",
@@ -54,8 +56,38 @@ _BLOCKED_WORDS = frozenset(
         "bastardo",
         "coglione",
         "minchia",
+        # en
+        "fuck",
+        "fucking",
+        "shit",
+        "cunt",
+        "asshole",
+        "bastard",
+        "bitch",
+        # de
+        "scheisse",
+        "arschloch",
+        "fotze",
+        "hurensohn",
+        "wichser",
+        # fr
+        "putain",
+        "connard",
+        "connasse",
+        "salope",
+        "encule",
+        # es
+        "mierda",
+        "puta",
+        "cabron",
+        "gilipollas",
+        "joder",
+        "polla",
     }
 )
+
+# Web addresses in a name: a scheme, "www.", or a common domain ending.
+_WEB_ADDRESS = re.compile(r"https?:|www\.|\.(it|com|net|org|eu|info|vet|uk|us|au|de|fr|es)\b")
 
 
 def contributor_pseudonym(user_id: str, *, key: str) -> str:
@@ -66,25 +98,23 @@ def contributor_pseudonym(user_id: str, *, key: str) -> str:
     return hmac.new(key.encode("utf-8"), user_id.encode("utf-8"), hashlib.sha256).hexdigest()
 
 
-def clean_place_name(name: str | None, *, place_type: str) -> str:
+def clean_place_name(name: str | None, *, place_type: str, language: str | None = None) -> str:
     """The sign over the door and nothing else: no contact details, no
-    insults. Dog parks may go unnamed; businesses may not."""
+    insults. Dog parks may go unnamed (they get the generic name in
+    `language`, Italian when not given); businesses may not."""
     text = re.sub(r"\s+", " ", name or "").strip()
     if not text:
-        default = _DEFAULT_REPORT_NAMES.get(place_type)
+        default = (
+            default_place_name(place_type, language or "it") if place_type == "dog_park" else None
+        )
         if default is None:
             raise ValidationError("Scrivi il nome dell'attività, come appare sull'insegna.")
         return default
     if len(text) > MAX_PLACE_NAME_LENGTH:
         raise ValidationError(f"Il nome può avere al massimo {MAX_PLACE_NAME_LENGTH} caratteri.")
-    lowered = text.lower()
-    if (
-        re.search(r"\d[\d\s./-]{5,}", text)
-        or "@" in text
-        or re.search(r"https?:|www\.|\.(it|com|net|org)\b", lowered)
-    ):
+    if re.search(r"\d[\d\s./-]{5,}", text) or "@" in text or _WEB_ADDRESS.search(text.lower()):
         raise ValidationError("Nel nome non inserire telefoni, email o siti web.")
-    if _BLOCKED_WORDS & set(re.findall(r"[a-zàèéìòù]+", lowered)):
+    if _BLOCKED_WORDS & set(re.findall(r"[^\W\d_]+", fold(text))):
         raise ValidationError("Il nome contiene parole non ammesse.")
     return text
 

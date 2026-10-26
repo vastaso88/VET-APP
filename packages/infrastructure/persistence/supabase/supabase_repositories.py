@@ -53,6 +53,7 @@ from packages.core.domain.pet_profile.weight_measurement import WeightMeasuremen
 from packages.core.domain.radar_places.models import (
     OSM_SOURCE_NAME,
     RADAR_PLACE_TRANSIENT_FIELDS,
+    RadarCountryCoverage,
     RadarDataSource,
     RadarPlace,
 )
@@ -314,6 +315,8 @@ class SupabaseRadarCatalogRepository(RadarCatalogRepository):
         self._client = client
         self._sources: list[RadarDataSource] = []
         self._sources_read_at: float | None = None
+        self._countries: list[RadarCountryCoverage] = []
+        self._countries_read_at: float | None = None
 
     def list_sources(self) -> list[RadarDataSource]:
         now = time.monotonic()
@@ -330,6 +333,21 @@ class SupabaseRadarCatalogRepository(RadarCatalogRepository):
         self._sources = [RadarDataSource.model_validate(row) for row in response.data or []]
         self._sources_read_at = now
         return list(self._sources)
+
+    def list_country_coverage(self) -> list[RadarCountryCoverage]:
+        now = time.monotonic()
+        read_at = self._countries_read_at
+        if read_at is not None and now - read_at < self._SOURCES_TTL_SECONDS:
+            return list(self._countries)
+        try:
+            response = self._client.table("radar_country_coverage").select("*").execute()
+        except Exception:
+            # Table not created yet: every country is then served as before.
+            _logger.warning("radar catalog unavailable: radar_country_coverage could not be read")
+            return []
+        self._countries = [RadarCountryCoverage.model_validate(row) for row in response.data or []]
+        self._countries_read_at = now
+        return list(self._countries)
 
     def list_osm_places(self, box: BoundingBox) -> list[RadarPlace]:
         return [_osm_place(row) for row in self._rows_in_box("radar_places_osm", box)]
@@ -640,8 +658,11 @@ class SupabaseMarketplaceListingRepository(MarketplaceListingRepository):
             return None
         return _row_to_listing(cast(dict[str, Any], response.data[0]))
 
-    def list_active(self) -> list[MarketplaceListing]:
-        response = self._client.table(self._table).select("*").eq("status", "active").execute()
+    def list_active(self, country: str | None = None) -> list[MarketplaceListing]:
+        query = self._client.table(self._table).select("*").eq("status", "active")
+        if country is not None:
+            query = query.eq("country", country)
+        response = query.execute()
         return [_row_to_listing(cast(dict[str, Any], item)) for item in response.data or []]
 
 

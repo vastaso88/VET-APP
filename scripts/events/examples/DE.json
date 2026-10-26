@@ -1,0 +1,39 @@
+{
+  "events": [
+    {
+      "slug": "example-de-heimtiermesse",
+      "title": "Beispiel-Heimtiermesse (ERFUNDENE Veranstaltung)",
+      "event_type": "pet_fair",
+      "level": "regional",
+      "level_basis": "curated",
+      "country": "DE",
+      "starts_on": "2026-11-14",
+      "ends_on": "2026-11-15",
+      "region": "Bayern",
+      "city": "Beispielstadt",
+      "province_code": "BY",
+      "venue_name": "Beispiel-Messezentrum",
+      "organizer_name": "Beispiel-Tierfreunde e. V.",
+      "description": "Erfundene Veranstaltung zum Ausprobieren der Liste: Es gibt sie nicht.",
+      "source_url": "https://www.example.org/de/heimtiermesse",
+      "verified_on": "2026-10-14"
+    },
+    {
+      "slug": "example-de-tierheim-tag",
+      "title": "Beispiel-Tag der offenen Tür im Tierheim (ERFUNDENE Veranstaltung)",
+      "event_type": "shelter_open_day",
+      "level": "local",
+      "level_basis": "default",
+      "country": "DE",
+      "starts_on": "2026-12-05",
+      "ends_on": "2026-12-05",
+      "region": "Hessen",
+      "city": "Musterhausen",
+      "province_code": "HE",
+      "organizer_name": "Beispiel-Tierheim",
+      "description": "Erfundene Veranstaltung zum Ausprobieren der Liste: Es gibt sie nicht.",
+      "source_url": "https://www.example.org/de/tierheim",
+      "verified_on": "2026-10-14"
+    }
+  ]
+}

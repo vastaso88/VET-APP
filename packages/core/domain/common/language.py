@@ -65,4 +65,6 @@ def response_language_instruction(language: str) -> str:
     return (
         f"Always reply in the user's language: {LANGUAGE_NAMES[code]} ({code}). "
         "This overrides any earlier instruction about the language of the reply."
+        " Reply exclusively in this selected language even when the owner writes "
+        "in another language."
     )

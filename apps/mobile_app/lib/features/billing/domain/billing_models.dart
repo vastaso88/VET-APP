@@ -1,7 +1,5 @@
-import 'package:intl/intl.dart';
-
-import '../../../l10n/date_formats.dart';
 import '../../../l10n/l10n.dart';
+import '../../../l10n/regional_defaults.dart';
 
 enum PlanTier { free, plus, pro }
 
@@ -59,9 +57,10 @@ class PlanFeature {
   }
 }
 
-/// "4,99 €" in the app language (placeholder prices, always euro).
-String formatPlanAmount(double price) =>
-    NumberFormat.currency(locale: appIntlLocale, symbol: '€').format(price);
+/// "4,99 €", "£4.99", "$4.99", "A$4.99" or "CHF 4.99": the placeholder price
+/// in the chosen variant's currency (the figure is not converted: real prices
+/// per country are still to be set).
+String formatPlanAmount(double price) => formatAppMoney(price);
 
 /// A subscription tier as shown in the plan comparison — mirrors the
 /// "Free / Plus / Pro" ladder common apps use for their pricing screen.
@@ -78,10 +77,11 @@ class SubscriptionPlan {
   final PlanTier tier;
   final String displayName;
 
-  /// Price in euro for one month, billed monthly.
+  /// Placeholder price for one month, billed monthly, in the chosen
+  /// variant's currency (see [formatPlanAmount]).
   final double monthlyPrice;
 
-  /// Price in euro for one month, billed yearly (usually discounted).
+  /// Placeholder price for one month, billed yearly (usually discounted).
   final double yearlyPrice;
 
   /// What this plan has beyond (or instead of) the shared baseline in

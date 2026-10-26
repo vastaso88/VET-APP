@@ -6,13 +6,28 @@ plugins {
     id("dev.flutter.flutter-gradle-plugin")
 }
 
-// Release signing is read from android/key.properties (git-ignored, created and
-// kept by the owner - never committed). Without that file a release build still
-// works but is signed with the debug key, as before. Expected keys: storeFile
-// (path relative to this app/ folder), storePassword, keyAlias, keyPassword.
+// Release signing, in order of precedence:
+//  1. CI distribution key (ANDROID_KEYSTORE_* variables, all four together) so tester
+//     APKs can update an existing installation;
+//  2. android/key.properties (git-ignored, created and kept by the owner - never
+//     committed): storeFile (path relative to this app/ folder), storePassword,
+//     keyAlias, keyPassword;
+//  3. the debug key, so `flutter run --release` keeps working.
 val keystoreProperties = Properties().apply {
     val file = rootProject.file("key.properties")
     if (file.exists()) file.inputStream().use { load(it) }
+}
+
+val releaseStorePath = System.getenv("ANDROID_KEYSTORE_PATH")
+val releaseSigningVariables = listOf(
+    "ANDROID_KEYSTORE_PATH", "ANDROID_KEYSTORE_PASSWORD", "ANDROID_KEY_ALIAS", "ANDROID_KEY_PASSWORD",
+)
+val hasReleaseSigning = releaseSigningVariables.any { !System.getenv(it).isNullOrBlank() }
+if (hasReleaseSigning) {
+    require(releaseSigningVariables.all { !System.getenv(it).isNullOrBlank() }) {
+        "All ANDROID_KEYSTORE signing variables must be provided together."
+    }
+    require(file(releaseStorePath!!).isFile) { "ANDROID_KEYSTORE_PATH must point to a keystore." }
 }
 
 android {
@@ -36,6 +51,17 @@ android {
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode
         versionName = flutter.versionName
+    }
+
+    signingConfigs {
+        if (hasReleaseSigning) {
+            create("distribution") {
+                storeFile = file(releaseStorePath!!)
+                storePassword = System.getenv("ANDROID_KEYSTORE_PASSWORD")
+                keyAlias = System.getenv("ANDROID_KEY_ALIAS")
+                keyPassword = System.getenv("ANDROID_KEY_PASSWORD")
+            }
+        }
     }
 
     // Three apps that live side by side on one phone, one per track. `prod`
@@ -79,9 +105,10 @@ android {
 
     buildTypes {
         release {
-            // The owner's release key when android/key.properties exists, the
-            // debug key otherwise, so `flutter run --release` keeps working.
-            signingConfig = signingConfigs.findByName("release") ?: signingConfigs.getByName("debug")
+            // CI distribution key when supplied, else the owner's key.properties key,
+            // else the debug key (local `flutter run --release`).
+            signingConfig = signingConfigs.findByName(if (hasReleaseSigning) "distribution" else "release")
+                ?: signingConfigs.getByName("debug")
             // R8 shrinks release builds: keep what plugins reach by reflection.
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
         }

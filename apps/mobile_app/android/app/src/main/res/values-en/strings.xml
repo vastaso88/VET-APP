@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="dog_walks_widget_description">New reminder and one-tap walk for your pets</string>
+    <string name="dog_walks_widget_title">VetApp</string>
+    <string name="dog_walks_widget_subtitle">Your pets</string>
+    <string name="dog_walks_widget_empty">Add your first pet in the app to get started</string>
+    <string name="dog_walks_widget_more">+%1$d more</string>
+    <string name="dog_walks_widget_reminder_cd">New reminder</string>
+    <string name="dog_walks_widget_walk_cd">Walk</string>
+    <string name="dog_walks_widget_pause_cd">Pause the walk</string>
+    <string name="dog_walks_widget_resume_cd">Resume the walk</string>
+    <string name="dog_walks_widget_open_walk_cd">Open the active walk</string>
+    <string name="dog_walks_widget_walk_running">Active · %1$s · %%s</string>
+    <string name="dog_walks_widget_walk_paused">Paused · %1$s · %%s</string>
+    <string name="walk_notif_channel_name">Walk in progress</string>
+    <string name="walk_notif_channel_description">Shows the active walk: time, distance, pause and finish.</string>
+    <string name="walk_notif_title_default">Walk in progress</string>
+    <string name="walk_notif_action_pause">Pause</string>
+    <string name="walk_notif_action_resume">Resume</string>
+    <string name="walk_notif_action_finish">Finish</string>
+</resources>

@@ -44,6 +44,7 @@ class MarketplaceListing {
     // this is a caller contract, not something this class enforces itself.
     required this.location,
     this.cityLabel,
+    this.country = 'IT',
     this.status = ListingStatus.active,
     this.reportCount = 0,
     required this.createdAt,
@@ -65,6 +66,12 @@ class MarketplaceListing {
 
   /// Neighbourhood/town only ("Navigli, Milano"), never a street address.
   final String? cityLabel;
+
+  /// ISO 3166-1 alpha-2 of the seller's country (from the app's language
+  /// variant when the ad was published). Prices are in that country's
+  /// currency and only owners of the same country see the ad. Rows written
+  /// before the column existed are Italian.
+  final String country;
   final ListingStatus status;
   final int reportCount;
   final DateTime createdAt;
@@ -105,6 +112,7 @@ class MarketplaceListing {
       species: species ?? this.species,
       location: location ?? this.location,
       cityLabel: cityLabel != null ? cityLabel() : this.cityLabel,
+      country: country,
       status: status ?? this.status,
       reportCount: reportCount ?? this.reportCount,
       createdAt: createdAt,

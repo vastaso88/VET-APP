@@ -26,51 +26,60 @@ class AddFirstPetPromptPage extends StatelessWidget {
     return Scaffold(
       backgroundColor: AppColors.background,
       body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(AppSpacing.xl),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Container(
-                width: 96,
-                height: 96,
-                alignment: Alignment.center,
-                decoration: BoxDecoration(
-                  color: AppColors.accent.withValues(alpha: 0.12),
-                  borderRadius: BorderRadius.circular(AppRadii.xxl),
-                ),
-                child: const Icon(Icons.add_photo_alternate_outlined, size: 44, color: AppColors.accent),
-              ),
-              const SizedBox(height: AppSpacing.xl),
-              Text(
-                context.l10n.firstRunAddPetTitle,
-                style: AppTextStyles.title.copyWith(fontSize: 22),
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: AppSpacing.sm),
-              Text(
-                context.l10n.firstRunAddPetBody,
-                style: AppTextStyles.body,
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: AppSpacing.xl),
-              SizedBox(
-                width: double.infinity,
-                child: FilledButton(
-                  onPressed: () => _addPet(context),
-                  style: FilledButton.styleFrom(
-                    backgroundColor: AppColors.primary,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadii.pill)),
+        // Scrolls instead of overflowing on a small phone or a large system text scale.
+        child: LayoutBuilder(
+          builder: (context, constraints) => SingleChildScrollView(
+            padding: const EdgeInsets.all(AppSpacing.xl),
+            child: ConstrainedBox(
+              constraints: BoxConstraints(
+                  minHeight: constraints.maxHeight - 2 * AppSpacing.xl),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Container(
+                    width: 96,
+                    height: 96,
+                    alignment: Alignment.center,
+                    decoration: BoxDecoration(
+                      color: AppColors.accent.withValues(alpha: 0.12),
+                      borderRadius: BorderRadius.circular(AppRadii.xxl),
+                    ),
+                    child: const Icon(Icons.add_photo_alternate_outlined,
+                        size: 44, color: AppColors.accent),
                   ),
-                  child: Text(context.l10n.firstRunAddPetNow),
-                ),
+                  const SizedBox(height: AppSpacing.xl),
+                  Text(
+                    context.l10n.firstRunAddPetTitle,
+                    style: AppTextStyles.title.copyWith(fontSize: 22),
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: AppSpacing.sm),
+                  Text(
+                    context.l10n.firstRunAddPetBody,
+                    style: AppTextStyles.body,
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: AppSpacing.xl),
+                  SizedBox(
+                    width: double.infinity,
+                    child: FilledButton(
+                      onPressed: () => _addPet(context),
+                      style: FilledButton.styleFrom(
+                        backgroundColor: AppColors.primary,
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(AppRadii.pill)),
+                      ),
+                      child: Text(context.l10n.firstRunAddPetNow),
+                    ),
+                  ),
+                  const SizedBox(height: AppSpacing.sm),
+                  TextButton(
+                    onPressed: () => Navigator.of(context).pop(),
+                    child: Text(context.l10n.firstRunAddPetLater),
+                  ),
+                ],
               ),
-              const SizedBox(height: AppSpacing.sm),
-              TextButton(
-                onPressed: () => Navigator.of(context).pop(),
-                child: Text(context.l10n.firstRunAddPetLater),
-              ),
-            ],
+            ),
           ),
         ),
       ),

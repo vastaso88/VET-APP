@@ -3,6 +3,8 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 
 import '../../../shared/config/app_runtime_config_loader.dart';
+import '../../language/data/language_store.dart';
+import '../domain/pet_news_edition.dart';
 import '../domain/pet_news_item.dart';
 
 abstract class PetNewsRepository {
@@ -32,18 +34,46 @@ const allPetNewsCategories = <String>[
 /// request.
 const petNewsPoolLimitPerCategory = 4;
 
+/// The edition the owner reads right now: app language x country of the
+/// chosen variant (🇬🇧 → en-GB edition, 🇩🇪 → de-DE, ...).
+PetNewsEdition currentPetNewsEdition() {
+  final variant = LanguageStore.instance.variant;
+  return petNewsEditionFor(variant.languageCode, variant.countryCode ?? 'IT');
+}
+
+/// Editions our backend (GET /news) has feeds for. Today only the Italian
+/// one: the backend reads Italian pet magazines and veterinary bodies. Any
+/// other edition gets an empty list and the "no news in your language and
+/// country" message - never Italian headlines, never another country's
+/// (docs/i18n/NOTIZIE_EVENTI_MERCATINO.md) and never a call from the phone to
+/// a third-party feed or proxy. When the backend gains per-country feeds, add
+/// the edition here and pass it to /news.
+const backendPetNewsEditions = <String>{'it-IT'};
+
+/// True when [edition] (default: the owner's) has news to show.
+bool petNewsEditionServed([PetNewsEdition? edition]) =>
+    backendPetNewsEditions.contains((edition ?? currentPetNewsEdition()).cacheKey);
+
 /// "Curiosità" read from our own backend (GET /news), which reads the RSS
 /// feeds of pet magazines and veterinary bodies, drops off-topic and
 /// recipe-like headlines, de-duplicates them and keeps a shared cache. The
 /// app no longer talks to any third-party feed or proxy. Swappable behind
 /// [PetNewsRepository].
+///
+/// Only an edition in [backendPetNewsEditions] is fetched; for any other the
+/// answer is an empty list without a request (see [petNewsEditionServed]).
 class BackendPetNewsRepository implements PetNewsRepository {
-  BackendPetNewsRepository({http.Client? client, AppRuntimeConfigLoader? configLoader})
-      : _client = client ?? http.Client(),
-        _configLoader = configLoader ?? const AppRuntimeConfigLoader();
+  BackendPetNewsRepository({
+    http.Client? client,
+    AppRuntimeConfigLoader? configLoader,
+    PetNewsEdition Function()? editionProvider,
+  })  : _client = client ?? http.Client(),
+        _configLoader = configLoader ?? const AppRuntimeConfigLoader(),
+        _editionProvider = editionProvider ?? currentPetNewsEdition;
 
   final http.Client _client;
   final AppRuntimeConfigLoader _configLoader;
+  final PetNewsEdition Function() _editionProvider;
 
   // One request returns every category, so the whole answer is kept for a
   // while and shared by every repository instance (Home, News page, splash
@@ -63,6 +93,7 @@ class BackendPetNewsRepository implements PetNewsRepository {
 
   @override
   Future<List<PetNewsItem>> fetchForSpecies(String species, {int limit = 2}) async {
+    if (!petNewsEditionServed(_editionProvider())) return const [];
     final byCategory = await _load();
     return (byCategory[species] ?? const <PetNewsItem>[]).take(limit).toList(growable: false);
   }

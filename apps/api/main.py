@@ -6,6 +6,7 @@ from fastapi.responses import JSONResponse
 
 from apps.api.routes.account import router as account_router
 from apps.api.routes.account_consents import router as account_consents_router
+from apps.api.routes.account_preferences import router as account_preferences_router
 from apps.api.routes.admin import router as admin_router
 from apps.api.routes.auth import router as auth_router
 from apps.api.routes.chat import router as chat_router
@@ -16,6 +17,7 @@ from apps.api.routes.events import router as events_router
 from apps.api.routes.health import router as health_router
 from apps.api.routes.legal import router as legal_router
 from apps.api.routes.local_services import router as local_services_router
+from apps.api.routes.marketplace import router as marketplace_router
 from apps.api.routes.news import router as news_router
 from apps.api.routes.pets import router as pets_router
 from apps.api.routes.reminders import router as reminders_router
@@ -86,6 +88,7 @@ app.include_router(chat_router)
 app.include_router(reminders_router)
 app.include_router(account_consents_router)
 app.include_router(account_router)
+app.include_router(account_preferences_router)
 app.include_router(legal_router)
 app.include_router(chat_response_reports_router)
 app.include_router(speech_to_text_router)
@@ -94,3 +97,4 @@ app.include_router(subscription_router)
 app.include_router(local_services_router)
 app.include_router(news_router)
 app.include_router(events_router)
+app.include_router(marketplace_router)

@@ -5,6 +5,10 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:intl/intl.dart' as intl;
 
+import 'app_localizations_de.dart';
+import 'app_localizations_en.dart';
+import 'app_localizations_es.dart';
+import 'app_localizations_fr.dart';
 import 'app_localizations_it.dart';
 
 // ignore_for_file: type=lint
@@ -92,7 +96,19 @@ abstract class AppLocalizations {
   ];
 
   /// A list of this localizations delegate's supported locales.
-  static const List<Locale> supportedLocales = <Locale>[Locale('it')];
+  static const List<Locale> supportedLocales = <Locale>[
+    Locale('de'),
+    Locale('en'),
+    Locale('es'),
+    Locale('fr'),
+    Locale('it')
+  ];
+
+  /// No description provided for @petsConsentFullText.
+  ///
+  /// In it, this message translates to:
+  /// **'Per darti un consiglio più preciso, l\'assistente può leggere la cartella clinica del tuo animale. Quando fai una domanda può leggere le tre voci più recenti, con titolo, categoria (visita, esame, vaccino, terapia o documento), data dell\'evento, descrizione e testo dei documenti allegati, anche se non c\'entrano con la domanda. Può leggere anche le malattie pregresse ancora in corso, con il nome e la data di inizio, al massimo cinque. Se chiedi di spiegare un esame, può leggere i documenti che lo riguardano, al massimo due. Di un documento molto lungo legge solo l\'inizio. Ciò che legge viene inviato al fornitore esterno di intelligenza artificiale che scrive la risposta. VetApp lo usa solo per risponderti. Puoi revocare il consenso in qualsiasi momento dalla scheda dell\'animale o dalle Impostazioni: vale per le richieste successive.'**
+  String get petsConsentFullText;
 
   /// No description provided for @appTitle.
   ///
@@ -2032,12 +2048,6 @@ abstract class AppLocalizations {
   /// **'In regalo'**
   String get marketplacePriceGift;
 
-  /// No description provided for @marketplaceDistanceAnywhere.
-  ///
-  /// In it, this message translates to:
-  /// **'Ovunque'**
-  String get marketplaceDistanceAnywhere;
-
   /// No description provided for @marketplaceDemoBedTitle.
   ///
   /// In it, this message translates to:
@@ -2092,17 +2102,35 @@ abstract class AppLocalizations {
   /// **'Compra, vendi e regala articoli per animali con altri proprietari.'**
   String get marketplaceIntro;
 
-  /// No description provided for @marketplaceDistanceNeedsLocation.
-  ///
-  /// In it, this message translates to:
-  /// **'Per filtrare per distanza imposta la tua posizione in Impostazioni → Località.'**
-  String get marketplaceDistanceNeedsLocation;
-
   /// No description provided for @marketplaceEmptyFiltered.
   ///
   /// In it, this message translates to:
   /// **'Nessun annuncio con questi filtri per ora.'**
   String get marketplaceEmptyFiltered;
+
+  /// No description provided for @marketplaceNeedsLocation.
+  ///
+  /// In it, this message translates to:
+  /// **'Il Mercatino mostra solo gli annunci vicino a te. Imposta la tua posizione in Impostazioni → Località per vederli.'**
+  String get marketplaceNeedsLocation;
+
+  /// No description provided for @marketplaceNoLiveAnimalsNote.
+  ///
+  /// In it, this message translates to:
+  /// **'Nel tuo paese il Mercatino non ammette annunci di animali vivi: solo prodotti e servizi per animali.'**
+  String get marketplaceNoLiveAnimalsNote;
+
+  /// No description provided for @marketplaceNoLiveAnimalsConfirm.
+  ///
+  /// In it, this message translates to:
+  /// **'Confermo che questo annuncio non offre un animale vivo (vendita, regalo o cessione)'**
+  String get marketplaceNoLiveAnimalsConfirm;
+
+  /// No description provided for @marketplaceNoLiveAnimalsRequired.
+  ///
+  /// In it, this message translates to:
+  /// **'Conferma che l\'annuncio non offre un animale vivo'**
+  String get marketplaceNoLiveAnimalsRequired;
 
   /// No description provided for @marketplaceLoadError.
   ///
@@ -2389,8 +2417,8 @@ abstract class AppLocalizations {
   /// No description provided for @marketplaceFieldPrice.
   ///
   /// In it, this message translates to:
-  /// **'Prezzo in €'**
-  String get marketplaceFieldPrice;
+  /// **'Prezzo ({currency})'**
+  String marketplaceFieldPrice(String currency);
 
   /// No description provided for @marketplaceSaving.
   ///
@@ -6004,6 +6032,12 @@ abstract class AppLocalizations {
   /// **'Nessun evento nel periodo scelto'**
   String get eventsEmptyPeriod;
 
+  /// No description provided for @eventsCountryOnlyNote.
+  ///
+  /// In it, this message translates to:
+  /// **'Mostriamo solo gli eventi del tuo paese, quello della lingua scelta nell\'app.'**
+  String get eventsCountryOnlyNote;
+
   /// No description provided for @eventsLevelLocal.
   ///
   /// In it, this message translates to:
@@ -6274,6 +6308,18 @@ abstract class AppLocalizations {
   /// **'Cerco i servizi nella tua zona. La prima volta può richiedere qualche secondo.'**
   String get localEventsSearchingNearby;
 
+  /// No description provided for @localEventsCoverageLimited.
+  ///
+  /// In it, this message translates to:
+  /// **'I dati dei servizi per questa zona sono ancora in preparazione: potresti vedere pochi luoghi o aspettare di più.'**
+  String get localEventsCoverageLimited;
+
+  /// No description provided for @localEventsCoverageUnsupported.
+  ///
+  /// In it, this message translates to:
+  /// **'Il radar non copre ancora questo paese: vedi solo ciò che OpenStreetMap conosce, senza altri controlli.'**
+  String get localEventsCoverageUnsupported;
+
   /// No description provided for @localEventsStale.
   ///
   /// In it, this message translates to:
@@ -6495,6 +6541,12 @@ abstract class AppLocalizations {
   /// In it, this message translates to:
   /// **'Nessuna notizia disponibile per questa categoria al momento.'**
   String get petNewsEmpty;
+
+  /// No description provided for @petNewsEmptyLocal.
+  ///
+  /// In it, this message translates to:
+  /// **'Per ora non ci sono notizie nella tua lingua e per il tuo paese. Non mostriamo notizie di altri paesi.'**
+  String get petNewsEmptyLocal;
 
   /// No description provided for @petNewsCategoryAll.
   ///
@@ -6751,7 +6803,7 @@ abstract class AppLocalizations {
   /// No description provided for @activitiesEventsSubtitle.
   ///
   /// In it, this message translates to:
-  /// **'Fiere, esposizioni e iniziative per animali in tutta Italia.'**
+  /// **'Fiere, esposizioni e iniziative per animali nel tuo paese.'**
   String get activitiesEventsSubtitle;
 
   /// No description provided for @activitiesGalleryTitle.
@@ -10714,7 +10766,7 @@ class _AppLocalizationsDelegate
 
   @override
   bool isSupported(Locale locale) =>
-      <String>['it'].contains(locale.languageCode);
+      <String>['de', 'en', 'es', 'fr', 'it'].contains(locale.languageCode);
 
   @override
   bool shouldReload(_AppLocalizationsDelegate old) => false;
@@ -10723,6 +10775,14 @@ class _AppLocalizationsDelegate
 AppLocalizations lookupAppLocalizations(Locale locale) {
   // Lookup logic when only language code is specified.
   switch (locale.languageCode) {
+    case 'de':
+      return AppLocalizationsDe();
+    case 'en':
+      return AppLocalizationsEn();
+    case 'es':
+      return AppLocalizationsEs();
+    case 'fr':
+      return AppLocalizationsFr();
     case 'it':
       return AppLocalizationsIt();
   }

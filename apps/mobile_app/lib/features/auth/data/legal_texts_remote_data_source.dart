@@ -3,6 +3,8 @@ import 'dart:convert';
 
 import 'package:http/http.dart' as http;
 
+import '../../../l10n/l10n.dart';
+
 import '../../../shared/config/app_runtime_config_loader.dart';
 
 /// Reads the public consent-text catalog (GET /legal/consents). No token is
@@ -24,7 +26,9 @@ class LegalTextsRemoteDataSource {
     try {
       final baseUrl = _configLoader.load().apiBaseUrl;
       final response = await _client
-          .get(Uri.parse('$baseUrl/legal/consents'))
+          .get(Uri.parse('$baseUrl/legal/consents').replace(
+            queryParameters: {'lang': AppLocaleHolder.current.languageCode},
+          ))
           .timeout(_timeout);
       if (response.statusCode < 200 || response.statusCode >= 300) return null;
 

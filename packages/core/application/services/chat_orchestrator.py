@@ -1,4 +1,5 @@
 import logging
+import re
 from collections.abc import Callable, Iterable
 from concurrent.futures import Future, ThreadPoolExecutor
 from datetime import UTC, date, datetime, timedelta
@@ -72,7 +73,7 @@ from packages.core.domain.knowledge.answer_validation import validate_answer
 from packages.core.domain.knowledge.evidence_synthesis import EvidenceSynthesis
 from packages.core.domain.knowledge.models import EvidenceSource
 from packages.core.domain.knowledge.relevance import relevant_sources
-from packages.core.domain.medical_record.consent_text import INLINE_QUESTION_IT
+from packages.core.domain.localization import translate
 from packages.core.domain.pet_profile.details import describe_for_prompt
 from packages.core.domain.pet_profile.models import FishStock, HabitatDetails
 from packages.core.domain.pet_profile.species import normalize_species
@@ -88,17 +89,15 @@ from packages.core.domain.pet_profile.species_rules import (
     uses_breed_word,
 )
 from packages.core.domain.pet_profile.weight import (
-    WEIGHT_SUGGESTION_MARKER,
     is_weight_relevant,
-    weight_suggestion,
 )
 from packages.core.domain.safety.dosage_request import is_dosage_request
 from packages.core.domain.safety.triage_clarification import (
-    CLARIFYING_QUESTIONS,
-    requires_immediate_escalation,
+    categorize as categorize_safety_flags,
 )
 from packages.core.domain.safety.triage_clarification import (
-    categorize as categorize_safety_flags,
+    clarifying_question,
+    requires_immediate_escalation,
 )
 from packages.core.domain.safety.triage_clarification import (
     classify_severity as classify_safety_severity,
@@ -251,6 +250,91 @@ EVIDENCE_KEYWORDS: dict[str, tuple[str, ...]] = {
     ),
 }
 
+# Keywords added with the multilingual layer (English, Spanish). Matched at the start of a
+# word, not as bare substrings: "tos" must not fire inside "costoso" nor "pain" inside
+# an Italian word, so Italian classification stays exactly as before.
+FOREIGN_EVIDENCE_KEYWORDS: dict[str, tuple[str, ...]] = {
+    "clinical_question": (
+        "vomiting",
+        "diarrhea",
+        "cough",
+        "fever",
+        "pain",
+        "symptom",
+        "itch",
+        "wound",
+        "swelling",
+        "limping",
+        "letharg",
+        "breathing",
+        "seizure",
+        "parasite",
+        "flea",
+        "tick",
+        "vómit",
+        "tos",
+        "fiebre",
+        "dolor",
+        "síntoma",
+        "picor",
+        "herida",
+        "hinchazón",
+        "cojea",
+        "letarg",
+        "convuls",
+        "parásit",
+        "pulga",
+        "garrapata",
+    ),
+    "nutrition_question": (
+        "food",
+        "eating",
+        "diet",
+        "nutrition",
+        "comida",
+        "nutrición",
+    ),
+    "behavior_question": (
+        "behavio",
+        "anxiety",
+        "bark",
+        "scratch",
+        "conducta",
+        "ansiedad",
+        "ladra",
+        "araña",
+        "agres",
+    ),
+    "preventive_care": (
+        "vaccine",
+        "parasite prevention",
+        "check-up",
+        "vacuna",
+        "antiparasit",
+        "prevención",
+    ),
+    "husbandry_question": (
+        "terrarium",
+        "enclosure",
+        "heating",
+        "heat mat",
+        "humidity",
+        "aquarium",
+        "water parameters",
+        "water change",
+        "cage",
+        "enrichment",
+        "recinto",
+        "calefacción",
+        "humedad",
+        "acuario",
+        "parámetros del agua",
+        "cambio de agua",
+        "jaula",
+        "enriquecimiento",
+    ),
+}
+
 # Real-world finding: defaulting to "general_info" for anything that
 # matched none of the keywords above meant most substantive pet questions
 # — a vague symptom report, a medication/dosage question, a symptom
@@ -286,6 +370,26 @@ SMALL_TALK_MESSAGES: frozenset[str] = frozenset(
     }
 )
 
+FOREIGN_SMALL_TALK_MESSAGES: frozenset[str] = frozenset(
+    {
+        "buenas noches",
+        "buenas tardes",
+        "buenos días",
+        "good evening",
+        "good morning",
+        "gracias",
+        "hello",
+        "hi",
+        "hola",
+        "quién eres",
+        "qué puedes hacer",
+        "thank you",
+        "thanks",
+        "what can you do",
+        "who are you",
+    }
+)
+
 # Real-world finding: asked for an exact drug dose, the general LLM path
 # confidently computed and handed over a specific mg figure with only a
 # disclaimer at the end — owners tend to act on the number, not the small
@@ -304,6 +408,16 @@ DOSAGE_REQUEST_MARKERS: tuple[str, ...] = (
     "dosaggio esatto",
     "dosaggio preciso",
     "quanto dosaggio",
+    "how many mg",
+    "how many ml",
+    "what dose",
+    "exact dose",
+    "precise dose",
+    "cuántos mg",
+    "cuántos ml",
+    "qué dosis",
+    "dosis exacta",
+    "dosis precisa",
 )
 
 # Real-world finding: "Ho un cane e anche un gatto, entrambi non mangiano"
@@ -337,7 +451,54 @@ SPECIES_WORD_TO_FAMILY: dict[str, str] = {
     "rettile": "reptile_amphibian",
     "pesce": "fish",
     "pesci": "fish",
+    "dog": "dog",
+    "dogs": "dog",
+    "cat": "cat",
+    "cats": "cat",
+    "rabbit": "small_mammal",
+    "rabbits": "small_mammal",
+    "hamster": "small_mammal",
+    "bird": "bird",
+    "birds": "bird",
+    "parrot": "bird",
+    "turtle": "reptile_amphibian",
+    "reptile": "reptile_amphibian",
+    "fish": "fish",
+    "perro": "dog",
+    "perros": "dog",
+    "gato": "cat",
+    "gatos": "cat",
+    "conejo": "small_mammal",
+    "conejos": "small_mammal",
+    "hámster": "small_mammal",
+    "pájaro": "bird",
+    "pájaros": "bird",
+    "tortuga": "reptile_amphibian",
+    "reptil": "reptile_amphibian",
+    "pez": "fish",
+    "peces": "fish",
 }
+
+
+def _starts_a_word(keyword: str, message: str) -> bool:
+    """`keyword` occurs in `message` at the start of a word (a stem matches every
+    inflection). Used for the English and Spanish keywords, which as bare substrings
+    would fire inside Italian words: "hi" in "spieghi", "tos" in "costoso"."""
+    return re.search(rf"(?<!\w){re.escape(keyword)}", message) is not None
+
+
+def _families_named_in(message: str) -> set[str]:
+    """The species families a message names, matching WHOLE words only: as a
+    substring "pez" sat inside "pezzo" and "cat" inside "cattivo", which
+    silently swapped the pet's species (and lost the toxin alarm for "ha
+    mangiato un pezzo di cioccolato")."""
+    return {
+        family
+        for word, family in SPECIES_WORD_TO_FAMILY.items()
+        if re.search(rf"(?<!\w){re.escape(word)}(?!\w)", message)
+    }
+
+
 MULTI_PET_INDEPENDENT_MARKERS: tuple[str, ...] = (
     "entrambi",
     "entrambe",
@@ -645,13 +806,21 @@ class ChatOrchestrator:
         if not is_weight_relevant(data.user_message):
             return result
         already_suggested = any(
-            message.role == "assistant" and WEIGHT_SUGGESTION_MARKER in message.content
+            message.role == "assistant"
+            and any(
+                translate("weight_marker", locale) in message.content
+                for locale in ("it", "en", "es", "de", "fr")
+            )
             for message in data.conversation_history
         )
         if already_suggested:
             return result
         return result.model_copy(
-            update={"answer": f"{result.answer}\n\n{weight_suggestion(data.pet_name)}"}
+            update={
+                "answer": result.answer
+                + "\n\n"
+                + translate("weight_suggestion", data.language, pet_name=data.pet_name)
+            }
         )
 
     @staticmethod
@@ -689,7 +858,10 @@ class ChatOrchestrator:
 
         if data.awaiting_safety_clarification and data.safety_clarification_category:
             return self._resolve_safety_clarification(
-                data.pet_name, data.safety_clarification_category, message
+                data.pet_name,
+                data.safety_clarification_category,
+                message,
+                response_locale=data.language,
             )
 
         # Real-world finding (stress test): a pet profile registered as
@@ -709,10 +881,12 @@ class ChatOrchestrator:
             if requires_immediate_escalation(message):
                 # Already unambiguous and severe — asking a clarifying
                 # question here would only delay real emergency care.
-                return self._urgent_triage_result(data.pet_name, safety_flags)
+                return self._urgent_triage_result(
+                    data.pet_name, safety_flags, response_locale=data.language
+                )
 
             category = categorize_safety_flags(safety_flags)
-            question = CLARIFYING_QUESTIONS.get(category) if category else None
+            question = clarifying_question(category, data.language)
             if question is not None:
                 return ChatOrchestratorResult(
                     answer=question,
@@ -731,7 +905,12 @@ class ChatOrchestrator:
             # safe by escalating directly), or a mapped category with no
             # clarifying question by design (toxin_medication: no benign
             # explanation a question could surface, see triage_clarification.py).
-            return self._urgent_triage_result(data.pet_name, safety_flags, category)
+            return self._urgent_triage_result(
+                data.pet_name,
+                safety_flags,
+                category,
+                response_locale=data.language,
+            )
 
         if self._is_dosage_request(lowered):
             # Real-world finding: asked for an exact drug dose, the general
@@ -741,10 +920,10 @@ class ChatOrchestrator:
             # their clinical judgement — a rule-based, non-negotiable
             # refusal here, ahead of any LLM call, guarantees that no
             # amount of prompt drift can slip a number through.
-            return self._dosage_guard_result()
+            return self._dosage_guard_result(data.language)
 
         if self._describes_independent_multi_pet_complaint(lowered):
-            return self._multi_pet_redirect_result(data.pet_name)
+            return self._multi_pet_redirect_result(data.pet_name, data.language)
 
         # Greetings, thanks, "chi sei": a fixed reply, no model, no quota,
         # not counted against the owner's allowance (build 33). Mid-interview
@@ -953,10 +1132,11 @@ class ChatOrchestrator:
                     and self._retrieve_medical_record_summary(data.pet_id) is not None
                 ):
                     return ChatOrchestratorResult(
-                        # The same facts as the consent text on record (v2):
-                        # what is read and where it goes, no promise of a
-                        # selection the code does not make.
-                        answer=INLINE_QUESTION_IT.format(pet_name=data.pet_name),
+                        answer=translate(
+                            "consent_request",
+                            data.language,
+                            pet_name=data.pet_name,
+                        ),
                         mode="consent_request",
                         confidence="low",
                         ai_generated=False,
@@ -970,7 +1150,9 @@ class ChatOrchestrator:
                         awaiting_medical_record_consent=True,
                     )
                 if turns_used < self._max_interview_questions:
-                    question = self._interview_planner.next_question(situation)
+                    question = self._interview_planner.next_question(
+                        situation, response_locale=data.language
+                    )
                     if question is not None:
                         asked_field = self._interview_planner.field_for_question(question)
                         if asked_field is not None:
@@ -1006,13 +1188,7 @@ class ChatOrchestrator:
                         SituationModel(asked_interview_fields=["__gave_up_once__"])
                     )
                     return ChatOrchestratorResult(
-                        answer=(
-                            "Non sono riuscito a capire bene la situazione con le domande "
-                            "fatte finora, e non voglio darti un'indicazione basata su "
-                            "informazioni incomplete. Puoi provare a raccontarmi di nuovo "
-                            "cosa sta succedendo, magari con altre parole, oppure "
-                            "ricominciare la conversazione da capo."
-                        ),
+                        answer=translate("interview_incomplete", data.language),
                         mode="interview",
                         confidence="low",
                         ai_generated=False,
@@ -1084,27 +1260,27 @@ class ChatOrchestrator:
         },
         "de": {
             "greeting": (
-                "Hallo! Ich bin für {name} da: erzähl mir, was los ist, oder frag mich, was "
-                "du möchtest."
+                "Hallo! Ich bin für {name} da: Erzählen Sie mir, was los ist, oder fragen Sie "
+                "mich, was Sie möchten."
             ),
-            "thanks": "Gern geschehen! Wenn du noch etwas für {name} brauchst, bin ich da.",
-            "ack": "Gut. Wann immer du willst, ich bin für {name} da.",
+            "thanks": "Gern geschehen! Wenn Sie noch etwas für {name} brauchen, bin ich da.",
+            "ack": "Gut. Wann immer Sie möchten, ich bin für {name} da.",
             "identity": (
                 "Ich bin der Assistent der App: Ich beantworte Fragen zu {name}, erkläre "
-                "Befunde und Untersuchungen in einfachen Worten und sage dir, wann es Zeit "
+                "Befunde und Untersuchungen in einfachen Worten und sage Ihnen, wann es Zeit "
                 "für den Tierarzt ist. Ich stelle keine Diagnosen und nenne keine Dosierungen."
             ),
         },
         "fr": {
             "greeting": (
-                "Bonjour ! Je suis là pour {name} : raconte-moi ce qui se passe ou pose-moi "
-                "ta question."
+                "Bonjour ! Je suis là pour {name} : racontez-moi ce qui se passe ou posez-moi "
+                "votre question."
             ),
-            "thanks": "Avec plaisir ! S'il te faut autre chose pour {name}, je suis là.",
-            "ack": "Parfait. Quand tu veux, je suis là pour {name}.",
+            "thanks": "Avec plaisir ! S'il vous faut autre chose pour {name}, je suis là.",
+            "ack": "Parfait. Quand vous voulez, je suis là pour {name}.",
             "identity": (
                 "Je suis l'assistant de l'appli : je réponds aux questions sur {name}, "
-                "j'explique les comptes rendus et les examens avec des mots simples et je te "
+                "j'explique les comptes rendus et les examens avec des mots simples et je vous "
                 "dis quand il faut voir le vétérinaire. Je ne pose pas de diagnostic et je ne "
                 "donne pas de dosages."
             ),
@@ -1175,8 +1351,10 @@ class ChatOrchestrator:
         flag = f"classifier:{category}"
         if verdict.level == "emergency":
             logger.warning("urgency classifier: emergency (%s) the fixed lists missed", category)
-            return self._urgent_triage_result(data.pet_name, [flag], category)
-        question = CLARIFYING_QUESTIONS.get(category)
+            return self._urgent_triage_result(
+                data.pet_name, [flag], category, response_locale=data.language
+            )
+        question = clarifying_question(category, data.language)
         if question is None:
             # "maybe" with nothing specific to ask: the answer itself, with
             # its own rule on when to see the vet, serves better than a
@@ -1232,38 +1410,27 @@ class ChatOrchestrator:
 
     @staticmethod
     def _urgent_triage_result(
-        pet_name: str, safety_flags: list[str], category: str | None = None
+        pet_name: str,
+        safety_flags: list[str],
+        category: str | None = None,
+        *,
+        response_locale: str = "it",
     ) -> ChatOrchestratorResult:
         # Real-world finding (2026-09-25): "quello che mi racconti di
         # {pet_name} è un segnale..." presumes the trigger was a narrated
         # symptom — nonsense when it was actually a question about a
         # medication/toxin's safety or dosage (nothing was "raccontato",
         # nothing was observed). Same escalation, different opening line.
-        if category == "toxin_medication":
-            opening = (
-                f"Meglio non rischiare: quello di cui mi parli può essere pericoloso per "
-                f"{pet_name}. Ecco cosa fare adesso:\n"
-            )
-        else:
-            opening = (
-                f"Hai fatto bene a scrivermi subito. Quello che mi racconti di "
-                f"{pet_name} è un segnale che merita una valutazione veterinaria "
-                "immediata. Ecco cosa fare adesso:\n"
-            )
+        opening_key = "triage_toxin_opening" if category == "toxin_medication" else "triage_opening"
+        opening = translate(opening_key, response_locale, pet_name=pet_name)
         return ChatOrchestratorResult(
-            answer=(
-                f"{opening}"
-                "1) contatta subito il tuo veterinario o un pronto soccorso veterinario;\n"
-                f"2) nel frattempo tieni {pet_name} calmo, al caldo e al sicuro;\n"
-                "3) evita di dargli cibo, acqua in eccesso o farmaci senza indicazione "
-                "del veterinario."
-            ),
+            answer=opening + translate("triage_steps", response_locale, pet_name=pet_name),
             mode="triage",
             confidence="high",
             ai_generated=False,
             safety_flags=safety_flags,
-            limitations=["Triage prudenziale generato senza approfondimento diagnostico."],
-            recommended_action="Valutazione veterinaria immediata.",
+            limitations=[translate("triage_limitation", response_locale)],
+            recommended_action=translate("triage_action", response_locale),
             provider="rule-based",
             model="safety-triage-guard",
             state=ConversationState.POSSIBLE_URGENT_CASE,
@@ -1283,9 +1450,7 @@ class ChatOrchestrator:
             return False
         if not any(marker in message for marker in MULTI_PET_INDEPENDENT_MARKERS):
             return False
-        mentioned_families = {
-            family for word, family in SPECIES_WORD_TO_FAMILY.items() if word in message
-        }
+        mentioned_families = _families_named_in(message)
         return len(mentioned_families) >= 2
 
     @staticmethod
@@ -1302,9 +1467,7 @@ class ChatOrchestrator:
         the profile.
         """
         profile_family = normalize_species(profile_species)
-        mentioned_families = {
-            family for word, family in SPECIES_WORD_TO_FAMILY.items() if word in message
-        }
+        mentioned_families = _families_named_in(message)
         if len(mentioned_families) == 1:
             (mentioned_family,) = mentioned_families
             if mentioned_family != profile_family:
@@ -1328,26 +1491,17 @@ class ChatOrchestrator:
         family = normalize_species(effective_species)
         lowered = text.lower()
         return any(
-            f"tuo {word}" in lowered or f"tua {word}" in lowered
+            re.search(rf"(?<!\w)(?:tuo|tua|your|tu) {re.escape(word)}(?!\w)", lowered)
             for word, mentioned_family in SPECIES_WORD_TO_FAMILY.items()
             if mentioned_family != family
         )
 
     @staticmethod
-    def _multi_pet_redirect_result(pet_name: str) -> ChatOrchestratorResult:
+    def _multi_pet_redirect_result(
+        pet_name: str, response_locale: str = "it"
+    ) -> ChatOrchestratorResult:
         return ChatOrchestratorResult(
-            answer=(
-                "Ho notato che mi parli di più di un animale con problemi che "
-                f"sembrano indipendenti tra loro. Per seguire bene ciascun caso "
-                f"ti conviene aprire una conversazione separata per {pet_name} "
-                "e una per l'altro animale — così ognuno ha la propria storia "
-                "e i propri dettagli, senza mescolare le informazioni. Se "
-                "invece il problema riguarda proprio un'interazione tra i due "
-                "(ad esempio si aggrediscono, competono per il cibo, uno si è "
-                "spaventato per l'altro), dimmelo pure qui: in quel caso il "
-                f"contesto dell'altro animale mi serve per capire cosa "
-                f"succede a {pet_name}."
-            ),
+            answer=translate("multi_pet", response_locale, pet_name=pet_name),
             mode="multi_pet_redirect",
             confidence="high",
             ai_generated=False,
@@ -1356,32 +1510,25 @@ class ChatOrchestrator:
         )
 
     @staticmethod
-    def _dosage_guard_result() -> ChatOrchestratorResult:
+    def _dosage_guard_result(response_locale: str = "it") -> ChatOrchestratorResult:
         return ChatOrchestratorResult(
-            answer=(
-                "Non ti do una cifra precisa: il dosaggio corretto di un farmaco "
-                "dipende dal peso esatto, dalla condizione clinica e dalla "
-                "formulazione specifica del prodotto — è una valutazione che spetta "
-                "solo al veterinario, l'unico che può stabilire o modificare una "
-                "terapia. Puoi trovare indicazioni generali sui dosaggi su fonti "
-                "veterinarie ufficiali, ma per il tuo animale conferma sempre la "
-                "dose esatta con il veterinario prima di somministrare qualsiasi "
-                "farmaco."
-            ),
+            answer=translate("dosage_answer", response_locale),
             mode="general",
             confidence="high",
             ai_generated=False,
-            limitations=[
-                "Questa app supporta il lavoro del veterinario, non lo sostituisce: "
-                "non fornisce mai dosaggi farmacologici precisi."
-            ],
-            recommended_action="Conferma il dosaggio esatto con il veterinario.",
+            limitations=[translate("dosage_limitation", response_locale)],
+            recommended_action=translate("dosage_action", response_locale),
             provider="rule-based",
             model="dosage-guard",
         )
 
     def _resolve_safety_clarification(
-        self, pet_name: str, category: str, reply: str
+        self,
+        pet_name: str,
+        category: str,
+        reply: str,
+        *,
+        response_locale: str = "it",
     ) -> ChatOrchestratorResult:
         """Handle the reply to a pending safety clarification (spec v3 §9).
 
@@ -1394,27 +1541,18 @@ class ChatOrchestrator:
         """
         severity = classify_safety_severity(category, reply)
         if severity == "high":
-            return self._urgent_triage_result(pet_name, [category], category)
+            return self._urgent_triage_result(
+                pet_name, [category], category, response_locale=response_locale
+            )
 
         return ChatOrchestratorResult(
-            answer=(
-                f"Grazie per il dettaglio. Quello che descrivi per {pet_name} sembra "
-                "spesso legato a uno sforzo, al caldo o all'emozione del momento, e di "
-                "solito si risolve da solo in poco tempo. Nel frattempo: tienilo "
-                "tranquillo, offrigli acqua fresca e osservalo per 15-20 minuti. "
-                "Se non migliora, se peggiora anche di poco, o se hai anche solo un "
-                "dubbio, contatta subito il veterinario — meglio una chiamata in più "
-                "che rischiare."
-            ),
+            answer=translate("safety_resolved", response_locale, pet_name=pet_name),
             mode="safety_clarification_resolved",
             confidence="medium",
             ai_generated=False,
             provider="rule-based",
             model="safety-clarification-gate",
-            recommended_action=(
-                "Osservazione ravvicinata; contattare il veterinario se non migliora "
-                "o in caso di dubbio."
-            ),
+            recommended_action=translate("observe_action", response_locale),
         )
 
     def _medical_context_for_prompt(
@@ -1492,12 +1630,12 @@ class ChatOrchestrator:
                 "\n\nThe cartella also holds a file whose reading FAILED, so you know "
                 "nothing of what it says. Tell the owner plainly and suggest uploading it "
                 "again or typing its values: "
-                + "; ".join(document.label() for document in unreadable)
+                + "; ".join(document.label(data.language) for document in unreadable)
             )
         others = [document for document in documents if document not in selected]
         if others:
             block += "\n\nOther documents in the cartella, not shown here: " + "; ".join(
-                document.label() for document in others
+                document.label(data.language) for document in others
             )
         return block, readable
 
@@ -1557,12 +1695,7 @@ class ChatOrchestrator:
         never a detour into the animal's symptoms. None when there is
         something to explain."""
         if data.attachment_unreadable:
-            return self._record_status_result(
-                "Non sono riuscito a leggere il file che hai allegato, quindi non posso "
-                "dirti cosa c'è scritto. Prova a inviarlo di nuovo: un PDF o una foto "
-                "nitida e ben illuminata di solito funzionano. In alternativa scrivimi qui "
-                "i valori che ti interessano e te li spiego."
-            )
+            return self._record_status_result(translate("file_unreadable", data.language))
         retriever = self._medical_record_context_retriever
         if data.photo_context or self._owner_supplied_content(data):
             return None
@@ -1571,36 +1704,34 @@ class ChatOrchestrator:
         count = retriever.count_for_pet(data.pet_id)
         if count == 0:
             return self._record_status_result(
-                f"Non trovo documenti nella cartella clinica di {data.pet_name}, quindi non "
-                "ho un referto da spiegarti. Puoi caricarlo nella cartella clinica oppure "
-                "allegarlo qui in chat; in alternativa scrivimi i valori che ti interessano "
-                "e te li spiego."
+                translate("record_empty", data.language, pet_name=data.pet_name)
             )
         if not data.medical_record_consent:
-            documents_found = "un documento" if count == 1 else f"{count} documenti"
+            documents_found = translate(
+                "document_one" if count == 1 else "document_many", data.language, count=count
+            )
             return self._record_status_result(
-                f"Nella cartella clinica di {data.pet_name} c'è {documents_found}, ma "
-                f"{MEDICAL_RECORD_NOTICE_MARKER} perché il consenso non è attivo: non so "
-                f"cosa c'è scritto. Puoi attivarlo dalla scheda di {data.pet_name}. In "
-                "alternativa allega qui il referto o scrivimi i valori, e te li spiego "
-                "subito."
+                translate(
+                    "record_no_consent",
+                    data.language,
+                    pet_name=data.pet_name,
+                    documents_found=documents_found,
+                )
             )
         selected = retriever.select_for_request(
             retriever.documents_for_pet(data.pet_id), data.user_message
         )
         if any(document.explainable for document in selected):
             return None
-        labels = " e ".join(document.label() for document in selected)
+        labels = translate("join_documents", data.language).join(
+            document.label(data.language) for document in selected
+        )
         if any(document.unreadable for document in selected):
             return self._record_status_result(
-                f"In cartella vedo {labels}, ma non sono riuscito a leggere il file: non "
-                "posso dirti cosa c'è scritto senza inventare. Prova a caricarlo di nuovo "
-                "(un PDF o una foto nitida di solito funzionano), oppure scrivimi qui i "
-                "valori e te li spiego."
+                translate("record_unreadable", data.language, labels=labels)
             )
         return self._record_status_result(
-            f"In cartella vedo {labels}, ma senza un file o una descrizione da leggere. "
-            "Allega qui il referto o scrivimi i valori che ti interessano e te li spiego."
+            translate("record_no_content", data.language, labels=labels)
         )
 
     @staticmethod
@@ -1614,9 +1745,15 @@ class ChatOrchestrator:
         if kind is not RequestKind.REPORT:
             return ""
         if data.photo_context:
-            line = "Ho letto il documento che mi hai allegato."
+            line = translate("report_attached", data.language)
         elif documents_read:
-            line = "Ho letto " + " e ".join(d.label() for d in documents_read) + "."
+            line = translate(
+                "report_read",
+                data.language,
+                labels=translate("join_documents", data.language).join(
+                    d.label(data.language) for d in documents_read
+                ),
+            )
         else:
             return ""
         if any(
@@ -1644,17 +1781,17 @@ class ChatOrchestrator:
         if data.medical_record_consent or intent not in self._RECORD_RELEVANT_INTENTS:
             return ""
         if any(
-            message.role == "assistant" and MEDICAL_RECORD_NOTICE_MARKER in message.content
+            message.role == "assistant"
+            and any(
+                translate("record_marker", locale) in message.content
+                for locale in ("it", "en", "es", "de", "fr")
+            )
             for message in data.conversation_history
         ):
             return ""
         if self._medical_record_context_retriever.count_for_pet(data.pet_id) == 0:
             return ""
-        return (
-            f"\n\nNota: {MEDICAL_RECORD_NOTICE_MARKER} di {data.pet_name} perché il "
-            "consenso non è attivo, quindi rispondo senza i suoi referti. Se vuoi che "
-            "ne tenga conto, puoi attivarlo dalla cartella clinica."
-        )
+        return "\n\n" + translate("record_notice", data.language, pet_name=data.pet_name)
 
     def _retrieve_medical_record_summary(self, pet_id: str) -> str | None:
         if self._medical_record_context_retriever is None or not pet_id:
@@ -1688,16 +1825,18 @@ class ChatOrchestrator:
                         known_medical_context=self._anonymize_for_provider(record_summary, data)
                     )
                 )
-                acknowledgement = "Grazie, ho dato un'occhiata alla cartella clinica. "
+                acknowledgement = translate("consent_read", data.language)
             else:
-                acknowledgement = "Va bene. "
+                acknowledgement = translate("consent_ok", data.language)
         else:
-            acknowledgement = "Va bene, procediamo senza consultarla. "
+            acknowledgement = translate("consent_declined", data.language)
 
         coverage = coverage_score(situation, self._coverage_weights)
         question = None
         if coverage < self._coverage_target and turns_used < self._max_interview_questions:
-            question = self._interview_planner.next_question(situation)
+            question = self._interview_planner.next_question(
+                situation, response_locale=data.language
+            )
             if question is not None:
                 asked_field = self._interview_planner.field_for_question(question)
                 if asked_field is not None:
@@ -1708,7 +1847,7 @@ class ChatOrchestrator:
         answer = (
             f"{acknowledgement}{question}"
             if question is not None
-            else f"{acknowledgement}Raccontami pure di nuovo cosa hai osservato, così ti rispondo."
+            else acknowledgement + translate("describe_again", data.language)
         )
         return ChatOrchestratorResult(
             answer=answer,
@@ -1742,22 +1881,12 @@ class ChatOrchestrator:
         sources = ranked.sources
         if not sources:
             return ChatOrchestratorResult(
-                answer=(
-                    "Non ho trovato evidenze affidabili sufficienti per rispondere in modo "
-                    "sicuro a questa domanda. Posso aiutarti a riformularla oppure a "
-                    "preparare le informazioni da portare al veterinario."
-                ),
+                answer=translate("no_evidence", data.language),
                 mode="evidence",
                 confidence="low",
                 ai_generated=False,
-                limitations=[
-                    "No source, no answer: il retrieval del prototipo non ha prodotto fonti "
-                    "ammissibili."
-                ],
-                recommended_action=(
-                    "Se il sintomo persiste, peggiora o coinvolge dolore, appetito o energia, "
-                    "consulta il veterinario."
-                ),
+                limitations=[translate("no_evidence_limit", data.language)],
+                recommended_action=translate("symptom_action", data.language),
                 provider="rule-based",
                 model="evidence-guard",
                 state=ConversationState.INSUFFICIENT_EVIDENCE,
@@ -1769,7 +1898,8 @@ class ChatOrchestrator:
             synthesis, response = self._evidence_synthesizer.synthesize(
                 f"{self._pet_context_block(data)}\n"
                 f"Question: {anonymized_message}\n"
-                f"Evidence:\n{evidence_block}"
+                f"Evidence:\n{evidence_block}",
+                response_language=data.language,
             )
         except QuotaExhausted as exc:
             return self._quota_result(
@@ -1782,19 +1912,12 @@ class ChatOrchestrator:
             # the LLM call deserves the same fail-safe treatment: a
             # rate-limited or down provider shouldn't crash the whole turn.
             return ChatOrchestratorResult(
-                answer=(
-                    "In questo momento non riesco a elaborare una risposta basata sulle "
-                    "fonti scientifiche (il servizio è temporaneamente non disponibile). "
-                    "Riprova tra poco, oppure consulta il veterinario se la situazione "
-                    "richiede attenzione ora."
-                ),
+                answer=translate("provider_failure", data.language),
                 mode="evidence",
                 confidence="low",
                 ai_generated=False,
                 sources=sources,
-                limitations=[
-                    "Sintesi delle evidenze non disponibile: provider LLM non raggiungibile."
-                ],
+                limitations=[translate("provider_failure_limitation", data.language)],
                 provider="rule-based",
                 model="evidence-guard",
                 state=ConversationState.RETRIEVAL_FAILURE,
@@ -1812,6 +1935,7 @@ class ChatOrchestrator:
                     sources=sources,
                     violations=["evidence_synthesis_empty: nessuna claim supportata prodotta"],
                     mode="evidence",
+                    response_locale=data.language,
                 )
             return self._generate_natural_answer(
                 data, message, intent, situation, effective_species, sources=sources
@@ -1820,7 +1944,10 @@ class ChatOrchestrator:
         validation = validate_answer(synthesis.all_claim_text(), sources_count=len(sources))
         if not validation.is_valid:
             return self._validation_failure_result(
-                sources=sources, violations=validation.violations, mode="evidence"
+                sources=sources,
+                violations=validation.violations,
+                mode="evidence",
+                response_locale=data.language,
             )
         # Real-world finding: an aquarium (species="Pesce") got an
         # AI-generated reply opening with "Nota per il tuo cane" — the
@@ -1834,25 +1961,24 @@ class ChatOrchestrator:
                 sources=sources,
                 violations=["wrong_species_reference"],
                 mode="evidence",
+                response_locale=data.language,
             )
 
         answer = self._response_generator.render(
-            synthesis, include_citation_markers=(intent == "husbandry_question")
+            synthesis,
+            include_citation_markers=(intent == "husbandry_question"),
+            response_locale=data.language,
         )
-        limitations = [*self._build_limitations(sources), *synthesis.evidence_gaps]
+        limitations = [*self._build_limitations(sources, data.language), *synthesis.evidence_gaps]
         if situation.safety_critical_unknowns:
             # Final safety review (spec v3 §29): the case still has an
             # unresolved safety-critical question even though we reached
             # an evidence answer — surface that rather than answering as
             # if everything is fine. Safety overrides completeness.
-            answer = (
-                "Prima di tutto: per alcuni aspetti che mi hai descritto non ho ancora "
-                "abbastanza chiarezza per escludere una situazione seria, quindi se "
-                f"peggiora non aspettare e contatta il veterinario. Detto questo:\n\n{answer}"
-            )
+            answer = translate("safety_unclear", data.language, answer=answer)
             limitations = [
                 *limitations,
-                "Nel caso restano aspetti di sicurezza non del tutto chiariti dall'intervista.",
+                translate("safety_unclear_limit", data.language),
             ]
 
         return ChatOrchestratorResult(
@@ -1862,10 +1988,7 @@ class ChatOrchestrator:
             ai_generated=True,
             sources=sources,
             limitations=limitations,
-            recommended_action=(
-                "Consulta il veterinario per una valutazione personalizzata se i sintomi "
-                "persistono."
-            ),
+            recommended_action=translate("persistent_action", data.language),
             provider=response.provider,
             model=response.model,
             evidence_synthesis=synthesis,
@@ -2056,16 +2179,12 @@ class ChatOrchestrator:
             )
         except ProviderError:
             return ChatOrchestratorResult(
-                answer=(
-                    "In questo momento non riesco a elaborare una risposta (il servizio è "
-                    "temporaneamente non disponibile). Riprova tra poco, oppure consulta il "
-                    "veterinario se la situazione richiede attenzione ora."
-                ),
+                answer=translate("provider_failure", data.language),
                 mode="natural",
                 confidence="low",
                 ai_generated=False,
                 sources=sources,
-                limitations=["Risposta non disponibile: provider LLM non raggiungibile."],
+                limitations=[translate("provider_failure_limitation", data.language)],
                 provider="rule-based",
                 model="natural-answer-guard",
                 state=ConversationState.RETRIEVAL_FAILURE,
@@ -2074,11 +2193,17 @@ class ChatOrchestrator:
         validation = validate_answer(response.content, sources_count=len(sources))
         if not validation.is_valid:
             return self._validation_failure_result(
-                sources=sources, violations=validation.violations, mode="natural"
+                sources=sources,
+                violations=validation.violations,
+                mode="natural",
+                response_locale=data.language,
             )
         if self._mentions_wrong_species(response.content, effective_species):
             return self._validation_failure_result(
-                sources=sources, violations=["wrong_species_reference"], mode="natural"
+                sources=sources,
+                violations=["wrong_species_reference"],
+                mode="natural",
+                response_locale=data.language,
             )
         # The habit the instructions do not fully remove: a closing
         # "consulta il veterinario" with no reason in it (build 29).
@@ -2102,19 +2227,11 @@ class ChatOrchestrator:
                 if sources
                 else ConversationState.NO_RELEVANT_SOURCES
             ),
-            limitations=[self._NATURAL_LIMITATION],
-            recommended_action=(
-                "Consulta il veterinario per una valutazione personalizzata se i sintomi "
-                "persistono o peggiorano."
-            ),
+            limitations=[translate("natural_limit", data.language)],
+            recommended_action=translate("worsening_action", data.language),
             provider=response.provider,
             model=response.model,
         )
-
-    _NATURAL_LIMITATION = (
-        "Risposta generata liberamente dal modello, non vincolata a fonti "
-        "verificate — utile per orientarsi, non sostituisce una visita veterinaria."
-    )
 
     def _cached_answer_result(self, cache_id: str) -> ChatOrchestratorResult | None:
         if self._answer_cache is None:
@@ -2142,11 +2259,8 @@ class ChatOrchestrator:
                 if cached.sources
                 else ConversationState.NO_RELEVANT_SOURCES
             ),
-            limitations=[self._NATURAL_LIMITATION],
-            recommended_action=(
-                "Consulta il veterinario per una valutazione personalizzata se i sintomi "
-                "persistono o peggiorano."
-            ),
+            limitations=[translate("natural_limit", cached.language)],
+            recommended_action=translate("worsening_action", cached.language),
             provider=cached.provider,
             model=cached.model,
         )
@@ -2236,30 +2350,23 @@ class ChatOrchestrator:
 
     @staticmethod
     def _validation_failure_result(
-        *, sources: list[EvidenceSource], violations: list[str], mode: str
+        *,
+        sources: list[EvidenceSource],
+        violations: list[str],
+        mode: str,
+        response_locale: str = "it",
     ) -> ChatOrchestratorResult:
-        source_note = (
-            "Ti lascio comunque le fonti che avevo trovato, puoi consultarle direttamente. "
-            if sources
-            else ""
-        )
+        source_note = translate("validation_source", response_locale) if sources else ""
         return ChatOrchestratorResult(
-            answer=(
-                "Quello che stavo per dirti non ha superato i nostri controlli di sicurezza "
-                "(ad esempio un riferimento non verificabile o un'affermazione troppo assoluta), "
-                "quindi preferisco non mostrartelo così com'è. "
-                f"{source_note}"
-                "Prova a riformulare la domanda, oppure consulta il veterinario per una "
-                "valutazione diretta."
-            ),
+            answer=translate("validation_answer", response_locale, source_note=source_note),
             mode=mode,
             confidence="low",
             ai_generated=False,
             sources=sources,
             limitations=[
-                f"Risposta scartata dal controllo di validazione: {v}" for v in violations
+                translate("validation_limit", response_locale, violation=v) for v in violations
             ],
-            recommended_action="Consulta il veterinario per una valutazione personalizzata.",
+            recommended_action=translate("vet_action", response_locale),
             provider="rule-based",
             model="answer-validator",
             state=ConversationState.SOURCE_VALIDATION_FAILURE,
@@ -2389,13 +2496,19 @@ class ChatOrchestrator:
         for intent, keywords in EVIDENCE_KEYWORDS.items():
             if any(keyword in message for keyword in keywords):
                 return intent
+        for intent, keywords in FOREIGN_EVIDENCE_KEYWORDS.items():
+            if any(_starts_a_word(keyword, message) for keyword in keywords):
+                return intent
         normalized = message.strip().rstrip("!.?").strip()
         # A short-length gate, not just a marker match: "va bene" alone
         # would otherwise misclassify a real question like "va bene
         # dargli il farmaco?" as small talk. Genuine greetings/thanks are
         # short; a message long enough to describe an actual case never
         # is, regardless of which words it happens to contain.
-        if len(normalized) <= 30 and any(marker in normalized for marker in SMALL_TALK_MESSAGES):
+        if len(normalized) <= 30 and (
+            any(marker in normalized for marker in SMALL_TALK_MESSAGES)
+            or any(_starts_a_word(marker, normalized) for marker in FOREIGN_SMALL_TALK_MESSAGES)
+        ):
             return "general_info"
         return "clinical_question"
 
@@ -2469,32 +2582,21 @@ class ChatOrchestrator:
         return "low"
 
     @staticmethod
-    def _build_limitations(sources: list[EvidenceSource]) -> list[str]:
+    def _build_limitations(sources: list[EvidenceSource], response_locale: str = "it") -> list[str]:
         limitations: list[str] = []
         if not any(source.tier == "A" for source in sources):
-            limitations.append(
-                "Le fonti recuperate non includono guideline o systematic review Tier A."
-            )
+            limitations.append(translate("tier_limit", response_locale))
         if any(source.species == "other" for source in sources):
-            limitations.append("Alcune fonti non sono specie-specifiche.")
+            limitations.append(translate("species_limit", response_locale))
         if all(source.access_depth == "C" for source in sources):
-            limitations.append(
-                "Per queste fonti abbiamo solo titolo e abstract, non il testo completo."
-            )
+            limitations.append(translate("abstract_limit", response_locale))
         if any(source.clinical_domain == "husbandry" for source in sources):
             # These are curated husbandry reference notes (access_depth "D"),
             # not peer-reviewed veterinary literature, and are tagged at
             # species-family level (e.g. "reptile_amphibian"), not the exact
             # species/morph — needs must be verified against a caresheet
             # for that specific animal.
-            limitations.append(
-                "Le indicazioni di allestimento/allevamento provengono da riferimenti "
-                "divulgativi curati, non da letteratura scientifica peer-reviewed: "
-                "verifica sempre i parametri per la tua specie e sottospecie esatta "
-                "con un veterinario esperto in esotici o un allevatore specializzato."
-            )
+            limitations.append(translate("husbandry_limit", response_locale))
         if not limitations:
-            limitations.append(
-                "Le evidenze restano informative e non sostituiscono una visita veterinaria."
-            )
+            limitations.append(translate("informative_limit", response_locale))
         return limitations

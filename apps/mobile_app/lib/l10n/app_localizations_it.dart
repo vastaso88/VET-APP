@@ -9,6 +9,10 @@ class AppLocalizationsIt extends AppLocalizations {
   AppLocalizationsIt([String locale = 'it']) : super(locale);
 
   @override
+  String get petsConsentFullText =>
+      'Per darti un consiglio più preciso, l\'assistente può leggere la cartella clinica del tuo animale. Quando fai una domanda può leggere le tre voci più recenti, con titolo, categoria (visita, esame, vaccino, terapia o documento), data dell\'evento, descrizione e testo dei documenti allegati, anche se non c\'entrano con la domanda. Può leggere anche le malattie pregresse ancora in corso, con il nome e la data di inizio, al massimo cinque. Se chiedi di spiegare un esame, può leggere i documenti che lo riguardano, al massimo due. Di un documento molto lungo legge solo l\'inizio. Ciò che legge viene inviato al fornitore esterno di intelligenza artificiale che scrive la risposta. VetApp lo usa solo per risponderti. Puoi revocare il consenso in qualsiasi momento dalla scheda dell\'animale o dalle Impostazioni: vale per le richieste successive.';
+
+  @override
   String get appTitle => 'VET APP';
 
   @override
@@ -1140,9 +1144,6 @@ class AppLocalizationsIt extends AppLocalizations {
   String get marketplacePriceGift => 'In regalo';
 
   @override
-  String get marketplaceDistanceAnywhere => 'Ovunque';
-
-  @override
   String get marketplaceDemoBedTitle => 'Cuccia imbottita (demo)';
 
   @override
@@ -1171,12 +1172,24 @@ class AppLocalizationsIt extends AppLocalizations {
       'Compra, vendi e regala articoli per animali con altri proprietari.';
 
   @override
-  String get marketplaceDistanceNeedsLocation =>
-      'Per filtrare per distanza imposta la tua posizione in Impostazioni → Località.';
-
-  @override
   String get marketplaceEmptyFiltered =>
       'Nessun annuncio con questi filtri per ora.';
+
+  @override
+  String get marketplaceNeedsLocation =>
+      'Il Mercatino mostra solo gli annunci vicino a te. Imposta la tua posizione in Impostazioni → Località per vederli.';
+
+  @override
+  String get marketplaceNoLiveAnimalsNote =>
+      'Nel tuo paese il Mercatino non ammette annunci di animali vivi: solo prodotti e servizi per animali.';
+
+  @override
+  String get marketplaceNoLiveAnimalsConfirm =>
+      'Confermo che questo annuncio non offre un animale vivo (vendita, regalo o cessione)';
+
+  @override
+  String get marketplaceNoLiveAnimalsRequired =>
+      'Conferma che l\'annuncio non offre un animale vivo';
 
   @override
   String get marketplaceLoadError =>
@@ -1346,7 +1359,9 @@ class AppLocalizationsIt extends AppLocalizations {
   String get marketplaceGiftSubtitle => 'Lo regali a chi ne ha bisogno';
 
   @override
-  String get marketplaceFieldPrice => 'Prezzo in €';
+  String marketplaceFieldPrice(String currency) {
+    return 'Prezzo ($currency)';
+  }
 
   @override
   String get marketplaceSaving => 'Salvataggio...';
@@ -3563,6 +3578,10 @@ class AppLocalizationsIt extends AppLocalizations {
   String get eventsEmptyPeriod => 'Nessun evento nel periodo scelto';
 
   @override
+  String get eventsCountryOnlyNote =>
+      'Mostriamo solo gli eventi del tuo paese, quello della lingua scelta nell\'app.';
+
+  @override
   String get eventsLevelLocal => 'Locale';
 
   @override
@@ -3704,6 +3723,14 @@ class AppLocalizationsIt extends AppLocalizations {
   @override
   String get localEventsSearchingNearby =>
       'Cerco i servizi nella tua zona. La prima volta può richiedere qualche secondo.';
+
+  @override
+  String get localEventsCoverageLimited =>
+      'I dati dei servizi per questa zona sono ancora in preparazione: potresti vedere pochi luoghi o aspettare di più.';
+
+  @override
+  String get localEventsCoverageUnsupported =>
+      'Il radar non copre ancora questo paese: vedi solo ciò che OpenStreetMap conosce, senza altri controlli.';
 
   @override
   String get localEventsStale =>
@@ -3882,6 +3909,10 @@ class AppLocalizationsIt extends AppLocalizations {
       'Nessuna notizia disponibile per questa categoria al momento.';
 
   @override
+  String get petNewsEmptyLocal =>
+      'Per ora non ci sono notizie nella tua lingua e per il tuo paese. Non mostriamo notizie di altri paesi.';
+
+  @override
   String get petNewsCategoryAll => 'Tutti';
 
   @override
@@ -4020,7 +4051,7 @@ class AppLocalizationsIt extends AppLocalizations {
 
   @override
   String get activitiesEventsSubtitle =>
-      'Fiere, esposizioni e iniziative per animali in tutta Italia.';
+      'Fiere, esposizioni e iniziative per animali nel tuo paese.';
 
   @override
   String get activitiesGalleryTitle => 'Galleria';

@@ -16,7 +16,7 @@ class AppLanguageVariant {
     required this.nativeName,
   });
 
-  /// Stable id saved on the phone: 'it', 'en-GB', 'en-US', 'en-AU', 'de', ...
+  /// Stable id saved on the phone: 'it', 'en-GB', 'en-US', 'en-AU', 'de', 'de-AT', 'de-CH', ...
   final String id;
 
   /// Language of the translation: it, en, de, fr, es.
@@ -70,7 +70,21 @@ const allLanguageVariants = <AppLanguageVariant>[
     languageCode: 'de',
     countryCode: 'DE',
     flag: '🇩🇪',
-    nativeName: 'Deutsch',
+    nativeName: 'Deutsch (Deutschland)',
+  ),
+  AppLanguageVariant(
+    id: 'de-AT',
+    languageCode: 'de',
+    countryCode: 'AT',
+    flag: '🇦🇹',
+    nativeName: 'Deutsch (Österreich)',
+  ),
+  AppLanguageVariant(
+    id: 'de-CH',
+    languageCode: 'de',
+    countryCode: 'CH',
+    flag: '🇨🇭',
+    nativeName: 'Deutsch (Schweiz)',
   ),
   AppLanguageVariant(
     id: 'fr',
@@ -78,6 +92,20 @@ const allLanguageVariants = <AppLanguageVariant>[
     countryCode: 'FR',
     flag: '🇫🇷',
     nativeName: 'Français',
+  ),
+  AppLanguageVariant(
+    id: 'fr-BE',
+    languageCode: 'fr',
+    countryCode: 'BE',
+    flag: '🇧🇪',
+    nativeName: 'Français (Belgique)',
+  ),
+  AppLanguageVariant(
+    id: 'fr-CH',
+    languageCode: 'fr',
+    countryCode: 'CH',
+    flag: '🇨🇭',
+    nativeName: 'Français (Suisse)',
   ),
   AppLanguageVariant(
     id: 'es',
@@ -116,7 +144,8 @@ AppLanguageVariant suggestLanguageVariant(
   Locale device,
   List<AppLanguageVariant> available,
 ) {
-  final sameLanguage = available.where((v) => v.languageCode == device.languageCode).toList();
+  final sameLanguage =
+      available.where((v) => v.languageCode == device.languageCode).toList();
   if (sameLanguage.isEmpty) {
     return available.firstWhere(
       (v) => v.id == sourceLanguageVariantId,
@@ -135,4 +164,32 @@ AppLanguageVariant suggestLanguageVariant(
     }
   }
   return sameLanguage.first;
+}
+
+/// Phone countries that are not a variant's own but have an obvious one:
+/// Ireland reads like the UK, New Zealand like Australia, Liechtenstein like
+/// Switzerland, Monaco like France.
+const _neighbourCountry = {
+  'en': {'IE': 'GB', 'NZ': 'AU'},
+  'de': {'LI': 'CH'},
+  'fr': {'MC': 'FR'},
+};
+
+/// The variant of [language] that the phone's country *unambiguously* points
+/// to, or null when the owner has to say which one they mean: an Italian or
+/// Spanish phone picking "English" does not tell us UK, US or Australia, and
+/// guessing (the old behaviour fell back to the US) quietly sets the wrong
+/// units, currency and date order. [variants] are the variants of one language;
+/// with a single one there is nothing to ask.
+AppLanguageVariant? knownVariantForDevice(Locale device, List<AppLanguageVariant> variants) {
+  if (variants.isEmpty) return null;
+  if (variants.length == 1) return variants.first;
+  final language = variants.first.languageCode;
+  final country = device.countryCode?.toUpperCase();
+  if (country == null || country.isEmpty) return null;
+  final target = _neighbourCountry[language]?[country] ?? country;
+  for (final variant in variants) {
+    if (variant.countryCode == target) return variant;
+  }
+  return null;
 }

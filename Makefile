@@ -18,6 +18,8 @@ test:
 
 i18n-check:
 	$(UV) run python scripts/i18n/check_i18n.py
+	$(UV) run python scripts/i18n/glossary.py check
+	$(UV) run python scripts/i18n/auto_translate.py check
 
 eval:
 	$(UV) run python scripts/eval/run_evaluation.py

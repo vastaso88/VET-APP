@@ -37,6 +37,7 @@ class HttpAccountConsentsRemoteDataSource implements AccountConsentsRemoteDataSo
     final token = CurrentUser.accessToken();
     return {
       'Content-Type': 'application/json',
+      'Accept-Language': AppLocaleHolder.current.languageCode,
       if (token != null && token.isNotEmpty) 'Authorization': 'Bearer $token',
     };
   }

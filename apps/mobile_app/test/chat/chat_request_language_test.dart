@@ -24,7 +24,8 @@ class _FakeConfigLoader extends AppRuntimeConfigLoader {
       );
 }
 
-const _replyBody = '{"reply":{"content":"ok"},"conversation":{"id":"c1","title":"t"}}';
+const _replyBody =
+    '{"reply":{"content":"ok"},"conversation":{"id":"c1","title":"t"}}';
 
 void main() {
   tearDown(() => AppLocaleHolder.current = const Locale('it'));
@@ -35,28 +36,37 @@ void main() {
       requests.add(request);
       return http.Response(_replyBody, 200);
     });
-    final source = HttpChatRemoteDataSource(client: client, configLoader: const _FakeConfigLoader());
+    final source = HttpChatRemoteDataSource(
+        client: client, configLoader: const _FakeConfigLoader());
 
     await source.sendMessage(petId: 'p1', userMessage: 'ciao');
     AppLocaleHolder.current = const Locale('en');
-    await source.editMessage(conversationId: 'c1', messageId: 'm1', userMessage: 'hello');
+    await source.editMessage(
+        conversationId: 'c1', messageId: 'm1', userMessage: 'hello');
 
     expect(jsonDecode(requests[0].body), {
       'pet_id': 'p1',
       'user_message': 'ciao',
       'language': 'it',
+      'response_locale': 'it',
     });
     expect(requests[0].headers['Accept-Language'], 'it');
-    expect(jsonDecode(requests[1].body), {'user_message': 'hello', 'language': 'en'});
+    expect(jsonDecode(requests[1].body),
+        {'user_message': 'hello', 'language': 'en'});
     expect(requests[1].headers['Accept-Language'], 'en');
   });
 
-  test('known backend messages are mapped, unknown ones are returned as they are', () {
+  test(
+      'known backend messages are mapped, unknown ones are returned as they are',
+      () {
     expect(
-      localizedBackendMessage('x', detail: 'conversation_limit_reached: ... conversazioni (4) ...'),
+      localizedBackendMessage('x',
+          detail: 'conversation_limit_reached: ... conversazioni (4) ...'),
       appL10n.chatErrorConversationLimit('4'),
     );
-    expect(localizedBackendMessage('Conversation Not Found'), appL10n.chatErrorConversationNotFound);
-    expect(localizedBackendMessage('something unexpected'), 'something unexpected');
+    expect(localizedBackendMessage('Conversation Not Found'),
+        appL10n.chatErrorConversationNotFound);
+    expect(localizedBackendMessage('something unexpected'),
+        'something unexpected');
   });
 }

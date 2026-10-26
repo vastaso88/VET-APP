@@ -1,5 +1,20 @@
 # Traduzioni (i18n) dell'app Flutter
 
+IT (sorgente), EN, ES, DE e FR sono disponibili per tutta l'app (tutte le chiavi di `app_it.arb` in ogni catalogo; EN vale per UK/US/AU, DE per
+DE/AT/CH, FR per FR/BE/CH). I testi fissi del backend sono in tutte e cinque le lingue ([FRENCH_BACKEND_WIRING.md](FRENCH_BACKEND_WIRING.md));
+controllo di layout in [STRESS_TEST_FR.md](STRESS_TEST_FR.md) e [STRESS_TEST_DE.md](STRESS_TEST_DE.md).
+Vedi [integrazione MULTILANG](MULTILANG_IMPLEMENTATION.md) per preferenze account, chat, testi legali, controlli e prova della branch.
+
+## Sistema per le traduzioni future (leggere prima di toccare un testo)
+
+| Documento | A cosa serve |
+|---|---|
+| [NUOVE_FUNZIONI.md](NUOVE_FUNZIONI.md) | la procedura: chiavi IT → bozze → revisione → test |
+| [GLOSSARIO_E_STILE.md](GLOSSARIO_E_STILE.md) + `glossary.json` | termini di funzioni e veterinari per lingua, registro (tu/tú/Sie/vous), tono, punteggiatura |
+| [AUTOMATIC_TRANSLATION.md](AUTOMATIC_TRANSLATION.md) | bozze DeepL, elenco "da rivedere", cosa deve configurare il proprietario (`DEEPL_API_KEY`) |
+| [TESTI_STORE_E_LEGALI.md](TESTI_STORE_E_LEGALI.md) | schede store, consensi, testi legali ed e-mail: dove stanno e chi li aggiorna |
+| [QA_FINALE_PER_LINGUA.md](QA_FINALE_PER_LINGUA.md) | cosa controllare prima di dire che una lingua è pronta |
+
 L'italiano è la lingua **sorgente**: tutte le frasi visibili stanno in `apps/mobile_app/lib/l10n/app_it.arb` (template). Le altre lingue sono file `app_xx.arb` accanto. Le classi `AppLocalizations*` in `lib/l10n/` sono **generate** da `flutter gen-l10n` (config: `apps/mobile_app/l10n.yaml`; si rigenerano da sole con `flutter pub get`/`flutter run`/`flutter build`, ma sono tenute nel repo).
 
 ## Come si usa una frase nel codice
@@ -9,7 +24,7 @@ import '../../../l10n/l10n.dart';          // percorso relativo
 Text(context.l10n.settingsLayoutTitle)     // nei widget
 appL10n.notificationsReminderTitle         // dove non c'è un BuildContext (domain, repository, notifiche)
 ```
-`context.l10n` ripiega sull'italiano se l'albero non ha i delegati (test con un `MaterialApp` semplice). `appL10n` legge la lingua corrente da `AppLocaleHolder`. Al cambio lingua `VetApp` ricostruisce tutta la UI, quindi anche i testi letti con `appL10n` si aggiornano.
+`context.l10n` ripiega sulla lingua corrente se l'albero non ha i delegati (test con un `MaterialApp` semplice). `appL10n` legge la lingua corrente da `AppLocaleHolder`. Al cambio lingua `VetApp` ricostruisce tutta la UI, quindi anche i testi letti con `appL10n` si aggiornano.
 
 Date e numeri:
 - `lib/l10n/date_formats.dart`: `appDateFormat('d MMM y')`, `formatAppDate(...)`, `appShortMonths()`, `appLongWeekdaysMondayFirst()`, `appDecimalSeparator()`… usano la lingua e il paese scelti (mesi minuscoli in italiano).
@@ -30,7 +45,7 @@ Date e numeri:
 1. Crea `lib/l10n/app_xx.arb` (`"@@locale": "xx"`). Parti dalle chiavi da tradurre: `python scripts/i18n/check_i18n.py --list-missing xx` (stampa `chiave<TAB>testo italiano`).
 2. `flutter gen-l10n`: `AppLocalizations.supportedLocales` ora include la lingua; da quel momento **compaiono da sole** la pagina di scelta lingua al primo avvio (prima della registrazione) e la sezione "Lingua" in Impostazioni (con una sola lingua sono nascoste/saltate).
 3. Le varianti con bandiera sono in `lib/features/language/domain/app_language.dart` (`allLanguageVariants`): per aggiungere un paese a una lingua esistente basta una riga (es. 🇨🇦 `en-CA`); le tre inglesi 🇬🇧 🇺🇸 🇦🇺 usano la stessa traduzione `en` ma paesi diversi (unità e formati).
-4. Android nativo (notifica passeggiata, widget home): aggiungi `android/app/src/main/res/values-xx/strings.xml` con le stesse chiavi di `values-it/strings.xml`. I testi nativi seguono la lingua del **telefono**, non quella scelta nell'app; le stringhe passate da Dart (titolo/testo della notifica passeggiata, distanza del widget) seguono invece la lingua dell'app.
+4. Android nativo (notifica passeggiata, widget home): aggiungi `android/app/src/main/res/values-xx/strings.xml` con le stesse chiavi di `values-it/strings.xml`. `AppLanguageContext` applica la preferenza dell'app alle risorse native; aggiorna anche il suo elenco di lingue supportate. Le stringhe passate da Dart seguono la stessa scelta.
 5. Backend: la lingua viaggia nel campo `language` di `POST /chat` e `PUT …/messages/{id}` e nell'header `Accept-Language` (it/en/de/fr/es; prompt con istruzione "rispondi nella lingua…"). I **testi legali/consensi** restano nel catalogo backend: aggiungi la lingua in `CONSENT_TEXTS_BY_LANGUAGE` (`packages/core/domain/consent/account_consent_text.py`, ripiego a `it`). I classificatori a parole chiave italiane (red flag, ponte IT→EN in `relevance.py`, ecc.) sono elencati in `docs/i18n/BACKEND_ITALIAN_CLASSIFIERS.md` e vanno resi multilingua a parte.
 6. Registra la lingua nei test (`test/language`) e nelle voci elencate in `check_i18n.py` se serve (di norma niente).
 
@@ -44,8 +59,9 @@ cd apps/mobile_app && flutter gen-l10n && flutter test
 ## Guardie automatiche
 `python scripts/i18n/check_i18n.py` (o `make i18n-check`; è anche in `tests/unit/test_check_i18n_script.py`, quindi in `uv run pytest`):
 1. segnala le stringhe italiane scritte direttamente nel codice Dart fuori da `lib/l10n` (euristica: lettere accentate o parole italiane frequenti dentro un literal). Le eccezioni giustificate stanno in `scripts/i18n/allowlist.txt` (riga `percorso :: sottostringa`, oppure un file intero); **scrivi sempre il motivo**.
-2. confronta ogni `app_xx.arb` con il template e **fallisce** se mancano chiavi o i segnaposto non coincidono (le chiavi in più sono un avviso).
-L'euristica non vede una parola italiana isolata senza accento (es. `'Nome'`): in code review controlla anche quelle.
+2. richiede EN/ES/DE/FR e confronta ogni `app_xx.arb` con il template: **fallisce** per chiavi mancanti o aggiuntive, valori vuoti e segnaposto incompatibili.
+3. `glossary.py check` (nome delle funzioni uguale al glossario) e `auto_translate.py check` (traduzioni non obsolete) completano il controllo in CI, vedi [AUTOMATIC_TRANSLATION.md](AUTOMATIC_TRANSLATION.md).
+4. segnala anche testi passati direttamente ai widget in altre lingue o su più righe. Resta un controllo euristico: la revisione del codice deve verificare i testi costruiti dinamicamente.
 
 ## Cosa NON tradurre
 - chiavi tecniche, codici di errore, id, URL, log, chiavi SharedPreferences, nomi di route, testi dei test;

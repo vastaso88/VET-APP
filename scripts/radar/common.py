@@ -16,6 +16,8 @@ ROOT_DIR = Path(__file__).resolve().parents[2]
 if str(ROOT_DIR) not in sys.path:
     sys.path.insert(0, str(ROOT_DIR))
 
+from packages.core.domain.geo.countries import RADAR_COUNTRIES, RadarCountry  # noqa: E402
+
 if TYPE_CHECKING:
     from supabase import Client
 
@@ -43,13 +45,33 @@ _use_system_certificates()
 BATCH_SIZE = 500
 
 # Bounding box of Italy, islands included. Stored with a completed
-# country-wide import so the API knows it can answer from the database.
+# Italian import in `data_sources`, where the API looked for it before the
+# per-country table (`radar_country_coverage`) existed: other countries must
+# not write one, a single rectangle cannot describe several countries.
 ITALY_BOUNDS = {
     "min_latitude": 35.2,
     "max_latitude": 47.2,
     "min_longitude": 6.5,
     "max_longitude": 18.8,
 }
+
+
+def parse_country(code: str) -> RadarCountry:
+    """The registry entry for `--country`, or a clear exit listing the
+    countries the radar knows."""
+    from packages.core.domain.geo.countries import get_radar_country
+
+    country = get_radar_country(code)
+    if country is None:
+        known = ", ".join(item.code for item in RADAR_COUNTRIES)
+        sys.exit(f"Paese sconosciuto: {code}. Paesi disponibili: {known}.")
+    return country
+
+
+def legacy_bounds_for(country: RadarCountry) -> dict[str, float]:
+    """Area columns for the `data_sources` row: Italy's, kept for the API
+    versions that predate `radar_country_coverage`; empty for any other."""
+    return dict(ITALY_BOUNDS) if country.code == "IT" else {}
 
 
 def now_iso() -> str:
@@ -107,12 +129,19 @@ def upsert_rows(client: Client, table: str, rows: list[dict[str, Any]]) -> None:
 
 
 def delete_rows_not_imported_at(
-    client: Client, table: str, imported_at: str, *, source: str | None = None
+    client: Client,
+    table: str,
+    imported_at: str,
+    *,
+    country: str,
+    source: str | None = None,
 ) -> None:
     """Drops what a previous run wrote and this one did not: every row of
-    this run carries the same `imported_at`. With `source`, only that
-    source's rows are touched (several sources share `radar_places_open`)."""
-    query = client.table(table).delete().neq("imported_at", imported_at)
+    this run carries the same `imported_at`. Only the rows of `country` are
+    touched, so importing one country never removes another's. With
+    `source`, only that source's rows are touched (several sources share
+    `radar_places_open`)."""
+    query = client.table(table).delete().neq("imported_at", imported_at).eq("country", country)
     if source is not None:
         query = query.eq("source", source)
     query.execute()
@@ -133,3 +162,18 @@ def load_excluded_ids(client: Client, source: str) -> frozenset[str]:
 
 def save_source(client: Client, row: dict[str, Any]) -> None:
     client.table("data_sources").upsert(row).execute()
+
+
+def save_country_coverage(client: Client, country: str, fields: dict[str, Any]) -> None:
+    """Writes the given columns of the country's `radar_country_coverage`
+    row (created on first use), leaving the others as they are."""
+    client.table("radar_country_coverage").upsert(
+        {"country": country, "updated_at": now_iso(), **fields}
+    ).execute()
+
+
+def sum_country_counts(client: Client, column: str) -> int:
+    """Total of a count column over every country, for the single
+    `data_sources` row each source has."""
+    response = client.table("radar_country_coverage").select(column).execute()
+    return sum(int(row.get(column) or 0) for row in response.data or [])

@@ -195,7 +195,7 @@ class _ListingDetailPageState extends State<ListingDetailPage> {
               ],
             ),
             const SizedBox(height: AppSpacing.xl),
-            Text(listingPriceLabel(listing.priceCents), style: AppTextStyles.heading),
+            Text(listingPriceLabel(listing.priceCents, country: listing.country), style: AppTextStyles.heading),
             if (listing.cityLabel != null) ...[
               const SizedBox(height: AppSpacing.xs),
               Text(context.l10n.marketplaceDetailApproxZone(listing.cityLabel!), style: AppTextStyles.bodySmall),

@@ -53,6 +53,14 @@ class EventFilter {
   }
 }
 
+/// Solo gli eventi di [country] (ISO alpha-2). Un evento di un altro paese non
+/// si mostra mai, nemmeno quando il proprio paese non ne ha: l'elenco resta
+/// vuoto e lo dice.
+List<EventEntry> filterEventsByCountry(List<EventEntry> events, String country) {
+  final code = country.toUpperCase();
+  return events.where((event) => event.country.toUpperCase() == code).toList();
+}
+
 /// Un evento cade nella finestra se i due intervalli di giorni si
 /// sovrappongono (un evento già iniziato e ancora in corso conta).
 bool eventOverlapsWindow(EventEntry event, DateTime from, DateTime to) {

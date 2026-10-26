@@ -1,0 +1,19 @@
+> **BOZZA — non è consulenza legale; da rivedere da un avvocato locale prima della pubblicazione**
+
+# Domande per il proprietario — Germania (valgono in parte per AT/CH)
+
+Data: 2026-10-14. Massimo 8 domande, raggruppate. Per ognuna: la mia raccomandazione prudente. Le prime 5 sono le principali. Le domande specifiche di Austria e Svizzera sono in `../at/08_*` e `../ch/08_*`.
+
+## Principali
+
+1. **Dati del titolare e legge applicabile.** Forma giuridica, sede, registro (REA), P.IVA, e-mail e telefono, e se esiste un DPO. Servono per l'**Impressum** (§ 5 DDG, no casella postale), per l'informativa e per i termini. Decidere anche la legge applicabile ai contratti con consumatori tedeschi (variante A tedesca / B italiana con norme cogenti locali, doc 03 §15) e se aderire a una conciliazione per consumatori (§ 36 VSBG). Raccomando: legge italiana con salvezza delle norme cogenti del paese dell'utente, e dichiarare che non si partecipa alla conciliazione finché non c'è un volume che lo giustifichi. *Impatto: doc 01 §3, doc 02 §1, doc 03 §14–15.*
+2. **Groq (USA): è certificato DPF?** Va chiesto al fornitore (e letto sulla lista ufficiale). Se non lo è, servono le SCC con valutazione del rischio. Raccomando di verificare **prima** del lancio in DACH. *Impatto: doc 02 §5; vale uguale per AT; per CH vedi `ch/08`.*
+3. **Prezzi e pagamenti.** Prezzi in € dei piani Plus/Pro (mensile e annuale), IVA inclusa, quando partono i pagamenti reali e **dove** si comprano: negli store (Apple/Google) o anche sul web (la Flutter web app è un «sito»: vale il § 312k BGB, il Widerrufsbutton, il § 312j). Cosa distingue i piani (oggi nulla): senza differenze, «Pro consigliato» è fragile. Raccomando: partire dal solo piano Free + prova, e attivare pagamenti dopo aver chiuso Button-Lösung, Kündigungsbutton e Widerrufsbutton. *Impatto: doc 03 §4–5; AT e CH usano gli stessi prezzi in € / CHF.*
+4. **Mercatino: animali vivi.** Si possono vendere o regalare? In DACH la materia è frammentata (§ 11 TierSchG in DE, TSchG in AT, TSchV in CH) e le piattaforme grandi chiedono autorizzazioni. Raccomando di **vietarlo** in tutta l'area finché un avvocato non rivede le norme (solo prodotti e servizi). *Impatto: doc 03 §8; ripetuto per AT e CH.*
+5. **Linea dell'assistente.** Posso presentare l'assistente come «informazioni generali e triage» senza ipotesi diagnostiche e senza nomi di farmaci Rx? La BTK ammette al massimo una diagnosi di sospetto *da un veterinario*; in Austria la diagnosi è riservata ai veterinari (TÄG § 4, 🟡). Raccomando: nessun «probabilmente è X», nessun dosaggio, nessun farmaco, nessun «virtual vet». *Impatto: prompt dell'assistente, doc 05, schede dello store; è la stessa decisione già presa per UK/US/AU.*
+
+## Secondarie
+
+6. **Lingua dei testi legali.** Un utente in Germania con app in inglese o italiano: mostro i testi legali in tedesco (regione) o nella lingua dell'interfaccia (con la traduzione di cortesia)? Idem per utenti DACH con app francese/italiana (specialmente CH). Raccomando: i testi legali seguono la **regione** (de-DE/de-AT/de-CH), mostrati in tedesco, con l'UI nella lingua scelta. *Impatto: doc 04, regola 5.*
+7. **Numeri utili e avvelenamenti.** Non esiste un numero nazionale per avvelenamenti di animali in Germania. Vuoi che io (o una persona) telefoni ai Giftnotruf per chiedere se rispondono ai proprietari di animali? Raccomando di sì prima del lancio; fino ad allora il banner mostra solo veterinario/Notdienst. *Impatto: doc 05 §4, doc 06.*
+8. **Dimensioni e strumenti.** Quanti addetti e che fatturato (BFSG: microimpresa < 10 persone e ≤ € 2 mln; DSA per micro/piccole imprese)? Si attiva uno strumento di analisi (oggi nessuno): raccomando di togliere la voce `analytics` dal catalogo tedesco finché non c'è uno strumento, o di attivarne uno con consenso e pulsanti pari rilievo. *Impatto: doc 01 §2 e §9, doc 02 §10, doc 04 §4.*

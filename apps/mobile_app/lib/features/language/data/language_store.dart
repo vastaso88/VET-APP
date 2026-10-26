@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:ui' show Locale, PlatformDispatcher;
 
 import 'package:flutter/foundation.dart';
+import 'package:home_widget/home_widget.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -10,6 +11,7 @@ import '../../../l10n/l10n.dart';
 import '../../settings/data/unit_settings_store.dart';
 import '../../settings/domain/unit_system.dart';
 import '../domain/app_language.dart';
+import 'account_language_store.dart';
 
 /// The language (and country) the app is shown in, saved on the phone.
 ///
@@ -31,9 +33,40 @@ class LanguageStore extends ChangeNotifier {
 
   /// The phone's language. Overridable in tests.
   @visibleForTesting
-  static Locale Function() deviceLocale = () => PlatformDispatcher.instance.locale;
+  static Locale Function() deviceLocale =
+      () => PlatformDispatcher.instance.locale;
+
+  static const _rememberedKey = 'vet_app.language_variant_by_language';
+
+  /// The last variant used for each language ({'en': 'en-AU'}): switching
+  /// en-AU → Español → English brings back en-AU, not a guess.
+  final Map<String, String> _lastVariantByLanguage = {};
 
   List<AppLanguageVariant> get available => availableOverride();
+
+  /// Variants of [code] the owner can pick from (the question to ask when
+  /// [knownVariantForLanguage] has no answer).
+  List<AppLanguageVariant> variantsOfLanguage(String code) =>
+      available.where((variant) => variant.languageCode == code).toList();
+
+  /// The variant to apply when the owner taps a *language* (compact selector),
+  /// or null when it has to be asked: the current variant if it is of that
+  /// language, else the last one used for it, else the one the phone's country
+  /// points to, else (several variants, unknown country) nothing: no default
+  /// UK, US or Australia is imposed.
+  AppLanguageVariant? knownVariantForLanguage(String code) {
+    if (_variant.languageCode == code) return _variant;
+    final candidates = variantsOfLanguage(code);
+    final remembered = languageVariantById(_lastVariantByLanguage[code]);
+    if (remembered != null && candidates.any((variant) => variant.id == remembered.id)) {
+      return remembered;
+    }
+    return knownVariantForDevice(deviceLocale(), candidates);
+  }
+
+  /// A variant of [code] to show as its label: the known one, else the first.
+  AppLanguageVariant variantForLanguage(String code) =>
+      knownVariantForLanguage(code) ?? variantsOfLanguage(code).first;
 
   /// More than one translation exists: the first-run page and the Settings
   /// section only appear then.
@@ -52,6 +85,11 @@ class LanguageStore extends ChangeNotifier {
   bool get needsFirstRunChoice => hasChoice && !_chosen;
 
   bool _loaded = false;
+  bool _explicitInSession = false;
+  int _selectionRevision = 0;
+
+  @visibleForTesting
+  AccountLanguageStore accountStore = const SupabaseAccountLanguageStore();
 
   Future<void> ensureLoaded() async {
     if (_loaded) return;
@@ -63,13 +101,15 @@ class LanguageStore extends ChangeNotifier {
     } catch (_) {
       // No readable preference: fall through to the suggestion.
     }
+    await _loadRemembered();
     final options = available;
     final storedId = stored?.id;
     if (stored != null && options.any((v) => v.id == storedId)) {
       _chosen = true;
       await _apply(stored, announce: false);
     } else {
-      await _apply(suggestLanguageVariant(deviceLocale(), options), announce: false);
+      await _apply(suggestLanguageVariant(deviceLocale(), options),
+          announce: false);
     }
   }
 
@@ -77,37 +117,119 @@ class LanguageStore extends ChangeNotifier {
   /// default measurement units to the variant's country unless the owner
   /// already picked units by hand.
   Future<void> choose(AppLanguageVariant variant) async {
+    _explicitInSession = true;
+    _selectionRevision++;
     _loaded = true;
     _chosen = true;
     await _apply(variant, announce: true);
+    await _persistDevicePreference();
+    await _saveAccount();
+  }
+
+  /// Session choice > account > saved device choice > device language > IT.
+  Future<void> syncAfterAuthentication() async {
+    final revision = _selectionRevision;
+    if (_explicitInSession) {
+      await _saveAccount();
+      return;
+    }
     try {
-      final preferences = await SharedPreferences.getInstance();
-      await preferences.setString(_storageKey, variant.id);
+      final remote =
+          await accountStore.read().timeout(const Duration(seconds: 5));
+      if (revision != _selectionRevision) return;
+      final exact = languageVariantById(remote);
+      final candidates =
+          available.where((v) => v.languageCode == remote).toList();
+      final variant = exact ?? (candidates.isEmpty ? null : candidates.first);
+      if (variant != null && available.any((v) => v.id == variant.id)) {
+        await _apply(variant, announce: true);
+        await _persistDevicePreference();
+        _chosen = true;
+      } else {
+        await _saveAccount();
+      }
     } catch (_) {
-      // Best-effort: the in-memory choice already applies for this session.
+      // Keep the device preference during a network failure.
     }
   }
 
-  Future<void> _apply(AppLanguageVariant variant, {required bool announce}) async {
+  Future<void> _saveAccount() async {
+    try {
+      await accountStore
+          .write(_variant.languageCode, _variant.id)
+          .timeout(const Duration(seconds: 5));
+    } catch (_) {
+      // The local preference remains usable while offline.
+    }
+  }
+
+  Future<void> _loadRemembered() async {
+    try {
+      final preferences = await SharedPreferences.getInstance();
+      for (final id in preferences.getStringList(_rememberedKey) ?? const <String>[]) {
+        final variant = languageVariantById(id);
+        if (variant != null) {
+          _lastVariantByLanguage.putIfAbsent(variant.languageCode, () => variant.id);
+        }
+      }
+    } catch (_) {
+      // Nothing remembered: variants are inferred or asked again.
+    }
+  }
+
+  Future<void> _persistDevicePreference() async {
+    try {
+      final preferences = await SharedPreferences.getInstance();
+      await preferences.setString(_storageKey, _variant.id);
+      await preferences.setStringList(_rememberedKey, _lastVariantByLanguage.values.toList());
+      unawaited(_refreshNativeWidget());
+    } catch (_) {
+      // Preference and widget refresh are best-effort; UI already changed.
+    }
+  }
+
+  Future<void> _refreshNativeWidget() async {
+    if (kIsWeb || defaultTargetPlatform != TargetPlatform.android) return;
+    try {
+      await HomeWidget.updateWidget(androidName: 'DogWalksWidgetProvider');
+    } catch (_) {
+      // No widget installed or native bridge unavailable: no impact on UI.
+    }
+  }
+
+  void resetSessionChoice() {
+    _explicitInSession = false;
+    _selectionRevision++;
+  }
+
+  Future<void> _apply(AppLanguageVariant variant,
+      {required bool announce}) async {
     final changed = variant.id != _variant.id;
     _variant = variant;
+    _lastVariantByLanguage[variant.languageCode] = variant.id;
     AppLocaleHolder.current = variant.locale;
     try {
       await initializeDateFormatting(appIntlLocale);
     } catch (_) {
       // Date patterns fall back to the default locale data.
     }
-    UnitSettingsStore.instance.applyLocaleDefault(defaultUnitsForLocale(variant.countryCode));
+    UnitSettingsStore.instance
+        .applyLocaleDefault(defaultUnitsForLocale(variant.countryCode));
     if (announce || changed) notifyListeners();
   }
 
   @visibleForTesting
   void resetForTest() {
     _loaded = false;
+    _explicitInSession = false;
+    _selectionRevision = 0;
+    accountStore = const SupabaseAccountLanguageStore();
     _chosen = false;
+    _lastVariantByLanguage.clear();
     _variant = allLanguageVariants.first;
     AppLocaleHolder.current = _variant.locale;
-    availableOverride = () => availableLanguageVariants(AppLocalizations.supportedLocales);
+    availableOverride =
+        () => availableLanguageVariants(AppLocalizations.supportedLocales);
     deviceLocale = () => PlatformDispatcher.instance.locale;
   }
 }
