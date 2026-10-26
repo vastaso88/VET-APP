@@ -2075,6 +2075,8 @@
     }
   },
   "localEventsSearchingNearby": "Ich suche Services in Ihrer Gegend. Beim ersten Mal kann es einige Sekunden dauern.",
+  "localEventsCoverageLimited": "Die Daten zu den Diensten in dieser Gegend werden noch vorbereitet: Sie sehen möglicherweise nur wenige Orte oder müssen länger warten.",
+  "localEventsCoverageUnsupported": "Der Radar deckt dieses Land noch nicht ab: Sie sehen nur, was OpenStreetMap kennt, ohne weitere Prüfungen.",
   "localEventsStale": "Ich konnte die Services dieser Gegend nicht aktualisieren: Sie sehen die zuletzt verfügbaren Daten, die möglicherweise nicht aktuell sind.",
   "localEventsPartialRadius": "Aktuell sind Services im Umkreis von {radius} verfügbar. Versuchen Sie es gleich noch einmal für den vollen Umkreis.",
   "@localEventsPartialRadius": {

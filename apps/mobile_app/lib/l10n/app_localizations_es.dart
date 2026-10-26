@@ -3707,6 +3707,14 @@ class AppLocalizationsEs extends AppLocalizations {
       'Buscando servicios en tu zona. La primera búsqueda puede tardar unos segundos.';
 
   @override
+  String get localEventsCoverageLimited =>
+      'Los datos de servicios de esta zona aún se están preparando: puede que veas pocos lugares o que tarde más.';
+
+  @override
+  String get localEventsCoverageUnsupported =>
+      'El radar aún no cubre este país: solo ves lo que OpenStreetMap conoce, sin otras comprobaciones.';
+
+  @override
   String get localEventsStale =>
       'No pude actualizar los servicios de esta zona. Ves los últimos datos disponibles, que podrían estar desactualizados.';
 

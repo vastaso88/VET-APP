@@ -9278,6 +9278,20 @@
       "fr": "c634a50ed1bb4e2dcba364a684806a1afe196d1a8506eb61abd45a8b21ddc54f"
     }
   },
+  "ui:localEventsCoverageLimited": {
+    "source": "1f470dcb8625682096d077c5ae4da66e01a0d7d21f82f643315b532d093f5598",
+    "targets": {
+      "en": "a6a372a708d752b1ef8c0c4bb91dc310fd2e79f6377b627bdcb550e3a3b7a1b6",
+      "es": "38d5a5dbbe63fe219820e50cf7222e2d7ab47f782fd7b4be2e59aa7e0f459766"
+    }
+  },
+  "ui:localEventsCoverageUnsupported": {
+    "source": "55921a499161ec63b2c0acd19ab0f8cd7276396bb68988b1270dee8edd150b0e",
+    "targets": {
+      "en": "ba67b9089d3bc170b4c75389ff3116976c2e2d44a2387aab7bbce2134b4bae9d",
+      "es": "0c070497415366d55a4dadec76c8336a0bd788e44eddb16e5030f733f5d56453"
+    }
+  },
   "ui:localEventsStale": {
     "source": "568cc5948619de3386af1fd3946da392d2e0996aabd335773e0493ea7528f64a",
     "targets": {

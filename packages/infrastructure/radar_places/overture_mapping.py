@@ -5,12 +5,16 @@ Kept apart from scripts/radar/import_overture_places.py so the rules
 functions with tests, independent of DuckDB and of the network.
 """
 
-import re
-import unicodedata
 from collections.abc import Iterable, Mapping
 from typing import Any
 
+from packages.core.domain.geo.countries import RadarCountry
 from packages.core.domain.radar_places.dedup import merge_radar_places
+from packages.core.domain.radar_places.labels import (
+    OTHER_KIND_NAME_HINTS,
+    VETERINARY_NAME_HINTS,
+    fold,
+)
 from packages.core.domain.radar_places.models import OVERTURE_SOURCE_NAME, RadarPlace
 
 # Overture `taxonomy.primary` -> radar place type. Exact matches only: a
@@ -42,37 +46,53 @@ DEFAULT_MIN_CONFIDENCE = 0.7
 
 OVERTURE_DEFAULT_LICENSE = "CDLA-Permissive-2.0"
 
-# Overture's primary category is sometimes wrong in a way the name makes
-# obvious: a "Toelettatura ..." or an "Allevamento ..." filed as a
-# veterinarian (about 100 rows of the Italian extract of 2026-09-23.1,
-# where the alternate categories are almost always empty and cannot
-# help). Corrected only out of "veterinary", the one category where a
-# wrong entry costs someone time in an emergency; the other way round a
-# name is weaker evidence ("Farmacia veterinaria" is not a clinic).
-_VETERINARY_WORDS = re.compile(r"veterinar|clinic|ambulator|ospedale|tierarzt|tierklinik|praxis")
-_OTHER_KIND_WORDS: dict[str, re.Pattern[str]] = {
-    "grooming": re.compile(r"toelett|toilett|tolett|grooming"),
-    "breeder": re.compile(r"allevament"),
-    "school": re.compile(r"addestr|cinofil|educator"),
-    "shop": re.compile(r"pet ?shop|pet ?store|negozio|mangimi|uccelleria|acquari"),
-    "hotel": re.compile(r"pensione"),
-    "shelter": re.compile(r"canile|gattile|rifugio|oasi felina"),
-}
-
 
 def place_type_for(category_type: str, name: str) -> str:
     """The radar type of an Overture place: its category's, unless the
     category says veterinarian and the name plainly says another kind of
-    business (and nothing veterinary)."""
+    business (and nothing veterinary), in the language of any supported
+    country (see radar_places/labels.py)."""
     if category_type != "veterinary":
         return category_type
-    folded = unicodedata.normalize("NFKD", name.lower())
-    plain = "".join(char for char in folded if not unicodedata.combining(char))
-    if _VETERINARY_WORDS.search(plain):
+    plain = fold(name)
+    if VETERINARY_NAME_HINTS.search(plain):
         return category_type
-    stated = [kind for kind, words in _OTHER_KIND_WORDS.items() if words.search(plain)]
+    stated = [kind for kind, words in OTHER_KIND_NAME_HINTS.items() if words.search(plain)]
     # Two kinds in one name ("Toelettatura e pet shop") decide nothing.
     return stated[0] if len(stated) == 1 else category_type
+
+
+def build_overture_query(release: str, country: RadarCountry) -> str:
+    """DuckDB query for one country's pet places in an Overture release.
+    The rectangles of the country let DuckDB skip most of the planet's
+    files; the country code then drops the neighbours inside them."""
+    categories = ", ".join(f"'{name}'" for name in sorted(OVERTURE_CATEGORIES))
+    inside = " OR ".join(
+        f"(bbox.xmin BETWEEN {box.min_longitude} AND {box.max_longitude} "
+        f"AND bbox.ymin BETWEEN {box.min_latitude} AND {box.max_latitude})"
+        for box in country.bounds
+    )
+    return f"""
+        SELECT id,
+               names.primary AS name,
+               taxonomy.primary AS category,
+               confidence,
+               operating_status,
+               bbox.xmin AS longitude,
+               bbox.ymin AS latitude,
+               addresses[1].freeform AS address,
+               addresses[1].locality AS locality,
+               phones[1] AS phone,
+               websites[1] AS website,
+               sources[1].license AS license
+        FROM read_parquet(
+            's3://overturemaps-us-west-2/release/{release}/theme=places/type=place/*',
+            hive_partitioning = 1
+        )
+        WHERE ({inside})
+          AND taxonomy.primary IN ({categories})
+          AND addresses[1].country = '{country.code}'
+    """
 
 
 def _text(value: Any) -> str | None:
@@ -145,10 +165,13 @@ def overture_rows_to_places(
     return [place.model_copy(update={"confirmed_by": []}) for place in merged]
 
 
-def place_to_open_row(place: RadarPlace, *, imported_at: str) -> dict[str, Any]:
+def place_to_open_row(
+    place: RadarPlace, *, imported_at: str, country: str = "IT"
+) -> dict[str, Any]:
     """Row for the `radar_places_open` table."""
     return {
         "id": place.id,
+        "country": country,
         "source": place.source_name,
         "source_id": place.source_external_id,
         "place_type": place.place_type,

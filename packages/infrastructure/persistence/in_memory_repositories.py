@@ -45,7 +45,11 @@ from packages.core.domain.marketplace.models import ListingReport, MarketplaceLi
 from packages.core.domain.medical_record.models import ClinicalEvent, PetCondition
 from packages.core.domain.pet_profile.models import PetProfile
 from packages.core.domain.pet_profile.weight_measurement import WeightMeasurement
-from packages.core.domain.radar_places.models import RadarDataSource, RadarPlace
+from packages.core.domain.radar_places.models import (
+    RadarCountryCoverage,
+    RadarDataSource,
+    RadarPlace,
+)
 from packages.core.domain.radar_reports.models import (
     RadarPlaceOverride,
     RadarPlaceRating,
@@ -222,11 +226,15 @@ class InMemoryRadarCatalogRepository(RadarCatalogRepository):
 
     def __init__(self) -> None:
         self.sources: list[RadarDataSource] = []
+        self.country_coverage: list[RadarCountryCoverage] = []
         self.osm_places: list[RadarPlace] = []
         self.open_places: list[RadarPlace] = []
 
     def list_sources(self) -> list[RadarDataSource]:
         return list(self.sources)
+
+    def list_country_coverage(self) -> list[RadarCountryCoverage]:
+        return list(self.country_coverage)
 
     def list_osm_places(self, box: BoundingBox) -> list[RadarPlace]:
         return [place for place in self.osm_places if _in_box(place, box)]

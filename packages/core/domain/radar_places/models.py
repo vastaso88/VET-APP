@@ -130,3 +130,25 @@ class RadarDataSource(BaseModel):
             min_latitude <= point.latitude <= max_latitude
             and min_longitude <= point.longitude <= max_longitude
         )
+
+
+class RadarCountryCoverage(BaseModel):
+    """What is imported for one country (`radar_country_coverage`). The
+    importers write it: OpenStreetMap is "complete" only once every region
+    of the country has been imported in one run, Overture is a single pass
+    per country. Without a complete OpenStreetMap import the API keeps
+    serving the country from the live per-cell cache."""
+
+    country: str
+    osm_complete_at: datetime | None = None
+    osm_release: str | None = None
+    osm_place_count: int = 0
+    # Regions (ISO 3166-2) of the last import that wrote any.
+    osm_regions: list[str] = Field(default_factory=list)
+    overture_release: str | None = None
+    overture_imported_at: datetime | None = None
+    overture_place_count: int = 0
+
+    @property
+    def osm_complete(self) -> bool:
+        return self.osm_complete_at is not None

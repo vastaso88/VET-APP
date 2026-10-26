@@ -3728,6 +3728,14 @@ class AppLocalizationsDe extends AppLocalizations {
       'Ich suche Services in Ihrer Gegend. Beim ersten Mal kann es einige Sekunden dauern.';
 
   @override
+  String get localEventsCoverageLimited =>
+      'Die Daten zu den Diensten in dieser Gegend werden noch vorbereitet: Sie sehen möglicherweise nur wenige Orte oder müssen länger warten.';
+
+  @override
+  String get localEventsCoverageUnsupported =>
+      'Der Radar deckt dieses Land noch nicht ab: Sie sehen nur, was OpenStreetMap kennt, ohne weitere Prüfungen.';
+
+  @override
   String get localEventsStale =>
       'Ich konnte die Services dieser Gegend nicht aktualisieren: Sie sehen die zuletzt verfügbaren Daten, die möglicherweise nicht aktuell sind.';
 

@@ -152,6 +152,9 @@ def test_local_services_places_flow() -> None:
     body = response.json()
     assert body["coverage"]["status"] == "refreshed"
     assert body["context"]["search_radius_km"] == 10
+    # Milan is in a supported country that is not imported in this test.
+    assert body["context"]["country"] == "IT"
+    assert body["context"]["coverage_level"] == "live"
     place = body["places"][0]
     assert place["name"] == "Veterinario Milano"
     assert place["distance_km"] < 1
@@ -192,6 +195,32 @@ def test_local_services_sources_lists_imported_datasets() -> None:
             "imported_at": "2026-10-04T00:00:00Z",
         }
     ]
+
+
+def test_local_services_countries_lists_every_country_with_its_coverage() -> None:
+    from datetime import UTC, datetime
+
+    from apps.api.dependencies.container import get_container
+    from packages.core.domain.radar_places.models import RadarCountryCoverage
+
+    catalog = get_container().radar_catalog_repository
+    catalog.sources = []  # type: ignore[attr-defined]
+    catalog.country_coverage = [  # type: ignore[attr-defined]
+        RadarCountryCoverage(country="DE", osm_complete_at=datetime(2026, 10, 20, tzinfo=UTC)),
+        RadarCountryCoverage(country="FR", overture_imported_at=datetime(2026, 10, 21, tzinfo=UTC)),
+    ]
+    client = TestClient(app)
+
+    countries = {
+        item["code"]: item for item in client.get("/local-services/countries").json()["countries"]
+    }
+
+    assert list(countries) == ["IT", "GB", "US", "AU", "DE", "FR", "ES"]
+    assert countries["DE"]["coverage_level"] == "complete"
+    assert countries["DE"]["osm_complete_at"] == "2026-10-20T00:00:00+00:00"
+    assert countries["FR"]["coverage_level"] == "partial"
+    assert countries["GB"]["coverage_level"] == "live"
+    assert countries["DE"]["flag"] == "🇩🇪" and countries["DE"]["osm_regions_total"] == 16
 
 
 def test_segnala_flow_needs_the_rules_then_shows_the_pending_place() -> None:

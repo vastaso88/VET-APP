@@ -12,7 +12,9 @@ from packages.core.application.ports.radar_reports_repository import RadarReport
 from packages.core.domain.common.entity import utc_now
 from packages.core.domain.consent.account_consent_text import CURRENT_VERSIONS
 from packages.core.domain.consent.models import AccountConsentType
+from packages.core.domain.geo.countries import radar_country_for_point
 from packages.core.domain.geo.models import Coordinates, haversine_distance_km
+from packages.core.domain.radar_places.labels import FALLBACK_LANGUAGE
 from packages.core.domain.radar_places.models import RadarPlace
 from packages.core.domain.radar_reports.models import (
     HOME_BASED_PLACE_TYPES,
@@ -204,7 +206,16 @@ class SubmitRadarReportService(_Contributions):
         if data.kind == "missing":
             if data.place_type not in self._settings.missing_place_types:
                 raise ValidationError("Questa categoria non può essere segnalata.")
-            name = clean_place_name(data.name, place_type=data.place_type)
+            # An unnamed dog park gets the generic name of the country it
+            # is in, in that country's language (English elsewhere).
+            country = radar_country_for_point(
+                Coordinates(latitude=data.latitude, longitude=data.longitude)
+            )
+            name = clean_place_name(
+                data.name,
+                place_type=data.place_type,
+                language=country.language if country is not None else FALLBACK_LANGUAGE,
+            )
             latitude, longitude = data.latitude, data.longitude
             if data.place_type in HOME_BASED_PLACE_TYPES:
                 latitude, longitude = coarsen_position(latitude, longitude)

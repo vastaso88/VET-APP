@@ -1130,6 +1130,52 @@ create table if not exists public.radar_place_overrides (
 alter table public.radar_places_cache
     add column if not exists details jsonb not null default '{}'::jsonb;
 
+-- Multi-country radar (docs/maps/COUNTRIES.md). Every imported place carries
+-- the ISO country code of the run that wrote it, so a re-import of one
+-- country replaces only that country's rows. Rows imported before this
+-- migration are Italy's.
+alter table public.radar_places_osm
+    add column if not exists country text not null default 'IT';
+alter table public.radar_places_open
+    add column if not exists country text not null default 'IT';
+create index if not exists radar_places_osm_country_idx on public.radar_places_osm (country);
+create index if not exists radar_places_open_country_idx on public.radar_places_open (country);
+
+-- What is imported for each country. OpenStreetMap counts as complete only
+-- when every region of the country went in during one run (osm_complete_at
+-- set); until then the API serves the country from the live per-cell cache.
+create table if not exists public.radar_country_coverage (
+    country text primary key,
+    osm_complete_at timestamptz,
+    osm_release text,
+    osm_place_count integer not null default 0,
+    osm_regions jsonb not null default '[]'::jsonb,
+    overture_release text,
+    overture_imported_at timestamptz,
+    overture_place_count integer not null default 0,
+    updated_at timestamptz not null default now()
+);
+
+-- Italy was imported before this table existed: derive its row from the
+-- areas recorded in data_sources (idempotent).
+insert into public.radar_country_coverage
+    (country, osm_complete_at, osm_release, osm_place_count)
+select 'IT', imported_at, release, place_count
+from public.data_sources
+where source = 'openstreetmap_overpass' and min_latitude is not null
+on conflict (country) do nothing;
+
+update public.radar_country_coverage as coverage
+set overture_release = source.release,
+    overture_imported_at = source.imported_at,
+    overture_place_count = source.place_count
+from public.data_sources as source
+where coverage.country = 'IT'
+  and source.source = 'overture'
+  and coverage.overture_imported_at is null;
+
+alter table public.radar_country_coverage enable row level security;
+
 alter table public.data_sources enable row level security;
 alter table public.radar_places_osm enable row level security;
 alter table public.radar_places_open enable row level security;

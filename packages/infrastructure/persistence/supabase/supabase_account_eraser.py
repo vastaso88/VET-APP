@@ -61,6 +61,7 @@ HANDLED_ELSEWHERE = frozenset({"clinical_events"})
 NOT_PERSONAL_TABLES: dict[str, str] = {
     "data_sources": "public catalogue of data sources",
     "radar_coverage_cells": "map coverage bookkeeping, no user data",
+    "radar_country_coverage": "per-country import bookkeeping, no user data",
     "radar_places_cache": "cache of public places",
     "radar_places_osm": "public OpenStreetMap places",
     "radar_places_open": "public open-data places",
