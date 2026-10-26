@@ -1,5 +1,6 @@
 import 'dart:math' as math;
 
+import '../../../shared/date/calendar_days.dart';
 import '../../settings/domain/unit_system.dart';
 import 'growth_reference.dart';
 import 'weight_measurement.dart';
@@ -11,16 +12,9 @@ const _daysPerMonth = 30.4375;
 /// Under this age (in months) the chart is a growth curve (weight against age).
 const growthCurveMonths = 12;
 
-/// Whole calendar days from [from] to [to] (both dates): a daylight-saving
-/// change never makes a day 23 or 25 hours long here.
-int daysBetween(DateTime from, DateTime to) =>
-    DateTime.utc(to.year, to.month, to.day)
-        .difference(DateTime.utc(from.year, from.month, from.day))
-        .inDays;
-
 /// Age in (fractional) months of a pet born on [birth], on day [date].
 double ageInMonths(DateTime birth, DateTime date) =>
-    daysBetween(birth, date) / _daysPerMonth;
+    calendarDaysBetween(birth, date) / _daysPerMonth;
 
 /// True when the pet is under a year old today (by the calendar: the day it
 /// turns one it is no longer a growth curve): its chart plots the weight
@@ -136,7 +130,7 @@ WeightChartData? buildWeightChart({
   final first = sorted.first.measuredOn;
   double xOf(WeightMeasurement m) => byAge
       ? ageInMonths(birthDate!, m.measuredOn)
-      : daysBetween(first, m.measuredOn).toDouble();
+      : calendarDaysBetween(first, m.measuredOn).toDouble();
 
   final points = [
     for (final m in sorted)

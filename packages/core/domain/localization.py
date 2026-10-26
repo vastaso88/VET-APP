@@ -380,11 +380,11 @@ _MESSAGES: dict[str, dict[SupportedLocale, str]] = {
         "fr": "Évaluation vétérinaire immédiate.",
     },
     "dosage_answer": {
-        "it": "Non ti do una cifra precisa: il dosaggio corretto di un farmaco dipende dal peso esatto, dalla condizione clinica e dalla formulazione specifica del prodotto. È una valutazione che spetta solo al veterinario, l'unico che può stabilire o modificare una terapia. Prima di somministrare qualsiasi farmaco, conferma sempre la dose esatta con il veterinario.",
-        "en": "I cannot give you an exact figure: the correct dose depends on the animal's precise weight, clinical condition and the specific product formulation. Only a veterinarian can establish or change a treatment. Always confirm the exact dose with the veterinarian before giving any medication.",
-        "es": "No puedo darte una cifra exacta: la dosis correcta depende del peso preciso, el estado clínico y la formulación concreta del producto. Solo un veterinario puede establecer o modificar un tratamiento. Confirma siempre la dosis exacta con el veterinario antes de administrar cualquier medicamento.",
-        "de": "Eine genaue Zahl nenne ich Ihnen nicht: Die richtige Dosis eines Medikaments hängt vom genauen Gewicht, vom Krankheitszustand und von der konkreten Zubereitung des Produkts ab. Das kann nur die Tierärztin bzw. der Tierarzt beurteilen, die oder der als Einzige eine Behandlung festlegen oder ändern darf. Klären Sie die genaue Dosis immer mit der Tierärztin bzw. dem Tierarzt, bevor Sie ein Medikament geben.",
-        "fr": "Je ne vous donne pas de chiffre précis : la bonne dose d'un médicament dépend du poids exact, de l'état clinique et de la formulation spécifique du produit. C'est une évaluation qui revient au seul vétérinaire, le seul à pouvoir établir ou modifier un traitement. Avant d'administrer un médicament, confirmez toujours la dose exacte avec le vétérinaire.",
+        "it": "Non ti do una cifra precisa: il dosaggio corretto di un farmaco dipende dal peso esatto, dalla condizione clinica e dalla formulazione specifica del prodotto — è una valutazione che spetta solo al veterinario, l'unico che può stabilire o modificare una terapia. Puoi trovare indicazioni generali sui dosaggi su fonti veterinarie ufficiali, ma per il tuo animale conferma sempre la dose esatta con il veterinario prima di somministrare qualsiasi farmaco.",
+        "en": "I cannot give you an exact figure: the correct dose depends on the animal's precise weight, clinical condition and the specific product formulation. Only a veterinarian can establish or change a treatment. You can find general dosage guidance in official veterinary sources, but for your animal always confirm the exact dose with the veterinarian before giving any medication.",
+        "es": "No puedo darte una cifra exacta: la dosis correcta depende del peso preciso, el estado clínico y la formulación concreta del producto. Solo un veterinario puede establecer o modificar un tratamiento. Puedes encontrar indicaciones generales sobre las dosis en fuentes veterinarias oficiales, pero para tu animal confirma siempre la dosis exacta con el veterinario antes de administrar cualquier medicamento.",
+        "de": "Eine genaue Zahl nenne ich Ihnen nicht: Die richtige Dosis eines Medikaments hängt vom genauen Gewicht, vom Krankheitszustand und von der konkreten Zubereitung des Produkts ab. Das kann nur die Tierärztin bzw. der Tierarzt beurteilen, die oder der als Einzige eine Behandlung festlegen oder ändern darf. Allgemeine Hinweise zu Dosierungen finden Sie in offiziellen tierärztlichen Quellen; für Ihr Tier klären Sie die genaue Dosis aber immer mit der Tierärztin bzw. dem Tierarzt, bevor Sie ein Medikament geben.",
+        "fr": "Je ne vous donne pas de chiffre précis : la bonne dose d'un médicament dépend du poids exact, de l'état clinique et de la formulation spécifique du produit. C'est une évaluation qui revient au seul vétérinaire, le seul à pouvoir établir ou modifier un traitement. Vous pouvez trouver des indications générales sur les posologies dans des sources vétérinaires officielles, mais pour votre animal confirmez toujours la dose exacte avec le vétérinaire avant d'administrer un médicament.",
     },
     "dosage_limitation": {
         "it": "Questa app supporta il lavoro del veterinario, non lo sostituisce: non fornisce mai dosaggi farmacologici precisi.",
@@ -401,7 +401,7 @@ _MESSAGES: dict[str, dict[SupportedLocale, str]] = {
         "fr": "Confirmez la posologie exacte avec le vétérinaire.",
     },
     "provider_failure": {
-        "it": "In questo momento non riesco a elaborare una risposta perché il servizio è temporaneamente non disponibile. Riprova tra poco, oppure consulta il veterinario se la situazione richiede attenzione ora.",
+        "it": "In questo momento non riesco a elaborare una risposta (il servizio è temporaneamente non disponibile). Riprova tra poco, oppure consulta il veterinario se la situazione richiede attenzione ora.",
         "en": "I cannot prepare an answer right now because the service is temporarily unavailable. Try again shortly, or contact a veterinarian if the situation needs attention now.",
         "es": "Ahora mismo no puedo preparar una respuesta porque el servicio no está disponible temporalmente. Inténtalo de nuevo en breve o contacta con un veterinario si la situación requiere atención inmediata.",
         "de": "Ich kann gerade keine Antwort erstellen, weil der Dienst vorübergehend nicht verfügbar ist. Versuchen Sie es gleich noch einmal oder wenden Sie sich an die Tierärztin bzw. den Tierarzt, wenn die Situation jetzt Aufmerksamkeit braucht.",
@@ -413,6 +413,22 @@ _MESSAGES: dict[str, dict[SupportedLocale, str]] = {
         "es": "Respuesta no disponible: no se pudo contactar con el proveedor del modelo de lenguaje.",
         "de": "Antwort nicht verfügbar: Der LLM-Anbieter ist nicht erreichbar.",
         "fr": "Réponse indisponible : fournisseur LLM injoignable.",
+    },
+    # The strict evidence path (husbandry): its failure names the sources
+    # it could not synthesise, as in build 35.
+    "provider_failure_evidence": {
+        "it": "In questo momento non riesco a elaborare una risposta basata sulle fonti scientifiche (il servizio è temporaneamente non disponibile). Riprova tra poco, oppure consulta il veterinario se la situazione richiede attenzione ora.",
+        "en": "I cannot prepare an answer based on the scientific sources right now because the service is temporarily unavailable. Try again shortly, or contact a veterinarian if the situation needs attention now.",
+        "es": "Ahora mismo no puedo preparar una respuesta basada en las fuentes científicas porque el servicio no está disponible temporalmente. Inténtalo de nuevo en breve o contacta con un veterinario si la situación requiere atención inmediata.",
+        "de": "Ich kann gerade keine Antwort auf Grundlage der wissenschaftlichen Quellen erstellen, weil der Dienst vorübergehend nicht verfügbar ist. Versuchen Sie es gleich noch einmal oder wenden Sie sich an die Tierärztin bzw. den Tierarzt, wenn die Situation jetzt Aufmerksamkeit braucht.",
+        "fr": "Pour le moment, je n'arrive pas à élaborer une réponse fondée sur les sources scientifiques car le service est temporairement indisponible. Réessayez dans un instant, ou consultez le vétérinaire si la situation demande de l'attention dès maintenant.",
+    },
+    "provider_failure_evidence_limitation": {
+        "it": "Sintesi delle evidenze non disponibile: provider LLM non raggiungibile.",
+        "en": "Evidence synthesis unavailable: the language model provider could not be reached.",
+        "es": "Síntesis de la evidencia no disponible: no se pudo contactar con el proveedor del modelo de lenguaje.",
+        "de": "Evidenzzusammenfassung nicht verfügbar: Der LLM-Anbieter ist nicht erreichbar.",
+        "fr": "Synthèse des preuves indisponible : fournisseur LLM injoignable.",
     },
     "consent_request": {
         "it": "Vuoi che consulti la cartella clinica di {pet_name} per darti un consiglio più preciso? Leggerò le tre voci più recenti, compreso il testo dei documenti allegati, e le malattie pregresse ancora in corso, e le invierò al servizio di intelligenza artificiale che scrive la risposta. Puoi cambiare idea in qualsiasi momento dalla scheda di {pet_name}.",

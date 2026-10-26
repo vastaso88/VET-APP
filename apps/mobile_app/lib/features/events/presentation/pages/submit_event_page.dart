@@ -4,9 +4,9 @@ import '../../../../design_system/tokens/app_colors.dart';
 import '../../../../design_system/tokens/app_spacing.dart';
 import '../../../../design_system/tokens/app_text_styles.dart';
 import '../../../../l10n/l10n.dart';
+import '../../../../shared/date/calendar_days.dart';
 import '../../data/event_submission_repository.dart';
 import '../../domain/event_entry.dart';
-import '../../domain/event_filter.dart';
 import '../../domain/event_submission.dart';
 import '../event_labels.dart';
 
@@ -50,7 +50,7 @@ class _SubmitEventPageState extends State<SubmitEventPage> {
   }
 
   Future<void> _pickDates() async {
-    final today = eventDay(widget.now());
+    final today = dayOnly(widget.now());
     final picked = await showDateRangePicker(
       context: context,
       firstDate: today,
@@ -85,8 +85,8 @@ class _SubmitEventPageState extends State<SubmitEventPage> {
       EventSubmissionDraft(
         title: _title.text.trim(),
         eventType: _eventType,
-        startsOn: eventDay(_dates!.start),
-        endsOn: eventDay(_dates!.end),
+        startsOn: dayOnly(_dates!.start),
+        endsOn: dayOnly(_dates!.end),
         city: _city.text.trim(),
         provinceCode: _optional(_province)?.toUpperCase(),
         venueName: _optional(_venue),

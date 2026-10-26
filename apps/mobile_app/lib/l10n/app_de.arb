@@ -3671,6 +3671,6 @@
   "remindersNotifPermBody": "Damit wir Sie benachrichtigen können, wenn eine Erinnerung fällig ist, benötigt VetApp die Berechtigung für Benachrichtigungen. Sie können dies jederzeit in den Einstellungen ändern.",
   "remindersNotifPermNotNow": "Nicht jetzt",
   "remindersNotifPermAllow": "Erlauben",
-  "remindersNotifOffBanner": "Benachrichtigungen sind deaktiviert: Erinnerungen werden nicht angezeigt",
+  "remindersNotifOffBanner": "Benachrichtigungen sind deaktiviert: Erinnerungen geben keinen Ton aus",
   "remindersNotifOffAction": "Aktivieren"
 }

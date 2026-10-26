@@ -14,6 +14,7 @@ questions, so the chosen species (`breed`: "Coniglio nano", "Axolotl",
 
 from __future__ import annotations
 
+import re
 import unicodedata
 from enum import StrEnum
 
@@ -46,6 +47,11 @@ _AMPHIBIANS = ("axolotl", "rana", "salamandra", "tritone", "altro anfibio")
 _POULTRY = ("anatra", "gallina", "oca")
 _LARGE_MAMMALS = ("alpaca", "asino", "capra", "cavallo", "lama", "maiale", "pecora", "pony")
 _INVERTEBRATES = ("granchio", "insetto", "lumaca", "mantide", "scorpione", "tarantola")
+# A "Piccoli mammiferi" is a rabbit when a word of its breed names one, typed in any app
+# language: "Coniglio nano", "Dwarf rabbit", "Lapin bélier", "Conejo enano", and German
+# compounds such as "Zwergkaninchen". Mirrored by `_rabbitStems` in pet_details.dart.
+_RABBIT_STEMS = ("conigli", "rabbit", "lapin", "conej")
+_RABBIT_COMPOUND = "kaninchen"
 
 
 def _fold(text: str) -> str:
@@ -55,6 +61,13 @@ def _fold(text: str) -> str:
 
 def _starts_with_any(name: str, prefixes: tuple[str, ...]) -> bool:
     return any(name == prefix or name.startswith(prefix + " ") for prefix in prefixes)
+
+
+def _names_a_rabbit(name: str) -> bool:
+    return any(
+        word.startswith(_RABBIT_STEMS) or _RABBIT_COMPOUND in word
+        for word in re.findall(r"[a-z]+", name)
+    )
 
 
 def pet_kind(species: str | None, breed: str | None = None) -> PetKind:
@@ -69,7 +82,7 @@ def pet_kind(species: str | None, breed: str | None = None) -> PetKind:
     if category == "bird":
         return PetKind.BIRD
     if category == "small_mammal":
-        return PetKind.RABBIT if name.startswith(("coniglio", "rabbit")) else PetKind.SMALL_MAMMAL
+        return PetKind.RABBIT if _names_a_rabbit(name) else PetKind.SMALL_MAMMAL
     if category == "reptile_amphibian":
         return PetKind.AMPHIBIAN if _starts_with_any(name, _AMPHIBIANS) else PetKind.REPTILE
     if _starts_with_any(name, _POULTRY):

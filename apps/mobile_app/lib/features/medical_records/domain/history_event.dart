@@ -1,3 +1,4 @@
+import '../../../shared/date/calendar_days.dart';
 import '../data/medical_records_repository.dart';
 import 'pet_condition.dart';
 import 'record_category.dart';
@@ -55,9 +56,6 @@ class HistoryEvent {
 
   bool get isCondition => condition != null;
 }
-
-/// [date] without the time of day.
-DateTime dayOnly(DateTime date) => DateTime(date.year, date.month, date.day);
 
 /// Every record and illness as events, oldest first. Undated ones come first
 /// (they cannot be placed on the calendar but still belong in an export). Two

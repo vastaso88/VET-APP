@@ -6,9 +6,6 @@ import '../../../shared/date/calendar_days.dart';
 import '../../pets/domain/pet_models.dart';
 import '../data/reminders_repository.dart';
 
-bool isSameDay(DateTime a, DateTime b) =>
-    a.year == b.year && a.month == b.month && a.day == b.day;
-
 PetProfile? petByName(List<PetProfile> pets, String name) {
   for (final pet in pets) {
     if (pet.name == name) return pet;

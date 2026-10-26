@@ -4,6 +4,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:vet_app_mobile/features/pets/data/pet_demo_store.dart';
 import 'package:vet_app_mobile/features/pets/domain/pet_details.dart';
 import 'package:vet_app_mobile/features/pets/domain/pet_models.dart';
+import 'package:vet_app_mobile/features/pets/domain/pet_species_breeds.dart';
 import 'package:vet_app_mobile/features/pets/domain/pet_value_labels.dart';
 
 PetProfile _pet({
@@ -172,6 +173,30 @@ void main() {
       expect(speciesHasBodyCondition('Piccoli mammiferi'), isFalse);
       expect(speciesHasActivity('Piccoli mammiferi', breed: 'Coniglio nano'), isFalse);
       expect(speciesHasNeutering('Piccoli mammiferi', breed: 'Furetto (Mustela putorius furo)'), isTrue);
+    });
+
+    test('a rabbit typed in any app language is a rabbit (same rule as the backend)', () {
+      for (final breed in [
+        'Rabbit',
+        'Dwarf rabbit',
+        'Kaninchen',
+        'Zwergkaninchen',
+        'Lapin',
+        'Lapin bélier',
+        'Conejo',
+        'Coneja enana',
+        'Coniglietto',
+      ]) {
+        expect(speciesHasBodyCondition('Piccoli mammiferi', breed: breed), isTrue, reason: breed);
+      }
+      // The listed species: every "Coniglio …" is a rabbit, nothing else is.
+      for (final breed in smallMammalBreeds) {
+        expect(
+          petKindOf('Piccoli mammiferi', breed) == PetKind.rabbit,
+          breed.startsWith('Coniglio'),
+          reason: breed,
+        );
+      }
     });
 
     test('"Altro": only a mammal we recognise is asked about neutering', () {

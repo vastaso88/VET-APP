@@ -4,7 +4,10 @@ from pydantic import BaseModel, Field, field_validator, model_validator
 
 from packages.core.domain.common.entity import new_id
 from packages.core.domain.medical_record.models import MedicalRecordConsentRecord
-from packages.core.domain.pet_profile.body_condition import BODY_CONDITIONS
+from packages.core.domain.pet_profile.body_condition import (
+    BODY_CONDITIONS,
+    species_has_body_condition,
+)
 from packages.core.domain.pet_profile.details import ACTIVITY_LEVELS, validated_microchip
 from packages.core.domain.pet_profile.sex import split_legacy_sex
 
@@ -122,6 +125,16 @@ class PetProfile(BaseModel):
         if value is not None and value not in BODY_CONDITIONS:
             raise ValueError(f"body_condition must be one of {BODY_CONDITIONS}")
         return value
+
+    @model_validator(mode="after")
+    def _body_condition_only_where_it_exists(self) -> "PetProfile":
+        """A species without a body condition never keeps one: an older app
+        may still send it, so it is dropped (stored as null), not refused."""
+        if self.body_condition is not None and not species_has_body_condition(
+            self.species, self.breed
+        ):
+            self.body_condition = None
+        return self
 
     @field_validator("activity_level")
     @classmethod

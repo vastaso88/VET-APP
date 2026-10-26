@@ -13,6 +13,20 @@ unless the reply gives a clear, specific, benign explanation.
 
 from packages.core.domain.localization import normalize_locale
 from packages.core.domain.localization_fr import CLARIFYING_QUESTIONS_FR
+from packages.core.domain.safety.red_flags_de_fr import (
+    GI_STASIS_DE,
+    GI_STASIS_FR,
+    IMMEDIATE_DE,
+    IMMEDIATE_FR,
+    REASSURING_DE,
+    REASSURING_FR,
+    TOXIN_MEDICATION_DE,
+    TOXIN_MEDICATION_FR,
+    URGENT_DE,
+    URGENT_FR,
+    WORSENING_DE,
+    WORSENING_FR,
+)
 
 RED_FLAG_CATEGORIES: dict[str, tuple[str, ...]] = {
     "respiratory": (
@@ -167,6 +181,14 @@ RED_FLAG_CATEGORIES: dict[str, tuple[str, ...]] = {
     # no oxygen. No clarifying question either.
     "circulatory": ("gengive pallide",),
 }
+# German and French (2026-10-26): the same categories, from red_flags_de_fr.py.
+for _catalog in (URGENT_DE, URGENT_FR):
+    for _category, _keywords in _catalog.items():
+        RED_FLAG_CATEGORIES[_category] = RED_FLAG_CATEGORIES[_category] + _keywords
+RED_FLAG_CATEGORIES["gi_stasis"] = RED_FLAG_CATEGORIES["gi_stasis"] + GI_STASIS_DE + GI_STASIS_FR
+RED_FLAG_CATEGORIES["toxin_medication"] = (
+    RED_FLAG_CATEGORIES["toxin_medication"] + TOXIN_MEDICATION_DE + TOXIN_MEDICATION_FR
+)
 
 # If the very first message already describes an unambiguous, ongoing
 # severe presentation, asking a clarifying question would only delay real
@@ -199,6 +221,8 @@ IMMEDIATE_ESCALATION_MARKERS: tuple[str, ...] = (
     "gengive bianche",
     "sangue ovunque",
     "emorragia grave",
+    *IMMEDIATE_DE,
+    *IMMEDIATE_FR,
 )
 
 CLARIFYING_QUESTIONS: dict[str, str] = {
@@ -430,6 +454,9 @@ REASSURING_MARKERS: dict[str, tuple[str, ...]] = {
     # gather duration/detail, but it must not be able to downgrade severity.
     "gi_stasis": (),
 }
+for _catalog in (REASSURING_DE, REASSURING_FR):
+    for _category, _markers in _catalog.items():
+        REASSURING_MARKERS[_category] = REASSURING_MARKERS[_category] + _markers
 
 # Category-independent: any of these in the reply means "still bad or
 # getting worse" and must override any reassuring marker.
@@ -460,6 +487,8 @@ WORSENING_MARKERS: tuple[str, ...] = (
     "continue de saigner",
     "ne répond pas",
     "ne se réveille pas",
+    *WORSENING_DE,
+    *WORSENING_FR,
 )
 
 

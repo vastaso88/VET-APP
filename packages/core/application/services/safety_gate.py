@@ -4,6 +4,11 @@ from packages.core.domain.knowledge.fuzzy_match import (
 )
 from packages.core.domain.pet_profile.species import normalize_species
 from packages.core.domain.safety.emergency_patterns import emergency_flags
+from packages.core.domain.safety.red_flags_de_fr import (
+    SPECIES_DE,
+    SPECIES_FR,
+    all_urgent_keywords,
+)
 
 URGENT_RED_FLAG_KEYWORDS = {
     "cannot breathe",
@@ -75,6 +80,8 @@ URGENT_RED_FLAG_KEYWORDS = {
     "urina con sangue",
     "perde sangue",
 }
+# German and French (2026-10-26), the same groups: red_flags_de_fr.py.
+URGENT_RED_FLAG_KEYWORDS |= all_urgent_keywords()
 
 # Real-world finding: the same owner-reported symptom can mean something
 # very different depending on species physiology, so a single universal
@@ -299,6 +306,15 @@ SPECIES_SPECIFIC_RED_FLAGS: dict[str, tuple[str, ...]] = {
         "diclofenac",
     ),
 }
+# German and French equivalents of each species list (red_flags_de_fr.py).
+for _family in SPECIES_SPECIFIC_RED_FLAGS:
+    SPECIES_SPECIFIC_RED_FLAGS[_family] = tuple(
+        dict.fromkeys(
+            SPECIES_SPECIFIC_RED_FLAGS[_family]
+            + SPECIES_DE.get(_family, ())
+            + SPECIES_FR.get(_family, ())
+        )
+    )
 
 
 class SafetyGate:

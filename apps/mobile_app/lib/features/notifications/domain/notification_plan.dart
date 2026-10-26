@@ -146,7 +146,7 @@ List<DateTime> reminderOccurrences(ReminderEntry reminder, DateTime until) {
         ? addMonthsClamped(first, step * index)
         : DateTime(first.year, first.month, first.day + step * index, first.hour, first.minute);
     if (at.isAfter(until)) break;
-    if (lastDay != null && _dayOf(at).isAfter(_dayOf(lastDay))) break;
+    if (lastDay != null && dayOnly(at).isAfter(dayOnly(lastDay))) break;
     occurrences.add(at);
   }
   return occurrences;
@@ -222,7 +222,7 @@ Iterable<PlannedNotification> _courseNotifications(
 Iterable<PlannedNotification> _birthdayNotifications(PetProfile pet, DateTime now) sync* {
   final birth = parsePetBirthdayLabel(pet.birthDateLabel);
   if (birth == null) return;
-  final today = _dayOf(now);
+  final today = dayOnly(now);
   if (birth.isAfter(today)) return;
   final l10n = appL10n;
 
@@ -253,7 +253,7 @@ Iterable<PlannedNotification> _birthdayNotifications(PetProfile pet, DateTime no
 /// years that have no 29th.
 DateTime nextBirthday(DateTime birth, DateTime from) {
   final thisYear = _birthdayIn(birth, from.year);
-  return thisYear.isBefore(_dayOf(from)) ? _birthdayIn(birth, from.year + 1) : thisYear;
+  return thisYear.isBefore(dayOnly(from)) ? _birthdayIn(birth, from.year + 1) : thisYear;
 }
 
 /// [birth]'s day and month in [year]; DateTime(2027, 2, 29) would silently
@@ -262,5 +262,3 @@ DateTime _birthdayIn(DateTime birth, int year) {
   final lastDay = DateTime(year, birth.month + 1, 0).day;
   return DateTime(year, birth.month, birth.day > lastDay ? lastDay : birth.day);
 }
-
-DateTime _dayOf(DateTime value) => DateTime(value.year, value.month, value.day);

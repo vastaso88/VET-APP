@@ -1912,12 +1912,12 @@ class ChatOrchestrator:
             # the LLM call deserves the same fail-safe treatment: a
             # rate-limited or down provider shouldn't crash the whole turn.
             return ChatOrchestratorResult(
-                answer=translate("provider_failure", data.language),
+                answer=translate("provider_failure_evidence", data.language),
                 mode="evidence",
                 confidence="low",
                 ai_generated=False,
                 sources=sources,
-                limitations=[translate("provider_failure_limitation", data.language)],
+                limitations=[translate("provider_failure_evidence_limitation", data.language)],
                 provider="rule-based",
                 model="evidence-guard",
                 state=ConversationState.RETRIEVAL_FAILURE,

@@ -128,10 +128,6 @@ def _list_auth_users(client: Any) -> list[Any]:
     return all_users
 
 
-def _count_auth_users(client: Any) -> int:
-    return len(_list_auth_users(client))
-
-
 def _parse_datetime(value: Any) -> datetime | None:
     if isinstance(value, datetime):
         return value if value.tzinfo else value.replace(tzinfo=UTC)
@@ -367,9 +363,7 @@ def admin_overview() -> dict[str, object]:
 
     pet_profiles_response = (
         client.table("pet_profiles")
-        .select(
-            "id,owner_id,species,species_group,is_active,is_exotic,is_memorial"
-        )
+        .select("id,owner_id,species,species_group,is_active,is_exotic,is_memorial")
         .execute()
     )
     pet_rows = list(getattr(pet_profiles_response, "data", None) or [])
@@ -544,11 +538,7 @@ def admin_moderation_detail(queue: str, item_id: str) -> dict[str, object]:
 
     if queue == "radar":
         response = (
-            client.table("radar_user_reports")
-            .select("*")
-            .eq("id", item_id)
-            .limit(1)
-            .execute()
+            client.table("radar_user_reports").select("*").eq("id", item_id).limit(1).execute()
         )
         rows = getattr(response, "data", None) or []
         if not rows:
@@ -564,11 +554,7 @@ def admin_moderation_detail(queue: str, item_id: str) -> dict[str, object]:
 
     if queue == "chat":
         response = (
-            client.table("chat_response_reports")
-            .select("*")
-            .eq("id", item_id)
-            .limit(1)
-            .execute()
+            client.table("chat_response_reports").select("*").eq("id", item_id).limit(1).execute()
         )
         rows = getattr(response, "data", None) or []
         if not rows:
@@ -638,13 +624,7 @@ def admin_resolve_radar_report(
 ) -> dict[str, object]:
     admin = _require_admin()
     client = _admin_client()
-    response = (
-        client.table("radar_user_reports")
-        .select("*")
-        .eq("id", report_id)
-        .limit(1)
-        .execute()
-    )
+    response = client.table("radar_user_reports").select("*").eq("id", report_id).limit(1).execute()
     rows = getattr(response, "data", None) or []
     if not rows:
         raise HTTPException(status_code=404, detail="Radar report not found")
@@ -662,11 +642,9 @@ def admin_resolve_radar_report(
             }
         ).eq("id", report_id).execute()
         if report.get("target_source") and report.get("target_source_id"):
-            client.table("radar_place_overrides").delete().eq(
-                "source", report["target_source"]
-            ).eq("source_id", report["target_source_id"]).eq(
-                "reason", override_reason
-            ).execute()
+            client.table("radar_place_overrides").delete().eq("source", report["target_source"]).eq(
+                "source_id", report["target_source_id"]
+            ).eq("reason", override_reason).execute()
     else:
         new_status = "confirmed" if request.action == "confirm" else "rejected"
         client.table("radar_user_reports").update(
@@ -691,13 +669,7 @@ def admin_resolve_radar_report(
                     }
                 ).execute()
 
-    updated = (
-        client.table("radar_user_reports")
-        .select("*")
-        .eq("id", report_id)
-        .limit(1)
-        .execute()
-    )
+    updated = client.table("radar_user_reports").select("*").eq("id", report_id).limit(1).execute()
     return {"report": (getattr(updated, "data", None) or [report])[0]}
 
 
@@ -723,9 +695,9 @@ def admin_resolve_marketplace_report(
     now = datetime.now(UTC).isoformat()
 
     if request.action == "remove_listing":
-        client.table("marketplace_listings").update(
-            {"status": "removed", "updated_at": now}
-        ).eq("id", listing_id).execute()
+        client.table("marketplace_listings").update({"status": "removed", "updated_at": now}).eq(
+            "id", listing_id
+        ).execute()
         report_update = {
             "status": "resolved",
             "resolution_action": "remove_listing",
@@ -742,9 +714,9 @@ def admin_resolve_marketplace_report(
             "resolved_by_admin_id": admin.id,
         }
     elif request.action == "restore_listing":
-        client.table("marketplace_listings").update(
-            {"status": "active", "updated_at": now}
-        ).eq("id", listing_id).execute()
+        client.table("marketplace_listings").update({"status": "active", "updated_at": now}).eq(
+            "id", listing_id
+        ).execute()
         report_update = {
             "status": "resolved",
             "resolution_action": "restore_listing",
@@ -761,9 +733,7 @@ def admin_resolve_marketplace_report(
             "resolved_by_admin_id": admin.id,
         }
 
-    client.table("marketplace_listing_reports").update(report_update).eq(
-        "id", report_id
-    ).execute()
+    client.table("marketplace_listing_reports").update(report_update).eq("id", report_id).execute()
 
     open_reports_response = (
         client.table("marketplace_listing_reports")
@@ -1003,7 +973,8 @@ def _validated_schedule_payload(engine: str, payload: dict[str, Any]) -> dict[st
 def admin_schedules() -> dict[str, object]:
     _require_admin()
     response = (
-        _admin_client().table("admin_ingestion_schedules")
+        _admin_client()
+        .table("admin_ingestion_schedules")
         .select("*")
         .order("next_run_at")
         .limit(100)
@@ -1019,17 +990,21 @@ def admin_create_schedule(request: AdminScheduleRequest) -> dict[str, object]:
     payload = _validated_schedule_payload(request.engine, request.payload)
     now = datetime.now(UTC)
     next_run = now if request.run_immediately else now + timedelta(hours=request.interval_hours)
-    response = client.table("admin_ingestion_schedules").insert(
-        {
-            "name": request.name,
-            "engine": request.engine,
-            "enabled": request.enabled,
-            "interval_hours": request.interval_hours,
-            "payload": payload,
-            "next_run_at": next_run.isoformat(),
-            "created_by": admin.id,
-        }
-    ).execute()
+    response = (
+        client.table("admin_ingestion_schedules")
+        .insert(
+            {
+                "name": request.name,
+                "engine": request.engine,
+                "enabled": request.enabled,
+                "interval_hours": request.interval_hours,
+                "payload": payload,
+                "next_run_at": next_run.isoformat(),
+                "created_by": admin.id,
+            }
+        )
+        .execute()
+    )
     rows = getattr(response, "data", None) or []
     return {"schedule": rows[0] if rows else None}
 
@@ -1331,4 +1306,3 @@ def admin_scientific_ingest(
 ) -> dict[str, object]:
     admin = _require_admin()
     return _execute_scientific_ingestion(request, actor_id=admin.id)
-

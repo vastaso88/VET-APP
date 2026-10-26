@@ -1360,7 +1360,7 @@ class AppLocalizationsIt extends AppLocalizations {
 
   @override
   String marketplaceFieldPrice(String currency) {
-    return 'Prezzo ($currency)';
+    return 'Prezzo in $currency';
   }
 
   @override
@@ -4051,7 +4051,7 @@ class AppLocalizationsIt extends AppLocalizations {
 
   @override
   String get activitiesEventsSubtitle =>
-      'Fiere, esposizioni e iniziative per animali nel tuo paese.';
+      'Fiere, esposizioni e iniziative per animali in tutta Italia.';
 
   @override
   String get activitiesGalleryTitle => 'Galleria';

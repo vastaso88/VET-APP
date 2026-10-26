@@ -6,8 +6,13 @@
 Data: 2026-10-14. Stesso schema e **stesse regole di registrazione** di `../de/04_einwilligungen_de-DE.md` (chiave per lingua+regione `de-CH`, versione propria `v1` indipendente da `de-DE`/`de-AT`, `locale` mostrata salvata nel `ConsentRecord`, hash del testo, nessun ripiego silenzioso `de-CH → de-DE`; problema A6 in `docs/i18n/REVISIONE_MULTILANG.md`). Differenze svizzere: **EDÖB** al posto di Datenschutzbehörde, «Personendaten», «Bekanntgabe ins Ausland», **ortografia svizzera (ss)**. Virgolette « » per le citazioni.
 
 ```python
-CURRENT_VERSIONS_BY_LOCALE["de-CH"] = {"terms_of_service": "v1", "privacy_policy": "v1",
-    "marketing_email": "v1", "analytics": "v1", "contribution_rules": "v1"}  # illustrativo
+CURRENT_VERSIONS_BY_LOCALE["de-CH"] = {
+    "terms_of_service": "v1",
+    "privacy_policy": "v1",
+    "marketing_email": "v1",
+    "analytics": "v1",
+    "contribution_rules": "v1",
+}  # illustrativo
 ```
 
 | Id catalogo | Tipo | Versione de-CH |

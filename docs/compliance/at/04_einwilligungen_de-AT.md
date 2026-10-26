@@ -6,8 +6,13 @@
 Data: 2026-10-14. Stesso schema e **stesse regole di registrazione** di `../de/04_einwilligungen_de-DE.md` (chiave per lingua+regione `de-AT`, versione propria `v1` indipendente da `de-DE`, `locale` mostrata salvata nel `ConsentRecord`, hash del testo, nessun ripiego silenzioso `de-AT → de-DE`; problema A6 in `docs/i18n/REVISIONE_MULTILANG.md`). Qui solo i testi, con le differenze austriache: **Datenschutzbehörde**, TKG 2021 § 165 Abs. 3 per i consensi sul dispositivo.
 
 ```python
-CURRENT_VERSIONS_BY_LOCALE["de-AT"] = {"terms_of_service": "v1", "privacy_policy": "v1",
-    "marketing_email": "v1", "analytics": "v1", "contribution_rules": "v1"}  # illustrativo
+CURRENT_VERSIONS_BY_LOCALE["de-AT"] = {
+    "terms_of_service": "v1",
+    "privacy_policy": "v1",
+    "marketing_email": "v1",
+    "analytics": "v1",
+    "contribution_rules": "v1",
+}  # illustrativo
 ```
 
 | Id catalogo | Tipo | Versione de-AT |

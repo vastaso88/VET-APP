@@ -1,5 +1,6 @@
 import '../../../l10n/date_formats.dart';
 import '../../../l10n/l10n.dart';
+import '../../../shared/date/calendar_days.dart';
 import '../domain/local_activity.dart';
 
 String localActivityKindLabel(LocalActivityKind kind) {
@@ -19,10 +20,8 @@ String? localActivityDateRangeLabel(LocalActivity activity) {
 
   final dayMonthFormat = appDateFormat('d MMM');
   final ends = activity.endsAt;
-  if (ends == null || _isSameDay(ends, starts)) {
+  if (ends == null || isSameDay(ends, starts)) {
     return dayMonthFormat.format(starts);
   }
   return '${dayMonthFormat.format(starts)} - ${dayMonthFormat.format(ends)}';
 }
-
-bool _isSameDay(DateTime a, DateTime b) => a.year == b.year && a.month == b.month && a.day == b.day;

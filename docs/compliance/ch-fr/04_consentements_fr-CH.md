@@ -6,8 +6,13 @@
 Data: 2026-10-14. Stesso schema e **stesse regole di registrazione** di `../de/04_einwilligungen_de-DE.md` e `../ch/04_einwilligungen_de-CH.md` (chiave per lingua+regione `fr-CH`, versione propria `v1` indipendente da `de-CH`/`fr-FR`/`fr-BE`, `locale` mostrata salvata nel `ConsentRecord`, hash del testo, **nessun ripiego silenzioso** `fr-CH → fr-FR` né `fr-CH → de-CH`; problema A6 in `docs/i18n/REVISIONE_MULTILANG.md`). Differenze svizzere: **PFPDT** al posto di CNIL/APD, «données personnelles», «communication à l'étranger». Testo equivalente nel contenuto a `de-CH` e agli italiani. Francese in vouvoiement.
 
 ```python
-CURRENT_VERSIONS_BY_LOCALE["fr-CH"] = {"terms_of_service": "v1", "privacy_policy": "v1",
-    "marketing_email": "v1", "analytics": "v1", "contribution_rules": "v1"}  # illustrativo
+CURRENT_VERSIONS_BY_LOCALE["fr-CH"] = {
+    "terms_of_service": "v1",
+    "privacy_policy": "v1",
+    "marketing_email": "v1",
+    "analytics": "v1",
+    "contribution_rules": "v1",
+}  # illustrativo
 ```
 
 | Id catalogo | Tipo | Versione fr-CH |

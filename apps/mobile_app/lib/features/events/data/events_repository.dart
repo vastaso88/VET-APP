@@ -1,6 +1,7 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../../shared/config/app_runtime_config_loader.dart';
+import '../../../shared/date/calendar_days.dart';
 import '../../territory/domain/territory.dart';
 import '../domain/event_entry.dart';
 import '../domain/event_filter.dart';
@@ -83,7 +84,7 @@ class EventsRepository {
 
 /// `YYYY-MM-DD`, il formato della colonna `date`.
 String formatEventDate(DateTime value) {
-  final day = eventDay(value);
+  final day = dayOnly(value);
   final month = day.month.toString().padLeft(2, '0');
   final date = day.day.toString().padLeft(2, '0');
   return '${day.year}-$month-$date';
@@ -111,8 +112,8 @@ EventEntry? parseEventRow(Map<String, dynamic> row) {
     eventType: text('event_type') ?? 'other',
     level: EventLevel.parse(row['level'] as String?),
     country: (text('country') ?? 'IT').toUpperCase(),
-    startsOn: eventDay(startsOn),
-    endsOn: eventDay(endsOn),
+    startsOn: dayOnly(startsOn),
+    endsOn: dayOnly(endsOn),
     description: text('description'),
     city: text('city'),
     provinceCode: text('province_code'),

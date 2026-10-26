@@ -94,7 +94,7 @@ void main() {
       await useLanguageVariant('en-AU');
       expect(listingPriceFieldLabel(), r'Price (A$)');
       await useLanguageVariant('it');
-      expect(listingPriceFieldLabel(), 'Prezzo (€)');
+      expect(listingPriceFieldLabel(), 'Prezzo in €');
     });
   });
 

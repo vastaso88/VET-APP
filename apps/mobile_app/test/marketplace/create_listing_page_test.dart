@@ -90,7 +90,7 @@ void main() {
     await _pickCategory(tester, 'Guinzagli, collari e pettorine');
     await tester.tap(find.text('Come nuovo'));
     await tester.tap(find.text('Cane'));
-    await tester.enterText(find.widgetWithText(TextFormField, 'Prezzo (€)'), '12,50');
+    await tester.enterText(find.widgetWithText(TextFormField, 'Prezzo in €'), '12,50');
     await tester.tap(find.text('Pubblica annuncio'));
     await tester.pumpAndSettle();
 
@@ -123,7 +123,7 @@ void main() {
     await tester.tap(find.text('Tutte le specie'));
     await tester.tap(find.text('In regalo'));
     await tester.pumpAndSettle();
-    expect(find.widgetWithText(TextFormField, 'Prezzo (€)'), findsNothing);
+    expect(find.widgetWithText(TextFormField, 'Prezzo in €'), findsNothing);
 
     await tester.tap(find.text('Pubblica annuncio'));
     await tester.pumpAndSettle();
@@ -170,7 +170,7 @@ void main() {
     );
 
     await tester.enterText(find.widgetWithText(TextFormField, 'Titolo'), 'Ciotola test');
-    await tester.enterText(find.widgetWithText(TextFormField, 'Prezzo (€)'), '-5');
+    await tester.enterText(find.widgetWithText(TextFormField, 'Prezzo in €'), '-5');
     await tester.tap(find.text('Pubblica annuncio'));
     await tester.pumpAndSettle();
 

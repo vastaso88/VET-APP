@@ -1,11 +1,6 @@
 from pydantic import BaseModel
 
 
-class Citation(BaseModel):
-    source: str
-    snippet: str | None = None
-
-
 class EvidenceSource(BaseModel):
     title: str
     journal: str | None = None

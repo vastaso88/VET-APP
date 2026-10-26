@@ -632,7 +632,7 @@
   "marketplaceSpeciesLabel": "Per quali animali",
   "marketplaceSpeciesRequired": "Indica per quali animali è, oppure \"Tutte le specie\"",
   "marketplaceGiftSubtitle": "Lo regali a chi ne ha bisogno",
-  "marketplaceFieldPrice": "Prezzo ({currency})",
+  "marketplaceFieldPrice": "Prezzo in {currency}",
   "@marketplaceFieldPrice": {
     "placeholders": {
       "currency": {
@@ -2239,7 +2239,7 @@
   "activitiesNearbyTitle": "Vicino a me",
   "activitiesNearbySubtitle": "Veterinari, negozi e aree cani vicino a te.",
   "activitiesEventsTitle": "Eventi",
-  "activitiesEventsSubtitle": "Fiere, esposizioni e iniziative per animali nel tuo paese.",
+  "activitiesEventsSubtitle": "Fiere, esposizioni e iniziative per animali in tutta Italia.",
   "activitiesGalleryTitle": "Galleria",
   "activitiesGallerySubtitle": "Raccogli foto e ricordi dei tuoi animali.",
   "activitiesMarketplaceTitle": "Mercatino dell'usato",

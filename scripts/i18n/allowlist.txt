@@ -15,8 +15,6 @@ lib/features/language/domain/app_language.dart
 # Brand and required map attribution are proper names, not translated copy.
 lib/app/splash/splash_page.dart :: 'VET APP'
 lib/features/dog_walks/presentation/widgets/walk_mini_map.dart :: '© OpenStreetMap'
-# An existing demo attachment filename, not an app label or translated document.
-lib/features/medical_records/presentation/pages/medical_records_pages.dart :: 'richiamo_vaccinale_moka.pdf'
 
 # Demo/seed data shown only in builds without Supabase and in tests (never in production).
 lib/features/medical_records/data/medical_records_repository.dart :: _previewRecords
@@ -25,7 +23,6 @@ lib/features/medical_records/data/medical_records_repository.dart :: 'Archiviato
 lib/features/medical_records/data/medical_records_repository.dart :: 'Utile per il follow-up
 lib/features/medical_records/data/medical_records_repository.dart :: 'Esami del sangue di Oliver'
 lib/features/medical_records/data/medical_records_repository.dart :: 'Valori nella norma
-lib/features/medical_records/presentation/pages/medical_records_pages.dart :: 'Caricato con successo
 lib/features/pets/domain/pet_models.dart :: 'Stomaco delicato
 lib/features/pets/domain/pet_models.dart :: 'Vaccino di richiamo tra 12 giorni'
 lib/features/pets/domain/pet_models.dart :: 'Controllo becco e unghie
@@ -54,9 +51,6 @@ lib/features/medical_records/data/medical_records_repository.dart :: subtitle:
 lib/features/medical_records/data/medical_records_repository.dart :: 'Importato'
 lib/features/medical_records/data/medical_records_repository.dart :: 'Revisionato'
 lib/features/medical_records/data/medical_records_repository.dart :: Pronto per l'invio
-lib/features/medical_records/presentation/pages/medical_records_pages.dart :: 'Importato'
-lib/features/medical_records/presentation/pages/medical_records_pages.dart :: 'Revisionato'
-lib/features/medical_records/presentation/pages/medical_records_pages.dart :: Pronto per l'invio
 # Species written to the pet profile and sent to the backend (stored values, not labels).
 lib/features/pets/data/pet_demo_store.dart :: label:
 # Test double of the auth backend: its messages are English and never shown.

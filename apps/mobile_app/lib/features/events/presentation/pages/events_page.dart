@@ -5,6 +5,7 @@ import '../../../../design_system/tokens/app_colors.dart';
 import '../../../../design_system/tokens/app_radii.dart';
 import '../../../../design_system/tokens/app_spacing.dart';
 import '../../../../design_system/tokens/app_text_styles.dart';
+import '../../../../shared/date/calendar_days.dart';
 import '../../../../shared/widgets/pet_loader.dart';
 import '../../data/events_repository.dart';
 import '../../domain/event_entry.dart';
@@ -69,7 +70,7 @@ class _EventsPageState extends State<EventsPage> {
   }
 
   Future<void> _pickDates() async {
-    final today = eventDay(widget.now());
+    final today = dayOnly(widget.now());
     final picked = await showDateRangePicker(
       context: context,
       firstDate: DateTime(today.year, today.month, today.day - 30),
@@ -83,7 +84,7 @@ class _EventsPageState extends State<EventsPage> {
       initialEntryMode: DatePickerEntryMode.calendarOnly,
     );
     if (picked == null || !mounted) return;
-    _filter = _filter.copyWith(from: eventDay(picked.start), to: eventDay(picked.end));
+    _filter = _filter.copyWith(from: dayOnly(picked.start), to: dayOnly(picked.end));
     _reload();
   }
 
@@ -159,7 +160,7 @@ class _EventsPageState extends State<EventsPage> {
 
   @override
   Widget build(BuildContext context) {
-    final today = eventDay(widget.now());
+    final today = dayOnly(widget.now());
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(

@@ -2417,7 +2417,7 @@ abstract class AppLocalizations {
   /// No description provided for @marketplaceFieldPrice.
   ///
   /// In it, this message translates to:
-  /// **'Prezzo ({currency})'**
+  /// **'Prezzo in {currency}'**
   String marketplaceFieldPrice(String currency);
 
   /// No description provided for @marketplaceSaving.
@@ -6803,7 +6803,7 @@ abstract class AppLocalizations {
   /// No description provided for @activitiesEventsSubtitle.
   ///
   /// In it, this message translates to:
-  /// **'Fiere, esposizioni e iniziative per animali nel tuo paese.'**
+  /// **'Fiere, esposizioni e iniziative per animali in tutta Italia.'**
   String get activitiesEventsSubtitle;
 
   /// No description provided for @activitiesGalleryTitle.

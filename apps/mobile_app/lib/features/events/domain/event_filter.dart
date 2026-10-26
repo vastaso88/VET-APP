@@ -1,9 +1,8 @@
+import '../../../shared/date/calendar_days.dart';
 import 'event_entry.dart';
 
 /// Finestra predefinita della sezione: da oggi ai prossimi 30 giorni.
 const int defaultEventWindowDays = 30;
-
-DateTime eventDay(DateTime value) => DateTime(value.year, value.month, value.day);
 
 /// Filtri scelti dall'utente. `from`/`to` sono giorni inclusi. Regione e tipo
 /// sono opzionali (null = tutti).
@@ -12,7 +11,7 @@ class EventFilter {
 
   /// "Nei prossimi 30 giorni", contati da [today] (oggi incluso).
   factory EventFilter.defaultWindow(DateTime today) {
-    final start = eventDay(today);
+    final start = dayOnly(today);
     // Calendar arithmetic, not `start.add(Duration(days: 30))`: adding 30 x
     // 24h across a clock change (end of October) lands at 23:00 of the
     // previous day and the window would end a day early.
@@ -64,8 +63,8 @@ List<EventEntry> filterEventsByCountry(List<EventEntry> events, String country) 
 /// Un evento cade nella finestra se i due intervalli di giorni si
 /// sovrappongono (un evento già iniziato e ancora in corso conta).
 bool eventOverlapsWindow(EventEntry event, DateTime from, DateTime to) {
-  return !eventDay(event.endsOn).isBefore(eventDay(from)) &&
-      !eventDay(event.startsOn).isAfter(eventDay(to));
+  return !dayOnly(event.endsOn).isBefore(dayOnly(from)) &&
+      !dayOnly(event.startsOn).isAfter(dayOnly(to));
 }
 
 /// Solo la parte di finestra (date): usata sia dal repository che dai test.

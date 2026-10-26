@@ -1,12 +1,13 @@
 import '../../../l10n/date_formats.dart';
 import '../../../l10n/l10n.dart';
+import '../../../shared/date/calendar_days.dart';
 import '../domain/event_filter.dart';
 
 /// "17 ott 2026", "17-18 ott 2026", "30 apr - 3 mag 2026" or, across years,
 /// "30 dic 2026 - 2 gen 2027" (month names in the app language).
 String eventDateRangeLabel(DateTime startsOn, DateTime endsOn) {
-  final start = eventDay(startsOn);
-  final end = eventDay(endsOn);
+  final start = dayOnly(startsOn);
+  final end = dayOnly(endsOn);
   final dayMonth = appDateFormat('d MMM');
   final dayMonthYear = appDateFormat('d MMM y');
 

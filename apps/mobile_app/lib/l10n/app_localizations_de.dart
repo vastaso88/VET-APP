@@ -6405,7 +6405,7 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get remindersNotifOffBanner =>
-      'Benachrichtigungen sind deaktiviert: Erinnerungen werden nicht angezeigt';
+      'Benachrichtigungen sind deaktiviert: Erinnerungen geben keinen Ton aus';
 
   @override
   String get remindersNotifOffAction => 'Aktivieren';

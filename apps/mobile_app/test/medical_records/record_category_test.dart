@@ -85,7 +85,7 @@ void main() {
     });
 
     test('copyWith changes the details and keeps the file', () {
-      final original = MedicalRecordEntry(
+      const original = MedicalRecordEntry(
         id: 'a',
         petName: 'Moka',
         title: 'scan.pdf',
@@ -94,7 +94,7 @@ void main() {
         badge: '',
         detailSource: '',
         createdAt: '',
-        timeline: const [],
+        timeline: [],
         attachmentId: 'file-1',
       );
 
@@ -132,7 +132,7 @@ void main() {
       final repository = PetConditionsRepository();
       await repository.save(condition('Otite', since: DateTime(2026, 2, 1)));
       await repository.save(
-        PetConditionEntry(id: 'other', petId: 'pet-2', name: 'Dermatite'),
+        const PetConditionEntry(id: 'other', petId: 'pet-2', name: 'Dermatite'),
       );
 
       final mine = await repository.loadForPet('pet-1');

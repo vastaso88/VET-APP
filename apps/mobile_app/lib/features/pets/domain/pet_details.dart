@@ -95,6 +95,18 @@ const _invertebrateNames = [
 bool _startsWithAny(String folded, List<String> prefixes) =>
     prefixes.any((prefix) => folded == prefix || folded.startsWith('$prefix '));
 
+/// A "Piccoli mammiferi" is a rabbit when a word of its breed names one, typed
+/// in any app language: "Coniglio nano", "Dwarf rabbit", "Lapin bélier",
+/// "Conejo enano", and German compounds such as "Zwergkaninchen". Mirrored by
+/// `_RABBIT_STEMS` in packages/core/domain/pet_profile/species_rules.py.
+const _rabbitStems = ['conigli', 'rabbit', 'lapin', 'conej'];
+const _rabbitCompound = 'kaninchen';
+
+bool _namesARabbit(String folded) => RegExp('[a-z]+').allMatches(folded).any((match) {
+      final word = match[0]!;
+      return _rabbitStems.any(word.startsWith) || word.contains(_rabbitCompound);
+    });
+
 PetKind petKindOf(String? species, [String? breed]) {
   final category = (species ?? '').trim().toLowerCase();
   final name = foldBreedText(breed ?? '');
@@ -108,7 +120,7 @@ PetKind petKindOf(String? species, [String? breed]) {
     case 'uccello':
       return PetKind.bird;
     case 'piccoli mammiferi':
-      return name.startsWith('coniglio') ? PetKind.rabbit : PetKind.smallMammal;
+      return _namesARabbit(name) ? PetKind.rabbit : PetKind.smallMammal;
     case 'rettili e anfibi':
       return _startsWithAny(name, _amphibianNames) ? PetKind.amphibian : PetKind.reptile;
     case 'altro':

@@ -63,7 +63,9 @@ Future<void> bootstrap() async {
         publishableKey: runtimeConfig.supabaseAnonKey,
       );
       supabaseEnabled = true;
-      await LanguageStore.instance.syncAfterAuthentication();
+      // Network round-trips (up to two 5 s timeouts): never before the first
+      // frame. The store notifies VetApp if the account's language differs.
+      unawaited(LanguageStore.instance.syncAfterAuthentication());
 
       // Supabase parses a password-recovery link's URL fragment during
       // initialize() above and fires this event once the resulting

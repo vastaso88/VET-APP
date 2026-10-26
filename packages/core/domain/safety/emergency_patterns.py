@@ -5,13 +5,21 @@ rat poison, antifreeze, lilies for a cat, gastric torsion / swollen belly,
 pale or blue gums — 0 of 56 realistic messages. They are matched here as
 WHOLE WORDS (a word may continue with its ending, "topicid" → "topicida",
 but is never found inside another word) on text normalised the way owners
-type it: capitals, missing accents, typographic apostrophes.
+type it: capitals, missing accents and umlauts, typographic apostrophes,
+"ß" as "ss", "œ" as "oe".
 
 Each pattern reports a stable flag; the flag belongs to a category in
 triage_clarification.RED_FLAG_CATEGORIES, which decides the response:
 - poisons → "toxin_medication" (immediate, "può essere pericoloso");
 - torsion, retching, swollen belly, pale/blue gums → categories with no
   clarifying question (immediate): asking first would only cost time.
+
+2026-10-26: the same five groups in German and French (the chat speaks
+it/en/es/de/fr since the MULTILANG merge; until then de/fr owners were
+covered only by the model-based classifier). Each language has its own
+patterns, written the way owners of that language type ("hat Rattengift
+gefressen", "a mangé de la mort-aux-rats"); the exposure words of every
+language are pooled, since a poison is dangerous however it was reached.
 """
 
 from __future__ import annotations
@@ -28,12 +36,25 @@ LILY_FLAG = "giglio"
 BLOAT_FLAG = "torsione gastrica"
 PALE_GUMS_FLAG = "gengive pallide"
 
+_PLAIN_FORMS = (
+    ("’", "'"),
+    ("‘", "'"),
+    ("´", "'"),
+    ("`", "'"),
+    ("“", '"'),
+    ("”", '"'),
+    ("ß", "ss"),
+    ("œ", "oe"),
+    ("æ", "ae"),
+)
+
 
 def normalize_for_matching(text: str) -> str:
-    """Lower case, accents removed, typographic quotes and apostrophes made
-    plain, whitespace collapsed: "L’ANTIGELO è lì" → "l'antigelo e li"."""
+    """Lower case, accents and umlauts removed, typographic quotes and
+    apostrophes made plain, "ß"/"œ" spelled out, whitespace collapsed:
+    "L’ANTIGELO è lì" → "l'antigelo e li", "Mäusegift" → "mausegift"."""
     text = text.lower()
-    for fancy, plain in (("’", "'"), ("‘", "'"), ("´", "'"), ("`", "'"), ("“", '"'), ("”", '"')):
+    for fancy, plain in _PLAIN_FORMS:
         text = text.replace(fancy, plain)
     text = "".join(
         ch for ch in unicodedata.normalize("NFKD", text) if not unicodedata.combining(ch)
@@ -58,17 +79,34 @@ class EmergencyPattern:
     requires: re.Pattern[str] | None = None
 
 
-# The animal ate, licked, chewed or drank it (or some is missing).
-_EXPOSURE = _words(
+# The animal ate, licked, chewed or drank it (or some is missing) — in
+# Italian, German and French; "ue"/"ae"/"oe" spellings of umlauts included.
+_EXPOSURE_IT = (
     r"mangiat\w*|mangiava|masticat\w*|mastica|leccat\w*|lecca|leccava|morso|morsicat\w*|"
     r"mordicchiat\w*|rosicchiat\w*|ingoiat\w*|ingerit\w*|inghiottit\w*|bevut\w*|"
     r"beveva|assaggiat\w*|avvelenat\w*|polline|ne manca\w*|ne mancano"
 )
+_EXPOSURE_DE = (
+    r"gefressen|gegessen|frisst|fressen|fras|geleckt|abgeleckt|leckt|gekaut|zerkaut|"
+    r"angekaut|gebissen|angeknabbert|geknabbert|angenagt|verschluckt|geschluckt|"
+    r"heruntergeschluckt|runtergeschluckt|getrunken|trinkt|aufgenommen|erwischt|"
+    r"vergiftet|probiert|genascht|fehlt|fehlen|pollen|blutenstaub|bluetenstaub"
+)
+_EXPOSURE_FR = (
+    r"mange|manger|mangeait|mangee|avale|avaler|avalait|avalee|leche|lecher|lechait|"
+    r"mache|macher|machait|machouille|machouiller|mordu|mord|mordille|mordiller|croque|"
+    r"croquer|grignote|grignoter|ronge|ronger|ingere|ingerer|bu|boit|boire|buvait|"
+    r"goute|gouter|empoisonne\w*|intoxique\w*|il manque|il en manque|pollen"
+)
+_EXPOSURE = _words(f"{_EXPOSURE_IT}|{_EXPOSURE_DE}|{_EXPOSURE_FR}")
 
 _RODENT = r"topi|topo|ratti|ratto|roditori|sorci"
+_RODENT_DE = r"ratten|maus|mause|maeuse|nager|nagetiere"
+_RODENT_FR = r"rats|rat|souris|rongeurs|mulots"
 _GDV_SPECIES = frozenset({"dog", "small_mammal"})
+_CAT = frozenset({"cat"})
 
-EMERGENCY_PATTERNS: tuple[EmergencyPattern, ...] = (
+_ITALIAN_PATTERNS: tuple[EmergencyPattern, ...] = (
     # --- rat poison (anticoagulants: bleeding days later, even if fine now)
     EmergencyPattern(
         RODENTICIDE_FLAG,
@@ -99,7 +137,7 @@ EMERGENCY_PATTERNS: tuple[EmergencyPattern, ...] = (
     EmergencyPattern(
         LILY_FLAG,
         _words(r"giglio|gigli|lilium|emerocallid\w*|hemerocallis"),
-        families=frozenset({"cat"}),
+        families=_CAT,
         requires=_EXPOSURE,
     ),
     # --- gastric dilatation-volvulus: torsion, unproductive retching
@@ -135,6 +173,188 @@ EMERGENCY_PATTERNS: tuple[EmergencyPattern, ...] = (
     ),
     EmergencyPattern(PALE_GUMS_FLAG, _words(r"cianosi|cianotic\w*")),
 )
+
+_GERMAN_PATTERNS: tuple[EmergencyPattern, ...] = (
+    # --- Rattengift, Mäusegift, Giftköder (umlauts arrive as a/o/u or ae/oe/ue)
+    EmergencyPattern(
+        RODENTICIDE_FLAG,
+        _words(
+            r"rattengift|mausegift|maeusegift|nagergift|rodentizid\w*|giftkoder|giftkoeder|"
+            r"rattenkoder|rattenkoeder|mausekoder|mausekoeder|giftweizen|giftgetreide"
+        ),
+        requires=_EXPOSURE,
+    ),
+    EmergencyPattern(
+        RODENTICIDE_FLAG,
+        _words(
+            rf"(?:koder|koeder|gift|kodermasse|koedermasse) (?:fur|fuer|gegen) (?:die )?"
+            rf"(?:{_RODENT_DE})"
+        ),
+        requires=_EXPOSURE,
+    ),
+    EmergencyPattern(
+        RODENTICIDE_FLAG,
+        _words(
+            rf"(?:vergiftete|tote vergiftete|vergifteten) (?:{_RODENT_DE})|"
+            rf"(?:{_RODENT_DE}) vergiftet"
+        ),
+    ),
+    # --- Frostschutzmittel, Kühlflüssigkeit, Glykol
+    EmergencyPattern(
+        ANTIFREEZE_FLAG,
+        _words(
+            r"frostschutz\w*|kuhlflussigkeit|kuehlfluessigkeit|kuhlerflussigkeit|"
+            r"kuehlerfluessigkeit|kuhlwasser|kuehlwasser|kuhlmittel|kuehlmittel|glykol|"
+            r"ethylenglykol|scheibenfrostschutz\w*"
+        ),
+        requires=_EXPOSURE,
+    ),
+    # --- Lilien (cat)
+    EmergencyPattern(
+        LILY_FLAG,
+        # Compounds too: Lilienblatt, Lilienpollen, Lilienvase.
+        _words(r"lilie\w*|taglilie\w*|lilium|hemerocallis"),
+        families=_CAT,
+        requires=_EXPOSURE,
+    ),
+    # --- Magendrehung
+    EmergencyPattern(
+        BLOAT_FLAG,
+        _words(
+            r"magendrehung|magenumdrehung|magentorsion|magendilatation|magenaufblahung|"
+            r"magenaufblaehung"
+        ),
+    ),
+    EmergencyPattern(
+        BLOAT_FLAG,
+        _words(
+            r"wurgt|wuergt|wurgen|wuergen|versucht zu erbrechen|versucht sich zu ubergeben|"
+            r"versucht sich zu uebergeben|kann nicht erbrechen|erbricht nichts|"
+            r"brechreiz ohne|leeres wurgen|leeres wuergen|wurgt ohne|wuergt ohne"
+        ),
+        families=frozenset({"dog"}),
+    ),
+    EmergencyPattern(
+        BLOAT_FLAG,
+        _words(
+            r"(?:bauch|magen|unterleib)(?: \w+){0,2} "
+            r"(?:aufgeblaht\w*|aufgeblaeht\w*|aufgetrieben\w*|aufgeblasen\w*|gebl\w*|hart\w*|"
+            r"prall\w*|gespannt\w*|dick wie eine trommel|wie eine trommel|wie ein ballon)|"
+            r"(?:aufgeblaht\w*|aufgeblaeht\w*|aufgetrieben\w*|harter|praller) (?:bauch|magen)"
+        ),
+        families=_GDV_SPECIES,
+    ),
+    # --- blasses, weißes, blaues Zahnfleisch / Zunge
+    EmergencyPattern(
+        PALE_GUMS_FLAG,
+        _words(
+            r"(?:zahnfleisch|schleimhaut|schleimhaute|schleimhaeute|maulschleimhaut|zunge|"
+            r"lippen|lefzen)(?: \w+){0,4} "
+            r"(?:blass\w*|bleich\w*|weiss\w*|weis\w*|grau\w*|blau\w*|blaulich\w*|"
+            r"blaeulich\w*|lila|violett\w*|zyanotisch\w*)"
+        ),
+    ),
+    EmergencyPattern(
+        PALE_GUMS_FLAG,
+        _words(
+            r"(?:blasses|bleiches|weisses|weises|graues|blaues|blauliches|blaeuliches|"
+            r"lila|violettes) (?:zahnfleisch|schleimhaute|schleimhaeute)|"
+            r"(?:blasse|bleiche|weisse|graue|blaue|blauliche|blaeuliche|violette|lila) "
+            r"(?:zunge|schleimhaute|schleimhaeute|lippen|lefzen)|zyanose|zyanotisch\w*"
+        ),
+    ),
+)
+
+_FRENCH_PATTERNS: tuple[EmergencyPattern, ...] = (
+    # --- mort-aux-rats, raticide, appât pour rats
+    EmergencyPattern(
+        RODENTICIDE_FLAG,
+        _words(
+            r"mort(?:-| )aux(?:-| )rats|raticide\w*|rodenticide\w*|souricide\w*|anti-rats|antirats"
+        ),
+        requires=_EXPOSURE,
+    ),
+    EmergencyPattern(
+        RODENTICIDE_FLAG,
+        _words(
+            rf"(?:appat|appats|poison|produit|grains|granules|bloc|blocs|pate|pates) "
+            rf"(?:\w+ )?(?:pour|contre|a|anti) (?:les |des )?(?:{_RODENT_FR})"
+        ),
+        requires=_EXPOSURE,
+    ),
+    EmergencyPattern(
+        RODENTICIDE_FLAG,
+        _words(rf"(?:{_RODENT_FR}) (?:empoisonne\w*|mort\w* empoisonne\w*)"),
+    ),
+    # --- antigel, liquide de refroidissement, glycol
+    EmergencyPattern(
+        ANTIFREEZE_FLAG,
+        _words(
+            r"antigel|anti-gel|liquide de refroidissement|liquide du radiateur|"
+            r"liquide radiateur|glycol|ethylene glycol|ethyleneglycol|lave-glace antigel|"
+            r"lave glace antigel"
+        ),
+        requires=_EXPOSURE,
+    ),
+    # --- lys / lis (cat)
+    EmergencyPattern(
+        LILY_FLAG,
+        _words(r"lys|lis|lilium|hemerocalle\w*|hemerocallis|fleur de lys|fleurs de lys"),
+        families=_CAT,
+        requires=_EXPOSURE,
+    ),
+    # --- torsion de l'estomac
+    EmergencyPattern(
+        BLOAT_FLAG,
+        _words(
+            r"(?:torsion|dilatation|retournement)(?: \w+){0,2} (?:de l'estomac|d'estomac|"
+            r"gastrique|de l'estomac)|estomac (?:retourne|tordu)|syndrome dilatation"
+        ),
+    ),
+    EmergencyPattern(
+        BLOAT_FLAG,
+        _words(
+            r"haut-le-coeur|hauts-le-coeur|haut le coeur|hauts le coeur|essaie de vomir|"
+            r"essaye de vomir|tente de vomir|n'arrive pas a vomir|vomit a vide|"
+            r"vomissements? a vide|vomissements? improductifs?|efforts de vomissement\w*|"
+            r"sans rien vomir|sans reussir a vomir|sans arriver a vomir"
+        ),
+        families=frozenset({"dog"}),
+    ),
+    EmergencyPattern(
+        BLOAT_FLAG,
+        _words(
+            r"(?:ventre|abdomen|estomac|bide|bidon)(?: \w+){0,2} "
+            r"(?:gonfle\w*|ballonne\w*|dur\w*|tendu\w*|distendu\w*|enfle\w*|"
+            r"comme un tambour|comme un ballon)"
+        ),
+        families=_GDV_SPECIES,
+    ),
+    # --- gencives pâles, blanches, bleues / langue bleue
+    EmergencyPattern(
+        PALE_GUMS_FLAG,
+        _words(
+            r"(?:gencive|gencives|muqueuse|muqueuses|langue|levres|levre|babines)(?: \w+){0,4} "
+            r"(?:pale\w*|blanch\w*|blanc\w*|bleu\w*|bleuatre\w*|gris\w*|violet\w*|violac\w*|"
+            r"cyanos\w*|cyanotique\w*|decolore\w*)"
+        ),
+    ),
+    EmergencyPattern(PALE_GUMS_FLAG, _words(r"cyanose|cyanotique\w*")),
+)
+
+EMERGENCY_PATTERNS: tuple[EmergencyPattern, ...] = (
+    *_ITALIAN_PATTERNS,
+    *_GERMAN_PATTERNS,
+    *_FRENCH_PATTERNS,
+)
+
+# How many patterns each language contributes (reported, and kept in step
+# by the tests: an equivalent of every Italian group exists in de and fr).
+PATTERNS_BY_LANGUAGE: dict[str, tuple[EmergencyPattern, ...]] = {
+    "it": _ITALIAN_PATTERNS,
+    "de": _GERMAN_PATTERNS,
+    "fr": _FRENCH_PATTERNS,
+}
 
 
 def emergency_flags(message: str, family: str) -> list[str]:

@@ -21,8 +21,15 @@ Regola specifica Francia: l'età del consenso digitale è **15 anni** (art. 45 L
 Esempio di forma dati (illustrativo, non è codice del repo):
 
 ```python
-CURRENT_VERSIONS_BY_LOCALE = {"fr-FR": {"terms_of_service": "v1", "privacy_policy": "v1",
-    "marketing_email": "v1", "analytics": "v1", "contribution_rules": "v1"}}
+CURRENT_VERSIONS_BY_LOCALE = {
+    "fr-FR": {
+        "terms_of_service": "v1",
+        "privacy_policy": "v1",
+        "marketing_email": "v1",
+        "analytics": "v1",
+        "contribution_rules": "v1",
+    }
+}
 ```
 
 ## Tabella degli id

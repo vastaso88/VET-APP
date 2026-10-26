@@ -35,7 +35,7 @@ void main() {
   test('the copy saved this session wins over the server row of the same id', () {
     // An older schema stores no category: the server row comes back as a
     // document, but the owner filed it as a vaccine.
-    final saved = const MedicalRecordEntry(
+    const saved = MedicalRecordEntry(
       id: 'upload-3',
       petName: 'Moka',
       title: 'Rabbia',
@@ -45,7 +45,7 @@ void main() {
       detailSource: '',
       createdAt: '',
       category: RecordCategory.vaccine,
-      timeline: const [],
+      timeline: [],
     );
     final server = [_record('upload-3', 'Rabbia'), _record('a', 'vecchio.pdf')];
 

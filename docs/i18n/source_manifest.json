@@ -3465,7 +3465,7 @@
     }
   },
   "ui:marketplaceFieldPrice": {
-    "source": "81e30b6c57ace9edac4a6a943ef7036fd2b2c92a3d3d874fc0b18cafffeae13a",
+    "source": "60161dde3beb11ef1d40b4111cedbbdab016c0e3dc9cf483cc3fb16ace4d4e0b",
     "targets": {
       "en": "e08187962944933cca1e29d29490535069851351e16f358089e28fbe3c6aa3a2",
       "es": "a30a1628df632a55e7f2edc3cb088e9419d6cb452ceafc4b59372b8573280252",
@@ -10044,7 +10044,7 @@
     }
   },
   "ui:activitiesEventsSubtitle": {
-    "source": "37daad9cc556489ba4bc2b3dacf15909db39d28741423a8370a0b2d64a63da90",
+    "source": "edd3bf0fe528ed94cae10b37058cb5d77e100090b04f93f447d62fb58c91c20e",
     "targets": {
       "en": "35afec6b1d776a21539768df0c0cc4effae15fab5641d40c503179a8679285c9",
       "es": "924d82e008dd02f64543abeec5907e8dca90f59e0557b673650a62862b0e12ff",
@@ -15961,7 +15961,7 @@
     "targets": {
       "en": "8a9a791afbcdc84a08289385e452abfe49005df6e711b492480eb2a41f5552a1",
       "es": "7ece7f8dd960fec5776bfc52170ddcc5d792011508287259fefb74a5a73bf363",
-      "de": "875203a60e442ec83ae94bf734a123ac25ff5693679ec9524d4332046aedc262",
+      "de": "1cb92c1e83cf42e99942992673f989510e416f75c9a9253c45e161698d610a4d",
       "fr": "16ee2c46de3d5b076b3ef40a7d918b939d2687b83c9e2c22cba4c9f04d66546e"
     }
   },
@@ -16425,12 +16425,12 @@
     }
   },
   "backend:dosage_answer": {
-    "source": "d3587635e6a78de22fcc2dfcfae3389a4c98d7a47d2646d2f8ed53aec1eb0f19",
+    "source": "a8f4ebff56538b2b0a61101a4ae6b63e57fa7bd7820a1ffd31b26bf2b6ca3dc6",
     "targets": {
-      "en": "799baf13fc535ad13777c0f66d3c38af46ef1ca4925049264ede01c5d13e1192",
-      "es": "212a55fc734722050a30e9e13862fb9fb6d57267162d98801d6a728939a3066d",
-      "de": "66663dbd55063c5fc42bff0eb16ecff8147bb17a3567e374b4f706481c1691ca",
-      "fr": "41b4538f6fa405cd9ab1018bbc7cd84fffa4f6d716bcbef49b2583bf57369928"
+      "en": "2e7f15704befb6f005290b9fce985083a6a061637ddd37495a07a02913aaa3cc",
+      "es": "877a6c07a35acb07a72223d9864c1beed516f8723ab0fc4019a61058e6f799a5",
+      "de": "f56f35c0ecae6ca51342eb97440eb9bdaa9790d2ff55c8cbab9c20c2c6fd914b",
+      "fr": "cb9c1c17a465627d312d6831864426a2fac81afcf095c106c7e99638dd054c4b"
     }
   },
   "backend:dosage_limitation": {
@@ -16452,7 +16452,7 @@
     }
   },
   "backend:provider_failure": {
-    "source": "ad8dfefbea0be45fe3a6e82efadcda736b8ed931aca093c0a3bef65fee0b08d0",
+    "source": "3e2a2a74a58629c459e59d9c4baa006c242d8e622f5b1c9aec3227492e0fb514",
     "targets": {
       "en": "adf600bb2baf78087e650095f677f8f87361193dec58b888aab6940d02e72ba2",
       "es": "5a83a086d8274c4538aeabbb8a24d08e6696d587cb04908a540ff316a1ce5830",
@@ -16467,6 +16467,24 @@
       "es": "4bdd15f94d6f8c8c1b2d85220f99e3d3795cb872ff16cdbb62cfc4a4e03e05ec",
       "de": "4b2aa5846ac133522a0d780f50fff68d101920e97dbaae1c83a931b66807f177",
       "fr": "e23092ea112ade3e3126682ed9727233d086cb50647ee5c3c3a5ff2fbe2d960d"
+    }
+  },
+  "backend:provider_failure_evidence": {
+    "source": "688abb9cd7ba4323def0b688567497076bedb69d0e46d89bbbfb26c127cfef22",
+    "targets": {
+      "en": "5932b1558427f3ed43dcb08741bd4af40c87ab0a28db2009dfcca6a6484f7ef7",
+      "es": "b94e60651866e2df6be33679401559a74d783456f64f641fbcf51c9d96403697",
+      "de": "33c65f054c932fa55326c625ed4d40800fb8504b534cc6ecdabd4d2aca92b490",
+      "fr": "d15e50a41d8012ccf1ff7dd98cc39ce2ffc97a5bbaf8eadcd54d8e8986b8084f"
+    }
+  },
+  "backend:provider_failure_evidence_limitation": {
+    "source": "4008db1e901a2a1940dfbcd044095e2ee1c5deb8ef176605d48107ddf8d37db9",
+    "targets": {
+      "en": "4c9eb67ff3e62644f3474df20f0af3f55961f15fd511bb492c38a87ed58616b7",
+      "es": "c1cf57eb5f098c869921cc00f5acb65e6043286875528a442e3ad70036ad4bbe",
+      "de": "7d101e6fe089252c66897041668855b95c481e4da1770dcd0ca55f9648a62ca4",
+      "fr": "652741ffafb0b88f4cb53f167642b635fb03ca83779106eeaeb9c04b5953312e"
     }
   },
   "backend:consent_request": {
