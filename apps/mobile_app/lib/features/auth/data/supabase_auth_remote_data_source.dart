@@ -80,6 +80,7 @@ class SupabaseAuthRemoteDataSource implements AuthRemoteDataSource {
         data: {
           if (request.displayName != null && request.displayName!.trim().isNotEmpty)
             'display_name': request.displayName!.trim(),
+          if (request.phone != null && request.phone!.isNotEmpty) 'phone': request.phone,
           'onboarding_completed': false,
           'preferred_locale': LanguageStore.instance.variant.languageCode,
           'preferred_locale_variant': LanguageStore.instance.variant.id,

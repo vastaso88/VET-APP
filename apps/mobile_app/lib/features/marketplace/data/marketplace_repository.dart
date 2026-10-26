@@ -12,8 +12,8 @@ import '../../territory/domain/territory.dart';
 import '../domain/marketplace_listing.dart';
 import 'listing_photo_store.dart';
 
-/// The search radius was missing, not positive or above the maximum
-/// ([marketplaceMaxRadiusKm]). The backend refuses such a request too; this
+/// The search radius was missing, below the minimum or above the maximum
+/// ([marketplaceMinRadiusKm] to [marketplaceMaxRadiusKm]). The backend refuses such a request too; this
 /// is the same rule checked before anything is asked.
 class InvalidListingRadiusException implements Exception {
   const InvalidListingRadiusException(this.radiusKm);
@@ -22,7 +22,7 @@ class InvalidListingRadiusException implements Exception {
 
   @override
   String toString() => 'Invalid marketplace radius: $radiusKm km '
-      '(1 m to $marketplaceMaxRadiusKm km)';
+      '($marketplaceMinRadiusKm to $marketplaceMaxRadiusKm km)';
 }
 
 /// Thrown when someone other than the author tries to change or delete a
@@ -83,7 +83,7 @@ class MarketplaceRepository {
 
   /// The ads a search can show: those of [country] (default: the owner's)
   /// within [radiusKm] of [center], at most [marketplaceMaxRadiusKm]. A
-  /// radius outside (0, max] is refused ([InvalidListingRadiusException]) -
+  /// radius outside [min, max] is refused ([InvalidListingRadiusException]) -
   /// there is no unlimited search. In production the backend answers
   /// (`GET /marketplace/listings`, which enforces the same rules); without a
   /// backend address or session the table is read directly with the same
@@ -94,7 +94,7 @@ class MarketplaceRepository {
     required double radiusKm,
     String? country,
   }) async {
-    if (radiusKm.isNaN || radiusKm <= 0 || radiusKm > marketplaceMaxRadiusKm) {
+    if (radiusKm.isNaN || radiusKm < marketplaceMinRadiusKm || radiusKm > marketplaceMaxRadiusKm) {
       throw InvalidListingRadiusException(radiusKm);
     }
     final countryCode = (country ?? currentTerritory().countryCode).toUpperCase();

@@ -3,6 +3,7 @@ import pytest
 from packages.core.domain.territory.rules import (
     KNOWN_COUNTRIES,
     MARKETPLACE_MAX_RADIUS_KM,
+    MARKETPLACE_MIN_RADIUS_KM,
     is_known_country,
     normalize_country,
     rules_for,
@@ -44,5 +45,5 @@ def test_normalisation_and_known_set() -> None:
 
 
 def test_thirty_miles_fit_inside_the_maximum_radius() -> None:
-    assert MARKETPLACE_MAX_RADIUS_KM == 50.0
+    assert (MARKETPLACE_MIN_RADIUS_KM, MARKETPLACE_MAX_RADIUS_KM) == (1.0, 300.0)
     assert 30 * 1.609344 <= MARKETPLACE_MAX_RADIUS_KM

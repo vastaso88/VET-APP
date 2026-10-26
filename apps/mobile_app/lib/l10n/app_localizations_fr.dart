@@ -1182,6 +1182,30 @@ class AppLocalizationsFr extends AppLocalizations {
       'Le marché de l\'occasion n\'affiche que les annonces près de chez vous. Définissez votre position dans Paramètres → Localisation pour les voir.';
 
   @override
+  String get marketplaceSetLocationAction => 'Définir ma position';
+
+  @override
+  String get marketplaceDistanceOther => 'Autre';
+
+  @override
+  String marketplaceDistanceOtherValue(String distance) {
+    return 'Autre : $distance';
+  }
+
+  @override
+  String get marketplaceDistanceDialogTitle => 'Distance maximale';
+
+  @override
+  String marketplaceDistanceDialogHelp(int min, int max, String unit) {
+    return 'Saisissez un nombre entier de $min à $max $unit.';
+  }
+
+  @override
+  String marketplaceDistanceDialogInvalid(int min, int max, String unit) {
+    return 'Valeur non valide : saisissez un nombre entier de $min à $max $unit.';
+  }
+
+  @override
   String get marketplaceNoLiveAnimalsNote =>
       'Dans votre pays, le marché de l\'occasion n\'accepte pas d\'annonces d\'animaux vivants : uniquement des produits et services pour animaux.';
 
@@ -6415,4 +6439,19 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get remindersNotifOffAction => 'Activer';
+
+  @override
+  String get authPhoneLabel => 'Numéro de téléphone (facultatif)';
+
+  @override
+  String get authPhoneHelp =>
+      'Facultatif. Il reste dans votre profil et vous pouvez le modifier ou le supprimer à tout moment.';
+
+  @override
+  String get phonePickerTitle => 'Choisissez l\'indicatif';
+
+  @override
+  String phonePickerSemantics(String country, String dial) {
+    return 'Indicatif téléphonique : $country (+$dial)';
+  }
 }

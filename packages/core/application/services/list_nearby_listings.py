@@ -7,6 +7,7 @@ from packages.core.domain.geo.models import Coordinates, haversine_distance_km
 from packages.core.domain.marketplace.models import ListingCategory, MarketplaceListing
 from packages.core.domain.territory.rules import (
     MARKETPLACE_MAX_RADIUS_KM,
+    MARKETPLACE_MIN_RADIUS_KM,
     is_known_country,
     normalize_country,
 )
@@ -16,7 +17,7 @@ from packages.shared.errors.base import ValidationError
 class ListNearbyListingsInput(BaseModel):
     buyer_location: Coordinates
     # Required, never defaulted: the Mercatino is local, a search always has a
-    # radius. Validated in the service (0 < radius <= MARKETPLACE_MAX_RADIUS_KM).
+    # radius. Validated in the service (MIN_RADIUS_KM <= radius <= MAX_RADIUS_KM).
     max_distance_km: float
     country: str
     category: ListingCategory | None = None
@@ -41,9 +42,10 @@ class ListNearbyListingsService:
 
     def execute(self, data: ListNearbyListingsInput) -> ListNearbyListingsOutput:
         radius = data.max_distance_km
-        if not 0 < radius <= MARKETPLACE_MAX_RADIUS_KM:
+        if not MARKETPLACE_MIN_RADIUS_KM <= radius <= MARKETPLACE_MAX_RADIUS_KM:
             raise ValidationError(
-                f"Il raggio di ricerca deve essere tra 0 e {MARKETPLACE_MAX_RADIUS_KM:g} km."
+                "Il raggio di ricerca deve essere tra "
+                f"{MARKETPLACE_MIN_RADIUS_KM:g} e {MARKETPLACE_MAX_RADIUS_KM:g} km."
             )
         if not is_known_country(data.country):
             raise ValidationError("Paese non supportato per il Mercatino.")

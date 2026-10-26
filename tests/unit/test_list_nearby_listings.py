@@ -54,8 +54,8 @@ def test_ads_of_other_countries_are_never_returned_however_close() -> None:
     assert service.execute(_search(10, "DE")).listings == []
 
 
-@pytest.mark.parametrize("radius", [0, -1, 50.01, 51, 1000, float("nan")])
-def test_a_radius_outside_zero_to_fifty_km_is_refused(radius: float) -> None:
+@pytest.mark.parametrize("radius", [0, 0.5, 0.99, -1, 300.01, 301, 5000, float("nan")])
+def test_a_radius_outside_one_to_three_hundred_km_is_refused(radius: float) -> None:
     service = _service(_listing("a", 1))
 
     with pytest.raises(ValidationError):
@@ -63,9 +63,16 @@ def test_a_radius_outside_zero_to_fifty_km_is_refused(radius: float) -> None:
 
 
 def test_the_maximum_radius_itself_is_accepted() -> None:
-    service = _service(_listing("a", 49), _listing("b", 60))
+    service = _service(_listing("a", 49), _listing("b", 60), _listing("c", 299), _listing("d", 310))
 
     assert [i.id for i in service.execute(_search(50)).listings] == ["a"]
+    assert [i.id for i in service.execute(_search(300)).listings] == ["a", "b", "c"]
+
+
+def test_the_minimum_radius_itself_is_accepted() -> None:
+    service = _service(_listing("a", 0.5), _listing("b", 5))
+
+    assert [i.id for i in service.execute(_search(1)).listings] == ["a"]
 
 
 def test_an_unknown_country_is_refused() -> None:

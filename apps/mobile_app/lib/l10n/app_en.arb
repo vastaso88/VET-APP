@@ -526,6 +526,45 @@
   "marketplaceIntro": "Buy, sell and give away pet items with other owners.",
   "marketplaceEmptyFiltered": "No listings match these filters yet.",
   "marketplaceNeedsLocation": "The marketplace only shows ads near you. Set your location in Settings → Location to see them.",
+  "marketplaceSetLocationAction": "Set your location",
+  "marketplaceDistanceOther": "Other",
+  "marketplaceDistanceOtherValue": "Other: {distance}",
+  "@marketplaceDistanceOtherValue": {
+    "placeholders": {
+      "distance": {
+        "type": "String"
+      }
+    }
+  },
+  "marketplaceDistanceDialogTitle": "Maximum distance",
+  "marketplaceDistanceDialogHelp": "Enter a whole number from {min} to {max} {unit}.",
+  "@marketplaceDistanceDialogHelp": {
+    "placeholders": {
+      "min": {
+        "type": "int"
+      },
+      "max": {
+        "type": "int"
+      },
+      "unit": {
+        "type": "String"
+      }
+    }
+  },
+  "marketplaceDistanceDialogInvalid": "Invalid value: enter a whole number from {min} to {max} {unit}.",
+  "@marketplaceDistanceDialogInvalid": {
+    "placeholders": {
+      "min": {
+        "type": "int"
+      },
+      "max": {
+        "type": "int"
+      },
+      "unit": {
+        "type": "String"
+      }
+    }
+  },
   "marketplaceNoLiveAnimalsNote": "In your country the marketplace does not allow ads for live animals: only products and services for animals.",
   "marketplaceNoLiveAnimalsConfirm": "I confirm this ad does not offer a live animal (sale, gift or rehoming)",
   "marketplaceNoLiveAnimalsRequired": "Confirm that the ad does not offer a live animal",
@@ -3672,5 +3711,19 @@
   "remindersNotifPermNotNow": "Not now",
   "remindersNotifPermAllow": "Allow",
   "remindersNotifOffBanner": "Notifications are turned off: reminders won't make a sound",
-  "remindersNotifOffAction": "Turn on"
+  "remindersNotifOffAction": "Turn on",
+  "authPhoneLabel": "Phone number (optional)",
+  "authPhoneHelp": "Optional. It stays in your profile and you can change or remove it at any time.",
+  "phonePickerTitle": "Choose the country code",
+  "phonePickerSemantics": "Country code: {country} (+{dial})",
+  "@phonePickerSemantics": {
+    "placeholders": {
+      "country": {
+        "type": "String"
+      },
+      "dial": {
+        "type": "String"
+      }
+    }
+  }
 }

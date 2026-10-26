@@ -472,6 +472,49 @@ String? normalizePhoneNumber(String input, [String? defaultCountry]) {
   return '+${format.dialCode}$national';
 }
 
+/// The flag of [countryCode] as an emoji (two regional-indicator letters).
+String countryFlagEmoji(String countryCode) {
+  final code = countryCode.toUpperCase();
+  if (code.length != 2) return '';
+  return String.fromCharCodes(code.runes.map((rune) => 0x1F1E6 + rune - 0x41));
+}
+
+/// Countries offered by a phone-prefix picker: the variant's own first, then
+/// the others by name in the app language.
+List<RegionalFormat> phoneCountriesForPicker() {
+  final own = appCountryCode();
+  final others = _formats.values.where((format) => format.countryCode != own).toList()
+    ..sort((a, b) => (appCountryName(a.countryCode) ?? a.countryCode)
+        .compareTo(appCountryName(b.countryCode) ?? b.countryCode));
+  return [
+    if (_formats[own] != null) _formats[own]!,
+    ...others,
+  ];
+}
+
+/// The country whose dial code starts an international number ("+447911…" →
+/// GB), or null for a number outside the table.
+RegionalFormat? regionalFormatForInternationalNumber(String international) {
+  final digits = international.replaceAll(RegExp(r'\D'), '');
+  return digits.isEmpty ? null : _formatForDialCode(digits);
+}
+
+/// A stored number ("+447911123456") split for an edit form: the country of
+/// its dial code and the national digits grouped for reading ("7911 123456").
+/// [countryCode] is null (and [national] the text as stored) when the number
+/// is not in the table or not valid.
+({String? countryCode, String national}) splitPhoneNumber(String stored) {
+  final normalized = normalizePhoneNumber(stored);
+  final format = normalized == null ? null : _formatForDialCode(normalized.substring(1));
+  if (normalized == null || format == null) return (countryCode: null, national: stored.trim());
+  final grouped = formatPhoneNumber(normalized);
+  final dial = '+${format.dialCode} ';
+  return (
+    countryCode: format.countryCode,
+    national: grouped.startsWith(dial) ? grouped.substring(dial.length) : grouped,
+  );
+}
+
 /// [normalizePhoneNumber] grouped for reading ("+44 7911 123456"); [input]
 /// unchanged when it is not a valid number.
 String formatPhoneNumber(String input, [String? defaultCountry]) {

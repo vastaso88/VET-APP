@@ -102,7 +102,7 @@ void main() {
     test('a search without a valid radius is refused, a valid one is served', () async {
       final repository = MarketplaceRepository.inMemory([_listing('a')]);
 
-      for (final bad in [0.0, -5.0, 50.1, 500.0, double.nan]) {
+      for (final bad in [0.0, 0.5, -5.0, 300.1, 500.0, double.nan]) {
         await expectLater(
           repository.loadNearbyListings(center: _me, radiusKm: bad),
           throwsA(isA<InvalidListingRadiusException>()),

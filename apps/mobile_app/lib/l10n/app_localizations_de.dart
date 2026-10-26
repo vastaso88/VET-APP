@@ -1186,6 +1186,30 @@ class AppLocalizationsDe extends AppLocalizations {
       'Der Gebrauchtmarkt zeigt nur Anzeigen in Ihrer Nähe. Legen Sie Ihren Standort unter Einstellungen → Standort fest, um sie zu sehen.';
 
   @override
+  String get marketplaceSetLocationAction => 'Standort festlegen';
+
+  @override
+  String get marketplaceDistanceOther => 'Andere';
+
+  @override
+  String marketplaceDistanceOtherValue(String distance) {
+    return 'Andere: $distance';
+  }
+
+  @override
+  String get marketplaceDistanceDialogTitle => 'Maximale Entfernung';
+
+  @override
+  String marketplaceDistanceDialogHelp(int min, int max, String unit) {
+    return 'Geben Sie eine ganze Zahl von $min bis $max $unit ein.';
+  }
+
+  @override
+  String marketplaceDistanceDialogInvalid(int min, int max, String unit) {
+    return 'Ungültiger Wert: Geben Sie eine ganze Zahl von $min bis $max $unit ein.';
+  }
+
+  @override
   String get marketplaceNoLiveAnimalsNote =>
       'In Ihrem Land sind auf dem Gebrauchtmarkt keine Anzeigen für lebende Tiere erlaubt: nur Produkte und Dienstleistungen für Tiere.';
 
@@ -6409,4 +6433,19 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get remindersNotifOffAction => 'Aktivieren';
+
+  @override
+  String get authPhoneLabel => 'Telefonnummer (optional)';
+
+  @override
+  String get authPhoneHelp =>
+      'Optional. Die Nummer bleibt in Ihrem Profil, und Sie können sie jederzeit ändern oder entfernen.';
+
+  @override
+  String get phonePickerTitle => 'Ländervorwahl wählen';
+
+  @override
+  String phonePickerSemantics(String country, String dial) {
+    return 'Ländervorwahl: $country (+$dial)';
+  }
 }

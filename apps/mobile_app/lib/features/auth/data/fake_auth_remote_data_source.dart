@@ -85,6 +85,7 @@ class FakeAuthRemoteDataSource implements AuthRemoteDataSource {
           : request.displayName?.trim(),
       createdAt: DateTime.now().toUtc(),
       onboardingCompleted: false,
+      phone: request.phone,
     );
     _users[normalizedEmail] = user;
     await _persistUsers();

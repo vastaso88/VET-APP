@@ -12,7 +12,7 @@ router = APIRouter(prefix="/marketplace", tags=["marketplace"])
 
 
 # The Mercatino is local: no radius, no search. `radius_km` has no default and
-# a value outside (0, MARKETPLACE_MAX_RADIUS_KM] is refused (400), whatever
+# a value outside [MARKETPLACE_MIN_RADIUS_KM, MARKETPLACE_MAX_RADIUS_KM] is refused (400), whatever
 # the app sends; `country` picks the only ads that are ever returned.
 @router.get("/listings")
 def list_nearby_listings(

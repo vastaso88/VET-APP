@@ -15,9 +15,11 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
-# Largest Mercatino search radius. 30 miles (48.3 km) fits inside it, so one
-# kilometre cap serves owners who read miles too. There is no "everywhere".
-MARKETPLACE_MAX_RADIUS_KM = 50.0
+# Mercatino search radius, in whole kilometres: 1 to 300 (owner decision
+# 2026-10-26, default 50 in the app). Miles are only a display unit, the app
+# always sends km. 30 miles (48.3 km) fits inside. There is no "everywhere".
+MARKETPLACE_MIN_RADIUS_KM = 1.0
+MARKETPLACE_MAX_RADIUS_KM = 300.0
 
 SOURCE_COUNTRY = "IT"
 

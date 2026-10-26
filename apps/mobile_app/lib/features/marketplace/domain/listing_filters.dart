@@ -3,10 +3,10 @@ import '../../location/domain/geo_math.dart';
 import '../../territory/domain/territory.dart';
 import 'marketplace_listing.dart';
 
-/// Preselected when the user has a position (owner decision, 2026-10-07):
-/// 25 km, or 15 mi for owners who read miles. There is no "everywhere": a
-/// search always has a radius and a centre (owner decision, 2026-10-14).
-const defaultListingDistanceKm = 25.0;
+/// Preselected when the user has a position (owner decision, 2026-10-26):
+/// 50 km, whatever the unit shown. There is no "everywhere": a search always
+/// has a radius and a centre (owner decision, 2026-10-14).
+const defaultListingDistanceKm = defaultMarketplaceRadiusKmValue;
 
 class ListingFilter {
   const ListingFilter({

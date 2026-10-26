@@ -526,6 +526,45 @@
   "marketplaceIntro": "Achetez, vendez et donnez des articles pour animaux avec d'autres propriétaires.",
   "marketplaceEmptyFiltered": "Aucune annonce avec ces filtres pour le moment.",
   "marketplaceNeedsLocation": "Le marché de l'occasion n'affiche que les annonces près de chez vous. Définissez votre position dans Paramètres → Localisation pour les voir.",
+  "marketplaceSetLocationAction": "Définir ma position",
+  "marketplaceDistanceOther": "Autre",
+  "marketplaceDistanceOtherValue": "Autre : {distance}",
+  "@marketplaceDistanceOtherValue": {
+    "placeholders": {
+      "distance": {
+        "type": "String"
+      }
+    }
+  },
+  "marketplaceDistanceDialogTitle": "Distance maximale",
+  "marketplaceDistanceDialogHelp": "Saisissez un nombre entier de {min} à {max} {unit}.",
+  "@marketplaceDistanceDialogHelp": {
+    "placeholders": {
+      "min": {
+        "type": "int"
+      },
+      "max": {
+        "type": "int"
+      },
+      "unit": {
+        "type": "String"
+      }
+    }
+  },
+  "marketplaceDistanceDialogInvalid": "Valeur non valide : saisissez un nombre entier de {min} à {max} {unit}.",
+  "@marketplaceDistanceDialogInvalid": {
+    "placeholders": {
+      "min": {
+        "type": "int"
+      },
+      "max": {
+        "type": "int"
+      },
+      "unit": {
+        "type": "String"
+      }
+    }
+  },
   "marketplaceNoLiveAnimalsNote": "Dans votre pays, le marché de l'occasion n'accepte pas d'annonces d'animaux vivants : uniquement des produits et services pour animaux.",
   "marketplaceNoLiveAnimalsConfirm": "Je confirme que cette annonce ne propose pas d'animal vivant (vente, don ou cession)",
   "marketplaceNoLiveAnimalsRequired": "Confirmez que l'annonce ne propose pas d'animal vivant",
@@ -3672,5 +3711,19 @@
   "remindersNotifPermNotNow": "Pas maintenant",
   "remindersNotifPermAllow": "Autoriser",
   "remindersNotifOffBanner": "Les notifications sont désactivées : les rappels ne sonneront pas",
-  "remindersNotifOffAction": "Activer"
+  "remindersNotifOffAction": "Activer",
+  "authPhoneLabel": "Numéro de téléphone (facultatif)",
+  "authPhoneHelp": "Facultatif. Il reste dans votre profil et vous pouvez le modifier ou le supprimer à tout moment.",
+  "phonePickerTitle": "Choisissez l'indicatif",
+  "phonePickerSemantics": "Indicatif téléphonique : {country} (+{dial})",
+  "@phonePickerSemantics": {
+    "placeholders": {
+      "country": {
+        "type": "String"
+      },
+      "dial": {
+        "type": "String"
+      }
+    }
+  }
 }

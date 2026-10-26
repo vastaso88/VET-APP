@@ -2114,6 +2114,42 @@ abstract class AppLocalizations {
   /// **'Il Mercatino mostra solo gli annunci vicino a te. Imposta la tua posizione in Impostazioni → Località per vederli.'**
   String get marketplaceNeedsLocation;
 
+  /// No description provided for @marketplaceSetLocationAction.
+  ///
+  /// In it, this message translates to:
+  /// **'Imposta la posizione'**
+  String get marketplaceSetLocationAction;
+
+  /// No description provided for @marketplaceDistanceOther.
+  ///
+  /// In it, this message translates to:
+  /// **'Altro'**
+  String get marketplaceDistanceOther;
+
+  /// No description provided for @marketplaceDistanceOtherValue.
+  ///
+  /// In it, this message translates to:
+  /// **'Altro: {distance}'**
+  String marketplaceDistanceOtherValue(String distance);
+
+  /// No description provided for @marketplaceDistanceDialogTitle.
+  ///
+  /// In it, this message translates to:
+  /// **'Distanza massima'**
+  String get marketplaceDistanceDialogTitle;
+
+  /// No description provided for @marketplaceDistanceDialogHelp.
+  ///
+  /// In it, this message translates to:
+  /// **'Scrivi un numero intero da {min} a {max} {unit}.'**
+  String marketplaceDistanceDialogHelp(int min, int max, String unit);
+
+  /// No description provided for @marketplaceDistanceDialogInvalid.
+  ///
+  /// In it, this message translates to:
+  /// **'Valore non valido: scrivi un numero intero da {min} a {max} {unit}.'**
+  String marketplaceDistanceDialogInvalid(int min, int max, String unit);
+
   /// No description provided for @marketplaceNoLiveAnimalsNote.
   ///
   /// In it, this message translates to:
@@ -10753,6 +10789,30 @@ abstract class AppLocalizations {
   /// In it, this message translates to:
   /// **'Attiva'**
   String get remindersNotifOffAction;
+
+  /// No description provided for @authPhoneLabel.
+  ///
+  /// In it, this message translates to:
+  /// **'Numero di telefono (facoltativo)'**
+  String get authPhoneLabel;
+
+  /// No description provided for @authPhoneHelp.
+  ///
+  /// In it, this message translates to:
+  /// **'Facoltativo. Resta nel tuo profilo e puoi cambiarlo o toglierlo in qualsiasi momento.'**
+  String get authPhoneHelp;
+
+  /// No description provided for @phonePickerTitle.
+  ///
+  /// In it, this message translates to:
+  /// **'Scegli il prefisso'**
+  String get phonePickerTitle;
+
+  /// No description provided for @phonePickerSemantics.
+  ///
+  /// In it, this message translates to:
+  /// **'Prefisso telefonico: {country} (+{dial})'**
+  String phonePickerSemantics(String country, String dial);
 }
 
 class _AppLocalizationsDelegate

@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:vet_app_mobile/app/shell/home_shell_page.dart';
 import 'package:vet_app_mobile/features/location/domain/coordinates.dart';
+import 'package:vet_app_mobile/features/marketplace/data/listing_radius_store.dart';
 import 'package:vet_app_mobile/features/marketplace/data/marketplace_repository.dart';
 import 'package:vet_app_mobile/features/marketplace/domain/marketplace_listing.dart';
 import 'package:vet_app_mobile/features/marketplace/presentation/pages/listing_detail_page.dart';
@@ -69,44 +71,127 @@ Future<void> _pumpPage(WidgetTester tester, {Coordinates? reference}) async {
 void main() {
   setUpAll(() => SharedPreferences.setMockInitialValues({}));
 
-  testWidgets('with a position, 25 km is preselected', (tester) async {
-    await _pumpPage(tester, reference: _me);
-
-    expect(find.text('Pallina vicina'), findsOneWidget);
-    expect(find.text('Gabbia a 20 km'), findsOneWidget);
-    expect(find.text('Gioco lontano'), findsNothing);
-    final chip = tester.widget<ChoiceChip>(find.widgetWithText(ChoiceChip, '25 km'));
-    expect(chip.selected, isTrue);
+  setUp(() {
+    SharedPreferences.setMockInitialValues({});
+    ListingRadiusStore.instance.resetForTest();
   });
 
-  testWidgets('the distance filter narrows the list', (tester) async {
+  testWidgets('with a position, 50 km is preselected', (tester) async {
     await _pumpPage(tester, reference: _me);
 
-    await tester.tap(find.widgetWithText(ChoiceChip, '5 km'));
-    await tester.pumpAndSettle();
     expect(find.text('Pallina vicina'), findsOneWidget);
-    expect(find.text('Collare a 4 km'), findsOneWidget);
-    expect(find.text('Gioco a 8 km'), findsNothing);
-
-    await tester.tap(find.widgetWithText(ChoiceChip, '2 km'));
-    await tester.pumpAndSettle();
-    expect(find.text('Pallina vicina'), findsOneWidget);
-    expect(find.text('Collare a 4 km'), findsNothing);
-
-    // The widest choice is the maximum, 50 km: 40 km is in, 60 km never is.
-    await tester.tap(find.widgetWithText(ChoiceChip, '50 km'));
-    await tester.pumpAndSettle();
     expect(find.text('Gioco a 40 km'), findsOneWidget);
     expect(find.text('Gioco lontano'), findsNothing);
+    final chip = tester.widget<ChoiceChip>(find.widgetWithText(ChoiceChip, '50 km'));
+    expect(chip.selected, isTrue);
+    expect(tester.widget<ChoiceChip>(find.byKey(const ValueKey('marketplace-radius-other'))).selected,
+        isFalse);
   });
 
-  testWidgets('there is no "everywhere" choice and the widest radius is 50 km', (tester) async {
+  testWidgets('the distance filter narrows and widens the list', (tester) async {
+    await _pumpPage(tester, reference: _me);
+
+    await tester.tap(find.widgetWithText(ChoiceChip, '10 km'));
+    await tester.pumpAndSettle();
+    expect(find.text('Gioco a 8 km'), findsOneWidget);
+    expect(find.text('Gabbia a 20 km'), findsNothing);
+
+    await tester.tap(find.widgetWithText(ChoiceChip, '25 km'));
+    await tester.pumpAndSettle();
+    expect(find.text('Gabbia a 20 km'), findsOneWidget);
+    expect(find.text('Gioco a 40 km'), findsNothing);
+
+    // 100 km now reaches the 60 km ad too; the old 50 km ceiling is gone.
+    await tester.tap(find.widgetWithText(ChoiceChip, '100 km'));
+    await tester.pumpAndSettle();
+    expect(find.text('Gioco lontano'), findsOneWidget);
+  });
+
+  testWidgets('there is no "everywhere" choice: 10, 25, 50, 100 km and Altro', (tester) async {
     await _pumpPage(tester, reference: _me);
 
     expect(find.text('Ovunque'), findsNothing);
-    for (final label in ['2 km', '5 km', '10 km', '25 km', '50 km']) {
+    for (final label in ['10 km', '25 km', '50 km', '100 km']) {
       expect(find.widgetWithText(ChoiceChip, label), findsOneWidget, reason: label);
     }
+    expect(
+      find.descendant(
+        of: find.byKey(const ValueKey('marketplace-radius-other')),
+        matching: find.text('Altro'),
+      ),
+      findsOneWidget,
+    );
+  });
+
+  group('Altro', () {
+    Future<void> enterOther(WidgetTester tester, String text) async {
+      await tester.tap(find.byKey(const ValueKey('marketplace-radius-other')));
+      await tester.pumpAndSettle();
+      await tester.enterText(find.byKey(const ValueKey('marketplace-radius-field')), text);
+      await tester.tap(find.byKey(const ValueKey('marketplace-radius-confirm')));
+      await tester.pumpAndSettle();
+    }
+
+    testWidgets('a typed distance filters the list, shows its value and is kept', (tester) async {
+      await _pumpPage(tester, reference: _me);
+
+      await enterOther(tester, '5');
+
+      expect(find.text('Collare a 4 km'), findsOneWidget);
+      expect(find.text('Gioco a 8 km'), findsNothing);
+      final other = tester.widget<ChoiceChip>(find.byKey(const ValueKey('marketplace-radius-other')));
+      expect(other.selected, isTrue);
+      expect(find.widgetWithText(ChoiceChip, 'Altro: 5 km'), findsOneWidget);
+      expect(tester.widget<ChoiceChip>(find.widgetWithText(ChoiceChip, '50 km')).selected, isFalse);
+      expect((await SharedPreferences.getInstance()).getInt('vet_app.marketplace_radius_km'), 5);
+    });
+
+    testWidgets('the choice is still there when the page is opened again', (tester) async {
+      await _pumpPage(tester, reference: _me);
+      await enterOther(tester, '5');
+
+      // A fresh start of the app: the store forgets, the phone remembers.
+      ListingRadiusStore.instance.resetForTest();
+      await tester.pumpWidget(const SizedBox());
+      await _pumpPage(tester, reference: _me);
+
+      expect(find.widgetWithText(ChoiceChip, 'Altro: 5 km'), findsOneWidget);
+      expect(find.text('Gioco a 8 km'), findsNothing);
+      expect(find.text('Collare a 4 km'), findsOneWidget);
+    });
+
+    testWidgets('a quick choice is kept too', (tester) async {
+      await _pumpPage(tester, reference: _me);
+      await tester.tap(find.widgetWithText(ChoiceChip, '100 km'));
+      await tester.pumpAndSettle();
+
+      ListingRadiusStore.instance.resetForTest();
+      await tester.pumpWidget(const SizedBox());
+      await _pumpPage(tester, reference: _me);
+
+      expect(tester.widget<ChoiceChip>(find.widgetWithText(ChoiceChip, '100 km')).selected, isTrue);
+      expect(find.text('Gioco lontano'), findsOneWidget);
+    });
+
+    testWidgets('values outside 1-300 or not whole are refused', (tester) async {
+      await _pumpPage(tester, reference: _me);
+
+      await tester.tap(find.byKey(const ValueKey('marketplace-radius-other')));
+      await tester.pumpAndSettle();
+      for (final bad in ['0', '301', '']) {
+        await tester.enterText(find.byKey(const ValueKey('marketplace-radius-field')), bad);
+        await tester.tap(find.byKey(const ValueKey('marketplace-radius-confirm')));
+        await tester.pumpAndSettle();
+        expect(find.byKey(const ValueKey('marketplace-radius-field')), findsOneWidget, reason: bad);
+        expect(find.textContaining('Valore non valido'), findsOneWidget, reason: bad);
+      }
+      expect((await SharedPreferences.getInstance()).getInt('vet_app.marketplace_radius_km'), isNull);
+
+      await tester.enterText(find.byKey(const ValueKey('marketplace-radius-field')), '300');
+      await tester.tap(find.byKey(const ValueKey('marketplace-radius-confirm')));
+      await tester.pumpAndSettle();
+      expect(find.widgetWithText(ChoiceChip, 'Altro: 300 km'), findsOneWidget);
+    });
   });
 
   testWidgets('ads from another country never show, even when very close', (tester) async {
@@ -129,7 +214,15 @@ void main() {
     expect(find.text('Gioco lontano'), findsNothing);
 
     await tester.tap(find.widgetWithText(ChoiceChip, 'Guinzagli, collari e pettorine'));
-    await tester.tap(find.widgetWithText(ChoiceChip, '2 km'));
+    await tester.pumpAndSettle();
+    expect(find.text('Collare a 4 km'), findsOneWidget);
+    expect(find.text('Gioco a 8 km'), findsNothing);
+
+    // 1 km (via "Altro") leaves the collar at 4 km out.
+    await tester.tap(find.byKey(const ValueKey('marketplace-radius-other')));
+    await tester.pumpAndSettle();
+    await tester.enterText(find.byKey(const ValueKey('marketplace-radius-field')), '1');
+    await tester.tap(find.byKey(const ValueKey('marketplace-radius-confirm')));
     await tester.pumpAndSettle();
     expect(find.text('Nessun annuncio con questi filtri per ora.'), findsOneWidget);
   });
@@ -150,29 +243,56 @@ void main() {
     expect(find.text('Pallina vicina'), findsOneWidget);
   });
 
-  testWidgets('without a position no ad is shown and the page asks for the position',
+  testWidgets('without a position no ad is shown, the page asks for it and offers the way',
       (tester) async {
     await _pumpPage(tester);
 
     expect(find.text('Pallina vicina'), findsNothing);
     expect(find.text('Gioco lontano'), findsNothing);
     expect(find.textContaining('Imposta la tua posizione'), findsOneWidget);
-    final chip = tester.widget<ChoiceChip>(find.widgetWithText(ChoiceChip, '2 km'));
+    final chip = tester.widget<ChoiceChip>(find.widgetWithText(ChoiceChip, '10 km'));
     expect(chip.onSelected, isNull);
+
+    // The button leads straight to Impostazioni → Località.
+    HomeShellNavigation.consumeLocationScroll();
+    await tester.tap(find.byKey(const ValueKey('marketplace-set-location')));
+    expect(find.widgetWithText(FilledButton, 'Imposta la posizione'), findsOneWidget);
+    expect(HomeShellNavigation.consumeLocationScroll(), isTrue);
+  });
+
+  testWidgets('with a position there is no set-location button', (tester) async {
+    await _pumpPage(tester, reference: _me);
+    expect(find.byKey(const ValueKey('marketplace-set-location')), findsNothing);
   });
 
   group('in the UK', () {
     setUp(() async => useLanguageVariant('en-GB'));
     tearDown(resetTerritoryForTest);
 
-    testWidgets('radius is in miles, up to 30 mi, with 15 mi preselected', (tester) async {
+    testWidgets('radius is shown in miles but kept in km, 31 mi (50 km) preselected', (tester) async {
       await _pumpPage(tester, reference: _me);
 
-      for (final label in ['1 mi', '3 mi', '5 mi', '15 mi', '30 mi']) {
+      for (final label in ['6 mi', '16 mi', '31 mi', '62 mi']) {
         expect(find.widgetWithText(ChoiceChip, label), findsOneWidget, reason: label);
       }
-      expect(tester.widget<ChoiceChip>(find.widgetWithText(ChoiceChip, '15 mi')).selected, isTrue);
+      expect(tester.widget<ChoiceChip>(find.widgetWithText(ChoiceChip, '31 mi')).selected, isTrue);
+      expect(ListingRadiusStore.instance.radiusKm, 50);
       expect(find.textContaining('Anywhere'), findsNothing);
+    });
+
+    testWidgets('"Other" takes miles and stores whole kilometres', (tester) async {
+      await _pumpPage(tester, reference: _me);
+
+      await tester.tap(find.byKey(const ValueKey('marketplace-radius-other')));
+      await tester.pumpAndSettle();
+      expect(find.textContaining('1 to 186 mi'), findsOneWidget);
+      await tester.enterText(find.byKey(const ValueKey('marketplace-radius-field')), '10');
+      await tester.tap(find.byKey(const ValueKey('marketplace-radius-confirm')));
+      await tester.pumpAndSettle();
+
+      expect(ListingRadiusStore.instance.radiusKm, 16);
+      expect((await SharedPreferences.getInstance()).getInt('vet_app.marketplace_radius_km'), 16);
+      expect(find.widgetWithText(ChoiceChip, 'Other: 10 mi'), findsOneWidget);
     });
   });
 

@@ -21,6 +21,7 @@ import '../../../first_run/presentation/pages/tutorial_page.dart';
 import '../../data/auth_repository_factory.dart';
 import '../../domain/auth_error_messages.dart';
 import '../widgets/auth_widgets.dart';
+import '../widgets/phone_number_field.dart';
 import 'legal_text_page.dart';
 import 'login_page.dart';
 
@@ -95,6 +96,7 @@ class RegisterPage extends StatefulWidget {
 class _RegisterPageState extends State<RegisterPage> {
   final _authRepository = const AuthRepositoryFactory().create();
   final _formKey = GlobalKey<FormState>();
+  final _phone = PhoneInputController();
   final _nameController = TextEditingController();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
@@ -111,6 +113,7 @@ class _RegisterPageState extends State<RegisterPage> {
 
   @override
   void dispose() {
+    _phone.dispose();
     _nameController.dispose();
     _emailController.dispose();
     _passwordController.dispose();
@@ -146,6 +149,7 @@ class _RegisterPageState extends State<RegisterPage> {
         email: _emailController.text.trim(),
         password: _passwordController.text,
         displayName: _nameController.text.trim(),
+        phone: _phone.e164,
       ),
     );
 
@@ -261,6 +265,12 @@ class _RegisterPageState extends State<RegisterPage> {
                   status: _status!,
                   title: _title(context.l10n),
                   message: _message(context.l10n)),
+            PhoneNumberField(
+              controller: _phone,
+              label: context.l10n.authPhoneLabel,
+              helperText: context.l10n.authPhoneHelp,
+            ),
+            const SizedBox(height: AppSpacing.md),
             AuthInputField(
               controller: _nameController,
               label: context.l10n.authNameLabel,

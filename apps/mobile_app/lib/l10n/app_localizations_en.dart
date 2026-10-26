@@ -1163,6 +1163,30 @@ class AppLocalizationsEn extends AppLocalizations {
       'The marketplace only shows ads near you. Set your location in Settings → Location to see them.';
 
   @override
+  String get marketplaceSetLocationAction => 'Set your location';
+
+  @override
+  String get marketplaceDistanceOther => 'Other';
+
+  @override
+  String marketplaceDistanceOtherValue(String distance) {
+    return 'Other: $distance';
+  }
+
+  @override
+  String get marketplaceDistanceDialogTitle => 'Maximum distance';
+
+  @override
+  String marketplaceDistanceDialogHelp(int min, int max, String unit) {
+    return 'Enter a whole number from $min to $max $unit.';
+  }
+
+  @override
+  String marketplaceDistanceDialogInvalid(int min, int max, String unit) {
+    return 'Invalid value: enter a whole number from $min to $max $unit.';
+  }
+
+  @override
   String get marketplaceNoLiveAnimalsNote =>
       'In your country the marketplace does not allow ads for live animals: only products and services for animals.';
 
@@ -6338,4 +6362,19 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get remindersNotifOffAction => 'Turn on';
+
+  @override
+  String get authPhoneLabel => 'Phone number (optional)';
+
+  @override
+  String get authPhoneHelp =>
+      'Optional. It stays in your profile and you can change or remove it at any time.';
+
+  @override
+  String get phonePickerTitle => 'Choose the country code';
+
+  @override
+  String phonePickerSemantics(String country, String dial) {
+    return 'Country code: $country (+$dial)';
+  }
 }

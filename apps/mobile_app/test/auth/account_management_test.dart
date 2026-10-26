@@ -24,6 +24,35 @@ Future<AuthRepositoryImpl> _signedIn() async {
 }
 
 void main() {
+  test('the optional phone given at sign-up is kept on the account, E.164', () async {
+    SharedPreferences.setMockInitialValues({});
+    final repository = AuthRepositoryImpl(
+      remoteDataSource: FakeAuthRemoteDataSource(),
+      sessionStore: MemoryAuthSessionStore(),
+    );
+
+    final withPhone = await repository.signUpWithPassword(
+      const AuthSignUpRequest(
+        email: 'con.telefono@vetapp.local',
+        password: 'secret-1',
+        displayName: 'Ada',
+        phone: '+393331234567',
+      ),
+    );
+    expect(withPhone.isSuccess, isTrue);
+    expect(repository.currentContext.user!.phone, '+393331234567');
+
+    final without = await repository.signUpWithPassword(
+      const AuthSignUpRequest(
+        email: 'senza.telefono@vetapp.local',
+        password: 'secret-1',
+        displayName: 'Bea',
+      ),
+    );
+    expect(without.isSuccess, isTrue);
+    expect(repository.currentContext.user!.phone, isNull);
+  });
+
   test('saving the profile updates the signed-in user everywhere', () async {
     final repository = await _signedIn();
 

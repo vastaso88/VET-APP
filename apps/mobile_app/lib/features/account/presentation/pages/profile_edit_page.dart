@@ -14,6 +14,7 @@ import '../../../../shared/widgets/pet_loader.dart';
 import '../../../auth/data/auth_repository_factory.dart';
 import '../../../auth/domain/auth_error_messages.dart';
 import '../../../auth/presentation/widgets/auth_widgets.dart';
+import '../../../auth/presentation/widgets/phone_number_field.dart';
 import '../../data/profile_photo_repository.dart';
 import '../widgets/account_page_scaffold.dart';
 import '../widgets/profile_avatar.dart';
@@ -34,7 +35,7 @@ class _ProfileEditPageState extends State<ProfileEditPage> {
   final _formKey = GlobalKey<FormState>();
   late final TextEditingController _firstName;
   late final TextEditingController _lastName;
-  late final TextEditingController _phone;
+  late final PhoneInputController _phone;
   final _photos = ProfilePhotoRepository();
 
   String? _avatarPath;
@@ -49,7 +50,7 @@ class _ProfileEditPageState extends State<ProfileEditPage> {
     final (first, last) = _splitName(user);
     _firstName = TextEditingController(text: first);
     _lastName = TextEditingController(text: last);
-    _phone = TextEditingController(text: user?.phone ?? '');
+    _phone = PhoneInputController(initialStored: user?.phone);
     _avatarPath = user?.avatarPath;
   }
 
@@ -123,7 +124,7 @@ class _ProfileEditPageState extends State<ProfileEditPage> {
           ProfileUpdate(
             firstName: _firstName.text,
             lastName: _lastName.text,
-            phone: _phone.text,
+            phone: _phone.e164,
             avatarPath: avatarPath,
           ),
         );
@@ -172,8 +173,8 @@ class _ProfileEditPageState extends State<ProfileEditPage> {
               ),
             ),
             const SizedBox(height: AppSpacing.sm),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
+            Wrap(
+              alignment: WrapAlignment.center,
               children: [
                 TextButton.icon(
                   onPressed: _saving ? null : _pickPhoto,
@@ -208,18 +209,10 @@ class _ProfileEditPageState extends State<ProfileEditPage> {
                   (value ?? '').trim().isEmpty ? l10n.accountProfileLastNameRequired : null,
             ),
             const SizedBox(height: AppSpacing.md),
-            AuthInputField(
+            PhoneNumberField(
               controller: _phone,
               label: l10n.accountProfilePhone,
-              hintText: l10n.accountProfilePhoneHint,
-              keyboardType: TextInputType.phone,
-              autofillHints: const [AutofillHints.telephoneNumber],
-              validator: (value) {
-                final text = (value ?? '').trim();
-                if (text.isEmpty) return null;
-                final valid = RegExp(r'^\+?[0-9 ()./-]{6,20}$').hasMatch(text);
-                return valid ? null : l10n.accountProfilePhoneInvalid;
-              },
+              helperText: l10n.authPhoneHelp,
             ),
             const SizedBox(height: AppSpacing.lg),
             Text(l10n.accountProfileEmailLabel, style: AppTextStyles.caption),

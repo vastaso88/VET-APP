@@ -1,5 +1,9 @@
-import 'package:flutter/material.dart';
+import 'dart:async';
 
+import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+
+import '../../../../app/shell/home_shell_page.dart';
 import '../../../../design_system/tokens/app_colors.dart';
 import '../../../../design_system/tokens/app_radii.dart';
 import '../../../../design_system/tokens/app_spacing.dart';
@@ -12,6 +16,7 @@ import '../../../location/domain/coordinates.dart';
 import '../../../location/presentation/reference_location.dart';
 import '../../../settings/data/unit_settings_store.dart';
 import '../../../territory/domain/territory.dart';
+import '../../data/listing_radius_store.dart';
 import '../../data/marketplace_repository.dart';
 import '../../domain/listing_filters.dart';
 import '../../domain/marketplace_listing.dart';
@@ -45,20 +50,36 @@ class MarketplacePage extends StatefulWidget {
 
 class _MarketplacePageState extends State<MarketplacePage> {
   late final MarketplaceRepository _repository = widget.repository ?? MarketplaceRepository();
-  // 25 km (15 mi for owners who read miles) until the owner picks another
-  // radius; there is no "everywhere".
-  late ListingFilter _filter = ListingFilter(
-    maxDistanceKm: defaultMarketplaceRadiusKm(miles: UnitSettingsStore.instance.system.usesMiles),
-  );
+  // The radius the owner chose last time (kept on the phone), 50 km until
+  // then; there is no "everywhere". Always km, whatever unit is shown.
+  late ListingFilter _filter = ListingFilter(maxDistanceKm: ListingRadiusStore.instance.radiusKm);
   late Future<_MarketplaceViewData> _dataFuture;
 
   @override
   void initState() {
     super.initState();
     _dataFuture = _loadData();
+    // The owner may set the position in Impostazioni and come back.
+    LocationPreferenceStore.instance.addListener(_onLocationChanged);
+  }
+
+  @override
+  void dispose() {
+    LocationPreferenceStore.instance.removeListener(_onLocationChanged);
+    super.dispose();
+  }
+
+  void _onLocationChanged() {
+    if (!mounted) return;
+    setState(() {
+      _dataFuture = _loadData();
+    });
   }
 
   Future<_MarketplaceViewData> _loadData() async {
+    // The saved radius is read before the first search, so it is the one asked.
+    await ListingRadiusStore.instance.ensureLoaded();
+    _filter = _filter.withMaxDistance(ListingRadiusStore.instance.radiusKm);
     final reference = await (widget.referenceLoader ?? loadMarketplaceReferenceLocation)();
     // Without a position nothing is asked of the backend or the table.
     final listings = reference == null
@@ -79,10 +100,20 @@ class _MarketplacePageState extends State<MarketplacePage> {
 
   /// A new radius asks again: the backend only returns what is inside it.
   void _selectRadius(double km) {
+    unawaited(ListingRadiusStore.instance.save(km));
     setState(() {
       _filter = _filter.withMaxDistance(km);
       _dataFuture = _loadData();
     });
+  }
+
+  /// "Altro": any whole number of km (or miles, shown as such) from 1 to 300.
+  Future<void> _askOtherRadius() async {
+    final km = await showDialog<double>(
+      context: context,
+      builder: (_) => _OtherRadiusDialog(currentKm: _filter.maxDistanceKm),
+    );
+    if (km != null) _selectRadius(km);
   }
 
   Future<void> _openCreateListing() async {
@@ -194,15 +225,34 @@ class _MarketplacePageState extends State<MarketplacePage> {
                     selected: _filter.maxDistanceKm,
                     enabled: data.referenceLocation != null,
                     onSelected: _selectRadius,
+                    onOther: _askOtherRadius,
                   ),
                   const SizedBox(height: AppSpacing.lg),
-                  if (matches.isEmpty)
+                  if (data.referenceLocation == null)
+                    Padding(
+                      padding: const EdgeInsets.symmetric(vertical: AppSpacing.xxl),
+                      child: Column(
+                        children: [
+                          Text(
+                            context.l10n.marketplaceNeedsLocation,
+                            style: AppTextStyles.bodySmall,
+                            textAlign: TextAlign.center,
+                          ),
+                          const SizedBox(height: AppSpacing.md),
+                          FilledButton.icon(
+                            key: const ValueKey('marketplace-set-location'),
+                            onPressed: HomeShellNavigation.showSettingsLocation,
+                            icon: const Icon(Icons.place_outlined),
+                            label: Text(context.l10n.marketplaceSetLocationAction),
+                          ),
+                        ],
+                      ),
+                    )
+                  else if (matches.isEmpty)
                     Padding(
                       padding: const EdgeInsets.symmetric(vertical: AppSpacing.xxl),
                       child: Text(
-                        data.referenceLocation == null
-                            ? context.l10n.marketplaceNeedsLocation
-                            : context.l10n.marketplaceEmptyFiltered,
+                        context.l10n.marketplaceEmptyFiltered,
                         style: AppTextStyles.bodySmall,
                         textAlign: TextAlign.center,
                       ),
@@ -376,11 +426,13 @@ class _DistanceFilterRow extends StatelessWidget {
     required this.selected,
     required this.enabled,
     required this.onSelected,
+    required this.onOther,
   });
 
   final double selected;
   final bool enabled;
   final ValueChanged<double> onSelected;
+  final VoidCallback onOther;
 
   @override
   Widget build(BuildContext context) {
@@ -397,18 +449,110 @@ class _DistanceFilterRow extends StatelessWidget {
               color: enabled ? AppColors.secondaryText : AppColors.mutedText,
             ),
           ),
-          ...marketplaceRadiusOptionsKm(miles: UnitSettingsStore.instance.system.usesMiles).map(
+          ...marketplaceRadiusOptionsKm.map(
             (km) => Padding(
               padding: const EdgeInsets.only(right: AppSpacing.sm),
               child: ChoiceChip(
+                key: ValueKey('marketplace-radius-${km.round()}'),
                 label: Text(listingDistanceFilterLabel(km)),
                 selected: selected == km,
                 onSelected: enabled ? (_) => onSelected(km) : null,
               ),
             ),
           ),
+          // "Altro" is selected whenever the radius is not one of the quick
+          // choices, and then shows the value.
+          ChoiceChip(
+            key: const ValueKey('marketplace-radius-other'),
+            label: Text(
+              marketplaceRadiusOptionsKm.contains(selected)
+                  ? context.l10n.marketplaceDistanceOther
+                  : context.l10n.marketplaceDistanceOtherValue(
+                      listingDistanceFilterLabel(selected),
+                    ),
+            ),
+            selected: !marketplaceRadiusOptionsKm.contains(selected),
+            onSelected: enabled ? (_) => onOther() : null,
+          ),
         ],
       ),
+    );
+  }
+}
+
+/// The "Altro" field: one whole number in the unit the owner reads, checked
+/// against 1-300 km before it is accepted; what comes out is always km.
+class _OtherRadiusDialog extends StatefulWidget {
+  const _OtherRadiusDialog({required this.currentKm});
+
+  final double currentKm;
+
+  @override
+  State<_OtherRadiusDialog> createState() => _OtherRadiusDialogState();
+}
+
+class _OtherRadiusDialogState extends State<_OtherRadiusDialog> {
+  late final bool _miles = UnitSettingsStore.instance.system.usesMiles;
+  late final TextEditingController _controller = TextEditingController(
+    text: marketplaceRadiusOptionsKm.contains(widget.currentKm)
+        ? ''
+        : (_miles ? kmToMiles(widget.currentKm).round() : widget.currentKm.round()).toString(),
+  );
+  bool _invalid = false;
+
+  String get _unit => _miles ? 'mi' : 'km';
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  void _submit() {
+    final km = marketplaceRadiusFromInput(_controller.text, miles: _miles);
+    if (km == null) {
+      setState(() => _invalid = true);
+      return;
+    }
+    Navigator.of(context).pop(km);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = context.l10n;
+    final min = marketplaceMinRadiusKm.toInt();
+    final max = marketplaceMaxRadiusInput(miles: _miles);
+    return AlertDialog(
+      title: Text(l10n.marketplaceDistanceDialogTitle),
+      content: TextField(
+        key: const ValueKey('marketplace-radius-field'),
+        controller: _controller,
+        autofocus: true,
+        keyboardType: TextInputType.number,
+        inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+        decoration: InputDecoration(
+          helperText: l10n.marketplaceDistanceDialogHelp(min, max, _unit),
+          helperMaxLines: 2,
+          errorText: _invalid ? l10n.marketplaceDistanceDialogInvalid(min, max, _unit) : null,
+          errorMaxLines: 3,
+          suffixText: _unit,
+        ),
+        onChanged: (_) {
+          if (_invalid) setState(() => _invalid = false);
+        },
+        onSubmitted: (_) => _submit(),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.of(context).pop(),
+          child: Text(l10n.commonCancel),
+        ),
+        FilledButton(
+          key: const ValueKey('marketplace-radius-confirm'),
+          onPressed: _submit,
+          child: Text(l10n.commonConfirm),
+        ),
+      ],
     );
   }
 }

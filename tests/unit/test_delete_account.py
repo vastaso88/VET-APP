@@ -104,9 +104,13 @@ class _Storage:
 class _Admin:
     def __init__(self) -> None:
         self.deleted_users: list[str] = []
+        # Sign-in accounts by id, with the metadata the app keeps there (the
+        # optional phone number lives in `user_metadata`, not in a table).
+        self.accounts: dict[str, dict[str, Any]] = {}
 
     def delete_user(self, user_id: str) -> None:
         self.deleted_users.append(user_id)
+        self.accounts.pop(user_id, None)
 
 
 class _Auth:
@@ -173,6 +177,10 @@ def test_deleting_an_account_leaves_no_data_of_that_owner_and_none_of_others_tou
     _seed(client, "22222222-2222-4222-8222-222222222222", tag="b")
     client.db["data_sources"] = [{"id": "shared-source"}]
     client.db["events"] = [{"id": "shared-event"}]
+    client.auth.admin.accounts = {
+        "11111111-1111-4111-8111-111111111111": {"phone": "+393331234567", "first_name": "Ada"},
+        "22222222-2222-4222-8222-222222222222": {"phone": "+447911123456"},
+    }
 
     before_rows, before_files = _snapshot(client)
     report = DeleteAccountService(_eraser(client)).execute(
@@ -211,6 +219,10 @@ def test_deleting_an_account_leaves_no_data_of_that_owner_and_none_of_others_tou
         }
 
     assert client.auth.admin.deleted_users == ["11111111-1111-4111-8111-111111111111"]
+    # The phone number and the other profile fields are in the account's
+    # metadata: they go with the account, and the other owner's stay.
+    assert list(client.auth.admin.accounts) == ["22222222-2222-4222-8222-222222222222"]
+    assert client.auth.admin.accounts["22222222-2222-4222-8222-222222222222"]["phone"]
     assert report.files_removed == 4
     assert report.rows_deleted["pet_profiles"] == 1
     assert report.rows_deleted["clinical_events"] == 1

@@ -10,6 +10,7 @@ import 'package:vet_app_mobile/app/theme/app_theme.dart';
 import 'package:vet_app_mobile/design_system/app_text_scaler.dart';
 import 'package:vet_app_mobile/design_system/responsive.dart';
 import 'package:vet_app_mobile/features/auth/presentation/pages/login_page.dart';
+import 'package:vet_app_mobile/features/account/presentation/pages/profile_edit_page.dart';
 import 'package:vet_app_mobile/features/auth/presentation/pages/register_page.dart';
 import 'package:vet_app_mobile/features/billing/presentation/pages/billing_page.dart';
 import 'package:vet_app_mobile/features/first_run/presentation/pages/add_first_pet_prompt_page.dart';
@@ -43,6 +44,7 @@ const _languages = {
 final _pages = <String, Widget Function()>{
   'login': () => const LoginPage(),
   'register': () => const RegisterPage(),
+  'profile edit': () => const ProfileEditPage(),
   'plan intro': () => const PlanIntroPage(),
   'tutorial': () => const TutorialPage(),
   'add first pet': () => const AddFirstPetPromptPage(),

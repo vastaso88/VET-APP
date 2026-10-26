@@ -40,26 +40,33 @@ void main() {
     expect(currentTerritory().liveAnimalListingsAllowed, isFalse);
   });
 
-  test('radius options end at the maximum: 50 km, or 30 mi, never "everywhere"', () {
-    final km = marketplaceRadiusOptionsKm(miles: false);
-    expect(km, [2, 5, 10, 25, 50]);
-    expect(km.last, marketplaceMaxRadiusKm);
-
-    final mi = marketplaceRadiusOptionsKm(miles: true);
-    expect(mi.length, 5);
-    expect(mi.last, closeTo(48.28, 0.01));
-    expect(mi.last, lessThanOrEqualTo(marketplaceMaxRadiusKm));
-    expect(kmToMiles(mi.last), closeTo(marketplaceMaxRadiusMiles, 0.001));
+  test('quick radius options are 10 / 25 / 50 / 100 km and the default is 50', () {
+    expect(marketplaceRadiusOptionsKm, [10, 25, 50, 100]);
+    expect(defaultMarketplaceRadiusKm(), 50);
+    expect(marketplaceRadiusOptionsKm, contains(defaultMarketplaceRadiusKm()));
+    expect(marketplaceRadiusOptionsKm.last, lessThanOrEqualTo(marketplaceMaxRadiusKm));
   });
 
-  test('the default radius is one of the options, in both units', () {
-    expect(marketplaceRadiusOptionsKm(miles: false), contains(defaultMarketplaceRadiusKm(miles: false)));
-    expect(marketplaceRadiusOptionsKm(miles: true), contains(defaultMarketplaceRadiusKm(miles: true)));
-  });
-
-  test('a radius is clamped into (0, 50] km', () {
-    expect(clampMarketplaceRadiusKm(500), marketplaceMaxRadiusKm);
-    expect(clampMarketplaceRadiusKm(-3), 0.1);
+  test('a radius is clamped into [1, 300] km', () {
+    expect(clampMarketplaceRadiusKm(500), 300);
+    expect(clampMarketplaceRadiusKm(-3), 1);
+    expect(clampMarketplaceRadiusKm(0.2), 1);
     expect(clampMarketplaceRadiusKm(12), 12);
+  });
+
+  test('"Altro" takes whole numbers 1-300 km, or miles that are stored as km', () {
+    expect(marketplaceRadiusFromInput('1', miles: false), 1);
+    expect(marketplaceRadiusFromInput(' 35 ', miles: false), 35);
+    expect(marketplaceRadiusFromInput('300', miles: false), 300);
+    for (final bad in ['0', '301', '-5', '2.5', '', 'abc', '1e2']) {
+      expect(marketplaceRadiusFromInput(bad, miles: false), isNull, reason: bad);
+    }
+
+    expect(marketplaceRadiusFromInput('10', miles: true), 16);
+    expect(marketplaceRadiusFromInput('186', miles: true), 299);
+    expect(marketplaceRadiusFromInput('187', miles: true), isNull);
+    expect(marketplaceRadiusFromInput('0', miles: true), isNull);
+    expect(marketplaceMaxRadiusInput(miles: true), 186);
+    expect(marketplaceMaxRadiusInput(miles: false), 300);
   });
 }

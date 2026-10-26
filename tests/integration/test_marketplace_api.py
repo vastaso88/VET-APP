@@ -43,7 +43,7 @@ def test_a_search_without_country_is_rejected() -> None:
 def test_a_radius_above_the_maximum_is_rejected() -> None:
     client = TestClient(app)
 
-    for radius in (50.5, 100, 5000, 0, -3):
+    for radius in (300.5, 301, 5000, 0, 0.5, -3):
         response = client.get(
             "/marketplace/listings", params={**ME, "radius_km": radius, "country": "IT"}
         )
@@ -64,7 +64,7 @@ def test_only_the_ads_of_the_country_inside_the_radius_come_back() -> None:
     assert "api-it-near" in ids
     assert "api-it-far" not in ids
     assert "api-fr-near" not in ids
-    assert body["context"] == {"country": "IT", "radius_km": 10.0, "max_radius_km": 50.0}
+    assert body["context"] == {"country": "IT", "radius_km": 10.0, "max_radius_km": 300.0}
     near = next(item for item in body["listings"] if item["id"] == "api-it-near")
     assert near["latitude"] and near["country"] == "IT" and "location" not in near
 
@@ -77,3 +77,14 @@ def test_the_maximum_radius_itself_is_served() -> None:
 
     assert response.status_code == 200
     assert "api-it-45km" in [item["id"] for item in response.json()["listings"]]
+
+
+def test_the_new_wide_radii_are_served() -> None:
+    _seed("api-it-120km", 120)
+    client = TestClient(app)
+
+    narrow = client.get("/marketplace/listings", params={**ME, "radius_km": 100, "country": "IT"})
+    wide = client.get("/marketplace/listings", params={**ME, "radius_km": 300, "country": "IT"})
+
+    assert "api-it-120km" not in [item["id"] for item in narrow.json()["listings"]]
+    assert "api-it-120km" in [item["id"] for item in wide.json()["listings"]]

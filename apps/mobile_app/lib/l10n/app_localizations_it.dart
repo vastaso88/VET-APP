@@ -1180,6 +1180,30 @@ class AppLocalizationsIt extends AppLocalizations {
       'Il Mercatino mostra solo gli annunci vicino a te. Imposta la tua posizione in Impostazioni → Località per vederli.';
 
   @override
+  String get marketplaceSetLocationAction => 'Imposta la posizione';
+
+  @override
+  String get marketplaceDistanceOther => 'Altro';
+
+  @override
+  String marketplaceDistanceOtherValue(String distance) {
+    return 'Altro: $distance';
+  }
+
+  @override
+  String get marketplaceDistanceDialogTitle => 'Distanza massima';
+
+  @override
+  String marketplaceDistanceDialogHelp(int min, int max, String unit) {
+    return 'Scrivi un numero intero da $min a $max $unit.';
+  }
+
+  @override
+  String marketplaceDistanceDialogInvalid(int min, int max, String unit) {
+    return 'Valore non valido: scrivi un numero intero da $min a $max $unit.';
+  }
+
+  @override
   String get marketplaceNoLiveAnimalsNote =>
       'Nel tuo paese il Mercatino non ammette annunci di animali vivi: solo prodotti e servizi per animali.';
 
@@ -6384,4 +6408,19 @@ class AppLocalizationsIt extends AppLocalizations {
 
   @override
   String get remindersNotifOffAction => 'Attiva';
+
+  @override
+  String get authPhoneLabel => 'Numero di telefono (facoltativo)';
+
+  @override
+  String get authPhoneHelp =>
+      'Facoltativo. Resta nel tuo profilo e puoi cambiarlo o toglierlo in qualsiasi momento.';
+
+  @override
+  String get phonePickerTitle => 'Scegli il prefisso';
+
+  @override
+  String phonePickerSemantics(String country, String dial) {
+    return 'Prefisso telefonico: $country (+$dial)';
+  }
 }

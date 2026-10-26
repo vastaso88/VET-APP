@@ -36,15 +36,17 @@ class Territory {
   final bool liveAnimalListingsAllowed;
 }
 
-/// Largest Mercatino search radius, whatever the unit shown (30 mi is 48.3 km,
-/// inside it). Mirrored by MARKETPLACE_MAX_RADIUS_KM in the backend.
-const marketplaceMaxRadiusKm = 50.0;
+/// Mercatino search radius bounds in whole kilometres, whatever the unit shown
+/// (owner decision 2026-10-26). Mirrored by MARKETPLACE_MIN_RADIUS_KM and
+/// MARKETPLACE_MAX_RADIUS_KM in the backend; the app always stores and sends km.
+const marketplaceMinRadiusKm = 1.0;
+const marketplaceMaxRadiusKm = 300.0;
+
+/// Radius preselected, and the one a fresh install starts from.
+const defaultMarketplaceRadiusKmValue = 50.0;
 
 const _miPerKm = 0.621371192;
 const _kmPerMi = 1.609344;
-
-/// Largest radius in miles for owners whose units are miles.
-const marketplaceMaxRadiusMiles = 30.0;
 
 const _territories = <String, Territory>{
   'IT': Territory(
@@ -114,19 +116,33 @@ Territory territoryFor(String? countryCode) =>
 /// variant.
 Territory currentTerritory() => territoryFor(LanguageStore.instance.variant.countryCode);
 
-/// Search-radius choices in the unit the owner reads ("1 / 3 / 5 / 15 / 30
-/// mi" or "2 / 5 / 10 / 25 / 50 km"), as kilometres. The last one is always
-/// the maximum; there is no "everywhere". The default is one of them.
-List<double> marketplaceRadiusOptionsKm({required bool miles}) => miles
-    ? const [1, 3, 5, 15, 30].map((mi) => mi * _kmPerMi).toList(growable: false)
-    : const [2.0, 5.0, 10.0, 25.0, marketplaceMaxRadiusKm];
+/// The quick search-radius choices, in kilometres: the filter also has an
+/// "Altro" chip for any whole value from [marketplaceMinRadiusKm] to
+/// [marketplaceMaxRadiusKm]. There is no "everywhere". Owners who read miles
+/// see the same values converted, but the radius is always kept and sent in km.
+const marketplaceRadiusOptionsKm = <double>[10, 25, 50, 100];
 
-/// Radius preselected for an owner with a position: 25 km, or 15 mi.
-double defaultMarketplaceRadiusKm({required bool miles}) => miles ? 15 * _kmPerMi : 25;
+/// Radius preselected for an owner with a position.
+double defaultMarketplaceRadiusKm() => defaultMarketplaceRadiusKmValue;
+
+/// A radius typed by the owner, in kilometres or in miles, as whole
+/// kilometres; null when it is not a whole number or falls outside
+/// [marketplaceMinRadiusKm]..[marketplaceMaxRadiusKm].
+double? marketplaceRadiusFromInput(String text, {required bool miles}) {
+  final value = int.tryParse(text.trim());
+  if (value == null) return null;
+  final km = miles ? (value * _kmPerMi).round() : value;
+  if (km < marketplaceMinRadiusKm || km > marketplaceMaxRadiusKm) return null;
+  return km.toDouble();
+}
+
+/// The largest whole number the "Altro" field accepts, in the unit shown.
+int marketplaceMaxRadiusInput({required bool miles}) =>
+    miles ? (marketplaceMaxRadiusKm * _miPerKm).floor() : marketplaceMaxRadiusKm.toInt();
 
 /// Kilometres -> miles, for showing the radius.
 double kmToMiles(double km) => km * _miPerKm;
 
-/// [radiusKm] never above the maximum, never below a metre-scale minimum.
+/// [radiusKm] inside the accepted range.
 double clampMarketplaceRadiusKm(double radiusKm) =>
-    radiusKm.clamp(0.1, marketplaceMaxRadiusKm).toDouble();
+    radiusKm.clamp(marketplaceMinRadiusKm, marketplaceMaxRadiusKm).toDouble();

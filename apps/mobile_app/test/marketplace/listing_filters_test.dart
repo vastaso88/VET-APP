@@ -53,22 +53,29 @@ void main() {
     expect(
         ids(applyListingFilter(listings, const ListingFilter(maxDistanceKm: 25), reference: _me)),
         ['toy-1km', 'leash-4km', 'toy-8km', 'cage-20km']);
-    // Default radius: 25 km.
+    // Default radius: 50 km.
     expect(ids(applyListingFilter(listings, const ListingFilter(), reference: _me)),
         ['toy-1km', 'leash-4km', 'toy-8km', 'cage-20km']);
+    expect(const ListingFilter().maxDistanceKm, 50);
   });
 
-  test('the radius never goes past 50 km, whatever the filter asks', () {
+  test('the radius never goes past 300 km, whatever the filter asks', () {
     final far = [
       ...listings,
       _listing('toy-45km', ListingCategory.toys, kmNorth: 45),
+      _listing('toy-250km', ListingCategory.toys, kmNorth: 250),
+      _listing('toy-350km', ListingCategory.toys, kmNorth: 350),
     ];
-    final wide = applyListingFilter(far, const ListingFilter(maxDistanceKm: 50), reference: _me);
-    expect(ids(wide), contains('toy-45km'));
-    expect(ids(wide), isNot(contains('toy-60km')));
+    final narrow = applyListingFilter(far, const ListingFilter(maxDistanceKm: 50), reference: _me);
+    expect(ids(narrow), contains('toy-45km'));
+    expect(ids(narrow), isNot(contains('toy-60km')));
+
+    final wide = applyListingFilter(far, const ListingFilter(maxDistanceKm: 300), reference: _me);
+    expect(ids(wide), containsAll(['toy-60km', 'toy-250km']));
+    expect(ids(wide), isNot(contains('toy-350km')));
 
     final absurd = applyListingFilter(far, const ListingFilter(maxDistanceKm: 5000), reference: _me);
-    expect(ids(absurd), isNot(contains('toy-60km')), reason: 'clamped to the 50 km maximum');
+    expect(ids(absurd), isNot(contains('toy-350km')), reason: 'clamped to the 300 km maximum');
   });
 
   test('without a position there is no search at all - nothing is returned', () {

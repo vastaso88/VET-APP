@@ -526,6 +526,45 @@
   "marketplaceIntro": "Compra, vende y regala artículos para mascotas con otros propietarios.",
   "marketplaceEmptyFiltered": "Todavía no hay anuncios con estos filtros.",
   "marketplaceNeedsLocation": "El mercadillo solo muestra anuncios cerca de ti. Indica tu ubicación en Ajustes → Ubicación para verlos.",
+  "marketplaceSetLocationAction": "Indicar mi ubicación",
+  "marketplaceDistanceOther": "Otro",
+  "marketplaceDistanceOtherValue": "Otro: {distance}",
+  "@marketplaceDistanceOtherValue": {
+    "placeholders": {
+      "distance": {
+        "type": "String"
+      }
+    }
+  },
+  "marketplaceDistanceDialogTitle": "Distancia máxima",
+  "marketplaceDistanceDialogHelp": "Escribe un número entero de {min} a {max} {unit}.",
+  "@marketplaceDistanceDialogHelp": {
+    "placeholders": {
+      "min": {
+        "type": "int"
+      },
+      "max": {
+        "type": "int"
+      },
+      "unit": {
+        "type": "String"
+      }
+    }
+  },
+  "marketplaceDistanceDialogInvalid": "Valor no válido: escribe un número entero de {min} a {max} {unit}.",
+  "@marketplaceDistanceDialogInvalid": {
+    "placeholders": {
+      "min": {
+        "type": "int"
+      },
+      "max": {
+        "type": "int"
+      },
+      "unit": {
+        "type": "String"
+      }
+    }
+  },
   "marketplaceNoLiveAnimalsNote": "En tu país el mercadillo no admite anuncios de animales vivos: solo productos y servicios para animales.",
   "marketplaceNoLiveAnimalsConfirm": "Confirmo que este anuncio no ofrece un animal vivo (venta, regalo o cesión)",
   "marketplaceNoLiveAnimalsRequired": "Confirma que el anuncio no ofrece un animal vivo",
@@ -3672,5 +3711,19 @@
   "remindersNotifPermNotNow": "Ahora no",
   "remindersNotifPermAllow": "Permitir",
   "remindersNotifOffBanner": "Las notificaciones están desactivadas: los recordatorios no sonarán",
-  "remindersNotifOffAction": "Activar"
+  "remindersNotifOffAction": "Activar",
+  "authPhoneLabel": "Número de teléfono (opcional)",
+  "authPhoneHelp": "Opcional. Se queda en tu perfil y puedes cambiarlo o quitarlo cuando quieras.",
+  "phonePickerTitle": "Elige el prefijo",
+  "phonePickerSemantics": "Prefijo telefónico: {country} (+{dial})",
+  "@phonePickerSemantics": {
+    "placeholders": {
+      "country": {
+        "type": "String"
+      },
+      "dial": {
+        "type": "String"
+      }
+    }
+  }
 }

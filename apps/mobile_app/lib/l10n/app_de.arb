@@ -526,6 +526,45 @@
   "marketplaceIntro": "Kaufen, verkaufen und verschenken Sie Tierbedarf mit anderen Tierhaltern.",
   "marketplaceEmptyFiltered": "Derzeit keine Anzeigen mit diesen Filtern.",
   "marketplaceNeedsLocation": "Der Gebrauchtmarkt zeigt nur Anzeigen in Ihrer Nähe. Legen Sie Ihren Standort unter Einstellungen → Standort fest, um sie zu sehen.",
+  "marketplaceSetLocationAction": "Standort festlegen",
+  "marketplaceDistanceOther": "Andere",
+  "marketplaceDistanceOtherValue": "Andere: {distance}",
+  "@marketplaceDistanceOtherValue": {
+    "placeholders": {
+      "distance": {
+        "type": "String"
+      }
+    }
+  },
+  "marketplaceDistanceDialogTitle": "Maximale Entfernung",
+  "marketplaceDistanceDialogHelp": "Geben Sie eine ganze Zahl von {min} bis {max} {unit} ein.",
+  "@marketplaceDistanceDialogHelp": {
+    "placeholders": {
+      "min": {
+        "type": "int"
+      },
+      "max": {
+        "type": "int"
+      },
+      "unit": {
+        "type": "String"
+      }
+    }
+  },
+  "marketplaceDistanceDialogInvalid": "Ungültiger Wert: Geben Sie eine ganze Zahl von {min} bis {max} {unit} ein.",
+  "@marketplaceDistanceDialogInvalid": {
+    "placeholders": {
+      "min": {
+        "type": "int"
+      },
+      "max": {
+        "type": "int"
+      },
+      "unit": {
+        "type": "String"
+      }
+    }
+  },
   "marketplaceNoLiveAnimalsNote": "In Ihrem Land sind auf dem Gebrauchtmarkt keine Anzeigen für lebende Tiere erlaubt: nur Produkte und Dienstleistungen für Tiere.",
   "marketplaceNoLiveAnimalsConfirm": "Ich bestätige, dass diese Anzeige kein lebendes Tier anbietet (Verkauf, Verschenken oder Abgabe)",
   "marketplaceNoLiveAnimalsRequired": "Bestätigen Sie, dass die Anzeige kein lebendes Tier anbietet",
@@ -3672,5 +3711,19 @@
   "remindersNotifPermNotNow": "Nicht jetzt",
   "remindersNotifPermAllow": "Erlauben",
   "remindersNotifOffBanner": "Benachrichtigungen sind deaktiviert: Erinnerungen geben keinen Ton aus",
-  "remindersNotifOffAction": "Aktivieren"
+  "remindersNotifOffAction": "Aktivieren",
+  "authPhoneLabel": "Telefonnummer (optional)",
+  "authPhoneHelp": "Optional. Die Nummer bleibt in Ihrem Profil, und Sie können sie jederzeit ändern oder entfernen.",
+  "phonePickerTitle": "Ländervorwahl wählen",
+  "phonePickerSemantics": "Ländervorwahl: {country} (+{dial})",
+  "@phonePickerSemantics": {
+    "placeholders": {
+      "country": {
+        "type": "String"
+      },
+      "dial": {
+        "type": "String"
+      }
+    }
+  }
 }
