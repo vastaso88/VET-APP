@@ -3,12 +3,14 @@
     uv run --with truststore python scripts/events/import_curated.py --dry-run
     uv run --with truststore python scripts/events/import_curated.py
 
-Reads data/events/curated/*.json and scripts/events/curated/*.json (see
-data/events/README.md and docs/features/news_and_events_sources.md), validates every
-event against the project rules (packages/infrastructure/events/curated_events.py)
-and upserts them by `slug`. Nothing is written if even one event is invalid:
-fix the file and run again. To take an event off the app set its "status" to
-"rejected" in the file (rows are never deleted by this script).
+Reads data/events/curated/*.json and scripts/events/curated/*.json (one file per
+country or per source, e.g. GB.json; events without "country" are Italian; see
+data/events/README.md, scripts/events/README.md and
+docs/features/news_and_events_sources.md), validates every event against the
+project rules (packages/infrastructure/events/curated_events.py) and upserts them
+by `slug`. Nothing is written if even one event is invalid: fix the file and run
+again. To take an event off the app set its "status" to "rejected" in the file
+(rows are never deleted by this script).
 """
 
 from __future__ import annotations
@@ -53,9 +55,23 @@ def main() -> int:
         help="directory of *.json files (repeatable; default: data/events/curated and "
         "scripts/events/curated)",
     )
+    parser.add_argument(
+        "--allow-examples",
+        action="store_true",
+        help="allow scripts/events/examples (FICTIONAL events, test database only)",
+    )
     args = parser.parse_args()
 
-    directories = args.path or DEFAULT_DIRECTORIES
+    directories: list[Path] = args.path or DEFAULT_DIRECTORIES
+    uses_examples = any("examples" in directory.parts for directory in directories)
+    if uses_examples and not args.allow_examples and not args.dry_run:
+        print(
+            "ERRORE  scripts/events/examples ha eventi FITTIZI: non si importano in produzione. "
+            "Per un database di prova usa --allow-examples.",
+            file=sys.stderr,
+        )
+        return 1
+
     events, problems = load_curated_events(directories)
     for problem in problems:
         print(f"ERRORE  {problem}", file=sys.stderr)

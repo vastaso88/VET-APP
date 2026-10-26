@@ -515,7 +515,6 @@
   "marketplaceSpeciesReptileAmphibian": "Reptiles and amphibians",
   "marketplaceSpeciesFish": "Fish",
   "marketplacePriceGift": "Free gift",
-  "marketplaceDistanceAnywhere": "Anywhere",
   "marketplaceDemoBedTitle": "Padded pet bed (demo)",
   "marketplaceDemoBedDescription": "Lightly used, medium size.",
   "marketplaceDemoBedArea": "City center, Milan",
@@ -525,8 +524,11 @@
   "marketplaceMapAction": "Map",
   "marketplaceNewListing": "New listing",
   "marketplaceIntro": "Buy, sell and give away pet items with other owners.",
-  "marketplaceDistanceNeedsLocation": "To filter by distance, set your location in Settings → Location.",
   "marketplaceEmptyFiltered": "No listings match these filters yet.",
+  "marketplaceNeedsLocation": "The marketplace only shows ads near you. Set your location in Settings → Location to see them.",
+  "marketplaceNoLiveAnimalsNote": "In your country the marketplace does not allow ads for live animals: only products and services for animals.",
+  "marketplaceNoLiveAnimalsConfirm": "I confirm this ad does not offer a live animal (sale, gift or rehoming)",
+  "marketplaceNoLiveAnimalsRequired": "Confirm that the ad does not offer a live animal",
   "marketplaceLoadError": "I can't load the listings. Check your connection.",
   "marketplaceFilterAllCategories": "All",
   "marketplaceFilterAllSpecies": "All pets",
@@ -630,7 +632,14 @@
   "marketplaceSpeciesLabel": "For which pets",
   "marketplaceSpeciesRequired": "Specify the pets it is for, or choose \"All species\"",
   "marketplaceGiftSubtitle": "Give it to someone who needs it",
-  "marketplaceFieldPrice": "Price in €",
+  "marketplaceFieldPrice": "Price ({currency})",
+  "@marketplaceFieldPrice": {
+    "placeholders": {
+      "currency": {
+        "type": "String"
+      }
+    }
+  },
   "marketplaceSaving": "Saving…",
   "marketplaceSaveChanges": "Save changes",
   "marketplacePublish": "Publish listing",
@@ -2023,6 +2032,7 @@
     }
   },
   "eventsEmptyPeriod": "No events in the selected period",
+  "eventsCountryOnlyNote": "We only show events from your country, the one of the language you picked in the app.",
   "eventsLevelLocal": "Local",
   "eventsLevelProvincial": "Provincial",
   "eventsLevelRegional": "Regional",
@@ -2186,6 +2196,7 @@
   "petNewsTitle": "News",
   "petNewsLoading": "Loading news...",
   "petNewsEmpty": "No news available for this category right now.",
+  "petNewsEmptyLocal": "There is no news in your language and country right now. We don't show news from other countries.",
   "petNewsCategoryAll": "All",
   "petNewsCategoryDog": "Dog",
   "petNewsCategoryCat": "Cat",
@@ -2228,7 +2239,7 @@
   "activitiesNearbyTitle": "Near me",
   "activitiesNearbySubtitle": "Nearby veterinarians, shops and dog parks.",
   "activitiesEventsTitle": "Events",
-  "activitiesEventsSubtitle": "Fairs, shows and pet initiatives throughout Italy.",
+  "activitiesEventsSubtitle": "Fairs, shows and pet initiatives in your country.",
   "activitiesGalleryTitle": "Gallery",
   "activitiesGallerySubtitle": "Collect photos and memories of your pets.",
   "activitiesMarketplaceTitle": "Second-hand marketplace",

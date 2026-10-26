@@ -17,6 +17,7 @@ from apps.api.routes.events import router as events_router
 from apps.api.routes.health import router as health_router
 from apps.api.routes.legal import router as legal_router
 from apps.api.routes.local_services import router as local_services_router
+from apps.api.routes.marketplace import router as marketplace_router
 from apps.api.routes.news import router as news_router
 from apps.api.routes.pets import router as pets_router
 from apps.api.routes.reminders import router as reminders_router
@@ -96,3 +97,4 @@ app.include_router(subscription_router)
 app.include_router(local_services_router)
 app.include_router(news_router)
 app.include_router(events_router)
+app.include_router(marketplace_router)

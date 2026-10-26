@@ -14,6 +14,7 @@ MarketplaceListing _listing(
   required double kmNorth,
   int ageDays = 0,
   List<ListingSpecies> species = const [ListingSpecies.dog],
+  String country = 'IT',
 }) {
   final created = DateTime(2026, 10, 7).subtract(Duration(days: ageDays));
   return MarketplaceListing(
@@ -23,6 +24,7 @@ MarketplaceListing _listing(
     category: category,
     condition: ListingCondition.good,
     species: species,
+    country: country,
     location: Coordinates(latitude: _me.latitude + kmNorth / 111.2, longitude: _me.longitude),
     createdAt: created,
     updatedAt: created,
@@ -51,8 +53,48 @@ void main() {
     expect(
         ids(applyListingFilter(listings, const ListingFilter(maxDistanceKm: 25), reference: _me)),
         ['toy-1km', 'leash-4km', 'toy-8km', 'cage-20km']);
+    // Default radius: 25 km.
     expect(ids(applyListingFilter(listings, const ListingFilter(), reference: _me)),
-        ['toy-1km', 'leash-4km', 'toy-8km', 'cage-20km', 'toy-60km']);
+        ['toy-1km', 'leash-4km', 'toy-8km', 'cage-20km']);
+  });
+
+  test('the radius never goes past 50 km, whatever the filter asks', () {
+    final far = [
+      ...listings,
+      _listing('toy-45km', ListingCategory.toys, kmNorth: 45),
+    ];
+    final wide = applyListingFilter(far, const ListingFilter(maxDistanceKm: 50), reference: _me);
+    expect(ids(wide), contains('toy-45km'));
+    expect(ids(wide), isNot(contains('toy-60km')));
+
+    final absurd = applyListingFilter(far, const ListingFilter(maxDistanceKm: 5000), reference: _me);
+    expect(ids(absurd), isNot(contains('toy-60km')), reason: 'clamped to the 50 km maximum');
+  });
+
+  test('without a position there is no search at all - nothing is returned', () {
+    expect(applyListingFilter(listings, const ListingFilter(maxDistanceKm: 50), reference: null),
+        isEmpty);
+    expect(applyListingFilter(listings, const ListingFilter(), reference: null), isEmpty);
+  });
+
+  test('only the country of the owner is shown, however close the ad is', () {
+    final mixed = [
+      _listing('it-near', ListingCategory.toys, kmNorth: 1),
+      _listing('fr-near', ListingCategory.toys, kmNorth: 1, country: 'FR'),
+      _listing('ch-near', ListingCategory.toys, kmNorth: 2, country: 'CH'),
+    ];
+    expect(ids(applyListingFilter(mixed, const ListingFilter(), reference: _me, country: 'IT')),
+        ['it-near']);
+    expect(ids(applyListingFilter(mixed, const ListingFilter(), reference: _me, country: 'FR')),
+        ['fr-near']);
+    expect(ids(applyListingFilter(mixed, const ListingFilter(), reference: _me, country: 'ch')),
+        ['ch-near']);
+    expect(applyListingFilter(mixed, const ListingFilter(), reference: _me, country: 'DE'), isEmpty);
+  });
+
+  test('a listing written before the country column counts as Italian', () {
+    final legacy = _listing('old-row', ListingCategory.toys, kmNorth: 1);
+    expect(legacy.country, 'IT');
   });
 
   test('category and distance combine', () {
@@ -71,12 +113,6 @@ void main() {
       reference: _me,
     ).single;
     expect(match.distanceMeters, closeTo(1000, 5));
-  });
-
-  test('without a reference the distance limit is ignored and newest come first', () {
-    final matches = applyListingFilter(listings, const ListingFilter(maxDistanceKm: 2));
-    expect(ids(matches), ['toy-8km', 'leash-4km', 'toy-60km', 'toy-1km', 'cage-20km']);
-    expect(matches.every((m) => m.distanceMeters == null), isTrue);
   });
 
   test('listings in the same grid cell share one map marker', () {

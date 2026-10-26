@@ -1,0 +1,39 @@
+{
+  "events": [
+    {
+      "slug": "example-au-pet-expo",
+      "title": "Example Pet Expo (FICTIONAL event)",
+      "event_type": "pet_fair",
+      "level": "regional",
+      "level_basis": "curated",
+      "country": "AU",
+      "starts_on": "2026-11-21",
+      "ends_on": "2026-11-22",
+      "region": "New South Wales",
+      "city": "Exampletown",
+      "province_code": "NSW",
+      "venue_name": "Example Showground",
+      "organizer_name": "Example Pet Society",
+      "description": "Made-up event to try the events list: it does not exist.",
+      "source_url": "https://www.example.org/au/pet-expo",
+      "verified_on": "2026-10-14"
+    },
+    {
+      "slug": "example-au-dog-walk",
+      "title": "Example Charity Dog Walk (FICTIONAL event)",
+      "event_type": "charity_event",
+      "level": "local",
+      "level_basis": "default",
+      "country": "AU",
+      "starts_on": "2026-12-06",
+      "ends_on": "2026-12-06",
+      "region": "Victoria",
+      "city": "Sampleton",
+      "province_code": "VIC",
+      "organizer_name": "Example Animal Welfare League",
+      "description": "Made-up event to try the events list: it does not exist.",
+      "source_url": "https://www.example.org/au/dog-walk",
+      "verified_on": "2026-10-14"
+    }
+  ]
+}

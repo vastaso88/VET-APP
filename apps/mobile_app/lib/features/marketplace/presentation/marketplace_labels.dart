@@ -5,6 +5,7 @@ import '../../../l10n/regional_defaults.dart';
 import '../../location/presentation/distance_label.dart';
 import '../../settings/data/unit_settings_store.dart';
 import '../../settings/domain/unit_conversion.dart';
+import '../../territory/domain/territory.dart';
 import '../domain/marketplace_listing.dart';
 
 String listingCategoryLabel(ListingCategory category) {
@@ -87,11 +88,20 @@ String listingSpeciesLabel(ListingSpecies species) {
   }
 }
 
-/// "Gift" or the price; [currencyCode] is the currency the listing is quoted
-/// in (default: the viewer's own currency).
-String listingPriceLabel(int? priceCents, [String? currencyCode]) {
+/// "Gift" or the price, in the currency of the listing's country ([country],
+/// default the owner's), written the way the app's language variant writes
+/// money ("£15.00", "$15.00", "A$15.00", "15,00 €", "CHF 15.00"). No
+/// conversion: a listing in pounds read from a euro phone stays in pounds.
+String listingPriceLabel(int? priceCents, {String? country}) {
   if (priceCents == null) return appL10n.marketplacePriceGift;
+  final currencyCode = country == null ? null : territoryFor(country).currencyCode;
   return formatAppMoneyCents(priceCents, currencyCode);
+}
+
+/// Label of the price field: "Prezzo (€)", "Price (£)"...
+String listingPriceFieldLabel({String? country}) {
+  final territory = country == null ? currentTerritory() : territoryFor(country);
+  return appL10n.marketplaceFieldPrice(territory.currencySymbol);
 }
 
 String listingDistanceLabel(double? distanceMeters) {
@@ -99,7 +109,6 @@ String listingDistanceLabel(double? distanceMeters) {
   return formatDistance(distanceMeters);
 }
 
-String listingDistanceFilterLabel(double? maxDistanceKm) {
-  if (maxDistanceKm == null) return appL10n.marketplaceDistanceAnywhere;
+String listingDistanceFilterLabel(double maxDistanceKm) {
   return formatKilometersIn(maxDistanceKm, UnitSettingsStore.instance.system);
 }

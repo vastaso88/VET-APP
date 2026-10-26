@@ -1149,9 +1149,6 @@ class AppLocalizationsDe extends AppLocalizations {
   String get marketplacePriceGift => 'Zu verschenken';
 
   @override
-  String get marketplaceDistanceAnywhere => 'Überall';
-
-  @override
   String get marketplaceDemoBedTitle => 'Gepolstertes Körbchen (Demo)';
 
   @override
@@ -1181,12 +1178,24 @@ class AppLocalizationsDe extends AppLocalizations {
       'Kaufen, verkaufen und verschenken Sie Tierbedarf mit anderen Tierhaltern.';
 
   @override
-  String get marketplaceDistanceNeedsLocation =>
-      'Um nach Entfernung zu filtern, legen Sie Ihren Standort unter Einstellungen → Standort fest.';
-
-  @override
   String get marketplaceEmptyFiltered =>
       'Derzeit keine Anzeigen mit diesen Filtern.';
+
+  @override
+  String get marketplaceNeedsLocation =>
+      'Der Gebrauchtmarkt zeigt nur Anzeigen in Ihrer Nähe. Legen Sie Ihren Standort unter Einstellungen → Standort fest, um sie zu sehen.';
+
+  @override
+  String get marketplaceNoLiveAnimalsNote =>
+      'In Ihrem Land sind auf dem Gebrauchtmarkt keine Anzeigen für lebende Tiere erlaubt: nur Produkte und Dienstleistungen für Tiere.';
+
+  @override
+  String get marketplaceNoLiveAnimalsConfirm =>
+      'Ich bestätige, dass diese Anzeige kein lebendes Tier anbietet (Verkauf, Verschenken oder Abgabe)';
+
+  @override
+  String get marketplaceNoLiveAnimalsRequired =>
+      'Bestätigen Sie, dass die Anzeige kein lebendes Tier anbietet';
 
   @override
   String get marketplaceLoadError =>
@@ -1359,7 +1368,9 @@ class AppLocalizationsDe extends AppLocalizations {
       'Sie schenken es jemandem, der es braucht';
 
   @override
-  String get marketplaceFieldPrice => 'Preis in €';
+  String marketplaceFieldPrice(String currency) {
+    return 'Preis ($currency)';
+  }
 
   @override
   String get marketplaceSaving => 'Wird gespeichert...';
@@ -3585,6 +3596,10 @@ class AppLocalizationsDe extends AppLocalizations {
   String get eventsEmptyPeriod => 'Keine Veranstaltungen im gewählten Zeitraum';
 
   @override
+  String get eventsCountryOnlyNote =>
+      'Wir zeigen nur Veranstaltungen aus Ihrem Land, dem Land der Sprache, die Sie in der App gewählt haben.';
+
+  @override
   String get eventsLevelLocal => 'Lokal';
 
   @override
@@ -3912,6 +3927,10 @@ class AppLocalizationsDe extends AppLocalizations {
       'Zurzeit sind für diese Kategorie keine News verfügbar.';
 
   @override
+  String get petNewsEmptyLocal =>
+      'Zurzeit gibt es keine News in Ihrer Sprache und für Ihr Land. News aus anderen Ländern zeigen wir nicht.';
+
+  @override
   String get petNewsCategoryAll => 'Alle';
 
   @override
@@ -4049,7 +4068,7 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get activitiesEventsSubtitle =>
-      'Messen, Ausstellungen und Aktionen für Tiere in ganz Italien.';
+      'Messen, Ausstellungen und Aktionen für Tiere in Ihrem Land.';
 
   @override
   String get activitiesGalleryTitle => 'Galerie';

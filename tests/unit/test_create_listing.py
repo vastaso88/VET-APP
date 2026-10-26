@@ -1,3 +1,5 @@
+import pytest
+
 from packages.core.application.services.create_listing import (
     CreateListingInput,
     CreateListingService,
@@ -10,6 +12,7 @@ from packages.core.domain.geo.models import (
 from packages.infrastructure.persistence.in_memory_repositories import (
     InMemoryMarketplaceListingRepository,
 )
+from packages.shared.errors.base import ValidationError
 
 
 def test_create_listing_never_stores_the_exact_coordinates() -> None:
@@ -80,3 +83,46 @@ def test_create_listing_keeps_target_species() -> None:
     )
 
     assert result.listing.target_species == ["cat"]
+
+
+def _input(country: str, *, confirms: bool = False) -> CreateListingInput:
+    return CreateListingInput(
+        owner_id="user-1",
+        title="Guinzaglio",
+        category="leashes_collars",
+        condition="good",
+        exact_location=Coordinates(latitude=48.1371, longitude=11.5754),
+        country=country,
+        confirms_no_live_animals=confirms,
+    )
+
+
+def test_listing_carries_the_country_of_its_seller() -> None:
+    service = CreateListingService(InMemoryMarketplaceListingRepository())
+
+    assert service.execute(_input("US")).listing.country == "US"
+    assert service.execute(_input("it")).listing.country == "IT"
+
+
+@pytest.mark.parametrize("country", ["DE", "AT", "CH", "FR", "BE", "ES", "GB"])
+def test_where_live_animals_are_not_allowed_the_author_must_confirm(country: str) -> None:
+    service = CreateListingService(InMemoryMarketplaceListingRepository())
+
+    with pytest.raises(ValidationError):
+        service.execute(_input(country))
+
+    assert service.execute(_input(country, confirms=True)).listing.country == country
+
+
+@pytest.mark.parametrize("country", ["IT", "US", "AU"])
+def test_elsewhere_no_confirmation_is_needed(country: str) -> None:
+    service = CreateListingService(InMemoryMarketplaceListingRepository())
+
+    assert service.execute(_input(country)).listing.country == country
+
+
+def test_an_unknown_country_cannot_publish() -> None:
+    service = CreateListingService(InMemoryMarketplaceListingRepository())
+
+    with pytest.raises(ValidationError):
+        service.execute(_input("ZZ", confirms=True))

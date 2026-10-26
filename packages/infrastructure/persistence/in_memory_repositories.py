@@ -356,8 +356,12 @@ class InMemoryMarketplaceListingRepository(MarketplaceListingRepository):
     def get(self, listing_id: str) -> MarketplaceListing | None:
         return self._items.get(listing_id)
 
-    def list_active(self) -> list[MarketplaceListing]:
-        return [item for item in self._items.values() if item.status == "active"]
+    def list_active(self, country: str | None = None) -> list[MarketplaceListing]:
+        return [
+            item
+            for item in self._items.values()
+            if item.status == "active" and (country is None or item.country == country)
+        ]
 
 
 class InMemoryListingReportRepository(ListingReportRepository):

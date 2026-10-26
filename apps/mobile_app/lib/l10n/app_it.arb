@@ -515,7 +515,6 @@
   "marketplaceSpeciesReptileAmphibian": "Rettili e anfibi",
   "marketplaceSpeciesFish": "Pesce",
   "marketplacePriceGift": "In regalo",
-  "marketplaceDistanceAnywhere": "Ovunque",
   "marketplaceDemoBedTitle": "Cuccia imbottita (demo)",
   "marketplaceDemoBedDescription": "Poco usata, taglia media.",
   "marketplaceDemoBedArea": "Centro, Milano",
@@ -525,8 +524,11 @@
   "marketplaceMapAction": "Mappa",
   "marketplaceNewListing": "Nuovo annuncio",
   "marketplaceIntro": "Compra, vendi e regala articoli per animali con altri proprietari.",
-  "marketplaceDistanceNeedsLocation": "Per filtrare per distanza imposta la tua posizione in Impostazioni → Località.",
   "marketplaceEmptyFiltered": "Nessun annuncio con questi filtri per ora.",
+  "marketplaceNeedsLocation": "Il Mercatino mostra solo gli annunci vicino a te. Imposta la tua posizione in Impostazioni → Località per vederli.",
+  "marketplaceNoLiveAnimalsNote": "Nel tuo paese il Mercatino non ammette annunci di animali vivi: solo prodotti e servizi per animali.",
+  "marketplaceNoLiveAnimalsConfirm": "Confermo che questo annuncio non offre un animale vivo (vendita, regalo o cessione)",
+  "marketplaceNoLiveAnimalsRequired": "Conferma che l'annuncio non offre un animale vivo",
   "marketplaceLoadError": "Non riesco a caricare gli annunci. Controlla la connessione.",
   "marketplaceFilterAllCategories": "Tutte",
   "marketplaceFilterAllSpecies": "Tutti gli animali",
@@ -630,7 +632,14 @@
   "marketplaceSpeciesLabel": "Per quali animali",
   "marketplaceSpeciesRequired": "Indica per quali animali è, oppure \"Tutte le specie\"",
   "marketplaceGiftSubtitle": "Lo regali a chi ne ha bisogno",
-  "marketplaceFieldPrice": "Prezzo in €",
+  "marketplaceFieldPrice": "Prezzo ({currency})",
+  "@marketplaceFieldPrice": {
+    "placeholders": {
+      "currency": {
+        "type": "String"
+      }
+    }
+  },
   "marketplaceSaving": "Salvataggio...",
   "marketplaceSaveChanges": "Salva modifiche",
   "marketplacePublish": "Pubblica annuncio",
@@ -2023,6 +2032,7 @@
     }
   },
   "eventsEmptyPeriod": "Nessun evento nel periodo scelto",
+  "eventsCountryOnlyNote": "Mostriamo solo gli eventi del tuo paese, quello della lingua scelta nell'app.",
   "eventsLevelLocal": "Locale",
   "eventsLevelProvincial": "Provinciale",
   "eventsLevelRegional": "Regionale",
@@ -2186,6 +2196,7 @@
   "petNewsTitle": "Notizie",
   "petNewsLoading": "Carico le News...",
   "petNewsEmpty": "Nessuna notizia disponibile per questa categoria al momento.",
+  "petNewsEmptyLocal": "Per ora non ci sono notizie nella tua lingua e per il tuo paese. Non mostriamo notizie di altri paesi.",
   "petNewsCategoryAll": "Tutti",
   "petNewsCategoryDog": "Cane",
   "petNewsCategoryCat": "Gatto",
@@ -2228,7 +2239,7 @@
   "activitiesNearbyTitle": "Vicino a me",
   "activitiesNearbySubtitle": "Veterinari, negozi e aree cani vicino a te.",
   "activitiesEventsTitle": "Eventi",
-  "activitiesEventsSubtitle": "Fiere, esposizioni e iniziative per animali in tutta Italia.",
+  "activitiesEventsSubtitle": "Fiere, esposizioni e iniziative per animali nel tuo paese.",
   "activitiesGalleryTitle": "Galleria",
   "activitiesGallerySubtitle": "Raccogli foto e ricordi dei tuoi animali.",
   "activitiesMarketplaceTitle": "Mercatino dell'usato",

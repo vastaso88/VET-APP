@@ -7,6 +7,8 @@ import 'package:vet_app_mobile/features/marketplace/domain/marketplace_listing.d
 import 'package:vet_app_mobile/features/marketplace/presentation/pages/listing_detail_page.dart';
 import 'package:vet_app_mobile/features/marketplace/presentation/pages/marketplace_page.dart';
 
+import '../territory/territory_test_helpers.dart';
+
 const _me = Coordinates(latitude: 45.46, longitude: 9.19);
 
 MarketplaceListing _listing(
@@ -15,6 +17,7 @@ MarketplaceListing _listing(
   required double kmNorth,
   String ownerId = 'seller',
   List<ListingSpecies> species = const [ListingSpecies.dog],
+  String country = 'IT',
 }) {
   final now = DateTime(2026, 10, 7);
   return MarketplaceListing(
@@ -25,6 +28,7 @@ MarketplaceListing _listing(
     condition: ListingCondition.good,
     priceCents: 1000,
     species: species,
+    country: country,
     location: Coordinates(latitude: _me.latitude + kmNorth / 111.2, longitude: _me.longitude),
     createdAt: now,
     updatedAt: now,
@@ -42,7 +46,9 @@ List<MarketplaceListing> _listings() => [
         kmNorth: 20,
         species: const [ListingSpecies.allSpecies],
       ),
+      _listing('Gioco a 40 km', ListingCategory.toys, kmNorth: 40),
       _listing('Gioco lontano', ListingCategory.toys, kmNorth: 60),
+      _listing('Annuncio francese', ListingCategory.toys, kmNorth: 1, country: 'FR'),
     ];
 
 /// Wide: test text renders as square glyphs, so the chip rows are long.
@@ -87,9 +93,27 @@ void main() {
     expect(find.text('Pallina vicina'), findsOneWidget);
     expect(find.text('Collare a 4 km'), findsNothing);
 
-    await tester.tap(find.widgetWithText(ChoiceChip, 'Ovunque'));
+    // The widest choice is the maximum, 50 km: 40 km is in, 60 km never is.
+    await tester.tap(find.widgetWithText(ChoiceChip, '50 km'));
     await tester.pumpAndSettle();
-    expect(find.text('Gioco lontano'), findsOneWidget);
+    expect(find.text('Gioco a 40 km'), findsOneWidget);
+    expect(find.text('Gioco lontano'), findsNothing);
+  });
+
+  testWidgets('there is no "everywhere" choice and the widest radius is 50 km', (tester) async {
+    await _pumpPage(tester, reference: _me);
+
+    expect(find.text('Ovunque'), findsNothing);
+    for (final label in ['2 km', '5 km', '10 km', '25 km', '50 km']) {
+      expect(find.widgetWithText(ChoiceChip, label), findsOneWidget, reason: label);
+    }
+  });
+
+  testWidgets('ads from another country never show, even when very close', (tester) async {
+    await _pumpPage(tester, reference: _me);
+
+    expect(find.text('Pallina vicina'), findsOneWidget);
+    expect(find.text('Annuncio francese'), findsNothing);
   });
 
   testWidgets('category and distance filters combine', (tester) async {
@@ -126,13 +150,30 @@ void main() {
     expect(find.text('Pallina vicina'), findsOneWidget);
   });
 
-  testWidgets('without a position everything is shown and distance is off', (tester) async {
+  testWidgets('without a position no ad is shown and the page asks for the position',
+      (tester) async {
     await _pumpPage(tester);
 
-    expect(find.text('Gioco lontano'), findsOneWidget);
-    expect(find.textContaining('imposta la tua posizione'), findsOneWidget);
+    expect(find.text('Pallina vicina'), findsNothing);
+    expect(find.text('Gioco lontano'), findsNothing);
+    expect(find.textContaining('Imposta la tua posizione'), findsOneWidget);
     final chip = tester.widget<ChoiceChip>(find.widgetWithText(ChoiceChip, '2 km'));
     expect(chip.onSelected, isNull);
+  });
+
+  group('in the UK', () {
+    setUp(() async => useLanguageVariant('en-GB'));
+    tearDown(resetTerritoryForTest);
+
+    testWidgets('radius is in miles, up to 30 mi, with 15 mi preselected', (tester) async {
+      await _pumpPage(tester, reference: _me);
+
+      for (final label in ['1 mi', '3 mi', '5 mi', '15 mi', '30 mi']) {
+        expect(find.widgetWithText(ChoiceChip, label), findsOneWidget, reason: label);
+      }
+      expect(tester.widget<ChoiceChip>(find.widgetWithText(ChoiceChip, '15 mi')).selected, isTrue);
+      expect(find.textContaining('Anywhere'), findsNothing);
+    });
   });
 
   testWidgets('the map button is available once listings are loaded', (tester) async {

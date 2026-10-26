@@ -658,8 +658,11 @@ class SupabaseMarketplaceListingRepository(MarketplaceListingRepository):
             return None
         return _row_to_listing(cast(dict[str, Any], response.data[0]))
 
-    def list_active(self) -> list[MarketplaceListing]:
-        response = self._client.table(self._table).select("*").eq("status", "active").execute()
+    def list_active(self, country: str | None = None) -> list[MarketplaceListing]:
+        query = self._client.table(self._table).select("*").eq("status", "active")
+        if country is not None:
+            query = query.eq("country", country)
+        response = query.execute()
         return [_row_to_listing(cast(dict[str, Any], item)) for item in response.data or []]
 
 

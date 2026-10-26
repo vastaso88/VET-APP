@@ -515,7 +515,6 @@
   "marketplaceSpeciesReptileAmphibian": "Reptiles et amphibiens",
   "marketplaceSpeciesFish": "Poisson",
   "marketplacePriceGift": "À donner",
-  "marketplaceDistanceAnywhere": "Partout",
   "marketplaceDemoBedTitle": "Panier rembourré (démo)",
   "marketplaceDemoBedDescription": "Peu utilisé, taille moyenne.",
   "marketplaceDemoBedArea": "Centre, Milan",
@@ -525,8 +524,11 @@
   "marketplaceMapAction": "Carte",
   "marketplaceNewListing": "Nouvelle annonce",
   "marketplaceIntro": "Achetez, vendez et donnez des articles pour animaux avec d'autres propriétaires.",
-  "marketplaceDistanceNeedsLocation": "Pour filtrer par distance, définissez votre position dans Paramètres → Localisation.",
   "marketplaceEmptyFiltered": "Aucune annonce avec ces filtres pour le moment.",
+  "marketplaceNeedsLocation": "Le marché de l'occasion n'affiche que les annonces près de chez vous. Définissez votre position dans Paramètres → Localisation pour les voir.",
+  "marketplaceNoLiveAnimalsNote": "Dans votre pays, le marché de l'occasion n'accepte pas d'annonces d'animaux vivants : uniquement des produits et services pour animaux.",
+  "marketplaceNoLiveAnimalsConfirm": "Je confirme que cette annonce ne propose pas d'animal vivant (vente, don ou cession)",
+  "marketplaceNoLiveAnimalsRequired": "Confirmez que l'annonce ne propose pas d'animal vivant",
   "marketplaceLoadError": "Je n'arrive pas à charger les annonces. Vérifiez votre connexion.",
   "marketplaceFilterAllCategories": "Toutes",
   "marketplaceFilterAllSpecies": "Tous les animaux",
@@ -630,7 +632,14 @@
   "marketplaceSpeciesLabel": "Pour quels animaux",
   "marketplaceSpeciesRequired": "Indiquez pour quels animaux, ou « Toutes les espèces »",
   "marketplaceGiftSubtitle": "Vous le donnez à qui en a besoin",
-  "marketplaceFieldPrice": "Prix en €",
+  "marketplaceFieldPrice": "Prix ({currency})",
+  "@marketplaceFieldPrice": {
+    "placeholders": {
+      "currency": {
+        "type": "String"
+      }
+    }
+  },
   "marketplaceSaving": "Enregistrement...",
   "marketplaceSaveChanges": "Enregistrer les modifications",
   "marketplacePublish": "Publier l'annonce",
@@ -2023,6 +2032,7 @@
     }
   },
   "eventsEmptyPeriod": "Aucun événement sur la période choisie",
+  "eventsCountryOnlyNote": "Nous n'affichons que les événements de votre pays, celui de la langue choisie dans l'application.",
   "eventsLevelLocal": "Local",
   "eventsLevelProvincial": "Provincial",
   "eventsLevelRegional": "Régional",
@@ -2186,6 +2196,7 @@
   "petNewsTitle": "Actualités",
   "petNewsLoading": "Je charge les actualités...",
   "petNewsEmpty": "Aucune actualité disponible pour cette catégorie pour le moment.",
+  "petNewsEmptyLocal": "Pour le moment, il n'y a pas d'actualités dans votre langue et pour votre pays. Nous n'affichons pas d'actualités d'autres pays.",
   "petNewsCategoryAll": "Toutes",
   "petNewsCategoryDog": "Chien",
   "petNewsCategoryCat": "Chat",
@@ -2228,7 +2239,7 @@
   "activitiesNearbyTitle": "Près de chez moi",
   "activitiesNearbySubtitle": "Vétérinaires, magasins et parcs canins près de chez vous.",
   "activitiesEventsTitle": "Événements",
-  "activitiesEventsSubtitle": "Salons, expositions et initiatives pour animaux dans toute l'Italie.",
+  "activitiesEventsSubtitle": "Salons, expositions et initiatives pour animaux dans votre pays.",
   "activitiesGalleryTitle": "Galerie",
   "activitiesGallerySubtitle": "Rassemblez les photos et les souvenirs de vos animaux.",
   "activitiesMarketplaceTitle": "Marché de l'occasion",

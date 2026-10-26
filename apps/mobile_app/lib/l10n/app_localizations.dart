@@ -2048,12 +2048,6 @@ abstract class AppLocalizations {
   /// **'In regalo'**
   String get marketplacePriceGift;
 
-  /// No description provided for @marketplaceDistanceAnywhere.
-  ///
-  /// In it, this message translates to:
-  /// **'Ovunque'**
-  String get marketplaceDistanceAnywhere;
-
   /// No description provided for @marketplaceDemoBedTitle.
   ///
   /// In it, this message translates to:
@@ -2108,17 +2102,35 @@ abstract class AppLocalizations {
   /// **'Compra, vendi e regala articoli per animali con altri proprietari.'**
   String get marketplaceIntro;
 
-  /// No description provided for @marketplaceDistanceNeedsLocation.
-  ///
-  /// In it, this message translates to:
-  /// **'Per filtrare per distanza imposta la tua posizione in Impostazioni → Località.'**
-  String get marketplaceDistanceNeedsLocation;
-
   /// No description provided for @marketplaceEmptyFiltered.
   ///
   /// In it, this message translates to:
   /// **'Nessun annuncio con questi filtri per ora.'**
   String get marketplaceEmptyFiltered;
+
+  /// No description provided for @marketplaceNeedsLocation.
+  ///
+  /// In it, this message translates to:
+  /// **'Il Mercatino mostra solo gli annunci vicino a te. Imposta la tua posizione in Impostazioni → Località per vederli.'**
+  String get marketplaceNeedsLocation;
+
+  /// No description provided for @marketplaceNoLiveAnimalsNote.
+  ///
+  /// In it, this message translates to:
+  /// **'Nel tuo paese il Mercatino non ammette annunci di animali vivi: solo prodotti e servizi per animali.'**
+  String get marketplaceNoLiveAnimalsNote;
+
+  /// No description provided for @marketplaceNoLiveAnimalsConfirm.
+  ///
+  /// In it, this message translates to:
+  /// **'Confermo che questo annuncio non offre un animale vivo (vendita, regalo o cessione)'**
+  String get marketplaceNoLiveAnimalsConfirm;
+
+  /// No description provided for @marketplaceNoLiveAnimalsRequired.
+  ///
+  /// In it, this message translates to:
+  /// **'Conferma che l\'annuncio non offre un animale vivo'**
+  String get marketplaceNoLiveAnimalsRequired;
 
   /// No description provided for @marketplaceLoadError.
   ///
@@ -2405,8 +2417,8 @@ abstract class AppLocalizations {
   /// No description provided for @marketplaceFieldPrice.
   ///
   /// In it, this message translates to:
-  /// **'Prezzo in €'**
-  String get marketplaceFieldPrice;
+  /// **'Prezzo ({currency})'**
+  String marketplaceFieldPrice(String currency);
 
   /// No description provided for @marketplaceSaving.
   ///
@@ -6020,6 +6032,12 @@ abstract class AppLocalizations {
   /// **'Nessun evento nel periodo scelto'**
   String get eventsEmptyPeriod;
 
+  /// No description provided for @eventsCountryOnlyNote.
+  ///
+  /// In it, this message translates to:
+  /// **'Mostriamo solo gli eventi del tuo paese, quello della lingua scelta nell\'app.'**
+  String get eventsCountryOnlyNote;
+
   /// No description provided for @eventsLevelLocal.
   ///
   /// In it, this message translates to:
@@ -6524,6 +6542,12 @@ abstract class AppLocalizations {
   /// **'Nessuna notizia disponibile per questa categoria al momento.'**
   String get petNewsEmpty;
 
+  /// No description provided for @petNewsEmptyLocal.
+  ///
+  /// In it, this message translates to:
+  /// **'Per ora non ci sono notizie nella tua lingua e per il tuo paese. Non mostriamo notizie di altri paesi.'**
+  String get petNewsEmptyLocal;
+
   /// No description provided for @petNewsCategoryAll.
   ///
   /// In it, this message translates to:
@@ -6779,7 +6803,7 @@ abstract class AppLocalizations {
   /// No description provided for @activitiesEventsSubtitle.
   ///
   /// In it, this message translates to:
-  /// **'Fiere, esposizioni e iniziative per animali in tutta Italia.'**
+  /// **'Fiere, esposizioni e iniziative per animali nel tuo paese.'**
   String get activitiesEventsSubtitle;
 
   /// No description provided for @activitiesGalleryTitle.
