@@ -97,6 +97,7 @@ def test_updating_a_hamster_with_a_body_condition_saves_none() -> None:
         .execute(
             UpdatePetProfileInput(
                 pet_id=created.id,
+                owner_id="user-1",
                 name="Briciola",
                 species="Piccoli mammiferi",
                 breed="Criceto siriano",

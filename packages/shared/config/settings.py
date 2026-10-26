@@ -61,6 +61,13 @@ class Settings(BaseSettings):
     # DEVELOPER_EMAILS so existing founder/developer accounts can be reused
     # without hardcoding personal addresses in source control.
     admin_emails: StringList = Field(default=[], alias="ADMIN_EMAILS")
+    # Shared secret for POST /admin/scheduler/tick (GitHub workflow
+    # admin-scheduler.yml). Random, 32+ bytes, rotated on its own; when
+    # empty the route falls back to the legacy digest of the service key.
+    admin_scheduler_secret: str = Field(default="", alias="ADMIN_SCHEDULER_SECRET")
+    # Browser origins allowed to call the API in production (the Flutter
+    # web app's origin). Empty = no cross-origin browser access.
+    cors_allowed_origins: StringList = Field(default=[], alias="CORS_ALLOWED_ORIGINS")
     # Secret key for the pseudonym stored in place of the reporter's id on
     # chat response reports. Changing it orphans existing pseudonyms (no
     # more dedup/erasure match for old rows), so set it once and keep it.
@@ -239,7 +246,9 @@ class Settings(BaseSettings):
     radar_open_sources: StringList = Field(default=["*"], alias="RADAR_OPEN_SOURCES")
     # Where a business owner or a user can ask for a correction or the
     # removal of a place. Shown publicly in the app; empty hides it.
-    support_contact_email: str = Field(default="vastaso88@gmail.com", alias="SUPPORT_CONTACT_EMAIL")
+    # No default on purpose: the repository is public and must not carry a
+    # personal address; set it per deployment.
+    support_contact_email: str = Field(default="", alias="SUPPORT_CONTACT_EMAIL")
     # Attachment bytes: local disk outside of PERSISTENCE_BACKEND=supabase
     # (fine for local dev), a Supabase Storage bucket when it is (required
     # on serverless deploys like Vercel, whose filesystem is read-only).
@@ -338,6 +347,15 @@ class Settings(BaseSettings):
                     "LLM_BASE_URL": self.llm_base_url,
                 },
             )
+
+        if self.environment == "production":
+            # A production deploy with the demo auth provider would accept
+            # every request as the demo user: refuse to start instead.
+            if self.auth_backend != "supabase" or self.persistence_backend != "supabase":
+                raise ValueError(
+                    "ENVIRONMENT=production requires AUTH_BACKEND=supabase and "
+                    "PERSISTENCE_BACKEND=supabase"
+                )
 
         if self.radar_places_provider != "openstreetmap_overpass":
             raise ValueError("RADAR_PLACES_PROVIDER must be openstreetmap_overpass")

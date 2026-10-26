@@ -30,7 +30,8 @@ class CreateReminderService:
         self._pet_profile_repository = pet_profile_repository
 
     def execute(self, data: CreateReminderInput) -> CreateReminderOutput:
-        if self._pet_profile_repository.get(data.pet_id) is None:
+        pet_profile = self._pet_profile_repository.get(data.pet_id)
+        if pet_profile is None or pet_profile.owner_id != data.owner_id:
             raise ValidationError("pet_profile not found")
         reminder = Reminder(**data.model_dump())
         return CreateReminderOutput(reminder=self._repository.save(reminder))

@@ -30,7 +30,7 @@ def _require_developer(container: ApplicationContainer) -> None:
     not be able to read anyone else's report through this API.
     """
     user = container.auth_provider.get_current_user()
-    if user.email.strip().lower() not in container.developer_emails:
+    if not user.email_verified or user.email.strip().lower() not in container.developer_emails:
         raise AuthenticationError("not allowed to review chat response reports")
 
 

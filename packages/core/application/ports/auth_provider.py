@@ -12,6 +12,10 @@ class AuthenticatedUser(BaseModel):
     # The name the owner gave at sign-up, when there is one.
     display_name: str | None = None
     preferred_locale: SupportedLocale = "it"
+    # False when the identity provider has not confirmed the address yet.
+    # Privileged allowlists (admin, developer) are matched on the e-mail,
+    # so an unconfirmed address must never unlock them.
+    email_verified: bool = True
 
 
 class AuthSession(BaseModel):

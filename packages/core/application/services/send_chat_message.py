@@ -179,7 +179,10 @@ class SendChatMessageService:
         if not data.user_message.strip() and not data.attachment_id:
             raise ValidationError("user_message must not be empty")
         pet_profile = self._pet_profile_repository.get(data.pet_id)
-        if pet_profile is None:
+        # Ownership is enforced here because the backend's Supabase client
+        # runs with the service role (no row-level security): another
+        # owner's pet id must look exactly like a missing one.
+        if pet_profile is None or pet_profile.owner_id != data.owner_id:
             raise ValidationError("pet_profile not found")
 
         # A retry of a message this server already answered (the app gave up
@@ -392,11 +395,15 @@ class SendChatMessageService:
     def _load_or_create_conversation(self, data: SendChatMessageInput) -> Conversation:
         if data.conversation_id:
             stored = self._repository.get(data.conversation_id)
-            if stored:
+            if stored and stored.owner_id == data.owner_id and stored.pet_id == data.pet_id:
                 return migrate_legacy_title(stored)
             raise ValidationError("conversation not found")
 
-        existing_for_pet = self._repository.list_by_pet(data.pet_id)
+        existing_for_pet = [
+            conversation
+            for conversation in self._repository.list_by_pet(data.pet_id)
+            if conversation.owner_id == data.owner_id
+        ]
         if len(existing_for_pet) >= self._max_active_conversations_per_pet:
             raise ValidationError(
                 "conversation_limit_reached: hai raggiunto il numero massimo di "

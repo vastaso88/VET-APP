@@ -26,3 +26,17 @@ uv.lock
 # Working data that may contain real names and phone numbers of
 # businesses (e.g. the radar dedup calibration sample): never committed.
 .local/
+
+# Build-time secrets and signing material (security audit 2026-10-26):
+# the dart-define file with the real Supabase/API values, Android keystores
+# and their passwords, Firebase/Google service files, CI define output.
+apps/mobile_app/.env.production.json
+apps/mobile_app/production.env.json
+apps/mobile_app/dart-defines.json
+**/dart-defines.json
+*.jks
+*.keystore
+**/key.properties
+**/google-services.json
+**/serviceAccount*.json
+**/firebase-service-account*.json

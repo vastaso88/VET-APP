@@ -64,6 +64,21 @@ class LocationPreferenceStore extends ChangeNotifier {
     }
   }
 
+  /// Sign-out: the home address and last position belong to the account
+  /// that just left, not to whoever signs in next on this device.
+  Future<void> clear() async {
+    _preference = const UserLocationPreference();
+    _loaded = false;
+    _loadingFuture = null;
+    notifyListeners();
+    try {
+      final preferences = await SharedPreferences.getInstance();
+      await preferences.remove(_storageKey);
+    } catch (_) {
+      // Best-effort, like update(): the in-memory value is already gone.
+    }
+  }
+
   Future<void> update(UserLocationPreference preference) async {
     _preference = preference;
     notifyListeners();

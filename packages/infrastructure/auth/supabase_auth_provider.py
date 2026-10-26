@@ -108,6 +108,7 @@ class SupabaseAuthProvider(AuthProvider):
             email=user.email or "",
             display_name=display_name if isinstance(display_name, str) else None,
             preferred_locale=normalize_locale(metadata.get("preferred_locale")),
+            email_verified=bool(getattr(user, "email_confirmed_at", None)),
         )
 
     def last_sign_in_at(self) -> datetime | None:

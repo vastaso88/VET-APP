@@ -14,7 +14,7 @@ from packages.infrastructure.persistence.in_memory_repositories import (
 )
 from packages.shared.errors.base import ValidationError
 
-_DEVELOPER_EMAILS = frozenset({"russo88fra@gmail.com", "vastaso88@gmail.com"})
+_DEVELOPER_EMAILS = frozenset({"dev1@example.com", "dev2@example.com"})
 
 
 def test_first_lookup_starts_a_ten_day_trial() -> None:
@@ -63,7 +63,7 @@ def test_developer_allowlist_always_has_access_even_after_trial_expiry() -> None
     service = GetOrCreateSubscriptionService(repository, _DEVELOPER_EMAILS)
 
     result = service.execute(
-        GetOrCreateSubscriptionInput(owner_id="dev-1", email="RUSSO88FRA@gmail.com")
+        GetOrCreateSubscriptionInput(owner_id="dev-1", email="DEV1@example.com")
     )
 
     assert result.is_developer is True

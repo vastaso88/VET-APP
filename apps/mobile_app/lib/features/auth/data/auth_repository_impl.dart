@@ -7,6 +7,7 @@ import '../domain/auth_repository.dart';
 import 'auth_remote_data_source.dart';
 import 'auth_session_store.dart';
 import 'memory_auth_session_store.dart';
+import 'remember_me_store.dart';
 
 class AuthRepositoryImpl implements AuthRepository {
   AuthRepositoryImpl({
@@ -51,6 +52,9 @@ class AuthRepositoryImpl implements AuthRepository {
           rememberMe: rememberMe,
         );
         await _sessionStore.write(context);
+        // Honoured at the next launch for the Supabase session (see
+        // RememberMeStore); the demo store honours it on its own.
+        await RememberMeStore.write(rememberMe);
         return Result.success(context);
       },
       onFailure: (error) async => Result.failure(error),

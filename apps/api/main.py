@@ -1,9 +1,12 @@
+import logging
+import uuid
 from collections.abc import Awaitable, Callable
 
 from fastapi import FastAPI, Request, Response
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
+from apps.api.rate_limit import SlidingWindowLimiter, build_middleware
 from apps.api.routes.account import router as account_router
 from apps.api.routes.account_consents import router as account_consents_router
 from apps.api.routes.account_preferences import router as account_preferences_router
@@ -32,10 +35,30 @@ from packages.shared.errors.base import AuthenticationError, ProviderError, Vali
 settings = get_settings()
 configure_logging(settings)
 setup_telemetry(settings.enable_telemetry)
+logger = logging.getLogger(__name__)
 
-app = FastAPI(title=settings.app_name)
+_is_production = settings.environment == "production"
 
-if settings.environment != "production":
+# The interactive API docs list every route and schema (admin ones too):
+# useful locally, an unnecessary map for an attacker in production.
+app = FastAPI(
+    title=settings.app_name,
+    docs_url=None if _is_production else "/docs",
+    redoc_url=None if _is_production else "/redoc",
+    openapi_url=None if _is_production else "/openapi.json",
+)
+
+if _is_production:
+    # Only the origins listed in CORS_ALLOWED_ORIGINS (the Flutter web
+    # app) may call the API from a browser; empty list = none.
+    if settings.cors_allowed_origins:
+        app.add_middleware(
+            CORSMiddleware,
+            allow_origins=list(settings.cors_allowed_origins),
+            allow_methods=["GET", "POST", "PUT", "PATCH", "DELETE"],
+            allow_headers=["Authorization", "Content-Type"],
+        )
+else:
     # The Flutter web client runs on its own dev-server origin (e.g.
     # localhost:8080) and calls this API cross-origin; browsers block that
     # without CORS. Wide open is fine for local/dev/staging, never for prod.
@@ -45,6 +68,29 @@ if settings.environment != "production":
         allow_methods=["*"],
         allow_headers=["*"],
     )
+
+rate_limiter = SlidingWindowLimiter()
+app.middleware("http")(build_middleware(rate_limiter))
+
+
+@app.middleware("http")
+async def security_headers(
+    request: Request, call_next: Callable[[Request], Awaitable[Response]]
+) -> Response:
+    """Defensive headers on every response. The API serves JSON (and one
+    user-uploaded file route), so the browser must never sniff types,
+    frame it, or cache authenticated answers."""
+    response = await call_next(request)
+    headers = response.headers
+    headers.setdefault("X-Content-Type-Options", "nosniff")
+    headers.setdefault("X-Frame-Options", "DENY")
+    headers.setdefault("Referrer-Policy", "no-referrer")
+    headers.setdefault("Permissions-Policy", "geolocation=(), camera=(), microphone=()")
+    if _is_production:
+        headers.setdefault("Strict-Transport-Security", "max-age=31536000; includeSubDomains")
+    if request.headers.get("Authorization"):
+        headers.setdefault("Cache-Control", "no-store")
+    return response
 
 
 @app.middleware("http")
@@ -76,7 +122,28 @@ async def handle_authentication_error(_: Request, exc: AuthenticationError) -> J
 
 @app.exception_handler(ProviderError)
 async def handle_provider_error(_: Request, exc: ProviderError) -> JSONResponse:
-    return JSONResponse(status_code=502, content={"detail": str(exc)})
+    # Provider error bodies (Groq quota lines, model names, request ids)
+    # stay in the server log; the client gets a fixed message plus a
+    # correlation id to quote when reporting the problem.
+    error_id = uuid.uuid4().hex[:12]
+    logger.warning("provider error %s: %s", error_id, exc)
+    return JSONResponse(
+        status_code=502,
+        content={
+            "detail": "Servizio temporaneamente non disponibile. Riprova tra poco.",
+            "error_id": error_id,
+        },
+    )
+
+
+@app.exception_handler(Exception)
+async def handle_unexpected_error(_: Request, exc: Exception) -> JSONResponse:
+    error_id = uuid.uuid4().hex[:12]
+    logger.exception("unhandled error %s", error_id)
+    return JSONResponse(
+        status_code=500,
+        content={"detail": "Errore interno. Riprova tra poco.", "error_id": error_id},
+    )
 
 
 app.include_router(health_router)
