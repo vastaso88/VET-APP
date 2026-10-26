@@ -3666,5 +3666,11 @@
   "remindersDoneMarked": "Marqué comme fait.",
   "remindersDoneDismissed": "Marqué comme non fait.",
   "remindersDonePostponed": "Je vous le redemanderai demain.",
-  "remindersDoneTooltip": "Marquer comme fait"
+  "remindersDoneTooltip": "Marquer comme fait",
+  "remindersNotifPermTitle": "Souhaitez-vous recevoir les alertes ?",
+  "remindersNotifPermBody": "Pour vous prévenir lorsqu'un rappel arrive à échéance, VetApp a besoin de l'autorisation d'envoyer des notifications. Vous pouvez la modifier à tout moment dans les Réglages.",
+  "remindersNotifPermNotNow": "Pas maintenant",
+  "remindersNotifPermAllow": "Autoriser",
+  "remindersNotifOffBanner": "Les notifications sont désactivées : les rappels ne sonneront pas",
+  "remindersNotifOffAction": "Activer"
 }

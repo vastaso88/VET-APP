@@ -174,6 +174,7 @@ void main() {
         MaterialApp(
           localizationsDelegates: AppLocalizations.localizationsDelegates,
           supportedLocales: AppLocalizations.supportedLocales,
+          locale: const Locale('it'),
           home: Builder(builder: (context) {
             captured = context;
             return const Scaffold();

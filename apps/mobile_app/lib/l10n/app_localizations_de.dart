@@ -6388,4 +6388,25 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get remindersDoneTooltip => 'Als erledigt markieren';
+
+  @override
+  String get remindersNotifPermTitle =>
+      'Möchten Sie Benachrichtigungen erhalten?';
+
+  @override
+  String get remindersNotifPermBody =>
+      'Damit wir Sie benachrichtigen können, wenn eine Erinnerung fällig ist, benötigt VetApp die Berechtigung für Benachrichtigungen. Sie können dies jederzeit in den Einstellungen ändern.';
+
+  @override
+  String get remindersNotifPermNotNow => 'Nicht jetzt';
+
+  @override
+  String get remindersNotifPermAllow => 'Erlauben';
+
+  @override
+  String get remindersNotifOffBanner =>
+      'Benachrichtigungen sind deaktiviert: Erinnerungen werden nicht angezeigt';
+
+  @override
+  String get remindersNotifOffAction => 'Aktivieren';
 }

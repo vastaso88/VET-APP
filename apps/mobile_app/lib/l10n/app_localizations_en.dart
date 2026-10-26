@@ -6317,4 +6317,25 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get remindersDoneTooltip => 'Mark as done';
+
+  @override
+  String get remindersNotifPermTitle =>
+      'Would you like reminders to alert you?';
+
+  @override
+  String get remindersNotifPermBody =>
+      'To alert you when a reminder is due, VetApp needs permission to send notifications. You can change this at any time in Settings.';
+
+  @override
+  String get remindersNotifPermNotNow => 'Not now';
+
+  @override
+  String get remindersNotifPermAllow => 'Allow';
+
+  @override
+  String get remindersNotifOffBanner =>
+      'Notifications are turned off: reminders won\'t make a sound';
+
+  @override
+  String get remindersNotifOffAction => 'Turn on';
 }
