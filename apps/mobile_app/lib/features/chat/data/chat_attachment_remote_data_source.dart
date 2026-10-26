@@ -11,6 +11,7 @@ import '../../../shared/files/image_metadata.dart';
 import '../../../shared/config/app_runtime_config_loader.dart';
 import '../../../shared/errors/app_network_error.dart';
 import '../../../shared/types/result.dart';
+import 'chat_remote_data_source.dart' show quotaExceededMessage;
 
 /// Parsed slice of `POST /chat-attachments`'s response (contract from "Chat
 /// LLM interna VETAPP"): the photo is analyzed server-side, so the mobile
@@ -64,6 +65,8 @@ class HttpChatAttachmentRemoteDataSource implements ChatAttachmentRemoteDataSour
       final token = CurrentUser.accessToken();
       final request = http.MultipartRequest('POST', Uri.parse('$_baseUrl/chat-attachments'))
         ..headers.addAll({
+          // The backend words its refusals (daily allowance) in this language.
+          'Accept-Language': AppLocaleHolder.current.languageCode,
           if (token != null && token.isNotEmpty) 'Authorization': 'Bearer $token',
         })
         ..fields['pet_id'] = petId
@@ -78,6 +81,12 @@ class HttpChatAttachmentRemoteDataSource implements ChatAttachmentRemoteDataSour
       final response = await http.Response.fromStream(streamedResponse);
 
       if (response.statusCode < 200 || response.statusCode >= 300) {
+        // Today's readings are used up: the backend's own sentence, in the
+        // user's language, instead of the generic upload error.
+        final quota = quotaExceededMessage(response.body);
+        if (quota != null) {
+          return Result.failure(AppNetworkError(code: 'quota_exceeded', message: quota));
+        }
         final detailCode = _detailCode(response.body);
         return Result.failure(
           AppNetworkError(

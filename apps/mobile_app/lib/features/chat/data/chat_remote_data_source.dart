@@ -390,6 +390,12 @@ class HttpChatRemoteDataSource implements ChatRemoteDataSource {
           .get(Uri.parse('$_baseUrl/conversations/$conversationId/summary'), headers: _headers)
           .timeout(_timeout);
       if (response.statusCode < 200 || response.statusCode >= 300) {
+        final quota = quotaExceededMessage(response.body);
+        if (quota != null) {
+          return Result.failure<String>(
+            AppNetworkError(code: 'quota_exceeded', message: quota),
+          );
+        }
         final detail = _detailOf(response.body);
         final message = switch (detail) {
           final d? when d.startsWith('conversation_empty') =>
@@ -420,17 +426,7 @@ class HttpChatRemoteDataSource implements ChatRemoteDataSource {
   }
 
   /// The `detail` text of an error body, or null when there is none.
-  static String? _detailOf(String body) {
-    try {
-      final decoded = jsonDecode(body);
-      if (decoded is Map<String, dynamic> && decoded['detail'] is String) {
-        return decoded['detail'] as String;
-      }
-    } catch (_) {
-      // Not JSON: no detail.
-    }
-    return null;
-  }
+  static String? _detailOf(String body) => detailOf(body);
 
   @override
   Future<Result<void>> deleteConversation(String conversationId) async {
@@ -618,4 +614,30 @@ String localizedBackendMessage(String raw, {String? detail}) {
       return appL10n.chatEditMessageMissing;
   }
   return raw;
+}
+
+/// The `detail` string of a backend error body, or null when the body is
+/// not JSON or has none.
+String? detailOf(String body) {
+  try {
+    final decoded = jsonDecode(body);
+    if (decoded is Map<String, dynamic> && decoded['detail'] is String) {
+      return decoded['detail'] as String;
+    }
+  } catch (_) {
+    // Not JSON: no detail.
+  }
+  return null;
+}
+
+/// The owner-facing sentence of a 429 "quota_exceeded" answer (a daily
+/// allowance of readings, dictations or summaries is used up): the backend
+/// writes `detail` as "quota_exceeded: <sentence in the user's language>".
+/// Null for any other body, so callers fall back to their own messages.
+String? quotaExceededMessage(String body) {
+  const prefix = 'quota_exceeded:';
+  final detail = detailOf(body);
+  if (detail == null || !detail.startsWith(prefix)) return null;
+  final message = detail.substring(prefix.length).trim();
+  return message.isEmpty ? null : message;
 }

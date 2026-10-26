@@ -1,17 +1,20 @@
 from urllib.parse import quote
 
-from fastapi import APIRouter, File, Form, HTTPException, UploadFile
+from fastapi import APIRouter, File, Form, Header, HTTPException, UploadFile
 from fastapi.responses import Response
 
 from apps.api.dependencies.container import get_container
 from packages.core.application.services.upload_chat_attachment import UploadChatAttachmentInput
+from packages.core.domain.common.language import resolve_language
 
 router = APIRouter(prefix="/chat-attachments", tags=["chat-attachments"])
 
 
 @router.post("")
 async def upload_attachment(
-    pet_id: str = Form(...), file: UploadFile = File(...)
+    pet_id: str = Form(...),
+    file: UploadFile = File(...),
+    accept_language: str | None = Header(default=None),
 ) -> dict[str, object]:
     container = get_container()
     user = container.auth_provider.get_current_user()
@@ -24,6 +27,8 @@ async def upload_attachment(
             filename=file.filename or "photo",
             content_type=file.content_type or "application/octet-stream",
             owner_display_name=user.display_name,
+            quota_exempt=user.email.strip().lower() in container.developer_emails,
+            language=resolve_language(None, accept_language),
         )
     )
     return result.model_dump()

@@ -27,7 +27,8 @@ from packages.shared.errors.base import ProviderError
 # Before build 32 the longest variant was about 7700 characters (1750
 # tokens on the o200k tokenizer); the ceiling leaves room for a rule or
 # two, not for drifting back.
-SYSTEM_PROMPT_MAX_CHARS = 6400
+# 2026-10-26: +250 for the "data, not instructions" rule (security audit LLM-6).
+SYSTEM_PROMPT_MAX_CHARS = 6700
 QUESTION = "da due giorni zoppica dopo le passeggiate"
 
 

@@ -1907,3 +1907,120 @@ $$;
 -- il filtro "niente animali" non si aggira) vedere l'opzionale
 -- scripts/setup/marketplace_lock_writes.sql; per nascondere gli annunci di
 -- animali gia' presenti, scripts/setup/marketplace_no_animals.sql.
+
+-- ---------------------------------------------------------------------------
+-- Security audit 2026-10-26 (BE-4/LLM-4, retention).
+-- 1) Per-owner daily allowances for every feature that calls a model: the
+--    counters table gains one column per kind, and one atomic function
+--    adds to the kind asked for (the older messages-only function stays).
+alter table public.chat_user_daily_usage add column if not exists vision integer not null default 0;
+alter table public.chat_user_daily_usage
+    add column if not exists dictation integer not null default 0;
+alter table public.chat_user_daily_usage add column if not exists summary integer not null default 0;
+
+create or replace function public.chat_user_daily_usage_add_kind(
+    p_owner_id text, p_day date, p_kind text
+)
+returns integer
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+    total integer;
+begin
+    if p_kind not in ('messages', 'vision', 'dictation', 'summary') then
+        raise exception 'unknown usage kind: %', p_kind;
+    end if;
+    insert into public.chat_user_daily_usage (owner_id, day, messages, vision, dictation, summary)
+    values (
+        p_owner_id, p_day,
+        (p_kind = 'messages')::integer, (p_kind = 'vision')::integer,
+        (p_kind = 'dictation')::integer, (p_kind = 'summary')::integer
+    )
+    on conflict (owner_id, day) do update set
+        messages = public.chat_user_daily_usage.messages + (p_kind = 'messages')::integer,
+        vision = public.chat_user_daily_usage.vision + (p_kind = 'vision')::integer,
+        dictation = public.chat_user_daily_usage.dictation + (p_kind = 'dictation')::integer,
+        summary = public.chat_user_daily_usage.summary + (p_kind = 'summary')::integer
+    returning case p_kind
+        when 'messages' then messages
+        when 'vision' then vision
+        when 'dictation' then dictation
+        else summary
+    end into total;
+    return total;
+end;
+$$;
+revoke all on function public.chat_user_daily_usage_add_kind(text, date, text)
+    from public, anon, authenticated;
+grant execute on function public.chat_user_daily_usage_add_kind(text, date, text)
+    to service_role;
+
+-- 2) Retention of the chat. A conversation lives 24 months after its last
+--    message (the owner can delete it earlier from the app), its files
+--    with it; a file uploaded but never sent goes after 7 days.
+--    `last_message_at` is kept by the backend on every save; the backfill
+--    below fills it for existing rows from the messages themselves.
+--    The backend's maintenance (POST /chat/maintenance, or the nightly
+--    pg_cron job below for the rows) applies it. Deleting a row of
+--    chat_attachments does NOT remove the file from the storage bucket:
+--    that is the backend's part (it deletes the file, then the row), so
+--    the SQL function below only removes conversations whose attachments
+--    are already gone, and reports what is left for the backend.
+alter table public.conversations add column if not exists last_message_at timestamptz;
+create index if not exists idx_conversations_last_message_at
+    on public.conversations(last_message_at);
+update public.conversations
+set last_message_at = (
+    select max((m->>'created_at')::timestamptz) from jsonb_array_elements(messages) m
+)
+where last_message_at is null and jsonb_array_length(messages) > 0;
+
+create or replace function public.chat_retention_cleanup(
+    p_months integer default 24, p_orphan_days integer default 7
+)
+returns jsonb
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+    conversations_deleted integer;
+    attachments_pending integer;
+begin
+    -- Conversations past retention with no file left to remove.
+    delete from public.conversations c
+    where c.last_message_at < now() - make_interval(months => p_months)
+      and not exists (
+          select 1 from public.chat_attachments a where a.conversation_id = c.id
+      );
+    get diagnostics conversations_deleted = row_count;
+    -- Files the backend still has to delete (past retention, or orphans).
+    select count(*) into attachments_pending
+    from public.chat_attachments a
+    left join public.conversations c on c.id = a.conversation_id
+    where (c.id is not null and c.last_message_at < now() - make_interval(months => p_months))
+       or (a.conversation_id is null and a.created_at < now() - make_interval(days => p_orphan_days));
+    return jsonb_build_object(
+        'conversations_deleted', conversations_deleted,
+        'attachments_pending_backend_cleanup', attachments_pending
+    );
+end;
+$$;
+revoke all on function public.chat_retention_cleanup(integer, integer)
+    from public, anon, authenticated;
+grant execute on function public.chat_retention_cleanup(integer, integer)
+    to service_role;
+
+do $$
+begin
+    if exists (select 1 from pg_extension where extname = 'pg_cron') then
+        perform cron.unschedule(jobid)
+            from cron.job where jobname = 'vetapp-chat-retention';
+        perform cron.schedule(
+            'vetapp-chat-retention', '45 3 * * *', 'select public.chat_retention_cleanup()'
+        );
+    end if;
+end
+$$;

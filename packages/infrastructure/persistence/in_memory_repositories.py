@@ -95,6 +95,14 @@ class InMemoryConversationRepository(ConversationRepository):
     def delete(self, conversation_id: str) -> None:
         self._items.pop(conversation_id, None)
 
+    def list_inactive_before(self, cutoff: datetime, *, limit: int = 200) -> list[Conversation]:
+        stale = [
+            item
+            for item in self._items.values()
+            if item.messages and item.messages[-1].created_at < cutoff
+        ]
+        return stale[:limit]
+
 
 class InMemoryReminderRepository(ReminderRepository):
     def __init__(self) -> None:
@@ -419,6 +427,18 @@ class InMemoryChatAttachmentRepository(ChatAttachmentRepository):
     def get(self, attachment_id: str) -> ChatAttachment | None:
         return self._items.get(attachment_id)
 
+    def list_by_conversation(self, conversation_id: str) -> list[ChatAttachment]:
+        return [a for a in self._items.values() if a.conversation_id == conversation_id]
+
+    def list_orphans_before(self, cutoff: datetime, *, limit: int = 200) -> list[ChatAttachment]:
+        orphans = [
+            a for a in self._items.values() if a.conversation_id is None and a.created_at < cutoff
+        ]
+        return orphans[:limit]
+
+    def delete(self, attachment_id: str) -> None:
+        self._items.pop(attachment_id, None)
+
 
 class InMemoryLocalActivityRepository(LocalActivityRepository):
     def __init__(self, seed: list[LocalActivity] | None = None) -> None:
@@ -440,6 +460,7 @@ class InMemoryLlmUsageRepository(LlmUsageRepository):
         self.events: list[LlmUsageEvent] = []
         self._daily: dict[tuple[date, str], ModelDailyUsage] = {}
         self._user_messages: dict[tuple[str, date], int] = {}
+        self._user_usage: dict[tuple[str, date], dict[str, int]] = {}
 
     def record(self, event: LlmUsageEvent) -> None:
         self.events.append(event)
@@ -459,9 +480,14 @@ class InMemoryLlmUsageRepository(LlmUsageRepository):
         usage.exhausted_until = until
 
     def add_user_message(self, owner_id: str, day: date) -> int:
+        return self.add_user_usage(owner_id, day, "messages")
+
+    def add_user_usage(self, owner_id: str, day: date, kind: str) -> int:
         key = (owner_id, day)
-        self._user_messages[key] = self._user_messages.get(key, 0) + 1
-        return self._user_messages[key]
+        counters = self._user_usage.setdefault(key, {})
+        counters[kind] = counters.get(kind, 0) + 1
+        self._user_messages[key] = counters.get("messages", 0)
+        return counters[kind]
 
     def cleanup(self, today: date, *, usage_days: int, user_days: int) -> dict[str, int]:
         kept = [e for e in self.events if (today - e.day).days < usage_days]
@@ -470,6 +496,7 @@ class InMemoryLlmUsageRepository(LlmUsageRepository):
         old_users = [k for k in self._user_messages if (today - k[1]).days >= user_days]
         for key in old_users:
             del self._user_messages[key]
+            self._user_usage.pop(key, None)
         return {"llm_usage": removed_events, "chat_user_daily_usage": len(old_users)}
 
 

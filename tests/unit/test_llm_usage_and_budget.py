@@ -285,7 +285,10 @@ def test_the_budget_reads_what_other_instances_recorded() -> None:
 
     budget = LlmBudget(repository, budgets={MAIN: 1000}, default_budget=1000, refresh_seconds=0.0)
 
-    assert budget.used_today(MAIN) == repository.usage_for_day(date.today())[0].total_tokens
+    assert (
+        budget.used_today(MAIN)
+        == repository.usage_for_day(datetime.now(UTC).date())[0].total_tokens
+    )
     assert budget.state(MAIN) == "exhausted"
 
 

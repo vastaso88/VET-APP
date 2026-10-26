@@ -9,6 +9,7 @@ import '../../../shared/auth/current_user.dart';
 import '../../../shared/config/app_runtime_config_loader.dart';
 import '../../../shared/errors/app_network_error.dart';
 import '../../../shared/types/result.dart';
+import 'chat_remote_data_source.dart' show quotaExceededMessage;
 
 abstract class SpeechToTextRemoteDataSource {
   /// Uploads a recorded audio clip and returns its transcription — see
@@ -43,6 +44,8 @@ class HttpSpeechToTextRemoteDataSource implements SpeechToTextRemoteDataSource {
       final token = CurrentUser.accessToken();
       final request = http.MultipartRequest('POST', Uri.parse('$_baseUrl/speech-to-text'))
         ..headers.addAll({
+          // The backend words its refusals (daily allowance) in this language.
+          'Accept-Language': AppLocaleHolder.current.languageCode,
           if (token != null && token.isNotEmpty) 'Authorization': 'Bearer $token',
         })
         ..files.add(http.MultipartFile.fromBytes('file', audioBytes, filename: fileName));
@@ -51,6 +54,12 @@ class HttpSpeechToTextRemoteDataSource implements SpeechToTextRemoteDataSource {
       final response = await http.Response.fromStream(streamedResponse);
 
       if (response.statusCode < 200 || response.statusCode >= 300) {
+        // Today's dictations are used up: the backend says so in the
+        // user's language, and that sentence is worth more than a generic one.
+        final quota = quotaExceededMessage(response.body);
+        if (quota != null) {
+          return Result.failure(AppNetworkError(code: 'quota_exceeded', message: quota));
+        }
         return Result.failure(
           AppNetworkError(
             code: 'speech_to_text_http_${response.statusCode}',

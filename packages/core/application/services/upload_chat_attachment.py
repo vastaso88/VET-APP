@@ -7,6 +7,10 @@ from packages.core.application.ports.pdf_reader import PdfContent, PdfReader
 from packages.core.application.ports.pet_profile_repository import PetProfileRepository
 from packages.core.application.ports.pii_anonymizer import PiiAnonymizationRequest, PiiAnonymizer
 from packages.core.application.services.document_summarizer import DocumentSummarizer
+from packages.core.application.services.llm_budget import (
+    LlmBudget,
+    require_feature_allowance,
+)
 from packages.core.domain.conversation.attachment import ChatAttachment
 from packages.core.domain.conversation.media_privacy import strip_image_metadata
 from packages.core.domain.conversation.media_type import (
@@ -43,6 +47,10 @@ class UploadChatAttachmentInput(BaseModel):
     # The signed-in owner's display name, when the account has one: it is
     # removed from the stored transcription.
     owner_display_name: str | None = None
+    # Daily allowance (security audit BE-4): exempt accounts, and the
+    # language of the refusal.
+    quota_exempt: bool = False
+    language: str = "it"
 
 
 class UploadChatAttachmentOutput(BaseModel):
@@ -74,6 +82,8 @@ class UploadChatAttachmentService:
         *,
         pdf_reader: PdfReader | None = None,
         document_summarizer: DocumentSummarizer | None = None,
+        budget: LlmBudget | None = None,
+        daily_limit: int = 0,
         pii_anonymizer: PiiAnonymizer | None = None,
         max_bytes: int = DEFAULT_MAX_ATTACHMENT_BYTES,
         max_pdf_pages: int = DEFAULT_MAX_PDF_PAGES,
@@ -84,6 +94,8 @@ class UploadChatAttachmentService:
         self._image_analyzer = image_analyzer
         self._pdf_reader = pdf_reader
         self._document_summarizer = document_summarizer
+        self._budget = budget
+        self._daily_limit = daily_limit
         self._pii_anonymizer = pii_anonymizer
         self._max_bytes = max_bytes
         self._max_pdf_pages = max_pdf_pages
@@ -112,6 +124,16 @@ class UploadChatAttachmentService:
                 "WEBP" + (" e documenti PDF." if pdf_supported else ".")
             )
 
+        # The owner's daily allowance of readings (security audit BE-4):
+        # refused before the file is stored or shown to a model.
+        require_feature_allowance(
+            self._budget,
+            owner_id=data.owner_id,
+            kind="vision",
+            limit=self._daily_limit,
+            exempt=data.quota_exempt,
+            language=data.language,
+        )
         # Everything that can reject the file happens before it is stored.
         pdf_content = self._read_pdf(data.file_bytes) if media_type == PDF else None
         known_names = [data.owner_display_name] if data.owner_display_name else []

@@ -26,6 +26,11 @@ class LocalFileStorage(MediaStorage):
             return None
         return path.read_bytes()
 
+    def delete(self, key: str) -> None:
+        path = self._resolve(key)
+        if path.is_file():
+            path.unlink()
+
     def _resolve(self, key: str) -> Path:
         safe_key = key.replace("..", "").replace("/", "").replace("\\", "")
         return self._base_dir / safe_key

@@ -430,6 +430,38 @@ _MESSAGES: dict[str, dict[SupportedLocale, str]] = {
         "de": "Evidenzzusammenfassung nicht verfügbar: Der LLM-Anbieter ist nicht erreichbar.",
         "fr": "Synthèse des preuves indisponible : fournisseur LLM injoignable.",
     },
+    # The net on the model's replies (security audit LLM-5): a dose the
+    # model wrote is replaced by the fixed dosage text; this is the reason.
+    "dosage_rewritten_limit": {
+        "it": "La risposta del modello conteneva un dosaggio ed è stata sostituita dal testo fisso.",
+        "en": "The model's reply contained a dosage and was replaced by the fixed text.",
+        "es": "La respuesta del modelo contenía una dosis y se sustituyó por el texto fijo.",
+        "de": "Die Antwort des Modells enthielt eine Dosierung und wurde durch den festen Text ersetzt.",
+        "fr": "La réponse du modèle contenait une posologie et a été remplacée par le texte fixe.",
+    },
+    # Per-owner daily allowances on the features that call a model
+    # (security audit BE-4/LLM-4). {limit} per day, {wait} until the reset.
+    "quota_vision_exhausted": {
+        "it": "Per oggi hai usato tutte le {limit} letture di foto e documenti disponibili. Potrai inviarne altre tra circa {wait}.",
+        "en": "You have used all {limit} photo and document readings available today. You can send more in about {wait}.",
+        "es": "Hoy has usado las {limit} lecturas de fotos y documentos disponibles. Podrás enviar otras dentro de unas {wait}.",
+        "de": "Sie haben heute alle {limit} verfügbaren Auswertungen von Fotos und Dokumenten genutzt. In etwa {wait} können Sie weitere senden.",
+        "fr": "Vous avez utilisé aujourd'hui les {limit} lectures de photos et de documents disponibles. Vous pourrez en envoyer d'autres dans environ {wait}.",
+    },
+    "quota_dictation_exhausted": {
+        "it": "Per oggi hai usato tutte le {limit} dettature disponibili. Potrai dettare di nuovo tra circa {wait}; intanto puoi scrivere il messaggio.",
+        "en": "You have used all {limit} dictations available today. You can dictate again in about {wait}; meanwhile you can type your message.",
+        "es": "Hoy has usado los {limit} dictados disponibles. Podrás dictar de nuevo dentro de unas {wait}; mientras tanto puedes escribir el mensaje.",
+        "de": "Sie haben heute alle {limit} verfügbaren Diktate genutzt. In etwa {wait} können Sie wieder diktieren; bis dahin können Sie die Nachricht tippen.",
+        "fr": "Vous avez utilisé aujourd'hui les {limit} dictées disponibles. Vous pourrez dicter à nouveau dans environ {wait} ; en attendant, vous pouvez écrire le message.",
+    },
+    "quota_summary_exhausted": {
+        "it": "Per oggi hai usato tutti i {limit} riassunti per il veterinario disponibili. Potrai chiederne un altro tra circa {wait}.",
+        "en": "You have used all {limit} vet summaries available today. You can request another in about {wait}.",
+        "es": "Hoy has usado los {limit} resúmenes para el veterinario disponibles. Podrás pedir otro dentro de unas {wait}.",
+        "de": "Sie haben heute alle {limit} verfügbaren Zusammenfassungen für die Tierarztpraxis genutzt. In etwa {wait} können Sie eine weitere anfordern.",
+        "fr": "Vous avez utilisé aujourd'hui les {limit} résumés pour le vétérinaire disponibles. Vous pourrez en demander un autre dans environ {wait}.",
+    },
     "consent_request": {
         "it": "Vuoi che consulti la cartella clinica di {pet_name} per darti un consiglio più preciso? Leggerò le tre voci più recenti, compreso il testo dei documenti allegati, e le malattie pregresse ancora in corso, e le invierò al servizio di intelligenza artificiale che scrive la risposta. Puoi cambiare idea in qualsiasi momento dalla scheda di {pet_name}.",
         "en": "Would you like me to consult {pet_name}'s medical records for more precise guidance? I will read the three most recent entries, including the text of attached documents, and any past illnesses that are still ongoing, and send them to the artificial intelligence service that writes the answer. You can change your mind at any time from {pet_name}'s profile.",

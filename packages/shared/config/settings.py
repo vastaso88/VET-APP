@@ -135,6 +135,27 @@ class Settings(BaseSettings):
     chat_daily_message_limit_per_user: int = Field(
         default=20, ge=0, alias="CHAT_DAILY_MESSAGE_LIMIT_PER_USER"
     )
+    # The other features that call a model, per owner per day (0 = no
+    # limit; security audit BE-4/LLM-4): photo/PDF readings, dictations,
+    # vet summaries. Same ledger and exemptions as the messages.
+    chat_daily_vision_limit_per_user: int = Field(
+        default=10, ge=0, alias="CHAT_DAILY_VISION_LIMIT_PER_USER"
+    )
+    chat_daily_dictation_limit_per_user: int = Field(
+        default=30, ge=0, alias="CHAT_DAILY_DICTATION_LIMIT_PER_USER"
+    )
+    chat_daily_summary_limit_per_user: int = Field(
+        default=5, ge=0, alias="CHAT_DAILY_SUMMARY_LIMIT_PER_USER"
+    )
+    # Retention of the chat itself: a conversation is deleted, with its
+    # files, this many months after its last message (0 = never); a file
+    # uploaded but never sent in a message goes after these days.
+    chat_conversation_retention_months: int = Field(
+        default=24, ge=0, alias="CHAT_CONVERSATION_RETENTION_MONTHS"
+    )
+    chat_orphan_attachment_retention_days: int = Field(
+        default=7, ge=1, alias="CHAT_ORPHAN_ATTACHMENT_RETENTION_DAYS"
+    )
     # The second guardian: the light model reads every ordinary message for
     # an emergency the fixed lists missed (any language). Fail-open on a
     # deadline or an outage.

@@ -86,6 +86,7 @@ from packages.core.application.services.maintain_chat_response_reports import (
     ChatResponseReportMaintenanceService,
 )
 from packages.core.application.services.maintain_chat_usage import (
+    ChatRetentionService,
     ChatUsageMaintenanceService,
 )
 from packages.core.application.services.medical_record_context_retriever import (
@@ -484,7 +485,17 @@ class ApplicationContainer:
         )
 
     def chat_usage_maintenance_service(self) -> ChatUsageMaintenanceService:
-        return ChatUsageMaintenanceService(self.llm_usage_repository, self.answer_cache_repository)
+        return ChatUsageMaintenanceService(
+            self.llm_usage_repository,
+            self.answer_cache_repository,
+            retention=ChatRetentionService(
+                self.conversation_repository,
+                self.chat_attachment_repository,
+                self.media_storage,
+                retention_months=self.settings.chat_conversation_retention_months,
+                orphan_days=self.settings.chat_orphan_attachment_retention_days,
+            ),
+        )
 
     def list_conversations_service(self) -> ListConversationsService:
         return ListConversationsService(self.conversation_repository)
@@ -506,6 +517,8 @@ class ApplicationContainer:
             self.pet_profile_repository,
             self.llm_client,
             self.pii_anonymizer,
+            budget=self.llm_budget,
+            daily_limit=self.settings.chat_daily_summary_limit_per_user,
         )
 
     def create_reminder_service(self) -> CreateReminderService:
@@ -534,7 +547,11 @@ class ApplicationContainer:
         return ResolveChatResponseReportService(self.chat_response_report_repository)
 
     def transcribe_audio_service(self) -> TranscribeAudioService:
-        return TranscribeAudioService(self.speech_to_text_provider)
+        return TranscribeAudioService(
+            self.speech_to_text_provider,
+            budget=self.llm_budget,
+            daily_limit=self.settings.chat_daily_dictation_limit_per_user,
+        )
 
     def upload_chat_attachment_service(self) -> UploadChatAttachmentService:
         return UploadChatAttachmentService(
@@ -545,6 +562,8 @@ class ApplicationContainer:
             pdf_reader=PypdfReader(),
             document_summarizer=DocumentSummarizer(self.llm_client, self.pii_anonymizer),
             pii_anonymizer=self.pii_anonymizer,
+            budget=self.llm_budget,
+            daily_limit=self.settings.chat_daily_vision_limit_per_user,
         )
 
     def _build_auth_provider(self) -> AuthProvider:

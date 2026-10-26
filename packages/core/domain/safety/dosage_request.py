@@ -70,6 +70,8 @@ _MEDICINE_WORDS_FR = (
     r"metronidazole|flagyl"
 )
 _MEDICINE_WORDS = f"{_MEDICINE_WORDS_IT}|{_MEDICINE_WORDS_DE}|{_MEDICINE_WORDS_FR}"
+# Shared with dose_in_answer.py (the net on the model's replies).
+MEDICINE_WORDS = _MEDICINE_WORDS
 _MEDICINE = _words(_MEDICINE_WORDS)
 
 _GIVE_IT = r"dare|dargli|darle|darne|do|dovrei dare|somministr\w*"

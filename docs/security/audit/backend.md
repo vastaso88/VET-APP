@@ -93,8 +93,8 @@ Scala di gravità: **Critica** (accesso a dati di altri utenti o controllo dell'
 - **Dove:** `apps/api/routes/speech_to_text.py:10-23`; `packages/infrastructure/speech/groq_speech_to_text_provider.py:131-145`.
 - **Problema:** `filename` e `content_type` arrivano dal client e vengono interpolati **senza escape** nelle intestazioni della parte multipart inviata a Groq:
   ```python
-  f'Content-Disposition: form-data; name="file"; filename="{filename}"\r\n'.encode(),
-  f"Content-Type: {content_type}\r\n\r\n".encode(),
+  (f'Content-Disposition: form-data; name="file"; filename="{filename}"\r\n'.encode(),)
+  (f"Content-Type: {content_type}\r\n\r\n".encode(),)
   ```
   Un filename con `"\r\n` chiude la parte e ne apre altre: il client può aggiungere campi del form (`model`, `prompt`, `language`, `temperature`, `response_format`) scelti da lui. Nessun limite di dimensione/durata sull'audio oltre i 4,5 MB di Vercel; nessun controllo del tipo (viene inoltrato qualunque byte).
 - **Impatto:** l'utente sceglie il modello di trascrizione (più costoso) o parametri non previsti; carico sulla quota Groq condivisa (vedi 3).

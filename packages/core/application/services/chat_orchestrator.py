@@ -70,6 +70,7 @@ from packages.core.domain.conversation.request_kind import (
 )
 from packages.core.domain.conversation.states import ConversationState
 from packages.core.domain.knowledge.answer_validation import validate_answer
+from packages.core.domain.knowledge.dose_in_answer import find_dosage
 from packages.core.domain.knowledge.evidence_synthesis import EvidenceSynthesis
 from packages.core.domain.knowledge.models import EvidenceSource
 from packages.core.domain.knowledge.relevance import relevant_sources
@@ -1526,6 +1527,27 @@ class ChatOrchestrator:
             model="dosage-guard",
         )
 
+    @staticmethod
+    def _dosage_rewritten_result(response_locale: str, dosage: str) -> ChatOrchestratorResult:
+        """The model wrote a dose despite the prompt (security audit LLM-5):
+        the owner gets the fixed dosage text instead, and the limitation
+        says why."""
+        logger.warning("answer validator: a dose in the model's reply (%s) was replaced", dosage)
+        return ChatOrchestratorResult(
+            answer=translate("dosage_answer", response_locale),
+            mode="general",
+            confidence="high",
+            ai_generated=False,
+            limitations=[
+                translate("dosage_limitation", response_locale),
+                translate("dosage_rewritten_limit", response_locale),
+            ],
+            recommended_action=translate("dosage_action", response_locale),
+            provider="rule-based",
+            model="answer-validator",
+            state=ConversationState.SOURCE_VALIDATION_FAILURE,
+        )
+
     def _resolve_safety_clarification(
         self,
         pet_name: str,
@@ -1589,8 +1611,10 @@ class ChatOrchestrator:
                 return "", []
             return (
                 "\n\nMedical records the owner allowed you to consult (most recent "
-                "first; an old exam may no longer reflect the current situation):\n"
-                f"{self._anonymize_for_provider(summary, data)}"
+                "first; an old exam may no longer reflect the current situation):"
+                + self._data_block(
+                    "medical records summary", self._anonymize_for_provider(summary, data)
+                )
             ), []
         count = retriever.count_for_pet(data.pet_id)
         if count == 0:
@@ -1641,7 +1665,7 @@ class ChatOrchestrator:
             block += "\n\nOther documents in the cartella, not shown here: " + "; ".join(
                 document.label(data.language) for document in others
             )
-        return block, readable
+        return self._data_block("documents from the pet's medical records", block), readable
 
     def _request_kind(self, data: ChatOrchestratorInput) -> RequestKind:
         document_attached = data.attachment_unreadable or (
@@ -1947,6 +1971,9 @@ class ChatOrchestrator:
                 data, message, intent, situation, effective_species, sources=sources
             )
 
+        dosage = find_dosage(synthesis.all_claim_text())
+        if dosage is not None:
+            return self._dosage_rewritten_result(data.language, dosage)
         validation = validate_answer(synthesis.all_claim_text(), sources_count=len(sources))
         if not validation.is_valid:
             return self._validation_failure_result(
@@ -2091,7 +2118,20 @@ class ChatOrchestrator:
         # one or two at best, and each one costs a few hundred tokens.
         sources = list(sources)[: self._prompt_max_sources]
         evidence_block = self._format_sources_for_prompt(sources) if sources else ""
-        anonymized_message = self._anonymize_for_provider(message, data)
+        # The owner's words and the text read from their file go to the
+        # model apart: the file as delimited data (security audit LLM-6).
+        # `message` (with the file's text folded in) keeps serving the
+        # safety checks, the routing and the cache key.
+        if data.photo_context:
+            owner_text = data.user_message.strip() or "(no text: only the attachment)"
+            attachment_block = self._data_block(
+                "text extracted from the file the owner attached to this message",
+                self._anonymize_for_provider(data.photo_context, data),
+            )
+        else:
+            owner_text = message
+            attachment_block = ""
+        anonymized_message = self._anonymize_for_provider(owner_text, data)
 
         # Real-world finding (2026-09-22 live test, "Acquario del
         # salotto"): a short follow-up ("dimmelo comunque") got a
@@ -2118,8 +2158,10 @@ class ChatOrchestrator:
         if data.reminders_context and not generic_context:
             reminders_context = (
                 "\n\nActive reminders the owner set for this pet (take them into "
-                "account when relevant, e.g. an ongoing therapy):\n"
-                f"{self._anonymize_for_provider(data.reminders_context, data)}"
+                "account when relevant, e.g. an ongoing therapy):"
+                + self._data_block(
+                    "reminders", self._anonymize_for_provider(data.reminders_context, data)
+                )
             )
         attachment_note = ""
         if data.attachment_unreadable:
@@ -2144,6 +2186,7 @@ class ChatOrchestrator:
             f"{self._pet_context_block(data, generic=generic_context)}\n"
             f"{history_block}"
             f"User message: {anonymized_message}"
+            f"{attachment_block}"
             f"{medical_context}"
             f"{reminders_context}"
             f"{attachment_note}"
@@ -2213,6 +2256,9 @@ class ChatOrchestrator:
                 mode="natural",
                 response_locale=data.language,
             )
+        dosage = find_dosage(response.content, allowed_text=medical_context)
+        if dosage is not None:
+            return self._dosage_rewritten_result(data.language, dosage)
         # The habit the instructions do not fully remove: a closing
         # "consulta il veterinario" with no reason in it (build 29).
         answer_text = strip_ritual_referral(response.content)
@@ -2396,6 +2442,14 @@ class ChatOrchestrator:
             model="answer-validator",
             state=ConversationState.SOURCE_VALIDATION_FAILURE,
         )
+
+    @staticmethod
+    def _data_block(label: str, body: str) -> str:
+        """Text that came from a file, a document or a reminder, marked as
+        data the model reads and never as instructions it follows
+        (security audit LLM-6); the system prompt says what the markers
+        mean."""
+        return f"\n\n\u00abBEGIN DATA: {label}\u00bb\n{body.strip()}\n\u00abEND DATA\u00bb"
 
     @staticmethod
     def _case_context_text(situation: SituationModel, latest_message: str) -> str:

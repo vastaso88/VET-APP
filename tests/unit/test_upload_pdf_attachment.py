@@ -59,6 +59,9 @@ class _Storage:
     def read(self, key: str) -> bytes | None:
         return self.saved.get(key)
 
+    def delete(self, key: str) -> None:
+        pass  # retention is not exercised here
+
 
 class _VisionAnalyzer:
     def __init__(self) -> None:

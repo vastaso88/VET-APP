@@ -31,7 +31,12 @@ from packages.infrastructure.logging.logger import configure_logging
 from packages.infrastructure.telemetry.noop import setup_telemetry
 from packages.shared.auth_context import reset_access_token, set_access_token
 from packages.shared.config.settings import get_settings
-from packages.shared.errors.base import AuthenticationError, ProviderError, ValidationError
+from packages.shared.errors.base import (
+    AuthenticationError,
+    ProviderError,
+    QuotaExceededError,
+    ValidationError,
+)
 
 settings = get_settings()
 configure_logging(settings)
@@ -119,6 +124,23 @@ async def handle_validation_error(_: Request, exc: ValidationError) -> JSONRespo
 @app.exception_handler(AuthenticationError)
 async def handle_authentication_error(_: Request, exc: AuthenticationError) -> JSONResponse:
     return JSONResponse(status_code=401, content={"detail": str(exc)})
+
+
+@app.exception_handler(QuotaExceededError)
+async def handle_quota_exceeded(_: Request, exc: QuotaExceededError) -> JSONResponse:
+    """A per-owner daily allowance is used up: 429 with a message written
+    for the owner (`detail`, prefixed by a stable code the app can map)."""
+    return JSONResponse(
+        status_code=429,
+        headers={"Retry-After": str(exc.retry_after_seconds)},
+        content={
+            "detail": f"quota_exceeded: {exc.message}",
+            "code": "quota_exceeded",
+            "kind": exc.kind,
+            "limit": exc.limit,
+            "retry_after_seconds": exc.retry_after_seconds,
+        },
+    )
 
 
 @app.exception_handler(ProviderError)

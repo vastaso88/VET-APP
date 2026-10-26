@@ -45,9 +45,8 @@ class LocationRepository {
     try {
       await client.from('user_locations').upsert({
         'owner_id': ownerId,
-        'mode': preference.mode == LocationMode.homeResidence
-            ? 'home_residence'
-            : 'current_position',
+        'mode':
+            preference.mode == LocationMode.homeResidence ? 'home_residence' : 'current_position',
         'home_latitude': preference.home?.latitude,
         'home_longitude': preference.home?.longitude,
         'home_label': preference.homeLabel,
@@ -71,7 +70,9 @@ class LocationRepository {
     final currentLongitude = (row['current_longitude'] as num?)?.toDouble();
 
     return UserLocationPreference(
-      mode: row['mode'] == 'home_residence' ? LocationMode.homeResidence : LocationMode.currentPosition,
+      mode: row['mode'] == 'home_residence'
+          ? LocationMode.homeResidence
+          : LocationMode.currentPosition,
       home: homeLatitude != null && homeLongitude != null
           ? Coordinates(latitude: homeLatitude, longitude: homeLongitude)
           : null,

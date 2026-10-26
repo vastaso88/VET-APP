@@ -110,8 +110,30 @@ class SupabaseConversationRepository(ConversationRepository):
 
     def save(self, conversation: Conversation) -> Conversation:
         payload = _serialize_payload(conversation.model_dump(mode="json"))
-        self._client.table(self._table).upsert(payload).execute()
+        # Retention (2026-10-26) reads this column; kept here on every save.
+        # Until the schema script has added the column, a save must not
+        # fail because of it: retried without.
+        if conversation.messages:
+            payload["last_message_at"] = conversation.messages[-1].created_at.isoformat()
+        try:
+            self._client.table(self._table).upsert(payload).execute()
+        except Exception as exc:
+            if "last_message_at" not in str(exc):
+                raise
+            _logger.warning("conversations.last_message_at missing: run supabase_schema.sql")
+            payload.pop("last_message_at", None)
+            self._client.table(self._table).upsert(payload).execute()
         return conversation
+
+    def list_inactive_before(self, cutoff: datetime, *, limit: int = 200) -> list[Conversation]:
+        response = (
+            self._client.table(self._table)
+            .select("*")
+            .lt("last_message_at", cutoff.isoformat())
+            .limit(limit)
+            .execute()
+        )
+        return [Conversation.model_validate(item) for item in response.data or []]
 
     def get(self, conversation_id: str) -> Conversation | None:
         response = (
@@ -761,6 +783,29 @@ class SupabaseChatAttachmentRepository(ChatAttachmentRepository):
             return None
         return ChatAttachment.model_validate(response.data[0])
 
+    def list_by_conversation(self, conversation_id: str) -> list[ChatAttachment]:
+        response = (
+            self._client.table(self._table)
+            .select("*")
+            .eq("conversation_id", conversation_id)
+            .execute()
+        )
+        return [ChatAttachment.model_validate(item) for item in response.data or []]
+
+    def list_orphans_before(self, cutoff: datetime, *, limit: int = 200) -> list[ChatAttachment]:
+        response = (
+            self._client.table(self._table)
+            .select("*")
+            .is_("conversation_id", "null")
+            .lt("created_at", cutoff.isoformat())
+            .limit(limit)
+            .execute()
+        )
+        return [ChatAttachment.model_validate(item) for item in response.data or []]
+
+    def delete(self, attachment_id: str) -> None:
+        self._client.table(self._table).delete().eq("id", attachment_id).execute()
+
 
 def _activity_to_row(activity: LocalActivity) -> dict[str, Any]:
     payload = _serialize_payload(activity.model_dump(mode="json", exclude={"location"}))
@@ -828,6 +873,14 @@ class SupabaseLlmUsageRepository(LlmUsageRepository):
     def add_user_message(self, owner_id: str, day: date) -> int:
         response = self._client.rpc(
             "chat_user_daily_usage_add", {"p_owner_id": owner_id, "p_day": day.isoformat()}
+        ).execute()
+        data = response.data
+        return int(data) if isinstance(data, (int, float, str)) else 0
+
+    def add_user_usage(self, owner_id: str, day: date, kind: str) -> int:
+        response = self._client.rpc(
+            "chat_user_daily_usage_add_kind",
+            {"p_owner_id": owner_id, "p_day": day.isoformat(), "p_kind": kind},
         ).execute()
         data = response.data
         return int(data) if isinstance(data, (int, float, str)) else 0

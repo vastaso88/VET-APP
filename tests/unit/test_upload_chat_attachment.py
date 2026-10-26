@@ -29,6 +29,9 @@ class _FakeMediaStorage(MediaStorage):
     def read(self, key: str) -> bytes | None:
         return self.saved.get(key)
 
+    def delete(self, key: str) -> None:
+        pass  # retention is not exercised here
+
 
 class _FakeImageAnalyzer(ImageAnalyzer):
     def analyze(self, image_bytes: bytes, content_type: str, context: str) -> str:

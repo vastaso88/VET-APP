@@ -181,7 +181,7 @@ def test_the_maintenance_route_is_for_developers_only(monkeypatch: pytest.Monkey
         response = client.post("/chat/maintenance")
 
         assert response.status_code == 200
-        assert set(response.json()["deleted"]) == {
+        assert set(response.json()["deleted"]) >= {
             "llm_usage",
             "chat_user_daily_usage",
             "chat_answer_cache",

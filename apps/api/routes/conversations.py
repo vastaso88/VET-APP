@@ -78,6 +78,7 @@ def conversation_summary(
             owner_id=user.id,
             conversation_id=conversation_id,
             language=resolve_language(None, accept_language),
+            quota_exempt=user.email.strip().lower() in container.developer_emails,
             owner_names=owner_names_for_anonymization(
                 user.display_name, pet_name=pet.name if pet else ""
             ),

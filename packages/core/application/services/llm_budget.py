@@ -30,7 +30,8 @@ from pydantic import BaseModel
 
 from packages.core.application.ports.llm_usage_repository import LlmUsageRepository
 from packages.core.domain.llm_usage.models import ModelDailyUsage, next_day_start
-from packages.shared.errors.base import ProviderError
+from packages.core.domain.localization import translate
+from packages.shared.errors.base import ProviderError, QuotaExceededError
 
 logger = logging.getLogger("vetgpt.budget")
 
@@ -71,18 +72,66 @@ def parse_budgets(value: str) -> dict[str, int]:
     return budgets
 
 
-def format_wait_it(seconds: int) -> str:
-    """ "pochi minuti", "20 minuti", "2 ore", "2 ore e 20 minuti"."""
+_WAIT_WORDS: dict[str, tuple[str, str, str, str, str]] = {
+    # a few minutes, minutes, hour, hours, and
+    "it": ("pochi minuti", "minuti", "ora", "ore", "e"),
+    "en": ("a few minutes", "minutes", "hour", "hours", "and"),
+    "es": ("unos minutos", "minutos", "hora", "horas", "y"),
+    "de": ("wenigen Minuten", "Minuten", "Stunde", "Stunden", "und"),
+    "fr": ("quelques minutes", "minutes", "heure", "heures", "et"),
+}
+
+
+def format_wait(seconds: int, locale: str = "it") -> str:
+    """ "pochi minuti", "20 minuti", "2 ore", "2 ore e 20 minuti" (and the
+    same in the chat's other languages)."""
+    few, minutes_word, hour_word, hours_word, conjunction = _WAIT_WORDS.get(
+        (locale or "it").split("-")[0].lower(), _WAIT_WORDS["it"]
+    )
     minutes = max(1, round(seconds / 60))
     if minutes < 3:
-        return "pochi minuti"
+        return few
     if minutes < 60:
-        return f"{minutes} minuti"
+        return f"{minutes} {minutes_word}"
     hours, rest = divmod(minutes, 60)
-    hour_word = "ora" if hours == 1 else "ore"
+    unit = hour_word if hours == 1 else hours_word
     if rest < 5:
-        return f"{hours} {hour_word}"
-    return f"{hours} {hour_word} e {rest} minuti"
+        return f"{hours} {unit}"
+    return f"{hours} {unit} {conjunction} {rest} {minutes_word}"
+
+
+def format_wait_it(seconds: int) -> str:
+    return format_wait(seconds, "it")
+
+
+def require_feature_allowance(
+    budget: LlmBudget | None,
+    *,
+    owner_id: str,
+    kind: str,
+    limit: int,
+    exempt: bool = False,
+    language: str = "it",
+) -> None:
+    """Raises QuotaExceededError when [owner_id] has used today's [limit] of
+    [kind] ("vision", "dictation", "summary"); counts the use otherwise.
+    No budget, no limit or an exempt account: nothing happens."""
+    if budget is None:
+        return
+    denial = budget.admit_feature(owner_id=owner_id, kind=kind, limit=limit, exempt=exempt)
+    if denial is None:
+        return
+    raise QuotaExceededError(
+        kind,
+        limit=limit,
+        retry_after_seconds=denial.retry_after_seconds,
+        message=translate(
+            f"quota_{kind}_exhausted",
+            language,
+            limit=limit,
+            wait=format_wait(denial.retry_after_seconds, language),
+        ),
+    )
 
 
 class LlmBudget:
@@ -221,6 +270,28 @@ class LlmBudget:
                 reason="user_limit",
                 retry_after_seconds=max(60, int((next_day_start(now) - now).total_seconds())),
                 daily_limit=self._user_daily_limit,
+            )
+        return None
+
+    def admit_feature(
+        self, *, owner_id: str, kind: str, limit: int, exempt: bool = False
+    ) -> QuotaDenial | None:
+        """The owner's daily allowance of one feature that calls a model
+        (security audit BE-4/LLM-4): counts the use and refuses past
+        [limit]. Same ledger and exemptions as the messages."""
+        if exempt or limit <= 0 or not owner_id:
+            return None
+        try:
+            count = self._repository.add_user_usage(owner_id, self._today(), kind)
+        except Exception:  # noqa: BLE001 - fail open: a ledger outage must not block owners
+            logger.exception("llm budget: could not count the owner's %s use", kind)
+            return None
+        if count > limit:
+            now = self._clock()
+            return QuotaDenial(
+                reason=f"{kind}_limit",
+                retry_after_seconds=max(60, int((next_day_start(now) - now).total_seconds())),
+                daily_limit=limit,
             )
         return None
 

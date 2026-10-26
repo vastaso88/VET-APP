@@ -16586,6 +16586,42 @@
       "fr": "652741ffafb0b88f4cb53f167642b635fb03ca83779106eeaeb9c04b5953312e"
     }
   },
+  "backend:dosage_rewritten_limit": {
+    "source": "988e5d23d6de791f14bb4a1d4171d315d5e5898477cd16251f9478f391ca1a63",
+    "targets": {
+      "en": "0446ec3440c920fed10ba479b6d04c66cb9d0c0e0c4787199126c5f937d3e6c3",
+      "es": "0dbb33ef5c7ce6d48cd0b3b5addeb8b80aa824994bea73bf98ebc4009db26246",
+      "de": "bbb5afc764c71a3427b36ef6bbbb5136132f42223aa2ffbbe2a3f68a082e934b",
+      "fr": "13e139f6495a03b517780031cb17c974b4fdc6dc5acf29b93eca4bfaa2630dca"
+    }
+  },
+  "backend:quota_vision_exhausted": {
+    "source": "9d9f72672af66d3b89f56842c0d8b4b497f2afe310988bbb25e3d12ffbc9f29a",
+    "targets": {
+      "en": "b987e4119729b47d1e794bc344bda377e66e1f4c96860901da7aa71dce9337d9",
+      "es": "adca4186fcf84c237e9da4875aebd854d37dab0b0ad6b4ab4aa569f09c406b7c",
+      "de": "c4b461ebee4df60c6b32383d971b9e26396b806d354cc178fff429422c0294a5",
+      "fr": "12797ac105d863c27da4666f3d68b5cafe6ea47b5cf4e0ebfe7a99b2da0ca9fa"
+    }
+  },
+  "backend:quota_dictation_exhausted": {
+    "source": "dcc19daa4c97091db2db6ecb4effe8d93e1f235eea1f291325978040b7519719",
+    "targets": {
+      "en": "3f2cf1dc506a38546f7d870f5dc1503da757dc52ad73b37afdc7e2c4d98bc021",
+      "es": "6458d1b0a064b5119f74f69f93432d7f57daa0ea223c3be833b15b8157ab83f3",
+      "de": "9a0d3ee0267a20fb87d3748efcbef8f35b4443e6e9c278593479ecefd4463304",
+      "fr": "cfd35f0a058bc33a534e01c9f7c76a5f079e28ba1d5e8c173beb606bd674942c"
+    }
+  },
+  "backend:quota_summary_exhausted": {
+    "source": "e10083e154dc09fbd1ef6746589503e1316cb37429a104d4e8e314ec7aa6dade",
+    "targets": {
+      "en": "fcde597f936fc130438fa3c9df2e14a4a9e8d3032f599835559f2918e1fc80b4",
+      "es": "602cc9e343366a87f42c2094ac62f5a6cd5fcb816d10b3783fd88a7a083214da",
+      "de": "20f32a4f4dba104e4da3072badd51ab93c0469a4af3a752818d6af8034e97096",
+      "fr": "695c445c280904e9fdaff5a271c40805781eba06a9697cf4b939cc37dbfaf59d"
+    }
+  },
   "backend:consent_request": {
     "source": "2ffb940ba216f1fab299fa9c805d565c1ee26ccfa32db6152d41f39c85ce86ae",
     "targets": {
