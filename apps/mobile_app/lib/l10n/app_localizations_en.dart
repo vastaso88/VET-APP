@@ -1156,6 +1156,18 @@ class AppLocalizationsEn extends AppLocalizations {
       'Buy, sell and give away pet items with other owners.';
 
   @override
+  String get marketplaceRules =>
+      'The marketplace only has items for animals. Animals cannot be sold, given away or swapped here, in any country.';
+
+  @override
+  String get marketplaceNoAnimalsMessage =>
+      'Only items for animals are sold on the marketplace, not animals.';
+
+  @override
+  String get marketplaceBackendUnavailable =>
+      'The marketplace can\'t be reached right now. Try again in a moment.';
+
+  @override
   String get marketplaceEmptyFiltered => 'No listings match these filters yet.';
 
   @override
@@ -1187,18 +1199,6 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get marketplaceNoLiveAnimalsNote =>
-      'In your country the marketplace does not allow ads for live animals: only products and services for animals.';
-
-  @override
-  String get marketplaceNoLiveAnimalsConfirm =>
-      'I confirm this ad does not offer a live animal (sale, gift or rehoming)';
-
-  @override
-  String get marketplaceNoLiveAnimalsRequired =>
-      'Confirm that the ad does not offer a live animal';
-
-  @override
   String get marketplaceLoadError =>
       'I can\'t load the listings. Check your connection.';
 
@@ -1222,6 +1222,9 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get marketplaceReasonInappropriate => 'Inappropriate content';
+
+  @override
+  String get marketplaceReasonSellsAnimals => 'Sells animals';
 
   @override
   String get marketplaceReportRemoved =>

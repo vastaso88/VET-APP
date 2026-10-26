@@ -209,6 +209,12 @@ class _MarketplacePageState extends State<MarketplacePage> {
                     context.l10n.marketplaceIntro,
                     style: AppTextStyles.bodySmall,
                   ),
+                  const SizedBox(height: AppSpacing.xs),
+                  Text(
+                    context.l10n.marketplaceRules,
+                    key: const ValueKey('marketplace-rules'),
+                    style: AppTextStyles.caption,
+                  ),
                   const SizedBox(height: AppSpacing.lg),
                   _CategoryFilterRow(
                     selected: _filter.category,
@@ -294,7 +300,7 @@ class _ListingRow extends StatelessWidget {
       listingConditionLabel(listing.condition),
       listingPriceLabel(listing.priceCents, country: listing.country),
       listingDistanceLabel(match.distanceMeters),
-      if (listing.cityLabel != null) listing.cityLabel!,
+      if (listingPlaceLabel(listing) case final place?) place,
     ];
     return DashboardListRow(
       title: listing.title,

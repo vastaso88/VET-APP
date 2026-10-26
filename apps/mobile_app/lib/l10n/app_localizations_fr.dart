@@ -1174,6 +1174,18 @@ class AppLocalizationsFr extends AppLocalizations {
       'Achetez, vendez et donnez des articles pour animaux avec d\'autres propriétaires.';
 
   @override
+  String get marketplaceRules =>
+      'Le marché de l\'occasion ne propose que des objets pour animaux. Les animaux ne peuvent être ni vendus, ni donnés, ni échangés, dans aucun pays.';
+
+  @override
+  String get marketplaceNoAnimalsMessage =>
+      'Sur le marché de l\'occasion, on ne vend que des objets pour animaux, pas d\'animaux.';
+
+  @override
+  String get marketplaceBackendUnavailable =>
+      'Le marché de l\'occasion est inaccessible pour le moment. Réessayez dans un instant.';
+
+  @override
   String get marketplaceEmptyFiltered =>
       'Aucune annonce avec ces filtres pour le moment.';
 
@@ -1206,18 +1218,6 @@ class AppLocalizationsFr extends AppLocalizations {
   }
 
   @override
-  String get marketplaceNoLiveAnimalsNote =>
-      'Dans votre pays, le marché de l\'occasion n\'accepte pas d\'annonces d\'animaux vivants : uniquement des produits et services pour animaux.';
-
-  @override
-  String get marketplaceNoLiveAnimalsConfirm =>
-      'Je confirme que cette annonce ne propose pas d\'animal vivant (vente, don ou cession)';
-
-  @override
-  String get marketplaceNoLiveAnimalsRequired =>
-      'Confirmez que l\'annonce ne propose pas d\'animal vivant';
-
-  @override
   String get marketplaceLoadError =>
       'Je n\'arrive pas à charger les annonces. Vérifiez votre connexion.';
 
@@ -1241,6 +1241,9 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get marketplaceReasonInappropriate => 'Contenu inapproprié';
+
+  @override
+  String get marketplaceReasonSellsAnimals => 'Vend des animaux';
 
   @override
   String get marketplaceReportRemoved =>

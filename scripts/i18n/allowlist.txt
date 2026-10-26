@@ -57,3 +57,7 @@ lib/features/pets/data/pet_demo_store.dart :: label:
 lib/features/auth/data/fake_auth_remote_data_source.dart
 # Internal English fallback messages; the user sees the localized text from auth_error_messages.dart.
 lib/features/auth/data/supabase_auth_remote_data_source.dart
+# Generated word lists of the Mercatino "no animals" rule (matching patterns in five languages, never shown).
+lib/features/marketplace/domain/animal_policy_patterns.dart
+# The exact Italian sentence the backend answers when it refuses an animal offer (compared, never shown).
+lib/features/marketplace/domain/animal_policy.dart :: Sul Mercatino si vendono

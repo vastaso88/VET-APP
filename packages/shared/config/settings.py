@@ -200,6 +200,15 @@ class Settings(BaseSettings):
     overpass_user_agent: str = Field(
         default="VET-APP/1.0 (+https://vet-app-psi-nine.vercel.app)", alias="OVERPASS_USER_AGENT"
     )
+    # Address <-> position for the app (Località, Segnala!), called from
+    # the backend so the user's address and IP never reach the provider
+    # (security audit APP-6). Same identification rule as Overpass.
+    nominatim_base_url: str = Field(
+        default="https://nominatim.openstreetmap.org", alias="NOMINATIM_BASE_URL"
+    )
+    nominatim_user_agent: str = Field(
+        default="VET-APP/1.0 (+https://vet-app-psi-nine.vercel.app)", alias="NOMINATIM_USER_AGENT"
+    )
     # "Segnala!" (community reports on the radar). The pseudonym key
     # turns account ids into the stand-ins stored with reports and votes;
     # it must live only here (environment), never in the database. When

@@ -524,6 +524,9 @@
   "marketplaceMapAction": "Carte",
   "marketplaceNewListing": "Nouvelle annonce",
   "marketplaceIntro": "Achetez, vendez et donnez des articles pour animaux avec d'autres propriétaires.",
+  "marketplaceRules": "Le marché de l'occasion ne propose que des objets pour animaux. Les animaux ne peuvent être ni vendus, ni donnés, ni échangés, dans aucun pays.",
+  "marketplaceNoAnimalsMessage": "Sur le marché de l'occasion, on ne vend que des objets pour animaux, pas d'animaux.",
+  "marketplaceBackendUnavailable": "Le marché de l'occasion est inaccessible pour le moment. Réessayez dans un instant.",
   "marketplaceEmptyFiltered": "Aucune annonce avec ces filtres pour le moment.",
   "marketplaceNeedsLocation": "Le marché de l'occasion n'affiche que les annonces près de chez vous. Définissez votre position dans Paramètres → Localisation pour les voir.",
   "marketplaceSetLocationAction": "Définir ma position",
@@ -565,9 +568,6 @@
       }
     }
   },
-  "marketplaceNoLiveAnimalsNote": "Dans votre pays, le marché de l'occasion n'accepte pas d'annonces d'animaux vivants : uniquement des produits et services pour animaux.",
-  "marketplaceNoLiveAnimalsConfirm": "Je confirme que cette annonce ne propose pas d'animal vivant (vente, don ou cession)",
-  "marketplaceNoLiveAnimalsRequired": "Confirmez que l'annonce ne propose pas d'animal vivant",
   "marketplaceLoadError": "Je n'arrive pas à charger les annonces. Vérifiez votre connexion.",
   "marketplaceFilterAllCategories": "Toutes",
   "marketplaceFilterAllSpecies": "Tous les animaux",
@@ -576,6 +576,7 @@
   "marketplaceReasonScam": "Arnaque",
   "marketplaceReasonProhibitedItem": "Article interdit",
   "marketplaceReasonInappropriate": "Contenu inapproprié",
+  "marketplaceReasonSellsAnimals": "Vend des animaux",
   "marketplaceReportRemoved": "Merci, l'annonce a été retirée après les signalements reçus.",
   "marketplaceReportSent": "Signalement envoyé, merci.",
   "marketplaceDeleteConfirmTitle": "Supprimer l'annonce ?",

@@ -526,3 +526,84 @@ def test_a_confirmed_user_reported_dog_park_is_rated_without_searching_the_area(
     assert client.put("/local-services/ratings", json=rating).json() == {"stars": 5}
     unknown = client.put("/local-services/ratings", json={**rating, "source_id": "nope"})
     assert unknown.status_code == 400
+
+
+class _RecordingGeocoder:
+    def __init__(self) -> None:
+        self.asked: list[tuple[str, object]] = []
+
+    def search(self, query: str, *, country_code: str | None, language: str | None) -> list:  # type: ignore[type-arg]
+        from packages.core.application.ports.geocoder import GeocodedPlace
+
+        self.asked.append(("search", (query, country_code, language)))
+        return [
+            GeocodedPlace(
+                latitude=45.4642,
+                longitude=9.19,
+                display_name="Via Esempio 1, Milano",
+                address={"road": "Via Esempio", "city": "Milano"},
+            )
+        ]
+
+    def reverse(
+        self, latitude: float, longitude: float, *, zoom: int, language: str | None
+    ) -> None:
+        self.asked.append(("reverse", (latitude, longitude, zoom, language)))
+        return None
+
+
+def test_geocoding_runs_on_the_backend_with_the_address_in_the_body(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    from apps.api.dependencies.container import get_container
+    from packages.core.application.services.geocoding import GeocodingService
+
+    client = _client_with_env(monkeypatch)
+    fake = _RecordingGeocoder()
+    get_container().geocoding_service = GeocodingService(fake)
+
+    found = client.post(
+        "/geocoding/search",
+        json={"query": "Via Esempio 1, Milano", "country_code": "IT", "language": "it"},
+    )
+    assert found.status_code == 200
+    assert found.json()["results"][0]["address"] == {"road": "Via Esempio", "city": "Milano"}
+    assert fake.asked[0] == ("search", ("Via Esempio 1, Milano", "it", "it"))
+
+    missed = client.post("/geocoding/reverse", json={"latitude": 45.46, "longitude": 9.19})
+    assert missed.json() == {"result": None}
+    assert fake.asked[1] == ("reverse", (45.46, 9.19, 18, None))
+
+    # The address is never a query parameter.
+    assert client.get("/geocoding/search", params={"query": "Via Esempio"}).status_code == 405
+    assert (
+        client.post(
+            "/geocoding/reverse", json={"latitude": 45, "longitude": 9, "zoom": 5}
+        ).status_code
+        == 422
+    )
+
+
+def test_geocoding_limits_and_provider_failures_have_their_own_codes(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    from apps.api.dependencies.container import get_container
+    from packages.core.application.services.geocoding import GeocodingService
+    from packages.shared.errors.base import ProviderError
+
+    client = _client_with_env(monkeypatch)
+    fake = _RecordingGeocoder()
+    get_container().geocoding_service = GeocodingService(fake, requests_per_minute=1)
+    body = {"query": "Via Esempio 1"}
+
+    assert client.post("/geocoding/search", json=body).status_code == 200
+    limited = client.post("/geocoding/search", json=body)
+    assert (limited.status_code, limited.json()["code"]) == (429, "geocoding_rate_limited")
+
+    def failing(*_: object, **__: object) -> None:
+        raise ProviderError("down")
+
+    fake.search = failing  # type: ignore[method-assign,assignment]
+    get_container().geocoding_service = GeocodingService(fake)
+    down = client.post("/geocoding/search", json=body)
+    assert (down.status_code, down.json()["code"]) == (503, "geocoding_unavailable")

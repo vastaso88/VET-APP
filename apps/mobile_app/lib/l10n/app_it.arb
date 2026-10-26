@@ -524,6 +524,9 @@
   "marketplaceMapAction": "Mappa",
   "marketplaceNewListing": "Nuovo annuncio",
   "marketplaceIntro": "Compra, vendi e regala articoli per animali con altri proprietari.",
+  "marketplaceRules": "Sul Mercatino si trovano solo oggetti per animali. Gli animali non si possono vendere, regalare né scambiare, in nessun paese.",
+  "marketplaceNoAnimalsMessage": "Sul Mercatino si vendono solo oggetti per animali, non animali.",
+  "marketplaceBackendUnavailable": "Il Mercatino non è raggiungibile in questo momento. Riprova tra poco.",
   "marketplaceEmptyFiltered": "Nessun annuncio con questi filtri per ora.",
   "marketplaceNeedsLocation": "Il Mercatino mostra solo gli annunci vicino a te. Imposta la tua posizione in Impostazioni → Località per vederli.",
   "marketplaceSetLocationAction": "Imposta la posizione",
@@ -565,9 +568,6 @@
       }
     }
   },
-  "marketplaceNoLiveAnimalsNote": "Nel tuo paese il Mercatino non ammette annunci di animali vivi: solo prodotti e servizi per animali.",
-  "marketplaceNoLiveAnimalsConfirm": "Confermo che questo annuncio non offre un animale vivo (vendita, regalo o cessione)",
-  "marketplaceNoLiveAnimalsRequired": "Conferma che l'annuncio non offre un animale vivo",
   "marketplaceLoadError": "Non riesco a caricare gli annunci. Controlla la connessione.",
   "marketplaceFilterAllCategories": "Tutte",
   "marketplaceFilterAllSpecies": "Tutti gli animali",
@@ -576,6 +576,7 @@
   "marketplaceReasonScam": "Truffa",
   "marketplaceReasonProhibitedItem": "Articolo non consentito",
   "marketplaceReasonInappropriate": "Contenuto inappropriato",
+  "marketplaceReasonSellsAnimals": "Vende animali",
   "marketplaceReportRemoved": "Grazie, l'annuncio è stato rimosso dopo le segnalazioni ricevute.",
   "marketplaceReportSent": "Segnalazione inviata, grazie.",
   "marketplaceDeleteConfirmTitle": "Eliminare l'annuncio?",

@@ -524,6 +524,9 @@
   "marketplaceMapAction": "Mapa",
   "marketplaceNewListing": "Nuevo anuncio",
   "marketplaceIntro": "Compra, vende y regala artículos para mascotas con otros propietarios.",
+  "marketplaceRules": "El mercadillo solo tiene objetos para animales. No se pueden vender, regalar ni intercambiar animales, en ningún país.",
+  "marketplaceNoAnimalsMessage": "En el mercadillo solo se venden objetos para animales, no animales.",
+  "marketplaceBackendUnavailable": "No se puede acceder al mercadillo ahora mismo. Inténtalo de nuevo en un momento.",
   "marketplaceEmptyFiltered": "Todavía no hay anuncios con estos filtros.",
   "marketplaceNeedsLocation": "El mercadillo solo muestra anuncios cerca de ti. Indica tu ubicación en Ajustes → Ubicación para verlos.",
   "marketplaceSetLocationAction": "Indicar mi ubicación",
@@ -565,9 +568,6 @@
       }
     }
   },
-  "marketplaceNoLiveAnimalsNote": "En tu país el mercadillo no admite anuncios de animales vivos: solo productos y servicios para animales.",
-  "marketplaceNoLiveAnimalsConfirm": "Confirmo que este anuncio no ofrece un animal vivo (venta, regalo o cesión)",
-  "marketplaceNoLiveAnimalsRequired": "Confirma que el anuncio no ofrece un animal vivo",
   "marketplaceLoadError": "No puedo cargar los anuncios. Comprueba la conexión.",
   "marketplaceFilterAllCategories": "Todos",
   "marketplaceFilterAllSpecies": "Todas las mascotas",
@@ -576,6 +576,7 @@
   "marketplaceReasonScam": "Estafa",
   "marketplaceReasonProhibitedItem": "Artículo no permitido",
   "marketplaceReasonInappropriate": "Contenido inapropiado",
+  "marketplaceReasonSellsAnimals": "Vende animales",
   "marketplaceReportRemoved": "Gracias, el anuncio se ha eliminado tras los informes recibidos.",
   "marketplaceReportSent": "Informe enviado, gracias.",
   "marketplaceDeleteConfirmTitle": "¿Eliminar el anuncio?",

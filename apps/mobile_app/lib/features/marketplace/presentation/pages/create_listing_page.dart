@@ -17,6 +17,7 @@ import '../../../territory/domain/territory.dart';
 import '../../data/area_label_geocoder.dart';
 import '../../data/listing_photo_store.dart';
 import '../../data/marketplace_repository.dart';
+import '../../domain/animal_policy.dart';
 import '../../domain/listing_location.dart';
 import '../../domain/marketplace_listing.dart';
 import '../marketplace_labels.dart';
@@ -78,9 +79,6 @@ class _CreateListingPageState extends State<CreateListingPage> {
   ListingCondition _condition = ListingCondition.good;
   bool _isGift = false;
 
-  /// Where the Mercatino does not allow ads for live animals the author
-  /// confirms, every time, that this ad offers none (Territory rule).
-  bool _noLiveAnimalsConfirmed = false;
   final Set<ListingSpecies> _species = {};
   final List<_DraftPhoto> _photos = [];
   bool _processingPhotos = false;
@@ -264,6 +262,16 @@ class _CreateListingPageState extends State<CreateListingPage> {
     }
   }
 
+  /// The Mercatino sells things for animals, never animals. The backend is the
+  /// one that decides; this says it before photos are uploaded.
+  /// Shown once: under the title when the title itself offers an animal, under
+  /// the description otherwise.
+  String? _animalOfferError(String? title, String? description, {required bool onTitle}) {
+    if (!offersAnimals(title, description)) return null;
+    final titleIsTheCause = offersAnimals(title);
+    return titleIsTheCause == onTitle ? context.l10n.marketplaceNoAnimalsMessage : null;
+  }
+
   Future<void> _submit() async {
     setState(() => _submitError = null);
     if (!_formKey.currentState!.validate()) return;
@@ -354,7 +362,9 @@ class _CreateListingPageState extends State<CreateListingPage> {
       if (!mounted) return;
       setState(() {
         _submitting = false;
-        _submitError = error is ListingPermissionException
+        _submitError = error is ListingPermissionException ||
+                error is ListingRejectedException ||
+                error is ListingBackendUnavailableException
             ? error.toString()
             : context.l10n.marketplaceSaveFailed;
       });
@@ -413,9 +423,12 @@ class _CreateListingPageState extends State<CreateListingPage> {
                 controller: _titleController,
                 decoration: InputDecoration(labelText: context.l10n.marketplaceFieldTitle),
                 maxLength: 80,
-                validator: (value) => (value == null || value.trim().isEmpty)
-                    ? context.l10n.marketplaceTitleRequired
-                    : null,
+                validator: (value) {
+                  if (value == null || value.trim().isEmpty) {
+                    return context.l10n.marketplaceTitleRequired;
+                  }
+                  return _animalOfferError(value, _descriptionController.text, onTitle: true);
+                },
               ),
               const SizedBox(height: AppSpacing.sm),
               TextFormField(
@@ -423,6 +436,8 @@ class _CreateListingPageState extends State<CreateListingPage> {
                 decoration: InputDecoration(labelText: context.l10n.marketplaceFieldDescription),
                 maxLines: 3,
                 maxLength: 1000,
+                validator: (value) =>
+                    _animalOfferError(_titleController.text, value, onTitle: false),
               ),
               const SizedBox(height: AppSpacing.sm),
               DropdownButtonFormField<ListingCategory>(
@@ -506,36 +521,12 @@ class _CreateListingPageState extends State<CreateListingPage> {
                   keyboardType: const TextInputType.numberWithOptions(decimal: true),
                   validator: _validatePrice,
                 ),
-              if (!currentTerritory().liveAnimalListingsAllowed) ...[
-                const SizedBox(height: AppSpacing.md),
-                Text(context.l10n.marketplaceNoLiveAnimalsNote, style: AppTextStyles.caption),
-                FormField<bool>(
-                  initialValue: _noLiveAnimalsConfirmed,
-                  validator: (_) => _noLiveAnimalsConfirmed
-                      ? null
-                      : context.l10n.marketplaceNoLiveAnimalsRequired,
-                  builder: (field) => Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      CheckboxListTile(
-                        contentPadding: EdgeInsets.zero,
-                        controlAffinity: ListTileControlAffinity.leading,
-                        title: Text(context.l10n.marketplaceNoLiveAnimalsConfirm),
-                        value: _noLiveAnimalsConfirmed,
-                        onChanged: (value) {
-                          setState(() => _noLiveAnimalsConfirmed = value ?? false);
-                          field.didChange(_noLiveAnimalsConfirmed);
-                        },
-                      ),
-                      if (field.hasError)
-                        Text(
-                          field.errorText!,
-                          style: AppTextStyles.caption.copyWith(color: AppColors.danger),
-                        ),
-                    ],
-                  ),
-                ),
-              ],
+              const SizedBox(height: AppSpacing.md),
+              Text(
+                context.l10n.marketplaceRules,
+                key: const ValueKey('marketplace-rules'),
+                style: AppTextStyles.caption,
+              ),
               const SizedBox(height: AppSpacing.xl),
               _LocationSection(
                 choice: _locationChoice,

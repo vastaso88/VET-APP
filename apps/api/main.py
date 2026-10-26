@@ -14,6 +14,7 @@ from apps.api.routes.chat_attachments import router as chat_attachments_router
 from apps.api.routes.chat_response_reports import router as chat_response_reports_router
 from apps.api.routes.conversations import router as conversations_router
 from apps.api.routes.events import router as events_router
+from apps.api.routes.geocoding import router as geocoding_router
 from apps.api.routes.health import router as health_router
 from apps.api.routes.legal import router as legal_router
 from apps.api.routes.local_services import router as local_services_router
@@ -97,4 +98,5 @@ app.include_router(subscription_router)
 app.include_router(local_services_router)
 app.include_router(news_router)
 app.include_router(events_router)
+app.include_router(geocoding_router)
 app.include_router(marketplace_router)

@@ -43,6 +43,7 @@ class _ListingDetailPageState extends State<ListingDetailPage> {
         'scam': context.l10n.marketplaceReasonScam,
         'prohibited_item': context.l10n.marketplaceReasonProhibitedItem,
         'inappropriate': context.l10n.marketplaceReasonInappropriate,
+        'sells_animals': context.l10n.marketplaceReasonSellsAnimals,
         'other': context.l10n.marketplaceOther,
       };
 
@@ -196,9 +197,15 @@ class _ListingDetailPageState extends State<ListingDetailPage> {
             ),
             const SizedBox(height: AppSpacing.xl),
             Text(listingPriceLabel(listing.priceCents, country: listing.country), style: AppTextStyles.heading),
-            if (listing.cityLabel != null) ...[
+            if (listingPlaceLabel(listing) case final place?) ...[
               const SizedBox(height: AppSpacing.xs),
-              Text(context.l10n.marketplaceDetailApproxZone(listing.cityLabel!), style: AppTextStyles.bodySmall),
+              Text(
+                listing.cityLabel == null
+                    ? place
+                    : context.l10n.marketplaceDetailApproxZone(place),
+                key: const ValueKey('listing-place'),
+                style: AppTextStyles.bodySmall,
+              ),
             ],
             if (listing.species.isNotEmpty) ...[
               const SizedBox(height: AppSpacing.md),

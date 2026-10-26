@@ -29,24 +29,21 @@ class TerritoryRules:
     country: str
     currency_code: str
     currency_symbol: str
-    # False where the Mercatino must not carry ads for living animals
-    # (docs/i18n/NOTIZIE_EVENTI_MERCATINO.md, "Animali vivi").
-    live_animal_listings_allowed: bool
 
 
 _RULES: dict[str, TerritoryRules] = {
     rules.country: rules
     for rules in (
-        TerritoryRules("IT", "EUR", "€", True),
-        TerritoryRules("GB", "GBP", "£", False),
-        TerritoryRules("US", "USD", "$", True),
-        TerritoryRules("AU", "AUD", "A$", True),
-        TerritoryRules("DE", "EUR", "€", False),
-        TerritoryRules("AT", "EUR", "€", False),
-        TerritoryRules("CH", "CHF", "CHF", False),
-        TerritoryRules("FR", "EUR", "€", False),
-        TerritoryRules("BE", "EUR", "€", False),
-        TerritoryRules("ES", "EUR", "€", False),
+        TerritoryRules("IT", "EUR", "€"),
+        TerritoryRules("GB", "GBP", "£"),
+        TerritoryRules("US", "USD", "$"),
+        TerritoryRules("AU", "AUD", "A$"),
+        TerritoryRules("DE", "EUR", "€"),
+        TerritoryRules("AT", "EUR", "€"),
+        TerritoryRules("CH", "CHF", "CHF"),
+        TerritoryRules("FR", "EUR", "€"),
+        TerritoryRules("BE", "EUR", "€"),
+        TerritoryRules("ES", "EUR", "€"),
     )
 }
 

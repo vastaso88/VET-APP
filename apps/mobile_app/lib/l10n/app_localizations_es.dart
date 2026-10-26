@@ -1164,6 +1164,18 @@ class AppLocalizationsEs extends AppLocalizations {
       'Compra, vende y regala artículos para mascotas con otros propietarios.';
 
   @override
+  String get marketplaceRules =>
+      'El mercadillo solo tiene objetos para animales. No se pueden vender, regalar ni intercambiar animales, en ningún país.';
+
+  @override
+  String get marketplaceNoAnimalsMessage =>
+      'En el mercadillo solo se venden objetos para animales, no animales.';
+
+  @override
+  String get marketplaceBackendUnavailable =>
+      'No se puede acceder al mercadillo ahora mismo. Inténtalo de nuevo en un momento.';
+
+  @override
   String get marketplaceEmptyFiltered =>
       'Todavía no hay anuncios con estos filtros.';
 
@@ -1196,18 +1208,6 @@ class AppLocalizationsEs extends AppLocalizations {
   }
 
   @override
-  String get marketplaceNoLiveAnimalsNote =>
-      'En tu país el mercadillo no admite anuncios de animales vivos: solo productos y servicios para animales.';
-
-  @override
-  String get marketplaceNoLiveAnimalsConfirm =>
-      'Confirmo que este anuncio no ofrece un animal vivo (venta, regalo o cesión)';
-
-  @override
-  String get marketplaceNoLiveAnimalsRequired =>
-      'Confirma que el anuncio no ofrece un animal vivo';
-
-  @override
   String get marketplaceLoadError =>
       'No puedo cargar los anuncios. Comprueba la conexión.';
 
@@ -1231,6 +1231,9 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get marketplaceReasonInappropriate => 'Contenido inapropiado';
+
+  @override
+  String get marketplaceReasonSellsAnimals => 'Vende animales';
 
   @override
   String get marketplaceReportRemoved =>

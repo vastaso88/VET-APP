@@ -2996,6 +2996,33 @@
       "fr": "56e89cbd36ab405779652b3a81f4dc92501cb398fefcb12a1b25d2440f4a1ffd"
     }
   },
+  "ui:marketplaceRules": {
+    "source": "54fa8cf452614d0fbb2ef602c4b665ddfc7a04e46ec86b8ef3ef9c91e7ac8de5",
+    "targets": {
+      "en": "b18cf91985eea3ab62f5a99fd87ce900cf2e34f0efed5fcab309922c5fe90fe2",
+      "es": "ab099c0e4ef48d9308532badb53f49fe8a0d9dda2bf42fc8cdf102a317727132",
+      "de": "a69aa721d95beeb69c1e1ebd6e62b0f9c95c228f5cc169e72fe25c04f2f23fc8",
+      "fr": "dcec03f0f9c8a0cf752aa0a930f2a0be9f2fab67de9be64b29625bd595e6b881"
+    }
+  },
+  "ui:marketplaceNoAnimalsMessage": {
+    "source": "ea9d04f6e5371eb4849589b0ca45b716b306262aa443cf3590b2a87936d24f9e",
+    "targets": {
+      "en": "a5d4b740630db3e74a217b6a6c20d21d449f484fdef590b12bcb6baf71e389b5",
+      "es": "3337bc12050537097f02a6a81baa55401616cc6d8556f2b33196bccc12bdab14",
+      "de": "8cd71ee0963da5f8c2501643b4df6eee67d780ea0bb8d0e08d111581f17181df",
+      "fr": "2d08ff5f7ae36dcd83a54d17ab1f1ed964115ab392abe9b7a4f8082167d17ff1"
+    }
+  },
+  "ui:marketplaceBackendUnavailable": {
+    "source": "f6e719c59511212fe9e7ffaaf847e067d648344c1411f0b423e7428e98d31c91",
+    "targets": {
+      "en": "33671102081a4a97c3719ff4a1dc30298d6216ddf9bb17ba625dafd29ce3d00e",
+      "es": "4ab3e04a4c83d6accf7eb3e16e017530dc8fb3484c82e2293d8b4186b0320186",
+      "de": "381cbd202cab40fb993e5bba299ab50d10aee9de395721f1a4e7cec58e319fcb",
+      "fr": "419486de3fe9d35c59719afc8b5ad2a40b962e63b296dd4d48a43b3fb15ab05d"
+    }
+  },
   "ui:marketplaceEmptyFiltered": {
     "source": "2a35cbd89745bc0701ca228ff4105a0816b26e7efafc5e6f02ba2746af368da4",
     "targets": {
@@ -3068,33 +3095,6 @@
       "fr": "a9239bf094cbd64b71c568efbe4630aba44d34651999c6d7eea3910f7525f4fe"
     }
   },
-  "ui:marketplaceNoLiveAnimalsNote": {
-    "source": "6944435bf1f60a4354cfd9b0cf46435d243012e8132673ad50281f97aefcd02f",
-    "targets": {
-      "en": "9482ed8ebbcec37de5003cc16a86435aee97dc2d4648709eb0626a0e49a998f1",
-      "es": "e5e630507dce8dccd5b9b6fcef21913c4a5da43af0e525887e6e5b7c684d3697",
-      "de": "58efb5bbd02173386db8e9d517efbbff93c112b428bcdb8dc370557757a38cc6",
-      "fr": "f3f7daf3b637e5a6f4e04722fc21199b2c932a854694442ae2e281db25730862"
-    }
-  },
-  "ui:marketplaceNoLiveAnimalsConfirm": {
-    "source": "7d27a903050de85cf26a8308f88ce499dd8ccdf18474001c0e502972d7abb5d3",
-    "targets": {
-      "en": "c1235eb775e57f2e5ca4caea9cdf2765145b6ba3bbe4d9dbce2b7f771037082a",
-      "es": "1fecb615f9dac3a67fdbc892ad409a2bc76e8681d57fdc6d7383503cd18e93d2",
-      "de": "6572f7839a7252c44c74ad93db3a69aedfa104e8cc0c0383bbc7fad510f81c70",
-      "fr": "60bc4adfa85145aec6dd8e5a1d53457df3c205e24d0aaa749ba02efb05087781"
-    }
-  },
-  "ui:marketplaceNoLiveAnimalsRequired": {
-    "source": "56aed1e5d2d8f65d6e87de300593189984c04028afd920655525087fc6eefb25",
-    "targets": {
-      "en": "b6cb97cd859b66e61a5c6b9959bf45eaecdc166dd73c9168a54b5f72f56ff5c2",
-      "es": "b653cdc07e06498e35c9b71289f32a37d8778ddf3edaae5a4d0efdb2eda8e53d",
-      "de": "444a0bcb6e045f720cbd3f591a57408cdad0ffd74b13ba3376f3409499e4163e",
-      "fr": "e52d879dde7a158e987b3123049e94743b9e2770053c302e36fe3799112a0f41"
-    }
-  },
   "ui:marketplaceLoadError": {
     "source": "07e5516d1f4fbde8157badf9dcad6001f5845bd6da444eabaddeb88964f9dc78",
     "targets": {
@@ -3165,6 +3165,15 @@
       "es": "c3ff24eb6150f45e240a94aaa3d13f0c37208fdb8195ff3fce7f0a6f16031ba3",
       "de": "bf8a1ab64d05f9b12950d930ed9acbd26c12fe49d3c0f748d2fc8908cde010a8",
       "fr": "5770bfdfbcccb1e20c9e26174f3d5f77407efd4366bdfc234e4153e6ec8e236e"
+    }
+  },
+  "ui:marketplaceReasonSellsAnimals": {
+    "source": "9043da3e1ba34305a7c644170e5fe3f2b77eec0e6a42d559007de9925177dbac",
+    "targets": {
+      "en": "2ac3fdb8ddf0abd6440d7c908cbf2c4b5ed852190b0310f7e3b7f4b25093f3b9",
+      "es": "526c528e31dd5f118ddc722c48041305ffa251c4683717cd2825e98c3ebb26c8",
+      "de": "dbef9a13586426859eb1ab410dafc515ff7fafba9a7453ef9000218e638aa605",
+      "fr": "f77f1166af142e7a4ba9c1122d53f4873808ec154210d71a19633457ace4b132"
     }
   },
   "ui:marketplaceReportRemoved": {

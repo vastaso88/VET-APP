@@ -524,6 +524,9 @@
   "marketplaceMapAction": "Karte",
   "marketplaceNewListing": "Neue Anzeige",
   "marketplaceIntro": "Kaufen, verkaufen und verschenken Sie Tierbedarf mit anderen Tierhaltern.",
+  "marketplaceRules": "Der Gebrauchtmarkt bietet nur Artikel für Tiere. Tiere dürfen hier in keinem Land verkauft, verschenkt oder getauscht werden.",
+  "marketplaceNoAnimalsMessage": "Auf dem Gebrauchtmarkt werden nur Artikel für Tiere verkauft, keine Tiere.",
+  "marketplaceBackendUnavailable": "Der Gebrauchtmarkt ist gerade nicht erreichbar. Versuchen Sie es gleich noch einmal.",
   "marketplaceEmptyFiltered": "Derzeit keine Anzeigen mit diesen Filtern.",
   "marketplaceNeedsLocation": "Der Gebrauchtmarkt zeigt nur Anzeigen in Ihrer Nähe. Legen Sie Ihren Standort unter Einstellungen → Standort fest, um sie zu sehen.",
   "marketplaceSetLocationAction": "Standort festlegen",
@@ -565,9 +568,6 @@
       }
     }
   },
-  "marketplaceNoLiveAnimalsNote": "In Ihrem Land sind auf dem Gebrauchtmarkt keine Anzeigen für lebende Tiere erlaubt: nur Produkte und Dienstleistungen für Tiere.",
-  "marketplaceNoLiveAnimalsConfirm": "Ich bestätige, dass diese Anzeige kein lebendes Tier anbietet (Verkauf, Verschenken oder Abgabe)",
-  "marketplaceNoLiveAnimalsRequired": "Bestätigen Sie, dass die Anzeige kein lebendes Tier anbietet",
   "marketplaceLoadError": "Ich kann die Anzeigen nicht laden. Prüfen Sie Ihre Verbindung.",
   "marketplaceFilterAllCategories": "Alle",
   "marketplaceFilterAllSpecies": "Alle Tiere",
@@ -576,6 +576,7 @@
   "marketplaceReasonScam": "Betrug",
   "marketplaceReasonProhibitedItem": "Nicht erlaubter Artikel",
   "marketplaceReasonInappropriate": "Unangemessener Inhalt",
+  "marketplaceReasonSellsAnimals": "Verkauft Tiere",
   "marketplaceReportRemoved": "Danke, die Anzeige wurde nach den eingegangenen Meldungen entfernt.",
   "marketplaceReportSent": "Meldung gesendet, danke.",
   "marketplaceDeleteConfirmTitle": "Anzeige löschen?",

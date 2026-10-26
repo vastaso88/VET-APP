@@ -1,5 +1,4 @@
 import 'dart:convert';
-import 'dart:math' as math;
 
 import 'package:http/http.dart' as http;
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -9,6 +8,7 @@ import '../../../shared/config/app_runtime_config_loader.dart';
 import '../../../l10n/l10n.dart';
 import '../../location/domain/coordinates.dart';
 import '../../territory/domain/territory.dart';
+import '../domain/animal_policy.dart';
 import '../domain/marketplace_listing.dart';
 import 'listing_photo_store.dart';
 
@@ -23,6 +23,28 @@ class InvalidListingRadiusException implements Exception {
   @override
   String toString() => 'Invalid marketplace radius: $radiusKm km '
       '($marketplaceMinRadiusKm to $marketplaceMaxRadiusKm km)';
+}
+
+/// The backend (or the app's own copy of the same rule) refused the ad. The
+/// message is the one to show: "Sul Mercatino si vendono solo oggetti per
+/// animali, non animali." when it offers an animal.
+class ListingRejectedException implements Exception {
+  const ListingRejectedException(this.message);
+
+  final String message;
+
+  @override
+  String toString() => message;
+}
+
+/// An ad cannot be published, edited or listed because the backend that
+/// decides is unreachable. Ads of others are never read from the database
+/// directly, so there is no fallback.
+class ListingBackendUnavailableException implements Exception {
+  const ListingBackendUnavailableException();
+
+  @override
+  String toString() => appL10n.marketplaceBackendUnavailable;
 }
 
 /// Thrown when someone other than the author tries to change or delete a
@@ -50,12 +72,14 @@ class MarketplaceRepository {
     ListingPhotoStore? photoStore,
     http.Client? httpClient,
     AppRuntimeConfigLoader? configLoader,
+    String? Function()? tokenProvider,
   })  : _client = client,
         _localOnly = false,
         _local = _sharedLocal,
         _photoStore = photoStore ?? ListingPhotoStore(client: client),
         _http = httpClient,
-        _configLoader = configLoader ?? const AppRuntimeConfigLoader();
+        _configLoader = configLoader ?? const AppRuntimeConfigLoader(),
+        _tokenProvider = tokenProvider ?? CurrentUser.accessToken;
 
   /// Isolated local store (tests, previews): never talks to Supabase.
   MarketplaceRepository.inMemory(List<MarketplaceListing> listings)
@@ -64,7 +88,8 @@ class MarketplaceRepository {
         _local = List<MarketplaceListing>.of(listings),
         _photoStore = ListingPhotoStore(localOnly: true),
         _http = null,
-        _configLoader = const AppRuntimeConfigLoader();
+        _configLoader = const AppRuntimeConfigLoader(),
+        _tokenProvider = CurrentUser.accessToken;
 
   static const _table = 'marketplace_listings';
   static final List<MarketplaceListing> _sharedLocal = List<MarketplaceListing>.of(_seedListings);
@@ -75,62 +100,86 @@ class MarketplaceRepository {
   final ListingPhotoStore _photoStore;
   final http.Client? _http;
   final AppRuntimeConfigLoader _configLoader;
+  final String? Function() _tokenProvider;
 
   ListingPhotoStore get photoStore => _photoStore;
 
   /// How long the backend gets to answer before the direct read is tried.
   static const _apiTimeout = Duration(seconds: 20);
 
-  /// The ads a search can show: those of [country] (default: the owner's)
-  /// within [radiusKm] of [center], at most [marketplaceMaxRadiusKm]. A
-  /// radius outside [min, max] is refused ([InvalidListingRadiusException]) -
-  /// there is no unlimited search. In production the backend answers
-  /// (`GET /marketplace/listings`, which enforces the same rules); without a
-  /// backend address or session the table is read directly with the same
-  /// country filter and a bounding box around the radius. The result is a
-  /// candidate set: `applyListingFilter` makes the exact cut.
+  /// The ads a search can show: those within [radiusKm] of [center], whatever
+  /// their country (near a border the ads across it count too; each one
+  /// carries its seller's country). The radius must be between
+  /// [marketplaceMinRadiusKm] and [marketplaceMaxRadiusKm]
+  /// ([InvalidListingRadiusException] otherwise) - there is no unlimited search.
+  /// In production the backend answers (`GET /marketplace/listings`, which
+  /// enforces the same rules): the table is never read directly for other
+  /// people's ads, so when the backend cannot be asked the search fails
+  /// ([ListingBackendUnavailableException]). Without any backend or database
+  /// (demo, tests) the local list answers. The result is a candidate set:
+  /// `applyListingFilter` makes the exact cut.
   Future<List<MarketplaceListing>> loadNearbyListings({
     required Coordinates center,
     required double radiusKm,
-    String? country,
   }) async {
     if (radiusKm.isNaN || radiusKm < marketplaceMinRadiusKm || radiusKm > marketplaceMaxRadiusKm) {
       throw InvalidListingRadiusException(radiusKm);
     }
-    final countryCode = (country ?? currentTerritory().countryCode).toUpperCase();
 
-    if (_localOnly) {
-      return _localNearby(center, radiusKm, countryCode);
-    }
+    if (_localOnly) return _localNearby();
 
-    final fromApi = await _loadNearbyFromApi(center, radiusKm, countryCode);
+    final fromApi = await _loadNearbyFromApi(center, radiusKm);
     if (fromApi != null) return fromApi;
 
-    final client = _resolveClient();
-    if (client == null) {
-      return _localNearby(center, radiusKm, countryCode);
-    }
-
-    // ~111 km per degree of latitude; longitude degrees shrink with latitude.
-    final latSpan = radiusKm / 111.0;
-    final cosLat = math.max(0.01, math.cos(center.latitude * math.pi / 180));
-    final lonSpan = radiusKm / (111.0 * cosLat);
-    final response = await client
-        .from(_table)
-        .select('*')
-        .eq('status', 'active')
-        .eq('country', countryCode)
-        .gte('latitude', center.latitude - latSpan)
-        .lte('latitude', center.latitude + latSpan)
-        .gte('longitude', center.longitude - lonSpan)
-        .lte('longitude', center.longitude + lonSpan);
-    return _parseRows(response as List<dynamic>);
+    if (_resolveClient() == null) return _localNearby();
+    throw const ListingBackendUnavailableException();
   }
 
-  List<MarketplaceListing> _localNearby(Coordinates center, double radiusKm, String country) {
+  List<MarketplaceListing> _localNearby() {
     return _local
-        .where((listing) => listing.status == ListingStatus.active && listing.country == country)
+        .where((listing) => listing.status == ListingStatus.active)
         .toList(growable: false);
+  }
+
+  /// One ad by id, through the backend (`GET /marketplace/listings/{id}`): an
+  /// active ad of anyone, any ad of its author. Null when it does not exist (or
+  /// is hidden from this user).
+  Future<MarketplaceListing?> loadListing(String id) async {
+    if (!_localOnly) {
+      final result = await _callApi('GET', '/marketplace/listings/${Uri.encodeComponent(id)}');
+      if (result != null) {
+        if (result.statusCode == 404) return null;
+        if (result.statusCode != 200) throw const ListingBackendUnavailableException();
+        final json = jsonDecode(utf8.decode(result.bodyBytes)) as Map<String, dynamic>;
+        return _parseRow(json['listing'] as Map<String, dynamic>);
+      }
+      if (_resolveClient() != null) throw const ListingBackendUnavailableException();
+    }
+    for (final listing in _local) {
+      if (listing.id == id && listing.status == ListingStatus.active) return listing;
+    }
+    return null;
+  }
+
+  /// Calls the backend with the user's session; null when it cannot be asked
+  /// (no address or no session) or did not answer at all (network, timeout).
+  Future<http.Response?> _callApi(String method, String path, {Object? body}) async {
+    final baseUrl = _configLoader.load().apiBaseUrl.trim();
+    final token = _tokenProvider();
+    if (baseUrl.isEmpty || token == null || token.isEmpty) return null;
+
+    final request = http.Request(method, Uri.parse('$baseUrl$path'))
+      ..headers['Authorization'] = 'Bearer $token';
+    if (body != null) {
+      request.headers['Content-Type'] = 'application/json';
+      request.body = jsonEncode(body);
+    }
+    try {
+      final streamed = await (_http ?? http.Client()).send(request).timeout(_apiTimeout);
+      return await http.Response.fromStream(streamed);
+    } catch (_) {
+      return null;
+    }
   }
 
   /// Null when the backend can't be asked (no address or session) or didn't
@@ -140,31 +189,21 @@ class MarketplaceRepository {
   Future<List<MarketplaceListing>?> _loadNearbyFromApi(
     Coordinates center,
     double radiusKm,
-    String country,
   ) async {
-    final baseUrl = _configLoader.load().apiBaseUrl.trim();
-    final token = CurrentUser.accessToken();
-    if (baseUrl.isEmpty || token == null || token.isEmpty) return null;
-
-    final uri = Uri.parse('$baseUrl/marketplace/listings').replace(
-      queryParameters: {
-        'latitude': center.latitude.toString(),
-        'longitude': center.longitude.toString(),
-        'radius_km': radiusKm.toString(),
-        'country': country,
-      },
-    );
+    final query = Uri(queryParameters: {
+      'latitude': center.latitude.toString(),
+      'longitude': center.longitude.toString(),
+      'radius_km': radiusKm.toString(),
+    }).query;
+    final response = await _callApi('GET', '/marketplace/listings?$query');
+    if (response == null) return null;
+    if (response.statusCode == 400 || response.statusCode == 422) {
+      throw InvalidListingRadiusException(radiusKm);
+    }
+    if (response.statusCode != 200) return null;
     try {
-      final response = await (_http ?? http.Client())
-          .get(uri, headers: {'Authorization': 'Bearer $token'}).timeout(_apiTimeout);
-      if (response.statusCode == 400 || response.statusCode == 422) {
-        throw InvalidListingRadiusException(radiusKm);
-      }
-      if (response.statusCode != 200) return null;
       final json = jsonDecode(utf8.decode(response.bodyBytes)) as Map<String, dynamic>;
       return _parseRows(json['listings'] as List<dynamic>? ?? const []);
-    } on InvalidListingRadiusException {
-      rethrow;
     } catch (_) {
       return null;
     }
@@ -179,6 +218,10 @@ class MarketplaceRepository {
     return listings;
   }
 
+  /// The active ads this device can read without the backend: the local list
+  /// (demo, tests) or, with a database, only the user's OWN ads (the database
+  /// lets nobody read other people's directly). Search goes through
+  /// [loadNearbyListings].
   Future<List<MarketplaceListing>> loadActiveListings() async {
     final client = _resolveClient();
     if (client == null) {
@@ -191,20 +234,74 @@ class MarketplaceRepository {
     return _parseRows(response as List<dynamic>);
   }
 
+  /// Publishes an ad. The Mercatino sells things for animals, never animals:
+  /// the same rule runs here before anything is sent and, the one that decides,
+  /// in the backend (`POST /marketplace/listings`), which is the only door to
+  /// the table. The ad is not written to the database directly.
   Future<void> createListing(MarketplaceListing listing) async {
-    final client = _resolveClient();
-    if (client == null) {
-      _local.insert(0, listing);
-      return;
+    _refuseAnimals(listing);
+    if (!_localOnly) {
+      if (await _writeViaApi('POST', '/marketplace/listings', listing)) return;
+      if (_resolveClient() != null) throw const ListingBackendUnavailableException();
     }
-    await client.from(_table).insert(_toRow(listing));
+    _local.insert(0, listing);
+  }
+
+  void _refuseAnimals(MarketplaceListing listing) {
+    if (offersAnimals(listing.title, listing.description)) {
+      throw ListingRejectedException(appL10n.marketplaceNoAnimalsMessage);
+    }
+  }
+
+  /// The body the backend takes to publish or edit an ad.
+  Map<String, dynamic> _toApiBody(MarketplaceListing listing) => {
+        'title': listing.title,
+        'description': listing.description,
+        'category': categoryToWire(listing.category),
+        'condition': _conditionToString(listing.condition),
+        'price_cents': listing.priceCents,
+        'photo_urls': listing.photoUrls,
+        'target_species': listing.species.map(speciesToWire).toList(),
+        'latitude': listing.location.latitude,
+        'longitude': listing.location.longitude,
+        'city_label': listing.cityLabel,
+        'country': listing.country,
+      };
+
+  /// True once the backend took the ad; false when it cannot be asked (no
+  /// address or session). A refusal of the content is a
+  /// [ListingRejectedException] carrying the backend's own message.
+  Future<bool> _writeViaApi(String method, String path, MarketplaceListing listing) async {
+    final response = await _callApi(method, path, body: _toApiBody(listing));
+    if (response == null) return false;
+    if (response.statusCode == 200) return true;
+    if (response.statusCode == 400) {
+      String? detail;
+      try {
+        detail = (jsonDecode(utf8.decode(response.bodyBytes)) as Map<String, dynamic>)['detail']
+            as String?;
+      } catch (_) {}
+      // The backend speaks Italian; the owner reads the message in their language.
+      throw ListingRejectedException(
+        detail == animalPolicyBackendMessage || detail == null
+            ? (detail == null ? appL10n.marketplaceSaveFailed : appL10n.marketplaceNoAnimalsMessage)
+            : detail,
+      );
+    }
+    throw const ListingBackendUnavailableException();
   }
 
   /// Author only. The `owner_id` filter plus `.select()` turn an RLS
   /// refusal (which Postgres reports as "0 rows" rather than an error) into
   /// a visible [ListingPermissionException].
   Future<void> updateListing(MarketplaceListing listing, {required String requesterId}) async {
-    final client = _resolveClient();
+    _refuseAnimals(listing);
+    if (!_localOnly && canManageListing(listing, requesterId)) {
+      final path = '/marketplace/listings/${Uri.encodeComponent(listing.id)}';
+      if (await _writeViaApi('PUT', path, listing)) return;
+      if (_resolveClient() != null) throw const ListingBackendUnavailableException();
+    }
+    final client = _localOnly ? null : _resolveClient();
     if (client == null) {
       final index = _local.indexWhere((item) => item.id == listing.id);
       // The stored copy decides ownership, not the one the caller hands in.
@@ -215,20 +312,10 @@ class MarketplaceRepository {
       return;
     }
 
-    if (!canManageListing(listing, requesterId)) throw const ListingPermissionException();
-    final row = _toRow(listing)
-      ..remove('id')
-      ..remove('owner_id')
-      ..remove('created_at')
-      ..remove('status')
-      ..remove('report_count');
-    final updated = await client
-        .from(_table)
-        .update(row)
-        .eq('id', listing.id)
-        .eq('owner_id', requesterId)
-        .select('id');
-    if ((updated as List<dynamic>).isEmpty) throw const ListingPermissionException();
+    // A real database without the backend: ads are only written through it.
+    throw canManageListing(listing, requesterId)
+        ? const ListingBackendUnavailableException()
+        : const ListingPermissionException();
   }
 
   /// Author only; the listing's photos are removed from storage afterwards.
@@ -266,28 +353,6 @@ class MarketplaceRepository {
     } else {
       _local[index] = listing;
     }
-  }
-
-  Map<String, dynamic> _toRow(MarketplaceListing listing) {
-    return {
-      'id': listing.id,
-      'owner_id': listing.ownerId,
-      'title': listing.title,
-      'description': listing.description,
-      'category': categoryToWire(listing.category),
-      'condition': _conditionToString(listing.condition),
-      'price_cents': listing.priceCents,
-      'photo_urls': listing.photoUrls,
-      'target_species': listing.species.map(speciesToWire).toList(),
-      'latitude': listing.location.latitude,
-      'longitude': listing.location.longitude,
-      'city_label': listing.cityLabel,
-      'country': listing.country,
-      'status': _statusToString(listing.status),
-      'report_count': listing.reportCount,
-      'created_at': listing.createdAt.toIso8601String(),
-      'updated_at': listing.updatedAt.toIso8601String(),
-    };
   }
 
   MarketplaceListing? _parseRow(Map<String, dynamic> row) {
@@ -377,19 +442,6 @@ class MarketplaceRepository {
         return ListingStatus.removed;
       default:
         return null;
-    }
-  }
-
-  static String _statusToString(ListingStatus status) {
-    switch (status) {
-      case ListingStatus.active:
-        return 'active';
-      case ListingStatus.reserved:
-        return 'reserved';
-      case ListingStatus.sold:
-        return 'sold';
-      case ListingStatus.removed:
-        return 'removed';
     }
   }
 

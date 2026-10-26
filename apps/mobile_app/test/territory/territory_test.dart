@@ -17,16 +17,6 @@ void main() {
     expect(territoryFor('AU').currencyCode, 'AUD');
   });
 
-  test('live animals are not allowed in DACH, FR/BE, ES and UK - one table, no scattered if', () {
-    const forbidden = ['DE', 'AT', 'CH', 'FR', 'BE', 'ES', 'GB'];
-    for (final code in forbidden) {
-      expect(territoryFor(code).liveAnimalListingsAllowed, isFalse, reason: code);
-    }
-    for (final code in ['IT', 'US', 'AU']) {
-      expect(territoryFor(code).liveAnimalListingsAllowed, isTrue, reason: code);
-    }
-  });
-
   test('an unknown or missing country gets the source country, never another one', () {
     expect(territoryFor(null).countryCode, 'IT');
     expect(territoryFor('ZZ').countryCode, 'IT');
@@ -37,7 +27,6 @@ void main() {
     expect(currentTerritory().countryCode, 'AU');
     await useLanguageVariant('es');
     expect(currentTerritory().countryCode, 'ES');
-    expect(currentTerritory().liveAnimalListingsAllowed, isFalse);
   });
 
   test('quick radius options are 10 / 25 / 50 / 100 km and the default is 50', () {

@@ -85,7 +85,7 @@ def test_create_listing_keeps_target_species() -> None:
     assert result.listing.target_species == ["cat"]
 
 
-def _input(country: str, *, confirms: bool = False) -> CreateListingInput:
+def _input(country: str) -> CreateListingInput:
     return CreateListingInput(
         owner_id="user-1",
         title="Guinzaglio",
@@ -93,7 +93,6 @@ def _input(country: str, *, confirms: bool = False) -> CreateListingInput:
         condition="good",
         exact_location=Coordinates(latitude=48.1371, longitude=11.5754),
         country=country,
-        confirms_no_live_animals=confirms,
     )
 
 
@@ -104,25 +103,53 @@ def test_listing_carries_the_country_of_its_seller() -> None:
     assert service.execute(_input("it")).listing.country == "IT"
 
 
-@pytest.mark.parametrize("country", ["DE", "AT", "CH", "FR", "BE", "ES", "GB"])
-def test_where_live_animals_are_not_allowed_the_author_must_confirm(country: str) -> None:
-    service = CreateListingService(InMemoryMarketplaceListingRepository())
-
-    with pytest.raises(ValidationError):
-        service.execute(_input(country))
-
-    assert service.execute(_input(country, confirms=True)).listing.country == country
-
-
-@pytest.mark.parametrize("country", ["IT", "US", "AU"])
-def test_elsewhere_no_confirmation_is_needed(country: str) -> None:
+@pytest.mark.parametrize("country", ["IT", "US", "AU", "DE", "AT", "CH", "FR", "BE", "ES", "GB"])
+def test_every_country_publishes_objects_the_same_way(country: str) -> None:
     service = CreateListingService(InMemoryMarketplaceListingRepository())
 
     assert service.execute(_input(country)).listing.country == country
+
+
+@pytest.mark.parametrize("country", ["IT", "US", "AU", "DE", "FR", "ES", "GB", "CH"])
+@pytest.mark.parametrize(
+    "title",
+    [
+        "Vendo cane",
+        "Cuccioli di labrador",
+        "Kittens for sale",
+        "Welpen zu verkaufen",
+        "Chiots à vendre",
+    ],
+)
+def test_no_animals_in_any_country_not_even_italy(country: str, title: str) -> None:
+    service = CreateListingService(InMemoryMarketplaceListingRepository())
+    payload = _input(country).model_copy(update={"title": title})
+
+    with pytest.raises(ValidationError, match="solo oggetti per animali"):
+        service.execute(payload)
+
+
+def test_the_description_is_checked_too() -> None:
+    service = CreateListingService(InMemoryMarketplaceListingRepository())
+    payload = _input("IT").model_copy(
+        update={"title": "Cuccia", "description": "Vendo anche due gattini di un mese"}
+    )
+
+    with pytest.raises(ValidationError):
+        service.execute(payload)
+
+
+def test_an_accessory_that_names_its_animal_is_published() -> None:
+    service = CreateListingService(InMemoryMarketplaceListingRepository())
+    payload = _input("IT").model_copy(
+        update={"title": "Cuccia per cuccioli", "description": "Trasportino per gatto incluso"}
+    )
+
+    assert service.execute(payload).listing.title == "Cuccia per cuccioli"
 
 
 def test_an_unknown_country_cannot_publish() -> None:
     service = CreateListingService(InMemoryMarketplaceListingRepository())
 
     with pytest.raises(ValidationError):
-        service.execute(_input("ZZ", confirms=True))
+        service.execute(_input("ZZ"))

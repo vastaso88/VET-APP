@@ -1178,6 +1178,18 @@ class AppLocalizationsDe extends AppLocalizations {
       'Kaufen, verkaufen und verschenken Sie Tierbedarf mit anderen Tierhaltern.';
 
   @override
+  String get marketplaceRules =>
+      'Der Gebrauchtmarkt bietet nur Artikel für Tiere. Tiere dürfen hier in keinem Land verkauft, verschenkt oder getauscht werden.';
+
+  @override
+  String get marketplaceNoAnimalsMessage =>
+      'Auf dem Gebrauchtmarkt werden nur Artikel für Tiere verkauft, keine Tiere.';
+
+  @override
+  String get marketplaceBackendUnavailable =>
+      'Der Gebrauchtmarkt ist gerade nicht erreichbar. Versuchen Sie es gleich noch einmal.';
+
+  @override
   String get marketplaceEmptyFiltered =>
       'Derzeit keine Anzeigen mit diesen Filtern.';
 
@@ -1210,18 +1222,6 @@ class AppLocalizationsDe extends AppLocalizations {
   }
 
   @override
-  String get marketplaceNoLiveAnimalsNote =>
-      'In Ihrem Land sind auf dem Gebrauchtmarkt keine Anzeigen für lebende Tiere erlaubt: nur Produkte und Dienstleistungen für Tiere.';
-
-  @override
-  String get marketplaceNoLiveAnimalsConfirm =>
-      'Ich bestätige, dass diese Anzeige kein lebendes Tier anbietet (Verkauf, Verschenken oder Abgabe)';
-
-  @override
-  String get marketplaceNoLiveAnimalsRequired =>
-      'Bestätigen Sie, dass die Anzeige kein lebendes Tier anbietet';
-
-  @override
   String get marketplaceLoadError =>
       'Ich kann die Anzeigen nicht laden. Prüfen Sie Ihre Verbindung.';
 
@@ -1245,6 +1245,9 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get marketplaceReasonInappropriate => 'Unangemessener Inhalt';
+
+  @override
+  String get marketplaceReasonSellsAnimals => 'Verkauft Tiere';
 
   @override
   String get marketplaceReportRemoved =>

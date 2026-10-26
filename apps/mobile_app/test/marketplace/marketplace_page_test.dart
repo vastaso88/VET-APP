@@ -194,11 +194,15 @@ void main() {
     });
   });
 
-  testWidgets('ads from another country never show, even when very close', (tester) async {
+  testWidgets('an ad from across the border shows with its seller flag, inside the radius',
+      (tester) async {
     await _pumpPage(tester, reference: _me);
 
     expect(find.text('Pallina vicina'), findsOneWidget);
-    expect(find.text('Annuncio francese'), findsNothing);
+    expect(find.text('Annuncio francese'), findsOneWidget);
+    // The French flag is in the row of the French ad only.
+    expect(find.textContaining('\u{1F1EB}\u{1F1F7}'), findsOneWidget);
+    expect(find.textContaining('\u{1F1EE}\u{1F1F9}'), findsNothing);
   });
 
   testWidgets('category and distance filters combine', (tester) async {

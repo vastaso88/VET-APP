@@ -2102,6 +2102,24 @@ abstract class AppLocalizations {
   /// **'Compra, vendi e regala articoli per animali con altri proprietari.'**
   String get marketplaceIntro;
 
+  /// No description provided for @marketplaceRules.
+  ///
+  /// In it, this message translates to:
+  /// **'Sul Mercatino si trovano solo oggetti per animali. Gli animali non si possono vendere, regalare né scambiare, in nessun paese.'**
+  String get marketplaceRules;
+
+  /// No description provided for @marketplaceNoAnimalsMessage.
+  ///
+  /// In it, this message translates to:
+  /// **'Sul Mercatino si vendono solo oggetti per animali, non animali.'**
+  String get marketplaceNoAnimalsMessage;
+
+  /// No description provided for @marketplaceBackendUnavailable.
+  ///
+  /// In it, this message translates to:
+  /// **'Il Mercatino non è raggiungibile in questo momento. Riprova tra poco.'**
+  String get marketplaceBackendUnavailable;
+
   /// No description provided for @marketplaceEmptyFiltered.
   ///
   /// In it, this message translates to:
@@ -2150,24 +2168,6 @@ abstract class AppLocalizations {
   /// **'Valore non valido: scrivi un numero intero da {min} a {max} {unit}.'**
   String marketplaceDistanceDialogInvalid(int min, int max, String unit);
 
-  /// No description provided for @marketplaceNoLiveAnimalsNote.
-  ///
-  /// In it, this message translates to:
-  /// **'Nel tuo paese il Mercatino non ammette annunci di animali vivi: solo prodotti e servizi per animali.'**
-  String get marketplaceNoLiveAnimalsNote;
-
-  /// No description provided for @marketplaceNoLiveAnimalsConfirm.
-  ///
-  /// In it, this message translates to:
-  /// **'Confermo che questo annuncio non offre un animale vivo (vendita, regalo o cessione)'**
-  String get marketplaceNoLiveAnimalsConfirm;
-
-  /// No description provided for @marketplaceNoLiveAnimalsRequired.
-  ///
-  /// In it, this message translates to:
-  /// **'Conferma che l\'annuncio non offre un animale vivo'**
-  String get marketplaceNoLiveAnimalsRequired;
-
   /// No description provided for @marketplaceLoadError.
   ///
   /// In it, this message translates to:
@@ -2215,6 +2215,12 @@ abstract class AppLocalizations {
   /// In it, this message translates to:
   /// **'Contenuto inappropriato'**
   String get marketplaceReasonInappropriate;
+
+  /// No description provided for @marketplaceReasonSellsAnimals.
+  ///
+  /// In it, this message translates to:
+  /// **'Vende animali'**
+  String get marketplaceReasonSellsAnimals;
 
   /// No description provided for @marketplaceReportRemoved.
   ///

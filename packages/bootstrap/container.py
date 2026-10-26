@@ -57,6 +57,7 @@ from packages.core.application.services.end_walk import EndWalkService
 from packages.core.application.services.evidence_query_normalizer import (
     EvidenceQueryNormalizer,
 )
+from packages.core.application.services.geocoding import GeocodingService
 from packages.core.application.services.get_account_consents import GetAccountConsentsService
 from packages.core.application.services.get_or_create_subscription import (
     GetOrCreateSubscriptionService,
@@ -125,12 +126,14 @@ from packages.core.application.services.situation_model_builder import Situation
 from packages.core.application.services.start_walk import StartWalkService
 from packages.core.application.services.submit_event import SubmitEventService
 from packages.core.application.services.transcribe_audio import TranscribeAudioService
+from packages.core.application.services.update_listing import UpdateListingService
 from packages.core.application.services.update_pet_profile import UpdatePetProfileService
 from packages.core.application.services.upload_chat_attachment import UploadChatAttachmentService
 from packages.core.application.services.urgency_classifier import UrgencyClassifier
 from packages.core.application.services.vet_summary import VetSummaryService
 from packages.infrastructure.auth.bootstrap_auth_provider import BootstrapAuthProvider
 from packages.infrastructure.documents.pypdf_reader import PypdfReader
+from packages.infrastructure.geocoding.nominatim_geocoder import NominatimGeocoder
 from packages.infrastructure.llm.providers.echo_llm_client import EchoLLMClient
 from packages.infrastructure.llm.providers.groq_chat_api import split_models
 from packages.infrastructure.llm.providers.groq_llm_client import GroqLLMClient
@@ -252,6 +255,8 @@ class ApplicationContainer:
         self.radar_catalog_repository = self._build_radar_catalog_repository()
         self.radar_reports_repository = self._build_radar_reports_repository()
         self.radar_places_source: RadarPlacesSource = OverpassRadarPlacesSource(settings)
+        # One per process: it holds the per-account request counts.
+        self.geocoding_service = GeocodingService(NominatimGeocoder(settings))
         self.marketplace_listing_repository = self._build_marketplace_listing_repository()
         self.listing_report_repository = self._build_listing_report_repository()
         self.local_activity_repository = self._build_local_activity_repository()
@@ -448,6 +453,9 @@ class ApplicationContainer:
 
     def create_listing_service(self) -> CreateListingService:
         return CreateListingService(self.marketplace_listing_repository)
+
+    def update_listing_service(self) -> UpdateListingService:
+        return UpdateListingService(self.marketplace_listing_repository)
 
     def list_nearby_listings_service(self) -> ListNearbyListingsService:
         return ListNearbyListingsService(self.marketplace_listing_repository)

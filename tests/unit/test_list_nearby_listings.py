@@ -33,8 +33,8 @@ def _service(*listings: MarketplaceListing) -> ListNearbyListingsService:
     return ListNearbyListingsService(repository)
 
 
-def _search(radius: float, country: str = "IT") -> ListNearbyListingsInput:
-    return ListNearbyListingsInput(buyer_location=ME, max_distance_km=radius, country=country)
+def _search(radius: float, buyer: Coordinates = ME) -> ListNearbyListingsInput:
+    return ListNearbyListingsInput(buyer_location=buyer, max_distance_km=radius)
 
 
 def test_only_ads_inside_the_radius_nearest_first() -> None:
@@ -46,12 +46,38 @@ def test_only_ads_inside_the_radius_nearest_first() -> None:
     assert result.distances_km["near"] == pytest.approx(2, abs=0.05)
 
 
-def test_ads_of_other_countries_are_never_returned_however_close() -> None:
+def test_distance_is_the_filter_ads_across_a_border_are_returned_too() -> None:
     service = _service(_listing("it-ad", 1), _listing("fr-ad", 1, "FR"), _listing("ch-ad", 2, "CH"))
 
-    assert [i.id for i in service.execute(_search(10, "IT")).listings] == ["it-ad"]
-    assert [i.id for i in service.execute(_search(10, "fr")).listings] == ["fr-ad"]
-    assert service.execute(_search(10, "DE")).listings == []
+    result = service.execute(_search(10))
+
+    assert {i.id for i in result.listings} == {"it-ad", "fr-ad", "ch-ad"}
+    assert {i.id: i.country for i in result.listings}["ch-ad"] == "CH"
+
+
+def test_como_sees_lugano_within_25_km_but_not_within_10() -> None:
+    como = Coordinates(latitude=45.8081, longitude=9.0852)
+    lugano = MarketplaceListing(
+        id="lugano-toy",
+        owner_id="seller",
+        title="Palla",
+        category="toys",
+        condition="good",
+        country="CH",
+        city_label="Lugano",
+        location=Coordinates(latitude=46.0037, longitude=8.9511),
+    )
+    service = _service(lugano, _listing("milano", 0))
+
+    assert "lugano-toy" in [i.id for i in service.execute(_search(25, como)).listings]
+    assert "lugano-toy" not in [i.id for i in service.execute(_search(10, como)).listings]
+
+
+def test_ads_that_are_not_active_are_never_returned() -> None:
+    hidden = _listing("hidden", 1).model_copy(update={"status": "removed_policy"})
+    service = _service(_listing("shown", 1), hidden)
+
+    assert [i.id for i in service.execute(_search(10)).listings] == ["shown"]
 
 
 @pytest.mark.parametrize("radius", [0, 0.5, 0.99, -1, 300.01, 301, 5000, float("nan")])
@@ -75,11 +101,6 @@ def test_the_minimum_radius_itself_is_accepted() -> None:
     assert [i.id for i in service.execute(_search(1)).listings] == ["a"]
 
 
-def test_an_unknown_country_is_refused() -> None:
-    with pytest.raises(ValidationError):
-        _service(_listing("a", 1)).execute(_search(10, "ZZ"))
-
-
-def test_the_search_input_has_no_default_radius_or_country() -> None:
+def test_the_search_input_has_no_default_radius() -> None:
     with pytest.raises(ValueError):
         ListNearbyListingsInput(buyer_location=ME)  # type: ignore[call-arg]

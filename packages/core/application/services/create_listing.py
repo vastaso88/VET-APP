@@ -4,17 +4,17 @@ from packages.core.application.ports.marketplace_listing_repository import (
     MarketplaceListingRepository,
 )
 from packages.core.domain.geo.models import Coordinates, approximate_coordinates
+from packages.core.domain.marketplace.animal_policy import (
+    ANIMAL_POLICY_MESSAGE,
+    offers_animals,
+)
 from packages.core.domain.marketplace.models import (
     ListingCategory,
     ListingCondition,
     ListingSpecies,
     MarketplaceListing,
 )
-from packages.core.domain.territory.rules import (
-    is_known_country,
-    normalize_country,
-    rules_for,
-)
+from packages.core.domain.territory.rules import is_known_country, normalize_country
 from packages.shared.errors.base import ValidationError
 
 
@@ -30,9 +30,6 @@ class CreateListingInput(BaseModel):
     target_species: list[ListingSpecies] = []
     city_label: str | None = None
     country: str = "IT"
-    # Where the country does not allow ads for living animals, the author
-    # states that this one offers none. Ignored elsewhere.
-    confirms_no_live_animals: bool = False
 
 
 class CreateListingOutput(BaseModel):
@@ -51,14 +48,10 @@ class CreateListingService:
         if not is_known_country(data.country):
             raise ValidationError("Paese non supportato per il Mercatino.")
         country = normalize_country(data.country)
-        if (
-            not rules_for(country).live_animal_listings_allowed
-            and not data.confirms_no_live_animals
-        ):
-            raise ValidationError(
-                "In questo paese il Mercatino non ammette annunci di animali vivi: "
-                "conferma che l'annuncio non ne offre."
-            )
+        # The Mercatino sells things for animals, never animals, in every
+        # country: this is the check that decides, whatever the app did.
+        if offers_animals(data.title, data.description):
+            raise ValidationError(ANIMAL_POLICY_MESSAGE)
         listing = MarketplaceListing(
             owner_id=data.owner_id,
             title=data.title,

@@ -43,26 +43,23 @@ class ListingMatch {
 /// The one filter both the list and the map read, so they can never show
 /// different sets.
 ///
-/// Three rules, all of them hard:
+/// Two rules, both hard:
 /// * no [reference] position -> nothing: the Mercatino is local, so without
 ///   a centre there is no search to run;
-/// * the radius is capped at [marketplaceMaxRadiusKm];
-/// * only listings of [country] (default: the owner's) are kept, so an ad
-///   from another country never shows, however close the border is.
-/// Nearest first.
+/// * the radius is kept between [marketplaceMinRadiusKm] and
+///   [marketplaceMaxRadiusKm].
+/// Distance is the filter on where an ad is: near a border the ads across it
+/// count too (they show the seller's flag and currency). Nearest first.
 List<ListingMatch> applyListingFilter(
   List<MarketplaceListing> listings,
   ListingFilter filter, {
   required Coordinates? reference,
-  String? country,
 }) {
   if (reference == null) return const [];
-  final countryCode = (country ?? currentTerritory().countryCode).toUpperCase();
   final limitMeters = clampMarketplaceRadiusKm(filter.maxDistanceKm) * 1000;
 
   final matches = <ListingMatch>[];
   for (final listing in listings) {
-    if (listing.country.toUpperCase() != countryCode) continue;
     if (filter.category != null && listing.category != filter.category) continue;
     if (filter.species != null && !listing.isFor(filter.species!)) continue;
     final distance = haversineMeters(reference, listing.location);

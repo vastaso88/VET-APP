@@ -30,8 +30,12 @@ ListingCondition = Literal["new", "like_new", "good", "worn"]
 ListingSpecies = Literal[
     "all", "dog", "cat", "small_mammal", "bird", "reptile_amphibian", "fish", "other"
 ]
-ListingStatus = Literal["active", "reserved", "sold", "removed"]
-ListingReportReason = Literal["spam", "scam", "prohibited_item", "inappropriate", "other"]
+# "removed_policy": hidden because it offered an animal (animal_policy.py); the
+# row is kept, never deleted, and only "active" listings are ever served.
+ListingStatus = Literal["active", "reserved", "sold", "removed", "removed_policy"]
+ListingReportReason = Literal[
+    "spam", "scam", "prohibited_item", "inappropriate", "sells_animals", "other"
+]
 
 # Non-goals (docs/maps/): no moderation queue, no image scanning, no
 # in-app messaging/payment - this is a listings board, not a
@@ -54,8 +58,9 @@ class MarketplaceListing(BaseModel):
     location: Coordinates
     city_label: str | None = None
     # ISO 3166-1 alpha-2 of the seller's country: prices are in its currency
-    # and only owners of the same country see the ad. Rows older than the
-    # column are Italian (scripts/setup/marketplace_country.sql).
+    # and the app shows its flag. Ads are found by distance, so a buyer near a
+    # border also sees the ads just across it. Rows older than the column are
+    # Italian (scripts/setup/marketplace_country.sql).
     country: str = "IT"
     status: ListingStatus = "active"
     report_count: int = 0

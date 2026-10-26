@@ -92,7 +92,11 @@ class _MarketplaceMapPageState extends State<MarketplaceMapPage> {
                 child: DashboardListRow(
                   title: match.listing.title,
                   subtitle:
-                      '${listingCategoryLabel(match.listing.category)} · ${listingPriceLabel(match.listing.priceCents, country: match.listing.country)}',
+                      [
+                    listingCategoryLabel(match.listing.category),
+                    listingPriceLabel(match.listing.priceCents, country: match.listing.country),
+                    if (isForeignListing(match.listing)) countryFlag(match.listing.country),
+                  ].join(' · '),
                   trailing: const Icon(Icons.chevron_right_rounded, color: AppColors.mutedText),
                   onTap: () => Navigator.of(context).pop(match),
                 ),

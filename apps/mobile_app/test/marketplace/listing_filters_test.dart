@@ -84,19 +84,17 @@ void main() {
     expect(applyListingFilter(listings, const ListingFilter(), reference: null), isEmpty);
   });
 
-  test('only the country of the owner is shown, however close the ad is', () {
+  test('distance is the filter: ads across the border inside the radius are kept', () {
     final mixed = [
       _listing('it-near', ListingCategory.toys, kmNorth: 1),
       _listing('fr-near', ListingCategory.toys, kmNorth: 1, country: 'FR'),
       _listing('ch-near', ListingCategory.toys, kmNorth: 2, country: 'CH'),
+      _listing('ch-far', ListingCategory.toys, kmNorth: 80, country: 'CH'),
     ];
-    expect(ids(applyListingFilter(mixed, const ListingFilter(), reference: _me, country: 'IT')),
-        ['it-near']);
-    expect(ids(applyListingFilter(mixed, const ListingFilter(), reference: _me, country: 'FR')),
-        ['fr-near']);
-    expect(ids(applyListingFilter(mixed, const ListingFilter(), reference: _me, country: 'ch')),
-        ['ch-near']);
-    expect(applyListingFilter(mixed, const ListingFilter(), reference: _me, country: 'DE'), isEmpty);
+    expect(ids(applyListingFilter(mixed, const ListingFilter(maxDistanceKm: 10), reference: _me)),
+        ['it-near', 'fr-near', 'ch-near']);
+    expect(ids(applyListingFilter(mixed, const ListingFilter(maxDistanceKm: 100), reference: _me)),
+        ['it-near', 'fr-near', 'ch-near', 'ch-far']);
   });
 
   test('a listing written before the country column counts as Italian', () {

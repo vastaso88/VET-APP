@@ -16,7 +16,6 @@ class Territory {
   const Territory({
     required this.countryCode,
     required this.currencyCode,
-    required this.liveAnimalListingsAllowed,
   });
 
   /// ISO 3166-1 alpha-2, upper case.
@@ -28,12 +27,6 @@ class Territory {
   /// How a price is written: €, £, $, A$, CHF. Taken from the one currency
   /// table of the app (l10n/regional_defaults.dart), never repeated here.
   String get currencySymbol => appCurrencySymbol(currencyCode);
-
-  /// False where the Mercatino must not carry ads for living animals
-  /// (docs/i18n/NOTIZIE_EVENTI_MERCATINO.md, "Animali vivi"). The Mercatino
-  /// only sells things for animals; where this is false the author also has
-  /// to confirm that the ad offers no animal.
-  final bool liveAnimalListingsAllowed;
 }
 
 /// Mercatino search radius bounds in whole kilometres, whatever the unit shown
@@ -52,52 +45,42 @@ const _territories = <String, Territory>{
   'IT': Territory(
     countryCode: 'IT',
     currencyCode: 'EUR',
-    liveAnimalListingsAllowed: true,
   ),
   'GB': Territory(
     countryCode: 'GB',
     currencyCode: 'GBP',
-    liveAnimalListingsAllowed: false,
   ),
   'US': Territory(
     countryCode: 'US',
     currencyCode: 'USD',
-    liveAnimalListingsAllowed: true,
   ),
   'AU': Territory(
     countryCode: 'AU',
     currencyCode: 'AUD',
-    liveAnimalListingsAllowed: true,
   ),
   'DE': Territory(
     countryCode: 'DE',
     currencyCode: 'EUR',
-    liveAnimalListingsAllowed: false,
   ),
   'AT': Territory(
     countryCode: 'AT',
     currencyCode: 'EUR',
-    liveAnimalListingsAllowed: false,
   ),
   'CH': Territory(
     countryCode: 'CH',
     currencyCode: 'CHF',
-    liveAnimalListingsAllowed: false,
   ),
   'FR': Territory(
     countryCode: 'FR',
     currencyCode: 'EUR',
-    liveAnimalListingsAllowed: false,
   ),
   'BE': Territory(
     countryCode: 'BE',
     currencyCode: 'EUR',
-    liveAnimalListingsAllowed: false,
   ),
   'ES': Territory(
     countryCode: 'ES',
     currencyCode: 'EUR',
-    liveAnimalListingsAllowed: false,
   ),
 };
 

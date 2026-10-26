@@ -7,18 +7,17 @@ Data: 2026-10-14. Sessione "Notizie, eventi e Mercatino per territorio" (ramo `m
 Il **territorio** dell'utente è il paese della variante di lingua scelta nell'app (🇮🇹 IT, 🇬🇧 GB, 🇺🇸 US, 🇦🇺 AU, 🇩🇪 DE, 🇫🇷 FR, 🇪🇸 ES). Tutto ciò che dipende dal paese sta in **una tabella**:
 `apps/mobile_app/lib/features/territory/domain/territory.dart` (app) e `packages/core/domain/territory/rules.py` (backend). I test dei due lati fissano gli stessi valori.
 
-| Paese | Valuta | Animali vivi nel Mercatino |
-| --- | --- | --- |
-| IT | € | ammessi |
-| GB | £ | **vietati** (vedi nota) |
-| US | $ | ammessi |
-| AU | A$ | ammessi |
-| DE, AT | € | **vietati** |
-| CH | CHF | **vietati** |
-| FR, BE | € | **vietati** |
-| ES | € | **vietati** |
+| Paese | Valuta |
+| --- | --- |
+| IT, DE, AT, FR, BE, ES | € |
+| GB | £ |
+| US | $ |
+| AU | A$ |
+| CH | CHF |
 
-Nota GB: l'elenco del committente indicava DACH, FR/BE e ES; i documenti legali di DE/AT/CH/FR/ES citano il Regno Unito come precedente ("come UK/DE") e la sessione legale UK è allineata. Ho messo GB tra i paesi vietati (scelta prudente, una riga da cambiare in `territory.dart` e `rules.py` se il proprietario decide diversamente).
+**Animali (decisione del proprietario, 2026-10-26): vietati in tutti i paesi, Italia compresa.** Il Mercatino vende solo oggetti per animali. Il backend (`CreateListingService`/`UpdateListingService`) rifiuta titoli e descrizioni che vendono, cedono o scambiano animali (`packages/core/domain/marketplace/animal_policy.py`, cinque lingue, parole intere); l'app applica la stessa regola per avvisare prima (`animal_policy.dart`, generato). Gli annunci già presenti si nascondono con `scripts/setup/marketplace_no_animals.sql` (stato `removed_policy`, nessuna cancellazione). "Vende animali" è un motivo di segnalazione.
+
+**Distanza, non paese**: gli annunci si trovano per raggio (1–300 km, predefinito 50). Vicino a un confine compaiono anche gli annunci dell'altro paese, con la bandiera del venditore e il prezzo nella sua valuta (nessuna conversione: non c'è un tasso affidabile senza servizi a pagamento).
 
 Un paese sconosciuto ottiene le regole dell'Italia (paese sorgente), mai quelle di un altro.
 
@@ -55,7 +54,7 @@ Feed curati per paese (candidati, **non attivi, ToS non verificati**): testate/e
 - **App**: usa la rotta quando ha indirizzo API e sessione; altrimenti (anteprime, test) legge la tabella con filtro `country` e riquadro attorno al raggio; in ogni caso applica gli stessi filtri (`applyListingFilter`): paese, raggio ≤ 50 km, niente senza posizione. Se la rotta risponde 400/422 non si ripiega sulla lettura diretta.
 - **Paese degli annunci**: colonna `marketplace_listings.country` (default `IT`), scritta alla pubblicazione col paese del venditore. Nessun annuncio di altri paesi, anche vicini al confine.
 - **Valuta**: simbolo per paese (€, £, $, A$, CHF) in lista, dettaglio e mappa; il campo prezzo diventa "Prezzo ({valuta})". Non esisteva ancora l'helper della sessione "Formati e store" (ramo `ml/formati-e-store` assente): ho usato la tabella del territorio; se quella sessione introduce un helper valuta, conviene farlo leggere da `Territory.currencySymbol` per non avere due fonti. Restano `€` fissi in `billing_models.dart` (fuori da questo lavoro).
-- **Animali vivi**: dove la tabella dice "vietati" la pagina "Nuovo annuncio" mostra una nota e una **casella obbligatoria** "Confermo che questo annuncio non offre un animale vivo"; il backend (`CreateListingService`) rifiuta la creazione senza conferma. Il Mercatino non ha categorie di animali: la regola è una dichiarazione + la segnalazione "Articolo non consentito" già esistente, non un riconoscimento automatico del testo.
+- **Animali**: vietati ovunque. La pagina "Nuovo annuncio" mostra la regola (nessuna casella di conferma); il backend rifiuta il testo che offre un animale con il messaggio "Sul Mercatino si vendono solo oggetti per animali, non animali."
 - **Decisione del proprietario**: la policy `marketplace_listings_select_all` permette ancora la lettura diretta dell'intera tabella con la anon key; finché non viene ristretta (testo in fondo a `marketplace_country.sql`) raggio e paese sono applicati dalla rotta e dall'app, non dal database.
 
 ## Chiavi di traduzione nuove (EN/ES fatte; DE/FR per le sessioni di traduzione)

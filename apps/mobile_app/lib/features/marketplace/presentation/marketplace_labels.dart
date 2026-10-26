@@ -104,6 +104,30 @@ String listingPriceFieldLabel({String? country}) {
   return appL10n.marketplaceFieldPrice(territory.currencySymbol);
 }
 
+/// The flag emoji of an ISO 3166-1 alpha-2 country ("CH" -> the Swiss flag);
+/// empty for anything else.
+String countryFlag(String countryCode) {
+  final code = countryCode.trim().toUpperCase();
+  if (!RegExp(r'^[A-Z]{2}$').hasMatch(code)) return '';
+  return String.fromCharCodes(code.codeUnits.map((unit) => 0x1F1E6 + unit - 0x41));
+}
+
+/// Whether the ad is from a country other than the owner's: near a border the
+/// search also shows the ads across it.
+bool isForeignListing(MarketplaceListing listing) =>
+    listing.country.toUpperCase() != currentTerritory().countryCode.toUpperCase();
+
+/// Where the ad is: the city, with the seller's flag in front when the ad is
+/// from another country (the price is then in that country's currency). Null
+/// when there is nothing to say.
+String? listingPlaceLabel(MarketplaceListing listing) {
+  final city = listing.cityLabel;
+  if (!isForeignListing(listing)) return city;
+  final flag = countryFlag(listing.country);
+  if (city == null || city.isEmpty) return flag.isEmpty ? listing.country.toUpperCase() : flag;
+  return flag.isEmpty ? city : '$flag $city';
+}
+
 String listingDistanceLabel(double? distanceMeters) {
   if (distanceMeters == null) return '';
   return formatDistance(distanceMeters);

@@ -8,8 +8,6 @@ from packages.core.domain.marketplace.models import ListingCategory, Marketplace
 from packages.core.domain.territory.rules import (
     MARKETPLACE_MAX_RADIUS_KM,
     MARKETPLACE_MIN_RADIUS_KM,
-    is_known_country,
-    normalize_country,
 )
 from packages.shared.errors.base import ValidationError
 
@@ -19,7 +17,6 @@ class ListNearbyListingsInput(BaseModel):
     # Required, never defaulted: the Mercatino is local, a search always has a
     # radius. Validated in the service (MIN_RADIUS_KM <= radius <= MAX_RADIUS_KM).
     max_distance_km: float
-    country: str
     category: ListingCategory | None = None
 
 
@@ -33,9 +30,10 @@ class ListNearbyListingsService:
     the fuzzed-coordinate privacy boundary entirely inside this codebase
     rather than depending on a geo-aware database extension.
 
-    Three hard rules (owner decisions 2026-10-14): the radius is mandatory and
-    capped at ``MARKETPLACE_MAX_RADIUS_KM``; only ads of the asker's country
-    are ever returned; nothing is served for an unknown country."""
+    Hard rules (owner decisions 2026-10-14 and 2026-10-26): the radius is
+    mandatory, between ``MARKETPLACE_MIN_RADIUS_KM`` and
+    ``MARKETPLACE_MAX_RADIUS_KM``, and it is the only filter on where an ad is
+    (across a border too); only ``active`` ads are ever returned."""
 
     def __init__(self, repository: MarketplaceListingRepository) -> None:
         self._repository = repository
@@ -47,13 +45,10 @@ class ListNearbyListingsService:
                 "Il raggio di ricerca deve essere tra "
                 f"{MARKETPLACE_MIN_RADIUS_KM:g} e {MARKETPLACE_MAX_RADIUS_KM:g} km."
             )
-        if not is_known_country(data.country):
-            raise ValidationError("Paese non supportato per il Mercatino.")
-        country = normalize_country(data.country)
 
-        candidates = [
-            item for item in self._repository.list_active(country) if item.country == country
-        ]
+        # Distance is the filter: a buyer near a border also sees the ads just
+        # across it (each one carries its seller's country, flag and currency).
+        candidates = self._repository.list_active()
         if data.category is not None:
             candidates = [item for item in candidates if item.category == data.category]
 

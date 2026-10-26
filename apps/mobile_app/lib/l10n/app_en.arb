@@ -524,6 +524,9 @@
   "marketplaceMapAction": "Map",
   "marketplaceNewListing": "New listing",
   "marketplaceIntro": "Buy, sell and give away pet items with other owners.",
+  "marketplaceRules": "The marketplace only has items for animals. Animals cannot be sold, given away or swapped here, in any country.",
+  "marketplaceNoAnimalsMessage": "Only items for animals are sold on the marketplace, not animals.",
+  "marketplaceBackendUnavailable": "The marketplace can't be reached right now. Try again in a moment.",
   "marketplaceEmptyFiltered": "No listings match these filters yet.",
   "marketplaceNeedsLocation": "The marketplace only shows ads near you. Set your location in Settings → Location to see them.",
   "marketplaceSetLocationAction": "Set your location",
@@ -565,9 +568,6 @@
       }
     }
   },
-  "marketplaceNoLiveAnimalsNote": "In your country the marketplace does not allow ads for live animals: only products and services for animals.",
-  "marketplaceNoLiveAnimalsConfirm": "I confirm this ad does not offer a live animal (sale, gift or rehoming)",
-  "marketplaceNoLiveAnimalsRequired": "Confirm that the ad does not offer a live animal",
   "marketplaceLoadError": "I can't load the listings. Check your connection.",
   "marketplaceFilterAllCategories": "All",
   "marketplaceFilterAllSpecies": "All pets",
@@ -576,6 +576,7 @@
   "marketplaceReasonScam": "Scam",
   "marketplaceReasonProhibitedItem": "Prohibited item",
   "marketplaceReasonInappropriate": "Inappropriate content",
+  "marketplaceReasonSellsAnimals": "Sells animals",
   "marketplaceReportRemoved": "Thank you, the listing has been removed following reports.",
   "marketplaceReportSent": "Report sent, thank you.",
   "marketplaceDeleteConfirmTitle": "Delete the listing?",

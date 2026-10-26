@@ -789,15 +789,20 @@ on public.dog_walks
 for delete
 using (owner_id = auth.uid()::text);
 
--- marketplace_listings: FIRST table in this schema with intentionally open
--- read access - everyone needs to browse everyone's listings. Safe only
--- because latitude/longitude are snapped to a ~1 km grid at write time,
--- never the exact address (see guard_marketplace_listing below).
+-- marketplace_listings: an owner reads only their OWN ads directly. Everyone
+-- else's ads are served by the backend (service role, which bypasses RLS):
+-- GET /marketplace/listings (radius 1-300 km), GET /marketplace/listings/{id}
+-- and the admin portal (through the backend). Before 2026-10-26 this was
+-- `using (true)`, which let anyone with the anon key read the whole table and
+-- skip the radius; scripts/setup/marketplace_read_protection.sql applies the
+-- change to an existing database. latitude/longitude are snapped to a ~1 km
+-- grid at write time (guard_marketplace_listing below).
 drop policy if exists marketplace_listings_select_all on public.marketplace_listings;
-create policy marketplace_listings_select_all
+drop policy if exists marketplace_listings_select_own on public.marketplace_listings;
+create policy marketplace_listings_select_own
 on public.marketplace_listings
 for select
-using (true);
+using (owner_id = auth.uid()::text);
 
 drop policy if exists marketplace_listings_insert_own on public.marketplace_listings;
 create policy marketplace_listings_insert_own
@@ -1502,7 +1507,8 @@ begin
             new.owner_id := old.owner_id;
             new.created_at := old.created_at;
             new.report_count := old.report_count;
-            if old.status = 'removed' or new.status = 'removed' then
+            if old.status in ('removed', 'removed_policy')
+               or new.status in ('removed', 'removed_policy') then
                 new.status := old.status;
             end if;
         end if;
@@ -1895,19 +1901,9 @@ begin
 end;
 $$;
 
--- DECISIONE DEL PROPRIETARIO (NON applicata qui): oggi chiunque abbia la anon
--- key puo' leggere TUTTA la tabella marketplace_listings con una query diretta
--- (policy marketplace_listings_select_all, using (true)), cioe' aggirare il
--- raggio massimo e il filtro per paese che il backend (GET /marketplace/listings)
--- e l'app applicano. Per rendere la regola davvero vincolante lato database,
--- dopo aver pubblicato app e backend nuovi, si puo' sostituire la policy con
--- una che lascia leggere direttamente solo i propri annunci:
---
---   drop policy if exists marketplace_listings_select_all on public.marketplace_listings;
---   create policy marketplace_listings_select_own
---   on public.marketplace_listings
---   for select
---   using (owner_id = auth.uid()::text);
---
--- La lettura "vicino a me" passerebbe solo dal backend (service role). Prima di
--- farlo vanno verificati il dettaglio annuncio, la mappa e il portale admin.
+-- Mercatino, 2026-10-26: la lettura diretta e' ora limitata ai propri annunci
+-- (policy marketplace_listings_select_own, sopra). Dettaglio, elenco, mappa e
+-- portale admin passano dal backend. Per scrivere anche solo dal backend (cosi'
+-- il filtro "niente animali" non si aggira) vedere l'opzionale
+-- scripts/setup/marketplace_lock_writes.sql; per nascondere gli annunci di
+-- animali gia' presenti, scripts/setup/marketplace_no_animals.sql.
