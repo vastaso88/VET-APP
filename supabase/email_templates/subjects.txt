@@ -3,21 +3,21 @@ A) conditional (language from user metadata) - try this first, check the preview
 B) neutral fallback if the dashboard shows the template code instead of rendering it.
 
 ## Confirm signup  (confirm_signup.html)
-A) {{ if and .Data.preferred_locale (eq .Data.preferred_locale "en") }}Confirm your VetApp account{{ else if and .Data.preferred_locale (eq .Data.preferred_locale "de") }}Bestätigen Sie Ihr VetApp-Konto{{ else if and .Data.preferred_locale (eq .Data.preferred_locale "fr") }}Confirmez votre compte VetApp{{ else if and .Data.preferred_locale (eq .Data.preferred_locale "es") }}Confirma tu cuenta de VetApp{{ else }}Conferma il tuo account VetApp{{ end }}
-B) Conferma il tuo account VetApp · Confirm your VetApp account
+A) {{ if and .Data.preferred_locale (eq .Data.preferred_locale "en") }}Confirm your Quokka account{{ else if and .Data.preferred_locale (eq .Data.preferred_locale "de") }}Bestätigen Sie Ihr Quokka-Konto{{ else if and .Data.preferred_locale (eq .Data.preferred_locale "fr") }}Confirmez votre compte Quokka{{ else if and .Data.preferred_locale (eq .Data.preferred_locale "es") }}Confirma tu cuenta de Quokka{{ else }}Conferma il tuo account Quokka{{ end }}
+B) Conferma il tuo account Quokka · Confirm your Quokka account
 
 ## Reset Password  (recovery.html)
-A) {{ if and .Data.preferred_locale (eq .Data.preferred_locale "en") }}Reset your VetApp password{{ else if and .Data.preferred_locale (eq .Data.preferred_locale "de") }}VetApp-Passwort zurücksetzen{{ else if and .Data.preferred_locale (eq .Data.preferred_locale "fr") }}Réinitialisez votre mot de passe VetApp{{ else if and .Data.preferred_locale (eq .Data.preferred_locale "es") }}Restablece tu contraseña de VetApp{{ else }}Reimposta la tua password VetApp{{ end }}
-B) Reimposta la tua password VetApp · Reset your VetApp password
+A) {{ if and .Data.preferred_locale (eq .Data.preferred_locale "en") }}Reset your Quokka password{{ else if and .Data.preferred_locale (eq .Data.preferred_locale "de") }}Quokka-Passwort zurücksetzen{{ else if and .Data.preferred_locale (eq .Data.preferred_locale "fr") }}Réinitialisez votre mot de passe Quokka{{ else if and .Data.preferred_locale (eq .Data.preferred_locale "es") }}Restablece tu contraseña de Quokka{{ else }}Reimposta la tua password Quokka{{ end }}
+B) Reimposta la tua password Quokka · Reset your Quokka password
 
 ## Magic Link  (magic_link.html)
-A) {{ if and .Data.preferred_locale (eq .Data.preferred_locale "en") }}Your VetApp sign-in link{{ else if and .Data.preferred_locale (eq .Data.preferred_locale "de") }}Ihr VetApp-Anmeldelink{{ else if and .Data.preferred_locale (eq .Data.preferred_locale "fr") }}Votre lien de connexion VetApp{{ else if and .Data.preferred_locale (eq .Data.preferred_locale "es") }}Tu enlace de acceso a VetApp{{ else }}Il tuo link di accesso a VetApp{{ end }}
-B) Il tuo link di accesso a VetApp · Your VetApp sign-in link
+A) {{ if and .Data.preferred_locale (eq .Data.preferred_locale "en") }}Your Quokka sign-in link{{ else if and .Data.preferred_locale (eq .Data.preferred_locale "de") }}Ihr Quokka-Anmeldelink{{ else if and .Data.preferred_locale (eq .Data.preferred_locale "fr") }}Votre lien de connexion Quokka{{ else if and .Data.preferred_locale (eq .Data.preferred_locale "es") }}Tu enlace de acceso a Quokka{{ else }}Il tuo link di accesso a Quokka{{ end }}
+B) Il tuo link di accesso a Quokka · Your Quokka sign-in link
 
 ## Change Email Address  (email_change.html)
-A) {{ if and .Data.preferred_locale (eq .Data.preferred_locale "en") }}Confirm your new VetApp email address{{ else if and .Data.preferred_locale (eq .Data.preferred_locale "de") }}Neue E-Mail-Adresse für VetApp bestätigen{{ else if and .Data.preferred_locale (eq .Data.preferred_locale "fr") }}Confirmez votre nouvelle adresse e-mail VetApp{{ else if and .Data.preferred_locale (eq .Data.preferred_locale "es") }}Confirma tu nuevo correo de VetApp{{ else }}Conferma il nuovo indirizzo email di VetApp{{ end }}
-B) Conferma il nuovo indirizzo email di VetApp · Confirm your new VetApp email address
+A) {{ if and .Data.preferred_locale (eq .Data.preferred_locale "en") }}Confirm your new Quokka email address{{ else if and .Data.preferred_locale (eq .Data.preferred_locale "de") }}Neue E-Mail-Adresse für Quokka bestätigen{{ else if and .Data.preferred_locale (eq .Data.preferred_locale "fr") }}Confirmez votre nouvelle adresse e-mail Quokka{{ else if and .Data.preferred_locale (eq .Data.preferred_locale "es") }}Confirma tu nuevo correo de Quokka{{ else }}Conferma il nuovo indirizzo email di Quokka{{ end }}
+B) Conferma il nuovo indirizzo email di Quokka · Confirm your new Quokka email address
 
 ## Reauthentication  (reauthentication.html)
-A) {{ if and .Data.preferred_locale (eq .Data.preferred_locale "en") }}Your VetApp confirmation code{{ else if and .Data.preferred_locale (eq .Data.preferred_locale "de") }}Ihr VetApp-Bestätigungscode{{ else if and .Data.preferred_locale (eq .Data.preferred_locale "fr") }}Votre code de confirmation VetApp{{ else if and .Data.preferred_locale (eq .Data.preferred_locale "es") }}Tu código de confirmación de VetApp{{ else }}Il tuo codice di conferma VetApp{{ end }}
-B) Il tuo codice di conferma VetApp · Your VetApp confirmation code
+A) {{ if and .Data.preferred_locale (eq .Data.preferred_locale "en") }}Your Quokka confirmation code{{ else if and .Data.preferred_locale (eq .Data.preferred_locale "de") }}Ihr Quokka-Bestätigungscode{{ else if and .Data.preferred_locale (eq .Data.preferred_locale "fr") }}Votre code de confirmation Quokka{{ else if and .Data.preferred_locale (eq .Data.preferred_locale "es") }}Tu código de confirmación de Quokka{{ else }}Il tuo codice di conferma Quokka{{ end }}
+B) Il tuo codice di conferma Quokka · Your Quokka confirmation code

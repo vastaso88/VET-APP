@@ -1,5 +1,5 @@
 name: vet_app_mobile
-description: Web-first Flutter client for VET APP, with mobile-ready support.
+description: Flutter client for Quokka (pet health app), web and mobile.
 publish_to: "none"
 version: 0.1.0+36
 

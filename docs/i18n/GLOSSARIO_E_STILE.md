@@ -62,7 +62,7 @@ Regole comuni a tutte le lingue:
 
 1. **Si traduce il significato, non le parole.** Etichette di UI brevi e naturali; la lunghezza deve restare vicina all'italiano (il tedesco si
    allunga: usare composti compatti, e il test di layout lo verifica, vedi §3).
-2. **Mai tradurre**: valori salvati o inviati al backend (specie `Cane`, date salvate), nomi propri (VetApp, OpenStreetMap), nomi dei referti e
+2. **Mai tradurre**: valori salvati o inviati al backend (specie `Cane`, date salvate), nomi propri (Quokka, OpenStreetMap), nomi dei referti e
    parole scritte dall'utente, elenchi di dati (razze, specie, fonti delle notizie), testi del modello di chat (il backend risponde nella lingua
    richiesta). Elenco completo: `README.md` → "Cosa NON tradurre".
 3. **Placeholder, plurali ICU e `\n` identici** all'italiano; le parole chiave `plural`/`other` restano in inglese. Il francese usa `=0`/`=1`/`other`

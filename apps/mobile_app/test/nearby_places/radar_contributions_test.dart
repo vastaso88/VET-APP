@@ -297,7 +297,7 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.text('Questo luogo esiste davvero qui?'), findsOneWidget);
     expect(find.text('Segnala un problema'), findsNothing);
-    expect(find.textContaining('Fonte: Segnalato dagli utenti VetApp'), findsOneWidget);
+    expect(find.textContaining('Fonte: Segnalato dagli utenti Quokka'), findsOneWidget);
 
     await tester.tap(find.text('Confermo'));
     await _settle(tester);

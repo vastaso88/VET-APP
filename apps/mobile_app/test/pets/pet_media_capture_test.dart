@@ -129,7 +129,7 @@ void main() {
     expect(picker.calls, ['pickImage:ImageSource.camera:quality=null', 'pickMultipleMedia:quality=null']);
   });
 
-  test('the copy for the VetApp album is made before the upload starts', () async {
+  test('the copy for the Quokka album is made before the upload starts', () async {
     picker.photo = _file('shot.jpg');
 
     await build().takePhoto('thor');

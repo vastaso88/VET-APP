@@ -1,11 +1,11 @@
 {
-    "name": "VET APP",
-    "short_name": "VET APP",
+    "name": "Quokka",
+    "short_name": "Quokka",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",
     "theme_color": "#0175C2",
-    "description": "Web-first VET APP demo for pet care, chat, records and reminders.",
+    "description": "Quokka: pet health, chat, records and reminders.",
     "orientation": "portrait-primary",
     "prefer_related_applications": false,
     "icons": [

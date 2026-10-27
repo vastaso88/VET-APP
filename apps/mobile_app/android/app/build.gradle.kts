@@ -78,17 +78,17 @@ android {
     productFlavors {
         create("prod") {
             dimension = "track"
-            resValue("string", "app_name", "VetApp")
+            resValue("string", "app_name", "Quokka")
         }
         create("francesco") {
             dimension = "track"
             applicationIdSuffix = ".francesco"
-            resValue("string", "app_name", "VetApp Francesco")
+            resValue("string", "app_name", "Quokka Francesco")
         }
         create("roberto") {
             dimension = "track"
             applicationIdSuffix = ".roberto"
-            resValue("string", "app_name", "VetApp Roberto")
+            resValue("string", "app_name", "Quokka Roberto")
         }
     }
 

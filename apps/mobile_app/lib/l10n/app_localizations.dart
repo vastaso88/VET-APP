@@ -107,7 +107,7 @@ abstract class AppLocalizations {
   /// No description provided for @petsConsentFullText.
   ///
   /// In it, this message translates to:
-  /// **'Per darti un consiglio più preciso, l\'assistente può leggere la cartella clinica del tuo animale. Quando fai una domanda può leggere le tre voci più recenti, con titolo, categoria (visita, esame, vaccino, terapia o documento), data dell\'evento, descrizione e testo dei documenti allegati, anche se non c\'entrano con la domanda. Può leggere anche le malattie pregresse ancora in corso, con il nome e la data di inizio, al massimo cinque. Se chiedi di spiegare un esame, può leggere i documenti che lo riguardano, al massimo due. Di un documento molto lungo legge solo l\'inizio. Ciò che legge viene inviato al fornitore esterno di intelligenza artificiale che scrive la risposta. VetApp lo usa solo per risponderti. Puoi revocare il consenso in qualsiasi momento dalla scheda dell\'animale o dalle Impostazioni: vale per le richieste successive.'**
+  /// **'Per darti un consiglio più preciso, l\'assistente può leggere la cartella clinica del tuo animale. Quando fai una domanda può leggere le tre voci più recenti, con titolo, categoria (visita, esame, vaccino, terapia o documento), data dell\'evento, descrizione e testo dei documenti allegati, anche se non c\'entrano con la domanda. Può leggere anche le malattie pregresse ancora in corso, con il nome e la data di inizio, al massimo cinque. Se chiedi di spiegare un esame, può leggere i documenti che lo riguardano, al massimo due. Di un documento molto lungo legge solo l\'inizio. Ciò che legge viene inviato al fornitore esterno di intelligenza artificiale che scrive la risposta. Quokka lo usa solo per risponderti. Puoi revocare il consenso in qualsiasi momento dalla scheda dell\'animale o dalle Impostazioni: vale per le richieste successive.'**
   String get petsConsentFullText;
 
   /// No description provided for @appTitle.
@@ -653,7 +653,7 @@ abstract class AppLocalizations {
   /// No description provided for @authHubTitle.
   ///
   /// In it, this message translates to:
-  /// **'VetApp: i tuoi pet a portata di zampa'**
+  /// **'Quokka: i tuoi pet a portata di zampa'**
   String get authHubTitle;
 
   /// No description provided for @authHubSubtitle.
@@ -905,7 +905,7 @@ abstract class AppLocalizations {
   /// No description provided for @billingTrialBannerEnding.
   ///
   /// In it, this message translates to:
-  /// **'La prova gratuita sta per terminare: scegli un piano per continuare a usare VetApp.'**
+  /// **'La prova gratuita sta per terminare: scegli un piano per continuare a usare Quokka.'**
   String get billingTrialBannerEnding;
 
   /// No description provided for @billingDeveloperBanner.
@@ -1025,7 +1025,7 @@ abstract class AppLocalizations {
   /// No description provided for @billingPaywallSubtitle.
   ///
   /// In it, this message translates to:
-  /// **'Scegli come continuare con VetApp. Puoi cambiare piano quando vuoi da Impostazioni.'**
+  /// **'Scegli come continuare con Quokka. Puoi cambiare piano quando vuoi da Impostazioni.'**
   String get billingPaywallSubtitle;
 
   /// No description provided for @billingChoosePlan.
@@ -1061,7 +1061,7 @@ abstract class AppLocalizations {
   /// No description provided for @firstRunWelcomeTitle.
   ///
   /// In it, this message translates to:
-  /// **'Benvenuto in VetApp.'**
+  /// **'Benvenuto in Quokka.'**
   String get firstRunWelcomeTitle;
 
   /// No description provided for @firstRunPlanIntroSubtitle.
@@ -1181,7 +1181,7 @@ abstract class AppLocalizations {
   /// No description provided for @firstRunTutorialRemindersBody.
   ///
   /// In it, this message translates to:
-  /// **'Vaccini, farmaci e visite: imposta un promemoria e VetApp ti avvisa al momento giusto.'**
+  /// **'Vaccini, farmaci e visite: imposta un promemoria e Quokka ti avvisa al momento giusto.'**
   String get firstRunTutorialRemindersBody;
 
   /// No description provided for @firstRunTutorialStart.
@@ -4049,7 +4049,7 @@ abstract class AppLocalizations {
   /// No description provided for @petsDetailRecordShareText.
   ///
   /// In it, this message translates to:
-  /// **'📄 {title}\n{source} · {date}\n\nCondiviso da VetApp'**
+  /// **'📄 {title}\n{source} · {date}\n\nCondiviso da Quokka'**
   String petsDetailRecordShareText(String title, String source, String date);
 
   /// No description provided for @petsDetailShareUnavailable.
@@ -5135,13 +5135,13 @@ abstract class AppLocalizations {
   /// No description provided for @placesDisclaimerClinic.
   ///
   /// In it, this message translates to:
-  /// **'In caso di urgenza telefona prima di partire: orari e recapiti arrivano da archivi aperti e non sono verificati da VetApp.'**
+  /// **'In caso di urgenza telefona prima di partire: orari e recapiti arrivano da archivi aperti e non sono verificati da Quokka.'**
   String get placesDisclaimerClinic;
 
   /// No description provided for @placesDisclaimerGeneric.
   ///
   /// In it, this message translates to:
-  /// **'Orari e recapiti arrivano da archivi aperti e non sono verificati da VetApp.'**
+  /// **'Orari e recapiti arrivano da archivi aperti e non sono verificati da Quokka.'**
   String get placesDisclaimerGeneric;
 
   /// No description provided for @placesSourceLine.
@@ -5453,7 +5453,7 @@ abstract class AppLocalizations {
   /// No description provided for @placesSourcesIntro.
   ///
   /// In it, this message translates to:
-  /// **'I luoghi del radar arrivano da archivi aperti, non da VetApp. Ogni scheda indica la sua fonte. Orari e recapiti possono non essere aggiornati.'**
+  /// **'I luoghi del radar arrivano da archivi aperti, non da Quokka. Ogni scheda indica la sua fonte. Orari e recapiti possono non essere aggiornati.'**
   String get placesSourcesIntro;
 
   /// No description provided for @placesSourcesNoContact.
@@ -5543,7 +5543,7 @@ abstract class AppLocalizations {
   /// No description provided for @placesSourceUsersName.
   ///
   /// In it, this message translates to:
-  /// **'Utenti VetApp'**
+  /// **'Utenti Quokka'**
   String get placesSourceUsersName;
 
   /// No description provided for @placesSourceUsersDescription.
@@ -5555,7 +5555,7 @@ abstract class AppLocalizations {
   /// No description provided for @placesSourceUsersAttribution.
   ///
   /// In it, this message translates to:
-  /// **'Segnalato dagli utenti VetApp'**
+  /// **'Segnalato dagli utenti Quokka'**
   String get placesSourceUsersAttribution;
 
   /// No description provided for @placesMapTitle.
@@ -6263,7 +6263,7 @@ abstract class AppLocalizations {
   /// No description provided for @localEventsConsentBody.
   ///
   /// In it, this message translates to:
-  /// **'Per mostrarti cosa c’è vicino a te VetApp usa la posizione del telefono solo mentre usi l’app. In alternativa puoi indicare un indirizzo.'**
+  /// **'Per mostrarti cosa c’è vicino a te Quokka usa la posizione del telefono solo mentre usi l’app. In alternativa puoi indicare un indirizzo.'**
   String get localEventsConsentBody;
 
   /// No description provided for @localEventsConsentChooseAddress.
@@ -7577,7 +7577,7 @@ abstract class AppLocalizations {
   /// No description provided for @settingsGallerySaveSubtitle.
   ///
   /// In it, this message translates to:
-  /// **'Le foto e i video scattati con la fotocamera dell\'app vengono copiati nell\'album \"VetApp\" del telefono.'**
+  /// **'Le foto e i video scattati con la fotocamera dell\'app vengono copiati nell\'album \"Quokka\" del telefono.'**
   String get settingsGallerySaveSubtitle;
 
   /// No description provided for @settingsSectionLocation.
@@ -8243,7 +8243,7 @@ abstract class AppLocalizations {
   /// No description provided for @walksNotifPermBody.
   ///
   /// In it, this message translates to:
-  /// **'Durante la passeggiata VetApp mostra una notifica fissa con tempo e distanza: da lì puoi metterla in pausa o terminarla anche con il telefono in tasca. Per vederla serve il permesso per le notifiche.\n\nLa passeggiata viene registrata comunque, anche se scegli \"Non ora\".'**
+  /// **'Durante la passeggiata Quokka mostra una notifica fissa con tempo e distanza: da lì puoi metterla in pausa o terminarla anche con il telefono in tasca. Per vederla serve il permesso per le notifiche.\n\nLa passeggiata viene registrata comunque, anche se scegli \"Non ora\".'**
   String get walksNotifPermBody;
 
   /// No description provided for @walksNotifPermNotNow.
@@ -8291,7 +8291,7 @@ abstract class AppLocalizations {
   /// No description provided for @walksNotifFallbackRunningText.
   ///
   /// In it, this message translates to:
-  /// **'VetApp sta tracciando il percorso della passeggiata.'**
+  /// **'Quokka sta tracciando il percorso della passeggiata.'**
   String get walksNotifFallbackRunningText;
 
   /// No description provided for @walksNotifChannelName.
@@ -8567,7 +8567,7 @@ abstract class AppLocalizations {
   /// No description provided for @accountSupportSubject.
   ///
   /// In it, this message translates to:
-  /// **'Assistenza VetApp (versione {version})'**
+  /// **'Assistenza Quokka (versione {version})'**
   String accountSupportSubject(String version);
 
   /// No description provided for @accountSupportBody.
@@ -9185,7 +9185,7 @@ abstract class AppLocalizations {
   /// No description provided for @monitoringBcsGuideDisclaimer.
   ///
   /// In it, this message translates to:
-  /// **'È un’indicazione orientativa che non sostituisce la visita del veterinario. Le illustrazioni sono schematiche e originali di VetApp.'**
+  /// **'È un’indicazione orientativa che non sostituisce la visita del veterinario. Le illustrazioni sono schematiche e originali di Quokka.'**
   String get monitoringBcsGuideDisclaimer;
 
   /// No description provided for @monitoringBcsGuideSource.
@@ -9239,13 +9239,13 @@ abstract class AppLocalizations {
   /// No description provided for @monitoringBcsSourceDog.
   ///
   /// In it, this message translates to:
-  /// **'criteri della scala a 9 punti del WSAVA Global Nutrition Committee per i cani (Laflamme, 1997), riassunti con parole nostre e ridotti a 5 livelli da VetApp. Non è materiale ufficiale WSAVA.'**
+  /// **'criteri della scala a 9 punti del WSAVA Global Nutrition Committee per i cani (Laflamme, 1997), riassunti con parole nostre e ridotti a 5 livelli da Quokka. Non è materiale ufficiale WSAVA.'**
   String get monitoringBcsSourceDog;
 
   /// No description provided for @monitoringBcsSourceCat.
   ///
   /// In it, this message translates to:
-  /// **'criteri della scala a 9 punti del WSAVA Global Nutrition Committee per i gatti (Laflamme, 1997; validata da Bjornvad e colleghi, 2011), riassunti con parole nostre e ridotti a 5 livelli da VetApp. Non è materiale ufficiale WSAVA.'**
+  /// **'criteri della scala a 9 punti del WSAVA Global Nutrition Committee per i gatti (Laflamme, 1997; validata da Bjornvad e colleghi, 2011), riassunti con parole nostre e ridotti a 5 livelli da Quokka. Non è materiale ufficiale WSAVA.'**
   String get monitoringBcsSourceCat;
 
   /// No description provided for @monitoringBcsSourceRabbit.
@@ -10769,7 +10769,7 @@ abstract class AppLocalizations {
   /// No description provided for @remindersNotifPermBody.
   ///
   /// In it, this message translates to:
-  /// **'Per avvisarti quando un promemoria scade, VetApp ha bisogno del permesso per le notifiche. Puoi cambiarlo in ogni momento da Impostazioni.'**
+  /// **'Per avvisarti quando un promemoria scade, Quokka ha bisogno del permesso per le notifiche. Puoi cambiarlo in ogni momento da Impostazioni.'**
   String get remindersNotifPermBody;
 
   /// No description provided for @remindersNotifPermNotNow.

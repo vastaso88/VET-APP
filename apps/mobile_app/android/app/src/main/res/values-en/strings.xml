@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="dog_walks_widget_description">New reminder and one-tap walk for your pets</string>
-    <string name="dog_walks_widget_title">VetApp</string>
+    <string name="dog_walks_widget_title">@string/app_name</string>
     <string name="dog_walks_widget_subtitle">Your pets</string>
     <string name="dog_walks_widget_empty">Add your first pet in the app to get started</string>
     <string name="dog_walks_widget_more">+%1$d more</string>

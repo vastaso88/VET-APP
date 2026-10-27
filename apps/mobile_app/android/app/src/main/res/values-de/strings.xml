@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="dog_walks_widget_description">Neue Erinnerung und Spaziergang mit einem Tipp für Ihre Tiere</string>
-    <string name="dog_walks_widget_title">VetApp</string>
+    <string name="dog_walks_widget_title">@string/app_name</string>
     <string name="dog_walks_widget_subtitle">Ihre Tiere</string>
     <string name="dog_walks_widget_empty">Fügen Sie in der App Ihr erstes Tier hinzu, um loszulegen</string>
     <string name="dog_walks_widget_more">+%1$d weitere</string>

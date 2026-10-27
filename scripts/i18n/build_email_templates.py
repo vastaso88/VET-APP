@@ -45,11 +45,11 @@ TEMPLATES: dict[str, dict] = {
         "supabase_name": "Confirm signup",
         "link": "{{ .ConfirmationURL }}",
         "subject": {
-            "en": "Confirm your VetApp account",
-            "de": "Bestätigen Sie Ihr VetApp-Konto",
-            "fr": "Confirmez votre compte VetApp",
-            "es": "Confirma tu cuenta de VetApp",
-            "it": "Conferma il tuo account VetApp",
+            "en": "Confirm your Quokka account",
+            "de": "Bestätigen Sie Ihr Quokka-Konto",
+            "fr": "Confirmez votre compte Quokka",
+            "es": "Confirma tu cuenta de Quokka",
+            "it": "Conferma il tuo account Quokka",
         },
         "heading": {
             "en": "Confirm your email",
@@ -59,11 +59,11 @@ TEMPLATES: dict[str, dict] = {
             "it": "Conferma la tua email",
         },
         "body": {
-            "en": "Thanks for signing up for VetApp. Tap the button to confirm your email address and get started.",
-            "de": "Danke für Ihre Registrierung bei VetApp. Tippen Sie auf die Schaltfläche, um Ihre E-Mail-Adresse zu bestätigen und loszulegen.",
-            "fr": "Merci de vous être inscrit sur VetApp. Appuyez sur le bouton pour confirmer votre adresse e-mail et commencer.",
-            "es": "Gracias por registrarte en VetApp. Toca el botón para confirmar tu correo y empezar.",
-            "it": "Grazie per esserti registrato a VetApp. Tocca il pulsante per confermare la tua email e iniziare.",
+            "en": "Thanks for signing up for Quokka. Tap the button to confirm your email address and get started.",
+            "de": "Danke für Ihre Registrierung bei Quokka. Tippen Sie auf die Schaltfläche, um Ihre E-Mail-Adresse zu bestätigen und loszulegen.",
+            "fr": "Merci de vous être inscrit sur Quokka. Appuyez sur le bouton pour confirmer votre adresse e-mail et commencer.",
+            "es": "Gracias por registrarte en Quokka. Toca el botón para confirmar tu correo y empezar.",
+            "it": "Grazie per esserti registrato a Quokka. Tocca il pulsante per confermare la tua email e iniziare.",
         },
         "button": {
             "en": "Confirm email",
@@ -73,22 +73,22 @@ TEMPLATES: dict[str, dict] = {
             "it": "Conferma email",
         },
         "footer": {
-            "en": "If you did not create a VetApp account, you can ignore this email.",
-            "de": "Falls Sie kein VetApp-Konto erstellt haben, können Sie diese E-Mail ignorieren.",
-            "fr": "Si vous n'avez pas créé de compte VetApp, vous pouvez ignorer cet e-mail.",
-            "es": "Si no has creado una cuenta de VetApp, puedes ignorar este correo.",
-            "it": "Se non hai creato un account VetApp, puoi ignorare questa email.",
+            "en": "If you did not create a Quokka account, you can ignore this email.",
+            "de": "Falls Sie kein Quokka-Konto erstellt haben, können Sie diese E-Mail ignorieren.",
+            "fr": "Si vous n'avez pas créé de compte Quokka, vous pouvez ignorer cet e-mail.",
+            "es": "Si no has creado una cuenta de Quokka, puedes ignorar este correo.",
+            "it": "Se non hai creato un account Quokka, puoi ignorare questa email.",
         },
     },
     "recovery": {
         "supabase_name": "Reset Password",
         "link": "{{ .ConfirmationURL }}",
         "subject": {
-            "en": "Reset your VetApp password",
-            "de": "VetApp-Passwort zurücksetzen",
-            "fr": "Réinitialisez votre mot de passe VetApp",
-            "es": "Restablece tu contraseña de VetApp",
-            "it": "Reimposta la tua password VetApp",
+            "en": "Reset your Quokka password",
+            "de": "Quokka-Passwort zurücksetzen",
+            "fr": "Réinitialisez votre mot de passe Quokka",
+            "es": "Restablece tu contraseña de Quokka",
+            "it": "Reimposta la tua password Quokka",
         },
         "heading": {
             "en": "Reset your password",
@@ -98,11 +98,11 @@ TEMPLATES: dict[str, dict] = {
             "it": "Reimposta la tua password",
         },
         "body": {
-            "en": "You asked to reset the password of your VetApp account. Tap the button to choose a new one. The link works for a limited time.",
-            "de": "Sie haben das Zurücksetzen des Passworts Ihres VetApp-Kontos angefordert. Tippen Sie auf die Schaltfläche, um ein neues zu wählen. Der Link ist nur begrenzt gültig.",
-            "fr": "Vous avez demandé à réinitialiser le mot de passe de votre compte VetApp. Appuyez sur le bouton pour en choisir un nouveau. Le lien est valable pour une durée limitée.",
-            "es": "Has pedido restablecer la contraseña de tu cuenta de VetApp. Toca el botón para elegir una nueva. El enlace es válido durante un tiempo limitado.",
-            "it": "Hai chiesto di reimpostare la password del tuo account VetApp. Tocca il pulsante per sceglierne una nuova. Il link vale per un tempo limitato.",
+            "en": "You asked to reset the password of your Quokka account. Tap the button to choose a new one. The link works for a limited time.",
+            "de": "Sie haben das Zurücksetzen des Passworts Ihres Quokka-Kontos angefordert. Tippen Sie auf die Schaltfläche, um ein neues zu wählen. Der Link ist nur begrenzt gültig.",
+            "fr": "Vous avez demandé à réinitialiser le mot de passe de votre compte Quokka. Appuyez sur le bouton pour en choisir un nouveau. Le lien est valable pour une durée limitée.",
+            "es": "Has pedido restablecer la contraseña de tu cuenta de Quokka. Toca el botón para elegir una nueva. El enlace es válido durante un tiempo limitado.",
+            "it": "Hai chiesto di reimpostare la password del tuo account Quokka. Tocca il pulsante per sceglierne una nuova. Il link vale per un tempo limitato.",
         },
         "button": {
             "en": "Choose a new password",
@@ -123,18 +123,18 @@ TEMPLATES: dict[str, dict] = {
         "supabase_name": "Magic Link",
         "link": "{{ .ConfirmationURL }}",
         "subject": {
-            "en": "Your VetApp sign-in link",
-            "de": "Ihr VetApp-Anmeldelink",
-            "fr": "Votre lien de connexion VetApp",
-            "es": "Tu enlace de acceso a VetApp",
-            "it": "Il tuo link di accesso a VetApp",
+            "en": "Your Quokka sign-in link",
+            "de": "Ihr Quokka-Anmeldelink",
+            "fr": "Votre lien de connexion Quokka",
+            "es": "Tu enlace de acceso a Quokka",
+            "it": "Il tuo link di accesso a Quokka",
         },
         "heading": {
-            "en": "Sign in to VetApp",
-            "de": "Bei VetApp anmelden",
-            "fr": "Connectez-vous à VetApp",
-            "es": "Inicia sesión en VetApp",
-            "it": "Accedi a VetApp",
+            "en": "Sign in to Quokka",
+            "de": "Bei Quokka anmelden",
+            "fr": "Connectez-vous à Quokka",
+            "es": "Inicia sesión en Quokka",
+            "it": "Accedi a Quokka",
         },
         "body": {
             "en": "Tap the button to sign in. The link can be used once and expires after a short time.",
@@ -162,11 +162,11 @@ TEMPLATES: dict[str, dict] = {
         "supabase_name": "Change Email Address",
         "link": "{{ .ConfirmationURL }}",
         "subject": {
-            "en": "Confirm your new VetApp email address",
-            "de": "Neue E-Mail-Adresse für VetApp bestätigen",
-            "fr": "Confirmez votre nouvelle adresse e-mail VetApp",
-            "es": "Confirma tu nuevo correo de VetApp",
-            "it": "Conferma il nuovo indirizzo email di VetApp",
+            "en": "Confirm your new Quokka email address",
+            "de": "Neue E-Mail-Adresse für Quokka bestätigen",
+            "fr": "Confirmez votre nouvelle adresse e-mail Quokka",
+            "es": "Confirma tu nuevo correo de Quokka",
+            "it": "Conferma il nuovo indirizzo email di Quokka",
         },
         "heading": {
             "en": "Confirm your new email address",
@@ -176,11 +176,11 @@ TEMPLATES: dict[str, dict] = {
             "it": "Conferma il nuovo indirizzo email",
         },
         "body": {
-            "en": "You asked to change the email of your VetApp account from {{ .Email }} to {{ .NewEmail }}. Tap the button to confirm.",
-            "de": "Sie möchten die E-Mail-Adresse Ihres VetApp-Kontos von {{ .Email }} auf {{ .NewEmail }} ändern. Tippen Sie zur Bestätigung auf die Schaltfläche.",
-            "fr": "Vous avez demandé à remplacer l'adresse e-mail de votre compte VetApp, {{ .Email }}, par {{ .NewEmail }}. Appuyez sur le bouton pour confirmer.",
-            "es": "Has pedido cambiar el correo de tu cuenta de VetApp de {{ .Email }} a {{ .NewEmail }}. Toca el botón para confirmar.",
-            "it": "Hai chiesto di cambiare l'email del tuo account VetApp da {{ .Email }} a {{ .NewEmail }}. Tocca il pulsante per confermare.",
+            "en": "You asked to change the email of your Quokka account from {{ .Email }} to {{ .NewEmail }}. Tap the button to confirm.",
+            "de": "Sie möchten die E-Mail-Adresse Ihres Quokka-Kontos von {{ .Email }} auf {{ .NewEmail }} ändern. Tippen Sie zur Bestätigung auf die Schaltfläche.",
+            "fr": "Vous avez demandé à remplacer l'adresse e-mail de votre compte Quokka, {{ .Email }}, par {{ .NewEmail }}. Appuyez sur le bouton pour confirmer.",
+            "es": "Has pedido cambiar el correo de tu cuenta de Quokka de {{ .Email }} a {{ .NewEmail }}. Toca el botón para confirmar.",
+            "it": "Hai chiesto di cambiare l'email del tuo account Quokka da {{ .Email }} a {{ .NewEmail }}. Tocca il pulsante per confermare.",
         },
         "button": {
             "en": "Confirm new email",
@@ -201,11 +201,11 @@ TEMPLATES: dict[str, dict] = {
         "supabase_name": "Reauthentication",
         "link": None,
         "subject": {
-            "en": "Your VetApp confirmation code",
-            "de": "Ihr VetApp-Bestätigungscode",
-            "fr": "Votre code de confirmation VetApp",
-            "es": "Tu código de confirmación de VetApp",
-            "it": "Il tuo codice di conferma VetApp",
+            "en": "Your Quokka confirmation code",
+            "de": "Ihr Quokka-Bestätigungscode",
+            "fr": "Votre code de confirmation Quokka",
+            "es": "Tu código de confirmación de Quokka",
+            "it": "Il tuo codice di conferma Quokka",
         },
         "heading": {
             "en": "Confirm it is you",
@@ -289,7 +289,7 @@ def block(spec: dict, language: str) -> str:
 
 def render(name: str, spec: dict) -> str:
     content = switch({language: "\n" + block(spec, language) + "\n" for language in LANGUAGES})
-    return f"""<!-- VetApp - Supabase "{spec["supabase_name"]}" template, generated by
+    return f"""<!-- Quokka - Supabase "{spec["supabase_name"]}" template, generated by
      scripts/i18n/build_email_templates.py - edit the script, not this file.
      Language = user_metadata.preferred_locale (en/de/fr/es, anything else = Italian). -->
 <!doctype html>
@@ -299,7 +299,7 @@ def render(name: str, spec: dict) -> str:
     <tr><td align="center" style="padding:24px 16px;">
       <table role="presentation" width="100%" cellpadding="0" cellspacing="0"
              style="max-width:480px;background:#ffffff;border-radius:16px;font-family:Arial,Helvetica,sans-serif;">
-        <tr><td style="padding:24px 24px 0;font-size:20px;font-weight:700;color:{BRAND};">VetApp</td></tr>
+        <tr><td style="padding:24px 24px 0;font-size:20px;font-weight:700;color:{BRAND};">Quokka</td></tr>
         <tr><td style="padding:16px 24px 24px;">
 {content}
         </td></tr>

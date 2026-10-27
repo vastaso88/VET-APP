@@ -1,5 +1,5 @@
 {
-  "petsConsentFullText": "To give you more precise advice, the assistant can read your pet's medical records. When you ask a question, it can read the three most recent entries, with title, category (visit, test, vaccine, therapy or document), event date, description and the text of attached documents, even if they are not related to your question. It can also read earlier conditions that are still ongoing, with the name and start date, up to five. If you ask it to explain a test, it can read the documents related to it, up to two. For a very long document it reads only the beginning. What it reads is sent to the external artificial intelligence provider that writes the answer. VetApp uses it only to answer you. You can withdraw your consent at any time from your pet's profile or from Settings: this applies to subsequent requests.",
+  "petsConsentFullText": "To give you more precise advice, the assistant can read your pet's medical records. When you ask a question, it can read the three most recent entries, with title, category (visit, test, vaccine, therapy or document), event date, description and the text of attached documents, even if they are not related to your question. It can also read earlier conditions that are still ongoing, with the name and start date, up to five. If you ask it to explain a test, it can read the documents related to it, up to two. For a very long document it reads only the beginning. What it reads is sent to the external artificial intelligence provider that writes the answer. Quokka uses it only to answer you. You can withdraw your consent at any time from your pet's profile or from Settings: this applies to subsequent requests.",
   "@@locale": "en",
   "appTitle": "VET APP",
   "commonCancel": "Cancel",
@@ -101,7 +101,7 @@
   "authLegalShareTooltip": "Share or download",
   "authLegalLoadError": "I can't load the text right now. Try again shortly.",
   "authLegalPreparingNotice": "The full privacy policy is being prepared and will be available here soon, with a download option.",
-  "authHubTitle": "VetApp: your pets within paw's reach",
+  "authHubTitle": "Quokka: your pets within paw's reach",
   "authHubSubtitle": "Sign in to your account or create a new one in seconds.",
   "authHubCreateAccount": "Create an account",
   "authHubPrivacyNote": "Your data stays private and is used only to manage your pet's profile.",
@@ -171,7 +171,7 @@
       }
     }
   },
-  "billingTrialBannerEnding": "Your free trial is about to end: choose a plan to keep using VetApp.",
+  "billingTrialBannerEnding": "Your free trial is about to end: choose a plan to keep using Quokka.",
   "billingDeveloperBanner": "Developer account: unlimited access, no plan required.",
   "billingCurrentPlanLabel": "Your plan",
   "billingRenewalOn": "Renews on {date}",
@@ -219,7 +219,7 @@
   "billingExpiryMonthLabel": "Month",
   "billingExpiryYearLabel": "Year",
   "billingPaywallTitle": "Your free trial has ended.",
-  "billingPaywallSubtitle": "Choose how to continue with VetApp. You can change plan anytime in Settings.",
+  "billingPaywallSubtitle": "Choose how to continue with Quokka. You can change plan anytime in Settings.",
   "billingChoosePlan": "Choose {plan}",
   "@billingChoosePlan": {
     "placeholders": {
@@ -239,7 +239,7 @@
   "billingTrialDialogBody": "Some features are limited on the Free plan. Switch to Plus or Pro for unlimited access when your trial ends.",
   "billingTrialDialogLater": "Later",
   "billingTrialDialogSeePlans": "View plans",
-  "firstRunWelcomeTitle": "Welcome to VetApp.",
+  "firstRunWelcomeTitle": "Welcome to Quokka.",
   "firstRunPlanIntroSubtitle": "Choose how to start: try everything free for 10 days with no card, or choose a plan now.",
   "firstRunPlanOrChoose": "OR CHOOSE A PLAN NOW",
   "firstRunTrialCardTitle": "Free trial — 10 days",
@@ -259,7 +259,7 @@
   "firstRunTutorialAssistantTitle": "Ask your assistant",
   "firstRunTutorialAssistantBody": "Ask questions about your pets' health and receive answers tailored to their specific situation.",
   "firstRunTutorialRemindersTitle": "Never miss another deadline",
-  "firstRunTutorialRemindersBody": "Vaccines, medicines and visits: set a reminder and VetApp will notify you at the right time.",
+  "firstRunTutorialRemindersBody": "Vaccines, medicines and visits: set a reminder and Quokka will notify you at the right time.",
   "firstRunTutorialStart": "Start",
   "chatLoadingTitle": "Opening the conversation",
   "chatLoadingSubtitle": "Loading the thread and the latest available context.",
@@ -1176,7 +1176,7 @@
   "petsDetailChatLimitOk": "Got it",
   "petsDetailRecordsSendTitle": "Send file",
   "petsDetailRecordsSendSubtitle": "Choose a document to send by email, WhatsApp or another app.",
-  "petsDetailRecordShareText": "📄 {title}\n{source} · {date}\n\nShared by VetApp",
+  "petsDetailRecordShareText": "📄 {title}\n{source} · {date}\n\nShared by Quokka",
   "@petsDetailRecordShareText": {
     "placeholders": {
       "title": {
@@ -1742,8 +1742,8 @@
   "placesActionDirections": "Directions",
   "placesActionWebsite": "Website",
   "placesDisclaimerCommunity": "Place reported by users: check before visiting.",
-  "placesDisclaimerClinic": "In an emergency, call before leaving: hours and contact details come from open data and are not verified by VetApp.",
-  "placesDisclaimerGeneric": "Hours and contact details come from open data and are not verified by VetApp.",
+  "placesDisclaimerClinic": "In an emergency, call before leaving: hours and contact details come from open data and are not verified by Quokka.",
+  "placesDisclaimerGeneric": "Hours and contact details come from open data and are not verified by Quokka.",
   "placesSourceLine": "Source: {source}",
   "@placesSourceLine": {
     "placeholders": {
@@ -1900,9 +1900,9 @@
   "placesSourceTorinoAttribution": "Municipality of Turin, dog parks (aperto.comune.torino.it), CC BY 4.0 license, 2019 data",
   "placesSourceMilanoAttribution": "Municipality of Milan, dog park locations (dati.comune.milano.it), CC BY 4.0 license. Includes processed CC BY 3.0 data from dati.gov.it",
   "placesSourceLicenseCcBy": "Creative Commons Attribution 4.0 (CC BY 4.0)",
-  "placesSourceUsersName": "VetApp users",
+  "placesSourceUsersName": "Quokka users",
   "placesSourceUsersDescription": "Places reported by users and confirmed by other users.",
-  "placesSourceUsersAttribution": "Reported by VetApp users",
+  "placesSourceUsersAttribution": "Reported by Quokka users",
   "placesMapTitle": "Map · {radius}",
   "@placesMapTitle": {
     "placeholders": {
@@ -2103,7 +2103,7 @@
   "localEventsLocating": "Finding your location…",
   "localEventsSearchingAround": "Finding what is around you. The first search in an area may take up to a minute.",
   "localEventsConsentTitle": "Use your location?",
-  "localEventsConsentBody": "VetApp uses your phone's location only while you use the app to show nearby services. You can enter an address instead.",
+  "localEventsConsentBody": "Quokka uses your phone's location only while you use the app to show nearby services. You can enter an address instead.",
   "localEventsConsentChooseAddress": "Choose an address",
   "localEventsConsentAllow": "Allow",
   "localEventsReportMissing": "Report a missing place",
@@ -2553,7 +2553,7 @@
   "settingsLayoutUnitsTitle": "Measurement unit",
   "settingsSectionPhotosVideos": "Photos and videos",
   "settingsGallerySaveTitle": "Save photos to the gallery",
-  "settingsGallerySaveSubtitle": "Photos and videos taken with the app camera are copied to the \"VetApp\" album on your phone.",
+  "settingsGallerySaveSubtitle": "Photos and videos taken with the app camera are copied to the \"Quokka\" album on your phone.",
   "settingsSectionLocation": "Location",
   "settingsLocationIntro": "Used to personalize events and news for your area.",
   "settingsLocationReferenceTitle": "Reference location",
@@ -2801,7 +2801,7 @@
   "walksConfirmFinishBody": "The route recorded so far will be saved.",
   "walksSavingSnackbar": "Saving walk…",
   "walksNotifPermTitle": "See your walk in notifications",
-  "walksNotifPermBody": "During the walk, VetApp shows an ongoing notification with time and distance. You can pause or finish from there, even with your phone in your pocket. Notification permission is required to see it.\n\nThe walk is recorded even if you choose \"Not now\".",
+  "walksNotifPermBody": "During the walk, Quokka shows an ongoing notification with time and distance. You can pause or finish from there, even with your phone in your pocket. Notification permission is required to see it.\n\nThe walk is recorded even if you choose \"Not now\".",
   "walksNotifPermNotNow": "Not now",
   "walksNotifPermAllow": "Allow",
   "walksNotifTitleWithPet": "Walk with {petName}",
@@ -2830,7 +2830,7 @@
     }
   },
   "walksNotifFallbackPausedText": "Tracking is paused. Resume in the app whenever you want.",
-  "walksNotifFallbackRunningText": "VetApp is tracking your walk route.",
+  "walksNotifFallbackRunningText": "Quokka is tracking your walk route.",
   "walksNotifChannelName": "Walk tracking",
   "walksSyncFailed": "Sync failed: change saved only on this phone",
   "walksFavoriteSaveFailed": "I couldn't save the favorite. Try again.",
@@ -2942,7 +2942,7 @@
   "settingsAccountSupportSubtitle": "Send us an email",
   "settingsAccountDelete": "Delete account",
   "settingsAccountDeleteSubtitle": "Delete your account and all your data",
-  "accountSupportSubject": "VetApp support (version {version})",
+  "accountSupportSubject": "Quokka support (version {version})",
   "@accountSupportSubject": {
     "placeholders": {
       "version": {
@@ -3114,7 +3114,7 @@
     }
   },
   "monitoringBcsGuideClear": "Remove the assessment",
-  "monitoringBcsGuideDisclaimer": "This is a rough guide and does not replace a veterinarian's examination. The illustrations are schematic and original to VetApp.",
+  "monitoringBcsGuideDisclaimer": "This is a rough guide and does not replace a veterinarian's examination. The illustrations are schematic and original to Quokka.",
   "monitoringBcsGuideSource": "Source: {source}",
   "@monitoringBcsGuideSource": {
     "placeholders": {
@@ -3137,8 +3137,8 @@
   "monitoringBcsGuideAdvice2": "Always assess the same way: same place, animal standing and calm, same three steps (touch, view from above, view from the side).",
   "monitoringBcsGuideAdvice3": "If in doubt, ask the veterinarian: body condition is easier to learn when someone shows you how to feel it.",
   "monitoringBcsGuideCaveatRabbit": "For rabbits this scale is less reliable: two people can give different scores to the same rabbit. If in doubt, ask the veterinarian.",
-  "monitoringBcsSourceDog": "criteria of the WSAVA Global Nutrition Committee 9-point scale for dogs (Laflamme, 1997), summarized in our own words and reduced to 5 levels by VetApp. Not official WSAVA material.",
-  "monitoringBcsSourceCat": "criteria of the WSAVA Global Nutrition Committee 9-point scale for cats (Laflamme, 1997; validated by Bjornvad et al., 2011), summarized in our own words and reduced to 5 levels by VetApp. Not official WSAVA material.",
+  "monitoringBcsSourceDog": "criteria of the WSAVA Global Nutrition Committee 9-point scale for dogs (Laflamme, 1997), summarized in our own words and reduced to 5 levels by Quokka. Not official WSAVA material.",
+  "monitoringBcsSourceCat": "criteria of the WSAVA Global Nutrition Committee 9-point scale for cats (Laflamme, 1997; validated by Bjornvad et al., 2011), summarized in our own words and reduced to 5 levels by Quokka. Not official WSAVA material.",
   "monitoringBcsSourceRabbit": "5-level Rabbit Size-O-Meter from the PFMA (Pet Food Manufacturers' Association), summarized in our own words. Agreement between assessors is limited (Halck et al., Veterinary Record, 2025).",
   "monitoringBcsNotAssessed": "Not assessed",
   "monitoringBcsAssess": "Assess body condition",
@@ -3708,7 +3708,7 @@
   "remindersDonePostponed": "I'll remind you again tomorrow.",
   "remindersDoneTooltip": "Mark as done",
   "remindersNotifPermTitle": "Would you like reminders to alert you?",
-  "remindersNotifPermBody": "To alert you when a reminder is due, VetApp needs permission to send notifications. You can change this at any time in Settings.",
+  "remindersNotifPermBody": "To alert you when a reminder is due, Quokka needs permission to send notifications. You can change this at any time in Settings.",
   "remindersNotifPermNotNow": "Not now",
   "remindersNotifPermAllow": "Allow",
   "remindersNotifOffBanner": "Notifications are turned off: reminders won't make a sound",

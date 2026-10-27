@@ -30,7 +30,7 @@
          file_picker), which need no permission. open_filex (PDF viewer) brings in
          media-read permissions through its manifest; they are removed here. -->
     <!-- Android 9 and older only: gal (copy of in-app camera captures into the
-         "VetApp" album) needs it there; from Android 10 MediaStore saves our own
+         "Quokka" album) needs it there; from Android 10 MediaStore saves our own
          files with no permission. video_compress declares it with no limit,
          although it only writes to its app-private folder: tools:node="replace"
          keeps this bounded declaration instead of the plugin's. -->

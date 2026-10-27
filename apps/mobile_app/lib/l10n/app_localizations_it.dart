@@ -10,7 +10,7 @@ class AppLocalizationsIt extends AppLocalizations {
 
   @override
   String get petsConsentFullText =>
-      'Per darti un consiglio più preciso, l\'assistente può leggere la cartella clinica del tuo animale. Quando fai una domanda può leggere le tre voci più recenti, con titolo, categoria (visita, esame, vaccino, terapia o documento), data dell\'evento, descrizione e testo dei documenti allegati, anche se non c\'entrano con la domanda. Può leggere anche le malattie pregresse ancora in corso, con il nome e la data di inizio, al massimo cinque. Se chiedi di spiegare un esame, può leggere i documenti che lo riguardano, al massimo due. Di un documento molto lungo legge solo l\'inizio. Ciò che legge viene inviato al fornitore esterno di intelligenza artificiale che scrive la risposta. VetApp lo usa solo per risponderti. Puoi revocare il consenso in qualsiasi momento dalla scheda dell\'animale o dalle Impostazioni: vale per le richieste successive.';
+      'Per darti un consiglio più preciso, l\'assistente può leggere la cartella clinica del tuo animale. Quando fai una domanda può leggere le tre voci più recenti, con titolo, categoria (visita, esame, vaccino, terapia o documento), data dell\'evento, descrizione e testo dei documenti allegati, anche se non c\'entrano con la domanda. Può leggere anche le malattie pregresse ancora in corso, con il nome e la data di inizio, al massimo cinque. Se chiedi di spiegare un esame, può leggere i documenti che lo riguardano, al massimo due. Di un documento molto lungo legge solo l\'inizio. Ciò che legge viene inviato al fornitore esterno di intelligenza artificiale che scrive la risposta. Quokka lo usa solo per risponderti. Puoi revocare il consenso in qualsiasi momento dalla scheda dell\'animale o dalle Impostazioni: vale per le richieste successive.';
 
   @override
   String get appTitle => 'VET APP';
@@ -302,7 +302,7 @@ class AppLocalizationsIt extends AppLocalizations {
       'Il testo completo dell\'informativa è in preparazione e sarà disponibile qui a breve, con la possibilità di scaricarlo.';
 
   @override
-  String get authHubTitle => 'VetApp: i tuoi pet a portata di zampa';
+  String get authHubTitle => 'Quokka: i tuoi pet a portata di zampa';
 
   @override
   String get authHubSubtitle =>
@@ -458,7 +458,7 @@ class AppLocalizationsIt extends AppLocalizations {
 
   @override
   String get billingTrialBannerEnding =>
-      'La prova gratuita sta per terminare: scegli un piano per continuare a usare VetApp.';
+      'La prova gratuita sta per terminare: scegli un piano per continuare a usare Quokka.';
 
   @override
   String get billingDeveloperBanner =>
@@ -528,7 +528,7 @@ class AppLocalizationsIt extends AppLocalizations {
 
   @override
   String get billingPaywallSubtitle =>
-      'Scegli come continuare con VetApp. Puoi cambiare piano quando vuoi da Impostazioni.';
+      'Scegli come continuare con Quokka. Puoi cambiare piano quando vuoi da Impostazioni.';
 
   @override
   String billingChoosePlan(String plan) {
@@ -557,7 +557,7 @@ class AppLocalizationsIt extends AppLocalizations {
   String get billingTrialDialogSeePlans => 'Vedi i piani';
 
   @override
-  String get firstRunWelcomeTitle => 'Benvenuto in VetApp.';
+  String get firstRunWelcomeTitle => 'Benvenuto in Quokka.';
 
   @override
   String get firstRunPlanIntroSubtitle =>
@@ -625,7 +625,7 @@ class AppLocalizationsIt extends AppLocalizations {
 
   @override
   String get firstRunTutorialRemindersBody =>
-      'Vaccini, farmaci e visite: imposta un promemoria e VetApp ti avvisa al momento giusto.';
+      'Vaccini, farmaci e visite: imposta un promemoria e Quokka ti avvisa al momento giusto.';
 
   @override
   String get firstRunTutorialStart => 'Inizia';
@@ -2325,7 +2325,7 @@ class AppLocalizationsIt extends AppLocalizations {
 
   @override
   String petsDetailRecordShareText(String title, String source, String date) {
-    return '📄 $title\n$source · $date\n\nCondiviso da VetApp';
+    return '📄 $title\n$source · $date\n\nCondiviso da Quokka';
   }
 
   @override
@@ -3014,11 +3014,11 @@ class AppLocalizationsIt extends AppLocalizations {
 
   @override
   String get placesDisclaimerClinic =>
-      'In caso di urgenza telefona prima di partire: orari e recapiti arrivano da archivi aperti e non sono verificati da VetApp.';
+      'In caso di urgenza telefona prima di partire: orari e recapiti arrivano da archivi aperti e non sono verificati da Quokka.';
 
   @override
   String get placesDisclaimerGeneric =>
-      'Orari e recapiti arrivano da archivi aperti e non sono verificati da VetApp.';
+      'Orari e recapiti arrivano da archivi aperti e non sono verificati da Quokka.';
 
   @override
   String placesSourceLine(String source) {
@@ -3216,7 +3216,7 @@ class AppLocalizationsIt extends AppLocalizations {
 
   @override
   String get placesSourcesIntro =>
-      'I luoghi del radar arrivano da archivi aperti, non da VetApp. Ogni scheda indica la sua fonte. Orari e recapiti possono non essere aggiornati.';
+      'I luoghi del radar arrivano da archivi aperti, non da Quokka. Ogni scheda indica la sua fonte. Orari e recapiti possono non essere aggiornati.';
 
   @override
   String get placesSourcesNoContact =>
@@ -3277,14 +3277,14 @@ class AppLocalizationsIt extends AppLocalizations {
       'Creative Commons Attribuzione 4.0 (CC BY 4.0)';
 
   @override
-  String get placesSourceUsersName => 'Utenti VetApp';
+  String get placesSourceUsersName => 'Utenti Quokka';
 
   @override
   String get placesSourceUsersDescription =>
       'Luoghi segnalati dagli utenti e confermati da altri utenti.';
 
   @override
-  String get placesSourceUsersAttribution => 'Segnalato dagli utenti VetApp';
+  String get placesSourceUsersAttribution => 'Segnalato dagli utenti Quokka';
 
   @override
   String placesMapTitle(String radius) {
@@ -3701,7 +3701,7 @@ class AppLocalizationsIt extends AppLocalizations {
 
   @override
   String get localEventsConsentBody =>
-      'Per mostrarti cosa c’è vicino a te VetApp usa la posizione del telefono solo mentre usi l’app. In alternativa puoi indicare un indirizzo.';
+      'Per mostrarti cosa c’è vicino a te Quokka usa la posizione del telefono solo mentre usi l’app. In alternativa puoi indicare un indirizzo.';
 
   @override
   String get localEventsConsentChooseAddress => 'Scegli un indirizzo';
@@ -4479,7 +4479,7 @@ class AppLocalizationsIt extends AppLocalizations {
 
   @override
   String get settingsGallerySaveSubtitle =>
-      'Le foto e i video scattati con la fotocamera dell\'app vengono copiati nell\'album \"VetApp\" del telefono.';
+      'Le foto e i video scattati con la fotocamera dell\'app vengono copiati nell\'album \"Quokka\" del telefono.';
 
   @override
   String get settingsSectionLocation => 'Località';
@@ -4877,7 +4877,7 @@ class AppLocalizationsIt extends AppLocalizations {
 
   @override
   String get walksNotifPermBody =>
-      'Durante la passeggiata VetApp mostra una notifica fissa con tempo e distanza: da lì puoi metterla in pausa o terminarla anche con il telefono in tasca. Per vederla serve il permesso per le notifiche.\n\nLa passeggiata viene registrata comunque, anche se scegli \"Non ora\".';
+      'Durante la passeggiata Quokka mostra una notifica fissa con tempo e distanza: da lì puoi metterla in pausa o terminarla anche con il telefono in tasca. Per vederla serve il permesso per le notifiche.\n\nLa passeggiata viene registrata comunque, anche se scegli \"Non ora\".';
 
   @override
   String get walksNotifPermNotNow => 'Non ora';
@@ -4909,7 +4909,7 @@ class AppLocalizationsIt extends AppLocalizations {
 
   @override
   String get walksNotifFallbackRunningText =>
-      'VetApp sta tracciando il percorso della passeggiata.';
+      'Quokka sta tracciando il percorso della passeggiata.';
 
   @override
   String get walksNotifChannelName => 'Tracciamento passeggiata';
@@ -5081,7 +5081,7 @@ class AppLocalizationsIt extends AppLocalizations {
 
   @override
   String accountSupportSubject(String version) {
-    return 'Assistenza VetApp (versione $version)';
+    return 'Assistenza Quokka (versione $version)';
   }
 
   @override
@@ -5418,7 +5418,7 @@ class AppLocalizationsIt extends AppLocalizations {
 
   @override
   String get monitoringBcsGuideDisclaimer =>
-      'È un’indicazione orientativa che non sostituisce la visita del veterinario. Le illustrazioni sono schematiche e originali di VetApp.';
+      'È un’indicazione orientativa che non sostituisce la visita del veterinario. Le illustrazioni sono schematiche e originali di Quokka.';
 
   @override
   String monitoringBcsGuideSource(String source) {
@@ -5455,11 +5455,11 @@ class AppLocalizationsIt extends AppLocalizations {
 
   @override
   String get monitoringBcsSourceDog =>
-      'criteri della scala a 9 punti del WSAVA Global Nutrition Committee per i cani (Laflamme, 1997), riassunti con parole nostre e ridotti a 5 livelli da VetApp. Non è materiale ufficiale WSAVA.';
+      'criteri della scala a 9 punti del WSAVA Global Nutrition Committee per i cani (Laflamme, 1997), riassunti con parole nostre e ridotti a 5 livelli da Quokka. Non è materiale ufficiale WSAVA.';
 
   @override
   String get monitoringBcsSourceCat =>
-      'criteri della scala a 9 punti del WSAVA Global Nutrition Committee per i gatti (Laflamme, 1997; validata da Bjornvad e colleghi, 2011), riassunti con parole nostre e ridotti a 5 livelli da VetApp. Non è materiale ufficiale WSAVA.';
+      'criteri della scala a 9 punti del WSAVA Global Nutrition Committee per i gatti (Laflamme, 1997; validata da Bjornvad e colleghi, 2011), riassunti con parole nostre e ridotti a 5 livelli da Quokka. Non è materiale ufficiale WSAVA.';
 
   @override
   String get monitoringBcsSourceRabbit =>
@@ -6397,7 +6397,7 @@ class AppLocalizationsIt extends AppLocalizations {
 
   @override
   String get remindersNotifPermBody =>
-      'Per avvisarti quando un promemoria scade, VetApp ha bisogno del permesso per le notifiche. Puoi cambiarlo in ogni momento da Impostazioni.';
+      'Per avvisarti quando un promemoria scade, Quokka ha bisogno del permesso per le notifiche. Puoi cambiarlo in ogni momento da Impostazioni.';
 
   @override
   String get remindersNotifPermNotNow => 'Non ora';

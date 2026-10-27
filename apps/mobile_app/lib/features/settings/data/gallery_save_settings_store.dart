@@ -3,7 +3,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 /// Persisted on/off switch for "Salva le foto nella galleria": when on, photos
 /// and videos taken with the in-app camera also get a copy in the phone's
-/// "VetApp" album. On by default. Same singleton + [ChangeNotifier] pattern as
+/// "Quokka" album. On by default. Same singleton + [ChangeNotifier] pattern as
 /// [LayoutSettingsStore], so the Settings switch and the camera flow agree.
 class GallerySaveSettingsStore extends ChangeNotifier {
   GallerySaveSettingsStore._();

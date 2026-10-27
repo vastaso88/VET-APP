@@ -5,9 +5,9 @@ import 'package:image_picker/image_picker.dart';
 import '../../settings/data/gallery_save_settings_store.dart';
 
 /// Name of the album created in the phone's gallery.
-const deviceGalleryAlbum = 'VetApp';
+const deviceGalleryAlbum = 'Quokka';
 
-/// Copies what the in-app camera just captured into the phone's "VetApp"
+/// Copies what the in-app camera just captured into the phone's "Quokka"
 /// album (MediaStore on Android, so no storage permission from Android 10 on).
 ///
 /// Only for camera captures: files picked from the gallery are already there.

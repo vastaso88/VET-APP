@@ -215,6 +215,7 @@ UI_ARGUMENT = re.compile(
 def looks_like_ui_text(text: str) -> bool:
     """Human-readable text in UI arguments, regardless of language/casing."""
     technical = {
+        "Quokka",
         "VetApp",
         "VET APP",
         "OSM",

@@ -43,7 +43,7 @@ CONSENT_TEXT_IT = (
     "leggere i documenti che lo riguardano, al massimo due. Di un documento "
     "molto lungo legge solo l'inizio. Ciò che "
     "legge viene inviato al fornitore esterno di intelligenza artificiale "
-    "che scrive la risposta. VetApp lo usa solo per risponderti. Puoi "
+    "che scrive la risposta. Quokka lo usa solo per risponderti. Puoi "
     "revocare il consenso in qualsiasi momento dalla scheda dell'animale o "
     "dalle Impostazioni: vale per le richieste successive."
 )

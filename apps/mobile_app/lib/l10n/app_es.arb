@@ -1,5 +1,5 @@
 {
-  "petsConsentFullText": "Para darte una orientación más precisa, el asistente puede leer el historial clínico de tu animal. Cuando haces una pregunta, puede leer las tres entradas más recientes, con el título, la categoría (visita, prueba, vacuna, tratamiento o documento), la fecha del evento, la descripción y el texto de los documentos adjuntos, aunque no estén relacionados con la pregunta. También puede leer las enfermedades previas que sigan en curso, con el nombre y la fecha de inicio, como máximo cinco. Si pides que explique una prueba, puede leer los documentos relacionados, como máximo dos. De un documento muy largo solo lee el principio. Lo que lee se envía al proveedor externo de inteligencia artificial que escribe la respuesta. VetApp lo usa solo para responderte. Puedes retirar el consentimiento en cualquier momento desde la ficha del animal o los Ajustes: se aplica a las solicitudes posteriores.",
+  "petsConsentFullText": "Para darte una orientación más precisa, el asistente puede leer el historial clínico de tu animal. Cuando haces una pregunta, puede leer las tres entradas más recientes, con el título, la categoría (visita, prueba, vacuna, tratamiento o documento), la fecha del evento, la descripción y el texto de los documentos adjuntos, aunque no estén relacionados con la pregunta. También puede leer las enfermedades previas que sigan en curso, con el nombre y la fecha de inicio, como máximo cinco. Si pides que explique una prueba, puede leer los documentos relacionados, como máximo dos. De un documento muy largo solo lee el principio. Lo que lee se envía al proveedor externo de inteligencia artificial que escribe la respuesta. Quokka lo usa solo para responderte. Puedes retirar el consentimiento en cualquier momento desde la ficha del animal o los Ajustes: se aplica a las solicitudes posteriores.",
   "@@locale": "es",
   "appTitle": "VET APP",
   "commonCancel": "Cancelar",
@@ -101,7 +101,7 @@
   "authLegalShareTooltip": "Compartir o descargar",
   "authLegalLoadError": "No puedo cargar el texto ahora. Inténtalo en unos instantes.",
   "authLegalPreparingNotice": "La política de privacidad completa está en preparación y estará disponible aquí pronto, con opción de descarga.",
-  "authHubTitle": "VetApp: tus mascotas al alcance de la pata",
+  "authHubTitle": "Quokka: tus mascotas al alcance de la pata",
   "authHubSubtitle": "Inicia sesión o crea una cuenta nueva en pocos segundos.",
   "authHubCreateAccount": "Crear una cuenta",
   "authHubPrivacyNote": "Tus datos son privados y solo se usan para gestionar el perfil de tu mascota.",
@@ -171,7 +171,7 @@
       }
     }
   },
-  "billingTrialBannerEnding": "Tu prueba gratuita está a punto de terminar: elige un plan para seguir usando VetApp.",
+  "billingTrialBannerEnding": "Tu prueba gratuita está a punto de terminar: elige un plan para seguir usando Quokka.",
   "billingDeveloperBanner": "Cuenta de desarrollador: acceso ilimitado, no se requiere plan.",
   "billingCurrentPlanLabel": "Tu plan",
   "billingRenewalOn": "Renovación el {date}",
@@ -219,7 +219,7 @@
   "billingExpiryMonthLabel": "Mes",
   "billingExpiryYearLabel": "Año",
   "billingPaywallTitle": "Tu prueba gratuita ha terminado.",
-  "billingPaywallSubtitle": "Elige cómo continuar con VetApp. Puedes cambiar de plan cuando quieras en Ajustes.",
+  "billingPaywallSubtitle": "Elige cómo continuar con Quokka. Puedes cambiar de plan cuando quieras en Ajustes.",
   "billingChoosePlan": "Elegir {plan}",
   "@billingChoosePlan": {
     "placeholders": {
@@ -239,7 +239,7 @@
   "billingTrialDialogBody": "Algunas funciones están limitadas en el plan Free. Cambia a Plus o Pro para tener acceso ilimitado cuando termine la prueba.",
   "billingTrialDialogLater": "Más tarde",
   "billingTrialDialogSeePlans": "Ver planes",
-  "firstRunWelcomeTitle": "Te damos la bienvenida a VetApp.",
+  "firstRunWelcomeTitle": "Te damos la bienvenida a Quokka.",
   "firstRunPlanIntroSubtitle": "Elige cómo empezar: prueba todo gratis durante 10 días sin tarjeta o elige un plan ahora.",
   "firstRunPlanOrChoose": "O ELIGE UN PLAN AHORA",
   "firstRunTrialCardTitle": "Prueba gratuita — 10 días",
@@ -259,7 +259,7 @@
   "firstRunTutorialAssistantTitle": "Pregunta a tu asistente",
   "firstRunTutorialAssistantBody": "Haz preguntas sobre la salud de tus animales y recibe respuestas adaptadas a su situación.",
   "firstRunTutorialRemindersTitle": "No olvides ninguna fecha",
-  "firstRunTutorialRemindersBody": "Vacunas, medicamentos y visitas: crea un recordatorio y VetApp te avisará en el momento adecuado.",
+  "firstRunTutorialRemindersBody": "Vacunas, medicamentos y visitas: crea un recordatorio y Quokka te avisará en el momento adecuado.",
   "firstRunTutorialStart": "Empezar",
   "chatLoadingTitle": "Abriendo la conversación",
   "chatLoadingSubtitle": "Cargando el hilo y el último contexto disponible.",
@@ -1176,7 +1176,7 @@
   "petsDetailChatLimitOk": "Entendido",
   "petsDetailRecordsSendTitle": "Enviar archivo",
   "petsDetailRecordsSendSubtitle": "Elige un documento para enviarlo por correo, WhatsApp u otra aplicación.",
-  "petsDetailRecordShareText": "📄 {title}\n{source} · {date}\n\nCompartido desde VetApp",
+  "petsDetailRecordShareText": "📄 {title}\n{source} · {date}\n\nCompartido desde Quokka",
   "@petsDetailRecordShareText": {
     "placeholders": {
       "title": {
@@ -1742,8 +1742,8 @@
   "placesActionDirections": "Indicaciones",
   "placesActionWebsite": "Sitio web",
   "placesDisclaimerCommunity": "Lugar informado por usuarios: compruébalo antes de ir.",
-  "placesDisclaimerClinic": "En caso de urgencia, llama antes de salir: los horarios y contactos proceden de datos abiertos y no están verificados por VetApp.",
-  "placesDisclaimerGeneric": "Los horarios y contactos proceden de datos abiertos y VetApp no los verifica.",
+  "placesDisclaimerClinic": "En caso de urgencia, llama antes de salir: los horarios y contactos proceden de datos abiertos y no están verificados por Quokka.",
+  "placesDisclaimerGeneric": "Los horarios y contactos proceden de datos abiertos y Quokka no los verifica.",
   "placesSourceLine": "Fuente: {source}",
   "@placesSourceLine": {
     "placeholders": {
@@ -1900,9 +1900,9 @@
   "placesSourceTorinoAttribution": "Ayuntamiento de Turín, parques caninos (aperto.comune.torino.it), licencia CC BY 4.0, datos de 2019",
   "placesSourceMilanoAttribution": "Ayuntamiento de Milán, ubicación de parques caninos (dati.comune.milano.it), licencia CC BY 4.0. Incluye datos procesados CC BY 3.0 de dati.gov.it",
   "placesSourceLicenseCcBy": "Creative Commons Atribución 4.0 (CC BY 4.0)",
-  "placesSourceUsersName": "Usuarios de VetApp",
+  "placesSourceUsersName": "Usuarios de Quokka",
   "placesSourceUsersDescription": "Lugares informados por usuarios y confirmados por otros usuarios.",
-  "placesSourceUsersAttribution": "Informado por usuarios de VetApp",
+  "placesSourceUsersAttribution": "Informado por usuarios de Quokka",
   "placesMapTitle": "Mapa · {radius}",
   "@placesMapTitle": {
     "placeholders": {
@@ -2103,7 +2103,7 @@
   "localEventsLocating": "Buscando tu ubicación…",
   "localEventsSearchingAround": "Buscando qué hay cerca. La primera búsqueda en una zona puede tardar hasta un minuto.",
   "localEventsConsentTitle": "¿Usar tu ubicación?",
-  "localEventsConsentBody": "VetApp usa la ubicación del teléfono solo mientras utilizas la app para mostrar servicios cercanos. También puedes indicar una dirección.",
+  "localEventsConsentBody": "Quokka usa la ubicación del teléfono solo mientras utilizas la app para mostrar servicios cercanos. También puedes indicar una dirección.",
   "localEventsConsentChooseAddress": "Elegir una dirección",
   "localEventsConsentAllow": "Permitir",
   "localEventsReportMissing": "Informar de un lugar ausente",
@@ -2553,7 +2553,7 @@
   "settingsLayoutUnitsTitle": "Unidad de medida",
   "settingsSectionPhotosVideos": "Fotos y vídeos",
   "settingsGallerySaveTitle": "Guardar fotos en la galería",
-  "settingsGallerySaveSubtitle": "Las fotos y vídeos hechos con la cámara de la app se copian al álbum «VetApp» del teléfono.",
+  "settingsGallerySaveSubtitle": "Las fotos y vídeos hechos con la cámara de la app se copian al álbum «Quokka» del teléfono.",
   "settingsSectionLocation": "Ubicación",
   "settingsLocationIntro": "Se usa para personalizar eventos y noticias de tu zona.",
   "settingsLocationReferenceTitle": "Ubicación de referencia",
@@ -2801,7 +2801,7 @@
   "walksConfirmFinishBody": "Se guardará el recorrido registrado hasta ahora.",
   "walksSavingSnackbar": "Guardando paseo…",
   "walksNotifPermTitle": "Ver el paseo en las notificaciones",
-  "walksNotifPermBody": "Durante el paseo, VetApp muestra una notificación fija con tiempo y distancia. Desde ella puedes pausar o terminar incluso con el teléfono en el bolsillo. Se necesita permiso de notificaciones para verla.\n\nEl paseo se registra aunque elijas «Ahora no».",
+  "walksNotifPermBody": "Durante el paseo, Quokka muestra una notificación fija con tiempo y distancia. Desde ella puedes pausar o terminar incluso con el teléfono en el bolsillo. Se necesita permiso de notificaciones para verla.\n\nEl paseo se registra aunque elijas «Ahora no».",
   "walksNotifPermNotNow": "Ahora no",
   "walksNotifPermAllow": "Permitir",
   "walksNotifTitleWithPet": "Paseo con {petName}",
@@ -2830,7 +2830,7 @@
     }
   },
   "walksNotifFallbackPausedText": "El seguimiento está en pausa. Reanúdalo en la app cuando quieras.",
-  "walksNotifFallbackRunningText": "VetApp está registrando el recorrido del paseo.",
+  "walksNotifFallbackRunningText": "Quokka está registrando el recorrido del paseo.",
   "walksNotifChannelName": "Seguimiento del paseo",
   "walksSyncFailed": "Sincronización fallida: cambio guardado solo en este teléfono",
   "walksFavoriteSaveFailed": "No pude guardar el favorito. Inténtalo de nuevo.",
@@ -2942,7 +2942,7 @@
   "settingsAccountSupportSubtitle": "Escríbenos un correo",
   "settingsAccountDelete": "Eliminar cuenta",
   "settingsAccountDeleteSubtitle": "Borra tu cuenta y todos tus datos",
-  "accountSupportSubject": "Asistencia VetApp (versión {version})",
+  "accountSupportSubject": "Asistencia Quokka (versión {version})",
   "@accountSupportSubject": {
     "placeholders": {
       "version": {
@@ -3114,7 +3114,7 @@
     }
   },
   "monitoringBcsGuideClear": "Quitar la valoración",
-  "monitoringBcsGuideDisclaimer": "Es una indicación orientativa que no sustituye la consulta con el veterinario. Las ilustraciones son esquemáticas y originales de VetApp.",
+  "monitoringBcsGuideDisclaimer": "Es una indicación orientativa que no sustituye la consulta con el veterinario. Las ilustraciones son esquemáticas y originales de Quokka.",
   "monitoringBcsGuideSource": "Fuente: {source}",
   "@monitoringBcsGuideSource": {
     "placeholders": {
@@ -3137,8 +3137,8 @@
   "monitoringBcsGuideAdvice2": "Valora siempre de la misma manera: mismo lugar, animal de pie y tranquilo, los mismos tres pasos (tacto, vista desde arriba, vista de lado).",
   "monitoringBcsGuideAdvice3": "Si tienes dudas, pregunta al veterinario: la condición corporal se aprende mejor con alguien que te enseñe cómo tocar.",
   "monitoringBcsGuideCaveatRabbit": "En los conejos esta escala es menos fiable: dos personas pueden dar puntuaciones distintas al mismo conejo. Si tienes dudas, pregunta al veterinario.",
-  "monitoringBcsSourceDog": "criterios de la escala de 9 puntos del WSAVA Global Nutrition Committee para perros (Laflamme, 1997), resumidos con palabras nuestras y reducidos a 5 niveles por VetApp. No es material oficial de la WSAVA.",
-  "monitoringBcsSourceCat": "criterios de la escala de 9 puntos del WSAVA Global Nutrition Committee para gatos (Laflamme, 1997; validada por Bjornvad y colaboradores, 2011), resumidos con palabras nuestras y reducidos a 5 niveles por VetApp. No es material oficial de la WSAVA.",
+  "monitoringBcsSourceDog": "criterios de la escala de 9 puntos del WSAVA Global Nutrition Committee para perros (Laflamme, 1997), resumidos con palabras nuestras y reducidos a 5 niveles por Quokka. No es material oficial de la WSAVA.",
+  "monitoringBcsSourceCat": "criterios de la escala de 9 puntos del WSAVA Global Nutrition Committee para gatos (Laflamme, 1997; validada por Bjornvad y colaboradores, 2011), resumidos con palabras nuestras y reducidos a 5 niveles por Quokka. No es material oficial de la WSAVA.",
   "monitoringBcsSourceRabbit": "Rabbit Size-O-Meter de 5 niveles de la PFMA (Pet Food Manufacturers' Association), resumido con palabras nuestras. La fiabilidad entre evaluadores es limitada (Halck y colaboradores, Veterinary Record, 2025).",
   "monitoringBcsNotAssessed": "Sin valorar",
   "monitoringBcsAssess": "Valora la condición corporal",
@@ -3708,7 +3708,7 @@
   "remindersDonePostponed": "Te lo recordaré mañana.",
   "remindersDoneTooltip": "Marcar como hecho",
   "remindersNotifPermTitle": "¿Quieres recibir los avisos?",
-  "remindersNotifPermBody": "Para avisarte cuando venza un recordatorio, VetApp necesita permiso para enviar notificaciones. Puedes cambiarlo en cualquier momento en Ajustes.",
+  "remindersNotifPermBody": "Para avisarte cuando venza un recordatorio, Quokka necesita permiso para enviar notificaciones. Puedes cambiarlo en cualquier momento en Ajustes.",
   "remindersNotifPermNotNow": "Ahora no",
   "remindersNotifPermAllow": "Permitir",
   "remindersNotifOffBanner": "Las notificaciones están desactivadas: los recordatorios no sonarán",

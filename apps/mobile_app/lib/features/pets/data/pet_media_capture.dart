@@ -103,7 +103,7 @@ class PetMediaCapture extends ChangeNotifier {
     final capturedAt = _now();
     _progress = appL10n.petsMediaPreparingFile;
     _changed();
-    // Runs before the upload so the copy in the VetApp album exists even if the
+    // Runs before the upload so the copy in the Quokka album exists even if the
     // upload fails; never throws.
     await _saveCopy(file, isVideo: isVideo);
     return importFiles(petId, [file], capturedAt: capturedAt);

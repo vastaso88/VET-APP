@@ -10,7 +10,7 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get petsConsentFullText =>
-      'Um Ihnen genauer raten zu können, darf der Assistent die Krankenakte Ihres Tieres lesen. Wenn Sie eine Frage stellen, kann er die drei neuesten Einträge lesen, mit Titel, Kategorie (Besuch, Untersuchung, Impfung, Therapie oder Dokument), Datum des Ereignisses, Beschreibung und Text der angehängten Dokumente, auch wenn sie nichts mit der Frage zu tun haben. Er kann außerdem frühere Erkrankungen lesen, die noch andauern, mit Name und Beginndatum, höchstens fünf. Wenn Sie um die Erklärung einer Untersuchung bitten, kann er die dazugehörigen Dokumente lesen, höchstens zwei. Von einem sehr langen Dokument liest er nur den Anfang. Was er liest, wird an den externen Anbieter für künstliche Intelligenz gesendet, der die Antwort verfasst. VetApp verwendet es nur, um Ihnen zu antworten. Sie können die Einwilligung jederzeit im Tierprofil oder in den Einstellungen widerrufen: Der Widerruf gilt für alle folgenden Anfragen.';
+      'Um Ihnen genauer raten zu können, darf der Assistent die Krankenakte Ihres Tieres lesen. Wenn Sie eine Frage stellen, kann er die drei neuesten Einträge lesen, mit Titel, Kategorie (Besuch, Untersuchung, Impfung, Therapie oder Dokument), Datum des Ereignisses, Beschreibung und Text der angehängten Dokumente, auch wenn sie nichts mit der Frage zu tun haben. Er kann außerdem frühere Erkrankungen lesen, die noch andauern, mit Name und Beginndatum, höchstens fünf. Wenn Sie um die Erklärung einer Untersuchung bitten, kann er die dazugehörigen Dokumente lesen, höchstens zwei. Von einem sehr langen Dokument liest er nur den Anfang. Was er liest, wird an den externen Anbieter für künstliche Intelligenz gesendet, der die Antwort verfasst. Quokka verwendet es nur, um Ihnen zu antworten. Sie können die Einwilligung jederzeit im Tierprofil oder in den Einstellungen widerrufen: Der Widerruf gilt für alle folgenden Anfragen.';
 
   @override
   String get appTitle => 'VET APP';
@@ -303,7 +303,7 @@ class AppLocalizationsDe extends AppLocalizations {
       'Der vollständige Text der Datenschutzerklärung ist in Vorbereitung und wird hier bald verfügbar sein, mit der Möglichkeit zum Herunterladen.';
 
   @override
-  String get authHubTitle => 'VetApp: Ihre Tiere immer griffbereit';
+  String get authHubTitle => 'Quokka: Ihre Tiere immer griffbereit';
 
   @override
   String get authHubSubtitle =>
@@ -461,7 +461,7 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get billingTrialBannerEnding =>
-      'Die kostenlose Testphase endet bald: Wählen Sie einen Tarif, um VetApp weiter zu nutzen.';
+      'Die kostenlose Testphase endet bald: Wählen Sie einen Tarif, um Quokka weiter zu nutzen.';
 
   @override
   String get billingDeveloperBanner =>
@@ -531,7 +531,7 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get billingPaywallSubtitle =>
-      'Wählen Sie, wie es mit VetApp weitergeht. Den Tarif können Sie jederzeit in den Einstellungen ändern.';
+      'Wählen Sie, wie es mit Quokka weitergeht. Den Tarif können Sie jederzeit in den Einstellungen ändern.';
 
   @override
   String billingChoosePlan(String plan) {
@@ -560,7 +560,7 @@ class AppLocalizationsDe extends AppLocalizations {
   String get billingTrialDialogSeePlans => 'Tarife ansehen';
 
   @override
-  String get firstRunWelcomeTitle => 'Willkommen bei VetApp.';
+  String get firstRunWelcomeTitle => 'Willkommen bei Quokka.';
 
   @override
   String get firstRunPlanIntroSubtitle =>
@@ -627,7 +627,7 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get firstRunTutorialRemindersBody =>
-      'Impfungen, Medikamente und Tierarztbesuche: Legen Sie eine Erinnerung fest, und VetApp benachrichtigt Sie zur richtigen Zeit.';
+      'Impfungen, Medikamente und Tierarztbesuche: Legen Sie eine Erinnerung fest, und Quokka benachrichtigt Sie zur richtigen Zeit.';
 
   @override
   String get firstRunTutorialStart => 'Los geht\'s';
@@ -2337,7 +2337,7 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String petsDetailRecordShareText(String title, String source, String date) {
-    return '📄 $title\n$source · $date\n\nGeteilt von VetApp';
+    return '📄 $title\n$source · $date\n\nGeteilt von Quokka';
   }
 
   @override
@@ -3028,11 +3028,11 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get placesDisclaimerClinic =>
-      'Rufen Sie im Notfall vor der Abfahrt an: Öffnungszeiten und Kontaktdaten stammen aus offenen Datenquellen und werden von VetApp nicht überprüft.';
+      'Rufen Sie im Notfall vor der Abfahrt an: Öffnungszeiten und Kontaktdaten stammen aus offenen Datenquellen und werden von Quokka nicht überprüft.';
 
   @override
   String get placesDisclaimerGeneric =>
-      'Öffnungszeiten und Kontaktdaten stammen aus offenen Datenquellen und werden von VetApp nicht überprüft.';
+      'Öffnungszeiten und Kontaktdaten stammen aus offenen Datenquellen und werden von Quokka nicht überprüft.';
 
   @override
   String placesSourceLine(String source) {
@@ -3231,7 +3231,7 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get placesSourcesIntro =>
-      'Die Orte im Radar stammen aus offenen Datenquellen, nicht von VetApp. Jeder Eintrag nennt seine Quelle. Öffnungszeiten und Kontaktdaten sind möglicherweise nicht aktuell.';
+      'Die Orte im Radar stammen aus offenen Datenquellen, nicht von Quokka. Jeder Eintrag nennt seine Quelle. Öffnungszeiten und Kontaktdaten sind möglicherweise nicht aktuell.';
 
   @override
   String get placesSourcesNoContact =>
@@ -3292,14 +3292,14 @@ class AppLocalizationsDe extends AppLocalizations {
       'Creative Commons Namensnennung 4.0 (CC BY 4.0)';
 
   @override
-  String get placesSourceUsersName => 'VetApp-Nutzer';
+  String get placesSourceUsersName => 'Quokka-Nutzer';
 
   @override
   String get placesSourceUsersDescription =>
       'Von Nutzern gemeldete und von anderen Nutzern bestätigte Orte.';
 
   @override
-  String get placesSourceUsersAttribution => 'Von VetApp-Nutzern gemeldet';
+  String get placesSourceUsersAttribution => 'Von Quokka-Nutzern gemeldet';
 
   @override
   String placesMapTitle(String radius) {
@@ -3719,7 +3719,7 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get localEventsConsentBody =>
-      'Um Ihnen zu zeigen, was in der Nähe ist, nutzt VetApp den Standort Ihres Telefons nur, solange Sie die App verwenden. Alternativ können Sie eine Adresse angeben.';
+      'Um Ihnen zu zeigen, was in der Nähe ist, nutzt Quokka den Standort Ihres Telefons nur, solange Sie die App verwenden. Alternativ können Sie eine Adresse angeben.';
 
   @override
   String get localEventsConsentChooseAddress => 'Adresse wählen';
@@ -4496,7 +4496,7 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get settingsGallerySaveSubtitle =>
-      'Fotos und Videos, die Sie mit der Kamera der App aufnehmen, werden in das Album „VetApp“ auf Ihrem Telefon kopiert.';
+      'Fotos und Videos, die Sie mit der Kamera der App aufnehmen, werden in das Album „Quokka“ auf Ihrem Telefon kopiert.';
 
   @override
   String get settingsSectionLocation => 'Standort';
@@ -4896,7 +4896,7 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get walksNotifPermBody =>
-      'Während des Spaziergangs zeigt VetApp eine dauerhafte Benachrichtigung mit Zeit und Strecke an. Dort können Sie ihn pausieren oder beenden, auch wenn das Telefon in der Tasche steckt. Um sie zu sehen, wird die Berechtigung für Benachrichtigungen benötigt.\n\nDer Spaziergang wird trotzdem aufgezeichnet, auch wenn Sie „Nicht jetzt“ wählen.';
+      'Während des Spaziergangs zeigt Quokka eine dauerhafte Benachrichtigung mit Zeit und Strecke an. Dort können Sie ihn pausieren oder beenden, auch wenn das Telefon in der Tasche steckt. Um sie zu sehen, wird die Berechtigung für Benachrichtigungen benötigt.\n\nDer Spaziergang wird trotzdem aufgezeichnet, auch wenn Sie „Nicht jetzt“ wählen.';
 
   @override
   String get walksNotifPermNotNow => 'Nicht jetzt';
@@ -4928,7 +4928,7 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get walksNotifFallbackRunningText =>
-      'VetApp zeichnet die Strecke Ihres Spaziergangs auf.';
+      'Quokka zeichnet die Strecke Ihres Spaziergangs auf.';
 
   @override
   String get walksNotifChannelName => 'Spaziergang-Aufzeichnung';
@@ -5102,7 +5102,7 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String accountSupportSubject(String version) {
-    return 'VetApp-Support (Version $version)';
+    return 'Quokka-Support (Version $version)';
   }
 
   @override
@@ -5441,7 +5441,7 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get monitoringBcsGuideDisclaimer =>
-      'Das ist ein Richtwert und ersetzt nicht den Besuch in der Tierarztpraxis. Die Illustrationen sind schematisch und stammen von VetApp.';
+      'Das ist ein Richtwert und ersetzt nicht den Besuch in der Tierarztpraxis. Die Illustrationen sind schematisch und stammen von Quokka.';
 
   @override
   String monitoringBcsGuideSource(String source) {
@@ -5478,11 +5478,11 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get monitoringBcsSourceDog =>
-      'Kriterien der 9-Punkte-Skala des WSAVA Global Nutrition Committee für Hunde (Laflamme, 1997), von uns mit eigenen Worten zusammengefasst und von VetApp auf 5 Stufen verkürzt. Kein offizielles WSAVA-Material.';
+      'Kriterien der 9-Punkte-Skala des WSAVA Global Nutrition Committee für Hunde (Laflamme, 1997), von uns mit eigenen Worten zusammengefasst und von Quokka auf 5 Stufen verkürzt. Kein offizielles WSAVA-Material.';
 
   @override
   String get monitoringBcsSourceCat =>
-      'Kriterien der 9-Punkte-Skala des WSAVA Global Nutrition Committee für Katzen (Laflamme, 1997; validiert von Bjornvad und Kollegen, 2011), von uns mit eigenen Worten zusammengefasst und von VetApp auf 5 Stufen verkürzt. Kein offizielles WSAVA-Material.';
+      'Kriterien der 9-Punkte-Skala des WSAVA Global Nutrition Committee für Katzen (Laflamme, 1997; validiert von Bjornvad und Kollegen, 2011), von uns mit eigenen Worten zusammengefasst und von Quokka auf 5 Stufen verkürzt. Kein offizielles WSAVA-Material.';
 
   @override
   String get monitoringBcsSourceRabbit =>
@@ -6422,7 +6422,7 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get remindersNotifPermBody =>
-      'Damit wir Sie benachrichtigen können, wenn eine Erinnerung fällig ist, benötigt VetApp die Berechtigung für Benachrichtigungen. Sie können dies jederzeit in den Einstellungen ändern.';
+      'Damit wir Sie benachrichtigen können, wenn eine Erinnerung fällig ist, benötigt Quokka die Berechtigung für Benachrichtigungen. Sie können dies jederzeit in den Einstellungen ändern.';
 
   @override
   String get remindersNotifPermNotNow => 'Nicht jetzt';
