@@ -5,8 +5,8 @@ sessione «APK e App nativa», che farà l'integrazione. Non è consulenza legal
 
 > **Stato 2026-10-28**: Sentry adottato (commit cc648c6, `apps/mobile_app/lib/shared/crash/crash_reporting.dart`,
 > runbook `docs/runbooks/crash_reporting.md`). Resta spento finché il proprietario non crea l'organizzazione in
-> regione EU, firma il DPA e passa `CRASH_REPORTING=true` + `SENTRY_DSN` alla build. Esito della verifica del
-> filtro in fondo (§ Verifica del filtro).
+> regione EU, firma il DPA e passa `CRASH_REPORTING=true` + `SENTRY_DSN` alla build. Verifica del filtro in fondo:
+> punti 1-3 risolti (commit 8f0c599), resta la prova con eventi reali.
 
 ## In due righe
 
@@ -137,33 +137,24 @@ Confronto con la configurazione minima raccomandata sopra:
 | Messaggio dell'eccezione rimosso | `exception.value = null`, `event.message = null`, `flutter_error_details` scartato | ✅ test "nothing of what the owner wrote survives" |
 | Mai su web | `isAvailable` falso su web | ✅ |
 
-Punti da sistemare o da verificare (per la sessione APK; non modificato il Dart):
+Punti esaminati (per la sessione APK). Stato al 2026-10-28 dopo il commit 8f0c599 su Francesco:
 
-1. **Crash nativi aggirano il filtro** (da correggere). `scrubCrashEvent` è un `beforeSend` **Dart**: viene eseguito
-   per gli eventi catturati dal lato Dart. I crash duri del livello nativo (eccezioni Java/Kotlin non gestite, ad esempio
-   nel `WalkTrackingService.kt`, crash NDK, ANR) sono catturati e inviati dall'SDK Android con la sua elaborazione, che
-   **include il messaggio dell'eccezione** e i propri contesti; il closure Dart non può girare in quel percorso (per un
-   crash duro l'invio avviene al riavvio successivo, prima ancora che Dart parta). La documentazione Sentry descrive
-   `enableNativeCrashHandling` come l'interruttore di questa cattura nativa (default attivo) e non afferma che i
-   crash nativi passino dagli hook Dart. Correzione consigliata, coerente con la scelta "privacy prima della
-   diagnostica": in `SentryCrashTransport.start` aggiungere `..enableNativeCrashHandling = false` (e lasciare
-   `anrEnabled` al default disattivato); si rinuncia ai crash del solo servizio di passeggiata nativo. Alternativa
-   se si vogliono anche quelli: lasciare attivo, dichiarare nell'informativa che per i crash nativi può arrivare il
-   messaggio tecnico dell'eccezione, e verificare sull'evento di prova nativo che non contenga dati dell'utente.
-2. **Contesto `device` tenuto per intero** (da verificare sull'evento di prova). I contesti arrivano dal livello
-   nativo prima di `beforeSend`; con `sendDefaultPii = false` l'SDK Android non dovrebbe popolare il nome del
-   dispositivo scelto dall'utente, ma potrebbe includere un identificativo di installazione (`contexts.device.id`)
-   e `contexts.app.device_app_hash`. Se sull'evento ricevuto compaiono, azzerarli in `scrubCrashEvent`
-   (`event.contexts.device?.name`, `?.id`/`deviceId`, `event.contexts.app?.deviceAppHash`) ed estendere il test
-   "nothing survives" con un nome dispositivo finto.
-3. **`culture`** (lingua e fuso orario) è tenuto: dato debole, accettabile; se si vuole il minimo assoluto, togliere
-   `culture` da `_keptContexts`.
-4. **Percorsi assoluti nei frame** (bassa): i frame del nostro codice usano URI `package:`; se nell'evento di prova
-   compaiono percorsi assoluti della macchina di build (nome utente Windows), azzerare `frame.absPath`.
-5. **`exception.mechanism`, `event.logger`, `event.fingerprint`, `event.threads`** non sono azzerati: non
-   trasportano testo dell'utente nei casi noti; controllarli una volta sull'evento di prova.
-6. Prima del rilascio con il flag: provocare un crash Dart **e** un crash nativo con un account di test, leggere i
-   due eventi su Sentry e spuntare i punti 1-5; annotare la data in questo documento.
+1. **Crash nativi** — ✅ risolto. `scrubCrashEvent` è un `beforeSend` **Dart** e non può girare per i crash duri del
+   livello nativo (eccezioni Java/Kotlin non gestite, crash NDK, ANR), che l'SDK Android invia con la propria
+   elaborazione, messaggio dell'eccezione incluso. In `SentryCrashTransport.start` ora sono spenti sia
+   `enableNativeCrashHandling` sia `anrEnabled`; nota: in `sentry_flutter` 9.0.0 **`anrEnabled` è attivo di default**
+   (`sentry_flutter_options.dart`: `bool anrEnabled = true`), per questo lo spegnimento esplicito era necessario.
+   Si rinuncia ai crash del solo servizio nativo di passeggiata.
+2. **Contesti `device` e `app`** — ✅ risolto. Non sono più tenuti per intero: vengono ricostruiti da una lista di
+   campi ammessi (modello, sistema, versione dell'app...), così cadono anche id di installazione, nome del telefono,
+   IMEI, `device_app_hash` e `viewNames`.
+3. **Percorsi assoluti nei frame** — ✅ risolto. I percorsi della macchina di build sono tolti dai frame
+   (`scrubStackPath`).
+4. **`culture`** (lingua e fuso orario) tenuto: dato debole, accettabile. `exception.mechanism`, `event.logger`,
+   `event.fingerprint`, `event.threads` non azzerati: senza testo dell'utente nei casi noti.
+5. ⏳ **Aperto fino all'account Sentry**: prima del primo rilascio con il flag, provocare un crash Dart con un
+   account di test, leggere l'evento ricevuto su Sentry, confermare i punti 1-4 sull'evento reale e annotare qui
+   la data.
 
 ## Fonti
 
