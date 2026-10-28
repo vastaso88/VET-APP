@@ -49,6 +49,10 @@ messaggio di rilascio o nel PR.
       firma con keystore di release (mai debug), `android:debuggable` assente.
 - [ ] Nessun permesso Android nuovo senza motivazione scritta in
       `docs/compliance/05_permessi_dispositivo_os.md`.
+- [ ] `CRASH_REPORTING=true` **solo** con `SENTRY_DSN` di un'organizzazione in
+      regione **EU** e con il **DPA Sentry firmato** e archiviato; altrimenti la
+      build va fatta senza il flag (il servizio resta spento). Mai il DSN nel
+      repository o nelle note di rilascio.
 - [ ] `flutter pub outdated` e `uv run pip-audit` (o equivalente) controllati;
       nessuna dipendenza con vulnerabilità nota non giustificata.
 - [ ] La versione in `pubspec.yaml` è aumentata; le note di rilascio

@@ -79,8 +79,8 @@ Finalità (voci del modulo Play). "Funzionalità" = App functionality; "Sicurezz
 | Attività nell'app → **Interazioni con l'app** | no (nessun SDK di analisi) | — | — | — | — | Il consenso "analytics" in Impostazioni esiste ma oggi non attiva alcun SDK: rispondere **no** finché resta così |
 | Attività nell'app → **Contenuti generati dagli utenti** | sì (annunci, segnalazioni di luoghi e stelle, proposte di eventi, segnalazioni di risposte) | no (annunci ed eventi approvati sono visibili agli altri utenti dentro l'app: Play non lo conta come condivisione con terzi) | no | no | Funzionalità | Pseudonimi per le segnalazioni radar |
 | Cronologia web / navigazione | no | — | — | — | — | — |
-| Info e prestazioni dell'app → **Log di arresto anomalo / Diagnostica** | **no oggi**; se si adotta il crash reporting (vedi `docs/security/10_crash_reporting.md`) → sì, non condiviso (fornitore con DPA), facoltativo, finalità Analisi | — | — | — | — | Nessun SDK oggi |
-| ID dispositivo o altri ID | no | — | — | — | — | Nessun ID pubblicitario; solo l'installation ID se si adotta Crashlytics |
+| Info e prestazioni dell'app → **Log di arresto anomalo** (dati diagnostici) | sì, **solo nelle build con `CRASH_REPORTING=true` e dopo il consenso** «Invia rapporti sugli errori» | no (Sentry = fornitore con DPA, organizzazione in regione EU) | no | **no** (facoltativo, opt-in, revocabile in Impostazioni) | Analisi (stabilità dell'app) | `scrubCrashEvent`: tipo eccezione, stack trace, modello/SO/versione; mai testo, utente, IP, URL, briciole. Se la build è senza flag rispondere **no** |
+| ID dispositivo o altri ID | no | — | — | — | — | Nessun ID pubblicitario; Sentry non riceve id utente né di installazione (da confermare sull'evento di prova: `contexts.device`) |
 
 ### 3.3 Altre risposte del modulo
 

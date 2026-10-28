@@ -3,6 +3,11 @@
 Ultimo aggiornamento: 2026-10-28. Parere della sessione Cybersicurezza per la
 sessione «APK e App nativa», che farà l'integrazione. Non è consulenza legale.
 
+> **Stato 2026-10-28**: Sentry adottato (commit cc648c6, `apps/mobile_app/lib/shared/crash/crash_reporting.dart`,
+> runbook `docs/runbooks/crash_reporting.md`). Resta spento finché il proprietario non crea l'organizzazione in
+> regione EU, firma il DPA e passa `CRASH_REPORTING=true` + `SENTRY_DSN` alla build. Esito della verifica del
+> filtro in fondo (§ Verifica del filtro).
+
 ## In due righe
 
 **Raccomandazione: Sentry, organizzazione nella regione EU (Francoforte),
@@ -115,6 +120,51 @@ utenti finali stanno in quel progetto; dichiarare il trasferimento USA
 nell'informativa (DPF Google) e nell'inventario fornitori; valutare che l'SDK
 aggiunge l'installation ID.
 
+## Verifica del filtro (2026-10-28, su `crash_reporting.dart` e `test/shared/crash_reporting_test.dart`)
+
+Confronto con la configurazione minima raccomandata sopra:
+
+| Raccomandazione | Nel codice | Esito |
+| --- | --- | --- |
+| Avvio solo dopo consenso, stop alla revoca e al logout | `CrashReporting.initialize/applyConsent/onSignedOut`, `CrashConsentStore` | ✅ con test |
+| Build flag + DSN fuori dal repo | `kCrashReportingFlag`, `kSentryDsn` da `--dart-define` | ✅ test "nothing can be sent" |
+| `sendDefaultPii = false` | impostato | ✅ |
+| Nessun screenshot / gerarchia widget | `attachScreenshot = false`, viewHierarchy default off | ✅ |
+| Niente session tracking / performance | tutti disattivati | ✅ (più di quanto chiesto) |
+| Breadcrumb puliti | `beforeBreadcrumb` scarta tutto, `enableAutoNativeBreadcrumbs = false`, `event.breadcrumbs = null` | ✅ (scelta più severa: nessuna briciola) |
+| Nessun user id / e-mail | mai impostati; `event.user = null` | ✅ |
+| `environment` = flavor, `release` = versione+build | package name, `version+buildNumber` | ✅ |
+| Messaggio dell'eccezione rimosso | `exception.value = null`, `event.message = null`, `flutter_error_details` scartato | ✅ test "nothing of what the owner wrote survives" |
+| Mai su web | `isAvailable` falso su web | ✅ |
+
+Punti da sistemare o da verificare (per la sessione APK; non modificato il Dart):
+
+1. **Crash nativi aggirano il filtro** (da correggere). `scrubCrashEvent` è un `beforeSend` **Dart**: viene eseguito
+   per gli eventi catturati dal lato Dart. I crash duri del livello nativo (eccezioni Java/Kotlin non gestite, ad esempio
+   nel `WalkTrackingService.kt`, crash NDK, ANR) sono catturati e inviati dall'SDK Android con la sua elaborazione, che
+   **include il messaggio dell'eccezione** e i propri contesti; il closure Dart non può girare in quel percorso (per un
+   crash duro l'invio avviene al riavvio successivo, prima ancora che Dart parta). La documentazione Sentry descrive
+   `enableNativeCrashHandling` come l'interruttore di questa cattura nativa (default attivo) e non afferma che i
+   crash nativi passino dagli hook Dart. Correzione consigliata, coerente con la scelta "privacy prima della
+   diagnostica": in `SentryCrashTransport.start` aggiungere `..enableNativeCrashHandling = false` (e lasciare
+   `anrEnabled` al default disattivato); si rinuncia ai crash del solo servizio di passeggiata nativo. Alternativa
+   se si vogliono anche quelli: lasciare attivo, dichiarare nell'informativa che per i crash nativi può arrivare il
+   messaggio tecnico dell'eccezione, e verificare sull'evento di prova nativo che non contenga dati dell'utente.
+2. **Contesto `device` tenuto per intero** (da verificare sull'evento di prova). I contesti arrivano dal livello
+   nativo prima di `beforeSend`; con `sendDefaultPii = false` l'SDK Android non dovrebbe popolare il nome del
+   dispositivo scelto dall'utente, ma potrebbe includere un identificativo di installazione (`contexts.device.id`)
+   e `contexts.app.device_app_hash`. Se sull'evento ricevuto compaiono, azzerarli in `scrubCrashEvent`
+   (`event.contexts.device?.name`, `?.id`/`deviceId`, `event.contexts.app?.deviceAppHash`) ed estendere il test
+   "nothing survives" con un nome dispositivo finto.
+3. **`culture`** (lingua e fuso orario) è tenuto: dato debole, accettabile; se si vuole il minimo assoluto, togliere
+   `culture` da `_keptContexts`.
+4. **Percorsi assoluti nei frame** (bassa): i frame del nostro codice usano URI `package:`; se nell'evento di prova
+   compaiono percorsi assoluti della macchina di build (nome utente Windows), azzerare `frame.absPath`.
+5. **`exception.mechanism`, `event.logger`, `event.fingerprint`, `event.threads`** non sono azzerati: non
+   trasportano testo dell'utente nei casi noti; controllarli una volta sull'evento di prova.
+6. Prima del rilascio con il flag: provocare un crash Dart **e** un crash nativo con un account di test, leggere i
+   due eventi su Sentry e spuntare i punti 1-5; annotare la data in questo documento.
+
 ## Fonti
 
 - Firebase, "Privacy and Security in Firebase": dati di Crashlytics, servizio
@@ -124,3 +174,5 @@ aggiunge l'installation ID.
   organizzazione, piano gratuito incluso: <https://docs.sentry.io/organization/data-storage-location/>
 - Sentry, FAQ sulla regione EU: <https://intercom.help/sentryio/en/articles/13964378>
 - Sentry, privacy e sicurezza (DPA, DPF): <https://sentry.io/trust/privacy/>
+- Sentry Flutter, opzioni (`beforeSend`, `enableNativeCrashHandling`, `anrEnabled`, `sendDefaultPii`):
+  <https://docs.sentry.io/platforms/dart/guides/flutter/configuration/options/>
