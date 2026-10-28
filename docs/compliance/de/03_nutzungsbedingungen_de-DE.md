@@ -1,7 +1,7 @@
 > **BOZZA — non è consulenza legale; da rivedere da un avvocato locale prima della pubblicazione**
 > ENTWURF — keine Rechtsberatung; vor der Veröffentlichung von einer Rechtsanwältin oder einem Rechtsanwalt in Deutschland prüfen zu lassen.
 
-Note per chi revisiona (italiano): i prezzi sono **segnaposto** (nell'app attuale: Plus 4,99 € / 3,99 €, Pro 9,99 € / 7,99 € al mese, segnaposto del proprietario; i piani oggi non si distinguono per funzioni). I pagamenti non sono attivi. Versione: **de-DE v1 (Entwurf)**, 2026-10-14. Le sezioni 5 e 6 sono scritte per `§ 312j`, `§ 312k`, `§ 356`/`§ 356a BGB` (doc 01 §4); la sezione 8 vieta gli animali vivi (raccomandazione). Le clausole di responsabilità (sez. 11) seguono lo schema usuale tedesco (nessuna esclusione per dolo, colpa grave, lesioni, obblighi essenziali) ma vanno viste da un avvocato (AGB-Recht, §§ 305 ss. BGB).
+Note per chi revisiona (italiano): i prezzi sono **segnaposto** (nell'app attuale: Plus 4,99 € / 3,99 €, Pro 9,99 € / 7,99 € al mese, segnaposto del proprietario; i piani oggi non si distinguono per funzioni). I pagamenti non sono attivi. Versione: **de-DE v1 (Entwurf)**, 2026-10-14. Le sezioni 5 e 6 sono scritte per `§ 312j`, `§ 312k`, `§ 356`/`§ 356a BGB` (doc 01 §4); la sezione 8 vieta gli animali in tutti i paesi (decisione del proprietario, 2026-10-26). Le clausole di responsabilità (sez. 11) seguono lo schema usuale tedesco (nessuna esclusione per dolo, colpa grave, lesioni, obblighi essenziali) ma vanno viste da un avvocato (AGB-Recht, §§ 305 ss. BGB).
 
 ---
 
@@ -58,7 +58,7 @@ Sie behalten Ihre Rechte an dem, was Sie hochladen (Fotos, Dokumente, Anzeigen, 
 
 Es gelten unsere Beitragsregeln (bei Ihrem ersten Beitrag angezeigt). Meldungen und Stimmen erscheinen ohne Ihren Namen. Veröffentlichen Sie keine persönlichen Angaben anderer. Anzeigen müssen ehrlich und zutreffend sein; Sie sind für Ihre Anzeige und für jedes Geschäft mit anderen Nutzenden selbst verantwortlich.
 
-**Keine lebenden Tiere.** Im Marktplatz dürfen in Deutschland keine lebenden Tiere verkauft, verschenkt oder vermittelt werden [Empfehlung; vom Anwalt zu bestätigen, siehe doc 01 §8]. Erlaubt sind Produkte und Dienstleistungen rund um Tiere.
+**Keine Tiere.** Im Marktplatz werden nur Gegenstände für Tiere angeboten. Tiere dürfen dort in keinem Land verkauft, verschenkt oder getauscht werden. Wir können Anzeigen entfernen, die gegen diese Regel verstoßen; Sie können eine Anzeige auf ihrer Seite melden („Anzeige melden“, Grund „Verkauft Tiere“). [Entscheidung des Eigentümers vom 26.10.2026, gilt in allen Ländern. Rechtlicher Hintergrund für Deutschland: doc 01 §8.]
 
 Wir können Inhalte entfernen oder Konten sperren, die gegen diese Bedingungen oder das Gesetz verstoßen, und begründen das, soweit möglich. Wenn Sie glauben, dass wir uns geirrt haben, schreiben Sie an [E-Mail]; wir prüfen es erneut.
 

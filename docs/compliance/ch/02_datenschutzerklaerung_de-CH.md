@@ -22,7 +22,7 @@ Unsere Angaben nach Art. 3 Abs. 1 lit. s UWG finden Sie im [Impressum] (Einstell
 
 | Kategorie | Beispiele | Woher die Daten stammen |
 |---|---|---|
-| Konto | E-Mail-Adresse, Name, Registrierungsdatum, Ihre Einwilligungsentscheide mit Datum und Version sowie die Sprach- und Regionsfassung, die Ihnen angezeigt wurde | Von Ihnen bei der Registrierung. Ihr Passwort wird von unserem Anmeldedienst bearbeitet |
+| Konto | E-Mail-Adresse, Vor- und Nachname, Registrierungsdatum, Ihre Einwilligungsentscheide mit Datum und Version sowie die Sprach- und Regionsfassung, die Ihnen angezeigt wurde. Freiwillig: Telefonnummer (keine Funktion nutzt sie; sie bleibt in Ihrem Profil, und Sie können sie ändern oder entfernen) und Profilfoto (nur Sie sehen es, in einem privaten Bereich Ihres Kontos; Sie können es ändern oder entfernen). Telefonnummer und Foto werden mit dem Konto gelöscht | Von Ihnen bei der Registrierung oder im Profil. Ihr Passwort wird von unserem Anmeldedienst bearbeitet |
 | Ihre Tiere | Name, Tierart, Rasse, Alter, Gewicht, Notizen, Fotos und Videos | Von Ihnen |
 | Dokumente und Gesundheitsakte | Dokumente, die Sie hochladen, und Gesundheitseinträge, die Sie erfassen. Sie können Angaben zu Ihnen oder zu anderen Personen enthalten (z. B. Ihren Namen und Ihre Adresse auf einer Tierarztrechnung) | Von Ihnen |
 | Chat | Ihre Fragen, die Antworten des Assistenten, Anhänge und Sprachnachrichten (wir wandeln sie in Text um, um zu antworten) | Von Ihnen und vom System |
@@ -52,6 +52,7 @@ Wir bearbeiten Personendaten nach den Grundsätzen des DSG (Rechtmässigkeit, Tr
 | Zweck | Grundlage / Rechtfertigung | Hinweise |
 |---|---|---|
 | Konto anlegen und führen; den Dienst bereitstellen (Tiere, Erinnerungen, Chat, Spaziergänge, Marktplatz) | Vertrag [bestätigen: Art. 31 Abs. 2 lit. a DSG] | Ohne diese Daten können wir den Dienst nicht erbringen |
+| Telefonnummer und Profilfoto in Ihrem Profil speichern, wenn Sie sie angeben | Einwilligung [bestätigen: Art. 31 Abs. 1 DSG], freiwillig | Keine Funktion nutzt die Telefonnummer; das Foto dient nur dazu, Ihnen Ihr Profil anzuzeigen. Sie können beides jederzeit im Profil entfernen |
 | Ihre Chat-Fragen beantworten, mithilfe eines externen KI-Anbieters | Vertrag | Antworten sind KI-generiert und als solche gekennzeichnet |
 | Den Chat die Gesundheitsakte eines Ihrer Tiere lesen lassen | Einwilligung | Freiwillig, pro Tier, jederzeit widerrufbar |
 | Orte in der Nähe anzeigen; Meldungen und Sternebewertungen zu Orten sammeln | Vertrag; für Beiträge [überwiegendes privates Interesse: bestätigen] | |

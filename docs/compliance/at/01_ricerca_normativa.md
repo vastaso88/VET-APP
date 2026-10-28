@@ -22,7 +22,7 @@ Premessa di fatto: titolare **italiano** (UE): nessun rappresentante ex art. 27 
 | PrAG § 9, ECG § 5 Abs. 2 | Prezzi finali con IVA | Media |
 | AI Act art. 50 | Come in DE (doc 05 `de/`) | Alta |
 | Tierärztegesetz (TÄG) | **Diagnosi e trattamento sono riservati ai veterinari** (§ 4); Fernbehandlung vietata (Erläuterungen); TeleVetRL 2024 | Alta |
-| Tierschutzgesetz (TSchG) | Annunci online di animali: **§ 8a TSchG**; raccomandazione: vietare nel Mercatino | Alta |
+| Tierschutzgesetz (TSchG) | Annunci online di animali: **§ 8a TSchG**; nel Mercatino gli animali sono vietati in tutti i paesi (decisione del proprietario, 2026-10-26) | Alta |
 | Età / Jugendschutz | 18+ (maggiore età), leggi dei Länder | Bassa |
 
 ## 1. Protezione dei dati: DSG 2018
@@ -66,7 +66,7 @@ Premessa di fatto: titolare **italiano** (UE): nessun rappresentante ex art. 27 
 
 - 🟡 **§ 8a TSchG** (introdotto nel 2017): gli animali possono essere inseriti online solo da **allevatori registrati** o nel quadro di detenzione autorizzata; i privati possono inserzionare solo singoli animali a determinate condizioni; per **cuccioli di cane e gatto**, i privati non possono offrirli pubblicamente. Fonti: [Salzburg24 su bazos.at](https://www.salzburg24.at/leben/tiere/tierhandel-auf-online-plattform-bazosat-gestoppt-art-200089), [Land NÖ](https://noe.gv.at/noe/Tierschutz/Tierleid_vermeiden.html), [Tierschutzombudsfrau](https://stockenboi.at/aktuelles/interessantes-aus-dem-tierschutzgesetz). Fonti 2018–2020; ❓ il testo vigente va letto nel RIS.
 - ✅/🟡 **Marcatura e registro:** chip obbligatorio e registrazione nella **Heimtierdatenbank** per cani e gatti da riproduzione (§ 24a TSchG; modifica 2025: i veterinari registrano i dati del primo detentore): [Land NÖ – Chip-Pflicht](https://noe.gv.at/noe/Tierschutz/Chip_Pflicht.html).
-- **Raccomandazione:** vietare nel Mercatino vendita/regalo di animali vivi (come DE e UK).
+- **Decisione del proprietario (2026-10-26):** nel Mercatino non si vendono, regalano né scambiano animali, in nessun paese: la regola non dipende più dall'Austria. Questa sezione resta come motivazione giuridica.
 
 ## 7. Altri aspetti
 

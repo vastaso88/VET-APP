@@ -25,7 +25,7 @@ Data: 2026-10-14. Le voci «conoscenza generale» sono da verificare; quelle con
 | Accessibilità | D.Lgs. 82/2022 | **Loi 2023-171 + décret 2023-931**, dal 28/06/2025; microimprese esonerate per i servizi (🟡); controllo DGCCRF | ⚖️ quale legge e se si è esonerati |
 | Veterinari | FNOVI, albi regionali; ricetta elettronica veterinaria | **Ordre national des vétérinaires** ✅; **L243-1** (esercizio abusivo: consulti, diagnosi, prescrizioni 🟡) | Nessuna diagnosi/prescrizione; **nessun consiglio personalizzato basato su anamnesi** (più severo del DE) |
 | Telemedicina veterinaria | normativa italiana | **Nessuna base legale oggi** (décret 2020-526 caduco dal 06/11/2021 ✅ Ordre) | L'app non è e non deve apparire «téléconsultation» |
-| Animali (vendita) | Legge e Regioni | I privati **non possono pubblicare online annunci di vendita di cani/gatti** ✅ justice.fr (28/04/2026); cessione gratuita con requisiti; **CEC dal 01/10/2022**; animalerie senza cani/gatti dal 01/01/2024 (🟡) | Mercatino senza animali vivi |
+| Animali (vendita) | Legge e Regioni | I privati **non possono pubblicare online annunci di vendita di cani/gatti** ✅ justice.fr (28/04/2026); cessione gratuita con requisiti; **CEC dal 01/10/2022**; animalerie senza cani/gatti dal 01/01/2024 (🟡) | Mercatino senza animali, in ogni paese (decisione del proprietario, 2026-10-26) |
 | Identificazione | Anagrafe canina regionale | **I-CAD** nazionale; cani da 4 mesi, gatti da 7 mesi ✅ justice.fr | Contenuti informativi |
 | Giurisdizione | Una | Foro del consumatore (Bruxelles I bis, 🟡) | Clausola di legge applicabile (doc 03 §15) |
 
@@ -61,4 +61,4 @@ Data: 2026-10-14. Le voci «conoscenza generale» sono da verificare; quelle con
 4. Consensi per `fr-FR` (doc 04); lingua mostrata salvata.
 5. Etichette IA e disclaimer (doc 05) — in particolare la linea «informazioni generali».
 6. Pulsanti di ordine, risoluzione, recesso e avvisi di rinnovo sulla web app (doc 03 §5).
-7. Mercatino: tolto «animali vivi» nella UI della Francia.
+7. Mercatino: nessun animale in nessun paese (decisione del proprietario, 2026-10-26); non è più una regola della Francia.

@@ -27,7 +27,7 @@ Data: 2026-10-14. Le voci con ✅ sono confermate nei doc 01/06; le altre sono �
 | Piattaforme | DSA + AGCOM | DSA + CNMC (❓) | Segnalazioni, motivazione delle rimozioni |
 | Veterinari | FNOVI, ricetta elettronica | Colegios + Consejo General; **Ley 44/2003** ✅; **RD 666/2023** ✅ | Nessuna diagnosi/prescrizione |
 | Ricetta | Ricetta elettronica veterinaria | Solo dopo **esame clinico** (art. 32.2 ✅); vendita a distanza Rx **vietata** ✅ | Nessun rimando a shop Rx |
-| Animali (vendita) | Legge e Regioni | **Ley 7/2023**: vendita online di animali da compagnia **vietata** (art. 57.1 ✅); cani/gatti/furetti solo da allevatore registrato (art. 55.1 ✅); cessione gratuita con contratto (art. 58.2 ✅) | Mercatino senza animali vivi |
+| Animali (vendita) | Legge e Regioni | **Ley 7/2023**: vendita online di animali da compagnia **vietata** (art. 57.1 ✅); cani/gatti/furetti solo da allevatore registrato (art. 55.1 ✅); cessione gratuita con contratto (art. 58.2 ✅) | Mercatino senza animali, in ogni paese (decisione del proprietario, 2026-10-26) |
 | Obblighi del proprietario | Anagrafe canina | Corso per tenere cani e assicurazione RC (art. 30 ✅, regolamento ❓); microchip (art. 51) | Contenuti informativi, non obbligo dell'app |
 | Giurisdizione | Una | Comunidades Autónomas con norme proprie su animali e consumo | Clausola di legge applicabile (doc 03 §15) |
 
@@ -64,4 +64,4 @@ Data: 2026-10-14. Le voci con ✅ sono confermate nei doc 01/06; le altre sono �
 4. Consensi per `es-ES` (doc 04); lingua mostrata salvata.
 5. Etichette IA e disclaimer (doc 05).
 6. Pulsanti «Pedido con obligación de pago», «Darme de baja», «Desistir del contrato» sulla web app; avviso di rinnovo a 15 giorni (doc 03 §5).
-7. Mercatino: togliere «animali vivi» nella UI della Spagna.
+7. Mercatino: nessun animale in nessun paese (decisione del proprietario, 2026-10-26); non è più una regola della Spagna.

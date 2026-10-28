@@ -24,7 +24,7 @@ Sessione: Legale DE. Data di consultazione di tutte le fonti: **2026-10-14**. Li
 | Verbraucherverträge über digitale Produkte (§§ 327 ff. BGB) | Garanzia, aggiornamenti, modifiche del servizio | Media |
 | AI Act art. 50 | Dichiarare che si parla con un'IA, **in vigore dal 02/08/2026** | Alta |
 | Diritto veterinario | Niente diagnosi finale né prescrizioni; l'app resta su informazioni generali e triage | Alta |
-| Tierschutz / Mercatino | Vendita di animali vivi: raccomandazione di **vietarla** | Alta |
+| Tierschutz / Mercatino | Vendita di animali: **vietata in tutti i paesi** (decisione del proprietario, 2026-10-26) | Alta |
 | Jugendschutz / età | 18+; capacità negoziale dei minori (§§ 104 ss. BGB) | Media |
 | BFSG (accessibilità) | Obbligo per servizi B2C online salvo microimprese | Media ⚖️ |
 | Store | Dati del «trader» (DSA), cancellazione account, schede privacy | Media |
@@ -107,7 +107,7 @@ Sessione: Legale DE. Data di consultazione di tutte le fonti: **2026-10-14**. Li
 
 - ✅ (più fonti istituzionali) Il **commercio professionale di vertebrati** richiede un'autorizzazione ex **§ 11 TierSchG**. Fonti: [Stadt Karlsruhe](https://web1.karlsruhe.de/service/Buergerdienste/leistung.php?id=6019791), [Merkblatt Erlangen-Höchstadt (12/2024)](https://erlangen-hoechstadt.de/media/15596/2024-12-06-merkblatt-erlaubnis-nach-11.pdf). La «professionalità» dipende dal caso (🟡 soglie indicative per l'allevamento: 3 cagne/3 cucciolate, 5 gatte/5 cucciolate).
 - 🟡 Non c'è un divieto federale generale di annunci online di animali; la Berlino ([handout](https://berlin.de/lb/tierschutz/haustierkauf/handout_onlinehandel-002.pdf)) lo definisce «non regolato»; il Bundesrat ha approvato nel 2021 una risoluzione (NRW) per limitarlo ad allevatori con autorizzazione (non è legge). eBay Kleinanzeigen dal 11/2022 richiede la § 11 per cani/gatti sotto 12 mesi (fonte secondaria, [Mimikama](https://www.mimikama.org/?p=293717)).
-- **Raccomandazione (come UK):** vietare nel Mercatino vendita e regalo di animali vivi in Germania finché un avvocato non rivede la materia. → doc 03 §8 e doc 08 domanda 3.
+- **Decisione del proprietario (2026-10-26):** nel Mercatino non si vendono, regalano né scambiano animali, in nessun paese: la regola non dipende più dalla Germania. Questa sezione resta come motivazione giuridica. → doc 03 §8.
 - ❓ Ordinanze dei Länder, obbligo di marcatura/registro (Tasso/FINDEFIX): non approfondite.
 
 ## 9. Piattaforma, contenuti dell'utente, accessibilità

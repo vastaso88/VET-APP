@@ -22,7 +22,7 @@ Data: 2026-10-14. Le voci «conoscenza generale» sono da verificare; ✅ = conf
 | IA | AI Act art. 50 | idem | idem | Etichetta IA obbligatoria |
 | Veterinari | FNOVI | **Tierärztegesetz**: diagnosi/trattamento **riservati**; Fernbehandlung vietata (Erläuterungen) ✅ TeleVetRL | DE: linee guida BTK, meno rigide | **Nessuna ipotesi diagnostica** |
 | Pubblicità | IAP | UWG + **§ 31 TÄG** per i veterinari | DE: HWG/UWG | Schede dello store prudenti |
-| Animali (vendita) | Leggi regionali | **§ 8a TSchG** annunci; Heimtierdatenbank; cuccioli non dai privati (🟡) | DE: § 11 TierSchG | Mercatino senza animali vivi |
+| Animali (vendita) | Leggi regionali | **§ 8a TSchG** annunci; Heimtierdatenbank; cuccioli non dai privati (🟡) | DE: § 11 TierSchG | Mercatino senza animali, in ogni paese (decisione del proprietario, 2026-10-26) |
 | Accessibilità | D.Lgs. 82/2022 | **BFSG austriaco** — legge di recepimento EAA (❓ non cercata) | DE: BFSG ✅ | ⚖️ |
 | Giurisdizione | Una | Federale + Länder (tutela giovani, caccia ecc.) | — | Clausola legge applicabile |
 
@@ -50,4 +50,4 @@ Data: 2026-10-14. Le voci «conoscenza generale» sono da verificare; ✅ = conf
 2. Campo indirizzo: PLZ a 4 cifre.
 3. Termini «Rücktritt» (non «Widerruf») nelle etichette dei pulsanti austriaci.
 4. Consensi `de-AT` (doc 04), IA e disclaimer (doc 05), numeri utili (doc 06).
-5. Mercatino: tolto «animali vivi».
+5. Mercatino: nessun animale in nessun paese (decisione del proprietario, 2026-10-26).

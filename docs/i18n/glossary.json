@@ -113,7 +113,7 @@
       "de": "Gebrauchtmarkt",
       "fr": "Marché de l'occasion",
       "keys": ["marketplacePageTitle", "activitiesMarketplaceTitle"],
-      "note": "Vincoli legali per paese (es. vendita di animali tra privati): vedi docs/compliance/<lingua>/."
+      "note": "Solo oggetti per animali: gli annunci di animali sono rifiutati in tutti i paesi (regola condivisa backend/app/SQL, packages/core/domain/marketplace/animal_policy.py). Termini per paese in docs/compliance/<lingua>/03_*."
     },
     {
       "id": "news",

@@ -70,7 +70,7 @@ Premessa di fatto: titolare **italiano** (UE), utenti in Svizzera → per la Svi
 
 - 🟡 **Annunci di cani** (Tierschutzverordnung, in vigore da 03/2018): obbligo di indicare dati di contatto del venditore (nome e indirizzo) e paese di allevamento/origine; multe fino a CHF 10.000 ([SRF](https://www.srf.ch/news/schweiz/untersuchung-des-sts-viele-online-hundeinserate-verstossen-gegen-das-gesetz)); la norma per i gatti non vale. Non ho letto il numero dell'articolo ❓.
 - 🟡 **Cani:** chip obbligatorio e registro **AMICUS** (Identitas AG, dal 2016); commercio professionale di animali domestici soggetto a autorizzazione e formazione (BLV). Fonti: [Identitas/Amicus via flyer](https://www.wuerenlos.ch/fileadmin/00_website/pdf/AMICUS_flyer.pdf), [Beobachter](https://www.beobachter.ch/natur/flora-fauna/arten-tierschutz/artikel/tierschutz_unserioeser-tierhandel-im-internet/).
-- **Raccomandazione:** vietare vendita e regalo di animali vivi nel Mercatino (come DE/AT/UK).
+- **Decisione del proprietario (2026-10-26):** nel Mercatino non si vendono, regalano né scambiano animali, in nessun paese: la regola non dipende più dalla Svizzera. Questa sezione resta come motivazione giuridica.
 
 ## 8. Altri aspetti
 

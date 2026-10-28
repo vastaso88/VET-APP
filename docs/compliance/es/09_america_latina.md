@@ -27,7 +27,7 @@ Tre fatti comuni: (1) **Groq/USA** è un trasferimento internazionale anche qui:
 2. **Consenso e dati sensibili.** In Colombia i dati sensibili (la salute dell'utente; quella dell'animale non lo è, ma i documenti caricati possono contenere dati dell'utente) richiedono consenso esplicito e opzionale; in Messico la nuova legge ha un regime proprio per i dati sensibili; in Cile e in Messico le nuove leggi sono recenti e le prassi non sono consolidate (🟡).
 3. **Diritto di recesso.** I termini sono più brevi (5–10 giorni) e, in Argentina, esiste un **pulsante** specifico: il pulsante «Desistir del contrato» di Spagna (doc 03 §5) non basta, serve la variante locale.
 4. **Veterinaria e farmaci.** Ogni paese ha il proprio ordine/legge di esercizio e le proprie regole su prescrizione, telemedicina e vendita di farmaci (non cercate qui ❓). La linea «nessuna diagnosi, nessun dosaggio, nessun Rx» (doc 05) è prudente, ma i numeri utili e i riferimenti a ordini/colegios vanno rifatti.
-5. **Animali.** Regole su vendita e cessione di animali, microchip e annunci non verificate: vietare gli animali vivi nel Mercatino è la scelta prudente (come DACH/Spagna).
+5. **Animali.** Regole su vendita e cessione di animali, microchip e annunci non verificate. Per il Mercatino non serve verificarle: gli animali sono vietati in tutti i paesi (decisione del proprietario, 2026-10-26).
 6. **IA.** Non c'è un equivalente dell'art. 50 AI Act già in vigore in tutti e quattro (progetti di legge in vari paesi, ❓ non cercati): per prudenza si mantiene l'etichetta «Generado por IA».
 7. **Emergenza e numeri utili.** Tutto da rifare (112 vale in Spagna, non qui): Messico, Argentina, Colombia, Cile hanno numeri diversi (❓ non verificati) e non ho verificato se esistano centri antitossici che rispondono a proprietari di animali.
 8. **Fiscale e pagamenti.** Valute locali, IVA/impuestos sui servizi digitali dei fornitori esteri, store locali e sistemi di pagamento: ⚖️ non valutati.
@@ -40,7 +40,7 @@ Tre fatti comuni: (1) **Groq/USA** è un trasferimento internazionale anche qui:
 3. Numeri utili verificati, ordine dei veterinari, regole su telemedicina e farmaci.
 4. Prezzi e imposte in valuta locale; scelta dei canali di pagamento; fatturazione.
 5. Scheda store e valutazione d'età per il paese; localizzazione UI (voseo, termini) se si vuole.
-6. Mercatino senza animali vivi fino a verifica locale.
+6. Mercatino senza animali, in tutti i paesi (decisione del proprietario, 2026-10-26).
 7. DPIA e registro dei trattamenti aggiornati per il trasferimento verso Groq (USA).
 
 **Specifico:**

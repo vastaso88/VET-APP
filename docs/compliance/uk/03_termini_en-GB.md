@@ -55,7 +55,9 @@ You keep your rights in what you upload (photos, documents, listings, reports). 
 
 ### Reports, votes and Marketplace listings
 
-Our contribution rules apply (shown when you first contribute). Reports and votes are shown without your name. Do not post personal details of other people. Listings must be honest and accurate; you are responsible for your listing and for any deal you make with another user. [Reviewer: the Marketplace rules must say whether live animals may be sold or given away, and how users report listings.]
+Our contribution rules apply (shown when you first contribute). Reports and votes are shown without your name. Do not post personal details of other people. Listings must be honest and accurate; you are responsible for your listing and for any deal you make with another user.
+
+**No animals.** The Marketplace is only for items for animals. Animals cannot be sold, given away or swapped on it, in any country. We may remove listings that break this rule; you can report a listing from its page (“Report listing”, reason “Sells animals”). [Owner decision of 26 October 2026, applies in every country. UK legal background: 01_ricerca_normativa.md.]
 
 We may remove content or suspend accounts that break these terms or the law. If you think we made a mistake, contact [email] and we will review it.
 

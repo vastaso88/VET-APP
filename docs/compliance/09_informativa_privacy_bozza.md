@@ -2,7 +2,7 @@
 
 > **BOZZA. Non pubblicare così com'è.** Da far rivedere da un legale prima del primo tester invitato (registro [08](08_punti_aperti_prima_del_lancio.md), punto 6). I campi tra [parentesi quadre] vanno compilati o verificati. Le note per il revisore in fondo vanno tolte prima della pubblicazione.
 
-Versione di prova: 2026-10-06 (aggiunti i permessi del dispositivo e i percorsi delle passeggiate; allineata alla sintesi «Privacy» v2 del catalogo di consensi).
+Versione di prova: 2026-10-28 (aggiunti cognome, telefono facoltativo e foto profilo facoltativa; il 2026-10-06 i permessi del dispositivo e i percorsi delle passeggiate; allineata alla sintesi «Privacy» v2 del catalogo di consensi).
 
 ## 1. Chi tratta i tuoi dati
 
@@ -12,7 +12,7 @@ Versione di prova: 2026-10-06 (aggiunti i permessi del dispositivo e i percorsi 
 
 | Categoria | Esempi | Da dove vengono |
 |---|---|---|
-| Account | Email, nome, data di registrazione, scelte di consenso con data e versione | Tu, in registrazione. La password è gestita dal fornitore di autenticazione |
+| Account | Email, nome e cognome, data di registrazione, scelte di consenso con data e versione. Facoltativi: numero di telefono (nessuna funzione lo usa: resta nel profilo e lo puoi modificare o togliere) e foto profilo (la vedi solo tu, in uno spazio privato del tuo account; la puoi cambiare o togliere). Telefono e foto si cancellano con l'account | Tu, in registrazione o dal profilo. La password è gestita dal fornitore di autenticazione |
 | Animali | Nome, specie, razza, età, peso, note, foto e video | Tu |
 | Documenti e cartella clinica | Documenti caricati, eventi clinici. Possono contenere dati tuoi o di terzi (es. nome, codice fiscale) | Tu |
 | Chat | Domande, risposte, allegati, messaggi vocali (trascritti per la risposta) | Tu e il sistema |
@@ -37,6 +37,7 @@ L'app chiede un permesso solo quando usi la funzione che lo richiede. Se lo negh
 | Finalità | Base giuridica | Note |
 |---|---|---|
 | Creare e gestire l'account, erogare il servizio (animali, promemoria, chat, passeggiate) | Esecuzione del contratto, art. 6(1)(b) | Senza questi dati il servizio non può essere erogato |
+| Conservare nel profilo il numero di telefono e la foto profilo, se li inserisci | Consenso, art. 6(1)(a), facoltativo | Nessuna funzione usa il telefono; la foto serve solo a mostrarti il tuo profilo. Puoi toglierli in qualsiasi momento dal profilo |
 | Rispondere alle domande in chat, anche con un fornitore di IA esterno | Esecuzione del contratto, art. 6(1)(b) | Le risposte sono generate da un sistema di IA e sono segnalate come tali (art. 50 AI Act) |
 | Far leggere alla chat la cartella clinica di un tuo animale | Consenso, art. 6(1)(a), revocabile | Testo nella schermata di consenso (documento 03). Legge le tre voci più recenti o, per spiegare un esame, fino a due documenti |
 | Mostrare luoghi vicini; raccogliere segnalazioni e stelle | Esecuzione del contratto, art. 6(1)(b); per i contributi [legittimo interesse, art. 6(1)(f): ⚖️ da confermare] | Le segnalazioni possono portare alla rimozione di un luogo |

@@ -47,6 +47,8 @@ You own the content you add (photos, notes, documents, reports). You give us per
 
 If you submit place reports or dog-park ratings, you accept the *Rules for reports and votes*. We may remove content or suspend an account that breaks them or that is false, repeated or harmful. Reports are not a guarantee of anything; check before you travel. You can ask us to remove or correct a place listing.
 
+**Marketplace.** The Marketplace is only for items for animals. Animals cannot be sold, given away or swapped there, in any country. You are responsible for your Marketplace listing and for any deal you make with another user. We may remove listings that break this rule, and you can report a listing from its page (“Report listing”, reason “Sells animals”). [Owner decision of 26 October 2026; applies in every country.]
+
 ## 8. The AI assistant
 
 Replies are written by an AI system and are labelled. They can be incomplete or wrong. Use them as general information and check anything important with a registered veterinarian. Do not rely on the assistant in an emergency. We do not provide, and the assistant should not be used to obtain, doses of prescription medicines.

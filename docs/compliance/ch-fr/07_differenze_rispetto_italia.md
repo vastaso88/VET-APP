@@ -45,5 +45,5 @@ Vale tutto `../ch/07` (nLPD, PFPDT senza potere di multa, DPF Swiss–US dal 15/
 
 1. Valuta CHF (formato fr-CH da decidere), campo «NPA» a 4 cifre, «canton» opzionale.
 2. Consensi `fr-CH` (doc 04), avviso IA (doc 05), numeri utili (doc 06; 145 solo dopo conferma).
-3. Mercatino: tolto «animali vivi».
+3. Mercatino: nessun animale in nessun paese (decisione del proprietario, 2026-10-26).
 4. Decidere se `fr-CH` si apre insieme a `de-CH` (domanda 1 in `08`).

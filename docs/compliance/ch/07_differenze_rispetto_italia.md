@@ -20,7 +20,7 @@ Data: 2026-10-14. La Svizzera **non è nell'UE** né nello SEE. Le voci «conosc
 | IVA | IVA italiana | **MWST** svizzera; registrazione per fornitori esteri oltre soglia (❓) | UE: OSS | ⚖️ domanda al proprietario |
 | IA | AI Act art. 50 | Nessuna legge generale; Convenzione CoE firmata 27/03/2025; consultazione attesa a fine 2026 (🟡) | UE: AI Act | AI Act si applica comunque a VetApp: stesso avviso |
 | Veterinari | FNOVI | **HMG / TAMV art. 10**: Rx solo se si conosce l'animale (🟡); diagnosi = veterinario (🟡) | AT: TÄG + TeleVetRL ✅ | Nessuna diagnosi/prescrizione |
-| Animali (vendita) | Regioni | **TSchV**: annunci di cani con nome/indirizzo/origine (🟡); registro AMICUS | DE: § 11 TierSchG; AT: § 8a TSchG | Mercatino senza animali vivi |
+| Animali (vendita) | Regioni | **TSchV**: annunci di cani con nome/indirizzo/origine (🟡); registro AMICUS | DE: § 11 TierSchG; AT: § 8a TSchG | Mercatino senza animali, in ogni paese (decisione del proprietario, 2026-10-26) |
 | Accessibilità | D.Lgs. 82/2022 | Nessuna legge equivalente al BFSG per i privati (❓ non cercata); Behindertengleichstellungsgesetz per enti pubblici | DE/AT: BFSG | Buona pratica |
 | Piattaforme | DSA + AGCOM | Nessun DSA; obblighi generali di responsabilità (❓) | DE/AT: DSA | Procedura di segnalazione volontaria |
 | Giurisdizione | Una | Federale + 26 Cantoni (veterinari, animali, polizia) | — | Clausola legge applicabile |
@@ -51,4 +51,4 @@ Data: 2026-10-14. La Svizzera **non è nell'UE** né nello SEE. Le voci «conosc
 2. Campo indirizzo: PLZ a 4 cifre, Kanton opzionale.
 3. Ortografia «ss»: attenzione a eventuali sostituzioni automatiche «ß» nella pipeline ARB.
 4. Consensi `de-CH` (doc 04), avviso IA (doc 05), numeri utili (doc 06).
-5. Mercatino: tolto «animali vivi».
+5. Mercatino: nessun animale in nessun paese (decisione del proprietario, 2026-10-26).

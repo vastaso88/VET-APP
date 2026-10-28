@@ -69,7 +69,7 @@ Fonte: [BOE-A-2023-7936](https://www.boe.es/buscar/act.php?id=BOE-A-2023-7936) (
 - ✅ **Art. 27 (lettere k, l, m):** vietati allevamento commerciale senza registro, vendita di cani/gatti/furetti nei negozi e commercializzazione/donazione/adozione di animali non identificati.
 - ✅ **Art. 30** (dal testo letto): corso di formazione obbligatorio per la tenenza di cani e assicurazione di responsabilità civile per tutta la vita dell'animale (importi e contenuti «reglamentariamente»: ❓ regolamento non cercato). **Art. 51:** identificazione (microchip) per cani, gatti e furetti.
 - 🟡 La legge dà molta parte al sviluppo regolamentare e alle Comunidades Autónomas (che possono avere norme proprie, es. Galizia): stampa.
-- **Raccomandazione (come DE/UK):** nel Mercatino **vietare vendita, regalo e cessione di animali vivi** in Spagna. Con l'art. 57.1 una vendita «tra privati» via app sarebbe vietata e l'art. 57.2 obbligherebbe la piattaforma a verificare i dati: troppo rischio per VetApp. Restano ammessi prodotti e servizi. → doc 03 §8, doc 08.
+- **Decisione del proprietario (2026-10-26):** nel Mercatino, in tutti i paesi, **niente vendita, regalo né scambio di animali**. Per la Spagna, con l'art. 57.1 una vendita «tra privati» via app sarebbe vietata e l'art. 57.2 obbligherebbe la piattaforma a verificare i dati: troppo rischio per VetApp. Restano ammessi solo oggetti per animali. → doc 03 §8, doc 08.
 - 🟡 Ricadute per l'assistente e i contenuti: non dare istruzioni su allevamento o cessione.
 
 ## 5. Esercizio della veterinaria, ricetta, telemedicina

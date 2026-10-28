@@ -75,7 +75,7 @@ Tedesco in **Sie** (formale), come da brief dell'Orchestratore; passare a "du" c
 
 ## Decisioni di prodotto emerse dalle sessioni legali (da confermare dal proprietario)
 
-1. **Mercatino senza animali vivi** in Germania/Austria/Svizzera, Francia/Belgio e Spagna (norme locali sulla vendita di animali): regola per paese nel Mercatino, oltre al raggio obbligatorio.
+1. **Mercatino senza animali, in tutti i paesi** (deciso dal proprietario il 2026-10-26; prima era una regola per Germania/Austria/Svizzera, Francia/Belgio e Spagna per le norme locali sulla vendita di animali): vale ovunque, oltre al raggio obbligatorio.
 2. **Linea dell'assistente senza diagnosi né prescrizioni**: in Francia la telemedicina veterinaria non ha base legale (Ordre des vétérinaires, 2023) e il consiglio personalizzato rischia l'esercizio abusivo; in DE/ES la telemedicina veterinaria è da verificare. Proposta: informazioni generali e triage, mai diagnosi/prescrizione, in tutti i paesi.
 3. **Registro legale**: spagnolo legale in «usted» e interfaccia in «tú»; tedesco in «Sie»; francese in «vous».
 4. **Consensi**: il testo legale segue la REGIONE (mai ripiego silenzioso fr-BE/fr-CH→fr-FR o es-XX→es-ES); versione propria v1 e locale mostrata salvata.

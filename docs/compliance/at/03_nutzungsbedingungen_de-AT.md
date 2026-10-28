@@ -58,7 +58,7 @@ Sie behalten Ihre Rechte an dem, was Sie hochladen (Fotos, Dokumente, Anzeigen, 
 
 Es gelten unsere Beitragsregeln (bei Ihrem ersten Beitrag angezeigt). Meldungen und Stimmen erscheinen ohne Ihren Namen. Veröffentlichen Sie keine persönlichen Angaben anderer. Anzeigen müssen ehrlich und zutreffend sein; Sie sind für Ihre Anzeige und für jedes Geschäft mit anderen Nutzenden selbst verantwortlich.
 
-**Keine lebenden Tiere.** Im Marktplatz dürfen in Österreich keine lebenden Tiere verkauft, verschenkt oder vermittelt werden [Empfehlung; vom Anwalt zu bestätigen, siehe at/01 §6: § 8a TSchG schränkt das Inserieren von Tieren stark ein]. Erlaubt sind Produkte und Dienstleistungen rund um Tiere.
+**Keine Tiere.** Im Marktplatz werden nur Gegenstände für Tiere angeboten. Tiere dürfen dort in keinem Land verkauft, verschenkt oder getauscht werden. Wir können Anzeigen entfernen, die gegen diese Regel verstoßen; Sie können eine Anzeige auf ihrer Seite melden („Anzeige melden“, Grund „Verkauft Tiere“). [Entscheidung des Eigentümers vom 26.10.2026, gilt in allen Ländern. Rechtlicher Hintergrund für Österreich: at/01 §6, § 8a TSchG.]
 
 Wir können Inhalte entfernen oder Konten sperren, die gegen diese Bedingungen oder das Gesetz verstoßen, und begründen das, soweit möglich. Wenn Sie glauben, dass wir uns geirrt haben, schreiben Sie an [E-Mail]; wir prüfen es erneut.
 

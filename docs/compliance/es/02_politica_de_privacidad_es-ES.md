@@ -33,7 +33,7 @@ Nuestros datos de información general (artículo 10 de la LSSI-CE) figuran en l
 
 | Categoría | Ejemplos | De dónde proceden |
 |---|---|---|
-| Cuenta | Correo electrónico, nombre, fecha de registro, sus decisiones de consentimiento con fecha y versión, y la versión de idioma y región que se le mostró | De usted al registrarse. Su contraseña la gestiona nuestro servicio de acceso |
+| Cuenta | Correo electrónico, nombre y apellidos, fecha de registro, sus decisiones de consentimiento con fecha y versión, y la versión de idioma y región que se le mostró. Opcionales: número de teléfono (ninguna función lo usa; permanece en su perfil y usted puede cambiarlo o quitarlo) y foto de perfil (solo usted la ve, en un espacio privado de su cuenta; puede cambiarla o quitarla). El teléfono y la foto se eliminan junto con la cuenta | De usted al registrarse o desde el perfil. Su contraseña la gestiona nuestro servicio de acceso |
 | Sus animales | Nombre, especie, raza, edad, peso, notas, fotos y vídeos | De usted |
 | Documentos e historial clínico | Documentos que usted sube y anotaciones de salud que registra. Pueden contener datos suyos o de otras personas (por ejemplo, su nombre y dirección en una factura veterinaria) | De usted |
 | Chat | Sus preguntas, las respuestas del asistente, archivos adjuntos y mensajes de voz (los convertimos en texto para responder) | De usted y del sistema |
@@ -61,6 +61,7 @@ La aplicación solo pide un permiso cuando usted usa una función que lo necesit
 | Finalidad | Base jurídica | Observaciones |
 |---|---|---|
 | Crear y mantener su cuenta; prestar el servicio (animales, recordatorios, chat, paseos, mercadillo) | Ejecución del contrato, art. 6.1.b RGPD | Sin estos datos no podemos prestar el servicio |
+| Guardar en su perfil el número de teléfono y la foto de perfil, si los indica | Consentimiento, art. 6.1.a RGPD, opcional | Ninguna función usa el teléfono; la foto solo sirve para mostrarle su perfil. Puede quitarlos en cualquier momento desde el perfil |
 | Responder a sus preguntas del chat con ayuda de un proveedor externo de IA | Ejecución del contrato, art. 6.1.b RGPD | Las respuestas están generadas por IA y se identifican como tales |
 | Permitir que el chat lea el historial clínico de uno de sus animales | Consentimiento, art. 6.1.a RGPD | Voluntario, por animal, revocable en cualquier momento |
 | Mostrar lugares cercanos; recoger avisos y valoraciones sobre lugares | Ejecución del contrato, art. 6.1.b RGPD; para las contribuciones [interés legítimo, art. 6.1.f RGPD: por confirmar] | |

@@ -1,7 +1,7 @@
 > **BOZZA — non è consulenza legale, da far rivedere a un legale locale**
 > BORRADOR — no constituye asesoramiento jurídico; debe revisarlo un abogado o una abogada en España antes de su publicación.
 
-Note per chi revisiona (italiano): i prezzi sono **segnaposto** (nell'app attuale: Plus 4,99 € / 3,99 €, Pro 9,99 € / 7,99 € al mese, segnaposto del proprietario; i piani oggi non si distinguono per funzioni). I pagamenti non sono attivi. Versione: **es-ES v1 (borrador)**, 2026-10-14. Sezioni 5 e 6 scritte per TRLGDCU artt. 97, 98.2, 98.7, 98.8, 102, 103 a)/m), 108.4 e per la Ley 10/2025 (doc 01 §3); la sezione 8 vieta gli animali vivi (Ley 7/2023 artt. 55, 57, 58; doc 01 §4). La responsabilità (sez. 11) è uno schema prudente da adattare alla normativa sulle clausole abusive (art. 82 ss. TRLGDCU, 🟡). Testo spagnolo in «usted».
+Note per chi revisiona (italiano): i prezzi sono **segnaposto** (nell'app attuale: Plus 4,99 € / 3,99 €, Pro 9,99 € / 7,99 € al mese, segnaposto del proprietario; i piani oggi non si distinguono per funzioni). I pagamenti non sono attivi. Versione: **es-ES v1 (borrador)**, 2026-10-14. Sezioni 5 e 6 scritte per TRLGDCU artt. 97, 98.2, 98.7, 98.8, 102, 103 a)/m), 108.4 e per la Ley 10/2025 (doc 01 §3); la sezione 8 vieta gli animali in tutti i paesi (decisione del proprietario, 2026-10-26; per la Spagna la base giuridica è Ley 7/2023 artt. 55, 57, 58; doc 01 §4). La responsabilità (sez. 11) è uno schema prudente da adattare alla normativa sulle clausole abusive (art. 82 ss. TRLGDCU, 🟡). Testo spagnolo in «usted».
 
 ---
 
@@ -58,7 +58,7 @@ Usted conserva sus derechos sobre lo que sube (fotos, documentos, anuncios, avis
 
 Se aplican nuestras reglas de contribución (se muestran en su primera contribución). Los avisos y votos aparecen sin su nombre. No publique datos personales de otras personas. Los anuncios deben ser veraces; usted es responsable de su anuncio y de cualquier trato con otros usuarios.
 
-**Sin animales vivos.** En el mercadillo no está permitido vender, regalar, ceder ni intermediar animales vivos en España [recomendación; a confirmar por el abogado, véase doc 01 §4: la Ley 7/2023 prohíbe la venta directa de animales de compañía por internet (art. 57.1) y exige que los anuncios incluyan el registro del criador y que las plataformas verifiquen los datos (art. 57.2); la cesión gratuita requiere contrato (art. 58.2)]. Se permiten productos y servicios relacionados con los animales.
+**Sin animales.** En el mercadillo solo se ofrecen objetos para animales. No está permitido vender, regalar ni intercambiar animales, en ningún país. Podemos retirar los anuncios que incumplan esta regla; puede denunciar un anuncio desde su ficha («Denunciar anuncio», motivo «Vende animales»). [Decisión del propietario de 26/10/2026, válida en todos los países. Base jurídica en España: doc 01 §4 (Ley 7/2023, arts. 55, 57 y 58).]
 
 Podemos retirar contenidos o suspender cuentas que incumplan estas condiciones o la ley, y lo motivaremos en la medida de lo posible. Si cree que nos hemos equivocado, escriba a [correo]; lo revisaremos de nuevo.
 

@@ -18,7 +18,7 @@ This policy explains how we handle your personal information when you use VetApp
 
 | What | Examples | Where it comes from |
 |---|---|---|
-| Account details | Email, name, date you signed up, the choices you made about consents (with date and version) | You, when you sign up. Your password is managed by our sign-in provider |
+| Account details | Email, first and last name, date you signed up, the choices you made about consents (with date and version). Optional: phone number (no feature uses it; it stays in your profile and you can change or remove it) and profile photo (only you can see it, in a private area of your account; you can change or remove it). Both are deleted with your account | You, when you sign up or from your profile. Your password is managed by our sign-in provider |
 | Your pets | Name, species, breed, age, weight, notes, photos and videos | You |
 | Documents and health records | Documents you upload and health events you record for a pet. They may contain information about you or other people (for example a name or address on a vet invoice) | You |
 | Chat | Your questions, the replies, attachments, voice messages (turned into text so we can answer) | You and our system |
@@ -34,6 +34,7 @@ We do not knowingly collect information from people under 18. VetApp is for adul
 ## 3. Why we collect it, and how we use it
 
 - To create and run your account and provide the service: pets, reminders, chat, walks.
+- To keep your optional phone number and profile photo in your profile, only if you add them. You can remove either one at any time.
 - To answer your questions in the chat, using an external artificial intelligence (AI) provider (see section 7).
 - To let the chat read a pet's health record, **only if you turn that on for that pet**. You can turn it off at any time.
 - To show nearby places and collect place reports and ratings.

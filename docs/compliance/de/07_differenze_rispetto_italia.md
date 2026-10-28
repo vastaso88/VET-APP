@@ -26,7 +26,7 @@ Data: 2026-10-14. Le voci «conoscenza generale» sono da verificare; quelle con
 | Veterinari | FNOVI, albi regionali; ricetta elettronica veterinaria | Tierärztekammern dei Länder; **BTK 2020** ✅ | Nessuna diagnosi/prescrizione; ✅ TAMG § 30 |
 | Telemedicina veterinaria | normativa italiana | BTK: al massimo diagnosi di sospetto, **niente Rx a distanza**; legata a una sede veterinaria ✅ | L'app non prescrive |
 | Farmaci online | ricetta elettronica | TAMG § 30: **vietata la vendita a distanza dei Rx** ✅ | Nessun rimando a shop di farmaci Rx |
-| Animali (vendita) | Legge e Regioni | **§ 11 TierSchG** per il commercio professionale ✅; eBay Kleinanzeigen richiede la § 11 per cani/gatti < 12 mesi (🟡) | Mercatino senza animali vivi |
+| Animali (vendita) | Legge e Regioni | **§ 11 TierSchG** per il commercio professionale ✅; eBay Kleinanzeigen richiede la § 11 per cani/gatti < 12 mesi (🟡) | Mercatino senza animali, in ogni paese (decisione del proprietario, 2026-10-26) |
 | Giurisdizione | Una | 16 Länder per vigilanza e Tierärztekammern | Clausola di legge applicabile (doc 03 §15) |
 
 ## Formati e linguaggio
@@ -62,4 +62,4 @@ Data: 2026-10-14. Le voci «conoscenza generale» sono da verificare; quelle con
 4. Consensi per `de-DE` (doc 04); lingua mostrata salvata.
 5. Etichette IA e disclaimer (doc 05).
 6. Pulsanti di ordine, disdetta e recesso sulla web app (doc 03 §5).
-7. Mercatino: tolto «animali vivi» nella UI della Germania.
+7. Mercatino: nessun animale in nessun paese (decisione del proprietario, 2026-10-26); non è più una regola della Germania.

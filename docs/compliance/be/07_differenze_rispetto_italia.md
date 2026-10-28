@@ -24,7 +24,7 @@ Data: 2026-10-14. Le voci «conoscenza generale» sono da verificare; 🟡 = fon
 | Accessibilità | D.Lgs. 82/2022 | **non cercata** ❓ | FR: loi 2023-171 | ⚖️ |
 | Veterinari | FNOVI; ricetta elettronica | **Ordre des médecins vétérinaires**, loi 28/08/1991; art. 16 Code de déontologie (fonte debole 🟡) | FR: Ordre ✅, L243-1 🟡 | Nessuna diagnosi/prescrizione |
 | Telemedicina veterinaria | normativa italiana | **Nessun quadro trovato** ❓ | FR: nessuna base legale oggi ✅ | L'app non è «téléconsultation» |
-| Animali (vendita) | Regioni | **Regionale** (Fiandre, Vallonia, Bruxelles); **DogID / CatID**; età acquirente 16 (Fiandre/Bxl) o 18 (Vallonia) (🟡) | FR: privati non possono vendere online cani/gatti ✅ | Mercatino senza animali vivi |
+| Animali (vendita) | Regioni | **Regionale** (Fiandre, Vallonia, Bruxelles); **DogID / CatID**; età acquirente 16 (Fiandre/Bxl) o 18 (Vallonia) (🟡) | FR: privati non possono vendere online cani/gatti ✅ | Mercatino senza animali, in ogni paese (decisione del proprietario, 2026-10-26) |
 | Lingue | una | **tre ufficiali (nl, fr, de)**; Bruxelles bilingue | FR: francese | nl-BE da valutare (`01` §4) |
 | Giurisdizione | Una | Federale + 3 Regioni + 3 Comunità | — | Clausola di legge applicabile |
 
@@ -58,5 +58,5 @@ Data: 2026-10-14. Le voci «conoscenza generale» sono da verificare; 🟡 = fon
 4. Consensi per `fr-BE` (doc 04); lingua mostrata salvata.
 5. Etichette IA e disclaimer (doc 05).
 6. Funzione di recesso a due passaggi sulla web app (doc 03 §5).
-7. Mercatino: tolto «animali vivi» nella UI del Belgio.
+7. Mercatino: nessun animale in nessun paese (decisione del proprietario, 2026-10-26); non è più una regola del Belgio.
 8. Decidere se aggiungere `nl-BE` prima di aprire Fiandre e Bruxelles.

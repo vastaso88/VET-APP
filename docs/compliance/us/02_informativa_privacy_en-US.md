@@ -24,7 +24,7 @@ VetApp is for people **18 or older** [VERIFY: age of majority varies by state]. 
 
 | What | Examples | Where it comes from |
 |---|---|---|
-| Account | Email, name, sign-up date, your consent choices with date and version, language and region shown to you when you chose | You, when you sign up |
+| Account | Email, first and last name, sign-up date, your consent choices with date and version, language and region shown to you when you chose. Optional: phone number (no feature uses it; it stays in your profile and you can change or remove it) and profile photo (only you can see it, in a private area of your account; you can change or remove it). Both are deleted with your account | You, when you sign up or from your profile |
 | Your pets | Pet's name, species, breed, age, weight, notes, photos and videos | You |
 | Documents and health records for your pet | Documents you upload, vet visits, vaccines, lab results. These may also contain **your** information or someone else's (for example, a name, phone number, or address) | You |
 | Chat | Your questions, the answers, attachments, voice messages (we turn them into text to answer) | You and our system |
@@ -47,6 +47,7 @@ The app asks for a permission only when you use a feature that needs it. If you 
 ## 4. Why we use your information
 
 - To create and run your account and give you the service (pets, reminders, chat, walks, nearby places).
+- To keep your optional phone number and profile photo in your profile, only if you add them. You can remove either one any time.
 - To answer your questions in chat, including by sending your question to an outside AI provider (Section 6).
 - To let our chat read your pet's health record **only if you turn that on** for that pet. You can turn it off any time.
 - To send you product news and tips by email **only if you opt in**.

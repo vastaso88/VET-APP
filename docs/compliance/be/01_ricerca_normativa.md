@@ -65,7 +65,7 @@ Sessione: Legale FR. Data di consultazione: **2026-10-14**. Lingua dei testi per
 - 🟡 **Identificazione e registrazione** di cani e gatti obbligatorie, con banche dati **DogID** e **CatID**; i gattini nati dal 01/11/2017 (Vallonia e Bruxelles) devono essere identificati e registrati prima dei 12 settimane e prima di essere ceduti; sterilizzazione dei gattini prima della cessione (Fiandre e Vallonia). Fonti: [police.be – Animal de compagnie](https://www.police.be/5337/node/19841), [BX1](https://bx1.be/?p=239750), [Test-Achats](https://www.test-achats.be/maison-energie/animaux-domestiques/dossier/acheter-un-animal).
 - 🟡 Età minima dell'acquirente: 16 anni in Fiandre e Bruxelles, 18 in Vallonia (salvo consenso dei genitori) (Test-Achats). Vallonia: divieto di vendere animali sul domaine public dal 2015; Liegi li vieta sui mercati comunali dal 01/01/2024 (DH, 2023).
 - ❓ **Non ho trovato regole specifiche sugli annunci online** (obbligo di indicare il numero di microchip nell'annuncio, divieti ai privati): le norme sono regionali (Fiandre, Vallonia, Bruxelles) e non le ho lette. Le mentions SIREN/numéro de portée sono **francesi**, non belghe.
-- **Raccomandazione:** nel Mercatino `fr-BE` **vietare vendita e regalo di animali vivi** (come FR, DE, UK) finché un avvocato non rivede le norme regionali. → doc 03 §8.
+- **Decisione del proprietario (2026-10-26):** nel Mercatino, in tutti i paesi, **niente vendita, regalo né scambio di animali**: non serve più che un avvocato riveda le norme regionali belghe per il Mercatino. → doc 03 §8.
 
 ## 7. IA, piattaforma, accessibilità
 

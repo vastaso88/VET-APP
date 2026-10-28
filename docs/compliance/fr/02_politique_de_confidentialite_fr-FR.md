@@ -22,7 +22,7 @@ Nos mentions légales (article 6-III de la loi pour la confiance dans l'économi
 
 | Catégorie | Exemples | D'où viennent les données |
 |---|---|---|
-| Compte | Adresse e-mail, nom, date d'inscription, vos choix de consentement avec la date, la version et la version linguistique/régionale du texte qui vous a été montrée | De vous, à l'inscription. Votre mot de passe est traité par notre service de connexion |
+| Compte | Adresse e-mail, prénom et nom, date d'inscription, vos choix de consentement avec la date, la version et la version linguistique/régionale du texte qui vous a été montrée. Facultatifs : numéro de téléphone (aucune fonction ne l'utilise ; il reste dans votre profil et vous pouvez le modifier ou le retirer) et photo de profil (vous seul la voyez, dans un espace privé de votre compte ; vous pouvez la changer ou la retirer). Le téléphone et la photo sont supprimés avec le compte | De vous, à l'inscription ou depuis le profil. Votre mot de passe est traité par notre service de connexion |
 | Vos animaux | Nom, espèce, race, âge, poids, notes, photos et vidéos | De vous |
 | Documents et carnet de santé | Documents que vous importez et entrées de santé que vous saisissez. Ils peuvent contenir des informations sur vous ou sur d'autres personnes (par exemple votre nom et votre adresse sur une facture vétérinaire) | De vous |
 | Discussion | Vos questions, les réponses de l'assistant, les pièces jointes et les messages vocaux (nous les convertissons en texte pour répondre) | De vous et du système |
@@ -50,6 +50,7 @@ L'application ne demande une autorisation que lorsque vous utilisez une fonction
 | Finalité | Base légale | Remarques |
 |---|---|---|
 | Créer et gérer votre compte ; fournir le service (animaux, rappels, discussion, promenades, petites annonces) | Contrat, article 6, 1, b) RGPD | Sans ces données, nous ne pouvons pas fournir le service |
+| Conserver dans votre profil le numéro de téléphone et la photo de profil, si vous les indiquez | Consentement, article 6, 1, a) RGPD, facultatif | Aucune fonction n'utilise le téléphone ; la photo sert seulement à vous montrer votre profil. Vous pouvez retirer l'un ou l'autre à tout moment depuis le profil |
 | Répondre à vos questions dans la discussion, avec l'aide d'un prestataire d'IA externe | Contrat, article 6, 1, b) RGPD | Les réponses sont générées par IA et signalées comme telles |
 | Permettre à la discussion de lire le carnet de santé d'un de vos animaux | Consentement, article 6, 1, a) RGPD | Facultatif, animal par animal, retirable à tout moment |
 | Afficher les lieux proches ; recueillir signalements et notes sur les lieux | Contrat, article 6, 1, b) RGPD ; pour les contributions [intérêt légitime, article 6, 1, f) RGPD : à confirmer] | |

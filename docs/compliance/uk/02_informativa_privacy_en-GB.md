@@ -21,7 +21,7 @@ ICO registration number: [number, if we are required to pay the data protection 
 
 | Category | Examples | Where it comes from |
 |---|---|---|
-| Account | Email address, name, date you registered, your consent choices with date and version, and the language and region version you were shown | You, when you sign up. Your password is handled by our sign-in provider |
+| Account | Email address, first and last name, date you registered, your consent choices with date and version, and the language and region version you were shown. Optional: phone number (no feature uses it; it stays in your profile and you can change or remove it) and profile photo (only you can see it, in a private area of your account; you can change or remove it). The phone number and photo are deleted with your account | You, when you sign up or from your profile. Your password is handled by our sign-in provider |
 | Your pets | Name, species, breed, age, weight, notes, photos and videos | You |
 | Documents and health record | Documents you upload and health events you record. These may contain your own details or other people's (for example, your name or address on a vet bill) | You |
 | Chat | Your questions, the assistant's answers, attachments and voice messages (which we turn into text to answer you) | You and the system |
@@ -49,6 +49,7 @@ The app asks for a permission only when you use a feature that needs it. If you 
 | Purpose | Lawful basis (UK GDPR) | Notes |
 |---|---|---|
 | Create and run your account; provide the service (pets, reminders, chat, walks, Marketplace) | Contract, Article 6(1)(b) | Without this we cannot provide the service |
+| Keep your phone number and profile photo in your profile, if you add them | Consent, Article 6(1)(a), optional | No feature uses the phone number; the photo is only used to show you your profile. You can remove either at any time from your profile |
 | Answer your chat questions, using an external AI provider | Contract, Article 6(1)(b) | Answers are AI-generated and labelled as such |
 | Let the chat read the health record of one of your pets | Consent, Article 6(1)(a) | Optional, per pet, and you can withdraw it at any time |
 | Show nearby places; collect place reports and star ratings | Contract, Article 6(1)(b); for contributions, [legitimate interests, Article 6(1)(f): to be confirmed] | |

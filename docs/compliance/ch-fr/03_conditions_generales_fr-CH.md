@@ -58,7 +58,7 @@ Vous conservez vos droits sur ce que vous importez (photos, documents, annonces,
 
 Nos règles de contribution s'appliquent (affichées lors de votre première contribution). Les signalements et votes apparaissent sans votre nom. Ne publiez pas d'informations personnelles sur autrui. Les annonces doivent être honnêtes et exactes ; vous êtes responsable de votre annonce et de toute transaction avec d'autres utilisateurs.
 
-**Aucun animal vivant.** Dans les petites annonces, il est interdit en Suisse de vendre, de donner ou de proposer à la cession un animal vivant [recommandation ; à confirmer par l'avocat, voir `../ch/01` §7]. Les produits et services liés aux animaux sont autorisés.
+**Aucun animal.** Les petites annonces ne proposent que des objets pour animaux. Il est interdit d'y vendre, d'y donner ou d'y échanger des animaux, dans tous les pays. Nous pouvons retirer une annonce qui ne respecte pas cette règle ; vous pouvez la signaler depuis sa fiche (« Signaler l'annonce », motif « Vend des animaux »). [Décision du propriétaire du 26/10/2026, valable dans tous les pays. Contexte juridique en Suisse : voir `../ch/01` §7.]
 
 Nous pouvons retirer des contenus ou suspendre des comptes qui enfreignent ces conditions ou la loi, en motivant notre décision dans la mesure du possible. Si vous pensez que nous nous sommes trompés, écrivez à [e-mail] ; nous réexaminerons la situation.
 

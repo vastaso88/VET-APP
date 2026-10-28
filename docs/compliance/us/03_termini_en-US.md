@@ -34,6 +34,8 @@ If a person is in danger or has been poisoned, call 911 or Poison Help at 1-800-
 
 **Public contributions.** Reports about places and dog-park ratings you submit are shown to other users without your name. By submitting them, you give us a perpetual, worldwide, royalty-free license to display and use them in VetApp. You agree to follow the Contribution Rules shown before your first contribution. [VERIFY: perpetual vs. limited license.]
 
+**Marketplace.** The Marketplace is only for items for animals. Animals can't be sold, given away, or swapped there, in any country. You are responsible for your listing and for any deal you make with another user. We may remove listings that break this rule or these Terms, and you can report a listing from its page ("Report listing", reason "Sells animals"). [Owner decision of October 26, 2026; applies in every country.]
+
 ## 5. Acceptable use
 
 You agree not to: break the law; harass or defraud others; submit false reports to harm a business; upload malware; scrape or reverse engineer the service; try to get around security or limits; use VetApp to give professional veterinary advice to others; use the AI to generate content that is illegal or harms animals or people; or resell the service. We may remove content or suspend accounts that break these Terms.
