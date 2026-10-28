@@ -28,6 +28,7 @@ certificate; **TIA** = valutazione dell'impatto del trasferimento.
 | Contributi radar/eventi | segnalazioni luoghi e stelle (con pseudonimo), proposte eventi (con id utente) | `radar_user_reports`, `radar_report_votes`, `radar_place_ratings`, `event_submissions` | legittimo interesse/contratto | 90 giorni per le segnalazioni scadute (da verificare) | bassa (pseudonimo) |
 | Abbonamento | piano, stato, scadenza prova, slot fondatore; eventi webhook Stripe (ramo roberto) | `subscriptions`, `billing_*` | contratto | fino a cancellazione + obblighi fiscali | media |
 | Uso del servizio | contatori messaggi/giorno per utente, ledger token Groq (senza testo), cache risposte anonimizzate | `chat_user_daily_usage` (30 gg), `llm_usage*` (90 gg), `chat_answer_cache` | legittimo interesse (limitare abusi/costi) | come indicato | bassa |
+| Esportazione dati (art. 15/20) | file JSON generato su richiesta con tutte le righe delle tabelle sopra + link firmati ai file validi 15 minuti; telefono e foto profilo inclusi se presenti | generato al volo da `GET /account/export`, **non conservato** lato server; resta sul dispositivo dell'utente | obbligo legale (art. 15, 20) | nessuna (non salvato) | **alta**: il file riunisce tutto; l'app deve avvisare l'utente di conservarlo con cura |
 | Log tecnici | log applicativi Vercel (richieste, errori), log Supabase (API, Auth, Postgres) | Vercel (IE/USA), Supabase (IE) | legittimo interesse (sicurezza) | Vercel: 1 ora runtime logs su piano hobby, Supabase: 1 giorno su piano free, 7 su Pro (da verificare col piano attivo) | media (IP, user id) |
 | Dati su dispositivo | sessione Supabase, preferenze, cache foto/video, bozze, notifiche programmate | storage privato dell'app Android / localStorage web | — | fino a logout/disinstallazione | vedi audit app |
 
@@ -54,6 +55,7 @@ tiene lui, noi solo id e stato).
 | **GitHub Inc.** | repository pubblico, CI, secrets | codice, log CI, segreti di build | USA | nessun dato personale degli utenti deve passare da qui | — | in uso |
 | **Editori RSS (news)** | notizie nell'app (dal backend) | nessun dato personale (richieste del backend) | vari | — | — | in uso |
 | **Presidio (Microsoft, libreria locale)** | anonimizzazione testi | gira nel backend, nessun invio esterno | — | — | — | opzionale (`PII_ANONYMIZER_BACKEND`) |
+| **Sentry (Functional Software Inc.)** — proposto, non ancora integrato | segnalazione crash ed errori dell'app | stack trace, modello/versione, orario; nessun id utente, URL puliti (vedi `10_crash_reporting.md`) | sede USA; organizzazione nella **regione EU (Francoforte)** | dati in UE; DPA con SCC; DPF dichiarata (verificare) | DPA dalle impostazioni dell'organizzazione | **da decidere**; consenso opt-in `diagnostics` |
 
 ## 3. Cosa deve fare il proprietario con questa tabella
 

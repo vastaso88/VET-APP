@@ -26,7 +26,7 @@ Glossario: **rischio residuo** = quello che resta dopo le misure già prese;
 | R15 | Posizione di casa inferibile dai percorsi GPS e condivisa con terzi (Nominatim, tile OSM) | utenti | 2 | 2 | 4 | Posizione annunci arrotondata a ~1 km; percorsi solo del proprietario | Dichiarare OSM/Nominatim nell'informativa o passare dal backend; arrotondare l'inizio/fine dei percorsi (futuro) | proprietario | aperto |
 | R16 | Workflow CI che pusha su `main` contenuti scaricati da siti esterni | integrità del codice | 1 | 2 | 2 | Nessun input non fidato nei comandi | Push → PR con revisione; action pinnate a SHA; branch protection | sviluppo | aperto |
 | R17 | Password dell'account demo nota pubblicamente (rami `roberto`, `MOTORE-ANAMNESI`) | quota Groq, dati demo | 3 | 1 | 3 | Mai su main; non è admin | Eliminare/reset dell'account; rimuovere env Vercel; cancellare i rami | proprietario | aperto |
-| R18 | Diritto di portabilità (art. 20) non esercitabile nell'app | utenti, titolare | 2 | 1 | 2 | Cancellazione account completa | Rotta `GET /account/export` | sviluppo | aperto |
+| R18 | Diritto di accesso/portabilità (artt. 15 e 20) non esercitabile nell'app | utenti, titolare | 1 | 1 | 1 | `GET /account/export` (2026-10-28): JSON con tutte le tabelle della cancellazione + link firmati 15 min, 1 export/10 min, test di allineamento con l'eraser | Pulsante «Scarica i miei dati» in app (sessione UI/UX) | sviluppo | ridotto |
 
 Rischi **accettati** (motivazione): nessun TLS pinning nell'app (TLS di sistema
 sufficiente, pinning complica le rotazioni); bucket `marketplace-photos`
