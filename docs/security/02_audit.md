@@ -35,7 +35,7 @@ proprietario · 👤 azione del proprietario (dashboard, chiavi, contratti) ·
 | APP-2 | Alta | "Resta connesso" deselezionato non onorato: la sessione Supabase restava su disco e l'app rientrava senza password | ✅ |
 | REPO-1 | Media | Password di un account demo reale scritta nel codice sui rami pubblici `origin/roberto` e `origin/MOTORE-ANAMNESI` (mai su main/Francesco) | 👤 eliminare/reset dell'account demo, rimuovere le env `DEMO_FOUNDER_*` su Vercel, ripulire i rami |
 | APP-3/4/5 | Media | Backup Android attivo (sessione e indirizzo di casa su Google Drive); al logout restavano posizione di casa, animali in memoria, passeggiata interrotta, widget, foto profilo del vecchio utente | ✅ |
-| BE-12 | Media | Nessuna esportazione dei dati dell'utente (GDPR art. 20, portabilità) | 🔧 |
+| BE-12 | Media | Nessuna esportazione dei dati dell'utente (GDPR art. 20, portabilità) | ✅ `GET /account/export` (2026-10-28, `09_export_dati_contratto.md`); pulsante in app 🔧 UI/UX |
 | REPO-4 / BE-11 | Media | Nessun lockfile (`uv.lock` è in `.gitignore`), dipendenze non bloccate: build non riproducibili, `pip-audit` non eseguibile | 👤 gestore git: `uv lock` e togliere `uv.lock` da `.gitignore`; Dependabot ✅ aggiunto |
 
 Rilievi **positivi** da mantenere: JWT verificato lato server da Supabase a ogni
@@ -101,7 +101,7 @@ controllo di proprietà: `audit/backend.md`, appendice A.
 | BE-9 | Media | Token dello scheduler = sha256 della service-role key, non ruotabile | ✅ `ADMIN_SCHEDULER_SECRET` dedicato (fallback legacy finché non impostato); 👤 impostarlo su Vercel e nei secrets GitHub |
 | BE-10 | Media | CORS `*` quando `ENVIRONMENT` manca; nessun header di sicurezza; `/docs` pubblico | ✅ in produzione CORS solo da `CORS_ALLOWED_ORIGINS`, header `nosniff`/`DENY`/`no-referrer`/HSTS/`no-store`, docs spenti |
 | BE-11 | Media | Dipendenze non bloccate, `pip-audit` non eseguito (TLS locale) | 👤 `uv lock` + CI con `pip-audit`; ✅ Dependabot |
-| BE-12 | Media | Nessuna esportazione dati (art. 20) | 🔧 `GET /account/export` JSON con sign-in recente |
+| BE-12 | Media | Nessuna esportazione dati (art. 20) | ✅ `GET /account/export` JSON, 1 per 10 min, link firmati 15 min (2026-10-28) |
 | BE-13 | Bassa | Promemoria su animali altrui | ✅ |
 | BE-14 | Bassa | Campi testo senza lunghezza massima | ✅ `schemas/pets.py`, `reminders.py`, `chat_response_reports.py`, `auth.py` |
 | BE-15 | Bassa | E-mail personale del titolare come default di `SUPPORT_CONTACT_EMAIL` (repo pubblico) | ✅ default vuoto; 👤 **impostare `SUPPORT_CONTACT_EMAIL` su Vercel** (altrimenti l'app non mostra un contatto) |

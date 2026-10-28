@@ -6,6 +6,7 @@ from functools import lru_cache
 
 from packages.core.application.ports.account_consents_repository import AccountConsentsRepository
 from packages.core.application.ports.account_eraser import AccountEraser
+from packages.core.application.ports.account_exporter import AccountExporter
 from packages.core.application.ports.answer_cache_repository import AnswerCacheRepository
 from packages.core.application.ports.auth_provider import AuthProvider
 from packages.core.application.ports.chat_attachment_repository import ChatAttachmentRepository
@@ -56,6 +57,9 @@ from packages.core.application.services.edit_chat_message import EditChatMessage
 from packages.core.application.services.end_walk import EndWalkService
 from packages.core.application.services.evidence_query_normalizer import (
     EvidenceQueryNormalizer,
+)
+from packages.core.application.services.export_account_data import (
+    ExportAccountDataService,
 )
 from packages.core.application.services.geocoding import GeocodingService
 from packages.core.application.services.get_account_consents import GetAccountConsentsService
@@ -164,6 +168,9 @@ from packages.infrastructure.llm.retrieval.pubmed_evidence_retriever import (
 )
 from packages.infrastructure.news.feed_reader import HttpPetNewsFeedReader
 from packages.infrastructure.persistence.in_memory_account_eraser import InMemoryAccountEraser
+from packages.infrastructure.persistence.in_memory_account_exporter import (
+    InMemoryAccountExporter,
+)
 from packages.infrastructure.persistence.in_memory_event_submissions import (
     InMemoryEventSubmissionRepository,
 )
@@ -334,6 +341,43 @@ class ApplicationContainer:
 
     def delete_account_service(self) -> DeleteAccountService:
         return DeleteAccountService(self._build_account_eraser())
+
+    def export_account_data_service(self) -> ExportAccountDataService:
+        return ExportAccountDataService(self._build_account_exporter())
+
+    def _build_account_exporter(self) -> AccountExporter:
+        # Same wiring (and same keys) as the eraser: the export must see
+        # exactly what the deletion would remove.
+        if self.settings.persistence_backend == "supabase":
+            try:
+                from packages.infrastructure.persistence.supabase.client import (
+                    build_supabase_client,
+                )
+                from packages.infrastructure.persistence.supabase.supabase_account_exporter import (
+                    SupabaseAccountExporter,
+                )
+
+                radar = self.radar_report_settings()
+                return SupabaseAccountExporter(
+                    build_supabase_client(self.settings),
+                    media_bucket=self.settings.media_storage_bucket,
+                    chat_reporter_secret=self.settings.reporter_pseudonym_secret(),
+                    radar_pseudonym_key=radar.pseudonym_key if radar else None,
+                )
+            except ModuleNotFoundError:
+                if self.settings.environment == "production":
+                    raise
+        return InMemoryAccountExporter(
+            pet_profiles=self.pet_profile_repository,
+            conversations=self.conversation_repository,
+            reminders=self.reminder_repository,
+            clinical_events=self.clinical_event_repository,
+            pet_conditions=self.pet_condition_repository,
+            account_consents=self.account_consents_repository,
+            user_locations=self.user_location_repository,
+            dog_walks=self.dog_walk_repository,
+            marketplace_listings=self.marketplace_listing_repository,
+        )
 
     def _build_account_eraser(self) -> AccountEraser:
         if self.settings.persistence_backend == "supabase":

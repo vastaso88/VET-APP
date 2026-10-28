@@ -15,6 +15,8 @@ personali e la aggiorna quando cambia qualcosa (vedi `05_checklist.md`).
 | [`06_inventario_dati_fornitori.md`](06_inventario_dati_fornitori.md) | Quali dati trattiamo, dove, per quanto; i fornitori con paese e base del trasferimento; bozza Data safety | registro trattamenti, informativa, Google Play |
 | [`07_proposta_claude_md.md`](07_proposta_claude_md.md) | Regole di sicurezza da incollare nel `CLAUDE.md` del progetto | per l'Orchestratore |
 | [`08_report_orchestratore_2026_10_26.md`](08_report_orchestratore_2026_10_26.md) | Sintesi per il proprietario: 5 rischi principali, correzioni, SQL da eseguire, azioni, punti per il legale | lettura di partenza |
+| [`09_export_dati_contratto.md`](09_export_dati_contratto.md) | Contratto della rotta `GET /account/export` (accesso e portabilità) per l'app e il supporto | quando si tocca l'export o il pulsante «Scarica i miei dati» |
+| [`10_crash_reporting.md`](10_crash_reporting.md) | Parere Crashlytics vs Sentry (privacy, consenso, configurazione minima): raccomandato Sentry regione EU con consenso opt-in | prima di integrare il crash reporting |
 | [`/SECURITY.md`](../../SECURITY.md) | Politica pubblica di segnalazione delle vulnerabilità (richiesta anche dal Cyber Resilience Act) | va attivata la "Private vulnerability reporting" su GitHub |
 
 Strumenti:

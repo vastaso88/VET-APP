@@ -128,3 +128,21 @@ def test_request_schemas_bound_text_lengths() -> None:
 
     weak = client.post("/auth/login", json={"email": "a@b.c", "password": "p" * 73})
     assert weak.status_code == 422
+
+
+def test_account_export_returns_the_callers_data_and_is_throttled() -> None:
+    client = TestClient(app)
+    headers = {"X-Forwarded-For": "203.0.113.42"}
+    created = client.post("/pets", json={"name": "Export Pet", "species": "dog"}, headers=headers)
+    assert created.status_code == 200
+
+    response = client.get("/account/export", headers=headers)
+
+    assert response.status_code == 200
+    body = response.json()
+    assert body["format_version"] == "1"
+    assert body["account"]["id"] == "demo-user"
+    assert any(row["name"] == "Export Pet" for row in body["data"]["pet_profiles"])
+    assert "generated_at" in body and "files" in body
+    # one export every ten minutes per caller
+    assert client.get("/account/export", headers=headers).status_code == 429

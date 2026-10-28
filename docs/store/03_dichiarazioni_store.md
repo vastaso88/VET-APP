@@ -9,7 +9,7 @@ nelle console. Ho letto le pagine ufficiali di Google solo tramite ricerca; per 
 
 | # | Cosa | Perché | Dove |
 |---|---|---|---|
-| B1 | **Manca l'eliminazione dell'account nell'app** (e un link web per chiederla) | Google Play lo richiede per ogni app con account creabili, con domanda nel modulo Data safety; l'App Store lo richiede (linea guida 5.1.1(v)). Disattivare non basta: servono la cancellazione dei dati o l'informativa sulla conservazione | `grep` di `deleteAccount`/`delete_account` in `apps/` e `packages/`: nessun risultato; l'informativa (`09_…`, riga 72) ha ancora "da definire" sulla conservazione |
+| B1 | **Eliminazione dell'account**: fatta nell'app (Impostazioni → Account → Elimina account, con nuova verifica della password; `DELETE /account` cancella ogni tabella e file, test di copertura sullo schema). **Manca ancora la pagina web** per chiedere la cancellazione senza l'app, richiesta da Play (link da inserire nel modulo Data safety) | Google Play la richiede per ogni app con account; App Store 5.1.1(v) | `apps/api/routes/account.py`, `delete_account_page.dart`; da fare: una pagina statica (es. sul sito o nel portale) con istruzioni e un contatto e-mail |
 | B2 | **Abbonamenti non reali**: i metodi di pagamento sono dimostrativi, i prezzi segnaposto | Un abbonamento digitale deve passare dalla fatturazione dello store (Google Play Billing / acquisti in-app Apple). Nelle schede non c'è alcun prezzo né prova gratuita per questo | `docs/auth/01_brainstorm.md` (trial e piani), `features/billing` |
 | B3 | **Consenso esplicito prima di inviare dati personali a un'IA di terze parti** (App Store, 5.1.2(i), in vigore da novembre 2025) | Apple chiede di dire dove i dati vanno, anche a IA di terze parti, e di ottenere un permesso esplicito prima. Una riga nell'informativa non basta secondo le fonti consultate. Oggi c'è il consenso per la cartella clinica per animale (`03_…`), ma non ho trovato una schermata che nomini il fornitore (oggi Groq) e cosa gli viene inviato prima della prima domanda in chat | `docs/compliance/04_termini_e_consensi.md`, `09_…` riga 53 |
 | B4 | **Segnalazione di contenuti IA offensivi nell'app** (Google Play, norma sui contenuti generati dall'IA) | La norma chiede una segnalazione dentro l'app per le app con IA generativa al centro (la chat lo è). Esiste il servizio `report_chat_response` (backend) e `docs/compliance/02_…` lo cita: da verificare che sia raggiungibile da ogni risposta dell'assistente, in tutte le lingue | `packages/core/application/services/report_chat_response.py` |
@@ -35,27 +35,72 @@ aree cani (`docs/compliance/au/08_domande_per_proprietario.md`).
 
 ## 3. Scheda privacy (Play "Data safety" / App Store "Privacy nutrition label")
 
-Da compilare con i dati reali; la base è `09_informativa_privacy_bozza.md` e `02_pii_anonymization.md`. Valida per tutti i paesi:
-le schede degli store sono globali (una sola per app), quindi vale il caso più severo.
+Aggiornata il 2026-10-28 dalla sessione Cybersicurezza sul codice del ramo Francesco (build 36, nome Quokka).
+Coerente con `docs/security/06_inventario_dati_fornitori.md` e con `docs/compliance/09_informativa_privacy_bozza.md`
+(versione 2026-10-28: cognome, telefono facoltativo, foto profilo). La scheda degli store è una sola per app in tutto il mondo:
+vale il caso più severo.
 
-| Dato | Raccolto | Condiviso con terzi | Scopo | Facoltativo |
-|---|---|---|---|---|
-| Email | sì | no (Supabase è fornitore) | Account | no |
-| Nome visualizzato | sì | no | Account | sì |
-| ID utente | sì | no | Account | no |
-| Posizione precisa o approssimativa | sì | sì, in forma ridotta: il centro di una cella a OpenStreetMap/Overpass e l'indirizzo scritto a Nominatim, con l'IP della richiesta | Funzioni dell'app (zona, luoghi vicini, passeggiate) | sì |
-| Percorso delle passeggiate | sì | no | Funzioni dell'app | sì |
-| Foto e video | sì | no (archiviazione Supabase) | Funzioni dell'app | sì |
-| Audio (messaggi vocali) | sì | sì: trascrizione da Groq | Funzioni dell'app | sì |
-| Testo della chat, documenti della cartella clinica | sì | sì: Groq (dopo filtri di privacy) | Funzioni dell'app | sì |
-| Dati di pagamento | **no** oggi (fatturazione dimostrativa) | — | — | — |
-| Analisi d'uso | solo con il consenso "analytics" (Impostazioni → Permessi e consensi); verificare quali SDK | da verificare | Analisi | sì |
-| Diagnostica / arresti anomali | da verificare | da verificare | — | — |
+### 3.1 Come risponde Google alle domande "condiviso?"
 
-Altre risposte: cifratura in transito **sì** (HTTPS); eliminazione dei dati **richiesta dallo store: vedi B1**; nessuna pubblicità e nessun
-tracciamento tra app (**da confermare**: oggi non risultano SDK pubblicitari). I fornitori che trattano i dati per conto di VetApp
-(Supabase, Vercel, Groq) sono "service provider"; Play non li conta come condivisione se agiscono solo su istruzione, ma
-Groq riceve contenuti dell'utente e va dichiarato nell'informativa. Trasferimenti extra-UE: `09_…`, punto 4.
+Google Play considera **"condivisione"** il trasferimento a una terza parte che tratta i dati per conto proprio. **Non** è
+condivisione il trasferimento a un **fornitore che tratta i dati solo per conto nostro** su istruzione contrattuale
+(service provider): Supabase (database, autenticazione, file), Vercel (hosting del backend), Groq (modelli per chat,
+visione, trascrizione) e Firebase App Distribution (solo tester) rientrano qui, **a condizione** che esista il contratto
+di trattamento (DPA) con ciascuno (vedi inventario fornitori: Groq da firmare). Vanno comunque nominati nell'informativa.
+Sono invece **condivisione** vera e propria: **OpenStreetMap Foundation** (Nominatim riceve l'indirizzo scritto a mano e
+l'IP del telefono; il server delle mappe riceve l'IP e l'area visualizzata) e, se si attivasse, un servizio di crash
+reporting non coperto da DPA. Non sono condivisione: i trasferimenti richiesti dalla legge, quelli anonimizzati, quelli
+decisi dall'utente (condividere un referto con il proprio veterinario dal telefono).
+
+### 3.2 Risposte al modulo, tipo per tipo
+
+Colonne: Raccolto (lasciando il dispositivo) · Condiviso · Trattato solo temporaneamente (ephemeral) · Obbligatorio ·
+Finalità (voci del modulo Play). "Funzionalità" = App functionality; "Sicurezza" = Fraud prevention, security and compliance;
+"Account" = Account management.
+
+| Categoria Play → tipo | Raccolto | Condiviso | Temporaneo | Obbligatorio | Finalità | Note dal codice |
+|---|---|---|---|---|---|---|
+| Informazioni personali → **Nome** | sì (nome visualizzato, cognome) | no | no | sì (nome alla registrazione) | Account, Funzionalità | `display_name`/`surname` nei metadati Supabase Auth |
+| Informazioni personali → **Indirizzo email** | sì | no | no | sì | Account, Funzionalità, Sicurezza | Supabase Auth; usata anche per l'allowlist admin/sviluppatori |
+| Informazioni personali → **ID utente** | sì | no | no | sì | Account, Funzionalità, Sicurezza | UUID Supabase; pseudonimizzato nelle segnalazioni |
+| Informazioni personali → **Numero di telefono** | sì | no | no | **no** (facoltativo) | Account | Metadati profilo; nessuna funzione lo usa oggi; cancellabile dal profilo |
+| Informazioni personali → **Indirizzo** | sì (indirizzo di casa scritto a mano, se scelto) | **sì**: OpenStreetMap Nominatim riceve il testo dell'indirizzo per trovarne le coordinate | no | no | Funzionalità | `address_geocoder.dart` chiama Nominatim **dal telefono**; coordinate e etichetta salvate in `user_locations` |
+| Informazioni personali → Altre info | sì (specie, razza, nome, dati clinici degli **animali**) | no | no | no | Funzionalità | Non sono dati sanitari dell'utente: dichiarare qui, non in "Salute e fitness" |
+| Posizione → **Posizione approssimativa** | sì | **sì**: il server delle mappe OSM riceve l'IP e l'area visualizzata | no | no | Funzionalità | Mercatino usa coordinate arrotondate a ~1 km |
+| Posizione → **Posizione precisa** | sì (GPS per passeggiate, servizi vicini, posizione attuale) | no (il backend interroga Overpass con il centro di una cella, non con la posizione dell'utente) | no | no | Funzionalità | Percorsi in `dog_walks`; nessuna posizione in background |
+| Messaggi → **Altri messaggi in-app** | sì (conversazioni con l'assistente) | no (Groq = fornitore) | no | no | Funzionalità | Testo anonimizzato prima dell'invio al modello; salvato in `conversations` |
+| Foto e video → **Foto** / **Video** | sì (profilo animale, galleria, allegati chat/cartella, foto profilo, foto annunci) | no (Groq = fornitore per l'analisi delle foto in chat); le foto degli annunci sono **pubbliche** per scelta dell'utente | no | no | Funzionalità | Metadati EXIF/posizione rimossi; bucket privati tranne `marketplace-photos` |
+| Audio → **Registrazioni vocali** | sì (dettatura in chat) | no (Groq = fornitore per la trascrizione) | **sì**: l'audio non è salvato, resta solo il testo | no | Funzionalità | `speech_to_text.py`: niente persistenza |
+| File e documenti | sì (referti PDF e immagini della cartella clinica) | no (Groq = fornitore, solo con consenso per animale) | no | no | Funzionalità | Bucket privato `chat-attachments`; testo anonimizzato |
+| Salute e fitness | **no** | — | — | — | — | I dati clinici sono degli animali |
+| Informazioni finanziarie | **no** | — | — | — | — | Nessun pagamento reale oggi; quando arriva: Play Billing, nessun dato di carta nell'app |
+| Contatti | no | — | — | — | — | Nessun accesso alla rubrica |
+| Calendario | no | — | — | — | — | Promemoria interni all'app, notifiche locali |
+| Attività nell'app → **Interazioni con l'app** | no (nessun SDK di analisi) | — | — | — | — | Il consenso "analytics" in Impostazioni esiste ma oggi non attiva alcun SDK: rispondere **no** finché resta così |
+| Attività nell'app → **Contenuti generati dagli utenti** | sì (annunci, segnalazioni di luoghi e stelle, proposte di eventi, segnalazioni di risposte) | no (annunci ed eventi approvati sono visibili agli altri utenti dentro l'app: Play non lo conta come condivisione con terzi) | no | no | Funzionalità | Pseudonimi per le segnalazioni radar |
+| Cronologia web / navigazione | no | — | — | — | — | — |
+| Info e prestazioni dell'app → **Log di arresto anomalo / Diagnostica** | **no oggi**; se si adotta il crash reporting (vedi `docs/security/10_crash_reporting.md`) → sì, non condiviso (fornitore con DPA), facoltativo, finalità Analisi | — | — | — | — | Nessun SDK oggi |
+| ID dispositivo o altri ID | no | — | — | — | — | Nessun ID pubblicitario; solo l'installation ID se si adotta Crashlytics |
+
+### 3.3 Altre risposte del modulo
+
+| Domanda | Risposta | Base |
+|---|---|---|
+| I dati sono crittografati in transito? | **Sì** | HTTPS verso Supabase, backend Vercel e Nominatim/OSM; HSTS sul backend e sulla web app |
+| Gli utenti possono chiedere la cancellazione dei dati? | **Sì**, nell'app (Impostazioni → Account → Elimina account) | `DELETE /account`; **serve anche l'URL della pagina web** (vedi B1) |
+| L'app permette di cancellare alcuni dati senza eliminare l'account? | Sì | Animali, conversazioni, promemoria, foto, annunci, posizione, telefono e foto profilo si cancellano singolarmente |
+| Esportazione dei dati | Sì | `GET /account/export` (pulsante in app in arrivo) |
+| L'app segue la Famiglie policy / è rivolta a minori? | No (18+) | Sezione 2 |
+| Revisione di sicurezza indipendente (MASA) | No | Facoltativa |
+| Raccolta dati obbligatoria per usare l'app | Solo nome, e-mail, ID utente; tutto il resto è facoltativo | Modulo "Required/Optional" |
+
+### 3.4 Cosa deve essere vero prima di inviare la scheda
+
+1. DPA firmati o accettati con Supabase, Vercel, Google (Firebase) e **Groq**: senza DPA, Groq va dichiarato come "condiviso" per messaggi, foto, audio e documenti.
+2. Pagina web per la richiesta di cancellazione (B1) pubblicata e linkata nel modulo.
+3. Informativa privacy pubblicata a un URL stabile (la scheda la richiede) che nomini tutti i fornitori, OSM/Nominatim compreso.
+4. Se si attiva il crash reporting: aggiornare la riga "Log di arresto anomalo" e l'informativa.
+5. Rileggere questa tabella a ogni funzione che tratta dati nuovi (`docs/security/05_checklist.md`, sezione B).
 
 ## 4. Dichiarazioni sull'IA
 
