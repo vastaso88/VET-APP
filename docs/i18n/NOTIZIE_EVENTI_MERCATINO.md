@@ -57,9 +57,9 @@ Feed curati per paese (candidati, **non attivi, ToS non verificati**): testate/e
 - **Animali**: vietati ovunque. La pagina "Nuovo annuncio" mostra la regola (nessuna casella di conferma); il backend rifiuta il testo che offre un animale con il messaggio "Sul Mercatino si vendono solo oggetti per animali, non animali."
 - **Decisione del proprietario**: la policy `marketplace_listings_select_all` permette ancora la lettura diretta dell'intera tabella con la anon key; finché non viene ristretta (testo in fondo a `marketplace_country.sql`) raggio e paese sono applicati dalla rotta e dall'app, non dal database.
 
-## Chiavi di traduzione nuove (EN/ES fatte; DE/FR per le sessioni di traduzione)
+## Chiavi di traduzione
 
-Vedi `docs/i18n/NOTIZIE_EVENTI_MERCATINO_CHIAVI.md`.
+Tutte le chiavi sono presenti nelle 5 lingue (`app_it/en/es/de/fr.arb`); i controlli sono `check_i18n.py`, `glossary.py check`, `auto_translate.py check`.
 
 ## Ordine di rilascio
 
