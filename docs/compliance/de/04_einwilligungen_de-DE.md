@@ -46,7 +46,7 @@ CURRENT_VERSIONS_BY_LOCALE = {
 ## 1. `terms_of_service` — de-DE v1
 
 ```
-Mit der Nutzung von VetApp stimmen Sie den Nutzungsbedingungen zu: den Regeln für die Nutzung der App, Ihren Pflichten als Nutzerin oder Nutzer und den Grenzen unserer Haftung, einschließlich der Tatsache, dass die Vorschläge des Assistenten den Rat einer Tierärztin oder eines Tierarztes nicht ersetzen. Ohne diese Zustimmung können wir kein Konto anlegen.
+Mit der Nutzung von Quokka stimmen Sie den Nutzungsbedingungen zu: den Regeln für die Nutzung der App, Ihren Pflichten als Nutzerin oder Nutzer und den Grenzen unserer Haftung, einschließlich der Tatsache, dass die Vorschläge des Assistenten den Rat einer Tierärztin oder eines Tierarztes nicht ersetzen. Ohne diese Zustimmung können wir kein Konto anlegen.
 ```
 
 ## 2. `privacy_policy` — de-DE v1
@@ -54,7 +54,7 @@ Mit der Nutzung von VetApp stimmen Sie den Nutzungsbedingungen zu: den Regeln f�
 Sintesi, non l'informativa completa. Va tenuta vera rispetto all'app (come l'IT v2).
 
 ```
-Kurz gesagt: Damit Sie VetApp nutzen können, verarbeiten wir Ihre Kontodaten (Name und E-Mail-Adresse), die Profile Ihrer Tiere, die Dokumente und Fotos, die Sie hochladen, Ihre Gespräche mit dem Assistenten und, wenn Sie sie einschalten, Ihren Standort und Ihre Spaziergang-Strecken. Was Sie dem Assistenten senden (Fragen, Anhänge, Sprachnachrichten), wird an einen externen Anbieter künstlicher Intelligenz gesendet, damit er die Antworten schreibt, und zwar teilweise in Länder außerhalb der EU; die Gesundheitsakte Ihres Tieres nur, wenn Sie es erlauben. Ihre Daten werden bei Hosting- und Datenbank-Diensten Dritter gespeichert. Sie können Auskunft, Berichtigung oder Löschung Ihrer Daten verlangen, indem Sie uns über Einstellungen → Kontakt schreiben, und freiwillige Einwilligungen jederzeit in den Einstellungen widerrufen. Sie können sich außerdem bei einer Datenschutz-Aufsichtsbehörde beschweren. Die vollständige Datenschutzerklärung ist in Vorbereitung.
+Kurz gesagt: Damit Sie Quokka nutzen können, verarbeiten wir Ihre Kontodaten (Name und E-Mail-Adresse), die Profile Ihrer Tiere, die Dokumente und Fotos, die Sie hochladen, Ihre Gespräche mit dem Assistenten und, wenn Sie sie einschalten, Ihren Standort und Ihre Spaziergang-Strecken. Was Sie dem Assistenten senden (Fragen, Anhänge, Sprachnachrichten), wird an einen externen Anbieter künstlicher Intelligenz gesendet, damit er die Antworten schreibt, und zwar teilweise in Länder außerhalb der EU; die Gesundheitsakte Ihres Tieres nur, wenn Sie es erlauben. Ihre Daten werden bei Hosting- und Datenbank-Diensten Dritter gespeichert. Sie können Auskunft, Berichtigung oder Löschung Ihrer Daten verlangen, indem Sie uns über Einstellungen → Kontakt schreiben, und freiwillige Einwilligungen jederzeit in den Einstellungen widerrufen. Sie können sich außerdem bei einer Datenschutz-Aufsichtsbehörde beschweren. Die vollständige Datenschutzerklärung ist in Vorbereitung.
 ```
 
 Quando la Datenschutzerklärung (doc 02) sarà pubblicata, sostituire l'ultima frase con un link e passare a `v2`.
@@ -62,7 +62,7 @@ Quando la Datenschutzerklärung (doc 02) sarà pubblicata, sostituire l'ultima f
 ## 3. `marketing_email` — de-DE v1
 
 ```
-Mit Ihrer Einwilligung dürfen wir Ihnen per E-Mail Neuigkeiten zu VetApp und Tipps für Ihre Tiere senden. Sie können Ihre Einwilligung jederzeit in den Einstellungen widerrufen; für die Nutzung der App macht das keinen Unterschied.
+Mit Ihrer Einwilligung dürfen wir Ihnen per E-Mail Neuigkeiten zu Quokka und Tipps für Ihre Tiere senden. Sie können Ihre Einwilligung jederzeit in den Einstellungen widerrufen; für die Nutzung der App macht das keinen Unterschied.
 ```
 
 (Prassi in Germania: **Double-Opt-in** con e-mail di conferma, perché l'onere della prova spetta all'inviante; § 7 UWG, conoscenza generale, da verificare. Ogni e-mail deve contenere un modo semplice di disiscriversi.)
@@ -96,7 +96,7 @@ Adattamenti rispetto all'IT: «area cani» → «Hundeauslauffläche» (termine 
 Non è un consenso di account (non è in `AccountConsentType`): vive in `packages/core/domain/medical_record/consent_text.py`. Valgono le stesse regole di locale e versione. Il testo deve restare coerente con ciò che il codice legge (tre voci recenti, due documenti per «spiegami l'esame», 1.200 e 3.500 caratteri); il test `tests/unit/test_consent_texts_match_behaviour.py` ne vincola le cifre per l'italiano: va esteso alla versione tedesca.
 
 ```
-Damit Ihnen der Assistent genauer raten kann, darf er die Gesundheitsakte Ihres Tieres lesen. Wenn Sie eine Frage stellen, kann er die drei neuesten Einträge mit Titel, Datum, Beschreibung und dem Text angehängter Dokumente lesen, auch wenn sie nichts mit Ihrer Frage zu tun haben. Wenn Sie ihn bitten, einen Befund zu erklären, kann er die Dokumente zu diesem Befund lesen, höchstens zwei. Von einem sehr langen Dokument liest er nur den Anfang. Was er liest, wird an den externen Anbieter künstlicher Intelligenz gesendet, der die Antwort schreibt. VetApp verwendet es nur, um Ihnen zu antworten. Sie können Ihre Einwilligung jederzeit auf der Seite Ihres Tieres oder in den Einstellungen widerrufen; das gilt für spätere Anfragen.
+Damit Ihnen der Assistent genauer raten kann, darf er die Gesundheitsakte Ihres Tieres lesen. Wenn Sie eine Frage stellen, kann er die drei neuesten Einträge mit Titel, Datum, Beschreibung und dem Text angehängter Dokumente lesen, auch wenn sie nichts mit Ihrer Frage zu tun haben. Wenn Sie ihn bitten, einen Befund zu erklären, kann er die Dokumente zu diesem Befund lesen, höchstens zwei. Von einem sehr langen Dokument liest er nur den Anfang. Was er liest, wird an den externen Anbieter künstlicher Intelligenz gesendet, der die Antwort schreibt. Quokka verwendet es nur, um Ihnen zu antworten. Sie können Ihre Einwilligung jederzeit auf der Seite Ihres Tieres oder in den Einstellungen widerrufen; das gilt für spätere Anfragen.
 ```
 
 Frage im Chat (mit `pet_name` zu formatieren), Entsprechung von `INLINE_QUESTION_IT`:

@@ -6,7 +6,7 @@ Data: 2026-10-14. Le voci «conoscenza generale» sono da verificare; ✅ = conf
 
 ## Legale
 
-| Tema | Italia | Austria | Differenza da DE | Effetto su VetApp |
+| Tema | Italia | Austria | Differenza da DE | Effetto su Quokka |
 |---|---|---|---|---|
 | Legge sui dati | GDPR + Codice privacy; Garante | GDPR + **DSG 2018**; **DSB** (una sola autorità) | DE ha 16+ autorità | Informativa `de-AT`; reclamo alla DSB |
 | Età digitale | 14 anni | **14 anni** (§ 4 Abs. 4 DSG, 🟡) | DE: 16 | Non rilevante: 18+ |

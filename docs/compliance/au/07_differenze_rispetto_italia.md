@@ -6,7 +6,7 @@ Per la sessione coordinatrice e per chi implementa le regioni. Le righe «legale
 
 ## Legale
 
-| Tema | Italia / UE | Australia | Effetto su VetApp |
+| Tema | Italia / UE | Australia | Effetto su Quokka |
 |---|---|---|---|
 | Legge privacy | GDPR + Garante | Privacy Act 1988 + APP; regolatore OAIC | Informativa diversa (file 02): niente «basi giuridiche» art. 6; sì APP 1/5/8; elenco Paesi esteri |
 | Soglia | Nessuna | Esenzione sotto A$3 mln di fatturato (con eccezioni) | Scrivere come se si applicassero gli APP (consigliato) |
@@ -15,7 +15,7 @@ Per la sessione coordinatrice e per chi implementa le regioni. Le righe «legale
 | Notifica violazioni | 72 ore (GDPR art. 33) | NDB: «serious harm», notifica a OAIC e interessati (valutazione entro 30 giorni, da verificare) | Procedura interna diversa |
 | Trasferimenti estero | Clausole contrattuali, adeguatezza | APP 8 + responsabilità s 16C (da verificare) | Nominare i Paesi (Groq, Vercel) |
 | IA | AI Act art. 50 (trasparenza) | Nessun obbligo specifico; linee guida OAIC/DISR volontarie; Piano IA 02/12/2025 | Badge IA mantenuto per coerenza |
-| Minori | Maggiorenni (bozza) | Codice minori OAIC (bozza, entro 10/12/2026); social min. 16 (non riguarda VetApp) | App 18+ |
+| Minori | Maggiorenni (bozza) | Codice minori OAIC (bozza, entro 10/12/2026); social min. 16 (non riguarda Quokka) | App 18+ |
 | Contenuti utenti | DSA (piccole imprese: obblighi ridotti) | Online Safety Act 2021 / eSafety (codici Phase 2 dal 09/03/2026) | Segnalazione contenuti; valutazione (incertezza) |
 | Consumo | Codice del consumo | Australian Consumer Law: garanzie non escludibili; prezzo unico con GST; abbonamenti (dal 01/07/2027) | Termini e piani (file 03) |
 | Veterinaria | Regole nazionali/regionali italiane | Otto giurisdizioni: board separati (file 01, sez. 6) | Solo informazioni generali (file 05) |

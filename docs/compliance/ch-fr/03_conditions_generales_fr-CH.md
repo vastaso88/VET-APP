@@ -5,19 +5,19 @@ Note per chi revisiona (italiano): prezzi **segnaposto in CHF** (non convertire 
 
 ---
 
-# VetApp – Conditions d'utilisation (Suisse)
+# Quokka – Conditions d'utilisation (Suisse)
 
 Version : fr-CH v1 (projet). Dernière mise à jour : [date].
 
 ## 1. Champ d'application
 
-Les présentes conditions s'appliquent entre vous et [raison sociale ou nom], [adresse], [numéro d'immatriculation / IDE], [e-mail] (« VetApp », « nous »). En vous inscrivant, vous les acceptez. Sans cette acceptation, vous ne pouvez pas créer de compte. Vous devez avoir au moins 18 ans [à confirmer]. Nos informations au sens de l'art. 3, al. 1, let. s LCD figurent dans les mentions légales.
+Les présentes conditions s'appliquent entre vous et [raison sociale ou nom], [adresse], [numéro d'immatriculation / IDE], [e-mail] (« Quokka », « nous »). En vous inscrivant, vous les acceptez. Sans cette acceptation, vous ne pouvez pas créer de compte. Vous devez avoir au moins 18 ans [à confirmer]. Nos informations au sens de l'art. 3, al. 1, let. s LCD figurent dans les mentions légales.
 
-## 2. Ce qu'est VetApp – et ce qu'elle n'est pas
+## 2. Ce qu'est Quokka – et ce qu'elle n'est pas
 
-VetApp vous aide à prendre soin de vos animaux : dossiers, rappels, promenades, lieux proches, petites annonces et un assistant d'intelligence artificielle.
+Quokka vous aide à prendre soin de vos animaux : dossiers, rappels, promenades, lieux proches, petites annonces et un assistant d'intelligence artificielle.
 
-**VetApp n'est pas un service vétérinaire.** L'assistant fournit des informations générales. Il ne pose pas de diagnostic, ne prescrit aucun médicament, n'indique aucune posologie et ne remplace pas un vétérinaire. Si votre animal semble malade ou si vous avez un doute, contactez votre cabinet vétérinaire. En cas d'urgence, rendez-vous immédiatement chez un vétérinaire ou dans une clinique vétérinaire. Voir l'avis sur l'IA et l'avis vétérinaire.
+**Quokka n'est pas un service vétérinaire.** L'assistant fournit des informations générales. Il ne pose pas de diagnostic, ne prescrit aucun médicament, n'indique aucune posologie et ne remplace pas un vétérinaire. Si votre animal semble malade ou si vous avez un doute, contactez votre cabinet vétérinaire. En cas d'urgence, rendez-vous immédiatement chez un vétérinaire ou dans une clinique vétérinaire. Voir l'avis sur l'IA et l'avis vétérinaire.
 
 ## 3. Votre compte
 
@@ -46,13 +46,13 @@ Tous les prix sont des prix finaux en francs suisses, TVA comprise dans la mesur
 
 Les présentes conditions ne limitent pas vos droits légaux impératifs. Les règles du Code des obligations sur les défauts et la responsabilité s'appliquent.
 
-## 7. Utilisation de VetApp
+## 7. Utilisation de Quokka
 
 Vous vous engagez à ne pas : enfreindre la loi ; importer des contenus sur lesquels vous n'avez pas de droits ; harceler, tromper ou nuire à autrui ; copier nos contenus ou les extraire de manière automatisée ; perturber le service ; ni utiliser l'assistant pour obtenir un diagnostic ou une ordonnance pour un animal qui n'est pas suivi par un vétérinaire.
 
 ## 8. Vos contenus
 
-Vous conservez vos droits sur ce que vous importez (photos, documents, annonces, signalements). Vous nous accordez une licence non exclusive pour l'héberger, le reproduire et l'afficher, uniquement pour faire fonctionner VetApp pour vous et, pour les contributions publiques, pour les montrer aux autres utilisateurs. Vous garantissez avoir le droit de l'importer.
+Vous conservez vos droits sur ce que vous importez (photos, documents, annonces, signalements). Vous nous accordez une licence non exclusive pour l'héberger, le reproduire et l'afficher, uniquement pour faire fonctionner Quokka pour vous et, pour les contributions publiques, pour les montrer aux autres utilisateurs. Vous garantissez avoir le droit de l'importer.
 
 ### Signalements, votes et petites annonces
 

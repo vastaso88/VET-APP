@@ -1,6 +1,6 @@
 > **BOZZA — non è consulenza legale, da far rivedere a un legale locale**
 
-# Spagna — ricerca normativa per VetApp
+# Spagna — ricerca normativa per Quokka
 
 Sessione: Legale ES. Data di consultazione di tutte le fonti: **2026-10-14**. Lingua dei testi per gli utenti: spagnolo (trato de «usted»), locale `es-ES`. Documenti interni in italiano. Il quadro UE comune (GDPR, AI Act art. 50, DSA, direttive consumatori) è già in `../de/01_ricerca_normativa.md` e qui è richiamato, non ripetuto. Il titolare è **italiano** (stabilito nell'UE): niente rappresentante ex art. 27 GDPR; autorità capofila probabilmente il Garante (art. 56 GDPR, 🟡), ma l'utente spagnolo può reclamare davanti all'**AEPD** (art. 77 GDPR).
 
@@ -12,7 +12,7 @@ Sessione: Legale ES. Data di consultazione di tutte le fonti: **2026-10-14**. Li
 
 ## 0. Quadro in una pagina
 
-| Tema | Cosa serve a VetApp in Spagna | Priorità |
+| Tema | Cosa serve a Quokka in Spagna | Priorità |
 |---|---|---|
 | RGPD + LOPDGDD 3/2018 | Politica de privacidad in spagnolo (doc 02), basi giuridiche, trasferimento verso USA (Groq), diritti, reclamo AEPD | Alta |
 | Età | App 18+; consenso digitale a 14 anni (LOPDGDD art. 7) | Media |
@@ -27,7 +27,7 @@ Sessione: Legale ES. Data di consultazione di tutte le fonti: **2026-10-14**. Li
 
 ## 1. RGPD e LOPDGDD (Ley Orgánica 3/2018)
 
-- ✅ **LOPDGDD art. 7.1:** il trattamento dei dati di un minore può fondarsi sul suo consenso solo se ha **più di 14 anni**; sotto i 14 serve il consenso di chi esercita la patria potestà o tutela (art. 7.2). Fonte: [BOE-A-2018-16673](https://www.boe.es/buscar/act.php?id=BOE-A-2018-16673), letto. Per VetApp (18+) la regola serve solo a motivare il limite di età e come reagire se un minore si registra.
+- ✅ **LOPDGDD art. 7.1:** il trattamento dei dati di un minore può fondarsi sul suo consenso solo se ha **più di 14 anni**; sotto i 14 serve il consenso di chi esercita la patria potestà o tutela (art. 7.2). Fonte: [BOE-A-2018-16673](https://www.boe.es/buscar/act.php?id=BOE-A-2018-16673), letto. Per Quokka (18+) la regola serve solo a motivare il limite di età e come reagire se un minore si registra.
 - ✅ La LOPDGDD contiene (indice letto) l'art. 11 «Transparencia e información al afectado» e gli artt. 12–18 sull'esercizio dei diritti. 🟡 L'art. 11 prevede l'informazione **a strati** (primo strato con identità, finalità e diritti, con rimando al secondo): il testo non è stato riletto. Il doc 02 è scritto in strati: sezione 0 «Información básica» + testo completo.
 - 🟡 **Autorità:** AEPD. Reclamo online alla sede elettrónica dell'AEPD. Se il titolare è italiano la capofila è il Garante, ma l'AEPD riceve il reclamo e lo trasmette (art. 56 e 60 GDPR, conoscenza generale).
 - 🟡 **DPO:** l'art. 34 LOPDGDD elenca i casi in cui un DPO è obbligatorio; non l'ho riletto. Dipende dal titolare italiano (art. 37 GDPR) ⚖️.
@@ -41,8 +41,8 @@ Sessione: Legale ES. Data di consultazione di tutte le fonti: **2026-10-14**. Li
 
 Fonte: [BOE-A-2002-13758](https://www.boe.es/buscar/act.php?id=BOE-A-2002-13758), versione consolidata «última actualización 23/01/2025» (letta tramite estratto).
 
-- **Art. 10 — Informazione generale** (✅): il prestatore deve rendere accessibili in modo permanente, facile, diretto e gratuito: denominazione o ragione sociale, residenza o domicilio, e-mail, dati di iscrizione al registro se esistono, NIF; se ci sono prezzi, indicare se includono imposte e spese di spedizione; per professioni regolamentate, collegio e titolo (non pertinente). Si adempie con la pagina web (art. 10.2). Per VetApp = voce «Información legal» (equivalente dell'Impressum tedesco; **non** serve il nome del legale rappresentante, ma sì NIF/P.IVA italiana: ⚖️ per il titolare estero).
-- **Art. 22.2 — Cookie / dispositivi di archiviazione** (✅): consenso previo con informazione chiara e completa, salvo archiviazione tecnica strettamente necessaria per trasmettere una comunicazione o per fornire un servizio espressamente richiesto. Vale anche per l'app (conoscenza generale 🟡). Oggi VetApp non usa strumenti non necessari (`analytics` è nel catalogo ma senza strumento attivo, vedi doc 04 §4).
+- **Art. 10 — Informazione generale** (✅): il prestatore deve rendere accessibili in modo permanente, facile, diretto e gratuito: denominazione o ragione sociale, residenza o domicilio, e-mail, dati di iscrizione al registro se esistono, NIF; se ci sono prezzi, indicare se includono imposte e spese di spedizione; per professioni regolamentate, collegio e titolo (non pertinente). Si adempie con la pagina web (art. 10.2). Per Quokka = voce «Información legal» (equivalente dell'Impressum tedesco; **non** serve il nome del legale rappresentante, ma sì NIF/P.IVA italiana: ⚖️ per il titolare estero).
+- **Art. 22.2 — Cookie / dispositivi di archiviazione** (✅): consenso previo con informazione chiara e completa, salvo archiviazione tecnica strettamente necessaria per trasmettere una comunicazione o per fornire un servizio espressamente richiesto. Vale anche per l'app (conoscenza generale 🟡). Oggi Quokka non usa strumenti non necessari (`analytics` è nel catalogo ma senza strumento attivo, vedi doc 04 §4).
 - **Art. 20 e 21 — Comunicazioni commerciali** (✅): devono essere identificabili; vietate le comunicazioni pubblicitarie per e-mail non richieste né autorizzate (art. 21.1); eccezione per clienti con relazione contrattuale e prodotti simili propri (art. 21.2), con possibilità di opporsi in modo semplice e gratuito. Quindi `marketing_email`: consenso esplicito + link di disiscrizione in ogni e-mail.
 - 🟡 Sanzioni LSSI e competenza (AEPD per cookie e spam; Secretaría de Estado para gli altri obblighi): conoscenza generale.
 
@@ -69,7 +69,7 @@ Fonte: [BOE-A-2023-7936](https://www.boe.es/buscar/act.php?id=BOE-A-2023-7936) (
 - ✅ **Art. 27 (lettere k, l, m):** vietati allevamento commerciale senza registro, vendita di cani/gatti/furetti nei negozi e commercializzazione/donazione/adozione di animali non identificati.
 - ✅ **Art. 30** (dal testo letto): corso di formazione obbligatorio per la tenenza di cani e assicurazione di responsabilità civile per tutta la vita dell'animale (importi e contenuti «reglamentariamente»: ❓ regolamento non cercato). **Art. 51:** identificazione (microchip) per cani, gatti e furetti.
 - 🟡 La legge dà molta parte al sviluppo regolamentare e alle Comunidades Autónomas (che possono avere norme proprie, es. Galizia): stampa.
-- **Decisione del proprietario (2026-10-26):** nel Mercatino, in tutti i paesi, **niente vendita, regalo né scambio di animali**. Per la Spagna, con l'art. 57.1 una vendita «tra privati» via app sarebbe vietata e l'art. 57.2 obbligherebbe la piattaforma a verificare i dati: troppo rischio per VetApp. Restano ammessi solo oggetti per animali. → doc 03 §8, doc 08.
+- **Decisione del proprietario (2026-10-26):** nel Mercatino, in tutti i paesi, **niente vendita, regalo né scambio di animali**. Per la Spagna, con l'art. 57.1 una vendita «tra privati» via app sarebbe vietata e l'art. 57.2 obbligherebbe la piattaforma a verificare i dati: troppo rischio per Quokka. Restano ammessi solo oggetti per animali. → doc 03 §8, doc 08.
 - 🟡 Ricadute per l'assistente e i contenuti: non dare istruzioni su allevamento o cessione.
 
 ## 5. Esercizio della veterinaria, ricetta, telemedicina
@@ -82,8 +82,8 @@ Fonte: [BOE-A-2023-7936](https://www.boe.es/buscar/act.php?id=BOE-A-2023-7936) (
 ## 6. AI Act (UE) e legge spagnola
 
 - ✅ Art. 50, par. 1 del Reg. UE 2024/1689 e linee guida della Commissione (20/07/2026, applicazione **02/08/2026**): vedi `../de/01 §6` (stessa fonte, letta il 2026-10-14). L'etichetta «generado por IA» e la schermata del primo uso (doc 05) sono quindi un obbligo.
-- 🟡 **Legge spagnola:** il «Proyecto de Ley Orgánica para el buen uso y la gobernanza de la inteligencia artificial» è stato pubblicato nel BOCG il **12/06/2026**, emendamenti fino al **30/06/2026**; ❓ stato attuale non verificato. Prevede la **AESIA** come autorità e sanzioni per mancata etichettatura di contenuti (immagini, audio, video) generati o manipolati (fonti: stampa e studi legali, non il testo). VetApp non genera contenuti sintetici tipo «deepfake», ma analizza foto/video degli utenti: ⚖️ valutare.
-- ❓ Ruolo di VetApp (fornitore del sistema basato su modello di terzi): come in DE.
+- 🟡 **Legge spagnola:** il «Proyecto de Ley Orgánica para el buen uso y la gobernanza de la inteligencia artificial» è stato pubblicato nel BOCG il **12/06/2026**, emendamenti fino al **30/06/2026**; ❓ stato attuale non verificato. Prevede la **AESIA** come autorità e sanzioni per mancata etichettatura di contenuti (immagini, audio, video) generati o manipolati (fonti: stampa e studi legali, non il testo). Quokka non genera contenuti sintetici tipo «deepfake», ma analizza foto/video degli utenti: ⚖️ valutare.
+- ❓ Ruolo di Quokka (fornitore del sistema basato su modello di terzi): come in DE.
 
 ## 7. Piattaforma, minori e accessibilità
 
@@ -109,12 +109,12 @@ Fonte: [BOE-A-2023-7936](https://www.boe.es/buscar/act.php?id=BOE-A-2023-7936) (
 ## 10. Incertezze (da non trasformare in affermazioni)
 
 - Testo integrale di LSSI e TRLGDCU non letto (solo estratti); numerazione dei commi.
-- Se la Ley 10/2025 si applica a VetApp e il termine di adeguamento (28/12/2026).
+- Se la Ley 10/2025 si applica a Quokka e il termine di adeguamento (28/12/2026).
 - Riserva della diagnosi veterinaria nella normativa spagnola e contenuto del Código Deontológico (artt. 36–38).
 - Regolamento sul corso e sull'assicurazione per cani (Ley 7/2023 art. 30) e norme delle CCAA sugli annunci di animali.
 - Certificazione DPF di Groq; esito C-703/25 P.
 - Stato parlamentare della legge IA (BOCG 12/06/2026) e di quella sui minori digitali.
-- Ruolo di VetApp nell'AI Act; testo integrale delle linee guida art. 50 (PDF non letto).
+- Ruolo di Quokka nell'AI Act; testo integrale delle linee guida art. 50 (PDF non letto).
 - Hojas de reclamaciones e autorità DSA/accessibilità.
 - SEVEMUR: numero e ambito (doc 06).
 

@@ -30,7 +30,7 @@ Stile: uguale a quello italiano (un blocco di testo, tono diretto). Punteggiatur
 ### `terms_of_service`
 
 ```
-By using VetApp, you agree to the Terms of Service: the rules for using the app, your responsibilities as a user, and the limits of our responsibility, including that the assistant's suggestions are not veterinary advice and do not replace a veterinarian. You must be 18 or older. Without this agreement we can't create an account. The Terms include an arbitration agreement and class-action waiver, which you can opt out of within 30 days.
+By using Quokka, you agree to the Terms of Service: the rules for using the app, your responsibilities as a user, and the limits of our responsibility, including that the assistant's suggestions are not veterinary advice and do not replace a veterinarian. You must be 18 or older. Without this agreement we can't create an account. The Terms include an arbitration agreement and class-action waiver, which you can opt out of within 30 days.
 ```
 
 *(La frase su arbitrato dipende dalla decisione del proprietario: se si elimina la clausola 14 dei Termini, togliere l'ultima frase. Vedi 03 e 08.)*
@@ -38,7 +38,7 @@ By using VetApp, you agree to the Terms of Service: the rules for using the app,
 ### `privacy_policy`
 
 ```
-In short: to let you use VetApp, we collect your account details (name and email), your pets' profiles, the documents and photos you upload, your chats with the assistant, and, if you turn them on, your location and walk routes. What you send to the assistant (questions, attachments, voice messages) is sent to an outside AI provider so it can write answers; your pet's health record is sent only if you allow it. Your data is stored with third-party hosting and database services. We don't sell your personal information or use it for targeted ads. You can ask to see, correct, or delete your data by writing to Settings → Contact us, and you can withdraw optional consents any time in Settings. The full Privacy Policy is available in Settings and at sign-up.
+In short: to let you use Quokka, we collect your account details (name and email), your pets' profiles, the documents and photos you upload, your chats with the assistant, and, if you turn them on, your location and walk routes. What you send to the assistant (questions, attachments, voice messages) is sent to an outside AI provider so it can write answers; your pet's health record is sent only if you allow it. Your data is stored with third-party hosting and database services. We don't sell your personal information or use it for targeted ads. You can ask to see, correct, or delete your data by writing to Settings → Contact us, and you can withdraw optional consents any time in Settings. The full Privacy Policy is available in Settings and at sign-up.
 ```
 
 *(Ultima frase: finché la policy completa non è pubblicata, usare la formula "The full Privacy Policy is being prepared", come nella v2 italiana. Verificare "We don't sell… targeted ads" prima di pubblicare.)*
@@ -46,7 +46,7 @@ In short: to let you use VetApp, we collect your account details (name and email
 ### `marketing_email`
 
 ```
-With your permission, we may email you news about VetApp and tips for your pets. You can withdraw your permission any time in Settings, and every email has an unsubscribe link. Saying no has no effect on how you use the app.
+With your permission, we may email you news about Quokka and tips for your pets. You can withdraw your permission any time in Settings, and every email has an unsubscribe link. Saying no has no effect on how you use the app.
 ```
 
 ### `analytics`
@@ -76,7 +76,7 @@ Rules for reports and votes
 Testo di consenso (corrisponde a `CONSENT_TEXT_IT` v2):
 
 ```
-To give you more precise advice, the assistant can read your pet's health record. When you ask a question, it may read the three most recent entries, including title, date, description, and the text of attached documents, even if they aren't related to your question. If you ask it to explain a test result, it may read the documents about it, up to two. For a very long document, it reads only the beginning. What it reads is sent to the outside AI provider that writes the answer. VetApp uses it only to answer you. You can withdraw your consent any time from your pet's page or in Settings; it applies to later requests.
+To give you more precise advice, the assistant can read your pet's health record. When you ask a question, it may read the three most recent entries, including title, date, description, and the text of attached documents, even if they aren't related to your question. If you ask it to explain a test result, it may read the documents about it, up to two. For a very long document, it reads only the beginning. What it reads is sent to the outside AI provider that writes the answer. Quokka uses it only to answer you. You can withdraw your consent any time from your pet's page or in Settings; it applies to later requests.
 ```
 
 Domanda in chat al primo uso (corrisponde a `INLINE_QUESTION_IT`, da formattare con `{pet_name}`):
@@ -90,7 +90,7 @@ Note: nei numeri (tre voci, due documenti) il testo deve coincidere con i limiti
 ### *(proposta)* `ai_provider_sharing`
 
 ```
-VetApp's assistant is powered by artificial intelligence (AI) provided by an outside company. To answer you, we send it what you type or upload in the chat (questions, photos, documents, voice messages). Some personal details may be removed first, but not all. Answers are generated by AI, can be wrong, and are not veterinary advice. Do you agree to send your chat messages to this AI provider? You can say no and still use the rest of the app, and you can change your choice any time in Settings.
+Quokka's assistant is powered by artificial intelligence (AI) provided by an outside company. To answer you, we send it what you type or upload in the chat (questions, photos, documents, voice messages). Some personal details may be removed first, but not all. Answers are generated by AI, can be wrong, and are not veterinary advice. Do you agree to send your chat messages to this AI provider? You can say no and still use the rest of the app, and you can change your choice any time in Settings.
 ```
 
 *(Bottoni suggeriti: "Agree and continue" / "Not now". Se rifiutato, la chat resta disattivata: limitare la funzione, non bloccare l'app — coerente con docs/compliance/04.)*

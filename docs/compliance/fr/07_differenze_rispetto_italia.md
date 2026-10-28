@@ -6,7 +6,7 @@ Data: 2026-10-14. Le voci «conoscenza generale» sono da verificare; quelle con
 
 ## Legale
 
-| Tema | Italia | Francia | Effetto su VetApp |
+| Tema | Italia | Francia | Effetto su Quokka |
 |---|---|---|---|
 | Legge sui dati | GDPR + Codice privacy; Garante | GDPR + **loi Informatique et Libertés**; **CNIL** | Informativa francese propria (doc 02, 04); reclamo alla CNIL o al Garante (capofila) |
 | Rappresentante UE | — | Non serve: titolare italiano è nell'UE | Nessun segnaposto di rappresentante |

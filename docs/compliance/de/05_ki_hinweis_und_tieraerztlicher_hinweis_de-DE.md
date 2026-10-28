@@ -20,7 +20,7 @@ Data: 2026-10-14. Base normativa: **AI Act art. 50 par. 1** (in vigore dal 02/08
 **Title:** Über den Assistenten
 
 ```
-Der Assistent von VetApp ist eine künstliche Intelligenz (KI). Seine Antworten werden von einem KI-System geschrieben und sind immer als „KI-generiert“ gekennzeichnet.
+Der Assistent von Quokka ist eine künstliche Intelligenz (KI). Seine Antworten werden von einem KI-System geschrieben und sind immer als „KI-generiert“ gekennzeichnet.
 
 Er gibt allgemeine Informationen, damit Sie Ihr Tier gut versorgen können. Er stellt keine Diagnosen, verschreibt nichts und behandelt nicht, und er ersetzt keine Tierärztin und keinen Tierarzt. Er kann sich irren.
 
@@ -46,7 +46,7 @@ Diese Antwort wurde von einem KI-System geschrieben. Sie kann Fehler enthalten.
 ## 3. Piè di pagina della chat (sotto il campo di scrittura)
 
 ```
-VetApp gibt allgemeine Informationen, keinen tierärztlichen Rat. Sprechen Sie bei Fragen zur Gesundheit Ihres Tieres immer mit Ihrer Tierarztpraxis.
+Quokka gibt allgemeine Informationen, keinen tierärztlichen Rat. Sprechen Sie bei Fragen zur Gesundheit Ihres Tieres immer mit Ihrer Tierarztpraxis.
 ```
 
 ## 4. Banner di emergenza (mostrato quando il triage rileva segnali gravi)
@@ -62,7 +62,7 @@ Nota: in Germania **non esiste** un numero nazionale per avvelenamenti di animal
 ## 5. Avviso sui farmaci
 
 ```
-VetApp empfiehlt keine Arzneimittel und keine Dosierungen. Geben Sie Ihrem Tier niemals Humanarzneimittel oder Arzneimittel, die nicht für dieses Tier verordnet wurden, es sei denn, Ihre Tierärztin oder Ihr Tierarzt rät dazu. Manche sind für Tiere giftig.
+Quokka empfiehlt keine Arzneimittel und keine Dosierungen. Geben Sie Ihrem Tier niemals Humanarzneimittel oder Arzneimittel, die nicht für dieses Tier verordnet wurden, es sei denn, Ihre Tierärztin oder Ihr Tierarzt rät dazu. Manche sind für Tiere giftig.
 ```
 
 ## 6. Avviso sulla lettura di analisi e documenti («spiegami questo esame»)
@@ -79,7 +79,7 @@ Ein Foto oder Video zeigt nicht alles. Der Assistent kann beschreiben, was er si
 
 ## 8. KI-Hinweis (pagina completa, richiamata dalle Impostazioni)
 
-**KI-Hinweis – wie VetApp KI einsetzt**
+**KI-Hinweis – wie Quokka KI einsetzt**
 
 ```
 So funktioniert der Assistent
@@ -115,8 +115,8 @@ Schreiben Sie an [Datenschutz-/Support-Adresse]. Sie können sich auch bei einer
 
 ## 10. Punti per l'avvocato
 
-1. Confermare che il comportamento descritto (informazioni generali, nessuna diagnosi/prescrizione) resta fuori dalle norme professionali dei Länder e dalla pubblicità sanitaria (HWG, UWG). In particolare: la chat può formulare *ipotesi* («wahrscheinlich ist es X»)? La BTK ammette al massimo diagnosi di sospetto *a un veterinario*; la linea prudente per VetApp è no.
+1. Confermare che il comportamento descritto (informazioni generali, nessuna diagnosi/prescrizione) resta fuori dalle norme professionali dei Länder e dalla pubblicità sanitaria (HWG, UWG). In particolare: la chat può formulare *ipotesi* («wahrscheinlich ist es X»)? La BTK ammette al massimo diagnosi di sospetto *a un veterinario*; la linea prudente per Quokka è no.
 2. Verificare se il «triage di sicurezza» (domande chiuse → «jetzt zur Tierärztin/zum Tierarzt») conta come consulenza e come va formulato.
 3. Confermare ruolo (fornitore) e testo definitivo dell'art. 50 AI Act, e se «KI-generiert» + schermata del primo uso bastano.
 4. Verificare che le schede dello store non violino UWG/HWG.
-5. Verificare se un veterinario che *usa* VetApp (o lo raccomanda) cambia il quadro (Berufsordnung del Land, pubblicità).
+5. Verificare se un veterinario che *usa* Quokka (o lo raccomanda) cambia il quadro (Berufsordnung del Land, pubblicità).

@@ -18,7 +18,7 @@ Data: 2026-10-13. Per ogni domanda: la mia raccomandazione prudente. Le prime 5 
 7. **Strumenti di analisi:** oggi non risulta alcuno; tengo la voce `analytics` nel catalogo? Raccomando di toglierla finché non c'è uno strumento, oppure di attivarne uno con consenso.
 8. **Canale reclami (nuovo obbligo DUAA, da giugno 2026):** chi risponde, in quanti giorni, con quale indirizzo? Segnaposto in doc 02/03.
 9. **Chi è il responsabile della sicurezza online (Online Safety Act) per il Mercatino/segnalazioni?** Basta una persona (dirigente) per le realtà piccole.
-10. **Collaborazioni con cliniche UK:** se in futuro un veterinario o una clinica raccomanda VetApp, vanno viste le regole RCVS sulla pubblicità/patrocinio.
+10. **Collaborazioni con cliniche UK:** se in futuro un veterinario o una clinica raccomanda Quokka, vanno viste le regole RCVS sulla pubblicità/patrocinio.
 11. **Numeri utili:** vuoi mostrare Animal PoisonLine (a pagamento, £35/£45) tra i riferimenti? È l'unico servizio nazionale per avvelenamenti, ma è commerciale. Raccomando di citarlo sempre accanto al veterinario.
 12. **Misure e formati:** ok a miglia come predefinito per le distanze e a kg per il peso (doc 07)?
 13. **Prima della pubblicazione:** vuoi un solicitor UK per rivedere i testi? Ho segnato ⚖️ i punti da chiedere (doc 01 §12).

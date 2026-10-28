@@ -6,7 +6,7 @@ Data: 2026-10-14. Le voci «conoscenza generale» sono da verificare; quelle con
 
 ## Legale
 
-| Tema | Italia | Germania | Effetto su VetApp |
+| Tema | Italia | Germania | Effetto su Quokka |
 |---|---|---|---|
 | Legge sui dati | GDPR + Codice privacy; Garante | GDPR + BDSG + TDDDG; 16+ autorità (una per Land) | Informativa tedesca propria (doc 02, 04); reclamo all'autorità del Land o al Garante (capofila) |
 | Rappresentante UE | — | Non serve: titolare italiano è nell'UE | Nessun segnaposto di rappresentante |

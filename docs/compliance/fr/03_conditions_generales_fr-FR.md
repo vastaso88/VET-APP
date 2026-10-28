@@ -5,19 +5,19 @@ Note per chi revisiona (italiano): i prezzi sono **segnaposto** (nell'app attual
 
 ---
 
-# VetApp – Conditions générales d'utilisation et de vente (France)
+# Quokka – Conditions générales d'utilisation et de vente (France)
 
 Version : fr-FR v1 (projet). Dernière mise à jour : [date].
 
 ## 1. Champ d'application
 
-Les présentes conditions s'appliquent entre vous et [raison sociale ou nom], [adresse], [numéro d'immatriculation, numéro de TVA], [e-mail] (« VetApp », « nous »). En vous inscrivant, vous les acceptez. Sans cette acceptation, vous ne pouvez pas créer de compte. Vous devez avoir au moins 18 ans [à confirmer]. Nos mentions légales figurent dans Réglages → Mentions légales.
+Les présentes conditions s'appliquent entre vous et [raison sociale ou nom], [adresse], [numéro d'immatriculation, numéro de TVA], [e-mail] (« Quokka », « nous »). En vous inscrivant, vous les acceptez. Sans cette acceptation, vous ne pouvez pas créer de compte. Vous devez avoir au moins 18 ans [à confirmer]. Nos mentions légales figurent dans Réglages → Mentions légales.
 
-## 2. Ce qu'est VetApp – et ce qu'elle n'est pas
+## 2. Ce qu'est Quokka – et ce qu'elle n'est pas
 
-VetApp vous aide à prendre soin de vos animaux : dossiers, rappels, promenades, lieux proches, petites annonces et un assistant d'intelligence artificielle.
+Quokka vous aide à prendre soin de vos animaux : dossiers, rappels, promenades, lieux proches, petites annonces et un assistant d'intelligence artificielle.
 
-**VetApp n'est pas un service vétérinaire.** L'assistant fournit des informations générales. Il ne pose pas de diagnostic, ne prescrit aucun médicament, n'indique aucune posologie, ne donne pas de conseil personnalisé de santé et ne remplace pas un vétérinaire. Si votre animal semble malade ou si vous avez un doute, contactez votre cabinet vétérinaire. En cas d'urgence, rendez-vous immédiatement chez un vétérinaire ou dans une clinique vétérinaire d'urgence. Voir l'avis sur l'IA et l'avis vétérinaire.
+**Quokka n'est pas un service vétérinaire.** L'assistant fournit des informations générales. Il ne pose pas de diagnostic, ne prescrit aucun médicament, n'indique aucune posologie, ne donne pas de conseil personnalisé de santé et ne remplace pas un vétérinaire. Si votre animal semble malade ou si vous avez un doute, contactez votre cabinet vétérinaire. En cas d'urgence, rendez-vous immédiatement chez un vétérinaire ou dans une clinique vétérinaire d'urgence. Voir l'avis sur l'IA et l'avis vétérinaire.
 
 ## 3. Votre compte
 
@@ -46,13 +46,13 @@ Tous les prix sont indiqués toutes taxes comprises (TTC). Avant tout paiement, 
 
 Les présentes conditions ne limitent pas vos droits de consommateur. Pour les contenus et services numériques, vous bénéficiez de la garantie légale de conformité (articles L224-25-1 et suivants du code de la consommation [à vérifier]), y compris les mises à jour nécessaires à la conformité du service. Si le service n'est pas conforme, vous pouvez demander sa mise en conformité, une réduction du prix ou la résolution du contrat.
 
-## 7. Utilisation de VetApp
+## 7. Utilisation de Quokka
 
 Vous vous engagez à ne pas : enfreindre la loi ; importer des contenus sur lesquels vous n'avez pas de droits ; harceler, tromper ou nuire à autrui ; copier nos contenus ou les extraire de manière automatisée ; perturber le service ; ni utiliser l'assistant pour obtenir un diagnostic ou une ordonnance pour un animal qui n'est pas suivi par un vétérinaire.
 
 ## 8. Vos contenus
 
-Vous conservez vos droits sur ce que vous importez (photos, documents, annonces, signalements). Vous nous accordez une licence non exclusive pour l'héberger, le reproduire et l'afficher, uniquement pour faire fonctionner VetApp pour vous et, pour les contributions publiques, pour les montrer aux autres utilisateurs. Vous garantissez avoir le droit de l'importer.
+Vous conservez vos droits sur ce que vous importez (photos, documents, annonces, signalements). Vous nous accordez une licence non exclusive pour l'héberger, le reproduire et l'afficher, uniquement pour faire fonctionner Quokka pour vous et, pour les contributions publiques, pour les montrer aux autres utilisateurs. Vous garantissez avoir le droit de l'importer.
 
 ### Signalements, votes et petites annonces
 

@@ -47,7 +47,7 @@ CURRENT_VERSIONS_BY_LOCALE = {
 ## 1. `terms_of_service` — es-ES v1
 
 ```
-Al usar VetApp, usted acepta las Condiciones de uso: las normas para usar la aplicación, sus obligaciones como usuario y los límites de nuestra responsabilidad, incluido el hecho de que las sugerencias del asistente no sustituyen el consejo de un veterinario. Sin esta aceptación no podemos crear su cuenta.
+Al usar Quokka, usted acepta las Condiciones de uso: las normas para usar la aplicación, sus obligaciones como usuario y los límites de nuestra responsabilidad, incluido el hecho de que las sugerencias del asistente no sustituyen el consejo de un veterinario. Sin esta aceptación no podemos crear su cuenta.
 ```
 
 ## 2. `privacy_policy` — es-ES v1
@@ -55,7 +55,7 @@ Al usar VetApp, usted acepta las Condiciones de uso: las normas para usar la apl
 Sintesi, non la politica completa. Va tenuta vera rispetto all'app (come l'IT v2).
 
 ```
-En resumen: para que pueda usar VetApp tratamos los datos de su cuenta (nombre y correo electrónico), las fichas de sus animales, los documentos y fotos que sube, sus conversaciones con el asistente y, si lo activa, su ubicación y los recorridos de sus paseos. Lo que envía al asistente (preguntas, archivos adjuntos, mensajes de voz) se envía a un proveedor externo de inteligencia artificial para que redacte las respuestas, en parte a países fuera de la UE; el historial clínico de su animal solo si usted lo autoriza. Sus datos se almacenan en servicios de alojamiento y base de datos de terceros. Puede solicitar el acceso, la rectificación o la supresión de sus datos escribiéndonos desde Ajustes → Contacto, y retirar en cualquier momento los consentimientos voluntarios en Ajustes. También puede presentar una reclamación ante la Agencia Española de Protección de Datos. La política de privacidad completa está en preparación.
+En resumen: para que pueda usar Quokka tratamos los datos de su cuenta (nombre y correo electrónico), las fichas de sus animales, los documentos y fotos que sube, sus conversaciones con el asistente y, si lo activa, su ubicación y los recorridos de sus paseos. Lo que envía al asistente (preguntas, archivos adjuntos, mensajes de voz) se envía a un proveedor externo de inteligencia artificial para que redacte las respuestas, en parte a países fuera de la UE; el historial clínico de su animal solo si usted lo autoriza. Sus datos se almacenan en servicios de alojamiento y base de datos de terceros. Puede solicitar el acceso, la rectificación o la supresión de sus datos escribiéndonos desde Ajustes → Contacto, y retirar en cualquier momento los consentimientos voluntarios en Ajustes. También puede presentar una reclamación ante la Agencia Española de Protección de Datos. La política de privacidad completa está en preparación.
 ```
 
 Quando la politica (doc 02) sarà pubblicata, sostituire l'ultima frase con un link e passare a `v2`.
@@ -63,7 +63,7 @@ Quando la politica (doc 02) sarà pubblicata, sostituire l'ultima frase con un l
 ## 3. `marketing_email` — es-ES v1
 
 ```
-Con su consentimiento, podemos enviarle por correo electrónico novedades sobre VetApp y consejos para sus animales. Puede retirar su consentimiento en cualquier momento en Ajustes o con el enlace de baja de cada correo; no afecta al uso de la aplicación.
+Con su consentimiento, podemos enviarle por correo electrónico novedades sobre Quokka y consejos para sus animales. Puede retirar su consentimiento en cualquier momento en Ajustes o con el enlace de baja de cada correo; no afecta al uso de la aplicación.
 ```
 
 (Art. 21 LSSI-CE ✅: vietate le comunicazioni commerciali per e-mail non richieste né autorizzate; ogni messaggio con modo semplice e gratuito di opporsi. Prassi consigliata: doppia conferma tramite e-mail, perché la prova spetta a chi invia — 🟡 conoscenza generale.)
@@ -97,7 +97,7 @@ Adattamenti rispetto all'IT: «area cani» → «área para perros» (in Spagna 
 Non è un consenso di account: vive in `packages/core/domain/medical_record/consent_text.py`. Valgono le stesse regole di locale e versione. Il testo deve restare coerente con ciò che il codice legge (tre voci recenti, due documenti per «spiegami l'esame», 1.200 e 3.500 caratteri); il test `tests/unit/test_consent_texts_match_behaviour.py` ne vincola le cifre per l'italiano: va esteso alla versione spagnola.
 
 ```
-Para orientarle con más precisión, el asistente puede leer el historial clínico de su animal. Cuando usted hace una pregunta, puede leer las tres entradas más recientes, con título, fecha, descripción y el texto de los documentos adjuntos, aunque no tengan relación con su pregunta. Si le pide que explique una prueba, puede leer los documentos relacionados con ella, como máximo dos. De un documento muy largo solo lee el principio. Lo que lee se envía al proveedor externo de inteligencia artificial que redacta la respuesta. VetApp lo usa únicamente para responderle. Puede retirar su consentimiento en cualquier momento desde la ficha de su animal o en Ajustes; se aplica a las solicitudes posteriores.
+Para orientarle con más precisión, el asistente puede leer el historial clínico de su animal. Cuando usted hace una pregunta, puede leer las tres entradas más recientes, con título, fecha, descripción y el texto de los documentos adjuntos, aunque no tengan relación con su pregunta. Si le pide que explique una prueba, puede leer los documentos relacionados con ella, como máximo dos. De un documento muy largo solo lee el principio. Lo que lee se envía al proveedor externo de inteligencia artificial que redacta la respuesta. Quokka lo usa únicamente para responderle. Puede retirar su consentimiento en cualquier momento desde la ficha de su animal o en Ajustes; se aplica a las solicitudes posteriores.
 ```
 
 Pregunta en el chat (formatear con `pet_name`), equivalente de `INLINE_QUESTION_IT`:

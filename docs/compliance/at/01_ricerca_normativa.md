@@ -1,6 +1,6 @@
 > **BOZZA — non è consulenza legale; da rivedere da un avvocato locale prima della pubblicazione**
 
-# Austria — ricerca normativa per VetApp
+# Austria — ricerca normativa per Quokka
 
 Sessione: Legale DE (sezione Austria). Data di consultazione di tutte le fonti: **2026-10-14**. Lingua dei testi destinati agli utenti: tedesco austriaco (`de-AT`, Sie-Form). Il quadro **UE comune** (GDPR, AI Act art. 50, DSA, trasferimenti verso gli USA, BFSG/EAA, Digital Omnibus) è in `../de/01_ricerca_normativa.md` §1, §6, §9: qui non si ripete. Questo documento tratta solo ciò che è **diverso o specifico per l'Austria**.
 

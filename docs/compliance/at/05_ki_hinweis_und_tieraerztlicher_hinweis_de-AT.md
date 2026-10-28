@@ -20,7 +20,7 @@ Data: 2026-10-14. Base normativa: **AI Act art. 50 par. 1** (obbligo dal 02/08/2
 **Title:** Über den Assistenten
 
 ```
-Der Assistent von VetApp ist eine künstliche Intelligenz (KI). Seine Antworten werden von einem KI-System geschrieben und sind immer als „KI-generiert“ gekennzeichnet.
+Der Assistent von Quokka ist eine künstliche Intelligenz (KI). Seine Antworten werden von einem KI-System geschrieben und sind immer als „KI-generiert“ gekennzeichnet.
 
 Er gibt allgemeine Informationen, damit Sie Ihr Tier gut versorgen können. Er stellt keine Diagnosen, verschreibt nichts und behandelt nicht, und er ersetzt keine Tierärztin und keinen Tierarzt. Diagnose und Behandlung sind in Österreich Tierärztinnen und Tierärzten vorbehalten. Er kann sich irren.
 
@@ -44,7 +44,7 @@ Diese Antwort wurde von einem KI-System geschrieben. Sie kann Fehler enthalten.
 ## 3. Piè di pagina della chat
 
 ```
-VetApp gibt allgemeine Informationen, keinen tierärztlichen Rat. Sprechen Sie bei Fragen zur Gesundheit Ihres Tieres immer mit Ihrer Tierarztpraxis.
+Quokka gibt allgemeine Informationen, keinen tierärztlichen Rat. Sprechen Sie bei Fragen zur Gesundheit Ihres Tieres immer mit Ihrer Tierarztpraxis.
 ```
 
 ## 4. Banner di emergenza (triage rileva segnali gravi) *(AT)*
@@ -60,7 +60,7 @@ Nota: la Vergiftungsinformationszentrale (VIZ) di Vienna `01 406 43 43` (24 h, �
 ## 5. Avviso sui farmaci
 
 ```
-VetApp empfiehlt keine Arzneimittel und keine Dosierungen. Geben Sie Ihrem Tier niemals Humanarzneimittel oder Arzneimittel, die nicht für dieses Tier verordnet wurden, es sei denn, Ihre Tierärztin oder Ihr Tierarzt rät dazu. Manche sind für Tiere giftig.
+Quokka empfiehlt keine Arzneimittel und keine Dosierungen. Geben Sie Ihrem Tier niemals Humanarzneimittel oder Arzneimittel, die nicht für dieses Tier verordnet wurden, es sei denn, Ihre Tierärztin oder Ihr Tierarzt rät dazu. Manche sind für Tiere giftig.
 ```
 
 ## 6. Avviso sulla lettura di analisi e documenti
@@ -77,7 +77,7 @@ Ein Foto oder Video zeigt nicht alles. Der Assistent kann beschreiben, was er si
 
 ## 8. KI-Hinweis (pagina completa)
 
-**KI-Hinweis – wie VetApp KI einsetzt**
+**KI-Hinweis – wie Quokka KI einsetzt**
 
 ```
 So funktioniert der Assistent
@@ -114,6 +114,6 @@ Schreiben Sie an [Datenschutz-/Support-Adresse]. Sie können sich auch bei der D
 ## 10. Punti per l'avvocato
 
 1. Confermare che l'informazione generale + triage resta fuori dalle attività riservate ai veterinari (§ 4 TÄG) e dal divieto di Fernbehandlung; in particolare se la **risposta a una domanda su sintomi specifici** diventa «Diagnose».
-2. Verificare se un veterinario austriaco che *usa* VetApp o lo raccomanda cade nelle regole sulla pubblicità (§ 31 TÄG).
+2. Verificare se un veterinario austriaco che *usa* Quokka o lo raccomanda cade nelle regole sulla pubblicità (§ 31 TÄG).
 3. Confermare che «KI-generiert» + schermata del primo uso soddisfano l'art. 50.
 4. Chiarire un eventuale nuovo Tierärztegesetz e se cambia la linea.

@@ -153,7 +153,7 @@ Revocare l'accettazione blocca solo le nuove segnalazioni e i nuovi voti; quelli
 
 **A. Contributi degli utenti**
 
-> Se segnali un luogo o esprimi un voto, trattiamo lo pseudonimo collegato al tuo account e i dati che inserisci (categoria, nome commerciale, posizione, stato) per mostrare la segnalazione nell'app come "Secondo gli utenti VetApp", per verificare le conferme e per gestire le contestazioni. Basi giuridiche: esecuzione del servizio richiesto (art. 6(1)(b) GDPR) e legittimo interesse alla qualità dei dati (art. 6(1)(f)). Destinatari: fornitori tecnici di hosting e database. Conservazione: come indicato nelle regole d'uso. Puoi cancellare i tuoi contributi in qualsiasi momento.
+> Se segnali un luogo o esprimi un voto, trattiamo lo pseudonimo collegato al tuo account e i dati che inserisci (categoria, nome commerciale, posizione, stato) per mostrare la segnalazione nell'app come "Secondo gli utenti Quokka", per verificare le conferme e per gestire le contestazioni. Basi giuridiche: esecuzione del servizio richiesto (art. 6(1)(b) GDPR) e legittimo interesse alla qualità dei dati (art. 6(1)(f)). Destinatari: fornitori tecnici di hosting e database. Conservazione: come indicato nelle regole d'uso. Puoi cancellare i tuoi contributi in qualsiasi momento.
 
 **B. Dati di terzi nelle fonti aperte e nelle segnalazioni**
 

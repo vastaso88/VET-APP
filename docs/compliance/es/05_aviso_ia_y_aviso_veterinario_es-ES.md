@@ -21,7 +21,7 @@ Data: 2026-10-14. Base normativa: **AI Act art. 50 par. 1** (obbligo dal 02/08/2
 **Title:** Sobre el asistente
 
 ```
-El asistente de VetApp es una inteligencia artificial (IA). Sus respuestas las redacta un sistema de IA y siempre se identifican como «Generado por IA».
+El asistente de Quokka es una inteligencia artificial (IA). Sus respuestas las redacta un sistema de IA y siempre se identifican como «Generado por IA».
 
 Ofrece información general para que pueda cuidar bien de su animal. No diagnostica, no receta ni trata, y no sustituye a un veterinario. Puede equivocarse.
 
@@ -47,7 +47,7 @@ Esta respuesta la ha redactado un sistema de IA. Puede contener errores.
 ## 3. Piè di pagina della chat (sotto il campo di scrittura)
 
 ```
-VetApp ofrece información general, no asesoramiento veterinario. Ante cualquier duda sobre la salud de su animal, consulte siempre a su clínica veterinaria.
+Quokka ofrece información general, no asesoramiento veterinario. Ante cualquier duda sobre la salud de su animal, consulte siempre a su clínica veterinaria.
 ```
 
 ## 4. Banner di emergenza (mostrato quando il triage rileva segnali gravi)
@@ -63,7 +63,7 @@ Nota: il SIT (91 562 04 20) è un servizio pubblico del Ministerio de Justicia c
 ## 5. Avviso sui farmaci
 
 ```
-VetApp no recomienda medicamentos ni dosis. No dé nunca a su animal medicamentos de uso humano ni medicamentos que no le hayan sido recetados, salvo que su veterinario se lo indique. Algunos son tóxicos para los animales.
+Quokka no recomienda medicamentos ni dosis. No dé nunca a su animal medicamentos de uso humano ni medicamentos que no le hayan sido recetados, salvo que su veterinario se lo indique. Algunos son tóxicos para los animales.
 ```
 
 ## 6. Avviso sulla lettura di analisi e documenti («spiegami questo esame»)
@@ -80,7 +80,7 @@ Una foto o un vídeo no lo muestra todo. El asistente puede describir lo que ve,
 
 ## 8. Aviso sobre la IA (pagina completa, richiamata dalle Impostazioni)
 
-**Aviso sobre la IA – cómo usa VetApp la inteligencia artificial**
+**Aviso sobre la IA – cómo usa Quokka la inteligencia artificial**
 
 ```
 Cómo funciona el asistente
@@ -116,8 +116,8 @@ Escriba a [dirección de privacidad/soporte]. También puede presentar una recla
 
 ## 10. Punti per il legale
 
-1. Confermare che il comportamento descritto (informazioni generali, nessuna diagnosi/prescrizione) resta fuori dalla riserva professionale (Ley 44/2003; art. 403 del Código Penal 🟡) e dalle norme deontologiche (Código Deontológico, artt. 36–38 non letti). In particolare: la chat può formulare *ipotesi*? Linea prudente di VetApp: no.
+1. Confermare che il comportamento descritto (informazioni generali, nessuna diagnosi/prescrizione) resta fuori dalla riserva professionale (Ley 44/2003; art. 403 del Código Penal 🟡) e dalle norme deontologiche (Código Deontológico, artt. 36–38 non letti). In particolare: la chat può formulare *ipotesi*? Linea prudente di Quokka: no.
 2. Verificare se il «triage di sicurezza» (domande chiuse → «acuda ya al veterinario») costituisce consulenza e come formularlo.
 3. Confermare ruolo (fornitore) e testo definitivo dell'art. 50 AI Act, e se «Generado por IA» + schermata del primo uso bastano; seguire il Proyecto de Ley Orgánica de gobernanza de la IA (AESIA).
 4. Verificare le schede store (pratiche ingannevoli, pubblicità sanitaria a livello di CCAA).
-5. Verificare se un veterinario che *usa* VetApp o la raccomanda cambia il quadro (Colegio provincial, pubblicità).
+5. Verificare se un veterinario che *usa* Quokka o la raccomanda cambia il quadro (Colegio provincial, pubblicità).

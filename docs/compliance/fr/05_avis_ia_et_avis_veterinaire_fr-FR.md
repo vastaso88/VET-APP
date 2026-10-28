@@ -21,7 +21,7 @@ Data: 2026-10-14. Base normativa: **AI Act art. 50 par. 1** (in applicazione dal
 **Title:** À propos de l'assistant
 
 ```
-L'assistant de VetApp est une intelligence artificielle (IA). Ses réponses sont rédigées par un système d'IA et sont toujours signalées « Généré par IA ».
+L'assistant de Quokka est une intelligence artificielle (IA). Ses réponses sont rédigées par un système d'IA et sont toujours signalées « Généré par IA ».
 
 Il donne des informations générales pour vous aider à bien prendre soin de votre animal. Il ne pose pas de diagnostic, ne prescrit rien, ne soigne pas, et il ne remplace pas un vétérinaire. Il peut se tromper.
 
@@ -47,7 +47,7 @@ Cette réponse a été rédigée par un système d'IA. Elle peut contenir des er
 ## 3. Piè di pagina della chat (sotto il campo di scrittura)
 
 ```
-VetApp fournit des informations générales, pas un avis vétérinaire. Pour toute question sur la santé de votre animal, parlez-en toujours à votre vétérinaire.
+Quokka fournit des informations générales, pas un avis vétérinaire. Pour toute question sur la santé de votre animal, parlez-en toujours à votre vétérinaire.
 ```
 
 ## 4. Banner di emergenza (mostrato quando il triage rileva segnali gravi)
@@ -63,7 +63,7 @@ Nota: la riga con il numero è tra parentesi quadre perché **va confermata per 
 ## 5. Avviso sui farmaci
 
 ```
-VetApp ne recommande aucun médicament ni aucune posologie. Ne donnez jamais à votre animal un médicament destiné aux humains, ni un médicament qui ne lui a pas été prescrit, sauf avis de votre vétérinaire. Certains sont toxiques pour les animaux.
+Quokka ne recommande aucun médicament ni aucune posologie. Ne donnez jamais à votre animal un médicament destiné aux humains, ni un médicament qui ne lui a pas été prescrit, sauf avis de votre vétérinaire. Certains sont toxiques pour les animaux.
 ```
 
 ## 6. Avviso sulla lettura di analisi e documenti («spiegami questo esame»)
@@ -80,7 +80,7 @@ Une photo ou une vidéo ne montre pas tout. L'assistant peut décrire ce qu'il v
 
 ## 8. Avis sur l'IA (pagina completa, richiamata dalle Impostazioni)
 
-**Avis sur l'IA – comment VetApp utilise l'intelligence artificielle**
+**Avis sur l'IA – comment Quokka utilise l'intelligence artificielle**
 
 ```
 Comment fonctionne l'assistant
@@ -116,8 +116,8 @@ Questions ou préoccupations
 
 ## 10. Punti per l'avvocato
 
-1. **Il punto principale:** la chat di VetApp (domande di triage, risposte contestualizzate all'animale, lettura della cartella clinica con consenso) è «téléconseil» ammesso (informazione generale) o «téléconsultation»/«acte de médecine» (art. L243-1)? Con quali accorgimenti si resta nel primo caso? Oggi non esiste una base legale per la telemedicina veterinaria (`01` §6).
+1. **Il punto principale:** la chat di Quokka (domande di triage, risposte contestualizzate all'animale, lettura della cartella clinica con consenso) è «téléconseil» ammesso (informazione generale) o «téléconsultation»/«acte de médecine» (art. L243-1)? Con quali accorgimenti si resta nel primo caso? Oggi non esiste una base legale per la telemedicina veterinaria (`01` §6).
 2. Verificare se un testo come «Il ne vous donne pas de conseil personnalisé» è sostenibile rispetto a ciò che l'assistente fa davvero (le risposte sono comunque calibrate sulla specie/età dell'animale).
 3. Confermare ruolo (fornitore) e testo definitivo dell'art. 50 AI Act, e se «Généré par IA» + schermata del primo uso bastano; autorità competente in Francia (DGCCRF? CNIL?).
-4. Verificare le schede dello store (L121-2) e se un veterinario che *usa* o raccomanda VetApp cambia il quadro (déontologie vétérinaire, pubblicità).
+4. Verificare le schede dello store (L121-2) e se un veterinario che *usa* o raccomanda Quokka cambia il quadro (déontologie vétérinaire, pubblicità).
 5. Medicinali veterinari online: non studiato (`01` §6).

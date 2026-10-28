@@ -5,19 +5,19 @@ Note per chi revisiona (italiano): i prezzi sono **segnaposto** perché i prezzi
 
 ---
 
-# VetApp Terms of Service (United Kingdom)
+# Quokka Terms of Service (United Kingdom)
 
 Version: en-GB v1 (draft). Last updated: [date].
 
 ## 1. About these terms
 
-These terms are between you and [company name] ("VetApp", "we", "us"), [registered address], [company number], [email]. By creating an account you agree to them. If you do not agree, you cannot create an account. You must be 18 or over [to confirm].
+These terms are between you and [company name] ("Quokka", "we", "us"), [registered address], [company number], [email]. By creating an account you agree to them. If you do not agree, you cannot create an account. You must be 18 or over [to confirm].
 
-## 2. What VetApp is, and what it is not
+## 2. What Quokka is, and what it is not
 
-VetApp helps you look after your pets: records, reminders, walks, nearby places, a Marketplace and an AI assistant.
+Quokka helps you look after your pets: records, reminders, walks, nearby places, a Marketplace and an AI assistant.
 
-**VetApp is not a veterinary service.** The assistant gives general information. It does not diagnose, prescribe, or replace a veterinary surgeon. If your pet is unwell or you are unsure, contact your vet. In an emergency, go to a vet straight away. See the AI Notice and Veterinary Disclaimer.
+**Quokka is not a veterinary service.** The assistant gives general information. It does not diagnose, prescribe, or replace a veterinary surgeon. If your pet is unwell or you are unsure, contact your vet. In an emergency, go to a vet straight away. See the AI Notice and Veterinary Disclaimer.
 
 ## 3. Your account
 
@@ -45,13 +45,13 @@ Prices include VAT where it applies [to confirm]. We will show the full price, a
 
 Nothing in these terms limits your legal rights as a consumer. Under the Consumer Rights Act 2015, digital content must be of satisfactory quality, fit for purpose and as described. If it is not, you may be entitled to repair or replacement, a price reduction or a refund.
 
-## 7. Using VetApp
+## 7. Using Quokka
 
 You agree not to: break the law; upload content you have no right to upload; harass, mislead or harm others; use the app to copy or scrape our content; try to interfere with the service; or use the assistant to get diagnoses or prescriptions for animals that are not under a vet's care.
 
 ## 8. Your content
 
-You keep your rights in what you upload (photos, documents, listings, reports). You give us a non-exclusive licence to host, copy and display it only to run VetApp for you and, for public contributions, to show it to other users. You promise that you have the right to upload it.
+You keep your rights in what you upload (photos, documents, listings, reports). You give us a non-exclusive licence to host, copy and display it only to run Quokka for you and, for public contributions, to show it to other users. You promise that you have the right to upload it.
 
 ### Reports, votes and Marketplace listings
 

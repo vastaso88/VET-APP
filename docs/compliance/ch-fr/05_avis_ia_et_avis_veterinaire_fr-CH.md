@@ -3,7 +3,7 @@
 
 # Avviso IA e disclaimer veterinario — fr-CH (v1 bozza)
 
-Data: 2026-10-14. Base: `../ch/05_ki_hinweis_und_tieraerztlicher_hinweis_de-CH.md` (stessi contenuti, in francese). Nessuna legge svizzera generale sull'IA (`../ch/01` §5); l'avviso è mantenuto perché **VetApp è offerta nell'UE** (AI Act art. 50, obbligo dal 02/08/2026) e per coerenza; TAMV art. 10 (Rx solo se si conosce l'animale, 🟡) e UWG/LCD (non promettere ciò che l'IA non fa). La linea «informazioni generali, nessun consiglio personalizzato» è quella francese applicata **per prudenza** (`../fr/01` §6): in Svizzera la distinzione non è stata verificata ❓.
+Data: 2026-10-14. Base: `../ch/05_ki_hinweis_und_tieraerztlicher_hinweis_de-CH.md` (stessi contenuti, in francese). Nessuna legge svizzera generale sull'IA (`../ch/01` §5); l'avviso è mantenuto perché **Quokka è offerta nell'UE** (AI Act art. 50, obbligo dal 02/08/2026) e per coerenza; TAMV art. 10 (Rx solo se si conosce l'animale, 🟡) e UWG/LCD (non promettere ciò che l'IA non fa). La linea «informazioni generali, nessun consiglio personalizzato» è quella francese applicata **per prudenza** (`../fr/01` §6): in Svizzera la distinzione non è stata verificata ❓.
 
 **Linee guida di redazione (italiano)**
 
@@ -21,7 +21,7 @@ Data: 2026-10-14. Base: `../ch/05_ki_hinweis_und_tieraerztlicher_hinweis_de-CH.m
 **Title:** À propos de l'assistant
 
 ```
-L'assistant de VetApp est une intelligence artificielle (IA). Ses réponses sont rédigées par un système d'IA et sont toujours signalées « Généré par IA ».
+L'assistant de Quokka est une intelligence artificielle (IA). Ses réponses sont rédigées par un système d'IA et sont toujours signalées « Généré par IA ».
 
 Il donne des informations générales pour vous aider à bien prendre soin de votre animal. Il ne pose pas de diagnostic, ne prescrit rien, ne soigne pas, et il ne remplace pas un vétérinaire. Il peut se tromper.
 
@@ -47,7 +47,7 @@ Cette réponse a été rédigée par un système d'IA. Elle peut contenir des er
 ## 3. Piè di pagina della chat (sotto il campo di scrittura)
 
 ```
-VetApp fournit des informations générales, pas un avis vétérinaire. Pour toute question sur la santé de votre animal, parlez-en toujours à votre vétérinaire.
+Quokka fournit des informations générales, pas un avis vétérinaire. Pour toute question sur la santé de votre animal, parlez-en toujours à votre vétérinaire.
 ```
 
 ## 4. Banner di emergenza (mostrato quando il triage rileva segnali gravi)
@@ -63,7 +63,7 @@ Nota: **Tox Info Suisse (145)** è il centro nazionale per le intossicazioni, 24
 ## 5. Avviso sui farmaci
 
 ```
-VetApp ne recommande aucun médicament ni aucune posologie. Ne donnez jamais à votre animal un médicament destiné aux humains, ni un médicament qui ne lui a pas été prescrit, sauf avis de votre vétérinaire. Certains sont toxiques pour les animaux.
+Quokka ne recommande aucun médicament ni aucune posologie. Ne donnez jamais à votre animal un médicament destiné aux humains, ni un médicament qui ne lui a pas été prescrit, sauf avis de votre vétérinaire. Certains sont toxiques pour les animaux.
 ```
 
 ## 6. Avviso sulla lettura di analisi e documenti («spiegami questo esame»)
@@ -80,7 +80,7 @@ Une photo ou une vidéo ne montre pas tout. L'assistant peut décrire ce qu'il v
 
 ## 8. Avis sur l'IA (pagina completa, richiamata dalle Impostazioni)
 
-**Avis sur l'IA – comment VetApp utilise l'intelligence artificielle**
+**Avis sur l'IA – comment Quokka utilise l'intelligence artificielle**
 
 ```
 Comment fonctionne l'assistant

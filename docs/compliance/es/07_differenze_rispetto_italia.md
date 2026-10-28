@@ -6,7 +6,7 @@ Data: 2026-10-14. Le voci con ✅ sono confermate nei doc 01/06; le altre sono �
 
 ## Legale
 
-| Tema | Italia | Spagna | Effetto su VetApp |
+| Tema | Italia | Spagna | Effetto su Quokka |
 |---|---|---|---|
 | Legge sui dati | GDPR + Codice privacy; Garante | GDPR + **LOPDGDD 3/2018**; **AEPD** | Politica de privacidad propria (doc 02, 04); reclamo all'AEPD o al Garante (capofila) |
 | Rappresentante UE | — | Non serve: titolare italiano nell'UE | Nessun rappresentante |

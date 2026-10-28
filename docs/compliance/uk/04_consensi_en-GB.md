@@ -46,7 +46,7 @@ CURRENT_VERSIONS_BY_LOCALE = {
 ## 1. `terms_of_service` — en-GB v1
 
 ```
-By using VetApp you accept the Terms of Service: the rules for using the app, your responsibilities as a user and the limits of our responsibility, including the fact that the assistant's suggestions do not replace the advice of a vet. Without this acceptance we cannot create an account.
+By using Quokka you accept the Terms of Service: the rules for using the app, your responsibilities as a user and the limits of our responsibility, including the fact that the assistant's suggestions do not replace the advice of a vet. Without this acceptance we cannot create an account.
 ```
 
 ## 2. `privacy_policy` — en-GB v1
@@ -54,7 +54,7 @@ By using VetApp you accept the Terms of Service: the rules for using the app, yo
 Sintesi, non l'informativa completa. Va tenuta vera rispetto all'app (come l'IT v2).
 
 ```
-In short: to let you use VetApp we process your account details (name and email), your pets' profiles, the documents and photos you upload, your conversations with the assistant and, if you switch them on, your location and your walk routes. What you send to the assistant (questions, attachments, voice messages) is sent to an external artificial intelligence provider so it can write the answers; your pet's health record only if you allow it. Your information is stored with third-party hosting and database services, some of which may be outside the UK. You can ask to see, correct or delete your information by writing to us from Settings → Contact us, and you can withdraw any optional consent at any time in Settings. You can also complain to the Information Commissioner's Office. The full privacy notice is being prepared.
+In short: to let you use Quokka we process your account details (name and email), your pets' profiles, the documents and photos you upload, your conversations with the assistant and, if you switch them on, your location and your walk routes. What you send to the assistant (questions, attachments, voice messages) is sent to an external artificial intelligence provider so it can write the answers; your pet's health record only if you allow it. Your information is stored with third-party hosting and database services, some of which may be outside the UK. You can ask to see, correct or delete your information by writing to us from Settings → Contact us, and you can withdraw any optional consent at any time in Settings. You can also complain to the Information Commissioner's Office. The full privacy notice is being prepared.
 ```
 
 Quando l'informativa completa (doc 02) sarà pubblicata, sostituire l'ultima frase con un link e passare a `v2`.
@@ -62,7 +62,7 @@ Quando l'informativa completa (doc 02) sarà pubblicata, sostituire l'ultima fra
 ## 3. `marketing_email` — en-GB v1
 
 ```
-With your consent, we may email you news about VetApp and tips for your pets. You can withdraw your consent at any time in Settings, and it makes no difference to how you use the app.
+With your consent, we may email you news about Quokka and tips for your pets. You can withdraw your consent at any time in Settings, and it makes no difference to how you use the app.
 ```
 
 (PECR: ogni email deve anche contenere un modo semplice di annullare l'iscrizione.)
@@ -96,7 +96,7 @@ Adattamenti rispetto all'IT: «dog park» invece di «area cani»; «trading nam
 Non è un consenso di account (non è in `AccountConsentType`): vive in `packages/core/domain/medical_record/consent_text.py`. Valgono le stesse regole di locale e versione. Il testo deve restare coerente con ciò che il codice legge (tre voci recenti, due documenti per «spiegami l'esame», 1.200 e 3.500 caratteri); il test `tests/unit/test_consent_texts_match_behaviour.py` ne vincola le cifre per l'italiano: va esteso alla versione inglese.
 
 ```
-To give you more precise advice, the assistant can read your pet's health record. When you ask a question it can read the three most recent entries, with title, date, description and the text of any attached documents, even if they are not related to your question. If you ask it to explain a test result, it can read the documents about that test, up to two. For a very long document it reads only the beginning. What it reads is sent to the external artificial intelligence provider that writes the answer. VetApp uses it only to answer you. You can withdraw your consent at any time from your pet's page or from Settings, and this applies to later requests.
+To give you more precise advice, the assistant can read your pet's health record. When you ask a question it can read the three most recent entries, with title, date, description and the text of any attached documents, even if they are not related to your question. If you ask it to explain a test result, it can read the documents about that test, up to two. For a very long document it reads only the beginning. What it reads is sent to the external artificial intelligence provider that writes the answer. Quokka uses it only to answer you. You can withdraw your consent at any time from your pet's page or from Settings, and this applies to later requests.
 ```
 
 Domanda in chat (da formattare con `pet_name`), equivalente di `INLINE_QUESTION_IT`:

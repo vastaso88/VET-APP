@@ -1,6 +1,6 @@
 > **BOZZA — non è consulenza legale; da rivedere da un avvocato locale prima della pubblicazione**
 
-# Germania — ricerca normativa per VetApp (e quadro UE comune a DE/AT)
+# Germania — ricerca normativa per Quokka (e quadro UE comune a DE/AT)
 
 Sessione: Legale DE. Data di consultazione di tutte le fonti: **2026-10-14**. Lingua dei testi destinati agli utenti: tedesco (Sie-Form), `de-DE`. Documenti interni in italiano. Cartelle sorelle: `../at/` (Austria) e `../ch/` (Svizzera, non UE): questo file contiene anche le **parti UE comuni** (GDPR, AI Act, DSA, direttive consumatori) che `at/01` richiama senza ripetere.
 
@@ -13,7 +13,7 @@ Sessione: Legale DE. Data di consultazione di tutte le fonti: **2026-10-14**. Li
 
 ## 0. Quadro in una pagina
 
-| Tema | Cosa serve a VetApp in Germania | Priorità |
+| Tema | Cosa serve a Quokka in Germania | Priorità |
 |---|---|---|
 | DSGVO + BDSG | Informativa tedesca (doc 02), basi giuridiche, trasferimento verso USA (Groq), diritti, reclamo; DPIA consigliata | Alta |
 | TDDDG § 25 | Consenso per memorizzare/leggere info sul dispositivo se non strettamente necessarie (anche in app) | Media |
@@ -54,7 +54,7 @@ Sessione: Legale DE. Data di consultazione di tutte le fonti: **2026-10-14**. Li
 
 - ✅ Dal 14/05/2024 la «Impressumspflicht» è nel **§ 5 DDG** (Digitale-Dienste-Gesetz), che ha sostituito il TMG. Fonte primaria: [§ 5 DDG](https://www.gesetze-im-internet.de/ddg/__5.html). Elenco letto (comma 1): (1) nome e indirizzo, per persone giuridiche forma giuridica e rappresentanti (e capitale sociale se indicato); (2) dati per contatto rapido e comunicazione diretta, **compreso un indirizzo e-mail**; (3) autorità di vigilanza se serve autorizzazione; (4) registro delle imprese e numero; (5) professioni regolamentate (ordine, titolo, norme professionali); (6) partita IVA / numero d'identificazione economica; (7) stato di liquidazione per AG/KGaA/GmbH; (8) fornitori di servizi media audiovisivi. Comma 2: altri obblighi informativi di altre leggi restano.
 - 🟡 Vale per le app offerte «geschäftsmäßig» e va resa **facilmente riconoscibile, direttamente raggiungibile e sempre disponibile**; come regola pratica non più di 2 clic. Un indirizzo con **casella postale non basta**. Fonti: [e-recht24](https://www.e-recht24.de/impressum/10176-app-impressum.html), [IHK München](https://www.ihk-muenchen.de/ratgeber/recht/internetrecht/impressum/). Rilevante anche per la scheda dello store.
-- 🟡 Se l'app contiene contenuti giornalistico-redazionali (la sezione «novità»/news?) si aggiunge un responsabile ex § 18 comma 2 MStV (fonte: stesse). ❓ da chiarire se le novità di VetApp sono redazionali.
+- 🟡 Se l'app contiene contenuti giornalistico-redazionali (la sezione «novità»/news?) si aggiunge un responsabile ex § 18 comma 2 MStV (fonte: stesse). ❓ da chiarire se le novità di Quokka sono redazionali.
 - ⚖️ Il titolare è italiano: in base al principio dello Stato d'origine (e-commerce) il suo Impressum potrebbe seguire la norma italiana (art. 7 D.Lgs. 70/2003, conoscenza generale), ma conviene un Impressum conforme al § 5 DDG in ogni caso.
 - Nota: l'Impressum è anche il posto per le informazioni su **conciliazione consumatori**: § 36 VSBG impone di dichiarare se si partecipa a una procedura di conciliazione (conoscenza generale, da verificare). La piattaforma ODR dell'UE è stata chiusa il 20/07/2025 (conoscenza generale, da verificare): non rimandarvi.
 
@@ -84,7 +84,7 @@ Sessione: Legale DE. Data di consultazione di tutte le fonti: **2026-10-14**. Li
 ## 5. Età e capacità negoziale
 
 - 🟡 In Germania i minori tra 7 e 17 anni hanno capacità limitata (§§ 106 ss. BGB): i contratti a pagamento richiedono il consenso dei genitori, con il «Taschengeldparagraph» (§ 110 BGB) come eccezione (conoscenza generale, da verificare). Quindi: **18+** per il piano a pagamento è la scelta lineare.
-- 🟡 Jugendschutz: nessuna verifica d'età rigida per un'app non «entwicklungsbeeinträchtigend»; il JMStV (Jugendmedienschutz-Staatsvertrag) e il JuSchG (§ 24a) fissano obblighi per fornitori di servizi con contenuti pericolosi/per minori. VetApp dichiara 18+ senza contenuti per soli adulti: ❓ valutare se serve l'impostazione «18+» nelle IARC/USK. Fonte: [WBS.legal](https://www.wbs.legal/medienrecht/jugendmedienschutz/jugendschutz-internet), [USK/IARC](https://usk.de/wp-content/uploads/2023/12/2023-12-07_Stellungnahme-JMStV-E-2023_USK_final.pdf) — letture parziali.
+- 🟡 Jugendschutz: nessuna verifica d'età rigida per un'app non «entwicklungsbeeinträchtigend»; il JMStV (Jugendmedienschutz-Staatsvertrag) e il JuSchG (§ 24a) fissano obblighi per fornitori di servizi con contenuti pericolosi/per minori. Quokka dichiara 18+ senza contenuti per soli adulti: ❓ valutare se serve l'impostazione «18+» nelle IARC/USK. Fonte: [WBS.legal](https://www.wbs.legal/medienrecht/jugendmedienschutz/jugendschutz-internet), [USK/IARC](https://usk.de/wp-content/uploads/2023/12/2023-12-07_Stellungnahme-JMStV-E-2023_USK_final.pdf) — letture parziali.
 - IARC: Google Play usa IARC (🟡 non vincolante rispetto a USK). Per Apple, valutazione propria (non cercata).
 
 ## 6. AI Act (UE) — trasparenza per i chatbot
@@ -93,7 +93,7 @@ Sessione: Legale DE. Data di consultazione di tutte le fonti: **2026-10-14**. Li
 - 🟡 Fonti secondarie sulle linee guida: l'eccezione «ovvio» è stretta; una dicitura generica come «assistente» non basta; esempi sufficienti: avviso all'inizio della sessione o indicatore permanente sul campo di input. Fonti: [Stephenson Harwood](https://perspectives.stephensonharwood.com/post/102nfqh/eu-ai-act-update-european-commission-adopts-guidelines-on-article-50-transparenc), [CSA research note](https://labs.cloudsecurityalliance.org/research/csa-research-note-eu-ai-act-article-50-transparency-20260729/).
 - 🟡 Il **Digital Omnibus** (Reg. UE 2026/1744 secondo le fonti, entrato in vigore il 27/07/2026) ha rinviato i sistemi ad alto rischio (Allegato III al 02/12/2027; Allegato I al 02/08/2028) ma **non l'art. 50**. Per l'art. 50, par. 2 (marcatura leggibile da macchina) i sistemi già sul mercato prima del 02/08/2026 hanno tempo fino al **02/12/2026**. Fonti secondarie discordi su alcuni dettagli: ❓ verificare su EUR-Lex.
 - 🟡 Sanzioni: fino a € 15 milioni o 3% del fatturato mondiale (fonti secondarie).
-- Effetto su VetApp: VetApp è **fornitore** di un sistema (la chat) basato su un modello di terzi: l'etichetta «KI-generiert», la schermata del primo uso e il piè di pagina (doc 05) servono davvero come obbligo, non solo come buona pratica. VetApp non è un sistema ad alto rischio (nessun uso sanitario umano). ⚖️ L'avvocato conferma il ruolo (fornitore/deployer) e se un'IA che dà consigli sulla salute animale entra in altre categorie.
+- Effetto su Quokka: Quokka è **fornitore** di un sistema (la chat) basato su un modello di terzi: l'etichetta «KI-generiert», la schermata del primo uso e il piè di pagina (doc 05) servono davvero come obbligo, non solo come buona pratica. Quokka non è un sistema ad alto rischio (nessun uso sanitario umano). ⚖️ L'avvocato conferma il ruolo (fornitore/deployer) e se un'IA che dà consigli sulla salute animale entra in altre categorie.
 
 ## 7. Diritto veterinario: diagnosi e prescrizione a distanza
 
@@ -112,7 +112,7 @@ Sessione: Legale DE. Data di consultazione di tutte le fonti: **2026-10-14**. Li
 
 ## 9. Piattaforma, contenuti dell'utente, accessibilità
 
-- 🟡 **DSA** (Reg. UE 2022/2065), attuato in Germania dal **DDG** (che ha sostituito il TMG il 14/05/2024, [e-recht24](https://www.e-recht24.de/news/abmahnung/10176-app-stores-fehlendes-impressum-wird-jetzt-abgemahnt.html)): VetApp ospita contenuti di utenti (segnalazioni, annunci) → obblighi dei servizi di hosting (punto di contatto, meccanismo di segnalazione, motivazione delle rimozioni). Esenzioni per micro/piccole imprese per gli obblighi delle piattaforme online (conoscenza generale, da verificare). L'obbligo di tracciabilità dei «trader» (art. 30) riguarda i marketplace con operatori commerciali; i privati non lo sono, ma un venditore ricorrente può esserlo ⚖️.
+- 🟡 **DSA** (Reg. UE 2022/2065), attuato in Germania dal **DDG** (che ha sostituito il TMG il 14/05/2024, [e-recht24](https://www.e-recht24.de/news/abmahnung/10176-app-stores-fehlendes-impressum-wird-jetzt-abgemahnt.html)): Quokka ospita contenuti di utenti (segnalazioni, annunci) → obblighi dei servizi di hosting (punto di contatto, meccanismo di segnalazione, motivazione delle rimozioni). Esenzioni per micro/piccole imprese per gli obblighi delle piattaforme online (conoscenza generale, da verificare). L'obbligo di tracciabilità dei «trader» (art. 30) riguarda i marketplace con operatori commerciali; i privati non lo sono, ma un venditore ricorrente può esserlo ⚖️.
 - 🟡 **BFSG** (Barrierefreiheitsstärkungsgesetz), in vigore dal **28/06/2025**: i servizi B2C online (e-commerce incluso) devono essere accessibili; esenzione per le microimprese (< 10 persone e fatturato/bilancio ≤ € 2 milioni) solo per i **servizi**; nessun periodo transitorio per app/siti. Fonte: [IHK Koblenz](https://www.ihk.de/koblenz/unternehmensservice/recht/aktuelles/aktuelle-informationen-aus-recht-und-steuern/barrierefreiheit-6616444), [Görg](https://www.goerg.de/de/aktuelles/veroeffentlichungen/20-01-2025/digital-ohne-huerden-was-das-bfsg-fuer-unternehmen-bedeutet). ⚖️ Il titolare italiano è soggetto anche alla propria legge (D.Lgs. 82/2022): l'avvocato indica quale e se la piccola dimensione esonera.
 
 ## 10. Store (Apple App Store, Google Play) per la Germania
@@ -137,7 +137,7 @@ Sessione: Legale DE. Data di consultazione di tutte le fonti: **2026-10-14**. Li
 ## 12. Incertezze (da non trasformare in affermazioni)
 
 - Esistenza e contenuto delle Berufsordnungen dei Länder sulla telemedicina; stato della Musterberufsordnung § 12 (testo non letto).
-- Ruolo di VetApp ai fini dell'AI Act (fornitore) e testo definitivo delle linee guida art. 50 (PDF non letto).
+- Ruolo di Quokka ai fini dell'AI Act (fornitore) e testo definitivo delle linee guida art. 50 (PDF non letto).
 - Se Groq è certificata DPF; esito dell'impugnazione C-703/25 P.
 - § 356a BGB (letto solo in fonti secondarie), sentenza CGUE C-234/25 (un solo documento), numerazione dei commi del § 356 BGB.
 - Se il contratto d'abbonamento in app passa dallo store (quindi niente Kündigungsbutton proprio) o dal sito.

@@ -5,19 +5,19 @@ Note per chi revisiona (italiano): i prezzi sono **segnaposto** (nell'app attual
 
 ---
 
-# VetApp – Condiciones de uso (España)
+# Quokka – Condiciones de uso (España)
 
 Versión: es-ES v1 (borrador). Fecha: [fecha].
 
 ## 1. Ámbito
 
-Estas condiciones rigen entre usted y [razón social o nombre], [dirección], [NIF/P. IVA], [correo electrónico] («VetApp», «nosotros»). Al registrarse, usted las acepta. Sin su aceptación no podemos crear su cuenta. Debe tener al menos 18 años [confirmar]. Nuestros datos de información general (art. 10 LSSI-CE) figuran en «Información legal».
+Estas condiciones rigen entre usted y [razón social o nombre], [dirección], [NIF/P. IVA], [correo electrónico] («Quokka», «nosotros»). Al registrarse, usted las acepta. Sin su aceptación no podemos crear su cuenta. Debe tener al menos 18 años [confirmar]. Nuestros datos de información general (art. 10 LSSI-CE) figuran en «Información legal».
 
-## 2. Qué es VetApp y qué no es
+## 2. Qué es Quokka y qué no es
 
-VetApp le ayuda a cuidar de sus animales: fichas, recordatorios, paseos, lugares cercanos, un mercadillo y un asistente de IA.
+Quokka le ayuda a cuidar de sus animales: fichas, recordatorios, paseos, lugares cercanos, un mercadillo y un asistente de IA.
 
-**VetApp no es un servicio veterinario.** El asistente ofrece información general. No diagnostica, no receta medicamentos, no indica dosis y no sustituye a un veterinario. Si su animal parece enfermo o usted tiene dudas, consulte a su clínica veterinaria. En una urgencia, acuda de inmediato a un veterinario. Véanse el Aviso sobre la IA y el Aviso veterinario.
+**Quokka no es un servicio veterinario.** El asistente ofrece información general. No diagnostica, no receta medicamentos, no indica dosis y no sustituye a un veterinario. Si su animal parece enfermo o usted tiene dudas, consulte a su clínica veterinaria. En una urgencia, acuda de inmediato a un veterinario. Véanse el Aviso sobre la IA y el Aviso veterinario.
 
 ## 3. Su cuenta
 
@@ -46,13 +46,13 @@ Todos los precios son precios totales con impuestos incluidos. Antes de pagar le
 
 Estas condiciones no limitan sus derechos legales como consumidor. Para contenidos y servicios digitales rigen las reglas legales de conformidad y actualización del TRLGDCU (arts. 115 bis y ss.). Si la aplicación no es conforme, tiene los derechos legales (puesta en conformidad, resolución del contrato, reducción del precio, indemnización).
 
-## 7. Uso de VetApp
+## 7. Uso de Quokka
 
 Se compromete a no: infringir la ley; subir contenido sobre el que no tenga derechos; acosar, engañar o perjudicar a otros; usar la aplicación para copiar o extraer de forma automatizada nuestro contenido; perturbar el servicio; o usar el asistente para obtener diagnósticos o recetas de animales que no estén bajo tratamiento veterinario.
 
 ## 8. Sus contenidos
 
-Usted conserva sus derechos sobre lo que sube (fotos, documentos, anuncios, avisos). Nos concede una licencia no exclusiva para almacenarlo, reproducirlo y mostrarlo, solo para operar VetApp para usted y, en el caso de contribuciones públicas, para mostrarlo a otros usuarios. Usted garantiza que tiene derecho a subirlo.
+Usted conserva sus derechos sobre lo que sube (fotos, documentos, anuncios, avisos). Nos concede una licencia no exclusiva para almacenarlo, reproducirlo y mostrarlo, solo para operar Quokka para usted y, en el caso de contribuciones públicas, para mostrarlo a otros usuarios. Usted garantiza que tiene derecho a subirlo.
 
 ### Avisos, votos y anuncios del mercadillo
 

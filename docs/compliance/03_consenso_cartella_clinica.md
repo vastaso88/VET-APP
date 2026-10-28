@@ -21,11 +21,11 @@ La v1 (approvata il 2026-09-17) diceva che l'assistente usa «solo le informazio
 | Domande di chiarimento (intervista) | Lo stesso riepilogo delle tre voci, tenuto nello stato della conversazione (`SituationModel.known_medical_context`) | come sopra | `chat_orchestrator.py` |
 | Senza consenso, o dopo la revoca | Solo il numero dei documenti presenti: né titoli né contenuto | | `_medical_context_for_prompt` |
 
-Destinatario: il fornitore esterno di IA che scrive la risposta (oggi Groq). Il riepilogo resta anche nello stato della conversazione salvato da VetApp.
+Destinatario: il fornitore esterno di IA che scrive la risposta (oggi Groq). Il riepilogo resta anche nello stato della conversazione salvato da Quokka.
 
 ### Che cosa dice la v2
 
-Quanti documenti legge e quali dati (titolo, data, descrizione, testo dei documenti, solo l'inizio di quelli molto lunghi), che non sceglie solo ciò che serve alla domanda, che il testo va al fornitore esterno di IA, che VetApp lo usa solo per rispondere, e che la revoca vale per le richieste successive. Non dichiara anonimizzazione: non è garantita (vedi sotto e [02](02_pii_anonymization.md)). La v2 vale per i consensi dati da ora in poi: `SetMedicalRecordConsentService` registra la versione corrente a ogni decisione.
+Quanti documenti legge e quali dati (titolo, data, descrizione, testo dei documenti, solo l'inizio di quelli molto lunghi), che non sceglie solo ciò che serve alla domanda, che il testo va al fornitore esterno di IA, che Quokka lo usa solo per rispondere, e che la revoca vale per le richieste successive. Non dichiara anonimizzazione: non è garantita (vedi sotto e [02](02_pii_anonymization.md)). La v2 vale per i consensi dati da ora in poi: `SetMedicalRecordConsentService` registra la versione corrente a ogni decisione.
 
 ### Che cosa dice la v3 (2026-10-14, «Cartella clinica per categorie»)
 

@@ -1,8 +1,8 @@
 > **BOZZA — non è consulenza legale; da rivedere da un avvocato locale prima della pubblicazione**
 
-# Svizzera — ricerca normativa per VetApp
+# Svizzera — ricerca normativa per Quokka
 
-Sessione: Legale DE (sezione Svizzera). Data di consultazione di tutte le fonti: **2026-10-14**. Lingua dei testi destinati agli utenti: tedesco svizzero (`de-CH`, Sie-Form, **«ss» al posto di «ß»**). La Svizzera **non è nell'UE**: il GDPR non è la legge di riferimento per gli utenti svizzeri (resta applicabile a VetApp come titolare UE per i trattamenti nell'UE), quindi qui contano nDSG/revDSG, UWG, OR, TSchV. Il quadro UE comune è in `../de/01` §1, §6; qui solo il diverso.
+Sessione: Legale DE (sezione Svizzera). Data di consultazione di tutte le fonti: **2026-10-14**. Lingua dei testi destinati agli utenti: tedesco svizzero (`de-CH`, Sie-Form, **«ss» al posto di «ß»**). La Svizzera **non è nell'UE**: il GDPR non è la legge di riferimento per gli utenti svizzeri (resta applicabile a Quokka come titolare UE per i trattamenti nell'UE), quindi qui contano nDSG/revDSG, UWG, OR, TSchV. Il quadro UE comune è in `../de/01` §1, §6; qui solo il diverso.
 
 ## Come leggere questo documento
 
@@ -20,7 +20,7 @@ Premessa di fatto: titolare **italiano** (UE), utenti in Svizzera → per la Svi
 | UWG art. 3 Abs. 1 lit. s (Impressum, e-commerce) | Identità e contatto chiari, e-mail; conferma d'ordine | Alta |
 | **Nessun diritto di recesso legale online** | Il recesso di 14 giorni UE non esiste; offerta volontaria | Alta |
 | PBV (prezzi) | Prezzi in CHF finali con IVA nel marketing; servizi nel catalogo art. 10 | Media |
-| IA | Nessuna legge generale; Bundesrat 12/02/2025; AI Act vale comunque per VetApp (UE) | Media |
+| IA | Nessuna legge generale; Bundesrat 12/02/2025; AI Act vale comunque per Quokka (UE) | Media |
 | Veterinari | HMG/TAMV: Rx solo se si conosce l'animale; diagnosi riservata a veterinari (🟡) | Alta |
 | Tierschutz | Annunci di cani: nome, indirizzo, origine; Mercatino senza animali vivi | Alta |
 | Età | 18 anni | Bassa |
@@ -30,7 +30,7 @@ Premessa di fatto: titolare **italiano** (UE), utenti in Svizzera → per la Svi
 
 - ✅ **Swiss–US Data Privacy Framework** — l'EDÖB conferma che dal **15/09/2024** esiste un livello di protezione adeguato per i dati scambiati tra Svizzera e **aziende USA certificate**; l'elenco è su dataprivacyframework.gov. Fonte primaria: [EDÖB 15/08/2024](https://www.edoeb.admin.ch/en/15082024-new-swiss-us-data-privacy-framework). Nota: per i dati svizzeri **non basta** la certificazione al DPF UE–USA: l'azienda deve aderire anche alla **estensione svizzera** (conoscenza generale ❓ da verificare per Groq).
 - 🟡 **Rappresentanza (art. 14 DSG):** i titolari privati con sede all'estero devono designare una rappresentanza in Svizzera se il trattamento (1) è collegato all'offerta di beni/servizi o all'osservazione del comportamento di persone in Svizzera, (2) è **esteso e regolare**, (3) comporta un **rischio elevato**. Condizioni cumulative; l'[Onlinekommentar](https://onlinekommentar.ch/de/kommentare/dsg14) ritiene che l'obbligo valga in pratica per pochi titolari (e che la soglia dei 250 dipendenti non vale per questo obbligo). La rappresentanza è un punto di contatto, tiene un registro e rende pubblici nome e indirizzo (art. 15). L'EDÖB può ordinare di designarla. Fonti: [foraus](https://www.foraus.ch/fr/posts/brauchen-auslaendische-it-unternehmen-wirklich-botschafterinnen-in-der-schweiz), [activemind](https://www.activemind.legal/?p=15194). ⚖️ **Un'app piccola con GPS e IA, quanti utenti in CH?** → domanda al proprietario.
-- 🟡 **Decisioni automatizzate (art. 21):** obbligo di informare per decisioni interamente automatizzate con effetti giuridici o significativi; diritto di far valere la propria posizione e revisione umana ([Onlinekommentar](https://onlinekommentar.ch/de/kommentare/dsg21)). VetApp non decide su di te.
+- 🟡 **Decisioni automatizzate (art. 21):** obbligo di informare per decisioni interamente automatizzate con effetti giuridici o significativi; diritto di far valere la propria posizione e revisione umana ([Onlinekommentar](https://onlinekommentar.ch/de/kommentare/dsg21)). Quokka non decide su di te.
 - 🟡 **Sanzioni:** l'EDÖB **non può infliggere multe** (può emettere provvedimenti correttivi, art. 51); le multe penali (fino a **CHF 250.000** per persone private che violano intenzionalmente obblighi informativi, di accesso e collaborazione, art. 60) sono perseguite dai **Cantoni** sulla persona responsabile; nei casi minori fino a CHF 50.000 contro l'impresa (art. 64). Fonti: [recordinglaw](https://www.recordinglaw.com/de/switzerland/data-privacy/ndsg-overview/), [Onlinekommentar art. 60](https://onlinekommentar.ch/de/kommentare/dsg60). Da verificare su Fedlex.
 - ❓ **Consenso (art. 6)**, **obbligo informativo (art. 19)**, **diritto di accesso (art. 25, 30 giorni?)**, **DPIA (art. 22)**: conosco la struttura ma **non ho riletto i testi in questa sessione**; nella bozza di informativa uso termini prudenti e segno «[bestätigen]».
 - 🟡 Trasferimenti verso l'UE/SEE: considerati adeguati dalla lista del Consiglio federale (Anhang 1 DSV, conoscenza generale ❓). Supabase (Irlanda), Vercel (Dublino) → non servono garanzie ulteriori.
@@ -58,7 +58,7 @@ Premessa di fatto: titolare **italiano** (UE), utenti in Svizzera → per la Svi
 ## 5. Intelligenza artificiale
 
 - 🟡 La Svizzera non ha una legge generale sull'IA. **Bundesrat 12/02/2025:** priorità alla ratifica della Convenzione quadro del Consiglio d'Europa sull'IA e adeguamenti settoriali; l'AI Act UE non viene ripreso «tel quel». Convenzione firmata il **27/03/2025**. Una proposta in consultazione è attesa **entro fine 2026** e non è ancora pubblicata. Le fonti divergono sullo stato della ratifica. Fonti: [Blick](https://www.blick.ch/politik/regulierung-bundesrat-will-ki-konventionen-des-europarates-uebernehmen-id20583692.html), [law.ch](https://law.ch/lawnews/2025/03/schweiz-unterzeichnet-europaratskonvention-zu-kuenstlicher-intelligenz-ki/), [BJ](https://www.bj.admin.ch/de/kuenstliche-intelligenz).
-- Effetto: nessun obbligo svizzero analogo all'art. 50 AI Act; ma **VetApp è un sistema offerto nell'UE** e quindi vale l'art. 50 (vedi `de/01` §6): per coerenza lo stesso avviso IA anche per gli utenti svizzeri.
+- Effetto: nessun obbligo svizzero analogo all'art. 50 AI Act; ma **Quokka è un sistema offerto nell'UE** e quindi vale l'art. 50 (vedi `de/01` §6): per coerenza lo stesso avviso IA anche per gli utenti svizzeri.
 
 ## 6. Veterinari: HMG e TAMV
 

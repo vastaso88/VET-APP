@@ -31,13 +31,13 @@ CURRENT_VERSIONS_BY_LOCALE["fr-CH"] = {
 ## 1. `terms_of_service` — fr-CH v1
 
 ```
-En utilisant VetApp, vous acceptez les conditions d'utilisation : les règles d'usage de l'application, vos obligations d'utilisateur et les limites de notre responsabilité, y compris le fait que les suggestions de l'assistant ne remplacent pas l'avis d'un vétérinaire. Sans cette acceptation, nous ne pouvons pas créer de compte.
+En utilisant Quokka, vous acceptez les conditions d'utilisation : les règles d'usage de l'application, vos obligations d'utilisateur et les limites de notre responsabilité, y compris le fait que les suggestions de l'assistant ne remplacent pas l'avis d'un vétérinaire. Sans cette acceptation, nous ne pouvons pas créer de compte.
 ```
 
 ## 2. `privacy_policy` — fr-CH v1
 
 ```
-En bref : pour que vous puissiez utiliser VetApp, nous traitons les données de votre compte (nom et adresse e-mail), les fiches de vos animaux, les documents et photos que vous importez, vos conversations avec l'assistant et, si vous les activez, votre localisation et le parcours de vos promenades. Ce que vous envoyez à l'assistant (questions, pièces jointes, messages vocaux) est transmis à un prestataire externe d'intelligence artificielle pour rédiger les réponses, en partie vers des pays situés hors de Suisse ; le carnet de santé de votre animal n'est transmis que si vous l'autorisez. Vos données sont conservées chez des prestataires d'hébergement et de base de données. Vous pouvez demander l'accès, la rectification ou l'effacement de vos données en nous écrivant via Réglages → Contact, et retirer à tout moment vos consentements facultatifs dans les réglages. Vous pouvez aussi vous adresser au Préposé fédéral à la protection des données et à la transparence (PFPDT). La politique de confidentialité complète est en cours de préparation.
+En bref : pour que vous puissiez utiliser Quokka, nous traitons les données de votre compte (nom et adresse e-mail), les fiches de vos animaux, les documents et photos que vous importez, vos conversations avec l'assistant et, si vous les activez, votre localisation et le parcours de vos promenades. Ce que vous envoyez à l'assistant (questions, pièces jointes, messages vocaux) est transmis à un prestataire externe d'intelligence artificielle pour rédiger les réponses, en partie vers des pays situés hors de Suisse ; le carnet de santé de votre animal n'est transmis que si vous l'autorisez. Vos données sont conservées chez des prestataires d'hébergement et de base de données. Vous pouvez demander l'accès, la rectification ou l'effacement de vos données en nous écrivant via Réglages → Contact, et retirer à tout moment vos consentements facultatifs dans les réglages. Vous pouvez aussi vous adresser au Préposé fédéral à la protection des données et à la transparence (PFPDT). La politique de confidentialité complète est en cours de préparation.
 ```
 
 Quando la politique de confidentialité (doc 02) sarà pubblicata, sostituire l'ultima frase con un link e passare a `v2`.
@@ -45,7 +45,7 @@ Quando la politique de confidentialité (doc 02) sarà pubblicata, sostituire l'
 ## 3. `marketing_email` — fr-CH v1
 
 ```
-Avec votre accord, nous pouvons vous envoyer par e-mail des nouveautés sur VetApp et des conseils pour vos animaux. Vous pouvez retirer votre accord à tout moment dans les réglages ; cela n'a aucune incidence sur votre utilisation de l'application.
+Avec votre accord, nous pouvons vous envoyer par e-mail des nouveautés sur Quokka et des conseils pour vos animaux. Vous pouvez retirer votre accord à tout moment dans les réglages ; cela n'a aucune incidence sur votre utilisation de l'application.
 ```
 
 (LCD art. 3 al. 1 let. o: la pubblicità di massa via telecomunicazione richiede il **consenso preventivo**, l'indicazione del mittente e un modo semplice per rifiutare — conoscenza generale ❓ da `ch/04`, non riletta.)
@@ -79,7 +79,7 @@ Règles pour les signalements et les votes
 Vive in `packages/core/domain/medical_record/consent_text.py`. Stesse regole di locale e versione; cifre (tre voci, due documenti, 1.200 / 3.500 caratteri) da vincolare con un test come per l'italiano.
 
 ```
-Pour vous conseiller plus précisément, l'assistant peut lire le carnet de santé de votre animal. Lorsque vous posez une question, il peut lire les trois entrées les plus récentes, avec leur titre, leur date, leur description et le texte des documents joints, même si elles n'ont aucun lien avec votre question. Lorsque vous lui demandez d'expliquer un résultat d'examen, il peut lire les documents liés à cet examen, deux au maximum. D'un document très long, il ne lit que le début. Ce qu'il lit est envoyé au prestataire externe d'intelligence artificielle qui rédige la réponse. VetApp l'utilise uniquement pour vous répondre. Vous pouvez retirer votre accord à tout moment sur la page de votre animal ou dans les réglages ; cela vaut pour les demandes suivantes.
+Pour vous conseiller plus précisément, l'assistant peut lire le carnet de santé de votre animal. Lorsque vous posez une question, il peut lire les trois entrées les plus récentes, avec leur titre, leur date, leur description et le texte des documents joints, même si elles n'ont aucun lien avec votre question. Lorsque vous lui demandez d'expliquer un résultat d'examen, il peut lire les documents liés à cet examen, deux au maximum. D'un document très long, il ne lit que le début. Ce qu'il lit est envoyé au prestataire externe d'intelligence artificielle qui rédige la réponse. Quokka l'utilise uniquement pour vous répondre. Vous pouvez retirer votre accord à tout moment sur la page de votre animal ou dans les réglages ; cela vaut pour les demandes suivantes.
 ```
 
 Question dans la discussion (à formater avec `pet_name`) :

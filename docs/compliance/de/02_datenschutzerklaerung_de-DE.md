@@ -5,13 +5,13 @@ Note per chi revisiona (italiano): i campi tra [parentesi quadre] vanno compilat
 
 ---
 
-# VetApp – Datenschutzerklärung (Deutschland)
+# Quokka – Datenschutzerklärung (Deutschland)
 
 Version: de-DE v1 (Entwurf). Stand: [Datum].
 
 ## 1. Wer wir sind
 
-VetApp wird betrieben von [Firma bzw. Name des Verantwortlichen], [Anschrift], [Handelsregister/Registernummer, USt-IdNr./Partita IVA] („wir“, „uns“).
+Quokka wird betrieben von [Firma bzw. Name des Verantwortlichen], [Anschrift], [Handelsregister/Registernummer, USt-IdNr./Partita IVA] („wir“, „uns“).
 Kontakt für Datenschutzfragen: [E-Mail-Adresse für Datenschutz].
 Datenschutzbeauftragter: [nicht benannt / Name und Kontakt].
 Vertreter in der EU: nicht erforderlich, da wir in der Europäischen Union niedergelassen sind. [Niederlassung in Italien prüfen.]
@@ -110,7 +110,7 @@ Wenden Sie sich an [E-Mail-Adresse für Datenschutz] oder nutzen Sie Einstellung
 
 ## 9. Kinder
 
-VetApp richtet sich an Personen ab 18 Jahren. Wenn Sie glauben, dass ein Kind uns personenbezogene Daten übermittelt hat, schreiben Sie uns; wir löschen sie.
+Quokka richtet sich an Personen ab 18 Jahren. Wenn Sie glauben, dass ein Kind uns personenbezogene Daten übermittelt hat, schreiben Sie uns; wir löschen sie.
 
 ## 10. Cookies und ähnliche Technologien (TDDDG)
 

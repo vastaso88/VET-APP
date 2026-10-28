@@ -5,19 +5,19 @@ Note per chi revisiona (italiano): i prezzi sono **segnaposto** (nell'app attual
 
 ---
 
-# VetApp – Nutzungsbedingungen (Deutschland)
+# Quokka – Nutzungsbedingungen (Deutschland)
 
 Version: de-DE v1 (Entwurf). Stand: [Datum].
 
 ## 1. Geltung
 
-Diese Bedingungen gelten zwischen Ihnen und [Firma bzw. Name], [Anschrift], [Registernummer, USt-IdNr.], [E-Mail] („VetApp“, „wir“, „uns“). Mit der Registrierung erklären Sie sich damit einverstanden. Ohne Zustimmung können Sie kein Konto anlegen. Sie müssen mindestens 18 Jahre alt sein [bestätigen]. Unsere Angaben nach § 5 DDG finden Sie im Impressum.
+Diese Bedingungen gelten zwischen Ihnen und [Firma bzw. Name], [Anschrift], [Registernummer, USt-IdNr.], [E-Mail] („Quokka“, „wir“, „uns“). Mit der Registrierung erklären Sie sich damit einverstanden. Ohne Zustimmung können Sie kein Konto anlegen. Sie müssen mindestens 18 Jahre alt sein [bestätigen]. Unsere Angaben nach § 5 DDG finden Sie im Impressum.
 
-## 2. Was VetApp ist – und was nicht
+## 2. Was Quokka ist – und was nicht
 
-VetApp hilft Ihnen bei der Versorgung Ihrer Tiere: Akten, Erinnerungen, Spaziergänge, Orte in der Nähe, ein Marktplatz und ein KI-Assistent.
+Quokka hilft Ihnen bei der Versorgung Ihrer Tiere: Akten, Erinnerungen, Spaziergänge, Orte in der Nähe, ein Marktplatz und ein KI-Assistent.
 
-**VetApp ist kein tierärztlicher Dienst.** Der Assistent gibt allgemeine Informationen. Er stellt keine Diagnosen, verschreibt keine Arzneimittel, nennt keine Dosierungen und ersetzt keine Tierärztin und keinen Tierarzt. Wenn Ihr Tier krank wirkt oder Sie unsicher sind, wenden Sie sich an Ihre Tierarztpraxis. Im Notfall gehen Sie sofort zu einer Tierärztin oder einem Tierarzt. Siehe KI-Hinweis und Tierärztlichen Hinweis.
+**Quokka ist kein tierärztlicher Dienst.** Der Assistent gibt allgemeine Informationen. Er stellt keine Diagnosen, verschreibt keine Arzneimittel, nennt keine Dosierungen und ersetzt keine Tierärztin und keinen Tierarzt. Wenn Ihr Tier krank wirkt oder Sie unsicher sind, wenden Sie sich an Ihre Tierarztpraxis. Im Notfall gehen Sie sofort zu einer Tierärztin oder einem Tierarzt. Siehe KI-Hinweis und Tierärztlichen Hinweis.
 
 ## 3. Ihr Konto
 
@@ -46,13 +46,13 @@ Alle Preise sind Gesamtpreise einschließlich Umsatzsteuer. Vor der Zahlung zeig
 
 Diese Bedingungen beschränken Ihre gesetzlichen Verbraucherrechte nicht. Für digitale Produkte gelten die gesetzlichen Regeln zur Vertragsmäßigkeit und zu Aktualisierungen (§§ 327 ff. BGB). Wenn die App nicht vertragsgemäß ist, haben Sie die gesetzlichen Rechte (Nacherfüllung, Vertragsbeendigung, Preisminderung, Schadensersatz).
 
-## 7. Nutzung von VetApp
+## 7. Nutzung von Quokka
 
 Sie verpflichten sich, nicht: gegen Gesetze zu verstoßen; Inhalte hochzuladen, an denen Sie keine Rechte haben; andere zu belästigen, zu täuschen oder zu schädigen; die App zu nutzen, um unsere Inhalte zu kopieren oder automatisiert abzugreifen; den Dienst zu stören; oder den Assistenten zu nutzen, um Diagnosen oder Rezepte für Tiere zu erhalten, die nicht in tierärztlicher Behandlung sind.
 
 ## 8. Ihre Inhalte
 
-Sie behalten Ihre Rechte an dem, was Sie hochladen (Fotos, Dokumente, Anzeigen, Meldungen). Sie räumen uns ein nicht ausschließliches Recht ein, es zu speichern, zu vervielfältigen und anzuzeigen, nur um VetApp für Sie zu betreiben und, bei öffentlichen Beiträgen, um sie anderen Nutzenden zu zeigen. Sie sichern zu, dass Sie das Recht haben, es hochzuladen.
+Sie behalten Ihre Rechte an dem, was Sie hochladen (Fotos, Dokumente, Anzeigen, Meldungen). Sie räumen uns ein nicht ausschließliches Recht ein, es zu speichern, zu vervielfältigen und anzuzeigen, nur um Quokka für Sie zu betreiben und, bei öffentlichen Beiträgen, um sie anderen Nutzenden zu zeigen. Sie sichern zu, dass Sie das Recht haben, es hochzuladen.
 
 ### Meldungen, Stimmen und Marktplatz-Anzeigen
 

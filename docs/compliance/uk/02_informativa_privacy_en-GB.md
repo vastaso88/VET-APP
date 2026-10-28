@@ -5,13 +5,13 @@ Note per chi revisiona (italiano): i campi tra [parentesi quadre] vanno compilat
 
 ---
 
-# VetApp Privacy Notice (United Kingdom)
+# Quokka Privacy Notice (United Kingdom)
 
 Version: en-GB v1 (draft). Last updated: [date].
 
 ## 1. Who we are
 
-VetApp is run by [company name], [registered address], [company number / VAT number] ("we", "us").
+Quokka is run by [company name], [registered address], [company number / VAT number] ("we", "us").
 Privacy contact: [privacy email address].
 UK representative (Article 27 UK GDPR): [name and address of UK representative, if we have no UK establishment].
 Data protection officer: [not appointed / name].
@@ -108,7 +108,7 @@ To use your rights, write to [privacy email address] or use Settings → Contact
 
 ## 9. Children
 
-VetApp is for people aged 18 or over [to confirm: see question 2 in the owner's questions]. If you think a child has given us personal information, contact us and we will delete it.
+Quokka is for people aged 18 or over [to confirm: see question 2 in the owner's questions]. If you think a child has given us personal information, contact us and we will delete it.
 
 ## 10. Cookies and similar technologies
 

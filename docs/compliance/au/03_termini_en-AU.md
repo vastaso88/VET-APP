@@ -4,21 +4,21 @@
 
 ---
 
-# VetApp Terms of Service (Australia)
+# Quokka Terms of Service (Australia)
 
 Version: en-AU v1 (draft). Last updated: [dd/mm/yyyy].
 
 ## 1. Who these terms are with
 
-These terms are between you and [Company name], ABN [number] ("VetApp", "we", "us"). By creating an account or using VetApp you accept them. If you do not accept them, you cannot create an account.
+These terms are between you and [Company name], ABN [number] ("Quokka", "we", "us"). By creating an account or using Quokka you accept them. If you do not accept them, you cannot create an account.
 
 You must be 18 or older [confirm].
 
-## 2. What VetApp is, and what it is not
+## 2. What Quokka is, and what it is not
 
-VetApp helps you look after your pets: pet profiles, reminders, documents, walks, nearby places and an AI assistant.
+Quokka helps you look after your pets: pet profiles, reminders, documents, walks, nearby places and an AI assistant.
 
-**VetApp is not a veterinary practice and does not provide veterinary services.** The assistant gives general information. It does not examine your animal, diagnose, prescribe or replace a registered veterinarian. See our *AI and vet advice notice* in the app. In an emergency, contact a veterinarian straight away.
+**Quokka is not a veterinary practice and does not provide veterinary services.** The assistant gives general information. It does not examine your animal, diagnose, prescribe or replace a registered veterinarian. See our *AI and vet advice notice* in the app. In an emergency, contact a veterinarian straight away.
 
 ## 3. Your account
 
@@ -26,7 +26,7 @@ You are responsible for keeping your sign-in details safe and for what happens u
 
 ## 4. Plans and prices
 
-- VetApp has a **Free** plan and paid plans (**Plus** and **Pro**). Features of each plan are shown in the app.
+- Quokka has a **Free** plan and paid plans (**Plus** and **Pro**). Features of each plan are shown in the app.
 - All prices are in **Australian dollars (A$) and include GST**. Current prices: Plus A$[x.xx] per [month/year]; Pro A$[x.xx] per [month/year].
 - **Free trial.** New accounts get a [10]-day free trial. No card is needed to start [confirm]. When the trial ends you choose a plan, and **Free is always an option**. You are never charged unless you choose a paid plan and confirm the price.
 - **Payments** for paid plans are processed by the Apple App Store or Google Play. Their terms apply to the payment, billing and refunds. You can cancel in your Apple ID or Google Play subscription settings at any time. Cancelling stops future renewals; [state what happens to the current period].
@@ -55,11 +55,11 @@ Replies are written by an AI system and are labelled. They can be incomplete or 
 
 ## 9. Acceptable use
 
-Do not use VetApp to break the law, to harm others or the service, to access it by unauthorised means, or to copy or resell it.
+Do not use Quokka to break the law, to harm others or the service, to access it by unauthorised means, or to copy or resell it.
 
 ## 10. Our responsibility
 
-We provide VetApp with due care and skill. We do not promise that it will always be available or free of errors. To the extent the law allows, we are not liable for loss that was not reasonably foreseeable, or for decisions you make about your animal's health without a veterinarian. Nothing here limits liability that cannot lawfully be limited (see section 5).
+We provide Quokka with due care and skill. We do not promise that it will always be available or free of errors. To the extent the law allows, we are not liable for loss that was not reasonably foreseeable, or for decisions you make about your animal's health without a veterinarian. Nothing here limits liability that cannot lawfully be limited (see section 5).
 
 ## 11. Ending your account
 

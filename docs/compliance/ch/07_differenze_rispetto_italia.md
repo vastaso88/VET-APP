@@ -6,7 +6,7 @@ Data: 2026-10-14. La Svizzera **non è nell'UE** né nello SEE. Le voci «conosc
 
 ## Legale
 
-| Tema | Italia / UE | Svizzera | Differenza da DE/AT | Effetto su VetApp |
+| Tema | Italia / UE | Svizzera | Differenza da DE/AT | Effetto su Quokka |
 |---|---|---|---|---|
 | Legge sui dati | GDPR + Codice privacy; Garante | **nDSG (revDSG), 01/09/2023** (🟡 data da conoscenza generale); **EDÖB** (senza potere di multa ✅ sec.) | UE: GDPR, autorità con multe | Informativa svizzera propria (doc 02, 04); terminologia «Personendaten», «bearbeiten» |
 | Rappresentante | Art. 27 GDPR (non per UE) | **Art. 14 DSG** solo se tutte le condizioni sono soddisfatte (🟡) | DE/AT: non serve | ⚖️ domanda al proprietario |
@@ -18,7 +18,7 @@ Data: 2026-10-14. La Svizzera **non è nell'UE** né nello SEE. Le voci «conosc
 | Pulsanti d'ordine/disdetta/recesso | — | Nessuno obbligatorio trovato (🟡) | DE: § 312j/§ 312k/§ 356a; AT: § 8/§ 13a FAGG | Non servono, ma conferma d'ordine e disdetta chiare |
 | Prezzi | Codice del consumo | **PBV**: CHF finali con MWST ✅; nessun obbligo generale online ✅ | DE: PAngV; AT: PrAG | Prezzi inkl. MWST |
 | IVA | IVA italiana | **MWST** svizzera; registrazione per fornitori esteri oltre soglia (❓) | UE: OSS | ⚖️ domanda al proprietario |
-| IA | AI Act art. 50 | Nessuna legge generale; Convenzione CoE firmata 27/03/2025; consultazione attesa a fine 2026 (🟡) | UE: AI Act | AI Act si applica comunque a VetApp: stesso avviso |
+| IA | AI Act art. 50 | Nessuna legge generale; Convenzione CoE firmata 27/03/2025; consultazione attesa a fine 2026 (🟡) | UE: AI Act | AI Act si applica comunque a Quokka: stesso avviso |
 | Veterinari | FNOVI | **HMG / TAMV art. 10**: Rx solo se si conosce l'animale (🟡); diagnosi = veterinario (🟡) | AT: TÄG + TeleVetRL ✅ | Nessuna diagnosi/prescrizione |
 | Animali (vendita) | Regioni | **TSchV**: annunci di cani con nome/indirizzo/origine (🟡); registro AMICUS | DE: § 11 TierSchG; AT: § 8a TSchG | Mercatino senza animali, in ogni paese (decisione del proprietario, 2026-10-26) |
 | Accessibilità | D.Lgs. 82/2022 | Nessuna legge equivalente al BFSG per i privati (❓ non cercata); Behindertengleichstellungsgesetz per enti pubblici | DE/AT: BFSG | Buona pratica |

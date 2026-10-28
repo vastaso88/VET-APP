@@ -5,13 +5,13 @@ Note per chi revisiona (italiano): i campi tra [parentesi quadre] vanno compilat
 
 ---
 
-# VetApp – Politique de confidentialité (Suisse)
+# Quokka – Politique de confidentialité (Suisse)
 
 Version : fr-CH v1 (projet). Dernière mise à jour : [date].
 
 ## 1. Qui sommes-nous
 
-VetApp est exploitée par [raison sociale ou nom du responsable], [adresse], [numéro d'immatriculation / IDE, numéro de TVA (partita IVA)] (« nous »). Nous sommes établis en Italie, donc à l'étranger.
+Quokka est exploitée par [raison sociale ou nom du responsable], [adresse], [numéro d'immatriculation / IDE, numéro de TVA (partita IVA)] (« nous »). Nous sommes établis en Italie, donc à l'étranger.
 Contact pour les questions de protection des données : [adresse e-mail dédiée].
 Conseiller ou conseillère à la protection des données : [non désigné / nom et coordonnées].
 Représentation en Suisse (art. 14 LPD) : [nom et adresse de la représentation, si nécessaire ; sinon supprimer].
@@ -113,7 +113,7 @@ Vous avez le droit d'accès, de rectification, d'effacement ou de destruction de
 
 ## 9. Enfants
 
-VetApp s'adresse aux personnes de 18 ans et plus. Si vous pensez qu'un enfant nous a transmis des données personnelles, écrivez-nous ; nous les supprimerons.
+Quokka s'adresse aux personnes de 18 ans et plus. Si vous pensez qu'un enfant nous a transmis des données personnelles, écrivez-nous ; nous les supprimerons.
 
 ## 10. Cookies et technologies similaires
 

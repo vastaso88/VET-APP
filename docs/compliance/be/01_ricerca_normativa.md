@@ -1,6 +1,6 @@
 > **BOZZA — non è consulenza legale; da rivedere da un avvocato locale prima della pubblicazione**
 
-# Belgio — ricerca normativa per VetApp (francofono, con nota sul neerlandese)
+# Belgio — ricerca normativa per Quokka (francofono, con nota sul neerlandese)
 
 Sessione: Legale FR. Data di consultazione: **2026-10-14**. Lingua dei testi per gli utenti: francese del Belgio, `fr-BE` (vouvoiement). Documenti interni in italiano. Il Belgio è nell'UE: il quadro comune (GDPR, trasferimenti USA/Groq, AI Act art. 50, DSA, store) è in **`../de/01_ricerca_normativa.md`**; la ricerca francese (scheda su telemedicina veterinaria, vendita animali, accessibilità) è in **`../fr/01_ricerca_normativa.md`**. Qui sono scritte solo le parti **belghe**.
 
@@ -12,7 +12,7 @@ Sessione: Legale FR. Data di consultazione: **2026-10-14**. Lingua dei testi per
 
 ## 0. Quadro in una pagina
 
-| Tema | Cosa serve a VetApp in Belgio | Priorità |
+| Tema | Cosa serve a Quokka in Belgio | Priorità |
 |---|---|---|
 | GDPR + loi du 30 juillet 2018 | Informativa fr-BE (doc 02), reclamo all'APD/GBA, età del consenso 13 anni (🟡) | Alta |
 | Traccianti (ePrivacy) | Consenso per il non necessario; la norma belga è in una legge sulle comunicazioni elettroniche, numerazione da verificare | Media |
@@ -26,7 +26,7 @@ Sessione: Legale FR. Data di consultazione: **2026-10-14**. Lingua dei testi per
 ## 1. GDPR, loi du 30 juillet 2018 e APD/GBA
 
 - 🟡 La loi du 30 juillet 2018 «relative à la protection des personnes physiques à l'égard des traitements de données à caractère personnel» completa il GDPR; l'autorità è l'**Autorité de protection des données (APD / GBA)**. Fonte: scheda di compliance non ufficiale ([theartofservice](https://compliance.theartofservice.com/frameworks/belgium-data-protection-act-wet-van-30-juli-2018-loi-du-30-juillet-2018)), da non citare come primaria.
-- 🟡 **Età del consenso digitale: 13 anni** (art. 8 GDPR; il Belgio è tra i paesi che hanno scelto 13 insieme a Danimarca, Finlandia, Svezia). Fonte secondaria: [Forbes Belgium](https://www.forbes.be/fr/securite-des-mineurs-en-ligne-le-rapport-remis-a-ursula-von-der-leyen-place-le-curseur-a-13-ans-quand-kidsunplugged-en-attendait-16/) e un commento su [Lexgo](https://www.lexgo.be/en/news-and-articles/10700-minorite-digitale-interpretation-tres-large-du-concept-par-l-apd). Numero dell'articolo della legge (art. 7) **non verificato** ❓. Pressione europea recente: il rapporto del panel sulla sicurezza dei minori online (13/07/2026) raccomanda una soglia armonizzata a 13 anni 🟡. VetApp è 18+: non è il punto critico.
+- 🟡 **Età del consenso digitale: 13 anni** (art. 8 GDPR; il Belgio è tra i paesi che hanno scelto 13 insieme a Danimarca, Finlandia, Svezia). Fonte secondaria: [Forbes Belgium](https://www.forbes.be/fr/securite-des-mineurs-en-ligne-le-rapport-remis-a-ursula-von-der-leyen-place-le-curseur-a-13-ans-quand-kidsunplugged-en-attendait-16/) e un commento su [Lexgo](https://www.lexgo.be/en/news-and-articles/10700-minorite-digitale-interpretation-tres-large-du-concept-par-l-apd). Numero dell'articolo della legge (art. 7) **non verificato** ❓. Pressione europea recente: il rapporto del panel sulla sicurezza dei minori online (13/07/2026) raccomanda una soglia armonizzata a 13 anni 🟡. Quokka è 18+: non è il punto critico.
 - 🟡 **Cookie e traccianti.** Obbligo di consenso preventivo per memorizzare/leggere informazioni sul terminale, salvo traccianti strettamente necessari. La norma era l'**art. 129 della loi du 13 juin 2005** sulle comunicazioni elettroniche; una sola fonte dice che dal gennaio 2022 sarebbe passata all'**art. 10/2 della loi du 30 juillet 2018** ❓. L'APD ha pubblicato una **checklist cookie il 20/10/2023** (non introduce obblighi nuovi). Fonti: [iubenda – checklist APD](https://www.iubenda.com/fr/blog/belgique-publication-dune-nouvelle-checklist-cookies-par-lapd/), [Hunton](https://www.hunton.com/privacy-and-cybersecurity-law-blog/belgian-privacy-commission-opens-public-consultation-draft-cookie). Affermazioni su «cookie wall» o su «Tout refuser» di pari rilievo vengono da siti commerciali: non da citare senza verifica. Linea: stessa di FR (consenso, pulsanti di pari rilievo).
 - DPO, DPIA, trasferimenti verso gli USA (Groq): come `de/01` §1 e `fr/01` §1.
 

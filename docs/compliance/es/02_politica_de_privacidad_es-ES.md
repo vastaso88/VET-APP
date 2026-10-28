@@ -5,7 +5,7 @@ Note per chi revisiona (italiano): i campi tra [parentesi quadre] vanno compilat
 
 ---
 
-# VetApp – Política de privacidad (España)
+# Quokka – Política de privacidad (España)
 
 Versión: es-ES v1 (borrador). Fecha: [fecha].
 
@@ -14,7 +14,7 @@ Versión: es-ES v1 (borrador). Fecha: [fecha].
 | | |
 |---|---|
 | **Responsable** | [Razón social o nombre del responsable], [dirección], [NIF/P. IVA] |
-| **Finalidad** | Prestarle el servicio de VetApp (cuenta, fichas de sus animales, recordatorios, chat con asistente de IA, paseos, lugares cercanos, mercadillo), atender sus consultas y, solo si usted lo autoriza, enviarle novedades |
+| **Finalidad** | Prestarle el servicio de Quokka (cuenta, fichas de sus animales, recordatorios, chat con asistente de IA, paseos, lugares cercanos, mercadillo), atender sus consultas y, solo si usted lo autoriza, enviarle novedades |
 | **Base jurídica** | Ejecución del contrato (art. 6.1.b RGPD); su consentimiento para lo opcional (art. 6.1.a); obligaciones legales e interés legítimo (art. 6.1.c y f) |
 | **Destinatarios** | Proveedores de alojamiento, base de datos e inteligencia artificial, algunos fuera de la UE (véase la sección 5). No vendemos sus datos |
 | **Derechos** | Acceso, rectificación, supresión, limitación, portabilidad, oposición y retirada del consentimiento. Puede reclamar ante la Agencia Española de Protección de Datos (AEPD) |
@@ -22,7 +22,7 @@ Versión: es-ES v1 (borrador). Fecha: [fecha].
 
 ## 1. Quién es el responsable
 
-VetApp es operada por [razón social o nombre del responsable], [dirección], [datos de inscripción registral, NIF/P. IVA] («nosotros»).
+Quokka es operada por [razón social o nombre del responsable], [dirección], [datos de inscripción registral, NIF/P. IVA] («nosotros»).
 Contacto para asuntos de privacidad: [correo electrónico de privacidad].
 Delegado de protección de datos: [no designado / nombre y contacto].
 Representante en la UE: no es necesario, porque estamos establecidos en la Unión Europea. [Comprobar el establecimiento en Italia.]
@@ -121,7 +121,7 @@ Escriba a [correo de privacidad] o use Ajustes → Contacto.
 
 ## 9. Menores
 
-VetApp está dirigida a personas de 18 años o más. Si cree que un menor nos ha facilitado datos personales, escríbanos y los eliminaremos.
+Quokka está dirigida a personas de 18 años o más. Si cree que un menor nos ha facilitado datos personales, escríbanos y los eliminaremos.
 
 ## 10. Cookies y tecnologías similares (art. 22.2 LSSI-CE)
 

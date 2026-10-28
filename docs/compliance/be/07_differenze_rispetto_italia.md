@@ -6,7 +6,7 @@ Data: 2026-10-14. Le voci «conoscenza generale» sono da verificare; 🟡 = fon
 
 ## Legale
 
-| Tema | Italia | Belgio | Differenza dalla Francia | Effetto su VetApp |
+| Tema | Italia | Belgio | Differenza dalla Francia | Effetto su Quokka |
 |---|---|---|---|---|
 | Legge sui dati | GDPR + Codice privacy; Garante | GDPR + **loi du 30 juillet 2018**; **APD/GBA** (🟡) | CNIL + LIL | Informativa belga propria (doc 02, 04); reclamo all'APD o al Garante (capofila) |
 | Rappresentante UE | — | Non serve | Uguale | — |

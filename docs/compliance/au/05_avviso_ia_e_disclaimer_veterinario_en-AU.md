@@ -7,7 +7,7 @@ Testi per gli utenti in inglese australiano. Base: `docs/compliance/01_ai_disclo
 ## Principi (italiano)
 
 1. **In Australia non c'è un obbligo di legge generale come l'art. 50 dell'AI Act.** Il badge IA resta per coerenza, per la guida OAIC sulla trasparenza e per le pratiche volontarie DISR. Le affermazioni sull'accuratezza devono essere vere (ACL, pratiche ingannevoli).
-2. **VetApp non è un veterinario.** Le leggi statali regolano i veterinari registrati; la diagnosi a distanza è un atto riservato (almeno in NSW). Quindi: informazioni generali, orientamento, mai diagnosi né prescrizione, mai dosaggi di farmaci su prescrizione per un animale specifico.
+2. **Quokka non è un veterinario.** Le leggi statali regolano i veterinari registrati; la diagnosi a distanza è un atto riservato (almeno in NSW). Quindi: informazioni generali, orientamento, mai diagnosi né prescrizione, mai dosaggi di farmaci su prescrizione per un animale specifico.
 3. **Emergenza → veterinario subito.** Nei sintomi gravi la chat dice «vai da un veterinario ora» prima di ogni altra cosa. Questo è il comportamento già descritto dal triage di sicurezza italiano (risposte rule-based, `ai_generated=False`).
 4. I numeri in questo testo (000, Animal Poisons Helpline) sono verificati nel file 06 con la data di consultazione. Se cambiano, aggiornare qui.
 
@@ -18,7 +18,7 @@ Testi per gli utenti in inglese australiano. Base: `docs/compliance/01_ai_disclo
 ## 2. Schermata di benvenuto (una volta)
 
 > **About the assistant**
-> VetApp's assistant uses artificial intelligence (AI) to write general information about your pet's health and care. It is not a veterinarian. It cannot examine your animal, diagnose a condition or prescribe medicine.
+> Quokka's assistant uses artificial intelligence (AI) to write general information about your pet's health and care. It is not a veterinarian. It cannot examine your animal, diagnose a condition or prescribe medicine.
 >
 > It can make mistakes, and its replies are always labelled as AI-generated. Use them as a starting point and check anything important with a registered veterinarian, especially if your pet seems unwell.
 >
@@ -46,7 +46,7 @@ Testi per gli utenti in inglese australiano. Base: `docs/compliance/01_ai_disclo
 
 > **AI and vet advice notice**
 >
-> **What the assistant is.** VetApp's assistant is an artificial intelligence (AI) system. It gives general information about pets. It does not know your animal, examine it or see its full history, unless you share it.
+> **What the assistant is.** Quokka's assistant is an artificial intelligence (AI) system. It gives general information about pets. It does not know your animal, examine it or see its full history, unless you share it.
 >
 > **What it is not.** It is not a veterinarian or a veterinary service. It does not diagnose, treat or prescribe. A reply is not a substitute for care from a veterinarian registered in your state or territory.
 >

@@ -4,11 +4,11 @@
 
 ---
 
-# VetApp Privacy Policy (Australia)
+# Quokka Privacy Policy (Australia)
 
 Version: en-AU v1 (draft). Last updated: [dd/mm/yyyy].
 
-This policy explains how we handle your personal information when you use VetApp in Australia. We aim to follow the Australian Privacy Principles (APPs) in the *Privacy Act 1988* (Cth), even where the law does not strictly require us to.
+This policy explains how we handle your personal information when you use Quokka in Australia. We aim to follow the Australian Privacy Principles (APPs) in the *Privacy Act 1988* (Cth), even where the law does not strictly require us to.
 
 ## 1. Who we are
 
@@ -27,7 +27,7 @@ This policy explains how we handle your personal information when you use VetApp
 | Technical data | IP address and server logs | Our system, for operation and security |
 | Subscription | The plan you picked, the start and end of your free trial. Payments are handled by the Apple App Store or Google Play | You, and Apple or Google |
 
-We do not knowingly collect information from people under 18. VetApp is for adults.
+We do not knowingly collect information from people under 18. Quokka is for adults.
 
 **Device permissions.** The app asks for a permission (location, microphone, notifications, camera or photos) only when you use the feature that needs it. If you say no, that feature stays off and the rest of the app keeps working.
 
@@ -46,7 +46,7 @@ We use your information for these purposes, or for a related purpose you would r
 
 ## 4. Marketing
 
-If you opt in, we may email you news about VetApp and tips for your pets. Every marketing email has an unsubscribe link that works without logging in. We act on an unsubscribe request within five business days. You can also withdraw your consent in Settings. Saying no does not affect your use of the app.
+If you opt in, we may email you news about Quokka and tips for your pets. Every marketing email has an unsubscribe link that works without logging in. We act on an unsubscribe request within five business days. You can also withdraw your consent in Settings. Saying no does not affect your use of the app.
 
 ## 5. Who we share it with
 
@@ -70,7 +70,7 @@ Some of the providers above are outside Australia. Based on what we know today, 
 
 The replies in the chat are written by an AI system and are marked as AI-generated. They can be wrong. Before your text goes to the AI provider, our system removes some recognisable personal details, such as emails, phone numbers and street addresses. It cannot catch everything (for example, a person's name written in the middle of a sentence). Images and audio are sent as they are. [Reviewer: see note 3.]
 
-If you give consent for a pet, the chat can read that pet's most recent health records and send them to the AI provider. VetApp uses that only to answer you.
+If you give consent for a pet, the chat can read that pet's most recent health records and send them to the AI provider. Quokka uses that only to answer you.
 
 **Automated decisions.** We do not use automated systems to make decisions that significantly affect your legal rights or interests. [Reviewer: from 10/12/2026 APP 1 requires a statement about automated decisions; see note 5.]
 
@@ -100,7 +100,7 @@ If you are unhappy with how we handled your information, contact us first. We wi
 
 ## 11. Children
 
-VetApp is for people aged 18 and over [confirm minimum age]. If you think a child has given us personal information, contact us and we will delete it.
+Quokka is for people aged 18 and over [confirm minimum age]. If you think a child has given us personal information, contact us and we will delete it.
 
 ## 12. Changes to this policy
 
@@ -115,7 +115,7 @@ We may update this policy. We will tell you in the app [method to be defined]. T
 3. **Anonimizzazione:** nel testo italiano due chiamate al fornitore ricevono il riepilogo della cartella clinica senza filtro (registro 08, punto 28). Non scrivere che la cartella viene filtrata finché non è corretto.
 4. **Salute:** i dati sono su animali; i dati personali del titolare (nome, email, posizione) sono personali. Chiedere al solicitor se il *health service provider* possa applicarsi per i dosaggi o le informazioni sanitarie che riguardano la persona.
 5. **Decisioni automatizzate:** dal 10/12/2026 l'APP 1 richiede di descriverle se incidono in modo significativo su diritti o interessi. La chat consiglia e non decide; la frase è prudente. Verificare con il solicitor.
-6. **Children's Online Privacy Code:** bozza di marzo 2026, registrazione prevista entro il 10/12/2026. Se VetApp rientra, serve consenso del genitore sotto i 15 anni; qui l'app è 18+.
+6. **Children's Online Privacy Code:** bozza di marzo 2026, registrazione prevista entro il 10/12/2026. Se Quokka rientra, serve consenso del genitore sotto i 15 anni; qui l'app è 18+.
 7. **Numero OAIC:** 1300 363 992 è dalla mia conoscenza, non l'ho verificato su fonte ufficiale in questa ricerca.
 8. **Notifica violazioni:** procedura interna da scrivere (valutazione entro 30 giorni dal sospetto, da verificare; poi avviso a OAIC e interessati).
 9. **Termini «30 giorni»** per accesso e reclamo: da confermare con il testo dell'APP 12.

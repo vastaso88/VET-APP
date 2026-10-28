@@ -9,11 +9,11 @@ Testi per l'app USA, in inglese americano semplice. Coerenti con `docs/complianc
 ```
 AI and Veterinary Notice
 
-VetApp's assistant is powered by artificial intelligence (AI). Here is what that means for you and your pet.
+Quokka's assistant is powered by artificial intelligence (AI). Here is what that means for you and your pet.
 
-1. It's AI, not a person. Answers are written by an AI system run by an outside provider. Answers from the AI are labeled "AI-generated" in the app. Some messages (for example, safety warnings) are written by VetApp, not by the AI.
+1. It's AI, not a person. Answers are written by an AI system run by an outside provider. Answers from the AI are labeled "AI-generated" in the app. Some messages (for example, safety warnings) are written by Quokka, not by the AI.
 
-2. It's not a veterinarian. VetApp and its assistant are not veterinarians and do not provide veterinary care. The assistant gives general information to help you understand your pet's situation and decide what to do next. It does not diagnose conditions, prescribe medicine, or tell you the right dose of a drug for your pet. No veterinarian-client-patient relationship is created by using VetApp.
+2. It's not a veterinarian. Quokka and its assistant are not veterinarians and do not provide veterinary care. The assistant gives general information to help you understand your pet's situation and decide what to do next. It does not diagnose conditions, prescribe medicine, or tell you the right dose of a drug for your pet. No veterinarian-client-patient relationship is created by using Quokka.
 
 3. It can be wrong. AI can give answers that are incomplete, out of date, or incorrect. It may not know everything about your pet, your region, or the medicines you have. Don't rely on it alone for decisions about your pet's health.
 
@@ -41,7 +41,7 @@ VetApp's assistant is powered by artificial intelligence (AI). Here is what that
 | Spiegazione di un referto | `This is general information about what this kind of test usually measures. It is not an interpretation of your pet's results. Please go over them with your vet.` |
 | Footer di ogni risposta a tema salute (opzionale, se la UI lo permette) | `General information only — talk to your veterinarian.` |
 | Schermata del consenso cartella clinica | vedi 04 (`medical_record_consent`) |
-| Scheda dello store (descrizione) | `VetApp organizes your pet's information and offers an AI assistant for general pet information. It is not a veterinarian and doesn't replace professional veterinary care.` |
+| Scheda dello store (descrizione) | `[app name] organizes your pet's information and offers an AI assistant for general pet information. It is not a veterinarian and doesn't replace professional veterinary care.` |
 | Scheda dello store, note per Apple/Google | `AI assistant for pet owners. Not a medical device. Not veterinary advice.` (verificare con Apple 1.4.1 e con la categoria dell'app) |
 
 ## 3. Cose da NON dire (marketing, store, sito)

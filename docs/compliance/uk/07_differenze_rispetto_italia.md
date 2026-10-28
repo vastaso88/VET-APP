@@ -6,7 +6,7 @@ Data: 2026-10-13. Le voci «conoscenza generale» sono da verificare; quelle con
 
 ## Legale
 
-| Tema | Italia / UE | Regno Unito | Effetto su VetApp |
+| Tema | Italia / UE | Regno Unito | Effetto su Quokka |
 |---|---|---|---|
 | Legge sui dati | GDPR + Codice privacy; Garante | UK GDPR + DPA 2018 + DUAA 2025; ICO | Informativa e consensi UK propri (doc 02, 04); reclamo all'ICO invece che al Garante |
 | Rappresentante | — | Art. 27 UK GDPR per titolare estero | Probabile nomina di un rappresentante UK ⚖️ |

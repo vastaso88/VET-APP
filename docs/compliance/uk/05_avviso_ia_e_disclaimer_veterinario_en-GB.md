@@ -19,7 +19,7 @@ Data: 2026-10-13. Base normativa: Veterinary Surgeons Act 1966 ss. 19 e 27 (diag
 **Title:** About the assistant
 
 ```
-VetApp's assistant is an artificial intelligence (AI). Its answers are written by an AI system and are always marked as "AI-generated".
+Quokka's assistant is an artificial intelligence (AI). Its answers are written by an AI system and are always marked as "AI-generated".
 
 It gives general information to help you look after your pet. It does not diagnose, prescribe or treat, and it is not a substitute for a veterinary surgeon. It can make mistakes.
 
@@ -45,7 +45,7 @@ This answer was written by an AI system. It may contain mistakes.
 ## 3. Piè di pagina della chat (sotto il campo di scrittura)
 
 ```
-VetApp gives general information, not veterinary advice. Always speak to your vet about your pet's health.
+Quokka gives general information, not veterinary advice. Always speak to your vet about your pet's health.
 ```
 
 ## 4. Banner di emergenza (mostrato quando il triage rileva segnali gravi)
@@ -61,7 +61,7 @@ Il numero e la tariffa vanno confermati prima della pubblicazione (doc 06). Se u
 ## 5. Avviso sui farmaci
 
 ```
-VetApp does not recommend medicines or doses. Never give your pet human medicines, or any medicine that was not prescribed for that animal, unless your vet tells you to. Some are poisonous to animals.
+Quokka does not recommend medicines or doses. Never give your pet human medicines, or any medicine that was not prescribed for that animal, unless your vet tells you to. Some are poisonous to animals.
 ```
 
 ## 6. Avviso sulla lettura di analisi e documenti («spiegami questo esame»)
@@ -78,7 +78,7 @@ A photo or video cannot show everything. The assistant can describe what it sees
 
 ## 8. AI Notice (pagina completa, richiamata dalle Impostazioni)
 
-**AI Notice — how VetApp uses AI**
+**AI Notice — how Quokka uses AI**
 
 ```
 How the assistant works
@@ -115,6 +115,6 @@ Email [privacy/support address]. You can also complain to the Information Commis
 ## 10. Punti per il solicitor
 
 1. Confermare che il comportamento descritto (informazioni generali, nessuna diagnosi/prescrizione) resta fuori da s. 27 VSA 1966. In particolare: la chat può formulare *ipotesi* sulle cause di un sintomo? E dire «probabilmente è X»? La linea più prudente è no.
-2. Verificare le eccezioni per i proprietari (Schedule 3 del VSA, non letta) e se un veterinario *che usa* VetApp cambia il quadro (RCVS telemedicina).
+2. Verificare le eccezioni per i proprietari (Schedule 3 del VSA, non letta) e se un veterinario *che usa* Quokka cambia il quadro (RCVS telemedicina).
 3. Confermare che le schede dello store non violano i codici ASA/CAP.
 4. Verificare se il «triage di sicurezza» (domande a risposta chiusa → «go to a vet now») conta come consulenza e come va formulato.
