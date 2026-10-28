@@ -29,7 +29,7 @@ Cosa fa il glossario:
 | Passeggiate | Walks | Paseos | Spaziergänge | Promenades |  |
 | Segnala un evento | Suggest an event | Sugerir un evento | Veranstaltung melden | Signaler un événement |  |
 | Eventi | Events | Eventos | Veranstaltungen | Événements | Nei filtri dei promemoria (remindersFilterEvents) il tedesco usa 'Termine': sono appuntamenti, non manifestazioni. |
-| Mercatino dell'usato | Second-hand marketplace | Mercadillo de segunda mano | Gebrauchtmarkt | Marché de l'occasion | Vincoli legali per paese (es. vendita di animali tra privati): vedi docs/compliance/<lingua>/. |
+| Mercatino dell'usato | Second-hand marketplace | Mercadillo de segunda mano | Gebrauchtmarkt | Marché de l'occasion | Solo oggetti per animali: gli annunci di animali sono rifiutati in tutti i paesi (regola condivisa backend/app/SQL, packages/core/domain/marketplace/animal_policy.py). Termini per paese in docs/compliance/<lingua>/03_*. |
 | Notizie | News | Noticias | News | Actualités |  |
 | cartella clinica | medical record | historial clínico | Krankenakte | dossier médical | Concetto legale: è l'oggetto del consenso. Stesso termine nell'app, nei testi del backend e nei consensi. |
 | referto | report | informe | Befund | compte rendu |  |

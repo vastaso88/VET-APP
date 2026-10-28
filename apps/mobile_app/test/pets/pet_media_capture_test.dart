@@ -5,6 +5,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:vet_app_mobile/features/pets/data/pet_media_capture.dart';
 import 'package:vet_app_mobile/features/pets/data/pet_media_importer.dart';
+import 'package:vet_app_mobile/shared/permissions/permission_explainer.dart';
 
 /// Stands in for the system camera / gallery: answers with whatever the test
 /// set, and records which door was knocked on.
@@ -157,6 +158,44 @@ void main() {
     expect(result, isNull);
     expect(events, isEmpty, reason: 'no copy, no upload');
     expect(capture.busy, isFalse);
+  });
+
+  group('the explanation before the camera or the gallery opens', () {
+    test('is asked for camera, video and gallery; "Non ora" opens nothing', () async {
+      picker.photo = _file('shot.jpg');
+      final asked = <PermissionPurpose>[];
+      final capture = PetMediaCapture(
+        picker: picker,
+        saveCopy: (file, {required isVideo}) async {},
+        explain: (purpose) async {
+          asked.add(purpose);
+          return false;
+        },
+      );
+
+      expect(await capture.takePhoto('thor'), isNull);
+      expect(await capture.recordVideo('thor'), isNull);
+      expect(await capture.importFromGallery('thor'), isNull);
+
+      expect(asked, [PermissionPurpose.camera, PermissionPurpose.camera, PermissionPurpose.gallery]);
+      expect(picker.calls, isEmpty, reason: 'declined: no camera, no gallery');
+    });
+
+    test('"Continua" goes on to the system camera', () async {
+      picker.photo = _file('shot.jpg');
+      final capture = PetMediaCapture(
+        picker: picker,
+        importerFactory: () => _FakeImporter((_, __, ___, ____, _____) async =>
+            const PetMediaImportResult(photos: 1)),
+        saveCopy: (file, {required isVideo}) async {},
+        explain: (_) async => true,
+      );
+
+      final result = await capture.takePhoto('thor');
+
+      expect(result!.photos, 1);
+      expect(picker.calls, hasLength(1));
+    });
   });
 
   test('gallery files are not stamped with a shot time (their own EXIF is used)', () async {

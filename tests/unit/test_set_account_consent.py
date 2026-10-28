@@ -93,3 +93,35 @@ def test_granting_terms_of_service_and_privacy_policy_succeeds() -> None:
     decision = result.account_consents.consents[AccountConsentType.TERMS_OF_SERVICE]
     assert decision.granted is True
     assert decision.version == CURRENT_VERSIONS[AccountConsentType.TERMS_OF_SERVICE]
+
+
+def test_error_reports_consent_is_optional_revocable_and_has_a_text_in_every_language() -> None:
+    from packages.core.domain.consent.account_consent_text import (
+        CONSENT_TEXTS_BY_LANGUAGE,
+        build_consent_catalog,
+    )
+
+    assert AccountConsentType.DIAGNOSTICS in AccountConsentType.OPTIONAL
+    assert AccountConsentType.DIAGNOSTICS not in AccountConsentType.MANDATORY
+
+    service = _service()
+    granted = service.execute(
+        SetAccountConsentInput(
+            owner_id="user-1", consent_key=AccountConsentType.DIAGNOSTICS, granted=True
+        )
+    )
+    decision = granted.account_consents.consents[AccountConsentType.DIAGNOSTICS]
+    assert decision.granted is True
+    assert decision.version == CURRENT_VERSIONS[AccountConsentType.DIAGNOSTICS]
+
+    revoked = service.execute(
+        SetAccountConsentInput(
+            owner_id="user-1", consent_key=AccountConsentType.DIAGNOSTICS, granted=False
+        )
+    )
+    assert revoked.account_consents.consents[AccountConsentType.DIAGNOSTICS].granted is False
+
+    for language in CONSENT_TEXTS_BY_LANGUAGE:
+        text = build_consent_catalog(language)[AccountConsentType.DIAGNOSTICS].text
+        assert text.strip()
+        assert "Germania" in text or "Germany" in text or "Alemania" in text

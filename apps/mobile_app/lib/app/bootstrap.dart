@@ -23,12 +23,16 @@ import '../features/reminders/data/reminders_repository.dart';
 import '../features/settings/data/layout_settings_store.dart';
 import '../features/settings/data/unit_settings_store.dart';
 import '../shared/cache/owner_json_cache.dart';
+import '../shared/crash/crash_reporting.dart';
 import '../shared/config/app_runtime_config_loader.dart';
 import 'launch/route_restoration.dart';
 import 'launch/restorable_pages.dart';
 
 Future<void> bootstrap() async {
   WidgetsFlutterBinding.ensureInitialized();
+  // Crash reports: nothing happens unless the build was made with
+  // --dart-define=CRASH_REPORTING=true (see docs/runbooks/crash_reporting.md).
+  await CrashReporting.instance.initialize();
   // Measurement units and chat text size are read synchronously by display code.
   // Units load first: the language's default units must not overwrite them.
   await UnitSettingsStore.instance.ensureLoaded();
@@ -102,6 +106,7 @@ Future<void> bootstrap() async {
           unawaited(PetPhotoRepository.clearLocalCaches());
           unawaited(OwnerJsonCache.clearAll());
           unawaited(RouteRestoration.instance.forget());
+          unawaited(CrashReporting.instance.onSignedOut());
           // Everything else the previous account left on this device
           // (security audit 2026-10-26): home address and last position,
           // pets held in memory, the interrupted-walk snapshot, the

@@ -14,6 +14,7 @@ import '../../../../design_system/tokens/app_spacing.dart';
 import '../../data/chat_demo_store.dart';
 import '../../data/chat_seed_data.dart';
 import '../../domain/chat_models.dart';
+import '../widgets/chat_ai_notice.dart';
 import '../widgets/chat_composer.dart';
 import '../widgets/chat_conversation_menu.dart';
 import '../widgets/chat_empty_state.dart';
@@ -112,6 +113,8 @@ class _ChatConversationDetailPageState extends State<ChatConversationDetailPage>
                   ),
                   child: _Header(conversation: conversation),
                 ),
+                // Always visible, whatever the state below (AI Act, art. 50).
+                const ChatAiNotice(),
                 Expanded(
                   child: AnimatedSwitcher(
                     duration: const Duration(milliseconds: 220),

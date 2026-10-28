@@ -17,6 +17,7 @@ import '../../../../design_system/tokens/app_radii.dart';
 import '../../../../design_system/tokens/app_spacing.dart';
 import '../../../../l10n/l10n.dart';
 import '../../../../app/launch/warm_start_store.dart';
+import '../../../../shared/permissions/permission_explainer.dart';
 import '../../../settings/data/layout_settings_store.dart';
 import '../../data/chat_demo_store.dart';
 import '../../data/chat_remote_data_source.dart' show chatMaxMessageLength;
@@ -402,7 +403,14 @@ class _ChatComposerState extends State<ChatComposer> with SingleTickerProviderSt
 
     var hasPermission = false;
     try {
-      hasPermission = await _recorder.hasPermission();
+      hasPermission = await _recorder.hasPermission(request: false);
+      if (!hasPermission) {
+        // Before Android's own dialog: why the microphone, and what happens
+        // without it. "Non ora" asks nothing.
+        if (!mounted) return;
+        if (!await explainPermission(context, PermissionPurpose.microphone)) return;
+        hasPermission = await _recorder.hasPermission();
+      }
     } catch (_) {
       // Treated like a refusal: the message below is shown.
     }

@@ -2,6 +2,8 @@ import 'dart:async';
 
 import 'package:http/http.dart' as http;
 
+import '../../features/account_consents/data/account_consents_remote_data_source.dart';
+import '../../features/account_consents/domain/account_consent_models.dart';
 import '../../features/chat/data/chat_demo_store.dart';
 import '../../features/location/data/location_preference_store.dart';
 import '../../features/location/data/location_repository.dart';
@@ -11,6 +13,7 @@ import '../../features/pets/data/pet_demo_store.dart';
 import '../../features/reminders/data/reminders_repository.dart';
 import '../../shared/auth/current_owner.dart';
 import '../../shared/config/app_runtime_config_loader.dart';
+import '../../shared/crash/crash_reporting.dart';
 
 /// Loads everything the home shell needs while the splash is on screen, so
 /// the first frame after the splash already has real data instead of each
@@ -62,7 +65,23 @@ class AppPreloader {
         () => MedicalRecordsRepository().loadRecords(),
         _loadLocation,
         _warmPetNewsCache,
+        _syncDiagnosticsConsent,
       ];
+
+  /// A phone that has just signed in does not know the account's decision on
+  /// "Invia rapporti sugli errori" yet (Impostazioni is not open): fetch it so
+  /// the reports start (or stay off) without a visit there. Only in a build
+  /// that can send them at all.
+  static Future<void> _syncDiagnosticsConsent() async {
+    if (!CrashReporting.instance.isAvailable) return;
+    final result = await HttpAccountConsentsRemoteDataSource().fetch();
+    result.fold(
+      onSuccess: (snapshot) => CrashReporting.instance.applyConsent(
+        snapshot.decisions[AccountConsentKeys.diagnostics]?.granted ?? false,
+      ),
+      onFailure: (_) {},
+    );
+  }
 
   /// Fetches every "curiosità" category ahead of time so its 20-minute
   /// cache (BackendPetNewsRepository) is already warm by the time the

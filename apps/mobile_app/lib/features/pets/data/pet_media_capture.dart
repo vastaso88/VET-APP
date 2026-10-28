@@ -4,6 +4,7 @@ import 'package:flutter/foundation.dart';
 import 'package:image_picker/image_picker.dart';
 
 import '../../../l10n/l10n.dart';
+import '../../../shared/permissions/permission_explainer.dart';
 import '../../settings/data/gallery_save_settings_store.dart';
 import '../domain/pet_video_rules.dart';
 import 'device_gallery_saver.dart';
@@ -25,7 +26,9 @@ class PetMediaCapture extends ChangeNotifier {
     PetMediaImporter Function()? importerFactory,
     Future<void> Function(XFile file, {required bool isVideo})? saveCopy,
     DateTime Function()? now,
+    Future<bool> Function(PermissionPurpose purpose)? explain,
   })  : _picker = picker ?? ImagePicker(),
+        _explain = explain ?? _explainOnce,
         _importerFactory = importerFactory ?? PetMediaImporter.new,
         _saveCopy = saveCopy ?? _saveCopyToDeviceGallery,
         _now = now ?? DateTime.now;
@@ -34,6 +37,13 @@ class PetMediaCapture extends ChangeNotifier {
   final PetMediaImporter Function() _importerFactory;
   final Future<void> Function(XFile file, {required bool isVideo}) _saveCopy;
   final DateTime Function() _now;
+
+  /// The window that says what is about to open (the camera, the gallery) before
+  /// it does. Shown once per phone; replaceable so tests need no dialog.
+  final Future<bool> Function(PermissionPurpose purpose) _explain;
+
+  static Future<bool> _explainOnce(PermissionPurpose purpose) =>
+      explainPermissionGlobally(purpose, onlyFirstTime: true);
 
   PetMediaImporter? _importer;
   String? _progress;
@@ -73,12 +83,14 @@ class PetMediaCapture extends ChangeNotifier {
     // No imageQuality: with it the picker re-encodes the photo on the phone
     // (and may lose its EXIF shooting time, which the walk caption and the walk
     // map pin depend on); compressPetPhoto re-encodes once, after the time is read.
+    if (!await _explain(PermissionPurpose.gallery)) return null;
     final files = await _picker.pickMultipleMedia();
     return importFiles(petId, files);
   }
 
   /// The system camera, one photo. Null when the owner backed out.
   Future<PetMediaImportResult?> takePhoto(String petId) async {
+    if (!await _explain(PermissionPurpose.camera)) return null;
     final file = await _picker.pickImage(source: ImageSource.camera);
     return _importCaptured(petId, file, isVideo: false);
   }
@@ -86,6 +98,7 @@ class PetMediaCapture extends ChangeNotifier {
   /// The system camera, one video of at most [petVideoMaxSeconds]. Null when
   /// the owner backed out.
   Future<PetMediaImportResult?> recordVideo(String petId) async {
+    if (!await _explain(PermissionPurpose.camera)) return null;
     final file = await _picker.pickVideo(
       source: ImageSource.camera,
       maxDuration: const Duration(seconds: petVideoMaxSeconds),

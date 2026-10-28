@@ -33,14 +33,27 @@ Conseguenza pratica: per i permessi legati a funzioni **plausibili a breve termi
 
 ## Testo di richiesta (rationale) — da mostrare prima del popup di sistema
 
-Per ciascun permesso "necessario subito" o "da dichiarare proattivamente", una frase breve e concreta (non generica) da mostrare nell'interfaccia immediatamente prima che scatti il popup nativo, così l'utente capisce perché viene chiesto prima di doverlo indovinare dal dialog di sistema:
+Aggiornato (2026-10-28). Prima di ogni richiesta di sistema l'app mostra una finestra breve e uguale per tutti, `explainPermission` in [permission_explainer.dart](../../apps/mobile_app/lib/shared/permissions/permission_explainer.dart): **titolo**, **perché serve** (parole semplici, senza gergo), **cosa succede se si rifiuta**, e due bottoni, «Non ora» e «Continua». «Non ora» non lancia nessuna richiesta e non blocca nulla: la funzione resta spenta e si può riprovare. Con «Continua» parte il dialog di Android, che resta l'unico evento di consenso (vedi sopra). I testi sono nelle chiavi `perm*` degli ARB, in cinque lingue (tu/tú/Sie/vous); l'italiano è la sorgente:
 
-- **Microfono**: "Per inviare un messaggio vocale, VetApp ha bisogno di accedere al microfono."
-- **Posizione**: "Per suggerirti eventi e attività vicino a te, VetApp ha bisogno della tua posizione." (coerente con quanto già mostrato in Impostazioni → Località)
-- **Fotocamera** (solo se `CAMERA` resta nel manifest, vedi audit): "Per fotografare un documento clinico, VetApp ha bisogno di accedere alla fotocamera."
-- **Notifiche**: "Per avvisarti quando è ora di un vaccino o di una cura, VetApp vuole inviarti notifiche."
+| Scopo | Quando compare | Titolo | Perché serve | Se si rifiuta |
+|---|---|---|---|---|
+| **Posizione** (`location`) | Prima richiesta della posizione (passeggiata, «Vicino a me», Località in Impostazioni): `GeolocatorLocationSampler`, solo se Android deve ancora chiedere | Usare la tua posizione? | Quokka usa la posizione del telefono per tracciare le passeggiate sulla mappa e per mostrarti servizi ed eventi vicino a te. La usa solo mentre l'app è aperta o durante una passeggiata. | Se rifiuti, niente di grave: puoi scegliere la tua zona a mano in Impostazioni, ma la passeggiata non verrà tracciata sulla mappa. |
+| **Notifiche dei promemoria** (`notifications`) | Al salvataggio di un promemoria, all'apertura dell'app con promemoria non fatti, e quando si accende l'interruttore in Impostazioni → Notifiche (al massimo 2 volte per i primi due casi) | Vuoi ricevere gli avvisi? | Per avvisarti quando un promemoria scade, Quokka ha bisogno del permesso per le notifiche. | Se rifiuti, i promemoria restano salvati ma non suoneranno. Puoi cambiare idea in ogni momento da Impostazioni. |
+| **Notifica della passeggiata** (`walkNotifications`) | Alla prima passeggiata (una volta sola) | Vedi la passeggiata nelle notifiche | Durante la passeggiata Quokka mostra una notifica fissa con tempo e distanza: da lì puoi metterla in pausa o terminarla anche con il telefono in tasca. | Se rifiuti, la passeggiata viene registrata comunque, ma non vedrai la notifica. |
+| **Microfono** (`microphone`) | Al primo tocco sul microfono della chat, se il permesso manca | Usare il microfono? | Il microfono serve per dettare i messaggi nella chat: parli e Quokka li scrive per te. La registrazione viene inviata a un servizio di trascrizione per diventare testo e non resta salvata sul telefono. | Se rifiuti, puoi sempre scrivere i messaggi con la tastiera. |
+| **Fotocamera** (`camera`) | Prima di aprire la fotocamera per una foto o un video (galleria dell'animale, passeggiata); **una volta sola per telefono** | Scattare una foto o un video | Si apre la fotocamera del telefono per scattare. Quokka non ha bisogno di un permesso speciale: la foto o il video vengono aggiunti alla galleria del tuo animale e, se vuoi, copiati nell'album Quokka del telefono. | Se scegli «Non ora» non succede nulla: puoi aggiungere le foto anche dalla galleria. |
+| **Foto e galleria** (`gallery`) | Prima di aprire la galleria del telefono (importa foto e video); **una volta sola per telefono** | Scegliere foto e video | Si apre la galleria del telefono: Quokka vede solo le foto e i video che scegli tu, non tutta la galleria. | Se scegli «Non ora» non viene aggiunto nulla; puoi riprovare quando vuoi. |
 
-Ogni testo si applica al momento dell'azione specifica (es. l'utente preme "aggiungi messaggio vocale"), mai in una schermata di onboarding generica — coerente con il principio just-in-time sopra.
+Note:
+
+- **Fotocamera e galleria non hanno un dialog di sistema**: usano il selettore di Android (vedi l'audit), che non richiede permessi. Per questo la finestra è solo informativa e compare una volta per telefono (si ricorda dopo «Continua», non dopo «Non ora»; la memoria si cancella al logout). Gli altri selettori di file (foto del profilo, allegati della chat, documenti della cartella clinica, foto del Mercatino) usano lo stesso selettore di sistema e non hanno finestra: l'utente sceglie il file nel momento in cui lo apre.
+- **Notifiche, altri punti d'ingresso**: la schermata del primo avvio (`NotificationPermissionPage`) è già una pagina intera con titolo, spiegazione e «Più tardi»; il bottone «Attiva» del banner «Le notifiche sono disattivate» in Promemoria è esso stesso la spiegazione (il banner dice cosa non funziona). Entrambi restano com'erano.
+- **Posizione in background**: non è usata né dichiarata (vedi tabella sopra): nessuna finestra.
+- **Microfono**: la chiamata a Android parte solo dopo «Continua». Se il permesso è già dato non compare nessuna finestra.
+- **Nessun permesso nuovo**: il manifest non cambia. Restano vietati `CAMERA`, `READ_MEDIA_*`, `READ_EXTERNAL_STORAGE` e gli allarmi esatti.
+- **Aggiungere una funzione con un permesso**: usare `explainPermission` con un nuovo `PermissionPurpose` e le tre chiavi `permXxxTitle/Why/Refuse` in tutte le lingue (procedura in [docs/i18n/NUOVE_FUNZIONI.md](../i18n/NUOVE_FUNZIONI.md)); mai una finestra scritta a mano.
+
+Ogni testo si applica al momento dell'azione specifica (es. l'utente tocca il microfono), mai in una schermata di onboarding generica — coerente con il principio just-in-time sopra.
 
 ## Aggiornamento obbligatorio quando un permesso non era già dichiarato
 

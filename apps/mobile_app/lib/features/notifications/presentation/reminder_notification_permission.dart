@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-import '../../../l10n/l10n.dart';
+import '../../../shared/permissions/permission_explainer.dart';
 import '../application/notification_scheduler.dart';
 
 const _asksKey = 'vet_app.reminder_notification_permission_asks';
@@ -41,24 +41,8 @@ Future<bool> maybeAskReminderNotificationPermission(
 
     await preferences.setInt(_asksKey, asks + 1);
     if (!context.mounted) return false;
-    final allow = await showDialog<bool>(
-      context: context,
-      builder: (dialogContext) => AlertDialog(
-        title: Text(dialogContext.l10n.remindersNotifPermTitle),
-        content: Text(dialogContext.l10n.remindersNotifPermBody),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(dialogContext).pop(false),
-            child: Text(dialogContext.l10n.remindersNotifPermNotNow),
-          ),
-          FilledButton(
-            onPressed: () => Navigator.of(dialogContext).pop(true),
-            child: Text(dialogContext.l10n.remindersNotifPermAllow),
-          ),
-        ],
-      ),
-    );
-    if (allow != true) return false;
+    final allow = await explainPermission(context, PermissionPurpose.notifications);
+    if (!allow) return false;
 
     final result = await (request ?? () => Permission.notification.request())();
     if (!result.isGranted) return false;

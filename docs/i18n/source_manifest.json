@@ -2042,6 +2042,15 @@
       "fr": "299f93b5320e007e04d935af7fce36bfd6a55f11e08c76cad7145d6272d31b5c"
     }
   },
+  "ui:chatAiNotice": {
+    "source": "445500b9a1d393df420b10868b8ed490cc6d4f9602697f0023df667b65b9233a",
+    "targets": {
+      "en": "8ea6d6d58413d5024e1b210fd8c540fcadec0d4030caaab6e8363a00902c7f26",
+      "es": "8bcfbe877a1fb1b081b5bc5665a259c639b82cf205c305c3ea468477abe17a2e",
+      "de": "58083e0c4d765b3981922ad6df41e92e5d2adb93f7d54d99194a8d791f9faf30",
+      "fr": "4566ecea80bb249c430acff0cd8b32e9412e3f28fe280c33177d6471677d5cf8"
+    }
+  },
   "ui:chatSummaryEmpty": {
     "source": "fbe4750128a7f9c07173ef32774ce80c9746dc6ea6237f903b2157d73e596774",
     "targets": {
@@ -12194,42 +12203,6 @@
       "fr": "22f939978bc9c2df0593f9c5f25f9f246b63b12f8f18abdb631465b75d1688a0"
     }
   },
-  "ui:walksNotifPermTitle": {
-    "source": "5c0e55ded920c82e5e1e3261523f11e2df65b115b633cba9697cfcf54de0db02",
-    "targets": {
-      "en": "6e7c868f38f23ed5ac1e8dc322d213ec82faa4cefc28582515ac7486c58c3040",
-      "es": "eab33dd14c0b03c6f49a126d79be82feb35b4af0ebe6ea7d939d8ebc8293b8d0",
-      "de": "7a9da57da00ad3a6cdd5febdc5038c984cce37da79de664a18a41d17f14b324c",
-      "fr": "e77b05572f15dfd3de01e8483d1205d2cbd6bb95a1e62a98083258215bdbca02"
-    }
-  },
-  "ui:walksNotifPermBody": {
-    "source": "496d7c53cdc89550c42cb5744a76fd9663c9270e0585dbc4eb5693570aab1fc8",
-    "targets": {
-      "en": "44d7f924ced687596ba13e812be7a76c03133161d3dea8dda18cb828e1e255c7",
-      "es": "456069077b932174454dcfe1d3403f3befc7eb9a9c65110462e90be7e525b637",
-      "de": "eb4fd628cbf682eb4f6cd28e195bb9d479f3cab3baa7f45990011a6f29a6f70d",
-      "fr": "4386e3563ecc3925f901935e1ce11208766b02acbf835550e1cbcafa75230577"
-    }
-  },
-  "ui:walksNotifPermNotNow": {
-    "source": "0d26fccd1ea090d33239b04b0b9141049dfdca51dc49bf7fbf564a26e58b7773",
-    "targets": {
-      "en": "357d49a29677068c52b0371e083a00bceca12660d4168cbdc0d8ae7dfb7435de",
-      "es": "f899c05b63e63825f7cdbe2228d42d42c92039582beb1624d3f694cd45ff41db",
-      "de": "46f8d710028dd0e98446a9636277058753af41402fc31e71cc27916c9a47d3c7",
-      "fr": "6fa4e8d638287c76c51d60afef7f327992ba4492f650355ee9d10b577b618036"
-    }
-  },
-  "ui:walksNotifPermAllow": {
-    "source": "6734659c34549214fd45379e39bb331b6d3dbe9792913ff9728e944175dce854",
-    "targets": {
-      "en": "4fe21c7d57102cf2acf79f33e4d6d2f15aca72052d82327bce3284373993bf66",
-      "es": "1ef2094be6efc7bed5c46c5895dd145fbab2782eb6cf69bee513e5fe5da2944d",
-      "de": "eb42ca17791a7637704da1061dff29155aebcb60fccabb64d64aa91588900763",
-      "fr": "247e6c951384920f16099d4840755ee4ba588bae74bf92dafea974971d8cdbdd"
-    }
-  },
   "ui:walksNotifTitleWithPet": {
     "source": "6f152109c044dc1cb693cb57830db33cfc4bb2633c17f88f63e5534e490fb3ce",
     "targets": {
@@ -15983,42 +15956,6 @@
       "fr": "6804bbc386baa86aeba04c4356f384f6f9794f6cd8392bc62c3e8812fd38e501"
     }
   },
-  "ui:remindersNotifPermTitle": {
-    "source": "f980ea2a10c01344d11cb6c72c5d62b43ffe667e298714344d2b84f955915640",
-    "targets": {
-      "en": "48bdb6db94dedaeb6f0ff8a5f404756fd8c400a6d1cfc2ed1e31e73d109a6552",
-      "es": "73ac1abee927cb70aabe2017cabcf74be7f55641b36f3b8acf74974212c4f449",
-      "de": "eebb5ce50a857202dac22d34930f3b7703fea1046c27c722be286bd79060e1a8",
-      "fr": "c17733085a5abd0040dba6e41e809e07fac9f6546681846bd13e27081f3a3dc7"
-    }
-  },
-  "ui:remindersNotifPermBody": {
-    "source": "9f811b588e2d659042f77807266344bec9b39eb1dca2ba63dfd178bcc3845bd7",
-    "targets": {
-      "en": "970409e76604f203fe2bca0823c0d6914b86d01c195d0a69fd49b5d14ef18ad3",
-      "es": "68f93927b7ee81ca685770da6c57e6a572bcd1b33a8a684847a9e81e86b4e24e",
-      "de": "1fb32c064498e6e8435392a45b67e4076b5ca9513216da6ccdf13f019d58dc1c",
-      "fr": "d57b2fa93105f03a180352a7c2e2adb7d2478f14784ff419221b04cfd5d22562"
-    }
-  },
-  "ui:remindersNotifPermNotNow": {
-    "source": "0d26fccd1ea090d33239b04b0b9141049dfdca51dc49bf7fbf564a26e58b7773",
-    "targets": {
-      "en": "357d49a29677068c52b0371e083a00bceca12660d4168cbdc0d8ae7dfb7435de",
-      "es": "f899c05b63e63825f7cdbe2228d42d42c92039582beb1624d3f694cd45ff41db",
-      "de": "46f8d710028dd0e98446a9636277058753af41402fc31e71cc27916c9a47d3c7",
-      "fr": "6fa4e8d638287c76c51d60afef7f327992ba4492f650355ee9d10b577b618036"
-    }
-  },
-  "ui:remindersNotifPermAllow": {
-    "source": "6734659c34549214fd45379e39bb331b6d3dbe9792913ff9728e944175dce854",
-    "targets": {
-      "en": "4fe21c7d57102cf2acf79f33e4d6d2f15aca72052d82327bce3284373993bf66",
-      "es": "1ef2094be6efc7bed5c46c5895dd145fbab2782eb6cf69bee513e5fe5da2944d",
-      "de": "eb42ca17791a7637704da1061dff29155aebcb60fccabb64d64aa91588900763",
-      "fr": "247e6c951384920f16099d4840755ee4ba588bae74bf92dafea974971d8cdbdd"
-    }
-  },
   "ui:remindersNotifOffBanner": {
     "source": "2865211851186ba098e9296a3f2902077e162ad430d169a7b062597bc93e3129",
     "targets": {
@@ -16071,6 +16008,195 @@
       "es": "04b183ea4e319c5dd29f174bfedbfcddc66a24f169ca1538996095e6ef69aa0e",
       "de": "31389cd6e12a4f319a54e4be54eb7cf33e5921a43f38a16114d3506d38c26155",
       "fr": "1fe99f31fa6451bd302991ab67a18b4e09a23bfe0786d835fec0c4c1734adae9"
+    }
+  },
+  "ui:permNotNow": {
+    "source": "0d26fccd1ea090d33239b04b0b9141049dfdca51dc49bf7fbf564a26e58b7773",
+    "targets": {
+      "en": "357d49a29677068c52b0371e083a00bceca12660d4168cbdc0d8ae7dfb7435de",
+      "es": "f899c05b63e63825f7cdbe2228d42d42c92039582beb1624d3f694cd45ff41db",
+      "de": "46f8d710028dd0e98446a9636277058753af41402fc31e71cc27916c9a47d3c7",
+      "fr": "6fa4e8d638287c76c51d60afef7f327992ba4492f650355ee9d10b577b618036"
+    }
+  },
+  "ui:permContinue": {
+    "source": "c6b356eacf7ad6141b64ec54eef652947025712eb8927a5832509d636bf8303d",
+    "targets": {
+      "en": "25ad263f60f3ed38266d9529e863a8c04ff68e0a9de016c01ceadb463531795d",
+      "es": "0f2aa8c0148e25b3089e0bf5bea11e0cb35a3251802bec32e297610afb90a1ae",
+      "de": "7ec2d672d35e12a547be7bb95187cebcb3011228ca5859314443c34eee974306",
+      "fr": "2bda559a22739b6d7e7182b9219cc15487e0b83199e7e09dbf1eb602400a9f5d"
+    }
+  },
+  "ui:permLocationTitle": {
+    "source": "b61a7cb88fac366a7fb277bf6d2ed4fa62ae24ccc8deb21eacf8a39e7c8e368b",
+    "targets": {
+      "en": "8583e23e34d7ecb610c9b4b1847452a589d7668f1336b83c2f51bb6a83d9cdc9",
+      "es": "0264d9ba2b62023fa77d88f3253e3457b80850d48c7765813cff4c62bdc0125e",
+      "de": "f9efebe09ffd4aba767f84e3db53cb5c24b1136df3d92afe52683553a9f95b33",
+      "fr": "9b725f0fc44a3904d8f0c66ed0cee338b443f69d9d093b4bc9026f311fce1859"
+    }
+  },
+  "ui:permLocationWhy": {
+    "source": "ef04d6ffcb73c76fea392d81561a1ea790ed62a3c2d3220fc57b5aedf7dd9b88",
+    "targets": {
+      "en": "25db48798dc13b97964213c8dfe939f233269370c2aa42c8f708557022c6f449",
+      "es": "169cffb181c74d45e3aa8a6255428fbee5f2d3f5d37767d69963fd2a36f041ee",
+      "de": "d855f2fe3c8d647b3c037b80e9e8b004b455dcfd4c1d6a6b020af51a2241ccb9",
+      "fr": "f5c7a426f9e3d338dfea2df684e0aa8b5818b65a313b45a56fce1c89f151470e"
+    }
+  },
+  "ui:permLocationRefuse": {
+    "source": "3b84fa92133ba9bf625dad40dad469976c47cd6ab9de184df1c7b660a6500106",
+    "targets": {
+      "en": "7be9f37ba91e2f428173706cee5dec7e3d6a3a94fc32ae4a87f986e9c3195d32",
+      "es": "53b1d9e68b9686322c44e0d002e6797426e24b60bc33aff1b668d9fa4bd2016e",
+      "de": "8c80c1f5d69ec1734724793fcfb834a440d8ed9e60952aa1c37658c4ccc7eaac",
+      "fr": "f8cd04d875cd83d390186f3ea069566f33e9cf7be5cbd73482a81cc16ae1e533"
+    }
+  },
+  "ui:permNotificationsTitle": {
+    "source": "f980ea2a10c01344d11cb6c72c5d62b43ffe667e298714344d2b84f955915640",
+    "targets": {
+      "en": "48bdb6db94dedaeb6f0ff8a5f404756fd8c400a6d1cfc2ed1e31e73d109a6552",
+      "es": "73ac1abee927cb70aabe2017cabcf74be7f55641b36f3b8acf74974212c4f449",
+      "de": "eebb5ce50a857202dac22d34930f3b7703fea1046c27c722be286bd79060e1a8",
+      "fr": "c17733085a5abd0040dba6e41e809e07fac9f6546681846bd13e27081f3a3dc7"
+    }
+  },
+  "ui:permNotificationsWhy": {
+    "source": "bbc43e99910b19941e57b9926cee9c602398a6f247919ca3774b470d5f9bf6d6",
+    "targets": {
+      "en": "3a7bb72888bf3efa7e63855e88985a617ab56ce316ec19f8db82e2445dd4bbc0",
+      "es": "f4e55e764bfd67a804f815c0369baa485fe9df950c83b04189a85e884d201af1",
+      "de": "64dcecf25f27cb1c027c4b6060800574641c4ac50a6602e0a1d5a0da8e239ed9",
+      "fr": "ca17e011be46f954a4df8163eaab58058a42011f9e261d349f5e15933e205062"
+    }
+  },
+  "ui:permNotificationsRefuse": {
+    "source": "f9587664495e1759e992d46e61a6b821e1c970a8c18f65c17e341912cc66e210",
+    "targets": {
+      "en": "f18cb5713f010ceb2945469febe29f718ec8a42bbd4d5933a3cf36212d480c26",
+      "es": "d4248dffeef220a92e6b5de9926ea8ce77af440ae8e4317ffcdc93ed0e3efcb7",
+      "de": "5b8d9570d644c1aa72975d35fc67f601db09b5d28e4a5f6fc72401dddb3a417e",
+      "fr": "3d2cf4c620d8af447143d7700cd43af3f2db53ed07bce454a3cd4b1356e60855"
+    }
+  },
+  "ui:permWalkNotificationsTitle": {
+    "source": "5c0e55ded920c82e5e1e3261523f11e2df65b115b633cba9697cfcf54de0db02",
+    "targets": {
+      "en": "6e7c868f38f23ed5ac1e8dc322d213ec82faa4cefc28582515ac7486c58c3040",
+      "es": "43af8e29e296e56e906d539abfb1bc36d9b3d0a0da6906960da1d3ca18aadea8",
+      "de": "7a9da57da00ad3a6cdd5febdc5038c984cce37da79de664a18a41d17f14b324c",
+      "fr": "e77b05572f15dfd3de01e8483d1205d2cbd6bb95a1e62a98083258215bdbca02"
+    }
+  },
+  "ui:permWalkNotificationsWhy": {
+    "source": "ae1d02ddd23063db78f42aed6e96c02336455f8f4fbca124abf75486e2ebe0ad",
+    "targets": {
+      "en": "307bcf0822856ba8804f5764853482d64f9d3cabc028456b89588d36c92aaec8",
+      "es": "8e831019cf41b2e9c5ecea64caff99393827dc7374036da79a1c378ea46f5508",
+      "de": "aac05339a7ca7b62c45e7612bc33c2e0ab3d3d0a1cf7f18afdd6050f8486f0b0",
+      "fr": "23fd6d7066c8713e7789b6147cb8415bbe99a085a253d9d110c518e576fe78e1"
+    }
+  },
+  "ui:permWalkNotificationsRefuse": {
+    "source": "705537e7eaa91ce23bdb520e74b4ed8a537c2d5450be03c7a186ba1daef4e3eb",
+    "targets": {
+      "en": "379c0ce48232e4a73efbc0fb71b78b4a18257f52dc9b5e82574fdb0252966b7a",
+      "es": "48445ae28ff6f4e1d996ac9f58522b851c8ce78283f31ccc21d6acd764d60ab7",
+      "de": "0d6b9036c56d3a7470326bfb0d51c39458d7c647742da51a82d5b0b23c386d1f",
+      "fr": "2009d9e84ee2f7626c0c8054102d8cb26522390ed009a2e6aab51bf43e3f59fc"
+    }
+  },
+  "ui:permMicrophoneTitle": {
+    "source": "0f4bb32075f041215214202ce0e3cb1bfc14df92d30d218ee5484b6c71ddb869",
+    "targets": {
+      "en": "521529f1ea04fb1020230230011baae3fa6e471a3ac00bc3c2c32fd2789d9d2b",
+      "es": "4eb9782815600332ee9737e515cc68b99cc681ac2281908efaa20c92cbed7aa0",
+      "de": "28353779322cbc93886c41ccd2d97c2680e3687aba16e9fed98b02644baa7e6b",
+      "fr": "6e6d7eac01a8a8c6b1e85e592b0e32dc6759fc4d85301170f59d5aae95a59834"
+    }
+  },
+  "ui:permMicrophoneWhy": {
+    "source": "0687b3dbce2e7a1e29f58257e65e23c903f62d361a6737f3b53f23100b1d61c2",
+    "targets": {
+      "en": "8ac9d6de6638439ea8f0ffc783e895ff7305a3e6e00276f1d721d2d633be867f",
+      "es": "8b357fe846fe8b74e293f2508e7f841e3eaab09b2c227ebd75a68edf2ea8cffa",
+      "de": "5b6cef7adc92a24014a562d79c1b8fb1097bc8a49484a122cf26a61e1c705c2a",
+      "fr": "ebded0aab2b54e9bab0a7d2ea135bad71caa3574547745fa69956445f35f46ed"
+    }
+  },
+  "ui:permMicrophoneRefuse": {
+    "source": "5ce4cf036e1a134714b12102b3de838a5f71f9e2b172aabb7b526520a6b491f2",
+    "targets": {
+      "en": "f9eaebceab75af6b29fbe451d6004e9839e9c32042f2100c0928361a5ef3c5c5",
+      "es": "c17b39987256f674bcc711bc9a0117b9ab6f147a2a38b53c83011e2d29a759a6",
+      "de": "38e15d7373b6158f1375bb9d66f4ce0adabde52c45d4c1d329408593f20bf4ab",
+      "fr": "4f23483403475dd42ed311a3658c6b3f6278a517c9c8e5c8758f0779054f2485"
+    }
+  },
+  "ui:permCameraTitle": {
+    "source": "268418298d1a3f94f70318a50f66f77fa1d38e6ab3835359aa4de69d3e0cfc5d",
+    "targets": {
+      "en": "74106ded1d8450a34bf825f8289496260fa5bc2a408071e303cf0b8d6f48c9d7",
+      "es": "e0f4daa4b8fa98942a3acc7b46a78bebda1c94029db2deaffe78b5ea040a8da4",
+      "de": "bb183170fa764ff1d75bd1cc68fdf373109db4fd85ba9c36e6ce52e0a74d191d",
+      "fr": "5e8b21eb803610ac21f748f0aa802f406e345df875169724097087a92d8e99d9"
+    }
+  },
+  "ui:permCameraWhy": {
+    "source": "8b9c98f1ccc9e423ce2c26961a36f41115b992bb40b1544239b5a8e7df363c89",
+    "targets": {
+      "en": "4cd2dc33f248a8e5f429ec1441324ab3a273e54db5b4ec3e6724c3d17a51f942",
+      "es": "82f201f063852fa51c75361dc77ac25874645235c000e92a1488212d608e08e3",
+      "de": "30d88cef427d3fafb8f822d863c0d2456dfa1a028ea06b7665d3b80d230e8d1f",
+      "fr": "88efd9c493bbebdd9b0545f613d5a76612d120337269bc4a8ab068cc963b659d"
+    }
+  },
+  "ui:permCameraRefuse": {
+    "source": "4547a4f7de869b3aab52416023e3185a5537aa53ce722ce4a09f983e74fef8c2",
+    "targets": {
+      "en": "fb333a2a575a3c6d240b3f25ac454488a0bef142db456753d810392ad36066ec",
+      "es": "d5e39749b89d5d57f6c9c91cf1b87c27791269b6f7faafeb087795477228bd2c",
+      "de": "d8f3c763c7ff2cc5c7d8dfbf8f057acc0410b27389aa1c36794d8a0ff281af7d",
+      "fr": "482bd3cf86775e1b6d728681a4a61e13446909767710911913b8bfcad6c67d52"
+    }
+  },
+  "ui:permGalleryTitle": {
+    "source": "adedff1aa212cf3f8c8f3429100bc4f62c0652bd6dd111305b99b31fda19db85",
+    "targets": {
+      "en": "c2266c3190d3e4422a37a822a5d8dc6054d114f340d31b66f1a7b97327e16951",
+      "es": "8e53032616ba2467065917f690fbcac4650dc003f1ef5d2be94c125e7e0adc8e",
+      "de": "089dd2367480c17332ccbf6fd05d5d9bd5ec58feb5fc295010802b57049e4d94",
+      "fr": "f324c0f28566806458223062f762db5bf91692cc06c725b51149c6fadc7526fb"
+    }
+  },
+  "ui:permGalleryWhy": {
+    "source": "be9411709c89d87069d2f736ef4b25b9824430c3fe67add5c92532c607237902",
+    "targets": {
+      "en": "423e2cd3fec6d5f853eca0cea2b8d9557e6afcdff04d2c1efb450861800f782f",
+      "es": "66173fb15d32eee38614f62acbd616fa5fbe5089ee549d0029db49ac0e9e9760",
+      "de": "903b09b329a6ac399defbc5885d035e43f498ce649283192001d430a8c3dca92",
+      "fr": "c9c3d8b441a4dab540b15b05e239e9a753c0a047104e301c358eb24680018b51"
+    }
+  },
+  "ui:permGalleryRefuse": {
+    "source": "b822dccb8d22a37816d2db968647dc1b017e3df6ff0121f57d4eeab21033c3de",
+    "targets": {
+      "en": "fb97e2d702051cd93b01d6bd3ebc2753e2bd5ebcd6e82a163d59b010cdcc74c8",
+      "es": "fc8d69ee37e64269a6c94f685aac200bda5d2bc7d134957139e37a0edb92c885",
+      "de": "7433ff920ba189635beb25b4b8e1c8e4afebac870a9eccd64ce3b61e1cea809b",
+      "fr": "37816995f76565ab306973386061d77713272600161a466962cb4ab5d262aa58"
+    }
+  },
+  "ui:settingsConsentDiagnostics": {
+    "source": "5112e34f35a9c9bc8103e44a50937ef117a98225f3c7d5faea6764a32a1eeb9e",
+    "targets": {
+      "en": "c66936ec3045e1be419b7d8fef63d346706af386cd995d569dd0a85e68ecf747",
+      "es": "e50c8d762c35e6b24fb2c7a4e835ebc76467990f5f62929ea883f7087f574bc4",
+      "de": "29542d81b1b34bc8dc37d547b3506b801f77fc80784227095a444c52a08d748d",
+      "fr": "33712769375c58f5704787ca64923dffc4b1a15a2d062221d36c47af2f1e4b9e"
     }
   },
   "backend:summary_header": {

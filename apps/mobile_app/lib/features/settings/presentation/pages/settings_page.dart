@@ -39,6 +39,8 @@ import '../../../account/presentation/pages/change_email_page.dart';
 import '../../../account/presentation/pages/change_password_page.dart';
 import '../../../account/presentation/pages/delete_account_page.dart';
 import '../../../../app/launch/restorable_pages.dart';
+import '../../../../shared/crash/crash_reporting.dart';
+import '../../../../shared/permissions/permission_explainer.dart';
 import '../../../../app/launch/warm_start_store.dart';
 import '../../../account/presentation/widgets/profile_avatar.dart';
 import '../../data/gallery_save_settings_store.dart';
@@ -144,6 +146,8 @@ class _SettingsPageState extends State<SettingsPage> {
       await openAppSettings();
       return;
     }
+    // Before Android's own dialog: why, and what happens if refused.
+    if (!await explainPermission(context, PermissionPurpose.notifications)) return;
     try {
       final status = await Permission.notification.request();
       if (mounted) setState(() => _notifications = status.isGranted);
@@ -262,15 +266,24 @@ class _SettingsPageState extends State<SettingsPage> {
     final result = await _consentsDataSource.fetch();
     if (!mounted) return;
     result.fold(
-      onSuccess: (snapshot) => setState(() {
-        _consents = snapshot;
-        _loadingConsents = false;
-      }),
+      onSuccess: (snapshot) {
+        setState(() {
+          _consents = snapshot;
+          _loadingConsents = false;
+        });
+        _applyDiagnosticsConsent(snapshot);
+      },
       onFailure: (error) => setState(() {
         _consentsError = error.message;
         _loadingConsents = false;
       }),
     );
+  }
+
+  /// Starts or stops the error reports to match the account's decision.
+  void _applyDiagnosticsConsent(AccountConsentsSnapshot snapshot) {
+    final granted = snapshot.decisions[AccountConsentKeys.diagnostics]?.granted ?? false;
+    unawaited(CrashReporting.instance.applyConsent(granted));
   }
 
   Future<void> _setConsent(String key, bool granted) async {
@@ -290,7 +303,10 @@ class _SettingsPageState extends State<SettingsPage> {
     final result = await _consentsDataSource.setConsent(consentKey: key, granted: granted);
     if (!mounted) return;
     result.fold(
-      onSuccess: (snapshot) => setState(() => _consents = snapshot),
+      onSuccess: (snapshot) {
+        setState(() => _consents = snapshot);
+        _applyDiagnosticsConsent(snapshot);
+      },
       onFailure: (error) {
         setState(() => _consents = previous);
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(error.message)));
@@ -465,6 +481,16 @@ class _SettingsPageState extends State<SettingsPage> {
         value: consents.decisions[AccountConsentKeys.analytics]?.granted ?? false,
         onChanged: (value) => _setConsent(AccountConsentKeys.analytics, value),
       ),
+      // Only in a build that can send error reports at all (CRASH_REPORTING
+      // flag and Sentry address): elsewhere the switch would do nothing.
+      if (CrashReporting.instance.isAvailable)
+        _ToggleRow(
+          icon: Icons.bug_report_outlined,
+          iconColor: AppColors.warning,
+          title: context.l10n.settingsConsentDiagnostics,
+          value: consents.decisions[AccountConsentKeys.diagnostics]?.granted ?? false,
+          onChanged: (value) => _setConsent(AccountConsentKeys.diagnostics, value),
+        ),
       ValueListenableBuilder<int>(
         valueListenable: PetDemoStore.changes,
         builder: (context, _, __) => _PetClinicalConsentSection(

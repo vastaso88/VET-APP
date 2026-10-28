@@ -79,7 +79,9 @@ class ChatConversationMenuButton extends StatelessWidget {
       for (final message in detail.messages)
         '${message.author == ChatMessageAuthor.user ? you : assistant}: ${message.text}',
     ];
-    await Share.share('$displayTitle\n\n${lines.join('\n\n')}', subject: displayTitle);
+    // The transparency notice travels with the conversation (AI Act, art. 50).
+    final notice = context.l10n.chatAiNotice;
+    await Share.share('$displayTitle\n$notice\n\n${lines.join('\n\n')}', subject: displayTitle);
   }
 
   Future<void> _rename(BuildContext context) async {
@@ -159,7 +161,10 @@ class ChatConversationMenuButton extends StatelessWidget {
                   const SizedBox(height: AppSpacing.md),
                   if (hasSummary)
                     FilledButton.icon(
-                      onPressed: () => Share.share(summary, subject: displayTitle),
+                      onPressed: () => Share.share(
+                        '${context.l10n.chatAiNotice}\n\n$summary',
+                        subject: displayTitle,
+                      ),
                       icon: const Icon(Icons.ios_share_rounded, size: 18),
                       label: Text(context.l10n.commonShare),
                     ),

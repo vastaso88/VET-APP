@@ -201,7 +201,10 @@ void main() {
       );
       await tester.pumpAndSettle();
       expect(find.text('Vuoi ricevere gli avvisi?'), findsOneWidget);
-      await tester.tap(find.text('Consenti'));
+      // Why it is needed and what happens if refused, before the system dialog.
+      expect(find.textContaining('Quokka ha bisogno del permesso per le notifiche'), findsOneWidget);
+      expect(find.textContaining('non suoneranno'), findsOneWidget);
+      await tester.tap(find.text('Continua'));
       await tester.pumpAndSettle();
 
       expect(await result, isTrue);

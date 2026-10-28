@@ -790,6 +790,10 @@ class AppLocalizationsFr extends AppLocalizations {
       'Ce résumé est généré automatiquement et ne constitue pas un diagnostic. Pour toute décision clinique, consultez le vétérinaire.';
 
   @override
+  String get chatAiNotice =>
+      'Je réponds grâce à une intelligence artificielle : je ne remplace pas le vétérinaire. En cas d\'urgence, appelez tout de suite une clinique.';
+
+  @override
   String get chatSummaryEmpty => 'Aucun résumé disponible.';
 
   @override
@@ -4897,19 +4901,6 @@ class AppLocalizationsFr extends AppLocalizations {
   String get walksSavingSnackbar => 'J\'enregistre la promenade...';
 
   @override
-  String get walksNotifPermTitle => 'Voir la promenade dans les notifications';
-
-  @override
-  String get walksNotifPermBody =>
-      'Pendant la promenade, Quokka affiche une notification fixe avec la durée et la distance : de là, vous pouvez la mettre en pause ou la terminer, même avec le téléphone dans la poche. Pour la voir, l\'autorisation de notifications est nécessaire.\n\nLa promenade est enregistrée dans tous les cas, même si vous choisissez « Pas maintenant ».';
-
-  @override
-  String get walksNotifPermNotNow => 'Pas maintenant';
-
-  @override
-  String get walksNotifPermAllow => 'Autoriser';
-
-  @override
   String walksNotifTitleWithPet(String petName) {
     return 'Promenade avec $petName';
   }
@@ -6424,19 +6415,6 @@ class AppLocalizationsFr extends AppLocalizations {
   String get remindersDoneTooltip => 'Marquer comme fait';
 
   @override
-  String get remindersNotifPermTitle => 'Souhaitez-vous recevoir les alertes ?';
-
-  @override
-  String get remindersNotifPermBody =>
-      'Pour vous prévenir lorsqu\'un rappel arrive à échéance, Quokka a besoin de l\'autorisation d\'envoyer des notifications. Vous pouvez la modifier à tout moment dans les Réglages.';
-
-  @override
-  String get remindersNotifPermNotNow => 'Pas maintenant';
-
-  @override
-  String get remindersNotifPermAllow => 'Autoriser';
-
-  @override
   String get remindersNotifOffBanner =>
       'Les notifications sont désactivées : les rappels ne sonneront pas';
 
@@ -6457,4 +6435,80 @@ class AppLocalizationsFr extends AppLocalizations {
   String phonePickerSemantics(String country, String dial) {
     return 'Indicatif téléphonique : $country (+$dial)';
   }
+
+  @override
+  String get permNotNow => 'Pas maintenant';
+
+  @override
+  String get permContinue => 'Continuer';
+
+  @override
+  String get permLocationTitle => 'Utiliser votre position ?';
+
+  @override
+  String get permLocationWhy =>
+      'Quokka utilise la position de votre téléphone pour enregistrer les promenades sur la carte et vous montrer des services et des événements près de chez vous. Elle n\'est utilisée que lorsque l\'application est ouverte ou pendant une promenade.';
+
+  @override
+  String get permLocationRefuse =>
+      'Si vous refusez, ce n\'est pas grave : vous pouvez choisir votre zone à la main dans les Paramètres, mais la promenade ne sera pas enregistrée sur la carte.';
+
+  @override
+  String get permNotificationsTitle => 'Souhaitez-vous recevoir les alertes ?';
+
+  @override
+  String get permNotificationsWhy =>
+      'Pour vous prévenir lorsqu\'un rappel arrive à échéance, Quokka a besoin de l\'autorisation d\'envoyer des notifications.';
+
+  @override
+  String get permNotificationsRefuse =>
+      'Si vous refusez, vos rappels restent enregistrés mais ne sonneront pas. Vous pouvez changer d\'avis à tout moment dans les Paramètres.';
+
+  @override
+  String get permWalkNotificationsTitle =>
+      'Voir la promenade dans les notifications';
+
+  @override
+  String get permWalkNotificationsWhy =>
+      'Pendant la promenade, Quokka affiche une notification fixe avec la durée et la distance : de là, vous pouvez la mettre en pause ou la terminer, même avec le téléphone dans la poche.';
+
+  @override
+  String get permWalkNotificationsRefuse =>
+      'Si vous refusez, la promenade est enregistrée dans tous les cas, mais vous ne verrez pas la notification.';
+
+  @override
+  String get permMicrophoneTitle => 'Utiliser le microphone ?';
+
+  @override
+  String get permMicrophoneWhy =>
+      'Le microphone sert à dicter les messages du chat : vous parlez et Quokka les écrit pour vous. L\'enregistrement est envoyé à un service de transcription pour être transformé en texte et n\'est pas conservé sur votre téléphone.';
+
+  @override
+  String get permMicrophoneRefuse =>
+      'Si vous refusez, vous pouvez toujours écrire vos messages avec le clavier.';
+
+  @override
+  String get permCameraTitle => 'Prendre une photo ou une vidéo';
+
+  @override
+  String get permCameraWhy =>
+      'L\'appareil photo de votre téléphone s\'ouvre pour prendre la photo. Quokka n\'a besoin d\'aucune autorisation particulière : la photo ou la vidéo est ajoutée à la galerie de votre animal et, si vous le souhaitez, copiée dans l\'album Quokka du téléphone.';
+
+  @override
+  String get permCameraRefuse =>
+      'Si vous choisissez « Pas maintenant », il ne se passe rien : vous pouvez aussi ajouter des photos depuis la galerie.';
+
+  @override
+  String get permGalleryTitle => 'Choisir des photos et des vidéos';
+
+  @override
+  String get permGalleryWhy =>
+      'La galerie de votre téléphone s\'ouvre : Quokka ne voit que les photos et les vidéos que vous choisissez, pas toute la galerie.';
+
+  @override
+  String get permGalleryRefuse =>
+      'Si vous choisissez « Pas maintenant », rien n\'est ajouté ; vous pouvez réessayer quand vous voulez.';
+
+  @override
+  String get settingsConsentDiagnostics => 'Envoyer les rapports d\'erreurs';
 }

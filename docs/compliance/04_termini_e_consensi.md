@@ -19,7 +19,7 @@ Serve consenso opt-in vero (art. 6(1)(a)) solo per trattamenti che vanno **oltre
 - **Granulare**: un toggle per finalità, mai un "accetta tutto" bundlato.
 - **Revocabile con la stessa facilità con cui è dato** (art. 7(3)) — da qui la sezione Impostazioni.
 
-Esempi concreti in VetApp: email di marketing e analisi d'uso sono consenso opt-in vero (`packages/core/domain/consent/models.py`, chiavi `marketing_email`/`analytics`). L'accesso della chat alla cartella clinica completa di un pet (vedi [03_consenso_cartella_clinica.md](03_consenso_cartella_clinica.md)) è correttamente opt-in per lo stesso motivo: va oltre il minimo necessario a rispondere alla domanda del momento.
+Esempi concreti in VetApp: email di marketing e analisi d'uso sono consenso opt-in vero (`packages/core/domain/consent/models.py`, chiavi `marketing_email`/`analytics`; dal 2026-10-28 anche `diagnostics`, «Invia rapporti sugli errori»: rapporti tecnici sugli arresti dell'app verso Sentry in UE, finalità stabilità e non misurazione d'uso, opt-in e spento di default, attivo solo in una build costruita per inviarli: vedi [docs/runbooks/crash_reporting.md](../runbooks/crash_reporting.md) e [docs/security/10_crash_reporting.md](../security/10_crash_reporting.md); testo IT/EN/ES nel catalogo del backend, da far rileggere al legale). L'accesso della chat alla cartella clinica completa di un pet (vedi [03_consenso_cartella_clinica.md](03_consenso_cartella_clinica.md)) è correttamente opt-in per lo stesso motivo: va oltre il minimo necessario a rispondere alla domanda del momento.
 
 ### 3. Permessi OS (fotocamera, notifiche, posizione, ecc.)
 Regolati dalle policy Apple/Play Store, non dal GDPR direttamente. L'evento di consenso autorevole è il dialog nativo dell'OS, non testo scritto dall'app. Entrambi gli store impongono:
@@ -32,7 +32,7 @@ Dettaglio in [05_permessi_dispositivo_os.md](05_permessi_dispositivo_os.md).
 
 1. **Sezione impostazioni con le autorizzazioni concesse**: sì, è vicino a un requisito (art. 7(3)) per i consensi opt-in, oltre che buona prassi per i permessi OS quando esisteranno. Implementata in Impostazioni → "Permessi e consensi".
 2. **Negare accesso vs. limitare funzioni al rifiuto**: limitare, quasi sempre. Il blocco totale dell'accesso è legittimo solo per il rifiuto dei Termini di Servizio (è un contratto, senza il quale non c'è servizio). Non è mai legittimo per un consenso opt-in rifiutato o un permesso OS negato.
-3. **Pagina di accettazione T&C all'accesso**: sì, ma tenuta separata da qualunque consenso opt-in — un solo step obbligatorio per contratto + informativa (in pratica: registrazione, dove la checkbox ora scrive davvero sul backend), mai bundlato con marketing/analytics, che vivono solo in Impostazioni, disattivati di default.
+3. **Pagina di accettazione T&C all'accesso**: sì, ma tenuta separata da qualunque consenso opt-in — un solo step obbligatorio per contratto + informativa (in pratica: registrazione, dove la checkbox ora scrive davvero sul backend), mai bundlato con marketing/analytics, che vivono solo in Impostazioni, disattivati di default (e lo stesso vale per i rapporti sugli errori).
 
 ## Un quarto caso: scelta obbligatoria del piano dopo la prova gratuita
 

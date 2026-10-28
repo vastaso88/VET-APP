@@ -1466,6 +1466,12 @@ abstract class AppLocalizations {
   /// **'Questo riassunto è generato automaticamente e non è una diagnosi. Per decisioni cliniche consulta il veterinario.'**
   String get chatSummaryDisclaimer;
 
+  /// No description provided for @chatAiNotice.
+  ///
+  /// In it, this message translates to:
+  /// **'Rispondo con un\'intelligenza artificiale: non sostituisco il veterinario. In emergenza chiama subito una clinica.'**
+  String get chatAiNotice;
+
   /// No description provided for @chatSummaryEmpty.
   ///
   /// In it, this message translates to:
@@ -8234,30 +8240,6 @@ abstract class AppLocalizations {
   /// **'Salvo la passeggiata...'**
   String get walksSavingSnackbar;
 
-  /// No description provided for @walksNotifPermTitle.
-  ///
-  /// In it, this message translates to:
-  /// **'Vedi la passeggiata nelle notifiche'**
-  String get walksNotifPermTitle;
-
-  /// No description provided for @walksNotifPermBody.
-  ///
-  /// In it, this message translates to:
-  /// **'Durante la passeggiata Quokka mostra una notifica fissa con tempo e distanza: da lì puoi metterla in pausa o terminarla anche con il telefono in tasca. Per vederla serve il permesso per le notifiche.\n\nLa passeggiata viene registrata comunque, anche se scegli \"Non ora\".'**
-  String get walksNotifPermBody;
-
-  /// No description provided for @walksNotifPermNotNow.
-  ///
-  /// In it, this message translates to:
-  /// **'Non ora'**
-  String get walksNotifPermNotNow;
-
-  /// No description provided for @walksNotifPermAllow.
-  ///
-  /// In it, this message translates to:
-  /// **'Consenti'**
-  String get walksNotifPermAllow;
-
   /// No description provided for @walksNotifTitleWithPet.
   ///
   /// In it, this message translates to:
@@ -10760,30 +10742,6 @@ abstract class AppLocalizations {
   /// **'Segna come fatto'**
   String get remindersDoneTooltip;
 
-  /// No description provided for @remindersNotifPermTitle.
-  ///
-  /// In it, this message translates to:
-  /// **'Vuoi ricevere gli avvisi?'**
-  String get remindersNotifPermTitle;
-
-  /// No description provided for @remindersNotifPermBody.
-  ///
-  /// In it, this message translates to:
-  /// **'Per avvisarti quando un promemoria scade, Quokka ha bisogno del permesso per le notifiche. Puoi cambiarlo in ogni momento da Impostazioni.'**
-  String get remindersNotifPermBody;
-
-  /// No description provided for @remindersNotifPermNotNow.
-  ///
-  /// In it, this message translates to:
-  /// **'Non ora'**
-  String get remindersNotifPermNotNow;
-
-  /// No description provided for @remindersNotifPermAllow.
-  ///
-  /// In it, this message translates to:
-  /// **'Consenti'**
-  String get remindersNotifPermAllow;
-
   /// No description provided for @remindersNotifOffBanner.
   ///
   /// In it, this message translates to:
@@ -10819,6 +10777,132 @@ abstract class AppLocalizations {
   /// In it, this message translates to:
   /// **'Prefisso telefonico: {country} (+{dial})'**
   String phonePickerSemantics(String country, String dial);
+
+  /// No description provided for @permNotNow.
+  ///
+  /// In it, this message translates to:
+  /// **'Non ora'**
+  String get permNotNow;
+
+  /// No description provided for @permContinue.
+  ///
+  /// In it, this message translates to:
+  /// **'Continua'**
+  String get permContinue;
+
+  /// No description provided for @permLocationTitle.
+  ///
+  /// In it, this message translates to:
+  /// **'Usare la tua posizione?'**
+  String get permLocationTitle;
+
+  /// No description provided for @permLocationWhy.
+  ///
+  /// In it, this message translates to:
+  /// **'Quokka usa la posizione del telefono per tracciare le passeggiate sulla mappa e per mostrarti servizi ed eventi vicino a te. La usa solo mentre l\'app è aperta o durante una passeggiata.'**
+  String get permLocationWhy;
+
+  /// No description provided for @permLocationRefuse.
+  ///
+  /// In it, this message translates to:
+  /// **'Se rifiuti, niente di grave: puoi scegliere la tua zona a mano in Impostazioni, ma la passeggiata non verrà tracciata sulla mappa.'**
+  String get permLocationRefuse;
+
+  /// No description provided for @permNotificationsTitle.
+  ///
+  /// In it, this message translates to:
+  /// **'Vuoi ricevere gli avvisi?'**
+  String get permNotificationsTitle;
+
+  /// No description provided for @permNotificationsWhy.
+  ///
+  /// In it, this message translates to:
+  /// **'Per avvisarti quando un promemoria scade, Quokka ha bisogno del permesso per le notifiche.'**
+  String get permNotificationsWhy;
+
+  /// No description provided for @permNotificationsRefuse.
+  ///
+  /// In it, this message translates to:
+  /// **'Se rifiuti, i promemoria restano salvati ma non suoneranno. Puoi cambiare idea in ogni momento da Impostazioni.'**
+  String get permNotificationsRefuse;
+
+  /// No description provided for @permWalkNotificationsTitle.
+  ///
+  /// In it, this message translates to:
+  /// **'Vedi la passeggiata nelle notifiche'**
+  String get permWalkNotificationsTitle;
+
+  /// No description provided for @permWalkNotificationsWhy.
+  ///
+  /// In it, this message translates to:
+  /// **'Durante la passeggiata Quokka mostra una notifica fissa con tempo e distanza: da lì puoi metterla in pausa o terminarla anche con il telefono in tasca.'**
+  String get permWalkNotificationsWhy;
+
+  /// No description provided for @permWalkNotificationsRefuse.
+  ///
+  /// In it, this message translates to:
+  /// **'Se rifiuti, la passeggiata viene registrata comunque, ma non vedrai la notifica.'**
+  String get permWalkNotificationsRefuse;
+
+  /// No description provided for @permMicrophoneTitle.
+  ///
+  /// In it, this message translates to:
+  /// **'Usare il microfono?'**
+  String get permMicrophoneTitle;
+
+  /// No description provided for @permMicrophoneWhy.
+  ///
+  /// In it, this message translates to:
+  /// **'Il microfono serve per dettare i messaggi nella chat: parli e Quokka li scrive per te. La registrazione viene inviata a un servizio di trascrizione per diventare testo e non resta salvata sul telefono.'**
+  String get permMicrophoneWhy;
+
+  /// No description provided for @permMicrophoneRefuse.
+  ///
+  /// In it, this message translates to:
+  /// **'Se rifiuti, puoi sempre scrivere i messaggi con la tastiera.'**
+  String get permMicrophoneRefuse;
+
+  /// No description provided for @permCameraTitle.
+  ///
+  /// In it, this message translates to:
+  /// **'Scattare una foto o un video'**
+  String get permCameraTitle;
+
+  /// No description provided for @permCameraWhy.
+  ///
+  /// In it, this message translates to:
+  /// **'Si apre la fotocamera del telefono per scattare. Quokka non ha bisogno di un permesso speciale: la foto o il video vengono aggiunti alla galleria del tuo animale e, se vuoi, copiati nell\'album Quokka del telefono.'**
+  String get permCameraWhy;
+
+  /// No description provided for @permCameraRefuse.
+  ///
+  /// In it, this message translates to:
+  /// **'Se scegli «Non ora» non succede nulla: puoi aggiungere le foto anche dalla galleria.'**
+  String get permCameraRefuse;
+
+  /// No description provided for @permGalleryTitle.
+  ///
+  /// In it, this message translates to:
+  /// **'Scegliere foto e video'**
+  String get permGalleryTitle;
+
+  /// No description provided for @permGalleryWhy.
+  ///
+  /// In it, this message translates to:
+  /// **'Si apre la galleria del telefono: Quokka vede solo le foto e i video che scegli tu, non tutta la galleria.'**
+  String get permGalleryWhy;
+
+  /// No description provided for @permGalleryRefuse.
+  ///
+  /// In it, this message translates to:
+  /// **'Se scegli «Non ora» non viene aggiunto nulla; puoi riprovare quando vuoi.'**
+  String get permGalleryRefuse;
+
+  /// No description provided for @settingsConsentDiagnostics.
+  ///
+  /// In it, this message translates to:
+  /// **'Invia rapporti sugli errori'**
+  String get settingsConsentDiagnostics;
 }
 
 class _AppLocalizationsDelegate

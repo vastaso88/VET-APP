@@ -348,6 +348,7 @@
   "chatSummaryLoading": "Preparo il riassunto…",
   "chatSummaryTitle": "Riassunto per il veterinario",
   "chatSummaryDisclaimer": "Questo riassunto è generato automaticamente e non è una diagnosi. Per decisioni cliniche consulta il veterinario.",
+  "chatAiNotice": "Rispondo con un'intelligenza artificiale: non sostituisco il veterinario. In emergenza chiama subito una clinica.",
   "chatSummaryEmpty": "Nessun riassunto disponibile.",
   "chatDeleteTitle": "Eliminare questa chat?",
   "chatDeleteBody": "La conversazione e i suoi messaggi verranno eliminati.",
@@ -2800,10 +2801,6 @@
   },
   "walksConfirmFinishBody": "Il percorso registrato finora verrà salvato.",
   "walksSavingSnackbar": "Salvo la passeggiata...",
-  "walksNotifPermTitle": "Vedi la passeggiata nelle notifiche",
-  "walksNotifPermBody": "Durante la passeggiata Quokka mostra una notifica fissa con tempo e distanza: da lì puoi metterla in pausa o terminarla anche con il telefono in tasca. Per vederla serve il permesso per le notifiche.\n\nLa passeggiata viene registrata comunque, anche se scegli \"Non ora\".",
-  "walksNotifPermNotNow": "Non ora",
-  "walksNotifPermAllow": "Consenti",
   "walksNotifTitleWithPet": "Passeggiata con {petName}",
   "@walksNotifTitleWithPet": {
     "placeholders": {
@@ -2943,9 +2940,21 @@
   "settingsAccountDelete": "Elimina account",
   "settingsAccountDeleteSubtitle": "Cancella il tuo account e tutti i tuoi dati",
   "accountSupportSubject": "Assistenza Quokka (versione {version})",
-  "@accountSupportSubject": {"placeholders": {"version": {"type": "String"}}},
+  "@accountSupportSubject": {
+    "placeholders": {
+      "version": {
+        "type": "String"
+      }
+    }
+  },
   "accountSupportBody": "Scrivi qui il tuo messaggio:\n\n\n\n—\nVersione app: {version}",
-  "@accountSupportBody": {"placeholders": {"version": {"type": "String"}}},
+  "@accountSupportBody": {
+    "placeholders": {
+      "version": {
+        "type": "String"
+      }
+    }
+  },
   "accountProfileTitle": "Il tuo profilo",
   "accountProfileFirstName": "Nome",
   "accountProfileLastName": "Cognome",
@@ -2967,9 +2976,21 @@
   "accountEmailSame": "È la tua email attuale.",
   "accountEmailSubmit": "Cambia email",
   "accountEmailApplied": "Email aggiornata: da ora accedi con {email}.",
-  "@accountEmailApplied": {"placeholders": {"email": {"type": "String"}}},
+  "@accountEmailApplied": {
+    "placeholders": {
+      "email": {
+        "type": "String"
+      }
+    }
+  },
   "accountEmailConfirmationSent": "Ti abbiamo mandato un link di conferma al nuovo indirizzo ({email}). Aprilo per completare il cambio: fino ad allora continui ad accedere con l'email attuale.",
-  "@accountEmailConfirmationSent": {"placeholders": {"email": {"type": "String"}}},
+  "@accountEmailConfirmationSent": {
+    "placeholders": {
+      "email": {
+        "type": "String"
+      }
+    }
+  },
   "accountPasswordTitle": "Cambia password",
   "accountPasswordCurrent": "Password attuale",
   "accountPasswordCurrentRequired": "Inserisci la password attuale.",
@@ -3683,10 +3704,6 @@
   "remindersDoneDismissed": "Segnato come non fatto.",
   "remindersDonePostponed": "Te lo richiedo domani.",
   "remindersDoneTooltip": "Segna come fatto",
-  "remindersNotifPermTitle": "Vuoi ricevere gli avvisi?",
-  "remindersNotifPermBody": "Per avvisarti quando un promemoria scade, Quokka ha bisogno del permesso per le notifiche. Puoi cambiarlo in ogni momento da Impostazioni.",
-  "remindersNotifPermNotNow": "Non ora",
-  "remindersNotifPermAllow": "Consenti",
   "remindersNotifOffBanner": "Le notifiche sono disattivate: i promemoria non suoneranno",
   "remindersNotifOffAction": "Attiva",
   "authPhoneLabel": "Numero di telefono (facoltativo)",
@@ -3702,5 +3719,26 @@
         "type": "String"
       }
     }
-  }
+  },
+  "permNotNow": "Non ora",
+  "permContinue": "Continua",
+  "permLocationTitle": "Usare la tua posizione?",
+  "permLocationWhy": "Quokka usa la posizione del telefono per tracciare le passeggiate sulla mappa e per mostrarti servizi ed eventi vicino a te. La usa solo mentre l'app è aperta o durante una passeggiata.",
+  "permLocationRefuse": "Se rifiuti, niente di grave: puoi scegliere la tua zona a mano in Impostazioni, ma la passeggiata non verrà tracciata sulla mappa.",
+  "permNotificationsTitle": "Vuoi ricevere gli avvisi?",
+  "permNotificationsWhy": "Per avvisarti quando un promemoria scade, Quokka ha bisogno del permesso per le notifiche.",
+  "permNotificationsRefuse": "Se rifiuti, i promemoria restano salvati ma non suoneranno. Puoi cambiare idea in ogni momento da Impostazioni.",
+  "permWalkNotificationsTitle": "Vedi la passeggiata nelle notifiche",
+  "permWalkNotificationsWhy": "Durante la passeggiata Quokka mostra una notifica fissa con tempo e distanza: da lì puoi metterla in pausa o terminarla anche con il telefono in tasca.",
+  "permWalkNotificationsRefuse": "Se rifiuti, la passeggiata viene registrata comunque, ma non vedrai la notifica.",
+  "permMicrophoneTitle": "Usare il microfono?",
+  "permMicrophoneWhy": "Il microfono serve per dettare i messaggi nella chat: parli e Quokka li scrive per te. La registrazione viene inviata a un servizio di trascrizione per diventare testo e non resta salvata sul telefono.",
+  "permMicrophoneRefuse": "Se rifiuti, puoi sempre scrivere i messaggi con la tastiera.",
+  "permCameraTitle": "Scattare una foto o un video",
+  "permCameraWhy": "Si apre la fotocamera del telefono per scattare. Quokka non ha bisogno di un permesso speciale: la foto o il video vengono aggiunti alla galleria del tuo animale e, se vuoi, copiati nell'album Quokka del telefono.",
+  "permCameraRefuse": "Se scegli «Non ora» non succede nulla: puoi aggiungere le foto anche dalla galleria.",
+  "permGalleryTitle": "Scegliere foto e video",
+  "permGalleryWhy": "Si apre la galleria del telefono: Quokka vede solo le foto e i video che scegli tu, non tutta la galleria.",
+  "permGalleryRefuse": "Se scegli «Non ora» non viene aggiunto nulla; puoi riprovare quando vuoi.",
+  "settingsConsentDiagnostics": "Invia rapporti sugli errori"
 }

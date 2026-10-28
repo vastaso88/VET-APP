@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-import '../../../l10n/l10n.dart';
+import '../../../shared/permissions/permission_explainer.dart';
 
 const _askedKey = 'vet_app.walk_notification_permission_asked';
 
@@ -33,24 +33,8 @@ Future<void> maybeAskWalkNotificationPermission(
 
     await preferences.setBool(_askedKey, true);
     if (!context.mounted) return;
-    final allow = await showDialog<bool>(
-      context: context,
-      builder: (dialogContext) => AlertDialog(
-        title: Text(dialogContext.l10n.walksNotifPermTitle),
-        content: Text(dialogContext.l10n.walksNotifPermBody),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(dialogContext).pop(false),
-            child: Text(dialogContext.l10n.walksNotifPermNotNow),
-          ),
-          FilledButton(
-            onPressed: () => Navigator.of(dialogContext).pop(true),
-            child: Text(dialogContext.l10n.walksNotifPermAllow),
-          ),
-        ],
-      ),
-    );
-    if (allow == true) {
+    final allow = await explainPermission(context, PermissionPurpose.walkNotifications);
+    if (allow) {
       await (request ?? () => Permission.notification.request())();
     }
   } catch (_) {

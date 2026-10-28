@@ -7,6 +7,9 @@ class AccountConsentKeys {
   static const privacyPolicy = 'privacy_policy';
   static const marketingEmail = 'marketing_email';
   static const analytics = 'analytics';
+
+  /// "Invia rapporti sugli errori": crash reports to Sentry (EU), opt-in.
+  static const diagnostics = 'diagnostics';
 }
 
 class ConsentDecision {

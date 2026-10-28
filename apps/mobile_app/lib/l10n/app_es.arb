@@ -348,6 +348,7 @@
   "chatSummaryLoading": "Preparando el resumen…",
   "chatSummaryTitle": "Resumen para el veterinario",
   "chatSummaryDisclaimer": "Este resumen se genera automáticamente y no es un diagnóstico. Consulta al veterinario para decisiones clínicas.",
+  "chatAiNotice": "Respondo con una inteligencia artificial: no sustituyo al veterinario. En una emergencia, llama enseguida a una clínica.",
   "chatSummaryEmpty": "No hay resumen disponible.",
   "chatDeleteTitle": "¿Eliminar este chat?",
   "chatDeleteBody": "La conversación y sus mensajes se eliminarán.",
@@ -2800,10 +2801,6 @@
   },
   "walksConfirmFinishBody": "Se guardará el recorrido registrado hasta ahora.",
   "walksSavingSnackbar": "Guardando paseo…",
-  "walksNotifPermTitle": "Ver el paseo en las notificaciones",
-  "walksNotifPermBody": "Durante el paseo, Quokka muestra una notificación fija con tiempo y distancia. Desde ella puedes pausar o terminar incluso con el teléfono en el bolsillo. Se necesita permiso de notificaciones para verla.\n\nEl paseo se registra aunque elijas «Ahora no».",
-  "walksNotifPermNotNow": "Ahora no",
-  "walksNotifPermAllow": "Permitir",
   "walksNotifTitleWithPet": "Paseo con {petName}",
   "@walksNotifTitleWithPet": {
     "placeholders": {
@@ -3707,10 +3704,6 @@
   "remindersDoneDismissed": "Marcado como no hecho.",
   "remindersDonePostponed": "Te lo recordaré mañana.",
   "remindersDoneTooltip": "Marcar como hecho",
-  "remindersNotifPermTitle": "¿Quieres recibir los avisos?",
-  "remindersNotifPermBody": "Para avisarte cuando venza un recordatorio, Quokka necesita permiso para enviar notificaciones. Puedes cambiarlo en cualquier momento en Ajustes.",
-  "remindersNotifPermNotNow": "Ahora no",
-  "remindersNotifPermAllow": "Permitir",
   "remindersNotifOffBanner": "Las notificaciones están desactivadas: los recordatorios no sonarán",
   "remindersNotifOffAction": "Activar",
   "authPhoneLabel": "Número de teléfono (opcional)",
@@ -3726,5 +3719,26 @@
         "type": "String"
       }
     }
-  }
+  },
+  "permNotNow": "Ahora no",
+  "permContinue": "Continuar",
+  "permLocationTitle": "¿Usar tu ubicación?",
+  "permLocationWhy": "Quokka usa la ubicación del teléfono para registrar los paseos en el mapa y mostrarte servicios y eventos cerca de ti. Solo la usa mientras la app está abierta o durante un paseo.",
+  "permLocationRefuse": "Si la rechazas, no pasa nada: puedes elegir tu zona a mano en Ajustes, pero el paseo no se registrará en el mapa.",
+  "permNotificationsTitle": "¿Quieres recibir los avisos?",
+  "permNotificationsWhy": "Para avisarte cuando venza un recordatorio, Quokka necesita permiso para enviar notificaciones.",
+  "permNotificationsRefuse": "Si lo rechazas, los recordatorios se guardan pero no sonarán. Puedes cambiar de idea en cualquier momento desde Ajustes.",
+  "permWalkNotificationsTitle": "Mira el paseo en las notificaciones",
+  "permWalkNotificationsWhy": "Durante el paseo, Quokka muestra una notificación fija con el tiempo y la distancia: desde ahí puedes pausarlo o terminarlo incluso con el teléfono en el bolsillo.",
+  "permWalkNotificationsRefuse": "Si lo rechazas, el paseo se registra igualmente, pero no verás la notificación.",
+  "permMicrophoneTitle": "¿Usar el micrófono?",
+  "permMicrophoneWhy": "El micrófono sirve para dictar los mensajes del chat: hablas y Quokka los escribe por ti. La grabación se envía a un servicio de transcripción para convertirla en texto y no se guarda en el teléfono.",
+  "permMicrophoneRefuse": "Si lo rechazas, siempre puedes escribir los mensajes con el teclado.",
+  "permCameraTitle": "Hacer una foto o un vídeo",
+  "permCameraWhy": "Se abre la cámara del teléfono para hacer la foto. Quokka no necesita ningún permiso especial: la foto o el vídeo se añaden a la galería de tu mascota y, si quieres, se copian en el álbum Quokka del teléfono.",
+  "permCameraRefuse": "Si eliges «Ahora no», no pasa nada: también puedes añadir fotos desde la galería.",
+  "permGalleryTitle": "Elegir fotos y vídeos",
+  "permGalleryWhy": "Se abre la galería del teléfono: Quokka solo ve las fotos y los vídeos que elijas, no toda la galería.",
+  "permGalleryRefuse": "Si eliges «Ahora no», no se añade nada; puedes volver a intentarlo cuando quieras.",
+  "settingsConsentDiagnostics": "Enviar informes de errores"
 }

@@ -348,6 +348,7 @@
   "chatSummaryLoading": "Ich erstelle die Zusammenfassung…",
   "chatSummaryTitle": "Zusammenfassung für die Tierarztpraxis",
   "chatSummaryDisclaimer": "Diese Zusammenfassung wird automatisch erstellt und ist keine Diagnose. Für medizinische Entscheidungen wenden Sie sich bitte an einen Tierarzt.",
+  "chatAiNotice": "Ich antworte mit einer künstlichen Intelligenz: Ich ersetze die Tierärztin bzw. den Tierarzt nicht. Rufen Sie im Notfall sofort eine Klinik an.",
   "chatSummaryEmpty": "Keine Zusammenfassung verfügbar.",
   "chatDeleteTitle": "Diesen Chat löschen?",
   "chatDeleteBody": "Die Unterhaltung und ihre Nachrichten werden gelöscht.",
@@ -2800,10 +2801,6 @@
   },
   "walksConfirmFinishBody": "Die bisher aufgezeichnete Strecke wird gespeichert.",
   "walksSavingSnackbar": "Spaziergang wird gespeichert...",
-  "walksNotifPermTitle": "Spaziergang in den Benachrichtigungen sehen",
-  "walksNotifPermBody": "Während des Spaziergangs zeigt Quokka eine dauerhafte Benachrichtigung mit Zeit und Strecke an. Dort können Sie ihn pausieren oder beenden, auch wenn das Telefon in der Tasche steckt. Um sie zu sehen, wird die Berechtigung für Benachrichtigungen benötigt.\n\nDer Spaziergang wird trotzdem aufgezeichnet, auch wenn Sie „Nicht jetzt“ wählen.",
-  "walksNotifPermNotNow": "Nicht jetzt",
-  "walksNotifPermAllow": "Erlauben",
   "walksNotifTitleWithPet": "Spaziergang mit {petName}",
   "@walksNotifTitleWithPet": {
     "placeholders": {
@@ -3707,10 +3704,6 @@
   "remindersDoneDismissed": "Als nicht erledigt markiert.",
   "remindersDonePostponed": "Ich frage morgen noch einmal nach.",
   "remindersDoneTooltip": "Als erledigt markieren",
-  "remindersNotifPermTitle": "Möchten Sie Benachrichtigungen erhalten?",
-  "remindersNotifPermBody": "Damit wir Sie benachrichtigen können, wenn eine Erinnerung fällig ist, benötigt Quokka die Berechtigung für Benachrichtigungen. Sie können dies jederzeit in den Einstellungen ändern.",
-  "remindersNotifPermNotNow": "Nicht jetzt",
-  "remindersNotifPermAllow": "Erlauben",
   "remindersNotifOffBanner": "Benachrichtigungen sind deaktiviert: Erinnerungen geben keinen Ton aus",
   "remindersNotifOffAction": "Aktivieren",
   "authPhoneLabel": "Telefonnummer (optional)",
@@ -3726,5 +3719,26 @@
         "type": "String"
       }
     }
-  }
+  },
+  "permNotNow": "Nicht jetzt",
+  "permContinue": "Weiter",
+  "permLocationTitle": "Standort verwenden?",
+  "permLocationWhy": "Quokka verwendet den Standort Ihres Telefons, um Spaziergänge auf der Karte aufzuzeichnen und Ihnen Dienste und Veranstaltungen in Ihrer Nähe zu zeigen. Er wird nur verwendet, solange die App geöffnet ist oder während eines Spaziergangs.",
+  "permLocationRefuse": "Wenn Sie ablehnen, ist das kein Problem: Sie können Ihr Gebiet in den Einstellungen von Hand wählen, aber der Spaziergang wird nicht auf der Karte aufgezeichnet.",
+  "permNotificationsTitle": "Möchten Sie Benachrichtigungen erhalten?",
+  "permNotificationsWhy": "Damit wir Sie benachrichtigen können, wenn eine Erinnerung fällig ist, benötigt Quokka die Berechtigung für Benachrichtigungen.",
+  "permNotificationsRefuse": "Wenn Sie ablehnen, bleiben Ihre Erinnerungen gespeichert, klingeln aber nicht. Sie können Ihre Meinung jederzeit in den Einstellungen ändern.",
+  "permWalkNotificationsTitle": "Spaziergang in den Benachrichtigungen sehen",
+  "permWalkNotificationsWhy": "Während des Spaziergangs zeigt Quokka eine dauerhafte Benachrichtigung mit Zeit und Strecke an. Dort können Sie ihn pausieren oder beenden, auch wenn das Telefon in der Tasche steckt.",
+  "permWalkNotificationsRefuse": "Wenn Sie ablehnen, wird der Spaziergang trotzdem aufgezeichnet, aber Sie sehen die Benachrichtigung nicht.",
+  "permMicrophoneTitle": "Mikrofon verwenden?",
+  "permMicrophoneWhy": "Das Mikrofon dient zum Diktieren von Chat-Nachrichten: Sie sprechen, Quokka schreibt für Sie. Die Aufnahme wird an einen Transkriptionsdienst gesendet, um in Text umgewandelt zu werden, und nicht auf Ihrem Telefon gespeichert.",
+  "permMicrophoneRefuse": "Wenn Sie ablehnen, können Sie Ihre Nachrichten weiterhin mit der Tastatur schreiben.",
+  "permCameraTitle": "Foto oder Video aufnehmen",
+  "permCameraWhy": "Die Kamera Ihres Telefons wird geöffnet, damit Sie die Aufnahme machen können. Quokka benötigt keine besondere Berechtigung: Das Foto oder Video wird der Galerie Ihres Tieres hinzugefügt und, wenn Sie möchten, in das Album „Quokka“ auf Ihrem Telefon kopiert.",
+  "permCameraRefuse": "Wenn Sie „Nicht jetzt“ wählen, passiert nichts: Sie können Fotos auch aus der Galerie hinzufügen.",
+  "permGalleryTitle": "Fotos und Videos auswählen",
+  "permGalleryWhy": "Die Galerie Ihres Telefons wird geöffnet: Quokka sieht nur die Fotos und Videos, die Sie auswählen, nicht Ihre gesamte Galerie.",
+  "permGalleryRefuse": "Wenn Sie „Nicht jetzt“ wählen, wird nichts hinzugefügt; Sie können es jederzeit erneut versuchen.",
+  "settingsConsentDiagnostics": "Fehlerberichte senden"
 }

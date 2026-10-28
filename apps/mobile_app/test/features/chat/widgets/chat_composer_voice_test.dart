@@ -17,8 +17,13 @@ class _FakeRecorder extends Fake implements AudioRecorder {
   String? startedPath;
   RecordConfig? startedConfig;
 
+  bool requestedPermission = false;
+
   @override
-  Future<bool> hasPermission({bool request = true}) async => permission;
+  Future<bool> hasPermission({bool request = true}) async {
+    if (request) requestedPermission = true;
+    return permission;
+  }
 
   @override
   Future<void> start(RecordConfig config, {required String path}) async {
@@ -87,15 +92,52 @@ void main() {
     expect(find.byIcon(Icons.mic_none_rounded), findsOneWidget);
   });
 
-  testWidgets('permesso negato: messaggio dedicato, nessun avvio', (tester) async {
+  testWidgets('senza permesso prima si spiega a cosa serve; rifiutato dal sistema: messaggio',
+      (tester) async {
     final recorder = _FakeRecorder(permission: false);
+    await _pump(tester, recorder);
+
+    await tester.tap(find.byIcon(Icons.mic_none_rounded));
+    await tester.pumpAndSettle();
+
+    // Prima della richiesta di sistema: perché, e cosa succede se si rifiuta.
+    expect(find.text('Usare il microfono?'), findsOneWidget);
+    expect(find.textContaining('dettare i messaggi nella chat'), findsOneWidget);
+    expect(find.textContaining('scrivere i messaggi con la tastiera'), findsOneWidget);
+    expect(recorder.requestedPermission, isFalse);
+
+    await tester.tap(find.text('Continua'));
+    await tester.pumpAndSettle();
+
+    expect(recorder.requestedPermission, isTrue);
+    expect(find.text('Serve il permesso per usare il microfono.'), findsOneWidget);
+    expect(recorder.startedPath, isNull);
+  });
+
+  testWidgets('"Non ora" non fa partire nessuna richiesta di sistema', (tester) async {
+    final recorder = _FakeRecorder(permission: false);
+    await _pump(tester, recorder);
+
+    await tester.tap(find.byIcon(Icons.mic_none_rounded));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Non ora'));
+    await tester.pumpAndSettle();
+
+    expect(recorder.requestedPermission, isFalse);
+    expect(recorder.startedPath, isNull);
+    // Si può riprovare: il microfono torna disponibile.
+    expect(find.byIcon(Icons.mic_none_rounded), findsOneWidget);
+  });
+
+  testWidgets('con il permesso già dato non compare nessuna spiegazione', (tester) async {
+    final recorder = _FakeRecorder();
     await _pump(tester, recorder);
 
     await tester.tap(find.byIcon(Icons.mic_none_rounded));
     await tester.pump();
 
-    expect(find.text('Serve il permesso per usare il microfono.'), findsOneWidget);
-    expect(recorder.startedPath, isNull);
+    expect(find.text('Usare il microfono?'), findsNothing);
+    expect(recorder.startedPath, isNotNull);
   });
 
   testWidgets('se lo stop fallisce torna a riposo con un messaggio', (tester) async {

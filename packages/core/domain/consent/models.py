@@ -25,13 +25,17 @@ class AccountConsentType:
     PRIVACY_POLICY = "privacy_policy"
     MARKETING_EMAIL = "marketing_email"
     ANALYTICS = "analytics"
+    # Error reports (crash diagnostics) sent to Sentry in the EU: a different
+    # purpose from analytics (stability, not measuring use), opt-in and off by
+    # default (see docs/security/10_crash_reporting.md).
+    DIAGNOSTICS = "diagnostics"
     # Rules for radar reports and dog-park votes: accepted before the
     # first contribution, never a gate on the app itself (see
     # docs/compliance/07_contributi_utenti.md).
     CONTRIBUTION_RULES = "contribution_rules"
 
     MANDATORY = frozenset({TERMS_OF_SERVICE, PRIVACY_POLICY})
-    OPTIONAL = frozenset({MARKETING_EMAIL, ANALYTICS, CONTRIBUTION_RULES})
+    OPTIONAL = frozenset({MARKETING_EMAIL, ANALYTICS, DIAGNOSTICS, CONTRIBUTION_RULES})
     ALL = MANDATORY | OPTIONAL
 
 
