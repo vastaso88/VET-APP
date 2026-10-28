@@ -28,7 +28,7 @@ class DashboardPrimitivePalette {
       DashboardTone.warning => AppColors.warning,
       DashboardTone.danger => AppColors.danger,
       DashboardTone.info => AppColors.info,
-      DashboardTone.warm => AppColors.accent,
+      DashboardTone.warm => AppColors.secondaryStrong,
       DashboardTone.neutral => AppColors.secondaryText,
     };
 
@@ -38,8 +38,8 @@ class DashboardPrimitivePalette {
       DashboardTone.warning => AppColors.warning.withValues(alpha: 0.14),
       DashboardTone.danger => AppColors.danger.withValues(alpha: 0.12),
       DashboardTone.info => AppColors.info.withValues(alpha: 0.12),
-      DashboardTone.warm => AppColors.accent.withValues(alpha: 0.14),
-      DashboardTone.neutral => AppColors.accentSoft,
+      DashboardTone.warm => AppColors.secondaryStrong.withValues(alpha: 0.14),
+      DashboardTone.neutral => AppColors.secondarySoft,
     };
 
     return (

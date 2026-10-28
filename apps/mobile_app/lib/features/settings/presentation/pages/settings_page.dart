@@ -38,6 +38,7 @@ import '../../../pets/presentation/widgets/medical_record_consent_card.dart';
 import '../../../account/presentation/pages/change_email_page.dart';
 import '../../../account/presentation/pages/change_password_page.dart';
 import '../../../account/presentation/pages/delete_account_page.dart';
+import '../../../account/presentation/pages/export_data_page.dart';
 import '../../../../app/launch/restorable_pages.dart';
 import '../../../../shared/crash/crash_reporting.dart';
 import '../../../../shared/permissions/permission_explainer.dart';
@@ -469,7 +470,7 @@ class _SettingsPageState extends State<SettingsPage> {
       ),
       _ToggleRow(
         icon: Icons.mail_outline_rounded,
-        iconColor: AppColors.accent,
+        iconColor: AppColors.secondaryStrong,
         title: context.l10n.settingsConsentMarketingEmail,
         value: consents.decisions[AccountConsentKeys.marketingEmail]?.granted ?? false,
         onChanged: (value) => _setConsent(AccountConsentKeys.marketingEmail, value),
@@ -582,7 +583,7 @@ class _SettingsPageState extends State<SettingsPage> {
                       listenable: BillingDemoStore.instance,
                       builder: (context, _) => _Row(
                         icon: Icons.workspace_premium_outlined,
-                        iconColor: AppColors.accent,
+                        iconColor: AppColors.secondaryStrong,
                         title: context.l10n.settingsSubscriptionAndPayments,
                         trailingText: BillingDemoStore.instance.isOnTrial
                             ? context.l10n.settingsTrialExpiresOn(
@@ -602,7 +603,7 @@ class _SettingsPageState extends State<SettingsPage> {
                   children: [
                     _ToggleRow(
                       icon: Icons.notifications_active_outlined,
-                      iconColor: AppColors.primary,
+                      iconColor: AppColors.secondaryStrong,
                       title: context.l10n.settingsNotificationsToggle,
                       value: _notifications,
                       onChanged: (value) => unawaited(_setNotifications(value)),
@@ -623,7 +624,7 @@ class _SettingsPageState extends State<SettingsPage> {
                   children: [
                     _StepperRow(
                       icon: Icons.view_week_outlined,
-                      iconColor: AppColors.primary,
+                      iconColor: AppColors.secondaryStrong,
                       title: context.l10n.settingsLayoutWeeksTitle,
                       subtitle: context.l10n.settingsLayoutWeeksSubtitle,
                       value: layout.weeksShown,
@@ -645,7 +646,7 @@ class _SettingsPageState extends State<SettingsPage> {
                     ),
                     _OptionsRow<ChatTextSize>(
                       icon: Icons.text_fields_rounded,
-                      iconColor: AppColors.accent,
+                      iconColor: AppColors.secondaryStrong,
                       title: context.l10n.settingsLayoutChatTextSizeTitle,
                       options: [
                         for (final size in ChatTextSize.values) (value: size, label: size.label),
@@ -689,7 +690,7 @@ class _SettingsPageState extends State<SettingsPage> {
                   children: [
                     _ToggleRow(
                       icon: Icons.photo_library_outlined,
-                      iconColor: AppColors.primary,
+                      iconColor: AppColors.secondaryStrong,
                       title: context.l10n.settingsGallerySaveTitle,
                       subtitle: context.l10n.settingsGallerySaveSubtitle,
                       value: GallerySaveSettingsStore.instance.enabled,
@@ -723,7 +724,7 @@ class _SettingsPageState extends State<SettingsPage> {
                     ),
                     _Row(
                       icon: Icons.gps_fixed_rounded,
-                      iconColor: AppColors.primary,
+                      iconColor: AppColors.secondaryStrong,
                       title: context.l10n.settingsLocationCurrentTitle,
                       subtitle: _capturingLocation
                           ? context.l10n.settingsLocationDetecting
@@ -735,7 +736,7 @@ class _SettingsPageState extends State<SettingsPage> {
                     ),
                     _Row(
                       icon: Icons.home_outlined,
-                      iconColor: AppColors.accent,
+                      iconColor: AppColors.secondaryStrong,
                       title: context.l10n.settingsLocationHomeTitle,
                       subtitle: location.home != null
                           ? _shortPlaceLabel(
@@ -775,13 +776,13 @@ class _SettingsPageState extends State<SettingsPage> {
                   children: [
                     _Row(
                       icon: Icons.help_outline_rounded,
-                      iconColor: AppColors.primary,
+                      iconColor: AppColors.secondaryStrong,
                       title: context.l10n.settingsHelpCenterTitle,
                       onTap: _openHelpCenter,
                     ),
                     _Row(
                       icon: Icons.mail_outline_rounded,
-                      iconColor: AppColors.accent,
+                      iconColor: AppColors.secondaryStrong,
                       title: context.l10n.settingsContactUs,
                       // The address comes from the backend (SUPPORT_CONTACT_EMAIL):
                       // none is shown until it is known, rather than a hardcoded
@@ -826,7 +827,7 @@ class _SettingsPageState extends State<SettingsPage> {
                   children: [
                     _Row(
                       icon: Icons.person_outline_rounded,
-                      iconColor: AppColors.primary,
+                      iconColor: AppColors.secondaryStrong,
                       title: context.l10n.settingsAccountProfile,
                       onTap: _openProfile,
                     ),
@@ -838,13 +839,13 @@ class _SettingsPageState extends State<SettingsPage> {
                     ),
                     _Row(
                       icon: Icons.lock_outline_rounded,
-                      iconColor: AppColors.accent,
+                      iconColor: AppColors.secondaryStrong,
                       title: context.l10n.settingsAccountChangePassword,
                       onTap: () => _openPage(const ChangePasswordPage()),
                     ),
                     _Row(
                       icon: Icons.support_agent_rounded,
-                      iconColor: AppColors.primary,
+                      iconColor: AppColors.secondaryStrong,
                       title: context.l10n.settingsAccountSupport,
                       subtitle: context.l10n.settingsAccountSupportSubtitle,
                       onTap: () => unawaited(_contactSupport()),
@@ -855,6 +856,13 @@ class _SettingsPageState extends State<SettingsPage> {
                       title: context.l10n.settingsLogout,
                       titleColor: AppColors.danger,
                       onTap: _logout,
+                    ),
+                    _Row(
+                      icon: Icons.download_rounded,
+                      iconColor: AppColors.secondaryStrong,
+                      title: context.l10n.settingsAccountExport,
+                      subtitle: context.l10n.settingsAccountExportSubtitle,
+                      onTap: () => _openPage(const ExportDataPage()),
                     ),
                     _Row(
                       icon: Icons.delete_forever_outlined,
@@ -1092,7 +1100,7 @@ class _NotificationCategoryToggles extends StatelessWidget {
             ),
             _ToggleRow(
               icon: Icons.cake_outlined,
-              iconColor: AppColors.accent,
+              iconColor: AppColors.secondaryStrong,
               title: context.l10n.notificationsCategoryBirthdays,
               value: preferences.birthdays,
               onChanged: (value) => unawaited(store.update(preferences.copyWith(birthdays: value))),
@@ -1156,7 +1164,7 @@ class _StepperRow extends StatelessWidget {
           IconButton(
             onPressed: value > minValue ? () => onChanged(value - 1) : null,
             icon: const Icon(Icons.remove_circle_outline),
-            color: AppColors.primary,
+            color: AppColors.secondaryStrong,
             visualDensity: VisualDensity.compact,
           ),
           Text(
@@ -1166,7 +1174,7 @@ class _StepperRow extends StatelessWidget {
           IconButton(
             onPressed: value < maxValue ? () => onChanged(value + 1) : null,
             icon: const Icon(Icons.add_circle_outline),
-            color: AppColors.primary,
+            color: AppColors.secondaryStrong,
             visualDensity: VisualDensity.compact,
           ),
         ],

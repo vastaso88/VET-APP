@@ -183,7 +183,7 @@ class _MemoriesComingSoonNote extends StatelessWidget {
       width: double.infinity,
       padding: const EdgeInsets.all(AppSpacing.lg),
       decoration: BoxDecoration(
-        color: AppColors.accentSoft,
+        color: AppColors.secondarySoft,
         borderRadius: BorderRadius.circular(AppRadii.large),
       ),
       child: Row(

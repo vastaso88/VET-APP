@@ -257,7 +257,7 @@ class _EntryRow extends StatelessWidget {
                 height: 36,
                 alignment: Alignment.center,
                 decoration: BoxDecoration(
-                  color: AppColors.accentSoft,
+                  color: AppColors.secondarySoft,
                   borderRadius: BorderRadius.circular(AppRadii.medium),
                 ),
                 child: Icon(
@@ -267,7 +267,7 @@ class _EntryRow extends StatelessWidget {
                       ? Icons.picture_as_pdf_outlined
                       : record.category.icon,
                   size: 17,
-                  color: AppColors.primary,
+                  color: AppColors.secondaryStrong,
                 ),
               ),
               const SizedBox(width: AppSpacing.md),
@@ -301,7 +301,7 @@ class _EntryRow extends StatelessWidget {
                     vertical: 3,
                   ),
                   decoration: BoxDecoration(
-                    color: AppColors.accentSoft,
+                    color: AppColors.secondarySoft,
                     borderRadius: BorderRadius.circular(AppRadii.pill),
                   ),
                   child: Text(
@@ -347,7 +347,7 @@ class _SelectionBar extends StatelessWidget {
         vertical: AppSpacing.xs,
       ),
       decoration: BoxDecoration(
-        color: AppColors.accentSoft,
+        color: AppColors.secondarySoft,
         borderRadius: BorderRadius.circular(AppRadii.medium),
       ),
       child: Row(
@@ -401,10 +401,10 @@ class _EmptyCategory extends StatelessWidget {
             Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: AppColors.accentSoft,
+                color: AppColors.secondarySoft,
                 borderRadius: BorderRadius.circular(AppRadii.large),
               ),
-              child: Icon(icon, size: 30, color: AppColors.primary),
+              child: Icon(icon, size: 30, color: AppColors.secondaryStrong),
             ),
             const SizedBox(height: AppSpacing.lg),
             Text(

@@ -21,7 +21,7 @@ class ListingPhoto extends StatelessWidget {
       url,
       fit: fit,
       errorBuilder: (_, __, ___) => const ColoredBox(
-        color: AppColors.warmSurface,
+        color: AppColors.surface,
         child: Center(child: Icon(Icons.broken_image_outlined, color: AppColors.mutedText)),
       ),
     );

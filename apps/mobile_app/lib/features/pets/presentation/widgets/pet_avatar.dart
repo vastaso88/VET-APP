@@ -94,7 +94,7 @@ class PetAvatar extends StatelessWidget {
                   style: TextStyle(
                     fontSize: badgeSize * 0.46,
                     fontWeight: FontWeight.w800,
-                    color: Colors.white,
+                    color: AppColors.onMedia,
                   ),
                 ),
               ),

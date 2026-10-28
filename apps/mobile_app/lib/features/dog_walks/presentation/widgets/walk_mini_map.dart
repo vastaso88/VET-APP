@@ -67,7 +67,7 @@ class WalkMiniMap extends StatelessWidget {
                     ],
                     color: AppColors.primaryStrong,
                     strokeWidth: 5,
-                    borderColor: Colors.white,
+                    borderColor: AppColors.onMedia,
                     borderStrokeWidth: 2.5,
                     strokeCap: StrokeCap.round,
                     strokeJoin: StrokeJoin.round,
@@ -85,9 +85,9 @@ class WalkMiniMap extends StatelessWidget {
                     child: const DecoratedBox(
                       key: ValueKey('walk-mini-photo-dot'),
                       decoration: BoxDecoration(
-                        color: AppColors.accent,
+                        color: AppColors.secondaryStrong,
                         shape: BoxShape.circle,
-                        border: Border.fromBorderSide(BorderSide(color: Colors.white, width: 2)),
+                        border: Border.fromBorderSide(BorderSide(color: AppColors.onMedia, width: 2)),
                       ),
                     ),
                   ),
@@ -102,10 +102,10 @@ class WalkMiniMap extends StatelessWidget {
           const Align(
             alignment: Alignment.bottomRight,
             child: DecoratedBox(
-              decoration: BoxDecoration(color: Color(0xB3FFFFFF)),
+              decoration: BoxDecoration(color: AppColors.onMediaMuted),
               child: Padding(
                 padding: EdgeInsets.symmetric(horizontal: 4, vertical: 1),
-                child: Text('© OpenStreetMap', style: TextStyle(fontSize: 9, color: Colors.black87)),
+                child: Text('© OpenStreetMap', style: TextStyle(fontSize: 9, color: AppColors.text)),
               ),
             ),
           ),

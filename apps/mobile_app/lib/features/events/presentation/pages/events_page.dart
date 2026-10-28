@@ -413,7 +413,7 @@ class _EventCard extends StatelessWidget {
                 Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Icon(Icons.place_rounded, size: 18, color: AppColors.accent),
+                    const Icon(Icons.place_rounded, size: 18, color: AppColors.secondaryStrong),
                     const SizedBox(width: 4),
                     Expanded(
                       child: Text.rich(
@@ -490,7 +490,7 @@ class _Pill extends StatelessWidget {
       background = AppColors.danger.withValues(alpha: 0.14);
       foreground = AppColors.danger;
     } else if (emphasized) {
-      background = AppColors.accentSoft;
+      background = AppColors.secondarySoft;
       foreground = AppColors.primaryStrong;
     } else {
       background = AppColors.background;

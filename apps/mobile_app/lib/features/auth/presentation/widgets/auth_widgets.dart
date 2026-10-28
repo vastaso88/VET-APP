@@ -72,7 +72,7 @@ class AuthScreenScaffold extends StatelessWidget {
                           border: Border.all(color: AppColors.border),
                           boxShadow: const [
                             BoxShadow(
-                              color: Color(0x1A163A35),
+                              color: AppColors.shadow,
                               blurRadius: 28,
                               offset: Offset(0, 16),
                             ),

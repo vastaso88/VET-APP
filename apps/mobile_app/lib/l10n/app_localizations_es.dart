@@ -5074,6 +5074,47 @@ class AppLocalizationsEs extends AppLocalizations {
       'Borra tu cuenta y todos tus datos';
 
   @override
+  String get settingsAccountExport => 'Descargar mis datos';
+
+  @override
+  String get settingsAccountExportSubtitle => 'Todos tus datos en un archivo';
+
+  @override
+  String get accountExportTitle => 'Descargar mis datos';
+
+  @override
+  String get accountExportIntro =>
+      'Recibe un archivo con todos los datos de tu cuenta: perfil, animales, informes, chats, recordatorios, paseos, consentimientos y anuncios. Incluye enlaces a tus archivos (fotos, adjuntos), válidos durante 15 minutos.';
+
+  @override
+  String get accountExportSensitive =>
+      'El archivo puede contener datos sensibles tuyos y de tus animales: guárdalo con cuidado y no lo compartas.';
+
+  @override
+  String get accountExportButton => 'Descargar mis datos';
+
+  @override
+  String get accountExportWorking => 'Preparando tus datos…';
+
+  @override
+  String get accountExportDone => 'Archivo guardado.';
+
+  @override
+  String get accountExportRateLimited =>
+      'Has pedido tus datos hace poco: inténtalo de nuevo en unos minutos';
+
+  @override
+  String get accountExportFailed =>
+      'No hemos podido preparar tus datos. Inténtalo de nuevo en un momento.';
+
+  @override
+  String get accountExportSaveFailed =>
+      'No hemos podido guardar el archivo. Inténtalo de nuevo.';
+
+  @override
+  String get accountExportSaveDialogTitle => 'Guardar tus datos';
+
+  @override
   String accountSupportSubject(String version) {
     return 'Asistencia Quokka (versión $version)';
   }

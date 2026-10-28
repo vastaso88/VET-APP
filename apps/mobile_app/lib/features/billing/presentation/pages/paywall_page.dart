@@ -124,10 +124,10 @@ class _PaywallPlanCard extends StatelessWidget {
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: AppSpacing.sm, vertical: 2),
                   decoration: BoxDecoration(
-                    color: AppColors.accentSoft,
+                    color: AppColors.secondarySoft,
                     borderRadius: BorderRadius.circular(AppRadii.pill),
                   ),
-                  child: Text(plan.badge!, style: AppTextStyles.caption.copyWith(color: AppColors.accent)),
+                  child: Text(plan.badge!, style: AppTextStyles.caption.copyWith(color: AppColors.primary)),
                 ),
               ],
             ],

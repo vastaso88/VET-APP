@@ -12,6 +12,7 @@ import '../../features/local_activities/domain/local_activity.dart';
 import '../../features/location/domain/coordinates.dart';
 import '../../features/marketplace/data/marketplace_repository.dart';
 import '../../features/marketplace/domain/marketplace_listing.dart';
+import '../../design_system/tokens/app_colors.dart';
 
 /// Isolated demo harness for the "gestione mappe" foundations
 /// (docs/maps/): renders a real flutter_map with seed data from all three
@@ -99,7 +100,7 @@ class _MapsDemoPageState extends State<MapsDemoPage> {
         .map(
           (walk) => Polyline(
             points: walk.route.map((point) => _toLatLng(point.coordinates)).toList(),
-            color: Colors.deepOrange,
+            color: AppCategoryColors.association,
             strokeWidth: 4,
           ),
         )
@@ -117,7 +118,7 @@ class _MapsDemoPageState extends State<MapsDemoPage> {
               message: activity.title,
               child: Icon(
                 activity.kind == LocalActivityKind.event ? Icons.event : Icons.medical_services,
-                color: Colors.blue,
+                color: AppColors.info,
               ),
             ),
           ),
@@ -134,7 +135,7 @@ class _MapsDemoPageState extends State<MapsDemoPage> {
             height: 36,
             child: Tooltip(
               message: '${listing.title} (posizione approssimata)',
-              child: const Icon(Icons.storefront, color: Colors.amber),
+              child: const Icon(Icons.storefront, color: AppColors.warning),
             ),
           ),
         )

@@ -234,10 +234,10 @@ class _Steps extends StatelessWidget {
                 width: 40,
                 height: 40,
                 decoration: BoxDecoration(
-                  color: AppColors.accentSoft,
+                  color: AppColors.secondarySoft,
                   borderRadius: BorderRadius.circular(AppRadii.medium),
                 ),
-                child: Icon(icon, color: AppColors.primary, size: 22),
+                child: Icon(icon, color: AppColors.secondaryStrong, size: 22),
               ),
               const SizedBox(height: AppSpacing.xs),
               Text(
@@ -328,7 +328,7 @@ class _LevelDescription extends StatelessWidget {
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Icon(icon, size: 20, color: AppColors.primary),
+              Icon(icon, size: 20, color: AppColors.secondaryStrong),
               const SizedBox(width: AppSpacing.sm),
               Expanded(
                 child: Text.rich(

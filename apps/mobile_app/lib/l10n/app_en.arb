@@ -2939,6 +2939,18 @@
   "settingsAccountSupportSubtitle": "Send us an email",
   "settingsAccountDelete": "Delete account",
   "settingsAccountDeleteSubtitle": "Delete your account and all your data",
+  "settingsAccountExport": "Download my data",
+  "settingsAccountExportSubtitle": "All your data in one file",
+  "accountExportTitle": "Download my data",
+  "accountExportIntro": "Get a file with all the data of your account: profile, pets, reports, chats, reminders, walks, consents and listings. It includes links to your files (photos, attachments), valid for 15 minutes.",
+  "accountExportSensitive": "The file may contain sensitive data about you and your pets: keep it safe and don't share it.",
+  "accountExportButton": "Download my data",
+  "accountExportWorking": "Preparing your data…",
+  "accountExportDone": "File saved.",
+  "accountExportRateLimited": "You requested your data a moment ago: try again in a few minutes",
+  "accountExportFailed": "We couldn't prepare your data. Try again shortly.",
+  "accountExportSaveFailed": "We couldn't save the file. Try again.",
+  "accountExportSaveDialogTitle": "Save your data",
   "accountSupportSubject": "Quokka support (version {version})",
   "@accountSupportSubject": {
     "placeholders": {

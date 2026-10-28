@@ -5030,6 +5030,47 @@ class AppLocalizationsEn extends AppLocalizations {
       'Delete your account and all your data';
 
   @override
+  String get settingsAccountExport => 'Download my data';
+
+  @override
+  String get settingsAccountExportSubtitle => 'All your data in one file';
+
+  @override
+  String get accountExportTitle => 'Download my data';
+
+  @override
+  String get accountExportIntro =>
+      'Get a file with all the data of your account: profile, pets, reports, chats, reminders, walks, consents and listings. It includes links to your files (photos, attachments), valid for 15 minutes.';
+
+  @override
+  String get accountExportSensitive =>
+      'The file may contain sensitive data about you and your pets: keep it safe and don\'t share it.';
+
+  @override
+  String get accountExportButton => 'Download my data';
+
+  @override
+  String get accountExportWorking => 'Preparing your data…';
+
+  @override
+  String get accountExportDone => 'File saved.';
+
+  @override
+  String get accountExportRateLimited =>
+      'You requested your data a moment ago: try again in a few minutes';
+
+  @override
+  String get accountExportFailed =>
+      'We couldn\'t prepare your data. Try again shortly.';
+
+  @override
+  String get accountExportSaveFailed =>
+      'We couldn\'t save the file. Try again.';
+
+  @override
+  String get accountExportSaveDialogTitle => 'Save your data';
+
+  @override
   String accountSupportSubject(String version) {
     return 'Quokka support (version $version)';
   }

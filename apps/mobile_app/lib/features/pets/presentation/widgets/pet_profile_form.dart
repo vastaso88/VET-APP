@@ -361,7 +361,7 @@ class _PetProfileFormState extends State<PetProfileForm> {
   Color _speciesAccentColor() {
     final species = _species;
     if (species == null || species.trim().isEmpty) {
-      return widget.initialPet?.accentColor ?? AppColors.accentSoft;
+      return widget.initialPet?.accentColor ?? AppColors.secondarySoft;
     }
     return PetDemoStore.optionForSpecies(species).accentColor;
   }
@@ -622,7 +622,7 @@ class _PetProfileFormState extends State<PetProfileForm> {
                   ),
                 ),
               ),
-              const Icon(Icons.search_rounded, color: AppColors.primary),
+              const Icon(Icons.search_rounded, color: AppColors.secondaryStrong),
             ],
           ),
         ),
@@ -714,7 +714,7 @@ class _PetProfileFormState extends State<PetProfileForm> {
     return TypedDateField(
       controller: _birthDateController,
       onPick: _pickBirthDate,
-      pickIcon: const Icon(Icons.calendar_month_rounded, color: AppColors.primary),
+      pickIcon: const Icon(Icons.calendar_month_rounded, color: AppColors.secondaryStrong),
       decoration: _inputDecoration(
         context.l10n.petsFormBirthDateLabel,
         appDateInputText(context.l10n.petsFormBirthDateHint),
@@ -1468,7 +1468,7 @@ class _FishKindCard extends StatelessWidget {
       label: '$title. $body',
       excludeSemantics: true,
       child: Material(
-        color: selected ? AppColors.accentSoft.withValues(alpha: 0.5) : AppColors.surface,
+        color: selected ? AppColors.secondarySoft.withValues(alpha: 0.5) : AppColors.surface,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(AppRadii.medium),
           side: BorderSide(
@@ -1616,7 +1616,7 @@ class _StockRow extends StatelessWidget {
               Expanded(
                 child: _SexCounter(
                   icon: Icons.female_rounded,
-                  color: AppColors.accent,
+                  color: AppColors.secondaryStrong,
                   count: item.femaleCount,
                   onChanged: onChangeFemale,
                 ),
@@ -1654,7 +1654,7 @@ class _SexCounter extends StatelessWidget {
         _CompactIconButton(
           onPressed: count > 0 ? () => onChanged(count - 1) : null,
           icon: Icons.remove_circle_outline,
-          color: AppColors.primary,
+          color: AppColors.secondaryStrong,
         ),
         SizedBox(
           width: 20,
@@ -1667,7 +1667,7 @@ class _SexCounter extends StatelessWidget {
         _CompactIconButton(
           onPressed: () => onChanged(count + 1),
           icon: Icons.add_circle_outline,
-          color: AppColors.primary,
+          color: AppColors.secondaryStrong,
         ),
       ],
     );
@@ -1849,7 +1849,7 @@ class _IdentityColorPicker extends StatelessWidget {
                 ),
               ),
               child: color == value
-                  ? const Icon(Icons.check_rounded, color: Colors.white, size: 16)
+                  ? const Icon(Icons.check_rounded, color: AppColors.onMedia, size: 16)
                   : null,
             ),
           ),
@@ -1916,8 +1916,8 @@ class _BreedPickerSheetState extends State<_BreedPickerSheet> {
                         final lastPinned = pinned &&
                             (index + 1 >= matches.length || !isPinnedBreedEntry(matches[index + 1]));
                         final tile = ListTile(
-                          tileColor: pinned ? AppColors.accentSoft.withValues(alpha: 0.35) : null,
-                          leading: pinned ? const Icon(Icons.pets_outlined, color: AppColors.primary) : null,
+                          tileColor: pinned ? AppColors.secondarySoft.withValues(alpha: 0.35) : null,
+                          leading: pinned ? const Icon(Icons.pets_outlined, color: AppColors.secondaryStrong) : null,
                           title: Text(
                             breed == 'Razza non specificata'
                                 ? context.l10n.petsBreedUnspecified

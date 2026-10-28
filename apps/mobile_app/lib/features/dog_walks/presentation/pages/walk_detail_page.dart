@@ -280,8 +280,8 @@ class _WalkPhotoPinMarkerState extends State<WalkPhotoPinMarker> {
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
                 color: AppColors.surfaceElevated,
-                border: Border.all(color: Colors.white, width: 3),
-                boxShadow: const [BoxShadow(color: Colors.black38, blurRadius: 4)],
+                border: Border.all(color: AppColors.onMedia, width: 3),
+                boxShadow: const [BoxShadow(color: AppColors.scrimSoft, blurRadius: 4)],
               ),
               clipBehavior: Clip.antiAlias,
               child: FutureBuilder<Uint8List?>(
@@ -299,10 +299,10 @@ class _WalkPhotoPinMarkerState extends State<WalkPhotoPinMarker> {
               right: 0,
               bottom: 0,
               child: DecoratedBox(
-                decoration: BoxDecoration(color: AppColors.accent, shape: BoxShape.circle),
+                decoration: BoxDecoration(color: AppColors.secondaryStrong, shape: BoxShape.circle),
                 child: Padding(
                   padding: EdgeInsets.all(3),
-                  child: Icon(Icons.photo_camera_rounded, size: 10, color: Colors.white),
+                  child: Icon(Icons.photo_camera_rounded, size: 10, color: AppColors.onMedia),
                 ),
               ),
             ),

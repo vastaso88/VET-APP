@@ -62,7 +62,7 @@ class PetDataSummaryRow extends StatelessWidget {
           ),
           child: Row(
             children: [
-              const Icon(Icons.badge_outlined, size: 16, color: AppColors.primary),
+              const Icon(Icons.badge_outlined, size: 16, color: AppColors.secondaryStrong),
               const SizedBox(width: AppSpacing.sm),
               Expanded(
                 child: Text(
@@ -165,7 +165,7 @@ class _PetDataPageState extends State<PetDataPage> {
           tooltip: t.commonEdit,
           onPressed: _edit,
           icon: const Icon(Icons.edit_outlined),
-          color: Colors.white,
+          color: AppColors.onPrimary,
           style: IconButton.styleFrom(backgroundColor: AppColors.primaryStrong),
         ),
       ],

@@ -62,10 +62,10 @@ Marker _dot(Coordinates at, Color color, double size, {IconData? icon}) {
       decoration: BoxDecoration(
         color: color,
         shape: BoxShape.circle,
-        border: Border.all(color: Colors.white, width: 2),
-        boxShadow: const [BoxShadow(color: Colors.black26, blurRadius: 2)],
+        border: Border.all(color: AppColors.onMedia, width: 2),
+        boxShadow: const [BoxShadow(color: AppColors.scrimLight, blurRadius: 2)],
       ),
-      child: icon == null ? null : Icon(icon, color: Colors.white, size: size * 0.55),
+      child: icon == null ? null : Icon(icon, color: AppColors.onMedia, size: size * 0.55),
     ),
   );
 }

@@ -36,11 +36,7 @@ class PetsScaffold extends StatelessWidget {
           gradient: LinearGradient(
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
-            colors: [
-              Color(0xFFF4F8F5),
-              Color(0xFFF8FBF8),
-              Color(0xFFEAF2ED),
-            ],
+            colors: AppColors.backgroundGradient,
           ),
         ),
         child: SafeArea(
@@ -60,9 +56,9 @@ class PetsScaffold extends StatelessWidget {
                       IconButton(
                         onPressed: onBack,
                         icon: const Icon(Icons.arrow_back_rounded),
-                        color: Colors.white,
+                        color: AppColors.onPrimary,
                         style: IconButton.styleFrom(
-                          backgroundColor: const Color(0xFF163A35),
+                          backgroundColor: AppColors.primaryStrong,
                         ),
                       ),
                       const SizedBox(width: AppSpacing.sm),
@@ -98,7 +94,7 @@ class PetsScaffold extends StatelessWidget {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          const Icon(Icons.pets, size: 14, color: AppColors.accent),
+          const Icon(Icons.pets, size: 14, color: AppColors.secondaryStrong),
           const SizedBox(width: AppSpacing.sm),
           Text(
             context.l10n.petsScaffoldBadge,
@@ -139,7 +135,7 @@ class RoundedSurface extends StatelessWidget {
         border: Border.all(color: borderColor),
         boxShadow: const [
           BoxShadow(
-            color: Color(0x12163A35),
+            color: AppColors.shadowSoft,
             blurRadius: 24,
             offset: Offset(0, 14),
           ),

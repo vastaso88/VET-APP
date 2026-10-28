@@ -231,7 +231,7 @@ class _PetGalleryPageState extends State<PetGalleryPage> {
                 },
               ),
             ListTile(
-              leading: const Icon(Icons.delete_outline, color: Colors.red),
+              leading: const Icon(Icons.delete_outline, color: AppColors.danger),
               title: Text(photo.isVideo
                   ? context.l10n.petsMediaDeleteVideoAction
                   : context.l10n.petsMediaDeletePhotoAction),
@@ -345,20 +345,20 @@ class _PetGalleryPageState extends State<PetGalleryPage> {
           if (_busy || _capture.busy)
             Positioned.fill(
               child: ColoredBox(
-                color: Colors.black.withValues(alpha: 0.35),
+                color: AppColors.scrimSoft,
                 child: Center(
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      PetLoader(label: _capture.progress, color: Colors.white),
+                      PetLoader(label: _capture.progress, color: AppColors.onMedia),
                       if (_capture.compressFraction case final fraction?) ...[
                         const SizedBox(height: AppSpacing.sm),
                         SizedBox(
                           width: 200,
                           child: LinearProgressIndicator(
                             value: fraction,
-                            color: Colors.white,
-                            backgroundColor: Colors.white24,
+                            color: AppColors.onMedia,
+                            backgroundColor: AppColors.onMediaFaint,
                           ),
                         ),
                       ],
@@ -367,8 +367,8 @@ class _PetGalleryPageState extends State<PetGalleryPage> {
                         OutlinedButton(
                           onPressed: _capture.cancelling ? null : _capture.cancel,
                           style: OutlinedButton.styleFrom(
-                            foregroundColor: Colors.white,
-                            side: const BorderSide(color: Colors.white70),
+                            foregroundColor: AppColors.onMedia,
+                            side: const BorderSide(color: AppColors.onMediaMuted),
                           ),
                           child: Text(context.l10n.commonCancel),
                         ),
@@ -419,10 +419,10 @@ class _PetPhotoViewerPageState extends State<PetPhotoViewerPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.black,
+      backgroundColor: AppColors.mediaBackground,
       appBar: AppBar(
-        backgroundColor: Colors.black,
-        foregroundColor: Colors.white,
+        backgroundColor: AppColors.mediaBackground,
+        foregroundColor: AppColors.onMedia,
         elevation: 0,
       ),
       body: FutureBuilder<Uint8List?>(
@@ -431,7 +431,7 @@ class _PetPhotoViewerPageState extends State<PetPhotoViewerPage> {
           final bytes = snapshot.data;
           if (bytes == null) {
             return const Center(
-              child: PetLoader(color: Colors.white),
+              child: PetLoader(color: AppColors.onMedia),
             );
           }
           final caption = widget.caption;
@@ -530,21 +530,21 @@ class _VideoViewerPageState extends State<_VideoViewerPage> {
   Widget build(BuildContext context) {
     final controller = _controller;
     return Scaffold(
-      backgroundColor: Colors.black,
+      backgroundColor: AppColors.mediaBackground,
       appBar: AppBar(
-        backgroundColor: Colors.black,
-        foregroundColor: Colors.white,
+        backgroundColor: AppColors.mediaBackground,
+        foregroundColor: AppColors.onMedia,
         elevation: 0,
       ),
       body: _failed
           ? Center(
               child: Text(
                 context.l10n.petsMediaVideoPlaybackFailed,
-                style: const TextStyle(color: Colors.white),
+                style: const TextStyle(color: AppColors.onMedia),
               ),
             )
           : controller == null
-              ? Center(child: PetLoader(label: context.l10n.petsMediaVideoLoading, color: Colors.white))
+              ? Center(child: PetLoader(label: context.l10n.petsMediaVideoLoading, color: AppColors.onMedia))
               : Column(
                   children: [
                     Expanded(
@@ -561,7 +561,7 @@ class _VideoViewerPageState extends State<_VideoViewerPage> {
                               ),
                             ),
                             if (!controller.value.isPlaying)
-                              const Icon(Icons.play_circle_fill_rounded, size: 72, color: Colors.white70),
+                              const Icon(Icons.play_circle_fill_rounded, size: 72, color: AppColors.onMediaMuted),
                           ],
                         ),
                       ),
@@ -573,9 +573,9 @@ class _VideoViewerPageState extends State<_VideoViewerPage> {
                         controller,
                         allowScrubbing: true,
                         colors: const VideoProgressColors(
-                          playedColor: Colors.white,
-                          bufferedColor: Colors.white38,
-                          backgroundColor: Colors.white24,
+                          playedColor: AppColors.onMedia,
+                          bufferedColor: AppColors.onMediaSoft,
+                          backgroundColor: AppColors.onMediaFaint,
                         ),
                       ),
                     ),
@@ -600,12 +600,12 @@ class _ViewerCaption extends StatelessWidget {
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Icon(Icons.pets_rounded, size: 16, color: Colors.white70),
+            const Icon(Icons.pets_rounded, size: 16, color: AppColors.onMediaMuted),
             const SizedBox(width: AppSpacing.xs),
             Flexible(
               child: Text(
                 text,
-                style: AppTextStyles.bodySmall.copyWith(color: Colors.white),
+                style: AppTextStyles.bodySmall.copyWith(color: AppColors.onMedia),
               ),
             ),
           ],

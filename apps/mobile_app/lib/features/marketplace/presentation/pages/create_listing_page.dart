@@ -622,8 +622,8 @@ class _PhotosSection extends StatelessWidget {
                         onTap: () => onRemove(index),
                         child: const CircleAvatar(
                           radius: 12,
-                          backgroundColor: Colors.black54,
-                          child: Icon(Icons.close, size: 14, color: Colors.white),
+                          backgroundColor: AppColors.scrim,
+                          child: Icon(Icons.close, size: 14, color: AppColors.onMedia),
                         ),
                       ),
                     ),
@@ -739,13 +739,13 @@ class _LocationSection extends StatelessWidget {
         Container(
           padding: const EdgeInsets.all(AppSpacing.md),
           decoration: BoxDecoration(
-            color: AppColors.accentSoft,
+            color: AppColors.secondarySoft,
             borderRadius: BorderRadius.circular(AppRadii.medium),
           ),
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Icon(Icons.shield_outlined, color: AppColors.primary, size: 18),
+              const Icon(Icons.shield_outlined, color: AppColors.secondaryStrong, size: 18),
               const SizedBox(width: AppSpacing.sm),
               Expanded(
                 child: Text(

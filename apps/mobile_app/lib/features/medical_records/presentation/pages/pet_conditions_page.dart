@@ -117,13 +117,13 @@ class _PetConditionsPageState extends State<PetConditionsPage> {
                       Container(
                         padding: const EdgeInsets.all(16),
                         decoration: BoxDecoration(
-                          color: AppColors.accentSoft,
+                          color: AppColors.secondarySoft,
                           borderRadius: BorderRadius.circular(AppRadii.large),
                         ),
                         child: const Icon(
                           conditionIcon,
                           size: 30,
-                          color: AppColors.primary,
+                          color: AppColors.secondaryStrong,
                         ),
                       ),
                       const SizedBox(height: AppSpacing.lg),
@@ -226,13 +226,13 @@ class _ConditionRow extends StatelessWidget {
                 height: 36,
                 alignment: Alignment.center,
                 decoration: BoxDecoration(
-                  color: AppColors.accentSoft,
+                  color: AppColors.secondarySoft,
                   borderRadius: BorderRadius.circular(AppRadii.medium),
                 ),
                 child: const Icon(
                   conditionIcon,
                   size: 17,
-                  color: AppColors.primary,
+                  color: AppColors.secondaryStrong,
                 ),
               ),
               const SizedBox(width: AppSpacing.md),
@@ -264,7 +264,7 @@ class _ConditionRow extends StatelessWidget {
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                 decoration: BoxDecoration(
                   color: condition.ongoing
-                      ? AppColors.accentSoft
+                      ? AppColors.secondarySoft
                       : AppColors.background,
                   borderRadius: BorderRadius.circular(AppRadii.pill),
                   border: Border.all(color: AppColors.border),

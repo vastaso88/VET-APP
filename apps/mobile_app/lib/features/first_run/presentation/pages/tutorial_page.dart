@@ -145,7 +145,7 @@ class _SlideView extends StatelessWidget {
                   color: AppColors.primary.withValues(alpha: 0.12),
                   borderRadius: BorderRadius.circular(AppRadii.xxl),
                 ),
-                child: Icon(slide.icon, size: 44, color: AppColors.primary),
+                child: Icon(slide.icon, size: 44, color: AppColors.secondaryStrong),
               ),
               const SizedBox(height: AppSpacing.xl),
               Text(

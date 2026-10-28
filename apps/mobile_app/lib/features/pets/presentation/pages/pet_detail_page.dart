@@ -126,13 +126,13 @@ class _PetDetailPageState extends State<PetDetailPage> {
                     ),
                   ),
           icon: const Icon(Icons.photo_library_outlined),
-          color: Colors.white,
+          color: AppColors.onPrimary,
           style: IconButton.styleFrom(backgroundColor: AppColors.primaryStrong),
         ),
         IconButton(
           onPressed: pet == null ? null : () => _openEdit(context, pet),
           icon: const Icon(Icons.edit_outlined),
-          color: Colors.white,
+          color: AppColors.onPrimary,
           style: IconButton.styleFrom(backgroundColor: AppColors.primaryStrong),
         ),
       ],
@@ -1322,7 +1322,7 @@ class _WalkCard extends StatelessWidget {
                           Container(
                             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                             decoration: BoxDecoration(
-                              color: AppColors.accentSoft,
+                              color: AppColors.secondarySoft,
                               borderRadius: BorderRadius.circular(AppRadii.pill),
                             ),
                             child: Text(
@@ -1382,10 +1382,10 @@ class _RowIcon extends StatelessWidget {
       height: 36,
       alignment: Alignment.center,
       decoration: BoxDecoration(
-        color: AppColors.accentSoft,
+        color: AppColors.secondarySoft,
         borderRadius: BorderRadius.circular(AppRadii.medium),
       ),
-      child: Icon(icon, size: 17, color: AppColors.primary),
+      child: Icon(icon, size: 17, color: AppColors.secondaryStrong),
     );
   }
 }

@@ -348,7 +348,7 @@ class _PetConditionFormPageState extends State<PetConditionFormPage> {
                           children: [
                             const Icon(
                               Icons.attach_file_rounded,
-                              color: AppColors.primary,
+                              color: AppColors.secondaryStrong,
                             ),
                             const SizedBox(width: AppSpacing.sm),
                             Expanded(
@@ -471,7 +471,7 @@ class _DateField extends StatelessWidget {
       pickIcon: const Icon(
         Icons.calendar_today_outlined,
         size: 18,
-        color: AppColors.primary,
+        color: AppColors.secondaryStrong,
       ),
       style: AppTextStyles.bodySmall.copyWith(color: AppColors.text),
       decoration: _decoration(hint: context.l10n.medDatePlaceholder),

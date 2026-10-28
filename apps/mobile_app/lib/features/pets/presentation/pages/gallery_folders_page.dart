@@ -50,9 +50,9 @@ class _GalleryFoldersPageState extends State<GalleryFoldersPage> {
                   IconButton(
                     onPressed: () => Navigator.of(context).maybePop(),
                     icon: const Icon(Icons.arrow_back_rounded),
-                    color: Colors.white,
+                    color: AppColors.onPrimary,
                     style: IconButton.styleFrom(
-                        backgroundColor: const Color(0xFF163A35)),
+                        backgroundColor: AppColors.primaryStrong),
                   ),
                   const SizedBox(width: AppSpacing.sm),
                   Expanded(

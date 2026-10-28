@@ -1,0 +1,64 @@
+<!doctype html><html lang="it"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Palette 60/30/10</title>
+<style>
+body{margin:0;padding:20px 16px;font-family:system-ui,sans-serif;background:#fff;color:#222}
+.pal{background:var(--bg);color:var(--text);padding:16px;border-radius:12px;margin-bottom:24px}
+h2{margin:0 0 12px}.cols{display:flex;gap:24px;flex-wrap:wrap}
+.phone{width:300px;background:var(--bg);border:1px solid var(--border);border-radius:20px;padding:16px;position:relative}
+.phone small{color:var(--sec-text)}.phone h3{margin:2px 0 10px;font-size:1.6rem}
+.card{background:var(--white);border:1px solid var(--border);border-radius:18px;padding:12px;margin-bottom:10px}
+.card.soft{background:var(--sage-soft);border-color:var(--sage-soft);color:var(--sage-strong);display:flex;gap:8px;align-items:center;font-weight:600}
+.card em{margin-left:auto;font-style:normal;color:var(--sage)}
+.ico{background:var(--sage-soft);color:var(--sage-strong);border-radius:10px;padding:2px 7px;font-weight:700}
+.cal{display:flex;justify-content:space-between;font-weight:700}.cal span{padding:6px 10px;border-radius:14px}
+.cal .today{background:var(--sage-soft);color:var(--sage-strong)}
+.chips{display:flex;gap:6px;margin:8px 0}.chip{padding:5px 12px;border-radius:999px;background:var(--sage-soft);color:var(--sage-strong);font-size:.85rem;font-weight:600}
+.chip.on{background:var(--accent);color:var(--on-accent)}
+.cta{width:100%;border:0;background:var(--accent);color:var(--on-accent);padding:12px;border-radius:16px;font-weight:700;margin-bottom:8px}
+.ghost{width:100%;background:var(--white);color:var(--accent-strong);border:1px solid var(--border);padding:11px;border-radius:16px;font-weight:700}
+.hint{color:var(--muted);font-size:.8rem}
+.nav{display:flex;justify-content:space-around;border-top:1px solid var(--border);padding-top:8px;font-size:.8rem;color:var(--sec-text)}
+.nav u{text-decoration:none;background:var(--sage-soft);color:var(--sage-strong);padding:3px 10px;border-radius:999px;font-weight:700}
+.swatches{flex:1;min-width:260px}.swatches h4{margin:10px 0 4px}
+.sw{display:flex;align-items:center;gap:8px;margin:3px 0;font-size:.85rem}.sw i{width:26px;height:26px;border-radius:7px;border:1px solid rgba(0,0,0,.15)}.sw span{color:var(--sec-text)}
+</style></head><body>
+<h1>Palette 60/30/10 · proposta e alternativa</h1>
+
+<section class="pal" style="--bg:#F6F1EA;--surface:#FCFAF7;--white:#FFFFFF;--text:#213134;--sec-text:#52645F;--muted:#5E6E6B;--border:#E6DDD2;--sage:#6E9482;--sage-soft:#E4EDE7;--sage-strong:#35604F;--accent:#2E686A;--accent-strong:#214E50;--accent-soft:#DCEBEA;--on-accent:#F9F6F0">
+<h2>Proposta · Petrolio e Salvia (accento attuale)</h2>
+<div class="cols">
+<div class="phone">
+  <small>Buongiorno</small><h3>Ospite</h3>
+  <div class="card"><div class="cal"><span>L</span><span>M</span><span class="today">27</span><span>G</span></div></div>
+  <div class="card soft"><b class="ico">⌂</b> Vicino a me <em>›</em></div>
+  <div class="chips"><span class="chip on">Tutti</span><span class="chip">Cane</span><span class="chip">Gatto</span></div>
+  <button class="cta">Nuovo promemoria</button>
+  <button class="ghost">Annulla</button>
+  <p class="hint">Suggerimento in grigio: #5E6E6B</p>
+  <div class="nav"><u>Home</u><span>Animali</span><span>Impostazioni</span></div>
+</div>
+<div class="swatches">
+  <h4>60% neutro</h4><div class="sw"><i style="background:#F6F1EA"></i><b>background</b><span>#F6F1EA · pagina</span></div><div class="sw"><i style="background:#FCFAF7"></i><b>surface</b><span>#FCFAF7 · schede</span></div><div class="sw"><i style="background:#213134"></i><b>text</b><span>#213134 · testo</span></div><div class="sw"><i style="background:#52645F"></i><b>secondaryText</b><span>#52645F · testo secondario</span></div><div class="sw"><i style="background:#5E6E6B"></i><b>mutedText</b><span>#5E6E6B · suggerimenti</span></div>
+  <h4>30% secondario (salvia)</h4><div class="sw"><i style="background:#6E9482"></i><b>secondary</b><span>#6E9482 · icone/barre</span></div><div class="sw"><i style="background:#E4EDE7"></i><b>secondarySoft</b><span>#E4EDE7 · pannelli, chip</span></div><div class="sw"><i style="background:#35604F"></i><b>secondaryStrong</b><span>#35604F · testo su pannelli</span></div>
+  <h4>10% accento</h4><div class="sw"><i style="background:#2E686A"></i><b>primary</b><span>#2E686A · pulsanti, selezione, link</span></div><div class="sw"><i style="background:#214E50"></i><b>primaryStrong</b><span>#214E50 · pulsante scuro</span></div><div class="sw"><i style="background:#DCEBEA"></i><b>primarySoft</b><span>#DCEBEA · elemento selezionato</span></div>
+</div></div></section>
+
+<section class="pal" style="--bg:#F6F1EA;--surface:#FCFAF7;--white:#FFFFFF;--text:#213134;--sec-text:#52645F;--muted:#5E6E6B;--border:#E6DDD2;--sage:#6E9482;--sage-soft:#E4EDE7;--sage-strong:#35604F;--accent:#AA4730;--accent-strong:#8A3623;--accent-soft:#F9E8E2;--on-accent:#FFFFFF">
+<h2>Alternativa · Salvia e Terracotta (accento diverso)</h2>
+<div class="cols">
+<div class="phone">
+  <small>Buongiorno</small><h3>Ospite</h3>
+  <div class="card"><div class="cal"><span>L</span><span>M</span><span class="today">27</span><span>G</span></div></div>
+  <div class="card soft"><b class="ico">⌂</b> Vicino a me <em>›</em></div>
+  <div class="chips"><span class="chip on">Tutti</span><span class="chip">Cane</span><span class="chip">Gatto</span></div>
+  <button class="cta">Nuovo promemoria</button>
+  <button class="ghost">Annulla</button>
+  <p class="hint">Suggerimento in grigio: #5E6E6B</p>
+  <div class="nav"><u>Home</u><span>Animali</span><span>Impostazioni</span></div>
+</div>
+<div class="swatches">
+  <h4>60% neutro</h4><div class="sw"><i style="background:#F6F1EA"></i><b>background</b><span>#F6F1EA · pagina</span></div><div class="sw"><i style="background:#FCFAF7"></i><b>surface</b><span>#FCFAF7 · schede</span></div><div class="sw"><i style="background:#213134"></i><b>text</b><span>#213134 · testo</span></div><div class="sw"><i style="background:#52645F"></i><b>secondaryText</b><span>#52645F · testo secondario</span></div><div class="sw"><i style="background:#5E6E6B"></i><b>mutedText</b><span>#5E6E6B · suggerimenti</span></div>
+  <h4>30% secondario (salvia)</h4><div class="sw"><i style="background:#6E9482"></i><b>secondary</b><span>#6E9482 · icone/barre</span></div><div class="sw"><i style="background:#E4EDE7"></i><b>secondarySoft</b><span>#E4EDE7 · pannelli, chip</span></div><div class="sw"><i style="background:#35604F"></i><b>secondaryStrong</b><span>#35604F · testo su pannelli</span></div>
+  <h4>10% accento</h4><div class="sw"><i style="background:#AA4730"></i><b>primary</b><span>#AA4730 · pulsanti, selezione, link</span></div><div class="sw"><i style="background:#8A3623"></i><b>primaryStrong</b><span>#8A3623 · pulsante scuro</span></div><div class="sw"><i style="background:#F9E8E2"></i><b>primarySoft</b><span>#F9E8E2 · elemento selezionato</span></div>
+</div></div></section>
+</body></html>

@@ -136,7 +136,7 @@ class _MedicalRecordConsentCardState extends State<MedicalRecordConsentCard> {
                     ),
                     Icon(
                       _expanded ? Icons.expand_less_rounded : Icons.expand_more_rounded,
-                      color: AppColors.primary,
+                      color: AppColors.secondaryStrong,
                     ),
                   ],
                 ),
@@ -186,7 +186,7 @@ class _MedicalRecordConsentCardState extends State<MedicalRecordConsentCard> {
                   ? context.l10n.petsConsentSaveFailed
                   : context.l10n.petsConsentStatusUnavailable,
               style: AppTextStyles.caption.copyWith(
-                color: _status == _CardStatus.saveError ? Colors.red.shade700 : AppColors.mutedText,
+                color: _status == _CardStatus.saveError ? AppColors.dangerStrong : AppColors.mutedText,
               ),
             ),
             const SizedBox(height: AppSpacing.xs),
