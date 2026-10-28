@@ -57,6 +57,13 @@ class SentryCrashTransport implements CrashTransport {
         ..beforeBreadcrumb = ((breadcrumb, hint) => null)
         ..reportPackages = false
         ..sendClientReports = false
+        // Native crashes (unhandled Java/Kotlin, NDK) and ANRs are sent by the
+        // Android SDK with the exception's message, on the next launch and before
+        // Dart runs: scrubCrashEvent could never filter them. So they are off -
+        // privacy before diagnostics. (anrEnabled is ON by default in this
+        // package, so it is switched off explicitly.)
+        ..enableNativeCrashHandling = false
+        ..anrEnabled = false
         ..beforeSend = scrubCrashEvent;
     });
   }
@@ -92,7 +99,86 @@ SentryEvent? scrubCrashEvent(SentryEvent event, Hint hint) {
     exception.value = null;
   }
   event.contexts.removeWhere((key, _) => !_keptContexts.contains(key));
+
+  // What describes the phone stays; what identifies it or its owner does not.
+  // The device and app descriptions are REBUILT from an allowlist of fields
+  // instead of cleaned: that also drops the ones the SDK adds without a typed
+  // field (the installation `id`, the device name - often "<name>'s phone" -,
+  // `device_unique_identifier`, the app's per-device hash, the names of the
+  // screens that were open).
+  final device = event.contexts.device;
+  if (device != null) event.contexts.device = _describeDevice(device);
+  final app = event.contexts.app;
+  if (app != null) event.contexts.app = _describeApp(app);
+
+  for (final exception in event.exceptions ?? const <SentryException>[]) {
+    _scrubFrames(exception.stackTrace);
+  }
+  for (final thread in event.threads ?? const <SentryThread>[]) {
+    _scrubFrames(thread.stacktrace);
+  }
   return event;
+}
+
+/// The phone, as the report needs it (model, system family, memory, screen):
+/// no name, no identifier, no boot time.
+SentryDevice _describeDevice(SentryDevice device) => SentryDevice(
+      family: device.family,
+      model: device.model,
+      modelId: device.modelId,
+      arch: device.arch,
+      manufacturer: device.manufacturer,
+      brand: device.brand,
+      simulator: device.simulator,
+      memorySize: device.memorySize,
+      freeMemory: device.freeMemory,
+      usableMemory: device.usableMemory,
+      lowMemory: device.lowMemory,
+      storageSize: device.storageSize,
+      freeStorage: device.freeStorage,
+      processorCount: device.processorCount,
+      cpuDescription: device.cpuDescription,
+      processorFrequency: device.processorFrequency,
+      screenWidthPixels: device.screenWidthPixels,
+      screenHeightPixels: device.screenHeightPixels,
+      screenDensity: device.screenDensity,
+      screenDpi: device.screenDpi,
+      orientation: device.orientation,
+      deviceType: device.deviceType,
+    );
+
+/// The app, as the report needs it: which build it was. No per-device hash, no
+/// screen names, no start time.
+SentryApp _describeApp(SentryApp app) => SentryApp(
+      name: app.name,
+      version: app.version,
+      identifier: app.identifier,
+      build: app.build,
+      buildType: app.buildType,
+    );
+
+void _scrubFrames(SentryStackTrace? stackTrace) {
+  if (stackTrace == null) return;
+  for (final frame in stackTrace.frames) {
+    frame
+      ..absPath = scrubStackPath(frame.absPath)
+      ..fileName = scrubStackPath(frame.fileName);
+  }
+}
+
+/// A stack frame's file without the build machine's folders (a Windows user
+/// name in `C:\Users\<name>\...`): `package:` and `dart:` paths are kept as they
+/// are; a file path is cut to what follows its last `/lib/`, else to the file
+/// name.
+@visibleForTesting
+String? scrubStackPath(String? path) {
+  if (path == null || path.isEmpty) return path;
+  if (path.startsWith('package:') || path.startsWith('dart:')) return path;
+  final normalized = path.replaceAll(r'\', '/');
+  if (!normalized.contains('/')) return path;
+  final lib = normalized.lastIndexOf('/lib/');
+  if (lib != -1) return normalized.substring(lib + 1);
+  return normalized.substring(normalized.lastIndexOf('/') + 1);
 }
 
 /// The owner's "send error reports" decision as the phone remembers it, so the

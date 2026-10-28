@@ -176,6 +176,20 @@ void main() {
     });
   });
 
+  group('scrubStackPath', () {
+    test('cuts a file path to the package part, keeps package: and dart: paths', () {
+      expect(scrubStackPath(r'C:\Users\mario\VetApp\apps\mobile_app\lib\a\b.dart'), 'lib/a/b.dart');
+      expect(scrubStackPath('/home/mario/work/app/lib/x.dart'), 'lib/x.dart');
+      expect(scrubStackPath('file:///C:/Users/mario/x/test/y_test.dart'), 'y_test.dart');
+      expect(scrubStackPath('package:flutter/src/widgets/framework.dart'),
+          'package:flutter/src/widgets/framework.dart');
+      expect(scrubStackPath('dart:async'), 'dart:async');
+      expect(scrubStackPath('libapp.so'), 'libapp.so');
+      expect(scrubStackPath(null), isNull);
+      expect(scrubStackPath(''), '');
+    });
+  });
+
   group('what leaves the phone (scrubCrashEvent)', () {
     SentryEvent dirtyEvent() {
       final event = SentryEvent(
@@ -187,15 +201,36 @@ void main() {
           SentryException(
             type: 'FormatException',
             value: 'Unexpected character in "Thor ha 3 anni, via Roma 1"',
-            stackTrace: SentryStackTrace(frames: [SentryStackFrame(function: 'parsePet')]),
+            stackTrace: SentryStackTrace(frames: [
+              SentryStackFrame(
+                function: 'parsePet',
+                absPath: r'C:\Users\mario.rossi\Documents\VetApp\apps\mobile_app\lib\pets\pet.dart',
+                fileName: 'file:///C:/Users/mario.rossi/Documents/VetApp/apps/mobile_app/lib/pets/pet.dart',
+              ),
+              SentryStackFrame(
+                function: 'build',
+                absPath: 'package:vet_app_mobile/pets/pet_page.dart',
+                fileName: 'package:vet_app_mobile/pets/pet_page.dart',
+              ),
+            ]),
           ),
         ],
         tags: {'owner': 'mario'},
         serverName: 'laptop-di-mario',
         contexts: Contexts(
-          device: SentryDevice(model: 'Pixel 8'),
+          device: SentryDevice.fromJson({
+            'model': 'Pixel 8',
+            'name': 'Telefono di Mario Rossi',
+            'id': 'a1b2c3d4-installation-id',
+            'device_unique_identifier': 'imei-123456789',
+          }),
           operatingSystem: SentryOperatingSystem(name: 'Android', version: '15'),
-          app: SentryApp(version: '1.2.3', build: '4'),
+          app: SentryApp(
+            version: '1.2.3',
+            build: '4',
+            deviceAppHash: 'hash-per-device',
+            viewNames: ['/pets/thor', '/chat'],
+          ),
         )..['flutter_error_details'] = {
             'context': 'building the pet name "Thor"',
             'information': 'phone 3331234567',
@@ -211,10 +246,37 @@ void main() {
 
       final exception = scrubbed.exceptions!.single;
       expect(exception.type, 'FormatException');
-      expect(exception.stackTrace!.frames.single.function, 'parsePet');
+      expect(exception.stackTrace!.frames.map((frame) => frame.function), ['parsePet', 'build']);
       expect(scrubbed.contexts.device!.model, 'Pixel 8');
       expect(scrubbed.contexts.operatingSystem!.name, 'Android');
       expect(scrubbed.contexts.app!.version, '1.2.3');
+    });
+
+    test('removes what identifies the phone: its name, its installation id, the app hash', () {
+      final scrubbed = scrubCrashEvent(dirtyEvent(), Hint())!;
+
+      final device = scrubbed.contexts.device!;
+      expect(device.model, 'Pixel 8', reason: 'the model is what the report is for');
+      expect(device.name, isNull);
+      expect(device.deviceUniqueIdentifier, isNull);
+      final app = scrubbed.contexts.app!;
+      expect(app.deviceAppHash, isNull);
+      expect(app.viewNames, isNull);
+      expect(app.version, '1.2.3');
+      final json = scrubbed.toJson().toString();
+      for (final secret in ['Mario', 'a1b2c3d4', 'imei-', 'hash-per-device', '/pets/thor']) {
+        expect(json, isNot(contains(secret)), reason: secret);
+      }
+    });
+
+    test('stack frames carry no folder of the build machine, package paths are kept', () {
+      final scrubbed = scrubCrashEvent(dirtyEvent(), Hint())!;
+      final frames = scrubbed.exceptions!.single.stackTrace!.frames;
+
+      expect(frames[0].absPath, 'lib/pets/pet.dart');
+      expect(frames[0].fileName, 'lib/pets/pet.dart');
+      expect(frames[1].absPath, 'package:vet_app_mobile/pets/pet_page.dart');
+      expect(scrubbed.toJson().toString(), isNot(contains('mario.rossi')));
     });
 
     test(
