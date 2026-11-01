@@ -12,9 +12,7 @@ from __future__ import annotations
 import html
 import re
 
-_PLACEHOLDER = re.compile(
-    r"\[(?:[A-Z][A-Z0-9_]+|(?:da|togliere)\s[^\]]*)\]"
-)
+_PLACEHOLDER = re.compile(r"\[(?:[A-Z][A-Z0-9_]+|(?:da|togliere)\s[^\]]*)\]")
 _LINK = re.compile(r"\[([^\]]+)\]\(([^)\s]+)\)")
 _BOLD = re.compile(r"\*\*(.+?)\*\*")
 _CODE = re.compile(r"`([^`]+)`")
@@ -68,7 +66,9 @@ def convert(source: str) -> tuple[str, list[tuple[str, str]]]:
             head, rows = _cells(block[0]), [_cells(r) for r in block[2:]]
             for row in rows:
                 if len(row) != len(head):
-                    raise ValueError(f"table row has {len(row)} cells, expected {len(head)}: {row[:2]}")
+                    raise ValueError(
+                        f"table row has {len(row)} cells, expected {len(head)}: {row[:2]}"
+                    )
             th = "".join(f'<th scope="col">{inline(c)}</th>' for c in head)
             body = "".join(
                 "<tr>" + "".join(f"<td>{inline(c)}</td>" for c in row) + "</tr>" for row in rows

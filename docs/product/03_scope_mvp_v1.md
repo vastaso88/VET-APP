@@ -51,7 +51,7 @@ Validare il primo loop di valore consumer con una versione semplice, usabile e f
 - matching con assicurazioni
 - upload e interpretazione avanzata di PDF clinici
 - piani dietetici complessi e personalizzazione profonda
-- modulo comportamentale esteso
+- modulo comportamentale esteso (**riaperto il 2026-11-01**: il comportamento e la relazione sono il centro del prodotto, vedi `11_…`)
 - computer vision
 - app mobile nativa
 - multilingua reale di lancio

@@ -9,6 +9,8 @@ Rendere semplice e utile un primo caso d'uso: un proprietario inserisce il profi
 ## Posizionamento iniziale
 **Assistente pet evidence-based per proprietari di animali.**
 
+> **Superato il 2026-11-01.** Il centro del prodotto è la consapevolezza del proprietario: Quokka è uno strumento di divulgazione che aiuta chi vive con un animale a capirlo e a gestirlo bene (etologia, relazione, gestione quotidiana, salute, doveri), con risposte basate su evidenze e posizioni ufficiali. Non è un corso e non rilascia attestati. Definizione, aree e piano in `11_riposizionamento_consapevolezza_proprietario.md`.
+
 Non è:
 - un sostituto del veterinario
 - un gestionale per cliniche

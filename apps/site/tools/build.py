@@ -27,11 +27,13 @@ LANGS = ["it"]  # add "en", "de", ... here once pages_<lang>.py exists
 DRAFT = True
 
 
-def _page_shell(lang_mod, *, title: str, description: str, body: str, path: str, nav: bool = True) -> str:
+def _page_shell(
+    lang_mod, *, title: str, description: str, body: str, path: str, nav: bool = True
+) -> str:
     T = lang_mod.UI
     links = "".join(
         f'<li><a href="/{lang_mod.LANG}/{p["slug"]}{"/" if p["slug"] else ""}"'
-        f'{" aria-current=\"page\"" if path == p["slug"] else ""}>{html.escape(p["nav"])}</a></li>'
+        f"{' aria-current="page"' if path == p['slug'] else ''}>{html.escape(p['nav'])}</a></li>"
         for p in lang_mod.PAGES
         if p.get("nav")
     )
@@ -83,7 +85,9 @@ def _legal_body(lang_mod, page: dict) -> str:
     toc_html = ""
     if page.get("toc") and toc:
         items = "".join(f'<li><a href="#{i}">{t}</a></li>' for i, t in toc)
-        toc_html = f'<nav class="toc" aria-label="{lang_mod.UI["toc_label"]}"><ol>{items}</ol></nav>'
+        toc_html = (
+            f'<nav class="toc" aria-label="{lang_mod.UI["toc_label"]}"><ol>{items}</ol></nav>'
+        )
     banner = f'<p class="draft" role="note">{lang_mod.UI["draft_banner"]}</p>'
     return (
         f"<h1>{html.escape(page['title'])}</h1>\n{banner}\n{page.get('intro', '')}\n{toc_html}\n"
@@ -107,7 +111,7 @@ def build_lang(lang: str) -> None:
         (out_dir / "index.html").write_text(
             _page_shell(
                 lang_mod,
-                title=f'{page["title"]} · Quokka' if page["slug"] else "Quokka",
+                title=f"{page['title']} · Quokka" if page["slug"] else "Quokka",
                 description=page["description"],
                 body=body,
                 path=page["slug"],
@@ -129,7 +133,10 @@ def build_lang(lang: str) -> None:
 
 def build_root() -> None:
     first = LANGS[0]
-    links = "".join(f'<li><a href="/{lang}/" hreflang="{lang}" lang="{lang}">{lang.upper()}</a></li>' for lang in LANGS)
+    links = "".join(
+        f'<li><a href="/{lang}/" hreflang="{lang}" lang="{lang}">{lang.upper()}</a></li>'
+        for lang in LANGS
+    )
     robots = '<meta name="robots" content="noindex, nofollow">\n' if DRAFT else ""
     (SITE_DIR / "index.html").write_text(
         f"""<!doctype html>

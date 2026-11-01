@@ -1,6 +1,6 @@
-# VetApp
+# VetApp (product name: Quokka)
 
-Flutter-first pet-tech app. Flutter web/mobile client + Python/FastAPI backend.
+Flutter-first app for pet owners' awareness: it helps people understand and manage their animal (ethology, relationship, daily care, health, owner duties), evidence-based, not a course and no certificates (`docs/product/11_riposizionamento_consapevolezza_proprietario.md`). Flutter web/mobile client + Python/FastAPI backend.
 
 ## Layout
 - `apps/mobile_app/` — Flutter client (`lib/`), web-first, Supabase auth/storage.

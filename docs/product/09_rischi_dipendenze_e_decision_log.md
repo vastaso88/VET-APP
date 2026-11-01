@@ -39,6 +39,7 @@ Il prodotto può apparire o troppo generico o troppo ostile all'ecosistema veter
 - v1 non include componenti marketplace / B2B
 - il nucleo prodotto è profilo + chat + storico + reminder
 - la misura del successo iniziale è il completamento del core loop e il ritorno d'uso
+- **2026-11-01 (proprietario):** il centro del prodotto passa dalla salute dell'animale alla consapevolezza del proprietario; Quokka è divulgazione (non corso, nessun attestato), il "patentino" è il metro del livello da raggiungere; il modulo comportamentale esce dall'icebox. Piano in `11_riposizionamento_consapevolezza_proprietario.md`
 
 ## Decisioni da prendere presto
 - quali campi minimi entrano nel profilo pet

@@ -36,5 +36,6 @@ o una funzione non ancora pubblica (Mercatino).
   regole, ammorbidirla ("Ci impegniamo a proteggere…") nelle schede non italiane.
 - "Trova … aree cani … (dove i dati sono disponibili)": i dati comunali sono italiani, fuori dall'Italia la mappa usa OpenStreetMap.
 - Numeri e nomi dei fornitori non compaiono nelle schede; compaiono nelle dichiarazioni (`03_…`).
-- Titoli: "VetApp" è un nome provvisorio? Verificare che sia disponibile come nome su entrambi gli store e in ogni paese (conflitti di
-  marchio) prima di impostarlo.
+- Titoli: "Quokka" è il nome deciso (2026-10-27) ma il marchio non è depositato: le schede restano private finché il consulente reale non
+  chiude la verifica (`docs/marchio/`). Dal 2026-11-01 il titolo porta la frase del nuovo centro, "capire il tuo animale"
+  (`docs/product/11_riposizionamento_consapevolezza_proprietario.md`), non più "salute".

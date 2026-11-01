@@ -55,7 +55,7 @@
 - integrazione con software veterinari
 - computer vision
 - piani dietetici avanzati
-- modulo comportamentale avanzato
+- modulo comportamentale avanzato (**riaperto il 2026-11-01**, vedi `11_riposizionamento_consapevolezza_proprietario.md`: fasi 2 e 3)
 - multilingua di espansione
 - contenuti social AI come stream operativo principale
 

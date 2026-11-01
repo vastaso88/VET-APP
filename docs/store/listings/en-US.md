@@ -11,40 +11,40 @@ Store locale: Play en-US · App Store English (U.S.).
 ### Titolo (max 30)
 
 ```text
-VetApp: Pet Health & Care
+Quokka: understand your pet
 ```
 
 ### Descrizione breve (max 80)
 
 ```text
-Pet profiles, health records, reminders and an AI assistant for your pets.
+Why they do it, how to care for them, your duties, when to see the veterinarian.
 ```
 
 ### Descrizione completa (max 4000)
 
 ```text
-VetApp keeps everything about your pet in one place: their profile, health records, reminders and an assistant that answers your questions.
+Quokka helps you understand your pet and care for them well every day: why they behave the way they do, what they need, what your duties are and when to see the veterinarian. Answers are based on scientific sources and official positions, and written for your pet's species.
 
 WHAT YOU CAN DO
-• Create a profile for each animal: dogs, cats, small mammals, birds, reptiles and amphibians, and fish (including aquariums).
-• Keep health records together: reports, vaccinations, weight and notes.
-• Never miss a vaccine or a medication: reminders with notifications on your phone.
-• Ask the AI assistant about your pet's health and care. Answers show their sources and limits and are always labelled as AI-generated.
-• Record dog walks with route, time, distance and photos.
-• Find veterinarians, pet shops and dog areas near you on the map (where data is available).
-• Use the app in your language, with the units, dates and currency of your country.
+• Ask the AI assistant: behavior, living together, feeding, environment, prevention, legal duties. It explains why, says what to do day to day and when it is worth seeing the veterinarian. Answers are always labelled as AI-generated.
+• Create a profile for each animal: dogs, cats, small mammals, birds, reptiles and amphibians, fish (aquariums too).
+• Keep reports, vaccinations, weight and notes together, and have them explained in plain words.
+• Reminders with phone notifications for vaccines, medications and visits.
+• Record walks with your dog: route, time, distance and photos.
+• Find veterinarians, pet shops and dog parks near you on the map (where data is available).
+• Use the app in your language, with your country's units, dates and currency.
 
 IMPORTANT
-VetApp is not a veterinary service and does not replace your veterinarian. It cannot diagnose or prescribe. If your pet seems seriously unwell, contact your veterinarian or an emergency veterinarian service straight away.
+Quokka is an information tool: it is not a veterinary service and does not replace your veterinarian, a trainer or a behaviorist. It does not diagnose or prescribe. If your pet seems very unwell, contact your veterinarian or an emergency clinic straight away.
 
 YOUR DATA, YOUR CHOICE
-Health records are only available to the assistant if you allow it for that pet, and you can withdraw your permission at any time. Privacy filters are applied to your questions before they are sent to the AI service. Location is used only while you use the app or record a walk.
+The assistant can read the health record only if you allow it for that animal, and you can withdraw consent at any time. Privacy filters are applied to your questions before they are sent to the AI service. Location is used only while you use the app or record a walk.
 ```
 
 ### Novità di questa versione (max 500)
 
 ```text
-Welcome to VetApp! Pet profiles, health records, reminders for vaccines and medications, an AI assistant and dog walks. The app now speaks more languages and uses your country's units, dates and currency.
+Quokka has a new center: helping you understand your pet, not just look after their health. The assistant explains why they behave as they do, everyday care and your duties; new colors; profiles, records, reminders and walks as before.
 ```
 
 ## App Store
@@ -52,50 +52,50 @@ Welcome to VetApp! Pet profiles, health records, reminders for vaccines and medi
 ### Nome (max 30)
 
 ```text
-VetApp: Pet Health & Care
+Quokka: understand your pet
 ```
 
 ### Sottotitolo (max 30)
 
 ```text
-Health and care for your pets
+Know your pet, care well
 ```
 
 ### Testo promozionale (max 170)
 
 ```text
-Everything about your pet in one app: health records, reminders for vaccines and medications, dog walks and an AI assistant that answers your questions.
+Understand your pet: why they do it, how to care for them, your duties and when to see the veterinarian. Answers based on scientific sources, for every species.
 ```
 
 ### Descrizione (identica alla descrizione completa di Google Play) (max 4000)
 
 ```text
-VetApp keeps everything about your pet in one place: their profile, health records, reminders and an assistant that answers your questions.
+Quokka helps you understand your pet and care for them well every day: why they behave the way they do, what they need, what your duties are and when to see the veterinarian. Answers are based on scientific sources and official positions, and written for your pet's species.
 
 WHAT YOU CAN DO
-• Create a profile for each animal: dogs, cats, small mammals, birds, reptiles and amphibians, and fish (including aquariums).
-• Keep health records together: reports, vaccinations, weight and notes.
-• Never miss a vaccine or a medication: reminders with notifications on your phone.
-• Ask the AI assistant about your pet's health and care. Answers show their sources and limits and are always labelled as AI-generated.
-• Record dog walks with route, time, distance and photos.
-• Find veterinarians, pet shops and dog areas near you on the map (where data is available).
-• Use the app in your language, with the units, dates and currency of your country.
+• Ask the AI assistant: behavior, living together, feeding, environment, prevention, legal duties. It explains why, says what to do day to day and when it is worth seeing the veterinarian. Answers are always labelled as AI-generated.
+• Create a profile for each animal: dogs, cats, small mammals, birds, reptiles and amphibians, fish (aquariums too).
+• Keep reports, vaccinations, weight and notes together, and have them explained in plain words.
+• Reminders with phone notifications for vaccines, medications and visits.
+• Record walks with your dog: route, time, distance and photos.
+• Find veterinarians, pet shops and dog parks near you on the map (where data is available).
+• Use the app in your language, with your country's units, dates and currency.
 
 IMPORTANT
-VetApp is not a veterinary service and does not replace your veterinarian. It cannot diagnose or prescribe. If your pet seems seriously unwell, contact your veterinarian or an emergency veterinarian service straight away.
+Quokka is an information tool: it is not a veterinary service and does not replace your veterinarian, a trainer or a behaviorist. It does not diagnose or prescribe. If your pet seems very unwell, contact your veterinarian or an emergency clinic straight away.
 
 YOUR DATA, YOUR CHOICE
-Health records are only available to the assistant if you allow it for that pet, and you can withdraw your permission at any time. Privacy filters are applied to your questions before they are sent to the AI service. Location is used only while you use the app or record a walk.
+The assistant can read the health record only if you allow it for that animal, and you can withdraw consent at any time. Privacy filters are applied to your questions before they are sent to the AI service. Location is used only while you use the app or record a walk.
 ```
 
 ### Parole chiave (max 100)
 
 ```text
-dog,cat,vet,veterinarian,pet,vaccine,reminder,health records,dog walking,rabbit,medication,puppy
+dog,cat,behavior,dog training,living together,rabbit,pets,reminders,veterinarian
 ```
 
 ### Novità di questa versione (max 4000)
 
 ```text
-Welcome to VetApp! Pet profiles, health records, reminders for vaccines and medications, an AI assistant and dog walks. The app now speaks more languages and uses your country's units, dates and currency.
+Quokka has a new center: helping you understand your pet, not just look after their health. The assistant explains why they behave as they do, everyday care and your duties; new colors; profiles, records, reminders and walks as before.
 ```

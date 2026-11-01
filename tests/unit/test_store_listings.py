@@ -50,6 +50,7 @@ def test_keywords_are_comma_separated_without_waste(code: str) -> None:
     assert all(item == item.strip() and item for item in items), keywords
     assert len({item.lower() for item in items}) == len(items), "duplicate keyword"
     assert "vetapp" not in keywords.lower(), "the app name is already indexed"
+    assert "quokka" not in keywords.lower(), "the app name is already indexed"
 
 
 @pytest.mark.parametrize("code", CODES)

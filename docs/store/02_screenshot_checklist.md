@@ -27,7 +27,7 @@ Le immagini si generano dopo; qui c'è cosa fotografare, con quali testi e quali
 | 2 | Profilo di un animale | Foto, razza, data di nascita nel formato del paese, peso nell'unità del paese |
 | 3 | Cartella clinica | Un referto, una vaccinazione, il consenso all'assistente per quell'animale |
 | 4 | Promemoria | Vaccino e cura in scadenza, data nel formato del paese |
-| 5 | Assistente IA | Una domanda e una risposta con fonti, **badge "generato dall'IA"** visibile |
+| 5 | Assistente IA | Una domanda sul perché di un comportamento e la risposta che lo spiega, con fonti e **badge "generato dall'IA"** visibile |
 | 6 | Urgenza | Risposta che rimanda al veterinario (mostra che l'app non sostituisce il veterinario) |
 | 7 | Passeggiata | Percorso sulla mappa, tempo e distanza nell'unità del paese |
 | 8 | Servizi vicini | Mappa con veterinari e negozi, scheda di un luogo |
@@ -43,7 +43,7 @@ Play: da 2 a 8 immagini per dispositivo (le prime 3 pesano di più nella pagina)
 | 2 | Il profilo di ogni animale | A profile for every pet | Ein Profil für jedes Tier | Un profil pour chaque animal | Un perfil para cada mascota |
 | 3 | La cartella clinica sempre con te | Health records, always with you | Die Gesundheitsakte immer dabei | Le carnet de santé toujours là | Historial clínico siempre contigo |
 | 4 | Mai più un vaccino dimenticato | Never miss a vaccine | Keine Impfung mehr vergessen | Plus aucun vaccin oublié | Ni una vacuna olvidada |
-| 5 | Risposte con fonti e limiti | Answers with sources and limits | Antworten mit Quellen und Grenzen | Réponses avec sources et limites | Respuestas con fuentes y límites |
+| 5 | Perché lo fa? Risposte con fonti | Why do they do that? Answers with sources | Warum tut es das? Antworten mit Quellen | Pourquoi il fait ça ? Réponses sourcées | ¿Por qué lo hace? Respuestas con fuentes |
 | 6 | Per le urgenze, il veterinario | In an emergency, call your vet | Im Notfall: Ihre Tierarztpraxis | En urgence, votre vétérinaire | En urgencias, tu veterinario |
 | 7 | Le passeggiate, passo dopo passo | Dog walks, step by step | Gassirunden, Schritt für Schritt | Vos promenades, pas à pas | Tus paseos, paso a paso |
 | 8 | Servizi per animali vicino a te | Pet services near you | Tierservices in Ihrer Nähe | Services pour animaux près de vous | Servicios para mascotas cerca |
