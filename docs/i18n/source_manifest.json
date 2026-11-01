@@ -12662,6 +12662,114 @@
       "fr": "d1d798c087eaf78041ac692412bad4e64f51a7ed787a56f1e91b7ae08d77c982"
     }
   },
+  "ui:settingsAccountExport": {
+    "source": "b6dad13dc6129b492bb64e82d757931c4e2198b08739add82cb86e19ebe2b7ee",
+    "targets": {
+      "en": "d578a3fc5db626da03fc14a2435754a531f0a6fc25757fd8dc299b0e443467e5",
+      "es": "6c2c4745757707b977d3dc1ace457edc5570d194dbd3d6ee79be06076f43d777",
+      "de": "816ddd91ee9fc3a22de6e4c7715b4dd25dcca753a3b7e2479dea155b42af3332",
+      "fr": "d0ace8ecebb77b60635eae347615f26e516b03da1e592575aae56e0e98f4ba78"
+    }
+  },
+  "ui:settingsAccountExportSubtitle": {
+    "source": "51003c53165a069e912bb7466f2efdd857ab493418535403afcd6ef7e524b99e",
+    "targets": {
+      "en": "3e1fda5d3f015dacc79667b117a43a2c6d53a1b06d88b30705e3ff49a862c9c6",
+      "es": "208c840739f8442d8ce884c919b536317f5e33ebe214d306f49a067f92666e71",
+      "de": "192a2f15b11dd1a17cd03bafd5d7c1cf3295e9cbfb705ffccb4464391e13dc72",
+      "fr": "901266519aa7d95e56cc7008de1051f253c69a4192c64783baf84321f78bb087"
+    }
+  },
+  "ui:accountExportTitle": {
+    "source": "b6dad13dc6129b492bb64e82d757931c4e2198b08739add82cb86e19ebe2b7ee",
+    "targets": {
+      "en": "d578a3fc5db626da03fc14a2435754a531f0a6fc25757fd8dc299b0e443467e5",
+      "es": "6c2c4745757707b977d3dc1ace457edc5570d194dbd3d6ee79be06076f43d777",
+      "de": "816ddd91ee9fc3a22de6e4c7715b4dd25dcca753a3b7e2479dea155b42af3332",
+      "fr": "d0ace8ecebb77b60635eae347615f26e516b03da1e592575aae56e0e98f4ba78"
+    }
+  },
+  "ui:accountExportIntro": {
+    "source": "494f77d943659c267b96c7597774213f1bce07f963aa12b5ee609430e67ffc18",
+    "targets": {
+      "en": "c0062cc2e0ba882c143e4c5b0465f76102545555ee5a214a58ea710f7b786c14",
+      "es": "a68cc3e6435d7dfce690c71c876f53e324e4c9127c73d0465e6b892182d23ae7",
+      "de": "3ffc7f32f3e928d9de1386a70ad2832f4cf91dcd64e9239f62b62a07d9f9aad3",
+      "fr": "8a9051697d333ea9d7d0b5678174ab81d3ef0e3fcfc20af2f18af1156212eaed"
+    }
+  },
+  "ui:accountExportSensitive": {
+    "source": "ebac298a79eced87058f4b758fd702e01290c03ad8cf50693e433e8e00839471",
+    "targets": {
+      "en": "a420f6ea5ec189d284063033a6dfa27d8b155024037a87982255b5610fd8ec2b",
+      "es": "dd5c31d66102ccf940642a2da5a9e6e312e2e5fa98c9bd3ba04a1bc1d3a250b8",
+      "de": "0fe0aa2fbee93e281072f86391ec645c9bd96aefc3e23251ec6eb0b78bbc208d",
+      "fr": "1835dd52a2ed84ce96e60f931385eb91f2169578fa27ab49af4c8be125fa83f1"
+    }
+  },
+  "ui:accountExportButton": {
+    "source": "b6dad13dc6129b492bb64e82d757931c4e2198b08739add82cb86e19ebe2b7ee",
+    "targets": {
+      "en": "d578a3fc5db626da03fc14a2435754a531f0a6fc25757fd8dc299b0e443467e5",
+      "es": "6c2c4745757707b977d3dc1ace457edc5570d194dbd3d6ee79be06076f43d777",
+      "de": "816ddd91ee9fc3a22de6e4c7715b4dd25dcca753a3b7e2479dea155b42af3332",
+      "fr": "d0ace8ecebb77b60635eae347615f26e516b03da1e592575aae56e0e98f4ba78"
+    }
+  },
+  "ui:accountExportWorking": {
+    "source": "ccfcbb63791a210bab52b3c69c117901d9b354bf975d5fe9e9b0fb65133905f4",
+    "targets": {
+      "en": "0e1f217072d77ee0b8078efaf012110a7ba85f17f2c37a41854ed716984326e8",
+      "es": "fb483437e4979be95de0b4fe3ce4cf360760080fcb068c7a32978e1714381017",
+      "de": "50ccd47abeab9717ccd653f53d6b063db294f1d293f1e12e4bdac29f6b739005",
+      "fr": "13e28dc34627ba5ec08127f4c5ebf569cab8911d00d06d5e9135275e637e75e8"
+    }
+  },
+  "ui:accountExportDone": {
+    "source": "085382a08853d1a4a58be4d91b75368b0141272a1a98b81491a836f0ef96e057",
+    "targets": {
+      "en": "9464f91769219033e3f1a38a7676898092d7d882188752631bee4a22d58a126a",
+      "es": "f9af21bbb64252d99c736fe6e05f82d2d31a2628598a0d8224201570683e92d2",
+      "de": "416ad153c0d2eb0f187ed40ce0da62529044ecc88dd38820c344a8aa70e1b3a9",
+      "fr": "0727389aaf0775f33f6780a9c3e37f1634440cdc495fcaed7a8df5ea6289cc43"
+    }
+  },
+  "ui:accountExportRateLimited": {
+    "source": "002c0629d12a4cf2b5c627cd8a646b122f6fe194b9e4ef0426e7eb1f3fa8db6a",
+    "targets": {
+      "en": "19696a9c8f630142b3634977f97cdf690f8446dd8e5d06b7df007944a65cbf17",
+      "es": "a97206904651ef2fd1512ad9159eff536ad0b82676711b31a8e25c06b091d280",
+      "de": "c2e5aabd68a93951b5cf51e1232280fa62ca085ac2d063c751d051e33fa3776f",
+      "fr": "3579a27b5e70121dc12474206dfcf21ede337c4338c5a9bef8b0797a2f551fc6"
+    }
+  },
+  "ui:accountExportFailed": {
+    "source": "b8d2e9fc27f7eee9f9a049a8e72917090e737ca5f67380ed5b8eee6dda8f2a17",
+    "targets": {
+      "en": "0256092061ec2086cc7513102dd29ad5a3fed6646a0419e9494f74ec0ae793e1",
+      "es": "58a7602e33c0dbafa64dbb87c5f013961753175cf7b6806d2d457750a91136ec",
+      "de": "7c228d610295c23e5d753345352ecbc61a41f66bcaefca1a17d1d012e8eed0bb",
+      "fr": "95d7f260ddf3ab225be04f57b08170c23acf1d2062557d95002bf0d2bd408aac"
+    }
+  },
+  "ui:accountExportSaveFailed": {
+    "source": "0e2f4db7d69540d0c2ffd820c359e7371e20f8c93bd4685c3fa9d1c526b74e10",
+    "targets": {
+      "en": "498966639ae89fd94773c7a3596a16951b8deed439b1969cb0122ef233313ea6",
+      "es": "57b1f58bdb935ee3d9d9a0df393001c1943768f334d88b07b24281260b424c48",
+      "de": "75a5b63167abf4766e56f9bd2ed9796cdd2abbd6928855134ddc893187d8e4fb",
+      "fr": "c6173e04808455c1202142b886669e59d94c479aa021502312c0f358d3fe6671"
+    }
+  },
+  "ui:accountExportSaveDialogTitle": {
+    "source": "a65eca8216880bc870c54f7ad4920c4ab1bdcb8faa241f2d237ffc91b1d1ed95",
+    "targets": {
+      "en": "5ccfdc43b2b467093e970602b72ef932a8c48231354784997b09c82c943ea1ca",
+      "es": "eef03cacdd0ef59ebb894dfcdf505f3a84d480d3699ac89b2bf7e0995b1db8bf",
+      "de": "38c0b56a5bb95de1fa2838a97ae8e12bfbd7ae114e8c3af319b46f29efa5ac82",
+      "fr": "ea7fdf7b9844b7931db767d48bdbde7b5712057d26348cd0cfc9bd8cfd30021d"
+    }
+  },
   "ui:accountSupportSubject": {
     "source": "4ac62bab32bd03d7b413d56565858dee7157c13dc5a45d51c09d8a81917a7e0b",
     "targets": {

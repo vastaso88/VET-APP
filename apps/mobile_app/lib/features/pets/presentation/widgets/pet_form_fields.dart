@@ -18,7 +18,7 @@ InputDecoration petFieldDecoration(String label, String hint) {
     labelText: label,
     hintText: hint,
     filled: true,
-    fillColor: Colors.white,
+    fillColor: AppColors.surfaceElevated,
     border: OutlineInputBorder(
       borderRadius: BorderRadius.circular(18),
       borderSide: const BorderSide(color: AppColors.border),
@@ -267,7 +267,7 @@ class PetSwitchTile extends StatelessWidget {
     // A Material (not a decorated Container): the tile paints its ink on the
     // nearest Material, which a coloured box in between would hide.
     return Material(
-      color: Colors.white,
+      color: AppColors.onMedia,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(18),
         side: const BorderSide(color: AppColors.border),

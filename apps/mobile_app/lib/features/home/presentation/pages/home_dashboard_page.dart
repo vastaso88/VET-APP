@@ -95,11 +95,7 @@ class _HomeDashboardPageState extends State<HomeDashboardPage> {
           gradient: LinearGradient(
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
-            colors: [
-              Color(0xFFF9F6F1),
-              Color(0xFFF4EFE7),
-              Color(0xFFEDE6DC),
-            ],
+            colors: AppColors.backgroundGradient,
           ),
         ),
         child: SafeArea(
@@ -451,7 +447,7 @@ class _DayChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final background = isToday ? AppColors.accentSoft : Colors.transparent;
+    final background = isToday ? AppColors.secondarySoft : Colors.transparent;
     const foreground = AppColors.text;
     final shown = markers.take(2).toList();
     final extra = markers.length - shown.length;
@@ -694,7 +690,7 @@ class _SponsorBanner extends StatelessWidget {
             width: 40,
             height: 40,
             decoration: BoxDecoration(
-              color: AppColors.accentSoft,
+              color: AppColors.secondarySoft,
               borderRadius: BorderRadius.circular(AppRadii.medium),
             ),
             child: const Icon(Icons.storefront_outlined,

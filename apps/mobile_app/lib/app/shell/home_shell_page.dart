@@ -236,8 +236,8 @@ class _HomeShellPageState extends State<HomeShellPage> {
 
             return NavigationBar(
               height: 76,
-              backgroundColor: Colors.white,
-              indicatorColor: AppColors.accentSoft,
+              backgroundColor: AppColors.surfaceElevated,
+              indicatorColor: AppColors.secondarySoft,
               selectedIndex: _currentIndex,
               onDestinationSelected: _handleDestinationSelected,
               destinations: _bottomDestinations,
@@ -271,7 +271,7 @@ class _HomeShellPageState extends State<HomeShellPage> {
                 border: Border.all(color: AppColors.border),
                 boxShadow: const [
                   BoxShadow(
-                    color: Color(0x14000000),
+                    color: AppColors.shadowSoft,
                     blurRadius: 28,
                     offset: Offset(0, 12),
                   ),
@@ -283,7 +283,7 @@ class _HomeShellPageState extends State<HomeShellPage> {
                     extended: isExtendedRail,
                     minExtendedWidth: 228,
                     backgroundColor: AppColors.primary,
-                    indicatorColor: AppColors.accentSoft,
+                    indicatorColor: AppColors.secondarySoft,
                     selectedIndex: _currentIndex,
                     onDestinationSelected: _handleDestinationSelected,
                     labelType: isExtendedRail
@@ -294,7 +294,7 @@ class _HomeShellPageState extends State<HomeShellPage> {
                       fontWeight: FontWeight.w600,
                     ),
                     unselectedLabelTextStyle: const TextStyle(
-                      color: Color(0xFFE7EEE9),
+                      color: AppColors.secondarySoft,
                     ),
                     leading: Padding(
                       padding: const EdgeInsets.fromLTRB(18, 20, 18, 12),
@@ -464,7 +464,7 @@ class _ShellBrand extends StatelessWidget {
           width: 44,
           height: 44,
           decoration: BoxDecoration(
-            color: AppColors.accentSoft.withValues(alpha: 0.18),
+            color: AppColors.secondarySoft.withValues(alpha: 0.18),
             borderRadius: BorderRadius.circular(14),
           ),
           child: const Icon(
@@ -509,7 +509,7 @@ class _RailFooter extends StatelessWidget {
       child: Text(
         context.l10n.shellRailFooter,
         style: Theme.of(context).textTheme.bodySmall?.copyWith(
-              color: const Color(0xFFCEE0D8),
+              color: AppColors.secondaryMid,
             ),
       ),
     );

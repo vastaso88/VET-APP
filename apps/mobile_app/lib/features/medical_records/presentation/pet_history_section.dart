@@ -92,7 +92,7 @@ class _PetHistorySectionState extends State<PetHistorySection> {
                 tooltip: l10n.medHistoryPrevMonth,
                 onPressed: () => _shiftMonth(-1),
                 icon: const Icon(Icons.chevron_left_rounded),
-                color: AppColors.primary,
+                color: AppColors.secondaryStrong,
               ),
               Expanded(
                 child: Text(
@@ -108,7 +108,7 @@ class _PetHistorySectionState extends State<PetHistorySection> {
                 tooltip: l10n.medHistoryNextMonth,
                 onPressed: () => _shiftMonth(1),
                 icon: const Icon(Icons.chevron_right_rounded),
-                color: AppColors.primary,
+                color: AppColors.secondaryStrong,
               ),
             ],
           ),
@@ -218,7 +218,7 @@ class _DayCell extends StatelessWidget {
           height: _cellHeight,
           margin: const EdgeInsets.all(1.5),
           decoration: BoxDecoration(
-            color: isSelected ? AppColors.accentSoft : null,
+            color: isSelected ? AppColors.secondarySoft : null,
             borderRadius: BorderRadius.circular(AppRadii.medium),
             border: isSelected || isToday
                 ? Border.all(
@@ -248,7 +248,7 @@ class _DayCell extends StatelessWidget {
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       for (final icon in shown)
-                        Icon(icon, size: 11, color: AppColors.primary),
+                        Icon(icon, size: 11, color: AppColors.secondaryStrong),
                       if (extra > 0)
                         Text(
                           '+$extra',
@@ -299,10 +299,10 @@ class _EventTile extends StatelessWidget {
                 height: 32,
                 alignment: Alignment.center,
                 decoration: BoxDecoration(
-                  color: AppColors.accentSoft,
+                  color: AppColors.secondarySoft,
                   borderRadius: BorderRadius.circular(AppRadii.medium),
                 ),
-                child: Icon(event.icon, size: 17, color: AppColors.primary),
+                child: Icon(event.icon, size: 17, color: AppColors.secondaryStrong),
               ),
               const SizedBox(width: AppSpacing.sm),
               Expanded(

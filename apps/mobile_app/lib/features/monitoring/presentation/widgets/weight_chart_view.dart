@@ -207,7 +207,7 @@ class WeightChartView extends StatelessWidget {
     return LineTooltipItem(
       '${formatMeasuredWeight(measurement.weightKg, system)}\n$when',
       AppTextStyles.caption
-          .copyWith(color: Colors.white, fontWeight: FontWeight.w700),
+          .copyWith(color: AppColors.onMedia, fontWeight: FontWeight.w700),
     );
   }
 }

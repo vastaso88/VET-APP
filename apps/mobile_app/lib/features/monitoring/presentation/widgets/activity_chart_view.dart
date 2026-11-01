@@ -122,7 +122,7 @@ class ActivityChartView extends StatelessWidget {
                     '${context.l10n.monitoringActivityWeekOf(formatAppDate(week.weekStart, 'd MMM'))}\n'
                     '$value · ${context.l10n.monitoringActivityWalkCount(week.walkCount)}',
                     AppTextStyles.caption.copyWith(
-                        color: Colors.white, fontWeight: FontWeight.w700),
+                        color: AppColors.onMedia, fontWeight: FontWeight.w700),
                   );
                 },
               ),

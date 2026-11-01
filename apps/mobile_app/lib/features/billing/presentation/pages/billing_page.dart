@@ -389,12 +389,12 @@ class _PlanCard extends StatelessWidget {
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: AppSpacing.sm, vertical: 2),
                   decoration: BoxDecoration(
-                    color: AppColors.accentSoft,
+                    color: AppColors.secondarySoft,
                     borderRadius: BorderRadius.circular(AppRadii.pill),
                   ),
                   child: Text(
                     plan.badge!,
-                    style: AppTextStyles.caption.copyWith(color: AppColors.accent),
+                    style: AppTextStyles.caption.copyWith(color: AppColors.primary),
                   ),
                 ),
               ],
@@ -509,7 +509,7 @@ class _AddPaymentMethodRow extends StatelessWidget {
   Widget build(BuildContext context) {
     return _Row(
       icon: Icons.add_circle_outline_rounded,
-      iconColor: AppColors.primary,
+      iconColor: AppColors.secondaryStrong,
       title: context.l10n.billingAddPaymentMethod,
       onTap: onTap,
     );

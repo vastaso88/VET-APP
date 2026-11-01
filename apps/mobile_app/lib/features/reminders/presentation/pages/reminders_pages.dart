@@ -521,7 +521,7 @@ class _MonthCalendarViewState extends State<_MonthCalendarView> {
               IconButton(
                 onPressed: () => _changeMonth(-1),
                 icon: const Icon(Icons.chevron_left_rounded),
-                color: AppColors.primary,
+                color: AppColors.secondaryStrong,
               ),
               Expanded(
                 child: Text(
@@ -533,7 +533,7 @@ class _MonthCalendarViewState extends State<_MonthCalendarView> {
               IconButton(
                 onPressed: () => _changeMonth(1),
                 icon: const Icon(Icons.chevron_right_rounded),
-                color: AppColors.primary,
+                color: AppColors.secondaryStrong,
               ),
             ],
           ),
@@ -639,7 +639,7 @@ class _MonthDayCell extends StatelessWidget {
   Widget build(BuildContext context) {
     final background = isSelected
         ? AppColors.primary
-        : (isToday ? AppColors.accentSoft : Colors.transparent);
+        : (isToday ? AppColors.secondarySoft : Colors.transparent);
     final foreground = isSelected
         ? AppColors.onPrimary
         : (inMonth
@@ -1401,7 +1401,7 @@ class _PickerField extends StatelessWidget {
               ),
               child: Row(
                 children: [
-                  Icon(icon, size: 16, color: AppColors.primary),
+                  Icon(icon, size: 16, color: AppColors.secondaryStrong),
                   const SizedBox(width: AppSpacing.sm),
                   Expanded(
                     child: Text(
@@ -1566,7 +1566,7 @@ class _DurationStepperState extends State<_DurationStepper> {
           onPressed:
               days > _DurationStepper.minDays ? () => widget.onChanged(days - 1) : null,
           icon: const Icon(Icons.remove_circle_outline),
-          color: AppColors.primary,
+          color: AppColors.secondaryStrong,
         ),
         Expanded(
           child: TextFormField(
@@ -1623,7 +1623,7 @@ class _DurationStepperState extends State<_DurationStepper> {
           onPressed:
               days < _DurationStepper.maxDays ? () => widget.onChanged(days + 1) : null,
           icon: const Icon(Icons.add_circle_outline),
-          color: AppColors.primary,
+          color: AppColors.secondaryStrong,
         ),
       ],
     );
@@ -1855,11 +1855,7 @@ class _Shell extends StatelessWidget {
           gradient: LinearGradient(
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
-            colors: [
-              Color(0xFFF8FBF8),
-              Color(0xFFF4F7EE),
-              Color(0xFFEAF0DC),
-            ],
+            colors: AppColors.backgroundGradient,
           ),
         ),
         child: SafeArea(
@@ -1927,9 +1923,9 @@ class _Header extends StatelessWidget {
                   IconButton(
                     onPressed: () => Navigator.of(context).maybePop(),
                     icon: const Icon(Icons.arrow_back_rounded),
-                    color: Colors.white,
+                    color: AppColors.onPrimary,
                     style: IconButton.styleFrom(
-                        backgroundColor: const Color(0xFF163A35)),
+                        backgroundColor: AppColors.primaryStrong),
                   ),
                   const SizedBox(width: AppSpacing.sm),
                   if (pet != null)
@@ -1980,7 +1976,7 @@ class _BrandPill extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         children: [
           const Icon(Icons.notifications_active_outlined,
-              size: 14, color: AppColors.accent),
+              size: 14, color: AppColors.secondaryStrong),
           const SizedBox(width: AppSpacing.sm),
           Flexible(
             child: Text(
@@ -2089,10 +2085,10 @@ class _Card extends StatelessWidget {
           Container(
             padding: const EdgeInsets.all(14),
             decoration: BoxDecoration(
-              color: AppColors.accentSoft,
+              color: AppColors.secondarySoft,
               borderRadius: BorderRadius.circular(18),
             ),
-            child: Icon(icon, size: 28, color: AppColors.primary),
+            child: Icon(icon, size: 28, color: AppColors.secondaryStrong),
           ),
           const SizedBox(height: AppSpacing.lg),
           Text(title, style: AppTextStyles.title),
@@ -2129,7 +2125,7 @@ class _Skeleton extends StatelessWidget {
       width: width,
       height: 16,
       decoration: BoxDecoration(
-        color: AppColors.accentSoft,
+        color: AppColors.secondarySoft,
         borderRadius: BorderRadius.circular(999),
       ),
     );
@@ -2146,13 +2142,13 @@ class _AccentPill extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       decoration: BoxDecoration(
-        color: AppColors.accentSoft,
+        color: AppColors.secondarySoft,
         borderRadius: BorderRadius.circular(AppRadii.pill),
       ),
       child: Text(
         label,
         style: const TextStyle(
-          color: Color(0xFF315E55),
+          color: AppColors.secondaryStrong,
           fontSize: 12,
           fontWeight: FontWeight.w700,
         ),
@@ -2187,10 +2183,10 @@ class _SummaryCard extends StatelessWidget {
           Container(
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
-              color: AppColors.accentSoft,
+              color: AppColors.secondarySoft,
               borderRadius: BorderRadius.circular(18),
             ),
-            child: Icon(icon, color: AppColors.primary),
+            child: Icon(icon, color: AppColors.secondaryStrong),
           ),
           const SizedBox(width: AppSpacing.md),
           Expanded(

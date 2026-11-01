@@ -16,6 +16,7 @@ import '../domain/pet_species_breeds.dart';
 import 'pet_photo_repository.dart';
 import '../domain/pet_identity_colors.dart';
 import '../domain/pet_models.dart';
+import '../../../design_system/tokens/app_colors.dart';
 
 class PetSpeciesOption {
   const PetSpeciesOption({
@@ -46,7 +47,7 @@ class PetDemoStore {
     const PetSpeciesOption(
       label: 'Cane',
       avatarEmoji: '🐶',
-      accentColor: Color(0xFFE7F2EE),
+      accentColor: AppIdentityColors.tintGreen,
       breeds: [
         'Akita',
         'Alano',
@@ -90,7 +91,7 @@ class PetDemoStore {
     const PetSpeciesOption(
       label: 'Gatto',
       avatarEmoji: '🐱',
-      accentColor: Color(0xFFF6EADF),
+      accentColor: AppIdentityColors.tintAmber,
       breeds: [
         'Abissino',
         'American Shorthair',
@@ -122,31 +123,31 @@ class PetDemoStore {
     PetSpeciesOption(
       label: 'Piccoli mammiferi',
       avatarEmoji: '🐹',
-      accentColor: const Color(0xFFF5F0D8),
+      accentColor: AppIdentityColors.tintYellow,
       breeds: smallMammalBreeds,
     ),
     PetSpeciesOption(
       label: 'Uccello',
       avatarEmoji: '🦜',
-      accentColor: const Color(0xFFE3EBF0),
+      accentColor: AppIdentityColors.tintBlue,
       breeds: birdBreeds,
     ),
     PetSpeciesOption(
       label: 'Rettili e anfibi',
       avatarEmoji: '🦎',
-      accentColor: const Color(0xFFEDF0DF),
+      accentColor: AppIdentityColors.tintOlive,
       breeds: reptileAmphibianBreeds,
     ),
     PetSpeciesOption(
       label: 'Pesce',
       avatarEmoji: '🐠',
-      accentColor: const Color(0xFFE1EEEE),
+      accentColor: AppIdentityColors.tintTeal,
       breeds: aquariumFishSpecies,
     ),
     PetSpeciesOption(
       label: 'Altro',
       avatarEmoji: '🐾',
-      accentColor: const Color(0xFFF1E7F3),
+      accentColor: AppIdentityColors.tintViolet,
       breeds: otherAnimalBreeds,
     ),
   ];

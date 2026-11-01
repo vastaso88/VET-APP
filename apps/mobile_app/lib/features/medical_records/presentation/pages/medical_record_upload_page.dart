@@ -513,7 +513,7 @@ class _MedicalRecordUploadPageState extends State<MedicalRecordUploadPage> {
                         pickIcon: const Icon(
                           Icons.calendar_today_outlined,
                           size: 18,
-                          color: AppColors.primary,
+                          color: AppColors.secondaryStrong,
                         ),
                         style: AppTextStyles.bodySmall.copyWith(
                           color: AppColors.text,
@@ -632,7 +632,7 @@ class _SuggestionBanner extends StatelessWidget {
         AppSpacing.xs,
       ),
       decoration: BoxDecoration(
-        color: AppColors.accentSoft,
+        color: AppColors.secondarySoft,
         borderRadius: BorderRadius.circular(AppRadii.medium),
       ),
       child: Row(
@@ -640,7 +640,7 @@ class _SuggestionBanner extends StatelessWidget {
           const Icon(
             Icons.lightbulb_outline_rounded,
             size: 18,
-            color: AppColors.primary,
+            color: AppColors.secondaryStrong,
           ),
           const SizedBox(width: AppSpacing.sm),
           Expanded(child: Text(text, style: AppTextStyles.caption)),
@@ -683,13 +683,13 @@ class _PickArea extends StatelessWidget {
                 width: 44,
                 height: 44,
                 decoration: BoxDecoration(
-                  color: AppColors.accentSoft,
+                  color: AppColors.secondarySoft,
                   borderRadius: BorderRadius.circular(AppRadii.medium),
                 ),
                 child: const Icon(
                   Icons.upload_file_outlined,
                   size: 22,
-                  color: AppColors.primary,
+                  color: AppColors.secondaryStrong,
                 ),
               ),
               const SizedBox(width: AppSpacing.md),
@@ -741,7 +741,7 @@ class _PickedFileCard extends StatelessWidget {
             width: 44,
             height: 44,
             decoration: BoxDecoration(
-              color: AppColors.accentSoft,
+              color: AppColors.secondarySoft,
               borderRadius: BorderRadius.circular(AppRadii.medium),
             ),
             child: const Icon(

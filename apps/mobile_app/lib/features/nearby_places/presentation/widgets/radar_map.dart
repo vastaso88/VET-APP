@@ -94,7 +94,7 @@ class RadarMap extends StatelessWidget {
                 decoration: BoxDecoration(
                   color: AppColors.primary,
                   shape: BoxShape.circle,
-                  border: Border.all(color: Colors.white, width: 3),
+                  border: Border.all(color: AppColors.onMedia, width: 3),
                 ),
               ),
             ),
@@ -158,12 +158,12 @@ class _ClusteredMarkers extends StatelessWidget {
                 decoration: BoxDecoration(
                   color: AppColors.text,
                   shape: BoxShape.circle,
-                  border: Border.all(color: Colors.white, width: 2),
+                  border: Border.all(color: AppColors.onMedia, width: 2),
                 ),
                 child: Text(
                   '${group.length}',
                   style: AppTextStyles.caption.copyWith(
-                    color: Colors.white,
+                    color: AppColors.onMedia,
                     fontWeight: FontWeight.w700,
                   ),
                 ),
@@ -194,16 +194,16 @@ class _ClusteredMarkers extends StatelessWidget {
                 width: 30,
                 height: 30,
                 decoration: BoxDecoration(
-                  color: item.pending ? Colors.white : item.category.color,
+                  color: item.pending ? AppColors.onMedia : item.category.color,
                   shape: BoxShape.circle,
                   border: Border.all(
-                    color: item.pending ? item.category.color : Colors.white,
+                    color: item.pending ? item.category.color : AppColors.onMedia,
                     width: 2,
                   ),
                 ),
                 child: Icon(
                   item.category.icon,
-                  color: item.pending ? item.category.color : Colors.white,
+                  color: item.pending ? item.category.color : AppColors.onMedia,
                   size: 16,
                 ),
               ),

@@ -46,7 +46,7 @@ class BodyConditionPicker extends StatelessWidget {
       width: double.infinity,
       padding: const EdgeInsets.all(AppSpacing.md),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: AppColors.onMedia,
         borderRadius: BorderRadius.circular(AppRadii.medium),
         border: Border.all(color: AppColors.border),
       ),

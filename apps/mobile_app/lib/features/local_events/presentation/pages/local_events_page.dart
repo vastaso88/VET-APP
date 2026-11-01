@@ -1136,7 +1136,7 @@ class _ClinicRow extends StatelessWidget {
             ),
           IconButton(
             tooltip: context.l10n.localEventsDirectionsTooltip(entry.title),
-            icon: const Icon(Icons.directions_outlined, color: AppColors.primary),
+            icon: const Icon(Icons.directions_outlined, color: AppColors.secondaryStrong),
             onPressed: () => openDirections(entry.location),
           ),
         ],

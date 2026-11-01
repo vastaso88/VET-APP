@@ -4,22 +4,23 @@ import '../../../l10n/date_formats.dart';
 import '../../../l10n/l10n.dart';
 import '../../local_activities/domain/local_activity.dart';
 import '../domain/radar_place.dart';
+import '../../../design_system/tokens/app_colors.dart';
 
 /// The single category vocabulary of the radar page: every list row, map
 /// marker, quick filter and legend entry reads its label, icon and color
 /// from here, so a category always looks the same wherever it appears.
 enum RadarCategory {
-  veterinary(Icons.local_hospital, Color(0xFFB3261E)),
-  shop(Icons.storefront, Color(0xFF8A5A00)),
-  dogPark(Icons.park, Color(0xFF2E7D32)),
-  shelter(Icons.cottage, Color(0xFF3949AB)),
-  association(Icons.groups, Color(0xFFBF360C)),
-  grooming(Icons.content_cut, Color(0xFF7B4FA3)),
-  hotel(Icons.night_shelter, Color(0xFF1F6FA5)),
-  school(Icons.school, Color(0xFF00796B)),
-  petSitting(Icons.volunteer_activism, Color(0xFFAD1457)),
-  breeder(Icons.pets, Color(0xFF6D4C41)),
-  other(Icons.place, Color(0xFF546E7A));
+  veterinary(Icons.local_hospital, AppCategoryColors.veterinary),
+  shop(Icons.storefront, AppCategoryColors.shop),
+  dogPark(Icons.park, AppCategoryColors.dogPark),
+  shelter(Icons.cottage, AppCategoryColors.shelter),
+  association(Icons.groups, AppCategoryColors.association),
+  grooming(Icons.content_cut, AppCategoryColors.grooming),
+  hotel(Icons.night_shelter, AppCategoryColors.hotel),
+  school(Icons.school, AppCategoryColors.school),
+  petSitting(Icons.volunteer_activism, AppCategoryColors.petSitting),
+  breeder(Icons.pets, AppCategoryColors.breeder),
+  other(Icons.place, AppCategoryColors.other);
 
   const RadarCategory(this.icon, this.color);
 
@@ -207,9 +208,9 @@ class RadarPendingMark extends StatelessWidget {
       height: size,
       alignment: Alignment.center,
       decoration: BoxDecoration(
-        color: const Color(0xFFD8A35A),
+        color: AppColors.warning,
         shape: BoxShape.circle,
-        border: Border.all(color: Colors.white, width: 1.5),
+        border: Border.all(color: AppColors.onMedia, width: 1.5),
       ),
       child: Text(
         '?',
@@ -217,7 +218,7 @@ class RadarPendingMark extends StatelessWidget {
           fontSize: size * 0.62,
           height: 1,
           fontWeight: FontWeight.w800,
-          color: const Color(0xFF213134),
+          color: AppColors.text,
         ),
       ),
     );

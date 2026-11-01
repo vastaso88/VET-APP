@@ -165,7 +165,7 @@ class _MeasurementSheetState extends State<MeasurementSheet> {
         hintText: hint,
         suffixIcon: suffix,
         filled: true,
-        fillColor: Colors.white,
+        fillColor: AppColors.surfaceElevated,
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(AppRadii.medium),
           borderSide: const BorderSide(color: AppColors.border),

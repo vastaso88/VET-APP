@@ -2939,6 +2939,18 @@
   "settingsAccountSupportSubtitle": "Escríbenos un correo",
   "settingsAccountDelete": "Eliminar cuenta",
   "settingsAccountDeleteSubtitle": "Borra tu cuenta y todos tus datos",
+  "settingsAccountExport": "Descargar mis datos",
+  "settingsAccountExportSubtitle": "Todos tus datos en un archivo",
+  "accountExportTitle": "Descargar mis datos",
+  "accountExportIntro": "Recibe un archivo con todos los datos de tu cuenta: perfil, animales, informes, chats, recordatorios, paseos, consentimientos y anuncios. Incluye enlaces a tus archivos (fotos, adjuntos), válidos durante 15 minutos.",
+  "accountExportSensitive": "El archivo puede contener datos sensibles tuyos y de tus animales: guárdalo con cuidado y no lo compartas.",
+  "accountExportButton": "Descargar mis datos",
+  "accountExportWorking": "Preparando tus datos…",
+  "accountExportDone": "Archivo guardado.",
+  "accountExportRateLimited": "Has pedido tus datos hace poco: inténtalo de nuevo en unos minutos",
+  "accountExportFailed": "No hemos podido preparar tus datos. Inténtalo de nuevo en un momento.",
+  "accountExportSaveFailed": "No hemos podido guardar el archivo. Inténtalo de nuevo.",
+  "accountExportSaveDialogTitle": "Guardar tus datos",
   "accountSupportSubject": "Asistencia Quokka (versión {version})",
   "@accountSupportSubject": {
     "placeholders": {

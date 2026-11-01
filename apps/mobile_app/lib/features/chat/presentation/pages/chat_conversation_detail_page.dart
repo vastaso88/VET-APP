@@ -521,7 +521,7 @@ class _NewConversationPlaceholder extends StatelessWidget {
               width: 56,
               height: 56,
               decoration: BoxDecoration(
-                color: AppColors.accentSoft,
+                color: AppColors.secondarySoft,
                 borderRadius: BorderRadius.circular(18),
               ),
               child: const Icon(

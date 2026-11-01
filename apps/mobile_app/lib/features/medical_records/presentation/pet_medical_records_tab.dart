@@ -145,7 +145,7 @@ class _PetMedicalRecordsTabState extends State<PetMedicalRecordsTab> {
                 if (category.isOfferedFor(widget.pet.species,
                     breed: widget.pet.breed))
                   ListTile(
-                    leading: Icon(category.icon, color: AppColors.primary),
+                    leading: Icon(category.icon, color: AppColors.secondaryStrong),
                     title: Text(category.singularLabel(l10n)),
                     onTap: () {
                       Navigator.of(sheetContext).pop();
@@ -153,7 +153,7 @@ class _PetMedicalRecordsTabState extends State<PetMedicalRecordsTab> {
                     },
                   ),
               ListTile(
-                leading: const Icon(conditionIcon, color: AppColors.primary),
+                leading: const Icon(conditionIcon, color: AppColors.secondaryStrong),
                 title: Text(l10n.medCatCondition),
                 onTap: () {
                   Navigator.of(sheetContext).pop();
@@ -197,7 +197,7 @@ class _PetMedicalRecordsTabState extends State<PetMedicalRecordsTab> {
                 contentPadding: EdgeInsets.zero,
                 leading: const Icon(
                   Icons.picture_as_pdf_outlined,
-                  color: AppColors.primary,
+                  color: AppColors.secondaryStrong,
                 ),
                 title: Text(sheetContext.l10n.medHistorySendAll),
                 subtitle: Text(sheetContext.l10n.medHistorySendAllSubtitle),
@@ -221,7 +221,7 @@ class _PetMedicalRecordsTabState extends State<PetMedicalRecordsTab> {
                   contentPadding: EdgeInsets.zero,
                   leading: Icon(
                     record.category.icon,
-                    color: AppColors.primary,
+                    color: AppColors.secondaryStrong,
                   ),
                   title: Text(
                     record.title,
@@ -390,10 +390,10 @@ class _CategoryTile extends StatelessWidget {
                 height: 40,
                 alignment: Alignment.center,
                 decoration: BoxDecoration(
-                  color: AppColors.accentSoft,
+                  color: AppColors.secondarySoft,
                   borderRadius: BorderRadius.circular(AppRadii.medium),
                 ),
-                child: Icon(icon, size: 20, color: AppColors.primary),
+                child: Icon(icon, size: 20, color: AppColors.secondaryStrong),
               ),
               const SizedBox(width: AppSpacing.sm),
               Expanded(

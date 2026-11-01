@@ -39,10 +39,10 @@ class ComingSoonPage extends StatelessWidget {
                 width: 72,
                 height: 72,
                 decoration: BoxDecoration(
-                  color: AppColors.accentSoft,
+                  color: AppColors.secondarySoft,
                   borderRadius: BorderRadius.circular(AppRadii.xl),
                 ),
-                child: Icon(icon, size: 32, color: AppColors.primary),
+                child: Icon(icon, size: 32, color: AppColors.secondaryStrong),
               ),
               const SizedBox(height: AppSpacing.xl),
               Text(context.l10n.sharedComingSoon, style: AppTextStyles.title),

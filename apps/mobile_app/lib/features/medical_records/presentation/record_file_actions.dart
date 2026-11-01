@@ -108,7 +108,7 @@ Future<void> showRecordActions(
               },
             ),
             ListTile(
-              leading: const Icon(Icons.delete_outline, color: Colors.red),
+              leading: const Icon(Icons.delete_outline, color: AppColors.danger),
               title: Text(sheetContext.l10n.commonDelete),
               onTap: () {
                 Navigator.of(sheetContext).pop();
@@ -280,10 +280,10 @@ class RecordImageViewer extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.black,
+      backgroundColor: AppColors.mediaBackground,
       appBar: AppBar(
-        backgroundColor: Colors.black,
-        foregroundColor: Colors.white,
+        backgroundColor: AppColors.mediaBackground,
+        foregroundColor: AppColors.onMedia,
         title: Text(title, maxLines: 1, overflow: TextOverflow.ellipsis),
       ),
       body: InteractiveViewer(

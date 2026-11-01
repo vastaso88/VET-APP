@@ -531,7 +531,7 @@ class _InfoPill extends StatelessWidget {
       decoration: BoxDecoration(
         color: AppColors.surface,
         borderRadius: BorderRadius.circular(999),
-        boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.15), blurRadius: 6)],
+        boxShadow: const [BoxShadow(color: AppColors.scrimLight, blurRadius: 6)],
       ),
       child: Text(text, style: AppTextStyles.caption),
     );
@@ -551,14 +551,14 @@ class _HeadingIndicator extends StatelessWidget {
     return Container(
       width: 40,
       height: 40,
-      decoration: BoxDecoration(
+      decoration: const BoxDecoration(
         color: AppColors.surface,
         shape: BoxShape.circle,
-        boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.15), blurRadius: 6)],
+        boxShadow: [BoxShadow(color: AppColors.scrimLight, blurRadius: 6)],
       ),
       child: Transform.rotate(
         angle: headingDegrees * (math.pi / 180),
-        child: const Icon(Icons.navigation_rounded, color: AppColors.primary),
+        child: const Icon(Icons.navigation_rounded, color: AppColors.secondaryStrong),
       ),
     );
   }
@@ -574,20 +574,20 @@ class _CaptureOverlay extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ColoredBox(
-      color: Colors.black.withValues(alpha: 0.35),
+      color: AppColors.scrimSoft,
       child: Center(
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            PetLoader(label: capture.progress, color: Colors.white),
+            PetLoader(label: capture.progress, color: AppColors.onMedia),
             if (capture.compressFraction case final fraction?) ...[
               const SizedBox(height: AppSpacing.sm),
               SizedBox(
                 width: 200,
                 child: LinearProgressIndicator(
                   value: fraction,
-                  color: Colors.white,
-                  backgroundColor: Colors.white24,
+                  color: AppColors.onMedia,
+                  backgroundColor: AppColors.onMediaFaint,
                 ),
               ),
             ],
@@ -596,8 +596,8 @@ class _CaptureOverlay extends StatelessWidget {
               OutlinedButton(
                 onPressed: capture.cancelling ? null : capture.cancel,
                 style: OutlinedButton.styleFrom(
-                  foregroundColor: Colors.white,
-                  side: const BorderSide(color: Colors.white70),
+                  foregroundColor: AppColors.onMedia,
+                  side: const BorderSide(color: AppColors.onMediaMuted),
                 ),
                 child: Text(context.l10n.commonCancel),
               ),

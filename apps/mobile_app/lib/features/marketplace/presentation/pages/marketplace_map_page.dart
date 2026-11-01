@@ -189,7 +189,7 @@ class _MarketplaceMapPageState extends State<MarketplaceMapPage> {
                         decoration: BoxDecoration(
                           color: AppColors.info,
                           shape: BoxShape.circle,
-                          border: Border.all(color: Colors.white, width: 3),
+                          border: Border.all(color: AppColors.onMedia, width: 3),
                         ),
                       ),
                     ),
@@ -255,15 +255,15 @@ class _ClusterMarker extends StatelessWidget {
           decoration: BoxDecoration(
             color: AppColors.warning,
             shape: BoxShape.circle,
-            border: Border.all(color: Colors.white, width: 2.5),
+            border: Border.all(color: AppColors.onMedia, width: 2.5),
             boxShadow: const [BoxShadow(color: AppColors.shadow, blurRadius: 6)],
           ),
           alignment: Alignment.center,
           child: single != null
-              ? Icon(listingCategoryIcon(single.category), color: Colors.white, size: 20)
+              ? Icon(listingCategoryIcon(single.category), color: AppColors.onMedia, size: 20)
               : Text(
                   '$count',
-                  style: AppTextStyles.button.copyWith(color: Colors.white),
+                  style: AppTextStyles.button.copyWith(color: AppColors.onMedia),
                 ),
         ),
       ),

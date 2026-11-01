@@ -17,7 +17,7 @@ Future<void> showBadgeEarnedDialog(
     context: context,
     barrierDismissible: true,
     barrierLabel: context.l10n.walksBadgeEarnedBarrier,
-    barrierColor: Colors.black.withValues(alpha: 0.5),
+    barrierColor: AppColors.scrim,
     transitionDuration: const Duration(milliseconds: 300),
     pageBuilder: (context, _, __) =>
         _BadgeEarnedDialog(badgeIds: earnedBadgeIds),
@@ -59,7 +59,7 @@ class _BadgeEarnedDialog extends StatelessWidget {
                 height: 72,
                 alignment: Alignment.center,
                 decoration: const BoxDecoration(
-                    color: AppColors.accentSoft, shape: BoxShape.circle),
+                    color: AppColors.secondarySoft, shape: BoxShape.circle),
                 child: const Icon(Icons.emoji_events_rounded,
                     size: 36, color: AppColors.warning),
               ),

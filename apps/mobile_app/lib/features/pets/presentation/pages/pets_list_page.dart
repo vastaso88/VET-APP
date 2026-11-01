@@ -78,14 +78,14 @@ class _PetsListPageState extends State<PetsListPage> {
           IconButton(
             onPressed: () => _openMemories(context),
             icon: const Icon(Icons.auto_awesome_outlined),
-            color: Colors.white,
+            color: AppColors.onPrimary,
             style: IconButton.styleFrom(backgroundColor: AppColors.secondary),
             tooltip: context.l10n.petsListMemoriesTooltip,
           ),
         IconButton(
           onPressed: () => _openCreate(context),
           icon: const Icon(Icons.add_rounded),
-          color: Colors.white,
+          color: AppColors.onPrimary,
           style: IconButton.styleFrom(backgroundColor: AppColors.primaryStrong),
         ),
       ],

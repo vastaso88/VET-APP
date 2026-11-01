@@ -210,7 +210,7 @@ class _ChatComposerState extends State<ChatComposer> with SingleTickerProviderSt
         border: Border.all(color: AppColors.border),
         boxShadow: const [
           BoxShadow(
-            color: Color(0x0F163A35),
+            color: AppColors.shadowSoft,
             blurRadius: 18,
             offset: Offset(0, 8),
           ),
@@ -658,7 +658,7 @@ class _TranscribingBanner extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md, vertical: AppSpacing.sm),
       decoration: BoxDecoration(
-        color: AppColors.accentSoft,
+        color: AppColors.secondarySoft,
         borderRadius: BorderRadius.circular(14),
       ),
       child: Row(
@@ -685,7 +685,7 @@ class _EditingBanner extends StatelessWidget {
   Widget build(BuildContext context) {
     return Row(
       children: [
-        const Icon(Icons.edit_outlined, size: 16, color: AppColors.primary),
+        const Icon(Icons.edit_outlined, size: 16, color: AppColors.secondaryStrong),
         const SizedBox(width: AppSpacing.xs),
         Expanded(
           child: Text(

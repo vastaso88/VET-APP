@@ -7,6 +7,7 @@ import '../../settings/domain/unit_conversion.dart';
 import '../../settings/domain/unit_system.dart';
 import 'pet_details.dart';
 import 'pet_value_labels.dart';
+import '../../../design_system/tokens/app_colors.dart';
 
 enum PetsScreenStatus {
   loading,
@@ -304,8 +305,8 @@ const samplePets = <PetProfile>[
     healthBadge: 'Stabile',
     nextVisitLabel: 'Vaccino di richiamo tra 12 giorni',
     avatarEmoji: 'M',
-    accentColor: Color(0xFFE7F2EE),
-    identityColor: Color(0xFF2F9E68),
+    accentColor: AppIdentityColors.tintGreen,
+    identityColor: AppIdentityColors.green,
   ),
   PetProfile(
     id: 'pet-oliver',
@@ -320,8 +321,8 @@ const samplePets = <PetProfile>[
     healthBadge: 'Da monitorare',
     nextVisitLabel: 'Controllo dentale la prossima settimana',
     avatarEmoji: 'O',
-    accentColor: Color(0xFFF6EADF),
-    identityColor: Color(0xFFD98C3D),
+    accentColor: AppIdentityColors.tintAmber,
+    identityColor: AppIdentityColors.amber,
   ),
   PetProfile(
     id: 'pet-rex',
@@ -336,8 +337,8 @@ const samplePets = <PetProfile>[
     healthBadge: 'In muta',
     nextVisitLabel: 'Controllo UVB terrario tra 3 giorni',
     avatarEmoji: 'R',
-    accentColor: Color(0xFFEDF0DF),
-    identityColor: Color(0xFF7A8C3D),
+    accentColor: AppIdentityColors.tintOlive,
+    identityColor: AppIdentityColors.olive,
     habitat: HabitatDetails(
       lengthCm: 100,
       widthCm: 50,
@@ -359,8 +360,8 @@ const samplePets = <PetProfile>[
     healthBadge: 'Stabile',
     nextVisitLabel: 'Controllo becco e unghie tra un mese',
     avatarEmoji: 'P',
-    accentColor: Color(0xFFE3EBF0),
-    identityColor: Color(0xFF5B7FD6),
+    accentColor: AppIdentityColors.tintBlue,
+    identityColor: AppIdentityColors.blue,
     habitat: HabitatDetails(
       lengthCm: 60,
       widthCm: 40,
@@ -382,8 +383,8 @@ const samplePets = <PetProfile>[
     healthBadge: 'Stabile',
     nextVisitLabel: 'Cambio acqua tra 5 giorni',
     avatarEmoji: 'A',
-    accentColor: Color(0xFFE1EEEE),
-    identityColor: Color(0xFF3D9E9E),
+    accentColor: AppIdentityColors.tintTeal,
+    identityColor: AppIdentityColors.teal,
     habitat: HabitatDetails(
       lengthCm: 80,
       widthCm: 35,

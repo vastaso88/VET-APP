@@ -330,7 +330,7 @@ class PhotoCaptionStrip extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ColoredBox(
-      color: Colors.black54,
+      color: AppColors.scrim,
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
         child: FittedBox(
@@ -339,12 +339,12 @@ class PhotoCaptionStrip extends StatelessWidget {
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Icon(Icons.pets_rounded, size: 12, color: Colors.white),
+              const Icon(Icons.pets_rounded, size: 12, color: AppColors.onMedia),
               const SizedBox(width: 3),
               Text(
                 text,
                 maxLines: 1,
-                style: AppTextStyles.caption.copyWith(color: Colors.white, fontSize: 11),
+                style: AppTextStyles.caption.copyWith(color: AppColors.onMedia, fontSize: 11),
               ),
             ],
           ),
@@ -366,11 +366,11 @@ class _VideoTile extends StatelessWidget {
     return Semantics(
       label: context.l10n.petsMediaVideoSemantics,
       child: ColoredBox(
-        color: const Color(0xFF163A35),
+        color: AppColors.primaryStrong,
         child: Stack(
           children: [
             const Center(
-              child: Icon(Icons.play_circle_fill_rounded, size: 40, color: Colors.white70),
+              child: Icon(Icons.play_circle_fill_rounded, size: 40, color: AppColors.onMediaMuted),
             ),
             if (durationSeconds != null)
               Positioned(
@@ -379,12 +379,12 @@ class _VideoTile extends StatelessWidget {
                 child: Container(
                   padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                   decoration: BoxDecoration(
-                    color: Colors.black54,
+                    color: AppColors.scrim,
                     borderRadius: BorderRadius.circular(AppRadii.pill),
                   ),
                   child: Text(
                     petVideoDurationLabel(durationSeconds!),
-                    style: AppTextStyles.caption.copyWith(color: Colors.white, fontSize: 11),
+                    style: AppTextStyles.caption.copyWith(color: AppColors.onMedia, fontSize: 11),
                   ),
                 ),
               ),

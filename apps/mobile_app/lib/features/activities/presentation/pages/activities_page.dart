@@ -49,7 +49,7 @@ class ActivitiesPage extends StatelessWidget {
             ),
             _ActivityRow(
               icon: Icons.event_outlined,
-              iconTone: AppColors.accent,
+              iconTone: AppColors.secondaryStrong,
               title: context.l10n.activitiesEventsTitle,
               subtitle: context.l10n.activitiesEventsSubtitle,
               onTap: () => Navigator.of(context)
@@ -73,7 +73,7 @@ class ActivitiesPage extends StatelessWidget {
             ),
             _ActivityRow(
               icon: Icons.favorite_outline,
-              iconTone: AppColors.accent,
+              iconTone: AppColors.secondaryStrong,
               title: context.l10n.activitiesPetFriendTitle,
               subtitle: context.l10n.activitiesPetFriendSubtitle,
               badge: context.l10n.activitiesComingSoonBadge,
@@ -157,7 +157,7 @@ class _ActivityRow extends StatelessWidget {
                           Container(
                             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                             decoration: BoxDecoration(
-                              color: AppColors.accentSoft,
+                              color: AppColors.secondarySoft,
                               borderRadius: BorderRadius.circular(AppRadii.pill),
                             ),
                             child: Text(

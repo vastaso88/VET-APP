@@ -147,8 +147,8 @@ class _NewsFeedPageState extends State<NewsFeedPage> {
                   IconButton(
                     onPressed: () => Navigator.of(context).maybePop(),
                     icon: const Icon(Icons.arrow_back_rounded),
-                    color: Colors.white,
-                    style: IconButton.styleFrom(backgroundColor: const Color(0xFF163A35)),
+                    color: AppColors.onPrimary,
+                    style: IconButton.styleFrom(backgroundColor: AppColors.primaryStrong),
                   ),
                   const SizedBox(width: AppSpacing.sm),
                   Expanded(
@@ -219,7 +219,7 @@ class _RefreshButton extends StatelessWidget {
               height: 20,
               child: PetLoader.small(),
             )
-          : const Icon(Icons.refresh_rounded, color: AppColors.primary),
+          : const Icon(Icons.refresh_rounded, color: AppColors.secondaryStrong),
     );
   }
 }

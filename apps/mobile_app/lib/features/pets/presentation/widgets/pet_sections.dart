@@ -140,9 +140,9 @@ class PetActionButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final backgroundColor =
-        primary ? AppColors.primary : const Color(0xFFF2E9DE);
+        primary ? AppColors.primary : AppColors.secondarySoft;
     final foregroundColor =
-        primary ? AppColors.onPrimary : const Color(0xFF6C4A36);
+        primary ? AppColors.onPrimary : AppColors.secondaryStrong;
 
     return SizedBox(
       width: double.infinity,

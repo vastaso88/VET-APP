@@ -8546,6 +8546,78 @@ abstract class AppLocalizations {
   /// **'Cancella il tuo account e tutti i tuoi dati'**
   String get settingsAccountDeleteSubtitle;
 
+  /// No description provided for @settingsAccountExport.
+  ///
+  /// In it, this message translates to:
+  /// **'Scarica i miei dati'**
+  String get settingsAccountExport;
+
+  /// No description provided for @settingsAccountExportSubtitle.
+  ///
+  /// In it, this message translates to:
+  /// **'Tutti i tuoi dati in un file'**
+  String get settingsAccountExportSubtitle;
+
+  /// No description provided for @accountExportTitle.
+  ///
+  /// In it, this message translates to:
+  /// **'Scarica i miei dati'**
+  String get accountExportTitle;
+
+  /// No description provided for @accountExportIntro.
+  ///
+  /// In it, this message translates to:
+  /// **'Ricevi un file con tutti i dati del tuo account: profilo, animali, referti, chat, promemoria, passeggiate, consensi e annunci. Include i link ai tuoi file (foto, allegati), validi 15 minuti.'**
+  String get accountExportIntro;
+
+  /// No description provided for @accountExportSensitive.
+  ///
+  /// In it, this message translates to:
+  /// **'Il file può contenere dati sensibili tuoi e dei tuoi animali: conservalo con cura e non condividerlo.'**
+  String get accountExportSensitive;
+
+  /// No description provided for @accountExportButton.
+  ///
+  /// In it, this message translates to:
+  /// **'Scarica i miei dati'**
+  String get accountExportButton;
+
+  /// No description provided for @accountExportWorking.
+  ///
+  /// In it, this message translates to:
+  /// **'Preparo i tuoi dati…'**
+  String get accountExportWorking;
+
+  /// No description provided for @accountExportDone.
+  ///
+  /// In it, this message translates to:
+  /// **'File salvato.'**
+  String get accountExportDone;
+
+  /// No description provided for @accountExportRateLimited.
+  ///
+  /// In it, this message translates to:
+  /// **'Hai già richiesto i dati da poco: riprova tra qualche minuto'**
+  String get accountExportRateLimited;
+
+  /// No description provided for @accountExportFailed.
+  ///
+  /// In it, this message translates to:
+  /// **'Non sono riuscito a preparare i dati. Riprova tra poco.'**
+  String get accountExportFailed;
+
+  /// No description provided for @accountExportSaveFailed.
+  ///
+  /// In it, this message translates to:
+  /// **'Non sono riuscito a salvare il file. Riprova.'**
+  String get accountExportSaveFailed;
+
+  /// No description provided for @accountExportSaveDialogTitle.
+  ///
+  /// In it, this message translates to:
+  /// **'Salva i tuoi dati'**
+  String get accountExportSaveDialogTitle;
+
   /// No description provided for @accountSupportSubject.
   ///
   /// In it, this message translates to:
