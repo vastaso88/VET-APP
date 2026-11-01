@@ -142,7 +142,7 @@ Punti esaminati (per la sessione APK). Stato al 2026-10-28 dopo il commit 8f0c59
 1. **Crash nativi** — ✅ risolto. `scrubCrashEvent` è un `beforeSend` **Dart** e non può girare per i crash duri del
    livello nativo (eccezioni Java/Kotlin non gestite, crash NDK, ANR), che l'SDK Android invia con la propria
    elaborazione, messaggio dell'eccezione incluso. In `SentryCrashTransport.start` ora sono spenti sia
-   `enableNativeCrashHandling` sia `anrEnabled`; nota: in `sentry_flutter` 9.0.0 **`anrEnabled` è attivo di default**
+   `enableNativeCrashHandling` sia `anrEnabled`; nota: in `sentry_flutter` 9.x (verificato su 9.0.0 e 9.30.1) **`anrEnabled` è attivo di default**
    (`sentry_flutter_options.dart`: `bool anrEnabled = true`), per questo lo spegnimento esplicito era necessario.
    Si rinuncia ai crash del solo servizio nativo di passeggiata.
 2. **Contesti `device` e `app`** — ✅ risolto. Non sono più tenuti per intero: vengono ricostruiti da una lista di

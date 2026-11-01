@@ -57,6 +57,8 @@ class SentryCrashTransport implements CrashTransport {
         ..beforeBreadcrumb = ((breadcrumb, hint) => null)
         ..reportPackages = false
         ..sendClientReports = false
+        // Trace metrics (9.x): never emitted by this app, kept off explicitly.
+        ..enableMetrics = false
         // Native crashes (unhandled Java/Kotlin, NDK) and ANRs are sent by the
         // Android SDK with the exception's message, on the next launch and before
         // Dart runs: scrubCrashEvent could never filter them. So they are off -

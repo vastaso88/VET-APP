@@ -29,7 +29,7 @@ Il filtro toglie anche ciò che identifica il telefono: le descrizioni di dispos
 ## Note tecniche
 
 - Nessun permesso Android in più (verificato sul manifest fuso release). `sentry_flutter` aggiunge un `ContentProvider` (`SentryPerformanceProvider`) che misura solo i tempi di avvio dell'app, senza inviare nulla se il servizio non parte.
-- `sentry_flutter` è fissato alla serie 9: la 10 richiede Android 8 (minSdk 26) e noi siamo a minSdk 24 (Android 7). Se si alza il minSdk, si può passare alla 10.
+- `sentry_flutter` è fissato alla serie 9 (oggi 9.30.1): la 10 richiede Android 8 (minSdk 26) e noi siamo a minSdk 24 (Android 7). Se si alza il minSdk, si può passare alla 10. La 9.0.0 non compila più con il nostro Kotlin 2.3 (il suo modulo Android chiede Kotlin 1.6, rimosso): restare sull'ultima 9.x. Le opzioni nuove della serie (`enableLogs`, `enableMetrics`) sono spente in `SentryCrashTransport.start`.
 - Per leggere gli stack con i nomi veri nelle build release servirebbe caricare i simboli (mapping R8, simboli Dart) con gli strumenti Sentry: non è configurato, e non c'è nulla da caricare finché le build non sono offuscate (Dart oggi non lo è; R8 sì, ma i crash nativi, gli unici in cui R8 conta, sono spenti).
 - Se il servizio fallisce all'avvio (indirizzo sbagliato, nessuna rete) resta spento e l'app va avanti.
 - Se in futuro si preferisse Crashlytics (seconda scelta della raccomandazione), `CrashTransport` è il punto da sostituire: consenso, filtri e interruttore restano gli stessi.
