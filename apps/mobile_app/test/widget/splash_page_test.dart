@@ -44,7 +44,7 @@ void main() {
     await tester.pump(const Duration(milliseconds: 500));
     expect(find.text(splashMessages[2]), findsOneWidget);
 
-    expect(splashMessages.length, inInclusiveRange(8, 10));
+    expect(splashMessages.length, inInclusiveRange(8, 12));
 
     gate.complete();
     await tester.pump(const Duration(seconds: 2));

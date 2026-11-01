@@ -113,7 +113,7 @@ abstract class AppLocalizations {
   /// No description provided for @appTitle.
   ///
   /// In it, this message translates to:
-  /// **'VET APP'**
+  /// **'Quokka'**
   String get appTitle;
 
   /// No description provided for @commonCancel.
@@ -473,7 +473,7 @@ abstract class AppLocalizations {
   /// No description provided for @authRegisterSubtitle.
   ///
   /// In it, this message translates to:
-  /// **'Pochi campi per iniziare a gestire salute e documenti dei tuoi animali.'**
+  /// **'Pochi campi per iniziare a capire e gestire meglio i tuoi animali.'**
   String get authRegisterSubtitle;
 
   /// No description provided for @authNameLabel.
@@ -653,7 +653,7 @@ abstract class AppLocalizations {
   /// No description provided for @authHubTitle.
   ///
   /// In it, this message translates to:
-  /// **'Quokka: i tuoi pet a portata di zampa'**
+  /// **'Quokka: capire il tuo animale'**
   String get authHubTitle;
 
   /// No description provided for @authHubSubtitle.
@@ -779,7 +779,7 @@ abstract class AppLocalizations {
   /// No description provided for @billingIncludedAssistant.
   ///
   /// In it, this message translates to:
-  /// **'Assistente per dubbi su salute, comportamento e routine'**
+  /// **'Assistente per capire il tuo animale: comportamento, gestione, salute, doveri'**
   String get billingIncludedAssistant;
 
   /// No description provided for @billingIncludedChatMedia.
@@ -1157,19 +1157,19 @@ abstract class AppLocalizations {
   /// No description provided for @firstRunTutorialPetsBody.
   ///
   /// In it, this message translates to:
-  /// **'Specie e razza, peso, note mediche e documenti: tutto organizzato per ciascun pet, sempre a portata di mano.'**
+  /// **'Specie, razza, peso, abitudini e documenti: tutto quello che serve per conoscerlo, sempre a portata di mano.'**
   String get firstRunTutorialPetsBody;
 
   /// No description provided for @firstRunTutorialAssistantTitle.
   ///
   /// In it, this message translates to:
-  /// **'Chiedi al tuo assistente'**
+  /// **'Capisci il tuo animale'**
   String get firstRunTutorialAssistantTitle;
 
   /// No description provided for @firstRunTutorialAssistantBody.
   ///
   /// In it, this message translates to:
-  /// **'Fai domande sulla salute dei tuoi animali e ricevi risposte pensate per la loro situazione specifica.'**
+  /// **'Chiedi perché fa quello che fa, come gestirlo ogni giorno e quando serve il veterinario: risposte basate su fonti scientifiche, pensate per la sua specie.'**
   String get firstRunTutorialAssistantBody;
 
   /// No description provided for @firstRunTutorialRemindersTitle.
@@ -1211,7 +1211,7 @@ abstract class AppLocalizations {
   /// No description provided for @chatEmptySubtitle.
   ///
   /// In it, this message translates to:
-  /// **'Scrivi il primo messaggio per iniziare il dialogo con l assistente.'**
+  /// **'Scrivi il primo messaggio per iniziare: puoi chiedere perché fa qualcosa, come gestirlo o quali sono i tuoi doveri.'**
   String get chatEmptySubtitle;
 
   /// No description provided for @chatEmptyAction.
@@ -1271,7 +1271,7 @@ abstract class AppLocalizations {
   /// No description provided for @chatNewConversationPrompt.
   ///
   /// In it, this message translates to:
-  /// **'Scrivi qui sotto cosa stai osservando: ti rispondo subito.'**
+  /// **'Scrivi cosa osservi o cosa vuoi capire: ti rispondo subito.'**
   String get chatNewConversationPrompt;
 
   /// No description provided for @chatTypingText.
@@ -3119,7 +3119,7 @@ abstract class AppLocalizations {
   /// No description provided for @shellRailFooter.
   ///
   /// In it, this message translates to:
-  /// **'Spazio clinico caldo'**
+  /// **'Capire, ogni giorno'**
   String get shellRailFooter;
 
   /// No description provided for @shellInterruptedWalkTitle.
@@ -3167,7 +3167,7 @@ abstract class AppLocalizations {
   /// No description provided for @splashMessageVet.
   ///
   /// In it, this message translates to:
-  /// **'Chiedi al veterinario virtuale, 24 ore su 24'**
+  /// **'Perché lo fa? Chiedilo all\'assistente, a qualsiasi ora'**
   String get splashMessageVet;
 
   /// No description provided for @splashMessageReminders.
@@ -3203,8 +3203,20 @@ abstract class AppLocalizations {
   /// No description provided for @splashMessageHealthBook.
   ///
   /// In it, this message translates to:
-  /// **'Il libretto sanitario nel taschino, senza più carte sparse'**
+  /// **'Referti e vaccini sempre con te, senza carte sparse'**
   String get splashMessageHealthBook;
+
+  /// No description provided for @splashMessageUnderstand.
+  ///
+  /// In it, this message translates to:
+  /// **'Capire il tuo animale è il primo modo di volergli bene'**
+  String get splashMessageUnderstand;
+
+  /// No description provided for @splashMessageDuties.
+  ///
+  /// In it, this message translates to:
+  /// **'Microchip, guinzaglio, viaggi: i tuoi doveri spiegati semplici'**
+  String get splashMessageDuties;
 
   /// No description provided for @splashMessageVaccines.
   ///
@@ -4397,7 +4409,7 @@ abstract class AppLocalizations {
   /// No description provided for @petsListEmptySubtitle.
   ///
   /// In it, this message translates to:
-  /// **'Crea il primo profilo per tenere sotto controllo salute, note e scadenze.'**
+  /// **'Crea il primo profilo: più è completo, meglio rispondo.'**
   String get petsListEmptySubtitle;
 
   /// No description provided for @petsListEmptyAction.

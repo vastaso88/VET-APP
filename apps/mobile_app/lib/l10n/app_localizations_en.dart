@@ -13,7 +13,7 @@ class AppLocalizationsEn extends AppLocalizations {
       'To give you more precise advice, the assistant can read your pet\'s medical records. When you ask a question, it can read the three most recent entries, with title, category (visit, test, vaccine, therapy or document), event date, description and the text of attached documents, even if they are not related to your question. It can also read earlier conditions that are still ongoing, with the name and start date, up to five. If you ask it to explain a test, it can read the documents related to it, up to two. For a very long document it reads only the beginning. What it reads is sent to the external artificial intelligence provider that writes the answer. Quokka uses it only to answer you. You can withdraw your consent at any time from your pet\'s profile or from Settings: this applies to subsequent requests.';
 
   @override
-  String get appTitle => 'VET APP';
+  String get appTitle => 'Quokka';
 
   @override
   String get commonCancel => 'Cancel';
@@ -204,7 +204,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get authRegisterSubtitle =>
-      'A few details to start managing your pets\' health and documents.';
+      'A few details to start understanding and looking after your pets better.';
 
   @override
   String get authNameLabel => 'Name';
@@ -301,7 +301,7 @@ class AppLocalizationsEn extends AppLocalizations {
       'The full privacy policy is being prepared and will be available here soon, with a download option.';
 
   @override
-  String get authHubTitle => 'Quokka: your pets within paw\'s reach';
+  String get authHubTitle => 'Quokka: understand your pet';
 
   @override
   String get authHubSubtitle =>
@@ -378,7 +378,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get billingIncludedAssistant =>
-      'An assistant for health, behavior and routine questions';
+      'Assistant to understand your pet: behavior, daily care, health, duties';
 
   @override
   String get billingIncludedChatMedia =>
@@ -604,14 +604,14 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get firstRunTutorialPetsBody =>
-      'Species and breed, weight, medical notes and documents: everything organized for each pet, always close at hand.';
+      'Species, breed, weight, habits and documents: everything you need to get to know it, always at hand.';
 
   @override
-  String get firstRunTutorialAssistantTitle => 'Ask your assistant';
+  String get firstRunTutorialAssistantTitle => 'Understand your pet';
 
   @override
   String get firstRunTutorialAssistantBody =>
-      'Ask questions about your pets\' health and receive answers tailored to their specific situation.';
+      'Ask why it does what it does, how to manage it every day and when a veterinarian is needed: answers based on scientific sources, made for its species.';
 
   @override
   String get firstRunTutorialRemindersTitle => 'Never miss another deadline';
@@ -635,7 +635,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get chatEmptySubtitle =>
-      'Write your first message to start talking with the assistant.';
+      'Write your first message to start: you can ask why it does something, how to manage it or what your duties are.';
 
   @override
   String get chatEmptyAction => 'Write now';
@@ -674,7 +674,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get chatNewConversationPrompt =>
-      'Describe what you are observing below and I will reply right away.';
+      'Write what you\'re seeing or what you want to understand: I\'ll answer right away.';
 
   @override
   String get chatTypingText => 'Writing a response…';
@@ -1750,7 +1750,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get shellTabSettings => 'Settings';
 
   @override
-  String get shellRailFooter => 'A welcoming clinical space';
+  String get shellRailFooter => 'Understanding, every day';
 
   @override
   String get shellInterruptedWalkTitle => 'Interrupted walk';
@@ -1780,7 +1780,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get splashMessageWalks => 'Record your walks with your dog!';
 
   @override
-  String get splashMessageVet => 'Ask the virtual veterinarian, 24 hours a day';
+  String get splashMessageVet =>
+      'Why does it do that? Ask the assistant, any time';
 
   @override
   String get splashMessageReminders =>
@@ -1801,7 +1802,15 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get splashMessageHealthBook =>
-      'Your health record in your pocket, with no scattered papers';
+      'Reports and vaccines always with you, no loose papers';
+
+  @override
+  String get splashMessageUnderstand =>
+      'Understanding your pet is the first step to caring for it well';
+
+  @override
+  String get splashMessageDuties =>
+      'Microchip, leash, travel: your duties explained simply';
 
   @override
   String get splashMessageVaccines =>
@@ -2506,7 +2515,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get petsListEmptySubtitle =>
-      'Create the first profile to keep track of health, notes and deadlines.';
+      'Create the first profile: the more complete it is, the better my answers.';
 
   @override
   String get petsListEmptyAction => 'Create pet';

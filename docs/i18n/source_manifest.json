@@ -9,12 +9,12 @@
     }
   },
   "ui:appTitle": {
-    "source": "5a37d54ad91d6a65431ef33f4c3656f60037776cfa46844b3c9efbfed13a676f",
+    "source": "e2ec675ede52a7dd9435697000a242d5ade74f533e229d3c88aff5254fe09aa2",
     "targets": {
-      "en": "f6f2969fde473594e586a1c94d782a95e02ff3262efa50f932644851c1f7cedc",
-      "es": "f6f2969fde473594e586a1c94d782a95e02ff3262efa50f932644851c1f7cedc",
-      "de": "f6f2969fde473594e586a1c94d782a95e02ff3262efa50f932644851c1f7cedc",
-      "fr": "f6f2969fde473594e586a1c94d782a95e02ff3262efa50f932644851c1f7cedc"
+      "en": "6f7847cbc83f31d0fdeffed083f6a86ccfb267db3c3d06557429cc30a71fcf2e",
+      "es": "6f7847cbc83f31d0fdeffed083f6a86ccfb267db3c3d06557429cc30a71fcf2e",
+      "de": "6f7847cbc83f31d0fdeffed083f6a86ccfb267db3c3d06557429cc30a71fcf2e",
+      "fr": "6f7847cbc83f31d0fdeffed083f6a86ccfb267db3c3d06557429cc30a71fcf2e"
     }
   },
   "ui:commonCancel": {
@@ -549,12 +549,12 @@
     }
   },
   "ui:authRegisterSubtitle": {
-    "source": "4a6dc5f806267c187f2bcecf9ee37ff12726525f11d0a3d01a2f5bbf31156be4",
+    "source": "a7178eb6b506edfd7fd90bc256f441efe264474367cf694e48b0c629ded5268d",
     "targets": {
-      "en": "4237385c22e4d00967e52fe1f63183edcfd3787ff8da8ef727e8999d69f2a17b",
-      "es": "a5cf27bd1ec742ab839c5e5b072c8c47befbe1dae21ecc8865244c0bc2dfaaae",
-      "de": "96a6926c25a0fc7657a7af846fe9ce8a05cc5712fb145f37ca18bf3aace8c202",
-      "fr": "4dd2d5ed371b706f97b4b2ecf319a04a6131f77c18eb73a385830ff22eae7272"
+      "en": "4bc846d3b54203d680306f9c839952d23f7b11b55a1e49838f7e590ff8bdd8d9",
+      "es": "115476ea1dd4051be16fb86fdb28e9b552340e0d56da2819315619ed8622b368",
+      "de": "2ff426956b150750ab7c2d8ab1d26836f80a575f2fdb09966900ca6f9b671aaa",
+      "fr": "a4dffe7da11d7fb2242762ebcfcb16c57c41111b37586ac2e8cc05c765c2f4d4"
     }
   },
   "ui:authNameLabel": {
@@ -819,12 +819,12 @@
     }
   },
   "ui:authHubTitle": {
-    "source": "e40018a254fc7b91ec5e1ab36b9e58300857f248ff4ee33787f5c7842c2879ac",
+    "source": "eb9a8b721bda132bb16037cdd3810b80aba51b39f2416f7c8c0473a0586046c3",
     "targets": {
-      "en": "a9f29d60bb6377efe1f8fcf49417beacaf48ba3f129f8420fb17389e152009a6",
-      "es": "a7b1af651e80b115e68cd8515e771a5f927305f7c64efe59c3a29338ff48e0f1",
-      "de": "6f122b3d76f5d4f6247217dcba7f294e6f3bfa6ce338e856f4bdf4bfdeaa670f",
-      "fr": "a61422c7894ba922b1d91470b607505c372d400160fde6d4eb7980d254c1df31"
+      "en": "f457c995e279af84027fc8e876172cedf42219f547f361ea79213301ee53ea09",
+      "es": "b7c848bd337912a816b8fdb4f379f30b959905d1ac7c306f5e51327601c7040c",
+      "de": "14b654ff3a10f4f24b3e1f63b4a900aaa60bfecdf1481eba83c68b844cbc046f",
+      "fr": "294adec69bd795a6613c8ba07662887671189fe48adbebeb75fc26a20e0a8382"
     }
   },
   "ui:authHubSubtitle": {
@@ -1008,12 +1008,12 @@
     }
   },
   "ui:billingIncludedAssistant": {
-    "source": "94d9b5bd778186be64ab750d6fcc384b9d23f482f7dda02c4edd84a91fc9afc9",
+    "source": "5f909dc108479cee5308fb2572f97ca791eccd437ea73c49641145db9e5ed1b6",
     "targets": {
-      "en": "a239de50d1f899717402c41bc1b10f981ce946bbae3ed1c68cc7dc571aaaf18e",
-      "es": "b6325bdff28280bfd0766eac1cd59715809291bd8434115a227c361f8a6e8530",
-      "de": "72b697386b8d98f9b609884db559ab01d103dd501b6efb18f9cfd9b933ff01db",
-      "fr": "c04f74a3d82ec57241b5484342175ad4b6424c0a9c6ef9bd717eae04178604de"
+      "en": "616ba7fe425a8b2ac3093200754d55d247fed1f70431f746552c63c08002a7a4",
+      "es": "4cd666147186ffcc861ffe06f060dbeb397db33d82a4dcfc50ba9fdd912a8323",
+      "de": "198b1ee88997d396b65713164a6fc0ac7e5fdf20a5dd2fd1be1fae523fafd8a4",
+      "fr": "53028f76773a274b09b2ca014a050e4469469d562553686deff3ee41ae1fb784"
     }
   },
   "ui:billingIncludedChatMedia": {
@@ -1575,30 +1575,30 @@
     }
   },
   "ui:firstRunTutorialPetsBody": {
-    "source": "748876912b7567afb834760fb5f8ff2f5e22542c5cf056b139c830f480056804",
+    "source": "abf3f5deedd75f982e306945478a36ca51527a7c8ae45e5667feb188a05a4ce2",
     "targets": {
-      "en": "39cbca7ce8e7bfa5375412963cada04e6c2c23c652dcaf5755ee0076c41c636d",
-      "es": "63e413978cdfd9281aa2c9a9469b8cc147eec158b04492efb1b9c06704176c01",
-      "de": "69440ee436a5b8fd64fce0d8a74826cf591cb27c64e81f88a5af4bf59289adb2",
-      "fr": "d4506d3749606970570ec29333ac6c2b3c8de1b9c54f755a08ebe7b9404c0bc1"
+      "en": "f94471a37a73fdf151c5050902615c5e7c895bfc110139d68e1842c4ac20e2c1",
+      "es": "fc05946bc566698cf65ae04e5dd1193c2c745a02f84d12a07dc433f575927791",
+      "de": "161cf12dbc8d009b220355f88e16ddfd26d891b476246720d89fa340b538bca3",
+      "fr": "1f746eb361c49d6508cce86097341d700284ff99a7d7468e22e5c565889cbb29"
     }
   },
   "ui:firstRunTutorialAssistantTitle": {
-    "source": "160813c6bc8e34fa28d3c4b491aecbe0c63b8a8b85355f1f62831327d4fd70b1",
+    "source": "8b59b5671d61c404e82360d612618317a408ee2b033702344c3a45999bb856ce",
     "targets": {
-      "en": "82e22b12ccdf29908ceeb5e7f330df5536b8605f0fdf3b4ed50240c7ba7d8809",
-      "es": "e3c40e39807c3e4d73d218dd96db9a1dca324ed5074107cc17e273de3a7a5f6b",
-      "de": "7894e81ec41985cf191f0e5e17aaac23b62b64160aeb65e14948a08025b4bc2b",
-      "fr": "c023fa90dceb9ebedcba649357e7bb1a21e5e9b17757093750c18ae1e4dbc10f"
+      "en": "909ea401e09c0203a44d93475aba47057ba747b265475194ce50cc6369f20851",
+      "es": "8e20b8d21ef49613be22b22cdb1e1b71c60b44f79729f774e19b5545bc6cfaa7",
+      "de": "4f8d8fabc7b7871597eaf6de9c2bd19500ddd5403c976a85ca0c9e7a18a494c4",
+      "fr": "3ad219dde0d488ae3ba12f87040fd226e8cf80059abde809c1c49e8fba3737e0"
     }
   },
   "ui:firstRunTutorialAssistantBody": {
-    "source": "72dd91224eba1b6cf81e88e48dfdec8bde81e5c170b1be4918a74ec752704d65",
+    "source": "c579859b828bd638cd00710b1ff9cef00bae78e66d9628f121d0415333e9c688",
     "targets": {
-      "en": "326cc48bec6d4e6ea6732711c7a63b575d9e6198bb4016ffca3c1d94166c82b7",
-      "es": "25d91b0f4d7f698fc3cfea49c1076108a74e08047de544aa0ece941bf3566aef",
-      "de": "146023b5e4b203daffa041bdf2f498b1e6c990c0807b4f240417385b19689aa7",
-      "fr": "010c2cd1c9ba80abc3eda335abc4710534bfea85001f1d95f27e9311269dfdbd"
+      "en": "a3b550e3ca1ada3f90f7f511409da191719ada1fdd0ff5a66db333a1fe4a0872",
+      "es": "f426e8de5a6f662e7120dcdb85e1a001cc38e87c762d3eb88b8a7c77e55d0e4e",
+      "de": "d5482dcc78dec4d96c926a36edb6421466a28d02dc564bf877b118e0403471a8",
+      "fr": "33411dcbfd20b3edd15d03a45459ce7d0e23b0f388d04eec7d3c20d2fea25483"
     }
   },
   "ui:firstRunTutorialRemindersTitle": {
@@ -1656,12 +1656,12 @@
     }
   },
   "ui:chatEmptySubtitle": {
-    "source": "a8381851cf33a12384062a338fe53b8f2a162110cde415321359987ff50cda8c",
+    "source": "f27f462de5b3900e80ca9a0f68a3a216f0582bebba010bc0c1a8e8f885f33f16",
     "targets": {
-      "en": "473f2a146eaf3a84a69b5a91d6de781e37ea8941f7a59f0cb3a19f4aec56de09",
-      "es": "123985523cf05676c314905bd9b78bf3991328751a1962b3d9e0d8a59120d64b",
-      "de": "53dea1179083a61760ee84f02e928cb20f8a8974e5eec48a989c13bc09a9389b",
-      "fr": "b818816be54ee94d297d7f77fb07f0c9646cfa4b0c32fd105b5dc2b10a03dfbd"
+      "en": "f922495afb1c16ec07006ccae8660848096de63f9e059e5d93997dcadb59c5f6",
+      "es": "9c957bb4b50d9b6b2ec8df8f214c5a113e1eab2d66e8f115f431dbebe068697c",
+      "de": "c687442b0d7b98f741189c335aee058044f22f8622351e2aa2865146785788c9",
+      "fr": "5b82e87b153be1c2bb975deb427029120aa3911d9ec163a3da35a1c756bac552"
     }
   },
   "ui:chatEmptyAction": {
@@ -1746,12 +1746,12 @@
     }
   },
   "ui:chatNewConversationPrompt": {
-    "source": "73375870a2e8a61f0dee15856ca161871f8685cdcdb2422e6f44479d00eb3cae",
+    "source": "aca77c046a52b2661a6e60a653c26f0b2bb3f2a7f8f6933ca5d6efb27bedce96",
     "targets": {
-      "en": "cbf52d2342b744d45444fdaffed9b280083a89f38a7b8782e289f7f8559e9c4b",
-      "es": "d5651e24686c67eb0243fb0aa5e8a9f7208f1e9126519208f2ce7679117d688c",
-      "de": "e624c31df4819fae13d99401994362eac398b3f6aa999a1d5468f6f4ff19b3b2",
-      "fr": "b65054a301149028be2bd43fa9386c88ee826c85bad175eeb03f513861af4ebb"
+      "en": "f490c5277f3010d402144731b45a9b8c85fa2282e653fd415aee42e3c650b6e5",
+      "es": "41cd5b7d6e2536bb10b19d43d5a352722094c7115804629488d10c589b49769e",
+      "de": "d8cfb87e5a9b30db7a6a040b927b97be78044437c8c965ac60fd50dc3b436318",
+      "fr": "a9550c6aa6cdb45faf86db4c7d1ecdcf331a47b041f9fd9088567d093467fc35"
     }
   },
   "ui:chatTypingText": {
@@ -4518,12 +4518,12 @@
     }
   },
   "ui:shellRailFooter": {
-    "source": "4b06775c83c09f20e3087acc76f1bea8b7f8f24564dbe416d6ed69f59f1b1045",
+    "source": "509d860082f1529b3d9eda1f03cf9727b5f8b8584cd2681474194db98d74f01c",
     "targets": {
-      "en": "ea9dc9c320e6f1220ea115b65376d78f225bd1ca6e1036932a24c02721978ef5",
-      "es": "5a63bc4e21e50a4d054810560e73c5465d336fb0785ab780e9d6905476489039",
-      "de": "1bb86679cec9ceb8433106f680ee117e9894bd5835ece277febaa53b0dba7d2b",
-      "fr": "b96c7d80bd9269b64834fcb2a7f68fc1b2dec71c4834049534684151a00e8f0f"
+      "en": "d92fa96f354cba4d39b43ecc6758ad6514b7128c88c0395c0e2105cd3b13f3df",
+      "es": "69c352205e928679ef4d6af8f6a293262acb940498887d311096cf7b90922051",
+      "de": "def1643947515b50a004faf2737712b328ef689ae95f2a89b42a2b95f6f5048b",
+      "fr": "b9c4339e7d73016f6fc15d7896dfdd5cc8970d2ed917585cb2febb5a65aee193"
     }
   },
   "ui:shellInterruptedWalkTitle": {
@@ -4590,12 +4590,12 @@
     }
   },
   "ui:splashMessageVet": {
-    "source": "6807c8242d79fa0eac1c2c998f3b52619122175e716a6eb8afbbfa0e0b4e9a22",
+    "source": "93497290f13fbe2eb16130a577180768f932090b5dfdaca987ad95825e3e5516",
     "targets": {
-      "en": "96c8025b0bfcfb6ba52d84e5ebb6d461577f0208490437a4b029b44fe57bbad7",
-      "es": "7a76ddbe68ef672c9a1b1e663a6990bae68f8344d6fa7ff0c087a4f0930a6d6f",
-      "de": "7e44507ca261b9fac7611a6748c04961f705d93839fcac360fc267a0579ac84f",
-      "fr": "38cf2932aba67aaa6be4e448fcf4ea322bde13a610fed7dfc599894f2488deea"
+      "en": "e1225e31805a982e10dcefd299ea39b8735f80c432c3110c20fc3d36a4a3c3c7",
+      "es": "f68ffa6f687bd001039b4b61b5242caa0320f19975029e2b1c7e0a72df0cec4f",
+      "de": "bb3ff0ced745c3030d46a6700205e2df931805fe91508135faf7045444fdd94a",
+      "fr": "5d919aa41068a61833d56f8f5281d90538ee5e9d9e6de6c4602fe4434ece2bb4"
     }
   },
   "ui:splashMessageReminders": {
@@ -4644,12 +4644,30 @@
     }
   },
   "ui:splashMessageHealthBook": {
-    "source": "aea2b8c9d9a727afc8f6c05c2a743c36c278f28c5b4fd74d6a8cbe225f9217e0",
+    "source": "b8b677705f88f5c75a0b54a8b468503f1ad67f086948242dd135d79aa4366ca0",
     "targets": {
-      "en": "73ae16bd769ad386ee390e80681a2e70173b79dad9b27b304801616747a832b7",
-      "es": "8c1f39369ff5cf9f4cbc9a7e376df996257543beb78d7b9a9939ef32d5e43e0b",
-      "de": "c6ba878b2d7a2467f7d381eabdb9b3c4491d0a37c4605b3edccd070ecce2ed9e",
-      "fr": "1783e37783af969b4f3d679f428e8677a998805a6249d6f74790b121a72cc373"
+      "en": "a463e0f9faa9f825a299ffe9ff6ddc5fdf92e0c8fa0c9523a86798c26861d0e5",
+      "es": "b2662ef194b4e30006420e7c742f5cb47282f2a81608d9d9d6b9a711213227d7",
+      "de": "98bb13304cb7fc79abdb28e63a5441e0e725bf28a2d93ce25292b199a4642d6d",
+      "fr": "e3bc9a8c3c97e83af2c1beaf5481b5cc57848f573c1620016656365a6b0e3bd0"
+    }
+  },
+  "ui:splashMessageUnderstand": {
+    "source": "19c8e512f156e621cbe309af8bca7a06c6a799ba0836cf4ebe7d1965e8953254",
+    "targets": {
+      "en": "102927a5fd39d650d59978a8a452ffcaf8dcea3127e94a814708090d62bcfbf2",
+      "es": "b155775d43272b839c148913911310a2ffa270a4f284d7154fac083cc63923b5",
+      "de": "5a8df1006c00cb06e570693ce763b14a12e9bc0cc4c058e4a51bc1b117f72c36",
+      "fr": "1a8a691face2ee26caea120829f715222ac68358380aa7548acdea174f30c6a5"
+    }
+  },
+  "ui:splashMessageDuties": {
+    "source": "901a845ea2716f5167ccc6a0464909d1fda87829e1fe3e03776b057f2f56eba1",
+    "targets": {
+      "en": "7be666e62ee7845cf687a92d38fcf9c66d6b6403c1523a9ca2b5b7364df33cf6",
+      "es": "1d65a1591253634ca9cb78135350cbf04eed13d0feab02ec872473a760a1a490",
+      "de": "4f5656a374ba425ad9e1b1b5eade521539a6b8bc1214cbb3ca50fd2f1f8b690c",
+      "fr": "5ecb2c56bc12f2187641a24263136de43c9c109e3d15d9e323c7f872f289b5bd"
     }
   },
   "ui:splashMessageVaccines": {
@@ -6435,12 +6453,12 @@
     }
   },
   "ui:petsListEmptySubtitle": {
-    "source": "33415b489642d8b04b55970cec85d2d74046603b86a5459f3aaa429cb237b44f",
+    "source": "4d5e2569adb824c563bfcb67b902d0b24417e979027f1c60d541f70f8e952566",
     "targets": {
-      "en": "6200b123fae5c7887b50ad4efa66d9ad2723d7880b41c8a8e42549360a5becc2",
-      "es": "d5a76a044aa4ab4288b345cbdd7c99ade04392a32658d37632bb9d113a5ddbff",
-      "de": "d815c900df5c2cc1d714d20e43f8c829c4a79da5c51836df2db4c70767001eda",
-      "fr": "d15ddfe8126584b9d7c6d78ef51b152e5f72c8e5461819ba1bc9f3c74733cbc8"
+      "en": "881018b1c55a62e8b7e74a846d1b3d59ad9453fc9b2b7cb54c1b0ef60b807952",
+      "es": "7e7967f46a258d395135b537bee2c86d47461d5223b3386331fa214cf35f4c18",
+      "de": "de088115516080eb12aec88ee76d65cd23d97dd9b5bbcfa246aacb7dbdd02ec3",
+      "fr": "6f94f08e0ff27e43b8302135700d5c0ac558ea60c45f0ea02ee1cfb9458ee55a"
     }
   },
   "ui:petsListEmptyAction": {

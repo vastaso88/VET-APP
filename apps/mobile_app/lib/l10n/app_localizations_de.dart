@@ -13,7 +13,7 @@ class AppLocalizationsDe extends AppLocalizations {
       'Um Ihnen genauer raten zu können, darf der Assistent die Krankenakte Ihres Tieres lesen. Wenn Sie eine Frage stellen, kann er die drei neuesten Einträge lesen, mit Titel, Kategorie (Besuch, Untersuchung, Impfung, Therapie oder Dokument), Datum des Ereignisses, Beschreibung und Text der angehängten Dokumente, auch wenn sie nichts mit der Frage zu tun haben. Er kann außerdem frühere Erkrankungen lesen, die noch andauern, mit Name und Beginndatum, höchstens fünf. Wenn Sie um die Erklärung einer Untersuchung bitten, kann er die dazugehörigen Dokumente lesen, höchstens zwei. Von einem sehr langen Dokument liest er nur den Anfang. Was er liest, wird an den externen Anbieter für künstliche Intelligenz gesendet, der die Antwort verfasst. Quokka verwendet es nur, um Ihnen zu antworten. Sie können die Einwilligung jederzeit im Tierprofil oder in den Einstellungen widerrufen: Der Widerruf gilt für alle folgenden Anfragen.';
 
   @override
-  String get appTitle => 'VET APP';
+  String get appTitle => 'Quokka';
 
   @override
   String get commonCancel => 'Abbrechen';
@@ -205,7 +205,7 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get authRegisterSubtitle =>
-      'Nur wenige Angaben, um Gesundheit und Dokumente Ihrer Tiere zu verwalten.';
+      'Nur wenige Angaben, um Ihre Tiere besser zu verstehen und zu betreuen.';
 
   @override
   String get authNameLabel => 'Name';
@@ -303,7 +303,7 @@ class AppLocalizationsDe extends AppLocalizations {
       'Der vollständige Text der Datenschutzerklärung ist in Vorbereitung und wird hier bald verfügbar sein, mit der Möglichkeit zum Herunterladen.';
 
   @override
-  String get authHubTitle => 'Quokka: Ihre Tiere immer griffbereit';
+  String get authHubTitle => 'Quokka: Ihr Tier verstehen';
 
   @override
   String get authHubSubtitle =>
@@ -385,7 +385,7 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get billingIncludedAssistant =>
-      'Assistent für Fragen zu Gesundheit, Verhalten und Alltag';
+      'Assistent, um Ihr Tier zu verstehen: Verhalten, Haltung, Gesundheit, Pflichten';
 
   @override
   String get billingIncludedChatMedia => 'Fotos, PDFs und Sprachdiktat im Chat';
@@ -613,14 +613,14 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get firstRunTutorialPetsBody =>
-      'Tierart und Rasse, Gewicht, medizinische Notizen und Dokumente: alles übersichtlich für jedes Tier, immer griffbereit.';
+      'Art, Rasse, Gewicht, Gewohnheiten und Dokumente: alles, was Sie brauchen, um es kennenzulernen, immer griffbereit.';
 
   @override
-  String get firstRunTutorialAssistantTitle => 'Fragen Sie Ihren Assistenten';
+  String get firstRunTutorialAssistantTitle => 'Verstehen Sie Ihr Tier';
 
   @override
   String get firstRunTutorialAssistantBody =>
-      'Stellen Sie Fragen zur Gesundheit Ihrer Tiere und erhalten Sie Antworten, die auf deren Situation zugeschnitten sind.';
+      'Fragen Sie, warum es tut, was es tut, wie Sie den Alltag gestalten und wann ein Tierarzt nötig ist: Antworten auf Grundlage wissenschaftlicher Quellen, passend zur Art.';
 
   @override
   String get firstRunTutorialRemindersTitle => 'Keine vergessenen Termine mehr';
@@ -644,7 +644,7 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get chatEmptySubtitle =>
-      'Schreiben Sie die erste Nachricht, um mit dem Assistenten zu starten.';
+      'Schreiben Sie die erste Nachricht: Sie können fragen, warum es etwas tut, wie Sie damit umgehen oder welche Pflichten Sie haben.';
 
   @override
   String get chatEmptyAction => 'Jetzt schreiben';
@@ -683,7 +683,7 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get chatNewConversationPrompt =>
-      'Schreiben Sie unten, was Sie beobachten – ich antworte sofort.';
+      'Schreiben Sie, was Sie beobachten oder verstehen möchten: Ich antworte sofort.';
 
   @override
   String get chatTypingText => 'Schreibt gerade eine Antwort...';
@@ -1782,7 +1782,7 @@ class AppLocalizationsDe extends AppLocalizations {
   String get shellTabSettings => 'Einstellungen';
 
   @override
-  String get shellRailFooter => 'Ein warmer, klinischer Raum';
+  String get shellRailFooter => 'Verstehen, jeden Tag';
 
   @override
   String get shellInterruptedWalkTitle => 'Spaziergang unterbrochen';
@@ -1814,7 +1814,7 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get splashMessageVet =>
-      'Fragen Sie den virtuellen Tierarzt, rund um die Uhr';
+      'Warum macht es das? Fragen Sie den Assistenten, jederzeit';
 
   @override
   String get splashMessageReminders =>
@@ -1836,7 +1836,15 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get splashMessageHealthBook =>
-      'Das Gesundheitsheft in der Tasche, nie wieder lose Zettel';
+      'Befunde und Impfungen immer dabei, ohne lose Zettel';
+
+  @override
+  String get splashMessageUnderstand =>
+      'Ihr Tier zu verstehen ist der erste Schritt zu einer guten Beziehung';
+
+  @override
+  String get splashMessageDuties =>
+      'Mikrochip, Leine, Reisen: Ihre Pflichten einfach erklärt';
 
   @override
   String get splashMessageVaccines =>
@@ -2544,7 +2552,7 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get petsListEmptySubtitle =>
-      'Legen Sie das erste Profil an, um Gesundheit, Notizen und Termine im Blick zu behalten.';
+      'Legen Sie das erste Profil an: Je vollständiger es ist, desto besser meine Antworten.';
 
   @override
   String get petsListEmptyAction => 'Tier anlegen';

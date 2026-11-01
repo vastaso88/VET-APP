@@ -13,7 +13,6 @@ lib/features/pet_news/domain/pet_news_edition.dart
 # Language names are written in their own language, never translated.
 lib/features/language/domain/app_language.dart
 # Brand and required map attribution are proper names, not translated copy.
-lib/app/splash/splash_page.dart :: 'VET APP'
 lib/features/dog_walks/presentation/widgets/walk_mini_map.dart :: '© OpenStreetMap'
 
 # Demo/seed data shown only in builds without Supabase and in tests (never in production).

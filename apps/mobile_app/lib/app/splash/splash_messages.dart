@@ -11,6 +11,8 @@ List<String> splashMessagesFor(AppLocalizations l10n) => [
       l10n.splashMessageNews,
       l10n.splashMessageProfiles,
       l10n.splashMessageHealthBook,
+      l10n.splashMessageUnderstand,
+      l10n.splashMessageDuties,
       l10n.splashMessageVaccines,
       l10n.splashMessageSpecies,
     ];

@@ -474,13 +474,13 @@ class _ShellBrand extends StatelessWidget {
         ),
         if (extended) ...[
           const SizedBox(width: 12),
-          const SizedBox(
+          SizedBox(
             width: 132,
             child: Text(
-              'VET APP',
+              context.l10n.appTitle,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
-              style: TextStyle(
+              style: const TextStyle(
                 color: AppColors.onPrimary,
                 fontSize: 18,
                 fontWeight: FontWeight.w700,

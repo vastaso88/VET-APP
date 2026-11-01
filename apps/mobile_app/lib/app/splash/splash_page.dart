@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 
 import '../../design_system/tokens/app_colors.dart';
+import '../../l10n/l10n.dart';
 import '../../design_system/tokens/app_spacing.dart';
 import '../../design_system/tokens/app_text_styles.dart';
 import '../../features/auth/data/auth_repository_factory.dart';
@@ -179,7 +180,7 @@ class _SplashPageState extends State<SplashPage> {
               children: [
                 const _SplashLogo(),
                 const SizedBox(height: AppSpacing.xl),
-                Text('VET APP', style: AppTextStyles.heading),
+                Text(context.l10n.appTitle, style: AppTextStyles.heading),
                 const SizedBox(height: AppSpacing.xl),
                 const LoadingAnimation(),
               ],
