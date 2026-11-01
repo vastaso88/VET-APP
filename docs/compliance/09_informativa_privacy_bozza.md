@@ -2,7 +2,7 @@
 
 > **BOZZA. Non pubblicare così com'è.** Da far rivedere da un legale prima del primo tester invitato (registro [08](08_punti_aperti_prima_del_lancio.md), punto 6). I campi tra [parentesi quadre] vanno compilati o verificati. Le note per il revisore in fondo vanno tolte prima della pubblicazione.
 
-Versione di prova: 2026-10-28 (aggiunti cognome, telefono facoltativo e foto profilo facoltativa; il 2026-10-06 i permessi del dispositivo e i percorsi delle passeggiate; allineata alla sintesi «Privacy» v2 del catalogo di consensi).
+Versione di prova: 2026-10-28 (aggiunti cognome, telefono facoltativo e foto profilo facoltativa; il 2026-10-06 i permessi del dispositivo e i percorsi delle passeggiate; allineata alla sintesi «Privacy» v3 del catalogo di consensi).
 
 ## 1. Chi tratta i tuoi dati
 
@@ -18,7 +18,9 @@ Versione di prova: 2026-10-28 (aggiunti cognome, telefono facoltativo e foto pro
 | Chat | Domande, risposte, allegati, messaggi vocali (trascritti per la risposta) | Tu e il sistema |
 | Posizione | Posizione GPS, solo con il permesso del dispositivo; oppure indirizzo inserito a mano. Per le passeggiate, il percorso: punti GPS con data, ora e precisione, collegati al tuo account e al tuo animale | Tu, tramite il dispositivo |
 | Contributi | Segnalazioni di luoghi, stelle sulle aree cani, voti. Associati a uno pseudonimo, non al tuo nome | Tu |
+| Mercatino | Gli annunci che pubblichi: titolo, descrizione, prezzo, foto, categoria, specie, città e posizione approssimata (circa 1 km). Gli altri utenti li vedono nella loro zona; il tuo nome e la tua e-mail non vengono mostrati | Tu |
 | Dati tecnici | Indirizzo IP e registri dei server | Il sistema, per funzionamento e sicurezza |
+| Rapporti sugli errori (facoltativi) | Se li consenti: tipo di errore, cosa stava facendo l'app, modello del telefono, versione di Android e dell'app, lingua e fuso orario. Mai il testo dei messaggi, foto, posizione, il tuo nome o la tua e-mail | Il sistema, solo se li attivi in Impostazioni |
 | Abbonamento | Piano scelto, inizio e fine della prova. Nessun dato di pagamento: i pagamenti non sono ancora attivi | Tu e il sistema |
 
 ### Permessi del dispositivo
@@ -36,13 +38,14 @@ L'app chiede un permesso solo quando usi la funzione che lo richiede. Se lo negh
 
 | Finalità | Base giuridica | Note |
 |---|---|---|
-| Creare e gestire l'account, erogare il servizio (animali, promemoria, chat, passeggiate) | Esecuzione del contratto, art. 6(1)(b) | Senza questi dati il servizio non può essere erogato |
+| Creare e gestire l'account, erogare il servizio (animali, promemoria, chat, passeggiate, Mercatino) | Esecuzione del contratto, art. 6(1)(b) | Senza questi dati il servizio non può essere erogato |
 | Conservare nel profilo il numero di telefono e la foto profilo, se li inserisci | Consenso, art. 6(1)(a), facoltativo | Nessuna funzione usa il telefono; la foto serve solo a mostrarti il tuo profilo. Puoi toglierli in qualsiasi momento dal profilo |
 | Rispondere alle domande in chat, anche con un fornitore di IA esterno | Esecuzione del contratto, art. 6(1)(b) | Le risposte sono generate da un sistema di IA e sono segnalate come tali (art. 50 AI Act) |
 | Far leggere alla chat la cartella clinica di un tuo animale | Consenso, art. 6(1)(a), revocabile | Testo nella schermata di consenso (documento 03). Legge le tre voci più recenti o, per spiegare un esame, fino a due documenti |
 | Mostrare luoghi vicini; raccogliere segnalazioni e stelle | Esecuzione del contratto, art. 6(1)(b); per i contributi [legittimo interesse, art. 6(1)(f): ⚖️ da confermare] | Le segnalazioni possono portare alla rimozione di un luogo |
 | Email di marketing | Consenso, art. 6(1)(a), facoltativo | Revocabile in qualsiasi momento dalle Impostazioni |
 | Analisi d'uso | Consenso, art. 6(1)(a), facoltativo | [Oggi non risulta alcuno strumento di analisi attivo: confermare o eliminare la voce] |
+| Trovare e correggere gli errori dell'app (rapporti sugli errori) | Consenso, art. 6(1)(a), facoltativo | Solo se li attivi in Impostazioni, revocabile in qualsiasi momento, e solo nelle versioni dell'app che prevedono i rapporti |
 | Sicurezza, prevenzione degli abusi, obblighi di legge | Obbligo legale, art. 6(1)(c); legittimo interesse, art. 6(1)(f) | |
 
 ## 4. Chi riceve i dati
@@ -56,6 +59,7 @@ L'app chiede un permesso solo quando usi la funzione che lo richiede. Se lo negh
 | Server di tile OpenStreetMap | Indirizzo IP e aree di mappa richieste | [da sostituire o confermare, registro punto 1] |
 | Overpass (dati OpenStreetMap) | Centro di una cella di griglia e indirizzo IP della richiesta; non la tua posizione precisa | [da verificare] |
 | Google (Firebase App Distribution) | Solo per le versioni di prova: email del tester | [da verificare: paese e garanzie] |
+| Sentry (Functional Software, Inc.) | Solo con il tuo consenso: il rapporto tecnico sull'errore (tipo di errore, cosa stava facendo l'app, modello del telefono, versione di Android e dell'app, lingua e fuso orario) | Server nell'UE (Francoforte, Germania); società con sede negli USA [da verificare: contratto di responsabile con clausole contrattuali standard; certificazione DPF]. Come in ogni connessione, Sentry vede l'indirizzo IP del telefono mentre riceve il rapporto [da verificare: opzione «Prevent Storing of IP Addresses» attiva nel progetto] |
 
 **Dati su luoghi e attività.** I luoghi del radar provengono da OpenStreetMap, Overture Maps e dai dataset dei Comuni. Non contengono dati tuoi, ma possono riguardare titolari di attività individuali. Se sei il titolare di una scheda e vuoi rettificarla o opporti, scrivi al contatto privacy (art. 21 GDPR).
 
@@ -67,13 +71,14 @@ Le risposte della chat sono generate da un sistema di IA. Prima di inviare il te
 
 | Dato | Periodo |
 |---|---|
-| Account e profilo animali | Fino alla cancellazione dell'account [procedura da definire] |
-| Cartella clinica e documenti | Fino alla rimozione da parte tua o alla cancellazione dell'account [da confermare] |
-| Chat | [da definire] |
-| Percorsi delle passeggiate | [da definire: sono dati di posizione che possono rivelare abitudini e abitazione] |
+| Account e profilo animali | Fino a quando elimini l'account da Impostazioni → Elimina account. La cancellazione è definitiva: toglie i profili dei tuoi animali, le chat, i promemoria, le passeggiate, le foto e i video, i referti e i documenti caricati, le misurazioni, i consensi, la posizione salvata, gli annunci del Mercatino e le credenziali di accesso [da verificare: per quanto tempo restano le copie di sicurezza dei fornitori] |
+| Cartella clinica e documenti | Fino alla rimozione da parte tua o alla cancellazione dell'account |
+| Chat | 24 mesi dopo l'ultimo messaggio: poi la conversazione e i suoi file vengono cancellati. Un file caricato e mai inviato in un messaggio si cancella dopo 7 giorni. Prima, se elimini l'account |
+| Percorsi delle passeggiate | Il percorso GPS resta solo per le ultime 3 passeggiate di ciascun animale, per quelle che segni come preferite (al massimo 5 per animale) e per la più lunga in distanza e in durata; delle altre restano distanza, durata e passi stimati. Tutto si cancella con l'account |
 | Segnalazioni e voti | Pseudonimo e voti cancellati 12 mesi dopo la chiusura della segnalazione; il contenuto resta senza riferimenti a te [da confermare] |
-| Registri tecnici | [da definire con l'hosting] |
-| Prova dei consensi | Per la durata del rapporto e il tempo di prescrizione [da confermare] |
+| Registri tecnici | Pochi giorni al massimo, secondo il fornitore: nei piani attuali Vercel tiene i registri di esecuzione circa 1 ora e Supabase da 1 a 7 giorni [da verificare nei piani attivi] |
+| Rapporti sugli errori | 90 giorni [da verificare nel piano Sentry scelto] |
+| Prova dei consensi | Si cancella con l'account [da decidere: se conservare una prova più a lungo, per esempio per il tempo di prescrizione] |
 
 ## 7. I tuoi diritti
 
@@ -89,7 +94,7 @@ Non prendiamo decisioni automatizzate con effetti giuridici su di te (art. 22 GD
 
 ## 10. Modifiche
 
-Questa informativa può cambiare. Ti avvisiamo nell'app [modalità da definire]. Versione: [numero]. Data: [data]. Sarà consultabile dalle Impostazioni e dal link nella registrazione. Dal 2026-10-06 il testo di consenso «Privacy» (v2) non promette più una pagina che non esiste e dice che l'informativa completa è in preparazione: alla pubblicazione quel testo va aggiornato con una nuova versione.
+Questa informativa può cambiare. Ti avvisiamo nell'app [modalità da definire]. Versione: [numero]. Data: [data]. Sarà consultabile dalle Impostazioni e dal link nella registrazione. Dal 2026-10-06 il testo di consenso «Privacy» (v2, poi v3 dal 2026-10-28) non promette più una pagina che non esiste e dice che l'informativa completa è in preparazione: alla pubblicazione quel testo va aggiornato con una nuova versione.
 
 ---
 
@@ -100,6 +105,6 @@ Questa informativa può cambiare. Ti avvisiamo nell'app [modalità da definire].
 3. Il link all'informativa dalle Impostazioni e dalla registrazione è un prerequisito del primo invito.
 4. Trasferimenti extra-UE (Groq, Vercel, Google): verificare le garanzie, per esempio le clausole contrattuali standard.
 5. Il contatto privacy è un segnaposto: vedi registro, punto 9.
-6. Testo di riferimento del consenso «Privacy»: `packages/core/domain/consent/account_consent_text.py` (v2, 2026-10-06). È una sintesi che deve restare coerente con questa informativa e dice che quella completa è «in preparazione»: alla pubblicazione sostituire la frase e passare a v3.
+6. Testo di riferimento del consenso «Privacy»: `packages/core/domain/consent/account_consent_text.py` (v3, 2026-10-28). È una sintesi che deve restare coerente con questa informativa e dice che quella completa è «in preparazione»: alla pubblicazione sostituire la frase e passare a v4.
 7. Permessi del dispositivo: le frasi su foto, video e fotocamera valgono solo dopo la correzione del manifest Android. Oggi il manifest dichiara ancora `READ_MEDIA_IMAGES` e, tramite il plugin `open_filex`, `READ_MEDIA_VIDEO` e `READ_MEDIA_AUDIO` (registro, punto 25; dettagli in [05](05_permessi_dispositivo_os.md)). Se `CAMERA` resta dichiarato, citare anche la fotocamera tra i permessi richiesti.
 8. Percorsi delle passeggiate: il backend li conserva (`WalkSession.route`). Definire il periodo di conservazione e valutare se servono davvero tutti i punti GPS dopo la chiusura della passeggiata (minimizzazione).

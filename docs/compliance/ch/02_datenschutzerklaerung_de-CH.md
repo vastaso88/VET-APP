@@ -30,6 +30,7 @@ Unsere Angaben nach Art. 3 Abs. 1 lit. s UWG finden Sie im [Impressum] (Einstell
 | Beiträge | Meldungen zu Orten, Sternebewertungen und Stimmen. Sie sind mit einem Pseudonym verknüpft, nicht mit Ihrem Namen | Von Ihnen |
 | Marktplatz | Anzeigen, Fotos, Preise und das von Ihnen gewählte Gebiet | Von Ihnen |
 | Technische Daten | IP-Adresse und Server-Protokolle | Vom System, um den Dienst zu betreiben und abzusichern |
+| Fehlerberichte (freiwillig) | Wenn Sie sie erlauben: die Art des Fehlers, was die App gerade tat, Handymodell, Android- und App-Version, Sprache und Zeitzone. Nie der Text von Nachrichten, Fotos, Standort, Ihr Name oder Ihre E-Mail-Adresse | Vom System, nur wenn Sie sie in den Einstellungen einschalten |
 | Abonnement | Gewählter Tarif, Beginn und Ende der kostenlosen Testphase. Wir speichern keine Kartendaten: Zahlungen sind [noch nicht aktiv / werden von (Zahlungsdienstleister) abgewickelt] | Von Ihnen und vom System |
 
 Wir fragen nicht gezielt nach besonders schützenswerten Personendaten (z. B. Gesundheitsdaten über Sie). Ein Dokument, das Sie hochladen, könnte solche Angaben enthalten. Bitte laden Sie keine Dokumente über Ihre eigene Gesundheit hoch.
@@ -58,6 +59,7 @@ Wir bearbeiten Personendaten nach den Grundsätzen des DSG (Rechtmässigkeit, Tr
 | Orte in der Nähe anzeigen; Meldungen und Sternebewertungen zu Orten sammeln | Vertrag; für Beiträge [überwiegendes privates Interesse: bestätigen] | |
 | Marketing-E-Mails | Einwilligung | Freiwillig. Sie können sie jederzeit in den Einstellungen widerrufen |
 | Nutzungsstatistik | Einwilligung | Freiwillig. [Derzeit setzen wir kein Analyse-Werkzeug ein: bestätigen oder Zeile streichen] |
+| Fehler der App finden und beheben (Fehlerberichte) | Einwilligung [bestätigen: Art. 31 Abs. 1 DSG] | Freiwillig. Nur wenn Sie sie in den Einstellungen einschalten, jederzeit widerrufbar. Nur in App-Versionen, die Fehlerberichte vorsehen |
 | Sicherheit, Missbrauchsabwehr, gesetzliche Pflichten | Gesetzliche Pflicht; überwiegendes Interesse | |
 | Ihre Anfragen und Beschwerden bearbeiten | Gesetzliche Pflicht | |
 
@@ -74,6 +76,7 @@ Soweit wir als in der EU niedergelassene Verantwortliche der EU-Datenschutz-Grun
 | OpenStreetMap-Kartenserver | Ihre IP-Adresse und die angeforderten Kartenbereiche | [bestätigen] |
 | Overpass (OpenStreetMap-Daten) | Der Mittelpunkt einer Rasterzelle und Ihre IP-Adresse; nicht Ihre genaue Position | [bestätigen] |
 | Google (Firebase App Distribution) | Nur Testversionen: die E-Mail-Adresse der Testerin bzw. des Testers | [bestätigen] |
+| Sentry (Functional Software, Inc.) | Nur mit Ihrer Einwilligung: ein technischer Fehlerbericht (Art des Fehlers, was die App gerade tat, Handymodell, Android- und App-Version, Sprache und Zeitzone) | Server in der EU (Frankfurt, Deutschland); Unternehmen mit Sitz in den USA [bestätigen: Auftragsverarbeitungsvertrag mit Standardvertragsklauseln; DPF-Zertifizierung]. Wie bei jeder Verbindung sieht Sentry die IP-Adresse Ihres Geräts, während es den Bericht empfängt [bestätigen: Projekteinstellung „Prevent Storing of IP Addresses“ aktiv] |
 
 Wir verkaufen Ihre Personendaten nicht.
 
@@ -95,13 +98,14 @@ Wir treffen keine automatisierten Einzelentscheidungen, die für Sie mit einer R
 
 | Daten | Dauer |
 |---|---|
-| Konto und Tierprofile | Bis Sie Ihr Konto löschen [Verfahren noch festzulegen] |
-| Gesundheitsakte und Dokumente | Bis Sie sie entfernen oder Ihr Konto löschen [bestätigen] |
-| Chat | [festzulegen] |
-| Spaziergang-Strecken | [festzulegen: Standortdaten können Gewohnheiten und Ihre Wohnadresse verraten] |
+| Konto und Tierprofile | Bis Sie Ihr Konto löschen (Einstellungen → Konto löschen). Das Löschen ist endgültig und entfernt Ihre Tierprofile, Chats, Erinnerungen, Spaziergänge, Fotos und Videos, hochgeladene Befunde und Dokumente, Messungen, Einwilligungen, den gespeicherten Standort, Ihre Marktplatz-Anzeigen und Ihre Anmeldedaten [bestätigen: wie lange Sicherungskopien der Anbieter bestehen] |
+| Gesundheitsakte und Dokumente | Bis Sie sie entfernen oder Ihr Konto löschen |
+| Chat | 24 Monate nach der letzten Nachricht; danach werden das Gespräch und seine Dateien gelöscht. Eine Datei, die hochgeladen, aber nie in einer Nachricht gesendet wurde, wird nach 7 Tagen gelöscht. Früher, wenn Sie Ihr Konto löschen |
+| Spaziergang-Strecken | Die GPS-Strecke bleibt nur für die letzten 3 Spaziergänge jedes Tieres, für Spaziergänge, die Sie als Favoriten markieren (höchstens 5 pro Tier), und für den längsten nach Entfernung und nach Dauer; von den übrigen bleiben nur Entfernung, Dauer und geschätzte Schritte. Alles wird mit dem Konto gelöscht |
 | Meldungen zu Orten und Stimmen | Pseudonym und Stimmen werden 12 Monate nach Abschluss der Meldung gelöscht; der Inhalt bleibt ohne Bezug zu Ihnen bestehen [bestätigen] |
-| Server-Protokolle | [mit dem Hosting-Anbieter festzulegen] |
-| Nachweis Ihrer Einwilligungen | Solange die Vertragsbeziehung besteht, zuzüglich der Verjährungsfrist [bestätigen] |
+| Server-Protokolle | Nur wenige Tage, je nach Anbieter: In den aktuellen Tarifen speichert Vercel Laufzeit-Protokolle etwa 1 Stunde und Supabase 1 bis 7 Tage [bestätigen in den aktiven Tarifen] |
+| Fehlerberichte | 90 Tage [bestätigen im gewählten Sentry-Tarif] |
+| Nachweis Ihrer Einwilligungen | Wird mit dem Konto gelöscht [festzulegen: ob ein Nachweis länger aufbewahrt werden soll, z. B. für die Verjährungsfrist] |
 
 ## 8. Ihre Rechte
 

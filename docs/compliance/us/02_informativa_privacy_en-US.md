@@ -30,7 +30,9 @@ Quokka is for people **18 or older** [VERIFY: age of majority varies by state]. 
 | Chat | Your questions, the answers, attachments, voice messages (we turn them into text to answer) | You and our system |
 | Location | GPS location, only if you allow it in your phone settings, or an address you type. For walks: GPS points with date, time, and accuracy, linked to your account and your pet | You, through your phone |
 | Contributions | Place reports, dog-park star ratings, votes. Shown to others without your name | You |
+| Marketplace | Listings you post: title, description, price, photos, category, species, your city and an approximate location (about 1 km / 0.6 mile). Other nearby users can see them; your name and email are not shown | You |
 | Technical | IP address, device and app version, server logs | Automatically |
+| Error reports (optional) | If you allow them: the type of error, what the app was doing, your phone model, the Android and app versions, and your language and time zone. Never message text, photos, location, your name or your email | Automatically, only if you turn them on in Settings |
 | Subscription | Plan you chose, trial start and end dates. [No payment card data is collected yet / Card payments are handled by [payment provider]; we don't see your full card number.] | You and our system |
 
 **We do not intentionally collect:** Social Security numbers, financial account numbers, or government ID numbers. Please don't upload them in documents or chat. Our system tries to remove some personal details before sending text to our AI provider, but it can't catch everything (see Section 6).
@@ -46,12 +48,13 @@ The app asks for a permission only when you use a feature that needs it. If you 
 
 ## 4. Why we use your information
 
-- To create and run your account and give you the service (pets, reminders, chat, walks, nearby places).
+- To create and run your account and give you the service (pets, reminders, chat, walks, nearby places, Marketplace).
 - To keep your optional phone number and profile photo in your profile, only if you add them. You can remove either one any time.
 - To answer your questions in chat, including by sending your question to an outside AI provider (Section 6).
 - To let our chat read your pet's health record **only if you turn that on** for that pet. You can turn it off any time.
 - To send you product news and tips by email **only if you opt in**.
 - To understand how the app is used **only if you opt in** to analytics. [VERIFY: no analytics tool is active today; delete this line if none.]
+- To find and fix errors in the app, **only if you opt in** to error reports in Settings. You can turn them off any time.
 - To keep Quokka secure, prevent abuse, fix problems, and follow the law.
 
 ## 5. Who we share information with
@@ -65,6 +68,7 @@ We do **not** sell your personal information, and we do **not** share it for cro
 | Groq (AI provider) | Text of your questions and documents, audio for transcription, images for analysis | [VERIFY: country and contract terms] |
 | OpenStreetMap services (Nominatim, map tiles, Overpass) | An address you type (to find coordinates); your IP address and map areas requested; a grid-cell center, not your exact location | [VERIFY] |
 | Google (Firebase App Distribution) | Test versions only: tester's email | [VERIFY] |
+| Sentry (Functional Software, Inc.) | Only if you opt in: a technical error report (type of error, what the app was doing, phone model, Android and app versions, language and time zone). Never message text, photos, location, your name or email | EU (Frankfurt, Germany); the company is based in the U.S. [VERIFY: data processing agreement and certifications; whether Sentry stores IP addresses] |
 
 We may also disclose information if the law requires it, to protect people's safety, or in a merger or sale of the company (we would tell you).
 
@@ -80,13 +84,14 @@ AI can be wrong. It does not replace a veterinarian. See the AI and Veterinary N
 
 | Information | How long |
 |---|---|
-| Account and pet profiles | Until you delete your account [procedure: VERIFY] |
+| Account and pet profiles | Until you delete your account in Settings → Delete account. Deletion is permanent and removes your pet profiles, chats, reminders, walks, photos and videos, uploaded reports and documents, measurements, consents, saved location, your Marketplace listings and your sign-in details [VERIFY: how long the providers' backup copies last] |
 | Health records and documents | Until you remove them or delete your account |
-| Chat | [TBD] |
-| Walk routes | [TBD; location data can reveal habits and home address] |
+| Chat | 24 months after the last message, then the conversation and its files are deleted. A file uploaded but never sent in a message is deleted after 7 days. Earlier if you delete your account |
+| Walk routes | We keep the GPS route only of the last 3 walks of each pet, of the walks you mark as favorites (at most 5 per pet) and of the longest walk by distance and by time; for other walks only distance, duration and estimated steps remain. All of it is deleted with your account |
 | Reports and votes | Pseudonym and votes deleted 12 months after the report closes; the content stays without your name [VERIFY] |
-| Server logs | [TBD] |
-| Proof of your consent choices | As long as needed to show we followed your choices [VERIFY] |
+| Server logs | A few days at most, depending on the provider: on the current plans Vercel keeps runtime logs for about 1 hour and Supabase for 1 to 7 days [VERIFY on the active plans] |
+| Error reports | 90 days [VERIFY in the chosen Sentry plan] |
+| Proof of your consent choices | Deleted with your account [DECIDE: whether to keep proof of consent for longer, for example for the limitation period] |
 
 We may keep some information longer if the law requires it or for security, and then only what's needed.
 

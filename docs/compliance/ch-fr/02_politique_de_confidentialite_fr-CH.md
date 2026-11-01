@@ -30,6 +30,7 @@ Nos informations au sens de l'art. 3, al. 1, let. s LCD figurent dans les [Menti
 | Contributions | Signalements de lieux, notes en étoiles et votes. Ils sont liés à un pseudonyme, pas à votre nom | De vous |
 | Petites annonces | Annonces, photos, prix et la zone que vous choisissez | De vous |
 | Données techniques | Adresse IP et journaux du serveur | Du système, pour faire fonctionner et sécuriser le service |
+| Rapports d'erreurs (facultatifs) | Si vous les autorisez : le type d'erreur, ce que faisait l'application, le modèle du téléphone, les versions d'Android et de l'application, la langue et le fuseau horaire. Jamais le texte de vos messages, de photos, de localisation, ni votre nom ou votre e-mail | Du système, uniquement si vous l'activez dans Réglages |
 | Abonnement | Formule choisie, début et fin de la période d'essai gratuite. Nous ne conservons aucune donnée de carte bancaire : les paiements sont [pas encore actifs / traités par (prestataire de paiement)] | De vous et du système |
 
 Nous ne demandons pas de manière ciblée de données personnelles sensibles (par exemple des données de santé vous concernant). Un document que vous importez pourrait en contenir. Merci de ne pas importer de document relatif à votre propre santé.
@@ -58,6 +59,7 @@ Nous traitons les données personnelles selon les principes de la LPD (licéité
 | Afficher les lieux proches ; recueillir signalements et notes sur les lieux | Contrat ; pour les contributions [intérêt privé prépondérant : à confirmer] | |
 | E-mails de promotion | Consentement | Facultatif. Vous pouvez le retirer à tout moment dans les réglages |
 | Statistiques d'usage | Consentement | Facultatif. [Aujourd'hui, nous n'utilisons aucun outil de mesure : confirmer ou supprimer la ligne] |
+| Trouver et corriger les erreurs de l'application (rapports d'erreurs) | Consentement [à confirmer : art. 31, al. 1 LPD] | Facultatif. Seulement si vous l'activez dans Réglages ; vous pouvez le retirer à tout moment. Seulement dans les versions de l'application qui prévoient ces rapports |
 | Sécurité, lutte contre les abus, obligations légales | Obligation légale ; intérêt prépondérant | |
 | Traiter vos demandes et réclamations | Obligation légale | |
 
@@ -74,6 +76,7 @@ Dans la mesure où, en tant que responsables établis dans l'UE, nous sommes sou
 | Serveurs de cartes OpenStreetMap | Votre adresse IP et les zones de carte demandées | [à confirmer] |
 | Overpass (données OpenStreetMap) | Le centre d'une cellule de grille et votre adresse IP ; pas votre position exacte | [à confirmer] |
 | Google (Firebase App Distribution) | Versions de test uniquement : l'adresse e-mail du testeur | [à confirmer] |
+| Sentry (Functional Software, Inc.) | Uniquement avec votre consentement : un rapport technique sur l'erreur (type d'erreur, ce que faisait l'application, modèle du téléphone, versions d'Android et de l'application, langue et fuseau horaire) | Serveurs dans l'UE (Francfort, Allemagne) ; société établie aux États-Unis [à confirmer : contrat de sous-traitance avec clauses contractuelles types ; certification DPF]. Comme pour toute connexion, Sentry voit l'adresse IP de l'appareil pendant qu'il reçoit le rapport [à confirmer : option « Prevent Storing of IP Addresses » activée dans le projet] |
 
 Nous ne vendons pas vos données personnelles.
 
@@ -95,13 +98,14 @@ Nous ne prenons pas de décision individuelle automatisée qui comporte pour vou
 
 | Données | Durée |
 |---|---|
-| Compte et fiches des animaux | Jusqu'à la suppression de votre compte [procédure à définir] |
-| Carnet de santé et documents | Jusqu'à leur suppression par vous ou à la suppression de votre compte [à confirmer] |
-| Discussion | [à définir] |
-| Parcours de promenade | [à définir : les données de localisation peuvent révéler vos habitudes et votre domicile] |
+| Compte et fiches des animaux | Jusqu'à la suppression de votre compte (Réglages → Supprimer le compte). La suppression est définitive : elle efface les fiches de vos animaux, les discussions, les rappels, les promenades, les photos et vidéos, les comptes rendus et documents importés, les mesures, les consentements, la localisation enregistrée, vos annonces et vos identifiants de connexion [à confirmer : durée de conservation des copies de sauvegarde chez les prestataires] |
+| Carnet de santé et documents | Jusqu'à leur suppression par vous ou à la suppression de votre compte |
+| Discussion | 24 mois après le dernier message ; ensuite la discussion et ses fichiers sont supprimés. Un fichier importé mais jamais envoyé dans un message est supprimé après 7 jours. Plus tôt si vous supprimez votre compte |
+| Parcours de promenade | Le tracé GPS n'est conservé que pour les 3 dernières promenades de chaque animal, celles que vous marquez comme favorites (5 au plus par animal) et la plus longue en distance et en durée ; pour les autres il reste la distance, la durée et les pas estimés. Tout est supprimé avec le compte |
 | Signalements de lieux et votes | Le pseudonyme et les votes sont supprimés 12 mois après la clôture du signalement ; le contenu reste sans lien avec vous [à confirmer] |
-| Journaux du serveur | [à définir avec l'hébergeur] |
-| Preuve de vos consentements | Pendant la relation contractuelle, plus le délai de prescription [à confirmer] |
+| Journaux du serveur | Quelques jours au plus, selon le prestataire : dans les offres actuelles, Vercel garde les journaux d'exécution environ 1 heure et Supabase de 1 à 7 jours [à confirmer dans les offres actives] |
+| Rapports d'erreurs | 90 jours [à confirmer dans l'offre Sentry choisie] |
+| Preuve de vos consentements | Supprimée avec le compte [à décider : conserver une preuve plus longtemps, par exemple pendant le délai de prescription] |
 
 ## 8. Vos droits
 

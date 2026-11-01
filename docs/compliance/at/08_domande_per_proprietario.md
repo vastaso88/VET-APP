@@ -2,7 +2,7 @@
 
 # Domande per il proprietario — Austria (solo ciò che si aggiunge a Germania)
 
-Data: 2026-10-14. Le decisioni comuni (dati del titolare, Groq/DPF, prezzi e pagamenti, Mercatino con animali vivi, linea dell'assistente, lingua dei testi legali) sono nelle domande 1–8 di `../de/08_domande_per_proprietario.md` e valgono anche qui. Questo file ha solo le domande **specifiche dell'Austria**: massimo 8, qui 4.
+Data: 2026-10-14. Le decisioni comuni (dati del titolare, Groq/DPF, prezzi e pagamenti, Mercatino: animali vietati ovunque, già deciso, linea dell'assistente, lingua dei testi legali) sono nelle domande 1–8 di `../de/08_domande_per_proprietario.md` e valgono anche qui. Questo file ha solo le domande **specifiche dell'Austria**: massimo 8, qui 4.
 
 1. **Assistente più prudente dove la legge lo richiede.** In Austria la diagnosi e il trattamento degli animali sono riservati ai veterinari e la Fernbehandlung senza visita è vietata (TÄG, Erläuterungen; TeleVetRL 24/05/2024). Accetti che per `de-AT` l'assistente non faccia nemmeno ipotesi («potrebbe essere…») e si limiti a informazioni generali, primo soccorso generico e invio al veterinario? Raccomando sì (è la decisione già presa «assistente più prudente dove la legge lo richiede»). *Impatto: prompt dell'assistente per locale, doc 05.*
 2. **Pulsante di recesso/disdetta in Austria.** Il Rücktrittsbutton (§ 13a FAGG) parte dal 01/10/2026 (🟡) e un Kündigungsbutton austriaco non risulta. Posso usare la **stessa funzione** (recesso e disdetta nella web app) per DE e AT? Raccomando sì, con testi `Rücktritt` per l'Austria. *Impatto: doc 03 §5.*

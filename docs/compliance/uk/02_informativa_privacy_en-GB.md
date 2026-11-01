@@ -29,6 +29,7 @@ ICO registration number: [number, if we are required to pay the data protection 
 | Contributions | Place reports, star ratings and votes. They are linked to a pseudonym, not your name | You |
 | Marketplace | Listings, photos, prices and the area you choose | You |
 | Technical data | IP address and server logs | The system, to run the service and keep it secure |
+| Error reports (optional) | If you allow them: the type of error, what the app was doing, your phone model, the Android and app versions, and your language and time zone. Never message text, photos, location, your name or your email | The system, only if you turn them on in Settings |
 | Subscription | The plan you choose, the start and end of your free trial. We do not hold card details: payments are [not yet active / handled by (payment provider)] | You and the system |
 
 We do not knowingly ask for special category data (such as health data about you). A document you upload could contain some. Please do not upload documents about your own health.
@@ -55,6 +56,7 @@ The app asks for a permission only when you use a feature that needs it. If you 
 | Show nearby places; collect place reports and star ratings | Contract, Article 6(1)(b); for contributions, [legitimate interests, Article 6(1)(f): to be confirmed] | |
 | Marketing emails | Consent, Article 6(1)(a) | Optional. You can withdraw at any time in Settings. PECR also applies |
 | Usage analytics | Consent, Article 6(1)(a) | Optional. [Today we do not use any analytics tool: confirm or delete this row] |
+| Find and fix errors in the app (error reports) | Consent, Article 6(1)(a) | Optional. Only if you turn them on in Settings; you can withdraw at any time. Only in app versions that include error reports |
 | Security, preventing abuse, legal obligations | Legal obligation, Article 6(1)(c); legitimate interests, Article 6(1)(f) | |
 | Handle your requests and complaints | Legal obligation, Article 6(1)(c) | |
 
@@ -69,6 +71,7 @@ The app asks for a permission only when you use a feature that needs it. If you 
 | OpenStreetMap map servers | Your IP address and the map areas requested | [to confirm] |
 | Overpass (OpenStreetMap data) | The centre of a grid cell and your IP address; not your exact position | [to confirm] |
 | Google (Firebase App Distribution) | Test versions only: the tester's email | [to confirm] |
+| Sentry (Functional Software, Inc.) | Only with your consent: a technical error report (type of error, what the app was doing, phone model, Android and app versions, language and time zone) | Servers in the EU (Frankfurt, Germany); the company is based in the USA [to confirm: data processing agreement with standard contractual clauses and the UK addendum; DPF certification]. Like any connection, Sentry sees your device's IP address while it receives the report [to confirm: the project setting "Prevent Storing of IP Addresses" is on] |
 
 We do not sell your personal information.
 
@@ -90,13 +93,14 @@ We do not make decisions about you that have legal or similarly significant effe
 
 | Information | How long |
 |---|---|
-| Account and pet profiles | Until you delete your account [process to be defined] |
-| Health record and documents | Until you remove them or delete your account [to confirm] |
-| Chat | [to define] |
-| Walk routes | [to define: location data can reveal habits and your home] |
+| Account and pet profiles | Until you delete your account in Settings → Delete account. Deletion is permanent and removes your pet profiles, chats, reminders, walks, photos and videos, uploaded reports and documents, measurements, consents, saved location, your Marketplace listings and your sign-in details [to confirm: how long the providers' backup copies last] |
+| Health record and documents | Until you remove them or delete your account |
+| Chat | 24 months after the last message, then the conversation and its files are deleted. A file uploaded but never sent in a message is deleted after 7 days. Earlier if you delete your account |
+| Walk routes | We keep the GPS route only of the last 3 walks of each pet, of the walks you mark as favourites (at most 5 per pet) and of the longest walk by distance and by time; for other walks only distance, duration and estimated steps remain. All of it is deleted with your account |
 | Place reports and votes | Pseudonym and votes deleted 12 months after the report closes; the content stays without links to you [to confirm] |
-| Server logs | [to define with the hosting provider] |
-| Proof of your consents | For as long as we have a relationship with you plus the limitation period [to confirm] |
+| Server logs | A few days at most, depending on the provider: on the current plans Vercel keeps runtime logs for about 1 hour and Supabase for 1 to 7 days [to confirm on the active plans] |
+| Error reports | 90 days [to confirm in the chosen Sentry plan] |
+| Proof of your consents | Deleted with your account [to decide: whether to keep proof of consent for longer, for example for the limitation period] |
 
 ## 8. Your rights
 

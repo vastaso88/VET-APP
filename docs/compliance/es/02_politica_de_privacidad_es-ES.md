@@ -41,6 +41,7 @@ Nuestros datos de información general (artículo 10 de la LSSI-CE) figuran en l
 | Contribuciones | Avisos sobre lugares, valoraciones con estrellas y votos. Se vinculan a un seudónimo, no a su nombre | De usted |
 | Mercadillo | Anuncios, fotos, precios y la zona que elija | De usted |
 | Datos técnicos | Dirección IP y registros del servidor | Del sistema, para operar y proteger el servicio |
+| Informes de errores (voluntarios) | Si usted los permite: el tipo de error, qué estaba haciendo la aplicación, el modelo del teléfono, las versiones de Android y de la aplicación, el idioma y la zona horaria. Nunca el texto de los mensajes, fotos, ubicación, su nombre ni su correo electrónico | Del sistema, solo si usted los activa en Ajustes |
 | Suscripción | Plan elegido, inicio y fin del periodo de prueba gratuito. No guardamos datos de tarjeta: los pagos [aún no están activos / los gestiona (proveedor de pagos)] | De usted y del sistema |
 
 No pedimos de forma deliberada categorías especiales de datos (art. 9 RGPD, por ejemplo datos de salud suyos). Un documento que usted suba podría contenerlos. Le rogamos que no suba documentos sobre su propia salud.
@@ -67,6 +68,7 @@ La aplicación solo pide un permiso cuando usted usa una función que lo necesit
 | Mostrar lugares cercanos; recoger avisos y valoraciones sobre lugares | Ejecución del contrato, art. 6.1.b RGPD; para las contribuciones [interés legítimo, art. 6.1.f RGPD: por confirmar] | |
 | Correos de novedades | Consentimiento, art. 6.1.a RGPD y art. 21 LSSI-CE | Voluntario. Puede retirarlo en cualquier momento en Ajustes y en cada correo |
 | Estadísticas de uso | Consentimiento, art. 6.1.a RGPD y art. 22.2 LSSI-CE | Voluntario. [Hoy no usamos ninguna herramienta de analítica: confirmar o eliminar la fila] |
+| Encontrar y corregir errores de la aplicación (informes de errores) | Consentimiento, art. 6.1.a RGPD y art. 22.2 LSSI-CE | Voluntario. Solo si usted los activa en Ajustes; puede retirarlo en cualquier momento. Solo en las versiones de la aplicación que incluyen informes de errores |
 | Seguridad, prevención de abusos, obligaciones legales | Obligación legal, art. 6.1.c RGPD; interés legítimo, art. 6.1.f RGPD | |
 | Atender sus solicitudes y reclamaciones | Obligación legal, art. 6.1.c RGPD | |
 | Almacenar o leer información en su dispositivo estrictamente necesaria para el servicio (por ejemplo, el inicio de sesión) | Art. 22.2 LSSI-CE (sin consentimiento) | Todo lo demás solo con su consentimiento previo |
@@ -82,6 +84,7 @@ La aplicación solo pide un permiso cuando usted usa una función que lo necesit
 | Servidores de mapas de OpenStreetMap | Su dirección IP y las zonas de mapa solicitadas | [confirmar] |
 | Overpass (datos de OpenStreetMap) | El centro de una cuadrícula y su dirección IP; no su posición exacta | [confirmar] |
 | Google (Firebase App Distribution) | Solo versiones de prueba: el correo del probador | [confirmar] |
+| Sentry (Functional Software, Inc.) | Solo con su consentimiento: un informe técnico del error (tipo de error, qué estaba haciendo la aplicación, modelo del teléfono, versiones de Android y de la aplicación, idioma y zona horaria) | Servidores en la UE (Fráncfort, Alemania); empresa con sede en EE. UU. [confirmar: contrato de encargo con cláusulas contractuales tipo; certificación DPF]. Como en cualquier conexión, Sentry ve la dirección IP del dispositivo mientras recibe el informe [confirmar: opción «Prevent Storing of IP Addresses» activada en el proyecto] |
 
 No vendemos sus datos personales.
 
@@ -103,13 +106,14 @@ No tomamos decisiones sobre usted basadas únicamente en un tratamiento automati
 
 | Datos | Plazo |
 |---|---|
-| Cuenta y fichas de animales | Hasta que usted elimine su cuenta [procedimiento por definir] |
-| Historial clínico y documentos | Hasta que usted los elimine o elimine su cuenta [confirmar] |
-| Chat | [por definir] |
-| Recorridos de paseo | [por definir: los datos de ubicación pueden revelar hábitos y su domicilio] |
+| Cuenta y fichas de animales | Hasta que usted elimine su cuenta (Ajustes → Eliminar cuenta). La eliminación es definitiva: borra las fichas de sus animales, los chats, los recordatorios, los paseos, las fotos y los vídeos, los informes y documentos subidos, las mediciones, los consentimientos, la ubicación guardada, sus anuncios del mercadillo y sus datos de acceso [confirmar: cuánto duran las copias de seguridad de los proveedores] |
+| Historial clínico y documentos | Hasta que usted los elimine o elimine su cuenta |
+| Chat | 24 meses después del último mensaje; después se borran la conversación y sus archivos. Un archivo subido pero nunca enviado en un mensaje se borra a los 7 días. Antes, si usted elimina su cuenta |
+| Recorridos de paseo | El trazado GPS solo se conserva de los 3 últimos paseos de cada animal, de los que usted marque como favoritos (como máximo 5 por animal) y del más largo en distancia y en duración; de los demás quedan la distancia, la duración y los pasos estimados. Todo se elimina con la cuenta |
 | Avisos sobre lugares y votos | El seudónimo y los votos se eliminan 12 meses después de cerrado el aviso; el contenido permanece sin vínculo con usted [confirmar] |
-| Registros del servidor | [por definir con el proveedor de alojamiento] |
-| Prueba de sus consentimientos | Mientras dure la relación contractual, más los plazos de prescripción y el bloqueo de datos [confirmar] |
+| Registros del servidor | Pocos días como máximo, según el proveedor: en los planes actuales Vercel conserva los registros de ejecución alrededor de 1 hora y Supabase de 1 a 7 días [confirmar en los planes activos] |
+| Informes de errores | 90 días [confirmar en el plan de Sentry elegido] |
+| Prueba de sus consentimientos | Se elimina con la cuenta [decidir: si se conserva una prueba más tiempo, por ejemplo durante el plazo de prescripción] |
 
 ## 8. Sus derechos
 

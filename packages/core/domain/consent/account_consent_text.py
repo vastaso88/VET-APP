@@ -15,7 +15,11 @@ CURRENT_VERSIONS: dict[str, str] = {
     # v2 (2026-10-06): v1 promised a full notice "consultabile dalle
     # Impostazioni" that does not exist; v2 says what is processed and that
     # the full notice is still being written.
-    AccountConsentType.PRIVACY_POLICY: "v2",
+    # v3 (2026-10-28): the account also holds the surname, an optional phone
+    # number and an optional profile photo, and the Marketplace publishes
+    # listings; v3 names them and the delete-account route. Renaming the
+    # product to Quokka (2026-10-27) changed no meaning: no bump for that.
+    AccountConsentType.PRIVACY_POLICY: "v3",
     AccountConsentType.MARKETING_EMAIL: "v1",
     AccountConsentType.ANALYTICS: "v1",
     AccountConsentType.DIAGNOSTICS: "v1",
@@ -35,15 +39,18 @@ CONSENT_TEXT_IT: dict[str, str] = {
     # and must not promise a page that does not exist.
     AccountConsentType.PRIVACY_POLICY: (
         "In sintesi: per farti usare Quokka trattiamo i dati dell'account "
-        "(nome ed email), il profilo dei tuoi animali, i documenti e le foto "
-        "che carichi, le conversazioni con l'assistente e, se li attivi, la "
+        "(nome, cognome ed email; facoltativi: telefono e foto profilo), il "
+        "profilo dei tuoi animali, i documenti, le foto e gli annunci del "
+        "Mercatino che pubblichi, le conversazioni con l'assistente e, se li "
+        "attivi, la "
         "tua posizione e i percorsi delle passeggiate. Quello che mandi "
         "all'assistente (domande, allegati, messaggi vocali) viene inviato a "
         "un fornitore esterno di intelligenza artificiale per scrivere le "
         "risposte; la cartella clinica solo se lo consenti. I dati sono "
         "conservati su servizi di terzi (hosting e database). Puoi chiedere "
         "accesso, correzione o cancellazione dei tuoi dati scrivendo da "
-        "Impostazioni → Contattaci, e revocare in ogni momento i consensi "
+        "Impostazioni → Contattaci, oppure eliminare l'account da "
+        "Impostazioni → Elimina account, e revocare in ogni momento i consensi "
         "facoltativi dalle Impostazioni. L'informativa completa è in "
         "preparazione."
     ),
@@ -59,13 +66,16 @@ CONSENT_TEXT_IT: dict[str, str] = {
         "come migliorarla. Puoi revocare il consenso in qualsiasi momento "
         "dalle Impostazioni, senza alcuna conseguenza sull'uso dell'app."
     ),
-    # Error reports: wording proposed in docs/security/10_crash_reporting.md; the
-    # provider (Sentry, EU) goes in the privacy notice's recipients table.
+    # Error reports: wording proposed in docs/security/10_crash_reporting.md and
+    # completed on 2026-10-28 (provider, purpose, exact data; still v1 because the
+    # consent is new). The provider (Sentry, EU) is also in the privacy notice.
     AccountConsentType.DIAGNOSTICS: (
         "Se l'app si chiude per un errore, con il tuo consenso inviamo un rapporto "
-        "tecnico (cosa stava facendo l'app, modello del telefono, versione dell'app) a "
-        "un servizio di diagnostica con server in Germania. Non include mai messaggi, "
-        "foto, posizione né dati dei tuoi animali. Puoi revocare il consenso in "
+        "tecnico a Sentry, un servizio di diagnostica con server in Germania, per "
+        "correggere l'errore. Il rapporto contiene il tipo di errore, cosa stava "
+        "facendo l'app, il modello del telefono, la versione di Android e dell'app, "
+        "la lingua e il fuso orario. Non include mai messaggi, foto, posizione, dati "
+        "dei tuoi animali, il tuo nome o la tua e-mail. Puoi revocare il consenso in "
         "qualsiasi momento da Impostazioni, senza conseguenze sull'uso dell'app."
     ),
     # Text agreed with docs/compliance/07_contributi_utenti.md.
@@ -99,19 +109,19 @@ CONSENT_TEXT_IT: dict[str, str] = {
 # required for these drafts before a public production release.
 CONSENT_TEXT_EN: dict[str, str] = {
     "terms_of_service": "By using Quokka, you accept the Terms of Service: the rules governing use of the app, your obligations as a user and the service's limits of liability, including the fact that the assistant's suggestions do not replace a veterinarian's advice. You cannot create an account without accepting these terms.",
-    "privacy_policy": "In brief: to let you use Quokka, we process account data (name and email), your pets' profiles, the documents and photos you upload, conversations with the assistant and, if you enable them, your location and walk routes. What you send to the assistant (questions, attachments, voice messages) is sent to an external artificial intelligence provider to write the answers; medical records are sent only with your consent. Data is stored on third-party services (hosting and database). You can request access to, correction or deletion of your data by writing through Settings → Contact us, and withdraw optional consents at any time from Settings. The full privacy notice is being prepared.",
+    "privacy_policy": "In brief: to let you use Quokka, we process account data (first name, last name and email; optional: phone number and profile photo), your pets' profiles, the documents, photos and Marketplace listings you publish, conversations with the assistant and, if you enable them, your location and walk routes. What you send to the assistant (questions, attachments, voice messages) is sent to an external artificial intelligence provider to write the answers; medical records are sent only with your consent. Data is stored on third-party services (hosting and database). You can request access to, correction or deletion of your data by writing through Settings → Contact us, or delete your account from Settings → Delete account, and withdraw optional consents at any time from Settings. The full privacy notice is being prepared.",
     "marketing_email": "With your consent, we may email you Quokka news and advice for your pets. You may withdraw consent at any time from Settings, without affecting your use of the app.",
     "analytics": "With your consent, we collect statistical and anonymous app usage data (such as screens visited and features used) to understand how to improve it. You may withdraw consent at any time from Settings, without affecting your use of the app.",
-    "diagnostics": "If the app closes because of an error, with your consent we send a technical report (what the app was doing, phone model, app version) to a diagnostics service with servers in Germany. It never includes messages, photos, location or your pets' data. You may withdraw consent at any time from Settings, without affecting your use of the app.",
+    "diagnostics": "If the app closes because of an error, with your consent we send a technical report to Sentry, a diagnostics service with servers in Germany, to fix the error. The report contains the type of error, what the app was doing, your phone model, the Android and app versions, and your language and time zone. It never includes messages, photos, location, your pets' data, your name or your email. You may withdraw consent at any time from Settings, without affecting your use of the app.",
     "contribution_rules": "Rules for reports and ratings\n1. Report only what you have verified personally or know for certain.\n2. For businesses, enter only the trading name as it appears on the sign. Do not enter phone numbers, private addresses, emails or other people's data.\n3. Reports remain “awaiting confirmation” until other users confirm them. They are not a guarantee: always check before visiting a place.\n4. Dog park ratings are personal opinions: one rating per park.\n5. Report a missing dog park only if it is public and open to the public. Do not report private property or invite others to enter private places.\n6. Do not use reports to harm a business. False or repeated reports may lead to account suspension.\n7. Businesses may request correction or removal of data: we check and respond as soon as possible.\n8. Your reports and ratings are published without your name or personal data, which continue to be processed as described in the privacy notice.",
 }
 
 CONSENT_TEXT_ES: dict[str, str] = {
     "terms_of_service": "Al usar Quokka aceptas los Términos de Servicio: las reglas que regulan el uso de la aplicación, tus obligaciones como usuario y los límites de responsabilidad del servicio, incluido que las sugerencias del asistente no sustituyen el consejo de un veterinario. Sin esta aceptación no es posible crear una cuenta.",
-    "privacy_policy": "En resumen: para que puedas usar Quokka tratamos los datos de tu cuenta (nombre y correo electrónico), los perfiles de tus animales, los documentos y fotos que subes, las conversaciones con el asistente y, si los activas, tu ubicación y los recorridos de los paseos. Lo que envías al asistente (preguntas, adjuntos, mensajes de voz) se envía a un proveedor externo de inteligencia artificial para escribir las respuestas; el historial clínico solo se envía si lo consientes. Los datos se conservan en servicios de terceros (alojamiento y base de datos). Puedes solicitar acceso, corrección o eliminación de tus datos escribiendo desde Ajustes → Contáctanos y retirar los consentimientos opcionales en cualquier momento desde los Ajustes. El aviso completo de privacidad está en preparación.",
+    "privacy_policy": "En resumen: para que puedas usar Quokka tratamos los datos de tu cuenta (nombre, apellidos y correo electrónico; opcionales: teléfono y foto de perfil), los perfiles de tus animales, los documentos, fotos y anuncios del mercadillo que publicas, las conversaciones con el asistente y, si los activas, tu ubicación y los recorridos de los paseos. Lo que envías al asistente (preguntas, adjuntos, mensajes de voz) se envía a un proveedor externo de inteligencia artificial para escribir las respuestas; el historial clínico solo se envía si lo consientes. Los datos se conservan en servicios de terceros (alojamiento y base de datos). Puedes solicitar acceso, corrección o eliminación de tus datos escribiendo desde Ajustes → Contáctanos, o eliminar tu cuenta desde Ajustes → Eliminar cuenta, y retirar los consentimientos opcionales en cualquier momento desde los Ajustes. El aviso completo de privacidad está en preparación.",
     "marketing_email": "Con tu consentimiento podemos enviarte por correo electrónico novedades de Quokka y consejos para tus animales. Puedes retirar el consentimiento en cualquier momento desde los Ajustes, sin consecuencias para el uso de la aplicación.",
     "analytics": "Con tu consentimiento recopilamos datos estadísticos y anónimos sobre el uso de la aplicación (por ejemplo, pantallas visitadas y funciones utilizadas) para saber cómo mejorarla. Puedes retirar el consentimiento en cualquier momento desde los Ajustes, sin consecuencias para el uso de la aplicación.",
-    "diagnostics": "Si la aplicación se cierra por un error, con tu consentimiento enviamos un informe técnico (qué estaba haciendo la aplicación, modelo del teléfono, versión de la aplicación) a un servicio de diagnóstico con servidores en Alemania. Nunca incluye mensajes, fotos, ubicación ni datos de tus animales. Puedes retirar el consentimiento en cualquier momento desde los Ajustes, sin consecuencias para el uso de la aplicación.",
+    "diagnostics": "Si la aplicación se cierra por un error, con tu consentimiento enviamos un informe técnico a Sentry, un servicio de diagnóstico con servidores en Alemania, para corregir el error. El informe contiene el tipo de error, qué estaba haciendo la aplicación, el modelo del teléfono, las versiones de Android y de la aplicación, y el idioma y la zona horaria. Nunca incluye mensajes, fotos, ubicación, datos de tus animales, tu nombre ni tu correo electrónico. Puedes retirar el consentimiento en cualquier momento desde los Ajustes, sin consecuencias para el uso de la aplicación.",
     "contribution_rules": "Reglas para avisos y valoraciones\n1. Comunica solo lo que hayas comprobado personalmente o sepas con certeza.\n2. Para los establecimientos, escribe solo el nombre comercial tal como aparece en el letrero. No incluyas teléfonos, direcciones privadas, correos electrónicos ni datos de otras personas.\n3. Los avisos quedan “pendientes de confirmación” hasta que otros usuarios los confirmen. No son una garantía: comprueba siempre antes de acudir a un lugar.\n4. Las valoraciones de parques caninos son opiniones personales: una valoración por parque.\n5. Comunica un parque canino que falta solo si es público y está abierto al público. No comuniques propiedades privadas ni invites a otras personas a entrar en lugares privados.\n6. No uses los avisos para perjudicar a un establecimiento. Los avisos falsos o repetidos pueden provocar la suspensión de la cuenta.\n7. Los establecimientos pueden solicitar que se corrija o elimine un dato: lo comprobamos y respondemos lo antes posible.\n8. Tus avisos y valoraciones se publican sin tu nombre ni tus datos personales, que siguen tratándose según el aviso de privacidad.",
 }
 
