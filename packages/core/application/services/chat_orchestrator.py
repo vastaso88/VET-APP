@@ -42,6 +42,7 @@ from packages.core.application.services.medical_record_context_retriever import 
 )
 from packages.core.application.services.natural_answer_prompt import (
     ANSWER_NOW_REMINDER,
+    PROMPT_VERSION,
     build_system_prompt,
 )
 from packages.core.application.services.response_generator import ResponseGenerator
@@ -1248,9 +1249,10 @@ class ChatOrchestrator:
             "thanks": "Di niente! Se ti serve altro per {name}, sono qui.",
             "ack": "Perfetto. Quando vuoi, sono qui per {name}.",
             "identity": (
-                "Sono l'assistente dell'app: rispondo alle domande su {name}, spiego referti "
-                "ed esami con parole semplici e ti dico quando è il caso di sentire il "
-                "veterinario. Non faccio diagnosi e non do dosaggi."
+                "Sono l'assistente dell'app: ti aiuto a capire {name}, perché fa quello che "
+                "fa e come gestirlo ogni giorno, spiego referti con parole semplici e ti dico "
+                "quando è il caso di sentire il veterinario. Non faccio diagnosi e non do "
+                "dosaggi."
             ),
         },
         "en": {
@@ -1258,9 +1260,10 @@ class ChatOrchestrator:
             "thanks": "You're welcome! If you need anything else for {name}, I'm here.",
             "ack": "Great. Whenever you want, I'm here for {name}.",
             "identity": (
-                "I'm the app's assistant: I answer questions about {name}, explain reports "
-                "and test results in plain words, and tell you when it's time to see the "
-                "vet. I don't diagnose and I don't give dosages."
+                "I'm the app's assistant: I help you understand {name}, why they do what "
+                "they do and how to manage everyday life together, I explain reports in "
+                "plain words and tell you when it's time to see the vet. I don't diagnose "
+                "and I don't give dosages."
             ),
         },
         "de": {
@@ -1271,9 +1274,11 @@ class ChatOrchestrator:
             "thanks": "Gern geschehen! Wenn Sie noch etwas für {name} brauchen, bin ich da.",
             "ack": "Gut. Wann immer Sie möchten, ich bin für {name} da.",
             "identity": (
-                "Ich bin der Assistent der App: Ich beantworte Fragen zu {name}, erkläre "
-                "Befunde und Untersuchungen in einfachen Worten und sage Ihnen, wann es Zeit "
-                "für den Tierarzt ist. Ich stelle keine Diagnosen und nenne keine Dosierungen."
+                "Ich bin der Assistent der App: Ich helfe Ihnen, {name} zu verstehen, warum "
+                "das Tier tut, was es tut, und wie Sie den Alltag gut gestalten; ich erkläre "
+                "Befunde in einfachen Worten und sage Ihnen, wann es Zeit für die Tierärztin "
+                "bzw. den Tierarzt ist. Ich stelle keine Diagnosen und nenne keine "
+                "Dosierungen."
             ),
         },
         "fr": {
@@ -1284,10 +1289,10 @@ class ChatOrchestrator:
             "thanks": "Avec plaisir ! S'il vous faut autre chose pour {name}, je suis là.",
             "ack": "Parfait. Quand vous voulez, je suis là pour {name}.",
             "identity": (
-                "Je suis l'assistant de l'appli : je réponds aux questions sur {name}, "
-                "j'explique les comptes rendus et les examens avec des mots simples et je vous "
-                "dis quand il faut voir le vétérinaire. Je ne pose pas de diagnostic et je ne "
-                "donne pas de dosages."
+                "Je suis l'assistant de l'appli : je vous aide à comprendre {name}, pourquoi "
+                "il fait ce qu'il fait et comment bien gérer le quotidien, j'explique les "
+                "comptes rendus avec des mots simples et je vous dis quand il faut voir le "
+                "vétérinaire. Je ne pose pas de diagnostic et je ne donne pas de dosages."
             ),
         },
         "es": {
@@ -1297,9 +1302,10 @@ class ChatOrchestrator:
             "thanks": "¡De nada! Si necesitas algo más para {name}, aquí estoy.",
             "ack": "Perfecto. Cuando quieras, aquí estoy para {name}.",
             "identity": (
-                "Soy el asistente de la app: respondo a preguntas sobre {name}, explico "
-                "informes y análisis con palabras sencillas y te digo cuándo conviene ver al "
-                "veterinario. No hago diagnósticos ni doy dosis."
+                "Soy el asistente de la app: te ayudo a entender a {name}, por qué hace lo "
+                "que hace y cómo gestionar el día a día, explico informes con palabras "
+                "sencillas y te digo cuándo conviene ver al veterinario. No hago diagnósticos "
+                "ni doy dosis."
             ),
         },
     }
@@ -2086,7 +2092,10 @@ class ChatOrchestrator:
             == normalize_question(message)
         ):
             cache_id = cache_key(
-                message, species=normalize_species(effective_species), language=data.language
+                message,
+                species=normalize_species(effective_species),
+                language=data.language,
+                prompt_version=PROMPT_VERSION,
             )
             cached = self._cached_answer_result(cache_id)
             if cached is not None:

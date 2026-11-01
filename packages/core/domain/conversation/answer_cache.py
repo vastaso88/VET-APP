@@ -69,6 +69,12 @@ def is_cacheable_question(
     return True
 
 
-def cache_key(message: str, *, species: str, language: str) -> str:
-    material = f"{language.strip().lower()}|{species.strip().lower()}|{normalize_question(message)}"
+def cache_key(message: str, *, species: str, language: str, prompt_version: str = "") -> str:
+    """[prompt_version] is the version of the system prompt the answer was
+    written under (natural_answer_prompt.PROMPT_VERSION): a new prompt means
+    new keys, so no answer written under the old rules survives its 24 h."""
+    material = (
+        f"{prompt_version.strip()}|{language.strip().lower()}|{species.strip().lower()}|"
+        f"{normalize_question(message)}"
+    )
     return hashlib.sha256(material.encode("utf-8")).hexdigest()[:32]

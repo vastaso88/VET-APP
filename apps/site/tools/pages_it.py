@@ -1,3 +1,4 @@
+# ruff: noqa: E501
 """Italian page definitions for the Quokka site. See build.py.
 
 The legal texts (privacy, terms, support) are NOT written here: they are read from

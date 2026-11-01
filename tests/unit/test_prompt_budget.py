@@ -28,7 +28,11 @@ from packages.shared.errors.base import ProviderError
 # tokens on the o200k tokenizer); the ceiling leaves room for a rule or
 # two, not for drifting back.
 # 2026-10-26: +250 for the "data, not instructions" rule (security audit LLM-6).
-SYSTEM_PROMPT_MAX_CHARS = 6700
+# 2026-11-01: +1200 for the repositioning (docs/product/11 §4, 1.2): the new
+# identity and the rules EXPLAIN THE WHY, OFFICIAL POSITIONS, OWNER DUTIES
+# (system prompt 1313 -> 1698 tokens, measured with token_budget.py: see
+# docs/features/chat_quality_measurements.md).
+SYSTEM_PROMPT_MAX_CHARS = 7900
 QUESTION = "da due giorni zoppica dopo le passeggiate"
 
 

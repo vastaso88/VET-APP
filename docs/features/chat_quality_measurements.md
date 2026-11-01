@@ -61,6 +61,26 @@ serie) a 1,91 s, contro 1,50 s della sola risposta (`latency_probe.py`, dettagli
 `chat_free_tier_budget.md`). Da riverificare con il modello leggero attivo alla prossima
 misura.
 
+## 2026-11-01 — costo in token del prompt riposizionato (senza provider)
+
+Riposizionamento sulla consapevolezza del proprietario (`docs/product/11`, fase 1.2):
+identità nuova e tre regole in più nel prompt di sistema (EXPLAIN THE WHY, OFFICIAL
+POSITIONS, OWNER DUTIES), `_DIRECT` fino a ~1500 caratteri per i "perché". Stesso
+strumento e stessi 80 turni della misura del 14 ottobre.
+
+| misura | 14 ottobre (build 32) | 1 novembre |
+|---|---|---|
+| token del prompt di sistema (mediana) | 1313 | 1698 |
+| token in ingresso al modello principale per turno (mediana) | 1485 | 1857 |
+| costo stimato di una risposta sul principale | 1985 | 2357 |
+| risposte/giorno con i 200k del principale | 100 | 84 |
+| risposte/giorno con principale + due riserve | 302 | 254 |
+
+Il prompt torna vicino al peso di prima della build 32 (1753): le regole nuove costano
+circa 385 token a chiamata. Leva possibile se serve recuperare: portare EXPLAIN THE WHY e
+OWNER DUTIES solo nelle varianti per domande dirette e comportamento, lasciando referti e
+sintomi al prompt corto (da decidere con l'instradamento comportamentale della fase 2).
+
 ## 2026-10-14 — costo in token per risposta (senza provider)
 
 `scripts/eval/chat_quality/token_budget.py`, tiktoken `o200k_base`, 80 turni degli

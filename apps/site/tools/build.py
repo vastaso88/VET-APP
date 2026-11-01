@@ -14,9 +14,11 @@ import html
 import importlib
 import sys
 from pathlib import Path
+from types import ModuleType
+from typing import Any
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-import mdlite  # noqa: E402
+import mdlite  # type: ignore[import-not-found]  # noqa: E402
 
 SITE_DIR = Path(__file__).resolve().parents[1]
 REPO_DIR = SITE_DIR.parents[1]
@@ -28,7 +30,7 @@ DRAFT = True
 
 
 def _page_shell(
-    lang_mod, *, title: str, description: str, body: str, path: str, nav: bool = True
+    lang_mod: ModuleType, *, title: str, description: str, body: str, path: str, nav: bool = True
 ) -> str:
     T = lang_mod.UI
     links = "".join(
@@ -69,7 +71,7 @@ def _page_shell(
 """
 
 
-def _legal_body(lang_mod, page: dict) -> str:
+def _legal_body(lang_mod: ModuleType, page: dict[str, Any]) -> str:
     """Take the publishable part of a docs/compliance text and lay it out."""
     text = (REPO_DIR / page["md"]).read_text(encoding="utf-8")
     # Drop the draft header (before the first rule) and the reviewer notes (last section).

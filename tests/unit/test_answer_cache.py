@@ -13,6 +13,7 @@ from packages.core.application.services.chat_orchestrator import (
     ChatOrchestrator,
     ChatOrchestratorInput,
 )
+from packages.core.application.services.natural_answer_prompt import PROMPT_VERSION
 from packages.core.domain.conversation.answer_cache import (
     cache_key,
     is_cacheable_question,
@@ -151,7 +152,7 @@ def test_a_follow_up_is_never_served_from_the_cache() -> None:
 def test_an_expired_answer_is_regenerated() -> None:
     client = RecordingLLMClient("Risposta nuova.")
     cache = InMemoryAnswerCacheRepository()
-    key = cache_key(CURIOSITY, species="dog", language="it")
+    key = cache_key(CURIOSITY, species="dog", language="it", prompt_version=PROMPT_VERSION)
     cache.put(
         CachedAnswer(
             key=key,
