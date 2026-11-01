@@ -80,7 +80,7 @@ Future<void> sharePdfThenDelete(
 }) async {
   Future<void> send(XFile file) => share != null
       ? share(file)
-      : Share.shareXFiles([file], subject: fileName);
+      : SharePlus.instance.share(ShareParams(files: [file], subject: fileName));
 
   if (kIsWeb) {
     await send(

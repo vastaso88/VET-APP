@@ -51,11 +51,16 @@ class _LegalTextPageState extends State<LegalTextPage> {
               future: _text,
               builder: (context, snapshot) {
                 final text = snapshot.data;
-                final ready = text != null && text.length >= LegalTextPage.fullTextMinLength;
+                final ready = text != null &&
+                    text.length >= LegalTextPage.fullTextMinLength;
                 return IconButton(
                   tooltip: context.l10n.authLegalShareTooltip,
                   icon: const Icon(Icons.ios_share_rounded),
-                  onPressed: ready ? () => Share.share(text, subject: widget.title) : null,
+                  onPressed: ready
+                      ? () => SharePlus.instance.share(
+                            ShareParams(text: text, subject: widget.title),
+                          )
+                      : null,
                 );
               },
             ),
@@ -80,7 +85,8 @@ class _LegalTextPageState extends State<LegalTextPage> {
               ),
             );
           }
-          final preparing = widget.shareable && text.length < LegalTextPage.fullTextMinLength;
+          final preparing =
+              widget.shareable && text.length < LegalTextPage.fullTextMinLength;
           return SingleChildScrollView(
             padding: const EdgeInsets.all(AppSpacing.xl),
             child: Column(
@@ -89,7 +95,8 @@ class _LegalTextPageState extends State<LegalTextPage> {
                 if (preparing) ...[
                   Text(
                     context.l10n.authLegalPreparingNotice,
-                    style: AppTextStyles.body.copyWith(fontWeight: FontWeight.w700),
+                    style: AppTextStyles.body
+                        .copyWith(fontWeight: FontWeight.w700),
                   ),
                   const SizedBox(height: AppSpacing.lg),
                 ],

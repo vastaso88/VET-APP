@@ -632,7 +632,7 @@ String? detailOf(String body) {
 
 /// The owner-facing sentence of a 429 "quota_exceeded" answer (a daily
 /// allowance of readings, dictations or summaries is used up): the backend
-/// writes `detail` as "quota_exceeded: <sentence in the user's language>".
+/// writes `detail` as `quota_exceeded: <sentence in the user's language>`.
 /// Null for any other body, so callers fall back to their own messages.
 String? quotaExceededMessage(String body) {
   const prefix = 'quota_exceeded:';

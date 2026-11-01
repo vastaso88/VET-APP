@@ -14,7 +14,8 @@ import '../data/medical_records_repository.dart';
 import '../domain/record_category.dart';
 import 'pages/medical_record_upload_page.dart';
 import 'record_category_labels.dart';
-import 'native_pdf_opener_stub.dart' if (dart.library.io) 'native_pdf_opener.dart';
+import 'native_pdf_opener_stub.dart'
+    if (dart.library.io) 'native_pdf_opener.dart';
 import 'pdf_open_outcome.dart';
 
 /// The bytes of a record's file: this session's cache first, then the server.
@@ -24,17 +25,20 @@ Future<Uint8List?> loadRecordBytes(MedicalRecordEntry record) async {
   if (cached != null) return cached.bytes;
   final attachmentId = record.attachmentId;
   if (attachmentId == null) return null;
-  final result = await HttpChatAttachmentRemoteDataSource().download(attachmentId);
+  final result =
+      await HttpChatAttachmentRemoteDataSource().download(attachmentId);
   return result.fold(onSuccess: (bytes) => bytes, onFailure: (_) => null);
 }
 
-String _mimeFor(Uint8List bytes, String name) => attachmentMediaType(bytes, name).toString();
+String _mimeFor(Uint8List bytes, String name) =>
+    attachmentMediaType(bytes, name).toString();
 
 /// Whether there is a file behind [record] to open or send: an upload on the
 /// server, or one still in this session's cache. An entry added without a
 /// file (a visit with just a date and notes) has none.
 bool recordHasFile(MedicalRecordEntry record) =>
-    record.attachmentId != null || MedicalRecordFileCache.instance.get(record.id) != null;
+    record.attachmentId != null ||
+    MedicalRecordFileCache.instance.get(record.id) != null;
 
 /// Opens the sheet with the actions for one record: Apri, Invia, modifica
 /// dettagli, Rinomina, Elimina.
@@ -45,8 +49,9 @@ Future<void> showRecordActions(
 }) {
   // What the title suggests, offered only for an entry still filed as a
   // plain document and only as a tap: never applied on its own.
-  final suggestion =
-      record.category == RecordCategory.document ? suggestCategoryFromTitle(record.title) : null;
+  final suggestion = record.category == RecordCategory.document
+      ? suggestCategoryFromTitle(record.title)
+      : null;
   final hasFile = recordHasFile(record);
   return showModalBottomSheet<void>(
     context: context,
@@ -59,8 +64,12 @@ Future<void> showRecordActions(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Padding(
-              padding: const EdgeInsets.fromLTRB(AppSpacing.lg, AppSpacing.md, AppSpacing.lg, AppSpacing.sm),
-              child: Text(record.title, style: AppTextStyles.title, maxLines: 2, overflow: TextOverflow.ellipsis),
+              padding: const EdgeInsets.fromLTRB(
+                  AppSpacing.lg, AppSpacing.md, AppSpacing.lg, AppSpacing.sm),
+              child: Text(record.title,
+                  style: AppTextStyles.title,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis),
             ),
             if (hasFile)
               ListTile(
@@ -84,7 +93,8 @@ Future<void> showRecordActions(
               ListTile(
                 leading: Icon(suggestion.icon),
                 title: Text(
-                  sheetContext.l10n.medActionClassifyAs(suggestion.singularLabel(sheetContext.l10n)),
+                  sheetContext.l10n.medActionClassifyAs(
+                      suggestion.singularLabel(sheetContext.l10n)),
                 ),
                 onTap: () {
                   Navigator.of(sheetContext).pop();
@@ -104,15 +114,18 @@ Future<void> showRecordActions(
               title: Text(sheetContext.l10n.medicalActionRename),
               onTap: () {
                 Navigator.of(sheetContext).pop();
-                renameRecordWithDialog(context, record: record, onRenamed: onChanged);
+                renameRecordWithDialog(context,
+                    record: record, onRenamed: onChanged);
               },
             ),
             ListTile(
-              leading: const Icon(Icons.delete_outline, color: AppColors.danger),
+              leading:
+                  const Icon(Icons.delete_outline, color: AppColors.danger),
               title: Text(sheetContext.l10n.commonDelete),
               onTap: () {
                 Navigator.of(sheetContext).pop();
-                deleteRecordWithConfirm(context, record: record, onDeleted: onChanged);
+                deleteRecordWithConfirm(context,
+                    record: record, onDeleted: onChanged);
               },
             ),
           ],
@@ -129,7 +142,8 @@ Future<void> _editDetails(
 ) async {
   await Navigator.of(context).push<MedicalRecordEntry>(
     MaterialPageRoute(
-      builder: (_) => MedicalRecordUploadPage(petName: record.petName, existing: record),
+      builder: (_) =>
+          MedicalRecordUploadPage(petName: record.petName, existing: record),
     ),
   );
   onChanged();
@@ -142,7 +156,8 @@ Future<void> _classifyAs(
   VoidCallback onChanged,
 ) async {
   try {
-    await MedicalRecordsRepository().updateRecordDetails(record.copyWith(category: category));
+    await MedicalRecordsRepository()
+        .updateRecordDetails(record.copyWith(category: category));
   } on MedicalRecordSaveException catch (error) {
     if (context.mounted) _showMessage(context, error.message);
     return;
@@ -153,7 +168,8 @@ Future<void> _classifyAs(
 /// Images open full-screen. A PDF has no in-app viewer here, so "Apri" hands
 /// it to the system: the share sheet offers "Apri con" on Android and the
 /// browser's own PDF view on web.
-Future<void> openRecordFile(BuildContext context, MedicalRecordEntry record) async {
+Future<void> openRecordFile(
+    BuildContext context, MedicalRecordEntry record) async {
   final bytes = await loadRecordBytes(record);
   if (!context.mounted) return;
   if (bytes == null) {
@@ -163,7 +179,8 @@ Future<void> openRecordFile(BuildContext context, MedicalRecordEntry record) asy
   final mime = _mimeFor(bytes, record.title);
   if (mime.startsWith('image/')) {
     await Navigator.of(context).push(
-      MaterialPageRoute<void>(builder: (_) => RecordImageViewer(bytes: bytes, title: record.title)),
+      MaterialPageRoute<void>(
+          builder: (_) => RecordImageViewer(bytes: bytes, title: record.title)),
     );
     return;
   }
@@ -178,14 +195,17 @@ Future<void> openRecordFile(BuildContext context, MedicalRecordEntry record) asy
       _showMessage(context, context.l10n.medicalPdfOpenFailed);
     case PdfOpenOutcome.unsupported:
       // Web: the browser's share/viewer path.
-      await Share.shareXFiles(
-        [XFile.fromData(bytes, name: record.title, mimeType: mime)],
-        text: record.title,
+      await SharePlus.instance.share(
+        ShareParams(
+          files: [XFile.fromData(bytes, name: record.title, mimeType: mime)],
+          text: record.title,
+        ),
       );
   }
 }
 
-Future<void> _offerShareInstead(BuildContext context, MedicalRecordEntry record) async {
+Future<void> _offerShareInstead(
+    BuildContext context, MedicalRecordEntry record) async {
   final share = await showDialog<bool>(
     context: context,
     builder: (dialogContext) => AlertDialog(
@@ -209,7 +229,8 @@ Future<void> _offerShareInstead(BuildContext context, MedicalRecordEntry record)
 }
 
 /// Sends one or several records' files through the system share sheet.
-Future<void> shareRecords(BuildContext context, List<MedicalRecordEntry> records) async {
+Future<void> shareRecords(
+    BuildContext context, List<MedicalRecordEntry> records) async {
   _showMessage(context, context.l10n.medicalPreparingFiles);
   final files = <XFile>[];
   var missing = 0;
@@ -219,7 +240,8 @@ Future<void> shareRecords(BuildContext context, List<MedicalRecordEntry> records
       missing++;
       continue;
     }
-    files.add(XFile.fromData(bytes, name: record.title, mimeType: _mimeFor(bytes, record.title)));
+    files.add(XFile.fromData(bytes,
+        name: record.title, mimeType: _mimeFor(bytes, record.title)));
   }
   if (!context.mounted) return;
   if (files.isEmpty) {
@@ -229,7 +251,7 @@ Future<void> shareRecords(BuildContext context, List<MedicalRecordEntry> records
   if (missing > 0) {
     _showMessage(context, context.l10n.medicalFilesMissing(missing));
   }
-  await Share.shareXFiles(files);
+  await SharePlus.instance.share(ShareParams(files: files));
 }
 
 /// Deletes a record after confirmation; a refused delete is shown, not hidden.
@@ -272,7 +294,8 @@ void _showMessage(BuildContext context, String text) {
 
 /// Full-screen view of an image record, with pinch to zoom.
 class RecordImageViewer extends StatelessWidget {
-  const RecordImageViewer({required this.bytes, required this.title, super.key});
+  const RecordImageViewer(
+      {required this.bytes, required this.title, super.key});
 
   final Uint8List bytes;
   final String title;
@@ -310,7 +333,8 @@ Future<void> renameRecordWithDialog(
         controller: controller,
         autofocus: true,
         textCapitalization: TextCapitalization.sentences,
-        decoration: InputDecoration(labelText: dialogContext.l10n.medicalRenameFieldLabel),
+        decoration: InputDecoration(
+            labelText: dialogContext.l10n.medicalRenameFieldLabel),
       ),
       actions: [
         TextButton(
@@ -318,14 +342,18 @@ Future<void> renameRecordWithDialog(
           child: Text(dialogContext.l10n.commonCancel),
         ),
         FilledButton(
-          onPressed: () => Navigator.of(dialogContext).pop(controller.text.trim()),
+          onPressed: () =>
+              Navigator.of(dialogContext).pop(controller.text.trim()),
           child: Text(dialogContext.l10n.commonSave),
         ),
       ],
     ),
   );
   controller.dispose();
-  if (newTitle == null || newTitle.isEmpty || newTitle == record.title || !context.mounted) {
+  if (newTitle == null ||
+      newTitle.isEmpty ||
+      newTitle == record.title ||
+      !context.mounted) {
     return;
   }
   try {

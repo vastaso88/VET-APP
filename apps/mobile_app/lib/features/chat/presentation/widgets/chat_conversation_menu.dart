@@ -31,9 +31,12 @@ class ChatConversationMenuButton extends StatelessWidget {
       icon: const Icon(Icons.more_vert_rounded, color: AppColors.text),
       onSelected: (action) => _run(context, action),
       itemBuilder: (_) => [
-        PopupMenuItem(value: _Action.rename, child: Text(context.l10n.chatMenuRename)),
-        PopupMenuItem(value: _Action.export, child: Text(context.l10n.chatMenuExport)),
-        PopupMenuItem(value: _Action.summary, child: Text(context.l10n.chatMenuSummary)),
+        PopupMenuItem(
+            value: _Action.rename, child: Text(context.l10n.chatMenuRename)),
+        PopupMenuItem(
+            value: _Action.export, child: Text(context.l10n.chatMenuExport)),
+        PopupMenuItem(
+            value: _Action.summary, child: Text(context.l10n.chatMenuSummary)),
         PopupMenuItem(
           value: _Action.delete,
           child: Text(
@@ -81,7 +84,12 @@ class ChatConversationMenuButton extends StatelessWidget {
     ];
     // The transparency notice travels with the conversation (AI Act, art. 50).
     final notice = context.l10n.chatAiNotice;
-    await Share.share('$displayTitle\n$notice\n\n${lines.join('\n\n')}', subject: displayTitle);
+    await SharePlus.instance.share(
+      ShareParams(
+        text: '$displayTitle\n$notice\n\n${lines.join('\n\n')}',
+        subject: displayTitle,
+      ),
+    );
   }
 
   Future<void> _rename(BuildContext context) async {
@@ -94,7 +102,8 @@ class ChatConversationMenuButton extends StatelessWidget {
           controller: controller,
           autofocus: true,
           textCapitalization: TextCapitalization.sentences,
-          decoration: InputDecoration(labelText: dialogContext.l10n.chatRenameFieldLabel),
+          decoration: InputDecoration(
+              labelText: dialogContext.l10n.chatRenameFieldLabel),
         ),
         actions: [
           TextButton(
@@ -102,7 +111,8 @@ class ChatConversationMenuButton extends StatelessWidget {
             child: Text(dialogContext.l10n.commonCancel),
           ),
           FilledButton(
-            onPressed: () => Navigator.of(dialogContext).pop(controller.text.trim()),
+            onPressed: () =>
+                Navigator.of(dialogContext).pop(controller.text.trim()),
             child: Text(dialogContext.l10n.commonSave),
           ),
         ],
@@ -110,7 +120,8 @@ class ChatConversationMenuButton extends StatelessWidget {
     );
     controller.dispose();
     if (newTitle == null || newTitle.isEmpty || !context.mounted) return;
-    final result = await ChatDemoStore.instance.renameConversation(conversationId, newTitle);
+    final result = await ChatDemoStore.instance
+        .renameConversation(conversationId, newTitle);
     if (!context.mounted) return;
     result.fold(
       onSuccess: (_) {},
@@ -134,18 +145,22 @@ class ChatConversationMenuButton extends StatelessWidget {
               if (!snapshot.hasData) {
                 return Padding(
                   padding: const EdgeInsets.all(AppSpacing.xl),
-                  child: Center(child: PetLoader(label: context.l10n.chatSummaryLoading)),
+                  child: Center(
+                      child: PetLoader(label: context.l10n.chatSummaryLoading)),
                 );
               }
               final result = snapshot.data!;
-              final summary = result.fold(onSuccess: (text) => text, onFailure: (_) => null);
-              final failure = result.fold(onSuccess: (_) => null, onFailure: (e) => e.message);
+              final summary = result.fold(
+                  onSuccess: (text) => text, onFailure: (_) => null);
+              final failure = result.fold(
+                  onSuccess: (_) => null, onFailure: (e) => e.message);
               final hasSummary = summary != null && summary.isNotEmpty;
               return Column(
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(context.l10n.chatSummaryTitle, style: AppTextStyles.title),
+                  Text(context.l10n.chatSummaryTitle,
+                      style: AppTextStyles.title),
                   const SizedBox(height: AppSpacing.sm),
                   Text(
                     context.l10n.chatSummaryDisclaimer,
@@ -154,16 +169,20 @@ class ChatConversationMenuButton extends StatelessWidget {
                   const SizedBox(height: AppSpacing.md),
                   if (hasSummary)
                     Flexible(
-                      child: SingleChildScrollView(child: Text(summary, style: AppTextStyles.bodySmall)),
+                      child: SingleChildScrollView(
+                          child: Text(summary, style: AppTextStyles.bodySmall)),
                     )
                   else
-                    Text(failure ?? context.l10n.chatSummaryEmpty, style: AppTextStyles.bodySmall),
+                    Text(failure ?? context.l10n.chatSummaryEmpty,
+                        style: AppTextStyles.bodySmall),
                   const SizedBox(height: AppSpacing.md),
                   if (hasSummary)
                     FilledButton.icon(
-                      onPressed: () => Share.share(
-                        '${context.l10n.chatAiNotice}\n\n$summary',
-                        subject: displayTitle,
+                      onPressed: () => SharePlus.instance.share(
+                        ShareParams(
+                          text: '${context.l10n.chatAiNotice}\n\n$summary',
+                          subject: displayTitle,
+                        ),
                       ),
                       icon: const Icon(Icons.ios_share_rounded, size: 18),
                       label: Text(context.l10n.commonShare),

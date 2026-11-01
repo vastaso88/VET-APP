@@ -36,7 +36,7 @@ String walkElapsedLabel(int elapsedSeconds) {
   return '$hours:$minutesLabel:$secondsLabel';
 }
 
-/// Turns a raw badge id (e.g. "distance_50km_pet_<id>") into a short
+/// Turns a raw badge id (e.g. `distance_50km_pet_<id>`) into a short
 /// label. The caller already scopes badges to one pet, so the
 /// trailing pet id is never shown.
 String badgeLabel(String badgeId) {

@@ -645,7 +645,7 @@ class PetDemoStore {
 
   int _lastIdMicros = 0;
 
-  /// 'pet-<microseconds>', strictly increasing: on a coarse clock (Windows) two
+  /// `pet-<microseconds>`, strictly increasing: on a coarse clock (Windows) two
   /// pets created in the same tick would otherwise get the same id and the
   /// second would overwrite the first.
   String _newPetId() {

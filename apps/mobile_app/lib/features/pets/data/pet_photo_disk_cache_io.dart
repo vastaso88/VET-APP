@@ -33,7 +33,7 @@ class FilePetPhotoDiskCache implements PetPhotoDiskCache {
     }
   }
 
-  /// Storage paths come from our own code ('<owner>/<pet>/<id>.jpg'); one that
+  /// Storage paths come from our own code (`<owner>/<pet>/<id>.jpg`); one that
   /// could point outside the folder is simply not cached.
   static bool _isSafe(String relative) =>
       relative.isNotEmpty &&
