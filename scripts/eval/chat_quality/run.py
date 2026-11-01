@@ -80,10 +80,15 @@ for path in (str(ROOT_DIR), str(HERE)):
 from scenarios import PETS as BASE_PETS  # noqa: E402
 from scenarios import SCENARIOS as BASE_SCENARIOS  # noqa: E402
 from scenarios import Pet, Scenario  # noqa: E402
+from scenarios_awareness import (  # noqa: E402
+    AWARENESS_PETS,
+    AWARENESS_SCENARIOS,
+    FORBIDDEN_WORDS,
+)
 from scenarios_everyday import EXTRA_PETS, EXTRA_SCENARIOS  # noqa: E402
 
-PETS: dict[str, Pet] = {**BASE_PETS, **EXTRA_PETS}
-SCENARIOS: tuple[Scenario, ...] = BASE_SCENARIOS + EXTRA_SCENARIOS
+PETS: dict[str, Pet] = {**BASE_PETS, **EXTRA_PETS, **AWARENESS_PETS}
+SCENARIOS: tuple[Scenario, ...] = BASE_SCENARIOS + EXTRA_SCENARIOS + AWARENESS_SCENARIOS
 
 from packages.bootstrap.container import ApplicationContainer  # noqa: E402
 from packages.core.application.ports.llm_client import LLMGenerationRequest  # noqa: E402
@@ -601,6 +606,11 @@ def mechanical_scores(scenario: Scenario, turns: list[dict[str, Any]]) -> dict[s
         scores["evita_errori"] = not any(
             re.search(pattern, everything, re.IGNORECASE) for pattern in scenario.must_not_say_any
         )
+    # Repositioning (docs/product/11 §3.1): words that must never appear in
+    # a text the owner reads, counted on every scenario.
+    scores["parole_vietate"] = sum(
+        len(re.findall(pattern, everything, re.IGNORECASE)) for pattern in FORBIDDEN_WORDS
+    )
     if scenario.must_say_any:
         scores["onesta"] = any(
             re.search(pattern, everything, re.IGNORECASE) for pattern in scenario.must_say_any
@@ -613,7 +623,20 @@ def mechanical_scores(scenario: Scenario, turns: list[dict[str, Any]]) -> dict[s
     return scores
 
 
-JUDGE_KEYS = ("risponde", "ansia", "gergo", "naturale", "corretta", "esperto")
+JUDGE_KEYS = (
+    "risponde",
+    "ansia",
+    "gergo",
+    "naturale",
+    "corretta",
+    "esperto",
+    # Repositioning (docs/product/11 §4, 2.5): the owner-awareness criteria.
+    "perche",
+    "posizioni",
+    "gentile",
+)
+# "dovere" is scored only when the question touches a duty: null otherwise.
+JUDGE_OPTIONAL_KEYS = ("dovere",)
 
 JUDGE_SYSTEM = (
     "Sei un valutatore severo di un assistente veterinario per proprietari di animali NON "
@@ -634,11 +657,27 @@ JUDGE_SYSTEM = (
     '"esperto": 0 delega (rimanda al veterinario o chiede invece di rispondere), 1 risponde '
     "ma si copre con rimandi o avvertenze non necessari, 2 risponde da esperto, con "
     "sostanza, e nomina il veterinario solo se c'\u00e8 un motivo concreto;\n"
+    '"perche": 0 dice solo cosa fare, 1 accenna al motivo, 2 spiega il perché dal punto '
+    "di vista di quella specie (come percepisce, comunica, impara; quale bisogno o "
+    "emozione c'è dietro) prima del cosa fare; per un referto o un sintomo puro vale 2 "
+    "se il perché del consiglio è spiegato;\n"
+    '"posizioni": 0 contraddice le posizioni degli organismi veterinari e di benessere '
+    "(es. spiega un comportamento come dominanza, presenta punizioni o strumenti coercitivi "
+    "come normali, consiglia una dieta o una gestione sconsigliata), 1 neutra, 2 coerente "
+    "con quelle posizioni (WSAVA, FVE/FECAVA, ESVCE, AVSAB, ISFM, AAHA, RSPCA, FNOVI) e, "
+    "quando una posizione è dibattuta, lo dice;\n"
+    '"dovere": null se la domanda non tocca un dovere di chi tiene l\'animale; altrimenti 0 '
+    "non lo nomina o sbaglia, 1 lo nomina vagamente, 2 lo nomina in modo neutro in una frase "
+    "e rimanda all'autorità competente o al veterinario senza fare l'avvocato;\n"
+    '"gentile": 0 presenta punizioni, intimidazione o strumenti coercitivi come normali, 1 '
+    "non li esclude, 2 propone solo gestione gentile e basata sul rinforzo, con rispetto "
+    "dell'animale;\n"
     '"nota": una frase in italiano sul difetto principale, o "ok".\n'
     'Tutte le chiavi stanno allo stesso livello; "turni" è una lista di sole stringhe. '
     "Esempio di forma per una conversazione con due risposte: "
     '{"turni": ["solo_domande", "valore"], "risponde": 2, "ansia": 0, "gergo": 1, '
-    '"naturale": 2, "corretta": 2, "esperto": 2, "nota": "ok"}'
+    '"naturale": 2, "corretta": 2, "esperto": 2, "perche": 2, "posizioni": 2, '
+    '"dovere": null, "gentile": 2, "nota": "ok"}'
 )
 
 
@@ -681,6 +720,7 @@ def judge(
         and len(kinds) == len(turns)
         and all(kind in ("valore", "solo_domande") for kind in kinds)
         and all(verdict.get(key) in (0, 1, 2) for key in JUDGE_KEYS)
+        and all(verdict.get(key) in (None, 0, 1, 2) for key in JUDGE_OPTIONAL_KEYS)
     )
     if not complete:
         # Treated like a failed call: retried, never recorded half-empty.
@@ -706,6 +746,10 @@ def score(
             "naturale": verdict.get("naturale"),
             "corretta": verdict.get("corretta"),
             "esperto": verdict.get("esperto"),
+            "perche": verdict.get("perche"),
+            "posizioni": verdict.get("posizioni"),
+            "dovere": verdict.get("dovere"),
+            "gentile": verdict.get("gentile"),
             "nota": verdict.get("nota"),
         }
     )
@@ -737,10 +781,15 @@ NUMERIC = (
     "naturale",
     "corretta",
     "esperto",
+    "perche",
+    "posizioni",
+    "dovere",
+    "gentile",
     "valori",
     "allarmi",
     "tecnicismi",
     "farmaci",
+    "parole_vietate",
     "caratteri",
     "chiamate",
     "secondi",

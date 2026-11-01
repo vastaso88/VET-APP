@@ -3,6 +3,9 @@ from packages.core.application.ports.evidence_retriever import (
     EvidenceRetriever,
 )
 from packages.core.domain.knowledge.models import EvidenceSource
+from packages.infrastructure.llm.retrieval.curated_awareness_evidence_retriever import (
+    AWARENESS_CATALOG,
+)
 from packages.infrastructure.llm.retrieval.curated_husbandry_evidence_retriever import (
     HUSBANDRY_CATALOG,
 )
@@ -74,7 +77,7 @@ _GENERIC_CATALOG = [
 # curated_husbandry_evidence_retriever.py) rather than being duplicated
 # here; concatenated in so the plain in-memory backend used by tests keeps
 # covering husbandry questions in one retriever.
-CATALOG = _GENERIC_CATALOG + HUSBANDRY_CATALOG
+CATALOG = _GENERIC_CATALOG + HUSBANDRY_CATALOG + AWARENESS_CATALOG
 
 QUERY_HINTS: dict[str, tuple[str, ...]] = {
     "clinical_question": ("tosse", "tossisce", "cough", "vomita", "vomit", "diarrea"),
@@ -129,5 +132,8 @@ class InMemoryEvidenceRetriever(EvidenceRetriever):
                     "behavior_question": "behavior",
                     "preventive_care": "preventive",
                     "husbandry_question": "husbandry",
+                    "everyday_question": "behavior",
                 }[intent]
+        if request.intent == "everyday_question":
+            return "behavior"
         return "general"

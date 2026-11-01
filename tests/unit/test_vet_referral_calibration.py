@@ -129,6 +129,13 @@ def test_several_ritual_closings_in_a_row_are_all_removed() -> None:
         "Portalo dal veterinario entro 24-48 ore.",
         # Not a referral at all.
         "Per sicurezza, tieni le scarpe in un armadio.",
+        # Repositioning (docs/product/11 §4, 2.6): the vet as part of a duty
+        # or of the information itself is substance, not ritual.
+        "Il microchip è obbligatorio e lo applica il veterinario, che registra il cane "
+        "in anagrafe.",
+        "In caso di dubbi sui richiami, il calendario vaccinale lo decide il veterinario.",
+        "Per sicurezza, il prodotto antiparassitario e la frequenza li decide il veterinario.",
+        "Se hai domande sul passaporto per viaggiare, chiedi al tuo veterinario.",
     ],
 )
 def test_a_concrete_or_non_referral_sentence_is_kept(closing: str) -> None:

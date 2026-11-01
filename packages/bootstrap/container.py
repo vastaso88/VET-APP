@@ -145,6 +145,9 @@ from packages.infrastructure.llm.providers.groq_llm_client import GroqLLMClient
 from packages.infrastructure.llm.retrieval.crossref_evidence_retriever import (
     CrossrefEvidenceRetriever,
 )
+from packages.infrastructure.llm.retrieval.curated_awareness_evidence_retriever import (
+    CuratedAwarenessEvidenceRetriever,
+)
 from packages.infrastructure.llm.retrieval.curated_husbandry_evidence_retriever import (
     CuratedHusbandryEvidenceRetriever,
 )
@@ -1093,7 +1096,13 @@ class ApplicationContainer:
             # for the live-verified reason why pooling them doesn't work.
             return IntentRoutedEvidenceRetriever(
                 default=EuropePmcEvidenceRetriever(),
-                overrides={"husbandry_question": CuratedHusbandryEvidenceRetriever()},
+                overrides={
+                    "husbandry_question": CuratedHusbandryEvidenceRetriever(),
+                    # Repositioning (docs/product/11 §4, 2.4): behaviour and
+                    # everyday questions read the curated awareness notes.
+                    "behavior_question": CuratedAwarenessEvidenceRetriever(),
+                    "everyday_question": CuratedAwarenessEvidenceRetriever(),
+                },
             )
         if self.settings.evidence_backend == "scientific_multi":
             # Spec v3 §20: PubMed, Europe PMC, Crossref and OpenAlex are
@@ -1109,7 +1118,13 @@ class ApplicationContainer:
                         OpenAlexEvidenceRetriever(),
                     ]
                 ),
-                overrides={"husbandry_question": CuratedHusbandryEvidenceRetriever()},
+                overrides={
+                    "husbandry_question": CuratedHusbandryEvidenceRetriever(),
+                    # Repositioning (docs/product/11 §4, 2.4): behaviour and
+                    # everyday questions read the curated awareness notes.
+                    "behavior_question": CuratedAwarenessEvidenceRetriever(),
+                    "everyday_question": CuratedAwarenessEvidenceRetriever(),
+                },
             )
         if self.settings.evidence_backend == "supabase":
             try:

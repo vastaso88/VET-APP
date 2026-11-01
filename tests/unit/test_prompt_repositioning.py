@@ -45,14 +45,17 @@ def test_the_prompt_carries_the_new_centre_and_rules(kind: RequestKind) -> None:
     prompt = build_system_prompt(kind, may_ask=True, has_reference_material=False)
 
     assert "helps people who live with an animal understand it and look after it well" in prompt
-    assert "EXPLAIN THE WHY" in prompt
-    assert "Never a dog by default" in prompt
     assert "OFFICIAL POSITIONS" in prompt
     for body in ("WSAVA", "FVE", "FECAVA", "ESVCE", "AVSAB", "ISFM", "AAHA", "RSPCA", "FNOVI"):
         assert body in prompt, body
     assert "when a position is debated" in prompt
-    assert "OWNER DUTIES" in prompt
-    assert "do not play the lawyer" in prompt
+    # Phase 2 token lever: the "why" and the duties travel with direct
+    # questions only; reports and symptoms keep the short prompt.
+    awareness = kind is RequestKind.DIRECT
+    assert ("EXPLAIN THE WHY" in prompt) is awareness
+    assert ("Never a dog by default" in prompt) is awareness
+    assert ("OWNER DUTIES" in prompt) is awareness
+    assert ("do not play the lawyer" in prompt) is awareness
     # The safety rules did not move.
     assert "WHEN TO SEND THE OWNER TO THE VET" in prompt
     assert "NO TREATMENT ADVICE OF YOUR OWN" in prompt

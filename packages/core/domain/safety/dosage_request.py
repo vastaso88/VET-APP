@@ -118,9 +118,66 @@ _VACCINE_EXCEPTION = _words(
 )
 
 
+# Preventive treatments the owner asks the schedule of (repositioning,
+# docs/product/11 §4, 2.3): "ogni quanto il vermifugo?" is a question of
+# principles, answered with "product and frequency are the vet's call",
+# not refused as a dose request. Five languages, accents removed.
+PREVENTION_CLASSES = _words(
+    r"vermifug\w*|sverminazion\w*|antiparassitar\w*|antipulci|antizecch\w*|spot-on|spot on|"
+    r"pipett\w* antiparassitar\w*|vaccin\w*|richiam\w*|filaria|filariosi|"
+    r"deworm\w*|worming|wormer|flea|fleas|tick|ticks|antiparasitic\w*|vaccination\w*|"
+    r"vaccine\w*|booster|heartworm|"
+    r"desparasit\w*|antiparasitari\w*|antipulgas|garrapat\w*|vacun\w*|"
+    r"entwurm\w*|wurmkur\w*|zeckenschutz|flohschutz|floh\w*|zecken\w*|\w*impf\w*|"
+    r"vermifuge\w*|antiparasitaire\w*|antipuce\w*|tique\w*|vaccin\w*|rappel\w*"
+)
+_SCHEDULE_WORDS = re.compile(
+    r"\b(?:ogni quanto|quante volte|con che frequenza|con quale frequenza|quando (?:va|si|devo|"
+    r"bisogna|serve)|a che eta|da che eta|how often|how frequently|when should|when do|"
+    r"cada cuanto|con que frecuencia|cuando (?:hay que|debo|se)|wie oft|wie haufig|wann (?:muss|"
+    r"soll|sollte)|tous les combien|a quelle frequence|quand (?:faut-il|dois-je|doit-on))\b"
+)
+# What makes it a dose request after all: an amount of the product.
+_SCHEDULE_AMOUNT = re.compile(
+    r"\b(?:mg|ml|cc|compress\w*|pastigli\w*|pillol\w*|gocce|tablets?|pills?|drops?|"
+    r"comprimidos?|pastillas?|gotas?|tabletten?|tropfen|comprimes?|cachets?|gouttes?|"
+    r"quant[oaie] ne|quanto gliene|how much|how many|cuant[oa]s?|wie ?viel|combien de)\b"
+)
+
+
+def is_prevention_schedule_question(message: str) -> bool:
+    """ "Ogni quanto va fatto il vermifugo?", "how often should he be
+    dewormed?": the schedule of a preventive treatment, with no amount in
+    the question."""
+    text = normalize_for_matching(message)
+    return bool(
+        PREVENTION_CLASSES.search(text)
+        and _SCHEDULE_WORDS.search(text)
+        and not _asks_an_amount_of_a_preventive(text)
+    )
+
+
+_MG_PER_KG = re.compile(r"\bmg\s*/\s*kg\b")
+
+
+def _asks_an_amount_of_a_preventive(text: str) -> bool:
+    # "cada cuanto" and "ogni quanto" are schedule words, not amounts:
+    # removed before looking for "cuantos comprimidos", "quanto ne do".
+    without_schedule = _SCHEDULE_WORDS.sub(" ", text)
+    return bool(_SCHEDULE_AMOUNT.search(without_schedule) or _MG_PER_KG.search(text))
+
+
 def is_dosage_request(message: str) -> bool:
     text = normalize_for_matching(message)
     if _VACCINE.search(text) and not _VACCINE_EXCEPTION.search(text):
         # "quante dosi di vaccino deve fare?" is a schedule question.
         return False
+    if is_prevention_schedule_question(message):
+        return False
+    if PREVENTION_CLASSES.search(text) and _asks_an_amount_of_a_preventive(text):
+        # "quante compresse di vermifugo gli do?", "how many tablets of
+        # wormer": an amount of a preventive is a dose like any other.
+        return True
+    if _MG_PER_KG.search(text) and _MEDICINE.search(text):
+        return True
     return bool(_ASKS_AN_AMOUNT.search(text) and _MEDICINE.search(text))

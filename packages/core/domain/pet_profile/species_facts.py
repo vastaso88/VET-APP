@@ -1,12 +1,18 @@
-"""Verified facts about less common species, handed to the model with the
+"""Verified facts about the animal's kind, handed to the model with the
 pet's context.
 
-Only for errors actually observed in the evaluation transcripts
-(2026-10-06): the model told an owner that a rabbit eating its own
-droppings "is not normal" (caecotrophy is normal and necessary) and
-suggested melon and cucumber for a leopard gecko (an insectivore). Kept
-short, and extended only when a new error is seen — a long encyclopaedia
-in the prompt would cost tokens on every message for nothing.
+Two layers, kept short on purpose (every fact costs tokens on every
+message it travels with):
+
+* correction facts, for errors actually observed in the evaluation
+  transcripts (2026-10-06: a rabbit eating its own droppings called
+  "not normal", melon suggested for a leopard gecko). They travel with
+  every message about that animal.
+* ethology facts (repositioning, docs/product/11 §4 2.4): how the species
+  perceives, communicates and learns, from the positions of the bodies
+  the chat prefers (ESVCE, AVSAB, ISFM, RWAF). They travel only with
+  direct and behaviour questions, where the "why" is the answer; reports
+  and symptoms keep the short prompt.
 """
 
 from __future__ import annotations
@@ -33,8 +39,51 @@ _FACTS: tuple[tuple[tuple[str, ...], str], ...] = (
     ),
 )
 
+# Family-level ethology, one short paragraph each, with the body whose
+# position it states. Matched on the app's species labels and on the
+# common names, like the correction facts.
+_ETHOLOGY: tuple[tuple[tuple[str, ...], str], ...] = (
+    (
+        ("cane", "cani", "dog", "perro", "hund", "chien"),
+        "Dog ethology (ESVCE and AVSAB position statements): a social animal that learns by "
+        "association and by what is rewarded; the 'dominance/alpha' reading of behaviour "
+        "problems is rejected, so never explain a behaviour as a bid for rank. A growl is "
+        "a warning, not disobedience: punishing it removes the warning, not the emotion. "
+        "Calming signals (yawning, lip licking, turning the head away, whale eye) say "
+        "the dog is uneasy. Socialisation to people, dogs and places matters most between "
+        "3 and 12-14 weeks. Reward-based methods only (AVSAB humane training, 2021).",
+    ),
+    (
+        ("gatto", "gatti", "cat", "gato", "katze", "chat"),
+        "Cat ethology (ISFM/AAFP environmental needs guidelines): a solitary hunter that "
+        "values territory and predictability over company and communicates by scent "
+        "(facial rubbing, scratching, urine marking) and small body signals; scratching "
+        "and marking are communication, not spite, so never present them as something to "
+        "punish. Key resources (food, water, litter trays, scratching, resting and hiding "
+        "places) go one per cat plus one, in separate spots. Purring is not only "
+        "contentment: cats also purr when in pain or anxious. Punishment raises fear and "
+        "aggression; change the environment and reward instead.",
+    ),
+    (
+        ("coniglio", "conigli", "rabbit", "conejo", "kaninchen", "lapin"),
+        "Rabbit ethology (RWAF and RSPCA welfare guidance): a social prey animal that "
+        "should live with a bonded companion rabbit and hides fear and illness; freezing, "
+        "thumping and a hunched body are stress or pain, not sulking. Being lifted feels "
+        "like being caught by a predator, so most rabbits dislike it (never by the ears "
+        "or scruff); interact at floor level. Needs space to run and stand upright, "
+        "things to dig and gnaw, constant hay. Reward-based handling only.",
+    ),
+)
 
-def species_facts(species: str, breed: str | None = None, notes: str | None = None) -> str:
-    """The facts that apply to this pet, or an empty string."""
+
+def species_facts(
+    species: str, breed: str | None = None, notes: str | None = None, *, ethology: bool = False
+) -> str:
+    """The facts that apply to this pet, or an empty string. `ethology`
+    adds the family-level ethology paragraph (direct and behaviour
+    questions only)."""
     haystack = " ".join(part for part in (species, breed or "", notes or "") if part).lower()
-    return "\n".join(text for keywords, text in _FACTS if any(k in haystack for k in keywords))
+    layers = (_FACTS, _ETHOLOGY) if ethology else (_FACTS,)
+    return "\n".join(
+        text for layer in layers for keywords, text in layer if any(k in haystack for k in keywords)
+    )

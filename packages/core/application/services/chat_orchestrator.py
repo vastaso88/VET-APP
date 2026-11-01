@@ -65,6 +65,7 @@ from packages.core.domain.conversation.request_kind import (
     asks_to_stop_questions,
     classify_request,
     consecutive_question_turns,
+    is_behavioural_or_duty,
     is_question_only,
     looks_like_document,
     may_ask_before_answering,
@@ -93,7 +94,11 @@ from packages.core.domain.pet_profile.species_rules import (
 from packages.core.domain.pet_profile.weight import (
     is_weight_relevant,
 )
-from packages.core.domain.safety.dosage_request import is_dosage_request
+from packages.core.domain.safety.dosage_request import (
+    is_dosage_request,
+    is_prevention_schedule_question,
+)
+from packages.core.domain.safety.exposure import is_educational_toxin_question
 from packages.core.domain.safety.triage_clarification import (
     categorize as categorize_safety_flags,
 )
@@ -182,6 +187,12 @@ EVIDENCE_KEYWORDS: dict[str, tuple[str, ...]] = {
         "cosa può essere",
         "cosa potrebbe essere",
         "sapete cosa",
+        # Kept clinical when the default became everyday_question (2026-11-01).
+        "sta male",
+        "stanno male",
+        "antidolorific",
+        "farmac",
+        "medicin",
         "cosa devo fare",
         "è normale che",
         "malat",
@@ -189,7 +200,44 @@ EVIDENCE_KEYWORDS: dict[str, tuple[str, ...]] = {
         "zona nera",
     ),
     "nutrition_question": ("cibo", "mangia", "aliment", "dieta", "nutriz"),
-    "behavior_question": ("comport", "ansia", "abbaia", "graffia", "aggress"),
+    "behavior_question": (
+        "comport",
+        "ansia",
+        "abbaia",
+        "abbai",
+        "graffia",
+        "aggress",
+        # Repositioning (docs/product/11 §4, 2.1): the behavioural and
+        # relational roots of request_kind.py, so these turns reach the
+        # curated awareness notes instead of the biomedical literature.
+        "tira al guinzaglio",
+        "ringhi",
+        "paura",
+        "spavent",
+        "marca il territorio",
+        "miagol",
+        "distrugg",
+        "mordicchi",
+        "separazion",
+        "da solo in casa",
+        "socializz",
+        "ulul",
+        "si nasconde",
+        "soffia",
+        "fusa",
+        "impasta",
+        "fuori dalla lettiera",
+        "si strappa le piume",
+        "convivenza",
+        "nuovo gatto",
+        "nuovo cane",
+        "gelos",
+        "educar",
+        "addestr",
+        "insegnar",
+        "rinforzo",
+        "punizione",
+    ),
     "preventive_care": ("vaccin", "antiparass", "checkup", "preven", "profilassi"),
     # Real-world finding: husbandry/equipment questions for exotic species
     # ("che lampada UVB per il geco?", "come ciclo l'acquario nuovo?") were
@@ -879,6 +927,13 @@ class ChatOrchestrator:
         effective_species = self._effective_species(lowered, data.species)
 
         safety_flags = self._safety_gate.evaluate(lowered, species=effective_species)
+        # Repositioning (docs/product/11 §4, 2.2): "perché il cioccolato fa
+        # male ai cani?" names a toxin without any exposure or intent to
+        # give it: the owner gets the explanation, with the safety list
+        # (natural_answer_prompt._SAFETY_QUESTION). "ha mangiato cioccolato"
+        # and "vorrei dargli la tachipirina" stay a triage, as before.
+        if safety_flags and self._is_educational_toxin_question(safety_flags, message):
+            safety_flags = []
         if safety_flags:
             if requires_immediate_escalation(message):
                 # Already unambiguous and severe — asking a clarifying
@@ -1445,6 +1500,14 @@ class ChatOrchestrator:
             provider="rule-based",
             model="safety-triage-guard",
             state=ConversationState.POSSIBLE_URGENT_CASE,
+        )
+
+    @staticmethod
+    def _is_educational_toxin_question(safety_flags: list[str], message: str) -> bool:
+        return (
+            categorize_safety_flags(safety_flags) == "toxin_medication"
+            and not requires_immediate_escalation(message)
+            and is_educational_toxin_question(message)
         )
 
     @staticmethod
@@ -2184,12 +2247,22 @@ class ChatOrchestrator:
         # natural_answer_prompt.py, per kind of request. validate_answer
         # below still enforces the citation rule mechanically.
         may_ask = self._may_ask(data, kind)
+        # Which notes travel with this request (repositioning): a toxin
+        # asked about, not met; a preventive treatment's schedule; a
+        # behaviour or duty question (one context question allowed).
+        toxin_flags = self._safety_gate.evaluate(message.lower(), species=effective_species)
         system_prompt = build_system_prompt(
             kind,
             may_ask=may_ask,
             has_reference_material=bool(evidence_block),
-            species_facts=species_facts(data.species, data.breed, data.notes),
+            species_facts=species_facts(
+                data.species, data.breed, data.notes, ethology=kind is RequestKind.DIRECT
+            ),
             language=data.language,
+            behavioural=kind is RequestKind.DIRECT and is_behavioural_or_duty(message),
+            safety_question=bool(toxin_flags)
+            and self._is_educational_toxin_question(toxin_flags, message),
+            prevention_schedule=is_prevention_schedule_question(message),
         )
         user_prompt = (
             f"{self._pet_context_block(data, generic=generic_context)}\n"
@@ -2598,7 +2671,11 @@ class ChatOrchestrator:
             or any(_starts_a_word(marker, normalized) for marker in FOREIGN_SMALL_TALK_MESSAGES)
         ):
             return "general_info"
-        return "clinical_question"
+        # Repositioning (docs/product/11 §4, 2.1): a sentence with no
+        # clinical vocabulary is a question about living with the animal,
+        # not a health worry by default. The clinical keywords above still
+        # catch "sta male", medicines and every symptom word.
+        return "everyday_question"
 
     def _format_conversation_history(self, data: ChatOrchestratorInput) -> str:
         """Recent prior turns of THIS conversation, for `_generate_natural_answer`

@@ -43,7 +43,12 @@ _CONCRETE = re.compile(
     r"ingerit|mangiato (un|una|del|dei)|non urina|non fa (la )?pip|non fa (le )?feci|"
     r"gonfi|dolore forte|non mangia|smette di mangiare|vomit|diarre|zopp|occhio|"
     r"letarg|apatic|febbre|peggior\w* (molto|rapidamente)|un giorno|due giorni|"
-    r"tre giorni|una settimana|24|48",
+    r"tre giorni|una settimana|24|48|"
+    # Repositioning (docs/product/11 §4, 2.6): the vet as part of a duty
+    # (microchip, compulsory vaccination) or of the information itself
+    # (who decides a product and its frequency) is substance, not ritual.
+    r"microchip|anagrafe|obbligator|vaccin|antirabbic|richiam|antiparassit|vermifug|"
+    r"prodotto|frequenza|decide|prescri|passaporto|museruola|guinzaglio",
     re.IGNORECASE,
 )
 

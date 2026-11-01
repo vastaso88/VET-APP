@@ -63,4 +63,31 @@ def test_the_orchestrator_hands_the_facts_to_the_model_for_a_rabbit_and_a_gecko(
     ChatOrchestrator(client, InMemoryEvidenceRetriever(), NoopPiiAnonymizer()).answer(
         ChatOrchestratorInput(user_message="cosa gli posso dare?", species="Cane", pet_name="Thor")
     )
-    assert "FACTS ABOUT" not in client.requests[-1].system_prompt
+    # No correction fact for a dog (the ethology paragraph of a direct
+    # question is another layer, tested below).
+    prompt = client.requests[-1].system_prompt
+    assert "Rabbit:" not in prompt and "Leopard gecko" not in prompt
+
+
+def test_the_ethology_layer_travels_only_with_direct_questions() -> None:
+    # Repositioning (docs/product/11 §4, 2.4): dog, cat and rabbit ethology
+    # with the body behind each position, for the "why" answers only.
+    assert species_facts("Cane", "Labrador") == ""
+    dog = species_facts("Cane", "Labrador", ethology=True)
+    cat = species_facts("Gatto", None, ethology=True)
+    rabbit = species_facts("Piccoli mammiferi", "Coniglio nano", ethology=True)
+
+    assert "ESVCE and AVSAB" in dog and "dominance" in dog
+    assert "ISFM" in cat and "not only" in cat
+    assert "RWAF" in rabbit and "ciecotrofi" in rabbit
+    assert species_facts("Piccoli mammiferi", "Criceto dorato", ethology=True) == ""
+
+    for message, expected in (
+        ("perché ringhia quando mi avvicino alla ciotola?", True),
+        ("da ieri zoppica e non appoggia la zampa", False),
+    ):
+        client = FakeLLMClient()
+        ChatOrchestrator(client, InMemoryEvidenceRetriever(), NoopPiiAnonymizer()).answer(
+            ChatOrchestratorInput(user_message=message, species="Cane", pet_name="Thor")
+        )
+        assert ("Dog ethology" in client.requests[-1].system_prompt) is expected, message

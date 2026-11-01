@@ -25,7 +25,7 @@ from __future__ import annotations
 
 import re
 
-from packages.core.domain.safety.dosage_request import MEDICINE_WORDS
+from packages.core.domain.safety.dosage_request import MEDICINE_WORDS, PREVENTION_CLASSES
 from packages.core.domain.safety.emergency_patterns import normalize_for_matching
 
 # English and Spanish medicine words (the Italian, German and French ones
@@ -83,6 +83,17 @@ def _names_a_medicine(sentence: str) -> bool:
     return any(not _BARE_UNIT.match(found.group(0)) for found in _MEDICINE.finditer(sentence))
 
 
+def _only_prevention_classes(sentence: str) -> bool:
+    """Every medicine word of the sentence is a preventive-treatment class
+    (vermifugo, antiparassitario, vaccino...), not a named drug."""
+    words = [
+        found.group(0)
+        for found in _MEDICINE.finditer(sentence)
+        if not _BARE_UNIT.match(found.group(0))
+    ]
+    return bool(words) and all(PREVENTION_CLASSES.fullmatch(word) for word in words)
+
+
 def find_dosage(answer: str, *, allowed_text: str = "") -> str | None:
     """The first dosage expression the model wrote on its own, or None.
     Comparisons run on normalised text (case, accents); an expression also
@@ -102,6 +113,11 @@ def find_dosage(answer: str, *, allowed_text: str = "") -> str | None:
         amount = _AMOUNT.search(sentence)
         if amount is not None and is_models_own(amount.group(0)):
             return amount.group(0)
+        if _only_prevention_classes(sentence):
+            # "il vermifugo di solito si fa ogni tre mesi, lo decide il
+            # veterinario": a principle about a preventive treatment, not
+            # a dose of a drug (an amount above is still caught).
+            continue
         posology = _POSOLOGY.search(sentence)
         if posology is not None and is_models_own(posology.group(0)):
             return posology.group(0)

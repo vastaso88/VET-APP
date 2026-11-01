@@ -5,6 +5,7 @@ from packages.core.domain.conversation.request_kind import (
     asks_to_stop_questions,
     classify_request,
     consecutive_question_turns,
+    is_behavioural_or_duty,
     is_question_only,
     looks_like_document,
     may_ask_before_answering,
@@ -70,6 +71,62 @@ def test_an_explicit_self_contained_question_is_answered_directly(message: str) 
     ],
 )
 def test_something_wrong_with_the_animal_is_a_symptom_report(message: str) -> None:
+    assert classify_request(message) is RequestKind.SYMPTOM
+
+
+# Repositioning (docs/product/11 §4, 2.1): behaviour, relationship and duty
+# messages are answered directly, even when not phrased as a question, for
+# every family of species the app knows. Never a dog by default.
+@pytest.mark.parametrize(
+    ("family", "message"),
+    [
+        ("dog", "il cane abbaia a tutti quelli che passano sotto casa"),
+        ("dog", "tira al guinzaglio da impazzire"),
+        ("dog", "ringhia quando mi avvicino alla ciotola"),
+        ("dog", "il microchip è obbligatorio?"),
+        ("dog", "my dog barks at every noise"),
+        ("dog", "mi perro ladra a todos los vecinos"),
+        ("dog", "mein Hund zieht an der Leine"),
+        ("dog", "mon chien aboie sur tout le monde"),
+        ("cat", "il gatto fa la pipì fuori dalla lettiera"),
+        ("cat", "soffia al gatto nuovo arrivato"),
+        ("cat", "my cat hisses at the new kitten"),
+        ("cat", "le chat griffe le canapé"),
+        ("cat", "die Katze markiert in der Wohnung"),
+        ("small_mammal", "il coniglio batte i denti quando lo accarezzo"),
+        ("small_mammal", "il criceto corre sulla ruota tutta la notte"),
+        ("small_mammal", "my rabbit hides all day"),
+        ("bird", "la cocorita si strappa le piume"),
+        ("bird", "il pappagallo urla appena esco dalla stanza"),
+        ("bird", "mi loro se arranca las plumas"),
+        ("reptile_amphibian", "il geco si nasconde sempre"),
+        ("reptile_amphibian", "la tartaruga ha paura quando la prendo in mano"),
+        ("fish", "il pesce rosso sta in superficie e sbuffa"),
+        ("fish", "il betta aggressivo con gli altri pesci della vasca"),
+        ("other", "il furetto mordicchia le mani quando gioca"),
+        ("other", "posso portare il furetto in aereo?"),
+        ("other", "il cavallo si spaventa con gli ombrelli"),
+        ("other", "serve l'assicurazione per il pony?"),
+    ],
+)
+def test_behaviour_and_duty_messages_are_answered_directly_for_every_family(
+    family: str, message: str
+) -> None:
+    assert is_behavioural_or_duty(message), (family, message)
+    assert classify_request(message) is RequestKind.DIRECT, (family, message)
+
+
+@pytest.mark.parametrize(
+    "message",
+    [
+        "Toby è mogio",
+        "da due giorni zoppica dalla zampa posteriore",
+        "vomita da stamattina",
+        "ha la diarrea e non mangia",
+    ],
+)
+def test_a_symptom_is_not_mistaken_for_behaviour(message: str) -> None:
+    assert not is_behavioural_or_duty(message)
     assert classify_request(message) is RequestKind.SYMPTOM
 
 

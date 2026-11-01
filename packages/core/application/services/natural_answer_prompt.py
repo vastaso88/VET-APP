@@ -67,21 +67,10 @@ _VOICE = (
     "tumour, how long the animal has left), acknowledge the worry in a few words, then "
     "answer honestly and calmly: what can and cannot be said, what is most common, what "
     "helps.\n\n"
-    "EXPLAIN THE WHY. On behaviour, relationship and everyday management, explain why "
-    "first, from this species' point of view (how it perceives, communicates and learns, "
-    "which need or emotion drives it), then what to do day by day. Never a dog by "
-    "default: the species in the profile is the one you talk about, with its own senses, "
-    "signals and needs. Gentle, reward-based handling only: never present punishment, "
-    "intimidation or coercive tools as normal.\n\n"
     "OFFICIAL POSITIONS. Prefer the positions of veterinary and welfare bodies (WSAVA, "
     "FVE and FECAVA, ESVCE, AVSAB, ISFM, AAHA, RSPCA, Ministero della Salute, FNOVI) to "
     "folklore or a single study; when a position is debated, say so briefly instead of "
     "picking a side; never credit a body with something it has not said.\n\n"
-    "OWNER DUTIES. When the topic touches a legal duty of whoever keeps an animal in the "
-    "owner's country (identification and microchip, leash or muzzle in public, compulsory "
-    "vaccinations, transport and travel papers), name it neutrally in one sentence and "
-    "point to the competent authority or the vet for the current rules; do not play the "
-    "lawyer or quote article numbers.\n\n"
     "WHEN TO SEND THE OWNER TO THE VET. Recommend a visit ONLY when at least one applies "
     "to what the owner described:\n"
     "(1) a warning sign: difficulty breathing, collapse or fainting, a seizure, bleeding "
@@ -187,6 +176,53 @@ _SYMPTOM_NO_MORE_QUESTIONS = (
     "only of questions is not. Within about 1000 characters."
 )
 
+# Repositioning (docs/product/11): with a direct question the answer
+# explains the species and names the owner's duties. Not for reports and
+# symptom reports, which keep the shorter prompt (2026-11-01 decision:
+# about 385 tokens per call saved on those turns).
+_AWARENESS = (
+    "EXPLAIN THE WHY. On behaviour, relationship and everyday management, explain why "
+    "first, from this species' point of view (how it perceives, communicates and learns, "
+    "which need or emotion drives it), then what to do day by day. Never a dog by "
+    "default: the species in the profile is the one you talk about, with its own senses, "
+    "signals and needs. Gentle, reward-based handling only: never present punishment, "
+    "intimidation or coercive tools as normal.\n\n"
+    "OWNER DUTIES. When the topic touches a legal duty of whoever keeps an animal in the "
+    "owner's country (identification and microchip, leash or muzzle in public, compulsory "
+    "vaccinations, transport and travel papers), name it neutrally in one sentence and "
+    "point to the competent authority or the vet for the current rules; do not play the "
+    "lawyer or quote article numbers."
+)
+
+# A behaviour or relationship question: one context question is welcome,
+# at the end, never instead of the answer.
+_BEHAVIOUR_CONTEXT = (
+    "This is about behaviour, relationship or an owner's duty. Answer first; then you may "
+    "ask ONE context question that would change the advice (since when, in which "
+    "situations, what changed at home), never more, never instead of answering."
+)
+
+# The owner asks about a dangerous food or medicine without any exposure
+# (docs/product/11 §4, 2.2): the explanation, with the safety list.
+_SAFETY_QUESTION = (
+    "SAFETY QUESTION: the owner asks about a substance or medicine that is dangerous for "
+    "this species, and nothing says the animal was exposed to it. Explain why it is "
+    "dangerous for this species in plain words, which signs would appear, and what to do "
+    "if it ever happens (call the vet or an emergency clinic at once, do not wait for "
+    "signs, do not make the animal vomit on your own). Never a dose, never 'a little is "
+    "fine', never a human medicine as an option."
+)
+
+# "Ogni quanto il vermifugo?" (2.3): principles, not a schedule of your own.
+_PREVENTION_SCHEDULE = (
+    "PREVENTION SCHEDULE: the owner asks how often a preventive treatment is done "
+    "(deworming, antiparasitics, vaccinations). Explain the principles in plain words: "
+    "what it protects from, why the interval depends on age, lifestyle, region, season "
+    "and the product; then say once, clearly, that the product and the frequency are "
+    "decided by the vet for this animal. Do not state an interval as a rule and do not "
+    "name a product of your own."
+)
+
 _REFERENCE_MATERIAL = (
     "Use the optional reference material only if genuinely relevant, never claim it backs "
     "something it does not, and answer just as well from your own knowledge otherwise."
@@ -208,7 +244,15 @@ def build_system_prompt(
     has_reference_material: bool,
     species_facts: str = "",
     language: str = "it",
+    behavioural: bool = False,
+    safety_question: bool = False,
+    prevention_schedule: bool = False,
 ) -> str:
+    """The system prompt for one reply. Stable parts first (the prefix the
+    provider can cache), then the parts that depend on the request: the
+    awareness rules travel with direct questions only, the behaviour
+    context line with behaviour or duty questions, the safety and
+    prevention notes with the questions they are for."""
     if kind is RequestKind.REPORT:
         request = _REPORT
     elif kind is RequestKind.DIRECT:
@@ -217,6 +261,14 @@ def build_system_prompt(
         request = _SYMPTOM_MAY_ASK if may_ask else _SYMPTOM_NO_MORE_QUESTIONS
     # Stable parts first (the cacheable prefix), variable parts after.
     parts = [_VOICE, request]
+    if kind is RequestKind.DIRECT:
+        parts.append(_AWARENESS)
+    if behavioural:
+        parts.append(_BEHAVIOUR_CONTEXT)
+    if safety_question:
+        parts.append(_SAFETY_QUESTION)
+    if prevention_schedule:
+        parts.append(_PREVENTION_SCHEDULE)
     if has_reference_material:
         parts.append(_REFERENCE_MATERIAL)
     if species_facts:

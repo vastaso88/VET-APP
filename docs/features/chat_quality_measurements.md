@@ -61,6 +61,42 @@ serie) a 1,91 s, contro 1,50 s della sola risposta (`latency_probe.py`, dettagli
 `chat_free_tier_budget.md`). Da riverificare con il modello leggero attivo alla prossima
 misura.
 
+## 2026-11-01 — fase 2: token per variante del prompt (senza provider)
+
+Leva decisa con l'Orchestratore: EXPLAIN THE WHY e OWNER DUTIES viaggiano solo con le
+domande dirette (comportamento, relazione, doveri, "perché"); referti e sintomi tornano al
+prompt corto. Le note di sicurezza (domanda educativa su un tossico), di prevenzione
+(frequenza di un antiparassitario) e l'etologia di specie (cane, gatto, coniglio) si
+aggiungono solo quando servono. Conteggio tiktoken `o200k_base`, prompt di sistema da solo.
+
+| variante | caratteri | token |
+|---|---|---|
+| referto (REPORT) | 6816 | 1532 |
+| sintomo, può ancora chiedere (SYMPTOM) | 6436 | 1438 |
+| sintomo, basta domande (SYMPTOM) | 6262 | 1395 |
+| domanda diretta (DIRECT + consapevolezza) | 7679 | 1698 |
+| comportamento o dovere (DIRECT + contesto) | 7916 | 1745 |
+| comportamento di un cane con etologia (DIRECT + fatti) | 8565 | 1899 |
+| domanda educativa su un tossico (DIRECT + sicurezza) | 8135 | 1800 |
+| frequenza di un preventivo (DIRECT + prevenzione) | 8111 | 1793 |
+| domanda diretta con fonti (DIRECT + materiale) | 7847 | 1728 |
+
+Rispetto alla fase 1 (1698 token per ogni variante): referti -166, sintomi -260/-303
+token a chiamata; le domande dirette restano a 1698 e le varianti nuove costano da +47
+(contesto comportamentale) a +201 (etologia del cane) token in più, solo quando scattano.
+
+`token_budget.py --category consapevolezza` sui 35 scenari nuovi (stand-in, nessun
+provider): prompt di sistema mediano 1839 token, ingresso al principale 1919 per turno,
+costo stimato per risposta 2419, 82 risposte/giorno con i 200k del principale (248 con
+le due riserve). È il caso peggiore per costruzione: tutti i turni sono domande dirette.
+Due scenari (geco nascosto, ore fuori dalla gabbia del furetto) passano dal percorso
+evidenze (intento gestione/husbandry), come prima della fase 2.
+
+Non eseguito contro Groq: i criteri nuovi del giudice (perché, posizioni, dovere,
+gentile, parole vietate) e gli scenari 5 aree × 7 famiglie sono pronti in
+`scripts/eval/chat_quality/scenarios_awareness.py` e `run.py`, da lanciare con la chiave
+EVAL quando l'Orchestratore lo decide.
+
 ## 2026-11-01 — costo in token del prompt riposizionato (senza provider)
 
 Riposizionamento sulla consapevolezza del proprietario (`docs/product/11`, fase 1.2):
