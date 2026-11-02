@@ -83,7 +83,7 @@ void main() {
       picker: picker,
       now: () => shot,
       saveCopy: (file, {required isVideo}) async =>
-          events.add('copy:${isVideo ? 'video' : 'photo'}:${file.name}'),
+          events.add('copy:${isVideo ? 'video' : 'photo'}:${file.path}'),
       importerFactory: () =>
           importer ??
           _FakeImporter((petId, files, capturedAt, onProgress, onCompress) async {

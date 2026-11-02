@@ -183,7 +183,9 @@ void main() {
       await _use('en-US');
       expect(formatAppMoneyCents(123450), r'$1,234.50');
       await _use('de-CH');
-      expect(formatAppMoneyCents(123450), 'CHF${_nbsp}1’234.50');
+      // intl 0.20.2 groups de-CH with ’ (U+2019), 0.20.3 with the ASCII apostrophe.
+      expect(formatAppMoneyCents(123450),
+          anyOf('CHF${_nbsp}1’234.50', "CHF${_nbsp}1'234.50"));
       await _use('fr');
       expect(formatAppMoneyCents(123450), '1${_nnbsp}234,50$_nbsp€');
       expect(formatAppNumber(1234.5, decimals: 2), '1${_nnbsp}234,50');
