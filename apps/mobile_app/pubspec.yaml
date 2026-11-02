@@ -25,7 +25,7 @@ dependencies:
   flutter_map: ^8.3.2
   latlong2: ^0.10.1
   geolocator: ^14.0.2
-  record: ^7.1.1
+  record: ^7.1.2
   crypto: ^3.0.7
   permission_handler: ^11.3.1
   home_widget: ^0.10.0
