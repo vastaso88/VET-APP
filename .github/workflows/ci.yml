@@ -53,7 +53,8 @@ jobs:
           distribution: temurin
           java-version: '17'
       - name: Compile Android native localization
-        run: flutter build apk --debug --flavor prod
+        # Debug build, never distributed: the Gradle signing guard still needs the flag.
+        run: flutter build apk --debug --flavor prod --android-project-arg=allowDebugSigning=true
 
   quality:
     runs-on: ubuntu-latest
