@@ -250,13 +250,26 @@ create table if not exists public.account_consents (
 );
 
 -- Subscriptions: single-row-per-owner, same shape as account_consents.
--- Starts the 10-day free trial (no card) on first lookup; `plan` stays
+-- Starts the 14-day free trial (no card) on first lookup; `plan` stays
 -- null while on trial, then holds the chosen plan key permanently.
 create table if not exists public.subscriptions (
     owner_id text primary key,
     trial_ends_at timestamptz not null,
     plan text,
     created_at timestamptz not null default now()
+);
+
+-- Devices signed in to an account, to hold the plan's limit on simultaneous
+-- devices (docs/marketing/03_prezzi_per_paese.md, plan limits). `device_id` is
+-- a random id the app makes at sign-in; nothing else about the phone is
+-- stored. Written only by the backend; the owner can read their own rows.
+create table if not exists public.user_devices (
+    owner_id text not null,
+    device_id text not null,
+    first_seen_at timestamptz not null default now(),
+    last_seen_at timestamptz not null default now(),
+    revoked_at timestamptz,
+    primary key (owner_id, device_id)
 );
 
 create index if not exists idx_pet_profiles_owner_id on public.pet_profiles(owner_id);
@@ -275,6 +288,7 @@ alter table public.pet_conditions enable row level security;
 alter table public.reminders enable row level security;
 alter table public.account_consents enable row level security;
 alter table public.subscriptions enable row level security;
+alter table public.user_devices enable row level security;
 
 drop policy if exists pet_profiles_select_own on public.pet_profiles;
 create policy pet_profiles_select_own
@@ -520,18 +534,18 @@ on public.subscriptions
 for select
 using (owner_id = auth.uid()::text);
 
+-- Subscriptions are written only by the backend (service role). A client-side
+-- insert/update would let an owner extend the trial or pick a plan without
+-- paying: see scripts/setup/subscriptions_lock_writes.sql.
 drop policy if exists subscriptions_insert_own on public.subscriptions;
-create policy subscriptions_insert_own
-on public.subscriptions
-for insert
-with check (owner_id = auth.uid()::text);
-
 drop policy if exists subscriptions_update_own on public.subscriptions;
-create policy subscriptions_update_own
-on public.subscriptions
-for update
-using (owner_id = auth.uid()::text)
-with check (owner_id = auth.uid()::text);
+
+-- Devices: the owner reads their own rows; only the backend writes them.
+drop policy if exists user_devices_select_own on public.user_devices;
+create policy user_devices_select_own
+on public.user_devices
+for select
+using (owner_id = auth.uid()::text);
 
 -- Maps management (docs/maps/): shared location primitive, one row per
 -- owner, same shape as account_consents. Plain lat/lng columns rather than

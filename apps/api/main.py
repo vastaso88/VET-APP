@@ -16,6 +16,7 @@ from apps.api.routes.chat import router as chat_router
 from apps.api.routes.chat_attachments import router as chat_attachments_router
 from apps.api.routes.chat_response_reports import router as chat_response_reports_router
 from apps.api.routes.conversations import router as conversations_router
+from apps.api.routes.devices import router as devices_router
 from apps.api.routes.events import router as events_router
 from apps.api.routes.geocoding import router as geocoding_router
 from apps.api.routes.health import router as health_router
@@ -33,8 +34,10 @@ from packages.shared.auth_context import reset_access_token, set_access_token
 from packages.shared.config.settings import get_settings
 from packages.shared.errors.base import (
     AuthenticationError,
+    PlanLimitError,
     ProviderError,
     QuotaExceededError,
+    SubscriptionRequiredError,
     ValidationError,
 )
 
@@ -126,6 +129,30 @@ async def handle_authentication_error(_: Request, exc: AuthenticationError) -> J
     return JSONResponse(status_code=401, content={"detail": str(exc)})
 
 
+@app.exception_handler(SubscriptionRequiredError)
+async def handle_subscription_required(_: Request, exc: SubscriptionRequiredError) -> JSONResponse:
+    return JSONResponse(
+        status_code=402,
+        content={
+            "detail": "subscription_required: la prova gratuita è terminata.",
+            "code": "subscription_required",
+        },
+    )
+
+
+@app.exception_handler(PlanLimitError)
+async def handle_plan_limit(_: Request, exc: PlanLimitError) -> JSONResponse:
+    return JSONResponse(
+        status_code=403,
+        content={
+            "detail": f"plan_limit_reached: {exc.message}",
+            "code": "plan_limit_reached",
+            "kind": exc.kind,
+            "limit": exc.limit,
+        },
+    )
+
+
 @app.exception_handler(QuotaExceededError)
 async def handle_quota_exceeded(_: Request, exc: QuotaExceededError) -> JSONResponse:
     """A per-owner daily allowance is used up: 429 with a message written
@@ -184,6 +211,7 @@ app.include_router(chat_response_reports_router)
 app.include_router(speech_to_text_router)
 app.include_router(chat_attachments_router)
 app.include_router(subscription_router)
+app.include_router(devices_router)
 app.include_router(local_services_router)
 app.include_router(news_router)
 app.include_router(events_router)

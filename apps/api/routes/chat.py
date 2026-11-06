@@ -1,6 +1,7 @@
-from fastapi import APIRouter, Header
+from fastapi import APIRouter, Depends, Header
 
 from apps.api.dependencies.container import get_container
+from apps.api.dependencies.subscription import require_active_subscription
 from apps.api.schemas.chat import SendChatMessageRequest
 from packages.core.application.services.send_chat_message import SendChatMessageInput
 from packages.core.domain.common.language import resolve_language
@@ -9,7 +10,7 @@ from packages.shared.errors.base import AuthenticationError
 router = APIRouter(prefix="/chat", tags=["chat"])
 
 
-@router.post("")
+@router.post("", dependencies=[Depends(require_active_subscription)])
 def send_chat_message(
     request: SendChatMessageRequest,
     accept_language: str | None = Header(default=None),

@@ -8,9 +8,7 @@ import '../../../../l10n/l10n.dart';
 import '../../data/billing_demo_store.dart';
 import '../../domain/billing_models.dart';
 
-/// Check-marked list of what a plan includes. Placeholder lines (a
-/// commercial choice not made yet) get a muted "help" icon and italic text
-/// so they can't be mistaken for a real promise.
+/// Check-marked list of what a plan includes.
 class PlanFeatureList extends StatelessWidget {
   const PlanFeatureList({super.key, required this.features});
 
@@ -27,23 +25,9 @@ class PlanFeatureList extends StatelessWidget {
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Icon(
-                  feature.isPlaceholder ? Icons.help_outline_rounded : Icons.check_rounded,
-                  size: 18,
-                  color: feature.isPlaceholder ? AppColors.mutedText : AppColors.success,
-                ),
+                const Icon(Icons.check_rounded, size: 18, color: AppColors.success),
                 const SizedBox(width: AppSpacing.sm),
-                Expanded(
-                  child: Text(
-                    feature.label,
-                    style: feature.isPlaceholder
-                        ? AppTextStyles.bodySmall.copyWith(
-                            color: AppColors.mutedText,
-                            fontStyle: FontStyle.italic,
-                          )
-                        : AppTextStyles.bodySmall,
-                  ),
-                ),
+                Expanded(child: Text(feature.label, style: AppTextStyles.bodySmall)),
               ],
             ),
           ),

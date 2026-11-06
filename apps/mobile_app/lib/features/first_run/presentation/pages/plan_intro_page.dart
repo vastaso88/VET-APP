@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 
 import '../../../../shared/widgets/pet_loader.dart';
@@ -12,7 +14,7 @@ import '../../../billing/data/subscription_remote_data_source.dart';
 import '../../../billing/domain/billing_models.dart';
 import '../../../billing/presentation/widgets/plan_feature_list.dart';
 
-/// First screen after signup: proposes the 10-day free trial (already
+/// First screen after signup: proposes the 14-day free trial (already
 /// started server-side by the time this shows — see register_page.dart)
 /// or an immediate plan choice. Pops when the owner is ready to continue,
 /// same "push and await" pattern as the other first-run pages.
@@ -25,7 +27,16 @@ class PlanIntroPage extends StatefulWidget {
 
 class _PlanIntroPageState extends State<PlanIntroPage> {
   final _dataSource = HttpSubscriptionRemoteDataSource();
+  final _store = BillingDemoStore.instance;
   PlanTier? _selecting;
+
+  @override
+  void initState() {
+    super.initState();
+    // The limits of each plan come from the backend; the cards fill in once
+    // they arrive.
+    unawaited(_store.syncFromBackend(dataSource: _dataSource));
+  }
 
   Future<void> _selectPlan(PlanTier tier) async {
     if (_selecting != null) return;
@@ -76,14 +87,22 @@ class _PlanIntroPageState extends State<PlanIntroPage> {
             const SizedBox(height: AppSpacing.md),
             const IncludedInAllPlansCard(),
             const SizedBox(height: AppSpacing.sm),
-            for (final plan in BillingDemoStore.plans) ...[
-              _CompactPlanCard(
-                plan: plan,
-                isLoading: _selecting == plan.tier,
-                onSelect: () => _selectPlan(plan.tier),
+            ListenableBuilder(
+              listenable: _store,
+              builder: (context, _) => Column(
+                children: [
+                  for (final plan in BillingDemoStore.plans) ...[
+                    _CompactPlanCard(
+                      plan: plan,
+                      features: _store.limitFeaturesFor(plan.tier),
+                      isLoading: _selecting == plan.tier,
+                      onSelect: () => _selectPlan(plan.tier),
+                    ),
+                    const SizedBox(height: AppSpacing.sm),
+                  ],
+                ],
               ),
-              const SizedBox(height: AppSpacing.sm),
-            ],
+            ),
           ],
         ),
       ),
@@ -150,20 +169,22 @@ class _TrialCard extends StatelessWidget {
 class _CompactPlanCard extends StatelessWidget {
   const _CompactPlanCard({
     required this.plan,
+    required this.features,
     required this.isLoading,
     required this.onSelect,
   });
 
   final SubscriptionPlan plan;
+  final List<PlanFeature> features;
   final bool isLoading;
   final VoidCallback onSelect;
 
   @override
   Widget build(BuildContext context) {
-    final price = plan.priceFor(BillingCycle.monthly);
-    final priceLabel = price == 0
-        ? context.l10n.billingPriceFree
-        : context.l10n.billingPricePerMonth(formatPlanAmount(price));
+    final l10n = context.l10n;
+    final priceLabel =
+        '${l10n.billingPricePerYear(formatPlanAmount(plan.priceFor(BillingCycle.yearly)))}'
+        ' · ${l10n.billingPricePerMonth(formatPlanAmount(plan.priceFor(BillingCycle.monthly)))}';
 
     return Container(
       padding: const EdgeInsets.all(AppSpacing.md),
@@ -181,7 +202,7 @@ class _CompactPlanCard extends StatelessWidget {
                 Text(plan.displayName, style: AppTextStyles.body.copyWith(fontWeight: FontWeight.w700)),
                 Text(priceLabel, style: AppTextStyles.bodySmall),
                 const SizedBox(height: AppSpacing.xs),
-                PlanFeatureList(features: plan.features),
+                PlanFeatureList(features: features),
               ],
             ),
           ),

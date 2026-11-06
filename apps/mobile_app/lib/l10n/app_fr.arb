@@ -105,6 +105,7 @@
   "authHubSubtitle": "Connectez-vous à votre compte ou créez-en un nouveau en quelques secondes.",
   "authHubCreateAccount": "Créer un compte",
   "authHubPrivacyNote": "Vos données restent privées et nous les utilisons uniquement pour gérer le profil de votre animal.",
+  "authDeviceLimitNotice": "Vous avez été déconnecté de cet appareil : votre compte a été ouvert sur un autre et votre offre autorise un nombre limité d'appareils. Vous pouvez vous reconnecter quand vous voulez.",
   "authErrorEmailExists": "Un compte existe déjà avec cette adresse e-mail. Essayez de vous connecter.",
   "authErrorWeakPassword": "Le mot de passe est trop faible : utilisez au moins 6 caractères, de préférence avec des chiffres ou des majuscules.",
   "authErrorEmailInvalid": "L'adresse e-mail ne semble pas valide.",
@@ -126,12 +127,40 @@
   "billingIncludedChatMedia": "Photos, PDF et dictée vocale dans le chat",
   "billingIncludedReminders": "Rappels",
   "billingIncludedNearbyServices": "Services pour animaux à proximité",
-  "billingFreePlaceholder": "Limites de l'offre Free : à définir",
-  "billingPlusPlaceholder": "Fonctions supplémentaires de l'offre Plus : à définir",
-  "billingProPlaceholder": "Fonctions supplémentaires de l'offre Pro : à définir",
   "billingPlanBadgeRecommended": "Recommandé",
   "billingIncludedInAllPlans": "Inclus dans toutes les offres",
-  "billingPriceFree": "Gratuit",
+  "billingLimitPets": "{count, plural, =1{1 animal} other{Jusqu'à {count} animaux}}",
+  "@billingLimitPets": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "billingLimitChatsPerPet": "{count, plural, =1{1 conversation par animal} other{Jusqu'à {count} conversations par animal}}",
+  "@billingLimitChatsPerPet": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "billingLimitQuestionsPerDay": "{count, plural, =1{1 question par jour} other{Jusqu'à {count} questions par jour}}",
+  "@billingLimitQuestionsPerDay": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "billingLimitDevices": "{count, plural, =1{1 appareil} other{Jusqu'à {count} appareils}}",
+  "@billingLimitDevices": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "billingPricePerMonth": "{amount}/mois",
   "@billingPricePerMonth": {
     "placeholders": {
@@ -140,8 +169,8 @@
       }
     }
   },
-  "billingPricePerMonthYearly": "{amount}/mois, facturé annuellement",
-  "@billingPricePerMonthYearly": {
+  "billingPricePerYear": "{amount}/an",
+  "@billingPricePerYear": {
     "placeholders": {
       "amount": {
         "type": "String"
@@ -174,6 +203,8 @@
   "billingTrialBannerEnding": "L'essai gratuit se termine bientôt : choisissez une offre pour continuer à utiliser Quokka.",
   "billingDeveloperBanner": "Compte développeur : accès illimité, aucune offre requise.",
   "billingCurrentPlanLabel": "Votre offre",
+  "billingTrialPlanName": "Essai gratuit",
+  "billingNoPlanName": "Aucune offre",
   "billingRenewalOn": "Renouvellement le {date}",
   "@billingRenewalOn": {
     "placeholders": {
@@ -185,7 +216,6 @@
   "billingCycleMonthly": "Mensuel",
   "billingCycleYearly": "Annuel",
   "billingCurrentPlanButton": "Offre actuelle",
-  "billingBackToFree": "Revenir à Free",
   "billingSwitchToPlan": "Passer à {plan}",
   "@billingSwitchToPlan": {
     "placeholders": {
@@ -220,6 +250,11 @@
   "billingExpiryYearLabel": "Année",
   "billingPaywallTitle": "Votre essai gratuit est terminé.",
   "billingPaywallSubtitle": "Choisissez comment continuer avec Quokka. Vous pouvez changer d'offre quand vous voulez dans les Paramètres.",
+  "billingPaywallDataTitle": "Vos données",
+  "billingPaywallDataBody": "Même sans offre, vous pouvez télécharger vos données ou supprimer votre compte.",
+  "billingPaywallEmergencyTitle": "Si votre animal est en danger",
+  "billingPaywallEmergencyBody": "Appelez immédiatement votre vétérinaire ou une clinique vétérinaire d'urgence. Quokka ne remplace pas une consultation.",
+  "billingPlanLimitReached": "Votre offre a atteint cette limite. Passez à une offre supérieure dans les Paramètres.",
   "billingChoosePlan": "Choisir {plan}",
   "@billingChoosePlan": {
     "placeholders": {
@@ -236,14 +271,14 @@
       }
     }
   },
-  "billingTrialDialogBody": "Avec l'offre Free, certaines fonctions sont limitées. Passez à Plus ou Pro pour tout avoir sans limites à la fin de l'essai.",
+  "billingTrialDialogBody": "À la fin de l'essai, il faut une offre pour continuer à utiliser Quokka. Choisissez celle qui vous convient : Plus, Pro ou Ultra.",
   "billingTrialDialogLater": "Plus tard",
   "billingTrialDialogSeePlans": "Voir les offres",
   "firstRunWelcomeTitle": "Bienvenue sur Quokka.",
-  "firstRunPlanIntroSubtitle": "Choisissez comment commencer : vous pouvez tout essayer gratuitement pendant 10 jours, sans carte bancaire, ou choisir tout de suite une offre.",
+  "firstRunPlanIntroSubtitle": "Choisissez comment commencer : vous pouvez tout essayer gratuitement pendant 14 jours, sans carte bancaire, ou choisir tout de suite une offre.",
   "firstRunPlanOrChoose": "OU CHOISISSEZ TOUT DE SUITE UNE OFFRE",
-  "firstRunTrialCardTitle": "10 jours gratuits",
-  "firstRunTrialCardBody": "Aucune carte bancaire requise. À la fin des 10 jours, nous vous demanderons de choisir une offre pour continuer.",
+  "firstRunTrialCardTitle": "14 jours gratuits",
+  "firstRunTrialCardBody": "Aucune carte bancaire requise. À la fin des 14 jours, nous vous demanderons de choisir une offre pour continuer.",
   "firstRunTrialStartButton": "Commencer l'essai gratuit",
   "firstRunPlanSelectButton": "Choisir",
   "firstRunAddPetTitle": "Ajoutez votre premier animal",

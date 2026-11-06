@@ -105,6 +105,7 @@
   "authHubSubtitle": "Sign in to your account or create a new one in seconds.",
   "authHubCreateAccount": "Create an account",
   "authHubPrivacyNote": "Your data stays private and is used only to manage your pet's profile.",
+  "authDeviceLimitNotice": "You were signed out of this device: your account was opened on another one, and your plan allows a limited number of devices. You can sign in again at any time.",
   "authErrorEmailExists": "An account already exists with this email. Try signing in.",
   "authErrorWeakPassword": "The password is too weak: use at least 6 characters, preferably with numbers or uppercase letters.",
   "authErrorEmailInvalid": "The email address does not appear to be valid.",
@@ -126,12 +127,40 @@
   "billingIncludedChatMedia": "Photos, PDFs and voice dictation in chat",
   "billingIncludedReminders": "Reminders",
   "billingIncludedNearbyServices": "Nearby pet services",
-  "billingFreePlaceholder": "Free plan limits: to be defined",
-  "billingPlusPlaceholder": "Plus extra features: to be defined",
-  "billingProPlaceholder": "Pro extra features: to be defined",
   "billingPlanBadgeRecommended": "Recommended",
   "billingIncludedInAllPlans": "Included in every plan",
-  "billingPriceFree": "Free",
+  "billingLimitPets": "{count, plural, =1{1 pet} other{Up to {count} pets}}",
+  "@billingLimitPets": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "billingLimitChatsPerPet": "{count, plural, =1{1 chat per pet} other{Up to {count} chats per pet}}",
+  "@billingLimitChatsPerPet": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "billingLimitQuestionsPerDay": "{count, plural, =1{1 question a day} other{Up to {count} questions a day}}",
+  "@billingLimitQuestionsPerDay": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "billingLimitDevices": "{count, plural, =1{1 device} other{Up to {count} devices}}",
+  "@billingLimitDevices": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "billingPricePerMonth": "{amount}/month",
   "@billingPricePerMonth": {
     "placeholders": {
@@ -140,8 +169,8 @@
       }
     }
   },
-  "billingPricePerMonthYearly": "{amount}/month, billed yearly",
-  "@billingPricePerMonthYearly": {
+  "billingPricePerYear": "{amount}/year",
+  "@billingPricePerYear": {
     "placeholders": {
       "amount": {
         "type": "String"
@@ -174,6 +203,8 @@
   "billingTrialBannerEnding": "Your free trial is about to end: choose a plan to keep using Quokka.",
   "billingDeveloperBanner": "Developer account: unlimited access, no plan required.",
   "billingCurrentPlanLabel": "Your plan",
+  "billingTrialPlanName": "Free trial",
+  "billingNoPlanName": "No plan",
   "billingRenewalOn": "Renews on {date}",
   "@billingRenewalOn": {
     "placeholders": {
@@ -185,7 +216,6 @@
   "billingCycleMonthly": "Monthly",
   "billingCycleYearly": "Yearly",
   "billingCurrentPlanButton": "Current plan",
-  "billingBackToFree": "Back to Free",
   "billingSwitchToPlan": "Switch to {plan}",
   "@billingSwitchToPlan": {
     "placeholders": {
@@ -220,6 +250,11 @@
   "billingExpiryYearLabel": "Year",
   "billingPaywallTitle": "Your free trial has ended.",
   "billingPaywallSubtitle": "Choose how to continue with Quokka. You can change plan anytime in Settings.",
+  "billingPaywallDataTitle": "Your data",
+  "billingPaywallDataBody": "Even without a plan you can download your data or delete your account.",
+  "billingPaywallEmergencyTitle": "If your pet is in danger",
+  "billingPaywallEmergencyBody": "Call your vet or an emergency veterinary clinic right away. Quokka does not replace a visit.",
+  "billingPlanLimitReached": "Your plan has reached this limit. Switch to a higher plan in Settings.",
   "billingChoosePlan": "Choose {plan}",
   "@billingChoosePlan": {
     "placeholders": {
@@ -236,14 +271,14 @@
       }
     }
   },
-  "billingTrialDialogBody": "Some features are limited on the Free plan. Switch to Plus or Pro for unlimited access when your trial ends.",
+  "billingTrialDialogBody": "When the trial ends you need a plan to keep using Quokka. Choose the one that suits you: Plus, Pro or Ultra.",
   "billingTrialDialogLater": "Later",
   "billingTrialDialogSeePlans": "View plans",
   "firstRunWelcomeTitle": "Welcome to Quokka.",
-  "firstRunPlanIntroSubtitle": "Choose how to start: try everything free for 10 days with no card, or choose a plan now.",
+  "firstRunPlanIntroSubtitle": "Choose how to start: try everything free for 14 days with no card, or choose a plan now.",
   "firstRunPlanOrChoose": "OR CHOOSE A PLAN NOW",
-  "firstRunTrialCardTitle": "Free trial — 10 days",
-  "firstRunTrialCardBody": "No card required. At the end of the 10 days, we will ask you to choose a plan to continue.",
+  "firstRunTrialCardTitle": "Free trial — 14 days",
+  "firstRunTrialCardBody": "No card required. At the end of the 14 days, we will ask you to choose a plan to continue.",
   "firstRunTrialStartButton": "Start free trial",
   "firstRunPlanSelectButton": "Choose",
   "firstRunAddPetTitle": "Add your first pet",

@@ -4,6 +4,7 @@ from pydantic import BaseModel
 
 from packages.core.application.ports.chat_attachment_repository import ChatAttachmentRepository
 from packages.core.application.ports.conversation_repository import ConversationRepository
+from packages.core.application.ports.owner_limits import OwnerLimitsLookup
 from packages.core.application.ports.pet_profile_repository import PetProfileRepository
 from packages.core.application.ports.weight_measurement_repository import (
     WeightMeasurementRepository,
@@ -37,6 +38,7 @@ from packages.core.domain.pet_profile.weight_measurement import (
     format_date_it,
     weight_label_with_date,
 )
+from packages.core.domain.subscription.limits import PlanLimits
 from packages.shared.errors.base import ValidationError
 
 # How many recent messages cross into the orchestrator (spec v3 §38: never
@@ -121,6 +123,7 @@ class SendChatMessageService:
         weight_measurement_repository: WeightMeasurementRepository | None = None,
         max_active_conversations_per_pet: int = 4,
         quota_exempt_emails: frozenset[str] = frozenset(),
+        owner_limits: OwnerLimitsLookup | None = None,
     ) -> None:
         self._repository = repository
         self._orchestrator = orchestrator
@@ -137,6 +140,13 @@ class SendChatMessageService:
         self._max_active_conversations_per_pet = max_active_conversations_per_pet
         # Developer accounts are not held to the daily message allowance.
         self._quota_exempt_emails = frozenset(e.strip().lower() for e in quota_exempt_emails)
+        # None: this deployment has no plans, so no per-plan limits apply.
+        self._owner_limits = owner_limits
+
+    def _limits_for(self, data: SendChatMessageInput) -> PlanLimits | None:
+        if self._owner_limits is None:
+            return None
+        return self._owner_limits(data.owner_id, data.owner_email)
 
     def _weight_label(self, owner_id: str, pet_profile: PetProfile, today: date) -> str | None:
         """The latest weighing with its date ("23 kg al 14 ottobre") when the
@@ -231,6 +241,7 @@ class SendChatMessageService:
             awaiting_medical_record_consent = False
 
         today = datetime.now(UTC).date()
+        plan_limits = self._limits_for(data)
         body_condition, body_condition_as_of = self._body_condition_context(
             data.owner_id, pet_profile, today
         )
@@ -262,6 +273,7 @@ class SendChatMessageService:
                 owner_id=data.owner_id,
                 quota_exempt=(getattr(data, "owner_email", None) or "").strip().lower()
                 in self._quota_exempt_emails,
+                user_daily_limit=plan_limits.daily_questions if plan_limits else None,
                 owner_names=owner_names_for_anonymization(
                     data.owner_display_name, pet_name=pet_profile.name
                 ),
@@ -404,10 +416,14 @@ class SendChatMessageService:
             for conversation in self._repository.list_by_pet(data.pet_id)
             if conversation.owner_id == data.owner_id
         ]
-        if len(existing_for_pet) >= self._max_active_conversations_per_pet:
+        max_per_pet = self._max_active_conversations_per_pet
+        plan_limits = self._limits_for(data)
+        if plan_limits is not None:
+            max_per_pet = min(max_per_pet, plan_limits.max_chats_per_pet)
+        if len(existing_for_pet) >= max_per_pet:
             raise ValidationError(
                 "conversation_limit_reached: hai raggiunto il numero massimo di "
-                f"conversazioni ({self._max_active_conversations_per_pet}) per questo "
+                f"conversazioni ({max_per_pet}) per questo "
                 "animale. Chiudine una per crearne una nuova."
             )
         return Conversation(

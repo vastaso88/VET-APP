@@ -8,6 +8,7 @@ import '../../../shared/auth/current_user.dart';
 import '../../../shared/config/app_runtime_config_loader.dart';
 import '../../../shared/errors/app_network_error.dart';
 import '../../../shared/types/result.dart';
+import '../../billing/data/subscription_required_signal.dart';
 
 /// Parsed slice of the backend's `POST /chat` response that the mobile chat
 /// feature actually needs — see `SendChatMessageOutput`
@@ -186,6 +187,8 @@ class HttpChatRemoteDataSource implements ChatRemoteDataSource {
         if (_isMessageTooLong(response)) {
           return Result.failure(_messageTooLong());
         }
+        final planError = _planError(response);
+        if (planError != null) return Result.failure(planError);
         final detail = _extractDetail(response.body);
         if (detail != null && detail.startsWith('conversation_limit_reached')) {
           final colonIndex = detail.indexOf(':');
@@ -322,6 +325,8 @@ class HttpChatRemoteDataSource implements ChatRemoteDataSource {
           )
           .timeout(_timeout);
       if (createResponse.statusCode < 200 || createResponse.statusCode >= 300) {
+        final planError = _planError(createResponse);
+        if (planError != null) return Result.failure(planError);
         return Result.failure(
           AppNetworkError(
             code: 'pet_bootstrap_http_${createResponse.statusCode}',
@@ -552,6 +557,28 @@ class HttpChatRemoteDataSource implements ChatRemoteDataSource {
         ),
       );
     }
+  }
+
+  /// The plan-related refusals: 402 `subscription_required` (the trial ended:
+  /// the owner is sent to the paywall) and 403 `plan_limit_reached` (the plan
+  /// does not allow more pets). Null for any other answer.
+  AppNetworkError? _planError(http.Response response) {
+    if (handleSubscriptionRequired(response.statusCode)) {
+      return AppNetworkError(
+        code: 'subscription_required',
+        message: appL10n.billingPaywallTitle,
+      );
+    }
+    if (response.statusCode == 403) {
+      final detail = _extractDetail(response.body);
+      if (detail != null && detail.startsWith('plan_limit_reached')) {
+        return AppNetworkError(
+          code: 'plan_limit_reached',
+          message: appL10n.billingPlanLimitReached,
+        );
+      }
+    }
+    return null;
   }
 
   /// The backend's 422 for a `user_message` over its length limit

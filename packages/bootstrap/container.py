@@ -29,6 +29,7 @@ from packages.core.application.ports.marketplace_listing_repository import (
     MarketplaceListingRepository,
 )
 from packages.core.application.ports.media_storage import MediaStorage
+from packages.core.application.ports.owner_limits import OwnerLimitsLookup
 from packages.core.application.ports.pet_condition_repository import PetConditionRepository
 from packages.core.application.ports.pet_news import PetNewsCacheRepository
 from packages.core.application.ports.pet_profile_repository import PetProfileRepository
@@ -40,6 +41,7 @@ from packages.core.application.ports.radar_reports_repository import RadarReport
 from packages.core.application.ports.reminder_repository import ReminderRepository
 from packages.core.application.ports.speech_to_text_provider import SpeechToTextProvider
 from packages.core.application.ports.subscription_repository import SubscriptionRepository
+from packages.core.application.ports.user_device_repository import UserDeviceRepository
 from packages.core.application.ports.user_location_repository import UserLocationRepository
 from packages.core.application.ports.weight_measurement_repository import (
     WeightMeasurementRepository,
@@ -64,6 +66,7 @@ from packages.core.application.services.export_account_data import (
 from packages.core.application.services.geocoding import GeocodingService
 from packages.core.application.services.get_account_consents import GetAccountConsentsService
 from packages.core.application.services.get_or_create_subscription import (
+    GetOrCreateSubscriptionInput,
     GetOrCreateSubscriptionService,
 )
 from packages.core.application.services.get_pet_news import GetPetNewsService
@@ -105,6 +108,7 @@ from packages.core.application.services.radar_reports import (
     WithdrawRadarReportService,
 )
 from packages.core.application.services.record_route_point import RecordRoutePointService
+from packages.core.application.services.register_device import RegisterDeviceService
 from packages.core.application.services.reminder_context_retriever import (
     ReminderContextRetriever,
 )
@@ -136,6 +140,7 @@ from packages.core.application.services.update_pet_profile import UpdatePetProfi
 from packages.core.application.services.upload_chat_attachment import UploadChatAttachmentService
 from packages.core.application.services.urgency_classifier import UrgencyClassifier
 from packages.core.application.services.vet_summary import VetSummaryService
+from packages.core.domain.subscription.limits import PlanLimits
 from packages.infrastructure.auth.bootstrap_auth_provider import BootstrapAuthProvider
 from packages.infrastructure.documents.pypdf_reader import PypdfReader
 from packages.infrastructure.geocoding.nominatim_geocoder import NominatimGeocoder
@@ -199,6 +204,7 @@ from packages.infrastructure.persistence.in_memory_repositories import (
     InMemoryRadarReportsRepository,
     InMemoryReminderRepository,
     InMemorySubscriptionRepository,
+    InMemoryUserDeviceRepository,
     InMemoryUserLocationRepository,
     InMemoryWeightMeasurementRepository,
 )
@@ -256,6 +262,7 @@ class ApplicationContainer:
         self.pet_condition_repository = self._build_pet_condition_repository()
         self.account_consents_repository = self._build_account_consents_repository()
         self.subscription_repository = self._build_subscription_repository()
+        self.user_device_repository = self._build_user_device_repository()
         self.developer_emails = frozenset(
             email.strip().lower() for email in settings.developer_emails
         )
@@ -319,7 +326,9 @@ class ApplicationContainer:
         )
 
     def create_pet_profile_service(self) -> CreatePetProfileService:
-        return CreatePetProfileService(self.pet_profile_repository)
+        return CreatePetProfileService(
+            self.pet_profile_repository, owner_limits=self.owner_limits_lookup()
+        )
 
     def get_pet_profile_service(self) -> GetPetProfileService:
         return GetPetProfileService(self.pet_profile_repository)
@@ -341,6 +350,26 @@ class ApplicationContainer:
 
     def get_or_create_subscription_service(self) -> GetOrCreateSubscriptionService:
         return GetOrCreateSubscriptionService(self.subscription_repository, self.developer_emails)
+
+    def register_device_service(self) -> RegisterDeviceService:
+        return RegisterDeviceService(self.user_device_repository, self.owner_limits_lookup())
+
+    def owner_limits_lookup(self) -> OwnerLimitsLookup:
+        """What the owner's plan allows (None = no limits). Fails open: a
+        subscription lookup outage must not lock owners out, same stance as
+        the usage ledger."""
+        service = self.get_or_create_subscription_service()
+
+        def lookup(owner_id: str, email: str | None) -> PlanLimits | None:
+            try:
+                return service.execute(
+                    GetOrCreateSubscriptionInput(owner_id=owner_id, email=email or "")
+                ).limits
+            except Exception:  # noqa: BLE001 - fail open
+                logger.exception("could not read the owner's plan limits")
+                return None
+
+        return lookup
 
     def delete_account_service(self) -> DeleteAccountService:
         return DeleteAccountService(self._build_account_eraser())
@@ -529,6 +558,7 @@ class ApplicationContainer:
             weight_measurement_repository=self.weight_measurement_repository,
             max_active_conversations_per_pet=self.settings.max_active_conversations_per_pet,
             quota_exempt_emails=self.developer_emails,
+            owner_limits=self.owner_limits_lookup(),
         )
 
     def chat_usage_maintenance_service(self) -> ChatUsageMaintenanceService:
@@ -806,6 +836,23 @@ class ApplicationContainer:
                     return InMemorySubscriptionRepository()
                 raise
         return InMemorySubscriptionRepository()
+
+    def _build_user_device_repository(self) -> UserDeviceRepository:
+        if self.settings.persistence_backend == "supabase":
+            try:
+                from packages.infrastructure.persistence.supabase.client import (
+                    build_supabase_client,
+                )
+                from packages.infrastructure.persistence.supabase.supabase_repositories import (
+                    SupabaseUserDeviceRepository,
+                )
+
+                return SupabaseUserDeviceRepository(build_supabase_client(self.settings))
+            except ModuleNotFoundError:
+                if self.settings.environment != "production":
+                    return InMemoryUserDeviceRepository()
+                raise
+        return InMemoryUserDeviceRepository()
 
     def _build_user_location_repository(self) -> UserLocationRepository:
         if self.settings.persistence_backend == "supabase":

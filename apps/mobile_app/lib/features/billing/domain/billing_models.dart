@@ -1,7 +1,9 @@
 import '../../../l10n/l10n.dart';
 import '../../../l10n/regional_defaults.dart';
 
-enum PlanTier { free, plus, pro }
+/// There is no free plan: after the 14-day trial an owner without a plan
+/// reaches only their own data (export, account deletion).
+enum PlanTier { plus, pro, ultra }
 
 enum BillingCycle { monthly, yearly }
 
@@ -20,6 +22,32 @@ extension CardBrandLabel on CardBrand {
   }
 }
 
+/// What one plan allows. The backend is the single source of these numbers
+/// (`packages/core/domain/subscription/limits.py`, sent by
+/// `GET /subscription/status`): the app never keeps its own copy.
+class PlanLimits {
+  const PlanLimits({
+    required this.maxPets,
+    required this.maxChatsPerPet,
+    required this.dailyQuestions,
+    required this.maxDevices,
+  });
+
+  factory PlanLimits.fromJson(Map<String, dynamic> json) {
+    return PlanLimits(
+      maxPets: json['max_pets'] as int,
+      maxChatsPerPet: json['max_chats_per_pet'] as int,
+      dailyQuestions: json['daily_questions'] as int,
+      maxDevices: json['max_devices'] as int,
+    );
+  }
+
+  final int maxPets;
+  final int maxChatsPerPet;
+  final int dailyQuestions;
+  final int maxDevices;
+}
+
 /// Every feature line the plan screens can show; the wording lives in the
 /// ARB catalog and is resolved when read (see [PlanFeature.label]).
 enum PlanFeatureId {
@@ -28,19 +56,19 @@ enum PlanFeatureId {
   includedChatMedia,
   includedReminders,
   includedNearbyServices,
-  freePlaceholder,
-  plusPlaceholder,
-  proPlaceholder,
+  limitPets,
+  limitChatsPerPet,
+  limitQuestionsPerDay,
+  limitDevices,
 }
 
-/// One line in a plan's "what's included" list. [isPlaceholder] marks a
-/// commercial decision the owner hasn't made yet, so the UI renders it as an
-/// obvious "to be defined" line instead of a promise.
+/// One line in a plan's "what's included" list. [count] fills the number of
+/// the limit lines.
 class PlanFeature {
-  const PlanFeature(this.id, {this.isPlaceholder = false});
+  const PlanFeature(this.id, {this.count = 0});
 
   final PlanFeatureId id;
-  final bool isPlaceholder;
+  final int count;
 
   String get label {
     final l10n = appL10n;
@@ -50,11 +78,20 @@ class PlanFeature {
       PlanFeatureId.includedChatMedia => l10n.billingIncludedChatMedia,
       PlanFeatureId.includedReminders => l10n.billingIncludedReminders,
       PlanFeatureId.includedNearbyServices => l10n.billingIncludedNearbyServices,
-      PlanFeatureId.freePlaceholder => l10n.billingFreePlaceholder,
-      PlanFeatureId.plusPlaceholder => l10n.billingPlusPlaceholder,
-      PlanFeatureId.proPlaceholder => l10n.billingProPlaceholder,
+      PlanFeatureId.limitPets => l10n.billingLimitPets(count),
+      PlanFeatureId.limitChatsPerPet => l10n.billingLimitChatsPerPet(count),
+      PlanFeatureId.limitQuestionsPerDay => l10n.billingLimitQuestionsPerDay(count),
+      PlanFeatureId.limitDevices => l10n.billingLimitDevices(count),
     };
   }
+
+  /// The four limit lines of a plan, in display order.
+  static List<PlanFeature> forLimits(PlanLimits limits) => [
+        PlanFeature(PlanFeatureId.limitPets, count: limits.maxPets),
+        PlanFeature(PlanFeatureId.limitChatsPerPet, count: limits.maxChatsPerPet),
+        PlanFeature(PlanFeatureId.limitQuestionsPerDay, count: limits.dailyQuestions),
+        PlanFeature(PlanFeatureId.limitDevices, count: limits.maxDevices),
+      ];
 }
 
 /// "4,99 €", "£4.99", "$4.99", "A$4.99" or "CHF 4.99": the placeholder price
@@ -62,15 +99,13 @@ class PlanFeature {
 /// per country are still to be set).
 String formatPlanAmount(double price) => formatAppMoney(price);
 
-/// A subscription tier as shown in the plan comparison — mirrors the
-/// "Free / Plus / Pro" ladder common apps use for their pricing screen.
+/// A subscription tier as shown in the plan comparison: Plus, Pro, Ultra.
 class SubscriptionPlan {
   const SubscriptionPlan({
     required this.tier,
     required this.displayName,
     required this.monthlyPrice,
     required this.yearlyPrice,
-    required this.features,
     this.isRecommended = false,
   });
 
@@ -81,12 +116,9 @@ class SubscriptionPlan {
   /// variant's currency (see [formatPlanAmount]).
   final double monthlyPrice;
 
-  /// Placeholder price for one month, billed yearly (usually discounted).
+  /// Placeholder price for the whole year, billed yearly: ten months, so the
+  /// discount stays within 16.67%.
   final double yearlyPrice;
-
-  /// What this plan has beyond (or instead of) the shared baseline in
-  /// `BillingDemoStore.includedInAllPlans`.
-  final List<PlanFeature> features;
 
   /// Highlights the plan with a "Consigliato" badge.
   final bool isRecommended;
@@ -94,6 +126,7 @@ class SubscriptionPlan {
   /// Short label shown on the plan card, or null when not highlighted.
   String? get badge => isRecommended ? appL10n.billingPlanBadgeRecommended : null;
 
+  /// What a purchase of this [cycle] costs: one month, or the whole year.
   double priceFor(BillingCycle cycle) =>
       cycle == BillingCycle.yearly ? yearlyPrice : monthlyPrice;
 }

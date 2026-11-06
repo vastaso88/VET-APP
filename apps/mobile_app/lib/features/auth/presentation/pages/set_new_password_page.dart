@@ -66,7 +66,8 @@ class _SetNewPasswordPageState extends State<SetNewPasswordPage> {
       onSuccess: (_) async {
         AppRouter.passwordRecoveryPending = false;
         if (_authRepository.currentContext.isSignedIn) {
-          final destination = await const SubscriptionGate().resolveDestination();
+          final destination =
+              await const SubscriptionGate().resolveDestination(afterSignIn: true);
           if (!mounted) return;
           Navigator.of(context).pushNamedAndRemoveUntil(destination, (route) => false);
           return;

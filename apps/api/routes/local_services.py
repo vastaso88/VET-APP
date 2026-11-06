@@ -1,10 +1,11 @@
 from typing import Annotated, Literal
 
-from fastapi import APIRouter, Query
+from fastapi import APIRouter, Depends, Query
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel, Field
 
 from apps.api.dependencies.container import ApplicationContainer, get_container
+from apps.api.dependencies.subscription import require_active_subscription
 from packages.core.application.services.list_nearby_radar_places import (
     ListNearbyRadarPlacesInput,
 )
@@ -219,7 +220,7 @@ def report_options() -> dict[str, object]:
     }
 
 
-@router.post("/reports", response_model=None)
+@router.post("/reports", response_model=None, dependencies=[Depends(require_active_subscription)])
 def submit_report(request: SubmitReportRequest) -> dict[str, object] | JSONResponse:
     container = get_container()
     user = container.auth_provider.get_current_user()
@@ -241,7 +242,11 @@ def submit_report(request: SubmitReportRequest) -> dict[str, object] | JSONRespo
     }
 
 
-@router.post("/reports/{report_id}/vote", response_model=None)
+@router.post(
+    "/reports/{report_id}/vote",
+    response_model=None,
+    dependencies=[Depends(require_active_subscription)],
+)
 def vote_report(report_id: str, request: VoteReportRequest) -> dict[str, object] | JSONResponse:
     container = get_container()
     user = container.auth_provider.get_current_user()
@@ -304,7 +309,7 @@ def _place_to_rate(container: ApplicationContainer, request: RatePlaceRequest) -
     )
 
 
-@router.put("/ratings", response_model=None)
+@router.put("/ratings", response_model=None, dependencies=[Depends(require_active_subscription)])
 def rate_place(request: RatePlaceRequest) -> dict[str, object] | JSONResponse:
     """Stars for a public dog park. The place is looked up in our own data
     rather than trusted from the request: only a dog park that exists

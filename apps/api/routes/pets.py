@@ -1,6 +1,7 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends
 
 from apps.api.dependencies.container import get_container
+from apps.api.dependencies.subscription import require_active_subscription
 from apps.api.schemas.pets import CreatePetProfileRequest, SetMedicalRecordConsentRequest
 from packages.core.application.services.create_pet_profile import CreatePetProfileInput
 from packages.core.application.services.get_pet_profile import GetPetProfileInput
@@ -36,17 +37,17 @@ def get_pet(pet_id: str) -> dict[str, object]:
     return result.model_dump()
 
 
-@router.post("")
+@router.post("", dependencies=[Depends(require_active_subscription)])
 def create_pet(request: CreatePetProfileRequest) -> dict[str, object]:
     container = get_container()
     user = container.auth_provider.get_current_user()
     result = container.create_pet_profile_service().execute(
-        CreatePetProfileInput(owner_id=user.id, **request.model_dump())
+        CreatePetProfileInput(owner_id=user.id, owner_email=user.email, **request.model_dump())
     )
     return result.model_dump()
 
 
-@router.put("/{pet_id}")
+@router.put("/{pet_id}", dependencies=[Depends(require_active_subscription)])
 def update_pet(pet_id: str, request: CreatePetProfileRequest) -> dict[str, object]:
     container = get_container()
     user = container.auth_provider.get_current_user()

@@ -246,30 +246,41 @@ class LlmBudget:
     # --- admission of a chat turn ---------------------------------------------------
 
     def admit(
-        self, *, owner_id: str, models: list[str], exempt: bool = False
+        self,
+        *,
+        owner_id: str,
+        models: list[str],
+        exempt: bool = False,
+        user_daily_limit: int | None = None,
     ) -> QuotaDenial | None:
         """Checked once per turn, before anything that may call a model and
         after the fixed emergency replies. Counts the owner's message only
-        when the turn is admitted."""
+        when the turn is admitted.
+
+        [user_daily_limit] is the owner's plan allowance and replaces the
+        deployment-wide default; unlike that default, 0 here means "none
+        allowed" (an owner without access), not "no limit"."""
         try:
             self.order(models)
         except QuotaExhausted as exc:
             return QuotaDenial(
                 reason="models_exhausted", retry_after_seconds=exc.retry_after_seconds
             )
-        if exempt or self._user_daily_limit <= 0 or not owner_id:
+        limit = self._user_daily_limit if user_daily_limit is None else user_daily_limit
+        unlimited = user_daily_limit is None and self._user_daily_limit <= 0
+        if exempt or unlimited or not owner_id:
             return None
         try:
             count = self._repository.add_user_message(owner_id, self._today())
         except Exception:  # noqa: BLE001 - fail open: a ledger outage must not block owners
             logger.exception("llm budget: could not count the owner's message")
             return None
-        if count > self._user_daily_limit:
+        if count > limit:
             now = self._clock()
             return QuotaDenial(
                 reason="user_limit",
                 retry_after_seconds=max(60, int((next_day_start(now) - now).total_seconds())),
-                daily_limit=self._user_daily_limit,
+                daily_limit=limit,
             )
         return None
 

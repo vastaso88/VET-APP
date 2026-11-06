@@ -1,14 +1,13 @@
-import 'billing_models.dart';
 import 'subscription_status.dart';
 
-/// Upgrade nudges for owners who picked the Free plan while still inside the
-/// 10-day trial (so the trial clock is still running). Fires once per
-/// threshold day, never for developers, never after the trial has ended.
+/// Nudges to pick a plan for owners who are still inside the 14-day trial
+/// and have not chosen one. Fires once per threshold day, never for
+/// developers, never once a plan is chosen or the trial has ended.
 class TrialReminderRule {
   const TrialReminderRule._();
 
-  static const trialLengthDays = 10;
-  static const reminderDays = {5, 7, 9, 10};
+  static const trialLengthDays = 14;
+  static const reminderDays = {7, 10, 12, 14};
 
   /// 1-based day of the trial for [now], clamped to 1..[trialLengthDays].
   static int trialDayFor(DateTime trialEndsAt, DateTime now) {
@@ -22,7 +21,7 @@ class TrialReminderRule {
   /// The threshold day to show right now, or null if no reminder is due.
   static int? dueDay(SubscriptionStatus status, DateTime now) {
     if (status.isDeveloper) return null;
-    if (status.plan != PlanTier.free) return null;
+    if (status.plan != null) return null;
     if (now.isAfter(status.trialEndsAt)) return null;
 
     final day = trialDayFor(status.trialEndsAt, now);

@@ -1,6 +1,7 @@
-from fastapi import APIRouter, Header, Response
+from fastapi import APIRouter, Depends, Header, Response
 
 from apps.api.dependencies.container import get_container
+from apps.api.dependencies.subscription import require_active_subscription
 from apps.api.schemas.conversations import EditChatMessageRequest, RenameConversationRequest
 from packages.core.application.services.delete_conversation import DeleteConversationInput
 from packages.core.application.services.edit_chat_message import EditChatMessageInput
@@ -38,7 +39,10 @@ def rename_conversation(
     return {"id": result.conversation.id, "title": result.conversation.title}
 
 
-@router.put("/{conversation_id}/messages/{message_id}")
+@router.put(
+    "/{conversation_id}/messages/{message_id}",
+    dependencies=[Depends(require_active_subscription)],
+)
 def edit_message(
     conversation_id: str,
     message_id: str,
@@ -63,7 +67,7 @@ def edit_message(
     return result.model_dump()
 
 
-@router.get("/{conversation_id}/summary")
+@router.get("/{conversation_id}/summary", dependencies=[Depends(require_active_subscription)])
 def conversation_summary(
     conversation_id: str, accept_language: str | None = Header(default=None)
 ) -> dict[str, object]:

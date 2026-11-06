@@ -317,6 +317,10 @@ class AppLocalizationsDe extends AppLocalizations {
       'Ihre Daten bleiben privat und werden nur zur Verwaltung des Profils Ihres Tieres verwendet.';
 
   @override
+  String get authDeviceLimitNotice =>
+      'Sie wurden auf diesem Gerät abgemeldet: Ihr Konto wurde auf einem anderen Gerät geöffnet, und Ihr Tarif erlaubt nur eine begrenzte Zahl an Geräten. Sie können sich jederzeit wieder anmelden.';
+
+  @override
   String get authErrorEmailExists =>
       'Mit dieser E-Mail-Adresse gibt es bereits ein Konto. Versuchen Sie, sich anzumelden.';
 
@@ -397,25 +401,54 @@ class AppLocalizationsDe extends AppLocalizations {
   String get billingIncludedNearbyServices => 'Tierservices in der Nähe';
 
   @override
-  String get billingFreePlaceholder =>
-      'Grenzen des Free-Tarifs: noch festzulegen';
-
-  @override
-  String get billingPlusPlaceholder =>
-      'Zusatzfunktionen des Plus-Tarifs: noch festzulegen';
-
-  @override
-  String get billingProPlaceholder =>
-      'Zusatzfunktionen des Pro-Tarifs: noch festzulegen';
-
-  @override
   String get billingPlanBadgeRecommended => 'Empfohlen';
 
   @override
   String get billingIncludedInAllPlans => 'In allen Tarifen enthalten';
 
   @override
-  String get billingPriceFree => 'Kostenlos';
+  String billingLimitPets(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Bis zu $count Tiere',
+      one: '1 Tier',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String billingLimitChatsPerPet(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Bis zu $count Chats pro Tier',
+      one: '1 Chat pro Tier',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String billingLimitQuestionsPerDay(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Bis zu $count Fragen pro Tag',
+      one: '1 Frage pro Tag',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String billingLimitDevices(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Bis zu $count Geräte',
+      one: '1 Gerät',
+    );
+    return '$_temp0';
+  }
 
   @override
   String billingPricePerMonth(String amount) {
@@ -423,8 +456,8 @@ class AppLocalizationsDe extends AppLocalizations {
   }
 
   @override
-  String billingPricePerMonthYearly(String amount) {
-    return '$amount/Monat, jährlich abgerechnet';
+  String billingPricePerYear(String amount) {
+    return '$amount/Jahr';
   }
 
   @override
@@ -471,6 +504,12 @@ class AppLocalizationsDe extends AppLocalizations {
   String get billingCurrentPlanLabel => 'Ihr Tarif';
 
   @override
+  String get billingTrialPlanName => 'Kostenlose Testphase';
+
+  @override
+  String get billingNoPlanName => 'Kein Tarif';
+
+  @override
   String billingRenewalOn(String date) {
     return 'Verlängerung am $date';
   }
@@ -483,9 +522,6 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get billingCurrentPlanButton => 'Aktueller Tarif';
-
-  @override
-  String get billingBackToFree => 'Zurück zu Free';
 
   @override
   String billingSwitchToPlan(String plan) {
@@ -534,6 +570,24 @@ class AppLocalizationsDe extends AppLocalizations {
       'Wählen Sie, wie es mit Quokka weitergeht. Den Tarif können Sie jederzeit in den Einstellungen ändern.';
 
   @override
+  String get billingPaywallDataTitle => 'Ihre Daten';
+
+  @override
+  String get billingPaywallDataBody =>
+      'Auch ohne Tarif können Sie Ihre Daten herunterladen oder Ihr Konto löschen.';
+
+  @override
+  String get billingPaywallEmergencyTitle => 'Wenn Ihr Tier in Gefahr ist';
+
+  @override
+  String get billingPaywallEmergencyBody =>
+      'Rufen Sie sofort Ihre Tierarztpraxis oder eine tierärztliche Notfallklinik an. Quokka ersetzt keinen Besuch.';
+
+  @override
+  String get billingPlanLimitReached =>
+      'Ihr Tarif hat diese Grenze erreicht. Wechseln Sie in den Einstellungen zu einem höheren Tarif.';
+
+  @override
   String billingChoosePlan(String plan) {
     return '$plan wählen';
   }
@@ -551,7 +605,7 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get billingTrialDialogBody =>
-      'Im Free-Tarif sind einige Funktionen eingeschränkt. Wechseln Sie zu Plus oder Pro, um nach der Testphase alles ohne Einschränkung zu nutzen.';
+      'Nach der Testphase brauchen Sie einen Tarif, um Quokka weiter zu nutzen. Wählen Sie den passenden: Plus, Pro oder Ultra.';
 
   @override
   String get billingTrialDialogLater => 'Später';
@@ -564,17 +618,17 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get firstRunPlanIntroSubtitle =>
-      'Wählen Sie Ihren Start: Sie können 10 Tage lang alles kostenlos und ohne Karte testen oder gleich einen Tarif wählen.';
+      'Wählen Sie Ihren Start: Sie können 14 Tage lang alles kostenlos und ohne Karte testen oder gleich einen Tarif wählen.';
 
   @override
   String get firstRunPlanOrChoose => 'ODER GLEICH EINEN TARIF WÄHLEN';
 
   @override
-  String get firstRunTrialCardTitle => '10 Tage gratis testen';
+  String get firstRunTrialCardTitle => '14 Tage gratis testen';
 
   @override
   String get firstRunTrialCardBody =>
-      'Keine Karte nötig. Nach den 10 Tagen bitten wir Sie, einen Tarif zu wählen, um weiterzumachen.';
+      'Keine Karte nötig. Nach den 14 Tagen bitten wir Sie, einen Tarif zu wählen, um weiterzumachen.';
 
   @override
   String get firstRunTrialStartButton => 'Testphase starten';

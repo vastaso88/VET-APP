@@ -315,6 +315,10 @@ class AppLocalizationsEn extends AppLocalizations {
       'Your data stays private and is used only to manage your pet\'s profile.';
 
   @override
+  String get authDeviceLimitNotice =>
+      'You were signed out of this device: your account was opened on another one, and your plan allows a limited number of devices. You can sign in again at any time.';
+
+  @override
   String get authErrorEmailExists =>
       'An account already exists with this email. Try signing in.';
 
@@ -391,22 +395,54 @@ class AppLocalizationsEn extends AppLocalizations {
   String get billingIncludedNearbyServices => 'Nearby pet services';
 
   @override
-  String get billingFreePlaceholder => 'Free plan limits: to be defined';
-
-  @override
-  String get billingPlusPlaceholder => 'Plus extra features: to be defined';
-
-  @override
-  String get billingProPlaceholder => 'Pro extra features: to be defined';
-
-  @override
   String get billingPlanBadgeRecommended => 'Recommended';
 
   @override
   String get billingIncludedInAllPlans => 'Included in every plan';
 
   @override
-  String get billingPriceFree => 'Free';
+  String billingLimitPets(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Up to $count pets',
+      one: '1 pet',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String billingLimitChatsPerPet(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Up to $count chats per pet',
+      one: '1 chat per pet',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String billingLimitQuestionsPerDay(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Up to $count questions a day',
+      one: '1 question a day',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String billingLimitDevices(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Up to $count devices',
+      one: '1 device',
+    );
+    return '$_temp0';
+  }
 
   @override
   String billingPricePerMonth(String amount) {
@@ -414,8 +450,8 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String billingPricePerMonthYearly(String amount) {
-    return '$amount/month, billed yearly';
+  String billingPricePerYear(String amount) {
+    return '$amount/year';
   }
 
   @override
@@ -462,6 +498,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get billingCurrentPlanLabel => 'Your plan';
 
   @override
+  String get billingTrialPlanName => 'Free trial';
+
+  @override
+  String get billingNoPlanName => 'No plan';
+
+  @override
   String billingRenewalOn(String date) {
     return 'Renews on $date';
   }
@@ -474,9 +516,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get billingCurrentPlanButton => 'Current plan';
-
-  @override
-  String get billingBackToFree => 'Back to Free';
 
   @override
   String billingSwitchToPlan(String plan) {
@@ -525,6 +564,24 @@ class AppLocalizationsEn extends AppLocalizations {
       'Choose how to continue with Quokka. You can change plan anytime in Settings.';
 
   @override
+  String get billingPaywallDataTitle => 'Your data';
+
+  @override
+  String get billingPaywallDataBody =>
+      'Even without a plan you can download your data or delete your account.';
+
+  @override
+  String get billingPaywallEmergencyTitle => 'If your pet is in danger';
+
+  @override
+  String get billingPaywallEmergencyBody =>
+      'Call your vet or an emergency veterinary clinic right away. Quokka does not replace a visit.';
+
+  @override
+  String get billingPlanLimitReached =>
+      'Your plan has reached this limit. Switch to a higher plan in Settings.';
+
+  @override
   String billingChoosePlan(String plan) {
     return 'Choose $plan';
   }
@@ -542,7 +599,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get billingTrialDialogBody =>
-      'Some features are limited on the Free plan. Switch to Plus or Pro for unlimited access when your trial ends.';
+      'When the trial ends you need a plan to keep using Quokka. Choose the one that suits you: Plus, Pro or Ultra.';
 
   @override
   String get billingTrialDialogLater => 'Later';
@@ -555,17 +612,17 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get firstRunPlanIntroSubtitle =>
-      'Choose how to start: try everything free for 10 days with no card, or choose a plan now.';
+      'Choose how to start: try everything free for 14 days with no card, or choose a plan now.';
 
   @override
   String get firstRunPlanOrChoose => 'OR CHOOSE A PLAN NOW';
 
   @override
-  String get firstRunTrialCardTitle => 'Free trial — 10 days';
+  String get firstRunTrialCardTitle => 'Free trial — 14 days';
 
   @override
   String get firstRunTrialCardBody =>
-      'No card required. At the end of the 10 days, we will ask you to choose a plan to continue.';
+      'No card required. At the end of the 14 days, we will ask you to choose a plan to continue.';
 
   @override
   String get firstRunTrialStartButton => 'Start free trial';

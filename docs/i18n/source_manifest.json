@@ -854,6 +854,15 @@
       "fr": "23780bb634c50710b415d68e933e1f62e881386020b99a09a5cbe27886f01f55"
     }
   },
+  "ui:authDeviceLimitNotice": {
+    "source": "bc04971ee7e118d9f70895024778ca8a3d1a5e81b4f6bc58aa0d90cdcca96e70",
+    "targets": {
+      "en": "e8402c9c4c29f17543bf360731acc40cbfd85074a27dff0bd43589dfb4f7c3de",
+      "es": "f35b61cd50c7c8328d112ec5e07ab6d0b9c613d6fc193f88716a39c1b1e88a04",
+      "de": "ba9e52ed45713cca9e4f69a25875f33de07545ab38b5826f5c485fe520abc124",
+      "fr": "b76766477b01baeb3813d929957082f27b721d64c85f504c978bc9f1d0a17793"
+    }
+  },
   "ui:authErrorEmailExists": {
     "source": "7c6613c37c2b22b6feffe0a29f17448510bb467e1242ffe0608c0003efcf59f7",
     "targets": {
@@ -1043,33 +1052,6 @@
       "fr": "a619339e8eed205736cd98f83559037a57a63298479f0323231736c501b363b4"
     }
   },
-  "ui:billingFreePlaceholder": {
-    "source": "e92be941774580f1235914e66854544c08f423ca7f8f9d27318d9598cd303ae6",
-    "targets": {
-      "en": "1bf960edfd0ea17e9395fa920d673e83b74ae8a7c8da3cde5cbd9f0e604567ec",
-      "es": "87d6f39f431771206357f3e93f7a2179b77bcc56e3fce6f3f635b4198eaf740a",
-      "de": "87af41d1b1677f14df0599250d9d4cff1433fe6af0476759011ce3c697e82204",
-      "fr": "50d1754a08d2064e9773569528a57db6430df2859704b126dcaff6c0da97d001"
-    }
-  },
-  "ui:billingPlusPlaceholder": {
-    "source": "06c70f04f21aa42bf9f7e9f12f817997eae58172e52f913384c16b14a16a2ed5",
-    "targets": {
-      "en": "cb8cf71bee6822a73f11188c05bef6ebafac031842906a990ed48ddf3b1e43df",
-      "es": "b63e6b6287f7ca36f3ceb4958c5db33fdd2a79140c6c266c4cf09a06c210c6b9",
-      "de": "276ed3d0a6d36faeb1b8750d0106e15e0626236f72c2f212a92398a4d6c29d93",
-      "fr": "daaf69cd6a9f782f8f59e4138bb62979fd48158e5904f4d4b48e7c5a73eec883"
-    }
-  },
-  "ui:billingProPlaceholder": {
-    "source": "f0c9fbd614882a52f65355403787d5dbe915915a52b694164420bc68fd2f9556",
-    "targets": {
-      "en": "e2b0ecaf20e5f84356a551b1f1563037db77292b8a3fd77e70e4898d799dfa35",
-      "es": "4eb435ee6cad36856dd7db0824e2846497733034178cf0d0fb6b9f83f0b77e07",
-      "de": "f9857ea4c1de89c4df733f6f71d4ea431d756b748c196a32533ea5b97cd00b27",
-      "fr": "31a8292336c3433185890389a1042c87356ef52bb11f89d1c88a73f5d1748fea"
-    }
-  },
   "ui:billingPlanBadgeRecommended": {
     "source": "728e13367f8a3aa1d09c52f70af7742c31d9c307580e29082336fb81e12e86cb",
     "targets": {
@@ -1088,13 +1070,40 @@
       "fr": "e2cf82206701a7e69d65cb0c7bbab71365966118a4f24f2ec95a66aacf097f6b"
     }
   },
-  "ui:billingPriceFree": {
-    "source": "be107cd95f19bd722bf5282f9fd44d6054b505b4454ac54ac06a59c5eb328f0c",
+  "ui:billingLimitPets": {
+    "source": "531adfd783d5521b62eac3c5f710d4e4d8adc9e6abc6f3b6589225612032ceaf",
     "targets": {
-      "en": "2b23d9ecfbb4feb9b0643d738265a0a66a7dd4e5373c296d5ae62c58254d2f5a",
-      "es": "717f85a4067ae6ddbf5516e629242586e9cb32fc4069a3ffc574512bb13e9109",
-      "de": "b957298acd8c9b97150a706c67e7467eec2cb578a7246fbc79d54479c180e916",
-      "fr": "5125f1d668923ca5119834bff1c643193db5445a6a501fdaa19ff23e55a14c24"
+      "en": "2f4fe32a9300eae012502704e407bdcfa55470a145f6ced1e922839f6c1d2863",
+      "es": "e1b394f2c9560d769ec1b06776ec9bda8b672d81b445314230423ee1dd2e903a",
+      "de": "13dd3d79daebbacacb85711c0c757f9ee27f5b6f021cb0e120e149e50e83b6ab",
+      "fr": "067c0f8792f60e7d97b44dc537bd4282cc096597f944db7925c201d896d30e75"
+    }
+  },
+  "ui:billingLimitChatsPerPet": {
+    "source": "f14ba21dd015cd17b6b95f4ae1e0024114f2f78c8d09a18167bcb3f35ba8bf3e",
+    "targets": {
+      "en": "98579c6a249f6e187b80836754da709516c350b3b6568d1174e5117866a4764e",
+      "es": "ab353fe49ad205906ae00f6f455b1ece58ac8330c63a8e6fc850dbd885151dd7",
+      "de": "938a736d4d571e3f6834ac3a54431f5b8ce30f11f5d4e32db15b224d1e2dbccf",
+      "fr": "aed17683f7b126533e0380f60d08da439e5c131d79430a16dc9121e514a72ad9"
+    }
+  },
+  "ui:billingLimitQuestionsPerDay": {
+    "source": "7530025e0681ec8d76c068d849a543b704722d1eb49ca24e407552b93c33bb73",
+    "targets": {
+      "en": "9a7a046374fae51e283056d28cf5ff3e92fecb78b6913f5319ee4ff06a4fb8b1",
+      "es": "840f7f27fdb2e43c3d14f1882592d6b132d8adf5886d0680f2cb677204049ba0",
+      "de": "4b66ed781547259771b9bc5729708dccaa016e6cbde1821bae2c2818c88cddc0",
+      "fr": "120af037484172591313317c36e7f7aa2d22c64086fedb8d07c0d10ed481b507"
+    }
+  },
+  "ui:billingLimitDevices": {
+    "source": "298fb2747d93d49bfbdc8b052d0b47c20f1942f159ca6c83e0cc2f655229ef70",
+    "targets": {
+      "en": "aec2a4585e2ede67364afea6f32c8c694427bfe77029125a0254ed04610fb680",
+      "es": "821934b7e73efb26de214786dd59358a5c8024cb3ae473c6c7d5dc573bda7938",
+      "de": "14a844b301b642e746c6c8234c0d3cc4f899cbe6b4a12b2f47e9fffdc1b0751d",
+      "fr": "6eeff3995bab319cbe5011942521bfc5ba821c8bf4d06288b20a53c93c951831"
     }
   },
   "ui:billingPricePerMonth": {
@@ -1106,13 +1115,13 @@
       "fr": "c2cc6da3eeb25b4f6b9480cb5a8d37a9409d0cd714933e08addd59315d95bcaf"
     }
   },
-  "ui:billingPricePerMonthYearly": {
-    "source": "bcc8f9e79d33a084e6a425cc277e0db38c07c40aeaa51e49b0e9e77691502e91",
+  "ui:billingPricePerYear": {
+    "source": "df980986c6f6a47dbf5d1fbc34f76313e086ed434a719305ca30522902b2fcd2",
     "targets": {
-      "en": "06f8b8fdec6afe8d89119eaf47d3e23c569925a611c5c47304bb484fa71375d2",
-      "es": "a3950d94c1233ab7b2401041bf13f820cbd2d4b979ab5ef90889a930f68cc8bf",
-      "de": "4d0fb8a786cbec9e3c9de740f2d8b34e057da7cce2e414fb9f1f7d54bab12911",
-      "fr": "c6afb5892a93df3b6fbe0236799814280e080aa8a171661f17b3bde4023ab911"
+      "en": "79a2357b430131261fe341f386c6e4b9f20c9f1ded1319bd2efa807efeb4f97e",
+      "es": "cc6714752dfb4bc5431bd9110850aeacc6f9aae3f0743ab74ccc5054592cebbc",
+      "de": "d4fec158237034d0d2dbe8d0eea0a873ed3881736d85634a8718b6e39aa36e78",
+      "fr": "fffdd3528c05bc493926ff607d63df8f43464e90db7cce756af157b3d1268cf8"
     }
   },
   "ui:billingTitle": {
@@ -1223,6 +1232,24 @@
       "fr": "cb0349587500206a39840af45f557bb5677322665d4f0ce02da2d981ae590748"
     }
   },
+  "ui:billingTrialPlanName": {
+    "source": "eab56ed91b1b6798e91183c966f1f67bf8c4b937430d247806bc8e6001285745",
+    "targets": {
+      "en": "c9cd17ce71f08f732b30aac660650f06e73ce8fc17d4691d2669e8ff55566048",
+      "es": "8f4ed78f4c4a39f52463d2f1151e8690e4c762a8b48d333b2f18d2898626318c",
+      "de": "c821aa1d53f87263f77ee13a3b3ed9f786e675deb8a88beccbb5182adbd2bad1",
+      "fr": "83e0615a08b32885a66883255be3f52273d0b1f4a3158e090bec7606e1224363"
+    }
+  },
+  "ui:billingNoPlanName": {
+    "source": "bdcba11ffeb1ddee8bfe4d3de6a0f2ff96b86a59bf0a537765da9070101aa11e",
+    "targets": {
+      "en": "678c27b3a5f0f401b1eceeb92b9d90c4da689c8c84aa64990144abb64ea1c68b",
+      "es": "768b071ef0f0ef84af2287f4d4ec3ebf6942704de84f7a0c21e8c5772477d752",
+      "de": "da6c7bfd68bb89cf334aec747ee1439bbec6036350a4aca4b6d73ccbcc447984",
+      "fr": "6ef762d0dcc91e2e2c4ff5d6dab4f48c1315943e369b42d4a4a79371ed2793ef"
+    }
+  },
   "ui:billingRenewalOn": {
     "source": "90228a515318e005e933519cba298fe5746f5dfb51b3cac8eec275d133f700f0",
     "targets": {
@@ -1257,15 +1284,6 @@
       "es": "bb9f5c6c19848f061c71e018e7f82628c2e5f7e99c7aab6a0db451221f35928f",
       "de": "a5acd2f0903019b012e6ebd17dc6166b30c6d940874153d0aaeb7ba0f36d0bce",
       "fr": "e88b58895cc72a79052cc4fa358d683788722119e9cdb7a4cacfee07f7e21df1"
-    }
-  },
-  "ui:billingBackToFree": {
-    "source": "6b12e7dcff6fd4bd13f1341637afe21bb54774f74536d3cb8a67ccb964f5bd8a",
-    "targets": {
-      "en": "b0171b8b76129f4ff274d742f0ece70cdc8d5e2f029a6b213fd0ab1d42fb8bfd",
-      "es": "dc017ca4834d927ba9b0a13ce57b710da430e63bd8b1a48925d29d5b3ed6c71d",
-      "de": "b1f78db988689c3d44a29ee629917fbabbecd85ddcc28118c5159d5dc405334f",
-      "fr": "e6848bac2d4704d6a9d93c9e5b69ecd503b67337aa79a715e7074b45f0441542"
     }
   },
   "ui:billingSwitchToPlan": {
@@ -1385,6 +1403,51 @@
       "fr": "2358136132625e603ef912fd0598053971c59f0a9dfe0c1b722ed88aa6e1d424"
     }
   },
+  "ui:billingPaywallDataTitle": {
+    "source": "c18f49a81b17053bbdafeda95d553194d16dc334e7a9ef9c9204cf569d7d0871",
+    "targets": {
+      "en": "21082b9b1c00418bbda525af4f841e28c4f0498092f129b8b990076b4024147f",
+      "es": "b4dc48333400803c2fc3a22b75a5d092ab379e07c1bae3abcf7f5e27452f09fb",
+      "de": "370d5c213d1869d6a8e24300044b3a2b7f942deccab738d686c4d94ce744e077",
+      "fr": "a968583889383114068e86943d3bc5e0eeb1c2f6d086c98df648fb04b1a15f4e"
+    }
+  },
+  "ui:billingPaywallDataBody": {
+    "source": "864aad58740376c3da6d510062d683114a3af05b4e873b09a8f574e7fdf3c366",
+    "targets": {
+      "en": "a7bc565db951f8012c0759408cb6484b825363d66d1c3c6f0a45b1cec6d73d64",
+      "es": "5b5d4959a48534e01981c645ea814e4291da88bddec812caaba7f243bf7b385f",
+      "de": "1e7b36e440b5ddd741e54079df346e7dc3f562cc91535a81190ceba22f794045",
+      "fr": "cc550e292bf2942c3e1a53e37b6ce63a4e48f8c671a5c2597e3b17e3d2084161"
+    }
+  },
+  "ui:billingPaywallEmergencyTitle": {
+    "source": "db373ea0f07c1ba8e14bd727ff42a371043f97c5f90101fbb1df6d214037e7ee",
+    "targets": {
+      "en": "e24ce401ae579a98e91171926f8b651d18d899976b151a62e352511db7caced1",
+      "es": "4c18f8566f6aaa5fef38de816be0e3731fd84fbd97c3b97c71450691a8687394",
+      "de": "d03775b6b18135412cf9770f1b89f871b079d2b6f0a49dc92744615a9a10a359",
+      "fr": "d01d9a3ae78b4f37e53f05a8f7af2e314a36681929c0cc859f22926ed2b0d8d5"
+    }
+  },
+  "ui:billingPaywallEmergencyBody": {
+    "source": "8d832fe242195f00fd240d14c6f11e15dde77dede95441dbf18b99b42bb18ef8",
+    "targets": {
+      "en": "b65ea9c1430494a49c172710d41a1533937f952061634498d84456389334f02c",
+      "es": "8d7b457a05a6135fc78194487eafc968ea0e5085d69f743519e2426977df5935",
+      "de": "4d2a1dc48c522b24b456537a6cd1ec4025f191bdd1242ed52c9b518cb3bf2845",
+      "fr": "87fa165dcd97e1dfede94956328d2d37e6380ee5524d346e6ab4fd510df012ff"
+    }
+  },
+  "ui:billingPlanLimitReached": {
+    "source": "90ade9d538657d989ab33878da88073f770f85b8d49c2e37ae8d680123b752d2",
+    "targets": {
+      "en": "5e467fa8e815e216dd2dbba90253935cfece67fd35550d34bd2e9af9232e3af5",
+      "es": "b18372840fdcc1a8b11ce737d494cc56456ddc7b21dd1736be556b4a97875671",
+      "de": "4092529be1c63538d74d44195e59fdbb69b1f8df7bcd00b76ad3320465125063",
+      "fr": "6aa8c2fb1363963a02d58ed67efed7585abf9419e4f0a9ceeb211c725ce69557"
+    }
+  },
   "ui:billingChoosePlan": {
     "source": "f319729f728f8a354250706596c484884d56903c265d6d59ab3f8f025ad8ca60",
     "targets": {
@@ -1404,12 +1467,12 @@
     }
   },
   "ui:billingTrialDialogBody": {
-    "source": "e06ece8b8f68319fb147d538582634fd166952da4489d922397108ff78ab2019",
+    "source": "30bca8d2f360623d471fc421c44ab290de47e8742e9646c76be8d3d1f0f9f190",
     "targets": {
-      "en": "c24e527a69e0804419fbc5b2260240fb69039fbc5f2bdc258d584d8d82129018",
-      "es": "76a55b3fbe83a2e8d3b08ea45ad632cacf69cb292618ec94e4333aa32dd28b9e",
-      "de": "781c971daa2e053d875013216b3735e85c03a4f3dc2b227161e65b103a354555",
-      "fr": "ec11420dfa294ed570d305509c767465654f09c28df70c138ce66e86cbf25adc"
+      "en": "79d6a66862be3e8ead21a7991e9637a1228ba61fefcc620b5da7eeb42ea3ca44",
+      "es": "e30205a361f0f6f31fd394ac64b0e76a22f2588ae2222663f8d9c01003b2ae9f",
+      "de": "25ff47f878c2d2c866c6a95fb8ea3abfa70e72cacda7dea8524d123e9029b82c",
+      "fr": "bde0e9099b14675ccdb17ad09087791caed8596849b2bc263beaa03f741dbb7c"
     }
   },
   "ui:billingTrialDialogLater": {
@@ -1440,12 +1503,12 @@
     }
   },
   "ui:firstRunPlanIntroSubtitle": {
-    "source": "fdf82522ee8d34e2d976c83b7b7c384918ed85712882c3b181e09e7ff8c7bc9c",
+    "source": "f607c60febe76b92599dec42e9a81942f34e370123655a10a8b9efbd2bbac5d2",
     "targets": {
-      "en": "3e6896fe9fb51fdd2a9eae95a2439c66a40fa30116d765a09eb2a78a69ea111a",
-      "es": "71a8b34b663e7de6a0f77d6730b750bc2a54b7d80818d290fc1781611e5933d6",
-      "de": "34266545490b6706917a4be08de9c86b3bbc0a971e0518293d44eed8de02a651",
-      "fr": "3a64f64cf38e51da4083ea38a46979594042674866b6a2e8e8b40960eba87ab5"
+      "en": "c93434e637b00a8de1050a317de92294f03cee79d1746d84a26d19015a4e4c57",
+      "es": "9800a5a29cbd5e24496a5d311d6aaa670c59e056e8bd1fbddbb35f32849140c1",
+      "de": "adb58e0f58c37cfc56bcdbbc3fac1cafdc8c09914275239635208520170a587c",
+      "fr": "20ca66afc969bb58d3f6ec84b82adbb292ddcfee1691cb1542333d7ec43d6649"
     }
   },
   "ui:firstRunPlanOrChoose": {
@@ -1458,21 +1521,21 @@
     }
   },
   "ui:firstRunTrialCardTitle": {
-    "source": "f922639b9114e28f21108b5ab987c21a80002419383a28cff676a22d383ae45b",
+    "source": "d95932c1022af238b738c2ce2ea4f919b3b363bacacbb3c11b94a4dbaf7791aa",
     "targets": {
-      "en": "cca20bac3bd02d537fb3370ccfa90c4a360d6285bf56497315320d90b53b0ecd",
-      "es": "0d0c577cdc7ad7aa614e3adca87db102f01068adfa9ff4cbc4f9c4888319570d",
-      "de": "85ce8f8588ed790c2e3c97fcb6543b2bb95fb29bcacba4a00e320ae9c9c61520",
-      "fr": "e5b2ca5366818c66bae69abd853898da972cc1388029995dfa306fdfa553e9bd"
+      "en": "e8d11d8388ea71b16d938685598b5b37cf6d4480b8eb04ac1daa8bafa3daa6ad",
+      "es": "0794aee300631843e7e8cbefad638b54a116ff556b131925335e128e4641897a",
+      "de": "4674ada73879f763b9e16b28b783137c5a7d616027d5fc2bdccacf7d1f0a3f57",
+      "fr": "73c7c77e14e4c441f24905934a70d644799eb2e14152e956dfa1449a888fd9d3"
     }
   },
   "ui:firstRunTrialCardBody": {
-    "source": "a9539ef3ac9769f60e59f3cd12e1a55b80b0d1711499eb6a16431ed1c66c6e50",
+    "source": "ac352fecc4b14cde9cf9f0a7e4d1f49509960f2fa67e6843064f79ec0561251e",
     "targets": {
-      "en": "e9e2d4f2447a43c4f8c67ded05c437b1d9dcffdb3b3daade4cb546417b6d720a",
-      "es": "c211f70ad284827ea146eb1c6f13cc738bf120e90caf7e38e2c887a7b003f238",
-      "de": "33264deb3ed92bd0031cf0726e1d4fb7cfea2b747d3af4e4bb235815e866348a",
-      "fr": "b0ff773c60ece050d5b0ad8367a7ed4a7ffbc475e6008cd7e436b88b0e15cb61"
+      "en": "d44c7c68c09ca255b087583a169df74cb539464cfd75714eddb7f2a8049e0eb6",
+      "es": "2527ec41e2c33db82b8572865792c20b1388679ff6e1ae87f79baeaa29416796",
+      "de": "8d2da2bb0399155229e1901fdf835e5ccb439b0b6031e4d2be4bcdd9e97eac94",
+      "fr": "dca0f3f1bdbae5238a98b871acfc70edd863e4804df26b5fcb8c23a0850063d0"
     }
   },
   "ui:firstRunTrialStartButton": {
@@ -16757,6 +16820,33 @@
       "fr": "d613dda66fc99bfc4d73126c6f63f23bb2e53dc66c24ea6707fef2114c439217"
     }
   },
+  "backend:triage_steps_exotic": {
+    "source": "85a92875e02ea438558158489d279029de813abf5974e583d641457aafde5b2c",
+    "targets": {
+      "en": "f28731dbe386329577f4693adfd1584950eec5a29f5e924d69a1dba5b3814ba6",
+      "es": "a19cef3a59eb7635f501b7f0994f13dbb9c8f204affdfb73f6598e0245608507",
+      "de": "6c455339cb3e9696bdd8d63377e3077bed15a1636763dbf455e85788e6c3465b",
+      "fr": "c7380f2194310ebdc162b28adae0cf1d1b0eca4f863c3cf89c076ea289c3bb55"
+    }
+  },
+  "backend:triage_steps_female": {
+    "source": "4bec2d1653a248868d95ed4e40e81e6582fb76ad32efa097021dad3d9e40f980",
+    "targets": {
+      "en": "1ca8f9599c43278fa05f52a9fedf9ca9bf698d8237390c382afdf55a876064b9",
+      "es": "1856348e0aa569370151a706c88573f67fd8fc8f1a5c80b81947c9be0bb0f2dd",
+      "de": "948cb9247e648e2f5f480a107104fdb38d336b97997382dd18d88426f2dd6a6f",
+      "fr": "d613dda66fc99bfc4d73126c6f63f23bb2e53dc66c24ea6707fef2114c439217"
+    }
+  },
+  "backend:triage_steps_exotic_female": {
+    "source": "d74906ae1db2fe516e13a232f627be5853eb3019379a5dbb755c91f238e26d9b",
+    "targets": {
+      "en": "f28731dbe386329577f4693adfd1584950eec5a29f5e924d69a1dba5b3814ba6",
+      "es": "b1ae3d2145bbf4af18eb5d8ebc32c90190740b791e0c96c28ceb103a7b677a94",
+      "de": "6c455339cb3e9696bdd8d63377e3077bed15a1636763dbf455e85788e6c3465b",
+      "fr": "c7380f2194310ebdc162b28adae0cf1d1b0eca4f863c3cf89c076ea289c3bb55"
+    }
+  },
   "backend:triage_limitation": {
     "source": "51369502b0a86e0e0197fc052f3d014e2b92e74bf7928ab8bf784ab5b61c3dca",
     "targets": {
@@ -16776,12 +16866,102 @@
     }
   },
   "backend:dosage_answer": {
-    "source": "a8f4ebff56538b2b0a61101a4ae6b63e57fa7bd7820a1ffd31b26bf2b6ca3dc6",
+    "source": "2cb25073295c1cd5aec24fd993125ffa98622bdf2c74ee9d983e0f43ce2968e5",
     "targets": {
-      "en": "2e7f15704befb6f005290b9fce985083a6a061637ddd37495a07a02913aaa3cc",
-      "es": "877a6c07a35acb07a72223d9864c1beed516f8723ab0fc4019a61058e6f799a5",
-      "de": "f56f35c0ecae6ca51342eb97440eb9bdaa9790d2ff55c8cbab9c20c2c6fd914b",
-      "fr": "cb9c1c17a465627d312d6831864426a2fac81afcf095c106c7e99638dd054c4b"
+      "en": "f778639f6ef8986db9a0bc1fbac0075d739b610d156eb245400b5e4ff3ecaff9",
+      "es": "5df59c0305b46fd50b633100a0c8faf7dcb3ef8f7be68f345f0688c73267eab2",
+      "de": "9f02965e97e2d81d07a4382b298345dab89a4a736a66472c4691df67e429d739",
+      "fr": "dbc247c3a50e9f4cb949a8c3521e68291d06b2ecc0aa66745b398d68b05fcfaa"
+    }
+  },
+  "backend:dosage_toxic_closing": {
+    "source": "b85e4d0858f6b734bbc1858ae29f1f9a23fdc134513e489721b4febbdcaae987",
+    "targets": {
+      "en": "41eeb03d0f156dd7cf4811c2690d784135a5d18bce7b6568d78344fa3a61bc5e",
+      "es": "8dbf90458707eac74f5f4b90ac1dcfd0567b39fce3d1b5e4301f0ab9f4b22758",
+      "de": "2b36292b286eb8dd729c8bf101c3ced424060307e56d1bea48e71be73c3d6698",
+      "fr": "8d0927c48edab061897c9d9badff15bcb7b6ef3a5a1464c9876c9751e587dffa"
+    }
+  },
+  "backend:triage_steps_bird_respiratory": {
+    "source": "4427b226ed2489b0d40f1ad071f75955229c2919c74a26319c9bd841c3bea2be",
+    "targets": {
+      "en": "e0b11e52ed6e756513ae8f355fe49b978b1f64e1a53de4fb2d2c338fce6a0cbd",
+      "es": "757ee94a8315a876e6d1563c6e185f397db96a3747d39a4e9e23279d9e5c1cc8",
+      "de": "3c40400328f961bfedabe2e914576787329a13e08d2b8b0707faf447a4ad04a7",
+      "fr": "af9e7f743fea46f8473f341ddf0708bdf16c91353f3d302fdbb1ada82917b6dc"
+    }
+  },
+  "backend:triage_steps_small_mammal_stasis": {
+    "source": "e3367b5d9b4d401d7476f2f071030e2b7b94353c43396fc7406aee589c86c6ff",
+    "targets": {
+      "en": "d64f2889b06d10348d0e4bc7e69492d2750172a7bd676f7cbeed016e97d36c6b",
+      "es": "6cfe66b22c983e538b561a19b187225f2ff15dd249b62f449e133b717c7ebfc7",
+      "de": "e2496a85dd18fc1a160f33a9955195ce01b4ceabd627f852469e6bf11d44dba2",
+      "fr": "17dbb8a686868eeeec8b8bcee91d4a551507c0575a3dbc8b6786c7659af8be43"
+    }
+  },
+  "backend:triage_steps_heatstroke": {
+    "source": "fea8952d547f96d686bb1f027938a87d7b573f3b2c691d25cf5452cf17a6fcca",
+    "targets": {
+      "en": "7148913b1c56b2c0bdab8d695169b2fcd281b8d4b6c19f47a0cca7f776abe567",
+      "es": "bd941f722dc2232b77717d13b1e5f979dde0a448551b0d4842cd5315466b4a80",
+      "de": "d9b8e8f104371208d5f5bc824c0ccfcb209f3b0b93e88f130a4d68317bbb5b56",
+      "fr": "f857f4d5501377c447de16d7fae818f9c5be54a3f97f7348c5f0f5da1dc43212"
+    }
+  },
+  "backend:triage_steps_snakebite": {
+    "source": "9ea0ec560f1ae9e2540b10cfca591e17519c93031fafa2faa8a48c244da3e2a1",
+    "targets": {
+      "en": "55c259ba71b8754bc41c6134a0405450b5d321d912cc19431e0962e9de1f5272",
+      "es": "907d541298fd147eb7b102fbec2488d7a16119d62f851953485f64810befc799",
+      "de": "2c1314920b111a0efd0d559e6c0f9b71e180bae098fa6c829c4e80cead4c5f92",
+      "fr": "a99010de093f6f396d47987daf1477dfa868c1594d505b312fee8632598e2ecd"
+    }
+  },
+  "backend:triage_steps_processionary": {
+    "source": "91db000611c3e14d2c85e8bbd090135a6c1428a1923b7e55c7095cbfe63988e9",
+    "targets": {
+      "en": "7ec12cd94d30b5a161de41a1adbcdf4b4adb6cf8a47d0d7b26a4810fa29a6644",
+      "es": "cd23c3f63a70d1d01ab501352c14cd689c6dd6adc30b56457be6d9fe29942990",
+      "de": "93b989bd9a1f69d2c712e4a5ffe6955cddee85763646bf96d145241f676dd81a",
+      "fr": "85c5896dd34cfe3caa873068583e1f01e2c85a2bfa8bedd455ba58e8ad69d6ca"
+    }
+  },
+  "backend:triage_steps_seizure": {
+    "source": "8f4eacb184c6b156965a48b2a7110ec7453bd0bddb50df65cb8f9635f926d94c",
+    "targets": {
+      "en": "fa068f9833069a4a86c781f7b29089902b1345a879908cccaec297b5fd0ded96",
+      "es": "d4377387521954c9444ef0ab8b9369eace268c490ef4bfa772b850e22dd9fdca",
+      "de": "819c966af36494abef550264bcf478ff824ae9626953ff01bb4a7cb479c31e2b",
+      "fr": "9a0d3b448cb7f5db05b9f3bd5f175f788c13e6705bc292f8879532efaa3e7fb7"
+    }
+  },
+  "backend:triage_opening_fish": {
+    "source": "736dfa7db8d0047db0ffa4fc40c0cb0fbfefff1f826bb5db07f3f76e2238bb63",
+    "targets": {
+      "en": "265387d7144f0e1d04faacbbd7b7f508d05e3ff020fa89b84b87ebaa68863506",
+      "es": "7455e92d6e1c1feaa27cb1e1f20d813a457676f7b2541844a5da13e4ab708b3e",
+      "de": "aa0b9445f09f860057874fbd13b1735af9706fdf4e4e44760ac7204cf15ae413",
+      "fr": "ce29c15f19f72abf81d1624aac2036c59ad9ecc827cd97fb1ae25ad372ad9446"
+    }
+  },
+  "backend:triage_steps_fish": {
+    "source": "7876146a374c44fd632d75b6d0c2133296462a7b0532f802df1bfa212ed49253",
+    "targets": {
+      "en": "fc9a2de066e66e13acf03a850b6ed83fa5a5c0b69973bc3b64f857e524a02ac8",
+      "es": "fc5b2989ab9a0ee3c862a496b0ea63cf1796b94cae14d1f47b8b8d6a28a9a891",
+      "de": "3bc5826c25ce5416ff52188aa0579d45e4a288a4e8472ed55db996475e0e87cb",
+      "fr": "033ef5fe7bc4d069ecc4be19844d2bbb8c439d1d53d39543f7bdfd1d43401f64"
+    }
+  },
+  "backend:triage_steps_cool": {
+    "source": "9cf5b51c589080783d334f696ba62711316c89e6680b94b7ed868c0467aab892",
+    "targets": {
+      "en": "95103efda76584ae2e0e6d450a2670625b4abdc99a38141e1066a8e46d06f091",
+      "es": "5b47ad614cd536d2ef21b38e9cc205e0fcbee99ea87a8946b4cf2a7fa6f3b515",
+      "de": "421594ce7a7aa094301b11357071a5e40536e9e908ffa5b10d10ba57a16d55e8",
+      "fr": "743cbf029ccd19fb3a3650f1e40a2c047c0624ad159fd4b9d2ccb4910801d80c"
     }
   },
   "backend:dosage_limitation": {

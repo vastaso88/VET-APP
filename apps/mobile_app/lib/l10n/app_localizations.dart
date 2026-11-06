@@ -674,6 +674,12 @@ abstract class AppLocalizations {
   /// **'I tuoi dati restano privati e li usiamo solo per gestire il profilo del tuo pet.'**
   String get authHubPrivacyNote;
 
+  /// No description provided for @authDeviceLimitNotice.
+  ///
+  /// In it, this message translates to:
+  /// **'Sei stato disconnesso da questo dispositivo: il tuo account è stato aperto su un altro e il tuo piano ammette un numero limitato di dispositivi. Puoi accedere di nuovo quando vuoi.'**
+  String get authDeviceLimitNotice;
+
   /// No description provided for @authErrorEmailExists.
   ///
   /// In it, this message translates to:
@@ -800,24 +806,6 @@ abstract class AppLocalizations {
   /// **'Servizi per animali nei dintorni'**
   String get billingIncludedNearbyServices;
 
-  /// No description provided for @billingFreePlaceholder.
-  ///
-  /// In it, this message translates to:
-  /// **'Limiti del piano Free: da definire'**
-  String get billingFreePlaceholder;
-
-  /// No description provided for @billingPlusPlaceholder.
-  ///
-  /// In it, this message translates to:
-  /// **'Funzioni extra del piano Plus: da definire'**
-  String get billingPlusPlaceholder;
-
-  /// No description provided for @billingProPlaceholder.
-  ///
-  /// In it, this message translates to:
-  /// **'Funzioni extra del piano Pro: da definire'**
-  String get billingProPlaceholder;
-
   /// No description provided for @billingPlanBadgeRecommended.
   ///
   /// In it, this message translates to:
@@ -830,11 +818,29 @@ abstract class AppLocalizations {
   /// **'Incluso in tutti i piani'**
   String get billingIncludedInAllPlans;
 
-  /// No description provided for @billingPriceFree.
+  /// No description provided for @billingLimitPets.
   ///
   /// In it, this message translates to:
-  /// **'Gratis'**
-  String get billingPriceFree;
+  /// **'{count, plural, =1{1 animale} other{Fino a {count} animali}}'**
+  String billingLimitPets(int count);
+
+  /// No description provided for @billingLimitChatsPerPet.
+  ///
+  /// In it, this message translates to:
+  /// **'{count, plural, =1{1 chat per animale} other{Fino a {count} chat per animale}}'**
+  String billingLimitChatsPerPet(int count);
+
+  /// No description provided for @billingLimitQuestionsPerDay.
+  ///
+  /// In it, this message translates to:
+  /// **'{count, plural, =1{1 domanda al giorno} other{Fino a {count} domande al giorno}}'**
+  String billingLimitQuestionsPerDay(int count);
+
+  /// No description provided for @billingLimitDevices.
+  ///
+  /// In it, this message translates to:
+  /// **'{count, plural, =1{1 dispositivo} other{Fino a {count} dispositivi}}'**
+  String billingLimitDevices(int count);
 
   /// No description provided for @billingPricePerMonth.
   ///
@@ -842,11 +848,11 @@ abstract class AppLocalizations {
   /// **'{amount}/mese'**
   String billingPricePerMonth(String amount);
 
-  /// No description provided for @billingPricePerMonthYearly.
+  /// No description provided for @billingPricePerYear.
   ///
   /// In it, this message translates to:
-  /// **'{amount}/mese, fatturato annualmente'**
-  String billingPricePerMonthYearly(String amount);
+  /// **'{amount}/anno'**
+  String billingPricePerYear(String amount);
 
   /// No description provided for @billingTitle.
   ///
@@ -920,6 +926,18 @@ abstract class AppLocalizations {
   /// **'Il tuo piano'**
   String get billingCurrentPlanLabel;
 
+  /// No description provided for @billingTrialPlanName.
+  ///
+  /// In it, this message translates to:
+  /// **'Prova gratuita'**
+  String get billingTrialPlanName;
+
+  /// No description provided for @billingNoPlanName.
+  ///
+  /// In it, this message translates to:
+  /// **'Nessun piano'**
+  String get billingNoPlanName;
+
   /// No description provided for @billingRenewalOn.
   ///
   /// In it, this message translates to:
@@ -943,12 +961,6 @@ abstract class AppLocalizations {
   /// In it, this message translates to:
   /// **'Piano attuale'**
   String get billingCurrentPlanButton;
-
-  /// No description provided for @billingBackToFree.
-  ///
-  /// In it, this message translates to:
-  /// **'Torna a Free'**
-  String get billingBackToFree;
 
   /// No description provided for @billingSwitchToPlan.
   ///
@@ -1028,6 +1040,36 @@ abstract class AppLocalizations {
   /// **'Scegli come continuare con Quokka. Puoi cambiare piano quando vuoi da Impostazioni.'**
   String get billingPaywallSubtitle;
 
+  /// No description provided for @billingPaywallDataTitle.
+  ///
+  /// In it, this message translates to:
+  /// **'I tuoi dati'**
+  String get billingPaywallDataTitle;
+
+  /// No description provided for @billingPaywallDataBody.
+  ///
+  /// In it, this message translates to:
+  /// **'Anche senza un piano puoi scaricare i tuoi dati o eliminare l\'account.'**
+  String get billingPaywallDataBody;
+
+  /// No description provided for @billingPaywallEmergencyTitle.
+  ///
+  /// In it, this message translates to:
+  /// **'Se il tuo animale è in pericolo'**
+  String get billingPaywallEmergencyTitle;
+
+  /// No description provided for @billingPaywallEmergencyBody.
+  ///
+  /// In it, this message translates to:
+  /// **'Chiama subito il tuo veterinario o una clinica veterinaria d\'urgenza. Quokka non sostituisce una visita.'**
+  String get billingPaywallEmergencyBody;
+
+  /// No description provided for @billingPlanLimitReached.
+  ///
+  /// In it, this message translates to:
+  /// **'Il tuo piano ha raggiunto questo limite. Passa a un piano superiore da Impostazioni.'**
+  String get billingPlanLimitReached;
+
   /// No description provided for @billingChoosePlan.
   ///
   /// In it, this message translates to:
@@ -1043,7 +1085,7 @@ abstract class AppLocalizations {
   /// No description provided for @billingTrialDialogBody.
   ///
   /// In it, this message translates to:
-  /// **'Con il piano Free alcune funzioni sono limitate. Passa a Plus o Pro per avere tutto senza limiti quando la prova finisce.'**
+  /// **'Alla fine della prova serve un piano per continuare a usare Quokka. Scegli quello che fa per te: Plus, Pro o Ultra.'**
   String get billingTrialDialogBody;
 
   /// No description provided for @billingTrialDialogLater.
@@ -1067,7 +1109,7 @@ abstract class AppLocalizations {
   /// No description provided for @firstRunPlanIntroSubtitle.
   ///
   /// In it, this message translates to:
-  /// **'Scegli come iniziare: puoi provare tutto gratis per 10 giorni, senza carta, oppure scegliere subito un piano.'**
+  /// **'Scegli come iniziare: puoi provare tutto gratis per 14 giorni, senza carta, oppure scegliere subito un piano.'**
   String get firstRunPlanIntroSubtitle;
 
   /// No description provided for @firstRunPlanOrChoose.
@@ -1079,13 +1121,13 @@ abstract class AppLocalizations {
   /// No description provided for @firstRunTrialCardTitle.
   ///
   /// In it, this message translates to:
-  /// **'Prova gratuita — 10 giorni'**
+  /// **'Prova gratuita — 14 giorni'**
   String get firstRunTrialCardTitle;
 
   /// No description provided for @firstRunTrialCardBody.
   ///
   /// In it, this message translates to:
-  /// **'Nessuna carta richiesta. Alla scadenza dei 10 giorni ti chiederemo di scegliere un piano per continuare.'**
+  /// **'Nessuna carta richiesta. Alla scadenza dei 14 giorni ti chiederemo di scegliere un piano per continuare.'**
   String get firstRunTrialCardBody;
 
   /// No description provided for @firstRunTrialStartButton.

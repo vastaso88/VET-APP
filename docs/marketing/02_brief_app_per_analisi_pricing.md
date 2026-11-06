@@ -52,14 +52,25 @@ Posizionamento dichiarato: **"supporto, non sostituzione" del veterinario**. L'a
 ### Account e onboarding
 - Registrazione, login, recupero credenziali.
 - Dopo la registrazione: presentazione dei piani, tutorial, aggiunta del primo animale.
-- **Prova gratuita di 10 giorni senza carta**. Alla scadenza l'utente deve scegliere un piano, Free incluso, quindi l'accesso non viene mai bloccato del tutto.
+- **Prova gratuita di 14 giorni senza carta**. Alla scadenza l'utente deve scegliere un piano (Plus, Pro o Ultra): il piano Free non esiste più (decisione del 2026-11-06). Senza piano restano solo i propri dati: esportazione, cancellazione dell'account, indicazioni di emergenza. Il parere legale sul blocco senza Free è da rifare.
 - Impostazioni: consensi (ToS, privacy, marketing, analytics), località (GPS o indirizzo manuale), layout Home.
 
-## 5. Struttura abbonamento attuale (da definire)
+## 5. Struttura abbonamento (decisa il 2026-11-06, in parte da confermare)
 
-Scala a tre livelli già presente nell'interfaccia: **Free / Plus / Pro**, con fatturazione **mensile o annuale** (annuale scontato). Il piano Pro ha l'etichetta "Consigliato".
+Tre piani a pagamento, **Plus / Pro / Ultra**, con fatturazione **mensile o annuale** (l'annuale vale 10 mensilità, sconto circa 16,6%). Il piano Pro ha l'etichetta "Consigliato". Non c'è un piano Free.
 
-Oggi **tutti i piani includono le stesse cose**: profili, assistente, allegati in chat, promemoria, servizi nei dintorni. Limiti del Free, extra di Plus e Pro e **prezzi sono segnaposto in attesa di decisione**. Un'idea già emersa è riservare al Pro il riepilogo pre-visita per il veterinario.
+Le funzioni sono le stesse in tutti i piani (profili, assistente, allegati in chat, promemoria, servizi nei dintorni); cambiano i **limiti**, applicati dal backend:
+
+| | Plus | Pro | Ultra |
+|---|---|---|---|
+| Animali | 3 | 6 | 15 |
+| Chat per animale | 2 | 4 | 6 |
+| Domande al giorno | 8 | 15 | 30 |
+| Dispositivi contemporanei | 2 | 3 | 3 |
+| Prezzo mensile (Italia) | 4,59 € | 8,59 € | 15,59 € |
+| Prezzo annuale (Italia) | 45,99 € | 85,99 € | 155,99 € |
+
+Durante la prova valgono i limiti del Pro. Le emergenze non contano mai nelle domande al giorno. I prezzi degli altri paesi sono nella proposta [03_prezzi_per_paese.md](03_prezzi_per_paese.md). Un'idea già emersa è riservare al Pro il riepilogo pre-visita per il veterinario (non decisa).
 
 ## 6. Struttura dei costi (rilevante per il pricing)
 
@@ -76,8 +87,8 @@ Le leve naturali per differenziare i piani sono quindi: **messaggi IA al giorno/
 
 ## 7. Idee di marketing già raccolte (da validare)
 
-- **Hook di acquisizione**: "10 giorni gratis, nessuna carta richiesta".
-- **Recensioni incentivate**: 2 settimane di full in regalo per una recensione positiva; per una recensione negativa si apre una conversazione e, se il problema viene risolto, si regalano 2 settimane.
+- **Hook di acquisizione**: "14 giorni gratis, nessuna carta richiesta".
+- **Feedback degli utenti**: nessun premio in settimane gratis legato a un voto o a una recensione (positiva o negativa): tolto il 2026-11-03 per decisione del proprietario, non è accettabile legalmente. Resta l'idea di chiedere a tutti gli utenti cosa serve per renderli pienamente soddisfatti, senza premi.
 - **Segnalazione bug in chat**: 1 settimana gratis per ogni bug risolto, verificato a mano, con tetto mensile per utente.
 - **Professionisti come promoter**: codici referral per clinica, portale/riepilogo pre-visita per il vet, widget co-brandizzato, account pro gratuito in cambio di referral, comitato scientifico di veterinari, contenuti formativi (ECM).
 - **Community/dati aperti**: le segnalazioni di luoghi rendono il radar migliore della concorrenza. Una collaborazione con OpenStreetMap è stata accantonata come idea futura.
@@ -87,9 +98,9 @@ Le leve naturali per differenziare i piani sono quindi: **messaggi IA al giorno/
 
 - **Mai** comunicare l'app come alternativa alla visita veterinaria. Nessuna promessa diagnostica.
 - Trasparenza IA (AI Act / disclosure) e GDPR: dati sanitari degli animali ma **dati personali dei proprietari**. Consensi granulari già implementati.
-- Gli incentivi per le recensioni devono rispettare le policy degli store (Google Play/App Store), che in genere vietano di incentivare recensioni *positive*. **Da verificare.**
+- Nessun premio (settimane gratis o altro) legato a voti o recensioni: deciso dal proprietario il 2026-11-03, non è accettabile legalmente e viola le policy degli store (Google Play/App Store).
 - I premi in giorni di abbonamento non hanno valore in denaro, non sono trasferibili e hanno un tetto.
-- Il Free non può essere un piano "vuoto": la scelta obbligatoria dopo il trial include il Free, quindi deve restare utile.
+- Senza il Free, dopo la prova chi non si abbona deve comunque poter esportare i propri dati, cancellare l'account e trovare le indicazioni di emergenza (obblighi GDPR e di sicurezza).
 
 ## 9. Concorrenza da considerare (non ancora analizzata a fondo)
 
@@ -100,10 +111,10 @@ App di gestione pet (diari salute, promemoria), app di telemedicina/chat veterin
 ## 10. Domande per l'analisi
 
 1. Quale modello di monetizzazione conviene a questo prodotto e a questo stadio: freemium, trial con paywall, abbonamento unico, a consumo, ibrido?
-2. Servono davvero 3 piani (Free/Plus/Pro) o ne bastano 2? Cosa mettere in ciascuno, partendo dalle leve di costo del §6?
+2. Servono davvero 3 piani (Plus/Pro/Ultra) o ne bastano 2? Cosa mettere in ciascuno, partendo dalle leve di costo del §6?
 3. Quale fascia di prezzo mensile/annuale è credibile per il mercato italiano pet-care, considerando il confronto con un consulto veterinario e con le app concorrenti?
 4. Conviene un **piano "famiglia/multi-animale"** o un prezzo per animale aggiuntivo?
 5. Come usare la componente B2B2C (veterinari, educatori, negozi): piano professionale a pagamento, referral, sponsorizzazioni nel radar?
 6. Quali funzioni tenere gratuite come **motore di acquisizione e retention** (es. radar, passeggiate, promemoria) e quali sono il vero "momento aha" da mettere dietro paywall?
 7. Strategia di lancio: canali (social, community cinofile, cliniche, gruppi di proprietari di esotici), messaggi chiave e metriche da monitorare (conversione trial→pagante, retention a 30 giorni, costo IA per utente).
-8. Rischi: costo IA per utente superiore al prezzo, percezione di "app medica", policy degli store sugli incentivi alle recensioni.
+8. Rischi: costo IA per utente superiore al prezzo, percezione di "app medica".

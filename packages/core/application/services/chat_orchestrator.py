@@ -58,6 +58,7 @@ from packages.core.domain.conversation.answer_cache import (
     is_cacheable_question,
     normalize_question,
 )
+from packages.core.domain.conversation.answer_cleanup import clean_answer_text
 from packages.core.domain.conversation.models import ChatMessage
 from packages.core.domain.conversation.referral_style import strip_ritual_referral
 from packages.core.domain.conversation.request_kind import (
@@ -73,7 +74,7 @@ from packages.core.domain.conversation.request_kind import (
 from packages.core.domain.conversation.states import ConversationState
 from packages.core.domain.knowledge.answer_validation import validate_answer
 from packages.core.domain.knowledge.dose_in_answer import find_dosage
-from packages.core.domain.knowledge.duty_notes import pinned_duty_notes
+from packages.core.domain.knowledge.duty_notes import DUTY_CATALOG, pinned_duty_notes
 from packages.core.domain.knowledge.evidence_synthesis import EvidenceSynthesis
 from packages.core.domain.knowledge.models import EvidenceSource
 from packages.core.domain.knowledge.relevance import relevant_sources
@@ -101,7 +102,24 @@ from packages.core.domain.safety.dosage_request import (
     is_prevention_schedule_question,
     names_a_medicine,
 )
-from packages.core.domain.safety.exposure import is_educational_toxin_question, is_exposure
+from packages.core.domain.safety.emergency_patterns import normalize_for_matching
+from packages.core.domain.safety.exposure import (
+    intends_to_give,
+    is_educational_toxin_question,
+    is_exposure,
+)
+from packages.core.domain.safety.first_aid import (
+    DOSE_PART_REFUSED,
+    FALSE_MEMORY_PREFIX,
+    GENERIC_TOXIN_WHY,
+    TOXIN_INTENT_TEXTS,
+    claims_the_chat_said_so,
+    has_a_question_besides_the_dose,
+    medical_cause_first,
+    mentions_heat,
+    named_foreign_country,
+    travel_to_sand_fly_area,
+)
 from packages.core.domain.safety.harmful_requests import (
     ADULT_FIRST,
     CERTIFY_REPLACEMENT,
@@ -166,6 +184,8 @@ logger = logging.getLogger("vetgpt.chat")
 _FEMALE_LABELS = frozenset({"femmina", "female", "hembra", "weiblich", "femelle", "f"})
 # Species whose emergencies need a vet who knows them.
 _EXOTIC_FAMILIES = frozenset({"bird", "small_mammal", "reptile_amphibian", "fish"})
+# Profile species that are groups: the breed field holds the animal itself.
+_GROUP_FAMILIES = frozenset({"small_mammal", "bird", "reptile_amphibian", "fish", "other"})
 _HAS_A_LETTER = re.compile(r"[^\W\d_]")
 _STATES_A_WEIGHT = re.compile(r"\b\d+(?:[.,]\d+)?\s?(?:kg|chili|chilogrammi|kilos?|g|grammi)\b")
 # A species named as the owner of a product or a thing ("del cane", "for
@@ -766,6 +786,9 @@ class ChatOrchestratorInput(BaseModel):
     # developer accounts are exempt.
     owner_id: str = ""
     quota_exempt: bool = False
+    # The owner's plan allowance of questions per day; None = the
+    # deployment-wide default (llm_budget.py).
+    user_daily_limit: int | None = None
 
 
 class ChatOrchestratorResult(BaseModel):
@@ -813,7 +836,7 @@ class ChatOrchestrator:
         coverage_weights: CoverageWeights = DEFAULT_COVERAGE_WEIGHTS,
         coverage_target: float = 0.85,
         max_interview_questions: int = 3,
-        strict_evidence_intents: frozenset[str] = frozenset({"husbandry_question"}),
+        strict_evidence_intents: frozenset[str] = frozenset(),
         usage_budget: LlmBudget | None = None,
         answer_models: list[str] | None = None,
         urgency_classifier: UrgencyClassifier | None = None,
@@ -888,7 +911,12 @@ class ChatOrchestrator:
         self._history_message_chars = max(50, history_message_chars)
 
     def answer(self, data: ChatOrchestratorInput) -> ChatOrchestratorResult:
-        result = self._with_weight_suggestion(data, self._answer(data))
+        result = self._answer(data)
+        if result.mode in ("natural", "evidence"):
+            # The API and the app show no source list (wide eval 2026-11-06):
+            # no "[1]" and no "ti lascio le fonti" in the text.
+            result = result.model_copy(update={"answer": clean_answer_text(result.answer)})
+        result = self._with_weight_suggestion(data, result)
         self._log_outcome(data, result)
         return result
 
@@ -920,6 +948,9 @@ class ChatOrchestrator:
         if data.aquarium_stock or normalize_species(data.species) == "fish":
             return result
         if result.mode not in cls._WEIGHT_SUGGESTION_MODES:
+            return result
+        if result.model in ("toxin-intent-guard", "dog-product-on-cat-guard"):
+            # "No, never" needs no weight (wide eval 2026-11-06).
             return result
         if result.state in cls._WEIGHT_SUGGESTION_BLOCKING_STATES:
             return result
@@ -991,6 +1022,8 @@ class ChatOrchestrator:
                 data.safety_clarification_category,
                 message,
                 response_locale=data.language,
+                species_family=normalize_species(self._effective_species(lowered, data.species)),
+                female=(data.sex or "").strip().lower() in _FEMALE_LABELS,
             )
 
         # Real-world finding (stress test): a pet profile registered as
@@ -1035,13 +1068,22 @@ class ChatOrchestrator:
             category = categorize_safety_flags(safety_flags)
             if (
                 category == "toxin_medication"
-                and any(flag in DOG_PRODUCT_ON_CAT_KEYWORDS for flag in safety_flags)
                 and not is_exposure(data.user_message)
-            ):
-                # Third round, 4: "la metto a Nina?" has not happened yet.
-                return self._fixed_reply(
-                    PERMETHRIN_INTENT_TEXTS, data, model="dog-product-on-cat-guard"
+                and (
+                    intends_to_give(data.user_message)
+                    or asks_an_amount(data.user_message.lower())
+                    or claims_the_chat_said_so(data.user_message)
                 )
+            ):
+                # Not happened yet and about to ("la metto a Nina?", "quanto
+                # ne do?", "mi hai detto che posso dargli il paracetamolo"):
+                # "no, never" with the why, not an emergency (wide eval
+                # 2026-11-06). Anything else about a toxin stays a triage.
+                if any(flag in DOG_PRODUCT_ON_CAT_KEYWORDS for flag in safety_flags):
+                    return self._fixed_reply(
+                        PERMETHRIN_INTENT_TEXTS, data, model="dog-product-on-cat-guard"
+                    )
+                return self._toxin_intent_result(data, message, family)
             if requires_immediate_escalation(message) or small_mammal_stasis_is_immediate(
                 category, family, message
             ):
@@ -1058,6 +1100,7 @@ class ChatOrchestrator:
                         species_family=family,
                         female=female,
                         toxicity_note=human_drug_toxicity_note(message, family, data.language),
+                        heat=mentions_heat(message),
                     ),
                     data,
                     minor,
@@ -1095,6 +1138,7 @@ class ChatOrchestrator:
                     species_family=family,
                     female=female,
                     toxicity_note=human_drug_toxicity_note(message, family, data.language),
+                    heat=mentions_heat(message),
                 ),
                 data,
                 minor,
@@ -1110,9 +1154,10 @@ class ChatOrchestrator:
                     "recommended_action": translate("dosage_action", data.language),
                 }
             )
-        if self._is_dosage_request(lowered) or self._asks_an_amount_of_a_recent_medicine(
-            lowered, user_history
-        ):
+        if (
+            self._is_dosage_request(lowered)
+            or self._asks_an_amount_of_a_recent_medicine(lowered, user_history)
+        ) and not has_a_question_besides_the_dose(data.user_message):
             # Real-world finding: asked for an exact drug dose, the general
             # LLM path confidently computed and handed over a specific mg
             # figure (with a disclaimer only at the end, which owners tend
@@ -1168,7 +1213,10 @@ class ChatOrchestrator:
         # this point, so they are never refused (build 32).
         if self._usage_budget is not None:
             denial = self._usage_budget.admit(
-                owner_id=data.owner_id, models=self._answer_models, exempt=data.quota_exempt
+                owner_id=data.owner_id,
+                models=self._answer_models,
+                exempt=data.quota_exempt,
+                user_daily_limit=data.user_daily_limit,
             )
             if denial is not None:
                 return self._quota_result(data.pet_name, denial)
@@ -1504,6 +1552,30 @@ class ChatOrchestrator:
         language = normalize_language(data.language)
         return texts.get(language, texts["it"]).format(name=data.pet_name)
 
+    @classmethod
+    def _toxin_intent_result(
+        cls, data: ChatOrchestratorInput, message: str, family: str
+    ) -> ChatOrchestratorResult:
+        language = normalize_language(data.language)
+        why = human_drug_toxicity_note(message, family, language) or cls._fixed_text(
+            GENERIC_TOXIN_WHY, data
+        )
+        text = TOXIN_INTENT_TEXTS.get(language, TOXIN_INTENT_TEXTS["it"]).format(
+            name=data.pet_name, why=why
+        )
+        if claims_the_chat_said_so(message):
+            text = cls._fixed_text(FALSE_MEMORY_PREFIX, data) + text
+        return ChatOrchestratorResult(
+            answer=text,
+            mode="general",
+            confidence="high",
+            ai_generated=False,
+            limitations=[translate("dosage_limitation", language)],
+            recommended_action=translate("dosage_action", language),
+            provider="rule-based",
+            model="toxin-intent-guard",
+        )
+
     @staticmethod
     def _euthanasia_refusal_result(data: ChatOrchestratorInput) -> ChatOrchestratorResult:
         language = normalize_language(data.language)
@@ -1529,6 +1601,16 @@ class ChatOrchestrator:
         language = normalize_language(data.language)
         prefix = ADULT_FIRST.get(language, ADULT_FIRST["it"])
         return result.model_copy(update={"answer": prefix + result.answer})
+
+    @staticmethod
+    def _specific_species(data: ChatOrchestratorInput, effective_species: str) -> str:
+        """The animal itself when the profile's species is a group ("Piccoli
+        mammiferi" + breed "Coniglio nano" -> "coniglio nano"), else the
+        family: a rabbit's answer is never reused for a hamster."""
+        family = normalize_species(effective_species)
+        if family in _GROUP_FAMILIES and (data.breed or "").strip():
+            return normalize_for_matching(data.breed or "")
+        return family
 
     @staticmethod
     def _asks_an_amount_of_a_recent_medicine(lowered: str, user_history: list[str]) -> bool:
@@ -1670,7 +1752,13 @@ class ChatOrchestrator:
         if verdict.level == "emergency":
             logger.warning("urgency classifier: emergency (%s) the fixed lists missed", category)
             return self._urgent_triage_result(
-                data.pet_name, [flag], category, response_locale=data.language
+                data.pet_name,
+                [flag],
+                category,
+                response_locale=data.language,
+                species_family=normalize_species(effective_species),
+                female=(data.sex or "").strip().lower() in _FEMALE_LABELS,
+                heat=mentions_heat(message),
             )
         question = clarifying_question(category, data.language)
         if question is None:
@@ -1736,6 +1824,7 @@ class ChatOrchestrator:
         species_family: str = "other",
         female: bool = False,
         toxicity_note: str = "",
+        heat: bool = False,
     ) -> ChatOrchestratorResult:
         # Real-world finding (2026-09-25): "quello che mi racconti di
         # {pet_name} è un segnale..." presumes the trigger was a narrated
@@ -1749,16 +1838,35 @@ class ChatOrchestrator:
         # Birds, small mammals and reptiles need a vet who knows the species
         # (stress test 2026-11-06); the Italian and Spanish steps agree in
         # gender with the animal.
-        if category == "bird_respiratory":
-            # Heat and darkness would worsen a heat-stressed bird (B).
-            steps_key = "triage_steps_bird_respiratory"
+        own_steps = {
+            "bird_respiratory": "triage_steps_bird_respiratory",
+            "heatstroke": "triage_steps_heatstroke",
+            "snakebite": "triage_steps_snakebite",
+            "processionary": "triage_steps_processionary",
+            "seizure": "triage_steps_seizure",
+            "fish_distress": "triage_steps_fish",
+        }
+        if category == "circulatory" and heat:
+            # "Lingua viola" after a run or in the heat: a heatstroke before
+            # a circulatory sign (wide eval 2026-11-06).
+            steps_key = "triage_steps_heatstroke"
+        elif category in own_steps:
+            steps_key = own_steps[category]
         elif category == "gi_stasis" and species_family == "small_mammal":
             # Hay stays available: fasting is the problem itself (C).
             steps_key = "triage_steps_small_mammal_stasis"
+        elif species_family == "fish":
+            steps_key = "triage_steps_fish"
+        elif heat:
+            # The owner speaks of heat: never "tieni ... al caldo".
+            steps_key = "triage_steps_cool"
         elif species_family in _EXOTIC_FAMILIES:
             steps_key = "triage_steps_exotic"
         else:
             steps_key = "triage_steps"
+        if species_family == "fish":
+            # An aquarium: "i pesci", not the tank's name, and no vet to call first.
+            opening = translate("triage_opening_fish", response_locale)
         if female and has_translation(f"{steps_key}_female", response_locale):
             steps_key = f"{steps_key}_female"
         return ChatOrchestratorResult(
@@ -1906,6 +2014,8 @@ class ChatOrchestrator:
         reply: str,
         *,
         response_locale: str = "it",
+        species_family: str = "other",
+        female: bool = False,
     ) -> ChatOrchestratorResult:
         """Handle the reply to a pending safety clarification (spec v3 §9).
 
@@ -1919,7 +2029,13 @@ class ChatOrchestrator:
         severity = classify_safety_severity(category, reply)
         if severity == "high":
             return self._urgent_triage_result(
-                pet_name, [category], category, response_locale=response_locale
+                pet_name,
+                [category],
+                category,
+                response_locale=response_locale,
+                species_family=species_family,
+                female=female,
+                heat=mentions_heat(reply),
             )
 
         return ChatOrchestratorResult(
@@ -2438,7 +2554,7 @@ class ChatOrchestrator:
         ):
             cache_id = cache_key(
                 message,
-                species=normalize_species(effective_species),
+                species=self._specific_species(data, effective_species),
                 language=data.language,
                 prompt_version=PROMPT_VERSION,
             )
@@ -2473,9 +2589,15 @@ class ChatOrchestrator:
         # Fifth round: a duty the owner names (dangerous breeds, abandonment,
         # a hedgehog found) gets its note by rule, ahead of what the
         # keyword search returned.
-        pinned = pinned_duty_notes(message)
-        if pinned:
-            sources = pinned + [source for source in sources if source not in pinned]
+        foreign = named_foreign_country(message)
+        if foreign:
+            # "Do I need to microchip my dog by law in the UK?": the Italian
+            # duty notes stay out (wide eval 2026-11-06).
+            sources = [source for source in sources if source not in DUTY_CATALOG]
+        else:
+            pinned = pinned_duty_notes(message)
+            if pinned:
+                sources = pinned + [source for source in sources if source not in pinned]
         sources = list(sources)[: self._prompt_max_sources]
         evidence_block = self._format_sources_for_prompt(sources) if sources else ""
         # The owner's words and the text read from their file go to the
@@ -2539,6 +2661,11 @@ class ChatOrchestrator:
         # asked about, not met; a preventive treatment's schedule; a
         # behaviour or duty question (one context question allowed).
         toxin_flags = self._safety_gate.evaluate(message.lower(), species=effective_species)
+        # "Il CBD funziona per l'artrosi? quante gocce?": the amount is
+        # refused in a fixed sentence, the rest is answered.
+        dose_part = self._is_dosage_request(message.lower()) and has_a_question_besides_the_dose(
+            data.user_message
+        )
         system_prompt = build_system_prompt(
             kind,
             may_ask=may_ask,
@@ -2561,6 +2688,10 @@ class ChatOrchestrator:
             plant_diet=is_plant_diet_for_a_carnivore(message, normalize_species(effective_species)),
             grief=mentions_a_death(message),
             hopelessness=expresses_hopelessness(message),
+            dose_part=dose_part,
+            foreign_country=foreign,
+            medical_first=medical_cause_first(message, data.age_years),
+            travel_south=travel_to_sand_fly_area(message, normalize_species(effective_species)),
         )
         user_prompt = (
             f"{self._pet_context_block(data, generic=generic_context)}\n"
@@ -2679,6 +2810,9 @@ class ChatOrchestrator:
         if mentions_a_child_at_risk(message) and not is_minor_writing(message):
             # Fourth round, 2: the note alone did not move the model.
             answer_text = self._fixed_text(CHILD_NEVER_ALONE, data) + answer_text
+            cache_id = None
+        if dose_part:
+            answer_text = self._fixed_text(DOSE_PART_REFUSED, data) + answer_text
             cache_id = None
         if is_minor_writing(message):
             answer_text = self._fixed_text(ADULT_FIRST, data) + answer_text
@@ -2834,7 +2968,9 @@ class ChatOrchestrator:
         # papers (2026-10-06). Only sources that concern the question are
         # ranked; with none left, the answer goes on without sources.
         return self._evidence_quality_engine.rank_and_select(
-            relevant_sources(raw_sources, f"{query} {keywords}" if keywords else query),
+            relevant_sources(
+                raw_sources, f"{query} {keywords}" if keywords else query, species=canonical_species
+            ),
             species=canonical_species,
             intent=intent,
             max_results=request.max_results,
@@ -2926,7 +3062,12 @@ class ChatOrchestrator:
         """
         if generic:
             # A cacheable general question: the answer must hold for every
-            # owner of this species, so nothing of this pet goes in.
+            # owner of this species, so nothing of this pet goes in; the
+            # species is the specific one (coniglio, criceto), not the group
+            # (wide eval 2026-11-06: "quale animale hai?" to a rabbit owner).
+            specific = self._specific_species(data, data.species)
+            if specific != normalize_species(data.species):
+                return f"Species: {data.species} ({specific})"
             return f"Species: {data.species}"
         lines = [
             f"Pet name: {self._anonymize_for_provider(data.pet_name, data)}",

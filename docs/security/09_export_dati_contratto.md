@@ -42,6 +42,7 @@ UI/UX; questo documento descrive cosa riceve.
     "user_locations": [ ... ],
     "account_consents": [ ... ],
     "subscriptions": [ ... ],
+    "user_devices": [ ... ],
     "marketplace_listings": [ ... ],
     "marketplace_listing_reports": [ ... ],
     "local_activities": [ ... ],

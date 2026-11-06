@@ -202,7 +202,7 @@ class _RegisterPageState extends State<RegisterPage> {
         ]),
       );
 
-      // Starts the 10-day free trial server-side (first status lookup for
+      // Starts the 14-day free trial server-side (first status lookup for
       // this owner_id creates it — see GetOrCreateSubscriptionService).
       await HttpSubscriptionRemoteDataSource().fetchStatus();
 

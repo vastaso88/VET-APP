@@ -47,7 +47,11 @@ class _BillingPageState extends State<BillingPage> {
       onSuccess: (status) {
         _store.switchToPlan(tier);
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(context.l10n.billingPlanSwitched(_store.currentPlan.displayName))),
+          SnackBar(
+            content: Text(
+              context.l10n.billingPlanSwitched(BillingDemoStore.planFor(tier).displayName),
+            ),
+          ),
         );
       },
       onFailure: (error) => ScaffoldMessenger.of(context).showSnackBar(
@@ -118,6 +122,7 @@ class _BillingPageState extends State<BillingPage> {
                 for (final plan in BillingDemoStore.plans) ...[
                   _PlanCard(
                     plan: plan,
+                    features: _store.limitFeaturesFor(plan.tier),
                     cycle: _store.billingCycle,
                     isCurrent: plan.tier == _store.currentTier,
                     onSelect: () => _switchToPlan(plan.tier),
@@ -150,11 +155,9 @@ class _BillingPageState extends State<BillingPage> {
 
 String _priceLabel(BuildContext context, SubscriptionPlan plan, BillingCycle cycle) {
   final l10n = context.l10n;
-  final price = plan.priceFor(cycle);
-  if (price == 0) return l10n.billingPriceFree;
-  final amount = formatPlanAmount(price);
+  final amount = formatPlanAmount(plan.priceFor(cycle));
   return cycle == BillingCycle.yearly
-      ? l10n.billingPricePerMonthYearly(amount)
+      ? l10n.billingPricePerYear(amount)
       : l10n.billingPricePerMonth(amount);
 }
 
@@ -263,7 +266,10 @@ class _CurrentPlanCard extends StatelessWidget {
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  plan.displayName,
+                  plan?.displayName ??
+                      (store.isOnTrial
+                          ? context.l10n.billingTrialPlanName
+                          : context.l10n.billingNoPlanName),
                   style: AppTextStyles.title.copyWith(color: AppColors.onPrimary),
                 ),
                 if (renewal != null) ...[
@@ -282,7 +288,7 @@ class _CurrentPlanCard extends StatelessWidget {
             ),
           ),
           Icon(
-            plan.tier == PlanTier.free ? Icons.spa_outlined : Icons.workspace_premium_outlined,
+            plan == null ? Icons.spa_outlined : Icons.workspace_premium_outlined,
             color: AppColors.onPrimary,
             size: 32,
           ),
@@ -359,12 +365,14 @@ class _CyclePill extends StatelessWidget {
 class _PlanCard extends StatelessWidget {
   const _PlanCard({
     required this.plan,
+    required this.features,
     required this.cycle,
     required this.isCurrent,
     required this.onSelect,
   });
 
   final SubscriptionPlan plan;
+  final List<PlanFeature> features;
   final BillingCycle cycle;
   final bool isCurrent;
   final VoidCallback onSelect;
@@ -403,7 +411,7 @@ class _PlanCard extends StatelessWidget {
           const SizedBox(height: 4),
           Text(_priceLabel(context, plan, cycle), style: AppTextStyles.bodySmall),
           const SizedBox(height: AppSpacing.md),
-          PlanFeatureList(features: plan.features),
+          PlanFeatureList(features: features),
           const SizedBox(height: AppSpacing.sm),
           SizedBox(
             width: double.infinity,
@@ -423,11 +431,7 @@ class _PlanCard extends StatelessWidget {
                       backgroundColor: AppColors.primary,
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadii.pill)),
                     ),
-                    child: Text(
-                      plan.tier == PlanTier.free
-                          ? context.l10n.billingBackToFree
-                          : context.l10n.billingSwitchToPlan(plan.displayName),
-                    ),
+                    child: Text(context.l10n.billingSwitchToPlan(plan.displayName)),
                   ),
           ),
         ],

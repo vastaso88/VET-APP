@@ -1,16 +1,17 @@
 from urllib.parse import quote
 
-from fastapi import APIRouter, File, Form, Header, HTTPException, UploadFile
+from fastapi import APIRouter, Depends, File, Form, Header, HTTPException, UploadFile
 from fastapi.responses import Response
 
 from apps.api.dependencies.container import get_container
+from apps.api.dependencies.subscription import require_active_subscription
 from packages.core.application.services.upload_chat_attachment import UploadChatAttachmentInput
 from packages.core.domain.common.language import resolve_language
 
 router = APIRouter(prefix="/chat-attachments", tags=["chat-attachments"])
 
 
-@router.post("")
+@router.post("", dependencies=[Depends(require_active_subscription)])
 async def upload_attachment(
     pet_id: str = Form(...),
     file: UploadFile = File(...),

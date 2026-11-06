@@ -93,7 +93,7 @@ class _LoginPageState extends State<LoginPage> {
     if (success) {
       await Future<void>.delayed(const Duration(milliseconds: 350));
       if (!mounted) return;
-      final destination = await const SubscriptionGate().resolveDestination();
+      final destination = await const SubscriptionGate().resolveDestination(afterSignIn: true);
       if (!mounted) return;
       Navigator.of(context).pushNamedAndRemoveUntil(
         destination,

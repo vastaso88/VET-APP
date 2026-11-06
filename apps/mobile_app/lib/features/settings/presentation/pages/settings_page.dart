@@ -589,7 +589,8 @@ class _SettingsPageState extends State<SettingsPage> {
                             ? context.l10n.settingsTrialExpiresOn(
                                 _numericDate(BillingDemoStore.instance.trialEndsAt!),
                               )
-                            : BillingDemoStore.instance.currentPlan.displayName,
+                            : BillingDemoStore.instance.currentPlan?.displayName ??
+                                context.l10n.billingNoPlanName,
                         onTap: _openBilling,
                       ),
                     ),

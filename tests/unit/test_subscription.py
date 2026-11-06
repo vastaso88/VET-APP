@@ -17,7 +17,7 @@ from packages.shared.errors.base import ValidationError
 _DEVELOPER_EMAILS = frozenset({"dev1@example.com", "dev2@example.com"})
 
 
-def test_first_lookup_starts_a_ten_day_trial() -> None:
+def test_first_lookup_starts_a_fourteen_day_trial() -> None:
     repository = InMemorySubscriptionRepository()
     service = GetOrCreateSubscriptionService(repository, _DEVELOPER_EMAILS)
 
@@ -28,7 +28,7 @@ def test_first_lookup_starts_a_ten_day_trial() -> None:
     assert result.subscription.plan is None
     assert result.has_access is True
     delta = result.subscription.trial_ends_at - utc_now()
-    assert timedelta(days=9) < delta <= timedelta(days=10)
+    assert timedelta(days=13) < delta <= timedelta(days=14)
 
 
 def test_second_lookup_reuses_the_same_subscription() -> None:

@@ -1,6 +1,7 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends
 
 from apps.api.dependencies.container import get_container
+from apps.api.dependencies.subscription import require_active_subscription
 from apps.api.schemas.reminders import CreateReminderRequest
 from packages.core.application.services.create_reminder import CreateReminderInput
 from packages.core.application.services.list_reminders import ListRemindersInput
@@ -16,7 +17,7 @@ def list_reminders() -> dict[str, object]:
     return result.model_dump()
 
 
-@router.post("")
+@router.post("", dependencies=[Depends(require_active_subscription)])
 def create_reminder(request: CreateReminderRequest) -> dict[str, object]:
     container = get_container()
     user = container.auth_provider.get_current_user()

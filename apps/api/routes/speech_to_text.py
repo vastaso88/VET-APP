@@ -1,6 +1,7 @@
-from fastapi import APIRouter, File, Header, UploadFile
+from fastapi import APIRouter, Depends, File, Header, UploadFile
 
 from apps.api.dependencies.container import get_container
+from apps.api.dependencies.subscription import require_active_subscription
 from packages.core.application.services.transcribe_audio import TranscribeAudioInput
 from packages.core.domain.common.language import resolve_language
 from packages.shared.errors.base import ValidationError
@@ -12,7 +13,7 @@ router = APIRouter(prefix="/speech-to-text", tags=["speech-to-text"])
 MAX_AUDIO_BYTES = 4 * 1024 * 1024
 
 
-@router.post("")
+@router.post("", dependencies=[Depends(require_active_subscription)])
 async def transcribe(
     file: UploadFile = File(...), accept_language: str | None = Header(default=None)
 ) -> dict[str, object]:

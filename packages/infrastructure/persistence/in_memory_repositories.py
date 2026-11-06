@@ -28,6 +28,7 @@ from packages.core.application.ports.radar_places_repository import RadarPlacesR
 from packages.core.application.ports.radar_reports_repository import RadarReportsRepository
 from packages.core.application.ports.reminder_repository import ReminderRepository
 from packages.core.application.ports.subscription_repository import SubscriptionRepository
+from packages.core.application.ports.user_device_repository import UserDeviceRepository
 from packages.core.application.ports.user_location_repository import UserLocationRepository
 from packages.core.application.ports.weight_measurement_repository import (
     WeightMeasurementRepository,
@@ -36,6 +37,7 @@ from packages.core.domain.consent.models import AccountConsents
 from packages.core.domain.conversation.attachment import ChatAttachment
 from packages.core.domain.conversation.models import Conversation
 from packages.core.domain.coverage.models import RadarCoverage
+from packages.core.domain.device.models import UserDevice
 from packages.core.domain.dog_walk.models import WalkSession
 from packages.core.domain.feedback.models import ChatResponseReport, ChatResponseReportCounter
 from packages.core.domain.geo.models import UserLocation
@@ -198,6 +200,18 @@ class InMemorySubscriptionRepository(SubscriptionRepository):
     def save(self, subscription: Subscription) -> Subscription:
         self._items[subscription.owner_id] = subscription
         return subscription
+
+
+class InMemoryUserDeviceRepository(UserDeviceRepository):
+    def __init__(self) -> None:
+        self._items: dict[tuple[str, str], UserDevice] = {}
+
+    def list_for_owner(self, owner_id: str) -> list[UserDevice]:
+        return [d for (owner, _), d in self._items.items() if owner == owner_id]
+
+    def save(self, device: UserDevice) -> UserDevice:
+        self._items[(device.owner_id, device.device_id)] = device
+        return device
 
 
 class InMemoryUserLocationRepository(UserLocationRepository):

@@ -1,6 +1,11 @@
 from pydantic import BaseModel
 
 from packages.core.application.ports.subscription_repository import SubscriptionRepository
+from packages.core.domain.subscription.limits import (
+    LIMITS_BY_PLAN,
+    PlanLimits,
+    effective_limits,
+)
 from packages.core.domain.subscription.models import Subscription
 
 
@@ -13,10 +18,15 @@ class GetOrCreateSubscriptionOutput(BaseModel):
     subscription: Subscription
     is_developer: bool
     has_access: bool
+    # What this owner is allowed right now; None = no limits (developer).
+    limits: PlanLimits | None = None
+    # The limits of every plan, so the app shows the same numbers the
+    # backend enforces without keeping a copy of them.
+    plan_limits: dict[str, PlanLimits] = LIMITS_BY_PLAN
 
 
 class GetOrCreateSubscriptionService:
-    """Starts the 10-day free trial (spec: no card required) on first
+    """Starts the 14-day free trial (spec: no card required) on first
     lookup, and reports whether the owner currently has access — always
     true for the developer allowlist, otherwise trial-or-plan."""
 
@@ -36,4 +46,5 @@ class GetOrCreateSubscriptionService:
             subscription=subscription,
             is_developer=is_developer,
             has_access=subscription.has_access(is_developer=is_developer),
+            limits=effective_limits(subscription, is_developer=is_developer),
         )

@@ -33,6 +33,7 @@ from packages.core.application.ports.radar_places_repository import RadarPlacesR
 from packages.core.application.ports.radar_reports_repository import RadarReportsRepository
 from packages.core.application.ports.reminder_repository import ReminderRepository
 from packages.core.application.ports.subscription_repository import SubscriptionRepository
+from packages.core.application.ports.user_device_repository import UserDeviceRepository
 from packages.core.application.ports.user_location_repository import UserLocationRepository
 from packages.core.application.ports.weight_measurement_repository import (
     WeightMeasurementRepository,
@@ -41,6 +42,7 @@ from packages.core.domain.consent.models import AccountConsents
 from packages.core.domain.conversation.attachment import ChatAttachment
 from packages.core.domain.conversation.models import Conversation
 from packages.core.domain.coverage.models import RadarCoverage
+from packages.core.domain.device.models import UserDevice
 from packages.core.domain.dog_walk.models import WalkSession
 from packages.core.domain.feedback.models import ChatResponseReport, ChatResponseReportCounter
 from packages.core.domain.geo.models import Coordinates, UserLocation
@@ -226,6 +228,21 @@ class SupabaseSubscriptionRepository(SubscriptionRepository):
         payload = _serialize_payload(subscription.model_dump(mode="json"))
         self._client.table(self._table).upsert(payload).execute()
         return subscription
+
+
+class SupabaseUserDeviceRepository(UserDeviceRepository):
+    def __init__(self, client: Client) -> None:
+        self._client = client
+        self._table = "user_devices"
+
+    def list_for_owner(self, owner_id: str) -> list[UserDevice]:
+        response = self._client.table(self._table).select("*").eq("owner_id", owner_id).execute()
+        return [UserDevice.model_validate(row) for row in response.data or []]
+
+    def save(self, device: UserDevice) -> UserDevice:
+        payload = _serialize_payload(device.model_dump(mode="json"))
+        self._client.table(self._table).upsert(payload, on_conflict="owner_id,device_id").execute()
+        return device
 
 
 def _user_location_to_row(user_location: UserLocation) -> dict[str, Any]:
