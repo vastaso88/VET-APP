@@ -87,10 +87,11 @@ from scenarios_awareness import (  # noqa: E402
 )
 from scenarios_everyday import EXTRA_PETS, EXTRA_SCENARIOS  # noqa: E402
 from scenarios_stress import STRESS_SCENARIOS  # noqa: E402
+from scenarios_wide import WIDE_SCENARIOS  # noqa: E402
 
 PETS: dict[str, Pet] = {**BASE_PETS, **EXTRA_PETS, **AWARENESS_PETS}
 SCENARIOS: tuple[Scenario, ...] = (
-    BASE_SCENARIOS + EXTRA_SCENARIOS + AWARENESS_SCENARIOS + STRESS_SCENARIOS
+    BASE_SCENARIOS + EXTRA_SCENARIOS + AWARENESS_SCENARIOS + STRESS_SCENARIOS + WIDE_SCENARIOS
 )
 
 from packages.bootstrap.container import ApplicationContainer  # noqa: E402
@@ -544,6 +545,11 @@ def run_scenario(settings: Settings, scenario: Scenario, cache: dict[str, str]) 
                 "state": str(output.state),
                 "llm_calls": CallCounter.calls - calls_before,
                 "seconds": round(seconds, 1),
+                "sources": [
+                    f"{source.title} | {source.journal or '-'} | {source.year or '-'} | "
+                    f"Tier {source.tier}"
+                    for source in output.sources
+                ],
             }
         )
     return {"id": scenario.id, "category": scenario.category, "turns": turns}
@@ -852,6 +858,8 @@ def write_outputs(label: str, results: list[dict[str, Any]], settings: Settings)
                 f"**Proprietario:** {turn['user']}{attachment}",
                 "",
                 f"**Chat** ({turn['mode']}): {turn['assistant']}",
+                "",
+                f"Fonti: {'; '.join(turn.get('sources') or []) or 'nessuna'}",
                 "",
             ]
         lines += [f"Punteggi: `{json.dumps(result['scores'], ensure_ascii=False)}`", ""]
