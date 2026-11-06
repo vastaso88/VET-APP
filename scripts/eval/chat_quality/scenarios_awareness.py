@@ -28,10 +28,15 @@ FORBIDDEN_WORDS: tuple[str, ...] = (
     r"\bformazione\b",
     r"\blezion[ei]\b",
     r"\battestat\w*",
-    r"\bcertificat\w*",
+    # "certificato" is forbidden as something Quokka would issue, not as a
+    # health/identification paper or a professional's qualification.
+    r"(?<!educatore )(?<!istruttore )(?<!addestratore )(?<!cinofilo )\bcertificat\w*\b"
+    r"(?! (?:di buona salute|di identificazione|sanitari|veterinari|medic|anagrafic))",
     r"\bpatentin\w*",
-    r"\besam[ei]\b(?! (?:del|dell|delle|degli|dei|di |fisico|clinico|obiettivo|"
-    r"feci|urine|sangue|coprologico|ematochimic))",
+    # "esame" only as a test to pass; clinical tests (esami del sangue,
+    # i risultati degli esami) stay allowed.
+    r"\besam[ei]\b (?:final[ei]|di (?:abilitazione|idoneità)|scritt[oi]|oral[ei]|teoric[oi])",
+    r"\bsuperare (?:un |l')esam[ei]\b",
     r"\bpromozione\b",
     r"veterinario virtuale",
     r"come un veterinario",

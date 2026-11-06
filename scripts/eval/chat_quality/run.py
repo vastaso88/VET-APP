@@ -86,9 +86,12 @@ from scenarios_awareness import (  # noqa: E402
     FORBIDDEN_WORDS,
 )
 from scenarios_everyday import EXTRA_PETS, EXTRA_SCENARIOS  # noqa: E402
+from scenarios_stress import STRESS_SCENARIOS  # noqa: E402
 
 PETS: dict[str, Pet] = {**BASE_PETS, **EXTRA_PETS, **AWARENESS_PETS}
-SCENARIOS: tuple[Scenario, ...] = BASE_SCENARIOS + EXTRA_SCENARIOS + AWARENESS_SCENARIOS
+SCENARIOS: tuple[Scenario, ...] = (
+    BASE_SCENARIOS + EXTRA_SCENARIOS + AWARENESS_SCENARIOS + STRESS_SCENARIOS
+)
 
 from packages.bootstrap.container import ApplicationContainer  # noqa: E402
 from packages.core.application.ports.llm_client import LLMGenerationRequest  # noqa: E402
@@ -607,9 +610,13 @@ def mechanical_scores(scenario: Scenario, turns: list[dict[str, Any]]) -> dict[s
             re.search(pattern, everything, re.IGNORECASE) for pattern in scenario.must_not_say_any
         )
     # Repositioning (docs/product/11 §3.1): words that must never appear in
-    # a text the owner reads, counted on every scenario.
+    # a text the owner reads, counted on every scenario. A word the owner
+    # used first ("mi rilasci un attestato?") may be echoed in the refusal.
     scores["parole_vietate"] = sum(
-        len(re.findall(pattern, everything, re.IGNORECASE)) for pattern in FORBIDDEN_WORDS
+        1
+        for pattern in FORBIDDEN_WORDS
+        for match in re.finditer(pattern, everything, re.IGNORECASE)
+        if match.group(0).lower() not in owner_text
     )
     if scenario.must_say_any:
         scores["onesta"] = any(
