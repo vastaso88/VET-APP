@@ -237,7 +237,9 @@ def test_a_child_writing_hears_call_an_adult_first() -> None:
         name="Toby",
     )
 
-    assert result.answer.startswith("Prima di tutto: chiama subito un adulto")
+    # Third round: a hurt child gets the fixed simple steps (no question).
+    assert result.answer.startswith("Prima di tutto chiama subito un adulto")
+    assert result.model == "minor-hurt-guard"
 
 
 def test_a_child_writing_an_ordinary_question_also_hears_it_and_the_model_knows() -> None:
@@ -325,7 +327,9 @@ def test_a_dogs_pipette_on_a_cat_is_a_fixed_emergency_that_names_permethrin() ->
     )
 
     assert client.requests == []
-    assert result.mode == "triage"
+    # Third round: not yet applied, so "no, never" with the why; the triage
+    # stays for a cat that already got it (test_stress_round3).
+    assert result.model == "dog-product-on-cat-guard"
     assert "permetrina" in result.answer and "veleno" in result.answer
 
 

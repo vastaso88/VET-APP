@@ -5,6 +5,7 @@ from packages.core.application.ports.evidence_retriever import (
 from packages.core.domain.knowledge.models import EvidenceSource
 from packages.infrastructure.llm.retrieval.curated_awareness_evidence_retriever import (
     AWARENESS_CATALOG,
+    awareness_sources_for,
 )
 from packages.infrastructure.llm.retrieval.curated_husbandry_evidence_retriever import (
     HUSBANDRY_CATALOG,
@@ -113,9 +114,10 @@ QUERY_HINTS: dict[str, tuple[str, ...]] = {
 class InMemoryEvidenceRetriever(EvidenceRetriever):
     def retrieve(self, request: EvidenceRetrievalRequest) -> list[EvidenceSource]:
         domain = self._domain_from_request(request)
+        catalog = _GENERIC_CATALOG + HUSBANDRY_CATALOG + awareness_sources_for(request.query)
         results = [
             source
-            for source in CATALOG
+            for source in catalog
             if (source.species == request.species or source.species == "other")
             and source.clinical_domain == domain
         ]

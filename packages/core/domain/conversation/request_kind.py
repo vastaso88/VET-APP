@@ -590,6 +590,12 @@ DUTY_ROOTS: tuple[str, ...] = (
 )
 
 
+def is_duty_question(message: str) -> bool:
+    """About a legal duty of whoever keeps the animal (microchip, leash,
+    travel papers, dangerous breeds...)."""
+    return _has_any(message.strip().lower(), DUTY_ROOTS)
+
+
 def is_behavioural_or_duty(message: str) -> bool:
     """A question about understanding the animal or about the owner's
     duties: answered directly, even when it is not phrased as a question."""

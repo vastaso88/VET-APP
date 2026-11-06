@@ -100,38 +100,53 @@ from packages.core.domain.safety.dosage_request import (
     is_prevention_schedule_question,
     names_a_medicine,
 )
-from packages.core.domain.safety.exposure import is_educational_toxin_question
+from packages.core.domain.safety.exposure import is_educational_toxin_question, is_exposure
 from packages.core.domain.safety.harmful_requests import (
     ADULT_FIRST,
     CERTIFY_REPLACEMENT,
+    CHILD_NEVER_ALONE,
+    DOSE_CHANGE_TEXTS,
     EUTHANASIA_REFUSAL,
     HARMFUL_NOTES,
+    HOPELESSNESS_OPENING,
     HUMAN_HEALTH_TEXTS,
     IDENTITY_TEXTS,
+    MINOR_HURT_TEXTS,
+    PERMETHRIN_INTENT_TEXTS,
+    PRICE_REPLACEMENT,
     PROMPT_LEAK_TEXTS,
     YES_NO_REPLACEMENT,
     answer_certifies,
     answer_is_bare_yes_no,
+    asks_care_costs,
     asks_for_a_bare_yes_or_no,
     detect_harmful_request,
+    expresses_hopelessness,
     is_about_a_future_animal,
+    is_dose_change_request,
     is_euthanasia_follow_up,
     is_human_health_question,
     is_identity_question,
     is_long_message,
+    is_minor_hurt,
     is_minor_writing,
+    is_plant_diet_for_a_carnivore,
     is_prompt_leak_request,
     mentions_a_child_at_risk,
+    mentions_a_death,
     strip_invented_prices,
+    strip_proceed_anyway,
+    vomiting_and_not_eating_for_a_day,
 )
 from packages.core.domain.safety.human_drug_toxicity import human_drug_toxicity_note
 from packages.core.domain.safety.triage_clarification import (
-    categorize as categorize_safety_flags,
-)
-from packages.core.domain.safety.triage_clarification import (
+    DOG_PRODUCT_ON_CAT_KEYWORDS,
     clarifying_question,
     requires_immediate_escalation,
     small_mammal_stasis_is_immediate,
+)
+from packages.core.domain.safety.triage_clarification import (
+    categorize as categorize_safety_flags,
 )
 from packages.core.domain.safety.triage_clarification import (
     classify_severity as classify_safety_severity,
@@ -1002,6 +1017,10 @@ class ChatOrchestrator:
         # A child writing ("ho 10 anni, il cane mi ha morso"): whatever
         # comes next, the first words are "call an adult".
         minor = is_minor_writing(message)
+        if is_minor_hurt(data.user_message):
+            # Third round, 3: a child with a bite or a scratch gets simple
+            # steps, never the clarifying question about the bleeding.
+            return self._fixed_reply(MINOR_HURT_TEXTS, data, model="minor-hurt-guard")
 
         safety_flags = self._safety_gate.evaluate(lowered, species=effective_species)
         # Repositioning (docs/product/11 §4, 2.2): "perché il cioccolato fa
@@ -1013,6 +1032,15 @@ class ChatOrchestrator:
             safety_flags = []
         if safety_flags:
             category = categorize_safety_flags(safety_flags)
+            if (
+                category == "toxin_medication"
+                and any(flag in DOG_PRODUCT_ON_CAT_KEYWORDS for flag in safety_flags)
+                and not is_exposure(data.user_message)
+            ):
+                # Third round, 4: "la metto a Nina?" has not happened yet.
+                return self._fixed_reply(
+                    PERMETHRIN_INTENT_TEXTS, data, model="dog-product-on-cat-guard"
+                )
             if requires_immediate_escalation(message) or small_mammal_stasis_is_immediate(
                 category, family, message
             ):
@@ -1071,6 +1099,16 @@ class ChatOrchestrator:
                 minor,
             )
 
+        if is_dose_change_request(data.user_message):
+            # Third round, 1: "ne do una, giusto?" was once confirmed by the
+            # model. Never a confirmation, never a number, call the vet.
+            result = self._fixed_reply(DOSE_CHANGE_TEXTS, data, model="dosage-guard")
+            return result.model_copy(
+                update={
+                    "limitations": [translate("dosage_limitation", data.language)],
+                    "recommended_action": translate("dosage_action", data.language),
+                }
+            )
         if self._is_dosage_request(lowered) or self._asks_an_amount_of_a_recent_medicine(
             lowered, user_history
         ):
@@ -2512,6 +2550,10 @@ class ChatOrchestrator:
             long_message=is_long_message(message),
             forced_yes_no=asks_for_a_bare_yes_or_no(message),
             future_animal=is_about_a_future_animal(message),
+            visit_today=vomiting_and_not_eating_for_a_day(message),
+            plant_diet=is_plant_diet_for_a_carnivore(message, normalize_species(effective_species)),
+            grief=mentions_a_death(message),
+            hopelessness=expresses_hopelessness(message),
         )
         user_prompt = (
             f"{self._pet_context_block(data, generic=generic_context)}\n"
@@ -2607,9 +2649,29 @@ class ChatOrchestrator:
         owner_text = " ".join(
             [m.content for m in data.conversation_history if m.role == "user"] + [message]
         )
-        without_prices = strip_invented_prices(answer_text, owner_text)
+        # Fourth round, 1: the sentence on estimates and instalments only
+        # when the owner asked what a visit or a treatment costs; elsewhere
+        # the invented figure is simply dropped.
+        without_prices = strip_invented_prices(
+            answer_text,
+            owner_text,
+            self._fixed_text(PRICE_REPLACEMENT, data) if asks_care_costs(owner_text) else "",
+        )
         if without_prices != answer_text:
             answer_text = without_prices
+            cache_id = None
+        if detect_harmful_request(message) == "online_purchase":
+            without_proceed = strip_proceed_anyway(answer_text)
+            if without_proceed != answer_text:
+                answer_text = without_proceed
+                cache_id = None
+        if expresses_hopelessness(message):
+            # Third round, 7: taken seriously, deterministically.
+            answer_text = self._fixed_text(HOPELESSNESS_OPENING, data) + answer_text
+            cache_id = None
+        if mentions_a_child_at_risk(message) and not is_minor_writing(message):
+            # Fourth round, 2: the note alone did not move the model.
+            answer_text = self._fixed_text(CHILD_NEVER_ALONE, data) + answer_text
             cache_id = None
         if is_minor_writing(message):
             answer_text = self._fixed_text(ADULT_FIRST, data) + answer_text

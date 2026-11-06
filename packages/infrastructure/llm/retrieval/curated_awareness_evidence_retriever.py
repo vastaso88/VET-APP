@@ -19,6 +19,7 @@ from packages.core.application.ports.evidence_retriever import (
     EvidenceRetrievalRequest,
     EvidenceRetriever,
 )
+from packages.core.domain.conversation.request_kind import is_duty_question
 from packages.core.domain.knowledge.models import EvidenceSource
 
 _PREFIX = "Curated awareness note (pending vet review): "
@@ -254,6 +255,15 @@ DUTY_CATALOG: list[EvidenceSource] = [
 AWARENESS_CATALOG += DUTY_CATALOG
 
 
+def awareness_sources_for(query: str) -> list[EvidenceSource]:
+    """The notes a question may draw on: the duty notes only when the
+    question is about a duty (third round, 10: "il gatto deve stare fuori?"
+    got the crime of abandonment and the microchip in the answer)."""
+    if is_duty_question(query):
+        return AWARENESS_CATALOG
+    return [source for source in AWARENESS_CATALOG if source not in DUTY_CATALOG]
+
+
 class CuratedAwarenessEvidenceRetriever(EvidenceRetriever):
     """Serves the curated awareness notes for behaviour, relationship and
     everyday-management questions (routed here by intent in container.py:
@@ -262,6 +272,7 @@ class CuratedAwarenessEvidenceRetriever(EvidenceRetriever):
     the species is filtered; the "other" note is a last resort."""
 
     def retrieve(self, request: EvidenceRetrievalRequest) -> list[EvidenceSource]:
-        exact = [source for source in AWARENESS_CATALOG if source.species == request.species]
-        fallback = [source for source in AWARENESS_CATALOG if source.species == "other"]
+        catalog = awareness_sources_for(request.query)
+        exact = [source for source in catalog if source.species == request.species]
+        fallback = [source for source in catalog if source.species == "other"]
         return (exact or fallback)[: request.max_results]

@@ -106,3 +106,8 @@ def is_educational_toxin_question(message: str) -> bool:
     if EXPOSURE_MARKERS.search(text) or INTENT_TO_GIVE_MARKERS.search(text):
         return False
     return "?" in text or bool(QUESTION_MARKERS.search(text))
+
+
+def is_exposure(message: str) -> bool:
+    """The animal already got the substance (ate, licked, was given it)."""
+    return bool(EXPOSURE_MARKERS.search(normalize_for_matching(message)))

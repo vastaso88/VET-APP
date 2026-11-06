@@ -234,16 +234,43 @@ _MINOR = (
     "now in two or three simple steps, then why the animal did it, without blaming anyone."
 )
 _CHILD_AT_RISK = (
-    "A CHILD IS INVOLVED. Say first, in one plain sentence, that a child and an animal are "
-    "never left together without an adult, and that hugs, pulled tails and face-to-face "
-    "contact are what the animal cannot tolerate; then explain the animal's signals and "
-    "what to teach the child."
+    "A CHILD IS INVOLVED. Say first, in two plain sentences: some gestures are never "
+    "allowed, with or without an adult watching (pulling the tail or ears, grabbing the "
+    "neck, tight hugs, face against the face), and a small child is never left alone with "
+    "the animal, not even for a moment. Never write 'without supervision' as if supervision "
+    "made those gestures acceptable. Then explain the animal's signals and what to teach the "
+    "child, gently."
+)
+_VISIT_TODAY = (
+    "VOMITING AND NOT EATING FOR A DAY OR MORE: the visit is today, say it clearly and "
+    "first ('oggi stesso'), never 'if it goes on another 24 hours'; then what to do until "
+    "then."
+)
+_PLANT_DIET = (
+    "A PLANT-BASED DIET FOR A CAT (an obligate carnivore): explain with respect why it is "
+    "dangerous (taurine, vitamin A, arachidonic acid, protein; a sick or kidney cat even "
+    "more) and that only a veterinary nutritionist could ever follow such a choice. Never "
+    "end with an offer to help plan it, list supplements or 'balance' it: no closing question "
+    "at all. Every acronym spelled out in plain words (malattia renale cronica, not CKD)."
+)
+_GRIEF = (
+    "THE ANIMAL HAS DIED. Grief first: warmth, no clinical tone, no questions. Nothing about "
+    "what happens to the body (cremation, burial, 'smaltimento') unless the owner asks."
+)
+_HOPELESSNESS = (
+    "THE OWNER SAYS NOTHING MAKES SENSE OR CANNOT GET UP. The opening line (talk to your "
+    "doctor or a listening service) is already written before your text: do not repeat it, "
+    "do not diagnose, do not minimise, never give a phone number. Stay with the person and "
+    "the animal they lost, in a few warm sentences."
 )
 _LONG_MESSAGE = (
     "LONG MESSAGE. The owner wrote several points: take them one by one, in the order "
     "given, a short paragraph each, none left out; do not summarise the documents on file "
-    "unless asked. A safety point (a child, a human medicine, a new growl) comes first. You "
-    "may go to about 1800 characters."
+    "unless asked. A safety point (a child, a human medicine, a new growl) comes first. A "
+    "money worry gets a concrete answer (a written preventivo, instalments, local "
+    "associations), never a figure. A sign like increased thirst is a reason for the check "
+    "in itself: do not explain it with a guessed cause. Never add a sign the owner did not "
+    "write. You may go to about 1800 characters."
 )
 _FORCED_YES_NO = (
     "THE OWNER ASKS FOR A BARE YES OR NO about health. Do not give it: say in one sentence "
@@ -296,6 +323,10 @@ def build_system_prompt(
     long_message: bool = False,
     forced_yes_no: bool = False,
     future_animal: bool = False,
+    visit_today: bool = False,
+    plant_diet: bool = False,
+    grief: bool = False,
+    hopelessness: bool = False,
 ) -> str:
     """The system prompt for one reply. Stable parts first (the prefix the
     provider can cache), then the parts that depend on the request: the
@@ -332,6 +363,14 @@ def build_system_prompt(
         parts.append(_FORCED_YES_NO)
     if future_animal:
         parts.append(_FUTURE_ANIMAL)
+    if visit_today:
+        parts.append(_VISIT_TODAY)
+    if plant_diet:
+        parts.append(_PLANT_DIET)
+    if grief:
+        parts.append(_GRIEF)
+    if hopelessness:
+        parts.append(_HOPELESSNESS)
     if has_reference_material:
         parts.append(_REFERENCE_MATERIAL)
     if species_facts:

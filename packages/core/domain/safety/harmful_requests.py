@@ -166,8 +166,10 @@ ONLINE_PURCHASE_NOTE = (
     "taken from the mother too early, false papers, sick or unsocialised, mothers kept in "
     "cages); name the facts without playing the lawyer: in the EU a puppy cannot travel before "
     "15 weeks (rabies vaccination at 12 weeks plus 21 days), it needs a microchip and an EU "
-    "pet passport, and in Italy it is not transferred before 60 days; the buyer risks "
-    "seizure, costs and a sick animal. Never write 'if you decide to proceed': say instead "
+    "pet passport, and in Italy it is not transferred before 60 days OF AGE (two months old, "
+    "counted from birth, never from arrival); the buyer risks seizure, costs and a sick "
+    "animal. Never write 'se decidi comunque di procedere', 'if you decide to proceed' or "
+    "any sentence that frames this purchase as an option: say instead "
     "how to recognise a serious breeder or a shelter (you see the mother and where the "
     "puppies live, no home delivery, health checks and documents the vet can verify, a "
     "written contract) and that a municipal canile or an association is a sound alternative."
@@ -727,22 +729,454 @@ _PRICE = re.compile(
 _SENTENCE_END = re.compile(r"(?<=[.!?])\s+")
 
 
-def strip_invented_prices(answer: str, owner_text: str) -> str:
-    """Drops every sentence that quotes a price the owner did not write
-    (G: 'una visita con analisi costa tra 150 € e 250 €'). Prices vary: the
-    prompt says to ask for a preventivo instead."""
+def strip_invented_prices(answer: str, owner_text: str, replacement: str = "") -> str:
+    """Replaces (or drops, with no replacement) every sentence that quotes a
+    price the owner did not write (G: 'una visita con analisi costa tra 150 €
+    e 250 €'): the owner's money question still gets an answer (third round,
+    11), just not a figure."""
     owner_prices = {re.sub(r"[\s.,]", "", found.lower()) for found in _PRICE.findall(owner_text)}
     kept: list[str] = []
     for paragraph in answer.split("\n"):
         sentences = _SENTENCE_END.split(paragraph) if paragraph.strip() else [paragraph]
-        kept_sentences = [
-            sentence
-            for sentence in sentences
-            if not any(
+        kept_sentences: list[str] = []
+        replaced = False
+        for sentence in sentences:
+            invented = any(
                 re.sub(r"[\s.,]", "", found.lower()) not in owner_prices
                 for found in _PRICE.findall(sentence)
             )
-        ]
+            if not invented:
+                kept_sentences.append(sentence)
+            elif replacement and not replaced:
+                kept_sentences.append(replacement)
+                replaced = True
         kept.append(" ".join(kept_sentences))
     cleaned = "\n".join(kept).strip()
     return cleaned or answer
+
+
+# 4. A dog's antiparasitic the owner is ABOUT to put on the cat: "no, never",
+# with the why; the triage stays for the cat that already got it.
+PERMETHRIN_INTENT_TEXTS: dict[str, str] = {
+    "it": (
+        "No, mai: le pipette, i collari e gli spray antiparassitari per cani contengono "
+        "spesso permetrina, che per il gatto è un veleno. Anche una sola pipetta può causare "
+        "tremori, convulsioni e la morte, e non conta che sia 'avanzata' o che la dose sembri "
+        "piccola. Per {name} serve un prodotto fatto per i gatti, scelto con il veterinario "
+        "in base al peso. Se gliel'hai già messa, anche poca, chiama subito il veterinario o "
+        "un pronto soccorso veterinario."
+    ),
+    "en": (
+        "No, never: dog flea pipettes, collars and sprays often contain permethrin, which is "
+        "a poison for cats. Even a single pipette can cause tremors, seizures and death, and "
+        "it does not matter that it was 'left over' or that the dose looks small. {name} "
+        "needs a product made for cats, chosen with the vet by weight. If you have already "
+        "applied it, even a little, call your vet or an emergency clinic right away."
+    ),
+    "es": (
+        "No, nunca: las pipetas, collares y sprays antiparasitarios para perros suelen "
+        "contener permetrina, que para el gato es un veneno. Una sola pipeta puede causar "
+        "temblores, convulsiones y la muerte, y da igual que 'sobrara' o que la dosis parezca "
+        "pequeña. {name} necesita un producto hecho para gatos, elegido con el veterinario "
+        "según el peso. Si ya se la has puesto, aunque sea poca, llama ahora mismo al "
+        "veterinario o a urgencias veterinarias."
+    ),
+    "de": (
+        "Nein, niemals: Spot-ons, Halsbänder und Sprays gegen Parasiten für Hunde enthalten "
+        "oft Permethrin, für Katzen ein Gift. Schon eine einzige Pipette kann Zittern, Krämpfe "
+        "und den Tod verursachen, egal ob sie 'übrig' war oder die Menge klein wirkt. {name} "
+        "braucht ein Produkt für Katzen, mit der Tierarztpraxis nach Gewicht ausgewählt. "
+        "Falls Sie es schon aufgetragen haben, auch nur wenig, rufen Sie sofort die Praxis "
+        "oder einen Notdienst an."
+    ),
+    "fr": (
+        "Non, jamais : les pipettes, colliers et sprays antiparasitaires pour chiens "
+        "contiennent souvent de la perméthrine, un poison pour le chat. Une seule pipette "
+        "peut provoquer tremblements, convulsions et la mort, et peu importe qu'elle soit "
+        "'en trop' ou que la dose paraisse faible. {name} a besoin d'un produit pour chats, "
+        "choisi avec le vétérinaire selon le poids. Si vous l'avez déjà appliquée, même un "
+        "peu, appelez tout de suite votre vétérinaire ou un service d'urgences."
+    ),
+}
+
+
+# --- third round (2026-11-06): dose changes, a hurt child, vomiting, diets, grief
+
+_PRESCRIPTION = _words(
+    r"prescritt\w*|ricetta|terapia|cura|il veterinario (?:mi )?ha detto|il veterinario (?:gli|le) "
+    r"ha dato|(?:gli|le) ha dato|compress\w* al giorno|volte al giorno|"
+    r"prescribed|prescription|the vet said|the vet gave|tablets? a day|times a day|"
+    r"recet\w*|el veterinario (?:me )?dijo|comprimidos al dia|pastillas al dia|veces al dia|"
+    r"verschrieben|rezept|der tierarzt (?:hat )?gesagt|tabletten am tag|"
+    r"prescrit\w*|ordonnance|le veterinaire (?:m')?a dit|comprimes par jour"
+)
+_DOSE_CHANGE = _words(
+    r"ne do (?:solo |soltanto )?(?:una|mezza|due|meno|di piu|di meno)|ne do (?:una|mezza)\b|"
+    r"gliene do (?:una|mezza|meno|di piu)|(?:ridurr\w*|riduco|abbass\w*|dimezz\w*|raddoppi\w*|"
+    r"aument\w*|diminui\w*|togli\w*|salt\w*|sospend\w*|smett\w*|interromp\w*|fermo) (?:\w+ ){0,3}"
+    r"(?:la dose|le dosi|la compressa|le compresse|la terapia|la cura|il farmaco|la pastiglia|"
+    r"le pastiglie|le gocce)|mi sembra (?:troppo|troppa|tanto|poco|poca)|e troppo per lui|"
+    r"e troppo per lei|posso darne (?:meno|di meno|di piu|una)|posso saltar\w*|posso smetter\w*|"
+    r"posso sospender\w*|posso non dargliel\w*|senza dirlo al veterinario|"
+    r"(?:halve|double|reduce|lower|increase|skip|stop|cut|drop) (?:\w+ ){0,3}(?:the dose|the "
+    r"dosage|the tablets?|the pills?|the medication|the medicine|a dose|it)|"
+    r"give (?:him|her|it) (?:only |just )?(?:one|half|less|more)|seems (?:too much|a lot|too "
+    r"little)|can i skip|can i stop|"
+    r"le doy (?:solo |solamente )?(?:una|media|menos|mas)|(?:reducir|bajar|subir|aumentar|saltar|"
+    r"suspender|dejar|quitar) (?:\w+ ){0,3}(?:la dosis|las pastillas|el medicamento|la "
+    r"medicacion|el tratamiento)|me parece (?:mucho|demasiado|poco)|"
+    r"gebe ich (?:nur )?(?:eine|eine halbe|weniger|mehr)|ich gebe (?:ihm |ihr )?(?:nur |lieber )?"
+    r"(?:eine|eine halbe|weniger|mehr)|(?:halbier\w*|verdoppel\w*|reduzier\w*|"
+    r"erhoh\w*|weglass\w*|absetz\w*|aufhor\w*) (?:\w+ ){0,3}(?:die dosis|die tablette|das "
+    r"medikament|die medikamente)|kommt mir (?:viel|zu viel|wenig) vor|"
+    r"je (?:lui )?(?:en )?donne (?:que |seulement )?(?:un|une|une demie|moins|plus)|(?:reduire|"
+    r"baisser|augmenter|doubler|sauter|arreter|supprimer) (?:\w+ ){0,3}(?:la dose|les comprimes|"
+    r"le medicament|le traitement)|ca me parait (?:beaucoup|trop|peu)"
+)
+
+
+def is_dose_change_request(message: str) -> bool:
+    """ "Gli ha prescritto 2 compresse al giorno, ne do una, giusto?": the
+    owner wants to change a prescribed dose on their own (less, more, skip,
+    stop). A fixed answer: never a confirmation, never a number."""
+    text = normalize_for_matching(message)
+    return bool(_PRESCRIPTION.search(text) and _DOSE_CHANGE.search(text))
+
+
+DOSE_CHANGE_TEXTS: dict[str, str] = {
+    "it": (
+        "Capisco il dubbio, ma la dose di un farmaco prescritto non si cambia da soli, né in "
+        "meno né in più, e non si salta né si sospende senza sentire chi l'ha prescritta: il "
+        "veterinario l'ha calcolata sul peso di {name}, sulla sua malattia e su come "
+        "funziona quel farmaco, e dare meno (o più) può rendere la cura inutile o "
+        "pericolosa, a volte senza segni visibili subito. Chiama il tuo veterinario e "
+        "chiedigli proprio questo: se la dose può essere rivista. Se il dubbio nasce da "
+        "qualcosa che hai notato in {name} (vomito, sonnolenza, inappetenza, altro), "
+        "diglielo subito: è il motivo per riparlarne, oggi."
+    ),
+    "en": (
+        "I understand the doubt, but the dose of a prescribed medicine is not changed on "
+        "one's own, neither down nor up, and it is not skipped or stopped without asking "
+        "whoever prescribed it: the vet worked it out on {name}'s weight, illness and on how "
+        "that medicine works, and giving less (or more) can make the treatment useless or "
+        "dangerous, sometimes with no visible sign at first. Call your vet and ask exactly "
+        "this: whether the dose can be reviewed. If the doubt comes from something you "
+        "noticed in {name} (vomiting, drowsiness, not eating, anything else), tell them right "
+        "away: that is the right reason to talk about it, today."
+    ),
+    "es": (
+        "Entiendo la duda, pero la dosis de un medicamento recetado no se cambia por cuenta "
+        "propia, ni hacia abajo ni hacia arriba, y no se salta ni se suspende sin consultar a "
+        "quien la recetó: el veterinario la calculó según el peso de {name}, su enfermedad y "
+        "cómo actúa ese medicamento, y dar menos (o más) puede volver el tratamiento inútil "
+        "o peligroso, a veces sin señales visibles al principio. Llama a tu veterinario y "
+        "pregúntale justo esto: si la dosis se puede revisar. Si la duda nace de algo que "
+        "has notado en {name} (vómitos, somnolencia, falta de apetito, otra cosa), díselo "
+        "enseguida: es el motivo correcto para hablarlo, hoy."
+    ),
+    "de": (
+        "Ich verstehe den Zweifel, aber die Dosis eines verschriebenen Medikaments ändert man "
+        "nicht selbst, weder nach unten noch nach oben, und man lässt sie nicht aus oder "
+        "setzt sie ab, ohne mit der Praxis zu sprechen, die sie verschrieben hat: Sie wurde "
+        "nach dem Gewicht von {name}, der Erkrankung und der Wirkweise des Medikaments "
+        "berechnet, und weniger (oder mehr) kann die Behandlung wirkungslos oder gefährlich "
+        "machen, manchmal zunächst ohne sichtbare Zeichen. Rufen Sie Ihre Tierarztpraxis an "
+        "und fragen Sie genau das: ob die Dosis überprüft werden kann. Wenn der Zweifel von "
+        "etwas kommt, das Sie bei {name} bemerkt haben (Erbrechen, Müdigkeit, Appetitlosigkeit "
+        "oder anderes), sagen Sie es sofort: Das ist der richtige Grund, heute darüber zu "
+        "sprechen."
+    ),
+    "fr": (
+        "Je comprends le doute, mais la dose d'un médicament prescrit ne se change pas seul, "
+        "ni à la baisse ni à la hausse, et on ne la saute pas ni ne l'arrête sans en parler à "
+        "la personne qui l'a prescrite : le vétérinaire l'a calculée selon le poids de "
+        "{name}, sa maladie et le fonctionnement de ce médicament, et en donner moins (ou "
+        "plus) peut rendre le traitement inutile ou dangereux, parfois sans signe visible au "
+        "début. Appelez votre vétérinaire et posez-lui exactement cette question : la dose "
+        "peut-elle être revue ? Si le doute vient de quelque chose que vous avez remarqué chez "
+        "{name} (vomissements, somnolence, perte d'appétit, autre), dites-le tout de suite : "
+        "c'est la bonne raison d'en reparler, aujourd'hui."
+    ),
+}
+
+_INJURY = _words(
+    r"mors[oa]|morsicat[oa]|mi ha morso|mi ha graffiat[oa]|graffi[oa]|sanguin\w*|sangue|ferit[oa]|"
+    r"taglio|bit me|bitten|bite|bleeding|blood|scratched|wound|cut|"
+    r"me mordio|mordid[oa]|me arano|sangra|sangre|herida|"
+    r"gebissen|biss|blutet|blut|gekratzt|wunde|"
+    r"mordu|morsure|m'a mordu|griffe|saigne|sang|blessure"
+)
+
+
+def is_minor_hurt(message: str) -> bool:
+    """A child writing about their own bite, scratch or bleeding: a fixed,
+    simple reply, no clarifying question."""
+    return is_minor_writing(message) and bool(_INJURY.search(normalize_for_matching(message)))
+
+
+MINOR_HURT_TEXTS: dict[str, str] = {
+    "it": (
+        "Prima di tutto chiama subito un adulto: la mamma, il papà o chi è in casa con te. "
+        "Intanto lava bene la mano con acqua e sapone, poi premi sulla ferita con un panno "
+        "pulito. Un adulto ti porterà dal medico a far vedere la mano: per un morso si fa "
+        "sempre. Non è colpa tua e nemmeno del cane: stava difendendo il suo osso, i cani lo "
+        "fanno quando hanno paura che glielo portino via. Quando l'adulto è con te, posso "
+        "spiegare anche a lui cosa fare."
+    ),
+    "en": (
+        "First of all call an adult right now: your mum, your dad or whoever is at home. "
+        "Meanwhile wash your hand well with soap and water, then press on the wound with a "
+        "clean cloth. An adult will take you to the doctor to have the hand checked: for a "
+        "bite that is always done. It is not your fault and not the dog's either: it was "
+        "guarding its bone, dogs do that when they are afraid it will be taken away. When the "
+        "adult is with you, I can explain to them what to do too."
+    ),
+    "es": (
+        "Antes de nada llama ahora mismo a un adulto: mamá, papá o quien esté en casa. "
+        "Mientras tanto lávate bien la mano con agua y jabón y luego aprieta sobre la herida "
+        "con un paño limpio. Un adulto te llevará al médico para que te mire la mano: con un "
+        "mordisco se hace siempre. No es culpa tuya ni del perro: estaba defendiendo su hueso, "
+        "los perros lo hacen cuando tienen miedo de que se lo quiten. Cuando el adulto esté "
+        "contigo, también le puedo explicar qué hacer."
+    ),
+    "de": (
+        "Ruf zuallererst sofort einen Erwachsenen: Mama, Papa oder wer gerade zu Hause ist. "
+        "Wasch dir in der Zwischenzeit die Hand gut mit Wasser und Seife und drück dann mit "
+        "einem sauberen Tuch auf die Wunde. Ein Erwachsener bringt dich zum Arzt, damit die "
+        "Hand angeschaut wird: bei einem Biss macht man das immer. Es ist nicht deine Schuld "
+        "und auch nicht die des Hundes: Er hat seinen Knochen verteidigt, das tun Hunde, wenn "
+        "sie Angst haben, dass man ihn wegnimmt. Wenn der Erwachsene bei dir ist, kann ich "
+        "auch ihm erklären, was zu tun ist."
+    ),
+    "fr": (
+        "Avant tout, appelle tout de suite un adulte : maman, papa ou la personne qui est à la "
+        "maison. En attendant, lave bien ta main à l'eau et au savon, puis appuie sur la "
+        "plaie avec un linge propre. Un adulte t'emmènera chez le médecin pour montrer ta "
+        "main : pour une morsure, on le fait toujours. Ce n'est pas ta faute, ni celle du "
+        "chien : il protégeait son os, les chiens font ça quand ils ont peur qu'on le leur "
+        "prenne. Quand l'adulte sera avec toi, je pourrai aussi lui expliquer quoi faire."
+    ),
+}
+
+_VOMIT = _words(
+    r"vomit\w*|rimett\w*|rigett\w*|throw\w* up|threw up|vomiting|vomited|vomit\w*|erbr\w*|"
+    r"ubergeben|vomi\w*"
+)
+_NOT_EATING = _words(
+    r"non mangia|non vuole mangiare|non tocca cibo|rifiuta il cibo|senza mangiare|non ha mangiato|"
+    r"doesn't want to eat|does not want to eat|not eating|won't eat|refuses food|hasn't eaten|"
+    r"no come|no quiere comer|sin comer|no ha comido|"
+    r"frisst nicht|will nicht fressen|ohne zu fressen|hat nicht gefressen|"
+    r"ne mange pas|ne veut pas manger|sans manger|n'a pas mange"
+)
+_A_DAY_OR_MORE = _words(
+    r"da ieri|da ieri sera|da stanotte|da due giorni|da tre giorni|da (?:piu di )?24 ore|da giorni|"
+    r"since yesterday|since last night|for (?:a|one|two|three) days?|for 24 hours|for days|"
+    r"desde ayer|desde anoche|desde hace (?:un|dos|tres) dias|"
+    r"seit gestern|seit gestern abend|seit (?:einem|zwei|drei) tag\w*|seit tagen|"
+    r"depuis hier|depuis hier soir|depuis (?:un|deux|trois) jours?|depuis des jours"
+)
+
+
+def vomiting_and_not_eating_for_a_day(message: str) -> bool:
+    """Vomiting plus not eating for a day or more: the visit is today, in
+    every language, not 'if it goes on another 24 hours'."""
+    text = normalize_for_matching(message)
+    return bool(_VOMIT.search(text) and _NOT_EATING.search(text) and _A_DAY_OR_MORE.search(text))
+
+
+_PLANT_DIET = _words(
+    r"vegan\w*|vegetarian\w*|vegetal\w*|vegetarisch\w*|veganisch\w*|vegetalien\w*|vegetarien\w*|"
+    r"senza carne|meat-free|sin carne|ohne fleisch|sans viande"
+)
+
+
+def is_plant_diet_for_a_carnivore(message: str, family: str) -> bool:
+    """A vegan or vegetarian diet for a cat (or a ferret): the answer must
+    not end by offering to plan it."""
+    return family in ("cat", "other") and bool(_PLANT_DIET.search(normalize_for_matching(message)))
+
+
+_DEATH = _words(
+    r"e mort[oa]|e mancat[oa]|se n'e andat[oa]|l'ho pers[oa]|abbiamo pers[oa]|ci ha lasciat[oa]|"
+    r"addormentat[oa] ieri|eutanasia ieri|died|passed away|we lost|i lost|put to sleep|"
+    r"murio|se fue|lo perdimos|la perdimos|gestorben|eingeschlafert|verloren|"
+    r"est mort|est morte|est decede|est decedee|nous avons perdu|j'ai perdu"
+)
+_HOPELESSNESS = _words(
+    r"niente ha (?:piu )?senso|nulla ha (?:piu )?senso|non ha (?:piu )?senso (?:niente|nulla)|"
+    r"nemmeno alzarmi|non riesco (?:piu )?ad alzarmi|non ce la faccio piu|non voglio (?:piu )?"
+    r"vivere|vorrei morire|farla finita|non vedo (?:piu )?(?:un )?motivo|"
+    r"nothing makes sense|nothing matters|can't (?:even )?get up|can't go on|don't want to live|"
+    r"want to die|end it all|no point|"
+    r"nada tiene sentido|no puedo (?:ni )?levantarme|no puedo mas|no quiero vivir|"
+    r"nichts (?:hat|macht) (?:mehr )?sinn|kann nicht (?:mehr )?aufstehen|kann nicht mehr|will "
+    r"nicht mehr leben|"
+    r"rien n'a (?:plus )?de sens|je n'arrive (?:plus )?a me lever|je n'en peux plus|je ne veux "
+    r"plus vivre"
+)
+
+
+def mentions_a_death(message: str) -> bool:
+    return bool(_DEATH.search(normalize_for_matching(message)))
+
+
+def expresses_hopelessness(message: str) -> bool:
+    """ "Niente ha più senso, nemmeno alzarmi": taken seriously, without a
+    diagnosis; a fixed opening line points to the doctor or a listening
+    service, never a phone number the app cannot verify."""
+    return bool(_HOPELESSNESS.search(normalize_for_matching(message)))
+
+
+HOPELESSNESS_OPENING: dict[str, str] = {
+    "it": (
+        "Quello che scrivi lo prendo sul serio. Un dolore così forte che non fa alzare dal "
+        "letto merita di essere detto a qualcuno che può starti accanto: parlane presto con "
+        "il tuo medico o con un servizio di ascolto, e non restare solo con questo peso. "
+    ),
+    "en": (
+        "I take what you write seriously. A pain so heavy that it keeps you from getting up "
+        "deserves to be told to someone who can stand by you: talk soon to your doctor or to "
+        "a listening service, and do not stay alone with this weight. "
+    ),
+    "es": (
+        "Me tomo en serio lo que escribes. Un dolor tan fuerte que no te deja levantarte "
+        "merece contarse a alguien que pueda acompañarte: habla pronto con tu médico o con "
+        "un servicio de escucha, y no te quedes solo con este peso. "
+    ),
+    "de": (
+        "Was Sie schreiben, nehme ich ernst. Ein Schmerz, der so schwer ist, dass er Sie nicht "
+        "aufstehen lässt, gehört zu jemandem, der Ihnen beistehen kann: Sprechen Sie bald mit "
+        "Ihrer Ärztin oder Ihrem Arzt oder mit einer Beratungsstelle, und bleiben Sie mit "
+        "dieser Last nicht allein. "
+    ),
+    "fr": (
+        "Je prends ce que vous écrivez au sérieux. Une douleur si lourde qu'elle empêche de se "
+        "lever mérite d'être dite à quelqu'un qui peut vous accompagner : parlez-en vite à "
+        "votre médecin ou à un service d'écoute, et ne restez pas seul avec ce poids. "
+    ),
+}
+
+_PROCEED_ANYWAY = re.compile(
+    r"[^.!?\n]*\b(?:se (?:poi |comunque )?decid\w* (?:comunque |lo stesso )?di (?:procedere|"
+    r"prenderlo|prenderla|acquistarlo|comprarlo|andare avanti)|se vuoi (?:comunque )?procedere|"
+    r"if you (?:still |do )?(?:decide|choose|want) to (?:proceed|go ahead|buy|get it|take it)|"
+    r"si (?:aun asi |de todos modos )?decides (?:seguir|comprarlo|adoptarlo|continuar)|"
+    r"wenn (?:du|sie) (?:dich|sich) (?:trotzdem |dennoch )?(?:entscheid\w*|dafur entscheid\w*)|"
+    r"si vous (?:decidez|choisissez) (?:quand meme |malgre tout )?de (?:proceder|l'acheter|"
+    r"le prendre|continuer))\b[^.!?\n]*[.!?]?",
+    re.IGNORECASE,
+)
+
+
+def strip_proceed_anyway(answer: str) -> str:
+    """Drops the sentence that frames a purchase from the illegal trade as
+    an option ('se decidi comunque di procedere, ...')."""
+    cleaned = _PROCEED_ANYWAY.sub("", normalize_for_matching(answer))
+    if cleaned == normalize_for_matching(answer):
+        return answer
+    # Work on the original text: remove the same sentences by position.
+    out = answer
+    for match in list(_PROCEED_ANYWAY.finditer(normalize_for_matching(out)))[::-1]:
+        out = out[: match.start()] + out[match.end() :]
+    return re.sub(r"[ \t]{2,}", " ", out).strip()
+
+
+PRICE_REPLACEMENT: dict[str, str] = {
+    "it": (
+        "Sui costi non ti do cifre, cambiano molto da struttura a struttura: chiedi un "
+        "preventivo scritto prima della visita e, se è un problema, di' che lo è: molti "
+        "ambulatori accettano pagamenti a rate e in molte zone ci sono associazioni che aiutano."
+    ),
+    "en": (
+        "On costs I give no figures, they vary a lot from one clinic to another: ask for a "
+        "written estimate before the visit and, if money is a problem, say so: many clinics "
+        "accept payment in instalments and in many areas there are associations that help."
+    ),
+    "es": (
+        "Sobre los costes no te doy cifras, cambian mucho de una clínica a otra: pide un "
+        "presupuesto por escrito antes de la visita y, si es un problema, dilo: muchas clínicas "
+        "aceptan pagos a plazos y en muchas zonas hay asociaciones que ayudan."
+    ),
+    "de": (
+        "Zu den Kosten nenne ich keine Zahlen, sie unterscheiden sich stark von Praxis zu "
+        "Praxis: Bitten Sie vor dem Termin um einen schriftlichen Kostenvoranschlag und sagen "
+        "Sie es, wenn das Geld knapp ist: Viele Praxen bieten Ratenzahlung an, und vielerorts "
+        "helfen Tierschutzvereine."
+    ),
+    "fr": (
+        "Sur les coûts je ne donne pas de chiffres, ils varient beaucoup d'une clinique à "
+        "l'autre : demandez un devis écrit avant la visite et, si c'est un problème, dites-le : "
+        "beaucoup de cliniques acceptent un paiement échelonné et, dans bien des régions, des "
+        "associations peuvent aider."
+    ),
+}
+
+
+# --- fourth round (2026-11-06): costs of care, a child never alone
+
+_COST_WORDS = _words(
+    r"quanto costa\w*|quanto costera|quanto si paga|quanto spendo|quanto viene|cost[oi]|prezz[oi]|"
+    r"spes[ae]|tariff\w*|soldi|economic\w*|permettermel[oa]|preventivo|"
+    r"how much (?:does|do|will|is|are)|costs?|price|prices|expensive|afford\w*|money|"
+    r"cuanto cuesta\w*|cuanto vale|precio\w*|coste\w*|costo\w*|dinero|"
+    r"wie viel kostet|was kostet|kosten|preis\w*|teuer|geld|"
+    r"combien coute\w*|combien ca coute|prix|couts?|cher|argent"
+)
+_CARE_WORDS = _words(
+    r"visit[ae]|controllo|cur[ae]|terapi[ae]|analisi|esam[ei]|prelievo|intervento|operazion\w*|"
+    r"sterilizz\w*|castrazion\w*|vaccin\w*|richiam\w*|farmac\w*|medicin\w*|ricovero|radiografi\w*|"
+    r"ecografi\w*|dentist\w*|pulizia dei denti|veterinari\w*|clinica|ambulatorio|"
+    r"visit|check-?up|treatment|therapy|tests?|blood ?work|surgery|operation|neuter\w*|spay\w*|"
+    r"vaccin\w*|booster|medication|medicine|hospitali[sz]\w*|x-?rays?|ultrasound|dental|vet|"
+    r"veterinarian|clinic|"
+    r"consulta|revision|tratamiento|analisis|pruebas|cirugia|operacion|esteriliz\w*|castra\w*|"
+    r"vacuna\w*|medicament\w*|hospitali\w*|radiografi\w*|ecografi\w*|veterinari\w*|clinica|"
+    r"untersuchung|kontrolle|behandlung|therapie|blutbild|bluttest|operation|kastration|"
+    r"sterilisation|impf\w*|medikament\w*|rontgen|ultraschall|tierarzt\w*|tierklinik|praxis|"
+    r"visite|consultation|controle|traitement|analyses?|prise de sang|chirurgie|operation|"
+    r"sterilisation|castration|vaccin\w*|rappel|medicament\w*|hospitalisation|radio\w*|"
+    r"echographie|veterinaire|clinique"
+)
+
+
+def asks_care_costs(owner_text: str) -> bool:
+    """The owner asks what a visit, a treatment or a test costs (or says
+    money is a problem for them): the invented figure is then replaced by
+    the sentence on estimates and instalments; elsewhere it is just dropped."""
+    text = normalize_for_matching(owner_text)
+    return bool(_COST_WORDS.search(text) and _CARE_WORDS.search(text))
+
+
+# A small child and the animal (fourth round, 2): the safety sentence is
+# written before the model's text, deterministically.
+CHILD_NEVER_ALONE: dict[str, str] = {
+    "it": (
+        "Prima di tutto: un bambino piccolo non resta mai da solo con l'animale, nemmeno "
+        "per un momento, e tirare la coda, prendere per il collo o abbracciare stretto non si "
+        "fa mai, neanche per gioco: un adulto accanto serve a fermare il gesto, non a renderlo "
+        "accettabile. "
+    ),
+    "en": (
+        "First of all: a small child is never left alone with the animal, not even for a "
+        "moment, and pulling the tail, grabbing the neck or hugging tight is never done, not "
+        "even in play: an adult nearby is there to stop the gesture, not to make it "
+        "acceptable. "
+    ),
+    "es": (
+        "Antes de nada: un niño pequeño nunca se queda solo con el animal, ni un momento, y "
+        "tirar de la cola, agarrar por el cuello o abrazar fuerte no se hace nunca, ni "
+        "jugando: un adulto al lado sirve para parar el gesto, no para hacerlo aceptable. "
+    ),
+    "de": (
+        "Zuallererst: Ein kleines Kind bleibt nie allein mit dem Tier, nicht einmal einen "
+        "Moment, und am Schwanz ziehen, am Hals packen oder fest drücken geht nie, auch nicht "
+        "im Spiel: Ein Erwachsener daneben ist dazu da, die Geste zu stoppen, nicht, sie "
+        "annehmbar zu machen. "
+    ),
+    "fr": (
+        "Avant tout : un jeune enfant ne reste jamais seul avec l'animal, pas même un instant, "
+        "et tirer la queue, attraper le cou ou serrer fort ne se fait jamais, même pour jouer : "
+        "un adulte à côté sert à arrêter le geste, pas à le rendre acceptable. "
+    ),
+}
