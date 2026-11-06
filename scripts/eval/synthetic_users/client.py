@@ -53,6 +53,7 @@ def save_state(user_id: str, state: dict[str, Any]) -> None:
 
 def call(user_id: str, method: str, path: str, body: Any = None, language: str = "") -> Any:
     token = load_state(user_id).get("token", "")
+    path = "/" + path.lstrip("/")
     request = urllib.request.Request(BASE + path, method=method)
     request.add_header("Authorization", f"Bearer {token}")
     if language:
@@ -76,6 +77,7 @@ def setup(user_id: str) -> None:
     save_state(user_id, state)
     for pet in me["pets"]:
         created = call(user_id, "POST", "/pets", pet)
+        created = created.get("pet_profile", created)
         if "id" not in created:
             print("ERRORE animale", pet["name"], created)
             continue
