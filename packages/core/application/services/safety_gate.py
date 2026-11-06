@@ -9,6 +9,11 @@ from packages.core.domain.safety.red_flags_de_fr import (
     SPECIES_FR,
     all_urgent_keywords,
 )
+from packages.core.domain.safety.triage_clarification import (
+    BIRD_RESPIRATORY_KEYWORDS,
+    DOG_PRODUCT_ON_CAT_KEYWORDS,
+    SMALL_MAMMAL_STASIS_KEYWORDS,
+)
 
 URGENT_RED_FLAG_KEYWORDS = {
     "cannot breathe",
@@ -141,6 +146,7 @@ SPECIES_SPECIFIC_RED_FLAGS: dict[str, tuple[str, ...]] = {
         "ha smesso di mangiare",
         "non mangia più",
         "non mangia da stamattina",
+        *SMALL_MAMMAL_STASIS_KEYWORDS,
         # Real-world finding: the medication-safety coverage below stopped
         # at cat/dog, so "posso dare l'aspirina al mio coniglio?" raised no
         # flag at all. Rabbits, guinea pigs, chinchillas and hamsters
@@ -179,6 +185,7 @@ SPECIES_SPECIFIC_RED_FLAGS: dict[str, tuple[str, ...]] = {
         "trattiene le uova",
     ),
     "bird": (
+        *BIRD_RESPIRATORY_KEYWORDS,
         "cannot perch",
         "can't perch",
         "on the cage floor",
@@ -217,6 +224,7 @@ SPECIES_SPECIFIC_RED_FLAGS: dict[str, tuple[str, ...]] = {
     # substance class for maintainability as this list keeps growing —
     # add new brand names to the class they belong to, not as one-offs.
     "cat": (
+        *DOG_PRODUCT_ON_CAT_KEYWORDS,
         "paracetamol",
         "acetaminophen",
         "ibuprofen",

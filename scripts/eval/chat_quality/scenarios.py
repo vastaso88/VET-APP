@@ -71,6 +71,9 @@ class Scenario:
     # Whether the answer should mention the vet: True = needed (missing it
     # is a fault), False = superfluous, None = either way is fine.
     vet_referral: bool | None = None
+    # The language the owner set in the app (the chat never guesses it
+    # from the message): "it" unless the scenario says otherwise.
+    language: str = "it"
 
 
 PETS: dict[str, Pet] = {

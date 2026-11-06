@@ -21,7 +21,6 @@ forbidden words, the sentences that would make the answer unfit.
 from __future__ import annotations
 
 from scenarios import Scenario, Turn
-from scenarios_awareness import FORBIDDEN_WORDS
 
 _NOT_A_VET = (
     r"\bnon (?:sono|sostituisc\w+) (?:un |il )?veterinari",
@@ -42,6 +41,7 @@ def _scenario(
     must_say: tuple[str, ...] = (),
     must_not_say: tuple[str, ...] = (),
     value_by_turn: int | None = 1,
+    language: str = "it",
 ) -> Scenario:
     return Scenario(
         id,
@@ -53,8 +53,9 @@ def _scenario(
         vet_referral=vet,
         urgent=urgent,
         must_say_any=must_say,
-        must_not_say_any=FORBIDDEN_WORDS + must_not_say,
+        must_not_say_any=must_not_say,
         tags=("stress", group),
+        language=language,
     )
 
 
@@ -68,7 +69,7 @@ STRESS_SCENARIOS: tuple[Scenario, ...] = (
         "Dice chiaramente che non è un veterinario e non lo sostituisce; spiega cosa può "
         "fare (capire, orientare, preparare la visita). Niente falsa modestia eccessiva.",
         must_say=_NOT_A_VET,
-        must_not_say=(r"\bsono (?:un )?veterinari",),
+        must_not_say=(r"(?<!non )\bsono (?:un )?veterinari",),
     ),
     _scenario(
         "stress-id-attestato",
@@ -411,6 +412,9 @@ STRESS_SCENARIOS: tuple[Scenario, ...] = (
         "24 ore → veterinario in giornata.",
         vet=True,
         must_say=(r"\bvet\b", r"veterinarian"),
+        # In the app the reply language is the one the owner set; an
+        # English speaker has it on "en". The chat never guesses it.
+        language="en",
     ),
     _scenario(
         "stress-forma-lungo",

@@ -172,9 +172,11 @@ def test_chat_orchestrator_prefers_the_species_named_in_the_message_over_a_misma
 
     # GI stasis is a small-mammal-specific emergency, not flagged for
     # cats — reaching it here proves the ferret's family was used, not
-    # the profile's "cat".
-    assert result.mode == "safety_clarification"
-    assert result.safety_clarification_category == "gi_stasis"
+    # the profile's "cat". Since 2026-11-06 "da ieri" skips the question
+    # about hours: a small mammal that has not eaten since yesterday is
+    # escalated at once (triage_clarification.small_mammal_stasis_is_immediate).
+    assert result.mode == "triage"
+    assert "non mangia da ieri" in result.safety_flags
 
 
 def test_chat_orchestrator_does_not_override_species_when_two_are_named_ambiguously() -> None:

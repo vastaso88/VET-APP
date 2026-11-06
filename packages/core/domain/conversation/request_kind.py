@@ -511,6 +511,11 @@ DUTY_ROOTS: tuple[str, ...] = (
     "condominio",
     "denunci",
     "registrar",
+    "razze pericolose",
+    "razza pericolosa",
+    "cani pericolosi",
+    "lista delle razze",
+    "lista razze",
     # en
     "registration",
     "register",
@@ -529,6 +534,9 @@ DUTY_ROOTS: tuple[str, ...] = (
     "rabies",
     "licence",
     "license",
+    "dangerous breeds",
+    "banned breeds",
+    "breed list",
     # es
     "registro",
     "correa obligatoria",
@@ -542,6 +550,8 @@ DUTY_ROOTS: tuple[str, ...] = (
     "pasaporte",
     "antirrábica",
     "licencia",
+    "razas peligrosas",
+    "ppp",
     # de
     "mikrochip",
     "registrier",
@@ -556,6 +566,8 @@ DUTY_ROOTS: tuple[str, ...] = (
     "tollwut",
     "hundesteuer",
     "sachkunde",
+    "listenhund",
+    "kampfhund",
     # fr
     "puce électronique",
     "pucé",
@@ -571,6 +583,10 @@ DUTY_ROOTS: tuple[str, ...] = (
     "obligatoire",
     "passeport",
     "antirabique",
+    "chiens dangereux",
+    "chien de catégorie",
+    "catégorie 1",
+    "catégorie 2",
 )
 
 
@@ -611,7 +627,9 @@ def classify_request(message: str, *, has_attachment: bool = False) -> RequestKi
     if has_attachment and (asks_to_explain or is_question(lowered) or not describes_symptom):
         # "cosa dice?" with a file attached: the file is the subject.
         return RequestKind.REPORT
-    if about_document and asks_to_explain and not describes_symptom:
+    if about_document and asks_to_explain and not describes_symptom and len(lowered) < 600:
+        # A long message that mentions "analisi" among many other points
+        # (stress test 2026-11-06) is not a request to read a document.
         return RequestKind.REPORT
     if describes_symptom:
         return RequestKind.SYMPTOM

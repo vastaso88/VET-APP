@@ -528,6 +528,7 @@ def run_scenario(settings: Settings, scenario: Scenario, cache: dict[str, str]) 
                 conversation_id=conversation_id,
                 user_message=turn.text,
                 attachment_id=attachment_id,
+                language=scenario.language,
             )
         )
         seconds = time.perf_counter() - started

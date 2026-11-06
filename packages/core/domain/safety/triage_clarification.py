@@ -11,8 +11,11 @@ reassurance. Every branch here defaults to the more cautious outcome
 unless the reply gives a clear, specific, benign explanation.
 """
 
+import re
+
 from packages.core.domain.localization import normalize_locale
 from packages.core.domain.localization_fr import CLARIFYING_QUESTIONS_FR
+from packages.core.domain.safety.emergency_patterns import normalize_for_matching
 from packages.core.domain.safety.red_flags_de_fr import (
     GI_STASIS_DE,
     GI_STASIS_FR,
@@ -27,6 +30,106 @@ from packages.core.domain.safety.red_flags_de_fr import (
     WORSENING_DE,
     WORSENING_FR,
 )
+
+# A bird breathing with the beak open, tail bobbing at every breath:
+# shared with the SafetyGate's species list (stress test 2026-11-06).
+BIRD_RESPIRATORY_KEYWORDS: tuple[str, ...] = (
+    "becco aperto",
+    "a becco aperto",
+    "respira con il becco",
+    "coda a ogni respiro",
+    "muove la coda a ogni respiro",
+    "coda che si muove quando respira",
+    "coda che pompa",
+    "respiro affannoso",
+    "open beak",
+    "open-beak",
+    "beak open",
+    "tail bobbing",
+    "tail bob",
+    "pico abierto",
+    "mueve la cola al respirar",
+    "offenem schnabel",
+    "schnabel offen",
+    "schwanzwippen",
+    "bec ouvert",
+    "queue qui bouge a chaque respiration",
+)
+
+# A dog's antiparasitic on a cat (permethrin, stress test 2026-11-06):
+# shared with the SafetyGate's cat list; category toxin_medication.
+DOG_PRODUCT_ON_CAT_KEYWORDS: tuple[str, ...] = (
+    "pipetta del cane",
+    "pipetta per cani",
+    "pipetta per il cane",
+    "pipetta da cane",
+    "antipulci del cane",
+    "antipulci per cani",
+    "antipulci per il cane",
+    "antiparassitario del cane",
+    "antiparassitario per cani",
+    "antiparassitario per il cane",
+    "spot-on del cane",
+    "spot on del cane",
+    "collare antiparassitario del cane",
+    "collare antipulci del cane",
+    "prodotto per cani",
+    "dog's flea treatment",
+    "dog flea treatment",
+    "flea treatment for dogs",
+    "dog's spot-on",
+    "dog spot-on",
+    "dog's pipette",
+    "dog pipette",
+    "pipeta del perro",
+    "pipeta para perros",
+    "antipulgas del perro",
+    "antipulgas para perros",
+    "spot-on vom hund",
+    "spot-on fur hunde",
+    "flohmittel vom hund",
+    "flohmittel fur hunde",
+    "pipette du chien",
+    "pipette pour chien",
+    "antipuces du chien",
+    "antipuces pour chien",
+)
+
+# Small mammals say "palline": shared with the SafetyGate's species list.
+SMALL_MAMMAL_STASIS_KEYWORDS: tuple[str, ...] = (
+    "non fa palline",
+    "non fa le palline",
+    "non fa più palline",
+    "non fa più le palline",
+    "non fa pallin",
+    "niente palline",
+    "non mangia e non fa",
+    "no droppings",
+    "not pooping",
+    "no poop",
+    "no hace bolitas",
+    "no hace caca",
+    "keine kottel",
+    "keine kotbällchen",
+    "pas de crottes",
+)
+
+_STASIS_DURATION = re.compile(
+    r"\b(?:ieri|stanotte|stamattina|da (?:\d+|molte|tante|diverse|parecchie) ore|da ore|"
+    r"tutto il giorno|tutta la notte|yesterday|last night|this morning|for hours|"
+    r"\d+ hours|all day|all night|ayer|anoche|esta manana|horas|gestern|heute morgen|"
+    r"stunden|die ganze nacht|hier|cette nuit|ce matin|heures|toute la nuit)\b"
+)
+
+
+def small_mammal_stasis_is_immediate(category: str | None, family: str, message: str) -> bool:
+    """A rabbit, guinea pig or hamster that has not eaten or passed
+    droppings since last night: GI stasis is a matter of hours, so the
+    clarifying question about hours is skipped (stress test 2026-11-06)."""
+    if category != "gi_stasis" or family != "small_mammal":
+        return False
+    return bool(_STASIS_DURATION.search(normalize_for_matching(message)))
+
 
 RED_FLAG_CATEGORIES: dict[str, tuple[str, ...]] = {
     "respiratory": (
@@ -106,6 +209,8 @@ RED_FLAG_CATEGORIES: dict[str, tuple[str, ...]] = {
         "non mangia più",
         "non mangia da stamattina",
         "niente cacca",
+        # Rabbits, guinea pigs, hamsters: "palline" (stress test 2026-11-06).
+        *SMALL_MAMMAL_STASIS_KEYWORDS,
     ),
     # Real-world finding (2026-09-25, reported via gestore git): a
     # medication/toxin mention (e.g. "che dosaggio di ibuprofene posso
@@ -121,6 +226,7 @@ RED_FLAG_CATEGORIES: dict[str, tuple[str, ...]] = {
     # first. ChatOrchestrator._urgent_triage_result uses this category
     # only to pick substance-appropriate phrasing, not to gate on a reply.
     "toxin_medication": (
+        *DOG_PRODUCT_ON_CAT_KEYWORDS,
         "ibuprofen",
         "paracetamol",
         "acetaminophen",
@@ -177,6 +283,10 @@ RED_FLAG_CATEGORIES: dict[str, tuple[str, ...]] = {
     # swelling hard — kills within hours. No clarifying question, like
     # toxin_medication: asking first would only cost time.
     "gastric_bloat": ("torsione gastrica",),
+    # A bird breathing with the beak open, tail bobbing at every breath
+    # (stress test 2026-11-06): in birds this is late and serious, never
+    # "after a run or at rest?" — straight to a vet who knows birds.
+    "bird_respiratory": BIRD_RESPIRATORY_KEYWORDS,
     # Pale, white, grey or blue gums or tongue: shock, bleeding inside,
     # no oxygen. No clarifying question either.
     "circulatory": ("gengive pallide",),

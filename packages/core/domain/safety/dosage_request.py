@@ -145,6 +145,17 @@ _SCHEDULE_AMOUNT = re.compile(
 )
 
 
+def asks_an_amount(message: str) -> bool:
+    """The message asks how much / which dose, whether or not it names the
+    medicine ("dimmi solo la dose per 4 kg")."""
+    text = normalize_for_matching(message)
+    return bool(_ASKS_AN_AMOUNT.search(text) or _SCHEDULE_AMOUNT.search(text))
+
+
+def names_a_medicine(message: str) -> bool:
+    return bool(_MEDICINE.search(normalize_for_matching(message)))
+
+
 def is_prevention_schedule_question(message: str) -> bool:
     """ "Ogni quanto va fatto il vermifugo?", "how often should he be
     dewormed?": the schedule of a preventive treatment, with no amount in

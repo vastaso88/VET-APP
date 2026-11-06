@@ -60,6 +60,11 @@ EXPOSURE_MARKERS = _words(
 INTENT_TO_GIVE_MARKERS = _words(
     r"vorrei dar\w*|voglio dar\w*|pensavo di dar\w*|posso dar\w*|potrei dar\w*|"
     r"gli do|le do|gli dar\w*|le dar\w*|dovrei dar\w*|devo dar\w*|"
+    r"l[oa] metto|gliel[oa] metto|metterl[oa]|posso metter\w*|potrei metter\w*|"
+    r"l[oa] applico|applicarl[oa]|gliel[oa] applico|"
+    r"can i put|could i put|put it on|apply it|se l[oa] pongo|le pongo|ponerl[oa]|"
+    r"darf ich .{0,20}auftragen|kann ich .{0,20}auftragen|puis-je .{0,20}mettre|"
+    r"je lui mets|l'appliquer|"
     r"quant\w*(?: \w+){0,4} (?:dare|do|dargli|darle|darne|dai|dia)|"
     r"can i give|could i give|should i give|i want to give|thinking of giving|i'll give|"
     r"do i give|how much|how many|"

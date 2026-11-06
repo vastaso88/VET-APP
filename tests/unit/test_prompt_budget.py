@@ -32,7 +32,11 @@ from packages.shared.errors.base import ProviderError
 # identity and the rules EXPLAIN THE WHY, OFFICIAL POSITIONS, OWNER DUTIES
 # (system prompt 1313 -> 1698 tokens, measured with token_budget.py: see
 # docs/features/chat_quality_measurements.md).
-SYSTEM_PROMPT_MAX_CHARS = 7900
+# 2026-11-06: +700 for WHAT YOU ARE NOT (stress test: no false identity, no
+# certificate, no bare yes/no to a health question, no invented law, a
+# refusal that says what it can do instead).
+# Second round of the same day: AI identity, no prices, OFF TOPIC rule.
+SYSTEM_PROMPT_MAX_CHARS = 9100
 QUESTION = "da due giorni zoppica dopo le passeggiate"
 
 
