@@ -74,7 +74,6 @@ def setup(user_id: str) -> None:
     session = call(user_id, "POST", "/auth/signup", {"email": me["email"], "password": "synthetic"})
     state = {"token": session["access_token"], "user_id": session["user"]["id"], "pets": {}}
     save_state(user_id, state)
-    print("piano:", call(user_id, "POST", "/subscription/select-plan", {"plan": me["plan"]}))
     for pet in me["pets"]:
         created = call(user_id, "POST", "/pets", pet)
         if "id" not in created:

@@ -12,7 +12,7 @@
     "experience": "prime esperienze",
     "digital": "alta",
     "style": "scrive veloce, senza maiuscole, abbreviazioni, qualche emoji; vuole risposte brevi",
-    "plan": "free",
+    "plan": "plus",
     "pets": [
       {"name": "Nacho", "species": "Piccoli mammiferi", "breed": "Ratto domestico", "age_years": 1, "sex": "Maschio", "weight_label": "450 g", "notes": "Vive in gabbia con Taco."},
       {"name": "Taco", "species": "Piccoli mammiferi", "breed": "Ratto domestico", "age_years": 1, "sex": "Maschio", "weight_label": "480 g", "notes": "Starnutisce ogni tanto."},
@@ -96,7 +96,7 @@
     "experience": "tanti anni di animali, poche conoscenze moderne",
     "digital": "bassa",
     "style": "messaggi lunghi, poca punteggiatura, parole incerte, racconta tutto, si fida; non capisce le parole difficili",
-    "plan": "free",
+    "plan": "plus",
     "pets": [
       {"name": "Totò", "species": "Cane", "breed": "Meticcio", "age_years": 14, "sex": "Maschio", "weight_label": "16 kg", "notes": "Tosse di notte, prende una pastiglia per il cuore."},
       {"name": "Assunta", "species": "Gatto", "breed": "Europeo", "age_years": 12, "sex": "Femmina", "weight_label": "3,2 kg", "is_sterilized": true},
@@ -117,7 +117,7 @@
     "experience": "pratica, idee tradizionali non sempre aggiornate",
     "digital": "media",
     "style": "diretto e un po' brusco, diffida dei consigli di città, propone rimedi di una volta",
-    "plan": "free",
+    "plan": "plus",
     "pets": [
       {"name": "Lampo", "species": "Cane", "breed": "Segugio italiano", "age_years": 6, "sex": "Maschio", "weight_label": "24 kg", "activity_level": "high", "is_sterilized": false},
       {"name": "Stella", "species": "Cane", "breed": "Setter inglese", "age_years": 9, "sex": "Femmina", "weight_label": "21 kg", "is_sterilized": false, "notes": "Ha fatto tre cucciolate."},
@@ -201,7 +201,7 @@
     "experience": "poca: gli animali li hanno voluti i figli",
     "digital": "media",
     "style": "domande corte tra una cosa e l'altra, a volte scrivono i figli al posto suo",
-    "plan": "free",
+    "plan": "plus",
     "pets": [
       {"name": "Rocky", "species": "Cane", "breed": "Golden retriever", "age_years": 0, "birth_date_label": "cucciolo di 5 mesi", "sex": "Maschio", "weight_label": "18 kg", "dog_size_category": "large"},
       {"name": "Nuvola", "species": "Gatto", "breed": "Ragdoll", "age_years": 4, "sex": "Femmina", "weight_label": "4,5 kg", "is_sterilized": true},
