@@ -146,7 +146,7 @@ jobs:
           flutter gen-l10n
           flutter build apk --release --flavor prod --build-number="$ANDROID_BUILD_NUMBER" \
             --dart-define-from-file="$RUNNER_TEMP/vetapp-distribution/dart-defines.json"
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: vetapp-multilang-release-${{ inputs.build_number }}
           path: apps/mobile_app/build/app/outputs/flutter-apk/app-prod-release.apk
