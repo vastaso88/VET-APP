@@ -61,7 +61,13 @@ def test_poisons_get_the_substance_opening_and_body_signs_the_symptom_one() -> N
 def test_every_dose_request_is_stopped_before_the_model(species: str, message: str) -> None:
     result, client = _answer(species, message)
 
-    assert result.model in ("dosage-guard", "safety-triage-guard"), result.answer
+    # "toxin-intent-guard" (2026-11-06): a toxic human drug about to be given
+    # gets "no, never" with the why, still before any model.
+    assert result.model in (
+        "dosage-guard",
+        "safety-triage-guard",
+        "toxin-intent-guard",
+    ), result.answer
     assert client.requests == []
 
 

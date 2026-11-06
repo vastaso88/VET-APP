@@ -36,7 +36,8 @@ from packages.shared.errors.base import ProviderError
 # certificate, no bare yes/no to a health question, no invented law, a
 # refusal that says what it can do instead).
 # Second round of the same day: AI identity, no prices, OFF TOPIC rule.
-SYSTEM_PROMPT_MAX_CHARS = 9100
+# Wide eval 2026-11-06: OWNER DUTIES says the notes describe Italy.
+SYSTEM_PROMPT_MAX_CHARS = 9300
 QUESTION = "da due giorni zoppica dopo le passeggiate"
 
 

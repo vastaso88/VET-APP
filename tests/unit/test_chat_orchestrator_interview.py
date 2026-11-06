@@ -104,6 +104,8 @@ def test_interview_loop_is_skipped_entirely_for_husbandry_questions() -> None:
         NoopPiiAnonymizer(),
         interview_planner=FixedInterviewPlanner("Non dovrebbe essere chiesto"),
         enable_interview_loop=True,
+        # The strict evidence path is opt-in since 2026-11-06.
+        strict_evidence_intents=frozenset({"husbandry_question"}),
     )
 
     result = orchestrator.answer(

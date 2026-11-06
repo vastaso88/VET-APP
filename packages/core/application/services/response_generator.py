@@ -44,12 +44,15 @@ class ResponseGenerator:
         if synthesis.uncertain_claims:
             parts.append(
                 copy["uncertain_prefix"]
-                + "; ".join(synthesis.uncertain_claims)
+                + "; ".join(_lower_first(c) for c in synthesis.uncertain_claims)
                 + copy["uncertain_suffix"]
             )
 
         if synthesis.conflicting_evidence:
-            parts.append(copy["conflicting_prefix"] + "; ".join(synthesis.conflicting_evidence))
+            parts.append(
+                copy["conflicting_prefix"]
+                + "; ".join(_lower_first(c) for c in synthesis.conflicting_evidence)
+            )
 
         if synthesis.safe_owner_actions:
             parts.append(copy["actions_prefix"] + "; ".join(synthesis.safe_owner_actions) + ".")
@@ -64,6 +67,16 @@ class ResponseGenerator:
         if not include_citation_markers:
             text = _CITATION_MARKER_PATTERN.sub("", text)
         return text
+
+
+def _lower_first(sentence: str) -> str:
+    """ "Alcune fonti suggeriscono anche che Le fonti..." (wide eval
+    2026-11-06): the claim continues the connector, so it starts in lower
+    case unless it begins with an acronym or a name in capitals."""
+    stripped = sentence.strip()
+    if len(stripped) > 1 and stripped[0].isupper() and not stripped[1].isupper():
+        return stripped[0].lower() + stripped[1:]
+    return stripped
 
 
 _CONNECTORS: dict[str, dict[str, str]] = {

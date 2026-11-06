@@ -191,6 +191,8 @@ BIRD_DE: tuple[str, ...] = (
 )
 
 SPECIES_DE: dict[str, tuple[str, ...]] = {
+    # Wide eval 2026-11-06: the fish words live in triage_clarification.py.
+    "fish": (),
     "small_mammal": GI_STASIS_DE + TOXINS_SMALL_MAMMAL_DE,
     "reptile_amphibian": REPTILE_DE,
     "bird": BIRD_DE,
@@ -484,6 +486,8 @@ BIRD_FR: tuple[str, ...] = (
 )
 
 SPECIES_FR: dict[str, tuple[str, ...]] = {
+    # Wide eval 2026-11-06: the fish words live in triage_clarification.py.
+    "fish": (),
     "small_mammal": GI_STASIS_FR + TOXINS_SMALL_MAMMAL_FR,
     "reptile_amphibian": REPTILE_FR,
     "bird": BIRD_FR,

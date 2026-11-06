@@ -12,7 +12,11 @@ from packages.core.domain.safety.red_flags_de_fr import (
 from packages.core.domain.safety.triage_clarification import (
     BIRD_RESPIRATORY_KEYWORDS,
     DOG_PRODUCT_ON_CAT_KEYWORDS,
+    FISH_DISTRESS_KEYWORDS,
+    HEATSTROKE_KEYWORDS,
+    PROCESSIONARY_KEYWORDS,
     SMALL_MAMMAL_STASIS_KEYWORDS,
+    SNAKEBITE_KEYWORDS,
 )
 
 URGENT_RED_FLAG_KEYWORDS = {
@@ -87,6 +91,11 @@ URGENT_RED_FLAG_KEYWORDS = {
 }
 # German and French (2026-10-26), the same groups: red_flags_de_fr.py.
 URGENT_RED_FLAG_KEYWORDS |= all_urgent_keywords()
+# Wide eval 2026-11-06: heatstroke, snake bites and processionary caterpillars
+# are emergencies for every species.
+URGENT_RED_FLAG_KEYWORDS |= (
+    set(HEATSTROKE_KEYWORDS) | set(SNAKEBITE_KEYWORDS) | set(PROCESSIONARY_KEYWORDS)
+)
 
 # Real-world finding: the same owner-reported symptom can mean something
 # very different depending on species physiology, so a single universal
@@ -184,6 +193,8 @@ SPECIES_SPECIFIC_RED_FLAGS: dict[str, tuple[str, ...]] = {
         "non riesce a deporre le uova",
         "trattiene le uova",
     ),
+    # Wide eval 2026-11-06: fish gasping at the surface is water in trouble.
+    "fish": (*FISH_DISTRESS_KEYWORDS,),
     "bird": (
         *BIRD_RESPIRATORY_KEYWORDS,
         "cannot perch",

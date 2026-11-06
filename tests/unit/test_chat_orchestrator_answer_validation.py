@@ -72,7 +72,9 @@ def test_valid_evidence_answer_strips_citation_markers_for_non_husbandry_intents
     assert result.evidence_synthesis.supported_claims == ["Le fonti [1] indicano di monitorare."]
 
 
-def test_husbandry_answers_keep_citation_markers_visible() -> None:
+def test_husbandry_answers_lose_citation_markers_before_leaving_the_backend() -> None:
+    # Wide eval 2026-11-06: the API and the app show no source list, so
+    # the numbered markers are removed from every reply (answer_cleanup.py).
     orchestrator, _ = _orchestrator(evidence_answer="Serve un terrario di almeno 120L [1].")
 
     result = orchestrator.answer(
@@ -84,7 +86,7 @@ def test_husbandry_answers_keep_citation_markers_visible() -> None:
     )
 
     assert result.mode == "evidence"
-    assert "[1]" in result.answer
+    assert "[1]" not in result.answer and "120L" in result.answer
 
 
 def test_out_of_range_citation_triggers_validation_failure() -> None:
@@ -198,7 +200,11 @@ def test_empty_synthesis_still_refuses_for_husbandry_questions() -> None:
             return LLMResponse(content="{}", provider="fake", model="fake-model", token_count=5)
 
     orchestrator = ChatOrchestrator(
-        EmptySynthesisClient(), InMemoryEvidenceRetriever(), NoopPiiAnonymizer()
+        EmptySynthesisClient(),
+        InMemoryEvidenceRetriever(),
+        NoopPiiAnonymizer(),
+        # The strict evidence path is opt-in since 2026-11-06.
+        strict_evidence_intents=frozenset({"husbandry_question"}),
     )
 
     result = orchestrator.answer(

@@ -205,7 +205,8 @@ _AWARENESS = (
     "owner's country (identification and microchip, leash or muzzle in public, compulsory "
     "vaccinations, transport and travel papers), name it neutrally in one sentence and "
     "point to the competent authority or the vet for the current rules; do not play the "
-    "lawyer or quote article numbers."
+    "lawyer or quote article numbers. The duty notes you may receive describe Italy: say "
+    "'in Italia' when you use them, and never present an Italian rule as universal."
 )
 
 # A behaviour or relationship question: one context question is welcome,
@@ -282,6 +283,31 @@ _FUTURE_ANIMAL = (
     "use the name, species or data of the pet in the profile; speak of 'the dog', 'the "
     "cat' or the breed named, and help the owner think it through honestly."
 )
+_DOSE_PART = (
+    "THE OWNER ALSO ASKED HOW MUCH. Do not answer that part in any way (no drops, no dose, "
+    "no 'usually'): the fixed sentence before your text already says the amount is the "
+    "vet's call. Answer the rest of the question fully."
+)
+_FOREIGN_COUNTRY = (
+    "ANOTHER COUNTRY. The owner is in, or asks about, a country that is not Italy: no "
+    "Italian rule, law or body in the answer. Say that duties vary by country and region "
+    "and to check with the local authority (municipality or equivalent) and the local vet; "
+    "give the general principle only."
+)
+_MEDICAL_FIRST = (
+    "RULE OUT A MEDICAL CAUSE FIRST. A new behaviour in an older animal (night vocalising, "
+    "restlessness, confusion) or urinating outside the usual place is, until a vet has "
+    "checked, a possible sign of pain, kidney or thyroid disease, a urinary problem or "
+    "cognitive decline: say so first and send for a check; 'per dispetto' does not exist. "
+    "Only then the environment and behaviour side."
+)
+_TRAVEL_SOUTH = (
+    "TRAVEL TO SOUTHERN ITALY OR THE ISLANDS WITH A DOG. Name leishmaniosi: a serious "
+    "disease spread by sand flies (pappataci) from spring to autumn, common in Sardinia, "
+    "Sicily and the south. Before leaving, the vet chooses a repellent spot-on or collar "
+    "active against sand flies and may propose the vaccine; keep the dog indoors at dusk "
+    "and at night; a blood test some months after the trip. Also ticks and heat."
+)
 _PREVENTION_SCHEDULE = (
     "PREVENTION SCHEDULE: the owner asks how often a preventive treatment is done "
     "(deworming, antiparasitics, vaccinations). Explain the principles in plain words: "
@@ -327,6 +353,10 @@ def build_system_prompt(
     plant_diet: bool = False,
     grief: bool = False,
     hopelessness: bool = False,
+    dose_part: bool = False,
+    foreign_country: bool = False,
+    medical_first: bool = False,
+    travel_south: bool = False,
 ) -> str:
     """The system prompt for one reply. Stable parts first (the prefix the
     provider can cache), then the parts that depend on the request: the
@@ -371,6 +401,14 @@ def build_system_prompt(
         parts.append(_GRIEF)
     if hopelessness:
         parts.append(_HOPELESSNESS)
+    if dose_part:
+        parts.append(_DOSE_PART)
+    if foreign_country:
+        parts.append(_FOREIGN_COUNTRY)
+    if medical_first:
+        parts.append(_MEDICAL_FIRST)
+    if travel_south:
+        parts.append(_TRAVEL_SOUTH)
     if has_reference_material:
         parts.append(_REFERENCE_MATERIAL)
     if species_facts:

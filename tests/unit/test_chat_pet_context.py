@@ -520,7 +520,9 @@ def test_no_weight_suggestion_on_an_emergency_escalation() -> None:
         )
     )
 
-    assert result.mode == "triage"
+    # 2026-11-06: a human drug not yet given gets "no, never" (toxin-intent
+    # guard) instead of the triage; neither carries the weight hint.
+    assert result.model == "toxin-intent-guard"
     assert WEIGHT_SUGGESTION_MARKER not in result.answer
 
 

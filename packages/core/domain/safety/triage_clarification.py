@@ -95,6 +95,96 @@ DOG_PRODUCT_ON_CAT_KEYWORDS: tuple[str, ...] = (
     "antipuces pour chien",
 )
 
+# First aid categories (wide eval 2026-11-06), no clarifying question:
+# each has its own fixed steps in localization.py.
+HEATSTROKE_KEYWORDS: tuple[str, ...] = (
+    "colpo di calore",
+    "colpo di caldo",
+    "caduto dopo la corsa",
+    "crollato dopo la corsa",
+    "crollato per il caldo",
+    "collassato per il caldo",
+    "chiuso in macchina al sole",
+    "heat stroke",
+    "heatstroke",
+    "heat exhaustion",
+    "collapsed after running",
+    "collapsed in the heat",
+    "golpe de calor",
+    "hitzschlag",
+    "coup de chaleur",
+)
+SNAKEBITE_KEYWORDS: tuple[str, ...] = (
+    "vipera",
+    "morso di vipera",
+    "morso di serpente",
+    "morsa da una vipera",
+    "morso da una vipera",
+    "morso da un serpente",
+    "snake bite",
+    "snakebite",
+    "bitten by a snake",
+    "bitten by a viper",
+    "bitten by an adder",
+    "vibora",
+    "víbora",
+    "mordedura de serpiente",
+    "schlangenbiss",
+    "kreuzotter",
+    "von einer schlange gebissen",
+    "vipere",
+    "vipère",
+    "morsure de serpent",
+    "mordu par une vipere",
+    "mordu par une vipère",
+)
+PROCESSIONARY_KEYWORDS: tuple[str, ...] = (
+    "processionaria",
+    "processionarie",
+    "bruchi in fila",
+    "bruchi pelosi",
+    "bruco peloso",
+    "processionary",
+    "pine caterpillar",
+    "hairy caterpillars",
+    "procesionaria",
+    "prozessionsspinner",
+    "raupen",
+    "processionnaire",
+    "chenilles processionnaires",
+)
+FISH_DISTRESS_KEYWORDS: tuple[str, ...] = (
+    "boccheggia",
+    "boccheggiano",
+    "a boccheggiare",
+    "in superficie a boccheggiare",
+    "tutti in superficie",
+    "sta in superficie",
+    "stanno in superficie",
+    "pinne chiuse",
+    "pancia in su",
+    "a pancia in su",
+    "galleggia su un fianco",
+    "gasping at the surface",
+    "gasping",
+    "all at the surface",
+    "floating on its side",
+    "belly up",
+    "clamped fins",
+    "boquean",
+    "boqueando",
+    "en la superficie",
+    "panza arriba",
+    "schnappen nach luft",
+    "an der oberflache",
+    "an der oberfläche",
+    "bauch nach oben",
+    "piper a la surface",
+    "pipent a la surface",
+    "a la surface",
+    "ventre en l'air",
+)
+
 # Small mammals say "palline": shared with the SafetyGate's species list.
 SMALL_MAMMAL_STASIS_KEYWORDS: tuple[str, ...] = (
     "non fa palline",
@@ -132,6 +222,13 @@ def small_mammal_stasis_is_immediate(category: str | None, family: str, message:
 
 
 RED_FLAG_CATEGORIES: dict[str, tuple[str, ...]] = {
+    # Wide eval 2026-11-06: first aid with its own fixed steps. First in the
+    # dict: "lingua viola" after a run is a heatstroke before it is a
+    # circulatory sign, and gets the shade-and-water steps.
+    "heatstroke": HEATSTROKE_KEYWORDS,
+    "snakebite": SNAKEBITE_KEYWORDS,
+    "processionary": PROCESSIONARY_KEYWORDS,
+    "fish_distress": FISH_DISTRESS_KEYWORDS,
     "respiratory": (
         "cannot breathe",
         "can't breathe",

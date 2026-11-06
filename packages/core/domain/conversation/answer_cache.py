@@ -31,11 +31,27 @@ _FILLERS = re.compile(
 # the species in general. Matched as whole words.
 _PERSONAL = re.compile(
     r"\b(?:mio|mia|miei|mie|nostro|nostra|nostri|nostre|mi|me|lui|lei|"
-    r"questo|questa|questi|queste|suo|sua|suoi|sue|ha|sta|fa|"
+    r"questo|questa|questi|queste|suo|sua|suoi|sue|ha|sta|fa|gli|glielo|gliela|gliene|"
+    r"dar(?:gli|le|lo|la|ne|gliel[oa]|gliene)|metter(?:gli|le|lo|la)|far(?:gli|le|lo|la)|"
+    r"portar(?:gli|le|lo|la)|lasciar(?:gli|le|lo|la)|insegnar(?:gli|le)|tener(?:lo|la)|"
     r"ieri|oggi|stamattina|stasera|stanotte|adesso|ora|ultimamente|"
     r"my|our|he|she|him|her|his|this|today|yesterday|now)\b"
 )
 _DIGIT = re.compile(r"\d")
+# A general question names its subject ("i cani", "un coniglio", "dogs"):
+# "può stare da solo in gabbietta?" is about THIS animal (wide eval
+# 2026-11-06), so it is never cached and gets the pet's own context.
+_SPECIES_NOUN = re.compile(
+    r"\b(?:can[ei]|cagn[ae]|cuccio[li]\w*|gatt[oaie]|gattin[oi]|conigli[oi]|cricet[oi]|cavi[ae]|"
+    r"cincill[aà]|porcellin[oi] d'india|furett[oi]|cocorit[ae]|pappagall\w*|canarin[oi]|"
+    r"inseparabil[ei]|calopsitt[ae]|gec[oh]i?|tartarugh?[ae]|pesc[ei]|pesci rossi|bett[a]|"
+    r"serpent[ei]|iguan[ae]|cavall[oi]|dogs?|puppies|puppy|cats?|kittens?|rabbits?|hamsters?|"
+    r"guinea pigs?|ferrets?|budgies?|budgerigars?|parrots?|canar(?:y|ies)|geckos?|turtles?|"
+    r"tortoises?|fish|goldfish|snakes?|horses?|perros?|gatos?|conejos?|hamsters?|hurones?|"
+    r"periquitos?|loros?|peces|hunde?|katzen?|kaninchen|hamster|frettchen|wellensittiche?|"
+    r"papageien?|fische?|chiens?|chats?|lapins?|hamsters?|furets?|perruches?|perroquets?|"
+    r"poissons?)\b"
+)
 
 
 def normalize_question(text: str) -> str:
@@ -62,6 +78,8 @@ def is_cacheable_question(
     if not MIN_QUESTION_CHARS <= len(normalized) <= MAX_QUESTION_CHARS:
         return False
     if _DIGIT.search(normalized) or _PERSONAL.search(normalized):
+        return False
+    if not _SPECIES_NOUN.search(normalized):
         return False
     name = normalize_question(pet_name)
     if name and re.search(rf"\b{re.escape(name)}\b", normalized):

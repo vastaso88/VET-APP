@@ -210,7 +210,14 @@ def test_chat_orchestrator_rejects_an_evidence_answer_that_calls_the_pet_the_wro
     client = ScriptedContentLLMClient(
         '{"supported_claims": ["Nota per il tuo cane, controlla i litri [1]."]}'
     )
-    orchestrator = ChatOrchestrator(client, InMemoryEvidenceRetriever(), NoopPiiAnonymizer())
+    # The strict evidence path is opt-in since 2026-11-06 (husbandry goes
+    # through the natural answer with the curated notes by default).
+    orchestrator = ChatOrchestrator(
+        client,
+        InMemoryEvidenceRetriever(),
+        NoopPiiAnonymizer(),
+        strict_evidence_intents=frozenset({"husbandry_question"}),
+    )
 
     result = orchestrator.answer(
         ChatOrchestratorInput(
@@ -248,7 +255,12 @@ def test_chat_orchestrator_allows_a_legitimate_comparison_mentioning_another_spe
     client = ScriptedContentLLMClient(
         '{"supported_claims": ["A differenza del cane, i pesci non hanno una vescica simile [1]."]}'
     )
-    orchestrator = ChatOrchestrator(client, InMemoryEvidenceRetriever(), NoopPiiAnonymizer())
+    orchestrator = ChatOrchestrator(
+        client,
+        InMemoryEvidenceRetriever(),
+        NoopPiiAnonymizer(),
+        strict_evidence_intents=frozenset({"husbandry_question"}),
+    )
 
     result = orchestrator.answer(
         ChatOrchestratorInput(
@@ -283,8 +295,9 @@ def test_chat_orchestrator_escalates_dog_only_flea_treatment_given_to_a_cat() ->
 
 
 def test_chat_orchestrator_escalates_paracetamol_brand_name_for_cats() -> None:
-    # Owners commonly say the brand name ("Tachipirina") rather than the
-    # generic name — this must be caught the same way as "paracetamolo".
+    # Wide eval 2026-11-06: "vorrei dare" is an intention, not an exposure:
+    # "no, never" with the why, before any model; the triage stays for a
+    # cat that already got it.
     client = FakeLLMClient()
     orchestrator = ChatOrchestrator(client, InMemoryEvidenceRetriever(), NoopPiiAnonymizer())
 
@@ -298,16 +311,22 @@ def test_chat_orchestrator_escalates_paracetamol_brand_name_for_cats() -> None:
         )
     )
 
-    assert result.mode == "triage"
-    assert result.state == ConversationState.POSSIBLE_URGENT_CASE
+    assert result.model == "toxin-intent-guard"
+    assert result.answer.startswith("No, mai.") and "tossico per il gatto" in result.answer
+    assert client.requests == []
+
+    given = orchestrator.answer(
+        ChatOrchestratorInput(
+            user_message="le ho dato la tachipirina un'ora fa per la febbre",
+            species="Gatto",
+            pet_name="Micio",
+        )
+    )
+    assert given.mode == "triage"
+    assert given.state == ConversationState.POSSIBLE_URGENT_CASE
 
 
 def test_toxin_medication_escalation_uses_substance_phrasing_not_symptom_phrasing() -> None:
-    # Real-world finding (2026-09-25, reported via gestore git): asking
-    # about a medication's dosage/safety triggered the generic triage
-    # template ("quello che mi racconti di Moka è un segnale...") — wrong,
-    # since nothing was actually narrated/observed, the trigger was a
-    # question about a substance.
     client = FakeLLMClient()
     orchestrator = ChatOrchestrator(client, InMemoryEvidenceRetriever(), NoopPiiAnonymizer())
 
@@ -319,9 +338,11 @@ def test_toxin_medication_escalation_uses_substance_phrasing_not_symptom_phrasin
         )
     )
 
-    assert result.mode == "triage"
+    # An amount of a human drug not yet given (2026-11-06): "no, never"
+    # with the why, never "quello che mi racconti" (nothing was told).
+    assert result.model == "toxin-intent-guard"
     assert "quello che mi racconti" not in result.answer.lower()
-    assert "pericoloso per Moka" in result.answer
+    assert "antinfiammatori umani" in result.answer and "Moka" in result.answer
 
 
 def test_chat_orchestrator_escalates_immediately_for_unambiguous_severe_messages() -> None:
@@ -449,7 +470,13 @@ def test_chat_orchestrator_requires_sources_for_husbandry_evidence_mode() -> Non
     # test_chat_orchestrator_answers_ordinary_questions_without_requiring_sources
     # below for why an ordinary clinical question no longer hard-refuses.
     client = FakeLLMClient()
-    orchestrator = ChatOrchestrator(client, InMemoryEvidenceRetriever(), NoopPiiAnonymizer())
+    orchestrator = ChatOrchestrator(
+        client,
+        InMemoryEvidenceRetriever(),
+        NoopPiiAnonymizer(),
+        # The strict evidence path is opt-in since 2026-11-06.
+        strict_evidence_intents=frozenset({"husbandry_question"}),
+    )
 
     result = orchestrator.answer(
         ChatOrchestratorInput(
@@ -468,7 +495,13 @@ def test_chat_orchestrator_requires_sources_for_husbandry_evidence_mode() -> Non
 
 def test_chat_orchestrator_uses_llm_when_sources_are_available_for_husbandry() -> None:
     client = FakeLLMClient()
-    orchestrator = ChatOrchestrator(client, InMemoryEvidenceRetriever(), NoopPiiAnonymizer())
+    orchestrator = ChatOrchestrator(
+        client,
+        InMemoryEvidenceRetriever(),
+        NoopPiiAnonymizer(),
+        # The strict evidence path is opt-in since 2026-11-06.
+        strict_evidence_intents=frozenset({"husbandry_question"}),
+    )
 
     result = orchestrator.answer(
         ChatOrchestratorInput(
@@ -612,7 +645,13 @@ def test_chat_orchestrator_answers_reptile_husbandry_questions_from_curated_cata
     # questions now get their own intent and a curated evidence catalog
     # instead of being silently unanswerable.
     client = FakeLLMClient()
-    orchestrator = ChatOrchestrator(client, InMemoryEvidenceRetriever(), NoopPiiAnonymizer())
+    orchestrator = ChatOrchestrator(
+        client,
+        InMemoryEvidenceRetriever(),
+        NoopPiiAnonymizer(),
+        # The strict evidence path is opt-in since 2026-11-06.
+        strict_evidence_intents=frozenset({"husbandry_question"}),
+    )
 
     result = orchestrator.answer(
         ChatOrchestratorInput(
@@ -634,7 +673,13 @@ def test_chat_orchestrator_recognizes_husbandry_questions_phrased_without_uvb_ja
     # ("should I let my chameleon get direct sun by the window") is very
     # commonly phrased without any UVB/equipment jargon at all.
     client = FakeLLMClient()
-    orchestrator = ChatOrchestrator(client, InMemoryEvidenceRetriever(), NoopPiiAnonymizer())
+    orchestrator = ChatOrchestrator(
+        client,
+        InMemoryEvidenceRetriever(),
+        NoopPiiAnonymizer(),
+        # The strict evidence path is opt-in since 2026-11-06.
+        strict_evidence_intents=frozenset({"husbandry_question"}),
+    )
 
     result = orchestrator.answer(
         ChatOrchestratorInput(
@@ -679,7 +724,13 @@ def test_chat_orchestrator_answers_bird_enrichment_questions_from_curated_catalo
     # lo stai notando?") — a wrong fit for a question with no symptom at
     # all. Also the curated catalog had zero bird entries.
     client = FakeLLMClient()
-    orchestrator = ChatOrchestrator(client, InMemoryEvidenceRetriever(), NoopPiiAnonymizer())
+    orchestrator = ChatOrchestrator(
+        client,
+        InMemoryEvidenceRetriever(),
+        NoopPiiAnonymizer(),
+        # The strict evidence path is opt-in since 2026-11-06.
+        strict_evidence_intents=frozenset({"husbandry_question"}),
+    )
 
     result = orchestrator.answer(
         ChatOrchestratorInput(
@@ -704,7 +755,13 @@ def test_chat_orchestrator_answers_enclosure_size_questions_from_curated_catalog
     # UVB/thermal content but the system honestly had no grounded answer
     # on enclosure SIZE — a real gap now filled by a dedicated entry.
     client = FakeLLMClient()
-    orchestrator = ChatOrchestrator(client, InMemoryEvidenceRetriever(), NoopPiiAnonymizer())
+    orchestrator = ChatOrchestrator(
+        client,
+        InMemoryEvidenceRetriever(),
+        NoopPiiAnonymizer(),
+        # The strict evidence path is opt-in since 2026-11-06.
+        strict_evidence_intents=frozenset({"husbandry_question"}),
+    )
 
     result = orchestrator.answer(
         ChatOrchestratorInput(
@@ -724,7 +781,13 @@ def test_chat_orchestrator_answers_enclosure_size_questions_from_curated_catalog
 
 def test_chat_orchestrator_answers_aquarium_husbandry_questions_from_curated_catalog() -> None:
     client = FakeLLMClient()
-    orchestrator = ChatOrchestrator(client, InMemoryEvidenceRetriever(), NoopPiiAnonymizer())
+    orchestrator = ChatOrchestrator(
+        client,
+        InMemoryEvidenceRetriever(),
+        NoopPiiAnonymizer(),
+        # The strict evidence path is opt-in since 2026-11-06.
+        strict_evidence_intents=frozenset({"husbandry_question"}),
+    )
 
     result = orchestrator.answer(
         ChatOrchestratorInput(

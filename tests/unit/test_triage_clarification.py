@@ -35,6 +35,11 @@ def test_every_category_has_a_clarifying_question_except_documented_exceptions()
         "gastric_bloat",
         "circulatory",
         "bird_respiratory",
+        # Wide eval 2026-11-06: first aid with its own fixed steps.
+        "heatstroke",
+        "snakebite",
+        "processionary",
+        "fish_distress",
     }
     assert set(CLARIFYING_QUESTIONS) == set(RED_FLAG_CATEGORIES) - categories_without_a_question
 

@@ -41,6 +41,15 @@ _STOPWORDS = frozenset(
     """.split()
 )
 
+# Farm and lab animals in a source's text: not this owner's pet.
+_OTHER_FAMILY = re.compile(
+    r"\b(?:equine|equid\w*|horses?|mares?|foals?|bovine|cattle|cows?|calves|calf|dairy|"
+    r"swine|pigs?|piglets?|porcine|sows?|sheep|ovine|lambs?|ewes?|goats?|caprine|poultry|"
+    r"chickens?|broilers?|hens?|turkeys?|ducks?|camel\w*|llamas?|alpacas?|mice|mouse|"
+    r"murine|rats?|rodent models?|primates?|macaques?|cavall\w*|bovin\w*|suin\w*|ovin\w*|"
+    r"caprin\w*|pollame|polli)\b"
+)
+
 # A species word is not a topic.
 _SPECIES_WORDS = frozenset(
     """
@@ -212,10 +221,27 @@ def topic_terms(text: str) -> set[str]:
     return terms
 
 
-def is_relevant(source: EvidenceSource, query_terms: set[str]) -> bool:
-    """True when the source's title or snippet shares a topic word with the
-    question. With no question terms at all nothing can be judged, and the
-    source is kept (the caller's other filters still apply)."""
+def is_relevant(
+    source: EvidenceSource, query_terms: set[str], *, species: str | None = None
+) -> bool:
+    """True when the source shares enough topic words with the question and
+    is about the right species. With no question terms at all nothing can
+    be judged, and the source is kept (the caller's other filters still
+    apply).
+
+    Wide eval 2026-11-06: one shared word let a Ravn-virus paper in for a
+    rabbit vaccine question and a biogeochemistry paper for budgie seeds.
+    A literature source now needs two shared terms when the question has
+    three or more; a curated note (tier D, written for the prompt) still
+    needs one. A source about another species never enters."""
+    if species and source.species not in (species, "other", None, ""):
+        return False
+    text_lower = _normalize(f"{source.title} {source.snippet or ''}")
+    if species and species != "other" and _OTHER_FAMILY.search(text_lower):
+        # Equine cytometry for a heartworm question, swine influenza for a
+        # rabbit vaccine: a paper about farm or lab animals is not about
+        # this pet, whatever words it shares.
+        return False
     if not query_terms:
         return True
     source_text = f"{source.title} {source.snippet or ''} {source.clinical_domain}"
@@ -224,10 +250,32 @@ def is_relevant(source: EvidenceSource, query_terms: set[str]) -> bool:
         for word in _WORD.findall(_normalize(source_text))
         if len(word) >= MIN_WORD_LENGTH and word not in _STOPWORDS and word not in _SPECIES_WORDS
     }
+
     # Multi-word bridge targets ("metabolic bone") contribute their words.
-    return bool(query_terms & source_terms)
+    # Stems match by prefix ("chew" from the bridge, "chewi" from the text).
+    def matches(term: str, pool: set[str]) -> bool:
+        return any(s.startswith(term) or term.startswith(s) for s in pool)
+
+    shared = [term for term in query_terms if matches(term, source_terms)]
+    if source.tier == "D" and source.access_depth == "D":
+        return bool(shared)
+    if len(shared) >= 2:
+        return True
+    if len(shared) == 1:
+        # One topic word in common: the source qualifies only if that word
+        # is in its title, not buried in the abstract (a Ravn-virus paper
+        # mentions "vaccine" once; a cough review is titled "Coughing").
+        title_terms = {
+            _stem(word)
+            for word in _WORD.findall(_normalize(source.title))
+            if len(word) >= MIN_WORD_LENGTH
+        }
+        return matches(shared[0], title_terms)
+    return False
 
 
-def relevant_sources(sources: list[EvidenceSource], query: str) -> list[EvidenceSource]:
+def relevant_sources(
+    sources: list[EvidenceSource], query: str, *, species: str | None = None
+) -> list[EvidenceSource]:
     terms = topic_terms(query)
-    return [source for source in sources if is_relevant(source, terms)]
+    return [source for source in sources if is_relevant(source, terms, species=species)]

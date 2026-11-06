@@ -81,9 +81,28 @@ INTENT_TO_GIVE_MARKERS = _words(
     r"mg|ml|cc"
 )
 
+# "He has not eaten any", "non ne ha mangiato": a negated exposure is no
+# exposure (wide eval 2026-11-06); removed before the markers are searched.
+_NEGATED_EXPOSURE = re.compile(
+    r"\b(?:non|not|hasn't|has not|hasnt|haven't|have not|didn't|did not|never|no|nicht|kein\w*|"
+    r"nie|niemals|jamais|nunca|pas)\b(?: \w+){0,3} (?:ne )?(?:ha )?"
+    r"(?:mangiat\w*|leccat\w*|bevut\w*|"
+    r"ingoiat\w*|ingerit\w*|preso|toccat\w*|eaten|ate|swallowed|licked|drunk|drank|chewed|touched|"
+    r"had any|comido|lamido|bebido|tragado|gefressen|gegessen|geleckt|getrunken|mange|leche|bu|"
+    r"avale)\w*"
+)
+
+
+def _without_negated_exposure(text: str) -> str:
+    return _NEGATED_EXPOSURE.sub(" ", text)
+
+
 # The owner is asking to understand.
 QUESTION_MARKERS = _words(
     r"perche|perche'|come mai|e vero che|davvero|quali|quale|cosa succede se|cosa fa|"
+    r"solo per sapere|e solo una domanda|solo una curiosita|per curiosita|sto solo chiedendo|"
+    r"i am only asking|i'm only asking|only asking|just asking|just curious|out of curiosity|"
+    r"solo pregunto|por curiosidad|nur eine frage|nur aus neugier|je demande juste|par curiosite|"
     r"quanto e pericolos\w*|quanto e tossic\w*|fa male|fanno male|e tossic\w*|e pericolos\w*|"
     r"e velenos\w*|sono tossic\w*|sono pericolos\w*|sono velenos\w*|"
     r"why|is it true|how dangerous|how toxic|what happens if|which|what foods|is .{0,20} toxic|"
@@ -102,12 +121,19 @@ def is_educational_toxin_question(message: str) -> bool:
     """True for "perché il cioccolato fa male ai cani?"; False for "ha
     mangiato cioccolato", "vorrei dargli la tachipirina" and for anything
     unclear."""
-    text = normalize_for_matching(message)
+    text = _without_negated_exposure(normalize_for_matching(message))
     if EXPOSURE_MARKERS.search(text) or INTENT_TO_GIVE_MARKERS.search(text):
         return False
     return "?" in text or bool(QUESTION_MARKERS.search(text))
 
 
 def is_exposure(message: str) -> bool:
-    """The animal already got the substance (ate, licked, was given it)."""
-    return bool(EXPOSURE_MARKERS.search(normalize_for_matching(message)))
+    """The animal already got the substance (ate, licked, was given it);
+    a negated exposure ("non ne ha mangiato") does not count."""
+    return bool(EXPOSURE_MARKERS.search(_without_negated_exposure(normalize_for_matching(message))))
+
+
+def intends_to_give(message: str) -> bool:
+    """The owner is about to give the substance ("vorrei dargliene mezza",
+    "quanto ne do?", "la metto?")."""
+    return bool(INTENT_TO_GIVE_MARKERS.search(normalize_for_matching(message)))

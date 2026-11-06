@@ -152,10 +152,13 @@ def test_the_exposure_keeps_todays_triage() -> None:
     assert client.requests == []
 
 
-def test_an_intent_to_give_a_human_medicine_keeps_todays_triage() -> None:
+def test_an_intent_to_give_a_human_medicine_gets_no_never_before_the_model() -> None:
+    # Wide eval 2026-11-06: not given yet, so "no, never" with the why; the
+    # triage stays for a cat that already got it.
     client, result = _answer(
         "è tossica la tachipirina? vorrei dargliene mezza", species="Gatto", language="it"
     )
 
-    assert result.mode in ("triage", "safety_clarification")
+    assert result.model == "toxin-intent-guard"
+    assert result.answer.startswith("No, mai.") and "tossico per il gatto" in result.answer
     assert client.requests == []
