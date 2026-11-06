@@ -20,6 +20,7 @@ from packages.core.application.ports.evidence_retriever import (
     EvidenceRetriever,
 )
 from packages.core.domain.conversation.request_kind import is_duty_question
+from packages.core.domain.knowledge.duty_notes import DUTY_CATALOG
 from packages.core.domain.knowledge.models import EvidenceSource
 
 _PREFIX = "Curated awareness note (pending vet review): "
@@ -171,83 +172,6 @@ AWARENESS_CATALOG: list[EvidenceSource] = [
             "the ability to behave normally, company or solitude as the species needs, "
             "protection from pain, suffering, injury and disease. Point the owner to a "
             "vet experienced with that species for the specifics."
-        ),
-    ),
-]
-
-_DUTY_PREFIX = "Curated note, owner duties in Italy (pending vet review): "
-
-# Owner duties, Italy (stress test 2026-11-06): one short note per topic,
-# each under the 300 characters the prompt keeps of a snippet, so the
-# fact the owner asked about reaches the model whole. Sources: Ministero
-# della Salute (ordinanza on dog ownership, renewed since 2009), codice
-# penale art. 727, legge 189/2004, legge 157/1992, European Convention for
-# the Protection of Pet Animals.
-DUTY_CATALOG: list[EvidenceSource] = [
-    EvidenceSource(
-        title=_DUTY_PREFIX + "dangerous breeds, leash and muzzle",
-        tier="D",
-        access_depth="D",
-        clinical_domain="behavior",
-        species="dog",
-        snippet=(
-            "Italy has NO list of dangerous breeds: the breed list was abolished in 2009 "
-            "(ordinanza Ministero della Salute); the single dog and its owner count, who "
-            "answers for its behaviour. Leash up to 1.5 m in town, a muzzle (museruola) carried "
-            "along. "
-            "Current rules: municipality, ASL, vet."
-        ),
-    ),
-    EvidenceSource(
-        title=_DUTY_PREFIX + "identification, anagrafe, transfer of puppies",
-        tier="D",
-        access_depth="D",
-        clinical_domain="behavior",
-        species="dog",
-        snippet=(
-            "Dogs are identified with a microchip and registered in the anagrafe canina; "
-            "puppies are not sold or given away before 60 days of age, and only with "
-            "microchip and a written passage of ownership. Selling regularly is a regulated "
-            "activity. Current rules: municipality, ASL, vet."
-        ),
-    ),
-    EvidenceSource(
-        title=_DUTY_PREFIX + "cruelty: abandonment, fights, mutilations",
-        tier="D",
-        access_depth="D",
-        clinical_domain="behavior",
-        species="dog",
-        snippet=(
-            "Abandoning an animal is a crime (art. 727 codice penale), not a fine; organising "
-            "or training for dog fights is a crime (legge 189/2004); cosmetic ear cropping "
-            "and tail docking are forbidden (European Convention for the Protection of Pet "
-            "Animals, in force in Italy)."
-        ),
-    ),
-    EvidenceSource(
-        title=_DUTY_PREFIX + "cats: abandonment, microchip, travel",
-        tier="D",
-        access_depth="D",
-        clinical_domain="behavior",
-        species="cat",
-        snippet=(
-            "Abandoning a cat is a crime (art. 727 codice penale) and a house cat does not "
-            "cope outside. Microchip and anagrafe are compulsory only in some regions, always "
-            "needed with the EU pet passport and rabies vaccination to travel in the EU. "
-            "Colony cats are protected. Current rules: municipality, ASL, vet."
-        ),
-    ),
-    EvidenceSource(
-        title=_DUTY_PREFIX + "wild animals found: never kept, CRAS",
-        tier="D",
-        access_depth="D",
-        clinical_domain="behavior",
-        species="other",
-        snippet=(
-            "A wild animal found (hedgehog, fledgling, fox cub, bat) is protected fauna "
-            "(legge 157/1992) and is never kept as a pet. If injured or in danger: dark "
-            "ventilated box, quiet, no food or milk, call the wildlife rescue centre (CRAS) "
-            "or the Carabinieri forestali (1515). If healthy, leave it where it is."
         ),
     ),
 ]

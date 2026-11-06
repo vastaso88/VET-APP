@@ -234,12 +234,12 @@ _MINOR = (
     "now in two or three simple steps, then why the animal did it, without blaming anyone."
 )
 _CHILD_AT_RISK = (
-    "A CHILD IS INVOLVED. Say first, in two plain sentences: some gestures are never "
-    "allowed, with or without an adult watching (pulling the tail or ears, grabbing the "
-    "neck, tight hugs, face against the face), and a small child is never left alone with "
-    "the animal, not even for a moment. Never write 'without supervision' as if supervision "
-    "made those gestures acceptable. Then explain the animal's signals and what to teach the "
-    "child, gently."
+    "A CHILD IS INVOLVED. The safety sentence is already written before your text (a small "
+    "child is never left alone with the animal; pulling the tail or ears, grabbing the neck, "
+    "tight hugs and face against the face are never done, with or without an adult "
+    "watching): do not repeat it, do not open with 'prima di tutto' or a list of rules. Go "
+    "straight to the animal's signals and to what to teach the child, gently, and never "
+    "write 'without supervision' as if supervision made those gestures acceptable."
 )
 _VISIT_TODAY = (
     "VOMITING AND NOT EATING FOR A DAY OR MORE: the visit is today, say it clearly and "

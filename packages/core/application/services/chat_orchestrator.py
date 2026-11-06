@@ -73,6 +73,7 @@ from packages.core.domain.conversation.request_kind import (
 from packages.core.domain.conversation.states import ConversationState
 from packages.core.domain.knowledge.answer_validation import validate_answer
 from packages.core.domain.knowledge.dose_in_answer import find_dosage
+from packages.core.domain.knowledge.duty_notes import pinned_duty_notes
 from packages.core.domain.knowledge.evidence_synthesis import EvidenceSynthesis
 from packages.core.domain.knowledge.models import EvidenceSource
 from packages.core.domain.knowledge.relevance import relevant_sources
@@ -2469,6 +2470,12 @@ class ChatOrchestrator:
             )
         # Two sources at most go into the prompt (build 32): the model uses
         # one or two at best, and each one costs a few hundred tokens.
+        # Fifth round: a duty the owner names (dangerous breeds, abandonment,
+        # a hedgehog found) gets its note by rule, ahead of what the
+        # keyword search returned.
+        pinned = pinned_duty_notes(message)
+        if pinned:
+            sources = pinned + [source for source in sources if source not in pinned]
         sources = list(sources)[: self._prompt_max_sources]
         evidence_block = self._format_sources_for_prompt(sources) if sources else ""
         # The owner's words and the text read from their file go to the

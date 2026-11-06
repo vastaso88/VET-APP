@@ -239,8 +239,11 @@ def test_the_child_note_says_never_not_without_supervision() -> None:
         name="Micia",
     )
     prompt = client.requests[-1].system_prompt
-    assert "never allowed, with or without an adult watching" in prompt
+    # Fifth round: the sentence is written before the model's text, and the
+    # note tells the model not to repeat it.
     assert "never left alone with the animal" in prompt
+    assert "do not repeat it" in prompt
+    assert "without supervision" in prompt
 
 
 def test_the_duty_notes_are_served_only_for_duty_questions() -> None:
@@ -328,3 +331,61 @@ def test_the_long_message_note_forbids_invented_signs() -> None:
         RequestKind.DIRECT, may_ask=False, has_reference_material=False, long_message=True
     )
     assert "Never add a sign the owner did not write" in prompt
+
+
+# --- fifth round (2026-11-06) ------------------------------------------------------------
+
+
+class _NothingFound:
+    """An evidence search that finds nothing (or whose keywords missed)."""
+
+    def retrieve(self, request: EvidenceRetrievalRequest) -> list:  # noqa: ANN401
+        return []
+
+
+def test_the_child_note_does_not_ask_to_repeat_the_fixed_sentence() -> None:
+    from packages.core.application.services.natural_answer_prompt import build_system_prompt
+    from packages.core.domain.conversation.request_kind import RequestKind
+
+    prompt = build_system_prompt(
+        RequestKind.DIRECT, may_ask=False, has_reference_material=False, child_at_risk=True
+    )
+    assert "already written before your text" in prompt
+    assert "do not repeat it" in prompt
+    assert "Say first" not in prompt
+
+
+def test_the_breed_list_note_is_pinned_whatever_the_search_found() -> None:
+    from packages.core.domain.knowledge.duty_notes import pinned_duty_notes
+
+    message = "qual è la lista delle razze pericolose in Italia? il mio vicino dice che Toby c'è"
+    pinned = pinned_duty_notes(message)
+    assert len(pinned) == 1 and pinned[0].title.endswith("dangerous breeds, leash and muzzle")
+    assert pinned_duty_notes("perché abbaia quando suona il campanello?") == []
+
+    client = RecordingLLMClient()
+    ChatOrchestrator(client, _NothingFound(), NoopPiiAnonymizer()).answer(  # type: ignore[arg-type]
+        ChatOrchestratorInput(user_message=message, species="Cane", pet_name="Toby")
+    )
+    assert "abolished in 2009" in client.requests[-1].user_prompt
+
+
+@pytest.mark.parametrize(
+    ("message", "title_end"),
+    [
+        ("non la voglio più, la lascio in campagna?", "cruelty: abandonment, fights, mutilations"),
+        ("ho trovato un riccio in giardino, lo tengo?", "wild animals found: never kept, CRAS"),
+        (
+            "voglio portare la gatta in Francia, serve il passaporto?",
+            "cats: abandonment, microchip, travel",
+        ),
+        (
+            "mi scrivi un annuncio per i cuccioli di 40 giorni?",
+            "identification, anagrafe, transfer of puppies",
+        ),
+    ],
+)
+def test_the_other_duty_notes_are_pinned_by_their_topic(message: str, title_end: str) -> None:
+    from packages.core.domain.knowledge.duty_notes import pinned_duty_notes
+
+    assert any(n.title.endswith(title_end) for n in pinned_duty_notes(message)), message
