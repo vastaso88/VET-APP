@@ -1231,6 +1231,14 @@ class AppLocalizationsEs extends AppLocalizations {
       'En el mercadillo solo se venden objetos para animales, no animales.';
 
   @override
+  String get marketplaceNoContactsMessage =>
+      'No incluyas teléfonos, correos, sitios web ni perfiles sociales en el anuncio.';
+
+  @override
+  String get marketplaceNoMedicinesMessage =>
+      'En el mercadillo no se pueden vender fármacos ni medicamentos veterinarios, ni siquiera sin receta.';
+
+  @override
   String get marketplaceBackendUnavailable =>
       'No se puede acceder al mercadillo ahora mismo. Inténtalo de nuevo en un momento.';
 

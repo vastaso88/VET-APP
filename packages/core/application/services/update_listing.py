@@ -9,6 +9,12 @@ from packages.core.domain.marketplace.animal_policy import (
     ANIMAL_POLICY_MESSAGE,
     offers_animals,
 )
+from packages.core.domain.marketplace.content_policy import (
+    CONTACT_POLICY_MESSAGE,
+    MEDICINE_POLICY_MESSAGE,
+    contains_contact_details,
+    offers_medicines,
+)
 from packages.core.domain.marketplace.models import (
     ListingCategory,
     ListingCondition,
@@ -57,6 +63,13 @@ class UpdateListingService:
             raise ValidationError("Paese non supportato per il Mercatino.")
         if offers_animals(data.title, data.description):
             raise ValidationError(ANIMAL_POLICY_MESSAGE)
+        # The text is public to every owner nearby: no phone numbers, e-mails,
+        # web sites or handles in it; and no veterinary medicines (retail only
+        # by authorised sellers, Reg. (EU) 2019/6).
+        if contains_contact_details(data.title, data.description):
+            raise ValidationError(CONTACT_POLICY_MESSAGE)
+        if offers_medicines(data.title, data.description):
+            raise ValidationError(MEDICINE_POLICY_MESSAGE)
 
         updated = current.model_copy(
             update={

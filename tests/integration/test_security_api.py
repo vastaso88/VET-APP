@@ -146,3 +146,39 @@ def test_account_export_returns_the_callers_data_and_is_throttled() -> None:
     assert "generated_at" in body and "files" in body
     # one export every ten minutes per caller
     assert client.get("/account/export", headers=headers).status_code == 429
+
+
+INTERNAL_CONVERSATION_KEYS = {
+    "situation_model",
+    "coverage_score",
+    "state",
+    "interview_turns_used",
+    "medical_record_consent",
+    "awaiting_medical_record_consent",
+    "awaiting_safety_clarification",
+    "safety_clarification_category",
+}
+
+
+def test_conversation_responses_carry_no_assistant_internals() -> None:
+    """Report 2026-11-06, 0.8: the list of conversations exposed the
+    assistant's working state. The app reads id, pet_id, title and the
+    messages (id, role, content, created_at, ai_generated, attachment)."""
+    client = TestClient(app)
+    pet = client.post("/pets", json={"name": "Nebbia", "species": "cat"}).json()["pet_profile"]
+
+    sent = client.post("/chat", json={"pet_id": pet["id"], "user_message": "Starnutisce"})
+    assert sent.status_code == 200
+    body = sent.json()
+    assert not INTERNAL_CONVERSATION_KEYS & set(body["conversation"])
+    assert "state_after" not in body["reply"]
+    assert all("state_after" not in m for m in body["conversation"]["messages"])
+    assert {"id", "pet_id", "title", "messages"} <= set(body["conversation"])
+
+    listed = client.get("/conversations").json()["conversations"]
+    assert listed
+    for conversation in listed:
+        assert not INTERNAL_CONVERSATION_KEYS & set(conversation)
+        for message in conversation["messages"]:
+            assert "state_after" not in message
+            assert {"id", "role", "content", "created_at"} <= set(message)

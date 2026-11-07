@@ -1239,6 +1239,14 @@ class AppLocalizationsIt extends AppLocalizations {
       'Sul Mercatino si vendono solo oggetti per animali, non animali.';
 
   @override
+  String get marketplaceNoContactsMessage =>
+      'Nell\'annuncio non inserire telefoni, email, siti web o profili social.';
+
+  @override
+  String get marketplaceNoMedicinesMessage =>
+      'Sul Mercatino non si possono vendere farmaci o medicinali veterinari, nemmeno senza ricetta.';
+
+  @override
   String get marketplaceBackendUnavailable =>
       'Il Mercatino non è raggiungibile in questo momento. Riprova tra poco.';
 

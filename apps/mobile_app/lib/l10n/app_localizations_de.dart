@@ -1244,6 +1244,14 @@ class AppLocalizationsDe extends AppLocalizations {
       'Auf dem Gebrauchtmarkt werden nur Artikel für Tiere verkauft, keine Tiere.';
 
   @override
+  String get marketplaceNoContactsMessage =>
+      'Geben Sie in der Anzeige keine Telefonnummern, E-Mail-Adressen, Websites oder Social-Media-Profile an.';
+
+  @override
+  String get marketplaceNoMedicinesMessage =>
+      'Auf dem Gebrauchtmarkt dürfen keine Arzneimittel oder Tiermedikamente verkauft werden, auch nicht rezeptfrei.';
+
+  @override
   String get marketplaceBackendUnavailable =>
       'Der Gebrauchtmarkt ist gerade nicht erreichbar. Versuchen Sie es gleich noch einmal.';
 

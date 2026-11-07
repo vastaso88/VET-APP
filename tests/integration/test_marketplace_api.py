@@ -189,3 +189,63 @@ def test_a_hidden_ad_is_not_served_to_others() -> None:
         ]
     ]
     assert "api-hidden" not in ids
+
+
+def test_another_sellers_account_id_never_leaves_only_mine_is_flagged() -> None:
+    """Report 2026-11-06, 0.2: the public row carried `owner_id`. The caller
+    (bootstrap user "demo-user") sees other sellers' ads without their id
+    and their own ads with `is_mine`."""
+    _seed("api-owner-other", 1)
+    get_container().marketplace_listing_repository.save(
+        MarketplaceListing(
+            id="api-owner-mine",
+            owner_id="demo-user",
+            title="api-owner-mine",
+            category="toys",
+            condition="good",
+            country="IT",
+            location=Coordinates(latitude=ME["latitude"], longitude=ME["longitude"]),
+        )
+    )
+    client = TestClient(app)
+
+    body = client.get("/marketplace/listings", params={**ME, "radius_km": 10}).json()
+    rows = {item["id"]: item for item in body["listings"]}
+
+    other = rows["api-owner-other"]
+    assert "owner_id" not in other and other["is_mine"] is False
+    mine = rows["api-owner-mine"]
+    assert mine["is_mine"] is True and mine["owner_id"] == "demo-user"
+
+    detail = client.get("/marketplace/listings/api-owner-other").json()["listing"]
+    assert "owner_id" not in detail and detail["is_mine"] is False
+
+
+def test_contact_details_and_medicines_are_refused_with_a_clear_message() -> None:
+    client = TestClient(app)
+    base = {
+        "title": "Cuccia imbottita",
+        "category": "toys",
+        "condition": "good",
+        "latitude": ME["latitude"],
+        "longitude": ME["longitude"],
+    }
+
+    contacts = client.post(
+        "/marketplace/listings",
+        json={**base, "description": "Chiamami al 3331234567 o scrivi a davide@example.com"},
+    )
+    assert contacts.status_code == 400
+    assert "telefoni" in contacts.json()["detail"]
+
+    medicine = client.post(
+        "/marketplace/listings",
+        json={**base, "title": "Flaconi di ivermectina senza ricetta"},
+    )
+    assert medicine.status_code == 400
+    assert "farmaci" in medicine.json()["detail"]
+
+    animals = client.post(
+        "/marketplace/listings", json={**base, "title": "Zwergkaninchen zu verkaufen"}
+    )
+    assert animals.status_code == 400

@@ -10,6 +10,7 @@ from packages.core.application.services.rename_conversation import RenameConvers
 from packages.core.application.services.send_chat_message import owner_names_for_anonymization
 from packages.core.application.services.vet_summary import VetSummaryInput
 from packages.core.domain.common.language import resolve_language
+from packages.core.domain.conversation.models import public_message
 
 router = APIRouter(prefix="/conversations", tags=["conversations"])
 
@@ -21,7 +22,7 @@ def list_conversations() -> dict[str, object]:
     result = container.list_conversations_service().execute(
         ListConversationsInput(owner_id=user.id)
     )
-    return result.model_dump()
+    return {"conversations": [c.public_dump() for c in result.conversations]}
 
 
 @router.patch("/{conversation_id}")
@@ -64,7 +65,10 @@ def edit_message(
             language=resolve_language(request.language, accept_language),
         )
     )
-    return result.model_dump()
+    body = result.model_dump(exclude={"conversation", "reply"})
+    body["conversation"] = result.conversation.public_dump()
+    body["reply"] = public_message(result.reply)
+    return body
 
 
 @router.get("/{conversation_id}/summary", dependencies=[Depends(require_active_subscription)])

@@ -1,4 +1,5 @@
 from datetime import datetime
+from typing import Any
 
 from pydantic import BaseModel, Field
 
@@ -45,6 +46,25 @@ class ChatMessage(BaseModel):
     state_after: ConversationSnapshot | None = None
 
 
+# Fields of Conversation that never leave the backend (see public_dump).
+INTERNAL_CONVERSATION_FIELDS: frozenset[str] = frozenset(
+    {
+        "situation_model",
+        "coverage_score",
+        "state",
+        "interview_turns_used",
+        "medical_record_consent",
+        "awaiting_medical_record_consent",
+        "awaiting_safety_clarification",
+        "safety_clarification_category",
+    }
+)
+
+
+def public_message(message: ChatMessage) -> dict[str, Any]:
+    return message.model_dump(exclude={"state_after"})
+
+
 class Conversation(BaseModel):
     id: str = Field(default_factory=new_id)
     owner_id: str
@@ -59,6 +79,19 @@ class Conversation(BaseModel):
     awaiting_medical_record_consent: bool = False
     awaiting_safety_clarification: bool = False
     safety_clarification_category: str | None = None
+
+    def public_dump(self) -> dict[str, Any]:
+        """The conversation as the API hands it to the owner's app: id, pet,
+        title and the messages. The assistant's working state (situation
+        model, coverage score, interview counters, pending-consent flags, the
+        per-message `state_after` snapshot) stays server-side: the app never
+        reads it and it is the assistant's data, not the owner's."""
+        return self.model_dump(
+            exclude={
+                **{name: True for name in INTERNAL_CONVERSATION_FIELDS},
+                "messages": {"__all__": {"state_after"}},
+            }
+        )
 
     def snapshot(self) -> ConversationSnapshot:
         return ConversationSnapshot.model_validate(

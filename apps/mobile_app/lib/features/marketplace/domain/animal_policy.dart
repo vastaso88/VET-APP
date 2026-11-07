@@ -50,6 +50,8 @@ bool _textOffersAnimals(String text, bool aboutAccessory) {
       offerThen.hasMatch(left)) {
     return true;
   }
-  if (_patterns['young_of']!.hasMatch(left)) return true;
+  if (_patterns['young_of']!.hasMatch(left) || _patterns['animal_count']!.hasMatch(left)) {
+    return true;
+  }
   return _patterns['young']!.hasMatch(left) && !aboutAccessory;
 }

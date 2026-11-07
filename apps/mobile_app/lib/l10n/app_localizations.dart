@@ -2162,6 +2162,18 @@ abstract class AppLocalizations {
   /// **'Sul Mercatino si vendono solo oggetti per animali, non animali.'**
   String get marketplaceNoAnimalsMessage;
 
+  /// No description provided for @marketplaceNoContactsMessage.
+  ///
+  /// In it, this message translates to:
+  /// **'Nell\'annuncio non inserire telefoni, email, siti web o profili social.'**
+  String get marketplaceNoContactsMessage;
+
+  /// No description provided for @marketplaceNoMedicinesMessage.
+  ///
+  /// In it, this message translates to:
+  /// **'Sul Mercatino non si possono vendere farmaci o medicinali veterinari, nemmeno senza ricetta.'**
+  String get marketplaceNoMedicinesMessage;
+
   /// No description provided for @marketplaceBackendUnavailable.
   ///
   /// In it, this message translates to:
