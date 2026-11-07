@@ -235,3 +235,19 @@ solo per prove sul proprio telefono.
   account di test, provare a leggere l'id dell'altro dall'app.
 - Termini contrattuali di Groq, Supabase, Vercel (vedi inventario fornitori).
 - Branch protection e 2FA su GitHub, Vercel, Supabase, Google.
+
+## 9. Seguito del 2026-11-07: rilievi degli utenti di prova (rapporto `.local/synthetic_users/report.md`)
+
+| ID | Gravità | Rilievo | Stato |
+| --- | --- | --- | --- |
+| MK-1 | Alta | Il dato pubblico degli annunci portava `owner_id` del venditore (le coordinate erano già arrotondate a ~1 km: non un difetto) | ✅ `routes/marketplace.py`: `owner_id` esce solo con i propri annunci, campo `is_mine` per l'app; test «utente B» in `test_marketplace_api.py` |
+| MK-2 | Alta | Telefono ed e-mail nel testo pubblico accettati (per i luoghi c'era già il rifiuto) | ✅ `content_policy.py` (backend decide) + `content_policy.dart` nel form e nel repository; messaggio in 5 lingue (`marketplaceNoContactsMessage`) |
+| MK-3 | Media | Annunci di animali non riconosciuti (de/en, pesci in acquario); lampada UVB rifiutata per errore | ✅ `animal_policy.py`: vocabolari ampliati (uccelli, roditori, pesci d'acquario, piccoli animali da cortile in 5 lingue; lampade e attrezzatura per terrari come accessori), nuova regola «numero + animale» (capienza «per 2 gatti» esclusa); Dart e SQL rigenerati; 14 casi nuovi nel corpus |
+| MK-4 | Alta (legale) | Farmaci veterinari in vendita tra privati («ivermectina senza ricetta») | ✅ rifiuto di farmaci, principi attivi e marchi comuni, con o senza ricetta (`MEDICINE_POLICY_MESSAGE`, 5 lingue). Base: Reg. UE 2019/6 artt. 103-104, d.lgs. 193/2006. Lo schema SQL **non** cambia: la regola è solo nel backend (gli annunci esistenti si controllano a mano, sono pochi) |
+| CH-1 | Media | L'elenco conversazioni e la risposta della chat esponevano lo stato interno dell'assistente (`state_after`, `situation_model`, `coverage_score`, flag di consenso) | ✅ `Conversation.public_dump()`: l'app riceve id, pet_id, title e messaggi (id, role, content, created_at, attachment, ai_generated); verificato che il client Flutter legge solo quelli; test in `test_security_api.py` |
+
+### Note libere del profilo e consenso alla cartella clinica (decisione per il proprietario)
+
+Verificato sul codice (`send_chat_message.py`, costruzione di `ChatOrchestratorInput`): le **note libere del profilo** (`pet_profile.notes`) e il **riepilogo dei promemoria** (titolo, date, note: quindi anche le terapie) entrano nel prompt **sempre**, indipendentemente dal consenso alla cartella clinica, che governa solo eventi clinici, documenti e malattie in corso. Il testo del consenso (v3) non nomina le note né i promemoria; il campo note nel form suggerisce «dieta, farmaci o comportamento». Il rilievo di u04 è quindi reale per costruzione, non un caso. Le note sono anonimizzate prima dell'invio, ma «Diagnosi MBD lieve 2024» resta leggibile.
+
+Opzioni: **(A)** far seguire note e promemoria al consenso: senza consenso non partono (una riga per ciascuno in `send_chat_message.py`, più test); **(B)** lasciare tutto com'è e dichiararlo: nel testo del consenso («le note del profilo e i promemoria vengono usati sempre») e nel suggerimento del campo note. **Consiglio A**: è ciò che una persona si aspetta negando il consenso, costa poco e la chat perde poco (dieta e carattere si ripetono nella domanda). Se si sceglie B, serve la versione v4 del testo del consenso e il riconsenso di tutti.

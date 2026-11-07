@@ -18,6 +18,7 @@ import '../../data/area_label_geocoder.dart';
 import '../../data/listing_photo_store.dart';
 import '../../data/marketplace_repository.dart';
 import '../../domain/animal_policy.dart';
+import '../../domain/content_policy.dart';
 import '../../domain/listing_location.dart';
 import '../../domain/marketplace_listing.dart';
 import '../marketplace_labels.dart';
@@ -272,6 +273,10 @@ class _CreateListingPageState extends State<CreateListingPage> {
     return titleIsTheCause == onTitle ? context.l10n.marketplaceNoAnimalsMessage : null;
   }
 
+  /// The ad is public: no phone numbers, e-mails, websites or handles in it.
+  String? _contactDetailsError(String? value) =>
+      containsContactDetails(value) ? context.l10n.marketplaceNoContactsMessage : null;
+
   Future<void> _submit() async {
     setState(() => _submitError = null);
     if (!_formKey.currentState!.validate()) return;
@@ -427,7 +432,8 @@ class _CreateListingPageState extends State<CreateListingPage> {
                   if (value == null || value.trim().isEmpty) {
                     return context.l10n.marketplaceTitleRequired;
                   }
-                  return _animalOfferError(value, _descriptionController.text, onTitle: true);
+                  return _contactDetailsError(value) ??
+                      _animalOfferError(value, _descriptionController.text, onTitle: true);
                 },
               ),
               const SizedBox(height: AppSpacing.sm),
@@ -437,6 +443,7 @@ class _CreateListingPageState extends State<CreateListingPage> {
                 maxLines: 3,
                 maxLength: 1000,
                 validator: (value) =>
+                    _contactDetailsError(value) ??
                     _animalOfferError(_titleController.text, value, onTitle: false),
               ),
               const SizedBox(height: AppSpacing.sm),

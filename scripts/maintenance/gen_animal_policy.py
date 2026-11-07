@@ -35,6 +35,7 @@ _ORDER = (
     "offer_then_animal_near",
     "animal_adjacent_offer",
     "young_of",
+    "animal_count",
     "young",
     "object",
     "adoption",
@@ -130,7 +131,7 @@ begin
             return true;
         end if;
     end if;
-    if t ~ '{p["young_of"]}' then
+    if t ~ '{p["young_of"]}' or t ~ '{p["animal_count"]}' then
         return true;
     end if;
     return t ~ '{p["young"]}' and not about_accessory;

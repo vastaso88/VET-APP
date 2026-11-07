@@ -5,6 +5,7 @@ from apps.api.dependencies.subscription import require_active_subscription
 from apps.api.schemas.chat import SendChatMessageRequest
 from packages.core.application.services.send_chat_message import SendChatMessageInput
 from packages.core.domain.common.language import resolve_language
+from packages.core.domain.conversation.models import public_message
 from packages.shared.errors.base import AuthenticationError
 
 router = APIRouter(prefix="/chat", tags=["chat"])
@@ -27,7 +28,11 @@ def send_chat_message(
             **fields,
         )
     )
-    return result.model_dump()
+    # The assistant's working state stays server-side (Conversation.public_dump).
+    body = result.model_dump(exclude={"conversation", "reply"})
+    body["conversation"] = result.conversation.public_dump()
+    body["reply"] = public_message(result.reply)
+    return body
 
 
 @router.post("/maintenance")

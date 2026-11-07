@@ -562,6 +562,8 @@
   "marketplaceIntro": "Compra, vendi e regala articoli per animali con altri proprietari.",
   "marketplaceRules": "Sul Mercatino si trovano solo oggetti per animali. Gli animali non si possono vendere, regalare né scambiare, in nessun paese.",
   "marketplaceNoAnimalsMessage": "Sul Mercatino si vendono solo oggetti per animali, non animali.",
+  "marketplaceNoContactsMessage": "Nell'annuncio non inserire telefoni, email, siti web o profili social.",
+  "marketplaceNoMedicinesMessage": "Sul Mercatino non si possono vendere farmaci o medicinali veterinari, nemmeno senza ricetta.",
   "marketplaceBackendUnavailable": "Il Mercatino non è raggiungibile in questo momento. Riprova tra poco.",
   "marketplaceEmptyFiltered": "Nessun annuncio con questi filtri per ora.",
   "marketplaceNeedsLocation": "Il Mercatino mostra solo gli annunci vicino a te. Imposta la tua posizione in Impostazioni → Località per vederli.",

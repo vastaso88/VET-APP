@@ -22,8 +22,15 @@ from packages.core.domain.territory.rules import (
 router = APIRouter(prefix="/marketplace", tags=["marketplace"])
 
 
-def _public_row(listing: MarketplaceListing) -> dict[str, object]:
-    row = listing.model_dump(mode="json", exclude={"location"})
+def _public_row(listing: MarketplaceListing, requester_id: str) -> dict[str, object]:
+    """An ad as other owners may see it. The seller's account id leaves only
+    with the seller's own ads (`is_mine` tells the app which ones they are):
+    to everyone else it is an internal identifier that would let a stranger
+    link the ad to an account."""
+    is_mine = listing.owner_id == requester_id
+    hidden = {"location"} if is_mine else {"location", "owner_id"}
+    row = listing.model_dump(mode="json", exclude=hidden)
+    row["is_mine"] = is_mine
     row["latitude"] = listing.location.latitude
     row["longitude"] = listing.location.longitude
     return row
@@ -43,7 +50,7 @@ def list_nearby_listings(
     category: ListingCategory | None = None,
 ) -> dict[str, object]:
     container = get_container()
-    container.auth_provider.get_current_user()
+    user = container.auth_provider.get_current_user()
     result = container.list_nearby_listings_service().execute(
         ListNearbyListingsInput(
             buyer_location=Coordinates(latitude=latitude, longitude=longitude),
@@ -53,7 +60,7 @@ def list_nearby_listings(
     )
     listings = []
     for item in result.listings:
-        row = _public_row(item)
+        row = _public_row(item, user.id)
         row["distance_km"] = round(result.distances_km[item.id], 3)
         listings.append(row)
     return {
@@ -104,7 +111,7 @@ def create_listing(payload: ListingPayload) -> dict[str, object]:
             country=payload.country,
         )
     )
-    return {"listing": _public_row(result.listing)}
+    return {"listing": _public_row(result.listing, user.id)}
 
 
 @router.put("/listings/{listing_id}")
@@ -127,7 +134,7 @@ def update_listing(listing_id: str, payload: ListingPayload) -> dict[str, object
             country=payload.country,
         )
     )
-    return {"listing": _public_row(result.listing)}
+    return {"listing": _public_row(result.listing, user.id)}
 
 
 # One ad by id (the detail page): an active ad to anyone signed in, any state to
@@ -139,4 +146,4 @@ def get_listing(listing_id: str) -> dict[str, object]:
     listing = container.marketplace_listing_repository.get(listing_id)
     if listing is None or (listing.status != "active" and listing.owner_id != user.id):
         raise HTTPException(status_code=404, detail="Annuncio non trovato.")
-    return {"listing": _public_row(listing)}
+    return {"listing": _public_row(listing, user.id)}

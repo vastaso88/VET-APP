@@ -1241,6 +1241,14 @@ class AppLocalizationsFr extends AppLocalizations {
       'Sur le marché de l\'occasion, on ne vend que des objets pour animaux, pas d\'animaux.';
 
   @override
+  String get marketplaceNoContactsMessage =>
+      'N\'indiquez pas de numéros de téléphone, d\'e-mails, de sites web ou de profils sociaux dans l\'annonce.';
+
+  @override
+  String get marketplaceNoMedicinesMessage =>
+      'Sur le marché de l\'occasion, on ne peut pas vendre de médicaments vétérinaires, même sans ordonnance.';
+
+  @override
   String get marketplaceBackendUnavailable =>
       'Le marché de l\'occasion est inaccessible pour le moment. Réessayez dans un instant.';
 

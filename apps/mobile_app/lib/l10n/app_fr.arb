@@ -562,6 +562,8 @@
   "marketplaceIntro": "Achetez, vendez et donnez des articles pour animaux avec d'autres propriétaires.",
   "marketplaceRules": "Le marché de l'occasion ne propose que des objets pour animaux. Les animaux ne peuvent être ni vendus, ni donnés, ni échangés, dans aucun pays.",
   "marketplaceNoAnimalsMessage": "Sur le marché de l'occasion, on ne vend que des objets pour animaux, pas d'animaux.",
+  "marketplaceNoContactsMessage": "N'indiquez pas de numéros de téléphone, d'e-mails, de sites web ou de profils sociaux dans l'annonce.",
+  "marketplaceNoMedicinesMessage": "Sur le marché de l'occasion, on ne peut pas vendre de médicaments vétérinaires, même sans ordonnance.",
   "marketplaceBackendUnavailable": "Le marché de l'occasion est inaccessible pour le moment. Réessayez dans un instant.",
   "marketplaceEmptyFiltered": "Aucune annonce avec ces filtres pour le moment.",
   "marketplaceNeedsLocation": "Le marché de l'occasion n'affiche que les annonces près de chez vous. Définissez votre position dans Paramètres → Localisation pour les voir.",

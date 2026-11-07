@@ -20,9 +20,11 @@ spaces:
 2. In what is left, block when an animal word has an offer word ("vendo",
    "sell", "verkaufe"...) or a qualifier ("disponibili", "for sale",
    "pedigree"...) within three words; or a young-animal word is followed by
-   "di/de/of/von" ("cuccioli di labrador"); or a young-animal word stands
-   alone in a text that names no accessory; or an adoption phrase appears
-   ("in adozione", "good home"...).
+   "di/de/of/von" ("cuccioli di labrador"); or a number precedes an animal
+   word ("15 pesci", "2 Nymphensittiche"; a capacity such as "gabbia per 2
+   conigli" was dropped in step 1); or a young-animal word stands alone in a
+   text that names no accessory; or an adoption phrase appears ("in
+   adozione", "good home"...).
 
 It is deliberately strict about the verbs and the animal words and forgiving
 about everything else: an accessory that merely names the animal it is for
@@ -71,23 +73,36 @@ ADULT_TERMS = (
     "furetto furetti cavia cavie porcellino pappagallo pappagalli cocorita cocorite canarino "
     "canarini cardellino tartaruga tartarughe serpente serpenti geco rettile rettili iguana pitone "
     "cavallo cavalli cavalla pony pesce pesci pesciolino criceto cincilla chinchilla degu gerbillo "
-    "gerbilli pettirosso inseparabili calopsite calopsita "
+    "gerbilli pettirosso inseparabili calopsite calopsita calopsitta calopsitte agapornis "
+    "agapornide cacatua cacatue pappagallino pappagallini guppy guppies platy molly scalare "
+    "scalari discus betta carassio carassi koi axolotl tritone tritoni coniglietto coniglietti "
+    "ratto ratti gallina galline quaglia quaglie capra capre caprette pecora pecore maialino "
+    "maialini asino asini "
     # en
     "dog dogs doggy cat cats rabbit rabbits hamster hamsters ferret ferrets parrot parrots budgie "
     "budgies canary canaries tortoise tortoises turtle turtles snake snakes lizard lizards gecko "
-    "horse horses stallion goldfish fish kitty "
+    "horse horses stallion goldfish fish kitty cockatiel cockatiels cockatoo cockatoos "
+    "budgerigar budgerigars lovebird lovebirds parakeet parakeets macaw macaws finch finches "
+    "chinchilla chinchillas gerbil gerbils degus axolotls tetra tetras bettas rats goat goats "
+    "sheep piglet piglets donkey donkeys "
     # es
     "perro perros perra perras perrito perritos gato gatos gata gatas conejo conejos coneja "
     "huron hurones cobaya cobayas loro loros periquito periquitos canario canarios tortuga "
-    "tortugas serpiente serpientes caballo caballos yegua pez peces "
+    "tortugas serpiente serpientes caballo caballos yegua pez peces ninfa ninfas cacatuas "
+    "agaporni cotorra cotorras jerbo jerbos rata ratas ajolote conejito conejitos cabra cabras "
+    "oveja ovejas cerdito cerditos burro burros "
     # de
     "hund hunde hundin katze katzen kater kaninchen hase hasen hamster frettchen meerschweinchen "
     "papagei papageien wellensittich wellensittiche kanarienvogel schildkrote schildkroten "
-    "schlange schlangen pferd pferde stute hengst fisch fische "
+    "schlange schlangen pferd pferde stute hengst fisch fische nymphensittich nymphensittiche "
+    "kakadu kakadus sittich sittiche unzertrennliche agaporniden zwergkaninchen zwerghase "
+    "zwerghasen rennmaus rennmause ratte ratten guppys ziege ziegen schaf schafe ferkel esel "
     # fr
     "chien chiens chienne chiennes chat chats chatte chattes lapin lapins lapine hamster hamsters "
     "furet furets cochon perroquet perroquets perruche perruches canari canaris tortue tortues "
-    "serpent serpents cheval chevaux jument poisson poissons"
+    "serpent serpents cheval chevaux jument poisson poissons calopsittes inseparable "
+    "inseparables cacatoes gerbille gerbilles souris combattant chevre chevres mouton moutons "
+    "porcelet porcelets ane anes"
 ).split()
 
 # Breeds: a name used on its own for an animal, rarely for an accessory.
@@ -120,32 +135,44 @@ OBJECT_TERMS = (
     "recinti box scatola borsa zaino passeggino rampa scaletta casetta canile fontanella "
     "abbigliamento vestito vestitino maglione felpa mantella accessori accessorio mangiatoia "
     "abbeveratoio filtro pompa riscaldatore illuminazione fieno truciolo lettiere sellino "
-    "sella bardatura museruole striscia tira medicinale integratore "
+    "sella bardatura museruole striscia tira medicinale integratore lampada lampade faretto "
+    "faretti uvb termostato termostati termoriscaldatore termometro igrometro nebulizzatore "
+    "substrato giocattolo giocattoli peluche tunnel amaca amache ruota trespolo trespoli "
+    "posatoio mangime semi fiocchi pellet sabbia ghiaia decorazione decorazioni "
     # en
     "leash lead collar collars harness bed beds crate crates carrier carriers cage cages bowl "
     "bowls tank aquarium terrarium vivarium coat jacket jumper sweater raincoat toy toys ball "
     "bone scratcher scratching scratch cushion mat muzzle brush shampoo food treats kennel pen "
     "playpen bag backpack stroller ramp stairs house tree litter cover clothes clothing "
     "pad pads training accessories accessory feeder filter pump heater lamp hay saddle bridle "
-    "blanket "
+    "blanket lamps bulb bulbs heatmat thermostat thermometer hygrometer substrate hammock "
+    "tunnel wheel perch perches seed seeds pellets gravel sand decoration decorations plush "
     # es
     "correa collar collares arnes cama camas transportin transportines jaula jaulas comedero "
     "bebedero arenero acuario abrigo juguete juguetes pelota hueso rascador cojin bozal "
     "cepillo champu comida pienso golosinas caseta parque bolso mochila cochecito rampa ropa "
-    "accesorios accesorio filtro bomba calentador heno silla manta "
+    "accesorios accesorio filtro bomba calentador heno silla manta lampara lamparas bombilla "
+    "bombillas termostato termometro sustrato hamaca tunel rueda percha perchas semillas grava "
+    "arena "
     # de
     "leine halsband halsbander geschirr korb bett hundebett katzenbett transportbox "
     "transporttasche kafig napf futternapf katzenklo streu aquarium terrarium mantel "
     "spielzeug knochen kratzbaum kissen maulkorb burste futter leckerli hutte gehege tasche "
     "rucksack kinderwagen rampe treppe kleidung zubehor pullover decke sattel fressnapf "
-    "filter pumpe heizung heu "
+    "filter pumpe heizung heu lampe lampen leuchte strahler thermostat thermometer substrat "
+    "hangematte laufrad sitzstange sitzstangen korner samen kies dekoration "
     # fr
     "laisse collier colliers harnais panier paniers caisse cage cages gamelle litiere "
     "aquarium terrarium manteau imper jouet jouets balle os griffoir coussin muselière "
     "museliere brosse shampoing nourriture croquettes friandises niche enclos sac poussette "
     "rampe vetement vetements accessoires accessoire filtre pompe chauffage foin selle "
-    "couverture"
+    "couverture lampes ampoule ampoules thermostat thermometre substrat hamac roue perchoir "
+    "perchoirs graines granules gravier sable"
 ).split()
+
+# A number after one of these says how many animals an accessory is FOR
+# ("gabbia per 2 conigli", "carrier for 2 cats"), not how many are offered.
+CAPACITY_PREPOSITIONS = "per for pour para fur fuer bis zu".split()
 
 # Prepositions that turn the next animal word into the target of an accessory.
 PREPOSITIONS = (
@@ -299,6 +326,8 @@ def _build_patterns() -> dict[str, str]:
     adoption = f"<B>(?:{_alternation(ADOPTION_PHRASES)})</B>"
     of_words = f"<B>(?:{_alternation(OF_WORDS)})</B>"
     article = f"<B>(?:{_alternation(ARTICLES)})</B>"
+    capacity = f"<B>(?:{_alternation(CAPACITY_PREPOSITIONS)})</B>"
+    number = "<B>[0-9]+</B>"
     conj = f"<B>(?:{_alternation(CONJUNCTIONS)})</B>"
     gap = f"(?: [a-z0-9]+){{0,{WINDOW}}} "
     near = f"(?: [a-z0-9]+){{0,{NEAR_WINDOW}}} "
@@ -306,10 +335,15 @@ def _build_patterns() -> dict[str, str]:
         # Step 1: an animal word that only names what an accessory is for
         # ("per gatto", "trasportino per un gatto", "dog bed", "guinzaglio cane").
         "object_target": (
-            f"(?:{prep}(?: {article})? {animal}|{obj}(?: [a-z0-9]+)? {animal})"
+            f"(?:{prep}(?: {article})? {animal}|{capacity} {number}(?: {article})? {animal}"
+            f"|{obj}(?: [a-z0-9]+)? {animal})"
             f"(?: {conj}(?: {article})? {animal})*"
             f"|{animal} {obj}"
         ),
+        # "15 pesci", "3 conigli nani", "2 Nymphensittiche": a count of animals
+        # (one that is not the capacity of an accessory, removed in step 1) is
+        # an offer even without a verb.
+        "animal_count": f"{number}(?: {article})? {animal}",
         "animal_then_offer": f"{animal}{gap}(?:{offer}|{qualifier})",
         "offer_then_animal": f"(?:{offer}|{qualifier}){gap}{animal}",
         # In a text about an accessory the offer must sit right next to the
@@ -340,6 +374,7 @@ _ANIMAL_ADJACENT_OFFER = _python_regex(PATTERN_SOURCES["animal_adjacent_offer"])
 _ANIMAL_THEN_OFFER_NEAR = _python_regex(PATTERN_SOURCES["animal_then_offer_near"])
 _OFFER_THEN_ANIMAL_NEAR = _python_regex(PATTERN_SOURCES["offer_then_animal_near"])
 _YOUNG_OF = _python_regex(PATTERN_SOURCES["young_of"])
+_ANIMAL_COUNT = _python_regex(PATTERN_SOURCES["animal_count"])
 _YOUNG = _python_regex(PATTERN_SOURCES["young"])
 _OBJECT = _python_regex(PATTERN_SOURCES["object"])
 _ADOPTION = _python_regex(PATTERN_SOURCES["adoption"])
@@ -375,6 +410,6 @@ def _offers_animals(text: str, about_accessory: bool) -> bool:
     offer_then = _OFFER_THEN_ANIMAL_NEAR if own_accessory else _OFFER_THEN_ANIMAL
     if _ANIMAL_ADJACENT_OFFER.search(left) or then_offer.search(left) or offer_then.search(left):
         return True
-    if _YOUNG_OF.search(left):
+    if _YOUNG_OF.search(left) or _ANIMAL_COUNT.search(left):
         return True
     return bool(_YOUNG.search(left) and not about_accessory)

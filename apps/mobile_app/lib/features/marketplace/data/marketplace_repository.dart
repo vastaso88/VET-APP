@@ -9,6 +9,7 @@ import '../../../l10n/l10n.dart';
 import '../../location/domain/coordinates.dart';
 import '../../territory/domain/territory.dart';
 import '../domain/animal_policy.dart';
+import '../domain/content_policy.dart';
 import '../domain/marketplace_listing.dart';
 import 'listing_photo_store.dart';
 
@@ -251,6 +252,20 @@ class MarketplaceRepository {
     if (offersAnimals(listing.title, listing.description)) {
       throw ListingRejectedException(appL10n.marketplaceNoAnimalsMessage);
     }
+    // Public text, no contact details (the backend refuses them too).
+    if (containsContactDetails(listing.title) || containsContactDetails(listing.description)) {
+      throw ListingRejectedException(appL10n.marketplaceNoContactsMessage);
+    }
+  }
+
+  /// The backend speaks Italian; these are its refusals the owner reads in
+  /// their own language. Anything else is shown as it came.
+  String _localizedRefusal(String? detail) {
+    if (detail == null) return appL10n.marketplaceSaveFailed;
+    if (detail == animalPolicyBackendMessage) return appL10n.marketplaceNoAnimalsMessage;
+    if (detail == contactPolicyBackendMessage) return appL10n.marketplaceNoContactsMessage;
+    if (detail == medicinePolicyBackendMessage) return appL10n.marketplaceNoMedicinesMessage;
+    return detail;
   }
 
   /// The body the backend takes to publish or edit an ad.
@@ -281,12 +296,7 @@ class MarketplaceRepository {
         detail = (jsonDecode(utf8.decode(response.bodyBytes)) as Map<String, dynamic>)['detail']
             as String?;
       } catch (_) {}
-      // The backend speaks Italian; the owner reads the message in their language.
-      throw ListingRejectedException(
-        detail == animalPolicyBackendMessage || detail == null
-            ? (detail == null ? appL10n.marketplaceSaveFailed : appL10n.marketplaceNoAnimalsMessage)
-            : detail,
-      );
+      throw ListingRejectedException(_localizedRefusal(detail));
     }
     throw const ListingBackendUnavailableException();
   }

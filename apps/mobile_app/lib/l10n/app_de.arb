@@ -562,6 +562,8 @@
   "marketplaceIntro": "Kaufen, verkaufen und verschenken Sie Tierbedarf mit anderen Tierhaltern.",
   "marketplaceRules": "Der Gebrauchtmarkt bietet nur Artikel für Tiere. Tiere dürfen hier in keinem Land verkauft, verschenkt oder getauscht werden.",
   "marketplaceNoAnimalsMessage": "Auf dem Gebrauchtmarkt werden nur Artikel für Tiere verkauft, keine Tiere.",
+  "marketplaceNoContactsMessage": "Geben Sie in der Anzeige keine Telefonnummern, E-Mail-Adressen, Websites oder Social-Media-Profile an.",
+  "marketplaceNoMedicinesMessage": "Auf dem Gebrauchtmarkt dürfen keine Arzneimittel oder Tiermedikamente verkauft werden, auch nicht rezeptfrei.",
   "marketplaceBackendUnavailable": "Der Gebrauchtmarkt ist gerade nicht erreichbar. Versuchen Sie es gleich noch einmal.",
   "marketplaceEmptyFiltered": "Derzeit keine Anzeigen mit diesen Filtern.",
   "marketplaceNeedsLocation": "Der Gebrauchtmarkt zeigt nur Anzeigen in Ihrer Nähe. Legen Sie Ihren Standort unter Einstellungen → Standort fest, um sie zu sehen.",

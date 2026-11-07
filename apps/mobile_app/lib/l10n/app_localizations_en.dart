@@ -1225,6 +1225,14 @@ class AppLocalizationsEn extends AppLocalizations {
       'Only items for animals are sold on the marketplace, not animals.';
 
   @override
+  String get marketplaceNoContactsMessage =>
+      'Do not put phone numbers, e-mail addresses, websites or social profiles in the ad.';
+
+  @override
+  String get marketplaceNoMedicinesMessage =>
+      'Medicines and veterinary drugs cannot be sold on the marketplace, even without a prescription.';
+
+  @override
   String get marketplaceBackendUnavailable =>
       'The marketplace can\'t be reached right now. Try again in a moment.';
 
