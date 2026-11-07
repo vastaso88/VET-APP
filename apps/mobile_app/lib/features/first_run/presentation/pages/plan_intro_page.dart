@@ -29,13 +29,20 @@ class _PlanIntroPageState extends State<PlanIntroPage> {
   final _dataSource = HttpSubscriptionRemoteDataSource();
   final _store = BillingDemoStore.instance;
   PlanTier? _selecting;
+  // False until the backend has answered once (or failed to): the screen
+  // differs during a public test, so it waits instead of flashing the plans.
+  bool _loaded = false;
 
   @override
   void initState() {
     super.initState();
     // The limits of each plan come from the backend; the cards fill in once
     // they arrive.
-    unawaited(_store.syncFromBackend(dataSource: _dataSource));
+    unawaited(
+      _store.syncFromBackend(dataSource: _dataSource).whenComplete(() {
+        if (mounted) setState(() => _loaded = true);
+      }),
+    );
   }
 
   Future<void> _selectPlan(PlanTier tier) async {
@@ -57,6 +64,13 @@ class _PlanIntroPageState extends State<PlanIntroPage> {
 
   @override
   Widget build(BuildContext context) {
+    if (!_loaded) {
+      return const Scaffold(
+        backgroundColor: AppColors.background,
+        body: SafeArea(child: Center(child: PetLoader())),
+      );
+    }
+    if (_store.isTestPeriod) return _TestPeriodView(store: _store);
     return Scaffold(
       backgroundColor: AppColors.background,
       body: SafeArea(
@@ -100,6 +114,84 @@ class _PlanIntroPageState extends State<PlanIntroPage> {
                     ),
                     const SizedBox(height: AppSpacing.sm),
                   ],
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// During a public test nobody chooses or pays: the welcome page says so and
+/// goes on, instead of offering a trial or a plan as if it were real.
+class _TestPeriodView extends StatelessWidget {
+  const _TestPeriodView({required this.store});
+
+  final BillingDemoStore store;
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: AppColors.background,
+      body: SafeArea(
+        child: ListView(
+          padding: const EdgeInsets.fromLTRB(
+            AppSpacing.xl,
+            AppSpacing.xl,
+            AppSpacing.xl,
+            AppSpacing.xxxl,
+          ),
+          children: [
+            Text(context.l10n.firstRunWelcomeTitle,
+                style: AppTextStyles.display.copyWith(fontSize: 26)),
+            const SizedBox(height: AppSpacing.lg),
+            Container(
+              key: const ValueKey('first-run-test-period'),
+              width: double.infinity,
+              padding: const EdgeInsets.all(AppSpacing.lg),
+              decoration: BoxDecoration(
+                color: AppColors.primaryStrong,
+                borderRadius: BorderRadius.circular(AppRadii.large),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      const Icon(Icons.science_outlined,
+                          color: AppColors.onPrimary),
+                      const SizedBox(width: AppSpacing.sm),
+                      Text(
+                        context.l10n.billingTestPeriodTitle,
+                        style: AppTextStyles.title
+                            .copyWith(color: AppColors.onPrimary, fontSize: 18),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: AppSpacing.sm),
+                  Text(
+                    context.l10n.billingTestPeriodBody(
+                        store.currentPlan?.displayName ?? ''),
+                    style: AppTextStyles.bodySmall.copyWith(
+                      color: AppColors.onPrimary.withValues(alpha: 0.9),
+                    ),
+                  ),
+                  const SizedBox(height: AppSpacing.lg),
+                  SizedBox(
+                    width: double.infinity,
+                    child: FilledButton(
+                      onPressed: () => Navigator.of(context).pop(),
+                      style: FilledButton.styleFrom(
+                        backgroundColor: AppColors.onPrimary,
+                        foregroundColor: AppColors.primaryStrong,
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(AppRadii.pill)),
+                      ),
+                      child: Text(context.l10n.commonContinue),
+                    ),
+                  ),
                 ],
               ),
             ),

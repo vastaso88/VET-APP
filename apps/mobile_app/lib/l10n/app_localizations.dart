@@ -1070,6 +1070,54 @@ abstract class AppLocalizations {
   /// **'Il tuo piano ha raggiunto questo limite. Passa a un piano superiore da Impostazioni.'**
   String get billingPlanLimitReached;
 
+  /// No description provided for @billingTestPeriodTitle.
+  ///
+  /// In it, this message translates to:
+  /// **'Periodo di test'**
+  String get billingTestPeriodTitle;
+
+  /// No description provided for @billingTestPeriodBody.
+  ///
+  /// In it, this message translates to:
+  /// **'Stai usando Quokka con il piano {plan}, senza pagare: durante il test tutti hanno lo stesso piano e non c\'è nulla da scegliere né da pagare.'**
+  String billingTestPeriodBody(String plan);
+
+  /// No description provided for @billingTestPeriodShort.
+  ///
+  /// In it, this message translates to:
+  /// **'{plan} · test'**
+  String billingTestPeriodShort(String plan);
+
+  /// No description provided for @billingActionNeedsPlan.
+  ///
+  /// In it, this message translates to:
+  /// **'Per farlo serve un piano. Scegline uno da Impostazioni → Abbonamento e pagamenti.'**
+  String get billingActionNeedsPlan;
+
+  /// No description provided for @marketplaceLimitedNotice.
+  ///
+  /// In it, this message translates to:
+  /// **'Stai vedendo solo oggetto, prezzo e foto. Con un piano vedi anche la descrizione e i dettagli e puoi pubblicare e segnalare annunci.'**
+  String get marketplaceLimitedNotice;
+
+  /// No description provided for @marketplaceLimitedSeePlans.
+  ///
+  /// In it, this message translates to:
+  /// **'Vedi i piani'**
+  String get marketplaceLimitedSeePlans;
+
+  /// No description provided for @eventsNeedsPlan.
+  ///
+  /// In it, this message translates to:
+  /// **'Gli eventi sono compresi nei piani. Scegli un piano per vederli.'**
+  String get eventsNeedsPlan;
+
+  /// No description provided for @billingPaywallBrowseMarketplace.
+  ///
+  /// In it, this message translates to:
+  /// **'Sfoglia gli annunci del Mercatino'**
+  String get billingPaywallBrowseMarketplace;
+
   /// No description provided for @billingChoosePlan.
   ///
   /// In it, this message translates to:
@@ -11041,6 +11089,180 @@ abstract class AppLocalizations {
   /// In it, this message translates to:
   /// **'Invia rapporti sugli errori'**
   String get settingsConsentDiagnostics;
+
+  /// No description provided for @marketplaceMessagesTitle.
+  ///
+  /// In it, this message translates to:
+  /// **'Messaggi del Mercatino'**
+  String get marketplaceMessagesTitle;
+
+  /// No description provided for @marketplaceMessagesOpen.
+  ///
+  /// In it, this message translates to:
+  /// **'{count, plural, =0{Messaggi} =1{Messaggi: 1 da leggere} other{Messaggi: {count} da leggere}}'**
+  String marketplaceMessagesOpen(int count);
+
+  /// No description provided for @marketplaceMessagesWriteToSeller.
+  ///
+  /// In it, this message translates to:
+  /// **'Scrivi al venditore'**
+  String get marketplaceMessagesWriteToSeller;
+
+  /// No description provided for @marketplaceMessagesEmpty.
+  ///
+  /// In it, this message translates to:
+  /// **'Nessuna conversazione. Quando scrivi a un venditore, o qualcuno ti scrive per un tuo annuncio, la trovi qui.'**
+  String get marketplaceMessagesEmpty;
+
+  /// No description provided for @marketplaceMessagesLoadFailed.
+  ///
+  /// In it, this message translates to:
+  /// **'Non riesco a caricare i messaggi. Riprova tra poco.'**
+  String get marketplaceMessagesLoadFailed;
+
+  /// No description provided for @marketplaceMessagesRoleBuyer.
+  ///
+  /// In it, this message translates to:
+  /// **'Con il venditore'**
+  String get marketplaceMessagesRoleBuyer;
+
+  /// No description provided for @marketplaceMessagesRoleSeller.
+  ///
+  /// In it, this message translates to:
+  /// **'Con un acquirente'**
+  String get marketplaceMessagesRoleSeller;
+
+  /// No description provided for @marketplaceMessagesClosedTag.
+  ///
+  /// In it, this message translates to:
+  /// **'Chiusa'**
+  String get marketplaceMessagesClosedTag;
+
+  /// No description provided for @marketplaceMessagesSafetyNotice.
+  ///
+  /// In it, this message translates to:
+  /// **'Per la tua sicurezza: non condividere dati personali (telefono, e-mail, indirizzo) e non pagare in anticipo.'**
+  String get marketplaceMessagesSafetyNotice;
+
+  /// No description provided for @marketplaceMessagesHint.
+  ///
+  /// In it, this message translates to:
+  /// **'Scrivi un messaggio'**
+  String get marketplaceMessagesHint;
+
+  /// No description provided for @marketplaceMessagesSend.
+  ///
+  /// In it, this message translates to:
+  /// **'Invia'**
+  String get marketplaceMessagesSend;
+
+  /// No description provided for @marketplaceMessagesSendFailed.
+  ///
+  /// In it, this message translates to:
+  /// **'Messaggio non inviato. Riprova.'**
+  String get marketplaceMessagesSendFailed;
+
+  /// No description provided for @marketplaceMessagesDailyLimit.
+  ///
+  /// In it, this message translates to:
+  /// **'Hai raggiunto il limite di {limit} nuove conversazioni al giorno. Riprova domani.'**
+  String marketplaceMessagesDailyLimit(int limit);
+
+  /// No description provided for @marketplaceMessagesClosed.
+  ///
+  /// In it, this message translates to:
+  /// **'Questa conversazione è chiusa: puoi rileggerla, ma non si possono più inviare messaggi.'**
+  String get marketplaceMessagesClosed;
+
+  /// No description provided for @marketplaceMessagesBlockedByMe.
+  ///
+  /// In it, this message translates to:
+  /// **'Hai bloccato questa persona. Sbloccala per scrivere di nuovo.'**
+  String get marketplaceMessagesBlockedByMe;
+
+  /// No description provided for @marketplaceMessagesUnavailable.
+  ///
+  /// In it, this message translates to:
+  /// **'Per questo annuncio non è possibile scrivere.'**
+  String get marketplaceMessagesUnavailable;
+
+  /// No description provided for @marketplaceMessagesPlanRequired.
+  ///
+  /// In it, this message translates to:
+  /// **'Per scrivere serve un piano attivo. Puoi comunque rileggere i messaggi, bloccare e segnalare.'**
+  String get marketplaceMessagesPlanRequired;
+
+  /// No description provided for @marketplaceMessagesMoreActions.
+  ///
+  /// In it, this message translates to:
+  /// **'Altre azioni'**
+  String get marketplaceMessagesMoreActions;
+
+  /// No description provided for @marketplaceMessagesBlock.
+  ///
+  /// In it, this message translates to:
+  /// **'Blocca utente'**
+  String get marketplaceMessagesBlock;
+
+  /// No description provided for @marketplaceMessagesUnblock.
+  ///
+  /// In it, this message translates to:
+  /// **'Sblocca utente'**
+  String get marketplaceMessagesUnblock;
+
+  /// No description provided for @marketplaceMessagesBlockTitle.
+  ///
+  /// In it, this message translates to:
+  /// **'Bloccare questa persona?'**
+  String get marketplaceMessagesBlockTitle;
+
+  /// No description provided for @marketplaceMessagesBlockBody.
+  ///
+  /// In it, this message translates to:
+  /// **'Non potrà più scriverti, per nessun annuncio, e tu non potrai scriverle. Non riceverà alcun avviso.'**
+  String get marketplaceMessagesBlockBody;
+
+  /// No description provided for @marketplaceMessagesBlockConfirm.
+  ///
+  /// In it, this message translates to:
+  /// **'Blocca'**
+  String get marketplaceMessagesBlockConfirm;
+
+  /// No description provided for @marketplaceMessagesBlocked.
+  ///
+  /// In it, this message translates to:
+  /// **'Utente bloccato.'**
+  String get marketplaceMessagesBlocked;
+
+  /// No description provided for @marketplaceMessagesUnblocked.
+  ///
+  /// In it, this message translates to:
+  /// **'Utente sbloccato.'**
+  String get marketplaceMessagesUnblocked;
+
+  /// No description provided for @marketplaceMessagesReport.
+  ///
+  /// In it, this message translates to:
+  /// **'Segnala conversazione'**
+  String get marketplaceMessagesReport;
+
+  /// No description provided for @marketplaceMessagesReportPrivacy.
+  ///
+  /// In it, this message translates to:
+  /// **'Il nostro team leggerà questa conversazione per valutare la segnalazione.'**
+  String get marketplaceMessagesReportPrivacy;
+
+  /// No description provided for @marketplaceMessagesReasonHarassment.
+  ///
+  /// In it, this message translates to:
+  /// **'Molestie'**
+  String get marketplaceMessagesReasonHarassment;
+
+  /// No description provided for @marketplaceMessagesActionFailed.
+  ///
+  /// In it, this message translates to:
+  /// **'Operazione non riuscita. Riprova.'**
+  String get marketplaceMessagesActionFailed;
 }
 
 class _AppLocalizationsDelegate

@@ -12,6 +12,7 @@ import '../../../../design_system/tokens/app_text_styles.dart';
 import '../../../../l10n/l10n.dart';
 import '../../../account/presentation/pages/delete_account_page.dart';
 import '../../../account/presentation/pages/export_data_page.dart';
+import '../../../marketplace/presentation/pages/marketplace_page.dart';
 import '../../data/billing_demo_store.dart';
 import '../../data/subscription_remote_data_source.dart';
 import '../../domain/billing_models.dart';
@@ -99,7 +100,14 @@ class _PaywallPageState extends State<PaywallPage> {
                   const SizedBox(height: AppSpacing.md),
                 ],
                 const SizedBox(height: AppSpacing.lg),
-                Text(context.l10n.billingPaywallDataTitle, style: AppTextStyles.title),
+                _DataActionRow(
+                  icon: Icons.storefront_outlined,
+                  label: context.l10n.billingPaywallBrowseMarketplace,
+                  onTap: () => _open(const MarketplacePage()),
+                ),
+                const SizedBox(height: AppSpacing.lg),
+                Text(context.l10n.billingPaywallDataTitle,
+                    style: AppTextStyles.title),
                 const SizedBox(height: AppSpacing.xs),
                 Text(context.l10n.billingPaywallDataBody, style: AppTextStyles.bodySmall),
                 const SizedBox(height: AppSpacing.sm),

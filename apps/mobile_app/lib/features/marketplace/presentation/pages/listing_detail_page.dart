@@ -8,11 +8,14 @@ import '../../../../l10n/l10n.dart';
 import '../../../../shared/auth/current_owner.dart';
 import '../../../home/presentation/widgets/home_dashboard_primitives.dart';
 import '../../data/listing_report_service.dart';
+import '../../data/marketplace_messages_repository.dart';
 import '../../data/marketplace_repository.dart';
 import '../../domain/marketplace_listing.dart';
 import '../marketplace_labels.dart';
+import '../widgets/limited_marketplace_notice.dart';
 import '../widgets/listing_photo.dart';
 import 'create_listing_page.dart';
+import 'marketplace_conversation_page.dart';
 
 /// Pops `true` whenever the listing changed (edited, deleted, removed by
 /// reports) so the list reloads.
@@ -23,12 +26,14 @@ class ListingDetailPage extends StatefulWidget {
     this.distanceMeters,
     this.repository,
     this.currentOwnerId,
+    this.messagesRepository,
   });
 
   final MarketplaceListing listing;
   final double? distanceMeters;
   final MarketplaceRepository? repository;
   final String? currentOwnerId;
+  final MarketplaceMessagesRepository? messagesRepository;
 
   @override
   State<ListingDetailPage> createState() => _ListingDetailPageState();
@@ -48,6 +53,18 @@ class _ListingDetailPageState extends State<ListingDetailPage> {
       };
 
   String get _currentOwnerId => widget.currentOwnerId ?? resolveCurrentOwnerId();
+
+  Future<void> _writeToSeller() async {
+    await Navigator.of(context).push<void>(
+      MaterialPageRoute<void>(
+        builder: (_) => MarketplaceConversationPage(
+          listingId: widget.listing.id,
+          listingTitle: widget.listing.title,
+          repository: widget.messagesRepository,
+        ),
+      ),
+    );
+  }
 
   Future<void> _reportListing() async {
     final reason = await showDialog<String>(
@@ -179,14 +196,16 @@ class _ListingDetailPageState extends State<ListingDetailPage> {
               spacing: AppSpacing.sm,
               runSpacing: AppSpacing.sm,
               children: [
-                DashboardBadge(
-                  label: listingCategoryLabel(listing.category),
-                  tone: DashboardTone.info,
-                ),
-                DashboardBadge(
-                  label: listingConditionLabel(listing.condition),
-                  tone: DashboardTone.neutral,
-                ),
+                if (!listing.isLimited) ...[
+                  DashboardBadge(
+                    label: listingCategoryLabel(listing.category),
+                    tone: DashboardTone.info,
+                  ),
+                  DashboardBadge(
+                    label: listingConditionLabel(listing.condition),
+                    tone: DashboardTone.neutral,
+                  ),
+                ],
                 if (widget.distanceMeters != null)
                   DashboardBadge(
                     label: listingDistanceLabel(widget.distanceMeters),
@@ -220,14 +239,22 @@ class _ListingDetailPageState extends State<ListingDetailPage> {
               const SizedBox(height: AppSpacing.xl),
               Text(listing.description!, style: AppTextStyles.body),
             ],
+            if (listing.isLimited) ...[
+              const SizedBox(height: AppSpacing.xl),
+              const LimitedMarketplaceNotice(),
+            ],
             const SizedBox(height: AppSpacing.xxl),
-            if (isOwner) ...[
-              DashboardActionButton(
-                label: context.l10n.marketplaceEditListing,
-                icon: Icons.edit_outlined,
-                onPressed: _busy ? null : _editListing,
-              ),
-              const SizedBox(height: AppSpacing.md),
+            if (listing.isLimited && !isOwner)
+              const SizedBox.shrink()
+            else if (isOwner) ...[
+              if (!listing.isLimited) ...[
+                DashboardActionButton(
+                  label: context.l10n.marketplaceEditListing,
+                  icon: Icons.edit_outlined,
+                  onPressed: _busy ? null : _editListing,
+                ),
+                const SizedBox(height: AppSpacing.md),
+              ],
               DashboardActionButton(
                 label: _busy
                     ? context.l10n.marketplaceDeleting
@@ -237,7 +264,14 @@ class _ListingDetailPageState extends State<ListingDetailPage> {
                 filled: false,
                 onPressed: _busy ? null : _deleteListing,
               ),
-            ] else
+            ] else ...[
+              DashboardActionButton(
+                key: const ValueKey('marketplace-write-to-seller'),
+                label: context.l10n.marketplaceMessagesWriteToSeller,
+                icon: Icons.mail_outline_rounded,
+                onPressed: _busy ? null : _writeToSeller,
+              ),
+              const SizedBox(height: AppSpacing.md),
               DashboardActionButton(
                 label: _busy
                     ? context.l10n.marketplaceReporting
@@ -247,6 +281,7 @@ class _ListingDetailPageState extends State<ListingDetailPage> {
                 filled: false,
                 onPressed: _busy ? null : _reportListing,
               ),
+            ],
           ],
         ),
       ),

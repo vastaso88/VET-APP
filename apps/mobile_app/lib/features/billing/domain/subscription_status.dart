@@ -10,6 +10,7 @@ class SubscriptionStatus {
     required this.hasAccess,
     this.limits,
     this.planLimits = const {},
+    this.testPeriod = false,
   });
 
   factory SubscriptionStatus.fromJson(Map<String, dynamic> json) {
@@ -21,6 +22,7 @@ class SubscriptionStatus {
       plan: planTierFromKey(subscription['plan'] as String?),
       isDeveloper: json['is_developer'] as bool,
       hasAccess: json['has_access'] as bool,
+      testPeriod: json['test_period'] as bool? ?? false,
       limits: rawLimits == null ? null : PlanLimits.fromJson(rawLimits),
       planLimits: {
         for (final entry in rawCatalog.entries)
@@ -42,6 +44,11 @@ class SubscriptionStatus {
 
   /// The limits of every plan, as the backend enforces them.
   final Map<PlanTier, PlanLimits> planLimits;
+
+  /// True during a public test of the app: every account is on [plan]
+  /// (reported by the backend, set by its environment) and nobody pays, so
+  /// the app must not ask for a payment or a choice of plan.
+  final bool testPeriod;
 
   bool get isTrialActive => DateTime.now().isBefore(trialEndsAt);
 

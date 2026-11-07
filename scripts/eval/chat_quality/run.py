@@ -289,22 +289,25 @@ class CallCounter:
         client_class._eval_counted = True
 
 
-def _dedicated_key(production_key: str) -> str:
-    """EVAL_LLM_API_KEY from the environment or the local .env. Exits with
-    an explanation when it is missing or is the production key."""
-    key = _env_value("EVAL_LLM_API_KEY")
+def _dedicated_key(
+    production_key: str, *, name: str = "EVAL_LLM_API_KEY", production_name: str = "LLM_API_KEY"
+) -> str:
+    """The dedicated evaluation key ([name]) from the environment or the
+    local .env. Exits with an explanation when it is missing or is the
+    production key ([production_name])."""
+    key = _env_value(name)
     if not key:
         sys.exit(
-            "Manca EVAL_LLM_API_KEY.\n"
-            "Le prove della chat non devono usare la chiave di produzione (LLM_API_KEY): "
+            f"Manca {name}.\n"
+            f"Le prove della chat non devono usare la chiave di produzione ({production_name}): "
             "consumano la stessa quota giornaliera e possono fermare la chat dell'app.\n"
             "Crea una chiave su un conto del provider SEPARATO da quello di produzione "
             "(i limiti sono per conto, non per chiave) e aggiungila al file .env locale "
-            "come EVAL_LLM_API_KEY=... Vedi scripts/eval/chat_quality/README.md."
+            f"come {name}=... Vedi scripts/eval/chat_quality/README.md."
         )
     if key == production_key and not _env_value("EVAL_LLM_BASE_URL"):
         sys.exit(
-            "EVAL_LLM_API_KEY è uguale a LLM_API_KEY: è la chiave di produzione. "
+            f"{name} è uguale a {production_name}: è la chiave di produzione. "
             "Usa una chiave di un conto separato."
         )
     return key
@@ -402,6 +405,32 @@ def build_settings(
                 "llm_provider": "groq",
                 "llm_base_url": base_url or settings.llm_base_url,
                 "llm_model": model or settings.llm_model,
+            }
+        )
+    # Claude under test (LLM_PROVIDER=anthropic in the .env, or
+    # EVAL_LLM_PROVIDER=anthropic): its own dedicated key, from a separate
+    # account or workspace; the Groq reserve is switched off (LLM_MODEL
+    # empty) so that a run measures one model, and the Groq key is the
+    # dedicated one too, for the attachment readings.
+    if (_env_value("EVAL_LLM_PROVIDER") or settings.llm_provider) == "anthropic":
+        updates: dict[str, Any] = {
+            "llm_provider": "anthropic",
+            "llm_model": "",
+            "llm_api_key": _env_value("EVAL_LLM_API_KEY"),
+        }
+        if _env_value("EVAL_ANTHROPIC_MODEL"):
+            updates["anthropic_model"] = _env_value("EVAL_ANTHROPIC_MODEL")
+        settings = settings.model_copy(update=updates)
+        if allow_production_key and not _env_value("EVAL_ANTHROPIC_API_KEY"):
+            _allow_production_key(max_tokens)
+            return settings
+        return settings.model_copy(
+            update={
+                "anthropic_api_key": _dedicated_key(
+                    settings.anthropic_api_key,
+                    name="EVAL_ANTHROPIC_API_KEY",
+                    production_name="ANTHROPIC_API_KEY",
+                )
             }
         )
     if settings.llm_provider == "echo":

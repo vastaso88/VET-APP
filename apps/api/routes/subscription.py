@@ -27,4 +27,11 @@ def select_plan(request: SelectPlanRequest) -> dict[str, object]:
     result = container.select_plan_service().execute(
         SelectPlanInput(owner_id=user.id, plan=request.plan)
     )
-    return result.model_dump()
+    body: dict[str, object] = result.model_dump()
+    if result.test_period:
+        body["code"] = "subscription_test_period"
+        body["message"] = (
+            "Periodo di test: tutti gli account sono sul piano di prova e nessuno paga. "
+            "Il piano non è stato modificato."
+        )
+    return body

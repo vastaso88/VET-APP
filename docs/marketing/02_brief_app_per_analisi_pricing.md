@@ -55,7 +55,7 @@ Posizionamento dichiarato: **"supporto, non sostituzione" del veterinario**. L'a
 - **Prova gratuita di 14 giorni senza carta**. Alla scadenza l'utente deve scegliere un piano (Plus, Pro o Ultra): il piano Free non esiste più (decisione del 2026-11-06). Senza piano restano solo i propri dati: esportazione, cancellazione dell'account, indicazioni di emergenza. Il parere legale sul blocco senza Free è da rifare.
 - Impostazioni: consensi (ToS, privacy, marketing, analytics), località (GPS o indirizzo manuale), layout Home.
 
-## 5. Struttura abbonamento (decisa il 2026-11-06, in parte da confermare)
+## 5. Struttura abbonamento (decisa il 2026-11-06; limiti aggiornati il 2026-11-07, modificabili più avanti)
 
 Tre piani a pagamento, **Plus / Pro / Ultra**, con fatturazione **mensile o annuale** (l'annuale vale 10 mensilità, sconto circa 16,6%). Il piano Pro ha l'etichetta "Consigliato". Non c'è un piano Free.
 
@@ -63,14 +63,18 @@ Le funzioni sono le stesse in tutti i piani (profili, assistente, allegati in ch
 
 | | Plus | Pro | Ultra |
 |---|---|---|---|
-| Animali | 3 | 6 | 15 |
+| Animali | 4 | 8 | 15 |
 | Chat per animale | 2 | 4 | 6 |
-| Domande al giorno | 8 | 15 | 30 |
+| Domande al giorno | 12 | 25 | 50 |
 | Dispositivi contemporanei | 2 | 3 | 3 |
 | Prezzo mensile (Italia) | 4,59 € | 8,59 € | 15,59 € |
 | Prezzo annuale (Italia) | 45,99 € | 85,99 € | 155,99 € |
 
-Durante la prova valgono i limiti del Pro. Le emergenze non contano mai nelle domande al giorno. I prezzi degli altri paesi sono nella proposta [03_prezzi_per_paese.md](03_prezzi_per_paese.md). Un'idea già emersa è riservare al Pro il riepilogo pre-visita per il veterinario (non decisa).
+Durante la prova valgono i limiti del Pro.
+
+**Test con il pubblico (decisione del 2026-11-07).** Finché dura il test nessuno paga e tutti hanno sempre il piano Pro, anche finita la prova di 14 giorni. Si accende solo dall'ambiente del backend (`SUBSCRIPTION_TEST_PLAN=pro`); l'app non mostra richieste di pagamento né la scelta del piano, ma una dicitura sul periodo di test. Spento (predefinito), tutto resta come descritto qui.
+
+**Dopo la prova, senza abbonamento** (con il test spento): gli Eventi sono bloccati; il Mercatino mostra gli annunci degli altri solo con oggetto, prezzo, foto, città e distanza (niente descrizione, categoria, specie né posizione sulla mappa) e non permette di pubblicare, modificare né segnalare; tutto il resto è bloccato e restano esportazione dei dati, cancellazione dell'account e indicazioni di emergenza. Il filtro è applicato dal backend. Le emergenze non contano mai nelle domande al giorno. I prezzi degli altri paesi sono nella proposta [03_prezzi_per_paese.md](03_prezzi_per_paese.md). Un'idea già emersa è riservare al Pro il riepilogo pre-visita per il veterinario (non decisa).
 
 ## 6. Struttura dei costi (rilevante per il pricing)
 

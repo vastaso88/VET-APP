@@ -22,6 +22,7 @@ import '../features/pets/data/pet_photo_repository.dart';
 import '../features/reminders/data/reminders_repository.dart';
 import '../features/settings/data/layout_settings_store.dart';
 import '../features/settings/data/unit_settings_store.dart';
+import '../features/marketplace/data/marketplace_unread_store.dart';
 import '../shared/cache/owner_json_cache.dart';
 import '../shared/crash/crash_reporting.dart';
 import '../shared/config/app_runtime_config_loader.dart';
@@ -116,6 +117,7 @@ Future<void> bootstrap() async {
           unawaited(const ActiveWalkRecoveryStore().clear());
           unawaited(syncPetsToHomeWidget(const []));
           ProfilePhotoRepository.clearLocalCache();
+          MarketplaceUnreadStore.instance.reset();
         }
         if (state.event == AuthChangeEvent.signedIn) {
           unawaited(LanguageStore.instance.syncAfterAuthentication());

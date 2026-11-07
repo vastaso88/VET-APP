@@ -255,6 +255,28 @@
   "billingPaywallEmergencyTitle": "Si tu mascota está en peligro",
   "billingPaywallEmergencyBody": "Llama de inmediato a tu veterinario o a una clínica veterinaria de urgencias. Quokka no sustituye una visita.",
   "billingPlanLimitReached": "Tu plan ha alcanzado este límite. Cambia a un plan superior en Ajustes.",
+  "billingTestPeriodTitle": "Periodo de prueba pública",
+  "billingTestPeriodBody": "Estás usando Quokka con el plan {plan}, sin pagar: durante la prueba todos tienen el mismo plan y no hay nada que elegir ni pagar.",
+  "@billingTestPeriodBody": {
+    "placeholders": {
+      "plan": {
+        "type": "String"
+      }
+    }
+  },
+  "billingTestPeriodShort": "{plan} · prueba",
+  "@billingTestPeriodShort": {
+    "placeholders": {
+      "plan": {
+        "type": "String"
+      }
+    }
+  },
+  "billingActionNeedsPlan": "Para hacerlo hace falta un plan. Elige uno en Ajustes → Suscripción y pagos.",
+  "marketplaceLimitedNotice": "Solo ves el artículo, el precio y las fotos. Con un plan ves también la descripción y los detalles, y puedes publicar y denunciar anuncios.",
+  "marketplaceLimitedSeePlans": "Ver los planes",
+  "eventsNeedsPlan": "Los eventos forman parte de los planes. Elige un plan para verlos.",
+  "billingPaywallBrowseMarketplace": "Ver los anuncios del mercadillo",
   "billingChoosePlan": "Elegir {plan}",
   "@billingChoosePlan": {
     "placeholders": {
@@ -3791,5 +3813,34 @@
   "permGalleryTitle": "Elegir fotos y vídeos",
   "permGalleryWhy": "Se abre la galería del teléfono: Quokka solo ve las fotos y los vídeos que elijas, no toda la galería.",
   "permGalleryRefuse": "Si eliges «Ahora no», no se añade nada; puedes volver a intentarlo cuando quieras.",
-  "settingsConsentDiagnostics": "Enviar informes de errores"
+  "settingsConsentDiagnostics": "Enviar informes de errores",
+  "marketplaceMessagesTitle": "Mensajes del mercadillo",
+  "marketplaceMessagesOpen": "{count, plural, =0{Mensajes} =1{Mensajes: 1 sin leer} other{Mensajes: {count} sin leer}}",
+  "marketplaceMessagesWriteToSeller": "Escribir al vendedor",
+  "marketplaceMessagesEmpty": "Ninguna conversación. Cuando escribas a un vendedor, o alguien te escriba por uno de tus anuncios, la encontrarás aquí.",
+  "marketplaceMessagesLoadFailed": "No se pueden cargar los mensajes. Inténtalo de nuevo en un momento.",
+  "marketplaceMessagesRoleBuyer": "Con el vendedor",
+  "marketplaceMessagesRoleSeller": "Con un comprador",
+  "marketplaceMessagesClosedTag": "Cerrada",
+  "marketplaceMessagesSafetyNotice": "Por tu seguridad: no compartas datos personales (teléfono, correo electrónico, dirección) y no pagues por adelantado.",
+  "marketplaceMessagesHint": "Escribe un mensaje",
+  "marketplaceMessagesSend": "Enviar",
+  "marketplaceMessagesSendFailed": "Mensaje no enviado. Inténtalo de nuevo.",
+  "marketplaceMessagesDailyLimit": "Has alcanzado el límite de {limit} conversaciones nuevas al día. Inténtalo de nuevo mañana.",
+  "marketplaceMessagesClosed": "Esta conversación está cerrada: puedes volver a leerla, pero ya no se pueden enviar mensajes.",
+  "marketplaceMessagesBlockedByMe": "Has bloqueado a esta persona. Desbloquéala para volver a escribir.",
+  "marketplaceMessagesUnavailable": "No es posible escribir por este anuncio.",
+  "marketplaceMessagesPlanRequired": "Para escribir necesitas un plan activo. Aun así puedes leer los mensajes, bloquear y denunciar.",
+  "marketplaceMessagesMoreActions": "Más acciones",
+  "marketplaceMessagesBlock": "Bloquear usuario",
+  "marketplaceMessagesUnblock": "Desbloquear usuario",
+  "marketplaceMessagesBlockTitle": "¿Bloquear a esta persona?",
+  "marketplaceMessagesBlockBody": "Ya no podrá escribirte por ningún anuncio y tú no podrás escribirle. No recibirá ningún aviso.",
+  "marketplaceMessagesBlockConfirm": "Bloquear",
+  "marketplaceMessagesBlocked": "Usuario bloqueado.",
+  "marketplaceMessagesUnblocked": "Usuario desbloqueado.",
+  "marketplaceMessagesReport": "Denunciar conversación",
+  "marketplaceMessagesReportPrivacy": "Nuestro equipo leerá esta conversación para valorar la denuncia.",
+  "marketplaceMessagesReasonHarassment": "Acoso",
+  "marketplaceMessagesActionFailed": "No se ha podido hacer. Inténtalo de nuevo."
 }

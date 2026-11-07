@@ -33,6 +33,20 @@ interrompe; prima di ogni chiamata viene stimato il costo massimo (prompt più i
 risposta) e, se supererebbe il tetto, la chiamata non parte. Pensata per un sottoinsieme
 rappresentativo, non per un giro completo.
 
+## Valutare Claude (LLM_PROVIDER=anthropic)
+
+Con `LLM_PROVIDER=anthropic` nel `.env`, o con `EVAL_LLM_PROVIDER=anthropic`, lo strumento
+usa il client Claude del backend e chiede una chiave dedicata, `EVAL_ANTHROPIC_API_KEY`,
+di un conto o workspace separato da quello di produzione (`ANTHROPIC_API_KEY`). La riserva
+Groq è spenta durante la prova, così ogni risposta viene dal modello in esame;
+`EVAL_ANTHROPIC_MODEL` cambia il modello. `EVAL_LLM_API_KEY` resta la chiave Groq dedicata
+per la lettura degli allegati.
+
+```
+EVAL_LLM_PROVIDER=anthropic
+EVAL_ANTHROPIC_API_KEY=<chiave del conto di prova>
+```
+
 ## Confrontare un altro fornitore (es. OpenAI)
 
 Lo strumento parla il protocollo "chat completions" compatibile OpenAI. Per misurare un

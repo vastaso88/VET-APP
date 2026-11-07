@@ -255,6 +255,28 @@
   "billingPaywallEmergencyTitle": "Wenn Ihr Tier in Gefahr ist",
   "billingPaywallEmergencyBody": "Rufen Sie sofort Ihre Tierarztpraxis oder eine tierärztliche Notfallklinik an. Quokka ersetzt keinen Besuch.",
   "billingPlanLimitReached": "Ihr Tarif hat diese Grenze erreicht. Wechseln Sie in den Einstellungen zu einem höheren Tarif.",
+  "billingTestPeriodTitle": "Testphase",
+  "billingTestPeriodBody": "Sie nutzen Quokka mit dem Tarif {plan}, ohne zu zahlen: Während des Tests haben alle denselben Tarif, es gibt nichts zu wählen oder zu bezahlen.",
+  "@billingTestPeriodBody": {
+    "placeholders": {
+      "plan": {
+        "type": "String"
+      }
+    }
+  },
+  "billingTestPeriodShort": "{plan} · Test",
+  "@billingTestPeriodShort": {
+    "placeholders": {
+      "plan": {
+        "type": "String"
+      }
+    }
+  },
+  "billingActionNeedsPlan": "Dafür brauchen Sie einen Tarif. Wählen Sie einen unter Einstellungen → Abo und Zahlungen.",
+  "marketplaceLimitedNotice": "Sie sehen nur Artikel, Preis und Fotos. Mit einem Tarif sehen Sie auch die Beschreibung und die Details und können Anzeigen einstellen und melden.",
+  "marketplaceLimitedSeePlans": "Tarife ansehen",
+  "eventsNeedsPlan": "Veranstaltungen sind Teil der Tarife. Wählen Sie einen Tarif, um sie zu sehen.",
+  "billingPaywallBrowseMarketplace": "Anzeigen im Gebrauchtmarkt ansehen",
   "billingChoosePlan": "{plan} wählen",
   "@billingChoosePlan": {
     "placeholders": {
@@ -3791,5 +3813,34 @@
   "permGalleryTitle": "Fotos und Videos auswählen",
   "permGalleryWhy": "Die Galerie Ihres Telefons wird geöffnet: Quokka sieht nur die Fotos und Videos, die Sie auswählen, nicht Ihre gesamte Galerie.",
   "permGalleryRefuse": "Wenn Sie „Nicht jetzt“ wählen, wird nichts hinzugefügt; Sie können es jederzeit erneut versuchen.",
-  "settingsConsentDiagnostics": "Fehlerberichte senden"
+  "settingsConsentDiagnostics": "Fehlerberichte senden",
+  "marketplaceMessagesTitle": "Nachrichten im Gebrauchtmarkt",
+  "marketplaceMessagesOpen": "{count, plural, =0{Nachrichten} =1{Nachrichten: 1 ungelesen} other{Nachrichten: {count} ungelesen}}",
+  "marketplaceMessagesWriteToSeller": "Nachricht schreiben",
+  "marketplaceMessagesEmpty": "Keine Unterhaltungen. Wenn Sie wegen einer Anzeige schreiben oder jemand Ihnen wegen Ihrer Anzeige schreibt, finden Sie das hier.",
+  "marketplaceMessagesLoadFailed": "Die Nachrichten konnten nicht geladen werden. Bitte versuchen Sie es gleich noch einmal.",
+  "marketplaceMessagesRoleBuyer": "Mit der anbietenden Person",
+  "marketplaceMessagesRoleSeller": "Mit einer interessierten Person",
+  "marketplaceMessagesClosedTag": "Geschlossen",
+  "marketplaceMessagesSafetyNotice": "Zu Ihrer Sicherheit: Geben Sie keine persönlichen Daten weiter (Telefon, E-Mail, Adresse) und zahlen Sie nicht im Voraus.",
+  "marketplaceMessagesHint": "Nachricht eingeben",
+  "marketplaceMessagesSend": "Senden",
+  "marketplaceMessagesSendFailed": "Nachricht nicht gesendet. Bitte versuchen Sie es noch einmal.",
+  "marketplaceMessagesDailyLimit": "Sie haben das Limit von {limit} neuen Unterhaltungen pro Tag erreicht. Versuchen Sie es morgen wieder.",
+  "marketplaceMessagesClosed": "Diese Unterhaltung ist geschlossen: Sie können sie nachlesen, aber es lassen sich keine Nachrichten mehr senden.",
+  "marketplaceMessagesBlockedByMe": "Sie haben diese Person blockiert. Heben Sie die Blockierung auf, um wieder zu schreiben.",
+  "marketplaceMessagesUnavailable": "Zu dieser Anzeige kann nicht geschrieben werden.",
+  "marketplaceMessagesPlanRequired": "Zum Schreiben ist ein aktiver Tarif nötig. Nachrichten lesen, blockieren und melden können Sie weiterhin.",
+  "marketplaceMessagesMoreActions": "Weitere Aktionen",
+  "marketplaceMessagesBlock": "Person blockieren",
+  "marketplaceMessagesUnblock": "Blockierung aufheben",
+  "marketplaceMessagesBlockTitle": "Diese Person blockieren?",
+  "marketplaceMessagesBlockBody": "Diese Person kann Ihnen zu keiner Anzeige mehr schreiben, und Sie können ihr nicht schreiben. Sie erhält keinen Hinweis.",
+  "marketplaceMessagesBlockConfirm": "Blockieren",
+  "marketplaceMessagesBlocked": "Person blockiert.",
+  "marketplaceMessagesUnblocked": "Blockierung aufgehoben.",
+  "marketplaceMessagesReport": "Unterhaltung melden",
+  "marketplaceMessagesReportPrivacy": "Unser Team liest diese Unterhaltung, um Ihre Meldung zu prüfen.",
+  "marketplaceMessagesReasonHarassment": "Belästigung",
+  "marketplaceMessagesActionFailed": "Das hat nicht geklappt. Bitte versuchen Sie es noch einmal."
 }

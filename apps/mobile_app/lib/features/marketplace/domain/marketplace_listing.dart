@@ -49,6 +49,8 @@ class MarketplaceListing {
     this.reportCount = 0,
     required this.createdAt,
     required this.updatedAt,
+    this.isLimited = false,
+    this.serverDistanceMeters,
   });
 
   final String id;
@@ -76,6 +78,15 @@ class MarketplaceListing {
   final int reportCount;
   final DateTime createdAt;
   final DateTime updatedAt;
+
+  /// True for an ad read by an owner without a plan: the backend sends only
+  /// the first look (title, price, photos, town, distance), so every other
+  /// field here is a placeholder and must not be shown or relied on.
+  final bool isLimited;
+
+  /// The distance the backend computed, only for a limited ad (its position
+  /// is withheld, so the app cannot measure it).
+  final double? serverDistanceMeters;
 
   bool get isGift => priceCents == null;
 
@@ -117,6 +128,8 @@ class MarketplaceListing {
       reportCount: reportCount ?? this.reportCount,
       createdAt: createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
+      isLimited: isLimited,
+      serverDistanceMeters: serverDistanceMeters,
     );
   }
 }

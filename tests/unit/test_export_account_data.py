@@ -25,6 +25,9 @@ from packages.core.domain.reminders.models import Reminder
 from packages.infrastructure.persistence.in_memory_account_exporter import (
     InMemoryAccountExporter,
 )
+from packages.infrastructure.persistence.in_memory_marketplace_messaging import (
+    InMemoryMarketplaceMessagingRepository,
+)
 from packages.infrastructure.persistence.in_memory_repositories import (
     InMemoryAccountConsentsRepository,
     InMemoryClinicalEventRepository,
@@ -111,6 +114,36 @@ def test_export_covers_every_table_the_deletion_erases() -> None:
     assert EXPORTED_TABLES == erased
 
 
+def test_the_export_of_messages_never_names_the_other_person() -> None:
+    client = _SigningFake()
+    client.db["marketplace_conversations"] = [
+        {"id": "c1", "buyer_id": OWNER_A, "seller_id": OWNER_B, "listing_title": "Cuccia"},
+        {"id": "c2", "buyer_id": OWNER_B, "seller_id": "someone-else", "listing_title": "Ciotola"},
+    ]
+    client.db["marketplace_messages"] = [
+        {"id": "m1", "conversation_id": "c1", "sender_id": OWNER_A, "body": "Ciao"},
+        {"id": "m2", "conversation_id": "c1", "sender_id": OWNER_B, "body": "Buongiorno"},
+        {"id": "m3", "conversation_id": "c2", "sender_id": OWNER_B, "body": "Non mia"},
+    ]
+    client.db["marketplace_user_blocks"] = [
+        {"blocker_id": OWNER_A, "blocked_id": OWNER_B},
+        {"blocker_id": OWNER_B, "blocked_id": OWNER_A},
+    ]
+
+    data = _exporter(client).export_data(OWNER_A).data
+
+    assert [row["id"] for row in data["marketplace_conversations"]] == ["c1"]
+    assert data["marketplace_conversations"][0]["seller_id"] is None
+    assert {row["body"]: row["sender_id"] for row in data["marketplace_messages"]} == {
+        "Ciao": OWNER_A,
+        "Buongiorno": None,
+    }
+    # A block made against the owner is not revealed, one made by them has no id.
+    assert data["marketplace_user_blocks"] == [{"blocker_id": OWNER_A, "blocked_id": None}]
+    for table in ("marketplace_conversations", "marketplace_messages", "marketplace_user_blocks"):
+        assert OWNER_B not in str(data[table])
+
+
 def test_export_returns_only_the_owners_rows_and_signed_links() -> None:
     client = _SigningFake()
     _seed(client, OWNER_A, tag="a")
@@ -183,6 +216,7 @@ def test_in_memory_export_isolates_owners() -> None:
         user_locations=InMemoryUserLocationRepository(),
         dog_walks=InMemoryDogWalkRepository(),
         marketplace_listings=InMemoryMarketplaceListingRepository(),
+        marketplace_messaging=InMemoryMarketplaceMessagingRepository(),
     )
 
     export = exporter.export_data("owner-a")

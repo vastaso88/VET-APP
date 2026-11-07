@@ -582,6 +582,38 @@ class AppLocalizationsEn extends AppLocalizations {
       'Your plan has reached this limit. Switch to a higher plan in Settings.';
 
   @override
+  String get billingTestPeriodTitle => 'Test period';
+
+  @override
+  String billingTestPeriodBody(String plan) {
+    return 'You are using Quokka on the $plan plan at no cost: during the test everyone has the same plan, so there is nothing to choose or pay for.';
+  }
+
+  @override
+  String billingTestPeriodShort(String plan) {
+    return '$plan · test';
+  }
+
+  @override
+  String get billingActionNeedsPlan =>
+      'This needs a plan. Choose one in Settings → Subscription and payments.';
+
+  @override
+  String get marketplaceLimitedNotice =>
+      'You are only seeing the item, price and photos. With a plan you also see the description and details, and you can post and report ads.';
+
+  @override
+  String get marketplaceLimitedSeePlans => 'See plans';
+
+  @override
+  String get eventsNeedsPlan =>
+      'Events are part of the plans. Choose a plan to see them.';
+
+  @override
+  String get billingPaywallBrowseMarketplace =>
+      'Browse the second-hand marketplace ads';
+
+  @override
   String billingChoosePlan(String plan) {
     return 'Choose $plan';
   }
@@ -6547,4 +6579,113 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get settingsConsentDiagnostics => 'Send error reports';
+
+  @override
+  String get marketplaceMessagesTitle => 'Marketplace messages';
+
+  @override
+  String marketplaceMessagesOpen(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Messages: $count unread',
+      one: 'Messages: 1 unread',
+      zero: 'Messages',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get marketplaceMessagesWriteToSeller => 'Message the seller';
+
+  @override
+  String get marketplaceMessagesEmpty =>
+      'No conversations yet. When you message a seller, or someone writes to you about one of your ads, you\'ll find it here.';
+
+  @override
+  String get marketplaceMessagesLoadFailed =>
+      'Messages could not be loaded. Please try again shortly.';
+
+  @override
+  String get marketplaceMessagesRoleBuyer => 'With the seller';
+
+  @override
+  String get marketplaceMessagesRoleSeller => 'With a buyer';
+
+  @override
+  String get marketplaceMessagesClosedTag => 'Closed';
+
+  @override
+  String get marketplaceMessagesSafetyNotice =>
+      'For your safety: do not share personal details (phone, email, address) and do not pay in advance.';
+
+  @override
+  String get marketplaceMessagesHint => 'Write a message';
+
+  @override
+  String get marketplaceMessagesSend => 'Send';
+
+  @override
+  String get marketplaceMessagesSendFailed =>
+      'Message not sent. Please try again.';
+
+  @override
+  String marketplaceMessagesDailyLimit(int limit) {
+    return 'You have reached the limit of $limit new conversations a day. Try again tomorrow.';
+  }
+
+  @override
+  String get marketplaceMessagesClosed =>
+      'This conversation is closed: you can read it again, but no more messages can be sent.';
+
+  @override
+  String get marketplaceMessagesBlockedByMe =>
+      'You have blocked this person. Unblock them to write again.';
+
+  @override
+  String get marketplaceMessagesUnavailable =>
+      'It is not possible to write about this ad.';
+
+  @override
+  String get marketplaceMessagesPlanRequired =>
+      'Writing requires an active plan. You can still read your messages, block and report.';
+
+  @override
+  String get marketplaceMessagesMoreActions => 'More actions';
+
+  @override
+  String get marketplaceMessagesBlock => 'Block user';
+
+  @override
+  String get marketplaceMessagesUnblock => 'Unblock user';
+
+  @override
+  String get marketplaceMessagesBlockTitle => 'Block this person?';
+
+  @override
+  String get marketplaceMessagesBlockBody =>
+      'They will no longer be able to write to you about any ad, and you will not be able to write to them. They will not be notified.';
+
+  @override
+  String get marketplaceMessagesBlockConfirm => 'Block';
+
+  @override
+  String get marketplaceMessagesBlocked => 'User blocked.';
+
+  @override
+  String get marketplaceMessagesUnblocked => 'User unblocked.';
+
+  @override
+  String get marketplaceMessagesReport => 'Report conversation';
+
+  @override
+  String get marketplaceMessagesReportPrivacy =>
+      'Our team will read this conversation to assess your report.';
+
+  @override
+  String get marketplaceMessagesReasonHarassment => 'Harassment';
+
+  @override
+  String get marketplaceMessagesActionFailed =>
+      'That did not work. Please try again.';
 }

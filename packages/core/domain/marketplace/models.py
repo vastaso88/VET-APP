@@ -37,9 +37,9 @@ ListingReportReason = Literal[
     "spam", "scam", "prohibited_item", "inappropriate", "sells_animals", "other"
 ]
 
-# Non-goals (docs/maps/): no moderation queue, no image scanning, no
-# in-app messaging/payment - this is a listings board, not a
-# transactional marketplace.
+# Non-goals (docs/maps/): no moderation queue for ads, no image scanning, no
+# in-app payment - this is a listings board, not a transactional marketplace.
+# Messages between buyer and seller: messaging.py.
 REPORT_COUNT_AUTO_REMOVE_THRESHOLD = 3
 
 

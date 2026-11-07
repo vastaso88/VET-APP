@@ -145,6 +145,19 @@ def _seed(client: FakeSupabase, owner: str, *, tag: str) -> None:
         client.db.setdefault(table, []).append(
             {"id": f"{tag}-{table}", column: contributor_pseudonym(owner, key=RADAR_KEY)}
         )
+    conversation = f"{tag}-marketplace-conversation"
+    client.db.setdefault("marketplace_conversations", []).append(
+        {"id": conversation, "buyer_id": owner, "seller_id": f"{tag}-seller"}
+    )
+    client.db.setdefault("marketplace_messages", []).append(
+        {"id": f"{tag}-message", "conversation_id": conversation, "sender_id": owner}
+    )
+    client.db.setdefault("marketplace_conversation_reports", []).append(
+        {"id": f"{tag}-conversation-report", "conversation_id": conversation, "reporter_id": owner}
+    )
+    client.db.setdefault("marketplace_user_blocks", []).append(
+        {"id": f"{tag}-user-block", "blocker_id": owner, "blocked_id": f"{tag}-other"}
+    )
     client.buckets.setdefault(MEDIA_BUCKET, set()).add(f"{tag}-attachment-key")
     client.buckets.setdefault("pet-photos", set()).update(
         {f"{owner}/pets/{tag}-pet/a.jpg", f"{owner}/account/avatar.jpg"}
@@ -285,6 +298,40 @@ def test_the_identity_is_kept_when_erasing_the_data_fails() -> None:
     with pytest.raises(RuntimeError):
         DeleteAccountService(eraser).execute(_fresh_request("11111111-1111-4111-8111-111111111111"))
     assert eraser.deleted == []
+
+
+def test_deleting_an_account_removes_its_conversations_with_the_other_persons_replies() -> None:
+    gone = "11111111-1111-4111-8111-111111111111"
+    other = "22222222-2222-4222-8222-222222222222"
+    third = "33333333-3333-4333-8333-333333333333"
+    client = FakeSupabase()
+    client.db["marketplace_conversations"] = [
+        {"id": "as-seller", "buyer_id": other, "seller_id": gone},
+        {"id": "as-buyer", "buyer_id": gone, "seller_id": other},
+        {"id": "not-involved", "buyer_id": other, "seller_id": third},
+    ]
+    client.db["marketplace_messages"] = [
+        {"id": "m1", "conversation_id": "as-seller", "sender_id": other},
+        {"id": "m2", "conversation_id": "as-buyer", "sender_id": gone},
+        {"id": "m3", "conversation_id": "not-involved", "sender_id": third},
+    ]
+    client.db["marketplace_conversation_reports"] = [
+        {"id": "r1", "conversation_id": "as-seller", "reporter_id": other},
+        {"id": "r2", "conversation_id": "not-involved", "reporter_id": third},
+    ]
+    client.db["marketplace_user_blocks"] = [
+        {"blocker_id": gone, "blocked_id": third},
+        {"blocker_id": other, "blocked_id": gone},
+        {"blocker_id": other, "blocked_id": third},
+    ]
+
+    report = _eraser(client).erase_data(gone)
+
+    assert [row["id"] for row in client.db["marketplace_conversations"]] == ["not-involved"]
+    assert [row["id"] for row in client.db["marketplace_messages"]] == ["m3"]
+    assert [row["id"] for row in client.db["marketplace_conversation_reports"]] == ["r2"]
+    assert client.db["marketplace_user_blocks"] == [{"blocker_id": other, "blocked_id": third}]
+    assert report.rows_deleted["marketplace_messages"] == 2
 
 
 def test_every_table_of_the_schema_is_either_erased_or_declared_not_personal() -> None:

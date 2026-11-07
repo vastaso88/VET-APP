@@ -116,6 +116,17 @@
       "note": "Solo oggetti per animali: gli annunci di animali sono rifiutati in tutti i paesi (regola condivisa backend/app/SQL, packages/core/domain/marketplace/animal_policy.py). Termini per paese in docs/compliance/<lingua>/03_*."
     },
     {
+      "id": "marketplace_messages",
+      "kind": "feature",
+      "it": "Messaggi del Mercatino",
+      "en": "Marketplace messages",
+      "es": "Mensajes del mercadillo",
+      "de": "Nachrichten im Gebrauchtmarkt",
+      "fr": "Messages du marché de l'occasion",
+      "keys": ["marketplaceMessagesTitle"],
+      "note": "Solo testo, tra compratore e venditore di un annuncio, senza mostrare a nessuno dei due i contatti dell'altro. Il tedesco evita 'Verkäufer' nei testi brevi (forma neutra: 'anbietende Person')."
+    },
+    {
       "id": "news",
       "kind": "feature",
       "it": "Notizie",

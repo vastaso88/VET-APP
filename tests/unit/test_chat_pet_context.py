@@ -239,6 +239,8 @@ def test_send_chat_message_feeds_profile_and_reminders_into_the_prompt() -> None
             species="Cane",
             sex="Maschio",
             weight_label="30 kg",
+            # R25 (2026-11-07): the reminders follow the record consent.
+            medical_record_consent=MedicalRecordConsentRecord(granted=True, version="v3"),
         )
     )
     reminders = InMemoryReminderRepository()

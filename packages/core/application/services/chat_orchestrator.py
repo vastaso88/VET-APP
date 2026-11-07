@@ -43,7 +43,9 @@ from packages.core.application.services.medical_record_context_retriever import 
 from packages.core.application.services.natural_answer_prompt import (
     ANSWER_NOW_REMINDER,
     PROMPT_VERSION,
+    build_emergency_prompt,
     build_system_prompt,
+    stable_prefix,
 )
 from packages.core.application.services.response_generator import ResponseGenerator
 from packages.core.application.services.safety_gate import SafetyGate
@@ -677,6 +679,11 @@ MULTI_PET_INTERACTION_MARKERS: tuple[str, ...] = (
 )
 
 
+# The model's part of an emergency reply: about 900 characters of Italian;
+# the provider adds its own reasoning headroom.
+_URGENT_ANSWER_MAX_TOKENS = 320
+
+
 class _Prefetch:
     """The light-model helpers and the literature search, started together
     as soon as a turn is allowed to call a model (build 33): the urgency
@@ -862,6 +869,10 @@ class ChatOrchestrator:
         answer_cache: AnswerCacheRepository | None = None,
         answer_cache_ttl_hours: int = 24,
         answer_max_tokens: int = 450,
+        # Seconds the model gets for its part of an emergency reply; 0 =
+        # the fixed first-aid steps only (the default here keeps the tests
+        # and the demo provider deterministic; the container sets it).
+        urgent_answer_timeout_seconds: int = 0,
         prompt_max_sources: int = 2,
         prompt_source_chars: int = 300,
         prompt_curated_source_chars: int = 1000,
@@ -918,6 +929,7 @@ class ChatOrchestrator:
         self._answer_cache = answer_cache
         self._answer_cache_ttl = timedelta(hours=max(1, answer_cache_ttl_hours))
         self._answer_max_tokens = max(100, answer_max_tokens)
+        self._urgent_answer_timeout_seconds = max(0, urgent_answer_timeout_seconds)
         self._prompt_max_sources = max(0, prompt_max_sources)
         self._prompt_source_chars = max(50, prompt_source_chars)
         # The curated notes (tier D, written for the prompt) are read whole:
@@ -1061,6 +1073,7 @@ class ChatOrchestrator:
                 data.pet_name,
                 pending_category,
                 message,
+                data=data,
                 response_locale=data.language,
                 species_family=normalize_species(self._effective_species(lowered, data.species)),
                 female=(data.sex or "").strip().lower() in _FEMALE_LABELS,
@@ -1152,11 +1165,12 @@ class ChatOrchestrator:
                 # rabbit or guinea pig that has not eaten since last night
                 # is in that group (GI stasis kills within hours).
                 return self._adult_first(
-                    self._urgent_triage_result(
-                        data.pet_name,
-                        safety_flags,
-                        category,
-                        response_locale=data.language,
+                    self._urgent_answer(
+                        data,
+                        message,
+                        safety_flags=safety_flags,
+                        category=category,
+                        species=effective_species,
                         species_family=family,
                         female=female,
                         toxicity_note=human_drug_toxicity_note(message, family, data.language),
@@ -1190,11 +1204,12 @@ class ChatOrchestrator:
             # clarifying question by design (toxin_medication: no benign
             # explanation a question could surface, see triage_clarification.py).
             return self._adult_first(
-                self._urgent_triage_result(
-                    data.pet_name,
-                    safety_flags,
-                    category,
-                    response_locale=data.language,
+                self._urgent_answer(
+                    data,
+                    message,
+                    safety_flags=safety_flags,
+                    category=category,
+                    species=effective_species,
                     species_family=family,
                     female=female,
                     toxicity_note=human_drug_toxicity_note(message, family, data.language),
@@ -1851,14 +1866,18 @@ class ChatOrchestrator:
             level = "emergency"
         if level == "emergency":
             logger.warning("urgency classifier: emergency (%s) the fixed lists missed", category)
-            return self._urgent_triage_result(
-                data.pet_name,
-                [flag],
-                category,
-                response_locale=data.language,
+            return self._urgent_answer(
+                data,
+                message,
+                safety_flags=[flag],
+                category=category,
+                species=effective_species,
                 species_family=normalize_species(effective_species),
                 female=(data.sex or "").strip().lower() in _FEMALE_LABELS,
                 heat=mentions_heat(message),
+                # Reached after the turn's admission (or past the owner's
+                # limit, P1): the message is not counted again.
+                admitted=True,
             )
         question = clarifying_question(category, data.language)
         if question is not None and not clarifying_question_fits(category, message):
@@ -1941,8 +1960,9 @@ class ChatOrchestrator:
             state=ConversationState.RETRIEVAL_FAILURE,
         )
 
-    @staticmethod
+    @classmethod
     def _urgent_triage_result(
+        cls,
         pet_name: str,
         safety_flags: list[str],
         category: str | None = None,
@@ -1953,6 +1973,41 @@ class ChatOrchestrator:
         toxicity_note: str = "",
         heat: bool = False,
     ) -> ChatOrchestratorResult:
+        """The fixed emergency reply: the opening, then the first-aid steps
+        of this category and species."""
+        opening, steps = cls._triage_texts(
+            pet_name,
+            category,
+            response_locale=response_locale,
+            species_family=species_family,
+            female=female,
+            toxicity_note=toxicity_note,
+            heat=heat,
+        )
+        return ChatOrchestratorResult(
+            answer=opening + steps,
+            mode="triage",
+            confidence="high",
+            ai_generated=False,
+            safety_flags=safety_flags,
+            limitations=[translate("triage_limitation", response_locale)],
+            recommended_action=translate("triage_action", response_locale),
+            provider="rule-based",
+            model="safety-triage-guard",
+            state=ConversationState.POSSIBLE_URGENT_CASE,
+        )
+
+    @staticmethod
+    def _triage_texts(
+        pet_name: str,
+        category: str | None = None,
+        *,
+        response_locale: str = "it",
+        species_family: str = "other",
+        female: bool = False,
+        toxicity_note: str = "",
+        heat: bool = False,
+    ) -> tuple[str, str]:
         # Real-world finding (2026-09-25): "quello che mi racconti di
         # {pet_name} è un segnale..." presumes the trigger was a narrated
         # symptom — nonsense when it was actually a question about a
@@ -1996,17 +2051,133 @@ class ChatOrchestrator:
             opening = translate("triage_opening_fish", response_locale)
         if female and has_translation(f"{steps_key}_female", response_locale):
             steps_key = f"{steps_key}_female"
-        return ChatOrchestratorResult(
-            answer=opening + translate(steps_key, response_locale, pet_name=pet_name),
-            mode="triage",
-            confidence="high",
-            ai_generated=False,
-            safety_flags=safety_flags,
-            limitations=[translate("triage_limitation", response_locale)],
-            recommended_action=translate("triage_action", response_locale),
-            provider="rule-based",
-            model="safety-triage-guard",
-            state=ConversationState.POSSIBLE_URGENT_CASE,
+        return opening, translate(steps_key, response_locale, pet_name=pet_name)
+
+    def _urgent_answer(
+        self,
+        data: ChatOrchestratorInput,
+        message: str,
+        *,
+        safety_flags: list[str],
+        category: str | None,
+        species: str,
+        species_family: str = "other",
+        female: bool = False,
+        toxicity_note: str = "",
+        heat: bool = False,
+        admitted: bool = False,
+    ) -> ChatOrchestratorResult:
+        """An emergency (owner decision 2026-11-07): the fixed opening says to
+        act now, then the model answers on this case and on the owner's
+        question with the fixed first aid as binding notes. The fixed steps
+        go instead when the model is off, every model's budget is gone, the
+        answer does not arrive within the deadline, the model declines, or
+        its text fails the checks (a dose, another species, questions only)."""
+        fixed = self._urgent_triage_result(
+            data.pet_name,
+            safety_flags,
+            category,
+            response_locale=data.language,
+            species_family=species_family,
+            female=female,
+            toxicity_note=toxicity_note,
+            heat=heat,
+        )
+        if self._urgent_answer_timeout_seconds <= 0:
+            return fixed
+        if not admitted and self._usage_budget is not None:
+            denial = self._usage_budget.admit(
+                owner_id=data.owner_id,
+                models=self._answer_models,
+                exempt=data.quota_exempt,
+                user_daily_limit=data.user_daily_limit,
+            )
+            if denial is not None and denial.reason != "user_limit":
+                # Every model's daily budget is gone: the fixed steps, as always.
+                return fixed
+            # The owner's own allowance never stops an emergency (P1): the
+            # message is counted and the answer goes.
+        opening, steps = self._triage_texts(
+            data.pet_name,
+            category,
+            response_locale=data.language,
+            species_family=species_family,
+            female=female,
+            toxicity_note=toxicity_note,
+            heat=heat,
+        )
+        owner_text = data.user_message.strip() or message
+        today = data.today or datetime.now(UTC).date()
+        user_prompt = (
+            f"{self._pet_context_block(data)}\n"
+            f"{self._format_conversation_history(data)}"
+            f"User message: {self._anonymize_for_provider(owner_text, data)}"
+            f"\n\nToday's date: {today.isoformat()}"
+        )
+        try:
+            response = self._llm_client.generate(
+                LLMGenerationRequest(
+                    system_prompt=build_emergency_prompt(
+                        first_aid=self._anonymize_for_provider(steps, data),
+                        language=data.language,
+                        species_facts=species_facts(data.species, data.breed, data.notes),
+                    ),
+                    user_prompt=user_prompt,
+                    max_tokens=_URGENT_ANSWER_MAX_TOKENS,
+                    purpose="urgent_answer",
+                    timeout_seconds=self._urgent_answer_timeout_seconds,
+                    cacheable_system_chars=len(stable_prefix(None)),
+                )
+            )
+        except ProviderError as exc:
+            # A refusal, a deadline, an outage, an exhausted budget: logged
+            # by kind only, and the fixed steps go.
+            logger.warning("urgent answer: %s; the fixed steps go", type(exc).__name__)
+            return fixed
+        except Exception:  # noqa: BLE001 - an emergency reply never fails on a helper
+            logger.exception("urgent answer: unexpected failure; the fixed steps go")
+            return fixed
+        text = clean_answer_text(response.content).strip()
+        if not self._urgent_text_passes(text, species):
+            logger.warning("urgent answer: the model's text failed the checks; the fixed steps go")
+            return fixed
+        return fixed.model_copy(
+            update={
+                "answer": opening + strip_invented_prices(text, owner_text, ""),
+                "ai_generated": True,
+                "provider": response.provider,
+                "model": response.model,
+            }
+        )
+
+    @classmethod
+    def _urgent_text_passes(cls, text: str, species: str) -> bool:
+        """The checks the model's part of an emergency reply must pass: the
+        same ones as an ordinary answer, without a rewrite (there the fixed
+        steps are the better reply)."""
+        return (
+            len(text) >= 60
+            and find_dosage(text) is None
+            and not cls._mentions_wrong_species(text, species)
+            and validate_answer(text, sources_count=0).is_valid
+            and not is_question_only(text)
+            and not answer_is_bare_yes_no(text)
+        )
+
+    @staticmethod
+    def _follows_a_triage_reply(data: ChatOrchestratorInput) -> bool:
+        """The last reply told the owner to act now for an emergency: this
+        message is a detail or a question about it (the fixed openings, in
+        the owner's language, are the only mark the history keeps)."""
+        last = next(
+            (m.content for m in reversed(data.conversation_history) if m.role == "assistant"),
+            None,
+        )
+        if not last:
+            return False
+        return any(
+            translate(key, data.language, pet_name=data.pet_name).strip() in last
+            for key in ("triage_opening", "triage_toxin_opening", "triage_opening_fish")
         )
 
     @staticmethod
@@ -2140,6 +2311,7 @@ class ChatOrchestrator:
         category: str,
         reply: str,
         *,
+        data: ChatOrchestratorInput | None = None,
         response_locale: str = "it",
         species_family: str = "other",
         female: bool = False,
@@ -2155,6 +2327,17 @@ class ChatOrchestrator:
         """
         severity = classify_safety_severity(category, reply)
         if severity == "high":
+            if data is not None:
+                return self._urgent_answer(
+                    data,
+                    reply,
+                    safety_flags=[category],
+                    category=category,
+                    species=data.species,
+                    species_family=species_family,
+                    female=female,
+                    heat=mentions_heat(reply),
+                )
             return self._urgent_triage_result(
                 pet_name,
                 [category],
@@ -2819,6 +3002,7 @@ class ChatOrchestrator:
             foreign_country=foreign,
             medical_first=medical_cause_first(message, data.age_years),
             travel_south=travel_to_sand_fly_area(message, normalize_species(effective_species)),
+            emergency_follow_up=self._follows_a_triage_reply(data),
         )
         user_prompt = (
             f"{self._pet_context_block(data, generic=generic_context)}\n"
@@ -2852,6 +3036,7 @@ class ChatOrchestrator:
                     user_prompt=user_prompt,
                     max_tokens=max_tokens,
                     purpose=purpose,
+                    cacheable_system_chars=len(stable_prefix(kind, may_ask=may_ask)),
                 )
             )
 

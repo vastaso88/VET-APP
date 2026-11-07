@@ -21,6 +21,8 @@ Thumbs.db
 /data/
 .vercel
 .env*
+# The example lists variable NAMES with empty values, never a secret.
+!.env.example
 
 # Working data that may contain real names and phone numbers of
 # businesses (e.g. the radar dedup calibration sample): never committed.

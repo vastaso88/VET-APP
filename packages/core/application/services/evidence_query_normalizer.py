@@ -28,6 +28,12 @@ SYSTEM_PROMPT = (
 )
 
 _OBJECT = re.compile(r"\{.*\}", re.DOTALL)
+KEYWORDS_SCHEMA: dict[str, object] = {
+    "type": "object",
+    "properties": {"keywords": {"type": "array", "items": {"type": "string"}}},
+    "required": ["keywords"],
+    "additionalProperties": False,
+}
 _WORD = re.compile(r"[A-Za-z][A-Za-z\- ]{1,40}")
 
 
@@ -49,6 +55,7 @@ class EvidenceQueryNormalizer:
                     purpose="evidence_query",
                     model_class="light",
                     json_mode=True,
+                    json_schema=KEYWORDS_SCHEMA,
                     timeout_seconds=self._timeout_seconds,
                 )
             )

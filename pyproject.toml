@@ -5,6 +5,7 @@ description = "Backend bootstrap for a Flutter-first AI pet-tech product."
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
+    "anthropic>=2.6.0",
     "fastapi>=0.116.0",
     "pydantic>=2.11.0",
     "pydantic-settings>=2.10.0",

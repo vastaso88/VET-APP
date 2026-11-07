@@ -5,6 +5,7 @@ import 'package:http/http.dart' as http;
 
 import '../../../shared/auth/current_user.dart';
 import '../../../shared/config/app_runtime_config_loader.dart';
+import '../../billing/data/subscription_required_signal.dart';
 import '../domain/event_submission.dart';
 
 /// Esito dell'invio di una segnalazione. Il messaggio di [rejected] arriva dal
@@ -72,7 +73,12 @@ class EventSubmissionRepository {
 
       if (response.statusCode == 201) return const EventSubmissionSent();
       if (response.statusCode == 401) return const EventSubmissionNotSignedIn();
-      if (response.statusCode == 429) return const EventSubmissionLimitReached();
+      if (handleSubscriptionRequired(response.statusCode)) {
+        return const EventSubmissionFailed();
+      }
+      if (response.statusCode == 429) {
+        return const EventSubmissionLimitReached();
+      }
       if (response.statusCode == 400) {
         final detail = (jsonDecode(response.body) as Map<String, dynamic>)['detail'];
         if (detail is String && detail.isNotEmpty) return EventSubmissionRejected(detail);

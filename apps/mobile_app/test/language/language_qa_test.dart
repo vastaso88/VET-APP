@@ -19,6 +19,8 @@ import 'package:vet_app_mobile/features/first_run/presentation/pages/tutorial_pa
 import 'package:vet_app_mobile/features/language/data/language_store.dart';
 import 'package:vet_app_mobile/features/language/domain/app_language.dart';
 import 'package:vet_app_mobile/features/language/presentation/widgets/language_settings_section.dart';
+import 'package:vet_app_mobile/features/marketplace/presentation/pages/marketplace_conversation_page.dart';
+import 'package:vet_app_mobile/features/marketplace/presentation/pages/marketplace_conversations_page.dart';
 import 'package:vet_app_mobile/features/pets/presentation/pages/pet_create_page.dart';
 import 'package:vet_app_mobile/l10n/l10n.dart';
 
@@ -50,6 +52,9 @@ final _pages = <String, Widget Function()>{
   'add first pet': () => const AddFirstPetPromptPage(),
   'pet create': () => const PetCreatePage(),
   'billing': () => const BillingPage(),
+  'marketplace messages': () => const MarketplaceConversationsPage(),
+  'marketplace conversation': () =>
+      const MarketplaceConversationPage(listingId: 'ad', listingTitle: 'Ad'),
   'language section': () => Scaffold(
         body: SingleChildScrollView(
           child: LanguageSettingsSection(expanded: true, onToggle: (_) {}),

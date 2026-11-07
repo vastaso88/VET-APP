@@ -57,6 +57,12 @@ class Settings(BaseSettings):
     # No default on purpose: these are real personal addresses, set via
     # DEVELOPER_EMAILS in .env (comma-separated), never hardcoded in source.
     developer_emails: StringList = Field(default=[], alias="DEVELOPER_EMAILS")
+    # Public test of the app (2026-11-07): while this names a plan ("plus",
+    # "pro" or "ultra") every account is reported on it, nobody pays and the
+    # trial never ends. Empty (the default) is the normal behaviour: trial,
+    # then a plan. Only the environment can set it, never a request. See
+    # packages/core/application/services/get_or_create_subscription.py.
+    subscription_test_plan: str = Field(default="", alias="SUBSCRIPTION_TEST_PLAN")
     # Backoffice allowlist. When empty, admin endpoints fall back to
     # DEVELOPER_EMAILS so existing founder/developer accounts can be reused
     # without hardcoding personal addresses in source control.
@@ -84,6 +90,29 @@ class Settings(BaseSettings):
     llm_api_key: str = Field(default="", alias="LLM_API_KEY")
     llm_base_url: str = Field(default="https://api.groq.com/openai/v1", alias="LLM_BASE_URL")
     llm_timeout_seconds: int = Field(default=30, alias="LLM_TIMEOUT_SECONDS")
+    # --- Claude (LLM_PROVIDER=anthropic, owner decision 2026-11-07) ------------
+    # The official SDK with ANTHROPIC_API_KEY; LLM_API_KEY stays the Groq key,
+    # used by the automatic reserve, the vision and the dictation. Effort:
+    # low, medium or high (the two higher levels are refused: thinking is
+    # switched off for the light calls, which those levels do not allow).
+    # The headroom is added to every answer's visible budget because the
+    # model's reasoning counts against max_tokens.
+    anthropic_api_key: str = Field(default="", alias="ANTHROPIC_API_KEY")
+    anthropic_model: str = Field(default="claude-haiku-5-5", alias="ANTHROPIC_MODEL")
+    anthropic_effort: str = Field(default="low", alias="ANTHROPIC_EFFORT")
+    anthropic_effort_light: str = Field(default="low", alias="ANTHROPIC_EFFORT_LIGHT")
+    anthropic_thinking_headroom_tokens: int = Field(
+        default=600, ge=0, alias="ANTHROPIC_THINKING_HEADROOM_TOKENS"
+    )
+    anthropic_timeout_seconds: int = Field(
+        default=30, ge=1, le=120, alias="ANTHROPIC_TIMEOUT_SECONDS"
+    )
+    # An emergency: the fixed opening, then the model on the case within
+    # this many seconds, else the fixed first-aid steps (0 = fixed steps
+    # only, as before 2026-11-07).
+    urgent_answer_timeout_seconds: int = Field(
+        default=12, ge=0, le=30, alias="URGENT_ANSWER_TIMEOUT_SECONDS"
+    )
     # --- Free-tier economy (build 32, 2026-10-14) -------------------------------
     # A smaller model with its own daily quota for mechanical work: case
     # extraction, interview phrasing, English search keywords, the urgency
@@ -119,7 +148,11 @@ class Settings(BaseSettings):
     llm_daily_token_budgets: str = Field(
         default=(
             "openai/gpt-oss-120b=200000,openai/gpt-oss-20b=200000,"
-            "qwen/qwen3.8-27b=200000,openai/gpt-oss-safeguard-20b=200000"
+            "qwen/qwen3.8-27b=200000,openai/gpt-oss-safeguard-20b=200000,"
+            # Claude is paid per token, not rationed: this is a spending
+            # guard (about 1 euro a day at Haiku 5.5 prices), past which
+            # the Groq reserve answers until midnight.
+            "claude-haiku-5-5=4000000"
         ),
         alias="LLM_DAILY_TOKEN_BUDGETS",
     )
@@ -347,6 +380,21 @@ class Settings(BaseSettings):
                     "SUPABASE_SERVICE_ROLE_KEY": self.supabase_service_role_key,
                 },
             )
+
+        if self.llm_provider == "anthropic":
+            self._require_fields(
+                "LLM_PROVIDER=anthropic",
+                {
+                    "ANTHROPIC_API_KEY": self.anthropic_api_key,
+                    "ANTHROPIC_MODEL": self.anthropic_model,
+                },
+            )
+        for name, value in (
+            ("ANTHROPIC_EFFORT", self.anthropic_effort),
+            ("ANTHROPIC_EFFORT_LIGHT", self.anthropic_effort_light),
+        ):
+            if value not in ("low", "medium", "high"):
+                raise ValueError(f"{name} must be low, medium or high")
 
         if self.llm_provider == "groq":
             self._require_fields(

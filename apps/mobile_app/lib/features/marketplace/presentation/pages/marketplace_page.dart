@@ -14,13 +14,17 @@ import '../../../home/presentation/widgets/home_dashboard_primitives.dart';
 import '../../../location/data/location_preference_store.dart';
 import '../../../location/domain/coordinates.dart';
 import '../../../location/presentation/reference_location.dart';
+import '../../../billing/data/billing_demo_store.dart';
 import '../../../settings/data/unit_settings_store.dart';
 import '../../../territory/domain/territory.dart';
 import '../../data/listing_radius_store.dart';
+import '../../data/marketplace_messages_repository.dart';
 import '../../data/marketplace_repository.dart';
 import '../../domain/listing_filters.dart';
 import '../../domain/marketplace_listing.dart';
 import '../marketplace_labels.dart';
+import '../widgets/limited_marketplace_notice.dart';
+import '../widgets/marketplace_messages_button.dart';
 import '../widgets/listing_photo.dart';
 import 'create_listing_page.dart';
 import 'listing_detail_page.dart';
@@ -38,11 +42,17 @@ Future<Coordinates?> loadMarketplaceReferenceLocation() async {
 }
 
 class MarketplacePage extends StatefulWidget {
-  const MarketplacePage({super.key, this.repository, this.referenceLoader});
+  const MarketplacePage({
+    super.key,
+    this.repository,
+    this.referenceLoader,
+    this.messagesRepository,
+  });
 
   /// Injectable for widget tests.
   final MarketplaceRepository? repository;
   final Future<Coordinates?> Function()? referenceLoader;
+  final MarketplaceMessagesRepository? messagesRepository;
 
   @override
   State<MarketplacePage> createState() => _MarketplacePageState();
@@ -130,6 +140,7 @@ class _MarketplacePageState extends State<MarketplacePage> {
           listing: match.listing,
           distanceMeters: match.distanceMeters,
           repository: _repository,
+          messagesRepository: widget.messagesRepository,
         ),
       ),
     );
@@ -153,6 +164,10 @@ class _MarketplacePageState extends State<MarketplacePage> {
 
   @override
   Widget build(BuildContext context) {
+    // An owner without a plan browses the first look of each ad and cannot
+    // act (the backend refuses anyway): no map, no new ad, no filters that
+    // need the details it withholds.
+    final limited = !BillingDemoStore.instance.hasAccess;
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
@@ -161,22 +176,27 @@ class _MarketplacePageState extends State<MarketplacePage> {
         foregroundColor: AppColors.text,
         title: Text(context.l10n.marketplacePageTitle, style: AppTextStyles.title),
         actions: [
-          FutureBuilder<_MarketplaceViewData>(
-            future: _dataFuture,
-            builder: (context, snapshot) => TextButton.icon(
-              onPressed: snapshot.hasData ? () => _openMap(snapshot.data!) : null,
-              icon: const Icon(Icons.map_outlined),
-              label: Text(context.l10n.marketplaceMapAction),
+          MarketplaceMessagesButton(repository: widget.messagesRepository),
+          if (!limited)
+            FutureBuilder<_MarketplaceViewData>(
+              future: _dataFuture,
+              builder: (context, snapshot) => TextButton.icon(
+                onPressed:
+                    snapshot.hasData ? () => _openMap(snapshot.data!) : null,
+                icon: const Icon(Icons.map_outlined),
+                label: Text(context.l10n.marketplaceMapAction),
+              ),
             ),
-          ),
           const SizedBox(width: AppSpacing.sm),
         ],
       ),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: _openCreateListing,
-        icon: const Icon(Icons.add),
-        label: Text(context.l10n.marketplaceNewListing),
-      ),
+      floatingActionButton: limited
+          ? null
+          : FloatingActionButton.extended(
+              onPressed: _openCreateListing,
+              icon: const Icon(Icons.add),
+              label: Text(context.l10n.marketplaceNewListing),
+            ),
       body: SafeArea(
         child: FutureBuilder<_MarketplaceViewData>(
           future: _dataFuture,
@@ -216,17 +236,23 @@ class _MarketplacePageState extends State<MarketplacePage> {
                     style: AppTextStyles.caption,
                   ),
                   const SizedBox(height: AppSpacing.lg),
-                  _CategoryFilterRow(
-                    selected: _filter.category,
-                    onSelected: (category) =>
-                        setState(() => _filter = _filter.withCategory(category)),
-                  ),
-                  const SizedBox(height: AppSpacing.sm),
-                  _SpeciesFilterRow(
-                    selected: _filter.species,
-                    onSelected: (species) => setState(() => _filter = _filter.withSpecies(species)),
-                  ),
-                  const SizedBox(height: AppSpacing.sm),
+                  if (limited) ...[
+                    const LimitedMarketplaceNotice(),
+                    const SizedBox(height: AppSpacing.lg),
+                  ] else ...[
+                    _CategoryFilterRow(
+                      selected: _filter.category,
+                      onSelected: (category) => setState(
+                          () => _filter = _filter.withCategory(category)),
+                    ),
+                    const SizedBox(height: AppSpacing.sm),
+                    _SpeciesFilterRow(
+                      selected: _filter.species,
+                      onSelected: (species) => setState(
+                          () => _filter = _filter.withSpecies(species)),
+                    ),
+                    const SizedBox(height: AppSpacing.sm),
+                  ],
                   _DistanceFilterRow(
                     selected: _filter.maxDistanceKm,
                     enabled: data.referenceLocation != null,
@@ -297,7 +323,7 @@ class _ListingRow extends StatelessWidget {
   Widget build(BuildContext context) {
     final listing = match.listing;
     final details = [
-      listingConditionLabel(listing.condition),
+      if (!listing.isLimited) listingConditionLabel(listing.condition),
       listingPriceLabel(listing.priceCents, country: listing.country),
       listingDistanceLabel(match.distanceMeters),
       if (listingPlaceLabel(listing) case final place?) place,
@@ -314,7 +340,12 @@ class _ListingRow extends StatelessWidget {
               ? ListingPhoto(url: listing.photoUrls.first)
               : ColoredBox(
                   color: AppColors.warning.withValues(alpha: 0.14),
-                  child: Icon(listingCategoryIcon(listing.category), color: AppColors.warning),
+                  child: Icon(
+                    listing.isLimited
+                        ? Icons.sell_outlined
+                        : listingCategoryIcon(listing.category),
+                    color: AppColors.warning,
+                  ),
                 ),
         ),
       ),

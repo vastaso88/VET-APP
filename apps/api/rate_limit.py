@@ -45,6 +45,9 @@ DEFAULT_RULES: tuple[RateLimitRule, ...] = (
     # Model calls outside the per-user daily chat quota.
     RateLimitRule(prefix="/speech-to-text", limit=20, window_seconds=600.0),
     RateLimitRule(prefix="/chat-attachments", limit=20, window_seconds=600.0),
+    # Messages of the Mercatino: a person does not send one a second for a
+    # minute; a script does. The daily limit on new conversations is in the service.
+    RateLimitRule(prefix="/marketplace/conversations", limit=60, window_seconds=60.0),
     # Data export: a full read of everything the owner has plus signed
     # links; once every ten minutes is plenty for a human and starves a
     # scraper holding a stolen token.

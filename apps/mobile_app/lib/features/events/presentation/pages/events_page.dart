@@ -184,7 +184,11 @@ class _EventsPageState extends State<EventsPage> {
               return Center(child: PetLoader(label: context.l10n.eventsSearching));
             }
 
-            final result = snapshot.data ?? const EventsLoadResult(events: [], failed: true);
+            final result = snapshot.data ??
+                const EventsLoadResult(events: [], failed: true);
+            if (result.needsPlan) {
+              return const _NeedsPlanState();
+            }
             if (result.failed) {
               return _ErrorState(onRetry: _reload);
             }
@@ -522,6 +526,33 @@ class _EmptyState extends StatelessWidget {
           const SizedBox(height: AppSpacing.md),
           Text(message, textAlign: TextAlign.center, style: AppTextStyles.body),
         ],
+      ),
+    );
+  }
+}
+
+class _NeedsPlanState extends StatelessWidget {
+  const _NeedsPlanState();
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(AppSpacing.xl),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Icon(Icons.lock_outline_rounded,
+                size: 36, color: AppColors.mutedText),
+            const SizedBox(height: AppSpacing.md),
+            Text(
+              context.l10n.eventsNeedsPlan,
+              key: const ValueKey('events-needs-plan'),
+              textAlign: TextAlign.center,
+              style: AppTextStyles.body,
+            ),
+          ],
+        ),
       ),
     );
   }

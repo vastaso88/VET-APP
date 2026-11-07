@@ -45,6 +45,10 @@ UI/UX; questo documento descrive cosa riceve.
     "user_devices": [ ... ],
     "marketplace_listings": [ ... ],
     "marketplace_listing_reports": [ ... ],
+    "marketplace_conversations": [ ... ],
+    "marketplace_messages": [ ... ],
+    "marketplace_user_blocks": [ ... ],
+    "marketplace_conversation_reports": [ ... ],
     "local_activities": [ ... ],
     "event_submissions": [ ... ],
     "chat_user_daily_usage": [ ... ],
@@ -72,6 +76,10 @@ Regole:
 - Le colonne interne `reporter_ref`, `reporter_pseudonym`, `voter_pseudonym`
   (pseudonimi dell'utente stesso) sono tolte: fuori dal servizio non hanno
   significato e aiuterebbero solo a correlare righe se il file venisse perso.
+- **Messaggi del Mercatino**: le conversazioni dell'utente con i messaggi di
+  entrambi (già leggibili nell'app), ma l'id dell'altra persona è sempre `null`
+  (`buyer_id`/`seller_id`, `sender_id`, `blocked_id`); solo i blocchi fatti
+  dall'utente, non quelli subiti, che il servizio non rivela per scelta.
 - **`files`**: un elemento per allegato della chat/cartella clinica, per foto e
   video dell'animale e per la foto profilo. `kind` ∈ `chat_attachment`,
   `pet_media`, `profile_photo`. `url` è un **link firmato valido 15 minuti**

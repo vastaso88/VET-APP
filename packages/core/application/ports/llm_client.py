@@ -1,6 +1,8 @@
-from typing import Protocol
+from typing import Any, Protocol
 
 from pydantic import BaseModel
+
+from packages.shared.errors.base import ProviderError
 
 
 class LLMGenerationRequest(BaseModel):
@@ -21,6 +23,13 @@ class LLMGenerationRequest(BaseModel):
     # A deadline shorter than the provider's default, for calls that must
     # not hold the answer up (the urgency classifier). None = the default.
     timeout_seconds: int | None = None
+    # The first N characters of system_prompt are the same for every owner
+    # and every call of this kind: a provider with a prompt cache marks
+    # them as the cacheable prefix. 0 = treat the whole prompt as stable.
+    cacheable_system_chars: int = 0
+    # With json_mode, the JSON schema of the expected object: a provider
+    # with structured outputs enforces it; the others ask for JSON in words.
+    json_schema: dict[str, Any] | None = None
 
 
 class LLMResponse(BaseModel):
@@ -34,6 +43,12 @@ class LLMResponse(BaseModel):
     prompt_tokens: int = 0
     completion_tokens: int = 0
     cached_prompt_tokens: int = 0
+
+
+class LLMRefusal(ProviderError):
+    """The provider's own safety classifiers declined the request (Claude:
+    `stop_reason: refusal`). A decision, not an outage: the reserve is not
+    asked the same thing and the owner gets a fixed, safe reply."""
 
 
 class LLMClient(Protocol):

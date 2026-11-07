@@ -60,9 +60,15 @@ List<ListingMatch> applyListingFilter(
 
   final matches = <ListingMatch>[];
   for (final listing in listings) {
-    if (filter.category != null && listing.category != filter.category) continue;
-    if (filter.species != null && !listing.isFor(filter.species!)) continue;
-    final distance = haversineMeters(reference, listing.location);
+    // A limited ad carries no category or species: the filters cannot apply.
+    if (!listing.isLimited) {
+      if (filter.category != null && listing.category != filter.category) {
+        continue;
+      }
+      if (filter.species != null && !listing.isFor(filter.species!)) continue;
+    }
+    final distance = listing.serverDistanceMeters ??
+        haversineMeters(reference, listing.location);
     if (distance > limitMeters) continue;
     matches.add(ListingMatch(listing, distance));
   }

@@ -704,6 +704,18 @@ class SupabaseMarketplaceListingRepository(MarketplaceListingRepository):
         response = query.execute()
         return [_row_to_listing(cast(dict[str, Any], item)) for item in response.data or []]
 
+    def statuses(self, listing_ids: list[str]) -> dict[str, str]:
+        if not listing_ids:
+            return {}
+        response = (
+            self._client.table(self._table)
+            .select("id,status")
+            .in_("id", list(set(listing_ids)))
+            .execute()
+        )
+        rows = cast(list[dict[str, Any]], response.data or [])
+        return {str(row["id"]): str(row["status"]) for row in rows}
+
 
 class SupabaseListingReportRepository(ListingReportRepository):
     def __init__(self, client: Client) -> None:

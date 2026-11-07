@@ -3,7 +3,8 @@
 The normal local backend knows one user. This one gives every account its own
 identity, keeps everything in memory, binds to 127.0.0.1 and forces SUPABASE_URL
 empty. With EVAL_CLAUDE_EXE set the model is reached through the Claude Code CLI
-(test use with an owner login); otherwise the configured provider is used.
+(test use with an owner login); with EVAL_ANTHROPIC_API_KEY (and no CLI) Claude is
+reached through the API with that dedicated key; otherwise the configured provider.
 """
 
 from __future__ import annotations
@@ -37,6 +38,31 @@ os.environ.update(
         "CRASH_REPORTING": "false",
     }
 )
+
+
+def _env_value(name: str) -> str:
+    """From the environment, else the local .env; never printed."""
+    value = os.environ.get(name, "").strip()
+    env_file = ROOT / ".env"
+    if not value and env_file.exists():
+        for line in env_file.read_text(encoding="utf-8").splitlines():
+            key, separator, raw = line.partition("=")
+            if separator and key.strip() == name:
+                value = raw.strip().strip('"').strip("'")
+    return value
+
+
+# Claude through the API with the dedicated evaluation key (never the
+# production one), when the CLI is not in use: the provider is switched for
+# this process only and the Groq reserve is off (LLM_MODEL empty), so every
+# answer comes from the model under test.
+ANTHROPIC_EVAL_KEY = "" if EXE else _env_value("EVAL_ANTHROPIC_API_KEY")
+if ANTHROPIC_EVAL_KEY:
+    os.environ.update(
+        {"LLM_PROVIDER": "anthropic", "ANTHROPIC_API_KEY": ANTHROPIC_EVAL_KEY, "LLM_MODEL": ""}
+    )
+    if _env_value("EVAL_ANTHROPIC_MODEL"):
+        os.environ["ANTHROPIC_MODEL"] = _env_value("EVAL_ANTHROPIC_MODEL")
 sys.path.insert(0, str(ROOT))
 os.chdir(ROOT)
 

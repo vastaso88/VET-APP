@@ -56,6 +56,11 @@ class MarketplaceModerationRequest(BaseModel):
     resolution_note: str | None = Field(default=None, max_length=1000)
 
 
+class MarketplaceMessageModerationRequest(BaseModel):
+    action: Literal["close_conversation", "dismiss_report", "reopen_report"]
+    resolution_note: str | None = Field(default=None, max_length=1000)
+
+
 class AdminScheduleRequest(BaseModel):
     name: str = Field(min_length=2, max_length=120)
     engine: Literal["geographic", "scientific"]
@@ -402,6 +407,14 @@ def admin_overview() -> dict[str, object]:
         .select("id", count=CountMethod.exact)
         .eq("status", "open")
     )
+    try:
+        marketplace_message_reports = _count_rows(
+            client.table("marketplace_conversation_reports")
+            .select("id", count=CountMethod.exact)
+            .eq("status", "open")
+        )
+    except Exception:  # noqa: BLE001 - the table exists only after marketplace_messages.sql
+        marketplace_message_reports = 0
     scrape_runs = _count_rows(client.table("scrape_runs").select("id", count=CountMethod.exact))
 
     sources_response = (
@@ -429,7 +442,9 @@ def admin_overview() -> dict[str, object]:
             "radar_places": radar_osm + radar_open,
             "radar_osm": radar_osm,
             "radar_open": radar_open,
-            "open_moderation": radar_reports + chat_reports + marketplace_reports,
+            "open_moderation": (
+                radar_reports + chat_reports + marketplace_reports + marketplace_message_reports
+            ),
             "scrape_runs": scrape_runs,
         },
         "user_details": {
@@ -455,6 +470,7 @@ def admin_overview() -> dict[str, object]:
             "radar_reports": radar_reports,
             "chat_reports": chat_reports,
             "marketplace_reports": marketplace_reports,
+            "marketplace_message_reports": marketplace_message_reports,
         },
         "data_sources": getattr(sources_response, "data", None) or [],
         "recent_runs": getattr(recent_runs_response, "data", None) or [],
@@ -531,9 +547,23 @@ def admin_moderation() -> dict[str, object]:
     }
 
 
+@router.get("/moderation/marketplace_messages")
+def admin_marketplace_message_reports() -> dict[str, object]:
+    _require_admin()
+    return {"reports": get_container().marketplace_messaging_moderation_service().queue()}
+
+
 @router.get("/moderation/{queue}/{item_id}")
 def admin_moderation_detail(queue: str, item_id: str) -> dict[str, object]:
     _require_admin()
+
+    if queue == "marketplace_messages":
+        # The team reads a thread only here, and only because it was reported.
+        detail = get_container().marketplace_messaging_moderation_service().detail(item_id)
+        if detail is None:
+            raise HTTPException(status_code=404, detail="Marketplace message report not found")
+        return {"queue": queue, "item": detail}
+
     client = _admin_client()
 
     if queue == "radar":
@@ -766,6 +796,22 @@ def admin_resolve_marketplace_report(
         .execute()
     )
     return {"report": (getattr(updated, "data", None) or [report])[0]}
+
+
+@router.post("/moderation/marketplace_messages/{report_id}")
+def admin_resolve_marketplace_message_report(
+    report_id: str,
+    request: MarketplaceMessageModerationRequest,
+) -> dict[str, object]:
+    admin = _require_admin()
+    report = (
+        get_container()
+        .marketplace_messaging_moderation_service()
+        .resolve(report_id, request.action, request.resolution_note, admin.id)
+    )
+    if report is None:
+        raise HTTPException(status_code=404, detail="Marketplace message report not found")
+    return {"report": report.model_dump(mode="json")}
 
 
 @router.get("/geographic")

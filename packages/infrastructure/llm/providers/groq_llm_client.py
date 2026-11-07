@@ -138,7 +138,9 @@ class GroqLLMClient(LLMClient):
         details = usage.get("prompt_tokens_details") or {}
         return LLMResponse(
             content=_THINKING.sub("", message.get("content") or "").strip(),
-            provider=self._settings.llm_provider,
+            # Its own name, not the configured provider's: as the reserve behind
+            # Claude (2026-11-07) its answers must not be labelled "anthropic".
+            provider="groq",
             model=body.get("model", model),
             token_count=int(usage.get("total_tokens", 0) or 0),
             finish_reason=choices[0].get("finish_reason"),

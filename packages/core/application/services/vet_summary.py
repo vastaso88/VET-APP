@@ -23,6 +23,7 @@ from packages.core.application.services.llm_budget import LlmBudget, require_fea
 from packages.core.application.services.medical_record_context_retriever import italian_date
 from packages.core.domain.conversation.models import Conversation
 from packages.core.domain.localization import language_name, translate
+from packages.core.domain.medical_record.consent_text import effective_decision
 from packages.core.domain.pet_profile.models import PetProfile
 from packages.shared.errors.base import ValidationError
 
@@ -97,7 +98,12 @@ class VetSummaryService:
         response = self._llm_client.generate(
             LLMGenerationRequest(
                 system_prompt=self._system_prompt(data.language),
-                user_prompt=self._user_prompt(conversation, pet, data.owner_names),
+                user_prompt=self._user_prompt(
+                    conversation,
+                    pet,
+                    data.owner_names,
+                    notes_allowed=self._record_allowed(conversation, pet),
+                ),
                 temperature=0.1,
                 max_tokens=1200,
                 purpose="vet_summary",
@@ -137,8 +143,23 @@ class VetSummaryService:
             f"one or two sentences each:\n{sections}"
         )
 
+    @staticmethod
+    def _record_allowed(conversation: Conversation, pet: PetProfile | None) -> bool:
+        """The record consent as the chat applies it (send_chat_message.py):
+        the pet-level decision under the current text wins, else the
+        conversation's. R25, option A: the profile's free notes follow it
+        here too."""
+        if pet is not None and pet.medical_record_consent is not None:
+            return effective_decision(pet.medical_record_consent) is True
+        return conversation.medical_record_consent is True
+
     def _user_prompt(
-        self, conversation: Conversation, pet: PetProfile | None, owner_names: list[str]
+        self,
+        conversation: Conversation,
+        pet: PetProfile | None,
+        owner_names: list[str],
+        *,
+        notes_allowed: bool = False,
     ) -> str:
         lines = []
         if pet is not None:
@@ -153,7 +174,9 @@ class VetSummaryService:
                         f"age {pet.age_years} years" if pet.age_years is not None else "",
                         f"sex {pet.sex}" if pet.sex else "",
                         f"weight {pet.weight_label}" if pet.weight_label else "",
-                        f"notes: {self._anonymize(pet.notes, owner_names)}" if pet.notes else "",
+                        f"notes: {self._anonymize(pet.notes, owner_names)}"
+                        if pet.notes and notes_allowed
+                        else "",
                     )
                     if part
                 )

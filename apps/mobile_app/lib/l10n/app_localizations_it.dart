@@ -586,6 +586,38 @@ class AppLocalizationsIt extends AppLocalizations {
       'Il tuo piano ha raggiunto questo limite. Passa a un piano superiore da Impostazioni.';
 
   @override
+  String get billingTestPeriodTitle => 'Periodo di test';
+
+  @override
+  String billingTestPeriodBody(String plan) {
+    return 'Stai usando Quokka con il piano $plan, senza pagare: durante il test tutti hanno lo stesso piano e non c\'è nulla da scegliere né da pagare.';
+  }
+
+  @override
+  String billingTestPeriodShort(String plan) {
+    return '$plan · test';
+  }
+
+  @override
+  String get billingActionNeedsPlan =>
+      'Per farlo serve un piano. Scegline uno da Impostazioni → Abbonamento e pagamenti.';
+
+  @override
+  String get marketplaceLimitedNotice =>
+      'Stai vedendo solo oggetto, prezzo e foto. Con un piano vedi anche la descrizione e i dettagli e puoi pubblicare e segnalare annunci.';
+
+  @override
+  String get marketplaceLimitedSeePlans => 'Vedi i piani';
+
+  @override
+  String get eventsNeedsPlan =>
+      'Gli eventi sono compresi nei piani. Scegli un piano per vederli.';
+
+  @override
+  String get billingPaywallBrowseMarketplace =>
+      'Sfoglia gli annunci del Mercatino';
+
+  @override
   String billingChoosePlan(String plan) {
     return 'Scegli $plan';
   }
@@ -6593,4 +6625,112 @@ class AppLocalizationsIt extends AppLocalizations {
 
   @override
   String get settingsConsentDiagnostics => 'Invia rapporti sugli errori';
+
+  @override
+  String get marketplaceMessagesTitle => 'Messaggi del Mercatino';
+
+  @override
+  String marketplaceMessagesOpen(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Messaggi: $count da leggere',
+      one: 'Messaggi: 1 da leggere',
+      zero: 'Messaggi',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get marketplaceMessagesWriteToSeller => 'Scrivi al venditore';
+
+  @override
+  String get marketplaceMessagesEmpty =>
+      'Nessuna conversazione. Quando scrivi a un venditore, o qualcuno ti scrive per un tuo annuncio, la trovi qui.';
+
+  @override
+  String get marketplaceMessagesLoadFailed =>
+      'Non riesco a caricare i messaggi. Riprova tra poco.';
+
+  @override
+  String get marketplaceMessagesRoleBuyer => 'Con il venditore';
+
+  @override
+  String get marketplaceMessagesRoleSeller => 'Con un acquirente';
+
+  @override
+  String get marketplaceMessagesClosedTag => 'Chiusa';
+
+  @override
+  String get marketplaceMessagesSafetyNotice =>
+      'Per la tua sicurezza: non condividere dati personali (telefono, e-mail, indirizzo) e non pagare in anticipo.';
+
+  @override
+  String get marketplaceMessagesHint => 'Scrivi un messaggio';
+
+  @override
+  String get marketplaceMessagesSend => 'Invia';
+
+  @override
+  String get marketplaceMessagesSendFailed => 'Messaggio non inviato. Riprova.';
+
+  @override
+  String marketplaceMessagesDailyLimit(int limit) {
+    return 'Hai raggiunto il limite di $limit nuove conversazioni al giorno. Riprova domani.';
+  }
+
+  @override
+  String get marketplaceMessagesClosed =>
+      'Questa conversazione è chiusa: puoi rileggerla, ma non si possono più inviare messaggi.';
+
+  @override
+  String get marketplaceMessagesBlockedByMe =>
+      'Hai bloccato questa persona. Sbloccala per scrivere di nuovo.';
+
+  @override
+  String get marketplaceMessagesUnavailable =>
+      'Per questo annuncio non è possibile scrivere.';
+
+  @override
+  String get marketplaceMessagesPlanRequired =>
+      'Per scrivere serve un piano attivo. Puoi comunque rileggere i messaggi, bloccare e segnalare.';
+
+  @override
+  String get marketplaceMessagesMoreActions => 'Altre azioni';
+
+  @override
+  String get marketplaceMessagesBlock => 'Blocca utente';
+
+  @override
+  String get marketplaceMessagesUnblock => 'Sblocca utente';
+
+  @override
+  String get marketplaceMessagesBlockTitle => 'Bloccare questa persona?';
+
+  @override
+  String get marketplaceMessagesBlockBody =>
+      'Non potrà più scriverti, per nessun annuncio, e tu non potrai scriverle. Non riceverà alcun avviso.';
+
+  @override
+  String get marketplaceMessagesBlockConfirm => 'Blocca';
+
+  @override
+  String get marketplaceMessagesBlocked => 'Utente bloccato.';
+
+  @override
+  String get marketplaceMessagesUnblocked => 'Utente sbloccato.';
+
+  @override
+  String get marketplaceMessagesReport => 'Segnala conversazione';
+
+  @override
+  String get marketplaceMessagesReportPrivacy =>
+      'Il nostro team leggerà questa conversazione per valutare la segnalazione.';
+
+  @override
+  String get marketplaceMessagesReasonHarassment => 'Molestie';
+
+  @override
+  String get marketplaceMessagesActionFailed =>
+      'Operazione non riuscita. Riprova.';
 }

@@ -16,6 +16,7 @@ from packages.core.application.ports.chat_response_report_repository import (
 from packages.core.application.ports.clinical_event_repository import ClinicalEventRepository
 from packages.core.application.ports.conversation_repository import ConversationRepository
 from packages.core.application.ports.dog_walk_repository import DogWalkRepository
+from packages.core.application.ports.event_catalog_repository import EventCatalogRepository
 from packages.core.application.ports.event_submission_repository import (
     EventSubmissionRepository,
 )
@@ -27,6 +28,9 @@ from packages.core.application.ports.llm_usage_repository import LlmUsageReposit
 from packages.core.application.ports.local_activity_repository import LocalActivityRepository
 from packages.core.application.ports.marketplace_listing_repository import (
     MarketplaceListingRepository,
+)
+from packages.core.application.ports.marketplace_messaging_repository import (
+    MarketplaceMessagingRepository,
 )
 from packages.core.application.ports.media_storage import MediaStorage
 from packages.core.application.ports.owner_limits import OwnerLimitsLookup
@@ -77,6 +81,7 @@ from packages.core.application.services.list_chat_response_reports import (
     ListChatResponseReportsService,
 )
 from packages.core.application.services.list_conversations import ListConversationsService
+from packages.core.application.services.list_events import ListEventsService
 from packages.core.application.services.list_nearby_activities import (
     ListNearbyActivitiesService,
 )
@@ -95,6 +100,10 @@ from packages.core.application.services.maintain_chat_response_reports import (
 from packages.core.application.services.maintain_chat_usage import (
     ChatRetentionService,
     ChatUsageMaintenanceService,
+)
+from packages.core.application.services.marketplace_messaging import (
+    MarketplaceMessagingModerationService,
+    MarketplaceMessagingService,
 )
 from packages.core.application.services.medical_record_context_retriever import (
     MedicalRecordContextRetriever,
@@ -141,12 +150,15 @@ from packages.core.application.services.upload_chat_attachment import UploadChat
 from packages.core.application.services.urgency_classifier import UrgencyClassifier
 from packages.core.application.services.vet_summary import VetSummaryService
 from packages.core.domain.subscription.limits import PlanLimits
+from packages.core.domain.subscription.models import SubscriptionPlan
 from packages.infrastructure.auth.bootstrap_auth_provider import BootstrapAuthProvider
 from packages.infrastructure.documents.pypdf_reader import PypdfReader
 from packages.infrastructure.geocoding.nominatim_geocoder import NominatimGeocoder
+from packages.infrastructure.llm.providers.anthropic_llm_client import AnthropicLLMClient
 from packages.infrastructure.llm.providers.echo_llm_client import EchoLLMClient
 from packages.infrastructure.llm.providers.groq_chat_api import split_models
 from packages.infrastructure.llm.providers.groq_llm_client import GroqLLMClient
+from packages.infrastructure.llm.providers.reserve_llm_client import ReserveLLMClient
 from packages.infrastructure.llm.retrieval.crossref_evidence_retriever import (
     CrossrefEvidenceRetriever,
 )
@@ -179,8 +191,14 @@ from packages.infrastructure.persistence.in_memory_account_eraser import InMemor
 from packages.infrastructure.persistence.in_memory_account_exporter import (
     InMemoryAccountExporter,
 )
+from packages.infrastructure.persistence.in_memory_event_catalog import (
+    InMemoryEventCatalogRepository,
+)
 from packages.infrastructure.persistence.in_memory_event_submissions import (
     InMemoryEventSubmissionRepository,
+)
+from packages.infrastructure.persistence.in_memory_marketplace_messaging import (
+    InMemoryMarketplaceMessagingRepository,
 )
 from packages.infrastructure.persistence.in_memory_pet_news import (
     InMemoryPetNewsCacheRepository,
@@ -227,11 +245,43 @@ from packages.shared.config.settings import Settings, get_settings
 logger = logging.getLogger(__name__)
 
 
+def _resolve_subscription_test_plan(raw: str) -> str | None:
+    """SUBSCRIPTION_TEST_PLAN as a plan key, or None for the normal behaviour.
+    A value that is not a plan is ignored with a warning rather than refused:
+    a typo must neither take the API down at start-up (a bad variable already
+    did once, 2026-10-06) nor hand out a plan nobody asked for."""
+    value = raw.strip().lower()
+    if not value:
+        return None
+    if value not in SubscriptionPlan.ALL:
+        logger.warning("SUBSCRIPTION_TEST_PLAN is not a plan: ignored (normal behaviour)")
+        return None
+    logger.warning(
+        "SUBSCRIPTION_TEST_PLAN is set: every account is on the %s plan and nobody pays",
+        value,
+    )
+    return value
+
+
+def groq_reserve_configured(settings: Settings) -> bool:
+    return bool(settings.llm_api_key.strip() and settings.llm_model.strip())
+
+
+def answer_models(settings: Settings) -> list[str]:
+    """The models an answer may come from, in order: what the budget
+    checks before a turn is admitted."""
+    groq = [settings.llm_model, *split_models(settings.llm_fallback_models)]
+    if settings.llm_provider == "anthropic":
+        return [settings.anthropic_model, *(groq if groq_reserve_configured(settings) else [])]
+    return groq
+
+
 class ApplicationContainer:
     def __init__(self, settings: Settings) -> None:
         self.settings = settings
         self._pet_news_service: GetPetNewsService | None = None
         self._event_submission_repository: EventSubmissionRepository | None = None
+        self._event_catalog_repository: EventCatalogRepository | None = None
         self.auth_provider = self._build_auth_provider()
         (
             self.pet_profile_repository,
@@ -266,6 +316,9 @@ class ApplicationContainer:
         self.developer_emails = frozenset(
             email.strip().lower() for email in settings.developer_emails
         )
+        self.subscription_test_plan = _resolve_subscription_test_plan(
+            settings.subscription_test_plan
+        )
         self.user_location_repository = self._build_user_location_repository()
         self.dog_walk_repository = self._build_dog_walk_repository()
         self.weight_measurement_repository = self._build_weight_measurement_repository()
@@ -277,6 +330,7 @@ class ApplicationContainer:
         self.geocoding_service = GeocodingService(NominatimGeocoder(settings))
         self.marketplace_listing_repository = self._build_marketplace_listing_repository()
         self.listing_report_repository = self._build_listing_report_repository()
+        self.marketplace_messaging_repository = self._build_marketplace_messaging_repository()
         self.local_activity_repository = self._build_local_activity_repository()
         self.chat_response_report_repository = self._build_chat_response_report_repository()
         self.chat_attachment_repository = self._build_chat_attachment_repository()
@@ -300,7 +354,7 @@ class ApplicationContainer:
             max_interview_questions=settings.interview_max_questions,
             response_language=settings.response_language,
             usage_budget=self.llm_budget,
-            answer_models=[settings.llm_model, *split_models(settings.llm_fallback_models)],
+            answer_models=answer_models(settings),
             urgency_classifier=(
                 UrgencyClassifier(
                     self.llm_client,
@@ -319,6 +373,10 @@ class ApplicationContainer:
             ),
             answer_cache_ttl_hours=settings.chat_answer_cache_ttl_hours,
             answer_max_tokens=settings.llm_answer_max_tokens,
+            # The demo provider echoes the prompt: its urgencies stay fixed.
+            urgent_answer_timeout_seconds=(
+                0 if settings.llm_provider == "echo" else settings.urgent_answer_timeout_seconds
+            ),
             prompt_max_sources=settings.llm_prompt_max_sources,
             prompt_source_chars=settings.llm_prompt_source_chars,
             history_recent_messages=settings.llm_history_recent_messages,
@@ -349,7 +407,11 @@ class ApplicationContainer:
         return SetAccountConsentService(self.account_consents_repository)
 
     def get_or_create_subscription_service(self) -> GetOrCreateSubscriptionService:
-        return GetOrCreateSubscriptionService(self.subscription_repository, self.developer_emails)
+        return GetOrCreateSubscriptionService(
+            self.subscription_repository,
+            self.developer_emails,
+            test_plan=self.subscription_test_plan,
+        )
 
     def register_device_service(self) -> RegisterDeviceService:
         return RegisterDeviceService(self.user_device_repository, self.owner_limits_lookup())
@@ -409,6 +471,7 @@ class ApplicationContainer:
             user_locations=self.user_location_repository,
             dog_walks=self.dog_walk_repository,
             marketplace_listings=self.marketplace_listing_repository,
+            marketplace_messaging=self.marketplace_messaging_repository,
         )
 
     def _build_account_eraser(self) -> AccountEraser:
@@ -434,7 +497,35 @@ class ApplicationContainer:
         return InMemoryAccountEraser()
 
     def select_plan_service(self) -> SelectPlanService:
-        return SelectPlanService(self.subscription_repository)
+        return SelectPlanService(
+            self.subscription_repository, test_plan=self.subscription_test_plan
+        )
+
+    def list_events_service(self) -> ListEventsService:
+        return ListEventsService(self.event_catalog_repository())
+
+    def event_catalog_repository(self) -> EventCatalogRepository:
+        """One per process (the in-memory double keeps its rows)."""
+        if self._event_catalog_repository is None:
+            self._event_catalog_repository = self._build_event_catalog_repository()
+        return self._event_catalog_repository
+
+    def _build_event_catalog_repository(self) -> EventCatalogRepository:
+        if self.settings.persistence_backend == "supabase":
+            try:
+                from packages.infrastructure.persistence.supabase import supabase_event_catalog
+                from packages.infrastructure.persistence.supabase.client import (
+                    build_supabase_client,
+                )
+
+                return supabase_event_catalog.SupabaseEventCatalogRepository(
+                    build_supabase_client(self.settings)
+                )
+            except ModuleNotFoundError:
+                if self.settings.environment != "production":
+                    return InMemoryEventCatalogRepository()
+                raise
+        return InMemoryEventCatalogRepository()
 
     def submit_event_service(self) -> SubmitEventService:
         return SubmitEventService(self.event_submission_repository())
@@ -536,6 +627,14 @@ class ApplicationContainer:
 
     def list_nearby_listings_service(self) -> ListNearbyListingsService:
         return ListNearbyListingsService(self.marketplace_listing_repository)
+
+    def marketplace_messaging_service(self) -> MarketplaceMessagingService:
+        return MarketplaceMessagingService(
+            self.marketplace_messaging_repository, self.marketplace_listing_repository
+        )
+
+    def marketplace_messaging_moderation_service(self) -> MarketplaceMessagingModerationService:
+        return MarketplaceMessagingModerationService(self.marketplace_messaging_repository)
 
     def report_listing_service(self) -> ReportListingService:
         return ReportListingService(
@@ -698,7 +797,16 @@ class ApplicationContainer:
             InMemoryReminderRepository(),
         )
 
-    def _build_llm_client(self) -> EchoLLMClient | GroqLLMClient:
+    def _build_llm_client(self) -> LLMClient:
+        if self.settings.llm_provider == "anthropic":
+            # Claude answers; the Groq chain is the automatic reserve when a
+            # Groq key is configured (owner decision 2026-11-07).
+            primary: LLMClient = AnthropicLLMClient(self.settings, availability=self.llm_budget)
+            if groq_reserve_configured(self.settings):
+                return ReserveLLMClient(
+                    primary, GroqLLMClient(self.settings, availability=self.llm_budget)
+                )
+            return primary
         if self.settings.llm_provider == "groq":
             return GroqLLMClient(self.settings, availability=self.llm_budget)
         return EchoLLMClient(self.settings)
@@ -1048,6 +1156,23 @@ class ApplicationContainer:
                     return InMemoryMarketplaceListingRepository()
                 raise
         return InMemoryMarketplaceListingRepository()
+
+    def _build_marketplace_messaging_repository(self) -> MarketplaceMessagingRepository:
+        if self.settings.persistence_backend == "supabase":
+            try:
+                from packages.infrastructure.persistence.supabase.client import (
+                    build_supabase_client,
+                )
+                from packages.infrastructure.persistence.supabase.supabase_marketplace_messaging import (  # noqa: E501
+                    SupabaseMarketplaceMessagingRepository,
+                )
+
+                return SupabaseMarketplaceMessagingRepository(build_supabase_client(self.settings))
+            except ModuleNotFoundError:
+                if self.settings.environment != "production":
+                    return InMemoryMarketplaceMessagingRepository()
+                raise
+        return InMemoryMarketplaceMessagingRepository()
 
     def _build_listing_report_repository(self) -> ListingReportRepository:
         if self.settings.persistence_backend == "supabase":

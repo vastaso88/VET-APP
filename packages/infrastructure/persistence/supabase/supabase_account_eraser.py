@@ -55,8 +55,19 @@ RADAR_PSEUDONYM_TABLES: tuple[tuple[str, str], ...] = (
     ("radar_user_reports", "reporter_pseudonym"),
 )
 
+# The two sides of a Mercatino conversation (see _erase_marketplace_messages).
+MARKETPLACE_PARTICIPANT_COLUMNS: tuple[str, ...] = ("buyer_id", "seller_id")
+
 # Tables handled by a dedicated step rather than by [OWNER_TABLES].
-HANDLED_ELSEWHERE = frozenset({"clinical_events"})
+HANDLED_ELSEWHERE = frozenset(
+    {
+        "clinical_events",
+        "marketplace_conversations",
+        "marketplace_messages",
+        "marketplace_user_blocks",
+        "marketplace_conversation_reports",
+    }
+)
 
 # Tables that hold nothing about an individual owner, and why.
 NOT_PERSONAL_TABLES: dict[str, str] = {
@@ -113,6 +124,8 @@ class SupabaseAccountEraser:
             )
             self._count(report, "clinical_events", response)
 
+        self._erase_marketplace_messages(owner_id, report)
+
         if self._radar_pseudonym_key:
             pseudonym = contributor_pseudonym(owner_id, key=self._radar_pseudonym_key)
             for table, column in RADAR_PSEUDONYM_TABLES:
@@ -127,6 +140,34 @@ class SupabaseAccountEraser:
         for table, column in OWNER_TABLES:
             self._delete_where(report, table, column, owner_id)
         return report
+
+    def _erase_marketplace_messages(self, owner_id: str, report: ErasureReport) -> None:
+        """A conversation goes as a whole when one of the two deletes the account:
+        the other person's replies can quote the deleted owner's details, and the
+        row names them. Children first and explicitly, like the rest of this file;
+        blocks go in both directions, because both ids identify the owner."""
+        conversation_ids: set[str] = set()
+        for column in MARKETPLACE_PARTICIPANT_COLUMNS:
+            response = (
+                self._client.table("marketplace_conversations")
+                .select("id")
+                .eq(column, owner_id)
+                .execute()
+            )
+            conversation_ids.update(str(row["id"]) for row in self._rows(response))
+        if conversation_ids:
+            for table in ("marketplace_conversation_reports", "marketplace_messages"):
+                response = (
+                    self._client.table(table)
+                    .delete()
+                    .in_("conversation_id", sorted(conversation_ids))
+                    .execute()
+                )
+                self._count(report, table, response)
+        for column in MARKETPLACE_PARTICIPANT_COLUMNS:
+            self._delete_where(report, "marketplace_conversations", column, owner_id)
+        for column in ("blocker_id", "blocked_id"):
+            self._delete_where(report, "marketplace_user_blocks", column, owner_id)
 
     def delete_identity(self, owner_id: str) -> None:
         self._require_user_id(owner_id)

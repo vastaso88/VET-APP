@@ -17,6 +17,8 @@ from packages.core.domain.feedback.pseudonym import reporter_ref
 from packages.core.domain.radar_reports.models import contributor_pseudonym
 from packages.infrastructure.persistence.supabase.supabase_account_eraser import (
     CHAT_REPORT_REF,
+    HANDLED_ELSEWHERE,
+    MARKETPLACE_PARTICIPANT_COLUMNS,
     OWNER_TABLES,
     PET_PHOTOS_BUCKET,
     RADAR_PSEUDONYM_TABLES,
@@ -37,8 +39,16 @@ _INTERNAL_COLUMNS = frozenset({"reporter_ref", "reporter_pseudonym", "voter_pseu
 EXPORTED_TABLES: frozenset[str] = frozenset(
     {table for table, _ in OWNER_TABLES}
     | {table for table, _ in RADAR_PSEUDONYM_TABLES}
-    | {CHAT_REPORT_REF[0], "clinical_events"}
+    | {CHAT_REPORT_REF[0]}
+    | HANDLED_ELSEWHERE
 )
+
+
+def hide_other_ids(row: dict[str, Any], columns: tuple[str, ...], owner_id: str) -> dict[str, Any]:
+    """[row] with the account id of anyone but [owner_id] blanked."""
+    return {
+        key: None if key in columns and value != owner_id else value for key, value in row.items()
+    }
 
 
 class SupabaseAccountExporter:
@@ -80,6 +90,8 @@ class SupabaseAccountExporter:
             else []
         )
 
+        export.data.update(self._marketplace_messages(owner_id))
+
         if self._radar_pseudonym_key:
             pseudonym = contributor_pseudonym(owner_id, key=self._radar_pseudonym_key)
             for table, column in RADAR_PSEUDONYM_TABLES:
@@ -110,6 +122,42 @@ class SupabaseAccountExporter:
             f"file links expire {SIGNED_URL_SECONDS // 60} minutes after generated_at"
         )
         return export
+
+    # -- Mercatino messages --------------------------------------------------
+
+    def _marketplace_messages(self, owner_id: str) -> dict[str, list[dict[str, Any]]]:
+        """The owner's conversations with both sides' messages, which they could
+        already read in the app, but never the other person's account id; and
+        only the blocks the owner made, because a block made against them is
+        something the service deliberately does not reveal."""
+        conversations: dict[str, dict[str, Any]] = {}
+        for column in MARKETPLACE_PARTICIPANT_COLUMNS:
+            for row in self._select_where("marketplace_conversations", column, owner_id):
+                conversations[str(row["id"])] = hide_other_ids(
+                    row, MARKETPLACE_PARTICIPANT_COLUMNS, owner_id
+                )
+        messages: list[dict[str, Any]] = []
+        if conversations:
+            messages = [
+                hide_other_ids(row, ("sender_id",), owner_id)
+                for row in self._rows(
+                    self._client.table("marketplace_messages")
+                    .select("*")
+                    .in_("conversation_id", sorted(conversations))
+                    .execute()
+                )
+            ]
+        return {
+            "marketplace_conversations": list(conversations.values()),
+            "marketplace_messages": messages,
+            "marketplace_user_blocks": [
+                hide_other_ids(row, ("blocked_id",), owner_id)
+                for row in self._select_where("marketplace_user_blocks", "blocker_id", owner_id)
+            ],
+            "marketplace_conversation_reports": self._select_where(
+                "marketplace_conversation_reports", "reporter_id", owner_id
+            ),
+        }
 
     # -- identity ------------------------------------------------------------
 

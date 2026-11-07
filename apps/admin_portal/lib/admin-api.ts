@@ -129,10 +129,20 @@ export type MarketplaceModerationItem = {
   } | null;
 };
 
+export type MarketplaceMessageReportItem = {
+  id: string;
+  conversation_id: string;
+  reason: string;
+  status: string;
+  created_at: string;
+  listing_title: string | null;
+};
+
 export type AdminModeration = {
   radar: RadarModerationItem[];
   chat: ChatModerationItem[];
   marketplace: MarketplaceModerationItem[];
+  marketplace_messages: MarketplaceMessageReportItem[];
 };
 
 export type GeographicSource = {
@@ -350,8 +360,10 @@ export type AdminSchedule = {
   updated_at: string;
 };
 
+export type ModerationQueue = "radar" | "chat" | "marketplace" | "marketplace_messages";
+
 export type ModerationDetail = {
-  queue: "radar" | "chat" | "marketplace";
+  queue: ModerationQueue;
   item: Record<string, unknown>;
   votes?: Array<{ vote: number; created_at: string }>;
 };
@@ -486,10 +498,26 @@ export async function getAdminOverview(): Promise<AdminOverview> {
   };
 }
 
+// A separate read: before the backend update or the SQL script, this queue is
+// simply empty and the other three keep working.
+async function getMarketplaceMessageReports(): Promise<MarketplaceMessageReportItem[]> {
+  try {
+    const payload = await authenticatedAdminRequest<{ reports: MarketplaceMessageReportItem[] }>(
+      "/admin/moderation/marketplace_messages",
+    );
+    return payload.reports;
+  } catch {
+    return [];
+  }
+}
+
 export async function getAdminModeration(): Promise<AdminModeration> {
   await requireAdminSession();
-  const payload = await authenticatedAdminRequest<AdminModeration>("/admin/moderation");
+  const payload = await authenticatedAdminRequest<Omit<AdminModeration, "marketplace_messages">>(
+    "/admin/moderation",
+  );
   return {
+    marketplace_messages: await getMarketplaceMessageReports(),
     radar: payload.radar.map((item) => ({
       ...item,
       admin_resolution_note: item.admin_resolution_note ?? null,
@@ -616,7 +644,7 @@ export async function ingestScientificEvidence(input: {
 
 
 export async function getModerationDetail(
-  queue: "radar" | "chat" | "marketplace",
+  queue: ModerationQueue,
   itemId: string,
 ): Promise<ModerationDetail | null> {
   await requireAdminSession();
@@ -656,6 +684,24 @@ export async function resolveMarketplaceModeration(
   await requireAdminSession();
   await authenticatedAdminRequest(
     `/admin/moderation/marketplace/${encodeURIComponent(reportId)}`,
+    {
+      method: "POST",
+      body: JSON.stringify({
+        action,
+        resolution_note: resolutionNote?.trim() || null,
+      }),
+    },
+  );
+}
+
+export async function resolveMarketplaceMessageModeration(
+  reportId: string,
+  action: "close_conversation" | "dismiss_report" | "reopen_report",
+  resolutionNote?: string,
+): Promise<void> {
+  await requireAdminSession();
+  await authenticatedAdminRequest(
+    `/admin/moderation/marketplace_messages/${encodeURIComponent(reportId)}`,
     {
       method: "POST",
       body: JSON.stringify({

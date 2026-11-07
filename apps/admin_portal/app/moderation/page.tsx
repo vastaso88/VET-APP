@@ -18,6 +18,7 @@ export default async function ModerationPage() {
     (item) => item.status === "reported" || item.status === "under_review",
   );
   const openMarketplace = moderation.marketplace.filter((item) => item.status === "open");
+  const openMessages = moderation.marketplace_messages.filter((item) => item.status === "open");
 
   return (
     <AdminShell title="Moderation" eyebrow="Trust & safety">
@@ -36,6 +37,11 @@ export default async function ModerationPage() {
           <span>Marketplace reports</span>
           <strong>{openMarketplace.length}</strong>
           <small>{moderation.marketplace.length} loaded</small>
+        </article>
+        <article className="metric-card">
+          <span>Marketplace messages</span>
+          <strong>{openMessages.length}</strong>
+          <small>{moderation.marketplace_messages.length} loaded</small>
         </article>
       </div>
 
@@ -64,6 +70,33 @@ export default async function ModerationPage() {
               </span>
             </div>
           )) : <div className="table-empty">No marketplace reports.</div>}
+        </div>
+      </section>
+
+      <section className="panel">
+        <div className="panel-heading">
+          <div>
+            <p className="eyebrow">Marketplace messages</p>
+            <h2>Reported conversations</h2>
+          </div>
+        </div>
+        <div className="data-table moderation-live-table moderation-with-action">
+          <div className="table-row table-head">
+            <span>Created</span><span>Reason</span><span>Listing</span><span>Report</span><span>Action</span>
+          </div>
+          {moderation.marketplace_messages.length ? moderation.marketplace_messages.map((item) => (
+            <div className="table-row" key={item.id}>
+              <span>{date(item.created_at)}</span>
+              <span>{item.reason}</span>
+              <span>{item.listing_title ?? "—"}</span>
+              <span>{item.status}</span>
+              <span>
+                <Link className="table-action-link" href={`/moderation/marketplace_messages/${item.id}`}>
+                  Open
+                </Link>
+              </span>
+            </div>
+          )) : <div className="table-empty">No reported conversations.</div>}
         </div>
       </section>
 

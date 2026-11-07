@@ -42,6 +42,17 @@ CATEGORIES: tuple[str, ...] = (
     "other",
 )
 LEVELS = ("emergency", "maybe", "normal")
+# For a provider with structured outputs (Claude): the object the prompt
+# below describes. The parser stays the floor for every provider.
+VERDICT_SCHEMA: dict[str, object] = {
+    "type": "object",
+    "properties": {
+        "level": {"type": "string", "enum": list(LEVELS)},
+        "category": {"type": ["string", "null"]},
+    },
+    "required": ["level", "category"],
+    "additionalProperties": False,
+}
 
 SYSTEM_PROMPT = (
     f"You {URGENCY_MARKER} to a pet-care app, in any language. Decide only how urgent "
@@ -92,6 +103,7 @@ class UrgencyClassifier:
                     purpose="urgency_classifier",
                     model_class="light",
                     json_mode=True,
+                    json_schema=VERDICT_SCHEMA,
                     timeout_seconds=self._timeout_seconds,
                 )
             )

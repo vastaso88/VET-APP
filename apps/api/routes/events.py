@@ -1,17 +1,34 @@
 from datetime import date
 from typing import Annotated
 
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends, Query
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel, Field
 
 from apps.api.dependencies.container import get_container
+from apps.api.dependencies.subscription import require_active_subscription
+from packages.core.application.services.list_events import ListEventsInput
 from packages.core.application.services.submit_event import (
     SubmissionLimitReachedError,
     SubmitEventInput,
 )
 
 router = APIRouter(prefix="/events", tags=["events"])
+
+
+@router.get("", dependencies=[Depends(require_active_subscription)])
+def list_events(
+    country: Annotated[str, Query(min_length=2, max_length=2)],
+    from_day: Annotated[date, Query(alias="from")],
+    to_day: Annotated[date, Query(alias="to")],
+) -> dict[str, object]:
+    """The public events of [country] that touch the window. Part of what a
+    plan includes: after the trial an owner without a plan gets 402."""
+    container = get_container()
+    result = container.list_events_service().execute(
+        ListEventsInput(country=country, from_day=from_day, to_day=to_day)
+    )
+    return {"events": result.events}
 
 
 class SubmitEventRequest(BaseModel):
@@ -26,7 +43,12 @@ class SubmitEventRequest(BaseModel):
     venue_name: Annotated[str | None, Field(max_length=200)] = None
 
 
-@router.post("/submissions", status_code=201, response_model=None)
+@router.post(
+    "/submissions",
+    status_code=201,
+    response_model=None,
+    dependencies=[Depends(require_active_subscription)],
+)
 def submit_event(request: SubmitEventRequest) -> JSONResponse | dict[str, str]:
     """ "Segnala un evento": the suggestion waits for the team's check and is
     not public until then. Needs a signed-in user (limits abuse); the author is

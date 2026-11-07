@@ -585,12 +585,20 @@ class _SettingsPageState extends State<SettingsPage> {
                         icon: Icons.workspace_premium_outlined,
                         iconColor: AppColors.secondaryStrong,
                         title: context.l10n.settingsSubscriptionAndPayments,
-                        trailingText: BillingDemoStore.instance.isOnTrial
-                            ? context.l10n.settingsTrialExpiresOn(
-                                _numericDate(BillingDemoStore.instance.trialEndsAt!),
+                        trailingText: BillingDemoStore.instance.isTestPeriod
+                            ? context.l10n.billingTestPeriodShort(
+                                BillingDemoStore
+                                        .instance.currentPlan?.displayName ??
+                                    '',
                               )
-                            : BillingDemoStore.instance.currentPlan?.displayName ??
-                                context.l10n.billingNoPlanName,
+                            : BillingDemoStore.instance.isOnTrial
+                                ? context.l10n.settingsTrialExpiresOn(
+                                    _numericDate(
+                                        BillingDemoStore.instance.trialEndsAt!),
+                                  )
+                                : BillingDemoStore
+                                        .instance.currentPlan?.displayName ??
+                                    context.l10n.billingNoPlanName,
                         onTap: _openBilling,
                       ),
                     ),

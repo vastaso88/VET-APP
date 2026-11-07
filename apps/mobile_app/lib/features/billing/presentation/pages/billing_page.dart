@@ -112,38 +112,52 @@ class _BillingPageState extends State<BillingPage> {
                   const _DeveloperBanner(),
                   const SizedBox(height: AppSpacing.md),
                 ],
-                _CurrentPlanCard(store: _store),
-                const SizedBox(height: AppSpacing.xl),
-                _SectionLabel(context.l10n.billingComparePlans),
-                _BillingCycleToggle(store: _store),
-                const SizedBox(height: AppSpacing.md),
-                const IncludedInAllPlansCard(),
-                const SizedBox(height: AppSpacing.md),
-                for (final plan in BillingDemoStore.plans) ...[
-                  _PlanCard(
-                    plan: plan,
-                    features: _store.limitFeaturesFor(plan.tier),
-                    cycle: _store.billingCycle,
-                    isCurrent: plan.tier == _store.currentTier,
-                    onSelect: () => _switchToPlan(plan.tier),
-                  ),
+                if (_store.isTestPeriod) ...[
+                  _TestPeriodBanner(
+                      planName: _store.currentPlan?.displayName ?? ''),
                   const SizedBox(height: AppSpacing.md),
                 ],
-                _SectionLabel(context.l10n.billingPaymentMethodsSection),
-                for (final method in _store.paymentMethods)
-                  _PaymentMethodTile(
-                    method: method,
-                    onSetDefault: () => _store.setDefaultPaymentMethod(method.id),
-                    onRemove: () => _store.removePaymentMethod(method.id),
+                _CurrentPlanCard(store: _store),
+                const SizedBox(height: AppSpacing.xl),
+                if (_store.isTestPeriod) ...[
+                  const IncludedInAllPlansCard(),
+                  const SizedBox(height: AppSpacing.md),
+                  _TestPeriodLimits(
+                      features: _store.limitFeaturesFor(
+                          _store.currentTier ?? PlanTier.pro)),
+                ] else ...[
+                  _SectionLabel(context.l10n.billingComparePlans),
+                  _BillingCycleToggle(store: _store),
+                  const SizedBox(height: AppSpacing.md),
+                  const IncludedInAllPlansCard(),
+                  const SizedBox(height: AppSpacing.md),
+                  for (final plan in BillingDemoStore.plans) ...[
+                    _PlanCard(
+                      plan: plan,
+                      features: _store.limitFeaturesFor(plan.tier),
+                      cycle: _store.billingCycle,
+                      isCurrent: plan.tier == _store.currentTier,
+                      onSelect: () => _switchToPlan(plan.tier),
+                    ),
+                    const SizedBox(height: AppSpacing.md),
+                  ],
+                  _SectionLabel(context.l10n.billingPaymentMethodsSection),
+                  for (final method in _store.paymentMethods)
+                    _PaymentMethodTile(
+                      method: method,
+                      onSetDefault: () =>
+                          _store.setDefaultPaymentMethod(method.id),
+                      onRemove: () => _store.removePaymentMethod(method.id),
+                    ),
+                  _AddPaymentMethodRow(onTap: _addPaymentMethod),
+                  _SectionLabel(context.l10n.billingInvoicingSection),
+                  _Row(
+                    icon: Icons.receipt_long_outlined,
+                    iconColor: AppColors.mutedText,
+                    title: context.l10n.billingPaymentHistory,
+                    onTap: _openPaymentHistory,
                   ),
-                _AddPaymentMethodRow(onTap: _addPaymentMethod),
-                _SectionLabel(context.l10n.billingInvoicingSection),
-                _Row(
-                  icon: Icons.receipt_long_outlined,
-                  iconColor: AppColors.mutedText,
-                  title: context.l10n.billingPaymentHistory,
-                  onTap: _openPaymentHistory,
-                ),
+                ],
               ],
             );
           },
@@ -203,6 +217,72 @@ class _TrialBanner extends StatelessWidget {
           ),
         ],
       ),
+    );
+  }
+}
+
+class _TestPeriodBanner extends StatelessWidget {
+  const _TestPeriodBanner({required this.planName});
+
+  final String planName;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      key: const ValueKey('billing-test-period-banner'),
+      width: double.infinity,
+      padding: const EdgeInsets.all(AppSpacing.md),
+      decoration: BoxDecoration(
+        color: AppColors.info.withValues(alpha: 0.12),
+        borderRadius: BorderRadius.circular(AppRadii.large),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Icon(Icons.science_outlined, color: AppColors.info, size: 20),
+          const SizedBox(width: AppSpacing.sm),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  context.l10n.billingTestPeriodTitle,
+                  style: AppTextStyles.bodySmall.copyWith(
+                    color: AppColors.info,
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  context.l10n.billingTestPeriodBody(planName),
+                  style: AppTextStyles.caption.copyWith(color: AppColors.info),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _TestPeriodLimits extends StatelessWidget {
+  const _TestPeriodLimits({required this.features});
+
+  final List<PlanFeature> features;
+
+  @override
+  Widget build(BuildContext context) {
+    if (features.isEmpty) return const SizedBox.shrink();
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(AppSpacing.lg),
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(AppRadii.large),
+        border: Border.all(color: AppColors.border),
+      ),
+      child: PlanFeatureList(features: features),
     );
   }
 }

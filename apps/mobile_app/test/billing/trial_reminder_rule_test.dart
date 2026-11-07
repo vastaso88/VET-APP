@@ -82,22 +82,22 @@ void main() {
           'is_developer': false,
           'has_access': true,
           'limits': {
-            'max_pets': 6,
+            'max_pets': 8,
             'max_chats_per_pet': 4,
-            'daily_questions': 15,
+            'daily_questions': 25,
             'max_devices': 3,
           },
           'plan_limits': {
             'plus': {
-              'max_pets': 3,
+              'max_pets': 4,
               'max_chats_per_pet': 2,
-              'daily_questions': 8,
+              'daily_questions': 12,
               'max_devices': 2,
             },
             'ultra': {
               'max_pets': 15,
               'max_chats_per_pet': 6,
-              'daily_questions': 30,
+              'daily_questions': 50,
               'max_devices': 3,
             },
           },
@@ -107,8 +107,8 @@ void main() {
       final status = SubscriptionStatus.fromJson(json(plan: 'pro'));
 
       expect(status.plan, PlanTier.pro);
-      expect(status.limits?.dailyQuestions, 15);
-      expect(status.planLimits[PlanTier.plus]?.maxPets, 3);
+      expect(status.limits?.dailyQuestions, 25);
+      expect(status.planLimits[PlanTier.plus]?.maxPets, 4);
       expect(status.planLimits[PlanTier.ultra]?.maxChatsPerPet, 6);
     });
 

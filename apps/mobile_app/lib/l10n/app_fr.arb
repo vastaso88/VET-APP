@@ -255,6 +255,28 @@
   "billingPaywallEmergencyTitle": "Si votre animal est en danger",
   "billingPaywallEmergencyBody": "Appelez immédiatement votre vétérinaire ou une clinique vétérinaire d'urgence. Quokka ne remplace pas une consultation.",
   "billingPlanLimitReached": "Votre offre a atteint cette limite. Passez à une offre supérieure dans les Paramètres.",
+  "billingTestPeriodTitle": "Période de test",
+  "billingTestPeriodBody": "Vous utilisez Quokka avec l'offre {plan}, sans payer : pendant le test, tout le monde a la même offre et il n'y a rien à choisir ni à payer.",
+  "@billingTestPeriodBody": {
+    "placeholders": {
+      "plan": {
+        "type": "String"
+      }
+    }
+  },
+  "billingTestPeriodShort": "{plan} · test",
+  "@billingTestPeriodShort": {
+    "placeholders": {
+      "plan": {
+        "type": "String"
+      }
+    }
+  },
+  "billingActionNeedsPlan": "Il faut une offre pour cela. Choisissez-en une dans Paramètres → Abonnement et paiements.",
+  "marketplaceLimitedNotice": "Vous ne voyez que l'objet, le prix et les photos. Avec une offre, vous voyez aussi la description et les détails, et vous pouvez publier et signaler des annonces.",
+  "marketplaceLimitedSeePlans": "Voir les offres",
+  "eventsNeedsPlan": "Les événements font partie des offres. Choisissez une offre pour les voir.",
+  "billingPaywallBrowseMarketplace": "Parcourir les annonces du marché de l'occasion",
   "billingChoosePlan": "Choisir {plan}",
   "@billingChoosePlan": {
     "placeholders": {
@@ -3791,5 +3813,34 @@
   "permGalleryTitle": "Choisir des photos et des vidéos",
   "permGalleryWhy": "La galerie de votre téléphone s'ouvre : Quokka ne voit que les photos et les vidéos que vous choisissez, pas toute la galerie.",
   "permGalleryRefuse": "Si vous choisissez « Pas maintenant », rien n'est ajouté ; vous pouvez réessayer quand vous voulez.",
-  "settingsConsentDiagnostics": "Envoyer les rapports d'erreurs"
+  "settingsConsentDiagnostics": "Envoyer les rapports d'erreurs",
+  "marketplaceMessagesTitle": "Messages du marché de l'occasion",
+  "marketplaceMessagesOpen": "{count, plural, =0{Messages} =1{Messages : 1 non lu} other{Messages : {count} non lus}}",
+  "marketplaceMessagesWriteToSeller": "Écrire au vendeur",
+  "marketplaceMessagesEmpty": "Aucune conversation. Quand vous écrivez à un vendeur, ou que quelqu'un vous écrit pour l'une de vos annonces, vous la trouvez ici.",
+  "marketplaceMessagesLoadFailed": "Impossible de charger les messages. Réessayez dans un instant.",
+  "marketplaceMessagesRoleBuyer": "Avec le vendeur",
+  "marketplaceMessagesRoleSeller": "Avec un acheteur",
+  "marketplaceMessagesClosedTag": "Fermée",
+  "marketplaceMessagesSafetyNotice": "Pour votre sécurité : ne partagez pas de données personnelles (téléphone, e-mail, adresse) et ne payez pas à l'avance.",
+  "marketplaceMessagesHint": "Écrire un message",
+  "marketplaceMessagesSend": "Envoyer",
+  "marketplaceMessagesSendFailed": "Message non envoyé. Réessayez.",
+  "marketplaceMessagesDailyLimit": "Vous avez atteint la limite de {limit} nouvelles conversations par jour. Réessayez demain.",
+  "marketplaceMessagesClosed": "Cette conversation est fermée : vous pouvez la relire, mais il n'est plus possible d'envoyer des messages.",
+  "marketplaceMessagesBlockedByMe": "Vous avez bloqué cette personne. Débloquez-la pour écrire de nouveau.",
+  "marketplaceMessagesUnavailable": "Il n'est pas possible d'écrire pour cette annonce.",
+  "marketplaceMessagesPlanRequired": "Pour écrire, il faut une formule active. Vous pouvez toujours relire les messages, bloquer et signaler.",
+  "marketplaceMessagesMoreActions": "Autres actions",
+  "marketplaceMessagesBlock": "Bloquer l'utilisateur",
+  "marketplaceMessagesUnblock": "Débloquer l'utilisateur",
+  "marketplaceMessagesBlockTitle": "Bloquer cette personne ?",
+  "marketplaceMessagesBlockBody": "Cette personne ne pourra plus vous écrire, pour aucune annonce, et vous ne pourrez plus lui écrire. Elle n'en sera pas avertie.",
+  "marketplaceMessagesBlockConfirm": "Bloquer",
+  "marketplaceMessagesBlocked": "Utilisateur bloqué.",
+  "marketplaceMessagesUnblocked": "Utilisateur débloqué.",
+  "marketplaceMessagesReport": "Signaler la conversation",
+  "marketplaceMessagesReportPrivacy": "Notre équipe lira cette conversation pour évaluer le signalement.",
+  "marketplaceMessagesReasonHarassment": "Harcèlement",
+  "marketplaceMessagesActionFailed": "L'opération a échoué. Réessayez."
 }

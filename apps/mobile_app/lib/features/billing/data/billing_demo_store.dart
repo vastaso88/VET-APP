@@ -110,6 +110,13 @@ class BillingDemoStore extends ChangeNotifier {
       _subscriptionStatus!.plan == null &&
       _subscriptionStatus!.isTrialActive;
 
+  /// True while the backend runs a public test: everyone on the same plan,
+  /// nobody pays, nothing to choose.
+  bool get isTestPeriod => _subscriptionStatus?.testPeriod ?? false;
+
+  /// False until the first answer of the backend.
+  bool get hasLoadedStatus => _subscriptionStatus != null;
+
   int get trialDaysLeft => _subscriptionStatus?.trialDaysLeft ?? 0;
 
   DateTime? get trialEndsAt => _subscriptionStatus?.trialEndsAt;

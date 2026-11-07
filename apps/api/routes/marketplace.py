@@ -1,19 +1,23 @@
 from typing import Annotated
 
-from fastapi import APIRouter, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Query
 from pydantic import BaseModel, Field
 
 from apps.api.dependencies.container import get_container
+from apps.api.dependencies.subscription import owner_has_access, require_active_subscription
 from packages.core.application.services.create_listing import CreateListingInput
 from packages.core.application.services.list_nearby_listings import ListNearbyListingsInput
+from packages.core.application.services.report_listing import ReportListingInput
 from packages.core.application.services.update_listing import UpdateListingInput
 from packages.core.domain.geo.models import Coordinates
 from packages.core.domain.marketplace.models import (
     ListingCategory,
     ListingCondition,
+    ListingReportReason,
     ListingSpecies,
     MarketplaceListing,
 )
+from packages.core.domain.marketplace.visibility import limit_listing_row
 from packages.core.domain.territory.rules import (
     MARKETPLACE_MAX_RADIUS_KM,
     MARKETPLACE_MIN_RADIUS_KM,
@@ -51,6 +55,9 @@ def list_nearby_listings(
 ) -> dict[str, object]:
     container = get_container()
     user = container.auth_provider.get_current_user()
+    # An owner without a plan (trial over) still browses, but sees only the
+    # first look of each ad (domain/marketplace/visibility.py).
+    limited = not owner_has_access()
     result = container.list_nearby_listings_service().execute(
         ListNearbyListingsInput(
             buyer_location=Coordinates(latitude=latitude, longitude=longitude),
@@ -62,13 +69,14 @@ def list_nearby_listings(
     for item in result.listings:
         row = _public_row(item, user.id)
         row["distance_km"] = round(result.distances_km[item.id], 3)
-        listings.append(row)
+        listings.append(limit_listing_row(row) if limited else row)
     return {
         "listings": listings,
         "context": {
             "radius_km": radius_km,
             "min_radius_km": MARKETPLACE_MIN_RADIUS_KM,
             "max_radius_km": MARKETPLACE_MAX_RADIUS_KM,
+            "limited": limited,
         },
     }
 
@@ -92,7 +100,7 @@ class ListingPayload(BaseModel):
 
 # The one door through which an ad is written: the content rule (no animals)
 # is applied here, so it does not depend on what the app did.
-@router.post("/listings")
+@router.post("/listings", dependencies=[Depends(require_active_subscription)])
 def create_listing(payload: ListingPayload) -> dict[str, object]:
     container = get_container()
     user = container.auth_provider.get_current_user()
@@ -114,7 +122,7 @@ def create_listing(payload: ListingPayload) -> dict[str, object]:
     return {"listing": _public_row(result.listing, user.id)}
 
 
-@router.put("/listings/{listing_id}")
+@router.put("/listings/{listing_id}", dependencies=[Depends(require_active_subscription)])
 def update_listing(listing_id: str, payload: ListingPayload) -> dict[str, object]:
     container = get_container()
     user = container.auth_provider.get_current_user()
@@ -146,4 +154,24 @@ def get_listing(listing_id: str) -> dict[str, object]:
     listing = container.marketplace_listing_repository.get(listing_id)
     if listing is None or (listing.status != "active" and listing.owner_id != user.id):
         raise HTTPException(status_code=404, detail="Annuncio non trovato.")
-    return {"listing": _public_row(listing, user.id)}
+    row = _public_row(listing, user.id)
+    if not owner_has_access():
+        # The same fields as in the list (the distance is only in the list).
+        return {"listing": limit_listing_row(row), "limited": True}
+    return {"listing": row, "limited": False}
+
+
+class ReportListingRequest(BaseModel):
+    reason: ListingReportReason
+
+
+# Reporting an ad is an action like writing one: the one door is this route, so
+# the plan check and the auto-removal threshold do not depend on the app.
+@router.post("/listings/{listing_id}/report", dependencies=[Depends(require_active_subscription)])
+def report_listing(listing_id: str, request: ReportListingRequest) -> dict[str, object]:
+    container = get_container()
+    user = container.auth_provider.get_current_user()
+    result = container.report_listing_service().execute(
+        ReportListingInput(listing_id=listing_id, reporter_owner_id=user.id, reason=request.reason)
+    )
+    return {"report_count": result.listing.report_count, "status": result.listing.status}

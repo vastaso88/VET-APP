@@ -248,9 +248,16 @@ class SendChatMessageService:
         body_condition, body_condition_as_of = self._body_condition_context(
             data.owner_id, pet_profile, today
         )
+        # R25, option A (owner decision 2026-11-07): the profile's free notes
+        # ("Diagnosi MBD lieve 2024") and the reminders, therapies included,
+        # are health information and leave for the provider only with the
+        # record consent granted under the current text. Without it the
+        # chat knows name, species, breed, sex, age and weight, as the
+        # consent text lets the owner expect.
+        record_allowed = medical_record_consent is True
         reminders_context = (
             self._reminder_context_retriever.summarize_for_pet(data.owner_id, pet_profile.id, today)
-            if self._reminder_context_retriever is not None
+            if record_allowed and self._reminder_context_retriever is not None
             else None
         )
 
@@ -262,7 +269,7 @@ class SendChatMessageService:
                 pet_id=pet_profile.id,
                 breed=pet_profile.breed,
                 age_years=pet_profile.age_years,
-                notes=pet_profile.notes,
+                notes=pet_profile.notes if record_allowed else None,
                 birth_date_label=pet_profile.birth_date_label,
                 sex=pet_profile.sex,
                 weight_label=self._weight_label(data.owner_id, pet_profile, today),

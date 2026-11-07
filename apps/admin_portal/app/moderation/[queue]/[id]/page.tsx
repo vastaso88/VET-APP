@@ -5,6 +5,7 @@ import { AdminShell } from "../../../../components/admin-shell";
 import { getModerationDetail } from "../../../../lib/admin-api";
 import {
   resolveChatReport,
+  resolveMarketplaceMessageReport,
   resolveMarketplaceReport,
   resolveRadarReport,
 } from "../../actions";
@@ -33,10 +34,10 @@ export default async function ModerationDetailPage({
   params: Promise<{ queue: string; id: string }>;
 }) {
   const { queue, id } = await params;
-  if (!["radar", "chat", "marketplace"].includes(queue)) notFound();
+  if (!["radar", "chat", "marketplace", "marketplace_messages"].includes(queue)) notFound();
 
   const detail = await getModerationDetail(
-    queue as "radar" | "chat" | "marketplace",
+    queue as "radar" | "chat" | "marketplace" | "marketplace_messages",
     id,
   );
 
@@ -63,6 +64,13 @@ export default async function ModerationDetailPage({
     queue === "marketplace" && item.listing && typeof item.listing === "object"
       ? item.listing as Record<string, unknown>
       : null;
+  const conversation =
+    queue === "marketplace_messages" && item.conversation && typeof item.conversation === "object"
+      ? item.conversation as Record<string, unknown>
+      : null;
+  const messages = queue === "marketplace_messages" && Array.isArray(item.messages)
+    ? item.messages as Array<Record<string, unknown>>
+    : [];
 
   return (
     <AdminShell title="Moderation detail" eyebrow={queue}>
@@ -114,6 +122,30 @@ export default async function ModerationDetailPage({
             </>
           ) : null}
         </div>
+
+        {queue === "marketplace_messages" ? (
+          <div className="detail-grid">
+            <div><span>Listing</span><strong>{conversation ? value(conversation, "listing_title") : "—"}</strong></div>
+            <div><span>Buyer</span><strong>{conversation ? value(conversation, "buyer_id") : "—"}</strong></div>
+            <div><span>Seller</span><strong>{conversation ? value(conversation, "seller_id") : "—"}</strong></div>
+            <div><span>Reporter</span><strong>{value(item, "reporter_id")}</strong></div>
+            <div><span>Closed by the team</span><strong>{conversation ? dateValue(conversation, "moderation_closed_at") : "—"}</strong></div>
+            <div><span>Resolution note</span><strong>{value(item, "resolution_note")}</strong></div>
+          </div>
+        ) : null}
+
+        {queue === "marketplace_messages" ? (
+          <div className="detail-copy">
+            <h3>Messages (read only because this conversation was reported)</h3>
+            <div className="compact-list">
+              {messages.length ? messages.map((message) => (
+                <span key={String(message.id)}>
+                  {value(message, "role")} · {dateValue(message, "created_at")}: {value(message, "body")}
+                </span>
+              )) : <span>No messages left.</span>}
+            </div>
+          </div>
+        ) : null}
 
         {queue === "chat" ? (
           <div className="detail-copy">
@@ -210,6 +242,21 @@ export default async function ModerationDetailPage({
               <button className="primary-button" name="action" value="dismiss_report">Dismiss / keep listing</button>
               <button className="ghost-button" name="action" value="restore_listing">Restore listing</button>
               <button className="ghost-button" name="action" value="reopen_report">Reopen report</button>
+            </div>
+          </form>
+        ) : null}
+
+        {queue === "marketplace_messages" ? (
+          <form action={resolveMarketplaceMessageReport} className="moderation-action-form">
+            <input type="hidden" name="report_id" value={id} />
+            <label>
+              Note
+              <input name="resolution_note" maxLength={1000} placeholder="Optional moderation note" />
+            </label>
+            <div className="form-actions">
+              <button className="danger-button" name="action" value="close_conversation">Close conversation</button>
+              <button className="primary-button" name="action" value="dismiss_report">Dismiss</button>
+              <button className="ghost-button" name="action" value="reopen_report">Reopen report and conversation</button>
             </div>
           </form>
         ) : null}

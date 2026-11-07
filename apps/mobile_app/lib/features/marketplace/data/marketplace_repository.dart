@@ -10,6 +10,7 @@ import '../../location/domain/coordinates.dart';
 import '../../territory/domain/territory.dart';
 import '../domain/animal_policy.dart';
 import '../domain/content_policy.dart';
+import '../../billing/data/subscription_required_signal.dart';
 import '../domain/marketplace_listing.dart';
 import 'listing_photo_store.dart';
 
@@ -150,9 +151,15 @@ class MarketplaceRepository {
       final result = await _callApi('GET', '/marketplace/listings/${Uri.encodeComponent(id)}');
       if (result != null) {
         if (result.statusCode == 404) return null;
-        if (result.statusCode != 200) throw const ListingBackendUnavailableException();
-        final json = jsonDecode(utf8.decode(result.bodyBytes)) as Map<String, dynamic>;
-        return _parseRow(json['listing'] as Map<String, dynamic>);
+        if (result.statusCode != 200) {
+          throw const ListingBackendUnavailableException();
+        }
+        final json =
+            jsonDecode(utf8.decode(result.bodyBytes)) as Map<String, dynamic>;
+        return _parseRow(
+          json['listing'] as Map<String, dynamic>,
+          limited: json['limited'] == true,
+        );
       }
       if (_resolveClient() != null) throw const ListingBackendUnavailableException();
     }
@@ -203,17 +210,23 @@ class MarketplaceRepository {
     }
     if (response.statusCode != 200) return null;
     try {
-      final json = jsonDecode(utf8.decode(response.bodyBytes)) as Map<String, dynamic>;
-      return _parseRows(json['listings'] as List<dynamic>? ?? const []);
+      final json =
+          jsonDecode(utf8.decode(response.bodyBytes)) as Map<String, dynamic>;
+      final context = json['context'] as Map<String, dynamic>?;
+      return _parseRows(
+        json['listings'] as List<dynamic>? ?? const [],
+        limited: context?['limited'] == true,
+      );
     } catch (_) {
       return null;
     }
   }
 
-  List<MarketplaceListing> _parseRows(List<dynamic> rows) {
+  List<MarketplaceListing> _parseRows(List<dynamic> rows,
+      {bool limited = false}) {
     final listings = <MarketplaceListing>[];
     for (final row in rows) {
-      final listing = _parseRow(row as Map<String, dynamic>);
+      final listing = _parseRow(row as Map<String, dynamic>, limited: limited);
       if (listing != null) listings.add(listing);
     }
     return listings;
@@ -290,6 +303,9 @@ class MarketplaceRepository {
     final response = await _callApi(method, path, body: _toApiBody(listing));
     if (response == null) return false;
     if (response.statusCode == 200) return true;
+    if (handleSubscriptionRequired(response.statusCode)) {
+      throw ListingRejectedException(appL10n.billingActionNeedsPlan);
+    }
     if (response.statusCode == 400) {
       String? detail;
       try {
@@ -299,6 +315,32 @@ class MarketplaceRepository {
       throw ListingRejectedException(_localizedRefusal(detail));
     }
     throw const ListingBackendUnavailableException();
+  }
+
+  /// Reports an ad through the backend (`POST /marketplace/listings/{id}/report`),
+  /// the one door: the plan check and the removal after three reporters are
+  /// decided there. Returns the ad as the backend now has it, or null when the
+  /// backend cannot be asked (demo, tests: the caller keeps its local path).
+  Future<MarketplaceListing?> reportListing(
+      MarketplaceListing listing, String reason) async {
+    if (_localOnly) return null;
+    final path =
+        '/marketplace/listings/${Uri.encodeComponent(listing.id)}/report';
+    final response = await _callApi('POST', path, body: {'reason': reason});
+    if (response == null) return null;
+    if (handleSubscriptionRequired(response.statusCode)) {
+      throw ListingRejectedException(appL10n.billingActionNeedsPlan);
+    }
+    if (response.statusCode != 200) {
+      throw const ListingBackendUnavailableException();
+    }
+    final json =
+        jsonDecode(utf8.decode(response.bodyBytes)) as Map<String, dynamic>;
+    return listing.copyWith(
+      reportCount: (json['report_count'] as num?)?.toInt(),
+      status: _statusFromString(json['status'] as String?),
+      updatedAt: DateTime.now(),
+    );
   }
 
   /// Author only. The `owner_id` filter plus `.select()` turn an RLS
@@ -365,7 +407,12 @@ class MarketplaceRepository {
     }
   }
 
-  MarketplaceListing? _parseRow(Map<String, dynamic> row) {
+  /// A [limited] row is what the backend sends an owner without a plan: only
+  /// the first look, so the fields it leaves out take placeholder values and
+  /// the ad is marked [MarketplaceListing.isLimited].
+  MarketplaceListing? _parseRow(Map<String, dynamic> row,
+      {bool limited = false}) {
+    if (limited) return _parseLimitedRow(row);
     final category = categoryFromWire(row['category'] as String?);
     final condition = _conditionFromString(row['condition'] as String?);
     final status = _statusFromString(row['status'] as String?);
@@ -409,6 +456,35 @@ class MarketplaceRepository {
       reportCount: (row['report_count'] as num?)?.toInt() ?? 0,
       createdAt: createdAt,
       updatedAt: updatedAt,
+    );
+  }
+
+  MarketplaceListing? _parseLimitedRow(Map<String, dynamic> row) {
+    final id = (row['id'] ?? '').toString();
+    if (id.isEmpty) return null;
+    final distanceKm = (row['distance_km'] as num?)?.toDouble();
+    final epoch = DateTime.fromMillisecondsSinceEpoch(0, isUtc: true);
+    return MarketplaceListing(
+      id: id,
+      ownerId: '',
+      title: (row['title'] ?? '').toString(),
+      category: ListingCategory.other,
+      condition: ListingCondition.good,
+      priceCents: (row['price_cents'] as num?)?.toInt(),
+      photoUrls: (row['photo_urls'] as List<dynamic>?)
+              ?.map((e) => e.toString())
+              .toList() ??
+          const [],
+      location: const Coordinates(latitude: 0, longitude: 0),
+      cityLabel: row['city_label'] as String?,
+      country: ((row['country'] as String?)?.trim().isNotEmpty ?? false)
+          ? (row['country'] as String).trim().toUpperCase()
+          : 'IT',
+      status: ListingStatus.active,
+      createdAt: epoch,
+      updatedAt: epoch,
+      isLimited: true,
+      serverDistanceMeters: distanceKm == null ? null : distanceKm * 1000,
     );
   }
 

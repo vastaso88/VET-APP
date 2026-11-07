@@ -339,6 +339,74 @@ ANSWER_NOW_REMINDER = (
 )
 
 
+# An emergency the fixed lists or the classifier recognised (owner decision
+# 2026-11-07): the fixed opening says to act now; the model answers on the
+# case with the fixed first aid as binding notes (chat_orchestrator.py,
+# _urgent_answer; the fixed steps when the model cannot answer in time).
+_EMERGENCY = (
+    "THIS REQUEST: AN EMERGENCY. A fixed opening before your text already tells the owner "
+    "that what they describe needs a vet right now and ends with 'here is what to do now': "
+    "do not repeat it, do not greet, do not reassure. Write, in this order, in plain words: "
+    "(1) what to do in the next minutes for THIS case, following the FIRST AID below "
+    "adapted to what the owner wrote (the vet or the emergency clinic comes first, on the "
+    "phone or on the way); (2) what to avoid: nothing by mouth unless the first aid says "
+    "otherwise, no home remedy, no medicine, never make the animal vomit on your own; (3) in "
+    "one or two sentences, what may be going on and why it cannot wait, without a diagnosis "
+    "as certain; (4) the answer to the owner's own question, if there is one. Never a dose, "
+    "a medicine of your own or a price; never 'wait and see' or 'if it does not improve'; a "
+    "question only when the answer would change what to do in the next minutes, at most "
+    "one, at the end. Short paragraphs or a short numbered list are both fine here. Within "
+    "about 900 characters. Always finish your last sentence."
+)
+
+# The message after an emergency reply: the detail or the question gets a
+# fresh, specific answer, not the whole first aid again.
+_EMERGENCY_FOLLOW_UP = (
+    "AFTER AN EMERGENCY REPLY. Your previous message told the owner to reach a vet now. This "
+    "message adds a detail, asks something about it or says what happened next: answer that "
+    "point directly and briefly (what the new detail may mean, what to do and not do while "
+    "reaching the vet), without repeating the whole first-aid list. If the detail makes "
+    "things worse, say so first, and that the vet comes before anything else; if the owner "
+    "says the animal is fine now, say what still deserves a check and when. No diagnosis as "
+    "certain, no dose, no medicine of your own."
+)
+
+
+def _request_block(kind: RequestKind, *, may_ask: bool) -> str:
+    if kind is RequestKind.REPORT:
+        return _REPORT
+    if kind is RequestKind.DIRECT:
+        return _DIRECT
+    return _SYMPTOM_MAY_ASK if may_ask else _SYMPTOM_NO_MORE_QUESTIONS
+
+
+def stable_prefix(kind: RequestKind | None, *, may_ask: bool = True) -> str:
+    """The part of the system prompt that is the same for every owner and
+    every call of this kind: the provider's prompt cache reuses it between
+    calls (LLMGenerationRequest.cacheable_system_chars). None = the emergency prompt."""
+    request = _EMERGENCY if kind is None else _request_block(kind, may_ask=may_ask)
+    return "\n\n".join([_VOICE, request])
+
+
+def build_emergency_prompt(*, first_aid: str, language: str = "it", species_facts: str = "") -> str:
+    """The system prompt of the model's part of an emergency reply: the
+    voice, the emergency rules, then the fixed first aid of this case as
+    binding notes (the variable part, after the cacheable prefix)."""
+    parts = [
+        stable_prefix(None),
+        "FIRST AID FOR THIS CASE (binding: these steps win over your own):\n" + first_aid,
+    ]
+    if species_facts:
+        parts.append(
+            "FACTS ABOUT THIS KIND OF ANIMAL (verified; where your own assumptions differ, "
+            "these win):\n" + species_facts
+        )
+    language_line = response_language_instruction(language)
+    if language_line:
+        parts.append(language_line)
+    return "\n\n".join(parts)
+
+
 def build_system_prompt(
     kind: RequestKind,
     *,
@@ -363,20 +431,15 @@ def build_system_prompt(
     foreign_country: bool = False,
     medical_first: bool = False,
     travel_south: bool = False,
+    emergency_follow_up: bool = False,
 ) -> str:
     """The system prompt for one reply. Stable parts first (the prefix the
     provider can cache), then the parts that depend on the request: the
     awareness rules travel with direct questions only, the behaviour
     context line with behaviour or duty questions, the safety and
     prevention notes with the questions they are for."""
-    if kind is RequestKind.REPORT:
-        request = _REPORT
-    elif kind is RequestKind.DIRECT:
-        request = _DIRECT
-    else:
-        request = _SYMPTOM_MAY_ASK if may_ask else _SYMPTOM_NO_MORE_QUESTIONS
     # Stable parts first (the cacheable prefix), variable parts after.
-    parts = [_VOICE, request]
+    parts = [stable_prefix(kind, may_ask=may_ask)]
     if kind is RequestKind.DIRECT:
         parts.append(_AWARENESS)
     if behavioural:
@@ -415,6 +478,8 @@ def build_system_prompt(
         parts.append(_MEDICAL_FIRST)
     if travel_south:
         parts.append(_TRAVEL_SOUTH)
+    if emergency_follow_up:
+        parts.append(_EMERGENCY_FOLLOW_UP)
     if has_reference_material:
         parts.append(_REFERENCE_MATERIAL)
     if species_facts:

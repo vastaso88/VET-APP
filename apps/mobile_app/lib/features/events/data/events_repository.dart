@@ -1,7 +1,14 @@
+import 'dart:async';
+import 'dart:convert';
+
+import 'package:http/http.dart' as http;
 import 'package:supabase_flutter/supabase_flutter.dart';
+
+import '../../../shared/auth/current_user.dart';
 
 import '../../../shared/config/app_runtime_config_loader.dart';
 import '../../../shared/date/calendar_days.dart';
+import '../../billing/data/subscription_required_signal.dart';
 import '../../territory/domain/territory.dart';
 import '../domain/event_entry.dart';
 import '../domain/event_filter.dart';
@@ -10,21 +17,80 @@ import '../domain/event_filter.dart';
 /// leggere" - per l'utente sono situazioni diverse e la prima non deve mai
 /// nascondere la seconda.
 class EventsLoadResult {
-  const EventsLoadResult({required this.events, this.failed = false});
+  const EventsLoadResult(
+      {required this.events, this.failed = false, this.needsPlan = false});
 
   final List<EventEntry> events;
   final bool failed;
+
+  /// The backend refused (402): the trial is over and the owner has no plan.
+  /// Different from [failed]: retrying changes nothing.
+  final bool needsPlan;
 }
 
-/// Lettura diretta della tabella `events` con la anon key: la policy RLS è di
-/// sola lettura pubblica (scripts/setup/supabase_schema.sql), le scritture
-/// avvengono solo da scripts/events/import_curated.py con la service role.
-/// Senza backend configurato (anteprima, test) l'elenco è vuoto: nessun evento
-/// di esempio, mai (vincolo del progetto: nessun dato inventato).
+/// Gli eventi li serve il backend (`GET /events`): fanno parte di cio' che
+/// include un piano e il controllo non puo' dipendere dall'app. Se il backend
+/// non risponde (non ancora rilasciato, rete) si ripiega sulla lettura diretta
+/// della tabella `events` con la anon key, finche' la sua policy RLS di lettura
+/// pubblica esiste (scripts/setup/events_read_via_backend.sql la toglie).
+/// Le scritture avvengono solo da scripts/events/import_curated.py con la
+/// service role. Senza backend configurato (anteprima, test) l'elenco e'
+/// vuoto: nessun evento di esempio, mai (vincolo del progetto: nessun dato
+/// inventato).
 class EventsRepository {
-  EventsRepository({SupabaseClient? client}) : _client = client;
+  EventsRepository({
+    SupabaseClient? client,
+    http.Client? httpClient,
+    String? Function()? tokenProvider,
+    AppRuntimeConfigLoader? configLoader,
+  })  : _client = client,
+        _http = httpClient,
+        _tokenProvider = tokenProvider ?? CurrentUser.accessToken,
+        _configLoader = configLoader ?? const AppRuntimeConfigLoader();
 
   final SupabaseClient? _client;
+  final http.Client? _http;
+  final String? Function() _tokenProvider;
+  final AppRuntimeConfigLoader _configLoader;
+
+  static const _apiTimeout = Duration(seconds: 20);
+
+  /// Gli eventi dal backend: null quando non si puo' interpellare o non ha
+  /// risposto in modo utile (si ripiega); un risultato `needsPlan` su 402.
+  Future<EventsLoadResult?> _loadFromApi({
+    required DateTime from,
+    required DateTime to,
+    required String countryCode,
+  }) async {
+    final baseUrl = _configLoader.load().apiBaseUrl.trim();
+    final token = _tokenProvider();
+    if (baseUrl.isEmpty || token == null || token.isEmpty) return null;
+
+    final uri = Uri.parse('$baseUrl/events').replace(queryParameters: {
+      'country': countryCode,
+      'from': formatEventDate(from),
+      'to': formatEventDate(to),
+    });
+    try {
+      final response = await (_http ?? http.Client()).get(uri,
+          headers: {'Authorization': 'Bearer $token'}).timeout(_apiTimeout);
+      if (handleSubscriptionRequired(response.statusCode)) {
+        return const EventsLoadResult(events: [], needsPlan: true);
+      }
+      if (response.statusCode != 200) return null;
+      final json =
+          jsonDecode(utf8.decode(response.bodyBytes)) as Map<String, dynamic>;
+      final events = <EventEntry>[];
+      for (final row in json['events'] as List<dynamic>? ?? const []) {
+        final event = parseEventRow(row as Map<String, dynamic>);
+        if (event != null) events.add(event);
+      }
+      return EventsLoadResult(
+          events: filterEventsByCountry(events, countryCode));
+    } catch (_) {
+      return null;
+    }
+  }
 
   /// Eventi che toccano la finestra [from]-[to] (estremi inclusi), ordinati per
   /// data di inizio. Regione e tipo si filtrano dopo, sul risultato: i volumi
@@ -38,7 +104,12 @@ class EventsRepository {
     required DateTime to,
     String? country,
   }) async {
-    final countryCode = (country ?? currentTerritory().countryCode).toUpperCase();
+    final countryCode =
+        (country ?? currentTerritory().countryCode).toUpperCase();
+    final fromApi =
+        await _loadFromApi(from: from, to: to, countryCode: countryCode);
+    if (fromApi != null) return fromApi;
+
     final client = _resolveClient();
     if (client == null) {
       return const EventsLoadResult(events: []);

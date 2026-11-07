@@ -385,6 +385,13 @@ class InMemoryMarketplaceListingRepository(MarketplaceListingRepository):
             if item.status == "active" and (country is None or item.country == country)
         ]
 
+    def statuses(self, listing_ids: list[str]) -> dict[str, str]:
+        return {
+            item_id: self._items[item_id].status
+            for item_id in listing_ids
+            if item_id in self._items
+        }
+
 
 class InMemoryListingReportRepository(ListingReportRepository):
     def __init__(self) -> None:

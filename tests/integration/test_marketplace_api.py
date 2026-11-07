@@ -62,7 +62,12 @@ def test_the_ads_inside_the_radius_come_back_across_the_border_too() -> None:
     assert "api-fr-near" in ids
     foreign = next(item for item in body["listings"] if item["id"] == "api-fr-near")
     assert foreign["country"] == "FR"
-    assert body["context"] == {"radius_km": 10.0, "min_radius_km": 1.0, "max_radius_km": 300.0}
+    assert body["context"] == {
+        "radius_km": 10.0,
+        "min_radius_km": 1.0,
+        "max_radius_km": 300.0,
+        "limited": False,
+    }
     near = next(item for item in body["listings"] if item["id"] == "api-it-near")
     assert near["latitude"] and near["country"] == "IT" and "location" not in near
 
