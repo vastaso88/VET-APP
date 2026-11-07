@@ -19,6 +19,7 @@ from __future__ import annotations
 import re
 
 from packages.core.domain.safety.emergency_patterns import normalize_for_matching
+from packages.core.domain.safety.first_aid import HOUSE_SOILING
 
 _GRAVE = re.compile(
     r"\b(?:gengive (?:blu|bianche|grigie|viola|violacee|pallide)|lingua (?:blu|viola|violacea)|"
@@ -67,7 +68,9 @@ def clarifying_question_fits(category: str | None, message: str) -> bool:
     urinates everywhere; about heavy breathing to a cough with no breathing
     words; about the bleeding to an owner who says there is none)."""
     text = normalize_for_matching(message)
-    if category == "urinary" and _POLYURIA.search(text):
+    # Urinating a lot, or outside the usual place in any language ("la gata
+    # orina fuera del arenero", Haiku round 2026-11-07): the animal urinates.
+    if category == "urinary" and (_POLYURIA.search(text) or HOUSE_SOILING.search(text)):
         return False
     if category == "respiratory" and _COUGH.search(text) and not _BREATHING.search(text):
         return False

@@ -152,7 +152,7 @@ def named_foreign_country(message: str) -> bool:
 
 # A new behaviour in an old animal, or house soiling: a medical cause is
 # ruled out first.
-_HOUSE_SOILING = re.compile(
+HOUSE_SOILING = re.compile(
     r"pipi (?:sul|nel|in|fuori|dappertutto|per casa)|fa (?:la )?pipi (?:sul|nel|in casa|fuori)|"
     r"fuori dalla lettiera|urina (?:in casa|sul|nel|fuori)|sporca in casa|marca in casa|"
     r"la cacca fuori|pees? on the|peeing on|outside the litter|urinat\w* (?:in the house|on the)|"
@@ -175,7 +175,7 @@ _OLD = re.compile(
 
 def medical_cause_first(message: str, age_years: int | None) -> bool:
     text = normalize_for_matching(message)
-    if _HOUSE_SOILING.search(text):
+    if HOUSE_SOILING.search(text):
         return True
     old = (age_years is not None and age_years >= 8) or bool(_OLD.search(text))
     return old and bool(_NEW_BEHAVIOUR.search(text))

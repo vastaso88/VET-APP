@@ -1128,7 +1128,7 @@ class ChatOrchestrator:
             if (
                 not requires_immediate_escalation(message)
                 and not describes_a_grave_picture(message)
-                and clarifying_question(category, data.language) is not None
+                and clarifying_question(category, data.language, female=female) is not None
                 and not clarifying_question_fits(category, message)
             ):
                 # The fixed question would contradict the message ("da quante
@@ -1180,7 +1180,7 @@ class ChatOrchestrator:
                     minor,
                 )
 
-            question = clarifying_question(category, data.language)
+            question = clarifying_question(category, data.language, female=female)
             if question is not None:
                 return self._adult_first(
                     ChatOrchestratorResult(
@@ -1879,7 +1879,9 @@ class ChatOrchestrator:
                 # limit, P1): the message is not counted again.
                 admitted=True,
             )
-        question = clarifying_question(category, data.language)
+        question = clarifying_question(
+            category, data.language, female=(data.sex or "").strip().lower() in _FEMALE_LABELS
+        )
         if question is not None and not clarifying_question_fits(category, message):
             # The fixed question would contradict the message: answer normally.
             question = None
@@ -2872,6 +2874,10 @@ class ChatOrchestrator:
             if cached is not None:
                 return cached
         generic_context = cache_id is not None
+        # "Il mio gatto vomita" with a dog's profile open: the answer is for
+        # the cat, and nothing of the dog (name, data, records, reminders)
+        # goes into the prompt (Haiku round 2026-11-07).
+        other_animal = normalize_species(effective_species) != normalize_species(data.species)
 
         if sources is None:
             # Real-world finding (kept from the earlier interview-loop
@@ -2944,10 +2950,12 @@ class ChatOrchestrator:
         # NOT yet ask for consent on its own when it's still unknown;
         # that's a separate, still-open piece of work.
         medical_context, documents_read = (
-            ("", []) if generic_context else self._medical_context_for_prompt(data, kind)
+            ("", [])
+            if generic_context or other_animal
+            else self._medical_context_for_prompt(data, kind)
         )
         reminders_context = ""
-        if data.reminders_context and not generic_context:
+        if data.reminders_context and not generic_context and not other_animal:
             reminders_context = (
                 "\n\nActive reminders the owner set for this pet (take them into "
                 "account when relevant, e.g. an ongoing therapy):"
@@ -2980,8 +2988,12 @@ class ChatOrchestrator:
             kind,
             may_ask=may_ask,
             has_reference_material=bool(evidence_block),
-            species_facts=species_facts(
-                data.species, data.breed, data.notes, ethology=kind is RequestKind.DIRECT
+            species_facts=(
+                species_facts(effective_species, ethology=kind is RequestKind.DIRECT)
+                if other_animal
+                else species_facts(
+                    data.species, data.breed, data.notes, ethology=kind is RequestKind.DIRECT
+                )
             ),
             language=data.language,
             behavioural=kind is RequestKind.DIRECT and is_behavioural_or_duty(message),
@@ -3003,9 +3015,15 @@ class ChatOrchestrator:
             medical_first=medical_cause_first(message, data.age_years),
             travel_south=travel_to_sand_fly_area(message, normalize_species(effective_species)),
             emergency_follow_up=self._follows_a_triage_reply(data),
+            other_animal=other_animal,
+        )
+        pet_block = (
+            self._other_animal_block(data, effective_species)
+            if other_animal
+            else self._pet_context_block(data, generic=generic_context)
         )
         user_prompt = (
-            f"{self._pet_context_block(data, generic=generic_context)}\n"
+            f"{pet_block}\n"
             f"{history_block}"
             f"User message: {anonymized_message}"
             f"{attachment_block}"
@@ -3074,7 +3092,7 @@ class ChatOrchestrator:
                 mode="natural",
                 response_locale=data.language,
             )
-        if self._mentions_wrong_species(response.content, effective_species):
+        if not other_animal and self._mentions_wrong_species(response.content, effective_species):
             return self._validation_failure_result(
                 sources=sources,
                 violations=["wrong_species_reference"],
@@ -3358,6 +3376,17 @@ class ChatOrchestrator:
         return self._pii_anonymizer.anonymize(
             PiiAnonymizationRequest(text=text, known_person_names=data.owner_names)
         ).anonymized_text
+
+    def _other_animal_block(self, data: ChatOrchestratorInput, effective_species: str) -> str:
+        """The message is about another species than the profile's: the
+        species named, and the fact that the open profile is someone else's
+        (its name only, so the model can say whose it is)."""
+        name = self._anonymize_for_provider(data.pet_name, data)
+        return (
+            f"Species: {effective_species} (the animal in the message). The profile open in "
+            f"the app belongs to a different animal, {name} ({data.species}): none of its "
+            "data applies."
+        )
 
     def _pet_context_block(self, data: ChatOrchestratorInput, *, generic: bool = False) -> str:
         """Every field PetProfile actually has today, not just name/species

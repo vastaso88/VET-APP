@@ -648,9 +648,70 @@ _CLARIFYING_QUESTIONS_DE: dict[str, str] = {
 }
 
 
-def clarifying_question(category: str | None, locale: str) -> str | None:
+# The same questions for a female animal, where the language marks the
+# gender (Haiku round 2026-11-07: "da quante ore non lo vedi urinare?" to
+# Nina). English, Spanish and German above are already neutral.
+CLARIFYING_QUESTIONS_FEMALE: dict[str, dict[str, str]] = {
+    "it": {
+        "collapse": (
+            "Prima di darti indicazioni, un paio di cose veloci: adesso è sveglia, ti "
+            "risponde e si muove normalmente, oppure è ancora a terra o poco reattiva? "
+            "E l'episodio è durato pochi secondi o più a lungo?"
+        ),
+        "seizure": (
+            "Prima di darti indicazioni, un paio di cose veloci: le convulsioni sono già "
+            "finite ed è tornata vigile, oppure stanno ancora succedendo adesso? Ed è la "
+            "prima volta che capita?"
+        ),
+        "urinary": (
+            "Prima di darti indicazioni, un paio di cose veloci: da quante ore non la "
+            "vedi urinare? E la vedi provarci senza risultato o lamentarsi, oppure "
+            "sembra solo che non ne abbia avuto occasione?"
+        ),
+    },
+    "es": {
+        "collapse": (
+            "Dos preguntas rápidas: ¿ahora está despierta, responde y se mueve con "
+            "normalidad, o sigue en el suelo y poco reactiva? ¿El episodio duró segundos o "
+            "más tiempo?"
+        ),
+    },
+    "fr": {
+        "collapse": (
+            "Deux questions rapides : est-elle maintenant éveillée, réactive et se "
+            "déplace-t-elle normalement, ou reste-t-elle au sol et peu réactive ? "
+            "L'épisode a-t-il duré quelques secondes ou plus longtemps ?"
+        ),
+        "seizure": (
+            "Deux questions rapides : les convulsions sont-elles terminées et est-elle "
+            "redevenue attentive, ou continuent-elles en ce moment ? Est-ce la première "
+            "fois ?"
+        ),
+        "bleeding_trauma": (
+            "Deux questions rapides : saigne-t-elle encore ou le saignement s'est-il "
+            "arrêté ou réduit ? Était-ce quelques gouttes ou une quantité qui vous "
+            "inquiète ?"
+        ),
+        "urinary": (
+            "Deux questions rapides : depuis combien d'heures n'a-t-elle pas uriné ? "
+            "Essaie-t-elle sans y parvenir ou montre-t-elle de la douleur ?"
+        ),
+        "gi_stasis": (
+            "Deux questions rapides : depuis combien d'heures exactement n'a-t-elle ni "
+            "mangé ni fait ses besoins ? S'est-elle approchée de la nourriture ou "
+            "a-t-elle produit ne serait-ce que quelques petites selles ?"
+        ),
+    },
+}
+
+
+def clarifying_question(category: str | None, locale: str, *, female: bool = False) -> str | None:
     if category is None:
         return None
+    if female:
+        variant = CLARIFYING_QUESTIONS_FEMALE.get(normalize_locale(locale), {}).get(category)
+        if variant is not None:
+            return variant
     catalogs = {
         "it": CLARIFYING_QUESTIONS,
         "en": _CLARIFYING_QUESTIONS_EN,

@@ -355,12 +355,25 @@ _EMERGENCY = (
     "as certain; (4) the answer to the owner's own question, if there is one. Never a dose, "
     "a medicine of your own or a price; never 'wait and see' or 'if it does not improve'; a "
     "question only when the answer would change what to do in the next minutes, at most "
-    "one, at the end. Short paragraphs or a short numbered list are both fine here. Within "
-    "about 900 characters. Always finish your last sentence."
+    "one, at the end. Give each first-aid step as it is written: never add a reason of "
+    "your own to it ('può peggiorare le cose', 'it may make things worse') and never "
+    "extend it with a step of your own. Short paragraphs or a short numbered list are "
+    "both fine here. Within about 900 characters. Always finish your last sentence."
 )
 
 # The message after an emergency reply: the detail or the question gets a
 # fresh, specific answer, not the whole first aid again.
+# "Il mio gatto vomita" with a dog's profile open (Haiku round 2026-11-07):
+# the answer is for the animal in the message, nothing of the profile.
+_OTHER_ANIMAL = (
+    "ANOTHER ANIMAL. The message is about an animal of a different species from the "
+    "profile open in the app: answer for the animal in the message, speak of it by its "
+    "species ('il tuo gatto'), and never use the profile's name, age, weight, notes or "
+    "documents, which belong to another animal. Say in one short sentence, at the end, "
+    "that the open profile is another animal's and that a profile for this one would "
+    "give more precise answers."
+)
+
 _EMERGENCY_FOLLOW_UP = (
     "AFTER AN EMERGENCY REPLY. Your previous message told the owner to reach a vet now. This "
     "message adds a detail, asks something about it or says what happened next: answer that "
@@ -432,6 +445,7 @@ def build_system_prompt(
     medical_first: bool = False,
     travel_south: bool = False,
     emergency_follow_up: bool = False,
+    other_animal: bool = False,
 ) -> str:
     """The system prompt for one reply. Stable parts first (the prefix the
     provider can cache), then the parts that depend on the request: the
@@ -480,6 +494,8 @@ def build_system_prompt(
         parts.append(_TRAVEL_SOUTH)
     if emergency_follow_up:
         parts.append(_EMERGENCY_FOLLOW_UP)
+    if other_animal:
+        parts.append(_OTHER_ANIMAL)
     if has_reference_material:
         parts.append(_REFERENCE_MATERIAL)
     if species_facts:
