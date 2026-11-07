@@ -3086,6 +3086,24 @@
       "fr": "2d08ff5f7ae36dcd83a54d17ab1f1ed964115ab392abe9b7a4f8082167d17ff1"
     }
   },
+  "ui:marketplaceNoContactsMessage": {
+    "source": "17d8480cfffb881cb59d19089ad7f9ed6d0be0509d271a2254864be1a7af08e1",
+    "targets": {
+      "en": "7858608516bebd84c3c14aa73025fb4d3af330b0353797437b54599c96146cfd",
+      "es": "28d8e37088736280e519f5289dc9bd2c26781f9f589600ba621e7bde47cbe9d1",
+      "de": "9844a034196680afcd79754430954da8ad75e79a41b0e20170e6f7c6343cce19",
+      "fr": "65d74091548a180d0dbda1573f29cf660b62d756bfdece29e5b9b05079dfa80d"
+    }
+  },
+  "ui:marketplaceNoMedicinesMessage": {
+    "source": "9c63b72ee5e8150a7c8b96fd7a5a8c5ba24b636b45696f32c4891da71edcf018",
+    "targets": {
+      "en": "9507a4bb8daeb5d2fc0b7760019d7c4016aa265ad15649b9efa7e419006f58b5",
+      "es": "e9abd551a5fa610158f989f858be326f777946690f9508dc98abee19bcdf768c",
+      "de": "0ee53dc38e5577d22fe3d55f7c6465b8bb884ad51e20137e4853b20abac3a074",
+      "fr": "e34089ad75c4ff277157ed1b6bf29f274b06375f51dc406fd1ee93af2dcf11c8"
+    }
+  },
   "ui:marketplaceBackendUnavailable": {
     "source": "f6e719c59511212fe9e7ffaaf847e067d648344c1411f0b423e7428e98d31c91",
     "targets": {
