@@ -13,10 +13,13 @@ from packages.core.domain.safety.triage_clarification import (
     BIRD_RESPIRATORY_KEYWORDS,
     DOG_PRODUCT_ON_CAT_KEYWORDS,
     FISH_DISTRESS_KEYWORDS,
+    FOREIGN_BODY_KEYWORDS,
+    HARD_BELLY_KEYWORDS,
     HEATSTROKE_KEYWORDS,
     PROCESSIONARY_KEYWORDS,
     SMALL_MAMMAL_STASIS_KEYWORDS,
     SNAKEBITE_KEYWORDS,
+    STRAINING_URINE_KEYWORDS,
 )
 
 URGENT_RED_FLAG_KEYWORDS = {
@@ -91,6 +94,11 @@ URGENT_RED_FLAG_KEYWORDS = {
 }
 # German and French (2026-10-26), the same groups: red_flags_de_fr.py.
 URGENT_RED_FLAG_KEYWORDS |= all_urgent_keywords()
+# Synthetic users 2026-11-07 (P1): swallowed objects, a hard belly, straining to
+# urinate, for every species.
+URGENT_RED_FLAG_KEYWORDS |= (
+    set(FOREIGN_BODY_KEYWORDS) | set(HARD_BELLY_KEYWORDS) | set(STRAINING_URINE_KEYWORDS)
+)
 # Wide eval 2026-11-06: heatstroke, snake bites and processionary caterpillars
 # are emergencies for every species.
 URGENT_RED_FLAG_KEYWORDS |= (

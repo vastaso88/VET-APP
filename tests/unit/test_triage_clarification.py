@@ -40,6 +40,7 @@ def test_every_category_has_a_clarifying_question_except_documented_exceptions()
         "snakebite",
         "processionary",
         "fish_distress",
+        "foreign_body",
     }
     assert set(CLARIFYING_QUESTIONS) == set(RED_FLAG_CATEGORIES) - categories_without_a_question
 

@@ -67,7 +67,7 @@ def test_after_the_daily_allowance_the_owner_is_told_when_to_come_back() -> None
 
     assert result.mode == "user_limit_reached"  # type: ignore[attr-defined]
     assert result.ai_generated is False  # type: ignore[attr-defined]
-    assert "2 messaggi" in result.answer  # type: ignore[attr-defined]
+    assert "2 domande" in result.answer  # type: ignore[attr-defined]
     assert "12 ore" in result.answer  # type: ignore[attr-defined]
     assert "Rex" in result.answer  # type: ignore[attr-defined]
     assert len(client.requests) == calls_before
@@ -106,7 +106,7 @@ def test_with_every_model_exhausted_the_reply_says_the_assistant_is_busy() -> No
 
     assert result.mode == "quota_exhausted"  # type: ignore[attr-defined]
     assert "molto richiesto" in result.answer  # type: ignore[attr-defined]
-    assert "Riprova tra circa 12 ore" in result.answer  # type: ignore[attr-defined]
+    assert "riprova tra circa 12 ore" in result.answer  # type: ignore[attr-defined]
     assert client.requests == []
 
 

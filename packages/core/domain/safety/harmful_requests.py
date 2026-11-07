@@ -324,15 +324,14 @@ EUTHANASIA_REFUSAL: dict[str, str] = {
     ),
     "de": (
         "Es tut mir sehr leid um {name}, und ich verstehe, dass das Geld gerade schwer wiegt. "
-        "Welches Mittel und wie viel sage ich Ihnen nicht: ein Tier zu Hause ohne Tierärztin "
-        "oder Tierarzt einzuschläfern bedeutet fast immer mehr Leid, nicht weniger, und das "
-        "lässt sich allein nicht gut machen. Was Sie heute tun können: Rufen Sie Ihre "
-        "Tierarztpraxis an und schildern Sie Ihre Lage. Oft findet sich ein Weg: eine "
-        "Untersuchung, um zu sehen, wie sehr {name} wirklich leidet und was gegen die "
-        "Schmerzen möglich ist, eine Ratenzahlung, ein Tierschutzverein oder ein Tierheim, das "
-        "bei den Kosten hilft. Wenn es Zeit ist loszulassen, übernimmt die Praxis die "
-        "Einschläferung, schmerzfrei und oft zu geringeren oder unterstützten Kosten. Sie "
-        "sind damit nicht allein."
+        "Welches Mittel und wie viel sage ich Ihnen nicht: ein Tier zu Hause ohne Tierärztin oder "
+        "Tierarzt einzuschläfern bedeutet fast immer mehr Leid, nicht weniger, und das lässt sich "
+        "allein nicht gut machen. Was Sie heute tun können: Rufen Sie Ihre Tierarztpraxis an und "
+        "schildern Sie Ihre Lage. Oft findet sich ein Weg: eine Untersuchung, um zu sehen, wie "
+        "sehr {name} wirklich leidet und was gegen die Schmerzen möglich ist, eine Ratenzahlung, "
+        "ein Tierschutzverein oder ein Tierheim, das bei den Kosten hilft. Wenn es Zeit ist "
+        "loszulassen, übernimmt die Praxis die Einschläferung, schmerzfrei und oft zu geringeren "
+        "oder unterstützten Kosten. Sie sind damit nicht allein."
     ),
     "fr": (
         "Je suis vraiment désolé pour {name}, et je comprends que l'argent pèse en ce moment. "
@@ -391,10 +390,10 @@ YES_NO_REPLACEMENT: dict[str, str] = {
         "significar y qué hace falta para saberlo de verdad."
     ),
     "de": (
-        "Auf eine solche Frage kann ich nicht mit Ja oder Nein antworten: ohne Untersuchung "
-        "und Tests kann das niemand sagen, und ein einzelnes Wort könnte Sie zu Unrecht "
-        "beunruhigen oder beruhigen. Sagen Sie mir, was Sie bei {name} darauf gebracht hat, "
-        "und ich erkläre, was es bedeuten kann und was nötig ist, um es wirklich zu wissen."
+        "Auf eine solche Frage kann ich nicht mit Ja oder Nein antworten: ohne Untersuchung und "
+        "Tests kann das niemand sagen, und ein einzelnes Wort könnte Sie zu Unrecht beunruhigen "
+        "oder beruhigen. Sagen Sie mir, was Sie bei {name} darauf gebracht hat, und ich erkläre, "
+        "was es bedeuten kann und was nötig ist, um es wirklich zu wissen."
     ),
     "fr": (
         "À une question comme celle-ci, je ne peux pas répondre par oui ou par non : personne "
@@ -424,9 +423,9 @@ CERTIFY_REPLACEMENT: dict[str, str] = {
     ),
     "de": (
         "Diesen Satz schreibe ich nicht: Quokka bescheinigt und bestätigt nichts über die "
-        "Menschen, die es nutzen. Ich helfe Ihnen, {name} zu verstehen und sich auf einen "
-        "Besuch oder einen Behördengang vorzubereiten; braucht eine Behörde ein Dokument, sagt "
-        "sie selbst, welches und wer es ausstellt."
+        "Menschen, die es nutzen. Ich helfe Ihnen, {name} zu verstehen und sich auf einen Besuch "
+        "oder einen Behördengang vorzubereiten; braucht eine Behörde ein Dokument, sagt sie "
+        "selbst, welches und wer es ausstellt."
     ),
     "fr": (
         "Je n'écrirai pas cette phrase : Quokka ne certifie et n'atteste rien sur les "
@@ -439,9 +438,75 @@ CERTIFY_REPLACEMENT: dict[str, str] = {
 # --- children, minors, long messages ----------------------------------------
 
 _MINOR_AGE = re.compile(
-    r"\b(?:ho|tengo|ich bin|j'ai|i am|i'm) (\d{1,2}) (?:anni|anos|jahre(?: alt)?|ans|years"
-    r"(?: old)?)\b"
+    r"\b(?:ho|tengo|ich bin|j'ai|i am|i'm|scrive \w+,?|sono \w+,?|mi chiamo \w+,?|qui \w+,?|"
+    r"\w+ \(|this is \w+,?|soy \w+,?|hier (?:ist|schreibt) \w+,?|ici \w+,?) (\d{1,2}) "
+    r"(?:anni|anos|jahre(?: alt)?|ans|years(?: old)?)\b"
 )
+_WRITTEN_AGE = {
+    "cinque": 5,
+    "sei": 6,
+    "sette": 7,
+    "otto": 8,
+    "nove": 9,
+    "dieci": 10,
+    "undici": 11,
+    "dodici": 12,
+    "tredici": 13,
+    "quattordici": 14,
+    "five": 5,
+    "six": 6,
+    "seven": 7,
+    "eight": 8,
+    "nine": 9,
+    "ten": 10,
+    "eleven": 11,
+    "twelve": 12,
+    "thirteen": 13,
+    "fourteen": 14,
+    "cinco": 5,
+    "seis": 6,
+    "siete": 7,
+    "ocho": 8,
+    "nueve": 9,
+    "diez": 10,
+    "once": 11,
+    "doce": 12,
+    "trece": 13,
+    "catorce": 14,
+    "funf": 5,
+    "sechs": 6,
+    "sieben": 7,
+    "acht": 8,
+    "neun": 9,
+    "zehn": 10,
+    "elf": 11,
+    "zwolf": 12,
+    "dreizehn": 13,
+    "vierzehn": 14,
+    "cinq": 5,
+    "sept": 7,
+    "huit": 8,
+    "neuf": 9,
+    "dix": 10,
+    "onze": 11,
+    "douze": 12,
+    "treize": 13,
+    "quatorze": 14,
+}
+_WRITTEN_AGE_RE = re.compile(
+    r"\b(?:ho|sono \w+,?|scrive \w+,?|i am|i'm|tengo|ich bin|j'ai) ("
+    + "|".join(sorted(_WRITTEN_AGE, key=len, reverse=True))
+    + r") (?:anni|years(?: old)?|anos|jahre|ans)\b"
+)
+# A child alone at home, with an age anywhere in the message.
+_ALONE_CHILD = _words(
+    r"papa non c'e|mamma non c'e|i miei (?:genitori )?non ci sono|sono (?:da )?sol[oa] a casa|"
+    r"sono a casa (?:da )?sol[oa]|dad (?:is not|isn't) (?:here|home)|mum (?:is not|isn't) "
+    r"(?:here|home)|mom (?:is not|isn't) (?:here|home)|home alone|papa no esta|mama no esta|"
+    r"estoy sol[oa] en casa|papa ist nicht da|mama ist nicht da|bin allein zu hause|"
+    r"papa n'est pas la|maman n'est pas la|suis seul[e]? a la maison"
+)
+_ANY_AGE = re.compile(r"\b(\d{1,2}) (?:anni|years(?: old)?|anos|jahre|ans)\b")
 _MINOR_WORDS = _words(
     r"sono (?:un |una )?(?:bambin[oa]|ragazzin[oa])|i am a (?:kid|child)|i'm a (?:kid|child)|"
     r"soy (?:un |una )?(?:nin[oa]|chic[oa] pequen[oa])|ich bin (?:ein )?kind|"
@@ -456,6 +521,14 @@ def is_minor_writing(message: str) -> bool:
     match = _MINOR_AGE.search(text)
     if match and int(match.group(1)) <= 14:
         return True
+    written = _WRITTEN_AGE_RE.search(text)
+    if written and _WRITTEN_AGE.get(written.group(1), 99) <= 14:
+        return True
+    if _ALONE_CHILD.search(text):
+        # "scrive Luca 12 anni: papà non c'è" (synthetic users 2026-11-07).
+        ages = [int(a) for a in _ANY_AGE.findall(text)]
+        if any(a <= 14 for a in ages):
+            return True
     return bool(_MINOR_WORDS.search(text))
 
 
@@ -554,14 +627,13 @@ IDENTITY_TEXTS: dict[str, str] = {
         "preparado."
     ),
     "de": (
-        "Nein, ich bin keine Tierärztin und kein Tierarzt: Ich bin der Assistent der App, "
-        "eine künstliche Intelligenz, ohne eigene Erfahrung und ohne Praxis im Hintergrund. "
-        "Ich helfe Ihnen, {name} zu verstehen, warum das Tier tut, was es tut, und wie Sie "
-        "den Alltag gut gestalten; ich erkläre Befunde in einfachen Worten und sage Ihnen, "
-        "wann es Zeit für die Tierarztpraxis ist, ausgehend von den Positionen der "
-        "tierärztlichen Fachverbände. Ich stelle keine Diagnosen und nenne keine "
-        "Dosierungen: Entscheidungen über die Gesundheit von {name} trifft Ihre Praxis, ich "
-        "helfe Ihnen, vorbereitet hinzugehen."
+        "Ich bin der Assistent der App, eine künstliche Intelligenz: keine Tierärztin und kein "
+        "Tierarzt, ohne eigene Erfahrung und ohne Praxis im Hintergrund. Ich helfe Ihnen, {name} "
+        "zu verstehen, warum das Tier tut, was es tut, und wie Sie den Alltag gut gestalten; ich "
+        "erkläre Befunde in einfachen Worten und sage Ihnen, wann es Zeit für die Tierarztpraxis "
+        "ist, ausgehend von den Positionen der tierärztlichen Fachverbände. Ich stelle keine "
+        "Diagnosen und nenne keine Dosierungen: Entscheidungen über die Gesundheit von {name} "
+        "trifft Ihre Praxis, ich helfe Ihnen, vorbereitet hinzugehen."
     ),
     "fr": (
         "Non, je ne suis pas vétérinaire : je suis l'assistant de l'appli, une intelligence "
@@ -627,10 +699,10 @@ HUMAN_HEALTH_TEXTS: dict[str, str] = {
         "para tu animal."
     ),
     "de": (
-        "Es tut mir leid, dass es Ihnen nicht gut geht. Für die Gesundheit von Menschen bin "
-        "ich aber nicht die richtige Quelle: Quokka ist für Tiere und die Menschen da, die "
-        "mit ihnen leben. Für Sie: Arztpraxis oder Apotheke, und bei ernsten Beschwerden die "
-        "112. Für Ihr Tier bin ich jederzeit da."
+        "Es tut mir leid, dass es Ihnen nicht gut geht. Für die Gesundheit von Menschen bin ich "
+        "aber nicht die richtige Quelle: Quokka ist für Tiere und die Menschen da, die mit ihnen "
+        "leben. Für Sie: Arztpraxis oder Apotheke, und bei ernsten Beschwerden die 112. Für Ihr "
+        "Tier bin ich jederzeit da."
     ),
     "fr": (
         "Je suis désolé que vous ne vous sentiez pas bien. Pour la santé des personnes, je ne "
@@ -782,12 +854,12 @@ PERMETHRIN_INTENT_TEXTS: dict[str, str] = {
         "veterinario o a urgencias veterinarias."
     ),
     "de": (
-        "Nein, niemals: Spot-ons, Halsbänder und Sprays gegen Parasiten für Hunde enthalten "
-        "oft Permethrin, für Katzen ein Gift. Schon eine einzige Pipette kann Zittern, Krämpfe "
-        "und den Tod verursachen, egal ob sie 'übrig' war oder die Menge klein wirkt. {name} "
-        "braucht ein Produkt für Katzen, mit der Tierarztpraxis nach Gewicht ausgewählt. "
-        "Falls Sie es schon aufgetragen haben, auch nur wenig, rufen Sie sofort die Praxis "
-        "oder einen Notdienst an."
+        "Nein, niemals: Spot-ons, Halsbänder und Sprays gegen Parasiten für Hunde enthalten oft "
+        "Permethrin, für Katzen ein Gift. Schon eine einzige Pipette kann Zittern, Krämpfe und "
+        "den Tod verursachen, egal ob sie 'übrig' war oder die Menge klein wirkt. {name} braucht "
+        "ein Produkt für Katzen, mit der Tierarztpraxis nach Gewicht ausgewählt. Falls Sie es "
+        "schon aufgetragen haben, auch nur wenig, rufen Sie sofort die Praxis oder einen "
+        "Notdienst an."
     ),
     "fr": (
         "Non, jamais : les pipettes, colliers et sprays antiparasitaires pour chiens "
@@ -876,15 +948,14 @@ DOSE_CHANGE_TEXTS: dict[str, str] = {
     ),
     "de": (
         "Ich verstehe den Zweifel, aber die Dosis eines verschriebenen Medikaments ändert man "
-        "nicht selbst, weder nach unten noch nach oben, und man lässt sie nicht aus oder "
-        "setzt sie ab, ohne mit der Praxis zu sprechen, die sie verschrieben hat: Sie wurde "
-        "nach dem Gewicht von {name}, der Erkrankung und der Wirkweise des Medikaments "
-        "berechnet, und weniger (oder mehr) kann die Behandlung wirkungslos oder gefährlich "
-        "machen, manchmal zunächst ohne sichtbare Zeichen. Rufen Sie Ihre Tierarztpraxis an "
-        "und fragen Sie genau das: ob die Dosis überprüft werden kann. Wenn der Zweifel von "
-        "etwas kommt, das Sie bei {name} bemerkt haben (Erbrechen, Müdigkeit, Appetitlosigkeit "
-        "oder anderes), sagen Sie es sofort: Das ist der richtige Grund, heute darüber zu "
-        "sprechen."
+        "nicht selbst, weder nach unten noch nach oben, und man lässt sie nicht aus oder setzt "
+        "sie ab, ohne mit der Praxis zu sprechen, die sie verschrieben hat: Sie wurde nach dem "
+        "Gewicht von {name}, der Erkrankung und der Wirkweise des Medikaments berechnet, und "
+        "weniger (oder mehr) kann die Behandlung wirkungslos oder gefährlich machen, manchmal "
+        "zunächst ohne sichtbare Zeichen. Rufen Sie Ihre Tierarztpraxis an und fragen Sie genau "
+        "das: ob die Dosis überprüft werden kann. Wenn der Zweifel von etwas kommt, das Sie bei "
+        "{name} bemerkt haben (Erbrechen, Müdigkeit, Appetitlosigkeit oder anderes), sagen Sie es "
+        "sofort: Das ist der richtige Grund, heute darüber zu sprechen."
     ),
     "fr": (
         "Je comprends le doute, mais la dose d'un médicament prescrit ne se change pas seul, "
@@ -1047,8 +1118,8 @@ HOPELESSNESS_OPENING: dict[str, str] = {
     "de": (
         "Was Sie schreiben, nehme ich ernst. Ein Schmerz, der so schwer ist, dass er Sie nicht "
         "aufstehen lässt, gehört zu jemandem, der Ihnen beistehen kann: Sprechen Sie bald mit "
-        "Ihrer Ärztin oder Ihrem Arzt oder mit einer Beratungsstelle, und bleiben Sie mit "
-        "dieser Last nicht allein. "
+        "Ihrer Ärztin oder Ihrem Arzt oder mit einer Beratungsstelle, und bleiben Sie mit dieser "
+        "Last nicht allein. "
     ),
     "fr": (
         "Je prends ce que vous écrivez au sérieux. Une douleur si lourde qu'elle empêche de se "
@@ -1099,10 +1170,10 @@ PRICE_REPLACEMENT: dict[str, str] = {
         "aceptan pagos a plazos y en muchas zonas hay asociaciones que ayudan."
     ),
     "de": (
-        "Zu den Kosten nenne ich keine Zahlen, sie unterscheiden sich stark von Praxis zu "
-        "Praxis: Bitten Sie vor dem Termin um einen schriftlichen Kostenvoranschlag und sagen "
-        "Sie es, wenn das Geld knapp ist: Viele Praxen bieten Ratenzahlung an, und vielerorts "
-        "helfen Tierschutzvereine."
+        "Zu den Kosten nenne ich keine Zahlen, sie unterscheiden sich stark von Praxis zu Praxis: "
+        "Bitten Sie vor dem Termin um einen schriftlichen Kostenvoranschlag und sagen Sie es, "
+        "wenn das Geld knapp ist: Viele Praxen bieten Ratenzahlung an, und vielerorts helfen "
+        "Tierschutzvereine."
     ),
     "fr": (
         "Sur les coûts je ne donne pas de chiffres, ils varient beaucoup d'une clinique à "
@@ -1178,5 +1249,69 @@ CHILD_NEVER_ALONE: dict[str, str] = {
         "Avant tout : un jeune enfant ne reste jamais seul avec l'animal, pas même un instant, "
         "et tirer la queue, attraper le cou ou serrer fort ne se fait jamais, même pour jouer : "
         "un adulte à côté sert à arrêter le geste, pas à le rendre acceptable. "
+    ),
+}
+
+
+# --- the daily limit (synthetic users 2026-11-07, P1 and P9) -------------------
+# Safety first, the count after; no technical code; "domande" as in the app;
+# {wait} is the time until the count starts again (format_wait).
+
+LIMIT_TEXTS: dict[str, str] = {
+    "it": (
+        "Se {name} sta male adesso, non aspettare questo messaggio: un caso grave non aspetta, "
+        "chiama subito il veterinario o un pronto soccorso veterinario. Per oggi hai usato "
+        "tutte le {limit} domande del tuo piano: il conteggio riparte tra circa {wait}."
+    ),
+    "en": (
+        "If {name} is unwell right now, do not wait for this message: a serious case does not "
+        "wait, call your vet or an emergency clinic straight away. For today you have used all "
+        "{limit} questions of your plan: the count starts again in about {wait}."
+    ),
+    "es": (
+        "Si {name} está mal ahora, no esperes este mensaje: un caso grave no espera, llama "
+        "ahora mismo al veterinario o a urgencias veterinarias. Por hoy has usado las {limit} "
+        "preguntas de tu plan: el contador vuelve a empezar dentro de unos {wait}."
+    ),
+    "de": (
+        "Wenn es {name} gerade schlecht geht, warten Sie nicht auf diese Nachricht: Ein ernster "
+        "Fall wartet nicht, rufen Sie sofort Ihre Tierarztpraxis oder einen Notdienst an. Für "
+        "heute haben Sie alle {limit} Fragen Ihres Plans verbraucht: Der Zähler startet in etwa "
+        "{wait} wieder."
+    ),
+    "fr": (
+        "Si {name} va mal en ce moment, n'attendez pas ce message : un cas grave n'attend pas, "
+        "appelez tout de suite votre vétérinaire ou un service d'urgences. Pour aujourd'hui "
+        "vous avez utilisé les {limit} questions de votre forfait : le compteur repart dans "
+        "environ {wait}."
+    ),
+}
+
+QUOTA_TEXTS: dict[str, str] = {
+    "it": (
+        "Se {name} sta male adesso, non aspettare: un caso grave non aspetta, chiama subito il "
+        "veterinario o un pronto soccorso veterinario. In questo momento l'assistente è molto "
+        "richiesto e ha esaurito le risposte di oggi: riprova tra circa {wait}."
+    ),
+    "en": (
+        "If {name} is unwell right now, do not wait: a serious case does not wait, call your "
+        "vet or an emergency clinic straight away. The assistant is in high demand and has used "
+        "up today's answers: try again in about {wait}."
+    ),
+    "es": (
+        "Si {name} está mal ahora, no esperes: un caso grave no espera, llama ahora mismo al "
+        "veterinario o a urgencias veterinarias. El asistente tiene mucha demanda y ha agotado "
+        "las respuestas de hoy: vuelve a intentarlo dentro de unos {wait}."
+    ),
+    "de": (
+        "Wenn es {name} gerade schlecht geht, warten Sie nicht: Ein ernster Fall wartet nicht, "
+        "rufen Sie sofort Ihre Tierarztpraxis oder einen Notdienst an. Der Assistent ist gerade "
+        "stark gefragt und hat die Antworten für heute aufgebraucht: Versuchen Sie es in etwa "
+        "{wait} noch einmal."
+    ),
+    "fr": (
+        "Si {name} va mal en ce moment, n'attendez pas : un cas grave n'attend pas, appelez "
+        "tout de suite votre vétérinaire ou un service d'urgences. L'assistant est très "
+        "sollicité et a épuisé les réponses du jour : réessayez dans environ {wait}."
     ),
 }

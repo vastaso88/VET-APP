@@ -73,6 +73,9 @@ class FakePiiAnonymizer:
 
 
 def test_chat_orchestrator_asks_a_safety_clarification_before_escalating() -> None:
+    # A collapse is a grave picture and escalates at once since 2026-11-07
+    # (clarification_fit.py); an ambiguous breathing complaint still gets
+    # the clarifying question first.
     # An ambiguous red-flag message asks one short, category-specific
     # question before deciding how urgently to respond (spec v3 §9) —
     # it must not jump straight to the scariest message.
@@ -81,7 +84,7 @@ def test_chat_orchestrator_asks_a_safety_clarification_before_escalating() -> No
 
     result = orchestrator.answer(
         ChatOrchestratorInput(
-            user_message="Il gatto ha un collasso improvviso",
+            user_message="respira male da stamattina, non è il suo solito",
             species="cat",
             pet_name="Luna",
         )
@@ -91,7 +94,7 @@ def test_chat_orchestrator_asks_a_safety_clarification_before_escalating() -> No
     assert result.provider == "rule-based"
     assert result.ai_generated is False
     assert result.awaiting_safety_clarification is True
-    assert result.safety_clarification_category == "collapse"
+    assert result.safety_clarification_category == "respiratory"
     assert not client.requests
 
 

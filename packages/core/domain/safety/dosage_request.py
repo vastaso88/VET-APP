@@ -148,8 +148,10 @@ _SCHEDULE_AMOUNT = re.compile(
 def asks_an_amount(message: str) -> bool:
     """The message asks how much / which dose, whether or not it names the
     medicine ("dimmi solo la dose per 4 kg")."""
+    # A pharmaceutical form alone ("the antibiotic drops for the water") is
+    # not a question about an amount (synthetic users 2026-11-07, P6).
     text = normalize_for_matching(message)
-    return bool(_ASKS_AN_AMOUNT.search(text) or _SCHEDULE_AMOUNT.search(text))
+    return bool(_ASKS_AN_AMOUNT.search(text))
 
 
 def names_a_medicine(message: str) -> bool:

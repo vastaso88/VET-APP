@@ -16,6 +16,7 @@ from packages.core.application.services.chat_orchestrator import (
 from packages.core.application.services.reminder_context_retriever import (
     ReminderContextRetriever,
 )
+from packages.core.application.services.safety_gate import SafetyGate
 from packages.core.domain.common.language import normalize_language
 from packages.core.domain.conversation.models import ChatMessage, Conversation
 from packages.core.domain.conversation.states import ConversationState
@@ -24,6 +25,7 @@ from packages.core.domain.conversation.title import (
     title_from_message,
 )
 from packages.core.domain.knowledge.models import EvidenceSource
+from packages.core.domain.localization import translate
 from packages.core.domain.medical_record.consent_text import (
     CURRENT_VERSION,
     effective_decision,
@@ -38,6 +40,7 @@ from packages.core.domain.pet_profile.weight_measurement import (
     format_date_it,
     weight_label_with_date,
 )
+from packages.core.domain.safety.triage_clarification import requires_immediate_escalation
 from packages.core.domain.subscription.limits import PlanLimits
 from packages.shared.errors.base import ValidationError
 
@@ -203,7 +206,7 @@ class SendChatMessageService:
         if replay is not None:
             return replay
 
-        conversation = self._load_or_create_conversation(data)
+        conversation = self._load_or_create_conversation(data, pet_profile)
         return self.respond_in(conversation, data, pet_profile)
 
     def respond_in(
@@ -318,7 +321,17 @@ class SendChatMessageService:
         reply.state_after = conversation.snapshot()
         self._persist_pet_level_consent(pet_profile, orchestrator_result.medical_record_consent)
 
-        stored_conversation = self._repository.save(conversation)
+        if (
+            orchestrator_result.mode in ("user_limit_reached", "quota_exhausted")
+            and not data.conversation_id
+            and len(conversation.messages) <= 2
+        ):
+            # A message the limit stopped does not create an empty chat
+            # (synthetic users 2026-11-07, P5): the reply is returned, the
+            # conversation is not stored.
+            stored_conversation = conversation
+        else:
+            stored_conversation = self._repository.save(conversation)
         return SendChatMessageOutput(
             conversation=stored_conversation,
             reply=reply,
@@ -404,7 +417,9 @@ class SendChatMessageService:
             )
         return attachment.analysis
 
-    def _load_or_create_conversation(self, data: SendChatMessageInput) -> Conversation:
+    def _load_or_create_conversation(
+        self, data: SendChatMessageInput, pet_profile: PetProfile | None = None
+    ) -> Conversation:
         if data.conversation_id:
             stored = self._repository.get(data.conversation_id)
             if stored and stored.owner_id == data.owner_id and stored.pet_id == data.pet_id:
@@ -421,15 +436,29 @@ class SendChatMessageService:
         if plan_limits is not None:
             max_per_pet = min(max_per_pet, plan_limits.max_chats_per_pet)
         if len(existing_for_pet) >= max_per_pet:
+            if existing_for_pet and self._is_an_emergency(data.user_message, pet_profile):
+                # An emergency never waits for a free slot (synthetic users
+                # 2026-11-07, P5): it goes on in the most recent chat.
+                return migrate_legacy_title(existing_for_pet[-1])
+            pet_name = pet_profile.name if pet_profile is not None else ""
             raise ValidationError(
-                "conversation_limit_reached: hai raggiunto il numero massimo di "
-                f"conversazioni ({max_per_pet}) per questo "
-                "animale. Chiudine una per crearne una nuova."
+                "conversation_limit_reached: "
+                + translate(
+                    "conversation_limit", data.language, limit=max_per_pet, pet_name=pet_name
+                )
             )
         return Conversation(
             owner_id=data.owner_id,
             pet_id=data.pet_id,
             title=title_from_message(data.user_message),
+        )
+
+    @staticmethod
+    def _is_an_emergency(message: str, pet_profile: PetProfile | None) -> bool:
+        species = pet_profile.species if pet_profile is not None else "other"
+        lowered = message.lower()
+        return bool(SafetyGate().evaluate(lowered, species=species)) or (
+            requires_immediate_escalation(lowered)
         )
 
     def _persist_pet_level_consent(self, pet_profile: PetProfile, granted: bool | None) -> None:

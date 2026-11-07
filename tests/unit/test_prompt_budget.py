@@ -37,7 +37,8 @@ from packages.shared.errors.base import ProviderError
 # refusal that says what it can do instead).
 # Second round of the same day: AI identity, no prices, OFF TOPIC rule.
 # Wide eval 2026-11-06: OWNER DUTIES says the notes describe Italy.
-SYSTEM_PROMPT_MAX_CHARS = 9300
+# 2026-11-07: the history and reference-material sentences (synthetic users P7, P11).
+SYSTEM_PROMPT_MAX_CHARS = 9700
 QUESTION = "da due giorni zoppica dopo le passeggiate"
 
 
@@ -115,6 +116,7 @@ def test_a_long_history_is_sent_as_recent_turns_plus_a_line_of_older_topics() ->
         NoopPiiAnonymizer(),
         history_recent_messages=4,
         history_message_chars=100,
+        history_last_reply_chars=100,
     )
     history: list[ChatMessage] = []
     for turn in range(1, 6):

@@ -34,7 +34,7 @@ from packages.core.application.services.llm_budget import (
     LlmBudget,
     QuotaDenial,
     QuotaExhausted,
-    format_wait_it,
+    format_wait,
 )
 from packages.core.application.services.medical_record_context_retriever import (
     MedicalRecordContextRetriever,
@@ -96,6 +96,14 @@ from packages.core.domain.pet_profile.species_rules import (
 from packages.core.domain.pet_profile.weight import (
     is_weight_relevant,
 )
+from packages.core.domain.safety.clarification_fit import (
+    PERSON_INJURY_TEXTS,
+    clarifying_question_fits,
+    denies_the_emergency,
+    describes_a_grave_picture,
+    injury_is_on_a_person,
+    is_a_past_event,
+)
 from packages.core.domain.safety.dosage_request import (
     asks_an_amount,
     is_dosage_request,
@@ -130,10 +138,12 @@ from packages.core.domain.safety.harmful_requests import (
     HOPELESSNESS_OPENING,
     HUMAN_HEALTH_TEXTS,
     IDENTITY_TEXTS,
+    LIMIT_TEXTS,
     MINOR_HURT_TEXTS,
     PERMETHRIN_INTENT_TEXTS,
     PRICE_REPLACEMENT,
     PROMPT_LEAK_TEXTS,
+    QUOTA_TEXTS,
     YES_NO_REPLACEMENT,
     answer_certifies,
     answer_is_bare_yes_no,
@@ -187,6 +197,14 @@ _EXOTIC_FAMILIES = frozenset({"bird", "small_mammal", "reptile_amphibian", "fish
 # Profile species that are groups: the breed field holds the animal itself.
 _GROUP_FAMILIES = frozenset({"small_mammal", "bird", "reptile_amphibian", "fish", "other"})
 _HAS_A_LETTER = re.compile(r"[^\W\d_]")
+# "non dell'aglio", "not the garlic": a substance the owner rules out.
+_NEGATED_SUBSTANCE = re.compile(
+    r"\b(?:non (?:dell'|del |della |dello |dei |degli |delle |di )|non parlavo (?:di |del |dell'|"
+    r"della )|non (?:intendevo|intendo|dico|parlo) (?:di |del |dell'|della |la |il |l')|"
+    r"not (?:the|about the) |i (?:didn't|did not|wasn't) (?:mean|talking about) (?:the )?|"
+    r"no (?:del|de la|de) |nicht (?:das|der|die|den|vom|von) |pas (?:du|de la|de l'|des) )"
+    r"\w+"
+)
 _STATES_A_WEIGHT = re.compile(r"\b\d+(?:[.,]\d+)?\s?(?:kg|chili|chilogrammi|kilos?|g|grammi)\b")
 # A species named as the owner of a product or a thing ("del cane", "for
 # dogs"), not as the animal the message is about.
@@ -849,6 +867,7 @@ class ChatOrchestrator:
         prompt_curated_source_chars: int = 1000,
         history_recent_messages: int = 6,
         history_message_chars: int = 400,
+        history_last_reply_chars: int = 1500,
     ) -> None:
         self._llm_client = llm_client
         self._evidence_retriever = evidence_retriever
@@ -909,6 +928,10 @@ class ChatOrchestrator:
         )
         self._history_recent_messages = max(0, history_recent_messages)
         self._history_message_chars = max(50, history_message_chars)
+        # The assistant's most recent reply travels whole (up to this cap):
+        # cut at 400 characters, the model told owners it could not see its
+        # own previous answer (synthetic users 2026-11-07, P7).
+        self._history_last_reply_chars = max(self._history_message_chars, history_last_reply_chars)
 
     def answer(self, data: ChatOrchestratorInput) -> ChatOrchestratorResult:
         result = self._answer(data)
@@ -1016,10 +1039,27 @@ class ChatOrchestrator:
             message = f"{message}\n\nContesto dall'allegato: {data.photo_context}".strip()
         lowered = message.lower()
 
-        if data.awaiting_safety_clarification and data.safety_clarification_category:
+        pending_category = data.safety_clarification_category
+        if data.awaiting_safety_clarification and pending_category:
+            if injury_is_on_a_person(data.user_message):
+                # "Il graffio è sul bambino!": a doctor's matter, not the vet's
+                # (synthetic users 2026-11-07, P4).
+                return self._fixed_reply(PERSON_INJURY_TEXTS, data, model="person-injury")
+            if denies_the_emergency(data.user_message) or (
+                self._classify_intent(lowered) == "general_info"
+            ):
+                # "No, nessun sangue, parlavo dell'incidente di anni fa", "ciao":
+                # the question is closed and the message is read as any other.
+                data = data.model_copy(
+                    update={
+                        "awaiting_safety_clarification": False,
+                        "safety_clarification_category": None,
+                    }
+                )
+                return self._answer(data)
             return self._resolve_safety_clarification(
                 data.pet_name,
-                data.safety_clarification_category,
+                pending_category,
                 message,
                 response_locale=data.language,
                 species_family=normalize_species(self._effective_species(lowered, data.species)),
@@ -1056,7 +1096,10 @@ class ChatOrchestrator:
             # steps, never the clarifying question about the bleeding.
             return self._fixed_reply(MINOR_HURT_TEXTS, data, model="minor-hurt-guard")
 
-        safety_flags = self._safety_gate.evaluate(lowered, species=effective_species)
+        # "Non dell'aglio, parlavo del Rimadyl": a substance the owner rules
+        # out is not the one asked about (synthetic users 2026-11-07, P6).
+        gate_text = _NEGATED_SUBSTANCE.sub(" ", lowered)
+        safety_flags = self._safety_gate.evaluate(gate_text, species=effective_species)
         # Repositioning (docs/product/11 §4, 2.2): "perché il cioccolato fa
         # male ai cani?" names a toxin without any exposure or intent to
         # give it: the owner gets the explanation, with the safety list
@@ -1064,6 +1107,21 @@ class ChatOrchestrator:
         # and "vorrei dargli la tachipirina" stay a triage, as before.
         if safety_flags and self._is_educational_toxin_question(safety_flags, message):
             safety_flags = []
+        if safety_flags and is_a_past_event(message) and not requires_immediate_escalation(message):
+            # "L'incidente di anni fa": not a current emergency (P4).
+            safety_flags = []
+        if safety_flags:
+            category = categorize_safety_flags(safety_flags)
+            if (
+                not requires_immediate_escalation(message)
+                and not describes_a_grave_picture(message)
+                and clarifying_question(category, data.language) is not None
+                and not clarifying_question_fits(category, message)
+            ):
+                # The fixed question would contradict the message ("da quante
+                # ore non urina?" to a cat that urinates everywhere): the
+                # ordinary answer, with its own rule on the vet, serves better.
+                safety_flags = []
         if safety_flags:
             category = categorize_safety_flags(safety_flags)
             if (
@@ -1084,8 +1142,10 @@ class ChatOrchestrator:
                         PERMETHRIN_INTENT_TEXTS, data, model="dog-product-on-cat-guard"
                     )
                 return self._toxin_intent_result(data, message, family)
-            if requires_immediate_escalation(message) or small_mammal_stasis_is_immediate(
-                category, family, message
+            if (
+                requires_immediate_escalation(message)
+                or describes_a_grave_picture(message)
+                or small_mammal_stasis_is_immediate(category, family, message)
             ):
                 # Already unambiguous and severe — asking a clarifying
                 # question here would only delay real emergency care. A
@@ -1169,9 +1229,7 @@ class ChatOrchestrator:
             # for a cat), the refusal says why (stress test 2026-11-06).
             return self._dosage_guard_result(
                 data.language,
-                toxicity_note=human_drug_toxicity_note(
-                    " ".join([*user_history[-4:], message]), family, data.language
-                ),
+                toxicity_note=self._toxicity_note_for(message, user_history, family, data.language),
             )
 
         if self._describes_independent_multi_pet_complaint(lowered):
@@ -1219,7 +1277,13 @@ class ChatOrchestrator:
                 user_daily_limit=data.user_daily_limit,
             )
             if denial is not None:
-                return self._quota_result(data.pet_name, denial)
+                # P1: an emergency the fixed lists missed is still an
+                # emergency; the light classifier runs before the limit
+                # stops the turn, and what escalates is never blocked.
+                urgent = self._urgency_despite_limit(data, message, lowered, effective_species)
+                if urgent is not None:
+                    return urgent
+                return self._quota_result(data, denial)
 
         situation = data.situation_model or SituationModel()
         turns_used = data.interview_turns_used
@@ -1613,6 +1677,25 @@ class ChatOrchestrator:
         return family
 
     @staticmethod
+    def _toxicity_note_for(
+        message: str, user_history: list[str], family: str, language: str
+    ) -> str:
+        """The why of the substance named in THIS message; only when this
+        message names no medicine at all ("dimmi solo la dose per 4 kg"),
+        the most recent earlier message that names one (synthetic users
+        2026-11-07, P6: the paracetamol text answered a question about
+        antibiotic drops)."""
+        cleaned = _NEGATED_SUBSTANCE.sub(" ", message.lower())
+        own = human_drug_toxicity_note(cleaned, family, language)
+        if own or names_a_medicine(cleaned):
+            return own
+        for earlier in reversed(user_history[-4:]):
+            earlier_cleaned = _NEGATED_SUBSTANCE.sub(" ", earlier.lower())
+            if names_a_medicine(earlier_cleaned):
+                return human_drug_toxicity_note(earlier_cleaned, family, language)
+        return ""
+
+    @staticmethod
     def _asks_an_amount_of_a_recent_medicine(lowered: str, user_history: list[str]) -> bool:
         """ "dimmi solo la dose per 4 kg" two turns after "quanta tachipirina le
         do?": the medicine is in the conversation, the amount is asked now."""
@@ -1747,9 +1830,26 @@ class ChatOrchestrator:
         verdict = prefetch.urgency()
         if verdict is None or verdict.level == "normal":
             return None
+        return self._result_from_urgency_verdict(verdict, data, message, effective_species)
+
+    def _result_from_urgency_verdict(
+        self,
+        verdict: UrgencyVerdict,
+        data: ChatOrchestratorInput,
+        message: str,
+        effective_species: str,
+    ) -> ChatOrchestratorResult | None:
+        """The fixed reply a classifier verdict calls for: the triage for
+        an emergency, the clarifying question for a possible one, None
+        when the ordinary answer serves better."""
         category = verdict.category or "other"
         flag = f"classifier:{category}"
-        if verdict.level == "emergency":
+        level = verdict.level
+        if level != "emergency" and describes_a_grave_picture(message):
+            # Blue gums, a collapse, a fall: the action first, no question
+            # (synthetic users 2026-11-07, P3).
+            level = "emergency"
+        if level == "emergency":
             logger.warning("urgency classifier: emergency (%s) the fixed lists missed", category)
             return self._urgent_triage_result(
                 data.pet_name,
@@ -1761,6 +1861,9 @@ class ChatOrchestrator:
                 heat=mentions_heat(message),
             )
         question = clarifying_question(category, data.language)
+        if question is not None and not clarifying_question_fits(category, message):
+            # The fixed question would contradict the message: answer normally.
+            question = None
         if question is None:
             # "maybe" with nothing specific to ask: the answer itself, with
             # its own rule on when to see the vet, serves better than a
@@ -1781,25 +1884,49 @@ class ChatOrchestrator:
             safety_clarification_category=category,
         )
 
-    @staticmethod
-    def _quota_result(pet_name: str, denial: QuotaDenial) -> ChatOrchestratorResult:
+    def _urgency_despite_limit(
+        self,
+        data: ChatOrchestratorInput,
+        message: str,
+        lowered: str,
+        effective_species: str,
+    ) -> ChatOrchestratorResult | None:
+        """With the owner's allowance used up, the light classifier still
+        reads the message: an emergency or a possible one goes on as if
+        there were no limit (synthetic users 2026-11-07, P1)."""
+        classifier = self._urgency_classifier
+        if classifier is None or self._classify_intent(lowered) == "general_info":
+            return None
+        try:
+            verdict = classifier.classify(
+                self._anonymize_for_provider(message, data), effective_species
+            )
+        except Exception:  # noqa: BLE001 - a helper must never cost the answer
+            logger.exception("urgency classifier at the limit failed; the limit message goes")
+            return None
+        if verdict is None or verdict.level == "normal":
+            return None
+        return self._result_from_urgency_verdict(verdict, data, message, effective_species)
+
+    @classmethod
+    def _quota_result(
+        cls, data: ChatOrchestratorInput, denial: QuotaDenial
+    ) -> ChatOrchestratorResult:
         """The kind refusal of a turn that cannot be answered today: the
-        owner's allowance is used up, or every model's daily quota is. With
-        the time to wait, never a generic error (build 32)."""
-        wait = format_wait_it(denial.retry_after_seconds)
+        owner's allowance is used up, or every model's daily quota is.
+        Safety first, then the count and when it starts again, in the
+        owner's language (synthetic users 2026-11-07, P9)."""
+        language = normalize_language(data.language)
+        wait = format_wait(denial.retry_after_seconds, language)
         if denial.reason == "user_limit":
-            answer = (
-                f"Per oggi hai usato tutti i {denial.daily_limit} messaggi disponibili con "
-                f"l'assistente: potrai scrivergli di nuovo tra circa {wait}. Se {pet_name} "
-                "sta male adesso, non aspettare: chiama il veterinario."
+            answer = LIMIT_TEXTS.get(language, LIMIT_TEXTS["it"]).format(
+                name=data.pet_name, limit=denial.daily_limit, wait=wait
             )
             mode = "user_limit_reached"
-            limitation = "Risposta non generata: limite giornaliero di messaggi raggiunto."
+            limitation = "Risposta non generata: limite giornaliero di domande raggiunto."
         else:
-            answer = (
-                "In questo momento l'assistente è molto richiesto e ha esaurito le risposte "
-                f"disponibili per oggi. Riprova tra circa {wait}. Se {pet_name} sta male "
-                "adesso, non aspettare: chiama il veterinario."
+            answer = QUOTA_TEXTS.get(language, QUOTA_TEXTS["it"]).format(
+                name=data.pet_name, wait=wait
             )
             mode = "quota_exhausted"
             limitation = "Risposta non generata: quota giornaliera del modello esaurita."
@@ -2400,7 +2527,7 @@ class ChatOrchestrator:
             )
         except QuotaExhausted as exc:
             return self._quota_result(
-                data.pet_name,
+                data,
                 QuotaDenial(reason="models_exhausted", retry_after_seconds=exc.retry_after_seconds),
             )
         except ProviderError:
@@ -2738,7 +2865,7 @@ class ChatOrchestrator:
                 response = generate(system_prompt + ANSWER_NOW_REMINDER, "answer_retry")
         except QuotaExhausted as exc:
             return self._quota_result(
-                data.pet_name,
+                data,
                 QuotaDenial(reason="models_exhausted", retry_after_seconds=exc.retry_after_seconds),
             )
         except ProviderError:
@@ -3184,10 +3311,14 @@ class ChatOrchestrator:
             if topics:
                 parts.append("Earlier topics in this conversation: " + " | ".join(topics))
         if recent:
+            last_reply = next((m for m in reversed(recent) if m.role == "assistant"), None)
             lines = [
                 f"{m.role}: "
                 + self._shorten(
-                    self._anonymize_for_provider(m.content, data), self._history_message_chars
+                    self._anonymize_for_provider(m.content, data),
+                    self._history_last_reply_chars
+                    if m is last_reply
+                    else self._history_message_chars,
                 )
                 for m in recent
             ]

@@ -62,9 +62,17 @@ def response_language_instruction(language: str) -> str:
     code = normalize_language(language)
     if code == DEFAULT_LANGUAGE:
         return ""
+    # The register of docs/i18n/GLOSSARIO_E_STILE.md: the fixed texts follow
+    # it, and so must the model (synthetic users 2026-11-07: German replies
+    # drifted to "du" while the fixed texts say "Sie").
+    register = {
+        "de": " Address the owner formally, with 'Sie' (never 'du').",
+        "fr": " Address the owner with 'vous' (never 'tu').",
+        "es": " Address the owner with 'tú', never 'usted'.",
+    }.get(code, "")
     return (
         f"Always reply in the user's language: {LANGUAGE_NAMES[code]} ({code}). "
         "This overrides any earlier instruction about the language of the reply."
         " Reply exclusively in this selected language even when the owner writes "
-        "in another language."
+        "in another language." + register
     )

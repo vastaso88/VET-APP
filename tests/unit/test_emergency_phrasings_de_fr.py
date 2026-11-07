@@ -147,17 +147,20 @@ def test_ordinary_messages_raise_no_alarm(language: str, species: str, message: 
 # --- formal address in the fixed replies -------------------------------------------------------
 
 
-@pytest.mark.parametrize("language", ["de", "fr"])
-def test_the_fixed_replies_address_the_owner_formally(language: str) -> None:
+@pytest.mark.parametrize(("language", "formal"), [("de", True), ("fr", True)])
+def test_the_fixed_replies_use_one_register_per_language(language: str, formal: bool) -> None:
+    # German in "Sie", French in "vous" (docs/i18n/GLOSSARIO_E_STILE.md); the
+    # model is told the same register in natural_answer_prompt.
     suite = SUITES[language]
     poison, _ = _answer(language, *suite.RODENTICIDE[0])
     bloat, _ = _answer(language, *suite.BLOAT[3])
     dose, _ = _answer(language, *suite.DOSAGE[0])
     greeting, _ = _answer(language, "Hund" if language == "de" else "Chien", "ciao")
 
+    expected, forbidden = (FORMAL, INFORMAL) if formal else (INFORMAL, FORMAL)
     for reply in (poison.answer, bloat.answer, dose.answer, greeting.answer):
-        assert FORMAL[language].search(reply), reply
-        assert not INFORMAL[language].search(reply), reply
+        assert expected[language].search(reply), reply
+        assert not forbidden[language].search(reply), reply
 
 
 # --- the lists themselves -----------------------------------------------------------------------

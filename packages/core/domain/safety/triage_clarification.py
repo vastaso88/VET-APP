@@ -185,6 +185,86 @@ FISH_DISTRESS_KEYWORDS: tuple[str, ...] = (
     "ventre en l'air",
 )
 
+# Synthetic users 2026-11-07 (P1): the phrasings of three real emergencies
+# that the lists did not know, universal (every species).
+FOREIGN_BODY_KEYWORDS: tuple[str, ...] = (
+    "ha mangiato un calzino",
+    "ha mangiato una calza",
+    "ha mangiato un pezzo di gomma",
+    "ha mangiato della gomma",
+    "ha mangiato un pezzo di plastica",
+    "ha mangiato un giocattolo",
+    "ha mangiato uno spago",
+    "ha mangiato un elastico",
+    "ha mangiato un sasso",
+    "ha mangiato un osso",
+    "ha ingoiato un",
+    "ha ingoiato una",
+    "ha inghiottito un",
+    "ha inghiottito una",
+    "ha ingerito un corpo estraneo",
+    "corpo estraneo",
+    "swallowed a sock",
+    "ate a sock",
+    "swallowed a toy",
+    "ate a toy",
+    "swallowed a string",
+    "ate rubber",
+    "swallowed a",
+    "foreign body",
+    "se trago un calcetin",
+    "se trago un juguete",
+    "cuerpo extrano",
+    "hat eine socke gefressen",
+    "hat ein spielzeug verschluckt",
+    "hat einen fremdkorper",
+    "fremdkorper",
+    "a avale une chaussette",
+    "a avale un jouet",
+    "corps etranger",
+)
+HARD_BELLY_KEYWORDS: tuple[str, ...] = (
+    "pancia dura",
+    "pancino duro",
+    "addome duro",
+    "pancia gonfia e dura",
+    "hard belly",
+    "swollen hard belly",
+    "barriga dura",
+    "harter bauch",
+    "ventre dur",
+)
+STRAINING_URINE_KEYWORDS: tuple[str, ...] = (
+    "non riesce a fare pipi",
+    "non riesce a fare la pipi",
+    "non riesce a fare pipì",
+    "non riesce a fare la pipì",
+    "non fa pipi",
+    "non fa la pipi",
+    "non fa pipì",
+    "non fa la pipì",
+    "urina a gocce",
+    "pipi a gocce",
+    "pipì a gocce",
+    "gocce di pipi",
+    "fa forza nella lettiera",
+    "fa forza in lettiera",
+    "sforza nella lettiera",
+    "si sforza in lettiera",
+    "sta nella lettiera e piange",
+    "straining to pee",
+    "straining to urinate",
+    "dribbling urine",
+    "pees in drops",
+    "urine in drops",
+    "no puede hacer pis",
+    "orina a gotas",
+    "kann nicht pinkeln",
+    "tropfenweise urin",
+    "n'arrive pas a uriner",
+    "urine goutte a goutte",
+)
+
 # Small mammals say "palline": shared with the SafetyGate's species list.
 SMALL_MAMMAL_STASIS_KEYWORDS: tuple[str, ...] = (
     "non fa palline",
@@ -229,6 +309,9 @@ RED_FLAG_CATEGORIES: dict[str, tuple[str, ...]] = {
     "snakebite": SNAKEBITE_KEYWORDS,
     "processionary": PROCESSIONARY_KEYWORDS,
     "fish_distress": FISH_DISTRESS_KEYWORDS,
+    # Synthetic users 2026-11-07 (P1): a swallowed object or a hard belly
+    # escalates at once; straining to urinate joins the urinary category.
+    "foreign_body": FOREIGN_BODY_KEYWORDS,
     "respiratory": (
         "cannot breathe",
         "can't breathe",
@@ -270,6 +353,7 @@ RED_FLAG_CATEGORIES: dict[str, tuple[str, ...]] = {
         "accidente",
     ),
     "urinary": (
+        *STRAINING_URINE_KEYWORDS,
         "anuria",
         "non urina",
         "cannot urinate",
@@ -379,7 +463,7 @@ RED_FLAG_CATEGORIES: dict[str, tuple[str, ...]] = {
     # Gastric dilatation-volvulus: torsion, unproductive retching, a belly
     # swelling hard — kills within hours. No clarifying question, like
     # toxin_medication: asking first would only cost time.
-    "gastric_bloat": ("torsione gastrica",),
+    "gastric_bloat": ("torsione gastrica", *HARD_BELLY_KEYWORDS),
     # A bird breathing with the beak open, tail bobbing at every breath
     # (stress test 2026-11-06): in birds this is late and serious, never
     # "after a run or at rest?" — straight to a vet who knows birds.

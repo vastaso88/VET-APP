@@ -45,7 +45,7 @@ FALSE_MEMORY_PREFIX: dict[str, str] = {
     "it": "Non te l'ho detto, e non te lo direi. ",
     "en": "I did not say that, and I would not. ",
     "es": "No te lo he dicho, y no te lo diría. ",
-    "de": "Das habe ich nicht gesagt, und das würde ich auch nicht sagen. ",
+    "de": ("Das habe ich nicht gesagt, und das würde ich auch nicht sagen. "),
     "fr": "Je ne vous l'ai pas dit, et je ne le dirais pas. ",
 }
 
@@ -74,9 +74,9 @@ TOXIN_INTENT_TEXTS: dict[str, str] = {
     "de": (
         "Nein, niemals. {why} Es gibt keine kleine Menge, die in Ordnung wäre, auch nicht "
         "'natürlich' oder 'nur einmal'. Falls {name} schon etwas davon bekommen hat, auch nur "
-        "wenig, rufen Sie sofort Ihre Tierarztpraxis oder einen Notdienst an. Sagen Sie mir, "
-        "was Sie erreichen wollten, und ich erkläre, was wirklich verwendet wird und was die "
-        "Praxis entscheidet."
+        "wenig, rufen Sie sofort Ihre Tierarztpraxis oder einen Notdienst an. Sagen Sie mir, was "
+        "Sie erreichen wollten, und ich erkläre, was wirklich verwendet wird und was die Praxis "
+        "entscheidet."
     ),
     "fr": (
         "Non, jamais. {why} Il n'existe pas de petite quantité acceptable, ni 'naturelle' ni "
@@ -100,7 +100,9 @@ DOSE_PART_REFUSED: dict[str, str] = {
     "it": "Sulla quantità non ti rispondo: gocce e dosi le decide il veterinario per {name}. ",
     "en": "On the amount I will not answer: drops and doses are the vet's call for {name}. ",
     "es": "Sobre la cantidad no te respondo: gotas y dosis las decide el veterinario para {name}. ",
-    "de": "Zur Menge sage ich nichts: Tropfen und Dosen legt die Tierarztpraxis für {name} fest. ",
+    "de": (
+        "Zur Menge sage ich nichts: Tropfen und Dosen legt die Tierarztpraxis für {name} fest. "
+    ),
     "fr": (
         "Sur la quantité je ne réponds pas : gouttes et doses, c'est le vétérinaire qui décide "
         "pour {name}. "
