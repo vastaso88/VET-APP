@@ -8,9 +8,15 @@ so the rules do not depend on the app:
 * what leaves here never carries an account id: `mine` and `role` are all the app
   needs, so neither side learns who the other one is;
 * the seller cannot write first, because a conversation is created only by a
-  buyer's message.
+  buyer's message;
+* nobody can open a conversation with a seller who could not answer (no active
+  plan, or kept out by the team): the refusal looks like any other unavailable
+  ad, so whether someone pays is never revealed;
+* someone the team kept out of the Mercatino reads but does not write, and is
+  told why ([MarketplaceRestrictedError]).
 """
 
+from collections.abc import Callable
 from datetime import UTC, datetime, timedelta
 
 from pydantic import BaseModel
@@ -32,11 +38,18 @@ from packages.core.domain.marketplace.messaging import (
     MarketplaceConversation,
     MarketplaceConversationReport,
     MarketplaceMessage,
+    MarketplaceRestriction,
+    MarketplaceRestrictionReason,
     MarketplaceUserBlock,
     ParticipantRole,
 )
 from packages.core.domain.subscription.limits import MAX_NEW_MARKETPLACE_CONVERSATIONS_PER_DAY
-from packages.shared.errors.base import QuotaExceededError, ValidationError, VetAppError
+from packages.shared.errors.base import (
+    MarketplaceRestrictedError,
+    QuotaExceededError,
+    ValidationError,
+    VetAppError,
+)
 
 
 class ConversationNotFoundError(VetAppError):
@@ -76,14 +89,39 @@ class SentMessage(BaseModel):
     message: MessageView
 
 
+class ListingMessaging(BaseModel):
+    """What the ad's page needs: the caller's conversation about it, if any, and
+    whether a new one can be opened. `can_start` is false for one reason or
+    another (closed ad, own ad, a block, a seller who could not answer) and never
+    says which."""
+
+    conversation: ConversationView | None
+    can_start: bool
+
+
+def raise_if_restricted(restriction: MarketplaceRestriction | None) -> None:
+    if restriction is not None and restriction.active:
+        raise MarketplaceRestrictedError(
+            reason=restriction.reason, since=restriction.created_at.isoformat()
+        )
+
+
 class MarketplaceMessagingService:
     def __init__(
         self,
         repository: MarketplaceMessagingRepository,
         listings: MarketplaceListingRepository,
+        seller_can_answer: Callable[[str], bool] = lambda _owner_id: True,
     ) -> None:
         self._repository = repository
         self._listings = listings
+        # Whether this owner's plan lets them write (trial, plan or public test).
+        self._seller_can_answer = seller_can_answer
+
+    def restriction_of(self, owner_id: str) -> MarketplaceRestriction | None:
+        """The team's restriction of this owner, only while it is in force."""
+        restriction = self._repository.get_restriction(owner_id)
+        return restriction if restriction is not None and restriction.active else None
 
     # -- writing ---------------------------------------------------------
 
@@ -95,14 +133,13 @@ class MarketplaceMessagingService:
         (missing, closed, the caller's own, or its seller blocked the caller)
         gives one answer, so a block cannot be told from a missing ad."""
         body = self._clean(text)
+        raise_if_restricted(self._repository.get_restriction(buyer_id))
         existing = self._repository.find_conversation(listing_id, buyer_id)
         if existing is not None:
             return self._send(existing, buyer_id, body)
 
         listing = self._listings.get(listing_id)
-        if listing is None or listing.status != "active" or listing.owner_id == buyer_id:
-            raise ConversationNotFoundError
-        if self._blocked_either_way(buyer_id, listing.owner_id):
+        if listing is None or not self._can_start(listing.owner_id, listing.status, buyer_id):
             raise ConversationNotFoundError
 
         self._enforce_daily_limit(buyer_id, locale)
@@ -118,12 +155,17 @@ class MarketplaceMessagingService:
 
     def send(self, conversation_id: str, user_id: str, text: str) -> SentMessage:
         body = self._clean(text)
-        return self._send(self._participant_conversation(conversation_id, user_id), user_id, body)
+        conversation = self._participant_conversation(conversation_id, user_id)
+        raise_if_restricted(self._repository.get_restriction(user_id))
+        return self._send(conversation, user_id, body)
 
     def _send(
         self, conversation: MarketplaceConversation, sender_id: str, body: str
     ) -> SentMessage:
-        if self._closure(conversation, sender_id) is not None:
+        closure = self._closure(conversation, sender_id)
+        if closure == "restricted":
+            raise_if_restricted(self._repository.get_restriction(sender_id))
+        if closure is not None:
             raise ConversationClosedError
 
         message = self._repository.add_message(
@@ -148,10 +190,21 @@ class MarketplaceMessagingService:
 
     # -- reading ---------------------------------------------------------
 
-    def find_for_listing(self, listing_id: str, buyer_id: str) -> ConversationView | None:
-        """The caller's own conversation about an ad, if they ever wrote."""
+    def find_for_listing(self, listing_id: str, buyer_id: str) -> ListingMessaging:
+        """The caller's own conversation about an ad, if they ever wrote, and
+        whether they could open one now."""
         conversation = self._repository.find_conversation(listing_id, buyer_id)
-        return None if conversation is None else self._view(conversation, buyer_id)
+        if conversation is not None:
+            return ListingMessaging(
+                conversation=self._view(conversation, buyer_id), can_start=False
+            )
+        listing = self._listings.get(listing_id)
+        can_start = (
+            listing is not None
+            and self.restriction_of(buyer_id) is None
+            and self._can_start(listing.owner_id, listing.status, buyer_id)
+        )
+        return ListingMessaging(conversation=None, can_start=can_start)
 
     def list_conversations(self, user_id: str) -> list[ConversationView]:
         conversations = self._repository.list_conversations(user_id, CONVERSATIONS_LIST_LIMIT)
@@ -159,8 +212,12 @@ class MarketplaceMessagingService:
             [item.listing_id for item in conversations if item.listing_id is not None]
         )
         blocks = self._repository.blocks_involving(user_id)
+        restricted = self._repository.restricted_among(
+            [user_id, *(item.other_participant(user_id) for item in conversations)]
+        )
         return [
-            self._view(item, user_id, statuses=statuses, blocks=blocks) for item in conversations
+            self._view(item, user_id, statuses=statuses, blocks=blocks, restricted=restricted)
+            for item in conversations
         ]
 
     def unread_total(self, user_id: str) -> int:
@@ -229,6 +286,17 @@ class MarketplaceMessagingService:
             raise ConversationNotFoundError
         return conversation
 
+    def _can_start(self, seller_id: str, listing_status: str, buyer_id: str) -> bool:
+        """A new conversation needs an open ad of someone else, no block between
+        the two, and a seller who could answer."""
+        return (
+            listing_status == "active"
+            and seller_id != buyer_id
+            and not self._blocked_either_way(buyer_id, seller_id)
+            and self.restriction_of(seller_id) is None
+            and self._seller_can_answer(seller_id)
+        )
+
     def _blocked_either_way(self, user_id: str, other_id: str) -> bool:
         return any(
             other_id in (block.blocker_id, block.blocked_id)
@@ -260,8 +328,15 @@ class MarketplaceMessagingService:
         *,
         statuses: dict[str, str] | None = None,
         blocks: list[MarketplaceUserBlock] | None = None,
+        restricted: set[str] | None = None,
     ) -> ConversationClosure | None:
         other = conversation.other_participant(user_id)
+        if restricted is None:
+            restricted = self._repository.restricted_among([user_id, other])
+        if user_id in restricted:
+            return "restricted"
+        if other in restricted:
+            return "closed"
         if blocks is None:
             blocks = self._repository.blocks_involving(user_id)
         if any(b.blocker_id == user_id and b.blocked_id == other for b in blocks):
@@ -283,11 +358,14 @@ class MarketplaceMessagingService:
         *,
         statuses: dict[str, str] | None = None,
         blocks: list[MarketplaceUserBlock] | None = None,
+        restricted: set[str] | None = None,
     ) -> ConversationView:
         role = conversation.role_of(user_id)
         if role is None:
             raise ConversationNotFoundError
-        closure = self._closure(conversation, user_id, statuses=statuses, blocks=blocks)
+        closure = self._closure(
+            conversation, user_id, statuses=statuses, blocks=blocks, restricted=restricted
+        )
         return ConversationView(
             id=conversation.id,
             listing_id=conversation.listing_id,
@@ -378,3 +456,38 @@ class MarketplaceMessagingModerationService:
             self._repository.set_moderation_closed(report.conversation_id, None)
             updates.update({"status": "open", "resolved_at": None, "resolution_action": None})
         return self._repository.save_report(report.model_copy(update=updates))
+
+    # -- keeping someone out of the Mercatino --------------------------------
+
+    def restrictions(self, limit: int = 200) -> list[dict[str, object]]:
+        return [item.model_dump(mode="json") for item in self._repository.list_restrictions(limit)]
+
+    def restrict(
+        self,
+        owner_id: str,
+        reason: MarketplaceRestrictionReason,
+        note: str | None,
+        admin_id: str,
+    ) -> MarketplaceRestriction:
+        """From now on [owner_id] cannot publish, edit an ad or write a message.
+        Restricting again replaces the reason and the date."""
+        return self._repository.save_restriction(
+            MarketplaceRestriction(
+                owner_id=owner_id,
+                reason=reason,
+                note=note.strip() if note and note.strip() else None,
+                created_by_admin_id=admin_id,
+            )
+        )
+
+    def lift(self, owner_id: str, admin_id: str) -> MarketplaceRestriction | None:
+        restriction = self._repository.get_restriction(owner_id)
+        if restriction is None:
+            return None
+        if not restriction.active:
+            return restriction
+        return self._repository.save_restriction(
+            restriction.model_copy(
+                update={"lifted_at": datetime.now(UTC), "lifted_by_admin_id": admin_id}
+            )
+        )

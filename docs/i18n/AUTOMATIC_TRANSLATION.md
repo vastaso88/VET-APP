@@ -67,7 +67,7 @@ traduzioni aggiornate.
 ```powershell
 python scripts/i18n/check_i18n.py
 python scripts/i18n/glossary.py check --soft
-python scripts/i18n/auto_translate.py acknowledge
+python scripts/i18n/auto_translate.py acknowledge --prefix ui:billing ui:firstRun   # solo ciò che hai rivisto
 python scripts/i18n/auto_translate.py check
 ```
 
@@ -75,7 +75,9 @@ python scripts/i18n/auto_translate.py check
    `flutter gen-l10n`, eseguire analisi e test. Poi committare cataloghi,
    codice generato e manifest revisionati sulla branch di lavoro.
 
-`acknowledge` attesta che tutti i testi correnti sono stati revisionati: non va
+`acknowledge` attesta che i testi indicati sono stati revisionati: richiede `--keys NOME...`
+(nome completo, es. `ui:billingTitle`, `backend:conversation_limit`) o `--prefix PREFISSO...`
+(es. `ui:billing`); `--all` conferma tutto ed è quasi sempre sbagliato. Non va
 eseguito solo per far passare un controllo senza aggiornare le traduzioni.
 L'artifact contiene un manifest candidato, da integrare solo insieme ai testi
 revisionati. Il workflow non committa, non apre PR, non effettua merge e non

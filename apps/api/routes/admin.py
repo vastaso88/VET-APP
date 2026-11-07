@@ -61,6 +61,12 @@ class MarketplaceMessageModerationRequest(BaseModel):
     resolution_note: str | None = Field(default=None, max_length=1000)
 
 
+class MarketplaceRestrictionRequest(BaseModel):
+    owner_id: str = Field(min_length=1, max_length=100)
+    reason: Literal["spam", "scam", "harassment", "prohibited_items", "other"]
+    note: str | None = Field(default=None, max_length=1000)
+
+
 class AdminScheduleRequest(BaseModel):
     name: str = Field(min_length=2, max_length=120)
     engine: Literal["geographic", "scientific"]
@@ -796,6 +802,37 @@ def admin_resolve_marketplace_report(
         .execute()
     )
     return {"report": (getattr(updated, "data", None) or [report])[0]}
+
+
+@router.get("/moderation/marketplace_restrictions")
+def admin_marketplace_restrictions() -> dict[str, object]:
+    _require_admin()
+    return {
+        "restrictions": get_container().marketplace_messaging_moderation_service().restrictions()
+    }
+
+
+@router.post("/moderation/marketplace_restrictions")
+def admin_restrict_marketplace_user(request: MarketplaceRestrictionRequest) -> dict[str, object]:
+    """Keeps one person out of the Mercatino: no new ads, no edits, no messages."""
+    admin = _require_admin()
+    restriction = (
+        get_container()
+        .marketplace_messaging_moderation_service()
+        .restrict(request.owner_id.strip(), request.reason, request.note, admin.id)
+    )
+    return {"restriction": restriction.model_dump(mode="json")}
+
+
+@router.post("/moderation/marketplace_restrictions/{owner_id}/lift")
+def admin_lift_marketplace_restriction(owner_id: str) -> dict[str, object]:
+    admin = _require_admin()
+    restriction = (
+        get_container().marketplace_messaging_moderation_service().lift(owner_id, admin.id)
+    )
+    if restriction is None:
+        raise HTTPException(status_code=404, detail="Marketplace restriction not found")
+    return {"restriction": restriction.model_dump(mode="json")}
 
 
 @router.post("/moderation/marketplace_messages/{report_id}")

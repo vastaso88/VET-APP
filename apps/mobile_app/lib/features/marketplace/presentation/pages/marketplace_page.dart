@@ -22,6 +22,7 @@ import '../../data/marketplace_messages_repository.dart';
 import '../../data/marketplace_repository.dart';
 import '../../domain/listing_filters.dart';
 import '../../domain/marketplace_listing.dart';
+import '../../domain/marketplace_restriction.dart';
 import '../marketplace_labels.dart';
 import '../widgets/limited_marketplace_notice.dart';
 import '../widgets/marketplace_messages_button.dart';
@@ -65,10 +66,25 @@ class _MarketplacePageState extends State<MarketplacePage> {
   late ListingFilter _filter = ListingFilter(maxDistanceKm: ListingRadiusStore.instance.radiusKm);
   late Future<_MarketplaceViewData> _dataFuture;
 
+  // Set when the moderation team kept this owner out of the Mercatino: the page
+  // says so and offers no new ad. Asked once; a failure leaves the page as it is.
+  MarketplaceRestriction? _restriction;
+
+  Future<void> _loadRestriction() async {
+    try {
+      final restriction =
+          await (widget.messagesRepository ?? MarketplaceMessagesRepository()).myRestriction();
+      if (mounted) setState(() => _restriction = restriction);
+    } on Exception {
+      // Nothing to say: the backend refuses anyway.
+    }
+  }
+
   @override
   void initState() {
     super.initState();
     _dataFuture = _loadData();
+    unawaited(_loadRestriction());
     // The owner may set the position in Impostazioni and come back.
     LocationPreferenceStore.instance.addListener(_onLocationChanged);
   }
@@ -181,8 +197,7 @@ class _MarketplacePageState extends State<MarketplacePage> {
             FutureBuilder<_MarketplaceViewData>(
               future: _dataFuture,
               builder: (context, snapshot) => TextButton.icon(
-                onPressed:
-                    snapshot.hasData ? () => _openMap(snapshot.data!) : null,
+                onPressed: snapshot.hasData ? () => _openMap(snapshot.data!) : null,
                 icon: const Icon(Icons.map_outlined),
                 label: Text(context.l10n.marketplaceMapAction),
               ),
@@ -190,7 +205,7 @@ class _MarketplacePageState extends State<MarketplacePage> {
           const SizedBox(width: AppSpacing.sm),
         ],
       ),
-      floatingActionButton: limited
+      floatingActionButton: limited || _restriction != null
           ? null
           : FloatingActionButton.extended(
               onPressed: _openCreateListing,
@@ -236,20 +251,24 @@ class _MarketplacePageState extends State<MarketplacePage> {
                     style: AppTextStyles.caption,
                   ),
                   const SizedBox(height: AppSpacing.lg),
+                  if (_restriction case final restriction?) ...[
+                    _RestrictionNotice(text: restriction.message(context.l10n)),
+                    const SizedBox(height: AppSpacing.lg),
+                  ],
                   if (limited) ...[
                     const LimitedMarketplaceNotice(),
                     const SizedBox(height: AppSpacing.lg),
                   ] else ...[
                     _CategoryFilterRow(
                       selected: _filter.category,
-                      onSelected: (category) => setState(
-                          () => _filter = _filter.withCategory(category)),
+                      onSelected: (category) =>
+                          setState(() => _filter = _filter.withCategory(category)),
                     ),
                     const SizedBox(height: AppSpacing.sm),
                     _SpeciesFilterRow(
                       selected: _filter.species,
-                      onSelected: (species) => setState(
-                          () => _filter = _filter.withSpecies(species)),
+                      onSelected: (species) =>
+                          setState(() => _filter = _filter.withSpecies(species)),
                     ),
                     const SizedBox(height: AppSpacing.sm),
                   ],
@@ -341,9 +360,7 @@ class _ListingRow extends StatelessWidget {
               : ColoredBox(
                   color: AppColors.warning.withValues(alpha: 0.14),
                   child: Icon(
-                    listing.isLimited
-                        ? Icons.sell_outlined
-                        : listingCategoryIcon(listing.category),
+                    listing.isLimited ? Icons.sell_outlined : listingCategoryIcon(listing.category),
                     color: AppColors.warning,
                   ),
                 ),
@@ -590,6 +607,39 @@ class _OtherRadiusDialogState extends State<_OtherRadiusDialog> {
           child: Text(l10n.commonConfirm),
         ),
       ],
+    );
+  }
+}
+
+/// Said to an owner the moderation team kept out of the Mercatino.
+class _RestrictionNotice extends StatelessWidget {
+  const _RestrictionNotice({required this.text});
+
+  final String text;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      key: const ValueKey('marketplace-restricted-notice'),
+      width: double.infinity,
+      padding: const EdgeInsets.all(AppSpacing.md),
+      decoration: BoxDecoration(
+        color: AppColors.dangerSoft,
+        borderRadius: BorderRadius.circular(AppRadii.large),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Icon(Icons.block_rounded, color: AppColors.dangerStrong, size: 20),
+          const SizedBox(width: AppSpacing.sm),
+          Expanded(
+            child: Text(
+              text,
+              style: AppTextStyles.bodySmall.copyWith(color: AppColors.dangerStrong),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

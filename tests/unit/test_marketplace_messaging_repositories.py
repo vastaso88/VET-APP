@@ -17,6 +17,7 @@ from packages.core.domain.marketplace.messaging import (
     MarketplaceConversation,
     MarketplaceConversationReport,
     MarketplaceMessage,
+    MarketplaceRestriction,
     MarketplaceUserBlock,
 )
 from packages.infrastructure.persistence.in_memory_marketplace_messaging import (
@@ -51,6 +52,15 @@ class _Query:
 
     def gt(self, column: str, value: int) -> _Query:
         self._filters.append(lambda row: row[column] > value)
+        return self
+
+    def is_(self, column: str, value: str) -> _Query:
+        assert value == "null"
+        self._filters.append(lambda row: row.get(column) is None)
+        return self
+
+    def in_(self, column: str, values: list[str]) -> _Query:
+        self._filters.append(lambda row: row.get(column) in values)
         return self
 
     def gte(self, column: str, value: str) -> _Query:
@@ -294,3 +304,25 @@ def test_reports_are_found_saved_again_and_listed(
     assert repository.find_report("c1", "other") is None
     assert repository.get_report("missing") is None
     assert [item.id for item in repository.list_reports(10)] == ["r2", "r1"]
+
+
+def test_a_restriction_counts_until_it_is_lifted(
+    repository: MarketplaceMessagingRepository,
+) -> None:
+    repository.save_restriction(MarketplaceRestriction(owner_id="a", reason="scam", created_at=T0))
+    repository.save_restriction(
+        MarketplaceRestriction(owner_id="b", reason="spam", created_at=T0 + timedelta(hours=1))
+    )
+
+    assert repository.restricted_among(["a", "b", "c"]) == {"a", "b"}
+
+    stored = repository.get_restriction("a")
+    assert stored is not None and stored.active
+    repository.save_restriction(stored.model_copy(update={"lifted_at": T0 + timedelta(days=1)}))
+
+    assert repository.restricted_among(["a", "b"]) == {"b"}
+    lifted = repository.get_restriction("a")
+    assert lifted is not None and not lifted.active
+    assert repository.get_restriction("c") is None
+    assert repository.restricted_among([]) == set()
+    assert [item.owner_id for item in repository.list_restrictions(10)] == ["b", "a"]

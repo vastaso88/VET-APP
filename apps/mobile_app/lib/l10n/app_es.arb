@@ -1,5 +1,5 @@
 {
-  "petsConsentFullText": "Para darte una orientación más precisa, el asistente puede leer el historial clínico de tu animal. Cuando haces una pregunta, puede leer las tres entradas más recientes, con el título, la categoría (visita, prueba, vacuna, tratamiento o documento), la fecha del evento, la descripción y el texto de los documentos adjuntos, aunque no estén relacionados con la pregunta. También puede leer las enfermedades previas que sigan en curso, con el nombre y la fecha de inicio, como máximo cinco. Si pides que explique una prueba, puede leer los documentos relacionados, como máximo dos. De un documento muy largo solo lee el principio. Lo que lee se envía al proveedor externo de inteligencia artificial que escribe la respuesta. Quokka lo usa solo para responderte. Puedes retirar el consentimiento en cualquier momento desde la ficha del animal o los Ajustes: se aplica a las solicitudes posteriores.",
+  "petsConsentFullText": "Para darte una orientación más precisa, el asistente puede leer el historial clínico de tu animal. Cuando haces una pregunta, puede leer las tres entradas más recientes, con el título, la categoría (visita, prueba, vacuna, tratamiento o documento), la fecha del evento, la descripción y el texto de los documentos adjuntos, aunque no estén relacionados con la pregunta. También puede leer las enfermedades previas que sigan en curso, con el nombre y la fecha de inicio, como máximo cinco. También lee las notas que escribiste en la ficha del animal y los recordatorios activos, tratamientos incluidos. Si pides que explique una prueba, puede leer los documentos relacionados, como máximo dos. De un documento muy largo solo lee el principio. Lo que lee se envía al proveedor externo de inteligencia artificial que escribe la respuesta. Quokka lo usa solo para responderte. Puedes retirar el consentimiento en cualquier momento desde la ficha del animal o los Ajustes: se aplica a las solicitudes posteriores.",
   "@@locale": "es",
   "appTitle": "Quokka",
   "commonCancel": "Cancelar",
@@ -105,7 +105,7 @@
   "authHubSubtitle": "Inicia sesión o crea una cuenta nueva en pocos segundos.",
   "authHubCreateAccount": "Crear una cuenta",
   "authHubPrivacyNote": "Tus datos son privados y solo se usan para gestionar el perfil de tu mascota.",
-  "authDeviceLimitNotice": "Se ha cerrado tu sesión en este dispositivo: tu cuenta se abrió en otro y tu plan admite un número limitado de dispositivos. Puedes volver a iniciar sesión cuando quieras.",
+  "authDeviceLimitNotice": "Se ha cerrado tu sesión en este dispositivo: tu cuenta se abrió en otro dispositivo y tu plan admite un número limitado de dispositivos. Puedes volver a iniciar sesión cuando quieras.",
   "authErrorEmailExists": "Ya existe una cuenta con este correo. Intenta iniciar sesión.",
   "authErrorWeakPassword": "La contraseña es demasiado débil: usa al menos 6 caracteres, preferiblemente con números o mayúsculas.",
   "authErrorEmailInvalid": "La dirección de correo no parece válida.",
@@ -240,7 +240,7 @@
       }
     }
   },
-  "billingSetDefault": "Establecer como predeterminado",
+  "billingSetDefault": "Establecer como predeterminada",
   "billingRemove": "Eliminar",
   "billingAddPaymentMethod": "Añadir método de pago",
   "billingCardBrandLabel": "Red de tarjeta",
@@ -253,10 +253,10 @@
   "billingPaywallDataTitle": "Tus datos",
   "billingPaywallDataBody": "Incluso sin un plan puedes descargar tus datos o eliminar tu cuenta.",
   "billingPaywallEmergencyTitle": "Si tu mascota está en peligro",
-  "billingPaywallEmergencyBody": "Llama de inmediato a tu veterinario o a una clínica veterinaria de urgencias. Quokka no sustituye una visita.",
+  "billingPaywallEmergencyBody": "Llama de inmediato a tu veterinario o a una clínica veterinaria de urgencias. Quokka no sustituye una visita al veterinario.",
   "billingPlanLimitReached": "Tu plan ha alcanzado este límite. Cambia a un plan superior en Ajustes.",
-  "billingTestPeriodTitle": "Periodo de prueba pública",
-  "billingTestPeriodBody": "Estás usando Quokka con el plan {plan}, sin pagar: durante la prueba todos tienen el mismo plan y no hay nada que elegir ni pagar.",
+  "billingTestPeriodTitle": "Fase de pruebas",
+  "billingTestPeriodBody": "Estás usando Quokka con el plan {plan}, sin pagar: durante las pruebas todos tienen el mismo plan y no hay nada que elegir ni pagar.",
   "@billingTestPeriodBody": {
     "placeholders": {
       "plan": {
@@ -264,7 +264,7 @@
       }
     }
   },
-  "billingTestPeriodShort": "{plan} · prueba",
+  "billingTestPeriodShort": "{plan} · pruebas",
   "@billingTestPeriodShort": {
     "placeholders": {
       "plan": {
@@ -276,7 +276,7 @@
   "marketplaceLimitedNotice": "Solo ves el artículo, el precio y las fotos. Con un plan ves también la descripción y los detalles, y puedes publicar y denunciar anuncios.",
   "marketplaceLimitedSeePlans": "Ver los planes",
   "eventsNeedsPlan": "Los eventos forman parte de los planes. Elige un plan para verlos.",
-  "billingPaywallBrowseMarketplace": "Ver los anuncios del mercadillo",
+  "billingPaywallBrowseMarketplace": "Explorar los anuncios del mercadillo",
   "billingChoosePlan": "Elegir {plan}",
   "@billingChoosePlan": {
     "placeholders": {
@@ -572,7 +572,7 @@
   "marketplaceSpeciesBird": "Ave",
   "marketplaceSpeciesReptileAmphibian": "Reptiles y anfibios",
   "marketplaceSpeciesFish": "Pez",
-  "marketplacePriceGift": "En regalo",
+  "marketplacePriceGift": "Se regala",
   "marketplaceDemoBedTitle": "Cama acolchada (demo)",
   "marketplaceDemoBedDescription": "Poco usada, tamaño mediano.",
   "marketplaceDemoBedArea": "Centro, Milán",
@@ -629,7 +629,7 @@
     }
   },
   "marketplaceLoadError": "No puedo cargar los anuncios. Comprueba la conexión.",
-  "marketplaceFilterAllCategories": "Todos",
+  "marketplaceFilterAllCategories": "Todas",
   "marketplaceFilterAllSpecies": "Todas las mascotas",
   "marketplaceReportListing": "Denunciar anuncio",
   "marketplaceReasonSpam": "Spam",
@@ -637,8 +637,8 @@
   "marketplaceReasonProhibitedItem": "Artículo no permitido",
   "marketplaceReasonInappropriate": "Contenido inapropiado",
   "marketplaceReasonSellsAnimals": "Vende animales",
-  "marketplaceReportRemoved": "Gracias, el anuncio se ha eliminado tras los informes recibidos.",
-  "marketplaceReportSent": "Informe enviado, gracias.",
+  "marketplaceReportRemoved": "Gracias, el anuncio se ha eliminado tras las denuncias recibidas.",
+  "marketplaceReportSent": "Denuncia enviada, gracias.",
   "marketplaceDeleteConfirmTitle": "¿Eliminar el anuncio?",
   "marketplaceDeleteConfirmBody": "\"{title}\" y sus fotos se eliminarán. No se puede deshacer.",
   "@marketplaceDeleteConfirmBody": {
@@ -669,7 +669,7 @@
   "marketplaceEditListing": "Editar anuncio",
   "marketplaceDeleting": "Eliminando...",
   "marketplaceDeleteListing": "Eliminar anuncio",
-  "marketplaceReporting": "Enviando informe…",
+  "marketplaceReporting": "Enviando denuncia...",
   "marketplaceMapTitle": "Mapa del mercadillo",
   "marketplaceListingsCount": "{count} anuncios",
   "@marketplaceListingsCount": {
@@ -718,10 +718,10 @@
   },
   "marketplaceZoneWait": "Espera a que se encuentre la zona e inténtalo de nuevo.",
   "marketplaceSaveFailed": "No pude guardar el anuncio. Comprueba la conexión e inténtalo de nuevo.",
-  "marketplacePriceRequired": "Introduce un precio o elige \"En regalo\"",
+  "marketplacePriceRequired": "Introduce un precio o elige \"Se regala\"",
   "marketplacePriceInvalid": "Introduce un precio válido",
   "marketplacePriceNegative": "El precio no puede ser negativo",
-  "marketplacePriceZero": "Para regalarlo, elige \"En regalo\"",
+  "marketplacePriceZero": "Para regalarlo, elige \"Se regala\"",
   "marketplacePriceTooHigh": "Precio demasiado alto",
   "marketplaceFieldTitle": "Título",
   "marketplaceTitleRequired": "Introduce un título",
@@ -754,12 +754,12 @@
       }
     }
   },
-  "marketplaceTakePhoto": "Hacer foto",
+  "marketplaceTakePhoto": "Tomar foto",
   "marketplaceFromGallery": "Desde la galería",
   "marketplacePhotosPrivacy": "Antes de subirlas, eliminamos los datos ocultos de las fotos (ubicación, dispositivo y fecha).",
   "marketplaceLocationTitle": "Ubicación",
   "marketplaceLocationKeep": "Zona actual del anuncio",
-  "marketplaceLocationNow": "Donde estoy ahora",
+  "marketplaceLocationNow": "Mi ubicación actual",
   "marketplaceLocationHome": "Residencia",
   "marketplaceLocationHomeHint": "Para usar tu residencia, indícala en Ajustes → Ubicación.",
   "marketplaceLocationSearching": "Buscando tu zona...",
@@ -2097,7 +2097,7 @@
   },
   "eventsSuggestAction": "Sugerir un evento",
   "eventsSuggestTitle": "Sugerir un evento",
-  "eventsSuggestIntro": "¿Conoces una feria o un evento para mascotas que no aparece aquí? Rellena los datos: lo comprobamos en el sitio del organizador antes de publicarlo.",
+  "eventsSuggestIntro": "¿Conoces una feria o un evento para mascotas que no aparece aquí? Completa los datos: lo comprobamos en el sitio del organizador antes de publicarlo.",
   "eventsSuggestPrivacy": "Escribe solo información sobre el evento: sin nombres de personas, correos ni teléfonos.",
   "eventsSuggestFieldTitle": "Nombre del evento",
   "eventsSuggestFieldType": "Tipo de evento",
@@ -2155,7 +2155,7 @@
   "eventsTypeMarket": "Mercadillo",
   "eventsTypeCharityEvent": "Evento benéfico",
   "eventsTypeAquariumExpo": "Acuariofilia",
-  "eventsTypeReptileExpo": "Terrarismo",
+  "eventsTypeReptileExpo": "Terrariofilia",
   "eventsTypeBirdShow": "Ornitología",
   "eventsTypeEquestrian": "Ecuestre",
   "eventsTypeOther": "Otro",
@@ -3842,5 +3842,37 @@
   "marketplaceMessagesReport": "Denunciar conversación",
   "marketplaceMessagesReportPrivacy": "Nuestro equipo leerá esta conversación para valorar la denuncia.",
   "marketplaceMessagesReasonHarassment": "Acoso",
-  "marketplaceMessagesActionFailed": "No se ha podido hacer. Inténtalo de nuevo."
+  "marketplaceMessagesActionFailed": "La operación no se ha podido completar. Inténtalo de nuevo.",
+  "marketplaceRestrictedNotice": "El equipo de moderación ha suspendido tu acceso al mercadillo desde el {date}. Motivo: {reason}. Puedes seguir viendo los anuncios y leer tus mensajes, pero no puedes publicar ni modificar anuncios ni enviar mensajes.",
+  "marketplaceRestrictedConversation": "El equipo de moderación ha suspendido tu acceso al mercadillo: puedes leer esta conversación, pero no escribir.",
+  "marketplaceRestrictionReasonSpam": "spam",
+  "marketplaceRestrictionReasonScam": "intento de estafa",
+  "marketplaceRestrictionReasonHarassment": "acoso",
+  "marketplaceRestrictionReasonProhibitedItems": "artículos no permitidos",
+  "marketplaceRestrictionReasonOther": "incumplimiento de las normas del mercadillo",
+  "localEventsExoticChip": "Expertos en exóticos",
+  "localEventsExoticAllGroups": "Todos los grupos",
+  "localEventsExoticDisclaimer": "Competencia declarada por el centro o por la fuente indicada, no verificada por Quokka.",
+  "localEventsExoticNone": "Ningún centro en un radio de {radius} declara esta competencia. Aún hay pocos datos: amplía el radio o comunícanos un centro desde su ficha.",
+  "exoticGroupReptileAmphibian": "Reptiles y anfibios",
+  "exoticGroupBird": "Aves",
+  "exoticGroupSmallMammal": "Pequeños mamíferos",
+  "exoticGroupFish": "Peces",
+  "exoticGroupOther": "Otros",
+  "exoticGroupGeneral": "animales exóticos (grupos no indicados)",
+  "exoticGroupSmallMammalHint": "Conejo, roedores, hurón",
+  "placesCompetenceTreats": "Atiende: {groups}",
+  "placesCompetenceSourceOsm": "Declarado en OpenStreetMap, leído el {date}",
+  "placesCompetenceSourceName": "Declarado en el nombre del centro, leído el {date}",
+  "placesCompetenceSourceClaim": "Declarado en la página del centro, comprobado el {date}",
+  "placesCompetenceSourcePage": "Página del centro",
+  "placesCompetenceClaimAction": "¿Atiende animales exóticos? Avísanos",
+  "placesCompetenceClaimTitle": "¿Qué animales exóticos atiende?",
+  "placesCompetenceClaimEvidence": "¿Dónde lo has leído?",
+  "placesCompetenceEvidenceWebsite": "En la web del centro",
+  "placesCompetenceEvidenceSign": "En el letrero",
+  "placesCompetenceEvidenceOther": "En otro sitio",
+  "placesCompetenceClaimNote": "Solo lo mostramos después de comprobar la página pública del centro.",
+  "placesCompetenceClaimSend": "Enviar",
+  "placesCompetenceClaimSent": "Gracias: lo comprobaremos antes de mostrarlo."
 }

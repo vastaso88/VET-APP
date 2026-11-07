@@ -125,6 +125,9 @@ class _MarketplaceConversationPageState extends State<MarketplaceConversationPag
     } on ConversationClosedException {
       if (mounted) _showMessage(context.l10n.marketplaceMessagesClosed);
       await _load();
+    } on MarketplaceRestrictedException catch (error) {
+      if (mounted) _showMessage(error.restriction.message(context.l10n));
+      await _load();
     } on ConversationNotFoundException {
       if (mounted) _showMessage(context.l10n.marketplaceMessagesUnavailable);
     } on MessagesPlanRequiredException {
@@ -330,9 +333,11 @@ class _MarketplaceConversationPageState extends State<MarketplaceConversationPag
     if (closure != null) {
       return _Banner(
         key: const ValueKey('marketplace-messages-closed'),
-        text: closure == ConversationClosedReason.blockedByMe
-            ? context.l10n.marketplaceMessagesBlockedByMe
-            : context.l10n.marketplaceMessagesClosed,
+        text: closure == ConversationClosedReason.restricted
+            ? context.l10n.marketplaceRestrictedConversation
+            : closure == ConversationClosedReason.blockedByMe
+                ? context.l10n.marketplaceMessagesBlockedByMe
+                : context.l10n.marketplaceMessagesClosed,
       );
     }
     if (!BillingDemoStore.instance.hasAccess) {

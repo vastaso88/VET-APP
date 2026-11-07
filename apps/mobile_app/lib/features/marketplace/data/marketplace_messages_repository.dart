@@ -6,6 +6,7 @@ import '../../../shared/auth/current_user.dart';
 import '../../../shared/config/app_runtime_config_loader.dart';
 import '../../billing/data/subscription_required_signal.dart';
 import '../domain/marketplace_conversation.dart';
+import '../domain/marketplace_restriction.dart';
 
 /// The backend cannot be asked (no address, no session, network, server error).
 class MessagesUnavailableException implements Exception {
@@ -32,6 +33,13 @@ class NewConversationLimitException implements Exception {
 /// The trial is over (402): the owner has already been sent to the paywall.
 class MessagesPlanRequiredException implements Exception {
   const MessagesPlanRequiredException();
+}
+
+/// The moderation team kept this owner out of the Mercatino (403).
+class MarketplaceRestrictedException implements Exception {
+  const MarketplaceRestrictedException(this.restriction);
+
+  final MarketplaceRestriction restriction;
 }
 
 /// Messages live only on the backend (`/marketplace/...conversation...`), which
@@ -65,17 +73,28 @@ class MarketplaceMessagesRepository {
   }
 
   /// The caller's own conversation about an ad, null if they never wrote.
-  Future<MarketplaceConversation?> conversationForListing(String listingId) async {
+  Future<MarketplaceConversation?> conversationForListing(String listingId) async =>
+      (await listingStatus(listingId)).conversation;
+
+  /// The caller's conversation about an ad and whether a new one can start.
+  Future<ListingMessagingStatus> listingStatus(String listingId) async {
     final json = await _call('GET', '/marketplace/listings/$listingId/conversation');
     final row = json['conversation'];
-    return row == null ? null : MarketplaceConversation.fromJson(row as Map<String, dynamic>);
+    return ListingMessagingStatus(
+      conversation:
+          row == null ? null : MarketplaceConversation.fromJson(row as Map<String, dynamic>),
+      canStart: json['can_start'] == true,
+    );
   }
+
+  /// The caller's own restriction by the moderation team, null when there is none.
+  Future<MarketplaceRestriction?> myRestriction() async =>
+      MarketplaceRestriction.fromJson(await _call('GET', '/marketplace/restriction'));
 
   Future<ConversationThread> readThread(String conversationId) async {
     final json = await _call('GET', '/marketplace/conversations/$conversationId');
     return ConversationThread(
-      conversation:
-          MarketplaceConversation.fromJson(json['conversation'] as Map<String, dynamic>),
+      conversation: MarketplaceConversation.fromJson(json['conversation'] as Map<String, dynamic>),
       messages: (json['messages'] as List<dynamic>? ?? const [])
           .map((row) => MarketplaceMessage.fromJson(row as Map<String, dynamic>))
           .toList(),
@@ -162,6 +181,9 @@ class MarketplaceMessagesRepository {
     switch (response.statusCode) {
       case 404:
         throw const ConversationNotFoundException();
+      case 403:
+        final restriction = _restriction(response);
+        if (restriction != null) throw MarketplaceRestrictedException(restriction);
       case 409:
         throw const ConversationClosedException();
       case 429:
@@ -169,6 +191,16 @@ class MarketplaceMessagesRepository {
         if (limit != null) throw NewConversationLimitException(limit);
     }
     throw const MessagesUnavailableException();
+  }
+
+  MarketplaceRestriction? _restriction(http.Response response) {
+    try {
+      return MarketplaceRestriction.fromJson(
+        jsonDecode(utf8.decode(response.bodyBytes)) as Map<String, dynamic>,
+      );
+    } catch (_) {
+      return null;
+    }
   }
 
   /// A 429 also comes from the general request throttle, without this field.

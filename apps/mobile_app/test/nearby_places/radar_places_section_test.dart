@@ -10,6 +10,7 @@ import 'package:vet_app_mobile/features/location/data/device_location_service.da
 import 'package:vet_app_mobile/features/location/data/location_preference_store.dart';
 import 'package:vet_app_mobile/features/location/domain/coordinates.dart';
 import 'package:vet_app_mobile/features/nearby_places/data/radar_places_repository.dart';
+import 'package:vet_app_mobile/features/nearby_places/domain/radar_competence.dart';
 import 'package:vet_app_mobile/features/nearby_places/domain/radar_data_source.dart';
 import 'package:vet_app_mobile/features/nearby_places/domain/radar_place.dart';
 import 'package:vet_app_mobile/features/nearby_places/presentation/pages/data_sources_page.dart';
@@ -504,6 +505,125 @@ void main() {
     expect(place!.type, RadarPlaceType.association);
     expect(radarCategoryForPlace(place.type), RadarCategory.association);
     expect(radarPlaceTypeToApi(place.type), 'association');
+  });
+
+  testWidgets('Esperti in esotici shows only vets with a declared competence of the group',
+      (tester) async {
+    const rabbits = RadarPlace(
+      id: 'rabbits',
+      type: RadarPlaceType.veterinary,
+      name: 'Clinica Conigli Esempio',
+      location: Coordinates(latitude: 45.466, longitude: 9.191),
+      distanceMeters: 600,
+      competences: [
+        RadarCompetence(
+          group: ExoticGroup.smallMammal,
+          basis: CompetenceBasis.osmTag,
+          readAt: null,
+        ),
+      ],
+    );
+    const exotics = RadarPlace(
+      id: 'exotics',
+      type: RadarPlaceType.veterinary,
+      name: 'Ambulatorio Esotici Esempio',
+      location: Coordinates(latitude: 45.467, longitude: 9.192),
+      distanceMeters: 700,
+      competences: [RadarCompetence(group: null, basis: CompetenceBasis.name)],
+    );
+    final repository = _repositoryWith([_clinic, rabbits, exotics, _dogPark]);
+    await _pumpPage(tester, repository);
+
+    await tester.ensureVisible(find.widgetWithText(RadarChip, 'Esperti in esotici'));
+    await tester.tap(find.widgetWithText(RadarChip, 'Esperti in esotici'));
+    await tester.pumpAndSettle();
+
+    // Clinics only, and only those with a declared competence; section open.
+    expect(find.text('Clinica Conigli Esempio'), findsOneWidget);
+    expect(find.text('Ambulatorio Esotici Esempio'), findsOneWidget);
+    expect(find.text('Clinica Veterinaria Duomo'), findsNothing);
+    expect(find.text('Area cani'), findsNothing);
+    expect(
+      find.text(
+          'Competenza dichiarata dalla struttura o dalla fonte indicata, non verificata da Quokka.'),
+      findsOneWidget,
+    );
+
+    // A group: the general "exotic animals" practice still matches it.
+    await tester.tap(find.widgetWithText(RadarChip, 'Uccelli'));
+    await tester.pumpAndSettle();
+    expect(find.text('Clinica Conigli Esempio'), findsNothing);
+    expect(find.text('Ambulatorio Esotici Esempio'), findsOneWidget);
+    expect(repository.requestedRadii, [10]);
+
+    // Back to everything.
+    await tester.tap(find.widgetWithText(RadarChip, 'Esperti in esotici'));
+    await tester.pumpAndSettle();
+    expect(find.textContaining('non verificata da Quokka'), findsNothing);
+  });
+
+  testWidgets('Esperti in esotici says so clearly when nothing is found', (tester) async {
+    await _pumpPage(tester, _repositoryWith([_clinic]));
+
+    await tester.ensureVisible(find.widgetWithText(RadarChip, 'Esperti in esotici'));
+    await tester.tap(find.widgetWithText(RadarChip, 'Esperti in esotici'));
+    await tester.pumpAndSettle();
+
+    expect(find.textContaining('dichiara questa competenza'), findsWidgets);
+    expect(find.text('Clinica Veterinaria Duomo'), findsNothing);
+  });
+
+  test('competences arrive from the API with group, basis, date and evidence', () {
+    final place = RadarPlace.tryFromJson({
+      'id': 'v1',
+      'place_type': 'veterinary',
+      'name': 'Clinica Esempio',
+      'latitude': 45.47,
+      'longitude': 9.19,
+      'distance_km': 1.0,
+      'competences': [
+        {
+          'group': 'bird',
+          'source': 'vetapp_users',
+          'basis': 'confirmed_claim',
+          'read_at': '2026-11-01T00:00:00Z',
+          'evidence_url': 'https://www.example.com/esotici'
+        },
+        {'group': 'exotic_general', 'source': 'overture', 'basis': 'name', 'read_at': null},
+        {'group': 'dog', 'source': 'x', 'basis': 'osm_tag'},
+      ],
+    });
+
+    expect(place!.competences, hasLength(2));
+    expect(place.competences.first.group, ExoticGroup.bird);
+    expect(place.competences.first.evidenceUrl, 'https://www.example.com/esotici');
+    expect(place.competences.last.isGeneral, isTrue);
+    expect(matchesExoticGroup(place.competences, ExoticGroup.fish), isTrue);
+  });
+
+  testWidgets('a vet card names the declared groups and who declares them', (tester) async {
+    final vet = RadarPlace(
+      id: 'card',
+      type: RadarPlaceType.veterinary,
+      name: 'Clinica Card Esempio',
+      location: const Coordinates(latitude: 45.466, longitude: 9.191),
+      distanceMeters: 600,
+      competences: [
+        RadarCompetence(
+          group: ExoticGroup.reptileAmphibian,
+          basis: CompetenceBasis.osmTag,
+          readAt: DateTime.utc(2026, 11, 1, 12),
+        ),
+      ],
+    );
+    await _pumpPage(tester, _repositoryWith([vet]));
+    await _openSection(tester, RadarCategory.veterinary);
+    await tester.tap(find.text('Clinica Card Esempio'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Cura: Rettili e anfibi'), findsOneWidget);
+    expect(find.textContaining('Dichiarato su OpenStreetMap, letto il 1'), findsOneWidget);
+    expect(find.textContaining('non verificata da Quokka'), findsOneWidget);
   });
 
   testWidgets('the clinics section has no descriptive subtitle', (tester) async {

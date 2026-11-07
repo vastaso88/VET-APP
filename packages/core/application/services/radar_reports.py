@@ -14,6 +14,11 @@ from packages.core.domain.consent.account_consent_text import CURRENT_VERSIONS
 from packages.core.domain.consent.models import AccountConsentType
 from packages.core.domain.geo.countries import radar_country_for_point
 from packages.core.domain.geo.models import Coordinates, haversine_distance_km
+from packages.core.domain.radar_places.competences import (
+    EXOTIC_GROUPS,
+    ClaimEvidenceKind,
+    RadarCompetenceClaim,
+)
 from packages.core.domain.radar_places.labels import FALLBACK_LANGUAGE
 from packages.core.domain.radar_places.models import RadarPlace
 from packages.core.domain.radar_reports.models import (
@@ -327,6 +332,56 @@ class WithdrawRadarReportService(_Contributions):
         self._repository.delete_report(report.id)
 
 
+class SubmitCompetenceClaimInput(BaseModel):
+    user_id: str
+    # The practice, already looked up in our own data by the caller.
+    place: RadarPlace
+    groups: list[str]
+    evidence_kind: ClaimEvidenceKind
+
+
+class SubmitCompetenceClaimService(_Contributions):
+    """ "Segnala!": "this practice treats exotic animals". The claim stays
+    pending and invisible: it counts only once the team has read the
+    practice's own public statement and confirmed it by hand
+    (scripts/radar/confirm_competence_claim.py)."""
+
+    def execute(self, data: SubmitCompetenceClaimInput) -> RadarCompetenceClaim:
+        if not self._settings.reports_enabled:
+            raise ValidationError(KIND_NOT_ACTIVE_MESSAGE)
+        self._require_rules_accepted(data.user_id)
+        if data.place.place_type != "veterinary":
+            raise ValidationError("Si può segnalare solo per un veterinario.")
+        groups = [group for group in EXOTIC_GROUPS if group in set(data.groups)]
+        if not groups or len(groups) != len(set(data.groups)):
+            raise ValidationError("Scegli almeno un gruppo di animali tra quelli proposti.")
+        reporter = self._pseudonym(data.user_id)
+        earlier = self._repository.list_claims_by_reporter(
+            reporter,
+            target_source=data.place.source_name,
+            target_source_id=data.place.source_external_id,
+        )
+        if any(claim.status == "pending" for claim in earlier):
+            raise ValidationError("Hai già fatto questa segnalazione.")
+        since = utc_now() - timedelta(days=1)
+        if self._repository.count_claims_since(reporter, since) >= self._settings.daily_limit:
+            raise ReportLimitReachedError(
+                f"Puoi fare al massimo {self._settings.daily_limit} segnalazioni al giorno."
+            )
+        return self._repository.save_claim(
+            RadarCompetenceClaim(
+                target_source=data.place.source_name,
+                target_source_id=data.place.source_external_id,
+                place_name=data.place.name[:120],
+                latitude=data.place.latitude,
+                longitude=data.place.longitude,
+                groups=groups,
+                evidence_kind=data.evidence_kind,
+                reporter_pseudonym=reporter,
+            )
+        )
+
+
 class RateDogParkInput(BaseModel):
     user_id: str
     place: RadarPlace
@@ -361,6 +416,8 @@ class RadarCommunitySnapshot(BaseModel):
     reports: list[RadarUserReport]
     overrides: list[RadarPlaceOverride]
     ratings: list[RadarPlaceRating]
+    # Exotic-competence claims the team confirmed (pending ones never show).
+    confirmed_claims: list[RadarCompetenceClaim] = []
 
 
 def run_together(*reads: Callable[[], Any]) -> list[Any]:
@@ -389,7 +446,7 @@ class RadarCommunityView(_Contributions):
             if kind == "missing" or (kind == "closed" and self._settings.show_pending_closures)
         ]
         ratings_enabled = self._settings.ratings_enabled
-        reports, overrides, ratings = run_together(
+        reports, overrides, ratings, claims = run_together(
             lambda: (
                 self._live_reports(box, kinds=kinds, statuses=["pending", "confirmed"])
                 if kinds
@@ -397,8 +454,11 @@ class RadarCommunityView(_Contributions):
             ),
             self._repository.list_overrides,
             lambda: self._repository.list_ratings(box) if ratings_enabled else [],
+            lambda: self._repository.list_claims(box, statuses=["confirmed"]),
         )
-        return RadarCommunitySnapshot(reports=reports, overrides=overrides, ratings=ratings)
+        return RadarCommunitySnapshot(
+            reports=reports, overrides=overrides, ratings=ratings, confirmed_claims=claims
+        )
 
     def user_places(
         self, box: BoundingBox, snapshot: RadarCommunitySnapshot | None = None

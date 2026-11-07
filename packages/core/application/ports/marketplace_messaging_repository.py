@@ -5,6 +5,7 @@ from packages.core.domain.marketplace.messaging import (
     MarketplaceConversation,
     MarketplaceConversationReport,
     MarketplaceMessage,
+    MarketplaceRestriction,
     MarketplaceUserBlock,
     ParticipantRole,
 )
@@ -62,4 +63,16 @@ class MarketplaceMessagingRepository(Protocol):
 
     def list_reports(self, limit: int) -> list[MarketplaceConversationReport]:
         """For the moderation queue, the most recent first."""
+        ...
+
+    def get_restriction(self, owner_id: str) -> MarketplaceRestriction | None: ...
+
+    def save_restriction(self, restriction: MarketplaceRestriction) -> MarketplaceRestriction: ...
+
+    def restricted_among(self, owner_ids: list[str]) -> set[str]:
+        """Which of [owner_ids] the team currently keeps out of the Mercatino."""
+        ...
+
+    def list_restrictions(self, limit: int) -> list[MarketplaceRestriction]:
+        """For the portal, the most recent first, lifted ones included."""
         ...

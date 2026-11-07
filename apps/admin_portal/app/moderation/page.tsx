@@ -1,7 +1,9 @@
 import Link from "next/link";
 
 import { AdminShell } from "../../components/admin-shell";
-import { getAdminModeration } from "../../lib/admin-api";
+import { MarketplaceRestrictForm } from "../../components/marketplace-restrict-form";
+import { getAdminModeration, getMarketplaceRestrictions } from "../../lib/admin-api";
+import { liftMarketplaceRestriction } from "./actions";
 
 function date(value: string | null): string {
   if (!value) return "—";
@@ -12,7 +14,11 @@ function date(value: string | null): string {
 }
 
 export default async function ModerationPage() {
-  const moderation = await getAdminModeration();
+  const [moderation, restrictions] = await Promise.all([
+    getAdminModeration(),
+    getMarketplaceRestrictions(),
+  ]);
+  const activeRestrictions = restrictions.filter((item) => !item.lifted_at);
   const openRadar = moderation.radar.filter((item) => item.status === "pending");
   const openChat = moderation.chat.filter(
     (item) => item.status === "reported" || item.status === "under_review",
@@ -97,6 +103,42 @@ export default async function ModerationPage() {
               </span>
             </div>
           )) : <div className="table-empty">No reported conversations.</div>}
+        </div>
+      </section>
+
+      <section className="panel">
+        <div className="panel-heading">
+          <div>
+            <p className="eyebrow">Marketplace</p>
+            <h2>People kept out of the Mercatino ({activeRestrictions.length} active)</h2>
+          </div>
+        </div>
+        <p className="muted">
+          They cannot publish or edit ads or write messages; they can still read and report.
+          They see the reason in their language and the date, never the note.
+        </p>
+        <MarketplaceRestrictForm label="Keep this person out" />
+        <div className="data-table moderation-live-table moderation-with-action">
+          <div className="table-row table-head">
+            <span>Since</span><span>User id</span><span>Reason</span><span>Note</span><span>Lifted</span><span>Action</span>
+          </div>
+          {restrictions.length ? restrictions.map((item) => (
+            <div className="table-row" key={`${item.owner_id}-${item.created_at}`}>
+              <span>{date(item.created_at)}</span>
+              <span>{item.owner_id}</span>
+              <span>{item.reason}</span>
+              <span>{item.note ?? "—"}</span>
+              <span>{date(item.lifted_at)}</span>
+              <span>
+                {item.lifted_at ? "—" : (
+                  <form action={liftMarketplaceRestriction}>
+                    <input type="hidden" name="owner_id" value={item.owner_id} />
+                    <button className="ghost-button" type="submit">Let back in</button>
+                  </form>
+                )}
+              </span>
+            </div>
+          )) : <div className="table-empty">Nobody is kept out of the Mercatino.</div>}
         </div>
       </section>
 

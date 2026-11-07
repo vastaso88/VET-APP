@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../../l10n/date_formats.dart';
 import '../../../l10n/l10n.dart';
 import '../../local_activities/domain/local_activity.dart';
+import '../domain/radar_competence.dart';
 import '../domain/radar_place.dart';
 import '../../../design_system/tokens/app_colors.dart';
 
@@ -57,6 +58,25 @@ enum RadarCategory {
       case RadarCategory.other:
         return l10n.placesCategoryOther;
     }
+  }
+}
+
+/// Label of an exotic group (null: "exotic animals", groups not stated).
+String exoticGroupLabel(ExoticGroup? group) {
+  final l10n = appL10n;
+  switch (group) {
+    case ExoticGroup.reptileAmphibian:
+      return l10n.exoticGroupReptileAmphibian;
+    case ExoticGroup.bird:
+      return l10n.exoticGroupBird;
+    case ExoticGroup.smallMammal:
+      return l10n.exoticGroupSmallMammal;
+    case ExoticGroup.fish:
+      return l10n.exoticGroupFish;
+    case ExoticGroup.other:
+      return l10n.exoticGroupOther;
+    case null:
+      return l10n.exoticGroupGeneral;
   }
 }
 

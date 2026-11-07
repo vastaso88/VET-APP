@@ -10,7 +10,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get petsConsentFullText =>
-      'Para darte una orientación más precisa, el asistente puede leer el historial clínico de tu animal. Cuando haces una pregunta, puede leer las tres entradas más recientes, con el título, la categoría (visita, prueba, vacuna, tratamiento o documento), la fecha del evento, la descripción y el texto de los documentos adjuntos, aunque no estén relacionados con la pregunta. También puede leer las enfermedades previas que sigan en curso, con el nombre y la fecha de inicio, como máximo cinco. Si pides que explique una prueba, puede leer los documentos relacionados, como máximo dos. De un documento muy largo solo lee el principio. Lo que lee se envía al proveedor externo de inteligencia artificial que escribe la respuesta. Quokka lo usa solo para responderte. Puedes retirar el consentimiento en cualquier momento desde la ficha del animal o los Ajustes: se aplica a las solicitudes posteriores.';
+      'Para darte una orientación más precisa, el asistente puede leer el historial clínico de tu animal. Cuando haces una pregunta, puede leer las tres entradas más recientes, con el título, la categoría (visita, prueba, vacuna, tratamiento o documento), la fecha del evento, la descripción y el texto de los documentos adjuntos, aunque no estén relacionados con la pregunta. También puede leer las enfermedades previas que sigan en curso, con el nombre y la fecha de inicio, como máximo cinco. También lee las notas que escribiste en la ficha del animal y los recordatorios activos, tratamientos incluidos. Si pides que explique una prueba, puede leer los documentos relacionados, como máximo dos. De un documento muy largo solo lee el principio. Lo que lee se envía al proveedor externo de inteligencia artificial que escribe la respuesta. Quokka lo usa solo para responderte. Puedes retirar el consentimiento en cualquier momento desde la ficha del animal o los Ajustes: se aplica a las solicitudes posteriores.';
 
   @override
   String get appTitle => 'Quokka';
@@ -317,7 +317,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get authDeviceLimitNotice =>
-      'Se ha cerrado tu sesión en este dispositivo: tu cuenta se abrió en otro y tu plan admite un número limitado de dispositivos. Puedes volver a iniciar sesión cuando quieras.';
+      'Se ha cerrado tu sesión en este dispositivo: tu cuenta se abrió en otro dispositivo y tu plan admite un número limitado de dispositivos. Puedes volver a iniciar sesión cuando quieras.';
 
   @override
   String get authErrorEmailExists =>
@@ -537,7 +537,7 @@ class AppLocalizationsEs extends AppLocalizations {
   }
 
   @override
-  String get billingSetDefault => 'Establecer como predeterminado';
+  String get billingSetDefault => 'Establecer como predeterminada';
 
   @override
   String get billingRemove => 'Eliminar';
@@ -579,23 +579,23 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get billingPaywallEmergencyBody =>
-      'Llama de inmediato a tu veterinario o a una clínica veterinaria de urgencias. Quokka no sustituye una visita.';
+      'Llama de inmediato a tu veterinario o a una clínica veterinaria de urgencias. Quokka no sustituye una visita al veterinario.';
 
   @override
   String get billingPlanLimitReached =>
       'Tu plan ha alcanzado este límite. Cambia a un plan superior en Ajustes.';
 
   @override
-  String get billingTestPeriodTitle => 'Periodo de prueba pública';
+  String get billingTestPeriodTitle => 'Fase de pruebas';
 
   @override
   String billingTestPeriodBody(String plan) {
-    return 'Estás usando Quokka con el plan $plan, sin pagar: durante la prueba todos tienen el mismo plan y no hay nada que elegir ni pagar.';
+    return 'Estás usando Quokka con el plan $plan, sin pagar: durante las pruebas todos tienen el mismo plan y no hay nada que elegir ni pagar.';
   }
 
   @override
   String billingTestPeriodShort(String plan) {
-    return '$plan · prueba';
+    return '$plan · pruebas';
   }
 
   @override
@@ -615,7 +615,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get billingPaywallBrowseMarketplace =>
-      'Ver los anuncios del mercadillo';
+      'Explorar los anuncios del mercadillo';
 
   @override
   String billingChoosePlan(String plan) {
@@ -1224,7 +1224,7 @@ class AppLocalizationsEs extends AppLocalizations {
   String get marketplaceSpeciesFish => 'Pez';
 
   @override
-  String get marketplacePriceGift => 'En regalo';
+  String get marketplacePriceGift => 'Se regala';
 
   @override
   String get marketplaceDemoBedTitle => 'Cama acolchada (demo)';
@@ -1311,7 +1311,7 @@ class AppLocalizationsEs extends AppLocalizations {
       'No puedo cargar los anuncios. Comprueba la conexión.';
 
   @override
-  String get marketplaceFilterAllCategories => 'Todos';
+  String get marketplaceFilterAllCategories => 'Todas';
 
   @override
   String get marketplaceFilterAllSpecies => 'Todas las mascotas';
@@ -1336,10 +1336,10 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get marketplaceReportRemoved =>
-      'Gracias, el anuncio se ha eliminado tras los informes recibidos.';
+      'Gracias, el anuncio se ha eliminado tras las denuncias recibidas.';
 
   @override
-  String get marketplaceReportSent => 'Informe enviado, gracias.';
+  String get marketplaceReportSent => 'Denuncia enviada, gracias.';
 
   @override
   String get marketplaceDeleteConfirmTitle => '¿Eliminar el anuncio?';
@@ -1376,7 +1376,7 @@ class AppLocalizationsEs extends AppLocalizations {
   String get marketplaceDeleteListing => 'Eliminar anuncio';
 
   @override
-  String get marketplaceReporting => 'Enviando informe…';
+  String get marketplaceReporting => 'Enviando denuncia...';
 
   @override
   String get marketplaceMapTitle => 'Mapa del mercadillo';
@@ -1433,7 +1433,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get marketplacePriceRequired =>
-      'Introduce un precio o elige \"En regalo\"';
+      'Introduce un precio o elige \"Se regala\"';
 
   @override
   String get marketplacePriceInvalid => 'Introduce un precio válido';
@@ -1442,7 +1442,7 @@ class AppLocalizationsEs extends AppLocalizations {
   String get marketplacePriceNegative => 'El precio no puede ser negativo';
 
   @override
-  String get marketplacePriceZero => 'Para regalarlo, elige \"En regalo\"';
+  String get marketplacePriceZero => 'Para regalarlo, elige \"Se regala\"';
 
   @override
   String get marketplacePriceTooHigh => 'Precio demasiado alto';
@@ -1495,7 +1495,7 @@ class AppLocalizationsEs extends AppLocalizations {
   }
 
   @override
-  String get marketplaceTakePhoto => 'Hacer foto';
+  String get marketplaceTakePhoto => 'Tomar foto';
 
   @override
   String get marketplaceFromGallery => 'Desde la galería';
@@ -1511,7 +1511,7 @@ class AppLocalizationsEs extends AppLocalizations {
   String get marketplaceLocationKeep => 'Zona actual del anuncio';
 
   @override
-  String get marketplaceLocationNow => 'Donde estoy ahora';
+  String get marketplaceLocationNow => 'Mi ubicación actual';
 
   @override
   String get marketplaceLocationHome => 'Residencia';
@@ -3627,7 +3627,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get eventsSuggestIntro =>
-      '¿Conoces una feria o un evento para mascotas que no aparece aquí? Rellena los datos: lo comprobamos en el sitio del organizador antes de publicarlo.';
+      '¿Conoces una feria o un evento para mascotas que no aparece aquí? Completa los datos: lo comprobamos en el sitio del organizador antes de publicarlo.';
 
   @override
   String get eventsSuggestPrivacy =>
@@ -3773,7 +3773,7 @@ class AppLocalizationsEs extends AppLocalizations {
   String get eventsTypeAquariumExpo => 'Acuariofilia';
 
   @override
-  String get eventsTypeReptileExpo => 'Terrarismo';
+  String get eventsTypeReptileExpo => 'Terrariofilia';
 
   @override
   String get eventsTypeBirdShow => 'Ornitología';
@@ -6735,5 +6735,120 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get marketplaceMessagesActionFailed =>
-      'No se ha podido hacer. Inténtalo de nuevo.';
+      'La operación no se ha podido completar. Inténtalo de nuevo.';
+
+  @override
+  String marketplaceRestrictedNotice(String date, String reason) {
+    return 'El equipo de moderación ha suspendido tu acceso al mercadillo desde el $date. Motivo: $reason. Puedes seguir viendo los anuncios y leer tus mensajes, pero no puedes publicar ni modificar anuncios ni enviar mensajes.';
+  }
+
+  @override
+  String get marketplaceRestrictedConversation =>
+      'El equipo de moderación ha suspendido tu acceso al mercadillo: puedes leer esta conversación, pero no escribir.';
+
+  @override
+  String get marketplaceRestrictionReasonSpam => 'spam';
+
+  @override
+  String get marketplaceRestrictionReasonScam => 'intento de estafa';
+
+  @override
+  String get marketplaceRestrictionReasonHarassment => 'acoso';
+
+  @override
+  String get marketplaceRestrictionReasonProhibitedItems =>
+      'artículos no permitidos';
+
+  @override
+  String get marketplaceRestrictionReasonOther =>
+      'incumplimiento de las normas del mercadillo';
+
+  @override
+  String get localEventsExoticChip => 'Expertos en exóticos';
+
+  @override
+  String get localEventsExoticAllGroups => 'Todos los grupos';
+
+  @override
+  String get localEventsExoticDisclaimer =>
+      'Competencia declarada por el centro o por la fuente indicada, no verificada por Quokka.';
+
+  @override
+  String localEventsExoticNone(String radius) {
+    return 'Ningún centro en un radio de $radius declara esta competencia. Aún hay pocos datos: amplía el radio o comunícanos un centro desde su ficha.';
+  }
+
+  @override
+  String get exoticGroupReptileAmphibian => 'Reptiles y anfibios';
+
+  @override
+  String get exoticGroupBird => 'Aves';
+
+  @override
+  String get exoticGroupSmallMammal => 'Pequeños mamíferos';
+
+  @override
+  String get exoticGroupFish => 'Peces';
+
+  @override
+  String get exoticGroupOther => 'Otros';
+
+  @override
+  String get exoticGroupGeneral => 'animales exóticos (grupos no indicados)';
+
+  @override
+  String get exoticGroupSmallMammalHint => 'Conejo, roedores, hurón';
+
+  @override
+  String placesCompetenceTreats(String groups) {
+    return 'Atiende: $groups';
+  }
+
+  @override
+  String placesCompetenceSourceOsm(String date) {
+    return 'Declarado en OpenStreetMap, leído el $date';
+  }
+
+  @override
+  String placesCompetenceSourceName(String date) {
+    return 'Declarado en el nombre del centro, leído el $date';
+  }
+
+  @override
+  String placesCompetenceSourceClaim(String date) {
+    return 'Declarado en la página del centro, comprobado el $date';
+  }
+
+  @override
+  String get placesCompetenceSourcePage => 'Página del centro';
+
+  @override
+  String get placesCompetenceClaimAction =>
+      '¿Atiende animales exóticos? Avísanos';
+
+  @override
+  String get placesCompetenceClaimTitle => '¿Qué animales exóticos atiende?';
+
+  @override
+  String get placesCompetenceClaimEvidence => '¿Dónde lo has leído?';
+
+  @override
+  String get placesCompetenceEvidenceWebsite => 'En la web del centro';
+
+  @override
+  String get placesCompetenceEvidenceSign => 'En el letrero';
+
+  @override
+  String get placesCompetenceEvidenceOther => 'En otro sitio';
+
+  @override
+  String get placesCompetenceClaimNote =>
+      'Solo lo mostramos después de comprobar la página pública del centro.';
+
+  @override
+  String get placesCompetenceClaimSend => 'Enviar';
+
+  @override
+  String get placesCompetenceClaimSent =>
+      'Gracias: lo comprobaremos antes de mostrarlo.';
 }

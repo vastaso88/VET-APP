@@ -1,5 +1,6 @@
 import '../../location/domain/coordinates.dart';
 import 'radar_community.dart';
+import 'radar_competence.dart';
 
 /// Mirrors packages/core/domain/radar_places `place_type` values. Unknown
 /// values coming from a newer backend fall back to [other] instead of
@@ -98,6 +99,7 @@ class RadarPlace {
     this.community,
     this.pendingClosure,
     this.rating,
+    this.competences = const [],
   });
 
   final String id;
@@ -143,6 +145,10 @@ class RadarPlace {
 
   /// Set for public dog parks, the only places that can be rated.
   final RadarRating? rating;
+
+  /// Exotic-animal groups this practice is declared competent for, each
+  /// with its source ("Esperti in esotici"). Empty for non-vets.
+  final List<RadarCompetence> competences;
 
   /// A user report still waiting for other users to confirm it.
   bool get isPendingReport => community?.isPending ?? false;
@@ -190,6 +196,10 @@ class RadarPlace {
       community: RadarReportInfo.tryFromJson(json['community']),
       pendingClosure: RadarReportInfo.tryFromJson(json['pending_closure']),
       rating: RadarRating.tryFromJson(json['rating']),
+      competences: (json['competences'] as List<dynamic>? ?? const [])
+          .map(RadarCompetence.tryFromJson)
+          .whereType<RadarCompetence>()
+          .toList(growable: false),
     );
   }
 

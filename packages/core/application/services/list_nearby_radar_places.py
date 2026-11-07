@@ -28,6 +28,10 @@ from packages.core.domain.coverage.models import (
 )
 from packages.core.domain.geo.countries import radar_country_for_point
 from packages.core.domain.geo.models import Coordinates, haversine_distance_km
+from packages.core.domain.radar_places.competences import (
+    RadarCompetenceClaim,
+    competences_of,
+)
 from packages.core.domain.radar_places.dedup import merge_radar_places
 from packages.core.domain.radar_places.models import (
     OSM_SOURCE_NAME,
@@ -118,6 +122,7 @@ class ListNearbyRadarPlacesService:
         max_search_radius_km: float,
         freshness_ttl_hours: int,
         open_sources: frozenset[str] | None = None,
+        exotic_name_matching: bool = False,
     ) -> None:
         self._repository = repository
         self._ingestion_service = ingestion_service
@@ -128,6 +133,34 @@ class ListNearbyRadarPlacesService:
         # Imported sources (other than OpenStreetMap) that are served;
         # None is all of them.
         self._open_sources = open_sources
+        # Read exotic-animal competence from practice names too
+        # (RADAR_EXOTIC_NAME_MATCHING, off until the owner decides).
+        self._exotic_name_matching = exotic_name_matching
+
+    def _with_competences(
+        self, places: list[RadarPlace], confirmed_claims: list[RadarCompetenceClaim]
+    ) -> list[RadarPlace]:
+        """Veterinary practices with the exotic-animal competences their
+        sources declare (competences.py); other places unchanged."""
+        claims = _claims_by_place(confirmed_claims)
+        result: list[RadarPlace] = []
+        for place in places:
+            if place.place_type != "veterinary":
+                result.append(place)
+                continue
+            competences = competences_of(
+                place.place_type,
+                source_name=place.source_name,
+                name=place.name,
+                details=place.details,
+                read_at=place.source_fetched_at,
+                name_matching=self._exotic_name_matching,
+                confirmed_claims=claims.get((place.source_name, place.source_external_id), []),
+            )
+            result.append(
+                place.model_copy(update={"competences": competences}) if competences else place
+            )
+        return result
 
     def execute(self, data: ListNearbyRadarPlacesInput) -> ListNearbyRadarPlacesOutput:
         origin = Coordinates(latitude=data.latitude, longitude=data.longitude)
@@ -216,6 +249,9 @@ class ListNearbyRadarPlacesService:
             # closed or duplicate drop out.
             places = merge_radar_places(places, self._community.user_places(box, snapshot))
             places = self._community.without_excluded(places, snapshot)
+        places = self._with_competences(
+            places, snapshot.confirmed_claims if snapshot is not None else []
+        )
         nearest = _nearest(places, origin, data, search_radius_km)
         return ListNearbyRadarPlacesOutput(
             places=nearest,
@@ -344,6 +380,15 @@ def _bounding_box(origin: Coordinates, radius_km: float) -> BoundingBox:
         min_longitude=origin.longitude - longitude_delta,
         max_longitude=origin.longitude + longitude_delta,
     )
+
+
+def _claims_by_place(
+    claims: list[RadarCompetenceClaim],
+) -> dict[tuple[str, str], list[RadarCompetenceClaim]]:
+    by_place: dict[tuple[str, str], list[RadarCompetenceClaim]] = {}
+    for claim in claims:
+        by_place.setdefault((claim.target_source, claim.target_source_id), []).append(claim)
+    return by_place
 
 
 def _nearest(

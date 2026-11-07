@@ -106,6 +106,15 @@ class InMemoryAccountExporter:
                 for row in _dump(repository.blocks_involving(owner_id))
                 if row["blocker_id"] == owner_id
             ],
+            "marketplace_user_restrictions": [
+                {
+                    key: value
+                    for key, value in restriction.model_dump(mode="json").items()
+                    if key not in ("created_by_admin_id", "lifted_by_admin_id")
+                }
+                for restriction in [repository.get_restriction(owner_id)]
+                if restriction is not None
+            ],
             "marketplace_conversation_reports": [
                 row
                 for row in _dump(repository.list_reports(10_000))

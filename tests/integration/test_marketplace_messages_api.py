@@ -68,6 +68,10 @@ def _ad(seller: str, *, status: ListingStatus = "active") -> str:
         location=Coordinates(latitude=45.46, longitude=9.19),
     )
     get_container().marketplace_listing_repository.save(listing)
+    # Publishing needs an open trial or a plan: the seller has a subscription row.
+    subscriptions = get_container().subscription_repository
+    if subscriptions.get(seller) is None:
+        subscriptions.save(Subscription(owner_id=seller))
     return listing.id
 
 
@@ -291,6 +295,49 @@ def test_without_a_plan_one_reads_blocks_and_reports_but_does_not_write(
     assert client.post(f"{base}/block").status_code == 200
 
 
+def test_a_seller_who_could_not_answer_gets_no_new_conversation(
+    client: TestClient, act_as: SwitchUser
+) -> None:
+    """Owner decision 2026-11-07: no new conversation with a seller without an
+    active plan, and nothing in the answer says why."""
+    buyer, seller, other_buyer = _people()
+    listing_id = _ad(seller)
+    existing = _open(client, act_as, buyer, listing_id)
+    _lapse(seller)
+
+    act_as(other_buyer)
+    status = client.get(f"/marketplace/listings/{listing_id}/conversation").json()
+    refused = client.post(
+        f"/marketplace/listings/{listing_id}/conversations", json={"text": "Ciao"}
+    )
+    missing = client.post("/marketplace/listings/no-such-ad/conversations", json={"text": "Ciao"})
+
+    assert status == {"conversation": None, "can_start": False}
+    assert refused.status_code == 404
+    assert refused.json() == missing.json(), "a lapsed seller looks like any unavailable ad"
+
+    # The conversation opened before stays readable for both.
+    act_as(buyer)
+    assert client.get(f"/marketplace/conversations/{existing}").status_code == 200
+    act_as(seller)
+    assert client.get(f"/marketplace/conversations/{existing}").status_code == 200
+
+
+def test_the_ad_page_learns_whether_a_conversation_can_start(
+    client: TestClient, act_as: SwitchUser
+) -> None:
+    buyer, seller, _ = _people()
+    listing_id = _ad(seller)
+    act_as(buyer)
+    assert client.get(f"/marketplace/listings/{listing_id}/conversation").json() == {
+        "conversation": None,
+        "can_start": True,
+    }
+    act_as(seller)
+    own = client.get(f"/marketplace/listings/{listing_id}/conversation").json()
+    assert own == {"conversation": None, "can_start": False}
+
+
 def test_user_b_gets_not_found_on_every_route(client: TestClient, act_as: SwitchUser) -> None:
     buyer, seller, stranger = _people()
     listing_id = _ad(seller)
@@ -317,7 +364,8 @@ def test_user_b_gets_not_found_on_every_route(client: TestClient, act_as: Switch
     }
     assert client.get("/marketplace/conversations/unread-count").json() == {"unread_total": 0}
     assert client.get(f"/marketplace/listings/{listing_id}/conversation").json() == {
-        "conversation": None
+        "conversation": None,
+        "can_start": True,
     }
 
     repository = get_container().marketplace_messaging_repository
@@ -422,3 +470,147 @@ def test_the_export_holds_my_conversations_without_the_other_persons_id(
     assert bodies == {"Ciao": buyer, "Sì": None}
     assert seller not in str(export.data["marketplace_conversations"])
     assert stranger not in str(export.data)
+
+
+LISTING_PAYLOAD = {
+    "title": "Cuccia",
+    "category": "kennels_carriers",
+    "condition": "good",
+    "latitude": 45.46,
+    "longitude": 9.19,
+}
+
+
+def _as_admin(act_as: SwitchUser, monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr(
+        "apps.api.routes.admin._configured_admin_emails",
+        lambda: frozenset({"admin-1@example.com"}),
+    )
+    act_as("admin-1")
+
+
+def test_the_team_keeps_someone_out_of_the_marketplace_and_lets_them_back(
+    client: TestClient, act_as: SwitchUser, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    buyer, seller, _ = _people()
+    listing_id = _ad(seller)
+    conversation_id = _open(client, act_as, buyer, listing_id)
+    other_ad = _ad(seller)
+    restrictions = "/admin/moderation/marketplace_restrictions"
+
+    _as_admin(act_as, monkeypatch)
+    created = client.post(
+        restrictions, json={"owner_id": buyer, "reason": "scam", "note": "tre segnalazioni"}
+    )
+    assert created.status_code == 200
+    assert created.json()["restriction"]["created_by_admin_id"] == "admin-1"
+
+    act_as(buyer)
+    mine = client.get("/marketplace/restriction").json()
+    assert mine["restricted"] is True and mine["reason"] == "scam" and mine["since"]
+    assert "note" not in mine, "the team's own words stay in the portal"
+
+    for response in (
+        client.post("/marketplace/listings", json=LISTING_PAYLOAD),
+        client.put(f"/marketplace/listings/{listing_id}", json=LISTING_PAYLOAD),
+        client.post(f"/marketplace/listings/{other_ad}/conversations", json={"text": "Ciao"}),
+        client.post(
+            f"/marketplace/conversations/{conversation_id}/messages", json={"text": "Ciao"}
+        ),
+    ):
+        assert response.status_code == 403, response.text
+        assert response.json()["code"] == "marketplace_restricted"
+        assert response.json()["reason"] == "scam"
+
+    # Reading and the safety tools stay open.
+    thread = client.get(f"/marketplace/conversations/{conversation_id}").json()
+    assert thread["conversation"]["closed_reason"] == "restricted"
+    assert (
+        client.post(
+            f"/marketplace/conversations/{conversation_id}/report", json={"reason": "spam"}
+        ).status_code
+        == 200
+    )
+    report = client.post(f"/marketplace/listings/{listing_id}/report", json={"reason": "spam"})
+    assert report.status_code == 200
+
+    # The other side only sees a closed conversation, and cannot start a new one.
+    act_as(seller)
+    view = client.get(f"/marketplace/conversations/{conversation_id}").json()["conversation"]
+    assert view["closed_reason"] == "closed" and view["can_write"] is False
+    assert client.get("/marketplace/restriction").json()["restricted"] is False
+
+    _as_admin(act_as, monkeypatch)
+    listed = client.get(restrictions).json()["restrictions"]
+    assert any(item["owner_id"] == buyer and item["note"] == "tre segnalazioni" for item in listed)
+    lifted = client.post(f"{restrictions}/{buyer}/lift")
+    assert lifted.json()["restriction"]["lifted_at"] is not None
+    assert client.post(f"{restrictions}/nobody/lift").status_code == 404
+
+    act_as(buyer)
+    assert client.get("/marketplace/restriction").json()["restricted"] is False
+    again = client.post(
+        f"/marketplace/conversations/{conversation_id}/messages", json={"text": "Ciao"}
+    )
+    assert again.status_code == 200
+
+
+def test_nobody_but_the_team_handles_restrictions(
+    client: TestClient, act_as: SwitchUser, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    buyer, _, stranger = _people()
+    monkeypatch.setattr(
+        "apps.api.routes.admin._configured_admin_emails",
+        lambda: frozenset({"admin-1@example.com"}),
+    )
+    restrictions = "/admin/moderation/marketplace_restrictions"
+    act_as(stranger)
+
+    assert client.get(restrictions).status_code == 403
+    assert client.post(restrictions, json={"owner_id": buyer, "reason": "spam"}).status_code == 403
+    assert client.post(f"{restrictions}/{buyer}/lift").status_code == 403
+    assert get_container().marketplace_messaging_repository.get_restriction(buyer) is None
+
+    bad = client.post(restrictions, json={"owner_id": buyer, "reason": "because"})
+    assert bad.status_code in (403, 422)
+
+
+def test_a_restricted_seller_gets_no_new_conversation(
+    client: TestClient, act_as: SwitchUser, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    buyer, seller, _ = _people()
+    listing_id = _ad(seller)
+    _as_admin(act_as, monkeypatch)
+    client.post(
+        "/admin/moderation/marketplace_restrictions",
+        json={"owner_id": seller, "reason": "prohibited_items"},
+    )
+
+    act_as(buyer)
+    status = client.get(f"/marketplace/listings/{listing_id}/conversation").json()
+    refused = client.post(
+        f"/marketplace/listings/{listing_id}/conversations", json={"text": "Ciao"}
+    )
+
+    assert status["can_start"] is False
+    assert refused.status_code == 404
+
+
+def test_the_export_holds_my_restriction_without_the_team_members_id(
+    client: TestClient, act_as: SwitchUser, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    buyer, _, _ = _people()
+    _as_admin(act_as, monkeypatch)
+    client.post(
+        "/admin/moderation/marketplace_restrictions", json={"owner_id": buyer, "reason": "spam"}
+    )
+
+    export = (
+        get_container()
+        .export_account_data_service()
+        .execute(ExportAccountDataInput(owner_id=buyer))
+    )
+
+    [row] = export.data["marketplace_user_restrictions"]
+    assert row["reason"] == "spam"
+    assert "created_by_admin_id" not in row

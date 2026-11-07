@@ -107,7 +107,7 @@ abstract class AppLocalizations {
   /// No description provided for @petsConsentFullText.
   ///
   /// In it, this message translates to:
-  /// **'Per darti un consiglio più preciso, l\'assistente può leggere la cartella clinica del tuo animale. Quando fai una domanda può leggere le tre voci più recenti, con titolo, categoria (visita, esame, vaccino, terapia o documento), data dell\'evento, descrizione e testo dei documenti allegati, anche se non c\'entrano con la domanda. Può leggere anche le malattie pregresse ancora in corso, con il nome e la data di inizio, al massimo cinque. Se chiedi di spiegare un esame, può leggere i documenti che lo riguardano, al massimo due. Di un documento molto lungo legge solo l\'inizio. Ciò che legge viene inviato al fornitore esterno di intelligenza artificiale che scrive la risposta. Quokka lo usa solo per risponderti. Puoi revocare il consenso in qualsiasi momento dalla scheda dell\'animale o dalle Impostazioni: vale per le richieste successive.'**
+  /// **'Per darti un consiglio più preciso, l\'assistente può leggere la cartella clinica del tuo animale. Quando fai una domanda può leggere le tre voci più recenti, con titolo, categoria (visita, esame, vaccino, terapia o documento), data dell\'evento, descrizione e testo dei documenti allegati, anche se non c\'entrano con la domanda. Può leggere anche le malattie pregresse ancora in corso, con il nome e la data di inizio, al massimo cinque. Legge anche le note che hai scritto nella scheda dell\'animale e i promemoria attivi, terapie comprese. Se chiedi di spiegare un esame, può leggere i documenti che lo riguardano, al massimo due. Di un documento molto lungo legge solo l\'inizio. Ciò che legge viene inviato al fornitore esterno di intelligenza artificiale che scrive la risposta. Quokka lo usa solo per risponderti. Puoi revocare il consenso in qualsiasi momento dalla scheda dell\'animale o dalle Impostazioni: vale per le richieste successive.'**
   String get petsConsentFullText;
 
   /// No description provided for @appTitle.
@@ -11263,6 +11263,198 @@ abstract class AppLocalizations {
   /// In it, this message translates to:
   /// **'Operazione non riuscita. Riprova.'**
   String get marketplaceMessagesActionFailed;
+
+  /// No description provided for @marketplaceRestrictedNotice.
+  ///
+  /// In it, this message translates to:
+  /// **'Il team di moderazione ha sospeso il tuo accesso al Mercatino dal {date}. Motivo: {reason}. Puoi consultare gli annunci e leggere i tuoi messaggi, ma non puoi pubblicare o modificare annunci né scrivere messaggi.'**
+  String marketplaceRestrictedNotice(String date, String reason);
+
+  /// No description provided for @marketplaceRestrictedConversation.
+  ///
+  /// In it, this message translates to:
+  /// **'Il team di moderazione ha sospeso il tuo accesso al Mercatino: puoi leggere questa conversazione, ma non scrivere.'**
+  String get marketplaceRestrictedConversation;
+
+  /// No description provided for @marketplaceRestrictionReasonSpam.
+  ///
+  /// In it, this message translates to:
+  /// **'spam'**
+  String get marketplaceRestrictionReasonSpam;
+
+  /// No description provided for @marketplaceRestrictionReasonScam.
+  ///
+  /// In it, this message translates to:
+  /// **'tentata truffa'**
+  String get marketplaceRestrictionReasonScam;
+
+  /// No description provided for @marketplaceRestrictionReasonHarassment.
+  ///
+  /// In it, this message translates to:
+  /// **'molestie'**
+  String get marketplaceRestrictionReasonHarassment;
+
+  /// No description provided for @marketplaceRestrictionReasonProhibitedItems.
+  ///
+  /// In it, this message translates to:
+  /// **'articoli non consentiti'**
+  String get marketplaceRestrictionReasonProhibitedItems;
+
+  /// No description provided for @marketplaceRestrictionReasonOther.
+  ///
+  /// In it, this message translates to:
+  /// **'violazione delle regole del Mercatino'**
+  String get marketplaceRestrictionReasonOther;
+
+  /// No description provided for @localEventsExoticChip.
+  ///
+  /// In it, this message translates to:
+  /// **'Esperti in esotici'**
+  String get localEventsExoticChip;
+
+  /// No description provided for @localEventsExoticAllGroups.
+  ///
+  /// In it, this message translates to:
+  /// **'Tutti i gruppi'**
+  String get localEventsExoticAllGroups;
+
+  /// No description provided for @localEventsExoticDisclaimer.
+  ///
+  /// In it, this message translates to:
+  /// **'Competenza dichiarata dalla struttura o dalla fonte indicata, non verificata da Quokka.'**
+  String get localEventsExoticDisclaimer;
+
+  /// No description provided for @localEventsExoticNone.
+  ///
+  /// In it, this message translates to:
+  /// **'Nessuna struttura entro {radius} dichiara questa competenza. I dati sono ancora pochi: allarga il raggio o segnala una struttura dalla sua scheda.'**
+  String localEventsExoticNone(String radius);
+
+  /// No description provided for @exoticGroupReptileAmphibian.
+  ///
+  /// In it, this message translates to:
+  /// **'Rettili e anfibi'**
+  String get exoticGroupReptileAmphibian;
+
+  /// No description provided for @exoticGroupBird.
+  ///
+  /// In it, this message translates to:
+  /// **'Uccelli'**
+  String get exoticGroupBird;
+
+  /// No description provided for @exoticGroupSmallMammal.
+  ///
+  /// In it, this message translates to:
+  /// **'Piccoli mammiferi'**
+  String get exoticGroupSmallMammal;
+
+  /// No description provided for @exoticGroupFish.
+  ///
+  /// In it, this message translates to:
+  /// **'Pesci'**
+  String get exoticGroupFish;
+
+  /// No description provided for @exoticGroupOther.
+  ///
+  /// In it, this message translates to:
+  /// **'Altro'**
+  String get exoticGroupOther;
+
+  /// No description provided for @exoticGroupGeneral.
+  ///
+  /// In it, this message translates to:
+  /// **'animali esotici (gruppi non indicati)'**
+  String get exoticGroupGeneral;
+
+  /// No description provided for @exoticGroupSmallMammalHint.
+  ///
+  /// In it, this message translates to:
+  /// **'Coniglio, roditori, furetto'**
+  String get exoticGroupSmallMammalHint;
+
+  /// No description provided for @placesCompetenceTreats.
+  ///
+  /// In it, this message translates to:
+  /// **'Cura: {groups}'**
+  String placesCompetenceTreats(String groups);
+
+  /// No description provided for @placesCompetenceSourceOsm.
+  ///
+  /// In it, this message translates to:
+  /// **'Dichiarato su OpenStreetMap, letto il {date}'**
+  String placesCompetenceSourceOsm(String date);
+
+  /// No description provided for @placesCompetenceSourceName.
+  ///
+  /// In it, this message translates to:
+  /// **'Dichiarato nel nome della struttura, letto il {date}'**
+  String placesCompetenceSourceName(String date);
+
+  /// No description provided for @placesCompetenceSourceClaim.
+  ///
+  /// In it, this message translates to:
+  /// **'Dichiarato sulla pagina della struttura, controllato il {date}'**
+  String placesCompetenceSourceClaim(String date);
+
+  /// No description provided for @placesCompetenceSourcePage.
+  ///
+  /// In it, this message translates to:
+  /// **'Pagina della struttura'**
+  String get placesCompetenceSourcePage;
+
+  /// No description provided for @placesCompetenceClaimAction.
+  ///
+  /// In it, this message translates to:
+  /// **'Cura animali esotici? Segnalalo'**
+  String get placesCompetenceClaimAction;
+
+  /// No description provided for @placesCompetenceClaimTitle.
+  ///
+  /// In it, this message translates to:
+  /// **'Quali animali esotici cura?'**
+  String get placesCompetenceClaimTitle;
+
+  /// No description provided for @placesCompetenceClaimEvidence.
+  ///
+  /// In it, this message translates to:
+  /// **'Dove l\'hai letto?'**
+  String get placesCompetenceClaimEvidence;
+
+  /// No description provided for @placesCompetenceEvidenceWebsite.
+  ///
+  /// In it, this message translates to:
+  /// **'Sul sito della struttura'**
+  String get placesCompetenceEvidenceWebsite;
+
+  /// No description provided for @placesCompetenceEvidenceSign.
+  ///
+  /// In it, this message translates to:
+  /// **'Sull\'insegna'**
+  String get placesCompetenceEvidenceSign;
+
+  /// No description provided for @placesCompetenceEvidenceOther.
+  ///
+  /// In it, this message translates to:
+  /// **'Altrove'**
+  String get placesCompetenceEvidenceOther;
+
+  /// No description provided for @placesCompetenceClaimNote.
+  ///
+  /// In it, this message translates to:
+  /// **'La mostriamo solo dopo aver controllato la pagina pubblica della struttura.'**
+  String get placesCompetenceClaimNote;
+
+  /// No description provided for @placesCompetenceClaimSend.
+  ///
+  /// In it, this message translates to:
+  /// **'Invia'**
+  String get placesCompetenceClaimSend;
+
+  /// No description provided for @placesCompetenceClaimSent.
+  ///
+  /// In it, this message translates to:
+  /// **'Grazie: la controlliamo prima di mostrarla.'**
+  String get placesCompetenceClaimSent;
 }
 
 class _AppLocalizationsDelegate

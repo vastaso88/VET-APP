@@ -14,6 +14,7 @@ import 'package:vet_app_mobile/features/nearby_places/data/radar_contributions_r
 import 'package:vet_app_mobile/features/nearby_places/data/radar_places_repository.dart';
 import 'package:vet_app_mobile/features/nearby_places/data/reverse_geocoder.dart';
 import 'package:vet_app_mobile/features/nearby_places/domain/radar_community.dart';
+import 'package:vet_app_mobile/features/nearby_places/domain/radar_competence.dart';
 import 'package:vet_app_mobile/features/nearby_places/domain/radar_place.dart';
 import 'package:vet_app_mobile/features/nearby_places/presentation/pages/report_missing_place_page.dart';
 import 'package:vet_app_mobile/features/nearby_places/presentation/radar_category.dart';
@@ -112,6 +113,20 @@ class _FakeContributions extends RadarContributionsRepository {
   Future<Result<void>> withdraw(String reportId) async {
     calls.add('withdraw:$reportId');
     return _slowGate();
+  }
+
+  @override
+  Future<Result<void>> claimCompetence(
+    RadarPlace place, {
+    required Set<ExoticGroup> groups,
+    required CompetenceEvidence evidence,
+  }) async {
+    final names = [
+      for (final group in ExoticGroup.values)
+        if (groups.contains(group)) group.apiValue,
+    ];
+    calls.add('competence:${place.id}:${names.join(',')}:${evidence.apiValue}');
+    return _gate<void>(null);
   }
 
   @override
@@ -535,6 +550,40 @@ void main() {
 
     expect(find.text('Segnalazione ritirata.'), findsOneWidget);
     expect(find.text('Ritira la mia segnalazione'), findsNothing);
+  });
+
+  testWidgets('a vet card sends an exotic-competence claim with groups and evidence',
+      (tester) async {
+    final (places, contributions) = await _pumpRadar(tester, [_clinic]);
+
+    await tester.tap(find.text('Clinica Duomo'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Cura animali esotici? Segnalalo'));
+    await tester.pumpAndSettle();
+
+    final send = find.widgetWithText(FilledButton, 'Invia');
+    expect(tester.widget<FilledButton>(send).onPressed, isNull);
+    await tester.tap(find.text('Uccelli'));
+    await tester.tap(find.text('Rettili e anfibi'));
+    await tester.tap(find.text('Sul sito della struttura'));
+    await tester.pumpAndSettle();
+    expect(find.textContaining('dopo aver controllato la pagina pubblica'), findsOneWidget);
+    await tester.tap(send);
+    await _settle(tester);
+
+    expect(contributions.calls, ['competence:clinic:reptile_amphibian,bird:website']);
+    expect(find.text('Grazie: la controlliamo prima di mostrarla.'), findsOneWidget);
+    // Pending claims change nothing on the map: no reload.
+    expect(places.requests, 1);
+  });
+
+  testWidgets('only vet cards offer the exotic-competence claim', (tester) async {
+    await _pumpRadar(tester, [_dogPark]);
+
+    await tester.tap(find.text('Area cani Sempione'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Cura animali esotici? Segnalalo'), findsNothing);
   });
 
   testWidgets('places that are not dog parks have no stars', (tester) async {

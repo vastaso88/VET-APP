@@ -10,7 +10,7 @@ class AppLocalizationsIt extends AppLocalizations {
 
   @override
   String get petsConsentFullText =>
-      'Per darti un consiglio più preciso, l\'assistente può leggere la cartella clinica del tuo animale. Quando fai una domanda può leggere le tre voci più recenti, con titolo, categoria (visita, esame, vaccino, terapia o documento), data dell\'evento, descrizione e testo dei documenti allegati, anche se non c\'entrano con la domanda. Può leggere anche le malattie pregresse ancora in corso, con il nome e la data di inizio, al massimo cinque. Se chiedi di spiegare un esame, può leggere i documenti che lo riguardano, al massimo due. Di un documento molto lungo legge solo l\'inizio. Ciò che legge viene inviato al fornitore esterno di intelligenza artificiale che scrive la risposta. Quokka lo usa solo per risponderti. Puoi revocare il consenso in qualsiasi momento dalla scheda dell\'animale o dalle Impostazioni: vale per le richieste successive.';
+      'Per darti un consiglio più preciso, l\'assistente può leggere la cartella clinica del tuo animale. Quando fai una domanda può leggere le tre voci più recenti, con titolo, categoria (visita, esame, vaccino, terapia o documento), data dell\'evento, descrizione e testo dei documenti allegati, anche se non c\'entrano con la domanda. Può leggere anche le malattie pregresse ancora in corso, con il nome e la data di inizio, al massimo cinque. Legge anche le note che hai scritto nella scheda dell\'animale e i promemoria attivi, terapie comprese. Se chiedi di spiegare un esame, può leggere i documenti che lo riguardano, al massimo due. Di un documento molto lungo legge solo l\'inizio. Ciò che legge viene inviato al fornitore esterno di intelligenza artificiale che scrive la risposta. Quokka lo usa solo per risponderti. Puoi revocare il consenso in qualsiasi momento dalla scheda dell\'animale o dalle Impostazioni: vale per le richieste successive.';
 
   @override
   String get appTitle => 'Quokka';
@@ -6733,4 +6733,118 @@ class AppLocalizationsIt extends AppLocalizations {
   @override
   String get marketplaceMessagesActionFailed =>
       'Operazione non riuscita. Riprova.';
+
+  @override
+  String marketplaceRestrictedNotice(String date, String reason) {
+    return 'Il team di moderazione ha sospeso il tuo accesso al Mercatino dal $date. Motivo: $reason. Puoi consultare gli annunci e leggere i tuoi messaggi, ma non puoi pubblicare o modificare annunci né scrivere messaggi.';
+  }
+
+  @override
+  String get marketplaceRestrictedConversation =>
+      'Il team di moderazione ha sospeso il tuo accesso al Mercatino: puoi leggere questa conversazione, ma non scrivere.';
+
+  @override
+  String get marketplaceRestrictionReasonSpam => 'spam';
+
+  @override
+  String get marketplaceRestrictionReasonScam => 'tentata truffa';
+
+  @override
+  String get marketplaceRestrictionReasonHarassment => 'molestie';
+
+  @override
+  String get marketplaceRestrictionReasonProhibitedItems =>
+      'articoli non consentiti';
+
+  @override
+  String get marketplaceRestrictionReasonOther =>
+      'violazione delle regole del Mercatino';
+
+  @override
+  String get localEventsExoticChip => 'Esperti in esotici';
+
+  @override
+  String get localEventsExoticAllGroups => 'Tutti i gruppi';
+
+  @override
+  String get localEventsExoticDisclaimer =>
+      'Competenza dichiarata dalla struttura o dalla fonte indicata, non verificata da Quokka.';
+
+  @override
+  String localEventsExoticNone(String radius) {
+    return 'Nessuna struttura entro $radius dichiara questa competenza. I dati sono ancora pochi: allarga il raggio o segnala una struttura dalla sua scheda.';
+  }
+
+  @override
+  String get exoticGroupReptileAmphibian => 'Rettili e anfibi';
+
+  @override
+  String get exoticGroupBird => 'Uccelli';
+
+  @override
+  String get exoticGroupSmallMammal => 'Piccoli mammiferi';
+
+  @override
+  String get exoticGroupFish => 'Pesci';
+
+  @override
+  String get exoticGroupOther => 'Altro';
+
+  @override
+  String get exoticGroupGeneral => 'animali esotici (gruppi non indicati)';
+
+  @override
+  String get exoticGroupSmallMammalHint => 'Coniglio, roditori, furetto';
+
+  @override
+  String placesCompetenceTreats(String groups) {
+    return 'Cura: $groups';
+  }
+
+  @override
+  String placesCompetenceSourceOsm(String date) {
+    return 'Dichiarato su OpenStreetMap, letto il $date';
+  }
+
+  @override
+  String placesCompetenceSourceName(String date) {
+    return 'Dichiarato nel nome della struttura, letto il $date';
+  }
+
+  @override
+  String placesCompetenceSourceClaim(String date) {
+    return 'Dichiarato sulla pagina della struttura, controllato il $date';
+  }
+
+  @override
+  String get placesCompetenceSourcePage => 'Pagina della struttura';
+
+  @override
+  String get placesCompetenceClaimAction => 'Cura animali esotici? Segnalalo';
+
+  @override
+  String get placesCompetenceClaimTitle => 'Quali animali esotici cura?';
+
+  @override
+  String get placesCompetenceClaimEvidence => 'Dove l\'hai letto?';
+
+  @override
+  String get placesCompetenceEvidenceWebsite => 'Sul sito della struttura';
+
+  @override
+  String get placesCompetenceEvidenceSign => 'Sull\'insegna';
+
+  @override
+  String get placesCompetenceEvidenceOther => 'Altrove';
+
+  @override
+  String get placesCompetenceClaimNote =>
+      'La mostriamo solo dopo aver controllato la pagina pubblica della struttura.';
+
+  @override
+  String get placesCompetenceClaimSend => 'Invia';
+
+  @override
+  String get placesCompetenceClaimSent =>
+      'Grazie: la controlliamo prima di mostrarla.';
 }

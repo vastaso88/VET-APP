@@ -410,7 +410,8 @@ class PetDemoStore {
       bodyCondition: _nonEmpty(row['body_condition']),
       activityLevel: _nonEmpty(row['activity_level']),
       weightLabel: (row['weight_label'] ?? '').toString(),
-      photoPath: (row['photo_path'] as String?)?.isNotEmpty == true ? row['photo_path'] as String : null,
+      photoPath:
+          (row['photo_path'] as String?)?.isNotEmpty == true ? row['photo_path'] as String : null,
       medicalRecordConsentGranted: _grantedFromConsentJson(row['medical_record_consent']),
       medicalNote: (row['notes'] ?? '').toString(),
       healthBadge: (row['health_badge'] ?? '').toString(),
@@ -564,7 +565,7 @@ class PetDemoStore {
   /// The consent text version the app shows today (see
   /// medical_record_consent_card.dart and, on the backend,
   /// packages/core/domain/medical_record/consent_text.py).
-  static const _currentConsentVersion = 'v3';
+  static const _currentConsentVersion = 'v4';
 
   /// A decision taken under an earlier consent text counts as no decision
   /// (2026-10-06): the switch shows "off / not decided" and the owner
@@ -627,9 +628,7 @@ class PetDemoStore {
       birthDateLabel: birthDate == null ? '' : formatPetBirthDate(birthDate),
       sex: sex,
       weightLabel: weightKg == null ? '' : formatPetWeight(weightKg),
-      medicalNote: medicalNote.trim().isEmpty
-          ? appL10n.petsDemoNewProfileNote
-          : medicalNote.trim(),
+      medicalNote: medicalNote.trim().isEmpty ? appL10n.petsDemoNewProfileNote : medicalNote.trim(),
       healthBadge: '',
       nextVisitLabel: appL10n.petsDemoNextVisitToPlan,
       avatarEmoji: name.trim().isEmpty ? option.avatarEmoji : name.trim()[0].toUpperCase(),
@@ -674,9 +673,9 @@ class PetDemoStore {
     if (key == 'gatto') return [catMeticcioBreedLabel, ...fifeCatBreeds, otherBreedLabel];
     // Every other category: its generic entries first (styled like
     // "Meticcio / incrocio"), then the list, then "Altra specie (scrivi)".
-    return otherSpeciesBreedOptions(key) ?? ['Razza non specificata', ...optionForSpecies(species).breeds];
+    return otherSpeciesBreedOptions(key) ??
+        ['Razza non specificata', ...optionForSpecies(species).breeds];
   }
-
 }
 
 /// A pet change that did not reach the server. The message is shown to the owner.

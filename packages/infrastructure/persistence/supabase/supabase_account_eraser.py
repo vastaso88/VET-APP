@@ -28,6 +28,7 @@ MARKETPLACE_PHOTOS_BUCKET = "marketplace-photos"
 # live database was set up by hand and cascades cannot be taken for granted.
 OWNER_TABLES: tuple[tuple[str, str], ...] = (
     ("marketplace_listing_reports", "reporter_owner_id"),
+    ("marketplace_user_restrictions", "owner_id"),
     ("marketplace_listings", "owner_id"),
     ("chat_response_reports", "reporter_owner_id"),
     ("chat_attachments", "owner_id"),
@@ -53,6 +54,7 @@ RADAR_PSEUDONYM_TABLES: tuple[tuple[str, str], ...] = (
     ("radar_report_votes", "voter_pseudonym"),
     ("radar_place_ratings", "voter_pseudonym"),
     ("radar_user_reports", "reporter_pseudonym"),
+    ("radar_competence_claims", "reporter_pseudonym"),
 )
 
 # The two sides of a Mercatino conversation (see _erase_marketplace_messages).

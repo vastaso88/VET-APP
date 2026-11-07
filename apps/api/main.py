@@ -35,6 +35,7 @@ from packages.shared.auth_context import reset_access_token, set_access_token
 from packages.shared.config.settings import get_settings
 from packages.shared.errors.base import (
     AuthenticationError,
+    MarketplaceRestrictedError,
     PlanLimitError,
     ProviderError,
     QuotaExceededError,
@@ -150,6 +151,21 @@ async def handle_plan_limit(_: Request, exc: PlanLimitError) -> JSONResponse:
             "code": "plan_limit_reached",
             "kind": exc.kind,
             "limit": exc.limit,
+        },
+    )
+
+
+@app.exception_handler(MarketplaceRestrictedError)
+async def handle_marketplace_restricted(
+    _: Request, exc: MarketplaceRestrictedError
+) -> JSONResponse:
+    return JSONResponse(
+        status_code=403,
+        content={
+            "detail": "marketplace_restricted",
+            "code": "marketplace_restricted",
+            "reason": exc.reason,
+            "since": exc.since,
         },
     )
 

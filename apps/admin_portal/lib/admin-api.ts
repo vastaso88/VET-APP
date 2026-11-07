@@ -138,6 +138,16 @@ export type MarketplaceMessageReportItem = {
   listing_title: string | null;
 };
 
+export type MarketplaceRestrictionItem = {
+  owner_id: string;
+  reason: string;
+  note: string | null;
+  created_at: string;
+  created_by_admin_id: string | null;
+  lifted_at: string | null;
+  lifted_by_admin_id: string | null;
+};
+
 export type AdminModeration = {
   radar: RadarModerationItem[];
   chat: ChatModerationItem[];
@@ -691,6 +701,39 @@ export async function resolveMarketplaceModeration(
         resolution_note: resolutionNote?.trim() || null,
       }),
     },
+  );
+}
+
+// Before the backend update or the SQL script this list is simply empty.
+export async function getMarketplaceRestrictions(): Promise<MarketplaceRestrictionItem[]> {
+  await requireAdminSession();
+  try {
+    const payload = await authenticatedAdminRequest<{ restrictions: MarketplaceRestrictionItem[] }>(
+      "/admin/moderation/marketplace_restrictions",
+    );
+    return payload.restrictions;
+  } catch {
+    return [];
+  }
+}
+
+export async function restrictMarketplaceUserRequest(
+  ownerId: string,
+  reason: "spam" | "scam" | "harassment" | "prohibited_items" | "other",
+  note?: string,
+): Promise<void> {
+  await requireAdminSession();
+  await authenticatedAdminRequest("/admin/moderation/marketplace_restrictions", {
+    method: "POST",
+    body: JSON.stringify({ owner_id: ownerId, reason, note: note?.trim() || null }),
+  });
+}
+
+export async function liftMarketplaceRestrictionRequest(ownerId: string): Promise<void> {
+  await requireAdminSession();
+  await authenticatedAdminRequest(
+    `/admin/moderation/marketplace_restrictions/${encodeURIComponent(ownerId)}/lift`,
+    { method: "POST" },
   );
 }
 

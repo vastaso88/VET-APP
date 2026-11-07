@@ -8,7 +8,9 @@ import '../../../design_system/tokens/app_text_styles.dart';
 import '../../../l10n/l10n.dart';
 import '../../location/domain/coordinates.dart';
 import '../../location/presentation/distance_label.dart';
+import '../../../l10n/date_formats.dart';
 import '../domain/radar_community.dart';
+import '../domain/radar_competence.dart';
 import '../domain/radar_data_source.dart';
 import '../domain/radar_place.dart';
 import 'radar_category.dart';
@@ -271,6 +273,29 @@ class _RadarPlaceSheetState extends State<_RadarPlaceSheet> {
     );
   }
 
+  Future<void> _claimCompetence() async {
+    final choice = await showDialog<({Set<ExoticGroup> groups, CompetenceEvidence evidence})>(
+      context: context,
+      builder: (_) => const _CompetenceClaimDialog(),
+    );
+    if (choice == null || !mounted) {
+      return;
+    }
+    await _contribute(
+      (contributions) => contributions.run<void>(
+        context,
+        () => contributions.repository.claimCompetence(
+          _place,
+          groups: choice.groups,
+          evidence: choice.evidence,
+        ),
+        successMessage: (_) => context.l10n.placesCompetenceClaimSent,
+        reload: false,
+      ),
+      closeOnSuccess: false,
+    );
+  }
+
   Future<void> _reportProblem() async {
     final contributions = widget.contributions;
     if (contributions == null) {
@@ -418,6 +443,10 @@ class _RadarPlaceSheetState extends State<_RadarPlaceSheet> {
                 children: details.map((detail) => _DetailChip(detail: detail)).toList(),
               ),
             ],
+            if (place.competences.isNotEmpty) ...[
+              const SizedBox(height: AppSpacing.md),
+              _CompetenceBlock(competences: place.competences),
+            ],
             if (rating != null) ...[
               const SizedBox(height: AppSpacing.md),
               _RatingRow(
@@ -480,9 +509,156 @@ class _RadarPlaceSheetState extends State<_RadarPlaceSheet> {
                   label: Text(context.l10n.placesReportProblemAction),
                 ),
               ),
+            if (canContribute && community == null && isClinic)
+              Align(
+                alignment: Alignment.centerLeft,
+                child: TextButton.icon(
+                  style: TextButton.styleFrom(padding: EdgeInsets.zero),
+                  onPressed: _busy ? null : _claimCompetence,
+                  icon: const Icon(Icons.cruelty_free_outlined, size: 18),
+                  label: Text(context.l10n.placesCompetenceClaimAction),
+                ),
+              ),
           ],
         ),
       ),
+    );
+  }
+}
+
+/// What a practice is declared competent for among exotic animals, and
+/// who declares it: each source with its reading date, never as Quokka's
+/// own judgement.
+class _CompetenceBlock extends StatelessWidget {
+  const _CompetenceBlock({required this.competences});
+
+  final List<RadarCompetence> competences;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = context.l10n;
+    final labels = <String>[];
+    for (final item in competences) {
+      final label = exoticGroupLabel(item.group);
+      if (!labels.contains(label)) labels.add(label);
+    }
+    final sources = <String>[];
+    String? evidenceUrl;
+    for (final item in competences) {
+      final date = item.readAt == null ? '—' : formatAppDate(item.readAt!.toLocal(), 'd MMM y');
+      final line = switch (item.basis) {
+        CompetenceBasis.osmTag => l10n.placesCompetenceSourceOsm(date),
+        CompetenceBasis.name => l10n.placesCompetenceSourceName(date),
+        CompetenceBasis.confirmedClaim => l10n.placesCompetenceSourceClaim(date),
+      };
+      if (!sources.contains(line)) sources.add(line);
+      evidenceUrl ??= item.evidenceUrl;
+    }
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Icon(Icons.cruelty_free_outlined, size: 18, color: RadarCategory.veterinary.color),
+            const SizedBox(width: AppSpacing.sm),
+            Expanded(
+              child: Text(
+                l10n.placesCompetenceTreats(labels.join(', ')),
+                style: AppTextStyles.body.copyWith(fontWeight: FontWeight.w700),
+              ),
+            ),
+          ],
+        ),
+        for (final line in sources) Text(line, style: AppTextStyles.caption),
+        if (evidenceUrl != null)
+          TextButton.icon(
+            style: TextButton.styleFrom(padding: EdgeInsets.zero),
+            onPressed: () => launchUrl(Uri.parse(evidenceUrl!), webOnlyWindowName: '_blank'),
+            icon: const Icon(Icons.open_in_new, size: 16),
+            label: Text(l10n.placesCompetenceSourcePage),
+          ),
+        Text(l10n.localEventsExoticDisclaimer, style: AppTextStyles.caption),
+      ],
+    );
+  }
+}
+
+/// Groups and evidence for "this practice treats exotic animals".
+class _CompetenceClaimDialog extends StatefulWidget {
+  const _CompetenceClaimDialog();
+
+  @override
+  State<_CompetenceClaimDialog> createState() => _CompetenceClaimDialogState();
+}
+
+class _CompetenceClaimDialogState extends State<_CompetenceClaimDialog> {
+  final Set<ExoticGroup> _groups = {};
+  CompetenceEvidence? _evidence;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = context.l10n;
+    final ready = _groups.isNotEmpty && _evidence != null;
+    return AlertDialog(
+      title: Text(l10n.placesCompetenceClaimTitle),
+      content: SingleChildScrollView(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            for (final group in ExoticGroup.values)
+              CheckboxListTile(
+                contentPadding: EdgeInsets.zero,
+                dense: true,
+                value: _groups.contains(group),
+                title: Text(exoticGroupLabel(group)),
+                subtitle:
+                    group == ExoticGroup.smallMammal ? Text(l10n.exoticGroupSmallMammalHint) : null,
+                onChanged: (on) => setState(
+                  () => on == true ? _groups.add(group) : _groups.remove(group),
+                ),
+              ),
+            const SizedBox(height: AppSpacing.sm),
+            Text(
+              l10n.placesCompetenceClaimEvidence,
+              style: AppTextStyles.body.copyWith(fontWeight: FontWeight.w700),
+            ),
+            RadioGroup<CompetenceEvidence>(
+              groupValue: _evidence,
+              onChanged: (value) => setState(() => _evidence = value),
+              child: Column(
+                children: [
+                  for (final evidence in CompetenceEvidence.values)
+                    RadioListTile<CompetenceEvidence>(
+                      contentPadding: EdgeInsets.zero,
+                      dense: true,
+                      value: evidence,
+                      title: Text(switch (evidence) {
+                        CompetenceEvidence.website => l10n.placesCompetenceEvidenceWebsite,
+                        CompetenceEvidence.sign => l10n.placesCompetenceEvidenceSign,
+                        CompetenceEvidence.other => l10n.placesCompetenceEvidenceOther,
+                      }),
+                    ),
+                ],
+              ),
+            ),
+            const SizedBox(height: AppSpacing.sm),
+            Text(l10n.placesCompetenceClaimNote, style: AppTextStyles.caption),
+          ],
+        ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.of(context).pop(),
+          child: Text(l10n.commonCancel),
+        ),
+        FilledButton(
+          onPressed: ready
+              ? () => Navigator.of(context).pop((groups: {..._groups}, evidence: _evidence!))
+              : null,
+          child: Text(l10n.placesCompetenceClaimSend),
+        ),
+      ],
     );
   }
 }

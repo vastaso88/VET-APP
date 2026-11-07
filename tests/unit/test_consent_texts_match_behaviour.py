@@ -106,10 +106,32 @@ def test_medical_record_wording_states_the_categories_dates_and_ongoing_conditio
 
 
 def test_a_decision_taken_under_the_previous_wording_no_longer_counts() -> None:
-    assert CURRENT_VERSION == "v3"
-    assert effective_decision(ConsentRecord(granted=True, version="v2")) is None
-    assert effective_decision(ConsentRecord(granted=False, version="v2")) is None
+    assert CURRENT_VERSION == "v4"
+    for earlier in ("v1", "v2", "v3"):
+        assert effective_decision(ConsentRecord(granted=True, version=earlier)) is None
+        assert effective_decision(ConsentRecord(granted=False, version=earlier)) is None
     assert effective_decision(ConsentRecord(granted=True, version=CURRENT_VERSION)) is True
+
+
+def test_v4_names_the_profile_notes_and_the_reminders_in_every_language() -> None:
+    # R25, option A (2026-11-07): the notes and the reminders follow this
+    # consent, so the text says that they are read.
+    assert "note che hai scritto nella scheda" in CONSENT_TEXT_IT
+    assert "promemoria attivi, terapie comprese" in CONSENT_TEXT_IT
+    assert "note della scheda e i promemoria attivi" in INLINE_QUESTION_IT
+    from packages.core.domain.localization import translate
+
+    l10n = _CONSENT_CARD.parents[4] / "l10n"
+    for lang, card_words, question_words in (
+        ("it", "promemoria attivi, terapie comprese", "note della scheda e i promemoria"),
+        ("en", "active reminders, therapies included", "notes on the profile and the active"),
+        ("es", "recordatorios activos, tratamientos incluidos", "notas de la ficha"),
+        ("de", "Erinnerungen, Therapien eingeschlossen", "Notizen im Profil"),
+        ("fr", "rappels actifs, traitements compris", "notes de la fiche"),
+    ):
+        card = json.loads((l10n / f"app_{lang}.arb").read_text(encoding="utf-8"))
+        assert card_words in card["petsConsentFullText"], lang
+        assert question_words in translate("consent_request", lang, pet_name="X"), lang
 
 
 def test_medical_record_wording_names_the_external_ai_provider_as_recipient() -> None:

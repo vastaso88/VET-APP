@@ -52,6 +52,7 @@ from packages.core.domain.marketplace.models import ListingReport, MarketplaceLi
 from packages.core.domain.medical_record.models import ClinicalEvent, PetCondition
 from packages.core.domain.pet_profile.models import PetProfile
 from packages.core.domain.pet_profile.weight_measurement import WeightMeasurement
+from packages.core.domain.radar_places.competences import RadarCompetenceClaim
 from packages.core.domain.radar_places.models import (
     OSM_SOURCE_NAME,
     RADAR_PLACE_TRANSIENT_FIELDS,
@@ -580,6 +581,53 @@ class SupabaseRadarReportsRepository(RadarReportsRepository):
             override.model_dump(mode="json")
         ).execute()
         self._overrides_read_at = None
+
+    def save_claim(self, claim: RadarCompetenceClaim) -> RadarCompetenceClaim:
+        self._client.table("radar_competence_claims").upsert(
+            claim.model_dump(mode="json")
+        ).execute()
+        return claim
+
+    def list_claims(self, box: BoundingBox, *, statuses: list[str]) -> list[RadarCompetenceClaim]:
+        try:
+            response = (
+                self._client.table("radar_competence_claims")
+                .select("*")
+                .in_("status", statuses)
+                .gte("latitude", box.min_latitude)
+                .lte("latitude", box.max_latitude)
+                .gte("longitude", box.min_longitude)
+                .lte("longitude", box.max_longitude)
+                .limit(1000)
+                .execute()
+            )
+        except Exception:
+            _logger.warning("competence claims unavailable: radar_competence_claims unreadable")
+            return []
+        return [RadarCompetenceClaim.model_validate(row) for row in response.data or []]
+
+    def list_claims_by_reporter(
+        self, reporter_pseudonym: str, *, target_source: str, target_source_id: str
+    ) -> list[RadarCompetenceClaim]:
+        response = (
+            self._client.table("radar_competence_claims")
+            .select("*")
+            .eq("reporter_pseudonym", reporter_pseudonym)
+            .eq("target_source", target_source)
+            .eq("target_source_id", target_source_id)
+            .execute()
+        )
+        return [RadarCompetenceClaim.model_validate(row) for row in response.data or []]
+
+    def count_claims_since(self, reporter_pseudonym: str, since: datetime) -> int:
+        response = (
+            self._client.table("radar_competence_claims")
+            .select("id")
+            .eq("reporter_pseudonym", reporter_pseudonym)
+            .gte("created_at", since.isoformat())
+            .execute()
+        )
+        return len(response.data or [])
 
     def list_overrides(self) -> list[RadarPlaceOverride]:
         # The whole (small, rarely changing) table is needed by every radar

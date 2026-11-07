@@ -14,6 +14,7 @@ from packages.core.application.services.radar_reports import (
     RadarReportSettings,
     RateDogParkInput,
     ReportLimitReachedError,
+    SubmitCompetenceClaimInput,
     SubmitRadarReportInput,
     VoteRadarReportInput,
     WithdrawRadarReportInput,
@@ -21,6 +22,7 @@ from packages.core.application.services.radar_reports import (
 from packages.core.domain.coverage.country_coverage import coverage_level
 from packages.core.domain.geo.countries import RADAR_COUNTRIES
 from packages.core.domain.geo.models import Coordinates
+from packages.core.domain.radar_places.competences import ClaimEvidenceKind, ExoticGroup
 from packages.core.domain.radar_places.models import (
     OSM_SOURCE_NAME,
     RADAR_PLACE_API_EXCLUDED_FIELDS,
@@ -51,6 +53,15 @@ class SubmitReportRequest(BaseModel):
 
 class VoteReportRequest(BaseModel):
     vote: Literal["confirm", "deny"]
+
+
+class CompetenceClaimRequest(BaseModel):
+    source: str = Field(max_length=60)
+    source_id: str = Field(max_length=120)
+    latitude: float = Field(ge=-90, le=90)
+    longitude: float = Field(ge=-180, le=180)
+    groups: list[ExoticGroup] = Field(min_length=1, max_length=5)
+    evidence_kind: ClaimEvidenceKind
 
 
 class RatePlaceRequest(BaseModel):
@@ -278,23 +289,43 @@ def withdraw_report(report_id: str) -> dict[str, object] | JSONResponse:
 
 
 def _place_to_rate(container: ApplicationContainer, request: RatePlaceRequest) -> RadarPlace | None:
-    """The place a rating is about, read by its id: one query. Searching
+    return _find_place(
+        container,
+        source=request.source,
+        source_id=request.source_id,
+        latitude=request.latitude,
+        longitude=request.longitude,
+        place_type="dog_park",
+    )
+
+
+def _find_place(
+    container: ApplicationContainer,
+    *,
+    source: str,
+    source_id: str,
+    latitude: float,
+    longitude: float,
+    place_type: str,
+) -> RadarPlace | None:
+    """A place a contribution is about, read by its id: one query. Searching
     the area around it (every source, merged, with the community layer)
-    made a star vote cost as much as loading the radar."""
-    if request.source == USER_SOURCE_NAME:
-        report = container.radar_reports_repository.get_report(request.source_id)
+    made a star vote cost as much as loading the radar. The request is
+    never trusted for the place's data."""
+    if source == USER_SOURCE_NAME:
+        report = container.radar_reports_repository.get_report(source_id)
         return report.as_place() if report is not None and report.kind == "missing" else None
-    place = container.radar_catalog_repository.get_place(request.source, request.source_id)
+    place = container.radar_catalog_repository.get_place(source, source_id)
     if place is not None:
         return place
     # Not in the imported catalog: an area still served from the live
     # per-cell cache. Found the long way.
     nearby = container.list_nearby_radar_places_service().execute(
         ListNearbyRadarPlacesInput(
-            latitude=request.latitude,
-            longitude=request.longitude,
+            latitude=latitude,
+            longitude=longitude,
             radius_km=0.3,
-            place_types=["dog_park"],
+            place_types=[place_type],
             per_type_limit=400,
         )
     )
@@ -302,11 +333,50 @@ def _place_to_rate(container: ApplicationContainer, request: RatePlaceRequest) -
         (
             item.place
             for item in nearby.places
-            if item.place.source_name == request.source
-            and item.place.source_external_id == request.source_id
+            if item.place.source_name == source and item.place.source_external_id == source_id
         ),
         None,
     )
+
+
+@router.post(
+    "/competence-claims", response_model=None, dependencies=[Depends(require_active_subscription)]
+)
+def claim_exotic_competence(request: CompetenceClaimRequest) -> dict[str, object] | JSONResponse:
+    """Segnala!: "this practice treats exotic animals". Pending until the
+    team confirms it from the practice's own public page; the answer never
+    says anything about other people's claims."""
+    container = get_container()
+    user = container.auth_provider.get_current_user()
+    service = container.submit_competence_claim_service()
+    if service is None:
+        return _contributions_off()
+    place = _find_place(
+        container,
+        source=request.source,
+        source_id=request.source_id,
+        latitude=request.latitude,
+        longitude=request.longitude,
+        place_type="veterinary",
+    )
+    if place is None:
+        raise ValidationError("Struttura non trovata.")
+    try:
+        claim = service.execute(
+            SubmitCompetenceClaimInput(
+                user_id=user.id,
+                place=place,
+                groups=list(request.groups),
+                evidence_kind=request.evidence_kind,
+            )
+        )
+    except ContributionRulesRequiredError as exc:
+        return _rules_required(exc)
+    except ReportLimitReachedError as exc:
+        return JSONResponse(
+            status_code=429, content={"detail": str(exc), "code": "report_limit_reached"}
+        )
+    return {"claim_id": claim.id, "status": claim.status, "groups": claim.groups}
 
 
 @router.put("/ratings", response_model=None, dependencies=[Depends(require_active_subscription)])

@@ -14,6 +14,7 @@ TABLES = (
     "marketplace_messages",
     "marketplace_user_blocks",
     "marketplace_conversation_reports",
+    "marketplace_user_restrictions",
 )
 
 
@@ -40,8 +41,33 @@ def test_every_table_is_protected_and_idempotent(table: str) -> None:
 def test_nobody_can_write_or_read_everything_from_outside_the_backend() -> None:
     sql = _statements(_script())
 
-    assert not re.search(r"for\s+(insert|update|delete|all)\b", sql)
+    # The only write policies are the restrictive ones on the ads, which can
+    # only take a right away, never give one.
+    for policy in re.findall(r"create policy \w+\s+on public\.\w+\s+(?:as \w+\s+)?for \w+", sql):
+        if re.search(r"for (insert|update|delete|all)$", policy):
+            assert "marketplace_listings" in policy and "as restrictive" in policy, policy
     assert "using (true)" not in sql
+
+
+def test_a_restricted_owner_cannot_write_ads_directly_either() -> None:
+    sql = _statements(_script())
+
+    function = re.search(
+        r"create or replace function public\.marketplace_caller_is_restricted\(\).*?\$\$;",
+        sql,
+        re.S,
+    )
+    assert function is not None
+    assert "security definer" in function.group(0)
+    assert "set search_path = public" in function.group(0)
+    # It answers only about the caller: nobody can ask about someone else.
+    assert "r.owner_id = auth.uid()::text" in function.group(0)
+    for action in ("insert", "update"):
+        assert re.search(
+            rf"create policy marketplace_listings_{action}_not_restricted\s+"
+            rf"on public\.marketplace_listings\s+as restrictive\s+for {action}",
+            sql,
+        )
 
 
 def test_a_block_made_against_me_is_not_readable_by_me() -> None:

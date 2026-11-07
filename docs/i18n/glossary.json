@@ -9,7 +9,10 @@
       "es": "Seguimiento",
       "de": "Monitoring",
       "fr": "Suivi",
-      "keys": ["monitoringTitle", "petsDetailTabMonitoring"],
+      "keys": [
+        "monitoringTitle",
+        "petsDetailTabMonitoring"
+      ],
       "note": "Pagina di peso, corporatura, curva di crescita e attività del cane. In tedesco resta 'Monitoring' per non confonderlo con 'Verlauf' (= Storico)."
     },
     {
@@ -20,7 +23,10 @@
       "es": "Historial",
       "de": "Verlauf",
       "fr": "Historique",
-      "keys": ["monitoringHistoryTitle", "medHistoryTitle"],
+      "keys": [
+        "monitoringHistoryTitle",
+        "medHistoryTitle"
+      ],
       "note": "Calendario di tutto ciò che è successo all'animale nella cartella clinica."
     },
     {
@@ -31,12 +37,26 @@
       "es": "Condición corporal",
       "de": "Körperbau",
       "fr": "Corpulence",
-      "keys": ["petsFormBodyConditionLabel", "monitoringBcsTitle"],
+      "keys": [
+        "petsFormBodyConditionLabel",
+        "monitoringBcsTitle"
+      ],
       "aliases": {
-        "en": ["body condition score", "BCS"],
-        "es": ["condición corporal"],
-        "de": ["Körperkondition", "Body-Condition-Score"],
-        "fr": ["état corporel", "note d'état corporel"]
+        "en": [
+          "body condition score",
+          "BCS"
+        ],
+        "es": [
+          "condición corporal"
+        ],
+        "de": [
+          "Körperkondition",
+          "Body-Condition-Score"
+        ],
+        "fr": [
+          "état corporel",
+          "note d'état corporel"
+        ]
       },
       "note": "Scala a 9 punti (BCS). Le guide sono testi nostri parafrasati: nelle altre lingue si traduce il nostro testo italiano, mai il testo originale delle fonti."
     },
@@ -48,8 +68,25 @@
       "es": "Cerca de mí",
       "de": "In meiner Nähe",
       "fr": "Près de chez moi",
-      "keys": ["homeNearbyTitle", "localEventsTitle", "activitiesNearbyTitle"],
+      "keys": [
+        "homeNearbyTitle",
+        "localEventsTitle",
+        "activitiesNearbyTitle"
+      ],
       "note": "Servizi per animali, eventi e attività nei dintorni."
+    },
+    {
+      "id": "exotic_experts",
+      "kind": "feature",
+      "it": "Esperti in esotici",
+      "en": "Exotic pet experts",
+      "es": "Expertos en exóticos",
+      "de": "Exoten-Experten",
+      "fr": "Experts NAC",
+      "keys": [
+        "localEventsExoticChip"
+      ],
+      "note": "Filtro di Vicino a me: veterinari che dichiarano di curare animali esotici (rettili, uccelli, piccoli mammiferi, pesci). In francese NAC = nouveaux animaux de compagnie, il termine corrente."
     },
     {
       "id": "reminders",
@@ -59,7 +96,11 @@
       "es": "Recordatorios",
       "de": "Erinnerungen",
       "fr": "Rappels",
-      "keys": ["remindersTitle", "petsDetailTabReminders", "billingIncludedReminders"],
+      "keys": [
+        "remindersTitle",
+        "petsDetailTabReminders",
+        "billingIncludedReminders"
+      ],
       "note": "Scadenze di vaccini, terapie, visite e cure. La domanda 'Fatto?' è remindersDoneTitle."
     },
     {
@@ -70,7 +111,9 @@
       "es": "¿Hecho?",
       "de": "Erledigt?",
       "fr": "Fait ?",
-      "keys": ["remindersDoneTitle"],
+      "keys": [
+        "remindersDoneTitle"
+      ],
       "note": "Il francese usa lo spazio insecabile prima del punto interrogativo."
     },
     {
@@ -81,7 +124,10 @@
       "es": "Paseos",
       "de": "Spaziergänge",
       "fr": "Promenades",
-      "keys": ["petsDetailTabWalks", "monitoringActivityStatWalks"]
+      "keys": [
+        "petsDetailTabWalks",
+        "monitoringActivityStatWalks"
+      ]
     },
     {
       "id": "suggest_event",
@@ -91,7 +137,10 @@
       "es": "Sugerir un evento",
       "de": "Veranstaltung melden",
       "fr": "Signaler un événement",
-      "keys": ["eventsSuggestAction", "eventsSuggestTitle"]
+      "keys": [
+        "eventsSuggestAction",
+        "eventsSuggestTitle"
+      ]
     },
     {
       "id": "events",
@@ -101,7 +150,10 @@
       "es": "Eventos",
       "de": "Veranstaltungen",
       "fr": "Événements",
-      "keys": ["eventsTitle", "activitiesEventsTitle"],
+      "keys": [
+        "eventsTitle",
+        "activitiesEventsTitle"
+      ],
       "note": "Nei filtri dei promemoria (remindersFilterEvents) il tedesco usa 'Termine': sono appuntamenti, non manifestazioni."
     },
     {
@@ -112,7 +164,10 @@
       "es": "Mercadillo de segunda mano",
       "de": "Gebrauchtmarkt",
       "fr": "Marché de l'occasion",
-      "keys": ["marketplacePageTitle", "activitiesMarketplaceTitle"],
+      "keys": [
+        "marketplacePageTitle",
+        "activitiesMarketplaceTitle"
+      ],
       "note": "Solo oggetti per animali: gli annunci di animali sono rifiutati in tutti i paesi (regola condivisa backend/app/SQL, packages/core/domain/marketplace/animal_policy.py). Termini per paese in docs/compliance/<lingua>/03_*."
     },
     {
@@ -123,7 +178,9 @@
       "es": "Mensajes del mercadillo",
       "de": "Nachrichten im Gebrauchtmarkt",
       "fr": "Messages du marché de l'occasion",
-      "keys": ["marketplaceMessagesTitle"],
+      "keys": [
+        "marketplaceMessagesTitle"
+      ],
       "note": "Solo testo, tra compratore e venditore di un annuncio, senza mostrare a nessuno dei due i contatti dell'altro. Il tedesco evita 'Verkäufer' nei testi brevi (forma neutra: 'anbietende Person')."
     },
     {
@@ -134,7 +191,9 @@
       "es": "Noticias",
       "de": "News",
       "fr": "Actualités",
-      "keys": ["petNewsTitle"]
+      "keys": [
+        "petNewsTitle"
+      ]
     },
     {
       "id": "medical_record",
@@ -145,10 +204,19 @@
       "de": "Krankenakte",
       "fr": "dossier médical",
       "aliases": {
-        "en": ["medical records", "health record"],
-        "es": ["historial médico"],
-        "de": ["Gesundheitsakte"],
-        "fr": ["dossier de santé"]
+        "en": [
+          "medical records",
+          "health record"
+        ],
+        "es": [
+          "historial médico"
+        ],
+        "de": [
+          "Gesundheitsakte"
+        ],
+        "fr": [
+          "dossier de santé"
+        ]
       },
       "note": "Concetto legale: è l'oggetto del consenso. Stesso termine nell'app, nei testi del backend e nei consensi."
     },
@@ -161,10 +229,22 @@
       "de": "Befund",
       "fr": "compte rendu",
       "aliases": {
-        "en": ["result", "results"],
-        "es": ["resultado", "informes"],
-        "de": ["Befunde", "Ergebnis"],
-        "fr": ["comptes rendus", "résultat"]
+        "en": [
+          "result",
+          "results"
+        ],
+        "es": [
+          "resultado",
+          "informes"
+        ],
+        "de": [
+          "Befunde",
+          "Ergebnis"
+        ],
+        "fr": [
+          "comptes rendus",
+          "résultat"
+        ]
       }
     },
     {
@@ -176,10 +256,21 @@
       "de": "Tierarzt",
       "fr": "vétérinaire",
       "aliases": {
-        "en": ["vet", "vets"],
-        "es": ["veterinaria"],
-        "de": ["Tierärztin", "Tierarztpraxis", "Tierärzte"],
-        "fr": ["vétérinaires"]
+        "en": [
+          "vet",
+          "vets"
+        ],
+        "es": [
+          "veterinaria"
+        ],
+        "de": [
+          "Tierärztin",
+          "Tierarztpraxis",
+          "Tierärzte"
+        ],
+        "fr": [
+          "vétérinaires"
+        ]
       },
       "note": "Tedesco: forma inclusiva 'Tierärztin bzw. Tierarzt' dove il testo è lungo; 'Tierarzt' nelle etichette brevi. en-US 'veterinarian', en-GB/en-AU 'vet' (schede store)."
     },
@@ -192,10 +283,22 @@
       "de": "Impfung",
       "fr": "vaccin",
       "aliases": {
-        "en": ["vaccination", "vaccines"],
-        "es": ["vacunas", "vacunación"],
-        "de": ["Impfungen", "Impfstoff"],
-        "fr": ["vaccination", "vaccins"]
+        "en": [
+          "vaccination",
+          "vaccines"
+        ],
+        "es": [
+          "vacunas",
+          "vacunación"
+        ],
+        "de": [
+          "Impfungen",
+          "Impfstoff"
+        ],
+        "fr": [
+          "vaccination",
+          "vaccins"
+        ]
       }
     },
     {
@@ -207,7 +310,10 @@
       "de": "Mikrochip",
       "fr": "puce électronique",
       "aliases": {
-        "fr": ["puce", "micropuce"]
+        "fr": [
+          "puce",
+          "micropuce"
+        ]
       }
     },
     {
@@ -219,10 +325,19 @@
       "de": "kastriert",
       "fr": "stérilisé",
       "aliases": {
-        "en": ["spayed", "neutering"],
-        "es": ["castrado"],
-        "de": ["sterilisiert"],
-        "fr": ["castré"]
+        "en": [
+          "spayed",
+          "neutering"
+        ],
+        "es": [
+          "castrado"
+        ],
+        "de": [
+          "sterilisiert"
+        ],
+        "fr": [
+          "castré"
+        ]
       }
     },
     {
@@ -233,7 +348,9 @@
       "es": "Asistente",
       "de": "Assistent",
       "fr": "Assistant",
-      "keys": ["chatSenderAssistant"],
+      "keys": [
+        "chatSenderAssistant"
+      ],
       "note": "È un'IA e deve essere sempre dichiarato (docs/compliance/01_ai_disclosure.md): mai 'veterinario virtuale' né nomi che lo facciano sembrare una persona."
     }
   ]

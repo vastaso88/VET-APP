@@ -1,7 +1,8 @@
 /// Why a conversation does not accept messages. [closed] covers a closed ad, the
-/// team's moderation and a block by the other person: the backend does not tell
-/// them apart on purpose, so nobody learns they were blocked.
-enum ConversationClosedReason { closed, blockedByMe }
+/// team's moderation and a block or restriction of the other person: the backend
+/// does not tell them apart on purpose, so nobody learns about it. [restricted]
+/// is said only to the person the moderation team kept out of the Mercatino.
+enum ConversationClosedReason { closed, blockedByMe, restricted }
 
 /// A conversation as the backend shows it to one of its two participants. It
 /// carries no account id of anyone: the role is all the app knows of the other.
@@ -27,6 +28,7 @@ class MarketplaceConversation {
       canWrite: json['can_write'] == true,
       closedReason: switch (json['closed_reason']) {
         'blocked_by_me' => ConversationClosedReason.blockedByMe,
+        'restricted' => ConversationClosedReason.restricted,
         'closed' => ConversationClosedReason.closed,
         _ => null,
       },
@@ -81,4 +83,14 @@ class SentMarketplaceMessage {
 
   final MarketplaceConversation conversation;
   final MarketplaceMessage message;
+}
+
+/// What an ad's page needs: the caller's conversation about it, if any, and
+/// whether a new one can be opened. [canStart] is false for reasons the backend
+/// does not tell apart (closed ad, a block, a seller who could not answer).
+class ListingMessagingStatus {
+  const ListingMessagingStatus({required this.conversation, required this.canStart});
+
+  final MarketplaceConversation? conversation;
+  final bool canStart;
 }

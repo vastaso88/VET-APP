@@ -304,6 +304,9 @@ class Settings(BaseSettings):
     # them, [] none). Off means: nothing new is accepted and what users
     # contributed is no longer shown; nothing is deleted.
     radar_reports_enabled: bool = Field(default=True, alias="RADAR_REPORTS_ENABLED")
+    # "Esperti in esotici": also read the competence from a practice's own
+    # name ("Ambulatorio per animali esotici"). Off until the owner decides.
+    radar_exotic_name_matching: bool = Field(default=False, alias="RADAR_EXOTIC_NAME_MATCHING")
     radar_report_closed_enabled: bool = Field(default=True, alias="RADAR_REPORT_CLOSED_ENABLED")
     radar_ratings_enabled: bool = Field(default=True, alias="RADAR_RATINGS_ENABLED")
     radar_open_sources: StringList = Field(default=["*"], alias="RADAR_OPEN_SOURCES")

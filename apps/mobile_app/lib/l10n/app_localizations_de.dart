@@ -10,7 +10,7 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get petsConsentFullText =>
-      'Um Ihnen genauer raten zu können, darf der Assistent die Krankenakte Ihres Tieres lesen. Wenn Sie eine Frage stellen, kann er die drei neuesten Einträge lesen, mit Titel, Kategorie (Besuch, Untersuchung, Impfung, Therapie oder Dokument), Datum des Ereignisses, Beschreibung und Text der angehängten Dokumente, auch wenn sie nichts mit der Frage zu tun haben. Er kann außerdem frühere Erkrankungen lesen, die noch andauern, mit Name und Beginndatum, höchstens fünf. Wenn Sie um die Erklärung einer Untersuchung bitten, kann er die dazugehörigen Dokumente lesen, höchstens zwei. Von einem sehr langen Dokument liest er nur den Anfang. Was er liest, wird an den externen Anbieter für künstliche Intelligenz gesendet, der die Antwort verfasst. Quokka verwendet es nur, um Ihnen zu antworten. Sie können die Einwilligung jederzeit im Tierprofil oder in den Einstellungen widerrufen: Der Widerruf gilt für alle folgenden Anfragen.';
+      'Um Ihnen genauer raten zu können, darf der Assistent die Krankenakte Ihres Tieres lesen. Wenn Sie eine Frage stellen, kann er die drei neuesten Einträge lesen, mit Titel, Kategorie (Besuch, Untersuchung, Impfung, Therapie oder Dokument), Datum des Ereignisses, Beschreibung und Text der angehängten Dokumente, auch wenn sie nichts mit der Frage zu tun haben. Er kann außerdem frühere Erkrankungen lesen, die noch andauern, mit Name und Beginndatum, höchstens fünf. Er liest außerdem die Notizen, die Sie im Tierprofil geschrieben haben, und die aktiven Erinnerungen, Therapien eingeschlossen. Wenn Sie um die Erklärung einer Untersuchung bitten, kann er die dazugehörigen Dokumente lesen, höchstens zwei. Von einem sehr langen Dokument liest er nur den Anfang. Was er liest, wird an den externen Anbieter für künstliche Intelligenz gesendet, der die Antwort verfasst. Quokka verwendet es nur, um Ihnen zu antworten. Sie können die Einwilligung jederzeit im Tierprofil oder in den Einstellungen widerrufen: Der Widerruf gilt für alle folgenden Anfragen.';
 
   @override
   String get appTitle => 'Quokka';
@@ -581,7 +581,7 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get billingPaywallEmergencyBody =>
-      'Rufen Sie sofort Ihre Tierarztpraxis oder eine tierärztliche Notfallklinik an. Quokka ersetzt keinen Besuch.';
+      'Rufen Sie sofort Ihre Tierarztpraxis oder eine tierärztliche Notfallklinik an. Quokka ersetzt keinen Tierarztbesuch.';
 
   @override
   String get billingPlanLimitReached =>
@@ -706,7 +706,7 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get firstRunTutorialAssistantBody =>
-      'Fragen Sie, warum es tut, was es tut, wie Sie den Alltag gestalten und wann ein Tierarzt nötig ist: Antworten auf Grundlage wissenschaftlicher Quellen, passend zur Art.';
+      'Fragen Sie, warum es tut, was es tut, wie Sie den Alltag gestalten und wann ein Tierarzt nötig ist: Antworten auf Grundlage wissenschaftlicher Quellen, passend zur Tierart.';
 
   @override
   String get firstRunTutorialRemindersTitle => 'Keine vergessenen Termine mehr';
@@ -1281,7 +1281,7 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get marketplaceNoMedicinesMessage =>
-      'Auf dem Gebrauchtmarkt dürfen keine Arzneimittel oder Tiermedikamente verkauft werden, auch nicht rezeptfrei.';
+      'Auf dem Gebrauchtmarkt dürfen keine Medikamente oder Tierarzneimittel verkauft werden, auch nicht rezeptfrei.';
 
   @override
   String get marketplaceBackendUnavailable =>
@@ -1414,7 +1414,7 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get marketplaceLocationErrorWithHome =>
-      'Ich kann Ihren Standort nicht ermitteln. Prüfen Sie die Standortberechtigungen oder nutzen Sie Ihre Wohnadresse.';
+      'Ich kann Ihren Standort nicht ermitteln. Prüfen Sie die Standortberechtigungen oder nutzen Sie Ihre Wohnort.';
 
   @override
   String get marketplaceLocationErrorNoHome =>
@@ -3736,7 +3736,7 @@ class AppLocalizationsDe extends AppLocalizations {
   String get eventsLevelLocal => 'Lokal';
 
   @override
-  String get eventsLevelProvincial => 'Provinz';
+  String get eventsLevelProvincial => 'Provinzebene';
 
   @override
   String get eventsLevelRegional => 'Regional';
@@ -3796,7 +3796,7 @@ class AppLocalizationsDe extends AppLocalizations {
   String get eventsTypeReptileExpo => 'Terraristik';
 
   @override
-  String get eventsTypeBirdShow => 'Ornithologie';
+  String get eventsTypeBirdShow => 'Vogelausstellung';
 
   @override
   String get eventsTypeEquestrian => 'Reitsport';
@@ -6756,4 +6756,120 @@ class AppLocalizationsDe extends AppLocalizations {
   @override
   String get marketplaceMessagesActionFailed =>
       'Das hat nicht geklappt. Bitte versuchen Sie es noch einmal.';
+
+  @override
+  String marketplaceRestrictedNotice(String date, String reason) {
+    return 'Das Moderationsteam hat Ihren Zugang zum Gebrauchtmarkt seit dem $date gesperrt. Grund: $reason. Sie können weiterhin Anzeigen ansehen und Ihre Nachrichten lesen, aber keine Anzeigen veröffentlichen oder bearbeiten und keine Nachrichten senden.';
+  }
+
+  @override
+  String get marketplaceRestrictedConversation =>
+      'Das Moderationsteam hat Ihren Zugang zum Gebrauchtmarkt gesperrt: Sie können diese Unterhaltung lesen, aber nicht darin schreiben.';
+
+  @override
+  String get marketplaceRestrictionReasonSpam => 'Spam';
+
+  @override
+  String get marketplaceRestrictionReasonScam => 'Betrugsversuch';
+
+  @override
+  String get marketplaceRestrictionReasonHarassment => 'Belästigung';
+
+  @override
+  String get marketplaceRestrictionReasonProhibitedItems =>
+      'nicht erlaubte Artikel';
+
+  @override
+  String get marketplaceRestrictionReasonOther =>
+      'Verstoß gegen die Regeln des Gebrauchtmarkts';
+
+  @override
+  String get localEventsExoticChip => 'Exoten-Experten';
+
+  @override
+  String get localEventsExoticAllGroups => 'Alle Gruppen';
+
+  @override
+  String get localEventsExoticDisclaimer =>
+      'Fachgebiet laut Praxis oder angegebener Quelle, nicht von Quokka geprüft.';
+
+  @override
+  String localEventsExoticNone(String radius) {
+    return 'Keine Praxis im Umkreis von $radius gibt dieses Fachgebiet an. Es gibt noch wenige Daten: Vergrößern Sie den Umkreis oder melden Sie eine Praxis über ihre Detailseite.';
+  }
+
+  @override
+  String get exoticGroupReptileAmphibian => 'Reptilien und Amphibien';
+
+  @override
+  String get exoticGroupBird => 'Vögel';
+
+  @override
+  String get exoticGroupSmallMammal => 'Kleinsäuger';
+
+  @override
+  String get exoticGroupFish => 'Fische';
+
+  @override
+  String get exoticGroupOther => 'Andere';
+
+  @override
+  String get exoticGroupGeneral => 'exotische Tiere (Gruppen nicht angegeben)';
+
+  @override
+  String get exoticGroupSmallMammalHint => 'Kaninchen, Nagetiere, Frettchen';
+
+  @override
+  String placesCompetenceTreats(String groups) {
+    return 'Behandelt: $groups';
+  }
+
+  @override
+  String placesCompetenceSourceOsm(String date) {
+    return 'Auf OpenStreetMap angegeben, gelesen am $date';
+  }
+
+  @override
+  String placesCompetenceSourceName(String date) {
+    return 'Im Namen der Praxis angegeben, gelesen am $date';
+  }
+
+  @override
+  String placesCompetenceSourceClaim(String date) {
+    return 'Auf der Seite der Praxis angegeben, geprüft am $date';
+  }
+
+  @override
+  String get placesCompetenceSourcePage => 'Seite der Praxis';
+
+  @override
+  String get placesCompetenceClaimAction =>
+      'Behandelt exotische Tiere? Melden Sie es';
+
+  @override
+  String get placesCompetenceClaimTitle =>
+      'Welche exotischen Tiere behandelt die Praxis?';
+
+  @override
+  String get placesCompetenceClaimEvidence => 'Wo haben Sie das gelesen?';
+
+  @override
+  String get placesCompetenceEvidenceWebsite => 'Auf der Website der Praxis';
+
+  @override
+  String get placesCompetenceEvidenceSign => 'Auf dem Schild';
+
+  @override
+  String get placesCompetenceEvidenceOther => 'Anderswo';
+
+  @override
+  String get placesCompetenceClaimNote =>
+      'Wir zeigen es erst, nachdem wir die öffentliche Seite der Praxis geprüft haben.';
+
+  @override
+  String get placesCompetenceClaimSend => 'Senden';
+
+  @override
+  String get placesCompetenceClaimSent =>
+      'Danke: Wir prüfen es, bevor wir es anzeigen.';
 }

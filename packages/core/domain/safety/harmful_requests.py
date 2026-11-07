@@ -1276,14 +1276,14 @@ LIMIT_TEXTS: dict[str, str] = {
     "de": (
         "Wenn es {name} gerade schlecht geht, warten Sie nicht auf diese Nachricht: Ein ernster "
         "Fall wartet nicht, rufen Sie sofort Ihre Tierarztpraxis oder einen Notdienst an. Für "
-        "heute haben Sie alle {limit} Fragen Ihres Plans verbraucht: Der Zähler startet in etwa "
+        "heute haben Sie alle {limit} Fragen Ihres Tarifs verbraucht: Der Zähler startet in "
         "{wait} wieder."
     ),
     "fr": (
         "Si {name} va mal en ce moment, n'attendez pas ce message : un cas grave n'attend pas, "
         "appelez tout de suite votre vétérinaire ou un service d'urgences. Pour aujourd'hui "
-        "vous avez utilisé les {limit} questions de votre forfait : le compteur repart dans "
-        "environ {wait}."
+        "vous avez utilisé les {limit} questions de votre offre : le compteur repart dans "
+        "{wait}."
     ),
 }
 
@@ -1306,12 +1306,12 @@ QUOTA_TEXTS: dict[str, str] = {
     "de": (
         "Wenn es {name} gerade schlecht geht, warten Sie nicht: Ein ernster Fall wartet nicht, "
         "rufen Sie sofort Ihre Tierarztpraxis oder einen Notdienst an. Der Assistent ist gerade "
-        "stark gefragt und hat die Antworten für heute aufgebraucht: Versuchen Sie es in etwa "
+        "stark gefragt und hat die Antworten für heute aufgebraucht: Versuchen Sie es in "
         "{wait} noch einmal."
     ),
     "fr": (
         "Si {name} va mal en ce moment, n'attendez pas : un cas grave n'attend pas, appelez "
         "tout de suite votre vétérinaire ou un service d'urgences. L'assistant est très "
-        "sollicité et a épuisé les réponses du jour : réessayez dans environ {wait}."
+        "sollicité et a épuisé les réponses du jour : réessayez dans {wait}."
     ),
 }

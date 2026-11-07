@@ -4,6 +4,7 @@ from packages.core.domain.marketplace.messaging import (
     MarketplaceConversation,
     MarketplaceConversationReport,
     MarketplaceMessage,
+    MarketplaceRestriction,
     MarketplaceUserBlock,
     ParticipantRole,
 )
@@ -15,6 +16,7 @@ class InMemoryMarketplaceMessagingRepository:
         self.messages: list[MarketplaceMessage] = []
         self.blocks: list[MarketplaceUserBlock] = []
         self.reports: dict[str, MarketplaceConversationReport] = {}
+        self.restrictions: dict[str, MarketplaceRestriction] = {}
 
     def find_conversation(self, listing_id: str, buyer_id: str) -> MarketplaceConversation | None:
         for item in self.conversations.values():
@@ -110,4 +112,22 @@ class InMemoryMarketplaceMessagingRepository:
 
     def list_reports(self, limit: int) -> list[MarketplaceConversationReport]:
         rows = sorted(self.reports.values(), key=lambda item: item.created_at, reverse=True)
+        return rows[:limit]
+
+    def get_restriction(self, owner_id: str) -> MarketplaceRestriction | None:
+        return self.restrictions.get(owner_id)
+
+    def save_restriction(self, restriction: MarketplaceRestriction) -> MarketplaceRestriction:
+        self.restrictions[restriction.owner_id] = restriction
+        return restriction
+
+    def restricted_among(self, owner_ids: list[str]) -> set[str]:
+        return {
+            owner_id
+            for owner_id in owner_ids
+            if (item := self.restrictions.get(owner_id)) is not None and item.active
+        }
+
+    def list_restrictions(self, limit: int) -> list[MarketplaceRestriction]:
+        rows = sorted(self.restrictions.values(), key=lambda item: item.created_at, reverse=True)
         return rows[:limit]

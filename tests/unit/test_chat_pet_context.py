@@ -23,6 +23,7 @@ from packages.core.application.services.send_chat_message import (
 )
 from packages.core.domain.conversation.attachment import ChatAttachment
 from packages.core.domain.conversation.models import ChatMessage
+from packages.core.domain.medical_record.consent_text import CURRENT_VERSION
 from packages.core.domain.medical_record.models import ClinicalEvent, MedicalRecordConsentRecord
 from packages.core.domain.pet_profile.models import FishStock, HabitatDetails, PetProfile
 from packages.core.domain.pet_profile.weight import WEIGHT_SUGGESTION_MARKER, is_weight_relevant
@@ -240,7 +241,9 @@ def test_send_chat_message_feeds_profile_and_reminders_into_the_prompt() -> None
             sex="Maschio",
             weight_label="30 kg",
             # R25 (2026-11-07): the reminders follow the record consent.
-            medical_record_consent=MedicalRecordConsentRecord(granted=True, version="v3"),
+            medical_record_consent=MedicalRecordConsentRecord(
+                granted=True, version=CURRENT_VERSION
+            ),
         )
     )
     reminders = InMemoryReminderRepository()

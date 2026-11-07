@@ -607,3 +607,110 @@ def test_geocoding_limits_and_provider_failures_have_their_own_codes(
     get_container().geocoding_service = GeocodingService(fake)
     down = client.post("/geocoding/search", json=body)
     assert (down.status_code, down.json()["code"]) == (503, "geocoding_unavailable")
+
+
+class _SwitchableUser:
+    """Auth provider for "user A / user B" checks on one in-memory backend."""
+
+    def __init__(self, user_id: str) -> None:
+        self.user_id = user_id
+
+    def get_current_user(self) -> object:
+        from packages.core.application.ports.auth_provider import AuthenticatedUser
+
+        return AuthenticatedUser(id=self.user_id, email=f"{self.user_id}@example.com")
+
+
+def test_exotic_competences_are_served_and_claims_stay_private_until_confirmed(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    from datetime import UTC, datetime
+
+    from apps.api.dependencies.container import get_container
+    from packages.core.domain.radar_places.models import RadarDataSource, RadarPlace
+
+    client = _client_with_env(monkeypatch)
+    container = get_container()
+    container.radar_places_source = _NoPlacesSource()  # type: ignore[assignment]
+    user = _SwitchableUser(container.auth_provider.get_current_user().id)
+    container.auth_provider = user  # type: ignore[assignment]
+    catalog = container.radar_catalog_repository
+    catalog.sources = [  # type: ignore[attr-defined]
+        RadarDataSource(
+            source="openstreetmap_overpass",
+            release="test",
+            license="ODbL",
+            attribution="test",
+            imported_at=datetime(2026, 11, 1, tzinfo=UTC),
+            min_latitude=35.0,
+            max_latitude=47.5,
+            min_longitude=6.0,
+            max_longitude=19.0,
+        )
+    ]
+    catalog.osm_places = [  # type: ignore[attr-defined]
+        RadarPlace(
+            coverage_key="catalog",
+            place_type=place_type,
+            name=name,
+            latitude=45.4650,
+            longitude=9.19,
+            source_name="openstreetmap_overpass",
+            source_external_id=source_id,
+            details=details,
+            source_fetched_at=datetime(2026, 11, 1, tzinfo=UTC),
+        )
+        for name, place_type, source_id, details in (
+            ("Clinica Esempio", "veterinary", "node/1", {"veterinary:treats:rabbit": "yes"}),
+            ("Area cani Esempio", "dog_park", "way/2", {}),
+        )
+    ]
+    here = {"latitude": 45.4642, "longitude": 9.19}
+
+    def vet() -> dict:  # type: ignore[type-arg]
+        places = client.get("/local-services/places", params=here).json()["places"]
+        return next(place for place in places if place["place_type"] == "veterinary")
+
+    served = vet()["competences"]
+    assert served == [
+        {
+            "group": "small_mammal",
+            "source": "openstreetmap_overpass",
+            "basis": "osm_tag",
+            "read_at": "2026-11-01T00:00:00Z",
+            "evidence_url": None,
+        }
+    ]
+
+    claim = {
+        "source": "openstreetmap_overpass",
+        "source_id": "node/1",
+        "latitude": 45.4650,
+        "longitude": 9.19,
+        "groups": ["bird"],
+        "evidence_kind": "website",
+    }
+    # User A: rules first, then the claim is accepted and stays pending.
+    assert client.post("/local-services/competence-claims", json=claim).status_code == 403
+    client.post("/account/consents", json={"consent_key": "contribution_rules", "granted": True})
+    created = client.post("/local-services/competence-claims", json=claim)
+    assert created.status_code == 200
+    assert created.json()["status"] == "pending"
+    assert "reporter" not in str(created.json())
+    assert vet()["competences"] == served
+
+    # User B: does not see A's pending claim anywhere, and makes their own.
+    user.user_id = "11111111-1111-4111-8111-1111111111bb"
+    page = client.get("/local-services/places", params=here).json()
+    assert vet()["competences"] == served
+    assert created.json()["claim_id"] not in str(page)
+    client.post("/account/consents", json={"consent_key": "contribution_rules", "granted": True})
+    own = client.post("/local-services/competence-claims", json=claim)
+    assert own.status_code == 200
+    assert own.json()["claim_id"] != created.json()["claim_id"]
+
+    # Only veterinary practices, only known groups.
+    on_park = {**claim, "source": "openstreetmap_overpass", "source_id": "way/2"}
+    assert client.post("/local-services/competence-claims", json=on_park).status_code == 400
+    bad_group = {**claim, "groups": ["dog"]}
+    assert client.post("/local-services/competence-claims", json=bad_group).status_code == 422

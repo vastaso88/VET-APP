@@ -7,8 +7,18 @@ import tempfile
 from pathlib import Path
 from unittest.mock import patch
 
+import pytest
+
 from scripts.i18n import glossary
-from scripts.i18n.auto_translate import ROOT, Catalogs, digest, main, protected_xml
+from scripts.i18n.auto_translate import (
+    ROOT,
+    Catalogs,
+    acknowledged,
+    digest,
+    main,
+    protected_xml,
+    select_entries,
+)
 
 
 def test_feature_names_match_the_glossary_in_every_catalog() -> None:
@@ -118,3 +128,63 @@ def test_small_talk_uses_the_register_of_the_style_guide() -> None:
     french = " ".join(texts["fr"].values())
     assert " du " not in f" {german.lower()} " and "erzähl mir" not in german.lower()
     assert " tu " not in f" {french.lower()} " and "raconte-moi" not in french.lower()
+
+
+def test_acknowledge_confirms_only_what_was_chosen() -> None:
+    catalogs = Catalogs(ROOT)
+    catalogs.sources["ui:remindersTitle"] = digest("Changed source")
+    catalogs.sources["ui:billingTitle"] = digest("Changed source")
+    selected = select_entries(catalogs, ["ui:remindersTitle"], None, False)
+    assert selected == ["ui:remindersTitle"]
+    manifest = acknowledged(catalogs, {}, selected)
+    assert set(manifest) == {"ui:remindersTitle"}
+    assert manifest["ui:remindersTitle"]["source"] == digest("Changed source")
+    by_prefix = select_entries(catalogs, None, ["ui:billing"], False)
+    assert "ui:billingTitle" in by_prefix and "ui:remindersTitle" not in by_prefix
+    old = {"ui:billingTitle": {"source": "old", "targets": {}}}
+    kept = acknowledged(catalogs, old, ["ui:remindersTitle"])
+    assert kept["ui:billingTitle"] == old["ui:billingTitle"]
+
+
+def test_acknowledge_refuses_to_confirm_everything_by_accident() -> None:
+    catalogs = Catalogs(ROOT)
+    with pytest.raises(ValueError, match="Choose what you reviewed"):
+        select_entries(catalogs, None, None, False)
+    with pytest.raises(ValueError, match="Choose what you reviewed"):
+        select_entries(catalogs, ["ui:remindersTitle"], None, True)
+    with pytest.raises(ValueError, match="Unknown entries"):
+        select_entries(catalogs, ["remindersTitle"], None, False)
+    with pytest.raises(ValueError, match="No entry matches"):
+        select_entries(catalogs, None, ["ui:doesNotExistAnywhere"], False)
+    assert len(select_entries(catalogs, None, None, True)) == len(catalogs.entries)
+
+
+def test_acknowledge_refuses_a_missing_translation_in_the_chosen_entries() -> None:
+    catalogs = Catalogs(ROOT)
+    catalogs.entries["ui:remindersTitle"]["de"] = ""
+    with pytest.raises(ValueError, match="missing translations"):
+        select_entries(catalogs, ["ui:remindersTitle"], None, False)
+    select_entries(catalogs, ["ui:billingTitle"], None, False)
+
+
+def test_acknowledge_command_updates_the_manifest_file_for_the_chosen_keys(tmp_path: Path) -> None:
+    manifest = tmp_path / "docs" / "i18n" / "source_manifest.json"
+    manifest.parent.mkdir(parents=True)
+    manifest.write_text("{}", encoding="utf-8")
+    catalogs = Catalogs(ROOT)
+    with (
+        patch("scripts.i18n.auto_translate.Catalogs", return_value=catalogs),
+        patch(
+            "sys.argv",
+            [
+                "auto_translate",
+                "acknowledge",
+                "--root",
+                str(tmp_path),
+                "--keys",
+                "ui:remindersTitle",
+            ],
+        ),
+    ):
+        assert main() == 0
+    assert list(json.loads(manifest.read_text(encoding="utf-8"))) == ["ui:remindersTitle"]

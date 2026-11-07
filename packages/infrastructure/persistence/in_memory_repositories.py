@@ -47,6 +47,7 @@ from packages.core.domain.marketplace.models import ListingReport, MarketplaceLi
 from packages.core.domain.medical_record.models import ClinicalEvent, PetCondition
 from packages.core.domain.pet_profile.models import PetProfile
 from packages.core.domain.pet_profile.weight_measurement import WeightMeasurement
+from packages.core.domain.radar_places.competences import RadarCompetenceClaim
 from packages.core.domain.radar_places.models import (
     RadarCountryCoverage,
     RadarDataSource,
@@ -288,6 +289,7 @@ class InMemoryRadarReportsRepository(RadarReportsRepository):
         self._votes: dict[tuple[str, str], RadarReportVote] = {}
         self._ratings: dict[tuple[str, str, str], RadarPlaceRating] = {}
         self._overrides: dict[tuple[str, str, str], RadarPlaceOverride] = {}
+        self._claims: dict[str, RadarCompetenceClaim] = {}
 
     def save_report(self, report: RadarUserReport) -> RadarUserReport:
         self._reports[report.id] = report
@@ -350,6 +352,37 @@ class InMemoryRadarReportsRepository(RadarReportsRepository):
 
     def list_overrides(self) -> list[RadarPlaceOverride]:
         return list(self._overrides.values())
+
+    def save_claim(self, claim: RadarCompetenceClaim) -> RadarCompetenceClaim:
+        self._claims[claim.id] = claim
+        return claim
+
+    def list_claims(self, box: BoundingBox, *, statuses: list[str]) -> list[RadarCompetenceClaim]:
+        return [
+            claim
+            for claim in self._claims.values()
+            if claim.status in statuses
+            and box.min_latitude <= claim.latitude <= box.max_latitude
+            and box.min_longitude <= claim.longitude <= box.max_longitude
+        ]
+
+    def list_claims_by_reporter(
+        self, reporter_pseudonym: str, *, target_source: str, target_source_id: str
+    ) -> list[RadarCompetenceClaim]:
+        return [
+            claim
+            for claim in self._claims.values()
+            if claim.reporter_pseudonym == reporter_pseudonym
+            and claim.target_source == target_source
+            and claim.target_source_id == target_source_id
+        ]
+
+    def count_claims_since(self, reporter_pseudonym: str, since: datetime) -> int:
+        return sum(
+            1
+            for claim in self._claims.values()
+            if claim.reporter_pseudonym == reporter_pseudonym and claim.created_at >= since
+        )
 
 
 class InMemoryDogWalkRepository(DogWalkRepository):

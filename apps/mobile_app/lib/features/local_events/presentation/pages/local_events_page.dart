@@ -20,6 +20,7 @@ import '../../../location/domain/geo_math.dart';
 import '../../../location/domain/supported_countries.dart';
 import '../../../location/presentation/distance_label.dart';
 import '../../../nearby_places/data/radar_places_repository.dart';
+import '../../../nearby_places/domain/radar_competence.dart';
 import '../../../nearby_places/domain/radar_place.dart';
 import '../../../nearby_places/presentation/pages/radar_map_page.dart';
 import '../../../nearby_places/presentation/pages/report_missing_place_page.dart';
@@ -93,6 +94,11 @@ class _LocalEventsPageState extends State<LocalEventsPage> {
 
   bool _showsCategory(RadarCategory category) =>
       _categories.isEmpty || _categories.contains(category);
+
+  /// "Esperti in esotici": only practices with a declared exotic-animal
+  /// competence, optionally of one group (null: any group).
+  bool _exoticOnly = false;
+  ExoticGroup? _exoticGroup;
 
   /// The one list section open below the map (clinics are the
   /// veterinary one); null when all are closed, as they are at first.
@@ -351,10 +357,28 @@ class _LocalEventsPageState extends State<LocalEventsPage> {
   /// Tapping a category shows only that one, replacing the previous
   /// choice; tapping the active one again goes back to all of them.
   void _toggleQuickCategory(RadarCategory category) {
-    final cleared = _categories.contains(category);
+    final cleared = _categories.contains(category) && !_exoticOnly;
+    _exoticOnly = false;
+    _exoticGroup = null;
     _setFilters(categories: cleared ? const {} : {category});
     // The chip's own section opens with it: that is where its places are.
     setState(() => _openSection = cleared ? null : category);
+  }
+
+  /// "Esperti in esotici" on: clinics only, their section open. Off: back
+  /// to every category.
+  void _toggleExotic() {
+    final on = !_exoticOnly;
+    _exoticOnly = on;
+    _exoticGroup = null;
+    _setFilters(categories: on ? const {RadarCategory.veterinary} : const {});
+    setState(() => _openSection = on ? RadarCategory.veterinary : null);
+  }
+
+  void _clearFilters() {
+    _exoticOnly = false;
+    _exoticGroup = null;
+    _setFilters(categories: const {});
   }
 
   /// Opens [category]'s section and closes the one that was open; tapping
@@ -462,7 +486,16 @@ class _LocalEventsPageState extends State<LocalEventsPage> {
       ...(radar?.places ?? const <RadarPlace>[])
           .where((place) => place.distanceMeters <= radiusMeters)
           .map(_RadarEntry.place),
-    ].where((entry) => _showsCategory(entry.category)).toList()
+    ]
+        .where((entry) => _showsCategory(entry.category))
+        // Only practices whose own source declares the competence: a
+        // hand-entered service never counts.
+        .where(
+          (entry) =>
+              !_exoticOnly ||
+              matchesExoticGroup(entry.place?.competences ?? const [], _exoticGroup),
+        )
+        .toList()
       ..sort((a, b) => a.distanceMeters.compareTo(b.distanceMeters));
 
     final clinics = entries.where((entry) => entry.category == RadarCategory.veterinary).toList();
@@ -498,10 +531,21 @@ class _LocalEventsPageState extends State<LocalEventsPage> {
           const SizedBox(height: AppSpacing.sm),
           _QuickCategoryBar(
             categories: _quickCategories,
-            selected: _categories,
+            selected: _exoticOnly ? const {} : _categories,
+            exoticOnly: _exoticOnly,
             onToggle: _toggleQuickCategory,
-            onClear: () => _setFilters(categories: const {}),
+            onToggleExotic: _toggleExotic,
+            onClear: _clearFilters,
           ),
+          if (_exoticOnly) ...[
+            const SizedBox(height: AppSpacing.sm),
+            _ExoticFilter(
+              selected: _exoticGroup,
+              onSelected: (group) => setState(() => _exoticGroup = group),
+              found: clinics.length,
+              radiusKm: _radiusKm,
+            ),
+          ],
           const SizedBox(height: AppSpacing.lg),
           _MapPreview(
             center: data.referenceLocation,
@@ -558,7 +602,11 @@ class _LocalEventsPageState extends State<LocalEventsPage> {
                     entries: clinics,
                     expanded: _showAllClinics,
                     collapsedRows: _collapsedRows,
-                    emptyLabel: context.l10n.localEventsNoClinics,
+                    emptyLabel: _exoticOnly
+                        ? context.l10n.localEventsExoticNone(
+                            formatKilometersIn(_radiusKm, UnitSettingsStore.instance.system),
+                          )
+                        : context.l10n.localEventsNoClinics,
                     onToggleExpanded: () => setState(() => _showAllClinics = !_showAllClinics),
                     rowBuilder: (entry) => _ClinicRow(entry: entry, onTap: () => _openEntry(entry)),
                   ),
@@ -641,13 +689,17 @@ class _QuickCategoryBar extends StatelessWidget {
   const _QuickCategoryBar({
     required this.categories,
     required this.selected,
+    required this.exoticOnly,
     required this.onToggle,
+    required this.onToggleExotic,
     required this.onClear,
   });
 
   final List<RadarCategory> categories;
   final Set<RadarCategory> selected;
+  final bool exoticOnly;
   final ValueChanged<RadarCategory> onToggle;
+  final VoidCallback onToggleExotic;
   final VoidCallback onClear;
 
   @override
@@ -660,7 +712,7 @@ class _QuickCategoryBar extends StatelessWidget {
             padding: const EdgeInsets.only(right: AppSpacing.sm),
             child: RadarChip(
               label: context.l10n.localEventsAll,
-              selected: selected.isEmpty,
+              selected: selected.isEmpty && !exoticOnly,
               onTap: onClear,
             ),
           ),
@@ -676,8 +728,76 @@ class _QuickCategoryBar extends StatelessWidget {
               ),
             ),
           ),
+          Padding(
+            padding: const EdgeInsets.only(right: AppSpacing.sm),
+            child: RadarChip(
+              label: context.l10n.localEventsExoticChip,
+              icon: Icons.cruelty_free_outlined,
+              iconColor: RadarCategory.veterinary.color,
+              selected: exoticOnly,
+              onTap: onToggleExotic,
+            ),
+          ),
         ],
       ),
+    );
+  }
+}
+
+/// The group choice of "Esperti in esotici", the disclaimer that the
+/// competence is declared and not checked by Quokka, and what to do when
+/// nothing is found (data are scarce: in many towns there is none yet).
+class _ExoticFilter extends StatelessWidget {
+  const _ExoticFilter({
+    required this.selected,
+    required this.onSelected,
+    required this.found,
+    required this.radiusKm,
+  });
+
+  final ExoticGroup? selected;
+  final ValueChanged<ExoticGroup?> onSelected;
+  final int found;
+  final double radiusKm;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Wrap(
+          spacing: AppSpacing.sm,
+          runSpacing: AppSpacing.xs,
+          children: [
+            RadarChip(
+              label: context.l10n.localEventsExoticAllGroups,
+              selected: selected == null,
+              onTap: () => onSelected(null),
+            ),
+            for (final group in ExoticGroup.values)
+              Tooltip(
+                message:
+                    group == ExoticGroup.smallMammal ? context.l10n.exoticGroupSmallMammalHint : '',
+                child: RadarChip(
+                  label: exoticGroupLabel(group),
+                  selected: selected == group,
+                  onTap: () => onSelected(group),
+                ),
+              ),
+          ],
+        ),
+        const SizedBox(height: AppSpacing.xs),
+        Text(context.l10n.localEventsExoticDisclaimer, style: AppTextStyles.caption),
+        if (found == 0) ...[
+          const SizedBox(height: AppSpacing.xs),
+          Text(
+            context.l10n.localEventsExoticNone(
+              formatKilometersIn(radiusKm, UnitSettingsStore.instance.system),
+            ),
+            style: AppTextStyles.bodySmall,
+          ),
+        ],
+      ],
     );
   }
 }

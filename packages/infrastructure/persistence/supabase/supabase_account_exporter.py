@@ -32,7 +32,17 @@ _LIST_PAGE = 100
 # Columns that only make sense inside the service (keyed pseudonyms of the
 # owner themself): they are the owner's data, but meaningless outside and
 # would only help someone correlate rows if the file leaked.
-_INTERNAL_COLUMNS = frozenset({"reporter_ref", "reporter_pseudonym", "voter_pseudonym"})
+# The ids of the team members who restricted or let back an owner on the
+# Mercatino are the team's, not the owner's data.
+_INTERNAL_COLUMNS = frozenset(
+    {
+        "reporter_ref",
+        "reporter_pseudonym",
+        "voter_pseudonym",
+        "created_by_admin_id",
+        "lifted_by_admin_id",
+    }
+)
 
 # The tables the export reads, derived from the eraser's lists so a table
 # added to one side shows up missing on the other in the alignment test.

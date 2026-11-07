@@ -14,6 +14,7 @@ from packages.core.application.services.request_radar_places_ingestion import (
 from packages.core.domain.geo.address_format import AddressParts, format_address
 from packages.core.domain.geo.countries import get_radar_country, radar_country_for_point
 from packages.core.domain.geo.models import Coordinates
+from packages.core.domain.radar_places.competences import OSM_TREATS_PREFIX
 from packages.core.domain.radar_places.labels import FALLBACK_LANGUAGE, default_place_name
 from packages.core.domain.radar_places.models import OSM_SOURCE_NAME, RadarPlace
 from packages.shared.config.settings import Settings
@@ -330,7 +331,17 @@ def build_overpass_area_query(*, iso_3166_2: str, timeout_seconds: int) -> str:
 
 
 def _read_details(tags: dict[str, str]) -> dict[str, str]:
-    return {key: tags[key].strip() for key in _DETAIL_TAGS if tags.get(key, "").strip()}
+    details = {key: tags[key].strip() for key in _DETAIL_TAGS if tags.get(key, "").strip()}
+    # Animals a practice states it treats (veterinary:treats:rabbit=yes):
+    # the source of the "Esperti in esotici" filter (competences.py).
+    details.update(
+        {
+            key: value.strip()
+            for key, value in tags.items()
+            if key.startswith(OSM_TREATS_PREFIX) and value.strip()
+        }
+    )
+    return details
 
 
 def _read_coordinates(element: dict[str, object]) -> tuple[float | None, float | None]:

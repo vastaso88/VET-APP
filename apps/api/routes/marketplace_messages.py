@@ -68,8 +68,22 @@ def write_to_seller(listing_id: str, request: MessageRequest) -> dict[str, objec
 @router.get("/listings/{listing_id}/conversation")
 def my_conversation_about_listing(listing_id: str) -> dict[str, object]:
     user = get_container().auth_provider.get_current_user()
-    view = _service().find_for_listing(listing_id, user.id)
-    return {"conversation": view.model_dump(mode="json") if view else None}
+    return _service().find_for_listing(listing_id, user.id).model_dump(mode="json")
+
+
+# The caller's own restriction by the moderation team, so the app can say it
+# before they try. Nobody can ask about anyone else.
+@router.get("/restriction")
+def my_marketplace_restriction() -> dict[str, object]:
+    user = get_container().auth_provider.get_current_user()
+    restriction = _service().restriction_of(user.id)
+    if restriction is None:
+        return {"restricted": False, "reason": None, "since": None}
+    return {
+        "restricted": True,
+        "reason": restriction.reason,
+        "since": restriction.created_at.isoformat(),
+    }
 
 
 @router.get("/conversations")

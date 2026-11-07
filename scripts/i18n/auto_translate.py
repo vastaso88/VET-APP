@@ -332,12 +332,65 @@ def review_markdown(rows: list[dict[str, Any]]) -> str:
     return "\n".join(lines)
 
 
+def select_entries(
+    catalogs: Catalogs,
+    keys: list[str] | None,
+    prefixes: list[str] | None,
+    everything: bool,
+) -> list[str]:
+    """The entries an `acknowledge` run attests to: exactly those named, never "all" by accident."""
+    if everything == bool(keys or prefixes):
+        raise ValueError("Choose what you reviewed: --keys NAME..., --prefix PREFIX... or --all")
+    if everything:
+        selected = list(catalogs.entries)
+    else:
+        unknown = [name for name in keys or [] if name not in catalogs.entries]
+        if unknown:
+            raise ValueError(f"Unknown entries (use the domain, e.g. ui:key): {unknown}")
+        selected = [
+            name
+            for name in catalogs.entries
+            if name in (keys or []) or any(name.startswith(prefix) for prefix in prefixes or [])
+        ]
+        if not selected:
+            raise ValueError("No entry matches the given --keys/--prefix")
+    missing = [
+        name
+        for name in selected
+        for lang in LANGUAGES
+        if not catalogs.entries[name].get(lang, "").strip()
+    ]
+    if missing:
+        raise ValueError(f"Cannot acknowledge missing translations: {sorted(set(missing))[:5]}")
+    return selected
+
+
+def acknowledged(
+    catalogs: Catalogs, manifest: dict[str, Any], selected: list[str]
+) -> dict[str, Any]:
+    """The manifest with the [selected] entries brought up to the current texts; others stay."""
+    snapshot = catalogs.snapshot()
+    return {**manifest, **{name: snapshot[name] for name in selected}}
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("mode", choices=("check", "acknowledge", "draft"))
     parser.add_argument("--root", type=Path, default=ROOT)
     parser.add_argument("--output", type=Path)
     parser.add_argument("--max-messages", type=int, default=100)
+    parser.add_argument(
+        "--keys", nargs="+", metavar="NAME", help="acknowledge: only these entries (ui:key)"
+    )
+    parser.add_argument(
+        "--prefix",
+        nargs="+",
+        metavar="PREFIX",
+        help="acknowledge: only entries whose name starts with one of these (ui:billing)",
+    )
+    parser.add_argument(
+        "--all", action="store_true", help="acknowledge: every entry (rarely right: see docs)"
+    )
     args = parser.parse_args()
     catalogs = Catalogs(args.root)
     path = args.root / MANIFEST
@@ -348,13 +401,9 @@ def main() -> int:
             print(f"Translation needs update/review: {name} -> {language}")
         return int(bool(changes))
     if args.mode == "acknowledge":
-        if any(
-            not values.get(lang, "").strip()
-            for values in catalogs.entries.values()
-            for lang in LANGUAGES
-        ):
-            raise ValueError("Cannot acknowledge missing translations")
-        write_json(path, catalogs.snapshot())
+        selected = select_entries(catalogs, args.keys, args.prefix, args.all)
+        write_json(path, acknowledged(catalogs, manifest, selected))
+        print(f"Acknowledged {len(selected)} entries.")
         return 0
     if args.output is None or args.output.resolve() == args.root.resolve():
         raise ValueError("Draft output must be separate from the working repository")

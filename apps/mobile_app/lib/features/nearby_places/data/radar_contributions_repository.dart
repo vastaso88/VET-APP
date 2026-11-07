@@ -9,6 +9,7 @@ import '../../../shared/errors/app_network_error.dart';
 import '../../../shared/types/result.dart';
 import '../../location/domain/coordinates.dart';
 import '../domain/radar_community.dart';
+import '../domain/radar_competence.dart';
 import '../domain/radar_place.dart';
 import '../../../l10n/l10n.dart';
 
@@ -120,6 +121,31 @@ class RadarContributionsRepository {
       'POST',
       '/local-services/reports/$reportId/vote',
       body: {'vote': confirm ? 'confirm' : 'deny'},
+    );
+    return result.map((_) {});
+  }
+
+  /// "This practice treats exotic animals": stays pending, and invisible,
+  /// until the team has checked the practice's own public page.
+  Future<Result<void>> claimCompetence(
+    RadarPlace place, {
+    required Set<ExoticGroup> groups,
+    required CompetenceEvidence evidence,
+  }) async {
+    final result = await _send(
+      'POST',
+      '/local-services/competence-claims',
+      body: {
+        'source': place.sourceName,
+        'source_id': place.sourceExternalId,
+        'latitude': place.location.latitude,
+        'longitude': place.location.longitude,
+        'groups': [
+          for (final group in ExoticGroup.values)
+            if (groups.contains(group)) group.apiValue,
+        ],
+        'evidence_kind': evidence.apiValue,
+      },
     );
     return result.map((_) {});
   }

@@ -5,6 +5,22 @@ messaggi dentro l'app, non da un campo telefono o da un'e-mail schermata. Un
 compratore scrive al venditore di un annuncio e nessuno dei due conosce numero,
 e-mail o id dell'altro.
 
+## Decisioni del proprietario (2026-11-07)
+
+1. **Conservazione**: una conversazione si cancella 6 mesi dopo l'ultimo messaggio se
+   l'annuncio è chiuso, comunque dopo 12 mesi, mai finché ha una segnalazione aperta.
+2. **Anti-spam**: al massimo 10 nuove conversazioni al giorno per persona; le risposte non
+   contano.
+3. **Venditore senza piano**: nessuno può aprire una conversazione nuova con lui. L'annuncio
+   mostra una frase neutra («Per questo annuncio non è possibile scrivere.»), uguale a quella
+   per un annuncio chiuso o un blocco: non rivela se il venditore paga. Le conversazioni già
+   aperte restano leggibili.
+4. **Blocco dal Mercatino da parte del team**: dal portale il team può tenere fuori una
+   persona (niente annunci nuovi, niente modifiche, niente messaggi) con un motivo e la data,
+   e annullare il blocco. La persona legge il motivo e la data nella sua lingua, mai la nota
+   del team; può ancora leggere, segnalare e cancellare i propri annunci.
+5. **Notifiche push**: non ora, dopo il test con il pubblico.
+
 ## Regole
 
 | Regola | Dove |
@@ -17,13 +33,16 @@ e-mail o id dell'altro.
 | Chi non partecipa riceve 404, come per un id inesistente; un blocco subito appare come conversazione chiusa | servizio; test «utente B» in `tests/integration/test_marketplace_messages_api.py` |
 | Avviso «non condividere dati personali e non pagare in anticipo» sempre in testa alla conversazione, anche prima del primo messaggio | `widgets/messages_safety_notice.dart` |
 | Il testo non va nei log né verso provider esterni e non è mai interpretato come HTML o link | backend e `marketplace_conversation_page.dart` |
+| Nessuna conversazione nuova con un venditore che non potrebbe rispondere (senza piano o tenuto fuori dal team); la risposta è identica a quella per un annuncio non disponibile | `_can_start` nel servizio; `owner_can_write_on_marketplace` in `container.py` |
+| Chi è tenuto fuori dal team riceve 403 `marketplace_restricted` (motivo e data) su pubblicazione, modifica e messaggi; l'altra persona vede solo «conversazione chiusa» | `raise_if_restricted`, `dependencies/marketplace.py` |
 
 ## Rotte (tutte con `get_current_user()`)
 
 | Metodo e percorso | Serve a | Piano |
 | --- | --- | --- |
 | `POST /marketplace/listings/{id}/conversations` | primo messaggio o seguito, dal compratore | sì |
-| `GET /marketplace/listings/{id}/conversation` | la propria conversazione su quell'annuncio, o `null` | no |
+| `GET /marketplace/listings/{id}/conversation` | la propria conversazione su quell'annuncio, o `null`, e `can_start` | no |
+| `GET /marketplace/restriction` | il proprio eventuale blocco da parte del team (motivo e data) | no |
 | `GET /marketplace/conversations` | elenco e totale non letti | no |
 | `GET /marketplace/conversations/unread-count` | solo il numero, per la busta | no |
 | `GET /marketplace/conversations/{id}` | conversazione e ultimi 200 messaggi | no |
@@ -34,7 +53,9 @@ e-mail o id dell'altro.
 
 Moderazione, solo per gli amministratori e nel portale: `GET /admin/moderation/marketplace_messages`,
 `GET` e `POST /admin/moderation/marketplace_messages/{id}` (azioni `close_conversation`,
-`dismiss_report`, `reopen_report`). Il team legge i messaggi solo di una conversazione segnalata
+`dismiss_report`, `reopen_report`); `GET` e `POST /admin/moderation/marketplace_restrictions`,
+`POST /admin/moderation/marketplace_restrictions/{owner_id}/lift` per tenere fuori una persona o
+farla rientrare. Il team legge i messaggi solo di una conversazione segnalata
 e l'app lo dice nella finestra di segnalazione.
 
 ## Dati
@@ -47,13 +68,15 @@ lettura diretta mostrerebbe l'id dell'altra persona.
   dell'altra persona, che possono citare i dati di chi cancella.
 - **Esportazione**: conversazioni e messaggi di entrambi, con l'id dell'altra persona sempre
   `null`; solo i blocchi fatti, non quelli subiti.
-- **Conservazione (proposta)**: 6 mesi dall'ultimo messaggio se l'annuncio è chiuso, 12 mesi
-  comunque, mai con una segnalazione aperta. La esegue `marketplace_messages_cleanup()` ogni
-  notte con pg_cron.
+- **Conservazione (decisa)**: 6 mesi dall'ultimo messaggio se l'annuncio è chiuso, 12 mesi
+  comunque, mai con una segnalazione aperta; un blocco del team annullato da più di 12 mesi si
+  cancella. La esegue `marketplace_messages_cleanup()` ogni notte con pg_cron.
+- **Blocco del team**: tabella `marketplace_user_restrictions`. Anche scrivendo direttamente
+  nella tabella degli annunci con la propria sessione, una policy restrittiva lo impedisce
+  (`marketplace_caller_is_restricted()`, che risponde solo su chi chiama).
 
 ## Avvisi
 
 Oggi non ci sono notifiche push: il numero sulla busta si aggiorna all'apertura e ogni minuto con
-il Mercatino aperto, la conversazione ogni 20 secondi. Proposta: aggiungere le push subito dopo il
-test con il pubblico e prima del lancio, perché senza avviso chi vende non sa di avere un messaggio
-se non riapre il Mercatino.
+il Mercatino aperto, la conversazione ogni 20 secondi. Le push arrivano dopo il test con il pubblico
+(decisione del 2026-11-07).

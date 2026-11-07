@@ -12,6 +12,7 @@ import '../domain/animal_policy.dart';
 import '../domain/content_policy.dart';
 import '../../billing/data/subscription_required_signal.dart';
 import '../domain/marketplace_listing.dart';
+import '../domain/marketplace_restriction.dart';
 import 'listing_photo_store.dart';
 
 /// The search radius was missing, below the minimum or above the maximum
@@ -154,8 +155,7 @@ class MarketplaceRepository {
         if (result.statusCode != 200) {
           throw const ListingBackendUnavailableException();
         }
-        final json =
-            jsonDecode(utf8.decode(result.bodyBytes)) as Map<String, dynamic>;
+        final json = jsonDecode(utf8.decode(result.bodyBytes)) as Map<String, dynamic>;
         return _parseRow(
           json['listing'] as Map<String, dynamic>,
           limited: json['limited'] == true,
@@ -210,8 +210,7 @@ class MarketplaceRepository {
     }
     if (response.statusCode != 200) return null;
     try {
-      final json =
-          jsonDecode(utf8.decode(response.bodyBytes)) as Map<String, dynamic>;
+      final json = jsonDecode(utf8.decode(response.bodyBytes)) as Map<String, dynamic>;
       final context = json['context'] as Map<String, dynamic>?;
       return _parseRows(
         json['listings'] as List<dynamic>? ?? const [],
@@ -222,8 +221,7 @@ class MarketplaceRepository {
     }
   }
 
-  List<MarketplaceListing> _parseRows(List<dynamic> rows,
-      {bool limited = false}) {
+  List<MarketplaceListing> _parseRows(List<dynamic> rows, {bool limited = false}) {
     final listings = <MarketplaceListing>[];
     for (final row in rows) {
       final listing = _parseRow(row as Map<String, dynamic>, limited: limited);
@@ -306,6 +304,15 @@ class MarketplaceRepository {
     if (handleSubscriptionRequired(response.statusCode)) {
       throw ListingRejectedException(appL10n.billingActionNeedsPlan);
     }
+    if (response.statusCode == 403) {
+      MarketplaceRestriction? restriction;
+      try {
+        restriction = MarketplaceRestriction.fromJson(
+          jsonDecode(utf8.decode(response.bodyBytes)) as Map<String, dynamic>,
+        );
+      } catch (_) {}
+      if (restriction != null) throw ListingRejectedException(restriction.message());
+    }
     if (response.statusCode == 400) {
       String? detail;
       try {
@@ -321,11 +328,9 @@ class MarketplaceRepository {
   /// the one door: the plan check and the removal after three reporters are
   /// decided there. Returns the ad as the backend now has it, or null when the
   /// backend cannot be asked (demo, tests: the caller keeps its local path).
-  Future<MarketplaceListing?> reportListing(
-      MarketplaceListing listing, String reason) async {
+  Future<MarketplaceListing?> reportListing(MarketplaceListing listing, String reason) async {
     if (_localOnly) return null;
-    final path =
-        '/marketplace/listings/${Uri.encodeComponent(listing.id)}/report';
+    final path = '/marketplace/listings/${Uri.encodeComponent(listing.id)}/report';
     final response = await _callApi('POST', path, body: {'reason': reason});
     if (response == null) return null;
     if (handleSubscriptionRequired(response.statusCode)) {
@@ -334,8 +339,7 @@ class MarketplaceRepository {
     if (response.statusCode != 200) {
       throw const ListingBackendUnavailableException();
     }
-    final json =
-        jsonDecode(utf8.decode(response.bodyBytes)) as Map<String, dynamic>;
+    final json = jsonDecode(utf8.decode(response.bodyBytes)) as Map<String, dynamic>;
     return listing.copyWith(
       reportCount: (json['report_count'] as num?)?.toInt(),
       status: _statusFromString(json['status'] as String?),
@@ -410,8 +414,7 @@ class MarketplaceRepository {
   /// A [limited] row is what the backend sends an owner without a plan: only
   /// the first look, so the fields it leaves out take placeholder values and
   /// the ad is marked [MarketplaceListing.isLimited].
-  MarketplaceListing? _parseRow(Map<String, dynamic> row,
-      {bool limited = false}) {
+  MarketplaceListing? _parseRow(Map<String, dynamic> row, {bool limited = false}) {
     if (limited) return _parseLimitedRow(row);
     final category = categoryFromWire(row['category'] as String?);
     final condition = _conditionFromString(row['condition'] as String?);
@@ -471,10 +474,8 @@ class MarketplaceRepository {
       category: ListingCategory.other,
       condition: ListingCondition.good,
       priceCents: (row['price_cents'] as num?)?.toInt(),
-      photoUrls: (row['photo_urls'] as List<dynamic>?)
-              ?.map((e) => e.toString())
-              .toList() ??
-          const [],
+      photoUrls:
+          (row['photo_urls'] as List<dynamic>?)?.map((e) => e.toString()).toList() ?? const [],
       location: const Coordinates(latitude: 0, longitude: 0),
       cityLabel: row['city_label'] as String?,
       country: ((row['country'] as String?)?.trim().isNotEmpty ?? false)

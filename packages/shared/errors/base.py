@@ -42,3 +42,14 @@ class QuotaExceededError(VetAppError):
         self.limit = limit
         self.retry_after_seconds = retry_after_seconds
         self.message = message
+
+
+class MarketplaceRestrictedError(VetAppError):
+    """The moderation team kept this owner out of the Mercatino: the API answers
+    403 `marketplace_restricted` with the reason code and the date, and the app
+    says it in the owner's language."""
+
+    def __init__(self, *, reason: str, since: str) -> None:
+        super().__init__("marketplace_restricted")
+        self.reason = reason
+        self.since = since

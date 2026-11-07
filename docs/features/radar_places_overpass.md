@@ -290,6 +290,25 @@ Su Vercel l'indirizzo IP è condiviso con altri clienti, quindi i 429 possono es
 
 La categoria `shelter` è del 2026-10-07 e compare dopo il prossimo import OSM e Overture (`import_osm_places.py`, `import_overture_places.py`); fino ad allora le mostra solo la cache per celle delle zone non coperte dal catalogo. Numeri trovati prima di aggiungerle: vedi "Tre categorie chieste il 2026-10-07".
 
+### Esperti in esotici (2026-11-07)
+
+Filtro di Vicino a me per i veterinari che **dichiarano** di curare animali esotici, per gruppo: rettili e anfibi, uccelli, piccoli mammiferi (coniglio, roditori, furetto), pesci, altro. Una struttura può averne più di uno. Ogni competenza tiene la propria fonte e la data in cui è stata letta; l'app dice sempre "competenza dichiarata dalla struttura o dalla fonte indicata, non verificata da Quokka".
+
+Fonti (`packages/core/domain/radar_places/competences.py`):
+
+| Fonte | Come | Stato | Licenza |
+| --- | --- | --- | --- |
+| OpenStreetMap | tag `veterinary:treats:<animale>=yes` sul veterinario (conigli, roditori, furetti, uccelli, tartarughe, rettili, pesci...; cani, gatti e animali da reddito ignorati) | attiva | ODbL, come il resto del radar |
+| Nome della struttura | parole rigorose: esotici, non convenzionali, NAC, rettili/erpetologia, aviaria/ornitologia, conigli/roditori/furetti, ittiopatologia. "Pesc" e "uccell" no (Pescara, vie) | **spenta** (`RADAR_EXOTIC_NAME_MATCHING=false`), in attesa della decisione del proprietario | la fonte del nome (OSM o Overture) |
+| Segnala! | "Cura animali esotici? Segnalalo" sulla scheda di un veterinario: gruppi e dove l'ha letto (sito, insegna, altro). Resta in attesa e invisibile finché il team non ha letto la pagina pubblica della struttura e l'ha confermata con `scripts/radar/confirm_competence_claim.py --claim-id <id> --evidence-url <pagina>` (prova obbligatoria) | attiva | dati nostri |
+| Elenchi delle società veterinarie (es. SIVAE) | SIVAE non pubblica un elenco: l'area soci è riservata, nessuna licenza indicata. Nessun elenco si usa senza permesso scritto | non usata | — |
+
+Dati: le competenze non si salvano con il luogo; si calcolano a ogni risposta (dai `details` già salvati di OSM, dal nome se l'interruttore è acceso, dalle segnalazioni confermate) e arrivano all'app come `competences` (gruppo, fonte, modo, data, pagina di prova). Per i tag OSM serve rilanciare l'import OSM; nessuna colonna nuova. Le segnalazioni stanno in `radar_competence_claims` (SQL: `scripts/setup/radar_exotic_competences.sql`, stesso blocco in `supabase_schema.sql`): RLS attiva senza policy e nessun privilegio ad anon/authenticated, pseudonimo di chi segnala, cancellate ed esportate con l'account; pulizia come le altre segnalazioni (`cleanup_reports.py`: in attesa da 90 giorni cancellate, pseudonimo tolto 12 mesi dopo la decisione).
+
+Numeri attesi in Italia all'avvio: circa 20 veterinari con tag OSM (quasi tutti per conigli, dati Geofabrik taginfo del 2026-11-07); con il nome acceso altri 15-20. In molte città il filtro non trova nulla: lo dice e invita ad allargare il raggio o a segnalare una struttura.
+
+Da fare dopo (non costruito): nella chat, quando una risposta d'urgenza consiglia un veterinario esperto in esotici, un collegamento che apre questo filtro.
+
 ### Associazioni (2026-10-21)
 
 OpenStreetMap non ha un tag specifico per le associazioni del mondo animale: in Italia `office=association` c'è su 3.743 luoghi ma il tipo (`association=*`) è quasi sempre assente o di altro genere (223 `rescue`, cioè soccorso alpino e protezione civile; nessun valore animale); `club=dog` è su 3 luoghi (conteggi Geofabrik taginfo del 2026-10-21). Quindi un'associazione, ONG, fondazione o club entra nella sezione quando:

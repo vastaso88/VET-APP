@@ -49,6 +49,7 @@ UI/UX; questo documento descrive cosa riceve.
     "marketplace_messages": [ ... ],
     "marketplace_user_blocks": [ ... ],
     "marketplace_conversation_reports": [ ... ],
+    "marketplace_user_restrictions": [ ... ],
     "local_activities": [ ... ],
     "event_submissions": [ ... ],
     "chat_user_daily_usage": [ ... ],
@@ -80,6 +81,8 @@ Regole:
   entrambi (già leggibili nell'app), ma l'id dell'altra persona è sempre `null`
   (`buyer_id`/`seller_id`, `sender_id`, `blocked_id`); solo i blocchi fatti
   dall'utente, non quelli subiti, che il servizio non rivela per scelta.
+  L'eventuale blocco dal Mercatino deciso dal team compare con motivo, date e
+  nota, senza l'id dell'amministratore (`created_by_admin_id`, `lifted_by_admin_id`).
 - **`files`**: un elemento per allegato della chat/cartella clinica, per foto e
   video dell'animale e per la foto profilo. `kind` ∈ `chat_attachment`,
   `pet_media`, `profile_photo`. `url` è un **link firmato valido 15 minuti**

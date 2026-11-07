@@ -19,10 +19,15 @@ WRITABLE_LISTING_STATUSES = frozenset({"active", "reserved"})
 
 ParticipantRole = Literal["buyer", "seller"]
 # Why the app says a conversation cannot be written to. A block by the other
-# person is deliberately reported as "closed", so nobody learns they were blocked.
-ConversationClosure = Literal["closed", "blocked_by_me"]
+# person, or the team's restriction of the other person, is deliberately reported
+# as "closed", so nobody learns about it; "restricted" is said only to the person
+# the team restricted.
+ConversationClosure = Literal["closed", "blocked_by_me", "restricted"]
 ConversationReportReason = Literal["spam", "scam", "harassment", "inappropriate", "other"]
 ConversationReportStatus = Literal["open", "dismissed", "resolved"]
+# Why the team kept someone out of the Mercatino: a code, so the person reads it
+# in their own language; the team's own words go in the note, never shown to them.
+MarketplaceRestrictionReason = Literal["spam", "scam", "harassment", "prohibited_items", "other"]
 
 
 class MarketplaceConversation(BaseModel):
@@ -75,3 +80,21 @@ class MarketplaceConversationReport(BaseModel):
     resolved_at: datetime | None = None
     resolved_by_admin_id: str | None = None
     created_at: datetime = Field(default_factory=utc_now)
+
+
+class MarketplaceRestriction(BaseModel):
+    """The moderation team kept [owner_id] out of the Mercatino: no new ads, no
+    edits, no messages. Lifting keeps the row (with who and when) for the record."""
+
+    owner_id: str
+    reason: MarketplaceRestrictionReason
+    # The team's own words: shown in the portal, never in the app.
+    note: str | None = Field(default=None, max_length=1000)
+    created_at: datetime = Field(default_factory=utc_now)
+    created_by_admin_id: str | None = None
+    lifted_at: datetime | None = None
+    lifted_by_admin_id: str | None = None
+
+    @property
+    def active(self) -> bool:
+        return self.lifted_at is None

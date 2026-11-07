@@ -10,7 +10,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get petsConsentFullText =>
-      'Pour vous donner un conseil plus précis, l\'assistant peut lire le dossier médical de votre animal. Lorsque vous posez une question, il peut lire les trois entrées les plus récentes, avec le titre, la catégorie (visite, examen, vaccin, traitement ou document), la date de l\'événement, la description et le texte des documents joints, même s\'ils n\'ont aucun rapport avec la question. Il peut aussi lire les maladies antérieures encore en cours, avec le nom et la date de début, cinq au maximum. Si vous demandez d\'expliquer un examen, il peut lire les documents qui le concernent, deux au maximum. D\'un document très long, il ne lit que le début. Ce qu\'il lit est envoyé au fournisseur externe d\'intelligence artificielle qui rédige la réponse. Quokka ne l\'utilise que pour vous répondre. Vous pouvez retirer votre consentement à tout moment depuis la fiche de l\'animal ou les Paramètres : cela vaut pour les demandes suivantes.';
+      'Pour vous donner un conseil plus précis, l\'assistant peut lire le dossier médical de votre animal. Lorsque vous posez une question, il peut lire les trois entrées les plus récentes, avec le titre, la catégorie (visite, examen, vaccin, traitement ou document), la date de l\'événement, la description et le texte des documents joints, même s\'ils n\'ont aucun rapport avec la question. Il peut aussi lire les maladies antérieures encore en cours, avec le nom et la date de début, cinq au maximum. Il lit aussi les notes que vous avez écrites dans la fiche de l\'animal et les rappels actifs, traitements compris. Si vous demandez d\'expliquer un examen, il peut lire les documents qui le concernent, deux au maximum. D\'un document très long, il ne lit que le début. Ce qu\'il lit est envoyé au fournisseur externe d\'intelligence artificielle qui rédige la réponse. Quokka ne l\'utilise que pour vous répondre. Vous pouvez retirer votre consentement à tout moment depuis la fiche de l\'animal ou les Paramètres : cela vaut pour les demandes suivantes.';
 
   @override
   String get appTitle => 'Quokka';
@@ -319,7 +319,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get authDeviceLimitNotice =>
-      'Vous avez été déconnecté de cet appareil : votre compte a été ouvert sur un autre et votre offre autorise un nombre limité d\'appareils. Vous pouvez vous reconnecter quand vous voulez.';
+      'Votre session a été fermée sur cet appareil : votre compte a été ouvert sur un autre appareil et votre offre autorise un nombre limité d\'appareils. Vous pouvez vous reconnecter quand vous voulez.';
 
   @override
   String get authErrorEmailExists =>
@@ -548,7 +548,7 @@ class AppLocalizationsFr extends AppLocalizations {
   String get billingAddPaymentMethod => 'Ajouter un moyen de paiement';
 
   @override
-  String get billingCardBrandLabel => 'Réseau';
+  String get billingCardBrandLabel => 'Réseau de la carte';
 
   @override
   String get billingCardLast4Label => '4 derniers chiffres';
@@ -592,7 +592,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String billingTestPeriodBody(String plan) {
-    return 'Vous utilisez Quokka avec l\'offre $plan, sans payer : pendant le test, tout le monde a la même offre et il n\'y a rien à choisir ni à payer.';
+    return 'Vous utilisez Quokka avec l\'offre $plan, sans payer : pendant le test, tout le monde a la même offre et il n\'y a rien à choisir ni à payer.';
   }
 
   @override
@@ -637,7 +637,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get billingTrialDialogBody =>
-      'À la fin de l\'essai, il faut une offre pour continuer à utiliser Quokka. Choisissez celle qui vous convient : Plus, Pro ou Ultra.';
+      'À la fin de l\'essai, il faut une offre pour continuer à utiliser Quokka. Choisissez celle qui vous convient : Plus, Pro ou Ultra.';
 
   @override
   String get billingTrialDialogLater => 'Plus tard';
@@ -650,7 +650,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get firstRunPlanIntroSubtitle =>
-      'Choisissez comment commencer : vous pouvez tout essayer gratuitement pendant 14 jours, sans carte bancaire, ou choisir tout de suite une offre.';
+      'Choisissez comment commencer : vous pouvez tout essayer gratuitement pendant 14 jours, sans carte bancaire, ou choisir tout de suite une offre.';
 
   @override
   String get firstRunPlanOrChoose => 'OU CHOISISSEZ TOUT DE SUITE UNE OFFRE';
@@ -686,7 +686,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get firstRunNotificationsBody =>
-      'Activez les notifications pour être prévenu des vaccins, traitements et visites à venir. Vous pouvez changer d\'avis à tout moment dans les Paramètres.';
+      'Activez les notifications pour recevoir des alertes sur les vaccins, traitements et visites à venir. Vous pouvez changer d\'avis à tout moment dans les Paramètres.';
 
   @override
   String get firstRunNotificationsEnable => 'Activer les notifications';
@@ -1171,7 +1171,8 @@ class AppLocalizationsFr extends AppLocalizations {
       'Seule la personne qui a publié l\'annonce peut la modifier ou la supprimer.';
 
   @override
-  String get marketplaceCategoryKennelsCarriers => 'Paniers et transport';
+  String get marketplaceCategoryKennelsCarriers =>
+      'Paniers, lits et caisses de transport';
 
   @override
   String get marketplaceCategoryLeashesCollars =>
@@ -1517,13 +1518,13 @@ class AppLocalizationsFr extends AppLocalizations {
       'Avant l\'envoi, nous retirons des photos les données cachées (position, appareil, date).';
 
   @override
-  String get marketplaceLocationTitle => 'Où il se trouve';
+  String get marketplaceLocationTitle => 'Où se trouve l\'article';
 
   @override
   String get marketplaceLocationKeep => 'Zone actuelle de l\'annonce';
 
   @override
-  String get marketplaceLocationNow => 'Là où je suis';
+  String get marketplaceLocationNow => 'Ma position actuelle';
 
   @override
   String get marketplaceLocationHome => 'Domicile';
@@ -3714,7 +3715,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String eventsWindowDefault(int days) {
-    return '$days prochains jours';
+    return 'Les $days prochains jours';
   }
 
   @override
@@ -6666,8 +6667,8 @@ class AppLocalizationsFr extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: 'Messages : $count non lus',
-      one: 'Messages : 1 non lu',
+      other: 'Messages : $count non lus',
+      one: 'Messages : 1 non lu',
       zero: 'Messages',
     );
     return '$_temp0';
@@ -6695,7 +6696,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get marketplaceMessagesSafetyNotice =>
-      'Pour votre sécurité : ne partagez pas de données personnelles (téléphone, e-mail, adresse) et ne payez pas à l\'avance.';
+      'Pour votre sécurité : ne partagez pas de données personnelles (téléphone, e-mail, adresse) et ne payez pas à l\'avance.';
 
   @override
   String get marketplaceMessagesHint => 'Écrire un message';
@@ -6713,7 +6714,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get marketplaceMessagesClosed =>
-      'Cette conversation est fermée : vous pouvez la relire, mais il n\'est plus possible d\'envoyer des messages.';
+      'Cette conversation est fermée : vous pouvez la relire, mais il n\'est plus possible d\'envoyer des messages.';
 
   @override
   String get marketplaceMessagesBlockedByMe =>
@@ -6721,11 +6722,11 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get marketplaceMessagesUnavailable =>
-      'Il n\'est pas possible d\'écrire pour cette annonce.';
+      'Il n\'est pas possible d\'écrire au sujet de cette annonce.';
 
   @override
   String get marketplaceMessagesPlanRequired =>
-      'Pour écrire, il faut une formule active. Vous pouvez toujours relire les messages, bloquer et signaler.';
+      'Pour écrire, il faut une offre active. Vous pouvez toujours relire les messages, bloquer et signaler.';
 
   @override
   String get marketplaceMessagesMoreActions => 'Autres actions';
@@ -6737,7 +6738,7 @@ class AppLocalizationsFr extends AppLocalizations {
   String get marketplaceMessagesUnblock => 'Débloquer l\'utilisateur';
 
   @override
-  String get marketplaceMessagesBlockTitle => 'Bloquer cette personne ?';
+  String get marketplaceMessagesBlockTitle => 'Bloquer cette personne ?';
 
   @override
   String get marketplaceMessagesBlockBody =>
@@ -6765,4 +6766,120 @@ class AppLocalizationsFr extends AppLocalizations {
   @override
   String get marketplaceMessagesActionFailed =>
       'L\'opération a échoué. Réessayez.';
+
+  @override
+  String marketplaceRestrictedNotice(String date, String reason) {
+    return 'L\'équipe de modération a suspendu votre accès au marché de l\'occasion depuis le $date. Motif : $reason. Vous pouvez toujours consulter les annonces et lire vos messages, mais vous ne pouvez ni publier ni modifier d\'annonces, ni envoyer de messages.';
+  }
+
+  @override
+  String get marketplaceRestrictedConversation =>
+      'L\'équipe de modération a suspendu votre accès au marché de l\'occasion : vous pouvez lire cette conversation, mais pas écrire.';
+
+  @override
+  String get marketplaceRestrictionReasonSpam => 'spam';
+
+  @override
+  String get marketplaceRestrictionReasonScam => 'tentative d\'escroquerie';
+
+  @override
+  String get marketplaceRestrictionReasonHarassment => 'harcèlement';
+
+  @override
+  String get marketplaceRestrictionReasonProhibitedItems =>
+      'articles non autorisés';
+
+  @override
+  String get marketplaceRestrictionReasonOther =>
+      'non-respect des règles du marché de l\'occasion';
+
+  @override
+  String get localEventsExoticChip => 'Experts NAC';
+
+  @override
+  String get localEventsExoticAllGroups => 'Tous les groupes';
+
+  @override
+  String get localEventsExoticDisclaimer =>
+      'Compétence déclarée par la structure ou par la source indiquée, non vérifiée par Quokka.';
+
+  @override
+  String localEventsExoticNone(String radius) {
+    return 'Aucune structure dans un rayon de $radius ne déclare cette compétence. Les données sont encore rares : élargissez le rayon ou signalez une structure depuis sa fiche.';
+  }
+
+  @override
+  String get exoticGroupReptileAmphibian => 'Reptiles et amphibiens';
+
+  @override
+  String get exoticGroupBird => 'Oiseaux';
+
+  @override
+  String get exoticGroupSmallMammal => 'Petits mammifères';
+
+  @override
+  String get exoticGroupFish => 'Poissons';
+
+  @override
+  String get exoticGroupOther => 'Autres';
+
+  @override
+  String get exoticGroupGeneral => 'animaux exotiques (groupes non précisés)';
+
+  @override
+  String get exoticGroupSmallMammalHint => 'Lapin, rongeurs, furet';
+
+  @override
+  String placesCompetenceTreats(String groups) {
+    return 'Soigne : $groups';
+  }
+
+  @override
+  String placesCompetenceSourceOsm(String date) {
+    return 'Déclaré sur OpenStreetMap, lu le $date';
+  }
+
+  @override
+  String placesCompetenceSourceName(String date) {
+    return 'Déclaré dans le nom de la structure, lu le $date';
+  }
+
+  @override
+  String placesCompetenceSourceClaim(String date) {
+    return 'Déclaré sur la page de la structure, vérifié le $date';
+  }
+
+  @override
+  String get placesCompetenceSourcePage => 'Page de la structure';
+
+  @override
+  String get placesCompetenceClaimAction =>
+      'Soigne les animaux exotiques ? Signalez-le';
+
+  @override
+  String get placesCompetenceClaimTitle =>
+      'Quels animaux exotiques soigne-t-elle ?';
+
+  @override
+  String get placesCompetenceClaimEvidence => 'Où l\'avez-vous lu ?';
+
+  @override
+  String get placesCompetenceEvidenceWebsite => 'Sur le site de la structure';
+
+  @override
+  String get placesCompetenceEvidenceSign => 'Sur l\'enseigne';
+
+  @override
+  String get placesCompetenceEvidenceOther => 'Ailleurs';
+
+  @override
+  String get placesCompetenceClaimNote =>
+      'Nous l\'affichons seulement après avoir vérifié la page publique de la structure.';
+
+  @override
+  String get placesCompetenceClaimSend => 'Envoyer';
+
+  @override
+  String get placesCompetenceClaimSent =>
+      'Merci : nous le vérifions avant de l\'afficher.';
 }

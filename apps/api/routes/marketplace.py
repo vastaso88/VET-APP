@@ -4,6 +4,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 from pydantic import BaseModel, Field
 
 from apps.api.dependencies.container import get_container
+from apps.api.dependencies.marketplace import require_marketplace_not_restricted
 from apps.api.dependencies.subscription import owner_has_access, require_active_subscription
 from packages.core.application.services.create_listing import CreateListingInput
 from packages.core.application.services.list_nearby_listings import ListNearbyListingsInput
@@ -100,7 +101,13 @@ class ListingPayload(BaseModel):
 
 # The one door through which an ad is written: the content rule (no animals)
 # is applied here, so it does not depend on what the app did.
-@router.post("/listings", dependencies=[Depends(require_active_subscription)])
+@router.post(
+    "/listings",
+    dependencies=[
+        Depends(require_active_subscription),
+        Depends(require_marketplace_not_restricted),
+    ],
+)
 def create_listing(payload: ListingPayload) -> dict[str, object]:
     container = get_container()
     user = container.auth_provider.get_current_user()
@@ -122,7 +129,13 @@ def create_listing(payload: ListingPayload) -> dict[str, object]:
     return {"listing": _public_row(result.listing, user.id)}
 
 
-@router.put("/listings/{listing_id}", dependencies=[Depends(require_active_subscription)])
+@router.put(
+    "/listings/{listing_id}",
+    dependencies=[
+        Depends(require_active_subscription),
+        Depends(require_marketplace_not_restricted),
+    ],
+)
 def update_listing(listing_id: str, payload: ListingPayload) -> dict[str, object]:
     container = get_container()
     user = container.auth_provider.get_current_user()

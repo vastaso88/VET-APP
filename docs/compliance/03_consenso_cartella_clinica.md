@@ -1,12 +1,16 @@
 # Consenso per l'accesso alla cartella clinica da parte della chat
 
+> **In attesa di parere (2026-11-07).** Il testo v4 (note della scheda e promemoria) è in
+> uso nel codice e nell'app ma aspetta il parere della sessione normativa, oggi
+> irraggiungibile. Fino al parere, ogni modifica al testo passa da quella sessione.
+
 Riguarda la feature descritta in spec v3 §18/§36: prima che l'assistente consulti le informazioni cliniche già registrate per un pet (visite, esami, vaccinazioni), l'owner deve dare un consenso esplicito, per animale (non per singola conversazione), revocabile in qualsiasi momento. Implementazione: [packages/core/domain/medical_record/models.py](../../packages/core/domain/medical_record/models.py) (`MedicalRecordConsentRecord`, con `version` che fissa il testo esatto visto dall'utente al momento della decisione).
 
 ## Testo approvato
 
 Fonte di verità per il testo esatto e la versione corrente: [packages/core/domain/medical_record/consent_text.py](../../packages/core/domain/medical_record/consent_text.py) (`CONSENT_TEXT_IT`, `CURRENT_VERSION`). Questo documento non duplica il testo per evitare che le due copie divergano. Esiste una sola copia letterale, nell'app: [medical_record_consent_card.dart](../../apps/mobile_app/lib/features/pets/presentation/widgets/medical_record_consent_card.dart) (`_approvedConsentText`). Il test `tests/unit/test_consent_texts_match_behaviour.py` verifica che coincida con quella del backend.
 
-**Versione corrente: v3 (2026-10-14).** La v2 (2026-10-06) corresse la v1.
+**Versione corrente: v4 (2026-11-07).** La v3 (2026-10-14) aggiunse categorie e malattie in corso; la v2 (2026-10-06) corresse la v1.
 
 ## Rettifica del 2026-10-06: la v1 prometteva più di quanto il sistema facesse
 
@@ -30,6 +34,10 @@ Quanti documenti legge e quali dati (titolo, data, descrizione, testo dei docume
 ### Che cosa dice la v3 (2026-10-14, «Cartella clinica per categorie»)
 
 Ogni voce ha una categoria (visita, esame, vaccino, terapia, documento) e la data dell'evento; la chat le riceve entrambe insieme al titolo. In più la chat legge le malattie pregresse ancora in corso (solo nome e data di inizio, al massimo cinque: `MAX_ONGOING_CONDITIONS`); terapia, note e allegati delle patologie, e le note delle voci, non partono. Le «Domande di chiarimento» ricevono lo stesso riepilogo esteso. Un consenso dato con la v2 non vale più (`effective_decision`: versione diversa = «non deciso»): l'interruttore della scheda risulta spento e la chat richiede la decisione sul testo nuovo prima di leggere qualcosa; nel frattempo vede solo il numero dei documenti.
+
+### Che cosa dice la v4 (2026-11-07, registro rischi R25, opzione A)
+
+Le note libere della scheda dell'animale («Diagnosi MBD lieve 2024») e i promemoria attivi, terapie comprese, sono informazioni sanitarie: dal 2026-11-07 partono verso il fornitore solo con questo consenso concesso sul testo corrente (`send_chat_message.py`: `notes` e `reminders_context` solo se `medical_record_consent is True`; `vet_summary.py`: le note del profilo nel riepilogo per il veterinario con la stessa regola). Prima partivano sempre, e il testo non lo diceva. La v4 aggiunge la frase «Legge anche le note che hai scritto nella scheda dell'animale e i promemoria attivi, terapie comprese», nelle cinque lingue (`petsConsentFullText` negli ARB) e nella domanda in chat (`consent_request`). Un consenso dato con la v3 non vale più (`effective_decision`): senza una nuova scelta non parte nulla di sanitario, né cartella né note né promemoria; restano disponibili nome, specie, razza, sesso, età e peso. Il suggerimento del campo note («dieta, farmaci o comportamento») resta invariato. Test: `test_notes_follow_record_consent.py`, `test_v4_names_the_profile_notes_and_the_reminders_in_every_language`.
 
 ## Punti aperti
 

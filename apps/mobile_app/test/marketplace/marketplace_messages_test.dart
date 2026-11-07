@@ -411,4 +411,95 @@ void main() {
       expect(find.text('Riprova'), findsOneWidget);
     });
   });
+
+  group('moderation and sellers who cannot answer', () {
+    testWidgets('the ad page shows a neutral sentence when no conversation can start',
+        (tester) async {
+      final backend = _Backend((_) => _json({'conversation': null, 'can_start': false}));
+      final listing = _listing();
+      await tester.pumpWidget(
+        _app(
+          ListingDetailPage(
+            listing: listing,
+            repository: MarketplaceRepository.inMemory([listing]),
+            currentOwnerId: 'buyer',
+            messagesRepository: backend.repository(),
+          ),
+        ),
+      );
+      await _settle(tester);
+
+      expect(find.byKey(const ValueKey('marketplace-write-to-seller')), findsNothing);
+      expect(find.text('Per questo annuncio non è possibile scrivere.'), findsOneWidget);
+    });
+
+    testWidgets('an existing conversation keeps the button even when a new one could not start',
+        (tester) async {
+      final backend = _Backend((_) => _json({'conversation': _conversation(), 'can_start': false}));
+      final listing = _listing();
+      await tester.pumpWidget(
+        _app(
+          ListingDetailPage(
+            listing: listing,
+            repository: MarketplaceRepository.inMemory([listing]),
+            currentOwnerId: 'buyer',
+            messagesRepository: backend.repository(),
+          ),
+        ),
+      );
+      await _settle(tester);
+
+      expect(find.byKey(const ValueKey('marketplace-write-to-seller')), findsOneWidget);
+    });
+
+    test('a restriction by the team is explained with its reason and date', () async {
+      final backend = _Backend((_) => _json({
+            'code': 'marketplace_restricted',
+            'reason': 'scam',
+            'since': '2026-11-07T10:00:00+00:00',
+          }, 403));
+      try {
+        await backend.repository().sendMessage('c1', 'Ciao');
+        fail('expected a restriction');
+      } on MarketplaceRestrictedException catch (error) {
+        final text = error.restriction.message();
+        expect(text, contains('tentata truffa'));
+        expect(text, contains('7 nov 2026'));
+      }
+    });
+
+    test('my own restriction is read, and none means none', () async {
+      final restricted = _Backend((_) => _json({
+            'restricted': true,
+            'reason': 'spam',
+            'since': '2026-11-07T10:00:00+00:00',
+          }));
+      final free = _Backend((_) => _json({'restricted': false, 'reason': null, 'since': null}));
+
+      expect((await restricted.repository().myRestriction())!.reason, 'spam');
+      expect(await free.repository().myRestriction(), isNull);
+    });
+
+    testWidgets('a restricted owner reads the conversation and is told why there is no field',
+        (tester) async {
+      final backend = _Backend((_) => _json({
+            'conversation': _conversation(canWrite: false, closedReason: 'restricted'),
+            'messages': [_message('Prima')],
+          }));
+      await tester.pumpWidget(
+        _app(
+          MarketplaceConversationPage(
+            conversationId: 'c1',
+            listingTitle: 'Trasportino',
+            repository: backend.repository(),
+          ),
+        ),
+      );
+      await _settle(tester);
+
+      expect(find.text('Prima'), findsOneWidget);
+      expect(find.byKey(const ValueKey('marketplace-messages-field')), findsNothing);
+      expect(find.textContaining('team di moderazione'), findsOneWidget);
+    });
+  });
 }

@@ -76,7 +76,7 @@ _WAIT_WORDS: dict[str, tuple[str, str, str, str, str]] = {
     # a few minutes, minutes, hour, hours, and
     "it": ("pochi minuti", "minuti", "ora", "ore", "e"),
     "en": ("a few minutes", "minutes", "hour", "hours", "and"),
-    "es": ("unos minutos", "minutos", "hora", "horas", "y"),
+    "es": ("pocos minutos", "minutos", "hora", "horas", "y"),
     "de": ("wenigen Minuten", "Minuten", "Stunde", "Stunden", "und"),
     "fr": ("quelques minutes", "minutes", "heure", "heures", "et"),
 }

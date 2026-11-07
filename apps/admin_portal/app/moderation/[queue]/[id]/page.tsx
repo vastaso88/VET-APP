@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
+import { MarketplaceRestrictForm } from "../../../../components/marketplace-restrict-form";
 import { AdminShell } from "../../../../components/admin-shell";
 import { getModerationDetail } from "../../../../lib/admin-api";
 import {
@@ -147,6 +148,20 @@ export default async function ModerationDetailPage({
           </div>
         ) : null}
 
+        {queue === "marketplace_messages" && conversation ? (
+          <div className="detail-copy">
+            <h3>Keep one of the two out of the Mercatino</h3>
+            <MarketplaceRestrictForm
+              ownerId={String(conversation.buyer_id ?? "")}
+              label="Keep the buyer out"
+            />
+            <MarketplaceRestrictForm
+              ownerId={String(conversation.seller_id ?? "")}
+              label="Keep the seller out"
+            />
+          </div>
+        ) : null}
+
         {queue === "chat" ? (
           <div className="detail-copy">
             <h3>Reported answer</h3>
@@ -189,6 +204,15 @@ export default async function ModerationDetailPage({
             <h3>Description</h3>
             <p>{value(listing, "description")}</p>
           </div>
+          {listing.owner_id ? (
+            <div className="detail-copy">
+              <h3>Keep the seller out of the Mercatino</h3>
+              <MarketplaceRestrictForm
+                ownerId={String(listing.owner_id)}
+                label="Keep the seller out"
+              />
+            </div>
+          ) : null}
         </section>
       ) : null}
 

@@ -13,6 +13,7 @@ from packages.core.domain.marketplace.messaging import (
     MarketplaceConversation,
     MarketplaceConversationReport,
     MarketplaceMessage,
+    MarketplaceRestriction,
     MarketplaceUserBlock,
     ParticipantRole,
 )
@@ -24,6 +25,7 @@ _CONVERSATIONS = "marketplace_conversations"
 _MESSAGES = "marketplace_messages"
 _BLOCKS = "marketplace_user_blocks"
 _REPORTS = "marketplace_conversation_reports"
+_RESTRICTIONS = "marketplace_user_restrictions"
 
 
 def _rows(response: Any) -> list[dict[str, Any]]:
@@ -198,3 +200,42 @@ class SupabaseMarketplaceMessagingRepository:
             .execute()
         )
         return [MarketplaceConversationReport.model_validate(row) for row in _rows(response)]
+
+    def get_restriction(self, owner_id: str) -> MarketplaceRestriction | None:
+        response = (
+            self._client.table(_RESTRICTIONS)
+            .select("*")
+            .eq("owner_id", owner_id)
+            .limit(1)
+            .execute()
+        )
+        rows = _rows(response)
+        return MarketplaceRestriction.model_validate(rows[0]) if rows else None
+
+    def save_restriction(self, restriction: MarketplaceRestriction) -> MarketplaceRestriction:
+        self._client.table(_RESTRICTIONS).upsert(
+            restriction.model_dump(mode="json"), on_conflict="owner_id"
+        ).execute()
+        return restriction
+
+    def restricted_among(self, owner_ids: list[str]) -> set[str]:
+        if not owner_ids:
+            return set()
+        response = (
+            self._client.table(_RESTRICTIONS)
+            .select("owner_id")
+            .in_("owner_id", sorted(set(owner_ids)))
+            .is_("lifted_at", "null")
+            .execute()
+        )
+        return {str(row["owner_id"]) for row in _rows(response)}
+
+    def list_restrictions(self, limit: int) -> list[MarketplaceRestriction]:
+        response = (
+            self._client.table(_RESTRICTIONS)
+            .select("*")
+            .order("created_at", desc=True)
+            .limit(limit)
+            .execute()
+        )
+        return [MarketplaceRestriction.model_validate(row) for row in _rows(response)]

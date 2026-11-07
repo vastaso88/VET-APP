@@ -112,6 +112,7 @@ from packages.core.application.services.radar_reports import (
     RadarCommunityView,
     RadarReportSettings,
     RateDogParkService,
+    SubmitCompetenceClaimService,
     SubmitRadarReportService,
     VoteRadarReportService,
     WithdrawRadarReportService,
@@ -599,6 +600,7 @@ class ApplicationContainer:
             max_search_radius_km=self.settings.radar_search_radius_km,
             freshness_ttl_hours=self.settings.radar_freshness_ttl_hours,
             open_sources=self.radar_open_sources(),
+            exotic_name_matching=self.settings.radar_exotic_name_matching,
         )
 
     def get_user_location_service(self) -> GetUserLocationService:
@@ -630,8 +632,20 @@ class ApplicationContainer:
 
     def marketplace_messaging_service(self) -> MarketplaceMessagingService:
         return MarketplaceMessagingService(
-            self.marketplace_messaging_repository, self.marketplace_listing_repository
+            self.marketplace_messaging_repository,
+            self.marketplace_listing_repository,
+            seller_can_answer=self.owner_can_write_on_marketplace,
         )
+
+    def owner_can_write_on_marketplace(self, owner_id: str) -> bool:
+        """Whether [owner_id]'s plan lets them write: the public test, a plan or an
+        open trial. Read without creating anything, for someone other than the
+        caller. The developer allowlist is matched by e-mail, which is not known
+        here: a developer past the trial without a plan counts as without one."""
+        if self.subscription_test_plan is not None:
+            return True
+        subscription = self.subscription_repository.get(owner_id)
+        return subscription is not None and subscription.has_access(is_developer=False)
 
     def marketplace_messaging_moderation_service(self) -> MarketplaceMessagingModerationService:
         return MarketplaceMessagingModerationService(self.marketplace_messaging_repository)
@@ -1044,6 +1058,14 @@ class ApplicationContainer:
         if settings is None or not settings.reports_enabled:
             return None
         return VoteRadarReportService(
+            self.radar_reports_repository, self.account_consents_repository, settings
+        )
+
+    def submit_competence_claim_service(self) -> SubmitCompetenceClaimService | None:
+        settings = self.radar_report_settings()
+        if settings is None or not settings.reports_enabled:
+            return None
+        return SubmitCompetenceClaimService(
             self.radar_reports_repository, self.account_consents_repository, settings
         )
 

@@ -10,7 +10,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get petsConsentFullText =>
-      'To give you more precise advice, the assistant can read your pet\'s medical records. When you ask a question, it can read the three most recent entries, with title, category (visit, test, vaccine, therapy or document), event date, description and the text of attached documents, even if they are not related to your question. It can also read earlier conditions that are still ongoing, with the name and start date, up to five. If you ask it to explain a test, it can read the documents related to it, up to two. For a very long document it reads only the beginning. What it reads is sent to the external artificial intelligence provider that writes the answer. Quokka uses it only to answer you. You can withdraw your consent at any time from your pet\'s profile or from Settings: this applies to subsequent requests.';
+      'To give you more precise advice, the assistant can read your pet\'s medical records. When you ask a question, it can read the three most recent entries, with title, category (visit, test, vaccine, therapy or document), event date, description and the text of attached documents, even if they are not related to your question. It can also read earlier conditions that are still ongoing, with the name and start date, up to five. It also reads the notes you wrote on your pet\'s profile and the active reminders, therapies included. If you ask it to explain a test, it can read the documents related to it, up to two. For a very long document it reads only the beginning. What it reads is sent to the external artificial intelligence provider that writes the answer. Quokka uses it only to answer you. You can withdraw your consent at any time from your pet\'s profile or from Settings: this applies to subsequent requests.';
 
   @override
   String get appTitle => 'Quokka';
@@ -316,7 +316,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get authDeviceLimitNotice =>
-      'You were signed out of this device: your account was opened on another one, and your plan allows a limited number of devices. You can sign in again at any time.';
+      'You were signed out of this device: your account was opened on another device, and your plan allows a limited number of devices. You can sign in again at any time.';
 
   @override
   String get authErrorEmailExists =>
@@ -600,7 +600,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get marketplaceLimitedNotice =>
-      'You are only seeing the item, price and photos. With a plan you also see the description and details, and you can post and report ads.';
+      'You are only seeing the item, price and photos. With a plan you also see the description and details, and you can post and report listings.';
 
   @override
   String get marketplaceLimitedSeePlans => 'See plans';
@@ -611,7 +611,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get billingPaywallBrowseMarketplace =>
-      'Browse the second-hand marketplace ads';
+      'Browse the second-hand marketplace listings';
 
   @override
   String billingChoosePlan(String plan) {
@@ -637,7 +637,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get billingTrialDialogLater => 'Later';
 
   @override
-  String get billingTrialDialogSeePlans => 'View plans';
+  String get billingTrialDialogSeePlans => 'See plans';
 
   @override
   String get firstRunWelcomeTitle => 'Welcome to Quokka.';
@@ -676,11 +676,11 @@ class AppLocalizationsEn extends AppLocalizations {
   String get firstRunAddPetLater => 'Skip for now';
 
   @override
-  String get firstRunNotificationsTitle => 'Do not miss your reminders';
+  String get firstRunNotificationsTitle => 'Don\'t miss your reminders';
 
   @override
   String get firstRunNotificationsBody =>
-      'Enable notifications for alerts about vaccines, medicines and upcoming visits. You can change this at any time in Settings.';
+      'Turn on notifications to get alerts about due vaccines, medicines and visits. You can change this at any time in Settings.';
 
   @override
   String get firstRunNotificationsEnable => 'Enable notifications';
@@ -700,7 +700,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get firstRunTutorialAssistantBody =>
-      'Ask why it does what it does, how to manage it every day and when a veterinarian is needed: answers based on scientific sources, made for its species.';
+      'Ask why it does what it does, how to manage it every day and when a veterinarian is needed: answers based on scientific sources, tailored to its species.';
 
   @override
   String get firstRunTutorialRemindersTitle => 'Never miss another deadline';
@@ -1258,7 +1258,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get marketplaceNoContactsMessage =>
-      'Do not put phone numbers, e-mail addresses, websites or social profiles in the ad.';
+      'Do not put phone numbers, emails, websites or social profiles in the listing.';
 
   @override
   String get marketplaceNoMedicinesMessage =>
@@ -1273,7 +1273,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get marketplaceNeedsLocation =>
-      'The marketplace only shows ads near you. Set your location in Settings → Location to see them.';
+      'The marketplace only shows listings near you. Set your location in Settings → Location to see them.';
 
   @override
   String get marketplaceSetLocationAction => 'Set your location';
@@ -3687,7 +3687,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get eventsCountryOnlyNote =>
-      'We only show events from your country, the one of the language you picked in the app.';
+      'We only show events from your country, based on the language you picked in the app.';
 
   @override
   String get eventsLevelLocal => 'Local';
@@ -6600,7 +6600,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get marketplaceMessagesEmpty =>
-      'No conversations yet. When you message a seller, or someone writes to you about one of your ads, you\'ll find it here.';
+      'No conversations yet. When you message a seller, or someone writes to you about one of your listings, you\'ll find it here.';
 
   @override
   String get marketplaceMessagesLoadFailed =>
@@ -6644,7 +6644,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get marketplaceMessagesUnavailable =>
-      'It is not possible to write about this ad.';
+      'It is not possible to message about this listing.';
 
   @override
   String get marketplaceMessagesPlanRequired =>
@@ -6664,7 +6664,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get marketplaceMessagesBlockBody =>
-      'They will no longer be able to write to you about any ad, and you will not be able to write to them. They will not be notified.';
+      'They will no longer be able to write to you about any listing, and you will not be able to write to them. They will not be notified.';
 
   @override
   String get marketplaceMessagesBlockConfirm => 'Block';
@@ -6688,4 +6688,119 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get marketplaceMessagesActionFailed =>
       'That did not work. Please try again.';
+
+  @override
+  String marketplaceRestrictedNotice(String date, String reason) {
+    return 'The moderation team has suspended your access to the marketplace since $date. Reason: $reason. You can still browse listings and read your messages, but you cannot post or edit listings or send messages.';
+  }
+
+  @override
+  String get marketplaceRestrictedConversation =>
+      'The moderation team has suspended your access to the marketplace: you can read this conversation, but not write in it.';
+
+  @override
+  String get marketplaceRestrictionReasonSpam => 'spam';
+
+  @override
+  String get marketplaceRestrictionReasonScam => 'attempted fraud';
+
+  @override
+  String get marketplaceRestrictionReasonHarassment => 'harassment';
+
+  @override
+  String get marketplaceRestrictionReasonProhibitedItems =>
+      'items that are not allowed';
+
+  @override
+  String get marketplaceRestrictionReasonOther =>
+      'breach of the marketplace rules';
+
+  @override
+  String get localEventsExoticChip => 'Exotic pet experts';
+
+  @override
+  String get localEventsExoticAllGroups => 'All groups';
+
+  @override
+  String get localEventsExoticDisclaimer =>
+      'Expertise as stated by the practice or by the source shown, not verified by Quokka.';
+
+  @override
+  String localEventsExoticNone(String radius) {
+    return 'No practice within $radius states this expertise. There is still little data: widen the radius or report a practice from its page.';
+  }
+
+  @override
+  String get exoticGroupReptileAmphibian => 'Reptiles and amphibians';
+
+  @override
+  String get exoticGroupBird => 'Birds';
+
+  @override
+  String get exoticGroupSmallMammal => 'Small mammals';
+
+  @override
+  String get exoticGroupFish => 'Fish';
+
+  @override
+  String get exoticGroupOther => 'Other';
+
+  @override
+  String get exoticGroupGeneral => 'exotic animals (groups not stated)';
+
+  @override
+  String get exoticGroupSmallMammalHint => 'Rabbit, rodents, ferret';
+
+  @override
+  String placesCompetenceTreats(String groups) {
+    return 'Treats: $groups';
+  }
+
+  @override
+  String placesCompetenceSourceOsm(String date) {
+    return 'Stated on OpenStreetMap, read on $date';
+  }
+
+  @override
+  String placesCompetenceSourceName(String date) {
+    return 'Stated in the practice\'s name, read on $date';
+  }
+
+  @override
+  String placesCompetenceSourceClaim(String date) {
+    return 'Stated on the practice\'s own page, checked on $date';
+  }
+
+  @override
+  String get placesCompetenceSourcePage => 'Practice page';
+
+  @override
+  String get placesCompetenceClaimAction => 'Treats exotic animals? Report it';
+
+  @override
+  String get placesCompetenceClaimTitle =>
+      'Which exotic animals does it treat?';
+
+  @override
+  String get placesCompetenceClaimEvidence => 'Where did you read it?';
+
+  @override
+  String get placesCompetenceEvidenceWebsite => 'On the practice\'s website';
+
+  @override
+  String get placesCompetenceEvidenceSign => 'On its sign';
+
+  @override
+  String get placesCompetenceEvidenceOther => 'Elsewhere';
+
+  @override
+  String get placesCompetenceClaimNote =>
+      'We show it only after checking the practice\'s own public page.';
+
+  @override
+  String get placesCompetenceClaimSend => 'Send';
+
+  @override
+  String get placesCompetenceClaimSent =>
+      'Thanks: we will check it before showing it.';
 }

@@ -2,6 +2,7 @@ from datetime import datetime
 from typing import Protocol
 
 from packages.core.application.ports.radar_catalog_repository import BoundingBox
+from packages.core.domain.radar_places.competences import RadarCompetenceClaim
 from packages.core.domain.radar_reports.models import (
     RadarPlaceOverride,
     RadarPlaceRating,
@@ -40,3 +41,16 @@ class RadarReportsRepository(Protocol):
     def save_override(self, override: RadarPlaceOverride) -> None: ...
 
     def list_overrides(self) -> list[RadarPlaceOverride]: ...
+
+    # Exotic-competence claims (radar_competence_claims).
+    def save_claim(self, claim: RadarCompetenceClaim) -> RadarCompetenceClaim: ...
+
+    def list_claims(
+        self, box: BoundingBox, *, statuses: list[str]
+    ) -> list[RadarCompetenceClaim]: ...
+
+    def list_claims_by_reporter(
+        self, reporter_pseudonym: str, *, target_source: str, target_source_id: str
+    ) -> list[RadarCompetenceClaim]: ...
+
+    def count_claims_since(self, reporter_pseudonym: str, since: datetime) -> int: ...

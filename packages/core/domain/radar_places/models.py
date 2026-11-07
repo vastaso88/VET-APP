@@ -4,6 +4,7 @@ from typing import Any, Literal
 from pydantic import BaseModel, Field, model_validator
 
 from packages.core.domain.geo.models import Coordinates
+from packages.core.domain.radar_places.competences import ExoticCompetence
 
 RadarPlaceType = Literal[
     "veterinary",
@@ -35,6 +36,8 @@ RADAR_PLACE_TRANSIENT_FIELDS = frozenset(
         "confidence",
         "license",
         "release",
+        # Worked out when a radar answer is composed (competences.py).
+        "competences",
     }
 )
 
@@ -86,6 +89,9 @@ class RadarPlace(BaseModel):
     confidence: float | None = None
     license: str | None = None
     release: str | None = None
+    # Exotic-animal groups a veterinary practice is declared competent for,
+    # each with its source and reading date. Never stored with the place.
+    competences: list[ExoticCompetence] = Field(default_factory=list)
 
     @model_validator(mode="after")
     def _assign_id(self) -> "RadarPlace":

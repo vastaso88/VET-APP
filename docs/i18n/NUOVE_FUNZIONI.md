@@ -17,8 +17,8 @@ L'italiano è la sorgente: si scrive solo lì, il resto segue. Lingue oggi: `it`
      Si traducono tutte le lingue nello stesso lavoro, rispettando glossario e guida di stile.
 3. **Revisione.** Una persona rilegge ogni bozza (spuntando `TRANSLATION_REVIEW.md`). Si guarda con più cura: negazioni, testi clinici, triage,
    consensi, nomi delle funzioni, lunghezza (il tedesco si allunga). Il testo italiano ambiguo si corregge alla sorgente e si riparte dal passo 1.
-   Poi: `python scripts/i18n/auto_translate.py acknowledge` e si committa il manifest (`docs/i18n/source_manifest.json`) con i cataloghi.
-   `acknowledge` attesta che i testi sono stati *rivisti*: non si esegue per far passare il controllo.
+   Poi: `python scripts/i18n/auto_translate.py acknowledge --prefix ui:nomeFunzione` (o `--keys ui:chiave ...`; `--all` quasi mai) e si committa il manifest (`docs/i18n/source_manifest.json`) con i cataloghi.
+   `acknowledge` attesta che i testi indicati sono stati *rivisti*: non si esegue per far passare il controllo.
 4. **Test.** Prima di dire "fatto":
 
    ```bash
