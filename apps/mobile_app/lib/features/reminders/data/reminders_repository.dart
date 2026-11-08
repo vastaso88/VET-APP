@@ -1,3 +1,4 @@
+import '../../billing/data/plan_access_refusal.dart';
 import '../../../shared/date/calendar_days.dart';
 import 'dart:async';
 
@@ -294,7 +295,8 @@ class RemindersRepository {
     } catch (error) {
       _restore(reminder.id, previous);
       if (error is ReminderSyncException) rethrow;
-      throw ReminderSyncException(appL10n.remindersErrorSaveFailed);
+      final refusal = handlePlanRefusal(error);
+      throw ReminderSyncException(refusal?.message ?? appL10n.remindersErrorSaveFailed);
     }
   }
 

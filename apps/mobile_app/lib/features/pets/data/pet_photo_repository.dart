@@ -6,6 +6,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../../shared/auth/current_user.dart';
 import '../../../shared/config/app_runtime_config_loader.dart';
+import '../../billing/data/plan_access_refusal.dart';
 import '../domain/pet_video_rules.dart';
 import 'pet_photo_disk_cache.dart';
 
@@ -270,14 +271,22 @@ class PetPhotoRepository {
     required String contentType,
     required Map<String, Object?> row,
   }) async {
-    await client.storage.from(bucket).uploadBinary(
-          path,
-          bytes,
-          fileOptions: FileOptions(contentType: contentType, upsert: false),
-        );
+    try {
+      await client.storage.from(bucket).uploadBinary(
+            path,
+            bytes,
+            fileOptions: FileOptions(contentType: contentType, upsert: false),
+          );
+    } catch (error) {
+      // Trial over: the Storage policy answers a bare 403 (no code of its own),
+      // told apart from other refusals by the account having no access.
+      handlePlanRefusal(error, storagePetPhotos: true);
+      rethrow;
+    }
     try {
       await _insertRow(client, row);
-    } catch (_) {
+    } catch (error) {
+      handlePlanRefusal(error);
       try {
         await client.storage.from(bucket).remove([path]);
       } catch (_) {

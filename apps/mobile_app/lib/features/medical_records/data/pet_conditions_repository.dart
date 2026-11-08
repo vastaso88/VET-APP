@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+import '../../billing/data/plan_access_refusal.dart';
 import '../../../../shared/auth/current_user.dart';
 import '../../../../shared/config/app_runtime_config_loader.dart';
 import '../../../l10n/l10n.dart';
@@ -65,8 +66,9 @@ class PetConditionsRepository {
         'attachment_id': condition.attachmentId,
         'attachment_name': condition.attachmentName,
       });
-    } catch (_) {
-      throw MedicalRecordSaveException(appL10n.medCondSaveFailed);
+    } catch (error) {
+      final refusal = handlePlanRefusal(error);
+      throw MedicalRecordSaveException(refusal?.message ?? appL10n.medCondSaveFailed);
     }
     changes.value++;
   }

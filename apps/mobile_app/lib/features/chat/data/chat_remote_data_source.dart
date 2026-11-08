@@ -9,7 +9,7 @@ import '../../../shared/config/app_runtime_config_loader.dart';
 import '../../../shared/date/utc_offset_header.dart';
 import '../../../shared/errors/app_network_error.dart';
 import '../../../shared/types/result.dart';
-import '../../billing/data/subscription_required_signal.dart';
+import '../../billing/data/plan_access_refusal.dart';
 
 /// Parsed slice of the backend's `POST /chat` response that the mobile chat
 /// feature actually needs — see `SendChatMessageOutput`
@@ -565,22 +565,15 @@ class HttpChatRemoteDataSource implements ChatRemoteDataSource {
   /// the owner is sent to the paywall) and 403 `plan_limit_reached` (the plan
   /// does not allow more pets). Null for any other answer.
   AppNetworkError? _planError(http.Response response) {
-    if (handleSubscriptionRequired(response.statusCode)) {
-      return AppNetworkError(
-        code: 'subscription_required',
-        message: appL10n.billingPaywallTitle,
-      );
-    }
-    if (response.statusCode == 403) {
-      final detail = _extractDetail(response.body);
-      if (detail != null && detail.startsWith('plan_limit_reached')) {
-        return AppNetworkError(
-          code: 'plan_limit_reached',
-          message: appL10n.billingPlanLimitReached,
-        );
-      }
-    }
-    return null;
+    final refusal = planRefusalFromHttp(response.statusCode, response.body);
+    if (refusal == null) return null;
+    applyPlanRefusal(refusal);
+    return AppNetworkError(
+      code: refusal.kind == PlanRefusalKind.subscriptionRequired
+          ? 'subscription_required'
+          : 'plan_limit_reached',
+      message: refusal.message,
+    );
   }
 
   /// The backend's 422 for a `user_message` over its length limit

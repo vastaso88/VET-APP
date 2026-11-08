@@ -4,6 +4,7 @@ import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+import '../../billing/data/plan_access_refusal.dart';
 import '../../../shared/auth/current_user.dart';
 import '../../../shared/cache/owner_json_cache.dart';
 import '../../../l10n/l10n.dart';
@@ -303,7 +304,10 @@ class PetDemoStore {
       _unsynced.remove(pet.id);
       changes.value++;
       return true;
-    } catch (_) {
+    } catch (error) {
+      // Trial over / pet limit reached: the paywall or the limit message
+      // instead of a silent "not synced" flag (the pet stays flagged too).
+      handlePlanRefusal(error, showMessage: true);
       _unsynced.add(pet.id);
       changes.value++;
       return false;

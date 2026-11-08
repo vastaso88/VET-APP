@@ -1,5 +1,6 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+import '../../billing/data/plan_access_refusal.dart';
 import '../../../../shared/config/app_runtime_config_loader.dart';
 import '../../location/domain/coordinates.dart';
 import '../domain/local_activity.dart';
@@ -40,8 +41,10 @@ class LocalActivitiesRepository {
 
     try {
       await client.from('local_activities').upsert(_toRow(activity));
-    } catch (_) {
+    } catch (error) {
       // Best-effort: the local list above already applied for this session.
+      // A refusal of the plan (trial over) is the one thing worth saying.
+      handlePlanRefusal(error, showMessage: true);
     }
   }
 

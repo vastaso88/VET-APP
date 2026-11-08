@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+import '../../billing/data/plan_access_refusal.dart';
 import '../../../l10n/date_formats.dart';
 import '../../../l10n/l10n.dart';
 import '../../../../shared/auth/current_user.dart';
@@ -196,8 +197,9 @@ class MedicalRecordsRepository {
         if (!_isMissingColumn(error)) rethrow;
         await client.from('clinical_events').upsert(legacyRow);
       }
-    } catch (_) {
-      throw MedicalRecordSaveException(appL10n.medicalSaveFailed);
+    } catch (error) {
+      final refusal = handlePlanRefusal(error);
+      throw MedicalRecordSaveException(refusal?.message ?? appL10n.medicalSaveFailed);
     }
     _savedThisSession.removeWhere((item) => item.id == record.id);
     _savedThisSession.add(record);
@@ -237,8 +239,9 @@ class MedicalRecordsRepository {
         if (!_isMissingColumn(error)) rethrow;
         await client.from('clinical_events').update(legacyChanges).eq('id', updated.id);
       }
-    } catch (_) {
-      throw MedicalRecordSaveException(appL10n.medicalSaveFailed);
+    } catch (error) {
+      final refusal = handlePlanRefusal(error);
+      throw MedicalRecordSaveException(refusal?.message ?? appL10n.medicalSaveFailed);
     }
     final sessionIndex = _savedThisSession.indexWhere((item) => item.id == updated.id);
     if (sessionIndex != -1) _savedThisSession[sessionIndex] = updated;
@@ -257,8 +260,9 @@ class MedicalRecordsRepository {
 
     try {
       await client.from('clinical_events').update({'title': title}).eq('id', record.id);
-    } catch (_) {
-      throw MedicalRecordSaveException(appL10n.medicalRenameFailed);
+    } catch (error) {
+      final refusal = handlePlanRefusal(error);
+      throw MedicalRecordSaveException(refusal?.message ?? appL10n.medicalRenameFailed);
     }
     final sessionIndex = _savedThisSession.indexWhere((item) => item.id == record.id);
     if (sessionIndex != -1) _savedThisSession[sessionIndex] = record.copyWith(title: title);

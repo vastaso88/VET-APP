@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+import '../../billing/data/plan_access_refusal.dart';
 import '../../../app/router/app_router.dart';
 import '../../../l10n/l10n.dart';
 import '../../../../shared/config/app_runtime_config_loader.dart';
@@ -16,9 +17,12 @@ import '../domain/walk_session.dart';
 /// repository method - same idea as its navigatorKey.
 void _notifySyncFailure(String action, Object error, {bool showMessage = true}) {
   debugPrint('DogWalksRepository: $action failed against Supabase: $error');
+  // The paywall opens even when the caller asked for no message: a refused
+  // plan is not a connection problem.
+  final refusal = handlePlanRefusal(error);
   if (!showMessage) return;
   AppRouter.scaffoldMessengerKey.currentState?.showSnackBar(
-    SnackBar(content: Text(appL10n.walksSyncFailed)),
+    SnackBar(content: Text(refusal?.message ?? appL10n.walksSyncFailed)),
   );
 }
 
