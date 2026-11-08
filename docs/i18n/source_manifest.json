@@ -18034,5 +18034,167 @@
       "de": "e9d1248fb54466e18d8a597ec2fa602a500da6e51f19d92addf5f0e359baf1be",
       "fr": "77249f40686804f33d6cc23b9a0b881f415716fe07b5293fa4817347c6bf6b6b"
     }
+  },
+  "ui:ageStepTitle": {
+    "source": "bdf0e4a1314aa26a578ea56a718b9741377f0543d584453e031798fe52aa99d6",
+    "targets": {
+      "en": "3ecedc20aef5ca3953131c0c3ac7a7f46df50197e39d6f06a293dfad829d9e97",
+      "es": "86c410f52480d18bd1efcd4a8afb9a055043acd89f6783384f8c862c6070130f",
+      "de": "b1002b386f2de3755be9a1dd1cbf8b46721ddb6734c635822ae25c29342f647a",
+      "fr": "f915ea7ccb8222f8455cdce73087ca78774e61c414ac19d175afb8fe48d7755e"
+    }
+  },
+  "ui:ageStepBody": {
+    "source": "746f0eadab0db1de671887f7c7c84d4312a28bd1cd8bf7907d97425f1914a708",
+    "targets": {
+      "en": "c8c98f5f88ff5cc796d8366e5c23c12547fa72f4ac5684ca3e7818e58b87dd28",
+      "es": "3412e60e2e28e547ef3479d15446fdbc689b87f599a77fc38ac328071f7c9ca6",
+      "de": "784830797d1aa2b6240b65bd5d4d1e2977054029ea09a44feecdc9e8d1ac46cc",
+      "fr": "a2d3444b3553d9320ee9aaae18ad669e752fe208159fb9071ff462e504a61d64"
+    }
+  },
+  "ui:ageStepCorrectionNote": {
+    "source": "87b57ae6e0365cc6acba39e8171a131b337e4c345653b4e0a353eebe26154624",
+    "targets": {
+      "en": "af49b2e6e5ef8b5db5f87f82d091f2e03b2869c2f506ef2cd8bd293d55cf2209",
+      "es": "2a4a96aab4a2b3bb8e6fa8fa16d586431df54ad0e80ff186b4f822ea30b18684",
+      "de": "04ac99440931cd313848facdca3bdd00a8daa9110367c6ac75b5a19495c75680",
+      "fr": "2078e8053d887df9b09e6acee04f6041ed1319a4eea6df4caa3b38f4274540f2"
+    }
+  },
+  "ui:ageStepLater": {
+    "source": "1ed5cb2ef3e233e35b1e1e085c2d3eed1633b9c258fe371dcaa0262ae4cd5dd8",
+    "targets": {
+      "en": "c19525e91f26d3c4b5974ccb834c600c6d97135b2875e993b910db6a5201e153",
+      "es": "457c12bde083cce16f3f2f2789f3d983ac52f4b2a93afbf2bc6c4a0abf7dd9e2",
+      "de": "be086c58c7d53baefa949080814ebe253e570adfc206c8d13c62bb939a5a1b6d",
+      "fr": "a63c2b6562abfc4f0d3f9edb88c4769d8cd86f697425c0b38e397038056e4fe2"
+    }
+  },
+  "ui:ageReasonSignIn": {
+    "source": "cca84291c698376754c47d080e052625f8de1464155aa076309cceda8301af1e",
+    "targets": {
+      "en": "086e141c039ba2e5e0e586fc4ab110971cf6bc59b92abde5e0e9e226c4edb551",
+      "es": "cf939edeedcc2235f2a24134f6b213fc2dcb04b1302f4dde9bf632e06da7edd2",
+      "de": "85e8136f53c66f3686072f19081f71390139fae0121454762b6f320ac4856281",
+      "fr": "9582bafc804dd65b65380d8352d3315c2e4a818ab0c4bd0409e14052c8b57f7a"
+    }
+  },
+  "ui:ageReasonMarketplace": {
+    "source": "02ee45bd2b0721a5dd50309dbf4a82e5fc76ed1cade510efbe7b1808768d44ea",
+    "targets": {
+      "en": "87732439399a636f7b873ef0df0811b916bd743dc7214f485056ebee16dd17d7",
+      "es": "54db01abfbc7b6d61b36b54f5fad4a7ba9b00ee17c211e596fb1258ce37823ce",
+      "de": "4260a2c18a17c82e43b0817ac9e1052192ec48860cd005c1500243dc5eca22d1",
+      "fr": "a0aee72e896f47cffd74f547e24f4a7790373509aed7cac85a1da75ba171c1df"
+    }
+  },
+  "ui:ageReasonPlan": {
+    "source": "63a9c0d7111422be3391b2c1b5dc0d8c77b5abb22be5590f8ee1246b95a8e00f",
+    "targets": {
+      "en": "c6f4c20140e36d301f0b1ef38e1ca4d8c2c018024f546bb576c49630cffc84e5",
+      "es": "a6482c0d5514f2413a1406c2eafa3d6fce3ad99699004143d048b311963ca560",
+      "de": "5f2a7e82da945cdfe24d38e9e364bf4b3a14a1d44fb4cf651b57d90b4ecc6a7e",
+      "fr": "ad5b6f5ca317e243eaedaa42928f6e7fc452279263f003e1f9fe7d5fda80e9cf"
+    }
+  },
+  "ui:ageSaveFailed": {
+    "source": "0f4bb952429566776066d0e0aab41e1d2b18bf3d28ec825a9e3af0ee6ce6c3ef",
+    "targets": {
+      "en": "cae58131526e8c0df58e00d89c5b095c593652bd025aad22fb250c4bb21ddbb8",
+      "es": "a24b922b85b112c8d5b52b591e7d5dfd663397fba4cb61ee32e4e84abbbca987",
+      "de": "c5540fc8d5305c06ee50e8fd5a918b5600f8953a1fa9d480f8bca04ed49d56b3",
+      "fr": "435d839d747f7e0a3523cffcfb7236d42e408da91e30de810a09f4b86a5e6bfe"
+    }
+  },
+  "ui:ageClosedTitle": {
+    "source": "cb54b9ac4778404bcc5ba8454dffdcd6fe71bed54a23a393e7514fc6dc78b477",
+    "targets": {
+      "en": "4b66be0df0e57dd28f35e828622038fb5e7542279a03905231f88d58a389de5b",
+      "es": "9f4cfc40129e49ba0881462b82a8f75b9df587c4686f2ec0bf40ecc41d5c550e",
+      "de": "226aa19ff94a304374b01f14152174bf0ea54077460c68149fa27f4e032440bc",
+      "fr": "dd56686fb327d030e1cad1a9fe8268ed15a12e4f2d2932a2852d18a67a436d21"
+    }
+  },
+  "ui:ageUnderageBody": {
+    "source": "4ce69f05f1966e59d00bd6c102a8a1259d3f48bd0674554432e733e8fd846048",
+    "targets": {
+      "en": "d13bc47df94b475e4614c360fa9b0fde19ba1621b62d1e47f20e685117ce1266",
+      "es": "96ae79fe5efe67836fac03c47d6c973a30d86fa92ce463f776684320bb0f8c3e",
+      "de": "cc996b7b304d11e78657c4d0d54b42247ccaab982e6f39db4f739ca121bfee7c",
+      "fr": "d1451e098576c2c44804505539538963bf7c2015e7e1aa30c1c78efbffa922d5"
+    }
+  },
+  "ui:ageClosedBody": {
+    "source": "b7b77d78f8904294b8eb4cdc341b31f82b9d54b9f8061cf590038172791e5cfa",
+    "targets": {
+      "en": "ccde9ecf8750501fe415a2994b0c558f64c6171d426bcfac678f8807341dd102",
+      "es": "0c9aee9a6be046cd484d84b2af9888ef918e6d9f839465d824741de25755719c",
+      "de": "ec8012232b2a0c6be3af7c8b2278a5967e3d9084c41961256d6910a8459c92a8",
+      "fr": "ecfd9e45c349a72697401390d33d716921e705cd4bdb8353b5d2fb2190bcde4f"
+    }
+  },
+  "ui:ageClosedContact": {
+    "source": "a0bc6b01c944e883a00ec94a6b172522c9c0559332edcfbb69d6eca5fd3e7ace",
+    "targets": {
+      "en": "0dbf0900ec7ee6eaf22955bc437d8a2aff843d09498d7b85e399300d4f54b637",
+      "es": "788b18012a8fda1ca95e73c4ccfe022a9dcd545e092b550bb00f5b58165a93a1",
+      "de": "60c812f620a0760197e82fc090d28245606882be54020c22d5a59ff6575d6026",
+      "fr": "193b9bb65f1e1250f8049501b0b871fe7b8095318f4bd989a3c1a56aac79b6fb"
+    }
+  },
+  "ui:ageClosedMailSubject": {
+    "source": "c9a27007a0212410f5594727cedd2b8f71286602e67daf0d1e0adcc5aa05d0c9",
+    "targets": {
+      "en": "73e7290039b771423bda85ce21c4205513114d4b70983aee21b9cf731a0ce685",
+      "es": "7e6a47fb67803a556ecd5582e3b46e79ab351ee552a0ce334db3d406861a72fe",
+      "de": "19d6e402df3307d9ffcfe9444621ff7a410fdc52e64bff6f4c5762eb9ad352f1",
+      "fr": "570e85aab78e0d7e41ca3634eb8444ed76aca4ea82e95ec31531630f61086b10"
+    }
+  },
+  "ui:ageMarketplaceTitle": {
+    "source": "30fa98a8076b118ebae664628c88728fc402440b0f6eb67651bf1b8fc6f2c2cb",
+    "targets": {
+      "en": "af528c52892137d26f26e041a070793e5df395283de9314016fa5be0b8a03fd3",
+      "es": "b77502bfe28b0127ef4855804a7ba800ebbc4791da85969d5721eb720e04a21c",
+      "de": "0b526ac20dd26c1361422728a41d2f94b5ceca9c0306a4989c8cbd3749f6f764",
+      "fr": "bc20b3d9293873c4d059a746475917a348741c883652e15dc1aa46372596fa9b"
+    }
+  },
+  "ui:ageMarketplaceBody": {
+    "source": "aa2f337b6d3d5063249906aedb7d27c8cd67bcba8a92d30415ab2d51fd9b9a68",
+    "targets": {
+      "en": "92057f59a7ae7f48d02a48628671205c58f25b7bc7a85e83cd5e37a86364b40d",
+      "es": "f13e8089da5af2858031a3aca4ef59754c0767977b2e76e880e0c7f511d3d9fd",
+      "de": "9bb0426ca362c3998ee400db00eef7521e45f46bd8a57610ed3dc499d04413d4",
+      "fr": "150cc49727fd5c96b2d864ff9283f83fcaf62f0b9c3937d2ff887094b601eeea"
+    }
+  },
+  "ui:ageGuardianTitle": {
+    "source": "c40573edb8d26ed091363645b3d21037be52a08740decd8cb07a858013cd5c30",
+    "targets": {
+      "en": "4465ffe8980bba24ce0f434968e7f67eeea9bd28f14a29353fc1d4bddd8024ce",
+      "es": "05ad8cd53722a52d696edb570306a2bbe07db4887b7248b438c9a04caedd53b4",
+      "de": "3155dd884b75b0be5d8a4af824ef1507ded38047b2b9aec2d3f162a126f75b69",
+      "fr": "b273df1d591d95760f1997c5a037aaa0043dd4385c9f007429648c265c8adfdb"
+    }
+  },
+  "ui:ageGuardianBody": {
+    "source": "2d20ea48693afa194ee2f8232227fcd5bf235ab6a9ea869986abfff49f440e81",
+    "targets": {
+      "en": "d010b0d6725100b09053b75d347720fde8cbbf1b30a9bd32a32abcae26c6e6cb",
+      "es": "51f1dcffac5838a629656bed4d9764dd493123409eea8a3c5e5bbb239ee2bb4b",
+      "de": "451a43a1d4351b3ea4c8f7c6509ee9a25d940f9c50ae49ffbacedd46ecf817f4",
+      "fr": "70cb6b14b908baa445761ca5ce8d91a9c5574d2bffae378f9d281b7920f4b771"
+    }
+  },
+  "ui:ageGuardianConfirm": {
+    "source": "2f47f8adfdbfee98fc5c2f77f01bc5497bac3f3147d7dd47971cf887c398c6ef",
+    "targets": {
+      "en": "545105d2faac5cf6e12a07233cb8d3a16c48586a96b2162964bec5c3ce516cc4",
+      "es": "09e11d8270449ed3fd51176e30c59ed6793c9155246d02be3d3371e6dbe5783f",
+      "de": "08eeb947c08e9e4804bdd46b14055cf7223783302d756cc92d939e42435c09c3",
+      "fr": "1a09c52608dd94993f5b8801b2cda85c1f9d72d3ba4e1df9bd1aad248a7d3027"
+    }
   }
 }

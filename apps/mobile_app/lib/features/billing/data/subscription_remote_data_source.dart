@@ -8,6 +8,7 @@ import '../../../shared/auth/current_user.dart';
 import '../../../shared/config/app_runtime_config_loader.dart';
 import '../../../shared/errors/app_network_error.dart';
 import '../../../shared/types/result.dart';
+import '../../age/domain/age_status.dart';
 import '../domain/billing_models.dart';
 import '../domain/subscription_status.dart';
 
@@ -75,6 +76,17 @@ class HttpSubscriptionRemoteDataSource implements SubscriptionRemoteDataSource {
     }
   }
 
+  /// `age_required` / `guardian_required` from a 403 body, else null.
+  String? _ageBlockCode(String body) {
+    try {
+      final decoded = jsonDecode(body);
+      final code = decoded is Map<String, dynamic> ? decoded['code'] : null;
+      return code == kAgeRequiredCode || code == kGuardianRequiredCode ? code as String : null;
+    } catch (_) {
+      return null;
+    }
+  }
+
   @override
   Future<Result<SubscriptionStatus>> selectPlan(PlanTier plan) async {
     try {
@@ -87,9 +99,12 @@ class HttpSubscriptionRemoteDataSource implements SubscriptionRemoteDataSource {
           .timeout(_timeout);
 
       if (response.statusCode < 200 || response.statusCode >= 300) {
+        // 403 for the age rules: the screens turn these two codes into the
+        // date-of-birth question / the parent's-authorisation dialog.
+        final ageCode = response.statusCode == 403 ? _ageBlockCode(response.body) : null;
         return Result.failure(
           AppNetworkError(
-            code: 'subscription_select_plan_http_${response.statusCode}',
+            code: ageCode ?? 'subscription_select_plan_http_${response.statusCode}',
             message: appL10n.billingErrorSelectPlan,
           ),
         );

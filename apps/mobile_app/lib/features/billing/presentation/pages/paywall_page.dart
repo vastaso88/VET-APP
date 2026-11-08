@@ -12,6 +12,8 @@ import '../../../../design_system/tokens/app_text_styles.dart';
 import '../../../../l10n/l10n.dart';
 import '../../../account/presentation/pages/delete_account_page.dart';
 import '../../../account/presentation/pages/export_data_page.dart';
+import '../../../age/presentation/age_flow.dart';
+import '../../../age/presentation/widgets/marketplace_age_gate.dart';
 import '../../../marketplace/presentation/pages/marketplace_page.dart';
 import '../../data/billing_demo_store.dart';
 import '../../data/subscription_remote_data_source.dart';
@@ -43,8 +45,11 @@ class _PaywallPageState extends State<PaywallPage> {
     unawaited(_store.syncFromBackend(dataSource: _dataSource));
   }
 
-  Future<void> _selectPlan(PlanTier tier) async {
+  Future<void> _selectPlan(PlanTier tier, {bool afterAgeQuestion = false}) async {
     if (_selecting != null) return;
+    // A paid plan needs a declared age (and a parent's OK for a minor).
+    if (!_store.isTestPeriod && !await ensureCanChoosePaidPlan(context)) return;
+    if (!mounted) return;
     setState(() => _selecting = tier);
     final result = await _dataSource.selectPlan(tier);
     if (!mounted) return;
@@ -54,10 +59,22 @@ class _PaywallPageState extends State<PaywallPage> {
         _store.switchToPlan(tier);
         Navigator.of(context).pushNamedAndRemoveUntil(AppRouter.homeShell, (route) => false);
       },
-      onFailure: (error) => ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(error.message)),
-      ),
+      onFailure: (error) {
+        // The backend wants the date / the parent's OK (the phone's own check
+        // did not): ask, then try once more.
+        if (isAgePlanBlock(error) && !afterAgeQuestion) {
+          unawaited(_askThenRetry(tier));
+          return;
+        }
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(error.message)));
+      },
     );
+  }
+
+  Future<void> _askThenRetry(PlanTier tier) async {
+    if (await ensureCanChoosePaidPlan(context) && mounted) {
+      await _selectPlan(tier, afterAgeQuestion: true);
+    }
   }
 
   void _open(Widget page) {
@@ -103,7 +120,7 @@ class _PaywallPageState extends State<PaywallPage> {
                 _DataActionRow(
                   icon: Icons.storefront_outlined,
                   label: context.l10n.billingPaywallBrowseMarketplace,
-                  onTap: () => _open(const MarketplacePage()),
+                  onTap: () => _open(const MarketplaceAgeGate(child: MarketplacePage())),
                 ),
                 const SizedBox(height: AppSpacing.lg),
                 Text(context.l10n.billingPaywallDataTitle,

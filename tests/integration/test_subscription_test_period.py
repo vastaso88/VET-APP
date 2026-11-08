@@ -26,9 +26,12 @@ def _expire_the_trial() -> None:
 
 
 @pytest.fixture
-def normal(monkeypatch: pytest.MonkeyPatch) -> TestClient:
-    """The switch off. An empty value beats whatever a local .env says."""
+def normal(monkeypatch: pytest.MonkeyPatch, request: pytest.FixtureRequest) -> TestClient:
+    """The switch off. An empty value beats whatever a local .env says. Choosing
+    a plan for real needs a declared adult, so everyone is one here (asked for
+    after the switch, which the container reads when it is first built)."""
     monkeypatch.setenv("SUBSCRIPTION_TEST_PLAN", "")
+    request.getfixturevalue("adult_everyone")
     return TestClient(app)
 
 

@@ -10,6 +10,7 @@ import '../../../../design_system/tokens/app_text_styles.dart';
 import '../../../../l10n/date_formats.dart';
 import '../../../../l10n/l10n.dart';
 import '../../../../shared/widgets/coming_soon_page.dart';
+import '../../../age/presentation/age_flow.dart';
 import '../../data/billing_demo_store.dart';
 import '../../data/subscription_remote_data_source.dart';
 import '../../domain/billing_models.dart';
@@ -37,8 +38,11 @@ class _BillingPageState extends State<BillingPage> {
     unawaited(_store.syncFromBackend(dataSource: _subscriptionDataSource));
   }
 
-  Future<void> _switchToPlan(PlanTier tier) async {
+  Future<void> _switchToPlan(PlanTier tier, {bool afterAgeQuestion = false}) async {
     if (_switchingPlan) return;
+    // A paid plan needs a declared age (and a parent's OK for a minor).
+    if (!_store.isTestPeriod && !await ensureCanChoosePaidPlan(context)) return;
+    if (!mounted) return;
     setState(() => _switchingPlan = true);
     final result = await _subscriptionDataSource.selectPlan(tier);
     if (!mounted) return;
@@ -54,10 +58,22 @@ class _BillingPageState extends State<BillingPage> {
           ),
         );
       },
-      onFailure: (error) => ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(error.message)),
-      ),
+      onFailure: (error) {
+        // The backend wants the date / the parent's OK (the phone's own check
+        // did not): ask, then try once more.
+        if (isAgePlanBlock(error) && !afterAgeQuestion) {
+          unawaited(_askThenRetry(tier));
+          return;
+        }
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(error.message)));
+      },
     );
+  }
+
+  Future<void> _askThenRetry(PlanTier tier) async {
+    if (await ensureCanChoosePaidPlan(context) && mounted) {
+      await _switchToPlan(tier, afterAgeQuestion: true);
+    }
   }
 
   void _openPaymentHistory() {

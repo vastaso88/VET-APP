@@ -249,6 +249,29 @@ create table if not exists public.account_consents (
     consents jsonb not null default '{}'::jsonb
 );
 
+-- Declared date of birth (docs/compliance/10_pareri_dal_2026_11_06.md §3).
+-- Written only by the backend (service role), never from user_metadata;
+-- never shown to anyone and erased with the account. Same SQL as
+-- .local/account_age.sql.
+create table if not exists public.account_age (
+    owner_id text primary key,
+    birth_date date not null,
+    declared_at timestamptz not null default now(),
+    -- Quando un minorenne (14-17) ha confermato di avere l'autorizzazione
+    -- di un genitore per un piano a pagamento.
+    guardian_ok_at timestamptz
+);
+
+alter table public.account_age enable row level security;
+
+drop policy if exists account_age_select_own on public.account_age;
+create policy account_age_select_own
+on public.account_age
+for select
+using (owner_id = auth.uid()::text);
+
+revoke insert, update, delete on public.account_age from anon, authenticated;
+
 -- Subscriptions: single-row-per-owner, same shape as account_consents.
 -- Starts the 14-day free trial (no card) on first lookup; `plan` stays
 -- null while on trial, then holds the chosen plan key permanently.

@@ -20,6 +20,10 @@ import '../../../first_run/presentation/pages/plan_intro_page.dart';
 import '../../../first_run/presentation/pages/tutorial_page.dart';
 import '../../data/auth_repository_factory.dart';
 import '../../domain/auth_error_messages.dart';
+import '../../../age/data/age_store.dart';
+import '../../../age/domain/age_status.dart';
+import '../../../age/presentation/pages/underage_notice_page.dart';
+import '../../../age/presentation/widgets/birth_date_form.dart';
 import '../widgets/auth_widgets.dart';
 import '../widgets/phone_number_field.dart';
 import 'legal_text_page.dart';
@@ -87,7 +91,10 @@ class _TermsAcceptanceTextState extends State<_TermsAcceptanceText> {
 }
 
 class RegisterPage extends StatefulWidget {
-  const RegisterPage({super.key});
+  const RegisterPage({super.key, @visibleForTesting this.initialBirthDate});
+
+  /// Skips the first (date of birth) step; for tests of the form itself.
+  final DateTime? initialBirthDate;
 
   @override
   State<RegisterPage> createState() => _RegisterPageState();
@@ -102,6 +109,10 @@ class _RegisterPageState extends State<RegisterPage> {
   final _passwordController = TextEditingController();
   final _confirmPasswordController = TextEditingController();
 
+  /// Declared on the first step, before name and e-mail. Compared with the
+  /// minimum age on the phone; it only leaves the phone once the account
+  /// exists, so a child's date is never sent anywhere.
+  late DateTime? _birthDate = widget.initialBirthDate;
   bool _acceptTerms = false;
   bool _isLoading = false;
   AuthBannerStatus? _status;
@@ -165,6 +176,11 @@ class _RegisterPageState extends State<RegisterPage> {
         return true;
       },
       onFailure: (error) {
+        // The account exists but waits for e-mail confirmation (no session to
+        // write the date with yet): keep the date for the first sign-in.
+        if (error.code == 'sign_up_confirmation_required' && _birthDate != null) {
+          unawaited(AgeStore.instance.rememberPending(_birthDate!));
+        }
         final presented = presentAuthError(error);
         setState(() {
           _isLoading = false;
@@ -201,6 +217,13 @@ class _RegisterPageState extends State<RegisterPage> {
           ),
         ]),
       );
+
+      // The declared date goes to the backend now that a session exists; if
+      // that fails it waits on the phone and is sent at the next start.
+      final declared = await AgeStore.instance.declare(_birthDate!);
+      if (declared.isFailure) {
+        await AgeStore.instance.rememberPending(_birthDate!);
+      }
 
       // Starts the 14-day free trial server-side (first status lookup for
       // this owner_id creates it — see GetOrCreateSubscriptionService).
@@ -248,8 +271,38 @@ class _RegisterPageState extends State<RegisterPage> {
     );
   }
 
+  void _onBirthDate(DateTime date) {
+    if (ageOn(date, DateTime.now()) < kMinimumAge) {
+      // No account, nothing saved or sent: only the message.
+      Navigator.of(context).push(
+        MaterialPageRoute<void>(builder: (_) => const UnderageNoticePage()),
+      );
+      return;
+    }
+    setState(() => _birthDate = date);
+  }
+
   @override
   Widget build(BuildContext context) {
+    if (_birthDate == null) {
+      return AuthScreenScaffold(
+        title: context.l10n.ageStepTitle,
+        subtitle: context.l10n.ageStepBody,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            BirthDateForm(onSubmit: _onBirthDate),
+            const SizedBox(height: AppSpacing.md),
+            AuthFooterLink(
+              label: context.l10n.authHaveAccountLoginLink,
+              onTap: () => Navigator.of(context).push(
+                MaterialPageRoute<void>(builder: (_) => const LoginPage()),
+              ),
+            ),
+          ],
+        ),
+      );
+    }
     return AuthScreenScaffold(
       title: context.l10n.authRegisterTitle,
       subtitle: context.l10n.authRegisterSubtitle,

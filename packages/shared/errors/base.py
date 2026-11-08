@@ -19,6 +19,18 @@ class SubscriptionRequiredError(VetAppError):
     `subscription_required` and the app shows the paywall."""
 
 
+class AgeRestrictedError(VetAppError):
+    """The owner's declared age (or the lack of one) does not allow this: the
+    API answers 403 with the code as `code`: `age_required` (declare the date
+    of birth first), `marketplace_adults_only`, `guardian_required` (a
+    declared minor must confirm a parent's authorisation before a paid plan),
+    `under_minimum_age` (account closed) or `age_already_declared`."""
+
+    @property
+    def code(self) -> str:
+        return str(self)
+
+
 class PlanLimitError(VetAppError):
     """The owner's plan does not allow more of [kind] ("pets",
     "chats_per_pet"): the API answers 403 `plan_limit_reached` with the

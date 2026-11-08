@@ -24,6 +24,10 @@ def get_subscription_status() -> dict[str, object]:
 def select_plan(request: SelectPlanRequest) -> dict[str, object]:
     container = get_container()
     user = container.auth_provider.get_current_user()
+    if container.subscription_test_plan is None:
+        # Paying needs a declared age; a declared minor also needs the
+        # parent's-authorisation confirmation (403 age_required / guardian_required).
+        container.age_gate_service().require_paid_plan(user.id)
     result = container.select_plan_service().execute(
         SelectPlanInput(owner_id=user.id, plan=request.plan)
     )

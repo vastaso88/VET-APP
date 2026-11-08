@@ -8,7 +8,8 @@ the Terms exist, and are built then.
 
 For every account it also works out which e-mail it would get (service S, or
 commercial P only with a consent in force and a declared adult) and which
-kinds of data P would quote, from real counts. The sequence stops by
+kinds of data P would quote, from real counts (animals, reminders, records of
+the medical record, walks); with nothing true to quote it gets S (rule 9). The sequence stops by
 construction when the account chooses a plan: it is no longer listed. Having
 downloaded the data does NOT stop it (owner decision of 2026-11-08; doc 12
 says otherwise, flagged to the Orchestrator).
@@ -25,9 +26,10 @@ from pydantic import BaseModel, Field
 from packages.core.application.ports.account_consents_repository import (
     AccountConsentsRepository,
 )
-from packages.core.application.ports.owner_contact_lookup import OwnerContact, OwnerContactLookup
+from packages.core.application.ports.owner_contact_lookup import OwnerContactLookup
 from packages.core.application.ports.subscription_repository import SubscriptionRepository
 from packages.core.application.services.account_data_counts import AccountDataCounter
+from packages.core.domain.age.models import AgeBand, band_for
 from packages.core.domain.common.entity import utc_now
 from packages.core.domain.consent.models import AccountConsentType
 from packages.core.domain.feedback.pseudonym import reporter_ref
@@ -42,7 +44,6 @@ from packages.core.domain.subscription.retention_notices import (
     COMMERCIAL,
     AccountDataCounts,
     NoticePlan,
-    is_adult,
     plan_notice,
 )
 
@@ -58,11 +59,13 @@ class RetentionDryRunSample(BaseModel):
     days_since_loss: int
     notice_due: int | None
     reachable: bool
-    # "service" or "commercial", the sentence for a minor, and the kinds of
-    # data the commercial text would quote (never the numbers).
+    # "service" or "commercial", the sentence for a minor, {elenco_contenuti}
+    # (the kinds of data the account really holds) and the counts the notice
+    # would quote: kinds only, never the numbers.
     variant: str = "service"
     minor_note: bool = False
-    cites: list[str] = Field(default_factory=list)
+    contents: list[str] = Field(default_factory=list)
+    counts_cited: list[str] = Field(default_factory=list)
 
 
 class RetentionDryRunReport(BaseModel):
@@ -94,15 +97,20 @@ class RetentionDryRunReport(BaseModel):
     service_notices: int = 0
     commercial_notices: int = 0
     with_marketing_consent: int = 0
-    # Age: declared adult / declared minor / not declared. Without a declared
-    # adult age an account never gets the commercial version.
+    # Age band from the declared date of birth (the backend's account_age
+    # table). Without a declared adult age an account never gets the
+    # commercial version. Accounts under 14 (closed, with their own 30-day
+    # procedure) are counted here and nowhere else: no notice, no clock, no
+    # erasure from this job.
     age_adult: int = 0
+    age_under_minimum: int = 0
     age_minor: int = 0
     age_unknown: int = 0
     commercial_blocked_by_age: int = 0
-    # Commercial accounts with nothing true to quote (no animals, documents or
-    # reminders, or the counts could not be read).
-    commercial_nothing_to_cite: int = 0
+    # Consent and adult age present, but nothing true to quote (no animals,
+    # reminders, records or walks, or the counts could not be read): rule 9,
+    # they get the service notice. Counted in service_notices too.
+    downgraded_nothing_to_cite: int = 0
     counts_unavailable: int = 0
     sample: list[RetentionDryRunSample] = Field(default_factory=list)
 
@@ -153,6 +161,13 @@ class RetentionDryRunService:
                 report.developers_excluded += 1
                 continue
 
+            band = band_for(contact.birth_date if contact else None, now.date())
+            if band == AgeBand.UNDER_MINIMUM:
+                # Closed accounts (declared age under 14) follow their own
+                # 30-day procedure: no notice, no clock, no erasure here.
+                report.age_under_minimum += 1
+                continue
+
             report.clock_started += 1
             reachable = contact is not None and email is not None
             if not reachable:
@@ -169,7 +184,7 @@ class RetentionDryRunService:
             if erasure_allowed(started, now, last_notice_day=None, last_notice_at=None):
                 report.erasable_now += 1
 
-            plan = self._plan(report, subscription.owner_id, notice, contact, now)
+            plan = self._plan(report, subscription.owner_id, notice, band)
             if len(report.sample) < SAMPLE_SIZE:
                 report.sample.append(
                     RetentionDryRunSample(
@@ -179,7 +194,8 @@ class RetentionDryRunService:
                         reachable=reachable,
                         variant=plan.variant,
                         minor_note=plan.minor_note,
-                        cites=plan.cites,
+                        contents=plan.contents,
+                        counts_cited=plan.counts_cited,
                     )
                 )
         return report
@@ -189,14 +205,12 @@ class RetentionDryRunService:
         report: RetentionDryRunReport,
         owner_id: str,
         notice: int | None,
-        contact: OwnerContact | None,
-        now: datetime,
+        band: str,
     ) -> NoticePlan:
         """Which e-mail this account would get, and what it may quote."""
-        adult = is_adult(contact.birth_date if contact else None, now.date())
-        if adult is True:
+        if band == AgeBand.ADULT:
             report.age_adult += 1
-        elif adult is False:
+        elif band == AgeBand.MINOR:
             report.age_minor += 1
         else:
             report.age_unknown += 1
@@ -204,13 +218,13 @@ class RetentionDryRunService:
         consent = self._marketing_consent(owner_id)
         if consent:
             report.with_marketing_consent += 1
-            if adult is not True:
+            if band != AgeBand.ADULT:
                 report.commercial_blocked_by_age += 1
 
         # Counts are read only for accounts that would get the commercial
         # text, the only one that quotes them.
         counts: AccountDataCounts | None = None
-        if consent and adult is True:
+        if consent and band == AgeBand.ADULT:
             counts = self._data_counter.count(owner_id)
             if counts is None:
                 report.counts_unavailable += 1
@@ -218,15 +232,15 @@ class RetentionDryRunService:
         plan = plan_notice(
             notice if notice is not None else NOTICE_DAYS[0],
             marketing_consent=consent,
-            adult=adult,
+            age_band=band,
             counts=counts,
         )
         if plan.variant == COMMERCIAL:
             report.commercial_notices += 1
-            if plan.nothing_to_cite:
-                report.commercial_nothing_to_cite += 1
         else:
             report.service_notices += 1
+        if plan.nothing_to_cite:
+            report.downgraded_nothing_to_cite += 1
         return plan
 
     def _marketing_consent(self, owner_id: str) -> bool:

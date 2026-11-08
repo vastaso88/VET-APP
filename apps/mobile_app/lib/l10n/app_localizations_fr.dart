@@ -6950,4 +6950,69 @@ class AppLocalizationsFr extends AppLocalizations {
   String marketplaceRestrictedAppeal(String place) {
     return 'Si vous pensez qu\'il s\'agit d\'une erreur, écrivez-nous depuis $place.';
   }
+
+  @override
+  String get ageStepTitle => 'Date de naissance';
+
+  @override
+  String get ageStepBody =>
+      'Nous en avons besoin pour appliquer les règles d\'âge. La date n\'est montrée à personne.';
+
+  @override
+  String get ageStepCorrectionNote =>
+      'Une fois enregistrée, elle ne peut plus être modifiée ici : pour la corriger, écrivez-nous depuis Paramètres → Nous contacter.';
+
+  @override
+  String get ageStepLater => 'Plus tard';
+
+  @override
+  String get ageReasonSignIn =>
+      'Pour utiliser toutes les fonctions de Quokka, nous avons besoin de votre date de naissance.';
+
+  @override
+  String get ageReasonMarketplace =>
+      'Pour accéder au marché de l\'occasion, nous avons besoin de votre date de naissance.';
+
+  @override
+  String get ageReasonPlan =>
+      'Avant de choisir une offre, nous avons besoin de votre date de naissance.';
+
+  @override
+  String get ageSaveFailed => 'Je n\'ai pas pu enregistrer la date. Réessayez.';
+
+  @override
+  String get ageClosedTitle =>
+      'Quokka est réservé aux personnes de 14 ans et plus';
+
+  @override
+  String get ageUnderageBody =>
+      'Nous n\'avons créé aucun compte et n\'avons enregistré aucune donnée. Revenez quand vous aurez 14 ans.';
+
+  @override
+  String get ageClosedBody =>
+      'Vous avez indiqué un âge inférieur à 14 ans : vous ne pouvez donc pas utiliser Quokka et l\'accès est fermé. Au bout de 30 jours, nous supprimerons les données de ce compte. Si vous avez saisi la date par erreur, écrivez-nous : nous pouvons la corriger.';
+
+  @override
+  String get ageClosedContact => 'Écrire au support';
+
+  @override
+  String get ageClosedMailSubject => 'Correction de la date de naissance';
+
+  @override
+  String get ageMarketplaceTitle =>
+      'Le marché de l\'occasion est réservé aux personnes de 18 ans et plus';
+
+  @override
+  String get ageMarketplaceBody =>
+      'Tout le reste de Quokka est à votre disposition. Le marché de l\'occasion s\'ouvrira tout seul à vos 18 ans.';
+
+  @override
+  String get ageGuardianTitle => 'Autorisation d\'un parent';
+
+  @override
+  String get ageGuardianBody =>
+      'Vous avez moins de 18 ans : pour souscrire à une offre, il faut l\'autorisation d\'un parent ou de la personne qui exerce l\'autorité parentale. Ne continuez que si vous l\'avez.';
+
+  @override
+  String get ageGuardianConfirm => 'J\'ai l\'autorisation';
 }

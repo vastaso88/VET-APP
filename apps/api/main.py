@@ -8,6 +8,7 @@ from fastapi.responses import JSONResponse
 
 from apps.api.rate_limit import SlidingWindowLimiter, build_middleware
 from apps.api.routes.account import router as account_router
+from apps.api.routes.account_age import router as account_age_router
 from apps.api.routes.account_consents import router as account_consents_router
 from apps.api.routes.account_preferences import router as account_preferences_router
 from apps.api.routes.admin import router as admin_router
@@ -35,6 +36,7 @@ from packages.infrastructure.telemetry.noop import setup_telemetry
 from packages.shared.auth_context import reset_access_token, set_access_token
 from packages.shared.config.settings import get_settings
 from packages.shared.errors.base import (
+    AgeRestrictedError,
     AuthenticationError,
     MarketplaceRestrictedError,
     PlanLimitError,
@@ -163,6 +165,12 @@ async def handle_subscription_required(_: Request, exc: SubscriptionRequiredErro
     )
 
 
+@app.exception_handler(AgeRestrictedError)
+async def handle_age_restricted(_: Request, exc: AgeRestrictedError) -> JSONResponse:
+    status = 409 if exc.code == "age_already_declared" else 403
+    return JSONResponse(status_code=status, content={"detail": exc.code, "code": exc.code})
+
+
 @app.exception_handler(PlanLimitError)
 async def handle_plan_limit(_: Request, exc: PlanLimitError) -> JSONResponse:
     return JSONResponse(
@@ -244,6 +252,7 @@ app.include_router(chat_router)
 app.include_router(reminders_router)
 app.include_router(account_consents_router)
 app.include_router(account_router)
+app.include_router(account_age_router)
 app.include_router(account_preferences_router)
 app.include_router(legal_router)
 app.include_router(chat_response_reports_router)

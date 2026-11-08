@@ -6914,4 +6914,67 @@ class AppLocalizationsIt extends AppLocalizations {
   String marketplaceRestrictedAppeal(String place) {
     return 'Se pensi sia un errore, scrivici da $place.';
   }
+
+  @override
+  String get ageStepTitle => 'Data di nascita';
+
+  @override
+  String get ageStepBody =>
+      'Ci serve per applicare le regole d\'età. La data non viene mostrata a nessuno.';
+
+  @override
+  String get ageStepCorrectionNote =>
+      'Una volta salvata non si modifica da qui: per correggerla scrivi da Impostazioni → Contattaci.';
+
+  @override
+  String get ageStepLater => 'Più tardi';
+
+  @override
+  String get ageReasonSignIn =>
+      'Per usare tutte le funzioni di Quokka ci serve la tua data di nascita.';
+
+  @override
+  String get ageReasonMarketplace =>
+      'Per entrare nel Mercatino ci serve la tua data di nascita.';
+
+  @override
+  String get ageReasonPlan =>
+      'Prima di scegliere un piano ci serve la tua data di nascita.';
+
+  @override
+  String get ageSaveFailed => 'Non sono riuscito a salvare la data. Riprova.';
+
+  @override
+  String get ageClosedTitle => 'Quokka è per chi ha almeno 14 anni';
+
+  @override
+  String get ageUnderageBody =>
+      'Non abbiamo creato nessun account e non abbiamo salvato nessun dato. Torna a trovarci quando avrai compiuto 14 anni.';
+
+  @override
+  String get ageClosedBody =>
+      'Hai indicato un\'età inferiore a 14 anni, quindi non puoi usare Quokka e l\'accesso è chiuso. Dopo 30 giorni cancelleremo i dati di questo account. Se hai scritto la data per sbaglio, scrivici: possiamo correggerla.';
+
+  @override
+  String get ageClosedContact => 'Scrivi al supporto';
+
+  @override
+  String get ageClosedMailSubject => 'Correzione della data di nascita';
+
+  @override
+  String get ageMarketplaceTitle => 'Il Mercatino è per chi ha almeno 18 anni';
+
+  @override
+  String get ageMarketplaceBody =>
+      'Tutto il resto di Quokka è a tua disposizione. Il Mercatino si aprirà da solo quando compirai 18 anni.';
+
+  @override
+  String get ageGuardianTitle => 'Autorizzazione di un genitore';
+
+  @override
+  String get ageGuardianBody =>
+      'Hai meno di 18 anni: per sottoscrivere un piano serve l\'autorizzazione di un genitore o di chi esercita la responsabilità genitoriale. Prosegui solo se ce l\'hai.';
+
+  @override
+  String get ageGuardianConfirm => 'Ho l\'autorizzazione';
 }

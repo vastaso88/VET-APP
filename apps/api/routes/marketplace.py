@@ -4,7 +4,10 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 from pydantic import BaseModel, Field
 
 from apps.api.dependencies.container import get_container
-from apps.api.dependencies.marketplace import require_marketplace_not_restricted
+from apps.api.dependencies.marketplace import (
+    require_marketplace_age,
+    require_marketplace_not_restricted,
+)
 from apps.api.dependencies.subscription import owner_has_access, require_active_subscription
 from packages.core.application.services.create_listing import CreateListingInput
 from packages.core.application.services.list_nearby_listings import ListNearbyListingsInput
@@ -24,7 +27,9 @@ from packages.core.domain.territory.rules import (
     MARKETPLACE_MIN_RADIUS_KM,
 )
 
-router = APIRouter(prefix="/marketplace", tags=["marketplace"])
+router = APIRouter(
+    prefix="/marketplace", tags=["marketplace"], dependencies=[Depends(require_marketplace_age)]
+)
 
 
 def _public_row(listing: MarketplaceListing, requester_id: str) -> dict[str, object]:

@@ -11557,6 +11557,114 @@ abstract class AppLocalizations {
   /// In it, this message translates to:
   /// **'Se pensi sia un errore, scrivici da {place}.'**
   String marketplaceRestrictedAppeal(String place);
+
+  /// No description provided for @ageStepTitle.
+  ///
+  /// In it, this message translates to:
+  /// **'Data di nascita'**
+  String get ageStepTitle;
+
+  /// No description provided for @ageStepBody.
+  ///
+  /// In it, this message translates to:
+  /// **'Ci serve per applicare le regole d\'età. La data non viene mostrata a nessuno.'**
+  String get ageStepBody;
+
+  /// No description provided for @ageStepCorrectionNote.
+  ///
+  /// In it, this message translates to:
+  /// **'Una volta salvata non si modifica da qui: per correggerla scrivi da Impostazioni → Contattaci.'**
+  String get ageStepCorrectionNote;
+
+  /// No description provided for @ageStepLater.
+  ///
+  /// In it, this message translates to:
+  /// **'Più tardi'**
+  String get ageStepLater;
+
+  /// No description provided for @ageReasonSignIn.
+  ///
+  /// In it, this message translates to:
+  /// **'Per usare tutte le funzioni di Quokka ci serve la tua data di nascita.'**
+  String get ageReasonSignIn;
+
+  /// No description provided for @ageReasonMarketplace.
+  ///
+  /// In it, this message translates to:
+  /// **'Per entrare nel Mercatino ci serve la tua data di nascita.'**
+  String get ageReasonMarketplace;
+
+  /// No description provided for @ageReasonPlan.
+  ///
+  /// In it, this message translates to:
+  /// **'Prima di scegliere un piano ci serve la tua data di nascita.'**
+  String get ageReasonPlan;
+
+  /// No description provided for @ageSaveFailed.
+  ///
+  /// In it, this message translates to:
+  /// **'Non sono riuscito a salvare la data. Riprova.'**
+  String get ageSaveFailed;
+
+  /// No description provided for @ageClosedTitle.
+  ///
+  /// In it, this message translates to:
+  /// **'Quokka è per chi ha almeno 14 anni'**
+  String get ageClosedTitle;
+
+  /// No description provided for @ageUnderageBody.
+  ///
+  /// In it, this message translates to:
+  /// **'Non abbiamo creato nessun account e non abbiamo salvato nessun dato. Torna a trovarci quando avrai compiuto 14 anni.'**
+  String get ageUnderageBody;
+
+  /// No description provided for @ageClosedBody.
+  ///
+  /// In it, this message translates to:
+  /// **'Hai indicato un\'età inferiore a 14 anni, quindi non puoi usare Quokka e l\'accesso è chiuso. Dopo 30 giorni cancelleremo i dati di questo account. Se hai scritto la data per sbaglio, scrivici: possiamo correggerla.'**
+  String get ageClosedBody;
+
+  /// No description provided for @ageClosedContact.
+  ///
+  /// In it, this message translates to:
+  /// **'Scrivi al supporto'**
+  String get ageClosedContact;
+
+  /// No description provided for @ageClosedMailSubject.
+  ///
+  /// In it, this message translates to:
+  /// **'Correzione della data di nascita'**
+  String get ageClosedMailSubject;
+
+  /// No description provided for @ageMarketplaceTitle.
+  ///
+  /// In it, this message translates to:
+  /// **'Il Mercatino è per chi ha almeno 18 anni'**
+  String get ageMarketplaceTitle;
+
+  /// No description provided for @ageMarketplaceBody.
+  ///
+  /// In it, this message translates to:
+  /// **'Tutto il resto di Quokka è a tua disposizione. Il Mercatino si aprirà da solo quando compirai 18 anni.'**
+  String get ageMarketplaceBody;
+
+  /// No description provided for @ageGuardianTitle.
+  ///
+  /// In it, this message translates to:
+  /// **'Autorizzazione di un genitore'**
+  String get ageGuardianTitle;
+
+  /// No description provided for @ageGuardianBody.
+  ///
+  /// In it, this message translates to:
+  /// **'Hai meno di 18 anni: per sottoscrivere un piano serve l\'autorizzazione di un genitore o di chi esercita la responsabilità genitoriale. Prosegui solo se ce l\'hai.'**
+  String get ageGuardianBody;
+
+  /// No description provided for @ageGuardianConfirm.
+  ///
+  /// In it, this message translates to:
+  /// **'Ho l\'autorizzazione'**
+  String get ageGuardianConfirm;
 }
 
 class _AppLocalizationsDelegate

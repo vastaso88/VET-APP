@@ -6918,4 +6918,68 @@ class AppLocalizationsEs extends AppLocalizations {
   String marketplaceRestrictedAppeal(String place) {
     return 'Si crees que es un error, escríbenos desde $place.';
   }
+
+  @override
+  String get ageStepTitle => 'Fecha de nacimiento';
+
+  @override
+  String get ageStepBody =>
+      'La necesitamos para aplicar las normas de edad. La fecha no se muestra a nadie.';
+
+  @override
+  String get ageStepCorrectionNote =>
+      'Una vez guardada, no se puede cambiar desde aquí: para corregirla, escríbenos desde Ajustes → Contáctanos.';
+
+  @override
+  String get ageStepLater => 'Más tarde';
+
+  @override
+  String get ageReasonSignIn =>
+      'Para usar todas las funciones de Quokka necesitamos tu fecha de nacimiento.';
+
+  @override
+  String get ageReasonMarketplace =>
+      'Para entrar en el mercadillo de segunda mano necesitamos tu fecha de nacimiento.';
+
+  @override
+  String get ageReasonPlan =>
+      'Antes de elegir un plan necesitamos tu fecha de nacimiento.';
+
+  @override
+  String get ageSaveFailed => 'No pude guardar la fecha. Inténtalo de nuevo.';
+
+  @override
+  String get ageClosedTitle => 'Quokka es para personas de 14 años o más';
+
+  @override
+  String get ageUnderageBody =>
+      'No hemos creado ninguna cuenta ni hemos guardado ningún dato. Vuelve cuando cumplas 14 años.';
+
+  @override
+  String get ageClosedBody =>
+      'Indicaste una edad inferior a 14 años, así que no puedes usar Quokka y el acceso está cerrado. Pasados 30 días borraremos los datos de esta cuenta. Si escribiste la fecha por error, escríbenos: podemos corregirla.';
+
+  @override
+  String get ageClosedContact => 'Escribir a soporte';
+
+  @override
+  String get ageClosedMailSubject => 'Corrección de la fecha de nacimiento';
+
+  @override
+  String get ageMarketplaceTitle =>
+      'El mercadillo de segunda mano es para personas de 18 años o más';
+
+  @override
+  String get ageMarketplaceBody =>
+      'Todo lo demás de Quokka está a tu disposición. El mercadillo se abrirá solo cuando cumplas 18 años.';
+
+  @override
+  String get ageGuardianTitle => 'Autorización de un progenitor';
+
+  @override
+  String get ageGuardianBody =>
+      'Eres menor de 18 años: para suscribirte a un plan necesitas la autorización de un progenitor o de quien ejerza la patria potestad. Continúa solo si la tienes.';
+
+  @override
+  String get ageGuardianConfirm => 'Tengo la autorización';
 }

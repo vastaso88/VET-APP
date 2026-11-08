@@ -6,6 +6,7 @@ import 'package:flutter/services.dart';
 
 import '../../design_system/tokens/app_colors.dart';
 import '../../features/activities/presentation/pages/activities_page.dart';
+import '../../features/age/presentation/age_flow.dart';
 import '../../features/billing/data/subscription_remote_data_source.dart';
 import '../../features/billing/presentation/trial_countdown_dialog.dart';
 import '../../features/dog_walks/data/active_walk_controller.dart';
@@ -73,6 +74,7 @@ class _HomeShellPageState extends State<HomeShellPage> {
         if (!mounted) return;
         HomeWidgetActionStore.instance.shellReady();
         unawaited(_maybeShowTrialCountdown());
+        unawaited(checkAgeAfterSignIn(context));
         _ready = true;
         // A notification tap that launched the app, then the reminders that
         // fell due while it was closed.

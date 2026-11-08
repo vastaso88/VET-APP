@@ -6870,4 +6870,68 @@ class AppLocalizationsEn extends AppLocalizations {
   String marketplaceRestrictedAppeal(String place) {
     return 'If you think this is a mistake, write to us from $place.';
   }
+
+  @override
+  String get ageStepTitle => 'Date of birth';
+
+  @override
+  String get ageStepBody =>
+      'We need it to apply the age rules. The date is not shown to anyone.';
+
+  @override
+  String get ageStepCorrectionNote =>
+      'Once saved, it can\'t be changed from here: to correct it, write to us from Settings → Contact us.';
+
+  @override
+  String get ageStepLater => 'Later';
+
+  @override
+  String get ageReasonSignIn =>
+      'To use all of Quokka\'s features we need your date of birth.';
+
+  @override
+  String get ageReasonMarketplace =>
+      'To enter the second-hand marketplace we need your date of birth.';
+
+  @override
+  String get ageReasonPlan =>
+      'Before choosing a plan we need your date of birth.';
+
+  @override
+  String get ageSaveFailed => 'I couldn\'t save the date. Try again.';
+
+  @override
+  String get ageClosedTitle => 'Quokka is for people aged 14 and over';
+
+  @override
+  String get ageUnderageBody =>
+      'We haven\'t created an account and we haven\'t saved any data. Come back when you turn 14.';
+
+  @override
+  String get ageClosedBody =>
+      'You entered an age under 14, so you can\'t use Quokka and access is closed. After 30 days we will delete this account\'s data. If you typed the date by mistake, write to us: we can correct it.';
+
+  @override
+  String get ageClosedContact => 'Write to support';
+
+  @override
+  String get ageClosedMailSubject => 'Date of birth correction';
+
+  @override
+  String get ageMarketplaceTitle =>
+      'The second-hand marketplace is for people aged 18 and over';
+
+  @override
+  String get ageMarketplaceBody =>
+      'Everything else in Quokka is available to you. The marketplace will open by itself when you turn 18.';
+
+  @override
+  String get ageGuardianTitle => 'A parent\'s authorization';
+
+  @override
+  String get ageGuardianBody =>
+      'You are under 18: to subscribe to a plan you need the authorization of a parent or of whoever has parental responsibility. Go ahead only if you have it.';
+
+  @override
+  String get ageGuardianConfirm => 'I have the authorization';
 }

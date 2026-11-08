@@ -20,6 +20,7 @@ import '../features/notifications/domain/notification_time_zone.dart';
 import '../features/pets/data/pet_demo_store.dart';
 import '../features/pets/data/pet_photo_repository.dart';
 import '../features/reminders/data/reminders_repository.dart';
+import '../features/age/data/age_store.dart';
 import '../features/settings/data/layout_settings_store.dart';
 import '../features/settings/data/unit_settings_store.dart';
 import '../features/marketplace/data/marketplace_unread_store.dart';
@@ -118,6 +119,7 @@ Future<void> bootstrap() async {
           unawaited(syncPetsToHomeWidget(const []));
           ProfilePhotoRepository.clearLocalCache();
           MarketplaceUnreadStore.instance.reset();
+          unawaited(AgeStore.instance.reset());
         }
         if (state.event == AuthChangeEvent.signedIn) {
           unawaited(LanguageStore.instance.syncAfterAuthentication());

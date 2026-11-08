@@ -11,6 +11,9 @@ import 'package:vet_app_mobile/design_system/app_text_scaler.dart';
 import 'package:vet_app_mobile/design_system/responsive.dart';
 import 'package:vet_app_mobile/features/auth/presentation/pages/login_page.dart';
 import 'package:vet_app_mobile/features/account/presentation/pages/profile_edit_page.dart';
+import 'package:vet_app_mobile/features/age/presentation/pages/birth_date_prompt_page.dart';
+import 'package:vet_app_mobile/features/age/presentation/pages/closed_account_page.dart';
+import 'package:vet_app_mobile/features/age/presentation/pages/underage_notice_page.dart';
 import 'package:vet_app_mobile/features/auth/presentation/pages/register_page.dart';
 import 'package:vet_app_mobile/features/billing/presentation/pages/billing_page.dart';
 import 'package:vet_app_mobile/features/first_run/presentation/pages/add_first_pet_prompt_page.dart';
@@ -47,6 +50,10 @@ const _languages = {
 final _pages = <String, Widget Function()>{
   'login': () => const LoginPage(),
   'register': () => const RegisterPage(),
+  'register form': () => RegisterPage(initialBirthDate: DateTime(1990, 1, 1)),
+  'age prompt': () => const BirthDatePromptPage(reason: 'Per continuare ci serve la tua data.'),
+  'underage notice': () => const UnderageNoticePage(),
+  'closed account': () => const ClosedAccountPage(),
   'profile edit': () => const ProfileEditPage(),
   'plan intro': () => const PlanIntroPage(),
   'tutorial': () => const TutorialPage(),

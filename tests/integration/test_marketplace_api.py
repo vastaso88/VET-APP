@@ -1,9 +1,12 @@
+import pytest
 from fastapi.testclient import TestClient
 
 from apps.api.main import app
 from packages.bootstrap.container import get_container
 from packages.core.domain.geo.models import Coordinates
 from packages.core.domain.marketplace.models import MarketplaceListing
+
+pytestmark = pytest.mark.usefixtures("adult_everyone")
 
 ME = {"latitude": 45.46, "longitude": 9.19}
 

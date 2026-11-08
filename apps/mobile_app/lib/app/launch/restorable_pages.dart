@@ -10,6 +10,7 @@ import '../../features/dog_walks/presentation/pages/active_walk_page.dart';
 import '../../features/chat/presentation/pages/chat_conversation_detail_page.dart';
 import '../../features/events/presentation/pages/events_page.dart';
 import '../../features/local_events/presentation/pages/local_events_page.dart';
+import '../../features/age/presentation/widgets/marketplace_age_gate.dart';
 import '../../features/marketplace/presentation/pages/marketplace_page.dart';
 import '../../features/medical_records/data/medical_records_repository.dart';
 import '../../features/medical_records/domain/record_category.dart';
@@ -54,7 +55,7 @@ void registerRestorablePages([RestorablePages? pages]) {
     ..registerSimple('local_events', () => const LocalEventsPage())
     ..registerSimple('events', () => const EventsPage())
     ..registerSimple('gallery_folders', () => const GalleryFoldersPage())
-    ..registerSimple('marketplace', () => const MarketplacePage());
+    ..registerSimple('marketplace', () => const MarketplaceAgeGate(child: MarketplacePage()));
 
   // Impostazioni tab.
   registry

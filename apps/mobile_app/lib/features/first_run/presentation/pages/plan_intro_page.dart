@@ -9,6 +9,7 @@ import '../../../../design_system/tokens/app_radii.dart';
 import '../../../../design_system/tokens/app_spacing.dart';
 import '../../../../design_system/tokens/app_text_styles.dart';
 import '../../../../l10n/l10n.dart';
+import '../../../age/presentation/age_flow.dart';
 import '../../../billing/data/billing_demo_store.dart';
 import '../../../billing/data/subscription_remote_data_source.dart';
 import '../../../billing/domain/billing_models.dart';
@@ -45,8 +46,11 @@ class _PlanIntroPageState extends State<PlanIntroPage> {
     );
   }
 
-  Future<void> _selectPlan(PlanTier tier) async {
+  Future<void> _selectPlan(PlanTier tier, {bool afterAgeQuestion = false}) async {
     if (_selecting != null) return;
+    // A paid plan needs a declared age (and a parent's OK for a minor).
+    if (!_store.isTestPeriod && !await ensureCanChoosePaidPlan(context)) return;
+    if (!mounted) return;
     setState(() => _selecting = tier);
     final result = await _dataSource.selectPlan(tier);
     if (!mounted) return;
@@ -56,10 +60,22 @@ class _PlanIntroPageState extends State<PlanIntroPage> {
         BillingDemoStore.instance.switchToPlan(tier);
         Navigator.of(context).pop();
       },
-      onFailure: (error) => ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(error.message)),
-      ),
+      onFailure: (error) {
+        // The backend wants the date / the parent's OK (the phone's own check
+        // did not): ask, then try once more.
+        if (isAgePlanBlock(error) && !afterAgeQuestion) {
+          unawaited(_askThenRetry(tier));
+          return;
+        }
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(error.message)));
+      },
     );
+  }
+
+  Future<void> _askThenRetry(PlanTier tier) async {
+    if (await ensureCanChoosePaidPlan(context) && mounted) {
+      await _selectPlan(tier, afterAgeQuestion: true);
+    }
   }
 
   @override

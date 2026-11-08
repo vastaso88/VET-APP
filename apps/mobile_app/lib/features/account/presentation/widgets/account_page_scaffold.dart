@@ -7,9 +7,17 @@ import '../../../../design_system/tokens/app_text_styles.dart';
 /// Shared frame of the account screens (profile, email, password, delete):
 /// the same plain page the other settings screens use.
 class AccountPageScaffold extends StatelessWidget {
-  const AccountPageScaffold({super.key, required this.title, required this.child});
+  const AccountPageScaffold({
+    super.key,
+    required this.title,
+    required this.child,
+    this.showBack = true,
+  });
 
   final String title;
+
+  /// False for a page the owner cannot leave (the closed account).
+  final bool showBack;
   final Widget child;
 
   @override
@@ -19,6 +27,7 @@ class AccountPageScaffold extends StatelessWidget {
       appBar: AppBar(
         backgroundColor: AppColors.background,
         elevation: 0,
+        automaticallyImplyLeading: showBack,
         foregroundColor: AppColors.text,
         title: Text(title, style: AppTextStyles.title),
       ),

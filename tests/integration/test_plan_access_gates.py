@@ -19,6 +19,8 @@ from packages.core.domain.marketplace.visibility import (
 )
 from packages.core.domain.subscription.models import Subscription
 
+pytestmark = pytest.mark.usefixtures("adult_everyone")
+
 OWNER = "demo-user"
 ME = {"latitude": 45.46, "longitude": 9.19}
 LISTING_BODY = {

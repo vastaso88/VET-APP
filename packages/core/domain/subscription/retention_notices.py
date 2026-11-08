@@ -6,63 +6,57 @@ may truthfully mention (docs/compliance/12_avvisi_prima_della_cancellazione.md).
 - Version P (commercial): only with a commercial consent in force AND a
   declared adult, and it replaces S. An account whose age is not known is
   treated as not adult: the fail-safe is the service notice.
+- No notice (variant "none"): a declared age under 14.
 
 This module only decides. It sends nothing and has no clock of its own.
 """
 
 from dataclasses import dataclass
-from datetime import date
 
 from pydantic import BaseModel, Field
 
+from packages.core.domain.age.models import AgeBand
 from packages.core.domain.subscription.retention import NOTICE_DAYS
 
 SERVICE = "service"
 COMMERCIAL = "commercial"
+# The account is outside the sequence: nothing is sent (declared age under 14).
+NO_NOTICE = "none"
 
-ADULT_AGE = 18
+# The kinds of data an account can hold, in the order of {elenco_contenuti}
+# (doc 12): animals, reminders, records of the medical record ("referti") and
+# walks. The commercial text may list only the ones with a count above zero.
+CONTENT_KINDS: tuple[str, ...] = ("animals", "reminders", "documents", "walks")
 
-# What the commercial text of each notice quotes about the account, by the
-# kind of data. "animals" = the names (or "i tuoi animali"), the others are
-# counts. A kind with nothing behind it is dropped from the text, never
-# replaced by a number that is not true (rule 2 of the doc).
-COMMERCIAL_CITES: dict[int, tuple[str, ...]] = {
-    0: ("animals",),
-    30: ("animals", "reminders", "documents"),
-    60: ("animals",),
-    90: ("animals",),
+# The two notices whose commercial text also quotes counts ({n_animali},
+# {n_documenti}, {n_promemoria}); the others quote only the names of the
+# animals and, in E1, {elenco_contenuti}. A kind at zero is dropped from the
+# sentence, never replaced by a number that is not true (rule 2 of the doc).
+COUNT_CITES: dict[int, tuple[str, ...]] = {
+    30: ("reminders", "documents"),
     106: ("animals", "documents", "reminders"),
-    113: ("animals",),
-    117: ("animals",),
-    119: ("animals",),
 }
-assert set(COMMERCIAL_CITES) == set(NOTICE_DAYS)
+assert set(COUNT_CITES) <= set(NOTICE_DAYS)
 
 
 @dataclass(frozen=True)
 class AccountDataCounts:
-    """How much the account really holds: pets, entries of the medical
-    record ("documenti") and reminders. Real counts or nothing."""
+    """How much the account really holds: pets, reminders, entries of the
+    medical record ("documenti"/"referti") and walks. Real counts or
+    nothing."""
 
     animals: int
     documents: int
     reminders: int
+    walks: int = 0
 
     def of(self, kind: str) -> int:
         return {
             "animals": self.animals,
-            "documents": self.documents,
             "reminders": self.reminders,
+            "documents": self.documents,
+            "walks": self.walks,
         }[kind]
-
-
-def is_adult(birth_date: date | None, today: date) -> bool | None:
-    """True/False from a date of birth; None when it is not known."""
-    if birth_date is None:
-        return None
-    had_birthday = (today.month, today.day) >= (birth_date.month, birth_date.day)
-    age = today.year - birth_date.year - (0 if had_birthday else 1)
-    return age >= ADULT_AGE
 
 
 class NoticePlan(BaseModel):
@@ -72,8 +66,13 @@ class NoticePlan(BaseModel):
     variant: str
     # The sentence about a parent's authorisation, only for a declared minor.
     minor_note: bool = False
-    cites: list[str] = Field(default_factory=list)
-    # Commercial text chosen but the account holds nothing to quote.
+    # {elenco_contenuti}: what the account really holds (commercial only).
+    contents: list[str] = Field(default_factory=list)
+    # The counts this notice's commercial text quotes, each above zero.
+    counts_cited: list[str] = Field(default_factory=list)
+    # Consent and adult age were there, but the account holds nothing true to
+    # quote (or the counts could not be read): rule 9, it gets the service
+    # notice instead.
     nothing_to_cite: bool = False
 
 
@@ -81,19 +80,30 @@ def plan_notice(
     notice_day: int,
     *,
     marketing_consent: bool,
-    adult: bool | None,
+    age_band: str,
     counts: AccountDataCounts | None,
 ) -> NoticePlan:
-    minor_note = adult is False
-    if not (marketing_consent and adult is True):
+    """[age_band] is an AgeBand from the declared date of birth. Only a
+    declared adult can get the commercial notice; only a declared minor
+    (14-17) gets the sentence about a parent's authorisation (an unknown age
+    has no note). An account under 14 gets no notice at all: it is closed,
+    cannot use or reactivate the app, and follows its own 30-day procedure
+    (owner decision relayed by the Orchestrator, 2026-11-09)."""
+    if age_band == AgeBand.UNDER_MINIMUM:
+        return NoticePlan(variant=NO_NOTICE)
+    minor_note = age_band == AgeBand.MINOR
+    if not (marketing_consent and age_band == AgeBand.ADULT):
         return NoticePlan(variant=SERVICE, minor_note=minor_note)
 
-    cites: list[str] = []
-    if counts is not None:
-        cites = [kind for kind in COMMERCIAL_CITES[notice_day] if counts.of(kind) > 0]
+    # Unknown counts (a failed read) also mean nothing may be quoted.
+    if counts is None:
+        return NoticePlan(variant=SERVICE, nothing_to_cite=True)
+    contents = [kind for kind in CONTENT_KINDS if counts.of(kind) > 0]
+    if not contents:
+        return NoticePlan(variant=SERVICE, nothing_to_cite=True)
+
     return NoticePlan(
         variant=COMMERCIAL,
-        cites=cites,
-        # Unknown counts (a failed read) also mean nothing may be quoted.
-        nothing_to_cite=not cites,
+        contents=contents,
+        counts_cited=[kind for kind in COUNT_CITES.get(notice_day, ()) if counts.of(kind) > 0],
     )

@@ -4,6 +4,7 @@ import logging
 from datetime import timedelta
 from functools import lru_cache
 
+from packages.core.application.ports.account_age_repository import AccountAgeRepository
 from packages.core.application.ports.account_consents_repository import AccountConsentsRepository
 from packages.core.application.ports.account_eraser import AccountEraser
 from packages.core.application.ports.account_exporter import AccountExporter
@@ -52,6 +53,7 @@ from packages.core.application.ports.weight_measurement_repository import (
     WeightMeasurementRepository,
 )
 from packages.core.application.services.account_data_counts import AccountDataCounter
+from packages.core.application.services.age_gate import AgeGateService
 from packages.core.application.services.chat_orchestrator import ChatOrchestrator
 from packages.core.application.services.consent_interpreter import ConsentInterpreter
 from packages.core.application.services.create_listing import CreateListingService
@@ -148,6 +150,9 @@ from packages.core.application.services.situation_model_builder import Situation
 from packages.core.application.services.start_walk import StartWalkService
 from packages.core.application.services.submit_event import SubmitEventService
 from packages.core.application.services.transcribe_audio import TranscribeAudioService
+from packages.core.application.services.underage_review_dry_run import (
+    UnderageReviewDryRunService,
+)
 from packages.core.application.services.update_listing import UpdateListingService
 from packages.core.application.services.update_pet_profile import UpdatePetProfileService
 from packages.core.application.services.upload_chat_attachment import UploadChatAttachmentService
@@ -155,6 +160,7 @@ from packages.core.application.services.urgency_classifier import UrgencyClassif
 from packages.core.application.services.vet_summary import VetSummaryService
 from packages.core.domain.subscription.limits import PlanLimits
 from packages.core.domain.subscription.models import SubscriptionPlan
+from packages.infrastructure.auth.age_guarded_auth_provider import AgeGuardedAuthProvider
 from packages.infrastructure.auth.bootstrap_auth_provider import BootstrapAuthProvider
 from packages.infrastructure.documents.pypdf_reader import PypdfReader
 from packages.infrastructure.geocoding.nominatim_geocoder import NominatimGeocoder
@@ -191,6 +197,9 @@ from packages.infrastructure.llm.retrieval.pubmed_evidence_retriever import (
     PubMedEvidenceRetriever,
 )
 from packages.infrastructure.news.feed_reader import HttpPetNewsFeedReader
+from packages.infrastructure.persistence.in_memory_account_age_repository import (
+    InMemoryAccountAgeRepository,
+)
 from packages.infrastructure.persistence.in_memory_account_eraser import InMemoryAccountEraser
 from packages.infrastructure.persistence.in_memory_account_exporter import (
     InMemoryAccountExporter,
@@ -318,6 +327,7 @@ class ApplicationContainer:
         self.account_consents_repository = self._build_account_consents_repository()
         self.subscription_repository = self._build_subscription_repository()
         self.user_device_repository = self._build_user_device_repository()
+        self.account_age_repository = self._build_account_age_repository()
         self.owner_contact_lookup = self._build_owner_contact_lookup()
         self.developer_emails = frozenset(
             email.strip().lower() for email in settings.developer_emails
@@ -431,6 +441,7 @@ class ApplicationContainer:
                 self.pet_profile_repository,
                 self.clinical_event_repository,
                 self.reminder_repository,
+                self.dog_walk_repository,
             ),
             test_plan=self.subscription_test_plan,
         )
@@ -454,6 +465,29 @@ class ApplicationContainer:
                 return None
 
         return lookup
+
+    def underage_review_dry_run_service(self) -> UnderageReviewDryRunService:
+        return UnderageReviewDryRunService(self.account_age_repository)
+
+    def age_gate_service(self) -> AgeGateService:
+        return AgeGateService(self.account_age_repository)
+
+    def _build_account_age_repository(self) -> AccountAgeRepository:
+        if self.settings.persistence_backend == "supabase":
+            try:
+                from packages.infrastructure.persistence.supabase.client import (
+                    build_supabase_client,
+                )
+                from packages.infrastructure.persistence.supabase.supabase_account_age_repository import (  # noqa: E501
+                    SupabaseAccountAgeRepository,
+                )
+
+                return SupabaseAccountAgeRepository(build_supabase_client(self.settings))
+            except ModuleNotFoundError:
+                if self.settings.environment != "production":
+                    return InMemoryAccountAgeRepository()
+                raise
+        return InMemoryAccountAgeRepository()
 
     def delete_account_service(self) -> DeleteAccountService:
         return DeleteAccountService(self._build_account_eraser())
@@ -778,6 +812,14 @@ class ApplicationContainer:
         )
 
     def _build_auth_provider(self) -> AuthProvider:
+        # An account that declared an age under the minimum is closed: the
+        # guard refuses it on every route (the age table is resolved lazily,
+        # it is built after the provider).
+        return AgeGuardedAuthProvider(
+            self._build_inner_auth_provider(), lambda: self.account_age_repository
+        )
+
+    def _build_inner_auth_provider(self) -> AuthProvider:
         if self.settings.auth_backend == "supabase":
             try:
                 from packages.infrastructure.auth.supabase_auth_provider import (

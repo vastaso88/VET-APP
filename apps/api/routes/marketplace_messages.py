@@ -11,6 +11,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel, Field
 
 from apps.api.dependencies.container import get_container
+from apps.api.dependencies.marketplace import require_marketplace_age
 from apps.api.dependencies.subscription import require_active_subscription
 from packages.core.application.services.marketplace_messaging import (
     ConversationClosedError,
@@ -22,7 +23,11 @@ from packages.core.domain.marketplace.messaging import (
     ConversationReportReason,
 )
 
-router = APIRouter(prefix="/marketplace", tags=["marketplace-messages"])
+router = APIRouter(
+    prefix="/marketplace",
+    tags=["marketplace-messages"],
+    dependencies=[Depends(require_marketplace_age)],
+)
 
 MessageText = Annotated[str, Field(min_length=1, max_length=MESSAGE_MAX_LENGTH)]
 

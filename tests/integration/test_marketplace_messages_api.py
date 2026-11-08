@@ -22,6 +22,8 @@ from packages.core.domain.marketplace.models import ListingStatus, MarketplaceLi
 from packages.core.domain.subscription.limits import MAX_NEW_MARKETPLACE_CONVERSATIONS_PER_DAY
 from packages.core.domain.subscription.models import Subscription
 
+pytestmark = pytest.mark.usefixtures("adult_everyone")
+
 SwitchUser = Callable[[str], None]
 
 
