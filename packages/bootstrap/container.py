@@ -112,6 +112,7 @@ from packages.core.application.services.marketplace_messaging import (
 from packages.core.application.services.medical_record_context_retriever import (
     MedicalRecordContextRetriever,
 )
+from packages.core.application.services.plan_access_sync import PlanAccessSync
 from packages.core.application.services.radar_reports import (
     RadarCommunityView,
     RadarReportSettings,
@@ -335,6 +336,7 @@ class ApplicationContainer:
         self.subscription_test_plan = _resolve_subscription_test_plan(
             settings.subscription_test_plan
         )
+        self.plan_access_sync = self._build_plan_access_sync()
         self.user_location_repository = self._build_user_location_repository()
         self.dog_walk_repository = self._build_dog_walk_repository()
         self.weight_measurement_repository = self._build_weight_measurement_repository()
@@ -427,7 +429,27 @@ class ApplicationContainer:
             self.subscription_repository,
             self.developer_emails,
             test_plan=self.subscription_test_plan,
+            access_sync=self.plan_access_sync,
         )
+
+    def _build_plan_access_sync(self) -> PlanAccessSync | None:
+        """Only with the Supabase database: that is where the rules on the
+        app's direct writes live (scripts/setup/plan_access_rules.sql)."""
+        if self.settings.persistence_backend != "supabase":
+            return None
+        try:
+            from packages.infrastructure.persistence.supabase.client import (
+                build_supabase_client,
+            )
+            from packages.infrastructure.persistence.supabase.supabase_plan_access_store import (
+                SupabasePlanAccessStore,
+            )
+
+            return PlanAccessSync(SupabasePlanAccessStore(build_supabase_client(self.settings)))
+        except ModuleNotFoundError:
+            if self.settings.environment == "production":
+                raise
+            return None
 
     def retention_dry_run_service(self) -> RetentionDryRunService:
         """Read-only report of what the data-retention job would do. Nothing
