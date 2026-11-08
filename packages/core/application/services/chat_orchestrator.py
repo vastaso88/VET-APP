@@ -2620,7 +2620,11 @@ class ChatOrchestrator:
         question — that turn just resolves consent and, if there's
         already enough to ask about, asks the next real question.
         """
-        interpreted = self._consent_interpreter.interpret(message)
+        # The reply can go to the light model when the rules cannot read it:
+        # anonymized like every other outbound text.
+        interpreted = self._consent_interpreter.interpret(
+            self._anonymize_for_provider(message, data)
+        )
         # Fail closed: an unclear reply is treated as "not granted", never
         # as implicit permission.
         consent = interpreted if interpreted is not None else False
@@ -3274,18 +3278,19 @@ class ChatOrchestrator:
         # The normalizer is an external model call: like every other
         # outbound prompt it only ever sees anonymized text (security audit
         # 2026-10-26). The local retrievers below keep the original words.
+        anonymized_query = self._pii_anonymizer.anonymize(
+            PiiAnonymizationRequest(text=query, known_person_names=owner_names or [])
+        ).anonymized_text
         keywords = (
-            self._evidence_query_normalizer.keywords(
-                self._pii_anonymizer.anonymize(
-                    PiiAnonymizationRequest(text=query, known_person_names=owner_names or [])
-                ).anonymized_text,
-                canonical_species,
-            )
+            self._evidence_query_normalizer.keywords(anonymized_query, canonical_species)
             if self._evidence_query_normalizer is not None
             else None
         )
         request = EvidenceRetrievalRequest(
-            query=keywords or query,
+            # The search goes to external literature services (Europe PMC,
+            # PubMed...): never the owner's raw words, even when the keyword
+            # helper did not answer. The local relevance check below keeps them.
+            query=keywords or anonymized_query,
             species=canonical_species,
             intent=intent,
             max_results=max_results,

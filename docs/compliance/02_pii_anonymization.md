@@ -28,7 +28,7 @@ In tutti questi punti viene passato anche il **nome del proprietario** (`display
 
 Email, telefoni italiani (cellulari e fissi, con o senza +39), codice fiscale, partita IVA, IBAN, URL e domini, indirizzi con numero civico (via/viale/piazza/corso… + civico, con CAP e comune se presenti), nomi preceduti da un'etichetta o un titolo ("Proprietario:", "Sig.", "Dott.ssa"…), nome e cognome del proprietario noti dall'account. Ogni valore è sostituito da un segnaposto (`[EMAIL]`, `[TELEFONO]`, `[INDIRIZZO]`, `[NOME]`…).
 
-Non tocca mai: dosaggi, date, valori di laboratorio, pesi, numeri di microchip.
+Non tocca mai: dosaggi, date, valori di laboratorio, pesi. Il **numero di microchip** invece viene sempre sostituito con `[MICROCHIP]` (decisione del proprietario, 2026-11-08): attraverso l'anagrafe identifica il proprietario, e alla risposta non serve. Vale in chat, nel riepilogo per il veterinario, nel testo estratto da documenti e foto, nella cache delle risposte e nelle ricerche nelle banche dati scientifiche. Resta fuori solo ciò che il filtro non può toccare: i pixel di una foto e la voce di un messaggio vocale (vedi sotto).
 
 ## Cosa NON copre (rischio residuo)
 

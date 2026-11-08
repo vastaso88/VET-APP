@@ -66,8 +66,8 @@ class GroqImageAnalyzer(ImageAnalyzer):
                             "reference ranges, and the written conclusions — as "
                             "compact text, up to about 10 lines. Copy what is written; "
                             "never interpret it, never add a value that is not "
-                            "legible, and omit names of people, addresses and phone "
-                            "numbers."
+                            "legible, and omit names of people, addresses, phone "
+                            "numbers and microchip or identification numbers."
                         ),
                     },
                     {

@@ -73,7 +73,7 @@ def test_a_realistic_report_keeps_every_clinical_detail() -> None:
         "Referto esami ematochimici del 12/09/2026",
         "Proprietario:",
         "Paziente: REX, cane maschio, Labrador, nato il 03/03/2019, peso 30,5 kg",
-        "Microchip: 380260101234567",
+        "Microchip: [MICROCHIP]",
         "Ematocrito: 38 % (rif. 37 - 55)",
         "Creatinina: 2,4 mg/dL (rif. 0,5 - 1,5) ALTO",
         "Piastrine: 350.000 /uL (rif. 200.000 - 500.000)",
@@ -104,10 +104,9 @@ def test_a_realistic_report_keeps_every_clinical_detail() -> None:
         "Globuli rossi 6.500.000 /uL, piastrine 350 000 /uL",
         "Temperatura 38,5 °C, frequenza cardiaca 120 bpm",
         "Acquario da 60 litri con 12 pesci, pH 7,2",
-        # microchip, in the forms owners and clinics write it
-        "Microchip 380260101234567",
-        "Chip n. 380 260 101 234 567",
-        "microchip 941000012345678 applicato nel 2020",
+        # the word alone, without a number, is not touched
+        "Il microchip è stato applicato nel 2020",
+        "Devo mettere il chip al gatto?",
         # ordinary sentences with capitalised words
         "Il cane di Marta gioca con Luna al parco",
     ],
@@ -188,5 +187,30 @@ def test_result_reports_what_was_found() -> None:
         PiiAnonymizationRequest(text="mail a@b.example, tel 3331234567, microchip 380260101234567")
     )
 
-    assert result.redaction_count == 2
-    assert result.entity_types_found == ["EMAIL", "TELEFONO"]
+    assert result.redaction_count == 3
+    assert result.entity_types_found == ["EMAIL", "MICROCHIP", "TELEFONO"]
+
+
+@pytest.mark.parametrize(
+    "text, expected",
+    [
+        ("Microchip 380260101234567", "Microchip [MICROCHIP]"),
+        ("Chip n. 380 260 101 234 567", "Chip n. [MICROCHIP]"),
+        (
+            "microchip 941000012345678 applicato nel 2020",
+            "microchip [MICROCHIP] applicato nel 2020",
+        ),
+        ("il numero è 380-260-101-234-567", "il numero è [MICROCHIP]"),
+        ("transponder nr. 0A1B2C3D4E", "transponder nr. [MICROCHIP]"),
+        (
+            "Microchip: 985 112 003 456 789, anagrafe Lombardia",
+            "Microchip: [MICROCHIP], anagrafe Lombardia",
+        ),
+        ("sul libretto c'è 380260101234567.", "sul libretto c'è [MICROCHIP]."),
+    ],
+)
+def test_the_microchip_is_always_replaced_whole(text: str, expected: str) -> None:
+    """Owner decision 2026-11-08: the microchip identifies the owner through
+    the registry and never leaves for a provider. Replaced as a whole: no
+    phone or VAT rule may take a piece of it and leave the rest readable."""
+    assert _anonymize(text) == expected

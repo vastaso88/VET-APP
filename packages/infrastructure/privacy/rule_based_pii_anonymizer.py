@@ -49,10 +49,28 @@ class _Rule:
 
 
 _RULES: tuple[_Rule, ...] = (
-    # --- protected first: clinically needed, must survive intact ---------
-    # ISO microchip: 15 digits, sometimes written in groups of three.
-    _Rule("MICROCHIP", re.compile(r"(?<!\d)\d{15}(?!\d)"), protect=True),
-    _Rule("MICROCHIP", re.compile(r"(?<!\d)\d{3}(?:[ .]\d{3}){4}(?!\d)"), protect=True),
+    # --- the microchip first, so no later rule splits it -------------------
+    # It identifies the animal AND, through the national registry, its owner
+    # (name and address): it never leaves for a provider (owner decision
+    # 2026-11-08). It is replaced as a whole, before the phone and VAT rules
+    # could each take a piece of it. ISO chips have 15 digits, sometimes in
+    # groups of three; older chips are shorter, so a number right after the
+    # word "microchip"/"chip"/"transponder" is taken whatever its length.
+    _Rule(
+        "MICROCHIP",
+        re.compile(
+            r"(?i:\b(?:micro\s?chip|chip|transponder))\s*(?:(?i:n|nr|no|num|numero)\.?\s*|n°\s*|#\s*)?"
+            # The number: hex letters only in its first block (older chips),
+            # later blocks are digits, so the next word ("applicato", "ed")
+            # is never taken; at least 8 characters.
+            r":?\s*((?=(?:[0-9A-Fa-f]|[ .-]\d){8,})[0-9A-Fa-f]*\d[0-9A-Fa-f]*(?:[ .-]\d+)*)"
+            r"(?![0-9A-Za-z])"
+        ),
+        group=1,
+    ),
+    _Rule("MICROCHIP", re.compile(r"(?<!\d)\d{15}(?!\d)")),
+    _Rule("MICROCHIP", re.compile(r"(?<!\d)\d{3}(?:[ .-]\d{3}){4}(?!\d)")),
+    # --- protected: clinically needed, must survive intact ---------------
     # Dates, so no digit rule can ever bite into one.
     _Rule("DATA", re.compile(r"(?<!\d)\d{1,2}[/.-]\d{1,2}[/.-]\d{2,4}(?!\d)"), protect=True),
     # --- personal data ---------------------------------------------------
@@ -128,8 +146,9 @@ class RuleBasedPiiAnonymizer:
     it is. See docs/compliance/02_pii_anonymization.md for the full list
     of what is and is not covered.
 
-    Rules are applied in order and never overlap: clinically needed
-    values (microchip numbers, dates) are claimed first, so that no later
+    Rules are applied in order and never overlap: the microchip number is
+    claimed first and replaced whole ("[MICROCHIP]", never part of it), then
+    clinically needed values (dates) are claimed and kept, so that no later
     rule can redact part of them.
     """
 
