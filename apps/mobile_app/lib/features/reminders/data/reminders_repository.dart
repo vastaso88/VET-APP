@@ -1,3 +1,4 @@
+import '../../../shared/date/calendar_days.dart';
 import 'dart:async';
 
 import 'package:flutter/foundation.dart';
@@ -260,7 +261,7 @@ class RemindersRepository {
         'pet_id': petId,
         'pet_name': reminder.petName,
         'title': reminder.title,
-        'due_date': _dateOnly(reminder.dueAt),
+        'due_date': isoDate(reminder.dueAt),
         'notes': reminder.note,
         'kind': reminder.kind.name,
         'due_at': reminder.dueAt.toIso8601String(),
@@ -296,9 +297,6 @@ class RemindersRepository {
       throw ReminderSyncException(appL10n.remindersErrorSaveFailed);
     }
   }
-
-  static String _dateOnly(DateTime date) =>
-      '${date.year.toString().padLeft(4, '0')}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}';
 
   /// Removes the reminder at once; if the server refuses, it comes back.
   Future<void> deleteReminder(String id) async {

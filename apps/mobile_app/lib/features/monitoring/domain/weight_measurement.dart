@@ -1,3 +1,4 @@
+import '../../../shared/date/calendar_days.dart';
 import '../../pets/domain/pet_models.dart';
 import 'body_condition.dart';
 
@@ -57,7 +58,7 @@ class WeightMeasurement {
         'id': id,
         'pet_id': petId,
         'owner_id': ownerId,
-        'measured_at': dateToIso(measuredOn),
+        'measured_at': isoDate(measuredOn),
         'weight_kg': weightKg,
         'body_condition': bodyCondition?.score,
         'note': note.trim().isEmpty ? null : note.trim(),
@@ -86,10 +87,6 @@ class WeightMeasurement {
     );
   }
 }
-
-/// `2026-10-14`: the date format of the `measured_at` column.
-String dateToIso(DateTime date) =>
-    '${date.year.toString().padLeft(4, '0')}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}';
 
 /// Oldest first; two weighings of the same day keep their creation order.
 List<WeightMeasurement> sortedByDate(Iterable<WeightMeasurement> measurements) {

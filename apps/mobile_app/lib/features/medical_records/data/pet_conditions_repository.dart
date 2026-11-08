@@ -4,6 +4,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../../../shared/auth/current_user.dart';
 import '../../../../shared/config/app_runtime_config_loader.dart';
 import '../../../l10n/l10n.dart';
+import '../../../shared/date/calendar_days.dart';
 import '../domain/pet_condition.dart';
 import 'medical_records_repository.dart' show MedicalRecordSaveException;
 
@@ -120,9 +121,4 @@ DateTime? _parseDay(Object? value) {
       : DateTime(parsed.year, parsed.month, parsed.day);
 }
 
-String? _isoDate(DateTime? date) {
-  if (date == null) return null;
-  return '${date.year.toString().padLeft(4, '0')}-'
-      '${date.month.toString().padLeft(2, '0')}-'
-      '${date.day.toString().padLeft(2, '0')}';
-}
+String? _isoDate(DateTime? date) => date == null ? null : isoDate(date);

@@ -143,15 +143,16 @@ class _SplashPageState extends State<SplashPage> {
   }
 
   /// The gate still decides, just after the home is already up: a refusal
-  /// (trial over, plan removed) replaces everything with the paywall.
+  /// (trial over, plan removed) replaces everything with the paywall, and a
+  /// revoked device (the gate has already signed out) with the sign-in page.
   Future<void> _confirmAccessInBackground() async {
     try {
       final destination =
           await (widget.resolveDestination ?? const SubscriptionGate().resolveDestination)();
       await _rememberAccess(destination);
-      if (destination == AppRouter.paywall) {
+      if (destination == AppRouter.paywall || destination == AppRouter.auth) {
         AppRouter.navigatorKey.currentState
-            ?.pushNamedAndRemoveUntil(AppRouter.paywall, (route) => false);
+            ?.pushNamedAndRemoveUntil(destination, (route) => false);
       }
     } catch (_) {
       // Fail-open, like the gate itself: the home stays.

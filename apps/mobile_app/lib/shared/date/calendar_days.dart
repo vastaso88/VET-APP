@@ -31,3 +31,8 @@ DateTime dayOnly(DateTime date) => DateTime(date.year, date.month, date.day);
 /// [a] and [b] fall on the same calendar day (their fields compared as given).
 bool isSameDay(DateTime a, DateTime b) =>
     a.year == b.year && a.month == b.month && a.day == b.day;
+
+/// `2026-10-14`: [date]'s calendar day as a SQL `date` column stores it (its
+/// fields as given, no time-zone conversion).
+String isoDate(DateTime date) =>
+    '${date.year.toString().padLeft(4, '0')}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}';

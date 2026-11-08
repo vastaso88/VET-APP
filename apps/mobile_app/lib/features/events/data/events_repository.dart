@@ -80,17 +80,19 @@ class EventsRepository {
       if (response.statusCode != 200) return null;
       final json =
           jsonDecode(utf8.decode(response.bodyBytes)) as Map<String, dynamic>;
-      final events = <EventEntry>[];
-      for (final row in json['events'] as List<dynamic>? ?? const []) {
-        final event = parseEventRow(row as Map<String, dynamic>);
-        if (event != null) events.add(event);
-      }
+      final events = _parseRows(json['events'] as List<dynamic>? ?? const []);
       return EventsLoadResult(
           events: filterEventsByCountry(events, countryCode));
     } catch (_) {
       return null;
     }
   }
+
+  /// The rows of either source that parse as events; malformed ones are skipped.
+  static List<EventEntry> _parseRows(List<dynamic> rows) => rows
+      .map((row) => parseEventRow(row as Map<String, dynamic>))
+      .whereType<EventEntry>()
+      .toList();
 
   /// Eventi che toccano la finestra [from]-[to] (estremi inclusi), ordinati per
   /// data di inizio. Regione e tipo si filtrano dopo, sul risultato: i volumi
@@ -126,11 +128,7 @@ class EventsRepository {
           .lte('starts_on', formatEventDate(to))
           .order('starts_on', ascending: true);
 
-      final events = <EventEntry>[];
-      for (final row in response as List<dynamic>) {
-        final event = parseEventRow(row as Map<String, dynamic>);
-        if (event != null) events.add(event);
-      }
+      final events = _parseRows(response as List<dynamic>);
       // The query already filters; this keeps a misconfigured policy from
       // leaking another country's event into the list.
       return EventsLoadResult(events: filterEventsByCountry(events, countryCode));

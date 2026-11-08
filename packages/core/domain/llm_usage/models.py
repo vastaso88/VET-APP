@@ -23,13 +23,12 @@ def usage_day(moment: datetime) -> date:
     """The UTC calendar day a call is counted under. Groq's own windows are
     rolling 24 hours per model; the calendar day is the conservative
     approximation we can share across serverless instances."""
-    return moment.astimezone(UTC).date()
+    return owner_day(moment, 0)
 
 
 def next_day_start(moment: datetime) -> datetime:
     """Midnight UTC after [moment]: when the day counters start over."""
-    day_after = usage_day(moment) + timedelta(days=1)
-    return datetime(day_after.year, day_after.month, day_after.day, tzinfo=UTC)
+    return next_owner_day_start(moment, 0)
 
 
 def owner_day(moment: datetime, offset_minutes: int) -> date:
