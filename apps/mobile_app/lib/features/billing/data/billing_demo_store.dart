@@ -143,6 +143,17 @@ class BillingDemoStore extends ChangeNotifier {
     );
   }
 
+  /// Sign-out: the next account on this device starts from nothing, never
+  /// from the previous one's plan or access (the Mercatino reads [hasAccess]).
+  void reset() {
+    _subscriptionStatus = null;
+    _currentTier = null;
+    _renewalDate = null;
+    _billingCycle = BillingCycle.yearly;
+    _paymentMethods = List<PaymentMethod>.of(_initialPaymentMethods);
+    notifyListeners();
+  }
+
   void setBillingCycle(BillingCycle cycle) {
     if (_billingCycle == cycle) return;
     _billingCycle = cycle;

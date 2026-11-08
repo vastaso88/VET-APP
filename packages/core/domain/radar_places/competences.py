@@ -15,14 +15,14 @@ Nothing here is a judgement by Quokka: the app says so next to every one.
 
 import re
 from datetime import datetime
-from typing import Literal
+from typing import Literal, get_args
 
 from pydantic import BaseModel, Field
 
 from packages.core.domain.common.entity import new_id, utc_now
 
 ExoticGroup = Literal["reptile_amphibian", "bird", "small_mammal", "fish", "other"]
-EXOTIC_GROUPS: tuple[str, ...] = ("reptile_amphibian", "bird", "small_mammal", "fish", "other")
+EXOTIC_GROUPS: tuple[str, ...] = get_args(ExoticGroup)
 
 # "Exotic animals" with no group named: the practice matches every group,
 # and the card says the groups were not stated.

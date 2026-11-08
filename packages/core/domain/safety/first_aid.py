@@ -109,7 +109,6 @@ DOSE_PART_REFUSED: dict[str, str] = {
     ),
 }
 
-_QUESTION_SPLIT = re.compile(r"(?<=\?)\s+|\s*\?\s*$")
 _AMOUNT_CLAUSE = re.compile(
     r"\b(?:quant[oaie]|gocce|dose|dosi|dosaggio|compress\w*|pastigli\w*|mg|ml|gliene|ne do|"
     r"how (?:much|many)|drops?|dose|dosage|tablets?|cuant[oa]s?|gotas|dosis|wie ?viel|tropfen|"

@@ -21,6 +21,27 @@ void main() {
     }
   });
 
+  test('the app reaches no outside host beyond the known ones', () {
+    // Everything else goes through our backend. A new host goes here only
+    // with a reason (and, if it receives data, a row in the vendor list).
+    const known = {
+      'tile.openstreetmap.org', // map tiles
+      'www.openstreetmap.org', // attribution link
+      'www.google.com', // directions handed to Google Maps
+      'docs.overturemaps.org', // data-source credit links
+      'opendata.comune.bologna.it',
+      'dati.comune.milano.it',
+      'aperto.comune.torino.it',
+    };
+    final hosts = <String>{};
+    for (final file in sources) {
+      hosts.addAll(RegExp(r'https?://([a-zA-Z0-9.-]+)')
+          .allMatches(file.readAsStringSync())
+          .map((match) => match.group(1)!));
+    }
+    expect(hosts.difference(known), isEmpty);
+  });
+
   test('the backend repository is the only news repository', () {
     final implementations = <String>[];
     for (final file in sources) {

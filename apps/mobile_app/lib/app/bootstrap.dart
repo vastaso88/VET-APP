@@ -11,6 +11,7 @@ import 'config/app_bootstrap_state.dart';
 import 'router/app_router.dart';
 import '../features/account/data/profile_photo_repository.dart';
 import '../features/auth/data/remember_me_store.dart';
+import '../features/billing/data/billing_demo_store.dart';
 import '../features/dog_walks/data/active_walk_recovery_store.dart';
 import '../features/dog_walks/data/walk_home_widget.dart';
 import '../features/location/data/location_preference_store.dart';
@@ -77,12 +78,10 @@ Future<void> bootstrap() async {
       // token stays valid elsewhere) before any screen can use it.
       final auth = Supabase.instance.client.auth;
       if (auth.currentSession != null && !(await RememberMeStore.read())) {
-        try {
-          await auth.signOut(scope: SignOutScope.local);
-        } catch (_) {
-          // Offline: the next launch retries; the session is not shown
-          // as "remembered" on purpose.
-        }
+        // The SDK drops the local session synchronously, then calls the
+        // logout endpoint with no time limit: that request must not hold
+        // the first frame. Offline it just fails; the session is gone anyway.
+        unawaited(auth.signOut(scope: SignOutScope.local).catchError((Object _) {}));
       }
       // Network round-trips (up to two 5 s timeouts): never before the first
       // frame. The store notifies VetApp if the account's language differs.
@@ -118,6 +117,7 @@ Future<void> bootstrap() async {
           unawaited(syncPetsToHomeWidget(const []));
           ProfilePhotoRepository.clearLocalCache();
           MarketplaceUnreadStore.instance.reset();
+          BillingDemoStore.instance.reset();
         }
         if (state.event == AuthChangeEvent.signedIn) {
           unawaited(LanguageStore.instance.syncAfterAuthentication());

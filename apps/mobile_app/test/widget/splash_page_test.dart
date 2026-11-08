@@ -124,6 +124,36 @@ void main() {
     expect(gateCalls, 1);
   });
 
+  testWidgets('warm start: a device revoked meanwhile lands on sign-in, not on the home',
+      (tester) async {
+    final gate = Completer<String>();
+    await tester.pumpWidget(
+      MaterialApp(
+        navigatorKey: AppRouter.navigatorKey,
+        home: SplashPage(
+          restoreSignedIn: () async => true,
+          warmTab: () async => 0,
+          preload: () async {},
+          resolveDestination: () => gate.future,
+        ),
+        onGenerateRoute: (settings) => MaterialPageRoute<void>(
+          settings: settings,
+          builder: (_) => Scaffold(body: Text('ROUTE:${settings.name}')),
+        ),
+      ),
+    );
+    await tester.pump(splashWarmMinDisplay + const Duration(milliseconds: 100));
+    await tester.pumpAndSettle(const Duration(milliseconds: 100));
+    expect(find.text('ROUTE:${AppRouter.homeShell}'), findsOneWidget);
+
+    // The gate signed the owner out (device revoked) and answers "sign in".
+    gate.complete(AppRouter.auth);
+    await tester.pumpAndSettle(const Duration(milliseconds: 100));
+
+    expect(find.text('ROUTE:${AppRouter.auth}'), findsOneWidget);
+    expect(find.text('ROUTE:${AppRouter.homeShell}'), findsNothing);
+  });
+
   testWidgets('signed out: skips preload, goes to login after min display', (tester) async {
     var preloadCalls = 0;
     await tester.pumpWidget(

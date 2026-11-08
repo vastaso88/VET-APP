@@ -5,6 +5,7 @@ import '../../../l10n/date_formats.dart';
 import '../../../l10n/l10n.dart';
 import '../../../../shared/auth/current_user.dart';
 import '../../../../shared/config/app_runtime_config_loader.dart';
+import '../../../shared/date/calendar_days.dart';
 import '../../pets/data/pet_demo_store.dart';
 import '../domain/record_category.dart';
 
@@ -169,7 +170,7 @@ class MedicalRecordsRepository {
       // table always had), so even before the category columns exist an
       // entry keeps its category after a reload instead of becoming a document.
       'event_type': record.category.key,
-      'event_date': _isoDate(record.eventDate ?? now),
+      'event_date': isoDate(record.eventDate ?? now),
       'created_at': now.toIso8601String(),
       'title': record.title,
       'pet_name': record.petName,
@@ -218,7 +219,7 @@ class MedicalRecordsRepository {
     final legacyChanges = <String, Object?>{
       'title': updated.title,
       'event_type': updated.category.key,
-      if (updated.eventDate != null) 'event_date': _isoDate(updated.eventDate!),
+      if (updated.eventDate != null) 'event_date': isoDate(updated.eventDate!),
     };
     try {
       try {
@@ -477,9 +478,6 @@ DateTime? _parseDay(Object? value) {
   final parsed = DateTime.tryParse(value?.toString() ?? '');
   return parsed == null ? null : DateTime(parsed.year, parsed.month, parsed.day);
 }
-
-String _isoDate(DateTime utc) =>
-    '${utc.year.toString().padLeft(4, '0')}-${utc.month.toString().padLeft(2, '0')}-${utc.day.toString().padLeft(2, '0')}';
 
 /// Display text for a `created_at` timestamptz from the server, in local time.
 /// Unparseable values are shown as they are rather than hidden.
