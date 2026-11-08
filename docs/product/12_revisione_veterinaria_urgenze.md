@@ -2,7 +2,7 @@
 
 Da far rivedere a un veterinario per piccoli animali ed esotici. La chat li usa come
 istruzioni vincolanti nelle urgenze e, se il modello non risponde, li mostra così come sono.
-Non sono ancora stati rivisti da un veterinario.
+Il proprietario li ha approvati così come sono l'8 novembre 2026. Non sono stati rivisti da un veterinario per piccoli animali ed esotici: per ora non è previsto.
 
 Per ogni riga indicare: va bene, oppure come va scritta. Se un consiglio non vale per tutti i
 casi del gruppo, scrivere il caso. Ogni gruppo può avere il proprio testo.
