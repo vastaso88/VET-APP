@@ -27,10 +27,13 @@ I dati della società (ragione sociale, sede, partita IVA, ecc.) compaiono nel s
    | `QUOKKA_SITE_TITOLARE` | Ragione sociale |
    | `QUOKKA_SITE_SEDE` | Sede legale |
    | `QUOKKA_SITE_CF_PIVA` | Codice fiscale / partita IVA |
-   | `QUOKKA_SITE_REA_REGISTRO_IMPRESE_SE_SOCIETA` | Numero REA e registro delle imprese |
+   | `QUOKKA_SITE_REA_REGISTRO_IMPRESE_SE_SOCIETA` | Ufficio del registro delle imprese e numero REA |
+   | `QUOKKA_SITE_CAPITALE_SOCIALE_VERSATO` | Capitale sociale versato (per esempio «10.000 euro») |
    | `QUOKKA_SITE_PEC` | Indirizzo PEC |
    | `QUOKKA_SITE_DPO_O_NON_DESIGNATO` | «Non designato» (salvo diversa indicazione della Normativa) |
    | `QUOKKA_SITE_DATA` | Data dell'ultimo aggiornamento dei testi (per esempio «1 dicembre 2026») |
+
+   **Facoltative** (solo se valgono per la società; altrimenti non crearle, la riga non compare): `QUOKKA_SITE_SOCIO_UNICO_O_VUOTO` (per esempio «Società con socio unico.») e `QUOKKA_SITE_LIQUIDAZIONE_O_VUOTO` (per esempio «Società in liquidazione.»).
 
    Ogni valore deve stare su una sola riga e non contenere questi simboli: `[ ] | * < >` e l'apice rovesciato. Se ne contiene uno, il deploy si ferma e lo dice (senza scrivere il valore).
 3. L'elenco definitivo di cosa mostrare lo stabilisce la sessione Normativa: se ne cambia la lista, il deploy lo dice. Il file `apps/site/.env.example` ha sempre l'elenco aggiornato.

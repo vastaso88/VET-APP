@@ -47,6 +47,10 @@ _VALUES: dict[str, str] = {}
 # What an environment value may not contain: it would break the Markdown or the HTML around it.
 _FORBIDDEN_IN_VALUE = re.compile(r"[\[\]|`*<>\r\n]")
 
+# Placeholders ending in _O_VUOTO are for facts that only some companies have (sole
+# shareholder, winding up): without a value they are left out and never block a release.
+_OPTIONAL = re.compile(r"\[[A-Z][A-Z0-9_]*_O_VUOTO\]")
+
 # A release build refuses to run while any of these is left in a page: placeholders
 # ([TITOLARE], [da verificare: ...], [in attesa del codice: ...]) and the lawyer flag.
 _REVIEW_FLAG = "⚖"  # the scales symbol the legal texts put next to points to confirm
@@ -85,9 +89,15 @@ def values_from_environ(environ: Mapping[str, str]) -> tuple[dict[str, str], lis
 
 
 def _fill(text: str, *, escape: bool) -> str:
-    """Replace every [NAME] that has an environment value."""
+    """Replace every [NAME] that has an environment value.
+
+    In a publication build an optional placeholder (see _OPTIONAL) that has no value
+    disappears; in a draft it stays visible so the owner can see where it goes.
+    """
     for name, value in _VALUES.items():
         text = text.replace(f"[{name}]", html.escape(value) if escape else value)
+    if not DRAFT:
+        text = _OPTIONAL.sub("", text)
     return text
 
 
@@ -102,7 +112,7 @@ def _page_shell(
         if p.get("nav")
     )
     robots = '<meta name="robots" content="noindex, nofollow">\n' if DRAFT else ""
-    owner = _fill(T["footer_owner"], escape=True)
+    owner = _fill(T["footer_owner"], escape=True).strip()
     if DRAFT:
         owner = mdlite.PLACEHOLDER.sub(lambda m: f"<mark>{m.group(0)}</mark>", owner)
     return f"""<!doctype html>
@@ -152,7 +162,11 @@ def _open_markers(label: str, text: str, first_line: int = 1) -> list[str]:
     """One message per placeholder or review flag still in the text, with its line."""
     found = []
     for number, line in enumerate(text.splitlines(), start=first_line):
-        markers = [m.group(0) for m in mdlite.PLACEHOLDER.finditer(line)]
+        markers = [
+            m.group(0)
+            for m in mdlite.PLACEHOLDER.finditer(line)
+            if not _OPTIONAL.fullmatch(m.group(0))
+        ]
         if _REVIEW_FLAG in line:
             markers.append(_REVIEW_FLAG)
         found += [f"{label}:{number}: {marker[:90]}" for marker in markers]

@@ -21,7 +21,12 @@ UI = {
         "<strong>BOZZA.</strong> Questo testo non è ancora definitivo e non è stato rivisto da un "
         "legale. I dati tra parentesi quadre, evidenziati, sono ancora da compilare."
     ),
-    "footer_owner": "Titolare: [TITOLARE], [SEDE], [CF_PIVA].",
+    "footer_owner": (
+        "Titolare: [TITOLARE], con sede legale in [SEDE], codice fiscale e partita IVA [CF_PIVA]. "
+        "Registro delle imprese: [REA_REGISTRO_IMPRESE_SE_SOCIETA]. "
+        "Capitale sociale versato: [CAPITALE_SOCIALE_VERSATO]. "
+        "[SOCIO_UNICO_O_VUOTO] [LIQUIDAZIONE_O_VUOTO]"
+    ),
     "footer_note": "Questo sito non usa cookie né strumenti di analisi.",
     "footer_draft": "Sito in costruzione.",
 }

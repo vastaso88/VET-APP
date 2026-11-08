@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import importlib.util
+import re
 from pathlib import Path
 from types import ModuleType, SimpleNamespace
 from typing import Any
@@ -319,3 +320,99 @@ def test_vercel_mode_releases_only_for_production(
     else:
         assert code == 0
         assert "noindex" in (out / "it" / "privacy" / "index.html").read_text(encoding="utf-8")
+
+
+_FOOTER = (
+    "Titolare: [TITOLARE]. Capitale sociale versato: [CAPITALE_SOCIALE_VERSATO]. "
+    "[SOCIO_UNICO_O_VUOTO]"
+)
+
+
+def _footer_of(build: ModuleType, tmp_path: Path) -> str:
+    html = (tmp_path / "site" / "it" / "privacy" / "index.html").read_text(encoding="utf-8")
+    return str(html.split('<footer class="site-footer">')[1].split("</p>")[0])
+
+
+def _company_lang(page: dict[str, Any]) -> SimpleNamespace:
+    return _lang([page], {**_UI, "footer_owner": _FOOTER})
+
+
+def test_optional_placeholder_without_value_is_left_out_and_never_blocks(
+    build: ModuleType, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    page = _legal(tmp_path, "Testo definitivo.")
+    monkeypatch.setattr(build, "LANGS", ["it"])
+    monkeypatch.setattr(build, "_load_lang", lambda _code: _company_lang(page))
+    environ = {
+        "QUOKKA_SITE_TITOLARE": "Esempio S.r.l.",
+        "QUOKKA_SITE_CAPITALE_SOCIALE_VERSATO": "10.000 euro",
+    }
+
+    assert build.main(["--release"], environ) == 0
+
+    footer = _footer_of(build, tmp_path)
+    assert footer.endswith("Capitale sociale versato: 10.000 euro.")
+    assert "SOCIO_UNICO" not in footer
+
+
+def test_optional_placeholder_with_value_is_shown_as_given(
+    build: ModuleType, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    page = _legal(tmp_path, "Testo definitivo.")
+    monkeypatch.setattr(build, "LANGS", ["it"])
+    monkeypatch.setattr(build, "_load_lang", lambda _code: _company_lang(page))
+    environ = {
+        "QUOKKA_SITE_TITOLARE": "Esempio S.r.l.",
+        "QUOKKA_SITE_CAPITALE_SOCIALE_VERSATO": "10.000 euro",
+        "QUOKKA_SITE_SOCIO_UNICO_O_VUOTO": "Società con socio unico.",
+    }
+
+    assert build.main(["--release"], environ) == 0
+
+    assert _footer_of(build, tmp_path).endswith("10.000 euro. Società con socio unico.")
+
+
+def test_required_company_facts_still_block_while_optional_ones_do_not(
+    build: ModuleType,
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    page = _legal(tmp_path, "Testo definitivo.")
+    monkeypatch.setattr(build, "LANGS", ["it"])
+    monkeypatch.setattr(build, "_load_lang", lambda _code: _company_lang(page))
+
+    assert build.main(["--release"], {"QUOKKA_SITE_TITOLARE": "Esempio S.r.l."}) == 1
+
+    err = capsys.readouterr().err
+    assert "Open names: CAPITALE_SOCIALE_VERSATO." in err
+    assert "SOCIO_UNICO" not in err
+
+
+def test_draft_keeps_the_optional_placeholder_visible(
+    build: ModuleType, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    page = _legal(tmp_path, "Testo definitivo.")
+    monkeypatch.setattr(build, "LANGS", ["it"])
+    monkeypatch.setattr(build, "_load_lang", lambda _code: _company_lang(page))
+
+    assert build.main([], {}) == 0
+
+    assert "<mark>[SOCIO_UNICO_O_VUOTO]</mark>" in _footer_of(build, tmp_path)
+
+
+def test_real_footer_has_the_company_register_data_and_each_name_is_documented(
+    build: ModuleType,
+) -> None:
+    footer = build._load_lang("it").UI["footer_owner"]
+    names = set(re.findall(r"\[([A-Z][A-Z0-9_]+)\]", footer))
+    assert {
+        "TITOLARE",
+        "SEDE",
+        "CF_PIVA",
+        "REA_REGISTRO_IMPRESE_SE_SOCIETA",
+        "CAPITALE_SOCIALE_VERSATO",
+    } <= names
+    example = (_BUILD_PATH.parents[1] / ".env.example").read_text(encoding="utf-8")
+    for name in names:
+        assert f"QUOKKA_SITE_{name}=" in example, name
