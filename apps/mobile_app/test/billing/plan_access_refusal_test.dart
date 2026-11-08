@@ -2,11 +2,48 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:vet_app_mobile/app/router/app_router.dart';
+import 'package:vet_app_mobile/features/billing/data/billing_demo_store.dart';
 import 'package:vet_app_mobile/features/billing/data/plan_access_refusal.dart';
+import 'package:vet_app_mobile/features/billing/data/subscription_remote_data_source.dart';
+import 'package:vet_app_mobile/features/billing/domain/billing_models.dart';
+import 'package:vet_app_mobile/features/billing/domain/subscription_status.dart';
 import 'package:vet_app_mobile/l10n/l10n.dart';
+import 'package:vet_app_mobile/shared/errors/app_network_error.dart';
+import 'package:vet_app_mobile/shared/types/result.dart';
+
+class _FakeStatusSource implements SubscriptionRemoteDataSource {
+  _FakeStatusSource({required this.hasAccess, this.fails = false});
+
+  final bool hasAccess;
+  final bool fails;
+  int calls = 0;
+
+  @override
+  Future<Result<SubscriptionStatus>> fetchStatus() async {
+    calls++;
+    if (fails) {
+      return Result.failure(const AppNetworkError(code: 'down', message: 'down'));
+    }
+    return Result.success(
+      SubscriptionStatus(
+        trialEndsAt: DateTime(2026, 1, 1),
+        plan: null,
+        isDeveloper: false,
+        hasAccess: hasAccess,
+      ),
+    );
+  }
+
+  @override
+  Future<Result<SubscriptionStatus>> selectPlan(PlanTier plan) => throw UnimplementedError();
+}
 
 void main() {
-  setUp(() => AppLocaleHolder.current = const Locale('it'));
+  setUp(() {
+    AppLocaleHolder.current = const Locale('it');
+    BillingDemoStore.instance.reset();
+  });
+  tearDown(() => BillingDemoStore.instance.reset());
 
   group('backend answers (HTTP)', () {
     test('402 subscription_required', () {
@@ -97,6 +134,70 @@ void main() {
         ),
         isNull,
       );
+    });
+  });
+
+  group('Storage 403 refreshes the account state once before deciding', () {
+    const forbidden = StorageException('new row violates row-level security', statusCode: '403');
+
+    Future<PlanAccessRefusal?> resolveWith(_FakeStatusSource source) => resolvePlanRefusal(
+          forbidden,
+          storagePetPhotos: true,
+          refreshStatus: () => BillingDemoStore.instance.syncFromBackend(dataSource: source),
+        );
+
+    test('an expired trial the app did not know about reaches the paywall', () async {
+      final source = _FakeStatusSource(hasAccess: false);
+      // Nothing loaded yet: the app still believes the account has access.
+      expect(BillingDemoStore.instance.hasAccess, isTrue);
+
+      final refusal = await resolveWith(source);
+
+      expect(refusal?.kind, PlanRefusalKind.subscriptionRequired);
+      expect(source.calls, 1);
+    });
+
+    test('an account that really has access stays an ordinary failure', () async {
+      final source = _FakeStatusSource(hasAccess: true);
+
+      expect(await resolveWith(source), isNull);
+      expect(source.calls, 1);
+    });
+
+    test('an unreachable backend stays an ordinary failure', () async {
+      expect(await resolveWith(_FakeStatusSource(hasAccess: false, fails: true)), isNull);
+    });
+
+    test('a failing refresh never throws', () async {
+      final refusal = await resolvePlanRefusal(
+        forbidden,
+        storagePetPhotos: true,
+        refreshStatus: () async => throw StateError('boom'),
+      );
+      expect(refusal, isNull);
+    });
+
+    test('only a 403 on pet-photos triggers the refresh', () async {
+      var refreshed = 0;
+      Future<void> refresh() async => refreshed++;
+      await resolvePlanRefusal(forbidden, refreshStatus: refresh);
+      await resolvePlanRefusal(
+        const StorageException('gone', statusCode: '404'),
+        storagePetPhotos: true,
+        refreshStatus: refresh,
+      );
+      await resolvePlanRefusal(StateError('offline'), storagePetPhotos: true, refreshStatus: refresh);
+      expect(refreshed, 0);
+    });
+
+    test('a PostgREST refusal needs no refresh', () async {
+      var refreshed = 0;
+      final refusal = await resolvePlanRefusal(
+        const PostgrestException(message: 'subscription_required', code: 'PT402'),
+        refreshStatus: () async => refreshed++,
+      );
+      expect(refusal?.kind, PlanRefusalKind.subscriptionRequired);
+      expect(refreshed, 0);
     });
   });
 

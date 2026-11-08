@@ -3,6 +3,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:video_player/video_player.dart';
 
 import '../../../l10n/l10n.dart';
+import '../../billing/data/plan_access_refusal.dart';
 import '../domain/pet_video_rules.dart';
 import '../domain/video_metadata_scrubber.dart';
 import 'pet_photo_repository.dart';
@@ -131,6 +132,7 @@ class PetMediaImporter {
     var photos = 0;
     var videos = 0;
     final problems = <String>[];
+    var refused = false;
 
     for (var index = 0; index < files.length && !_cancelled; index++) {
       onProgress?.call(index + 1, files.length);
@@ -149,11 +151,18 @@ class PetMediaImporter {
         } else {
           photos++;
         }
-      } catch (_) {
-        problems.add(appL10n.petsMediaImportFileFailed(_label(file)));
+      } catch (error) {
+        if (error is PlanAccessRefusedException) {
+          // The same refusal would hit every remaining file: stop here.
+          problems.add(error.refusal.message);
+          refused = true;
+        } else {
+          problems.add(appL10n.petsMediaImportFileFailed(_label(file)));
+        }
       } finally {
         await _compressor.discardPickedCopy(file);
       }
+      if (refused) break;
     }
     return PetMediaImportResult(
       photos: photos,

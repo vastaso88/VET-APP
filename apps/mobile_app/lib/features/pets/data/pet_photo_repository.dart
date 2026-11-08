@@ -280,20 +280,30 @@ class PetPhotoRepository {
     } catch (error) {
       // Trial over: the Storage policy answers a bare 403 (no code of its own),
       // told apart from other refusals by the account having no access.
-      handlePlanRefusal(error, storagePetPhotos: true);
+      await _failIfPlanRefused(error, storagePetPhotos: true);
       rethrow;
     }
     try {
       await _insertRow(client, row);
     } catch (error) {
-      handlePlanRefusal(error);
       try {
         await client.storage.from(bucket).remove([path]);
       } catch (_) {
         // Best effort: an orphan is recoverable, hiding the real error is not.
       }
+      await _failIfPlanRefused(error);
       rethrow;
     }
+  }
+
+  /// A write the plan refused: sends the owner to the paywall (or shows the
+  /// limit) and throws [PlanAccessRefusedException] so the importer can say why.
+  /// Anything else returns, and the caller rethrows the original error.
+  static Future<void> _failIfPlanRefused(Object error, {bool storagePetPhotos = false}) async {
+    final refusal = await resolvePlanRefusal(error, storagePetPhotos: storagePetPhotos);
+    if (refusal == null) return;
+    applyPlanRefusal(refusal);
+    throw PlanAccessRefusedException(refusal);
   }
 
   /// `taken_at` arrived 2026-10-07 (scripts/setup/supabase_schema.sql): until

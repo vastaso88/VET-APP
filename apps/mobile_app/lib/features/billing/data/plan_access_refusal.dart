@@ -142,3 +142,39 @@ PlanAccessRefusal? handlePlanRefusal(
   if (refusal != null) applyPlanRefusal(refusal, showMessage: showMessage);
   return refusal;
 }
+
+/// Thrown by an upload whose write the plan refused, after the owner has been
+/// sent to the paywall (or shown the limit): lets the caller word its own
+/// failure with [PlanAccessRefusal.message] instead of a generic one.
+class PlanAccessRefusedException implements Exception {
+  const PlanAccessRefusedException(this.refusal);
+
+  final PlanAccessRefusal refusal;
+
+  @override
+  String toString() => 'PlanAccessRefusedException(${refusal.kind.name})';
+}
+
+/// Like [planRefusalFromError], for the `catch` of an upload that can wait
+/// for the account state. A Storage 403 on `pet-photos` carries no code, so
+/// when the app still believes the account has access (or has not loaded its
+/// state yet) the state is refreshed ONCE from `/subscription/status` before
+/// deciding: a trial that ended while the app was open then reaches the paywall.
+/// [refreshStatus] is replaceable for tests.
+Future<PlanAccessRefusal?> resolvePlanRefusal(
+  Object error, {
+  bool storagePetPhotos = false,
+  Future<void> Function()? refreshStatus,
+}) async {
+  final known = planRefusalFromError(error, storagePetPhotos: storagePetPhotos);
+  if (known != null) return known;
+  final storageForbidden =
+      error is StorageException && storagePetPhotos && error.statusCode == '403';
+  if (!storageForbidden) return null;
+  try {
+    await (refreshStatus ?? () => BillingDemoStore.instance.syncFromBackend())();
+  } catch (_) {
+    return null; // Unreachable backend: stay with the ordinary failure.
+  }
+  return planRefusalFromError(error, storagePetPhotos: true);
+}

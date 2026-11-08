@@ -3,11 +3,13 @@ import 'dart:typed_data';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:image/image.dart' as img;
 import 'package:image_picker/image_picker.dart';
+import 'package:vet_app_mobile/features/billing/data/plan_access_refusal.dart';
 import 'package:vet_app_mobile/features/pets/data/pet_media_importer.dart';
 import 'package:vet_app_mobile/features/pets/data/pet_photo_repository.dart';
 import 'package:vet_app_mobile/features/pets/domain/pet_video_rules.dart';
 import 'package:vet_app_mobile/features/pets/domain/video_metadata_scrubber.dart';
 import 'package:vet_app_mobile/features/pets/presentation/pages/gallery_folders_page.dart';
+import 'package:vet_app_mobile/l10n/l10n.dart';
 
 List<int> _u32(int value) => [
       (value >> 24) & 0xFF,
@@ -42,6 +44,24 @@ bool _contains(Uint8List bytes, List<int> needle) {
 }
 
 var _n = 0;
+
+/// A repository whose uploads the plan refuses (trial over).
+class _RefusingRepository extends PetPhotoRepository {
+  int calls = 0;
+
+  @override
+  Future<PetPhotoEntry?> upload({
+    required String petId,
+    required Uint8List compressedJpeg,
+    required bool isProfile,
+    DateTime? takenAt,
+  }) async {
+    calls++;
+    throw const PlanAccessRefusedException(
+      PlanAccessRefusal(PlanRefusalKind.subscriptionRequired),
+    );
+  }
+}
 
 void main() {
   group('checkPetVideo', () {
@@ -361,6 +381,27 @@ void main() {
       final result = await importer.importAll(petId: 'p', files: [video('rotto.mp4', 1000)]);
 
       expect(result.problems.single, contains('Non riesco a leggere'));
+    });
+
+    test('a file refused by the plan says so and stops the rest', () async {
+      final repository = _RefusingRepository();
+      final importer = PetMediaImporter(repository: repository);
+      final jpeg = Uint8List.fromList(img.encodeJpg(img.Image(width: 8, height: 8)));
+      XFile photo(String name) => XFile.fromData(
+            jpeg,
+            name: name,
+            path: '/p/$name',
+            mimeType: 'image/jpeg',
+            length: jpeg.length,
+          );
+
+      final result = await importer.importAll(
+        petId: 'p',
+        files: [photo('a.jpg'), photo('b.jpg'), photo('c.jpg')],
+      );
+
+      expect(result.problems, [appL10n.billingPaywallTitle]);
+      expect(repository.calls, 1);
     });
 
     test('progress is reported for every file, and one bad file does not stop the rest', () async {
