@@ -10,7 +10,8 @@ Sito statico in HTML/CSS puro: nessun framework, nessun JavaScript, nessun cooki
 | `404.html`, `index.html`, `robots.txt` | Pagina non trovata, ingresso (rimanda a `/it/`), robots |
 | `assets/style.css` | Stile. Colori = token di `apps/mobile_app/lib/design_system/tokens/app_colors.dart` |
 | `vercel.json` | Header di sicurezza (CSP senza script, HSTS, nosniff, Referrer-Policy, …), redirect `/` → `/it/` |
-| `tools/` | Generatore (`build.py`, `mdlite.py`, `pages_it.py`). Non viene pubblicato (`.vercelignore`) |
+| `tools/` | Generatore (`build.py`, `mdlite.py`, `pages_it.py`) e test in `tests/unit/test_site_release_check.py` |
+| `.env.example` | Nomi (senza valori) delle variabili con i dati del titolare |
 
 Privacy, termini e assistenza **non si scrivono qui**: sono impaginati da `docs/compliance/it/` (testi della sessione normativa). Home, cancellazione account e avviso IA stanno in `tools/pages_it.py`.
 
@@ -33,22 +34,34 @@ Apri http://localhost:8765/it/ (i link sono assoluti: servi la cartella `apps/si
 
 ## Pubblicare su Vercel
 
-1. Vercel → **Add New… → Project** → importa il repository GitHub di VetApp.
+Il sito di produzione **non** è l'HTML committato (quello è sempre la bozza): lo costruisce Vercel a ogni deploy con `python3 tools/build.py --vercel --out dist` (è in `vercel.json`). In produzione è un build di pubblicazione: riempie i dati del titolare dalle variabili d'ambiente e **fallisce** se resta un solo segnaposto, così l'ultima versione buona resta online. Sugli altri rami fa una bozza con `noindex`.
+
+1. Vercel → **Add New… → Project** → importa il repository GitHub.
 2. **Project Name**: per esempio `quokka-site` (diverso dal progetto del backend).
-3. **Root Directory**: `apps/site`. **Framework Preset**: *Other*. Build Command, Output Directory e Install Command: vuoti. Vercel pubblica la cartella così com'è.
-4. **Production Branch**: `main`. Niente variabili d'ambiente.
-5. **Deploy**. Controlla l'indirizzo `*.vercel.app` provvisorio.
-6. Collegare il dominio: Project → **Settings → Domains** → aggiungi `quokkapet.net` e `www.quokkapet.net`. Vercel mostra i record DNS da inserire presso il registrar (di solito un record `A` per `quokkapet.net` e un `CNAME` per `www`). Se il DNS è su Cloudflare, i record vanno su "solo DNS" (nuvola grigia).
-7. Dopo qualche minuto il certificato HTTPS è automatico.
+3. **Root Directory**: `apps/site`. **Framework Preset**: *Other*. Lascia Build Command e Output Directory come propone `vercel.json`. In **Settings → General** controlla che sia attiva *Include source files outside of the Root Directory in the Build Step* (il generatore legge `docs/compliance/it/`).
+4. **Production Branch**: `main`.
+5. **Settings → Environment Variables** (ambiente *Production*): le variabili `QUOKKA_SITE_*` elencate in `.env.example`. I valori stanno solo lì, mai nel repository.
+6. **Deploy**. Finché i testi hanno segnaposto aperti il deploy di produzione fallisce e nel log compare l'elenco di cosa manca: è voluto. Le anteprime (altri rami) si costruiscono in bozza.
+7. Collegare il dominio: vedi `PASSI_PROPRIETARIO.md`.
+
+Da verificare al primo deploy: che l'immagine di build di Vercel abbia `python3` (la usa solo la libreria standard). Se il build non parte per questo motivo, il deploy fallisce senza pubblicare nulla.
+
+## Dati del titolare (mai nel repository)
+
+I testi tengono i segnaposto (`[TITOLARE]`, `[SEDE]`, `[CF_PIVA]`, …). In un build di pubblicazione ogni `[NOME]` viene sostituito dal valore della variabile `QUOKKA_SITE_NOME`; ogni valore è una riga, senza `[ ] | ` * < >`. L'elenco dei nomi è in `.env.example`; il minimo da mostrare lo stabilisce la sessione Normativa. Per provare in locale senza scrivere nulla nel repository:
+
+```bash
+QUOKKA_SITE_TITOLARE="Esempio S.r.l." python apps/site/tools/build.py --release --out /tmp/prova
+```
+
+(si ferma elencando i segnaposto ancora aperti; con `--out` non tocca l'HTML committato).
 
 ## Prima di pubblicarlo davvero (bozza → definitivo)
 
 Oggi tutto è in **modalità bozza**: ogni pagina ha `noindex` e `robots.txt` blocca i motori di ricerca, perché i testi legali hanno ancora segnaposto.
 
-- [ ] Segnaposto riempiti nei testi di `docs/compliance/it/` e testi rivisti dal legale. Il controllo è automatico: `python apps/site/tools/build.py --release` si ferma elencando ogni riga con `[MAIUSCOLO]`, `[da verificare/decidere: …]`, `[in attesa del codice: …]` o ⚖️ (anche nel piè di pagina con i dati del titolare).
-- [ ] Quando l'elenco è vuoto, `--release` genera il sito senza banner di bozza, senza `noindex` e con `robots.txt` aperto: committare i file generati.
-- [ ] Titolare nel piè di pagina (`UI["footer_owner"]` in `tools/pages_it.py`): obbligo di legge, dati reali solo nel testo pubblicato, mai nel repository.
-- [ ] Indirizzo di contatto confermato dal proprietario (`CONTACT_EMAIL` in `tools/pages_it.py`).
+- [ ] Testi di `docs/compliance/it/` rivisti dal legale e senza segnaposto che non siano dati del titolare. Il controllo è automatico: `python apps/site/tools/build.py --release --out /tmp/prova` elenca ogni `[MAIUSCOLO]`, `[da verificare/decidere: …]`, `[in attesa del codice: …]` e ⚖️ ancora aperto (anche nel piè di pagina).
+- [ ] Variabili `QUOKKA_SITE_*` impostate su Vercel (Production). Con l'elenco vuoto il build di produzione genera il sito senza banner di bozza, senza `noindex` e con `robots.txt` aperto.
 - [ ] In Play Console: informativa = `https://quokkapet.net/it/privacy/`, eliminazione account = `https://quokkapet.net/it/cancellazione-account/`.
 - [ ] Nell'app: sostituire la frase «L'informativa completa è in preparazione» con il link (vedi `docs/compliance/it/README.md`).
 

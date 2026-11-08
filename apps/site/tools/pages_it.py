@@ -21,7 +21,7 @@ UI = {
         "<strong>BOZZA.</strong> Questo testo non è ancora definitivo e non è stato rivisto da un "
         "legale. I dati tra parentesi quadre, evidenziati, sono ancora da compilare."
     ),
-    "footer_owner": "Titolare: <mark>[TITOLARE]</mark>, <mark>[SEDE]</mark>, <mark>[CF_PIVA]</mark>.",
+    "footer_owner": "Titolare: [TITOLARE], [SEDE], [CF_PIVA].",
     "footer_note": "Questo sito non usa cookie né strumenti di analisi.",
     "footer_draft": "Sito in costruzione.",
 }

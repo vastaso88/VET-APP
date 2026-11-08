@@ -2,11 +2,15 @@
 
     python apps/site/tools/build.py             # draft build: banner, noindex, robots blocks all
     python apps/site/tools/build.py --release   # publication build: stops if a marker is left
+    python apps/site/tools/build.py --vercel --out dist   # what Vercel runs (see vercel.json)
 
 The legal pages are laid out from the texts the legal workstream keeps in
-docs/compliance/<lang>/, so they are never retyped here. Run this again whenever
-those texts change, then commit the generated HTML. Vercel publishes apps/site
-as it is (no build step on their side).
+docs/compliance/<lang>/, so they are never retyped here.
+
+Owner data (company name, registered office, VAT number, ...) never lives in the
+repository, which is public: the texts keep placeholders such as [TITOLARE]. A
+publication build fills them from environment variables named QUOKKA_SITE_<NAME>
+(QUOKKA_SITE_TITOLARE for [TITOLARE]) and stops if any placeholder stays open.
 """
 
 from __future__ import annotations
@@ -14,7 +18,11 @@ from __future__ import annotations
 import argparse
 import html
 import importlib
+import os
+import re
+import shutil
 import sys
+from collections.abc import Mapping
 from pathlib import Path
 from types import ModuleType
 from typing import Any
@@ -26,9 +34,18 @@ SITE_DIR = Path(__file__).resolve().parents[1]
 REPO_DIR = SITE_DIR.parents[1]
 LANGS = ["it"]  # add "en", "de", ... here once pages_<lang>.py exists
 
+# Where the site is written. None = in place, next to the sources (draft, local preview).
+OUT_DIR: Path | None = None
+
 # While True every page asks search engines not to index it and robots.txt
-# blocks everything. Set to False on the day the real texts are published.
+# blocks everything. main() turns it off for a release build.
 DRAFT = True
+
+ENV_PREFIX = "QUOKKA_SITE_"
+# Owner data for the placeholders of a release build: {"TITOLARE": "..."}; set by main().
+_VALUES: dict[str, str] = {}
+# What an environment value may not contain: it would break the Markdown or the HTML around it.
+_FORBIDDEN_IN_VALUE = re.compile(r"[\[\]|`*<>\r\n]")
 
 # A release build refuses to run while any of these is left in a page: placeholders
 # ([TITOLARE], [da verificare: ...], [in attesa del codice: ...]) and the lawyer flag.
@@ -39,6 +56,39 @@ _DRAFT_ONLY_UI = {"draft_banner", "footer_draft"}
 
 def _load_lang(lang: str) -> ModuleType:
     return importlib.import_module(f"pages_{lang}")
+
+
+def _out() -> Path:
+    return OUT_DIR or SITE_DIR
+
+
+def values_from_environ(environ: Mapping[str, str]) -> tuple[dict[str, str], list[str]]:
+    """Owner data from QUOKKA_SITE_* variables, and a message per unusable variable.
+
+    The messages never repeat a value: they may be personal data.
+    """
+    values: dict[str, str] = {}
+    errors: list[str] = []
+    for key, raw in environ.items():
+        if not key.startswith(ENV_PREFIX):
+            continue
+        name, value = key[len(ENV_PREFIX) :], raw.strip()
+        if not value:
+            continue
+        if not re.fullmatch(r"[A-Z][A-Z0-9_]+", name):
+            errors.append(f"{key}: the name after {ENV_PREFIX} must be UPPER_CASE (A-Z, 0-9, _)")
+        elif _FORBIDDEN_IN_VALUE.search(value):
+            errors.append(f"{key}: value must be one line without [ ] | ` * < >")
+        else:
+            values[name] = value
+    return values, errors
+
+
+def _fill(text: str, *, escape: bool) -> str:
+    """Replace every [NAME] that has an environment value."""
+    for name, value in _VALUES.items():
+        text = text.replace(f"[{name}]", html.escape(value) if escape else value)
+    return text
 
 
 def _page_shell(
@@ -52,6 +102,9 @@ def _page_shell(
         if p.get("nav")
     )
     robots = '<meta name="robots" content="noindex, nofollow">\n' if DRAFT else ""
+    owner = _fill(T["footer_owner"], escape=True)
+    if DRAFT:
+        owner = mdlite.PLACEHOLDER.sub(lambda m: f"<mark>{m.group(0)}</mark>", owner)
     return f"""<!doctype html>
 <html lang="{lang_mod.LANG}">
 <head>
@@ -74,7 +127,7 @@ def _page_shell(
 </main>
 <footer class="site-footer">
 <div class="wrap">
-<p>{T["footer_owner"]}</p>
+<p>{owner}</p>
 <p>{T["footer_note"]}{" " + T["footer_draft"] if DRAFT else ""}</p>
 </div>
 </footer>
@@ -92,17 +145,17 @@ def _legal_source(page: dict[str, Any]) -> tuple[str, int]:
     text = text.split("\n## Note per il revisore", 1)[0].rstrip().rstrip("-").rstrip()
     for old, new in page.get("subs", {}).items():
         text = text.replace(old, new)
-    return text, first_line
+    return _fill(text, escape=False), first_line
 
 
 def _open_markers(label: str, text: str, first_line: int = 1) -> list[str]:
-    """One message per line of text that still holds a placeholder or a review flag."""
+    """One message per placeholder or review flag still in the text, with its line."""
     found = []
     for number, line in enumerate(text.splitlines(), start=first_line):
-        if mdlite.PLACEHOLDER.search(line) or _REVIEW_FLAG in line:
-            marker = mdlite.PLACEHOLDER.search(line)
-            excerpt = marker.group(0) if marker else _REVIEW_FLAG
-            found.append(f"{label}:{number}: {excerpt[:90]}")
+        markers = [m.group(0) for m in mdlite.PLACEHOLDER.finditer(line)]
+        if _REVIEW_FLAG in line:
+            markers.append(_REVIEW_FLAG)
+        found += [f"{label}:{number}: {marker[:90]}" for marker in markers]
     return found
 
 
@@ -115,11 +168,23 @@ def release_problems(lang_mod: ModuleType) -> list[str]:
             problems += _open_markers(page["md"], text, first_line)
         label = f"pages_{lang_mod.LANG}.py [{page['slug'] or 'home'}]"
         for key in ("title", "description", "intro", "body"):
-            problems += _open_markers(f"{label} {key}", page.get(key, ""))
+            problems += _open_markers(f"{label} {key}", _fill(page.get(key, ""), escape=True))
     for key, value in lang_mod.UI.items():
         if key not in _DRAFT_ONLY_UI:
-            problems += _open_markers(f"pages_{lang_mod.LANG}.py UI[{key}]", value)
+            problems += _open_markers(
+                f"pages_{lang_mod.LANG}.py UI[{key}]", _fill(value, escape=True)
+            )
     return problems
+
+
+def _open_names(problems: list[str]) -> list[str]:
+    """Names of the [UPPER_CASE] placeholders among the problems, without repeats."""
+    names = []
+    for problem in problems:
+        found = re.search(r"\[([A-Z][A-Z0-9_]+)\]$", problem)
+        if found and found.group(1) not in names:
+            names.append(found.group(1))
+    return names
 
 
 def _legal_body(lang_mod: ModuleType, page: dict[str, Any]) -> str:
@@ -149,12 +214,12 @@ def build_lang(lang: str) -> None:
         if "md" in page:
             body = _legal_body(lang_mod, page)
         else:
-            body = page["body"]
+            body = _fill(page["body"], escape=True)
         if DRAFT and page.get("draft") and "md" not in page:
             body = body.replace(
                 "</h1>", f'</h1>\n<p class="draft" role="note">{lang_mod.UI["draft_banner"]}</p>', 1
             )
-        out_dir = SITE_DIR / lang / page["slug"]
+        out_dir = _out() / lang / page["slug"]
         out_dir.mkdir(parents=True, exist_ok=True)
         (out_dir / "index.html").write_text(
             _page_shell(
@@ -167,7 +232,7 @@ def build_lang(lang: str) -> None:
             encoding="utf-8",
         )
     not_found = lang_mod.NOT_FOUND
-    (SITE_DIR / "404.html").write_text(
+    (_out() / "404.html").write_text(
         _page_shell(
             lang_mod,
             title=not_found["title"] + " · Quokka",
@@ -186,7 +251,9 @@ def build_root() -> None:
         for lang in LANGS
     )
     robots = '<meta name="robots" content="noindex, nofollow">\n' if DRAFT else ""
-    (SITE_DIR / "index.html").write_text(
+    out = _out()
+    out.mkdir(parents=True, exist_ok=True)
+    (out / "index.html").write_text(
         f"""<!doctype html>
 <html lang="{first}">
 <head>
@@ -203,31 +270,60 @@ def build_root() -> None:
 """,
         encoding="utf-8",
     )
-    (SITE_DIR / "robots.txt").write_text(
+    (out / "robots.txt").write_text(
         "User-agent: *\nDisallow: /\n" if DRAFT else "User-agent: *\nAllow: /\n", encoding="utf-8"
     )
+    if out.resolve() != SITE_DIR.resolve():
+        shutil.copytree(SITE_DIR / "assets", out / "assets", dirs_exist_ok=True)
 
 
-def main(argv: list[str] | None = None) -> int:
-    global DRAFT
+def main(argv: list[str] | None = None, environ: Mapping[str, str] | None = None) -> int:
+    global DRAFT, OUT_DIR
+    environ = os.environ if environ is None else environ
     parser = argparse.ArgumentParser(description="Build the Quokka static site.")
     parser.add_argument(
         "--release",
         action="store_true",
-        help="publication build: fails listing every open placeholder; no draft banner, no noindex",
+        help="publication build: owner data from QUOKKA_SITE_* variables, fails while any "
+        "placeholder is open; no draft banner, no noindex",
+    )
+    parser.add_argument(
+        "--vercel",
+        action="store_true",
+        help="--release when Vercel builds the production deployment (VERCEL_ENV=production), "
+        "a draft build for previews",
+    )
+    parser.add_argument(
+        "--out", type=Path, help="write the site here instead of next to the sources"
     )
     args = parser.parse_args(argv)
-    if args.release:
+    release = args.release or (args.vercel and environ.get("VERCEL_ENV") == "production")
+    OUT_DIR = args.out
+    if release:
+        values, errors = values_from_environ(environ)
+        if errors:
+            print("Release blocked: unusable environment variable(s):", file=sys.stderr)
+            print("\n".join(errors), file=sys.stderr)
+            return 1
+        _VALUES.clear()
+        _VALUES.update(values)
         problems = [line for lang in LANGS for line in release_problems(_load_lang(lang))]
         if problems:
             print(f"Release blocked: {len(problems)} open marker(s).", file=sys.stderr)
             print("\n".join(problems), file=sys.stderr)
+            names = _open_names(problems)
+            if names:
+                print(
+                    f"\nOwner data is set with environment variables {ENV_PREFIX}<NAME>, "
+                    f"never in the repository. Open names: {', '.join(names)}.",
+                    file=sys.stderr,
+                )
             return 1
         DRAFT = False
     for lang in LANGS:
         build_lang(lang)
     build_root()
-    print(f"built {', '.join(LANGS)} (draft={DRAFT})")
+    print(f"built {', '.join(LANGS)} (draft={DRAFT}) in {_out()}")
     return 0
 
 
