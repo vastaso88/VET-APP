@@ -51,6 +51,7 @@ from packages.core.application.ports.user_location_repository import UserLocatio
 from packages.core.application.ports.weight_measurement_repository import (
     WeightMeasurementRepository,
 )
+from packages.core.application.services.account_data_counts import AccountDataCounter
 from packages.core.application.services.chat_orchestrator import ChatOrchestrator
 from packages.core.application.services.consent_interpreter import ConsentInterpreter
 from packages.core.application.services.create_listing import CreateListingService
@@ -425,6 +426,12 @@ class ApplicationContainer:
             self.subscription_repository,
             self.owner_contact_lookup,
             self.developer_emails,
+            self.account_consents_repository,
+            AccountDataCounter(
+                self.pet_profile_repository,
+                self.clinical_event_repository,
+                self.reminder_repository,
+            ),
             test_plan=self.subscription_test_plan,
         )
 

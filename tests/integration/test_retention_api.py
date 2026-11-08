@@ -107,6 +107,10 @@ def test_the_dry_run_reports_counts_and_changes_nothing(client: TestClient) -> N
     assert body["clock_running"] is True
     assert body["accounts_without_plan"] == 1
     assert body["erasable_now"] == 0
+    # No registration records a date of birth yet: the safe, service notice.
+    assert body["age_unknown"] == 1
+    assert body["service_notices"] == 1
+    assert body["commercial_notices"] == 0
     assert repository.get(OWNER) == before
 
 

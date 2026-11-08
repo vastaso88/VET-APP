@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from datetime import date
 from typing import Protocol
 
 
@@ -9,6 +10,10 @@ class OwnerContact:
 
     email: str | None
     email_confirmed: bool
+    # The date of birth the owner declared at registration, if any. None =
+    # not declared (today no screen records it), which callers treat as "not
+    # known to be an adult".
+    birth_date: date | None = None
 
 
 class OwnerContactLookup(Protocol):

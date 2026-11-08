@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import logging
+from datetime import date
 from typing import TYPE_CHECKING
 
 from packages.core.application.ports.owner_contact_lookup import OwnerContact, OwnerContactLookup
@@ -9,6 +10,11 @@ if TYPE_CHECKING:
     from supabase import Client
 
 logger = logging.getLogger(__name__)
+
+# Where the registration is to write the declared date of birth (ISO date, in
+# the account's user metadata). Nothing writes it yet: until then every
+# account reads as "age not known".
+BIRTH_DATE_METADATA_KEY = "birth_date"
 
 
 class SupabaseOwnerContactLookup(OwnerContactLookup):
@@ -32,4 +38,17 @@ class SupabaseOwnerContactLookup(OwnerContactLookup):
         return OwnerContact(
             email=email if isinstance(email, str) and email.strip() else None,
             email_confirmed=getattr(user, "email_confirmed_at", None) is not None,
+            birth_date=_declared_birth_date(getattr(user, "user_metadata", None)),
         )
+
+
+def _declared_birth_date(metadata: object) -> date | None:
+    if not isinstance(metadata, dict):
+        return None
+    raw = metadata.get(BIRTH_DATE_METADATA_KEY)
+    if not isinstance(raw, str):
+        return None
+    try:
+        return date.fromisoformat(raw[:10])
+    except ValueError:
+        return None

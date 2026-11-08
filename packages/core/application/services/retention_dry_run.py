@@ -2,21 +2,34 @@
 
 It answers "what would the job do right now?" and nothing else: it reads, it
 counts, it never sends a message and never erases anything, and it has no
-code path that could (the only collaborators are two read-only ports).
+code path that could (the collaborators are read-only ports).
 Sending and erasure stay off until Confirm email, a custom SMTP sender and
 the Terms exist, and are built then.
 
+For every account it also works out which e-mail it would get (service S, or
+commercial P only with a consent in force and a declared adult) and which
+kinds of data P would quote, from real counts. The sequence stops by
+construction when the account chooses a plan: it is no longer listed. Having
+downloaded the data does NOT stop it (owner decision of 2026-11-08; doc 12
+says otherwise, flagged to the Orchestrator).
+
 The report holds counts and a short sample of pseudonymous references: no
-e-mail, no owner id, no name, so it can be read in a log or by a scheduler.
+e-mail, no owner id, no name, no per-account number, so it can be read in a
+log or by a scheduler.
 """
 
 from datetime import datetime
 
 from pydantic import BaseModel, Field
 
-from packages.core.application.ports.owner_contact_lookup import OwnerContactLookup
+from packages.core.application.ports.account_consents_repository import (
+    AccountConsentsRepository,
+)
+from packages.core.application.ports.owner_contact_lookup import OwnerContact, OwnerContactLookup
 from packages.core.application.ports.subscription_repository import SubscriptionRepository
+from packages.core.application.services.account_data_counts import AccountDataCounter
 from packages.core.domain.common.entity import utc_now
+from packages.core.domain.consent.models import AccountConsentType
 from packages.core.domain.feedback.pseudonym import reporter_ref
 from packages.core.domain.subscription.retention import (
     NOTICE_DAYS,
@@ -24,6 +37,13 @@ from packages.core.domain.subscription.retention import (
     due_notice_day,
     erasure_allowed,
     past_retention,
+)
+from packages.core.domain.subscription.retention_notices import (
+    COMMERCIAL,
+    AccountDataCounts,
+    NoticePlan,
+    is_adult,
+    plan_notice,
 )
 
 # One contact lookup per account without access, each a call to the auth
@@ -38,6 +58,11 @@ class RetentionDryRunSample(BaseModel):
     days_since_loss: int
     notice_due: int | None
     reachable: bool
+    # "service" or "commercial", the sentence for a minor, and the kinds of
+    # data the commercial text would quote (never the numbers).
+    variant: str = "service"
+    minor_note: bool = False
+    cites: list[str] = Field(default_factory=list)
 
 
 class RetentionDryRunReport(BaseModel):
@@ -65,6 +90,20 @@ class RetentionDryRunReport(BaseModel):
     erasable_now: int = 0
     without_reachable_address: int = 0
     unverified_address: int = 0
+    # Which e-mail each account would get.
+    service_notices: int = 0
+    commercial_notices: int = 0
+    with_marketing_consent: int = 0
+    # Age: declared adult / declared minor / not declared. Without a declared
+    # adult age an account never gets the commercial version.
+    age_adult: int = 0
+    age_minor: int = 0
+    age_unknown: int = 0
+    commercial_blocked_by_age: int = 0
+    # Commercial accounts with nothing true to quote (no animals, documents or
+    # reminders, or the counts could not be read).
+    commercial_nothing_to_cite: int = 0
+    counts_unavailable: int = 0
     sample: list[RetentionDryRunSample] = Field(default_factory=list)
 
 
@@ -74,12 +113,16 @@ class RetentionDryRunService:
         subscriptions: SubscriptionRepository,
         contacts: OwnerContactLookup,
         developer_emails: frozenset[str],
+        consents: AccountConsentsRepository,
+        data_counter: AccountDataCounter,
         *,
         test_plan: str | None = None,
     ) -> None:
         self._subscriptions = subscriptions
         self._contacts = contacts
         self._developer_emails = developer_emails
+        self._consents = consents
+        self._data_counter = data_counter
         self._test_plan = test_plan
 
     def execute(self, *, now: datetime | None = None) -> RetentionDryRunReport:
@@ -125,6 +168,8 @@ class RetentionDryRunService:
                 report.past_retention += 1
             if erasure_allowed(started, now, last_notice_day=None, last_notice_at=None):
                 report.erasable_now += 1
+
+            plan = self._plan(report, subscription.owner_id, notice, contact, now)
             if len(report.sample) < SAMPLE_SIZE:
                 report.sample.append(
                     RetentionDryRunSample(
@@ -132,6 +177,66 @@ class RetentionDryRunService:
                         days_since_loss=days_since_loss(started, now),
                         notice_due=notice,
                         reachable=reachable,
+                        variant=plan.variant,
+                        minor_note=plan.minor_note,
+                        cites=plan.cites,
                     )
                 )
         return report
+
+    def _plan(
+        self,
+        report: RetentionDryRunReport,
+        owner_id: str,
+        notice: int | None,
+        contact: OwnerContact | None,
+        now: datetime,
+    ) -> NoticePlan:
+        """Which e-mail this account would get, and what it may quote."""
+        adult = is_adult(contact.birth_date if contact else None, now.date())
+        if adult is True:
+            report.age_adult += 1
+        elif adult is False:
+            report.age_minor += 1
+        else:
+            report.age_unknown += 1
+
+        consent = self._marketing_consent(owner_id)
+        if consent:
+            report.with_marketing_consent += 1
+            if adult is not True:
+                report.commercial_blocked_by_age += 1
+
+        # Counts are read only for accounts that would get the commercial
+        # text, the only one that quotes them.
+        counts: AccountDataCounts | None = None
+        if consent and adult is True:
+            counts = self._data_counter.count(owner_id)
+            if counts is None:
+                report.counts_unavailable += 1
+
+        plan = plan_notice(
+            notice if notice is not None else NOTICE_DAYS[0],
+            marketing_consent=consent,
+            adult=adult,
+            counts=counts,
+        )
+        if plan.variant == COMMERCIAL:
+            report.commercial_notices += 1
+            if plan.nothing_to_cite:
+                report.commercial_nothing_to_cite += 1
+        else:
+            report.service_notices += 1
+        return plan
+
+    def _marketing_consent(self, owner_id: str) -> bool:
+        """A commercial consent in force: the latest decision is "granted".
+        Anything unreadable counts as no consent."""
+        try:
+            record = self._consents.get(owner_id)
+        except Exception:  # noqa: BLE001 - when in doubt, no commercial e-mail
+            return False
+        if record is None:
+            return False
+        decision = record.consents.get(AccountConsentType.MARKETING_EMAIL)
+        return decision is not None and decision.granted
