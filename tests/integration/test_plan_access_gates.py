@@ -208,15 +208,18 @@ def test_with_a_plan_the_actions_work_and_three_reporters_remove_an_ad() -> None
     first = client.post("/marketplace/listings/ad-8/report", json={"reason": "scam"})
 
     assert first.status_code == 200
-    assert first.json() == {"report_count": 1, "status": "active"}
+    # The reporter learns nothing about the ad's count or state.
+    assert first.json() == {"ok": True}
+    stored = get_container().marketplace_listing_repository.get("ad-8")
+    assert stored is not None and stored.report_count == 1
 
 
-def test_a_report_for_a_missing_ad_is_a_clear_400_not_a_crash() -> None:
+def test_a_report_for_a_missing_ad_is_a_404_like_reading_it() -> None:
     _choose("pro")
 
     response = TestClient(app).post("/marketplace/listings/nope/report", json={"reason": "spam"})
 
-    assert response.status_code == 400
+    assert response.status_code == 404
 
 
 # --- Eventi ------------------------------------------------------------------

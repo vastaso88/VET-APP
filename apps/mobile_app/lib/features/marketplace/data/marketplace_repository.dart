@@ -336,15 +336,16 @@ class MarketplaceRepository {
     if (handleSubscriptionRequired(response.statusCode)) {
       throw ListingRejectedException(appL10n.billingActionNeedsPlan);
     }
+    // Gone, or no longer open to others: the same answer as reading it.
+    if (response.statusCode == 404) {
+      throw ListingRejectedException(appL10n.marketplaceListingGone);
+    }
     if (response.statusCode != 200) {
       throw const ListingBackendUnavailableException();
     }
-    final json = jsonDecode(utf8.decode(response.bodyBytes)) as Map<String, dynamic>;
-    return listing.copyWith(
-      reportCount: (json['report_count'] as num?)?.toInt(),
-      status: _statusFromString(json['status'] as String?),
-      updatedAt: DateTime.now(),
-    );
+    // The backend does not tell the reporter the ad's count or state: what the
+    // reporter sees stays as it was until the list is read again.
+    return listing;
   }
 
   /// Author only. The `owner_id` filter plus `.select()` turn an RLS

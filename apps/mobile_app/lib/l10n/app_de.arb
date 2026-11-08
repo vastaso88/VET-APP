@@ -3909,5 +3909,6 @@
   "ageMarketplaceBody": "Alles andere in Quokka steht Ihnen zur Verfügung. Der Gebrauchtmarkt öffnet sich von selbst, sobald Sie 18 Jahre alt sind.",
   "ageGuardianTitle": "Zustimmung eines Elternteils",
   "ageGuardianBody": "Sie sind unter 18: Für den Abschluss eines Tarifs brauchen Sie die Zustimmung eines Elternteils oder der Person, die die elterliche Sorge ausübt. Fahren Sie nur fort, wenn Sie sie haben.",
-  "ageGuardianConfirm": "Ich habe die Zustimmung"
+  "ageGuardianConfirm": "Ich habe die Zustimmung",
+  "marketplaceListingGone": "Diese Anzeige ist nicht mehr verfügbar."
 }

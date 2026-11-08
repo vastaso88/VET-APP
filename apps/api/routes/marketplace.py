@@ -186,11 +186,17 @@ class ReportListingRequest(BaseModel):
 # Reporting an ad is open to everyone signed in, with or without a plan (owner
 # decision 2026-11-08): it is a safety tool, the only action left to someone
 # without a plan. The auto-removal threshold is applied here, not by the app.
+# An ad the caller could not open (missing, or someone else's that is no longer
+# active) answers 404 exactly like GET /listings/{id}; the answer never carries
+# the ad's report count or state, which are the team's business.
 @router.post("/listings/{listing_id}/report")
 def report_listing(listing_id: str, request: ReportListingRequest) -> dict[str, object]:
     container = get_container()
     user = container.auth_provider.get_current_user()
-    result = container.report_listing_service().execute(
+    listing = container.marketplace_listing_repository.get(listing_id)
+    if listing is None or (listing.status != "active" and listing.owner_id != user.id):
+        raise HTTPException(status_code=404, detail="Annuncio non trovato.")
+    container.report_listing_service().execute(
         ReportListingInput(listing_id=listing_id, reporter_owner_id=user.id, reason=request.reason)
     )
-    return {"report_count": result.listing.report_count, "status": result.listing.status}
+    return {"ok": True}

@@ -3909,5 +3909,6 @@
   "ageMarketplaceBody": "Everything else in Quokka is available to you. The marketplace will open by itself when you turn 18.",
   "ageGuardianTitle": "A parent's authorization",
   "ageGuardianBody": "You are under 18: to subscribe to a plan you need the authorization of a parent or of whoever has parental responsibility. Go ahead only if you have it.",
-  "ageGuardianConfirm": "I have the authorization"
+  "ageGuardianConfirm": "I have the authorization",
+  "marketplaceListingGone": "This listing is no longer available."
 }

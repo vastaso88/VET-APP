@@ -3909,5 +3909,6 @@
   "ageMarketplaceBody": "Todo lo demás de Quokka está a tu disposición. El mercadillo se abrirá solo cuando cumplas 18 años.",
   "ageGuardianTitle": "Autorización de un progenitor",
   "ageGuardianBody": "Eres menor de 18 años: para suscribirte a un plan necesitas la autorización de un progenitor o de quien ejerza la patria potestad. Continúa solo si la tienes.",
-  "ageGuardianConfirm": "Tengo la autorización"
+  "ageGuardianConfirm": "Tengo la autorización",
+  "marketplaceListingGone": "Este anuncio ya no está disponible."
 }

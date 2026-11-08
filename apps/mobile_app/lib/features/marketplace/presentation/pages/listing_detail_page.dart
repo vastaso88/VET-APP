@@ -117,11 +117,27 @@ class _ListingDetailPageState extends State<ListingDetailPage> {
     if (reason == null) return;
 
     setState(() => _busy = true);
-    final updated = await ListingReportService(listingRepository: _repository).report(
-      listing: widget.listing,
-      reporterOwnerId: _currentOwnerId,
-      reason: reason,
-    );
+    final MarketplaceListing updated;
+    try {
+      updated = await ListingReportService(listingRepository: _repository).report(
+        listing: widget.listing,
+        reporterOwnerId: _currentOwnerId,
+        reason: reason,
+      );
+    } on Exception catch (error) {
+      if (!mounted) return;
+      setState(() => _busy = false);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            error is ListingRejectedException
+                ? error.message
+                : context.l10n.marketplaceMessagesActionFailed,
+          ),
+        ),
+      );
+      return;
+    }
     if (!mounted) return;
 
     ScaffoldMessenger.of(context).showSnackBar(

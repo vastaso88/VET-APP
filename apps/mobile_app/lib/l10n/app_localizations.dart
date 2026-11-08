@@ -11665,6 +11665,12 @@ abstract class AppLocalizations {
   /// In it, this message translates to:
   /// **'Ho l\'autorizzazione'**
   String get ageGuardianConfirm;
+
+  /// No description provided for @marketplaceListingGone.
+  ///
+  /// In it, this message translates to:
+  /// **'Questo annuncio non è più disponibile.'**
+  String get marketplaceListingGone;
 }
 
 class _AppLocalizationsDelegate

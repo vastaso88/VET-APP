@@ -18196,5 +18196,14 @@
       "de": "08eeb947c08e9e4804bdd46b14055cf7223783302d756cc92d939e42435c09c3",
       "fr": "1a09c52608dd94993f5b8801b2cda85c1f9d72d3ba4e1df9bd1aad248a7d3027"
     }
+  },
+  "ui:marketplaceListingGone": {
+    "source": "bfd97662320c0db8f0a99fe130ef88a1a66ff383987570eb881f1c4712b0eca0",
+    "targets": {
+      "en": "55f43eac5b9d85d78e8328007a8e2f5915774fe1d2bb1e8bb4e565bc6d9f4831",
+      "es": "d476d320f6632c5cb4d8238c08ec04aae0e8c316c37fda020aed2aeabc73ff6b",
+      "de": "c7214e02423fbdc0c746c1b8668b85efb1a874cdc33f0eea2803e1f10528141e",
+      "fr": "047054b446a0703dade2c3660dcb539ee8ef5bf2104a91019975251eeec9aa75"
+    }
   }
 }

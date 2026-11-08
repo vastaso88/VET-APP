@@ -3918,5 +3918,6 @@
   "ageMarketplaceBody": "Tutto il resto di Quokka è a tua disposizione. Il Mercatino si aprirà da solo quando compirai 18 anni.",
   "ageGuardianTitle": "Autorizzazione di un genitore",
   "ageGuardianBody": "Hai meno di 18 anni: per sottoscrivere un piano serve l'autorizzazione di un genitore o di chi esercita la responsabilità genitoriale. Prosegui solo se ce l'hai.",
-  "ageGuardianConfirm": "Ho l'autorizzazione"
+  "ageGuardianConfirm": "Ho l'autorizzazione",
+  "marketplaceListingGone": "Questo annuncio non è più disponibile."
 }

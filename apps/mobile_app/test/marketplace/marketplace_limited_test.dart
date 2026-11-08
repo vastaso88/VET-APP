@@ -184,11 +184,11 @@ void main() {
       );
     });
 
-    test('reporting goes through the backend and returns the ad as it now is', () async {
+    test('reporting goes through the backend, which tells nothing about the ad', () async {
       late http.Request seen;
       final client = MockClient((request) async {
         seen = request;
-        return http.Response(jsonEncode({'report_count': 3, 'status': 'removed'}), 200);
+        return http.Response(jsonEncode({'ok': true}), 200);
       });
       final repository = _repository(client);
       final now = DateTime(2026, 10, 26);
@@ -208,8 +208,34 @@ void main() {
       expect(seen.method, 'POST');
       expect(seen.url.path, '/marketplace/listings/ad-9/report');
       expect(jsonDecode(seen.body), {'reason': 'scam'});
-      expect(updated!.reportCount, 3);
-      expect(updated.status, ListingStatus.removed);
+      expect(updated!.reportCount, 0);
+      expect(updated.status, ListingStatus.active);
+    });
+
+    test('an ad no longer open answers like a missing one', () async {
+      final repository = _repository(MockClient((_) async => http.Response('{}', 404)));
+      final now = DateTime(2026, 11, 9);
+      final listing = MarketplaceListing(
+        id: 'ad-gone',
+        ownerId: 'seller',
+        title: 'Palla',
+        category: ListingCategory.toys,
+        condition: ListingCondition.good,
+        location: const Coordinates(latitude: 45.8, longitude: 9.0),
+        createdAt: now,
+        updatedAt: now,
+      );
+
+      await expectLater(
+        repository.reportListing(listing, 'spam'),
+        throwsA(
+          isA<ListingRejectedException>().having(
+            (e) => e.message,
+            'message',
+            'Questo annuncio non è più disponibile.',
+          ),
+        ),
+      );
     });
   });
 }

@@ -1,10 +1,14 @@
+from datetime import timedelta
+
 import pytest
 from fastapi.testclient import TestClient
 
 from apps.api.main import app
 from packages.bootstrap.container import get_container
+from packages.core.domain.common.entity import utc_now
 from packages.core.domain.geo.models import Coordinates
 from packages.core.domain.marketplace.models import MarketplaceListing
+from packages.core.domain.subscription.models import Subscription
 
 pytestmark = pytest.mark.usefixtures("adult_everyone")
 
@@ -257,3 +261,60 @@ def test_contact_details_and_medicines_are_refused_with_a_clear_message() -> Non
         "/marketplace/listings", json={**base, "title": "Zwergkaninchen zu verkaufen"}
     )
     assert animals.status_code == 400
+
+
+@pytest.mark.parametrize("status", ["sold", "removed", "removed_policy"])
+def test_user_b_cannot_report_an_ad_of_a_that_is_no_longer_open(
+    status: str, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """Cleanup pass 2026-11-09: reporting someone else's closed or hidden ad
+    answered 200 with its count and state; now it is a 404 like reading it."""
+    monkeypatch.setenv("SUBSCRIPTION_TEST_PLAN", "")
+    get_container().marketplace_listing_repository.save(
+        MarketplaceListing(
+            id=f"api-report-{status}",
+            owner_id="seller-a",
+            title="Cuccia",
+            category="toys",
+            condition="good",
+            status=status,  # type: ignore[arg-type]
+            location=Coordinates(latitude=45.46, longitude=9.19),
+        )
+    )
+    client = TestClient(app)
+
+    hidden = client.post(
+        f"/marketplace/listings/api-report-{status}/report", json={"reason": "spam"}
+    )
+    reading = client.get(f"/marketplace/listings/api-report-{status}")
+
+    assert hidden.status_code == 404
+    assert hidden.json() == reading.json()
+    stored = get_container().marketplace_listing_repository.get(f"api-report-{status}")
+    assert stored is not None and stored.report_count == 0
+
+
+def test_a_valid_report_answers_without_count_or_state_even_without_a_plan(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setenv("SUBSCRIPTION_TEST_PLAN", "")
+    get_container().subscription_repository.save(
+        Subscription(owner_id="demo-user", trial_ends_at=utc_now() - timedelta(days=1))
+    )
+    get_container().marketplace_listing_repository.save(
+        MarketplaceListing(
+            id="api-report-open",
+            owner_id="seller-a",
+            title="Cuccia",
+            category="toys",
+            condition="good",
+            location=Coordinates(latitude=45.46, longitude=9.19),
+        )
+    )
+
+    response = TestClient(app).post(
+        "/marketplace/listings/api-report-open/report", json={"reason": "scam"}
+    )
+
+    assert response.status_code == 200
+    assert response.json() == {"ok": True}

@@ -3909,5 +3909,6 @@
   "ageMarketplaceBody": "Tout le reste de Quokka est à votre disposition. Le marché de l'occasion s'ouvrira tout seul à vos 18 ans.",
   "ageGuardianTitle": "Autorisation d'un parent",
   "ageGuardianBody": "Vous avez moins de 18 ans : pour souscrire à une offre, il faut l'autorisation d'un parent ou de la personne qui exerce l'autorité parentale. Ne continuez que si vous l'avez.",
-  "ageGuardianConfirm": "J'ai l'autorisation"
+  "ageGuardianConfirm": "J'ai l'autorisation",
+  "marketplaceListingGone": "Cette annonce n'est plus disponible."
 }

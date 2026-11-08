@@ -6977,4 +6977,7 @@ class AppLocalizationsIt extends AppLocalizations {
 
   @override
   String get ageGuardianConfirm => 'Ho l\'autorizzazione';
+
+  @override
+  String get marketplaceListingGone => 'Questo annuncio non è più disponibile.';
 }
