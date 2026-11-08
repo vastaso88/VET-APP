@@ -614,3 +614,29 @@ def test_the_export_holds_my_restriction_without_the_team_members_id(
     [row] = export.data["marketplace_user_restrictions"]
     assert row["reason"] == "spam"
     assert "created_by_admin_id" not in row
+
+
+def test_messages_are_throttled_through_both_doors_with_one_count(
+    client: TestClient, act_as: SwitchUser
+) -> None:
+    """Security review 2026-11-08: the ad's route also continues an existing
+    conversation, and it was outside the per-minute limit, so a script could
+    flood a seller through it. Both doors now share one count."""
+    buyer, seller, _ = _people()
+    listing_id = _ad(seller)
+    conversation_id = _open(client, act_as, buyer, listing_id)
+
+    statuses = [
+        client.post(
+            f"/marketplace/listings/{listing_id}/conversations", json={"text": "Ancora io"}
+        ).status_code
+        for _ in range(70)
+    ]
+
+    assert 429 in statuses
+    assert statuses.index(429) == 59, "60 messages a minute in total, the first one included"
+    other_door = client.post(
+        f"/marketplace/conversations/{conversation_id}/messages", json={"text": "E qui?"}
+    )
+    assert other_door.status_code == 429
+    assert "Retry-After" in other_door.headers

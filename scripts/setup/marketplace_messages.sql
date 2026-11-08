@@ -174,8 +174,10 @@ using (not public.marketplace_caller_is_restricted())
 with check (not public.marketplace_caller_is_restricted());
 
 -- Conservazione (decisione del proprietario, 2026-11-07): la conversazione si
--- cancella 6 mesi dopo l'ultimo messaggio se l'annuncio è chiuso, 12 mesi dopo
--- l'ultimo messaggio comunque; mai finché ha una segnalazione aperta. Messaggi e
+-- cancella 6 mesi dopo la chiusura dell'annuncio (o della conversazione da parte
+-- del team), 12 mesi dopo l'ultimo messaggio comunque; mai finché ha una
+-- segnalazione aperta. Un annuncio cancellato non lascia la data di chiusura: lì
+-- valgono 6 mesi dall'ultimo messaggio. Messaggi e
 -- segnalazioni seguono la conversazione (on delete cascade). I blocchi tra utenti
 -- restano finché esiste l'account; un blocco del team annullato da più di 12 mesi
 -- si cancella, uno in vigore resta.
@@ -189,6 +191,10 @@ declare
     conversation_rows integer;
     restriction_rows integer;
 begin
+    -- "6 mesi dalla chiusura": the closing moment is when the team closed the
+    -- conversation, or the ad's last change of state (a closed ad cannot be
+    -- edited any more, so its updated_at is when it closed). An ad deleted
+    -- outright leaves no date: there the last message counts.
     delete from public.marketplace_conversations c
     where not exists (
             select 1 from public.marketplace_conversation_reports r
@@ -200,10 +206,15 @@ begin
                 c.last_message_at < now() - interval '6 months'
                 and (
                     c.listing_id is null
-                    or c.moderation_closed_at is not null
+                    or (
+                        c.moderation_closed_at is not null
+                        and c.moderation_closed_at < now() - interval '6 months'
+                    )
                     or exists (
                         select 1 from public.marketplace_listings l
-                        where l.id = c.listing_id and l.status not in ('active', 'reserved')
+                        where l.id = c.listing_id
+                          and l.status not in ('active', 'reserved')
+                          and l.updated_at < now() - interval '6 months'
                     )
                 )
             )

@@ -35,6 +35,11 @@ class RateLimitRule:
     limit: int
     window_seconds: float
     methods: frozenset[str] = frozenset({"POST"})
+    # The path must also end with this (for routes with an id in the middle).
+    suffix: str = ""
+    # Rules with the same bucket share one count per caller (two doors to
+    # the same action); empty = the rule's own count.
+    bucket: str = ""
 
 
 DEFAULT_RULES: tuple[RateLimitRule, ...] = (
@@ -47,7 +52,21 @@ DEFAULT_RULES: tuple[RateLimitRule, ...] = (
     RateLimitRule(prefix="/chat-attachments", limit=20, window_seconds=600.0),
     # Messages of the Mercatino: a person does not send one a second for a
     # minute; a script does. The daily limit on new conversations is in the service.
-    RateLimitRule(prefix="/marketplace/conversations", limit=60, window_seconds=60.0),
+    # Two doors write a message: the conversation's own route, and the ad's
+    # route, which also continues an existing conversation. One shared count.
+    RateLimitRule(
+        prefix="/marketplace/conversations",
+        limit=60,
+        window_seconds=60.0,
+        bucket="marketplace-messages",
+    ),
+    RateLimitRule(
+        prefix="/marketplace/listings/",
+        suffix="/conversations",
+        limit=60,
+        window_seconds=60.0,
+        bucket="marketplace-messages",
+    ),
     # Data export: a full read of everything the owner has plus signed
     # links; once every ten minutes is plenty for a human and starves a
     # scraper holding a stolen token.
@@ -70,14 +89,18 @@ class SlidingWindowLimiter:
 
     def rule_for(self, method: str, path: str) -> RateLimitRule | None:
         for rule in self._rules:
-            if method.upper() in rule.methods and path.startswith(rule.prefix):
+            if (
+                method.upper() in rule.methods
+                and path.startswith(rule.prefix)
+                and path.endswith(rule.suffix)
+            ):
                 return rule
         return None
 
     def allow(self, rule: RateLimitRule, key: str) -> bool:
         now = self._clock()
         with self._lock:
-            bucket = self._hits.setdefault((rule.prefix, key), deque())
+            bucket = self._hits.setdefault((rule.bucket or rule.prefix, key), deque())
             while bucket and now - bucket[0] > rule.window_seconds:
                 bucket.popleft()
             if len(bucket) >= rule.limit:
