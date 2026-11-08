@@ -290,7 +290,7 @@ Su Vercel l'indirizzo IP è condiviso con altri clienti, quindi i 429 possono es
 
 La categoria `shelter` è del 2026-10-07 e compare dopo il prossimo import OSM e Overture (`import_osm_places.py`, `import_overture_places.py`); fino ad allora le mostra solo la cache per celle delle zone non coperte dal catalogo. Numeri trovati prima di aggiungerle: vedi "Tre categorie chieste il 2026-10-07".
 
-### Esperti in esotici (2026-11-07)
+### Dichiarano di trattare animali esotici (2026-11-07; nome confermato il 2026-11-08)
 
 Filtro di Vicino a me per i veterinari che **dichiarano** di curare animali esotici, per gruppo: rettili e anfibi, uccelli, piccoli mammiferi (coniglio, roditori, furetto), pesci, altro. Una struttura può averne più di uno. Ogni competenza tiene la propria fonte e la data in cui è stata letta; l'app dice sempre "competenza dichiarata dalla struttura o dalla fonte indicata, non verificata da Quokka".
 
@@ -299,7 +299,7 @@ Fonti (`packages/core/domain/radar_places/competences.py`):
 | Fonte | Come | Stato | Licenza |
 | --- | --- | --- | --- |
 | OpenStreetMap | tag `veterinary:treats:<animale>=yes` sul veterinario (conigli, roditori, furetti, uccelli, tartarughe, rettili, pesci...; cani, gatti e animali da reddito ignorati) | attiva | ODbL, come il resto del radar |
-| Nome della struttura | parole rigorose: esotici, non convenzionali, NAC, rettili/erpetologia, aviaria/ornitologia, conigli/roditori/furetti, ittiopatologia. "Pesc" e "uccell" no (Pescara, vie) | **spenta** (`RADAR_EXOTIC_NAME_MATCHING=false`), in attesa della decisione del proprietario | la fonte del nome (OSM o Overture) |
+| Nome della struttura | parole rigorose: esotici, non convenzionali, NAC, rettili/erpetologia, aviaria/ornitologia, conigli/roditori/furetti, ittiopatologia. "Pesc" e "uccell" no (Pescara, vie) | **attiva** dal 2026-11-08 per decisione del proprietario (`RADAR_EXOTIC_NAME_MATCHING`, default `true`) | la fonte del nome (OSM o Overture) |
 | Segnala! | "Cura animali esotici? Segnalalo" sulla scheda di un veterinario: gruppi e dove l'ha letto (sito, insegna, altro). Resta in attesa e invisibile finché il team non ha letto la pagina pubblica della struttura e l'ha confermata con `scripts/radar/confirm_competence_claim.py --claim-id <id> --evidence-url <pagina>` (prova obbligatoria) | attiva | dati nostri |
 | Elenchi delle società veterinarie (es. SIVAE) | SIVAE non pubblica un elenco: l'area soci è riservata, nessuna licenza indicata. Nessun elenco si usa senza permesso scritto | non usata | — |
 
@@ -308,6 +308,27 @@ Dati: le competenze non si salvano con il luogo; si calcolano a ogni risposta (d
 Numeri attesi in Italia all'avvio: circa 20 veterinari con tag OSM (quasi tutti per conigli, dati Geofabrik taginfo del 2026-11-07); con il nome acceso altri 15-20. In molte città il filtro non trova nulla: lo dice e invita ad allargare il raggio o a segnalare una struttura.
 
 Da fare dopo (non costruito): nella chat, quando una risposta d'urgenza consiglia un veterinario esperto in esotici, un collegamento che apre questo filtro.
+
+#### Controllo sul sito ufficiale (regola del proprietario, 2026-11-08)
+
+Una competenza si segna solo se il **sito ufficiale** della struttura dichiara che cura quel gruppo o ha esperti per quel gruppo; se il sito non c'è o non lo dice, la struttura resta normale. Nessun elenco di società (SIVAE o altre). Nessuna lettura automatica dei siti: la fa una persona.
+
+1. `scripts/radar/list_exotic_candidates.py` legge solo le nostre tabelle e scrive `.local/radar/exotic_candidates.csv` (fuori da git): una riga per struttura candidata, con nome, città, sito come lo dà la fonte e motivo. Di default sono candidate le strutture che i tag OSM o il nome indicano già come esperte; con `--all-with-website` (e `--city`) si allarga a tutte quelle con un sito.
+2. Una persona apre ogni sito e compila `esito` (si / no / nessun_sito), `gruppi` e `pagina` (l'indirizzo della pagina che lo dice).
+3. `scripts/radar/confirm_competence_claim.py --import-checked <csv>` registra le righe "si" come competenze confermate, con la pagina come prova e "team" come autore; le righe "no" e "nessun_sito" non cambiano nulla. Prima si può provare con `--dry-run`.
+
+Sulla scheda compare "Dichiarato sulla pagina della struttura, controllato il …" con il link alla pagina.
+
+### Solo strutture, mai persone (decisione del proprietario, 2026-11-08)
+
+Un elemento che è solo una persona ("Dott. Mario Rossi", "Rossi Maria", "Mario Rossi Veterinario": un professionista senza struttura, forse all'indirizzo di casa) non compare mai: viene scartato all'import (OSM e Overture), nella cache per celle, in ogni risposta dell'API e nelle segnalazioni "manca un luogo" ("Scrivi il nome della struttura, non quello di una persona"). Regola in `packages/core/domain/radar_places/person_names.py`:
+
+- è una persona un titolo seguito da un nome ("Dott.ssa …", "Dr. …", anche in mezzo: "Rossi Dr. Mario"), oppure da due a quattro parole di cui una è un nome proprio comune (elenco di nomi italiani, inglesi, tedeschi, francesi, spagnoli nel codice) e nient'altro;
+- non è una persona un nome con una parola da struttura o da attività (ambulatorio, clinica, studio, centro, toelettatura, pet shop, Tierarztpraxis, srl…), con "e"/"&", con un santo ("Veterinario San Pietro"), con un articolo in testa ("La Cuccia di Ettore") o un negozio "di" qualcuno ("Pelolindo di Laura …"). Una professione da sola (veterinario, educatore cinofilo) non fa di un nome una struttura.
+
+Misura sull'estratto Overture Italia (2026-11-08): 359 elementi tolti su 16.218 (291 veterinari, 32 negozi, 15 addestramento, 10 toelettature, 8 allevamenti, 2 pet sitter, 1 pensione). Su un campione di 60, circa 9 su 10 erano davvero persone; il resto erano nomi di negozio composti da un nome proprio (es. un nome di fantasia), tolti anche loro: è una scelta prudente. Una struttura tolta per errore si rimette solo cambiando la regola.
+
+Le righe già salvate prima della regola si tolgono anche dal database con `scripts/radar/purge_person_places.py` (prima `--dry-run`), o con il prossimo import per le tabelle OSM e Overture.
 
 ### Associazioni (2026-10-21)
 

@@ -1,4 +1,4 @@
-"""Exotic-animal competence of veterinary practices ("Esperti in esotici").
+"""Exotic-animal competence of veterinary practices ("Dichiarano di trattare animali esotici").
 
 A practice is listed under a group only when a verifiable source declares
 it, and every competence keeps where it was read and when:

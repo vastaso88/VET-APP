@@ -38,6 +38,7 @@ from packages.core.domain.radar_places.models import (
     RadarDataSource,
     RadarPlace,
 )
+from packages.core.domain.radar_places.person_names import is_person_only
 from packages.shared.errors.base import ProviderError
 
 # The cache is shared by cell, so imports are not attributed to whoever
@@ -249,6 +250,9 @@ class ListNearbyRadarPlacesService:
             # closed or duplicate drop out.
             places = merge_radar_places(places, self._community.user_places(box, snapshot))
             places = self._community.without_excluded(places, snapshot)
+        # Rows imported or cached before the rule existed: a person is never
+        # served, whatever table it comes from.
+        places = [place for place in places if not is_person_only(place.name)]
         places = self._with_competences(
             places, snapshot.confirmed_claims if snapshot is not None else []
         )

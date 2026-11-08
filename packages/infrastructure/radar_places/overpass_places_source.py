@@ -17,6 +17,7 @@ from packages.core.domain.geo.models import Coordinates
 from packages.core.domain.radar_places.competences import OSM_TREATS_PREFIX
 from packages.core.domain.radar_places.labels import FALLBACK_LANGUAGE, default_place_name
 from packages.core.domain.radar_places.models import OSM_SOURCE_NAME, RadarPlace
+from packages.core.domain.radar_places.person_names import is_person_only
 from packages.shared.config.settings import Settings
 from packages.shared.errors.base import ProviderError
 
@@ -274,7 +275,8 @@ def map_osm_element(
     name = _first_tag(tags, "name", "brand", "operator") or default_place_name(
         place_type, radar_country.language if radar_country else FALLBACK_LANGUAGE
     )
-    if not name:
+    # Only facilities, never a person (possibly at a home address).
+    if not name or is_person_only(name):
         return None
 
     source_external_id = f"{element_type}/{element_id}"

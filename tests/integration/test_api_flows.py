@@ -714,3 +714,36 @@ def test_exotic_competences_are_served_and_claims_stay_private_until_confirmed(
     assert client.post("/local-services/competence-claims", json=on_park).status_code == 400
     bad_group = {**claim, "groups": ["dog"]}
     assert client.post("/local-services/competence-claims", json=bad_group).status_code == 422
+
+
+def test_geocoding_limits_are_per_account_and_need_a_session(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    from apps.api.dependencies.container import get_container
+    from packages.core.application.services.geocoding import GeocodingService
+    from packages.shared.errors.base import AuthenticationError
+
+    client = _client_with_env(monkeypatch)
+    container = get_container()
+    fake = _RecordingGeocoder()
+    container.geocoding_service = GeocodingService(fake, requests_per_minute=1)
+    user = _SwitchableUser("11111111-1111-4111-8111-1111111111aa")
+    container.auth_provider = user  # type: ignore[assignment]
+    body = {"query": "Via Esempio 1"}
+
+    # User A uses up their minute.
+    assert client.post("/geocoding/search", json=body).status_code == 200
+    assert client.post("/geocoding/search", json=body).status_code == 429
+    # User B is not affected by A.
+    user.user_id = "11111111-1111-4111-8111-1111111111bb"
+    assert client.post("/geocoding/search", json=body).status_code == 200
+
+    # No session, no geocoding.
+    class _NoSession:
+        def get_current_user(self) -> object:
+            raise AuthenticationError("Missing access token")
+
+    container.auth_provider = _NoSession()  # type: ignore[assignment]
+    assert (
+        client.post("/geocoding/reverse", json={"latitude": 45, "longitude": 9}).status_code == 401
+    )

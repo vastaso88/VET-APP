@@ -16,6 +16,7 @@ from packages.core.domain.radar_places.labels import (
     fold,
 )
 from packages.core.domain.radar_places.models import OVERTURE_SOURCE_NAME, RadarPlace
+from packages.core.domain.radar_places.person_names import is_person_only
 
 # Overture `taxonomy.primary` -> radar place type. Exact matches only: a
 # substring match on "pet_store" also catches "carpet_store". Dog parks
@@ -107,6 +108,9 @@ def overture_row_to_place(
     confidence, closed, or without a name or position."""
     category_type = OVERTURE_CATEGORIES.get(str(row.get("category") or ""))
     name = _text(row.get("name"))
+    # Only facilities, never a person (possibly at a home address).
+    if name is not None and is_person_only(name):
+        return None
     place_type = place_type_for(category_type, name) if category_type and name else None
     latitude, longitude = row.get("latitude"), row.get("longitude")
     confidence = row.get("confidence")

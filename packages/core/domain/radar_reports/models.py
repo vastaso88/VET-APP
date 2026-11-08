@@ -20,6 +20,7 @@ from packages.core.domain.common.entity import new_id, utc_now
 from packages.core.domain.geo.models import Coordinates, haversine_distance_km
 from packages.core.domain.radar_places.labels import default_place_name, fold
 from packages.core.domain.radar_places.models import RadarPlace
+from packages.core.domain.radar_places.person_names import is_person_only
 from packages.shared.errors.base import ValidationError
 
 USER_SOURCE_NAME = "vetapp_users"
@@ -116,6 +117,9 @@ def clean_place_name(name: str | None, *, place_type: str, language: str | None 
         raise ValidationError("Nel nome non inserire telefoni, email o siti web.")
     if _BLOCKED_WORDS & set(re.findall(r"[^\W\d_]+", fold(text))):
         raise ValidationError("Il nome contiene parole non ammesse.")
+    if is_person_only(text):
+        # The map shows facilities only, never a person.
+        raise ValidationError("Scrivi il nome della struttura, non quello di una persona.")
     return text
 
 
