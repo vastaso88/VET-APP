@@ -1,4 +1,4 @@
-# Italia — testi legali pubblicabili (sito quokka.pet)
+# Italia — testi legali pubblicabili (sito quokkapet.net)
 
 Bozze dei tre testi che Google Play chiede su un sito pubblico, più le domande al proprietario. Sono scritti per essere pubblicati così come sono, **dopo** aver riempito i segnaposto e aver fatto rivedere i punti ⚖️ da un legale italiano.
 

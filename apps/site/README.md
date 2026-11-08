@@ -38,7 +38,7 @@ Apri http://localhost:8765/it/ (i link sono assoluti: servi la cartella `apps/si
 3. **Root Directory**: `apps/site`. **Framework Preset**: *Other*. Build Command, Output Directory e Install Command: vuoti. Vercel pubblica la cartella così com'è.
 4. **Production Branch**: `main`. Niente variabili d'ambiente.
 5. **Deploy**. Controlla l'indirizzo `*.vercel.app` provvisorio.
-6. Collegare il dominio: Project → **Settings → Domains** → aggiungi `quokka.pet` e `www.quokka.pet`. Vercel mostra i record DNS da inserire presso il registrar (di solito un record `A` per `quokka.pet` e un `CNAME` per `www`). Se il DNS è su Cloudflare, i record vanno su "solo DNS" (nuvola grigia).
+6. Collegare il dominio: Project → **Settings → Domains** → aggiungi `quokkapet.net` e `www.quokkapet.net`. Vercel mostra i record DNS da inserire presso il registrar (di solito un record `A` per `quokkapet.net` e un `CNAME` per `www`). Se il DNS è su Cloudflare, i record vanno su "solo DNS" (nuvola grigia).
 7. Dopo qualche minuto il certificato HTTPS è automatico.
 
 ## Prima di pubblicarlo davvero (bozza → definitivo)
@@ -49,7 +49,7 @@ Oggi tutto è in **modalità bozza**: ogni pagina ha `noindex` e `robots.txt` bl
 - [ ] In `tools/build.py` mettere `DRAFT = False`, rilanciare `build.py` e committare.
 - [ ] Titolare nel piè di pagina (`UI["footer_owner"]` in `tools/pages_it.py`): obbligo di legge, dati reali solo nel testo pubblicato, mai nel repository.
 - [ ] Indirizzo di contatto confermato dal proprietario (`CONTACT_EMAIL` in `tools/pages_it.py`).
-- [ ] In Play Console: informativa = `https://quokka.pet/it/privacy/`, eliminazione account = `https://quokka.pet/it/cancellazione-account/`.
+- [ ] In Play Console: informativa = `https://quokkapet.net/it/privacy/`, eliminazione account = `https://quokkapet.net/it/cancellazione-account/`.
 - [ ] Nell'app: sostituire la frase «L'informativa completa è in preparazione» con il link (vedi `docs/compliance/it/README.md`).
 
 ## Aggiungere una lingua
@@ -61,5 +61,5 @@ Oggi tutto è in **modalità bozza**: ogni pagina ha `noindex` e `robots.txt` bl
 ## Sicurezza (coerente con `docs/security/`)
 
 - CSP `default-src 'none'; style-src 'self'; img-src 'self'; frame-ancestors 'none'`: niente script, niente risorse esterne. Se un giorno servirà qualcosa di esterno (analisi, font), prima va aggiornata la CSP e, per le analisi, serve il banner di consenso (informativa §11).
-- HSTS senza `preload`: attivarlo solo quando tutti i sottodomini di `quokka.pet` sono su HTTPS.
+- HSTS senza `preload`: attivarlo solo quando tutti i sottodomini di `quokkapet.net` sono su HTTPS.
 - Niente segreti né dati personali reali nel repository (è pubblico).

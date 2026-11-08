@@ -1,4 +1,4 @@
-> **BOZZA — pagina di assistenza per il sito quokka.pet (richiesta da Google Play insieme a informativa e termini). Non pubblicare finché ci sono segnaposto tra parentesi quadre.**
+> **BOZZA — pagina di assistenza per il sito quokkapet.net (richiesta da Google Play insieme a informativa e termini). Non pubblicare finché ci sono segnaposto tra parentesi quadre.**
 > Segnaposto: `[NOME_IN_MAIUSCOLO]` = dato che deve fornire il proprietario (vedi `08_domande_per_proprietario.md`); `[in attesa del codice: …]` = descrive una funzione che il codice non ha ancora: non pubblicarlo finché non c'è.
 
 Versione: **it v2 (bozza)**, 2026-11-08 (v1: 2026-10-28).
@@ -58,7 +58,7 @@ Se pensi di aver trovato un problema di sicurezza, scrivi a [EMAIL_SICUREZZA]. N
 
 ## Note per il revisore (da eliminare prima della pubblicazione)
 
-1. Tre indirizzi dedicati (assistenza, privacy, sicurezza) su quokka.pet evitano di mettere in pubblico un indirizzo personale del proprietario; possono anche inoltrare alla stessa casella.
+1. Tre indirizzi dedicati (assistenza, privacy, sicurezza) su quokkapet.net evitano di mettere in pubblico un indirizzo personale del proprietario; possono anche inoltrare alla stessa casella.
 2. Non promettere tempi di risposta (nessun «entro N giorni») finché non c'è un processo presidiato.
 3. L'elenco delle azioni dell'app è quello del codice al 2026-10-28; se cambiano i nomi delle voci in Impostazioni va aggiornato.
 4. Numeri utili: l'app non ha un elenco per l'Italia; decidere se metterne uno qui [da decidere].

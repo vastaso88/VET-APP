@@ -9,7 +9,7 @@ Versione: **it v2 (bozza)**, 2026-11-08 (v1: 2026-10-28). Base: `../09_informati
 
 Ultimo aggiornamento: [DATA]. Versione: it v2.
 
-Questa informativa spiega quali dati personali tratta Quokka, perché, con chi li condividiamo, per quanto tempo li conserviamo e quali diritti hai (artt. 13 e 14 del Regolamento UE 2016/679, «GDPR»). Vale per l'app Quokka e per il sito quokka.pet.
+Questa informativa spiega quali dati personali tratta Quokka, perché, con chi li condividiamo, per quanto tempo li conserviamo e quali diritti hai (artt. 13 e 14 del Regolamento UE 2016/679, «GDPR»). Vale per l'app Quokka e per il sito quokkapet.net.
 
 ## 1. Chi tratta i tuoi dati
 
@@ -149,7 +149,7 @@ Usiamo misure tecniche e organizzative adeguate (art. 32 GDPR): connessioni cifr
 
 ## 11. Cookie e strumenti simili
 
-L'app e il sito usano solo strumenti tecnici necessari (sessione di accesso, lingua, preferenze di visualizzazione). Non usiamo cookie di profilazione né pubblicità. [da verificare per il sito quokka.pet: nessun cookie non tecnico; se si aggiunge uno strumento di analisi serve un banner con «Accetta» e «Rifiuta» di pari evidenza.]
+L'app e il sito usano solo strumenti tecnici necessari (sessione di accesso, lingua, preferenze di visualizzazione). Non usiamo cookie di profilazione né pubblicità. [da verificare per il sito quokkapet.net: nessun cookie non tecnico; se si aggiunge uno strumento di analisi serve un banner con «Accetta» e «Rifiuta» di pari evidenza.]
 
 ## 12. Modifiche
 
