@@ -41,6 +41,9 @@ messaggio di rilascio o nel PR.
 - [ ] Controllo passivo di esposizione eseguito con la sola chiave publishable
       (vedi `scripts/security/check_anon_exposure.py`): nessuna tabella con dati
       personali restituisce righe senza login.
+- [ ] Pagamenti veri: `SUBSCRIPTION_TEST_PLAN` tolto su Vercel e, dopo un controllo dello
+      stato, `select test_plan from public.plan_access_config` restituisce `null`
+      (altrimenti il database fa scrivere tutti come sul piano Pro).
 - [ ] Nessuna funzione `security definer` nuova senza `set search_path` e
       `revoke ... from public, anon, authenticated`.
 

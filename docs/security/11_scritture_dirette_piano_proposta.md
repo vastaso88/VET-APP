@@ -1,6 +1,6 @@
 # Scritture dirette dell'app e regole del piano: inventario e proposta
 
-Data: 2026-11-09 (Francesco 02f449d). Stato: **proposta, niente costruito**.
+Data: 2026-11-09 (Francesco 02f449d). Stato: **strada A approvata e costruita** (2026-11-09): `scripts/setup/plan_access_rules.sql`, generato da `scripts/maintenance/gen_plan_access_sql.py`; vedi §4.
 Registro dei rischi: R28.
 
 ## Il problema in parole semplici
@@ -120,3 +120,43 @@ Decisioni che servono al proprietario: cosa resta permesso dopo la prova oltre
 alla cancellazione (consiglio: lettura e cancellazione; niente nuovi dati né
 modifiche); se `user_locations` resta esente (consiglio: sì, non ha valore di
 piano); se le foto già caricate oltre la prova restano o si puliscono.
+
+## 4. Cosa è stato costruito (strada A, 2026-11-09)
+
+Decisioni del proprietario applicate: dopo la prova restano lettura, esportazione
+e cancellazione; `user_locations` esente; foto già caricate tenute (le toglie la
+conservazione dei 4 mesi con il resto dell'account).
+
+- `packages/core/domain/subscription/direct_writes.py`: le 8 tabelle controllate,
+  le 2 esenti, il bucket `pet-photos`, i codici.
+- `scripts/maintenance/gen_plan_access_sql.py` → `scripts/setup/plan_access_rules.sql`:
+  `caller_max_pets()` e `caller_can_write()` (security definer, `search_path`
+  fisso); trigger `plan_access_10_gate` (insert/update) su ogni tabella e
+  `plan_access_20_pet_limit` su `pet_profiles` (lock per utente, un upsert di
+  un animale già esistente non conta); policy restrittive `with check` su insert
+  e update (`using (true)`: un rifiuto dà errore, non un aggiornamento muto di
+  0 righe) e sullo storage `pet-photos`; tabelle `plan_access_config` (piano di
+  test, creata su `'pro'`) e `plan_access_unlimited` (sviluppatori, sparisce con
+  l'account). I numeri vengono da `limits.py`: il test fallisce se divergono.
+- Backend: `PlanAccessSync` (porta `PlanAccessStore`, Supabase e in memoria),
+  chiamato a ogni `/subscription/status`, tiene allineati piano di test
+  (`SUBSCRIPTION_TEST_PLAN`) e lista sviluppatori (`DEVELOPER_EMAILS`), una
+  scrittura per processo e senza mai cambiare la risposta all'utente.
+
+**Codici definitivi per l'app** (gli stessi del backend, così l'app ha una sola
+mappatura). Dal database arrivano come errore PostgREST:
+
+| Caso | HTTP | `code` (SQLSTATE) | `message` | `details` | `hint` |
+| --- | --- | --- | --- | --- | --- |
+| Prova finita, nessun piano: nuovo dato o modifica | 402 | `PT402` | `subscription_required` | testo tecnico | — |
+| Limite di animali del piano raggiunto | 403 | `PT403` | `plan_limit_reached` | `pets` | il limite, es. `8` |
+| Caricamento di una foto dopo la prova | 403 dello Storage (policy RLS) | — | messaggio dello Storage | — | — |
+
+Dal backend gli stessi casi arrivano già come `{"code": "subscription_required"}`
+(402) e `{"code": "plan_limit_reached", "kind": "pets"}` (403).
+
+**Ordine di esecuzione** (SQL Editor): `subscriptions_lock_writes.sql` →
+`plan_access_rules.sql` → verifiche in fondo allo script. Non verificato su un
+Postgres reale (nessuno disponibile qui): eseguirlo prima su un progetto di prova
+o in una transazione e lanciare le verifiche.
+

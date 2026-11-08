@@ -4,6 +4,7 @@ from datetime import datetime
 from pydantic import BaseModel
 
 from packages.core.application.ports.subscription_repository import SubscriptionRepository
+from packages.core.application.services.plan_access_sync import PlanAccessSync
 from packages.core.domain.common.entity import utc_now
 from packages.core.domain.subscription.limits import (
     LIMITS_BY_PLAN,
@@ -59,10 +60,14 @@ class GetOrCreateSubscriptionService:
         repository: SubscriptionRepository,
         developer_emails: frozenset[str],
         test_plan: str | None = None,
+        access_sync: PlanAccessSync | None = None,
     ) -> None:
         self._repository = repository
         self._developer_emails = developer_emails
         self._test_plan = test_plan
+        # Tells the database rules on the app's direct writes the two facts
+        # only the backend knows (scripts/setup/plan_access_rules.sql).
+        self._access_sync = access_sync
 
     def execute(self, data: GetOrCreateSubscriptionInput) -> GetOrCreateSubscriptionOutput:
         subscription = self._repository.get(data.owner_id)
@@ -70,6 +75,10 @@ class GetOrCreateSubscriptionService:
             subscription = self._repository.save(Subscription(owner_id=data.owner_id))
 
         is_developer = data.email.strip().lower() in self._developer_emails
+        if self._access_sync is not None:
+            self._access_sync.sync(
+                owner_id=data.owner_id, is_developer=is_developer, test_plan=self._test_plan
+            )
         has_access = subscription.has_access(is_developer=is_developer)
         subscription = self._keep_retention_clock(
             subscription, without_access=not has_access and self._test_plan is None
