@@ -17,14 +17,15 @@ Un'e-mail che invita a sottoscrivere un piano è una **comunicazione commerciale
 4. **L'uscita è sempre visibile**: ogni e-mail, anche P, ha il link per scaricare i dati e quello per riattivare. Non si nasconde la via per andarsene.
 5. **Minorenni (14–17 anni)**: solo versione S, con la frase sull'autorizzazione del genitore per i piani.
 6. **P**: etichetta «Comunicazione commerciale», chi la invia, revoca in un clic (art. 21 GDPR; art. 130), nessuna offerta o sconto finché non esistono e, se esistono, condizioni e scadenza reali.
-7. **Chi ha già scaricato i dati o ha già scelto un piano**: la sequenza si ferma.
+7. **Solo l'abbonamento ferma la sequenza.** Scaricare i dati non ferma l'orologio (decisione del proprietario, 8 novembre): la cancellazione avviene comunque alla data indicata. La sequenza si ferma solo se l'utente sceglie un piano o cancella l'account.
 8. **Frequenza**: sono 8 e-mail in 4 mesi. Per chi non ha dato il consenso le tre mensili (+1, +2, +3 mesi) sono solo «stato dell'account»: se si preferisce ridurre, si tengono la prima e le ultime quattro.
+9. **P solo se c'è qualcosa di vero da citare.** Se l'account non ha animali, documenti né promemoria, anche con il consenso si manda S: «qui è tutto come l'hai lasciato» non sarebbe vero (artt. 21–22 Codice del consumo). Se c'è qualcosa, si citano solo gli elementi che esistono (`{elenco_contenuti}`).
 
 ## 3. Le 8 e-mail
 
 **Come si leggono.** Per ogni e-mail: oggetto e testo iniziale per S e per P, poi il blocco comune. `{variabile}` si riempie al momento dell'invio; nessun nome o dato di persona o di società nel repository. `{evento}` = «la prova gratuita è finita» o «il tuo piano è scaduto».
 
-**Blocco comune S** (sotto il testo iniziale): «Cosa puoi fare. Scegli un piano per tenere i tuoi dati: {link_riattiva}. Scarica una copia dei tuoi dati: {link_scarica_dati}. Se non fai nulla, il {data_cancellazione} cancelliamo l'account e i dati collegati e non si può annullare. {nota_minorenni} Questa è una comunicazione di servizio sul tuo account. {titolare}, {contatto}.»
+**Blocco comune S** (sotto il testo iniziale): «Cosa puoi fare. Scegli un piano per tenere i tuoi dati: {link_riattiva}. Scarica una copia dei tuoi dati: {link_scarica_dati}. Se non fai nulla, il {data_cancellazione} cancelliamo l'account e i dati collegati e non si può annullare. Scaricare i dati non ferma la cancellazione: per tenere l'account serve un piano. {nota_minorenni} Questa è una comunicazione di servizio sul tuo account. {titolare}, {contatto}.»
 
 **Blocco comune P**: lo stesso testo, più: «Comunicazione commerciale. Ricevi questo messaggio perché hai dato il consenso alle comunicazioni commerciali: puoi revocarlo qui {link_annulla_comunicazioni} o in Impostazioni → Permessi e consensi. {titolare}, {contatto}.» (al posto della riga «comunicazione di servizio»).
 
@@ -32,7 +33,7 @@ Un'e-mail che invita a sottoscrivere un piano è una **comunicazione commerciale
 
 ### E1: subito (giorno 0)
 - **S, oggetto**: «{evento_titolo}: i tuoi dati restano per 4 mesi». **Testo**: «Ciao {nome}, {evento}. Il tuo account resta e i tuoi dati restano al sicuro per 4 mesi, fino al {data_cancellazione}. In questo periodo puoi consultare e scaricare i dati che hai inserito; le altre funzioni tornano quando scegli un piano.»
-- **P, oggetto**: «{nome}, qui è tutto come l'hai lasciato». **Testo**: «Ciao {nome}, ci è piaciuto aiutarti con {animali}. {evento}, ma il tuo account resta com'è fino al {data_cancellazione}: animali, promemoria, referti e passeggiate sono ancora qui. Quando vuoi, scegli un piano e riparti da dove eri.»
+- **P, oggetto**: «{nome}, qui è tutto come l'hai lasciato». **Testo**: «Ciao {nome}, ci è piaciuto aiutarti con {animali}. {evento}, ma il tuo account resta com'è fino al {data_cancellazione}: {elenco_contenuti} sono ancora qui. Quando vuoi, scegli un piano e riparti da dove eri.»
 
 ### E2: dopo 1 mese
 - **S, oggetto**: «Il tuo account Quokka è in pausa: restano 3 mesi». **Testo**: «Ciao {nome}, il tuo account è in pausa da un mese. I tuoi dati restano fino al {data_cancellazione} ({giorni_rimasti} giorni).»
@@ -69,10 +70,11 @@ Un'e-mail che invita a sottoscrivere un piano è una **comunicazione commerciale
 | `{nome}`, `{animali}` | nome dell'utente; «i tuoi animali» o i nomi, se pochi |
 | `{data_cancellazione}`, `{giorni_rimasti}` | data vera e giorni veri alla cancellazione |
 | `{n_animali}`, `{n_documenti}`, `{n_promemoria}` | conteggi veri dell'account; se zero, si toglie la frase |
+| `{elenco_contenuti}` | elenco di ciò che l'account contiene davvero (animali, promemoria, referti, passeggiate), solo con conteggio maggiore di zero |
 | `{evento}`, `{evento_titolo}` | prova finita o piano scaduto |
 | `{link_riattiva}`, `{link_scarica_dati}` | collegamento ai piani; collegamento a Impostazioni → Account → Scarica i miei dati |
 | `{link_annulla_comunicazioni}` | revoca del consenso commerciale in un clic (solo P) |
 | `{titolare}`, `{contatto}` | dati della società e contatto, da configurazione e variabili d'ambiente, mai scritti nel repository |
 | `{nota_minorenni}` | frase sull'autorizzazione del genitore, solo per account dichiarati minorenni |
 
-Il codice (sessioni Pricing e Backend) deve: scegliere S o P per ogni invio (P solo con consenso commerciale in corso e maggiore età); fermare la sequenza se l'utente sceglie un piano, scarica i dati o cancella l'account; contare davvero animali, documenti e promemoria; non registrare nei log il testo delle e-mail né i conteggi; usare lo stesso eraser dell'account per la cancellazione. Finché il codice non c'è, i testi di it/03 §4 e it/02 restano «in attesa del codice».
+Il codice (sessioni Pricing e Backend) deve: scegliere S o P per ogni invio (P solo con consenso commerciale in corso, maggiore età e almeno una cosa vera da citare; la data di nascita oggi non esiste nel codice, la costruisce la sessione Registrazione, e finché manca tutti ricevono S); fermare la sequenza se l'utente sceglie un piano o cancella l'account (scaricare i dati non la ferma); contare davvero animali, documenti e promemoria; non registrare nei log il testo delle e-mail né i conteggi; usare lo stesso eraser dell'account per la cancellazione. Finché il codice non c'è, i testi di it/03 §4 e it/02 restano «in attesa del codice».

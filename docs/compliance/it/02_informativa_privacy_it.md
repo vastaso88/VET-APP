@@ -118,7 +118,7 @@ Non prendiamo decisioni su di te basate unicamente su un trattamento automatizza
 | Annunci del Mercatino | Fino a quando li elimini o elimini l'account |
 | Messaggi del Mercatino | 6 mesi dopo l'ultimo messaggio se l'annuncio è chiuso, comunque 12 mesi; mai finché la conversazione ha una segnalazione aperta. Se elimini l'account la conversazione sparisce [in attesa del codice: se è segnalata, e la segnalazione è aperta o accolta, resta senza i tuoi dati di account fino a 12 mesi dopo la decisione sulla segnalazione] |
 | Registro dei dispositivi | Fino a quando elimini l'account [da decidere: oppure 12 mesi senza uso] |
-| Account senza piano | 4 mesi dalla fine della prova o dalla scadenza dell'abbonamento; poi cancellazione con le stesse regole di «Elimina account». Prima ti avvisiamo, con avvisi sempre più ravvicinati [in attesa del codice] |
+| Account senza piano | 4 mesi dalla fine della prova o dalla scadenza dell'abbonamento; poi cancellazione con le stesse regole di «Elimina account». Prima ti avvisiamo, con avvisi sempre più ravvicinati. Scaricare i dati non ferma la cancellazione [in attesa del codice] |
 | Data di nascita | Fino a quando elimini l'account [in attesa del codice] |
 | Segnalazioni e voti sui luoghi | Pseudonimo e voti si cancellano 12 mesi dopo la chiusura della segnalazione; il contenuto resta senza riferimenti a te |
 | Registri tecnici | Pochi giorni al massimo, secondo il fornitore: nei piani attuali Vercel tiene i registri di esecuzione circa 1 ora e Supabase da 1 a 7 giorni [da verificare nei piani attivi] |
