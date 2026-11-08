@@ -8,11 +8,13 @@ Two rules, both decided by the backend whatever the app did:
   strangers with no way back (synthetic-users report 2026-11-06, finding
   0.3). The places feature already refuses them in a venue's name; this is
   the same rule for ads.
-* **No veterinary medicines**, with or without a prescription: in the EU
-  medicinal products for animals are sold at retail only by authorised
-  pharmacies and outlets (Reg. (EU) 2019/6, art. 103-104; in Italy d.lgs.
-  193/2006), never between private individuals. Food, supplements, flea
-  collars and other accessories are not medicines and pass.
+* **No medicines, veterinary ones included**, with or without a prescription:
+  in the EU medicinal products for animals are sold at retail only by
+  authorised pharmacies and outlets (Reg. (EU) 2019/6, art. 103-104; in Italy
+  d.lgs. 218/2023, which replaced d.lgs. 193/2006 from 18 January 2024), and
+  medicines for people only by authorised outlets too; never between private
+  individuals. Food, supplements, flea collars and other accessories are not
+  medicines and pass.
 
 Messages are in Italian like every other backend validation message; the app
 maps them to the owner's language (marketplace_repository.dart).
