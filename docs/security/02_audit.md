@@ -124,7 +124,7 @@ Mai inviati: e-mail, id utente, telefono, posizione, microchip del profilo.
 | --- | --- | --- | --- |
 | LLM-1 | Alta | Messaggio grezzo al normalizzatore delle parole chiave | ✅ `chat_orchestrator.py` (+ test) |
 | LLM-2 | Alta | Foto/audio in chiaro verso gli USA; termini Groq (DPA, retention zero, no training) non verificati; Presidio non attivo in produzione (filtro a regole) | 🧭 👤 prima del lancio: DPA/SCC Groq, attivare "Zero Data Retention"; valutare OCR o dettatura sul dispositivo |
-| LLM-3 | Media | Microchip volutamente escluso dall'anonimizzazione | 🧭 sostituire con `[MICROCHIP]` salvo le ultime 3 cifre |
+| LLM-3 | Media | Microchip volutamente escluso dall'anonimizzazione | ✅ 2026-11-08 (decisione del proprietario): sostituito sempre con `[MICROCHIP]` in chat, riepilogo per il veterinario, testo di documenti e foto, cache delle risposte, interprete del consenso e ricerche nelle banche dati scientifiche esterne (che ora ricevono sempre la query anonimizzata); prompt della visione: omettere anche i numeri di microchip. Restano fuori dal filtro i pixel delle foto e la voce dei vocali |
 | LLM-4 | Media | Visione e dettatura fuori dal budget condiviso e dalla quota per utente | 🔧 (vedi BE-4) |
 | LLM-5 | Media | Divieto di consigli terapeutici solo nel prompt: insistendo si ottengono farmaci e dosi | 🔧 sessione Chat: validatore della risposta (lista farmaci/dosi) |
 | LLM-6 | Media | Testo estratto dagli allegati rientra nel prompt senza delimitatori (prompt injection persistente, oggi solo autolesiva) | 🔧 sessione Chat: delimitare e marcare come "dati, non istruzioni" |
