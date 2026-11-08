@@ -250,6 +250,12 @@ class _ListingDetailPageState extends State<ListingDetailPage> {
             const SizedBox(height: AppSpacing.xl),
             Text(listingPriceLabel(listing.priceCents, country: listing.country),
                 style: AppTextStyles.heading),
+            const SizedBox(height: AppSpacing.xs),
+            Text(
+              context.l10n.marketplaceDetailPrivateSeller,
+              key: const ValueKey('listing-private-seller'),
+              style: AppTextStyles.caption,
+            ),
             if (listingPlaceLabel(listing) case final place?) ...[
               const SizedBox(height: AppSpacing.xs),
               Text(
@@ -276,8 +282,19 @@ class _ListingDetailPageState extends State<ListingDetailPage> {
               const LimitedMarketplaceNotice(),
             ],
             const SizedBox(height: AppSpacing.xxl),
+            // Without a plan the only action left is reporting (owner decision
+            // 2026-11-08): the backend accepts it from everyone.
             if (listing.isLimited && !isOwner)
-              const SizedBox.shrink()
+              DashboardActionButton(
+                key: const ValueKey('marketplace-report-listing'),
+                label: _busy
+                    ? context.l10n.marketplaceReporting
+                    : context.l10n.marketplaceReportListing,
+                icon: Icons.flag_outlined,
+                tone: DashboardTone.danger,
+                filled: false,
+                onPressed: _busy ? null : _reportListing,
+              )
             else if (isOwner) ...[
               if (!listing.isLimited) ...[
                 DashboardActionButton(

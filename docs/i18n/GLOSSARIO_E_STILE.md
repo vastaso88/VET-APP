@@ -24,7 +24,7 @@ Cosa fa il glossario:
 | Storico | History | Historial | Verlauf | Historique | Calendario di tutto ciò che è successo all'animale nella cartella clinica. |
 | Corporatura | Body condition | Condición corporal | Körperbau | Corpulence | Scala a 9 punti (BCS). Le guide sono testi nostri parafrasati: nelle altre lingue si traduce il nostro testo italiano, mai il testo originale delle fonti. |
 | Vicino a me | Near me | Cerca de mí | In meiner Nähe | Près de chez moi | Servizi per animali, eventi e attività nei dintorni. |
-| Esperti in esotici | Exotic pet experts | Expertos en exóticos | Exoten-Experten | Experts NAC | Filtro di Vicino a me: veterinari che dichiarano di curare animali esotici (rettili, uccelli, piccoli mammiferi, pesci). In francese NAC = nouveaux animaux de compagnie, il termine corrente. |
+| Dichiarano di trattare animali esotici | Say they treat exotic pets | Declaran tratar animales exóticos | Geben an, exotische Tiere zu behandeln | Déclarent soigner les NAC | Nome confermato dal proprietario il 2026-11-08 (parere Normativa: non promettere competenze verificate). Filtro di Vicino a me: veterinari che dichiarano di curare animali esotici (rettili, uccelli, piccoli mammiferi, pesci). In francese NAC = nouveaux animaux de compagnie, il termine corrente. |
 | Promemoria | Reminders | Recordatorios | Erinnerungen | Rappels | Scadenze di vaccini, terapie, visite e cure. La domanda 'Fatto?' è remindersDoneTitle. |
 | Fatto? | Done? | ¿Hecho? | Erledigt? | Fait ? | Il francese usa lo spazio insecabile prima del punto interrogativo. |
 | Passeggiate | Walks | Paseos | Spaziergänge | Promenades |  |

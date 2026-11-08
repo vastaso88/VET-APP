@@ -13,6 +13,7 @@ import 'package:vet_app_mobile/features/marketplace/domain/marketplace_listing.d
 import 'package:vet_app_mobile/features/marketplace/presentation/pages/listing_detail_page.dart';
 import 'package:vet_app_mobile/features/marketplace/presentation/pages/marketplace_conversation_page.dart';
 import 'package:vet_app_mobile/features/marketplace/presentation/pages/marketplace_conversations_page.dart';
+import 'package:vet_app_mobile/features/marketplace/presentation/pages/marketplace_info_page.dart';
 import 'package:vet_app_mobile/l10n/l10n.dart';
 import 'package:vet_app_mobile/shared/config/app_runtime_config.dart';
 import 'package:vet_app_mobile/shared/config/app_runtime_config_loader.dart';
@@ -465,6 +466,7 @@ void main() {
         final text = error.restriction.message();
         expect(text, contains('tentata truffa'));
         expect(text, contains('7 nov 2026'));
+        expect(text, contains('Impostazioni → Contattaci'));
       }
     });
 
@@ -500,6 +502,60 @@ void main() {
       expect(find.text('Prima'), findsOneWidget);
       expect(find.byKey(const ValueKey('marketplace-messages-field')), findsNothing);
       expect(find.textContaining('team di moderazione'), findsOneWidget);
+    });
+  });
+
+  group('private deals, safety and reporting (owner decisions 2026-11-08)', () {
+    testWidgets('every conversation starts with the advice and says the team may read it',
+        (tester) async {
+      final backend = _Backend((_) => _json({'conversation': null, 'can_start': true}));
+      await tester.pumpWidget(
+        _app(
+          MarketplaceConversationPage(
+            listingId: 'ad-1',
+            listingTitle: 'Trasportino',
+            repository: backend.repository(),
+          ),
+        ),
+      );
+      await _settle(tester);
+
+      expect(find.textContaining('non è parte della compravendita'), findsOneWidget);
+      expect(
+        find.textContaining('Se la conversazione viene segnalata, il team di Quokka può leggerla.'),
+        findsOneWidget,
+      );
+      expect(find.byKey(const ValueKey('marketplace-info-button')), findsOneWidget);
+    });
+
+    testWidgets('the info page explains rules, private deals and how to report', (tester) async {
+      await tester.pumpWidget(_app(const MarketplaceInfoPage()));
+      await tester.pump();
+
+      expect(find.text('Come funziona il Mercatino'), findsOneWidget);
+      expect(find.textContaining('non è parte di nessun accordo'), findsOneWidget);
+      expect(find.textContaining("guarda l'oggetto prima di pagare"), findsOneWidget);
+      await tester.scrollUntilVisible(find.textContaining('Termini di servizio'), 200);
+      expect(find.textContaining('segnalalo'), findsOneWidget);
+    });
+
+    testWidgets('without a plan an ad can still be reported, and says it is from a private',
+        (tester) async {
+      final listing = _listing(limited: true);
+      await tester.pumpWidget(
+        _app(
+          ListingDetailPage(
+            listing: listing,
+            repository: MarketplaceRepository.inMemory([listing]),
+            currentOwnerId: 'buyer',
+          ),
+        ),
+      );
+      await tester.pump();
+
+      expect(find.byKey(const ValueKey('marketplace-report-listing')), findsOneWidget);
+      expect(find.byKey(const ValueKey('marketplace-write-to-seller')), findsNothing);
+      expect(find.byKey(const ValueKey('listing-private-seller')), findsOneWidget);
     });
   });
 }

@@ -127,7 +127,7 @@ void main() {
     expect(find.byIcon(Icons.map_outlined), findsNothing, reason: 'no map');
   });
 
-  testWidgets('without a plan the detail shows the first look, a notice and no report button',
+  testWidgets('without a plan the detail shows the first look, a notice and only the report button',
       (tester) async {
     await _setAccess(hasAccess: false);
     await tester.binding.setSurfaceSize(const Size(600, 1600));
@@ -146,7 +146,8 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.byKey(const ValueKey('marketplace-limited-notice')), findsOneWidget);
-    expect(find.text('Segnala annuncio'), findsNothing);
+    // Owner decision 2026-11-08: reporting stays open without a plan.
+    expect(find.text('Segnala annuncio'), findsOneWidget);
     expect(find.text('Modifica annuncio'), findsNothing);
   });
 

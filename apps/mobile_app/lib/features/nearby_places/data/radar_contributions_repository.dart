@@ -270,6 +270,10 @@ String localizedBackendMessage(String raw) {
     "scrivi il nome dell'attività, come appare sull'insegna.": l10n.placesBackendNameRequired,
     'nel nome non inserire telefoni, email o siti web.': l10n.placesBackendNameNoContacts,
     'il nome contiene parole non ammesse.': l10n.placesBackendNameBlockedWords,
+    'scrivi il nome della struttura, non quello di una persona.': l10n.placesBackendNamePerson,
+    'si può segnalare solo per un veterinario.': l10n.placesBackendClaimVetOnly,
+    'scegli almeno un gruppo di animali tra quelli proposti.': l10n.placesBackendClaimGroups,
+    'struttura non trovata.': l10n.placesBackendPlaceNotFound,
   };
   final exact = known[key];
   if (exact != null) {

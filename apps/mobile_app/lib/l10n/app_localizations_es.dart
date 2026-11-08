@@ -6665,7 +6665,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get marketplaceMessagesSafetyNotice =>
-      'Por tu seguridad: no compartas datos personales (teléfono, correo electrónico, dirección) y no pagues por adelantado.';
+      'Quokka pone en contacto a dos particulares y no es parte de la compraventa: el acuerdo, el pago y la entrega solo conciernen a las dos personas. No revisamos anuncios, objetos ni personas, y no respondemos de ellos. Si intercambias datos de contacto, lo haces bajo tu responsabilidad: no pagues por adelantado a quien no conoces. Si la conversación se denuncia, el equipo de Quokka puede leerla.';
 
   @override
   String get marketplaceMessagesHint => 'Escribe un mensaje';
@@ -6764,7 +6764,7 @@ class AppLocalizationsEs extends AppLocalizations {
       'incumplimiento de las normas del mercadillo';
 
   @override
-  String get localEventsExoticChip => 'Expertos en exóticos';
+  String get localEventsExoticChip => 'Declaran tratar animales exóticos';
 
   @override
   String get localEventsExoticAllGroups => 'Todos los grupos';
@@ -6851,4 +6851,71 @@ class AppLocalizationsEs extends AppLocalizations {
   @override
   String get placesCompetenceClaimSent =>
       'Gracias: lo comprobaremos antes de mostrarlo.';
+
+  @override
+  String get placesBackendNamePerson =>
+      'Escribe el nombre del centro, no el de una persona.';
+
+  @override
+  String get placesBackendClaimVetOnly =>
+      'Esto solo se puede indicar para un centro veterinario.';
+
+  @override
+  String get placesBackendClaimGroups =>
+      'Elige al menos uno de los grupos de animales propuestos.';
+
+  @override
+  String get placesBackendPlaceNotFound => 'Centro no encontrado.';
+
+  @override
+  String get marketplacePublishDisclaimer =>
+      'Publicas un anuncio como particular. Quokka pone en contacto a las personas, pero no es parte de la compraventa: el acuerdo, el pago y la entrega son cosa solo tuya y de quien compra, y Quokka no responde de ellos. No revisamos de antemano los anuncios ni los objetos: describe el estado del objeto y sus defectos de forma honesta y completa. No se pueden vender animales ni fármacos o medicamentos veterinarios. No escribas teléfonos ni correos electrónicos en el texto: te escribirán a través de los mensajes de la app.';
+
+  @override
+  String get marketplaceDetailPrivateSeller =>
+      'Anuncio de un particular: no se aplican las garantías previstas para las compras a profesionales.';
+
+  @override
+  String get marketplaceInfoTitle => 'Cómo funciona el mercadillo';
+
+  @override
+  String get marketplaceInfoWhat =>
+      'El mercadillo es un espacio donde particulares venden o regalan objetos usados para animales. Quokka pone en contacto a quien publica y a quien busca: no vende, no compra y no es parte de ningún acuerdo.';
+
+  @override
+  String get marketplaceInfoDeal =>
+      'El acuerdo, el precio, el pago, la entrega y las garantías se deciden solo entre las dos partes. Quokka no gestiona pagos ni envíos y no responde del resultado de una compraventa (objeto distinto del anuncio, defectos, falta de entrega o de pago), salvo lo que la ley no permite excluir.';
+
+  @override
+  String get marketplaceInfoChecks =>
+      'No comprobamos la exactitud de los anuncios ni la identidad o fiabilidad de las personas. Pide fotos e información, mira el objeto antes de pagar y comprueba que sea seguro para tu animal: correas, jaulas, lámparas y transportines usados pueden tener defectos ocultos.';
+
+  @override
+  String get marketplaceInfoPrivateSale =>
+      'Entre particulares no se aplican las garantías y protecciones previstas para las compras a un profesional (como la garantía legal de conformidad y el desistimiento de los contratos a distancia, donde tu país los prevea): se aplican las normas generales sobre la compraventa.';
+
+  @override
+  String get marketplaceInfoContacts =>
+      'Si decides intercambiar teléfono, correo electrónico u otros datos de contacto en los mensajes, lo haces bajo tu responsabilidad: comparte solo lo necesario y solo con quien te parezca de fiar. No pagues por adelantado a quien no conoces.';
+
+  @override
+  String get marketplaceInfoReports =>
+      'Los anuncios y los mensajes los escriben los usuarios, que son responsables de ellos. Si un anuncio o una conversación te parece incorrecto, denúncialo: nuestro equipo valora la denuncia y puede retirar el anuncio, cerrar la conversación o dejar a una persona fuera del mercadillo.';
+
+  @override
+  String get marketplaceInfoForbidden =>
+      'No se venden animales ni fármacos o medicamentos veterinarios. La app bloquea muchos anuncios que los mencionan, pero no todos: denúncialos.';
+
+  @override
+  String get marketplaceInfoPrivacy =>
+      'Las conversaciones son privadas. El equipo de Quokka lee una conversación solo si una de las dos personas la denuncia, para valorar la denuncia.';
+
+  @override
+  String get marketplaceInfoTerms =>
+      'Más detalles en los Términos del servicio, sección Mercadillo.';
+
+  @override
+  String marketplaceRestrictedAppeal(String place) {
+    return 'Si crees que es un error, escríbenos desde $place.';
+  }
 }

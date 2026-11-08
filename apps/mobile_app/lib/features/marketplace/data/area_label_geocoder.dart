@@ -1,46 +1,54 @@
-import 'dart:convert';
-
 import 'package:http/http.dart' as http;
 
 import '../../../l10n/l10n.dart';
+import '../../../shared/auth/current_user.dart';
+import '../../../shared/config/app_runtime_config_loader.dart';
+import '../../location/data/address_geocoder.dart';
 import '../../location/domain/coordinates.dart';
 
 /// Turns a listing's already-approximated position into a zone name
-/// ("Navigli, Milano"), via OpenStreetMap's Nominatim like the Località
-/// settings. Only the ~1 km grid point is ever sent, so not even the
-/// geocoding service sees the seller's real position; zoom 14 asks for
-/// neighbourhood level, and street/house number are never read.
+/// ("Navigli, Milano"). Asked to VetApp's backend (POST /geocoding/reverse,
+/// zoom 14 = neighbourhood), which queries OpenStreetMap's Nominatim on the
+/// app's behalf: the provider never sees the user's IP address (security
+/// audit APP-6), and only the ~1 km grid point is ever sent, so not even
+/// the backend learns the seller's real position. Street, house number and
+/// postcode are never read.
 abstract class AreaLabelResolver {
   Future<String?> areaLabelOf(Coordinates approximated);
 }
 
+/// The name is kept from when the app called Nominatim directly.
 class NominatimAreaLabelResolver implements AreaLabelResolver {
-  NominatimAreaLabelResolver({http.Client? client}) : _client = client ?? http.Client();
+  NominatimAreaLabelResolver({
+    http.Client? client,
+    AppRuntimeConfigLoader? configLoader,
+    String? Function()? accessToken,
+  })  : _client = client ?? http.Client(),
+        _configLoader = configLoader ?? const AppRuntimeConfigLoader(),
+        _accessToken = accessToken ?? CurrentUser.accessToken;
 
   final http.Client _client;
+  final AppRuntimeConfigLoader _configLoader;
+  final String? Function() _accessToken;
 
   @override
   Future<String?> areaLabelOf(Coordinates approximated) async {
-    final uri = Uri.https('nominatim.openstreetmap.org', '/reverse', {
-      'format': 'jsonv2',
-      'lat': approximated.latitude.toString(),
-      'lon': approximated.longitude.toString(),
-      'zoom': '14',
-      'accept-language': AppLocaleHolder.current.languageCode,
-    });
-    try {
-      final response = await _client.get(
-        uri,
-        headers: {'User-Agent': 'VetApp/1.0 (com.vetapp.mobile_app)'},
-      ).timeout(const Duration(seconds: 8));
-      if (response.statusCode != 200) return null;
-      final address =
-          (jsonDecode(utf8.decode(response.bodyBytes)) as Map<String, dynamic>)['address'];
-      if (address is! Map<String, dynamic>) return null;
-      return areaLabelFromAddress(address);
-    } catch (_) {
-      return null;
-    }
+    final json = await postToGeocodingBackend(
+      _client,
+      _configLoader,
+      _accessToken,
+      '/geocoding/reverse',
+      {
+        'latitude': approximated.latitude,
+        'longitude': approximated.longitude,
+        'zoom': 14,
+        'language': AppLocaleHolder.current.languageCode,
+      },
+    );
+    final result = json?['result'];
+    final address = result is Map<String, dynamic> ? result['address'] : null;
+    if (address is! Map<String, dynamic>) return null;
+    return areaLabelFromAddress(address);
   }
 }
 

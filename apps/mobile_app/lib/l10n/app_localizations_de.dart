@@ -6685,7 +6685,7 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get marketplaceMessagesSafetyNotice =>
-      'Zu Ihrer Sicherheit: Geben Sie keine persönlichen Daten weiter (Telefon, E-Mail, Adresse) und zahlen Sie nicht im Voraus.';
+      'Quokka bringt zwei Privatpersonen in Kontakt und ist nicht Partei des Kaufs: Vereinbarung, Bezahlung und Übergabe betreffen nur Sie beide. Wir prüfen weder Anzeigen noch Gegenstände oder Personen und haften nicht dafür. Wenn Sie Kontaktdaten austauschen, geschieht das auf eigene Verantwortung: Zahlen Sie nicht im Voraus an Personen, die Sie nicht kennen. Wird die Unterhaltung gemeldet, kann das Quokka-Team sie lesen.';
 
   @override
   String get marketplaceMessagesHint => 'Nachricht eingeben';
@@ -6784,7 +6784,7 @@ class AppLocalizationsDe extends AppLocalizations {
       'Verstoß gegen die Regeln des Gebrauchtmarkts';
 
   @override
-  String get localEventsExoticChip => 'Exoten-Experten';
+  String get localEventsExoticChip => 'Geben an, exotische Tiere zu behandeln';
 
   @override
   String get localEventsExoticAllGroups => 'Alle Gruppen';
@@ -6872,4 +6872,71 @@ class AppLocalizationsDe extends AppLocalizations {
   @override
   String get placesCompetenceClaimSent =>
       'Danke: Wir prüfen es, bevor wir es anzeigen.';
+
+  @override
+  String get placesBackendNamePerson =>
+      'Geben Sie den Namen der Einrichtung an, nicht den einer Person.';
+
+  @override
+  String get placesBackendClaimVetOnly =>
+      'Das kann nur für eine Tierarztpraxis gemeldet werden.';
+
+  @override
+  String get placesBackendClaimGroups =>
+      'Wählen Sie mindestens eine der angebotenen Tiergruppen.';
+
+  @override
+  String get placesBackendPlaceNotFound => 'Einrichtung nicht gefunden.';
+
+  @override
+  String get marketplacePublishDisclaimer =>
+      'Sie veröffentlichen eine Anzeige als Privatperson. Quokka bringt Menschen in Kontakt, ist aber nicht Partei des Kaufs: Vereinbarung, Bezahlung und Übergabe betreffen nur Sie und die kaufende Person, und Quokka haftet nicht dafür. Wir prüfen Anzeigen und Gegenstände nicht im Voraus: Beschreiben Sie Zustand und Mängel des Gegenstands ehrlich und vollständig. Tiere sowie Arzneimittel und Tierarzneimittel dürfen nicht verkauft werden. Schreiben Sie keine Telefonnummern oder E-Mail-Adressen in den Text: Interessierte schreiben Ihnen über die Nachrichten.';
+
+  @override
+  String get marketplaceDetailPrivateSeller =>
+      'Anzeige einer Privatperson: Die besonderen Schutzregeln für Käufe bei Unternehmen gelten nicht.';
+
+  @override
+  String get marketplaceInfoTitle => 'So funktioniert der Gebrauchtmarkt';
+
+  @override
+  String get marketplaceInfoWhat =>
+      'Der Gebrauchtmarkt ist ein Bereich, in dem Privatpersonen gebrauchte Gegenstände für Tiere verkaufen oder verschenken. Quokka bringt Anbietende und Suchende in Kontakt: Quokka verkauft nicht, kauft nicht und ist an keiner Vereinbarung beteiligt.';
+
+  @override
+  String get marketplaceInfoDeal =>
+      'Vereinbarung, Preis, Bezahlung, Übergabe und Garantien legen nur Sie beide fest. Quokka wickelt weder Zahlungen noch Versand ab und haftet nicht für den Ausgang eines Kaufs (Gegenstand anders als in der Anzeige, Mängel, ausbleibende Übergabe oder Zahlung), soweit das Gesetz einen Ausschluss erlaubt.';
+
+  @override
+  String get marketplaceInfoChecks =>
+      'Wir prüfen weder die Richtigkeit der Anzeigen noch Identität oder Zuverlässigkeit der Personen. Fragen Sie nach Fotos und Informationen, sehen Sie sich den Gegenstand vor dem Bezahlen an und prüfen Sie, ob er für Ihr Tier sicher ist: Gebrauchte Gurte, Käfige, Lampen und Transportboxen können versteckte Mängel haben.';
+
+  @override
+  String get marketplaceInfoPrivateSale =>
+      'Zwischen Privatpersonen gelten die besonderen Schutzregeln für Käufe bei Unternehmen nicht (etwa die gesetzliche Gewährleistung beim Verbrauchsgüterkauf und das Widerrufsrecht bei Fernabsatzverträgen, soweit Ihr Land sie vorsieht): Es gelten die allgemeinen gesetzlichen Regeln zum Kaufvertrag.';
+
+  @override
+  String get marketplaceInfoContacts =>
+      'Wenn Sie in den Nachrichten Telefonnummer, E-Mail-Adresse oder andere Kontaktdaten austauschen, tun Sie das auf eigene Verantwortung: Geben Sie nur weiter, was nötig ist, und nur an Personen, die Ihnen zuverlässig erscheinen. Zahlen Sie nicht im Voraus an Personen, die Sie nicht kennen.';
+
+  @override
+  String get marketplaceInfoReports =>
+      'Anzeigen und Nachrichten schreiben die Nutzerinnen und Nutzer, die dafür verantwortlich sind. Wenn Ihnen eine Anzeige oder eine Unterhaltung nicht korrekt erscheint, melden Sie sie: Unser Team prüft die Meldung und kann die Anzeige entfernen, die Unterhaltung schließen oder eine Person vom Gebrauchtmarkt ausschließen.';
+
+  @override
+  String get marketplaceInfoForbidden =>
+      'Tiere sowie Arzneimittel und Tierarzneimittel dürfen nicht verkauft werden. Die App blockiert viele Anzeigen, die Tiere oder Arzneimittel nennen, aber nicht alle: Melden Sie sie.';
+
+  @override
+  String get marketplaceInfoPrivacy =>
+      'Unterhaltungen sind privat. Das Quokka-Team liest eine Unterhaltung nur, wenn eine der beiden Personen sie meldet, um die Meldung zu prüfen.';
+
+  @override
+  String get marketplaceInfoTerms =>
+      'Einzelheiten in den Nutzungsbedingungen, Abschnitt Gebrauchtmarkt.';
+
+  @override
+  String marketplaceRestrictedAppeal(String place) {
+    return 'Wenn Sie glauben, dass es sich um einen Fehler handelt, schreiben Sie uns über $place.';
+  }
 }

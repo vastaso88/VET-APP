@@ -78,15 +78,15 @@
     {
       "id": "exotic_experts",
       "kind": "feature",
-      "it": "Esperti in esotici",
-      "en": "Exotic pet experts",
-      "es": "Expertos en exóticos",
-      "de": "Exoten-Experten",
-      "fr": "Experts NAC",
+      "it": "Dichiarano di trattare animali esotici",
+      "en": "Say they treat exotic pets",
+      "es": "Declaran tratar animales exóticos",
+      "de": "Geben an, exotische Tiere zu behandeln",
+      "fr": "Déclarent soigner les NAC",
       "keys": [
         "localEventsExoticChip"
       ],
-      "note": "Filtro di Vicino a me: veterinari che dichiarano di curare animali esotici (rettili, uccelli, piccoli mammiferi, pesci). In francese NAC = nouveaux animaux de compagnie, il termine corrente."
+      "note": "Nome confermato dal proprietario il 2026-11-08 (parere Normativa: non promettere competenze verificate). Filtro di Vicino a me: veterinari che dichiarano di curare animali esotici (rettili, uccelli, piccoli mammiferi, pesci). In francese NAC = nouveaux animaux de compagnie, il termine corrente."
     },
     {
       "id": "reminders",

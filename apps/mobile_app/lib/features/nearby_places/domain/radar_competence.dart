@@ -1,4 +1,4 @@
-/// "Esperti in esotici": exotic-animal groups a veterinary practice is
+/// "Dichiarano di trattare animali esotici": exotic-animal groups a veterinary practice is
 /// declared competent for. Every competence carries its own source and the
 /// date it was read (packages/core/domain/radar_places/competences.py);
 /// none of them is a judgement by Quokka.

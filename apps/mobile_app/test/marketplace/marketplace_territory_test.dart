@@ -151,7 +151,7 @@ void main() {
       await tester.tap(find.text('Perro'));
       await tester.enterText(find.widgetWithText(TextFormField, 'Precio (€)'), '5');
 
-      await tester.tap(find.text('Publicar anuncio'));
+      await _tapPublish(tester, 'Publicar anuncio');
       await tester.pumpAndSettle();
 
       final created = (await repository.loadActiveListings()).single;
@@ -165,7 +165,7 @@ void main() {
       await _openCreate(tester, repository);
 
       await tester.enterText(find.widgetWithText(TextFormField, 'Titolo'), 'Vendo cuccioli');
-      await tester.tap(find.text('Pubblica annuncio'));
+      await _tapPublish(tester, 'Pubblica annuncio');
       await tester.pumpAndSettle();
 
       expect(find.text('Sul Mercatino si vendono solo oggetti per animali, non animali.'),
@@ -173,4 +173,15 @@ void main() {
       expect(await repository.loadActiveListings(), isEmpty);
     });
   });
+}
+
+/// The legal note above the button (owner decision 2026-11-08) can push it out
+/// of the lazily built list: scroll to it first.
+Future<void> _tapPublish(WidgetTester tester, String label) async {
+  await tester.scrollUntilVisible(
+    find.text(label),
+    300,
+    scrollable: find.byType(Scrollable).first,
+  );
+  await tester.tap(find.text(label));
 }

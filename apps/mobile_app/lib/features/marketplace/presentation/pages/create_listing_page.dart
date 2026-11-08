@@ -552,6 +552,14 @@ class _CreateListingPageState extends State<CreateListingPage> {
                     style: AppTextStyles.bodySmall.copyWith(color: AppColors.danger)),
               ],
               const SizedBox(height: AppSpacing.xl),
+              if (!_isEditing) ...[
+                Text(
+                  context.l10n.marketplacePublishDisclaimer,
+                  key: const ValueKey('marketplace-publish-disclaimer'),
+                  style: AppTextStyles.caption,
+                ),
+                const SizedBox(height: AppSpacing.md),
+              ],
               DashboardActionButton(
                 label: _submitting
                     ? context.l10n.marketplaceSaving

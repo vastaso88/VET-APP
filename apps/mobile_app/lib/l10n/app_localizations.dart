@@ -11141,7 +11141,7 @@ abstract class AppLocalizations {
   /// No description provided for @marketplaceMessagesSafetyNotice.
   ///
   /// In it, this message translates to:
-  /// **'Per la tua sicurezza: non condividere dati personali (telefono, e-mail, indirizzo) e non pagare in anticipo.'**
+  /// **'Quokka mette in contatto due privati e non è parte della compravendita: accordo, pagamento e consegna riguardano solo voi. Non verifichiamo annunci, oggetti o persone e non ne rispondiamo. Se vi scambiate contatti, è sotto la vostra responsabilità: non pagare in anticipo a chi non conosci. Se la conversazione viene segnalata, il team di Quokka può leggerla.'**
   String get marketplaceMessagesSafetyNotice;
 
   /// No description provided for @marketplaceMessagesHint.
@@ -11309,7 +11309,7 @@ abstract class AppLocalizations {
   /// No description provided for @localEventsExoticChip.
   ///
   /// In it, this message translates to:
-  /// **'Esperti in esotici'**
+  /// **'Dichiarano di trattare animali esotici'**
   String get localEventsExoticChip;
 
   /// No description provided for @localEventsExoticAllGroups.
@@ -11455,6 +11455,108 @@ abstract class AppLocalizations {
   /// In it, this message translates to:
   /// **'Grazie: la controlliamo prima di mostrarla.'**
   String get placesCompetenceClaimSent;
+
+  /// No description provided for @placesBackendNamePerson.
+  ///
+  /// In it, this message translates to:
+  /// **'Scrivi il nome della struttura, non quello di una persona.'**
+  String get placesBackendNamePerson;
+
+  /// No description provided for @placesBackendClaimVetOnly.
+  ///
+  /// In it, this message translates to:
+  /// **'Si può segnalare solo per un veterinario.'**
+  String get placesBackendClaimVetOnly;
+
+  /// No description provided for @placesBackendClaimGroups.
+  ///
+  /// In it, this message translates to:
+  /// **'Scegli almeno un gruppo di animali tra quelli proposti.'**
+  String get placesBackendClaimGroups;
+
+  /// No description provided for @placesBackendPlaceNotFound.
+  ///
+  /// In it, this message translates to:
+  /// **'Struttura non trovata.'**
+  String get placesBackendPlaceNotFound;
+
+  /// No description provided for @marketplacePublishDisclaimer.
+  ///
+  /// In it, this message translates to:
+  /// **'Pubblichi un annuncio come privato. Quokka mette in contatto le persone ma non è parte della compravendita: accordo, pagamento e consegna riguardano solo te e chi compra, e Quokka non ne risponde. Non controlliamo in anticipo gli annunci né gli oggetti: descrivi lo stato dell\'oggetto e i difetti in modo onesto e completo. Non si possono vendere animali né farmaci o medicinali veterinari. Nel testo non scrivere telefoni o e-mail: ti si scrive con i messaggi.'**
+  String get marketplacePublishDisclaimer;
+
+  /// No description provided for @marketplaceDetailPrivateSeller.
+  ///
+  /// In it, this message translates to:
+  /// **'Annuncio di un privato: non valgono le garanzie previste per gli acquisti da professionisti.'**
+  String get marketplaceDetailPrivateSeller;
+
+  /// No description provided for @marketplaceInfoTitle.
+  ///
+  /// In it, this message translates to:
+  /// **'Come funziona il Mercatino'**
+  String get marketplaceInfoTitle;
+
+  /// No description provided for @marketplaceInfoWhat.
+  ///
+  /// In it, this message translates to:
+  /// **'Il Mercatino è uno spazio dove persone private vendono o regalano oggetti usati per animali. Quokka mette in contatto chi pubblica e chi cerca: non vende, non compra e non è parte di nessun accordo.'**
+  String get marketplaceInfoWhat;
+
+  /// No description provided for @marketplaceInfoDeal.
+  ///
+  /// In it, this message translates to:
+  /// **'Accordo, prezzo, pagamento, consegna e garanzie si decidono solo tra voi due. Quokka non gestisce pagamenti né spedizioni e non risponde dell\'esito di una compravendita (oggetto diverso dall\'annuncio, difetti, mancata consegna o mancato pagamento), salvo ciò che la legge non permette di escludere.'**
+  String get marketplaceInfoDeal;
+
+  /// No description provided for @marketplaceInfoChecks.
+  ///
+  /// In it, this message translates to:
+  /// **'Non verifichiamo l\'esattezza degli annunci né l\'identità o l\'affidabilità delle persone. Chiedi foto e informazioni, guarda l\'oggetto prima di pagare e controlla che sia sicuro per il tuo animale: cinghie, gabbie, lampade e trasportini usati possono avere difetti nascosti.'**
+  String get marketplaceInfoChecks;
+
+  /// No description provided for @marketplaceInfoPrivateSale.
+  ///
+  /// In it, this message translates to:
+  /// **'Tra privati non valgono le garanzie e le tutele previste per gli acquisti da un professionista (come la garanzia legale di conformità e il recesso dei contratti a distanza): valgono le regole del codice civile sulla compravendita.'**
+  String get marketplaceInfoPrivateSale;
+
+  /// No description provided for @marketplaceInfoContacts.
+  ///
+  /// In it, this message translates to:
+  /// **'Se scegli di scambiare telefono, e-mail o altri contatti nei messaggi, lo fai sotto la tua responsabilità: condividi solo ciò che serve e solo con chi ti sembra affidabile. Non pagare in anticipo a chi non conosci.'**
+  String get marketplaceInfoContacts;
+
+  /// No description provided for @marketplaceInfoReports.
+  ///
+  /// In it, this message translates to:
+  /// **'Annunci e messaggi sono scritti dagli utenti, che ne sono responsabili. Se un annuncio o una conversazione ti sembra scorretto, segnalalo: il nostro team valuta la segnalazione e può rimuovere l\'annuncio, chiudere la conversazione o tenere una persona fuori dal Mercatino.'**
+  String get marketplaceInfoReports;
+
+  /// No description provided for @marketplaceInfoForbidden.
+  ///
+  /// In it, this message translates to:
+  /// **'Non si vendono animali né farmaci o medicinali veterinari. L\'app blocca molti annunci che li nominano, non tutti: segnalali.'**
+  String get marketplaceInfoForbidden;
+
+  /// No description provided for @marketplaceInfoPrivacy.
+  ///
+  /// In it, this message translates to:
+  /// **'Le conversazioni sono private. Il team di Quokka legge una conversazione solo se una delle due persone la segnala, per valutare la segnalazione.'**
+  String get marketplaceInfoPrivacy;
+
+  /// No description provided for @marketplaceInfoTerms.
+  ///
+  /// In it, this message translates to:
+  /// **'Dettagli nei Termini di servizio, sezione Mercatino.'**
+  String get marketplaceInfoTerms;
+
+  /// No description provided for @marketplaceRestrictedAppeal.
+  ///
+  /// In it, this message translates to:
+  /// **'Se pensi sia un errore, scrivici da {place}.'**
+  String marketplaceRestrictedAppeal(String place);
 }
 
 class _AppLocalizationsDelegate

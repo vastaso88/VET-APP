@@ -72,6 +72,12 @@ export default async function ModerationDetailPage({
   const messages = queue === "marketplace_messages" && Array.isArray(item.messages)
     ? item.messages as Array<Record<string, unknown>>
     : [];
+  const accesses = queue === "marketplace_messages" && Array.isArray(item.accesses)
+    ? item.accesses as Array<Record<string, unknown>>
+    : [];
+  // A participant who deleted the account appears by role only.
+  const isDeleted = (id: unknown) => typeof id === "string" && id.startsWith("deleted-");
+  const keptAfterErasure = Boolean(conversation?.erased_participant_at);
 
   return (
     <AdminShell title="Moderation detail" eyebrow={queue}>
@@ -131,6 +137,14 @@ export default async function ModerationDetailPage({
             <div><span>Seller</span><strong>{conversation ? value(conversation, "seller_id") : "—"}</strong></div>
             <div><span>Reporter</span><strong>{value(item, "reporter_id")}</strong></div>
             <div><span>Closed by the team</span><strong>{conversation ? dateValue(conversation, "moderation_closed_at") : "—"}</strong></div>
+            <div>
+              <span>Kept after an account deletion</span>
+              <strong>
+                {keptAfterErasure
+                  ? `yes, until ${item.kept_until ? dateValue(item, "kept_until") : "the decision on the report"}`
+                  : "no"}
+              </strong>
+            </div>
             <div><span>Resolution note</span><strong>{value(item, "resolution_note")}</strong></div>
           </div>
         ) : null}
@@ -148,17 +162,38 @@ export default async function ModerationDetailPage({
           </div>
         ) : null}
 
+        {queue === "marketplace_messages" ? (
+          <div className="detail-copy">
+            <h3>Who of the team looked at this report</h3>
+            <div className="compact-list">
+              {accesses.length ? accesses.map((access) => (
+                <span key={String(access.id)}>
+                  {dateValue(access, "accessed_at")} · {value(access, "admin_id")} · {value(access, "action")}
+                </span>
+              )) : <span>No access recorded yet.</span>}
+            </div>
+          </div>
+        ) : null}
+
         {queue === "marketplace_messages" && conversation ? (
           <div className="detail-copy">
             <h3>Keep one of the two out of the Mercatino</h3>
-            <MarketplaceRestrictForm
-              ownerId={String(conversation.buyer_id ?? "")}
-              label="Keep the buyer out"
-            />
-            <MarketplaceRestrictForm
-              ownerId={String(conversation.seller_id ?? "")}
-              label="Keep the seller out"
-            />
+            {isDeleted(conversation.buyer_id) ? (
+              <p className="muted">The buyer deleted the account.</p>
+            ) : (
+              <MarketplaceRestrictForm
+                ownerId={String(conversation.buyer_id ?? "")}
+                label="Keep the buyer out"
+              />
+            )}
+            {isDeleted(conversation.seller_id) ? (
+              <p className="muted">The seller deleted the account.</p>
+            ) : (
+              <MarketplaceRestrictForm
+                ownerId={String(conversation.seller_id ?? "")}
+                label="Keep the seller out"
+              />
+            )}
           </div>
         ) : null}
 

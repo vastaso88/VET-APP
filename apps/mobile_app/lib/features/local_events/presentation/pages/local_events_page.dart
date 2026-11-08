@@ -95,7 +95,7 @@ class _LocalEventsPageState extends State<LocalEventsPage> {
   bool _showsCategory(RadarCategory category) =>
       _categories.isEmpty || _categories.contains(category);
 
-  /// "Esperti in esotici": only practices with a declared exotic-animal
+  /// "Dichiarano di trattare animali esotici": only practices with a declared exotic-animal
   /// competence, optionally of one group (null: any group).
   bool _exoticOnly = false;
   ExoticGroup? _exoticGroup;
@@ -365,7 +365,7 @@ class _LocalEventsPageState extends State<LocalEventsPage> {
     setState(() => _openSection = cleared ? null : category);
   }
 
-  /// "Esperti in esotici" on: clinics only, their section open. Off: back
+  /// "Dichiarano di trattare animali esotici" on: clinics only, their section open. Off: back
   /// to every category.
   void _toggleExotic() {
     final on = !_exoticOnly;
@@ -744,7 +744,7 @@ class _QuickCategoryBar extends StatelessWidget {
   }
 }
 
-/// The group choice of "Esperti in esotici", the disclaimer that the
+/// The group choice of "Dichiarano di trattare animali esotici", the disclaimer that the
 /// competence is declared and not checked by Quokka, and what to do when
 /// nothing is found (data are scarce: in many towns there is none yet).
 class _ExoticFilter extends StatelessWidget {

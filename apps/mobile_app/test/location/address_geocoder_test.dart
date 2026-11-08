@@ -5,6 +5,7 @@ import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
 import 'package:vet_app_mobile/features/location/data/address_geocoder.dart';
 import 'package:vet_app_mobile/features/location/domain/coordinates.dart';
+import 'package:vet_app_mobile/features/marketplace/data/area_label_geocoder.dart';
 import 'package:vet_app_mobile/features/nearby_places/data/reverse_geocoder.dart';
 import 'package:vet_app_mobile/shared/config/app_runtime_config.dart';
 import 'package:vet_app_mobile/shared/config/app_runtime_config_loader.dart';
@@ -166,5 +167,35 @@ void main() {
     expect(seen.url.hasQuery, isFalse);
     expect((jsonDecode(seen.body) as Map<String, dynamic>)['zoom'], 18);
     expect(label, 'Via Esempio 10, Milano');
+  });
+
+  test('the Mercatino zone name comes from the backend too, at neighbourhood level', () async {
+    late http.Request seen;
+    final resolver = NominatimAreaLabelResolver(
+      client: MockClient((request) async {
+        seen = request;
+        return http.Response(
+          jsonEncode({
+            'result': {
+              'latitude': 45.45,
+              'longitude': 9.17,
+              'display_name': 'unused',
+              'address': {'suburb': 'Navigli', 'city': 'Milano', 'road': 'Via Esempio'},
+            },
+          }),
+          200,
+        );
+      }),
+      configLoader: _backend,
+      accessToken: _token,
+    );
+
+    final label = await resolver.areaLabelOf(const Coordinates(latitude: 45.45, longitude: 9.17));
+
+    expect(seen.url.toString(), 'https://api.esempio.example/geocoding/reverse');
+    expect(seen.url.hasQuery, isFalse);
+    expect((jsonDecode(seen.body) as Map<String, dynamic>)['zoom'], 14);
+    // Street names are never shown for a listing.
+    expect(label, 'Navigli, Milano');
   });
 }

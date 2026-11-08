@@ -21,13 +21,19 @@ class MarketplaceRestriction {
   final String reason;
   final DateTime since;
 
-  /// The whole explanation, in the owner's language.
+  /// The whole explanation, in the owner's language, with the way to ask for a
+  /// review (DSA art. 17): the same "Contattaci" of the Settings, whose address
+  /// comes from the backend, so it is never written twice.
   String message([AppLocalizations? l10n]) {
     final strings = l10n ?? appL10n;
-    return strings.marketplaceRestrictedNotice(
+    final notice = strings.marketplaceRestrictedNotice(
       formatAppDate(since.toLocal(), 'd MMM y'),
       _reasonLabel(strings),
     );
+    final appeal = strings.marketplaceRestrictedAppeal(
+      '${strings.settingsTitle} → ${strings.settingsContactUs}',
+    );
+    return '$notice $appeal';
   }
 
   String _reasonLabel(AppLocalizations strings) => switch (reason) {

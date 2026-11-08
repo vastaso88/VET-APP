@@ -26,6 +26,7 @@ import '../../domain/marketplace_restriction.dart';
 import '../marketplace_labels.dart';
 import '../widgets/limited_marketplace_notice.dart';
 import '../widgets/marketplace_messages_button.dart';
+import 'marketplace_info_page.dart';
 import '../widgets/listing_photo.dart';
 import 'create_listing_page.dart';
 import 'listing_detail_page.dart';
@@ -192,6 +193,7 @@ class _MarketplacePageState extends State<MarketplacePage> {
         foregroundColor: AppColors.text,
         title: Text(context.l10n.marketplacePageTitle, style: AppTextStyles.title),
         actions: [
+          const MarketplaceInfoButton(),
           MarketplaceMessagesButton(repository: widget.messagesRepository),
           if (!limited)
             FutureBuilder<_MarketplaceViewData>(

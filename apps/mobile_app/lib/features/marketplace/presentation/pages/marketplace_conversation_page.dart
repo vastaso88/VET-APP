@@ -14,6 +14,7 @@ import '../../data/marketplace_messages_repository.dart';
 import '../../data/marketplace_unread_store.dart';
 import '../../domain/marketplace_conversation.dart';
 import '../widgets/messages_safety_notice.dart';
+import 'marketplace_info_page.dart';
 
 /// Same limit as the backend (`MESSAGE_MAX_LENGTH`), which is what decides.
 const _maxMessageLength = 1000;
@@ -235,6 +236,7 @@ class _MarketplaceConversationPageState extends State<MarketplaceConversationPag
           overflow: TextOverflow.ellipsis,
         ),
         actions: [
+          const MarketplaceInfoButton(),
           if (conversation != null) _menu(context, conversation),
         ],
       ),

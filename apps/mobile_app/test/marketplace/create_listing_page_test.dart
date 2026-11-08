@@ -91,7 +91,7 @@ void main() {
     await tester.tap(find.text('Come nuovo'));
     await tester.tap(find.text('Cane'));
     await tester.enterText(find.widgetWithText(TextFormField, 'Prezzo in €'), '12,50');
-    await tester.tap(find.text('Pubblica annuncio'));
+    await _tapPublish(tester);
     await tester.pumpAndSettle();
 
     final created = (await repository.loadActiveListings()).single;
@@ -125,7 +125,7 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.widgetWithText(TextFormField, 'Prezzo in €'), findsNothing);
 
-    await tester.tap(find.text('Pubblica annuncio'));
+    await _tapPublish(tester);
     await tester.pumpAndSettle();
 
     final created = (await repository.loadActiveListings()).single;
@@ -150,7 +150,7 @@ void main() {
     await _pickCategory(tester, 'Giochi');
     await tester.tap(find.text('Gatto'));
     await tester.tap(find.text('In regalo'));
-    await tester.tap(find.text('Pubblica annuncio'));
+    await _tapPublish(tester);
     await tester.pumpAndSettle();
 
     expect(find.textContaining('Non riesco a rilevare la tua posizione'), findsOneWidget);
@@ -171,7 +171,7 @@ void main() {
 
     await tester.enterText(find.widgetWithText(TextFormField, 'Titolo'), 'Ciotola test');
     await tester.enterText(find.widgetWithText(TextFormField, 'Prezzo in €'), '-5');
-    await tester.tap(find.text('Pubblica annuncio'));
+    await _tapPublish(tester);
     await tester.pumpAndSettle();
 
     expect(find.text('Scegli una categoria'), findsOneWidget);
@@ -284,4 +284,15 @@ void main() {
     expect(selected('Pesce'), isTrue);
     expect(selected('Tutte le specie'), isFalse);
   });
+}
+
+/// The legal note above the button (owner decision 2026-11-08) can push it out
+/// of the lazily built list: scroll to it first.
+Future<void> _tapPublish(WidgetTester tester) async {
+  await tester.scrollUntilVisible(
+    find.text('Pubblica annuncio'),
+    300,
+    scrollable: find.byType(Scrollable).first,
+  );
+  await tester.tap(find.text('Pubblica annuncio'));
 }

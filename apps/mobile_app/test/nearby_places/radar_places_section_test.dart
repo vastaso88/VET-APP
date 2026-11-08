@@ -534,8 +534,8 @@ void main() {
     final repository = _repositoryWith([_clinic, rabbits, exotics, _dogPark]);
     await _pumpPage(tester, repository);
 
-    await tester.ensureVisible(find.widgetWithText(RadarChip, 'Esperti in esotici'));
-    await tester.tap(find.widgetWithText(RadarChip, 'Esperti in esotici'));
+    await tester.ensureVisible(find.widgetWithText(RadarChip, 'Dichiarano di trattare animali esotici'));
+    await tester.tap(find.widgetWithText(RadarChip, 'Dichiarano di trattare animali esotici'));
     await tester.pumpAndSettle();
 
     // Clinics only, and only those with a declared competence; section open.
@@ -557,7 +557,7 @@ void main() {
     expect(repository.requestedRadii, [10]);
 
     // Back to everything.
-    await tester.tap(find.widgetWithText(RadarChip, 'Esperti in esotici'));
+    await tester.tap(find.widgetWithText(RadarChip, 'Dichiarano di trattare animali esotici'));
     await tester.pumpAndSettle();
     expect(find.textContaining('non verificata da Quokka'), findsNothing);
   });
@@ -565,8 +565,8 @@ void main() {
   testWidgets('Esperti in esotici says so clearly when nothing is found', (tester) async {
     await _pumpPage(tester, _repositoryWith([_clinic]));
 
-    await tester.ensureVisible(find.widgetWithText(RadarChip, 'Esperti in esotici'));
-    await tester.tap(find.widgetWithText(RadarChip, 'Esperti in esotici'));
+    await tester.ensureVisible(find.widgetWithText(RadarChip, 'Dichiarano di trattare animali esotici'));
+    await tester.tap(find.widgetWithText(RadarChip, 'Dichiarano di trattare animali esotici'));
     await tester.pumpAndSettle();
 
     expect(find.textContaining('dichiara questa competenza'), findsWidgets);
