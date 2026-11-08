@@ -35,7 +35,7 @@ Dall'app: Impostazioni → Contattaci.
 
 **Cosa succede quando finisce la prova?** Non c'è un piano gratuito. Dopo la prova, o se un abbonamento scade, puoi consultare e scaricare i dati che hai inserito, eliminare l'account e leggere le indicazioni di emergenza; le altre funzioni tornano quando scegli un piano. Conserviamo i tuoi dati per 4 mesi, ti avvisiamo prima della fine e poi cancelliamo l'account. Scaricare i dati non ferma la cancellazione: per tenere l'account serve un piano. [in attesa del codice: cancellazione automatica e avvisi.] [da verificare: l'elenco di ciò che resta disponibile.]
 
-**Quanti anni bisogna avere?** Almeno 14 anni. Il Mercatino, con i messaggi, è per chi ha 18 anni o più. Quando ti iscrivi ti chiediamo la data di nascita, solo per applicare queste regole. [in attesa del codice: data di nascita e blocchi per età.]
+**Quanti anni bisogna avere?** Almeno 14 anni. Il Mercatino, con i messaggi, è per chi ha 18 anni o più. Quando ti iscrivi ti chiediamo la data di nascita, solo per applicare queste regole. Se hai scritto la data per sbaglio, scrivici da Impostazioni → Contattaci.
 
 **L'assistente ha sbagliato.** Usa il pulsante per segnalare la risposta: ci aiuta a correggere il problema. Ricorda che l'assistente è un'intelligenza artificiale: dà informazioni generali, non fa diagnosi né prescrizioni e non sostituisce il veterinario.
 
@@ -62,4 +62,4 @@ Se pensi di aver trovato un problema di sicurezza, scrivi a [EMAIL_SICUREZZA]. N
 2. Non promettere tempi di risposta (nessun «entro N giorni») finché non c'è un processo presidiato.
 3. L'elenco delle azioni dell'app è quello del codice al 2026-10-28; se cambiano i nomi delle voci in Impostazioni va aggiornato.
 4. Numeri utili: l'app non ha un elenco per l'Italia; decidere se metterne uno qui [da decidere].
-5. Le risposte su cosa succede dopo la prova e sull'età descrivono funzioni non ancora nel codice (nota 10 di `03_termini_di_servizio_it.md`).
+5. La risposta su cosa succede dopo la prova descrive funzioni non ancora nel codice (nota 10 di `03_termini_di_servizio_it.md`); quella sull'età è nel codice dal 9 novembre.
