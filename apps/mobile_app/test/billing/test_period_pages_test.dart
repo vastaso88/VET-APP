@@ -33,10 +33,10 @@ SubscriptionStatus _status({bool testPeriod = false, bool hasAccess = true, Plan
     hasAccess: hasAccess,
     testPeriod: testPeriod,
     planLimits: const {
-      PlanTier.plus: PlanLimits(maxPets: 4, maxChatsPerPet: 2, dailyQuestions: 12, maxDevices: 2),
-      PlanTier.pro: PlanLimits(maxPets: 8, maxChatsPerPet: 4, dailyQuestions: 25, maxDevices: 3),
+      PlanTier.plus: PlanLimits(maxPets: 4, maxChatsPerPet: 2, dailyQuestions: 9, maxDevices: 2),
+      PlanTier.pro: PlanLimits(maxPets: 8, maxChatsPerPet: 4, dailyQuestions: 16, maxDevices: 3),
       PlanTier.ultra:
-          PlanLimits(maxPets: 15, maxChatsPerPet: 6, dailyQuestions: 50, maxDevices: 3),
+          PlanLimits(maxPets: 15, maxChatsPerPet: 6, dailyQuestions: 30, maxDevices: 3),
     },
   );
 }

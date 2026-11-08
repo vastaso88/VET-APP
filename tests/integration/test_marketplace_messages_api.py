@@ -432,6 +432,9 @@ def test_moderation_in_the_portal_needs_an_admin_and_can_close_the_conversation(
     queue = client.get(queue_url).json()["reports"]
     assert any(item["id"] == report.id for item in queue)
     detail = client.get(detail_url).json()["item"]
+    # Every look of the team is written down, with who and when.
+    assert [(a["admin_id"], a["action"]) for a in detail["accesses"]] == [("admin-1", "read")]
+    assert detail["kept_until"] is None
     assert detail["reason"] == "scam"
     assert [(m["body"], m["role"]) for m in detail["messages"]] == [("Ciao", "buyer")]
 

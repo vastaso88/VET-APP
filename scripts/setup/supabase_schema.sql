@@ -258,6 +258,10 @@ create table if not exists public.subscriptions (
     plan text,
     created_at timestamptz not null default now()
 );
+-- The day the account was first seen without access: the start of the four
+-- months its data is kept (packages/core/domain/subscription/retention.py).
+-- Written only by the backend; nothing is sent or erased from it yet.
+alter table public.subscriptions add column if not exists access_lost_at timestamptz;
 
 -- Devices signed in to an account, to hold the plan's limit on simultaneous
 -- devices (docs/marketing/03_prezzi_per_paese.md, plan limits). `device_id` is
@@ -1262,7 +1266,7 @@ alter table public.radar_user_reports enable row level security;
 alter table public.radar_report_votes enable row level security;
 alter table public.radar_place_ratings enable row level security;
 
--- "Esperti in esotici": segnalazioni di competenza confermate a mano.
+-- "Dichiarano di trattare animali esotici": segnalazioni di competenza confermate a mano.
 -- Stesso blocco di scripts/setup/radar_exotic_competences.sql.
 create table if not exists public.radar_competence_claims (
     id text primary key,
@@ -2090,6 +2094,7 @@ create table if not exists public.marketplace_conversations (
     buyer_unread integer not null default 0 check (buyer_unread >= 0),
     seller_unread integer not null default 0 check (seller_unread >= 0),
     moderation_closed_at timestamptz,
+    erased_participant_at timestamptz,
     created_at timestamptz not null default now(),
     last_message_at timestamptz not null default now(),
     check (buyer_id <> seller_id)
@@ -2140,6 +2145,27 @@ create table if not exists public.marketplace_user_restrictions (
     lifted_at timestamptz,
     lifted_by_admin_id text
 );
+
+-- Conversazione tenuta dopo la cancellazione di un account perché segnalata
+-- (decisione del proprietario 2026-11-08, parere docs/compliance/10 §2.3).
+alter table public.marketplace_conversations
+    add column if not exists erased_participant_at timestamptz;
+
+-- Traccia di chi del team ha letto o deciso una conversazione segnalata. Solo
+-- backend: nessuna policy per gli utenti, privilegi tolti ad anon e authenticated.
+create table if not exists public.marketplace_moderation_access_log (
+    id text primary key,
+    admin_id text not null,
+    report_id text not null,
+    conversation_id text not null,
+    action text not null
+        check (action in ('read', 'close_conversation', 'dismiss_report', 'reopen_report')),
+    accessed_at timestamptz not null default now()
+);
+create index if not exists idx_marketplace_moderation_access_log_report
+    on public.marketplace_moderation_access_log(report_id, accessed_at desc);
+alter table public.marketplace_moderation_access_log enable row level security;
+revoke all on table public.marketplace_moderation_access_log from anon, authenticated;
 
 -- Una sola conversazione per annuncio e compratore. I NULL (annuncio cancellato)
 -- non collidono tra loro.
@@ -2265,7 +2291,8 @@ begin
     -- edited any more, so its updated_at is when it closed). An ad deleted
     -- outright leaves no date: there the last message counts.
     delete from public.marketplace_conversations c
-    where not exists (
+    where c.erased_participant_at is null
+      and not exists (
             select 1 from public.marketplace_conversation_reports r
             where r.conversation_id = c.id and r.status = 'open'
         )
@@ -2289,6 +2316,18 @@ begin
             )
         );
     get diagnostics conversation_rows = row_count;
+    -- Tenute dopo una cancellazione: via appena la segnalazione è respinta, o 12
+    -- mesi dopo la decisione; mai finché è aperta.
+    delete from public.marketplace_conversations c
+    where c.erased_participant_at is not null
+      and not exists (
+            select 1 from public.marketplace_conversation_reports r
+            where r.conversation_id = c.id
+              and (r.status = 'open'
+                   or (r.status = 'resolved' and r.resolved_at > now() - interval '12 months'))
+        );
+    delete from public.marketplace_moderation_access_log
+    where accessed_at < now() - interval '24 months';
     delete from public.marketplace_user_restrictions
     where lifted_at is not null and lifted_at < now() - interval '12 months';
     get diagnostics restriction_rows = row_count;

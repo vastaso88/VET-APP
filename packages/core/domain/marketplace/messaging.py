@@ -18,6 +18,15 @@ CONVERSATIONS_LIST_LIMIT = 100
 WRITABLE_LISTING_STATUSES = frozenset({"active", "reserved"})
 
 ParticipantRole = Literal["buyer", "seller"]
+# Who wrote, once that person deleted the account and the conversation was kept
+# because it is under review (owner decision 2026-11-08, legal opinion
+# docs/compliance/10 §2.3): the account id is replaced by the role.
+DELETED_PARTICIPANT_IDS: dict[str, str] = {"buyer": "deleted-buyer", "seller": "deleted-seller"}
+# A kept conversation lasts this long after the team's decision on the report.
+KEPT_AFTER_DECISION_DAYS = 365
+# Report states that keep a conversation after an account deletion: still open,
+# or upheld by the team ("resolved"). A dismissed report keeps nothing.
+KEEPING_REPORT_STATUSES = frozenset({"open", "resolved"})
 # Why the app says a conversation cannot be written to. A block by the other
 # person, or the team's restriction of the other person, is deliberately reported
 # as "closed", so nobody learns about it; "restricted" is said only to the person
@@ -41,6 +50,9 @@ class MarketplaceConversation(BaseModel):
     seller_unread: int = 0
     # Set by the team from the moderation portal: nobody can write any more.
     moderation_closed_at: datetime | None = None
+    # Set when a participant deleted the account and the conversation was kept for
+    # the report under review: only the moderation team sees it from then on.
+    erased_participant_at: datetime | None = None
     created_at: datetime = Field(default_factory=utc_now)
     last_message_at: datetime = Field(default_factory=utc_now)
 
@@ -98,3 +110,18 @@ class MarketplaceRestriction(BaseModel):
     @property
     def active(self) -> bool:
         return self.lifted_at is None
+
+
+ModerationAccessAction = Literal["read", "close_conversation", "dismiss_report", "reopen_report"]
+
+
+class ModerationAccess(BaseModel):
+    """One look of the team at a reported conversation, or one decision on it: the
+    trail the legal opinion asks for (docs/compliance/10 §2.3, point 5)."""
+
+    id: str = Field(default_factory=new_id)
+    admin_id: str
+    report_id: str
+    conversation_id: str
+    action: ModerationAccessAction
+    accessed_at: datetime = Field(default_factory=utc_now)

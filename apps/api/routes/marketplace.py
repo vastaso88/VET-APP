@@ -178,9 +178,10 @@ class ReportListingRequest(BaseModel):
     reason: ListingReportReason
 
 
-# Reporting an ad is an action like writing one: the one door is this route, so
-# the plan check and the auto-removal threshold do not depend on the app.
-@router.post("/listings/{listing_id}/report", dependencies=[Depends(require_active_subscription)])
+# Reporting an ad is open to everyone signed in, with or without a plan (owner
+# decision 2026-11-08): it is a safety tool, the only action left to someone
+# without a plan. The auto-removal threshold is applied here, not by the app.
+@router.post("/listings/{listing_id}/report")
 def report_listing(listing_id: str, request: ReportListingRequest) -> dict[str, object]:
     container = get_container()
     user = container.auth_provider.get_current_user()

@@ -21,6 +21,27 @@ e-mail o id dell'altro.
    del team; può ancora leggere, segnalare e cancellare i propri annunci.
 5. **Notifiche push**: non ora, dopo il test con il pubblico.
 
+## Decisioni del proprietario (2026-11-08)
+
+21. **Conversazione segnalata dopo la cancellazione di un account** (parere
+    `docs/compliance/10_pareri_dal_2026_11_06.md` §2.3, 7 condizioni): si tiene solo se la
+    segnalazione è aperta o accolta, e solo quella conversazione. L'id di chi cancella diventa
+    `deleted-buyer` o `deleted-seller` in conversazione, messaggi e segnalazione; vale anche se
+    cancella chi ha segnalato. Da quel momento la vede solo il team: all'altra persona sparisce
+    dall'app, come senza la segnalazione. Si cancella appena la segnalazione è respinta, oppure
+    12 mesi dopo la decisione. Ogni lettura e decisione del team resta in
+    `marketplace_moderation_access_log` (24 mesi). Nel portale il dettaglio mostra fino a quando
+    la si tiene e chi l'ha guardata.
+22. **Contatti nei messaggi privati: permessi**; negli annunci pubblici restano vietati. Testi
+    della sessione Normativa (`docs/compliance/11_esclusioni_responsabilita.md` §4): frase sopra
+    «Pubblica annuncio», pagina «Come funziona il Mercatino» (icona «i» nella barra del Mercatino
+    e di ogni conversazione), avviso fisso in testa a ogni conversazione, riga «Annuncio di un
+    privato» sotto il prezzo.
+23. **«Se la conversazione viene segnalata, il team di Quokka può leggerla.»**: nell'avviso
+    fisso, in 5 lingue.
+24. **Segnalare un annuncio: consentito a tutti**, anche senza piano; senza piano non si può
+    fare altro (niente conversazioni nuove: 402).
+
 ## Regole
 
 | Regola | Dove |
@@ -31,7 +52,7 @@ e-mail o id dell'altro.
 | Scrivere richiede un piano (402); leggere, segnare come letto, bloccare e segnalare no: sono dati propri e strumenti di sicurezza | `routes/marketplace_messages.py` |
 | Annuncio venduto, rimosso, nascosto o cancellato, oppure chiusura dal team: conversazione leggibile, non scrivibile (409) | `_closure` nel servizio |
 | Chi non partecipa riceve 404, come per un id inesistente; un blocco subito appare come conversazione chiusa | servizio; test «utente B» in `tests/integration/test_marketplace_messages_api.py` |
-| Avviso «non condividere dati personali e non pagare in anticipo» sempre in testa alla conversazione, anche prima del primo messaggio | `widgets/messages_safety_notice.dart` |
+| Avviso fisso in testa alla conversazione, anche prima del primo messaggio: Quokka non è parte dell'accordo, contatti sotto la propria responsabilità, non pagare in anticipo, il team può leggere una conversazione segnalata | `widgets/messages_safety_notice.dart` |
 | Il testo non va nei log né verso provider esterni e non è mai interpretato come HTML o link | backend e `marketplace_conversation_page.dart` |
 | Nessuna conversazione nuova con un venditore che non potrebbe rispondere (senza piano o tenuto fuori dal team); la risposta è identica a quella per un annuncio non disponibile | `_can_start` nel servizio; `owner_can_write_on_marketplace` in `container.py` |
 | Chi è tenuto fuori dal team riceve 403 `marketplace_restricted` (motivo e data) su pubblicazione, modifica e messaggi; l'altra persona vede solo «conversazione chiusa» | `raise_if_restricted`, `dependencies/marketplace.py` |

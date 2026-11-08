@@ -179,7 +179,7 @@ def test_the_filter_never_lets_a_new_field_through_by_default() -> None:
 # --- Mercatino: no action ----------------------------------------------------
 
 
-def test_without_a_plan_creating_editing_and_reporting_ads_answer_402() -> None:
+def test_without_a_plan_creating_and_editing_ads_answer_402_reporting_does_not() -> None:
     _lapse()
     _seed("ad-7")
     client = TestClient(app)
@@ -188,11 +188,13 @@ def test_without_a_plan_creating_editing_and_reporting_ads_answer_402() -> None:
     edited = client.put("/marketplace/listings/ad-7", json=LISTING_BODY)
     reported = client.post("/marketplace/listings/ad-7/report", json={"reason": "spam"})
 
-    for response in (created, edited, reported):
+    for response in (created, edited):
         assert response.status_code == 402
         assert response.json()["code"] == "subscription_required"
+    # Owner decision 2026-11-08: reporting is open to everyone, plan or not.
+    assert reported.status_code == 200
     stored = get_container().marketplace_listing_repository.get("ad-7")
-    assert stored is not None and stored.report_count == 0
+    assert stored is not None and stored.report_count == 1
 
 
 def test_with_a_plan_the_actions_work_and_three_reporters_remove_an_ad() -> None:

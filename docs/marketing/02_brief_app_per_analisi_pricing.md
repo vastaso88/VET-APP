@@ -55,7 +55,7 @@ Posizionamento dichiarato: **"supporto, non sostituzione" del veterinario**. L'a
 - **Prova gratuita di 14 giorni senza carta**. Alla scadenza l'utente deve scegliere un piano (Plus, Pro o Ultra): il piano Free non esiste più (decisione del 2026-11-06). Senza piano restano solo i propri dati: esportazione, cancellazione dell'account, indicazioni di emergenza. Il parere legale sul blocco senza Free è da rifare.
 - Impostazioni: consensi (ToS, privacy, marketing, analytics), località (GPS o indirizzo manuale), layout Home.
 
-## 5. Struttura abbonamento (decisa il 2026-11-06; limiti aggiornati il 2026-11-07, modificabili più avanti)
+## 5. Struttura abbonamento (decisa il 2026-11-06; domande al giorno aggiornate l'8 novembre (9/16/30, variante del business plan); foto, dettature, riepiloghi, spazio e tetto di spesa IA ancora da decidere)
 
 Tre piani a pagamento, **Plus / Pro / Ultra**, con fatturazione **mensile o annuale** (l'annuale vale 10 mensilità, sconto circa 16,6%). Il piano Pro ha l'etichetta "Consigliato". Non c'è un piano Free.
 
@@ -65,7 +65,7 @@ Le funzioni sono le stesse in tutti i piani (profili, assistente, allegati in ch
 |---|---|---|---|
 | Animali | 4 | 8 | 15 |
 | Chat per animale | 2 | 4 | 6 |
-| Domande al giorno | 12 | 25 | 50 |
+| Domande al giorno | 9 | 16 | 30 |
 | Dispositivi contemporanei | 2 | 3 | 3 |
 | Prezzo mensile (Italia) | 4,59 € | 8,59 € | 15,59 € |
 | Prezzo annuale (Italia) | 45,99 € | 85,99 € | 155,99 € |

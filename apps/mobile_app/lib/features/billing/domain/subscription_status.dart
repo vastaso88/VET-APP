@@ -11,6 +11,7 @@ class SubscriptionStatus {
     this.limits,
     this.planLimits = const {},
     this.testPeriod = false,
+    this.dataKeptUntil,
   });
 
   factory SubscriptionStatus.fromJson(Map<String, dynamic> json) {
@@ -23,6 +24,8 @@ class SubscriptionStatus {
       isDeveloper: json['is_developer'] as bool,
       hasAccess: json['has_access'] as bool,
       testPeriod: json['test_period'] as bool? ?? false,
+      // tryParse: a malformed date must never break the access gate.
+      dataKeptUntil: DateTime.tryParse(json['data_kept_until'] as String? ?? ''),
       limits: rawLimits == null ? null : PlanLimits.fromJson(rawLimits),
       planLimits: {
         for (final entry in rawCatalog.entries)
@@ -49,6 +52,11 @@ class SubscriptionStatus {
   /// (reported by the backend, set by its environment) and nobody pays, so
   /// the app must not ask for a payment or a choice of plan.
   final bool testPeriod;
+
+  /// When the data of an account without access is erased if nothing changes
+  /// (four months after the access was lost); null while it has access.
+  /// Parsed only: no screen shows it until the legal texts for it exist.
+  final DateTime? dataKeptUntil;
 
   bool get isTrialActive => DateTime.now().isBefore(trialEndsAt);
 

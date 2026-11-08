@@ -7,6 +7,7 @@ from packages.core.domain.marketplace.messaging import (
     MarketplaceMessage,
     MarketplaceRestriction,
     MarketplaceUserBlock,
+    ModerationAccess,
     ParticipantRole,
 )
 
@@ -75,4 +76,10 @@ class MarketplaceMessagingRepository(Protocol):
 
     def list_restrictions(self, limit: int) -> list[MarketplaceRestriction]:
         """For the portal, the most recent first, lifted ones included."""
+        ...
+
+    def log_moderation_access(self, access: ModerationAccess) -> None: ...
+
+    def list_moderation_accesses(self, report_id: str) -> list[ModerationAccess]:
+        """The trail of one report, the most recent first."""
         ...

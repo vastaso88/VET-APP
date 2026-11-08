@@ -33,6 +33,7 @@ from packages.core.application.ports.marketplace_messaging_repository import (
     MarketplaceMessagingRepository,
 )
 from packages.core.application.ports.media_storage import MediaStorage
+from packages.core.application.ports.owner_contact_lookup import OwnerContactLookup
 from packages.core.application.ports.owner_limits import OwnerLimitsLookup
 from packages.core.application.ports.pet_condition_repository import PetConditionRepository
 from packages.core.application.ports.pet_news import PetNewsCacheRepository
@@ -133,6 +134,7 @@ from packages.core.application.services.request_radar_places_ingestion import (
 from packages.core.application.services.resolve_chat_response_report import (
     ResolveChatResponseReportService,
 )
+from packages.core.application.services.retention_dry_run import RetentionDryRunService
 from packages.core.application.services.safety_gate import SafetyGate
 from packages.core.application.services.select_plan import SelectPlanService
 from packages.core.application.services.send_chat_message import SendChatMessageService
@@ -216,6 +218,7 @@ from packages.infrastructure.persistence.in_memory_repositories import (
     InMemoryLlmUsageRepository,
     InMemoryLocalActivityRepository,
     InMemoryMarketplaceListingRepository,
+    InMemoryOwnerContactLookup,
     InMemoryPetConditionRepository,
     InMemoryPetProfileRepository,
     InMemoryRadarCatalogRepository,
@@ -314,6 +317,7 @@ class ApplicationContainer:
         self.account_consents_repository = self._build_account_consents_repository()
         self.subscription_repository = self._build_subscription_repository()
         self.user_device_repository = self._build_user_device_repository()
+        self.owner_contact_lookup = self._build_owner_contact_lookup()
         self.developer_emails = frozenset(
             email.strip().lower() for email in settings.developer_emails
         )
@@ -410,6 +414,16 @@ class ApplicationContainer:
     def get_or_create_subscription_service(self) -> GetOrCreateSubscriptionService:
         return GetOrCreateSubscriptionService(
             self.subscription_repository,
+            self.developer_emails,
+            test_plan=self.subscription_test_plan,
+        )
+
+    def retention_dry_run_service(self) -> RetentionDryRunService:
+        """Read-only report of what the data-retention job would do. Nothing
+        here sends or erases; those collaborators are not wired on purpose."""
+        return RetentionDryRunService(
+            self.subscription_repository,
+            self.owner_contact_lookup,
             self.developer_emails,
             test_plan=self.subscription_test_plan,
         )
@@ -958,6 +972,23 @@ class ApplicationContainer:
                     return InMemorySubscriptionRepository()
                 raise
         return InMemorySubscriptionRepository()
+
+    def _build_owner_contact_lookup(self) -> OwnerContactLookup:
+        if self.settings.persistence_backend == "supabase":
+            try:
+                from packages.infrastructure.persistence.supabase.client import (
+                    build_supabase_client,
+                )
+                from packages.infrastructure.persistence.supabase.supabase_owner_contact_lookup import (  # noqa: E501
+                    SupabaseOwnerContactLookup,
+                )
+
+                return SupabaseOwnerContactLookup(build_supabase_client(self.settings))
+            except ModuleNotFoundError:
+                if self.settings.environment != "production":
+                    return InMemoryOwnerContactLookup()
+                raise
+        return InMemoryOwnerContactLookup()
 
     def _build_user_device_repository(self) -> UserDeviceRepository:
         if self.settings.persistence_backend == "supabase":

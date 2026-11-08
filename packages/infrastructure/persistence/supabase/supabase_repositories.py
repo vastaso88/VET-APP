@@ -226,9 +226,28 @@ class SupabaseSubscriptionRepository(SubscriptionRepository):
         return Subscription.model_validate(response.data[0])
 
     def save(self, subscription: Subscription) -> Subscription:
-        payload = _serialize_payload(subscription.model_dump(mode="json"))
+        # Without the retention clock: it has a column and a method of its own
+        # (scripts/setup/subscriptions_retention.sql), so saving a plan works
+        # on a database that does not have the column yet.
+        payload = _serialize_payload(
+            subscription.model_dump(mode="json", exclude={"access_lost_at"})
+        )
         self._client.table(self._table).upsert(payload).execute()
         return subscription
+
+    def set_access_lost_at(self, owner_id: str, value: datetime | None) -> None:
+        self._client.table(self._table).update(
+            {"access_lost_at": value.isoformat() if value is not None else None}
+        ).eq("owner_id", owner_id).execute()
+
+    def list_without_plan(self) -> list[Subscription]:
+        response = (
+            self._client.table(self._table)
+            .select("*")
+            .or_("plan.is.null,plan.not.in.(plus,pro,ultra)")
+            .execute()
+        )
+        return [Subscription.model_validate(row) for row in response.data or []]
 
 
 class SupabaseUserDeviceRepository(UserDeviceRepository):

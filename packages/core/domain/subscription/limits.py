@@ -19,13 +19,13 @@ class PlanLimits(BaseModel):
 
 LIMITS_BY_PLAN: dict[str, PlanLimits] = {
     SubscriptionPlan.PLUS: PlanLimits(
-        max_pets=4, max_chats_per_pet=2, daily_questions=12, max_devices=2
+        max_pets=4, max_chats_per_pet=2, daily_questions=9, max_devices=2
     ),
     SubscriptionPlan.PRO: PlanLimits(
-        max_pets=8, max_chats_per_pet=4, daily_questions=25, max_devices=3
+        max_pets=8, max_chats_per_pet=4, daily_questions=16, max_devices=3
     ),
     SubscriptionPlan.ULTRA: PlanLimits(
-        max_pets=15, max_chats_per_pet=6, daily_questions=50, max_devices=3
+        max_pets=15, max_chats_per_pet=6, daily_questions=30, max_devices=3
     ),
 }
 

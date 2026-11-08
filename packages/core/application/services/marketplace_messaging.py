@@ -30,6 +30,7 @@ from packages.core.application.ports.marketplace_messaging_repository import (
 from packages.core.domain.localization import translate
 from packages.core.domain.marketplace.messaging import (
     CONVERSATIONS_LIST_LIMIT,
+    KEPT_AFTER_DECISION_DAYS,
     MESSAGE_MAX_LENGTH,
     THREAD_MESSAGES_LIMIT,
     WRITABLE_LISTING_STATUSES,
@@ -41,6 +42,8 @@ from packages.core.domain.marketplace.messaging import (
     MarketplaceRestriction,
     MarketplaceRestrictionReason,
     MarketplaceUserBlock,
+    ModerationAccess,
+    ModerationAccessAction,
     ParticipantRole,
 )
 from packages.core.domain.subscription.limits import MAX_NEW_MARKETPLACE_CONVERSATIONS_PER_DAY
@@ -134,7 +137,7 @@ class MarketplaceMessagingService:
         gives one answer, so a block cannot be told from a missing ad."""
         body = self._clean(text)
         raise_if_restricted(self._repository.get_restriction(buyer_id))
-        existing = self._repository.find_conversation(listing_id, buyer_id)
+        existing = self._visible(self._repository.find_conversation(listing_id, buyer_id))
         if existing is not None:
             return self._send(existing, buyer_id, body)
 
@@ -193,7 +196,7 @@ class MarketplaceMessagingService:
     def find_for_listing(self, listing_id: str, buyer_id: str) -> ListingMessaging:
         """The caller's own conversation about an ad, if they ever wrote, and
         whether they could open one now."""
-        conversation = self._repository.find_conversation(listing_id, buyer_id)
+        conversation = self._visible(self._repository.find_conversation(listing_id, buyer_id))
         if conversation is not None:
             return ListingMessaging(
                 conversation=self._view(conversation, buyer_id), can_start=False
@@ -207,7 +210,11 @@ class MarketplaceMessagingService:
         return ListingMessaging(conversation=None, can_start=can_start)
 
     def list_conversations(self, user_id: str) -> list[ConversationView]:
-        conversations = self._repository.list_conversations(user_id, CONVERSATIONS_LIST_LIMIT)
+        conversations = [
+            item
+            for item in self._repository.list_conversations(user_id, CONVERSATIONS_LIST_LIMIT)
+            if item.erased_participant_at is None
+        ]
         statuses = self._listings.statuses(
             [item.listing_id for item in conversations if item.listing_id is not None]
         )
@@ -281,9 +288,20 @@ class MarketplaceMessagingService:
     def _participant_conversation(
         self, conversation_id: str, user_id: str
     ) -> MarketplaceConversation:
-        conversation = self._repository.get_conversation(conversation_id)
+        conversation = self._visible(self._repository.get_conversation(conversation_id))
         if conversation is None or conversation.role_of(user_id) is None:
             raise ConversationNotFoundError
+        return conversation
+
+    @staticmethod
+    def _visible(
+        conversation: MarketplaceConversation | None,
+    ) -> MarketplaceConversation | None:
+        """A conversation kept after an account deletion is for the moderation team
+        only (legal opinion docs/compliance/10 §2.3): to the other participant it
+        is gone, as it would be without the report."""
+        if conversation is None or conversation.erased_participant_at is not None:
+            return None
         return conversation
 
     def _can_start(self, seller_id: str, listing_status: str, buyer_id: str) -> bool:
@@ -410,11 +428,20 @@ class MarketplaceMessagingModerationService:
             )
         return rows
 
-    def detail(self, report_id: str) -> dict[str, object] | None:
+    def detail(self, report_id: str, admin_id: str) -> dict[str, object] | None:
+        """The reported conversation, for the team. Every look is written down."""
         report = self._repository.get_report(report_id)
         if report is None:
             return None
         conversation = self._repository.get_conversation(report.conversation_id)
+        self._repository.log_moderation_access(
+            ModerationAccess(
+                admin_id=admin_id,
+                report_id=report.id,
+                conversation_id=report.conversation_id,
+                action="read",
+            )
+        )
         messages = (
             self._repository.list_messages(conversation.id, THREAD_MESSAGES_LIMIT)
             if conversation is not None
@@ -423,6 +450,11 @@ class MarketplaceMessagingModerationService:
         return {
             **report.model_dump(mode="json"),
             "conversation": conversation.model_dump(mode="json") if conversation else None,
+            "kept_until": self._kept_until(report, conversation),
+            "accesses": [
+                item.model_dump(mode="json")
+                for item in self._repository.list_moderation_accesses(report.id)
+            ],
             "messages": [
                 {
                     "id": message.id,
@@ -434,12 +466,39 @@ class MarketplaceMessagingModerationService:
             ],
         }
 
+    @staticmethod
+    def _kept_until(
+        report: MarketplaceConversationReport, conversation: MarketplaceConversation | None
+    ) -> str | None:
+        """For a conversation kept after an account deletion: the day it goes, 12
+        months after the decision. None while the report is open (it stays until
+        the decision) or when nobody deleted an account."""
+        if conversation is None or conversation.erased_participant_at is None:
+            return None
+        if report.status == "resolved" and report.resolved_at is not None:
+            return (report.resolved_at + timedelta(days=KEPT_AFTER_DECISION_DAYS)).isoformat()
+        return None
+
     def resolve(
-        self, report_id: str, action: str, note: str | None, admin_id: str
+        self,
+        report_id: str,
+        action: ModerationAccessAction,
+        note: str | None,
+        admin_id: str,
     ) -> MarketplaceConversationReport | None:
         report = self._repository.get_report(report_id)
         if report is None:
             return None
+        if action == "read":
+            raise ValidationError("not a decision")
+        self._repository.log_moderation_access(
+            ModerationAccess(
+                admin_id=admin_id,
+                report_id=report.id,
+                conversation_id=report.conversation_id,
+                action=action,
+            )
+        )
         now = datetime.now(UTC)
         updates: dict[str, object] = {
             "resolution_note": note,

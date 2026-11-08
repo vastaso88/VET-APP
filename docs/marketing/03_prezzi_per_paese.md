@@ -70,15 +70,9 @@ Regole di arrotondamento: il mensile finisce in ,x9; l'annuale è il valore inte
 
 ## Margine
 
-Ricavo netto al mese con piano annuale, tolti IVA o GST e commissione store del 15% (ipotesi: iscrizione ai programmi per piccoli sviluppatori), a confronto con il costo IA nel caso peggiore (tutte le domande del giorno usate ogni giorno). Limiti del 2026-11-07: 12, 25 e 50 domande al giorno, circa 0,0035 € a domanda:
+I margini per piano, con il costo misurato per domanda e i costi fissi, sono nel [business plan](04_business_plan_costi_margini.md) e cambiano con i limiti (domande al giorno 9/16/30 dall'8 novembre). Questa sezione usava una stima prudenziale di 0,0035 € a domanda su limiti precedenti: non va più letta come margine.
 
-| | Italia | Germania | Spagna | Svizzera | Costo IA caso peggiore | Margine in Italia, caso peggiore |
-|---|---|---|---|---|---|---|
-| Plus | 2,67 € | 2,98 € | 2,58 € | 3,80 € | 1,26 € | 53% |
-| Pro | 4,99 € | 5,59 € | 4,80 € | 7,14 € | 2,63 € | 47% |
-| Ultra | 9,06 € | 10,12 € | 8,72 € | 12,97 € | 5,25 € | 42% |
-
-Il costo IA è uguale ovunque, quindi è lui a fissare il minimo. Nel caso peggiore il margine scende sotto il 30% con un moltiplicatore sotto circa 0,67 (Plus), 0,75 (Pro) e 0,83 (Ultra): il limite 0,60 della proposta **non basta** in quello scenario estremo (uso del limite pieno ogni giorno). Con un uso tipico (un quarto del limite) il margine resta ampio. Per i mercati più poveri (Brasile, India, Messico) servirebbe un minimo del moltiplicatore più alto per Pro e Ultra, oppure meno domande al giorno. I limiti possono ancora cambiare: ricalcolare qui.
+Regola che resta valida: il costo dell'IA è uguale in ogni paese, quindi un prezzo scontato riduce il margine di quel paese in proporzione. Prima di scontare, controllare il moltiplicatore contro il margine del business plan nel caso peggiore (limite pieno ogni giorno); per i mercati molto più poveri (Brasile, India, Messico) servirebbe un minimo più alto o limiti più bassi.
 
 ## Cosa dicono le fonti
 

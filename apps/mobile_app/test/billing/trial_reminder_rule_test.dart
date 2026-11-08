@@ -84,20 +84,20 @@ void main() {
           'limits': {
             'max_pets': 8,
             'max_chats_per_pet': 4,
-            'daily_questions': 25,
+            'daily_questions': 16,
             'max_devices': 3,
           },
           'plan_limits': {
             'plus': {
               'max_pets': 4,
               'max_chats_per_pet': 2,
-              'daily_questions': 12,
+              'daily_questions': 9,
               'max_devices': 2,
             },
             'ultra': {
               'max_pets': 15,
               'max_chats_per_pet': 6,
-              'daily_questions': 50,
+              'daily_questions': 30,
               'max_devices': 3,
             },
           },
@@ -107,7 +107,7 @@ void main() {
       final status = SubscriptionStatus.fromJson(json(plan: 'pro'));
 
       expect(status.plan, PlanTier.pro);
-      expect(status.limits?.dailyQuestions, 25);
+      expect(status.limits?.dailyQuestions, 16);
       expect(status.planLimits[PlanTier.plus]?.maxPets, 4);
       expect(status.planLimits[PlanTier.ultra]?.maxChatsPerPet, 6);
     });
@@ -127,6 +127,20 @@ void main() {
 
       expect(status.limits, isNull);
       expect(status.planLimits, isEmpty);
+    });
+
+    test('reads the date the data is kept until, and tolerates its absence', () {
+      expect(SubscriptionStatus.fromJson(json()).dataKeptUntil, isNull);
+
+      final withDate = json()..['data_kept_until'] = '2027-03-10T09:00:00Z';
+      expect(
+        SubscriptionStatus.fromJson(withDate).dataKeptUntil,
+        DateTime.utc(2027, 3, 10, 9),
+      );
+
+      // A malformed date must never break the access gate.
+      final broken = json()..['data_kept_until'] = 'not-a-date';
+      expect(SubscriptionStatus.fromJson(broken).dataKeptUntil, isNull);
     });
   });
 }

@@ -42,6 +42,7 @@ class _Query:
         self._db = db
         self._table = table
         self._delete = False
+        self._update: dict[str, Any] | None = None
         self._filters: list[Callable[[dict[str, Any]], bool]] = []
 
     def select(self, _columns: str) -> _Query:
@@ -49,6 +50,10 @@ class _Query:
 
     def delete(self) -> _Query:
         self._delete = True
+        return self
+
+    def update(self, fields: dict[str, Any]) -> _Query:
+        self._update = fields
         return self
 
     def eq(self, column: str, value: str) -> _Query:
@@ -64,6 +69,10 @@ class _Query:
         matching = [row for row in rows if all(f(row) for f in self._filters)]
         if self._delete:
             self._db[self._table] = [row for row in rows if row not in matching]
+        if self._update is not None:
+            for row in rows:
+                if all(f(row) for f in self._filters):
+                    row.update(self._update)
         return _Response([dict(row) for row in matching])
 
 
@@ -332,6 +341,45 @@ def test_deleting_an_account_removes_its_conversations_with_the_other_persons_re
     assert [row["id"] for row in client.db["marketplace_conversation_reports"]] == ["r2"]
     assert client.db["marketplace_user_blocks"] == [{"blocker_id": other, "blocked_id": third}]
     assert report.rows_deleted["marketplace_messages"] == 2
+
+
+def test_a_conversation_under_review_is_kept_without_the_deleted_owners_id() -> None:
+    """Owner decision 2026-11-08 (docs/compliance/10 §2.3): an open or upheld report
+    keeps its conversation, with the id replaced by the role; a dismissed one does not."""
+    gone = "11111111-1111-4111-8111-111111111111"
+    other = "22222222-2222-4222-8222-222222222222"
+    client = FakeSupabase()
+    client.db["marketplace_conversations"] = [
+        {"id": "open", "buyer_id": gone, "seller_id": other, "buyer_unread": 2},
+        {"id": "upheld", "buyer_id": other, "seller_id": gone},
+        {"id": "dismissed", "buyer_id": gone, "seller_id": other},
+    ]
+    client.db["marketplace_messages"] = [
+        {"id": "m1", "conversation_id": "open", "sender_id": gone},
+        {"id": "m2", "conversation_id": "open", "sender_id": other},
+        {"id": "m3", "conversation_id": "upheld", "sender_id": gone},
+        {"id": "m4", "conversation_id": "dismissed", "sender_id": gone},
+    ]
+    client.db["marketplace_conversation_reports"] = [
+        {"id": "r1", "conversation_id": "open", "reporter_id": gone, "status": "open"},
+        {"id": "r2", "conversation_id": "upheld", "reporter_id": other, "status": "resolved"},
+        {"id": "r3", "conversation_id": "dismissed", "reporter_id": other, "status": "dismissed"},
+    ]
+
+    _eraser(client).erase_data(gone)
+
+    kept = {row["id"]: row for row in client.db["marketplace_conversations"]}
+    assert set(kept) == {"open", "upheld"}
+    assert kept["open"]["buyer_id"] == "deleted-buyer"
+    assert kept["open"]["erased_participant_at"] and kept["open"]["buyer_unread"] == 0
+    assert kept["upheld"]["seller_id"] == "deleted-seller"
+    senders = {row["id"]: row["sender_id"] for row in client.db["marketplace_messages"]}
+    assert senders == {"m1": "deleted-buyer", "m2": other, "m3": "deleted-seller"}
+    reporters = {r["id"]: r["reporter_id"] for r in client.db["marketplace_conversation_reports"]}
+    assert reporters == {"r1": "deleted-buyer", "r2": other}
+    for rows in client.db.values():
+        for row in rows:
+            assert gone not in row.values()
 
 
 def test_every_table_of_the_schema_is_either_erased_or_declared_not_personal() -> None:

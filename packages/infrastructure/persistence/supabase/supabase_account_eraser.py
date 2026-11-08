@@ -8,11 +8,16 @@ so a new table cannot silently escape the deletion."""
 
 from __future__ import annotations
 
+from datetime import UTC, datetime
 from typing import TYPE_CHECKING, Any, cast
 from uuid import UUID
 
 from packages.core.application.ports.account_eraser import ErasureReport
 from packages.core.domain.feedback.pseudonym import reporter_ref
+from packages.core.domain.marketplace.messaging import (
+    DELETED_PARTICIPANT_IDS,
+    KEEPING_REPORT_STATUSES,
+)
 from packages.core.domain.radar_reports.models import contributor_pseudonym
 
 if TYPE_CHECKING:
@@ -87,6 +92,10 @@ NOT_PERSONAL_TABLES: dict[str, str] = {
     "llm_usage_daily": "aggregate model usage, no owner column",
     "chat_answer_cache": "anonymised answer cache, no owner column",
     "chat_response_report_counters": "aggregate counters, no owner column",
+    "marketplace_moderation_access_log": (
+        "team-only trail of who read or decided a reported conversation: team ids and "
+        "random report/conversation ids, no owner column"
+    ),
 }
 
 
@@ -147,27 +156,69 @@ class SupabaseAccountEraser:
         """A conversation goes as a whole when one of the two deletes the account:
         the other person's replies can quote the deleted owner's details, and the
         row names them. Children first and explicitly, like the rest of this file;
-        blocks go in both directions, because both ids identify the owner."""
-        conversation_ids: set[str] = set()
-        for column in MARKETPLACE_PARTICIPANT_COLUMNS:
+        blocks go in both directions, because both ids identify the owner.
+
+        Except a conversation under review (owner decision 2026-11-08, legal opinion
+        docs/compliance/10 §2.3): with a report still open or upheld by the team it
+        stays, for the team only, with the deleted owner's id replaced by the role
+        everywhere it appears (conversation, messages, report). The nightly cleanup
+        removes it 12 months after the decision, or as soon as the report is
+        dismissed. It applies whoever deletes: the reported person or the reporter."""
+        roles: dict[str, str] = {}
+        for column, role in zip(MARKETPLACE_PARTICIPANT_COLUMNS, ("buyer", "seller"), strict=True):
             response = (
                 self._client.table("marketplace_conversations")
                 .select("id")
                 .eq(column, owner_id)
                 .execute()
             )
-            conversation_ids.update(str(row["id"]) for row in self._rows(response))
-        if conversation_ids:
+            roles.update({str(row["id"]): role for row in self._rows(response)})
+
+        kept: set[str] = set()
+        if roles:
+            reports = (
+                self._client.table("marketplace_conversation_reports")
+                .select("conversation_id,status")
+                .in_("conversation_id", sorted(roles))
+                .execute()
+            )
+            kept = {
+                str(row["conversation_id"])
+                for row in self._rows(reports)
+                if row.get("status") in KEEPING_REPORT_STATUSES
+            }
+        gone = sorted(set(roles) - kept)
+        if gone:
             for table in ("marketplace_conversation_reports", "marketplace_messages"):
-                response = (
-                    self._client.table(table)
-                    .delete()
-                    .in_("conversation_id", sorted(conversation_ids))
-                    .execute()
-                )
+                response = self._client.table(table).delete().in_("conversation_id", gone).execute()
                 self._count(report, table, response)
-        for column in MARKETPLACE_PARTICIPANT_COLUMNS:
-            self._delete_where(report, "marketplace_conversations", column, owner_id)
+            response = (
+                self._client.table("marketplace_conversations").delete().in_("id", gone).execute()
+            )
+            self._count(report, "marketplace_conversations", response)
+
+        now = datetime.now(UTC).isoformat()
+        for conversation_id in sorted(kept):
+            role = roles[conversation_id]
+            placeholder = DELETED_PARTICIPANT_IDS[role]
+            self._client.table("marketplace_conversations").update(
+                {
+                    f"{role}_id": placeholder,
+                    "erased_participant_at": now,
+                    "buyer_unread": 0,
+                    "seller_unread": 0,
+                }
+            ).eq("id", conversation_id).execute()
+            for table, column in (
+                ("marketplace_messages", "sender_id"),
+                ("marketplace_conversation_reports", "reporter_id"),
+            ):
+                self._client.table(table).update({column: placeholder}).eq(
+                    "conversation_id", conversation_id
+                ).eq(column, owner_id).execute()
+        if kept:
+            report.rows_deleted["marketplace_conversations_kept_for_review"] = len(kept)
+
         for column in ("blocker_id", "blocked_id"):
             self._delete_where(report, "marketplace_user_blocks", column, owner_id)
 

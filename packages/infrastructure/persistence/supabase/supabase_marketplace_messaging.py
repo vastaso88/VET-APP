@@ -15,6 +15,7 @@ from packages.core.domain.marketplace.messaging import (
     MarketplaceMessage,
     MarketplaceRestriction,
     MarketplaceUserBlock,
+    ModerationAccess,
     ParticipantRole,
 )
 
@@ -26,6 +27,7 @@ _MESSAGES = "marketplace_messages"
 _BLOCKS = "marketplace_user_blocks"
 _REPORTS = "marketplace_conversation_reports"
 _RESTRICTIONS = "marketplace_user_restrictions"
+_ACCESS_LOG = "marketplace_moderation_access_log"
 
 
 def _rows(response: Any) -> list[dict[str, Any]]:
@@ -239,3 +241,17 @@ class SupabaseMarketplaceMessagingRepository:
             .execute()
         )
         return [MarketplaceRestriction.model_validate(row) for row in _rows(response)]
+
+    def log_moderation_access(self, access: ModerationAccess) -> None:
+        self._client.table(_ACCESS_LOG).insert(access.model_dump(mode="json")).execute()
+
+    def list_moderation_accesses(self, report_id: str) -> list[ModerationAccess]:
+        response = (
+            self._client.table(_ACCESS_LOG)
+            .select("*")
+            .eq("report_id", report_id)
+            .order("accessed_at", desc=True)
+            .limit(200)
+            .execute()
+        )
+        return [ModerationAccess.model_validate(row) for row in _rows(response)]

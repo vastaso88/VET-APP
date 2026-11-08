@@ -6,6 +6,7 @@ from packages.core.domain.marketplace.messaging import (
     MarketplaceMessage,
     MarketplaceRestriction,
     MarketplaceUserBlock,
+    ModerationAccess,
     ParticipantRole,
 )
 
@@ -17,6 +18,7 @@ class InMemoryMarketplaceMessagingRepository:
         self.blocks: list[MarketplaceUserBlock] = []
         self.reports: dict[str, MarketplaceConversationReport] = {}
         self.restrictions: dict[str, MarketplaceRestriction] = {}
+        self.moderation_accesses: list[ModerationAccess] = []
 
     def find_conversation(self, listing_id: str, buyer_id: str) -> MarketplaceConversation | None:
         for item in self.conversations.values():
@@ -131,3 +133,10 @@ class InMemoryMarketplaceMessagingRepository:
     def list_restrictions(self, limit: int) -> list[MarketplaceRestriction]:
         rows = sorted(self.restrictions.values(), key=lambda item: item.created_at, reverse=True)
         return rows[:limit]
+
+    def log_moderation_access(self, access: ModerationAccess) -> None:
+        self.moderation_accesses.append(access)
+
+    def list_moderation_accesses(self, report_id: str) -> list[ModerationAccess]:
+        rows = [item for item in self.moderation_accesses if item.report_id == report_id]
+        return sorted(rows, key=lambda item: item.accessed_at, reverse=True)

@@ -21,6 +21,7 @@ from apps.api.routes.events import router as events_router
 from apps.api.routes.geocoding import router as geocoding_router
 from apps.api.routes.health import router as health_router
 from apps.api.routes.legal import router as legal_router
+from apps.api.routes.lifecycle import router as lifecycle_router
 from apps.api.routes.local_services import router as local_services_router
 from apps.api.routes.marketplace import router as marketplace_router
 from apps.api.routes.marketplace_messages import router as marketplace_messages_router
@@ -235,6 +236,7 @@ async def handle_unexpected_error(_: Request, exc: Exception) -> JSONResponse:
 
 app.include_router(health_router)
 app.include_router(admin_router)
+app.include_router(lifecycle_router)
 app.include_router(auth_router)
 app.include_router(pets_router)
 app.include_router(conversations_router)

@@ -1,4 +1,4 @@
--- "Esperti in esotici" (Vicino a me), 2026-11-07: segnalazioni "questa
+-- "Dichiarano di trattare animali esotici" (Vicino a me), 2026-11-07: segnalazioni "questa
 -- struttura cura animali esotici" fatte con Segnala!. Idempotente. Lo stesso
 -- blocco sta in supabase_schema.sql (un test controlla che restino allineati).
 --

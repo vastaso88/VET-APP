@@ -19,6 +19,7 @@ from packages.core.domain.marketplace.messaging import (
     MarketplaceMessage,
     MarketplaceRestriction,
     MarketplaceUserBlock,
+    ModerationAccess,
 )
 from packages.infrastructure.persistence.in_memory_marketplace_messaging import (
     InMemoryMarketplaceMessagingRepository,
@@ -326,3 +327,26 @@ def test_a_restriction_counts_until_it_is_lifted(
     assert repository.get_restriction("c") is None
     assert repository.restricted_among([]) == set()
     assert [item.owner_id for item in repository.list_restrictions(10)] == ["b", "a"]
+
+
+def test_the_moderation_trail_is_kept_per_report_newest_first(
+    repository: MarketplaceMessagingRepository,
+) -> None:
+    for minute, action in enumerate(("read", "close_conversation")):
+        repository.log_moderation_access(
+            ModerationAccess(
+                admin_id="admin-1",
+                report_id="r1",
+                conversation_id="c1",
+                action=action,  # type: ignore[arg-type]
+                accessed_at=T0 + timedelta(minutes=minute),
+            )
+        )
+    repository.log_moderation_access(
+        ModerationAccess(admin_id="admin-2", report_id="r2", conversation_id="c2", action="read")
+    )
+
+    trail = repository.list_moderation_accesses("r1")
+
+    assert [item.action for item in trail] == ["close_conversation", "read"]
+    assert repository.list_moderation_accesses("none") == []

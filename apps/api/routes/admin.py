@@ -561,11 +561,14 @@ def admin_marketplace_message_reports() -> dict[str, object]:
 
 @router.get("/moderation/{queue}/{item_id}")
 def admin_moderation_detail(queue: str, item_id: str) -> dict[str, object]:
-    _require_admin()
+    admin = _require_admin()
 
     if queue == "marketplace_messages":
-        # The team reads a thread only here, and only because it was reported.
-        detail = get_container().marketplace_messaging_moderation_service().detail(item_id)
+        # The team reads a thread only here, and only because it was reported;
+        # every look is written down (marketplace_moderation_access_log).
+        detail = (
+            get_container().marketplace_messaging_moderation_service().detail(item_id, admin.id)
+        )
         if detail is None:
             raise HTTPException(status_code=404, detail="Marketplace message report not found")
         return {"queue": queue, "item": detail}

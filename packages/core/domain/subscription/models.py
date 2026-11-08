@@ -29,6 +29,10 @@ class Subscription(BaseModel):
     trial_ends_at: datetime = Field(default_factory=lambda: utc_now() + TRIAL_DURATION)
     plan: str | None = None
     created_at: datetime = Field(default_factory=utc_now)
+    # The day D the account was first seen without access (retention.py): the
+    # start of the four months its data is kept. Set and cleared only through
+    # `SubscriptionRepository.set_access_lost_at`, never by `save`.
+    access_lost_at: datetime | None = None
 
     @field_validator("plan", mode="before")
     @classmethod

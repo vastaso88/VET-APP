@@ -18,6 +18,7 @@ from packages.core.application.ports.local_activity_repository import LocalActiv
 from packages.core.application.ports.marketplace_listing_repository import (
     MarketplaceListingRepository,
 )
+from packages.core.application.ports.owner_contact_lookup import OwnerContact, OwnerContactLookup
 from packages.core.application.ports.pet_condition_repository import PetConditionRepository
 from packages.core.application.ports.pet_profile_repository import PetProfileRepository
 from packages.core.application.ports.radar_catalog_repository import (
@@ -199,8 +200,34 @@ class InMemorySubscriptionRepository(SubscriptionRepository):
         return self._items.get(owner_id)
 
     def save(self, subscription: Subscription) -> Subscription:
-        self._items[subscription.owner_id] = subscription
-        return subscription
+        # Like the database: the retention clock is not part of a save.
+        stored = self._items.get(subscription.owner_id)
+        kept = stored.access_lost_at if stored is not None else None
+        self._items[subscription.owner_id] = subscription.model_copy(
+            update={"access_lost_at": kept}
+        )
+        return self._items[subscription.owner_id]
+
+    def set_access_lost_at(self, owner_id: str, value: datetime | None) -> None:
+        stored = self._items.get(owner_id)
+        if stored is not None:
+            self._items[owner_id] = stored.model_copy(update={"access_lost_at": value})
+
+    def list_without_plan(self) -> list[Subscription]:
+        return [item for item in self._items.values() if item.plan is None]
+
+
+class InMemoryOwnerContactLookup(OwnerContactLookup):
+    """Local/test double: knows only the contacts a test registered."""
+
+    def __init__(self) -> None:
+        self._items: dict[str, OwnerContact] = {}
+
+    def register(self, owner_id: str, contact: OwnerContact) -> None:
+        self._items[owner_id] = contact
+
+    def get(self, owner_id: str) -> OwnerContact | None:
+        return self._items.get(owner_id)
 
 
 class InMemoryUserDeviceRepository(UserDeviceRepository):

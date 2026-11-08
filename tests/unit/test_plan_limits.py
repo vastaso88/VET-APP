@@ -116,7 +116,7 @@ def test_status_carries_the_limits_and_the_catalogue() -> None:
     assert result.limits == TRIAL_LIMITS
     assert result.plan_limits == LIMITS_BY_PLAN
     dumped = result.model_dump()
-    assert dumped["plan_limits"]["ultra"]["daily_questions"] == 50
+    assert dumped["plan_limits"]["ultra"]["daily_questions"] == 30
 
 
 # --- pets -------------------------------------------------------------------
