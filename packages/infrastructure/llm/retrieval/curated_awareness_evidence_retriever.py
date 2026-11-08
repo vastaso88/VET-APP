@@ -40,11 +40,13 @@ AWARENESS_CATALOG: list[EvidenceSource] = [
             "a quiet resting place, predictable routines, things to chew. Stress signs: "
             "yawning out of context, lip licking, turning the head away, whale eye, "
             "panting at rest, a tucked tail, freezing, displacement scratching. Common "
-            "mistakes: punishing growling (it removes the warning, not the emotion), "
+            "mistakes: punishing a growl instead of removing what upsets the dog, "
             "hugging and face-to-face contact many dogs only tolerate, leaving a puppy "
-            "alone for hours without gradual practice, skipping socialisation between "
-            "3 and 12-14 weeks, using choke, prong or shock tools (AVSAB humane training "
-            "position, 2021: reward-based methods only)."
+            "alone for hours without gradual practice, skipping socialisation in the "
+            "first three months or forcing a frightened puppy (AVSAB puppy socialization, "
+            "2008: gradual, never to excessive fear, and it goes on after), using choke, "
+            "prong or shock tools (AVSAB humane training position, 2021: reward-based "
+            "methods only; aversive methods are linked to more fear-related aggression)."
         ),
     ),
     EvidenceSource(

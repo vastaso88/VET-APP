@@ -47,11 +47,14 @@ _ETHOLOGY: tuple[tuple[tuple[str, ...], str], ...] = (
         ("cane", "cani", "dog", "perro", "hund", "chien"),
         "Dog ethology (ESVCE and AVSAB position statements): a social animal that learns by "
         "association and by what is rewarded; the 'dominance/alpha' reading of behaviour "
-        "problems is rejected, so never explain a behaviour as a bid for rank. A growl is "
-        "a warning, not disobedience: punishing it removes the warning, not the emotion. "
-        "Calming signals (yawning, lip licking, turning the head away, whale eye) say "
-        "the dog is uneasy. Socialisation to people, dogs and places matters most between "
-        "3 and 12-14 weeks. Reward-based methods only (AVSAB humane training, 2021).",
+        "problems is rejected, so never explain a behaviour as a bid for rank. A growl "
+        "says the dog is uncomfortable: remove or reduce what upsets it, never punish; "
+        "aversive methods are linked to more fear-related aggression and anxiety (AVSAB "
+        "humane training, 2021). Calming signals (yawning, lip licking, turning the head "
+        "away, whale eye) say the dog is uneasy. The first three months of life matter "
+        "most for socialisation, but it goes on after them; exposure is gradual, never "
+        "forced: a frightened puppy is not pushed on, and fear is a reason to ask the vet "
+        "(AVSAB puppy socialization, 2008). Reward-based methods only.",
     ),
     (
         ("gatto", "gatti", "cat", "gato", "katze", "chat"),

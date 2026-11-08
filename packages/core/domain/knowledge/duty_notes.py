@@ -24,9 +24,16 @@ _DUTY_PREFIX = "Curated note, owner duties in Italy (pending vet review): "
 # Owner duties, Italy (stress test 2026-11-06): one short note per topic,
 # each under the 300 characters the prompt keeps of a snippet, so the
 # fact the owner asked about reaches the model whole. Sources: Ministero
-# della Salute (ordinanza on dog ownership, renewed since 2009), codice
-# penale art. 727, legge 189/2004, legge 157/1992, European Convention for
-# the Protection of Pet Animals.
+# della Salute (ordinanza on dog ownership, renewed since 2009)
+# [verified 2026-11-08 in the Gazzetta Ufficiale: ordinanza 6 agosto 2013,
+# GU 209 of 6-9-2013, art. 1 c. 3 (leash up to 1.50 m in urban areas and
+# places open to the public, dog areas excepted; a muzzle carried, put on
+# when there is a risk or the authorities ask); the 2015 renewal (GU 209
+# of 9-9-2015) changed only the owners' courses (c. 5); the renewals of
+# 10-7-2025 (GU 192 of 20-8-2025) and 16-7-2026 (GU 206 of 5-9-2026) only
+# extend it by twelve months, the last from 5-9-2026, so to 5-9-2027.
+# Re-check every September.], codice penale art. 727, legge 189/2004,
+# legge 157/1992, European Convention for the Protection of Pet Animals.
 DUTY_CATALOG: list[EvidenceSource] = [
     EvidenceSource(
         title=_DUTY_PREFIX + "dangerous breeds, leash and muzzle",

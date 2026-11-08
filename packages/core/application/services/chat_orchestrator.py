@@ -195,7 +195,12 @@ logger = logging.getLogger("vetgpt.chat")
 # Profile labels of a female animal, for the gender of the fixed texts.
 _FEMALE_LABELS = frozenset({"femmina", "female", "hembra", "weiblich", "femelle", "f"})
 # Species whose emergencies need a vet who knows them.
-_EXOTIC_FAMILIES = frozenset({"bird", "small_mammal", "reptile_amphibian", "fish"})
+_EXOTIC_FAMILIES = frozenset({"bird", "small_mammal", "reptile_amphibian", "fish", "ferret"})
+# A ferret is filed under "Piccoli mammiferi" in the app, but it is a
+# carnivore: the rabbit's stasis steps (hay, a gut that must not stop) do
+# not describe it (manual project, 2026-11-08). Named in the breed, the
+# notes or the message.
+_FERRET = re.compile(r"\b(?:furett\w*|ferrets?|huron(?:es)?|frettchen|furets?)\b")
 # Profile species that are groups: the breed field holds the animal itself.
 _GROUP_FAMILIES = frozenset({"small_mammal", "bird", "reptile_amphibian", "fish", "other"})
 _HAS_A_LETTER = re.compile(r"[^\W\d_]")
@@ -2075,6 +2080,10 @@ class ChatOrchestrator:
         go instead when the model is off, every model's budget is gone, the
         answer does not arrive within the deadline, the model declines, or
         its text fails the checks (a dose, another species, questions only)."""
+        if species_family == "small_mammal" and _FERRET.search(
+            normalize_for_matching(" ".join((data.breed or "", data.notes or "", message)))
+        ):
+            species_family = "ferret"
         fixed = self._urgent_triage_result(
             data.pet_name,
             safety_flags,
