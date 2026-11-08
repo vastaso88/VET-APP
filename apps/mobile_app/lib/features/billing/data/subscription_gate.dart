@@ -36,16 +36,27 @@ class SubscriptionGate {
     bool afterSignIn = false,
   }) async {
     final registry = _deviceRegistry ?? DeviceRegistry();
-    if (!await registry.register(claim: afterSignIn)) {
+    final source = _dataSource ?? HttpSubscriptionRemoteDataSource();
+
+    // The two calls do not depend on each other, so they run together: on a
+    // cold start the owner waits for the slower of them (15 s at worst), not
+    // for their sum (25 s). Each keeps its own timeout and its own outcome.
+    // `ignore()` only keeps an early error of the status call from being
+    // reported as unhandled while the device answer is awaited; whoever
+    // awaits the future below still receives it.
+    final registered = registry.register(claim: afterSignIn);
+    final fetched = source.fetchStatus()..ignore();
+
+    if (!await registered) {
       // A newer device took this one's place: sign out here and say why on
-      // the sign-in screen.
+      // the sign-in screen. The status is not needed any more: its answer
+      // (or failure) is dropped.
       DeviceRegistry.pendingNotice = true;
       await (_signOut ?? _defaultSignOut)();
       return (destination: AppRouter.auth, status: null);
     }
 
-    final source = _dataSource ?? HttpSubscriptionRemoteDataSource();
-    final result = await source.fetchStatus();
+    final result = await fetched;
     return result.fold(
       // Fail-open: a backend hiccup shouldn't lock a legitimate user out of
       // the app they were already signed into.
