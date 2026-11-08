@@ -1262,7 +1262,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get marketplaceNoMedicinesMessage =>
-      'Medicines and veterinary drugs cannot be sold on the marketplace, even without a prescription.';
+      'Medicines, including veterinary ones, cannot be sold on the marketplace, even without a prescription.';
 
   @override
   String get marketplaceBackendUnavailable =>
@@ -6617,7 +6617,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get marketplaceMessagesSafetyNotice =>
-      'Quokka puts two private individuals in touch and is not a party to the sale: the agreement, payment and delivery concern only the two of you. We do not check ads, items or people and are not responsible for them. If you exchange contact details, you do so at your own risk: do not pay in advance to someone you do not know. If the conversation is reported, the Quokka team can read it.';
+      'Quokka puts two private individuals in touch and is not a party to the sale: the agreement, payment and delivery concern only you and the other person. We do not check ads, items or people and are not responsible for them. If you exchange contact details, you do so at your own risk: do not pay in advance to someone you do not know. If the conversation is reported, the Quokka team can read it.';
 
   @override
   String get marketplaceMessagesHint => 'Write a message';
@@ -6821,7 +6821,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get marketplacePublishDisclaimer =>
-      'You are publishing an ad as a private individual. Quokka puts people in touch but is not a party to the sale: the agreement, payment and delivery concern only you and the buyer, and Quokka is not responsible for them. We do not check ads or items in advance: describe the item\'s condition and any defects honestly and completely. Animals, medicines and veterinary drugs cannot be sold. Do not write phone numbers or email addresses in the text: people contact you through messages.';
+      'You are publishing an ad as a private individual. Quokka puts people in touch but is not a party to the sale: the agreement, payment and delivery concern only you and the buyer, and Quokka is not responsible for them. We do not check ads or items in advance: describe the item\'s condition and any defects honestly and completely. Animals cannot be sold, nor can medicines, including veterinary ones. Do not write phone numbers or email addresses in the text: people contact you through messages.';
 
   @override
   String get marketplaceDetailPrivateSeller =>
@@ -6856,7 +6856,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get marketplaceInfoForbidden =>
-      'Animals, medicines and veterinary drugs cannot be sold. The app blocks many ads that mention them, but not all: report them.';
+      'Animals and medicines, including veterinary ones, cannot be sold. The app blocks many ads that mention them, but not all: report them.';
 
   @override
   String get marketplaceInfoPrivacy =>

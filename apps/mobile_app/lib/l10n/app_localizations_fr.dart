@@ -1279,7 +1279,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get marketplaceNoMedicinesMessage =>
-      'Sur le marché de l\'occasion, on ne peut pas vendre de médicaments vétérinaires, même sans ordonnance.';
+      'Sur le marché de l\'occasion, on ne peut pas vendre de médicaments, y compris vétérinaires, même sans ordonnance.';
 
   @override
   String get marketplaceBackendUnavailable =>
@@ -6696,7 +6696,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get marketplaceMessagesSafetyNotice =>
-      'Quokka met en relation deux particuliers et n\'est pas partie à la vente : l\'accord, le paiement et la remise ne concernent que vous deux. Nous ne vérifions ni les annonces, ni les objets, ni les personnes, et n\'en répondons pas. Si vous échangez vos coordonnées, c\'est sous votre responsabilité : ne payez pas à l\'avance quelqu\'un que vous ne connaissez pas. Si la conversation est signalée, l\'équipe de Quokka peut la lire.';
+      'Quokka met en relation deux particuliers et n\'est pas partie à la vente : l\'accord, le paiement et la remise ne concernent que vous et l\'autre personne. Nous ne vérifions ni les annonces, ni les objets, ni les personnes, et n\'en répondons pas. Si vous échangez vos coordonnées, c\'est sous votre responsabilité : ne payez pas à l\'avance quelqu\'un que vous ne connaissez pas. Si la conversation est signalée, l\'équipe de Quokka peut la lire.';
 
   @override
   String get marketplaceMessagesHint => 'Écrire un message';
@@ -6900,7 +6900,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get marketplacePublishDisclaimer =>
-      'Vous publiez une annonce en tant que particulier. Quokka met les personnes en relation mais n\'est pas partie à la vente : l\'accord, le paiement et la remise de l\'objet ne concernent que vous et l\'acheteur, et Quokka n\'en répond pas. Nous ne contrôlons pas à l\'avance les annonces ni les objets : décrivez l\'état de l\'objet et ses défauts de façon honnête et complète. On ne peut vendre ni animaux ni médicaments, vétérinaires ou non. N\'écrivez ni téléphone ni e-mail dans le texte : on vous écrit via la messagerie.';
+      'Vous publiez une annonce en tant que particulier. Quokka met les personnes en relation mais n\'est pas partie à la vente : l\'accord, le paiement et la remise de l\'objet ne concernent que vous et l\'acheteur, et Quokka n\'en répond pas. Nous ne contrôlons pas à l\'avance les annonces ni les objets : décrivez l\'état de l\'objet et ses défauts de façon honnête et complète. On ne peut vendre ni animaux ni médicaments, y compris vétérinaires. N\'écrivez ni téléphone ni e-mail dans le texte : on vous écrit via la messagerie.';
 
   @override
   String get marketplaceDetailPrivateSeller =>
@@ -6936,7 +6936,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get marketplaceInfoForbidden =>
-      'On ne vend ni animaux ni médicaments, vétérinaires ou non. L\'application bloque de nombreuses annonces qui en parlent, mais pas toutes : signalez-les.';
+      'On ne vend ni animaux ni médicaments, y compris vétérinaires. L\'application bloque de nombreuses annonces qui en parlent, mais pas toutes : signalez-les.';
 
   @override
   String get marketplaceInfoPrivacy =>

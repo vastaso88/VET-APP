@@ -1268,7 +1268,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get marketplaceNoMedicinesMessage =>
-      'En el mercadillo no se pueden vender fármacos ni medicamentos veterinarios, ni siquiera sin receta.';
+      'En el mercadillo no se pueden vender fármacos ni medicamentos, tampoco veterinarios, ni siquiera sin receta.';
 
   @override
   String get marketplaceBackendUnavailable =>
@@ -6665,7 +6665,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get marketplaceMessagesSafetyNotice =>
-      'Quokka pone en contacto a dos particulares y no es parte de la compraventa: el acuerdo, el pago y la entrega solo conciernen a las dos personas. No revisamos anuncios, objetos ni personas, y no respondemos de ellos. Si intercambias datos de contacto, lo haces bajo tu responsabilidad: no pagues por adelantado a quien no conoces. Si la conversación se denuncia, el equipo de Quokka puede leerla.';
+      'Quokka pone en contacto a dos particulares y no es parte de la compraventa: el acuerdo, el pago y la entrega solo conciernen a ti y a la otra persona. No revisamos anuncios, objetos ni personas, y no respondemos de ellos. Si intercambias datos de contacto, lo haces bajo tu responsabilidad: no pagues por adelantado a quien no conoces. Si la conversación se denuncia, el equipo de Quokka puede leerla.';
 
   @override
   String get marketplaceMessagesHint => 'Escribe un mensaje';
@@ -6869,7 +6869,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get marketplacePublishDisclaimer =>
-      'Publicas un anuncio como particular. Quokka pone en contacto a las personas, pero no es parte de la compraventa: el acuerdo, el pago y la entrega son cosa solo tuya y de quien compra, y Quokka no responde de ellos. No revisamos de antemano los anuncios ni los objetos: describe el estado del objeto y sus defectos de forma honesta y completa. No se pueden vender animales ni fármacos o medicamentos veterinarios. No escribas teléfonos ni correos electrónicos en el texto: te escribirán a través de los mensajes de la app.';
+      'Publicas un anuncio como particular. Quokka pone en contacto a las personas, pero no es parte de la compraventa: el acuerdo, el pago y la entrega son cosa solo tuya y de quien compra, y Quokka no responde de ellos. No revisamos de antemano los anuncios ni los objetos: describe el estado del objeto y sus defectos de forma honesta y completa. No se pueden vender animales ni fármacos o medicamentos, tampoco veterinarios. No escribas teléfonos ni correos electrónicos en el texto: te escribirán a través de los mensajes de la app.';
 
   @override
   String get marketplaceDetailPrivateSeller =>
@@ -6904,7 +6904,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get marketplaceInfoForbidden =>
-      'No se venden animales ni fármacos o medicamentos veterinarios. La app bloquea muchos anuncios que los mencionan, pero no todos: denúncialos.';
+      'No se venden animales ni fármacos o medicamentos, tampoco veterinarios. La app bloquea muchos anuncios que los mencionan, pero no todos: denúncialos.';
 
   @override
   String get marketplaceInfoPrivacy =>

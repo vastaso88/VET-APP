@@ -1281,7 +1281,7 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get marketplaceNoMedicinesMessage =>
-      'Auf dem Gebrauchtmarkt dürfen keine Medikamente oder Tierarzneimittel verkauft werden, auch nicht rezeptfrei.';
+      'Auf dem Gebrauchtmarkt dürfen keine Arzneimittel verkauft werden, auch keine Tierarzneimittel und auch nicht rezeptfrei.';
 
   @override
   String get marketplaceBackendUnavailable =>
@@ -6685,7 +6685,7 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get marketplaceMessagesSafetyNotice =>
-      'Quokka bringt zwei Privatpersonen in Kontakt und ist nicht Partei des Kaufs: Vereinbarung, Bezahlung und Übergabe betreffen nur Sie beide. Wir prüfen weder Anzeigen noch Gegenstände oder Personen und haften nicht dafür. Wenn Sie Kontaktdaten austauschen, geschieht das auf eigene Verantwortung: Zahlen Sie nicht im Voraus an Personen, die Sie nicht kennen. Wird die Unterhaltung gemeldet, kann das Quokka-Team sie lesen.';
+      'Quokka bringt zwei Privatpersonen in Kontakt und ist nicht Partei des Kaufs: Vereinbarung, Bezahlung und Übergabe betreffen nur Sie und die andere Person. Wir prüfen weder Anzeigen noch Gegenstände oder Personen und haften nicht dafür. Wenn Sie Kontaktdaten austauschen, geschieht das auf eigene Verantwortung: Zahlen Sie nicht im Voraus an Personen, die Sie nicht kennen. Wird die Unterhaltung gemeldet, kann das Quokka-Team sie lesen.';
 
   @override
   String get marketplaceMessagesHint => 'Nachricht eingeben';
@@ -6890,7 +6890,7 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get marketplacePublishDisclaimer =>
-      'Sie veröffentlichen eine Anzeige als Privatperson. Quokka bringt Menschen in Kontakt, ist aber nicht Partei des Kaufs: Vereinbarung, Bezahlung und Übergabe betreffen nur Sie und die kaufende Person, und Quokka haftet nicht dafür. Wir prüfen Anzeigen und Gegenstände nicht im Voraus: Beschreiben Sie Zustand und Mängel des Gegenstands ehrlich und vollständig. Tiere sowie Arzneimittel und Tierarzneimittel dürfen nicht verkauft werden. Schreiben Sie keine Telefonnummern oder E-Mail-Adressen in den Text: Interessierte schreiben Ihnen über die Nachrichten.';
+      'Sie veröffentlichen eine Anzeige als Privatperson. Quokka bringt Menschen in Kontakt, ist aber nicht Partei des Kaufs: Vereinbarung, Bezahlung und Übergabe betreffen nur Sie und die kaufende Person, und Quokka haftet nicht dafür. Wir prüfen Anzeigen und Gegenstände nicht im Voraus: Beschreiben Sie Zustand und Mängel des Gegenstands ehrlich und vollständig. Tiere und Arzneimittel, auch Tierarzneimittel, dürfen nicht verkauft werden. Schreiben Sie keine Telefonnummern oder E-Mail-Adressen in den Text: Interessierte schreiben Ihnen über die Nachrichten.';
 
   @override
   String get marketplaceDetailPrivateSeller =>
@@ -6925,7 +6925,7 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get marketplaceInfoForbidden =>
-      'Tiere sowie Arzneimittel und Tierarzneimittel dürfen nicht verkauft werden. Die App blockiert viele Anzeigen, die Tiere oder Arzneimittel nennen, aber nicht alle: Melden Sie sie.';
+      'Tiere und Arzneimittel, auch Tierarzneimittel, dürfen nicht verkauft werden. Die App blockiert viele Anzeigen, die Tiere oder Arzneimittel nennen, aber nicht alle: Melden Sie sie.';
 
   @override
   String get marketplaceInfoPrivacy =>

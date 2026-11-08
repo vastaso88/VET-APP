@@ -2219,7 +2219,7 @@ abstract class AppLocalizations {
   /// No description provided for @marketplaceNoMedicinesMessage.
   ///
   /// In it, this message translates to:
-  /// **'Sul Mercatino non si possono vendere farmaci o medicinali veterinari, nemmeno senza ricetta.'**
+  /// **'Sul Mercatino non si possono vendere farmaci o medicinali, anche veterinari, nemmeno senza ricetta.'**
   String get marketplaceNoMedicinesMessage;
 
   /// No description provided for @marketplaceBackendUnavailable.
@@ -11141,7 +11141,7 @@ abstract class AppLocalizations {
   /// No description provided for @marketplaceMessagesSafetyNotice.
   ///
   /// In it, this message translates to:
-  /// **'Quokka mette in contatto due privati e non è parte della compravendita: accordo, pagamento e consegna riguardano solo voi. Non verifichiamo annunci, oggetti o persone e non ne rispondiamo. Se vi scambiate contatti, è sotto la vostra responsabilità: non pagare in anticipo a chi non conosci. Se la conversazione viene segnalata, il team di Quokka può leggerla.'**
+  /// **'Quokka mette in contatto due privati e non è parte della compravendita: accordo, pagamento e consegna riguardano solo te e l\'altra persona. Non verifichiamo annunci, oggetti o persone e non ne rispondiamo. Se scambi i tuoi contatti, lo fai sotto la tua responsabilità: non pagare in anticipo a chi non conosci. Se la conversazione viene segnalata, il team di Quokka può leggerla.'**
   String get marketplaceMessagesSafetyNotice;
 
   /// No description provided for @marketplaceMessagesHint.
@@ -11483,7 +11483,7 @@ abstract class AppLocalizations {
   /// No description provided for @marketplacePublishDisclaimer.
   ///
   /// In it, this message translates to:
-  /// **'Pubblichi un annuncio come privato. Quokka mette in contatto le persone ma non è parte della compravendita: accordo, pagamento e consegna riguardano solo te e chi compra, e Quokka non ne risponde. Non controlliamo in anticipo gli annunci né gli oggetti: descrivi lo stato dell\'oggetto e i difetti in modo onesto e completo. Non si possono vendere animali né farmaci o medicinali veterinari. Nel testo non scrivere telefoni o e-mail: ti si scrive con i messaggi.'**
+  /// **'Pubblichi un annuncio come privato. Quokka mette in contatto le persone ma non è parte della compravendita: accordo, pagamento e consegna riguardano solo te e chi compra, e Quokka non ne risponde. Non controlliamo in anticipo gli annunci né gli oggetti: descrivi lo stato dell\'oggetto e i difetti in modo onesto e completo. Non si possono vendere animali né farmaci o medicinali, anche veterinari. Nel testo non scrivere telefoni o e-mail: ti si scrive con i messaggi.'**
   String get marketplacePublishDisclaimer;
 
   /// No description provided for @marketplaceDetailPrivateSeller.
@@ -11537,7 +11537,7 @@ abstract class AppLocalizations {
   /// No description provided for @marketplaceInfoForbidden.
   ///
   /// In it, this message translates to:
-  /// **'Non si vendono animali né farmaci o medicinali veterinari. L\'app blocca molti annunci che li nominano, non tutti: segnalali.'**
+  /// **'Non si vendono animali né farmaci o medicinali, anche veterinari. L\'app blocca molti annunci che li nominano, non tutti: segnalali.'**
   String get marketplaceInfoForbidden;
 
   /// No description provided for @marketplaceInfoPrivacy.
