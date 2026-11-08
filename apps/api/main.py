@@ -42,6 +42,11 @@ from packages.shared.errors.base import (
     SubscriptionRequiredError,
     ValidationError,
 )
+from packages.shared.user_clock import (
+    parse_utc_offset_minutes,
+    reset_utc_offset_minutes,
+    set_utc_offset_minutes,
+)
 
 settings = get_settings()
 configure_logging(settings)
@@ -67,7 +72,7 @@ if _is_production:
             CORSMiddleware,
             allow_origins=list(settings.cors_allowed_origins),
             allow_methods=["GET", "POST", "PUT", "PATCH", "DELETE"],
-            allow_headers=["Authorization", "Content-Type"],
+            allow_headers=["Authorization", "Content-Type", "X-UTC-Offset-Minutes"],
         )
 else:
     # The Flutter web client runs on its own dev-server origin (e.g.
@@ -102,6 +107,21 @@ async def security_headers(
     if request.headers.get("Authorization"):
         headers.setdefault("Cache-Control", "no-store")
     return response
+
+
+@app.middleware("http")
+async def inject_user_clock(
+    request: Request, call_next: Callable[[Request], Awaitable[Response]]
+) -> Response:
+    """The offset of the owner's phone from UTC, for the per-owner daily
+    counters (packages/shared/user_clock.py). Anything not believable is UTC."""
+    state = set_utc_offset_minutes(
+        parse_utc_offset_minutes(request.headers.get("X-UTC-Offset-Minutes"))
+    )
+    try:
+        return await call_next(request)
+    finally:
+        reset_utc_offset_minutes(state)
 
 
 @app.middleware("http")

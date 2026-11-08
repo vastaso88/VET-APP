@@ -7,6 +7,7 @@ import 'package:http/http.dart' as http;
 import '../../../l10n/l10n.dart';
 import '../../../shared/auth/current_user.dart';
 import '../../../shared/config/app_runtime_config_loader.dart';
+import '../../../shared/date/utc_offset_header.dart';
 import '../../../shared/errors/app_network_error.dart';
 import '../../../shared/types/result.dart';
 import 'chat_remote_data_source.dart' show quotaExceededMessage;
@@ -46,6 +47,7 @@ class HttpSpeechToTextRemoteDataSource implements SpeechToTextRemoteDataSource {
         ..headers.addAll({
           // The backend words its refusals (daily allowance) in this language.
           'Accept-Language': AppLocaleHolder.current.languageCode,
+          ...utcOffsetHeader(),
           if (token != null && token.isNotEmpty) 'Authorization': 'Bearer $token',
         })
         ..files.add(http.MultipartFile.fromBytes('file', audioBytes, filename: fileName));

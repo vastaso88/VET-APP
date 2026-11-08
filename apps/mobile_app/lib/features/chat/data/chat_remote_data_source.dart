@@ -6,6 +6,7 @@ import 'package:http/http.dart' as http;
 import '../../../l10n/l10n.dart';
 import '../../../shared/auth/current_user.dart';
 import '../../../shared/config/app_runtime_config_loader.dart';
+import '../../../shared/date/utc_offset_header.dart';
 import '../../../shared/errors/app_network_error.dart';
 import '../../../shared/types/result.dart';
 import '../../billing/data/subscription_required_signal.dart';
@@ -149,6 +150,7 @@ class HttpChatRemoteDataSource implements ChatRemoteDataSource {
     return {
       'Content-Type': 'application/json',
       'Accept-Language': AppLocaleHolder.current.languageCode,
+      ...utcOffsetHeader(),
       if (token != null && token.isNotEmpty) 'Authorization': 'Bearer $token',
     };
   }

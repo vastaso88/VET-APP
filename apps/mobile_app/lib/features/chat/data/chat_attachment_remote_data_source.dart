@@ -9,6 +9,7 @@ import '../../../shared/auth/current_user.dart';
 import '../../../shared/files/attachment_media_type.dart';
 import '../../../shared/files/image_metadata.dart';
 import '../../../shared/config/app_runtime_config_loader.dart';
+import '../../../shared/date/utc_offset_header.dart';
 import '../../../shared/errors/app_network_error.dart';
 import '../../../shared/types/result.dart';
 import 'chat_remote_data_source.dart' show quotaExceededMessage;
@@ -67,6 +68,7 @@ class HttpChatAttachmentRemoteDataSource implements ChatAttachmentRemoteDataSour
         ..headers.addAll({
           // The backend words its refusals (daily allowance) in this language.
           'Accept-Language': AppLocaleHolder.current.languageCode,
+          ...utcOffsetHeader(),
           if (token != null && token.isNotEmpty) 'Authorization': 'Bearer $token',
         })
         ..fields['pet_id'] = petId

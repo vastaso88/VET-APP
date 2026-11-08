@@ -32,6 +32,21 @@ def next_day_start(moment: datetime) -> datetime:
     return datetime(day_after.year, day_after.month, day_after.day, tzinfo=UTC)
 
 
+def owner_day(moment: datetime, offset_minutes: int) -> date:
+    """The calendar day of [moment] on a clock [offset_minutes] ahead of UTC:
+    the day the owner's own counters belong to."""
+    return (moment.astimezone(UTC) + timedelta(minutes=offset_minutes)).date()
+
+
+def next_owner_day_start(moment: datetime, offset_minutes: int) -> datetime:
+    """The instant (UTC) of the next midnight on that clock: when the owner's
+    daily counters start over. With a summer-time change before that midnight
+    it is off by the hour the phone will correct on its next request."""
+    local = moment.astimezone(UTC) + timedelta(minutes=offset_minutes)
+    next_midnight = datetime(local.year, local.month, local.day, tzinfo=UTC) + timedelta(days=1)
+    return next_midnight - timedelta(minutes=offset_minutes)
+
+
 def estimate_tokens(text: str) -> int:
     """A provider-free estimate: about one token every 3.5 characters, which
     is close for Italian prose on the o200k tokenizer family (measured with

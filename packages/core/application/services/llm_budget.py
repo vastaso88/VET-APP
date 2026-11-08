@@ -11,8 +11,11 @@ the whole organization. The chat must not discover the limit by failing:
   that state the chat says so kindly, with the time to wait, instead of
   "servizio non disponibile";
 * each owner has a daily number of messages (configurable), so one account
-  cannot spend the quota of everyone else. Emergencies never reach this
-  check: the fixed triage replies use no model.
+  cannot spend the quota of everyone else. The owner's day is their own:
+  the counters start over at midnight on the clock of their phone (the
+  offset the app sends, packages/shared/user_clock.py), while the models'
+  token budgets above stay on the provider's day, UTC. Emergencies never
+  reach this check: the fixed triage replies use no model.
 
 The counters live in the ledger (Supabase in production, so every
 serverless instance sees the same totals) and are re-read at most every
@@ -29,9 +32,15 @@ from datetime import UTC, date, datetime, timedelta
 from pydantic import BaseModel
 
 from packages.core.application.ports.llm_usage_repository import LlmUsageRepository
-from packages.core.domain.llm_usage.models import ModelDailyUsage, next_day_start
+from packages.core.domain.llm_usage.models import (
+    ModelDailyUsage,
+    next_day_start,
+    next_owner_day_start,
+    owner_day,
+)
 from packages.core.domain.localization import translate
 from packages.shared.errors.base import ProviderError, QuotaExceededError
+from packages.shared.user_clock import current_utc_offset_minutes
 
 logger = logging.getLogger("vetgpt.budget")
 
@@ -270,16 +279,17 @@ class LlmBudget:
         unlimited = user_daily_limit is None and self._user_daily_limit <= 0
         if exempt or unlimited or not owner_id:
             return None
+        now = self._clock()
+        offset = current_utc_offset_minutes()
         try:
-            count = self._repository.add_user_message(owner_id, self._today())
+            count = self._repository.add_user_message(owner_id, owner_day(now, offset))
         except Exception:  # noqa: BLE001 - fail open: a ledger outage must not block owners
             logger.exception("llm budget: could not count the owner's message")
             return None
         if count > limit:
-            now = self._clock()
             return QuotaDenial(
                 reason="user_limit",
-                retry_after_seconds=max(60, int((next_day_start(now) - now).total_seconds())),
+                retry_after_seconds=self._seconds_until_owner_midnight(now, offset),
                 daily_limit=limit,
             )
         return None
@@ -292,21 +302,28 @@ class LlmBudget:
         [limit]. Same ledger and exemptions as the messages."""
         if exempt or limit <= 0 or not owner_id:
             return None
+        now = self._clock()
+        offset = current_utc_offset_minutes()
         try:
-            count = self._repository.add_user_usage(owner_id, self._today(), kind)
+            count = self._repository.add_user_usage(owner_id, owner_day(now, offset), kind)
         except Exception:  # noqa: BLE001 - fail open: a ledger outage must not block owners
             logger.exception("llm budget: could not count the owner's %s use", kind)
             return None
         if count > limit:
-            now = self._clock()
             return QuotaDenial(
                 reason=f"{kind}_limit",
-                retry_after_seconds=max(60, int((next_day_start(now) - now).total_seconds())),
+                retry_after_seconds=self._seconds_until_owner_midnight(now, offset),
                 daily_limit=limit,
             )
         return None
 
     # --- internals ------------------------------------------------------------------
+
+    @staticmethod
+    def _seconds_until_owner_midnight(now: datetime, offset_minutes: int) -> int:
+        """When the owner's counters start over: their own midnight, from the
+        offset their phone sent (0 = UTC). Never under a minute."""
+        return max(60, int((next_owner_day_start(now, offset_minutes) - now).total_seconds()))
 
     def _today(self) -> date:
         return self._clock().astimezone(UTC).date()
