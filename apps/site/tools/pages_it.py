@@ -22,10 +22,8 @@ UI = {
         "legale. I dati tra parentesi quadre, evidenziati, sono ancora da compilare."
     ),
     "footer_owner": "Titolare: <mark>[TITOLARE]</mark>, <mark>[SEDE]</mark>, <mark>[CF_PIVA]</mark>.",
-    "footer_draft": (
-        "Sito in costruzione. Quokka è il nome del prodotto; "
-        "questo sito non usa cookie né strumenti di analisi."
-    ),
+    "footer_note": "Questo sito non usa cookie né strumenti di analisi.",
+    "footer_draft": "Sito in costruzione.",
 }
 
 _URLS = {"[URL_INFORMATIVA]": "/it/privacy/", "[URL_TERMINI]": "/it/termini/"}

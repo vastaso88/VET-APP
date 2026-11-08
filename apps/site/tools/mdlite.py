@@ -12,7 +12,8 @@ from __future__ import annotations
 import html
 import re
 
-_PLACEHOLDER = re.compile(r"\[(?:[A-Z][A-Z0-9_]+|(?:da|togliere)\s[^\]]*)\]")
+# What the legal workstream leaves open: [TITOLARE], [da verificare: ...], [in attesa del codice].
+PLACEHOLDER = re.compile(r"\[(?:[A-Z][A-Z0-9_]+|(?:da|in attesa|togliere)\b[^\]]*)\]")
 _LINK = re.compile(r"\[([^\]]+)\]\(([^)\s]+)\)")
 _BOLD = re.compile(r"\*\*(.+?)\*\*")
 _CODE = re.compile(r"`([^`]+)`")
@@ -29,7 +30,7 @@ def inline(text: str) -> str:
     text = _CODE.sub(r"<code>\1</code>", text)
     text = _LINK.sub(lambda m: f'<a href="{html.escape(m.group(2))}">{m.group(1)}</a>', text)
     text = _BOLD.sub(r"<strong>\1</strong>", text)
-    return _PLACEHOLDER.sub(lambda m: f"<mark>{m.group(0)}</mark>", text)
+    return PLACEHOLDER.sub(lambda m: f"<mark>{m.group(0)}</mark>", text)
 
 
 def _cells(line: str) -> list[str]:

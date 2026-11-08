@@ -45,8 +45,8 @@ Apri http://localhost:8765/it/ (i link sono assoluti: servi la cartella `apps/si
 
 Oggi tutto è in **modalità bozza**: ogni pagina ha `noindex` e `robots.txt` blocca i motori di ricerca, perché i testi legali hanno ancora segnaposto.
 
-- [ ] Segnaposto riempiti nei testi di `docs/compliance/it/` e testi rivisti dal legale. Controllo: `grep -rn "<mark>" apps/site/it` deve restituire solo ciò che è voluto (idealmente niente).
-- [ ] In `tools/build.py` mettere `DRAFT = False`, rilanciare `build.py` e committare.
+- [ ] Segnaposto riempiti nei testi di `docs/compliance/it/` e testi rivisti dal legale. Il controllo è automatico: `python apps/site/tools/build.py --release` si ferma elencando ogni riga con `[MAIUSCOLO]`, `[da verificare/decidere: …]`, `[in attesa del codice: …]` o ⚖️ (anche nel piè di pagina con i dati del titolare).
+- [ ] Quando l'elenco è vuoto, `--release` genera il sito senza banner di bozza, senza `noindex` e con `robots.txt` aperto: committare i file generati.
 - [ ] Titolare nel piè di pagina (`UI["footer_owner"]` in `tools/pages_it.py`): obbligo di legge, dati reali solo nel testo pubblicato, mai nel repository.
 - [ ] Indirizzo di contatto confermato dal proprietario (`CONTACT_EMAIL` in `tools/pages_it.py`).
 - [ ] In Play Console: informativa = `https://quokkapet.net/it/privacy/`, eliminazione account = `https://quokkapet.net/it/cancellazione-account/`.
