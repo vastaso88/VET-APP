@@ -21,8 +21,9 @@ profile's free notes and the active reminders, therapies included, leave
 for the provider only with this consent (send_chat_message.py,
 vet_summary.py), and the text now says so. A decision under v3 counts as
 no decision: nothing of the record, the notes or the reminders goes until
-the owner decides again. Wording awaiting the opinion of the regulatory
-session (docs/compliance/03_consenso_cartella_clinica.md).
+the owner decides again. The regulatory session gave its opinion on
+2026-11-08 (docs/compliance/03_consenso_cartella_clinica.md): right in
+substance, two points to fix in a v5 (purpose and recipients).
 
 Bump CURRENT_VERSION whenever the wording changes materially, so
 `MedicalRecordConsentRecord.version` keeps meaning "the text the owner

@@ -4,15 +4,16 @@ Bozze dei tre testi che Google Play chiede su un sito pubblico, più le domande 
 
 | File | Cosa è |
 |---|---|
-| `02_informativa_privacy_it.md` | Informativa sulla privacy (artt. 13–14 GDPR), completa e allineata al codice al 2026-10-28 |
-| `03_termini_di_servizio_it.md` | Termini di servizio, con la regola del Mercatino («solo oggetti per animali, nessun animale in nessun paese») |
+| `02_informativa_privacy_it.md` | Informativa sulla privacy (artt. 13–14 GDPR), v2 dell'8 novembre 2026: allineata al codice del 2026-10-28, più Anthropic, registro dei dispositivi, messaggi del Mercatino, età minima e conservazione per chi non rinnova (le parti non ancora nel codice sono marcate «in attesa del codice») |
+| `03_termini_di_servizio_it.md` | Termini di servizio v2: senza piano Free, età minima, Mercatino con messaggi e divieto di farmaci («solo oggetti per animali, nessun animale in nessun paese»), conservazione per chi non rinnova |
 | `04_pagina_assistenza_it.md` | Pagina di assistenza: contatti, domande frequenti, come eliminare l'account, come segnalare |
-| `08_domande_per_proprietario.md` | Le domande a cui deve rispondere il proprietario per riempire i segnaposto |
+| `08_domande_per_proprietario.md` | Le domande a cui deve rispondere il proprietario per riempire i segnaposto, con la colonna «Quando» (prima del test o del lancio) |
+| `../10_pareri_dal_2026_11_06.md` | I pareri dietro la v2: quali domande servono prima del test chiuso, età minima, Anthropic, messaggi del Mercatino, conservazione per chi non rinnova |
 
-**Segnaposto.** `[NOME_IN_MAIUSCOLO]` è un dato che deve fornire il proprietario; `[da verificare: …]` e `[da decidere: …]` sono controlli prima della pubblicazione. Non pubblicare finché questo comando restituisce qualcosa:
+**Segnaposto.** `[NOME_IN_MAIUSCOLO]` è un dato che deve fornire il proprietario; `[da verificare: …]` e `[da decidere: …]` sono controlli prima della pubblicazione; `[in attesa del codice: …]` descrive una funzione che il codice non ha ancora. Non pubblicare finché questo comando restituisce qualcosa:
 
 ```bash
-grep -nE "\[[A-Z][A-Z_]+\]|\[da (verificare|decidere|confermare)" docs/compliance/it/0[234]_*.md
+grep -nE "\[[A-Z][A-Z_]+\]|\[(da (verificare|decidere|confermare)|in attesa)" docs/compliance/it/0[234]_*.md
 ```
 
 (Le «Note per il revisore» in fondo a ogni file vanno tolte alla pubblicazione.)

@@ -1,13 +1,13 @@
 > **BOZZA — non è consulenza legale. Non pubblicare finché ci sono segnaposto tra parentesi quadre e finché un legale italiano non l'ha rivista.**
-> Segnaposto: `[NOME_IN_MAIUSCOLO]` = dato che deve fornire il proprietario (elenco e domande in `08_domande_per_proprietario.md`); `[da verificare: …]` e `[da decidere: …]` = controlli prima della pubblicazione.
+> Segnaposto: `[NOME_IN_MAIUSCOLO]` = dato che deve fornire il proprietario (elenco e domande in `08_domande_per_proprietario.md`); `[da verificare: …]` e `[da decidere: …]` = controlli prima della pubblicazione; `[in attesa del codice: …]` = il testo descrive una funzione che il codice non ha ancora, o una decisione non presa: non pubblicarlo finché non c'è.
 
-Versione: **it v1 (bozza)**, 2026-10-28. Base: `../09_informativa_privacy_bozza.md` e le informative per paese (`../de/02_*`, `../uk/02_*`), allineate al codice il 2026-10-28.
+Versione: **it v2 (bozza)**, 2026-11-08 (v1: 2026-10-28). Base: `../09_informativa_privacy_bozza.md` e le informative per paese (`../de/02_*`, `../uk/02_*`), allineate al codice il 2026-10-28. La v2 aggiunge, dopo i pareri in `../10_pareri_dal_2026_11_06.md`: Anthropic, registro dei dispositivi, messaggi del Mercatino, data di nascita e minori, conservazione per chi non rinnova, competenze delle strutture.
 
 ---
 
 # Quokka — Informativa sulla privacy
 
-Ultimo aggiornamento: [DATA]. Versione: it v1.
+Ultimo aggiornamento: [DATA]. Versione: it v2.
 
 Questa informativa spiega quali dati personali tratta Quokka, perché, con chi li condividiamo, per quanto tempo li conserviamo e quali diritti hai (artt. 13 e 14 del Regolamento UE 2016/679, «GDPR»). Vale per l'app Quokka e per il sito quokka.pet.
 
@@ -23,15 +23,17 @@ Responsabile della protezione dei dati (DPO): [DPO_O_NON_DESIGNATO].
 
 | Categoria | Esempi | Da dove vengono |
 |---|---|---|
-| Account | E-mail, nome e cognome, data di registrazione, le tue scelte di consenso con data e versione. Facoltativi: numero di telefono (nessuna funzione lo usa: resta nel profilo e lo puoi modificare o togliere) e foto profilo (la vedi solo tu, in uno spazio privato del tuo account; la puoi cambiare o togliere). Telefono e foto si cancellano con l'account | Tu, in registrazione o dal profilo. La password è gestita dal nostro fornitore di accesso: noi non la vediamo |
+| Account | E-mail, nome e cognome, data di nascita [in attesa del codice] (serve solo ad applicare le regole d'età e non è mostrata a nessuno), data di registrazione, le tue scelte di consenso con data e versione. Facoltativi: numero di telefono (nessuna funzione lo usa: resta nel profilo e lo puoi modificare o togliere) e foto profilo (la vedi solo tu, in uno spazio privato del tuo account; la puoi cambiare o togliere). Telefono e foto si cancellano con l'account | Tu, in registrazione o dal profilo. La password è gestita dal nostro fornitore di accesso: noi non la vediamo |
 | I tuoi animali | Nome, specie, razza, data di nascita o età, sesso, peso e misurazioni, microchip (se lo inserisci), note, foto e video | Tu |
 | Documenti e cartella clinica | Documenti che carichi ed eventi clinici che registri (visite, esami, vaccini, terapie, malattie in corso). Possono contenere dati tuoi o di altre persone (per esempio il tuo nome e il tuo indirizzo su una fattura veterinaria) | Tu |
 | Chat | Le tue domande, le risposte dell'assistente, gli allegati e i messaggi vocali (li trasformiamo in testo per rispondere) | Tu e il sistema |
 | Posizione | La posizione GPS, solo se la consenti dal telefono, oppure un indirizzo che scrivi tu; la posizione di riferimento che salvi (attuale o residenza). Per le passeggiate, il percorso: punti GPS con data, ora e precisione, collegati al tuo account e al tuo animale | Tu, tramite il telefono |
-| Contributi | Segnalazioni di luoghi, stelle sulle aree cani e voti. Sono collegati a uno pseudonimo, non al tuo nome | Tu |
+| Contributi | Segnalazioni di luoghi, stelle sulle aree cani e voti, e le segnalazioni che una struttura veterinaria tratta animali esotici (si mostrano solo dopo che il nostro team ha letto la dichiarazione pubblica della struttura). Sono collegati a uno pseudonimo, non al tuo nome | Tu |
 | Mercatino | Gli annunci che pubblichi: titolo, descrizione, prezzo, foto, categoria, specie, città e posizione approssimata (circa 1 km). Gli altri utenti li vedono nella loro zona; il tuo nome e la tua e-mail non vengono mostrati. Le segnalazioni che fai sugli annunci altrui | Tu |
+| Messaggi del Mercatino | I messaggi che scrivi e ricevi (solo testo, fino a 1000 caratteri, con la data), le conversazioni a cui partecipi, i blocchi e le segnalazioni di conversazioni che fai o ricevi e, se il nostro team ti tiene fuori dal Mercatino, il motivo e la data. L'altra persona non vede il tuo nome, la tua e-mail né il tuo telefono. Se tu o l'altra persona segnalate una conversazione, il nostro team la legge per valutare la segnalazione: solo quella conversazione e solo per questo scopo | Tu, l'altra persona e il sistema |
 | Rapporti sugli errori (facoltativi) | Se li consenti: tipo di errore, cosa stava facendo l'app, modello del telefono, versione di Android e dell'app, lingua e fuso orario. Mai il testo dei messaggi, foto, posizione, il tuo nome o la tua e-mail | Il sistema, solo se li attivi in Impostazioni e solo nelle versioni dell'app che li prevedono |
 | Dati tecnici | Indirizzo IP e registri dei server | Il sistema, per far funzionare e proteggere il servizio |
+| Dispositivi | Un identificativo casuale dell'installazione dell'app, la data della prima e dell'ultima volta che l'hai usata e l'eventuale revoca. Serve a contare i dispositivi del tuo piano e a proteggere l'account | Il sistema |
 | Abbonamento | Piano scelto, inizio e fine della prova gratuita. Non raccogliamo dati di carte: i pagamenti [non sono ancora attivi / sono gestiti da [FORNITORE_PAGAMENTI]] | Tu e il sistema |
 
 Non chiediamo di proposito categorie particolari di dati (art. 9 GDPR, per esempio dati sulla tua salute). Un documento che carichi potrebbe contenerne: ti chiediamo di non caricare documenti sulla tua salute.
@@ -53,7 +55,7 @@ L'app chiede un permesso solo quando usi la funzione che lo richiede. Se lo negh
 |---|---|---|
 | Creare e gestire l'account; fornire il servizio (animali, promemoria, chat, passeggiate, Mercatino) | Esecuzione del contratto, art. 6(1)(b) GDPR | Senza questi dati non possiamo fornire il servizio |
 | Conservare nel profilo il numero di telefono e la foto profilo, se li inserisci | Consenso, art. 6(1)(a) GDPR | Facoltativo. Nessuna funzione usa il telefono; la foto serve solo a mostrarti il tuo profilo. Puoi toglierli in qualsiasi momento |
-| Rispondere alle domande in chat, con l'aiuto di un fornitore esterno di intelligenza artificiale | Esecuzione del contratto, art. 6(1)(b) | Le risposte sono generate da un sistema di IA e segnalate come tali |
+| Rispondere alle domande in chat e, se lo chiedi, preparare il riepilogo per il veterinario, con l'aiuto di fornitori esterni di intelligenza artificiale | Esecuzione del contratto, art. 6(1)(b) | Le risposte sono generate da un sistema di IA e segnalate come tali |
 | Far leggere alla chat la cartella clinica di un tuo animale | Consenso, art. 6(1)(a) | Facoltativo, per animale, revocabile in qualsiasi momento dalla scheda dell'animale o da Impostazioni |
 | Mostrare luoghi vicini; raccogliere segnalazioni e stelle sui luoghi | Esecuzione del contratto, art. 6(1)(b); per i contributi, legittimo interesse, art. 6(1)(f) [da verificare con il legale] | Le segnalazioni possono portare alla rimozione di un luogo |
 | Email di marketing | Consenso, art. 6(1)(a) | Facoltativo; revocabile in qualsiasi momento da Impostazioni. [da verificare: oggi non inviamo email di marketing] |
@@ -61,6 +63,12 @@ L'app chiede un permesso solo quando usi la funzione che lo richiede. Se lo negh
 | Trovare e correggere gli errori dell'app (rapporti sugli errori) | Consenso, art. 6(1)(a) e art. 122 Codice privacy | Facoltativo. Solo se li attivi in Impostazioni; revocabile in qualsiasi momento. Solo nelle versioni dell'app che prevedono i rapporti [da verificare alla pubblicazione] |
 | Sicurezza, prevenzione degli abusi (per esempio limiti d'uso e segnalazioni false), obblighi di legge | Obbligo legale, art. 6(1)(c); legittimo interesse, art. 6(1)(f) | |
 | Gestire le tue richieste e i reclami | Obbligo legale, art. 6(1)(c) | |
+| Applicare i limiti d'età (data di nascita) [in attesa del codice] | Legittimo interesse, art. 6(1)(f) GDPR, e rispetto dell'età minima per i consensi (art. 8 GDPR; art. 2-quinquies Codice privacy) [da verificare con il legale] | Non è mostrata a nessuno e si cancella con l'account. Chi ha meno di 14 anni non può creare l'account |
+| Consegnare i messaggi del Mercatino | Esecuzione del contratto, art. 6(1)(b) | Il testo dei messaggi non va a fornitori di intelligenza artificiale |
+| Moderare il Mercatino: leggere una conversazione segnalata, bloccare, tenere una persona fuori dal Mercatino | Legittimo interesse, art. 6(1)(f) [da verificare con il legale] | Il nostro team legge solo le conversazioni segnalate, per valutare la segnalazione. Lo diciamo a entrambe le persone: qui, nei termini e nell'avviso in cima alla conversazione |
+| Conservare una conversazione segnalata dopo la cancellazione dell'account [in attesa della decisione del proprietario] | Legittimo interesse, art. 6(1)(f), e art. 17(3)(e) GDPR: serve ad accertare, esercitare o difendere un diritto [da verificare con il legale] | Solo se la segnalazione è aperta o è stata accolta; solo quella conversazione, senza i dati di account di chi ha cancellato; fino a 12 mesi dopo la decisione sulla segnalazione |
+| Contare i dispositivi del tuo piano e proteggere l'account | Esecuzione del contratto, art. 6(1)(b); legittimo interesse, art. 6(1)(f) | |
+| Conservare l'account per 4 mesi dopo la fine della prova o dell'abbonamento e avvisarti prima di cancellarlo [in attesa del codice] | Esecuzione del contratto, art. 6(1)(b); legittimo interesse, art. 6(1)(f), a farti ritrovare i dati | Gli avvisi sono comunicazioni di servizio e non contengono offerte |
 | Salvare sul tuo telefono informazioni strettamente necessarie all'app (accesso, lingua, preferenze) | Art. 122, comma 1, Codice privacy: non serve il consenso | Tutto il resto solo con il tuo consenso |
 
 ## 4. Chi riceve i dati
@@ -69,7 +77,8 @@ L'app chiede un permesso solo quando usi la funzione che lo richiede. Se lo negh
 |---|---|---|
 | Supabase | Database, accesso all'account, archivio di allegati e foto | Irlanda (UE). Società con sede negli USA [da verificare: DPA e clausole contrattuali standard] |
 | Vercel | Hosting del nostro server | Dublino, Irlanda (UE). Società con sede negli USA [da verificare: DPA] |
-| Groq | Il testo delle tue domande e dei documenti per scrivere le risposte; l'audio per la trascrizione; le immagini per l'analisi | Stati Uniti [GARANZIE_GROQ] |
+| Anthropic PBC | Il testo delle tue domande, ripulito come spiegato nella sezione 6, il profilo dell'animale e, se acconsenti, note, promemoria e documenti: per scrivere le risposte e capire quanto è urgente il caso. Non riceve immagini né audio | Stati Uniti [GARANZIE_ANTHROPIC] [in attesa: chiave, DPA e verifica del Data Privacy Framework prima dell'attivazione; se non si attiva, togliere la riga] |
+| Groq | Il testo delle tue domande e dei documenti per scrivere le risposte [dopo l'attivazione di Anthropic: solo quando il fornitore principale non risponde]; l'audio per la trascrizione; le immagini per l'analisi | Stati Uniti [GARANZIE_GROQ] |
 | Sentry (Functional Software, Inc.) | Solo con il tuo consenso: il rapporto tecnico sull'errore (tipo di errore, cosa stava facendo l'app, modello del telefono, versione di Android e dell'app, lingua e fuso orario) | Server nell'UE (Francoforte, Germania); società con sede negli USA [GARANZIE_SENTRY]. Come in ogni connessione, Sentry vede l'indirizzo IP del telefono mentre riceve il rapporto [da verificare: opzione «Prevent Storing of IP Addresses» attiva nel progetto] |
 | Nominatim (OpenStreetMap) | L'indirizzo che scrivi, per trovarne le coordinate; il tuo indirizzo IP | Regno Unito / UE [da verificare] |
 | Server delle mappe di OpenStreetMap | Il tuo indirizzo IP e le aree di mappa che chiedi | Regno Unito / UE [da verificare; vedi nota sul fornitore delle mappe] |
@@ -80,21 +89,21 @@ L'app chiede un permesso solo quando usi la funzione che lo richiede. Se lo negh
 
 Non vendiamo i tuoi dati personali.
 
-**Altri utenti.** Gli annunci del Mercatino e le segnalazioni che pubblichi sono visibili agli altri utenti, senza il tuo nome e senza la tua e-mail.
+**Altri utenti.** Gli annunci del Mercatino e le segnalazioni che pubblichi sono visibili agli altri utenti, senza il tuo nome e senza la tua e-mail. I messaggi del Mercatino li vedono solo le due persone della conversazione e, se viene segnalata, il nostro team.
 
 **Luoghi e attività.** I luoghi sulla mappa vengono da OpenStreetMap, Overture Maps e da dataset pubblici dei Comuni. Non contengono dati su di te, ma possono riguardare titolari di attività individuali. Se sei il titolare di una scheda e vuoi chiedere una correzione, la rimozione o opporti al trattamento (art. 21 GDPR), scrivi a [EMAIL_PRIVACY].
 
 ## 5. Trasferimenti fuori dall'UE/SEE
 
-Alcuni fornitori sono società statunitensi o trattano dati negli Stati Uniti (in particolare Groq). Per questi trasferimenti ci basiamo su una decisione di adeguatezza della Commissione europea (per esempio il Data Privacy Framework UE–USA, se il fornitore è certificato; art. 45 GDPR) oppure sulle clausole contrattuali standard della Commissione (art. 46(2)(c) GDPR), insieme a una valutazione dei rischi del trasferimento. Puoi chiederci una copia delle garanzie scrivendo a [EMAIL_PRIVACY]. [da completare per ogni fornitore: vedi `docs/security/06_inventario_dati_fornitori.md`]
+Alcuni fornitori sono società statunitensi o trattano dati negli Stati Uniti (in particolare Anthropic e Groq). Per questi trasferimenti ci basiamo su una decisione di adeguatezza della Commissione europea (per esempio il Data Privacy Framework UE–USA, se il fornitore è certificato; art. 45 GDPR) oppure sulle clausole contrattuali standard della Commissione (art. 46(2)(c) GDPR), insieme a una valutazione dei rischi del trasferimento. Puoi chiederci una copia delle garanzie scrivendo a [EMAIL_PRIVACY]. [da completare per ogni fornitore: vedi `docs/security/06_inventario_dati_fornitori.md`]
 
 ## 6. Come usiamo l'intelligenza artificiale
 
 Le risposte della chat sono scritte da un sistema di intelligenza artificiale e sono segnalate come tali. L'assistente dà informazioni generali: non fa diagnosi, non prescrive e non sostituisce il veterinario.
 
-Prima di inviare il testo al fornitore, il sistema toglie in automatico alcuni dati personali riconoscibili: e-mail, telefoni, codice fiscale, partita IVA, IBAN, indirizzi con numero civico, nomi preceduti da un'etichetta o noti dall'account. Non può riconoscerli tutti: per esempio un nome di persona scritto in mezzo a una frase. Immagini e audio partono così come sono; viene ripulito solo il testo che ne risulta.
+Prima di inviare il testo ai fornitori, il sistema toglie in automatico alcuni dati personali riconoscibili: e-mail, telefoni, codice fiscale, partita IVA, IBAN, indirizzi con numero civico, nomi preceduti da un'etichetta o noti dall'account. Non può riconoscerli tutti: per esempio un nome di persona scritto in mezzo a una frase. Immagini e audio partono così come sono; viene ripulito solo il testo che ne risulta. Il testo ripulito non è anonimo: può contenere altri dati che scrivi tu, per questo i fornitori sono vincolati da un contratto (art. 28 GDPR).
 
-Se acconsenti, la chat può leggere la cartella clinica del tuo animale: le tre voci più recenti (titolo, categoria, data, descrizione e testo dei documenti allegati, di quelli molto lunghi solo l'inizio), le malattie in corso (al massimo cinque) e, se chiedi di spiegare un esame, fino a due documenti che lo riguardano. Quello che legge viene inviato al fornitore di IA solo per risponderti.
+Se acconsenti, la chat può leggere la cartella clinica del tuo animale: le tre voci più recenti (titolo, categoria, data, descrizione e testo dei documenti allegati, di quelli molto lunghi solo l'inizio), le malattie in corso (al massimo cinque), le note che hai scritto nella scheda dell'animale e i promemoria attivi, terapie comprese, e, se chiedi di spiegare un esame, fino a due documenti che lo riguardano. Quello che legge viene inviato ai fornitori di IA solo per risponderti e per preparare il riepilogo per il veterinario che puoi chiedere.
 
 Non prendiamo decisioni su di te basate unicamente su un trattamento automatizzato che producano effetti giuridici o incidano in modo analogo sulla tua persona (art. 22 GDPR).
 
@@ -107,6 +116,10 @@ Non prendiamo decisioni su di te basate unicamente su un trattamento automatizza
 | Chat | 24 mesi dopo l'ultimo messaggio: poi la conversazione e i suoi file vengono cancellati. Un file caricato e mai inviato in un messaggio si cancella dopo 7 giorni. Prima, se elimini l'account |
 | Percorsi delle passeggiate | Il percorso GPS resta solo per le ultime 3 passeggiate di ciascun animale, per quelle che segni come preferite (al massimo 5 per animale) e per la più lunga in distanza e in durata; delle altre restano distanza, durata e passi stimati. Tutto si cancella con l'account |
 | Annunci del Mercatino | Fino a quando li elimini o elimini l'account |
+| Messaggi del Mercatino | 6 mesi dopo l'ultimo messaggio se l'annuncio è chiuso, comunque 12 mesi; mai finché la conversazione ha una segnalazione aperta. Se elimini l'account la conversazione sparisce [in attesa della decisione del proprietario: se è segnalata, e la segnalazione è aperta o accolta, resta senza i tuoi dati di account fino a 12 mesi dopo la decisione sulla segnalazione] |
+| Registro dei dispositivi | Fino a quando elimini l'account [da decidere: oppure 12 mesi senza uso] |
+| Account senza piano | 4 mesi dalla fine della prova o dalla scadenza dell'abbonamento; poi cancellazione con le stesse regole di «Elimina account». Prima ti avvisiamo, con avvisi sempre più ravvicinati [in attesa del codice] |
+| Data di nascita | Fino a quando elimini l'account [in attesa del codice] |
 | Segnalazioni e voti sui luoghi | Pseudonimo e voti si cancellano 12 mesi dopo la chiusura della segnalazione; il contenuto resta senza riferimenti a te |
 | Registri tecnici | Pochi giorni al massimo, secondo il fornitore: nei piani attuali Vercel tiene i registri di esecuzione circa 1 ora e Supabase da 1 a 7 giorni [da verificare nei piani attivi] |
 | Rapporti sugli errori | 90 giorni [da verificare nel piano Sentry scelto] |
@@ -118,11 +131,17 @@ Hai diritto di accesso (art. 15), rettifica (art. 16), cancellazione (art. 17), 
 
 Dall'app puoi già: modificare o togliere telefono e foto dal profilo, revocare i consensi facoltativi, eliminare l'account. Per una copia dei tuoi dati in un formato leggibile da un computer (JSON) scrivi a [EMAIL_PRIVACY]: [da verificare: oggi la copia si prepara su richiesta, nell'app non c'è ancora un pulsante]. Rispondiamo di norma entro un mese (art. 12(3)).
 
+**Limiti alla cancellazione.** Se una conversazione del Mercatino è stata segnalata e la segnalazione è aperta o è stata accolta, quando elimini l'account quella conversazione, senza i tuoi dati di account, può restare fino a 12 mesi dopo la decisione, perché serve a difendere diritti (art. 17(3)(e) GDPR); puoi sempre chiedere una copia dei tuoi messaggi (art. 15) [in attesa della decisione del proprietario].
+
 **Reclamo.** Puoi proporre reclamo al Garante per la protezione dei dati personali (www.garanteprivacy.it).
 
 ## 9. Minori
 
-Quokka è per persone maggiorenni [da confermare l'età minima]. Se pensi che un minore ci abbia dato dati personali, scrivici: li cancelliamo.
+Quokka è per chi ha almeno 14 anni [da decidere: età minima proposta, parere 10 §3]. Quando crei l'account ti chiediamo la data di nascita, solo per applicare le regole d'età: non la mostriamo a nessuno. Chi ha meno di 14 anni non può creare l'account. Se hai meno di 18 anni non puoi usare il Mercatino, e per un piano a pagamento serve l'autorizzazione di un genitore (termini, §1). Da 14 anni puoi dare da solo i consensi facoltativi (rapporti sugli errori, lettura della cartella clinica da parte della chat); marketing e statistiche non si offrono ai minorenni.
+
+**In breve, se hai meno di 18 anni.** Usiamo i tuoi dati per far funzionare l'app, non li vendiamo, non mostriamo il tuo nome agli altri utenti e puoi cancellare tutto quando vuoi da Impostazioni → Elimina account.
+
+Se pensi che una persona sotto i 14 anni ci abbia dato dati personali, scrivici: li cancelliamo. [in attesa del codice: data di nascita, blocchi per età e consensi facoltativi riservati ai maggiorenni (marketing, statistiche).]
 
 ## 10. Sicurezza
 
@@ -150,3 +169,8 @@ Se cambiamo questa informativa in modo importante te lo diciamo nell'app [e per 
 8. **Copia dei dati**: l'endpoint `GET /account/export` esiste, ma l'app non ha un pulsante. Fino ad allora, risposta manuale entro un mese.
 9. **Conservazione**: le durate di chat (24 mesi), file orfani (7 giorni), percorsi e rapporti di errori sono quelle del codice al 2026-10-28; se cambiano, cambia questa tabella.
 10. **Numero di telefono**: nessuna funzione lo usa. Il proprietario lo vuole chiesto in registrazione per un uso futuro (verifica o recupero dell'account); restano aperti la minimizzazione e la finalità (art. 5(1)(b)–(c) GDPR), registro 08, punto 29. Quando avrà una funzione, aggiornare questa informativa.
+11. **Anthropic**: la riga e i trasferimenti restano «in attesa» finché non ci sono chiave, DPA accettato e archiviato e verifica del DPF (l'appello C-703/25 P sul DPF è pendente: tenere le SCC come garanzia di riserva). Il testo ripulito non è «anonimo»: non usare la parola. Parere: `../10_pareri_dal_2026_11_06.md`, §2.2.
+12. **Messaggi del Mercatino**: la conservazione di una conversazione segnalata dopo la cancellazione dell'account vale solo se il proprietario approva le sette condizioni del parere (§2.3). Il team legge solo le conversazioni segnalate: va detto a entrambe le persone (qui, nei Termini, nell'avviso in testa alla conversazione).
+13. **Età**: il §9 è scritto sulla proposta di 14 anni (art. 2-quinquies Codice privacy). Il linguaggio per i minori serve all'art. 2-quinquies, comma 2. La data di nascita non è ancora nel codice (parere §3).
+14. **Chi non rinnova e registro dei dispositivi**: 4 mesi decisi dal proprietario; avvisi come comunicazioni di servizio, senza offerte (art. 130 Codice privacy). Per il registro dei dispositivi (`user_devices`) la conservazione proposta è fino alla cancellazione dell'account, o 12 mesi senza uso: da decidere.
+15. **Clausole «in attesa del codice»**: data di nascita, cancellazione dopo 4 mesi e avvisi, conservazione di una conversazione segnalata, riga di Anthropic. Elenco completo in `03_termini_di_servizio_it.md`, nota 10.
