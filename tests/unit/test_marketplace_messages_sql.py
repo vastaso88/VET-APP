@@ -103,6 +103,10 @@ def test_the_cleanup_keeps_what_is_under_review_and_runs_by_itself() -> None:
     assert "interval '6 months'" in body
     assert "interval '12 months'" in body
     assert "r.status = 'open'" in body
+    # 6 months from the closing, not from the last message (owner decision):
+    # a quiet conversation must not vanish the day its ad is sold.
+    assert "l.updated_at < now() - interval '6 months'" in body
+    assert "c.moderation_closed_at < now() - interval '6 months'" in body
     assert re.search(
         r"revoke all on function public\.marketplace_messages_cleanup\(\)\s+"
         r"from public, anon, authenticated;",
