@@ -3003,7 +3003,7 @@
   "settingsAccountExport": "Download my data",
   "settingsAccountExportSubtitle": "All your data in one file",
   "accountExportTitle": "Download my data",
-  "accountExportIntro": "Get a file with all the data of your account: profile, pets, reports, chats, reminders, walks, consents and listings. It includes links to your files (photos, attachments), valid for 15 minutes.",
+  "accountExportIntro": "Get a file with all the data of your account: profile, pets, medical record, chats, reminders, walks, consents and listings. It includes links to your files (photos, attachments), valid for 15 minutes.",
   "accountExportSensitive": "The file may contain sensitive data about you and your pets: keep it safe and don't share it.",
   "accountExportButton": "Download my data",
   "accountExportWorking": "Preparing your data…",
@@ -3013,7 +3013,7 @@
   "accountExportSaveFailed": "We couldn't save the file. Try again.",
   "accountExportSaveDialogTitle": "Save your data",
   "accountExportEstimating": "Working out the size…",
-  "accountExportReadyFiles": "{count} files to download, about {size}",
+  "accountExportReadyFiles": "{count, plural, one{{count} file to download} other{{count} files to download}}, about {size}",
   "@accountExportReadyFiles": {
     "placeholders": {
       "count": {
@@ -3024,7 +3024,7 @@
       }
     }
   },
-  "accountExportReadyUnknownSize": "{count} files to download (size unknown)",
+  "accountExportReadyUnknownSize": "{count, plural, one{{count} file to download} other{{count} files to download}} (size unknown)",
   "@accountExportReadyUnknownSize": {
     "placeholders": {
       "count": {
@@ -3050,7 +3050,7 @@
   "accountExportPackaging": "Putting the zip together…",
   "accountExportCancelled": "Cancelled. No file was saved.",
   "accountExportTooBig": "Too many files for a zip on this device: download the data only (JSON).",
-  "accountExportZipDoneMissing": "Zip saved. {count} files could not be downloaded: the list is in the leggimi.html page.",
+  "accountExportZipDoneMissing": "Zip saved. {count, plural, one{1 file could not be downloaded} other{{count} files could not be downloaded}}: the list is in the leggimi.html page.",
   "@accountExportZipDoneMissing": {
     "placeholders": {
       "count": {

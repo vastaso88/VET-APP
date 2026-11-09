@@ -3003,7 +3003,7 @@
   "settingsAccountExport": "Télécharger mes données",
   "settingsAccountExportSubtitle": "Toutes vos données dans un fichier",
   "accountExportTitle": "Télécharger mes données",
-  "accountExportIntro": "Recevez un fichier avec toutes les données de votre compte : profil, animaux, comptes rendus, conversations, rappels, promenades, consentements et annonces. Il contient des liens vers vos fichiers (photos, pièces jointes), valables 15 minutes.",
+  "accountExportIntro": "Recevez un fichier avec toutes les données de votre compte : profil, animaux, dossier médical, conversations, rappels, promenades, consentements et annonces. Il contient des liens vers vos fichiers (photos, pièces jointes), valables 15 minutes.",
   "accountExportSensitive": "Le fichier peut contenir des données sensibles sur vous et vos animaux : conservez-le avec soin et ne le partagez pas.",
   "accountExportButton": "Télécharger mes données",
   "accountExportWorking": "Préparation de vos données…",
@@ -3013,7 +3013,7 @@
   "accountExportSaveFailed": "Impossible d'enregistrer le fichier. Réessayez.",
   "accountExportSaveDialogTitle": "Enregistrer vos données",
   "accountExportEstimating": "Calcul de la taille…",
-  "accountExportReadyFiles": "{count} fichiers à télécharger, environ {size}",
+  "accountExportReadyFiles": "{count, plural, one{{count} fichier à télécharger} other{{count} fichiers à télécharger}}, environ {size}",
   "@accountExportReadyFiles": {
     "placeholders": {
       "count": {
@@ -3024,7 +3024,7 @@
       }
     }
   },
-  "accountExportReadyUnknownSize": "{count} fichiers à télécharger (taille inconnue)",
+  "accountExportReadyUnknownSize": "{count, plural, one{{count} fichier à télécharger} other{{count} fichiers à télécharger}} (taille inconnue)",
   "@accountExportReadyUnknownSize": {
     "placeholders": {
       "count": {
@@ -3050,7 +3050,7 @@
   "accountExportPackaging": "Préparation du zip…",
   "accountExportCancelled": "Opération annulée. Aucun fichier n'a été enregistré.",
   "accountExportTooBig": "Trop de fichiers pour un zip sur cet appareil : téléchargez seulement les données (JSON).",
-  "accountExportZipDoneMissing": "Zip enregistré. {count} fichiers n’ont pas pu être téléchargés : la liste est dans la page leggimi.html.",
+  "accountExportZipDoneMissing": "Zip enregistré. {count, plural, one{1 fichier n'a pas pu être téléchargé} other{{count} fichiers n'ont pas pu être téléchargés}} : la liste est dans la page leggimi.html.",
   "@accountExportZipDoneMissing": {
     "placeholders": {
       "count": {

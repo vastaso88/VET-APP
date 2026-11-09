@@ -3003,7 +3003,7 @@
   "settingsAccountExport": "Descargar mis datos",
   "settingsAccountExportSubtitle": "Todos tus datos en un archivo",
   "accountExportTitle": "Descargar mis datos",
-  "accountExportIntro": "Recibe un archivo con todos los datos de tu cuenta: perfil, animales, informes, chats, recordatorios, paseos, consentimientos y anuncios. Incluye enlaces a tus archivos (fotos, adjuntos), válidos durante 15 minutos.",
+  "accountExportIntro": "Recibe un archivo con todos los datos de tu cuenta: perfil, animales, historial clínico, chats, recordatorios, paseos, consentimientos y anuncios. Incluye enlaces a tus archivos (fotos, adjuntos), válidos durante 15 minutos.",
   "accountExportSensitive": "El archivo puede contener datos sensibles tuyos y de tus animales: guárdalo con cuidado y no lo compartas.",
   "accountExportButton": "Descargar mis datos",
   "accountExportWorking": "Preparando tus datos…",
@@ -3013,7 +3013,7 @@
   "accountExportSaveFailed": "No hemos podido guardar el archivo. Inténtalo de nuevo.",
   "accountExportSaveDialogTitle": "Guardar tus datos",
   "accountExportEstimating": "Calculando el tamaño…",
-  "accountExportReadyFiles": "{count} archivos por descargar, unos {size}",
+  "accountExportReadyFiles": "{count, plural, one{{count} archivo por descargar} other{{count} archivos por descargar}}, unos {size}",
   "@accountExportReadyFiles": {
     "placeholders": {
       "count": {
@@ -3024,7 +3024,7 @@
       }
     }
   },
-  "accountExportReadyUnknownSize": "{count} archivos por descargar (tamaño desconocido)",
+  "accountExportReadyUnknownSize": "{count, plural, one{{count} archivo por descargar} other{{count} archivos por descargar}} (tamaño desconocido)",
   "@accountExportReadyUnknownSize": {
     "placeholders": {
       "count": {
@@ -3050,7 +3050,7 @@
   "accountExportPackaging": "Preparando el zip…",
   "accountExportCancelled": "Operación cancelada. No se guardó ningún archivo.",
   "accountExportTooBig": "Demasiados archivos para un zip en este dispositivo: descarga solo los datos (JSON).",
-  "accountExportZipDoneMissing": "Zip guardado. {count} archivos no se pudieron descargar: la lista está en la página leggimi.html.",
+  "accountExportZipDoneMissing": "Zip guardado. {count, plural, one{1 archivo no se pudo descargar} other{{count} archivos no se pudieron descargar}}: la lista está en la página leggimi.html.",
   "@accountExportZipDoneMissing": {
     "placeholders": {
       "count": {

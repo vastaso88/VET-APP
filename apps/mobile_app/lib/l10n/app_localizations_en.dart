@@ -5146,7 +5146,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get accountExportIntro =>
-      'Get a file with all the data of your account: profile, pets, reports, chats, reminders, walks, consents and listings. It includes links to your files (photos, attachments), valid for 15 minutes.';
+      'Get a file with all the data of your account: profile, pets, medical record, chats, reminders, walks, consents and listings. It includes links to your files (photos, attachments), valid for 15 minutes.';
 
   @override
   String get accountExportSensitive =>
@@ -5181,12 +5181,24 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String accountExportReadyFiles(int count, String size) {
-    return '$count files to download, about $size';
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count files to download',
+      one: '$count file to download',
+    );
+    return '$_temp0, about $size';
   }
 
   @override
   String accountExportReadyUnknownSize(int count) {
-    return '$count files to download (size unknown)';
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count files to download',
+      one: '$count file to download',
+    );
+    return '$_temp0 (size unknown)';
   }
 
   @override
@@ -5219,7 +5231,13 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String accountExportZipDoneMissing(int count) {
-    return 'Zip saved. $count files could not be downloaded: the list is in the leggimi.html page.';
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count files could not be downloaded',
+      one: '1 file could not be downloaded',
+    );
+    return 'Zip saved. $_temp0: the list is in the leggimi.html page.';
   }
 
   @override

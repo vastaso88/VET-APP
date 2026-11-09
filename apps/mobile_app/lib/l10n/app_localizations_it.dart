@@ -5185,7 +5185,7 @@ class AppLocalizationsIt extends AppLocalizations {
 
   @override
   String get accountExportIntro =>
-      'Ricevi un file con tutti i dati del tuo account: profilo, animali, referti, chat, promemoria, passeggiate, consensi e annunci. Include i link ai tuoi file (foto, allegati), validi 15 minuti.';
+      'Ricevi un file con tutti i dati del tuo account: profilo, animali, cartella clinica, chat, promemoria, passeggiate, consensi e annunci. Include i link ai tuoi file (foto, allegati), validi 15 minuti.';
 
   @override
   String get accountExportSensitive =>
@@ -5220,12 +5220,24 @@ class AppLocalizationsIt extends AppLocalizations {
 
   @override
   String accountExportReadyFiles(int count, String size) {
-    return '$count file da scaricare, circa $size';
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count file da scaricare',
+      one: '$count file da scaricare',
+    );
+    return '$_temp0, circa $size';
   }
 
   @override
   String accountExportReadyUnknownSize(int count) {
-    return '$count file da scaricare (dimensione non nota)';
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count file da scaricare',
+      one: '$count file da scaricare',
+    );
+    return '$_temp0 (dimensione non nota)';
   }
 
   @override
@@ -5259,7 +5271,13 @@ class AppLocalizationsIt extends AppLocalizations {
 
   @override
   String accountExportZipDoneMissing(int count) {
-    return 'Zip salvato. $count file non si sono scaricati: l’elenco è nella pagina leggimi.html.';
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count file non si sono scaricati',
+      one: '1 file non si è scaricato',
+    );
+    return 'Zip salvato. $_temp0: l’elenco è nella pagina leggimi.html.';
   }
 
   @override

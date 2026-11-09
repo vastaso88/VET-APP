@@ -309,7 +309,7 @@ void main() {
         await tester.pumpAndSettle();
 
         expect(saved, isNotNull);
-        expect(find.textContaining('1 file non si sono scaricati'), findsOneWidget);
+        expect(find.textContaining('1 file non si è scaricato'), findsOneWidget);
         final html = utf8.decode(ZipDecoder()
             .decodeBytes(saved!.bytes)
             .files
@@ -363,6 +363,81 @@ void main() {
         expect(
             tester.widget<FilledButton>(find.byKey(const ValueKey('export-zip-button'))).onPressed, isNull);
         expect(find.byKey(const ValueKey('export-json-button')), findsOneWidget);
+      });
+
+      for (final (variant, locale, one, many) in [
+        ('en-GB', 'en', '1 file to download, about 2 KB', '2 files to download, about 4 KB'),
+        ('es', 'es', '1 archivo por descargar, unos 2 KB', '2 archivos por descargar, unos 4 KB'),
+        ('de', 'de', '1 Datei zum Herunterladen, etwa 2 KB', '2 Dateien zum Herunterladen, etwa 4 KB'),
+        ('fr', 'fr', '1 fichier à télécharger, environ 2 KB', '2 fichiers à télécharger, environ 4 KB'),
+      ]) {
+        testWidgets('the file count has a singular and a plural ($locale)', (tester) async {
+          await useLanguageVariant(variant);
+          Future<void> pumpWith(int files) async {
+            final export = AccountExportFile(
+              fileName: 'x.json',
+              bytes: Uint8List.fromList(utf8.encode(jsonEncode({
+                'files': [
+                  for (var i = 0; i < files; i++)
+                    {'path': 'a/$i.jpg', 'kind': 'pet_media', 'url': 'https://files.test/$i'},
+                ],
+              }))),
+            );
+            await tester.pumpWidget(
+              MaterialApp(
+                localizationsDelegates: AppLocalizations.localizationsDelegates,
+                supportedLocales: AppLocalizations.supportedLocales,
+                locale: Locale(locale),
+                home: ExportDataPage(
+                  key: ValueKey('page-$files'),
+                  dataSource: _FakeSource(Result.success(export)),
+                  fetcher: _FakeFetcher(size: 2048),
+                  workspaceFactory: () async => MemoryExportWorkspace(),
+                ),
+              ),
+            );
+            await _fetch(tester);
+          }
+
+          await pumpWith(1);
+          expect(find.text(one), findsOneWidget);
+          await pumpWith(2);
+          expect(find.text(many), findsOneWidget);
+        });
+      }
+
+      testWidgets('two files that do not download use the plural', (tester) async {
+        await _pump(
+          tester,
+          source: _FakeSource(Result.success(withFiles)),
+          fetcher: _FakeFetcher(
+            size: 10,
+            failing: {'https://files.test/a.jpg', 'https://files.test/b.jpg'},
+          ),
+          saver: (file, title) async => true,
+        );
+
+        await _fetch(tester);
+        await tester.tap(find.byKey(const ValueKey('export-zip-button')));
+        await tester.pumpAndSettle();
+
+        expect(find.textContaining('2 file non si sono scaricati'), findsOneWidget);
+      });
+
+      test('the missing-files message has a singular and a plural in every language', () {
+        const expected = {
+          'it': ('1 file non si è scaricato', '3 file non si sono scaricati'),
+          'en': ('1 file could not be downloaded', '3 files could not be downloaded'),
+          'es': ('1 archivo no se pudo descargar', '3 archivos no se pudieron descargar'),
+          'de': ('1 Datei konnte nicht heruntergeladen werden', '3 Dateien konnten nicht heruntergeladen werden'),
+          'fr': ("1 fichier n'a pas pu être téléchargé", "3 fichiers n'ont pas pu être téléchargés"),
+        };
+        expected.forEach((code, texts) {
+          final l10n = lookupAppLocalizations(Locale(code));
+          expect(l10n.accountExportZipDoneMissing(1), contains(texts.$1), reason: code);
+          expect(l10n.accountExportZipDoneMissing(3), contains(texts.$2), reason: code);
+          expect(l10n.accountExportZipDoneMissing(1), isNot(contains('{')), reason: code);
+        });
       });
 
       testWidgets('with no files it says so and still offers both', (tester) async {

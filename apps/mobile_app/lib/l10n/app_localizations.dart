@@ -8681,7 +8681,7 @@ abstract class AppLocalizations {
   /// No description provided for @accountExportIntro.
   ///
   /// In it, this message translates to:
-  /// **'Ricevi un file con tutti i dati del tuo account: profilo, animali, referti, chat, promemoria, passeggiate, consensi e annunci. Include i link ai tuoi file (foto, allegati), validi 15 minuti.'**
+  /// **'Ricevi un file con tutti i dati del tuo account: profilo, animali, cartella clinica, chat, promemoria, passeggiate, consensi e annunci. Include i link ai tuoi file (foto, allegati), validi 15 minuti.'**
   String get accountExportIntro;
 
   /// No description provided for @accountExportSensitive.
@@ -8741,13 +8741,13 @@ abstract class AppLocalizations {
   /// No description provided for @accountExportReadyFiles.
   ///
   /// In it, this message translates to:
-  /// **'{count} file da scaricare, circa {size}'**
+  /// **'{count, plural, one{{count} file da scaricare} other{{count} file da scaricare}}, circa {size}'**
   String accountExportReadyFiles(int count, String size);
 
   /// No description provided for @accountExportReadyUnknownSize.
   ///
   /// In it, this message translates to:
-  /// **'{count} file da scaricare (dimensione non nota)'**
+  /// **'{count, plural, one{{count} file da scaricare} other{{count} file da scaricare}} (dimensione non nota)'**
   String accountExportReadyUnknownSize(int count);
 
   /// No description provided for @accountExportReadyOnlyData.
@@ -8801,7 +8801,7 @@ abstract class AppLocalizations {
   /// No description provided for @accountExportZipDoneMissing.
   ///
   /// In it, this message translates to:
-  /// **'Zip salvato. {count} file non si sono scaricati: l’elenco è nella pagina leggimi.html.'**
+  /// **'Zip salvato. {count, plural, one{1 file non si è scaricato} other{{count} file non si sono scaricati}}: l’elenco è nella pagina leggimi.html.'**
   String accountExportZipDoneMissing(int count);
 
   /// No description provided for @accountExportReadmeTitle.

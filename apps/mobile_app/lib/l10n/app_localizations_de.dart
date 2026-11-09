@@ -5203,7 +5203,7 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get accountExportIntro =>
-      'Sie erhalten eine Datei mit allen Daten Ihres Kontos: Profil, Tiere, Befunde, Chats, Erinnerungen, Spaziergänge, Einwilligungen und Anzeigen. Sie enthält Links zu Ihren Dateien (Fotos, Anhänge), die 15 Minuten gültig sind.';
+      'Sie erhalten eine Datei mit allen Daten Ihres Kontos: Profil, Tiere, Krankenakte, Chats, Erinnerungen, Spaziergänge, Einwilligungen und Anzeigen. Sie enthält Links zu Ihren Dateien (Fotos, Anhänge), die 15 Minuten gültig sind.';
 
   @override
   String get accountExportSensitive =>
@@ -5238,12 +5238,24 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String accountExportReadyFiles(int count, String size) {
-    return '$count Dateien zum Herunterladen, etwa $size';
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count Dateien zum Herunterladen',
+      one: '$count Datei zum Herunterladen',
+    );
+    return '$_temp0, etwa $size';
   }
 
   @override
   String accountExportReadyUnknownSize(int count) {
-    return '$count Dateien zum Herunterladen (Größe unbekannt)';
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count Dateien zum Herunterladen',
+      one: '$count Datei zum Herunterladen',
+    );
+    return '$_temp0 (Größe unbekannt)';
   }
 
   @override
@@ -5277,7 +5289,13 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String accountExportZipDoneMissing(int count) {
-    return 'ZIP gespeichert. $count Dateien konnten nicht heruntergeladen werden: Die Liste steht auf der Seite leggimi.html.';
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count Dateien konnten nicht heruntergeladen werden',
+      one: '1 Datei konnte nicht heruntergeladen werden',
+    );
+    return 'ZIP gespeichert. $_temp0: Die Liste steht auf der Seite leggimi.html.';
   }
 
   @override

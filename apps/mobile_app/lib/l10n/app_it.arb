@@ -3003,7 +3003,7 @@
   "settingsAccountExport": "Scarica i miei dati",
   "settingsAccountExportSubtitle": "Tutti i tuoi dati in un file",
   "accountExportTitle": "Scarica i miei dati",
-  "accountExportIntro": "Ricevi un file con tutti i dati del tuo account: profilo, animali, referti, chat, promemoria, passeggiate, consensi e annunci. Include i link ai tuoi file (foto, allegati), validi 15 minuti.",
+  "accountExportIntro": "Ricevi un file con tutti i dati del tuo account: profilo, animali, cartella clinica, chat, promemoria, passeggiate, consensi e annunci. Include i link ai tuoi file (foto, allegati), validi 15 minuti.",
   "accountExportSensitive": "Il file può contenere dati sensibili tuoi e dei tuoi animali: conservalo con cura e non condividerlo.",
   "accountExportButton": "Scarica i miei dati",
   "accountExportWorking": "Preparo i tuoi dati…",
@@ -3013,7 +3013,7 @@
   "accountExportSaveFailed": "Non sono riuscito a salvare il file. Riprova.",
   "accountExportSaveDialogTitle": "Salva i tuoi dati",
   "accountExportEstimating": "Calcolo la dimensione…",
-  "accountExportReadyFiles": "{count} file da scaricare, circa {size}",
+  "accountExportReadyFiles": "{count, plural, one{{count} file da scaricare} other{{count} file da scaricare}}, circa {size}",
   "@accountExportReadyFiles": {
     "placeholders": {
       "count": {
@@ -3024,7 +3024,7 @@
       }
     }
   },
-  "accountExportReadyUnknownSize": "{count} file da scaricare (dimensione non nota)",
+  "accountExportReadyUnknownSize": "{count, plural, one{{count} file da scaricare} other{{count} file da scaricare}} (dimensione non nota)",
   "@accountExportReadyUnknownSize": {
     "placeholders": {
       "count": {
@@ -3050,7 +3050,7 @@
   "accountExportPackaging": "Preparo lo zip…",
   "accountExportCancelled": "Operazione annullata. Nessun file è stato salvato.",
   "accountExportTooBig": "Troppi file per uno zip su questo dispositivo: scarica solo i dati (JSON).",
-  "accountExportZipDoneMissing": "Zip salvato. {count} file non si sono scaricati: l’elenco è nella pagina leggimi.html.",
+  "accountExportZipDoneMissing": "Zip salvato. {count, plural, one{1 file non si è scaricato} other{{count} file non si sono scaricati}}: l’elenco è nella pagina leggimi.html.",
   "@accountExportZipDoneMissing": {
     "placeholders": {
       "count": {

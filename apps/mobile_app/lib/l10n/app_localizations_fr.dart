@@ -5212,7 +5212,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get accountExportIntro =>
-      'Recevez un fichier avec toutes les données de votre compte : profil, animaux, comptes rendus, conversations, rappels, promenades, consentements et annonces. Il contient des liens vers vos fichiers (photos, pièces jointes), valables 15 minutes.';
+      'Recevez un fichier avec toutes les données de votre compte : profil, animaux, dossier médical, conversations, rappels, promenades, consentements et annonces. Il contient des liens vers vos fichiers (photos, pièces jointes), valables 15 minutes.';
 
   @override
   String get accountExportSensitive =>
@@ -5247,12 +5247,24 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String accountExportReadyFiles(int count, String size) {
-    return '$count fichiers à télécharger, environ $size';
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count fichiers à télécharger',
+      one: '$count fichier à télécharger',
+    );
+    return '$_temp0, environ $size';
   }
 
   @override
   String accountExportReadyUnknownSize(int count) {
-    return '$count fichiers à télécharger (taille inconnue)';
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count fichiers à télécharger',
+      one: '$count fichier à télécharger',
+    );
+    return '$_temp0 (taille inconnue)';
   }
 
   @override
@@ -5286,7 +5298,13 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String accountExportZipDoneMissing(int count) {
-    return 'Zip enregistré. $count fichiers n’ont pas pu être téléchargés : la liste est dans la page leggimi.html.';
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count fichiers n\'ont pas pu être téléchargés',
+      one: '1 fichier n\'a pas pu être téléchargé',
+    );
+    return 'Zip enregistré. $_temp0 : la liste est dans la page leggimi.html.';
   }
 
   @override

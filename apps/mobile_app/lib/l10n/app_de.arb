@@ -3003,7 +3003,7 @@
   "settingsAccountExport": "Meine Daten herunterladen",
   "settingsAccountExportSubtitle": "Alle Ihre Daten in einer Datei",
   "accountExportTitle": "Meine Daten herunterladen",
-  "accountExportIntro": "Sie erhalten eine Datei mit allen Daten Ihres Kontos: Profil, Tiere, Befunde, Chats, Erinnerungen, Spaziergänge, Einwilligungen und Anzeigen. Sie enthält Links zu Ihren Dateien (Fotos, Anhänge), die 15 Minuten gültig sind.",
+  "accountExportIntro": "Sie erhalten eine Datei mit allen Daten Ihres Kontos: Profil, Tiere, Krankenakte, Chats, Erinnerungen, Spaziergänge, Einwilligungen und Anzeigen. Sie enthält Links zu Ihren Dateien (Fotos, Anhänge), die 15 Minuten gültig sind.",
   "accountExportSensitive": "Die Datei kann sensible Daten über Sie und Ihre Tiere enthalten: Bewahren Sie sie sorgfältig auf und geben Sie sie nicht weiter.",
   "accountExportButton": "Meine Daten herunterladen",
   "accountExportWorking": "Ihre Daten werden vorbereitet…",
@@ -3013,7 +3013,7 @@
   "accountExportSaveFailed": "Die Datei konnte nicht gespeichert werden. Versuchen Sie es erneut.",
   "accountExportSaveDialogTitle": "Ihre Daten speichern",
   "accountExportEstimating": "Größe wird berechnet…",
-  "accountExportReadyFiles": "{count} Dateien zum Herunterladen, etwa {size}",
+  "accountExportReadyFiles": "{count, plural, one{{count} Datei zum Herunterladen} other{{count} Dateien zum Herunterladen}}, etwa {size}",
   "@accountExportReadyFiles": {
     "placeholders": {
       "count": {
@@ -3024,7 +3024,7 @@
       }
     }
   },
-  "accountExportReadyUnknownSize": "{count} Dateien zum Herunterladen (Größe unbekannt)",
+  "accountExportReadyUnknownSize": "{count, plural, one{{count} Datei zum Herunterladen} other{{count} Dateien zum Herunterladen}} (Größe unbekannt)",
   "@accountExportReadyUnknownSize": {
     "placeholders": {
       "count": {
@@ -3050,7 +3050,7 @@
   "accountExportPackaging": "ZIP wird erstellt…",
   "accountExportCancelled": "Abgebrochen. Es wurde keine Datei gespeichert.",
   "accountExportTooBig": "Zu viele Dateien für ein ZIP auf diesem Gerät: Laden Sie nur die Daten (JSON) herunter.",
-  "accountExportZipDoneMissing": "ZIP gespeichert. {count} Dateien konnten nicht heruntergeladen werden: Die Liste steht auf der Seite leggimi.html.",
+  "accountExportZipDoneMissing": "ZIP gespeichert. {count, plural, one{1 Datei konnte nicht heruntergeladen werden} other{{count} Dateien konnten nicht heruntergeladen werden}}: Die Liste steht auf der Seite leggimi.html.",
   "@accountExportZipDoneMissing": {
     "placeholders": {
       "count": {
