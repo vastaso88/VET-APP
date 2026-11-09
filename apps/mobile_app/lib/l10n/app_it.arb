@@ -3012,6 +3012,138 @@
   "accountExportFailed": "Non sono riuscito a preparare i dati. Riprova tra poco.",
   "accountExportSaveFailed": "Non sono riuscito a salvare il file. Riprova.",
   "accountExportSaveDialogTitle": "Salva i tuoi dati",
+  "accountExportEstimating": "Calcolo la dimensione…",
+  "accountExportReadyFiles": "{count} file da scaricare, circa {size}",
+  "@accountExportReadyFiles": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "size": {
+        "type": "String"
+      }
+    }
+  },
+  "accountExportReadyUnknownSize": "{count} file da scaricare (dimensione non nota)",
+  "@accountExportReadyUnknownSize": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "accountExportReadyOnlyData": "Non ci sono foto né allegati: solo i dati.",
+  "accountExportZipButton": "Crea lo zip leggibile",
+  "accountExportJsonButton": "Solo i dati (JSON)",
+  "accountExportCancel": "Annulla",
+  "accountExportProgress": "Scarico i file: {done} di {total}",
+  "@accountExportProgress": {
+    "placeholders": {
+      "done": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "accountExportPackaging": "Preparo lo zip…",
+  "accountExportCancelled": "Operazione annullata. Nessun file è stato salvato.",
+  "accountExportTooBig": "Troppi file per uno zip su questo dispositivo: scarica solo i dati (JSON).",
+  "accountExportZipDoneMissing": "Zip salvato. {count} file non si sono scaricati: l’elenco è nella pagina leggimi.html.",
+  "@accountExportZipDoneMissing": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "accountExportReadmeTitle": "I tuoi dati su Quokka",
+  "accountExportReadmeIntro": "Questa pagina riassume i dati del tuo account. I dati completi, nel formato originale, sono nel file dati.json; foto e allegati sono nelle cartelle foto e allegati.",
+  "accountExportReadmeGeneratedOn": "Creato il {date}",
+  "@accountExportReadmeGeneratedOn": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "accountExportReadmeSectionAccount": "Account",
+  "accountExportReadmeSectionPets": "Animali",
+  "accountExportReadmePetSheet": "Scheda",
+  "accountExportReadmeClinicalRecord": "Cartella clinica",
+  "accountExportReadmeConditions": "Condizioni",
+  "accountExportReadmeWeights": "Pesate",
+  "accountExportReadmeReminders": "Promemoria",
+  "accountExportReadmeWalks": "Passeggiate",
+  "accountExportReadmeMedia": "Foto e video",
+  "accountExportReadmeChat": "Conversazioni della chat",
+  "accountExportReadmeAttachments": "Allegati",
+  "accountExportReadmeMarketplace": "Mercatino dell'usato",
+  "accountExportReadmeConsents": "Consensi",
+  "accountExportReadmeSubscription": "Abbonamento",
+  "accountExportReadmeLocation": "Posizione",
+  "accountExportReadmeOther": "Altri dati",
+  "accountExportReadmeMissing": "File non scaricati",
+  "accountExportReadmeMissingIntro": "Questi file non si sono potuti scaricare (il link era scaduto o la rete non rispondeva). Rifai l'esportazione per averli.",
+  "accountExportReadmeEmpty": "Nessun dato.",
+  "accountExportReadmeRoleUser": "Tu",
+  "accountExportReadmeRoleAssistant": "Assistente",
+  "accountExportReadmeYes": "Sì",
+  "accountExportReadmeNo": "No",
+  "accountExportReadmeRoutePoints": "{count} punti del percorso",
+  "@accountExportReadmeRoutePoints": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "accountExportFieldName": "Nome",
+  "accountExportFieldEmail": "E-mail",
+  "accountExportFieldSurname": "Cognome",
+  "accountExportFieldPhone": "Telefono",
+  "accountExportFieldLocale": "Lingua",
+  "accountExportFieldSpecies": "Specie",
+  "accountExportFieldBreed": "Razza",
+  "accountExportFieldSex": "Sesso",
+  "accountExportFieldBirthDate": "Data di nascita",
+  "accountExportFieldAgeYears": "Età (anni)",
+  "accountExportFieldWeight": "Peso",
+  "accountExportFieldMicrochip": "Microchip",
+  "accountExportFieldNotes": "Note",
+  "accountExportFieldTitle": "Titolo",
+  "accountExportFieldSubtitle": "Dettaglio",
+  "accountExportFieldDescription": "Descrizione",
+  "accountExportFieldStatus": "Stato",
+  "accountExportFieldCreatedAt": "Creato il",
+  "accountExportFieldUpdatedAt": "Aggiornato il",
+  "accountExportFieldLastSignIn": "Ultimo accesso",
+  "accountExportFieldStartedOn": "Inizio",
+  "accountExportFieldEndedOn": "Fine",
+  "accountExportFieldTherapy": "Terapia",
+  "accountExportFieldMeasuredAt": "Data della pesata",
+  "accountExportFieldWeightKg": "Peso (kg)",
+  "accountExportFieldBodyCondition": "Corporatura",
+  "accountExportFieldDueDate": "Scadenza",
+  "accountExportFieldDistance": "Distanza (m)",
+  "accountExportFieldDuration": "Durata (secondi)",
+  "accountExportFieldSteps": "Passi stimati",
+  "accountExportFieldFavorite": "Preferita",
+  "accountExportFieldPrice": "Prezzo",
+  "accountExportFieldCity": "Luogo",
+  "accountExportFieldCategory": "Categoria",
+  "accountExportFieldCondition": "Condizione",
+  "accountExportFieldPlan": "Piano",
+  "accountExportFieldTrialEnds": "Fine della prova",
+  "accountExportFieldFileName": "Nome del file",
+  "accountExportFieldContentType": "Tipo di file",
+  "accountExportFieldAnalysis": "Analisi",
+  "accountExportFieldMode": "Modalità",
+  "accountExportFieldHomeLabel": "Residenza",
+  "accountExportFieldCurrentLabel": "Posizione attuale",
+  "accountExportFieldReason": "Motivo",
+  "accountExportFieldPetName": "Animale",
   "accountSupportSubject": "Assistenza Quokka (versione {version})",
   "@accountSupportSubject": {
     "placeholders": {
@@ -3888,9 +4020,9 @@
   "placesBackendClaimGroups": "Scegli almeno un gruppo di animali tra quelli proposti.",
   "placesBackendPlaceNotFound": "Struttura non trovata.",
   "marketplacePublishDisclaimer": "Pubblichi un annuncio come privato. Quokka mette in contatto le persone ma non è parte della compravendita: accordo, pagamento e consegna riguardano solo te e chi compra, e Quokka non ne risponde. Non controlliamo in anticipo gli annunci né gli oggetti: descrivi lo stato dell'oggetto e i difetti in modo onesto e completo. Non si possono vendere animali né farmaci o medicinali, anche veterinari. Nel testo non scrivere telefoni o e-mail: ti si scrive con i messaggi.",
-  "marketplaceDetailPrivateSeller": "Annuncio di un privato: non valgono le garanzie previste per gli acquisti da professionisti.",
+  "marketplaceDetailPrivateSeller": "Annuncio di un privato (lo dichiara chi vende): non valgono le garanzie previste per gli acquisti da professionisti.",
   "marketplaceInfoTitle": "Come funziona il Mercatino",
-  "marketplaceInfoWhat": "Il Mercatino è uno spazio dove persone private vendono o regalano oggetti usati per animali. Quokka mette in contatto chi pubblica e chi cerca: non vende, non compra e non è parte di nessun accordo.",
+  "marketplaceInfoWhat": "Il Mercatino è solo per privati: persone che vendono o regalano oggetti usati per animali, senza farne un'attività commerciale o professionale. Lo dichiari a ogni annuncio. Quokka mette in contatto chi pubblica e chi cerca: non vende, non compra e non è parte di nessun accordo.",
   "marketplaceInfoDeal": "Accordo, prezzo, pagamento, consegna e garanzie si decidono solo tra voi due. Quokka non gestisce pagamenti né spedizioni e non risponde dell'esito di una compravendita (oggetto diverso dall'annuncio, difetti, mancata consegna o mancato pagamento), salvo ciò che la legge non permette di escludere.",
   "marketplaceInfoChecks": "Non verifichiamo l'esattezza degli annunci né l'identità o l'affidabilità delle persone. Chiedi foto e informazioni, guarda l'oggetto prima di pagare e controlla che sia sicuro per il tuo animale: cinghie, gabbie, lampade e trasportini usati possono avere difetti nascosti.",
   "marketplaceInfoPrivateSale": "Tra privati non valgono le garanzie e le tutele previste per gli acquisti da un professionista (come la garanzia legale di conformità e il recesso dei contratti a distanza): valgono le regole del codice civile sulla compravendita.",
@@ -3911,7 +4043,7 @@
   "ageSaveFailed": "Non sono riuscito a salvare la data. Riprova.",
   "ageClosedTitle": "Quokka è per chi ha almeno 14 anni",
   "ageUnderageBody": "Non abbiamo creato nessun account e non abbiamo salvato nessun dato. Torna a trovarci quando avrai compiuto 14 anni.",
-  "ageClosedBody": "Hai indicato un'età inferiore a 14 anni, quindi non puoi usare Quokka e l'accesso è chiuso. Dopo 30 giorni cancelleremo i dati di questo account. Se hai scritto la data per sbaglio, scrivici: possiamo correggerla.",
+  "ageClosedBody": "Hai indicato un'età inferiore a 14 anni, quindi non puoi usare Quokka e l'accesso è chiuso. Puoi eliminare l'account e tutti i dati con il pulsante qui sotto, oppure scriverci: li cancelliamo noi. Se hai scritto la data per sbaglio, scrivici: possiamo correggerla.",
   "ageClosedContact": "Scrivi al supporto",
   "ageClosedMailSubject": "Correzione della data di nascita",
   "ageMarketplaceTitle": "Il Mercatino è per chi ha almeno 18 anni",
@@ -3919,5 +4051,8 @@
   "ageGuardianTitle": "Autorizzazione di un genitore",
   "ageGuardianBody": "Hai meno di 18 anni: per sottoscrivere un piano serve l'autorizzazione di un genitore o di chi esercita la responsabilità genitoriale. Prosegui solo se ce l'hai.",
   "ageGuardianConfirm": "Ho l'autorizzazione",
-  "marketplaceListingGone": "Questo annuncio non è più disponibile."
+  "marketplaceListingGone": "Questo annuncio non è più disponibile.",
+  "marketplacePrivateSellerDeclaration": "Dichiaro di vendere come privato, non nell'ambito di un'attività commerciale o professionale.",
+  "marketplacePrivateSellerRequired": "Per pubblicare devi confermare di vendere come privato: il Mercatino non è per attività commerciali o professionali.",
+  "marketplaceInfoPrivateOnly": "Se vendi come attività commerciale o professionale non puoi usare il Mercatino: Quokka può rimuovere gli annunci e sospendere l'accesso."
 }

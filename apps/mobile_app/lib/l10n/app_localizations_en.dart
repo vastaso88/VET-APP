@@ -5177,6 +5177,274 @@ class AppLocalizationsEn extends AppLocalizations {
   String get accountExportSaveDialogTitle => 'Save your data';
 
   @override
+  String get accountExportEstimating => 'Working out the size…';
+
+  @override
+  String accountExportReadyFiles(int count, String size) {
+    return '$count files to download, about $size';
+  }
+
+  @override
+  String accountExportReadyUnknownSize(int count) {
+    return '$count files to download (size unknown)';
+  }
+
+  @override
+  String get accountExportReadyOnlyData =>
+      'There are no photos or attachments: only the data.';
+
+  @override
+  String get accountExportZipButton => 'Create the readable zip';
+
+  @override
+  String get accountExportJsonButton => 'Data only (JSON)';
+
+  @override
+  String get accountExportCancel => 'Cancel';
+
+  @override
+  String accountExportProgress(int done, int total) {
+    return 'Downloading files: $done of $total';
+  }
+
+  @override
+  String get accountExportPackaging => 'Putting the zip together…';
+
+  @override
+  String get accountExportCancelled => 'Cancelled. No file was saved.';
+
+  @override
+  String get accountExportTooBig =>
+      'Too many files for a zip on this device: download the data only (JSON).';
+
+  @override
+  String accountExportZipDoneMissing(int count) {
+    return 'Zip saved. $count files could not be downloaded: the list is in the leggimi.html page.';
+  }
+
+  @override
+  String get accountExportReadmeTitle => 'Your data on Quokka';
+
+  @override
+  String get accountExportReadmeIntro =>
+      'This page summarizes the data of your account. The complete data, in the original format, is in the file dati.json; photos and attachments are in the foto and allegati folders.';
+
+  @override
+  String accountExportReadmeGeneratedOn(String date) {
+    return 'Created on $date';
+  }
+
+  @override
+  String get accountExportReadmeSectionAccount => 'Account';
+
+  @override
+  String get accountExportReadmeSectionPets => 'Pets';
+
+  @override
+  String get accountExportReadmePetSheet => 'Profile';
+
+  @override
+  String get accountExportReadmeClinicalRecord => 'Medical record';
+
+  @override
+  String get accountExportReadmeConditions => 'Conditions';
+
+  @override
+  String get accountExportReadmeWeights => 'Weigh-ins';
+
+  @override
+  String get accountExportReadmeReminders => 'Reminders';
+
+  @override
+  String get accountExportReadmeWalks => 'Walks';
+
+  @override
+  String get accountExportReadmeMedia => 'Photos and videos';
+
+  @override
+  String get accountExportReadmeChat => 'Chat conversations';
+
+  @override
+  String get accountExportReadmeAttachments => 'Attachments';
+
+  @override
+  String get accountExportReadmeMarketplace => 'Second-hand marketplace';
+
+  @override
+  String get accountExportReadmeConsents => 'Consents';
+
+  @override
+  String get accountExportReadmeSubscription => 'Subscription';
+
+  @override
+  String get accountExportReadmeLocation => 'Location';
+
+  @override
+  String get accountExportReadmeOther => 'Other data';
+
+  @override
+  String get accountExportReadmeMissing => 'Files not downloaded';
+
+  @override
+  String get accountExportReadmeMissingIntro =>
+      'These files could not be downloaded (the link had expired or the network did not answer). Export again to get them.';
+
+  @override
+  String get accountExportReadmeEmpty => 'No data.';
+
+  @override
+  String get accountExportReadmeRoleUser => 'You';
+
+  @override
+  String get accountExportReadmeRoleAssistant => 'Assistant';
+
+  @override
+  String get accountExportReadmeYes => 'Yes';
+
+  @override
+  String get accountExportReadmeNo => 'No';
+
+  @override
+  String accountExportReadmeRoutePoints(int count) {
+    return '$count route points';
+  }
+
+  @override
+  String get accountExportFieldName => 'Name';
+
+  @override
+  String get accountExportFieldEmail => 'Email';
+
+  @override
+  String get accountExportFieldSurname => 'Last name';
+
+  @override
+  String get accountExportFieldPhone => 'Phone';
+
+  @override
+  String get accountExportFieldLocale => 'Language';
+
+  @override
+  String get accountExportFieldSpecies => 'Species';
+
+  @override
+  String get accountExportFieldBreed => 'Breed';
+
+  @override
+  String get accountExportFieldSex => 'Sex';
+
+  @override
+  String get accountExportFieldBirthDate => 'Date of birth';
+
+  @override
+  String get accountExportFieldAgeYears => 'Age (years)';
+
+  @override
+  String get accountExportFieldWeight => 'Weight';
+
+  @override
+  String get accountExportFieldMicrochip => 'Microchip';
+
+  @override
+  String get accountExportFieldNotes => 'Notes';
+
+  @override
+  String get accountExportFieldTitle => 'Title';
+
+  @override
+  String get accountExportFieldSubtitle => 'Details';
+
+  @override
+  String get accountExportFieldDescription => 'Description';
+
+  @override
+  String get accountExportFieldStatus => 'Status';
+
+  @override
+  String get accountExportFieldCreatedAt => 'Created on';
+
+  @override
+  String get accountExportFieldUpdatedAt => 'Updated on';
+
+  @override
+  String get accountExportFieldLastSignIn => 'Last sign-in';
+
+  @override
+  String get accountExportFieldStartedOn => 'Start';
+
+  @override
+  String get accountExportFieldEndedOn => 'End';
+
+  @override
+  String get accountExportFieldTherapy => 'Therapy';
+
+  @override
+  String get accountExportFieldMeasuredAt => 'Weigh-in date';
+
+  @override
+  String get accountExportFieldWeightKg => 'Weight (kg)';
+
+  @override
+  String get accountExportFieldBodyCondition => 'Body condition';
+
+  @override
+  String get accountExportFieldDueDate => 'Due date';
+
+  @override
+  String get accountExportFieldDistance => 'Distance (m)';
+
+  @override
+  String get accountExportFieldDuration => 'Duration (seconds)';
+
+  @override
+  String get accountExportFieldSteps => 'Estimated steps';
+
+  @override
+  String get accountExportFieldFavorite => 'Favorite';
+
+  @override
+  String get accountExportFieldPrice => 'Price';
+
+  @override
+  String get accountExportFieldCity => 'Place';
+
+  @override
+  String get accountExportFieldCategory => 'Category';
+
+  @override
+  String get accountExportFieldCondition => 'Condition';
+
+  @override
+  String get accountExportFieldPlan => 'Plan';
+
+  @override
+  String get accountExportFieldTrialEnds => 'Trial ends';
+
+  @override
+  String get accountExportFieldFileName => 'File name';
+
+  @override
+  String get accountExportFieldContentType => 'File type';
+
+  @override
+  String get accountExportFieldAnalysis => 'Analysis';
+
+  @override
+  String get accountExportFieldMode => 'Mode';
+
+  @override
+  String get accountExportFieldHomeLabel => 'Home';
+
+  @override
+  String get accountExportFieldCurrentLabel => 'Current location';
+
+  @override
+  String get accountExportFieldReason => 'Reason';
+
+  @override
+  String get accountExportFieldPetName => 'Pet';
+
+  @override
   String accountSupportSubject(String version) {
     return 'Quokka support (version $version)';
   }
@@ -6825,14 +7093,14 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get marketplaceDetailPrivateSeller =>
-      'Ad from a private individual: the guarantees for purchases from businesses do not apply.';
+      'Listing from a private individual (as declared by the seller): the guarantees for purchases from businesses do not apply.';
 
   @override
   String get marketplaceInfoTitle => 'How the marketplace works';
 
   @override
   String get marketplaceInfoWhat =>
-      'The marketplace is a space where private individuals sell or give away used items for animals. Quokka puts those who publish in touch with those who are looking: it does not sell, does not buy and is not a party to any agreement.';
+      'The marketplace is for private individuals only: people who sell or give away used items for animals without doing so as a commercial or professional activity. You declare this for every listing. Quokka puts those who publish in touch with those who are looking: it does not sell, does not buy and is not a party to any agreement.';
 
   @override
   String get marketplaceInfoDeal =>
@@ -6909,7 +7177,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get ageClosedBody =>
-      'You entered an age under 14, so you can\'t use Quokka and access is closed. After 30 days we will delete this account\'s data. If you typed the date by mistake, write to us: we can correct it.';
+      'You entered an age under 14, so you can\'t use Quokka and access is closed. You can delete the account and all its data with the button below, or write to us and we will delete them. If you typed the date by mistake, write to us: we can correct it.';
 
   @override
   String get ageClosedContact => 'Write to support';
@@ -6937,4 +7205,16 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get marketplaceListingGone => 'This listing is no longer available.';
+
+  @override
+  String get marketplacePrivateSellerDeclaration =>
+      'I declare that I am selling as a private individual, not as part of a commercial or professional activity.';
+
+  @override
+  String get marketplacePrivateSellerRequired =>
+      'To publish, you must confirm that you are selling as a private individual: the marketplace is not for commercial or professional activities.';
+
+  @override
+  String get marketplaceInfoPrivateOnly =>
+      'If you sell as a commercial or professional activity, you cannot use the marketplace: Quokka may remove your listings and suspend your access.';
 }

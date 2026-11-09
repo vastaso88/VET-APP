@@ -4,6 +4,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:vet_app_mobile/features/age/data/account_age_remote_data_source.dart';
 import 'package:vet_app_mobile/features/age/data/age_store.dart';
 import 'package:vet_app_mobile/features/age/domain/age_status.dart';
+import 'package:vet_app_mobile/features/account/presentation/pages/delete_account_page.dart';
+import 'package:vet_app_mobile/features/age/presentation/pages/closed_account_page.dart';
 import 'package:vet_app_mobile/features/age/presentation/pages/underage_notice_page.dart';
 import 'package:vet_app_mobile/features/age/presentation/widgets/birth_date_form.dart';
 import 'package:vet_app_mobile/features/age/presentation/widgets/marketplace_age_gate.dart';
@@ -212,6 +214,32 @@ void main() {
       expect(find.byType(UnderageNoticePage), findsNothing);
       // The form of step 2 has phone, name, e-mail and two passwords.
       expect(find.byType(TextFormField).evaluate().length, greaterThan(3));
+    });
+  });
+
+  group('closed account page', () {
+    testWidgets('offers deleting the account, writing to support and signing out', (
+      tester,
+    ) async {
+      tester.view.physicalSize = const Size(600, 1200);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+      AgeStore.useForTest(_FakeBackend(declared: _status(AgeBand.underMinimum)));
+
+      await tester.pumpWidget(_app(const ClosedAccountPage()));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Quokka è per chi ha almeno 14 anni'), findsOneWidget);
+      expect(find.textContaining("Puoi eliminare l'account e tutti i dati"), findsOneWidget);
+      expect(find.textContaining('Dopo 30 giorni'), findsNothing);
+      expect(find.text('Elimina account'), findsOneWidget);
+      expect(find.text('Scarica i miei dati'), findsOneWidget);
+      expect(find.text('Esci'), findsOneWidget);
+
+      await tester.tap(find.text('Elimina account'));
+      await tester.pumpAndSettle();
+      expect(find.byType(DeleteAccountPage), findsOneWidget);
     });
   });
 

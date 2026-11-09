@@ -250,10 +250,19 @@ class MarketplaceRepository {
   /// the same rule runs here before anything is sent and, the one that decides,
   /// in the backend (`POST /marketplace/listings`), which is the only door to
   /// the table. The ad is not written to the database directly.
-  Future<void> createListing(MarketplaceListing listing) async {
+  ///
+  /// [privateSellerDeclared]: the seller ticked "I sell as a private person"
+  /// (owner decision 2026-11-09); the backend refuses the ad without it.
+  Future<void> createListing(
+    MarketplaceListing listing, {
+    bool privateSellerDeclared = false,
+  }) async {
     _refuseAnimals(listing);
     if (!_localOnly) {
-      if (await _writeViaApi('POST', '/marketplace/listings', listing)) return;
+      if (await _writeViaApi('POST', '/marketplace/listings', listing,
+          privateSellerDeclared: privateSellerDeclared)) {
+        return;
+      }
       if (_resolveClient() != null) throw const ListingBackendUnavailableException();
     }
     _local.insert(0, listing);
@@ -276,11 +285,18 @@ class MarketplaceRepository {
     if (detail == animalPolicyBackendMessage) return appL10n.marketplaceNoAnimalsMessage;
     if (detail == contactPolicyBackendMessage) return appL10n.marketplaceNoContactsMessage;
     if (detail == medicinePolicyBackendMessage) return appL10n.marketplaceNoMedicinesMessage;
+    if (detail == 'private_seller_declaration_required') {
+      return appL10n.marketplacePrivateSellerRequired;
+    }
     return detail;
   }
 
   /// The body the backend takes to publish or edit an ad.
-  Map<String, dynamic> _toApiBody(MarketplaceListing listing) => {
+  Map<String, dynamic> _toApiBody(
+    MarketplaceListing listing, {
+    required bool privateSellerDeclared,
+  }) =>
+      {
         'title': listing.title,
         'description': listing.description,
         'category': categoryToWire(listing.category),
@@ -292,13 +308,23 @@ class MarketplaceRepository {
         'longitude': listing.location.longitude,
         'city_label': listing.cityLabel,
         'country': listing.country,
+        'private_seller_declared': privateSellerDeclared,
       };
 
   /// True once the backend took the ad; false when it cannot be asked (no
   /// address or session). A refusal of the content is a
   /// [ListingRejectedException] carrying the backend's own message.
-  Future<bool> _writeViaApi(String method, String path, MarketplaceListing listing) async {
-    final response = await _callApi(method, path, body: _toApiBody(listing));
+  Future<bool> _writeViaApi(
+    String method,
+    String path,
+    MarketplaceListing listing, {
+    required bool privateSellerDeclared,
+  }) async {
+    final response = await _callApi(
+      method,
+      path,
+      body: _toApiBody(listing, privateSellerDeclared: privateSellerDeclared),
+    );
     if (response == null) return false;
     if (response.statusCode == 200) return true;
     if (handleSubscriptionRequired(response.statusCode)) {
@@ -351,11 +377,18 @@ class MarketplaceRepository {
   /// Author only. The `owner_id` filter plus `.select()` turn an RLS
   /// refusal (which Postgres reports as "0 rows" rather than an error) into
   /// a visible [ListingPermissionException].
-  Future<void> updateListing(MarketplaceListing listing, {required String requesterId}) async {
+  Future<void> updateListing(
+    MarketplaceListing listing, {
+    required String requesterId,
+    bool privateSellerDeclared = false,
+  }) async {
     _refuseAnimals(listing);
     if (!_localOnly && canManageListing(listing, requesterId)) {
       final path = '/marketplace/listings/${Uri.encodeComponent(listing.id)}';
-      if (await _writeViaApi('PUT', path, listing)) return;
+      if (await _writeViaApi('PUT', path, listing,
+          privateSellerDeclared: privateSellerDeclared)) {
+        return;
+      }
       if (_resolveClient() != null) throw const ListingBackendUnavailableException();
     }
     final client = _localOnly ? null : _resolveClient();

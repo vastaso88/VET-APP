@@ -8732,6 +8732,510 @@ abstract class AppLocalizations {
   /// **'Salva i tuoi dati'**
   String get accountExportSaveDialogTitle;
 
+  /// No description provided for @accountExportEstimating.
+  ///
+  /// In it, this message translates to:
+  /// **'Calcolo la dimensione…'**
+  String get accountExportEstimating;
+
+  /// No description provided for @accountExportReadyFiles.
+  ///
+  /// In it, this message translates to:
+  /// **'{count} file da scaricare, circa {size}'**
+  String accountExportReadyFiles(int count, String size);
+
+  /// No description provided for @accountExportReadyUnknownSize.
+  ///
+  /// In it, this message translates to:
+  /// **'{count} file da scaricare (dimensione non nota)'**
+  String accountExportReadyUnknownSize(int count);
+
+  /// No description provided for @accountExportReadyOnlyData.
+  ///
+  /// In it, this message translates to:
+  /// **'Non ci sono foto né allegati: solo i dati.'**
+  String get accountExportReadyOnlyData;
+
+  /// No description provided for @accountExportZipButton.
+  ///
+  /// In it, this message translates to:
+  /// **'Crea lo zip leggibile'**
+  String get accountExportZipButton;
+
+  /// No description provided for @accountExportJsonButton.
+  ///
+  /// In it, this message translates to:
+  /// **'Solo i dati (JSON)'**
+  String get accountExportJsonButton;
+
+  /// No description provided for @accountExportCancel.
+  ///
+  /// In it, this message translates to:
+  /// **'Annulla'**
+  String get accountExportCancel;
+
+  /// No description provided for @accountExportProgress.
+  ///
+  /// In it, this message translates to:
+  /// **'Scarico i file: {done} di {total}'**
+  String accountExportProgress(int done, int total);
+
+  /// No description provided for @accountExportPackaging.
+  ///
+  /// In it, this message translates to:
+  /// **'Preparo lo zip…'**
+  String get accountExportPackaging;
+
+  /// No description provided for @accountExportCancelled.
+  ///
+  /// In it, this message translates to:
+  /// **'Operazione annullata. Nessun file è stato salvato.'**
+  String get accountExportCancelled;
+
+  /// No description provided for @accountExportTooBig.
+  ///
+  /// In it, this message translates to:
+  /// **'Troppi file per uno zip su questo dispositivo: scarica solo i dati (JSON).'**
+  String get accountExportTooBig;
+
+  /// No description provided for @accountExportZipDoneMissing.
+  ///
+  /// In it, this message translates to:
+  /// **'Zip salvato. {count} file non si sono scaricati: l’elenco è nella pagina leggimi.html.'**
+  String accountExportZipDoneMissing(int count);
+
+  /// No description provided for @accountExportReadmeTitle.
+  ///
+  /// In it, this message translates to:
+  /// **'I tuoi dati su Quokka'**
+  String get accountExportReadmeTitle;
+
+  /// No description provided for @accountExportReadmeIntro.
+  ///
+  /// In it, this message translates to:
+  /// **'Questa pagina riassume i dati del tuo account. I dati completi, nel formato originale, sono nel file dati.json; foto e allegati sono nelle cartelle foto e allegati.'**
+  String get accountExportReadmeIntro;
+
+  /// No description provided for @accountExportReadmeGeneratedOn.
+  ///
+  /// In it, this message translates to:
+  /// **'Creato il {date}'**
+  String accountExportReadmeGeneratedOn(String date);
+
+  /// No description provided for @accountExportReadmeSectionAccount.
+  ///
+  /// In it, this message translates to:
+  /// **'Account'**
+  String get accountExportReadmeSectionAccount;
+
+  /// No description provided for @accountExportReadmeSectionPets.
+  ///
+  /// In it, this message translates to:
+  /// **'Animali'**
+  String get accountExportReadmeSectionPets;
+
+  /// No description provided for @accountExportReadmePetSheet.
+  ///
+  /// In it, this message translates to:
+  /// **'Scheda'**
+  String get accountExportReadmePetSheet;
+
+  /// No description provided for @accountExportReadmeClinicalRecord.
+  ///
+  /// In it, this message translates to:
+  /// **'Cartella clinica'**
+  String get accountExportReadmeClinicalRecord;
+
+  /// No description provided for @accountExportReadmeConditions.
+  ///
+  /// In it, this message translates to:
+  /// **'Condizioni'**
+  String get accountExportReadmeConditions;
+
+  /// No description provided for @accountExportReadmeWeights.
+  ///
+  /// In it, this message translates to:
+  /// **'Pesate'**
+  String get accountExportReadmeWeights;
+
+  /// No description provided for @accountExportReadmeReminders.
+  ///
+  /// In it, this message translates to:
+  /// **'Promemoria'**
+  String get accountExportReadmeReminders;
+
+  /// No description provided for @accountExportReadmeWalks.
+  ///
+  /// In it, this message translates to:
+  /// **'Passeggiate'**
+  String get accountExportReadmeWalks;
+
+  /// No description provided for @accountExportReadmeMedia.
+  ///
+  /// In it, this message translates to:
+  /// **'Foto e video'**
+  String get accountExportReadmeMedia;
+
+  /// No description provided for @accountExportReadmeChat.
+  ///
+  /// In it, this message translates to:
+  /// **'Conversazioni della chat'**
+  String get accountExportReadmeChat;
+
+  /// No description provided for @accountExportReadmeAttachments.
+  ///
+  /// In it, this message translates to:
+  /// **'Allegati'**
+  String get accountExportReadmeAttachments;
+
+  /// No description provided for @accountExportReadmeMarketplace.
+  ///
+  /// In it, this message translates to:
+  /// **'Mercatino dell\'usato'**
+  String get accountExportReadmeMarketplace;
+
+  /// No description provided for @accountExportReadmeConsents.
+  ///
+  /// In it, this message translates to:
+  /// **'Consensi'**
+  String get accountExportReadmeConsents;
+
+  /// No description provided for @accountExportReadmeSubscription.
+  ///
+  /// In it, this message translates to:
+  /// **'Abbonamento'**
+  String get accountExportReadmeSubscription;
+
+  /// No description provided for @accountExportReadmeLocation.
+  ///
+  /// In it, this message translates to:
+  /// **'Posizione'**
+  String get accountExportReadmeLocation;
+
+  /// No description provided for @accountExportReadmeOther.
+  ///
+  /// In it, this message translates to:
+  /// **'Altri dati'**
+  String get accountExportReadmeOther;
+
+  /// No description provided for @accountExportReadmeMissing.
+  ///
+  /// In it, this message translates to:
+  /// **'File non scaricati'**
+  String get accountExportReadmeMissing;
+
+  /// No description provided for @accountExportReadmeMissingIntro.
+  ///
+  /// In it, this message translates to:
+  /// **'Questi file non si sono potuti scaricare (il link era scaduto o la rete non rispondeva). Rifai l\'esportazione per averli.'**
+  String get accountExportReadmeMissingIntro;
+
+  /// No description provided for @accountExportReadmeEmpty.
+  ///
+  /// In it, this message translates to:
+  /// **'Nessun dato.'**
+  String get accountExportReadmeEmpty;
+
+  /// No description provided for @accountExportReadmeRoleUser.
+  ///
+  /// In it, this message translates to:
+  /// **'Tu'**
+  String get accountExportReadmeRoleUser;
+
+  /// No description provided for @accountExportReadmeRoleAssistant.
+  ///
+  /// In it, this message translates to:
+  /// **'Assistente'**
+  String get accountExportReadmeRoleAssistant;
+
+  /// No description provided for @accountExportReadmeYes.
+  ///
+  /// In it, this message translates to:
+  /// **'Sì'**
+  String get accountExportReadmeYes;
+
+  /// No description provided for @accountExportReadmeNo.
+  ///
+  /// In it, this message translates to:
+  /// **'No'**
+  String get accountExportReadmeNo;
+
+  /// No description provided for @accountExportReadmeRoutePoints.
+  ///
+  /// In it, this message translates to:
+  /// **'{count} punti del percorso'**
+  String accountExportReadmeRoutePoints(int count);
+
+  /// No description provided for @accountExportFieldName.
+  ///
+  /// In it, this message translates to:
+  /// **'Nome'**
+  String get accountExportFieldName;
+
+  /// No description provided for @accountExportFieldEmail.
+  ///
+  /// In it, this message translates to:
+  /// **'E-mail'**
+  String get accountExportFieldEmail;
+
+  /// No description provided for @accountExportFieldSurname.
+  ///
+  /// In it, this message translates to:
+  /// **'Cognome'**
+  String get accountExportFieldSurname;
+
+  /// No description provided for @accountExportFieldPhone.
+  ///
+  /// In it, this message translates to:
+  /// **'Telefono'**
+  String get accountExportFieldPhone;
+
+  /// No description provided for @accountExportFieldLocale.
+  ///
+  /// In it, this message translates to:
+  /// **'Lingua'**
+  String get accountExportFieldLocale;
+
+  /// No description provided for @accountExportFieldSpecies.
+  ///
+  /// In it, this message translates to:
+  /// **'Specie'**
+  String get accountExportFieldSpecies;
+
+  /// No description provided for @accountExportFieldBreed.
+  ///
+  /// In it, this message translates to:
+  /// **'Razza'**
+  String get accountExportFieldBreed;
+
+  /// No description provided for @accountExportFieldSex.
+  ///
+  /// In it, this message translates to:
+  /// **'Sesso'**
+  String get accountExportFieldSex;
+
+  /// No description provided for @accountExportFieldBirthDate.
+  ///
+  /// In it, this message translates to:
+  /// **'Data di nascita'**
+  String get accountExportFieldBirthDate;
+
+  /// No description provided for @accountExportFieldAgeYears.
+  ///
+  /// In it, this message translates to:
+  /// **'Età (anni)'**
+  String get accountExportFieldAgeYears;
+
+  /// No description provided for @accountExportFieldWeight.
+  ///
+  /// In it, this message translates to:
+  /// **'Peso'**
+  String get accountExportFieldWeight;
+
+  /// No description provided for @accountExportFieldMicrochip.
+  ///
+  /// In it, this message translates to:
+  /// **'Microchip'**
+  String get accountExportFieldMicrochip;
+
+  /// No description provided for @accountExportFieldNotes.
+  ///
+  /// In it, this message translates to:
+  /// **'Note'**
+  String get accountExportFieldNotes;
+
+  /// No description provided for @accountExportFieldTitle.
+  ///
+  /// In it, this message translates to:
+  /// **'Titolo'**
+  String get accountExportFieldTitle;
+
+  /// No description provided for @accountExportFieldSubtitle.
+  ///
+  /// In it, this message translates to:
+  /// **'Dettaglio'**
+  String get accountExportFieldSubtitle;
+
+  /// No description provided for @accountExportFieldDescription.
+  ///
+  /// In it, this message translates to:
+  /// **'Descrizione'**
+  String get accountExportFieldDescription;
+
+  /// No description provided for @accountExportFieldStatus.
+  ///
+  /// In it, this message translates to:
+  /// **'Stato'**
+  String get accountExportFieldStatus;
+
+  /// No description provided for @accountExportFieldCreatedAt.
+  ///
+  /// In it, this message translates to:
+  /// **'Creato il'**
+  String get accountExportFieldCreatedAt;
+
+  /// No description provided for @accountExportFieldUpdatedAt.
+  ///
+  /// In it, this message translates to:
+  /// **'Aggiornato il'**
+  String get accountExportFieldUpdatedAt;
+
+  /// No description provided for @accountExportFieldLastSignIn.
+  ///
+  /// In it, this message translates to:
+  /// **'Ultimo accesso'**
+  String get accountExportFieldLastSignIn;
+
+  /// No description provided for @accountExportFieldStartedOn.
+  ///
+  /// In it, this message translates to:
+  /// **'Inizio'**
+  String get accountExportFieldStartedOn;
+
+  /// No description provided for @accountExportFieldEndedOn.
+  ///
+  /// In it, this message translates to:
+  /// **'Fine'**
+  String get accountExportFieldEndedOn;
+
+  /// No description provided for @accountExportFieldTherapy.
+  ///
+  /// In it, this message translates to:
+  /// **'Terapia'**
+  String get accountExportFieldTherapy;
+
+  /// No description provided for @accountExportFieldMeasuredAt.
+  ///
+  /// In it, this message translates to:
+  /// **'Data della pesata'**
+  String get accountExportFieldMeasuredAt;
+
+  /// No description provided for @accountExportFieldWeightKg.
+  ///
+  /// In it, this message translates to:
+  /// **'Peso (kg)'**
+  String get accountExportFieldWeightKg;
+
+  /// No description provided for @accountExportFieldBodyCondition.
+  ///
+  /// In it, this message translates to:
+  /// **'Corporatura'**
+  String get accountExportFieldBodyCondition;
+
+  /// No description provided for @accountExportFieldDueDate.
+  ///
+  /// In it, this message translates to:
+  /// **'Scadenza'**
+  String get accountExportFieldDueDate;
+
+  /// No description provided for @accountExportFieldDistance.
+  ///
+  /// In it, this message translates to:
+  /// **'Distanza (m)'**
+  String get accountExportFieldDistance;
+
+  /// No description provided for @accountExportFieldDuration.
+  ///
+  /// In it, this message translates to:
+  /// **'Durata (secondi)'**
+  String get accountExportFieldDuration;
+
+  /// No description provided for @accountExportFieldSteps.
+  ///
+  /// In it, this message translates to:
+  /// **'Passi stimati'**
+  String get accountExportFieldSteps;
+
+  /// No description provided for @accountExportFieldFavorite.
+  ///
+  /// In it, this message translates to:
+  /// **'Preferita'**
+  String get accountExportFieldFavorite;
+
+  /// No description provided for @accountExportFieldPrice.
+  ///
+  /// In it, this message translates to:
+  /// **'Prezzo'**
+  String get accountExportFieldPrice;
+
+  /// No description provided for @accountExportFieldCity.
+  ///
+  /// In it, this message translates to:
+  /// **'Luogo'**
+  String get accountExportFieldCity;
+
+  /// No description provided for @accountExportFieldCategory.
+  ///
+  /// In it, this message translates to:
+  /// **'Categoria'**
+  String get accountExportFieldCategory;
+
+  /// No description provided for @accountExportFieldCondition.
+  ///
+  /// In it, this message translates to:
+  /// **'Condizione'**
+  String get accountExportFieldCondition;
+
+  /// No description provided for @accountExportFieldPlan.
+  ///
+  /// In it, this message translates to:
+  /// **'Piano'**
+  String get accountExportFieldPlan;
+
+  /// No description provided for @accountExportFieldTrialEnds.
+  ///
+  /// In it, this message translates to:
+  /// **'Fine della prova'**
+  String get accountExportFieldTrialEnds;
+
+  /// No description provided for @accountExportFieldFileName.
+  ///
+  /// In it, this message translates to:
+  /// **'Nome del file'**
+  String get accountExportFieldFileName;
+
+  /// No description provided for @accountExportFieldContentType.
+  ///
+  /// In it, this message translates to:
+  /// **'Tipo di file'**
+  String get accountExportFieldContentType;
+
+  /// No description provided for @accountExportFieldAnalysis.
+  ///
+  /// In it, this message translates to:
+  /// **'Analisi'**
+  String get accountExportFieldAnalysis;
+
+  /// No description provided for @accountExportFieldMode.
+  ///
+  /// In it, this message translates to:
+  /// **'Modalità'**
+  String get accountExportFieldMode;
+
+  /// No description provided for @accountExportFieldHomeLabel.
+  ///
+  /// In it, this message translates to:
+  /// **'Residenza'**
+  String get accountExportFieldHomeLabel;
+
+  /// No description provided for @accountExportFieldCurrentLabel.
+  ///
+  /// In it, this message translates to:
+  /// **'Posizione attuale'**
+  String get accountExportFieldCurrentLabel;
+
+  /// No description provided for @accountExportFieldReason.
+  ///
+  /// In it, this message translates to:
+  /// **'Motivo'**
+  String get accountExportFieldReason;
+
+  /// No description provided for @accountExportFieldPetName.
+  ///
+  /// In it, this message translates to:
+  /// **'Animale'**
+  String get accountExportFieldPetName;
+
   /// No description provided for @accountSupportSubject.
   ///
   /// In it, this message translates to:
@@ -11489,7 +11993,7 @@ abstract class AppLocalizations {
   /// No description provided for @marketplaceDetailPrivateSeller.
   ///
   /// In it, this message translates to:
-  /// **'Annuncio di un privato: non valgono le garanzie previste per gli acquisti da professionisti.'**
+  /// **'Annuncio di un privato (lo dichiara chi vende): non valgono le garanzie previste per gli acquisti da professionisti.'**
   String get marketplaceDetailPrivateSeller;
 
   /// No description provided for @marketplaceInfoTitle.
@@ -11501,7 +12005,7 @@ abstract class AppLocalizations {
   /// No description provided for @marketplaceInfoWhat.
   ///
   /// In it, this message translates to:
-  /// **'Il Mercatino è uno spazio dove persone private vendono o regalano oggetti usati per animali. Quokka mette in contatto chi pubblica e chi cerca: non vende, non compra e non è parte di nessun accordo.'**
+  /// **'Il Mercatino è solo per privati: persone che vendono o regalano oggetti usati per animali, senza farne un\'attività commerciale o professionale. Lo dichiari a ogni annuncio. Quokka mette in contatto chi pubblica e chi cerca: non vende, non compra e non è parte di nessun accordo.'**
   String get marketplaceInfoWhat;
 
   /// No description provided for @marketplaceInfoDeal.
@@ -11621,7 +12125,7 @@ abstract class AppLocalizations {
   /// No description provided for @ageClosedBody.
   ///
   /// In it, this message translates to:
-  /// **'Hai indicato un\'età inferiore a 14 anni, quindi non puoi usare Quokka e l\'accesso è chiuso. Dopo 30 giorni cancelleremo i dati di questo account. Se hai scritto la data per sbaglio, scrivici: possiamo correggerla.'**
+  /// **'Hai indicato un\'età inferiore a 14 anni, quindi non puoi usare Quokka e l\'accesso è chiuso. Puoi eliminare l\'account e tutti i dati con il pulsante qui sotto, oppure scriverci: li cancelliamo noi. Se hai scritto la data per sbaglio, scrivici: possiamo correggerla.'**
   String get ageClosedBody;
 
   /// No description provided for @ageClosedContact.
@@ -11671,6 +12175,24 @@ abstract class AppLocalizations {
   /// In it, this message translates to:
   /// **'Questo annuncio non è più disponibile.'**
   String get marketplaceListingGone;
+
+  /// No description provided for @marketplacePrivateSellerDeclaration.
+  ///
+  /// In it, this message translates to:
+  /// **'Dichiaro di vendere come privato, non nell\'ambito di un\'attività commerciale o professionale.'**
+  String get marketplacePrivateSellerDeclaration;
+
+  /// No description provided for @marketplacePrivateSellerRequired.
+  ///
+  /// In it, this message translates to:
+  /// **'Per pubblicare devi confermare di vendere come privato: il Mercatino non è per attività commerciali o professionali.'**
+  String get marketplacePrivateSellerRequired;
+
+  /// No description provided for @marketplaceInfoPrivateOnly.
+  ///
+  /// In it, this message translates to:
+  /// **'Se vendi come attività commerciale o professionale non puoi usare il Mercatino: Quokka può rimuovere gli annunci e sospendere l\'accesso.'**
+  String get marketplaceInfoPrivateOnly;
 }
 
 class _AppLocalizationsDelegate

@@ -128,13 +128,16 @@ void main() {
 
   group('no animals, in any country', () {
     for (final variant in ['it', 'es', 'de']) {
-      testWidgets('the form states the rule and has no confirmation checkbox ($variant)',
+      testWidgets('the form states the rule; its only checkbox is the private-seller one ($variant)',
           (tester) async {
         await useLanguageVariant(variant);
         await _openCreate(tester, MarketplaceRepository.inMemory(const []));
 
         expect(find.byKey(const ValueKey('marketplace-rules')), findsOneWidget);
-        expect(find.byType(CheckboxListTile), findsNothing);
+        // No "no animals" confirmation: the rule is stated, not ticked. The one
+        // box is the private-seller declaration (owner decision 2026-11-09).
+        expect(find.byType(CheckboxListTile), findsOneWidget);
+        expect(find.byKey(const ValueKey('marketplace-private-seller')), findsOneWidget);
       });
     }
 
@@ -167,9 +170,15 @@ void main() {
       await tester.enterText(find.widgetWithText(TextFormField, 'Titolo'), 'Vendo cuccioli');
       await _tapPublish(tester, 'Pubblica annuncio');
       await tester.pumpAndSettle();
+      // The refusal sits under the title, at the top of the form.
+      const refusal = 'Sul Mercatino si vendono solo oggetti per animali, non animali.';
+      await tester.scrollUntilVisible(
+        find.text(refusal),
+        -300,
+        scrollable: find.byType(Scrollable).first,
+      );
 
-      expect(find.text('Sul Mercatino si vendono solo oggetti per animali, non animali.'),
-          findsOneWidget);
+      expect(find.text(refusal), findsOneWidget);
       expect(await repository.loadActiveListings(), isEmpty);
     });
   });
@@ -178,10 +187,25 @@ void main() {
 /// The legal note above the button (owner decision 2026-11-08) can push it out
 /// of the lazily built list: scroll to it first.
 Future<void> _tapPublish(WidgetTester tester, String label) async {
+  await _declarePrivateSeller(tester);
   await tester.scrollUntilVisible(
     find.text(label),
     300,
     scrollable: find.byType(Scrollable).first,
   );
+  await tester.ensureVisible(find.text(label));
+  await tester.pumpAndSettle();
   await tester.tap(find.text(label));
+}
+
+/// Owner decision 2026-11-09: every publication declares a private seller.
+Future<void> _declarePrivateSeller(WidgetTester tester) async {
+  final box = find.byKey(const ValueKey('marketplace-private-seller'));
+  await tester.scrollUntilVisible(box, 300, scrollable: find.byType(Scrollable).first);
+  await tester.ensureVisible(box);
+  await tester.pumpAndSettle();
+  if (tester.widget<CheckboxListTile>(box).value != true) {
+    await tester.tap(box);
+    await tester.pump();
+  }
 }

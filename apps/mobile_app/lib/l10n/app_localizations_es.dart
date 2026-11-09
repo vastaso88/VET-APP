@@ -5218,6 +5218,275 @@ class AppLocalizationsEs extends AppLocalizations {
   String get accountExportSaveDialogTitle => 'Guardar tus datos';
 
   @override
+  String get accountExportEstimating => 'Calculando el tamaño…';
+
+  @override
+  String accountExportReadyFiles(int count, String size) {
+    return '$count archivos por descargar, unos $size';
+  }
+
+  @override
+  String accountExportReadyUnknownSize(int count) {
+    return '$count archivos por descargar (tamaño desconocido)';
+  }
+
+  @override
+  String get accountExportReadyOnlyData =>
+      'No hay fotos ni adjuntos: solo los datos.';
+
+  @override
+  String get accountExportZipButton => 'Crear el zip legible';
+
+  @override
+  String get accountExportJsonButton => 'Solo los datos (JSON)';
+
+  @override
+  String get accountExportCancel => 'Cancelar';
+
+  @override
+  String accountExportProgress(int done, int total) {
+    return 'Descargando archivos: $done de $total';
+  }
+
+  @override
+  String get accountExportPackaging => 'Preparando el zip…';
+
+  @override
+  String get accountExportCancelled =>
+      'Operación cancelada. No se guardó ningún archivo.';
+
+  @override
+  String get accountExportTooBig =>
+      'Demasiados archivos para un zip en este dispositivo: descarga solo los datos (JSON).';
+
+  @override
+  String accountExportZipDoneMissing(int count) {
+    return 'Zip guardado. $count archivos no se pudieron descargar: la lista está en la página leggimi.html.';
+  }
+
+  @override
+  String get accountExportReadmeTitle => 'Tus datos en Quokka';
+
+  @override
+  String get accountExportReadmeIntro =>
+      'Esta página resume los datos de tu cuenta. Los datos completos, en el formato original, están en el archivo dati.json; las fotos y los adjuntos están en las carpetas foto y allegati.';
+
+  @override
+  String accountExportReadmeGeneratedOn(String date) {
+    return 'Creado el $date';
+  }
+
+  @override
+  String get accountExportReadmeSectionAccount => 'Cuenta';
+
+  @override
+  String get accountExportReadmeSectionPets => 'Animales';
+
+  @override
+  String get accountExportReadmePetSheet => 'Ficha';
+
+  @override
+  String get accountExportReadmeClinicalRecord => 'Historial clínico';
+
+  @override
+  String get accountExportReadmeConditions => 'Afecciones';
+
+  @override
+  String get accountExportReadmeWeights => 'Pesajes';
+
+  @override
+  String get accountExportReadmeReminders => 'Recordatorios';
+
+  @override
+  String get accountExportReadmeWalks => 'Paseos';
+
+  @override
+  String get accountExportReadmeMedia => 'Fotos y vídeos';
+
+  @override
+  String get accountExportReadmeChat => 'Conversaciones del chat';
+
+  @override
+  String get accountExportReadmeAttachments => 'Adjuntos';
+
+  @override
+  String get accountExportReadmeMarketplace => 'Mercadillo de segunda mano';
+
+  @override
+  String get accountExportReadmeConsents => 'Consentimientos';
+
+  @override
+  String get accountExportReadmeSubscription => 'Suscripción';
+
+  @override
+  String get accountExportReadmeLocation => 'Ubicación';
+
+  @override
+  String get accountExportReadmeOther => 'Otros datos';
+
+  @override
+  String get accountExportReadmeMissing => 'Archivos no descargados';
+
+  @override
+  String get accountExportReadmeMissingIntro =>
+      'Estos archivos no se pudieron descargar (el enlace había caducado o la red no respondía). Vuelve a exportar para obtenerlos.';
+
+  @override
+  String get accountExportReadmeEmpty => 'Sin datos.';
+
+  @override
+  String get accountExportReadmeRoleUser => 'Tú';
+
+  @override
+  String get accountExportReadmeRoleAssistant => 'Asistente';
+
+  @override
+  String get accountExportReadmeYes => 'Sí';
+
+  @override
+  String get accountExportReadmeNo => 'No';
+
+  @override
+  String accountExportReadmeRoutePoints(int count) {
+    return '$count puntos del recorrido';
+  }
+
+  @override
+  String get accountExportFieldName => 'Nombre';
+
+  @override
+  String get accountExportFieldEmail => 'Correo electrónico';
+
+  @override
+  String get accountExportFieldSurname => 'Apellidos';
+
+  @override
+  String get accountExportFieldPhone => 'Teléfono';
+
+  @override
+  String get accountExportFieldLocale => 'Idioma';
+
+  @override
+  String get accountExportFieldSpecies => 'Especie';
+
+  @override
+  String get accountExportFieldBreed => 'Raza';
+
+  @override
+  String get accountExportFieldSex => 'Sexo';
+
+  @override
+  String get accountExportFieldBirthDate => 'Fecha de nacimiento';
+
+  @override
+  String get accountExportFieldAgeYears => 'Edad (años)';
+
+  @override
+  String get accountExportFieldWeight => 'Peso';
+
+  @override
+  String get accountExportFieldMicrochip => 'Microchip';
+
+  @override
+  String get accountExportFieldNotes => 'Notas';
+
+  @override
+  String get accountExportFieldTitle => 'Título';
+
+  @override
+  String get accountExportFieldSubtitle => 'Detalle';
+
+  @override
+  String get accountExportFieldDescription => 'Descripción';
+
+  @override
+  String get accountExportFieldStatus => 'Estado';
+
+  @override
+  String get accountExportFieldCreatedAt => 'Creado el';
+
+  @override
+  String get accountExportFieldUpdatedAt => 'Actualizado el';
+
+  @override
+  String get accountExportFieldLastSignIn => 'Último acceso';
+
+  @override
+  String get accountExportFieldStartedOn => 'Inicio';
+
+  @override
+  String get accountExportFieldEndedOn => 'Fin';
+
+  @override
+  String get accountExportFieldTherapy => 'Tratamiento';
+
+  @override
+  String get accountExportFieldMeasuredAt => 'Fecha del pesaje';
+
+  @override
+  String get accountExportFieldWeightKg => 'Peso (kg)';
+
+  @override
+  String get accountExportFieldBodyCondition => 'Condición corporal';
+
+  @override
+  String get accountExportFieldDueDate => 'Vencimiento';
+
+  @override
+  String get accountExportFieldDistance => 'Distancia (m)';
+
+  @override
+  String get accountExportFieldDuration => 'Duración (segundos)';
+
+  @override
+  String get accountExportFieldSteps => 'Pasos estimados';
+
+  @override
+  String get accountExportFieldFavorite => 'Favorito';
+
+  @override
+  String get accountExportFieldPrice => 'Precio';
+
+  @override
+  String get accountExportFieldCity => 'Lugar';
+
+  @override
+  String get accountExportFieldCategory => 'Categoría';
+
+  @override
+  String get accountExportFieldCondition => 'Estado';
+
+  @override
+  String get accountExportFieldPlan => 'Plan';
+
+  @override
+  String get accountExportFieldTrialEnds => 'Fin de la prueba';
+
+  @override
+  String get accountExportFieldFileName => 'Nombre del archivo';
+
+  @override
+  String get accountExportFieldContentType => 'Tipo de archivo';
+
+  @override
+  String get accountExportFieldAnalysis => 'Análisis';
+
+  @override
+  String get accountExportFieldMode => 'Modo';
+
+  @override
+  String get accountExportFieldHomeLabel => 'Residencia';
+
+  @override
+  String get accountExportFieldCurrentLabel => 'Ubicación actual';
+
+  @override
+  String get accountExportFieldReason => 'Motivo';
+
+  @override
+  String get accountExportFieldPetName => 'Animal';
+
+  @override
   String accountSupportSubject(String version) {
     return 'Asistencia Quokka (versión $version)';
   }
@@ -6873,14 +7142,14 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get marketplaceDetailPrivateSeller =>
-      'Anuncio de un particular: no se aplican las garantías previstas para las compras a profesionales.';
+      'Anuncio de un particular (según declara quien vende): no se aplican las garantías previstas para las compras a profesionales.';
 
   @override
   String get marketplaceInfoTitle => 'Cómo funciona el mercadillo';
 
   @override
   String get marketplaceInfoWhat =>
-      'El mercadillo es un espacio donde particulares venden o regalan objetos usados para animales. Quokka pone en contacto a quien publica y a quien busca: no vende, no compra y no es parte de ningún acuerdo.';
+      'El mercadillo es solo para particulares: personas que venden o regalan objetos usados para animales sin que sea una actividad comercial, empresarial o profesional. Lo declaras en cada anuncio. Quokka pone en contacto a quien publica y a quien busca: no vende, no compra y no es parte de ningún acuerdo.';
 
   @override
   String get marketplaceInfoDeal =>
@@ -6957,7 +7226,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get ageClosedBody =>
-      'Indicaste una edad inferior a 14 años, así que no puedes usar Quokka y el acceso está cerrado. Pasados 30 días borraremos los datos de esta cuenta. Si escribiste la fecha por error, escríbenos: podemos corregirla.';
+      'Indicaste una edad inferior a 14 años, así que no puedes usar Quokka y el acceso está cerrado. Puedes eliminar la cuenta y todos sus datos con el botón de abajo, o escribirnos y los borramos nosotros. Si escribiste la fecha por error, escríbenos: podemos corregirla.';
 
   @override
   String get ageClosedContact => 'Escribir a soporte';
@@ -6985,4 +7254,16 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get marketplaceListingGone => 'Este anuncio ya no está disponible.';
+
+  @override
+  String get marketplacePrivateSellerDeclaration =>
+      'Declaro que vendo como particular, no en el ámbito de una actividad comercial, empresarial o profesional.';
+
+  @override
+  String get marketplacePrivateSellerRequired =>
+      'Para publicar debes confirmar que vendes como particular: el mercadillo no es para actividades comerciales, empresariales o profesionales.';
+
+  @override
+  String get marketplaceInfoPrivateOnly =>
+      'Si vendes como actividad comercial, empresarial o profesional, no puedes usar el mercadillo: Quokka puede retirar los anuncios y suspender el acceso.';
 }

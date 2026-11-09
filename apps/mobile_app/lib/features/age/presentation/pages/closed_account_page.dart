@@ -8,6 +8,8 @@ import '../../../../design_system/tokens/app_colors.dart';
 import '../../../../design_system/tokens/app_spacing.dart';
 import '../../../../design_system/tokens/app_text_styles.dart';
 import '../../../../l10n/l10n.dart';
+import '../../../account/presentation/pages/delete_account_page.dart';
+import '../../../account/presentation/pages/export_data_page.dart';
 import '../../../account/presentation/widgets/account_page_scaffold.dart';
 import '../../../auth/data/auth_repository_factory.dart';
 import '../../data/age_store.dart';
@@ -73,7 +75,28 @@ class _ClosedAccountPageState extends State<ClosedAccountPage> {
             if (_supportEmail != null)
               FilledButton(onPressed: _writeToSupport, child: Text(l10n.ageClosedContact)),
             const SizedBox(height: AppSpacing.sm),
-            OutlinedButton(onPressed: _signOut, child: Text(l10n.settingsLogout)),
+            // Right of access stays open to a closed account.
+            OutlinedButton(
+              onPressed: () => Navigator.of(context).push(
+                MaterialPageRoute<void>(builder: (_) => const ExportDataPage()),
+              ),
+              child: Text(l10n.settingsAccountExport),
+            ),
+            const SizedBox(height: AppSpacing.sm),
+            // Always offered: the owner can erase the account and every piece
+            // of data right here (DELETE /account is open to a closed account).
+            OutlinedButton(
+              onPressed: () => Navigator.of(context).push(
+                MaterialPageRoute<void>(builder: (_) => const DeleteAccountPage()),
+              ),
+              style: OutlinedButton.styleFrom(
+                foregroundColor: AppColors.danger,
+                side: const BorderSide(color: AppColors.danger),
+              ),
+              child: Text(l10n.settingsAccountDelete),
+            ),
+            const SizedBox(height: AppSpacing.sm),
+            TextButton(onPressed: _signOut, child: Text(l10n.settingsLogout)),
           ],
         ),
       ),

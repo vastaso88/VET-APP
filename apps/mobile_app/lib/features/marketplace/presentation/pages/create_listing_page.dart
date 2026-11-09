@@ -93,6 +93,8 @@ class _CreateListingPageState extends State<CreateListingPage> {
   String? _locationError;
 
   bool _submitting = false;
+  // Asked at every publication and every edit, never remembered.
+  bool _privateSeller = false;
   String? _submitError;
 
   bool get _isEditing => widget.existing != null;
@@ -280,6 +282,10 @@ class _CreateListingPageState extends State<CreateListingPage> {
   Future<void> _submit() async {
     setState(() => _submitError = null);
     if (!_formKey.currentState!.validate()) return;
+    if (!_privateSeller) {
+      setState(() => _submitError = context.l10n.marketplacePrivateSellerRequired);
+      return;
+    }
 
     if (_approxLocation == null) {
       if (_locationChoice != null && !_resolvingLocation) {
@@ -340,6 +346,7 @@ class _CreateListingPageState extends State<CreateListingPage> {
             createdAt: now,
             updatedAt: now,
           ),
+          privateSellerDeclared: _privateSeller,
         );
       } else {
         await _repository.updateListing(
@@ -356,6 +363,7 @@ class _CreateListingPageState extends State<CreateListingPage> {
             updatedAt: now,
           ),
           requesterId: requesterId,
+          privateSellerDeclared: _privateSeller,
         );
         // Only once the listing no longer points at them.
         await _repository.photoStore.remove(
@@ -552,6 +560,18 @@ class _CreateListingPageState extends State<CreateListingPage> {
                     style: AppTextStyles.bodySmall.copyWith(color: AppColors.danger)),
               ],
               const SizedBox(height: AppSpacing.xl),
+              CheckboxListTile(
+                key: const ValueKey('marketplace-private-seller'),
+                value: _privateSeller,
+                onChanged: (value) => setState(() => _privateSeller = value ?? false),
+                controlAffinity: ListTileControlAffinity.leading,
+                contentPadding: EdgeInsets.zero,
+                title: Text(
+                  context.l10n.marketplacePrivateSellerDeclaration,
+                  style: AppTextStyles.bodySmall,
+                ),
+              ),
+              const SizedBox(height: AppSpacing.md),
               if (!_isEditing) ...[
                 Text(
                   context.l10n.marketplacePublishDisclaimer,

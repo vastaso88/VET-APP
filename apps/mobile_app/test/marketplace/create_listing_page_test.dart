@@ -214,6 +214,12 @@ void main() {
     expect(find.text('Città Studi, Milano'), findsOneWidget);
 
     await tester.enterText(find.widgetWithText(TextFormField, 'Titolo'), 'Trasportino grande');
+    await _declarePrivateSeller(tester);
+    await tester.scrollUntilVisible(
+      find.text('Salva modifiche'),
+      300,
+      scrollable: find.byType(Scrollable).first,
+    );
     await tester.tap(find.text('Salva modifiche'));
     await tester.pumpAndSettle();
 
@@ -250,6 +256,12 @@ void main() {
       ),
     );
 
+    await _declarePrivateSeller(tester);
+    await tester.scrollUntilVisible(
+      find.text('Salva modifiche'),
+      300,
+      scrollable: find.byType(Scrollable).first,
+    );
     await tester.tap(find.text('Salva modifiche'));
     await tester.pumpAndSettle();
 
@@ -289,10 +301,25 @@ void main() {
 /// The legal note above the button (owner decision 2026-11-08) can push it out
 /// of the lazily built list: scroll to it first.
 Future<void> _tapPublish(WidgetTester tester) async {
+  await _declarePrivateSeller(tester);
   await tester.scrollUntilVisible(
     find.text('Pubblica annuncio'),
     300,
     scrollable: find.byType(Scrollable).first,
   );
+  await tester.ensureVisible(find.text('Pubblica annuncio'));
+  await tester.pumpAndSettle();
   await tester.tap(find.text('Pubblica annuncio'));
+}
+
+/// Owner decision 2026-11-09: every publication declares a private seller.
+Future<void> _declarePrivateSeller(WidgetTester tester) async {
+  final box = find.byKey(const ValueKey('marketplace-private-seller'));
+  await tester.scrollUntilVisible(box, 300, scrollable: find.byType(Scrollable).first);
+  await tester.ensureVisible(box);
+  await tester.pumpAndSettle();
+  if (tester.widget<CheckboxListTile>(box).value != true) {
+    await tester.tap(box);
+    await tester.pump();
+  }
 }

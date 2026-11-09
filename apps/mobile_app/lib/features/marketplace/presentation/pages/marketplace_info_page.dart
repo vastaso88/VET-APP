@@ -17,6 +17,7 @@ class MarketplaceInfoPage extends StatelessWidget {
     final l10n = context.l10n;
     final points = [
       l10n.marketplaceInfoWhat,
+      l10n.marketplaceInfoPrivateOnly,
       l10n.marketplaceInfoDeal,
       l10n.marketplaceInfoChecks,
       l10n.marketplaceInfoPrivateSale,

@@ -3012,6 +3012,138 @@
   "accountExportFailed": "We couldn't prepare your data. Try again shortly.",
   "accountExportSaveFailed": "We couldn't save the file. Try again.",
   "accountExportSaveDialogTitle": "Save your data",
+  "accountExportEstimating": "Working out the size…",
+  "accountExportReadyFiles": "{count} files to download, about {size}",
+  "@accountExportReadyFiles": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "size": {
+        "type": "String"
+      }
+    }
+  },
+  "accountExportReadyUnknownSize": "{count} files to download (size unknown)",
+  "@accountExportReadyUnknownSize": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "accountExportReadyOnlyData": "There are no photos or attachments: only the data.",
+  "accountExportZipButton": "Create the readable zip",
+  "accountExportJsonButton": "Data only (JSON)",
+  "accountExportCancel": "Cancel",
+  "accountExportProgress": "Downloading files: {done} of {total}",
+  "@accountExportProgress": {
+    "placeholders": {
+      "done": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "accountExportPackaging": "Putting the zip together…",
+  "accountExportCancelled": "Cancelled. No file was saved.",
+  "accountExportTooBig": "Too many files for a zip on this device: download the data only (JSON).",
+  "accountExportZipDoneMissing": "Zip saved. {count} files could not be downloaded: the list is in the leggimi.html page.",
+  "@accountExportZipDoneMissing": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "accountExportReadmeTitle": "Your data on Quokka",
+  "accountExportReadmeIntro": "This page summarizes the data of your account. The complete data, in the original format, is in the file dati.json; photos and attachments are in the foto and allegati folders.",
+  "accountExportReadmeGeneratedOn": "Created on {date}",
+  "@accountExportReadmeGeneratedOn": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "accountExportReadmeSectionAccount": "Account",
+  "accountExportReadmeSectionPets": "Pets",
+  "accountExportReadmePetSheet": "Profile",
+  "accountExportReadmeClinicalRecord": "Medical record",
+  "accountExportReadmeConditions": "Conditions",
+  "accountExportReadmeWeights": "Weigh-ins",
+  "accountExportReadmeReminders": "Reminders",
+  "accountExportReadmeWalks": "Walks",
+  "accountExportReadmeMedia": "Photos and videos",
+  "accountExportReadmeChat": "Chat conversations",
+  "accountExportReadmeAttachments": "Attachments",
+  "accountExportReadmeMarketplace": "Second-hand marketplace",
+  "accountExportReadmeConsents": "Consents",
+  "accountExportReadmeSubscription": "Subscription",
+  "accountExportReadmeLocation": "Location",
+  "accountExportReadmeOther": "Other data",
+  "accountExportReadmeMissing": "Files not downloaded",
+  "accountExportReadmeMissingIntro": "These files could not be downloaded (the link had expired or the network did not answer). Export again to get them.",
+  "accountExportReadmeEmpty": "No data.",
+  "accountExportReadmeRoleUser": "You",
+  "accountExportReadmeRoleAssistant": "Assistant",
+  "accountExportReadmeYes": "Yes",
+  "accountExportReadmeNo": "No",
+  "accountExportReadmeRoutePoints": "{count} route points",
+  "@accountExportReadmeRoutePoints": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "accountExportFieldName": "Name",
+  "accountExportFieldEmail": "Email",
+  "accountExportFieldSurname": "Last name",
+  "accountExportFieldPhone": "Phone",
+  "accountExportFieldLocale": "Language",
+  "accountExportFieldSpecies": "Species",
+  "accountExportFieldBreed": "Breed",
+  "accountExportFieldSex": "Sex",
+  "accountExportFieldBirthDate": "Date of birth",
+  "accountExportFieldAgeYears": "Age (years)",
+  "accountExportFieldWeight": "Weight",
+  "accountExportFieldMicrochip": "Microchip",
+  "accountExportFieldNotes": "Notes",
+  "accountExportFieldTitle": "Title",
+  "accountExportFieldSubtitle": "Details",
+  "accountExportFieldDescription": "Description",
+  "accountExportFieldStatus": "Status",
+  "accountExportFieldCreatedAt": "Created on",
+  "accountExportFieldUpdatedAt": "Updated on",
+  "accountExportFieldLastSignIn": "Last sign-in",
+  "accountExportFieldStartedOn": "Start",
+  "accountExportFieldEndedOn": "End",
+  "accountExportFieldTherapy": "Therapy",
+  "accountExportFieldMeasuredAt": "Weigh-in date",
+  "accountExportFieldWeightKg": "Weight (kg)",
+  "accountExportFieldBodyCondition": "Body condition",
+  "accountExportFieldDueDate": "Due date",
+  "accountExportFieldDistance": "Distance (m)",
+  "accountExportFieldDuration": "Duration (seconds)",
+  "accountExportFieldSteps": "Estimated steps",
+  "accountExportFieldFavorite": "Favorite",
+  "accountExportFieldPrice": "Price",
+  "accountExportFieldCity": "Place",
+  "accountExportFieldCategory": "Category",
+  "accountExportFieldCondition": "Condition",
+  "accountExportFieldPlan": "Plan",
+  "accountExportFieldTrialEnds": "Trial ends",
+  "accountExportFieldFileName": "File name",
+  "accountExportFieldContentType": "File type",
+  "accountExportFieldAnalysis": "Analysis",
+  "accountExportFieldMode": "Mode",
+  "accountExportFieldHomeLabel": "Home",
+  "accountExportFieldCurrentLabel": "Current location",
+  "accountExportFieldReason": "Reason",
+  "accountExportFieldPetName": "Pet",
   "accountSupportSubject": "Quokka support (version {version})",
   "@accountSupportSubject": {
     "placeholders": {
@@ -3880,9 +4012,9 @@
   "placesBackendClaimGroups": "Choose at least one of the animal groups offered.",
   "placesBackendPlaceNotFound": "Facility not found.",
   "marketplacePublishDisclaimer": "You are publishing an ad as a private individual. Quokka puts people in touch but is not a party to the sale: the agreement, payment and delivery concern only you and the buyer, and Quokka is not responsible for them. We do not check ads or items in advance: describe the item's condition and any defects honestly and completely. Animals cannot be sold, nor can medicines, including veterinary ones. Do not write phone numbers or email addresses in the text: people contact you through messages.",
-  "marketplaceDetailPrivateSeller": "Ad from a private individual: the guarantees for purchases from businesses do not apply.",
+  "marketplaceDetailPrivateSeller": "Listing from a private individual (as declared by the seller): the guarantees for purchases from businesses do not apply.",
   "marketplaceInfoTitle": "How the marketplace works",
-  "marketplaceInfoWhat": "The marketplace is a space where private individuals sell or give away used items for animals. Quokka puts those who publish in touch with those who are looking: it does not sell, does not buy and is not a party to any agreement.",
+  "marketplaceInfoWhat": "The marketplace is for private individuals only: people who sell or give away used items for animals without doing so as a commercial or professional activity. You declare this for every listing. Quokka puts those who publish in touch with those who are looking: it does not sell, does not buy and is not a party to any agreement.",
   "marketplaceInfoDeal": "The agreement, price, payment, delivery and any guarantees are decided only between the two of you. Quokka does not handle payments or shipping and is not responsible for the outcome of a sale (an item different from the ad, defects, non-delivery or non-payment), except where the law does not allow this to be excluded.",
   "marketplaceInfoChecks": "We do not check that ads are accurate, nor the identity or reliability of people. Ask for photos and information, look at the item before paying and check that it is safe for your pet: used straps, cages, lamps and carriers can have hidden defects.",
   "marketplaceInfoPrivateSale": "Between private individuals, the guarantees and protections for purchases from a business (such as the legal guarantee of conformity and the right of withdrawal from distance contracts, where your country provides them) do not apply: the general legal rules on sales apply.",
@@ -3902,7 +4034,7 @@
   "ageSaveFailed": "I couldn't save the date. Try again.",
   "ageClosedTitle": "Quokka is for people aged 14 and over",
   "ageUnderageBody": "We haven't created an account and we haven't saved any data. Come back when you turn 14.",
-  "ageClosedBody": "You entered an age under 14, so you can't use Quokka and access is closed. After 30 days we will delete this account's data. If you typed the date by mistake, write to us: we can correct it.",
+  "ageClosedBody": "You entered an age under 14, so you can't use Quokka and access is closed. You can delete the account and all its data with the button below, or write to us and we will delete them. If you typed the date by mistake, write to us: we can correct it.",
   "ageClosedContact": "Write to support",
   "ageClosedMailSubject": "Date of birth correction",
   "ageMarketplaceTitle": "The second-hand marketplace is for people aged 18 and over",
@@ -3910,5 +4042,8 @@
   "ageGuardianTitle": "A parent's authorization",
   "ageGuardianBody": "You are under 18: to subscribe to a plan you need the authorization of a parent or of whoever has parental responsibility. Go ahead only if you have it.",
   "ageGuardianConfirm": "I have the authorization",
-  "marketplaceListingGone": "This listing is no longer available."
+  "marketplaceListingGone": "This listing is no longer available.",
+  "marketplacePrivateSellerDeclaration": "I declare that I am selling as a private individual, not as part of a commercial or professional activity.",
+  "marketplacePrivateSellerRequired": "To publish, you must confirm that you are selling as a private individual: the marketplace is not for commercial or professional activities.",
+  "marketplaceInfoPrivateOnly": "If you sell as a commercial or professional activity, you cannot use the marketplace: Quokka may remove your listings and suspend your access."
 }
