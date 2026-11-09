@@ -20,7 +20,7 @@ Un'e-mail che invita a sottoscrivere un piano è una **comunicazione commerciale
 7. **Solo l'abbonamento ferma la sequenza.** Scaricare i dati non ferma l'orologio (decisione del proprietario, 8 novembre): la cancellazione avviene comunque alla data indicata. La sequenza si ferma solo se l'utente sceglie un piano o cancella l'account.
 8. **Frequenza**: sono 8 e-mail in 4 mesi. Per chi non ha dato il consenso le tre mensili (+1, +2, +3 mesi) sono solo «stato dell'account»: se si preferisce ridurre, si tengono la prima e le ultime quattro.
 9. **P solo se c'è qualcosa di vero da citare.** Se l'account non ha animali, documenti né promemoria, anche con il consenso si manda S: «qui è tutto come l'hai lasciato» non sarebbe vero (artt. 21–22 Codice del consumo). Se c'è qualcosa, si citano solo gli elementi che esistono (`{elenco_contenuti}`).
-10. **Gli account sotto i 14 anni sono esclusi** (decisione tecnica del 9 novembre): non ricevono né S né P, perché per loro non vale la sequenza dei 4 mesi. L'account è chiuso (restano solo assistenza, esportazione ed eliminazione) e segue la regola dei 30 giorni, oggi solo prova a secco. Il messaggio di chiusura è quello dell'app, non fa parte di queste 8 e-mail.
+10. **Gli account sotto i 14 anni sono esclusi** (decisione tecnica del 9 novembre): non ricevono né S né P, perché per loro non vale la sequenza dei 4 mesi. L'account è chiuso (restano solo assistenza, esportazione ed eliminazione) e la sua cancellazione è una procedura del team (entro 30 giorni da quando lo scopriamo o da quando ce lo chiedono), non una sequenza automatica. Il messaggio di chiusura è quello dell'app, non fa parte di queste 8 e-mail.
 
 ## 3. Le 8 e-mail
 

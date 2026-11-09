@@ -139,10 +139,11 @@ Decisione 22: i contatti nei messaggi privati sono permessi. L'annuncio pubblico
 
 **A. Alla pubblicazione** (sopra il pulsante «Pubblica»):
 «Pubblichi un annuncio come privato. Quokka mette in contatto le persone ma non è parte della compravendita: accordo, pagamento e consegna riguardano solo te e chi compra, e Quokka non ne risponde. Non controlliamo in anticipo gli annunci né gli oggetti: descrivi lo stato dell'oggetto e i difetti in modo onesto e completo. Non si possono vendere animali né farmaci o medicinali, anche veterinari. Nel testo non scrivere telefoni o e-mail: ti si scrive con i messaggi.»
-*Casella da spuntare, se il proprietario decide che il Mercatino è solo per privati ([da decidere]):* «Dichiaro di vendere come privato, non come attività professionale.»
+*Casella obbligatoria a ogni pubblicazione e a ogni modifica, mai preselezionata (decisione del proprietario, 9 novembre: Mercatino solo per privati):* «Dichiaro di vendere come privato, non nell'ambito di un'attività commerciale o professionale.» *Senza la casella:* «Per pubblicare devi confermare di vendere come privato: il Mercatino non è per attività commerciali o professionali.»
 
 **B. Sezione Info del Mercatino** («Come funziona il Mercatino»):
-- «Il Mercatino è uno spazio dove persone private vendono o regalano oggetti usati per animali. Quokka mette in contatto chi pubblica e chi cerca: non vende, non compra e non è parte di nessun accordo.»
+- «Il Mercatino è solo per privati: persone che vendono o regalano oggetti usati per animali, senza farne un'attività commerciale o professionale. Lo dichiari a ogni annuncio. Quokka mette in contatto chi pubblica e chi cerca: non vende, non compra e non è parte di nessun accordo.»
+- «Se vendi come attività commerciale o professionale non puoi usare il Mercatino: Quokka può rimuovere gli annunci e sospendere l'accesso.»
 - «Accordo, prezzo, pagamento, consegna e garanzie si decidono solo tra voi due. Quokka non gestisce pagamenti né spedizioni e non risponde dell'esito di una compravendita (oggetto diverso dall'annuncio, difetti, mancata consegna o mancato pagamento), salvo ciò che la legge non permette di escludere.»
 - «Non verifichiamo l'esattezza degli annunci né l'identità o l'affidabilità delle persone. Chiedi foto e informazioni, guarda l'oggetto prima di pagare e controlla che sia sicuro per il tuo animale: cinghie, gabbie, lampade e trasportini usati possono avere difetti nascosti.»
 - «Tra privati non valgono le garanzie e le tutele previste per gli acquisti da un professionista (come la garanzia legale di conformità e il recesso dei contratti a distanza): valgono le regole del codice civile sulla compravendita.»
@@ -156,7 +157,7 @@ Decisione 22: i contatti nei messaggi privati sono permessi. L'annuncio pubblico
 **C. Avviso fisso in conversazione** (in cima, sempre visibile, anche prima del primo messaggio):
 «Quokka mette in contatto due privati e non è parte della compravendita: accordo, pagamento e consegna riguardano solo te e l'altra persona. Non verifichiamo annunci, oggetti o persone e non ne rispondiamo. Se scambi i tuoi contatti, lo fai sotto la tua responsabilità: non pagare in anticipo a chi non conosci. Se la conversazione viene segnalata, il team di Quokka può leggerla.» (versione tutta al «tu», dalla revisione delle traduzioni dell'8 novembre)
 
-**D. Etichetta sulla scheda dell'annuncio** (riga sotto il prezzo): «Annuncio di un privato: non valgono le garanzie previste per gli acquisti da professionisti.»
+**D. Etichetta sulla scheda dell'annuncio** (riga sotto il prezzo): «Annuncio di un privato (lo dichiara chi vende): non valgono le garanzie previste per gli acquisti da professionisti.»
 
 **E. Messaggio di blocco da parte del team** (già in registro 08, punto 41): aggiungere «Se pensi sia un errore, scrivici da Impostazioni → Contattaci.» (il contatto che l'app legge dal backend, non un indirizzo scritto a mano).
 
@@ -165,13 +166,13 @@ Decisione 22: i contatti nei messaggi privati sono permessi. L'annuncio pubblico
 **Fondamento.**
 - **Ruolo.** Quokka non è parte del contratto di compravendita (i contratti hanno effetto solo tra le parti, art. 1372 c.c.): dirlo descrive la realtà. Come prestatore di hosting, per i contenuti degli utenti vale l'esenzione se non c'è conoscenza effettiva e si interviene subito dopo una segnalazione (art. 6 DSA). L'esenzione non copre la nostra condotta diretta: per questo i testi dicono «salvo ciò che la legge non permette di escludere» e non promettono controlli che non facciamo.
 - **Tra privati.** Le tutele del consumatore (garanzia legale di conformità, recesso a distanza) valgono solo contro un professionista (art. 3 Codice del consumo): tra privati valgono il codice civile e la garanzia per i vizi (artt. 1490 ss. c.c.), che le parti possono limitare, ma non se il venditore tace in malafede i difetti (art. 1490, comma 2): per questo il testo A chiede di descrivere i difetti.
-- **Segnalazione di chi è professionista.** Se il Mercatino ammettesse venditori professionisti, il compratore dovrebbe sapere che lo sono e che le sue tutele cambiano (direttiva 2011/83/UE, art. 6a, da verificare se si applica a un sito di annunci in cui il contratto non si conclude sulla piattaforma ⚖️). Il testo D è comunque la forma di avviso più solida. Proposta: Mercatino solo per privati ([da decidere]).
+- **Segnalazione di chi è professionista.** Se il Mercatino ammettesse venditori professionisti, il compratore dovrebbe sapere che lo sono e che le sue tutele cambiano (direttiva 2011/83/UE, art. 6a, da verificare se si applica a un sito di annunci in cui il contratto non si conclude sulla piattaforma ⚖️). Il testo D è comunque la forma di avviso più solida. Deciso il 9 novembre: Mercatino solo per privati, con la casella del testo A; la piattaforma si fonda sulla dichiarazione del venditore (come chiede la direttiva 2011/83/UE, art. 6a, per i marketplace) e non la verifica. La formula della casella riprende il «professionista» dell'art. 3 Codice del consumo (attività commerciale, industriale, artigianale o professionale).
 - **Contatti nei messaggi.** I messaggi sono corrispondenza privata: il team li legge solo se una delle due persone segnala la conversazione e l'ha accettato nei Termini (parere [10](10_pareri_dal_2026_11_06.md) §2.3). Chi scrive un telefono in un messaggio ne è responsabile; la privacy dei messaggi (conservazione 6 e 12 mesi, mai con una segnalazione aperta; conversazioni segnalate dopo la cancellazione dell'account, approvate l'8 novembre con le sette condizioni) resta come nell'informativa.
 - **Cosa non si dice.** Non si scrive «Quokka garantisce» né «venditori verificati»; non si promettono controlli che il filtro non fa (il filtro rifiuta animali, farmaci e recapiti nel testo, ma non ferma tutto).
 
 ## 5. Cosa cambia nei testi legali e chi mette gli avvisi
 
-**Inseriti in [it/03](it/03_termini_di_servizio_it.md)** (Termini v2, 8 novembre): §2 (promemoria, pesi, passeggiate, urgenze), §4 (store), §8 (Mercatino: rapporto tra privati, contatti, «solo privati» [da decidere]), §9, §10 (notizie, eventi, manuale), §14 (clausola generale con elenco preciso e salvaguardia). Aggiornate anche [it/02](it/02_informativa_privacy_it.md) (messaggi: i contatti si possono scrivere) e [it/04](it/04_pagina_assistenza_it.md).
+**Inseriti in [it/03](it/03_termini_di_servizio_it.md)** (Termini v2, 8 novembre): §2 (promemoria, pesi, passeggiate, urgenze), §4 (store), §8 (Mercatino: rapporto tra privati, contatti, «solo privati», deciso il 9 novembre), §9, §10 (notizie, eventi, manuale), §14 (clausola generale con elenco preciso e salvaguardia). Aggiornate anche [it/02](it/02_informativa_privacy_it.md) (messaggi: i contatti si possono scrivere) e [it/04](it/04_pagina_assistenza_it.md).
 
 | Cosa | Chi | Quando |
 |---|---|---|
@@ -180,5 +181,5 @@ Decisione 22: i contatti nei messaggi privati sono permessi. L'annuncio pubblico
 | Frase sull'emergenza nella riga fissa della chat | Chat | Prima del test con il pubblico |
 | «Cartella clinica» come archivio personale | UI/UX | Prima del lancio |
 | 09 e bozze per paese: stessa clausola generale e stessi avvisi nelle lingue del paese | Sessione normativa | Dopo le decisioni; registro 08, punto 46 |
-| Decisione: Mercatino solo per privati, con casella | Proprietario | Prima di aprire il Mercatino al pubblico |
+| Mercatino solo per privati, con casella obbligatoria (testi in §4) | Mercatino | Deciso il 9 novembre; il codice prima di aprire il Mercatino al pubblico |
 | Controllare i riferimenti «da verificare» (art. 36, comma 2, lettere a–c; artt. 37 e 37-bis; direttiva 2024/2853; art. 6a direttiva 2011/83/UE) | Sessione normativa, appena torna la ricerca; legale | Prima di pubblicare |

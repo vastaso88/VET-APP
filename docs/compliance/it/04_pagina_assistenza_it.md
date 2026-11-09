@@ -29,7 +29,7 @@ Dall'app: Impostazioni → Contattaci.
 
 **Sono il titolare di un'attività che compare tra i servizi vicini.** I luoghi vengono da OpenStreetMap, Overture Maps e dataset pubblici dei Comuni. Per chiedere una correzione o la rimozione scrivi a [quokkaapp26@gmail.com](mailto:quokkaapp26@gmail.com) indicando il nome dell'attività e dove si trova. Se vuoi correggere o togliere una competenza mostrata (per esempio «animali esotici»), scrivi allo stesso indirizzo.
 
-**Come segnalo un annuncio del Mercatino?** Apri l'annuncio e tocca «Segnala annuncio». Sul Mercatino si trovano solo oggetti per animali: gli animali non si possono vendere, regalare né scambiare, e non si possono vendere farmaci o medicinali, anche veterinari. Per contenuti illeciti puoi scrivere anche a [EMAIL_SEGNALAZIONI].
+**Come segnalo un annuncio del Mercatino?** Apri l'annuncio e tocca «Segnala annuncio». Il Mercatino è solo per privati e vi si trovano solo oggetti per animali: gli animali non si possono vendere, regalare né scambiare, e non si possono vendere farmaci o medicinali, anche veterinari. Per contenuti illeciti puoi scrivere anche a [EMAIL_SEGNALAZIONI].
 
 **Mi scrive qualcuno dal Mercatino e non voglio rispondere.** Apri la conversazione, tocca «Altre azioni» e scegli «Blocca utente»: non potrà più scriverti, per nessun annuncio, e non riceve alcun avviso. Per segnalarla scegli «Segnala conversazione»: il nostro team leggerà quella conversazione per valutare la segnalazione. Quokka non mostra nome, e-mail o telefono dell'altra persona; se scegli di scambiarli lo fai sotto la tua responsabilità, e non pagare in anticipo a chi non conosci.
 
