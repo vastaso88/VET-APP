@@ -14,11 +14,13 @@ TABLE = "account_age"
 
 def _to_model(row: dict[str, Any]) -> AccountAge:
     guardian = row.get("guardian_ok_at")
+    correction = row.get("correction_requested_at")
     return AccountAge(
         owner_id=str(row["owner_id"]),
         birth_date=date.fromisoformat(str(row["birth_date"])[:10]),
         declared_at=datetime.fromisoformat(str(row["declared_at"])),
         guardian_ok_at=datetime.fromisoformat(str(guardian)) if guardian else None,
+        correction_requested_at=datetime.fromisoformat(str(correction)) if correction else None,
     )
 
 
@@ -62,6 +64,26 @@ class SupabaseAccountAgeRepository(AccountAgeRepository):
             .eq("owner_id", owner_id)
             .execute()
         )
+        rows = cast(list[dict[str, Any]], response.data or [])
+        return _to_model(rows[0]) if rows else None
+
+    def list_all(self) -> list[AccountAge]:
+        rows = cast(
+            list[dict[str, Any]],
+            self._client.table(TABLE).select("*").execute().data or [],
+        )
+        return [_to_model(row) for row in rows]
+
+    def replace_birth_date(self, owner_id: str, birth_date: date) -> AccountAge | None:
+        return self._update(
+            owner_id, {"birth_date": birth_date.isoformat(), "correction_requested_at": None}
+        )
+
+    def set_correction_requested(self, owner_id: str, at: datetime | None) -> AccountAge | None:
+        return self._update(owner_id, {"correction_requested_at": at.isoformat() if at else None})
+
+    def _update(self, owner_id: str, values: dict[str, Any]) -> AccountAge | None:
+        response = self._client.table(TABLE).update(values).eq("owner_id", owner_id).execute()
         rows = cast(list[dict[str, Any]], response.data or [])
         return _to_model(rows[0]) if rows else None
 

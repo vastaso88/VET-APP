@@ -729,6 +729,67 @@ export async function restrictMarketplaceUserRequest(
   });
 }
 
+export type ClosedByAgeAccount = {
+  /** Keyed reference: the only name of the account the portal ever sees. */
+  ref: string;
+  closed_at: string;
+  days_closed: number;
+  /** 30 days or more since the account was closed. */
+  past_deadline: boolean;
+  /** The person wrote that the date was a mistake: do not erase. */
+  correction_requested: boolean;
+  /** First letter and domain only, to recognise the sender of a message. */
+  email_hint: string | null;
+};
+
+export async function getClosedByAgeAccounts(): Promise<ClosedByAgeAccount[]> {
+  await requireAdminSession();
+  try {
+    const payload = await authenticatedAdminRequest<{ accounts: ClosedByAgeAccount[] }>(
+      "/admin/age/closed",
+    );
+    return payload.accounts;
+  } catch {
+    return [];
+  }
+}
+
+export type ClosedByAgeErasure = { rows_deleted: number; files_removed: number };
+
+export async function eraseClosedByAgeAccountRequest(
+  ref: string,
+  confirm: string,
+): Promise<ClosedByAgeErasure> {
+  await requireAdminSession();
+  const payload = await authenticatedAdminRequest<{ outcome: ClosedByAgeErasure }>(
+    `/admin/age/closed/${encodeURIComponent(ref)}/erase`,
+    { method: "POST", body: JSON.stringify({ confirm }) },
+  );
+  return payload.outcome;
+}
+
+export async function correctClosedByAgeDateRequest(
+  ref: string,
+  birthDate: string,
+): Promise<void> {
+  await requireAdminSession();
+  await authenticatedAdminRequest(`/admin/age/closed/${encodeURIComponent(ref)}/correct`, {
+    method: "POST",
+    body: JSON.stringify({ birth_date: birthDate }),
+  });
+}
+
+export async function setClosedByAgeCorrectionRequestedRequest(
+  ref: string,
+  requested: boolean,
+): Promise<void> {
+  await requireAdminSession();
+  await authenticatedAdminRequest(
+    `/admin/age/closed/${encodeURIComponent(ref)}/correction-requested`,
+    { method: "POST", body: JSON.stringify({ requested }) },
+  );
+}
+
 export async function liftMarketplaceRestrictionRequest(ownerId: string): Promise<void> {
   await requireAdminSession();
   await authenticatedAdminRequest(

@@ -42,6 +42,14 @@ ListingReportReason = Literal[
 # Messages between buyer and seller: messaging.py.
 REPORT_COUNT_AUTO_REMOVE_THRESHOLD = 3
 
+# What the API answers (400) to a publication or an edit without the private
+# seller declaration: a code, which the app turns into a sentence.
+PRIVATE_SELLER_DECLARATION_REQUIRED = "private_seller_declaration_required"
+# The wording of the box the seller ticks, as approved by the legal session
+# (docs/compliance/11_esclusioni_responsabilita.md §4). Change it together with
+# the text (app key marketplacePrivateSellerDeclaration).
+PRIVATE_SELLER_DECLARATION_VERSION = "2026-11-09"
+
 
 class MarketplaceListing(BaseModel):
     id: str = Field(default_factory=new_id)
@@ -64,6 +72,13 @@ class MarketplaceListing(BaseModel):
     country: str = "IT"
     status: ListingStatus = "active"
     report_count: int = 0
+    # When the seller last declared to sell as a private person, not as a
+    # business (owner decision 2026-11-09: the Mercatino is for private people
+    # only). Asked at every publication and every edit; null on ads older than
+    # the rule (scripts/setup/marketplace_private_sellers.sql).
+    private_seller_declared_at: datetime | None = None
+    # Which wording the seller ticked (PRIVATE_SELLER_DECLARATION_VERSION).
+    private_seller_declaration_version: str | None = None
     created_at: datetime = Field(default_factory=utc_now)
     updated_at: datetime = Field(default_factory=utc_now)
 

@@ -1,3 +1,4 @@
+from datetime import datetime
 from typing import Annotated
 
 from fastapi import APIRouter, Depends, HTTPException, Query
@@ -13,8 +14,11 @@ from packages.core.application.services.create_listing import CreateListingInput
 from packages.core.application.services.list_nearby_listings import ListNearbyListingsInput
 from packages.core.application.services.report_listing import ReportListingInput
 from packages.core.application.services.update_listing import UpdateListingInput
+from packages.core.domain.common.entity import utc_now
 from packages.core.domain.geo.models import Coordinates
 from packages.core.domain.marketplace.models import (
+    PRIVATE_SELLER_DECLARATION_REQUIRED,
+    PRIVATE_SELLER_DECLARATION_VERSION,
     ListingCategory,
     ListingCondition,
     ListingReportReason,
@@ -26,6 +30,7 @@ from packages.core.domain.territory.rules import (
     MARKETPLACE_MAX_RADIUS_KM,
     MARKETPLACE_MIN_RADIUS_KM,
 )
+from packages.shared.errors.base import ValidationError
 
 router = APIRouter(
     prefix="/marketplace", tags=["marketplace"], dependencies=[Depends(require_marketplace_age)]
@@ -38,7 +43,16 @@ def _public_row(listing: MarketplaceListing, requester_id: str) -> dict[str, obj
     to everyone else it is an internal identifier that would let a stranger
     link the ad to an account."""
     is_mine = listing.owner_id == requester_id
-    hidden = {"location"} if is_mine else {"location", "owner_id"}
+    hidden = (
+        {"location"}
+        if is_mine
+        else {
+            "location",
+            "owner_id",
+            "private_seller_declared_at",
+            "private_seller_declaration_version",
+        }
+    )
     row = listing.model_dump(mode="json", exclude=hidden)
     row["is_mine"] = is_mine
     row["latitude"] = listing.location.latitude
@@ -102,6 +116,16 @@ class ListingPayload(BaseModel):
     longitude: float = Field(ge=-180, le=180)
     city_label: str | None = Field(default=None, max_length=120)
     country: str = Field(default="IT", min_length=2, max_length=2)
+    # The seller ticks "I sell as a private person, not as a business" (owner
+    # decision 2026-11-09). Without it the ad is neither published nor edited.
+    private_seller_declared: bool = False
+
+
+def _private_seller_declaration(payload: ListingPayload) -> datetime:
+    """The moment of the declaration, or a 400 with a code the app translates."""
+    if not payload.private_seller_declared:
+        raise ValidationError(PRIVATE_SELLER_DECLARATION_REQUIRED)
+    return utc_now()
 
 
 # The one door through which an ad is written: the content rule (no animals)
@@ -116,6 +140,7 @@ class ListingPayload(BaseModel):
 def create_listing(payload: ListingPayload) -> dict[str, object]:
     container = get_container()
     user = container.auth_provider.get_current_user()
+    declared_at = _private_seller_declaration(payload)
     result = container.create_listing_service().execute(
         CreateListingInput(
             owner_id=user.id,
@@ -129,6 +154,8 @@ def create_listing(payload: ListingPayload) -> dict[str, object]:
             target_species=payload.target_species,
             city_label=payload.city_label,
             country=payload.country,
+            private_seller_declared_at=declared_at,
+            private_seller_declaration_version=PRIVATE_SELLER_DECLARATION_VERSION,
         )
     )
     return {"listing": _public_row(result.listing, user.id)}
@@ -144,6 +171,7 @@ def create_listing(payload: ListingPayload) -> dict[str, object]:
 def update_listing(listing_id: str, payload: ListingPayload) -> dict[str, object]:
     container = get_container()
     user = container.auth_provider.get_current_user()
+    declared_at = _private_seller_declaration(payload)
     result = container.update_listing_service().execute(
         UpdateListingInput(
             owner_id=user.id,
@@ -158,6 +186,8 @@ def update_listing(listing_id: str, payload: ListingPayload) -> dict[str, object
             target_species=payload.target_species,
             city_label=payload.city_label,
             country=payload.country,
+            private_seller_declared_at=declared_at,
+            private_seller_declaration_version=PRIVATE_SELLER_DECLARATION_VERSION,
         )
     )
     return {"listing": _public_row(result.listing, user.id)}

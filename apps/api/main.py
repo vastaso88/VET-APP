@@ -12,6 +12,7 @@ from apps.api.routes.account_age import router as account_age_router
 from apps.api.routes.account_consents import router as account_consents_router
 from apps.api.routes.account_preferences import router as account_preferences_router
 from apps.api.routes.admin import router as admin_router
+from apps.api.routes.admin_age import router as admin_age_router
 from apps.api.routes.auth import router as auth_router
 from apps.api.routes.chat import router as chat_router
 from apps.api.routes.chat_attachments import router as chat_attachments_router
@@ -244,6 +245,7 @@ async def handle_unexpected_error(_: Request, exc: Exception) -> JSONResponse:
 
 app.include_router(health_router)
 app.include_router(admin_router)
+app.include_router(admin_age_router)
 app.include_router(lifecycle_router)
 app.include_router(auth_router)
 app.include_router(pets_router)

@@ -19,10 +19,10 @@ class UnderageReviewReport(BaseModel):
 
 
 class UnderageReviewDryRunService:
-    """What the 30-day review of accounts that declared an age under the
-    minimum would do. It reads and counts. There is no erase path here on
-    purpose: the erasure stays off until the Orchestrator switches it on
-    (same posture as the data-retention dry run)."""
+    """How many closed accounts (declared age under the minimum) have been
+    closed for more than 30 days, so the team can delete them by hand. It reads
+    and counts. There is no erase path here: the automatic erasure is not
+    switched on (owner decision, 9 November 2026)."""
 
     def __init__(self, repository: AccountAgeRepository) -> None:
         self._repository = repository

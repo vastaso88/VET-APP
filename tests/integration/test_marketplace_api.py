@@ -101,6 +101,7 @@ def test_the_new_wide_radii_are_served() -> None:
 
 
 PAYLOAD = {
+    "private_seller_declared": True,
     "title": "Cuccia per cuccioli",
     "description": "Poco usata",
     "category": "kennels_carriers",
@@ -241,6 +242,7 @@ def test_contact_details_and_medicines_are_refused_with_a_clear_message() -> Non
         "condition": "good",
         "latitude": ME["latitude"],
         "longitude": ME["longitude"],
+        "private_seller_declared": True,
     }
 
     contacts = client.post(
@@ -318,3 +320,47 @@ def test_a_valid_report_answers_without_count_or_state_even_without_a_plan(
 
     assert response.status_code == 200
     assert response.json() == {"ok": True}
+
+
+def test_publishing_or_editing_without_the_private_seller_declaration_is_refused() -> None:
+    """Owner decision 2026-11-09: the Mercatino is for private people only."""
+    client = TestClient(app)
+    undeclared = {key: value for key, value in PAYLOAD.items() if key != "private_seller_declared"}
+
+    refused = client.post("/marketplace/listings", json=undeclared)
+    assert refused.status_code == 400
+    assert refused.json()["detail"] == "private_seller_declaration_required"
+
+    created = client.post("/marketplace/listings", json=PAYLOAD).json()["listing"]
+    assert created["private_seller_declared_at"], "the seller sees their own declaration"
+    stored = get_container().marketplace_listing_repository.get(created["id"])
+    assert stored is not None and stored.private_seller_declared_at is not None
+    assert stored.private_seller_declaration_version == "2026-11-09"
+    first = stored.private_seller_declared_at
+
+    edit = client.put(f"/marketplace/listings/{created['id']}", json=undeclared)
+    assert edit.status_code == 400
+    again = client.put(f"/marketplace/listings/{created['id']}", json=PAYLOAD)
+    assert again.status_code == 200
+    restored = get_container().marketplace_listing_repository.get(created["id"])
+    assert restored is not None and restored.private_seller_declared_at is not None
+    assert restored.private_seller_declared_at >= first
+
+
+def test_user_b_neither_edits_a_declaration_of_a_nor_sees_it() -> None:
+    _seed("api-declared-of-a", 1)
+    repository = get_container().marketplace_listing_repository
+    before = repository.get("api-declared-of-a")
+    assert before is not None
+    client = TestClient(app)
+
+    refused = client.put("/marketplace/listings/api-declared-of-a", json=PAYLOAD)
+    seen = client.get("/marketplace/listings/api-declared-of-a").json()["listing"]
+
+    assert refused.status_code == 400
+    after = repository.get("api-declared-of-a")
+    assert (
+        after is not None and after.private_seller_declared_at == before.private_seller_declared_at
+    )
+    assert "private_seller_declared_at" not in seen
+    assert "private_seller_declaration_version" not in seen

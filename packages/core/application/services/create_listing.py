@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from pydantic import BaseModel
 
 from packages.core.application.ports.marketplace_listing_repository import (
@@ -36,6 +38,8 @@ class CreateListingInput(BaseModel):
     target_species: list[ListingSpecies] = []
     city_label: str | None = None
     country: str = "IT"
+    private_seller_declared_at: datetime | None = None
+    private_seller_declaration_version: str | None = None
 
 
 class CreateListingOutput(BaseModel):
@@ -77,5 +81,7 @@ class CreateListingService:
             city_label=data.city_label,
             country=country,
             location=approximate_coordinates(data.exact_location),
+            private_seller_declared_at=data.private_seller_declared_at,
+            private_seller_declaration_version=data.private_seller_declaration_version,
         )
         return CreateListingOutput(listing=self._repository.save(listing))

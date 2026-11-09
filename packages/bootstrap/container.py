@@ -54,6 +54,7 @@ from packages.core.application.ports.weight_measurement_repository import (
 )
 from packages.core.application.services.account_data_counts import AccountDataCounter
 from packages.core.application.services.age_gate import AgeGateService
+from packages.core.application.services.age_review_admin import AgeReviewAdminService
 from packages.core.application.services.chat_orchestrator import ChatOrchestrator
 from packages.core.application.services.consent_interpreter import ConsentInterpreter
 from packages.core.application.services.create_listing import CreateListingService
@@ -487,6 +488,17 @@ class ApplicationContainer:
                 return None
 
         return lookup
+
+    def account_eraser(self) -> AccountEraser:
+        return self._build_account_eraser()
+
+    def age_review_admin_service(self) -> AgeReviewAdminService:
+        return AgeReviewAdminService(
+            self.account_age_repository,
+            self.owner_contact_lookup,
+            self._build_account_eraser(),
+            self.settings.reporter_pseudonym_secret(),
+        )
 
     def underage_review_dry_run_service(self) -> UnderageReviewDryRunService:
         return UnderageReviewDryRunService(self.account_age_repository)

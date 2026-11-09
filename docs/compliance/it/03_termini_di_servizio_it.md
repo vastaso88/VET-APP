@@ -97,7 +97,7 @@ L'app, il suo software, i suoi testi e la sua grafica sono nostri o dei nostri l
 
 ## 12. Sospensione e chiusura dell'account
 
-Puoi eliminare l'account in qualsiasi momento da Impostazioni → Elimina account; la cancellazione è definitiva (vedi l'informativa privacy). Possiamo sospendere o chiudere un account se violi in modo grave o ripetuto questi termini o la legge; dove possibile ti spieghiamo il motivo e puoi rispondere scrivendo a [quokkaapp26@gmail.com](mailto:quokkaapp26@gmail.com). Se dopo la prova o alla scadenza di un abbonamento non scegli un piano, l'account si cancella dopo 4 mesi (vedi §4). Se scopriamo che hai meno di 14 anni, chiudiamo l'account e cancelliamo i dati (vedi §1).
+Puoi eliminare l'account in qualsiasi momento da Impostazioni → Elimina account; la cancellazione è definitiva (vedi l'informativa privacy). Possiamo sospendere o chiudere un account se violi in modo grave o ripetuto questi termini o la legge; dove possibile ti spieghiamo il motivo e puoi rispondere scrivendo a [quokkaapp26@gmail.com](mailto:quokkaapp26@gmail.com). Se dopo la prova o alla scadenza di un abbonamento non scegli un piano, l'account si cancella dopo 4 mesi (vedi §4). Se scopriamo che hai meno di 14 anni, chiudiamo l'account e cancelliamo i dati senza ritardo, comunque entro 30 giorni (vedi §1).
 
 ## 13. Modifiche al servizio e ai termini
 

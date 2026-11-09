@@ -14,8 +14,9 @@ from pydantic import BaseModel
 MINIMUM_AGE = 14
 ADULT_AGE = 18
 
-# Days an account that declared an age under the minimum stays closed before
-# its data may be erased (the erasure job is still off: dry run only).
+# Days after which a closed account (declared age under the minimum) shows up
+# in the team's dry-run count. Nothing is erased automatically (owner decision,
+# 9 November 2026): the owner deletes the account or the team does it by hand.
 UNDER_MINIMUM_GRACE_DAYS = 30
 OLDEST_PLAUSIBLE_AGE = 120
 
@@ -34,6 +35,9 @@ class AccountAge(BaseModel):
     # When the owner confirmed they have a parent's authorisation for a paid
     # plan (only meaningful for a declared minor).
     guardian_ok_at: datetime | None = None
+    # Set by the team when the owner wrote to say the date was a mistake: a
+    # closed account with a pending correction is never erased.
+    correction_requested_at: datetime | None = None
 
 
 def age_on(birth_date: date, today: date) -> int:

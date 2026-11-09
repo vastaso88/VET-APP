@@ -17,8 +17,14 @@ create table if not exists public.account_age (
     declared_at timestamptz not null default now(),
     -- Quando un minorenne (14-17) ha confermato di avere l'autorizzazione
     -- di un genitore per un piano a pagamento.
-    guardian_ok_at timestamptz
+    guardian_ok_at timestamptz,
+    -- Segnata dal team quando la persona ha scritto per dire che la data era
+    -- sbagliata: finche' c'e', l'account chiuso non si cancella dal portale.
+    correction_requested_at timestamptz
 );
+
+-- Per chi ha gia' eseguito la prima versione dello script.
+alter table public.account_age add column if not exists correction_requested_at timestamptz;
 
 alter table public.account_age enable row level security;
 
@@ -31,5 +37,6 @@ using (owner_id = auth.uid()::text);
 revoke insert, update, delete on public.account_age from anon, authenticated;
 
 -- Correzione di una data dichiarata male (diritto di rettifica, art. 16 GDPR):
--- la fa il supporto, dopo aver verificato chi scrive, con
+-- la fa il supporto dal portale (Account chiusi per età), dopo aver verificato
+-- chi scrive. Il comando a mano resta possibile:
 --   update public.account_age set birth_date = 'AAAA-MM-GG' where owner_id = '<id>';

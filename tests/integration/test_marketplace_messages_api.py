@@ -478,6 +478,7 @@ def test_the_export_holds_my_conversations_without_the_other_persons_id(
 
 
 LISTING_PAYLOAD = {
+    "private_seller_declared": True,
     "title": "Cuccia",
     "category": "kennels_carriers",
     "condition": "good",

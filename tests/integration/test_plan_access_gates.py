@@ -24,6 +24,7 @@ pytestmark = pytest.mark.usefixtures("adult_everyone")
 OWNER = "demo-user"
 ME = {"latitude": 45.46, "longitude": 9.19}
 LISTING_BODY = {
+    "private_seller_declared": True,
     "title": "Trasportino",
     "category": "kennels_carriers",
     "condition": "good",

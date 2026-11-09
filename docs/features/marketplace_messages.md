@@ -101,3 +101,16 @@ lettura diretta mostrerebbe l'id dell'altra persona.
 Oggi non ci sono notifiche push: il numero sulla busta si aggiorna all'apertura e ogni minuto con
 il Mercatino aperto, la conversazione ogni 20 secondi. Le push arrivano dopo il test con il pubblico
 (decisione del 2026-11-07).
+
+## Solo privati (decisione del proprietario, 2026-11-09)
+
+A ogni pubblicazione e modifica di un annuncio una casella obbligatoria, mai preselezionata:
+«Dichiaro di vendere come privato, non nell'ambito di un'attività commerciale o professionale.»
+(testi della Normativa, `docs/compliance/11_esclusioni_responsabilita.md` §4). Senza, il backend
+risponde 400 `private_seller_declaration_required`; con, salva sull'annuncio data
+(`private_seller_declared_at`) e versione del testo (`private_seller_declaration_version`,
+oggi `2026-11-09`). Le due colonne si vedono solo nei propri annunci. SQL:
+`scripts/setup/marketplace_private_sellers.sql` (stesso blocco in `supabase_schema.sql`), con due
+policy restrittive per chi scrive direttamente nella tabella. Le app già installate non mandano la
+dichiarazione: dopo il deploy non possono pubblicare finché non si aggiornano.
+
