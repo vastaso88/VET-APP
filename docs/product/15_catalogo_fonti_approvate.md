@@ -99,7 +99,7 @@ Tutti aperti **per intero** il 2026-11-10 (testo completo letto; l'elenco comple
 | ESCCAP GL1 (vermi) | Letta solo nei passaggi chiave: non basta per una scheda sui vermi |
 | Foglio illustrativo britannico di Nobivac Myxo-RHD PLUS | È l'autorizzazione per la Gran Bretagna, non per l'UE; le pagine EMA con il testo europeo sono bloccate. Nessuna scheda sul vaccino del coniglio finché non si apre il testo UE o italiano |
 | Documenti IZS e Ministero 2011-2026 sul coniglio | Riguardano soprattutto i conigli da allevamento; nessuno dà un calendario per i conigli da compagnia; la pagina del Ministero è bloccata |
-| Altri 9 lavori sul coniglio scaricati e non letti | Elenco in `manuale_fonti/ex_rabbit.md` (cartella delle note condivise), seconda tornata |
+| Altri 9 lavori sul coniglio scaricati e non letti | Le copie sono state cancellate. Identificativi PubMed Central dei candidati, per una seconda tornata: PMC12861439 (rassegna sulla malattia emorragica virale, 2025), PMC11504023 (conigli da compagnia vaccinati contro RHDV2, 2024), PMC7106034 (malattie digestive dei piccoli mammiferi esotici, 2013), PMC7129804 (coniglio anziano, 2010), PMC12554809 (obesità), PMC11825090 (pesi standard). Prima di riprenderli, il semaforo (§5.1) |
 
 ## 5. Diritti d'uso: cosa serve dalla Normativa
 
@@ -108,9 +108,28 @@ Domande aperte (non sono mie decisioni; il parere `compliance/13` dice che i pun
 1. **Riassunto di fatti da fonti «all rights reserved»** (WSAVA, ESCCAP, AAFP/ISFM, iCatCare, Elsevier): il parere lo ammette con parole nostre e una riga «Fonte». ESCCAP, ABCD, iCatCare e FVE scrivono però «permesso scritto per la riproduzione». Conferma che per un riassunto non serve; se la Normativa preferisce, il permesso si chiede lo stesso (contatti: ESCCAP info@esccap.org, WSAVA admin@wsava.org e modulo, FVE info@fve.org).
 2. **Fonti CC BY-NC-ND** (AAHA 2021 secondo Crossref) e **CC BY-NC**: il riassunto di fatti con parole nostre è lecito come per i diritti riservati, o le escludiamo del tutto come per ora?
 3. **Copie PubMed Central di articoli Elsevier** con la sola licenza COVID-19 (diritto scaduto con l'emergenza): trattare come diritti riservati (riassunto, nessun testo).
-4. **Lettura automatica**: per scrivere queste schede, strumenti automatici hanno letto singoli documenti pubblici (PDF e testi di PubMed Central, tramite le interfacce ufficiali di Europe PMC), senza raccogliere interi siti. La riserva dei diritti per l'estrazione di testo e dati (art. 70-quater e 70-septies) **non è stata controllata prima**, come chiede il parere §3. Le copie scaricate sono solo di lavoro e vengono cancellate; chiedere alla Normativa se per i prossimi documenti serve un controllo per fonte.
+4. **Lettura automatica: nota sull'evento (2026-11-10).** Per scrivere le schede, strumenti automatici (sessioni di aiuto di questa sessione) hanno letto **singoli documenti pubblici**, uno alla volta: i PDF di WSAVA, ESCCAP, iCatCare e AAHA/AAFP, e i testi di articoli presi dall'interfaccia XML di Europe PMC (copie PubMed Central). Non sono stati raccolti interi siti. La riserva dei diritti per l'estrazione di testo e dati (art. 70-quater e 70-septies) **non era stata controllata prima**, come chiede il parere §3. Dai controlli della Normativa (Appendice A.4) risulta che ESCCAP, iCatCare ed Elsevier avevano una riserva espressa nei termini, e che per Wiley e SAGE i termini non erano apribili: le fonti coinvolte sono segnate «rosso» nel catalogo. Effetto sulle schede: tutte restano in bozza; le frasi che poggiano su fonti rosse (84) vanno rilette a mano da una persona (`docs/product/15a_lista_rilettura_a_mano.md`). **Copie cancellate**: le cartelle di scaricamento e i testi estratti (nella cartella temporanea di questa sessione), i file di testo prodotti dagli strumenti nella cartella di sessione di Claude Code; nel repository e nell'archivio della chat ci sono solo metadati e le nostre schede. Restano le registrazioni delle sessioni di aiuto (file di sessione dell'applicazione, fuori dal repository), che possono contenere brani letti: la loro cancellazione la decide il proprietario. **Regola nuova** (parere, Appendice A.3): vale il semaforo qui sotto prima di ogni lettura.
 5. **Riga «Fonte»**: usata con il formato del parere (ente o autori, titolo, rivista, anno, DOI o indirizzo, «Riassunto di Quokka, verificato il …», e per CC BY «Licenza CC BY; modificato da Quokka»). Si ottiene da `python scripts/manuale/check_manuale.py --righe`.
 6. **Diritto sui generis delle banche dati**: nessuna scheda riprende tabelle o elenchi interi; l'archivio che la sessione Chat costruirà contiene le nostre schede, non le fonti.
+
+
+### 5.1 Il semaforo prima di ogni lettura automatica (dalla Normativa)
+
+| Semaforo | Quando | Cosa si può fare | Fonti oggi |
+|---|---|---|---|
+| Verde | CC0 o CC BY indicata sulla pagina dell'articolo (Europe PMC: solo il sottoinsieme «uso commerciale consentito») | Lettura automatica, un documento alla volta, con attribuzione | 5: O'Neill 2025, Jackson 2025, Craciun 2025, Forder 2024, Fenton 2025 |
+| Giallo | Nessuna riserva trovata ma diritti riservati | Prima il controllo in 4 punti (robots.txt, termini, segnali leggibili da macchina, avviso nel PDF) e la registrazione; poi un documento alla volta | 3: WSAVA (vaccini 2024, nutrizione 2011, guida premi 2025) |
+| Rosso | Riserva presente, o controllo impossibile (pagina bloccata), o licenza NC/ND | Solo lettura a mano da una persona, o permesso scritto. **Mai il testo incollato in un modello** | 11: ESCCAP GL3, iCatCare (2), Elsevier (3), AAHA/AAFP, ISFM, Webb, Batchelor (editore SAGE, termini non apribili), Elwood (Wiley, termini non apribili) |
+
+Per ogni fonte, `data/manuale/fonti.json` ha ora `semaforo`, `riserva_estrazione_automatica` (con la data del controllo, 2026-11-10) e `lettura_eseguita`. Le fonti con licenza NC o ND servono solo a confermare fatti già sostenuti da altre fonti, segnate «solo fatti»: oggi nessuna scheda poggia su di esse (iCatCare 2025 e AAHA 2021 non sono usate).
+
+### 5.2 Cosa ha risposto la Normativa (`compliance/13`, Appendice A)
+
+- **ESCCAP, WSAVA, iCatCare, ABCD, FVE**: il riassunto di fatti, con parole nostre e una riga «Fonte», non richiede permesso; il rischio vero è il «compendio» (frasi e struttura della fonte), e la regola è «si scrive dal concetto, non dalla frase». Per le schede su iCatCare, ESCCAP o FVE la Normativa consiglia di scrivere agli enti (bozza in A.5), a scelta del proprietario.
+- **CC BY-NC e ND**: i fatti sì, la forma no; non come base unica; si possono usare per confermare fatti, segnando «solo fatti».
+- **Lettura automatica già fatta**: difetto di procedura, rischio sostanziale limitato; le tre fonti Elsevier, Elwood, ESCCAP e iCatCare sono rosse, e le loro frasi vanno rilette a mano (15a).
+
+Il controllo di somiglianza richiesto («nessuna sequenza di 6 o più parole uguali alla fonte») ha un limite: le fonti sono in inglese e le schede in italiano, quindi una sequenza di parole uguali non può esistere; il rischio vero è la **traduzione ravvicinata** (stesso ordine delle clausole e degli elenchi). Questo si controlla leggendo la fonte: per le fonti verdi e gialle l'ho fatto con un quarto giro (§7.1); per le rosse è nella lista di rilettura a mano.
 
 ## 6. Cosa manca e come sbloccarlo
 
@@ -149,7 +168,7 @@ Cosa serve prima di chiamarle «rivedute»: la lettura del proprietario; la revi
 
 ### 7.1 Cosa ha trovato il controllo (e cosa ne ho tratto)
 
-Primo giro: 146 frasi (53 corrette, 62 in parte, 29 traduzioni troppo vicine, 2 non sostenute). Secondo giro, dopo la riscrittura: 136 frasi con fonte (90 corrette, 34 in parte, 12 ancora vicine, 0 non sostenute). Le correzioni successive (cautele ripristinate, riferimenti di pagina, frasi riformulate) sono state applicate ma **non** ricontrollate: restano `bozza` fino alla lettura del proprietario. Il controllo non sostituisce la sua lettura: una fonte può essere letta male da due sessioni di seguito.
+Primo giro: 146 frasi (53 corrette, 62 in parte, 29 traduzioni troppo vicine, 2 non sostenute). Secondo giro, dopo la riscrittura: 136 frasi con fonte (90 corrette, 34 in parte, 12 ancora vicine, 0 non sostenute). Quarto giro (dopo la regola del semaforo, solo sulle 54 frasi che poggiano su fonti verdi o gialle: WSAVA e articoli CC BY, un documento alla volta, copie cancellate): 45 corrette e 8 in parte, 0 non sostenute; 8 traduzioni ancora troppo vicine alla fonte, che ho riscritto dal concetto, e alcune cautele e perimetri da precisare, che ho corretto (per esempio: «ogni 3 anni» vale per i vaccini vivi attenuati; «uva e xilitolo» mancavano dall'elenco dei cibi tossici). Per le frasi su fonti rosse il quarto giro non si può fare da parte mia (regola del semaforo): sono nella lista di rilettura a mano. Le correzioni successive (cautele ripristinate, riferimenti di pagina, frasi riformulate) sono state applicate ma **non** ricontrollate: restano `bozza` fino alla lettura del proprietario. Il controllo non sostituisce la sua lettura: una fonte può essere letta male da due sessioni di seguito.
 
 | Tipo di problema | Esempio reale | Regola che ne è uscita |
 |---|---|---|

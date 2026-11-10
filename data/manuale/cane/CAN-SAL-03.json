@@ -25,13 +25,13 @@
     "magro",
     "grasso"
   ],
-  "riassunto_per_chat": "WSAVA propone di controllare a ogni visita peso, grasso (scala 1-9) e muscolo. Per la maggior parte degli animali l'obiettivo è 4-5 su 9, che ad alcuni proprietari può sembrare «troppo magro»; gli obiettivi poggiano su pochi studi. Il grasso si valuta guardando e toccando, soprattutto nei cani a pelo medio-lungo; il grasso in eccesso può nascondere una perdita di muscolo. Oltre 6 su 9 il rischio di malattie sembra aumentare (evidenze limitate). Cuccioli sotto l'anno, cani oltre i 7 anni, gravidanza e allattamento chiedono più attenzione. Premi, snack e avanzi: meno del 10% delle calorie del giorno e mai al posto di un pasto. Per alcuni animali un cambio di alimento in 7-10 giorni dà meno disturbi digestivi; nessun metodo è provato migliore. Tra i segnali che meritano una valutazione: punteggio fuori dall'intervallo 4-5, perdita di muscolo, cambio di peso senza spiegazione, disturbi digestivi, problemi di denti e pelo. Cibi pericolosi tra gli altri: cioccolato, macadamia, cipolla e simili, alcol e pasta lievitata cruda; ossa cotte e crude. La linea guida letta (2011) non dà un ritmo di dimagrimento in numeri.",
+  "riassunto_per_chat": "WSAVA propone di controllare a ogni visita peso, grasso (scala 1-9) e muscolo. Per la maggior parte degli animali l'obiettivo è 4-5 su 9, che ad alcuni proprietari può sembrare «troppo magro»; gli obiettivi poggiano su pochi studi. Il grasso si valuta guardando e toccando, soprattutto nei cani a pelo medio-lungo; il grasso in eccesso può nascondere una perdita di muscolo. Oltre 6 su 9 il rischio di malattie sembra aumentare (evidenze limitate). Cuccioli sotto l'anno, cani oltre i 7 anni, gravidanza e allattamento chiedono più attenzione. Premi, snack e avanzi: meno del 10% delle calorie del giorno e mai al posto di un pasto. Per alcuni animali un cambio di alimento in 7-10 giorni dà meno disturbi digestivi; nessun metodo è provato migliore. Tra i segnali che meritano una valutazione: punteggio fuori dall'intervallo 4-5, perdita di muscolo, cambio di peso senza spiegazione, disturbi digestivi, problemi di denti e pelo. Cibi pericolosi tra gli altri: cioccolato, macadamia, cipolla e simili, uva e uvetta, xilitolo, alcol e pasta lievitata cruda; ossa cotte e crude. La linea guida letta (2011) non dà un ritmo di dimagrimento in numeri.",
   "blocchi": [
     {
       "tipo": "in_breve",
       "frasi": [
         {
-          "testo": "Secondo WSAVA a ogni visita andrebbero controllati peso, quantità di grasso (scala da 1 a 9) e quantità di muscolo. Per la maggior parte degli animali il punto d'arrivo è 4-5 su 9, anche se ad alcuni proprietari può sembrare «troppo magro». Gli obiettivi si basano su un numero limitato di studi.",
+          "testo": "WSAVA propone di misurare a ogni controllo peso, grasso (scala da 1 a 9) e muscolo. La fascia da cercare nella maggior parte degli animali è 4-5 su 9: poggia su pochi studi, e chi vive con l'animale può trovarlo più snello di come se lo immaginava.",
           "fonti": [
             {
               "id": "wsava_nutr_2011",
@@ -45,7 +45,7 @@
       "tipo": "cosa_sapere",
       "frasi": [
         {
-          "testo": "Per valutare il grasso serve guardare e toccare il cane; nei cani a pelo medio-lungo il tatto è indispensabile.",
+          "testo": "Guardare non basta: per giudicare grasso e muscolo bisogna toccare il corpo, e con il pelo medio-lungo la mano dice più dell'occhio.",
           "fonti": [
             {
               "id": "wsava_nutr_2011",
@@ -126,7 +126,7 @@
           ]
         },
         {
-          "testo": "A casa conviene tenere d'occhio l'aspetto generale e il livello di attività, la forma e il peso del corpo, quanto e come mangia e la regolarità di stomaco e intestino. Cuccioli, anziani e femmine gravide o in allattamento vanno seguiti più spesso.",
+          "testo": "A casa si guardano: cosa e come mangia, come cambiano forma e peso del corpo, feci e vomito, e l'energia di ogni giorno. Cuccioli, anziani e femmine gravide o in allattamento hanno bisogno di controlli più frequenti.",
           "fonti": [
             {
               "id": "wsava_nutr_2011",
@@ -140,7 +140,7 @@
       "tipo": "cosa_non_fare",
       "frasi": [
         {
-          "testo": "Tra gli ingredienti tossici la guida per i proprietari elenca, tra gli altri, cioccolato, noci di macadamia, cipolla e simili, alcol e pasta lievitata cruda; anche le ossa, cotte o crude, possono essere molto pericolose.",
+          "testo": "Sono tossici per il cane il cioccolato, l'uva e l'uvetta, lo xilitolo (un dolcificante), cipolla e simili, le noci di macadamia, l'alcol, la pasta lievitata cruda e le bevande con caffeina. Anche le ossa, crude o cotte, possono causare danni gravi.",
           "fonti": [
             {
               "id": "wsava_treats_dog_2025",

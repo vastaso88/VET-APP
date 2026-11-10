@@ -22,13 +22,13 @@
     "letargia",
     "sta male"
   ],
-  "riassunto_per_chat": "Il coniglio è una preda e tende a nascondere i segni di malattia e di dolore: i cambiamenti sono spesso lievi e possono sembrare poco importanti. In un sondaggio britannico su 500 proprietari reclutati online, 345 hanno valutato anche 8 video di conigli: sono andati d'accordo con tre esperti nell'88,8% dei casi senza dolore e nel 65,2% con dolore grave, ma solo nel 28,4% con dolore lieve e nel 43,2% con dolore moderato; in media attribuivano al dolore punteggi più bassi degli esperti (11,9 contro 18). Nella prima parte del sondaggio alcune persone hanno risposto «non serve il veterinario» per quasi ogni problema proposto, tranne fratture, denti posteriori troppo lunghi e stasi intestinale. Nello studio sui denti, tra i segni descritti compaiono letargia, cambiamenti di comportamento lievi e riluttanza a mangiare il fieno. Secondo un'indagine tra 46 professionisti, i problemi di benessere più importanti nei conigli da compagnia tra i primi cinque ci sono lo spazio ridotto, la stasi intestinale, i problemi dei denti, l'alimentazione sbagliata e l'assenza di un coniglio compagno. Nessuna fonte letta dice ogni quanto pesare il coniglio.",
+  "riassunto_per_chat": "Il coniglio è una preda e tende a nascondere i segni di malattia e di dolore: i cambiamenti sono spesso lievi e possono sembrare poco importanti. In un sondaggio britannico su 500 proprietari reclutati online, 345 hanno valutato anche 8 video di conigli: sono andati d'accordo con tre esperti nell'88,8% dei casi senza dolore e nel 65,2% con dolore grave, ma solo nel 28,4% con dolore lieve e nel 43,2% con dolore moderato; in media attribuivano al dolore punteggi più bassi degli esperti (11,9 contro 18). Nella prima parte del sondaggio alcune persone hanno risposto «non serve il veterinario» per quasi ogni problema proposto, tranne fratture, denti posteriori troppo lunghi e stasi intestinale. Gli autori dello studio sui denti invitano a fare attenzione a cambiamenti di comportamento anche lievi, come la letargia, e alla riluttanza a mangiare il fieno. In un'indagine tra 46 professionisti veterinari, i cinque problemi di benessere con maggiore impatto stimato nei conigli da compagnia sono, in ordine: spazio ridotto, stasi intestinale, problemi dei denti, alimentazione sbagliata, assenza di un coniglio compagno. Nessuna fonte letta dice ogni quanto pesare il coniglio.",
   "blocchi": [
     {
       "tipo": "in_breve",
       "frasi": [
         {
-          "testo": "Il coniglio è una preda e per istinto nasconde malattia e dolore: i cambiamenti dovuti al dolore sono spesso sottili e al proprietario possono sembrare insignificanti.",
+          "testo": "Essendo una preda, il coniglio tende a non far vedere quando sta male o soffre; le variazioni del suo comportamento sono spesso così lievi che in casa si fatica a notarle o le si sottovaluta.",
           "fonti": [
             {
               "id": "bmcvr_pain_2024",
@@ -46,7 +46,7 @@
       "tipo": "cosa_sapere",
       "frasi": [
         {
-          "testo": "In un sondaggio britannico 345 proprietari hanno anche valutato 8 video di conigli. Hanno concordato con tre esperti nell'88,8% dei casi senza dolore e nel 65,2% con dolore grave, ma solo nel 28,4% dei casi con dolore lieve e nel 43,2% con dolore moderato; in media hanno attribuito al dolore punteggi più bassi degli esperti (11,9 contro 18).",
+          "testo": "In una seconda parte del sondaggio, 345 proprietari hanno dato un punteggio di dolore a 8 video di conigli, confrontato con quello di tre esperti. Gli estremi li hanno riconosciuti meglio: accordo dell'88,8% sul coniglio senza dolore e del 65,2% su quello con dolore grave. Il dolore lieve (28,4%) e quello moderato (43,2%) sono sfuggiti molto più spesso. Nel complesso il punteggio dei proprietari è stato più basso di quello degli esperti: 11,9 contro 18 (massimo possibile 24).",
           "fonti": [
             {
               "id": "bmcvr_pain_2024",
@@ -55,7 +55,7 @@
           ]
         },
         {
-          "testo": "Nella prima parte dello stesso sondaggio (500 proprietari) alcune persone hanno risposto «non serve il veterinario» per quasi ogni problema proposto; le eccezioni sono state le fratture, i denti posteriori troppo lunghi e la stasi intestinale.",
+          "testo": "Per quasi tutte le condizioni proposte nel questionario (500 proprietari) c'era almeno qualcuno convinto che il veterinario non servisse; non è successo soltanto per tre: stasi intestinale, denti posteriori troppo lunghi e fratture.",
           "fonti": [
             {
               "id": "bmcvr_pain_2024",
@@ -64,7 +64,7 @@
           ]
         },
         {
-          "testo": "Secondo un'indagine tra 46 professionisti, i problemi di benessere più importanti nei conigli da compagnia tra i primi cinque ci sono lo spazio troppo piccolo, la stasi intestinale, i problemi dei denti, l'alimentazione sbagliata e l'assenza di un coniglio compagno.",
+          "testo": "In un'indagine tra 46 professionisti veterinari (veterinari e infermieri), i cinque problemi di benessere con maggiore impatto stimato nel coniglio da compagnia sono risultati, in ordine: spazio troppo piccolo, stasi intestinale, problemi dei denti, alimentazione sbagliata, assenza di un coniglio compagno.",
           "fonti": [
             {
               "id": "animals_welfare_2025",
@@ -78,7 +78,7 @@
       "tipo": "cosa_osservare",
       "frasi": [
         {
-          "testo": "Nello studio sulla malattia dentale, tra i segni che si possono notare ci sono letargia, cambiamenti lievi di comportamento e riluttanza a mangiare il fieno.",
+          "testo": "Gli autori dello studio sulla malattia dentale invitano a fare attenzione a cambiamenti di comportamento anche lievi, come la letargia, e alla riluttanza a mangiare il fieno; la letargia è stata registrata nel 9,3% dei casi.",
           "fonti": [
             {
               "id": "vetrec_dental_2025",

@@ -38,7 +38,7 @@
           ]
         },
         {
-          "testo": "Il vaccino contro la leucemia felina (FeLV) è essenziale nei gattini sotto l'anno e negli adulti che hanno accesso all'esterno o convivono con gatti che escono, dove il virus è diffuso, e si fa solo ai gatti risultati negativi.",
+          "testo": "Dove il virus della leucemia felina è diffuso, il vaccino è essenziale per i gattini e per i gatti adulti esposti, perché escono o convivono con gatti che escono; si fa solo se il test è negativo.",
           "fonti": [
             {
               "id": "wsava_vacc_2024",
@@ -61,7 +61,7 @@
           ]
         },
         {
-          "testo": "Gli essenziali sono pensati per tutti i gatti, anche per quelli che vivono solo in casa. Per i gatti a basso rischio (soli, in casa, senza soggiorni in pensione) i richiami dei vaccini vivi attenuati si fanno ogni 3 anni o con intervalli più lunghi.",
+          "testo": "Il vaccino essenziale vale anche per il gatto di casa. Se vive solo, non esce e non va in pensione, per i vaccini vivi attenuati il richiamo può distanziarsi a 3 anni o più.",
           "fonti": [
             {
               "id": "wsava_vacc_2024",
@@ -70,7 +70,7 @@
           ]
         },
         {
-          "testo": "Per i gatti più esposti (pensione, contatto con altri gatti) i richiami contro calicivirus ed herpesvirus possono essere più frequenti, fino a uno l'anno.",
+          "testo": "Se il gatto va spesso in pensione o frequenta gatti possibilmente infetti, i richiami contro calicivirus ed herpesvirus possono arrivare a essere annuali.",
           "fonti": [
             {
               "id": "wsava_vacc_2024",
@@ -79,11 +79,11 @@
           ]
         },
         {
-          "testo": "Tra i non essenziali ci sono Chlamydia felis e Bordetella, indicati in situazioni particolari, per esempio nei gruppi numerosi di gatti dove la malattia è stata confermata; la scelta spetta al veterinario. Il vaccino contro la FIV non è mai stato autorizzato in Europa.",
+          "testo": "Chlamydia felis: in case con più gatti dove la malattia è già stata confermata. Bordetella: solo in situazioni ad alto rischio, come colonie molto grandi. La scelta dei vaccini non essenziali nasce da un confronto tra veterinario e proprietario. Il vaccino contro la FIV non è mai stato autorizzato in Europa.",
           "fonti": [
             {
               "id": "wsava_vacc_2024",
-              "punto": "Feline, p. 20"
+              "punto": "Feline, p. 20; Executive Summary, p. 3"
             }
           ]
         },
@@ -102,7 +102,7 @@
       "tipo": "cosa_osservare",
       "frasi": [
         {
-          "testo": "Dopo il vaccino si osservano spesso dolore o gonfiore nel punto dell'iniezione e un malessere con febbre, abbattimento, poco appetito o vomito; sono più rare le reazioni allergiche.",
+          "testo": "Sono comuni dolore e gonfiore dove è stata fatta l'iniezione, e anche febbre, abbattimento, perdita di appetito e vomito; le reazioni allergiche si vedono più di rado.",
           "fonti": [
             {
               "id": "wsava_vacc_2024",
@@ -111,7 +111,7 @@
           ]
         },
         {
-          "testo": "Il tumore nel punto dell'iniezione è raro e il rischio è molto più piccolo del vantaggio dei vaccini. Per la linea guida, una massa che dura da 3 mesi, supera i 2 cm o cresce ancora dopo un mese è il limite oltre il quale si fa la biopsia.",
+          "testo": "Il sarcoma nel punto dell'iniezione è raro e il suo rischio è molto più piccolo del beneficio del vaccino. Una massa comparsa dopo l'iniezione va fatta controllare se dopo 3 mesi c'è ancora, se supera i 2 cm in qualsiasi momento o se un mese dopo continua a crescere; in quei casi la linea guida prevede la biopsia.",
           "fonti": [
             {
               "id": "wsava_vacc_2024",
@@ -125,7 +125,7 @@
       "tipo": "cosa_non_fare",
       "frasi": [
         {
-          "testo": "Per alcuni vaccini vivi attenuati, vaccinare un animale gravido, malato o ferito di norma non è consigliato; con il cortisone per una malattia importante si rimanda, e per le terapie che abbassano molto le difese serve il parere di uno specialista.",
+          "testo": "Con alcuni vaccini vivi attenuati si evita di vaccinare un animale in gravidanza, malato o ferito. Se c'è una malattia importante curata con cortisone, si aspetta che l'animale stia di nuovo bene; se è in corso una terapia che abbassa molto le difese, la linea guida rimanda a un parere specialistico.",
           "fonti": [
             {
               "id": "wsava_vacc_2024",
@@ -148,7 +148,7 @@
       "tipo": "limiti",
       "frasi": [
         {
-          "testo": "Sono linee guida mondiali scritte per i veterinari: non danno un calendario per l'Italia e non dicono cosa fare a casa dopo una reazione. Gli inviti a sentire il veterinario sono nostri. Il lavoro WSAVA è stato sostenuto da MSD Animal Health e gli autori hanno ricevuto compensi da produttori di vaccini. Le linee guida europee ABCD sul gatto non sono state ancora lette per questa scheda.",
+          "testo": "Sono linee guida mondiali, scritte per i veterinari: non danno un calendario per l'Italia e non dicono cosa fare a casa dopo una reazione. Gli inviti a sentire il veterinario segnati «Consiglio di Quokka» sono nostri; gli altri vengono dalla linea guida. Il lavoro WSAVA è stato sostenuto da MSD Animal Health, che non aveva diritto di veto; gli autori dichiarano pagamenti di vario tipo da produttori di vaccini. Le linee guida europee ABCD sul gatto non sono state ancora lette per questa scheda.",
           "fonti": [
             {
               "id": "wsava_vacc_2024",

@@ -38,7 +38,7 @@
           ]
         },
         {
-          "testo": "Nel mondo gli essenziali sono quelli contro cimurro, adenovirus e parvovirus. La leptospirosi rientra tra gli essenziali dove la malattia è presente, i ceppi sono noti e il vaccino è disponibile; la rabbia dove la malattia è presente.",
+          "testo": "Cimurro, adenovirus e parvovirus sono essenziali ovunque. Per la leptospirosi conta dove vivi: è essenziale solo nelle zone in cui la malattia c'è, si conoscono i ceppi in circolazione e il vaccino è disponibile. Per la rabbia vale lo stesso criterio di presenza della malattia.",
           "fonti": [
             {
               "id": "wsava_vacc_2024",
@@ -52,7 +52,7 @@
       "tipo": "cosa_sapere",
       "frasi": [
         {
-          "testo": "Per il cucciolo lo schema parte a 6-8 settimane, con altre dosi ogni 2-4 settimane fino ad almeno 16 settimane. La dose che pesa di più è l'ultima, quella a 16 settimane o oltre.",
+          "testo": "Per decidere l'ultima dose conta il momento in cui gli anticorpi della madre sono calati: per questo si parte a 6-8 settimane e si ripete ogni 2-4 settimane fino ad almeno 16 settimane, e la dose decisiva è quella a 16 settimane o più.",
           "fonti": [
             {
               "id": "wsava_vacc_2024",
@@ -115,7 +115,7 @@
           ]
         },
         {
-          "testo": "La socializzazione del cucciolo non deve aspettare la fine dei vaccini: si possono far incontrare persone e altri cani, ma solo cuccioli sani e adulti completamente vaccinati, tenendolo lontano dagli ambienti esterni che potrebbero essere contaminati.",
+          "testo": "La socializzazione di solito può cominciare prima della fine della serie: il cucciolo incontra solo cuccioli sani e cani adulti completamente vaccinati, in condizioni controllate, e resta lontano dai luoghi esterni che potrebbero essere contaminati.",
           "fonti": [
             {
               "id": "wsava_vacc_2024",
@@ -129,7 +129,7 @@
       "tipo": "cosa_osservare",
       "frasi": [
         {
-          "testo": "Dopo il vaccino capita spesso di vedere dolore o gonfiore nel punto dell'iniezione e, in alcuni cani, febbre, abbattimento, poco appetito o vomito. Le reazioni allergiche (orticaria, shock) sono più rare.",
+          "testo": "Sono comuni dolore e gonfiore dove è stata fatta l'iniezione, e anche febbre, abbattimento, perdita di appetito e vomito; orticaria e shock allergico si vedono più di rado.",
           "fonti": [
             {
               "id": "wsava_vacc_2024",
@@ -138,7 +138,7 @@
           ]
         },
         {
-          "testo": "Il rischio di reazioni è maggiore nei cani piccoli, in alcune razze (Bulldog francese, Bassotto, Boston terrier) e quando nella stessa visita si somministrano più vaccini diversi.",
+          "testo": "Il rischio è più alto nei cani piccoli (sotto i 5 kg soprattutto, se ricevono più vaccini nella stessa visita) e in razze come Bassotto, Boston terrier e Bulldog francese.",
           "fonti": [
             {
               "id": "wsava_vacc_2024",
@@ -152,7 +152,7 @@
       "tipo": "cosa_non_fare",
       "frasi": [
         {
-          "testo": "Per alcuni vaccini vivi attenuati, vaccinare un animale gravido, malato o ferito di norma non è consigliato, anche se molti vaccini canini di questo tipo sono ormai approvati in gravidanza. In caso di malattia importante trattata con cortisone si rimanda finché l'animale non torna in buona salute; se è in cura con farmaci che abbassano molto le difese, la linea guida chiede il parere di uno specialista.",
+          "testo": "Con alcuni vaccini vivi attenuati si evita di vaccinare un animale in gravidanza, malato o ferito. In gravidanza un numero crescente di vaccini canini è ormai autorizzato, ma solo se serve davvero. Se c'è una malattia importante curata con cortisone, si aspetta che l'animale stia di nuovo bene; se è in corso una terapia che abbassa molto le difese, la linea guida rimanda a un parere specialistico.",
           "fonti": [
             {
               "id": "wsava_vacc_2024",
@@ -179,7 +179,7 @@
       "tipo": "limiti",
       "frasi": [
         {
-          "testo": "Sono linee guida mondiali, scritte per i veterinari: non danno un calendario per l'Italia e non dicono cosa fare a casa dopo una reazione. Gli inviti a sentire il veterinario in questa scheda sono nostri. Il lavoro del gruppo WSAVA è stato sostenuto da MSD Animal Health, e gli autori hanno ricevuto compensi da produttori di vaccini.",
+          "testo": "Sono linee guida mondiali, scritte per i veterinari: non danno un calendario per l'Italia e non dicono cosa fare a casa dopo una reazione. Gli inviti a sentire il veterinario segnati «Consiglio di Quokka» sono nostri; gli altri vengono dalla linea guida. Il lavoro del gruppo WSAVA è stato sostenuto da MSD Animal Health, che non aveva diritto di veto; gli autori dichiarano di aver ricevuto, in passato, pagamenti di vario tipo da produttori di vaccini.",
           "fonti": [
             {
               "id": "wsava_vacc_2024",

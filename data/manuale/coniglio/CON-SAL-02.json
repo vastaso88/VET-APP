@@ -48,7 +48,7 @@
       "tipo": "cosa_sapere",
       "frasi": [
         {
-          "testo": "Poiché non hanno la radice chiusa, i denti del coniglio continuano a crescere per tutta la vita; la loro lunghezza dipende da diversi fattori, tra cui la ruvidità del cibo e il contatto tra i denti durante la masticazione.",
+          "testo": "I denti del coniglio hanno la radice aperta e ricrescono di continuo per tutta la vita. A tenerli della giusta lunghezza contribuiscono, tra l'altro, il consumo dovuto ai cibi abrasivi e lo sfregamento fra le arcate quando mastica.",
           "fonti": [
             {
               "id": "animals_odontogenic_2025",
@@ -66,7 +66,7 @@
           ]
         },
         {
-          "testo": "Una dieta ricca di fibra è importante per prevenire la malattia dentale o rallentarla. Una rassegna mette alla base il fieno di graminacee, con pellet in quantità limitata, e sconsiglia i mangimi tipo muesli, associati alla scelta dei soli pezzi preferiti e al cattivo allineamento dei denti.",
+          "testo": "Il fieno di graminacee (fleolo, erba di prato, erba mazzolina) è la base della dieta: la fibra aiuta a prevenire i problemi ai denti o a farli progredire più piano. Secondo una rassegna le crocchette vanno date in poca quantità, e i mix tipo muesli sono da evitare: portano il coniglio a scegliere solo i bocconi che preferisce, e questo è collegato a denti che non combaciano bene.",
           "fonti": [
             {
               "id": "vetrec_dental_2025",
@@ -88,7 +88,7 @@
           ]
         },
         {
-          "testo": "I denti dietro non sono facili da valutare senza un otoscopio o uno strumento simile.",
+          "testo": "La bocca del coniglio è lunga e stretta: per esaminare bene i denti posteriori di solito serve un otoscopio o un visore simile.",
           "fonti": [
             {
               "id": "vetrec_dental_2025",
@@ -97,11 +97,11 @@
           ]
         },
         {
-          "testo": "In uno studio su 2.219 conigli con malattia dentale diagnosticata in ambulatori del Regno Unito, 547 sono morti e, tra questi, nel 51,2% la malattia dentale è stata la causa o ha contribuito alla morte.",
+          "testo": "In uno studio su 2.219 conigli con malattia dentale diagnosticata in ambulatori del Regno Unito, 547 sono morti e, tra questi, nel 51,2% la malattia dentale è stata la causa o ha contribuito alla morte; per il 19,9% dei decessi la causa non era registrata.",
           "fonti": [
             {
               "id": "vetrec_dental_2025",
-              "punto": "Abstract"
+              "punto": "Abstract; Results, Mortality"
             }
           ]
         }
@@ -161,7 +161,7 @@
       "tipo": "quando_andare_dal_veterinario",
       "frasi": [
         {
-          "testo": "I cambiamenti dentali tardivi sono spesso irreversibili, e la malattia dentale può contribuire alla stasi intestinale (vedi la scheda su «mangia meno»).",
+          "testo": "Quando le alterazioni dei denti sono ormai avanzate, spesso non è più possibile farle regredire; inoltre la malattia dentale può favorire la stasi intestinale (vedi la scheda su «mangia meno»).",
           "fonti": [
             {
               "id": "vetrec_dental_2025",
@@ -188,11 +188,19 @@
       "tipo": "limiti",
       "frasi": [
         {
-          "testo": "Non abbiamo trovato una linea guida di società veterinarie sui denti del coniglio. Le fonti sono uno studio inglese del 2025, una rassegna del 2025 sugli ascessi dentali e due rassegne più vecchie (2005 e 2013, riassunte, non riprodotte). Il consiglio di contattare il veterinario è nostro.",
+          "testo": "Non abbiamo trovato una linea guida di società veterinarie sui denti del coniglio. Le fonti sono uno studio britannico del 2025 (dati del 2019), una rassegna del 2025 sugli ascessi dentali e due rassegne più vecchie (2005 e 2013), riassunte e non riprodotte. Il consiglio di contattare il veterinario è nostro.",
           "fonti": [
             {
               "id": "vetrec_dental_2025",
               "punto": "intero articolo"
+            },
+            {
+              "id": "vcna_gi_2013",
+              "punto": "sezione «Dental disease, gastrointestinal stasis, and dysbiosis»"
+            },
+            {
+              "id": "vcna_gastro_2005",
+              "punto": "«Dental disease»"
             }
           ]
         }

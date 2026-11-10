@@ -13,6 +13,7 @@ Rules enforced (docs/product/13 §2, §3):
 Standard library only. Run: ``python scripts/manuale/check_manuale.py``.
 Exit code 1 if any error; warnings do not fail. ``--righe`` prints the "Fonte" lines.
 ``--esporta`` writes data/manuale/health_cards.json (the archive format).
+``--rilettura`` writes the list of sentences on red-light sources for a hand review.
 """
 
 from __future__ import annotations
@@ -52,7 +53,7 @@ CHAT_SUMMARY_MAX = 1600
 FORBIDDEN = tuple(
     re.compile(pattern, re.IGNORECASE)
     for pattern in (
-        r"\bcors[oi]\b",
+        r"(?<!in )(?<!nel )(?<!del )cors[oi]",
         r"\bformazione\b",
         r"\blezion[ei]\b",
         r"\battestat\w*",
@@ -106,6 +107,10 @@ def check_sources(sources: list[dict[str, Any]]) -> tuple[dict[str, dict[str, An
             errors.append(f"{label}: controllata_il non è una data AAAA-MM-GG")
         if src.get("tipo") in ("studio", "revisione") and not (src.get("doi") or src.get("pmid")):
             errors.append(f"{label}: uno studio ha bisogno di DOI o PMID")
+        if src.get("semaforo") not in ("verde", "giallo", "rosso"):
+            errors.append(f"{label}: manca 'semaforo' (verde, giallo, rosso)")
+        if not src.get("riserva_estrazione_automatica"):
+            errors.append(f"{label}: manca 'riserva_estrazione_automatica'")
         rights = src.get("diritti")
         if not isinstance(rights, dict) or not rights.get("stato"):
             errors.append(f"{label}: manca diritti.stato")
@@ -215,6 +220,25 @@ def source_line(source: dict[str, Any]) -> str:
     return line
 
 
+def citation(source: dict[str, Any]) -> str:
+    """One readable citation, without the "Fonte:" label (the chat adds the label)."""
+    line = source_line(source)
+    line = line.removeprefix("Fonte: ")
+    line = line.split(". Riassunto di Quokka")[0]
+    if str(source.get("diritti", {}).get("stato", "")).startswith("cc_by"):
+        line += " (licenza CC BY, modificato da Quokka)"
+    return line
+
+
+def export_source(sources: dict[str, dict[str, Any]], ids: list[str]) -> str:
+    """A single list of citations separated by "; ", with no labels."""
+    checked = max(str(sources[sid].get("controllata_il", "")) for sid in ids)
+    return (
+        "; ".join(citation(sources[sid]) for sid in ids)
+        + f". Riassunto di Quokka, verificato il {checked}."
+    )
+
+
 def print_source_lines() -> int:
     """``--righe``: the "Fonte" lines of every card, from the source registry."""
     sources = {str(s["id"]): s for s in _load(DATA / "fonti.json")}
@@ -277,7 +301,7 @@ def export_records() -> list[dict[str, Any]]:
                 "topic": card["argomento"],
                 "title": card["titolo"],
                 "body": (chr(10) * 2).join(parts),
-                "source": " ".join(source_line(sources[sid]) for sid in ids),
+                "source": export_source(sources, ids),
                 "source_level": max(int(sources[sid]["livello"]) for sid in ids),
                 "state": "approved" if approved else "draft",
             }
@@ -300,7 +324,60 @@ def write_export() -> int:
     return 0
 
 
+RILETTURA_PATH = ROOT / "docs" / "product" / "15a_lista_rilettura_a_mano.md"
+
+
+def write_hand_review_list() -> int:
+    """Sentences resting on a "rosso" source: a person opens the source and checks them.
+
+    Fonti rosse (docs/compliance/13, Appendice A.3): solo lettura a mano o permesso scritto;
+    il testo della fonte non si dà mai a un modello. The list carries our sentences and the
+    place to look at, never the source's text.
+    """
+    sources = {str(s["id"]): s for s in _load(DATA / "fonti.json")}
+    out = [
+        "# Lista per la rilettura a mano delle frasi su fonti «rosse»",
+        "",
+        "Generata da `python scripts/manuale/check_manuale.py --rilettura`; non si modifica.",
+        "Per ogni frase: la persona apre **la fonte** (campo `url` di `data/manuale/fonti.json`),",
+        "va al punto indicato e controlla tre cose:",
+        "(1) la fonte dice davvero questo; (2) la frase è scritta con parole e ordine nostri,",
+        "non è una traduzione di quella della fonte; (3) non perde una cautela («sembra»...).",
+        "Il testo della fonte non va incollato in un modello.",
+        "",
+    ]
+    total = 0
+    for path in sorted(p for p in DATA.glob("*/*.json") if p.parent.name != "_schema"):
+        card = _load(path)
+        rows: list[str] = []
+        for block in card["blocchi"]:
+            for sentence in block["frasi"]:
+                red = [
+                    r for r in sentence.get("fonti", []) if sources[r["id"]]["semaforo"] == "rosso"
+                ]
+                if not red:
+                    continue
+                total += 1
+                places = "; ".join(f"{r['id']}: {r['punto']}" for r in red)
+                text = sentence["testo"].replace("|", "/")
+                rows.append(f"| {BLOCK_TITLES[block['tipo']]} | {text} | {places} | [ ] [ ] [ ] |")
+        if rows:
+            out += [f"## {card['codice']} {card['titolo']}", ""]
+            out += [
+                "| Blocco | Frase | Fonte e punto | 1 / 2 / 3 |",
+                "|---|---|---|---|",
+                *rows,
+                "",
+            ]
+    out.insert(2, f"Frasi da rileggere: **{total}**.")
+    RILETTURA_PATH.write_text(chr(10).join(out) + chr(10), encoding="utf-8")
+    print(f"{total} frasi su fonti rosse, scritte in {RILETTURA_PATH}")
+    return 0
+
+
 def main() -> int:
+    if "--rilettura" in sys.argv:
+        return write_hand_review_list()
     if "--righe" in sys.argv:
         return print_source_lines()
     if "--esporta" in sys.argv:

@@ -12,20 +12,30 @@
     "url": "https://wsava.org/global-guidelines/vaccination-guidelines/",
     "url_letto": "https://wsava.org/wp-content/uploads/2024/04/WSAVA-Vaccination-guidelines-2024.pdf",
     "edizione": "2024; sostituisce la versione 2016",
-    "specie": ["cane", "gatto"],
-    "argomenti": ["vaccini"],
+    "specie": [
+      "cane",
+      "gatto"
+    ],
+    "argomenti": [
+      "vaccini"
+    ],
     "lingua": "en",
     "diritti": {
       "stato": "riservati_licenza_non_stabilita",
       "licenza_letta": "«(c) 2024 WSAVA»; ogni pagina dice che gli articoli ad accesso aperto sono regolati dalla licenza Creative Commons applicabile, senza dire quale; Crossref non elenca licenze CC",
       "uso_previsto": "riassunto con parole nostre, rimando alla pagina ufficiale, nessuna copia di testo, tabelle o schemi; il PDF letto porta un timbro di scarico istituzionale: non si ripubblica",
-      "riserva_estrazione_automatica": "non verificata"
+      "riserva_estrazione_automatica": "nessuna riserva trovata (robots.txt aperto, nessuna pagina di termini; meta e intestazioni non visibili, tdmrep.json assente)"
     },
     "sponsor": "Lavoro del gruppo sostenuto da MSD Animal Health (senza diritto di veto); i quattro autori hanno ricevuto compensi da produttori di vaccini (p. 35 della copia letta)",
     "controllata_il": "2026-11-10",
     "controllata_da": "sessione Manuale (lettura del testo completo)",
     "come_aperta": "testo_completo",
-    "note": "I numeri di pagina nelle schede sono quelli della copia early-view (1-40); la pagina della rivista è quella + 276 (inferenza dall'intervallo di pagine)."
+    "note": "I numeri di pagina nelle schede sono quelli della copia early-view (1-40); la pagina della rivista è quella + 276 (inferenza dall'intervallo di pagine).",
+    "semaforo": "giallo",
+    "riserva_estrazione_automatica": "nessuna riserva trovata (robots.txt aperto, nessuna pagina di termini; meta e intestazioni non visibili, tdmrep.json assente)",
+    "riserva_controllata_il": "2026-11-10",
+    "lettura_eseguita": "automatica, un documento alla volta, il 2026-11-10 prima della regola del semaforo; copie di lavoro cancellate",
+    "uso_futuro": "giallo: controllo in 4 punti e registrazione prima di ogni nuova lettura; un documento alla volta"
   },
   {
     "id": "esccap_gl3_2022",
@@ -40,20 +50,30 @@
     "url": "https://www.esccap.org/guidelines/gl3/",
     "url_letto": "https://www.esccap.org/uploads/docs/cgqtqpf1_0720_ESCCAP_GL3__English_v19_1p.pdf",
     "edizione": "7ª edizione 2022, ultima inglese trovata; la GL3 italiana sul sito è la 2ª edizione 2012, superata",
-    "specie": ["cane", "gatto"],
-    "argomenti": ["pulci-zecche"],
+    "specie": [
+      "cane",
+      "gatto"
+    ],
+    "argomenti": [
+      "pulci-zecche"
+    ],
     "lingua": "en",
     "diritti": {
       "stato": "riservati_permesso_scritto_per_riproduzione",
       "licenza_letta": "«(c) ESCCAP 2012-2022 All rights reserved»; ogni ridistribuzione o riproduzione, anche parziale, richiede il permesso scritto preventivo di ESCCAP",
       "uso_previsto": "riassunto con parole nostre e rimando; valutare con la Normativa se chiedere comunque un permesso per iscritto (contatto: info@esccap.org)",
-      "riserva_estrazione_automatica": "non verificata"
+      "riserva_estrazione_automatica": "riserva presente (pagina «Legal»: niente dispositivi automatici, niente copie, niente uso commerciale)"
     },
     "sponsor": "ESCCAP accetta il sostegno di aziende farmaceutiche (Elanco, IDEXX, MSD, Vetoquinol, Zoetis, Boehringer Ingelheim); gli sponsor «Ruby» possono leggere e commentare le bozze, ma ESCCAP mantiene il controllo editoriale (pagina «Sponsors», letta il 2026-11-10)",
     "controllata_il": "2026-11-10",
     "controllata_da": "sessione Manuale (lettura del testo completo)",
     "come_aperta": "testo_completo",
-    "note": "I numeri di pagina sono quelli stampati. La guida non nomina la permetrina, solo i «piretroidi sintetici»."
+    "note": "I numeri di pagina sono quelli stampati. La guida non nomina la permetrina, solo i «piretroidi sintetici».",
+    "semaforo": "rosso",
+    "riserva_estrazione_automatica": "riserva presente (pagina «Legal»: niente dispositivi automatici, niente copie, niente uso commerciale)",
+    "riserva_controllata_il": "2026-11-10",
+    "lettura_eseguita": "automatica, un documento alla volta, il 2026-11-10 prima della regola del semaforo; copie di lavoro cancellate",
+    "uso_futuro": "solo lettura a mano da una persona o permesso scritto; mai il testo in un modello"
   },
   {
     "id": "wsava_nutr_2011",
@@ -68,20 +88,31 @@
     "url": "https://wsava.org/global-guidelines/global-nutrition-guidelines/",
     "url_letto": "https://wsava.org/wp-content/uploads/2020/01/WSAVA-Nutrition-Assessment-Guidelines-2011-JSAP.pdf",
     "edizione": "2011; la pagina WSAVA letta il 2026-11-10 la presenta ancora come linea guida attuale",
-    "specie": ["cane", "gatto"],
-    "argomenti": ["peso-corporatura", "alimentazione"],
+    "specie": [
+      "cane",
+      "gatto"
+    ],
+    "argomenti": [
+      "peso-corporatura",
+      "alimentazione"
+    ],
     "lingua": "en",
     "diritti": {
       "stato": "riservati_procedura_wsava",
       "licenza_letta": "«(c) 2011 WSAVA». La pagina WSAVA dice che le risorse sono «our copyright» e chiede di seguire la procedura (SOP v4) e di compilare il modulo di richiesta; la SOP ammette l'uso solo integrale e senza modifiche, con il logo e la riga di credito, e per un'organizzazione a scopo di lucro coinvolge il Consiglio esecutivo",
       "uso_previsto": "solo riassunto con parole nostre di fatti e raccomandazioni; non si riproducono testi, schede di valutazione, figure; da chiarire con la Normativa se per un semplice riassunto serva la richiesta WSAVA (modulo sulla pagina)",
-      "riserva_estrazione_automatica": "non verificata"
+      "riserva_estrazione_automatica": "nessuna riserva trovata (robots.txt aperto, nessuna pagina di termini; meta e intestazioni non visibili, tdmrep.json assente)"
     },
     "sponsor": "Nessun finanziamento stampato nella copia letta; il Comitato di nutrizione WSAVA ha sostenitori industriali (SOP v4)",
     "controllata_il": "2026-11-10",
     "controllata_da": "sessione Manuale (lettura del testo completo)",
     "come_aperta": "testo_completo",
-    "note": "Numeri di pagina della copia early-view (1-12); pagina della rivista = pagina + 384 (inferenza). Nessun ritmo di dimagrimento in numeri."
+    "note": "Numeri di pagina della copia early-view (1-12); pagina della rivista = pagina + 384 (inferenza). Nessun ritmo di dimagrimento in numeri.",
+    "semaforo": "giallo",
+    "riserva_estrazione_automatica": "nessuna riserva trovata (robots.txt aperto, nessuna pagina di termini; meta e intestazioni non visibili, tdmrep.json assente)",
+    "riserva_controllata_il": "2026-11-10",
+    "lettura_eseguita": "automatica, un documento alla volta, il 2026-11-10 prima della regola del semaforo; copie di lavoro cancellate",
+    "uso_futuro": "giallo: controllo in 4 punti e registrazione prima di ogni nuova lettura; un documento alla volta"
   },
   {
     "id": "wsava_treats_dog_2025",
@@ -96,20 +127,31 @@
     "url": "https://wsava.org/global-guidelines/global-nutrition-guidelines/",
     "url_letto": "https://wsava.org/wp-content/uploads/2025/11/WSAVA_GuidetoTreats_Dogs_251107.pdf",
     "edizione": "novembre 2025",
-    "specie": ["cane"],
-    "argomenti": ["peso-corporatura", "alimentazione", "cibi-pericolosi"],
+    "specie": [
+      "cane"
+    ],
+    "argomenti": [
+      "peso-corporatura",
+      "alimentazione",
+      "cibi-pericolosi"
+    ],
     "lingua": "en",
     "diritti": {
       "stato": "riservati_procedura_wsava",
       "licenza_letta": "Nessuna riga di copyright nel testo; vale quanto dichiarato nella pagina del Comitato di nutrizione (risorse WSAVA protette, procedura e modulo di richiesta)",
       "uso_previsto": "riassunto con parole nostre",
-      "riserva_estrazione_automatica": "non verificata"
+      "riserva_estrazione_automatica": "nessuna riserva trovata (robots.txt aperto, nessuna pagina di termini; meta e intestazioni non visibili, tdmrep.json assente)"
     },
     "sponsor": "Non indicato nel testo",
     "controllata_il": "2026-11-10",
     "controllata_da": "sessione Manuale (lettura del testo completo)",
     "come_aperta": "testo_completo",
-    "note": "Le frasi sul 10% delle calorie e sui cibi da evitare sono nel testo; numeri di pagina non stabiliti."
+    "note": "Le frasi sul 10% delle calorie e sui cibi da evitare sono nel testo; numeri di pagina non stabiliti.",
+    "semaforo": "giallo",
+    "riserva_estrazione_automatica": "nessuna riserva trovata (robots.txt aperto, nessuna pagina di termini; meta e intestazioni non visibili, tdmrep.json assente)",
+    "riserva_controllata_il": "2026-11-10",
+    "lettura_eseguita": "automatica, un documento alla volta, il 2026-11-10 prima della regola del semaforo; copie di lavoro cancellate",
+    "uso_futuro": "giallo: controllo in 4 punti e registrazione prima di ogni nuova lettura; un documento alla volta"
   },
   {
     "id": "aaha_feline_lifestage_2021",
@@ -124,20 +166,30 @@
     "url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC10812130/",
     "url_letto": "https://pmc.ncbi.nlm.nih.gov/articles/PMC10812130/",
     "edizione": "febbraio 2021, aggiorna quella del 2010; esiste una nota di correzione (JFMS 2021;23(8):NP3), non aperta",
-    "specie": ["gatto"],
-    "argomenti": ["lettiera-urine", "ciclo-di-vita"],
+    "specie": [
+      "gatto"
+    ],
+    "argomenti": [
+      "lettiera-urine",
+      "ciclo-di-vita"
+    ],
     "lingua": "en",
     "diritti": {
       "stato": "riservati",
       "licenza_letta": "«(c) 2021 by AAHA, AAFP and ISFM»; nessuna licenza CC mostrata",
       "uso_previsto": "riassunto con parole nostre, nessuna copia",
-      "riserva_estrazione_automatica": "non verificata"
+      "riserva_estrazione_automatica": "non verificabile (termini SAGE non apribili: errore 403)"
     },
     "sponsor": "Contributi educativi di Boehringer Ingelheim, CareCredit, Dechra, Hill's, IDEXX, Merck Animal Health, Zoetis tramite AAHA; alcuni autori dichiarano compensi di aziende del settore",
     "controllata_il": "2026-11-10",
     "controllata_da": "sessione Manuale (lettura del testo completo)",
     "come_aperta": "testo_completo",
-    "note": "La versione PMC non ha numeri di pagina stampati: i punti citati sono sezioni."
+    "note": "La versione PMC non ha numeri di pagina stampati: i punti citati sono sezioni.",
+    "semaforo": "rosso",
+    "riserva_estrazione_automatica": "non verificabile (termini SAGE non apribili: errore 403)",
+    "riserva_controllata_il": "2026-11-10",
+    "lettura_eseguita": "automatica, un documento alla volta, il 2026-11-10 prima della regola del semaforo; copie di lavoro cancellate",
+    "uso_futuro": "solo lettura a mano da una persona o permesso scritto; mai il testo in un modello"
   },
   {
     "id": "isfm_inappetent_2022",
@@ -152,20 +204,29 @@
     "url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC11107985/",
     "url_letto": "https://pmc.ncbi.nlm.nih.gov/articles/PMC11107985/",
     "edizione": "luglio 2022; errata del 2023 (JFMS 25(2)) letta, non tocca le frasi usate",
-    "specie": ["gatto"],
-    "argomenti": ["non-mangia-vomito"],
+    "specie": [
+      "gatto"
+    ],
+    "argomenti": [
+      "non-mangia-vomito"
+    ],
     "lingua": "en",
     "diritti": {
       "stato": "riservati",
       "licenza_letta": "«(c) ISFM and AAFP 2022»; nessuna licenza CC",
       "uso_previsto": "riassunto con parole nostre",
-      "riserva_estrazione_automatica": "non verificata"
+      "riserva_estrazione_automatica": "non verificabile (termini SAGE non apribili: errore 403)"
     },
     "sponsor": "Nessun finanziamento; alcuni autori consulenti per aziende di alimenti e farmaci (uno è dipendente di Royal Canin)",
     "controllata_il": "2026-11-10",
     "controllata_da": "sessione Manuale (lettura del testo completo)",
     "come_aperta": "testo_completo",
-    "note": "Scritta per gatti ricoverati: si usano solo le parti su cause, nausea e quando intervenire."
+    "note": "Scritta per gatti ricoverati: si usano solo le parti su cause, nausea e quando intervenire.",
+    "semaforo": "rosso",
+    "riserva_estrazione_automatica": "non verificabile (termini SAGE non apribili: errore 403)",
+    "riserva_controllata_il": "2026-11-10",
+    "lettura_eseguita": "automatica, un documento alla volta, il 2026-11-10 prima della regola del semaforo; copie di lavoro cancellate",
+    "uso_futuro": "solo lettura a mano da una persona o permesso scritto; mai il testo in un modello"
   },
   {
     "id": "icatcare_wont_eat_2022",
@@ -180,20 +241,29 @@
     "url": "https://icatcare.org/cat-advice/cat-carer-guides",
     "url_letto": "https://icatcare.org/resources/cat-carer-guide-managing-the-cat-that-wont-eat.pdf",
     "edizione": "2022",
-    "specie": ["gatto"],
-    "argomenti": ["non-mangia-vomito"],
+    "specie": [
+      "gatto"
+    ],
+    "argomenti": [
+      "non-mangia-vomito"
+    ],
     "lingua": "en",
     "diritti": {
       "stato": "riservati_permesso_scritto_per_riuso",
       "licenza_letta": "«(c) 2022 International Cat Care»; i termini del sito consentono l'uso personale non commerciale e vietano riuso o ripubblicazione senza permesso scritto",
       "uso_previsto": "riassunto con parole nostre e rimando",
-      "riserva_estrazione_automatica": "non verificata"
+      "riserva_estrazione_automatica": "riserva presente (termini: solo uso personale non commerciale)"
     },
     "sponsor": "Nessuno nel testo (appello a donazioni); iCatCare ha partner commerciali elencati sul sito",
     "controllata_il": "2026-11-10",
     "controllata_da": "sessione Manuale (lettura del testo completo)",
     "come_aperta": "testo_completo",
-    "note": "Compagna della linea guida ISFM 2022 (isfm_inappetent_2022)."
+    "note": "Compagna della linea guida ISFM 2022 (isfm_inappetent_2022).",
+    "semaforo": "rosso",
+    "riserva_estrazione_automatica": "riserva presente (termini: solo uso personale non commerciale)",
+    "riserva_controllata_il": "2026-11-10",
+    "lettura_eseguita": "automatica, un documento alla volta, il 2026-11-10 prima della regola del semaforo; copie di lavoro cancellate",
+    "uso_futuro": "solo lettura a mano da una persona o permesso scritto; mai il testo in un modello"
   },
   {
     "id": "icatcare_urinary_2025",
@@ -208,20 +278,29 @@
     "url": "https://icatcare.org/cat-advice/cat-carer-guides",
     "url_letto": "https://icatcare.org/resources/cat-carer-guide-urinary-tract-diseases.pdf",
     "edizione": "2025",
-    "specie": ["gatto"],
-    "argomenti": ["lettiera-urine"],
+    "specie": [
+      "gatto"
+    ],
+    "argomenti": [
+      "lettiera-urine"
+    ],
     "lingua": "en",
     "diritti": {
       "stato": "riservati_permesso_scritto_per_riuso",
       "licenza_letta": "«(c) 2025 International Cat Care»; termini del sito come sopra",
       "uso_previsto": "riassunto con parole nostre e rimando",
-      "riserva_estrazione_automatica": "non verificata"
+      "riserva_estrazione_automatica": "riserva presente (termini: solo uso personale non commerciale)"
     },
     "sponsor": "Nessuno nel testo",
     "controllata_il": "2026-11-10",
     "controllata_da": "sessione Manuale (lettura del testo completo)",
     "come_aperta": "testo_completo",
-    "note": "Compagna della linea guida iCatCare 2025 sulle malattie delle basse vie urinarie, che ha licenza CC BY-NC e qui non è usata."
+    "note": "Compagna della linea guida iCatCare 2025 sulle malattie delle basse vie urinarie, che ha licenza CC BY-NC e qui non è usata.",
+    "semaforo": "rosso",
+    "riserva_estrazione_automatica": "riserva presente (termini: solo uso personale non commerciale)",
+    "riserva_controllata_il": "2026-11-10",
+    "lettura_eseguita": "automatica, un documento alla volta, il 2026-11-10 prima della regola del semaforo; copie di lavoro cancellate",
+    "uso_futuro": "solo lettura a mano da una persona o permesso scritto; mai il testo in un modello"
   },
   {
     "id": "webb_hl_2018",
@@ -236,20 +315,29 @@
     "url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC10816292/",
     "url_letto": "https://pmc.ncbi.nlm.nih.gov/articles/PMC10816292/",
     "edizione": "2018",
-    "specie": ["gatto"],
-    "argomenti": ["non-mangia-vomito"],
+    "specie": [
+      "gatto"
+    ],
+    "argomenti": [
+      "non-mangia-vomito"
+    ],
     "lingua": "en",
     "diritti": {
       "stato": "riservati",
       "licenza_letta": "«(c) The Author(s) 2018»; nessuna licenza CC mostrata",
       "uso_previsto": "riassunto con parole nostre",
-      "riserva_estrazione_automatica": "non verificata"
+      "riserva_estrazione_automatica": "non verificabile (termini SAGE non apribili: errore 403)"
     },
     "sponsor": "L'autrice dichiara nessun conflitto di interessi né finanziamento",
     "controllata_il": "2026-11-10",
     "controllata_da": "sessione Manuale (lettura del testo completo, versione PMC)",
     "come_aperta": "testo_completo",
-    "note": ""
+    "note": "",
+    "semaforo": "rosso",
+    "riserva_estrazione_automatica": "non verificabile (termini SAGE non apribili: errore 403)",
+    "riserva_controllata_il": "2026-11-10",
+    "lettura_eseguita": "automatica, un documento alla volta, il 2026-11-10 prima della regola del semaforo; copie di lavoro cancellate",
+    "uso_futuro": "solo lettura a mano da una persona o permesso scritto; mai il testo in un modello"
   },
   {
     "id": "batchelor_vomit_2013",
@@ -264,20 +352,29 @@
     "url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC10816764/",
     "url_letto": "https://pmc.ncbi.nlm.nih.gov/articles/PMC10816764/",
     "edizione": "2013 (13 anni); gli autori stessi dicono che molta pratica corrente ha prove limitate",
-    "specie": ["gatto"],
-    "argomenti": ["non-mangia-vomito"],
+    "specie": [
+      "gatto"
+    ],
+    "argomenti": [
+      "non-mangia-vomito"
+    ],
     "lingua": "en",
     "diritti": {
       "stato": "riservati",
       "licenza_letta": "«(c) ISFM and AAFP 2013»; nessuna licenza CC",
       "uso_previsto": "riassunto con parole nostre, solo le parti che non riguardano i farmaci",
-      "riserva_estrazione_automatica": "non verificata"
+      "riserva_estrazione_automatica": "non verificabile (termini SAGE non apribili: errore 403)"
     },
     "sponsor": "Le ricerche bibliografiche sono state pagate da Pfizer Animal Health (produttore di un farmaco contro il vomito, che sostiene l'European Emesis Council); un autore è dipendente Pfizer; una cattedra è sostenuta da Royal Canin",
     "controllata_il": "2026-11-10",
     "controllata_da": "sessione Manuale (lettura del testo completo, versione PMC)",
     "come_aperta": "testo_completo",
-    "note": "Conflitto di interessi da dichiarare nelle schede."
+    "note": "Conflitto di interessi da dichiarare nelle schede.",
+    "semaforo": "rosso",
+    "riserva_estrazione_automatica": "non verificabile (termini SAGE non apribili: errore 403)",
+    "riserva_controllata_il": "2026-11-10",
+    "lettura_eseguita": "automatica, un documento alla volta, il 2026-11-10 prima della regola del semaforo; copie di lavoro cancellate",
+    "uso_futuro": "solo lettura a mano da una persona o permesso scritto; mai il testo in un modello"
   },
   {
     "id": "elwood_emesis_2010",
@@ -292,20 +389,29 @@
     "url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC7167204/",
     "url_letto": "https://pmc.ncbi.nlm.nih.gov/articles/PMC7167204/",
     "edizione": "2010 (16 anni), nessuna edizione più recente trovata",
-    "specie": ["cane"],
-    "argomenti": ["vomito-diarrea"],
+    "specie": [
+      "cane"
+    ],
+    "argomenti": [
+      "vomito-diarrea"
+    ],
     "lingua": "en",
     "diritti": {
       "stato": "riservati",
       "licenza_letta": "«(c) 2010 BSAVA»; la copia PubMed Central può essere riusata «per la durata dell'emergenza sanitaria COVID-19»: il diritto è scaduto, quindi solo riassunto",
       "uso_previsto": "riassunto con parole nostre",
-      "riserva_estrazione_automatica": "non verificata"
+      "riserva_estrazione_automatica": "non verificabile (termini Wiley non apribili: errore 403); copia PubMed Central con licenza COVID-19 scaduta"
     },
     "sponsor": "Gli autori ringraziano Pfizer Animal Health (produttore di un farmaco contro il vomito); autore con affiliazione Pfizer",
     "controllata_il": "2026-11-10",
     "controllata_da": "sessione Manuale (lettura del testo completo, versione PMC)",
     "come_aperta": "testo_completo",
-    "note": "Fonte di livello 1 per la diarrea (linea guida europea ENOVAT, Vet J 2024) non aperta."
+    "note": "Fonte di livello 1 per la diarrea (linea guida europea ENOVAT, Vet J 2024) non aperta.",
+    "semaforo": "rosso",
+    "riserva_estrazione_automatica": "non verificabile (termini Wiley non apribili: errore 403); copia PubMed Central con licenza COVID-19 scaduta",
+    "riserva_controllata_il": "2026-11-10",
+    "lettura_eseguita": "automatica, un documento alla volta, il 2026-11-10 prima della regola del semaforo; copie di lavoro cancellate",
+    "uso_futuro": "solo lettura a mano da una persona o permesso scritto; mai il testo in un modello"
   },
   {
     "id": "oneill_diarrhoea_2025",
@@ -320,8 +426,12 @@
     "url": "https://doi.org/10.1371/journal.pone.0324203",
     "url_letto": "https://www.ebi.ac.uk/europepmc/webservices/rest/PMC12156985/fullTextXML",
     "edizione": "2025",
-    "specie": ["cane"],
-    "argomenti": ["vomito-diarrea"],
+    "specie": [
+      "cane"
+    ],
+    "argomenti": [
+      "vomito-diarrea"
+    ],
     "lingua": "en",
     "diritti": {
       "stato": "cc_by_4",
@@ -333,7 +443,11 @@
     "controllata_il": "2026-11-10",
     "controllata_da": "sessione Manuale (lettura del testo completo)",
     "come_aperta": "testo_completo",
-    "note": "Studio su 1.835 casi visitati dai veterinari: descrive la frequenza, non dà soglie d'allarme. L'indicazione sugli antibiotici è di una linea guida (ENOVAT) citata dallo studio e non letta direttamente."
+    "note": "Studio su 1.835 casi visitati dai veterinari: descrive la frequenza, non dà soglie d'allarme. L'indicazione sugli antibiotici è di una linea guida (ENOVAT) citata dallo studio e non letta direttamente.",
+    "semaforo": "verde",
+    "riserva_estrazione_automatica": "non applicabile (CC BY)",
+    "riserva_controllata_il": "2026-11-10",
+    "lettura_eseguita": "automatica, un documento alla volta, il 2026-11-10 prima della regola del semaforo; copie di lavoro cancellate"
   },
   {
     "id": "vetrec_dental_2025",
@@ -348,8 +462,14 @@
     "url": "https://doi.org/10.1002/vetr.5326",
     "url_letto": "https://www.ebi.ac.uk/europepmc/webservices/rest/PMC12412282/fullTextXML",
     "edizione": "versione definitiva, accettata il 28 febbraio 2025",
-    "specie": ["coniglio"],
-    "argomenti": ["denti", "non-mangia", "malessere-nascosto"],
+    "specie": [
+      "coniglio"
+    ],
+    "argomenti": [
+      "denti",
+      "non-mangia",
+      "malessere-nascosto"
+    ],
     "lingua": "en",
     "diritti": {
       "stato": "cc_by_4",
@@ -361,7 +481,11 @@
     "controllata_il": "2026-11-10",
     "controllata_da": "sessione Manuale (lettura del testo completo, XML Europe PMC)",
     "come_aperta": "testo_completo",
-    "note": "La versione XML non ha interruzioni di pagina: i punti citati sono sezioni."
+    "note": "La versione XML non ha interruzioni di pagina: i punti citati sono sezioni.",
+    "semaforo": "verde",
+    "riserva_estrazione_automatica": "non applicabile (CC BY)",
+    "riserva_controllata_il": "2026-11-10",
+    "lettura_eseguita": "automatica, un documento alla volta, il 2026-11-10 prima della regola del semaforo; copie di lavoro cancellate"
   },
   {
     "id": "animals_odontogenic_2025",
@@ -376,8 +500,12 @@
     "url": "https://doi.org/10.3390/ani15131994",
     "url_letto": "https://www.ebi.ac.uk/europepmc/webservices/rest/PMC12249203/fullTextXML",
     "edizione": "2025",
-    "specie": ["coniglio"],
-    "argomenti": ["denti"],
+    "specie": [
+      "coniglio"
+    ],
+    "argomenti": [
+      "denti"
+    ],
     "lingua": "en",
     "diritti": {
       "stato": "cc_by",
@@ -389,7 +517,11 @@
     "controllata_il": "2026-11-10",
     "controllata_da": "sessione Manuale (lettura del testo completo, XML Europe PMC)",
     "come_aperta": "testo_completo",
-    "note": "Rassegna narrativa sugli ascessi dentali: si usano le sezioni su anatomia, segni e prevenzione. La rivista non è una rivista veterinaria."
+    "note": "Rassegna narrativa sugli ascessi dentali: si usano le sezioni su anatomia, segni e prevenzione. La rivista non è una rivista veterinaria.",
+    "semaforo": "verde",
+    "riserva_estrazione_automatica": "non applicabile (CC BY)",
+    "riserva_controllata_il": "2026-11-10",
+    "lettura_eseguita": "automatica, un documento alla volta, il 2026-11-10 prima della regola del semaforo; copie di lavoro cancellate"
   },
   {
     "id": "vcna_gi_2013",
@@ -404,20 +536,31 @@
     "url": "https://doi.org/10.1016/j.cvex.2013.01.002",
     "url_letto": "https://www.ebi.ac.uk/europepmc/webservices/rest/PMC7128126/fullTextXML",
     "edizione": "2013 (13 anni); non sostituita da una versione più recente trovata",
-    "specie": ["coniglio", "cavia"],
-    "argomenti": ["non-mangia", "denti"],
+    "specie": [
+      "coniglio",
+      "cavia"
+    ],
+    "argomenti": [
+      "non-mangia",
+      "denti"
+    ],
     "lingua": "en",
     "diritti": {
       "stato": "riservati",
       "licenza_letta": "Copia PubMed Central con la licenza generale COVID-19 di Elsevier (riuso per ricerca): l'articolo non riguarda il COVID e il diritto d'autore resta di Elsevier",
       "uso_previsto": "solo riassunto con parole nostre; nessuna citazione estesa",
-      "riserva_estrazione_automatica": "non verificata"
+      "riserva_estrazione_automatica": "riserva presente (Elsevier: estrazione di testo e dati solo per uso non commerciale)"
     },
     "sponsor": "Nessuna dichiarazione trovata",
     "controllata_il": "2026-11-10",
     "controllata_da": "sessione Manuale (lettura del testo completo, XML Europe PMC)",
     "come_aperta": "testo_completo",
-    "note": "Contiene dosi e terapie: non usate."
+    "note": "Contiene dosi e terapie: non usate.",
+    "semaforo": "rosso",
+    "riserva_estrazione_automatica": "riserva presente (Elsevier: estrazione di testo e dati solo per uso non commerciale)",
+    "riserva_controllata_il": "2026-11-10",
+    "lettura_eseguita": "automatica, un documento alla volta, il 2026-11-10 prima della regola del semaforo; copie di lavoro cancellate",
+    "uso_futuro": "solo lettura a mano da una persona o permesso scritto; mai il testo in un modello"
   },
   {
     "id": "vcna_gastro_2005",
@@ -432,20 +575,30 @@
     "url": "https://doi.org/10.1016/j.cvex.2005.01.007",
     "url_letto": "https://www.ebi.ac.uk/europepmc/webservices/rest/PMC7118780/fullTextXML",
     "edizione": "2005 (21 anni): solo fisiologia di base e segni",
-    "specie": ["coniglio"],
-    "argomenti": ["non-mangia", "denti"],
+    "specie": [
+      "coniglio"
+    ],
+    "argomenti": [
+      "non-mangia",
+      "denti"
+    ],
     "lingua": "en",
     "diritti": {
       "stato": "riservati",
       "licenza_letta": "Come sopra (licenza generale COVID-19 di Elsevier, copyright dell'editore)",
       "uso_previsto": "solo riassunto con parole nostre",
-      "riserva_estrazione_automatica": "non verificata"
+      "riserva_estrazione_automatica": "riserva presente (Elsevier: estrazione di testo e dati solo per uso non commerciale)"
     },
     "sponsor": "Nessuna dichiarazione trovata",
     "controllata_il": "2026-11-10",
     "controllata_da": "sessione Manuale (lettura del testo completo, XML Europe PMC)",
     "come_aperta": "testo_completo",
-    "note": "Fonte vecchia: usata solo per basi di fisiologia e segni; contiene dosi e terapie: non usate."
+    "note": "Fonte vecchia: usata solo per basi di fisiologia e segni; contiene dosi e terapie: non usate.",
+    "semaforo": "rosso",
+    "riserva_estrazione_automatica": "riserva presente (Elsevier: estrazione di testo e dati solo per uso non commerciale)",
+    "riserva_controllata_il": "2026-11-10",
+    "lettura_eseguita": "automatica, un documento alla volta, il 2026-11-10 prima della regola del semaforo; copie di lavoro cancellate",
+    "uso_futuro": "solo lettura a mano da una persona o permesso scritto; mai il testo in un modello"
   },
   {
     "id": "varga_digestive_2014",
@@ -460,20 +613,29 @@
     "url": "https://doi.org/10.1016/B978-0-7020-4979-8.00008-X",
     "url_letto": "https://www.ebi.ac.uk/europepmc/webservices/rest/PMC7149685/fullTextXML",
     "edizione": "manuale 2014; numero di edizione non indicato nel testo letto",
-    "specie": ["coniglio"],
-    "argomenti": ["non-mangia"],
+    "specie": [
+      "coniglio"
+    ],
+    "argomenti": [
+      "non-mangia"
+    ],
     "lingua": "en",
     "diritti": {
       "stato": "riservati",
       "licenza_letta": "Copia PubMed Central con la licenza generale COVID-19 di Elsevier; copyright dell'editore",
       "uso_previsto": "solo riassunto con parole nostre e brevi citazioni",
-      "riserva_estrazione_automatica": "non verificata"
+      "riserva_estrazione_automatica": "riserva presente (Elsevier: estrazione di testo e dati solo per uso non commerciale)"
     },
     "sponsor": "Nessuna dichiarazione trovata",
     "controllata_il": "2026-11-10",
     "controllata_da": "sessione Manuale (lettura del testo completo, XML Europe PMC)",
     "come_aperta": "testo_completo",
-    "note": "Livello 3: è l'unica fonte letta che parla al proprietario del coniglio che non mangia. Contiene dosi e terapie: non usate."
+    "note": "Livello 3: è l'unica fonte letta che parla al proprietario del coniglio che non mangia. Contiene dosi e terapie: non usate.",
+    "semaforo": "rosso",
+    "riserva_estrazione_automatica": "riserva presente (Elsevier: estrazione di testo e dati solo per uso non commerciale)",
+    "riserva_controllata_il": "2026-11-10",
+    "lettura_eseguita": "automatica, un documento alla volta, il 2026-11-10 prima della regola del semaforo; copie di lavoro cancellate",
+    "uso_futuro": "solo lettura a mano da una persona o permesso scritto; mai il testo in un modello"
   },
   {
     "id": "bmcvr_pain_2024",
@@ -488,8 +650,12 @@
     "url": "https://doi.org/10.1186/s12917-024-03947-7",
     "url_letto": "https://www.ebi.ac.uk/europepmc/webservices/rest/PMC10967183/fullTextXML",
     "edizione": "2024",
-    "specie": ["coniglio"],
-    "argomenti": ["malessere-nascosto"],
+    "specie": [
+      "coniglio"
+    ],
+    "argomenti": [
+      "malessere-nascosto"
+    ],
     "lingua": "en",
     "diritti": {
       "stato": "cc_by_4",
@@ -501,7 +667,11 @@
     "controllata_il": "2026-11-10",
     "controllata_da": "sessione Manuale (lettura del testo completo, XML Europe PMC)",
     "come_aperta": "testo_completo",
-    "note": "Sondaggio online su 500 proprietari reclutati con Facebook: campione autoselezionato."
+    "note": "Sondaggio online su 500 proprietari reclutati con Facebook: campione autoselezionato.",
+    "semaforo": "verde",
+    "riserva_estrazione_automatica": "non applicabile (CC BY)",
+    "riserva_controllata_il": "2026-11-10",
+    "lettura_eseguita": "automatica, un documento alla volta, il 2026-11-10 prima della regola del semaforo; copie di lavoro cancellate"
   },
   {
     "id": "animals_welfare_2025",
@@ -516,8 +686,14 @@
     "url": "https://doi.org/10.3390/ani15101423",
     "url_letto": "https://www.ebi.ac.uk/europepmc/webservices/rest/PMC12108152/fullTextXML",
     "edizione": "2025",
-    "specie": ["coniglio", "cavia", "criceto"],
-    "argomenti": ["malessere-nascosto"],
+    "specie": [
+      "coniglio",
+      "cavia",
+      "criceto"
+    ],
+    "argomenti": [
+      "malessere-nascosto"
+    ],
     "lingua": "en",
     "diritti": {
       "stato": "cc_by",
@@ -529,6 +705,10 @@
     "controllata_il": "2026-11-10",
     "controllata_da": "sessione Manuale (lettura del testo completo, XML Europe PMC)",
     "come_aperta": "testo_completo",
-    "note": "Questionario tra 46 professionisti: opinioni, non misure di frequenza. Solo come contesto."
+    "note": "Questionario tra 46 professionisti: opinioni, non misure di frequenza. Solo come contesto.",
+    "semaforo": "verde",
+    "riserva_estrazione_automatica": "non applicabile (CC BY)",
+    "riserva_controllata_il": "2026-11-10",
+    "lettura_eseguita": "automatica, un documento alla volta, il 2026-11-10 prima della regola del semaforo; copie di lavoro cancellate"
   }
 ]
