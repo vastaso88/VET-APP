@@ -95,7 +95,12 @@ def test_effective_limits_by_state() -> None:
     expired = _subscription(trial_ends_at=utc_now() - timedelta(days=1))
     paid_after_trial = _subscription(trial_ends_at=utc_now() - timedelta(days=1), plan="plus")
 
-    assert effective_limits(in_trial, is_developer=False) == TRIAL_LIMITS == LIMITS_BY_PLAN["pro"]
+    assert effective_limits(in_trial, is_developer=False) == TRIAL_LIMITS
+    # The trial has Pro's allowances (and says it is the trial).
+    assert TRIAL_LIMITS.model_dump(exclude={"source"}) == LIMITS_BY_PLAN["pro"].model_dump(
+        exclude={"source"}
+    )
+    assert TRIAL_LIMITS.source == "trial"
     assert effective_limits(expired, is_developer=False) == NO_ACCESS_LIMITS
     assert effective_limits(paid_after_trial, is_developer=False) == LIMITS_BY_PLAN["plus"]
     assert effective_limits(expired, is_developer=True) is None

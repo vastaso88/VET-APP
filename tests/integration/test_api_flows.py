@@ -747,3 +747,37 @@ def test_geocoding_limits_are_per_account_and_need_a_session(
     assert (
         client.post("/geocoding/reverse", json={"latitude": 45, "longitude": 9}).status_code == 401
     )
+
+
+def test_not_helpful_flow_on_a_health_answer() -> None:
+    # Plan "fratello maggiore" (2026-11-10), contract agreed with the app:
+    # health_answer on the reply and on the stored message, the button's
+    # route, not_helpful kept after a reload, the internal flag never sent.
+    client = TestClient(app)
+    pet_id = client.post("/pets", json={"name": "Rocco", "species": "dog"}).json()["pet_profile"][
+        "id"
+    ]
+
+    chat = client.post(
+        "/chat", json={"pet_id": pet_id, "user_message": "Rocco ha la diarrea da due giorni"}
+    ).json()
+    assert chat["health_answer"] is True
+    assert chat["reply"]["health_answer"] is True
+    conversation_id, message_id = chat["conversation"]["id"], chat["reply"]["id"]
+    route = f"/conversations/{conversation_id}/messages/{message_id}/not-helpful"
+
+    assert client.post(route).json() == {"recorded": True}
+    assert client.post(route).json() == {"recorded": True}  # idempotent
+
+    stored = next(
+        c
+        for c in client.get("/conversations").json()["conversations"]
+        if c["id"] == conversation_id
+    )
+    reply = next(m for m in stored["messages"] if m["id"] == message_id)
+    assert reply["not_helpful"] is True
+    assert "escalate_next_health" not in stored
+
+    missing = client.post(f"/conversations/{conversation_id}/messages/nope/not-helpful")
+    assert missing.status_code == 400
+    assert "not found" in missing.json()["detail"]

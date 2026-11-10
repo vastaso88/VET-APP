@@ -599,6 +599,36 @@ def is_identity_question(message: str) -> bool:
     return bool(_IDENTITY_QUESTION.search(normalize_for_matching(message)))
 
 
+# A message about something else entirely (a car, a recipe, homework), with no
+# animal in it: a fixed reply, no model (plan stage 2, 2026-11-10).
+OFF_TOPIC_TEXTS: dict[str, str] = {
+    "it": (
+        "Su questo non posso aiutarti: Quokka serve a capire e accudire il tuo animale "
+        "(comportamento, relazione, cura di ogni giorno, salute e doveri di chi lo tiene). "
+        "Se hai una domanda su {name}, scrivimela pure."
+    ),
+    "en": (
+        "I can't help with that: Quokka is here to help you understand and look after your "
+        "animal (behavior, your relationship, everyday care, health and an owner's duties). "
+        "If you have a question about {name}, just ask."
+    ),
+    "es": (
+        "Con esto no puedo ayudarte: Quokka sirve para entender y cuidar a tu animal "
+        "(comportamiento, relación, cuidados diarios, salud y obligaciones de quien lo "
+        "tiene). Si tienes una pregunta sobre {name}, escríbemela."
+    ),
+    "de": (
+        "Dabei kann ich Ihnen nicht helfen: Quokka ist dafür da, Ihr Tier zu verstehen und "
+        "gut zu versorgen (Verhalten, Beziehung, tägliche Pflege, Gesundheit und Pflichten "
+        "rund um die Tierhaltung). Wenn Sie eine Frage zu {name} haben, schreiben Sie mir gern."
+    ),
+    "fr": (
+        "Je ne peux pas vous aider sur ce point : Quokka sert à comprendre votre animal et à "
+        "bien s'en occuper (comportement, relation, soins quotidiens, santé et devoirs du "
+        "propriétaire). Si vous avez une question sur {name}, écrivez-la-moi."
+    ),
+}
+
 IDENTITY_TEXTS: dict[str, str] = {
     "it": (
         "Sono l'assistente dell'app, un'intelligenza artificiale: non sono un veterinario, "
@@ -1284,6 +1314,31 @@ LIMIT_TEXTS: dict[str, str] = {
         "appelez tout de suite votre vétérinaire ou un service d'urgences. Pour aujourd'hui "
         "vous avez utilisé les {limit} questions de votre offre : le compteur repart dans "
         "{wait}."
+    ),
+}
+
+# When the owner has used the day's questions and a higher plan exists, the
+# message also says which (owner decision 2026-11-10: no paid credits, the
+# chat says when the count starts again and points to the plan above). The
+# section name is the one the app shows (settingsSubscriptionAndPayments).
+# {plan} is Pro or Ultra. Never for Ultra or the free trial.
+LIMIT_UPGRADE_TEXTS: dict[str, str] = {
+    "it": (
+        " Se ti serve di più, puoi passare al piano {plan} da Impostazioni → "
+        "Abbonamento e pagamenti."
+    ),
+    "en": (
+        " If you need more, you can move up to the {plan} plan in Settings → "
+        "Subscription and payments."
+    ),
+    "es": " Si necesitas más, puedes pasar al plan {plan} en Ajustes → Suscripción y pagos.",
+    "de": (
+        " Wenn Sie mehr brauchen, können Sie unter Einstellungen → Abo und Zahlungen auf den "
+        "Tarif {plan} wechseln."
+    ),
+    "fr": (
+        " Si vous avez besoin de plus, vous pouvez passer à l'offre {plan} dans Paramètres → "
+        "Abonnement et paiements."
     ),
 }
 

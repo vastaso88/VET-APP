@@ -64,6 +64,16 @@ DEFAULT_RESERVE_SHARE = 0.8
 # past the next counter reset is pointless to remember.
 MAX_EXHAUSTION_SECONDS = 24 * 3600
 
+# A health case takes 3-4 messages (the chat asks before it answers): the
+# replies that continue a topic are not new questions, but they are not
+# free of limit either. Per day an owner may send this many of them for each
+# question the plan allows (3 x 16 = 48 for Pro).
+FOLLOWUPS_PER_QUESTION = 3
+
+# The kinds in the owner's daily counters (chat_user_daily_usage_add_kind).
+SONNET_KIND = "sonnet"
+FOLLOWUP_KIND = "followup"
+
 
 class QuotaExhausted(ProviderError):
     """Every model that could answer has used its day's tokens."""
@@ -358,6 +368,7 @@ class LlmBudget:
         models: list[str],
         exempt: bool = False,
         user_daily_limit: int | None = None,
+        counts_as_question: bool = True,
     ) -> QuotaDenial | None:
         """Checked once per turn, before anything that may call a model and
         after the fixed emergency replies. Counts the owner's message only
@@ -365,7 +376,16 @@ class LlmBudget:
 
         [user_daily_limit] is the owner's plan allowance and replaces the
         deployment-wide default; unlike that default, 0 here means "none
-        allowed" (an owner without access), not "no limit"."""
+        allowed" (an owner without access), not "no limit".
+
+        [counts_as_question] is False for a message that CONTINUES a topic
+        (the reply to a clarifying question of the chat, or the retry after
+        "this did not help me"): only the message that opens a topic is a
+        question of the plan. The caller must derive it from the conversation's
+        own state on the server, never from anything the app sends. A
+        continuation is not stopped by the day's questions being used up (a
+        case under way is never cut off), but it has its own ceiling, three
+        times the plan's questions, and the models' quota still applies."""
         try:
             self.order(models)
         except QuotaExhausted as exc:
@@ -378,6 +398,8 @@ class LlmBudget:
             return None
         now = self._clock()
         offset = current_utc_offset_minutes()
+        if not counts_as_question:
+            return self._admit_follow_up(owner_id, limit, now, offset)
         try:
             count = self._repository.add_user_message(owner_id, owner_day(now, offset))
         except Exception:  # noqa: BLE001 - fail open: a ledger outage must not block owners
@@ -412,6 +434,67 @@ class LlmBudget:
                 retry_after_seconds=self._seconds_until_owner_midnight(now, offset),
                 daily_limit=limit,
             )
+        return None
+
+    def _admit_follow_up(
+        self, owner_id: str, question_limit: int, now: datetime, offset: int
+    ) -> QuotaDenial | None:
+        """A message that continues a topic: counted apart from the questions,
+        refused only past its ceiling (FOLLOWUPS_PER_QUESTION times the
+        plan's questions). Same fail-open as the questions: a ledger outage
+        must not cut a case under way."""
+        ceiling = question_limit * FOLLOWUPS_PER_QUESTION
+        try:
+            count = self._repository.add_user_usage(owner_id, owner_day(now, offset), FOLLOWUP_KIND)
+        except Exception:  # noqa: BLE001 - fail open, as for the questions
+            logger.exception("llm budget: could not count the owner's follow-up")
+            return None
+        if count > ceiling:
+            return QuotaDenial(
+                reason="user_limit",
+                retry_after_seconds=self._seconds_until_owner_midnight(now, offset),
+                daily_limit=question_limit,
+            )
+        return None
+
+    def admit_sonnet(
+        self,
+        *,
+        owner_id: str,
+        limit: int | None,
+        model: str | None = None,
+        exempt: bool = False,
+    ) -> QuotaDenial | None:
+        """May Claude Sonnet write this answer? None: yes, and it is counted
+        against the owner's allowance of today. A denial is not an error for
+        the owner: Haiku writes the answer instead and nobody is told.
+
+        [limit] is the plan's allowance (PlanLimits.daily_sonnet_answers);
+        None means no limit (a developer account), 0 none at all. [model] is
+        the Sonnet model: while the euro cap of the day is past its reserve
+        share the dearer model goes first, so Sonnet is refused and Haiku
+        keeps the margin. The allowance is not spent on a refusal.
+
+        Unlike the questions this FAILS CLOSED: if the ledger cannot be read
+        or written the answer is Haiku's, since an expensive model must never
+        be left unmetered by an outage (or by the SQL not being run yet,
+        scripts/setup/chat_usage_sonnet_followups.sql)."""
+        now = self._clock()
+        offset = current_utc_offset_minutes()
+        wait = self._seconds_until_owner_midnight(now, offset)
+        if model is not None and self.state(model) != "ok":
+            return QuotaDenial(reason="sonnet_budget", retry_after_seconds=wait)
+        if exempt or limit is None:
+            return None
+        if limit <= 0 or not owner_id:
+            return QuotaDenial(reason="sonnet_limit", retry_after_seconds=wait, daily_limit=0)
+        try:
+            count = self._repository.add_user_usage(owner_id, owner_day(now, offset), SONNET_KIND)
+        except Exception:  # noqa: BLE001 - fail closed: Haiku answers
+            logger.exception("llm budget: could not count the owner's Sonnet answer")
+            return QuotaDenial(reason="sonnet_ledger", retry_after_seconds=wait, daily_limit=limit)
+        if count > limit:
+            return QuotaDenial(reason="sonnet_limit", retry_after_seconds=wait, daily_limit=limit)
         return None
 
     # --- internals ------------------------------------------------------------------

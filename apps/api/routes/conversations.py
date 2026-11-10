@@ -6,6 +6,7 @@ from apps.api.schemas.conversations import EditChatMessageRequest, RenameConvers
 from packages.core.application.services.delete_conversation import DeleteConversationInput
 from packages.core.application.services.edit_chat_message import EditChatMessageInput
 from packages.core.application.services.list_conversations import ListConversationsInput
+from packages.core.application.services.mark_not_helpful import MarkNotHelpfulInput
 from packages.core.application.services.rename_conversation import RenameConversationInput
 from packages.core.application.services.send_chat_message import owner_names_for_anonymization
 from packages.core.application.services.vet_summary import VetSummaryInput
@@ -69,6 +70,24 @@ def edit_message(
     body["conversation"] = result.conversation.public_dump()
     body["reply"] = public_message(result.reply)
     return body
+
+
+@router.post(
+    "/{conversation_id}/messages/{message_id}/not-helpful",
+    dependencies=[Depends(require_active_subscription)],
+)
+def mark_not_helpful(conversation_id: str, message_id: str) -> dict[str, bool]:
+    """ "Non mi ha aiutato" under a health answer (plan "fratello maggiore"):
+    the next health answer of this conversation is written with more care.
+    Idempotent; costs no question of the daily allowance."""
+    container = get_container()
+    user = container.auth_provider.get_current_user()
+    container.mark_not_helpful_service().execute(
+        MarkNotHelpfulInput(
+            owner_id=user.id, conversation_id=conversation_id, message_id=message_id
+        )
+    )
+    return {"recorded": True}
 
 
 @router.get("/{conversation_id}/summary", dependencies=[Depends(require_active_subscription)])

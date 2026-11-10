@@ -127,8 +127,8 @@ _VOICE = (
     "health a doctor or a pharmacist; no content on the topic and no mention of the "
     "animal.\n\n"
     "FORMAT. Plain text in short paragraphs, as in a chat message: no headings, tables, "
-    "numbered lists, arrows or bold; a short list only for a procedure the owner asked "
-    "for. No citation marker like [1] unless quoting that numbered reference from the "
+    "arrows or bold; a short numbered list of steps when the owner has to do something. "
+    "No citation marker like [1] unless quoting that numbered reference from the "
     "optional reference material. Always finish your last sentence."
 )
 
@@ -157,10 +157,10 @@ _DIRECT = (
     "is worth paying attention, a practical tip if there is one. Do not turn a curiosity "
     "into a check-up: no list of signs to watch unless the owner described a problem. Do "
     "not ask for information before answering; if one detail would really sharpen the "
-    "answer, answer first and ask that ONE thing at the end, as optional. Two to five "
-    "sentences are often enough; never more than about 1000 characters, or about 1500 "
-    "when the owner asks why the animal does something or how to manage a situation (the "
-    "why, then the practice). For a curiosity, normal behaviour or everyday care the words "
+    "answer, answer first and ask that ONE thing at the end, as optional. About 120-180 "
+    "words: short and complete; a short numbered list of steps when the owner has to do "
+    "something; never shorten a safety warning to fit. For a curiosity, normal behaviour "
+    "or everyday care the words "
     "'veterinario' and 'controllo' must not appear as a reflex or a closing; they are "
     "right where the vet is part of the duty or of the information itself (the microchip, "
     "a compulsory vaccination, who chooses an antiparasitic product and how often). "
@@ -178,7 +178,7 @@ _SYMPTOM_MAY_ASK = (
     "follow WHEN TO SEND THE OWNER TO THE VET (a visit with its timing only if one of those "
     "reasons applies, otherwise at most one conditional sentence). A growing lump, blood, "
     "a symptom lasting days, pain, an animal that stopped eating: that is already enough, "
-    "answer, do not interview. Within about 1000 characters."
+    "answer, do not interview. About 120-180 words; never shorten a safety warning."
 )
 
 _SYMPTOM_NO_MORE_QUESTIONS = (
@@ -189,7 +189,7 @@ _SYMPTOM_NO_MORE_QUESTIONS = (
     "next day or two, without assuming symptoms nobody mentioned; then follow WHEN TO SEND "
     "THE OWNER TO THE VET (for a mild picture: one conditional sentence with a time "
     "threshold, not a visit). One optional question at the very end is fine; a reply made "
-    "only of questions is not. Within about 1000 characters."
+    "only of questions is not. About 120-180 words; never shorten a safety warning."
 )
 
 # Repositioning (docs/product/11): with a direct question the answer
@@ -363,6 +363,31 @@ _EMERGENCY = (
 
 # The message after an emergency reply: the detail or the question gets a
 # fresh, specific answer, not the whole first aid again.
+# A health question (plan stage 2, 2026-11-10): the approved cards are the only
+# source of clinical statements; without cards, the safe path.
+_HEALTH_FROM_CARDS = (
+    "HEALTH QUESTION, APPROVED CARDS. After the user message come <fonti_approvate> with "
+    "numbered cards (S1, S2...). On health (causes, what a sign means, illnesses, "
+    "prevention, medicines, what to do at home) say ONLY what these cards say, in plain "
+    "words, and put the card's label after the sentence, like [S1]. Where the question "
+    "goes beyond the cards, do not fill the gap from your own knowledge: say that on that "
+    "point you have no verified source, then ask the one or two questions that matter, "
+    "name the signs to watch and say when to see the vet (WHEN TO SEND THE OWNER TO THE "
+    "VET still applies). A card's section 'Limiti di questa scheda' says what it does "
+    "not cover: never fill those points from your own knowledge. Advice marked "
+    "'Consiglio di Quokka' is ours, not the source's: keep that distinction. Everything "
+    "else in these instructions still applies."
+)
+_HEALTH_NO_CARDS = (
+    "HEALTH QUESTION, NO APPROVED CARD. There is no verified source for this question: "
+    "do not explain causes, illnesses or what a sign means from your own knowledge, do "
+    "not name possible diagnoses, never suggest a medicine, a dose or a home remedy. "
+    "Instead: say in one short sentence that you have no verified source on this yet; ask "
+    "the one or two questions that would help (since when, appetite, energy, anything "
+    "else different); name the signs to watch at home; say when to see the vet, "
+    "following WHEN TO SEND THE OWNER TO THE VET."
+)
+
 # "Il mio gatto vomita" with a dog's profile open (Haiku round 2026-11-07):
 # the answer is for the animal in the message, nothing of the profile.
 _OTHER_ANIMAL = (
@@ -372,6 +397,16 @@ _OTHER_ANIMAL = (
     "documents, which belong to another animal. Say in one short sentence, at the end, "
     "that the open profile is another animal's and that a profile for this one would "
     "give more precise answers."
+)
+
+# The owner was not helped by the previous health answer (plan "fratello
+# maggiore"): this reply is the second try.
+_SECOND_TRY = (
+    "SECOND TRY. The owner says your previous answer on this topic did not help, or asks "
+    "the same thing again. Read the conversation, find what was missing, unclear or not "
+    "answered, and answer exactly that, more concretely; do not repeat the previous "
+    "answer and do not apologise at length. One short question at the end only if you "
+    "really need it to help."
 )
 
 _EMERGENCY_FOLLOW_UP = (
@@ -446,6 +481,8 @@ def build_system_prompt(
     travel_south: bool = False,
     emergency_follow_up: bool = False,
     other_animal: bool = False,
+    health_cards: int | None = None,
+    second_try: bool = False,
 ) -> str:
     """The system prompt for one reply. Stable parts first (the prefix the
     provider can cache), then the parts that depend on the request: the
@@ -496,6 +533,11 @@ def build_system_prompt(
         parts.append(_EMERGENCY_FOLLOW_UP)
     if other_animal:
         parts.append(_OTHER_ANIMAL)
+    # None = not a health question under the cards rule; 0 = no card found.
+    if second_try:
+        parts.append(_SECOND_TRY)
+    if health_cards is not None:
+        parts.append(_HEALTH_FROM_CARDS if health_cards > 0 else _HEALTH_NO_CARDS)
     if has_reference_material:
         parts.append(_REFERENCE_MATERIAL)
     if species_facts:

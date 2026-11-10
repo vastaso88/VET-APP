@@ -322,6 +322,10 @@
   "chatLoadingSubtitle": "Nous chargeons la conversation et le dernier contexte disponible.",
   "chatEmptyTitle": "La conversation est vide",
   "chatEmptySubtitle": "Écrivez le premier message pour commencer : vous pouvez demander pourquoi il fait quelque chose, comment le gérer ou quelles sont vos obligations.",
+  "chatNotHelpfulButton": "Cela ne m'a pas aidé",
+  "chatNotHelpfulSemantics": "Signaler que cette réponse n'a pas aidé",
+  "chatNotHelpfulRetry": "Je réessaie avec plus d'attention : dites-moi ce qui ne vous a pas aidé.",
+  "chatNotHelpfulFailed": "Impossible d'envoyer le signalement. Réessayez.",
   "chatEmptyAction": "Écrire maintenant",
   "chatEmptyGreeting": "Bonjour, j'ai une question pour {pet}.",
   "@chatEmptyGreeting": {

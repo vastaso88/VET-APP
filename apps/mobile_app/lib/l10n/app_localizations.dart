@@ -1304,6 +1304,30 @@ abstract class AppLocalizations {
   /// **'Scrivi il primo messaggio per iniziare: puoi chiedere perché fa qualcosa, come gestirlo o quali sono i tuoi doveri.'**
   String get chatEmptySubtitle;
 
+  /// No description provided for @chatNotHelpfulButton.
+  ///
+  /// In it, this message translates to:
+  /// **'Non mi ha aiutato'**
+  String get chatNotHelpfulButton;
+
+  /// No description provided for @chatNotHelpfulSemantics.
+  ///
+  /// In it, this message translates to:
+  /// **'Segnala che questa risposta non ti è stata utile'**
+  String get chatNotHelpfulSemantics;
+
+  /// No description provided for @chatNotHelpfulRetry.
+  ///
+  /// In it, this message translates to:
+  /// **'Ci riprovo con più attenzione: dimmi cosa non ti è stato utile.'**
+  String get chatNotHelpfulRetry;
+
+  /// No description provided for @chatNotHelpfulFailed.
+  ///
+  /// In it, this message translates to:
+  /// **'Non sono riuscito a inviare la segnalazione. Riprova.'**
+  String get chatNotHelpfulFailed;
+
   /// No description provided for @chatEmptyAction.
   ///
   /// In it, this message translates to:

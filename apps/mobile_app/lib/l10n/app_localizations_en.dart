@@ -727,6 +727,20 @@ class AppLocalizationsEn extends AppLocalizations {
       'Write your first message to start: you can ask why it does something, how to manage it or what your duties are.';
 
   @override
+  String get chatNotHelpfulButton => 'That didn\'t help';
+
+  @override
+  String get chatNotHelpfulSemantics => 'Tell us this answer didn\'t help';
+
+  @override
+  String get chatNotHelpfulRetry =>
+      'I\'ll try again more carefully: tell me what wasn\'t useful.';
+
+  @override
+  String get chatNotHelpfulFailed =>
+      'We couldn\'t send your report. Try again.';
+
+  @override
   String get chatEmptyAction => 'Write now';
 
   @override

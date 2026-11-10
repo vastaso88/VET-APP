@@ -43,6 +43,9 @@ class ChatMessage {
     this.isRead = true,
     this.aiGenerated = false,
     this.attachmentImageBytes,
+    this.serverId,
+    this.healthAnswer = false,
+    this.notHelpful = false,
   });
 
   final String id;
@@ -60,6 +63,34 @@ class ChatMessage {
   /// display in the thread (the backend gets it via a separate upload, not
   /// re-sent here).
   final Uint8List? attachmentImageBytes;
+
+  /// The message's id on the server (`reply.id` of `POST /chat`, or the stored
+  /// id of a restored conversation); null for messages that never reached it.
+  final String? serverId;
+
+  /// The backend marked this answer as being about the animal's health
+  /// (`health_answer`): only those get the "Non mi ha aiutato" button.
+  final bool healthAnswer;
+
+  /// The owner said this answer did not help (kept by the server too).
+  final bool notHelpful;
+
+  /// Whether the "Non mi ha aiutato" button is offered under this message.
+  bool get canReportNotHelpful =>
+      author == ChatMessageAuthor.assistant && healthAnswer && serverId != null && serverId!.isNotEmpty;
+
+  ChatMessage copyWith({bool? notHelpful}) => ChatMessage(
+        id: id,
+        author: author,
+        text: text,
+        timeLabel: timeLabel,
+        isRead: isRead,
+        aiGenerated: aiGenerated,
+        attachmentImageBytes: attachmentImageBytes,
+        serverId: serverId,
+        healthAnswer: healthAnswer,
+        notHelpful: notHelpful ?? this.notHelpful,
+      );
 }
 
 class ChatConversationDetail {

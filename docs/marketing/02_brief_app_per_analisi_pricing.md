@@ -66,6 +66,7 @@ Le funzioni sono le stesse in tutti i piani (profili, assistente, allegati in ch
 | Animali | 4 | 8 | 15 |
 | Chat per animale | 2 | 4 | 6 |
 | Domande al giorno | 9 | 16 | 30 |
+| Risposte approfondite al giorno (Claude Sonnet, quando la prima risposta non ha aiutato; oltre, risponde Haiku) | 1 | 2 | 3 |
 | Dispositivi contemporanei | 2 | 3 | 3 |
 | Prezzo mensile (Italia) | 4,59 € | 8,59 € | 15,59 € |
 | Prezzo annuale (Italia) | 45,99 € | 85,99 € | 155,99 € |
@@ -74,7 +75,7 @@ Durante la prova valgono i limiti del Pro.
 
 **Test con il pubblico (decisione del 2026-11-07).** Finché dura il test nessuno paga e tutti hanno sempre il piano Pro, anche finita la prova di 14 giorni. Si accende solo dall'ambiente del backend (`SUBSCRIPTION_TEST_PLAN=pro`); l'app non mostra richieste di pagamento né la scelta del piano, ma una dicitura sul periodo di test. Spento (predefinito), tutto resta come descritto qui.
 
-**Dopo la prova, senza abbonamento** (con il test spento): gli Eventi sono bloccati; il Mercatino mostra gli annunci degli altri solo con oggetto, prezzo, foto, città e distanza (niente descrizione, categoria, specie né posizione sulla mappa) e non permette di pubblicare, modificare né segnalare; tutto il resto è bloccato e restano esportazione dei dati, cancellazione dell'account e indicazioni di emergenza. Il filtro è applicato dal backend. Le emergenze non contano mai nelle domande al giorno. I prezzi degli altri paesi sono nella proposta [03_prezzi_per_paese.md](03_prezzi_per_paese.md). Un'idea già emersa è riservare al Pro il riepilogo pre-visita per il veterinario (non decisa).
+**Dopo la prova, senza abbonamento** (con il test spento): gli Eventi sono bloccati; il Mercatino mostra gli annunci degli altri solo con oggetto, prezzo, foto, città e distanza (niente descrizione, categoria, specie né posizione sulla mappa) e non permette di pubblicare, modificare né segnalare; tutto il resto è bloccato e restano esportazione dei dati, cancellazione dell'account e indicazioni di emergenza. Il filtro è applicato dal backend. Le emergenze non contano mai nelle domande al giorno. Contano solo i messaggi che aprono un argomento nuovo: la risposta a una domanda di chiarimento della chat non è una domanda del piano (ha un tetto suo, 3 volte le domande del piano) e la risposta di Sonnet è la correzione di una domanda già contata. Niente crediti a pagamento: al limite la chat dice quando riparte il conteggio e propone il piano superiore (Plus → Pro, Pro → Ultra; mai per Ultra e per la prova). I prezzi degli altri paesi sono nella proposta [03_prezzi_per_paese.md](03_prezzi_per_paese.md). Un'idea già emersa è riservare al Pro il riepilogo pre-visita per il veterinario (non decisa).
 
 ## 6. Struttura dei costi (rilevante per il pricing)
 

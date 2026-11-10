@@ -322,6 +322,10 @@
   "chatLoadingSubtitle": "Der Verlauf und der letzte verfügbare Kontext werden geladen.",
   "chatEmptyTitle": "Die Unterhaltung ist leer",
   "chatEmptySubtitle": "Schreiben Sie die erste Nachricht: Sie können fragen, warum es etwas tut, wie Sie damit umgehen oder welche Pflichten Sie haben.",
+  "chatNotHelpfulButton": "Das hat mir nicht geholfen",
+  "chatNotHelpfulSemantics": "Melden, dass diese Antwort nicht geholfen hat",
+  "chatNotHelpfulRetry": "Ich versuche es noch einmal genauer: Sagen Sie mir, was nicht hilfreich war.",
+  "chatNotHelpfulFailed": "Das konnte nicht gesendet werden. Versuchen Sie es erneut.",
   "chatEmptyAction": "Jetzt schreiben",
   "chatEmptyGreeting": "Hallo, ich habe eine Frage zu {pet}.",
   "@chatEmptyGreeting": {

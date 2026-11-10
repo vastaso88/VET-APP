@@ -5,6 +5,7 @@ import '../../../../design_system/tokens/app_colors.dart';
 import '../../../../design_system/tokens/app_radii.dart';
 import '../../../../design_system/tokens/app_spacing.dart';
 import '../../../../design_system/tokens/app_text_styles.dart';
+import '../../../../l10n/l10n.dart';
 import '../../domain/chat_models.dart';
 import '../../../settings/data/layout_settings_store.dart';
 
@@ -13,9 +14,14 @@ class ChatMessageBubble extends StatelessWidget {
     super.key,
     required this.message,
     this.onLongPress,
+    this.onNotHelpful,
   });
 
   final ChatMessage message;
+
+  /// «Non mi ha aiutato» under a health answer: true when the signal reached
+  /// the backend. Null where the button must not appear.
+  final Future<bool> Function()? onNotHelpful;
 
   /// Opens the message's actions (on the owner's own messages: "Modifica").
   final VoidCallback? onLongPress;
@@ -37,7 +43,7 @@ class ChatMessageBubble extends StatelessWidget {
     final foregroundColor = isUser ? AppColors.onPrimary : AppColors.text;
     final showAiDisclosure = !isUser && message.aiGenerated;
 
-    return Row(
+    final bubble = Row(
       mainAxisAlignment:
           isUser ? MainAxisAlignment.end : MainAxisAlignment.start,
       children: [
@@ -113,6 +119,112 @@ class ChatMessageBubble extends StatelessWidget {
           ),
         ),
       ],
+    );
+
+    if (!message.canReportNotHelpful || (onNotHelpful == null && !message.notHelpful)) return bubble;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        bubble,
+        NotHelpfulFeedback(message: message, onNotHelpful: onNotHelpful),
+      ],
+    );
+  }
+}
+
+/// Under a health answer: a quiet «Non mi ha aiutato». After the tap the
+/// button gives way to a short note that invites the owner to say what was
+/// missing; the owner then writes it as a normal message (this does not add a
+/// message and does not use up a question). If the signal cannot be sent the
+/// button stays and a short error appears.
+class NotHelpfulFeedback extends StatefulWidget {
+  const NotHelpfulFeedback({super.key, required this.message, required this.onNotHelpful});
+
+  final ChatMessage message;
+  final Future<bool> Function()? onNotHelpful;
+
+  @override
+  State<NotHelpfulFeedback> createState() => _NotHelpfulFeedbackState();
+}
+
+class _NotHelpfulFeedbackState extends State<NotHelpfulFeedback> {
+  bool _sending = false;
+  bool _failed = false;
+  bool _sent = false;
+
+  Future<void> _send() async {
+    final send = widget.onNotHelpful;
+    if (send == null || _sending) return;
+    setState(() {
+      _sending = true;
+      _failed = false;
+    });
+    final ok = await send();
+    if (!mounted) return;
+    setState(() {
+      _sending = false;
+      _failed = !ok;
+      _sent = ok;
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = context.l10n;
+    if (widget.message.notHelpful || _sent) {
+      return Padding(
+        padding: const EdgeInsets.fromLTRB(AppSpacing.sm, AppSpacing.xs, AppSpacing.sm, 0),
+        child: Semantics(
+          liveRegion: true,
+          child: Text(
+            l10n.chatNotHelpfulRetry,
+            key: ValueKey('chat-not-helpful-note-${widget.message.id}'),
+            style: AppTextStyles.caption.copyWith(color: AppColors.secondaryText),
+          ),
+        ),
+      );
+    }
+
+    return Padding(
+      padding: const EdgeInsets.only(top: AppSpacing.xs),
+      child: Align(
+        alignment: Alignment.centerLeft,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Semantics(
+              button: true,
+              label: l10n.chatNotHelpfulButton,
+              hint: l10n.chatNotHelpfulSemantics,
+              excludeSemantics: true,
+              child: TextButton.icon(
+                key: ValueKey('chat-not-helpful-${widget.message.id}'),
+                onPressed: _sending ? null : _send,
+                style: TextButton.styleFrom(
+                  minimumSize: const Size(48, 48),
+                  foregroundColor: AppColors.secondaryText,
+                  textStyle: AppTextStyles.caption,
+                  padding: const EdgeInsets.symmetric(horizontal: AppSpacing.sm),
+                ),
+                icon: const Icon(Icons.thumb_down_alt_outlined, size: 16),
+                label: Text(l10n.chatNotHelpfulButton),
+              ),
+            ),
+            if (_failed)
+              Padding(
+                padding: const EdgeInsets.only(left: AppSpacing.sm),
+                child: Semantics(
+                  liveRegion: true,
+                  child: Text(
+                    l10n.chatNotHelpfulFailed,
+                    key: ValueKey('chat-not-helpful-error-${widget.message.id}'),
+                    style: AppTextStyles.caption.copyWith(color: AppColors.danger),
+                  ),
+                ),
+              ),
+          ],
+        ),
+      ),
     );
   }
 }

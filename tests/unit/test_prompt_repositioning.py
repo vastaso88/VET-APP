@@ -64,10 +64,13 @@ def test_the_prompt_carries_the_new_centre_and_rules(kind: RequestKind) -> None:
     assert "pet-care app" not in prompt
 
 
-def test_direct_questions_may_run_longer_for_a_why_and_may_name_the_vet_as_a_duty() -> None:
+def test_direct_questions_are_concise_and_may_name_the_vet_as_a_duty() -> None:
     prompt = build_system_prompt(RequestKind.DIRECT, may_ask=False, has_reference_material=False)
 
-    assert "about 1500" in prompt
+    # Plan "fratello maggiore" (2026-11-10): about 120-180 words, a list of
+    # steps when needed, safety warnings never cut (it replaced "about 1500").
+    assert "About 120-180 words" in prompt
+    assert "never shorten a safety warning" in prompt
     assert "must not appear as a reflex or a closing" in prompt
     assert "microchip" in prompt and "compulsory vaccination" in prompt
     assert "Do not ask for information before answering" in prompt

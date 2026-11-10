@@ -149,6 +149,8 @@ class _ChatConversationDetailPageState extends State<ChatConversationDetailPage>
                           scrollController: _scrollController,
                           editingMessage: _editingMessage,
                           onRequestEdit: _showMessageActions,
+                          onNotHelpful: (message) =>
+                              _store.reportNotHelpful(widget.conversationId, message),
                           onCancelEditing: () => setState(() => _editingMessage = null),
                         ),
                     },
@@ -415,6 +417,7 @@ class _SuccessConversationView extends StatelessWidget {
     required this.scrollController,
     required this.editingMessage,
     required this.onRequestEdit,
+    required this.onNotHelpful,
     required this.onCancelEditing,
   });
 
@@ -425,6 +428,9 @@ class _SuccessConversationView extends StatelessWidget {
   final ScrollController scrollController;
   final ChatMessage? editingMessage;
   final void Function(ChatMessage message) onRequestEdit;
+
+  /// «Non mi ha aiutato» on a health answer; true when the backend got it.
+  final Future<bool> Function(ChatMessage message) onNotHelpful;
   final VoidCallback onCancelEditing;
 
   @override
@@ -462,7 +468,12 @@ class _SuccessConversationView extends StatelessWidget {
                           if (state != null && message.id == state._anchoredReplyId) {
                             return KeyedSubtree(
                               key: state._anchoredReplyKey,
-                              child: ChatMessageBubble(message: message),
+                              child: ChatMessageBubble(
+                                message: message,
+                                onNotHelpful: message.canReportNotHelpful
+                                    ? () => onNotHelpful(message)
+                                    : null,
+                              ),
                             );
                           }
                           final editable =
@@ -470,6 +481,8 @@ class _SuccessConversationView extends StatelessWidget {
                           return ChatMessageBubble(
                             message: message,
                             onLongPress: editable ? () => onRequestEdit(message) : null,
+                            onNotHelpful:
+                                message.canReportNotHelpful ? () => onNotHelpful(message) : null,
                           );
                         }
 

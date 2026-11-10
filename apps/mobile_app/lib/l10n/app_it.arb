@@ -322,6 +322,10 @@
   "chatLoadingSubtitle": "Stiamo caricando il thread e l ultimo contesto disponibile.",
   "chatEmptyTitle": "La conversazione e vuota",
   "chatEmptySubtitle": "Scrivi il primo messaggio per iniziare: puoi chiedere perché fa qualcosa, come gestirlo o quali sono i tuoi doveri.",
+  "chatNotHelpfulButton": "Non mi ha aiutato",
+  "chatNotHelpfulSemantics": "Segnala che questa risposta non ti è stata utile",
+  "chatNotHelpfulRetry": "Ci riprovo con più attenzione: dimmi cosa non ti è stato utile.",
+  "chatNotHelpfulFailed": "Non sono riuscito a inviare la segnalazione. Riprova.",
   "chatEmptyAction": "Scrivi ora",
   "chatEmptyGreeting": "Ciao, ho una domanda per {pet}.",
   "@chatEmptyGreeting": {

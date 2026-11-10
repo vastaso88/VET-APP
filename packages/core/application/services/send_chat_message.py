@@ -100,6 +100,8 @@ class SendChatMessageOutput(BaseModel):
     mode: str
     confidence: str
     ai_generated: bool
+    # Plan "fratello maggiore": the app shows "Non mi ha aiutato" under it.
+    health_answer: bool = False
     sources: list[EvidenceSource]
     limitations: list[str]
     safety_flags: list[str]
@@ -284,6 +286,10 @@ class SendChatMessageService:
                 quota_exempt=(getattr(data, "owner_email", None) or "").strip().lower()
                 in self._quota_exempt_emails,
                 user_daily_limit=plan_limits.daily_questions if plan_limits else None,
+                sonnet_daily_limit=(plan_limits.daily_sonnet_answers if plan_limits else None),
+                upgrade_plan=plan_limits.upgrade_to if plan_limits else None,
+                escalate_health=conversation.escalate_next_health,
+                awaiting_anamnesis=conversation.awaiting_anamnesis,
                 owner_names=owner_names_for_anonymization(
                     data.owner_display_name, pet_name=pet_profile.name
                 ),
@@ -309,8 +315,14 @@ class SendChatMessageService:
             role="assistant",
             content=orchestrator_result.answer,
             ai_generated=orchestrator_result.ai_generated,
+            health_answer=orchestrator_result.health_answer or None,
         )
         conversation.messages.append(reply)
+        conversation.awaiting_anamnesis = orchestrator_result.awaiting_anamnesis
+        if orchestrator_result.health_answer:
+            # The second try has been given (or was refused by the cap): the
+            # button's effect is spent.
+            conversation.escalate_next_health = False
         conversation.situation_model = orchestrator_result.situation_model
         conversation.coverage_score = orchestrator_result.coverage_score
         conversation.state = orchestrator_result.state
@@ -345,6 +357,7 @@ class SendChatMessageService:
             mode=orchestrator_result.mode,
             confidence=orchestrator_result.confidence,
             ai_generated=orchestrator_result.ai_generated,
+            health_answer=orchestrator_result.health_answer,
             sources=orchestrator_result.sources,
             limitations=orchestrator_result.limitations,
             safety_flags=orchestrator_result.safety_flags,
@@ -383,6 +396,7 @@ class SendChatMessageService:
                     mode="replayed",
                     confidence="medium",
                     ai_generated=bool(reply.ai_generated),
+                    health_answer=bool(reply.health_answer),
                     sources=[],
                     limitations=[],
                     safety_flags=[],

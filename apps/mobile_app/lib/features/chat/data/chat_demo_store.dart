@@ -149,6 +149,9 @@ class ChatDemoStore extends ChangeNotifier {
                       : ChatMessageAuthor.assistant,
                   text: message.content,
                   timeLabel: _timeLabelFor(message.createdAt),
+                  serverId: message.id.isEmpty ? null : message.id,
+                  healthAnswer: message.healthAnswer,
+                  notHelpful: message.notHelpful,
                 ),
             ],
             backendConversationId: conversation.id,
@@ -433,6 +436,8 @@ class ChatDemoStore extends ChangeNotifier {
           text: reply.content,
           timeLabel: _clockLabel(),
           aiGenerated: reply.aiGenerated,
+          serverId: reply.messageId,
+          healthAnswer: reply.healthAnswer,
         );
         _freshAssistantIds.add(assistantMessage.id);
         final serverTitle = reply.title?.trim();
@@ -446,6 +451,33 @@ class ChatDemoStore extends ChangeNotifier {
         return Result.success(resultThread);
       },
     );
+  }
+
+  /// «Non mi ha aiutato» under a health answer: tells the backend (which then
+  /// has the next health answer of this conversation written with more care)
+  /// and remembers it, so the button gives way to the note. True when the
+  /// signal was recorded. It is not a question: nothing is added to the thread.
+  Future<bool> reportNotHelpful(String conversationId, ChatMessage message) async {
+    final thread = conversationById(conversationId);
+    final backendId = thread?.backendConversationId;
+    final serverId = message.serverId;
+    if (thread == null || backendId == null || serverId == null || !_configLoader.load().hasApiBaseUrl) {
+      return false;
+    }
+    final result = await _remote.markNotHelpful(conversationId: backendId, messageId: serverId);
+    if (result.isFailure) return false;
+    final current = conversationById(conversationId) ?? thread;
+    _replaceThread(
+      conversationId,
+      current.copyWith(
+        messages: [
+          for (final item in current.messages)
+            item.id == message.id ? item.copyWith(notHelpful: true) : item,
+        ],
+      ),
+    );
+    notifyListeners();
+    return true;
   }
 
   /// The most recent message the owner sent in [conversationId]: after a
@@ -535,6 +567,8 @@ class ChatDemoStore extends ChangeNotifier {
               text: reply.content,
               timeLabel: _clockLabel(),
               aiGenerated: reply.aiGenerated,
+              serverId: reply.messageId,
+              healthAnswer: reply.healthAnswer,
             );
             _freshAssistantIds.add(assistantMessage.id);
 

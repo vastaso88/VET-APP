@@ -105,6 +105,12 @@ class Settings(BaseSettings):
     anthropic_inference_geo: Literal["global", "us"] = Field(
         default="global", alias="ANTHROPIC_INFERENCE_GEO"
     )
+    # The occasional more capable model (plan "fratello maggiore", 2026-11-10):
+    # the free part of urgencies and the health answer after the owner was not
+    # helped. Same client, account, anonymisation and region as every other
+    # request to Anthropic; OFF until the measured numbers are approved.
+    anthropic_model_strong: str = Field(default="claude-sonnet-5-5", alias="ANTHROPIC_MODEL_STRONG")
+    sonnet_escalation_enabled: bool = Field(default=False, alias="SONNET_ESCALATION")
     anthropic_effort: str = Field(default="low", alias="ANTHROPIC_EFFORT")
     anthropic_effort_light: str = Field(default="low", alias="ANTHROPIC_EFFORT_LIGHT")
     anthropic_thinking_headroom_tokens: int = Field(
@@ -207,6 +213,15 @@ class Settings(BaseSettings):
     urgency_classifier_timeout_seconds: int = Field(
         default=6, ge=1, le=30, alias="URGENCY_CLASSIFIER_TIMEOUT_SECONDS"
     )
+    # Health answers only from approved cards (plan stage 2, 2026-11-10): off
+    # until the first approved cards are loaded, because with an empty store
+    # every health answer takes the safe path (questions, signs, when to see
+    # the vet). Cards: Supabase table health_cards with PERSISTENCE_BACKEND=
+    # supabase (scripts/setup/health_cards.sql), in memory otherwise.
+    health_sources_rule_enabled: bool = Field(default=False, alias="HEALTH_SOURCES_RULE")
+    # Evaluation only: the in-memory store also reads the cards still in draft
+    # (refused in production, see the validator).
+    health_cards_include_drafts: bool = Field(default=False, alias="HEALTH_CARDS_INCLUDE_DRAFTS")
     # English keywords (light model) as the literature search query.
     evidence_query_normalizer_enabled: bool = Field(
         default=True, alias="EVIDENCE_QUERY_NORMALIZER_ENABLED"
@@ -367,6 +382,9 @@ class Settings(BaseSettings):
 
     @model_validator(mode="after")
     def validate_backend_configuration(self) -> "Settings":
+        if self.environment == "production" and self.health_cards_include_drafts:
+            raise ValueError("HEALTH_CARDS_INCLUDE_DRAFTS is for evaluations, never production")
+
         if self.persistence_backend == "supabase":
             self._require_fields(
                 "PERSISTENCE_BACKEND=supabase",

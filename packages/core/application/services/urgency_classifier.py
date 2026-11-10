@@ -42,6 +42,9 @@ CATEGORIES: tuple[str, ...] = (
     "other",
 )
 LEVELS = ("emergency", "maybe", "normal")
+# What the message is about (plan stage 2): "health" gets the approved-cards
+# rule, "off_topic" the fixed reply (when no animal is mentioned either).
+TOPICS = ("health", "care", "off_topic")
 # For a provider with structured outputs (Claude): the object the prompt
 # below describes. The parser stays the floor for every provider.
 VERDICT_SCHEMA: dict[str, object] = {
@@ -49,15 +52,17 @@ VERDICT_SCHEMA: dict[str, object] = {
     "properties": {
         "level": {"type": "string", "enum": list(LEVELS)},
         "category": {"type": ["string", "null"]},
+        "topic": {"type": "string", "enum": list(TOPICS)},
     },
-    "required": ["level", "category"],
+    "required": ["level", "category", "topic"],
     "additionalProperties": False,
 }
 
 SYSTEM_PROMPT = (
     f"You {URGENCY_MARKER} to a pet-care app, in any language. Decide only how urgent "
     "the situation is RIGHT NOW. Reply with ONLY a JSON object: "
-    '{"level": "emergency" | "maybe" | "normal", "category": string | null}.\n'
+    '{"level": "emergency" | "maybe" | "normal", "category": string | null, '
+    '"topic": "health" | "care" | "off_topic"}.\n'
     "emergency: the owner describes something happening to their animal now that needs a "
     "vet within minutes to a few hours — not breathing well, collapse or unconsciousness, "
     "a seizure, heavy or unstoppable bleeding, a serious injury, a swallowed poison, toxic "
@@ -69,7 +74,12 @@ SYSTEM_PROMPT = (
     "documents, behaviour, feeding, care. Do not call it an emergency because a serious "
     "word appears in a question ('is chocolate dangerous?' is normal; 'he just ate "
     "chocolate' is emergency).\n"
-    "category, when level is not normal, is one of: " + ", ".join(CATEGORIES) + "."
+    "category, when level is not normal, is one of: " + ", ".join(CATEGORIES) + ".\n"
+    "topic: health = the animal's body, symptoms, illness, prevention, vaccines, "
+    "parasites, medicines, poisons, diet for a problem; care = behaviour, training, "
+    "environment, ordinary feeding, duties, anything else about living with an animal; "
+    "off_topic = nothing to do with animals (cars, recipes, people's health, homework, "
+    "news). A message that mentions an animal is never off_topic."
 )
 
 _OBJECT = re.compile(r"\{.*\}", re.DOTALL)
@@ -78,6 +88,7 @@ _OBJECT = re.compile(r"\{.*\}", re.DOTALL)
 class UrgencyVerdict(BaseModel):
     level: str
     category: str | None = None
+    topic: str | None = None
 
 
 class UrgencyClassifier:
@@ -99,7 +110,7 @@ class UrgencyClassifier:
                     system_prompt=SYSTEM_PROMPT,
                     user_prompt=f"Species: {species}\nMessage: {message[:1500]}",
                     temperature=0.0,
-                    max_tokens=60,
+                    max_tokens=80,
                     purpose="urgency_classifier",
                     model_class="light",
                     json_mode=True,
@@ -131,6 +142,10 @@ class UrgencyClassifier:
             return None
         category = payload.get("category")
         category = str(category).strip().lower() if category else None
+        raw_topic = str(payload.get("topic") or "").strip().lower()
+        topic = raw_topic if raw_topic in TOPICS else None
         if level == "normal":
-            return UrgencyVerdict(level=level)
-        return UrgencyVerdict(level=level, category=category if category in CATEGORIES else "other")
+            return UrgencyVerdict(level=level, topic=topic)
+        return UrgencyVerdict(
+            level=level, category=category if category in CATEGORIES else "other", topic=topic
+        )

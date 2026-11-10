@@ -48,7 +48,12 @@ def test_parsing_is_lenient_about_wrapping_and_strict_about_values() -> None:
     parse = UrgencyClassifier.parse
     wrapped = parse('Sure: {"level": "emergency", "category": "seizure"} .')
     assert wrapped is not None
-    assert wrapped.model_dump() == {"level": "emergency", "category": "seizure"}
+    assert wrapped.model_dump() == {"level": "emergency", "category": "seizure", "topic": None}
+    # Plan stage 2: the topic beside the urgency, ignored when unknown.
+    assert parse('{"level": "normal", "category": null, "topic": "off_topic"}').topic == (  # type: ignore[union-attr]
+        "off_topic"
+    )
+    assert parse('{"level": "normal", "category": null, "topic": "sport"}').topic is None  # type: ignore[union-attr]
     assert parse('{"level": "maybe", "category": "cardiology"}').category == "other"  # type: ignore[union-attr]
     assert parse('{"level": "normal", "category": "seizure"}').category is None  # type: ignore[union-attr]
     assert parse('{"level": "panic"}') is None

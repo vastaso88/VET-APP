@@ -17,6 +17,9 @@ class LLMGenerationRequest(BaseModel):
     # a smaller model with its own (larger) daily quota, for mechanical work
     # — extraction, keywords, classification. A provider without a light
     # model serves both from the main one.
+    # "strong": the occasional more capable model (Claude Sonnet, plan
+    # "fratello maggiore"), when the provider has one; the others serve it
+    # from the main model.
     model_class: str = "main"
     # The reply must be a JSON object; the provider enforces it when it can.
     json_mode: bool = False

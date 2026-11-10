@@ -134,6 +134,21 @@ La misura di precisione (66 frasi per lingua) richiede la chiave di valutazione.
 - quando nessun modello della catena può rispondere: "In questo momento l'assistente è
   molto richiesto e ha esaurito le risposte disponibili per oggi. Riprova tra circa 2
   ore..." (`mode` `quota_exhausted`), non un errore;
+- **Sonnet come "fratello maggiore"** (piano approvato il 10 novembre 2026): tetto di risposte
+  scritte da Claude Sonnet al giorno per piano (`PlanLimits.daily_sonnet_answers`: Plus 1,
+  Pro 2, Ultra 3; prova e test pubblico come Pro; azzeramento alla mezzanotte dell'utente).
+  `LlmBudget.admit_sonnet(...)`: oltre il tetto, o oltre la soglia di riserva del tetto in
+  euro, risponde Haiku (non è un errore e non si dice all'utente); se il registro non
+  risponde **fallisce chiuso** (Haiku). La scelta di quando passare a Sonnet è della chat;
+- **Continuazioni**: `admit(..., counts_as_question=False)` per il messaggio che continua
+  un argomento (la risposta a un chiarimento, il "non mi ha aiutato"): non è una domanda
+  del piano e non viene fermato dalle domande finite, ma ha un tetto suo di
+  `FOLLOWUPS_PER_QUESTION` (3) volte le domande del piano. Va derivato **dallo stato della
+  conversazione sul server**, mai da un campo dell'app. SQL:
+  `scripts/setup/chat_usage_sonnet_followups.sql` (due tipi in più nei contatori);
+- oltre il limite delle domande il messaggio dice quando riparte il conteggio e, se esiste un
+  piano sopra (`PlanLimits.upgrade_to`: Plus → Pro, Pro → Ultra; mai per Ultra e per la
+  prova), lo propone (`LIMIT_UPGRADE_TEXTS`). Niente crediti a pagamento;
 - `CHAT_DAILY_MESSAGE_LIMIT_PER_USER` (20; 0 = nessun limite) messaggi per utente che
   arrivano al modello; oltre: "Per oggi hai usato tutti i 20 messaggi..." (`mode`
   `user_limit_reached`). `DEVELOPER_EMAILS` esenti. Le risposte fisse (emergenze, dosaggi,

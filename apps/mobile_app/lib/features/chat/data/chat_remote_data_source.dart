@@ -25,11 +25,19 @@ class ChatSendResult {
     required this.aiGenerated,
     required this.backendConversationId,
     this.title,
+    this.messageId,
+    this.healthAnswer = false,
   });
 
   final String content;
   final bool aiGenerated;
   final String backendConversationId;
+
+  /// `reply.id`: the server's id of the answer, needed to say it did not help.
+  final String? messageId;
+
+  /// `health_answer`: the backend classed this answer as being about health.
+  final bool healthAnswer;
 
   /// The conversation's title on the server (it follows an edited first
   /// message when it was the automatic one).
@@ -45,12 +53,16 @@ class RemoteChatMessage {
     required this.role,
     required this.content,
     required this.createdAt,
+    this.healthAnswer = false,
+    this.notHelpful = false,
   });
 
   final String id;
   final String role;
   final String content;
   final DateTime? createdAt;
+  final bool healthAnswer;
+  final bool notHelpful;
 }
 
 /// A stored backend conversation as returned by `GET /conversations` (which
@@ -78,6 +90,15 @@ abstract class ChatRemoteDataSource {
     required String userMessage,
     String? attachmentId,
     String? clientMessageId,
+  });
+
+  /// `POST /conversations/{id}/messages/{messageId}/not-helpful`: the owner says
+  /// the answer did not help. Empty body; the backend decides what the next
+  /// health answer of the conversation will be. It does not use up one of the
+  /// day's questions. Safe to repeat.
+  Future<Result<void>> markNotHelpful({
+    required String conversationId,
+    required String messageId,
   });
 
   /// `PUT /conversations/{id}/messages/{messageId}`: replaces one of the
@@ -240,7 +261,48 @@ class HttpChatRemoteDataSource implements ChatRemoteDataSource {
       aiGenerated: json['ai_generated'] as bool? ?? false,
       backendConversationId: conversation['id'] as String,
       title: conversation['title'] as String?,
+      messageId: reply['id'] as String?,
+      healthAnswer: json['health_answer'] as bool? ?? reply['health_answer'] as bool? ?? false,
     );
+  }
+
+  @override
+  Future<Result<void>> markNotHelpful({
+    required String conversationId,
+    required String messageId,
+  }) async {
+    try {
+      final response = await _client
+          .post(
+            Uri.parse(
+              '$_baseUrl/conversations/${Uri.encodeComponent(conversationId)}'
+              '/messages/${Uri.encodeComponent(messageId)}/not-helpful',
+            ),
+            headers: _headers,
+          )
+          .timeout(_timeout);
+      if (response.statusCode < 200 || response.statusCode >= 300) {
+        return Result.failure(
+          AppNetworkError(
+            code: 'chat_not_helpful_http_${response.statusCode}',
+            message: appL10n.chatNotHelpfulFailed,
+          ),
+        );
+      }
+      return Result.success(null);
+    } on TimeoutException {
+      return Result.failure(
+        AppNetworkError(code: 'chat_not_helpful_timeout', message: appL10n.chatNotHelpfulFailed),
+      );
+    } catch (error) {
+      return Result.failure(
+        AppNetworkError(
+          code: 'chat_not_helpful_unexpected_error',
+          message: appL10n.chatNotHelpfulFailed,
+          details: error,
+        ),
+      );
+    }
   }
 
   @override
@@ -502,6 +564,8 @@ class HttpChatRemoteDataSource implements ChatRemoteDataSource {
                   role: raw['role'] as String? ?? 'assistant',
                   content: raw['content'] as String? ?? '',
                   createdAt: DateTime.tryParse(raw['created_at'] as String? ?? ''),
+                  healthAnswer: raw['health_answer'] as bool? ?? false,
+                  notHelpful: raw['not_helpful'] as bool? ?? false,
                 ),
             ],
           ),

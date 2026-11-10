@@ -733,6 +733,21 @@ class AppLocalizationsDe extends AppLocalizations {
       'Schreiben Sie die erste Nachricht: Sie können fragen, warum es etwas tut, wie Sie damit umgehen oder welche Pflichten Sie haben.';
 
   @override
+  String get chatNotHelpfulButton => 'Das hat mir nicht geholfen';
+
+  @override
+  String get chatNotHelpfulSemantics =>
+      'Melden, dass diese Antwort nicht geholfen hat';
+
+  @override
+  String get chatNotHelpfulRetry =>
+      'Ich versuche es noch einmal genauer: Sagen Sie mir, was nicht hilfreich war.';
+
+  @override
+  String get chatNotHelpfulFailed =>
+      'Das konnte nicht gesendet werden. Versuchen Sie es erneut.';
+
+  @override
   String get chatEmptyAction => 'Jetzt schreiben';
 
   @override

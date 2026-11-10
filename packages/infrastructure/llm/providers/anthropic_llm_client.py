@@ -101,11 +101,19 @@ class AnthropicLLMClient(LLMClient):
     def model(self) -> str:
         return self._settings.anthropic_model
 
+    def model_for(self, req: LLMGenerationRequest) -> str:
+        """The strong class (plan "fratello maggiore") goes to the more capable
+        model; everything else to the configured one. Same payload, same
+        anonymised input, same region for both."""
+        if req.model_class == "strong":
+            return self._settings.anthropic_model_strong
+        return self._settings.anthropic_model
+
     def generate(self, req: LLMGenerationRequest) -> LLMResponse:
         if self._availability is not None:
             # Past its daily budget the model is left alone (QuotaExhausted):
             # the reserve, when there is one, takes the call.
-            self._availability.order([self.model])
+            self._availability.order([self.model_for(req)])
         client = self._client
         if req.timeout_seconds is not None:
             client = client.with_options(timeout=req.timeout_seconds, max_retries=0)
@@ -144,7 +152,7 @@ class AnthropicLLMClient(LLMClient):
         if use_schema:
             output_config["format"] = {"type": "json_schema", "schema": req.json_schema}
         body: dict[str, Any] = {
-            "model": settings.anthropic_model,
+            "model": self.model_for(req),
             "max_tokens": (
                 req.max_tokens
                 if light
@@ -186,7 +194,7 @@ class AnthropicLLMClient(LLMClient):
         return LLMResponse(
             content=text,
             provider=PROVIDER_NAME,
-            model=str(getattr(message, "model", "") or self.model),
+            model=str(getattr(message, "model", "") or self.model_for(req)),
             token_count=prompt_tokens + completion_tokens,
             finish_reason=finish,
             prompt_tokens=prompt_tokens,

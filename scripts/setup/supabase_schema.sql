@@ -2017,6 +2017,12 @@ alter table public.chat_user_daily_usage add column if not exists vision integer
 alter table public.chat_user_daily_usage
     add column if not exists dictation integer not null default 0;
 alter table public.chat_user_daily_usage add column if not exists summary integer not null default 0;
+-- Plan "fratello maggiore" (2026-11-10): Sonnet answers and messages that
+-- continue a topic; see scripts/setup/chat_usage_sonnet_followups.sql.
+alter table public.chat_user_daily_usage
+    add column if not exists sonnet integer not null default 0;
+alter table public.chat_user_daily_usage
+    add column if not exists followup integer not null default 0;
 
 create or replace function public.chat_user_daily_usage_add_kind(
     p_owner_id text, p_day date, p_kind text
@@ -2029,24 +2035,31 @@ as $$
 declare
     total integer;
 begin
-    if p_kind not in ('messages', 'vision', 'dictation', 'summary') then
+    if p_kind not in ('messages', 'vision', 'dictation', 'summary', 'sonnet', 'followup') then
         raise exception 'unknown usage kind: %', p_kind;
     end if;
-    insert into public.chat_user_daily_usage (owner_id, day, messages, vision, dictation, summary)
+    insert into public.chat_user_daily_usage (
+        owner_id, day, messages, vision, dictation, summary, sonnet, followup
+    )
     values (
         p_owner_id, p_day,
         (p_kind = 'messages')::integer, (p_kind = 'vision')::integer,
-        (p_kind = 'dictation')::integer, (p_kind = 'summary')::integer
+        (p_kind = 'dictation')::integer, (p_kind = 'summary')::integer,
+        (p_kind = 'sonnet')::integer, (p_kind = 'followup')::integer
     )
     on conflict (owner_id, day) do update set
         messages = public.chat_user_daily_usage.messages + (p_kind = 'messages')::integer,
         vision = public.chat_user_daily_usage.vision + (p_kind = 'vision')::integer,
         dictation = public.chat_user_daily_usage.dictation + (p_kind = 'dictation')::integer,
-        summary = public.chat_user_daily_usage.summary + (p_kind = 'summary')::integer
+        summary = public.chat_user_daily_usage.summary + (p_kind = 'summary')::integer,
+        sonnet = public.chat_user_daily_usage.sonnet + (p_kind = 'sonnet')::integer,
+        followup = public.chat_user_daily_usage.followup + (p_kind = 'followup')::integer
     returning case p_kind
         when 'messages' then messages
         when 'vision' then vision
         when 'dictation' then dictation
+        when 'sonnet' then sonnet
+        when 'followup' then followup
         else summary
     end into total;
     return total;

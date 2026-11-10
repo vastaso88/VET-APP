@@ -29,6 +29,7 @@ from packages.core.application.services.evidence_query_normalizer import (
     EvidenceQueryNormalizer,
 )
 from packages.core.application.services.evidence_synthesizer import EvidenceSynthesizer
+from packages.core.application.services.health_card_selector import HealthCardSelector
 from packages.core.application.services.interview_planner import InterviewPlanner
 from packages.core.application.services.llm_budget import (
     LlmBudget,
@@ -69,6 +70,7 @@ from packages.core.domain.conversation.request_kind import (
     classify_request,
     consecutive_question_turns,
     is_behavioural_or_duty,
+    is_question,
     is_question_only,
     looks_like_document,
     may_ask_before_answering,
@@ -78,8 +80,14 @@ from packages.core.domain.knowledge.answer_validation import validate_answer
 from packages.core.domain.knowledge.dose_in_answer import find_dosage
 from packages.core.domain.knowledge.duty_notes import DUTY_CATALOG, pinned_duty_notes
 from packages.core.domain.knowledge.evidence_synthesis import EvidenceSynthesis
+from packages.core.domain.knowledge.health_cards import (
+    HealthCard,
+    card_species_key,
+    format_cards_for_prompt,
+    source_line,
+)
 from packages.core.domain.knowledge.models import EvidenceSource
-from packages.core.domain.knowledge.relevance import relevant_sources
+from packages.core.domain.knowledge.relevance import relevant_sources, topic_terms
 from packages.core.domain.localization import has_translation, translate
 from packages.core.domain.pet_profile.details import describe_for_prompt
 from packages.core.domain.pet_profile.models import FishStock, HabitatDetails
@@ -141,7 +149,9 @@ from packages.core.domain.safety.harmful_requests import (
     HUMAN_HEALTH_TEXTS,
     IDENTITY_TEXTS,
     LIMIT_TEXTS,
+    LIMIT_UPGRADE_TEXTS,
     MINOR_HURT_TEXTS,
+    OFF_TOPIC_TEXTS,
     PERMETHRIN_INTENT_TEXTS,
     PRICE_REPLACEMENT,
     PROMPT_LEAK_TEXTS,
@@ -196,6 +206,38 @@ logger = logging.getLogger("vetgpt.chat")
 _FEMALE_LABELS = frozenset({"femmina", "female", "hembra", "weiblich", "femelle", "f"})
 # Species whose emergencies need a vet who knows them.
 _EXOTIC_FAMILIES = frozenset({"bird", "small_mammal", "reptile_amphibian", "fish", "ferret"})
+# Intents that are health questions (approved-cards rule, "Non mi ha
+# aiutato"), together with the classifier's "health" topic.
+_HEALTH_INTENTS = frozenset({"clinical_question", "preventive_care"})
+# [S1], [S2]: the labels of the approved cards in a health answer.
+_CARD_LABEL = re.compile(r"\[S(\d+)\]")
+# Words that put an animal in the message: such a message is never off topic.
+_ANIMAL_WORDS = re.compile(
+    r"\b(?:animal\w*|cucciol\w*|bestiol\w*|pet|pets|veterinar\w*|vet|zamp\w*|micio|mici|gattin\w*|cagnolin\w*|tierarzt\w*|tier|tiere|haustier\w*|mascota\w*|veterinaire|chiot\w*|chaton\w*|puppy|puppies|kitten\w*)\b"
+)
+# "Non hai capito", "non mi hai aiutato": the owner says the answer did not
+# help (plan "fratello maggiore"), in the five languages.
+_DISSATISFIED = re.compile(
+    r"\b(?:non (?:hai|mi hai) (?:capito|risposto)|non mi (?:ha|hai) aiutat\w*|non mi aiut\w*|"
+    r"non (?:e|era) quello che (?:ho|avevo) chiesto|non serve a niente|risposta inutile|"
+    r"non rispondi alla (?:mia )?domanda|"
+    r"you (?:didn'?t|did not) (?:understand|answer)|(?:that|this) (?:doesn'?t|does not|"
+    r"didn'?t) help|not what i asked|no (?:me )?has (?:entendido|respondido)|"
+    r"no me (?:ayuda|has ayudado|sirve)|no es lo que (?:he )?pregunt\w*|"
+    r"(?:sie haben|du hast) (?:mich )?nicht verstanden|(?:das )?hilft (?:mir )?nicht|"
+    r"nicht (?:das|was) ich gefragt|vous n'avez pas compris|tu n'as pas compris|"
+    r"(?:ca|cela) ne m'aide pas|ce n'est pas ce que j'ai demande)\b"
+)
+
+
+def _only_questions(text: str) -> bool:
+    """Every sentence of the reply is a question to the owner: an anamnesis
+    turn. A statement followed by a courtesy question ("Può essere il caldo.
+    Vuoi sapere altro?") is an answer, not an anamnesis (stage 4)."""
+    sentences = [part.strip() for part in re.findall(r"[^.!?]+[.!?]*", text) if part.strip()]
+    return bool(sentences) and all(sentence.endswith("?") for sentence in sentences)
+
+
 # A ferret is filed under "Piccoli mammiferi" in the app, but it is a
 # carnivore: the rabbit's stasis steps (hay, a gut that must not stop) do
 # not describe it (manual project, 2026-11-08). Named in the breed, the
@@ -819,6 +861,23 @@ class ChatOrchestratorInput(BaseModel):
     # The owner's plan allowance of questions per day; None = the
     # deployment-wide default (llm_budget.py).
     user_daily_limit: int | None = None
+    # The plan's allowance of answers per day written by Claude Sonnet,
+    # for LlmBudget.admit_sonnet (None = no limit, a developer account;
+    # 0 = none). The routing that picks Sonnet reads it.
+    sonnet_daily_limit: int | None = None
+    # The plan above the owner's own ("pro" or "ultra"), named in the
+    # message that says the day's questions are used up; None for Ultra,
+    # the free trial and developer accounts.
+    upgrade_plan: str | None = None
+    # The owner pressed "Non mi ha aiutato" on a health answer of this
+    # conversation (server-side state, never a field the app sends).
+    escalate_health: bool = False
+    # Set by the orchestrator itself when it re-reads the reply to one of its
+    # clarifying questions as an ordinary message (never by a caller).
+    continues_topic: bool = False
+    # The last reply was an anamnesis question the pipeline produced
+    # (conversation state, set by the server; never by the app).
+    awaiting_anamnesis: bool = False
 
 
 class ChatOrchestratorResult(BaseModel):
@@ -840,6 +899,13 @@ class ChatOrchestratorResult(BaseModel):
     awaiting_medical_record_consent: bool = False
     awaiting_safety_clarification: bool = False
     safety_clarification_category: str | None = None
+    # Plan "fratello maggiore": a non-urgent health answer written by the model
+    # (the app shows "Non mi ha aiutato"), and whether the strong model wrote it.
+    health_answer: bool = False
+    escalated: bool = False
+    # This reply is an anamnesis question (vague symptom, questions only):
+    # the next message answers it (stage 4).
+    awaiting_anamnesis: bool = False
     evidence_synthesis: EvidenceSynthesis | None = None
     """Structured synthesis behind `answer` for mode="evidence" (spec v3
     §27) — supported/uncertain/conflicting claims kept distinguishable
@@ -878,6 +944,10 @@ class ChatOrchestrator:
         # the fixed first-aid steps only (the default here keeps the tests
         # and the demo provider deterministic; the container sets it).
         urgent_answer_timeout_seconds: int = 0,
+        # Health answers only from approved cards (plan stage 2); None = off.
+        health_card_selector: HealthCardSelector | None = None,
+        # The more capable model's name (plan "fratello maggiore"); None = off.
+        strong_model: str | None = None,
         prompt_max_sources: int = 2,
         prompt_source_chars: int = 300,
         prompt_curated_source_chars: int = 1000,
@@ -935,6 +1005,8 @@ class ChatOrchestrator:
         self._answer_cache_ttl = timedelta(hours=max(1, answer_cache_ttl_hours))
         self._answer_max_tokens = max(100, answer_max_tokens)
         self._urgent_answer_timeout_seconds = max(0, urgent_answer_timeout_seconds)
+        self._health_card_selector = health_card_selector
+        self._strong_model = strong_model
         self._prompt_max_sources = max(0, prompt_max_sources)
         self._prompt_source_chars = max(50, prompt_source_chars)
         # The curated notes (tier D, written for the prompt) are read whole:
@@ -1071,6 +1143,8 @@ class ChatOrchestrator:
                     update={
                         "awaiting_safety_clarification": False,
                         "safety_clarification_category": None,
+                        # still the reply to the chat's question: not a new question
+                        "continues_topic": True,
                     }
                 )
                 return self._answer(data)
@@ -1295,6 +1369,9 @@ class ChatOrchestrator:
                 models=self._answer_models,
                 exempt=data.quota_exempt,
                 user_daily_limit=data.user_daily_limit,
+                # Plan "fratello maggiore": only the message that opens a
+                # topic is a question of the plan.
+                counts_as_question=not self._continues_a_topic(data),
             )
             if denial is not None:
                 # P1: an emergency the fixed lists missed is still an
@@ -1389,6 +1466,9 @@ class ChatOrchestrator:
         )
         if second_opinion is not None:
             return second_opinion
+        off_topic = self._off_topic_result(data, message, lowered, prefetch)
+        if off_topic is not None:
+            return off_topic
 
         # What the owner asked for comes before any anamnesis (build 22
         # feedback: "spiegami il referto" was answered by asking for
@@ -1852,6 +1932,147 @@ class ChatOrchestrator:
             return None
         return self._result_from_urgency_verdict(verdict, data, message, effective_species)
 
+    def _off_topic_result(
+        self,
+        data: ChatOrchestratorInput,
+        message: str,
+        lowered: str,
+        prefetch: _Prefetch,
+    ) -> ChatOrchestratorResult | None:
+        """A message about something else entirely (plan stage 2): the fixed
+        reply, no model. Only when the classifier says so AND the message
+        names no animal: a false "off topic" on a real question would be
+        worse than a short answer, so any animal word keeps the answer."""
+        verdict = prefetch.urgency()
+        if verdict is None or verdict.topic != "off_topic":
+            return None
+        if self._mentions_an_animal(data, message, lowered):
+            return None
+        return self._fixed_reply(OFF_TOPIC_TEXTS, data, model="off-topic-guard")
+
+    @staticmethod
+    def _mentions_an_animal(data: ChatOrchestratorInput, message: str, lowered: str) -> bool:
+        name = (data.pet_name or "").strip().lower()
+        return bool(
+            _families_named_in(lowered)
+            or _ANIMAL_WORDS.search(normalize_for_matching(message))
+            or (name and re.search(rf"(?<!\w){re.escape(name)}(?!\w)", lowered))
+        )
+
+    def _health_rule_applies(
+        self,
+        kind: RequestKind,
+        intent: str,
+        prefetch: _Prefetch | None,
+    ) -> bool:
+        return self._health_card_selector is not None and self._is_health_question(
+            kind, intent, prefetch
+        )
+
+    @staticmethod
+    def _is_health_question(
+        kind: RequestKind,
+        intent: str,
+        prefetch: _Prefetch | None,
+    ) -> bool:
+        """A health question (approved-cards rule, "Non mi ha aiutato"): the
+        clinical or prevention words, or the classifier's "health" topic. A
+        document to explain keeps its own source (the document itself)."""
+        if kind is RequestKind.REPORT:
+            return False
+        # Not "any statement": the request kind calls every message that is not
+        # a question a symptom description (a poem request, a grief message),
+        # so the clinical and prevention words, or the classifier, decide.
+        if intent in _HEALTH_INTENTS:
+            return True
+        verdict = prefetch.urgency() if prefetch is not None else None
+        return verdict is not None and verdict.topic == "health"
+
+    def _continues_a_topic(self, data: ChatOrchestratorInput) -> bool:
+        """The message continues a topic already counted, read only from the
+        conversation's state on the server (plan "fratello maggiore", stage
+        4, agreed with Pricing): the reply to one of the chat's questions
+        (urgency clarification, record consent, interview, or a reply that
+        ended asking the owner something), or the second try after the owner
+        was not helped. Anything else opens a topic and is a question."""
+        if data.continues_topic or data.awaiting_medical_record_consent:
+            return True
+        if data.escalate_health or self._owner_not_helped(data):
+            return True
+        if self._enable_interview_loop and data.interview_turns_used > 0:
+            return True
+        # The last reply was an anamnesis question the server marked: the
+        # owner's answer continues the case, unless it is a new, self-contained
+        # question that shares nothing with the case. A courtesy question at
+        # the end of an answer ("vuoi sapere altro?") is not an anamnesis and
+        # never makes the next message free.
+        return data.awaiting_anamnesis and not self._opens_a_new_topic(data)
+
+    @staticmethod
+    def _opens_a_new_topic(data: ChatOrchestratorInput) -> bool:
+        if not is_question(data.user_message):
+            return False
+        case = next(
+            (m.content for m in reversed(data.conversation_history) if m.role == "user"), ""
+        )
+        return not (topic_terms(data.user_message) & topic_terms(case))
+
+    def _strong_allowed(self, data: ChatOrchestratorInput) -> bool:
+        """May the more capable model write this answer? Off without a model;
+        otherwise the plan's daily cap and the euro cap decide (Pricing's
+        admit_sonnet, which counts the answer when it says yes). A refusal
+        is never an error: the ordinary model answers, and nobody is told."""
+        if self._strong_model is None:
+            return False
+        if self._usage_budget is None:
+            return True
+        denial = self._usage_budget.admit_sonnet(
+            owner_id=data.owner_id,
+            limit=data.sonnet_daily_limit,
+            model=self._strong_model,
+            exempt=data.quota_exempt,
+        )
+        if denial is not None:
+            logger.info("strong model refused (%s): the ordinary model answers", denial.reason)
+            return False
+        return True
+
+    @staticmethod
+    def _owner_not_helped(data: ChatOrchestratorInput) -> bool:
+        """After a health answer, the owner says it did not help, or asks the
+        same thing again in other words (plan "fratello maggiore")."""
+        history = data.conversation_history
+        last_reply = next((m for m in reversed(history) if m.role == "assistant"), None)
+        if last_reply is None or not last_reply.health_answer:
+            return False
+        if _DISSATISFIED.search(normalize_for_matching(data.user_message)):
+            return True
+        previous = next((m for m in reversed(history) if m.role == "user"), None)
+        if previous is None:
+            return False
+        now, before = topic_terms(data.user_message), topic_terms(previous.content)
+        shared = now & before
+        # The same question in other words: most of its terms again.
+        return len(shared) >= 2 and len(shared) >= 0.6 * min(len(now), len(before))
+
+    def _health_cards_for(
+        self, data: ChatOrchestratorInput, message: str, effective_species: str
+    ) -> list[HealthCard]:
+        assert self._health_card_selector is not None
+        try:
+            return self._health_card_selector.select(
+                species=card_species_key(
+                    normalize_species(effective_species),
+                    data.breed or "",
+                    data.notes or "",
+                    message,
+                ),
+                question=message,
+            )
+        except Exception:  # noqa: BLE001 - no card means the safe path, never an error
+            logger.exception("health cards: selection failed; safe path")
+            return []
+
     def _result_from_urgency_verdict(
         self,
         verdict: UrgencyVerdict,
@@ -1948,6 +2169,10 @@ class ChatOrchestrator:
             answer = LIMIT_TEXTS.get(language, LIMIT_TEXTS["it"]).format(
                 name=data.pet_name, limit=denial.daily_limit, wait=wait
             )
+            if data.upgrade_plan:
+                answer += LIMIT_UPGRADE_TEXTS.get(language, LIMIT_UPGRADE_TEXTS["it"]).format(
+                    plan=data.upgrade_plan.capitalize()
+                )
             mode = "user_limit_reached"
             limitation = "Risposta non generata: limite giornaliero di domande raggiunto."
         else:
@@ -2102,6 +2327,9 @@ class ChatOrchestrator:
                 models=self._answer_models,
                 exempt=data.quota_exempt,
                 user_daily_limit=data.user_daily_limit,
+                # An emergency is never a question of the plan (as before the
+                # model wrote part of it); the follow-up ceiling still applies.
+                counts_as_question=False,
             )
             if denial is not None and denial.reason != "user_limit":
                 # Every model's daily budget is gone: the fixed steps, as always.
@@ -2136,6 +2364,9 @@ class ChatOrchestrator:
                     user_prompt=user_prompt,
                     max_tokens=_URGENT_ANSWER_MAX_TOKENS,
                     purpose="urgent_answer",
+                    # Plan "fratello maggiore": the more capable model writes the
+                    # free part when the plan allows it; the fixed steps never change.
+                    model_class="strong" if self._strong_allowed(data) else "main",
                     timeout_seconds=self._urgent_answer_timeout_seconds,
                     cacheable_system_chars=len(stable_prefix(None)),
                 )
@@ -2861,6 +3092,15 @@ class ChatOrchestrator:
         # animal in particular) may share its answer with every owner of the
         # same species for a day (build 32). Personal cases never do.
         kind = request_kind or self._request_kind(data)
+        # Plan "fratello maggiore": the owner was not helped by a health answer
+        # (the same question again, or "non hai capito"): that complaint
+        # continues the health topic even without a health word in it.
+        not_helped = self._owner_not_helped(data)
+        health_question = self._is_health_question(kind, intent, prefetch) or not_helped
+        health_rule = self._health_card_selector is not None and health_question
+        # ... or the button pressed on the last health answer.
+        second_try = health_question and (data.escalate_health or not_helped)
+        escalated = second_try and self._strong_allowed(data)
         cache_id: str | None = None
         if (
             self._answer_cache is not None
@@ -2881,7 +3121,9 @@ class ChatOrchestrator:
                 message,
                 species=self._specific_species(data, effective_species),
                 language=data.language,
-                prompt_version=PROMPT_VERSION,
+                # An answer written under the cards rule is never served
+                # for one written without it, and the other way round.
+                prompt_version=PROMPT_VERSION + ("+schede" if health_rule else ""),
             )
             cached = self._cached_answer_result(cache_id)
             if cached is not None:
@@ -2929,6 +3171,16 @@ class ChatOrchestrator:
                 sources = pinned + [source for source in sources if source not in pinned]
         sources = list(sources)[: self._prompt_max_sources]
         evidence_block = self._format_sources_for_prompt(sources) if sources else ""
+        # Plan stage 2: on a health question the approved cards are the only
+        # sources; the optional material (notes not yet approved, literature)
+        # stays out.
+        cards: list[HealthCard] = []
+        cards_block = ""
+        if health_rule:
+            cards = self._health_cards_for(data, message, effective_species)
+            sources = [card.as_evidence() for card in cards]
+            evidence_block = ""
+            cards_block = "\n\n" + format_cards_for_prompt(cards) if cards else ""
         # The owner's words and the text read from their file go to the
         # model apart: the file as delimited data (security audit LLM-6).
         # `message` (with the file's text folded in) keeps serving the
@@ -3029,6 +3281,8 @@ class ChatOrchestrator:
             travel_south=travel_to_sand_fly_area(message, normalize_species(effective_species)),
             emergency_follow_up=self._follows_a_triage_reply(data),
             other_animal=other_animal,
+            health_cards=len(cards) if health_rule else None,
+            second_try=second_try,
         )
         pet_block = (
             self._other_animal_block(data, effective_species)
@@ -3044,6 +3298,7 @@ class ChatOrchestrator:
             f"{reminders_context}"
             f"{attachment_note}"
             f"\n\nToday's date: {today.isoformat()}"
+            + cards_block
             + (
                 f"\n\nReference material (optional, use only if genuinely "
                 f"relevant):\n{evidence_block}"
@@ -3067,6 +3322,7 @@ class ChatOrchestrator:
                     user_prompt=user_prompt,
                     max_tokens=max_tokens,
                     purpose=purpose,
+                    model_class="strong" if escalated else "main",
                     cacheable_system_chars=len(stable_prefix(kind, may_ask=may_ask)),
                 )
             )
@@ -3098,6 +3354,23 @@ class ChatOrchestrator:
             )
 
         validation = validate_answer(response.content, sources_count=len(sources))
+        if health_rule:
+            # A card label that was not given ([S4] with three cards, any [S]
+            # with none) is an invented source.
+            invented = [
+                label
+                for label in _CARD_LABEL.findall(response.content)
+                if not 1 <= int(label) <= len(cards)
+            ]
+            if invented:
+                return self._validation_failure_result(
+                    sources=sources,
+                    violations=["card_label_out_of_range: " + ", ".join(invented)],
+                    mode="natural",
+                    response_locale=data.language,
+                )
+            if cards and not _CARD_LABEL.search(response.content):
+                logger.warning("health answer with %d cards cites none of them", len(cards))
         if not validation.is_valid:
             return self._validation_failure_result(
                 sources=sources,
@@ -3160,6 +3433,17 @@ class ChatOrchestrator:
         if is_minor_writing(message):
             answer_text = self._fixed_text(ADULT_FIRST, data) + answer_text
             cache_id = None
+        if cards:
+            # The cards the answer cites (all of them when it cites none):
+            # their attribution goes under the answer, cached copies too.
+            cited = sorted({int(label) for label in _CARD_LABEL.findall(answer_text)})
+            used = [cards[index - 1] for index in cited if 1 <= index <= len(cards)] or cards
+            answer_text = (
+                answer_text.rstrip() + "\n\n" + source_line(used, normalize_language(data.language))
+            )
+        if second_try:
+            # A second try is about this owner's own case: never shared.
+            cache_id = None
         if cache_id is not None and response.finish_reason != "length":
             self._store_cached_answer(
                 cache_id, message, answer_text, response, sources, data, effective_species
@@ -3183,6 +3467,11 @@ class ChatOrchestrator:
             recommended_action=translate("worsening_action", data.language),
             provider=response.provider,
             model=response.model,
+            health_answer=health_question,
+            escalated=escalated,
+            awaiting_anamnesis=(
+                kind is RequestKind.SYMPTOM and may_ask and _only_questions(response.content)
+            ),
         )
 
     def _cached_answer_result(self, cache_id: str) -> ChatOrchestratorResult | None:

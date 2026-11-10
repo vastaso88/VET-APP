@@ -18988,5 +18988,41 @@
       "de": "a3a5b09f28ca03f11817ab0b457c635846a06c0c48d7e95633503ac94e726b74",
       "fr": "69dbd0d43e3ad72274c2bed671bb929f53a2210da492dfab043d57603827504c"
     }
+  },
+  "ui:chatNotHelpfulButton": {
+    "source": "a4b1b00bb6be9a17a3014c72dd1ec8a69dbd4368f47acf99d5da43dedef20f16",
+    "targets": {
+      "en": "381846a1b6cd64a465710a09b418aa0d25912bbae235a1eace49c57a677a089b",
+      "es": "13019a1c62dfa7d2dfaff4af974da0cc3e5e5c764ceeca685f1e5d4a7a2b445d",
+      "de": "766209eeb5e01257d1c8bafc01d3062d5d94043c7ef0f5cace59192c34aadd2e",
+      "fr": "c521681bf05e621ef41be5baf65d8f09cb1090fef660e8c7085e0f55580bcbbf"
+    }
+  },
+  "ui:chatNotHelpfulSemantics": {
+    "source": "976dccb366a94de695338098605b328e3886f4cf90d8e08031da02837d3b490b",
+    "targets": {
+      "en": "fd30ed2305ea8f93a226d720580da76f2f4c4cf0e03ae81617f9918e034d41e0",
+      "es": "ecc21ad7e82efbd522afe59b5ad1e16518ec2d6e2e26792087dd2f037c23f8d0",
+      "de": "f249f3f72bca2af3f660cc1e4087c91febdc49610caa1683f35556161008c56d",
+      "fr": "282ad35890001bfd69580b722b5e911c15ad5082b301e99306e6ef7f831eb4b8"
+    }
+  },
+  "ui:chatNotHelpfulRetry": {
+    "source": "e487532def15cfe1b9a998f15c7f758527d7f0d87438a8c6b879e877f9314ee9",
+    "targets": {
+      "en": "bbd14b39a655ab5deb965c6d81bf670070d2ae892b9d5f75a92157c876db7c66",
+      "es": "7d93d6206fbbb841e8821e15335e0cbfdc2d761aeda4a2599bd4064ad17d78bb",
+      "de": "5b27c91b56bafebf30923d2db6e9f1effa1ae718c29c860ed4beb6a01f946ffa",
+      "fr": "b49cb2765f7d8aa4596e9f1ab2875e734e9db0cbbda2091a9c4bedb9106daa84"
+    }
+  },
+  "ui:chatNotHelpfulFailed": {
+    "source": "6766cf0c96116f55b9ebc66bf9b3980d16e60715642396662a40351b50bba999",
+    "targets": {
+      "en": "c0511f3696e53ab79bd11677958575a29d154a67a926aa70be45669f5cce7f55",
+      "es": "d372420b22ed338e3d6e1e09069c3a7b7757104305834f78b98c7f2bb969e8c0",
+      "de": "6e3e3a630dc2b216c554e7b5a81c0be9e7db15172d331431c5fb9a6fbada28af",
+      "fr": "7c5eac6e2f0dabc002da02d5aca721b5da061c9e60ca5dfe3eb02081f279522d"
+    }
   }
 }

@@ -24,6 +24,7 @@ class ConversationSnapshot(BaseModel):
     awaiting_medical_record_consent: bool = False
     awaiting_safety_clarification: bool = False
     safety_clarification_category: str | None = None
+    awaiting_anamnesis: bool = False
 
 
 class ChatMessage(BaseModel):
@@ -42,6 +43,11 @@ class ChatMessage(BaseModel):
     # On assistant messages: whether the text was written by the AI model
     # (drives the AI-disclosure badge) — kept so a replayed reply carries it.
     ai_generated: bool | None = None
+    # On assistant messages (plan "fratello maggiore"): a non-urgent health
+    # answer written by the model (the app shows "Non mi ha aiutato" under
+    # it), and whether the owner pressed it.
+    health_answer: bool | None = None
+    not_helpful: bool | None = None
     # On assistant messages: the conversation's state after this reply.
     state_after: ConversationSnapshot | None = None
 
@@ -57,6 +63,8 @@ INTERNAL_CONVERSATION_FIELDS: frozenset[str] = frozenset(
         "awaiting_medical_record_consent",
         "awaiting_safety_clarification",
         "safety_clarification_category",
+        "escalate_next_health",
+        "awaiting_anamnesis",
     }
 )
 
@@ -79,6 +87,13 @@ class Conversation(BaseModel):
     awaiting_medical_record_consent: bool = False
     awaiting_safety_clarification: bool = False
     safety_clarification_category: str | None = None
+    # The owner pressed "Non mi ha aiutato": the next health answer in this
+    # conversation is written by the more capable model (within the plan's cap).
+    escalate_next_health: bool = False
+    # The last reply was an anamnesis question the pipeline produced (a vague
+    # symptom, questions only): the owner's next message answers it and is
+    # not a new question of the plan (stage 4). Set by the server only.
+    awaiting_anamnesis: bool = False
 
     def public_dump(self) -> dict[str, Any]:
         """The conversation as the API hands it to the owner's app: id, pet,
