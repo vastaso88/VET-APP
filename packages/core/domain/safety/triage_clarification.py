@@ -705,8 +705,28 @@ CLARIFYING_QUESTIONS_FEMALE: dict[str, dict[str, str]] = {
 }
 
 
-def clarifying_question(category: str | None, locale: str, *, female: bool = False) -> str | None:
+# Questions written for one kind of animal (2026-11-10: "how many hours without
+# eating or passing droppings" was asked about a dog that vomited): gut stasis
+# is a rabbit's and rodent's emergency, so its question goes to them only.
+_CATEGORY_FAMILIES: dict[str, frozenset[str]] = {
+    "gi_stasis": frozenset({"small_mammal"}),
+}
+
+
+def clarifying_question(
+    category: str | None,
+    locale: str,
+    *,
+    female: bool = False,
+    family: str | None = None,
+) -> str | None:
+    """The fixed clarifying question of [category] in [locale]; None when
+    there is none, or when it is written for another kind of animal than
+    [family] (None = do not check the species)."""
     if category is None:
+        return None
+    allowed = _CATEGORY_FAMILIES.get(category)
+    if allowed is not None and family is not None and family not in allowed:
         return None
     if female:
         variant = CLARIFYING_QUESTIONS_FEMALE.get(normalize_locale(locale), {}).get(category)

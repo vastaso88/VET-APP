@@ -209,6 +209,23 @@ _EXOTIC_FAMILIES = frozenset({"bird", "small_mammal", "reptile_amphibian", "fish
 # Intents that are health questions (approved-cards rule, "Non mi ha
 # aiutato"), together with the classifier's "health" topic.
 _HEALTH_INTENTS = frozenset({"clinical_question", "preventive_care"})
+# Teeth are health too (2026-11-10: the rabbit's teeth card was never found,
+# because "denti" is not a clinical word of the intent lists). Only for the
+# health label: the routing of everything else is unchanged. Showing the
+# teeth is a behaviour signal, not a dental question.
+_DENTAL = re.compile(
+    r"\b(?:dent[ei]|dentale|dentatura|denti lunghi|malocclusion\w*|bava|sbav\w*|"
+    r"(?:mangia|mastica) (?:solo )?da un lato|"
+    r"teeth|tooth|dental|drool\w*|(?:eats|chews) on one side|"
+    r"dientes?|dental|malocclusion|babe\w*|(?:come|mastica) de un lado|"
+    r"zahn|zahne|zahnfehlstellung|sabber\w*|kaut einseitig|"
+    r"dents?|dentaire|bave|mache d'un (?:seul )?cote)\b"
+)
+_SHOWS_TEETH = re.compile(
+    r"\b(?:mostr\w* (?:i )?denti|show\w* (?:his |her |its |their )?teeth|"
+    r"bar\w* (?:his |her |its )?teeth|ensen\w* los dientes|zeigt (?:die )?zahne|"
+    r"montr\w* (?:les )?dents)\b"
+)
 # [S1], [S2]: the labels of the approved cards in a health answer.
 _CARD_LABEL = re.compile(r"\[S(\d+)\]")
 # Words that put an animal in the message: such a message is never off topic.
@@ -1207,7 +1224,8 @@ class ChatOrchestrator:
             if (
                 not requires_immediate_escalation(message)
                 and not describes_a_grave_picture(message)
-                and clarifying_question(category, data.language, female=female) is not None
+                and clarifying_question(category, data.language, female=female, family=family)
+                is not None
                 and not clarifying_question_fits(category, message)
             ):
                 # The fixed question would contradict the message ("da quante
@@ -1259,7 +1277,7 @@ class ChatOrchestrator:
                     minor,
                 )
 
-            question = clarifying_question(category, data.language, female=female)
+            question = clarifying_question(category, data.language, female=female, family=family)
             if question is not None:
                 return self._adult_first(
                     ChatOrchestratorResult(
@@ -1959,21 +1977,12 @@ class ChatOrchestrator:
             or (name and re.search(rf"(?<!\w){re.escape(name)}(?!\w)", lowered))
         )
 
-    def _health_rule_applies(
-        self,
-        kind: RequestKind,
-        intent: str,
-        prefetch: _Prefetch | None,
-    ) -> bool:
-        return self._health_card_selector is not None and self._is_health_question(
-            kind, intent, prefetch
-        )
-
     @staticmethod
     def _is_health_question(
         kind: RequestKind,
         intent: str,
         prefetch: _Prefetch | None,
+        message: str = "",
     ) -> bool:
         """A health question (approved-cards rule, "Non mi ha aiutato"): the
         clinical or prevention words, or the classifier's "health" topic. A
@@ -1984,6 +1993,9 @@ class ChatOrchestrator:
         # a question a symptom description (a poem request, a grief message),
         # so the clinical and prevention words, or the classifier, decide.
         if intent in _HEALTH_INTENTS:
+            return True
+        text = normalize_for_matching(message)
+        if _DENTAL.search(text) and not _SHOWS_TEETH.search(text):
             return True
         verdict = prefetch.urgency() if prefetch is not None else None
         return verdict is not None and verdict.topic == "health"
@@ -2106,7 +2118,10 @@ class ChatOrchestrator:
                 admitted=True,
             )
         question = clarifying_question(
-            category, data.language, female=(data.sex or "").strip().lower() in _FEMALE_LABELS
+            category,
+            data.language,
+            female=(data.sex or "").strip().lower() in _FEMALE_LABELS,
+            family=normalize_species(effective_species),
         )
         if question is not None and not clarifying_question_fits(category, message):
             # The fixed question would contradict the message: answer normally.
@@ -3096,7 +3111,7 @@ class ChatOrchestrator:
         # (the same question again, or "non hai capito"): that complaint
         # continues the health topic even without a health word in it.
         not_helped = self._owner_not_helped(data)
-        health_question = self._is_health_question(kind, intent, prefetch) or not_helped
+        health_question = self._is_health_question(kind, intent, prefetch, message) or not_helped
         health_rule = self._health_card_selector is not None and health_question
         # ... or the button pressed on the last health answer.
         second_try = health_question and (data.escalate_health or not_helped)
