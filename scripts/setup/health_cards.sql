@@ -37,6 +37,10 @@ comment on table public.health_cards is
     'Service role only: RLS on, no policy.';
 
 alter table public.health_cards enable row level security;
+-- Second defence, as for every backend-only table: without privileges the app
+-- cannot even query it, whatever a future policy says.
+revoke all on table public.health_cards from anon, authenticated;
+grant all on table public.health_cards to service_role;
 
 create index if not exists health_cards_species_idx on public.health_cards using gin (species);
 create index if not exists health_cards_search_idx on public.health_cards using gin (
