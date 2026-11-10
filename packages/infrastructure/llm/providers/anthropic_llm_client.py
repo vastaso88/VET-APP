@@ -52,13 +52,14 @@ logger = logging.getLogger("vetgpt.llm.anthropic")
 
 PROVIDER_NAME = "anthropic"
 # Every request is processed in the United States (owner and regulatory
-# session, 2026-11-10): the medical record consent v5 says so, so this is a
-# constant, not a setting. "global", the API default, would let Anthropic
+# session, 2026-11-10): the medical record consent v5 says so, so the setting defaults to "us"
+# and must stay there. "global", the API default, would let Anthropic
 # process elsewhere and make the consent text untrue (docs/compliance/03,
 # "Che cosa dirà la v5", point 1). Request parameter `inference_geo`
 # (anthropic SDK 2.6.0, Messages.create); US-only inference is billed at
 # 1.1x the standard rate.
-INFERENCE_GEO = "us"
+# The value comes from settings.anthropic_inference_geo (default "us" on this
+# branch), the same one the spending guard prices with (pricing.py).
 JSON_ONLY_INSTRUCTION = "\n\nReply with one JSON object only: no other text, no code fence."
 _FINISH_REASONS = {"end_turn": "stop", "stop_sequence": "stop", "max_tokens": "length"}
 
@@ -160,7 +161,7 @@ class AnthropicLLMClient(LLMClient):
             ),
             "messages": [{"role": "user", "content": req.user_prompt}],
             "output_config": output_config,
-            "inference_geo": INFERENCE_GEO,
+            "inference_geo": self._settings.anthropic_inference_geo,
         }
         if system:
             body["system"] = system

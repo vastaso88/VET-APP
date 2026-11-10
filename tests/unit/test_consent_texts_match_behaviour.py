@@ -138,9 +138,9 @@ def test_v5_names_anthropic_and_the_united_states_in_every_language() -> None:
     # v5 (2026-11-10): the providers by name, the US transfer, the summary
     # for the vet; and the region the client really asks for.
     from packages.core.domain.localization import translate
-    from packages.infrastructure.llm.providers.anthropic_llm_client import INFERENCE_GEO
+    from packages.shared.config.settings import Settings
 
-    assert INFERENCE_GEO == "us"
+    assert Settings().anthropic_inference_geo == "us"
     for text in (CONSENT_TEXT_IT, INLINE_QUESTION_IT):
         assert "Anthropic" in text and "Groq" in text
         assert "Stati Uniti" in text

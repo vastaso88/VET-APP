@@ -103,7 +103,7 @@ class Settings(BaseSettings):
     # 1.1 times the price). The spending guard counts with this value, so the
     # client must send exactly this one as `inference_geo`.
     anthropic_inference_geo: Literal["global", "us"] = Field(
-        default="global", alias="ANTHROPIC_INFERENCE_GEO"
+        default="us", alias="ANTHROPIC_INFERENCE_GEO"
     )
     anthropic_effort: str = Field(default="low", alias="ANTHROPIC_EFFORT")
     anthropic_effort_light: str = Field(default="low", alias="ANTHROPIC_EFFORT_LIGHT")
