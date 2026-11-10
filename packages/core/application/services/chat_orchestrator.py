@@ -3262,9 +3262,14 @@ class ChatOrchestrator:
             ),
             language=data.language,
             behavioural=kind is RequestKind.DIRECT and is_behavioural_or_duty(message),
-            safety_question=bool(toxin_flags)
+            # Under the cards rule the notes that ask the model to explain
+            # clinical content from its own knowledge stay out: the approved
+            # cards are the only clinical source (measured 2026-11-10: the
+            # prevention note made the model explain rabbit vaccines without a card).
+            safety_question=not health_rule
+            and bool(toxin_flags)
             and self._is_educational_toxin_question(toxin_flags, message),
-            prevention_schedule=is_prevention_schedule_question(message),
+            prevention_schedule=not health_rule and is_prevention_schedule_question(message),
             harmful_note=HARMFUL_NOTES.get(detect_harmful_request(message) or "", ""),
             minor=is_minor_writing(message),
             child_at_risk=mentions_a_child_at_risk(message),
@@ -3277,8 +3282,9 @@ class ChatOrchestrator:
             hopelessness=expresses_hopelessness(message),
             dose_part=dose_part,
             foreign_country=foreign,
-            medical_first=medical_cause_first(message, data.age_years),
-            travel_south=travel_to_sand_fly_area(message, normalize_species(effective_species)),
+            medical_first=not health_rule and medical_cause_first(message, data.age_years),
+            travel_south=not health_rule
+            and travel_to_sand_fly_area(message, normalize_species(effective_species)),
             emergency_follow_up=self._follows_a_triage_reply(data),
             other_animal=other_animal,
             health_cards=len(cards) if health_rule else None,

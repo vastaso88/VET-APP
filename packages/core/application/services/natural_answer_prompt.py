@@ -376,7 +376,8 @@ _HEALTH_FROM_CARDS = (
     "VET still applies). A card's section 'Limiti di questa scheda' says what it does "
     "not cover: never fill those points from your own knowledge. Advice marked "
     "'Consiglio di Quokka' is ours, not the source's: keep that distinction. Everything "
-    "else in these instructions still applies."
+    "else in these instructions still applies, except that this rule wins over any "
+    "instruction that would have you explain health from your own knowledge."
 )
 _HEALTH_NO_CARDS = (
     "HEALTH QUESTION, NO APPROVED CARD. There is no verified source for this question: "
@@ -385,7 +386,8 @@ _HEALTH_NO_CARDS = (
     "Instead: say in one short sentence that you have no verified source on this yet; ask "
     "the one or two questions that would help (since when, appetite, energy, anything "
     "else different); name the signs to watch at home; say when to see the vet, "
-    "following WHEN TO SEND THE OWNER TO THE VET."
+    "following WHEN TO SEND THE OWNER TO THE VET. This rule wins over any other "
+    "instruction here that would have you explain causes, illnesses or treatments."
 )
 
 # "Il mio gatto vomita" with a dog's profile open (Haiku round 2026-11-07):

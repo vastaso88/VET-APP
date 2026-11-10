@@ -241,3 +241,17 @@ def test_drafts_are_refused_in_production() -> None:
             PERSISTENCE_BACKEND="supabase",
             HEALTH_CARDS_INCLUDE_DRAFTS=True,
         )
+
+
+def test_under_the_rule_the_notes_asking_for_clinical_explanations_stay_out() -> None:
+    # Measured 2026-11-10: the prevention-schedule note made the model explain
+    # rabbit vaccines although no card covered them.
+    _, with_rule = _ask("ogni quanto va fatto il vaccino a Toby?")
+    _, without_rule = _ask("ogni quanto va fatto il vaccino a Toby?", rule=False)
+
+    (ruled,) = with_rule.requests_for("answer")
+    (plain,) = without_rule.requests_for("answer")
+    assert "PREVENTION SCHEDULE" not in ruled.system_prompt
+    assert "HEALTH QUESTION, NO APPROVED CARD" in ruled.system_prompt
+    assert "This rule wins" in ruled.system_prompt
+    assert "PREVENTION SCHEDULE" in plain.system_prompt
