@@ -106,8 +106,8 @@ def test_medical_record_wording_states_the_categories_dates_and_ongoing_conditio
 
 
 def test_a_decision_taken_under_the_previous_wording_no_longer_counts() -> None:
-    assert CURRENT_VERSION == "v4"
-    for earlier in ("v1", "v2", "v3"):
+    assert CURRENT_VERSION == "v5"
+    for earlier in ("v1", "v2", "v3", "v4"):
         assert effective_decision(ConsentRecord(granted=True, version=earlier)) is None
         assert effective_decision(ConsentRecord(granted=False, version=earlier)) is None
     assert effective_decision(ConsentRecord(granted=True, version=CURRENT_VERSION)) is True
@@ -132,6 +132,33 @@ def test_v4_names_the_profile_notes_and_the_reminders_in_every_language() -> Non
         card = json.loads((l10n / f"app_{lang}.arb").read_text(encoding="utf-8"))
         assert card_words in card["petsConsentFullText"], lang
         assert question_words in translate("consent_request", lang, pet_name="X"), lang
+
+
+def test_v5_names_anthropic_and_the_united_states_in_every_language() -> None:
+    # v5 (2026-11-10): the providers by name, the US transfer, the summary
+    # for the vet; and the region the client really asks for.
+    from packages.core.domain.localization import translate
+    from packages.infrastructure.llm.providers.anthropic_llm_client import INFERENCE_GEO
+
+    assert INFERENCE_GEO == "us"
+    for text in (CONSENT_TEXT_IT, INLINE_QUESTION_IT):
+        assert "Anthropic" in text and "Groq" in text
+        assert "Stati Uniti" in text
+    assert "riepilogo per il veterinario" in CONSENT_TEXT_IT
+    assert "togliamo nomi, recapiti" in CONSENT_TEXT_IT
+    l10n = _CONSENT_CARD.parents[4] / "l10n"
+    for lang, country in (
+        ("it", "Stati Uniti"),
+        ("en", "United States"),
+        ("es", "Estados Unidos"),
+        ("de", "Vereinigten Staaten"),
+        ("fr", "États-Unis"),
+    ):
+        card = json.loads((l10n / f"app_{lang}.arb").read_text(encoding="utf-8"))
+        question = translate("consent_request", lang, pet_name="X")
+        for text in (card["petsConsentFullText"], question):
+            assert "Anthropic" in text and "Groq" in text, lang
+            assert country in text, lang
 
 
 def test_medical_record_wording_names_the_external_ai_provider_as_recipient() -> None:
