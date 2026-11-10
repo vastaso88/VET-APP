@@ -1,7 +1,16 @@
-"""The daily token budget per model, shared through the usage ledger.
+"""The daily budget of the models, shared through the usage ledger.
 
-Groq's free tier gives each model its own tokens-per-day limit, counted for
-the whole organization. The chat must not discover the limit by failing:
+Two kinds of budget, by what a model costs (pricing.py):
+
+* a PAID model (Claude Haiku) is capped in EUROS, for all the paid models
+  together: the day's spend is each token type times its price (an output
+  token is 5 times an input token, a cache read a tenth of one), converted
+  at LLM_USD_PER_EUR. `daily_cap_eur()` is the one place where the cap is
+  decided (today a fixed LLM_DAILY_BUDGET_EUR, minimum 1 EUR a day);
+* a FREE model (Groq's free tier) has a tokens-per-day limit per model,
+  counted for the whole organization.
+
+The same rules apply to both. The chat must not discover a limit by failing:
 
 * under 80% of a model's budget (configurable) it is used normally;
 * from 80% the reserve models go first, so the main model keeps a margin
@@ -37,6 +46,12 @@ from packages.core.domain.llm_usage.models import (
     next_day_start,
     next_owner_day_start,
     owner_day,
+)
+from packages.core.domain.llm_usage.pricing import (
+    DEFAULT_INFERENCE_GEO,
+    DEFAULT_USD_PER_EUR,
+    price_for,
+    spend_usd,
 )
 from packages.core.domain.localization import translate
 from packages.shared.errors.base import ProviderError, QuotaExceededError
@@ -155,9 +170,21 @@ class LlmBudget:
         refresh_seconds: float = 30.0,
         clock: Callable[[], datetime] | None = None,
         monotonic: Callable[[], float] = time.monotonic,
+        daily_budget_eur: float | None = None,
+        usd_per_eur: float = DEFAULT_USD_PER_EUR,
+        inference_geo: str = DEFAULT_INFERENCE_GEO,
     ) -> None:
         self._repository = repository
         self._budgets = dict(budgets)
+        # None = no euro cap: every model keeps its token budget (the old
+        # behaviour, for callers that never set one).
+        self._daily_budget_eur = (
+            None if daily_budget_eur is None else max(0.0, float(daily_budget_eur))
+        )
+        self._usd_per_eur = usd_per_eur if usd_per_eur > 0 else DEFAULT_USD_PER_EUR
+        # Where the paid models run (ANTHROPIC_INFERENCE_GEO): "us" costs 1.1
+        # times the standard price. The same value the client sends.
+        self._inference_geo = inference_geo
         self._default_budget = max(1, default_budget)
         self._reserve_share = reserve_share
         self._user_daily_limit = max(0, user_daily_limit)
@@ -167,8 +194,50 @@ class LlmBudget:
         self._known: dict[str, ModelDailyUsage] = {}
         self._known_day: date | None = None
         self._read_at: float | None = None
+        for model in self._budgets:
+            if self._euro_governed(model):
+                logger.warning(
+                    "llm budget: the token budget of %s is ignored, its spend is capped in euros",
+                    model,
+                )
 
     # --- what the budget knows -------------------------------------------------
+
+    def daily_cap_eur(self) -> float | None:
+        """The day's spending cap for the paid models, in euros (None: no euro
+        cap). THE single place where the cap is decided: today the fixed
+        LLM_DAILY_BUDGET_EUR (owner decision 2026-11-10: at least 1 EUR a day).
+        The rule "6% of the paying customers' revenue, never under that
+        minimum" (docs/marketing/04_business_plan_costi_margini.md §5) is not
+        built: when it is, it replaces this body and nothing else."""
+        return self._daily_budget_eur
+
+    def _euro_governed(self, model: str) -> bool:
+        """A paid model, while there is a euro cap: its budget is money."""
+        return self._daily_budget_eur is not None and price_for(model).is_paid
+
+    def _spend_eur(self, usage: ModelDailyUsage) -> float:
+        return (
+            spend_usd(
+                price_for(usage.model),
+                prompt_tokens=usage.prompt_tokens,
+                completion_tokens=usage.completion_tokens,
+                cached_prompt_tokens=usage.cached_prompt_tokens,
+                cache_write_tokens=usage.cache_write_tokens,
+                inference_geo=self._inference_geo,
+            )
+            / self._usd_per_eur
+        )
+
+    def spent_today_eur(self) -> float:
+        """What the paid models have cost today, in euros (the ledger's totals
+        plus this process's own calls since the last read)."""
+        self._refresh()
+        return sum(
+            self._spend_eur(usage)
+            for usage in self._known.values()
+            if price_for(usage.model).is_paid
+        )
 
     def budget_for(self, model: str) -> int:
         return self._budgets.get(model, self._default_budget)
@@ -185,6 +254,14 @@ class LlmBudget:
         usage = self._known.get(model)
         if usage is not None and usage.exhausted_until is not None and usage.exhausted_until > now:
             return "exhausted"
+        if self._euro_governed(model):
+            used_eur = self.spent_today_eur()
+            cap = self.daily_cap_eur() or 0.0
+            if used_eur >= cap:
+                return "exhausted"
+            if used_eur >= cap * self._reserve_share:
+                return "reserve"
+            return "ok"
         used = usage.total_tokens if usage else 0
         budget = self.budget_for(model)
         if used >= budget:
@@ -224,14 +301,34 @@ class LlmBudget:
             )
         return ordered
 
-    def note_usage(self, model: str, total_tokens: int) -> None:
-        """Adds a call this process just made, ahead of the next refresh."""
+    def note_usage(
+        self,
+        model: str,
+        total_tokens: int,
+        *,
+        prompt_tokens: int | None = None,
+        completion_tokens: int = 0,
+        cached_prompt_tokens: int = 0,
+        cache_write_tokens: int = 0,
+    ) -> None:
+        """Adds a call this process just made, ahead of the next refresh.
+
+        The parts of the call are what the euro spend is made of. Told only
+        the total, the call is counted as plain input: an undercount next to
+        output tokens, but real calls always give their parts."""
         self._refresh()
         usage = self._known.get(model)
         if usage is None:
             usage = ModelDailyUsage(day=self._today(), model=model)
             self._known[model] = usage
-        usage.total_tokens += max(0, total_tokens)
+        total = max(0, total_tokens)
+        completion = max(0, completion_tokens)
+        prompt = max(0, total - completion) if prompt_tokens is None else max(0, prompt_tokens)
+        usage.total_tokens += total
+        usage.prompt_tokens += prompt
+        usage.completion_tokens += completion
+        usage.cached_prompt_tokens += max(0, cached_prompt_tokens)
+        usage.cache_write_tokens += max(0, cache_write_tokens)
         usage.calls += 1
 
     def note_rate_limited(

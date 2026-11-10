@@ -1,6 +1,6 @@
 import json
 from functools import lru_cache
-from typing import Annotated, Any
+from typing import Annotated, Any, Literal
 
 from pydantic import BeforeValidator, Field, model_validator
 from pydantic_settings import BaseSettings, NoDecode, SettingsConfigDict
@@ -99,6 +99,12 @@ class Settings(BaseSettings):
     # model's reasoning counts against max_tokens.
     anthropic_api_key: str = Field(default="", alias="ANTHROPIC_API_KEY")
     anthropic_model: str = Field(default="claude-haiku-5-5", alias="ANTHROPIC_MODEL")
+    # Where Claude runs: "global" (standard price) or "us" (US-only inference,
+    # 1.1 times the price). The spending guard counts with this value, so the
+    # client must send exactly this one as `inference_geo`.
+    anthropic_inference_geo: Literal["global", "us"] = Field(
+        default="global", alias="ANTHROPIC_INFERENCE_GEO"
+    )
     anthropic_effort: str = Field(default="low", alias="ANTHROPIC_EFFORT")
     anthropic_effort_light: str = Field(default="low", alias="ANTHROPIC_EFFORT_LIGHT")
     anthropic_thinking_headroom_tokens: int = Field(
@@ -148,14 +154,19 @@ class Settings(BaseSettings):
     llm_daily_token_budgets: str = Field(
         default=(
             "openai/gpt-oss-120b=200000,openai/gpt-oss-20b=200000,"
-            "qwen/qwen3.8-27b=200000,openai/gpt-oss-safeguard-20b=200000,"
-            # Claude is paid per token, not rationed: this is a spending
-            # guard (about 1 euro a day at Haiku 5.5 prices), past which
-            # the Groq reserve answers until midnight.
-            "claude-haiku-5-5=4000000"
+            "qwen/qwen3.8-27b=200000,openai/gpt-oss-safeguard-20b=200000"
         ),
         alias="LLM_DAILY_TOKEN_BUDGETS",
     )
+    # Claude is paid per token, not rationed: its guard is money, not raw
+    # tokens (an output token costs 5 times an input token, a cache read a
+    # tenth). The day's spend of the paid models together may reach this many
+    # euros (owner decision 2026-11-10: never under 1 EUR a day); past it the
+    # Groq reserve answers until midnight UTC. A token budget given above for
+    # a paid model is ignored. The conversion uses LLM_USD_PER_EUR (1 EUR in
+    # USD; ECB 2026-11-06: 1.1165).
+    llm_daily_budget_eur: float = Field(default=1.0, gt=0, alias="LLM_DAILY_BUDGET_EUR")
+    llm_usd_per_eur: float = Field(default=1.1165, gt=0, alias="LLM_USD_PER_EUR")
     llm_default_daily_token_budget: int = Field(
         default=200_000, ge=1, alias="LLM_DEFAULT_DAILY_TOKEN_BUDGET"
     )

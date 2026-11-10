@@ -43,6 +43,9 @@ class LLMResponse(BaseModel):
     prompt_tokens: int = 0
     completion_tokens: int = 0
     cached_prompt_tokens: int = 0
+    # The part of prompt_tokens written to the provider's prompt cache (Claude
+    # reports it; priced above plain input, so the spending guard needs it).
+    cache_write_tokens: int = 0
 
 
 class LLMRefusal(ProviderError):

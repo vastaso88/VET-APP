@@ -108,7 +108,24 @@ La misura di precisione (66 frasi per lingua) richiede la chiave di valutazione.
 `LlmBudget` (`llm_budget.py`), condiviso tra le istanze serverless tramite Supabase:
 
 - budget per modello da `LLM_DAILY_TOKEN_BUDGETS` (default: le cifre pubbliche), altrimenti
-  `LLM_DEFAULT_DAILY_TOKEN_BUDGET`;
+  `LLM_DEFAULT_DAILY_TOKEN_BUDGET`. Vale per i modelli **gratuiti** (Groq);
+- i modelli **a pagamento** (Claude Haiku) hanno invece un tetto in **euro**
+  (`LLM_DAILY_BUDGET_EUR`, default 1,0, mai sotto 1 € al giorno): la spesa del giorno è,
+  per ogni tipo di token, quantità × prezzo (entrata normale, uscita, lettura e scrittura
+  della cache), convertita con `LLM_USD_PER_EUR` (default 1,1165; BCE, 6 novembre 2026).
+  I prezzi stanno in un solo posto, `packages/core/domain/llm_usage/pricing.py`
+  (Haiku 5.5: 0,10 / 0,50 $ per milione in entrata / uscita, 0,01 $ lettura e 0,125 $
+  scrittura della cache). L'inferenza solo USA (`inference_geo="us"`) costa 1,1 volte su
+  ogni categoria di token: il moltiplicatore sta accanto ai prezzi e si applica con
+  `ANTHROPIC_INFERENCE_GEO` (`global` di default, oppure `us`), che deve essere **lo stesso
+  valore che il client invia ad Anthropic**. Un budget in token dato a un modello a
+  pagamento viene ignorato.
+  Stessi stati e stessa soglia di riserva dei modelli gratuiti; oltre il tetto risponde la
+  riserva Groq fino a mezzanotte UTC. Il punto unico dove il tetto viene deciso è
+  `LlmBudget.daily_cap_eur()`: la regola "6% del fatturato dei paganti" (business plan §5) non
+  è costruita, andrà lì. La scrittura in cache entra nel totale del giorno con
+  `scripts/setup/llm_usage_cache_writes.sql`; senza, quei token valgono come entrata
+  normale (piccolo sottoconteggio, il resto funziona);
 - da `LLM_BUDGET_RESERVE_SHARE` (80%) del budget il modello passa in coda alla catena: le
   riserve vanno prima; al 100% è saltato fino al reset (mezzanotte UTC del contatore);
 - un 429 "per day" di Groq segna il modello esaurito **per tutte le istanze**, fino al
@@ -148,7 +165,7 @@ Nuove variabili (tutte con default): `LLM_MODEL_LIGHT`, `LLM_LIGHT_FALLBACK_MODE
 `LLM_ANSWER_MAX_TOKENS`, `LLM_REASONING_HEADROOM_TOKENS`, `LLM_PROMPT_MAX_SOURCES`,
 `LLM_PROMPT_SOURCE_CHARS`, `LLM_HISTORY_RECENT_MESSAGES`, `LLM_HISTORY_MESSAGE_CHARS`,
 `LLM_DAILY_TOKEN_BUDGETS`, `LLM_DEFAULT_DAILY_TOKEN_BUDGET`, `LLM_BUDGET_RESERVE_SHARE`,
-`CHAT_DAILY_MESSAGE_LIMIT_PER_USER`, `URGENCY_CLASSIFIER_ENABLED`,
+`LLM_DAILY_BUDGET_EUR`, `LLM_USD_PER_EUR`, `CHAT_DAILY_MESSAGE_LIMIT_PER_USER`, `URGENCY_CLASSIFIER_ENABLED`,
 `URGENCY_CLASSIFIER_TIMEOUT_SECONDS`, `EVIDENCE_QUERY_NORMALIZER_ENABLED`,
 `CHAT_ANSWER_CACHE_ENABLED`, `CHAT_ANSWER_CACHE_TTL_HOURS`.
 

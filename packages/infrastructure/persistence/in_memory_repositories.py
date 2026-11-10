@@ -551,6 +551,7 @@ class InMemoryLlmUsageRepository(LlmUsageRepository):
         usage.prompt_tokens += event.prompt_tokens
         usage.completion_tokens += event.completion_tokens
         usage.cached_prompt_tokens += event.cached_prompt_tokens
+        usage.cache_write_tokens += event.cache_write_tokens
         usage.total_tokens += event.total_tokens
 
     def usage_for_day(self, day: date) -> list[ModelDailyUsage]:
