@@ -1,0 +1,62 @@
+{
+  "codice": "CAN-SAL-04",
+  "specie": "cane",
+  "area": "SAL",
+  "argomento": "vomito-diarrea",
+  "titolo": "Il cane vomita o ha la diarrea: cosa sapere e cosa osservare",
+  "stato": "bozza",
+  "livello_schede": 2,
+  "ultimo_controllo": "2026-11-10",
+  "scadenza": "2027-11-10",
+  "revisione": {"proprietario": null, "specialista": null},
+  "parole_chiave": ["vomito", "vomita", "diarrea", "feci molli", "stomaco", "pancia", "digiuno", "dieta", "antibiotico", "disidratazione"],
+  "riassunto_per_chat": "Un vomito lieve, senza altri segni, che dura poco è comune e per lo più si risolve da solo: in uno studio citato da una rassegna europea l'89% dei cani guariva in meno di due giorni; nella maggior parte dei casi la causa non si scopre, e le più probabili sono errori di dieta, infezioni e tossine. Anche la diarrea acuta è frequente: in uno studio inglese su 1.835 cani visitati dal veterinario nel 98% è durata meno di 14 giorni e in oltre l'80% non è servita una seconda visita. Per i veterinari sono criteri di preoccupazione: vomito molto frequente, abbondante o maleodorante; sangue o feci nere; dolore addominale; febbre; disidratazione grave; vomito che persiste nonostante le cure; durata oltre 3-4 settimane; perdita di peso marcata; forte malessere. Se il veterinario ha impostato una cura si segue quella; un farmaco contro il vomito può nasconderlo, quindi si osserva il cane e si avvisa il veterinario se peggiora; se il vomito continua il veterinario ricontrolla entro 48 ore al massimo. Sul digiuno di circa 24 ore non ci sono studi; per gli autori un alimento molto digeribile sembra più adatto. Per una linea guida europea riportata da uno studio, gli antibiotici di norma non servono nella diarrea acuta lieve o moderata. Se il cane sta molto male o ha ingerito qualcosa di pericoloso: veterinario subito.",
+  "blocchi": [
+    {
+      "tipo": "in_breve",
+      "frasi": [
+        {"testo": "Un vomito lieve, senza altri segni, che dura poco è comune e spesso passa da solo: in uno studio citato dalla rassegna, l'89% dei cani che vomitavano è guarito in meno di due giorni.", "fonti": [{"id": "elwood_emesis_2010", "punto": "«Diagnostic approach»; «Treatment/management of emesis»"}]},
+        {"testo": "Anche la diarrea acuta è frequente e di solito breve: in uno studio inglese su 1.835 cani portati dal veterinario, nel 98% è durata meno di 14 giorni e in oltre l'80% non è servita una seconda visita.", "fonti": [{"id": "oneill_diarrhoea_2025", "punto": "Discussion; Conclusions"}]}
+      ]
+    },
+    {
+      "tipo": "cosa_sapere",
+      "frasi": [
+        {"testo": "Nel vomito acuto lieve la causa di solito non viene scoperta; le più probabili sono errori di dieta, infezioni e sostanze tossiche.", "fonti": [{"id": "elwood_emesis_2010", "punto": "«Diagnostic approach»"}]},
+        {"testo": "Alcune cause sono più frequenti nei cani giovani, come l'ingestione di corpi estranei; altre negli anziani, come i tumori dello stomaco.", "fonti": [{"id": "elwood_emesis_2010", "punto": "«Clinical presentation and initial assessment»"}]},
+        {"testo": "Un vomito forte e prolungato fa perdere liquidi e sali minerali e può portare a disidratazione e shock.", "fonti": [{"id": "elwood_emesis_2010", "punto": "«Consequences and complications of emesis»"}]},
+        {"testo": "Togliere il cibo per circa 24 ore è la pratica più diffusa, ma non esistono studi che la confrontino con il dare presto un alimento molto digeribile; per i cani che stanno bene è improbabile che l'una o l'altra scelta cambi molto le cose, e in mancanza di dati gli autori ritengono più adatto un alimento molto digeribile (opinione di esperti).", "fonti": [{"id": "elwood_emesis_2010", "punto": "«Dietary management»"}]},
+        {"testo": "Per una linea guida europea, riportata dallo studio inglese e non letta direttamente, nella diarrea acuta lieve o moderata gli antibiotici di norma non vanno usati.", "fonti": [{"id": "oneill_diarrhoea_2025", "punto": "Discussion (cita le linee guida ENOVAT); Conclusions"}]}
+      ]
+    },
+    {
+      "tipo": "cosa_osservare",
+      "frasi": [
+        {"testo": "Per i veterinari sono segni che richiedono un approfondimento: sul vomito stesso (molto frequente, abbondante, maleodorante, o che non migliora con le cure); la presenza di sangue (nel vomito o come feci nere); e le condizioni generali del cane, con forte dolore alla pancia, febbre, disidratazione grave o shock.", "fonti": [{"id": "elwood_emesis_2010", "punto": "Table 8, «Criteria for concern in vomiting dogs» (strumento per i veterinari)"}]},
+        {"testo": "Per i veterinari sono motivi di approfondimento anche un vomito che dura da più di 3-4 settimane, un calo di peso marcato e un forte malessere, che di solito non accompagna i disturbi banali.", "fonti": [{"id": "elwood_emesis_2010", "punto": "Table 8"}]},
+        {"testo": "Un cane con nausea può sembrare spento, sbavare, leccarsi spesso le labbra, deglutire a vuoto e non voler mangiare.", "fonti": [{"id": "elwood_emesis_2010", "punto": "«Consequences and complications of emesis»"}]}
+      ]
+    },
+    {
+      "tipo": "cosa_non_fare",
+      "frasi": [
+        {"testo": "Se il veterinario ha impostato una cura, si danno solo i farmaci e l'alimento che ha indicato.", "fonti": [{"id": "elwood_emesis_2010", "punto": "«Monitoring»"}]},
+        {"testo": "Un farmaco contro il vomito può mascherarlo: per questo si osserva con attenzione il cane e si avvisa il veterinario appena peggiora.", "fonti": [{"id": "elwood_emesis_2010", "punto": "«Monitoring»"}]},
+        {"testo": "Dopo l'uso di alcuni antinfiammatori può comparire sangue nel vomito.", "fonti": [{"id": "elwood_emesis_2010", "punto": "tabella della storia clinica, riga su frequenza, volume e natura del vomito"}]}
+      ]
+    },
+    {
+      "tipo": "quando_andare_dal_veterinario",
+      "frasi": [
+        {"testo": "Se il vomito continua dopo una prima visita e le cure, il veterinario ricontrolla il cane al massimo entro 48 ore, e il proprietario torna prima se è preoccupato.", "fonti": [{"id": "elwood_emesis_2010", "punto": "«Monitoring»"}]},
+        {"testo": "Se noti i segni di approfondimento descritti sopra (sul vomito, sul sangue e sulle condizioni del cane), conviene sentire subito il veterinario.", "nostro": true}
+      ]
+    },
+    {
+      "tipo": "limiti",
+      "frasi": [
+        {"testo": "La linea guida europea sulla diarrea acuta non è stata aperta e la rassegna sul vomito è del 2010, con il sostegno di un'azienda che produce un farmaco contro il vomito. La regola delle 48 ore e l'elenco dei segni di approfondimento sono strumenti pensati per i veterinari; l'invito a sentire subito il veterinario per quei segni è nostro. Nessuna fonte letta dà un elenco di segni d'allarme per la diarrea, dice cosa fare con i cuccioli o avverte contro i farmaci umani: se il cane sta molto male o ha ingerito qualcosa di pericoloso, chiama subito il veterinario (per le urgenze la chat segue i passi già approvati).", "fonti": [{"id": "elwood_emesis_2010", "punto": "Acknowledgements; «Monitoring»; Table 8"}]}
+      ]
+    }
+  ]
+}

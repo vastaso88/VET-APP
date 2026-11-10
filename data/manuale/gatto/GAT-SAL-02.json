@@ -1,0 +1,148 @@
+{
+  "codice": "GAT-SAL-02",
+  "specie": "gatto",
+  "area": "SAL",
+  "argomento": "pulci-zecche",
+  "titolo": "Pulci e zecche nel gatto: attenzione ai prodotti del cane",
+  "stato": "bozza",
+  "livello_schede": 1,
+  "ultimo_controllo": "2026-11-10",
+  "scadenza": "2027-11-10",
+  "revisione": {
+    "proprietario": null,
+    "specialista": null
+  },
+  "parole_chiave": [
+    "pulci",
+    "zecche",
+    "antiparassitario",
+    "antipulci",
+    "pipetta",
+    "piretroidi",
+    "permetrina",
+    "gatto",
+    "tossico"
+  ],
+  "riassunto_per_chat": "ESCCAP (2022): i piretroidi sintetici molto concentrati registrati solo per il cane sono tossici per il gatto, mentre alcuni piretroidi approvati per il cane sono sicuri e approvati anche per il gatto; nelle case con cani e gatti i preparati tossici per il gatto vanno evitati oppure usati con cautela, seguendo le avvertenze dell'etichetta. Pulci e zecche trasmettono malattie: per le pulci tenia, Bartonella (malattia da graffio di gatto), Rickettsia felis. I gatti sembrano meno colpiti dei cani dalle malattie da zecca, ma dove le zecche sono un problema vanno controllate con un acaricida adatto. Si trattano tutti gli animali di casa. Il gatto si lecca e toglie le pulci: non vederle non esclude l'allergia (prurito, peli spezzati, croste su schiena e base della coda). Pettine antipulci; zecche tolte con strumento adatto, senza olio, alcol o etere. Prodotto e frequenza: veterinario.",
+  "blocchi": [
+    {
+      "tipo": "in_breve",
+      "frasi": [
+        {
+          "testo": "Alcuni antiparassitari pensati per il cane, in particolare i piretroidi sintetici molto concentrati registrati solo per il cane, sono tossici per il gatto. Altri piretroidi approvati per il cane sono invece sicuri e approvati anche per il gatto.",
+          "fonti": [
+            {
+              "id": "esccap_gl3_2022",
+              "punto": "2.4, p. 15; 2.5, p. 16"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "tipo": "cosa_sapere",
+      "frasi": [
+        {
+          "testo": "Dove convivono cani e gatti si evita di usare i preparati tossici per il gatto, oppure li si usa con cautela, rispettando le avvertenze dell'etichetta.",
+          "fonti": [
+            {
+              "id": "esccap_gl3_2022",
+              "punto": "2.4, p. 15; 2.5, p. 16"
+            }
+          ]
+        },
+        {
+          "testo": "Le pulci trasmettono la tenia, la Bartonella (la malattia da graffio di gatto), Rickettsia felis e altri microbi. Anche le zecche trasmettono malattie in Europa.",
+          "fonti": [
+            {
+              "id": "esccap_gl3_2022",
+              "punto": "Table 1, p. 5; Table 4, p. 11"
+            }
+          ]
+        },
+        {
+          "testo": "Sembra che i gatti risentano meno dei cani delle malattie da zecche; se però le zecche sono un problema anche per il gatto, la linea guida indica di combatterle con un acaricida adatto.",
+          "fonti": [
+            {
+              "id": "esccap_gl3_2022",
+              "punto": "2.5, p. 16"
+            }
+          ]
+        },
+        {
+          "testo": "Si trattano tutti gli animali che vivono in casa. Le pulci possono comparire in ogni stagione, anche al chiuso.",
+          "fonti": [
+            {
+              "id": "esccap_gl3_2022",
+              "punto": "1.4, p. 9; 2.4, p. 15; 1.1, p. 7"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "tipo": "cosa_osservare",
+      "frasi": [
+        {
+          "testo": "Il gatto, leccandosi, toglie le pulci: non trovarne non esclude l'allergia alla loro saliva, che dà prurito, peli spezzati, papule e croste, soprattutto su schiena e base della coda.",
+          "fonti": [
+            {
+              "id": "esccap_gl3_2022",
+              "punto": "1.2 e 1.3, p. 8"
+            }
+          ]
+        },
+        {
+          "testo": "Il pettine antipulci è il metodo più sensibile per scovarle. Le zecche vanno tolte subito con lo strumento adatto, senza olio, alcol o etere.",
+          "fonti": [
+            {
+              "id": "esccap_gl3_2022",
+              "punto": "1.3, p. 8; 2.2 e 2.4, p. 15"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "tipo": "cosa_non_fare",
+      "frasi": [
+        {
+          "testo": "Non dare al gatto un antiparassitario registrato solo per il cane, come la pipetta avanzata del cane: alcuni sono tossici per il gatto.",
+          "nostro": true
+        }
+      ]
+    },
+    {
+      "tipo": "quando_andare_dal_veterinario",
+      "frasi": [
+        {
+          "testo": "Il prodotto e la frequenza vanno concordati con il veterinario.",
+          "fonti": [
+            {
+              "id": "esccap_gl3_2022",
+              "punto": "1.5, p. 9"
+            }
+          ]
+        },
+        {
+          "testo": "Se il gatto ha preso un prodotto per cani o sta male dopo un trattamento, chiama subito il veterinario (per le urgenze la chat segue i passi già approvati).",
+          "nostro": true
+        }
+      ]
+    },
+    {
+      "tipo": "limiti",
+      "frasi": [
+        {
+          "testo": "La linea guida parla di «piretroidi sintetici» e non nomina la permetrina; non dice cosa fare in caso di intossicazione ed è scritta soprattutto per i veterinari. I consigli di non dare prodotti del cane e di chiamare il veterinario sono nostri, scelti per prudenza. ESCCAP è finanziata da aziende del settore, che possono leggere le bozze, ma mantiene il controllo del testo.",
+          "fonti": [
+            {
+              "id": "esccap_gl3_2022",
+              "punto": "2.4, p. 15; Scope, p. 6; p. 33; pagina «Sponsors» di esccap.org"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,188 @@
+{
+  "codice": "CAN-SAL-02",
+  "specie": "cane",
+  "area": "SAL",
+  "argomento": "pulci-zecche",
+  "titolo": "Pulci e zecche nel cane: cosa sapere",
+  "stato": "bozza",
+  "livello_schede": 1,
+  "ultimo_controllo": "2026-11-10",
+  "scadenza": "2027-11-10",
+  "revisione": {
+    "proprietario": null,
+    "specialista": null
+  },
+  "parole_chiave": [
+    "pulci",
+    "zecche",
+    "antiparassitario",
+    "antipulci",
+    "prurito",
+    "parassiti",
+    "pipetta",
+    "zecca"
+  ],
+  "riassunto_per_chat": "Per ESCCAP (linea guida 2022) pulci e zecche contano in molti casi più per le malattie che trasmettono che per l'infestazione stessa: tenia, bartonella, Rickettsia felis per le pulci; babesiosi, borreliosi di Lyme, ehrlichiosi, anaplasmosi e altre per le zecche. Le pulci possono continuare a svilupparsi in casa anche fuori stagione; le zecche nell'Europa centrale hanno in genere due periodi di attività (marzo-giugno e agosto-novembre), nelle zone calde alcune specie anche tutto l'anno. La protezione deve coprire l'intero periodo di attività e il piano si concorda con il veterinario. Se in casa c'è anche un gatto: alcuni prodotti registrati solo per il cane sono tossici per il gatto. Si trattano tutti gli animali di casa; la maggior parte delle pulci è nell'ambiente. Zecche: controllo quotidiano e rimozione con uno strumento adatto, senza olio, alcol o etere, e senza forzare. Allergia alla saliva delle pulci: prurito, peli spezzati, croste soprattutto su schiena e base della coda; il cane le toglie leccandosi.",
+  "blocchi": [
+    {
+      "tipo": "in_breve",
+      "frasi": [
+        {
+          "testo": "In molti casi pulci e zecche pesano più per le malattie che possono trasmettere che per la sola infestazione.",
+          "fonti": [
+            {
+              "id": "esccap_gl3_2022",
+              "punto": "Introduction, p. 5-6"
+            }
+          ]
+        },
+        {
+          "testo": "Le pulci possono portare la tenia e batteri come Bartonella e Rickettsia felis. Le zecche in Europa trasmettono, tra le altre, babesiosi, borreliosi di Lyme, ehrlichiosi e anaplasmosi.",
+          "fonti": [
+            {
+              "id": "esccap_gl3_2022",
+              "punto": "Table 1, p. 5; Table 4, p. 11; 2.2, p. 15"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "tipo": "cosa_sapere",
+      "frasi": [
+        {
+          "testo": "Le pulci possono continuare a svilupparsi in casa anche fuori stagione, soprattutto dove c'è riscaldamento o ci sono tappeti: per questo a volte la protezione serve tutto l'anno.",
+          "fonti": [
+            {
+              "id": "esccap_gl3_2022",
+              "punto": "1.1, p. 7; 1.5, p. 9"
+            }
+          ]
+        },
+        {
+          "testo": "Nell'Europa centrale le zecche hanno di norma due picchi di attività, da marzo a giugno e da agosto a novembre; dove fa caldo alcune specie possono nutrirsi tutto l'anno.",
+          "fonti": [
+            {
+              "id": "esccap_gl3_2022",
+              "punto": "2.1, p. 14"
+            }
+          ]
+        },
+        {
+          "testo": "La protezione va estesa a tutto il periodo in cui le zecche sono attive. A seconda del rischio può bastare il controllo del cane oppure serve anche un trattamento; il piano si concorda con il veterinario.",
+          "fonti": [
+            {
+              "id": "esccap_gl3_2022",
+              "punto": "2.5, p. 16; 1.5, p. 9"
+            }
+          ]
+        },
+        {
+          "testo": "Vanno rispettati i tempi di ripetizione del prodotto. Lo shampoo o il nuoto possono ridurre l'effetto dei prodotti applicati sulla pelle.",
+          "fonti": [
+            {
+              "id": "esccap_gl3_2022",
+              "punto": "1.5, p. 9; 2.5, p. 16"
+            }
+          ]
+        },
+        {
+          "testo": "Si trattano tutti gli animali che vivono in casa, non solo quello infestato. La maggior parte delle pulci si trova nell'ambiente, in uova e larve: lavare la cuccia e passare l'aspirapolvere aiuta a ridurle.",
+          "fonti": [
+            {
+              "id": "esccap_gl3_2022",
+              "punto": "1.4, p. 9; 2.4, p. 15"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "tipo": "cosa_osservare",
+      "frasi": [
+        {
+          "testo": "Le zecche vanno cercate ogni giorno e tolte subito con uno strumento fatto per questo. Olio, alcol ed etere non vanno usati.",
+          "fonti": [
+            {
+              "id": "esccap_gl3_2022",
+              "punto": "2.5, p. 16; 2.2 e 2.4, p. 15"
+            }
+          ]
+        },
+        {
+          "testo": "Chi è allergico alla saliva delle pulci ha prurito, peli spezzati, piccole papule e croste; la dermatite umida compare in genere sulla schiena e alla base della coda. Leccandosi il cane elimina le pulci, quindi non vederle non esclude il problema: il metodo più sensibile per scovarle è il pettine antipulci.",
+          "fonti": [
+            {
+              "id": "esccap_gl3_2022",
+              "punto": "1.2 e 1.3, p. 8"
+            }
+          ]
+        },
+        {
+          "testo": "Con molte pulci si può arrivare all'anemia, soprattutto in cuccioli, anziani e animali debilitati. Un'infezione da tenia può indicare pulci presenti o recenti.",
+          "fonti": [
+            {
+              "id": "esccap_gl3_2022",
+              "punto": "1.2 e 1.3, p. 8"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "tipo": "cosa_non_fare",
+      "frasi": [
+        {
+          "testo": "Se in casa c'è anche un gatto, attenzione: alcuni prodotti registrati solo per il cane, in particolare i piretroidi sintetici molto concentrati, sono tossici per il gatto (altri piretroidi sono invece approvati anche per il gatto).",
+          "fonti": [
+            {
+              "id": "esccap_gl3_2022",
+              "punto": "2.4, p. 15; 2.5, p. 16"
+            }
+          ]
+        },
+        {
+          "testo": "Togliere la zecca con la forza può lasciare nella pelle parti della bocca e favorire un'infezione.",
+          "fonti": [
+            {
+              "id": "esccap_gl3_2022",
+              "punto": "2.2, p. 15"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "tipo": "quando_andare_dal_veterinario",
+      "frasi": [
+        {
+          "testo": "Prodotto e frequenza del trattamento vanno concordati con il veterinario.",
+          "fonti": [
+            {
+              "id": "esccap_gl3_2022",
+              "punto": "1.5, p. 9"
+            }
+          ]
+        },
+        {
+          "testo": "Se il cane ha prurito forte, croste o sta male dopo un morso di zecca, chiama il veterinario.",
+          "nostro": true
+        }
+      ]
+    },
+    {
+      "tipo": "limiti",
+      "frasi": [
+        {
+          "testo": "La linea guida ESCCAP è scritta soprattutto per i veterinari e non indica quando il proprietario deve rivolgersi a loro: gli inviti a chiamare il veterinario sono nostri. I periodi delle zecche si riferiscono a Regno Unito ed Europa centrale e non all'Italia. L'ultima edizione inglese è del 2022; la versione italiana sul sito è del 2012 e non va usata. ESCCAP è finanziata da aziende del settore, che possono leggere le bozze, ma mantiene il controllo del testo.",
+          "fonti": [
+            {
+              "id": "esccap_gl3_2022",
+              "punto": "Scope, p. 6; 2.1, p. 14; p. 33; pagina «Sponsors» di esccap.org"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

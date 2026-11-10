@@ -1,0 +1,202 @@
+{
+  "codice": "CON-SAL-02",
+  "specie": "coniglio",
+  "area": "SAL",
+  "argomento": "denti",
+  "titolo": "I denti del coniglio: perché il fieno e quando fare controllare",
+  "stato": "bozza",
+  "livello_schede": 2,
+  "ultimo_controllo": "2026-11-10",
+  "scadenza": "2027-11-10",
+  "revisione": {
+    "proprietario": null,
+    "specialista": null
+  },
+  "parole_chiave": [
+    "coniglio",
+    "denti",
+    "incisivi",
+    "molari",
+    "fieno",
+    "bava",
+    "sbava",
+    "abbassa il cibo",
+    "ascesso",
+    "occhio che lacrima"
+  ],
+  "riassunto_per_chat": "I denti del coniglio non hanno la radice chiusa e spuntano per tutta la vita; si consumano masticando alimenti ruvidi, per questo la base della dieta è il fieno e si evitano i mangimi tipo muesli. Con poca fibra le corone dei molari si allungano e formano punte taglienti. Contano anche traumi, infezioni e fattori genetici. I denti dietro non si valutano facilmente senza otoscopio o strumento simile. Segni: bava, difficoltà a inghiottire o cibo lasciato cadere, riluttanza a mangiare il fieno, perdita di peso, occhio che lacrima da tempo, secrezione dal naso, ascessi al viso, incisivi molto lunghi. In uno studio britannico su 2.219 conigli con malattia dentale diagnosticata, 547 sono morti e nel 51,2% di questi la malattia dentale è stata causa o ha contribuito alla morte. Gli ascessi dentali di solito non danno febbre. Tagliare gli incisivi non va mai fatto; per accorciare i denti, soprattutto quelli dietro, si usano altri metodi, idealmente con sedazione o anestesia. Una rassegna consiglia un controllo completo con ispezione della bocca ogni 6-12 mesi, e nei casi a rischio un esame in anestesia a intervalli più lunghi (12-18 mesi) o prima se compaiono segni; non è una linea guida di società.",
+  "blocchi": [
+    {
+      "tipo": "in_breve",
+      "frasi": [
+        {
+          "testo": "I denti del coniglio spuntano per tutta la vita e si consumano masticando: per questo la base della dieta è il fieno.",
+          "fonti": [
+            {
+              "id": "animals_odontogenic_2025",
+              "punto": "§3 Anatomy; §11 Prophylaxis"
+            },
+            {
+              "id": "vcna_gi_2013",
+              "punto": "sezione «Dental disease, gastrointestinal stasis, and dysbiosis»"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "tipo": "cosa_sapere",
+      "frasi": [
+        {
+          "testo": "Poiché non hanno la radice chiusa, i denti del coniglio continuano a crescere per tutta la vita; la loro lunghezza dipende da diversi fattori, tra cui la ruvidità del cibo e il contatto tra i denti durante la masticazione.",
+          "fonti": [
+            {
+              "id": "animals_odontogenic_2025",
+              "punto": "§3 Anatomy"
+            }
+          ]
+        },
+        {
+          "testo": "Con una dieta povera di fibra e poco abrasiva le corone dei molari si allungano e cambiano l'inclinazione della superficie di masticazione, fino a formare punte taglienti.",
+          "fonti": [
+            {
+              "id": "vcna_gi_2013",
+              "punto": "sezione «Dental disease, gastrointestinal stasis, and dysbiosis»"
+            }
+          ]
+        },
+        {
+          "testo": "Una dieta ricca di fibra è importante per prevenire la malattia dentale o rallentarla. Una rassegna mette alla base il fieno di graminacee, con pellet in quantità limitata, e sconsiglia i mangimi tipo muesli, associati alla scelta dei soli pezzi preferiti e al cattivo allineamento dei denti.",
+          "fonti": [
+            {
+              "id": "vetrec_dental_2025",
+              "punto": "Introduction"
+            },
+            {
+              "id": "animals_odontogenic_2025",
+              "punto": "§11 Prophylaxis"
+            }
+          ]
+        },
+        {
+          "testo": "Non conta solo la dieta: anche traumi, infezioni e fattori genetici possono avere un ruolo.",
+          "fonti": [
+            {
+              "id": "vcna_gi_2013",
+              "punto": "sezione «Dental disease, gastrointestinal stasis, and dysbiosis»"
+            }
+          ]
+        },
+        {
+          "testo": "I denti dietro non sono facili da valutare senza un otoscopio o uno strumento simile.",
+          "fonti": [
+            {
+              "id": "vetrec_dental_2025",
+              "punto": "Discussion"
+            }
+          ]
+        },
+        {
+          "testo": "In uno studio su 2.219 conigli con malattia dentale diagnosticata in ambulatori del Regno Unito, 547 sono morti e, tra questi, nel 51,2% la malattia dentale è stata la causa o ha contribuito alla morte.",
+          "fonti": [
+            {
+              "id": "vetrec_dental_2025",
+              "punto": "Abstract"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "tipo": "cosa_osservare",
+      "frasi": [
+        {
+          "testo": "Segni che il proprietario può notare: bava, difficoltà a inghiottire o soffocamento con il cibo non masticato, cibo lasciato cadere, riluttanza a mangiare fieno e cibi duri, perdita di peso, occhio che lacrima da tempo, secrezione dal naso, minore digrignamento dei denti, zampette alla bocca, ascessi al viso, incisivi molto lunghi.",
+          "fonti": [
+            {
+              "id": "vetrec_dental_2025",
+              "punto": "Table 1"
+            }
+          ]
+        },
+        {
+          "testo": "Il coniglio nasconde spesso dolore e malattia: le prime avvisaglie, come l'occhio che lacrima o il fieno lasciato, meritano attenzione.",
+          "fonti": [
+            {
+              "id": "vetrec_dental_2025",
+              "punto": "Discussion"
+            }
+          ]
+        },
+        {
+          "testo": "Gli ascessi dentali nel coniglio di solito non danno febbre: sentirlo non caldo non esclude il problema.",
+          "fonti": [
+            {
+              "id": "vcna_gastro_2005",
+              "punto": "«Dental disease, gastrointestinal stasis, and dysbiosis», Clinical features"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "tipo": "cosa_non_fare",
+      "frasi": [
+        {
+          "testo": "Tagliare gli incisivi non va mai fatto; per accorciare i denti, soprattutto quelli dietro, si usano altri metodi, idealmente con sedazione o anestesia. Il taglio dei denti può causare fratture longitudinali.",
+          "fonti": [
+            {
+              "id": "vetrec_dental_2025",
+              "punto": "Introduction; Conclusion"
+            },
+            {
+              "id": "vcna_gastro_2005",
+              "punto": "«Dental disease, gastrointestinal stasis, and dysbiosis», Etiology"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "tipo": "quando_andare_dal_veterinario",
+      "frasi": [
+        {
+          "testo": "I cambiamenti dentali tardivi sono spesso irreversibili, e la malattia dentale può contribuire alla stasi intestinale (vedi la scheda su «mangia meno»).",
+          "fonti": [
+            {
+              "id": "vetrec_dental_2025",
+              "punto": "Discussion"
+            }
+          ]
+        },
+        {
+          "testo": "Una rassegna consiglia un controllo fisico completo con ispezione della bocca a coniglio sveglio ogni 6-12 mesi; nei casi a rischio indica un esame con endoscopio in anestesia a intervalli più lunghi (12-18 mesi) o prima se compaiono segni. Non è una linea guida di società veterinarie.",
+          "fonti": [
+            {
+              "id": "animals_odontogenic_2025",
+              "punto": "§11 Prophylaxis"
+            }
+          ]
+        },
+        {
+          "testo": "Se il coniglio mangia meno, perde peso, sbava, lascia cadere il cibo, ha l'occhio che lacrima da tempo o il viso gonfio, contatta il veterinario.",
+          "nostro": true
+        }
+      ]
+    },
+    {
+      "tipo": "limiti",
+      "frasi": [
+        {
+          "testo": "Non abbiamo trovato una linea guida di società veterinarie sui denti del coniglio. Le fonti sono uno studio inglese del 2025, una rassegna del 2025 sugli ascessi dentali e due rassegne più vecchie (2005 e 2013, riassunte, non riprodotte). Il consiglio di contattare il veterinario è nostro.",
+          "fonti": [
+            {
+              "id": "vetrec_dental_2025",
+              "punto": "intero articolo"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

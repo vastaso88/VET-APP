@@ -1,0 +1,193 @@
+{
+  "codice": "CAN-SAL-01",
+  "specie": "cane",
+  "area": "SAL",
+  "argomento": "vaccini",
+  "titolo": "I vaccini del cane: cosa sapere",
+  "stato": "bozza",
+  "livello_schede": 1,
+  "ultimo_controllo": "2026-11-10",
+  "scadenza": "2027-11-10",
+  "revisione": {
+    "proprietario": null,
+    "specialista": null
+  },
+  "parole_chiave": [
+    "vaccino",
+    "vaccini",
+    "richiamo",
+    "cucciolo",
+    "cimurro",
+    "parvovirosi",
+    "leptospirosi",
+    "rabbia",
+    "vaccinare"
+  ],
+  "riassunto_per_chat": "Le linee guida WSAVA 2024 distinguono vaccini essenziali, per tutti i cani, e non essenziali, da proporre solo se vita e zona espongono al rischio. Essenziali nel mondo: cimurro, adenovirus, parvovirus; leptospirosi dove la malattia è presente, si conoscono i ceppi e il vaccino è disponibile; rabbia dove la malattia è presente. Cucciolo: dose a 6-8 settimane e poi ogni 2-4 settimane fino ad almeno 16 settimane; conta soprattutto la dose a 16 settimane o dopo; poi una dose a circa 26 settimane oppure un test degli anticorpi. Adulto: per i vaccini vivi attenuati contro cimurro, adenovirus e parvovirus i richiami non servono più spesso di ogni 3 anni; leptospirosi e rabbia seguono regole diverse (si ritiene che la leptospirosi protegga meno di 18 mesi; per la rabbia spesso decide la legge). I non essenziali durano in genere circa un anno. Reazioni comuni: dolore o gonfiore nel punto dell'iniezione, febbre, abbattimento, vomito; rare le reazioni allergiche gravi; più rischio nei cani piccoli e con più vaccini diversi nella stessa visita. Calendario e scelta dei vaccini: veterinario.",
+  "blocchi": [
+    {
+      "tipo": "in_breve",
+      "frasi": [
+        {
+          "testo": "Le linee guida internazionali separano i vaccini «essenziali», pensati per ogni cane, da quelli «non essenziali», che si propongono solo ai cani più esposti per zona o per stile di vita.",
+          "fonti": [
+            {
+              "id": "wsava_vacc_2024",
+              "punto": "Introduction, p. 4 (copia early-view)"
+            }
+          ]
+        },
+        {
+          "testo": "Nel mondo gli essenziali sono quelli contro cimurro, adenovirus e parvovirus. La leptospirosi rientra tra gli essenziali dove la malattia è presente, i ceppi sono noti e il vaccino è disponibile; la rabbia dove la malattia è presente.",
+          "fonti": [
+            {
+              "id": "wsava_vacc_2024",
+              "punto": "Introduction, p. 4; Canine, p. 15"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "tipo": "cosa_sapere",
+      "frasi": [
+        {
+          "testo": "Per il cucciolo lo schema parte a 6-8 settimane, con altre dosi ogni 2-4 settimane fino ad almeno 16 settimane. La dose che pesa di più è l'ultima, quella a 16 settimane o oltre.",
+          "fonti": [
+            {
+              "id": "wsava_vacc_2024",
+              "punto": "Canine, p. 11; FAQ, p. 26"
+            }
+          ]
+        },
+        {
+          "testo": "Chiusa la serie del cucciolo, si aggiunge una dose intorno alle 26 settimane; in alternativa si può misurare gli anticorpi a partire dalle 20 settimane.",
+          "fonti": [
+            {
+              "id": "wsava_vacc_2024",
+              "punto": "Canine, p. 14; FAQ, p. 26"
+            }
+          ]
+        },
+        {
+          "testo": "Nel cane adulto i richiami dei vaccini vivi attenuati contro cimurro, adenovirus e parvovirus non servono più spesso di una volta ogni 3 anni. La visita di controllo annuale resta utile, ma non coincide con il vaccino.",
+          "fonti": [
+            {
+              "id": "wsava_vacc_2024",
+              "punto": "Canine, p. 14; Executive Summary, p. 3; FAQ, p. 30"
+            }
+          ]
+        },
+        {
+          "testo": "Leptospirosi e rabbia seguono regole diverse: si ritiene che la protezione contro la leptospirosi duri meno di 18 mesi, quindi il richiamo è annuale; per la rabbia l'intervallo è spesso stabilito dalla legge.",
+          "fonti": [
+            {
+              "id": "wsava_vacc_2024",
+              "punto": "FAQ, p. 26 e 30; Canine, p. 15"
+            }
+          ]
+        },
+        {
+          "testo": "I vaccini non essenziali (per esempio contro Bordetella e parainfluenza, o contro la leishmaniosi dove si usa) proteggono in genere circa un anno. Se vaccinare e con cosa lo si decide parlando con il veterinario.",
+          "fonti": [
+            {
+              "id": "wsava_vacc_2024",
+              "punto": "Canine, p. 15-16; Executive Summary, p. 3"
+            }
+          ]
+        },
+        {
+          "testo": "Sul vaccino contro la malattia di Lyme il parere è incerto: la linea guida dà più peso al controllo delle zecche.",
+          "fonti": [
+            {
+              "id": "wsava_vacc_2024",
+              "punto": "Canine, p. 16"
+            }
+          ]
+        },
+        {
+          "testo": "Si può verificare la protezione misurando gli anticorpi (cimurro, adenovirus, parvovirus), ma è facoltativo: i test rapidi non hanno tutti la stessa affidabilità e, se il risultato è negativo, di norma si rivaccina.",
+          "fonti": [
+            {
+              "id": "wsava_vacc_2024",
+              "punto": "Serology, p. 8-9; FAQ, p. 33"
+            }
+          ]
+        },
+        {
+          "testo": "La socializzazione del cucciolo non deve aspettare la fine dei vaccini: si possono far incontrare persone e altri cani, ma solo cuccioli sani e adulti completamente vaccinati, tenendolo lontano dagli ambienti esterni che potrebbero essere contaminati.",
+          "fonti": [
+            {
+              "id": "wsava_vacc_2024",
+              "punto": "FAQ, p. 26"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "tipo": "cosa_osservare",
+      "frasi": [
+        {
+          "testo": "Dopo il vaccino capita spesso di vedere dolore o gonfiore nel punto dell'iniezione e, in alcuni cani, febbre, abbattimento, poco appetito o vomito. Le reazioni allergiche (orticaria, shock) sono più rare.",
+          "fonti": [
+            {
+              "id": "wsava_vacc_2024",
+              "punto": "Adverse events, p. 23-24"
+            }
+          ]
+        },
+        {
+          "testo": "Il rischio di reazioni è maggiore nei cani piccoli, in alcune razze (Bulldog francese, Bassotto, Boston terrier) e quando nella stessa visita si somministrano più vaccini diversi.",
+          "fonti": [
+            {
+              "id": "wsava_vacc_2024",
+              "punto": "Adverse events, p. 24"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "tipo": "cosa_non_fare",
+      "frasi": [
+        {
+          "testo": "Per alcuni vaccini vivi attenuati, vaccinare un animale gravido, malato o ferito di norma non è consigliato, anche se molti vaccini canini di questo tipo sono ormai approvati in gravidanza. In caso di malattia importante trattata con cortisone si rimanda finché l'animale non torna in buona salute; se è in cura con farmaci che abbassano molto le difese, la linea guida chiede il parere di uno specialista.",
+          "fonti": [
+            {
+              "id": "wsava_vacc_2024",
+              "punto": "p. 22; FAQ, p. 28 e 30"
+            }
+          ]
+        },
+        {
+          "testo": "Se il cane è malato o in cura, chiedi al veterinario quando è il momento giusto per vaccinare.",
+          "nostro": true
+        }
+      ]
+    },
+    {
+      "tipo": "quando_andare_dal_veterinario",
+      "frasi": [
+        {
+          "testo": "Se dopo il vaccino il cane sta male o hai dubbi sulla reazione, avvisa il veterinario.",
+          "nostro": true
+        }
+      ]
+    },
+    {
+      "tipo": "limiti",
+      "frasi": [
+        {
+          "testo": "Sono linee guida mondiali, scritte per i veterinari: non danno un calendario per l'Italia e non dicono cosa fare a casa dopo una reazione. Gli inviti a sentire il veterinario in questa scheda sono nostri. Il lavoro del gruppo WSAVA è stato sostenuto da MSD Animal Health, e gli autori hanno ricevuto compensi da produttori di vaccini.",
+          "fonti": [
+            {
+              "id": "wsava_vacc_2024",
+              "punto": "Executive Summary, p. 3; Acknowledgements and conflict of interest, p. 35"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

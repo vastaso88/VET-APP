@@ -1,0 +1,62 @@
+{
+  "codice": "GAT-SAL-03",
+  "specie": "gatto",
+  "area": "SAL",
+  "argomento": "non-mangia-vomito",
+  "titolo": "Il gatto mangia meno o vomita",
+  "stato": "bozza",
+  "livello_schede": 2,
+  "ultimo_controllo": "2026-11-10",
+  "scadenza": "2027-11-10",
+  "revisione": {"proprietario": null, "specialista": null},
+  "parole_chiave": ["gatto", "non mangia", "mangia poco", "inappetente", "vomito", "vomita", "boli di pelo", "lipidosi", "digiuno", "schizzinoso"],
+  "riassunto_per_chat": "Per iCatCare anche solo circa tre giorni di cibo scarso possono avere conseguenze importanti per la salute del gatto: se mangia meno o diventa più selettivo si contatta il veterinario. Nei gatti che non mangiano per giorni, soprattutto se in sovrappeso, può comparire la lipidosi epatica: riconoscerla e curarla in tempo cambia molto l'esito, che dipende anche da altre malattie. Per i veterinari le misure nutrizionali (come una sonda) non vanno rimandate oltre 3 giorni da quando il gatto ha smesso di mangiare. Un gatto nauseato può semplicemente non voler mangiare. Il vomito lieve e di breve durata può passare in 1-2 giorni, ma sembra meno frequente che nel cane e i gatti visitati hanno più spesso bisogno di accertamenti; cause comuni sono i boli di pelo. Tra i criteri che i veterinari usano per approfondire: vomito frequente, abbondante o maleodorante, sangue o feci nere, dolore addominale, forte abbattimento, febbre, disidratazione, calo di peso, durata oltre 2 settimane. Non forzare il gatto con cucchiaio o siringa. Il digiuno di 24-48 ore è la pratica più diffusa nel vomito ma senza studi sul gatto, e nei gatti malati o in sovrappeso gli autori avvertono del rischio di lipidosi. I farmaci contro il vomito possono mascherarlo. Nessuna fonte letta indica un limite di 24-48 ore per l'inappetenza: le fonti parlano di circa 3 giorni.",
+  "blocchi": [
+    {
+      "tipo": "in_breve",
+      "frasi": [
+        {"testo": "Per iCatCare anche solo circa tre giorni di cibo scarso possono avere conseguenze importanti per la salute del gatto; se mangia meno o diventa più selettivo conviene contattare il veterinario.", "fonti": [{"id": "icatcare_wont_eat_2022", "punto": "p. 2"}]},
+        {"testo": "Se un gatto, soprattutto in sovrappeso, resta senza mangiare per giorni, può sviluppare la lipidosi epatica, una malattia del fegato. Riconoscerla e curarla presto cambia molto l'esito, che dipende anche da eventuali altre malattie.", "fonti": [{"id": "webb_hl_2018", "punto": "Abstract; sezioni «Presentation» e sul trattamento"}]}
+      ]
+    },
+    {
+      "tipo": "cosa_sapere",
+      "frasi": [
+        {"testo": "La linea guida ISFM 2022, scritta per i gatti ricoverati, dice ai veterinari di non rimandare oltre 3 giorni da quando il gatto ha smesso di mangiare gli interventi nutrizionali, come l'uso di una sonda.", "fonti": [{"id": "isfm_inappetent_2022", "punto": "«When to intervene»"}]},
+        {"testo": "Un gatto nauseato può semplicemente non voler mangiare, senza vomitare. Anche il dolore, lo stress e le malattie possono togliere l'appetito.", "fonti": [{"id": "isfm_inappetent_2022", "punto": "«Nausea and vomiting»"}, {"id": "icatcare_wont_eat_2022", "punto": "p. 3"}]},
+        {"testo": "Un vomito lieve e di breve durata può passare in uno o due giorni; sembra però meno frequente nel gatto che nel cane, e i gatti portati dal veterinario hanno più spesso bisogno di accertamenti.", "fonti": [{"id": "batchelor_vomit_2013", "punto": "«Diagnostic approach»"}]},
+        {"testo": "I gatti vomitano spesso boli di pelo. Ingeriscono di rado corpi estranei, ma quando succede sono segnalati soprattutto quelli lineari, come i fili, e il vomito tende a essere persistente e forte.", "fonti": [{"id": "batchelor_vomit_2013", "punto": "Introduction; «Clinical presentation and initial assessment»"}]},
+        {"testo": "Nel vomito, la pratica più usata è togliere il cibo per 24-48 ore, ma non ci sono studi sul gatto: gli autori avvertono di fare attenzione nei gatti malati, soprattutto in sovrappeso, per il rischio di lipidosi epatica.", "fonti": [{"id": "batchelor_vomit_2013", "punto": "«Dietary management»"}]}
+      ]
+    },
+    {
+      "tipo": "cosa_osservare",
+      "frasi": [
+        {"testo": "Un gatto con nausea può avere conati davanti al cibo, allontanarsi dalla ciotola, leccarsi le labbra e sbavare.", "fonti": [{"id": "isfm_inappetent_2022", "punto": "«Nausea and vomiting»"}, {"id": "icatcare_wont_eat_2022", "punto": "p. 3"}]},
+        {"testo": "Tra i criteri che i veterinari usano per decidere se approfondire ci sono: vomito frequente, abbondante o maleodorante; sangue nel vomito o feci nere; dolore alla pancia; forte abbattimento; febbre; calo di peso; disidratazione grave; vomito che dura da oltre 2 settimane o non migliora con le cure. Per alcuni di questi (disidratazione grave, durata, mancata risposta alle cure) gli autori dicono che si basano su opinioni di esperti.", "fonti": [{"id": "batchelor_vomit_2013", "punto": "Table 7 e testo che la commenta"}]},
+        {"testo": "Prima della visita conviene pesare e annotare quanto cibo il gatto mangia davvero, tenendo un diario.", "fonti": [{"id": "icatcare_wont_eat_2022", "punto": "p. 10"}]}
+      ]
+    },
+    {
+      "tipo": "cosa_non_fare",
+      "frasi": [
+        {"testo": "Non forzare il gatto a mangiare con il cucchiaio o la siringa: oltre a stressarlo, può fargli associare il cibo a un'esperienza spiacevole.", "fonti": [{"id": "icatcare_wont_eat_2022", "punto": "p. 3 e p. 6"}]},
+        {"testo": "Gli snack possono aiutare a invogliare il gatto, ma con moderazione; per il cibo umano chiedi al veterinario.", "fonti": [{"id": "icatcare_wont_eat_2022", "punto": "p. 5"}]},
+        {"testo": "Un farmaco contro il vomito può nascondere i segni di una malattia di fondo.", "fonti": [{"id": "batchelor_vomit_2013", "punto": "«Monitoring»"}]}
+      ]
+    },
+    {
+      "tipo": "quando_andare_dal_veterinario",
+      "frasi": [
+        {"testo": "Se mangia meno del solito o diventa più selettivo, contatta il veterinario.", "fonti": [{"id": "icatcare_wont_eat_2022", "punto": "p. 2"}]},
+        {"testo": "Se vomita e compare uno dei segni elencati sopra, conviene sentire presto il veterinario. Se il vomito continua dopo una prima visita, la rassegna indica un nuovo controllo entro 48 ore.", "fonti": [{"id": "batchelor_vomit_2013", "punto": "Table 7; «Monitoring»"}]}
+      ]
+    },
+    {
+      "tipo": "limiti",
+      "frasi": [
+        {"testo": "Nessuna fonte letta indica un limite di 24-48 ore per l'inappetenza: la linea guida e la guida per i proprietari parlano di circa 3 giorni (le 24-48 ore compaiono nella rassegna sul vomito come digiuno e come tempo del nuovo controllo). L'elenco dei segni di preoccupazione è uno strumento per i veterinari. La rassegna sul vomito è del 2013 ed è stata sostenuta in parte da un'azienda che produce un farmaco contro il vomito; la frase sul mascheramento viene da questa fonte. Se il gatto sta molto male, chiama subito il veterinario (per le urgenze la chat segue i passi già approvati).", "fonti": [{"id": "batchelor_vomit_2013", "punto": "Funding and acknowledgements; «Dietary management»; «Monitoring»"}]}
+      ]
+    }
+  ]
+}

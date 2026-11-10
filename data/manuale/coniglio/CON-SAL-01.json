@@ -1,0 +1,194 @@
+{
+  "codice": "CON-SAL-01",
+  "specie": "coniglio",
+  "area": "SAL",
+  "argomento": "non-mangia",
+  "titolo": "Il coniglio mangia meno o fa meno palline",
+  "stato": "bozza",
+  "livello_schede": 3,
+  "ultimo_controllo": "2026-11-10",
+  "scadenza": "2027-11-10",
+  "revisione": {
+    "proprietario": null,
+    "specialista": null
+  },
+  "parole_chiave": [
+    "coniglio",
+    "non mangia",
+    "inappetente",
+    "palline",
+    "feci",
+    "stasi",
+    "intestino",
+    "fieno",
+    "pancia gonfia",
+    "digiuno"
+  ],
+  "riassunto_per_chat": "Un coniglio che non mangia, comunque sia cominciato il problema, rischia una grave malattia del fegato (lipidosi epatica) che può portare all'insufficienza del fegato e alla morte; un manuale di medicina del coniglio indica che un coniglio che non mangia va curato senza ritardo. Il segnale più precoce è l'appetito che cala insieme a meno feci; un coniglio sano fa molte palline dure (fino a circa 180 al giorno se mangia bene fieno) e la loro assenza è un dato importante. All'inizio può sembrare ancora vispo; più avanti può stare curvo, fermo, trascurare la pulizia e disidratarsi. Le cause sono molte (denti, dolore, ansia, cambi di ambiente o di dieta, infezioni, ostruzioni) e spesso l'intestino rallentato è conseguenza di altro; poca fibra indigeribile rallenta l'intestino. Un'ostruzione è un'urgenza chirurgica. Un coniglio con diarrea non va tenuto a digiuno come cane e gatto; gli enzimi di ananas e papaya non hanno sciolto il pelo in una prova del 1983 citata dal manuale; per gli antibiotici si raccomanda un uso ponderato. Nessuna linea guida di società veterinaria è stata trovata: il manuale, rivolto ai veterinari, indica per l'alimentazione assistita 12 ore (riquadro) o 24 ore (testo) senza cibo.",
+  "blocchi": [
+    {
+      "tipo": "in_breve",
+      "frasi": [
+        {
+          "testo": "Un coniglio che non mangia, comunque sia cominciato il problema, rischia una grave malattia del fegato (la lipidosi epatica), che può portare all'insufficienza del fegato e alla morte.",
+          "fonti": [
+            {
+              "id": "varga_digestive_2014",
+              "punto": "cap. 8, sezione «Anorexia and development of hepatic lipidosis»"
+            },
+            {
+              "id": "vetrec_dental_2025",
+              "punto": "Discussion, sezione sui segni clinici"
+            }
+          ]
+        },
+        {
+          "testo": "Il manuale di medicina del coniglio consultato indica che un coniglio che non mangia va curato senza ritardo.",
+          "fonti": [
+            {
+              "id": "varga_digestive_2014",
+              "punto": "cap. 8, sezione sulla diagnosi e cura dell'ipomotilità gastrointestinale"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "tipo": "cosa_sapere",
+      "frasi": [
+        {
+          "testo": "Il rallentamento dell'intestino (stasi) ha molte cause: dolore, problemi ai denti, ansia, cambi nell'ambiente, infezioni, corpi estranei. Spesso è la conseguenza di un altro problema, che il veterinario deve cercare.",
+          "fonti": [
+            {
+              "id": "vcna_gi_2013",
+              "punto": "sezione «Gastrointestinal hypomotility and stasis»"
+            }
+          ]
+        },
+        {
+          "testo": "Tra i fattori di stress che possono scatenarla la rassegna elenca cambi di sistemazione, di abitudini o di alimentazione, i trasporti e le temperature estreme.",
+          "fonti": [
+            {
+              "id": "vcna_gastro_2005",
+              "punto": "«Gastric stasis and gastrointestinal ileus», Etiology"
+            }
+          ]
+        },
+        {
+          "testo": "Una dieta povera di fibra indigeribile rallenta l'intestino e fa ristagnare pelo e cibo nello stomaco; il fieno di buona qualità è una fonte di questa fibra.",
+          "fonti": [
+            {
+              "id": "varga_digestive_2014",
+              "punto": "cap. 8, sezioni «Diet» e Box 8.3"
+            }
+          ]
+        },
+        {
+          "testo": "Un'ostruzione, con intestino pieno di gas o liquidi riconosciuto dal veterinario con la radiografia, è un'urgenza chirurgica; anche il gonfiore da gas può mettere la vita in pericolo.",
+          "fonti": [
+            {
+              "id": "vcna_gi_2013",
+              "punto": "sezione «Gastrointestinal hypomotility and stasis»"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "tipo": "cosa_osservare",
+      "frasi": [
+        {
+          "testo": "Il segnale più precoce è un appetito che cala insieme a una riduzione delle feci.",
+          "fonti": [
+            {
+              "id": "varga_digestive_2014",
+              "punto": "cap. 8, sezione sulla diagnosi dell'ipomotilità"
+            }
+          ]
+        },
+        {
+          "testo": "Un coniglio che mangia bene fieno fa molte palline dure, fino a circa 180 al giorno: la mancanza di feci dure è un dato importante, da confrontare con il solito.",
+          "fonti": [
+            {
+              "id": "varga_digestive_2014",
+              "punto": "cap. 8, Box 8.3"
+            }
+          ]
+        },
+        {
+          "testo": "All'inizio il coniglio può sembrare ancora abbastanza vispo, quindi non farti rassicurare. Con il tempo può stare curvo e fermo, smettere di pulirsi e disidratarsi.",
+          "fonti": [
+            {
+              "id": "varga_digestive_2014",
+              "punto": "cap. 8, sezione sulla diagnosi dell'ipomotilità"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "tipo": "cosa_non_fare",
+      "frasi": [
+        {
+          "testo": "Un coniglio con la diarrea non va tenuto a digiuno come si fa con cane e gatto.",
+          "fonti": [
+            {
+              "id": "varga_digestive_2014",
+              "punto": "cap. 8, Box 8.3"
+            }
+          ]
+        },
+        {
+          "testo": "Il manuale cita una prova di laboratorio del 1983 in cui gli enzimi di ananas e papaya non scioglievano il pelo, e osserva che l'eventuale effetto del succo di ananas potrebbe dipendere dal liquido.",
+          "fonti": [
+            {
+              "id": "varga_digestive_2014",
+              "punto": "cap. 8, sezione sul trattamento"
+            }
+          ]
+        },
+        {
+          "testo": "La rassegna raccomanda un uso ponderato degli antibiotici: usarli senza criterio favorisce lo sviluppo di batteri pericolosi.",
+          "fonti": [
+            {
+              "id": "vcna_gi_2013",
+              "punto": "sezione «Dysbiosis and Antibiotic-associated Enterotoxemia»"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "tipo": "quando_andare_dal_veterinario",
+      "frasi": [
+        {
+          "testo": "Per il manuale, un coniglio che non mangia va curato senza ritardo.",
+          "fonti": [
+            {
+              "id": "varga_digestive_2014",
+              "punto": "cap. 8, sezione sulla diagnosi dell'ipomotilità"
+            }
+          ]
+        },
+        {
+          "testo": "Se il coniglio mangia poco e le palline diminuiscono o mancano, contatta subito il veterinario.",
+          "nostro": true
+        }
+      ]
+    },
+    {
+      "tipo": "limiti",
+      "frasi": [
+        {
+          "testo": "Non abbiamo trovato una linea guida di una società veterinaria su questo tema né un tempo preciso pensato per il proprietario. Il manuale, rivolto ai veterinari, indica come riferimento per l'alimentazione assistita con la siringa più di 12 ore senza mangiare in un riquadro sui principi generali di trattamento dei disturbi digestivi, e più di 24 ore nel testo. Le fonti sono due rassegne (2005 e 2013), il manuale (2014) e uno studio inglese del 2025; i testi Elsevier sono riassunti, non riprodotti. Le dosi e le cure che compaiono in queste fonti non sono usate: sono scelte del veterinario. L'invito a contattare subito il veterinario e gli inviti a non farsi rassicurare e a confrontare con il solito sono nostri.",
+          "fonti": [
+            {
+              "id": "varga_digestive_2014",
+              "punto": "cap. 8, Box 8.3 e sezione sul trattamento"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

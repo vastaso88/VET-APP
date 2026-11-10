@@ -1,0 +1,123 @@
+{
+  "codice": "CON-SAL-03",
+  "specie": "coniglio",
+  "area": "SAL",
+  "argomento": "malessere-nascosto",
+  "titolo": "Il coniglio nasconde il dolore: cosa osservare",
+  "stato": "bozza",
+  "livello_schede": 2,
+  "ultimo_controllo": "2026-11-10",
+  "scadenza": "2027-11-10",
+  "revisione": {
+    "proprietario": null,
+    "specialista": null
+  },
+  "parole_chiave": [
+    "coniglio",
+    "dolore",
+    "malato",
+    "nasconde",
+    "segni",
+    "comportamento",
+    "letargia",
+    "sta male"
+  ],
+  "riassunto_per_chat": "Il coniglio è una preda e tende a nascondere i segni di malattia e di dolore: i cambiamenti sono spesso lievi e possono sembrare poco importanti. In un sondaggio britannico su 500 proprietari reclutati online, 345 hanno valutato anche 8 video di conigli: sono andati d'accordo con tre esperti nell'88,8% dei casi senza dolore e nel 65,2% con dolore grave, ma solo nel 28,4% con dolore lieve e nel 43,2% con dolore moderato; in media attribuivano al dolore punteggi più bassi degli esperti (11,9 contro 18). Nella prima parte del sondaggio alcune persone hanno risposto «non serve il veterinario» per quasi ogni problema proposto, tranne fratture, denti posteriori troppo lunghi e stasi intestinale. Nello studio sui denti, tra i segni descritti compaiono letargia, cambiamenti di comportamento lievi e riluttanza a mangiare il fieno. Secondo un'indagine tra 46 professionisti, i problemi di benessere più importanti nei conigli da compagnia tra i primi cinque ci sono lo spazio ridotto, la stasi intestinale, i problemi dei denti, l'alimentazione sbagliata e l'assenza di un coniglio compagno. Nessuna fonte letta dice ogni quanto pesare il coniglio.",
+  "blocchi": [
+    {
+      "tipo": "in_breve",
+      "frasi": [
+        {
+          "testo": "Il coniglio è una preda e per istinto nasconde malattia e dolore: i cambiamenti dovuti al dolore sono spesso sottili e al proprietario possono sembrare insignificanti.",
+          "fonti": [
+            {
+              "id": "bmcvr_pain_2024",
+              "punto": "Abstract; Background"
+            },
+            {
+              "id": "vetrec_dental_2025",
+              "punto": "Discussion"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "tipo": "cosa_sapere",
+      "frasi": [
+        {
+          "testo": "In un sondaggio britannico 345 proprietari hanno anche valutato 8 video di conigli. Hanno concordato con tre esperti nell'88,8% dei casi senza dolore e nel 65,2% con dolore grave, ma solo nel 28,4% dei casi con dolore lieve e nel 43,2% con dolore moderato; in media hanno attribuito al dolore punteggi più bassi degli esperti (11,9 contro 18).",
+          "fonti": [
+            {
+              "id": "bmcvr_pain_2024",
+              "punto": "Abstract; Results, valutazione dei video"
+            }
+          ]
+        },
+        {
+          "testo": "Nella prima parte dello stesso sondaggio (500 proprietari) alcune persone hanno risposto «non serve il veterinario» per quasi ogni problema proposto; le eccezioni sono state le fratture, i denti posteriori troppo lunghi e la stasi intestinale.",
+          "fonti": [
+            {
+              "id": "bmcvr_pain_2024",
+              "punto": "Results, «Associated levels of pain»"
+            }
+          ]
+        },
+        {
+          "testo": "Secondo un'indagine tra 46 professionisti, i problemi di benessere più importanti nei conigli da compagnia tra i primi cinque ci sono lo spazio troppo piccolo, la stasi intestinale, i problemi dei denti, l'alimentazione sbagliata e l'assenza di un coniglio compagno.",
+          "fonti": [
+            {
+              "id": "animals_welfare_2025",
+              "punto": "Results"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "tipo": "cosa_osservare",
+      "frasi": [
+        {
+          "testo": "Nello studio sulla malattia dentale, tra i segni che si possono notare ci sono letargia, cambiamenti lievi di comportamento e riluttanza a mangiare il fieno.",
+          "fonti": [
+            {
+              "id": "vetrec_dental_2025",
+              "punto": "Discussion; Table 1"
+            }
+          ]
+        },
+        {
+          "testo": "Per i cambiamenti nel mangiare e nelle feci vedi le schede su «mangia meno o fa meno palline» e sui denti.",
+          "nostro": true
+        }
+      ]
+    },
+    {
+      "tipo": "quando_andare_dal_veterinario",
+      "frasi": [
+        {
+          "testo": "Se noti uno di questi cambiamenti e non ne conosci la causa, parlane con il veterinario: il coniglio mostra poco il dolore e la malattia.",
+          "nostro": true
+        }
+      ]
+    },
+    {
+      "tipo": "limiti",
+      "frasi": [
+        {
+          "testo": "Il sondaggio sul dolore è stato fatto online tra proprietari che hanno scelto di partecipare (reclutati con Facebook): non rappresenta tutti i proprietari. La seconda indagine riporta opinioni di professionisti, non misure. Nessuna fonte letta dice ogni quanto pesare il coniglio o perché farlo. Gli inviti a contattare il veterinario sono nostri.",
+          "fonti": [
+            {
+              "id": "bmcvr_pain_2024",
+              "punto": "Discussion (limiti dello studio)"
+            },
+            {
+              "id": "animals_welfare_2025",
+              "punto": "Methods"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

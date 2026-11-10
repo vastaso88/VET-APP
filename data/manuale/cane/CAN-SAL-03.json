@@ -1,0 +1,177 @@
+{
+  "codice": "CAN-SAL-03",
+  "specie": "cane",
+  "area": "SAL",
+  "argomento": "peso-corporatura",
+  "titolo": "Peso e forma del corpo del cane: come valutarli",
+  "stato": "bozza",
+  "livello_schede": 1,
+  "ultimo_controllo": "2026-11-10",
+  "scadenza": "2027-11-10",
+  "revisione": {
+    "proprietario": null,
+    "specialista": null
+  },
+  "parole_chiave": [
+    "peso",
+    "dimagrire",
+    "dimagrimento",
+    "ingrassare",
+    "sovrappeso",
+    "corporatura",
+    "premi",
+    "snack",
+    "dieta",
+    "magro",
+    "grasso"
+  ],
+  "riassunto_per_chat": "WSAVA propone di controllare a ogni visita peso, grasso (scala 1-9) e muscolo. Per la maggior parte degli animali l'obiettivo è 4-5 su 9, che ad alcuni proprietari può sembrare «troppo magro»; gli obiettivi poggiano su pochi studi. Il grasso si valuta guardando e toccando, soprattutto nei cani a pelo medio-lungo; il grasso in eccesso può nascondere una perdita di muscolo. Oltre 6 su 9 il rischio di malattie sembra aumentare (evidenze limitate). Cuccioli sotto l'anno, cani oltre i 7 anni, gravidanza e allattamento chiedono più attenzione. Premi, snack e avanzi: meno del 10% delle calorie del giorno e mai al posto di un pasto. Per alcuni animali un cambio di alimento in 7-10 giorni dà meno disturbi digestivi; nessun metodo è provato migliore. Tra i segnali che meritano una valutazione: punteggio fuori dall'intervallo 4-5, perdita di muscolo, cambio di peso senza spiegazione, disturbi digestivi, problemi di denti e pelo. Cibi pericolosi tra gli altri: cioccolato, macadamia, cipolla e simili, alcol e pasta lievitata cruda; ossa cotte e crude. La linea guida letta (2011) non dà un ritmo di dimagrimento in numeri.",
+  "blocchi": [
+    {
+      "tipo": "in_breve",
+      "frasi": [
+        {
+          "testo": "Secondo WSAVA a ogni visita andrebbero controllati peso, quantità di grasso (scala da 1 a 9) e quantità di muscolo. Per la maggior parte degli animali il punto d'arrivo è 4-5 su 9, anche se ad alcuni proprietari può sembrare «troppo magro». Gli obiettivi si basano su un numero limitato di studi.",
+          "fonti": [
+            {
+              "id": "wsava_nutr_2011",
+              "punto": "p. 2-3 della copia early-view"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "tipo": "cosa_sapere",
+      "frasi": [
+        {
+          "testo": "Per valutare il grasso serve guardare e toccare il cane; nei cani a pelo medio-lungo il tatto è indispensabile.",
+          "fonti": [
+            {
+              "id": "wsava_nutr_2011",
+              "punto": "p. 4-5"
+            }
+          ]
+        },
+        {
+          "testo": "Il grasso in eccesso può nascondere una perdita di muscolo, che si avverte più facilmente toccando il cane.",
+          "fonti": [
+            {
+              "id": "wsava_nutr_2011",
+              "punto": "p. 4"
+            }
+          ]
+        },
+        {
+          "testo": "Sopra i 6 punti su 9 il rischio di malattie negli adulti sembra aumentare, ma le prove sono limitate.",
+          "fonti": [
+            {
+              "id": "wsava_nutr_2011",
+              "punto": "p. 3"
+            }
+          ]
+        },
+        {
+          "testo": "Cuccioli sotto l'anno, cani sopra i 7 anni, gravidanza e allattamento richiedono un'attenzione maggiore.",
+          "fonti": [
+            {
+              "id": "wsava_nutr_2011",
+              "punto": "p. 3"
+            }
+          ]
+        },
+        {
+          "testo": "Premi, snack e avanzi dovrebbero fornire meno del 10% delle calorie del giorno e non prendere il posto di un pasto.",
+          "fonti": [
+            {
+              "id": "wsava_nutr_2011",
+              "punto": "Table 1, p. 3"
+            },
+            {
+              "id": "wsava_treats_dog_2025",
+              "punto": "p. 1"
+            }
+          ]
+        },
+        {
+          "testo": "Un alimento indicato «per uso intermittente o complementare» non è completo e bilanciato; la linea guida lo spiega con la dicitura americana AAFCO e ricorda che le regole di etichettatura cambiano da paese a paese.",
+          "fonti": [
+            {
+              "id": "wsava_nutr_2011",
+              "punto": "p. 5"
+            }
+          ]
+        },
+        {
+          "testo": "Per alcuni animali un cambio graduale dell'alimento, in 7-10 giorni, sembra dare meno disturbi digestivi; per la linea guida nessun metodo ha prove migliori degli altri.",
+          "fonti": [
+            {
+              "id": "wsava_nutr_2011",
+              "punto": "p. 7-8"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "tipo": "cosa_osservare",
+      "frasi": [
+        {
+          "testo": "Tra i segnali che per la linea guida meritano una valutazione più attenta: un punteggio fuori dall'intervallo 4-5, una perdita di muscolo, un cambio di peso senza spiegazione, premi e avanzi sopra il 10% delle calorie, disturbi digestivi, problemi ai denti o al pelo.",
+          "fonti": [
+            {
+              "id": "wsava_nutr_2011",
+              "punto": "Table 1, p. 3"
+            }
+          ]
+        },
+        {
+          "testo": "A casa conviene tenere d'occhio l'aspetto generale e il livello di attività, la forma e il peso del corpo, quanto e come mangia e la regolarità di stomaco e intestino. Cuccioli, anziani e femmine gravide o in allattamento vanno seguiti più spesso.",
+          "fonti": [
+            {
+              "id": "wsava_nutr_2011",
+              "punto": "Monitoring, p. 9"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "tipo": "cosa_non_fare",
+      "frasi": [
+        {
+          "testo": "Tra gli ingredienti tossici la guida per i proprietari elenca, tra gli altri, cioccolato, noci di macadamia, cipolla e simili, alcol e pasta lievitata cruda; anche le ossa, cotte o crude, possono essere molto pericolose.",
+          "fonti": [
+            {
+              "id": "wsava_treats_dog_2025",
+              "punto": "p. 2, sezione sui cibi e i premi non sicuri"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "tipo": "quando_andare_dal_veterinario",
+      "frasi": [
+        {
+          "testo": "Se noti un cambio di peso senza spiegazione, una perdita di muscolo o problemi ai denti o al pelo, parlane con il veterinario: sono tra i segnali per cui la linea guida chiede una valutazione più approfondita.",
+          "nostro": true
+        }
+      ]
+    },
+    {
+      "tipo": "limiti",
+      "frasi": [
+        {
+          "testo": "La linea guida è del 2011 e WSAVA la presenta ancora come attuale (pagina letta il 10 novembre 2026); è scritta per i veterinari. Non dà un ritmo di dimagrimento in numeri. L'invito a parlarne con il veterinario è nostro. Le schede illustrate WSAVA hanno diritti riservati e qui non sono riprodotte. Il Comitato di nutrizione WSAVA ha sostenitori dell'industria.",
+          "fonti": [
+            {
+              "id": "wsava_nutr_2011",
+              "punto": "p. 1-12; pagina «Global Nutrition Guidelines» di wsava.org; procedura SOP v4 del Comitato, p. 1-2"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

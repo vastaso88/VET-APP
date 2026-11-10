@@ -1,0 +1,180 @@
+{
+  "codice": "GAT-SAL-04",
+  "specie": "gatto",
+  "area": "SAL",
+  "argomento": "lettiera-urine",
+  "titolo": "Il gatto sporca fuori dalla lettiera o fatica a fare pipì",
+  "stato": "bozza",
+  "livello_schede": 1,
+  "ultimo_controllo": "2026-11-10",
+  "scadenza": "2027-11-10",
+  "revisione": {
+    "proprietario": null,
+    "specialista": null
+  },
+  "parole_chiave": [
+    "gatto",
+    "lettiera",
+    "pipì",
+    "urina",
+    "sporca in casa",
+    "cistite",
+    "blocco urinario",
+    "sforza",
+    "maschio",
+    "sangue nelle urine"
+  ],
+  "riassunto_per_chat": "Un gatto maschio che fatica a urinare (sforza, va spesso in lettiera, fa poca o nessuna pipì) può avere un blocco dell'uretra: per iCatCare serve il veterinario con urgenza, perché peggiora in fretta e i reni possono danneggiarsi. Lo sforzo può essere scambiato per stitichezza. Altri segni di problemi urinari: sangue nelle urine, piccole quantità più volte con molto scavo, sporcare in casa, essere più quieto e interessarsi meno al cibo, leccarsi molto genitali o addome. Sporcare fuori dalla lettiera è un motivo frequente per chiedere il parere del veterinario, e può nascondere cause mediche; le linee guida AAHA/AAFP/ISFM invitano a rivolgersi presto al veterinario; in uno studio citato solo il 31,7% di questi gatti era stato visitato. Nei gatti adulti con segni urinari la cistite idiopatica felina è la causa più probabile e può peggiorare con lo stress. Lettiera: una per gatto più una, lunga almeno una volta e mezza il gatto, agglomerante e senza profumo, pulita ogni giorno. Mai punire il gatto.",
+  "blocchi": [
+    {
+      "tipo": "in_breve",
+      "frasi": [
+        {
+          "testo": "Un gatto maschio che fatica a urinare (sforza, va spesso in lettiera, fa poca pipì o nessuna) può avere l'uretra bloccata. Serve il veterinario con urgenza: peggiora in fretta e i reni possono danneggiarsi.",
+          "fonti": [
+            {
+              "id": "icatcare_urinary_2025",
+              "punto": "p. 3, riquadro «Blocked cats»"
+            }
+          ]
+        },
+        {
+          "testo": "Lo sforzo a urinare può sembrare stitichezza.",
+          "fonti": [
+            {
+              "id": "icatcare_urinary_2025",
+              "punto": "p. 2"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "tipo": "cosa_sapere",
+      "frasi": [
+        {
+          "testo": "Sporcare fuori dalla lettiera è un motivo frequente per chiedere il parere del veterinario, ma in uno studio citato dalle linee guida solo il 31,7% di questi gatti era stato visitato.",
+          "fonti": [
+            {
+              "id": "aaha_feline_lifestage_2021",
+              "punto": "sezione «Elimination»"
+            }
+          ]
+        },
+        {
+          "testo": "Le linee guida raccomandano di rivolgersi presto al veterinario per individuare condizioni pericolose, come il blocco delle vie urinarie.",
+          "fonti": [
+            {
+              "id": "aaha_feline_lifestage_2021",
+              "punto": "«General litter box considerations»"
+            }
+          ]
+        },
+        {
+          "testo": "Nei gatti adulti con segni urinari la causa più probabile è la cistite idiopatica felina, una diagnosi per esclusione che può peggiorare con lo stress.",
+          "fonti": [
+            {
+              "id": "aaha_feline_lifestage_2021",
+              "punto": "«Lower urinary tract disease»"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "tipo": "cosa_osservare",
+      "frasi": [
+        {
+          "testo": "Un problema urinario può mostrarsi con sangue nelle urine, con sforzo o molte visite alla lettiera per poca pipì e tanto scavare, con pipì fuori posto in casa, e con segni più generali: gatto più quieto, che mangia meno o che si lecca molto genitali e addome.",
+          "fonti": [
+            {
+              "id": "icatcare_urinary_2025",
+              "punto": "p. 2"
+            }
+          ]
+        },
+        {
+          "testo": "Una buona lettiera: una per ogni gatto più una di scorta, con lettiera agglomerante senza profumo, da pulire ogni giorno.",
+          "fonti": [
+            {
+              "id": "aaha_feline_lifestage_2021",
+              "punto": "«General litter box considerations»"
+            },
+            {
+              "id": "icatcare_urinary_2025",
+              "punto": "pp. 7-8"
+            }
+          ]
+        },
+        {
+          "testo": "La vaschetta dovrebbe essere lunga almeno una volta e mezza il gatto, misurato dal naso alla base della coda.",
+          "fonti": [
+            {
+              "id": "icatcare_urinary_2025",
+              "punto": "pp. 7-8"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "tipo": "cosa_non_fare",
+      "frasi": [
+        {
+          "testo": "Non sgridare né punire il gatto che sporca fuori dalla lettiera e non portarlo in lettiera come punizione.",
+          "fonti": [
+            {
+              "id": "aaha_feline_lifestage_2021",
+              "punto": "«General litter box considerations»"
+            },
+            {
+              "id": "icatcare_urinary_2025",
+              "punto": "p. 10"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "tipo": "quando_andare_dal_veterinario",
+      "frasi": [
+        {
+          "testo": "Un gatto maschio con difficoltà a urinare va portato dal veterinario con urgenza.",
+          "fonti": [
+            {
+              "id": "icatcare_urinary_2025",
+              "punto": "p. 3, riquadro «Blocked cats»"
+            }
+          ]
+        },
+        {
+          "testo": "Per sangue nelle urine o sforzo in qualunque gatto, e per lo sporcare fuori dalla lettiera, la guida invita a contattare il veterinario per escludere cause mediche.",
+          "fonti": [
+            {
+              "id": "icatcare_urinary_2025",
+              "punto": "p. 2"
+            },
+            {
+              "id": "aaha_feline_lifestage_2021",
+              "punto": "sezione «Elimination»; «General litter box considerations»"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "tipo": "limiti",
+      "frasi": [
+        {
+          "testo": "La linea guida iCatCare del 2025 è stata letta ma non è usata come base di questa scheda perché ha una licenza che esclude l'uso commerciale. La guida per i proprietari (© International Cat Care) e le linee guida sulle fasi della vita (© AAHA, AAFP, ISFM) sono protette da copyright e sono qui riassunte con parole nostre. Le linee guida sulle fasi della vita sono sostenute da aziende del settore e lo studio sul 31,7% è americano e citato di seconda mano.",
+          "fonti": [
+            {
+              "id": "aaha_feline_lifestage_2021",
+              "punto": "nota sul finanziamento; sezione «Elimination»"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,162 @@
+{
+  "codice": "GAT-SAL-01",
+  "specie": "gatto",
+  "area": "SAL",
+  "argomento": "vaccini",
+  "titolo": "I vaccini del gatto: cosa sapere",
+  "stato": "bozza",
+  "livello_schede": 1,
+  "ultimo_controllo": "2026-11-10",
+  "scadenza": "2027-11-10",
+  "revisione": {
+    "proprietario": null,
+    "specialista": null
+  },
+  "parole_chiave": [
+    "vaccino",
+    "vaccini",
+    "richiamo",
+    "gattino",
+    "panleucopenia",
+    "leucemia felina",
+    "felv",
+    "gatto di casa",
+    "vaccinare"
+  ],
+  "riassunto_per_chat": "Le linee guida WSAVA 2024 considerano essenziali per ogni gatto i vaccini contro panleucopenia, calicivirus ed herpesvirus. Il vaccino contro la leucemia felina (FeLV) è essenziale nei gattini sotto l'anno e negli adulti con accesso all'esterno, dove il virus è diffuso; si fa solo ai gatti risultati negativi. Gattino: prima dose a 6-8 settimane, richiami ogni 2-4 settimane fino ad almeno 16 settimane, poi una dose a 26 settimane o più. Adulto a basso rischio (solo, in casa, senza pensione): richiami degli essenziali ogni 3 anni o più; i gatti più esposti possono richiedere richiami più frequenti contro calicivirus ed herpesvirus, fino a uno all'anno. Il vaccino contro la FIV non è mai stato autorizzato in Europa. Dopo il vaccino sono frequenti dolore o gonfiore nel punto dell'iniezione, febbre e abbattimento; una massa nel punto dell'iniezione va fatta vedere al veterinario (3 mesi, 2 cm, crescita oltre un mese sono i limiti oltre i quali si fa la biopsia). Calendario e scelta: veterinario.",
+  "blocchi": [
+    {
+      "tipo": "in_breve",
+      "frasi": [
+        {
+          "testo": "Per le linee guida internazionali i vaccini essenziali, quelli per ogni gatto, sono quelli contro panleucopenia, calicivirus ed herpesvirus.",
+          "fonti": [
+            {
+              "id": "wsava_vacc_2024",
+              "punto": "Introduction, p. 4 (copia early-view)"
+            }
+          ]
+        },
+        {
+          "testo": "Il vaccino contro la leucemia felina (FeLV) è essenziale nei gattini sotto l'anno e negli adulti che hanno accesso all'esterno o convivono con gatti che escono, dove il virus è diffuso, e si fa solo ai gatti risultati negativi.",
+          "fonti": [
+            {
+              "id": "wsava_vacc_2024",
+              "punto": "Introduction, p. 4; Feline, p. 19-20"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "tipo": "cosa_sapere",
+      "frasi": [
+        {
+          "testo": "Nel gattino lo schema parte a 6-8 settimane, con altre dosi ogni 2-4 settimane fino ad almeno 16 settimane, e una dose ulteriore a 26 settimane o più.",
+          "fonti": [
+            {
+              "id": "wsava_vacc_2024",
+              "punto": "Feline, p. 16"
+            }
+          ]
+        },
+        {
+          "testo": "Gli essenziali sono pensati per tutti i gatti, anche per quelli che vivono solo in casa. Per i gatti a basso rischio (soli, in casa, senza soggiorni in pensione) i richiami dei vaccini vivi attenuati si fanno ogni 3 anni o con intervalli più lunghi.",
+          "fonti": [
+            {
+              "id": "wsava_vacc_2024",
+              "punto": "Introduction, p. 3-4; Feline, p. 19; FAQ, p. 30"
+            }
+          ]
+        },
+        {
+          "testo": "Per i gatti più esposti (pensione, contatto con altri gatti) i richiami contro calicivirus ed herpesvirus possono essere più frequenti, fino a uno l'anno.",
+          "fonti": [
+            {
+              "id": "wsava_vacc_2024",
+              "punto": "Feline, p. 19"
+            }
+          ]
+        },
+        {
+          "testo": "Tra i non essenziali ci sono Chlamydia felis e Bordetella, indicati in situazioni particolari, per esempio nei gruppi numerosi di gatti dove la malattia è stata confermata; la scelta spetta al veterinario. Il vaccino contro la FIV non è mai stato autorizzato in Europa.",
+          "fonti": [
+            {
+              "id": "wsava_vacc_2024",
+              "punto": "Feline, p. 20"
+            }
+          ]
+        },
+        {
+          "testo": "Il test degli anticorpi serve per la panleucopenia; per herpesvirus e calicivirus la presenza di anticorpi non è considerata un indicatore affidabile di protezione.",
+          "fonti": [
+            {
+              "id": "wsava_vacc_2024",
+              "punto": "Serology, p. 8-9"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "tipo": "cosa_osservare",
+      "frasi": [
+        {
+          "testo": "Dopo il vaccino si osservano spesso dolore o gonfiore nel punto dell'iniezione e un malessere con febbre, abbattimento, poco appetito o vomito; sono più rare le reazioni allergiche.",
+          "fonti": [
+            {
+              "id": "wsava_vacc_2024",
+              "punto": "Adverse events, p. 23-24"
+            }
+          ]
+        },
+        {
+          "testo": "Il tumore nel punto dell'iniezione è raro e il rischio è molto più piccolo del vantaggio dei vaccini. Per la linea guida, una massa che dura da 3 mesi, supera i 2 cm o cresce ancora dopo un mese è il limite oltre il quale si fa la biopsia.",
+          "fonti": [
+            {
+              "id": "wsava_vacc_2024",
+              "punto": "Injection-site sarcoma, p. 25"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "tipo": "cosa_non_fare",
+      "frasi": [
+        {
+          "testo": "Per alcuni vaccini vivi attenuati, vaccinare un animale gravido, malato o ferito di norma non è consigliato; con il cortisone per una malattia importante si rimanda, e per le terapie che abbassano molto le difese serve il parere di uno specialista.",
+          "fonti": [
+            {
+              "id": "wsava_vacc_2024",
+              "punto": "p. 22; FAQ, p. 28 e 30"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "tipo": "quando_andare_dal_veterinario",
+      "frasi": [
+        {
+          "testo": "Una massa comparsa nel punto dell'iniezione va fatta vedere al veterinario senza aspettare mesi, e così ogni reazione che ti preoccupa. Se il gatto è malato o in cura, chiedi quando vaccinare.",
+          "nostro": true
+        }
+      ]
+    },
+    {
+      "tipo": "limiti",
+      "frasi": [
+        {
+          "testo": "Sono linee guida mondiali scritte per i veterinari: non danno un calendario per l'Italia e non dicono cosa fare a casa dopo una reazione. Gli inviti a sentire il veterinario sono nostri. Il lavoro WSAVA è stato sostenuto da MSD Animal Health e gli autori hanno ricevuto compensi da produttori di vaccini. Le linee guida europee ABCD sul gatto non sono state ancora lette per questa scheda.",
+          "fonti": [
+            {
+              "id": "wsava_vacc_2024",
+              "punto": "Introduction, p. 4; Acknowledgements and conflict of interest, p. 35"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

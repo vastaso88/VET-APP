@@ -18,7 +18,9 @@ Thumbs.db
 
 # Locally stored chat attachment photos (MEDIA_STORAGE_DIR) — runtime
 # user-uploaded content, never source, never committed.
-/data/
+/data/*
+# Curated health cards (approved sources, no personal data) are source code.
+!/data/manuale/
 .vercel
 .env*
 # The example lists variable NAMES with empty values, never a secret.
