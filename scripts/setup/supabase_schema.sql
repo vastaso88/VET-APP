@@ -1665,6 +1665,10 @@ create table if not exists public.llm_usage_daily (
     exhausted_until timestamptz,
     primary key (day, model)
 );
+-- Tokens written to the provider's prompt cache (priced above plain input in
+-- the euro spending cap); see scripts/setup/llm_usage_cache_writes.sql.
+alter table public.llm_usage_daily
+    add column if not exists cache_write_tokens integer not null default 0;
 alter table public.llm_usage_daily enable row level security;
 
 -- Atomic add: concurrent instances never lose each other's tokens.
@@ -1694,6 +1698,25 @@ as $$
         cached_prompt_tokens =
             public.llm_usage_daily.cached_prompt_tokens + excluded.cached_prompt_tokens,
         total_tokens = public.llm_usage_daily.total_tokens + excluded.total_tokens;
+$$;
+
+-- The cache writes of a call, added to the day's total on their own so that a
+-- database without this function still counts every call.
+create or replace function public.llm_usage_add_cache_writes(
+    p_day date,
+    p_model text,
+    p_tokens integer
+)
+returns void
+language sql
+security definer
+set search_path = public
+as $$
+    insert into public.llm_usage_daily (day, model, cache_write_tokens)
+    values (p_day, p_model, greatest(p_tokens, 0))
+    on conflict (day, model) do update set
+        cache_write_tokens =
+            public.llm_usage_daily.cache_write_tokens + excluded.cache_write_tokens;
 $$;
 
 create table if not exists public.chat_user_daily_usage (
@@ -1755,6 +1778,10 @@ $$;
 revoke all on function public.llm_usage_add(date, text, integer, integer, integer, integer)
     from public, anon, authenticated;
 grant execute on function public.llm_usage_add(date, text, integer, integer, integer, integer)
+    to service_role;
+revoke all on function public.llm_usage_add_cache_writes(date, text, integer)
+    from public, anon, authenticated;
+grant execute on function public.llm_usage_add_cache_writes(date, text, integer)
     to service_role;
 
 revoke all on function public.chat_user_daily_usage_add(text, date)

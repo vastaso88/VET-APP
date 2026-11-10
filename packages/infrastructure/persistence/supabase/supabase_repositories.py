@@ -939,7 +939,9 @@ class SupabaseLlmUsageRepository(LlmUsageRepository):
         self._client = client
 
     def record(self, event: LlmUsageEvent) -> None:
-        row = event.model_dump(mode="json")
+        # The per-call row keeps its original shape: cache writes live in the
+        # daily totals only (llm_usage_cache_writes.sql).
+        row = event.model_dump(mode="json", exclude={"cache_write_tokens"})
         row["day"] = event.day.isoformat()
         self._client.table("llm_usage").insert(row).execute()
         self._client.rpc(
@@ -953,6 +955,24 @@ class SupabaseLlmUsageRepository(LlmUsageRepository):
                 "p_total_tokens": event.total_tokens,
             },
         ).execute()
+        if event.cache_write_tokens > 0:
+            self._add_cache_writes(event)
+
+    def _add_cache_writes(self, event: LlmUsageEvent) -> None:
+        """Best effort and separate from the call above, so that a database
+        without the function (the SQL not run yet) still counts every call:
+        the writes are then priced as plain input, a small undercount."""
+        try:
+            self._client.rpc(
+                "llm_usage_add_cache_writes",
+                {
+                    "p_day": event.day.isoformat(),
+                    "p_model": event.model,
+                    "p_tokens": event.cache_write_tokens,
+                },
+            ).execute()
+        except Exception:  # noqa: BLE001 - precision of the spend, never the ledger itself
+            _logger.warning("llm usage: could not add the cache writes to the day's total")
 
     def usage_for_day(self, day: date) -> list[ModelDailyUsage]:
         response = (

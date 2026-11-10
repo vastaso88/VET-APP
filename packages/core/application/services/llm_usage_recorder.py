@@ -65,12 +65,20 @@ class InstrumentedLLMClient(LLMClient):
             prompt_tokens=prompt_tokens,
             completion_tokens=completion_tokens,
             cached_prompt_tokens=response.cached_prompt_tokens,
+            cache_write_tokens=response.cache_write_tokens,
             total_tokens=total,
             duration_ms=int((time.perf_counter() - started) * 1000),
             outcome="length" if response.finish_reason == "length" else "ok",
         )
         if self._budget is not None:
-            self._budget.note_usage(response.model, total)
+            self._budget.note_usage(
+                response.model,
+                total,
+                prompt_tokens=prompt_tokens,
+                completion_tokens=completion_tokens,
+                cached_prompt_tokens=response.cached_prompt_tokens,
+                cache_write_tokens=response.cache_write_tokens,
+            )
         self._record(event)
         return response
 
@@ -86,6 +94,7 @@ class InstrumentedLLMClient(LLMClient):
                     "prompt_tokens": event.prompt_tokens,
                     "completion_tokens": event.completion_tokens,
                     "cached_prompt_tokens": event.cached_prompt_tokens,
+                    "cache_write_tokens": event.cache_write_tokens,
                     "total_tokens": event.total_tokens,
                     "duration_ms": event.duration_ms,
                     "outcome": event.outcome,

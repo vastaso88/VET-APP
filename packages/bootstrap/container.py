@@ -315,6 +315,9 @@ class ApplicationContainer:
             default_budget=settings.llm_default_daily_token_budget,
             reserve_share=settings.llm_budget_reserve_share,
             user_daily_limit=settings.chat_daily_message_limit_per_user,
+            daily_budget_eur=settings.llm_daily_budget_eur,
+            usd_per_eur=settings.llm_usd_per_eur,
+            inference_geo=settings.anthropic_inference_geo,
         )
         self.llm_client: LLMClient = InstrumentedLLMClient(
             self._build_llm_client(),

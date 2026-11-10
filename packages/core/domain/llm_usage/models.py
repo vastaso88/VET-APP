@@ -63,6 +63,10 @@ class LlmUsageEvent(BaseModel):
     prompt_tokens: int = 0
     completion_tokens: int = 0
     cached_prompt_tokens: int = 0
+    # Part of prompt_tokens that was written to the provider's prompt cache
+    # (a premium over plain input). Kept in the daily totals only, see
+    # scripts/setup/llm_usage_cache_writes.sql; the per-call row has no column.
+    cache_write_tokens: int = 0
     total_tokens: int = 0
     duration_ms: int = 0
     # "ok", "length" (the reply hit max_tokens), "rate_limited", "error".
@@ -80,6 +84,9 @@ class ModelDailyUsage(BaseModel):
     prompt_tokens: int = 0
     completion_tokens: int = 0
     cached_prompt_tokens: int = 0
+    # A database without llm_usage_cache_writes.sql has no such column: 0, and
+    # the writes are then counted at the plain input price (a small undercount).
+    cache_write_tokens: int = 0
     total_tokens: int = 0
     # Set when the provider itself said the model's daily limit is reached
     # (HTTP 429 "per day"), with the moment it said to try again.

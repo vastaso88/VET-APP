@@ -19,7 +19,8 @@ prompt, the user prompt the orchestrator already passed through
   of it) is its own block marked for the prompt cache; the rest is a
   second cached block, so an identical variable part also hits;
 * usage is counted whole: input + cache writes + cache reads as prompt
-  tokens (cache reads also as `cached_prompt_tokens`), output tokens
+  tokens (cache reads also as `cached_prompt_tokens`, cache writes also as
+  `cache_write_tokens`: the spending guard prices each part), output tokens
   (reasoning included) as completion tokens;
 * a `json_mode` call with a `json_schema` uses structured outputs; without
   one, or when the schema is refused, the JSON instruction goes in words;
@@ -191,4 +192,5 @@ class AnthropicLLMClient(LLMClient):
             prompt_tokens=prompt_tokens,
             completion_tokens=completion_tokens,
             cached_prompt_tokens=cache_read,
+            cache_write_tokens=cache_creation,
         )
