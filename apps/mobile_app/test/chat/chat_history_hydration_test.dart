@@ -83,6 +83,14 @@ class _FakeRemote implements ChatRemoteDataSource {
       Result.success<void>(null);
 
   @override
+  Future<Result<String>> renameConversation(String conversationId, String title) async =>
+      Result.success(title);
+
+  @override
+  Future<Result<String>> conversationSummary(String conversationId) async =>
+      Result.success('');
+
+  @override
   Future<Result<String>> ensureDefaultPetId({
     required String fallbackName,
     required String fallbackSpecies,
@@ -90,11 +98,21 @@ class _FakeRemote implements ChatRemoteDataSource {
       Result.success('p1');
 
   @override
+  Future<Result<ChatSendResult>> editMessage({
+    required String conversationId,
+    required String messageId,
+    required String userMessage,
+    String? clientMessageId,
+  }) async =>
+      Result.failure(const AppNetworkError(code: 'x', message: 'unused'));
+
+  @override
   Future<Result<ChatSendResult>> sendMessage({
     required String petId,
     String? conversationId,
     required String userMessage,
     String? attachmentId,
+    String? clientMessageId,
   }) async =>
       Result.failure(const AppNetworkError(code: 'x', message: 'unused'));
 }

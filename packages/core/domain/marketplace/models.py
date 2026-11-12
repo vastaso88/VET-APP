@@ -6,23 +6,49 @@ from pydantic import BaseModel, Field
 from packages.core.domain.common.entity import new_id, utc_now
 from packages.core.domain.geo.models import Coordinates
 
+# Current list (2026-10-07, mirrors the app's ListingCategory). The legacy
+# values at the end are still accepted so rows written before the change
+# validate; scripts/setup/marketplace_v2.sql rewrites them in the database.
 ListingCategory = Literal[
+    "kennels_carriers",
+    "leashes_collars",
+    "toys",
+    "clothing",
+    "feeding",
+    "hygiene_grooming",
+    "aquariums_terrariums",
+    "cages_aviaries",
+    "other",
     "food",
     "accessories",
     "health_wellness",
     "transport_carriers",
-    "toys",
     "grooming",
-    "other",
 ]
 ListingCondition = Literal["new", "like_new", "good", "worn"]
-ListingStatus = Literal["active", "reserved", "sold", "removed"]
-ListingReportReason = Literal["spam", "scam", "prohibited_item", "inappropriate", "other"]
+# "all" = generic item for every species; a listing never mixes it with others.
+ListingSpecies = Literal[
+    "all", "dog", "cat", "small_mammal", "bird", "reptile_amphibian", "fish", "other"
+]
+# "removed_policy": hidden because it offered an animal (animal_policy.py); the
+# row is kept, never deleted, and only "active" listings are ever served.
+ListingStatus = Literal["active", "reserved", "sold", "removed", "removed_policy"]
+ListingReportReason = Literal[
+    "spam", "scam", "prohibited_item", "inappropriate", "sells_animals", "other"
+]
 
-# Non-goals (docs/maps/): no moderation queue, no image scanning, no
-# in-app messaging/payment - this is a listings board, not a
-# transactional marketplace.
+# Non-goals (docs/maps/): no moderation queue for ads, no image scanning, no
+# in-app payment - this is a listings board, not a transactional marketplace.
+# Messages between buyer and seller: messaging.py.
 REPORT_COUNT_AUTO_REMOVE_THRESHOLD = 3
+
+# What the API answers (400) to a publication or an edit without the private
+# seller declaration: a code, which the app turns into a sentence.
+PRIVATE_SELLER_DECLARATION_REQUIRED = "private_seller_declaration_required"
+# The wording of the box the seller ticks, as approved by the legal session
+# (docs/compliance/11_esclusioni_responsabilita.md §4). Change it together with
+# the text (app key marketplacePrivateSellerDeclaration).
+PRIVATE_SELLER_DECLARATION_VERSION = "2026-11-09"
 
 
 class MarketplaceListing(BaseModel):
@@ -34,12 +60,25 @@ class MarketplaceListing(BaseModel):
     condition: ListingCondition
     price_cents: int | None = None
     photo_urls: list[str] = Field(default_factory=list)
-    # Already fuzzed via geo.models.fuzz_coordinates before this is saved -
+    target_species: list[ListingSpecies] = Field(default_factory=list)
+    # Already snapped via geo.models.approximate_coordinates before this is saved -
     # the exact seller address is never persisted here.
     location: Coordinates
     city_label: str | None = None
+    # ISO 3166-1 alpha-2 of the seller's country: prices are in its currency
+    # and the app shows its flag. Ads are found by distance, so a buyer near a
+    # border also sees the ads just across it. Rows older than the column are
+    # Italian (scripts/setup/marketplace_country.sql).
+    country: str = "IT"
     status: ListingStatus = "active"
     report_count: int = 0
+    # When the seller last declared to sell as a private person, not as a
+    # business (owner decision 2026-11-09: the Mercatino is for private people
+    # only). Asked at every publication and every edit; null on ads older than
+    # the rule (scripts/setup/marketplace_private_sellers.sql).
+    private_seller_declared_at: datetime | None = None
+    # Which wording the seller ticked (PRIVATE_SELLER_DECLARATION_VERSION).
+    private_seller_declaration_version: str | None = None
     created_at: datetime = Field(default_factory=utc_now)
     updated_at: datetime = Field(default_factory=utc_now)
 

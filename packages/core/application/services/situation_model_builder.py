@@ -64,6 +64,9 @@ class SituationModelBuilder:
                     # "length"), which silently discarded every field,
                     # including presenting_problem, turn after turn.
                     max_tokens=1500,
+                    purpose="situation_model",
+                    model_class="light",
+                    json_mode=True,
                 )
             )
         except ProviderError:

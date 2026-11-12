@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:geolocator/geolocator.dart';
 
+import '../../../shared/permissions/permission_explainer.dart';
 import '../domain/coordinates.dart';
 
 enum LocationRequestFailure {
@@ -32,7 +33,15 @@ abstract class LocationSampler {
 }
 
 class GeolocatorLocationSampler implements LocationSampler {
-  const GeolocatorLocationSampler();
+  const GeolocatorLocationSampler({this.explainFirst = _explainLocation});
+
+  /// Called before Android's own permission dialog (only when the permission
+  /// is still to be asked): the window that says why the position is needed and
+  /// what happens without it. Returns false when the owner chose "Non ora" -
+  /// then nothing is asked. Replaceable so tests need no dialog.
+  final Future<bool> Function() explainFirst;
+
+  static Future<bool> _explainLocation() => explainPermissionGlobally(PermissionPurpose.location);
 
   @override
   Future<DeviceLocationResult> requestCurrentPosition() async {
@@ -44,6 +53,9 @@ class GeolocatorLocationSampler implements LocationSampler {
 
       var permission = await Geolocator.checkPermission();
       if (permission == LocationPermission.denied) {
+        if (!await explainFirst()) {
+          return const DeviceLocationResult.failure(LocationRequestFailure.permissionDenied);
+        }
         permission = await Geolocator.requestPermission();
       }
       if (permission == LocationPermission.denied) {

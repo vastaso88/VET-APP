@@ -1,0 +1,73 @@
+{
+  "events": [
+    {
+      "slug": "international-sor-2026",
+      "title": "International SOR 2026 - 85ª mostra ornitologica internazionale",
+      "event_type": "bird_show",
+      "level": "regional",
+      "level_basis": "organizer_claim",
+      "starts_on": "2026-11-20",
+      "ends_on": "2026-11-22",
+      "region": "Emilia-Romagna",
+      "city": "Modena",
+      "province_code": "MO",
+      "venue_name": "Fiere di Modena",
+      "organizer_name": "Società Ornitologica Reggiana APS",
+      "description": "Mostra ornitologica internazionale organizzata dalla Società Ornitologica Reggiana, con iscrizioni alle manifestazioni e classifiche.",
+      "source_url": "https://www.sor.re.it/en/project/international-sor-2026/",
+      "verified_on": "2026-10-21",
+      "status": "published"
+    },
+    {
+      "slug": "esotika-pet-show-busto-arsizio-2026",
+      "title": "Esotika Pet Show - Busto Arsizio",
+      "event_type": "pet_fair",
+      "level": "local",
+      "level_basis": "default",
+      "starts_on": "2026-11-07",
+      "ends_on": "2026-11-08",
+      "region": "Lombardia",
+      "city": "Busto Arsizio",
+      "province_code": "VA",
+      "organizer_name": "ASD Pets Italy",
+      "description": "Fiera itinerante degli animali esotici e da compagnia: rettili, anfibi, pesci, uccelli e piccoli mammiferi.",
+      "source_url": "https://www.esotikapetshow.it/fiera/busto-arsizio-7-8-novembre-2026/",
+      "verified_on": "2026-10-21",
+      "status": "published"
+    },
+    {
+      "slug": "esotika-pet-show-fermo-2026",
+      "title": "Esotika Pet Show - Fermo",
+      "event_type": "pet_fair",
+      "level": "local",
+      "level_basis": "default",
+      "starts_on": "2026-11-21",
+      "ends_on": "2026-11-22",
+      "region": "Marche",
+      "city": "Fermo",
+      "province_code": "FM",
+      "organizer_name": "ASD Pets Italy",
+      "description": "Fiera itinerante degli animali esotici e da compagnia: rettili, anfibi, pesci, uccelli e piccoli mammiferi.",
+      "source_url": "https://www.esotikapetshow.it/fiera/fermo-21-22-novembre-2026/",
+      "verified_on": "2026-10-21",
+      "status": "published"
+    },
+    {
+      "slug": "esotika-pet-show-pordenone-2026",
+      "title": "Esotika Pet Show - Pordenone",
+      "event_type": "pet_fair",
+      "level": "local",
+      "level_basis": "default",
+      "starts_on": "2026-11-28",
+      "ends_on": "2026-11-29",
+      "region": "Friuli-Venezia Giulia",
+      "city": "Pordenone",
+      "province_code": "PN",
+      "organizer_name": "ASD Pets Italy",
+      "description": "Fiera itinerante degli animali esotici e da compagnia: rettili, anfibi, pesci, uccelli e piccoli mammiferi.",
+      "source_url": "https://www.esotikapetshow.it/fiera/pordenone-28-29-novembre-2026/",
+      "verified_on": "2026-10-21",
+      "status": "published"
+    }
+  ]
+}

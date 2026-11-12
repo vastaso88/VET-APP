@@ -1,11 +1,21 @@
+from datetime import datetime
 from typing import Protocol
 
 from pydantic import BaseModel
+
+from packages.core.domain.localization import SupportedLocale
 
 
 class AuthenticatedUser(BaseModel):
     id: str
     email: str
+    # The name the owner gave at sign-up, when there is one.
+    display_name: str | None = None
+    preferred_locale: SupportedLocale = "it"
+    # False when the identity provider has not confirmed the address yet.
+    # Privileged allowlists (admin, developer) are matched on the e-mail,
+    # so an unconfirmed address must never unlock them.
+    email_verified: bool = True
 
 
 class AuthSession(BaseModel):
@@ -17,6 +27,14 @@ class AuthSession(BaseModel):
 class AuthProvider(Protocol):
     def get_current_user(self) -> AuthenticatedUser: ...
 
+    def update_preferred_locale(self, locale: SupportedLocale) -> AuthenticatedUser: ...
+
     def sign_in_with_password(self, email: str, password: str) -> AuthSession: ...
 
     def sign_up(self, email: str, password: str) -> AuthSession | None: ...
+
+    def last_sign_in_at(self) -> datetime | None:
+        """When the caller last proved who they are with their credentials
+        (not merely when the token was refreshed), or None when unknown.
+        Used to ask for a recent sign-in before irreversible actions."""
+        ...

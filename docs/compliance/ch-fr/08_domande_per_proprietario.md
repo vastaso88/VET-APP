@@ -1,0 +1,10 @@
+> **BOZZA — non è consulenza legale; da rivedere da un avvocato locale prima della pubblicazione**
+
+# Domande per il proprietario — Svizzera romanda (solo ciò che si aggiunge a `ch/08`)
+
+Data: 2026-10-14. Le decisioni svizzere (rappresentanza art. 14 nLPD e TVA, recesso volontario di 14 giorni, Swiss–US DPF di Groq, Tox Info Suisse) sono già nelle domande 1–5 di `../ch/08_domande_per_proprietario.md`, e quelle comuni in `../de/08_*` e `../fr/08_*`. Qui solo ciò che nasce dai **testi francesi**: massimo 8, qui 4.
+
+1. **Apri la Svizzera romanda insieme a `de-CH`?** I testi `fr-CH` (02–05) sono pronti in bozza e derivano da `de-CH`. Aprirli insieme richiede lo stesso avvocato svizzero (che rilegge entrambe le lingue) e le tre verifiche di `ch/08` n. 1 (rappresentanza, TVA, avvocato). Raccomando: aprire la Romandia **solo dopo** che `de-CH` è stato rivisto da un avvocato svizzero, con revisione `fr-CH` nello stesso incarico. *Impatto: doc 02–04.*
+2. **Quale testo legale vede un utente svizzero con UI in un'altra lingua?** Esempio: Ginevra con app in inglese o tedesco; Friburgo e Vallese bilingui. Raccomando: il testo legale segue la **regione/lingua impostata** (`fr-CH` per l'utente francofono), non la lingua dell'interfaccia, e mai un ripiego silenzioso tra `de-CH` e `fr-CH`. *Impatto: doc 04, regola di registrazione; riprende `ch/08` n. 5 e `de/08` n. 6.*
+3. **Linea dell'assistente per la Svizzera.** Ho applicato la linea francese (informazioni generali, nessun consiglio personalizzato basato su anamnesi, nessun dosaggio/farmaco) perché è la più prudente. La Svizzera non ha il vincolo esplicito della Francia, ma ho trovato solo fonti secondarie (TAMV/Swissmedic 🟡). Accetti la stessa linea della Francia, da far verificare a un avvocato svizzero? *Impatto: doc 05; stessa domanda 5 di `fr/08`.*
+4. **Formato della valuta e termini per fr-CH.** CHF con quale formato (es. `CHF 1 234.50` o `1 234,50 CHF`) e quali termini d'interfaccia («parc à chiens»/«espace canin»)? Raccomando di far scegliere un formato dalla sessione i18n e testarlo in tutte le schermate dei prezzi, evitando di copiare l'apostrofo tedesco. *Impatto: doc 03 §4, doc 07.*

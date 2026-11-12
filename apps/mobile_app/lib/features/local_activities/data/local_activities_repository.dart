@@ -1,13 +1,15 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+import '../../billing/data/plan_access_refusal.dart';
 import '../../../../shared/config/app_runtime_config_loader.dart';
 import '../../location/domain/coordinates.dart';
 import '../domain/local_activity.dart';
 
 /// Same shape as RemindersRepository. The local seed mirrors
 /// packages/infrastructure/persistence/demo_seed.py's `local_activities`
-/// so a fresh demo (no Supabase configured) still shows something on the
-/// map instead of an empty state.
+/// and exists only for the preview without a backend (no Supabase client:
+/// demo pages, widget tests). With a backend the user sees real rows or an
+/// explicit empty state, never demo events mixed into production.
 class LocalActivitiesRepository {
   LocalActivitiesRepository({SupabaseClient? client}) : _client = client;
 
@@ -16,9 +18,8 @@ class LocalActivitiesRepository {
   static final List<LocalActivity> _localActivities = List<LocalActivity>.of(_seedActivities);
 
   Future<List<LocalActivity>> loadActiveActivities() async {
-    final remote = await _tryLoadRemoteActivities();
-    if (remote.isNotEmpty) {
-      return remote;
+    if (_resolveClient() != null) {
+      return _tryLoadRemoteActivities();
     }
     return List<LocalActivity>.unmodifiable(
       _localActivities.where((activity) => activity.status == LocalActivityStatus.active),
@@ -40,8 +41,10 @@ class LocalActivitiesRepository {
 
     try {
       await client.from('local_activities').upsert(_toRow(activity));
-    } catch (_) {
+    } catch (error) {
       // Best-effort: the local list above already applied for this session.
+      // A refusal of the plan (trial over) is the one thing worth saying.
+      handlePlanRefusal(error, showMessage: true);
     }
   }
 

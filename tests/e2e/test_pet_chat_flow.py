@@ -23,9 +23,11 @@ def test_pet_creation_then_chat_flow() -> None:
     pet_repo = InMemoryPetProfileRepository()
     conversation_repo = InMemoryConversationRepository()
 
-    pet = CreatePetProfileService(pet_repo).execute(
-        CreatePetProfileInput(owner_id="user-1", name="Luna", species="cat")
-    ).pet_profile
+    pet = (
+        CreatePetProfileService(pet_repo)
+        .execute(CreatePetProfileInput(owner_id="user-1", name="Luna", species="cat"))
+        .pet_profile
+    )
 
     orchestrator = ChatOrchestrator(
         EchoLLMClient(Settings()), InMemoryEvidenceRetriever(), NoopPiiAnonymizer()

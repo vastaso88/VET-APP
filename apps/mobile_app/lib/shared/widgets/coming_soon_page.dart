@@ -4,6 +4,7 @@ import '../../design_system/tokens/app_colors.dart';
 import '../../design_system/tokens/app_radii.dart';
 import '../../design_system/tokens/app_spacing.dart';
 import '../../design_system/tokens/app_text_styles.dart';
+import '../../l10n/l10n.dart';
 
 /// Generic placeholder for a feature that's planned but not built yet.
 class ComingSoonPage extends StatelessWidget {
@@ -38,13 +39,13 @@ class ComingSoonPage extends StatelessWidget {
                 width: 72,
                 height: 72,
                 decoration: BoxDecoration(
-                  color: AppColors.accentSoft,
+                  color: AppColors.secondarySoft,
                   borderRadius: BorderRadius.circular(AppRadii.xl),
                 ),
-                child: Icon(icon, size: 32, color: AppColors.primary),
+                child: Icon(icon, size: 32, color: AppColors.secondaryStrong),
               ),
               const SizedBox(height: AppSpacing.xl),
-              Text('In arrivo', style: AppTextStyles.title),
+              Text(context.l10n.sharedComingSoon, style: AppTextStyles.title),
               const SizedBox(height: AppSpacing.sm),
               Text(
                 description,

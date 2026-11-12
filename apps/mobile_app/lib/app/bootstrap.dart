@@ -1,19 +1,47 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_web_plugins/url_strategy.dart';
-import 'package:intl/date_symbol_data_local.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'app.dart';
 import 'config/app_bootstrap_state.dart';
 import 'router/app_router.dart';
+import '../features/account/data/profile_photo_repository.dart';
+import '../features/auth/data/remember_me_store.dart';
+import '../features/billing/data/billing_demo_store.dart';
+import '../features/dog_walks/data/active_walk_recovery_store.dart';
 import '../features/dog_walks/data/walk_home_widget.dart';
+import '../features/location/data/location_preference_store.dart';
+import '../features/language/data/language_store.dart';
+import '../features/notifications/application/notification_scheduler.dart';
+import '../features/notifications/domain/notification_time_zone.dart';
+import '../features/pets/data/pet_demo_store.dart';
+import '../features/pets/data/pet_photo_repository.dart';
+import '../features/reminders/data/reminders_repository.dart';
+import '../features/age/data/age_store.dart';
+import '../features/settings/data/layout_settings_store.dart';
+import '../features/settings/data/unit_settings_store.dart';
+import '../features/marketplace/data/marketplace_unread_store.dart';
+import '../shared/cache/owner_json_cache.dart';
+import '../shared/crash/crash_reporting.dart';
 import '../shared/config/app_runtime_config_loader.dart';
+import 'launch/route_restoration.dart';
+import 'launch/restorable_pages.dart';
 
 Future<void> bootstrap() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await initializeDateFormatting('it_IT');
+  // Crash reports: nothing happens unless the build was made with
+  // --dart-define=CRASH_REPORTING=true (see docs/runbooks/crash_reporting.md).
+  await CrashReporting.instance.initialize();
+  // Measurement units and chat text size are read synchronously by display code.
+  // Units load first: the language's default units must not overwrite them.
+  await UnitSettingsStore.instance.ensureLoaded();
+  // Saved (or suggested) language; also loads the date symbols for it.
+  await LanguageStore.instance.ensureLoaded();
+  unawaited(LayoutSettingsStore.instance.ensureLoaded());
 
   // The app has no landscape layouts anywhere; rotating breaks several
   // pages (Home's week-strip, the walk map). The Android manifest also
@@ -31,15 +59,34 @@ Future<void> bootstrap() async {
   }
 
   final runtimeConfig = const AppRuntimeConfigLoader().load();
+  if (runtimeConfig.isProduction && !runtimeConfig.hasSupabaseCredentials) {
+    throw StateError(
+      'Build di produzione senza SUPABASE_URL/SUPABASE_ANON_KEY: '
+      'usa --dart-define-from-file=.env.production.json',
+    );
+  }
   var supabaseEnabled = false;
 
   if (runtimeConfig.hasSupabaseCredentials) {
     try {
       await Supabase.initialize(
         url: runtimeConfig.supabaseUrl,
-        anonKey: runtimeConfig.supabaseAnonKey,
+        publishableKey: runtimeConfig.supabaseAnonKey,
       );
       supabaseEnabled = true;
+      // "Resta connesso" unticked at the last sign-in: the SDK restored the
+      // session from disk anyway, so drop it here (locally: the refresh
+      // token stays valid elsewhere) before any screen can use it.
+      final auth = Supabase.instance.client.auth;
+      if (auth.currentSession != null && !(await RememberMeStore.read())) {
+        // The SDK drops the local session synchronously, then calls the
+        // logout endpoint with no time limit: that request must not hold
+        // the first frame. Offline it just fails; the session is gone anyway.
+        unawaited(auth.signOut(scope: SignOutScope.local).catchError((Object _) {}));
+      }
+      // Network round-trips (up to two 5 s timeouts): never before the first
+      // frame. The store notifies VetApp if the account's language differs.
+      unawaited(LanguageStore.instance.syncAfterAuthentication());
 
       // Supabase parses a password-recovery link's URL fragment during
       // initialize() above and fires this event once the resulting
@@ -50,14 +97,41 @@ Future<void> bootstrap() async {
       // for a new password.
       Supabase.instance.client.auth.onAuthStateChange.listen((state) {
         if (state.event == AuthChangeEvent.passwordRecovery) {
-          AppRouter.navigatorKey.currentState
-              ?.pushNamedAndRemoveUntil(AppRouter.setNewPassword, (route) => false);
+          AppRouter.passwordRecoveryPending = true;
+          _openSetNewPasswordWhenReady();
+        }
+        // Any sign-out (button, expired session): pet photos kept on this
+        // device go with it.
+        if (state.event == AuthChangeEvent.signedOut) {
+          LanguageStore.instance.resetSessionChoice();
+          unawaited(PetPhotoRepository.clearLocalCaches());
+          unawaited(OwnerJsonCache.clearAll());
+          unawaited(RouteRestoration.instance.forget());
+          unawaited(CrashReporting.instance.onSignedOut());
+          // Everything else the previous account left on this device
+          // (security audit 2026-10-26): home address and last position,
+          // pets held in memory, the interrupted-walk snapshot, the
+          // home-screen widget's pet list, the profile photo in memory.
+          unawaited(LocationPreferenceStore.instance.clear());
+          PetDemoStore.instance.reset();
+          unawaited(const ActiveWalkRecoveryStore().clear());
+          unawaited(syncPetsToHomeWidget(const []));
+          ProfilePhotoRepository.clearLocalCache();
+          MarketplaceUnreadStore.instance.reset();
+          unawaited(AgeStore.instance.reset());
+          BillingDemoStore.instance.reset();
+        }
+        if (state.event == AuthChangeEvent.signedIn) {
+          unawaited(LanguageStore.instance.syncAfterAuthentication());
         }
       });
     } catch (_) {
       supabaseEnabled = false;
     }
   }
+
+  // Pages that can be reopened after the app was killed in the background.
+  registerRestorablePages();
 
   runApp(
     VetApp(
@@ -68,5 +142,35 @@ Future<void> bootstrap() async {
     ),
   );
 
+  // The session is already restored from disk at this point: put the pets and
+  // reminders saved by the last run on screen now; the splash preload (or the
+  // first page to open) then refreshes them from the server.
+  if (supabaseEnabled) {
+    unawaited(PetDemoStore.instance.restoreFromCache());
+    unawaited(RemindersRepository().restoreFromCache());
+  }
+
+  // Scheduled notifications carry their text already translated: reschedule
+  // them when the language changes.
+  LanguageStore.instance.addListener(NotificationScheduler.instance.requestResync);
+
   initWalkHomeWidgetLaunchHandling();
+  // Reminder, medicine and birthday notifications on the phone (no-op on web).
+  unawaited(initNotificationTimeZone().then((_) => NotificationScheduler.instance.start()));
+}
+
+/// On a cold start the recovery link can arrive before the first frame, when
+/// there is no navigator yet: retry briefly instead of dropping it.
+void _openSetNewPasswordWhenReady({int attempt = 0}) {
+  final navigator = AppRouter.navigatorKey.currentState;
+  if (navigator != null) {
+    navigator.pushNamedAndRemoveUntil(AppRouter.setNewPassword, (route) => false);
+    return;
+  }
+  if (attempt < 50) {
+    Future<void>.delayed(
+      const Duration(milliseconds: 100),
+      () => _openSetNewPasswordWhenReady(attempt: attempt + 1),
+    );
+  }
 }

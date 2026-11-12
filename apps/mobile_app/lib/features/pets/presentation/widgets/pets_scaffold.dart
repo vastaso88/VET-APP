@@ -4,6 +4,7 @@ import '../../../../design_system/tokens/app_colors.dart';
 import '../../../../design_system/tokens/app_radii.dart';
 import '../../../../design_system/tokens/app_spacing.dart';
 import '../../../../design_system/tokens/app_text_styles.dart';
+import '../../../../l10n/l10n.dart';
 
 class PetsScaffold extends StatelessWidget {
   const PetsScaffold({
@@ -35,11 +36,7 @@ class PetsScaffold extends StatelessWidget {
           gradient: LinearGradient(
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
-            colors: [
-              Color(0xFFF4F8F5),
-              Color(0xFFF8FBF8),
-              Color(0xFFEAF2ED),
-            ],
+            colors: AppColors.backgroundGradient,
           ),
         ),
         child: SafeArea(
@@ -59,14 +56,14 @@ class PetsScaffold extends StatelessWidget {
                       IconButton(
                         onPressed: onBack,
                         icon: const Icon(Icons.arrow_back_rounded),
-                        color: Colors.white,
+                        color: AppColors.onPrimary,
                         style: IconButton.styleFrom(
-                          backgroundColor: const Color(0xFF163A35),
+                          backgroundColor: AppColors.primaryStrong,
                         ),
                       ),
                       const SizedBox(width: AppSpacing.sm),
                     ],
-                    badge ?? _defaultBadge(),
+                    badge ?? _defaultBadge(context),
                     const Spacer(),
                     if (actions != null) ...actions!,
                   ],
@@ -87,21 +84,21 @@ class PetsScaffold extends StatelessWidget {
     );
   }
 
-  Widget _defaultBadge() {
+  Widget _defaultBadge(BuildContext context) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
       decoration: BoxDecoration(
         color: AppColors.primary,
         borderRadius: BorderRadius.circular(16),
       ),
-      child: const Row(
+      child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(Icons.pets, size: 14, color: AppColors.accent),
-          SizedBox(width: AppSpacing.sm),
+          const Icon(Icons.pets, size: 14, color: AppColors.secondaryStrong),
+          const SizedBox(width: AppSpacing.sm),
           Text(
-            'Pet',
-            style: TextStyle(
+            context.l10n.petsScaffoldBadge,
+            style: const TextStyle(
               color: AppColors.onPrimary,
               fontSize: 12,
               fontWeight: FontWeight.w800,
@@ -138,7 +135,7 @@ class RoundedSurface extends StatelessWidget {
         border: Border.all(color: borderColor),
         boxShadow: const [
           BoxShadow(
-            color: Color(0x12163A35),
+            color: AppColors.shadowSoft,
             blurRadius: 24,
             offset: Offset(0, 14),
           ),

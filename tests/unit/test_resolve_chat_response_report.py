@@ -15,7 +15,10 @@ def test_resolving_sets_status_timestamp_and_credited_bug_ref() -> None:
     repository = InMemoryChatResponseReportRepository()
     report = repository.save(
         ChatResponseReport(
-            conversation_id="c1", message_id="m1", pet_id="p1", reporter_owner_id="o1",
+            conversation_id="c1",
+            message_id="m1",
+            pet_id="p1",
+            reporter_owner_id="o1",
             reported_answer="answer",
         )
     )
@@ -39,7 +42,10 @@ def test_moving_to_under_review_does_not_set_resolved_at() -> None:
     repository = InMemoryChatResponseReportRepository()
     report = repository.save(
         ChatResponseReport(
-            conversation_id="c1", message_id="m1", pet_id="p1", reporter_owner_id="o1",
+            conversation_id="c1",
+            message_id="m1",
+            pet_id="p1",
+            reporter_owner_id="o1",
             reported_answer="answer",
         )
     )
@@ -57,15 +63,16 @@ def test_wont_fix_does_not_set_a_credited_bug_ref_unless_given() -> None:
     repository = InMemoryChatResponseReportRepository()
     report = repository.save(
         ChatResponseReport(
-            conversation_id="c1", message_id="m1", pet_id="p1", reporter_owner_id="o1",
+            conversation_id="c1",
+            message_id="m1",
+            pet_id="p1",
+            reporter_owner_id="o1",
             reported_answer="answer",
         )
     )
     service = ResolveChatResponseReportService(repository)
 
-    result = service.execute(
-        ResolveChatResponseReportInput(report_id=report.id, status="wont_fix")
-    )
+    result = service.execute(ResolveChatResponseReportInput(report_id=report.id, status="wont_fix"))
 
     assert result.report.status == "wont_fix"
     assert result.report.resolved_at is not None

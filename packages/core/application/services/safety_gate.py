@@ -3,13 +3,71 @@ from packages.core.domain.knowledge.fuzzy_match import (
     find_fuzzy_keyword_matches,
 )
 from packages.core.domain.pet_profile.species import normalize_species
+from packages.core.domain.safety.emergency_patterns import emergency_flags
+from packages.core.domain.safety.red_flags_de_fr import (
+    SPECIES_DE,
+    SPECIES_FR,
+    all_urgent_keywords,
+)
+from packages.core.domain.safety.triage_clarification import (
+    BIRD_RESPIRATORY_KEYWORDS,
+    DOG_PRODUCT_ON_CAT_KEYWORDS,
+    FISH_DISTRESS_KEYWORDS,
+    FOREIGN_BODY_KEYWORDS,
+    HARD_BELLY_KEYWORDS,
+    HEATSTROKE_KEYWORDS,
+    PROCESSIONARY_KEYWORDS,
+    SMALL_MAMMAL_STASIS_KEYWORDS,
+    SNAKEBITE_KEYWORDS,
+    STRAINING_URINE_KEYWORDS,
+)
 
 URGENT_RED_FLAG_KEYWORDS = {
+    "cannot breathe",
+    "can't breathe",
+    "not breathing",
+    "difficulty breathing",
+    "struggling to breathe",
+    "open mouth breathing",
+    "bleeding",
+    "hemorrhage",
+    "blood in vomit",
+    "vomiting blood",
+    "blood in stool",
+    "blood in urine",
+    "cannot urinate",
+    "can't urinate",
+    "not urinating",
+    "accident",
+    "no respira",
+    "no puede respirar",
+    "dificultad para respirar",
+    "respira con la boca abierta",
+    "hemorragia",
+    "sangra",
+    "colapso",
+    "sangre en el vómito",
+    "vomita sangre",
+    "sangre en las heces",
+    "sangre en la orina",
+    "no orina",
+    "no puede orinar",
+    "accidente",
     "convuls",
     "seizure",
     "non respira",
     "respira male",
     "dispnea",
+    # Real-world finding (2026-10-05 evaluation): "respira a bocca aperta e
+    # fa molta fatica a respirare", about a cat, raised no flag at all and
+    # got an ordinary round of questions - none of the three phrasings
+    # above is how an owner actually says it.
+    "fatica a respirare",
+    "respira a fatica",
+    "respira con fatica",
+    "respira a bocca aperta",
+    "respira con la bocca aperta",
+    "non riesce a respirare",
     "emorrag",
     "sanguina",
     "trauma",
@@ -34,6 +92,18 @@ URGENT_RED_FLAG_KEYWORDS = {
     "urina con sangue",
     "perde sangue",
 }
+# German and French (2026-10-26), the same groups: red_flags_de_fr.py.
+URGENT_RED_FLAG_KEYWORDS |= all_urgent_keywords()
+# Synthetic users 2026-11-07 (P1): swallowed objects, a hard belly, straining to
+# urinate, for every species.
+URGENT_RED_FLAG_KEYWORDS |= (
+    set(FOREIGN_BODY_KEYWORDS) | set(HARD_BELLY_KEYWORDS) | set(STRAINING_URINE_KEYWORDS)
+)
+# Wide eval 2026-11-06: heatstroke, snake bites and processionary caterpillars
+# are emergencies for every species.
+URGENT_RED_FLAG_KEYWORDS |= (
+    set(HEATSTROKE_KEYWORDS) | set(SNAKEBITE_KEYWORDS) | set(PROCESSIONARY_KEYWORDS)
+)
 
 # Real-world finding: the same owner-reported symptom can mean something
 # very different depending on species physiology, so a single universal
@@ -63,6 +133,17 @@ URGENT_RED_FLAG_KEYWORDS = {
 #   deliberately left out — too easily explained by a cold room.
 SPECIES_SPECIFIC_RED_FLAGS: dict[str, tuple[str, ...]] = {
     "small_mammal": (
+        "not eaten for a day",
+        "not eating since yesterday",
+        "not passing stool",
+        "stopped eating",
+        "no come desde ayer",
+        "no defeca",
+        "ha dejado de comer",
+        "amoxicillin",
+        "penicillin",
+        "clindamycin",
+        "erythromycin",
         "non mangia da un giorno",
         "non mangia da ieri",
         "non mangia da 24 ore",
@@ -72,6 +153,17 @@ SPECIES_SPECIFIC_RED_FLAGS: dict[str, tuple[str, ...]] = {
         "non produce feci",
         "non fa feci",
         "niente cacca",
+        # Same evaluation: "non mangia e non fa le feci da ieri sera", about
+        # a rabbit, matched none of the wordings above (the article in "le
+        # feci", the day named after the second symptom).
+        "non fa le feci",
+        "non fa più le feci",
+        "non fa più la cacca",
+        "non fa più cacca",
+        "ha smesso di mangiare",
+        "non mangia più",
+        "non mangia da stamattina",
+        *SMALL_MAMMAL_STASIS_KEYWORDS,
         # Real-world finding: the medication-safety coverage below stopped
         # at cat/dog, so "posso dare l'aspirina al mio coniglio?" raised no
         # flag at all. Rabbits, guinea pigs, chinchillas and hamsters
@@ -99,11 +191,27 @@ SPECIES_SPECIFIC_RED_FLAGS: dict[str, tuple[str, ...]] = {
         "diclofenac",
     ),
     "reptile_amphibian": (
+        "prolapse",
+        "prolapso",
+        "egg binding",
+        "cannot lay eggs",
+        "no puede poner huevos",
+        "retención de huevos",
         "prolasso",
         "non riesce a deporre le uova",
         "trattiene le uova",
     ),
+    # Wide eval 2026-11-06: fish gasping at the surface is water in trouble.
+    "fish": (*FISH_DISTRESS_KEYWORDS,),
     "bird": (
+        *BIRD_RESPIRATORY_KEYWORDS,
+        "cannot perch",
+        "can't perch",
+        "on the cage floor",
+        "fallen off the perch",
+        "no puede posarse",
+        "en el fondo de la jaula",
+        "permethrin",
         "non riesce a stare sul trespolo",
         "trovato sul fondo della gabbia",
         "caduto dal trespolo",
@@ -135,6 +243,23 @@ SPECIES_SPECIFIC_RED_FLAGS: dict[str, tuple[str, ...]] = {
     # substance class for maintainability as this list keeps growing —
     # add new brand names to the class they belong to, not as one-offs.
     "cat": (
+        *DOG_PRODUCT_ON_CAT_KEYWORDS,
+        "paracetamol",
+        "acetaminophen",
+        "ibuprofen",
+        "aspirin",
+        "permethrin",
+        "chocolate",
+        "grapes",
+        "raisins",
+        "xylitol",
+        "onion",
+        "garlic",
+        "uvas",
+        "pasas",
+        "xilitol",
+        "cebolla",
+        "ajo",
         # analgesics/NSAIDs — dangerous for cats, no benign explanation.
         # "Moment" (a very common ibuprofen brand) is deliberately NOT
         # included: as a bare substring it matches "momento"/"al momento"
@@ -170,6 +295,18 @@ SPECIES_SPECIFIC_RED_FLAGS: dict[str, tuple[str, ...]] = {
         "aglio",
     ),
     "dog": (
+        "ibuprofen",
+        "chocolate",
+        "grapes",
+        "raisins",
+        "xylitol",
+        "onion",
+        "garlic",
+        "uvas",
+        "pasas",
+        "xilitol",
+        "cebolla",
+        "ajo",
         "cioccolat",
         "uva",
         "uvetta",
@@ -196,6 +333,15 @@ SPECIES_SPECIFIC_RED_FLAGS: dict[str, tuple[str, ...]] = {
         "diclofenac",
     ),
 }
+# German and French equivalents of each species list (red_flags_de_fr.py).
+for _family in SPECIES_SPECIFIC_RED_FLAGS:
+    SPECIES_SPECIFIC_RED_FLAGS[_family] = tuple(
+        dict.fromkeys(
+            SPECIES_SPECIFIC_RED_FLAGS[_family]
+            + SPECIES_DE.get(_family, ())
+            + SPECIES_FR.get(_family, ())
+        )
+    )
 
 
 class SafetyGate:
@@ -226,4 +372,8 @@ class SafetyGate:
         matches += list(
             find_fuzzy_keyword_matches(lowered, SPECIES_SPECIFIC_RED_FLAGS.get(family, ()))
         )
+        # Poisons and emergencies no keyword above caught (2026-10-14: rat
+        # poison, antifreeze, lilies, torsion, pale gums), matched as whole
+        # words on normalised text — see emergency_patterns.py.
+        matches += [flag for flag in emergency_flags(message, family) if flag not in matches]
         return matches

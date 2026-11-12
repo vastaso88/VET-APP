@@ -68,9 +68,7 @@ def test_in_progress_and_discarded_walks_do_not_count_toward_badges() -> None:
         WalkSession(
             owner_id="user-1", pet_id="pet-1", status="in_progress", distance_meters=50_000
         ),
-        WalkSession(
-            owner_id="user-1", pet_id="pet-1", status="discarded", distance_meters=50_000
-        ),
+        WalkSession(owner_id="user-1", pet_id="pet-1", status="discarded", distance_meters=50_000),
     ]
 
     badges = evaluate_badges(walks)

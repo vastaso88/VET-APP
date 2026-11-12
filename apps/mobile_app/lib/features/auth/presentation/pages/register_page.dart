@@ -1,9 +1,15 @@
 import 'dart:async';
 
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+
+import '../../../../design_system/tokens/app_colors.dart';
+
+import '../../../../shared/widgets/pet_loader.dart';
 
 import '../../../../app/router/app_router.dart';
 import '../../../../design_system/tokens/app_spacing.dart';
+import '../../../../l10n/l10n.dart';
 import '../../../../shared/auth/auth.dart';
 import '../../../account_consents/data/account_consents_remote_data_source.dart';
 import '../../../account_consents/domain/account_consent_models.dart';
@@ -13,11 +19,82 @@ import '../../../first_run/presentation/pages/notification_permission_page.dart'
 import '../../../first_run/presentation/pages/plan_intro_page.dart';
 import '../../../first_run/presentation/pages/tutorial_page.dart';
 import '../../data/auth_repository_factory.dart';
+import '../../domain/auth_error_messages.dart';
+import '../../../age/data/age_store.dart';
+import '../../../age/domain/age_status.dart';
+import '../../../age/presentation/pages/underage_notice_page.dart';
+import '../../../age/presentation/widgets/birth_date_form.dart';
 import '../widgets/auth_widgets.dart';
+import '../widgets/phone_number_field.dart';
+import 'legal_text_page.dart';
 import 'login_page.dart';
 
+class _TermsAcceptanceText extends StatefulWidget {
+  const _TermsAcceptanceText(
+      {required this.onTermsTap, required this.onPrivacyTap});
+
+  final VoidCallback onTermsTap;
+  final VoidCallback onPrivacyTap;
+
+  @override
+  State<_TermsAcceptanceText> createState() => _TermsAcceptanceTextState();
+}
+
+class _TermsAcceptanceTextState extends State<_TermsAcceptanceText> {
+  late final TapGestureRecognizer _termsTap = TapGestureRecognizer()
+    ..onTap = widget.onTermsTap;
+  late final TapGestureRecognizer _privacyTap = TapGestureRecognizer()
+    ..onTap = widget.onPrivacyTap;
+
+  @override
+  void dispose() {
+    _termsTap.dispose();
+    _privacyTap.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    const base = TextStyle(
+        fontSize: 14, fontWeight: FontWeight.w700, color: AppColors.text);
+    final link = base.copyWith(
+        color: AppColors.primary, decoration: TextDecoration.underline);
+    final l10n = context.l10n;
+    // The sentence is one localized message; the two link names are swapped
+    // in as markers so the surrounding words can move with the language.
+    const termsMarker = '\u0001';
+    const privacyMarker = '\u0002';
+    final sentence = l10n.authTermsAcceptance(termsMarker, privacyMarker);
+    final spans = <InlineSpan>[];
+    sentence.splitMapJoin(
+      RegExp('[$termsMarker$privacyMarker]'),
+      onMatch: (match) {
+        final isTerms = match[0] == termsMarker;
+        spans.add(
+          TextSpan(
+            text: isTerms
+                ? l10n.authTermsOfServiceLabel
+                : l10n.authPrivacyPolicyLabel,
+            style: link,
+            recognizer: isTerms ? _termsTap : _privacyTap,
+          ),
+        );
+        return '';
+      },
+      onNonMatch: (text) {
+        if (text.isNotEmpty) spans.add(TextSpan(text: text));
+        return '';
+      },
+    );
+    return Text.rich(TextSpan(style: base, children: spans));
+  }
+}
+
 class RegisterPage extends StatefulWidget {
-  const RegisterPage({super.key});
+  const RegisterPage({super.key, @visibleForTesting this.initialBirthDate});
+
+  /// Skips the first (date of birth) step; for tests of the form itself.
+  final DateTime? initialBirthDate;
 
   @override
   State<RegisterPage> createState() => _RegisterPageState();
@@ -26,19 +103,28 @@ class RegisterPage extends StatefulWidget {
 class _RegisterPageState extends State<RegisterPage> {
   final _authRepository = const AuthRepositoryFactory().create();
   final _formKey = GlobalKey<FormState>();
+  final _phone = PhoneInputController();
   final _nameController = TextEditingController();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   final _confirmPasswordController = TextEditingController();
 
+  /// Declared on the first step, before name and e-mail. Compared with the
+  /// minimum age on the phone; it only leaves the phone once the account
+  /// exists, so a child's date is never sent anywhere.
+  late DateTime? _birthDate = widget.initialBirthDate;
   bool _acceptTerms = false;
   bool _isLoading = false;
   AuthBannerStatus? _status;
-  String _title = '';
-  String _message = '';
+  String Function(AppLocalizations) _title = (_) => '';
+  String Function(AppLocalizations) _message = (_) => '';
+  bool _hasValidated = false;
+  String Function()? _emailServerError;
+  String Function()? _passwordServerError;
 
   @override
   void dispose() {
+    _phone.dispose();
     _nameController.dispose();
     _emailController.dispose();
     _passwordController.dispose();
@@ -47,23 +133,26 @@ class _RegisterPageState extends State<RegisterPage> {
   }
 
   Future<void> _submit() async {
+    setState(() => _hasValidated = true);
     final isValid = _formKey.currentState?.validate() ?? false;
     if (!isValid || !_acceptTerms) {
       setState(() {
         _status = AuthBannerStatus.error;
-        _title = 'Serve un ultimo controllo';
-        _message = !_acceptTerms
-            ? 'Devi accettare privacy e disclaimer per continuare.'
-            : 'Controlla i campi: nome, email e password devono essere validi.';
+        _title = (l10n) => l10n.authRegisterCheckTitle;
+        _message = (l10n) => !_acceptTerms
+            ? l10n.authRegisterTermsRequired
+            : l10n.authRegisterFieldsInvalid;
       });
       return;
     }
 
     setState(() {
       _isLoading = true;
+      _emailServerError = null;
+      _passwordServerError = null;
       _status = AuthBannerStatus.loading;
-      _title = 'Creazione account';
-      _message = 'Sto creando l account e preparando la sessione iniziale.';
+      _title = (l10n) => l10n.authRegisterLoadingTitle;
+      _message = (l10n) => l10n.authRegisterLoadingMessage;
     });
 
     final result = await _authRepository.signUpWithPassword(
@@ -71,6 +160,7 @@ class _RegisterPageState extends State<RegisterPage> {
         email: _emailController.text.trim(),
         password: _passwordController.text,
         displayName: _nameController.text.trim(),
+        phone: _phone.e164,
       ),
     );
 
@@ -80,17 +170,29 @@ class _RegisterPageState extends State<RegisterPage> {
         setState(() {
           _isLoading = false;
           _status = AuthBannerStatus.success;
-          _title = 'Account pronto';
-          _message = 'Registrazione completata. Ti porto nella home.';
+          _title = (l10n) => l10n.authRegisterSuccessTitle;
+          _message = (l10n) => l10n.authRegisterSuccessMessage;
         });
         return true;
       },
       onFailure: (error) {
+        // The account exists but waits for e-mail confirmation (no session to
+        // write the date with yet): keep the date for the first sign-in.
+        if (error.code == 'sign_up_confirmation_required' && _birthDate != null) {
+          unawaited(AgeStore.instance.rememberPending(_birthDate!));
+        }
+        final presented = presentAuthError(error);
         setState(() {
           _isLoading = false;
           _status = AuthBannerStatus.error;
-          _title = 'Account non creato';
-          _message = error.message;
+          _title = (l10n) => l10n.authRegisterFailureTitle;
+          _message = (_) => presentAuthError(error).message;
+          if (presented.field == AuthErrorField.email) {
+            _emailServerError = () => presentAuthError(error).message;
+          }
+          if (presented.field == AuthErrorField.password) {
+            _passwordServerError = () => presentAuthError(error).message;
+          }
         });
         return false;
       },
@@ -116,7 +218,14 @@ class _RegisterPageState extends State<RegisterPage> {
         ]),
       );
 
-      // Starts the 10-day free trial server-side (first status lookup for
+      // The declared date goes to the backend now that a session exists; if
+      // that fails it waits on the phone and is sent at the next start.
+      final declared = await AgeStore.instance.declare(_birthDate!);
+      if (declared.isFailure) {
+        await AgeStore.instance.rememberPending(_birthDate!);
+      }
+
+      // Starts the 14-day free trial server-side (first status lookup for
       // this owner_id creates it — see GetOrCreateSubscriptionService).
       await HttpSubscriptionRemoteDataSource().fetchStatus();
 
@@ -129,6 +238,14 @@ class _RegisterPageState extends State<RegisterPage> {
         (route) => false,
       );
     }
+  }
+
+  void _openLegal(String consentKey, String title) {
+    Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder: (_) => LegalTextPage(consentKey: consentKey, title: title),
+      ),
+    );
   }
 
   /// Plan proposal (trial or immediate pick) → short feature tutorial →
@@ -145,7 +262,8 @@ class _RegisterPageState extends State<RegisterPage> {
     );
     if (!mounted) return;
     await Navigator.of(context).push(
-      MaterialPageRoute<void>(builder: (_) => const NotificationPermissionPage()),
+      MaterialPageRoute<void>(
+          builder: (_) => const NotificationPermissionPage()),
     );
     if (!mounted) return;
     await Navigator.of(context).push(
@@ -153,25 +271,66 @@ class _RegisterPageState extends State<RegisterPage> {
     );
   }
 
+  void _onBirthDate(DateTime date) {
+    if (ageOn(date, DateTime.now()) < kMinimumAge) {
+      // No account, nothing saved or sent: only the message.
+      Navigator.of(context).push(
+        MaterialPageRoute<void>(builder: (_) => const UnderageNoticePage()),
+      );
+      return;
+    }
+    setState(() => _birthDate = date);
+  }
+
   @override
   Widget build(BuildContext context) {
+    if (_birthDate == null) {
+      return AuthScreenScaffold(
+        title: context.l10n.ageStepTitle,
+        subtitle: context.l10n.ageStepBody,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            BirthDateForm(onSubmit: _onBirthDate),
+            const SizedBox(height: AppSpacing.md),
+            AuthFooterLink(
+              label: context.l10n.authHaveAccountLoginLink,
+              onTap: () => Navigator.of(context).push(
+                MaterialPageRoute<void>(builder: (_) => const LoginPage()),
+              ),
+            ),
+          ],
+        ),
+      );
+    }
     return AuthScreenScaffold(
-      title: 'Crea il tuo profilo.',
-      subtitle: 'Pochi campi per iniziare a gestire salute e documenti dei tuoi animali.',
+      title: context.l10n.authRegisterTitle,
+      subtitle: context.l10n.authRegisterSubtitle,
       child: Form(
         key: _formKey,
+        autovalidateMode:
+            _hasValidated ? AutovalidateMode.always : AutovalidateMode.disabled,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             if (_status != null)
-              AuthStateBanner(status: _status!, title: _title, message: _message),
+              AuthStateBanner(
+                  status: _status!,
+                  title: _title(context.l10n),
+                  message: _message(context.l10n)),
+            PhoneNumberField(
+              controller: _phone,
+              label: context.l10n.authPhoneLabel,
+              helperText: context.l10n.authPhoneHelp,
+            ),
+            const SizedBox(height: AppSpacing.md),
             AuthInputField(
               controller: _nameController,
-              label: 'Nome',
-              hintText: 'Il tuo nome',
+              label: context.l10n.authNameLabel,
+              hintText: context.l10n.authNameHint,
               validator: (value) {
                 if ((value ?? '').trim().isEmpty) {
-                  return 'Inserisci il tuo nome.';
+                  return context.l10n.authNameRequired;
                 }
                 return null;
               },
@@ -179,40 +338,44 @@ class _RegisterPageState extends State<RegisterPage> {
             const SizedBox(height: AppSpacing.md),
             AuthInputField(
               controller: _emailController,
-              label: 'Email',
-              hintText: 'nome@dominio.it',
+              label: context.l10n.authEmailLabel,
+              hintText: context.l10n.authEmailHint,
               keyboardType: TextInputType.emailAddress,
               autofillHints: const [AutofillHints.email],
+              serverError: _emailServerError?.call(),
               validator: (value) {
                 final text = value?.trim() ?? '';
-                if (text.isEmpty) return 'Inserisci la tua email.';
-                if (!text.contains('@')) return 'Email non valida.';
+                if (text.isEmpty) return context.l10n.authEmailRequired;
+                if (!text.contains('@')) return context.l10n.authEmailInvalid;
                 return null;
               },
             ),
             const SizedBox(height: AppSpacing.md),
             AuthInputField(
               controller: _passwordController,
-              label: 'Password',
-              hintText: 'Almeno 6 caratteri',
+              label: context.l10n.authPasswordLabel,
+              serverError: _passwordServerError?.call(),
+              hintText: context.l10n.authPasswordHint,
               obscureText: true,
               autofillHints: const [AutofillHints.newPassword],
               validator: (value) {
                 final text = value ?? '';
-                if (text.isEmpty) return 'Inserisci una password.';
-                if (text.length < 6) return 'Minimo 6 caratteri.';
+                if (text.isEmpty) return context.l10n.authPasswordRequiredNew;
+                if (text.length < 6) return context.l10n.authPasswordMinLength;
                 return null;
               },
             ),
             const SizedBox(height: AppSpacing.md),
             AuthInputField(
               controller: _confirmPasswordController,
-              label: 'Conferma password',
-              hintText: 'Ripeti la password',
+              label: context.l10n.authConfirmPasswordLabel,
+              hintText: context.l10n.authConfirmPasswordHint,
               obscureText: true,
               autofillHints: const [AutofillHints.newPassword],
               validator: (value) {
-                if (value != _passwordController.text) return 'Le password non coincidono.';
+                if (value != _passwordController.text) {
+                  return context.l10n.authPasswordsMismatch;
+                }
                 return null;
               },
             ),
@@ -223,9 +386,15 @@ class _RegisterPageState extends State<RegisterPage> {
                 contentPadding: EdgeInsets.zero,
                 value: _acceptTerms,
                 onChanged: (value) => setState(() => _acceptTerms = value),
-                title: const Text(
-                  "Accetto i Termini di Servizio e l'Informativa Privacy",
-                  style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700),
+                title: _TermsAcceptanceText(
+                  onTermsTap: () => _openLegal(
+                    AccountConsentKeys.termsOfService,
+                    context.l10n.authTermsOfServiceLabel,
+                  ),
+                  onPrivacyTap: () => _openLegal(
+                    AccountConsentKeys.privacyPolicy,
+                    context.l10n.authPrivacyPolicyLabel,
+                  ),
                 ),
               ),
             ),
@@ -238,14 +407,14 @@ class _RegisterPageState extends State<RegisterPage> {
                     ? const SizedBox(
                         width: 20,
                         height: 20,
-                        child: CircularProgressIndicator(strokeWidth: 2),
+                        child: PetLoader.small(),
                       )
-                    : const Text('Crea account'),
+                    : Text(context.l10n.authRegisterButton),
               ),
             ),
             const SizedBox(height: AppSpacing.md),
             AuthFooterLink(
-              label: 'Hai gia un account? Accedi',
+              label: context.l10n.authHaveAccountLoginLink,
               onTap: () => Navigator.of(context).push(
                 MaterialPageRoute<void>(builder: (_) => const LoginPage()),
               ),

@@ -61,7 +61,7 @@ void main() {
   });
 
   group('buildWalkHistoryView', () {
-    test('shows each walk once, in its highest-priority section', () {
+    test('records and favorites do not repeat each other, but "recent" repeats them', () {
       final walks = [
         _walk('recent-1', daysAgo: 0, distanceMeters: 90000, durationSeconds: 100), // also both records
         _walk('recent-2', daysAgo: 1, isFavorite: true), // also a favorite
@@ -74,9 +74,46 @@ void main() {
       expect(view.longestDistance!.id, 'recent-1');
       expect(view.longestDuration!.id, 'recent-1');
       expect(view.favorites.map((w) => w.id), ['recent-2', 'old-favorite']);
-      // recent-1 and recent-2 are already shown above, so "recent" only
-      // needs to fill in what's left of the last-3 window.
-      expect(view.recent.map((w) => w.id), ['recent-3']);
+      // Owner report 2026-10-06: "Recenti" disappeared when the newest walk
+      // was also a record. It always lists the last three, repeats included.
+      expect(view.recent.map((w) => w.id), ['recent-1', 'recent-2', 'recent-3']);
+    });
+
+    test('a single walk that is a record still shows up under "recent"', () {
+      final view = buildWalkHistoryView([_walk('only', daysAgo: 0)]);
+
+      expect(view.longestDistance!.id, 'only');
+      expect(view.recent.map((w) => w.id), ['only']);
+    });
+
+    test('recent is capped at the retention window, newest first', () {
+      final walks = [for (var i = 0; i < 6; i++) _walk('w$i', daysAgo: i)];
+
+      final view = buildWalkHistoryView(walks);
+
+      expect(view.recent.map((w) => w.id), ['w0', 'w1', 'w2']);
+      expect(view.recent, hasLength(recentWalkCount));
+    });
+
+    test('every walk in "recent" keeps its route under the retention policy', () {
+      final walks = [for (var i = 0; i < 6; i++) _walk('w$i', daysAgo: i)];
+
+      final view = buildWalkHistoryView(walks);
+      final kept = retainedRouteWalkIds(walks);
+
+      expect(view.recent.every((walk) => kept.contains(walk.id)), isTrue);
+    });
+
+    test('highlightLabelFor names the records and favorites a repeated walk is', () {
+      final walks = [
+        _walk('both', daysAgo: 0, distanceMeters: 90000, durationSeconds: 9000, isFavorite: true),
+        _walk('plain', daysAgo: 1),
+      ];
+
+      final view = buildWalkHistoryView(walks);
+
+      expect(view.highlightLabelFor(walks[0]), 'Più lunga · Più duratura · Preferita');
+      expect(view.highlightLabelFor(walks[1]), isNull);
     });
 
     test('distance and duration records can be different walks', () {

@@ -73,6 +73,9 @@ class FakePiiAnonymizer:
 
 
 def test_chat_orchestrator_asks_a_safety_clarification_before_escalating() -> None:
+    # A collapse is a grave picture and escalates at once since 2026-11-07
+    # (clarification_fit.py); an ambiguous breathing complaint still gets
+    # the clarifying question first.
     # An ambiguous red-flag message asks one short, category-specific
     # question before deciding how urgently to respond (spec v3 §9) —
     # it must not jump straight to the scariest message.
@@ -81,7 +84,7 @@ def test_chat_orchestrator_asks_a_safety_clarification_before_escalating() -> No
 
     result = orchestrator.answer(
         ChatOrchestratorInput(
-            user_message="Il gatto ha un collasso improvviso",
+            user_message="respira male da stamattina, non è il suo solito",
             species="cat",
             pet_name="Luna",
         )
@@ -91,7 +94,7 @@ def test_chat_orchestrator_asks_a_safety_clarification_before_escalating() -> No
     assert result.provider == "rule-based"
     assert result.ai_generated is False
     assert result.awaiting_safety_clarification is True
-    assert result.safety_clarification_category == "collapse"
+    assert result.safety_clarification_category == "respiratory"
     assert not client.requests
 
 
@@ -172,9 +175,11 @@ def test_chat_orchestrator_prefers_the_species_named_in_the_message_over_a_misma
 
     # GI stasis is a small-mammal-specific emergency, not flagged for
     # cats — reaching it here proves the ferret's family was used, not
-    # the profile's "cat".
-    assert result.mode == "safety_clarification"
-    assert result.safety_clarification_category == "gi_stasis"
+    # the profile's "cat". Since 2026-11-06 "da ieri" skips the question
+    # about hours: a small mammal that has not eaten since yesterday is
+    # escalated at once (triage_clarification.small_mammal_stasis_is_immediate).
+    assert result.mode == "triage"
+    assert "non mangia da ieri" in result.safety_flags
 
 
 def test_chat_orchestrator_does_not_override_species_when_two_are_named_ambiguously() -> None:
@@ -208,7 +213,14 @@ def test_chat_orchestrator_rejects_an_evidence_answer_that_calls_the_pet_the_wro
     client = ScriptedContentLLMClient(
         '{"supported_claims": ["Nota per il tuo cane, controlla i litri [1]."]}'
     )
-    orchestrator = ChatOrchestrator(client, InMemoryEvidenceRetriever(), NoopPiiAnonymizer())
+    # The strict evidence path is opt-in since 2026-11-06 (husbandry goes
+    # through the natural answer with the curated notes by default).
+    orchestrator = ChatOrchestrator(
+        client,
+        InMemoryEvidenceRetriever(),
+        NoopPiiAnonymizer(),
+        strict_evidence_intents=frozenset({"husbandry_question"}),
+    )
 
     result = orchestrator.answer(
         ChatOrchestratorInput(
@@ -223,30 +235,35 @@ def test_chat_orchestrator_rejects_an_evidence_answer_that_calls_the_pet_the_wro
     assert any("wrong_species_reference" in violation for violation in result.limitations)
 
 
-def test_chat_orchestrator_rejects_a_general_answer_that_calls_the_pet_the_wrong_species() -> None:
+def test_small_talk_never_reaches_the_model_so_it_can_never_name_the_wrong_species() -> None:
+    # Build 33: greetings are answered by fixed text (before that, a
+    # model reply "come sta il tuo cane" to an aquarium was a real finding).
     client = ScriptedContentLLMClient("Ciao! Come sta il tuo cane oggi?")
     orchestrator = ChatOrchestrator(client, InMemoryEvidenceRetriever(), NoopPiiAnonymizer())
 
     result = orchestrator.answer(
-        ChatOrchestratorInput(
-            user_message="ciao", species="Pesce", pet_name="Acquario del salotto"
-        )
+        ChatOrchestratorInput(user_message="ciao", species="Pesce", pet_name="Acquario del salotto")
     )
 
     assert result.mode == "general"
     assert result.ai_generated is False
-    assert any("wrong_species_reference" in violation for violation in result.limitations)
+    assert "cane" not in result.answer.lower()
+    assert "Acquario del salotto" in result.answer
+    assert client.requests == []
 
 
 def test_chat_orchestrator_allows_a_legitimate_comparison_mentioning_another_species() -> None:
     # Mentioning another species without claiming it's THIS pet (no
     # possessive "tuo"/"tua") must not be flagged.
     client = ScriptedContentLLMClient(
-        '{"supported_claims": ['
-        '"A differenza del cane, i pesci non hanno una vescica simile [1]."'
-        ']}'
+        '{"supported_claims": ["A differenza del cane, i pesci non hanno una vescica simile [1]."]}'
     )
-    orchestrator = ChatOrchestrator(client, InMemoryEvidenceRetriever(), NoopPiiAnonymizer())
+    orchestrator = ChatOrchestrator(
+        client,
+        InMemoryEvidenceRetriever(),
+        NoopPiiAnonymizer(),
+        strict_evidence_intents=frozenset({"husbandry_question"}),
+    )
 
     result = orchestrator.answer(
         ChatOrchestratorInput(
@@ -281,32 +298,38 @@ def test_chat_orchestrator_escalates_dog_only_flea_treatment_given_to_a_cat() ->
 
 
 def test_chat_orchestrator_escalates_paracetamol_brand_name_for_cats() -> None:
-    # Owners commonly say the brand name ("Tachipirina") rather than the
-    # generic name — this must be caught the same way as "paracetamolo".
+    # Wide eval 2026-11-06: "vorrei dare" is an intention, not an exposure:
+    # "no, never" with the why, before any model; the triage stays for a
+    # cat that already got it.
     client = FakeLLMClient()
     orchestrator = ChatOrchestrator(client, InMemoryEvidenceRetriever(), NoopPiiAnonymizer())
 
     result = orchestrator.answer(
         ChatOrchestratorInput(
             user_message=(
-                "Vorrei dare la tachipirina al mio gatto che ha la febbre, "
-                "che dosaggio uso?"
+                "Vorrei dare la tachipirina al mio gatto che ha la febbre, che dosaggio uso?"
             ),
             species="Gatto",
             pet_name="Micio",
         )
     )
 
-    assert result.mode == "triage"
-    assert result.state == ConversationState.POSSIBLE_URGENT_CASE
+    assert result.model == "toxin-intent-guard"
+    assert result.answer.startswith("No, mai.") and "tossico per il gatto" in result.answer
+    assert client.requests == []
+
+    given = orchestrator.answer(
+        ChatOrchestratorInput(
+            user_message="le ho dato la tachipirina un'ora fa per la febbre",
+            species="Gatto",
+            pet_name="Micio",
+        )
+    )
+    assert given.mode == "triage"
+    assert given.state == ConversationState.POSSIBLE_URGENT_CASE
 
 
 def test_toxin_medication_escalation_uses_substance_phrasing_not_symptom_phrasing() -> None:
-    # Real-world finding (2026-09-25, reported via gestore git): asking
-    # about a medication's dosage/safety triggered the generic triage
-    # template ("quello che mi racconti di Moka è un segnale...") — wrong,
-    # since nothing was actually narrated/observed, the trigger was a
-    # question about a substance.
     client = FakeLLMClient()
     orchestrator = ChatOrchestrator(client, InMemoryEvidenceRetriever(), NoopPiiAnonymizer())
 
@@ -318,9 +341,11 @@ def test_toxin_medication_escalation_uses_substance_phrasing_not_symptom_phrasin
         )
     )
 
-    assert result.mode == "triage"
+    # An amount of a human drug not yet given (2026-11-06): "no, never"
+    # with the why, never "quello che mi racconti" (nothing was told).
+    assert result.model == "toxin-intent-guard"
     assert "quello che mi racconti" not in result.answer.lower()
-    assert "pericoloso per Moka" in result.answer
+    assert "antinfiammatori umani" in result.answer and "Moka" in result.answer
 
 
 def test_chat_orchestrator_escalates_immediately_for_unambiguous_severe_messages() -> None:
@@ -448,7 +473,13 @@ def test_chat_orchestrator_requires_sources_for_husbandry_evidence_mode() -> Non
     # test_chat_orchestrator_answers_ordinary_questions_without_requiring_sources
     # below for why an ordinary clinical question no longer hard-refuses.
     client = FakeLLMClient()
-    orchestrator = ChatOrchestrator(client, InMemoryEvidenceRetriever(), NoopPiiAnonymizer())
+    orchestrator = ChatOrchestrator(
+        client,
+        InMemoryEvidenceRetriever(),
+        NoopPiiAnonymizer(),
+        # The strict evidence path is opt-in since 2026-11-06.
+        strict_evidence_intents=frozenset({"husbandry_question"}),
+    )
 
     result = orchestrator.answer(
         ChatOrchestratorInput(
@@ -467,7 +498,13 @@ def test_chat_orchestrator_requires_sources_for_husbandry_evidence_mode() -> Non
 
 def test_chat_orchestrator_uses_llm_when_sources_are_available_for_husbandry() -> None:
     client = FakeLLMClient()
-    orchestrator = ChatOrchestrator(client, InMemoryEvidenceRetriever(), NoopPiiAnonymizer())
+    orchestrator = ChatOrchestrator(
+        client,
+        InMemoryEvidenceRetriever(),
+        NoopPiiAnonymizer(),
+        # The strict evidence path is opt-in since 2026-11-06.
+        strict_evidence_intents=frozenset({"husbandry_question"}),
+    )
 
     result = orchestrator.answer(
         ChatOrchestratorInput(
@@ -611,7 +648,13 @@ def test_chat_orchestrator_answers_reptile_husbandry_questions_from_curated_cata
     # questions now get their own intent and a curated evidence catalog
     # instead of being silently unanswerable.
     client = FakeLLMClient()
-    orchestrator = ChatOrchestrator(client, InMemoryEvidenceRetriever(), NoopPiiAnonymizer())
+    orchestrator = ChatOrchestrator(
+        client,
+        InMemoryEvidenceRetriever(),
+        NoopPiiAnonymizer(),
+        # The strict evidence path is opt-in since 2026-11-06.
+        strict_evidence_intents=frozenset({"husbandry_question"}),
+    )
 
     result = orchestrator.answer(
         ChatOrchestratorInput(
@@ -633,7 +676,13 @@ def test_chat_orchestrator_recognizes_husbandry_questions_phrased_without_uvb_ja
     # ("should I let my chameleon get direct sun by the window") is very
     # commonly phrased without any UVB/equipment jargon at all.
     client = FakeLLMClient()
-    orchestrator = ChatOrchestrator(client, InMemoryEvidenceRetriever(), NoopPiiAnonymizer())
+    orchestrator = ChatOrchestrator(
+        client,
+        InMemoryEvidenceRetriever(),
+        NoopPiiAnonymizer(),
+        # The strict evidence path is opt-in since 2026-11-06.
+        strict_evidence_intents=frozenset({"husbandry_question"}),
+    )
 
     result = orchestrator.answer(
         ChatOrchestratorInput(
@@ -678,7 +727,13 @@ def test_chat_orchestrator_answers_bird_enrichment_questions_from_curated_catalo
     # lo stai notando?") — a wrong fit for a question with no symptom at
     # all. Also the curated catalog had zero bird entries.
     client = FakeLLMClient()
-    orchestrator = ChatOrchestrator(client, InMemoryEvidenceRetriever(), NoopPiiAnonymizer())
+    orchestrator = ChatOrchestrator(
+        client,
+        InMemoryEvidenceRetriever(),
+        NoopPiiAnonymizer(),
+        # The strict evidence path is opt-in since 2026-11-06.
+        strict_evidence_intents=frozenset({"husbandry_question"}),
+    )
 
     result = orchestrator.answer(
         ChatOrchestratorInput(
@@ -703,7 +758,13 @@ def test_chat_orchestrator_answers_enclosure_size_questions_from_curated_catalog
     # UVB/thermal content but the system honestly had no grounded answer
     # on enclosure SIZE — a real gap now filled by a dedicated entry.
     client = FakeLLMClient()
-    orchestrator = ChatOrchestrator(client, InMemoryEvidenceRetriever(), NoopPiiAnonymizer())
+    orchestrator = ChatOrchestrator(
+        client,
+        InMemoryEvidenceRetriever(),
+        NoopPiiAnonymizer(),
+        # The strict evidence path is opt-in since 2026-11-06.
+        strict_evidence_intents=frozenset({"husbandry_question"}),
+    )
 
     result = orchestrator.answer(
         ChatOrchestratorInput(
@@ -718,14 +779,18 @@ def test_chat_orchestrator_answers_enclosure_size_questions_from_curated_catalog
 
     assert result.mode == "evidence"
     assert result.ai_generated is True
-    assert any(
-        "enclosure size" in (source.title or "") for source in result.sources
-    )
+    assert any("enclosure size" in (source.title or "") for source in result.sources)
 
 
 def test_chat_orchestrator_answers_aquarium_husbandry_questions_from_curated_catalog() -> None:
     client = FakeLLMClient()
-    orchestrator = ChatOrchestrator(client, InMemoryEvidenceRetriever(), NoopPiiAnonymizer())
+    orchestrator = ChatOrchestrator(
+        client,
+        InMemoryEvidenceRetriever(),
+        NoopPiiAnonymizer(),
+        # The strict evidence path is opt-in since 2026-11-06.
+        strict_evidence_intents=frozenset({"husbandry_question"}),
+    )
 
     result = orchestrator.answer(
         ChatOrchestratorInput(
@@ -963,8 +1028,7 @@ def test_independent_multi_pet_complaint_is_redirected() -> None:
     result = orchestrator.answer(
         ChatOrchestratorInput(
             user_message=(
-                "Ho un cane e anche un gatto, entrambi non mangiano da "
-                "stamattina, cosa può essere?"
+                "Ho un cane e anche un gatto, entrambi non mangiano da stamattina, cosa può essere?"
             ),
             species="dog",
             pet_name="Rex",

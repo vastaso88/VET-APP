@@ -3,7 +3,10 @@ import 'package:flutter/material.dart';
 import '../../../../design_system/tokens/app_colors.dart';
 import '../../../../design_system/tokens/app_radii.dart';
 import '../../../../design_system/tokens/app_spacing.dart';
+import '../../../../l10n/l10n.dart';
+import '../../../monitoring/data/weight_measurements_repository.dart';
 import '../../data/pet_demo_store.dart';
+import '../../data/pet_photo_repository.dart';
 import '../../domain/pet_format.dart';
 import '../../domain/pet_models.dart';
 import '../widgets/pet_avatar.dart';
@@ -16,39 +19,43 @@ class PetEditPage extends StatelessWidget {
     required this.pet,
     super.key,
     this.state = PetsScreenStatus.success,
-    this.errorMessage = 'Non riesco ad aprire questo profilo pet per la modifica.',
+    this.errorMessage,
   });
 
   final PetProfile pet;
   final PetsScreenStatus state;
-  final String errorMessage;
+  final String? errorMessage;
 
   @override
   Widget build(BuildContext context) {
     return PetsScaffold(
-      title: 'Modifica ${pet.name}',
+      title: context.l10n.petsEditTitle(pet.name),
       onBack: () => Navigator.of(context).maybePop(),
       badge: PetAvatar(
         label: pet.avatarEmoji,
         backgroundColor: pet.accentColor,
         photoBytes: pet.photoBytes,
+        photoPath: pet.photoPath,
         identityColor: pet.identityColor,
         size: 36,
       ),
       actions: [
         TextButton(
           onPressed: () => Navigator.of(context).maybePop(),
-          style: TextButton.styleFrom(foregroundColor: Colors.white),
-          child: const Text('Chiudi'),
+          style: TextButton.styleFrom(
+            foregroundColor: AppColors.primaryStrong,
+            textStyle: const TextStyle(fontWeight: FontWeight.w700),
+          ),
+          child: Text(context.l10n.commonClose),
         ),
       ],
       body: switch (state) {
         PetsScreenStatus.loading =>
-          const PetsLoadingView(label: 'Carico il form di modifica...'),
+          PetsLoadingView(label: context.l10n.petsEditLoading),
         PetsScreenStatus.error => PetsErrorView(
-            title: 'Modifica non disponibile',
-            subtitle: errorMessage,
-            actionLabel: 'Chiudi',
+            title: context.l10n.petsEditErrorTitle,
+            subtitle: errorMessage ?? context.l10n.petsEditErrorDefault,
+            actionLabel: context.l10n.commonClose,
             onRetry: () => Navigator.of(context).maybePop(),
           ),
         PetsScreenStatus.empty => _EditForm(pet: pet),
@@ -66,29 +73,62 @@ class _EditForm extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return PetProfileForm(
-      title: 'Bozza profilo',
+      title: context.l10n.petsEditFormTitle,
       initialPet: pet,
-      submitLabel: 'Salva modifiche',
+      submitLabel: context.l10n.petsEditSubmit,
       footerActions: _PetLifecycleActions(pet: pet),
       onSubmit: (draft) async {
+        final raw = draft.photoBytes;
+        final String? newPhotoPath;
+        if (!draft.photoTouched) {
+          newPhotoPath = pet.photoPath;
+        } else if (raw == null) {
+          newPhotoPath = null;
+        } else {
+          newPhotoPath = await saveProfilePhoto(petId: pet.id, raw: raw);
+        }
+
         final updated = pet.copyWith(
           name: draft.name,
           species: draft.species,
           breed: draft.breed ?? '',
           birthDateLabel: draft.birthDate == null ? '' : formatPetBirthDate(draft.birthDate!),
           sex: draft.sex,
-          weightLabel: formatPetWeight(draft.weightKg),
+          weightLabel: draft.weightKg == null ? '' : formatPetWeight(draft.weightKg!),
           medicalNote: draft.medicalNote,
           identityColor: draft.identityColor,
-          photoBytes: draft.photoBytes,
-          clearPhoto: draft.photoBytes == null,
+          photoBytes: draft.photoTouched ? raw : pet.photoBytes,
+          photoPath: newPhotoPath,
+          clearPhoto: draft.photoTouched && raw == null,
           aquariumStock: draft.aquariumStock,
           habitat: draft.habitat,
           dogSizeCategory: draft.dogSizeCategory,
           clearDogSizeCategory: draft.dogSizeCategory == null,
+          isSterilized: draft.isSterilized,
+          clearIsSterilized: draft.isSterilized == null,
+          microchipNumber: draft.microchipNumber,
+          clearMicrochipNumber: draft.microchipNumber == null,
+          coatColor: draft.coatColor,
+          clearCoatColor: draft.coatColor == null,
+          bodyCondition: draft.bodyCondition,
+          clearBodyCondition: draft.bodyCondition == null,
+          activityLevel: draft.activityLevel,
+          clearActivityLevel: draft.activityLevel == null,
         );
         await PetDemoStore.instance.upsert(updated);
+        // A weight or corporatura typed into the profile is a new weighing,
+        // today (one weighing when both changed).
+        await WeightMeasurementsRepository().recordProfileEdit(
+          before: pet,
+          after: updated,
+          newWeightKg: draft.weightKg,
+        );
         if (!context.mounted) return;
+        if (PetDemoStore.instance.isUnsynced(updated.id)) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(context.l10n.petsEditUnsyncedSnack)),
+          );
+        }
         Navigator.of(context).pop(updated);
       },
     );
@@ -109,21 +149,27 @@ class _PetLifecycleActions extends StatelessWidget {
       builder: (dialogContext) => AlertDialog(
         backgroundColor: AppColors.surface,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadii.large)),
-        title: const Text('Rimuovere questo profilo?'),
-        content: Text('Il profilo di "${pet.name}" verrà eliminato definitivamente, insieme ai suoi dati.'),
+        title: Text(context.l10n.petsEditDeleteTitle),
+        content: Text(context.l10n.petsEditDeleteMessage(pet.name)),
         actions: [
-          TextButton(onPressed: () => Navigator.of(dialogContext).pop(false), child: const Text('Annulla')),
+          TextButton(onPressed: () => Navigator.of(dialogContext).pop(false), child: Text(context.l10n.commonCancel)),
           FilledButton(
             style: FilledButton.styleFrom(backgroundColor: AppColors.danger),
             onPressed: () => Navigator.of(dialogContext).pop(true),
-            child: const Text('Rimuovi'),
+            child: Text(context.l10n.petsEditDeleteConfirm),
           ),
         ],
       ),
     );
     if (confirmed != true) return;
 
-    await PetDemoStore.instance.delete(pet.id);
+    try {
+      await PetDemoStore.instance.delete(pet.id);
+    } on PetSyncException catch (error) {
+      if (!context.mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(error.message)));
+      return;
+    }
     if (!context.mounted) return;
     Navigator.of(context)
       ..pop()
@@ -136,16 +182,13 @@ class _PetLifecycleActions extends StatelessWidget {
       builder: (dialogContext) => AlertDialog(
         backgroundColor: AppColors.surface,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadii.large)),
-        title: const Text('Spostare nei ricordi?'),
-        content: Text(
-          '"${pet.name}" uscirà dalla lista Animali e sarà conservato nella sezione Ricordi, '
-          'con il suo profilo e le sue foto.',
-        ),
+        title: Text(context.l10n.petsEditMemorialTitle),
+        content: Text(context.l10n.petsEditMemorialMessage(pet.name)),
         actions: [
-          TextButton(onPressed: () => Navigator.of(dialogContext).pop(false), child: const Text('Annulla')),
+          TextButton(onPressed: () => Navigator.of(dialogContext).pop(false), child: Text(context.l10n.commonCancel)),
           FilledButton(
             onPressed: () => Navigator.of(dialogContext).pop(true),
-            child: const Text('Sposta'),
+            child: Text(context.l10n.petsEditMemorialConfirm),
           ),
         ],
       ),
@@ -171,7 +214,7 @@ class _PetLifecycleActions extends StatelessWidget {
           child: OutlinedButton.icon(
             onPressed: () => _moveToMemories(context),
             icon: const Icon(Icons.auto_awesome_outlined, size: 18),
-            label: const Text('Sposta nei ricordi'),
+            label: Text(context.l10n.petsEditMemorialAction),
           ),
         ),
         const SizedBox(height: AppSpacing.sm),
@@ -180,7 +223,7 @@ class _PetLifecycleActions extends StatelessWidget {
           child: TextButton.icon(
             onPressed: () => _delete(context),
             icon: const Icon(Icons.delete_outline_rounded, size: 18, color: AppColors.danger),
-            label: const Text('Rimuovi profilo', style: TextStyle(color: AppColors.danger)),
+            label: Text(context.l10n.petsEditDeleteAction, style: const TextStyle(color: AppColors.danger)),
           ),
         ),
       ],

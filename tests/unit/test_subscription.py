@@ -14,10 +14,10 @@ from packages.infrastructure.persistence.in_memory_repositories import (
 )
 from packages.shared.errors.base import ValidationError
 
-_DEVELOPER_EMAILS = frozenset({"russo88fra@gmail.com", "vastaso88@gmail.com"})
+_DEVELOPER_EMAILS = frozenset({"dev1@example.com", "dev2@example.com"})
 
 
-def test_first_lookup_starts_a_ten_day_trial() -> None:
+def test_first_lookup_starts_a_fourteen_day_trial() -> None:
     repository = InMemorySubscriptionRepository()
     service = GetOrCreateSubscriptionService(repository, _DEVELOPER_EMAILS)
 
@@ -28,7 +28,7 @@ def test_first_lookup_starts_a_ten_day_trial() -> None:
     assert result.subscription.plan is None
     assert result.has_access is True
     delta = result.subscription.trial_ends_at - utc_now()
-    assert timedelta(days=9) < delta <= timedelta(days=10)
+    assert timedelta(days=13) < delta <= timedelta(days=14)
 
 
 def test_second_lookup_reuses_the_same_subscription() -> None:
@@ -47,9 +47,7 @@ def test_second_lookup_reuses_the_same_subscription() -> None:
 
 def test_expired_trial_without_a_plan_loses_access() -> None:
     repository = InMemorySubscriptionRepository()
-    repository.save(
-        Subscription(owner_id="user-1", trial_ends_at=utc_now() - timedelta(days=1))
-    )
+    repository.save(Subscription(owner_id="user-1", trial_ends_at=utc_now() - timedelta(days=1)))
     service = GetOrCreateSubscriptionService(repository, _DEVELOPER_EMAILS)
 
     result = service.execute(
@@ -61,13 +59,11 @@ def test_expired_trial_without_a_plan_loses_access() -> None:
 
 def test_developer_allowlist_always_has_access_even_after_trial_expiry() -> None:
     repository = InMemorySubscriptionRepository()
-    repository.save(
-        Subscription(owner_id="dev-1", trial_ends_at=utc_now() - timedelta(days=1))
-    )
+    repository.save(Subscription(owner_id="dev-1", trial_ends_at=utc_now() - timedelta(days=1)))
     service = GetOrCreateSubscriptionService(repository, _DEVELOPER_EMAILS)
 
     result = service.execute(
-        GetOrCreateSubscriptionInput(owner_id="dev-1", email="RUSSO88FRA@gmail.com")
+        GetOrCreateSubscriptionInput(owner_id="dev-1", email="DEV1@example.com")
     )
 
     assert result.is_developer is True
@@ -76,9 +72,7 @@ def test_developer_allowlist_always_has_access_even_after_trial_expiry() -> None
 
 def test_select_plan_grants_access_even_after_trial_expiry() -> None:
     repository = InMemorySubscriptionRepository()
-    repository.save(
-        Subscription(owner_id="user-1", trial_ends_at=utc_now() - timedelta(days=1))
-    )
+    repository.save(Subscription(owner_id="user-1", trial_ends_at=utc_now() - timedelta(days=1)))
     select_plan = SelectPlanService(repository)
     get_status = GetOrCreateSubscriptionService(repository, _DEVELOPER_EMAILS)
 

@@ -38,12 +38,12 @@ class ChatErrorState extends StatelessWidget {
                 width: 72,
                 height: 72,
                 decoration: BoxDecoration(
-                  color: const Color(0xFFF7E0D9),
+                  color: AppColors.dangerSoft,
                   borderRadius: BorderRadius.circular(24),
                 ),
                 child: const Icon(
                   Icons.cloud_off_outlined,
-                  color: Color(0xFF8B4E3D),
+                  color: AppColors.dangerStrong,
                   size: 34,
                 ),
               ),

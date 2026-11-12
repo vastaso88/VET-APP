@@ -3,10 +3,12 @@ import 'dart:convert';
 
 import 'package:http/http.dart' as http;
 
+import '../../../l10n/l10n.dart';
 import '../../../shared/auth/current_user.dart';
 import '../../../shared/config/app_runtime_config_loader.dart';
 import '../../../shared/errors/app_network_error.dart';
 import '../../../shared/types/result.dart';
+import '../../age/domain/age_status.dart';
 import '../domain/billing_models.dart';
 import '../domain/subscription_status.dart';
 
@@ -49,7 +51,7 @@ class HttpSubscriptionRemoteDataSource implements SubscriptionRemoteDataSource {
         return Result.failure(
           AppNetworkError(
             code: 'subscription_status_http_${response.statusCode}',
-            message: 'Non sono riuscito a verificare il tuo abbonamento. Riprova.',
+            message: appL10n.billingErrorStatus,
           ),
         );
       }
@@ -58,19 +60,30 @@ class HttpSubscriptionRemoteDataSource implements SubscriptionRemoteDataSource {
       return Result.success(SubscriptionStatus.fromJson(json));
     } on TimeoutException {
       return Result.failure<SubscriptionStatus>(
-        const AppNetworkError(
+        AppNetworkError(
           code: 'subscription_status_timeout',
-          message: 'La richiesta ha impiegato troppo tempo. Riprova.',
+          message: appL10n.authNetworkTimeout,
         ),
       );
     } catch (e) {
       return Result.failure<SubscriptionStatus>(
         AppNetworkError(
           code: 'subscription_status_unexpected_error',
-          message: "Qualcosa e' andato storto. Riprova.",
+          message: appL10n.authNetworkUnexpected,
           details: e,
         ),
       );
+    }
+  }
+
+  /// `age_required` / `guardian_required` from a 403 body, else null.
+  String? _ageBlockCode(String body) {
+    try {
+      final decoded = jsonDecode(body);
+      final code = decoded is Map<String, dynamic> ? decoded['code'] : null;
+      return code == kAgeRequiredCode || code == kGuardianRequiredCode ? code as String : null;
+    } catch (_) {
+      return null;
     }
   }
 
@@ -86,27 +99,30 @@ class HttpSubscriptionRemoteDataSource implements SubscriptionRemoteDataSource {
           .timeout(_timeout);
 
       if (response.statusCode < 200 || response.statusCode >= 300) {
+        // 403 for the age rules: the screens turn these two codes into the
+        // date-of-birth question / the parent's-authorisation dialog.
+        final ageCode = response.statusCode == 403 ? _ageBlockCode(response.body) : null;
         return Result.failure(
           AppNetworkError(
-            code: 'subscription_select_plan_http_${response.statusCode}',
-            message: 'Non sono riuscito a salvare il piano scelto. Riprova.',
+            code: ageCode ?? 'subscription_select_plan_http_${response.statusCode}',
+            message: appL10n.billingErrorSelectPlan,
           ),
         );
       }
 
-      return fetchStatus();
+      return await fetchStatus();
     } on TimeoutException {
       return Result.failure<SubscriptionStatus>(
-        const AppNetworkError(
+        AppNetworkError(
           code: 'subscription_select_plan_timeout',
-          message: 'La richiesta ha impiegato troppo tempo. Riprova.',
+          message: appL10n.authNetworkTimeout,
         ),
       );
     } catch (e) {
       return Result.failure<SubscriptionStatus>(
         AppNetworkError(
           code: 'subscription_select_plan_unexpected_error',
-          message: "Qualcosa e' andato storto. Riprova.",
+          message: appL10n.authNetworkUnexpected,
           details: e,
         ),
       );

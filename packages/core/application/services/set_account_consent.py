@@ -18,6 +18,7 @@ class SetAccountConsentInput(BaseModel):
     owner_id: str
     consent_key: str
     granted: bool
+    language: str = "it"
 
 
 class SetAccountConsentOutput(BaseModel):
@@ -56,4 +57,6 @@ class SetAccountConsentService:
             }
         )
         saved = self._repository.save(updated)
-        return SetAccountConsentOutput(account_consents=saved, catalog=build_consent_catalog())
+        return SetAccountConsentOutput(
+            account_consents=saved, catalog=build_consent_catalog(data.language)
+        )

@@ -136,9 +136,7 @@ def test_translates_a_misspelled_brand_name_via_fuzzy_matching() -> None:
     # generic clinical query instead of veterinary toxicology literature.
     planner = EvidenceQueryPlanner()
 
-    query = planner.build_query(
-        "Posso dare la tachipirna al mio gatto?", "clinical_question"
-    )
+    query = planner.build_query("Posso dare la tachipirna al mio gatto?", "clinical_question")
 
     assert "toxicity" in query
 

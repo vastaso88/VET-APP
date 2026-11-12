@@ -1,6 +1,7 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../features/auth/data/auth_repository_factory.dart';
+import '../../l10n/l10n.dart';
 import 'app_user.dart';
 
 /// Small convenience wrapper around the cached [AuthRepositoryFactory]
@@ -30,10 +31,11 @@ class CurrentUser {
 
   /// A short, presentable name for greetings and avatars.
   /// Falls back to the email's local part, then to [fallback].
-  static String firstName({String fallback = 'ospite'}) {
+  static String firstName({String? fallback}) {
+    final guest = fallback ?? appL10n.sharedGuestName;
     final user = get();
     if (user == null) {
-      return fallback;
+      return guest;
     }
 
     final displayName = user.displayName?.trim();
@@ -42,13 +44,14 @@ class CurrentUser {
     }
 
     final emailLocalPart = user.email.split('@').first.trim();
-    return emailLocalPart.isEmpty ? fallback : emailLocalPart;
+    return emailLocalPart.isEmpty ? guest : emailLocalPart;
   }
 
-  static String fullName({String fallback = 'Ospite'}) {
+  static String fullName({String? fallback}) {
+    final guest = fallback ?? appL10n.sharedGuestName;
     final user = get();
     if (user == null) {
-      return fallback;
+      return guest;
     }
 
     final displayName = user.displayName?.trim();
@@ -57,6 +60,6 @@ class CurrentUser {
     }
 
     final emailLocalPart = user.email.split('@').first.trim();
-    return emailLocalPart.isEmpty ? fallback : emailLocalPart;
+    return emailLocalPart.isEmpty ? guest : emailLocalPart;
   }
 }

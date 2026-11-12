@@ -3,12 +3,18 @@ import 'package:flutter/material.dart';
 import '../../features/auth/presentation/pages/auth_placeholder_page.dart';
 import '../../features/auth/presentation/pages/set_new_password_page.dart';
 import '../../features/billing/presentation/pages/paywall_page.dart';
+import '../../features/language/presentation/widgets/first_run_language_gate.dart';
 import '../preview/maps_demo_page.dart';
 import '../shell/home_shell_page.dart';
 import '../splash/splash_page.dart';
 
 class AppRouter {
   static final navigatorKey = GlobalKey<NavigatorState>();
+
+  /// Set by the Supabase passwordRecovery listener in bootstrap.dart. Read by
+  /// the splash so a cold-start recovery link isn't overwritten by the normal
+  /// route to home; cleared once the new password is saved.
+  static bool passwordRecoveryPending = false;
 
   /// Lets a data-layer class (DogWalksRepository's failed-Supabase-sync
   /// notice, 2026-10-01) show a SnackBar without threading a BuildContext
@@ -34,13 +40,16 @@ class AppRouter {
         );
       case auth:
         return MaterialPageRoute<void>(
-          builder: (_) => const AuthPlaceholderPage(),
+          builder: (_) => const FirstRunLanguageGate(child: AuthPlaceholderPage()),
           settings: settings,
         );
       case home:
       case homeShell:
         return MaterialPageRoute<void>(
-          builder: (_) => const HomeShellPage(),
+          // `arguments` carries the tab to reopen (warm start, see SplashPage).
+          builder: (_) => HomeShellPage(
+            initialIndex: settings.arguments is int ? settings.arguments! as int : 0,
+          ),
           settings: settings,
         );
       case paywall:

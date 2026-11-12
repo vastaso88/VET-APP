@@ -1,15 +1,21 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
+
+import '../../../../shared/widgets/pet_loader.dart';
 
 import '../../../../design_system/tokens/app_colors.dart';
 import '../../../../design_system/tokens/app_radii.dart';
 import '../../../../design_system/tokens/app_spacing.dart';
 import '../../../../design_system/tokens/app_text_styles.dart';
+import '../../../../l10n/l10n.dart';
+import '../../../age/presentation/age_flow.dart';
 import '../../../billing/data/billing_demo_store.dart';
 import '../../../billing/data/subscription_remote_data_source.dart';
 import '../../../billing/domain/billing_models.dart';
+import '../../../billing/presentation/widgets/plan_feature_list.dart';
 
-/// First screen after signup: proposes the 10-day free trial (already
+/// First screen after signup: proposes the 14-day free trial (already
 /// started server-side by the time this shows — see register_page.dart)
 /// or an immediate plan choice. Pops when the owner is ready to continue,
 /// same "push and await" pattern as the other first-run pages.
@@ -22,10 +28,29 @@ class PlanIntroPage extends StatefulWidget {
 
 class _PlanIntroPageState extends State<PlanIntroPage> {
   final _dataSource = HttpSubscriptionRemoteDataSource();
+  final _store = BillingDemoStore.instance;
   PlanTier? _selecting;
+  // False until the backend has answered once (or failed to): the screen
+  // differs during a public test, so it waits instead of flashing the plans.
+  bool _loaded = false;
 
-  Future<void> _selectPlan(PlanTier tier) async {
+  @override
+  void initState() {
+    super.initState();
+    // The limits of each plan come from the backend; the cards fill in once
+    // they arrive.
+    unawaited(
+      _store.syncFromBackend(dataSource: _dataSource).whenComplete(() {
+        if (mounted) setState(() => _loaded = true);
+      }),
+    );
+  }
+
+  Future<void> _selectPlan(PlanTier tier, {bool afterAgeQuestion = false}) async {
     if (_selecting != null) return;
+    // A paid plan needs a declared age (and a parent's OK for a minor).
+    if (!_store.isTestPeriod && !await ensureCanChoosePaidPlan(context)) return;
+    if (!mounted) return;
     setState(() => _selecting = tier);
     final result = await _dataSource.selectPlan(tier);
     if (!mounted) return;
@@ -35,11 +60,92 @@ class _PlanIntroPageState extends State<PlanIntroPage> {
         BillingDemoStore.instance.switchToPlan(tier);
         Navigator.of(context).pop();
       },
-      onFailure: (error) => ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(error.message)),
+      onFailure: (error) {
+        // The backend wants the date / the parent's OK (the phone's own check
+        // did not): ask, then try once more.
+        if (isAgePlanBlock(error) && !afterAgeQuestion) {
+          unawaited(_askThenRetry(tier));
+          return;
+        }
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(error.message)));
+      },
+    );
+  }
+
+  Future<void> _askThenRetry(PlanTier tier) async {
+    if (await ensureCanChoosePaidPlan(context) && mounted) {
+      await _selectPlan(tier, afterAgeQuestion: true);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (!_loaded) {
+      return const Scaffold(
+        backgroundColor: AppColors.background,
+        body: SafeArea(child: Center(child: PetLoader())),
+      );
+    }
+    if (_store.isTestPeriod) return _TestPeriodView(store: _store);
+    return Scaffold(
+      backgroundColor: AppColors.background,
+      body: SafeArea(
+        child: ListView(
+          padding: const EdgeInsets.fromLTRB(
+            AppSpacing.xl,
+            AppSpacing.xl,
+            AppSpacing.xl,
+            AppSpacing.xxxl,
+          ),
+          children: [
+            Text(context.l10n.firstRunWelcomeTitle, style: AppTextStyles.display.copyWith(fontSize: 26)),
+            const SizedBox(height: AppSpacing.sm),
+            Text(
+              context.l10n.firstRunPlanIntroSubtitle,
+              style: AppTextStyles.body,
+            ),
+            const SizedBox(height: AppSpacing.xl),
+            _TrialCard(
+              isLoading: _selecting != null,
+              onStart: () => Navigator.of(context).pop(),
+            ),
+            const SizedBox(height: AppSpacing.xl),
+            Text(
+              context.l10n.firstRunPlanOrChoose,
+              style: AppTextStyles.caption.copyWith(letterSpacing: 0.8),
+            ),
+            const SizedBox(height: AppSpacing.md),
+            const IncludedInAllPlansCard(),
+            const SizedBox(height: AppSpacing.sm),
+            ListenableBuilder(
+              listenable: _store,
+              builder: (context, _) => Column(
+                children: [
+                  for (final plan in BillingDemoStore.plans) ...[
+                    _CompactPlanCard(
+                      plan: plan,
+                      features: _store.limitFeaturesFor(plan.tier),
+                      isLoading: _selecting == plan.tier,
+                      onSelect: () => _selectPlan(plan.tier),
+                    ),
+                    const SizedBox(height: AppSpacing.sm),
+                  ],
+                ],
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
+}
+
+/// During a public test nobody chooses or pays: the welcome page says so and
+/// goes on, instead of offering a trial or a plan as if it were real.
+class _TestPeriodView extends StatelessWidget {
+  const _TestPeriodView({required this.store});
+
+  final BillingDemoStore store;
 
   @override
   Widget build(BuildContext context) {
@@ -54,32 +160,57 @@ class _PlanIntroPageState extends State<PlanIntroPage> {
             AppSpacing.xxxl,
           ),
           children: [
-            Text('Benvenuto in VetApp.', style: AppTextStyles.display.copyWith(fontSize: 26)),
-            const SizedBox(height: AppSpacing.sm),
-            Text(
-              'Scegli come iniziare: puoi provare tutto gratis per 10 giorni, senza carta, '
-              'oppure scegliere subito un piano.',
-              style: AppTextStyles.body,
-            ),
-            const SizedBox(height: AppSpacing.xl),
-            _TrialCard(
-              isLoading: _selecting != null,
-              onStart: () => Navigator.of(context).pop(),
-            ),
-            const SizedBox(height: AppSpacing.xl),
-            Text(
-              'OPPURE SCEGLI SUBITO UN PIANO',
-              style: AppTextStyles.caption.copyWith(letterSpacing: 0.8),
-            ),
-            const SizedBox(height: AppSpacing.md),
-            for (final plan in BillingDemoStore.plans) ...[
-              _CompactPlanCard(
-                plan: plan,
-                isLoading: _selecting == plan.tier,
-                onSelect: () => _selectPlan(plan.tier),
+            Text(context.l10n.firstRunWelcomeTitle,
+                style: AppTextStyles.display.copyWith(fontSize: 26)),
+            const SizedBox(height: AppSpacing.lg),
+            Container(
+              key: const ValueKey('first-run-test-period'),
+              width: double.infinity,
+              padding: const EdgeInsets.all(AppSpacing.lg),
+              decoration: BoxDecoration(
+                color: AppColors.primaryStrong,
+                borderRadius: BorderRadius.circular(AppRadii.large),
               ),
-              const SizedBox(height: AppSpacing.sm),
-            ],
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      const Icon(Icons.science_outlined,
+                          color: AppColors.onPrimary),
+                      const SizedBox(width: AppSpacing.sm),
+                      Text(
+                        context.l10n.billingTestPeriodTitle,
+                        style: AppTextStyles.title
+                            .copyWith(color: AppColors.onPrimary, fontSize: 18),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: AppSpacing.sm),
+                  Text(
+                    context.l10n.billingTestPeriodBody(
+                        store.currentPlan?.displayName ?? ''),
+                    style: AppTextStyles.bodySmall.copyWith(
+                      color: AppColors.onPrimary.withValues(alpha: 0.9),
+                    ),
+                  ),
+                  const SizedBox(height: AppSpacing.lg),
+                  SizedBox(
+                    width: double.infinity,
+                    child: FilledButton(
+                      onPressed: () => Navigator.of(context).pop(),
+                      style: FilledButton.styleFrom(
+                        backgroundColor: AppColors.onPrimary,
+                        foregroundColor: AppColors.primaryStrong,
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(AppRadii.pill)),
+                      ),
+                      child: Text(context.l10n.commonContinue),
+                    ),
+                  ),
+                ],
+              ),
+            ),
           ],
         ),
       ),
@@ -109,16 +240,19 @@ class _TrialCard extends StatelessWidget {
             children: [
               const Icon(Icons.celebration_outlined, color: AppColors.onPrimary),
               const SizedBox(width: AppSpacing.sm),
-              Text(
-                'Prova gratuita — 10 giorni',
-                style: AppTextStyles.title.copyWith(color: AppColors.onPrimary, fontSize: 18),
+              Expanded(
+                child: Text(
+                  context.l10n.firstRunTrialCardTitle,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: AppTextStyles.title.copyWith(color: AppColors.onPrimary, fontSize: 18),
+                ),
               ),
             ],
           ),
           const SizedBox(height: AppSpacing.sm),
           Text(
-            'Nessuna carta richiesta. Alla scadenza dei 10 giorni ti chiederemo di '
-            'scegliere un piano per continuare.',
+            context.l10n.firstRunTrialCardBody,
             style: AppTextStyles.bodySmall.copyWith(color: AppColors.onPrimary.withValues(alpha: 0.9)),
           ),
           const SizedBox(height: AppSpacing.lg),
@@ -131,7 +265,7 @@ class _TrialCard extends StatelessWidget {
                 foregroundColor: AppColors.primaryStrong,
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadii.pill)),
               ),
-              child: const Text('Inizia la prova gratuita'),
+              child: Text(context.l10n.firstRunTrialStartButton),
             ),
           ),
         ],
@@ -143,20 +277,22 @@ class _TrialCard extends StatelessWidget {
 class _CompactPlanCard extends StatelessWidget {
   const _CompactPlanCard({
     required this.plan,
+    required this.features,
     required this.isLoading,
     required this.onSelect,
   });
 
   final SubscriptionPlan plan;
+  final List<PlanFeature> features;
   final bool isLoading;
   final VoidCallback onSelect;
 
   @override
   Widget build(BuildContext context) {
-    final price = plan.priceFor(BillingCycle.monthly);
-    final priceLabel = price == 0
-        ? 'Gratis'
-        : '${NumberFormat.currency(locale: 'it_IT', symbol: '€').format(price)}/mese';
+    final l10n = context.l10n;
+    final priceLabel =
+        '${l10n.billingPricePerYear(formatPlanAmount(plan.priceFor(BillingCycle.yearly)))}'
+        ' · ${l10n.billingPricePerMonth(formatPlanAmount(plan.priceFor(BillingCycle.monthly)))}';
 
     return Container(
       padding: const EdgeInsets.all(AppSpacing.md),
@@ -173,6 +309,8 @@ class _CompactPlanCard extends StatelessWidget {
               children: [
                 Text(plan.displayName, style: AppTextStyles.body.copyWith(fontWeight: FontWeight.w700)),
                 Text(priceLabel, style: AppTextStyles.bodySmall),
+                const SizedBox(height: AppSpacing.xs),
+                PlanFeatureList(features: features),
               ],
             ),
           ),
@@ -190,9 +328,9 @@ class _CompactPlanCard extends StatelessWidget {
                 ? const SizedBox(
                     width: 16,
                     height: 16,
-                    child: CircularProgressIndicator(strokeWidth: 2),
+                    child: PetLoader.small(),
                   )
-                : const Text('Scegli'),
+                : Text(context.l10n.firstRunPlanSelectButton),
           ),
         ],
       ),

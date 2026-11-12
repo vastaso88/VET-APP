@@ -1,0 +1,39 @@
+{
+  "events": [
+    {
+      "slug": "example-us-pet-expo",
+      "title": "Example Pet Expo (FICTIONAL event)",
+      "event_type": "pet_fair",
+      "level": "regional",
+      "level_basis": "curated",
+      "country": "US",
+      "starts_on": "2026-11-07",
+      "ends_on": "2026-11-08",
+      "region": "California",
+      "city": "Exampleville",
+      "province_code": "CA",
+      "venue_name": "Example Convention Center",
+      "organizer_name": "Example Pet Association",
+      "description": "Made-up event to try the events list: it does not exist.",
+      "source_url": "https://www.example.org/us/pet-expo",
+      "verified_on": "2026-10-14"
+    },
+    {
+      "slug": "example-us-adoption-day",
+      "title": "Example Adoption Day (FICTIONAL event)",
+      "event_type": "adoption_day",
+      "level": "local",
+      "level_basis": "default",
+      "country": "US",
+      "starts_on": "2026-11-28",
+      "ends_on": "2026-11-28",
+      "region": "Texas",
+      "city": "Sampleton",
+      "province_code": "TX",
+      "organizer_name": "Example Animal Shelter",
+      "description": "Made-up event to try the events list: it does not exist.",
+      "source_url": "https://www.example.org/us/adoption-day",
+      "verified_on": "2026-10-14"
+    }
+  ]
+}

@@ -59,6 +59,10 @@ INTENT_TO_DOMAIN: dict[str, str] = {
     "behavior_question": "behavior",
     "preventive_care": "preventive",
     "husbandry_question": "husbandry",
+    # Repositioning (docs/product/11): understanding the species and the
+    # owner's duties live with behaviour and welfare, where the curated
+    # awareness notes are filed.
+    "everyday_question": "behavior",
 }
 
 

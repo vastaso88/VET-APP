@@ -1,0 +1,86 @@
+"""What one call to a language model cost, and the day's total per model.
+
+Groq's free tier counts tokens per day and per model, for the whole
+organization (2026-10-05: one evaluation run took the production chat
+down). To stay inside it on purpose rather than by luck, every call is
+recorded with its purpose, and the daily totals drive the budget
+(llm_budget.py). Nothing here carries the owner's words: counts only.
+"""
+
+from __future__ import annotations
+
+from datetime import UTC, date, datetime, timedelta
+from uuid import uuid4
+
+from pydantic import BaseModel, Field
+
+
+def utc_now() -> datetime:
+    return datetime.now(UTC)
+
+
+def usage_day(moment: datetime) -> date:
+    """The UTC calendar day a call is counted under. Groq's own windows are
+    rolling 24 hours per model; the calendar day is the conservative
+    approximation we can share across serverless instances."""
+    return owner_day(moment, 0)
+
+
+def next_day_start(moment: datetime) -> datetime:
+    """Midnight UTC after [moment]: when the day counters start over."""
+    return next_owner_day_start(moment, 0)
+
+
+def owner_day(moment: datetime, offset_minutes: int) -> date:
+    """The calendar day of [moment] on a clock [offset_minutes] ahead of UTC:
+    the day the owner's own counters belong to."""
+    return (moment.astimezone(UTC) + timedelta(minutes=offset_minutes)).date()
+
+
+def next_owner_day_start(moment: datetime, offset_minutes: int) -> datetime:
+    """The instant (UTC) of the next midnight on that clock: when the owner's
+    daily counters start over. With a summer-time change before that midnight
+    it is off by the hour the phone will correct on its next request."""
+    local = moment.astimezone(UTC) + timedelta(minutes=offset_minutes)
+    next_midnight = datetime(local.year, local.month, local.day, tzinfo=UTC) + timedelta(days=1)
+    return next_midnight - timedelta(minutes=offset_minutes)
+
+
+def estimate_tokens(text: str) -> int:
+    """A provider-free estimate: about one token every 3.5 characters, which
+    is close for Italian prose on the o200k tokenizer family (measured with
+    tiktoken on the evaluation prompts, 2026-10-14). Used only where the
+    provider reports no usage (the stand-in model, failures)."""
+    return max(0, round(len(text) / 3.5))
+
+
+class LlmUsageEvent(BaseModel):
+    id: str = Field(default_factory=lambda: uuid4().hex)
+    occurred_at: datetime = Field(default_factory=utc_now)
+    model: str
+    model_class: str = "main"
+    purpose: str
+    prompt_tokens: int = 0
+    completion_tokens: int = 0
+    cached_prompt_tokens: int = 0
+    total_tokens: int = 0
+    duration_ms: int = 0
+    # "ok", "length" (the reply hit max_tokens), "rate_limited", "error".
+    outcome: str = "ok"
+
+    @property
+    def day(self) -> date:
+        return usage_day(self.occurred_at)
+
+
+class ModelDailyUsage(BaseModel):
+    day: date
+    model: str
+    calls: int = 0
+    prompt_tokens: int = 0
+    completion_tokens: int = 0
+    cached_prompt_tokens: int = 0
+    total_tokens: int = 0
+    # Set when the provider itself said the model's daily limit is reached
+    # (HTTP 429 "per day"), with the moment it said to try again.
+    exhausted_until: datetime | None = None

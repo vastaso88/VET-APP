@@ -1,56 +1,70 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:flutter_map/flutter_map.dart';
-import 'package:latlong2/latlong.dart' as latlong;
-import 'package:share_plus/share_plus.dart';
+
+import '../../../settings/data/unit_settings_store.dart';
+import '../../../settings/domain/unit_conversion.dart';
+import '../../../../shared/widgets/pet_loader.dart';
 
 import '../../../../design_system/tokens/app_colors.dart';
 import '../../../../design_system/tokens/app_radii.dart';
 import '../../../../design_system/tokens/app_spacing.dart';
 import '../../../../design_system/tokens/app_text_styles.dart';
-import '../../../chat/data/chat_attachment_remote_data_source.dart';
+import '../../../../l10n/l10n.dart';
 import '../../../chat/data/chat_demo_store.dart';
 import '../../../chat/domain/chat_models.dart';
 import '../../../chat/presentation/pages/chat_conversation_detail_page.dart';
 import '../../../dog_walks/data/active_walk_controller.dart';
 import '../../../dog_walks/data/dog_walks_repository.dart';
+import '../../../dog_walks/data/walk_history_controller.dart';
+import '../../../dog_walks/domain/walk_eligibility.dart';
+import '../../../dog_walks/domain/walk_photo_pins.dart';
 import '../../../dog_walks/domain/walk_retention.dart';
-import '../../../dog_walks/domain/walk_route_markers.dart';
-import '../../../dog_walks/domain/walk_route_segments.dart';
 import '../../../dog_walks/domain/walk_session.dart';
 import '../../../dog_walks/presentation/pages/active_walk_page.dart';
 import '../../../dog_walks/presentation/pages/walk_detail_page.dart';
 import '../../../dog_walks/presentation/walk_labels.dart';
+import '../../../location/domain/coordinates.dart';
 import '../../../dog_walks/presentation/widgets/badge_gallery_dialog.dart';
-import '../../../dog_walks/presentation/widgets/walk_map_style.dart';
-import '../../../dog_walks/presentation/widgets/walk_route_markers_layer.dart';
-import '../../../../shared/auth/current_owner.dart';
-import '../../../medical_records/data/medical_record_file_cache.dart';
+import '../../../dog_walks/presentation/widgets/walk_mini_map.dart';
 import '../../../medical_records/data/medical_records_repository.dart';
-import '../../../medical_records/presentation/pages/medical_record_upload_page.dart';
-import '../../../medical_records/presentation/pages/medical_records_pages.dart';
+import '../../../medical_records/presentation/pet_medical_records_tab.dart';
+import '../../../monitoring/domain/weight_measurement.dart';
+import '../../../monitoring/presentation/pages/monitoring_tab.dart';
 import '../../../reminders/data/reminders_repository.dart';
 import '../../../reminders/domain/reminder_presentation.dart';
 import '../../../reminders/presentation/pages/reminders_pages.dart';
+import '../../../reminders/presentation/widgets/reminder_menu_button.dart';
 import '../../data/pet_demo_store.dart';
+import '../../data/pet_photo_repository.dart';
+import '../../domain/pet_format.dart';
 import '../../domain/pet_models.dart';
+import '../../../chat/presentation/widgets/chat_conversation_menu.dart';
+import '../../../../app/launch/route_restoration.dart';
+import '../../../notifications/presentation/notifications_off_banner.dart';
 import '../widgets/pet_avatar.dart';
 import '../widgets/pets_scaffold.dart';
 import '../widgets/pets_state_views.dart';
+import 'pet_data_page.dart';
 import 'pet_edit_page.dart';
+import 'pet_gallery_page.dart';
 
 class PetDetailPage extends StatefulWidget {
   const PetDetailPage({
     super.key,
     this.pet,
     this.state = PetsScreenStatus.success,
-    this.errorMessage = 'Questo profilo pet non e disponibile al momento.',
+    this.errorMessage,
+    this.initialTab = 0,
   });
 
   final PetProfile? pet;
   final PetsScreenStatus state;
-  final String errorMessage;
+  final String? errorMessage;
+
+  /// Which card opens first (reminders, chat, records...): used when the page
+  /// is restored after the app was killed in the background.
+  final int initialTab;
 
   @override
   State<PetDetailPage> createState() => _PetDetailPageState();
@@ -63,19 +77,33 @@ class _PetDetailPageState extends State<PetDetailPage> {
   final RemindersRepository _remindersRepository = RemindersRepository();
   final DogWalksRepository _walksRepository = DogWalksRepository();
 
+  late int _openTab = widget.initialTab;
+
   @override
   void initState() {
     super.initState();
     _pet = widget.pet ?? PetDemoStore.instance.list().firstOrNull;
   }
 
+  // Remembered while open, so it can be reopened on the same card (restoration).
   @override
   Widget build(BuildContext context) {
+    return RestorationMarker(
+      kind: 'pet_detail',
+      args: () => {
+        'petId': (_pet ?? widget.pet)?.id,
+        'tab': _openTab,
+      },
+      child: _buildPage(context),
+    );
+  }
+
+  Widget _buildPage(BuildContext context) {
     final pet = _pet ?? widget.pet ?? PetDemoStore.instance.list().firstOrNull;
 
     return PetsScaffold(
-      title: pet?.name ?? 'Dettaglio pet',
-      subtitle: pet == null ? null : pet.species,
+      title: pet?.name ?? context.l10n.petsDetailTitleFallback,
+      subtitle: pet == null ? null : petHeaderSubtitle(pet),
       onBack: () => Navigator.of(context).maybePop(),
       badge: pet == null
           ? null
@@ -83,31 +111,44 @@ class _PetDetailPageState extends State<PetDetailPage> {
               label: pet.avatarEmoji,
               backgroundColor: pet.accentColor,
               photoBytes: pet.photoBytes,
+              photoPath: pet.photoPath,
               identityColor: pet.identityColor,
               size: 36,
             ),
       actions: [
         IconButton(
+          tooltip: context.l10n.petsDetailGalleryTooltip,
+          onPressed: pet == null
+              ? null
+              : () => Navigator.of(context).push(
+                    MaterialPageRoute<void>(
+                      builder: (_) => PetGalleryPage(pet: pet),
+                    ),
+                  ),
+          icon: const Icon(Icons.photo_library_outlined),
+          color: AppColors.onPrimary,
+          style: IconButton.styleFrom(backgroundColor: AppColors.primaryStrong),
+        ),
+        IconButton(
           onPressed: pet == null ? null : () => _openEdit(context, pet),
           icon: const Icon(Icons.edit_outlined),
-          color: Colors.white,
+          color: AppColors.onPrimary,
           style: IconButton.styleFrom(backgroundColor: AppColors.primaryStrong),
         ),
       ],
       body: switch (widget.state) {
         PetsScreenStatus.loading =>
-          const PetsLoadingView(label: 'Carico il dettaglio pet...'),
+          PetsLoadingView(label: context.l10n.petsDetailLoading),
         PetsScreenStatus.error => PetsErrorView(
-            title: 'Dettaglio pet non disponibile',
-            subtitle: widget.errorMessage,
-            actionLabel: 'Torna alla lista',
+            title: context.l10n.petsDetailErrorTitle,
+            subtitle: widget.errorMessage ?? context.l10n.petsDetailErrorDefault,
+            actionLabel: context.l10n.petsDetailBackToList,
             onRetry: () => Navigator.of(context).maybePop(),
           ),
         PetsScreenStatus.empty => PetsEmptyView(
-            title: 'Nessun pet selezionato',
-            subtitle:
-                'Scegli un profilo dalla lista per vedere dettagli, chat e referti.',
-            actionLabel: 'Torna alla lista',
+            title: context.l10n.petsDetailEmptyTitle,
+            subtitle: context.l10n.petsDetailEmptySubtitle,
+            actionLabel: context.l10n.petsDetailBackToList,
             onAction: () => Navigator.of(context).maybePop(),
           ),
         PetsScreenStatus.success => _PetDetailContent(
@@ -115,6 +156,11 @@ class _PetDetailPageState extends State<PetDetailPage> {
             recordsRepository: _recordsRepository,
             remindersRepository: _remindersRepository,
             walksRepository: _walksRepository,
+            initialTab: _openTab,
+            onTabChanged: (index) {
+              _openTab = index;
+              RouteRestoration.instance.touch();
+            },
           ),
       },
     );
@@ -132,18 +178,55 @@ class _PetDetailPageState extends State<PetDetailPage> {
   }
 }
 
+/// "Cane · Labrador · 3 anni" - what sits under the pet's name. Whatever is
+/// missing is simply left out: no breed (or the bare "Altro") and no readable
+/// birth date leave just the species. An aquarium shows its population
+/// instead of a breed and has no age.
+String petHeaderSubtitle(PetProfile pet, {DateTime? now}) {
+  final breed = pet.breed.trim();
+  final age = pet.isAquarium ? null : petAgeLabel(pet.birthDateLabel, now: now);
+  final parts = <String>[
+    pet.speciesDisplayLabel,
+    if (pet.isAquarium)
+      pet.breedLabel
+    else if (breed.isNotEmpty && breed != 'Altro')
+      pet.breedLabel
+    else if (breed == 'Altro' && (pet.dogSizeCategory ?? '').isNotEmpty)
+      pet.breedLabel,
+    if (age != null) age,
+  ];
+  return parts.join(' · ');
+}
+
+/// One tab title, always at the same readable size: the bar scrolls sideways
+/// when the titles do not all fit, instead of shrinking each one differently.
+class PetTabLabel extends StatelessWidget {
+  const PetTabLabel(this.label, {super.key});
+
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    return Tab(child: Text(label, maxLines: 1, softWrap: false));
+  }
+}
+
 class _PetDetailContent extends StatefulWidget {
   const _PetDetailContent({
     required this.pet,
     required this.recordsRepository,
     required this.remindersRepository,
     required this.walksRepository,
+    this.initialTab = 0,
+    this.onTabChanged,
   });
 
   final PetProfile pet;
   final MedicalRecordsRepository recordsRepository;
   final RemindersRepository remindersRepository;
   final DogWalksRepository walksRepository;
+  final int initialTab;
+  final ValueChanged<int>? onTabChanged;
 
   @override
   State<_PetDetailContent> createState() => _PetDetailContentState();
@@ -151,8 +234,52 @@ class _PetDetailContent extends StatefulWidget {
 
 class _PetDetailContentState extends State<_PetDetailContent>
     with SingleTickerProviderStateMixin {
-  late final TabController _tabController =
-      TabController(length: 4, vsync: this);
+  /// "Passeggiate" is offered for dogs only (owner request, 2026-10-03) -
+  /// for any other species the tab (and so the start button, badges and
+  /// history) simply isn't there. A non-dog that still has historic walks
+  /// stored just never loads them.
+  bool get _showsWalks => isDogSpecies(widget.pet.species);
+
+  /// "Monitoraggio" (weight, growth, activity) has its own tab for every
+  /// species but fish and aquariums.
+  bool get _showsMonitoring => supportsWeightMonitoring(widget.pet);
+
+  int get _tabCount =>
+      3 + (_showsMonitoring ? 1 : 0) + (_showsWalks ? 1 : 0);
+
+  // The restored tab index is clamped to the tabs this pet actually has.
+  late TabController _tabController = TabController(
+    length: _tabCount,
+    vsync: this,
+    initialIndex: widget.initialTab.clamp(0, _tabCount - 1),
+  );
+
+  void _reportTab() {
+    if (!_tabController.indexIsChanging) widget.onTabChanged?.call(_tabController.index);
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _tabController.addListener(_reportTab);
+  }
+
+  @override
+  void didUpdateWidget(covariant _PetDetailContent oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    // Editing the species while this page is open can add/remove a tab;
+    // a TabController's length is fixed, so it has to be rebuilt.
+    final expectedLength = _tabCount;
+    if (_tabController.length != expectedLength) {
+      final previousIndex = _tabController.index;
+      _tabController.dispose();
+      _tabController = TabController(
+        length: expectedLength,
+        vsync: this,
+        initialIndex: previousIndex < expectedLength ? previousIndex : 0,
+      )..addListener(_reportTab);
+    }
+  }
 
   @override
   void dispose() {
@@ -165,6 +292,17 @@ class _PetDetailContentState extends State<_PetDetailContent>
     final habitat = widget.pet.habitat;
     return Column(
       children: [
+        ValueListenableBuilder<int>(
+          valueListenable: PetDemoStore.changes,
+          builder: (context, _, __) => PetDemoStore.instance.isUnsynced(widget.pet.id)
+              ? Padding(
+                  padding: const EdgeInsets.only(bottom: AppSpacing.sm),
+                  child: _UnsyncedPetBanner(petId: widget.pet.id),
+                )
+              : const SizedBox.shrink(),
+        ),
+        PetDataSummaryRow(pet: widget.pet),
+        const SizedBox(height: AppSpacing.sm),
         if (habitat != null && !habitat.isEmpty) ...[
           _HabitatSummaryRow(pet: widget.pet, habitat: habitat),
           const SizedBox(height: AppSpacing.sm),
@@ -181,13 +319,20 @@ class _PetDetailContentState extends State<_PetDetailContent>
           labelStyle:
               AppTextStyles.bodySmall.copyWith(fontWeight: FontWeight.w700),
           unselectedLabelStyle: AppTextStyles.bodySmall,
+          // Scrollable from the left, every title at the same size (owner
+          // report, build 34: some titles came out much smaller than others).
+          // The TabBar scrolls the selected tab into view by itself. Tab order
+          // and count are unchanged: the restored tab is saved by index.
           isScrollable: true,
           tabAlignment: TabAlignment.start,
-          tabs: const [
-            Tab(text: 'Promemoria'),
-            Tab(text: 'Chat'),
-            Tab(text: 'Referti'),
-            Tab(text: 'Passeggiate'),
+          labelPadding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
+          tabs: [
+            PetTabLabel(context.l10n.petsDetailTabReminders),
+            PetTabLabel(context.l10n.petsDetailTabChat),
+            PetTabLabel(context.l10n.petsDetailTabRecords),
+            if (_showsMonitoring)
+              PetTabLabel(context.l10n.petsDetailTabMonitoring),
+            if (_showsWalks) PetTabLabel(context.l10n.petsDetailTabWalks),
           ],
         ),
         const SizedBox(height: AppSpacing.md),
@@ -198,9 +343,11 @@ class _PetDetailContentState extends State<_PetDetailContent>
               _RemindersTab(
                   pet: widget.pet, repository: widget.remindersRepository),
               _ChatTab(pet: widget.pet),
-              _RecordsTab(
+              PetMedicalRecordsTab(
                   pet: widget.pet, repository: widget.recordsRepository),
-              _WalksTab(pet: widget.pet, repository: widget.walksRepository),
+              if (_showsMonitoring) MonitoringTab(pet: widget.pet),
+              if (_showsWalks)
+                _WalksTab(pet: widget.pet, repository: widget.walksRepository),
             ],
           ),
         ),
@@ -228,25 +375,18 @@ Future<bool> _confirmDelete(
       actions: [
         TextButton(
           onPressed: () => Navigator.of(dialogContext).pop(false),
-          child: const Text('Annulla'),
+          child: Text(context.l10n.commonCancel),
         ),
         FilledButton(
           style: FilledButton.styleFrom(backgroundColor: AppColors.danger),
           onPressed: () => Navigator.of(dialogContext).pop(true),
-          child: const Text('Elimina'),
+          child: Text(context.l10n.commonDelete),
         ),
       ],
     ),
   );
   return confirmed ?? false;
 }
-
-String _habitatLabel(String species) => switch (species) {
-      'Pesce' => 'Acquario',
-      'Rettili e anfibi' => 'Terrario',
-      'Uccello' => 'Voliera',
-      _ => 'Habitat',
-    };
 
 /// A single-line summary, tap to see the full habitat details — kept to
 /// one line so it doesn't eat into the space the tabs below need.
@@ -256,16 +396,21 @@ class _HabitatSummaryRow extends StatelessWidget {
   final PetProfile pet;
   final HabitatDetails habitat;
 
-  String _summary() {
+  String _summary(BuildContext context) {
+    final system = UnitSettingsStore.instance.system;
     final parts = <String>[
-      if (habitat.hasDimensions) habitat.dimensionsLabel,
-      if (habitat.volumeLiters != null) '${habitat.volumeLiters} L',
-      if (habitat.temperatureLabel.isNotEmpty) habitat.temperatureLabel,
+      if (habitat.hasDimensions) habitat.dimensionsLabelIn(system),
+      if (habitat.volumeLiters != null)
+        system.usesUsGallons
+            ? formatVolumeIn(habitat.volumeLiters!, system)
+            : '${habitat.volumeLiters} L',
+      if (habitat.temperatureLabel.isNotEmpty) temperatureLabelIn(habitat.temperatureLabel, system),
     ];
-    return parts.isEmpty ? 'Tocca per i dettagli' : parts.join(' · ');
+    return parts.isEmpty ? context.l10n.petsDetailHabitatTapForDetails : parts.join(' · ');
   }
 
   void _openDetails(BuildContext context) {
+    final system = UnitSettingsStore.instance.system;
     showModalBottomSheet<void>(
       context: context,
       backgroundColor: AppColors.surface,
@@ -279,18 +424,21 @@ class _HabitatSummaryRow extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(_habitatLabel(pet.species), style: AppTextStyles.title),
+              Text(petHabitatLabel(pet.species, sheetContext.l10n), style: AppTextStyles.title),
               const SizedBox(height: AppSpacing.md),
               if (habitat.hasDimensions)
-                _HabitatDetailRow('Dimensioni', habitat.dimensionsLabel),
+                _HabitatDetailRow(
+                    sheetContext.l10n.petsDetailHabitatDimensions, habitat.dimensionsLabelIn(system)),
               if (habitat.volumeLiters != null)
-                _HabitatDetailRow('Volume', '${habitat.volumeLiters} litri'),
+                _HabitatDetailRow(sheetContext.l10n.petsDetailHabitatVolume,
+                    formatVolumeIn(habitat.volumeLiters!, system)),
               if (habitat.temperatureLabel.isNotEmpty)
-                _HabitatDetailRow('Temperatura', habitat.temperatureLabel),
+                _HabitatDetailRow(sheetContext.l10n.petsFormHabitatTemperature,
+                    temperatureLabelIn(habitat.temperatureLabel, system)),
               if (habitat.substrate.isNotEmpty)
-                _HabitatDetailRow('Substrato', habitat.substrate),
+                _HabitatDetailRow(sheetContext.l10n.petsFormHabitatSubstrate, habitat.substrate),
               if (habitat.notes.isNotEmpty)
-                _HabitatDetailRow('Attrezzatura', habitat.notes),
+                _HabitatDetailRow(sheetContext.l10n.petsFormHabitatEquipment, habitat.notes),
             ],
           ),
         ),
@@ -321,7 +469,7 @@ class _HabitatSummaryRow extends StatelessWidget {
               const SizedBox(width: AppSpacing.sm),
               Expanded(
                 child: Text(
-                  '${_habitatLabel(pet.species)} · ${_summary()}',
+                  '${petHabitatLabel(pet.species, context.l10n)} · ${_summary(context)}',
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: AppTextStyles.caption.copyWith(
@@ -380,7 +528,7 @@ class _AquariumStockCard extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisSize: MainAxisSize.min,
         children: [
-          Text('Popolazione', style: AppTextStyles.caption),
+          Text(context.l10n.petsDetailPopulation, style: AppTextStyles.caption),
           const SizedBox(height: AppSpacing.sm),
           // Capped so a big population can't push the tabs below off
           // screen — scrolls internally instead once there are more than
@@ -465,19 +613,6 @@ class _RemindersTabState extends State<_RemindersTab> {
     await _reload();
   }
 
-  Future<void> _deleteReminder(ReminderEntry reminder) async {
-    final confirmed = await _confirmDelete(
-      context,
-      title: 'Eliminare questo promemoria?',
-      message: '"${reminder.title}" verrà eliminato definitivamente.',
-    );
-    if (!confirmed) return;
-
-    await widget.repository.deleteReminder(reminder.id);
-    if (!mounted) return;
-    await _reload();
-  }
-
   @override
   Widget build(BuildContext context) {
     return Column(
@@ -487,10 +622,12 @@ class _RemindersTabState extends State<_RemindersTab> {
           child: FilledButton.icon(
             onPressed: _openCreate,
             icon: const Icon(Icons.add_rounded, size: 18),
-            label: const Text('Nuovo promemoria'),
+            label: Text(context.l10n.petsDetailRemindersNew),
           ),
         ),
         const SizedBox(height: AppSpacing.md),
+        // Shown only while the phone does not let reminders ring.
+        const NotificationsOffBanner(),
         Expanded(
           child: ValueListenableBuilder<int>(
             valueListenable: RemindersRepository.changes,
@@ -499,7 +636,7 @@ class _RemindersTabState extends State<_RemindersTab> {
               builder: (context, snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting) {
                   return const Center(
-                      child: CircularProgressIndicator(strokeWidth: 2));
+                      child: PetLoader());
                 }
 
                 final reminders = (snapshot.data ?? const <ReminderEntry>[])
@@ -509,7 +646,7 @@ class _RemindersTabState extends State<_RemindersTab> {
                 if (reminders.isEmpty) {
                   return _EmptyTabState(
                     icon: Icons.notifications_none_rounded,
-                    text: 'Nessun promemoria ancora per ${widget.pet.name}.',
+                    text: context.l10n.petsDetailRemindersEmpty(widget.pet.name),
                   );
                 }
 
@@ -519,8 +656,8 @@ class _RemindersTabState extends State<_RemindersTab> {
                       const SizedBox(height: AppSpacing.sm),
                   itemBuilder: (_, index) => _ReminderRow(
                     reminder: reminders[index],
+                    repository: widget.repository,
                     onTap: () => _openDetail(reminders[index]),
-                    onDelete: () => _deleteReminder(reminders[index]),
                   ),
                 );
               },
@@ -534,22 +671,24 @@ class _RemindersTabState extends State<_RemindersTab> {
 
 class _ReminderRow extends StatelessWidget {
   const _ReminderRow(
-      {required this.reminder, required this.onTap, required this.onDelete});
+      {required this.reminder, required this.repository, required this.onTap});
 
   final ReminderEntry reminder;
+  final RemindersRepository repository;
   final VoidCallback onTap;
-  final VoidCallback onDelete;
 
   @override
   Widget build(BuildContext context) {
     final presentation = ReminderPresentation.of(reminder);
     return _CompactRow(
       onTap: onTap,
-      onDelete: onDelete,
       leading: _RowIcon(icon: presentation.icon),
       title: reminder.title,
       subtitle: presentation.kindLabel,
       trailingText: presentation.dateLabel,
+      // Edit / mark done / delete live in the three-dot menu; the list
+      // rebuilds by itself through RemindersRepository.changes.
+      trailingAction: ReminderMenuButton(reminder: reminder, repository: repository),
     );
   }
 }
@@ -594,7 +733,7 @@ class _ChatTabState extends State<_ChatTab> {
               child: FilledButton.icon(
                 onPressed: () => _startConversation(context),
                 icon: const Icon(Icons.add_comment_outlined, size: 18),
-                label: const Text('Nuova chat'),
+                label: Text(context.l10n.petsDetailChatNew),
               ),
             ),
             const SizedBox(height: AppSpacing.md),
@@ -602,8 +741,7 @@ class _ChatTabState extends State<_ChatTab> {
               child: conversations.isEmpty
                   ? _EmptyTabState(
                       icon: Icons.chat_bubble_outline_rounded,
-                      text:
-                          'Nessuna conversazione ancora per ${widget.pet.name}.',
+                      text: context.l10n.petsDetailChatEmpty(widget.pet.name),
                     )
                   : ListView.separated(
                       itemCount: conversations.length,
@@ -623,12 +761,6 @@ class _ChatTabState extends State<_ChatTab> {
                             conversation: conversation,
                             onTap: () =>
                                 _openConversation(context, conversation),
-                            onDelete: () async {
-                              if (await _confirmDeleteChat(
-                                  context, conversation)) {
-                                await _deleteConversation(conversation.id);
-                              }
-                            },
                           ),
                         );
                       },
@@ -648,8 +780,7 @@ class _ChatTabState extends State<_ChatTab> {
         if (!mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-              content: Text(
-                  'Chat rimossa qui, ma non sul server: ${error.message}')),
+              content: Text(context.l10n.petsDetailChatDeleteFailed(error.message))),
         );
       },
     );
@@ -659,8 +790,8 @@ class _ChatTabState extends State<_ChatTab> {
       BuildContext context, ChatConversationSummary conversation) {
     return _confirmDelete(
       context,
-      title: 'Eliminare questa chat?',
-      message: '"${conversation.title}" verrà eliminata definitivamente.',
+      title: context.l10n.petsDetailChatDeleteTitle,
+      message: context.l10n.petsDetailChatDeleteMessage(conversation.title),
     );
   }
 
@@ -701,15 +832,17 @@ class _ChatTabState extends State<_ChatTab> {
         backgroundColor: AppColors.surface,
         shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(AppRadii.large)),
-        title: const Text('Limite chat raggiunto'),
+        title: Text(context.l10n.petsDetailChatLimitTitle),
         content: Text(
-          'Puoi avere al massimo ${ChatDemoStore.maxConversationsPerPet} conversazioni attive per '
-          '${widget.pet.name}. Elimina una chat esistente per aprirne una nuova.',
+          context.l10n.petsDetailChatLimitMessage(
+            ChatDemoStore.maxConversationsPerPet,
+            widget.pet.name,
+          ),
         ),
         actions: [
           FilledButton(
             onPressed: () => Navigator.of(dialogContext).pop(),
-            child: const Text('Ho capito'),
+            child: Text(context.l10n.petsDetailChatLimitOk),
           ),
         ],
       ),
@@ -721,17 +854,21 @@ class _ChatRow extends StatelessWidget {
   const _ChatRow(
       {required this.conversation,
       required this.onTap,
-      required this.onDelete});
+      });
 
   final ChatConversationSummary conversation;
   final VoidCallback onTap;
-  final VoidCallback onDelete;
+
 
   @override
   Widget build(BuildContext context) {
     return _CompactRow(
       onTap: onTap,
-      onDelete: onDelete,
+      trailingAction: ChatConversationMenuButton(
+        conversationId: conversation.id,
+        title: conversation.title,
+        petName: conversation.activePetName,
+      ),
       leading: const _RowIcon(icon: Icons.chat_bubble_outline_rounded),
       title: conversation.title,
       subtitle: conversation.previewMessage,
@@ -759,225 +896,6 @@ class _DeleteSwipeBackground extends StatelessWidget {
 }
 
 // ---------------------------------------------------------------------------
-// Referti tab
-// ---------------------------------------------------------------------------
-
-class _RecordsTab extends StatefulWidget {
-  const _RecordsTab({required this.pet, required this.repository});
-
-  final PetProfile pet;
-  final MedicalRecordsRepository repository;
-
-  @override
-  State<_RecordsTab> createState() => _RecordsTabState();
-}
-
-class _RecordsTabState extends State<_RecordsTab> {
-  late Future<List<MedicalRecordEntry>> _future =
-      widget.repository.loadRecords();
-
-  Future<void> _reload() async {
-    setState(() => _future = widget.repository.loadRecords());
-    await _future;
-  }
-
-  Future<void> _openUpload() async {
-    await Navigator.of(context).push(
-      MaterialPageRoute<MedicalRecordEntry>(
-        builder: (_) => MedicalRecordUploadPage(petName: widget.pet.name),
-      ),
-    );
-    if (!mounted) return;
-    await _reload();
-  }
-
-  void _openDetail(MedicalRecordEntry record) {
-    Navigator.of(context).push(
-      MaterialPageRoute<void>(
-          builder: (_) => MedicalRecordDetailPage(record: record)),
-    );
-  }
-
-  Future<void> _deleteRecord(MedicalRecordEntry record) async {
-    final confirmed = await _confirmDelete(
-      context,
-      title: 'Eliminare questo documento?',
-      message: '"${record.title}" verrà eliminato definitivamente.',
-    );
-    if (!confirmed) return;
-
-    await widget.repository.deleteRecord(record.id);
-    if (!mounted) return;
-    await _reload();
-  }
-
-  Future<void> _openSendSheet(List<MedicalRecordEntry> records) async {
-    await showModalBottomSheet<void>(
-      context: context,
-      backgroundColor: AppColors.surface,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(AppRadii.xl)),
-      ),
-      builder: (sheetContext) => SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(AppSpacing.lg),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text('Invia file', style: AppTextStyles.title),
-              const SizedBox(height: AppSpacing.xs),
-              Text(
-                'Scegli un documento da inviare via email, WhatsApp e altro.',
-                style: AppTextStyles.bodySmall,
-              ),
-              const SizedBox(height: AppSpacing.md),
-              for (final record in records) ...[
-                _CompactRow(
-                  leading: const _RowIcon(icon: Icons.description_outlined),
-                  title: record.title,
-                  subtitle: record.subtitle,
-                  onTap: () {
-                    Navigator.of(sheetContext).pop();
-                    _shareRecord(record);
-                  },
-                ),
-                if (record != records.last)
-                  const SizedBox(height: AppSpacing.sm),
-              ],
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  Future<void> _shareRecord(MedicalRecordEntry record) async {
-    try {
-      var cached = MedicalRecordFileCache.instance.get(record.id);
-      if (cached == null && record.attachmentId != null) {
-        // Not in this session's cache (e.g. app was reopened) but a real
-        // upload exists remotely — fetch it instead of falling back to a
-        // text summary.
-        final result = await HttpChatAttachmentRemoteDataSource()
-            .download(record.attachmentId!);
-        final bytes =
-            result.fold(onSuccess: (bytes) => bytes, onFailure: (_) => null);
-        if (bytes != null) {
-          cached = (bytes: bytes, fileName: record.title, mimeType: null);
-        }
-      }
-
-      if (cached != null) {
-        await Share.shareXFiles(
-          [
-            XFile.fromData(cached.bytes,
-                name: cached.fileName, mimeType: cached.mimeType)
-          ],
-          text: record.title,
-        );
-      } else {
-        // No real bytes behind this demo record (it's seed data, not
-        // something uploaded this session) — share a text summary instead
-        // of pretending there's a file attached.
-        await Share.share(
-          '📄 ${record.title}\n${record.detailSource} · ${record.createdAt}\n\nCondiviso da VetApp',
-        );
-      }
-    } catch (_) {
-      // The share sheet isn't available on every browser/device (e.g. no
-      // Web Share API support) — fail quietly with a clear message rather
-      // than letting the exception surface as a broken interaction.
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-            content:
-                Text('Condivisione non disponibile su questo dispositivo.')),
-      );
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return FutureBuilder<List<MedicalRecordEntry>>(
-      future: _future,
-      builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return const Center(child: CircularProgressIndicator(strokeWidth: 2));
-        }
-
-        final records = (snapshot.data ?? const <MedicalRecordEntry>[])
-            .where((record) => record.petName == widget.pet.name)
-            .toList(growable: false);
-
-        return Column(
-          children: [
-            Row(
-              children: [
-                Expanded(
-                  child: OutlinedButton.icon(
-                    onPressed: _openUpload,
-                    icon: const Icon(Icons.upload_file_outlined, size: 18),
-                    label: const Text('Carica nuovo file'),
-                  ),
-                ),
-                const SizedBox(width: AppSpacing.sm),
-                Expanded(
-                  child: FilledButton.icon(
-                    onPressed:
-                        records.isEmpty ? null : () => _openSendSheet(records),
-                    icon: const Icon(Icons.ios_share_rounded, size: 18),
-                    label: const Text('Invia file'),
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: AppSpacing.md),
-            Expanded(
-              child: records.isEmpty
-                  ? _EmptyTabState(
-                      icon: Icons.folder_open_outlined,
-                      text: 'Nessun documento ancora per ${widget.pet.name}.',
-                    )
-                  : ListView.separated(
-                      itemCount: records.length,
-                      separatorBuilder: (_, __) =>
-                          const SizedBox(height: AppSpacing.sm),
-                      itemBuilder: (_, index) => _RecordRow(
-                        record: records[index],
-                        onTap: () => _openDetail(records[index]),
-                        onDelete: () => _deleteRecord(records[index]),
-                      ),
-                    ),
-            ),
-          ],
-        );
-      },
-    );
-  }
-}
-
-class _RecordRow extends StatelessWidget {
-  const _RecordRow(
-      {required this.record, required this.onTap, required this.onDelete});
-
-  final MedicalRecordEntry record;
-  final VoidCallback onTap;
-  final VoidCallback onDelete;
-
-  @override
-  Widget build(BuildContext context) {
-    return _CompactRow(
-      onTap: onTap,
-      onDelete: onDelete,
-      leading: const _RowIcon(icon: Icons.description_outlined),
-      title: record.title,
-      subtitle: record.subtitle,
-    );
-  }
-}
-
-// ---------------------------------------------------------------------------
 // Passeggiate tab
 // ---------------------------------------------------------------------------
 
@@ -992,31 +910,50 @@ class _WalksTab extends StatefulWidget {
 }
 
 class _WalksTabState extends State<_WalksTab> {
-  late Future<List<WalkSession>> _future = _load();
+  // History, records, favorites and recents all hang off this controller: it
+  // reloads on any change (walk just finished, favorite toggled, a walk
+  // deleted) without ever blanking the list, and applies star/trash taps
+  // optimistically (owner reports, 2026-10-03 and 2026-10-05).
+  late final WalkHistoryController _history = WalkHistoryController(
+    petId: widget.pet.id,
+    repository: widget.repository,
+  )..refresh();
 
-  Future<List<WalkSession>> _load() async {
-    final ownerId = resolveCurrentOwnerId();
-    final walks = await widget.repository.loadWalks(ownerId);
-    final completed = walks
-        .where((walk) => walk.petId == widget.pet.id && walk.status == WalkStatus.completed)
-        .toList();
+  /// This pet photos (rows only, no image bytes): the places they were taken
+  /// on each walk show as dots on the history thumbnails.
+  List<PetPhotoEntry> _photos = const [];
 
-    // One-time cleanup (owner request, 2026-09-30) for zero-distance walks
-    // saved before the fix that stops them being saved at all
-    // (walk_completion_flow.dart) - a no-op once none are left.
-    final zeroDistance = completed.where((walk) => walk.distanceMeters <= 0).toList();
-    for (final walk in zeroDistance) {
-      await widget.repository.deleteWalk(ownerId, walk.id);
+  @override
+  void initState() {
+    super.initState();
+    PetPhotoRepository.changes.addListener(_loadPhotos);
+    _loadPhotos();
+  }
+
+  @override
+  void dispose() {
+    PetPhotoRepository.changes.removeListener(_loadPhotos);
+    _history.dispose();
+    super.dispose();
+  }
+
+  Future<void> _loadPhotos() async {
+    try {
+      final photos = await PetPhotoRepository().list(widget.pet.id);
+      if (!mounted) return;
+      setState(() => _photos = [for (final photo in photos) if (!photo.isVideo) photo]);
+    } catch (_) {
+      // Dots are an extra: the thumbnails are the same without them.
     }
-
-    return completed.where((walk) => walk.distanceMeters > 0).toList()
-      ..sort((a, b) => b.startedAt.compareTo(a.startedAt));
   }
 
-  Future<void> _reload() async {
-    setState(() => _future = _load());
-    await _future;
-  }
+  List<Coordinates> _photoPointsFor(WalkSession walk) => [
+        for (final pin in walkPhotoPins(
+          walk,
+          [for (final photo in _photos) (id: photo.id, takenAt: photo.takenAt)],
+        ))
+          pin.at,
+      ];
 
   /// Pushes the live/paused/fresh-start page - ActiveWalkPage itself already
   /// knows whether to resume the singleton's in-progress walk or start a
@@ -1030,14 +967,14 @@ class _WalksTabState extends State<_WalksTab> {
       MaterialPageRoute<bool>(builder: (_) => ActiveWalkPage(pet: widget.pet)),
     );
     if (!mounted) return;
-    await _reload();
+    unawaited(_history.refresh());
   }
 
   Future<void> _showBadges() async {
-    final walks = await _future;
+    await _history.settled;
     if (!mounted) return;
     await showBadgeGalleryDialog(context,
-        petId: widget.pet.id, walksForPet: walks);
+        petId: widget.pet.id, walksForPet: _history.walks ?? const <WalkSession>[]);
   }
 
   @override
@@ -1066,7 +1003,7 @@ class _WalksTabState extends State<_WalksTab> {
                 ),
                 label: activeForThisPet
                     ? _WalkStatusLabel(walk: controller.walk!)
-                    : const Text('Avvia passeggiata'),
+                    : Text(context.l10n.petsDetailWalksStart),
               ),
             );
           },
@@ -1077,24 +1014,24 @@ class _WalksTabState extends State<_WalksTab> {
           child: OutlinedButton.icon(
             onPressed: _showBadges,
             icon: const Icon(Icons.emoji_events_outlined, size: 18),
-            label: const Text('Badge'),
+            label: Text(context.l10n.petsDetailWalksBadges),
           ),
         ),
         const SizedBox(height: AppSpacing.md),
         Expanded(
-          child: FutureBuilder<List<WalkSession>>(
-            future: _future,
-            builder: (context, snapshot) {
-              if (snapshot.connectionState == ConnectionState.waiting) {
-                return const Center(
-                    child: CircularProgressIndicator(strokeWidth: 2));
+          child: AnimatedBuilder(
+            animation: _history,
+            builder: (context, _) {
+              // Only the very first load shows the loader; later reloads
+              // keep the walks on screen until the new ones arrive.
+              final walks = _history.walks;
+              if (walks == null) {
+                return const Center(child: PetLoader());
               }
-
-              final walks = snapshot.data ?? const <WalkSession>[];
               if (walks.isEmpty) {
                 return _EmptyTabState(
                   icon: Icons.directions_walk_outlined,
-                  text: 'Nessuna passeggiata ancora per ${widget.pet.name}.',
+                  text: context.l10n.petsDetailWalksEmpty(widget.pet.name),
                 );
               }
 
@@ -1102,50 +1039,55 @@ class _WalksTabState extends State<_WalksTab> {
               return ListView(
                 children: [
                   if (history.longestDistance != null || history.longestDuration != null) ...[
-                    const _WalksSectionLabel('Record 🏆'),
+                    _WalksSectionLabel(context.l10n.petsDetailWalksRecords),
                     if (history.longestDistance != null)
                       _WalkCard(
+                        key: ValueKey('record-distance-${history.longestDistance!.id}'),
                         walk: history.longestDistance!,
                         petName: widget.pet.name,
-                        repository: widget.repository,
-                        onChanged: _reload,
+                        history: _history,
+                        photoPoints: _photoPointsFor(history.longestDistance!),
                         recordLabel: history.longestDuration?.id == history.longestDistance!.id
-                            ? 'Più lunga · Più duratura'
-                            : 'Più lunga',
+                            ? context.l10n.petsDetailWalkLongestAndDuration
+                            : context.l10n.petsDetailWalkLongest,
                       ),
                     if (history.longestDuration != null &&
                         history.longestDuration!.id != history.longestDistance?.id) ...[
                       const SizedBox(height: AppSpacing.sm),
                       _WalkCard(
+                        key: ValueKey('record-duration-${history.longestDuration!.id}'),
                         walk: history.longestDuration!,
                         petName: widget.pet.name,
-                        repository: widget.repository,
-                        onChanged: _reload,
-                        recordLabel: 'Più duratura',
+                        history: _history,
+                        photoPoints: _photoPointsFor(history.longestDuration!),
+                        recordLabel: context.l10n.petsDetailWalkLongestDuration,
                       ),
                     ],
                     const SizedBox(height: AppSpacing.md),
                   ],
                   if (history.favorites.isNotEmpty) ...[
-                    const _WalksSectionLabel('Preferite ⭐'),
+                    _WalksSectionLabel(context.l10n.petsDetailWalksFavorites),
                     for (final walk in history.favorites) ...[
                       _WalkCard(
+                          key: ValueKey('favorite-${walk.id}'),
                           walk: walk,
                           petName: widget.pet.name,
-                          repository: widget.repository,
-                          onChanged: _reload),
+                          history: _history,
+                          photoPoints: _photoPointsFor(walk)),
                       const SizedBox(height: AppSpacing.sm),
                     ],
                     const SizedBox(height: AppSpacing.sm),
                   ],
                   if (history.recent.isNotEmpty) ...[
-                    const _WalksSectionLabel('Recenti'),
+                    _WalksSectionLabel(context.l10n.petsDetailWalksRecent),
                     for (final walk in history.recent) ...[
                       _WalkCard(
+                          key: ValueKey('recent-${walk.id}'),
                           walk: walk,
                           petName: widget.pet.name,
-                          repository: widget.repository,
-                          onChanged: _reload),
+                          history: _history,
+                          photoPoints: _photoPointsFor(walk),
+                          recordLabel: history.highlightLabelFor(walk)),
                       const SizedBox(height: AppSpacing.sm),
                     ],
                   ],
@@ -1213,9 +1155,12 @@ class _WalkStatusLabelState extends State<_WalkStatusLabel> {
   @override
   Widget build(BuildContext context) {
     final activeSeconds = walkActiveDurationSeconds(widget.walk);
-    final prefix = widget.walk.isPaused ? 'In pausa' : 'Passeggiata in corso';
+    final distance = walkDistanceLabel(widget.walk.distanceMeters);
+    final elapsed = walkElapsedLabel(activeSeconds);
     return Text(
-      '$prefix · ${walkDistanceLabel(widget.walk.distanceMeters)} · ${walkElapsedLabel(activeSeconds)}',
+      widget.walk.isPaused
+          ? context.l10n.petsDetailWalkStatusPaused(distance, elapsed)
+          : context.l10n.petsDetailWalkStatusActive(distance, elapsed),
       overflow: TextOverflow.ellipsis,
     );
   }
@@ -1254,17 +1199,23 @@ class _WalksSectionLabel extends StatelessWidget {
 /// ones).
 class _WalkCard extends StatelessWidget {
   const _WalkCard({
+    super.key,
     required this.walk,
     required this.petName,
-    required this.repository,
-    required this.onChanged,
+    required this.history,
+    this.photoPoints = const [],
     this.recordLabel,
   });
 
   final WalkSession walk;
   final String petName;
-  final DogWalksRepository repository;
-  final VoidCallback onChanged;
+
+  /// Star and trash go through it: the card changes at once, the write
+  /// follows behind and is undone with a message if it is refused.
+  final WalkHistoryController history;
+
+  /// Where photos were taken on this walk, for the thumbnail dots.
+  final List<Coordinates> photoPoints;
 
   /// "Più lunga" / "Più duratura" / both, when this card is shown under the
   /// Record section (owner request, 2026-09-30: distance and duration are
@@ -1281,19 +1232,16 @@ class _WalkCard extends StatelessWidget {
       final confirmed = await showDialog<bool>(
         context: context,
         builder: (context) => AlertDialog(
-          title: const Text('Togliere dai preferiti?'),
-          content: const Text(
-            'Se non è anche il record o tra le ultime 3 passeggiate, potrà perdere la mappa '
-            'alla prossima pulizia automatica.',
-          ),
+          title: Text(context.l10n.petsDetailWalkUnfavoriteTitle),
+          content: Text(context.l10n.petsDetailWalkUnfavoriteMessage),
           actions: [
             TextButton(
               onPressed: () => Navigator.of(context).pop(false),
-              child: const Text('Annulla'),
+              child: Text(context.l10n.commonCancel),
             ),
             FilledButton(
               onPressed: () => Navigator.of(context).pop(true),
-              child: const Text('Togli dai preferiti'),
+              child: Text(context.l10n.petsDetailWalkUnfavoriteConfirm),
             ),
           ],
         ),
@@ -1301,36 +1249,36 @@ class _WalkCard extends StatelessWidget {
       if (confirmed != true) return;
     }
 
-    await repository.saveWalk(walk.copyWith(isFavorite: !walk.isFavorite));
-    onChanged();
+    await history.setFavorite(walk, !walk.isFavorite);
   }
 
   Future<void> _delete(BuildContext context) async {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Eliminare questa passeggiata?'),
+        title: Text(context.l10n.petsDetailWalkDeleteTitle),
         content: Text(
-          'La passeggiata del ${walkDateLabel(walk.startedAt)} '
-          '(${walkDistanceLabel(walk.distanceMeters)}) verrà eliminata definitivamente.',
+          context.l10n.petsDetailWalkDeleteMessage(
+            walkDateLabel(walk.startedAt),
+            walkDistanceLabel(walk.distanceMeters),
+          ),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(false),
-            child: const Text('Annulla'),
+            child: Text(context.l10n.commonCancel),
           ),
           FilledButton(
             style: FilledButton.styleFrom(backgroundColor: AppColors.danger),
             onPressed: () => Navigator.of(context).pop(true),
-            child: const Text('Elimina'),
+            child: Text(context.l10n.commonDelete),
           ),
         ],
       ),
     );
     if (confirmed != true) return;
 
-    await repository.deleteWalk(resolveCurrentOwnerId(), walk.id);
-    onChanged();
+    await history.delete(walk);
   }
 
   Future<void> _openDetail(BuildContext context) async {
@@ -1346,7 +1294,8 @@ class _WalkCard extends StatelessWidget {
     final subtitleParts = [
       walkDistanceLabel(walk.distanceMeters),
       if (walk.durationSeconds != null) walkDurationLabel(walk.durationSeconds),
-      if (walk.stepCountEstimate != null) '~${walk.stepCountEstimate} passi',
+      if (walk.stepCountEstimate != null)
+        context.l10n.petsDetailWalkSteps(walk.stepCountEstimate!),
     ];
     return Material(
       color: AppColors.surface,
@@ -1358,10 +1307,8 @@ class _WalkCard extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             SizedBox(
-              height: 120,
-              child: walk.route.isEmpty
-                  ? const _WalkMissingRoutePlaceholder()
-                  : _WalkMiniMap(route: walk.route),
+              height: 150,
+              child: WalkMiniMap(walk: walk, photoPoints: photoPoints),
             ),
             Padding(
               padding: const EdgeInsets.all(AppSpacing.md),
@@ -1375,7 +1322,7 @@ class _WalkCard extends StatelessWidget {
                           Container(
                             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                             decoration: BoxDecoration(
-                              color: AppColors.accentSoft,
+                              color: AppColors.secondarySoft,
                               borderRadius: BorderRadius.circular(AppRadii.pill),
                             ),
                             child: Text(
@@ -1419,77 +1366,6 @@ class _WalkCard extends StatelessWidget {
   }
 }
 
-/// Static (no pan/zoom) preview of one walk's route - the history cards
-/// only need a glance, not an interactive map.
-class _WalkMiniMap extends StatelessWidget {
-  const _WalkMiniMap({required this.route});
-
-  final List<RoutePoint> route;
-
-  @override
-  Widget build(BuildContext context) {
-    final points = route
-        .map((point) => latlong.LatLng(
-            point.coordinates.latitude, point.coordinates.longitude))
-        .toList();
-    final bounds = LatLngBounds.fromPoints(points);
-    final segments = splitRouteIntoSegments(route);
-
-    return IgnorePointer(
-      child: FlutterMap(
-        options: MapOptions(
-          initialCameraFit: CameraFit.bounds(
-              bounds: bounds, padding: const EdgeInsets.all(24)),
-          interactionOptions:
-              const InteractionOptions(flags: InteractiveFlag.none),
-        ),
-        children: [
-          buildWalkTileLayer(),
-          PolylineLayer(
-            polylines: [
-              for (final segment in segments)
-                if (segment.length >= 2)
-                  Polyline(
-                    points: segment
-                        .map((point) =>
-                            latlong.LatLng(point.coordinates.latitude, point.coordinates.longitude))
-                        .toList(),
-                    color: AppColors.primary,
-                    strokeWidth: 3,
-                  ),
-            ],
-          ),
-          buildWalkRouteMarkersLayer(computeWalkRouteMarkers(route, isFinished: true)),
-        ],
-      ),
-    );
-  }
-}
-
-/// Shown instead of _WalkMiniMap for a walk whose route is empty - either
-/// pruned by retention (walk_retention.dart, expected) or saved by a
-/// release from before GPS tracking existed (owner report, 2026-09-30: a
-/// blank thumbnail with no explanation looked like a bug either way).
-class _WalkMissingRoutePlaceholder extends StatelessWidget {
-  const _WalkMissingRoutePlaceholder();
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      color: AppColors.background,
-      alignment: Alignment.center,
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          const Icon(Icons.map_outlined, color: AppColors.mutedText, size: 28),
-          const SizedBox(height: 4),
-          Text('Percorso non disponibile', style: AppTextStyles.caption),
-        ],
-      ),
-    );
-  }
-}
-
 // ---------------------------------------------------------------------------
 // Shared compact primitives
 // ---------------------------------------------------------------------------
@@ -1506,10 +1382,10 @@ class _RowIcon extends StatelessWidget {
       height: 36,
       alignment: Alignment.center,
       decoration: BoxDecoration(
-        color: AppColors.accentSoft,
+        color: AppColors.secondarySoft,
         borderRadius: BorderRadius.circular(AppRadii.medium),
       ),
-      child: Icon(icon, size: 17, color: AppColors.primary),
+      child: Icon(icon, size: 17, color: AppColors.secondaryStrong),
     );
   }
 }
@@ -1520,8 +1396,8 @@ class _CompactRow extends StatelessWidget {
     required this.title,
     required this.subtitle,
     this.onTap,
-    this.onDelete,
     this.trailingText,
+    this.trailingAction,
     this.badgeCount = 0,
   });
 
@@ -1529,8 +1405,8 @@ class _CompactRow extends StatelessWidget {
   final String title;
   final String subtitle;
   final VoidCallback? onTap;
-  final VoidCallback? onDelete;
   final String? trailingText;
+  final Widget? trailingAction;
   final int badgeCount;
 
   @override
@@ -1598,19 +1474,12 @@ class _CompactRow extends StatelessWidget {
                 const SizedBox(width: AppSpacing.sm),
                 Text(trailingText!, style: AppTextStyles.caption),
               ],
-              if (onDelete != null) ...[
+              if (trailingAction != null) ...[
                 const SizedBox(width: 2),
-                IconButton(
-                  onPressed: onDelete,
-                  icon: const Icon(Icons.delete_outline_rounded,
-                      size: 18, color: AppColors.danger),
-                  tooltip: 'Elimina',
-                  visualDensity: VisualDensity.compact,
-                  constraints:
-                      const BoxConstraints(minWidth: 32, minHeight: 32),
-                ),
+                trailingAction!,
+              ] else ...[
               ],
-              if (onTap != null) ...[
+              if (onTap != null && trailingAction == null) ...[
                 const SizedBox(width: AppSpacing.xs),
                 const Icon(Icons.chevron_right_rounded,
                     size: 18, color: AppColors.mutedText),
@@ -1650,4 +1519,57 @@ class _EmptyTabState extends StatelessWidget {
 
 extension _IterableFirstOrNull<T> on Iterable<T> {
   T? get firstOrNull => isEmpty ? null : first;
+}
+
+/// Shown while a pet change is only on this device. "Riprova" tries the
+/// server again; the pet keeps its local data either way.
+class _UnsyncedPetBanner extends StatefulWidget {
+  const _UnsyncedPetBanner({required this.petId});
+
+  final String petId;
+
+  @override
+  State<_UnsyncedPetBanner> createState() => _UnsyncedPetBannerState();
+}
+
+class _UnsyncedPetBannerState extends State<_UnsyncedPetBanner> {
+  bool _retrying = false;
+
+  Future<void> _retry() async {
+    setState(() => _retrying = true);
+    final ok = await PetDemoStore.instance.retrySync(widget.petId);
+    if (!mounted) return;
+    setState(() => _retrying = false);
+    if (!ok) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(context.l10n.petsDetailUnsyncedRetryFailed)),
+      );
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(AppSpacing.md),
+      decoration: BoxDecoration(
+        color: AppColors.surfaceElevated,
+        borderRadius: BorderRadius.circular(AppRadii.medium),
+        border: Border.all(color: AppColors.danger),
+      ),
+      child: Row(
+        children: [
+          Expanded(
+            child: Text(
+              context.l10n.petsDetailUnsyncedBanner,
+              style: AppTextStyles.caption.copyWith(color: AppColors.danger, fontWeight: FontWeight.w700),
+            ),
+          ),
+          const SizedBox(width: AppSpacing.sm),
+          _retrying
+              ? const PetLoader.small()
+              : TextButton(onPressed: _retry, child: Text(context.l10n.commonRetry)),
+        ],
+      ),
+    );
+  }
 }

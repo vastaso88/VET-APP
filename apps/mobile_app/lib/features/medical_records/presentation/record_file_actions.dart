@@ -1,0 +1,366 @@
+import 'dart:typed_data';
+
+import 'package:flutter/material.dart';
+import 'package:share_plus/share_plus.dart';
+
+import '../../../design_system/tokens/app_colors.dart';
+import '../../../design_system/tokens/app_spacing.dart';
+import '../../../design_system/tokens/app_text_styles.dart';
+import '../../../l10n/l10n.dart';
+import '../../../shared/files/attachment_media_type.dart';
+import '../../chat/data/chat_attachment_remote_data_source.dart';
+import '../data/medical_record_file_cache.dart';
+import '../data/medical_records_repository.dart';
+import '../domain/record_category.dart';
+import 'pages/medical_record_upload_page.dart';
+import 'record_category_labels.dart';
+import 'native_pdf_opener_stub.dart'
+    if (dart.library.io) 'native_pdf_opener.dart';
+import 'pdf_open_outcome.dart';
+
+/// The bytes of a record's file: this session's cache first, then the server.
+/// Null when the record has no file, or the file can't be reached right now.
+Future<Uint8List?> loadRecordBytes(MedicalRecordEntry record) async {
+  final cached = MedicalRecordFileCache.instance.get(record.id);
+  if (cached != null) return cached.bytes;
+  final attachmentId = record.attachmentId;
+  if (attachmentId == null) return null;
+  final result =
+      await HttpChatAttachmentRemoteDataSource().download(attachmentId);
+  return result.fold(onSuccess: (bytes) => bytes, onFailure: (_) => null);
+}
+
+String _mimeFor(Uint8List bytes, String name) =>
+    attachmentMediaType(bytes, name).toString();
+
+/// Whether there is a file behind [record] to open or send: an upload on the
+/// server, or one still in this session's cache. An entry added without a
+/// file (a visit with just a date and notes) has none.
+bool recordHasFile(MedicalRecordEntry record) =>
+    record.attachmentId != null ||
+    MedicalRecordFileCache.instance.get(record.id) != null;
+
+/// Opens the sheet with the actions for one record: Apri, Invia, modifica
+/// dettagli, Rinomina, Elimina.
+Future<void> showRecordActions(
+  BuildContext context, {
+  required MedicalRecordEntry record,
+  required VoidCallback onChanged,
+}) {
+  // What the title suggests, offered only for an entry still filed as a
+  // plain document and only as a tap: never applied on its own.
+  final suggestion = record.category == RecordCategory.document
+      ? suggestCategoryFromTitle(record.title)
+      : null;
+  final hasFile = recordHasFile(record);
+  return showModalBottomSheet<void>(
+    context: context,
+    backgroundColor: AppColors.surface,
+    isScrollControlled: true,
+    builder: (sheetContext) => SafeArea(
+      child: SingleChildScrollView(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Padding(
+              padding: const EdgeInsets.fromLTRB(
+                  AppSpacing.lg, AppSpacing.md, AppSpacing.lg, AppSpacing.sm),
+              child: Text(record.title,
+                  style: AppTextStyles.title,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis),
+            ),
+            if (hasFile)
+              ListTile(
+                leading: const Icon(Icons.open_in_new_rounded),
+                title: Text(sheetContext.l10n.medicalActionOpen),
+                onTap: () {
+                  Navigator.of(sheetContext).pop();
+                  openRecordFile(context, record);
+                },
+              ),
+            if (hasFile)
+              ListTile(
+                leading: const Icon(Icons.ios_share_rounded),
+                title: Text(sheetContext.l10n.medicalActionSend),
+                onTap: () {
+                  Navigator.of(sheetContext).pop();
+                  shareRecords(context, [record]);
+                },
+              ),
+            if (suggestion != null)
+              ListTile(
+                leading: Icon(suggestion.icon),
+                title: Text(
+                  sheetContext.l10n.medActionClassifyAs(
+                      suggestion.singularLabel(sheetContext.l10n)),
+                ),
+                onTap: () {
+                  Navigator.of(sheetContext).pop();
+                  _classifyAs(context, record, suggestion, onChanged);
+                },
+              ),
+            ListTile(
+              leading: const Icon(Icons.tune_rounded),
+              title: Text(sheetContext.l10n.medActionEditDetails),
+              onTap: () {
+                Navigator.of(sheetContext).pop();
+                _editDetails(context, record, onChanged);
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.drive_file_rename_outline_rounded),
+              title: Text(sheetContext.l10n.medicalActionRename),
+              onTap: () {
+                Navigator.of(sheetContext).pop();
+                renameRecordWithDialog(context,
+                    record: record, onRenamed: onChanged);
+              },
+            ),
+            ListTile(
+              leading:
+                  const Icon(Icons.delete_outline, color: AppColors.danger),
+              title: Text(sheetContext.l10n.commonDelete),
+              onTap: () {
+                Navigator.of(sheetContext).pop();
+                deleteRecordWithConfirm(context,
+                    record: record, onDeleted: onChanged);
+              },
+            ),
+          ],
+        ),
+      ),
+    ),
+  );
+}
+
+Future<void> _editDetails(
+  BuildContext context,
+  MedicalRecordEntry record,
+  VoidCallback onChanged,
+) async {
+  await Navigator.of(context).push<MedicalRecordEntry>(
+    MaterialPageRoute(
+      builder: (_) =>
+          MedicalRecordUploadPage(petName: record.petName, existing: record),
+    ),
+  );
+  onChanged();
+}
+
+Future<void> _classifyAs(
+  BuildContext context,
+  MedicalRecordEntry record,
+  RecordCategory category,
+  VoidCallback onChanged,
+) async {
+  try {
+    await MedicalRecordsRepository()
+        .updateRecordDetails(record.copyWith(category: category));
+  } on MedicalRecordSaveException catch (error) {
+    if (context.mounted) _showMessage(context, error.message);
+    return;
+  }
+  onChanged();
+}
+
+/// Images open full-screen. A PDF has no in-app viewer here, so "Apri" hands
+/// it to the system: the share sheet offers "Apri con" on Android and the
+/// browser's own PDF view on web.
+Future<void> openRecordFile(
+    BuildContext context, MedicalRecordEntry record) async {
+  final bytes = await loadRecordBytes(record);
+  if (!context.mounted) return;
+  if (bytes == null) {
+    _showMessage(context, context.l10n.medicalFileUnavailable);
+    return;
+  }
+  final mime = _mimeFor(bytes, record.title);
+  if (mime.startsWith('image/')) {
+    await Navigator.of(context).push(
+      MaterialPageRoute<void>(
+          builder: (_) => RecordImageViewer(bytes: bytes, title: record.title)),
+    );
+    return;
+  }
+  final outcome = await openPdfNatively(bytes, record.title);
+  if (!context.mounted) return;
+  switch (outcome) {
+    case PdfOpenOutcome.opened:
+      return;
+    case PdfOpenOutcome.noApp:
+      await _offerShareInstead(context, record);
+    case PdfOpenOutcome.failed:
+      _showMessage(context, context.l10n.medicalPdfOpenFailed);
+    case PdfOpenOutcome.unsupported:
+      // Web: the browser's share/viewer path.
+      await SharePlus.instance.share(
+        ShareParams(
+          files: [XFile.fromData(bytes, name: record.title, mimeType: mime)],
+          text: record.title,
+        ),
+      );
+  }
+}
+
+Future<void> _offerShareInstead(
+    BuildContext context, MedicalRecordEntry record) async {
+  final share = await showDialog<bool>(
+    context: context,
+    builder: (dialogContext) => AlertDialog(
+      title: Text(dialogContext.l10n.medicalNoPdfAppTitle),
+      content: Text(dialogContext.l10n.medicalNoPdfAppBody),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.of(dialogContext).pop(false),
+          child: Text(dialogContext.l10n.commonClose),
+        ),
+        FilledButton(
+          onPressed: () => Navigator.of(dialogContext).pop(true),
+          child: Text(dialogContext.l10n.medicalActionSend),
+        ),
+      ],
+    ),
+  );
+  if (share == true && context.mounted) {
+    await shareRecords(context, [record]);
+  }
+}
+
+/// Sends one or several records' files through the system share sheet.
+Future<void> shareRecords(
+    BuildContext context, List<MedicalRecordEntry> records) async {
+  _showMessage(context, context.l10n.medicalPreparingFiles);
+  final files = <XFile>[];
+  var missing = 0;
+  for (final record in records) {
+    final bytes = await loadRecordBytes(record);
+    if (bytes == null) {
+      missing++;
+      continue;
+    }
+    files.add(XFile.fromData(bytes,
+        name: record.title, mimeType: _mimeFor(bytes, record.title)));
+  }
+  if (!context.mounted) return;
+  if (files.isEmpty) {
+    _showMessage(context, context.l10n.medicalNoFilesToSend);
+    return;
+  }
+  if (missing > 0) {
+    _showMessage(context, context.l10n.medicalFilesMissing(missing));
+  }
+  await SharePlus.instance.share(ShareParams(files: files));
+}
+
+/// Deletes a record after confirmation; a refused delete is shown, not hidden.
+Future<void> deleteRecordWithConfirm(
+  BuildContext context, {
+  required MedicalRecordEntry record,
+  required VoidCallback onDeleted,
+}) async {
+  final confirmed = await showDialog<bool>(
+    context: context,
+    builder: (dialogContext) => AlertDialog(
+      title: Text(dialogContext.l10n.medicalDeleteConfirmTitle),
+      content: Text(dialogContext.l10n.medicalDeleteConfirmBody(record.title)),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.of(dialogContext).pop(false),
+          child: Text(dialogContext.l10n.commonCancel),
+        ),
+        FilledButton(
+          onPressed: () => Navigator.of(dialogContext).pop(true),
+          child: Text(dialogContext.l10n.commonDelete),
+        ),
+      ],
+    ),
+  );
+  if (confirmed != true) return;
+  if (context.mounted) _showMessage(context, context.l10n.medicalDeleting);
+  try {
+    await MedicalRecordsRepository().deleteRecord(record.id);
+  } on MedicalRecordSaveException catch (error) {
+    if (context.mounted) _showMessage(context, error.message);
+    return;
+  }
+  onDeleted();
+}
+
+void _showMessage(BuildContext context, String text) {
+  ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(text)));
+}
+
+/// Full-screen view of an image record, with pinch to zoom.
+class RecordImageViewer extends StatelessWidget {
+  const RecordImageViewer(
+      {required this.bytes, required this.title, super.key});
+
+  final Uint8List bytes;
+  final String title;
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: AppColors.mediaBackground,
+      appBar: AppBar(
+        backgroundColor: AppColors.mediaBackground,
+        foregroundColor: AppColors.onMedia,
+        title: Text(title, maxLines: 1, overflow: TextOverflow.ellipsis),
+      ),
+      body: InteractiveViewer(
+        minScale: 1,
+        maxScale: 4,
+        child: Center(child: Image.memory(bytes, fit: BoxFit.contain)),
+      ),
+    );
+  }
+}
+
+/// Asks for a new title and saves it on the title field only.
+Future<void> renameRecordWithDialog(
+  BuildContext context, {
+  required MedicalRecordEntry record,
+  required VoidCallback onRenamed,
+}) async {
+  final controller = TextEditingController(text: record.title);
+  final newTitle = await showDialog<String>(
+    context: context,
+    builder: (dialogContext) => AlertDialog(
+      title: Text(dialogContext.l10n.medicalRenameTitle),
+      content: TextField(
+        controller: controller,
+        autofocus: true,
+        textCapitalization: TextCapitalization.sentences,
+        decoration: InputDecoration(
+            labelText: dialogContext.l10n.medicalRenameFieldLabel),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.of(dialogContext).pop(),
+          child: Text(dialogContext.l10n.commonCancel),
+        ),
+        FilledButton(
+          onPressed: () =>
+              Navigator.of(dialogContext).pop(controller.text.trim()),
+          child: Text(dialogContext.l10n.commonSave),
+        ),
+      ],
+    ),
+  );
+  controller.dispose();
+  if (newTitle == null ||
+      newTitle.isEmpty ||
+      newTitle == record.title ||
+      !context.mounted) {
+    return;
+  }
+  try {
+    await MedicalRecordsRepository().renameRecord(record, newTitle);
+  } on MedicalRecordSaveException catch (error) {
+    if (context.mounted) _showMessage(context, error.message);
+    return;
+  }
+  onRenamed();
+}

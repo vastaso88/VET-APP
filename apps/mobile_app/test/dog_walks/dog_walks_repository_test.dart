@@ -140,6 +140,88 @@ void main() {
     },
   );
 
+  group('changes notifier (owner report, 2026-10-03: history only refreshed after leaving '
+      'the tab and coming back)', () {
+    WalkSession walkFor(String suffix, {WalkStatus status = WalkStatus.completed}) {
+      return WalkSession(
+        id: 'walk-changes-$suffix-${DateTime.now().microsecondsSinceEpoch}',
+        ownerId: 'owner-changes-test',
+        petId: 'pet-1',
+        status: status,
+        startedAt: DateTime.now(),
+        distanceMeters: 500,
+        route: [
+          RoutePoint(coordinates: const Coordinates(latitude: 45.46, longitude: 9.19), recordedAt: DateTime.now()),
+        ],
+      );
+    }
+
+    test('ticks when a finished walk is saved, or its favorite flag toggled', () async {
+      final repository = DogWalksRepository();
+      final walk = walkFor('save');
+      final before = DogWalksRepository.changes.value;
+
+      await repository.saveWalk(walk);
+      expect(DogWalksRepository.changes.value, before + 1);
+
+      await repository.saveWalk(walk.copyWith(isFavorite: true));
+      expect(DogWalksRepository.changes.value, before + 2);
+    });
+
+    test('does not tick for saves of a walk still in progress (one per GPS fix)', () async {
+      final repository = DogWalksRepository();
+      final before = DogWalksRepository.changes.value;
+
+      await repository.saveWalk(walkFor('live', status: WalkStatus.inProgress));
+
+      expect(DogWalksRepository.changes.value, before);
+    });
+
+    test('ticks on delete and on clearRoute', () async {
+      final repository = DogWalksRepository();
+      final walk = walkFor('mutate');
+      await repository.saveWalk(walk);
+      final before = DogWalksRepository.changes.value;
+
+      await repository.clearRoute(walk.ownerId, walk.id);
+      expect(DogWalksRepository.changes.value, before + 1);
+
+      await repository.deleteWalk(walk.ownerId, walk.id);
+      expect(DogWalksRepository.changes.value, before + 2);
+    });
+
+    test('does not tick when a save is refused because the walk was deleted', () async {
+      final repository = DogWalksRepository();
+      final walk = walkFor('refused');
+      await repository.saveWalk(walk);
+      await repository.deleteWalk(walk.ownerId, walk.id);
+      final before = DogWalksRepository.changes.value;
+
+      await repository.saveWalk(walk.copyWith(isFavorite: true));
+
+      expect(DogWalksRepository.changes.value, before);
+    });
+
+    test('a listener sees the new state when it reloads inside the callback', () async {
+      final repository = DogWalksRepository();
+      final walk = walkFor('listener');
+      var sawWalkOnTick = false;
+      void listener() {
+        repository.loadWalks('owner-changes-test').then((walks) {
+          sawWalkOnTick = walks.any((w) => w.id == walk.id);
+        });
+      }
+
+      DogWalksRepository.changes.addListener(listener);
+      addTearDown(() => DogWalksRepository.changes.removeListener(listener));
+
+      await repository.saveWalk(walk);
+      await Future<void>.delayed(Duration.zero);
+
+      expect(sawWalkOnTick, isTrue, reason: 'local state is updated before the tick fires');
+    });
+  });
+
   test('deleteWalk removes the walk from the local fallback list', () async {
     final repository = DogWalksRepository();
     final walk = WalkSession(

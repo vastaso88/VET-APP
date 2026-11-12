@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+import '../../billing/data/plan_access_refusal.dart';
 import '../../../app/router/app_router.dart';
+import '../../../l10n/l10n.dart';
 import '../../../../shared/config/app_runtime_config_loader.dart';
 import '../../location/domain/coordinates.dart';
+import '../domain/wall_clock_time.dart';
 import '../domain/walk_retention.dart';
 import '../domain/walk_session.dart';
 
@@ -12,10 +15,14 @@ import '../domain/walk_session.dart';
 /// just not responding to the tap). Uses AppRouter's global
 /// scaffoldMessengerKey rather than threading a BuildContext through every
 /// repository method - same idea as its navigatorKey.
-void _notifySyncFailure(String action, Object error) {
+void _notifySyncFailure(String action, Object error, {bool showMessage = true}) {
   debugPrint('DogWalksRepository: $action failed against Supabase: $error');
+  // The paywall opens even when the caller asked for no message: a refused
+  // plan is not a connection problem.
+  final refusal = handlePlanRefusal(error);
+  if (!showMessage) return;
   AppRouter.scaffoldMessengerKey.currentState?.showSnackBar(
-    const SnackBar(content: Text('Sincronizzazione non riuscita: modifica salvata solo sul telefono')),
+    SnackBar(content: Text(refusal?.message ?? appL10n.walksSyncFailed)),
   );
 }
 
@@ -56,6 +63,15 @@ class DogWalksRepository {
   final SupabaseClient? _client;
 
   static final List<WalkSession> _localWalks = List<WalkSession>.of(_seedWalks);
+
+  /// Ticks whenever a finished walk is saved (end of walk, favorite
+  /// toggle), deleted, or has its route stripped - so the history, records,
+  /// favorites, recents and the pet page's status button can rebuild the
+  /// moment shared data changes instead of only after the owner navigates
+  /// away and back (owner report, 2026-10-03). Same idea as
+  /// RemindersRepository.changes. Static because the walk list itself is:
+  /// every DogWalksRepository instance shares it.
+  static final ValueNotifier<int> changes = ValueNotifier<int>(0);
 
   /// Ids whose most recent `saveWalk` upsert failed against Supabase -
   /// until it succeeds, [loadWalks] must trust the local copy over remote
@@ -122,11 +138,18 @@ class DogWalksRepository {
     return List<WalkSession>.unmodifiable(merged);
   }
 
-  Future<void> saveWalk(WalkSession walk) async {
+  /// Applies [walk] locally at once (and announces it) and then writes it to
+  /// Supabase. Returns whether the write is safely stored: true when synced
+  /// or when no backend is configured, false when the remote write failed -
+  /// the local copy still stands (see [loadWalks]), so most callers ignore
+  /// it. The owner-initiated actions on the history cards pass
+  /// [notifyFailure] false and undo the edit with [restoreWalk] plus their
+  /// own message instead of the generic "saved only on the phone".
+  Future<bool> saveWalk(WalkSession walk, {bool notifyFailure = true}) async {
     if (_deletedKeys.contains((walk.ownerId, walk.id))) {
       // Refuse to resurrect a walk this repository was explicitly told to
       // delete - see _deletedKeys' doc comment for why this exists.
-      return;
+      return true;
     }
 
     final index = _localWalks.indexWhere((item) => item.id == walk.id);
@@ -143,42 +166,88 @@ class DogWalksRepository {
       // copy that will ever exist, so there's nothing to be "unsynced"
       // relative to.
       _unsyncedIds.remove(walk.id);
-      return;
+      _announceChange(walk);
+      return true;
     }
+
+    // Unsynced from the moment the write starts, not just once it fails:
+    // announcing the change below makes the history reload immediately, and
+    // that read can reach Supabase before this upsert has landed - without
+    // this it would see (and display) the previous value.
+    _unsyncedIds.add(walk.id);
+    _announceChange(walk);
 
     try {
       await client.from('dog_walks').upsert(toRow(walk));
       _unsyncedIds.remove(walk.id);
+      return true;
     } catch (error) {
       // The local list above already applied for this session; loadWalks
       // won't let a stale remote row overwrite it until this succeeds.
-      _unsyncedIds.add(walk.id);
-      _notifySyncFailure('saving walk ${walk.id}', error);
+      _notifySyncFailure('saving walk ${walk.id}', error, showMessage: notifyFailure);
+      return false;
     }
+  }
+
+  /// Local-only undo of an owner action whose remote write was refused:
+  /// puts [walk] back as it was before the edit/delete, lifts the delete
+  /// tombstone and the "trust local over remote" marks (remote still holds
+  /// the old row, so it is the truth again) and announces the change.
+  void restoreWalk(WalkSession walk) {
+    _deletedKeys.remove((walk.ownerId, walk.id));
+    _pendingDeleteIds.remove(walk.id);
+    _unsyncedIds.remove(walk.id);
+    final index = _localWalks.indexWhere((item) => item.id == walk.id);
+    if (index == -1) {
+      _localWalks.insert(0, walk);
+    } else {
+      _localWalks[index] = walk;
+    }
+    changes.value++;
+  }
+
+  /// Ticks [changes] for a save - except while a walk is still being
+  /// tracked: ActiveWalkController saves on every accepted GPS fix, and the
+  /// history screens (which only show finished walks) must not reload and
+  /// re-query Supabase once per fix. The live state reaches the UI through
+  /// ActiveWalkController's own ChangeNotifier instead.
+  static void _announceChange(WalkSession walk) {
+    if (walk.status == WalkStatus.inProgress) {
+      return;
+    }
+    changes.value++;
   }
 
   /// Removes a walk entirely - the trash button on a history card (owner
   /// request, 2026-09-30), and the one-time cleanup of already-saved
   /// zero-distance walks (_WalksTabState._load() in pet_detail_page.dart).
-  Future<void> deleteWalk(String ownerId, String walkId) async {
+  ///
+  /// Returns whether the remote delete went through (true with no backend);
+  /// see [saveWalk] for [notifyFailure] and [restoreWalk].
+  Future<bool> deleteWalk(String ownerId, String walkId, {bool notifyFailure = true}) async {
     _deletedKeys.add((ownerId, walkId));
     _localWalks.removeWhere((walk) => walk.id == walkId && walk.ownerId == ownerId);
     _unsyncedIds.remove(walkId);
+    changes.value++;
 
     final client = _resolveClient();
     if (client == null) {
       _pendingDeleteIds.remove(walkId);
-      return;
+      return true;
     }
 
+    // Hidden from remote reads from the moment the delete starts (the
+    // reload the change above triggers can beat the DELETE to Supabase).
+    _pendingDeleteIds.add(walkId);
     try {
       await client.from('dog_walks').delete().eq('id', walkId).eq('owner_id', ownerId);
       _pendingDeleteIds.remove(walkId);
+      return true;
     } catch (error) {
       // Same posture as saveWalk: loadWalks hides this id out of remote
       // until the delete actually goes through.
-      _pendingDeleteIds.add(walkId);
-      _notifySyncFailure('deleting walk $walkId', error);
+      _notifySyncFailure('deleting walk $walkId', error, showMessage: notifyFailure);
+      return false;
     }
   }
 
@@ -219,6 +288,7 @@ class DogWalksRepository {
     final index = _localWalks.indexWhere((item) => item.id == walkId && item.ownerId == ownerId);
     if (index != -1) {
       _localWalks[index] = _localWalks[index].copyWith(route: const []);
+      changes.value++;
     }
 
     final client = _resolveClient();
@@ -226,8 +296,14 @@ class DogWalksRepository {
       return;
     }
 
+    // Same in-flight protection as saveWalk: until the UPDATE lands, a
+    // remote read must not bring the route back into the history.
+    if (index != -1) {
+      _unsyncedIds.add(walkId);
+    }
     try {
       await client.from('dog_walks').update({'route': []}).eq('id', walkId).eq('owner_id', ownerId);
+      _unsyncedIds.remove(walkId);
     } catch (error) {
       // Idempotent and retried naturally next time retention math says this
       // walk's route should be gone - doesn't need saveWalk's
@@ -268,14 +344,14 @@ class DogWalksRepository {
       'owner_id': walk.ownerId,
       'pet_id': walk.petId,
       'status': _statusToString(walk.status),
-      'started_at': walk.startedAt.toIso8601String(),
-      'ended_at': walk.endedAt?.toIso8601String(),
+      'started_at': wallClockToStored(walk.startedAt),
+      'ended_at': walk.endedAt == null ? null : wallClockToStored(walk.endedAt!),
       'distance_meters': walk.distanceMeters,
       'duration_seconds': walk.durationSeconds,
       'step_count_estimate': walk.stepCountEstimate,
       'is_favorite': walk.isFavorite,
       'is_paused': walk.isPaused,
-      'paused_at': walk.pausedAt?.toIso8601String(),
+      'paused_at': walk.pausedAt == null ? null : wallClockToStored(walk.pausedAt!),
       'paused_seconds': walk.pausedSeconds,
       'route': walk.route
           .map(
@@ -294,7 +370,7 @@ class DogWalksRepository {
   }
 
   static WalkSession? fromRow(Map<String, dynamic> row) {
-    final startedAt = DateTime.tryParse((row['started_at'] ?? '').toString());
+    final startedAt = storedToWallClock(row['started_at']);
     final status = _statusFromString(row['status'] as String?);
     if (startedAt == null || status == null) {
       return null;
@@ -315,13 +391,13 @@ class DogWalksRepository {
       petId: (row['pet_id'] ?? '').toString(),
       status: status,
       startedAt: startedAt,
-      endedAt: DateTime.tryParse((row['ended_at'] ?? '').toString()),
+      endedAt: storedToWallClock(row['ended_at']),
       distanceMeters: (row['distance_meters'] as num?)?.toDouble() ?? 0,
       durationSeconds: (row['duration_seconds'] as num?)?.toInt(),
       stepCountEstimate: (row['step_count_estimate'] as num?)?.toInt(),
       isFavorite: row['is_favorite'] as bool? ?? false,
       isPaused: row['is_paused'] as bool? ?? false,
-      pausedAt: DateTime.tryParse((row['paused_at'] ?? '').toString()),
+      pausedAt: storedToWallClock(row['paused_at']),
       pausedSeconds: (row['paused_seconds'] as num?)?.toInt() ?? 0,
       route: route,
     );

@@ -1,0 +1,39 @@
+{
+  "events": [
+    {
+      "slug": "example-it-fiera-animali",
+      "title": "Fiera di esempio per animali (evento FITTIZIO)",
+      "event_type": "pet_fair",
+      "level": "regional",
+      "level_basis": "curated",
+      "country": "IT",
+      "starts_on": "2026-11-21",
+      "ends_on": "2026-11-22",
+      "region": "Lombardia",
+      "city": "Esempiopoli",
+      "province_code": "MI",
+      "venue_name": "Centro fieristico di esempio",
+      "organizer_name": "Associazione di esempio",
+      "description": "Evento inventato per provare l'elenco eventi: non esiste.",
+      "source_url": "https://www.example.org/it/fiera-animali",
+      "verified_on": "2026-10-14"
+    },
+    {
+      "slug": "example-it-giornata-adozione",
+      "title": "Giornata di adozione di esempio (evento FITTIZIO)",
+      "event_type": "adoption_day",
+      "level": "local",
+      "level_basis": "default",
+      "country": "IT",
+      "starts_on": "2026-12-05",
+      "ends_on": "2026-12-05",
+      "region": "Lazio",
+      "city": "Esempiopoli",
+      "province_code": "RM",
+      "organizer_name": "Rifugio di esempio",
+      "description": "Evento inventato per provare l'elenco eventi: non esiste.",
+      "source_url": "https://www.example.org/it/adozione",
+      "verified_on": "2026-10-14"
+    }
+  ]
+}

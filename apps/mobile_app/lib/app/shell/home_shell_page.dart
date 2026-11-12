@@ -1,10 +1,14 @@
 import 'dart:async';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import '../../design_system/tokens/app_colors.dart';
 import '../../features/activities/presentation/pages/activities_page.dart';
+import '../../features/age/presentation/age_flow.dart';
+import '../../features/billing/data/subscription_remote_data_source.dart';
+import '../../features/billing/presentation/trial_countdown_dialog.dart';
 import '../../features/dog_walks/data/active_walk_controller.dart';
 import '../../features/dog_walks/data/active_walk_recovery_store.dart';
 import '../../features/dog_walks/data/dog_walks_repository.dart';
@@ -16,6 +20,13 @@ import '../../features/home/presentation/pages/home_dashboard_page.dart';
 import '../../features/pets/data/pet_demo_store.dart';
 import '../../features/pets/pets.dart';
 import '../../features/settings/presentation/pages/settings_page.dart';
+import '../../l10n/l10n.dart';
+import '../../features/notifications/application/notification_taps.dart';
+import '../../features/notifications/presentation/reminder_notification_permission.dart';
+import '../../features/reminders/data/reminders_repository.dart';
+import '../../features/reminders/presentation/reminder_completion_prompter.dart';
+import '../launch/route_restoration.dart';
+import '../launch/warm_start_store.dart';
 
 class HomeShellPage extends StatefulWidget {
   const HomeShellPage({super.key, this.initialIndex = 0});
@@ -36,32 +47,114 @@ class _HomeShellPageState extends State<HomeShellPage> {
 
   late final List<_ShellTabNavigator> _pages = [
     _ShellTabNavigator(
-        navigatorKey: _navigatorKeys[0], rootPage: const HomeDashboardPage()),
+        tab: 0, navigatorKey: _navigatorKeys[0], rootPage: const HomeDashboardPage()),
     _ShellTabNavigator(
-        navigatorKey: _navigatorKeys[1], rootPage: const PetsListPage()),
+        tab: 1, navigatorKey: _navigatorKeys[1], rootPage: const PetsListPage()),
     _ShellTabNavigator(
-        navigatorKey: _navigatorKeys[2], rootPage: const ActivitiesPage()),
+        tab: 2, navigatorKey: _navigatorKeys[2], rootPage: const ActivitiesPage()),
     _ShellTabNavigator(
-        navigatorKey: _navigatorKeys[3], rootPage: const SettingsPage()),
+        tab: 3, navigatorKey: _navigatorKeys[3], rootPage: const SettingsPage()),
   ];
 
   @override
   void initState() {
     super.initState();
+    HomeShellNavigation._requests.addListener(_onTabRequested);
+    NotificationTaps.instance.pendingReminderId.addListener(_askAboutTappedReminder);
+    // Back from the background: a reminder may have fallen due meanwhile.
+    _lifecycle = AppLifecycleListener(onResume: () {
+      if (_ready) unawaited(ReminderCompletionPrompter.instance.checkDue());
+    });
     WidgetsBinding.instance.addPostFrameCallback((_) {
+      unawaited(_restoreOpenPages());
       // The shell being up means signed in and past splash/paywall: only now
       // may a tapped home-screen widget shortcut (reminder / walk) be opened,
       // and after the interrupted-walk prompt, so the two never stack.
       _checkForInterruptedWalk().whenComplete(() {
-        if (mounted) HomeWidgetActionStore.instance.shellReady();
+        if (!mounted) return;
+        HomeWidgetActionStore.instance.shellReady();
+        unawaited(_maybeShowTrialCountdown());
+        unawaited(checkAgeAfterSignIn(context));
+        _ready = true;
+        // A notification tap that launched the app, then the reminders that
+        // fell due while it was closed.
+        _askAboutTappedReminder();
+        unawaited(ReminderCompletionPrompter.instance.checkDue().whenComplete(_askNotificationPermission));
       });
     });
   }
 
+  AppLifecycleListener? _lifecycle;
+  bool _ready = false;
+
+  /// Reminders exist but the phone may not allow notifications (a fresh install,
+  /// a sign-in on another phone): ask, once or twice, so they can ring.
+  Future<void> _askNotificationPermission() async {
+    if (!mounted) return;
+    final reminders = await RemindersRepository().loadReminders();
+    if (!mounted || reminders.every((reminder) => reminder.isDone)) return;
+    await maybeAskReminderNotificationPermission(context);
+  }
+
+  /// The owner tapped a reminder's notification: "Fatto? Registralo nello storico".
+  void _askAboutTappedReminder() {
+    if (!_ready || !mounted) return;
+    final id = NotificationTaps.instance.take();
+    if (id != null) unawaited(ReminderCompletionPrompter.instance.promptFor(id));
+  }
+
   @override
   void dispose() {
+    HomeShellNavigation._requests.removeListener(_onTabRequested);
+    NotificationTaps.instance.pendingReminderId.removeListener(_askAboutTappedReminder);
+    _lifecycle?.dispose();
     HomeWidgetActionStore.instance.shellGone();
     super.dispose();
+  }
+
+  /// After the app was killed in the background: opens again the pages that
+  /// were open inside the tabs (pet, chat, records...), then starts saving the
+  /// stack again. Once per run.
+  Future<void> _restoreOpenPages() async {
+    final restoration = RouteRestoration.instance;
+    if (restoration.planConsumed) {
+      // A rebuilt shell in the same run: nothing to reopen.
+      _restoreDone.complete();
+      return;
+    }
+    restoration.planConsumed = true;
+    try {
+      final plan = await restoration.loadPlan();
+      if (plan.isEmpty || !mounted) return;
+      // The walk page waits until the interrupted walk has been resumed (the
+      // owner answers a dialog first); see _checkForInterruptedWalk.
+      _deferredWalkPages = [for (final entry in plan) if (entry.kind == 'active_walk') entry];
+      await _replay([for (final entry in plan) if (entry.kind != 'active_walk') entry]);
+    } finally {
+      _restoreDone.complete();
+      restoration.enablePersistence();
+    }
+  }
+
+  final Completer<void> _restoreDone = Completer<void>();
+  List<RestorableRouteEntry> _deferredWalkPages = const [];
+
+  Future<void> _replay(List<RestorableRouteEntry> plan) {
+    return RouteReplayer(pages: RestorablePages.instance).replay(
+      plan: plan,
+      navigatorFor: (tab) =>
+          tab >= 0 && tab < _navigatorKeys.length ? _navigatorKeys[tab].currentState : null,
+      isAlive: () => mounted,
+    );
+  }
+
+  Future<void> _maybeShowTrialCountdown() async {
+    final result = await HttpSubscriptionRemoteDataSource().fetchStatus();
+    if (!mounted) return;
+    result.fold(
+      onSuccess: (status) => showTrialCountdownIfDue(context, status),
+      onFailure: (_) {},
+    );
   }
 
   /// Offers to resume a walk that was still "in_progress" on disk when the
@@ -79,19 +172,18 @@ class _HomeShellPageState extends State<HomeShellPage> {
       context: context,
       barrierDismissible: false,
       builder: (context) => AlertDialog(
-        title: const Text('Passeggiata interrotta'),
+        title: Text(context.l10n.shellInterruptedWalkTitle),
         content: Text(
-          'È rimasta una passeggiata in corso (${walkDistanceLabel(recovered.distanceMeters)} '
-          'finora). Vuoi riprenderla?',
+          context.l10n.shellInterruptedWalkBody(walkDistanceLabel(recovered.distanceMeters)),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(false),
-            child: const Text('Scarta'),
+            child: Text(context.l10n.shellInterruptedWalkDiscard),
           ),
           FilledButton(
             onPressed: () => Navigator.of(context).pop(true),
-            child: const Text('Riprendi'),
+            child: Text(context.l10n.shellInterruptedWalkResume),
           ),
         ],
       ),
@@ -99,6 +191,13 @@ class _HomeShellPageState extends State<HomeShellPage> {
 
     if (shouldResume == true) {
       await ActiveWalkController.instance.recoverInterrupted(recovered);
+      // The walk page was open when the app died: put it back on the walk.
+      await _restoreDone.future;
+      if (mounted && _deferredWalkPages.isNotEmpty) {
+        final pages = _deferredWalkPages;
+        _deferredWalkPages = const [];
+        await _replay(pages);
+      }
     } else {
       await DogWalksRepository()
           .saveWalk(recovered.copyWith(status: WalkStatus.discarded));
@@ -139,8 +238,8 @@ class _HomeShellPageState extends State<HomeShellPage> {
 
             return NavigationBar(
               height: 76,
-              backgroundColor: Colors.white,
-              indicatorColor: AppColors.accentSoft,
+              backgroundColor: AppColors.surfaceElevated,
+              indicatorColor: AppColors.secondarySoft,
               selectedIndex: _currentIndex,
               onDestinationSelected: _handleDestinationSelected,
               destinations: _bottomDestinations,
@@ -174,7 +273,7 @@ class _HomeShellPageState extends State<HomeShellPage> {
                 border: Border.all(color: AppColors.border),
                 boxShadow: const [
                   BoxShadow(
-                    color: Color(0x14000000),
+                    color: AppColors.shadowSoft,
                     blurRadius: 28,
                     offset: Offset(0, 12),
                   ),
@@ -186,7 +285,7 @@ class _HomeShellPageState extends State<HomeShellPage> {
                     extended: isExtendedRail,
                     minExtendedWidth: 228,
                     backgroundColor: AppColors.primary,
-                    indicatorColor: AppColors.accentSoft,
+                    indicatorColor: AppColors.secondarySoft,
                     selectedIndex: _currentIndex,
                     onDestinationSelected: _handleDestinationSelected,
                     labelType: isExtendedRail
@@ -197,7 +296,7 @@ class _HomeShellPageState extends State<HomeShellPage> {
                       fontWeight: FontWeight.w600,
                     ),
                     unselectedLabelTextStyle: const TextStyle(
-                      color: Color(0xFFE7EEE9),
+                      color: AppColors.secondarySoft,
                     ),
                     leading: Padding(
                       padding: const EdgeInsets.fromLTRB(18, 20, 18, 12),
@@ -239,9 +338,29 @@ class _HomeShellPageState extends State<HomeShellPage> {
     }
 
     // Already on the Home tab with nothing pushed above it: this is the
-    // true root, so let the system close the app rather than trapping the
-    // back button here.
+    // true root, so leave the app rather than trapping the back button here.
+    // On Android it goes to the background (as Android 12+ does by default)
+    // instead of finishing: finishing killed the Flutter engine, and with it
+    // any walk being tracked (owner report, 2026-10-07).
+    if (await _moveAppToBackground()) return;
     SystemNavigator.pop();
+  }
+
+  static const _appNavigationChannel = MethodChannel('vetapp/app_navigation');
+
+  Future<bool> _moveAppToBackground() async {
+    if (kIsWeb || defaultTargetPlatform != TargetPlatform.android) return false;
+    try {
+      return await _appNavigationChannel.invokeMethod<bool>('moveToBackground') ?? false;
+    } catch (_) {
+      return false;
+    }
+  }
+
+  void _onTabRequested() {
+    final request = HomeShellNavigation._requests.value;
+    if (request == null || !mounted) return;
+    _handleDestinationSelected(request.tab);
   }
 
   void _handleDestinationSelected(int value) {
@@ -253,73 +372,82 @@ class _HomeShellPageState extends State<HomeShellPage> {
     setState(() {
       _currentIndex = value;
     });
+    // So the next launch can reopen this tab (see WarmStartStore).
+    unawaited(const WarmStartStore().saveTab(value));
   }
 
-  List<NavigationRailDestination> get _destinations => const [
+  List<NavigationRailDestination> get _destinations => [
         NavigationRailDestination(
-          icon: Icon(Icons.home_outlined),
-          selectedIcon: Icon(Icons.home_rounded),
-          label: Text('Home'),
+          icon: const Icon(Icons.home_outlined),
+          selectedIcon: const Icon(Icons.home_rounded),
+          label: Text(context.l10n.shellTabHome),
         ),
         NavigationRailDestination(
-          icon: Icon(Icons.pets_outlined),
-          selectedIcon: Icon(Icons.pets_rounded),
-          label: Text('Animali'),
+          icon: const Icon(Icons.pets_outlined),
+          selectedIcon: const Icon(Icons.pets_rounded),
+          label: Text(context.l10n.shellTabPets),
         ),
         NavigationRailDestination(
-          icon: Icon(Icons.explore_outlined),
-          selectedIcon: Icon(Icons.explore_rounded),
-          label: Text('Attività'),
+          icon: const Icon(Icons.explore_outlined),
+          selectedIcon: const Icon(Icons.explore_rounded),
+          label: Text(context.l10n.shellTabActivities),
         ),
         NavigationRailDestination(
-          icon: Icon(Icons.settings_outlined),
-          selectedIcon: Icon(Icons.settings_rounded),
-          label: Text('Impostazioni'),
+          icon: const Icon(Icons.settings_outlined),
+          selectedIcon: const Icon(Icons.settings_rounded),
+          label: Text(context.l10n.shellTabSettings),
         ),
       ];
 
-  List<NavigationDestination> get _bottomDestinations => const [
+  List<NavigationDestination> get _bottomDestinations => [
         NavigationDestination(
-          icon: Icon(Icons.home_outlined),
-          selectedIcon: Icon(Icons.home_rounded),
-          label: 'Home',
+          icon: const Icon(Icons.home_outlined),
+          selectedIcon: const Icon(Icons.home_rounded),
+          label: context.l10n.shellTabHome,
         ),
         NavigationDestination(
-          icon: Icon(Icons.pets_outlined),
-          selectedIcon: Icon(Icons.pets_rounded),
-          label: 'Animali',
+          icon: const Icon(Icons.pets_outlined),
+          selectedIcon: const Icon(Icons.pets_rounded),
+          label: context.l10n.shellTabPets,
         ),
         NavigationDestination(
-          icon: Icon(Icons.explore_outlined),
-          selectedIcon: Icon(Icons.explore_rounded),
-          label: 'Attività',
+          icon: const Icon(Icons.explore_outlined),
+          selectedIcon: const Icon(Icons.explore_rounded),
+          label: context.l10n.shellTabActivities,
         ),
         NavigationDestination(
-          icon: Icon(Icons.settings_outlined),
-          selectedIcon: Icon(Icons.settings_rounded),
-          label: 'Impostazioni',
+          icon: const Icon(Icons.settings_outlined),
+          selectedIcon: const Icon(Icons.settings_rounded),
+          label: context.l10n.shellTabSettings,
         ),
       ];
 }
 
 class _ShellTabNavigator extends StatelessWidget {
   const _ShellTabNavigator({
+    required this.tab,
     required this.navigatorKey,
     required this.rootPage,
   });
 
+  final int tab;
   final GlobalKey<NavigatorState> navigatorKey;
   final Widget rootPage;
 
   @override
   Widget build(BuildContext context) {
-    return Navigator(
-      key: navigatorKey,
-      onGenerateRoute: (_) {
-        return MaterialPageRoute<void>(
-          builder: (_) => rootPage,
-        );
-      },
+    // The scope tells pages pushed in this tab which tab they belong to, so
+    // they can be restored there (see RouteRestoration).
+    return ShellTabScope(
+      index: tab,
+      child: Navigator(
+        key: navigatorKey,
+        onGenerateRoute: (_) {
+          return MaterialPageRoute<void>(
+            builder: (_) => rootPage,
+          );
+        },
+      ),
     );
   }
 }
@@ -338,7 +466,7 @@ class _ShellBrand extends StatelessWidget {
           width: 44,
           height: 44,
           decoration: BoxDecoration(
-            color: AppColors.accentSoft.withValues(alpha: 0.18),
+            color: AppColors.secondarySoft.withValues(alpha: 0.18),
             borderRadius: BorderRadius.circular(14),
           ),
           child: const Icon(
@@ -348,13 +476,13 @@ class _ShellBrand extends StatelessWidget {
         ),
         if (extended) ...[
           const SizedBox(width: 12),
-          const SizedBox(
+          SizedBox(
             width: 132,
             child: Text(
-              'VET APP',
+              context.l10n.appTitle,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
-              style: TextStyle(
+              style: const TextStyle(
                 color: AppColors.onPrimary,
                 fontSize: 18,
                 fontWeight: FontWeight.w700,
@@ -381,9 +509,9 @@ class _RailFooter extends StatelessWidget {
     return Align(
       alignment: Alignment.centerLeft,
       child: Text(
-        'Spazio clinico caldo',
+        context.l10n.shellRailFooter,
         style: Theme.of(context).textTheme.bodySmall?.copyWith(
-              color: const Color(0xFFCEE0D8),
+              color: AppColors.secondaryMid,
             ),
       ),
     );
@@ -445,9 +573,11 @@ class _ActiveWalkBannerState extends State<_ActiveWalkBanner> {
 
         final activeSeconds = walkActiveDurationSeconds(walk);
         final label = walk.isPaused
-            ? 'Passeggiata in pausa · ${walkDistanceLabel(walk.distanceMeters)}'
-            : 'Passeggiata in corso · ${walkElapsedLabel(activeSeconds)} · '
-                '${walkDistanceLabel(walk.distanceMeters)}';
+            ? context.l10n.shellWalkPausedBanner(walkDistanceLabel(walk.distanceMeters))
+            : context.l10n.shellWalkActiveBanner(
+                walkElapsedLabel(activeSeconds),
+                walkDistanceLabel(walk.distanceMeters),
+              );
         return Material(
           color: AppColors.primary,
           child: InkWell(
@@ -481,4 +611,49 @@ class _ActiveWalkBannerState extends State<_ActiveWalkBanner> {
       },
     );
   }
+}
+
+/// Lets any page switch the bottom navigation to another tab, so a screen of
+/// another tab (e.g. Impostazioni) is opened as itself and the bar highlights
+/// it, instead of being pushed on top of the tab the owner came from.
+class HomeShellNavigation {
+  const HomeShellNavigation._();
+
+  static const homeTab = 0;
+  static const petsTab = 1;
+  static const activitiesTab = 2;
+  static const settingsTab = 3;
+
+  static final ValueNotifier<_TabRequest?> _requests = ValueNotifier<_TabRequest?>(null);
+
+  /// Switches to [tab] and shows its root page. A new request object each
+  /// time, so asking for the same tab twice still notifies.
+  static void goToTab(int tab) => _requests.value = _TabRequest(tab);
+
+  static bool _pendingLocationScroll = false;
+  static final ValueNotifier<int> _locationScrollRequests = ValueNotifier<int>(0);
+
+  /// Opens the Impostazioni tab already scrolled to the Località section.
+  static void showSettingsLocation() {
+    _pendingLocationScroll = true;
+    _locationScrollRequests.value++;
+    goToTab(settingsTab);
+  }
+
+  /// True once per [showSettingsLocation] request, for a Settings page built
+  /// after the request was made.
+  static bool consumeLocationScroll() {
+    final pending = _pendingLocationScroll;
+    _pendingLocationScroll = false;
+    return pending;
+  }
+
+  /// Fires on each [showSettingsLocation], for a Settings page already built.
+  static ValueListenable<int> get locationScrollRequests => _locationScrollRequests;
+}
+
+class _TabRequest {
+  const _TabRequest(this.tab);
+
+  final int tab;
 }

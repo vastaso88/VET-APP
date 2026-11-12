@@ -1,15 +1,21 @@
-from fastapi import APIRouter, File, Form, HTTPException, UploadFile
+from urllib.parse import quote
+
+from fastapi import APIRouter, Depends, File, Form, Header, HTTPException, UploadFile
 from fastapi.responses import Response
 
 from apps.api.dependencies.container import get_container
+from apps.api.dependencies.subscription import require_active_subscription
 from packages.core.application.services.upload_chat_attachment import UploadChatAttachmentInput
+from packages.core.domain.common.language import resolve_language
 
 router = APIRouter(prefix="/chat-attachments", tags=["chat-attachments"])
 
 
-@router.post("")
+@router.post("", dependencies=[Depends(require_active_subscription)])
 async def upload_attachment(
-    pet_id: str = Form(...), file: UploadFile = File(...)
+    pet_id: str = Form(...),
+    file: UploadFile = File(...),
+    accept_language: str | None = Header(default=None),
 ) -> dict[str, object]:
     container = get_container()
     user = container.auth_provider.get_current_user()
@@ -21,6 +27,9 @@ async def upload_attachment(
             file_bytes=file_bytes,
             filename=file.filename or "photo",
             content_type=file.content_type or "application/octet-stream",
+            owner_display_name=user.display_name,
+            quota_exempt=user.email.strip().lower() in container.developer_emails,
+            language=resolve_language(None, accept_language),
         )
     )
     return result.model_dump()
@@ -38,4 +47,15 @@ def get_attachment_file(attachment_id: str) -> Response:
     content = container.media_storage.read(attachment.storage_key)
     if content is None:
         raise HTTPException(status_code=404, detail="attachment file not found")
-    return Response(content=content, media_type=attachment.content_type)
+    # RFC 5987 form, so a filename with accents or spaces survives intact.
+    filename = quote(attachment.original_filename or "allegato", safe="")
+    return Response(
+        content=content,
+        media_type=attachment.content_type,
+        headers={
+            "Content-Disposition": f"inline; filename*=UTF-8''{filename}",
+            # The stored type comes from the file's own signature; never
+            # let a browser second-guess it.
+            "X-Content-Type-Options": "nosniff",
+        },
+    )

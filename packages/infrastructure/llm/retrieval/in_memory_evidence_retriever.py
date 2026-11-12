@@ -3,6 +3,10 @@ from packages.core.application.ports.evidence_retriever import (
     EvidenceRetriever,
 )
 from packages.core.domain.knowledge.models import EvidenceSource
+from packages.infrastructure.llm.retrieval.curated_awareness_evidence_retriever import (
+    AWARENESS_CATALOG,
+    awareness_sources_for,
+)
 from packages.infrastructure.llm.retrieval.curated_husbandry_evidence_retriever import (
     HUSBANDRY_CATALOG,
 )
@@ -28,8 +32,7 @@ _GENERIC_CATALOG = [
         clinical_domain="nutrition",
         species="cat",
         snippet=(
-            "Nutritional support and hydration monitoring remain central in feline "
-            "CKD management."
+            "Nutritional support and hydration monitoring remain central in feline CKD management."
         ),
     ),
     EvidenceSource(
@@ -75,7 +78,7 @@ _GENERIC_CATALOG = [
 # curated_husbandry_evidence_retriever.py) rather than being duplicated
 # here; concatenated in so the plain in-memory backend used by tests keeps
 # covering husbandry questions in one retriever.
-CATALOG = _GENERIC_CATALOG + HUSBANDRY_CATALOG
+CATALOG = _GENERIC_CATALOG + HUSBANDRY_CATALOG + AWARENESS_CATALOG
 
 QUERY_HINTS: dict[str, tuple[str, ...]] = {
     "clinical_question": ("tosse", "tossisce", "cough", "vomita", "vomit", "diarrea"),
@@ -111,9 +114,10 @@ QUERY_HINTS: dict[str, tuple[str, ...]] = {
 class InMemoryEvidenceRetriever(EvidenceRetriever):
     def retrieve(self, request: EvidenceRetrievalRequest) -> list[EvidenceSource]:
         domain = self._domain_from_request(request)
+        catalog = _GENERIC_CATALOG + HUSBANDRY_CATALOG + awareness_sources_for(request.query)
         results = [
             source
-            for source in CATALOG
+            for source in catalog
             if (source.species == request.species or source.species == "other")
             and source.clinical_domain == domain
         ]
@@ -130,5 +134,8 @@ class InMemoryEvidenceRetriever(EvidenceRetriever):
                     "behavior_question": "behavior",
                     "preventive_care": "preventive",
                     "husbandry_question": "husbandry",
+                    "everyday_question": "behavior",
                 }[intent]
+        if request.intent == "everyday_question":
+            return "behavior"
         return "general"

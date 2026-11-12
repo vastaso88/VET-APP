@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../l10n/l10n.dart';
 import '../tokens/app_colors.dart';
 import '../tokens/app_radii.dart';
 import '../tokens/app_spacing.dart';
@@ -18,12 +19,12 @@ class AiDisclosureBadge extends StatelessWidget {
 
   final AiDisclosureLevel level;
 
-  String get _label {
+  String _label(AppLocalizations l10n) {
     switch (level) {
       case AiDisclosureLevel.aiGenerated:
-        return 'Generato da IA';
+        return l10n.sharedAiGenerated;
       case AiDisclosureLevel.notHumanReviewed:
-        return 'Risposta automatica, non revisionata';
+        return l10n.sharedAiNotReviewed;
     }
   }
 
@@ -41,7 +42,7 @@ class AiDisclosureBadge extends StatelessWidget {
           const Icon(Icons.auto_awesome_rounded, size: 12, color: AppColors.info),
           const SizedBox(width: AppSpacing.xs),
           Text(
-            _label,
+            _label(context.l10n),
             style: AppTextStyles.caption.copyWith(color: AppColors.info),
           ),
         ],

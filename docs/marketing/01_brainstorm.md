@@ -2,15 +2,17 @@
 
 Idee raccolte progressivamente. Non ancora prioritizzate né validate: servono come materiale grezzo da cui, in futuro, estrarre iniziative concrete.
 
-## Incentivi per le recensioni (2026-09-16)
+## Feedback degli utenti e recensioni (2026-09-16, riscritta il 2026-11-03)
 
-Meccanismo proposto per incentivare recensioni positive e recuperare quelle negative:
+**Decisione del proprietario (2026-11-03): nessuna settimana di abbonamento gratis legata a un voto o a una recensione**, né per quelle positive né per quelle negative, e nemmeno come regalo accompagnato dalla richiesta di cambiare il voto. Non è accettabile legalmente (G5 in [02_guardrail_legali_marketing.md](../social/02_guardrail_legali_marketing.md)) e viola le regole degli store. L'idea originale del 2026-09-16 (2 settimane per la recensione positiva, 2 settimane per la negativa risolta) è tolta per intero.
 
-- **Recensione positiva**: si regalano 2 settimane di abbonamento full.
-- **Recensione non massima (ma non negativa)**: si chiede all'utente (via email o altro canale) cosa servirebbe per arrivare al voto massimo. Le risposte si raccolgono e vengono usate per guidare le migliorie future del prodotto.
-- **Recensione negativa**: si apre automaticamente una conversazione per capire il problema riscontrato. Se il problema viene risolto, si regalano 2 settimane di abbonamento full; insieme al regalo si allega una richiesta gentile di aggiornare voto e recensione.
+Cosa resta: **chiedere consiglio agli utenti per renderli pienamente soddisfatti.**
 
-Punti aperti da definire in futuro: su quale piattaforma raccogliere le recensioni, come automatizzare il flusso di richiesta/risposta, come evitare abusi del meccanismo (es. utenti che sfruttano il regalo senza intenzione di aggiornare la recensione).
+- **Domanda aperta a tutti**: "Cosa ti servirebbe per essere pienamente soddisfatto di Quokka?", posta a ogni utente nello stesso modo, a prescindere dal voto dato e dal fatto che abbia lasciato una recensione. Le risposte si raccolgono e guidano le migliorie future del prodotto.
+- **Separata dalla richiesta di recensione**: il canale dei consigli non è un filtro prima della recensione. La richiesta di recensione, se si fa, passa dall'API ufficiale dello store in base a un momento d'uso, non in base alla soddisfazione dichiarata.
+- **Chi segnala un problema viene aiutato a risolverlo** (conversazione di assistenza), senza regali e senza chiedere di modificare voto o recensione.
+
+Punti aperti: dove mettere il canale nell'app (es. Impostazioni → Assistenza), con quale cadenza e in quali momenti d'uso chiedere il consiglio, come raccogliere e leggere le risposte. Il premio per una segnalazione di bug che porta a un fix (sezione sotto) è legato a un'azione neutra, non a un voto: resta compatibile.
 
 ## News card (pet_news) — indicizzazione e monetizzazione (2026-09-16)
 
@@ -59,7 +61,7 @@ Punti aperti: quale professione aggredire per prima (veterinari vs. educatori ci
 
 ## Regalo per segnalazione di bug nella chat (2026-09-20)
 
-Proposta (arrivata tramite la sessione "Chat LLM interna VETAPP", che gestisce l'orchestratore chat): se un cliente segnala rapidamente dalla chat una risposta mancante/limitata/errata, e la segnalazione porta a un miglioramento reale della chat, gli si regala una settimana di abbonamento gratis per ogni bug risolto. È la stessa famiglia di meccanismo di "Incentivi per le recensioni" sopra, ma innescato dalla qualità del prodotto invece che dallo store rating — e con un vantaggio in più: chi lo risolve produce già un commit + un test di regressione, quindi esiste una prova verificabile che il bug è stato davvero corretto (non un'autocertificazione).
+Proposta (arrivata tramite la sessione "Chat LLM interna VETAPP", che gestisce l'orchestratore chat): se un cliente segnala rapidamente dalla chat una risposta mancante/limitata/errata, e la segnalazione porta a un miglioramento reale della chat, gli si regala una settimana di abbonamento gratis per ogni bug risolto. A differenza dei premi per le recensioni (tolti il 2026-11-03, sezione "Feedback degli utenti e recensioni" sopra), questo premio è legato a un'azione neutra (una segnalazione che porta a un fix), non a un voto né a una recensione — e con un vantaggio in più: chi lo risolve produce già un commit + un test di regressione, quindi esiste una prova verificabile che il bug è stato davvero corretto (non un'autocertificazione).
 
 **Decisioni prese (con l'utente):**
 - **Accredito**: revisione umana al momento del fix, non automatico. Chi risolve un bug segnalato marca esplicitamente quali segnalazioni corrispondono a quel fix — solo quelle vengono premiate.
@@ -68,7 +70,7 @@ Proposta (arrivata tramite la sessione "Chat LLM interna VETAPP", che gestisce l
 
 **Blocco tecnico scoperto verificando il codice**: non esiste ancora nessuna infrastruttura di abbonamento/pagamento reale. C'è una feature `apps/mobile_app/lib/features/billing/` con i piani Free/Plus/Pro, ma è dichiaratamente solo un demo store locale (`BillingDemoStore`, "no billing backend exists yet") — persino i prezzi di Plus e Pro sono un placeholder in attesa di input umano. Il meccanismo "regala una settimana" non ha quindi ancora nulla di reale a cui agganciarsi: la policy va fissata ora (sopra), ma l'implementazione del pulsante "segnala questa risposta" può procedere lato chat (tracciamento) indipendentemente, mentre l'accredito vero e proprio resta bloccato finché non esiste un abbonamento reale da estendere.
 
-Coincidenza utile: il piano Pro nel demo store include già "Riepilogo pre-visita per il veterinario" — la stessa idea del "portale professionista" proposta sopra in "Professionisti come promoter e clienti". I due filoni convergono: vale la pena tenerli allineati quando si passerà dalla fase demo a quella reale.
+**Correzione (2026-10-06):** una versione precedente di questa nota diceva che il piano Pro del demo store includeva già "Riepilogo pre-visita per il veterinario". Non era vero: era una voce inventata del demo store, tolta dalla sessione Pricing. Oggi nessun piano limita o aggiunge funzioni: Free, Plus e Pro danno lo stesso accesso. Il portale pre-visita resta un'idea di marketing (sezione "Professionisti come promoter e clienti"), non una funzione esistente né un'estensione di un piano.
 
 **Nota legale (da formalizzare quando esisterà un vero sistema di abbonamento)**: il regalo va descritto esplicitamente come privo di valore in denaro, non trasferibile, non cumulabile oltre il tetto fissato, e revocabile in caso di abuso — poche righe da aggiungere alla sezione abbonamenti dei Termini di Servizio ([04_termini_e_consensi.md](../compliance/04_termini_e_consensi.md)) quando quella sezione verrà scritta.
 
@@ -79,6 +81,8 @@ Coincidenza utile: il piano Pro nel demo store include già "Riepilogo pre-visit
 Policy commerciale reale, già implementata (non più un'idea): al signup parte una prova gratuita di 10 giorni senza richiedere una carta di pagamento. Alla scadenza, se non è stato scelto un piano, l'app mostra una schermata che obbliga a scegliere un piano — **incluso Free**, quindi non è un vero blocco dell'accesso (vedi nota di compliance in [04_termini_e_consensi.md](../compliance/04_termini_e_consensi.md)). Nessun addebito reale è ancora collegato: scegliere Plus o Pro oggi non comporta alcun pagamento.
 
 **Materiale utilizzabile subito nel copy marketing**: "10 giorni gratis, nessuna carta richiesta" è un hook forte per landing page/store listing/onboarding — rimuove l'obiezione più comune all'iscrizione (paura di dimenticare di disdire ed essere addebitati). Va tenuto aggiornato se in futuro cambia la durata o si aggiunge la richiesta di carta.
+
+**Aggiornamento (2026-11-06)**: la prova dura ora **14 giorni** e il piano Free non esiste più. Dopo la prova chi non si abbona accede solo ai propri dati (esportazione, cancellazione, indicazioni di emergenza). I tre piani sono Plus, Pro e Ultra, con limiti diversi su animali, chat, domande al giorno e dispositivi: tabella e prezzi in [02_brief_app_per_analisi_pricing.md](02_brief_app_per_analisi_pricing.md) §5 e [03_prezzi_per_paese.md](03_prezzi_per_paese.md). Il copy deve dire "14 giorni gratis, nessuna carta richiesta". Il parere legale sul blocco senza Free è da rifare. La nota di correzione del 2026-10-06 sopra ("nessun piano limita o aggiunge funzioni") è superata: i limiti per piano ora esistono e sono applicati dal backend.
 
 Eccezione tecnica (non da menzionare pubblicamente): 3 account sviluppatore in allowlist hanno accesso illimitato senza trial/piano — solo per test interni.
 

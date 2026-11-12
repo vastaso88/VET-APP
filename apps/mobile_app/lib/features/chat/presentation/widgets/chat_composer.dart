@@ -1,14 +1,26 @@
-import 'dart:typed_data';
+import 'dart:async';
+import 'dart:io' show File;
 
 import 'package:file_picker/file_picker.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+
+import '../../../../shared/widgets/pet_loader.dart';
+
 import 'package:http/http.dart' as http;
+import 'package:path_provider/path_provider.dart';
 import 'package:record/record.dart';
 
 import '../../../../design_system/tokens/app_colors.dart';
 import '../../../../design_system/tokens/app_radii.dart';
 import '../../../../design_system/tokens/app_spacing.dart';
+import '../../../../l10n/l10n.dart';
+import '../../../../app/launch/warm_start_store.dart';
+import '../../../../shared/permissions/permission_explainer.dart';
+import '../../../settings/data/layout_settings_store.dart';
 import '../../data/chat_demo_store.dart';
+import '../../data/chat_remote_data_source.dart' show chatMaxMessageLength;
 import '../../data/speech_to_text_remote_data_source.dart';
 
 enum _VoiceState { idle, recording, transcribing }
@@ -20,6 +32,12 @@ class ChatComposer extends StatefulWidget {
     required this.petName,
     this.onSend,
     this.speechToText,
+    this.recorder,
+    this.recordingPathProvider,
+    this.editingText,
+    this.onCancelEditing,
+    this.allowEmptySend = false,
+    this.draftKey,
   });
 
   final String hintText;
@@ -30,44 +48,154 @@ class ChatComposer extends StatefulWidget {
   final void Function(String text, {String? attachmentId, Uint8List? attachmentImageBytes})? onSend;
   final SpeechToTextRemoteDataSource? speechToText;
 
+  /// Overridable so tests can drive the dictation flow without a microphone.
+  final AudioRecorder? recorder;
+  final Future<String> Function()? recordingPathProvider;
+
+  /// The text of a sent message being edited: when it changes from null, it
+  /// is put in the field and the composer shows it is editing. Sending then
+  /// replaces that message (see ChatDemoStore.editMessage).
+  final String? editingText;
+  final VoidCallback? onCancelEditing;
+
+  /// Lets an empty field be sent: an edited message that keeps only its
+  /// photo.
+  final bool allowEmptySend;
+
+  /// Identifies the conversation, so the text typed and not sent survives the
+  /// app being killed in the background (saved on this phone, put back here).
+  final String? draftKey;
+
+  static String get listeningText => appL10n.chatListeningText;
+  static String get transcribingText => appL10n.chatTranscribingText;
+  static String get editingLabel => appL10n.chatEditingLabel;
+
   @override
   State<ChatComposer> createState() => _ChatComposerState();
 }
 
-class _ChatComposerState extends State<ChatComposer> {
+class _ChatComposerState extends State<ChatComposer> with SingleTickerProviderStateMixin {
   final TextEditingController _controller = TextEditingController();
-  final AudioRecorder _recorder = AudioRecorder();
+  final FocusNode _focusNode = FocusNode();
+
+  /// Drives the pulsing dot and stop button while recording (build 28: it
+  /// was not clear the microphone was listening).
+  late final AnimationController _pulse = AnimationController(
+    vsync: this,
+    duration: const Duration(milliseconds: 900),
+  );
+  Timer? _elapsedTimer;
+  int _elapsedSeconds = 0;
+  late final AudioRecorder _recorder = widget.recorder ?? AudioRecorder();
   late final SpeechToTextRemoteDataSource _speechToText =
       widget.speechToText ?? HttpSpeechToTextRemoteDataSource();
 
   bool _hasText = false;
+
+  /// The field holds as many characters as the backend accepts: typing or
+  /// pasting stops there, and a line says why.
+  bool _atLimit = false;
   _VoiceState _voiceState = _VoiceState.idle;
 
   Uint8List? _pendingImageBytes;
   String? _pendingAttachmentId;
   bool _uploadingAttachment = false;
 
+  Timer? _draftTimer;
+
+  Future<void> _restoreDraft() async {
+    final key = widget.draftKey;
+    if (key == null) return;
+    final draft = await const WarmStartStore().loadDraft(key);
+    // Only into an untouched field: never over what is being typed or edited.
+    if (!mounted || draft == null || _controller.text.isNotEmpty || widget.editingText != null) {
+      return;
+    }
+    _controller.value = TextEditingValue(
+      text: draft,
+      selection: TextSelection.collapsed(offset: draft.length),
+    );
+  }
+
+  void _scheduleDraftSave() {
+    final key = widget.draftKey;
+    // An edited sent message is not a draft.
+    if (key == null || widget.editingText != null) return;
+    _draftTimer?.cancel();
+    final text = _controller.text;
+    _draftTimer = Timer(
+      const Duration(milliseconds: 400),
+      () => const WarmStartStore().saveDraft(key, text),
+    );
+  }
+
   @override
   void initState() {
     super.initState();
+    unawaited(_restoreDraft());
+    _controller.addListener(_scheduleDraftSave);
     _controller.addListener(() {
       final hasText = _controller.text.trim().isNotEmpty;
-      if (hasText != _hasText) {
-        setState(() => _hasText = hasText);
+      final atLimit = _controller.text.length >= chatMaxMessageLength;
+      if (hasText != _hasText || atLimit != _atLimit) {
+        setState(() {
+          _hasText = hasText;
+          _atLimit = atLimit;
+        });
       }
     });
   }
 
   @override
+  void didUpdateWidget(covariant ChatComposer oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    final editing = widget.editingText;
+    if (editing != null && editing != oldWidget.editingText) {
+      _controller.value = TextEditingValue(
+        text: editing,
+        selection: TextSelection.collapsed(offset: editing.length),
+      );
+      _focusNode.requestFocus();
+    }
+  }
+
+  @override
   void dispose() {
+    _draftTimer?.cancel();
+    _elapsedTimer?.cancel();
+    _pulse.dispose();
+    _focusNode.dispose();
     _controller.dispose();
     _recorder.dispose();
     super.dispose();
   }
 
+  void _startRecordingFeedback() {
+    _elapsedTimer?.cancel();
+    _elapsedSeconds = 0;
+    _elapsedTimer = Timer.periodic(const Duration(seconds: 1), (_) {
+      if (mounted) setState(() => _elapsedSeconds++);
+    });
+    _pulse.repeat(reverse: true);
+  }
+
+  void _stopRecordingFeedback() {
+    _elapsedTimer?.cancel();
+    _elapsedTimer = null;
+    _pulse
+      ..stop()
+      ..value = 0;
+  }
+
+  void _cancelEditing() {
+    _controller.clear();
+    widget.onCancelEditing?.call();
+  }
+
   @override
   Widget build(BuildContext context) {
-    final canSend = _hasText && !_uploadingAttachment;
+    final canSend = (_hasText || widget.allowEmptySend) && !_uploadingAttachment;
+    final isEditing = widget.editingText != null;
 
     return Container(
       padding: const EdgeInsets.fromLTRB(
@@ -82,7 +210,7 @@ class _ChatComposerState extends State<ChatComposer> {
         border: Border.all(color: AppColors.border),
         boxShadow: const [
           BoxShadow(
-            color: Color(0x0F163A35),
+            color: AppColors.shadowSoft,
             blurRadius: 18,
             offset: Offset(0, 8),
           ),
@@ -99,33 +227,65 @@ class _ChatComposerState extends State<ChatComposer> {
             ),
             const SizedBox(height: AppSpacing.sm),
           ],
+          if (isEditing) ...[
+            _EditingBanner(onCancel: _cancelEditing),
+            const SizedBox(height: AppSpacing.sm),
+          ],
+          if (_voiceState == _VoiceState.recording) ...[
+            _RecordingBanner(
+              pulse: _pulse,
+              elapsedSeconds: _elapsedSeconds,
+              onTap: _toggleRecording,
+            ),
+            const SizedBox(height: AppSpacing.sm),
+          ] else if (_voiceState == _VoiceState.transcribing) ...[
+            const _TranscribingBanner(),
+            const SizedBox(height: AppSpacing.sm),
+          ],
           ConstrainedBox(
             constraints: const BoxConstraints(minHeight: 44),
-            child: TextField(
-              controller: _controller,
-              minLines: 1,
-              maxLines: 8,
-              textInputAction: TextInputAction.newline,
-              style: const TextStyle(color: AppColors.text, fontSize: 15, height: 1.4),
-              decoration: InputDecoration(
-                hintText: _voiceState == _VoiceState.recording
-                    ? 'Sto ascoltando...'
-                    : _voiceState == _VoiceState.transcribing
-                        ? 'Trascrivo il messaggio...'
-                        : widget.hintText,
-                border: InputBorder.none,
-                isCollapsed: true,
-                hintStyle: const TextStyle(color: AppColors.mutedText),
+            child: ListenableBuilder(
+              listenable: LayoutSettingsStore.instance,
+              builder: (context, _) => TextField(
+                controller: _controller,
+                focusNode: _focusNode,
+                inputFormatters: [LengthLimitingTextInputFormatter(chatMaxMessageLength)],
+                minLines: 1,
+                maxLines: 8,
+                textInputAction: TextInputAction.newline,
+                style: TextStyle(
+                  color: AppColors.text,
+                  fontSize: 15 * LayoutSettingsStore.instance.settings.chatTextSize.scale,
+                  height: 1.4,
+                ),
+                decoration: InputDecoration(
+                  hintText: _voiceState == _VoiceState.recording
+                      ? context.l10n.chatListeningHint
+                      : _voiceState == _VoiceState.transcribing
+                          ? context.l10n.chatTranscribingHint
+                          : widget.hintText,
+                  border: InputBorder.none,
+                  isCollapsed: true,
+                  hintStyle: const TextStyle(color: AppColors.mutedText),
+                ),
               ),
             ),
           ),
+          if (_atLimit) ...[
+            const SizedBox(height: AppSpacing.xs),
+            Text(
+              context.l10n.chatInputLimitReached(chatMaxMessageLength),
+              style: const TextStyle(color: AppColors.danger, fontSize: 12),
+            ),
+          ],
           const SizedBox(height: AppSpacing.sm),
           Row(
             children: [
               _ComposerIconButton(
                 icon: Icons.add_rounded,
-                tooltip: 'Aggiungi una foto',
-                onPressed: _uploadingAttachment ? null : _pickAndUploadImage,
+                tooltip: context.l10n.chatAddPhotoTooltip,
+                // An edited message keeps its original photo.
+                onPressed: _uploadingAttachment || isEditing ? null : _pickAndUploadImage,
               ),
               const Spacer(),
               if (_voiceState == _VoiceState.transcribing)
@@ -134,19 +294,24 @@ class _ChatComposerState extends State<ChatComposer> {
                   child: SizedBox(
                     width: 22,
                     height: 22,
-                    child: CircularProgressIndicator(strokeWidth: 2),
+                    child: PetLoader.small(),
                   ),
                 )
               else
-                _ComposerIconButton(
-                  icon: _voiceState == _VoiceState.recording
-                      ? Icons.stop_circle_rounded
-                      : Icons.mic_none_rounded,
-                  tooltip: _voiceState == _VoiceState.recording
-                      ? 'Ferma e trascrivi'
-                      : 'Messaggio vocale',
-                  color: _voiceState == _VoiceState.recording ? AppColors.danger : null,
-                  onPressed: _toggleRecording,
+                ScaleTransition(
+                  scale: Tween<double>(begin: 1, end: 1.18).animate(
+                    CurvedAnimation(parent: _pulse, curve: Curves.easeInOut),
+                  ),
+                  child: _ComposerIconButton(
+                    icon: _voiceState == _VoiceState.recording
+                        ? Icons.stop_circle_rounded
+                        : Icons.mic_none_rounded,
+                    tooltip: _voiceState == _VoiceState.recording
+                        ? context.l10n.chatStopRecordingTooltip
+                        : context.l10n.chatVoiceMessageTooltip,
+                    color: _voiceState == _VoiceState.recording ? AppColors.danger : null,
+                    onPressed: _toggleRecording,
+                  ),
                 ),
               const SizedBox(width: AppSpacing.xs),
               SizedBox(
@@ -170,7 +335,7 @@ class _ChatComposerState extends State<ChatComposer> {
 
   void _sendMessage(String value) {
     final message = value.trim();
-    if (message.isEmpty) return;
+    if (message.isEmpty && !widget.allowEmptySend) return;
     widget.onSend?.call(
       message,
       attachmentId: _pendingAttachmentId,
@@ -234,23 +399,73 @@ class _ChatComposerState extends State<ChatComposer> {
       return;
     }
     if (_voiceState != _VoiceState.idle) return;
+    final l10n = context.l10n;
 
-    final hasPermission = await _recorder.hasPermission();
+    var hasPermission = false;
+    try {
+      hasPermission = await _recorder.hasPermission(request: false);
+      if (!hasPermission) {
+        // Before Android's own dialog: why the microphone, and what happens
+        // without it. "Non ora" asks nothing.
+        if (!mounted) return;
+        if (!await explainPermission(context, PermissionPurpose.microphone)) return;
+        hasPermission = await _recorder.hasPermission();
+      }
+    } catch (_) {
+      // Treated like a refusal: the message below is shown.
+    }
     if (!hasPermission) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Serve il permesso per usare il microfono.')),
+        SnackBar(content: Text(l10n.chatMicPermissionNeeded)),
       );
       return;
     }
 
-    await _recorder.start(const RecordConfig(), path: 'chat-voice-message.webm');
+    try {
+      // `record` opens the file as given, and a bare name resolves against the
+      // process working directory (read-only "/" on Android): the recorder
+      // refused to start there. Native recordings go to a real temp file.
+      final path = await (widget.recordingPathProvider ?? _defaultRecordingPath)();
+      await _recorder.start(_recordConfig, path: path);
+    } catch (_) {
+      _showMessage(l10n.chatMicStartFailed);
+      return;
+    }
     if (!mounted) return;
     setState(() => _voiceState = _VoiceState.recording);
+    _startRecordingFeedback();
+  }
+
+  /// Mono 16 kHz AAC (.m4a) is plenty for speech and keeps the upload small.
+  /// The web recorder picks its own container (webm), so keep its defaults.
+  static const _recordConfig = kIsWeb
+      ? RecordConfig()
+      : RecordConfig(
+          encoder: AudioEncoder.aacLc, sampleRate: 16000, numChannels: 1, bitRate: 64000);
+
+  static Future<String> _defaultRecordingPath() async {
+    if (kIsWeb) return 'chat-voice-message.webm';
+    final directory = await getTemporaryDirectory();
+    return '${directory.path}/chat-voice-${DateTime.now().millisecondsSinceEpoch}.m4a';
+  }
+
+  void _showMessage(String message) {
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(message)));
   }
 
   Future<void> _stopAndTranscribe() async {
-    final path = await _recorder.stop();
+    final l10n = context.l10n;
+    _stopRecordingFeedback();
+    String? path;
+    try {
+      path = await _recorder.stop();
+    } catch (_) {
+      if (mounted) setState(() => _voiceState = _VoiceState.idle);
+      _showMessage(l10n.chatRecordingFailed);
+      return;
+    }
     if (!mounted) return;
     setState(() => _voiceState = _VoiceState.transcribing);
 
@@ -261,11 +476,13 @@ class _ChatComposerState extends State<ChatComposer> {
 
     try {
       // On web `stop()` returns a `blob:` URL for the recording; http can
-      // fetch it directly (the blob lives in this same page's origin).
-      final response = await http.get(Uri.parse(path));
+      // fetch it directly (the blob lives in this same page's origin). On
+      // Android/iOS it is a plain file path.
+      final audioBytes =
+          kIsWeb ? (await http.get(Uri.parse(path))).bodyBytes : await File(path).readAsBytes();
       final result = await _speechToText.transcribe(
-        audioBytes: response.bodyBytes,
-        fileName: 'chat-voice-message.webm',
+        audioBytes: audioBytes,
+        fileName: kIsWeb ? 'chat-voice-message.webm' : 'chat-voice-message.m4a',
       );
       if (!mounted) return;
       result.fold(
@@ -273,7 +490,11 @@ class _ChatComposerState extends State<ChatComposer> {
           final transcribed = text.trim();
           if (transcribed.isEmpty) return;
           final current = _controller.text;
-          final merged = current.trim().isEmpty ? transcribed : '$current $transcribed';
+          final joined = current.trim().isEmpty ? transcribed : '$current $transcribed';
+          // Set directly, so the field's length limit has to be applied here.
+          final merged = joined.length > chatMaxMessageLength
+              ? joined.substring(0, chatMaxMessageLength)
+              : joined;
           _controller.value = TextEditingValue(
             text: merged,
             selection: TextSelection.collapsed(offset: merged.length),
@@ -286,9 +507,15 @@ class _ChatComposerState extends State<ChatComposer> {
     } catch (_) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Non sono riuscito a leggere la registrazione. Riprova.')),
+        SnackBar(content: Text(l10n.chatRecordingReadFailed)),
       );
     } finally {
+      if (!kIsWeb) {
+        // The clip is only needed for the transcription.
+        try {
+          await File(path).delete();
+        } catch (_) {}
+      }
       if (mounted) setState(() => _voiceState = _VoiceState.idle);
     }
   }
@@ -324,7 +551,7 @@ class _PendingAttachmentChip extends StatelessWidget {
                   child: SizedBox(
                     width: 18,
                     height: 18,
-                    child: CircularProgressIndicator(strokeWidth: 2),
+                    child: PetLoader.small(),
                   ),
                 ),
               ),
@@ -333,14 +560,143 @@ class _PendingAttachmentChip extends StatelessWidget {
         const SizedBox(width: AppSpacing.sm),
         Expanded(
           child: Text(
-            isUploading ? 'Sto guardando la foto...' : 'Foto pronta da inviare',
+            isUploading ? context.l10n.chatPhotoAnalyzing : context.l10n.chatPhotoReady,
             style: const TextStyle(color: AppColors.secondaryText, fontSize: 12),
           ),
         ),
         IconButton(
           onPressed: onRemove,
           icon: const Icon(Icons.close_rounded, size: 18),
-          tooltip: 'Rimuovi foto',
+          tooltip: context.l10n.chatRemovePhotoTooltip,
+          visualDensity: VisualDensity.compact,
+          constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
+        ),
+      ],
+    );
+  }
+}
+
+/// While recording: a pulsing dot, what is happening, how long it has been.
+/// Tapping it stops the recording, like the stop button.
+class _RecordingBanner extends StatelessWidget {
+  const _RecordingBanner({
+    required this.pulse,
+    required this.elapsedSeconds,
+    required this.onTap,
+  });
+
+  final Animation<double> pulse;
+  final int elapsedSeconds;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final minutes = elapsedSeconds ~/ 60;
+    final seconds = (elapsedSeconds % 60).toString().padLeft(2, '0');
+    return Semantics(
+      button: true,
+      label: context.l10n.chatRecordingSemantics(
+        context.l10n.chatListeningText,
+        minutes,
+        seconds,
+      ),
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(14),
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md, vertical: AppSpacing.sm),
+          decoration: BoxDecoration(
+            color: AppColors.danger.withValues(alpha: 0.08),
+            borderRadius: BorderRadius.circular(14),
+          ),
+          child: Row(
+            children: [
+              FadeTransition(
+                opacity: Tween<double>(begin: 1, end: 0.25).animate(pulse),
+                child: Container(
+                  width: 10,
+                  height: 10,
+                  decoration: const BoxDecoration(
+                    color: AppColors.danger,
+                    shape: BoxShape.circle,
+                  ),
+                ),
+              ),
+              const SizedBox(width: AppSpacing.sm),
+              Expanded(
+                child: Text(
+                  context.l10n.chatListeningText,
+                  style: const TextStyle(
+                    color: AppColors.text,
+                    fontSize: 13,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+              Text(
+                '$minutes:$seconds',
+                style: const TextStyle(
+                  color: AppColors.danger,
+                  fontSize: 13,
+                  fontWeight: FontWeight.w700,
+                  fontFeatures: [FontFeature.tabularFigures()],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _TranscribingBanner extends StatelessWidget {
+  const _TranscribingBanner();
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md, vertical: AppSpacing.sm),
+      decoration: BoxDecoration(
+        color: AppColors.secondarySoft,
+        borderRadius: BorderRadius.circular(14),
+      ),
+      child: Row(
+        children: [
+          const PetLoader.small(),
+          const SizedBox(width: AppSpacing.sm),
+          Text(
+            context.l10n.chatTranscribingText,
+            style: const TextStyle(
+                color: AppColors.text, fontSize: 13, fontWeight: FontWeight.w600),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _EditingBanner extends StatelessWidget {
+  const _EditingBanner({required this.onCancel});
+
+  final VoidCallback onCancel;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        const Icon(Icons.edit_outlined, size: 16, color: AppColors.secondaryStrong),
+        const SizedBox(width: AppSpacing.xs),
+        Expanded(
+          child: Text(
+            context.l10n.chatEditingLabel,
+            style: const TextStyle(color: AppColors.primary, fontSize: 13, fontWeight: FontWeight.w700),
+          ),
+        ),
+        IconButton(
+          onPressed: onCancel,
+          tooltip: context.l10n.chatCancelEditTooltip,
+          icon: const Icon(Icons.close_rounded, size: 18, color: AppColors.secondaryText),
           visualDensity: VisualDensity.compact,
           constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
         ),

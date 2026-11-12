@@ -15,54 +15,45 @@ class BillingDemoStore extends ChangeNotifier {
 
   static final BillingDemoStore instance = BillingDemoStore._();
 
-  // TODO(human): questi sono placeholder — sostituisci con i prezzi reali
-  // di Plus e Pro (mensile ed equivalente mensile se fatturato annuale, in
-  // euro). Free resta a 0.
-  static const double _plusMonthly = 4.99;
-  static const double _plusYearly = 3.99;
-  static const double _proMonthly = 9.99;
-  static const double _proYearly = 7.99;
+  /// What every plan shares. Each line maps to a real backend route (pets,
+  /// chat + chat attachments + speech_to_text, reminders, local_services).
+  /// What changes from plan to plan is the four limits, see
+  /// [limitFeaturesFor].
+  static const List<PlanFeature> includedInAllPlans = [
+    PlanFeature(PlanFeatureId.includedPets),
+    PlanFeature(PlanFeatureId.includedAssistant),
+    PlanFeature(PlanFeatureId.includedChatMedia),
+    PlanFeature(PlanFeatureId.includedReminders),
+    PlanFeature(PlanFeatureId.includedNearbyServices),
+  ];
 
+  /// Starting prices for Italy (docs/marketing/03_prezzi_per_paese.md):
+  /// the yearly price is ten months. Prices for the other countries are set
+  /// in the store consoles, and once real subscriptions exist the app shows
+  /// the price the store returns, not these figures.
   static const List<SubscriptionPlan> plans = [
-    SubscriptionPlan(
-      tier: PlanTier.free,
-      displayName: 'Free',
-      monthlyPrice: 0,
-      yearlyPrice: 0,
-      features: [
-        'Profilo di un animale',
-        'Promemoria di base',
-        '5 domande all\'assistente al mese',
-      ],
-    ),
     SubscriptionPlan(
       tier: PlanTier.plus,
       displayName: 'Plus',
-      monthlyPrice: _plusMonthly,
-      yearlyPrice: _plusYearly,
-      features: [
-        'Fino a 3 animali',
-        'Promemoria illimitati',
-        'Domande illimitate all\'assistente',
-        'Cartella clinica digitale',
-      ],
+      monthlyPrice: 4.59,
+      yearlyPrice: 45.99,
     ),
     SubscriptionPlan(
       tier: PlanTier.pro,
       displayName: 'Pro',
-      monthlyPrice: _proMonthly,
-      yearlyPrice: _proYearly,
-      features: [
-        'Animali illimitati',
-        'Tutto quanto incluso in Plus',
-        'Riepilogo pre-visita per il veterinario',
-        'Supporto prioritario',
-      ],
+      monthlyPrice: 8.59,
+      yearlyPrice: 85.99,
       // "Più scelto" would claim a real popularity ranking we don't have
       // data for yet (no paying users exist). "Consigliato" makes the same
       // visual point without asserting an unverified fact — see legal
       // review note in docs/auth/01_brainstorm.md (2026-09-26).
-      badge: 'Consigliato',
+      isRecommended: true,
+    ),
+    SubscriptionPlan(
+      tier: PlanTier.ultra,
+      displayName: 'Ultra',
+      monthlyPrice: 15.59,
+      yearlyPrice: 155.99,
     ),
   ];
 
@@ -77,8 +68,8 @@ class BillingDemoStore extends ChangeNotifier {
     ),
   ];
 
-  PlanTier _currentTier = PlanTier.free;
-  BillingCycle _billingCycle = BillingCycle.monthly;
+  PlanTier? _currentTier;
+  BillingCycle _billingCycle = BillingCycle.yearly;
   DateTime? _renewalDate;
   late List<PaymentMethod> _paymentMethods;
 
@@ -86,24 +77,49 @@ class BillingDemoStore extends ChangeNotifier {
   // Null until the first successful syncFromBackend() call.
   SubscriptionStatus? _subscriptionStatus;
 
-  PlanTier get currentTier => _currentTier;
+  /// The chosen plan; null while on the trial or once it has ended.
+  PlanTier? get currentTier => _currentTier;
 
   BillingCycle get billingCycle => _billingCycle;
 
   DateTime? get renewalDate => _renewalDate;
 
-  SubscriptionPlan get currentPlan =>
-      plans.firstWhere((plan) => plan.tier == _currentTier);
+  static SubscriptionPlan planFor(PlanTier tier) =>
+      plans.firstWhere((plan) => plan.tier == tier);
+
+  SubscriptionPlan? get currentPlan {
+    final tier = _currentTier;
+    return tier == null ? null : planFor(tier);
+  }
 
   List<PaymentMethod> get paymentMethods => List.unmodifiable(_paymentMethods);
 
-  /// True while the account has no chosen plan yet and the 10-day free
+  /// The limits of [tier] as the backend enforces them; null until the first
+  /// successful sync (the screens then simply leave the limit lines out).
+  PlanLimits? planLimitsFor(PlanTier tier) => _subscriptionStatus?.planLimits[tier];
+
+  /// The four limit lines of [tier], empty until the backend has answered.
+  List<PlanFeature> limitFeaturesFor(PlanTier tier) {
+    final limits = planLimitsFor(tier);
+    return limits == null ? const [] : PlanFeature.forLimits(limits);
+  }
+
+  /// True while the account has no chosen plan yet and the 14-day free
   /// trial (no card required) is still running.
   bool get isOnTrial => _subscriptionStatus != null &&
       _subscriptionStatus!.plan == null &&
       _subscriptionStatus!.isTrialActive;
 
+  /// True while the backend runs a public test: everyone on the same plan,
+  /// nobody pays, nothing to choose.
+  bool get isTestPeriod => _subscriptionStatus?.testPeriod ?? false;
+
+  /// False until the first answer of the backend.
+  bool get hasLoadedStatus => _subscriptionStatus != null;
+
   int get trialDaysLeft => _subscriptionStatus?.trialDaysLeft ?? 0;
+
+  DateTime? get trialEndsAt => _subscriptionStatus?.trialEndsAt;
 
   bool get isDeveloperAccount => _subscriptionStatus?.isDeveloper ?? false;
 
@@ -117,7 +133,7 @@ class BillingDemoStore extends ChangeNotifier {
     result.fold(
       onSuccess: (status) {
         _subscriptionStatus = status;
-        _currentTier = status.plan ?? PlanTier.free;
+        _currentTier = status.plan;
         notifyListeners();
       },
       onFailure: (_) {
@@ -125,6 +141,17 @@ class BillingDemoStore extends ChangeNotifier {
         // still works from cached/demo data if the backend is unreachable.
       },
     );
+  }
+
+  /// Sign-out: the next account on this device starts from nothing, never
+  /// from the previous one's plan or access (the Mercatino reads [hasAccess]).
+  void reset() {
+    _subscriptionStatus = null;
+    _currentTier = null;
+    _renewalDate = null;
+    _billingCycle = BillingCycle.yearly;
+    _paymentMethods = List<PaymentMethod>.of(_initialPaymentMethods);
+    notifyListeners();
   }
 
   void setBillingCycle(BillingCycle cycle) {
@@ -135,13 +162,11 @@ class BillingDemoStore extends ChangeNotifier {
 
   void switchToPlan(PlanTier tier) {
     _currentTier = tier;
-    _renewalDate = tier == PlanTier.free
-        ? null
-        : DateTime.now().add(
-            _billingCycle == BillingCycle.yearly
-                ? const Duration(days: 365)
-                : const Duration(days: 30),
-          );
+    _renewalDate = DateTime.now().add(
+      _billingCycle == BillingCycle.yearly
+          ? const Duration(days: 365)
+          : const Duration(days: 30),
+    );
     notifyListeners();
   }
 

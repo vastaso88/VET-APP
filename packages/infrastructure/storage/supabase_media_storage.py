@@ -21,9 +21,15 @@ class SupabaseMediaStorage(MediaStorage):
         self._bucket = bucket
 
     def save(self, key: str, content: bytes) -> None:
-        self._client.storage.from_(self._bucket).upload(
-            key, content, {"upsert": "true"}
-        )
+        self._client.storage.from_(self._bucket).upload(key, content, {"upsert": "true"})
+
+    def delete(self, key: str) -> None:
+        try:
+            self._client.storage.from_(self._bucket).remove([key])
+        except Exception:
+            # Already gone, or the bucket is unreachable right now: the
+            # retention job runs again tomorrow (and logs its own counts).
+            return
 
     def read(self, key: str) -> bytes | None:
         try:

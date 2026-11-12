@@ -1,0 +1,399 @@
+from typing import Annotated, Literal
+
+from fastapi import APIRouter, Depends, Query
+from fastapi.responses import JSONResponse
+from pydantic import BaseModel, Field
+
+from apps.api.dependencies.container import ApplicationContainer, get_container
+from apps.api.dependencies.subscription import require_active_subscription
+from packages.core.application.services.list_nearby_radar_places import (
+    ListNearbyRadarPlacesInput,
+)
+from packages.core.application.services.radar_reports import (
+    ContributionRulesRequiredError,
+    RadarReportSettings,
+    RateDogParkInput,
+    ReportLimitReachedError,
+    SubmitCompetenceClaimInput,
+    SubmitRadarReportInput,
+    VoteRadarReportInput,
+    WithdrawRadarReportInput,
+)
+from packages.core.domain.coverage.country_coverage import coverage_level
+from packages.core.domain.geo.countries import RADAR_COUNTRIES
+from packages.core.domain.geo.models import Coordinates
+from packages.core.domain.radar_places.competences import ClaimEvidenceKind, ExoticGroup
+from packages.core.domain.radar_places.models import (
+    OSM_SOURCE_NAME,
+    RADAR_PLACE_API_EXCLUDED_FIELDS,
+    RadarDataSource,
+    RadarPlace,
+    RadarPlaceType,
+)
+from packages.core.domain.radar_reports.models import (
+    USER_SOURCE_NAME,
+    RadarUserReport,
+    ReportKind,
+)
+from packages.shared.errors.base import ValidationError
+
+router = APIRouter(prefix="/local-services", tags=["local-services"])
+
+
+class SubmitReportRequest(BaseModel):
+    kind: ReportKind
+    place_type: RadarPlaceType
+    name: str | None = Field(default=None, max_length=120)
+    latitude: float = Field(ge=-90, le=90)
+    longitude: float = Field(ge=-180, le=180)
+    address_label: str | None = Field(default=None, max_length=160)
+    target_source: str | None = Field(default=None, max_length=60)
+    target_source_id: str | None = Field(default=None, max_length=120)
+
+
+class VoteReportRequest(BaseModel):
+    vote: Literal["confirm", "deny"]
+
+
+class CompetenceClaimRequest(BaseModel):
+    source: str = Field(max_length=60)
+    source_id: str = Field(max_length=120)
+    latitude: float = Field(ge=-90, le=90)
+    longitude: float = Field(ge=-180, le=180)
+    groups: list[ExoticGroup] = Field(min_length=1, max_length=5)
+    evidence_kind: ClaimEvidenceKind
+
+
+class RatePlaceRequest(BaseModel):
+    source: str = Field(max_length=60)
+    source_id: str = Field(max_length=120)
+    latitude: float = Field(ge=-90, le=90)
+    longitude: float = Field(ge=-180, le=180)
+    stars: int = Field(ge=1, le=5)
+
+
+def _source_payload(source: RadarDataSource) -> dict[str, object]:
+    return source.model_dump(
+        mode="json",
+        include={"source", "release", "license", "attribution", "url", "imported_at"},
+    )
+
+
+def _report_payload(report: RadarUserReport, settings: RadarReportSettings) -> dict[str, object]:
+    # Never the reporter: not even as a pseudonym.
+    return {
+        "report_id": report.id,
+        "kind": report.kind,
+        "status": report.status,
+        "confirmations": max(0, report.confirmations - report.denials),
+        "required": settings.required_for(report.kind),
+        "expires_in_days": report.expires_in_days(expiry_days=settings.expiry_days),
+    }
+
+
+def _contributions_off() -> JSONResponse:
+    return JSONResponse(
+        status_code=503,
+        content={
+            "detail": "Segnalazioni e voti non sono ancora attivi.",
+            "code": "contributions_disabled",
+        },
+    )
+
+
+def _rules_required(exc: ContributionRulesRequiredError) -> JSONResponse:
+    return JSONResponse(
+        status_code=403, content={"detail": str(exc), "code": "contribution_rules_required"}
+    )
+
+
+# Deliberately no bulk/export variant of this route: the data comes from
+# open datasets (OpenStreetMap is ODbL), and serving it only as bounded,
+# distance-filtered results keeps the app a "produced work" rather than a
+# redistributed derivative database (docs/features/radar_places_overpass.md).
+@router.get("/places")
+def list_nearby_places(
+    latitude: Annotated[float, Query(ge=-90, le=90)],
+    longitude: Annotated[float, Query(ge=-180, le=180)],
+    radius_km: Annotated[float | None, Query(gt=0)] = None,
+    place_type: Annotated[list[RadarPlaceType] | None, Query()] = None,
+    per_type_limit: Annotated[int, Query(ge=1, le=400)] = 60,
+) -> dict[str, object]:
+    container = get_container()
+    user = container.auth_provider.get_current_user()
+    result = container.list_nearby_radar_places_service().execute(
+        ListNearbyRadarPlacesInput(
+            latitude=latitude,
+            longitude=longitude,
+            radius_km=radius_km,
+            place_types=list(place_type or []),
+            per_type_limit=per_type_limit,
+            viewer_id=user.id,
+        )
+    )
+    return {
+        "places": [
+            {
+                **item.place.model_dump(mode="json", exclude=set(RADAR_PLACE_API_EXCLUDED_FIELDS)),
+                "distance_km": round(item.distance_km, 3),
+                **result.extras.get(item.place.id, {}),
+            }
+            for item in result.places
+        ],
+        "coverage": {
+            "coverage_key": result.coverage_key,
+            "status": result.coverage_status,
+            "refreshed_at": result.refreshed_at,
+        },
+        "context": {
+            "search_radius_km": result.search_radius_km,
+            "country": result.country,
+            "coverage_level": result.coverage_level,
+        },
+        "sources": [_source_payload(source) for source in result.sources],
+        # Where to write about a place that should not be listed.
+        "support_contact_email": container.settings.support_contact_email.strip() or None,
+    }
+
+
+@router.get("/sources")
+def list_data_sources() -> dict[str, object]:
+    """Datasets behind the radar, for the app's "Fonti dati" page."""
+    container = get_container()
+    container.auth_provider.get_current_user()
+    served = container.radar_open_sources()
+    return {
+        "sources": [
+            _source_payload(source)
+            for source in container.radar_catalog_repository.list_sources()
+            if source.source == OSM_SOURCE_NAME or served is None or source.source in served
+        ],
+        # Where to ask for a correction or removal; null when not configured.
+        "support_contact_email": container.settings.support_contact_email.strip() or None,
+    }
+
+
+@router.get("/countries")
+def list_countries() -> dict[str, object]:
+    """The countries the radar is built for and how far each is imported:
+    the table behind the app's "this area is not covered yet" notice."""
+    container = get_container()
+    container.auth_provider.get_current_user()
+    rows = {row.country: row for row in container.radar_catalog_repository.list_country_coverage()}
+    legacy = {
+        source.source: source for source in container.radar_catalog_repository.list_sources()
+    }.get(OSM_SOURCE_NAME)
+    countries = []
+    for country in RADAR_COUNTRIES:
+        row = rows.get(country.code)
+        centre = country.bounds[0]
+        legacy_covered = legacy is not None and legacy.covers(
+            Coordinates(
+                latitude=(centre.min_latitude + centre.max_latitude) / 2,
+                longitude=(centre.min_longitude + centre.max_longitude) / 2,
+            )
+        )
+        countries.append(
+            {
+                "code": country.code,
+                "name": country.name,
+                "flag": country.flag,
+                "language": country.language,
+                "coverage_level": coverage_level(country, row, legacy_osm_covers=legacy_covered),
+                "osm_regions_total": len(country.regions),
+                "osm_complete_at": (
+                    row.osm_complete_at.isoformat() if row and row.osm_complete_at else None
+                ),
+            }
+        )
+    return {"countries": countries}
+
+
+@router.get("/reports/options")
+def report_options() -> dict[str, object]:
+    """What "Segnala!" currently accepts, so the app's form follows the
+    server's configuration without a new build."""
+    container = get_container()
+    container.auth_provider.get_current_user()
+    settings = container.radar_report_settings()
+    kinds = settings.report_kinds() if settings else []
+    return {
+        "enabled": bool(kinds),
+        "missing_place_types": (
+            sorted(settings.missing_place_types) if settings and "missing" in kinds else []
+        ),
+        "confirmations_required": settings.confirmations_required if settings else None,
+        # Kinds of report accepted now, and whether dog parks can be rated.
+        "report_kinds": kinds,
+        "ratings_enabled": settings is not None and settings.ratings_enabled,
+        # A report nobody confirmed within this many days is dropped.
+        "expiry_days": settings.expiry_days if settings else None,
+    }
+
+
+@router.post("/reports", response_model=None, dependencies=[Depends(require_active_subscription)])
+def submit_report(request: SubmitReportRequest) -> dict[str, object] | JSONResponse:
+    container = get_container()
+    user = container.auth_provider.get_current_user()
+    service = container.submit_radar_report_service()
+    settings = container.radar_report_settings()
+    if service is None or settings is None:
+        return _contributions_off()
+    try:
+        result = service.execute(SubmitRadarReportInput(user_id=user.id, **request.model_dump()))
+    except ContributionRulesRequiredError as exc:
+        return _rules_required(exc)
+    except ReportLimitReachedError as exc:
+        return JSONResponse(
+            status_code=429, content={"detail": str(exc), "code": "report_limit_reached"}
+        )
+    return {
+        **_report_payload(result.report, settings),
+        "counted_as_confirmation": result.counted_as_confirmation,
+    }
+
+
+@router.post(
+    "/reports/{report_id}/vote",
+    response_model=None,
+    dependencies=[Depends(require_active_subscription)],
+)
+def vote_report(report_id: str, request: VoteReportRequest) -> dict[str, object] | JSONResponse:
+    container = get_container()
+    user = container.auth_provider.get_current_user()
+    service = container.vote_radar_report_service()
+    settings = container.radar_report_settings()
+    if service is None or settings is None:
+        return _contributions_off()
+    try:
+        report = service.execute(
+            VoteRadarReportInput(
+                user_id=user.id, report_id=report_id, confirm=request.vote == "confirm"
+            )
+        )
+    except ContributionRulesRequiredError as exc:
+        return _rules_required(exc)
+    return _report_payload(report, settings)
+
+
+@router.delete("/reports/{report_id}", response_model=None)
+def withdraw_report(report_id: str) -> dict[str, object] | JSONResponse:
+    """The reporter takes back their own pending report."""
+    container = get_container()
+    user = container.auth_provider.get_current_user()
+    service = container.withdraw_radar_report_service()
+    if service is None:
+        return _contributions_off()
+    service.execute(WithdrawRadarReportInput(user_id=user.id, report_id=report_id))
+    return {"withdrawn": True}
+
+
+def _place_to_rate(container: ApplicationContainer, request: RatePlaceRequest) -> RadarPlace | None:
+    return _find_place(
+        container,
+        source=request.source,
+        source_id=request.source_id,
+        latitude=request.latitude,
+        longitude=request.longitude,
+        place_type="dog_park",
+    )
+
+
+def _find_place(
+    container: ApplicationContainer,
+    *,
+    source: str,
+    source_id: str,
+    latitude: float,
+    longitude: float,
+    place_type: str,
+) -> RadarPlace | None:
+    """A place a contribution is about, read by its id: one query. Searching
+    the area around it (every source, merged, with the community layer)
+    made a star vote cost as much as loading the radar. The request is
+    never trusted for the place's data."""
+    if source == USER_SOURCE_NAME:
+        report = container.radar_reports_repository.get_report(source_id)
+        return report.as_place() if report is not None and report.kind == "missing" else None
+    place = container.radar_catalog_repository.get_place(source, source_id)
+    if place is not None:
+        return place
+    # Not in the imported catalog: an area still served from the live
+    # per-cell cache. Found the long way.
+    nearby = container.list_nearby_radar_places_service().execute(
+        ListNearbyRadarPlacesInput(
+            latitude=latitude,
+            longitude=longitude,
+            radius_km=0.3,
+            place_types=[place_type],
+            per_type_limit=400,
+        )
+    )
+    return next(
+        (
+            item.place
+            for item in nearby.places
+            if item.place.source_name == source and item.place.source_external_id == source_id
+        ),
+        None,
+    )
+
+
+@router.post(
+    "/competence-claims", response_model=None, dependencies=[Depends(require_active_subscription)]
+)
+def claim_exotic_competence(request: CompetenceClaimRequest) -> dict[str, object] | JSONResponse:
+    """Segnala!: "this practice treats exotic animals". Pending until the
+    team confirms it from the practice's own public page; the answer never
+    says anything about other people's claims."""
+    container = get_container()
+    user = container.auth_provider.get_current_user()
+    service = container.submit_competence_claim_service()
+    if service is None:
+        return _contributions_off()
+    place = _find_place(
+        container,
+        source=request.source,
+        source_id=request.source_id,
+        latitude=request.latitude,
+        longitude=request.longitude,
+        place_type="veterinary",
+    )
+    if place is None:
+        raise ValidationError("Struttura non trovata.")
+    try:
+        claim = service.execute(
+            SubmitCompetenceClaimInput(
+                user_id=user.id,
+                place=place,
+                groups=list(request.groups),
+                evidence_kind=request.evidence_kind,
+            )
+        )
+    except ContributionRulesRequiredError as exc:
+        return _rules_required(exc)
+    except ReportLimitReachedError as exc:
+        return JSONResponse(
+            status_code=429, content={"detail": str(exc), "code": "report_limit_reached"}
+        )
+    return {"claim_id": claim.id, "status": claim.status, "groups": claim.groups}
+
+
+@router.put("/ratings", response_model=None, dependencies=[Depends(require_active_subscription)])
+def rate_place(request: RatePlaceRequest) -> dict[str, object] | JSONResponse:
+    """Stars for a public dog park. The place is looked up in our own data
+    rather than trusted from the request: only a dog park that exists
+    there can be rated."""
+    container = get_container()
+    user = container.auth_provider.get_current_user()
+    service = container.rate_dog_park_service()
+    if service is None:
+        return _contributions_off()
+    place = _place_to_rate(container, request)
+    if place is None:
+        raise ValidationError("Area cani non trovata.")
+    try:
+        service.execute(RateDogParkInput(user_id=user.id, place=place, stars=request.stars))
+    except ContributionRulesRequiredError as exc:
+        return _rules_required(exc)
+    return {"stars": request.stars}

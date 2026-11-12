@@ -4,8 +4,8 @@ from pydantic import BaseModel, Field
 
 CITATION_PATTERN = re.compile(r"\[(\d+)\]")
 
-# Deliberately conservative and Italian-specific (the app answers in
-# Italian). Not exhaustive — a CitationVerifier/AnswerValidator is a
+# Deliberately conservative and multilingual. Not exhaustive — a
+# CitationVerifier/AnswerValidator is a
 # safety net, not a substitute for a well-instructed prompt.
 ABSOLUTE_CLAIM_MARKERS: tuple[str, ...] = (
     "sicuramente",
@@ -17,6 +17,20 @@ ABSOLUTE_CLAIM_MARKERS: tuple[str, ...] = (
     "risolve al 100%",
     "nessun rischio",
     "garantito al 100%",
+    "definitely",
+    "guaranteed cure",
+    "always resolves",
+    "completely eliminates",
+    "without any doubt",
+    "100% guaranteed",
+    "no risk",
+    "definitivamente",
+    "cura garantizada",
+    "siempre lo resuelve",
+    "elimina por completo",
+    "sin ninguna duda",
+    "garantizado al 100%",
+    "sin riesgo",
 )
 
 

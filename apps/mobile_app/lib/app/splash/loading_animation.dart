@@ -5,7 +5,9 @@ import 'package:flutter/material.dart';
 
 import '../../design_system/tokens/app_spacing.dart';
 import '../../design_system/tokens/app_text_styles.dart';
+import '../../l10n/l10n.dart';
 import 'splash_messages.dart';
+import '../../design_system/tokens/app_colors.dart';
 
 /// How often the feature teaser under the animation changes.
 const splashMessageInterval = Duration(milliseconds: 2500);
@@ -73,10 +75,10 @@ class _SplashAnimalTickerState extends State<SplashAnimalTicker>
           // Fade the edges so emojis glide in and out of the window.
           shaderCallback: (bounds) => const LinearGradient(
             colors: [
-              Color(0x00FFFFFF),
-              Color(0xFFFFFFFF),
-              Color(0xFFFFFFFF),
-              Color(0x00FFFFFF),
+              AppColors.onMediaClear,
+              AppColors.onMedia,
+              AppColors.onMedia,
+              AppColors.onMediaClear,
             ],
             stops: [0, 0.2, 0.8, 1],
           ).createShader(bounds),
@@ -135,7 +137,7 @@ class _SplashRotatingMessagesState extends State<SplashRotatingMessages> {
     super.initState();
     _timer = Timer.periodic(splashMessageInterval, (_) {
       if (mounted) {
-        setState(() => _index = (_index + 1) % splashMessages.length);
+        setState(() => _index = (_index + 1) % splashMessagesFor(context.l10n).length);
       }
     });
   }
@@ -164,7 +166,7 @@ class _SplashRotatingMessagesState extends State<SplashRotatingMessages> {
           ),
         ),
         child: Text(
-          splashMessages[_index],
+          splashMessagesFor(context.l10n)[_index],
           key: ValueKey<int>(_index),
           textAlign: TextAlign.center,
           style: AppTextStyles.bodySmall,

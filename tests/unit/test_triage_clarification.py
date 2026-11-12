@@ -24,7 +24,24 @@ def test_every_category_has_a_clarifying_question_except_documented_exceptions()
     # instead of spending a turn on a question first, unlike seizure/
     # gi_stasis. This test still catches an ACCIDENTAL omission for any
     # other category.
-    categories_without_a_question = {"toxin_medication"}
+    # "gastric_bloat" and "circulatory" (2026-10-14) are the same kind of
+    # exception: torsion and pale gums have no benign explanation a quick
+    # question could surface in time.
+    # "bird_respiratory" (2026-11-06): a bird breathing with the beak open
+    # is late and serious; "after a run or at rest?" would be the wrong
+    # question, so it escalates at once to a vet who knows birds.
+    categories_without_a_question = {
+        "toxin_medication",
+        "gastric_bloat",
+        "circulatory",
+        "bird_respiratory",
+        # Wide eval 2026-11-06: first aid with its own fixed steps.
+        "heatstroke",
+        "snakebite",
+        "processionary",
+        "fish_distress",
+        "foreign_body",
+    }
     assert set(CLARIFYING_QUESTIONS) == set(RED_FLAG_CATEGORIES) - categories_without_a_question
 
 

@@ -1,13 +1,15 @@
 import 'dart:async';
 
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
-import '../../../../app/router/app_router.dart';
+import '../../../../shared/widgets/pet_loader.dart';
+
 import '../../../../design_system/tokens/app_spacing.dart';
+import '../../../../l10n/l10n.dart';
 import '../../../../features/billing/data/subscription_gate.dart';
 import '../../../../shared/auth/auth.dart';
 import '../../data/auth_repository_factory.dart';
+import '../../domain/auth_error_messages.dart';
 import '../widgets/auth_widgets.dart';
 import 'register_page.dart';
 import 'reset_password_page.dart';
@@ -20,31 +22,17 @@ class LoginPage extends StatefulWidget {
 }
 
 class _LoginPageState extends State<LoginPage> {
-  static const bool _uiPreviewEnabled = bool.fromEnvironment(
-    'ENABLE_UI_PREVIEW',
-    defaultValue: false,
-  );
-  static const String _demoFounderEmail = String.fromEnvironment(
-    'DEMO_FOUNDER_EMAIL',
-    defaultValue: 'demo-founder-01@vetapp.ai',
-  );
-  static const String _demoFounderPassword = String.fromEnvironment(
-    'DEMO_FOUNDER_PASSWORD',
-    defaultValue: 'VetAppDemo2026!',
-  );
-
   final _authRepository = const AuthRepositoryFactory().create();
   final _formKey = GlobalKey<FormState>();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
 
   AuthBannerStatus? _status;
-  String _title = '';
-  String _message = '';
+  String Function(AppLocalizations) _title = (_) => '';
+  String Function(AppLocalizations) _message = (_) => '';
   bool _isLoading = false;
   bool _rememberMe = true;
-
-  bool get _showUiPreview => kDebugMode || _uiPreviewEnabled;
+  bool _hasValidated = false;
 
   @override
   void dispose() {
@@ -54,12 +42,13 @@ class _LoginPageState extends State<LoginPage> {
   }
 
   Future<void> _submit() async {
+    setState(() => _hasValidated = true);
     final isValid = _formKey.currentState?.validate() ?? false;
     if (!isValid) {
       setState(() {
         _status = AuthBannerStatus.error;
-        _title = 'Controlla i campi';
-        _message = 'Servono una email valida e una password di almeno 6 caratteri.';
+        _title = (l10n) => l10n.authBannerCheckFieldsTitle;
+        _message = (l10n) => l10n.authLoginFieldsInvalidMessage;
       });
       return;
     }
@@ -67,8 +56,8 @@ class _LoginPageState extends State<LoginPage> {
     setState(() {
       _isLoading = true;
       _status = AuthBannerStatus.loading;
-      _title = 'Accesso in corso';
-      _message = 'Sto verificando le credenziali.';
+      _title = (l10n) => l10n.authLoginLoadingTitle;
+      _message = (l10n) => l10n.authLoginLoadingMessage;
     });
 
     final result = await _authRepository.signInWithPassword(
@@ -85,8 +74,8 @@ class _LoginPageState extends State<LoginPage> {
         setState(() {
           _isLoading = false;
           _status = AuthBannerStatus.success;
-          _title = 'Accesso completato';
-          _message = 'La sessione e pronta. Ti porto nel flusso principale.';
+          _title = (l10n) => l10n.authLoginSuccessTitle;
+          _message = (l10n) => l10n.authLoginSuccessMessage;
         });
         return true;
       },
@@ -94,8 +83,8 @@ class _LoginPageState extends State<LoginPage> {
         setState(() {
           _isLoading = false;
           _status = AuthBannerStatus.error;
-          _title = 'Accesso non riuscito';
-          _message = error.message;
+          _title = (l10n) => l10n.authLoginFailureTitle;
+          _message = (_) => localizedAuthMessage(error);
         });
         return false;
       },
@@ -104,7 +93,7 @@ class _LoginPageState extends State<LoginPage> {
     if (success) {
       await Future<void>.delayed(const Duration(milliseconds: 350));
       if (!mounted) return;
-      final destination = await const SubscriptionGate().resolveDestination();
+      final destination = await const SubscriptionGate().resolveDestination(afterSignIn: true);
       if (!mounted) return;
       Navigator.of(context).pushNamedAndRemoveUntil(
         destination,
@@ -113,89 +102,47 @@ class _LoginPageState extends State<LoginPage> {
     }
   }
 
-  Future<void> _openDevelopmentPreview() async {
-    setState(() {
-      _isLoading = true;
-      _status = AuthBannerStatus.loading;
-      _title = 'Apro anteprima sviluppo';
-      _message = 'Creo una sessione demo per rendere disponibili anche le API protette.';
-    });
-
-    final result = await _authRepository.signInWithPassword(
-      const AuthEmailPasswordCredentials(
-        email: _demoFounderEmail,
-        password: _demoFounderPassword,
-      ),
-      rememberMe: true,
-    );
-
-    if (!mounted) return;
-
-    final success = result.fold(
-      onSuccess: (_) {
-        setState(() {
-          _isLoading = false;
-          _status = AuthBannerStatus.success;
-          _title = 'Anteprima pronta';
-          _message = 'Sessione demo attiva. Apro l’app.';
-        });
-        return true;
-      },
-      onFailure: (error) {
-        setState(() {
-          _isLoading = false;
-          _status = AuthBannerStatus.error;
-          _title = 'Anteprima non disponibile';
-          _message = error.message;
-        });
-        return false;
-      },
-    );
-
-    if (!success || !mounted) return;
-
-    Navigator.of(context).pushNamedAndRemoveUntil(
-      AppRouter.homeShell,
-      (route) => false,
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     return AuthScreenScaffold(
-      title: 'Bentornato.',
-      subtitle: 'Accedi per ritrovare i tuoi animali, promemoria e documenti.',
+      title: context.l10n.authLoginTitle,
+      subtitle: context.l10n.authLoginSubtitle,
       child: Form(
         key: _formKey,
+        autovalidateMode:
+            _hasValidated ? AutovalidateMode.always : AutovalidateMode.disabled,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             if (_status != null)
-              AuthStateBanner(status: _status!, title: _title, message: _message),
+              AuthStateBanner(
+                  status: _status!,
+                  title: _title(context.l10n),
+                  message: _message(context.l10n)),
             AuthInputField(
               controller: _emailController,
-              label: 'Email',
-              hintText: 'nome@dominio.it',
+              label: context.l10n.authEmailLabel,
+              hintText: context.l10n.authEmailHint,
               keyboardType: TextInputType.emailAddress,
               autofillHints: const [AutofillHints.email],
               validator: (value) {
                 final text = value?.trim() ?? '';
-                if (text.isEmpty) return 'Inserisci la tua email.';
-                if (!text.contains('@')) return 'Email non valida.';
+                if (text.isEmpty) return context.l10n.authEmailRequired;
+                if (!text.contains('@')) return context.l10n.authEmailInvalid;
                 return null;
               },
             ),
             const SizedBox(height: AppSpacing.md),
             AuthInputField(
               controller: _passwordController,
-              label: 'Password',
-              hintText: 'Almeno 6 caratteri',
+              label: context.l10n.authPasswordLabel,
+              hintText: context.l10n.authPasswordHint,
               obscureText: true,
               autofillHints: const [AutofillHints.password],
               validator: (value) {
                 final text = value ?? '';
-                if (text.isEmpty) return 'Inserisci la password.';
-                if (text.length < 6) return 'Minimo 6 caratteri.';
+                if (text.isEmpty) return context.l10n.authPasswordRequiredLogin;
+                if (text.length < 6) return context.l10n.authPasswordMinLength;
                 return null;
               },
             ),
@@ -205,19 +152,23 @@ class _LoginPageState extends State<LoginPage> {
               children: [
                 Checkbox(
                   value: _rememberMe,
-                  onChanged: (value) => setState(() => _rememberMe = value ?? true),
+                  onChanged: (value) =>
+                      setState(() => _rememberMe = value ?? true),
                 ),
-                GestureDetector(
-                  onTap: () => setState(() => _rememberMe = !_rememberMe),
-                  child: const Text('Resta connesso'),
+                Flexible(
+                  child: GestureDetector(
+                    onTap: () => setState(() => _rememberMe = !_rememberMe),
+                    child: Text(context.l10n.authRememberMe),
+                  ),
                 ),
               ],
             ),
             const SizedBox(height: AppSpacing.sm),
             AuthFooterLink(
-              label: 'Password dimenticata?',
+              label: context.l10n.authForgotPasswordLink,
               onTap: () => Navigator.of(context).push(
-                MaterialPageRoute<void>(builder: (_) => const ResetPasswordPage()),
+                MaterialPageRoute<void>(
+                    builder: (_) => const ResetPasswordPage()),
               ),
             ),
             const SizedBox(height: AppSpacing.lg),
@@ -229,25 +180,14 @@ class _LoginPageState extends State<LoginPage> {
                     ? const SizedBox(
                         width: 20,
                         height: 20,
-                        child: CircularProgressIndicator(strokeWidth: 2),
+                        child: PetLoader.small(),
                       )
-                    : const Text('Accedi'),
+                    : Text(context.l10n.authLoginButton),
               ),
             ),
-            if (_showUiPreview) ...[
-              const SizedBox(height: AppSpacing.sm),
-              SizedBox(
-                width: double.infinity,
-                child: OutlinedButton.icon(
-                  onPressed: _isLoading ? null : _openDevelopmentPreview,
-                  icon: const Icon(Icons.developer_mode_rounded),
-                  label: const Text('Apri anteprima sviluppo'),
-                ),
-              ),
-            ],
             const SizedBox(height: AppSpacing.md),
             AuthFooterLink(
-              label: 'Non hai un account? Registrati',
+              label: context.l10n.authNoAccountRegisterLink,
               onTap: () => Navigator.of(context).push(
                 MaterialPageRoute<void>(builder: (_) => const RegisterPage()),
               ),

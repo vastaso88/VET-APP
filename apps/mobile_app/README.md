@@ -69,3 +69,7 @@ For demo and founder review:
 See the current implementation/state here:
 - [docs/frontend/09-mobile-preview-state.md](/C:/Users/vasta/OneDrive%20-%20Techbau%20SpA/Documenti/PERS/VET%20APP/GIT/docs/frontend/09-mobile-preview-state.md)
 - [docs/frontend/10-ux-review-2026-03-26.md](/C:/Users/vasta/OneDrive%20-%20Techbau%20SpA/Documenti/PERS/VET%20APP/GIT/docs/frontend/10-ux-review-2026-03-26.md)
+
+## Android
+
+Le build Android usano i flavor `prod`, `francesco` e `roberto` e richiedono `--flavor`. Vedi `docs/runbooks/android_flavors.md`.

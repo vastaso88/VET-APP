@@ -7,13 +7,10 @@ import '../../../../design_system/tokens/app_colors.dart';
 import '../../../../design_system/tokens/app_radii.dart';
 import '../../../../design_system/tokens/app_spacing.dart';
 import '../../../../design_system/tokens/app_text_styles.dart';
+import '../../../../l10n/date_formats.dart';
+import '../../../../l10n/l10n.dart';
 import '../../../../shared/auth/current_user.dart';
-import '../../../local_activities/data/local_activities_repository.dart';
 import '../../../local_events/presentation/pages/local_events_page.dart';
-import '../../../location/data/location_preference_store.dart';
-import '../../../location/domain/coordinates.dart';
-import '../../../location/domain/geo_math.dart';
-import '../../../location/presentation/reference_location.dart';
 import '../../../pet_news/data/pet_news_repository.dart';
 import '../../../pet_news/domain/pet_news_item.dart';
 import '../../../pet_news/presentation/pages/news_feed_page.dart';
@@ -24,6 +21,7 @@ import '../../../pets/presentation/widgets/pet_avatar.dart';
 import '../../../reminders/data/reminders_repository.dart';
 import '../../../reminders/domain/reminder_calendar.dart';
 import '../../../reminders/presentation/pages/reminders_pages.dart';
+import '../../../../shared/date/calendar_days.dart';
 import '../../../settings/data/layout_settings_store.dart';
 import '../widgets/home_dashboard_primitives.dart';
 
@@ -36,7 +34,7 @@ class HomeDashboardPage extends StatefulWidget {
 
 class _HomeDashboardPageState extends State<HomeDashboardPage> {
   final _remindersRepository = RemindersRepository();
-  final _petNewsRepository = GoogleNewsPetNewsRepository();
+  final _petNewsRepository = BackendPetNewsRepository();
 
   late Future<List<PetNewsItem>> _petNewsFuture;
 
@@ -89,7 +87,7 @@ class _HomeDashboardPageState extends State<HomeDashboardPage> {
 
   @override
   Widget build(BuildContext context) {
-    final ownerName = CurrentUser.firstName(fallback: 'Ospite');
+    final ownerName = CurrentUser.firstName(fallback: context.l10n.sharedGuestName);
 
     return SizedBox.expand(
       child: Container(
@@ -97,11 +95,7 @@ class _HomeDashboardPageState extends State<HomeDashboardPage> {
           gradient: LinearGradient(
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
-            colors: [
-              Color(0xFFF9F6F1),
-              Color(0xFFF4EFE7),
-              Color(0xFFEDE6DC),
-            ],
+            colors: AppColors.backgroundGradient,
           ),
         ),
         child: SafeArea(
@@ -118,7 +112,7 @@ class _HomeDashboardPageState extends State<HomeDashboardPage> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text('Buongiorno', style: AppTextStyles.caption),
+                    Text(context.l10n.homeGreeting, style: AppTextStyles.caption),
                     const SizedBox(height: AppSpacing.xs),
                     Text(ownerName, style: AppTextStyles.display),
                     const SizedBox(height: AppSpacing.xxl),
@@ -213,12 +207,22 @@ List<PetNewsItem> selectHomeNewsSlots({
   return result;
 }
 
+/// The days of the home calendar strip: [weeksShown] full weeks starting from
+/// the week of [today]. Calendar arithmetic, so the clock change of 29/03 and
+/// 25/10 never repeats or skips a date.
+@visibleForTesting
+List<DateTime> homeCalendarDays(
+    DateTime today, int weeksShown, WeekStartDay weekStartDay) {
+  final weekStart = _startOfWeek(today, weekStartDay);
+  return List.generate(weeksShown * 7, (i) => addCalendarDays(weekStart, i));
+}
+
 DateTime _startOfWeek(DateTime day, WeekStartDay weekStartDay) {
   final startOfDay = DateTime(day.year, day.month, day.day);
   final offset = weekStartDay == WeekStartDay.monday
       ? startOfDay.weekday - 1
       : startOfDay.weekday % 7;
-  return startOfDay.subtract(Duration(days: offset));
+  return addCalendarDays(startOfDay, -offset);
 }
 
 class _AgendaSection extends StatelessWidget {
@@ -245,15 +249,15 @@ class _AgendaSection extends StatelessWidget {
               future: repository.loadReminders(),
               builder: (context, snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting) {
-                  return const Column(
+                  return Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       DashboardSectionHeader(
-                        title: 'Prossime attività',
-                        subtitle: 'Spot e cicli, per tutti gli animali.',
+                        title: context.l10n.homeAgendaTitle,
+                        subtitle: context.l10n.homeAgendaLoadingSubtitle,
                       ),
-                      SizedBox(height: AppSpacing.lg),
-                      _SectionSkeleton(),
+                      const SizedBox(height: AppSpacing.lg),
+                      const _SectionSkeleton(),
                     ],
                   );
                 }
@@ -267,12 +271,13 @@ class _AgendaSection extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     DashboardSectionHeader(
-                      title: 'Prossime attività',
-                      subtitle: _summaryLine(reminders),
+                      title: context.l10n.homeAgendaTitle,
+                      subtitle: _summaryLine(context, reminders),
                     ),
                     const SizedBox(height: AppSpacing.lg),
-                    Builder(
-                      builder: (context) {
+                    ValueListenableBuilder<int>(
+                      valueListenable: PetDemoStore.changes,
+                      builder: (context, _, __) {
                         final pets = PetDemoStore.instance.list();
                         final legendPets = _petsWithVisibleActivity(
                           reminders,
@@ -321,10 +326,10 @@ class _AgendaSection extends StatelessWidget {
   /// layout setting, which only governs the calendar strip above. Courses
   /// aren't counted here — they're ongoing rather than "upcoming", and are
   /// shown on the calendar as capsule markers instead.
-  String _summaryLine(List<ReminderEntry> reminders) {
+  String _summaryLine(BuildContext context, List<ReminderEntry> reminders) {
     final today = DateTime.now();
     final startOfToday = DateTime(today.year, today.month, today.day);
-    final endOfWindow = startOfToday.add(const Duration(days: 10));
+    final endOfWindow = addCalendarDays(startOfToday, 10);
 
     final count = reminders.where((r) {
       if (r.kind == EventKind.course) return false;
@@ -332,7 +337,7 @@ class _AgendaSection extends StatelessWidget {
       return !d.isBefore(startOfToday) && !d.isAfter(endOfWindow);
     }).length;
 
-    return '$count attività nei prossimi 10 giorni';
+    return context.l10n.homeAgendaSummary(count);
   }
 }
 
@@ -349,7 +354,7 @@ List<PetProfile> _petsWithVisibleActivity(
       _startOfWeek(DateTime(today.year, today.month, today.day), weekStartDay);
   final activeIds = <String>{};
   for (var i = 0; i < weeksShown * 7; i++) {
-    final day = weekStart.add(Duration(days: i));
+    final day = addCalendarDays(weekStart, i);
     for (final reminder in reminders) {
       if (!reminderActiveOnDay(reminder, day)) continue;
       final pet = petByName(pets, reminder.petName);
@@ -374,20 +379,28 @@ class _WeekStrip extends StatelessWidget {
   final int weeksShown;
   final WeekStartDay weekStartDay;
 
-  static const _mondayFirstLabels = ['L', 'M', 'M', 'G', 'V', 'S', 'D'];
-  static const _sundayFirstLabels = ['D', 'L', 'M', 'M', 'G', 'V', 'S'];
+  /// One-letter weekday headers in the app language ("L M M G V S D" in
+  /// Italian), Monday first.
+  static List<String> _mondayFirstLabels() => [
+        for (final name in appShortWeekdaysMondayFirst()) _initial(name),
+      ];
+
+  static List<String> _sundayFirstLabels() {
+    final monday = _mondayFirstLabels();
+    return [monday.last, ...monday.sublist(0, 6)];
+  }
+
+  static String _initial(String name) =>
+      name.isEmpty ? '' : String.fromCharCode(name.runes.first).toUpperCase();
 
   @override
   Widget build(BuildContext context) {
     final today = DateTime.now();
     final startOfToday = DateTime(today.year, today.month, today.day);
-    final weekStart = _startOfWeek(startOfToday, weekStartDay);
     final labels = weekStartDay == WeekStartDay.monday
-        ? _mondayFirstLabels
-        : _sundayFirstLabels;
-    final totalDays = weeksShown * 7;
-    final days =
-        List.generate(totalDays, (i) => weekStart.add(Duration(days: i)));
+        ? _mondayFirstLabels()
+        : _sundayFirstLabels();
+    final days = homeCalendarDays(startOfToday, weeksShown, weekStartDay);
 
     return Column(
       children: [
@@ -434,7 +447,7 @@ class _DayChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final background = isToday ? AppColors.accentSoft : Colors.transparent;
+    final background = isToday ? AppColors.secondarySoft : Colors.transparent;
     const foreground = AppColors.text;
     final shown = markers.take(2).toList();
     final extra = markers.length - shown.length;
@@ -522,6 +535,7 @@ class _PetLegend extends StatelessWidget {
                 label: pet.avatarEmoji,
                 backgroundColor: pet.accentColor,
                 photoBytes: pet.photoBytes,
+                photoPath: pet.photoPath,
                 identityColor: pet.identityColor,
                 size: 30,
               ),
@@ -553,9 +567,9 @@ class _PetNewsSection extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const DashboardSectionHeader(
-          title: 'Curiosità per i tuoi animali',
-          subtitle: 'Notizie dal mondo dei pet selezionate per te.',
+        DashboardSectionHeader(
+          title: context.l10n.homeNewsTitle,
+          subtitle: context.l10n.homeNewsSubtitle,
         ),
         const SizedBox(height: AppSpacing.lg),
         FutureBuilder<List<PetNewsItem>>(
@@ -569,7 +583,10 @@ class _PetNewsSection extends StatelessWidget {
             if (items.isEmpty) {
               return DashboardSurfaceCard(
                 child: Text(
-                  'Curiosità non disponibili al momento. Riprova più tardi.',
+                  // Edition without feeds yet: say so instead of "try later".
+                  petNewsEditionServed()
+                      ? context.l10n.homeNewsUnavailable
+                      : context.l10n.petNewsEmptyLocal,
                   style: AppTextStyles.bodySmall,
                 ),
               );
@@ -608,7 +625,7 @@ class _MoreNewsButton extends StatelessWidget {
       child: OutlinedButton.icon(
         onPressed: onTap,
         icon: const Icon(Icons.newspaper_outlined, size: 18),
-        label: const Text('Scopri altre notizie'),
+        label: Text(context.l10n.homeNewsMore),
       ),
     );
   }
@@ -622,42 +639,6 @@ class _LocalEventsNotice extends StatefulWidget {
 }
 
 class _LocalEventsNoticeState extends State<_LocalEventsNotice> {
-  // Same Milano fallback used by the maps demo route and the marketplace
-  // page while the user hasn't set a Località preference.
-  static const _fallbackLocation =
-      Coordinates(latitude: 45.4642, longitude: 9.1900);
-  static const _nearbyRadiusKm = 25.0;
-
-  late final Future<String> _summaryFuture = _loadSummary();
-
-  Future<String> _loadSummary() async {
-    await LocationPreferenceStore.instance.ensureLoaded();
-    final preference = LocationPreferenceStore.instance.preference;
-    final referenceLocation =
-        resolveReferenceLocation(preference, _fallbackLocation);
-
-    final activities = await LocalActivitiesRepository().loadActiveActivities();
-    final nearby = activities.where(
-      (activity) =>
-          haversineMeters(referenceLocation, activity.location) <=
-          _nearbyRadiusKm * 1000,
-    );
-
-    if (nearby.isEmpty) {
-      return 'Eventi nei dintorni · nessuno nel raggio di ${_nearbyRadiusKm.round()} km';
-    }
-    final count = nearby.length;
-    final nearest = nearby.reduce(
-      (a, b) => haversineMeters(referenceLocation, a.location) <=
-              haversineMeters(referenceLocation, b.location)
-          ? a
-          : b,
-    );
-    return count == 1
-        ? 'Eventi nei dintorni · ${nearest.title}'
-        : 'Eventi nei dintorni · $count nella tua zona, tra cui ${nearest.title}';
-  }
-
   @override
   Widget build(BuildContext context) {
     return DashboardSurfaceCard(
@@ -681,17 +662,12 @@ class _LocalEventsNoticeState extends State<_LocalEventsNotice> {
           ),
           const SizedBox(width: AppSpacing.md),
           Expanded(
-            child: FutureBuilder<String>(
-              future: _summaryFuture,
-              builder: (context, snapshot) {
-                return Text(
-                  snapshot.data ?? 'Eventi nei dintorni',
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: AppTextStyles.bodySmall.copyWith(
-                      fontWeight: FontWeight.w600, color: AppColors.text),
-                );
-              },
+            child: Text(
+              context.l10n.homeNearbyTitle,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: AppTextStyles.bodySmall.copyWith(
+                  fontWeight: FontWeight.w600, color: AppColors.text),
             ),
           ),
           const Icon(Icons.chevron_right_rounded, color: AppColors.mutedText),
@@ -714,7 +690,7 @@ class _SponsorBanner extends StatelessWidget {
             width: 40,
             height: 40,
             decoration: BoxDecoration(
-              color: AppColors.accentSoft,
+              color: AppColors.secondarySoft,
               borderRadius: BorderRadius.circular(AppRadii.medium),
             ),
             child: const Icon(Icons.storefront_outlined,
@@ -723,7 +699,7 @@ class _SponsorBanner extends StatelessWidget {
           const SizedBox(width: AppSpacing.md),
           Expanded(
             child: Text(
-              'Spazio riservato ai nostri partner.',
+              context.l10n.homeSponsorBanner,
               style: AppTextStyles.bodySmall
                   .copyWith(color: AppColors.secondaryText),
             ),
@@ -749,7 +725,14 @@ class _SectionSkeleton extends StatelessWidget {
             child: CircularProgressIndicator(strokeWidth: 2),
           ),
           const SizedBox(width: AppSpacing.md),
-          Text('Caricamento...', style: AppTextStyles.bodySmall),
+          Flexible(
+            child: Text(
+              context.l10n.homeSectionLoading,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: AppTextStyles.bodySmall,
+            ),
+          ),
         ],
       ),
     );

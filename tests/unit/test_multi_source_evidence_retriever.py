@@ -64,9 +64,7 @@ def test_a_failing_source_does_not_block_the_others() -> None:
 
 
 def test_trims_to_max_results_but_still_queries_every_source() -> None:
-    first = _FakeSource(
-        [_source(title="A1", doi="10.1/a1"), _source(title="A2", doi="10.1/a2")]
-    )
+    first = _FakeSource([_source(title="A1", doi="10.1/a1"), _source(title="A2", doi="10.1/a2")])
     second = _FakeSource([_source(title="B1", doi="10.1/b1")])
     retriever = MultiSourceEvidenceRetriever([first, second])
 

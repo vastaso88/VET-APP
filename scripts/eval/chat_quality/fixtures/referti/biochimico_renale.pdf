@@ -1,0 +1,75 @@
+%PDF-1.4
+1 0 obj
+<< /Type /Catalog /Pages 2 0 R >>
+endobj
+2 0 obj
+<< /Type /Pages /Kids [3 0 R] /Count 1 >>
+endobj
+3 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] /Contents 4 0 R /Resources << /Font << /F1 5 0 R >> >> >>
+endobj
+4 0 obj
+<< /Length 1393 >>
+stream
+BT
+/F1 9 Tf
+40 800 Td
+(CLINICA VETERINARIA ESEMPIO \(struttura fittizia, dati di prova\)) Tj
+0 -13 Td
+(Referto esami ematochimici - profilo biochimico) Tj
+0 -13 Td
+(Data prelievo: 12/09/2026) Tj
+0 -13 Td
+(Paziente: Micia - gatto europeo, femmina sterilizzata, 14 anni, 3,6 kg) Tj
+0 -13 Td
+() Tj
+0 -13 Td
+(Esame                Risultato    Unita     Intervallo di riferimento) Tj
+0 -13 Td
+(Creatinina           3,1          mg/dL     0,8 - 2,0      ALTO) Tj
+0 -13 Td
+(Urea                 110          mg/dL     30 - 65        ALTO) Tj
+0 -13 Td
+(Fosforo              6,8          mg/dL     2,6 - 6,0      ALTO) Tj
+0 -13 Td
+(SDMA                 22           ug/dL     0 - 14         ALTO) Tj
+0 -13 Td
+(Potassio             3,6          mEq/L     3,5 - 5,5) Tj
+0 -13 Td
+(Proteine totali      7,1          g/dL      5,7 - 8,0) Tj
+0 -13 Td
+(Albumina             3,0          g/dL      2,5 - 3,9) Tj
+0 -13 Td
+(ALT \(GPT\)            48           U/L       20 - 100) Tj
+0 -13 Td
+(Glucosio             102          mg/dL     70 - 150) Tj
+0 -13 Td
+(Calcio               9,8          mg/dL     8,0 - 10,7) Tj
+0 -13 Td
+() Tj
+0 -13 Td
+(Note del laboratorio: quadro compatibile con riduzione della funzionalita renale.) Tj
+0 -13 Td
+(Si consiglia valutazione insieme a esame delle urine e misurazione della pressione.) Tj
+0 -13 Td
+(Referto firmato dal direttore sanitario \(nome di prova\).) Tj
+0 -13 Td
+ET
+endstream
+endobj
+5 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Courier /Encoding /WinAnsiEncoding >>
+endobj
+xref
+0 6
+0000000000 65535 f 
+0000000009 00000 n 
+0000000058 00000 n 
+0000000115 00000 n 
+0000000241 00000 n 
+0000001686 00000 n 
+trailer
+<< /Size 6 /Root 1 0 R >>
+startxref
+1781
+%%EOF

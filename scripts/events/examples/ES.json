@@ -1,0 +1,39 @@
+{
+  "events": [
+    {
+      "slug": "example-es-feria-mascotas",
+      "title": "Feria de mascotas de ejemplo (evento FICTICIO)",
+      "event_type": "pet_fair",
+      "level": "regional",
+      "level_basis": "curated",
+      "country": "ES",
+      "starts_on": "2026-11-14",
+      "ends_on": "2026-11-15",
+      "region": "Comunidad de Madrid",
+      "city": "Villaejemplo",
+      "province_code": "M",
+      "venue_name": "Recinto ferial de ejemplo",
+      "organizer_name": "Asociación de ejemplo",
+      "description": "Evento inventado para probar la lista: no existe.",
+      "source_url": "https://www.example.org/es/feria-mascotas",
+      "verified_on": "2026-10-14"
+    },
+    {
+      "slug": "example-es-jornada-adopcion",
+      "title": "Jornada de adopción de ejemplo (evento FICTICIO)",
+      "event_type": "adoption_day",
+      "level": "local",
+      "level_basis": "default",
+      "country": "ES",
+      "starts_on": "2026-12-05",
+      "ends_on": "2026-12-05",
+      "region": "Cataluña",
+      "city": "Ejemplópolis",
+      "province_code": "B",
+      "organizer_name": "Refugio de ejemplo",
+      "description": "Evento inventado para probar la lista: no existe.",
+      "source_url": "https://www.example.org/es/adopcion",
+      "verified_on": "2026-10-14"
+    }
+  ]
+}

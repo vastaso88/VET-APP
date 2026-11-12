@@ -1,0 +1,58 @@
+{
+  "_comment": "Synthetic sample for the per-country radar tests: invented names, addresses, ids and phone numbers, real city-centre coordinates only to land inside each country. No real business and no personal data.",
+  "osm": [
+    {
+      "country": "IT", "type": "node", "id": 1001, "lat": 45.4642, "lon": 9.19,
+      "tags": {"amenity": "veterinary", "name": "Ambulatorio Esempio", "addr:street": "Via Esempio", "addr:housenumber": "12", "addr:postcode": "20100", "addr:city": "Milano"},
+      "expect": {"place_type": "veterinary", "name": "Ambulatorio Esempio", "address_label": "Via Esempio 12, 20100 Milano"}
+    },
+    {
+      "country": "GB", "type": "node", "id": 1002, "lat": 51.5072, "lon": -0.1276,
+      "tags": {"shop": "pet_grooming", "name": "Example Grooming", "addr:street": "Example Road", "addr:housenumber": "10", "addr:postcode": "ZZ1 1ZZ", "addr:city": "London"},
+      "expect": {"place_type": "grooming", "name": "Example Grooming", "address_label": "10 Example Road, London ZZ1 1ZZ"}
+    },
+    {
+      "country": "US", "type": "way", "id": 1003, "center": {"lat": 41.8781, "lon": -87.6298},
+      "tags": {"leisure": "dog_park", "addr:street": "Example St", "addr:housenumber": "12", "addr:postcode": "62704", "addr:city": "Springfield", "addr:state": "IL"},
+      "expect": {"place_type": "dog_park", "name": "Dog park", "address_label": "12 Example St, Springfield, IL 62704"}
+    },
+    {
+      "country": "AU", "type": "node", "id": 1004, "lat": -33.8688, "lon": 151.2093,
+      "tags": {"amenity": "veterinary", "name": "Example Vet", "addr:street": "Example St", "addr:housenumber": "12", "addr:postcode": "2000", "addr:city": "Sydney", "addr:state": "NSW"},
+      "expect": {"place_type": "veterinary", "name": "Example Vet", "address_label": "12 Example St, Sydney NSW 2000"}
+    },
+    {
+      "country": "DE", "type": "node", "id": 1005, "lat": 52.52, "lon": 13.405,
+      "tags": {"shop": "pet", "name": "Beispiel Tierhandlung", "addr:street": "Musterstraße", "addr:housenumber": "12", "addr:postcode": "10115", "addr:city": "Berlin"},
+      "expect": {"place_type": "shop", "name": "Beispiel Tierhandlung", "address_label": "Musterstraße 12, 10115 Berlin"}
+    },
+    {
+      "country": "DE", "type": "way", "id": 1006, "center": {"lat": 52.51, "lon": 13.39},
+      "tags": {"leisure": "dog_park"},
+      "expect": {"place_type": "dog_park", "name": "Hundeauslaufplatz", "address_label": null}
+    },
+    {
+      "country": "FR", "type": "node", "id": 1007, "lat": 48.8566, "lon": 2.3522,
+      "tags": {"amenity": "animal_boarding", "name": "Exemple Pension", "addr:street": "rue de la Paix", "addr:housenumber": "12", "addr:postcode": "75002", "addr:city": "Paris"},
+      "expect": {"place_type": "hotel", "name": "Exemple Pension", "address_label": "12 rue de la Paix, 75002 Paris"}
+    },
+    {
+      "country": "ES", "type": "node", "id": 1008, "lat": 40.4168, "lon": -3.7038,
+      "tags": {"amenity": "veterinary", "addr:street": "Calle Mayor", "addr:housenumber": "12", "addr:postcode": "28013", "addr:city": "Madrid"},
+      "expect": {"place_type": "veterinary", "name": "Veterinario", "address_label": "Calle Mayor 12, 28013 Madrid"}
+    }
+  ],
+  "overture": [
+    {"country": "GB", "id": "fake-gb-1", "name": "Example Veterinary Clinic", "category": "veterinarian", "confidence": 0.9, "operating_status": "open", "longitude": -0.1276, "latitude": 51.5072, "address": "10 Example Road", "locality": "London", "expect": "veterinary"},
+    {"country": "US", "id": "fake-us-1", "name": "Example Animal Hospital", "category": "animal_hospital", "confidence": 0.8, "operating_status": "open", "longitude": -87.6298, "latitude": 41.8781, "address": "12 Example St", "locality": "Springfield", "expect": "veterinary"},
+    {"country": "US", "id": "fake-us-2", "name": "Happy Tails Grooming", "category": "veterinarian", "confidence": 0.8, "operating_status": "open", "longitude": -87.63, "latitude": 41.88, "address": null, "locality": "Springfield", "expect": "grooming"},
+    {"country": "AU", "id": "fake-au-1", "name": "Example Pet Boarding", "category": "pet_boarding", "confidence": 0.75, "operating_status": "open", "longitude": 151.2093, "latitude": -33.8688, "address": "12 Example St", "locality": "Sydney", "expect": "hotel"},
+    {"country": "DE", "id": "fake-de-1", "name": "Hundesalon Beispiel", "category": "veterinarian", "confidence": 0.9, "operating_status": "open", "longitude": 13.405, "latitude": 52.52, "address": "Musterstraße 12", "locality": "Berlin", "expect": "grooming"},
+    {"country": "DE", "id": "fake-de-2", "name": "Tierarztpraxis Beispiel", "category": "veterinarian", "confidence": 0.9, "operating_status": "open", "longitude": 13.41, "latitude": 52.52, "address": "Musterstraße 14", "locality": "Berlin", "expect": "veterinary"},
+    {"country": "FR", "id": "fake-fr-1", "name": "Animalerie Exemple", "category": "pet_store", "confidence": 0.85, "operating_status": "open", "longitude": 2.3522, "latitude": 48.8566, "address": "12 rue de la Paix", "locality": "Paris", "expect": "shop"},
+    {"country": "FR", "id": "fake-fr-2", "name": "Toilettage Exemple", "category": "veterinarian", "confidence": 0.85, "operating_status": "open", "longitude": 2.36, "latitude": 48.86, "address": null, "locality": "Paris", "expect": "grooming"},
+    {"country": "ES", "id": "fake-es-1", "name": "Escuela Canina Ejemplo", "category": "veterinarian", "confidence": 0.8, "operating_status": "open", "longitude": -3.7038, "latitude": 40.4168, "address": "Calle Mayor 12", "locality": "Madrid", "expect": "school"},
+    {"country": "ES", "id": "fake-es-2", "name": "Clínica Veterinaria Ejemplo", "category": "veterinarian", "confidence": 0.8, "operating_status": "open", "longitude": -3.71, "latitude": 40.42, "address": null, "locality": "Madrid", "expect": "veterinary"},
+    {"country": "IT", "id": "fake-it-1", "name": "Toelettatura Esempio", "category": "veterinarian", "confidence": 0.8, "operating_status": "open", "longitude": 9.19, "latitude": 45.46, "address": "Via Esempio 1", "locality": "Milano", "expect": "grooming"}
+  ]
+}

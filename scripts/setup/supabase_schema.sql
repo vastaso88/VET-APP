@@ -47,6 +47,45 @@ alter table public.pet_profiles add column if not exists habitat jsonb;
 alter table public.pet_profiles
     add column if not exists aquarium_stock jsonb not null default '[]'::jsonb;
 
+-- Profilo animale v2 (2026-10-14): optional details, all nullable.
+-- `is_sterilized` is separate from `sex`; body_condition and activity_level
+-- hold language-independent codes (the app translates them).
+alter table public.pet_profiles add column if not exists is_sterilized boolean;
+alter table public.pet_profiles add column if not exists microchip_number text;
+alter table public.pet_profiles add column if not exists coat_color text;
+alter table public.pet_profiles add column if not exists body_condition text;
+alter table public.pet_profiles add column if not exists activity_level text;
+
+alter table public.pet_profiles drop constraint if exists pet_profiles_microchip_number_check;
+alter table public.pet_profiles add constraint pet_profiles_microchip_number_check
+    check (microchip_number is null or microchip_number ~ '^[0-9]{15}$');
+alter table public.pet_profiles drop constraint if exists pet_profiles_body_condition_check;
+alter table public.pet_profiles add constraint pet_profiles_body_condition_check
+    check (body_condition is null or body_condition in
+        ('very_thin', 'thin', 'normal', 'slightly_overweight', 'overweight'));
+alter table public.pet_profiles drop constraint if exists pet_profiles_activity_level_check;
+alter table public.pet_profiles add constraint pet_profiles_activity_level_check
+    check (activity_level is null or activity_level in ('sedentary', 'normal', 'active'));
+
+-- Sex is now Maschio / Femmina / Sconosciuto; the old combined values are
+-- split into sex + is_sterilized. Idempotent: once converted, no row matches.
+-- (tests/unit/test_pet_sex_migration.py runs this exact statement.)
+-- migrate-sex:begin
+update public.pet_profiles
+set is_sterilized = case sex
+        when 'Maschio castrato' then true
+        when 'Femmina sterilizzata' then true
+        else false
+    end,
+    sex = case sex
+        when 'Maschio castrato' then 'Maschio'
+        when 'Maschio intero' then 'Maschio'
+        when 'Femmina sterilizzata' then 'Femmina'
+        when 'Femmina intera' then 'Femmina'
+    end
+where sex in ('Maschio castrato', 'Maschio intero', 'Femmina sterilizzata', 'Femmina intera');
+-- migrate-sex:end
+
 create table if not exists public.conversations (
     id text primary key,
     owner_id text not null,
@@ -105,6 +144,67 @@ create table if not exists public.clinical_events (
 -- of this one).
 alter table public.clinical_events add column if not exists attachment_id text;
 
+-- Found 2026-10-04 reading the live schema: clinical_events already existed
+-- in the live project (from the earlier system) with a different shape, so
+-- the `create table if not exists` above was a no-op there - same trap as
+-- 9d6522f. Live columns: id, owner_id NOT NULL, pet_id NOT NULL, event_type
+-- NOT NULL, title NOT NULL, event_date date NOT NULL, summary, severity,
+-- source, linked_document_id, created_at timestamptz, attachment_id.
+-- Every column the app writes is therefore declared explicitly here, and
+-- the live table's NOT NULL columns that the app does not fill get a
+-- default, so an insert from the app succeeds on either shape.
+alter table public.clinical_events add column if not exists pet_name text;
+alter table public.clinical_events add column if not exists subtitle text;
+alter table public.clinical_events add column if not exists meta text;
+alter table public.clinical_events add column if not exists badge text;
+alter table public.clinical_events add column if not exists detail_source text;
+-- The live table's own columns, so a database created from this script has
+-- the same shape (nullable here; NOT NULL only where it already was).
+alter table public.clinical_events add column if not exists owner_id text;
+alter table public.clinical_events add column if not exists event_type text;
+alter table public.clinical_events add column if not exists event_date date;
+alter table public.clinical_events add column if not exists summary text;
+alter table public.clinical_events alter column owner_id set default auth.uid()::text;
+alter table public.clinical_events alter column event_type set default 'document';
+alter table public.clinical_events alter column event_date set default current_date;
+-- pet_name was NOT NULL only in this script's own (never applied live)
+-- definition; the chat does not need it and old rows do not have it.
+alter table public.clinical_events alter column pet_name drop not null;
+
+-- Cartella clinica per categorie (2026-10-14). Every entry has a category
+-- (visit / exam / vaccine / therapy / document), an optional finer type for
+-- visits, exams and therapies, and the owner's own notes. `event_date`
+-- (above) is the date of the event, which the owner can now set apart from
+-- the day the file was uploaded. Rows written before the categories existed
+-- become "document"; re-running only touches rows still without a valid one.
+alter table public.clinical_events add column if not exists category text;
+alter table public.clinical_events add column if not exists subtype text;
+alter table public.clinical_events add column if not exists notes text;
+update public.clinical_events
+    set category = 'document'
+    where category is null
+       or category not in ('visit', 'exam', 'vaccine', 'therapy', 'document');
+alter table public.clinical_events alter column category set default 'document';
+alter table public.clinical_events alter column category set not null;
+
+-- Patologie (2026-10-14): one row per illness of a pet. `status` is
+-- 'ongoing' or 'resolved'; `ended_on` only when resolved. An optional file
+-- goes through the same chat-attachments upload as the referti.
+create table if not exists public.pet_conditions (
+    id text primary key,
+    owner_id text not null default auth.uid()::text,
+    pet_id text not null references public.pet_profiles(id) on delete cascade,
+    name text not null,
+    started_on date,
+    status text not null default 'ongoing',
+    ended_on date,
+    therapy text,
+    notes text,
+    attachment_id text,
+    attachment_name text,
+    created_at timestamptz not null default now()
+);
+
 create table if not exists public.reminders (
     id text primary key,
     owner_id text not null,
@@ -128,6 +228,18 @@ alter table public.reminders add column if not exists occurrence_count integer;
 alter table public.reminders add column if not exists recurrence_end_date timestamptz;
 alter table public.reminders add column if not exists course_duration_days integer;
 alter table public.reminders add column if not exists is_done boolean not null default false;
+-- Daily dose times ("08:00", "20:00") of a medicine course, one phone
+-- notification each per day (apps/mobile_app/lib/features/notifications/).
+alter table public.reminders add column if not exists dose_times text[];
+
+-- Categoria dei promemoria (2026-10-21): the same keys as the cartella clinica
+-- (visit / exam / vaccine / therapy) plus grooming and other, and the finer
+-- type of a clinical one (clinical_events.subtype). Completing a clinical
+-- reminder writes a clinical_events row with the id reminder-<reminder id>-
+-- <yyyymmdd>, so no link column is needed. Reminders saved before this stay
+-- NULL: the app guesses their category from the title and never writes the guess.
+alter table public.reminders add column if not exists category text;
+alter table public.reminders add column if not exists subtype text;
 
 -- Account-level consents (docs/compliance/04_termini_e_consensi.md): ToS,
 -- privacy policy, marketing email, analytics. One row per owner; each key
@@ -137,8 +249,35 @@ create table if not exists public.account_consents (
     consents jsonb not null default '{}'::jsonb
 );
 
+-- Declared date of birth (docs/compliance/10_pareri_dal_2026_11_06.md §3).
+-- Written only by the backend (service role), never from user_metadata;
+-- never shown to anyone and erased with the account. Same SQL as
+-- .local/account_age.sql.
+create table if not exists public.account_age (
+    owner_id text primary key,
+    birth_date date not null,
+    declared_at timestamptz not null default now(),
+    -- Quando un minorenne (14-17) ha confermato di avere l'autorizzazione
+    -- di un genitore per un piano a pagamento.
+    guardian_ok_at timestamptz,
+    -- Set by the team when the owner wrote to say the date was a mistake: while
+    -- it is set, a closed account is not erased from the portal.
+    correction_requested_at timestamptz
+);
+alter table public.account_age add column if not exists correction_requested_at timestamptz;
+
+alter table public.account_age enable row level security;
+
+drop policy if exists account_age_select_own on public.account_age;
+create policy account_age_select_own
+on public.account_age
+for select
+using (owner_id = auth.uid()::text);
+
+revoke insert, update, delete on public.account_age from anon, authenticated;
+
 -- Subscriptions: single-row-per-owner, same shape as account_consents.
--- Starts the 10-day free trial (no card) on first lookup; `plan` stays
+-- Starts the 14-day free trial (no card) on first lookup; `plan` stays
 -- null while on trial, then holds the chosen plan key permanently.
 create table if not exists public.subscriptions (
     owner_id text primary key,
@@ -146,20 +285,41 @@ create table if not exists public.subscriptions (
     plan text,
     created_at timestamptz not null default now()
 );
+-- The day the account was first seen without access: the start of the four
+-- months its data is kept (packages/core/domain/subscription/retention.py).
+-- Written only by the backend; nothing is sent or erased from it yet.
+alter table public.subscriptions add column if not exists access_lost_at timestamptz;
+
+-- Devices signed in to an account, to hold the plan's limit on simultaneous
+-- devices (docs/marketing/03_prezzi_per_paese.md, plan limits). `device_id` is
+-- a random id the app makes at sign-in; nothing else about the phone is
+-- stored. Written only by the backend; the owner can read their own rows.
+create table if not exists public.user_devices (
+    owner_id text not null,
+    device_id text not null,
+    first_seen_at timestamptz not null default now(),
+    last_seen_at timestamptz not null default now(),
+    revoked_at timestamptz,
+    primary key (owner_id, device_id)
+);
 
 create index if not exists idx_pet_profiles_owner_id on public.pet_profiles(owner_id);
 create index if not exists idx_conversations_owner_id on public.conversations(owner_id);
 create index if not exists idx_conversations_pet_id on public.conversations(pet_id);
 create index if not exists idx_clinical_events_pet_id on public.clinical_events(pet_id);
+create index if not exists idx_pet_conditions_pet_id on public.pet_conditions(pet_id);
+create index if not exists idx_pet_conditions_owner_id on public.pet_conditions(owner_id);
 create index if not exists idx_reminders_owner_id on public.reminders(owner_id);
 create index if not exists idx_reminders_pet_id on public.reminders(pet_id);
 
 alter table public.pet_profiles enable row level security;
 alter table public.conversations enable row level security;
 alter table public.clinical_events enable row level security;
+alter table public.pet_conditions enable row level security;
 alter table public.reminders enable row level security;
 alter table public.account_consents enable row level security;
 alter table public.subscriptions enable row level security;
+alter table public.user_devices enable row level security;
 
 drop policy if exists pet_profiles_select_own on public.pet_profiles;
 create policy pet_profiles_select_own
@@ -255,6 +415,90 @@ with check (
     )
 );
 
+-- The app renames, recategorizes and deletes its own entries: policies are
+-- permissive (OR-ed), so these add to whatever the live table already has.
+drop policy if exists clinical_events_update_own on public.clinical_events;
+create policy clinical_events_update_own
+on public.clinical_events
+for update
+using (
+    pet_id is not null
+    and exists (
+        select 1
+        from public.pet_profiles
+        where public.pet_profiles.id = public.clinical_events.pet_id
+          and public.pet_profiles.owner_id = auth.uid()::text
+    )
+)
+with check (
+    exists (
+        select 1
+        from public.pet_profiles
+        where public.pet_profiles.id = public.clinical_events.pet_id
+          and public.pet_profiles.owner_id = auth.uid()::text
+    )
+);
+
+drop policy if exists clinical_events_delete_own on public.clinical_events;
+create policy clinical_events_delete_own
+on public.clinical_events
+for delete
+using (
+    pet_id is not null
+    and exists (
+        select 1
+        from public.pet_profiles
+        where public.pet_profiles.id = public.clinical_events.pet_id
+          and public.pet_profiles.owner_id = auth.uid()::text
+    )
+);
+
+-- pet_conditions: the owner's own list of a pet's past and current illnesses
+-- (the "Patologie" tile of the cartella clinica). Owner only: every policy
+-- checks both the row's owner and that the pet is theirs. The chat reads the
+-- ongoing ones (name and start date only), with the owner's consent, through
+-- the backend's service role.
+drop policy if exists pet_conditions_select_own on public.pet_conditions;
+create policy pet_conditions_select_own
+on public.pet_conditions
+for select
+using (owner_id = auth.uid()::text);
+
+drop policy if exists pet_conditions_insert_own on public.pet_conditions;
+create policy pet_conditions_insert_own
+on public.pet_conditions
+for insert
+with check (
+    owner_id = auth.uid()::text
+    and exists (
+        select 1
+        from public.pet_profiles
+        where public.pet_profiles.id = public.pet_conditions.pet_id
+          and public.pet_profiles.owner_id = auth.uid()::text
+    )
+);
+
+drop policy if exists pet_conditions_update_own on public.pet_conditions;
+create policy pet_conditions_update_own
+on public.pet_conditions
+for update
+using (owner_id = auth.uid()::text)
+with check (
+    owner_id = auth.uid()::text
+    and exists (
+        select 1
+        from public.pet_profiles
+        where public.pet_profiles.id = public.pet_conditions.pet_id
+          and public.pet_profiles.owner_id = auth.uid()::text
+    )
+);
+
+drop policy if exists pet_conditions_delete_own on public.pet_conditions;
+create policy pet_conditions_delete_own
+on public.pet_conditions
+for delete
+using (owner_id = auth.uid()::text);
+
 drop policy if exists reminders_select_own on public.reminders;
 create policy reminders_select_own
 on public.reminders
@@ -321,18 +565,18 @@ on public.subscriptions
 for select
 using (owner_id = auth.uid()::text);
 
+-- Subscriptions are written only by the backend (service role). A client-side
+-- insert/update would let an owner extend the trial or pick a plan without
+-- paying: see scripts/setup/subscriptions_lock_writes.sql.
 drop policy if exists subscriptions_insert_own on public.subscriptions;
-create policy subscriptions_insert_own
-on public.subscriptions
-for insert
-with check (owner_id = auth.uid()::text);
-
 drop policy if exists subscriptions_update_own on public.subscriptions;
-create policy subscriptions_update_own
-on public.subscriptions
-for update
-using (owner_id = auth.uid()::text)
-with check (owner_id = auth.uid()::text);
+
+-- Devices: the owner reads their own rows; only the backend writes them.
+drop policy if exists user_devices_select_own on public.user_devices;
+create policy user_devices_select_own
+on public.user_devices
+for select
+using (owner_id = auth.uid()::text);
 
 -- Maps management (docs/maps/): shared location primitive, one row per
 -- owner, same shape as account_consents. Plain lat/lng columns rather than
@@ -389,9 +633,9 @@ alter table public.dog_walks add column if not exists is_paused boolean not null
 alter table public.dog_walks add column if not exists paused_at timestamptz;
 alter table public.dog_walks add column if not exists paused_seconds integer not null default 0;
 
--- Mercatino dell'usato. latitude/longitude are ALREADY fuzzed before
--- insert (packages/core/application/services/create_listing.py) - the
--- application service, not this table, is the privacy boundary.
+-- Mercatino dell'usato. latitude/longitude are snapped to a ~1 km grid
+-- before insert (the app's listing_location.dart, create_listing.py) and
+-- again by the guard_marketplace_listing trigger further down.
 create table if not exists public.marketplace_listings (
     id text primary key,
     owner_id text not null,
@@ -497,6 +741,29 @@ create index if not exists idx_marketplace_listing_reports_listing_id
     on public.marketplace_listing_reports(listing_id);
 create index if not exists idx_local_activities_status on public.local_activities(status);
 create index if not exists idx_local_activities_kind on public.local_activities(kind);
+-- Privacy posture for chat response reports (2026-10-03,
+-- docs/compliance/07_contributi_utenti.md). Additive/idempotent, because
+-- the table already exists live:
+-- * reporter_ref: keyed pseudonym (HMAC of the owner id, computed by the
+--   backend) stored instead of the owner id. reporter_owner_id is kept
+--   only as a nullable legacy column: new rows leave it null, and the
+--   backend maintenance job converts and blanks any old row.
+-- * chat_response_report_counters: all that survives a report once its
+--   retention (12 months after the outcome) has passed.
+alter table public.chat_response_reports add column if not exists reporter_ref text;
+alter table public.chat_response_reports alter column reporter_owner_id drop not null;
+create index if not exists idx_chat_response_reports_reporter_ref
+    on public.chat_response_reports(reporter_ref);
+
+create table if not exists public.chat_response_report_counters (
+    period text not null,
+    reason text not null,
+    status text not null,
+    total integer not null default 0,
+    primary key (period, reason, status)
+);
+alter table public.chat_response_report_counters enable row level security;
+
 create index if not exists idx_chat_response_reports_conversation_id
     on public.chat_response_reports(conversation_id);
 create index if not exists idx_chat_response_reports_status
@@ -567,15 +834,20 @@ on public.dog_walks
 for delete
 using (owner_id = auth.uid()::text);
 
--- marketplace_listings: FIRST table in this schema with intentionally open
--- read access - everyone needs to browse everyone's listings. Safe only
--- because latitude/longitude are pre-fuzzed at write time by the service
--- layer, never the exact address (see create_listing.py).
+-- marketplace_listings: an owner reads only their OWN ads directly. Everyone
+-- else's ads are served by the backend (service role, which bypasses RLS):
+-- GET /marketplace/listings (radius 1-300 km), GET /marketplace/listings/{id}
+-- and the admin portal (through the backend). Before 2026-10-26 this was
+-- `using (true)`, which let anyone with the anon key read the whole table and
+-- skip the radius; scripts/setup/marketplace_read_protection.sql applies the
+-- change to an existing database. latitude/longitude are snapped to a ~1 km
+-- grid at write time (guard_marketplace_listing below).
 drop policy if exists marketplace_listings_select_all on public.marketplace_listings;
-create policy marketplace_listings_select_all
+drop policy if exists marketplace_listings_select_own on public.marketplace_listings;
+create policy marketplace_listings_select_own
 on public.marketplace_listings
 for select
-using (true);
+using (owner_id = auth.uid()::text);
 
 drop policy if exists marketplace_listings_insert_own on public.marketplace_listings;
 create policy marketplace_listings_insert_own
@@ -664,27 +936,15 @@ for update
 using (submitted_by_owner_id = auth.uid()::text)
 with check (submitted_by_owner_id = auth.uid()::text);
 
--- chat_response_reports: insert-only for regular users, same posture as
--- marketplace_listing_reports. No select/update policy -> default deny;
--- the review/resolve workflow (list all, mark resolved, credit a bug
--- ref) goes through the Python backend's service-role client only. No
--- staff/admin role concept exists yet anywhere in this schema, so those
--- endpoints have no additional authorization gate today - same MVP
--- maturity level as the rest of this app, flagged here rather than
--- silently assumed safe.
+-- chat_response_reports: no client access at all. RLS is enabled with NO
+-- policy -> default deny for select/insert/update/delete, so nobody can
+-- read (or forge) a report through the Supabase client; every read and
+-- write goes through the Python backend's service-role client, which
+-- pseudonymizes the reporter and anonymizes the text before storing, and
+-- restricts review to the developer allowlist. The earlier insert-own
+-- policy is dropped: a direct client insert would bypass exactly those
+-- protections. Same for chat_response_report_counters (RLS on, no policy).
 drop policy if exists chat_response_reports_insert_own on public.chat_response_reports;
-create policy chat_response_reports_insert_own
-on public.chat_response_reports
-for insert
-with check (
-    reporter_owner_id = auth.uid()::text
-    and exists (
-        select 1
-        from public.conversations
-        where public.conversations.id = public.chat_response_reports.conversation_id
-          and public.conversations.owner_id = auth.uid()::text
-    )
-);
 
 -- chat_attachments: insert-only for regular users, same posture as
 -- chat_response_reports. No select/update policy -> default deny; the
@@ -713,3 +973,1449 @@ with check (
 insert into storage.buckets (id, name, public)
 values ('chat-attachments', 'chat-attachments', false)
 on conflict (id) do nothing;
+
+-- Nearby pet-services radar ("cosa c'e' attorno"): places imported from
+-- OpenStreetMap/Overpass, cached per geographic cell and shared by every
+-- user in that cell (see packages/core/domain/coverage/models.py). RLS on
+-- with no policies: only the Python backend's service-role client
+-- reads/writes them, same posture as chat_attachments.
+create table if not exists public.radar_coverage_cells (
+    coverage_key text primary key,
+    center_latitude double precision not null,
+    center_longitude double precision not null,
+    radius_km double precision not null,
+    source_name text not null,
+    place_count integer not null default 0,
+    refreshed_at timestamptz not null default now(),
+    expires_at timestamptz not null
+);
+
+create table if not exists public.radar_places_cache (
+    id text primary key,
+    coverage_key text not null,
+    place_type text not null,
+    subtype text,
+    name text not null,
+    summary text,
+    city text,
+    address_label text,
+    latitude double precision not null,
+    longitude double precision not null,
+    source_name text not null,
+    source_external_id text not null,
+    source_url text,
+    phone text,
+    website_url text,
+    is_pet_friendly boolean not null default true,
+    tags jsonb not null default '[]'::jsonb,
+    source_fetched_at timestamptz,
+    status text not null default 'active'
+);
+
+create index if not exists radar_places_cache_coverage_key_idx
+    on public.radar_places_cache (coverage_key);
+
+alter table public.radar_places_cache add column if not exists opening_hours text;
+alter table public.radar_places_cache
+    add column if not exists species jsonb not null default '[]'::jsonb;
+
+alter table public.radar_coverage_cells enable row level security;
+alter table public.radar_places_cache enable row level security;
+
+-- Pet photos: profile picture (pet_profiles.photo_path points at the current
+-- one) plus a gallery. Files live in the private 'pet-photos' bucket under
+-- <owner_id>/<pet_id>/<photo_id>.jpg; the owner-folder policies below key on that.
+alter table public.pet_profiles add column if not exists photo_path text;
+
+create table if not exists public.pet_photos (
+    id text primary key,
+    owner_id text not null,
+    pet_id text not null references public.pet_profiles(id) on delete cascade,
+    storage_path text not null,
+    created_at timestamptz not null default now(),
+    is_profile boolean not null default false
+);
+create index if not exists pet_photos_pet_created_idx on public.pet_photos (pet_id, created_at desc);
+
+-- Short videos share the gallery table and the same private bucket (the file
+-- keeps its mp4/mov extension in storage_path). Rows written before this
+-- migration are photos by default, so the app works with or without it.
+alter table public.pet_photos add column if not exists media_type text not null default 'photo';
+alter table public.pet_photos add column if not exists duration_seconds integer;
+alter table public.pet_photos add column if not exists size_bytes bigint;
+
+-- When a photo or video was actually shot (in-app camera time, or the EXIF
+-- date of an imported photo) - created_at is only the upload time. Lets the
+-- gallery caption a shot taken during a walk ("Passeggiata del 07/10/26").
+-- Nullable: unknown for older rows and imported videos. The app saves rows
+-- without it until this has run.
+alter table public.pet_photos add column if not exists taken_at timestamptz;
+do $$
+begin
+    if not exists (
+        select 1 from pg_constraint where conname = 'pet_photos_media_type_check'
+    ) then
+        alter table public.pet_photos
+            add constraint pet_photos_media_type_check check (media_type in ('photo', 'video'));
+    end if;
+end $$;
+
+alter table public.pet_photos enable row level security;
+
+drop policy if exists pet_photos_select_own on public.pet_photos;
+create policy pet_photos_select_own on public.pet_photos
+for select using (owner_id = auth.uid()::text);
+
+drop policy if exists pet_photos_insert_own on public.pet_photos;
+create policy pet_photos_insert_own on public.pet_photos
+for insert with check (owner_id = auth.uid()::text);
+
+drop policy if exists pet_photos_update_own on public.pet_photos;
+create policy pet_photos_update_own on public.pet_photos
+for update using (owner_id = auth.uid()::text) with check (owner_id = auth.uid()::text);
+
+drop policy if exists pet_photos_delete_own on public.pet_photos;
+create policy pet_photos_delete_own on public.pet_photos
+for delete using (owner_id = auth.uid()::text);
+
+insert into storage.buckets (id, name, public)
+values ('pet-photos', 'pet-photos', false)
+on conflict (id) do nothing;
+
+-- Server-side ceiling for one object, equal to petVideoMaxBytes in the app
+-- (pet_video_rules.dart): 20 MB since build 26, when the phone started
+-- re-encoding videos to 720p (was 50 MB). The app checks first, this stops
+-- anything that bypasses it. Photos are ~0.3-0.6 MB.
+update storage.buckets set file_size_limit = 20000000 where id = 'pet-photos';
+
+drop policy if exists pet_photos_objects_select_own on storage.objects;
+create policy pet_photos_objects_select_own on storage.objects
+for select using (bucket_id = 'pet-photos' and (storage.foldername(name))[1] = auth.uid()::text);
+
+drop policy if exists pet_photos_objects_insert_own on storage.objects;
+create policy pet_photos_objects_insert_own on storage.objects
+for insert with check (bucket_id = 'pet-photos' and (storage.foldername(name))[1] = auth.uid()::text);
+
+drop policy if exists pet_photos_objects_delete_own on storage.objects;
+create policy pet_photos_objects_delete_own on storage.objects
+for delete using (bucket_id = 'pet-photos' and (storage.foldername(name))[1] = auth.uid()::text);
+
+-- Radar offline catalog: places imported in bulk by scripts/radar/, so
+-- the API answers from this database instead of calling a provider while
+-- a user waits. One table per source, never joined into a combined
+-- table: OpenStreetMap is ODbL (share-alike) and must stay separable
+-- from the permissively licensed Overture data. Sources are combined
+-- only in memory, per request (packages/core/domain/radar_places/dedup.py).
+-- RLS on with no policies: service-role only, same posture as the cache.
+create table if not exists public.data_sources (
+    source text primary key,
+    release text not null,
+    license text not null,
+    attribution text not null,
+    url text,
+    place_count integer not null default 0,
+    imported_at timestamptz not null default now(),
+    min_latitude double precision,
+    max_latitude double precision,
+    min_longitude double precision,
+    max_longitude double precision
+);
+
+create table if not exists public.radar_places_osm (
+    id text primary key,
+    place_type text not null,
+    subtype text,
+    name text not null,
+    summary text,
+    opening_hours text,
+    species jsonb not null default '[]'::jsonb,
+    details jsonb not null default '{}'::jsonb,
+    city text,
+    address_label text,
+    latitude double precision not null,
+    longitude double precision not null,
+    source_external_id text not null,
+    source_url text,
+    phone text,
+    website_url text,
+    imported_at timestamptz not null default now()
+);
+
+create index if not exists radar_places_osm_position_idx
+    on public.radar_places_osm (latitude, longitude);
+
+create table if not exists public.radar_places_open (
+    id text primary key,
+    source text not null,
+    source_id text not null,
+    place_type text not null,
+    subtype text,
+    name text not null,
+    latitude double precision not null,
+    longitude double precision not null,
+    address_label text,
+    city text,
+    phone text,
+    website_url text,
+    confidence double precision,
+    license text not null,
+    release text not null,
+    imported_at timestamptz not null default now()
+);
+
+create index if not exists radar_places_open_position_idx
+    on public.radar_places_open (latitude, longitude);
+
+-- Manual corrections the importers and the API respect: a place listed
+-- here with action 'exclude' is not imported again and not shown.
+create table if not exists public.radar_place_overrides (
+    source text not null,
+    source_id text not null,
+    action text not null default 'exclude',
+    reason text,
+    created_at timestamptz not null default now(),
+    primary key (source, source_id, action)
+);
+
+alter table public.radar_places_cache
+    add column if not exists details jsonb not null default '{}'::jsonb;
+
+-- Multi-country radar (docs/maps/COUNTRIES.md). Every imported place carries
+-- the ISO country code of the run that wrote it, so a re-import of one
+-- country replaces only that country's rows. Rows imported before this
+-- migration are Italy's.
+alter table public.radar_places_osm
+    add column if not exists country text not null default 'IT';
+alter table public.radar_places_open
+    add column if not exists country text not null default 'IT';
+create index if not exists radar_places_osm_country_idx on public.radar_places_osm (country);
+create index if not exists radar_places_open_country_idx on public.radar_places_open (country);
+
+-- What is imported for each country. OpenStreetMap counts as complete only
+-- when every region of the country went in during one run (osm_complete_at
+-- set); until then the API serves the country from the live per-cell cache.
+create table if not exists public.radar_country_coverage (
+    country text primary key,
+    osm_complete_at timestamptz,
+    osm_release text,
+    osm_place_count integer not null default 0,
+    osm_regions jsonb not null default '[]'::jsonb,
+    overture_release text,
+    overture_imported_at timestamptz,
+    overture_place_count integer not null default 0,
+    updated_at timestamptz not null default now()
+);
+
+-- Italy was imported before this table existed: derive its row from the
+-- areas recorded in data_sources (idempotent).
+insert into public.radar_country_coverage
+    (country, osm_complete_at, osm_release, osm_place_count)
+select 'IT', imported_at, release, place_count
+from public.data_sources
+where source = 'openstreetmap_overpass' and min_latitude is not null
+on conflict (country) do nothing;
+
+update public.radar_country_coverage as coverage
+set overture_release = source.release,
+    overture_imported_at = source.imported_at,
+    overture_place_count = source.place_count
+from public.data_sources as source
+where coverage.country = 'IT'
+  and source.source = 'overture'
+  and coverage.overture_imported_at is null;
+
+alter table public.radar_country_coverage enable row level security;
+
+alter table public.data_sources enable row level security;
+alter table public.radar_places_osm enable row level security;
+alter table public.radar_places_open enable row level security;
+alter table public.radar_place_overrides enable row level security;
+
+-- "Segnala!": community reports on the radar, the votes that confirm or
+-- deny them, and star ratings of public dog parks. Our own data, never
+-- written to OpenStreetMap or into the open-data tables. People appear
+-- only as a keyed pseudonym computed by the backend (RADAR_PSEUDONYM_KEY,
+-- kept outside the database): no account id is stored here, and no
+-- table maps pseudonyms back to accounts. RLS on with no policies: all
+-- access goes through the backend's service-role client.
+create table if not exists public.radar_user_reports (
+    id text primary key,
+    kind text not null,
+    status text not null default 'pending',
+    place_type text not null,
+    name text not null,
+    latitude double precision not null,
+    longitude double precision not null,
+    address_label text,
+    target_source text,
+    target_source_id text,
+    reporter_pseudonym text not null,
+    confirmations integer not null default 0,
+    denials integer not null default 0,
+    created_at timestamptz not null default now(),
+    resolved_at timestamptz
+);
+
+create index if not exists radar_user_reports_position_idx
+    on public.radar_user_reports (latitude, longitude);
+create index if not exists radar_user_reports_reporter_idx
+    on public.radar_user_reports (reporter_pseudonym, created_at);
+
+create table if not exists public.radar_report_votes (
+    report_id text not null references public.radar_user_reports(id) on delete cascade,
+    voter_pseudonym text not null,
+    vote smallint not null,
+    created_at timestamptz not null default now(),
+    primary key (report_id, voter_pseudonym)
+);
+
+create table if not exists public.radar_place_ratings (
+    source text not null,
+    source_id text not null,
+    voter_pseudonym text not null,
+    stars smallint not null check (stars between 1 and 5),
+    latitude double precision not null,
+    longitude double precision not null,
+    updated_at timestamptz not null default now(),
+    primary key (source, source_id, voter_pseudonym)
+);
+
+create index if not exists radar_place_ratings_position_idx
+    on public.radar_place_ratings (latitude, longitude);
+
+-- Position and category of an excluded place, so the same place listed by
+-- another source is dropped too.
+alter table public.radar_place_overrides add column if not exists place_type text;
+alter table public.radar_place_overrides add column if not exists latitude double precision;
+alter table public.radar_place_overrides add column if not exists longitude double precision;
+
+alter table public.radar_user_reports enable row level security;
+alter table public.radar_report_votes enable row level security;
+alter table public.radar_place_ratings enable row level security;
+
+-- "Dichiarano di trattare animali esotici": segnalazioni di competenza confermate a mano.
+-- Stesso blocco di scripts/setup/radar_exotic_competences.sql.
+create table if not exists public.radar_competence_claims (
+    id text primary key,
+    target_source text not null check (char_length(target_source) <= 60),
+    target_source_id text not null check (char_length(target_source_id) <= 120),
+    place_name text not null check (char_length(place_name) <= 120),
+    latitude double precision not null,
+    longitude double precision not null,
+    groups jsonb not null default '[]'::jsonb,
+    evidence_kind text not null check (evidence_kind in ('website', 'sign', 'other')),
+    status text not null default 'pending'
+        check (status in ('pending', 'confirmed', 'rejected')),
+    reporter_pseudonym text not null,
+    created_at timestamptz not null default now(),
+    resolved_at timestamptz,
+    evidence_url text check (evidence_url is null or char_length(evidence_url) <= 500),
+    resolution_note text check (resolution_note is null or char_length(resolution_note) <= 300)
+);
+
+create index if not exists radar_competence_claims_position_idx
+    on public.radar_competence_claims (status, latitude, longitude);
+create index if not exists radar_competence_claims_reporter_idx
+    on public.radar_competence_claims (reporter_pseudonym, created_at);
+
+alter table public.radar_competence_claims enable row level security;
+revoke all on table public.radar_competence_claims from anon, authenticated;
+
+-- ---------------------------------------------------------------------------
+-- Eventi (sezione "Eventi" in Attività, docs/features/events_engine.md, Fase A
+-- in versione snella). Una riga = una edizione (date concrete). Nazionale,
+-- senza mappa: città/provincia/regione sono testo, niente coordinate né
+-- tabella ISTAT (Fase B). Caricamento curato da data/events/curated/*.json con
+-- scripts/events/import_curated.py (service role); l'app legge direttamente
+-- con la anon key, quindi RLS è in SOLA LETTURA pubblica: nessuna policy di
+-- scrittura -> solo la service role può inserire o modificare.
+-- ---------------------------------------------------------------------------
+create table if not exists public.events (
+    id uuid primary key default gen_random_uuid(),
+    slug text not null unique,             -- "petsfestival-cremona-2026"
+    title text not null,
+    description text,                      -- breve, scritta da noi
+    event_type text not null default 'other',
+    level text not null default 'local',   -- local|provincial|regional|national|international
+    level_basis text not null default 'default',
+    audience text not null default 'public',  -- public|professional
+    species text[] not null default '{}',     -- vuoto = tutte
+    starts_on date not null,
+    ends_on date not null,
+    city text,
+    province_code text,                    -- sigla, es. 'CR'
+    region text,                           -- nome, es. 'Lombardia'
+    venue_name text,
+    organizer_name text,                   -- solo enti e società, mai persone
+    source_url text,                       -- pagina ufficiale dell'evento/organizzatore
+    source text not null default 'curated',
+    license text not null default 'fatti pubblici verificati dal curatore',
+    status text not null default 'draft',  -- draft|published|cancelled|postponed|rejected
+    verification_status text not null default 'unverified',
+    last_verified_at timestamptz,
+    created_at timestamptz not null default now(),
+    updated_at timestamptz not null default now(),
+    check (ends_on >= starts_on)
+);
+
+create index if not exists events_active_idx
+    on public.events (ends_on, starts_on) where status in ('published', 'cancelled', 'postponed');
+create index if not exists events_region_idx
+    on public.events (region, starts_on) where status in ('published', 'cancelled', 'postponed');
+
+alter table public.events enable row level security;
+
+drop policy if exists events_select_public on public.events;
+create policy events_select_public
+on public.events
+for select
+using (status in ('published', 'cancelled', 'postponed') and audience = 'public');
+
+
+-- Admin operations: moderation resolution metadata and recurring ingestion schedules.
+
+alter table public.marketplace_listing_reports
+    add column if not exists status text not null default 'open',
+    add column if not exists resolution_action text,
+    add column if not exists resolution_note text,
+    add column if not exists resolved_at timestamptz,
+    add column if not exists resolved_by_admin_id text;
+
+do $$
+begin
+    if not exists (
+        select 1 from pg_constraint
+        where conname = 'marketplace_listing_reports_status_check'
+          and conrelid = 'public.marketplace_listing_reports'::regclass
+    ) then
+        alter table public.marketplace_listing_reports
+            add constraint marketplace_listing_reports_status_check
+            check (status in ('open','resolved','dismissed'));
+    end if;
+end $$;
+
+alter table public.radar_user_reports
+    add column if not exists admin_resolution_note text,
+    add column if not exists resolved_by_admin_id text;
+
+create table if not exists public.admin_ingestion_schedules (
+    id uuid primary key default extensions.gen_random_uuid(),
+    name text not null,
+    engine text not null check (engine in ('geographic','scientific')),
+    enabled boolean not null default true,
+    interval_hours integer not null check (interval_hours between 1 and 8760),
+    payload jsonb not null default '{}'::jsonb,
+    next_run_at timestamptz not null,
+    last_run_at timestamptz,
+    last_status text check (last_status is null or last_status in ('completed','failed')),
+    last_error text,
+    last_job_id text,
+    locked_at timestamptz,
+    created_by text,
+    created_at timestamptz not null default now(),
+    updated_at timestamptz not null default now()
+);
+
+create index if not exists idx_admin_ingestion_schedules_due
+    on public.admin_ingestion_schedules (enabled, next_run_at)
+    where enabled = true;
+
+drop trigger if exists trg_admin_ingestion_schedules_set_updated_at
+    on public.admin_ingestion_schedules;
+create trigger trg_admin_ingestion_schedules_set_updated_at
+before update on public.admin_ingestion_schedules
+for each row execute function public.set_updated_at();
+
+alter table public.admin_ingestion_schedules enable row level security;
+
+create or replace function public.admin_claim_due_schedules(limit_count integer default 10)
+returns setof public.admin_ingestion_schedules
+language plpgsql
+security invoker
+set search_path = public, extensions
+as $$
+begin
+    return query
+    with due as (
+        select id
+        from public.admin_ingestion_schedules
+        where enabled = true
+          and next_run_at <= now()
+          and (locked_at is null or locked_at < now() - interval '2 hours')
+        order by next_run_at asc
+        for update skip locked
+        limit greatest(coalesce(limit_count,10),1)
+    )
+    update public.admin_ingestion_schedules s
+    set locked_at = now()
+    from due
+    where s.id = due.id
+    returning s.*;
+end;
+$$;
+
+revoke all on function public.admin_claim_due_schedules(integer)
+    from public, anon, authenticated;
+grant execute on function public.admin_claim_due_schedules(integer)
+    to service_role;
+
+
+-- Marketplace moderation changes report state after the original trigger was
+-- introduced. Count only unresolved/open reports and keep the trigger function
+-- non-callable as a public RPC; it is invoked automatically by PostgreSQL.
+create or replace function public.handle_marketplace_listing_report()
+returns trigger
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+    distinct_reporters integer;
+begin
+    select count(distinct reporter_owner_id)
+    into distinct_reporters
+    from public.marketplace_listing_reports
+    where listing_id = new.listing_id
+      and status = 'open';
+
+    update public.marketplace_listings
+    set report_count = distinct_reporters,
+        status = case
+            when distinct_reporters >= 3 and status not in ('sold', 'removed') then 'removed'
+            else status
+        end,
+        updated_at = now()
+    where id = new.listing_id;
+
+    return new;
+end;
+$$;
+
+revoke all on function public.handle_marketplace_listing_report()
+from public, anon, authenticated;
+
+grant execute on function public.handle_marketplace_listing_report()
+to service_role;
+
+
+-- Mercatino v2 (2026-10-07): species, new category list, grid-rounded
+-- positions + moderation guard, public photo bucket. Same content as
+-- scripts/setup/marketplace_v2.sql (the one-off for existing databases).
+
+alter table public.marketplace_listings
+    add column if not exists target_species jsonb not null default '[]'::jsonb;
+
+-- Old form saved "0" as a price; free items are "in regalo" (null) now.
+update public.marketplace_listings set price_cents = null where price_cents <= 0;
+
+-- Rows written before the grid (randomly offset positions) are snapped too.
+update public.marketplace_listings
+set latitude = round(latitude::numeric, 2)::double precision,
+    longitude = round(longitude::numeric, 2)::double precision
+where latitude <> round(latitude::numeric, 2)::double precision
+   or longitude <> round(longitude::numeric, 2)::double precision;
+
+update public.marketplace_listings
+set category = case category
+        when 'transport_carriers' then 'kennels_carriers'
+        when 'food' then 'feeding'
+        when 'grooming' then 'hygiene_grooming'
+        else 'other'
+    end
+where category in ('transport_carriers', 'food', 'grooming', 'accessories', 'health_wellness');
+
+do $$
+begin
+    if not exists (
+        select 1 from pg_constraint
+        where conname = 'marketplace_listings_category_check'
+          and conrelid = 'public.marketplace_listings'::regclass
+    ) then
+        alter table public.marketplace_listings
+            add constraint marketplace_listings_category_check
+            check (category in (
+                'kennels_carriers', 'leashes_collars', 'toys', 'clothing', 'feeding',
+                'hygiene_grooming', 'aquariums_terrariums', 'cages_aviaries', 'other'
+            ));
+    end if;
+    if not exists (
+        select 1 from pg_constraint
+        where conname = 'marketplace_listings_price_check'
+          and conrelid = 'public.marketplace_listings'::regclass
+    ) then
+        alter table public.marketplace_listings
+            add constraint marketplace_listings_price_check
+            check (price_cents is null or price_cents > 0);
+    end if;
+    if not exists (
+        select 1 from pg_constraint
+        where conname = 'marketplace_listings_photos_check'
+          and conrelid = 'public.marketplace_listings'::regclass
+    ) then
+        alter table public.marketplace_listings
+            add constraint marketplace_listings_photos_check
+            check (jsonb_typeof(photo_urls) = 'array' and jsonb_array_length(photo_urls) <= 6);
+    end if;
+end;
+$$;
+
+-- Runs as the caller (no security definer), so current_user tells a regular
+-- app user ('authenticated'/'anon') apart from the service role (admin
+-- moderation in apps/api/routes/admin.py) and from the report trigger,
+-- which runs as its owner and must keep updating report_count/status.
+create or replace function public.guard_marketplace_listing()
+returns trigger
+language plpgsql
+set search_path = public
+as $$
+begin
+    new.latitude := round(new.latitude::numeric, 2)::double precision;
+    new.longitude := round(new.longitude::numeric, 2)::double precision;
+
+    if current_user in ('authenticated', 'anon') then
+        if tg_op = 'INSERT' then
+            new.report_count := 0;
+            new.status := 'active';
+        else
+            new.owner_id := old.owner_id;
+            new.created_at := old.created_at;
+            new.report_count := old.report_count;
+            if old.status in ('removed', 'removed_policy')
+               or new.status in ('removed', 'removed_policy') then
+                new.status := old.status;
+            end if;
+        end if;
+    end if;
+
+    return new;
+end;
+$$;
+
+drop trigger if exists marketplace_listing_guard on public.marketplace_listings;
+create trigger marketplace_listing_guard
+before insert or update on public.marketplace_listings
+for each row execute function public.guard_marketplace_listing();
+
+insert into storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
+values ('marketplace-photos', 'marketplace-photos', true, 5000000, array['image/jpeg'])
+on conflict (id) do update
+set public = true,
+    file_size_limit = 5000000,
+    allowed_mime_types = array['image/jpeg'];
+
+-- Viewing goes through the public url and needs no policy; this select
+-- policy is what Storage requires (with delete) for the author to remove
+-- their own photos.
+drop policy if exists marketplace_photos_objects_select_own on storage.objects;
+create policy marketplace_photos_objects_select_own on storage.objects
+for select using (
+    bucket_id = 'marketplace-photos' and (storage.foldername(name))[1] = auth.uid()::text
+);
+
+drop policy if exists marketplace_photos_objects_insert_own on storage.objects;
+create policy marketplace_photos_objects_insert_own on storage.objects
+for insert with check (
+    bucket_id = 'marketplace-photos' and (storage.foldername(name))[1] = auth.uid()::text
+);
+
+drop policy if exists marketplace_photos_objects_delete_own on storage.objects;
+create policy marketplace_photos_objects_delete_own on storage.objects
+for delete using (
+    bucket_id = 'marketplace-photos' and (storage.foldername(name))[1] = auth.uid()::text
+);
+
+-- ---------------------------------------------------------------------------
+-- Model usage ledger and daily budget (build 32, 2026-10-14).
+-- Groq's free tier counts tokens per day and per model for the whole
+-- organization. The backend records every model call (counts only: never
+-- the owner's words), keeps the day's totals per model so every serverless
+-- instance sees the same figures, counts each owner's messages per day, and
+-- caches answers to general curiosities. Retention: llm_usage rows have no
+-- personal data (keep 90 days for analysis); chat_user_daily_usage links an
+-- owner id to a count only (keep 30 days). Cleanup, to run periodically:
+--   delete from public.llm_usage where day < current_date - 90;
+--   delete from public.chat_user_daily_usage where day < current_date - 30;
+--   delete from public.chat_answer_cache where expires_at < now();
+create table if not exists public.llm_usage (
+    id text primary key,
+    occurred_at timestamptz not null default now(),
+    day date not null,
+    model text not null,
+    model_class text not null default 'main',
+    purpose text not null,
+    prompt_tokens integer not null default 0,
+    completion_tokens integer not null default 0,
+    cached_prompt_tokens integer not null default 0,
+    total_tokens integer not null default 0,
+    duration_ms integer not null default 0,
+    outcome text not null default 'ok'
+);
+create index if not exists idx_llm_usage_day_model on public.llm_usage(day, model);
+create index if not exists idx_llm_usage_day_purpose on public.llm_usage(day, purpose);
+alter table public.llm_usage enable row level security;
+
+create table if not exists public.llm_usage_daily (
+    day date not null,
+    model text not null,
+    calls integer not null default 0,
+    prompt_tokens integer not null default 0,
+    completion_tokens integer not null default 0,
+    cached_prompt_tokens integer not null default 0,
+    total_tokens integer not null default 0,
+    exhausted_until timestamptz,
+    primary key (day, model)
+);
+alter table public.llm_usage_daily enable row level security;
+
+-- Atomic add: concurrent instances never lose each other's tokens.
+create or replace function public.llm_usage_add(
+    p_day date,
+    p_model text,
+    p_prompt_tokens integer,
+    p_completion_tokens integer,
+    p_cached_tokens integer,
+    p_total_tokens integer
+)
+returns void
+language sql
+security definer
+set search_path = public
+as $$
+    insert into public.llm_usage_daily (
+        day, model, calls, prompt_tokens, completion_tokens, cached_prompt_tokens, total_tokens
+    )
+    values (
+        p_day, p_model, 1, p_prompt_tokens, p_completion_tokens, p_cached_tokens, p_total_tokens
+    )
+    on conflict (day, model) do update set
+        calls = public.llm_usage_daily.calls + 1,
+        prompt_tokens = public.llm_usage_daily.prompt_tokens + excluded.prompt_tokens,
+        completion_tokens = public.llm_usage_daily.completion_tokens + excluded.completion_tokens,
+        cached_prompt_tokens =
+            public.llm_usage_daily.cached_prompt_tokens + excluded.cached_prompt_tokens,
+        total_tokens = public.llm_usage_daily.total_tokens + excluded.total_tokens;
+$$;
+
+create table if not exists public.chat_user_daily_usage (
+    owner_id text not null,
+    day date not null,
+    messages integer not null default 0,
+    primary key (owner_id, day)
+);
+alter table public.chat_user_daily_usage enable row level security;
+
+-- Counts one more message for the owner today and returns the new total.
+create or replace function public.chat_user_daily_usage_add(p_owner_id text, p_day date)
+returns integer
+language sql
+security definer
+set search_path = public
+as $$
+    insert into public.chat_user_daily_usage (owner_id, day, messages)
+    values (p_owner_id, p_day, 1)
+    on conflict (owner_id, day) do update set
+        messages = public.chat_user_daily_usage.messages + 1
+    returning messages;
+$$;
+
+-- Answers to general questions about a kind of animal, shared for a day.
+-- `question` is the normalized question (no names, no personal case: the
+-- backend only caches questions that pass answer_cache.py's rules).
+create table if not exists public.chat_answer_cache (
+    key text primary key,
+    species text not null,
+    language text not null default 'it',
+    question text not null,
+    answer text not null,
+    provider text not null,
+    model text not null,
+    sources jsonb not null default '[]'::jsonb,
+    created_at timestamptz not null default now(),
+    expires_at timestamptz not null,
+    hits integer not null default 0
+);
+create index if not exists idx_chat_answer_cache_expires_at on public.chat_answer_cache(expires_at);
+alter table public.chat_answer_cache enable row level security;
+
+create or replace function public.chat_answer_cache_hit(p_key text)
+returns void
+language sql
+security definer
+set search_path = public
+as $$
+    update public.chat_answer_cache set hits = hits + 1 where key = p_key;
+$$;
+
+-- These three functions run as their owner (security definer) and are the
+-- only way the backend moves the shared counters. They must not be callable
+-- from the app's own key: otherwise anyone could add tokens to the day's
+-- total (switching the whole chat to degraded mode) or add messages to
+-- another owner's daily count (locking them out). Only the backend, with
+-- the service role, may call them.
+revoke all on function public.llm_usage_add(date, text, integer, integer, integer, integer)
+    from public, anon, authenticated;
+grant execute on function public.llm_usage_add(date, text, integer, integer, integer, integer)
+    to service_role;
+
+revoke all on function public.chat_user_daily_usage_add(text, date)
+    from public, anon, authenticated;
+grant execute on function public.chat_user_daily_usage_add(text, date)
+    to service_role;
+
+revoke all on function public.chat_answer_cache_hit(text)
+    from public, anon, authenticated;
+grant execute on function public.chat_answer_cache_hit(text)
+    to service_role;
+
+-- Retention for the usage ledger and the answer cache (build 33). One
+-- function deletes what has aged out: llm_usage rows after 90 days,
+-- chat_user_daily_usage after 30 days, expired chat_answer_cache rows; the
+-- per-day totals in llm_usage_daily stay (a few rows a day, no personal
+-- data). Two ways to run it, either is enough:
+--   * pg_cron (enable the extension once in the Supabase dashboard,
+--     Database > Extensions > pg_cron): the block below then schedules it
+--     every night at 03:15 UTC; re-running this script keeps one schedule;
+--   * the backend route POST /chat/maintenance (developer accounts only),
+--     from any external scheduler.
+create or replace function public.chat_usage_cleanup()
+returns jsonb
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+    usage_rows integer;
+    user_rows integer;
+    cache_rows integer;
+begin
+    delete from public.llm_usage where day < current_date - 90;
+    get diagnostics usage_rows = row_count;
+    delete from public.chat_user_daily_usage where day < current_date - 30;
+    get diagnostics user_rows = row_count;
+    delete from public.chat_answer_cache where expires_at < now();
+    get diagnostics cache_rows = row_count;
+    return jsonb_build_object(
+        'llm_usage', usage_rows,
+        'chat_user_daily_usage', user_rows,
+        'chat_answer_cache', cache_rows
+    );
+end;
+$$;
+revoke all on function public.chat_usage_cleanup()
+    from public, anon, authenticated;
+grant execute on function public.chat_usage_cleanup()
+    to service_role;
+
+do $$
+begin
+    if exists (select 1 from pg_extension where extname = 'pg_cron') then
+        perform cron.unschedule(jobid)
+            from cron.job where jobname = 'vetapp-chat-usage-cleanup';
+        perform cron.schedule(
+            'vetapp-chat-usage-cleanup', '15 3 * * *', 'select public.chat_usage_cleanup()'
+        );
+    end if;
+end
+$$;
+
+-- Misurazioni del peso (pagina "Monitoraggio" del pet, 2026-10-14). Una riga
+-- per pesata: data, peso SEMPRE in kg (l'app converte da/verso lb nella
+-- visualizzazione), corporatura facoltativa a 5 livelli (1 molto magro ...
+-- 5 sovrappeso) e nota. L'app legge/scrive direttamente da Supabase (come
+-- pet_profiles e dog_walks); il backend della chat legge l'ultima riga con la
+-- service key. Non per i pesci/acquari (filtro lato app).
+create table if not exists public.pet_weight_measurements (
+    id text primary key,
+    pet_id text not null references public.pet_profiles(id) on delete cascade,
+    owner_id text not null,
+    measured_at date not null,
+    weight_kg numeric(7, 3) not null check (weight_kg > 0 and weight_kg <= 2000),
+    body_condition smallint check (body_condition between 1 and 5),
+    note text check (note is null or char_length(note) <= 500),
+    created_at timestamptz not null default now()
+);
+
+create index if not exists idx_pet_weight_measurements_pet_date
+    on public.pet_weight_measurements(pet_id, measured_at desc);
+create index if not exists idx_pet_weight_measurements_owner_id
+    on public.pet_weight_measurements(owner_id);
+
+alter table public.pet_weight_measurements enable row level security;
+
+-- Solo il proprietario: stessa forma di dog_walks (insert verifica anche che
+-- il pet sia suo).
+drop policy if exists pet_weight_measurements_select_own on public.pet_weight_measurements;
+create policy pet_weight_measurements_select_own
+on public.pet_weight_measurements
+for select
+using (owner_id = auth.uid()::text);
+
+drop policy if exists pet_weight_measurements_insert_own on public.pet_weight_measurements;
+create policy pet_weight_measurements_insert_own
+on public.pet_weight_measurements
+for insert
+with check (
+    owner_id = auth.uid()::text
+    and exists (
+        select 1
+        from public.pet_profiles
+        where public.pet_profiles.id = public.pet_weight_measurements.pet_id
+          and public.pet_profiles.owner_id = auth.uid()::text
+    )
+);
+
+drop policy if exists pet_weight_measurements_update_own on public.pet_weight_measurements;
+create policy pet_weight_measurements_update_own
+on public.pet_weight_measurements
+for update
+using (owner_id = auth.uid()::text)
+with check (owner_id = auth.uid()::text);
+
+drop policy if exists pet_weight_measurements_delete_own on public.pet_weight_measurements;
+create policy pet_weight_measurements_delete_own
+on public.pet_weight_measurements
+for delete
+using (owner_id = auth.uid()::text);
+
+-- ---------------------------------------------------------------------------
+-- Curiosità per i tuoi animali (GET /news). Il backend legge i feed RSS e tiene
+-- qui l'ultima copia valida (una riga per pubblico, oggi 'it'): se le fonti non
+-- rispondono si serve questa. Solo service role (RLS attiva, nessuna policy).
+-- ---------------------------------------------------------------------------
+create table if not exists public.pet_news_snapshots (
+    key text primary key,
+    fetched_at timestamptz not null,
+    items jsonb not null default '[]'::jsonb
+);
+alter table public.pet_news_snapshots enable row level security;
+
+-- ---------------------------------------------------------------------------
+-- "Segnala un evento": proposte degli utenti per la sezione Eventi (POST
+-- /events/submissions). Restano qui in moderazione: il team le controlla con
+-- scripts/events/moderate_submissions.py e solo allora diventano righe di
+-- public.events. `submitted_by` serve solo a limitare gli abusi, non si mostra
+-- mai. Solo service role (RLS attiva, nessuna policy); cancellata con l'account.
+-- ---------------------------------------------------------------------------
+create table if not exists public.event_submissions (
+    id text primary key,
+    submitted_by text not null,
+    title text not null,
+    event_type text not null,
+    starts_on date not null,
+    ends_on date not null,
+    city text not null,
+    province_code text,
+    region text,
+    venue_name text,
+    source_url text not null,
+    status text not null default 'pending'
+        check (status in ('pending', 'approved', 'rejected')),
+    review_note text,
+    event_slug text,
+    created_at timestamptz not null default now(),
+    reviewed_at timestamptz,
+    check (ends_on >= starts_on)
+);
+create index if not exists event_submissions_status_idx
+    on public.event_submissions (status, created_at);
+create index if not exists event_submissions_owner_idx
+    on public.event_submissions (submitted_by, created_at);
+alter table public.event_submissions enable row level security;
+
+-- Origine e licenza delle righe di public.events non curate a mano (feed
+-- importati, segnalazioni approvate). Le colonne `source` e `license` esistono
+-- già: qui si documenta soltanto che i valori possono essere altri.
+
+-- Notizie, eventi e Mercatino per territorio (2026-10-14, sessione "Notizie,
+-- eventi e Mercatino per territorio"). Idempotente: si puo' eseguire piu' volte.
+-- Lo stesso blocco e' in fondo a supabase_schema.sql, cosi' un setup nuovo lo
+-- ha gia'; ESEGUI QUESTO FILE UNA VOLTA sul database esistente, PRIMA di
+-- pubblicare la versione dell'app/backend che legge la colonna.
+--
+-- 1. events.country: paese in cui si svolge l'evento (ISO 3166-1 alpha-2).
+--    L'app mostra solo gli eventi del paese dell'utente. Le righe esistenti
+--    sono italiane (valore predefinito 'IT').
+-- 2. marketplace_listings.country: paese del venditore. Prezzi nella valuta
+--    del paese; l'app e il backend mostrano solo annunci dello stesso paese
+--    dell'utente. Le righe esistenti sono italiane.
+
+alter table public.events
+    add column if not exists country text not null default 'IT';
+
+create index if not exists events_country_idx
+    on public.events (country, starts_on) where status in ('published', 'cancelled', 'postponed');
+
+alter table public.marketplace_listings
+    add column if not exists country text not null default 'IT';
+
+create index if not exists idx_marketplace_listings_country
+    on public.marketplace_listings (country) where status = 'active';
+
+do $$
+begin
+    if not exists (
+        select 1 from pg_constraint
+        where conname = 'marketplace_listings_country_check'
+          and conrelid = 'public.marketplace_listings'::regclass
+    ) then
+        alter table public.marketplace_listings
+            add constraint marketplace_listings_country_check
+            check (country ~ '^[A-Z]{2}$');
+    end if;
+    if not exists (
+        select 1 from pg_constraint
+        where conname = 'events_country_check'
+          and conrelid = 'public.events'::regclass
+    ) then
+        alter table public.events
+            add constraint events_country_check
+            check (country ~ '^[A-Z]{2}$');
+    end if;
+end;
+$$;
+
+-- Mercatino, 2026-10-26: la lettura diretta e' ora limitata ai propri annunci
+-- (policy marketplace_listings_select_own, sopra). Dettaglio, elenco, mappa e
+-- portale admin passano dal backend. Per scrivere anche solo dal backend (cosi'
+-- il filtro "niente animali" non si aggira) vedere l'opzionale
+-- scripts/setup/marketplace_lock_writes.sql; per nascondere gli annunci di
+-- animali gia' presenti, scripts/setup/marketplace_no_animals.sql.
+
+-- ---------------------------------------------------------------------------
+-- Security audit 2026-10-26 (BE-4/LLM-4, retention).
+-- 1) Per-owner daily allowances for every feature that calls a model: the
+--    counters table gains one column per kind, and one atomic function
+--    adds to the kind asked for (the older messages-only function stays).
+alter table public.chat_user_daily_usage add column if not exists vision integer not null default 0;
+alter table public.chat_user_daily_usage
+    add column if not exists dictation integer not null default 0;
+alter table public.chat_user_daily_usage add column if not exists summary integer not null default 0;
+
+create or replace function public.chat_user_daily_usage_add_kind(
+    p_owner_id text, p_day date, p_kind text
+)
+returns integer
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+    total integer;
+begin
+    if p_kind not in ('messages', 'vision', 'dictation', 'summary') then
+        raise exception 'unknown usage kind: %', p_kind;
+    end if;
+    insert into public.chat_user_daily_usage (owner_id, day, messages, vision, dictation, summary)
+    values (
+        p_owner_id, p_day,
+        (p_kind = 'messages')::integer, (p_kind = 'vision')::integer,
+        (p_kind = 'dictation')::integer, (p_kind = 'summary')::integer
+    )
+    on conflict (owner_id, day) do update set
+        messages = public.chat_user_daily_usage.messages + (p_kind = 'messages')::integer,
+        vision = public.chat_user_daily_usage.vision + (p_kind = 'vision')::integer,
+        dictation = public.chat_user_daily_usage.dictation + (p_kind = 'dictation')::integer,
+        summary = public.chat_user_daily_usage.summary + (p_kind = 'summary')::integer
+    returning case p_kind
+        when 'messages' then messages
+        when 'vision' then vision
+        when 'dictation' then dictation
+        else summary
+    end into total;
+    return total;
+end;
+$$;
+revoke all on function public.chat_user_daily_usage_add_kind(text, date, text)
+    from public, anon, authenticated;
+grant execute on function public.chat_user_daily_usage_add_kind(text, date, text)
+    to service_role;
+
+-- 2) Retention of the chat. A conversation lives 24 months after its last
+--    message (the owner can delete it earlier from the app), its files
+--    with it; a file uploaded but never sent goes after 7 days.
+--    `last_message_at` is kept by the backend on every save; the backfill
+--    below fills it for existing rows from the messages themselves.
+--    The backend's maintenance (POST /chat/maintenance, or the nightly
+--    pg_cron job below for the rows) applies it. Deleting a row of
+--    chat_attachments does NOT remove the file from the storage bucket:
+--    that is the backend's part (it deletes the file, then the row), so
+--    the SQL function below only removes conversations whose attachments
+--    are already gone, and reports what is left for the backend.
+alter table public.conversations add column if not exists last_message_at timestamptz;
+create index if not exists idx_conversations_last_message_at
+    on public.conversations(last_message_at);
+update public.conversations
+set last_message_at = (
+    select max((m->>'created_at')::timestamptz) from jsonb_array_elements(messages) m
+)
+where last_message_at is null and jsonb_array_length(messages) > 0;
+
+create or replace function public.chat_retention_cleanup(
+    p_months integer default 24, p_orphan_days integer default 7
+)
+returns jsonb
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+    conversations_deleted integer;
+    attachments_pending integer;
+begin
+    -- Conversations past retention with no file left to remove.
+    delete from public.conversations c
+    where c.last_message_at < now() - make_interval(months => p_months)
+      and not exists (
+          select 1 from public.chat_attachments a where a.conversation_id = c.id
+      );
+    get diagnostics conversations_deleted = row_count;
+    -- Files the backend still has to delete (past retention, or orphans).
+    select count(*) into attachments_pending
+    from public.chat_attachments a
+    left join public.conversations c on c.id = a.conversation_id
+    where (c.id is not null and c.last_message_at < now() - make_interval(months => p_months))
+       or (a.conversation_id is null and a.created_at < now() - make_interval(days => p_orphan_days));
+    return jsonb_build_object(
+        'conversations_deleted', conversations_deleted,
+        'attachments_pending_backend_cleanup', attachments_pending
+    );
+end;
+$$;
+revoke all on function public.chat_retention_cleanup(integer, integer)
+    from public, anon, authenticated;
+grant execute on function public.chat_retention_cleanup(integer, integer)
+    to service_role;
+
+do $$
+begin
+    if exists (select 1 from pg_extension where extname = 'pg_cron') then
+        perform cron.unschedule(jobid)
+            from cron.job where jobname = 'vetapp-chat-retention';
+        perform cron.schedule(
+            'vetapp-chat-retention', '45 3 * * *', 'select public.chat_retention_cleanup()'
+        );
+    end if;
+end
+$$;
+
+-- Mercatino: messaggi dentro l'app (decisione del proprietario, 2026-11-07) e
+-- blocco di una persona dal Mercatino da parte del team di moderazione.
+-- Un compratore scrive al venditore di un annuncio e nessuno dei due conosce il
+-- numero, l'e-mail o l'id dell'altro. Idempotente. Lo stesso blocco sta in
+-- supabase_schema.sql (un test controlla che i due restino allineati).
+--
+-- Si scrive e si legge SOLO dal backend (chiave service_role, che non passa da
+-- RLS): lì stanno le regole (partecipazione, abbonamento, blocchi, limite
+-- giornaliero, annuncio chiuso). Per questo a anon e authenticated è tolto ogni
+-- privilegio: leggere direttamente una conversazione mostrerebbe l'id dell'altra
+-- persona. RLS e policy *_own restano come seconda difesa, nel caso i privilegi
+-- venissero ridati per errore; nessuna policy permette di scrivere.
+
+create table if not exists public.marketplace_conversations (
+    id text primary key,
+    -- Null quando l'annuncio viene cancellato: la conversazione resta leggibile.
+    listing_id text references public.marketplace_listings(id) on delete set null,
+    listing_title text not null check (char_length(listing_title) <= 200),
+    buyer_id text not null,
+    seller_id text not null,
+    buyer_unread integer not null default 0 check (buyer_unread >= 0),
+    seller_unread integer not null default 0 check (seller_unread >= 0),
+    moderation_closed_at timestamptz,
+    erased_participant_at timestamptz,
+    created_at timestamptz not null default now(),
+    last_message_at timestamptz not null default now(),
+    check (buyer_id <> seller_id)
+);
+
+create table if not exists public.marketplace_messages (
+    id text primary key,
+    conversation_id text not null
+        references public.marketplace_conversations(id) on delete cascade,
+    sender_id text not null,
+    body text not null check (char_length(body) between 1 and 1000),
+    created_at timestamptz not null default now()
+);
+
+create table if not exists public.marketplace_user_blocks (
+    blocker_id text not null,
+    blocked_id text not null,
+    created_at timestamptz not null default now(),
+    primary key (blocker_id, blocked_id)
+);
+
+create table if not exists public.marketplace_conversation_reports (
+    id text primary key,
+    conversation_id text not null
+        references public.marketplace_conversations(id) on delete cascade,
+    reporter_id text not null,
+    reason text not null
+        check (reason in ('spam', 'scam', 'harassment', 'inappropriate', 'other')),
+    status text not null default 'open' check (status in ('open', 'dismissed', 'resolved')),
+    resolution_action text,
+    resolution_note text check (resolution_note is null or char_length(resolution_note) <= 1000),
+    resolved_at timestamptz,
+    resolved_by_admin_id text,
+    created_at timestamptz not null default now(),
+    unique (conversation_id, reporter_id)
+);
+
+create table if not exists public.marketplace_user_restrictions (
+    -- Una riga per persona: il team la tiene fuori dal Mercatino (niente annunci
+    -- nuovi, niente modifiche, niente messaggi). Annullare il blocco riempie
+    -- lifted_at e lascia la riga, con chi e quando.
+    owner_id text primary key,
+    reason text not null
+        check (reason in ('spam', 'scam', 'harassment', 'prohibited_items', 'other')),
+    note text check (note is null or char_length(note) <= 1000),
+    created_at timestamptz not null default now(),
+    created_by_admin_id text,
+    lifted_at timestamptz,
+    lifted_by_admin_id text
+);
+
+-- Conversazione tenuta dopo la cancellazione di un account perché segnalata
+-- (decisione del proprietario 2026-11-08, parere docs/compliance/10 §2.3).
+alter table public.marketplace_conversations
+    add column if not exists erased_participant_at timestamptz;
+
+-- Traccia di chi del team ha letto o deciso una conversazione segnalata. Solo
+-- backend: nessuna policy per gli utenti, privilegi tolti ad anon e authenticated.
+create table if not exists public.marketplace_moderation_access_log (
+    id text primary key,
+    admin_id text not null,
+    report_id text not null,
+    conversation_id text not null,
+    action text not null
+        check (action in ('read', 'close_conversation', 'dismiss_report', 'reopen_report')),
+    accessed_at timestamptz not null default now()
+);
+create index if not exists idx_marketplace_moderation_access_log_report
+    on public.marketplace_moderation_access_log(report_id, accessed_at desc);
+alter table public.marketplace_moderation_access_log enable row level security;
+revoke all on table public.marketplace_moderation_access_log from anon, authenticated;
+
+-- Una sola conversazione per annuncio e compratore. I NULL (annuncio cancellato)
+-- non collidono tra loro.
+create unique index if not exists idx_marketplace_conversations_listing_buyer
+    on public.marketplace_conversations(listing_id, buyer_id);
+create index if not exists idx_marketplace_conversations_buyer
+    on public.marketplace_conversations(buyer_id, last_message_at desc);
+create index if not exists idx_marketplace_conversations_seller
+    on public.marketplace_conversations(seller_id, last_message_at desc);
+create index if not exists idx_marketplace_messages_conversation
+    on public.marketplace_messages(conversation_id, created_at desc);
+create index if not exists idx_marketplace_messages_sender
+    on public.marketplace_messages(sender_id);
+create index if not exists idx_marketplace_user_blocks_blocked
+    on public.marketplace_user_blocks(blocked_id);
+create index if not exists idx_marketplace_conversation_reports_reporter
+    on public.marketplace_conversation_reports(reporter_id);
+create index if not exists idx_marketplace_conversation_reports_status
+    on public.marketplace_conversation_reports(status, created_at desc);
+
+alter table public.marketplace_conversations enable row level security;
+alter table public.marketplace_messages enable row level security;
+alter table public.marketplace_user_blocks enable row level security;
+alter table public.marketplace_conversation_reports enable row level security;
+alter table public.marketplace_user_restrictions enable row level security;
+
+drop policy if exists marketplace_conversations_select_own on public.marketplace_conversations;
+create policy marketplace_conversations_select_own
+on public.marketplace_conversations
+for select
+using (buyer_id = auth.uid()::text or seller_id = auth.uid()::text);
+
+drop policy if exists marketplace_messages_select_own on public.marketplace_messages;
+create policy marketplace_messages_select_own
+on public.marketplace_messages
+for select
+using (sender_id = auth.uid()::text);
+
+drop policy if exists marketplace_user_blocks_select_own on public.marketplace_user_blocks;
+create policy marketplace_user_blocks_select_own
+on public.marketplace_user_blocks
+for select
+using (blocker_id = auth.uid()::text);
+
+drop policy if exists marketplace_conversation_reports_select_own
+    on public.marketplace_conversation_reports;
+create policy marketplace_conversation_reports_select_own
+on public.marketplace_conversation_reports
+for select
+using (reporter_id = auth.uid()::text);
+
+revoke all on table public.marketplace_conversations from anon, authenticated;
+revoke all on table public.marketplace_messages from anon, authenticated;
+revoke all on table public.marketplace_user_blocks from anon, authenticated;
+revoke all on table public.marketplace_conversation_reports from anon, authenticated;
+revoke all on table public.marketplace_user_restrictions from anon, authenticated;
+
+drop policy if exists marketplace_user_restrictions_select_own
+    on public.marketplace_user_restrictions;
+create policy marketplace_user_restrictions_select_own
+on public.marketplace_user_restrictions
+for select
+using (owner_id = auth.uid()::text);
+
+-- Chi è bloccato non pubblica né modifica annunci nemmeno scrivendo direttamente
+-- nella tabella con la propria sessione (finché le policy insert/update esistono:
+-- marketplace_lock_writes.sql le toglie). La funzione guarda solo chi chiama, così
+-- nessuno può chiedere se un'altra persona è bloccata.
+create or replace function public.marketplace_caller_is_restricted()
+returns boolean
+language sql
+stable
+security definer
+set search_path = public
+as $$
+    select exists (
+        select 1 from public.marketplace_user_restrictions r
+        where r.owner_id = auth.uid()::text and r.lifted_at is null
+    );
+$$;
+revoke all on function public.marketplace_caller_is_restricted()
+    from public, anon, authenticated;
+grant execute on function public.marketplace_caller_is_restricted()
+    to authenticated;
+
+drop policy if exists marketplace_listings_insert_not_restricted on public.marketplace_listings;
+create policy marketplace_listings_insert_not_restricted
+on public.marketplace_listings
+as restrictive
+for insert
+to authenticated
+with check (not public.marketplace_caller_is_restricted());
+
+drop policy if exists marketplace_listings_update_not_restricted on public.marketplace_listings;
+create policy marketplace_listings_update_not_restricted
+on public.marketplace_listings
+as restrictive
+for update
+to authenticated
+using (not public.marketplace_caller_is_restricted())
+with check (not public.marketplace_caller_is_restricted());
+
+-- Conservazione (decisione del proprietario, 2026-11-07): la conversazione si
+-- cancella 6 mesi dopo la chiusura dell'annuncio (o della conversazione da parte
+-- del team), 12 mesi dopo l'ultimo messaggio comunque; mai finché ha una
+-- segnalazione aperta. Un annuncio cancellato non lascia la data di chiusura: lì
+-- valgono 6 mesi dall'ultimo messaggio. Messaggi e
+-- segnalazioni seguono la conversazione (on delete cascade). I blocchi tra utenti
+-- restano finché esiste l'account; un blocco del team annullato da più di 12 mesi
+-- si cancella, uno in vigore resta.
+create or replace function public.marketplace_messages_cleanup()
+returns jsonb
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+    conversation_rows integer;
+    restriction_rows integer;
+begin
+    -- "6 mesi dalla chiusura": the closing moment is when the team closed the
+    -- conversation, or the ad's last change of state (a closed ad cannot be
+    -- edited any more, so its updated_at is when it closed). An ad deleted
+    -- outright leaves no date: there the last message counts.
+    delete from public.marketplace_conversations c
+    where c.erased_participant_at is null
+      and not exists (
+            select 1 from public.marketplace_conversation_reports r
+            where r.conversation_id = c.id and r.status = 'open'
+        )
+        and (
+            c.last_message_at < now() - interval '12 months'
+            or (
+                c.last_message_at < now() - interval '6 months'
+                and (
+                    c.listing_id is null
+                    or (
+                        c.moderation_closed_at is not null
+                        and c.moderation_closed_at < now() - interval '6 months'
+                    )
+                    or exists (
+                        select 1 from public.marketplace_listings l
+                        where l.id = c.listing_id
+                          and l.status not in ('active', 'reserved')
+                          and l.updated_at < now() - interval '6 months'
+                    )
+                )
+            )
+        );
+    get diagnostics conversation_rows = row_count;
+    -- Tenute dopo una cancellazione: via appena la segnalazione è respinta, o 12
+    -- mesi dopo la decisione; mai finché è aperta.
+    delete from public.marketplace_conversations c
+    where c.erased_participant_at is not null
+      and not exists (
+            select 1 from public.marketplace_conversation_reports r
+            where r.conversation_id = c.id
+              and (r.status = 'open'
+                   or (r.status = 'resolved' and r.resolved_at > now() - interval '12 months'))
+        );
+    delete from public.marketplace_moderation_access_log
+    where accessed_at < now() - interval '24 months';
+    delete from public.marketplace_user_restrictions
+    where lifted_at is not null and lifted_at < now() - interval '12 months';
+    get diagnostics restriction_rows = row_count;
+    return jsonb_build_object(
+        'marketplace_conversations', conversation_rows,
+        'marketplace_user_restrictions', restriction_rows
+    );
+end;
+$$;
+revoke all on function public.marketplace_messages_cleanup()
+    from public, anon, authenticated;
+grant execute on function public.marketplace_messages_cleanup()
+    to service_role;
+
+-- La riga per la pulizia automatica, ogni notte alle 03:30 UTC. Serve pg_cron
+-- (Supabase: Database > Extensions); senza, questo blocco non fa nulla.
+do $$
+begin
+    if exists (select 1 from pg_extension where extname = 'pg_cron') then
+        perform cron.unschedule(jobid)
+            from cron.job where jobname = 'vetapp-marketplace-messages-cleanup';
+        perform cron.schedule(
+            'vetapp-marketplace-messages-cleanup',
+            '30 3 * * *',
+            'select public.marketplace_messages_cleanup()'
+        );
+    end if;
+end
+$$;
+
+-- Mercatino solo per privati (decisione del proprietario, 2026-11-09). Chi
+-- pubblica o modifica un annuncio dichiara di vendere come privato, non come
+-- attività commerciale; il backend rifiuta senza la dichiarazione e ne salva la
+-- data qui. Gli annunci più vecchi restano con null. Idempotente.
+alter table public.marketplace_listings
+    add column if not exists private_seller_declared_at timestamptz;
+-- Quale testo della dichiarazione è stato spuntato (es. '2026-11-09').
+alter table public.marketplace_listings
+    add column if not exists private_seller_declaration_version text
+    check (
+        private_seller_declaration_version is null
+        or char_length(private_seller_declaration_version) <= 32
+    );
+
+-- Anche scrivendo direttamente nella tabella con la propria sessione (finché le
+-- policy insert/update esistono: marketplace_lock_writes.sql le toglie), un
+-- annuncio nuovo o modificato deve portare la dichiarazione. Policy restrittive:
+-- tolgono un diritto, non ne danno. Il backend usa la service role e non passa
+-- da qui (la regola lì è nella rotta).
+drop policy if exists marketplace_listings_insert_private_seller on public.marketplace_listings;
+create policy marketplace_listings_insert_private_seller
+on public.marketplace_listings
+as restrictive
+for insert
+to authenticated
+with check (private_seller_declared_at is not null);
+
+drop policy if exists marketplace_listings_update_private_seller on public.marketplace_listings;
+create policy marketplace_listings_update_private_seller
+on public.marketplace_listings
+as restrictive
+for update
+to authenticated
+with check (private_seller_declared_at is not null);

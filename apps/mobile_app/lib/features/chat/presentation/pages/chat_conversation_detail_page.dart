@@ -1,13 +1,22 @@
+import 'dart:async';
 import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
+
+import '../../../../l10n/l10n.dart';
+import '../../../../app/launch/route_restoration.dart';
+import '../../../../shared/widgets/pet_loader.dart';
+
 
 import '../../../../design_system/tokens/app_colors.dart';
 import '../../../../design_system/tokens/app_spacing.dart';
 import '../../data/chat_demo_store.dart';
 import '../../data/chat_seed_data.dart';
 import '../../domain/chat_models.dart';
+import '../widgets/chat_ai_notice.dart';
 import '../widgets/chat_composer.dart';
+import '../widgets/chat_conversation_menu.dart';
 import '../widgets/chat_empty_state.dart';
 import '../widgets/chat_error_state.dart';
 import '../widgets/chat_loading_state.dart';
@@ -39,6 +48,15 @@ class _ChatConversationDetailPageState extends State<ChatConversationDetailPage>
   bool _isSending = false;
   int _lastRenderedMessageCount = 0;
 
+  /// The reply that just arrived: the list keeps its start in view (at a
+  /// third from the top) instead of jumping to its end, until the owner
+  /// sends the next message.
+  String? _anchoredReplyId;
+  final GlobalKey _anchoredReplyKey = GlobalKey();
+
+  /// The owner's message being edited (its text is in the composer).
+  ChatMessage? _editingMessage;
+
   @override
   void initState() {
     super.initState();
@@ -58,8 +76,22 @@ class _ChatConversationDetailPageState extends State<ChatConversationDetailPage>
     super.dispose();
   }
 
+  /// Remembered while open: after a restart only conversations the server
+  /// knows can be reopened, so the backend id is what is saved when there is one.
   @override
   Widget build(BuildContext context) {
+    return RestorationMarker(
+      kind: 'chat_conversation',
+      args: () => {
+        'conversationId':
+            _store.conversationById(widget.conversationId)?.backendConversationId ??
+                widget.conversationId,
+      },
+      child: _buildPage(context),
+    );
+  }
+
+  Widget _buildPage(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.background,
       body: SafeArea(
@@ -81,32 +113,31 @@ class _ChatConversationDetailPageState extends State<ChatConversationDetailPage>
                   ),
                   child: _Header(conversation: conversation),
                 ),
+                // Always visible, whatever the state below (AI Act, art. 50).
+                const ChatAiNotice(),
                 Expanded(
                   child: AnimatedSwitcher(
                     duration: const Duration(milliseconds: 220),
                     child: switch (widget.state) {
-                      ChatScreenState.loading => const ChatLoadingState(
-                          key: ValueKey('loading'),
-                          title: 'Apriamo la conversazione',
-                          subtitle:
-                              'Stiamo caricando il thread e l ultimo contesto disponibile.',
+                      ChatScreenState.loading => ChatLoadingState(
+                          key: const ValueKey('loading'),
+                          title: context.l10n.chatLoadingTitle,
+                          subtitle: context.l10n.chatLoadingSubtitle,
                         ),
                       ChatScreenState.empty => ChatEmptyState(
                           key: const ValueKey('empty'),
-                          title: 'La conversazione e vuota',
-                          subtitle:
-                              'Scrivi il primo messaggio per iniziare il dialogo con l assistente.',
-                          actionLabel: 'Scrivi ora',
+                          title: context.l10n.chatEmptyTitle,
+                          subtitle: context.l10n.chatEmptySubtitle,
+                          actionLabel: context.l10n.chatEmptyAction,
                           onAction: () => _sendMessage(
-                            'Ciao, ho una domanda per ${conversation.petName}.',
+                            context.l10n.chatEmptyGreeting(conversation.petName),
                           ),
                         ),
                       ChatScreenState.error => ChatErrorState(
                           key: const ValueKey('error'),
-                          title: 'Conversazione non disponibile',
-                          subtitle:
-                              'Qualcosa e andato storto nel recupero del thread.',
-                          actionLabel: 'Torna alle chat',
+                          title: context.l10n.chatErrorTitle,
+                          subtitle: context.l10n.chatErrorSubtitle,
+                          actionLabel: context.l10n.chatErrorAction,
                           onAction:
                               widget.onRetry ?? () => Navigator.of(context).maybePop(),
                         ),
@@ -114,8 +145,11 @@ class _ChatConversationDetailPageState extends State<ChatConversationDetailPage>
                           key: const ValueKey('success'),
                           conversation: conversation,
                           isSending: _isSending,
-                          onSendMessage: _sendMessage,
+                          onSendMessage: _onComposerSend,
                           scrollController: _scrollController,
+                          editingMessage: _editingMessage,
+                          onRequestEdit: _showMessageActions,
+                          onCancelEditing: () => setState(() => _editingMessage = null),
                         ),
                     },
                   ),
@@ -132,6 +166,7 @@ class _ChatConversationDetailPageState extends State<ChatConversationDetailPage>
     String message, {
     String? attachmentId,
     Uint8List? attachmentImageBytes,
+    String? retryOfMessageId,
   }) async {
     if (_isSending) return;
 
@@ -140,6 +175,8 @@ class _ChatConversationDetailPageState extends State<ChatConversationDetailPage>
 
     setState(() {
       _isSending = true;
+      // The owner's own message and the typing indicator go to the bottom.
+      _anchoredReplyId = null;
     });
 
     final result = await _store.sendMessage(
@@ -147,28 +184,39 @@ class _ChatConversationDetailPageState extends State<ChatConversationDetailPage>
       cleanMessage,
       attachmentId: attachmentId,
       attachmentImageBytes: attachmentImageBytes,
+      retryOfMessageId: retryOfMessageId,
     );
 
     if (!mounted) return;
     setState(() {
       _isSending = false;
     });
-    _scrollToBottom();
 
     result.fold(
       onSuccess: (_) {},
       onFailure: (error) {
+        _scrollToBottom();
         // A reached conversation limit is expected, not a failure to
         // retry — retrying would just hit the same 400 again.
-        final isLimitReached = error.code == 'chat_conversation_limit_reached';
+        // Same for a message over the length limit: it would be refused again.
+        final isLimitReached = error.code == 'chat_conversation_limit_reached' ||
+            error.code == 'chat_message_too_long';
+        // A retry reuses the message already shown (and its attachment):
+        // the backend recognises it and returns the answer it may already
+        // have produced, so nothing is sent or shown twice.
+        final failed = _store.lastUserMessage(widget.conversationId);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(error.message),
             action: isLimitReached
                 ? null
                 : SnackBarAction(
-                    label: 'Riprova',
-                    onPressed: () => _sendMessage(cleanMessage),
+                    label: context.l10n.commonRetry,
+                    onPressed: () => _sendMessage(
+                      cleanMessage,
+                      attachmentId: attachmentId,
+                      retryOfMessageId: failed?.text == cleanMessage ? failed?.id : null,
+                    ),
                   ),
           ),
         );
@@ -176,13 +224,117 @@ class _ChatConversationDetailPageState extends State<ChatConversationDetailPage>
     );
   }
 
+  void _onComposerSend(
+    String text, {
+    String? attachmentId,
+    Uint8List? attachmentImageBytes,
+  }) {
+    final editing = _editingMessage;
+    if (editing != null) {
+      _editMessage(editing, text);
+      return;
+    }
+    _sendMessage(text, attachmentId: attachmentId, attachmentImageBytes: attachmentImageBytes);
+  }
+
+  /// Long press on one of the owner's messages.
+  Future<void> _showMessageActions(ChatMessage message) async {
+    if (_isSending) return;
+    final choice = await showModalBottomSheet<String>(
+      context: context,
+      showDragHandle: true,
+      builder: (sheetContext) => SafeArea(
+        child: ListTile(
+          leading: const Icon(Icons.edit_outlined),
+          title: Text(context.l10n.chatMessageEditAction),
+          subtitle: Text(context.l10n.chatMessageEditHint),
+          onTap: () => Navigator.of(sheetContext).pop('edit'),
+        ),
+      ),
+    );
+    if (!mounted || choice != 'edit') return;
+    setState(() => _editingMessage = message);
+  }
+
+  /// Replaces [original] with [text]: the thread is cut there and the
+  /// assistant answers again (see ChatDemoStore.editMessage).
+  Future<void> _editMessage(
+    ChatMessage original,
+    String text, {
+    String? retryOfMessageId,
+  }) async {
+    if (_isSending) return;
+    setState(() {
+      _isSending = true;
+      _anchoredReplyId = null;
+      _editingMessage = null;
+    });
+
+    final result = await _store.editMessage(
+      widget.conversationId,
+      original.id,
+      text,
+      retryOfMessageId: retryOfMessageId,
+    );
+
+    if (!mounted) return;
+    setState(() => _isSending = false);
+
+    result.fold(
+      onSuccess: (_) {},
+      onFailure: (error) {
+        _scrollToBottom();
+        final canRetry = error.code != 'chat_edit_message_missing' &&
+            error.code != 'chat_message_too_long';
+        final edited = _store.lastUserMessage(widget.conversationId);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(error.message),
+            action: canRetry
+                ? SnackBarAction(
+                    label: context.l10n.commonRetry,
+                    onPressed: () => _editMessage(
+                      original,
+                      text,
+                      retryOfMessageId: edited?.text == text.trim() ? edited?.id : null,
+                    ),
+                  )
+                : null,
+          ),
+        );
+      },
+    );
+  }
+
+  /// After a list change: a reply that just arrived is shown from its
+  /// start (see [chatReplyScrollOffset]); anything else scrolls to the end.
   void _scrollToBottom() {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted || !_scrollController.hasClients) {
         return;
       }
-      _scrollController.jumpTo(_scrollController.position.maxScrollExtent);
+      final position = _scrollController.position;
+      final reply = _anchoredReplyId == null ? null : _anchoredReplyKey.currentContext;
+      final box = reply?.findRenderObject();
+      if (box != null && box.attached) {
+        final revealTop = RenderAbstractViewport.of(box).getOffsetToReveal(box, 0).offset;
+        _scrollController.jumpTo(
+          chatReplyScrollOffset(
+            replyTop: revealTop,
+            viewportExtent: position.viewportDimension,
+            minScrollExtent: position.minScrollExtent,
+            maxScrollExtent: position.maxScrollExtent,
+          ),
+        );
+        return;
+      }
+      _scrollController.jumpTo(position.maxScrollExtent);
     });
+  }
+
+  /// Called while the list lays out a reply that just arrived.
+  void _anchorFreshReply(String messageId) {
+    _anchoredReplyId = messageId;
   }
 
   void _scheduleScrollIfNeeded(int messageCount) {
@@ -220,7 +372,7 @@ class _Header extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                conversation.title,
+                _headerTitle(context, conversation),
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
                 style: const TextStyle(
@@ -244,6 +396,11 @@ class _Header extends StatelessWidget {
             ],
           ),
         ),
+        ChatConversationMenuButton(
+          conversationId: conversation.id,
+          title: conversation.title,
+          petName: conversation.petName,
+        ),
       ],
     );
   }
@@ -256,6 +413,9 @@ class _SuccessConversationView extends StatelessWidget {
     required this.isSending,
     required this.onSendMessage,
     required this.scrollController,
+    required this.editingMessage,
+    required this.onRequestEdit,
+    required this.onCancelEditing,
   });
 
   final ChatConversationDetail conversation;
@@ -263,6 +423,9 @@ class _SuccessConversationView extends StatelessWidget {
   final void Function(String text, {String? attachmentId, Uint8List? attachmentImageBytes})
       onSendMessage;
   final ScrollController scrollController;
+  final ChatMessage? editingMessage;
+  final void Function(ChatMessage message) onRequestEdit;
+  final VoidCallback onCancelEditing;
 
   @override
   Widget build(BuildContext context) {
@@ -289,10 +452,28 @@ class _SuccessConversationView extends StatelessWidget {
                       itemBuilder: (context, index) {
                         if (index < conversation.messages.length) {
                           final message = conversation.messages[index];
-                          return ChatMessageBubble(message: message);
+                          // The whole reply at once (build 26: no more
+                          // letter-by-letter reveal); the page keeps its
+                          // start in view.
+                          if (message.author == ChatMessageAuthor.assistant &&
+                              ChatDemoStore.instance.takeFreshReply(message.id)) {
+                            state?._anchorFreshReply(message.id);
+                          }
+                          if (state != null && message.id == state._anchoredReplyId) {
+                            return KeyedSubtree(
+                              key: state._anchoredReplyKey,
+                              child: ChatMessageBubble(message: message),
+                            );
+                          }
+                          final editable =
+                              message.author == ChatMessageAuthor.user && !isSending;
+                          return ChatMessageBubble(
+                            message: message,
+                            onLongPress: editable ? () => onRequestEdit(message) : null,
+                          );
                         }
 
-                        return const _TypingBubble();
+                        return const ChatTypingBubble();
                       },
                       separatorBuilder: (_, __) => const SizedBox(height: AppSpacing.sm),
                       itemCount: totalItems,
@@ -306,9 +487,14 @@ class _SuccessConversationView extends StatelessWidget {
                 AppSpacing.lg,
               ),
               child: ChatComposer(
-                hintText: 'Scrivi una domanda su ${conversation.petName}',
+                hintText: context.l10n.chatComposerHint(conversation.petName),
                 petName: conversation.petName,
                 onSend: onSendMessage,
+                draftKey: conversation.backendConversationId ?? conversation.id,
+                editingText: editingMessage?.text,
+                onCancelEditing: onCancelEditing,
+                // An edited message keeps its photo; the text may go.
+                allowEmptySend: editingMessage?.attachmentImageBytes != null,
               ),
             ),
           ],
@@ -335,7 +521,7 @@ class _NewConversationPlaceholder extends StatelessWidget {
               width: 56,
               height: 56,
               decoration: BoxDecoration(
-                color: AppColors.accentSoft,
+                color: AppColors.secondarySoft,
                 borderRadius: BorderRadius.circular(18),
               ),
               child: const Icon(
@@ -346,7 +532,7 @@ class _NewConversationPlaceholder extends StatelessWidget {
             ),
             const SizedBox(height: AppSpacing.md),
             Text(
-              'Nuova conversazione su $petName',
+              context.l10n.chatNewConversationOnPet(petName),
               textAlign: TextAlign.center,
               style: const TextStyle(
                 color: AppColors.text,
@@ -355,10 +541,10 @@ class _NewConversationPlaceholder extends StatelessWidget {
               ),
             ),
             const SizedBox(height: AppSpacing.xs),
-            const Text(
-              'Scrivi qui sotto cosa stai osservando: ti rispondo subito.',
+            Text(
+              context.l10n.chatNewConversationPrompt,
               textAlign: TextAlign.center,
-              style: TextStyle(
+              style: const TextStyle(
                 color: AppColors.secondaryText,
                 fontSize: 13,
                 height: 1.4,
@@ -371,8 +557,38 @@ class _NewConversationPlaceholder extends StatelessWidget {
   }
 }
 
-class _TypingBubble extends StatelessWidget {
-  const _TypingBubble();
+/// Shown while the answer is being produced. After [slowAfter] it says so:
+/// an answer can take longer than usual, and the owner should not think
+/// the app has stopped (build 26).
+class ChatTypingBubble extends StatefulWidget {
+  const ChatTypingBubble({super.key, this.slowAfter = const Duration(seconds: 12)});
+
+  final Duration slowAfter;
+
+  static String get typingText => appL10n.chatTypingText;
+  static String get slowText => appL10n.chatTypingSlowText;
+
+  @override
+  State<ChatTypingBubble> createState() => _ChatTypingBubbleState();
+}
+
+class _ChatTypingBubbleState extends State<ChatTypingBubble> {
+  Timer? _timer;
+  bool _slow = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _timer = Timer(widget.slowAfter, () {
+      if (mounted) setState(() => _slow = true);
+    });
+  }
+
+  @override
+  void dispose() {
+    _timer?.cancel();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -388,21 +604,19 @@ class _TypingBubble extends StatelessWidget {
           borderRadius: BorderRadius.circular(20),
           border: Border.all(color: AppColors.border),
         ),
-        child: const Row(
+        child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            SizedBox(
-              width: 14,
-              height: 14,
-              child: CircularProgressIndicator(strokeWidth: 2),
-            ),
-            SizedBox(width: AppSpacing.sm),
-            Text(
-              'Sta scrivendo una risposta...',
-              style: TextStyle(
-                color: AppColors.secondaryText,
-                fontSize: 12,
-                fontWeight: FontWeight.w600,
+            const PetLoader.small(),
+            const SizedBox(width: AppSpacing.sm),
+            Flexible(
+              child: Text(
+                _slow ? context.l10n.chatTypingSlowText : context.l10n.chatTypingText,
+                style: const TextStyle(
+                  color: AppColors.secondaryText,
+                  fontSize: 12,
+                  fontWeight: FontWeight.w600,
+                ),
               ),
             ),
           ],
@@ -410,4 +624,27 @@ class _TypingBubble extends StatelessWidget {
       ),
     );
   }
+}
+
+/// Where the list should stand once a reply has arrived: the reply's start
+/// a third of the way down the screen, so the owner reads it from the top
+/// and scrolls for the rest. A reply short enough to fit below that point
+/// simply ends at the bottom of the list, as before.
+double chatReplyScrollOffset({
+  required double replyTop,
+  required double viewportExtent,
+  required double minScrollExtent,
+  required double maxScrollExtent,
+}) {
+  final anchored = replyTop - viewportExtent / 3;
+  final target = anchored < maxScrollExtent ? anchored : maxScrollExtent;
+  return target < minScrollExtent ? minScrollExtent : target;
+}
+
+/// The stored title is a placeholder until the backend names the chat.
+String _headerTitle(BuildContext context, ChatConversationDetail conversation) {
+  if (conversation.title.trim().isEmpty || conversation.title.startsWith('Chat for')) {
+    return context.l10n.chatDefaultTitle(conversation.petName);
+  }
+  return conversation.title;
 }

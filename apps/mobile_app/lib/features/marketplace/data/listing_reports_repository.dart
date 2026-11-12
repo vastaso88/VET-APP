@@ -74,7 +74,8 @@ class ListingReportsRepository {
       final response = await client
           .from('marketplace_listing_reports')
           .select('reporter_owner_id')
-          .eq('listing_id', listingId);
+          .eq('listing_id', listingId)
+          .eq('status', 'open');
       final rows = response as List<dynamic>;
       return rows
           .map((row) => (row as Map<String, dynamic>)['reporter_owner_id'].toString())

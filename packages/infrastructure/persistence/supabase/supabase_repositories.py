@@ -1,9 +1,15 @@
 from __future__ import annotations
 
+import logging
+import time
 from datetime import date, datetime
 from typing import TYPE_CHECKING, Any, cast
 
 from packages.core.application.ports.account_consents_repository import AccountConsentsRepository
+from packages.core.application.ports.answer_cache_repository import (
+    AnswerCacheRepository,
+    CachedAnswer,
+)
 from packages.core.application.ports.chat_attachment_repository import ChatAttachmentRepository
 from packages.core.application.ports.chat_response_report_repository import (
     ChatResponseReportRepository,
@@ -12,29 +18,61 @@ from packages.core.application.ports.clinical_event_repository import ClinicalEv
 from packages.core.application.ports.conversation_repository import ConversationRepository
 from packages.core.application.ports.dog_walk_repository import DogWalkRepository
 from packages.core.application.ports.listing_report_repository import ListingReportRepository
+from packages.core.application.ports.llm_usage_repository import LlmUsageRepository
 from packages.core.application.ports.local_activity_repository import LocalActivityRepository
 from packages.core.application.ports.marketplace_listing_repository import (
     MarketplaceListingRepository,
 )
+from packages.core.application.ports.pet_condition_repository import PetConditionRepository
 from packages.core.application.ports.pet_profile_repository import PetProfileRepository
+from packages.core.application.ports.radar_catalog_repository import (
+    BoundingBox,
+    RadarCatalogRepository,
+)
+from packages.core.application.ports.radar_places_repository import RadarPlacesRepository
+from packages.core.application.ports.radar_reports_repository import RadarReportsRepository
 from packages.core.application.ports.reminder_repository import ReminderRepository
 from packages.core.application.ports.subscription_repository import SubscriptionRepository
+from packages.core.application.ports.user_device_repository import UserDeviceRepository
 from packages.core.application.ports.user_location_repository import UserLocationRepository
+from packages.core.application.ports.weight_measurement_repository import (
+    WeightMeasurementRepository,
+)
 from packages.core.domain.consent.models import AccountConsents
 from packages.core.domain.conversation.attachment import ChatAttachment
 from packages.core.domain.conversation.models import Conversation
+from packages.core.domain.coverage.models import RadarCoverage
+from packages.core.domain.device.models import UserDevice
 from packages.core.domain.dog_walk.models import WalkSession
-from packages.core.domain.feedback.models import ChatResponseReport
+from packages.core.domain.feedback.models import ChatResponseReport, ChatResponseReportCounter
 from packages.core.domain.geo.models import Coordinates, UserLocation
+from packages.core.domain.llm_usage.models import LlmUsageEvent, ModelDailyUsage
 from packages.core.domain.local_activity.models import LocalActivity
 from packages.core.domain.marketplace.models import ListingReport, MarketplaceListing
-from packages.core.domain.medical_record.models import ClinicalEvent
+from packages.core.domain.medical_record.models import ClinicalEvent, PetCondition
 from packages.core.domain.pet_profile.models import PetProfile
+from packages.core.domain.pet_profile.weight_measurement import WeightMeasurement
+from packages.core.domain.radar_places.competences import RadarCompetenceClaim
+from packages.core.domain.radar_places.models import (
+    OSM_SOURCE_NAME,
+    RADAR_PLACE_TRANSIENT_FIELDS,
+    RadarCountryCoverage,
+    RadarDataSource,
+    RadarPlace,
+)
+from packages.core.domain.radar_reports.models import (
+    RadarPlaceOverride,
+    RadarPlaceRating,
+    RadarReportVote,
+    RadarUserReport,
+)
 from packages.core.domain.reminders.models import Reminder
 from packages.core.domain.subscription.models import Subscription
 
 if TYPE_CHECKING:
     from supabase import Client
+
+_logger = logging.getLogger(__name__)
 
 
 def _serialize_payload(payload: dict[str, Any]) -> dict[str, Any]:
@@ -75,16 +113,34 @@ class SupabaseConversationRepository(ConversationRepository):
 
     def save(self, conversation: Conversation) -> Conversation:
         payload = _serialize_payload(conversation.model_dump(mode="json"))
-        self._client.table(self._table).upsert(payload).execute()
+        # Retention (2026-10-26) reads this column; kept here on every save.
+        # Until the schema script has added the column, a save must not
+        # fail because of it: retried without.
+        if conversation.messages:
+            payload["last_message_at"] = conversation.messages[-1].created_at.isoformat()
+        try:
+            self._client.table(self._table).upsert(payload).execute()
+        except Exception as exc:
+            if "last_message_at" not in str(exc):
+                raise
+            _logger.warning("conversations.last_message_at missing: run supabase_schema.sql")
+            payload.pop("last_message_at", None)
+            self._client.table(self._table).upsert(payload).execute()
         return conversation
 
-    def get(self, conversation_id: str) -> Conversation | None:
+    def list_inactive_before(self, cutoff: datetime, *, limit: int = 200) -> list[Conversation]:
         response = (
             self._client.table(self._table)
             .select("*")
-            .eq("id", conversation_id)
-            .limit(1)
+            .lt("last_message_at", cutoff.isoformat())
+            .limit(limit)
             .execute()
+        )
+        return [Conversation.model_validate(item) for item in response.data or []]
+
+    def get(self, conversation_id: str) -> Conversation | None:
+        response = (
+            self._client.table(self._table).select("*").eq("id", conversation_id).limit(1).execute()
         )
         if not response.data:
             return None
@@ -127,6 +183,16 @@ class SupabaseClinicalEventRepository(ClinicalEventRepository):
         return [ClinicalEvent.model_validate(item) for item in response.data or []]
 
 
+class SupabasePetConditionRepository(PetConditionRepository):
+    def __init__(self, client: Client) -> None:
+        self._client = client
+        self._table = "pet_conditions"
+
+    def list_by_pet(self, pet_id: str) -> list[PetCondition]:
+        response = self._client.table(self._table).select("*").eq("pet_id", pet_id).execute()
+        return [PetCondition.model_validate(item) for item in response.data or []]
+
+
 class SupabaseAccountConsentsRepository(AccountConsentsRepository):
     def __init__(self, client: Client) -> None:
         self._client = client
@@ -160,9 +226,43 @@ class SupabaseSubscriptionRepository(SubscriptionRepository):
         return Subscription.model_validate(response.data[0])
 
     def save(self, subscription: Subscription) -> Subscription:
-        payload = _serialize_payload(subscription.model_dump(mode="json"))
+        # Without the retention clock: it has a column and a method of its own
+        # (scripts/setup/subscriptions_retention.sql), so saving a plan works
+        # on a database that does not have the column yet.
+        payload = _serialize_payload(
+            subscription.model_dump(mode="json", exclude={"access_lost_at"})
+        )
         self._client.table(self._table).upsert(payload).execute()
         return subscription
+
+    def set_access_lost_at(self, owner_id: str, value: datetime | None) -> None:
+        self._client.table(self._table).update(
+            {"access_lost_at": value.isoformat() if value is not None else None}
+        ).eq("owner_id", owner_id).execute()
+
+    def list_without_plan(self) -> list[Subscription]:
+        response = (
+            self._client.table(self._table)
+            .select("*")
+            .or_("plan.is.null,plan.not.in.(plus,pro,ultra)")
+            .execute()
+        )
+        return [Subscription.model_validate(row) for row in response.data or []]
+
+
+class SupabaseUserDeviceRepository(UserDeviceRepository):
+    def __init__(self, client: Client) -> None:
+        self._client = client
+        self._table = "user_devices"
+
+    def list_for_owner(self, owner_id: str) -> list[UserDevice]:
+        response = self._client.table(self._table).select("*").eq("owner_id", owner_id).execute()
+        return [UserDevice.model_validate(row) for row in response.data or []]
+
+    def save(self, device: UserDevice) -> UserDevice:
+        payload = _serialize_payload(device.model_dump(mode="json"))
+        self._client.table(self._table).upsert(payload, on_conflict="owner_id,device_id").execute()
+        return device
 
 
 def _user_location_to_row(user_location: UserLocation) -> dict[str, Any]:
@@ -208,6 +308,363 @@ class SupabaseUserLocationRepository(UserLocationRepository):
         return user_location
 
 
+class SupabaseRadarPlacesRepository(RadarPlacesRepository):
+    """Shared per-cell cache of imported places. Both tables have RLS on
+    and no policies (see scripts/setup/supabase_schema.sql): only this
+    service-role client reads/writes them."""
+
+    def __init__(self, client: Client) -> None:
+        self._client = client
+        self._coverage_table = "radar_coverage_cells"
+        self._places_table = "radar_places_cache"
+
+    def get_coverage(self, coverage_key: str) -> RadarCoverage | None:
+        response = (
+            self._client.table(self._coverage_table)
+            .select("*")
+            .eq("coverage_key", coverage_key)
+            .limit(1)
+            .execute()
+        )
+        if not response.data:
+            return None
+        return RadarCoverage.model_validate(response.data[0])
+
+    def list_places(self, coverage_key: str) -> list[RadarPlace]:
+        response = (
+            self._client.table(self._places_table)
+            .select("*")
+            .eq("coverage_key", coverage_key)
+            .execute()
+        )
+        return [RadarPlace.model_validate(item) for item in response.data or []]
+
+    def replace_coverage(self, coverage: RadarCoverage, places: list[RadarPlace]) -> None:
+        # Upsert first, then drop rows the provider no longer returns: a
+        # failure halfway leaves the previous import readable instead of
+        # an empty cell.
+        rows = [
+            place.model_dump(mode="json", exclude=set(RADAR_PLACE_TRANSIENT_FIELDS))
+            for place in places
+        ]
+        if rows:
+            self._client.table(self._places_table).upsert(rows).execute()
+        stale = (
+            self._client.table(self._places_table)
+            .delete()
+            .eq("coverage_key", coverage.coverage_key)
+        )
+        if rows:
+            # Rows just upserted carry this import's timestamp; anything
+            # older in the cell was not returned this time.
+            stale = stale.lt("source_fetched_at", coverage.refreshed_at.isoformat())
+        stale.execute()
+        self._client.table(self._coverage_table).upsert(coverage.model_dump(mode="json")).execute()
+
+
+class SupabaseRadarCatalogRepository(RadarCatalogRepository):
+    """Reads the tables scripts/radar/ fills offline. One table per source
+    (radar_places_osm, radar_places_open): they are never joined or copied
+    into each other, here or in the database."""
+
+    _PAGE_SIZE = 1000
+    _SOURCES_TTL_SECONDS = 300.0
+
+    def __init__(self, client: Client) -> None:
+        self._client = client
+        self._sources: list[RadarDataSource] = []
+        self._sources_read_at: float | None = None
+        self._countries: list[RadarCountryCoverage] = []
+        self._countries_read_at: float | None = None
+
+    def list_sources(self) -> list[RadarDataSource]:
+        now = time.monotonic()
+        read_at = self._sources_read_at
+        if read_at is not None and now - read_at < self._SOURCES_TTL_SECONDS:
+            return list(self._sources)
+        try:
+            response = self._client.table("data_sources").select("*").execute()
+        except Exception:
+            # Tables not created yet, or a transient failure: the radar
+            # still works on the live per-cell cache alone.
+            _logger.warning("radar catalog unavailable: data_sources could not be read")
+            return []
+        self._sources = [RadarDataSource.model_validate(row) for row in response.data or []]
+        self._sources_read_at = now
+        return list(self._sources)
+
+    def list_country_coverage(self) -> list[RadarCountryCoverage]:
+        now = time.monotonic()
+        read_at = self._countries_read_at
+        if read_at is not None and now - read_at < self._SOURCES_TTL_SECONDS:
+            return list(self._countries)
+        try:
+            response = self._client.table("radar_country_coverage").select("*").execute()
+        except Exception:
+            # Table not created yet: every country is then served as before.
+            _logger.warning("radar catalog unavailable: radar_country_coverage could not be read")
+            return []
+        self._countries = [RadarCountryCoverage.model_validate(row) for row in response.data or []]
+        self._countries_read_at = now
+        return list(self._countries)
+
+    def list_osm_places(self, box: BoundingBox) -> list[RadarPlace]:
+        return [_osm_place(row) for row in self._rows_in_box("radar_places_osm", box)]
+
+    def list_open_places(self, box: BoundingBox) -> list[RadarPlace]:
+        return [_open_place(row) for row in self._rows_in_box("radar_places_open", box)]
+
+    def get_place(self, source: str, source_id: str) -> RadarPlace | None:
+        try:
+            if source == OSM_SOURCE_NAME:
+                query = (
+                    self._client.table("radar_places_osm")
+                    .select("*")
+                    .eq("source_external_id", source_id)
+                )
+            else:
+                query = (
+                    self._client.table("radar_places_open")
+                    .select("*")
+                    .eq("source", source)
+                    .eq("source_id", source_id)
+                )
+            rows = cast(list[dict[str, Any]], query.limit(1).execute().data or [])
+        except Exception:
+            _logger.warning("radar catalog unavailable: a place could not be read")
+            return None
+        if not rows:
+            return None
+        return _osm_place(rows[0]) if source == OSM_SOURCE_NAME else _open_place(rows[0])
+
+    def _rows_in_box(self, table: str, box: BoundingBox) -> list[dict[str, Any]]:
+        # PostgREST caps a response at 1000 rows; a 50 km box around a big
+        # city holds more than that.
+        rows: list[dict[str, Any]] = []
+        while True:
+            response = (
+                self._client.table(table)
+                .select("*")
+                .gte("latitude", box.min_latitude)
+                .lte("latitude", box.max_latitude)
+                .gte("longitude", box.min_longitude)
+                .lte("longitude", box.max_longitude)
+                .order("id")
+                .range(len(rows), len(rows) + self._PAGE_SIZE - 1)
+                .execute()
+            )
+            page = cast(list[dict[str, Any]], response.data or [])
+            rows.extend(page)
+            if len(page) < self._PAGE_SIZE:
+                return rows
+
+
+def _osm_place(row: dict[str, Any]) -> RadarPlace:
+    return RadarPlace.model_validate(
+        {
+            **row,
+            "coverage_key": "catalog",
+            "source_name": OSM_SOURCE_NAME,
+            "source_fetched_at": row.get("imported_at"),
+        }
+    )
+
+
+def _open_place(row: dict[str, Any]) -> RadarPlace:
+    return RadarPlace.model_validate(
+        {
+            **row,
+            "coverage_key": "catalog",
+            "source_name": row["source"],
+            "source_external_id": row["source_id"],
+            "source_fetched_at": row.get("imported_at"),
+        }
+    )
+
+
+class SupabaseRadarReportsRepository(RadarReportsRepository):
+    """Community reports, votes and ratings. RLS on with no policies:
+    every read and write goes through this service-role client, because
+    rows are keyed by a pseudonym only the backend can compute.
+
+    Reads answer "nothing" when the tables are missing or unreachable, so
+    the radar keeps working without the community layer; writes fail
+    loudly."""
+
+    _MAX_IDS_PER_QUERY = 100
+    _OVERRIDES_TTL_SECONDS = 60.0
+
+    def __init__(self, client: Client) -> None:
+        self._client = client
+        self._overrides: list[RadarPlaceOverride] = []
+        self._overrides_read_at: float | None = None
+
+    def save_report(self, report: RadarUserReport) -> RadarUserReport:
+        self._client.table("radar_user_reports").upsert(report.model_dump(mode="json")).execute()
+        return report
+
+    def get_report(self, report_id: str) -> RadarUserReport | None:
+        response = (
+            self._client.table("radar_user_reports")
+            .select("*")
+            .eq("id", report_id)
+            .limit(1)
+            .execute()
+        )
+        return RadarUserReport.model_validate(response.data[0]) if response.data else None
+
+    def delete_report(self, report_id: str) -> None:
+        # Its votes go with it (on delete cascade).
+        self._client.table("radar_user_reports").delete().eq("id", report_id).execute()
+
+    def list_reports(
+        self, box: BoundingBox, *, kinds: list[str], statuses: list[str]
+    ) -> list[RadarUserReport]:
+        try:
+            response = (
+                self._client.table("radar_user_reports")
+                .select("*")
+                .in_("kind", kinds)
+                .in_("status", statuses)
+                .gte("latitude", box.min_latitude)
+                .lte("latitude", box.max_latitude)
+                .gte("longitude", box.min_longitude)
+                .lte("longitude", box.max_longitude)
+                .limit(1000)
+                .execute()
+            )
+        except Exception:
+            _logger.warning("radar reports unavailable: radar_user_reports could not be read")
+            return []
+        return [RadarUserReport.model_validate(row) for row in response.data or []]
+
+    def count_reports_since(self, reporter_pseudonym: str, since: datetime) -> int:
+        response = (
+            self._client.table("radar_user_reports")
+            .select("id")
+            .eq("reporter_pseudonym", reporter_pseudonym)
+            .gte("created_at", since.isoformat())
+            .execute()
+        )
+        return len(response.data or [])
+
+    def save_vote(self, vote: RadarReportVote) -> None:
+        self._client.table("radar_report_votes").upsert(vote.model_dump(mode="json")).execute()
+
+    def list_votes(self, report_id: str) -> list[RadarReportVote]:
+        response = (
+            self._client.table("radar_report_votes")
+            .select("*")
+            .eq("report_id", report_id)
+            .execute()
+        )
+        return [RadarReportVote.model_validate(row) for row in response.data or []]
+
+    def list_votes_by_voter(
+        self, report_ids: list[str], voter_pseudonym: str
+    ) -> list[RadarReportVote]:
+        try:
+            response = (
+                self._client.table("radar_report_votes")
+                .select("*")
+                .eq("voter_pseudonym", voter_pseudonym)
+                .in_("report_id", report_ids[: self._MAX_IDS_PER_QUERY])
+                .execute()
+            )
+        except Exception:
+            return []
+        return [RadarReportVote.model_validate(row) for row in response.data or []]
+
+    def save_rating(self, rating: RadarPlaceRating) -> None:
+        self._client.table("radar_place_ratings").upsert(rating.model_dump(mode="json")).execute()
+
+    def list_ratings(self, box: BoundingBox) -> list[RadarPlaceRating]:
+        try:
+            response = (
+                self._client.table("radar_place_ratings")
+                .select("*")
+                .gte("latitude", box.min_latitude)
+                .lte("latitude", box.max_latitude)
+                .gte("longitude", box.min_longitude)
+                .lte("longitude", box.max_longitude)
+                .limit(1000)
+                .execute()
+            )
+        except Exception:
+            _logger.warning("radar ratings unavailable: radar_place_ratings could not be read")
+            return []
+        return [RadarPlaceRating.model_validate(row) for row in response.data or []]
+
+    def save_override(self, override: RadarPlaceOverride) -> None:
+        self._client.table("radar_place_overrides").upsert(
+            override.model_dump(mode="json")
+        ).execute()
+        self._overrides_read_at = None
+
+    def save_claim(self, claim: RadarCompetenceClaim) -> RadarCompetenceClaim:
+        self._client.table("radar_competence_claims").upsert(
+            claim.model_dump(mode="json")
+        ).execute()
+        return claim
+
+    def list_claims(self, box: BoundingBox, *, statuses: list[str]) -> list[RadarCompetenceClaim]:
+        try:
+            response = (
+                self._client.table("radar_competence_claims")
+                .select("*")
+                .in_("status", statuses)
+                .gte("latitude", box.min_latitude)
+                .lte("latitude", box.max_latitude)
+                .gte("longitude", box.min_longitude)
+                .lte("longitude", box.max_longitude)
+                .limit(1000)
+                .execute()
+            )
+        except Exception:
+            _logger.warning("competence claims unavailable: radar_competence_claims unreadable")
+            return []
+        return [RadarCompetenceClaim.model_validate(row) for row in response.data or []]
+
+    def list_claims_by_reporter(
+        self, reporter_pseudonym: str, *, target_source: str, target_source_id: str
+    ) -> list[RadarCompetenceClaim]:
+        response = (
+            self._client.table("radar_competence_claims")
+            .select("*")
+            .eq("reporter_pseudonym", reporter_pseudonym)
+            .eq("target_source", target_source)
+            .eq("target_source_id", target_source_id)
+            .execute()
+        )
+        return [RadarCompetenceClaim.model_validate(row) for row in response.data or []]
+
+    def count_claims_since(self, reporter_pseudonym: str, since: datetime) -> int:
+        response = (
+            self._client.table("radar_competence_claims")
+            .select("id")
+            .eq("reporter_pseudonym", reporter_pseudonym)
+            .gte("created_at", since.isoformat())
+            .execute()
+        )
+        return len(response.data or [])
+
+    def list_overrides(self) -> list[RadarPlaceOverride]:
+        # The whole (small, rarely changing) table is needed by every radar
+        # request: kept for a minute rather than read each time. A removal
+        # made elsewhere (the script, another instance) shows within that.
+        now = time.monotonic()
+        read_at = self._overrides_read_at
+        if read_at is not None and now - read_at < self._OVERRIDES_TTL_SECONDS:
+            return list(self._overrides)
+        try:
+            response = self._client.table("radar_place_overrides").select("*").execute()
+        except Exception:
+            return []
+        self._overrides = [RadarPlaceOverride.model_validate(row) for row in response.data or []]
+        self._overrides_read_at = now
+        return list(self._overrides)
+
+
 class SupabaseDogWalkRepository(DogWalkRepository):
     def __init__(self, client: Client) -> None:
         self._client = client
@@ -227,6 +684,51 @@ class SupabaseDogWalkRepository(DogWalkRepository):
     def list_by_owner(self, owner_id: str) -> list[WalkSession]:
         response = self._client.table(self._table).select("*").eq("owner_id", owner_id).execute()
         return [WalkSession.model_validate(item) for item in response.data or []]
+
+
+class SupabaseWeightMeasurementRepository(WeightMeasurementRepository):
+    """Reads the weighings the app saves in `pet_weight_measurements`.
+
+    Never raises: the chat must keep answering on the profile weight when the
+    table does not exist yet (the schema script not run) or cannot be read.
+    """
+
+    def __init__(self, client: Client) -> None:
+        self._client = client
+        self._table = "pet_weight_measurements"
+
+    def latest_for_pet(self, owner_id: str, pet_id: str) -> WeightMeasurement | None:
+        return self._latest(owner_id, pet_id, with_body_condition=False)
+
+    def latest_with_body_condition_for_pet(
+        self, owner_id: str, pet_id: str
+    ) -> WeightMeasurement | None:
+        return self._latest(owner_id, pet_id, with_body_condition=True)
+
+    def _latest(
+        self, owner_id: str, pet_id: str, *, with_body_condition: bool
+    ) -> WeightMeasurement | None:
+        try:
+            query = (
+                self._client.table(self._table)
+                .select("pet_id,measured_at,weight_kg,body_condition")
+                .eq("owner_id", owner_id)
+                .eq("pet_id", pet_id)
+            )
+            if with_body_condition:
+                # The column holds 1..5 or null: "> 0" keeps only the filled ones.
+                query = query.gt("body_condition", 0)
+            response = (
+                query.order("measured_at", desc=True)
+                .order("created_at", desc=True)
+                .limit(1)
+                .execute()
+            )
+            rows = response.data or []
+            return WeightMeasurement.model_validate(rows[0]) if rows else None
+        except Exception:
+            _logger.warning("weight measurements unavailable: pet_weight_measurements not read")
+            return None
 
 
 def _listing_to_row(listing: MarketplaceListing) -> dict[str, Any]:
@@ -262,9 +764,24 @@ class SupabaseMarketplaceListingRepository(MarketplaceListingRepository):
             return None
         return _row_to_listing(cast(dict[str, Any], response.data[0]))
 
-    def list_active(self) -> list[MarketplaceListing]:
-        response = self._client.table(self._table).select("*").eq("status", "active").execute()
+    def list_active(self, country: str | None = None) -> list[MarketplaceListing]:
+        query = self._client.table(self._table).select("*").eq("status", "active")
+        if country is not None:
+            query = query.eq("country", country)
+        response = query.execute()
         return [_row_to_listing(cast(dict[str, Any], item)) for item in response.data or []]
+
+    def statuses(self, listing_ids: list[str]) -> dict[str, str]:
+        if not listing_ids:
+            return {}
+        response = (
+            self._client.table(self._table)
+            .select("id,status")
+            .in_("id", list(set(listing_ids)))
+            .execute()
+        )
+        rows = cast(list[dict[str, Any]], response.data or [])
+        return {str(row["id"]): str(row["status"]) for row in rows}
 
 
 class SupabaseListingReportRepository(ListingReportRepository):
@@ -288,6 +805,7 @@ class SupabaseChatResponseReportRepository(ChatResponseReportRepository):
     def __init__(self, client: Client) -> None:
         self._client = client
         self._table = "chat_response_reports"
+        self._counters_table = "chat_response_report_counters"
 
     def save(self, report: ChatResponseReport) -> ChatResponseReport:
         payload = _serialize_payload(report.model_dump(mode="json"))
@@ -302,18 +820,40 @@ class SupabaseChatResponseReportRepository(ChatResponseReportRepository):
             return None
         return ChatResponseReport.model_validate(response.data[0])
 
-    def list_by_owner(self, owner_id: str) -> list[ChatResponseReport]:
+    def list_by_reporter(self, reporter_ref: str) -> list[ChatResponseReport]:
         response = (
-            self._client.table(self._table)
-            .select("*")
-            .eq("reporter_owner_id", owner_id)
-            .execute()
+            self._client.table(self._table).select("*").eq("reporter_ref", reporter_ref).execute()
         )
         return [ChatResponseReport.model_validate(item) for item in response.data or []]
 
     def list_all(self) -> list[ChatResponseReport]:
         response = self._client.table(self._table).select("*").execute()
         return [ChatResponseReport.model_validate(item) for item in response.data or []]
+
+    def delete(self, report_id: str) -> None:
+        self._client.table(self._table).delete().eq("id", report_id).execute()
+
+    def add_to_counter(self, period: str, reason: str, status: str, amount: int) -> None:
+        # Read-then-upsert rather than an atomic increment: only the
+        # retention job writes here, one run at a time.
+        existing = (
+            self._client.table(self._counters_table)
+            .select("*")
+            .eq("period", period)
+            .eq("reason", reason)
+            .eq("status", status)
+            .limit(1)
+            .execute()
+        )
+        counters = [ChatResponseReportCounter.model_validate(row) for row in existing.data or []]
+        current = counters[0].total if counters else 0
+        self._client.table(self._counters_table).upsert(
+            {"period": period, "reason": reason, "status": status, "total": current + amount}
+        ).execute()
+
+    def list_counters(self) -> list[ChatResponseReportCounter]:
+        response = self._client.table(self._counters_table).select("*").execute()
+        return [ChatResponseReportCounter.model_validate(item) for item in response.data or []]
 
 
 class SupabaseChatAttachmentRepository(ChatAttachmentRepository):
@@ -333,15 +873,34 @@ class SupabaseChatAttachmentRepository(ChatAttachmentRepository):
 
     def get(self, attachment_id: str) -> ChatAttachment | None:
         response = (
-            self._client.table(self._table)
-            .select("*")
-            .eq("id", attachment_id)
-            .limit(1)
-            .execute()
+            self._client.table(self._table).select("*").eq("id", attachment_id).limit(1).execute()
         )
         if not response.data:
             return None
         return ChatAttachment.model_validate(response.data[0])
+
+    def list_by_conversation(self, conversation_id: str) -> list[ChatAttachment]:
+        response = (
+            self._client.table(self._table)
+            .select("*")
+            .eq("conversation_id", conversation_id)
+            .execute()
+        )
+        return [ChatAttachment.model_validate(item) for item in response.data or []]
+
+    def list_orphans_before(self, cutoff: datetime, *, limit: int = 200) -> list[ChatAttachment]:
+        response = (
+            self._client.table(self._table)
+            .select("*")
+            .is_("conversation_id", "null")
+            .lt("created_at", cutoff.isoformat())
+            .limit(limit)
+            .execute()
+        )
+        return [ChatAttachment.model_validate(item) for item in response.data or []]
+
+    def delete(self, attachment_id: str) -> None:
+        self._client.table(self._table).delete().eq("id", attachment_id).execute()
 
 
 def _activity_to_row(activity: LocalActivity) -> dict[str, Any]:
@@ -368,3 +927,91 @@ class SupabaseLocalActivityRepository(LocalActivityRepository):
     def list_active(self) -> list[LocalActivity]:
         response = self._client.table(self._table).select("*").eq("status", "active").execute()
         return [_row_to_activity(cast(dict[str, Any], item)) for item in response.data or []]
+
+
+class SupabaseLlmUsageRepository(LlmUsageRepository):
+    """llm_usage (one row per call), llm_usage_daily (totals per model and
+    day, kept by the llm_usage_add function so concurrent instances add up
+    correctly) and chat_user_daily_usage (messages per owner and day).
+    Schema: scripts/setup/supabase_schema.sql."""
+
+    def __init__(self, client: Client) -> None:
+        self._client = client
+
+    def record(self, event: LlmUsageEvent) -> None:
+        row = event.model_dump(mode="json")
+        row["day"] = event.day.isoformat()
+        self._client.table("llm_usage").insert(row).execute()
+        self._client.rpc(
+            "llm_usage_add",
+            {
+                "p_day": event.day.isoformat(),
+                "p_model": event.model,
+                "p_prompt_tokens": event.prompt_tokens,
+                "p_completion_tokens": event.completion_tokens,
+                "p_cached_tokens": event.cached_prompt_tokens,
+                "p_total_tokens": event.total_tokens,
+            },
+        ).execute()
+
+    def usage_for_day(self, day: date) -> list[ModelDailyUsage]:
+        response = (
+            self._client.table("llm_usage_daily").select("*").eq("day", day.isoformat()).execute()
+        )
+        return [ModelDailyUsage.model_validate(item) for item in response.data or []]
+
+    def mark_exhausted(self, model: str, day: date, until: datetime) -> None:
+        self._client.table("llm_usage_daily").upsert(
+            {"day": day.isoformat(), "model": model, "exhausted_until": until.isoformat()},
+            on_conflict="day,model",
+        ).execute()
+
+    def add_user_message(self, owner_id: str, day: date) -> int:
+        response = self._client.rpc(
+            "chat_user_daily_usage_add", {"p_owner_id": owner_id, "p_day": day.isoformat()}
+        ).execute()
+        data = response.data
+        return int(data) if isinstance(data, (int, float, str)) else 0
+
+    def add_user_usage(self, owner_id: str, day: date, kind: str) -> int:
+        response = self._client.rpc(
+            "chat_user_daily_usage_add_kind",
+            {"p_owner_id": owner_id, "p_day": day.isoformat(), "p_kind": kind},
+        ).execute()
+        data = response.data
+        return int(data) if isinstance(data, (int, float, str)) else 0
+
+    def cleanup(self, today: date, *, usage_days: int, user_days: int) -> dict[str, int]:
+        # The SQL function applies the same retention (90/30 days and the
+        # expired cache rows) and is also what pg_cron runs at night.
+        response = self._client.rpc("chat_usage_cleanup", {}).execute()
+        data = response.data if isinstance(response.data, dict) else {}
+        return {str(key): int(value) for key, value in data.items()}
+
+
+class SupabaseAnswerCacheRepository(AnswerCacheRepository):
+    def __init__(self, client: Client) -> None:
+        self._client = client
+        self._table = "chat_answer_cache"
+
+    def get(self, key: str) -> CachedAnswer | None:
+        response = self._client.table(self._table).select("*").eq("key", key).limit(1).execute()
+        if not response.data:
+            return None
+        return CachedAnswer.model_validate(response.data[0])
+
+    def put(self, answer: CachedAnswer) -> None:
+        payload = _serialize_payload(answer.model_dump(mode="json"))
+        self._client.table(self._table).upsert(payload).execute()
+
+    def count_hit(self, key: str) -> None:
+        try:
+            self._client.rpc("chat_answer_cache_hit", {"p_key": key}).execute()
+        except Exception:  # noqa: BLE001 - a missing counter is not worth an error
+            _logger.debug("chat_answer_cache_hit unavailable", exc_info=True)
+
+    def purge_expired(self, now: datetime) -> int:
+        response = (
+            self._client.table(self._table).delete().lt("expires_at", now.isoformat()).execute()
+        )
+        return len(response.data or [])

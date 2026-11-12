@@ -1,5 +1,8 @@
 from __future__ import annotations
 
+import base64
+import json
+from datetime import UTC, datetime
 from typing import TYPE_CHECKING, Any
 
 from packages.core.application.ports.auth_provider import (
@@ -7,6 +10,7 @@ from packages.core.application.ports.auth_provider import (
     AuthProvider,
     AuthSession,
 )
+from packages.core.domain.localization import SupportedLocale, normalize_locale
 from packages.shared.auth_context import get_access_token
 from packages.shared.errors.base import AuthenticationError
 
@@ -17,8 +21,9 @@ else:
 
 _SUPABASE_IMPORT_ERROR: ModuleNotFoundError | None
 try:
-    from supabase import Client as _SupabaseClient  # noqa: F401
     from supabase_auth.errors import AuthApiError
+
+    from supabase import Client as _SupabaseClient  # noqa: F401
 except ModuleNotFoundError as exc:  # pragma: no cover - exercised by local runtime environments
     _SUPABASE_IMPORT_ERROR = exc
 
@@ -28,6 +33,43 @@ except ModuleNotFoundError as exc:  # pragma: no cover - exercised by local runt
         codepath already raises before reaching this class."""
 else:
     _SUPABASE_IMPORT_ERROR = None
+
+
+def sign_in_time_from_token(token: str) -> datetime | None:
+    """When the session behind a Supabase access token last authenticated.
+
+    GoTrue puts an `amr` list in the token ([{"method": "password",
+    "timestamp": <unix>}]); its newest timestamp is the real sign-in and does
+    not move when the token is refreshed, so a stolen session that was
+    refreshed for days still reads as old. Tokens without `amr` fall back to
+    `iat` (refresh time): weaker, but the app signs in again right before the
+    sensitive call, so a legitimate caller is always fresh either way.
+
+    The signature is not checked here: the token was already validated by
+    Supabase in [SupabaseAuthProvider.get_current_user] on the same request.
+    """
+    try:
+        payload_part = token.split(".")[1]
+        payload = json.loads(
+            base64.urlsafe_b64decode(payload_part + "=" * (-len(payload_part) % 4))
+        )
+    except (IndexError, ValueError):
+        return None
+    if not isinstance(payload, dict):
+        return None
+
+    stamps: list[float] = []
+    amr = payload.get("amr")
+    if isinstance(amr, list):
+        for entry in amr:
+            stamp = entry.get("timestamp") if isinstance(entry, dict) else None
+            if isinstance(stamp, int | float):
+                stamps.append(float(stamp))
+    if not stamps:
+        issued_at = payload.get("iat")
+        if isinstance(issued_at, int | float):
+            stamps.append(float(issued_at))
+    return datetime.fromtimestamp(max(stamps), UTC) if stamps else None
 
 
 class SupabaseAuthProvider(AuthProvider):
@@ -57,7 +99,35 @@ class SupabaseAuthProvider(AuthProvider):
         if user is None:
             raise AuthenticationError("Invalid access token")
 
-        return AuthenticatedUser(id=user.id, email=user.email or "")
+        metadata = getattr(user, "user_metadata", None) or {}
+        if not isinstance(metadata, dict):
+            metadata = {}
+        display_name = metadata.get("display_name") if isinstance(metadata, dict) else None
+        return AuthenticatedUser(
+            id=user.id,
+            email=user.email or "",
+            display_name=display_name if isinstance(display_name, str) else None,
+            preferred_locale=normalize_locale(metadata.get("preferred_locale")),
+            email_verified=bool(getattr(user, "email_confirmed_at", None)),
+        )
+
+    def last_sign_in_at(self) -> datetime | None:
+        token = get_access_token()
+        return sign_in_time_from_token(token) if token else None
+
+    def update_preferred_locale(self, locale: SupportedLocale) -> AuthenticatedUser:
+        # Authenticate first; callers never supply the target user's identity.
+        current = self.get_current_user()
+        response = self._admin_client.auth.admin.get_user_by_id(current.id)
+        user = getattr(response, "user", None)
+        if user is None:
+            raise AuthenticationError("Invalid account")
+        metadata = dict(getattr(user, "user_metadata", None) or {})
+        metadata["preferred_locale"] = locale
+        # A stale regional variant must not override the new generic preference.
+        metadata.pop("preferred_locale_variant", None)
+        self._admin_client.auth.admin.update_user_by_id(current.id, {"user_metadata": metadata})
+        return current.model_copy(update={"preferred_locale": locale})
 
     def sign_in_with_password(self, email: str, password: str) -> AuthSession:
         response = self._public_client.auth.sign_in_with_password(

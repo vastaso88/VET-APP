@@ -4,10 +4,13 @@ import 'dart:typed_data';
 
 import 'package:http/http.dart' as http;
 
+import '../../../l10n/l10n.dart';
 import '../../../shared/auth/current_user.dart';
 import '../../../shared/config/app_runtime_config_loader.dart';
+import '../../../shared/date/utc_offset_header.dart';
 import '../../../shared/errors/app_network_error.dart';
 import '../../../shared/types/result.dart';
+import 'chat_remote_data_source.dart' show quotaExceededMessage;
 
 abstract class SpeechToTextRemoteDataSource {
   /// Uploads a recorded audio clip and returns its transcription — see
@@ -42,6 +45,9 @@ class HttpSpeechToTextRemoteDataSource implements SpeechToTextRemoteDataSource {
       final token = CurrentUser.accessToken();
       final request = http.MultipartRequest('POST', Uri.parse('$_baseUrl/speech-to-text'))
         ..headers.addAll({
+          // The backend words its refusals (daily allowance) in this language.
+          'Accept-Language': AppLocaleHolder.current.languageCode,
+          ...utcOffsetHeader(),
           if (token != null && token.isNotEmpty) 'Authorization': 'Bearer $token',
         })
         ..files.add(http.MultipartFile.fromBytes('file', audioBytes, filename: fileName));
@@ -50,10 +56,16 @@ class HttpSpeechToTextRemoteDataSource implements SpeechToTextRemoteDataSource {
       final response = await http.Response.fromStream(streamedResponse);
 
       if (response.statusCode < 200 || response.statusCode >= 300) {
+        // Today's dictations are used up: the backend says so in the
+        // user's language, and that sentence is worth more than a generic one.
+        final quota = quotaExceededMessage(response.body);
+        if (quota != null) {
+          return Result.failure(AppNetworkError(code: 'quota_exceeded', message: quota));
+        }
         return Result.failure(
           AppNetworkError(
             code: 'speech_to_text_http_${response.statusCode}',
-            message: 'Non sono riuscito a trascrivere il messaggio vocale.',
+            message: appL10n.chatErrorTranscribe,
           ),
         );
       }
@@ -62,16 +74,16 @@ class HttpSpeechToTextRemoteDataSource implements SpeechToTextRemoteDataSource {
       return Result.success(json['text'] as String? ?? '');
     } on TimeoutException {
       return Result.failure<String>(
-        const AppNetworkError(
+        AppNetworkError(
           code: 'speech_to_text_timeout',
-          message: 'Richiesta scaduta. Riprova.',
+          message: appL10n.chatErrorRequestTimeout,
         ),
       );
     } catch (e) {
       return Result.failure<String>(
         AppNetworkError(
           code: 'speech_to_text_unexpected_error',
-          message: "Qualcosa e' andato storto. Riprova.",
+          message: appL10n.chatErrorGeneric,
           details: e,
         ),
       );

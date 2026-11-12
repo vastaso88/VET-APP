@@ -1,15 +1,24 @@
-<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
+    <!-- Release builds need network too; debug/profile manifests used to be the only ones declaring it. -->
+    <uses-permission android:name="android.permission.INTERNET" />
     <!-- Runtime permission on Android 13+ (API 33), requested via
          permission_handler from the first-run notification prompt — see
          lib/features/first_run/presentation/pages/notification_permission_page.dart. -->
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <!-- Lets flutter_local_notifications put the scheduled reminder/medicine/
+         birthday notifications back after a reboot (lib/features/notifications/).
+         Deliberately NO SCHEDULE_EXACT_ALARM / USE_EXACT_ALARM: inexact alarms
+         may arrive a few minutes late in Doze, which is fine for these, and
+         exact ones need a Google Play declaration reserved to alarm/calendar apps. -->
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
     <!-- Foreground-only location — Località in Impostazioni, passeggiate, attività locali.
          See docs/compliance/05_permessi_dispositivo_os.md. -->
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
     <!-- Keeps GPS tracking alive while a walk is running and the app is
-         backgrounded (active_walk_controller.dart's foregroundNotificationConfig)
-         via a persistent notification - NOT the same thing as
+         backgrounded (WalkTrackingService.kt, with geolocator's own
+         foregroundNotificationConfig as fallback) via a persistent notification - NOT the same thing as
          ACCESS_BACKGROUND_LOCATION ("Allow all the time"), which
          docs/compliance/05_permessi_dispositivo_os.md explicitly defers
          pending a roadmap decision because of its store-review scrutiny.
@@ -17,14 +26,29 @@
          foreground location access, which it does. -->
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_LOCATION" />
-    <!-- Declared proactively, not yet used in code (docs/compliance/05_permessi_dispositivo_os.md):
-         photographing a medical-record document instead of only picking an existing file. -->
-    <uses-permission android:name="android.permission.CAMERA" />
-    <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />
+    <!-- Photos and videos go through the system camera and picker (image_picker,
+         file_picker), which need no permission. open_filex (PDF viewer) brings in
+         media-read permissions through its manifest; they are removed here. -->
+    <!-- Android 9 and older only: gal (copy of in-app camera captures into the
+         "Quokka" album) needs it there; from Android 10 MediaStore saves our own
+         files with no permission. video_compress declares it with no limit,
+         although it only writes to its app-private folder: tools:node="replace"
+         keeps this bounded declaration instead of the plugin's. -->
+    <uses-permission
+        android:name="android.permission.WRITE_EXTERNAL_STORAGE"
+        android:maxSdkVersion="28"
+        tools:node="replace" />
+    <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" tools:node="remove" />
+    <uses-permission android:name="android.permission.READ_MEDIA_VIDEO" tools:node="remove" />
+    <uses-permission android:name="android.permission.READ_MEDIA_AUDIO" tools:node="remove" />
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" tools:node="remove" />
     <application
-        android:label="vetapp"
+        android:label="@string/app_name"
         android:name="${applicationName}"
-        android:icon="@mipmap/ic_launcher">
+        android:icon="@mipmap/ic_launcher"
+        android:allowBackup="false"
+        android:fullBackupContent="@xml/backup_rules"
+        android:dataExtractionRules="@xml/data_extraction_rules">
         <activity
             android:name=".MainActivity"
             android:exported="true"
@@ -69,6 +93,15 @@
             <intent-filter>
                 <action android:name="es.antonborri.home_widget.action.LAUNCH" />
             </intent-filter>
+            <!-- Password-recovery link from the Supabase email (redirectTo in
+                 supabase_auth_remote_data_source.dart). supabase_flutter reads it
+                 via app_links; it's not routed by Flutter (see the meta-data above). -->
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="vetapp" android:host="auth-callback" />
+            </intent-filter>
         </activity>
         <!-- "Passeggiate" home-screen widget: shows the owner's pets, tapping
              one opens the app straight into a new walk for that pet (owner
@@ -84,6 +117,29 @@
                 android:name="android.appwidget.provider"
                 android:resource="@xml/dog_walks_widget_info" />
         </receiver>
+        <!-- flutter_local_notifications: shows the scheduled notifications and
+             reschedules them after a reboot or an app update. -->
+        <receiver
+            android:exported="false"
+            android:name="com.dexterous.flutterlocalnotifications.ScheduledNotificationReceiver" />
+        <receiver
+            android:exported="false"
+            android:name="com.dexterous.flutterlocalnotifications.ScheduledNotificationBootReceiver">
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED"/>
+                <action android:name="android.intent.action.MY_PACKAGE_REPLACED"/>
+                <action android:name="android.intent.action.QUICKBOOT_POWERON" />
+                <action android:name="com.htc.intent.action.QUICKBOOT_POWERON"/>
+            </intent-filter>
+        </receiver>
+        <!-- Walk tracking (WalkTrackingService.kt): keeps GPS alive in the
+             background with the "Passeggiata con <pet>" notification. Typed
+             "location", covered by FOREGROUND_SERVICE_LOCATION above; no new
+             permission. -->
+        <service
+            android:name=".WalkTrackingService"
+            android:exported="false"
+            android:foregroundServiceType="location" />
         <!-- Don't delete the meta-data below.
              This is used by the Flutter tool to generate GeneratedPluginRegistrant.java -->
         <meta-data

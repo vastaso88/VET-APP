@@ -2,6 +2,9 @@ import 'dart:collection';
 
 import 'package:flutter/foundation.dart';
 
+import '../../../l10n/l10n.dart';
+import '../../../shared/date/calendar_days.dart';
+import '../../../shared/errors/app_network_error.dart';
 import '../../../shared/auth/current_user.dart';
 import '../../../shared/config/app_runtime_config_loader.dart';
 import '../../../shared/types/result.dart';
@@ -132,9 +135,11 @@ class ChatDemoStore extends ChangeNotifier {
               DateTime.fromMillisecondsSinceEpoch(0),
           ChatConversationDetail(
             id: conversation.id,
-            title: conversation.title.isEmpty ? '$petName - conversazione' : conversation.title,
+            title: conversation.title.isEmpty
+                ? appL10n.chatSavedConversationTitle(petName)
+                : conversation.title,
             petName: petName,
-            statusLabel: 'Conversazione salvata',
+            statusLabel: appL10n.chatStatusSaved,
             messages: [
               for (final message in conversation.messages)
                 ChatMessage(
@@ -169,12 +174,12 @@ class ChatDemoStore extends ChangeNotifier {
     final now = DateTime.now();
     final today = DateTime(now.year, now.month, now.day);
     final day = DateTime(local.year, local.month, local.day);
-    final daysAgo = today.difference(day).inDays;
+    final daysAgo = calendarDaysBetween(day, today);
     if (daysAgo <= 0) {
       return '${local.hour.toString().padLeft(2, '0')}:${local.minute.toString().padLeft(2, '0')}';
     }
     if (daysAgo == 1) {
-      return 'ieri';
+      return appL10n.chatTimeYesterday;
     }
     return '${local.day.toString().padLeft(2, '0')}/${local.month.toString().padLeft(2, '0')}';
   }
@@ -211,6 +216,58 @@ class ChatDemoStore extends ChangeNotifier {
     return _remote.deleteConversation(backendConversationId);
   }
 
+  /// Renames the chat at once. If the backend refuses, the old title comes back
+  /// and the failure is returned so the caller can say so.
+  Future<Result<void>> renameConversation(String id, String title) async {
+    final index = _threads.indexWhere((thread) => thread.id == id);
+    if (index == -1) return Result.success<void>(null);
+    final previous = _threads[index];
+    _threads[index] = previous.copyWith(title: title);
+    notifyListeners();
+
+    final backendConversationId = previous.backendConversationId;
+    if (backendConversationId == null) return Result.success<void>(null);
+    final result = await _remote.renameConversation(backendConversationId, title);
+    return result.fold(
+      onSuccess: (storedTitle) {
+        final current = _threads.indexWhere((thread) => thread.id == id);
+        if (current != -1) {
+          _threads[current] = _threads[current].copyWith(title: storedTitle);
+          notifyListeners();
+        }
+        return Result.success<void>(null);
+      },
+      onFailure: (error) {
+        final current = _threads.indexWhere((thread) => thread.id == id);
+        if (current != -1) _threads[current] = previous;
+        notifyListeners();
+        return Result.failure<void>(error);
+      },
+    );
+  }
+
+  /// The veterinary summary of a stored chat. Needs the backend conversation.
+  Future<Result<String>> conversationSummary(String id) {
+    final backendConversationId = conversationById(id)?.backendConversationId;
+    if (backendConversationId == null) {
+      return Future.value(
+        Result.failure<String>(
+          AppNetworkError(
+            code: 'conversation_summary_unavailable',
+            message: appL10n.chatSummaryNotYet,
+          ),
+        ),
+      );
+    }
+    return _remote.conversationSummary(backendConversationId);
+  }
+
+  /// Replies that arrived since the last time they were shown; the page reveals
+  /// them progressively and takes each one once.
+  final Set<String> _freshAssistantIds = <String>{};
+
+  bool takeFreshReply(String messageId) => _freshAssistantIds.remove(messageId);
+
   ChatConversationDetail? conversationById(String id) {
     for (final thread in _threads) {
       if (thread.id == id) {
@@ -233,7 +290,10 @@ class ChatDemoStore extends ChangeNotifier {
     }
 
     final created = fallback ??
-        _createConversation(petName: 'il tuo pet', title: 'Nuova conversazione');
+        _createConversation(
+          petName: appL10n.chatFallbackPetName,
+          title: appL10n.chatNewConversation,
+        );
     _threads.insert(0, created);
     _openedConversationIds.add(created.id);
     notifyListeners();
@@ -243,7 +303,7 @@ class ChatDemoStore extends ChangeNotifier {
   ChatConversationDetail startConversation({required String petName}) {
     final conversation = _createConversation(
       petName: petName,
-      title: '$petName - nuova conversazione',
+      title: appL10n.chatNewConversationTitle(petName),
     );
     _threads.insert(0, conversation);
     _openedConversationIds.add(conversation.id);
@@ -251,11 +311,16 @@ class ChatDemoStore extends ChangeNotifier {
     return conversation;
   }
 
+  /// Sends [message]. With [retryOfMessageId] (the id of a message already
+  /// in the thread whose send failed) the message is not added again: the
+  /// same id goes to the backend, which returns the answer it may already
+  /// have produced instead of answering twice.
   Future<Result<ChatConversationDetail>> sendMessage(
     String conversationId,
     String message, {
     String? attachmentId,
     Uint8List? attachmentImageBytes,
+    String? retryOfMessageId,
   }) async {
     final cleanMessage = message.trim();
     if (cleanMessage.isEmpty) {
@@ -263,30 +328,134 @@ class ChatDemoStore extends ChangeNotifier {
     }
 
     final thread = conversationById(conversationId) ?? _threads.first;
-    final userMessage = ChatMessage(
-      id: _messageId('user'),
-      author: ChatMessageAuthor.user,
-      text: cleanMessage,
-      timeLabel: _clockLabel(),
-      isRead: true,
-      attachmentImageBytes: attachmentImageBytes,
-    );
+    final alreadyInThread = retryOfMessageId != null &&
+        thread.messages.any((message) => message.id == retryOfMessageId);
+    final userMessageId = alreadyInThread ? retryOfMessageId : _messageId('user');
 
-    _replaceThread(
-      conversationId,
-      thread.copyWith(
-        title: _maybeRetitle(thread.title, cleanMessage),
-        statusLabel: 'Messaggio inviato',
-        messages: [...thread.messages, userMessage],
-      ),
-    );
+    if (!alreadyInThread) {
+      final userMessage = ChatMessage(
+        id: userMessageId,
+        author: ChatMessageAuthor.user,
+        text: cleanMessage,
+        timeLabel: _clockLabel(),
+        isRead: true,
+        attachmentImageBytes: attachmentImageBytes,
+      );
+      _replaceThread(
+        conversationId,
+        thread.copyWith(
+          title: _maybeRetitle(thread.title, cleanMessage),
+          statusLabel: appL10n.chatStatusSent,
+          messages: [...thread.messages, userMessage],
+        ),
+      );
+    }
     _openedConversationIds.add(conversationId);
     notifyListeners();
 
     if (!_configLoader.load().hasApiBaseUrl) {
       return Result.success(await _sendDemoReply(conversationId, cleanMessage));
     }
-    return _sendRealMessage(conversationId, cleanMessage, attachmentId: attachmentId);
+    return _sendRealMessage(
+      conversationId,
+      cleanMessage,
+      attachmentId: attachmentId,
+      clientMessageId: userMessageId,
+    );
+  }
+
+  /// Replaces the owner's message [messageId] with [newText]: the thread is
+  /// cut there (that message and everything after it go, replies included)
+  /// and the assistant answers the edited text. The original attachment is
+  /// kept. With [retryOfMessageId] (the edited message already shown, after
+  /// a failed attempt) the thread is not cut again and the same id goes to
+  /// the backend, which returns the answer it may already have produced.
+  Future<Result<ChatConversationDetail>> editMessage(
+    String conversationId,
+    String messageId,
+    String newText, {
+    String? retryOfMessageId,
+  }) async {
+    final text = newText.trim();
+    final thread = conversationById(conversationId) ?? _threads.first;
+    final alreadyEdited = retryOfMessageId != null &&
+        thread.messages.any((message) => message.id == retryOfMessageId);
+    final index = thread.messages.indexWhere((message) => message.id == messageId);
+    if (!alreadyEdited && index < 0) {
+      return Result.failure(
+        AppNetworkError(
+          code: 'chat_edit_message_missing',
+          message: appL10n.chatEditMessageMissing,
+        ),
+      );
+    }
+
+    final editedId = alreadyEdited ? retryOfMessageId : _messageId('user');
+    if (!alreadyEdited) {
+      final original = thread.messages[index];
+      final edited = ChatMessage(
+        id: editedId,
+        author: ChatMessageAuthor.user,
+        text: text,
+        timeLabel: _clockLabel(),
+        isRead: true,
+        attachmentImageBytes: original.attachmentImageBytes,
+      );
+      _replaceThread(
+        conversationId,
+        thread.copyWith(
+          statusLabel: appL10n.chatStatusEdited,
+          messages: [...thread.messages.take(index), edited],
+        ),
+      );
+    }
+    _openedConversationIds.add(conversationId);
+    notifyListeners();
+
+    final backendConversationId = thread.backendConversationId;
+    if (!_configLoader.load().hasApiBaseUrl || backendConversationId == null) {
+      return Result.success(await _sendDemoReply(conversationId, text));
+    }
+
+    final result = await _remote.editMessage(
+      conversationId: backendConversationId,
+      messageId: messageId,
+      userMessage: text,
+      clientMessageId: editedId,
+    );
+    return result.fold(
+      onFailure: (error) => Result.failure(error),
+      onSuccess: (reply) {
+        final updatedThread = conversationById(conversationId) ?? thread;
+        final assistantMessage = ChatMessage(
+          id: _messageId('assistant'),
+          author: ChatMessageAuthor.assistant,
+          text: reply.content,
+          timeLabel: _clockLabel(),
+          aiGenerated: reply.aiGenerated,
+        );
+        _freshAssistantIds.add(assistantMessage.id);
+        final serverTitle = reply.title?.trim();
+        final resultThread = updatedThread.copyWith(
+          title: serverTitle == null || serverTitle.isEmpty ? null : serverTitle,
+          statusLabel: appL10n.chatStatusReplyReady,
+          messages: [...updatedThread.messages, assistantMessage],
+        );
+        _replaceThread(conversationId, resultThread);
+        notifyListeners();
+        return Result.success(resultThread);
+      },
+    );
+  }
+
+  /// The most recent message the owner sent in [conversationId]: after a
+  /// failed send, the one a retry should reuse.
+  ChatMessage? lastUserMessage(String conversationId) {
+    final messages = conversationById(conversationId)?.messages ?? const <ChatMessage>[];
+    for (final message in messages.reversed) {
+      if (message.author == ChatMessageAuthor.user) return message;
+    }
+    return null;
   }
 
   /// Uploads a photo for [petName] and returns its backend attachment id —
@@ -322,11 +491,12 @@ class ChatDemoStore extends ChangeNotifier {
       text: _generateReply(cleanMessage, updatedThread.petName),
       timeLabel: _clockLabel(),
     );
+    _freshAssistantIds.add(assistantMessage.id);
 
     _replaceThread(
       conversationId,
       updatedThread.copyWith(
-        statusLabel: 'Risposta pronta',
+        statusLabel: appL10n.chatStatusReplyReady,
         messages: [...updatedThread.messages, assistantMessage],
       ),
     );
@@ -340,6 +510,7 @@ class ChatDemoStore extends ChangeNotifier {
     String conversationId,
     String cleanMessage, {
     String? attachmentId,
+    String? clientMessageId,
   }) async {
     final thread = conversationById(conversationId) ?? _threads.first;
 
@@ -352,6 +523,7 @@ class ChatDemoStore extends ChangeNotifier {
           conversationId: thread.backendConversationId,
           userMessage: cleanMessage,
           attachmentId: attachmentId,
+          clientMessageId: clientMessageId,
         );
         return sendResult.fold(
           onFailure: (error) => Result.failure(error),
@@ -364,9 +536,10 @@ class ChatDemoStore extends ChangeNotifier {
               timeLabel: _clockLabel(),
               aiGenerated: reply.aiGenerated,
             );
+            _freshAssistantIds.add(assistantMessage.id);
 
             final resultThread = updatedThread.copyWith(
-              statusLabel: 'Risposta pronta',
+              statusLabel: appL10n.chatStatusReplyReady,
               messages: [...updatedThread.messages, assistantMessage],
               backendConversationId: reply.backendConversationId,
             );
@@ -424,8 +597,8 @@ class ChatDemoStore extends ChangeNotifier {
         : ChatMessage(
             id: _messageId('summary'),
             author: ChatMessageAuthor.assistant,
-            text: 'Nuovo thread pronto per essere usato.',
-            timeLabel: 'adesso',
+            text: appL10n.chatEmptyThreadPreview,
+            timeLabel: appL10n.chatTimeNow,
           );
 
     final unreadCount = _openedConversationIds.contains(conversation.id)
@@ -441,8 +614,8 @@ class ChatDemoStore extends ChangeNotifier {
       activePetName: conversation.petName,
       previewMessage: lastMessage.text,
       lastSender: lastMessage.author == ChatMessageAuthor.assistant
-          ? 'Assistente'
-          : 'Tu',
+          ? appL10n.chatSenderAssistant
+          : appL10n.chatSenderYou,
     );
   }
 
@@ -457,7 +630,7 @@ class ChatDemoStore extends ChangeNotifier {
       id: _conversationId(petName),
       title: title,
       petName: petName,
-      statusLabel: 'Nuova conversazione',
+      statusLabel: appL10n.chatNewConversation,
       messages: const [],
     );
   }
@@ -491,32 +664,37 @@ class ChatDemoStore extends ChangeNotifier {
   }
 
   String _maybeRetitle(String title, String message) {
-    if (title.toLowerCase().contains('nuova conversazione')) {
+    final lowerTitle = title.toLowerCase();
+    // Titles saved before localisation (or in another language) carry the
+    // Italian marker; the current language's own marker is checked too.
+    if (lowerTitle.contains('nuova conversazione') ||
+        lowerTitle.contains(appL10n.chatNewConversation.toLowerCase())) {
       final subject = message.length > 34 ? '${message.substring(0, 34).trim()}...' : message;
-      return 'Chat - $subject';
+      return appL10n.chatRetitled(subject);
     }
     return title;
   }
 
+  // The keywords below match what the owner types (demo mode only).
   String _generateReply(String message, String petName) {
     final normalized = message.toLowerCase();
 
     if (normalized.contains('appetito') || normalized.contains('mang') || normalized.contains('cibo')) {
-      return 'Per $petName terrei sotto osservazione appetito, acqua e livello di energia per le prossime 24 ore. Se peggiora, meglio sentire il veterinario.';
+      return appL10n.chatDemoReplyAppetite(petName);
     }
 
     if (normalized.contains('vomit') || normalized.contains('diarrea')) {
-      return 'Se ci sono vomito o diarrea, conviene monitorare idratazione e contattare il veterinario se i sintomi si ripetono o diventano intensi.';
+      return appL10n.chatDemoReplyVomiting;
     }
 
     if (normalized.contains('vaccin') || normalized.contains('richiamo')) {
-      return 'Posso aiutarti a mettere il richiamo di $petName in agenda e aggiungere un reminder chiaro nella home.';
+      return appL10n.chatDemoReplyVaccine(petName);
     }
 
     if (normalized.contains('peso') || normalized.contains('dimagr')) {
-      return 'Sul peso di $petName possiamo fissare un controllo periodico e confrontarlo con l ultima visita per capire se il trend cambia davvero.';
+      return appL10n.chatDemoReplyWeight(petName);
     }
 
-    return 'Ho preso nota: per $petName ti preparo un riepilogo breve, cosi hai subito un piano pratico e leggibile.';
+    return appL10n.chatDemoReplyDefault(petName);
   }
 }

@@ -80,7 +80,23 @@ class PresidioPiiAnonymizer:
             ],
             context=["telefono", "cellulare", "numero", "chiamami", "richiamami"],
         )
-        return [codice_fiscale, it_mobile_phone]
+        # Microchip (owner decision 2026-11-08: never to a provider): it
+        # identifies the owner through the national registry. 15 digits, or
+        # five groups of three.
+        microchip = PatternRecognizer(
+            supported_entity="MICROCHIP",
+            supported_language="it",
+            patterns=[
+                Pattern(name="microchip_15_digits", regex=r"(?<!\d)\d{15}(?!\d)", score=0.9),
+                Pattern(
+                    name="microchip_grouped",
+                    regex=r"(?<!\d)\d{3}(?:[ .-]\d{3}){4}(?!\d)",
+                    score=0.9,
+                ),
+            ],
+            context=["microchip", "chip", "transponder", "anagrafe"],
+        )
+        return [codice_fiscale, it_mobile_phone, microchip]
 
     def anonymize(self, request: PiiAnonymizationRequest) -> PiiAnonymizationResult:
         results = self._analyzer.analyze(text=request.text, language=request.language)
@@ -89,7 +105,8 @@ class PresidioPiiAnonymizer:
         # the documented way to wire the two packages together) but mypy
         # sees two distinct types.
         anonymized = self._anonymizer.anonymize(
-            text=request.text, analyzer_results=results  # type: ignore[arg-type]
+            text=request.text,
+            analyzer_results=results,  # type: ignore[arg-type]
         )
         entity_types = sorted({result.entity_type for result in results})
         return PiiAnonymizationResult(

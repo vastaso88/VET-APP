@@ -2,6 +2,13 @@ import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 
+import '../../../l10n/l10n.dart';
+import '../../settings/domain/unit_conversion.dart';
+import '../../settings/domain/unit_system.dart';
+import 'pet_details.dart';
+import 'pet_value_labels.dart';
+import '../../../design_system/tokens/app_colors.dart';
+
 enum PetsScreenStatus {
   loading,
   empty,
@@ -76,6 +83,14 @@ class HabitatDetails {
     return '${part(lengthCm)}×${part(widthCm)}×${part(heightCm)} cm';
   }
 
+  /// [dimensionsLabel] in the owner's unit system (inches instead of cm).
+  String dimensionsLabelIn(UnitSystem system) {
+    if (!hasDimensions) return '';
+    String part(int? value) =>
+        value == null ? '?' : formatLengthIn(value, system).split(' ').first;
+    return '${part(lengthCm)}×${part(widthCm)}×${part(heightCm)} ${lengthUnitName(system)}';
+  }
+
   bool get isEmpty =>
       !hasDimensions &&
       volumeLiters == null &&
@@ -100,11 +115,18 @@ class PetProfile {
     required this.accentColor,
     required this.identityColor,
     this.photoBytes,
+    this.photoPath,
+    this.medicalRecordConsentGranted,
     this.aquariumStock = const [],
     this.isMemorial = false,
     this.memorialDate,
     this.habitat,
     this.dogSizeCategory,
+    this.isSterilized,
+    this.microchipNumber,
+    this.coatColor,
+    this.bodyCondition,
+    this.activityLevel,
   });
 
   final String id;
@@ -137,6 +159,14 @@ class PetProfile {
   /// demo). Null falls back to the plain letter avatar.
   final Uint8List? photoBytes;
 
+  /// Storage path of the persisted profile photo (`pet-photos` bucket), used
+  /// to load the image on a fresh session when [photoBytes] isn't in memory.
+  final String? photoPath;
+
+  /// Owner's per-pet decision on the chat reading this pet's clinical
+  /// records (spec v3 §18). Null = never decided, which the chat treats as no.
+  final bool? medicalRecordConsentGranted;
+
   /// True once the owner has moved this pet to Ricordi (memories) — it
   /// drops out of the active Animali list but its profile is kept.
   final bool isMemorial;
@@ -153,22 +183,43 @@ class PetProfile {
   /// breed to infer a size range from.
   final String? dogSizeCategory;
 
-  String get title => '$name - $species';
+  /// Neutering, separate from [sex] (profile v2, 2026-10-14). Null = not said.
+  final bool? isSterilized;
+
+  /// 15-digit ISO 11784 microchip number, digits only. Null/empty = none given.
+  final String? microchipNumber;
+
+  /// Free text, e.g. "nero e focato".
+  final String? coatColor;
+
+  /// One of [petBodyConditions] ("very_thin" ... "overweight"). Null = not said.
+  final String? bodyCondition;
+
+  /// One of [petActivityLevels]. Null = not said.
+  final String? activityLevel;
+
+  /// The kind of animal as the owner reads it: an aquarium is an "Acquario",
+  /// not a "Pesce" (it holds many fish of several species).
+  String get speciesDisplayLabel =>
+      isAquarium ? appL10n.petsHabitatAquarium : localizedSpeciesLabel(species);
+
+  String get title => '$name - $speciesDisplayLabel';
 
   String get breedLabel {
     if (isAquarium) {
       final totalFish = aquariumStock.fold<int>(0, (sum, stock) => sum + stock.count);
       final speciesCount = aquariumStock.length;
-      final speciesLabel = speciesCount == 1 ? '1 specie' : '$speciesCount specie';
-      final fishLabel = totalFish == 1 ? '1 pesce' : '$totalFish pesci';
-      return '$speciesLabel · $fishLabel';
+      final t = appL10n;
+      return t.petsAquariumSummary(t.petsSpeciesCount(speciesCount), t.petsFishCount(totalFish));
     }
     if (breed.trim().isEmpty) {
-      return 'Razza non specificata';
+      return speciesUsesBreedWord(species)
+          ? appL10n.petsBreedUnspecified
+          : appL10n.petsSpeciesUnspecified;
     }
     final size = dogSizeCategory;
     if (breed.trim() == 'Altro' && size != null && size.isNotEmpty) {
-      return 'Altro · Taglia $size';
+      return appL10n.petsBreedOtherWithSize(localizedDogSizeLabel(size));
     }
     return breed.trim();
   }
@@ -188,6 +239,8 @@ class PetProfile {
     Color? accentColor,
     Color? identityColor,
     Uint8List? photoBytes,
+    String? photoPath,
+    bool? medicalRecordConsentGranted,
     bool clearPhoto = false,
     List<FishStock>? aquariumStock,
     bool? isMemorial,
@@ -195,6 +248,16 @@ class PetProfile {
     HabitatDetails? habitat,
     String? dogSizeCategory,
     bool clearDogSizeCategory = false,
+    bool? isSterilized,
+    String? microchipNumber,
+    String? coatColor,
+    String? bodyCondition,
+    String? activityLevel,
+    bool clearIsSterilized = false,
+    bool clearMicrochipNumber = false,
+    bool clearCoatColor = false,
+    bool clearBodyCondition = false,
+    bool clearActivityLevel = false,
   }) {
     return PetProfile(
       id: id ?? this.id,
@@ -211,12 +274,19 @@ class PetProfile {
       accentColor: accentColor ?? this.accentColor,
       identityColor: identityColor ?? this.identityColor,
       photoBytes: clearPhoto ? null : (photoBytes ?? this.photoBytes),
+      photoPath: clearPhoto ? null : (photoPath ?? this.photoPath),
+      medicalRecordConsentGranted: medicalRecordConsentGranted ?? this.medicalRecordConsentGranted,
       aquariumStock: aquariumStock ?? this.aquariumStock,
       isMemorial: isMemorial ?? this.isMemorial,
       memorialDate: memorialDate ?? this.memorialDate,
       habitat: habitat ?? this.habitat,
       dogSizeCategory:
           clearDogSizeCategory ? null : (dogSizeCategory ?? this.dogSizeCategory),
+      isSterilized: clearIsSterilized ? null : (isSterilized ?? this.isSterilized),
+      microchipNumber: clearMicrochipNumber ? null : (microchipNumber ?? this.microchipNumber),
+      coatColor: clearCoatColor ? null : (coatColor ?? this.coatColor),
+      bodyCondition: clearBodyCondition ? null : (bodyCondition ?? this.bodyCondition),
+      activityLevel: clearActivityLevel ? null : (activityLevel ?? this.activityLevel),
     );
   }
 }
@@ -235,8 +305,8 @@ const samplePets = <PetProfile>[
     healthBadge: 'Stabile',
     nextVisitLabel: 'Vaccino di richiamo tra 12 giorni',
     avatarEmoji: 'M',
-    accentColor: Color(0xFFE7F2EE),
-    identityColor: Color(0xFF2F9E68),
+    accentColor: AppIdentityColors.tintGreen,
+    identityColor: AppIdentityColors.green,
   ),
   PetProfile(
     id: 'pet-oliver',
@@ -251,8 +321,8 @@ const samplePets = <PetProfile>[
     healthBadge: 'Da monitorare',
     nextVisitLabel: 'Controllo dentale la prossima settimana',
     avatarEmoji: 'O',
-    accentColor: Color(0xFFF6EADF),
-    identityColor: Color(0xFFD98C3D),
+    accentColor: AppIdentityColors.tintAmber,
+    identityColor: AppIdentityColors.amber,
   ),
   PetProfile(
     id: 'pet-rex',
@@ -267,8 +337,8 @@ const samplePets = <PetProfile>[
     healthBadge: 'In muta',
     nextVisitLabel: 'Controllo UVB terrario tra 3 giorni',
     avatarEmoji: 'R',
-    accentColor: Color(0xFFEDF0DF),
-    identityColor: Color(0xFF7A8C3D),
+    accentColor: AppIdentityColors.tintOlive,
+    identityColor: AppIdentityColors.olive,
     habitat: HabitatDetails(
       lengthCm: 100,
       widthCm: 50,
@@ -290,8 +360,8 @@ const samplePets = <PetProfile>[
     healthBadge: 'Stabile',
     nextVisitLabel: 'Controllo becco e unghie tra un mese',
     avatarEmoji: 'P',
-    accentColor: Color(0xFFE3EBF0),
-    identityColor: Color(0xFF5B7FD6),
+    accentColor: AppIdentityColors.tintBlue,
+    identityColor: AppIdentityColors.blue,
     habitat: HabitatDetails(
       lengthCm: 60,
       widthCm: 40,
@@ -307,14 +377,14 @@ const samplePets = <PetProfile>[
     breed: '',
     birthDateLabel: '',
     sex: 'Sconosciuto',
-    weightLabel: '0,4 kg',
+    weightLabel: '',
     medicalNote:
         'Filtro pulito ogni settimana, parametri dell\'acqua controllati regolarmente.',
     healthBadge: 'Stabile',
     nextVisitLabel: 'Cambio acqua tra 5 giorni',
     avatarEmoji: 'A',
-    accentColor: Color(0xFFE1EEEE),
-    identityColor: Color(0xFF3D9E9E),
+    accentColor: AppIdentityColors.tintTeal,
+    identityColor: AppIdentityColors.teal,
     habitat: HabitatDetails(
       lengthCm: 80,
       widthCm: 35,

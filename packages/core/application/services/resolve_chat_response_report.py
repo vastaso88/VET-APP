@@ -3,9 +3,12 @@ from pydantic import BaseModel
 from packages.core.application.ports.chat_response_report_repository import (
     ChatResponseReportRepository,
 )
+from packages.core.application.services.report_chat_response import clip
 from packages.core.domain.common.entity import utc_now
 from packages.core.domain.feedback.models import ChatResponseReport, ChatResponseReportStatus
 from packages.shared.errors.base import ValidationError
+
+MAX_RESOLUTION_NOTE_CHARS = 1000
 
 _TERMINAL_STATUSES: tuple[ChatResponseReportStatus, ...] = ("resolved", "wont_fix")
 
@@ -42,7 +45,11 @@ class ResolveChatResponseReportService:
             update={
                 "status": data.status,
                 "resolved_at": utc_now() if is_terminal else report.resolved_at,
-                "resolution_note": data.resolution_note,
+                "resolution_note": (
+                    clip(data.resolution_note, MAX_RESOLUTION_NOTE_CHARS)
+                    if data.resolution_note is not None
+                    else None
+                ),
                 "credited_bug_ref": data.credited_bug_ref,
             }
         )

@@ -8,17 +8,26 @@ import 'package:home_widget/home_widget.dart';
 
 import '../../../app/router/app_router.dart';
 import '../../pets/data/pet_demo_store.dart';
+import '../../settings/data/unit_settings_store.dart';
+import '../../settings/domain/unit_conversion.dart';
 import '../../pets/domain/pet_models.dart';
 import '../../reminders/presentation/pages/reminders_pages.dart';
+import '../domain/walk_eligibility.dart';
 import '../domain/walk_session.dart';
 import '../presentation/pages/active_walk_page.dart';
+import '../presentation/widgets/walk_control_sheet.dart';
 import 'active_walk_controller.dart';
 import 'home_widget_action_store.dart';
+
+export '../domain/walk_eligibility.dart' show isDogSpecies;
 
 const _petsDataKey = 'dog_walks_widget_pets';
 const _petsTotalKey = 'dog_walks_widget_total';
 const _activeWalkKey = 'dog_walks_widget_active_walk';
-const _androidProviderName = 'DogWalksWidgetProvider';
+// Fully qualified on purpose: home_widget resolves a bare name against the
+// application id, which carries a suffix in the francesco/roberto flavors,
+// while the Kotlin package (namespace) is the same for every flavor.
+const _androidProviderName = 'com.vetapp.vetapp.DogWalksWidgetProvider';
 const _activeWalkRouteName = 'active_walk_from_widget';
 
 /// Native side: WalkWidgetBridge in MainActivity.kt. The widget's
@@ -39,9 +48,9 @@ const activeWalkWidgetThrottle = Duration(seconds: 7);
 /// real total is saved too, so the widget can say "+N altri".
 const _maxWidgetPets = 4;
 
-/// Species are stored as the Italian label from PetDemoStore.speciesOptions.
-@visibleForTesting
-bool isDogSpecies(String species) => species.trim().toLowerCase() == 'cane';
+// isDogSpecies lives in walk_eligibility.dart now (shared with the pet detail
+// page's Passeggiate tab); re-exported so existing imports of it from here
+// keep working.
 
 bool get _isAndroid =>
     !kIsWeb && defaultTargetPlatform == TargetPlatform.android;
@@ -72,7 +81,7 @@ Future<void> syncPetsToHomeWidget(List<PetProfile> pets) async {
   try {
     await HomeWidget.saveWidgetData<String>(_petsDataKey, payload);
     await HomeWidget.saveWidgetData<String>(_petsTotalKey, '${pets.length}');
-    await HomeWidget.updateWidget(androidName: _androidProviderName);
+    await HomeWidget.updateWidget(qualifiedAndroidName: _androidProviderName);
   } catch (_) {
     // Best-effort - see doc comment above.
   }
@@ -122,11 +131,15 @@ class ActiveWalkWidgetSnapshot {
       };
 }
 
-/// "1,3 km" - Italian decimal comma, one decimal.
+/// "1,3 km" - decimal separator of the app language, one decimal (miles/yards/feet for the
+/// imperial and USA systems).
 @visibleForTesting
 String formatWidgetDistance(double meters) {
-  final km = meters <= 0 ? 0.0 : meters / 1000;
-  return '${km.toStringAsFixed(1).replaceAll('.', ',')} km';
+  final distance = meters <= 0 ? 0.0 : meters;
+  if (UnitSettingsStore.instance.system.usesMiles) {
+    return '${formatDecimal(distance / 1609.344, trimZeros: false)} mi';
+  }
+  return '${formatDecimal(distance / 1000, trimZeros: false)} km';
 }
 
 /// Mirrors an [ActiveWalkController] into the widget, throttled: the first
@@ -219,7 +232,7 @@ Future<void> _publishActiveWalkToWidget(
         jsonEncode(snapshot.toJson()),
       );
     }
-    await HomeWidget.updateWidget(androidName: _androidProviderName);
+    await HomeWidget.updateWidget(qualifiedAndroidName: _androidProviderName);
   } catch (_) {
     // Best-effort, like the pets sync above.
   }
@@ -330,6 +343,13 @@ Future<void> _openWidgetAction(HomeWidgetAction action) async {
       if (ActiveWalkController.instance.walk?.petId == matchedPet.id) {
         await ActiveWalkController.instance.resume();
       }
+    case HomeWidgetActionKind.finishWalk:
+      final controller = ActiveWalkController.instance;
+      // Stale notification (walk already finished): nothing to end.
+      if (!controller.isActive || controller.walk?.petId != matchedPet.id) return;
+      final context = navigator.overlay?.context;
+      if (context == null || !context.mounted) return;
+      await confirmAndFinishWalk(context, pet: matchedPet);
     case HomeWidgetActionKind.newReminder:
       unawaited(
         navigator.push(

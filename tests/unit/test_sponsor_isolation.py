@@ -47,6 +47,6 @@ def test_chat_pipeline_modules_never_import_sponsor_or_advertising_code() -> Non
             if any(banned in lowered for banned in BANNED_SUBSTRINGS):
                 violations.append(f"{relative_path} imports {imported}")
 
-    assert not violations, (
-        "Sponsor/advertising isolation violated (spec v3 §34): " + "; ".join(violations)
+    assert not violations, "Sponsor/advertising isolation violated (spec v3 §34): " + "; ".join(
+        violations
     )

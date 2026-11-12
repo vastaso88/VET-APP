@@ -1,0 +1,212 @@
+[
+  {
+    "id": "u01",
+    "name": "Giulia Ferrante",
+    "email": "giulia.ferrante@example.com",
+    "age": 19,
+    "band": "18-24",
+    "city": "Bologna",
+    "language": "it",
+    "job": "studentessa fuori sede in un monolocale, budget molto basso",
+    "interests": "TikTok, rettili, fai da te economico",
+    "experience": "prime esperienze",
+    "digital": "alta",
+    "style": "scrive veloce, senza maiuscole, abbreviazioni, qualche emoji; vuole risposte brevi",
+    "plan": "plus",
+    "pets": [
+      {"name": "Nacho", "species": "Piccoli mammiferi", "breed": "Ratto domestico", "age_years": 1, "sex": "Maschio", "weight_label": "450 g", "notes": "Vive in gabbia con Taco."},
+      {"name": "Taco", "species": "Piccoli mammiferi", "breed": "Ratto domestico", "age_years": 1, "sex": "Maschio", "weight_label": "480 g", "notes": "Starnutisce ogni tanto."},
+      {"name": "Mochi", "species": "Gatto", "breed": "Europeo", "age_years": 3, "sex": "Femmina", "weight_label": "3,8 kg", "is_sterilized": true, "notes": "Adottata in gattile, timida."},
+      {"name": "Lizzo", "species": "Rettili e anfibi", "breed": "Geco leopardino", "age_years": 2, "sex": "Femmina", "weight_label": "60 g", "habitat": {"length_cm": 60, "width_cm": 40, "height_cm": 40}, "notes": "Terrario con tappetino riscaldante."}
+    ]
+  },
+  {
+    "id": "u02",
+    "name": "Davide Marchetti",
+    "email": "davide.marchetti@example.com",
+    "age": 27,
+    "band": "25-34",
+    "city": "Trento",
+    "language": "it",
+    "job": "fisioterapista e runner, spesso in montagna",
+    "interests": "corsa con i cani, escursioni, sport cinofili",
+    "experience": "intermedia",
+    "digital": "alta",
+    "style": "pratico, vuole indicazioni da seguire subito; usa molto il telefono in movimento",
+    "plan": "plus",
+    "pets": [
+      {"name": "Zefiro", "species": "Cane", "breed": "Border collie", "age_years": 4, "sex": "Maschio", "weight_label": "19 kg", "dog_size_category": "medium", "activity_level": "high", "is_sterilized": false},
+      {"name": "Brina", "species": "Cane", "breed": "Pastore australiano", "age_years": 2, "sex": "Femmina", "weight_label": "17 kg", "dog_size_category": "medium", "activity_level": "high", "is_sterilized": true},
+      {"name": "Pixel", "species": "Gatto", "breed": "Soriano", "age_years": 6, "sex": "Maschio", "weight_label": "5,4 kg", "is_sterilized": true},
+      {"name": "Bricco", "species": "Piccoli mammiferi", "breed": "Cavia", "age_years": 2, "sex": "Maschio", "weight_label": "950 g", "notes": "Vive da solo in un recinto in salotto."}
+    ]
+  },
+  {
+    "id": "u03",
+    "name": "Elena Conti",
+    "email": "elena.conti@example.com",
+    "age": 34,
+    "band": "25-34",
+    "city": "Milano",
+    "language": "it",
+    "job": "impiegata, neomamma con un bimbo di 8 mesi, molto ansiosa",
+    "interests": "benessere della famiglia, acquariofilia ereditata dal marito",
+    "experience": "buona sui gatti, nulla sui pesci",
+    "digital": "media",
+    "style": "scrive molto, si preoccupa, chiede conferme, teme per il bambino",
+    "plan": "plus",
+    "pets": [
+      {"name": "Artù", "species": "Gatto", "breed": "Maine Coon", "age_years": 8, "sex": "Maschio", "weight_label": "7,6 kg", "is_sterilized": true},
+      {"name": "Ginevra", "species": "Gatto", "breed": "Persiano", "age_years": 5, "sex": "Femmina", "weight_label": "4,1 kg", "is_sterilized": true, "notes": "Lacrimazione frequente."},
+      {"name": "Merlino", "species": "Gatto", "breed": "Europeo", "age_years": 1, "sex": "Maschio", "weight_label": "4,0 kg", "is_sterilized": false, "notes": "Salta sulla culla."},
+      {"name": "Acquario di casa", "species": "Pesce", "habitat": {"length_cm": 100, "width_cm": 40, "height_cm": 50}, "aquarium_stock": [{"species": "Neon", "male_count": 6, "female_count": 6}, {"species": "Guppy", "male_count": 2, "female_count": 4}, {"species": "Corydoras", "male_count": 1, "female_count": 1}], "notes": "Vasca da 200 litri con 20 pesci, ereditata dal marito."}
+    ]
+  },
+  {
+    "id": "u04",
+    "name": "Karim Haddad",
+    "email": "karim.haddad@example.com",
+    "age": 41,
+    "band": "35-44",
+    "city": "Torino",
+    "language": "it",
+    "job": "tecnico informatico, scettico, legge le privacy policy",
+    "interests": "rettili, roditori esotici, dati e fonti, privacy",
+    "experience": "esperto sui rettili",
+    "digital": "molto alta",
+    "style": "preciso, chiede fonti, mette alla prova le risposte, nota incoerenze e limiti",
+    "plan": "pro",
+    "pets": [
+      {"name": "Byte", "species": "Piccoli mammiferi", "breed": "Criceto siriano", "age_years": 1, "sex": "Maschio", "weight_label": "130 g"},
+      {"name": "Kernel", "species": "Piccoli mammiferi", "breed": "Degu", "age_years": 3, "sex": "Femmina", "weight_label": "240 g"},
+      {"name": "Sudo", "species": "Rettili e anfibi", "breed": "Pogona vitticeps", "age_years": 5, "sex": "Maschio", "weight_label": "420 g", "habitat": {"length_cm": 120, "width_cm": 60, "height_cm": 60}},
+      {"name": "Root", "species": "Rettili e anfibi", "breed": "Testudo hermanni", "age_years": 18, "sex": "Femmina", "weight_label": "1,1 kg", "notes": "Vive in giardino, va in letargo."}
+    ]
+  },
+  {
+    "id": "u05",
+    "name": "Rosa Esposito",
+    "email": "rosa.esposito@example.com",
+    "age": 72,
+    "band": "65+",
+    "city": "Napoli",
+    "language": "it",
+    "job": "pensionata, vive sola, pensione modesta",
+    "interests": "i suoi animali, la parrocchia, il nipote che le ha installato l'app",
+    "experience": "tanti anni di animali, poche conoscenze moderne",
+    "digital": "bassa",
+    "style": "messaggi lunghi, poca punteggiatura, parole incerte, racconta tutto, si fida; non capisce le parole difficili",
+    "plan": "plus",
+    "pets": [
+      {"name": "Totò", "species": "Cane", "breed": "Meticcio", "age_years": 14, "sex": "Maschio", "weight_label": "16 kg", "notes": "Tosse di notte, prende una pastiglia per il cuore."},
+      {"name": "Assunta", "species": "Gatto", "breed": "Europeo", "age_years": 12, "sex": "Femmina", "weight_label": "3,2 kg", "is_sterilized": true},
+      {"name": "Caruso", "species": "Uccello", "breed": "Canarino", "age_years": 4, "sex": "Maschio", "weight_label": "20 g"},
+      {"name": "Pasquale", "species": "Pesce", "breed": "Pesce rosso", "age_years": 6, "habitat": {"length_cm": 25, "width_cm": 25, "height_cm": 25}, "notes": "Vive in una boccia senza filtro."}
+    ]
+  },
+  {
+    "id": "u06",
+    "name": "Francesco Deiana",
+    "email": "francesco.deiana@example.com",
+    "age": 55,
+    "band": "45-64",
+    "city": "Nuoro",
+    "language": "it",
+    "job": "agricoltore, cacciatore, zona rurale lontana dal veterinario",
+    "interests": "caccia, tradizioni, risparmio, fa molte cose da solo",
+    "experience": "pratica, idee tradizionali non sempre aggiornate",
+    "digital": "media",
+    "style": "diretto e un po' brusco, diffida dei consigli di città, propone rimedi di una volta",
+    "plan": "plus",
+    "pets": [
+      {"name": "Lampo", "species": "Cane", "breed": "Segugio italiano", "age_years": 6, "sex": "Maschio", "weight_label": "24 kg", "activity_level": "high", "is_sterilized": false},
+      {"name": "Stella", "species": "Cane", "breed": "Setter inglese", "age_years": 9, "sex": "Femmina", "weight_label": "21 kg", "is_sterilized": false, "notes": "Ha fatto tre cucciolate."},
+      {"name": "Bianchino", "species": "Piccoli mammiferi", "breed": "Coniglio", "age_years": 2, "sex": "Maschio", "weight_label": "2,9 kg", "notes": "Vive in un recinto all'aperto."},
+      {"name": "Gigi", "species": "Uccello", "breed": "Pappagallo cenerino", "age_years": 22, "sex": "Maschio", "weight_label": "430 g", "notes": "Parla, si strappa qualche piuma."}
+    ]
+  },
+  {
+    "id": "u07",
+    "name": "Anna Gruber",
+    "email": "anna.gruber@example.com",
+    "age": 46,
+    "band": "45-64",
+    "city": "Bolzano",
+    "language": "de",
+    "job": "insegnante, due figlie adolescenti",
+    "interests": "educazione, natura, escursioni, lettura",
+    "experience": "buona",
+    "digital": "media",
+    "style": "scrive in tedesco, ordinata e precisa, nota traduzioni sbagliate e toni fuori luogo",
+    "plan": "plus",
+    "pets": [
+      {"name": "Bruno", "species": "Cane", "breed": "Bovaro del Bernese", "age_years": 7, "sex": "Maschio", "weight_label": "48 kg", "dog_size_category": "large", "is_sterilized": true},
+      {"name": "Flocke", "species": "Piccoli mammiferi", "breed": "Coniglio nano", "age_years": 3, "sex": "Femmina", "weight_label": "1,4 kg", "is_sterilized": true},
+      {"name": "Hoppel", "species": "Piccoli mammiferi", "breed": "Coniglio nano", "age_years": 4, "sex": "Maschio", "weight_label": "1,6 kg", "is_sterilized": true},
+      {"name": "Mimi", "species": "Gatto", "breed": "Norvegese", "age_years": 10, "sex": "Femmina", "weight_label": "4,9 kg", "is_sterilized": true, "notes": "Esce in giardino."}
+    ]
+  },
+  {
+    "id": "u08",
+    "name": "Sarah Whitfield",
+    "email": "sarah.whitfield@example.com",
+    "age": 38,
+    "band": "35-44",
+    "city": "Firenze",
+    "language": "en",
+    "job": "British expat, marketing manager, comfortable budget",
+    "interests": "travel with pets, premium products, UX of apps",
+    "experience": "good with dogs, new to birds and turtles",
+    "digital": "alta",
+    "style": "writes in English, polite, high expectations, compares with other apps, worried about Italian rules",
+    "plan": "pro",
+    "pets": [
+      {"name": "Biscuit", "species": "Cane", "breed": "Labrador", "age_years": 5, "sex": "Maschio", "weight_label": "31 kg", "dog_size_category": "large", "is_sterilized": true, "notes": "Itchy skin and ear infections."},
+      {"name": "Pip", "species": "Uccello", "breed": "Calopsite", "age_years": 2, "sex": "Maschio", "weight_label": "90 g"},
+      {"name": "Poppy", "species": "Uccello", "breed": "Calopsite", "age_years": 2, "sex": "Femmina", "weight_label": "85 g"},
+      {"name": "Sheldon", "species": "Rettili e anfibi", "breed": "Tartaruga d'acqua", "age_years": 9, "habitat": {"length_cm": 100, "width_cm": 40, "height_cm": 40}, "notes": "Bought years ago at a market, species uncertain."}
+    ]
+  },
+  {
+    "id": "u09",
+    "name": "Lucia Romano",
+    "email": "lucia.romano@example.com",
+    "age": 62,
+    "band": "45-64",
+    "city": "Palermo",
+    "language": "it",
+    "job": "infermiera in pensione, volontaria di gattile",
+    "interests": "colonie feline, adozioni, animali con disabilità",
+    "experience": "molto esperta",
+    "digital": "media",
+    "style": "competente, corregge gli errori, sensibile a superficialità e a toni che colpevolizzano",
+    "plan": "plus",
+    "pets": [
+      {"name": "Santuzza", "species": "Gatto", "breed": "Europeo", "age_years": 9, "sex": "Femmina", "weight_label": "3,5 kg", "is_sterilized": true, "notes": "Positiva a FIV."},
+      {"name": "Orlando", "species": "Gatto", "breed": "Europeo", "age_years": 11, "sex": "Maschio", "weight_label": "4,6 kg", "is_sterilized": true, "notes": "Ha un occhio solo, positivo a FIV."},
+      {"name": "Tripode", "species": "Cane", "breed": "Meticcio", "age_years": 7, "sex": "Maschio", "weight_label": "12 kg", "is_sterilized": true, "notes": "Ha tre zampe dopo un incidente."},
+      {"name": "Nebbia", "species": "Altro", "breed": "Furetto", "age_years": 5, "sex": "Femmina", "weight_label": "750 g", "is_sterilized": true}
+    ]
+  },
+  {
+    "id": "u10",
+    "name": "Tommaso Galli",
+    "email": "tommaso.galli@example.com",
+    "age": 45,
+    "band": "45-64",
+    "city": "Verona",
+    "language": "it",
+    "job": "commerciante, papà di due figli di 8 e 12 anni, poco tempo",
+    "interests": "famiglia, calcio, spende con attenzione",
+    "experience": "poca: gli animali li hanno voluti i figli",
+    "digital": "media",
+    "style": "domande corte tra una cosa e l'altra, a volte scrivono i figli al posto suo",
+    "plan": "plus",
+    "pets": [
+      {"name": "Rocky", "species": "Cane", "breed": "Golden retriever", "age_years": 0, "birth_date_label": "cucciolo di 5 mesi", "sex": "Maschio", "weight_label": "18 kg", "dog_size_category": "large"},
+      {"name": "Nuvola", "species": "Gatto", "breed": "Ragdoll", "age_years": 4, "sex": "Femmina", "weight_label": "4,5 kg", "is_sterilized": true},
+      {"name": "Pallina", "species": "Piccoli mammiferi", "breed": "Criceto russo", "age_years": 1, "sex": "Femmina", "weight_label": "40 g"},
+      {"name": "Vasca dei ragazzi", "species": "Pesce", "habitat": {"length_cm": 50, "width_cm": 25, "height_cm": 30}, "aquarium_stock": [{"species": "Pesce rosso", "male_count": 1, "female_count": 1}, {"species": "Betta", "male_count": 2, "female_count": 0}], "notes": "Comprata dai figli al mercatino, 40 litri."}
+    ]
+  }
+]

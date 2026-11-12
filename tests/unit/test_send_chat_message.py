@@ -130,7 +130,9 @@ def test_send_chat_message_forwards_breed_and_age_to_the_orchestrator() -> None:
     service = SendChatMessageService(InMemoryConversationRepository(), orchestrator, pet_repository)
 
     result = service.execute(
-        SendChatMessageInput(owner_id="user-1", pet_id="pet-1", user_message="ciao")
+        SendChatMessageInput(
+            owner_id="user-1", pet_id="pet-1", user_message="quante volte al giorno deve mangiare?"
+        )
     )
 
     assert "Breed: Labrador" in result.reply.content
@@ -155,7 +157,9 @@ def test_send_chat_message_forwards_habitat_and_aquarium_stock_to_the_orchestrat
     service = SendChatMessageService(InMemoryConversationRepository(), orchestrator, pet_repository)
 
     result = service.execute(
-        SendChatMessageInput(owner_id="user-1", pet_id="pet-1", user_message="ciao")
+        SendChatMessageInput(
+            owner_id="user-1", pet_id="pet-1", user_message="quante volte al giorno deve mangiare?"
+        )
     )
 
     assert "54 liters" in result.reply.content

@@ -1,18 +1,31 @@
 import '../../location/domain/coordinates.dart';
 
+/// Owner-facing list agreed 2026-10-07 (session "Mercatino"). The wire
+/// values of the categories this replaced (food, accessories,
+/// health_wellness, transport_carriers, grooming) are still read - see
+/// MarketplaceRepository's legacy mapping - so rows written before the
+/// change keep showing up.
 enum ListingCategory {
-  food,
-  accessories,
-  healthWellness,
-  transportCarriers,
+  kennelsCarriers,
+  leashesCollars,
   toys,
-  grooming,
+  clothing,
+  feeding,
+  hygieneGrooming,
+  aquariumsTerrariums,
+  cagesAviaries,
   other,
 }
 
 enum ListingCondition { newItem, likeNew, good, worn }
 
 enum ListingStatus { active, reserved, sold, removed }
+
+/// Same groups as the pet species picker (pets/data/pet_demo_store.dart),
+/// plus [allSpecies] for generic items (a bowl, a carrier for "any" pet).
+/// Every listing has at least one; [allSpecies] is never combined with the
+/// others (create_listing_page.dart enforces both).
+enum ListingSpecies { allSpecies, dog, cat, smallMammal, bird, reptileAmphibian, fish, other }
 
 class MarketplaceListing {
   const MarketplaceListing({
@@ -24,16 +37,20 @@ class MarketplaceListing {
     required this.condition,
     this.priceCents,
     this.photoUrls = const [],
-    // Must already be fuzzed by the caller before construction - see
-    // location/domain/geo_math.dart:fuzzCoordinates. The app writes
-    // straight to Supabase (no backend API in between), so this is a
-    // caller contract, not something this class enforces itself.
+    this.species = const [],
+    // Must already be approximated by the caller before construction - see
+    // marketplace/domain/listing_location.dart:approximateListingLocation.
+    // The app writes straight to Supabase (no backend API in between), so
+    // this is a caller contract, not something this class enforces itself.
     required this.location,
     this.cityLabel,
+    this.country = 'IT',
     this.status = ListingStatus.active,
     this.reportCount = 0,
     required this.createdAt,
     required this.updatedAt,
+    this.isLimited = false,
+    this.serverDistanceMeters,
   });
 
   final String id;
@@ -42,16 +59,54 @@ class MarketplaceListing {
   final String? description;
   final ListingCategory category;
   final ListingCondition condition;
+
+  /// Null means "in regalo".
   final int? priceCents;
   final List<String> photoUrls;
+  final List<ListingSpecies> species;
   final Coordinates location;
+
+  /// Neighbourhood/town only ("Navigli, Milano"), never a street address.
   final String? cityLabel;
+
+  /// ISO 3166-1 alpha-2 of the seller's country (from the app's language
+  /// variant when the ad was published). Prices are in that country's
+  /// currency and only owners of the same country see the ad. Rows written
+  /// before the column existed are Italian.
+  final String country;
   final ListingStatus status;
   final int reportCount;
   final DateTime createdAt;
   final DateTime updatedAt;
 
+  /// True for an ad read by an owner without a plan: the backend sends only
+  /// the first look (title, price, photos, town, distance), so every other
+  /// field here is a placeholder and must not be shown or relied on.
+  final bool isLimited;
+
+  /// The distance the backend computed, only for a limited ad (its position
+  /// is withheld, so the app cannot measure it).
+  final double? serverDistanceMeters;
+
+  bool get isGift => priceCents == null;
+
+  /// True when the item suits [species]. Listings for all species, and rows
+  /// saved before species existed (empty list), suit everyone.
+  bool isFor(ListingSpecies species) =>
+      this.species.isEmpty ||
+      this.species.contains(ListingSpecies.allSpecies) ||
+      this.species.contains(species);
+
   MarketplaceListing copyWith({
+    String? title,
+    String? Function()? description,
+    ListingCategory? category,
+    ListingCondition? condition,
+    int? Function()? priceCents,
+    List<String>? photoUrls,
+    List<ListingSpecies>? species,
+    Coordinates? location,
+    String? Function()? cityLabel,
     ListingStatus? status,
     int? reportCount,
     DateTime? updatedAt,
@@ -59,18 +114,22 @@ class MarketplaceListing {
     return MarketplaceListing(
       id: id,
       ownerId: ownerId,
-      title: title,
-      description: description,
-      category: category,
-      condition: condition,
-      priceCents: priceCents,
-      photoUrls: photoUrls,
-      location: location,
-      cityLabel: cityLabel,
+      title: title ?? this.title,
+      description: description != null ? description() : this.description,
+      category: category ?? this.category,
+      condition: condition ?? this.condition,
+      priceCents: priceCents != null ? priceCents() : this.priceCents,
+      photoUrls: photoUrls ?? this.photoUrls,
+      species: species ?? this.species,
+      location: location ?? this.location,
+      cityLabel: cityLabel != null ? cityLabel() : this.cityLabel,
+      country: country,
       status: status ?? this.status,
       reportCount: reportCount ?? this.reportCount,
       createdAt: createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
+      isLimited: isLimited,
+      serverDistanceMeters: serverDistanceMeters,
     );
   }
 }

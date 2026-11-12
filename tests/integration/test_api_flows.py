@@ -1,3 +1,4 @@
+import pytest
 from fastapi.testclient import TestClient
 
 from apps.api.main import app
@@ -116,3 +117,633 @@ def test_account_consents_flow() -> None:
         "/account/consents", json={"consent_key": "terms_of_service", "granted": False}
     )
     assert revoke_terms.status_code == 400
+
+
+def test_local_services_places_flow() -> None:
+    from apps.api.dependencies.container import get_container
+    from packages.core.application.services.request_radar_places_ingestion import (
+        RequestRadarPlacesIngestionInput,
+    )
+    from packages.core.domain.radar_places.models import RadarPlace
+
+    class _FakeSource:
+        name = "fake_source"
+
+        def fetch_places(self, request_data: RequestRadarPlacesIngestionInput) -> list[RadarPlace]:
+            return [
+                RadarPlace(
+                    coverage_key=request_data.coverage_window().coverage_key,
+                    place_type="veterinary",
+                    name="Veterinario Milano",
+                    latitude=45.4650,
+                    longitude=9.1910,
+                    source_name=self.name,
+                    source_external_id="node/1",
+                    source_payload={"raw": True},
+                )
+            ]
+
+    get_container().radar_places_source = _FakeSource()
+    client = TestClient(app)
+
+    response = client.get("/local-services/places", params={"latitude": 45.4642, "longitude": 9.19})
+
+    assert response.status_code == 200
+    body = response.json()
+    assert body["coverage"]["status"] == "refreshed"
+    assert body["context"]["search_radius_km"] == 10
+    # Milan is in a supported country that is not imported in this test.
+    assert body["context"]["country"] == "IT"
+    assert body["context"]["coverage_level"] == "live"
+    place = body["places"][0]
+    assert place["name"] == "Veterinario Milano"
+    assert place["distance_km"] < 1
+    assert "source_payload" not in place
+    assert "owner_id" not in place
+
+    assert client.get("/local-services/places").status_code == 422
+
+
+def test_local_services_sources_lists_imported_datasets() -> None:
+    from datetime import UTC, datetime
+
+    from apps.api.dependencies.container import get_container
+    from packages.core.domain.radar_places.models import RadarDataSource
+
+    catalog = get_container().radar_catalog_repository
+    catalog.sources = [  # type: ignore[attr-defined]
+        RadarDataSource(
+            source="overture",
+            release="2026-09-23.1",
+            license="CDLA-Permissive-2.0",
+            attribution="© Overture Maps Foundation — Places",
+            imported_at=datetime(2026, 10, 4, tzinfo=UTC),
+            place_count=15831,
+        )
+    ]
+    client = TestClient(app)
+
+    body = client.get("/local-services/sources").json()
+
+    assert body["sources"] == [
+        {
+            "source": "overture",
+            "release": "2026-09-23.1",
+            "license": "CDLA-Permissive-2.0",
+            "attribution": "© Overture Maps Foundation — Places",
+            "url": None,
+            "imported_at": "2026-10-04T00:00:00Z",
+        }
+    ]
+
+
+def test_local_services_countries_lists_every_country_with_its_coverage() -> None:
+    from datetime import UTC, datetime
+
+    from apps.api.dependencies.container import get_container
+    from packages.core.domain.radar_places.models import RadarCountryCoverage
+
+    catalog = get_container().radar_catalog_repository
+    catalog.sources = []  # type: ignore[attr-defined]
+    catalog.country_coverage = [  # type: ignore[attr-defined]
+        RadarCountryCoverage(country="DE", osm_complete_at=datetime(2026, 10, 20, tzinfo=UTC)),
+        RadarCountryCoverage(country="FR", overture_imported_at=datetime(2026, 10, 21, tzinfo=UTC)),
+    ]
+    client = TestClient(app)
+
+    countries = {
+        item["code"]: item for item in client.get("/local-services/countries").json()["countries"]
+    }
+
+    assert list(countries) == ["IT", "GB", "US", "AU", "DE", "FR", "ES"]
+    assert countries["DE"]["coverage_level"] == "complete"
+    assert countries["DE"]["osm_complete_at"] == "2026-10-20T00:00:00+00:00"
+    assert countries["FR"]["coverage_level"] == "partial"
+    assert countries["GB"]["coverage_level"] == "live"
+    assert countries["DE"]["flag"] == "🇩🇪" and countries["DE"]["osm_regions_total"] == 16
+
+
+def test_segnala_flow_needs_the_rules_then_shows_the_pending_place() -> None:
+    from apps.api.dependencies.container import get_container
+    from packages.core.application.services.request_radar_places_ingestion import (
+        RequestRadarPlacesIngestionInput,
+    )
+    from packages.core.domain.radar_places.models import RadarPlace
+
+    class _EmptySource:
+        name = "fake_source"
+
+        def fetch_places(self, request_data: RequestRadarPlacesIngestionInput) -> list[RadarPlace]:
+            return []
+
+    get_container().radar_places_source = _EmptySource()
+    client = TestClient(app)
+    report = {
+        "kind": "missing",
+        "place_type": "grooming",
+        "name": "Toelettatura Bau",
+        "latitude": 45.4650,
+        "longitude": 9.1910,
+    }
+
+    options = client.get("/local-services/reports/options").json()
+    assert options["enabled"] is True
+    assert "grooming" in options["missing_place_types"]
+
+    refused = client.post("/local-services/reports", json=report)
+    assert refused.status_code == 403
+    assert refused.json()["code"] == "contribution_rules_required"
+
+    accepted = client.post(
+        "/account/consents", json={"consent_key": "contribution_rules", "granted": True}
+    )
+    assert accepted.status_code == 200
+
+    created = client.post("/local-services/reports", json=report)
+    assert created.status_code == 200
+    body = created.json()
+    assert (body["status"], body["confirmations"], body["required"]) == ("pending", 0, 5)
+    assert "reporter_pseudonym" not in body
+
+    own_vote = client.post(
+        f"/local-services/reports/{body['report_id']}/vote", json={"vote": "confirm"}
+    )
+    assert own_vote.status_code == 400
+
+    places = client.get(
+        "/local-services/places", params={"latitude": 45.4642, "longitude": 9.19}
+    ).json()["places"]
+    assert len(places) == 1
+    place = places[0]
+    assert place["name"] == "Toelettatura Bau"
+    assert place["source_name"] == "vetapp_users"
+    assert place["community"]["status"] == "pending"
+    assert place["community"]["viewer_is_reporter"] is True
+    assert "reporter_pseudonym" not in str(places)
+
+    with_contact = client.post(
+        "/local-services/reports", json={**report, "name": "Bau 02 0000 0001", "latitude": 45.5}
+    )
+    assert with_contact.status_code == 400
+
+
+def _client_with_env(monkeypatch: pytest.MonkeyPatch, **env: str) -> TestClient:
+    from apps.api.dependencies.container import reset_container
+    from packages.shared.config.settings import reset_settings
+
+    for name, value in env.items():
+        monkeypatch.setenv(name, value)
+    reset_settings()
+    reset_container()
+    return TestClient(app)
+
+
+_REPORT = {
+    "kind": "missing",
+    "place_type": "grooming",
+    "name": "Toelettatura Bau",
+    "latitude": 45.4650,
+    "longitude": 9.1910,
+}
+_RATING = {
+    "source": "openstreetmap_overpass",
+    "source_id": "way/1",
+    "latitude": 45.4650,
+    "longitude": 9.1910,
+    "stars": 4,
+}
+
+
+def test_radar_switches_default_to_everything_on(monkeypatch: pytest.MonkeyPatch) -> None:
+    options = _client_with_env(monkeypatch).get("/local-services/reports/options").json()
+
+    assert options["enabled"] is True
+    assert options["report_kinds"] == ["missing", "closed", "duplicate", "wrong_position"]
+    assert options["ratings_enabled"] is True
+
+
+def test_reports_switch_off_is_told_to_the_app_and_enforced(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    client = _client_with_env(monkeypatch, RADAR_REPORTS_ENABLED="false")
+
+    options = client.get("/local-services/reports/options").json()
+    assert (options["enabled"], options["report_kinds"]) == (False, [])
+    assert options["missing_place_types"] == []
+    assert options["ratings_enabled"] is True
+    refused = client.post("/local-services/reports", json=_REPORT)
+    assert (refused.status_code, refused.json()["code"]) == (503, "contributions_disabled")
+    vote = client.post("/local-services/reports/any/vote", json={"vote": "confirm"})
+    assert vote.status_code == 503
+
+
+def test_closed_switch_off_refuses_only_that_kind(monkeypatch: pytest.MonkeyPatch) -> None:
+    client = _client_with_env(monkeypatch, RADAR_REPORT_CLOSED_ENABLED="false")
+
+    options = client.get("/local-services/reports/options").json()
+    assert options["enabled"] is True
+    assert options["report_kinds"] == ["missing", "duplicate", "wrong_position"]
+    closed = client.post(
+        "/local-services/reports",
+        json={**_REPORT, "kind": "closed", "target_source": "overture", "target_source_id": "abc"},
+    )
+    assert closed.status_code == 400
+    # A missing place gets as far as the rules, as usual.
+    assert client.post("/local-services/reports", json=_REPORT).status_code == 403
+
+
+def test_ratings_switch_off_is_told_to_the_app_and_enforced(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    client = _client_with_env(monkeypatch, RADAR_RATINGS_ENABLED="false")
+
+    options = client.get("/local-services/reports/options").json()
+    assert (options["enabled"], options["ratings_enabled"]) == (True, False)
+    refused = client.put("/local-services/ratings", json=_RATING)
+    assert (refused.status_code, refused.json()["code"]) == (503, "contributions_disabled")
+
+
+class _NoPlacesSource:
+    name = "fake_source"
+
+    def fetch_places(self, request_data: object) -> list[object]:
+        return []
+
+
+def test_open_sources_switch_limits_places_and_the_sources_page(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    from datetime import UTC, datetime
+
+    from apps.api.dependencies.container import get_container
+    from packages.core.domain.radar_places.models import RadarDataSource, RadarPlace
+
+    def names(env: dict[str, str]) -> tuple[list[str], list[str]]:
+        client = _client_with_env(monkeypatch, **env)
+        # No live provider in a test: OpenStreetMap answers with nothing.
+        get_container().radar_places_source = _NoPlacesSource()  # type: ignore[assignment]
+        catalog = get_container().radar_catalog_repository
+        catalog.sources = [  # type: ignore[attr-defined]
+            RadarDataSource(
+                source=name,
+                release="test",
+                license="test",
+                attribution="test",
+                imported_at=datetime(2026, 10, 4, tzinfo=UTC),
+            )
+            for name in ("overture", "comune_milano")
+        ]
+        catalog.open_places = [  # type: ignore[attr-defined]
+            RadarPlace(
+                coverage_key="catalog",
+                place_type=place_type,
+                name=name,
+                latitude=latitude,
+                longitude=9.19,
+                source_name=source,
+                source_external_id=name,
+            )
+            for name, place_type, latitude, source in (
+                ("Clinica Esempio", "veterinary", 45.4700, "overture"),
+                ("Area cani Esempio", "dog_park", 45.4660, "comune_milano"),
+            )
+        ]
+        places = client.get(
+            "/local-services/places", params={"latitude": 45.4642, "longitude": 9.19}
+        ).json()["places"]
+        sources = client.get("/local-services/sources").json()["sources"]
+        return (
+            sorted(place["source_name"] for place in places),
+            sorted(source["source"] for source in sources),
+        )
+
+    both = ["comune_milano", "overture"]
+    assert names({}) == (both, both)
+    assert names({"RADAR_OPEN_SOURCES": '["comune_milano"]'}) == (
+        ["comune_milano"],
+        ["comune_milano"],
+    )
+
+
+def test_a_report_can_be_withdrawn_by_who_made_it_and_ratings_are_read_back(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    from apps.api.dependencies.container import get_container
+    from packages.core.domain.radar_places.models import RadarPlace
+
+    client = _client_with_env(monkeypatch)
+    get_container().radar_places_source = _NoPlacesSource()  # type: ignore[assignment]
+    client.post("/account/consents", json={"consent_key": "contribution_rules", "granted": True})
+    here = {"latitude": 45.4642, "longitude": 9.19}
+
+    options = client.get("/local-services/reports/options").json()
+    assert options["expiry_days"] == 7
+
+    created = client.post("/local-services/reports", json=_REPORT).json()
+    assert created["expires_in_days"] == 7
+    listed = client.get("/local-services/places", params=here).json()["places"]
+    assert listed[0]["community"]["expires_in_days"] == 7
+
+    withdrawn = client.delete(f"/local-services/reports/{created['report_id']}")
+    assert withdrawn.json() == {"withdrawn": True}
+    assert client.get("/local-services/places", params=here).json()["places"] == []
+    assert client.delete(f"/local-services/reports/{created['report_id']}").status_code == 400
+
+    # A star vote is stored and comes back as the viewer's own on the next read.
+    get_container().radar_catalog_repository.open_places = [  # type: ignore[attr-defined]
+        RadarPlace(
+            coverage_key="catalog",
+            place_type="dog_park",
+            name="Area cani Esempio",
+            latitude=45.4660,
+            longitude=9.19,
+            source_name="comune_milano",
+            source_external_id="park-1",
+        )
+    ]
+    get_container().radar_catalog_repository.sources = [  # type: ignore[attr-defined]
+        _data_source("comune_milano")
+    ]
+    rating = {
+        "source": "comune_milano",
+        "source_id": "park-1",
+        "latitude": 45.4660,
+        "longitude": 9.19,
+        "stars": 4,
+    }
+    assert client.put("/local-services/ratings", json=rating).json() == {"stars": 4}
+    park = client.get("/local-services/places", params=here).json()["places"][0]
+    assert park["rating"] == {"can_rate": True, "count": 1, "average": None, "viewer_stars": 4}
+    assert client.put("/local-services/ratings", json={**rating, "stars": 2}).status_code == 200
+    park = client.get("/local-services/places", params=here).json()["places"][0]
+    assert (park["rating"]["count"], park["rating"]["viewer_stars"]) == (1, 2)
+
+
+def _data_source(name: str) -> object:
+    from datetime import UTC, datetime
+
+    from packages.core.domain.radar_places.models import RadarDataSource
+
+    return RadarDataSource(
+        source=name,
+        release="test",
+        license="test",
+        attribution="test",
+        imported_at=datetime(2026, 10, 4, tzinfo=UTC),
+    )
+
+
+def test_a_confirmed_user_reported_dog_park_is_rated_without_searching_the_area(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    from apps.api.dependencies.container import get_container
+    from packages.core.domain.radar_reports.models import RadarUserReport
+
+    client = _client_with_env(monkeypatch)
+    container = get_container()
+    container.radar_places_source = _NoPlacesSource()  # type: ignore[assignment]
+    client.post("/account/consents", json={"consent_key": "contribution_rules", "granted": True})
+    report = container.radar_reports_repository.save_report(
+        RadarUserReport(
+            kind="missing",
+            status="confirmed",
+            place_type="dog_park",
+            name="Area cani",
+            latitude=45.4660,
+            longitude=9.19,
+            reporter_pseudonym="someone-else",
+            confirmations=5,
+        )
+    )
+    rating = {
+        "source": "vetapp_users",
+        "source_id": report.id,
+        "latitude": 45.4660,
+        "longitude": 9.19,
+        "stars": 5,
+    }
+
+    assert client.put("/local-services/ratings", json=rating).json() == {"stars": 5}
+    unknown = client.put("/local-services/ratings", json={**rating, "source_id": "nope"})
+    assert unknown.status_code == 400
+
+
+class _RecordingGeocoder:
+    def __init__(self) -> None:
+        self.asked: list[tuple[str, object]] = []
+
+    def search(self, query: str, *, country_code: str | None, language: str | None) -> list:  # type: ignore[type-arg]
+        from packages.core.application.ports.geocoder import GeocodedPlace
+
+        self.asked.append(("search", (query, country_code, language)))
+        return [
+            GeocodedPlace(
+                latitude=45.4642,
+                longitude=9.19,
+                display_name="Via Esempio 1, Milano",
+                address={"road": "Via Esempio", "city": "Milano"},
+            )
+        ]
+
+    def reverse(
+        self, latitude: float, longitude: float, *, zoom: int, language: str | None
+    ) -> None:
+        self.asked.append(("reverse", (latitude, longitude, zoom, language)))
+        return None
+
+
+def test_geocoding_runs_on_the_backend_with_the_address_in_the_body(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    from apps.api.dependencies.container import get_container
+    from packages.core.application.services.geocoding import GeocodingService
+
+    client = _client_with_env(monkeypatch)
+    fake = _RecordingGeocoder()
+    get_container().geocoding_service = GeocodingService(fake)
+
+    found = client.post(
+        "/geocoding/search",
+        json={"query": "Via Esempio 1, Milano", "country_code": "IT", "language": "it"},
+    )
+    assert found.status_code == 200
+    assert found.json()["results"][0]["address"] == {"road": "Via Esempio", "city": "Milano"}
+    assert fake.asked[0] == ("search", ("Via Esempio 1, Milano", "it", "it"))
+
+    missed = client.post("/geocoding/reverse", json={"latitude": 45.46, "longitude": 9.19})
+    assert missed.json() == {"result": None}
+    assert fake.asked[1] == ("reverse", (45.46, 9.19, 18, None))
+
+    # The address is never a query parameter.
+    assert client.get("/geocoding/search", params={"query": "Via Esempio"}).status_code == 405
+    assert (
+        client.post(
+            "/geocoding/reverse", json={"latitude": 45, "longitude": 9, "zoom": 5}
+        ).status_code
+        == 422
+    )
+
+
+def test_geocoding_limits_and_provider_failures_have_their_own_codes(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    from apps.api.dependencies.container import get_container
+    from packages.core.application.services.geocoding import GeocodingService
+    from packages.shared.errors.base import ProviderError
+
+    client = _client_with_env(monkeypatch)
+    fake = _RecordingGeocoder()
+    get_container().geocoding_service = GeocodingService(fake, requests_per_minute=1)
+    body = {"query": "Via Esempio 1"}
+
+    assert client.post("/geocoding/search", json=body).status_code == 200
+    limited = client.post("/geocoding/search", json=body)
+    assert (limited.status_code, limited.json()["code"]) == (429, "geocoding_rate_limited")
+
+    def failing(*_: object, **__: object) -> None:
+        raise ProviderError("down")
+
+    fake.search = failing  # type: ignore[method-assign,assignment]
+    get_container().geocoding_service = GeocodingService(fake)
+    down = client.post("/geocoding/search", json=body)
+    assert (down.status_code, down.json()["code"]) == (503, "geocoding_unavailable")
+
+
+class _SwitchableUser:
+    """Auth provider for "user A / user B" checks on one in-memory backend."""
+
+    def __init__(self, user_id: str) -> None:
+        self.user_id = user_id
+
+    def get_current_user(self) -> object:
+        from packages.core.application.ports.auth_provider import AuthenticatedUser
+
+        return AuthenticatedUser(id=self.user_id, email=f"{self.user_id}@example.com")
+
+
+def test_exotic_competences_are_served_and_claims_stay_private_until_confirmed(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    from datetime import UTC, datetime
+
+    from apps.api.dependencies.container import get_container
+    from packages.core.domain.radar_places.models import RadarDataSource, RadarPlace
+
+    client = _client_with_env(monkeypatch)
+    container = get_container()
+    container.radar_places_source = _NoPlacesSource()  # type: ignore[assignment]
+    user = _SwitchableUser(container.auth_provider.get_current_user().id)
+    container.auth_provider = user  # type: ignore[assignment]
+    catalog = container.radar_catalog_repository
+    catalog.sources = [  # type: ignore[attr-defined]
+        RadarDataSource(
+            source="openstreetmap_overpass",
+            release="test",
+            license="ODbL",
+            attribution="test",
+            imported_at=datetime(2026, 11, 1, tzinfo=UTC),
+            min_latitude=35.0,
+            max_latitude=47.5,
+            min_longitude=6.0,
+            max_longitude=19.0,
+        )
+    ]
+    catalog.osm_places = [  # type: ignore[attr-defined]
+        RadarPlace(
+            coverage_key="catalog",
+            place_type=place_type,
+            name=name,
+            latitude=45.4650,
+            longitude=9.19,
+            source_name="openstreetmap_overpass",
+            source_external_id=source_id,
+            details=details,
+            source_fetched_at=datetime(2026, 11, 1, tzinfo=UTC),
+        )
+        for name, place_type, source_id, details in (
+            ("Clinica Esempio", "veterinary", "node/1", {"veterinary:treats:rabbit": "yes"}),
+            ("Area cani Esempio", "dog_park", "way/2", {}),
+        )
+    ]
+    here = {"latitude": 45.4642, "longitude": 9.19}
+
+    def vet() -> dict:  # type: ignore[type-arg]
+        places = client.get("/local-services/places", params=here).json()["places"]
+        return next(place for place in places if place["place_type"] == "veterinary")
+
+    served = vet()["competences"]
+    assert served == [
+        {
+            "group": "small_mammal",
+            "source": "openstreetmap_overpass",
+            "basis": "osm_tag",
+            "read_at": "2026-11-01T00:00:00Z",
+            "evidence_url": None,
+        }
+    ]
+
+    claim = {
+        "source": "openstreetmap_overpass",
+        "source_id": "node/1",
+        "latitude": 45.4650,
+        "longitude": 9.19,
+        "groups": ["bird"],
+        "evidence_kind": "website",
+    }
+    # User A: rules first, then the claim is accepted and stays pending.
+    assert client.post("/local-services/competence-claims", json=claim).status_code == 403
+    client.post("/account/consents", json={"consent_key": "contribution_rules", "granted": True})
+    created = client.post("/local-services/competence-claims", json=claim)
+    assert created.status_code == 200
+    assert created.json()["status"] == "pending"
+    assert "reporter" not in str(created.json())
+    assert vet()["competences"] == served
+
+    # User B: does not see A's pending claim anywhere, and makes their own.
+    user.user_id = "11111111-1111-4111-8111-1111111111bb"
+    page = client.get("/local-services/places", params=here).json()
+    assert vet()["competences"] == served
+    assert created.json()["claim_id"] not in str(page)
+    client.post("/account/consents", json={"consent_key": "contribution_rules", "granted": True})
+    own = client.post("/local-services/competence-claims", json=claim)
+    assert own.status_code == 200
+    assert own.json()["claim_id"] != created.json()["claim_id"]
+
+    # Only veterinary practices, only known groups.
+    on_park = {**claim, "source": "openstreetmap_overpass", "source_id": "way/2"}
+    assert client.post("/local-services/competence-claims", json=on_park).status_code == 400
+    bad_group = {**claim, "groups": ["dog"]}
+    assert client.post("/local-services/competence-claims", json=bad_group).status_code == 422
+
+
+def test_geocoding_limits_are_per_account_and_need_a_session(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    from apps.api.dependencies.container import get_container
+    from packages.core.application.services.geocoding import GeocodingService
+    from packages.shared.errors.base import AuthenticationError
+
+    client = _client_with_env(monkeypatch)
+    container = get_container()
+    fake = _RecordingGeocoder()
+    container.geocoding_service = GeocodingService(fake, requests_per_minute=1)
+    user = _SwitchableUser("11111111-1111-4111-8111-1111111111aa")
+    container.auth_provider = user  # type: ignore[assignment]
+    body = {"query": "Via Esempio 1"}
+
+    # User A uses up their minute.
+    assert client.post("/geocoding/search", json=body).status_code == 200
+    assert client.post("/geocoding/search", json=body).status_code == 429
+    # User B is not affected by A.
+    user.user_id = "11111111-1111-4111-8111-1111111111bb"
+    assert client.post("/geocoding/search", json=body).status_code == 200
+
+    # No session, no geocoding.
+    class _NoSession:
+        def get_current_user(self) -> object:
+            raise AuthenticationError("Missing access token")
+
+    container.auth_provider = _NoSession()  # type: ignore[assignment]
+    assert (
+        client.post("/geocoding/reverse", json={"latitude": 45, "longitude": 9}).status_code == 401
+    )

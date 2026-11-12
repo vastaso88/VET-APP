@@ -23,6 +23,11 @@ class ListingReportService {
     required String reporterOwnerId,
     required String reason,
   }) async {
+    // The backend decides (plan check, three reporters remove the ad). The
+    // local path below is only for demo and tests, where there is no backend.
+    final fromBackend = await _listingRepository.reportListing(listing, reason);
+    if (fromBackend != null) return fromBackend;
+
     await _reportRepository.save(
       ListingReport(
         id: 'report-${DateTime.now().microsecondsSinceEpoch}',
@@ -39,7 +44,7 @@ class ListingReportService {
       status: reportCount >= reportCountAutoRemoveThreshold ? ListingStatus.removed : null,
       updatedAt: DateTime.now(),
     );
-    await _listingRepository.saveListing(updated);
+    _listingRepository.applyModerationResult(updated);
     return updated;
   }
 }

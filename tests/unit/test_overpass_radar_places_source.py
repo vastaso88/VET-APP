@@ -34,11 +34,11 @@ class _FakeResponse:
                         "tags": {
                             "amenity": "veterinary",
                             "name": "Veterinario Milano",
-                            "addr:street": "Via Torino",
+                            "addr:street": "Via Esempio",
                             "addr:housenumber": "10",
-                            "addr:postcode": "20123",
+                            "addr:postcode": "20100",
                             "addr:city": "Milano",
-                            "contact:phone": "+39 02 1234567",
+                            "contact:phone": "+39 02 0000 0001",
                             "contact:website": "https://vet.example",
                             "opening_hours": "Mo-Fr 09:00-19:00",
                         },
@@ -75,7 +75,6 @@ def test_overpass_source_posts_query_and_maps_osm_elements(
         ENVIRONMENT="test",
         RADAR_PLACES_PROVIDER="openstreetmap_overpass",
         RADAR_SEARCH_RADIUS_KM=10,
-        RADAR_INGESTION_RADIUS_KM=10,
         OVERPASS_BASE_URL="https://overpass.example/api/interpreter",
         OVERPASS_TIMEOUT_SECONDS=25,
         OVERPASS_MAX_RADIUS_KM=10,
@@ -100,7 +99,7 @@ def test_overpass_source_posts_query_and_maps_osm_elements(
     assert http_request.full_url == "https://overpass.example/api/interpreter"
     assert http_request.get_method() == "POST"
     assert http_request.get_header("User-agent") == "VET-APP-test/1.0"
-    assert captured["timeout"] == 30
+    assert captured["timeout"] == 20
     assert "around:10000,45.464200,9.189900" in overpass_query
     assert '["amenity"="veterinary"]' in overpass_query
     assert '["shop"="pet_grooming"]' in overpass_query
@@ -116,11 +115,11 @@ def test_overpass_source_posts_query_and_maps_osm_elements(
     assert veterinary.name == "Veterinario Milano"
     assert veterinary.place_type == "veterinary"
     assert veterinary.subtype == "amenity:veterinary"
-    assert veterinary.address_label == "Via Torino 10, 20123, Milano"
+    assert veterinary.address_label == "Via Esempio 10, 20100 Milano"
     assert veterinary.city == "Milano"
     assert veterinary.latitude == 45.4629
     assert veterinary.longitude == 9.1882
-    assert veterinary.phone == "+39 02 1234567"
+    assert veterinary.phone == "+39 02 0000 0001"
     assert veterinary.website_url == "https://vet.example"
     assert veterinary.source_url == "https://www.openstreetmap.org/node/101"
     assert veterinary.freshness_status == "fresh"
@@ -132,3 +131,83 @@ def test_overpass_source_posts_query_and_maps_osm_elements(
     assert grooming.latitude == 45.4701
     assert grooming.longitude == 9.2011
     assert grooming.website_url == "https://www.openstreetmap.org/way/202"
+
+
+def test_shelters_are_classified_with_their_own_type() -> None:
+    from datetime import UTC, datetime
+
+    from packages.infrastructure.radar_places.overpass_places_source import map_osm_element
+
+    shelter = map_osm_element(
+        {
+            "type": "node",
+            "id": 1,
+            "lat": 45.0,
+            "lon": 9.0,
+            "tags": {
+                "amenity": "animal_shelter",
+                "animal_shelter": "dog;cat",
+                "animal_shelter:adoption": "yes",
+            },
+        },
+        owner_id="",
+        coverage_key="catalog",
+        fetched_at=datetime(2026, 10, 7, tzinfo=UTC),
+    )
+
+    assert shelter is not None
+    assert (shelter.place_type, shelter.name) == ("shelter", "Rifugio per animali")
+    assert shelter.species == ["dog", "cat"]
+    assert shelter.details == {"animal_shelter:adoption": "yes"}
+
+
+def test_animal_associations_are_classified_by_their_tag_or_name() -> None:
+    from datetime import UTC, datetime
+
+    from packages.infrastructure.radar_places.overpass_places_source import map_osm_element
+
+    def mapped(tags: dict[str, str]):  # type: ignore[no-untyped-def]
+        return map_osm_element(
+            {"type": "node", "id": 7, "lat": 45.0, "lon": 9.0, "tags": tags},
+            owner_id="",
+            coverage_key="catalog",
+            fetched_at=datetime(2026, 10, 21, tzinfo=UTC),
+        )
+
+    for tags in (
+        {"office": "association", "name": "ENPA Sezione di Esempio"},
+        {"office": "association", "name": "Gruppo Cinofilo Esempio"},
+        {"office": "ngo", "name": "Amici degli animali Esempio"},
+        {"office": "association", "association": "animal_welfare", "name": "Esempio"},
+        {"club": "sport", "name": "Club Felino Esempio"},
+        {"club": "dog", "name": "Esempio"},
+    ):
+        place = mapped(tags)
+        assert place is not None, tags
+        assert place.place_type == "association", tags
+
+    # Not about animals, or only by an accident of spelling: not listed.
+    for tags in (
+        {"office": "association", "name": "Associazione Solidarietà Esempio"},
+        {"office": "association", "name": "Rifugio Alpino Esempio"},
+        {"office": "association", "name": "Circolo Lavoratori Esempio"},
+        {"club": "sport", "name": "Tennis Club Esempio"},
+    ):
+        assert mapped(tags) is None, tags
+
+    # An association with no name is not shown: there would be nothing to call it.
+    assert mapped({"office": "association", "association": "animal_welfare"}) is None
+    # A shelter run by an association stays a shelter.
+    shelter = mapped({"amenity": "animal_shelter", "office": "association", "name": "ENPA Rifugio"})
+    assert shelter is not None and shelter.place_type == "shelter"
+
+
+def test_the_overpass_query_asks_for_associations() -> None:
+    from packages.infrastructure.radar_places.overpass_places_source import (
+        build_overpass_area_query,
+    )
+
+    query = build_overpass_area_query(iso_3166_2="IT-25", timeout_seconds=90)
+
+    assert '["club"]["name"~' in query
+    assert '["office"~"^(association|ngo|charity|foundation)$"]["association"~"animal",i]' in query

@@ -1,0 +1,13 @@
+CLINICA VETERINARIA ESEMPIO (struttura fittizia, dati di prova)
+Esame coprologico (feci) - flottazione e test antigenico
+Data: 20/09/2026
+Paziente: Birba - cane meticcio, femmina, 4 mesi, 6,5 kg
+
+Aspetto macroscopico: feci molli, colore marrone, assenza di sangue visibile.
+Esame per flottazione: presenti uova di Toxocara canis (ascaridi) ++
+Test antigenico Giardia: POSITIVO
+Coccidi: non osservati
+Tenie: non osservate
+
+Commento: positivita per ascaridi e Giardia, parassiti intestinali frequenti nel cucciolo.
+Trattamento e controllo a discrezione del veterinario curante; ripetere l'esame a fine terapia.

@@ -2,16 +2,32 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
+import '../../../monitoring/domain/body_condition.dart';
+import '../../../monitoring/domain/body_condition_guide.dart';
+import '../../../monitoring/presentation/widgets/body_condition_picker.dart';
+import '../../../settings/data/unit_settings_store.dart';
+import '../../../settings/domain/unit_conversion.dart';
+import '../../../settings/domain/unit_system.dart';
 import '../../data/pet_demo_store.dart';
 import '../../domain/fish_species.dart';
-import '../../domain/pet_format.dart';
+import '../../domain/pet_breeds.dart';
+import '../../domain/pet_details.dart';
+import '../../domain/pet_species_breeds.dart';
 import '../../domain/pet_identity_colors.dart';
+import '../../domain/pet_format.dart';
 import '../../domain/pet_models.dart';
+import '../../domain/pet_value_labels.dart';
 import '../../../../design_system/tokens/app_colors.dart';
 import '../../../../design_system/tokens/app_radii.dart';
 import '../../../../design_system/tokens/app_spacing.dart';
 import '../../../../design_system/tokens/app_text_styles.dart';
+import '../../../../l10n/l10n.dart';
+import '../../../../l10n/regional_defaults.dart';
+import '../../../../shared/formatters/date_input_formatter.dart';
+import '../../../../shared/widgets/typed_date_field.dart';
+import '../../../../shared/widgets/pet_loader.dart';
 import 'pet_avatar.dart';
+import 'pet_form_fields.dart';
 import 'pet_sections.dart';
 
 class PetProfileDraft {
@@ -21,13 +37,19 @@ class PetProfileDraft {
     required this.breed,
     this.birthDate,
     required this.sex,
-    required this.weightKg,
+    this.weightKg,
     required this.medicalNote,
     required this.identityColor,
     this.photoBytes,
+    this.photoTouched = false,
     this.aquariumStock = const [],
     this.habitat,
     this.dogSizeCategory,
+    this.isSterilized,
+    this.microchipNumber,
+    this.coatColor,
+    this.bodyCondition,
+    this.activityLevel,
   });
 
   final String name;
@@ -38,13 +60,26 @@ class PetProfileDraft {
   /// whole tank. Still asked for a single pet (including a lone fish).
   final DateTime? birthDate;
   final String sex;
-  final double weightKg;
+  final double? weightKg;
   final String medicalNote;
   final Color identityColor;
   final Uint8List? photoBytes;
+
+  /// True only when the owner picked or removed a photo in this form. A
+  /// persisted photo the owner never touched must not be cleared on save.
+  final bool photoTouched;
   final List<FishStock> aquariumStock;
   final HabitatDetails? habitat;
   final String? dogSizeCategory;
+
+  /// Profile v2 details, all optional (null = not given or not applicable to
+  /// the species): neutering, 15-digit microchip, coat colour, body condition
+  /// and activity level codes.
+  final bool? isSterilized;
+  final String? microchipNumber;
+  final String? coatColor;
+  final String? bodyCondition;
+  final String? activityLevel;
 }
 
 /// Species that live in an enclosure worth describing (dimensions, water/
@@ -52,12 +87,8 @@ class PetProfileDraft {
 bool _speciesHasHabitat(String? species) =>
     species == 'Pesce' || species == 'Rettili e anfibi' || species == 'Uccello';
 
-String _habitatLabel(String? species) => switch (species) {
-      'Pesce' => 'Acquario',
-      'Rettili e anfibi' => 'Terrario',
-      'Uccello' => 'Voliera',
-      _ => 'Habitat',
-    };
+/// Number of steps of the creation flow.
+const _kWizardSteps = 4;
 
 class PetProfileForm extends StatefulWidget {
   const PetProfileForm({
@@ -67,6 +98,8 @@ class PetProfileForm extends StatefulWidget {
     super.key,
     this.initialPet,
     this.footerActions,
+    this.stepped = false,
+    this.onFinish,
   });
 
   final PetProfile? initialPet;
@@ -79,6 +112,12 @@ class PetProfileForm extends StatefulWidget {
   /// existing pet, never while creating one.
   final Widget? footerActions;
 
+  /// Step-by-step creation (4 steps and a "Profilo creato!" screen) instead of
+  /// the single page. [onSubmit] must then only save: the form itself shows the
+  /// final screen, and [onFinish] runs when the owner taps "Fine".
+  final bool stepped;
+  final VoidCallback? onFinish;
+
   @override
   State<PetProfileForm> createState() => _PetProfileFormState();
 }
@@ -88,12 +127,21 @@ class _PetProfileFormState extends State<PetProfileForm> {
   late final TextEditingController _nameController;
   late final TextEditingController _weightController;
   late final TextEditingController _notesController;
+  late final TextEditingController _microchipController;
+  late final TextEditingController _coatColorController;
   late String? _species;
   late String? _breed;
+  bool _otherBreed = false;
+  final _otherBreedController = TextEditingController();
   late String? _dogSizeCategory;
   late String? _sex;
-  DateTime? _birthDate;
+  late bool? _sterilized;
+  late String? _bodyCondition;
+  late String? _activityLevel;
+  late final TextEditingController _birthDateController;
   Uint8List? _photoBytes;
+  bool _photoTouched = false;
+  bool _submitting = false;
   late Color _identityColor;
   late bool _isAquarium;
   late List<FishStock> _aquariumStock;
@@ -110,48 +158,104 @@ class _PetProfileFormState extends State<PetProfileForm> {
   bool _volumeManuallyEdited = false;
   bool _isAutoUpdatingVolume = false;
 
+  // Step-by-step creation only.
+  int _step = 0;
+  bool _done = false;
+  String _createdName = '';
+  final _scrollController = ScrollController();
+
   @override
   void initState() {
     super.initState();
     final pet = widget.initialPet;
     final habitat = pet?.habitat;
     _nameController = TextEditingController(text: pet?.name ?? '');
-    _weightController = TextEditingController(
-      text: _weightFromLabel(pet?.weightLabel),
-    );
     _notesController = TextEditingController(text: pet?.medicalNote ?? '');
+    _microchipController = TextEditingController(text: pet?.microchipNumber ?? '');
+    _coatColorController = TextEditingController(text: pet?.coatColor ?? '');
     _species = pet?.species;
     _breed = _normalizeBreed(pet?.breed);
+    final initialBreed = _breed;
+    if (initialBreed == 'Altro') {
+      _otherBreed = true;
+    } else if (initialBreed != null && _species != null && !(_species == 'Pesce' && (pet?.isAquarium ?? false)) &&
+        isCustomBreed(initialBreed, PetDemoStore.breedsForSpecies(_species!))) {
+      _otherBreed = true;
+      _otherBreedController.text = initialBreed;
+    }
+    // After the species: small animals are weighed in grams.
+    _weightController = TextEditingController(text: _weightFromLabel(pet?.weightLabel));
     _dogSizeCategory = pet?.dogSizeCategory;
-    _sex = pet?.sex;
-    _birthDate = _parseBirthDate(pet?.birthDateLabel);
+    // A pet still carrying a combined value ("Femmina sterilizzata") is shown
+    // as sex + neutering switch.
+    final legacySex = splitLegacySex(pet?.sex);
+    _sex = legacySex.sex == null || legacySex.sex!.isEmpty ? null : legacySex.sex;
+    _sterilized = pet?.isSterilized ?? legacySex.sterilized;
+    _bodyCondition = pet?.bodyCondition;
+    _activityLevel = pet?.activityLevel;
+    final initialBirthDate = _parseBirthDate(pet?.birthDateLabel);
+    _birthDateController = TextEditingController(
+      text: initialBirthDate == null ? '' : formatDateForInput(initialBirthDate),
+    );
     _photoBytes = pet?.photoBytes;
     _identityColor = pet?.identityColor ?? PetDemoStore.instance.nextDefaultIdentityColor();
     _isAquarium = pet?.isAquarium ?? false;
     _aquariumStock = List.of(pet?.aquariumStock ?? const []);
-    _lengthController = TextEditingController(text: habitat?.lengthCm?.toString() ?? '');
-    _widthController = TextEditingController(text: habitat?.widthCm?.toString() ?? '');
-    _heightController = TextEditingController(text: habitat?.heightCm?.toString() ?? '');
-    _volumeController = TextEditingController(text: habitat?.volumeLiters?.toString() ?? '');
+    _lengthController = TextEditingController(text: _cmField(habitat?.lengthCm));
+    _widthController = TextEditingController(text: _cmField(habitat?.widthCm));
+    _heightController = TextEditingController(text: _cmField(habitat?.heightCm));
+    _volumeController = TextEditingController(text: _litersField(habitat?.volumeLiters));
     _volumeController.addListener(() {
       if (_isAutoUpdatingVolume) return;
       _volumeManuallyEdited = true;
     });
-    _temperatureController = TextEditingController(text: habitat?.temperatureLabel ?? '');
+    _temperatureController = TextEditingController(
+      text: temperatureLabelIn(habitat?.temperatureLabel ?? '', _units),
+    );
     _substrateController = TextEditingController(text: habitat?.substrate ?? '');
     _habitatNotesController = TextEditingController(text: habitat?.notes ?? '');
   }
 
+  UnitSystem get _units => UnitSettingsStore.instance.system;
+
+  /// Number as shown in a field in the owner's unit ("23,6"), one decimal.
+  String _fieldNumber(double value) => formatDecimal(value);
+
+  double? _typedNumber(String text) => double.tryParse(text.trim().replaceAll(',', '.'));
+
+  /// A dimension field (cm, or inches in the imperial/USA systems) as cm.
+  int? _typedCm(TextEditingController controller) {
+    final value = _typedNumber(controller.text);
+    return value == null ? null : displayToCm(value, _units);
+  }
+
+  String _cmField(int? cm) => cm == null
+      ? ''
+      : (_units.usesInches ? _fieldNumber(cmToDisplay(cm, _units)) : cm.toString());
+
+  /// The liters field (US gallons in the USA system) as liters.
+  int? _typedLiters() {
+    final value = _typedNumber(_volumeController.text);
+    return value == null ? null : displayToLiters(value, _units);
+  }
+
+  String _litersField(int? liters) {
+    if (liters == null) return '';
+    return _units.usesUsGallons
+        ? _fieldNumber(litersToDisplay(liters.toDouble(), _units))
+        : liters.toString();
+  }
+
   void _recalculateVolume() {
     if (_volumeManuallyEdited) return;
-    final length = int.tryParse(_lengthController.text.trim());
-    final width = int.tryParse(_widthController.text.trim());
-    final height = int.tryParse(_heightController.text.trim());
+    final length = _typedCm(_lengthController);
+    final width = _typedCm(_widthController);
+    final height = _typedCm(_heightController);
     if (length == null || width == null || height == null) return;
 
     final liters = (length * width * height / 1000).round();
     _isAutoUpdatingVolume = true;
-    _volumeController.text = liters.toString();
+    _volumeController.text = _litersField(liters);
     _isAutoUpdatingVolume = false;
   }
 
@@ -162,54 +266,66 @@ class _PetProfileFormState extends State<PetProfileForm> {
     );
     final bytes = result?.files.single.bytes;
     if (bytes == null) return;
-    setState(() => _photoBytes = bytes);
+    setState(() {
+      _photoBytes = bytes;
+      _photoTouched = true;
+    });
   }
 
-  void _removePhoto() => setState(() => _photoBytes = null);
+  void _removePhoto() => setState(() {
+        _photoBytes = null;
+        _photoTouched = true;
+      });
 
   Future<void> _openAddSpeciesSheet() async {
-    final existing = _aquariumStock.map((stock) => stock.species).toSet();
-    final available = aquariumFishSpecies.where((species) => !existing.contains(species)).toList();
+    final existing = _aquariumStock.map((stock) => foldBreedText(stock.species)).toSet();
+    final options = [
+      fishGenericLabel,
+      ...aquariumFishSpecies,
+      otherEntryLabel,
+    ].where((name) => isOtherBreedEntry(name) || !existing.contains(foldBreedText(name))).toList();
 
-    final selected = await showModalBottomSheet<String>(
-      context: context,
-      backgroundColor: AppColors.surface,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(AppRadii.xl)),
-      ),
-      builder: (sheetContext) => SafeArea(
-        child: available.isEmpty
-            ? Padding(
-                padding: const EdgeInsets.all(AppSpacing.xl),
-                child: Text(
-                  'Hai già aggiunto tutte le specie disponibili.',
-                  style: AppTextStyles.bodySmall,
-                ),
-              )
-            : ListView(
-                shrinkWrap: true,
-                padding: const EdgeInsets.symmetric(vertical: AppSpacing.md),
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: AppSpacing.lg,
-                      vertical: AppSpacing.sm,
-                    ),
-                    child: Text('Aggiungi specie', style: AppTextStyles.title),
-                  ),
-                  for (final species in available)
-                    ListTile(
-                      title: Text(species, style: AppTextStyles.bodySmall.copyWith(color: AppColors.text)),
-                      onTap: () => Navigator.of(sheetContext).pop(species),
-                    ),
-                ],
-              ),
-      ),
-    );
-
-    if (selected == null) return;
+    final selected = await _pickBreed(options);
+    if (selected == null || !mounted) return;
+    final species = isOtherBreedEntry(selected) ? await _askSpeciesName() : selected;
+    if (species == null || species.trim().isEmpty || !mounted) return;
+    if (existing.contains(foldBreedText(species))) return;
     setState(
-      () => _aquariumStock = [..._aquariumStock, FishStock(species: selected, maleCount: 1)],
+      () => _aquariumStock = [
+        ..._aquariumStock,
+        FishStock(species: species.trim(), maleCount: 1),
+      ],
+    );
+  }
+
+  /// The "Altra specie (scrivi)" entry of the aquarium: asks for the name.
+  Future<String?> _askSpeciesName() {
+    final controller = TextEditingController();
+    return showDialog<String>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: Text(dialogContext.l10n.petsFormOtherSpeciesDialogTitle),
+        content: TextField(
+          controller: controller,
+          autofocus: true,
+          textCapitalization: TextCapitalization.sentences,
+          decoration: _inputDecoration(
+            dialogContext.l10n.petsFormBreedSpeciesLabel,
+            dialogContext.l10n.petsFormOtherSpeciesHint,
+          ),
+          onSubmitted: (value) => Navigator.of(dialogContext).pop(value),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(),
+            child: Text(dialogContext.l10n.commonCancel),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(controller.text),
+            child: Text(dialogContext.l10n.commonAdd),
+          ),
+        ],
+      ),
     );
   }
 
@@ -245,7 +361,7 @@ class _PetProfileFormState extends State<PetProfileForm> {
   Color _speciesAccentColor() {
     final species = _species;
     if (species == null || species.trim().isEmpty) {
-      return widget.initialPet?.accentColor ?? AppColors.accentSoft;
+      return widget.initialPet?.accentColor ?? AppColors.secondarySoft;
     }
     return PetDemoStore.optionForSpecies(species).accentColor;
   }
@@ -253,8 +369,12 @@ class _PetProfileFormState extends State<PetProfileForm> {
   @override
   void dispose() {
     _nameController.dispose();
+    _otherBreedController.dispose();
+    _birthDateController.dispose();
     _weightController.dispose();
     _notesController.dispose();
+    _microchipController.dispose();
+    _coatColorController.dispose();
     _lengthController.dispose();
     _widthController.dispose();
     _heightController.dispose();
@@ -262,277 +382,538 @@ class _PetProfileFormState extends State<PetProfileForm> {
     _temperatureController.dispose();
     _substrateController.dispose();
     _habitatNotesController.dispose();
+    _scrollController.dispose();
     super.dispose();
   }
 
+  bool get _isAquariumProfile => _species == 'Pesce' && _isAquarium;
+
+  /// The animal as far as the species and the chosen breed/species tell.
+  PetKind get _kind => petKindOf(_species, _breed);
+
+  /// Birds, small mammals, reptiles, amphibians and invertebrates are weighed
+  /// in grams (a budgerigar is 35 g, not 0,035 kg). Rabbits, dogs, cats and
+  /// the larger animals stay in kg, and imperial owners keep their pounds.
+  bool get _weighsInGrams =>
+      !_units.usesPounds &&
+      switch (_kind) {
+        PetKind.bird ||
+        PetKind.smallMammal ||
+        PetKind.reptile ||
+        PetKind.amphibian ||
+        PetKind.invertebrate =>
+          true,
+        _ => false,
+      };
+
+  /// The species changed (dropdown or chip): breed, size and aquarium choices
+  /// belonged to the previous one. Sex is kept: fish simply never use it.
+  void _onSpeciesChanged(String? value) {
+    setState(() {
+      _species = value;
+      _breed = null;
+      _otherBreed = false;
+      _otherBreedController.clear();
+      _dogSizeCategory = null;
+      // The assessment belongs to the previous species' guide.
+      _bodyCondition = null;
+      if (value != 'Pesce') {
+        _isAquarium = false;
+        _aquariumStock = [];
+      }
+    });
+  }
+
+  /// [items] in a column, [AppSpacing.md] apart; nulls (fields that don't
+  /// apply to the species) are skipped.
+  Widget _fields(List<Widget?> items) {
+    final shown = items.whereType<Widget>().toList();
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        for (var i = 0; i < shown.length; i++) ...[
+          if (i > 0) const SizedBox(height: AppSpacing.md),
+          shown[i],
+        ],
+      ],
+    );
+  }
+
+  // ---- fields (shared by the single page and the steps) --------------------
+
+  Widget _photoField() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        ValueListenableBuilder<TextEditingValue>(
+          valueListenable: _nameController,
+          builder: (context, value, _) {
+            final trimmed = value.text.trim();
+            final label = trimmed.isNotEmpty
+                ? trimmed[0].toUpperCase()
+                : (widget.initialPet?.avatarEmoji ?? '?');
+            return _PhotoPicker(
+              photoBytes: _photoBytes,
+              photoPath: _photoTouched ? null : widget.initialPet?.photoPath,
+              identityColor: _identityColor,
+              backgroundColor: _speciesAccentColor(),
+              label: label,
+              onPick: _pickPhoto,
+              onRemove: _photoBytes == null &&
+                      (_photoTouched || widget.initialPet?.photoPath == null)
+                  ? null
+                  : _removePhoto,
+            );
+          },
+        ),
+        const SizedBox(height: AppSpacing.md),
+        Text(context.l10n.petsFormIdentityColor, style: AppTextStyles.caption),
+        const SizedBox(height: AppSpacing.xs),
+        _IdentityColorPicker(
+          value: _identityColor,
+          onChanged: (color) => setState(() => _identityColor = color),
+        ),
+      ],
+    );
+  }
+
+  Widget _nameField() {
+    return TextFormField(
+      controller: _nameController,
+      textInputAction: TextInputAction.next,
+      decoration: _inputDecoration(context.l10n.petsFormNameLabel, context.l10n.petsFormNameHint),
+      validator: (value) {
+        if ((value ?? '').trim().isEmpty) {
+          return context.l10n.petsFormNameError;
+        }
+        return null;
+      },
+    );
+  }
+
+  Widget _speciesDropdown() {
+    return DropdownButtonFormField<String>(
+      isExpanded: true,
+      initialValue: _species,
+      decoration: _inputDecoration(
+        context.l10n.petsFormSpeciesLabel,
+        context.l10n.petsFormSpeciesHint,
+      ),
+      items: PetDemoStore.speciesOptions
+          .map(
+            (option) => DropdownMenuItem<String>(
+              value: option.label,
+              child: Text(localizedSpeciesLabel(option.label)),
+            ),
+          )
+          .toList(growable: false),
+      onChanged: _onSpeciesChanged,
+      validator: (value) {
+        if (value == null || value.trim().isEmpty) {
+          return context.l10n.petsFormSpeciesError;
+        }
+        return null;
+      },
+    );
+  }
+
+  Widget _speciesChips() {
+    return PetSpeciesChips(
+      value: _species,
+      onChanged: _onSpeciesChanged,
+      validator: (value) =>
+          value == null || value.trim().isEmpty ? context.l10n.petsFormSpeciesError : null,
+    );
+  }
+
+  /// Right under the fish chip: one fish (picked by species) or a whole tank.
+  Widget? _profileTypeField() {
+    if (_species != 'Pesce') return null;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(context.l10n.petsFormProfileType, style: AppTextStyles.caption),
+        const SizedBox(height: AppSpacing.xs),
+        _FishKindChoice(
+          aquarium: _isAquarium,
+          onChanged: (value) => setState(() {
+            _isAquarium = value;
+            _breed = null;
+            _otherBreed = false;
+            _otherBreedController.clear();
+          }),
+        ),
+      ],
+    );
+  }
+
+  /// The aquarium's population editor, or the breed picker (and its "other"
+  /// text field) for any single pet.
+  Widget _breedOrStockField() {
+    if (_isAquariumProfile) {
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(context.l10n.petsFormAquariumPopulation, style: AppTextStyles.caption),
+          const SizedBox(height: AppSpacing.xs),
+          _AquariumStockEditor(
+            stock: _aquariumStock,
+            onAdd: _openAddSpeciesSheet,
+            onChangeMale: _changeMaleCount,
+            onChangeFemale: _changeFemaleCount,
+            onRemove: _removeStock,
+          ),
+        ],
+      );
+    }
+    return _fields([_breedPicker(), if (_otherBreed) _otherBreedField()]);
+  }
+
+  /// Dogs and cats choose a "razza"; every other animal a "specie".
+  bool get _usesBreedWord => speciesUsesBreedWord(_species);
+
+  String? _breedError() {
+    if (_species == null || _isAquariumProfile || _otherBreed) return null;
+    final breed = _normalizeBreed(_breed);
+    if (breed != null) return null;
+    return _usesBreedWord
+        ? context.l10n.petsFormBreedRequired
+        : context.l10n.petsFormBreedSpeciesRequired;
+  }
+
+  Widget _breedPicker() {
+    final breedOptions = _breedOptionsForSelectedSpecies();
+    return FormField<String>(
+      // A new field (and no stale error) whenever the species or the fish
+      // profile type changes.
+      key: ValueKey('breed-$_species-$_isAquarium'),
+      initialValue: _breed,
+      validator: (_) => _breedError(),
+      builder: (field) => InkWell(
+        onTap: _species == null
+            ? null
+            : () async {
+                final picked = await _pickBreed(breedOptions);
+                if (picked == null || !mounted) return;
+                setState(() {
+                  if (isOtherBreedEntry(picked)) {
+                    _otherBreed = true;
+                    _breed = _otherBreedController.text.trim().isEmpty
+                        ? 'Altro'
+                        : _otherBreedController.text.trim();
+                  } else {
+                    _otherBreed = false;
+                    _breed = picked == 'Razza non specificata' ? null : picked;
+                  }
+                });
+                field.didChange(picked);
+              },
+        borderRadius: BorderRadius.circular(18),
+        child: InputDecorator(
+          decoration: _inputDecoration(petBreedFieldLabel(context.l10n, _species), '')
+              .copyWith(errorText: field.errorText),
+          child: Row(
+            children: [
+              Expanded(
+                child: Text(
+                  _breedDisplay(context.l10n),
+                  style: AppTextStyles.bodySmall.copyWith(
+                    color: _breedIsPlaceholder ? AppColors.mutedText : AppColors.text,
+                  ),
+                ),
+              ),
+              const Icon(Icons.search_rounded, color: AppColors.secondaryStrong),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _otherBreedField() {
+    return TextFormField(
+      controller: _otherBreedController,
+      textCapitalization: TextCapitalization.sentences,
+      decoration: _usesBreedWord
+          ? _inputDecoration(
+              context.l10n.petsFormOtherBreedLabel,
+              context.l10n.petsFormOtherBreedHint,
+            )
+          : _inputDecoration(
+              context.l10n.petsFormOtherSpeciesLabel,
+              context.l10n.petsFormOtherSpeciesHint,
+            ),
+      validator: (value) => (value ?? '').trim().isEmpty
+          ? (_usesBreedWord
+              ? context.l10n.petsFormBreedTextRequired
+              : context.l10n.petsFormBreedSpeciesTextRequired)
+          : null,
+      onChanged: (value) => setState(() {
+        _breed = value.trim().isEmpty ? 'Altro' : value.trim();
+      }),
+    );
+  }
+
+  bool get _isMixedBreed => _breed == meticcioBreedLabel || _breed == catMeticcioBreedLabel;
+
+  /// "Di razza" / "Meticcio" (dogs and cats): Meticcio needs no further input.
+  Widget _pureOrMixedField() {
+    return PetTwoWayToggle(
+      firstLabel: context.l10n.petsWizardPureBred,
+      secondLabel: context.l10n.petsWizardMixedBreed,
+      secondSelected: _isMixedBreed,
+      onChanged: (mixed) => setState(() {
+        _otherBreed = false;
+        _otherBreedController.clear();
+        _breed = mixed
+            ? (_species == 'Gatto' ? catMeticcioBreedLabel : meticcioBreedLabel)
+            : null;
+      }),
+    );
+  }
+
+  Widget? _dogSizeField() {
+    if (!speciesHasSize(_species)) return null;
+    return PetCodeDropdown(
+      label: context.l10n.petsFormDogSizeLabelShort,
+      hint: context.l10n.petsFormDogSizeHint,
+      value: _dogSizeCategory,
+      codes: PetDemoStore.dogSizeCategories,
+      labelOf: localizedDogSizeLabel,
+      onChanged: (value) => setState(() => _dogSizeCategory = value),
+    );
+  }
+
+  Widget? _habitatField() {
+    if (!_speciesHasHabitat(_species)) return null;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(petHabitatLabel(_species, context.l10n), style: AppTextStyles.caption),
+        const SizedBox(height: AppSpacing.xs),
+        _HabitatFields(
+          showVolume: _species == 'Pesce',
+          lengthController: _lengthController,
+          widthController: _widthController,
+          heightController: _heightController,
+          volumeController: _volumeController,
+          temperatureController: _temperatureController,
+          substrateController: _substrateController,
+          notesController: _habitatNotesController,
+          inputDecoration: _inputDecoration,
+          onDimensionChanged: _recalculateVolume,
+        ),
+      ],
+    );
+  }
+
+  /// A multi-fish aquarium has no single "birth date" — asked only for a
+  /// single pet (a lone fish included).
+  Widget? _birthDateField() {
+    if (_isAquariumProfile) return null;
+    return TypedDateField(
+      controller: _birthDateController,
+      onPick: _pickBirthDate,
+      pickIcon: const Icon(Icons.calendar_month_rounded, color: AppColors.secondaryStrong),
+      decoration: _inputDecoration(
+        context.l10n.petsFormBirthDateLabel,
+        appDateInputText(context.l10n.petsFormBirthDateHint),
+      ),
+      validator: (value) {
+        final raw = (value ?? '').trim();
+        if (raw.isEmpty) {
+          return context.l10n.petsFormBirthDateRequired;
+        }
+        final parsed = parseStrictDate(raw);
+        if (parsed == null) {
+          return appDateInputText(context.l10n.petsFormBirthDateInvalid);
+        }
+        if (parsed.isAfter(DateTime.now())) {
+          return context.l10n.petsFormBirthDateFuture;
+        }
+        return null;
+      },
+    );
+  }
+
+  /// Fish don't get a standalone Sesso field: for an aquarium, one sex value
+  /// for the whole tank doesn't make sense — it's tracked per species instead,
+  /// right in the population editor. A single fish just doesn't show it.
+  Widget? _sexField() {
+    if (_species == 'Pesce') return null;
+    return PetSexField(
+      value: _sex,
+      onChanged: (value) => setState(() => _sex = value),
+    );
+  }
+
+  Widget? _sterilizedField() {
+    if (!speciesHasNeutering(_species, breed: _breed)) return null;
+    return PetSwitchTile(
+      label: context.l10n.petsFormSterilized,
+      value: _sterilized ?? false,
+      onChanged: (value) => setState(() => _sterilized = value),
+    );
+  }
+
+  Widget? _weightField() {
+    if (!speciesHasWeight(_species)) return null;
+    final grams = _weighsInGrams;
+    return TextFormField(
+      controller: _weightController,
+      textInputAction: TextInputAction.next,
+      keyboardType: const TextInputType.numberWithOptions(decimal: true),
+      inputFormatters: [
+        FilteringTextInputFormatter.allow(RegExp(r'[0-9,.\s]')),
+      ],
+      decoration: _inputDecoration(
+        grams
+            ? context.l10n.petsFormWeightLabelG
+            : _units.usesPounds
+                ? context.l10n.petsFormWeightLabelLb
+                : context.l10n.petsFormWeightLabelKg,
+        grams
+            ? context.l10n.petsFormWeightHintG
+            : _units.usesPounds
+                ? context.l10n.petsFormWeightHintLb
+                : context.l10n.petsFormWeightHintKg,
+      ),
+      validator: (value) {
+        if ((value ?? '').trim().isEmpty) {
+          return null;
+        }
+        final parsed = _parseWeight(value);
+        if (parsed == null) {
+          return context.l10n.petsFormWeightInvalid;
+        }
+        if (parsed <= 0) {
+          return context.l10n.petsFormWeightPositive;
+        }
+        return null;
+      },
+    );
+  }
+
+  /// The reference-backed guide of the chosen species, or null: no guide, no
+  /// body condition (nothing to pick, nothing stored).
+  BodyConditionGuideKind? get _bodyConditionGuide =>
+      bodyConditionGuideForSpecies(_species, breed: _breed);
+
+  Widget? _bodyConditionField() {
+    final guide = _bodyConditionGuide;
+    if (guide == null) return null;
+    return BodyConditionPicker(
+      kind: guide,
+      petName: _nameController.text.trim(),
+      value: BodyCondition.fromCode(_bodyCondition),
+      onChanged: (value) => setState(() => _bodyCondition = value?.code),
+    );
+  }
+
+  Widget? _activityField() {
+    if (!speciesHasActivity(_species, breed: _breed)) return null;
+    return PetCodeDropdown(
+      label: context.l10n.petsFormActivityLabel,
+      hint: context.l10n.petsFormActivityHint,
+      value: _activityLevel,
+      codes: petActivityLevels,
+      labelOf: localizedActivityLevelLabel,
+      onChanged: (value) => setState(() => _activityLevel = value),
+    );
+  }
+
+  Widget? _coatColorField() {
+    if (!speciesHasCoatColor(_species)) return null;
+    final furred = speciesHasCoat(_species, breed: _breed);
+    return TextFormField(
+      controller: _coatColorController,
+      textInputAction: TextInputAction.next,
+      textCapitalization: TextCapitalization.sentences,
+      decoration: _inputDecoration(
+        furred ? context.l10n.petsFormCoatColorLabel : context.l10n.petsFormColorLabel,
+        furred ? context.l10n.petsFormCoatColorHint : context.l10n.petsFormColorHint,
+      ),
+    );
+  }
+
+  Widget? _microchipField() {
+    if (!speciesHasMicrochip(_species, breed: _breed)) return null;
+    return TextFormField(
+      controller: _microchipController,
+      textInputAction: TextInputAction.next,
+      keyboardType: TextInputType.number,
+      inputFormatters: [
+        FilteringTextInputFormatter.allow(RegExp(r'[0-9\s-]')),
+        LengthLimitingTextInputFormatter(25),
+      ],
+      decoration: _inputDecoration(
+        context.l10n.petsFormMicrochipLabel,
+        context.l10n.petsFormMicrochipHint,
+      ),
+      validator: (value) =>
+          isValidMicrochip(value) ? null : context.l10n.petsFormMicrochipInvalid,
+    );
+  }
+
+  Widget _notesField() {
+    return TextFormField(
+      controller: _notesController,
+      maxLines: 4,
+      decoration: _inputDecoration(
+        context.l10n.petsFormNotesLabel,
+        context.l10n.petsFormNotesHint,
+      ),
+    );
+  }
+
+  // ---- layouts --------------------------------------------------------------
+
   @override
   Widget build(BuildContext context) {
-    final breedOptions = _breedOptionsForSelectedSpecies();
-    final isAquariumProfile = _species == 'Pesce' && _isAquarium;
+    if (widget.stepped) return _buildStepped(context);
 
     return SingleChildScrollView(
       child: Form(
         key: _formKey,
+        // Re-validate each field as the owner edits it, so a message clears as
+        // soon as its value becomes valid instead of lingering until next submit.
+        autovalidateMode: AutovalidateMode.onUserInteraction,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             PetSection(
               title: widget.title,
               children: [
-                ValueListenableBuilder<TextEditingValue>(
-                  valueListenable: _nameController,
-                  builder: (context, value, _) {
-                    final trimmed = value.text.trim();
-                    final label = trimmed.isNotEmpty
-                        ? trimmed[0].toUpperCase()
-                        : (widget.initialPet?.avatarEmoji ?? '?');
-                    return _PhotoPicker(
-                      photoBytes: _photoBytes,
-                      identityColor: _identityColor,
-                      backgroundColor: _speciesAccentColor(),
-                      label: label,
-                      onPick: _pickPhoto,
-                      onRemove: _photoBytes == null ? null : _removePhoto,
-                    );
-                  },
-                ),
-                const SizedBox(height: AppSpacing.md),
-                Text('Colore identificativo', style: AppTextStyles.caption),
-                const SizedBox(height: AppSpacing.xs),
-                _IdentityColorPicker(
-                  value: _identityColor,
-                  onChanged: (color) => setState(() => _identityColor = color),
-                ),
+                _photoField(),
                 const SizedBox(height: AppSpacing.lg),
-                TextFormField(
-                  controller: _nameController,
-                  textInputAction: TextInputAction.next,
-                  decoration: _inputDecoration('Nome', 'Moka'),
-                  validator: (value) {
-                    if ((value ?? '').trim().isEmpty) {
-                      return 'Inserisci il nome del pet.';
-                    }
-                    return null;
-                  },
-                ),
-                const SizedBox(height: AppSpacing.md),
-                DropdownButtonFormField<String>(
-                  initialValue: _species,
-                  decoration: _inputDecoration('Specie', 'Seleziona una specie'),
-                  items: PetDemoStore.speciesOptions
-                      .map(
-                        (option) => DropdownMenuItem<String>(
-                          value: option.label,
-                          child: Text(option.label),
-                        ),
-                      )
-                      .toList(growable: false),
-                  onChanged: (value) {
-                    setState(() {
-                      _species = value;
-                      _breed = null;
-                      _dogSizeCategory = null;
-                      if (value != 'Pesce') {
-                        _isAquarium = false;
-                        _aquariumStock = [];
-                      } else {
-                        // Fish don't get the standalone Sesso field (see
-                        // below) — sex is tracked per aquarium species
-                        // instead, so this is just a safe non-null default.
-                        _sex = 'Sconosciuto';
-                      }
-                    });
-                  },
-                  validator: (value) {
-                    if (value == null || value.trim().isEmpty) {
-                      return 'Seleziona una specie.';
-                    }
-                    return null;
-                  },
-                ),
-                if (_species == 'Pesce') ...[
-                  const SizedBox(height: AppSpacing.md),
-                  Text('Tipo di profilo', style: AppTextStyles.caption),
-                  const SizedBox(height: AppSpacing.xs),
-                  _AquariumModeToggle(
-                    value: _isAquarium,
-                    onChanged: (value) => setState(() => _isAquarium = value),
-                  ),
-                ],
-                const SizedBox(height: AppSpacing.md),
-                if (_species == 'Pesce' && _isAquarium) ...[
-                  Text('Popolazione dell\'acquario', style: AppTextStyles.caption),
-                  const SizedBox(height: AppSpacing.xs),
-                  _AquariumStockEditor(
-                    stock: _aquariumStock,
-                    onAdd: _openAddSpeciesSheet,
-                    onChangeMale: _changeMaleCount,
-                    onChangeFemale: _changeFemaleCount,
-                    onRemove: _removeStock,
-                  ),
-                ] else
-                  DropdownButtonFormField<String>(
-                    initialValue: breedOptions.contains(_breed) ? _breed : null,
-                    decoration: _inputDecoration(
-                      'Razza',
-                      _species == null
-                          ? 'Seleziona prima la specie'
-                          : 'Facoltativa',
-                    ),
-                    items: breedOptions
-                        .map(
-                          (breed) => DropdownMenuItem<String>(
-                            value: breed == 'Razza non specificata' ? '' : breed,
-                            child: Text(breed),
-                          ),
-                        )
-                        .toList(growable: false),
-                    onChanged: _species == null
-                        ? null
-                        : (value) {
-                            setState(() {
-                              _breed = value;
-                              if (value != 'Altro') {
-                                _dogSizeCategory = null;
-                              }
-                            });
-                          },
-                  ),
-                if (_species == 'Cane' && _breed == 'Altro') ...[
-                  const SizedBox(height: AppSpacing.md),
-                  DropdownButtonFormField<String>(
-                    initialValue: _dogSizeCategory,
-                    decoration: _inputDecoration('Taglia', 'Seleziona una taglia'),
-                    items: PetDemoStore.dogSizeCategories
-                        .map(
-                          (size) => DropdownMenuItem<String>(value: size, child: Text(size)),
-                        )
-                        .toList(growable: false),
-                    onChanged: (value) => setState(() => _dogSizeCategory = value),
-                  ),
-                ],
-                if (_speciesHasHabitat(_species)) ...[
-                  const SizedBox(height: AppSpacing.lg),
-                  Text(_habitatLabel(_species), style: AppTextStyles.caption),
-                  const SizedBox(height: AppSpacing.xs),
-                  _HabitatFields(
-                    showVolume: _species == 'Pesce',
-                    lengthController: _lengthController,
-                    widthController: _widthController,
-                    heightController: _heightController,
-                    volumeController: _volumeController,
-                    temperatureController: _temperatureController,
-                    substrateController: _substrateController,
-                    notesController: _habitatNotesController,
-                    inputDecoration: _inputDecoration,
-                    onDimensionChanged: _recalculateVolume,
-                  ),
-                ],
-                // A multi-fish aquarium has no single "birth date" — asked
-                // only for a single pet (a lone fish included).
-                if (!isAquariumProfile) ...[
-                  const SizedBox(height: AppSpacing.md),
-                  InkWell(
-                    onTap: _pickBirthDate,
-                    borderRadius: BorderRadius.circular(18),
-                    child: InputDecorator(
-                      decoration:
-                          _inputDecoration('Data di nascita', 'Seleziona una data'),
-                      child: Row(
-                        children: [
-                          Expanded(
-                            child: Text(
-                              _birthDate == null
-                                  ? 'Seleziona una data'
-                                  : formatPetBirthDate(_birthDate!),
-                              style: AppTextStyles.bodySmall.copyWith(
-                                color: _birthDate == null
-                                    ? AppColors.mutedText
-                                    : AppColors.text,
-                              ),
-                            ),
-                          ),
-                          const Icon(Icons.calendar_month_rounded, color: AppColors.primary),
-                        ],
-                      ),
-                    ),
-                  ),
-                  if (_birthDate == null) ...[
-                    const SizedBox(height: 6),
-                    Text(
-                      'Seleziona la data di nascita.',
-                      style: AppTextStyles.caption.copyWith(color: Colors.red.shade700),
-                    ),
-                  ],
-                ],
-                // Fish don't get a standalone Sesso field: for an aquarium,
-                // one sex value for the whole tank doesn't make sense — it's
-                // tracked per species instead, right in the population
-                // editor above. A single fish just doesn't show it.
-                if (_species != 'Pesce') ...[
-                  const SizedBox(height: AppSpacing.md),
-                  DropdownButtonFormField<String>(
-                    initialValue: _sex,
-                    decoration: _inputDecoration('Sesso', 'Seleziona'),
-                    items: PetDemoStore.sexOptions
-                        .map(
-                          (sex) => DropdownMenuItem<String>(
-                            value: sex,
-                            child: Text(sex),
-                          ),
-                        )
-                        .toList(growable: false),
-                    onChanged: (value) {
-                      setState(() {
-                        _sex = value;
-                      });
-                    },
-                    validator: (value) {
-                      if (value == null || value.trim().isEmpty) {
-                        return 'Seleziona il sesso.';
-                      }
-                      return null;
-                    },
-                  ),
-                ],
-                const SizedBox(height: AppSpacing.md),
-                TextFormField(
-                  controller: _weightController,
-                  textInputAction: TextInputAction.next,
-                  keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                  inputFormatters: [
-                    FilteringTextInputFormatter.allow(RegExp(r'[0-9,.\s]')),
-                  ],
-                  decoration: _inputDecoration('Peso', 'Es. 18,4'),
-                  validator: (value) {
-                    final parsed = _parseWeight(value);
-                    if (parsed == null) {
-                      return 'Inserisci un peso valido.';
-                    }
-                    if (parsed <= 0) {
-                      return 'Il peso deve essere maggiore di zero.';
-                    }
-                    return null;
-                  },
-                ),
-                const SizedBox(height: AppSpacing.md),
-                TextFormField(
-                  controller: _notesController,
-                  maxLines: 4,
-                  decoration: _inputDecoration(
-                    'Note',
-                    'Aggiungi note brevi su dieta, farmaci o comportamento.',
-                  ),
-                ),
+                _fields([
+                  _nameField(),
+                  _speciesDropdown(),
+                  _profileTypeField(),
+                  _breedOrStockField(),
+                  _dogSizeField(),
+                  _habitatField(),
+                  _birthDateField(),
+                  _sexField(),
+                  _sterilizedField(),
+                  _weightField(),
+                  _bodyConditionField(),
+                  _activityField(),
+                  _coatColorField(),
+                  _microchipField(),
+                  _notesField(),
+                ]),
               ],
             ),
             const SizedBox(height: AppSpacing.lg),
             SizedBox(
               width: double.infinity,
               child: ElevatedButton.icon(
-                onPressed: _submit,
-                icon: const Icon(Icons.save_rounded),
-                label: Text(widget.submitLabel),
+                onPressed: _submitting ? null : _submit,
+                icon: _submitting
+                    ? const PetLoader.small(color: AppColors.onPrimary)
+                    : const Icon(Icons.save_rounded),
+                label: Text(_submitting ? context.l10n.petsFormSaving : widget.submitLabel),
               ),
             ),
             if (widget.footerActions != null) widget.footerActions!,
@@ -543,84 +924,346 @@ class _PetProfileFormState extends State<PetProfileForm> {
     );
   }
 
-  InputDecoration _inputDecoration(String label, String hint) {
-    return InputDecoration(
-      labelText: label,
-      hintText: hint,
-      filled: true,
-      fillColor: Colors.white,
-      border: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(18),
-        borderSide: const BorderSide(color: AppColors.border),
-      ),
-      enabledBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(18),
-        borderSide: const BorderSide(color: AppColors.border),
-      ),
-      focusedBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(18),
-        borderSide: const BorderSide(color: AppColors.primary, width: 1.6),
+  Widget _buildStepped(BuildContext context) {
+    if (_done) return _buildDone(context);
+
+    final t = context.l10n;
+    final titles = [
+      t.petsWizardStep1Title,
+      t.petsWizardStep2Title,
+      t.petsWizardStep3Title,
+      t.petsWizardStep4Title,
+    ];
+    final subtitles = [
+      t.petsWizardStep1Subtitle,
+      t.petsWizardStep2Subtitle,
+      t.petsWizardStep3Subtitle,
+      t.petsWizardStep4Subtitle,
+    ];
+    final isLast = _step == _kWizardSteps - 1;
+
+    return PopScope(
+      // Back inside the flow goes to the previous step; only from the first
+      // step does it leave the page. Everything typed is kept (the controllers
+      // live in this State, not in the step widgets).
+      canPop: _step == 0,
+      onPopInvokedWithResult: (didPop, _) {
+        if (!didPop) _goToStep(_step - 1);
+      },
+      child: SingleChildScrollView(
+        controller: _scrollController,
+        child: Form(
+          key: _formKey,
+          autovalidateMode: AutovalidateMode.onUserInteraction,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              PetStepDots(current: _step, total: _kWizardSteps),
+              const SizedBox(height: AppSpacing.md),
+              PetSection(
+                title: titles[_step],
+                subtitle: subtitles[_step],
+                children: [_stepFields(_step)],
+              ),
+              const SizedBox(height: AppSpacing.lg),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: _submitting ? null : _next,
+                  child: _submitting
+                      ? const PetLoader.small(color: AppColors.onPrimary)
+                      : Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(isLast ? t.petsWizardConfirm : t.petsWizardNext),
+                            if (!isLast) ...[
+                              const SizedBox(width: AppSpacing.xs),
+                              const Icon(Icons.arrow_forward_rounded, size: 18),
+                            ],
+                          ],
+                        ),
+                ),
+              ),
+              if (_step > 0)
+                SizedBox(
+                  width: double.infinity,
+                  child: TextButton(
+                    onPressed: _submitting ? null : () => _goToStep(_step - 1),
+                    child: Text(t.petsWizardBack),
+                  ),
+                ),
+              const SizedBox(height: AppSpacing.lg),
+            ],
+          ),
+        ),
       ),
     );
   }
 
+  /// Species first: everything after it depends on what animal it is.
+  Widget _stepFields(int step) {
+    switch (step) {
+      case 0:
+        return _fields([
+          _speciesChips(),
+          _profileTypeField(),
+          if (_isAquariumProfile)
+            _breedOrStockField()
+          else if (_usesBreedWord) ...[
+            _pureOrMixedField(),
+            if (!_isMixedBreed) _breedOrStockField(),
+          ] else if (_species != null)
+            _breedOrStockField(),
+        ]);
+      case 1:
+        return _fields([
+          _photoField(),
+          _nameField(),
+          _sexField(),
+        ]);
+      case 2:
+        return _fields([
+          _birthDateField(),
+          _dogSizeField(),
+          _activityField(),
+          _bodyConditionField(),
+          _weightField(),
+          _coatColorField(),
+          _habitatField(),
+        ]);
+      default:
+        return _fields([
+          _microchipField(),
+          _notesField(),
+          _sterilizedField(),
+        ]);
+    }
+  }
+
+  Widget _buildDone(BuildContext context) {
+    final t = context.l10n;
+    return SingleChildScrollView(
+      child: Padding(
+        padding: const EdgeInsets.only(top: AppSpacing.xl),
+        child: Column(
+          children: [
+            Container(
+              width: 84,
+              height: 84,
+              alignment: Alignment.center,
+              decoration: BoxDecoration(
+                color: AppColors.success.withValues(alpha: 0.15),
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(Icons.check_rounded, size: 48, color: AppColors.success),
+            ),
+            const SizedBox(height: AppSpacing.lg),
+            Text(t.petsWizardDoneTitle, style: AppTextStyles.heading, textAlign: TextAlign.center),
+            const SizedBox(height: AppSpacing.sm),
+            Text(
+              t.petsWizardDoneMessage(_createdName),
+              style: AppTextStyles.body,
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: AppSpacing.xl),
+            SizedBox(
+              width: double.infinity,
+              child: OutlinedButton.icon(
+                onPressed: _startAnother,
+                icon: const Icon(Icons.add_rounded, size: 18),
+                label: Text(t.petsWizardAddAnother),
+              ),
+            ),
+            const SizedBox(height: AppSpacing.sm),
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                onPressed: widget.onFinish,
+                child: Text(t.petsWizardFinish),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _goToStep(int step) {
+    if (step < 0 || step >= _kWizardSteps) return;
+    FocusScope.of(context).unfocus();
+    setState(() => _step = step);
+    if (_scrollController.hasClients) _scrollController.jumpTo(0);
+  }
+
+  /// Validates the visible step, then moves on (or saves, on the last step).
+  void _next() {
+    if (!(_formKey.currentState?.validate() ?? false)) return;
+    if (_step == 0 && _isAquariumProfile && _aquariumStock.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(context.l10n.petsFormAquariumNeedsSpecies)),
+      );
+      return;
+    }
+    if (_step < _kWizardSteps - 1) {
+      _goToStep(_step + 1);
+      return;
+    }
+    _submit();
+  }
+
+  /// Back to an empty step 1 for another animal.
+  void _startAnother() {
+    for (final controller in [
+      _nameController,
+      _weightController,
+      _notesController,
+      _microchipController,
+      _coatColorController,
+      _otherBreedController,
+      _birthDateController,
+      _lengthController,
+      _widthController,
+      _heightController,
+      _volumeController,
+      _temperatureController,
+      _substrateController,
+      _habitatNotesController,
+    ]) {
+      controller.clear();
+    }
+    setState(() {
+      _species = null;
+      _breed = null;
+      _otherBreed = false;
+      _dogSizeCategory = null;
+      _sex = null;
+      _sterilized = null;
+      _bodyCondition = null;
+      _activityLevel = null;
+      _photoBytes = null;
+      _photoTouched = false;
+      _isAquarium = false;
+      _aquariumStock = [];
+      _volumeManuallyEdited = false;
+      _identityColor = PetDemoStore.instance.nextDefaultIdentityColor();
+      _createdName = '';
+      _done = false;
+      _step = 0;
+    });
+  }
+
+  InputDecoration _inputDecoration(String label, String hint) => petFieldDecoration(label, hint);
+
+  /// True while the breed row shows a hint ("Seleziona una razza") rather than a value.
+  bool get _breedIsPlaceholder {
+    if (_species == null || _otherBreed) return false;
+    final breed = _breed;
+    return breed == null || breed.isEmpty;
+  }
+
+  String _breedDisplay(AppLocalizations t) {
+    if (_species == null) return t.petsFormBreedSelectSpeciesFirst;
+    if (_otherBreed) {
+      return _usesBreedWord ? otherBreedLabel : otherEntryLabel;
+    }
+    final breed = _breed;
+    if (breed != null && breed.isNotEmpty) return breed;
+    return _usesBreedWord ? t.petsFormBreedPlaceholder : t.petsFormBreedSpeciesPlaceholder;
+  }
+
+  Future<String?> _pickBreed(List<String> options) {
+    return showModalBottomSheet<String>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: AppColors.surface,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(AppRadii.xl)),
+      ),
+      builder: (_) => _BreedPickerSheet(options: options),
+    );
+  }
+
   Future<void> _pickBirthDate() async {
-    final initialDate = _birthDate ?? DateTime(2021, 1, 1);
+    final initialDate = parseStrictDate(_birthDateController.text) ?? DateTime(2021, 1, 1);
     final picked = await showDatePicker(
       context: context,
       initialDate: initialDate,
       firstDate: DateTime(2000),
       lastDate: DateTime.now(),
+      // The dialog's own "write" mode has no gg/mm/aaaa slashes; typing
+      // already happens in the field next to this icon, so the dialog only
+      // needs to offer the calendar.
+      initialEntryMode: DatePickerEntryMode.calendarOnly,
     );
-    if (picked != null) {
-      setState(() {
-        _birthDate = picked;
-      });
-    }
+    if (picked == null) return;
+    setState(() => _birthDateController.text = formatDateForInput(picked));
   }
 
   void _submit() async {
-    final isAquariumProfile = _species == 'Pesce' && _isAquarium;
     final isValid = _formKey.currentState?.validate() ?? false;
-    if (!isValid || (!isAquariumProfile && _birthDate == null)) {
-      setState(() {});
+    if (!isValid) {
       return;
     }
 
-    if (isAquariumProfile && _aquariumStock.isEmpty) {
+    if (_isAquariumProfile && _aquariumStock.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Aggiungi almeno una specie all\'acquario.')),
+        SnackBar(content: Text(context.l10n.petsFormAquariumNeedsSpecies)),
       );
       return;
     }
 
+    final microchip = normalizeMicrochip(_microchipController.text);
+    final coatColor = _coatColorController.text.trim();
     final draft = PetProfileDraft(
       name: _nameController.text.trim(),
       species: _species!.trim(),
-      breed: isAquariumProfile ? null : _normalizeBreed(_breed),
-      birthDate: isAquariumProfile ? null : _birthDate,
-      sex: _sex!.trim(),
-      weightKg: _parseWeight(_weightController.text)!,
+      breed: _isAquariumProfile ? null : _normalizeBreed(_breed),
+      birthDate: _isAquariumProfile ? null : parseStrictDate(_birthDateController.text.trim()),
+      // Fish have no Sesso field (see [_sexField]); an unanswered one is "non so".
+      sex: _species == 'Pesce' ? sexUnknown : (_sex ?? sexUnknown),
+      weightKg: speciesHasWeight(_species) ? _parseWeight(_weightController.text) : null,
       medicalNote: _notesController.text.trim(),
       identityColor: _identityColor,
       photoBytes: _photoBytes,
-      aquariumStock: isAquariumProfile ? _aquariumStock : const [],
+      photoTouched: _photoTouched,
+      aquariumStock: _isAquariumProfile ? _aquariumStock : const [],
       habitat: _buildHabitat(),
-      dogSizeCategory: _species == 'Cane' && _breed == 'Altro' ? _dogSizeCategory : null,
+      dogSizeCategory: speciesHasSize(_species) ? _dogSizeCategory : null,
+      // A switch left off during creation reads as "no"; when editing, an
+      // untouched unknown stays unknown.
+      isSterilized: speciesHasNeutering(_species, breed: _breed)
+          ? (_sterilized ?? (widget.stepped ? false : null))
+          : null,
+      microchipNumber:
+          speciesHasMicrochip(_species, breed: _breed) && microchip.isNotEmpty ? microchip : null,
+      coatColor: speciesHasCoatColor(_species) && coatColor.isNotEmpty ? coatColor : null,
+      bodyCondition: _bodyConditionGuide == null ? null : _bodyCondition,
+      activityLevel: speciesHasActivity(_species, breed: _breed) ? _activityLevel : null,
     );
 
-    await widget.onSubmit(draft);
+    setState(() => _submitting = true);
+    try {
+      await widget.onSubmit(draft);
+      if (widget.stepped && mounted) {
+        setState(() {
+          _done = true;
+          _createdName = draft.name;
+        });
+      }
+    } finally {
+      if (mounted) setState(() => _submitting = false);
+    }
   }
 
   HabitatDetails? _buildHabitat() {
     if (!_speciesHasHabitat(_species)) return null;
 
     final habitat = HabitatDetails(
-      lengthCm: int.tryParse(_lengthController.text.trim()),
-      widthCm: int.tryParse(_widthController.text.trim()),
-      heightCm: int.tryParse(_heightController.text.trim()),
-      volumeLiters: _species == 'Pesce' ? int.tryParse(_volumeController.text.trim()) : null,
-      temperatureLabel: _temperatureController.text.trim(),
+      lengthCm: _typedCm(_lengthController),
+      widthCm: _typedCm(_widthController),
+      heightCm: _typedCm(_heightController),
+      volumeLiters: _species == 'Pesce' ? _typedLiters() : null,
+      temperatureLabel: temperatureLabelFromInput(_temperatureController.text, _units),
       substrate: _substrateController.text.trim(),
       notes: _habitatNotesController.text.trim(),
     );
@@ -649,13 +1292,21 @@ class _PetProfileFormState extends State<PetProfileForm> {
       return null;
     }
 
-    final normalized = raw.replaceAll(',', '.');
-    return double.tryParse(normalized);
+    final typed = double.tryParse(raw.replaceAll(',', '.'));
+    if (typed == null) return null;
+    // Typed in grams for small animals, otherwise in the owner's unit (kg or
+    // lb); stored in kg.
+    return _weighsInGrams ? typed / 1000 : displayToKg(typed, _units);
   }
 
+  /// The weight field's text: the stored kg label, in the owner's unit.
   String _weightFromLabel(String? label) {
-    final raw = label?.replaceAll('kg', '').trim() ?? '';
-    return raw.replaceAll(',', '.');
+    final kg = parseWeightLabelKg(label ?? '');
+    if (kg == null) return '';
+    if (_weighsInGrams) return formatDecimal(kg * 1000);
+    // Three decimals so a saved label ("32 g", "10,21 kg") comes back to the same
+    // label when the profile is saved untouched.
+    return formatDecimal(kgToDisplay(kg, _units), digits: 3);
   }
 
   DateTime? _parseBirthDate(String? label) {
@@ -680,21 +1331,23 @@ class _PetProfileFormState extends State<PetProfileForm> {
 
   int? _monthNumber(String label) {
     const months = {
-      'Gen': 1,
-      'Feb': 2,
-      'Mar': 3,
-      'Apr': 4,
-      'Mag': 5,
-      'Giu': 6,
-      'Lug': 7,
-      'Ago': 8,
-      'Set': 9,
-      'Ott': 10,
-      'Nov': 11,
-      'Dic': 12,
+      'gen': 1,
+      'feb': 2,
+      'mar': 3,
+      'apr': 4,
+      'mag': 5,
+      'giu': 6,
+      'lug': 7,
+      'ago': 8,
+      'set': 9,
+      'ott': 10,
+      'nov': 11,
+      'dic': 12,
     };
 
-    return months[label];
+    // formato salvato: sempre italiano. Saved labels may still use the old
+    // capitalised form ("05 Mag 2021").
+    return months[label.toLowerCase()];
   }
 
 }
@@ -706,10 +1359,12 @@ class _PhotoPicker extends StatelessWidget {
     required this.backgroundColor,
     required this.label,
     required this.onPick,
+    this.photoPath,
     this.onRemove,
   });
 
   final Uint8List? photoBytes;
+  final String? photoPath;
   final Color identityColor;
   final Color backgroundColor;
   final String label;
@@ -725,6 +1380,7 @@ class _PhotoPicker extends StatelessWidget {
           label: label,
           backgroundColor: backgroundColor,
           photoBytes: photoBytes,
+          photoPath: photoPath,
           identityColor: identityColor,
           size: 64,
         ),
@@ -737,13 +1393,17 @@ class _PhotoPicker extends StatelessWidget {
               OutlinedButton.icon(
                 onPressed: onPick,
                 icon: const Icon(Icons.add_a_photo_outlined, size: 16),
-                label: Text(photoBytes == null ? 'Aggiungi foto' : 'Cambia foto'),
+                label: Text(
+                  photoBytes == null && photoPath == null
+                      ? context.l10n.petsFormPhotoAdd
+                      : context.l10n.petsFormPhotoChange,
+                ),
               ),
               if (onRemove != null)
                 TextButton.icon(
                   onPressed: onRemove,
                   icon: const Icon(Icons.delete_outline, size: 16),
-                  label: const Text('Rimuovi'),
+                  label: Text(context.l10n.petsFormPhotoRemove),
                 ),
             ],
           ),
@@ -753,33 +1413,99 @@ class _PhotoPicker extends StatelessWidget {
   }
 }
 
-class _AquariumModeToggle extends StatelessWidget {
-  const _AquariumModeToggle({required this.value, required this.onChanged});
+/// "Pesce" / "Acquario": two cards, each saying what it registers.
+class _FishKindChoice extends StatelessWidget {
+  const _FishKindChoice({required this.aquarium, required this.onChanged});
 
-  final bool value;
+  final bool aquarium;
   final ValueChanged<bool> onChanged;
 
   @override
   Widget build(BuildContext context) {
-    return SegmentedButton<bool>(
-      segments: const [
-        ButtonSegment(
-          value: false,
-          icon: Icon(Icons.set_meal_outlined, size: 16),
-          label: Text('Un pesce'),
+    final t = context.l10n;
+    return Column(
+      children: [
+        _FishKindCard(
+          icon: Icons.set_meal_outlined,
+          title: t.petsFormFishSingleTitle,
+          body: t.petsFormFishSingleBody,
+          selected: !aquarium,
+          onTap: () => onChanged(false),
         ),
-        ButtonSegment(
-          value: true,
-          icon: Icon(Icons.water_outlined, size: 16),
-          label: Text('Acquario'),
+        const SizedBox(height: AppSpacing.sm),
+        _FishKindCard(
+          icon: Icons.water_outlined,
+          title: t.petsHabitatAquarium,
+          body: t.petsFormFishAquariumBody,
+          selected: aquarium,
+          onTap: () => onChanged(true),
         ),
       ],
-      selected: {value},
-      showSelectedIcon: false,
-      onSelectionChanged: (selection) => onChanged(selection.first),
-      style: ButtonStyle(
-        visualDensity: VisualDensity.compact,
-        textStyle: WidgetStatePropertyAll(AppTextStyles.caption.copyWith(fontWeight: FontWeight.w700)),
+    );
+  }
+}
+
+class _FishKindCard extends StatelessWidget {
+  const _FishKindCard({
+    required this.icon,
+    required this.title,
+    required this.body,
+    required this.selected,
+    required this.onTap,
+  });
+
+  final IconData icon;
+  final String title;
+  final String body;
+  final bool selected;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return Semantics(
+      button: true,
+      selected: selected,
+      label: '$title. $body',
+      excludeSemantics: true,
+      child: Material(
+        color: selected ? AppColors.secondarySoft.withValues(alpha: 0.5) : AppColors.surface,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(AppRadii.medium),
+          side: BorderSide(
+            color: selected ? AppColors.primary : AppColors.border,
+            width: selected ? 1.6 : 1,
+          ),
+        ),
+        child: InkWell(
+          borderRadius: BorderRadius.circular(AppRadii.medium),
+          onTap: onTap,
+          child: Padding(
+            padding: const EdgeInsets.all(AppSpacing.md),
+            child: Row(
+              children: [
+                Icon(icon, color: selected ? AppColors.primaryStrong : AppColors.mutedText),
+                const SizedBox(width: AppSpacing.md),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        title,
+                        style: AppTextStyles.bodySmall.copyWith(
+                          color: AppColors.text,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                      const SizedBox(height: 2),
+                      Text(body, style: AppTextStyles.caption),
+                    ],
+                  ),
+                ),
+                if (selected) const Icon(Icons.check_circle_rounded, color: AppColors.primary),
+              ],
+            ),
+          ),
+        ),
       ),
     );
   }
@@ -808,7 +1534,7 @@ class _AquariumStockEditor extends StatelessWidget {
         if (stock.isEmpty)
           Padding(
             padding: const EdgeInsets.only(bottom: AppSpacing.sm),
-            child: Text('Nessuna specie aggiunta ancora.', style: AppTextStyles.bodySmall),
+            child: Text(context.l10n.petsFormNoSpeciesYet, style: AppTextStyles.bodySmall),
           )
         else
           ...stock.asMap().entries.map(
@@ -825,7 +1551,7 @@ class _AquariumStockEditor extends StatelessWidget {
         OutlinedButton.icon(
           onPressed: onAdd,
           icon: const Icon(Icons.add_rounded, size: 18),
-          label: const Text('Aggiungi specie'),
+          label: Text(context.l10n.petsFormAddSpecies),
         ),
       ],
     );
@@ -890,7 +1616,7 @@ class _StockRow extends StatelessWidget {
               Expanded(
                 child: _SexCounter(
                   icon: Icons.female_rounded,
-                  color: AppColors.accent,
+                  color: AppColors.secondaryStrong,
                   count: item.femaleCount,
                   onChanged: onChangeFemale,
                 ),
@@ -928,7 +1654,7 @@ class _SexCounter extends StatelessWidget {
         _CompactIconButton(
           onPressed: count > 0 ? () => onChanged(count - 1) : null,
           icon: Icons.remove_circle_outline,
-          color: AppColors.primary,
+          color: AppColors.secondaryStrong,
         ),
         SizedBox(
           width: 20,
@@ -941,7 +1667,7 @@ class _SexCounter extends StatelessWidget {
         _CompactIconButton(
           onPressed: () => onChanged(count + 1),
           icon: Icons.add_circle_outline,
-          color: AppColors.primary,
+          color: AppColors.secondaryStrong,
         ),
       ],
     );
@@ -1001,7 +1727,13 @@ class _HabitatFields extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final dimensionFormatters = [FilteringTextInputFormatter.digitsOnly];
+    final system = UnitSettingsStore.instance.system;
+    final dimensionFormatters = [
+      system.usesInches
+          ? FilteringTextInputFormatter.allow(RegExp(r'[0-9,.]'))
+          : FilteringTextInputFormatter.digitsOnly,
+    ];
+    final lengthUnit = lengthUnitName(system);
 
     return Column(
       children: [
@@ -1010,9 +1742,9 @@ class _HabitatFields extends StatelessWidget {
             Expanded(
               child: TextFormField(
                 controller: lengthController,
-                keyboardType: TextInputType.number,
+                keyboardType: const TextInputType.numberWithOptions(decimal: true),
                 inputFormatters: dimensionFormatters,
-                decoration: inputDecoration('Lunghezza', 'cm'),
+                decoration: inputDecoration(context.l10n.petsFormHabitatLength, lengthUnit),
                 onChanged: (_) => onDimensionChanged(),
               ),
             ),
@@ -1020,9 +1752,9 @@ class _HabitatFields extends StatelessWidget {
             Expanded(
               child: TextFormField(
                 controller: widthController,
-                keyboardType: TextInputType.number,
+                keyboardType: const TextInputType.numberWithOptions(decimal: true),
                 inputFormatters: dimensionFormatters,
-                decoration: inputDecoration('Larghezza', 'cm'),
+                decoration: inputDecoration(context.l10n.petsFormHabitatWidth, lengthUnit),
                 onChanged: (_) => onDimensionChanged(),
               ),
             ),
@@ -1030,9 +1762,9 @@ class _HabitatFields extends StatelessWidget {
             Expanded(
               child: TextFormField(
                 controller: heightController,
-                keyboardType: TextInputType.number,
+                keyboardType: const TextInputType.numberWithOptions(decimal: true),
                 inputFormatters: dimensionFormatters,
-                decoration: inputDecoration('Altezza', 'cm'),
+                decoration: inputDecoration(context.l10n.petsFormHabitatHeight, lengthUnit),
                 onChanged: (_) => onDimensionChanged(),
               ),
             ),
@@ -1042,28 +1774,45 @@ class _HabitatFields extends StatelessWidget {
           const SizedBox(height: AppSpacing.md),
           TextFormField(
             controller: volumeController,
-            keyboardType: TextInputType.number,
-            inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-            decoration: inputDecoration('Litri', 'Calcolati dalle dimensioni, modificabili'),
+            keyboardType: const TextInputType.numberWithOptions(decimal: true),
+            inputFormatters: [
+              system.usesUsGallons
+                  ? FilteringTextInputFormatter.allow(RegExp(r'[0-9,.]'))
+                  : FilteringTextInputFormatter.digitsOnly,
+            ],
+            decoration: inputDecoration(
+              system.usesUsGallons
+                  ? context.l10n.petsFormHabitatUsGallons
+                  : context.l10n.petsFormHabitatLiters,
+              context.l10n.petsFormHabitatVolumeHint,
+            ),
           ),
         ],
         const SizedBox(height: AppSpacing.md),
         TextFormField(
           controller: temperatureController,
-          decoration: inputDecoration('Temperatura', 'Es. 24-26°C'),
+          decoration: inputDecoration(
+            context.l10n.petsFormHabitatTemperature,
+            system.usesFahrenheit
+                ? context.l10n.petsFormHabitatTemperatureHintF
+                : context.l10n.petsFormHabitatTemperatureHintC,
+          ),
         ),
         const SizedBox(height: AppSpacing.md),
         TextFormField(
           controller: substrateController,
-          decoration: inputDecoration('Substrato', 'Es. ghiaia fine, fibra di cocco'),
+          decoration: inputDecoration(
+            context.l10n.petsFormHabitatSubstrate,
+            context.l10n.petsFormHabitatSubstrateHint,
+          ),
         ),
         const SizedBox(height: AppSpacing.md),
         TextFormField(
           controller: notesController,
           maxLines: 3,
           decoration: inputDecoration(
-            'Attrezzatura',
-            'Filtro, illuminazione, riscaldatore, piante, lampada UVB, posatoi...',
+            context.l10n.petsFormHabitatEquipment,
+            context.l10n.petsFormHabitatEquipmentHint,
           ),
         ),
       ],
@@ -1100,11 +1849,94 @@ class _IdentityColorPicker extends StatelessWidget {
                 ),
               ),
               child: color == value
-                  ? const Icon(Icons.check_rounded, color: Colors.white, size: 16)
+                  ? const Icon(Icons.check_rounded, color: AppColors.onMedia, size: 16)
                   : null,
             ),
           ),
       ],
+    );
+  }
+}
+
+/// Searchable list of breeds. Typing narrows it; "Meticcio / altra razza" is
+/// always offered so an unlisted breed can still be described.
+class _BreedPickerSheet extends StatefulWidget {
+  const _BreedPickerSheet({required this.options});
+
+  final List<String> options;
+
+  @override
+  State<_BreedPickerSheet> createState() => _BreedPickerSheetState();
+}
+
+class _BreedPickerSheetState extends State<_BreedPickerSheet> {
+  String _query = '';
+
+  @override
+  Widget build(BuildContext context) {
+    final query = foldBreedText(_query);
+    // The free-text entry is always the last row, whatever was typed, so an
+    // unlisted breed can be entered even when the search finds nothing.
+    final freeText = widget.options.where(isOtherBreedEntry).toList(growable: false);
+    final matches = [
+      ...widget.options.where(
+        (breed) => !isOtherBreedEntry(breed) && (query.isEmpty || breedMatchesQuery(breed, _query)),
+      ),
+      ...freeText,
+    ];
+    // Dogs and cats are searched by breed name; the scientific name only
+    // matters for the other animal categories.
+    final dogOrCat = widget.options.contains(otherBreedLabel);
+
+    return SafeArea(
+      child: SizedBox(
+        height: MediaQuery.sizeOf(context).height * 0.7,
+        child: Column(
+          children: [
+            Padding(
+              padding: const EdgeInsets.fromLTRB(AppSpacing.lg, AppSpacing.md, AppSpacing.lg, AppSpacing.sm),
+              child: TextField(
+                autofocus: true,
+                onChanged: (value) => setState(() => _query = value),
+                decoration: InputDecoration(
+                  hintText: dogOrCat
+                      ? context.l10n.petsFormBreedSearchHint
+                      : context.l10n.petsFormBreedSearchHintScientific,
+                  prefixIcon: const Icon(Icons.search_rounded),
+                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(18)),
+                ),
+              ),
+            ),
+            Expanded(
+              child: ListView.builder(
+                      itemCount: matches.length,
+                      itemBuilder: (_, index) {
+                        final breed = matches[index];
+                        final pinned = isPinnedBreedEntry(breed);
+                        final lastPinned = pinned &&
+                            (index + 1 >= matches.length || !isPinnedBreedEntry(matches[index + 1]));
+                        final tile = ListTile(
+                          tileColor: pinned ? AppColors.secondarySoft.withValues(alpha: 0.35) : null,
+                          leading: pinned ? const Icon(Icons.pets_outlined, color: AppColors.secondaryStrong) : null,
+                          title: Text(
+                            breed == 'Razza non specificata'
+                                ? context.l10n.petsBreedUnspecified
+                                : breed,
+                            style: pinned ? const TextStyle(fontWeight: FontWeight.w600) : null,
+                          ),
+                          onTap: () => Navigator.of(context).pop(breed),
+                        );
+                        if (!lastPinned) return tile;
+                        return Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [tile, const Divider(height: 1)],
+                        );
+                      },
+                    ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }

@@ -1,7 +1,34 @@
+import json
 from functools import lru_cache
+from typing import Annotated, Any
 
-from pydantic import Field, model_validator
-from pydantic_settings import BaseSettings, SettingsConfigDict
+from pydantic import BeforeValidator, Field, model_validator
+from pydantic_settings import BaseSettings, NoDecode, SettingsConfigDict
+
+
+def _string_list(value: Any) -> Any:
+    """A list setting from the environment: a JSON array (["a", "b"]) or plain
+    text separated by commas ("a, b"). Spaces are trimmed and empty items
+    dropped. pydantic-settings alone only understands JSON, and a plain
+    "a@b.it" in an env var made Settings() raise at import, taking the whole
+    serverless function down (2026-10-06)."""
+    if not isinstance(value, str):
+        return value
+    text = value.strip()
+    if text.startswith("["):
+        try:
+            parsed = json.loads(text)
+        except ValueError:
+            parsed = None
+        if isinstance(parsed, list):
+            return [str(item).strip() for item in parsed if str(item).strip()]
+        text = text.strip("[]")
+    parts = (part.strip().strip("\"'").strip() for part in text.split(","))
+    return [item for item in parts if item]
+
+
+# NoDecode: hand the raw env text to the validator above instead of JSON-decoding it.
+StringList = Annotated[list[str], NoDecode, BeforeValidator(_string_list)]
 
 
 class Settings(BaseSettings):
@@ -29,12 +56,162 @@ class Settings(BaseSettings):
     # (packages/core/application/services/get_or_create_subscription.py).
     # No default on purpose: these are real personal addresses, set via
     # DEVELOPER_EMAILS in .env (comma-separated), never hardcoded in source.
-    developer_emails: list[str] = Field(default=[], alias="DEVELOPER_EMAILS")
+    developer_emails: StringList = Field(default=[], alias="DEVELOPER_EMAILS")
+    # Public test of the app (2026-11-07): while this names a plan ("plus",
+    # "pro" or "ultra") every account is reported on it, nobody pays and the
+    # trial never ends. Empty (the default) is the normal behaviour: trial,
+    # then a plan. Only the environment can set it, never a request. See
+    # packages/core/application/services/get_or_create_subscription.py.
+    subscription_test_plan: str = Field(default="", alias="SUBSCRIPTION_TEST_PLAN")
+    # Backoffice allowlist. When empty, admin endpoints fall back to
+    # DEVELOPER_EMAILS so existing founder/developer accounts can be reused
+    # without hardcoding personal addresses in source control.
+    admin_emails: StringList = Field(default=[], alias="ADMIN_EMAILS")
+    # Shared secret for POST /admin/scheduler/tick (GitHub workflow
+    # admin-scheduler.yml). Random, 32+ bytes, rotated on its own; when
+    # empty the route falls back to the legacy digest of the service key.
+    admin_scheduler_secret: str = Field(default="", alias="ADMIN_SCHEDULER_SECRET")
+    # Browser origins allowed to call the API in production (the Flutter
+    # web app's origin). Empty = no cross-origin browser access.
+    cors_allowed_origins: StringList = Field(default=[], alias="CORS_ALLOWED_ORIGINS")
+    # Secret key for the pseudonym stored in place of the reporter's id on
+    # chat response reports. Changing it orphans existing pseudonyms (no
+    # more dedup/erasure match for old rows), so set it once and keep it.
+    reporter_pseudonym_salt: str = Field(default="", alias="REPORTER_PSEUDONYM_SALT")
     llm_provider: str = Field(default="echo", alias="LLM_PROVIDER")
     llm_model: str = Field(default="demo-model", alias="LLM_MODEL")
+    # Reserve models, comma-separated, tried in order when LLM_MODEL is rate
+    # limited (Groq counts its daily limit per model: 2026-10-05, the chat
+    # was down for hours on a single exhausted model). Empty = no reserve.
+    # Default: the models active on the Groq account on 2026-10-05.
+    llm_fallback_models: str = Field(
+        default="openai/gpt-oss-20b,qwen/qwen3.8-27b", alias="LLM_FALLBACK_MODELS"
+    )
     llm_api_key: str = Field(default="", alias="LLM_API_KEY")
     llm_base_url: str = Field(default="https://api.groq.com/openai/v1", alias="LLM_BASE_URL")
     llm_timeout_seconds: int = Field(default=30, alias="LLM_TIMEOUT_SECONDS")
+    # --- Claude (LLM_PROVIDER=anthropic, owner decision 2026-11-07) ------------
+    # The official SDK with ANTHROPIC_API_KEY; LLM_API_KEY stays the Groq key,
+    # used by the automatic reserve, the vision and the dictation. Effort:
+    # low, medium or high (the two higher levels are refused: thinking is
+    # switched off for the light calls, which those levels do not allow).
+    # The headroom is added to every answer's visible budget because the
+    # model's reasoning counts against max_tokens.
+    anthropic_api_key: str = Field(default="", alias="ANTHROPIC_API_KEY")
+    anthropic_model: str = Field(default="claude-haiku-5-5", alias="ANTHROPIC_MODEL")
+    anthropic_effort: str = Field(default="low", alias="ANTHROPIC_EFFORT")
+    anthropic_effort_light: str = Field(default="low", alias="ANTHROPIC_EFFORT_LIGHT")
+    anthropic_thinking_headroom_tokens: int = Field(
+        default=600, ge=0, alias="ANTHROPIC_THINKING_HEADROOM_TOKENS"
+    )
+    anthropic_timeout_seconds: int = Field(
+        default=30, ge=1, le=120, alias="ANTHROPIC_TIMEOUT_SECONDS"
+    )
+    # An emergency: the fixed opening, then the model on the case within
+    # this many seconds, else the fixed first-aid steps (0 = fixed steps
+    # only, as before 2026-11-07).
+    urgent_answer_timeout_seconds: int = Field(
+        default=12, ge=0, le=30, alias="URGENT_ANSWER_TIMEOUT_SECONDS"
+    )
+    # --- Free-tier economy (build 32, 2026-10-14) -------------------------------
+    # A smaller model with its own daily quota for mechanical work: case
+    # extraction, interview phrasing, English search keywords, the urgency
+    # classifier. Empty = everything on LLM_MODEL. Its own reserve, tried in
+    # order when it is rate limited. Default: the small gpt-oss, which the
+    # free accounts have (2026-10-14: llama-3.1-8b-instant was not in the
+    # catalogue of a new free account; a missing model is skipped for the
+    # day and the reserve takes over).
+    llm_model_light: str = Field(default="openai/gpt-oss-20b", alias="LLM_MODEL_LIGHT")
+    llm_light_fallback_models: str = Field(
+        default="qwen/qwen3.8-27b", alias="LLM_LIGHT_FALLBACK_MODELS"
+    )
+    # Visible-reply budget of an ordinary answer (about 1300 characters of
+    # Italian); reports get a little more. Reasoning models (openai/gpt-oss)
+    # spend extra tokens thinking before writing: that headroom is added
+    # to every call to them, on top of the visible budget.
+    llm_answer_max_tokens: int = Field(default=450, ge=100, alias="LLM_ANSWER_MAX_TOKENS")
+    llm_reasoning_headroom_tokens: int = Field(
+        default=350, ge=0, alias="LLM_REASONING_HEADROOM_TOKENS"
+    )
+    # What goes into the answer prompt: at most this many sources, each
+    # snippet cut at this many characters; the last N messages of the
+    # conversation verbatim (each cut at M characters), older ones as a
+    # one-line list of topics.
+    llm_prompt_max_sources: int = Field(default=2, ge=0, alias="LLM_PROMPT_MAX_SOURCES")
+    llm_prompt_source_chars: int = Field(default=300, ge=50, alias="LLM_PROMPT_SOURCE_CHARS")
+    llm_history_recent_messages: int = Field(default=6, ge=0, alias="LLM_HISTORY_RECENT_MESSAGES")
+    llm_history_message_chars: int = Field(default=400, ge=50, alias="LLM_HISTORY_MESSAGE_CHARS")
+    # Daily token budgets per model ("model=tokens,..."): the free-tier
+    # figures published by Groq (2026-10), to confirm in the console. From
+    # LLM_BUDGET_RESERVE_SHARE of a budget the reserve models go first; at
+    # 100% the model is left alone until the day resets.
+    llm_daily_token_budgets: str = Field(
+        default=(
+            "openai/gpt-oss-120b=200000,openai/gpt-oss-20b=200000,"
+            "qwen/qwen3.8-27b=200000,openai/gpt-oss-safeguard-20b=200000,"
+            # Claude is paid per token, not rationed: this is a spending
+            # guard (about 1 euro a day at Haiku 5.5 prices), past which
+            # the Groq reserve answers until midnight.
+            "claude-haiku-5-5=4000000"
+        ),
+        alias="LLM_DAILY_TOKEN_BUDGETS",
+    )
+    llm_default_daily_token_budget: int = Field(
+        default=200_000, ge=1, alias="LLM_DEFAULT_DAILY_TOKEN_BUDGET"
+    )
+    llm_budget_reserve_share: float = Field(
+        default=0.8, ge=0.1, le=1.0, alias="LLM_BUDGET_RESERVE_SHARE"
+    )
+    # Messages per owner per day that may reach the model (0 = no limit);
+    # the fixed emergency replies are never counted. DEVELOPER_EMAILS are
+    # exempt.
+    chat_daily_message_limit_per_user: int = Field(
+        default=20, ge=0, alias="CHAT_DAILY_MESSAGE_LIMIT_PER_USER"
+    )
+    # The other features that call a model, per owner per day (0 = no
+    # limit; security audit BE-4/LLM-4): photo/PDF readings, dictations,
+    # vet summaries. Same ledger and exemptions as the messages.
+    chat_daily_vision_limit_per_user: int = Field(
+        default=10, ge=0, alias="CHAT_DAILY_VISION_LIMIT_PER_USER"
+    )
+    chat_daily_dictation_limit_per_user: int = Field(
+        default=30, ge=0, alias="CHAT_DAILY_DICTATION_LIMIT_PER_USER"
+    )
+    chat_daily_summary_limit_per_user: int = Field(
+        default=5, ge=0, alias="CHAT_DAILY_SUMMARY_LIMIT_PER_USER"
+    )
+    # Retention of the chat itself: a conversation is deleted, with its
+    # files, this many months after its last message (0 = never); a file
+    # uploaded but never sent in a message goes after these days.
+    chat_conversation_retention_months: int = Field(
+        default=24, ge=0, alias="CHAT_CONVERSATION_RETENTION_MONTHS"
+    )
+    chat_orphan_attachment_retention_days: int = Field(
+        default=7, ge=1, alias="CHAT_ORPHAN_ATTACHMENT_RETENTION_DAYS"
+    )
+    # The second guardian: the light model reads every ordinary message for
+    # an emergency the fixed lists missed (any language). Fail-open on a
+    # deadline or an outage.
+    urgency_classifier_enabled: bool = Field(default=True, alias="URGENCY_CLASSIFIER_ENABLED")
+    urgency_classifier_timeout_seconds: int = Field(
+        default=6, ge=1, le=30, alias="URGENCY_CLASSIFIER_TIMEOUT_SECONDS"
+    )
+    # English keywords (light model) as the literature search query.
+    evidence_query_normalizer_enabled: bool = Field(
+        default=True, alias="EVIDENCE_QUERY_NORMALIZER_ENABLED"
+    )
+    # Answers to general curiosities ("i cani possono mangiare le fragole?")
+    # are kept for this long and shared between owners of the same species.
+    chat_answer_cache_enabled: bool = Field(default=True, alias="CHAT_ANSWER_CACHE_ENABLED")
+    chat_answer_cache_ttl_hours: int = Field(
+        default=24, ge=1, le=168, alias="CHAT_ANSWER_CACHE_TTL_HOURS"
+    )
+    # "Curiosità per i tuoi animali": headlines read from the RSS feeds
+    # listed in packages/infrastructure/news/feeds.py and kept in a shared
+    # snapshot for this long. A comma-separated list of feed keys switches
+    # single feeds off without a deploy (a publisher asking us to stop).
+    news_cache_ttl_minutes: int = Field(default=120, ge=10, le=720, alias="NEWS_CACHE_TTL_MINUTES")
+    news_disabled_feeds: str = Field(default="", alias="NEWS_DISABLED_FEEDS")
     # Voice dictation (speech-to-text): reuses LLM_API_KEY/LLM_BASE_URL
     # rather than a separate key — Groq's Whisper transcription endpoint
     # is the same account/base URL family as chat completions, so this
@@ -45,72 +222,104 @@ class Settings(BaseSettings):
     # (LLM_API_KEY/LLM_BASE_URL) as chat and voice dictation.
     vision_provider: str = Field(default="echo", alias="VISION_PROVIDER")
     vision_model: str = Field(default="qwen/qwen3.8-27b", alias="VISION_MODEL")
-
-    # Nearby pet-services radar. Overpass is the low-cost default and the
-    # existing Supabase coverage tables remain the cache boundary.
+    # Same idea for reading photos and scans. Empty by default: on
+    # 2026-10-05 the Groq account had no second model that accepts images.
+    vision_fallback_models: str = Field(default="", alias="VISION_FALLBACK_MODELS")
+    # Nearby pet-services radar ("cosa c'e' attorno"). OpenStreetMap via
+    # Overpass is the only provider; results are cached per geographic cell
+    # in Supabase (radar_coverage_cells / radar_places_cache), so Overpass
+    # is called at most once per cell per RADAR_FRESHNESS_TTL_HOURS. The
+    # radius ladder (10/25/50 km) and its cell sizes live in
+    # packages/core/domain/coverage/models.py; RADAR_SEARCH_RADIUS_KM only
+    # caps how far up that ladder the app may go.
     radar_places_provider: str = Field(
-        default="openstreetmap_overpass",
-        alias="RADAR_PLACES_PROVIDER",
+        default="openstreetmap_overpass", alias="RADAR_PLACES_PROVIDER"
     )
-    radar_search_radius_km: float = Field(
-        default=10.0,
-        gt=0,
-        alias="RADAR_SEARCH_RADIUS_KM",
-    )
-    radar_ingestion_radius_km: float = Field(
-        default=10.0,
-        gt=0,
-        alias="RADAR_INGESTION_RADIUS_KM",
-    )
-    radar_freshness_ttl_hours: int = Field(
-        default=168,
-        gt=0,
-        alias="RADAR_FRESHNESS_TTL_HOURS",
-    )
+    radar_search_radius_km: float = Field(default=50.0, gt=0, alias="RADAR_SEARCH_RADIUS_KM")
+    radar_freshness_ttl_hours: int = Field(default=168, gt=0, alias="RADAR_FRESHNESS_TTL_HOURS")
     overpass_base_url: str = Field(
-        default="https://overpass-api.de/api/interpreter",
-        alias="OVERPASS_BASE_URL",
+        default="https://overpass-api.de/api/interpreter", alias="OVERPASS_BASE_URL"
+    )
+    # Tried in order when the main interpreter is overloaded (429/504).
+    overpass_fallback_urls: StringList = Field(
+        default=[
+            "https://overpass.private.coffee/api/interpreter",
+            "https://overpass.kumi.systems/api/interpreter",
+        ],
+        alias="OVERPASS_FALLBACK_URLS",
     )
     overpass_timeout_seconds: int = Field(
-        default=25,
-        ge=5,
-        le=180,
-        alias="OVERPASS_TIMEOUT_SECONDS",
+        default=40, ge=5, le=180, alias="OVERPASS_TIMEOUT_SECONDS"
     )
+    # Must cover the widest tier's import radius (50 km search + cell offset).
     overpass_max_radius_km: float = Field(
-        default=10.0,
-        gt=0,
-        le=25,
-        alias="OVERPASS_MAX_RADIUS_KM",
+        default=70.0, gt=0, le=100, alias="OVERPASS_MAX_RADIUS_KM"
     )
+    # Overpass usage policy asks for an identifying User-Agent with a way
+    # to reach the operator: set OVERPASS_USER_AGENT in production to
+    # include a real technical contact.
     overpass_user_agent: str = Field(
-        default="VET-APP/1.0",
-        alias="OVERPASS_USER_AGENT",
+        default="VET-APP/1.0 (+https://vet-app-psi-nine.vercel.app)", alias="OVERPASS_USER_AGENT"
     )
-    google_places_api_key: str = Field(default="", alias="GOOGLE_PLACES_API_KEY")
-    google_places_base_url: str = Field(
-        default="https://places.googleapis.com/v1",
-        alias="GOOGLE_PLACES_BASE_URL",
+    # Address <-> position for the app (Località, Segnala!), called from
+    # the backend so the user's address and IP never reach the provider
+    # (security audit APP-6). Same identification rule as Overpass.
+    nominatim_base_url: str = Field(
+        default="https://nominatim.openstreetmap.org", alias="NOMINATIM_BASE_URL"
     )
-    google_places_field_mask: str = Field(
-        default=(
-            "places.id,places.displayName,places.formattedAddress,places.location,"
-            "places.primaryType,places.types,places.googleMapsUri,places.businessStatus"
-        ),
-        alias="GOOGLE_PLACES_FIELD_MASK",
+    nominatim_user_agent: str = Field(
+        default="VET-APP/1.0 (+https://vet-app-psi-nine.vercel.app)", alias="NOMINATIM_USER_AGENT"
     )
-    google_places_included_types: str = Field(
-        default="veterinary_care,pet_store,pet_care,pet_boarding_service,dog_park",
-        alias="GOOGLE_PLACES_INCLUDED_TYPES",
+    # "Segnala!" (community reports on the radar). The pseudonym key
+    # turns account ids into the stand-ins stored with reports and votes;
+    # it must live only here (environment), never in the database. When
+    # empty, the key is derived from SUPABASE_SERVICE_ROLE_KEY (see
+    # ApplicationContainer.radar_report_settings), so contributions work
+    # without one more variable to set. Setting it explicitly is still
+    # the better option: a derived key changes if the service key is
+    # rotated, and every pseudonym with it.
+    radar_pseudonym_key: str = Field(default="", alias="RADAR_PSEUDONYM_KEY")
+    radar_report_confirmations: int = Field(default=5, ge=1, alias="RADAR_REPORT_CONFIRMATIONS")
+    radar_report_closed_confirmations: int = Field(
+        default=5, ge=1, alias="RADAR_REPORT_CLOSED_CONFIRMATIONS"
     )
-
+    radar_report_daily_limit: int = Field(default=5, ge=1, alias="RADAR_REPORT_DAILY_LIMIT")
+    # Days after which a report nobody confirmed even once is dropped.
+    radar_report_expiry_days: int = Field(default=7, ge=1, alias="RADAR_REPORT_EXPIRY_DAYS")
+    # Categories that can be reported as missing (in env: a JSON list or
+    # comma-separated names).
+    radar_report_place_types: StringList = Field(
+        default=["veterinary", "grooming", "shop", "hotel", "dog_park", "shelter"],
+        alias="RADAR_REPORT_PLACE_TYPES",
+    )
+    # Whether a not-yet-confirmed "closed" report is shown on the place.
+    radar_report_show_pending_closures: bool = Field(
+        default=False, alias="RADAR_REPORT_SHOW_PENDING_CLOSURES"
+    )
+    # Switches, all on by default, to turn one part of the radar off
+    # from the environment alone (docs/features/radar_places_overpass.md):
+    # reports and votes; the "closed" kind of report only; dog-park stars;
+    # and which sources of `radar_places_open` are served (a JSON list of
+    # source names, e.g. ["overture","comune_milano"]; ["*"] is all of
+    # them, [] none). Off means: nothing new is accepted and what users
+    # contributed is no longer shown; nothing is deleted.
+    radar_reports_enabled: bool = Field(default=True, alias="RADAR_REPORTS_ENABLED")
+    # "Dichiarano di trattare animali esotici": also read the competence from a practice's own
+    # name ("Ambulatorio per animali esotici"). On by owner's decision, 2026-11-08.
+    radar_exotic_name_matching: bool = Field(default=True, alias="RADAR_EXOTIC_NAME_MATCHING")
+    radar_report_closed_enabled: bool = Field(default=True, alias="RADAR_REPORT_CLOSED_ENABLED")
+    radar_ratings_enabled: bool = Field(default=True, alias="RADAR_RATINGS_ENABLED")
+    radar_open_sources: StringList = Field(default=["*"], alias="RADAR_OPEN_SOURCES")
+    # Where a business owner or a user can ask for a correction or the
+    # removal of a place. Shown publicly in the app; empty hides it.
+    # No default on purpose: the repository is public and must not carry a
+    # personal address; set it per deployment.
+    support_contact_email: str = Field(default="", alias="SUPPORT_CONTACT_EMAIL")
     # Attachment bytes: local disk outside of PERSISTENCE_BACKEND=supabase
     # (fine for local dev), a Supabase Storage bucket when it is (required
     # on serverless deploys like Vercel, whose filesystem is read-only).
     media_storage_dir: str = Field(default="./data/chat_attachments", alias="MEDIA_STORAGE_DIR")
-    media_storage_bucket: str = Field(
-        default="chat-attachments", alias="MEDIA_STORAGE_BUCKET"
-    )
+    media_storage_bucket: str = Field(default="chat-attachments", alias="MEDIA_STORAGE_BUCKET")
     log_level: str = Field(default="INFO", alias="LOG_LEVEL")
     enable_telemetry: bool = Field(default=False, alias="ENABLE_TELEMETRY")
     # 2026-09-21: default flipped to False — see chat_orchestrator.py's
@@ -119,7 +328,10 @@ class Settings(BaseSettings):
     enable_interview_loop: bool = Field(default=False, alias="ENABLE_INTERVIEW_LOOP")
     situation_coverage_target: float = Field(default=0.85, alias="SITUATION_COVERAGE_TARGET")
     interview_max_questions: int = Field(default=3, alias="INTERVIEW_MAX_QUESTIONS")
-    pii_anonymizer_backend: str = Field(default="noop", alias="PII_ANONYMIZER_BACKEND")
+    # "rules" (default): the dependency-free rule-based anonymizer.
+    # "presidio": Presidio + spaCy, only where those are installed.
+    # "noop": nothing is removed — honoured outside production only.
+    pii_anonymizer_backend: str = Field(default="rules", alias="PII_ANONYMIZER_BACKEND")
     max_active_conversations_per_pet: int = Field(
         default=4, alias="MAX_ACTIVE_CONVERSATIONS_PER_PET"
     )
@@ -128,7 +340,19 @@ class Settings(BaseSettings):
     # adding a locale later is a config change, not a core-engine rewrite.
     locale: str = Field(default="it-IT", alias="LOCALE")
     response_language: str = Field(default="it", alias="RESPONSE_LANGUAGE")
-    retrieval_languages: list[str] = Field(default=["en", "it"], alias="RETRIEVAL_LANGUAGES")
+    retrieval_languages: StringList = Field(default=["en", "it"], alias="RETRIEVAL_LANGUAGES")
+
+    def reporter_pseudonym_secret(self) -> str:
+        """The dedicated salt when configured; otherwise the Supabase
+        service-role key (already a server-only secret), so a deployment
+        that never set the new variable still never stores a guessable
+        hash. The fixed last resort only applies to local in-memory runs.
+        """
+        return (
+            self.reporter_pseudonym_salt
+            or self.supabase_service_role_key
+            or "vetapp-local-development-only"
+        )
 
     @model_validator(mode="after")
     def validate_backend_configuration(self) -> "Settings":
@@ -160,6 +384,21 @@ class Settings(BaseSettings):
                 },
             )
 
+        if self.llm_provider == "anthropic":
+            self._require_fields(
+                "LLM_PROVIDER=anthropic",
+                {
+                    "ANTHROPIC_API_KEY": self.anthropic_api_key,
+                    "ANTHROPIC_MODEL": self.anthropic_model,
+                },
+            )
+        for name, value in (
+            ("ANTHROPIC_EFFORT", self.anthropic_effort),
+            ("ANTHROPIC_EFFORT_LIGHT", self.anthropic_effort_light),
+        ):
+            if value not in ("low", "medium", "high"):
+                raise ValueError(f"{name} must be low, medium or high")
+
         if self.llm_provider == "groq":
             self._require_fields(
                 "LLM_PROVIDER=groq",
@@ -190,47 +429,19 @@ class Settings(BaseSettings):
                 },
             )
 
-        normalized_radar_provider = self.radar_places_provider.strip().lower()
-        if normalized_radar_provider == "google_places":
-            self._require_fields(
-                "RADAR_PLACES_PROVIDER=google_places",
-                {
-                    "GOOGLE_PLACES_API_KEY": self.google_places_api_key,
-                    "GOOGLE_PLACES_BASE_URL": self.google_places_base_url,
-                    "GOOGLE_PLACES_FIELD_MASK": self.google_places_field_mask,
-                },
-            )
-            if self.environment != "test" and (
-                self.radar_search_radius_km > 1
-                or self.radar_ingestion_radius_km > 1
-            ):
+        if self.environment == "production":
+            # A production deploy with the demo auth provider would accept
+            # every request as the demo user: refuse to start instead.
+            if self.auth_backend != "supabase" or self.persistence_backend != "supabase":
                 raise ValueError(
-                    "Google Places runtime radius must not exceed 1 km; "
-                    "use openstreetmap_overpass for wider cached coverage"
+                    "ENVIRONMENT=production requires AUTH_BACKEND=supabase and "
+                    "PERSISTENCE_BACKEND=supabase"
                 )
-        elif normalized_radar_provider == "openstreetmap_overpass":
-            self._require_fields(
-                "RADAR_PLACES_PROVIDER=openstreetmap_overpass",
-                {
-                    "OVERPASS_BASE_URL": self.overpass_base_url,
-                    "OVERPASS_USER_AGENT": self.overpass_user_agent,
-                },
-            )
-            if (
-                self.radar_search_radius_km > self.overpass_max_radius_km
-                or self.radar_ingestion_radius_km > self.overpass_max_radius_km
-            ):
-                raise ValueError(
-                    "RADAR_SEARCH_RADIUS_KM and RADAR_INGESTION_RADIUS_KM must not "
-                    "exceed OVERPASS_MAX_RADIUS_KM"
-                )
-        elif not (
-            self.environment == "test" and normalized_radar_provider == "catalog"
-        ):
-            raise ValueError(
-                "RADAR_PLACES_PROVIDER must be one of: "
-                "openstreetmap_overpass, google_places"
-            )
+
+        if self.radar_places_provider != "openstreetmap_overpass":
+            raise ValueError("RADAR_PLACES_PROVIDER must be openstreetmap_overpass")
+        if self.radar_search_radius_km > self.overpass_max_radius_km:
+            raise ValueError("RADAR_SEARCH_RADIUS_KM must not exceed OVERPASS_MAX_RADIUS_KM")
 
         return self
 

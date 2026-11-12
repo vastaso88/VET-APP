@@ -4,18 +4,19 @@ import '../../../../design_system/tokens/app_colors.dart';
 import '../../../../design_system/tokens/app_radii.dart';
 import '../../../../design_system/tokens/app_spacing.dart';
 import '../../../../design_system/tokens/app_text_styles.dart';
+import '../../../../l10n/l10n.dart';
 
 class PetsLoadingView extends StatelessWidget {
-  const PetsLoadingView({super.key, this.label = 'Caricamento pet...'});
+  const PetsLoadingView({super.key, this.label});
 
-  final String label;
+  final String? label;
 
   @override
   Widget build(BuildContext context) {
     return _StateSurface(
       icon: Icons.hourglass_top_rounded,
-      title: label,
-      subtitle: 'Attendi un istante mentre prepariamo la schermata.',
+      title: label ?? context.l10n.petsLoadingDefaultLabel,
+      subtitle: context.l10n.petsLoadingSubtitle,
       child: Column(
         children: List.generate(
           3,
@@ -24,7 +25,7 @@ class PetsLoadingView extends StatelessWidget {
             child: Container(
               height: 96,
               decoration: BoxDecoration(
-                color: Colors.white.withValues(alpha: 0.72),
+                color: AppColors.surfaceElevated.withValues(alpha: 0.72),
                 borderRadius: BorderRadius.circular(24),
               ),
             ),
@@ -41,13 +42,13 @@ class PetsErrorView extends StatelessWidget {
     required this.subtitle,
     super.key,
     this.onRetry,
-    this.actionLabel = 'Riprova',
+    this.actionLabel,
   });
 
   final String title;
   final String subtitle;
   final VoidCallback? onRetry;
-  final String actionLabel;
+  final String? actionLabel;
 
   @override
   Widget build(BuildContext context) {
@@ -55,12 +56,12 @@ class PetsErrorView extends StatelessWidget {
       icon: Icons.warning_amber_rounded,
       title: title,
       subtitle: subtitle,
-      accent: const Color(0xFFF8E8E0),
+      accent: AppColors.secondarySoft,
       child: SizedBox(
         width: double.infinity,
         child: OutlinedButton(
           onPressed: onRetry,
-          child: Text(actionLabel),
+          child: Text(actionLabel ?? context.l10n.commonRetry),
         ),
       ),
     );
@@ -87,7 +88,7 @@ class PetsEmptyView extends StatelessWidget {
       icon: Icons.pets_rounded,
       title: title,
       subtitle: subtitle,
-      accent: AppColors.accentSoft,
+      accent: AppColors.secondarySoft,
       child: SizedBox(
         width: double.infinity,
         child: ElevatedButton(
@@ -105,7 +106,7 @@ class _StateSurface extends StatelessWidget {
     required this.title,
     required this.subtitle,
     required this.child,
-    this.accent = AppColors.accentSoft,
+    this.accent = AppColors.secondarySoft,
   });
 
   final IconData icon;
@@ -127,7 +128,7 @@ class _StateSurface extends StatelessWidget {
             border: Border.all(color: AppColors.border),
             boxShadow: const [
               BoxShadow(
-                color: Color(0x11163A35),
+                color: AppColors.shadowSoft,
                 blurRadius: 24,
                 offset: Offset(0, 12),
               ),
@@ -143,7 +144,7 @@ class _StateSurface extends StatelessWidget {
                   color: accent,
                   borderRadius: BorderRadius.circular(AppRadii.large),
                 ),
-                child: Icon(icon, color: AppColors.primary, size: 34),
+                child: Icon(icon, color: AppColors.secondaryStrong, size: 34),
               ),
               const SizedBox(height: AppSpacing.lg),
               Text(

@@ -48,9 +48,11 @@ def test_start_walk_rejects_a_pet_owned_by_someone_else() -> None:
 
 def test_recording_route_points_accumulates_distance() -> None:
     walk_repository = InMemoryDogWalkRepository()
-    walk = StartWalkService(walk_repository, _pet_repository()).execute(
-        StartWalkInput(owner_id="user-1", pet_id="pet-1")
-    ).walk
+    walk = (
+        StartWalkService(walk_repository, _pet_repository())
+        .execute(StartWalkInput(owner_id="user-1", pet_id="pet-1"))
+        .walk
+    )
     service = RecordRoutePointService(walk_repository)
 
     service.execute(
@@ -74,9 +76,11 @@ def test_recording_route_points_accumulates_distance() -> None:
 
 def test_recording_a_point_on_someone_elses_walk_is_rejected() -> None:
     walk_repository = InMemoryDogWalkRepository()
-    walk = StartWalkService(walk_repository, _pet_repository()).execute(
-        StartWalkInput(owner_id="user-1", pet_id="pet-1")
-    ).walk
+    walk = (
+        StartWalkService(walk_repository, _pet_repository())
+        .execute(StartWalkInput(owner_id="user-1", pet_id="pet-1"))
+        .walk
+    )
 
     with pytest.raises(ValidationError):
         RecordRoutePointService(walk_repository).execute(
@@ -90,9 +94,11 @@ def test_recording_a_point_on_someone_elses_walk_is_rejected() -> None:
 
 def test_recording_a_point_on_a_finished_walk_is_rejected() -> None:
     walk_repository = InMemoryDogWalkRepository()
-    walk = StartWalkService(walk_repository, _pet_repository()).execute(
-        StartWalkInput(owner_id="user-1", pet_id="pet-1")
-    ).walk
+    walk = (
+        StartWalkService(walk_repository, _pet_repository())
+        .execute(StartWalkInput(owner_id="user-1", pet_id="pet-1"))
+        .walk
+    )
     EndWalkService(walk_repository).execute(EndWalkInput(walk_id=walk.id, owner_id="user-1"))
 
     with pytest.raises(ValidationError):
@@ -107,9 +113,11 @@ def test_recording_a_point_on_a_finished_walk_is_rejected() -> None:
 
 def test_ending_a_walk_sets_duration_and_estimated_steps() -> None:
     walk_repository = InMemoryDogWalkRepository()
-    walk = StartWalkService(walk_repository, _pet_repository()).execute(
-        StartWalkInput(owner_id="user-1", pet_id="pet-1")
-    ).walk
+    walk = (
+        StartWalkService(walk_repository, _pet_repository())
+        .execute(StartWalkInput(owner_id="user-1", pet_id="pet-1"))
+        .walk
+    )
     RecordRoutePointService(walk_repository).execute(
         RecordRoutePointInput(
             walk_id=walk.id,
@@ -137,9 +145,11 @@ def test_ending_a_walk_sets_duration_and_estimated_steps() -> None:
 
 def test_ending_someone_elses_walk_is_rejected() -> None:
     walk_repository = InMemoryDogWalkRepository()
-    walk = StartWalkService(walk_repository, _pet_repository()).execute(
-        StartWalkInput(owner_id="user-1", pet_id="pet-1")
-    ).walk
+    walk = (
+        StartWalkService(walk_repository, _pet_repository())
+        .execute(StartWalkInput(owner_id="user-1", pet_id="pet-1"))
+        .walk
+    )
 
     with pytest.raises(ValidationError):
         EndWalkService(walk_repository).execute(EndWalkInput(walk_id=walk.id, owner_id="user-2"))
@@ -147,9 +157,11 @@ def test_ending_someone_elses_walk_is_rejected() -> None:
 
 def test_ending_an_already_finished_walk_is_rejected() -> None:
     walk_repository = InMemoryDogWalkRepository()
-    walk = StartWalkService(walk_repository, _pet_repository()).execute(
-        StartWalkInput(owner_id="user-1", pet_id="pet-1")
-    ).walk
+    walk = (
+        StartWalkService(walk_repository, _pet_repository())
+        .execute(StartWalkInput(owner_id="user-1", pet_id="pet-1"))
+        .walk
+    )
     EndWalkService(walk_repository).execute(EndWalkInput(walk_id=walk.id, owner_id="user-1"))
 
     with pytest.raises(ValidationError):

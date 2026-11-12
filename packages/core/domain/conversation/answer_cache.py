@@ -1,0 +1,98 @@
+"""Which questions may share one answer, and under which key.
+
+Only a general curiosity about the kind of animal ("i cani possono mangiare
+le fragole?", "quanto vive un criceto?") qualifies: a question that is
+answered the same for every owner of that species. Anything about THIS
+animal — a symptom, something it did, its age or weight, its documents, a
+follow-up — is answered fresh every time, with the pet's own context.
+
+The key is the normalized question plus species and language: accents,
+punctuation, fillers ("ciao", "una domanda") and spacing do not matter.
+"""
+
+from __future__ import annotations
+
+import hashlib
+import re
+import unicodedata
+
+from packages.core.domain.conversation.request_kind import RequestKind
+
+MIN_QUESTION_CHARS = 8
+MAX_QUESTION_CHARS = 200
+
+# Openers that carry no topic (see also title.py).
+_FILLERS = re.compile(
+    r"^(?:(?:ciao|buongiorno|buonasera|salve|hey|scusa|scusami|senti|per favore|"
+    r"una domanda|ho una domanda|avrei una domanda|volevo sapere|vorrei sapere|"
+    r"mi dici|dimmi|secondo te)[\s,:]*)+"
+)
+# Words that make a question about this animal or this moment rather than
+# the species in general. Matched as whole words.
+_PERSONAL = re.compile(
+    r"\b(?:mio|mia|miei|mie|nostro|nostra|nostri|nostre|mi|me|lui|lei|"
+    r"questo|questa|questi|queste|suo|sua|suoi|sue|ha|sta|fa|gli|glielo|gliela|gliene|"
+    r"dar(?:gli|le|lo|la|ne|gliel[oa]|gliene)|metter(?:gli|le|lo|la)|far(?:gli|le|lo|la)|"
+    r"portar(?:gli|le|lo|la)|lasciar(?:gli|le|lo|la)|insegnar(?:gli|le)|tener(?:lo|la)|"
+    r"ieri|oggi|stamattina|stasera|stanotte|adesso|ora|ultimamente|"
+    r"my|our|he|she|him|her|his|this|today|yesterday|now)\b"
+)
+_DIGIT = re.compile(r"\d")
+# A general question names its subject ("i cani", "un coniglio", "dogs"):
+# "può stare da solo in gabbietta?" is about THIS animal (wide eval
+# 2026-11-06), so it is never cached and gets the pet's own context.
+_SPECIES_NOUN = re.compile(
+    r"\b(?:can[ei]|cagn[ae]|cuccio[li]\w*|gatt[oaie]|gattin[oi]|conigli[oi]|cricet[oi]|cavi[ae]|"
+    r"cincill[aà]|porcellin[oi] d'india|furett[oi]|cocorit[ae]|pappagall\w*|canarin[oi]|"
+    r"inseparabil[ei]|calopsitt[ae]|gec[oh]i?|tartarugh?[ae]|pesc[ei]|pesci rossi|bett[a]|"
+    r"serpent[ei]|iguan[ae]|cavall[oi]|dogs?|puppies|puppy|cats?|kittens?|rabbits?|hamsters?|"
+    r"guinea pigs?|ferrets?|budgies?|budgerigars?|parrots?|canar(?:y|ies)|geckos?|turtles?|"
+    r"tortoises?|fish|goldfish|snakes?|horses?|perros?|gatos?|conejos?|hamsters?|hurones?|"
+    r"periquitos?|loros?|peces|hunde?|katzen?|kaninchen|hamster|frettchen|wellensittiche?|"
+    r"papageien?|fische?|chiens?|chats?|lapins?|hamsters?|furets?|perruches?|perroquets?|"
+    r"poissons?)\b"
+)
+
+
+def normalize_question(text: str) -> str:
+    lowered = unicodedata.normalize("NFKD", text.strip().lower())
+    without_accents = "".join(ch for ch in lowered if not unicodedata.combining(ch))
+    without_punctuation = re.sub(r"[^\w\s]", " ", without_accents)
+    collapsed = re.sub(r"\s+", " ", without_punctuation).strip()
+    return _FILLERS.sub("", collapsed).strip()
+
+
+def is_cacheable_question(
+    message: str,
+    *,
+    kind: RequestKind,
+    pet_name: str,
+    has_attachment: bool,
+    has_history: bool,
+) -> bool:
+    """True only for a general question, asked as the first message, with
+    nothing that ties it to this animal."""
+    if kind is not RequestKind.DIRECT or has_attachment or has_history:
+        return False
+    normalized = normalize_question(message)
+    if not MIN_QUESTION_CHARS <= len(normalized) <= MAX_QUESTION_CHARS:
+        return False
+    if _DIGIT.search(normalized) or _PERSONAL.search(normalized):
+        return False
+    if not _SPECIES_NOUN.search(normalized):
+        return False
+    name = normalize_question(pet_name)
+    if name and re.search(rf"\b{re.escape(name)}\b", normalized):
+        return False
+    return True
+
+
+def cache_key(message: str, *, species: str, language: str, prompt_version: str = "") -> str:
+    """[prompt_version] is the version of the system prompt the answer was
+    written under (natural_answer_prompt.PROMPT_VERSION): a new prompt means
+    new keys, so no answer written under the old rules survives its 24 h."""
+    material = (
+        f"{prompt_version.strip()}|{language.strip().lower()}|{species.strip().lower()}|"
+        f"{normalize_question(message)}"
+    )
+    return hashlib.sha256(material.encode("utf-8")).hexdigest()[:32]

@@ -4,10 +4,15 @@ import 'dart:typed_data';
 
 import 'package:http/http.dart' as http;
 
+import '../../../l10n/l10n.dart';
 import '../../../shared/auth/current_user.dart';
+import '../../../shared/files/attachment_media_type.dart';
+import '../../../shared/files/image_metadata.dart';
 import '../../../shared/config/app_runtime_config_loader.dart';
+import '../../../shared/date/utc_offset_header.dart';
 import '../../../shared/errors/app_network_error.dart';
 import '../../../shared/types/result.dart';
+import 'chat_remote_data_source.dart' show quotaExceededMessage;
 
 /// Parsed slice of `POST /chat-attachments`'s response (contract from "Chat
 /// LLM interna VETAPP"): the photo is analyzed server-side, so the mobile
@@ -61,19 +66,34 @@ class HttpChatAttachmentRemoteDataSource implements ChatAttachmentRemoteDataSour
       final token = CurrentUser.accessToken();
       final request = http.MultipartRequest('POST', Uri.parse('$_baseUrl/chat-attachments'))
         ..headers.addAll({
+          // The backend words its refusals (daily allowance) in this language.
+          'Accept-Language': AppLocaleHolder.current.languageCode,
+          ...utcOffsetHeader(),
           if (token != null && token.isNotEmpty) 'Authorization': 'Bearer $token',
         })
         ..fields['pet_id'] = petId
-        ..files.add(http.MultipartFile.fromBytes('file', imageBytes, filename: fileName));
+        ..files.add(http.MultipartFile.fromBytes(
+          'file',
+          stripImageMetadata(imageBytes),
+          filename: fileName,
+          contentType: attachmentMediaType(imageBytes, fileName),
+        ));
 
       final streamedResponse = await _client.send(request).timeout(_timeout);
       final response = await http.Response.fromStream(streamedResponse);
 
       if (response.statusCode < 200 || response.statusCode >= 300) {
+        // Today's readings are used up: the backend's own sentence, in the
+        // user's language, instead of the generic upload error.
+        final quota = quotaExceededMessage(response.body);
+        if (quota != null) {
+          return Result.failure(AppNetworkError(code: 'quota_exceeded', message: quota));
+        }
+        final detailCode = _detailCode(response.body);
         return Result.failure(
           AppNetworkError(
-            code: 'chat_attachment_http_${response.statusCode}',
-            message: 'Non sono riuscito a caricare la foto.',
+            code: detailCode ?? 'chat_attachment_http_${response.statusCode}',
+            message: _messageFor(detailCode, response.statusCode),
           ),
         );
       }
@@ -89,16 +109,23 @@ class HttpChatAttachmentRemoteDataSource implements ChatAttachmentRemoteDataSour
       );
     } on TimeoutException {
       return Result.failure<ChatAttachmentUploadResult>(
-        const AppNetworkError(
+        AppNetworkError(
           code: 'chat_attachment_timeout',
-          message: 'Richiesta scaduta. Riprova.',
+          message: appL10n.chatErrorRequestTimeout,
+        ),
+      );
+    } on http.ClientException {
+      return Result.failure<ChatAttachmentUploadResult>(
+        AppNetworkError(
+          code: 'chat_attachment_offline',
+          message: appL10n.chatErrorAttachmentOffline,
         ),
       );
     } catch (e) {
       return Result.failure<ChatAttachmentUploadResult>(
         AppNetworkError(
           code: 'chat_attachment_unexpected_error',
-          message: "Qualcosa e' andato storto. Riprova.",
+          message: appL10n.chatErrorGeneric,
           details: e,
         ),
       );
@@ -120,7 +147,7 @@ class HttpChatAttachmentRemoteDataSource implements ChatAttachmentRemoteDataSour
         return Result.failure(
           AppNetworkError(
             code: 'chat_attachment_download_http_${response.statusCode}',
-            message: 'Non sono riuscito a scaricare il file.',
+            message: appL10n.chatErrorAttachmentDownload,
           ),
         );
       }
@@ -128,19 +155,56 @@ class HttpChatAttachmentRemoteDataSource implements ChatAttachmentRemoteDataSour
       return Result.success(response.bodyBytes);
     } on TimeoutException {
       return Result.failure<Uint8List>(
-        const AppNetworkError(
+        AppNetworkError(
           code: 'chat_attachment_download_timeout',
-          message: 'Richiesta scaduta. Riprova.',
+          message: appL10n.chatErrorRequestTimeout,
         ),
       );
     } catch (e) {
       return Result.failure<Uint8List>(
         AppNetworkError(
           code: 'chat_attachment_download_unexpected_error',
-          message: "Qualcosa e' andato storto. Riprova.",
+          message: appL10n.chatErrorGeneric,
           details: e,
         ),
       );
     }
   }
+}
+
+/// The backend's stable error code, taken from the start of a 400 `detail`
+/// such as "pdf_unreadable: ...". Null when the body has no known shape.
+String? _detailCode(String body) {
+  try {
+    final decoded = jsonDecode(body);
+    if (decoded is! Map<String, dynamic>) return null;
+    final detail = decoded['detail'];
+    if (detail is! String) return null;
+    final code = detail.split(':').first.trim();
+    return _knownCodes.contains(code) ? code : null;
+  } catch (_) {
+    return null;
+  }
+}
+
+const _knownCodes = {
+  'attachment_too_large',
+  'unsupported_attachment_type',
+  'pdf_too_many_pages',
+  'pdf_unreadable',
+};
+
+String _messageFor(String? detailCode, int statusCode) {
+  switch (detailCode) {
+    case 'attachment_too_large':
+      return appL10n.chatErrorAttachmentTooLarge;
+    case 'unsupported_attachment_type':
+      return appL10n.chatErrorAttachmentUnsupported;
+    case 'pdf_too_many_pages':
+      return appL10n.chatErrorPdfTooManyPages;
+    case 'pdf_unreadable':
+      return appL10n.chatErrorPdfUnreadable;
+  }
+  if (statusCode == 413) return appL10n.chatErrorAttachmentTooLarge;
+  return appL10n.chatErrorAttachmentUpload;
 }

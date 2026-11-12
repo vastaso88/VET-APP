@@ -1,6 +1,6 @@
-# Vet App
+# Quokka (repository VetApp)
 
-Web-first pet-tech product with a Flutter client and a Python backend bootstrap. The repository is set up to show a convincing browser demo first, while keeping the core ready for APIs, Supabase, and multiple LLM providers, with mobile-ready configuration for later releases.
+Quokka helps people who live with an animal understand it and look after it well: ethology, relationship, everyday care, health and the owner's duties, with answers grounded in evidence and official positions. It is an awareness tool, not a course (see `docs/product/11_riposizionamento_consapevolezza_proprietario.md`). Flutter client and Python backend. The repository is set up to show a convincing browser demo first, while keeping the core ready for APIs, Supabase, and multiple LLM providers, with mobile-ready configuration for later releases.
 
 ## Goals
 - validate onboarding, auth, home, pet profile, chat, records, and reminders in a single web flow

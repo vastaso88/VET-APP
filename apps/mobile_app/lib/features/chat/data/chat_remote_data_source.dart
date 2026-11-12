@@ -3,25 +3,37 @@ import 'dart:convert';
 
 import 'package:http/http.dart' as http;
 
+import '../../../l10n/l10n.dart';
 import '../../../shared/auth/current_user.dart';
 import '../../../shared/config/app_runtime_config_loader.dart';
+import '../../../shared/date/utc_offset_header.dart';
 import '../../../shared/errors/app_network_error.dart';
 import '../../../shared/types/result.dart';
+import '../../billing/data/plan_access_refusal.dart';
 
 /// Parsed slice of the backend's `POST /chat` response that the mobile chat
 /// feature actually needs — see `SendChatMessageOutput`
 /// (packages/core/application/services/send_chat_message.py) for the full
 /// contract.
+/// The longest message the backend accepts (apps/api/schemas/chat.py,
+/// MAX_USER_MESSAGE_CHARS — a test keeps the two equal).
+const chatMaxMessageLength = 8000;
+
 class ChatSendResult {
   const ChatSendResult({
     required this.content,
     required this.aiGenerated,
     required this.backendConversationId,
+    this.title,
   });
 
   final String content;
   final bool aiGenerated;
   final String backendConversationId;
+
+  /// The conversation's title on the server (it follows an edited first
+  /// message when it was the automatic one).
+  final String? title;
 }
 
 /// One message of a stored backend conversation — see `ChatMessage` in
@@ -58,11 +70,26 @@ class RemoteConversation {
 }
 
 abstract class ChatRemoteDataSource {
+  /// [clientMessageId] identifies this message across retries: sending it
+  /// again after a timeout returns the answer the server already produced.
   Future<Result<ChatSendResult>> sendMessage({
     required String petId,
     String? conversationId,
     required String userMessage,
     String? attachmentId,
+    String? clientMessageId,
+  });
+
+  /// `PUT /conversations/{id}/messages/{messageId}`: replaces one of the
+  /// owner's messages and everything after it, and returns the new answer
+  /// (same shape as [sendMessage]). [messageId] may be the server's id or the
+  /// app's own one; [clientMessageId] identifies the edited message across
+  /// retries.
+  Future<Result<ChatSendResult>> editMessage({
+    required String conversationId,
+    required String messageId,
+    required String userMessage,
+    String? clientMessageId,
   });
 
   /// Resolves a real, backend-known pet id to attach chat messages to.
@@ -81,6 +108,12 @@ abstract class ChatRemoteDataSource {
   });
 
   Future<Result<void>> deleteConversation(String conversationId);
+
+  /// PATCH /conversations/{id} with the new title.
+  Future<Result<String>> renameConversation(String conversationId, String title);
+
+  /// GET /conversations/{id}/summary: the veterinary summary, not a diagnosis.
+  Future<Result<String>> conversationSummary(String conversationId);
 
   /// The signed-in owner's stored conversations with their messages
   /// (`GET /conversations`), so chat history survives an app restart.
@@ -103,12 +136,21 @@ class HttpChatRemoteDataSource implements ChatRemoteDataSource {
 
   static const _timeout = Duration(seconds: 25);
 
+  /// Producing an answer can take longer than any other call: the backend
+  /// may search the literature (up to ~10-20 s) and then wait for the model
+  /// (up to 30 s per call). 25 s used to cut answers the server then stored
+  /// anyway (2026-10-07); the page shows "ci sto mettendo più del solito"
+  /// well before this.
+  static const _chatTimeout = Duration(seconds: 90);
+
   String get _baseUrl => _configLoader.load().apiBaseUrl;
 
   Map<String, String> get _headers {
     final token = CurrentUser.accessToken();
     return {
       'Content-Type': 'application/json',
+      'Accept-Language': AppLocaleHolder.current.languageCode,
+      ...utcOffsetHeader(),
       if (token != null && token.isNotEmpty) 'Authorization': 'Bearer $token',
     };
   }
@@ -119,6 +161,7 @@ class HttpChatRemoteDataSource implements ChatRemoteDataSource {
     String? conversationId,
     required String userMessage,
     String? attachmentId,
+    String? clientMessageId,
   }) async {
     try {
       final response = await _client
@@ -130,9 +173,12 @@ class HttpChatRemoteDataSource implements ChatRemoteDataSource {
               if (conversationId != null) 'conversation_id': conversationId,
               'user_message': userMessage,
               if (attachmentId != null) 'attachment_id': attachmentId,
+              if (clientMessageId != null) 'client_message_id': clientMessageId,
+              'language': AppLocaleHolder.current.languageCode,
+              'response_locale': AppLocaleHolder.current.languageCode,
             }),
           )
-          .timeout(_timeout);
+          .timeout(_chatTimeout);
 
       if (response.statusCode < 200 || response.statusCode >= 300) {
         // The backend enforces a max-active-conversations-per-pet limit and
@@ -140,46 +186,109 @@ class HttpChatRemoteDataSource implements ChatRemoteDataSource {
         // detail — a normal, expected outcome (not a real failure), so it's
         // surfaced with its own code and the backend's own user-facing
         // message instead of the generic network-error copy below.
+        if (_isMessageTooLong(response)) {
+          return Result.failure(_messageTooLong());
+        }
+        final planError = _planError(response);
+        if (planError != null) return Result.failure(planError);
         final detail = _extractDetail(response.body);
         if (detail != null && detail.startsWith('conversation_limit_reached')) {
           final colonIndex = detail.indexOf(':');
           return Result.failure(
             AppNetworkError(
               code: 'chat_conversation_limit_reached',
-              message: colonIndex == -1 ? detail : detail.substring(colonIndex + 1).trim(),
+              message: localizedBackendMessage(
+                colonIndex == -1 ? detail : detail.substring(colonIndex + 1).trim(),
+                detail: detail,
+              ),
             ),
           );
         }
         return Result.failure(
           AppNetworkError(
             code: 'chat_http_${response.statusCode}',
-            message: "Non sono riuscito a contattare l'assistente. Riprova.",
+            message: appL10n.chatErrorContactAssistant,
           ),
         );
       }
 
-      final json = jsonDecode(response.body) as Map<String, dynamic>;
-      final reply = json['reply'] as Map<String, dynamic>;
-      final conversation = json['conversation'] as Map<String, dynamic>;
-      return Result.success(
-        ChatSendResult(
-          content: reply['content'] as String? ?? '',
-          aiGenerated: json['ai_generated'] as bool? ?? false,
-          backendConversationId: conversation['id'] as String,
-        ),
-      );
+      return Result.success(_sendResultFrom(response.body));
     } on TimeoutException {
       return Result.failure<ChatSendResult>(
-        const AppNetworkError(
+        AppNetworkError(
           code: 'chat_timeout',
-          message: 'La richiesta ha impiegato troppo tempo. Riprova.',
+          message: appL10n.chatErrorAssistantTimeout,
         ),
       );
     } catch (e) {
       return Result.failure<ChatSendResult>(
         AppNetworkError(
           code: 'chat_unexpected_error',
-          message: "Qualcosa e' andato storto. Riprova.",
+          message: appL10n.chatErrorGeneric,
+          details: e,
+        ),
+      );
+    }
+  }
+
+  static ChatSendResult _sendResultFrom(String body) {
+    final json = jsonDecode(body) as Map<String, dynamic>;
+    final reply = json['reply'] as Map<String, dynamic>;
+    final conversation = json['conversation'] as Map<String, dynamic>;
+    return ChatSendResult(
+      content: reply['content'] as String? ?? '',
+      aiGenerated: json['ai_generated'] as bool? ?? false,
+      backendConversationId: conversation['id'] as String,
+      title: conversation['title'] as String?,
+    );
+  }
+
+  @override
+  Future<Result<ChatSendResult>> editMessage({
+    required String conversationId,
+    required String messageId,
+    required String userMessage,
+    String? clientMessageId,
+  }) async {
+    try {
+      final response = await _client
+          .put(
+            Uri.parse(
+              '$_baseUrl/conversations/${Uri.encodeComponent(conversationId)}'
+              '/messages/${Uri.encodeComponent(messageId)}',
+            ),
+            headers: _headers,
+            body: jsonEncode({
+              'user_message': userMessage,
+              if (clientMessageId != null) 'client_message_id': clientMessageId,
+              'language': AppLocaleHolder.current.languageCode,
+            }),
+          )
+          .timeout(_chatTimeout);
+      if (response.statusCode < 200 || response.statusCode >= 300) {
+        if (_isMessageTooLong(response)) {
+          return Result.failure(_messageTooLong());
+        }
+        return Result.failure(
+          AppNetworkError(
+            code: 'chat_edit_http_${response.statusCode}',
+            message: appL10n.chatErrorEditFailed,
+          ),
+        );
+      }
+      return Result.success(_sendResultFrom(response.body));
+    } on TimeoutException {
+      return Result.failure<ChatSendResult>(
+        AppNetworkError(
+          code: 'chat_timeout',
+          message: appL10n.chatErrorAssistantTimeout,
+        ),
+      );
+    } catch (e) {
+      return Result.failure<ChatSendResult>(
+        AppNetworkError(
+          code: 'chat_edit_failed',
+          message: appL10n.chatErrorEditNetwork,
           details: e,
         ),
       );
@@ -218,10 +327,12 @@ class HttpChatRemoteDataSource implements ChatRemoteDataSource {
           )
           .timeout(_timeout);
       if (createResponse.statusCode < 200 || createResponse.statusCode >= 300) {
+        final planError = _planError(createResponse);
+        if (planError != null) return Result.failure(planError);
         return Result.failure(
           AppNetworkError(
             code: 'pet_bootstrap_http_${createResponse.statusCode}',
-            message: 'Non sono riuscito a preparare il profilo del pet.',
+            message: appL10n.chatErrorPetBootstrap,
           ),
         );
       }
@@ -230,18 +341,99 @@ class HttpChatRemoteDataSource implements ChatRemoteDataSource {
       return Result.success(petProfile['id'] as String);
     } on TimeoutException {
       return Result.failure<String>(
-        const AppNetworkError(code: 'pet_bootstrap_timeout', message: 'Richiesta scaduta. Riprova.'),
+        AppNetworkError(code: 'pet_bootstrap_timeout', message: appL10n.chatErrorRequestTimeout),
       );
     } catch (e) {
       return Result.failure<String>(
         AppNetworkError(
           code: 'pet_bootstrap_unexpected_error',
-          message: "Qualcosa e' andato storto. Riprova.",
+          message: appL10n.chatErrorGeneric,
           details: e,
         ),
       );
     }
   }
+
+  @override
+  @override
+  Future<Result<String>> renameConversation(String conversationId, String title) async {
+    try {
+      final response = await _client
+          .patch(
+            Uri.parse('$_baseUrl/conversations/$conversationId'),
+            headers: {..._headers, 'Content-Type': 'application/json'},
+            body: jsonEncode({'title': title}),
+          )
+          .timeout(_timeout);
+      if (response.statusCode < 200 || response.statusCode >= 300) {
+        final detail = _detailOf(response.body);
+        return Result.failure<String>(
+          AppNetworkError(
+            code: 'conversation_rename_http_${response.statusCode}',
+            message: detail != null && detail.startsWith('invalid_title')
+                ? appL10n.chatErrorTitleEmpty
+                : appL10n.chatErrorRenameFailed,
+          ),
+        );
+      }
+      // The backend cleans the title; show what it stored, not what was typed.
+      final json = jsonDecode(response.body) as Map<String, dynamic>;
+      return Result.success(json['title'] as String? ?? title);
+    } catch (e) {
+      return Result.failure<String>(
+        AppNetworkError(
+          code: 'conversation_rename_failed',
+          message: appL10n.chatErrorRenameNetwork,
+          details: e,
+        ),
+      );
+    }
+  }
+
+  @override
+  Future<Result<String>> conversationSummary(String conversationId) async {
+    try {
+      final response = await _client
+          .get(Uri.parse('$_baseUrl/conversations/$conversationId/summary'), headers: _headers)
+          .timeout(_timeout);
+      if (response.statusCode < 200 || response.statusCode >= 300) {
+        final quota = quotaExceededMessage(response.body);
+        if (quota != null) {
+          return Result.failure<String>(
+            AppNetworkError(code: 'quota_exceeded', message: quota),
+          );
+        }
+        final detail = _detailOf(response.body);
+        final message = switch (detail) {
+          final d? when d.startsWith('conversation_empty') =>
+            appL10n.chatErrorSummaryEmpty,
+          _ when response.statusCode == 502 => appL10n.chatErrorSummaryModel,
+          _ => appL10n.chatErrorSummaryFailed,
+        };
+        return Result.failure<String>(
+          AppNetworkError(
+            code: detail != null && detail.isNotEmpty
+                ? 'conversation_summary_${detail.split(':').first.trim()}'
+                : 'conversation_summary_http_${response.statusCode}',
+            message: message,
+          ),
+        );
+      }
+      final json = jsonDecode(response.body) as Map<String, dynamic>;
+      return Result.success(json['summary'] as String? ?? '');
+    } catch (e) {
+      return Result.failure<String>(
+        AppNetworkError(
+          code: 'conversation_summary_failed',
+          message: appL10n.chatErrorSummaryNetwork,
+          details: e,
+        ),
+      );
+    }
+  }
+
+  /// The `detail` text of an error body, or null when there is none.
+  static String? _detailOf(String body) => detailOf(body);
 
   @override
   Future<Result<void>> deleteConversation(String conversationId) async {
@@ -254,23 +446,23 @@ class HttpChatRemoteDataSource implements ChatRemoteDataSource {
         return Result.failure(
           AppNetworkError(
             code: 'conversation_delete_http_${response.statusCode}',
-            message: 'Non sono riuscito a eliminare la chat sul server.',
+            message: appL10n.chatErrorDeleteFailed,
           ),
         );
       }
       return Result.success<void>(null);
     } on TimeoutException {
       return Result.failure<void>(
-        const AppNetworkError(
+        AppNetworkError(
           code: 'conversation_delete_timeout',
-          message: 'Richiesta scaduta. Riprova.',
+          message: appL10n.chatErrorRequestTimeout,
         ),
       );
     } catch (e) {
       return Result.failure<void>(
         AppNetworkError(
           code: 'conversation_delete_unexpected_error',
-          message: "Qualcosa e' andato storto. Riprova.",
+          message: appL10n.chatErrorGeneric,
           details: e,
         ),
       );
@@ -287,7 +479,7 @@ class HttpChatRemoteDataSource implements ChatRemoteDataSource {
         return Result.failure(
           AppNetworkError(
             code: 'conversation_list_http_${response.statusCode}',
-            message: 'Non sono riuscito a caricare le tue chat.',
+            message: appL10n.chatErrorListChats,
           ),
         );
       }
@@ -318,16 +510,16 @@ class HttpChatRemoteDataSource implements ChatRemoteDataSource {
       return Result.success(conversations);
     } on TimeoutException {
       return Result.failure<List<RemoteConversation>>(
-        const AppNetworkError(
+        AppNetworkError(
           code: 'conversation_list_timeout',
-          message: 'Richiesta scaduta. Riprova.',
+          message: appL10n.chatErrorRequestTimeout,
         ),
       );
     } catch (e) {
       return Result.failure<List<RemoteConversation>>(
         AppNetworkError(
           code: 'conversation_list_unexpected_error',
-          message: "Qualcosa e' andato storto. Riprova.",
+          message: appL10n.chatErrorGeneric,
           details: e,
         ),
       );
@@ -344,7 +536,7 @@ class HttpChatRemoteDataSource implements ChatRemoteDataSource {
         return Result.failure(
           AppNetworkError(
             code: 'pet_list_http_${response.statusCode}',
-            message: 'Non sono riuscito a caricare i tuoi pet.',
+            message: appL10n.chatErrorListPets,
           ),
         );
       }
@@ -356,18 +548,59 @@ class HttpChatRemoteDataSource implements ChatRemoteDataSource {
       });
     } on TimeoutException {
       return Result.failure<Map<String, String>>(
-        const AppNetworkError(code: 'pet_list_timeout', message: 'Richiesta scaduta. Riprova.'),
+        AppNetworkError(code: 'pet_list_timeout', message: appL10n.chatErrorRequestTimeout),
       );
     } catch (e) {
       return Result.failure<Map<String, String>>(
         AppNetworkError(
           code: 'pet_list_unexpected_error',
-          message: "Qualcosa e' andato storto. Riprova.",
+          message: appL10n.chatErrorGeneric,
           details: e,
         ),
       );
     }
   }
+
+  /// The plan-related refusals: 402 `subscription_required` (the trial ended:
+  /// the owner is sent to the paywall) and 403 `plan_limit_reached` (the plan
+  /// does not allow more pets). Null for any other answer.
+  AppNetworkError? _planError(http.Response response) {
+    final refusal = planRefusalFromHttp(response.statusCode, response.body);
+    if (refusal == null) return null;
+    applyPlanRefusal(refusal);
+    return AppNetworkError(
+      code: refusal.kind == PlanRefusalKind.subscriptionRequired
+          ? 'subscription_required'
+          : 'plan_limit_reached',
+      message: refusal.message,
+    );
+  }
+
+  /// The backend's 422 for a `user_message` over its length limit
+  /// (`MAX_USER_MESSAGE_CHARS`): not worth a "Riprova", the same text would
+  /// be refused again.
+  static bool _isMessageTooLong(http.Response response) {
+    if (response.statusCode != 422) return false;
+    try {
+      final decoded = jsonDecode(response.body);
+      final errors = decoded is Map<String, dynamic> ? decoded['detail'] : null;
+      if (errors is! List) return false;
+      return errors.any(
+        (error) =>
+            error is Map &&
+            error['type'] == 'string_too_long' &&
+            error['loc'] is List &&
+            (error['loc'] as List).contains('user_message'),
+      );
+    } catch (_) {
+      return false;
+    }
+  }
+
+  static AppNetworkError _messageTooLong() => AppNetworkError(
+        code: 'chat_message_too_long',
+        message: appL10n.chatErrorMessageTooLong(chatMaxMessageLength),
+      );
 
   String? _extractDetail(String body) {
     try {
@@ -381,4 +614,52 @@ class HttpChatRemoteDataSource implements ChatRemoteDataSource {
     }
     return null;
   }
+}
+
+/// Maps the backend's known `detail` texts/codes to local, translated
+/// messages. [raw] is the text to show when it carries a payload (the part
+/// after "code: "), [detail] the full detail string (defaults to [raw]).
+/// Unknown texts are returned unchanged.
+String localizedBackendMessage(String raw, {String? detail}) {
+  final full = (detail ?? raw).trim();
+  final lower = full.toLowerCase();
+  if (lower.startsWith('conversation_limit_reached')) {
+    final max = RegExp(r'\((\d+)\)').firstMatch(full)?.group(1) ?? '4';
+    return appL10n.chatErrorConversationLimit(max);
+  }
+  if (lower.startsWith('invalid_title')) return appL10n.chatErrorTitleEmpty;
+  if (lower.startsWith('conversation_empty')) return appL10n.chatErrorSummaryEmpty;
+  switch (lower) {
+    case 'conversation not found':
+      return appL10n.chatErrorConversationNotFound;
+    case 'message not found':
+      return appL10n.chatEditMessageMissing;
+  }
+  return raw;
+}
+
+/// The `detail` string of a backend error body, or null when the body is
+/// not JSON or has none.
+String? detailOf(String body) {
+  try {
+    final decoded = jsonDecode(body);
+    if (decoded is Map<String, dynamic> && decoded['detail'] is String) {
+      return decoded['detail'] as String;
+    }
+  } catch (_) {
+    // Not JSON: no detail.
+  }
+  return null;
+}
+
+/// The owner-facing sentence of a 429 "quota_exceeded" answer (a daily
+/// allowance of readings, dictations or summaries is used up): the backend
+/// writes `detail` as `quota_exceeded: <sentence in the user's language>`.
+/// Null for any other body, so callers fall back to their own messages.
+String? quotaExceededMessage(String body) {
+  const prefix = 'quota_exceeded:';
+  final detail = detailOf(body);
+  if (detail == null || !detail.startsWith(prefix)) return null;
+  final message = detail.substring(prefix.length).trim();
+  return message.isEmpty ? null : message;
 }

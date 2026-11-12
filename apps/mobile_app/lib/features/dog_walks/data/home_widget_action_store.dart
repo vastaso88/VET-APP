@@ -12,6 +12,9 @@ enum HomeWidgetActionKind {
   /// (normally the pill talks to the live isolate without any navigation).
   pauseWalk,
   resumeWalk,
+
+  /// "Termina" on the walk notification (WalkTrackingService.kt).
+  finishWalk,
 }
 
 class HomeWidgetAction {
@@ -20,8 +23,9 @@ class HomeWidgetAction {
   final HomeWidgetActionKind kind;
   final String petId;
 
-  /// Parses `homewidget://<start_walk|new_reminder|open_walk|pause_walk|resume_walk>?petId=...`
-  /// (built in DogWalksWidgetProvider.kt). Null for anything else.
+  /// Parses `homewidget://<start_walk|new_reminder|open_walk|pause_walk|resume_walk|finish_walk>?petId=...`
+  /// (built in DogWalksWidgetProvider.kt, also used by the walk notification
+  /// in WalkTrackingService.kt). Null for anything else.
   static HomeWidgetAction? tryParse(Uri? uri) {
     if (uri == null) return null;
     final petId = uri.queryParameters['petId'];
@@ -37,6 +41,8 @@ class HomeWidgetAction {
         return HomeWidgetAction(HomeWidgetActionKind.pauseWalk, petId);
       case 'resume_walk':
         return HomeWidgetAction(HomeWidgetActionKind.resumeWalk, petId);
+      case 'finish_walk':
+        return HomeWidgetAction(HomeWidgetActionKind.finishWalk, petId);
     }
     return null;
   }

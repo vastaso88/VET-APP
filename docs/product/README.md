@@ -15,5 +15,6 @@ Curated product documents for the MVP now live here instead of the repository ro
 
 ## Additional source
 - `10_prd_mvp_modulare.md`
+- `11_riposizionamento_consapevolezza_proprietario.md` — 2026-11-01: dal "pet health" alla consapevolezza del proprietario; screening, regole, piano in 3 fasi. Prevale sui documenti precedenti dove dicono "salute".
 
 This keeps the root focused on codebase bootstrap and operational files.

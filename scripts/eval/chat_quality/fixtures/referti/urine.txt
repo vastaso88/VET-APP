@@ -1,0 +1,20 @@
+CLINICA VETERINARIA ESEMPIO (struttura fittizia, dati di prova)
+Esame chimico-fisico delle urine e sedimento
+Data: 12/09/2026
+Paziente: Micia - gatto, femmina sterilizzata, 14 anni
+Metodo di raccolta: cistocentesi
+
+Colore: giallo paglierino      Aspetto: limpido
+Peso specifico: 1.018          (rif. gatto > 1.035)      BASSO
+pH: 6,5                        (rif. 6,0 - 7,5)
+Proteine: + (30 mg/dL)         (rif. assenti/tracce)
+Glucosio: assente
+Chetoni: assenti
+Bilirubina: assente
+Sangue/emoglobina: tracce
+Rapporto proteine/creatinina urinario (UPC): 0,5   (rif. < 0,2; borderline 0,2 - 0,4)   ALTO
+
+Sedimento: rari eritrociti (0-2 per campo), rari leucociti, assenza di cristalli,
+assenza di batteri, rare cellule epiteliali.
+
+Commento: urine poco concentrate con lieve proteinuria.

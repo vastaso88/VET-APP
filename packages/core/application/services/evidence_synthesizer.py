@@ -11,7 +11,13 @@ SYNTHESIS_MARKER = "performing evidence synthesis"
 
 # spec v3 §31: the core engine reads this instead of hardcoding "Italian",
 # so a future locale is a config change — see Settings.response_language.
-LANGUAGE_NAMES: dict[str, str] = {"it": "Italian", "en": "English"}
+LANGUAGE_NAMES: dict[str, str] = {
+    "it": "Italian",
+    "en": "English",
+    "es": "Spanish",
+    "de": "German",
+    "fr": "French",
+}
 
 
 def _build_system_prompt(response_language: str) -> str:
@@ -37,6 +43,9 @@ def _build_system_prompt(response_language: str) -> str:
         "supported_claims only when the cited evidence directly backs it; if evidence is "
         "thin, contradictory, or merely suggestive, it belongs in uncertain_claims or "
         "conflicting_evidence instead. Leave any list empty ([]) rather than padding it. "
+        "referral_conditions in particular: only concrete signs that in this case "
+        "genuinely require a vet (a warning sign, a time threshold), never a generic "
+        "'if in doubt' — for an equipment, enclosure or care question it is usually empty. "
         "Never state a specific number (a frequency such as 'once a week', a duration, a "
         "quantity) in supported_claims or uncertain_claims unless that exact number "
         "appears in the Evidence list — if the evidence only supports a general "
@@ -64,12 +73,18 @@ class EvidenceSynthesizer:
         self._llm_client = llm_client
         self._system_prompt = _build_system_prompt(response_language)
 
-    def synthesize(self, user_prompt: str) -> tuple[EvidenceSynthesis, LLMResponse]:
+    def synthesize(
+        self, user_prompt: str, *, response_language: str | None = None
+    ) -> tuple[EvidenceSynthesis, LLMResponse]:
         """Returns the parsed synthesis alongside the raw LLMResponse, so
         the caller can still report which provider/model produced it."""
         response = self._llm_client.generate(
             LLMGenerationRequest(
-                system_prompt=self._system_prompt,
+                system_prompt=(
+                    _build_system_prompt(response_language)
+                    if response_language is not None
+                    else self._system_prompt
+                ),
                 user_prompt=user_prompt,
                 # The structured JSON (up to 7 populated lists) needs more
                 # room than the single free-text paragraph this replaced —
@@ -83,6 +98,7 @@ class EvidenceSynthesizer:
                 # even with reasoning_effort=low at 1200 tokens is the
                 # reason for this extra headroom, not a theoretical margin.
                 max_tokens=2000,
+                purpose="evidence_synthesis",
             )
         )
         return self._parse(response.content), response

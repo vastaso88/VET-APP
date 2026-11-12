@@ -1,0 +1,16 @@
+CLINICA VETERINARIA ESEMPIO (struttura fittizia, dati di prova)
+Referto ecografia addominale
+Data: 05/09/2026
+Paziente: Argo - cane Labrador, maschio castrato, 12 anni
+
+Fegato: dimensioni lievemente aumentate, margini regolari, ecostruttura omogenea,
+ecogenicita lievemente aumentata in modo diffuso. Colecisti nella norma.
+Milza: dimensioni nella norma; presente un nodulo ipoecogeno di 1,2 cm al corpo
+splenico, a margini netti, non vascolarizzato al color Doppler.
+Reni: dimensioni e forma nella norma, buona distinzione cortico-midollare.
+Vescica: moderatamente distesa, parete regolare, contenuto anecogeno.
+Surreni, stomaco, intestino e pancreas: nella norma.
+Linfonodi addominali: non aumentati. Assenza di versamento addominale.
+
+Conclusioni: nodulo splenico di piccole dimensioni di aspetto aspecifico;
+lieve epatopatia diffusa aspecifica. Si consiglia controllo ecografico tra 2-3 mesi.
