@@ -101,6 +101,7 @@ from packages.core.application.services.list_reminders import ListRemindersServi
 from packages.core.application.services.list_walks import ListWalksService
 from packages.core.application.services.llm_budget import LlmBudget, parse_budgets
 from packages.core.application.services.llm_usage_recorder import InstrumentedLLMClient
+from packages.core.application.services.llm_usage_report import LlmUsageReportService
 from packages.core.application.services.maintain_chat_response_reports import (
     ChatResponseReportMaintenanceService,
 )
@@ -472,6 +473,17 @@ class ApplicationContainer:
             if self.settings.environment == "production":
                 raise
             return None
+
+    def llm_usage_report_service(self) -> LlmUsageReportService:
+        """What the AI costs, for the admin portal: aggregates of the usage
+        ledger, priced like the daily cap prices them."""
+        return LlmUsageReportService(
+            self.llm_usage_repository,
+            self.llm_budget,
+            monthly_credits_usd=self.settings.llm_monthly_credits_usd,
+            usd_per_eur=self.settings.llm_usd_per_eur,
+            inference_geo=self.settings.anthropic_inference_geo,
+        )
 
     def retention_dry_run_service(self) -> RetentionDryRunService:
         """Read-only report of what the data-retention job would do. Nothing

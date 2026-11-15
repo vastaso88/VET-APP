@@ -173,6 +173,10 @@ class Settings(BaseSettings):
     # USD; ECB 2026-11-06: 1.1165).
     llm_daily_budget_eur: float = Field(default=1.0, gt=0, alias="LLM_DAILY_BUDGET_EUR")
     llm_usd_per_eur: float = Field(default=1.1165, gt=0, alias="LLM_USD_PER_EUR")
+    # The monthly credit the Anthropic account has, in USD: the admin portal
+    # compares the month's spend with it. Information only, it limits nothing
+    # (the real limits are in the Anthropic Console).
+    llm_monthly_credits_usd: float = Field(default=100.0, gt=0, alias="LLM_MONTHLY_CREDITS_USD")
     llm_default_daily_token_budget: int = Field(
         default=200_000, ge=1, alias="LLM_DEFAULT_DAILY_TOKEN_BUDGET"
     )

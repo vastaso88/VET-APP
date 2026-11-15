@@ -557,6 +557,13 @@ class InMemoryLlmUsageRepository(LlmUsageRepository):
     def usage_for_day(self, day: date) -> list[ModelDailyUsage]:
         return [usage.model_copy() for (d, _), usage in self._daily.items() if d == day]
 
+    def usage_for_days(self, start: date, end: date) -> list[ModelDailyUsage]:
+        return [
+            usage.model_copy()
+            for (d, _), usage in sorted(self._daily.items(), key=lambda item: item[0])
+            if start <= d <= end
+        ]
+
     def mark_exhausted(self, model: str, day: date, until: datetime) -> None:
         usage = self._daily.setdefault((day, model), ModelDailyUsage(day=day, model=model))
         usage.exhausted_until = until

@@ -911,3 +911,64 @@ button, input, select { font: inherit; }
     height: 500px;
   }
 }
+
+/* Consumi IA (app/ai-usage/page.tsx) */
+.usage-table .table-row {
+  grid-template-columns: 1.5fr repeat(6, minmax(0, 1fr));
+}
+
+.usage-state {
+  font-size: 12px;
+  font-weight: 700;
+  padding: 6px 10px;
+  border-radius: 999px;
+  border: 1px solid #b8d8cc;
+  background: var(--accent-soft);
+  color: #1b5b49;
+  white-space: nowrap;
+}
+
+.usage-state-reserve {
+  border-color: #ecd49a;
+  background: #fbf3dc;
+  color: #7a5a0b;
+}
+
+.usage-state-exhausted {
+  border-color: #efb4af;
+  background: #fbe7e5;
+  color: #8f1d15;
+}
+
+.usage-meter {
+  height: 12px;
+  border-radius: 999px;
+  background: #edf0f2;
+  overflow: hidden;
+}
+
+.usage-meter > span {
+  display: block;
+  height: 100%;
+  background: var(--accent);
+}
+
+.usage-meter-reserve > span { background: #c98a12; }
+.usage-meter-exhausted > span { background: #b3261e; }
+
+.usage-chart {
+  display: block;
+  width: 100%;
+  height: auto;
+  max-height: 260px;
+}
+
+.usage-bar { fill: var(--accent); }
+.usage-bar-over { fill: #b3261e; }
+.usage-axis-line { stroke: var(--border); stroke-width: 1; }
+.usage-cap-line { stroke: #b3261e; stroke-width: 1; stroke-dasharray: 4 3; }
+.usage-axis { fill: var(--muted); font-size: 10px; }
+
+@media (max-width: 1050px) {
+  .usage-table .table-row { grid-template-columns: 1.4fr repeat(6, minmax(0, 1fr)); font-size: 12px; }
+}

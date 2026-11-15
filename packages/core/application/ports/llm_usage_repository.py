@@ -14,6 +14,11 @@ class LlmUsageRepository(Protocol):
 
     def usage_for_day(self, day: date) -> list[ModelDailyUsage]: ...
 
+    def usage_for_days(self, start: date, end: date) -> list[ModelDailyUsage]:
+        """The totals per model and day from [start] to [end], both included
+        (the admin portal's usage page). Aggregates only: no owner, no text."""
+        ...
+
     def mark_exhausted(self, model: str, day: date, until: datetime) -> None: ...
 
     def add_user_message(self, owner_id: str, day: date) -> int:

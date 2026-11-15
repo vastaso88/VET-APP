@@ -980,6 +980,17 @@ class SupabaseLlmUsageRepository(LlmUsageRepository):
         )
         return [ModelDailyUsage.model_validate(item) for item in response.data or []]
 
+    def usage_for_days(self, start: date, end: date) -> list[ModelDailyUsage]:
+        response = (
+            self._client.table("llm_usage_daily")
+            .select("*")
+            .gte("day", start.isoformat())
+            .lte("day", end.isoformat())
+            .order("day")
+            .execute()
+        )
+        return [ModelDailyUsage.model_validate(item) for item in response.data or []]
+
     def mark_exhausted(self, model: str, day: date, until: datetime) -> None:
         self._client.table("llm_usage_daily").upsert(
             {"day": day.isoformat(), "model": model, "exhausted_until": until.isoformat()},

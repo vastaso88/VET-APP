@@ -222,6 +222,20 @@ class LlmBudget:
         built: when it is, it replaces this body and nothing else."""
         return self._daily_budget_eur
 
+    def euro_state(self, spent_eur: float) -> str:
+        """The state of the day for a spend of [spent_eur] against the euro cap:
+        "ok", "reserve" (past the reserve share) or "exhausted". The same
+        thresholds the paid models are judged by, so the admin portal reports
+        exactly what the chat does. "ok" when there is no euro cap."""
+        cap = self.daily_cap_eur()
+        if cap is None:
+            return "ok"
+        if spent_eur >= cap:
+            return "exhausted"
+        if spent_eur >= cap * self._reserve_share:
+            return "reserve"
+        return "ok"
+
     def _euro_governed(self, model: str) -> bool:
         """A paid model, while there is a euro cap: its budget is money."""
         return self._daily_budget_eur is not None and price_for(model).is_paid
@@ -265,13 +279,7 @@ class LlmBudget:
         if usage is not None and usage.exhausted_until is not None and usage.exhausted_until > now:
             return "exhausted"
         if self._euro_governed(model):
-            used_eur = self.spent_today_eur()
-            cap = self.daily_cap_eur() or 0.0
-            if used_eur >= cap:
-                return "exhausted"
-            if used_eur >= cap * self._reserve_share:
-                return "reserve"
-            return "ok"
+            return self.euro_state(self.spent_today_eur())
         used = usage.total_tokens if usage else 0
         budget = self.budget_for(model)
         if used >= budget:

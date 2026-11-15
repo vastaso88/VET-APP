@@ -754,6 +754,90 @@ export async function getClosedByAgeAccounts(): Promise<ClosedByAgeAccount[]> {
   }
 }
 
+/** Totals of one model's calls over a period. Aggregates only. */
+export type LlmUsageTotals = {
+  /** Calls to the model, not answers: one chat answer can take several. */
+  calls: number;
+  prompt_tokens: number;
+  completion_tokens: number;
+  cached_tokens: number;
+  cache_write_tokens: number;
+  total_tokens: number;
+  usd: number;
+  eur: number;
+};
+
+export type LlmModelUsage = {
+  model: string;
+  /** "Haiku 5.5", "Sonnet 5.5", "gpt-oss-120b". */
+  label: string;
+  provider: "anthropic" | "groq";
+  paid: boolean;
+  today: LlmUsageTotals;
+  month: LlmUsageTotals;
+};
+
+export type LlmDayUsage = {
+  /** The ledger's day (UTC), YYYY-MM-DD. */
+  date: string;
+  usd: number;
+  eur: number;
+  calls: number;
+  paid_calls: number;
+  reserve_calls: number;
+};
+
+/** "ok"; "reserve" (past the reserve share: Sonnet is off); "exhausted". */
+export type LlmBudgetState = "ok" | "reserve" | "exhausted";
+
+/** What the AI costs: from the usage ledger, no owner, no text. */
+export type AdminLlmUsage = {
+  generated_at: string;
+  /** 1 EUR in USD, as configured. */
+  usd_per_eur: number;
+  /** "us" costs 1.1 times the standard price. */
+  inference_geo: string;
+  today: {
+    date: string;
+    spent_usd: number;
+    spent_eur: number;
+    cap_eur: number | null;
+    share_of_cap: number | null;
+    state: LlmBudgetState;
+  };
+  month: {
+    month: string;
+    spent_usd: number;
+    spent_eur: number;
+    credits_usd: number;
+    share_of_credits: number;
+    days_elapsed: number;
+    days_in_month: number;
+    projected_usd: number;
+  };
+  models: LlmModelUsage[];
+  /** The last 30 days, oldest first, none missing. */
+  daily: LlmDayUsage[];
+  sonnet_answers_today: number;
+  /** Calls the Groq reserve took today. */
+  reserve_calls_today: number;
+  failed_calls_today: number;
+  failed_calls_month: number;
+};
+
+/** null when the usage ledger cannot be read (the page says so). */
+export async function getAdminLlmUsage(): Promise<AdminLlmUsage | null> {
+  await requireAdminSession();
+  try {
+    return await authenticatedAdminRequest<AdminLlmUsage>("/admin/llm-usage");
+  } catch (error) {
+    // A failed API answer or a network failure: the page says it. Anything
+    // else (a redirect to the sign-in page) must go through.
+    if (error instanceof AdminApiError || error instanceof TypeError) return null;
+    throw error;
+  }
+}
+
 export type ClosedByAgeErasure = { rows_deleted: number; files_removed: number };
 
 export async function eraseClosedByAgeAccountRequest(

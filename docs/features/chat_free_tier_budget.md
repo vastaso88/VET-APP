@@ -140,6 +140,11 @@ La misura di precisione (66 frasi per lingua) richiede la chiave di valutazione.
   `LlmBudget.admit_sonnet(...)`: oltre il tetto, o oltre la soglia di riserva del tetto in
   euro, risponde Haiku (non è un errore e non si dice all'utente); se il registro non
   risponde **fallisce chiuso** (Haiku). La scelta di quando passare a Sonnet è della chat;
+- **Dove si vede**: pagina "Consumi IA" del portale admin (`GET /admin/llm-usage`,
+  `LlmUsageReportService`): spesa di oggi contro il tetto in euro, mese contro i crediti
+  (`LLM_MONTHLY_CREDITS_USD`, default 100), per modello, ultimi 30 giorni, risposte Sonnet e
+  chiamate della riserva Groq. Solo aggregati del registro, nessun utente né testo; sono
+  stime dai nostri conteggi (giorni UTC), il conto esatto è nella Console Anthropic;
 - **Continuazioni**: `admit(..., counts_as_question=False)` per il messaggio che continua
   un argomento (la risposta a un chiarimento, il "non mi ha aiutato"): non è una domanda
   del piano e non viene fermato dalle domande finite, ma ha un tetto suo di

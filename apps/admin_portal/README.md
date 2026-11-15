@@ -18,6 +18,12 @@ This is intentionally a separate product surface from `apps/mobile_app`.
 - server-side admin allowlist enforced by FastAPI
 - Overview with live Auth / pet / conversations / Radar / moderation / scrape metrics
 - latest data sources and scrape runs, read-only
+- "Consumi IA" (`/ai-usage`): what the AI costs, from the backend's `GET /admin/llm-usage`
+  (usage ledger, aggregates only, no owner and no text): today against the daily euro cap,
+  the month against the Anthropic credits (`LLM_MONTHLY_CREDITS_USD`, default 100), per model,
+  the last 30 days, Sonnet answers and Groq reserve calls. Estimates from our own counts: the
+  exact bill is in the Anthropic Console (https://platform.claude.com/cost). Pure helpers in
+  `lib/llm-usage-format.ts`.
 
 ## Authorization
 
