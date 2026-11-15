@@ -1,17 +1,17 @@
 {
-  "codice": "GAT-SAL-02",
-  "specie": "gatto",
   "area": "SAL",
-  "argomento": "pulci-zecche",
-  "titolo": "Pulci e zecche nel gatto: attenzione ai prodotti del cane",
   "stato": "bozza",
   "livello_schede": 1,
-  "ultimo_controllo": "2026-11-10",
-  "scadenza": "2027-11-10",
+  "ultimo_controllo": "2026-11-15",
+  "scadenza": "2027-11-15",
   "revisione": {
     "proprietario": null,
     "specialista": null
   },
+  "codice": "GAT-SAL-02",
+  "specie": "gatto",
+  "argomento": "pulci-zecche",
+  "titolo": "Pulci e zecche nel gatto: attenzione ai prodotti del cane",
   "parole_chiave": [
     "pulci",
     "zecche",
@@ -21,19 +21,35 @@
     "piretroidi",
     "permetrina",
     "gatto",
-    "tossico"
+    "tossico",
+    "avvelenamento"
   ],
-  "riassunto_per_chat": "ESCCAP (2022): i piretroidi sintetici molto concentrati registrati solo per il cane sono tossici per il gatto, mentre alcuni piretroidi approvati per il cane sono sicuri e approvati anche per il gatto; nelle case con cani e gatti i preparati tossici per il gatto vanno evitati oppure usati con cautela, seguendo le avvertenze dell'etichetta. Pulci e zecche trasmettono malattie: per le pulci tenia, Bartonella (malattia da graffio di gatto), Rickettsia felis. I gatti sembrano meno colpiti dei cani dalle malattie da zecca, ma dove le zecche sono un problema vanno controllate con un acaricida adatto. Si trattano tutti gli animali di casa. Il gatto si lecca e toglie le pulci: non vederle non esclude l'allergia (prurito, peli spezzati, croste su schiena e base della coda). Pettine antipulci; zecche tolte con strumento adatto, senza olio, alcol o etere. Prodotto e frequenza: veterinario.",
+  "modifiche_ultimo_giro": {
+    "tenute": 0,
+    "sostituite": 8,
+    "tolte": 2,
+    "nota": "Ora poggia sulla guida ufficiale britannica sulla permetrina (VMD) e su WSAVA. Il divieto di dare al gatto un prodotto del cane e la chiamata al veterinario sono ora sostenuti da una fonte ufficiale (prima erano consigli nostri). Tolte: malattie trasmesse dalle pulci, segni dell'allergia, pettine, zecche."
+  },
+  "riassunto_per_chat": "Per la guida ufficiale britannica (VMD) gli spot-on per cani con molta permetrina (oltre il 50% nell'esempio) possono avvelenare e uccidere i gatti; uno spot-on destinato ai soli cani non va applicato al gatto in nessuna quantità, neppure parziale. Secondo la guida britannica non ogni prodotto con permetrina è vietato al gatto: esistono shampoo, spray, polveri e collari a bassa concentrazione autorizzati per il gatto (prodotti del Regno Unito), da usare seguendo le istruzioni. Se il cane in casa è trattato con permetrina, le avvertenze chiedono di tenere il gatto separato dal cane appena trattato e di non farglielo leccare. Possibili segni di avvelenamento: tremori e crisi convulsive, difficoltà a camminare, sbavamento, vomito, comportamento più tranquillo. Se per errore sul gatto è finito uno spot-on con permetrina, la guida chiede di sciacquarlo subito con acqua e un detergente non aggressivo e di andare senza attendere dal veterinario con la confezione. Per WSAVA le pulci sono un rischio che dura tutto l'anno per molti animali; per gli animali esposti indica una prevenzione regolare scelta in base a tipo, mole ed età; prodotto e frequenza si decidono con il veterinario.",
   "blocchi": [
     {
       "tipo": "in_breve",
       "frasi": [
         {
-          "testo": "Alcuni antiparassitari pensati per il cane, in particolare i piretroidi sintetici molto concentrati registrati solo per il cane, sono tossici per il gatto. Altri piretroidi approvati per il cane sono invece sicuri e approvati anche per il gatto.",
+          "testo": "Gli spot-on per cani con molta permetrina (oltre il 50% nell'esempio della guida) possono avvelenare e uccidere i gatti.",
           "fonti": [
             {
-              "id": "esccap_gl3_2022",
-              "punto": "2.4, p. 15; 2.5, p. 16"
+              "id": "vmd_permethrin_2014",
+              "punto": "sezione «Dog spot-ons: permethrin»"
+            }
+          ]
+        },
+        {
+          "testo": "Un prodotto spot-on destinato ai soli cani non va applicato al gatto in nessuna quantità, neppure parziale: il gatto può stare male molto in fretta e può anche morire.",
+          "fonti": [
+            {
+              "id": "vmd_permethrin_2014",
+              "punto": "introduzione e sezione «Veterinary medicines with permethrin: Spot-ons»"
             }
           ]
         }
@@ -43,38 +59,38 @@
       "tipo": "cosa_sapere",
       "frasi": [
         {
-          "testo": "Dove convivono cani e gatti si evita di usare i preparati tossici per il gatto, oppure li si usa con cautela, rispettando le avvertenze dell'etichetta.",
+          "testo": "Secondo la guida britannica non ogni prodotto con permetrina è vietato al gatto: esistono shampoo, spray, polveri e collari a bassa concentrazione autorizzati per il gatto, da usare solo seguendo le istruzioni. Disponibilità e prodotti sono quelli del Regno Unito.",
           "fonti": [
             {
-              "id": "esccap_gl3_2022",
-              "punto": "2.4, p. 15; 2.5, p. 16"
+              "id": "vmd_permethrin_2014",
+              "punto": "introduzione e sezione «Veterinary medicines with permethrin: Other types»"
             }
           ]
         },
         {
-          "testo": "Le pulci trasmettono la tenia, la Bartonella (la malattia da graffio di gatto), Rickettsia felis e altri microbi. Anche le zecche trasmettono malattie in Europa.",
+          "testo": "Se il cane in casa è stato trattato con un prodotto a base di permetrina, le avvertenze in etichetta chiedono di tenere il gatto separato dal cane appena trattato e di non farglielo leccare.",
           "fonti": [
             {
-              "id": "esccap_gl3_2022",
-              "punto": "Table 1, p. 5; Table 4, p. 11"
+              "id": "vmd_permethrin_2014",
+              "punto": "sezione «Dog spot-ons: permethrin»"
             }
           ]
         },
         {
-          "testo": "Sembra che i gatti risentano meno dei cani delle malattie da zecche; se però le zecche sono un problema anche per il gatto, la linea guida indica di combatterle con un acaricida adatto.",
+          "testo": "Per molti animali le pulci sono un rischio che dura tutto l'anno ed è difficile da evitare; anche chi vive solo in casa non è a rischio zero di parassiti.",
           "fonti": [
             {
-              "id": "esccap_gl3_2022",
-              "punto": "2.5, p. 16"
+              "id": "wsava_wellness_2025",
+              "punto": "p. 11-12"
             }
           ]
         },
         {
-          "testo": "Si trattano tutti gli animali che vivono in casa. Le pulci possono comparire in ogni stagione, anche al chiuso.",
+          "testo": "Per gli animali esposti a pulci o zecche, WSAVA indica una prevenzione regolare, scelta in base al tipo di animale, alla sua mole e alla sua età.",
           "fonti": [
             {
-              "id": "esccap_gl3_2022",
-              "punto": "1.4, p. 9; 2.4, p. 15; 1.1, p. 7"
+              "id": "wsava_wellness_2025",
+              "punto": "p. 8 e 11"
             }
           ]
         }
@@ -84,31 +100,13 @@
       "tipo": "cosa_osservare",
       "frasi": [
         {
-          "testo": "Il gatto, leccandosi, toglie le pulci: non trovarne non esclude l'allergia alla loro saliva, che dà prurito, peli spezzati, papule e croste, soprattutto su schiena e base della coda.",
+          "testo": "Possibili segni di avvelenamento da permetrina: tremori e crisi convulsive, difficoltà a reggersi e a camminare, sbavamento, vomito, un comportamento più tranquillo del solito.",
           "fonti": [
             {
-              "id": "esccap_gl3_2022",
-              "punto": "1.2 e 1.3, p. 8"
+              "id": "vmd_permethrin_2014",
+              "punto": "sezione «Permethrin poisoning: what to look for»"
             }
           ]
-        },
-        {
-          "testo": "Il pettine antipulci è il metodo più sensibile per scovarle. Le zecche vanno tolte subito con lo strumento adatto, senza olio, alcol o etere.",
-          "fonti": [
-            {
-              "id": "esccap_gl3_2022",
-              "punto": "1.3, p. 8; 2.2 e 2.4, p. 15"
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "tipo": "cosa_non_fare",
-      "frasi": [
-        {
-          "testo": "Non dare al gatto un antiparassitario registrato solo per il cane, come la pipetta avanzata del cane: alcuni sono tossici per il gatto.",
-          "nostro": true
         }
       ]
     },
@@ -116,17 +114,22 @@
       "tipo": "quando_andare_dal_veterinario",
       "frasi": [
         {
-          "testo": "Il prodotto e la frequenza vanno concordati con il veterinario.",
+          "testo": "Se per errore sul gatto è finito uno spot-on con permetrina, la guida chiede di sciacquare subito via il prodotto con acqua e un detergente non aggressivo e di andare senza attendere dal veterinario, con la confezione.",
           "fonti": [
             {
-              "id": "esccap_gl3_2022",
-              "punto": "1.5, p. 9"
+              "id": "vmd_permethrin_2014",
+              "punto": "sezione «Dog spot-ons: permethrin»"
             }
           ]
         },
         {
-          "testo": "Se il gatto ha preso un prodotto per cani o sta male dopo un trattamento, chiama subito il veterinario (per le urgenze la chat segue i passi già approvati).",
-          "nostro": true
+          "testo": "Prodotto e frequenza del trattamento vanno concordati con il veterinario.",
+          "fonti": [
+            {
+              "id": "wsava_wellness_2025",
+              "punto": "p. 11-12"
+            }
+          ]
         }
       ]
     },
@@ -134,13 +137,7 @@
       "tipo": "limiti",
       "frasi": [
         {
-          "testo": "La linea guida parla di «piretroidi sintetici» e non nomina la permetrina; non dice cosa fare in caso di intossicazione ed è scritta soprattutto per i veterinari. I consigli di non dare prodotti del cane e di chiamare il veterinario sono nostri, scelti per prudenza. ESCCAP è finanziata da aziende del settore, che possono leggere le bozze, ma mantiene il controllo del testo.",
-          "fonti": [
-            {
-              "id": "esccap_gl3_2022",
-              "punto": "2.4, p. 15; Scope, p. 6; p. 33; pagina «Sponsors» di esccap.org"
-            }
-          ]
+          "testo": "La guida britannica sulla permetrina è del 2014 e riguarda prodotti e autorizzazioni del Regno Unito; il documento WSAVA è stato elaborato insieme a HealthforAnimals, associazione internazionale dell'industria della salute animale. Non coprono le malattie trasmesse dalle pulci, i segni dell'allergia, il pettine antipulci né le zecche nel gatto. Per le urgenze la chat segue i passi già approvati."
         }
       ]
     }

@@ -14,6 +14,7 @@ Standard library only. Run: ``python scripts/manuale/check_manuale.py``.
 Exit code 1 if any error; warnings do not fail. ``--righe`` prints the "Fonte" lines.
 ``--esporta`` writes data/manuale/health_cards.json (the archive format).
 ``--rilettura`` writes the list of sentences on red-light sources for a hand review.
+``--approvazione`` writes docs/product/16_schede_da_approvare.md (the owner's review).
 """
 
 from __future__ import annotations
@@ -32,6 +33,7 @@ STATES = ("bozza", "fonti_controllate", "rivista", "pubblicata")
 OPEN_HOW = ("testo_completo", "solo_riassunto", "solo_scheda_bibliografica")
 SOURCE_TYPES = (
     "linea_guida",
+    "guida_ufficiale",
     "posizione",
     "studio",
     "revisione",
@@ -225,8 +227,14 @@ def citation(source: dict[str, Any]) -> str:
     line = source_line(source)
     line = line.removeprefix("Fonte: ")
     line = line.split(". Riassunto di Quokka")[0]
-    if str(source.get("diritti", {}).get("stato", "")).startswith("cc_by"):
+    state = str(source.get("diritti", {}).get("stato", ""))
+    if state.startswith("cc_by"):
         line += " (licenza CC BY, modificato da Quokka)"
+    elif state == "ogl_v3":
+        line += (
+            " (contiene informazioni del settore pubblico con Open Government Licence v3.0;"
+            " modificato da Quokka)"
+        )
     return line
 
 
@@ -375,7 +383,71 @@ def write_hand_review_list() -> int:
     return 0
 
 
+REVIEW_DOC = ROOT / "docs" / "product" / "16_schede_da_approvare.md"
+SPECIES_TITLE = {"cane": "Cane", "gatto": "Gatto", "coniglio": "Coniglio"}
+
+
+def write_review_doc() -> int:
+    """The owner's approval document: every card in full, with the changes of the last round."""
+    sources = {str(s["id"]): s for s in _load(DATA / "fonti.json")}
+    cards = [_load(p) for p in sorted(DATA.glob("*/*.json")) if p.parent.name != "_schema"]
+    out = [
+        "# Schede di salute da approvare",
+        "",
+        "Generato da `python scripts/manuale/check_manuale.py --approvazione`. "
+        f"{len(cards)} schede, "
+        "tutte in bozza: la chat le userà solo dopo la tua approvazione.",
+        "Per ogni scheda rispondimi in chat con il codice e una di queste parole: **ok**, oppure "
+        "**correggi** con cosa cambiare, oppure **togli**.",
+        "Esempio: `CAN-SAL-01 ok`, `GAT-SAL-02 correggi: …`.",
+        "",
+        "Fonti: `docs/product/15_catalogo_fonti_approvate.md`. "
+        "Frasi da rileggere a mano sulle fonti "
+        "con diritti riservati: `docs/product/15a_lista_rilettura_a_mano.md`.",
+        "",
+        "---",
+        "",
+    ]
+    for card in cards:
+        ids: list[str] = []
+        for block in card["blocchi"]:
+            for sentence in block["frasi"]:
+                for ref in sentence.get("fonti", []):
+                    if ref["id"] not in ids:
+                        ids.append(ref["id"])
+        out.append(f"## {card['codice']} · {SPECIES_TITLE[card['specie']]} · {card['titolo']}")
+        out.append("")
+        worst = max(int(sources[i]["livello"]) for i in ids)
+        out.append(f"*Argomento: {card['argomento']} · livello delle fonti: {worst}*")
+        change = card.get("modifiche_ultimo_giro")
+        if change:
+            out.append("")
+            out.append(
+                f"**Rispetto alla versione precedente:** {change['tenute']} frasi tenute, "
+                f"{change['sostituite']} sostituite, {change['tolte']} tolte. "
+                f"{change.get('nota', '')}".rstrip()
+            )
+        out.append("")
+        for block in sorted(card["blocchi"], key=lambda b: list(BLOCK_TITLES).index(b["tipo"])):
+            out.append(BLOCK_TITLES[block["tipo"]])
+            for sentence in block["frasi"]:
+                prefix = "Consiglio di Quokka (non della fonte): " if sentence.get("nostro") else ""
+                out.append(f"- {prefix}{sentence['testo']}")
+            out.append("")
+        out.append("> Fonti: " + export_source(sources, ids))
+        out.append("")
+        out.append("Esito: ☐ ok  ☐ correggi  ☐ togli")
+        out.append("")
+        out.append("---")
+        out.append("")
+    REVIEW_DOC.write_text(chr(10).join(out), encoding="utf-8")
+    print(f"{len(cards)} schede scritte in {REVIEW_DOC}")
+    return 0
+
+
 def main() -> int:
+    if "--approvazione" in sys.argv:
+        return write_review_doc()
     if "--rilettura" in sys.argv:
         return write_hand_review_list()
     if "--righe" in sys.argv:

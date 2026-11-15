@@ -1,6 +1,6 @@
 # Schede di salute da approvare
 
-Versione aggiornata dopo il quarto controllo delle fonti. 11 schede, tutte in bozza: la chat le userà solo dopo la tua approvazione.
+Generato da `python scripts/manuale/check_manuale.py --approvazione`. 11 schede, tutte in bozza: la chat le userà solo dopo la tua approvazione.
 Per ogni scheda rispondimi in chat con il codice e una di queste parole: **ok**, oppure **correggi** con cosa cambiare, oppure **togli**.
 Esempio: `CAN-SAL-01 ok`, `GAT-SAL-02 correggi: …`.
 
@@ -10,7 +10,9 @@ Fonti: `docs/product/15_catalogo_fonti_approvate.md`. Frasi da rileggere a mano 
 
 ## CAN-SAL-01 · Cane · I vaccini del cane: cosa sapere
 
-*Argomento: vaccini · Fonte principale di livello 1 (ente o società scientifica)*
+*Argomento: vaccini · livello delle fonti: 1*
+
+**Rispetto alla versione precedente:** 16 frasi tenute, 0 sostituite, 0 tolte. Poggia solo su documenti WSAVA (fonte gialla): nessuna frase cambiata in questo giro.
 
 In breve
 - Le linee guida internazionali separano i vaccini «essenziali», pensati per ogni cane, da quelli «non essenziali», che si propongono solo ai cani più esposti per zona o per stile di vita.
@@ -48,36 +50,35 @@ Esito: ☐ ok  ☐ correggi  ☐ togli
 
 ## CAN-SAL-02 · Cane · Pulci e zecche nel cane: cosa sapere
 
-*Argomento: pulci-zecche · Fonte principale di livello 1 (ente o società scientifica)*
+*Argomento: pulci-zecche · livello delle fonti: 1*
+
+**Rispetto alla versione precedente:** 0 frasi tenute, 9 sostituite, 5 tolte. Ora poggia su WSAVA (Principles of Wellness 2025), sulla guida ufficiale britannica sulla permetrina (VMD) e sulla scheda ECDC per la stagionalità della zecca. Tolti: malattie trasmesse (babesiosi, Lyme, tenia), segni dell'allergia alla saliva delle pulci, anemia, come togliere la zecca, oli e alcol, perché per questi non c'è una fonte ufficiale consentita.
 
 In breve
-- In molti casi pulci e zecche pesano più per le malattie che possono trasmettere che per la sola infestazione.
-- Le pulci possono portare la tenia e batteri come Bartonella e Rickettsia felis. Le zecche in Europa trasmettono, tra le altre, babesiosi, borreliosi di Lyme, ehrlichiosi e anaplasmosi.
+- Per WSAVA pulci e zecche possono trasmettere malattie dannose, alcune delle quali raggiungono anche le persone.
 
 Cosa sapere
-- Le pulci possono continuare a svilupparsi in casa anche fuori stagione, soprattutto dove c'è riscaldamento o ci sono tappeti: per questo a volte la protezione serve tutto l'anno.
-- Nell'Europa centrale le zecche hanno di norma due picchi di attività, da marzo a giugno e da agosto a novembre; dove fa caldo alcune specie possono nutrirsi tutto l'anno.
-- La protezione va estesa a tutto il periodo in cui le zecche sono attive. A seconda del rischio può bastare il controllo del cane oppure serve anche un trattamento; il piano si concorda con il veterinario.
-- Vanno rispettati i tempi di ripetizione del prodotto. Lo shampoo o il nuoto possono ridurre l'effetto dei prodotti applicati sulla pelle.
-- Si trattano tutti gli animali che vivono in casa, non solo quello infestato. La maggior parte delle pulci si trova nell'ambiente, in uova e larve: lavare la cuccia e passare l'aspirapolvere aiuta a ridurle.
+- Per molti animali le pulci sono un rischio che dura tutto l'anno ed è difficile da evitare; anche chi vive solo in casa non è a rischio zero di parassiti.
+- Secondo l'ECDC l'attività della zecca Ixodes ricinus non è uguale ovunque: nel centro Europa sono state osservate due fasi, tra aprile e maggio e tra settembre e ottobre; nelle zone più fredde del nord Europa e in montagna è stata rilevata una sola fase, in estate. Sono segnalati anche casi sporadici nella stagione fredda. Sono dati europei, non specifici per l'Italia.
+- La protezione da pulci e zecche si costruisce sul singolo cane: contano la zona in cui vive, le sue abitudini e quanto rischio è disposto ad accettare chi lo accudisce. Se il cane vive dove le zecche sono diffuse, un trattamento antizecche continuativo o a scadenze regolari può giovargli.
+- Il prodotto va usato seguendo con cura le sue istruzioni; ogni quanto trattare dipende dalla zona, dal rischio e dalle indicazioni locali.
+- Se non si è fatta prevenzione e le pulci si sono insediate, servono almeno tre mesi di trattamento, che riguarda sia il cane sia la casa.
+- Per la casa esistono prodotti insetticidi pensati per le zone dove il cane riposa (cuccia, divani, tappeti): servono solo per l'ambiente, si usano seguendo le istruzioni e non vanno mai usati sul cane.
 
 Cosa osservare
-- Le zecche vanno cercate ogni giorno e tolte subito con uno strumento fatto per questo. Olio, alcol ed etere non vanno usati.
-- Chi è allergico alla saliva delle pulci ha prurito, peli spezzati, piccole papule e croste; la dermatite umida compare in genere sulla schiena e alla base della coda. Leccandosi il cane elimina le pulci, quindi non vederle non esclude il problema: il metodo più sensibile per scovarle è il pettine antipulci.
-- Con molte pulci si può arrivare all'anemia, soprattutto in cuccioli, anziani e animali debilitati. Un'infezione da tenia può indicare pulci presenti o recenti.
+- Se la passeggiata è passata per un'area con zecche, soprattutto tra vegetazione alta, cespugli o boschi, al ritorno si ispeziona il cane.
+- Pelle e pelo si controllano con regolarità, per esempio ogni settimana; se il prurito aumenta o è forte, il cane va valutato dal veterinario.
 
 Cosa non fare
-- Se in casa c'è anche un gatto, attenzione: alcuni prodotti registrati solo per il cane, in particolare i piretroidi sintetici molto concentrati, sono tossici per il gatto (altri piretroidi sono invece approvati anche per il gatto).
-- Togliere la zecca con la forza può lasciare nella pelle parti della bocca e favorire un'infezione.
+- Se in casa c'è anche un gatto: gli spot-on per cani con molta permetrina (oltre il 50% nell'esempio della guida) possono avvelenare e uccidere i gatti. Se il cane è stato trattato con permetrina, le avvertenze in etichetta chiedono di tenere il gatto separato dal cane appena trattato e di non farglielo leccare.
 
 Quando andare dal veterinario
 - Prodotto e frequenza del trattamento vanno concordati con il veterinario.
-- Consiglio di Quokka (non della fonte): Se il cane ha prurito forte, croste o sta male dopo un morso di zecca, chiama il veterinario.
 
 Limiti di questa scheda
-- La linea guida ESCCAP è scritta soprattutto per i veterinari e non indica quando il proprietario deve rivolgersi a loro: gli inviti a chiamare il veterinario sono nostri. I periodi delle zecche si riferiscono a Regno Unito ed Europa centrale e non all'Italia. L'ultima edizione inglese è del 2022; la versione italiana sul sito è del 2012 e non va usata. ESCCAP è finanziata da aziende del settore, che possono leggere le bozze, ma mantiene il controllo del testo.
+- Il documento WSAVA è stato elaborato insieme a HealthforAnimals, associazione internazionale dell'industria della salute animale; la guida britannica sulla permetrina è del 2014 e riguarda il Regno Unito; la scheda dell'ECDC è scritta per la salute pubblica umana e qui serve solo per la stagionalità della zecca, con dati europei e non italiani. Non coprono i segni dell'allergia alla saliva delle pulci, l'anemia, la tenia né come togliere una zecca dal cane (la scheda ECDC dà indicazioni solo per le persone): per queste cose chiedi al veterinario.
 
-> Fonti: ESCCAP (European Scientific Counsel Companion Animal Parasites), Control of Ectoparasites in Dogs and Cats, ESCCAP Guideline 03, 2022, https://www.esccap.org/guidelines/gl3/. Riassunto di Quokka, verificato il 2026-11-10.
+> Fonti: WSAVA (con HealthforAnimals, associazione dell'industria), Principles of Wellness, 2025, https://wsava.org/global-guidelines/; ECDC (Centro europeo per la prevenzione e il controllo delle malattie), Factsheet about tick-borne encephalitis (TBE), 2024, https://www.ecdc.europa.eu/en/tick-borne-encephalitis/facts/factsheet (licenza CC BY, modificato da Quokka); Veterinary Medicines Directorate (Regno Unito), Permethrin: don't put your cat at risk, 2014, https://www.gov.uk/government/publications/permethrin-dont-put-your-cat-at-risk (contiene informazioni del settore pubblico con Open Government Licence v3.0; modificato da Quokka). Riassunto di Quokka, verificato il 2026-11-15.
 
 Esito: ☐ ok  ☐ correggi  ☐ togli
 
@@ -85,7 +86,9 @@ Esito: ☐ ok  ☐ correggi  ☐ togli
 
 ## CAN-SAL-03 · Cane · Peso e forma del corpo del cane: come valutarli
 
-*Argomento: peso-corporatura · Fonte principale di livello 1 (ente o società scientifica)*
+*Argomento: peso-corporatura · livello delle fonti: 1*
+
+**Rispetto alla versione precedente:** 13 frasi tenute, 0 sostituite, 0 tolte. Poggia solo su documenti WSAVA (fonte gialla): nessuna frase cambiata in questo giro.
 
 In breve
 - WSAVA propone di misurare a ogni controllo peso, grasso (scala da 1 a 9) e muscolo. La fascia da cercare nella maggior parte degli animali è 4-5 su 9: poggia su pochi studi, e chi vive con l'animale può trovarlo più snello di come se lo immaginava.
@@ -118,76 +121,40 @@ Esito: ☐ ok  ☐ correggi  ☐ togli
 
 ---
 
-## CAN-SAL-04 · Cane · Il cane vomita o ha la diarrea: cosa sapere e cosa osservare
-
-*Argomento: vomito-diarrea · Fonte principale di livello 2 (studio scientifico)*
-
-In breve
-- Un vomito lieve, senza altri segni, che dura poco è comune e spesso passa da solo: in uno studio citato dalla rassegna, l'89% dei cani che vomitavano è guarito in meno di due giorni.
-- Anche la diarrea acuta è frequente e di solito breve: in uno studio inglese su 1.835 cani portati dal veterinario, nel 98% è durata meno di 14 giorni e in oltre l'80% non è servita una seconda visita.
-
-Cosa sapere
-- Nel vomito acuto lieve la causa di solito non viene scoperta; le più probabili sono errori di dieta, infezioni e sostanze tossiche.
-- Alcune cause sono più frequenti nei cani giovani, come l'ingestione di corpi estranei; altre negli anziani, come i tumori dello stomaco.
-- Un vomito forte e prolungato fa perdere liquidi e sali minerali e può portare a disidratazione e shock.
-- Togliere il cibo per circa 24 ore è la pratica più diffusa, ma non esistono studi che la confrontino con il dare presto un alimento molto digeribile; per i cani che stanno bene è improbabile che l'una o l'altra scelta cambi molto le cose, e in mancanza di dati gli autori ritengono più adatto un alimento molto digeribile (opinione di esperti).
-- Per una linea guida europea, riportata dallo studio inglese e non letta direttamente, nella diarrea acuta lieve o moderata gli antibiotici di norma non vanno usati.
-
-Cosa osservare
-- Per i veterinari sono segni che richiedono un approfondimento: sul vomito stesso (molto frequente, abbondante, maleodorante, o che non migliora con le cure); la presenza di sangue (nel vomito o come feci nere); e le condizioni generali del cane, con forte dolore alla pancia, febbre, disidratazione grave o shock.
-- Per i veterinari sono motivi di approfondimento anche un vomito che dura da più di 3-4 settimane, un calo di peso marcato e un forte malessere, che di solito non accompagna i disturbi banali.
-- Un cane con nausea può sembrare spento, sbavare, leccarsi spesso le labbra, deglutire a vuoto e non voler mangiare.
-
-Cosa non fare
-- Se il veterinario ha impostato una cura, si danno solo i farmaci e l'alimento che ha indicato.
-- Un farmaco contro il vomito può mascherarlo: per questo si osserva con attenzione il cane e si avvisa il veterinario appena peggiora.
-- Dopo l'uso di alcuni antinfiammatori può comparire sangue nel vomito.
-
-Quando andare dal veterinario
-- Se il vomito continua dopo una prima visita e le cure, il veterinario ricontrolla il cane al massimo entro 48 ore, e il proprietario torna prima se è preoccupato.
-- Consiglio di Quokka (non della fonte): Se noti i segni di approfondimento descritti sopra (sul vomito, sul sangue e sulle condizioni del cane), conviene sentire subito il veterinario.
-
-Limiti di questa scheda
-- La linea guida europea sulla diarrea acuta non è stata aperta e la rassegna sul vomito è del 2010, con il sostegno di un'azienda che produce un farmaco contro il vomito. La regola delle 48 ore e l'elenco dei segni di approfondimento sono strumenti pensati per i veterinari; l'invito a sentire subito il veterinario per quei segni è nostro. Nessuna fonte letta dà un elenco di segni d'allarme per la diarrea, dice cosa fare con i cuccioli o avverte contro i farmaci umani: se il cane sta molto male o ha ingerito qualcosa di pericoloso, chiama subito il veterinario (per le urgenze la chat segue i passi già approvati).
-
-> Fonti: Elwood C et al. (European Emesis Council), Emesis in dogs: a review, Journal of Small Animal Practice, 2010, https://doi.org/10.1111/j.1748-5827.2009.00820.x; O'Neill DG, Prisk LJ, Brodbelt DC, Church DB, Allerton F, Epidemiology and clinical management of acute diarrhoea in dogs under primary veterinary care in the UK, PLoS ONE, 2025, https://doi.org/10.1371/journal.pone.0324203 (licenza CC BY, modificato da Quokka). Riassunto di Quokka, verificato il 2026-11-10.
-
-Esito: ☐ ok  ☐ correggi  ☐ togli
-
----
-
 ## CON-SAL-01 · Coniglio · Il coniglio mangia meno o fa meno palline
 
-*Argomento: non-mangia · Fonte principale di livello 3 (manuale di esperti)*
+*Argomento: non-mangia · livello delle fonti: 1*
+
+**Rispetto alla versione precedente:** 0 frasi tenute, 10 sostituite, 3 tolte. Tutte le frasi ora poggiano sulla guida ufficiale scozzese. Tolte: ostruzione e gas, ananas e papaya, digiuno nella diarrea; cadute anche la lipidosi epatica, gli antibiotici e il numero di palline.
 
 In breve
-- Un coniglio che non mangia, comunque sia cominciato il problema, rischia una grave malattia del fegato (la lipidosi epatica), che può portare all'insufficienza del fegato e alla morte.
-- Il manuale di medicina del coniglio consultato indica che un coniglio che non mangia va curato senza ritardo.
+- La guida ufficiale scozzese considera un'emergenza il coniglio che non mangia o non fa feci: va portato subito dal veterinario, perché può peggiorare in fretta.
+- Il coniglio tende a nascondere il malessere: può sembrare quasi normale fino a quando sta già molto male.
 
 Cosa sapere
-- Il rallentamento dell'intestino (stasi) ha molte cause: dolore, problemi ai denti, ansia, cambi nell'ambiente, infezioni, corpi estranei. Spesso è la conseguenza di un altro problema, che il veterinario deve cercare.
-- Tra i fattori di stress che possono scatenarla la rassegna elenca cambi di sistemazione, di abitudini o di alimentazione, i trasporti e le temperature estreme.
-- Una dieta povera di fibra indigeribile rallenta l'intestino e fa ristagnare pelo e cibo nello stomaco; il fieno di buona qualità è una fonte di questa fibra.
-- Un'ostruzione, con intestino pieno di gas o liquidi riconosciuto dal veterinario con la radiografia, è un'urgenza chirurgica; anche il gonfiore da gas può mettere la vita in pericolo.
+- Fieno o erba devono essere almeno l'80% dell'alimentazione e restare sempre a disposizione, di giorno e di notte: la fibra mantiene attivo l'intestino.
+- Il coniglio è molto sensibile a ogni cambio di alimentazione: ogni novità va introdotta gradualmente, un cibo alla volta, a piccole quantità, osservando come reagisce.
+- Anche i problemi ai denti e lo stress possono far calare l'appetito.
+- Il pelo ingerito mentre il coniglio si pulisce può ostruire l'intestino: per questo lo si spazzola con regolarità, almeno ogni giorno se ha il pelo lungo.
 
 Cosa osservare
-- Il segnale più precoce è un appetito che cala insieme a una riduzione delle feci.
-- Un coniglio che mangia bene fieno fa molte palline dure, fino a circa 180 al giorno: la mancanza di feci dure è un dato importante, da confrontare con il solito.
-- All'inizio il coniglio può sembrare ancora abbastanza vispo, quindi non farti rassicurare. Con il tempo può stare curvo e fermo, smettere di pulirsi e disidratarsi.
+- Le feci cambiano: più piccole e scure, in numero minore, liquide o del tutto assenti; anche appetito e sete diversi dal solito sono un segnale.
+- Le feci si controllano ogni giorno.
+- Può restare immobile, con la schiena incurvata e il pelo non curato o ritto.
+- Dopo un viaggio si verifica che il coniglio mangi.
 
 Cosa non fare
-- Un coniglio con la diarrea non va tenuto a digiuno come si fa con cane e gatto.
-- Il manuale cita una prova di laboratorio del 1983 in cui gli enzimi di ananas e papaya non scioglievano il pelo, e osserva che l'eventuale effetto del succo di ananas potrebbe dipendere dal liquido.
-- La rassegna raccomanda un uso ponderato degli antibiotici: usarli senza criterio favorisce lo sviluppo di batteri pericolosi.
+- Il coniglio ha bisogno di mangiare di continuo: il fieno non deve mai mancare.
+- Non dare medicine per l'uomo o per altri animali (possono essere molto pericolose): solo quelle prescritte o consigliate dal veterinario proprio per i conigli.
 
 Quando andare dal veterinario
-- Per il manuale, un coniglio che non mangia va curato senza ritardo.
-- Consiglio di Quokka (non della fonte): Se il coniglio mangia poco e le palline diminuiscono o mancano, contatta subito il veterinario.
+- Un coniglio che non mangia o non fa feci va portato subito dal veterinario.
+- Diarrea, oppure larve di mosca sul pelo: veterinario subito.
 
 Limiti di questa scheda
-- Non abbiamo trovato una linea guida di una società veterinaria su questo tema né un tempo preciso pensato per il proprietario. Il manuale, rivolto ai veterinari, indica come riferimento per l'alimentazione assistita con la siringa più di 12 ore senza mangiare in un riquadro sui principi generali di trattamento dei disturbi digestivi, e più di 24 ore nel testo. Le fonti sono due rassegne (2005 e 2013), il manuale (2014) e uno studio inglese del 2025; i testi Elsevier sono riassunti, non riprodotti. Le dosi e le cure che compaiono in queste fonti non sono usate: sono scelte del veterinario. L'invito a contattare subito il veterinario e gli inviti a non farsi rassicurare e a confrontare con il solito sono nostri.
+- La fonte è la guida ufficiale del governo scozzese del 2018 sul benessere dei conigli da compagnia: sono indicazioni ufficiali del Regno Unito, non norme italiane né linee guida di una società veterinaria. Non spiega in dettaglio il meccanismo del rallentamento dell'intestino (accenna a pelo ingerito, semi, noci e mais come rischi di ostruzione) e non indica terapie né dosi: per queste serve il veterinario. «Subito» è la parola della guida.
 
-> Fonti: Varga M, Digestive Disorders (cap. 8), in: Textbook of Rabbit Medicine, Elsevier, 2014, https://doi.org/10.1016/B978-0-7020-4979-8.00008-X; Jackson MA, O'Neill DG, Hedley J, Brodbelt DC, Burn CC, Dental disease in rabbits under UK primary veterinary care: Clinical management and associated welfare impacts, Veterinary Record, 2025, https://doi.org/10.1002/vetr.5326 (licenza CC BY, modificato da Quokka); DeCubellis J, Graham J, Gastrointestinal Disease in Guinea Pigs and Rabbits, Veterinary Clinics of North America: Exotic Animal Practice, 2013, https://doi.org/10.1016/j.cvex.2013.01.002; Reusch B, Rabbit Gastroenterology, Veterinary Clinics of North America: Exotic Animal Practice, 2005, https://doi.org/10.1016/j.cvex.2005.01.007. Riassunto di Quokka, verificato il 2026-11-10.
+> Fonti: Scottish Government, Pet Rabbit Welfare Guidance, 2018, https://www.gov.scot/publications/pet-rabbit-welfare-guidance/ (contiene informazioni del settore pubblico con Open Government Licence v3.0; modificato da Quokka). Riassunto di Quokka, verificato il 2026-11-15.
 
 Esito: ☐ ok  ☐ correggi  ☐ togli
 
@@ -195,36 +162,36 @@ Esito: ☐ ok  ☐ correggi  ☐ togli
 
 ## CON-SAL-02 · Coniglio · I denti del coniglio: perché il fieno e quando fare controllare
 
-*Argomento: denti · Fonte principale di livello 2 (studio scientifico)*
+*Argomento: denti · livello delle fonti: 1*
+
+**Rispetto alla versione precedente:** 0 frasi tenute, 12 sostituite, 2 tolte. Tutte le frasi ora poggiano sulla guida ufficiale scozzese. Tolte: lo studio su 2.219 conigli e gli ascessi senza febbre; cadono anche i controlli in anestesia e il divieto assoluto di tagliare gli incisivi (la guida dice solo che li corregge il veterinario).
 
 In breve
-- I denti del coniglio spuntano per tutta la vita e si consumano masticando: per questo la base della dieta è il fieno.
+- I denti del coniglio crescono per tutta la vita e si consumano masticando fieno ed erba: per questo il fieno è la base della dieta.
 
 Cosa sapere
-- I denti del coniglio hanno la radice aperta e ricrescono di continuo per tutta la vita. A tenerli della giusta lunghezza contribuiscono, tra l'altro, il consumo dovuto ai cibi abrasivi e lo sfregamento fra le arcate quando mastica.
-- Con una dieta povera di fibra e poco abrasiva le corone dei molari si allungano e cambiano l'inclinazione della superficie di masticazione, fino a formare punte taglienti.
-- Il fieno di graminacee (fleolo, erba di prato, erba mazzolina) è la base della dieta: la fibra aiuta a prevenire i problemi ai denti o a farli progredire più piano. Secondo una rassegna le crocchette vanno date in poca quantità, e i mix tipo muesli sono da evitare: portano il coniglio a scegliere solo i bocconi che preferisce, e questo è collegato a denti che non combaciano bene.
-- Non conta solo la dieta: anche traumi, infezioni e fattori genetici possono avere un ruolo.
-- La bocca del coniglio è lunga e stretta: per esaminare bene i denti posteriori di solito serve un otoscopio o un visore simile.
-- In uno studio su 2.219 conigli con malattia dentale diagnosticata in ambulatori del Regno Unito, 547 sono morti e, tra questi, nel 51,2% la malattia dentale è stata la causa o ha contribuito alla morte; per il 19,9% dei decessi la causa non era registrata.
+- I denti davanti tagliano il cibo e quelli dietro lo macinano.
+- Fieno ed erba sono almeno l'80% della dieta; le crocchette non più del 5-10%; il massimo raccomandato oggi è circa 25 g per kg di peso al giorno.
+- La guida dice di non usare i cibi tipo muesli, legati a problemi digestivi e dei denti; se il coniglio li mangia già, il passaggio alle crocchette va fatto lentamente, in circa 2-4 settimane.
+- I denti dietro possono non combaciare e formare punte che possono causare molto dolore mentre il coniglio mangia; alcune razze sono più predisposte per la forma del cranio.
+- I denti dietro non si vedono facilmente: vanno fatti controllare dal veterinario con un otoscopio.
 
 Cosa osservare
-- Segni che il proprietario può notare: bava, difficoltà a inghiottire o soffocamento con il cibo non masticato, cibo lasciato cadere, riluttanza a mangiare fieno e cibi duri, perdita di peso, occhio che lacrima da tempo, secrezione dal naso, minore digrignamento dei denti, zampette alla bocca, ascessi al viso, incisivi molto lunghi.
-- Il coniglio nasconde spesso dolore e malattia: le prime avvisaglie, come l'occhio che lacrima o il fieno lasciato, meritano attenzione.
-- Gli ascessi dentali nel coniglio di solito non danno febbre: sentirlo non caldo non esclude il problema.
+- Possono indicare un problema ai denti: bava o mento bagnato, pelo bagnato su petto e zampe, mangiare poco o smettere di mangiare, perdere peso, avere incisivi troppo lunghi o storti.
+- Digrignare i denti è tra i segni di sofferenza elencati dalla guida.
+- Una volta alla settimana si controllano gli incisivi e le unghie.
 
 Cosa non fare
-- Tagliare gli incisivi non va mai fatto; per accorciare i denti, soprattutto quelli dietro, si usano altri metodi, idealmente con sedazione o anestesia. Il taglio dei denti può causare fratture longitudinali.
+- Denti storti o troppo lunghi: secondo la guida li deve correggere solo il veterinario.
 
 Quando andare dal veterinario
-- Quando le alterazioni dei denti sono ormai avanzate, spesso non è più possibile farle regredire; inoltre la malattia dentale può favorire la stasi intestinale (vedi la scheda su «mangia meno»).
-- Una rassegna consiglia un controllo fisico completo con ispezione della bocca a coniglio sveglio ogni 6-12 mesi; nei casi a rischio indica un esame con endoscopio in anestesia a intervalli più lunghi (12-18 mesi) o prima se compaiono segni. Non è una linea guida di società veterinarie.
-- Consiglio di Quokka (non della fonte): Se il coniglio mangia meno, perde peso, sbava, lascia cadere il cibo, ha l'occhio che lacrima da tempo o il viso gonfio, contatta il veterinario.
+- Con poco appetito, mento bagnato o bava, o se smette di mangiare, la guida dice di andare subito dal veterinario.
+- Il controllo dei denti posteriori con l'otoscopio è consigliato idealmente ogni sei mesi.
 
 Limiti di questa scheda
-- Non abbiamo trovato una linea guida di società veterinarie sui denti del coniglio. Le fonti sono uno studio britannico del 2025 (dati del 2019), una rassegna del 2025 sugli ascessi dentali e due rassegne più vecchie (2005 e 2013), riassunte e non riprodotte. Il consiglio di contattare il veterinario è nostro.
+- La fonte è la guida ufficiale del governo scozzese del 2018 sul benessere dei conigli da compagnia: sono indicazioni ufficiali del Regno Unito, non norme italiane né linee guida di una società veterinaria. Non descrive le cause delle malattie dentali in dettaglio e non indica cure.
 
-> Fonti: Craciun S, Nadas GC, Odontogenic Abscesses in Pet Rabbits: A Comprehensive Review of Pathogenesis, Diagnosis, and Treatment Advances, Animals (MDPI), 2025, https://doi.org/10.3390/ani15131994 (licenza CC BY, modificato da Quokka); DeCubellis J, Graham J, Gastrointestinal Disease in Guinea Pigs and Rabbits, Veterinary Clinics of North America: Exotic Animal Practice, 2013, https://doi.org/10.1016/j.cvex.2013.01.002; Jackson MA, O'Neill DG, Hedley J, Brodbelt DC, Burn CC, Dental disease in rabbits under UK primary veterinary care: Clinical management and associated welfare impacts, Veterinary Record, 2025, https://doi.org/10.1002/vetr.5326 (licenza CC BY, modificato da Quokka); Reusch B, Rabbit Gastroenterology, Veterinary Clinics of North America: Exotic Animal Practice, 2005, https://doi.org/10.1016/j.cvex.2005.01.007. Riassunto di Quokka, verificato il 2026-11-10.
+> Fonti: Scottish Government, Pet Rabbit Welfare Guidance, 2018, https://www.gov.scot/publications/pet-rabbit-welfare-guidance/ (contiene informazioni del settore pubblico con Open Government Licence v3.0; modificato da Quokka). Riassunto di Quokka, verificato il 2026-11-15.
 
 Esito: ☐ ok  ☐ correggi  ☐ togli
 
@@ -232,27 +199,61 @@ Esito: ☐ ok  ☐ correggi  ☐ togli
 
 ## CON-SAL-03 · Coniglio · Il coniglio nasconde il dolore: cosa osservare
 
-*Argomento: malessere-nascosto · Fonte principale di livello 2 (studio scientifico)*
+*Argomento: malessere-nascosto · livello delle fonti: 1*
+
+**Rispetto alla versione precedente:** 0 frasi tenute, 3 sostituite, 3 tolte. Tutte le frasi ora poggiano sulla guida ufficiale scozzese. Tolte: il sondaggio sui proprietari, l'indagine su 46 professionisti e le opinioni dei proprietari; le altre frasi sono nuove, dalla guida.
 
 In breve
-- Essendo una preda, il coniglio tende a non far vedere quando sta male o soffre; le variazioni del suo comportamento sono spesso così lievi che in casa si fatica a notarle o le si sottovaluta.
+- Il coniglio è una preda: di solito non mostra in modo evidente dolore e malessere, e i cambiamenti del suo comportamento sono molto sottili.
+- Un coniglio malato spesso non sembra stare male finché non è già molto grave.
 
 Cosa sapere
-- In una seconda parte del sondaggio, 345 proprietari hanno dato un punteggio di dolore a 8 video di conigli, confrontato con quello di tre esperti. Gli estremi li hanno riconosciuti meglio: accordo dell'88,8% sul coniglio senza dolore e del 65,2% su quello con dolore grave. Il dolore lieve (28,4%) e quello moderato (43,2%) sono sfuggiti molto più spesso. Nel complesso il punteggio dei proprietari è stato più basso di quello degli esperti: 11,9 contro 18 (massimo possibile 24).
-- Per quasi tutte le condizioni proposte nel questionario (500 proprietari) c'era almeno qualcuno convinto che il veterinario non servisse; non è successo soltanto per tre: stasi intestinale, denti posteriori troppo lunghi e fratture.
-- In un'indagine tra 46 professionisti veterinari (veterinari e infermieri), i cinque problemi di benessere con maggiore impatto stimato nel coniglio da compagnia sono risultati, in ordine: spazio troppo piccolo, stasi intestinale, problemi dei denti, alimentazione sbagliata, assenza di un coniglio compagno.
+- Conoscere il comportamento normale del proprio coniglio aiuta a notare quando qualcosa cambia.
+- Tra i segni possibili di dolore la guida indica la pancia premuta a terra, la schiena inarcata, i fianchi che si contraggono e l'addome retratto, il sussulto o le strida, la riluttanza a sollevarsi sulle zampe posteriori; tra i segni di sofferenza anche la postura incurvata e il digrignare i denti.
+- La guida descrive anche la «scala della smorfia» del coniglio, che osserva occhi, guance, narici, orecchie e baffi: va usata insieme ad altri segni e solo con il coniglio sveglio; la guida precisa che è ancora in sviluppo.
 
 Cosa osservare
-- Gli autori dello studio sulla malattia dentale invitano a fare attenzione a cambiamenti di comportamento anche lievi, come la letargia, e alla riluttanza a mangiare il fieno; la letargia è stata registrata nel 9,3% dei casi.
-- Consiglio di Quokka (non della fonte): Per i cambiamenti nel mangiare e nelle feci vedi le schede su «mangia meno o fa meno palline» e sui denti.
+- Ogni giorno basta una rapida ispezione da capo a coda: come si comporta, come mangia e beve, e poi zampe, pelo, testa, feci, zona posteriore, con attenzione a eventuali noduli.
+- Ogni settimana si controllano unghie e incisivi.
+- In clima caldo si controlla la zona posteriore almeno due volte al giorno: la miasi (larve di mosca) può uccidere in poche ore.
+- È una buona idea pesare il coniglio e annotare il peso almeno una volta al mese; un calo può indicare un problema ai denti o altro. Idealmente le costole si sentono facilmente.
+
+Cosa non fare
+- Non dare medicine per l'uomo o per altri animali (possono essere molto pericolose): solo quelle prescritte o consigliate dal veterinario proprio per i conigli.
 
 Quando andare dal veterinario
-- Consiglio di Quokka (non della fonte): Se noti uno di questi cambiamenti e non ne conosci la causa, parlane con il veterinario: il coniglio mostra poco il dolore e la malattia.
+- Per ogni segno di malattia o cambiamento di comportamento la guida invita a consultare il veterinario e parla di controlli veterinari regolari (cita il check-up annuale a proposito dei denti).
+- Larve di mosca o diarrea: veterinario subito. Respirare con la bocca aperta va trattato come un'emergenza.
 
 Limiti di questa scheda
-- Il sondaggio sul dolore è stato fatto online tra proprietari che hanno scelto di partecipare (reclutati con Facebook): non rappresenta tutti i proprietari. La seconda indagine riporta opinioni di professionisti, non misure. Nessuna fonte letta dice ogni quanto pesare il coniglio o perché farlo. Gli inviti a contattare il veterinario sono nostri.
+- La fonte è la guida ufficiale del governo scozzese del 2018 sul benessere dei conigli da compagnia: sono indicazioni ufficiali del Regno Unito, non norme italiane né linee guida di una società veterinaria. Non dà soglie numeriche oltre a quelle riportate e non indica cure.
 
-> Fonti: Forder C, Benato L, Rooney NJ, An investigation into how accurately UK rabbit owners identify pain in their pet rabbits, BMC Veterinary Research, 2024, https://doi.org/10.1186/s12917-024-03947-7 (licenza CC BY, modificato da Quokka); Jackson MA, O'Neill DG, Hedley J, Brodbelt DC, Burn CC, Dental disease in rabbits under UK primary veterinary care: Clinical management and associated welfare impacts, Veterinary Record, 2025, https://doi.org/10.1002/vetr.5326 (licenza CC BY, modificato da Quokka); Fenton L, Benato L, Mancinelli E, Rooney NJ, What Are the Most Prevalent Welfare Issues for Pet Small Mammals?, Animals (MDPI), 2025, https://doi.org/10.3390/ani15101423 (licenza CC BY, modificato da Quokka). Riassunto di Quokka, verificato il 2026-11-10.
+> Fonti: Scottish Government, Pet Rabbit Welfare Guidance, 2018, https://www.gov.scot/publications/pet-rabbit-welfare-guidance/ (contiene informazioni del settore pubblico con Open Government Licence v3.0; modificato da Quokka). Riassunto di Quokka, verificato il 2026-11-15.
+
+Esito: ☐ ok  ☐ correggi  ☐ togli
+
+---
+
+## CON-SAL-04 · Coniglio · I vaccini del coniglio: cosa dice la guida ufficiale
+
+*Argomento: vaccini · livello delle fonti: 1*
+
+**Rispetto alla versione precedente:** 0 frasi tenute, 0 sostituite, 0 tolte. Scheda nuova (la richiesta di vaccini del coniglio era la più scoperta nella chat): poggia solo sulla guida scozzese; non c'è alcuna fonte ufficiale apribile per l'Italia.
+
+In breve
+- Per la guida ufficiale scozzese esistono vaccini annuali contro la mixomatosi e contro la malattia emorragica virale (VHD), incluso il ceppo VHD2, che la guida del 2018 chiama nuovo.
+- Per la guida sono malattie di solito mortali e la vaccinazione è raccomandata; per il vaccino da usare il riferimento è il veterinario.
+
+Cosa sapere
+- Si tengono i conigli lontani dai conigli selvatici e dai luoghi dove questi sono stati, per il rischio di trasmissione di malattie.
+
+Quando andare dal veterinario
+- Consiglio di Quokka (non della fonte): In Italia chiedi al veterinario quale vaccino usare e quando, e se protegge anche dal ceppo RHDV2: queste indicazioni sono britanniche.
+
+Limiti di questa scheda
+- La fonte è la guida ufficiale del governo scozzese del 2018 sul benessere dei conigli da compagnia: sono indicazioni ufficiali del Regno Unito, non norme italiane né linee guida di una società veterinaria. Non dà età della prima dose né calendario. Per l'Italia (età, richiami, prodotti che coprono il ceppo RHDV2) non abbiamo trovato una fonte ufficiale che si possa consultare; calendario e prodotto li decide il veterinario. L'invito a chiedere del ceppo RHDV2 è nostro.
+
+> Fonti: Scottish Government, Pet Rabbit Welfare Guidance, 2018, https://www.gov.scot/publications/pet-rabbit-welfare-guidance/ (contiene informazioni del settore pubblico con Open Government Licence v3.0; modificato da Quokka). Riassunto di Quokka, verificato il 2026-11-15.
 
 Esito: ☐ ok  ☐ correggi  ☐ togli
 
@@ -260,7 +261,9 @@ Esito: ☐ ok  ☐ correggi  ☐ togli
 
 ## GAT-SAL-01 · Gatto · I vaccini del gatto: cosa sapere
 
-*Argomento: vaccini · Fonte principale di livello 1 (ente o società scientifica)*
+*Argomento: vaccini · livello delle fonti: 1*
+
+**Rispetto alla versione precedente:** 12 frasi tenute, 0 sostituite, 0 tolte. Poggia solo su documenti WSAVA (fonte gialla): nessuna frase cambiata in questo giro.
 
 In breve
 - Per le linee guida internazionali i vaccini essenziali, quelli per ogni gatto, sono quelli contro panleucopenia, calicivirus ed herpesvirus.
@@ -294,70 +297,65 @@ Esito: ☐ ok  ☐ correggi  ☐ togli
 
 ## GAT-SAL-02 · Gatto · Pulci e zecche nel gatto: attenzione ai prodotti del cane
 
-*Argomento: pulci-zecche · Fonte principale di livello 1 (ente o società scientifica)*
+*Argomento: pulci-zecche · livello delle fonti: 1*
+
+**Rispetto alla versione precedente:** 0 frasi tenute, 8 sostituite, 2 tolte. Ora poggia sulla guida ufficiale britannica sulla permetrina (VMD) e su WSAVA. Il divieto di dare al gatto un prodotto del cane e la chiamata al veterinario sono ora sostenuti da una fonte ufficiale (prima erano consigli nostri). Tolte: malattie trasmesse dalle pulci, segni dell'allergia, pettine, zecche.
 
 In breve
-- Alcuni antiparassitari pensati per il cane, in particolare i piretroidi sintetici molto concentrati registrati solo per il cane, sono tossici per il gatto. Altri piretroidi approvati per il cane sono invece sicuri e approvati anche per il gatto.
+- Gli spot-on per cani con molta permetrina (oltre il 50% nell'esempio della guida) possono avvelenare e uccidere i gatti.
+- Un prodotto spot-on destinato ai soli cani non va applicato al gatto in nessuna quantità, neppure parziale: il gatto può stare male molto in fretta e può anche morire.
 
 Cosa sapere
-- Dove convivono cani e gatti si evita di usare i preparati tossici per il gatto, oppure li si usa con cautela, rispettando le avvertenze dell'etichetta.
-- Le pulci trasmettono la tenia, la Bartonella (la malattia da graffio di gatto), Rickettsia felis e altri microbi. Anche le zecche trasmettono malattie in Europa.
-- Sembra che i gatti risentano meno dei cani delle malattie da zecche; se però le zecche sono un problema anche per il gatto, la linea guida indica di combatterle con un acaricida adatto.
-- Si trattano tutti gli animali che vivono in casa. Le pulci possono comparire in ogni stagione, anche al chiuso.
+- Secondo la guida britannica non ogni prodotto con permetrina è vietato al gatto: esistono shampoo, spray, polveri e collari a bassa concentrazione autorizzati per il gatto, da usare solo seguendo le istruzioni. Disponibilità e prodotti sono quelli del Regno Unito.
+- Se il cane in casa è stato trattato con un prodotto a base di permetrina, le avvertenze in etichetta chiedono di tenere il gatto separato dal cane appena trattato e di non farglielo leccare.
+- Per molti animali le pulci sono un rischio che dura tutto l'anno ed è difficile da evitare; anche chi vive solo in casa non è a rischio zero di parassiti.
+- Per gli animali esposti a pulci o zecche, WSAVA indica una prevenzione regolare, scelta in base al tipo di animale, alla sua mole e alla sua età.
 
 Cosa osservare
-- Il gatto, leccandosi, toglie le pulci: non trovarne non esclude l'allergia alla loro saliva, che dà prurito, peli spezzati, papule e croste, soprattutto su schiena e base della coda.
-- Il pettine antipulci è il metodo più sensibile per scovarle. Le zecche vanno tolte subito con lo strumento adatto, senza olio, alcol o etere.
-
-Cosa non fare
-- Consiglio di Quokka (non della fonte): Non dare al gatto un antiparassitario registrato solo per il cane, come la pipetta avanzata del cane: alcuni sono tossici per il gatto.
+- Possibili segni di avvelenamento da permetrina: tremori e crisi convulsive, difficoltà a reggersi e a camminare, sbavamento, vomito, un comportamento più tranquillo del solito.
 
 Quando andare dal veterinario
-- Il prodotto e la frequenza vanno concordati con il veterinario.
-- Consiglio di Quokka (non della fonte): Se il gatto ha preso un prodotto per cani o sta male dopo un trattamento, chiama subito il veterinario (per le urgenze la chat segue i passi già approvati).
+- Se per errore sul gatto è finito uno spot-on con permetrina, la guida chiede di sciacquare subito via il prodotto con acqua e un detergente non aggressivo e di andare senza attendere dal veterinario, con la confezione.
+- Prodotto e frequenza del trattamento vanno concordati con il veterinario.
 
 Limiti di questa scheda
-- La linea guida parla di «piretroidi sintetici» e non nomina la permetrina; non dice cosa fare in caso di intossicazione ed è scritta soprattutto per i veterinari. I consigli di non dare prodotti del cane e di chiamare il veterinario sono nostri, scelti per prudenza. ESCCAP è finanziata da aziende del settore, che possono leggere le bozze, ma mantiene il controllo del testo.
+- La guida britannica sulla permetrina è del 2014 e riguarda prodotti e autorizzazioni del Regno Unito; il documento WSAVA è stato elaborato insieme a HealthforAnimals, associazione internazionale dell'industria della salute animale. Non coprono le malattie trasmesse dalle pulci, i segni dell'allergia, il pettine antipulci né le zecche nel gatto. Per le urgenze la chat segue i passi già approvati.
 
-> Fonti: ESCCAP (European Scientific Counsel Companion Animal Parasites), Control of Ectoparasites in Dogs and Cats, ESCCAP Guideline 03, 2022, https://www.esccap.org/guidelines/gl3/. Riassunto di Quokka, verificato il 2026-11-10.
+> Fonti: Veterinary Medicines Directorate (Regno Unito), Permethrin: don't put your cat at risk, 2014, https://www.gov.uk/government/publications/permethrin-dont-put-your-cat-at-risk (contiene informazioni del settore pubblico con Open Government Licence v3.0; modificato da Quokka); WSAVA (con HealthforAnimals, associazione dell'industria), Principles of Wellness, 2025, https://wsava.org/global-guidelines/. Riassunto di Quokka, verificato il 2026-11-15.
 
 Esito: ☐ ok  ☐ correggi  ☐ togli
 
 ---
 
-## GAT-SAL-03 · Gatto · Il gatto mangia meno o vomita
+## GAT-SAL-03 · Gatto · Il gatto mangia poco: cosa sapere
 
-*Argomento: non-mangia-vomito · Fonte principale di livello 2 (studio scientifico)*
+*Argomento: non-mangia-vomito · livello delle fonti: 1*
+
+**Rispetto alla versione precedente:** 0 frasi tenute, 7 sostituite, 7 tolte. Ora poggia su una scheda WSAVA e sulle note di un webinar FelineVMA, entrambe per i veterinari. Tolti: vomito (frequenza, boli di pelo, criteri di preoccupazione, digiuno, farmaci contro il vomito) e il ricontrollo entro 48 ore, per mancanza di una fonte ufficiale consentita.
 
 In breve
-- Per iCatCare anche solo circa tre giorni di cibo scarso possono avere conseguenze importanti per la salute del gatto; se mangia meno o diventa più selettivo conviene contattare il veterinario.
-- Se un gatto, soprattutto in sovrappeso, resta senza mangiare per giorni, può sviluppare la lipidosi epatica, una malattia del fegato. Riconoscerla e curarla presto cambia molto l'esito, che dipende anche da eventuali altre malattie.
+- Le note FelineVMA per i veterinari indicano che un gatto malato che da più di 24 ore mangia poco o niente rischia di arrivare dal veterinario già in difficoltà nutrizionale; dopo le prime misure (cura della causa, ambiente adatto, cibo appetibile), se l'assunzione resta troppo bassa si passa a un sostegno nutrizionale, in genere entro 3 giorni.
+- Per WSAVA, 3-4 giorni di assunzione ridotta, contando anche i giorni a casa, indicano che un supporto nutrizionale probabilmente serve se il recupero non è imminente.
 
 Cosa sapere
-- La linea guida ISFM 2022, scritta per i gatti ricoverati, dice ai veterinari di non rimandare oltre 3 giorni da quando il gatto ha smesso di mangiare gli interventi nutrizionali, come l'uso di una sonda.
-- Un gatto nauseato può semplicemente non voler mangiare, senza vomitare. Anche il dolore, lo stress e le malattie possono togliere l'appetito.
-- Un vomito lieve e di breve durata può passare in uno o due giorni; sembra però meno frequente nel gatto che nel cane, e i gatti portati dal veterinario hanno più spesso bisogno di accertamenti.
-- I gatti vomitano spesso boli di pelo. Ingeriscono di rado corpi estranei, ma quando succede sono segnalati soprattutto quelli lineari, come i fili, e il vomito tende a essere persistente e forte.
-- Nel vomito, la pratica più usata è togliere il cibo per 24-48 ore, ma non ci sono studi sul gatto: gli autori avvertono di fare attenzione nei gatti malati, soprattutto in sovrappeso, per il rischio di lipidosi epatica.
+- Un gatto può mangiare poco per molte ragioni: malattie digestive (nausea, vomito, diarrea), dolore, stress, farmaci, tumori, malattie respiratorie o cardiache, disidratazione.
+- Secondo le note, un'assunzione troppo bassa, soprattutto in una specie che ha bisogno di molte proteine, può portare a perdita di muscolo, ad alterazioni del metabolismo del fegato (le diapositive parlano di «HL», la lipidosi epatica) e a maggiore mortalità: per questo il sostegno nutrizionale precoce è importante.
+- Per invogliare un gatto che mangia poco si offrono piccole porzioni fresche, spesso; alcuni gatti mangiano meglio durante un breve momento di coccole o di spazzolatura.
 
 Cosa osservare
-- Un gatto con nausea può avere conati davanti al cibo, allontanarsi dalla ciotola, leccarsi le labbra e sbavare.
-- Tra i criteri che i veterinari usano per decidere se approfondire ci sono: vomito frequente, abbondante o maleodorante; sangue nel vomito o feci nere; dolore alla pancia; forte abbattimento; febbre; calo di peso; disidratazione grave; vomito che dura da oltre 2 settimane o non migliora con le cure. Per alcuni di questi (disidratazione grave, durata, mancata risposta alle cure) gli autori dicono che si basano su opinioni di esperti.
-- Prima della visita conviene pesare e annotare quanto cibo il gatto mangia davvero, tenendo un diario.
+- Prima della visita conviene ricordare con precisione cosa il gatto mangia davvero: gusti e consistenze preferiti, quanto e quante volte al giorno, e se gradisce il cibo tiepido o freddo.
 
 Cosa non fare
-- Non forzare il gatto a mangiare con il cucchiaio o la siringa: oltre a stressarlo, può fargli associare il cibo a un'esperienza spiacevole.
-- Gli snack possono aiutare a invogliare il gatto, ma con moderazione; per il cibo umano chiedi al veterinario.
-- Un farmaco contro il vomito può nascondere i segni di una malattia di fondo.
+- Le note per il personale veterinario sconsigliano l'alimentazione con la siringa, quella forzata e lo spalmare il cibo sul naso del gatto: aumentano l'avversione al cibo e il disagio.
 
 Quando andare dal veterinario
-- Se mangia meno del solito o diventa più selettivo, contatta il veterinario.
-- Se vomita e compare uno dei segni elencati sopra, conviene sentire presto il veterinario. Se il vomito continua dopo una prima visita, la rassegna indica un nuovo controllo entro 48 ore.
+- Consiglio di Quokka (non della fonte): Se il gatto mangia meno del solito e la cosa dura, contatta il veterinario senza aspettare 3 giorni: quella soglia è pensata per i veterinari.
 
 Limiti di questa scheda
-- Nessuna fonte letta indica un limite di 24-48 ore per l'inappetenza: la linea guida e la guida per i proprietari parlano di circa 3 giorni (le 24-48 ore compaiono nella rassegna sul vomito come digiuno e come tempo del nuovo controllo). L'elenco dei segni di preoccupazione è uno strumento per i veterinari. La rassegna sul vomito è del 2013 ed è stata sostenuta in parte da un'azienda che produce un farmaco contro il vomito; la frase sul mascheramento viene da questa fonte. Se il gatto sta molto male, chiama subito il veterinario (per le urgenze la chat segue i passi già approvati).
+- Le fonti sono le note di un webinar di FelineVMA e una scheda WSAVA per gatti e cani ricoverati: sono materiali per i veterinari, non una linea guida per i proprietari. Non coprono il vomito, per il quale non abbiamo una fonte ufficiale consentita.
+- Consiglio di Quokka (non della fonte): Per un gatto che sta molto male, chiama subito il veterinario (per le urgenze la chat segue i passi già approvati).
 
-> Fonti: International Cat Care (iCatCare), Cat Carer Guide: Managing the cat that won't eat: information for owners/caregivers, 2022, https://icatcare.org/cat-advice/cat-carer-guides; Webb CB, Hepatic lipidosis: clinical review drawn from collective effort, Journal of Feline Medicine and Surgery, 2018, https://doi.org/10.1177/1098612X18758591; ISFM, Taylor S, Chan DL et al., 2022 ISFM Consensus Guidelines on Management of the Inappetent Hospitalised Cat, Journal of Feline Medicine and Surgery, 2022, https://doi.org/10.1177/1098612X221106353; Batchelor DJ et al. (European Emesis Council), Mechanisms, causes, investigation and management of vomiting disorders in cats: a literature review, Journal of Feline Medicine and Surgery, 2013, https://doi.org/10.1177/1098612X12473466. Riassunto di Quokka, verificato il 2026-11-10.
+> Fonti: FelineVMA (già AAFP), A. Saffire, Nursing Nutrition for the Hospitalized Inappetant Feline Patient (note del webinar), 2024, https://catvets.com/clinical-resources/practice-guidelines/; WSAVA Global Nutrition Committee, Feeding Guide for Hospitalized Dogs and Cats, 2013, https://wsava.org/global-guidelines/global-nutrition-guidelines/. Riassunto di Quokka, verificato il 2026-11-15.
 
 Esito: ☐ ok  ☐ correggi  ☐ togli
 
@@ -365,32 +363,36 @@ Esito: ☐ ok  ☐ correggi  ☐ togli
 
 ## GAT-SAL-04 · Gatto · Il gatto sporca fuori dalla lettiera o fatica a fare pipì
 
-*Argomento: lettiera-urine · Fonte principale di livello 1 (ente o società scientifica)*
+*Argomento: lettiera-urine · livello delle fonti: 1*
+
+**Rispetto alla versione precedente:** 0 frasi tenute, 9 sostituite, 2 tolte. Ora poggia su un opuscolo FelineVMA/ISFM e su una dichiarazione AAFP. Tolti: lo sforzo scambiato per stitichezza e lo studio sul 31,7%. L'urgenza del maschio che fatica a urinare è ora un consiglio nostro: nessuna fonte ufficiale consentita la dice per intero.
 
 In breve
-- Un gatto maschio che fatica a urinare (sforza, va spesso in lettiera, fa poca pipì o nessuna) può avere l'uretra bloccata. Serve il veterinario con urgenza: peggiora in fretta e i reni possono danneggiarsi.
-- Lo sforzo a urinare può sembrare stitichezza.
+- I calcoli urinari possono causare un'ostruzione dell'uretra o degli ureteri, pericolosa per la vita.
+- Consiglio di Quokka (non della fonte): Un gatto maschio che fatica a urinare (sforza, va spesso in lettiera, produce poca o nessuna pipì) può avere l'uretra bloccata ed è un'urgenza: portalo subito dal veterinario (per le urgenze la chat segue i passi già approvati).
 
 Cosa sapere
-- Sporcare fuori dalla lettiera è un motivo frequente per chiedere il parere del veterinario, ma in uno studio citato dalle linee guida solo il 31,7% di questi gatti era stato visitato.
-- Le linee guida raccomandano di rivolgersi presto al veterinario per individuare condizioni pericolose, come il blocco delle vie urinarie.
-- Nei gatti adulti con segni urinari la causa più probabile è la cistite idiopatica felina, una diagnosi per esclusione che può peggiorare con lo stress.
+- Se un gatto inizia a sporcare fuori dalla lettiera, l'opuscolo chiede di contattare presto lo studio veterinario: serve una visita accurata con analisi delle urine, per distinguere tra infezioni, cistite, artrosi, malattie renali, diabete e altre cause.
+- Tra le cause mediche c'è la cistite idiopatica felina: il gatto urina più spesso, con difficoltà e dolore, a volte con sangue; i sintomi vanno e vengono e peggiorano con stress e cambi di dieta, tra gli altri fattori.
+- Un calcolo nella vescica può dare sangue nelle urine, dolore e bisogno di urinare più spesso, anche fuori dalla lettiera; un calcolo nei reni o negli ureteri dà soprattutto dolore addominale e irritabilità, e di rado cambia le urinazioni.
 
 Cosa osservare
-- Un problema urinario può mostrarsi con sangue nelle urine, con sforzo o molte visite alla lettiera per poca pipì e tanto scavare, con pipì fuori posto in casa, e con segni più generali: gatto più quieto, che mangia meno o che si lecca molto genitali e addome.
-- Una buona lettiera: una per ogni gatto più una di scorta, con lettiera agglomerante senza profumo, da pulire ogni giorno.
+- Come regola pratica: una lettiera per ogni gatto più una di scorta, in punti diversi; la maggior parte dei gatti preferisce una lettiera fine, senza profumo e agglomerante; i rifiuti vanno tolti almeno una volta al giorno.
 - La vaschetta dovrebbe essere lunga almeno una volta e mezza il gatto, misurato dal naso alla base della coda.
 
 Cosa non fare
-- Non sgridare né punire il gatto che sporca fuori dalla lettiera e non portarlo in lettiera come punizione.
+- Non punire il gatto che sporca: la punizione può causare aggressività da paura, indebolisce il rapporto e sposta la marcatura in punti meno visibili.
+- Possono portare a evitare la lettiera anche brutte esperienze, come restare intrappolato o trovarla sporca.
 
 Quando andare dal veterinario
-- Un gatto maschio con difficoltà a urinare va portato dal veterinario con urgenza.
-- Per sangue nelle urine o sforzo in qualunque gatto, e per lo sporcare fuori dalla lettiera, la guida invita a contattare il veterinario per escludere cause mediche.
+- Ogni gatto che inizia a sporcare fuori dalla lettiera va visitato per escludere cause mediche.
 
 Limiti di questa scheda
-- La linea guida iCatCare del 2025 è stata letta ma non è usata come base di questa scheda perché ha una licenza che esclude l'uso commerciale. La guida per i proprietari (© International Cat Care) e le linee guida sulle fasi della vita (© AAHA, AAFP, ISFM) sono protette da copyright e sono qui riassunte con parole nostre. Le linee guida sulle fasi della vita sono sostenute da aziende del settore e lo studio sul 31,7% è americano e citato di seconda mano.
+- La dichiarazione AAFP riguarda i calcoli urinari, non ogni problema di lettiera, e ha contributi educativi di Hill's, Purina Pro Plan e Royal Canin; l'opuscolo è sostenuto da Ceva ed è di FelineVMA insieme a ISFM.
+- Consiglio di Quokka (non della fonte): Nessuna fonte ufficiale consentita dice per intero che il gatto maschio che fatica a urinare è un'urgenza: questo consiglio è nostro, scelto per prudenza; per le urgenze la chat segue i passi già approvati.
 
-> Fonti: International Cat Care (iCatCare), Cat Carer Guide: Lower urinary tract diseases: understanding urinary tract diseases and how to help cats at home, 2025, https://icatcare.org/cat-advice/cat-carer-guides; AAHA/AAFP (Quimby J, Gowland S, Carney HC, DePorter T, Plummer P, Westropp J), 2021 AAHA/AAFP Feline Life Stage Guidelines, Journal of Feline Medicine and Surgery, 2021, https://doi.org/10.1177/1098612X21993657. Riassunto di Quokka, verificato il 2026-11-10.
+> Fonti: AAFP (oggi FelineVMA): Dunn, Kornya, Lulich, 2022 AAFP Consensus Statement: Approaches to Urolithiasis Treatment, 2022, https://catvets.com/clinical-resources/practice-guidelines/; FelineVMA e ISFM, Feline House-Soiling: Useful Information for Cat Owners, 2024, https://catvets.com/clinical-resources/practice-guidelines/. Riassunto di Quokka, verificato il 2026-11-15.
 
 Esito: ☐ ok  ☐ correggi  ☐ togli
+
+---

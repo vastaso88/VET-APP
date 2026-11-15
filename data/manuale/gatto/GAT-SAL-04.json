@@ -1,17 +1,17 @@
 {
-  "codice": "GAT-SAL-04",
   "specie": "gatto",
   "area": "SAL",
-  "argomento": "lettiera-urine",
-  "titolo": "Il gatto sporca fuori dalla lettiera o fatica a fare pipì",
   "stato": "bozza",
   "livello_schede": 1,
-  "ultimo_controllo": "2026-11-10",
-  "scadenza": "2027-11-10",
+  "ultimo_controllo": "2026-11-15",
+  "scadenza": "2027-11-15",
   "revisione": {
     "proprietario": null,
     "specialista": null
   },
+  "codice": "GAT-SAL-04",
+  "argomento": "lettiera-urine",
+  "titolo": "Il gatto sporca fuori dalla lettiera o fatica a fare pipì",
   "parole_chiave": [
     "gatto",
     "lettiera",
@@ -22,30 +22,31 @@
     "blocco urinario",
     "sforza",
     "maschio",
-    "sangue nelle urine"
+    "calcoli"
   ],
-  "riassunto_per_chat": "Un gatto maschio che fatica a urinare (sforza, va spesso in lettiera, fa poca o nessuna pipì) può avere un blocco dell'uretra: per iCatCare serve il veterinario con urgenza, perché peggiora in fretta e i reni possono danneggiarsi. Lo sforzo può essere scambiato per stitichezza. Altri segni di problemi urinari: sangue nelle urine, piccole quantità più volte con molto scavo, sporcare in casa, essere più quieto e interessarsi meno al cibo, leccarsi molto genitali o addome. Sporcare fuori dalla lettiera è un motivo frequente per chiedere il parere del veterinario, e può nascondere cause mediche; le linee guida AAHA/AAFP/ISFM invitano a rivolgersi presto al veterinario; in uno studio citato solo il 31,7% di questi gatti era stato visitato. Nei gatti adulti con segni urinari la cistite idiopatica felina è la causa più probabile e può peggiorare con lo stress. Lettiera: una per gatto più una, lunga almeno una volta e mezza il gatto, agglomerante e senza profumo, pulita ogni giorno. Mai punire il gatto.",
+  "modifiche_ultimo_giro": {
+    "tenute": 0,
+    "sostituite": 9,
+    "tolte": 2,
+    "nota": "Ora poggia su un opuscolo FelineVMA/ISFM e su una dichiarazione AAFP. Tolti: lo sforzo scambiato per stitichezza e lo studio sul 31,7%. L'urgenza del maschio che fatica a urinare è ora un consiglio nostro: nessuna fonte ufficiale consentita la dice per intero."
+  },
+  "riassunto_per_chat": "Consiglio nostro: un gatto maschio che fatica a urinare (sforza, va spesso in lettiera, produce poca o nessuna pipì) può avere l'uretra bloccata ed è un'urgenza; la chat segue i passi già approvati. Per AAFP i calcoli urinari possono causare un'ostruzione dell'uretra o degli ureteri, pericolosa per la vita; un calcolo nella vescica può dare sangue nelle urine, dolore e bisogno di urinare più spesso, anche fuori dalla lettiera; uno nei reni o negli ureteri dà soprattutto dolore addominale e irritabilità, e di rado cambia le urinazioni. Per FelineVMA e ISFM, se un gatto inizia a sporcare fuori dalla lettiera conviene contattare presto lo studio veterinario: serve una visita accurata con analisi delle urine, per distinguere tra infezioni, cistite, artrosi, malattie renali, diabete e altre cause. La cistite idiopatica felina è una causa medica: urinazioni più frequenti, con difficoltà e dolore, a volte sangue; va e viene e peggiora con stress e cambi di dieta. Come regola pratica: una lettiera per gatto più una di scorta, in punti diversi; la maggior parte dei gatti preferisce lettiera fine, senza profumo, agglomerante; rifiuti tolti almeno una volta al giorno; vaschetta lunga almeno una volta e mezza il gatto. Non punire il gatto.",
   "blocchi": [
     {
       "tipo": "in_breve",
       "frasi": [
         {
-          "testo": "Un gatto maschio che fatica a urinare (sforza, va spesso in lettiera, fa poca pipì o nessuna) può avere l'uretra bloccata. Serve il veterinario con urgenza: peggiora in fretta e i reni possono danneggiarsi.",
+          "testo": "I calcoli urinari possono causare un'ostruzione dell'uretra o degli ureteri, pericolosa per la vita.",
           "fonti": [
             {
-              "id": "icatcare_urinary_2025",
-              "punto": "p. 3, riquadro «Blocked cats»"
+              "id": "aafp_urolithiasis_2022",
+              "punto": "p. 1"
             }
           ]
         },
         {
-          "testo": "Lo sforzo a urinare può sembrare stitichezza.",
-          "fonti": [
-            {
-              "id": "icatcare_urinary_2025",
-              "punto": "p. 2"
-            }
-          ]
+          "testo": "Un gatto maschio che fatica a urinare (sforza, va spesso in lettiera, produce poca o nessuna pipì) può avere l'uretra bloccata ed è un'urgenza: portalo subito dal veterinario (per le urgenze la chat segue i passi già approvati).",
+          "nostro": true
         }
       ]
     },
@@ -53,29 +54,29 @@
       "tipo": "cosa_sapere",
       "frasi": [
         {
-          "testo": "Sporcare fuori dalla lettiera è un motivo frequente per chiedere il parere del veterinario, ma in uno studio citato dalle linee guida solo il 31,7% di questi gatti era stato visitato.",
+          "testo": "Se un gatto inizia a sporcare fuori dalla lettiera, l'opuscolo chiede di contattare presto lo studio veterinario: serve una visita accurata con analisi delle urine, per distinguere tra infezioni, cistite, artrosi, malattie renali, diabete e altre cause.",
           "fonti": [
             {
-              "id": "aaha_feline_lifestage_2021",
-              "punto": "sezione «Elimination»"
+              "id": "felinevma_isfm_housesoiling_2024",
+              "punto": "p. 2 (cause mediche) e p. 1 (conclusione)"
             }
           ]
         },
         {
-          "testo": "Le linee guida raccomandano di rivolgersi presto al veterinario per individuare condizioni pericolose, come il blocco delle vie urinarie.",
+          "testo": "Tra le cause mediche c'è la cistite idiopatica felina: il gatto urina più spesso, con difficoltà e dolore, a volte con sangue; i sintomi vanno e vengono e peggiorano con stress e cambi di dieta, tra gli altri fattori.",
           "fonti": [
             {
-              "id": "aaha_feline_lifestage_2021",
-              "punto": "«General litter box considerations»"
+              "id": "felinevma_isfm_housesoiling_2024",
+              "punto": "sezione «Feline Idiopathic Cystitis»"
             }
           ]
         },
         {
-          "testo": "Nei gatti adulti con segni urinari la causa più probabile è la cistite idiopatica felina, una diagnosi per esclusione che può peggiorare con lo stress.",
+          "testo": "Un calcolo nella vescica può dare sangue nelle urine, dolore e bisogno di urinare più spesso, anche fuori dalla lettiera; un calcolo nei reni o negli ureteri dà soprattutto dolore addominale e irritabilità, e di rado cambia le urinazioni.",
           "fonti": [
             {
-              "id": "aaha_feline_lifestage_2021",
-              "punto": "«Lower urinary tract disease»"
+              "id": "aafp_urolithiasis_2022",
+              "punto": "p. 1"
             }
           ]
         }
@@ -85,24 +86,11 @@
       "tipo": "cosa_osservare",
       "frasi": [
         {
-          "testo": "Un problema urinario può mostrarsi con sangue nelle urine, con sforzo o molte visite alla lettiera per poca pipì e tanto scavare, con pipì fuori posto in casa, e con segni più generali: gatto più quieto, che mangia meno o che si lecca molto genitali e addome.",
+          "testo": "Come regola pratica: una lettiera per ogni gatto più una di scorta, in punti diversi; la maggior parte dei gatti preferisce una lettiera fine, senza profumo e agglomerante; i rifiuti vanno tolti almeno una volta al giorno.",
           "fonti": [
             {
-              "id": "icatcare_urinary_2025",
-              "punto": "p. 2"
-            }
-          ]
-        },
-        {
-          "testo": "Una buona lettiera: una per ogni gatto più una di scorta, con lettiera agglomerante senza profumo, da pulire ogni giorno.",
-          "fonti": [
-            {
-              "id": "aaha_feline_lifestage_2021",
-              "punto": "«General litter box considerations»"
-            },
-            {
-              "id": "icatcare_urinary_2025",
-              "punto": "pp. 7-8"
+              "id": "felinevma_isfm_housesoiling_2024",
+              "punto": "sezioni «Designing the optimal litter box» e «Managing»"
             }
           ]
         },
@@ -110,8 +98,8 @@
           "testo": "La vaschetta dovrebbe essere lunga almeno una volta e mezza il gatto, misurato dal naso alla base della coda.",
           "fonti": [
             {
-              "id": "icatcare_urinary_2025",
-              "punto": "pp. 7-8"
+              "id": "felinevma_isfm_housesoiling_2024",
+              "punto": "sezione «Size»"
             }
           ]
         }
@@ -121,15 +109,20 @@
       "tipo": "cosa_non_fare",
       "frasi": [
         {
-          "testo": "Non sgridare né punire il gatto che sporca fuori dalla lettiera e non portarlo in lettiera come punizione.",
+          "testo": "Non punire il gatto che sporca: la punizione può causare aggressività da paura, indebolisce il rapporto e sposta la marcatura in punti meno visibili.",
           "fonti": [
             {
-              "id": "aaha_feline_lifestage_2021",
-              "punto": "«General litter box considerations»"
-            },
+              "id": "felinevma_isfm_housesoiling_2024",
+              "punto": "sezione «Additional considerations»"
+            }
+          ]
+        },
+        {
+          "testo": "Possono portare a evitare la lettiera anche brutte esperienze, come restare intrappolato o trovarla sporca.",
+          "fonti": [
             {
-              "id": "icatcare_urinary_2025",
-              "punto": "p. 10"
+              "id": "felinevma_isfm_housesoiling_2024",
+              "punto": "p. 2, «Environmental and Social Factors»"
             }
           ]
         }
@@ -139,24 +132,11 @@
       "tipo": "quando_andare_dal_veterinario",
       "frasi": [
         {
-          "testo": "Un gatto maschio con difficoltà a urinare va portato dal veterinario con urgenza.",
+          "testo": "Ogni gatto che inizia a sporcare fuori dalla lettiera va visitato per escludere cause mediche.",
           "fonti": [
             {
-              "id": "icatcare_urinary_2025",
-              "punto": "p. 3, riquadro «Blocked cats»"
-            }
-          ]
-        },
-        {
-          "testo": "Per sangue nelle urine o sforzo in qualunque gatto, e per lo sporcare fuori dalla lettiera, la guida invita a contattare il veterinario per escludere cause mediche.",
-          "fonti": [
-            {
-              "id": "icatcare_urinary_2025",
-              "punto": "p. 2"
-            },
-            {
-              "id": "aaha_feline_lifestage_2021",
-              "punto": "sezione «Elimination»; «General litter box considerations»"
+              "id": "felinevma_isfm_housesoiling_2024",
+              "punto": "p. 2 (cause mediche) e p. 1 (conclusione)"
             }
           ]
         }
@@ -166,13 +146,11 @@
       "tipo": "limiti",
       "frasi": [
         {
-          "testo": "La linea guida iCatCare del 2025 è stata letta ma non è usata come base di questa scheda perché ha una licenza che esclude l'uso commerciale. La guida per i proprietari (© International Cat Care) e le linee guida sulle fasi della vita (© AAHA, AAFP, ISFM) sono protette da copyright e sono qui riassunte con parole nostre. Le linee guida sulle fasi della vita sono sostenute da aziende del settore e lo studio sul 31,7% è americano e citato di seconda mano.",
-          "fonti": [
-            {
-              "id": "aaha_feline_lifestage_2021",
-              "punto": "nota sul finanziamento; sezione «Elimination»"
-            }
-          ]
+          "testo": "La dichiarazione AAFP riguarda i calcoli urinari, non ogni problema di lettiera, e ha contributi educativi di Hill's, Purina Pro Plan e Royal Canin; l'opuscolo è sostenuto da Ceva ed è di FelineVMA insieme a ISFM."
+        },
+        {
+          "testo": "Nessuna fonte ufficiale consentita dice per intero che il gatto maschio che fatica a urinare è un'urgenza: questo consiglio è nostro, scelto per prudenza; per le urgenze la chat segue i passi già approvati.",
+          "nostro": true
         }
       ]
     }

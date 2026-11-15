@@ -173,5 +173,11 @@
         }
       ]
     }
-  ]
+  ],
+  "modifiche_ultimo_giro": {
+    "tenute": 13,
+    "sostituite": 0,
+    "tolte": 0,
+    "nota": "Poggia solo su documenti WSAVA (fonte gialla): nessuna frase cambiata in questo giro."
+  }
 }

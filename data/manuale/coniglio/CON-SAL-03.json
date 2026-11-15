@@ -5,9 +5,9 @@
   "argomento": "malessere-nascosto",
   "titolo": "Il coniglio nasconde il dolore: cosa osservare",
   "stato": "bozza",
-  "livello_schede": 2,
-  "ultimo_controllo": "2026-11-10",
-  "scadenza": "2027-11-10",
+  "livello_schede": 1,
+  "ultimo_controllo": "2026-11-15",
+  "scadenza": "2027-11-15",
   "revisione": {
     "proprietario": null,
     "specialista": null
@@ -19,24 +19,36 @@
     "nasconde",
     "segni",
     "comportamento",
-    "letargia",
-    "sta male"
+    "sta male",
+    "peso",
+    "controlli"
   ],
-  "riassunto_per_chat": "Il coniglio è una preda e tende a nascondere i segni di malattia e di dolore: i cambiamenti sono spesso lievi e possono sembrare poco importanti. In un sondaggio britannico su 500 proprietari reclutati online, 345 hanno valutato anche 8 video di conigli: sono andati d'accordo con tre esperti nell'88,8% dei casi senza dolore e nel 65,2% con dolore grave, ma solo nel 28,4% con dolore lieve e nel 43,2% con dolore moderato; in media attribuivano al dolore punteggi più bassi degli esperti (11,9 contro 18). Nella prima parte del sondaggio alcune persone hanno risposto «non serve il veterinario» per quasi ogni problema proposto, tranne fratture, denti posteriori troppo lunghi e stasi intestinale. Gli autori dello studio sui denti invitano a fare attenzione a cambiamenti di comportamento anche lievi, come la letargia, e alla riluttanza a mangiare il fieno. In un'indagine tra 46 professionisti veterinari, i cinque problemi di benessere con maggiore impatto stimato nei conigli da compagnia sono, in ordine: spazio ridotto, stasi intestinale, problemi dei denti, alimentazione sbagliata, assenza di un coniglio compagno. Nessuna fonte letta dice ogni quanto pesare il coniglio.",
+  "modifiche_ultimo_giro": {
+    "tenute": 0,
+    "sostituite": 3,
+    "tolte": 3,
+    "nota": "Tutte le frasi ora poggiano sulla guida ufficiale scozzese. Tolte: il sondaggio sui proprietari, l'indagine su 46 professionisti e le opinioni dei proprietari; le altre frasi sono nuove, dalla guida."
+  },
+  "riassunto_per_chat": "Il coniglio è una preda e di solito non mostra in modo evidente dolore e malessere: i cambiamenti di comportamento sono molto sottili e un coniglio malato spesso non sembra stare male finché non è già molto grave. Conoscere il comportamento normale aiuta a notare i cambiamenti. Segni possibili di dolore: pancia premuta a terra, schiena inarcata, fianchi che si contraggono, addome retratto, sussulti o strida, riluttanza a sollevarsi sulle zampe posteriori; segni di sofferenza anche postura incurvata e digrignare i denti. La guida descrive anche la scala della smorfia (occhi, guance, narici, orecchie, baffi), da usare insieme ad altri segni e solo con il coniglio sveglio; precisa che è ancora in sviluppo. Ogni giorno si controllano comportamento, zampe, pelo, occhi, naso, bocca, orecchie, feci, zona anale e noduli; ogni settimana unghie e incisivi; in clima caldo la zona posteriore almeno due volte al giorno (la miasi può uccidere in poche ore). È una buona idea pesare il coniglio e annotare il peso almeno una volta al mese; idealmente le costole si sentono facilmente. Per ogni segno di malattia: veterinario; la guida parla di controlli regolari. Respirare con la bocca aperta è un'emergenza. Non dare medicine per l'uomo o per altri animali: solo quelle prescritte o consigliate dal veterinario per i conigli.",
   "blocchi": [
     {
       "tipo": "in_breve",
       "frasi": [
         {
-          "testo": "Essendo una preda, il coniglio tende a non far vedere quando sta male o soffre; le variazioni del suo comportamento sono spesso così lievi che in casa si fatica a notarle o le si sottovaluta.",
+          "testo": "Il coniglio è una preda: di solito non mostra in modo evidente dolore e malessere, e i cambiamenti del suo comportamento sono molto sottili.",
           "fonti": [
             {
-              "id": "bmcvr_pain_2024",
-              "punto": "Abstract; Background"
-            },
+              "id": "scot_rabbit_2018",
+              "punto": "p. 3 e 28"
+            }
+          ]
+        },
+        {
+          "testo": "Un coniglio malato spesso non sembra stare male finché non è già molto grave.",
+          "fonti": [
             {
-              "id": "vetrec_dental_2025",
-              "punto": "Discussion"
+              "id": "scot_rabbit_2018",
+              "punto": "p. 28"
             }
           ]
         }
@@ -46,29 +58,29 @@
       "tipo": "cosa_sapere",
       "frasi": [
         {
-          "testo": "In una seconda parte del sondaggio, 345 proprietari hanno dato un punteggio di dolore a 8 video di conigli, confrontato con quello di tre esperti. Gli estremi li hanno riconosciuti meglio: accordo dell'88,8% sul coniglio senza dolore e del 65,2% su quello con dolore grave. Il dolore lieve (28,4%) e quello moderato (43,2%) sono sfuggiti molto più spesso. Nel complesso il punteggio dei proprietari è stato più basso di quello degli esperti: 11,9 contro 18 (massimo possibile 24).",
+          "testo": "Conoscere il comportamento normale del proprio coniglio aiuta a notare quando qualcosa cambia.",
           "fonti": [
             {
-              "id": "bmcvr_pain_2024",
-              "punto": "Abstract; Results, valutazione dei video"
+              "id": "scot_rabbit_2018",
+              "punto": "p. 28"
             }
           ]
         },
         {
-          "testo": "Per quasi tutte le condizioni proposte nel questionario (500 proprietari) c'era almeno qualcuno convinto che il veterinario non servisse; non è successo soltanto per tre: stasi intestinale, denti posteriori troppo lunghi e fratture.",
+          "testo": "Tra i segni possibili di dolore la guida indica la pancia premuta a terra, la schiena inarcata, i fianchi che si contraggono e l'addome retratto, il sussulto o le strida, la riluttanza a sollevarsi sulle zampe posteriori; tra i segni di sofferenza anche la postura incurvata e il digrignare i denti.",
           "fonti": [
             {
-              "id": "bmcvr_pain_2024",
-              "punto": "Results, «Associated levels of pain»"
+              "id": "scot_rabbit_2018",
+              "punto": "p. 28-30"
             }
           ]
         },
         {
-          "testo": "In un'indagine tra 46 professionisti veterinari (veterinari e infermieri), i cinque problemi di benessere con maggiore impatto stimato nel coniglio da compagnia sono risultati, in ordine: spazio troppo piccolo, stasi intestinale, problemi dei denti, alimentazione sbagliata, assenza di un coniglio compagno.",
+          "testo": "La guida descrive anche la «scala della smorfia» del coniglio, che osserva occhi, guance, narici, orecchie e baffi: va usata insieme ad altri segni e solo con il coniglio sveglio; la guida precisa che è ancora in sviluppo.",
           "fonti": [
             {
-              "id": "animals_welfare_2025",
-              "punto": "Results"
+              "id": "scot_rabbit_2018",
+              "punto": "p. 31-32"
             }
           ]
         }
@@ -78,17 +90,54 @@
       "tipo": "cosa_osservare",
       "frasi": [
         {
-          "testo": "Gli autori dello studio sulla malattia dentale invitano a fare attenzione a cambiamenti di comportamento anche lievi, come la letargia, e alla riluttanza a mangiare il fieno; la letargia è stata registrata nel 9,3% dei casi.",
+          "testo": "Ogni giorno basta una rapida ispezione da capo a coda: come si comporta, come mangia e beve, e poi zampe, pelo, testa, feci, zona posteriore, con attenzione a eventuali noduli.",
           "fonti": [
             {
-              "id": "vetrec_dental_2025",
-              "punto": "Discussion; Table 1"
+              "id": "scot_rabbit_2018",
+              "punto": "p. 33"
             }
           ]
         },
         {
-          "testo": "Per i cambiamenti nel mangiare e nelle feci vedi le schede su «mangia meno o fa meno palline» e sui denti.",
-          "nostro": true
+          "testo": "Ogni settimana si controllano unghie e incisivi.",
+          "fonti": [
+            {
+              "id": "scot_rabbit_2018",
+              "punto": "p. 34"
+            }
+          ]
+        },
+        {
+          "testo": "In clima caldo si controlla la zona posteriore almeno due volte al giorno: la miasi (larve di mosca) può uccidere in poche ore.",
+          "fonti": [
+            {
+              "id": "scot_rabbit_2018",
+              "punto": "p. 34"
+            }
+          ]
+        },
+        {
+          "testo": "È una buona idea pesare il coniglio e annotare il peso almeno una volta al mese; un calo può indicare un problema ai denti o altro. Idealmente le costole si sentono facilmente.",
+          "fonti": [
+            {
+              "id": "scot_rabbit_2018",
+              "punto": "p. 18 e 34"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "tipo": "cosa_non_fare",
+      "frasi": [
+        {
+          "testo": "Non dare medicine per l'uomo o per altri animali (possono essere molto pericolose): solo quelle prescritte o consigliate dal veterinario proprio per i conigli.",
+          "fonti": [
+            {
+              "id": "scot_rabbit_2018",
+              "punto": "p. 37"
+            }
+          ]
         }
       ]
     },
@@ -96,8 +145,22 @@
       "tipo": "quando_andare_dal_veterinario",
       "frasi": [
         {
-          "testo": "Se noti uno di questi cambiamenti e non ne conosci la causa, parlane con il veterinario: il coniglio mostra poco il dolore e la malattia.",
-          "nostro": true
+          "testo": "Per ogni segno di malattia o cambiamento di comportamento la guida invita a consultare il veterinario e parla di controlli veterinari regolari (cita il check-up annuale a proposito dei denti).",
+          "fonti": [
+            {
+              "id": "scot_rabbit_2018",
+              "punto": "p. 27-28 e 35"
+            }
+          ]
+        },
+        {
+          "testo": "Larve di mosca o diarrea: veterinario subito. Respirare con la bocca aperta va trattato come un'emergenza.",
+          "fonti": [
+            {
+              "id": "scot_rabbit_2018",
+              "punto": "p. 33-34"
+            }
+          ]
         }
       ]
     },
@@ -105,17 +168,7 @@
       "tipo": "limiti",
       "frasi": [
         {
-          "testo": "Il sondaggio sul dolore è stato fatto online tra proprietari che hanno scelto di partecipare (reclutati con Facebook): non rappresenta tutti i proprietari. La seconda indagine riporta opinioni di professionisti, non misure. Nessuna fonte letta dice ogni quanto pesare il coniglio o perché farlo. Gli inviti a contattare il veterinario sono nostri.",
-          "fonti": [
-            {
-              "id": "bmcvr_pain_2024",
-              "punto": "Discussion (limiti dello studio)"
-            },
-            {
-              "id": "animals_welfare_2025",
-              "punto": "Methods"
-            }
-          ]
+          "testo": "La fonte è la guida ufficiale del governo scozzese del 2018 sul benessere dei conigli da compagnia: sono indicazioni ufficiali del Regno Unito, non norme italiane né linee guida di una società veterinaria. Non dà soglie numeriche oltre a quelle riportate e non indica cure."
         }
       ]
     }

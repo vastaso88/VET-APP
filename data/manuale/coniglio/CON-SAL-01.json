@@ -5,9 +5,9 @@
   "argomento": "non-mangia",
   "titolo": "Il coniglio mangia meno o fa meno palline",
   "stato": "bozza",
-  "livello_schede": 3,
-  "ultimo_controllo": "2026-11-10",
-  "scadenza": "2027-11-10",
+  "livello_schede": 1,
+  "ultimo_controllo": "2026-11-15",
+  "scadenza": "2027-11-15",
   "revisione": {
     "proprietario": null,
     "specialista": null
@@ -18,36 +18,38 @@
     "inappetente",
     "palline",
     "feci",
-    "stasi",
     "intestino",
     "fieno",
-    "pancia gonfia",
-    "digiuno"
+    "pancia",
+    "digiuno",
+    "stasi"
   ],
-  "riassunto_per_chat": "Un coniglio che non mangia, comunque sia cominciato il problema, rischia una grave malattia del fegato (lipidosi epatica) che può portare all'insufficienza del fegato e alla morte; un manuale di medicina del coniglio indica che un coniglio che non mangia va curato senza ritardo. Il segnale più precoce è l'appetito che cala insieme a meno feci; un coniglio sano fa molte palline dure (fino a circa 180 al giorno se mangia bene fieno) e la loro assenza è un dato importante. All'inizio può sembrare ancora vispo; più avanti può stare curvo, fermo, trascurare la pulizia e disidratarsi. Le cause sono molte (denti, dolore, ansia, cambi di ambiente o di dieta, infezioni, ostruzioni) e spesso l'intestino rallentato è conseguenza di altro; poca fibra indigeribile rallenta l'intestino. Un'ostruzione è un'urgenza chirurgica. Un coniglio con diarrea non va tenuto a digiuno come cane e gatto; gli enzimi di ananas e papaya non hanno sciolto il pelo in una prova del 1983 citata dal manuale; per gli antibiotici si raccomanda un uso ponderato. Nessuna linea guida di società veterinaria è stata trovata: il manuale, rivolto ai veterinari, indica per l'alimentazione assistita 12 ore (riquadro) o 24 ore (testo) senza cibo.",
+  "modifiche_ultimo_giro": {
+    "tenute": 0,
+    "sostituite": 10,
+    "tolte": 3,
+    "nota": "Tutte le frasi ora poggiano sulla guida ufficiale scozzese. Tolte: ostruzione e gas, ananas e papaya, digiuno nella diarrea; cadute anche la lipidosi epatica, gli antibiotici e il numero di palline."
+  },
+  "riassunto_per_chat": "Per la guida ufficiale scozzese sul benessere dei conigli, un coniglio che non mangia o non fa feci è un'emergenza da portare subito dal veterinario, perché può peggiorare in fretta; spesso un coniglio malato non sembra stare male finché non è già molto grave. Fieno o erba sono almeno l'80% dell'alimentazione e devono essere sempre disponibili: la fibra mantiene attivo l'intestino. Il coniglio è molto sensibile a ogni cambio di alimentazione; problemi ai denti e stress possono far calare l'appetito, e il pelo ingerito può ostruire l'intestino. Segnali: feci più piccole e scure, in numero minore, liquide o assenti; appetito e sete diversi dal solito; immobilità con schiena incurvata e pelo non curato. Si controllano le feci ogni giorno. Diarrea o larve di mosca: veterinario subito. Non dare medicine per l'uomo o per altri animali: solo quelle prescritte o consigliate dal veterinario per i conigli. La fonte non spiega in dettaglio il meccanismo del rallentamento intestinale né dà terapie.",
   "blocchi": [
     {
       "tipo": "in_breve",
       "frasi": [
         {
-          "testo": "Un coniglio che non mangia, comunque sia cominciato il problema, rischia una grave malattia del fegato (la lipidosi epatica), che può portare all'insufficienza del fegato e alla morte.",
+          "testo": "La guida ufficiale scozzese considera un'emergenza il coniglio che non mangia o non fa feci: va portato subito dal veterinario, perché può peggiorare in fretta.",
           "fonti": [
             {
-              "id": "varga_digestive_2014",
-              "punto": "cap. 8, sezione «Anorexia and development of hepatic lipidosis»"
-            },
-            {
-              "id": "vetrec_dental_2025",
-              "punto": "Discussion, sezione sui segni clinici"
+              "id": "scot_rabbit_2018",
+              "punto": "p. 28"
             }
           ]
         },
         {
-          "testo": "Il manuale di medicina del coniglio consultato indica che un coniglio che non mangia va curato senza ritardo.",
+          "testo": "Il coniglio tende a nascondere il malessere: può sembrare quasi normale fino a quando sta già molto male.",
           "fonti": [
             {
-              "id": "varga_digestive_2014",
-              "punto": "cap. 8, sezione sulla diagnosi e cura dell'ipomotilità gastrointestinale"
+              "id": "scot_rabbit_2018",
+              "punto": "p. 28"
             }
           ]
         }
@@ -57,38 +59,38 @@
       "tipo": "cosa_sapere",
       "frasi": [
         {
-          "testo": "Il rallentamento dell'intestino (stasi) ha molte cause: dolore, problemi ai denti, ansia, cambi nell'ambiente, infezioni, corpi estranei. Spesso è la conseguenza di un altro problema, che il veterinario deve cercare.",
+          "testo": "Fieno o erba devono essere almeno l'80% dell'alimentazione e restare sempre a disposizione, di giorno e di notte: la fibra mantiene attivo l'intestino.",
           "fonti": [
             {
-              "id": "vcna_gi_2013",
-              "punto": "sezione «Gastrointestinal hypomotility and stasis»"
+              "id": "scot_rabbit_2018",
+              "punto": "p. 15"
             }
           ]
         },
         {
-          "testo": "Tra i fattori di stress che possono scatenarla la rassegna elenca cambi di sistemazione, di abitudini o di alimentazione, i trasporti e le temperature estreme.",
+          "testo": "Il coniglio è molto sensibile a ogni cambio di alimentazione: ogni novità va introdotta gradualmente, un cibo alla volta, a piccole quantità, osservando come reagisce.",
           "fonti": [
             {
-              "id": "vcna_gastro_2005",
-              "punto": "«Gastric stasis and gastrointestinal ileus», Etiology"
+              "id": "scot_rabbit_2018",
+              "punto": "p. 17"
             }
           ]
         },
         {
-          "testo": "Una dieta povera di fibra indigeribile rallenta l'intestino e fa ristagnare pelo e cibo nello stomaco; il fieno di buona qualità è una fonte di questa fibra.",
+          "testo": "Anche i problemi ai denti e lo stress possono far calare l'appetito.",
           "fonti": [
             {
-              "id": "varga_digestive_2014",
-              "punto": "cap. 8, sezioni «Diet» e Box 8.3"
+              "id": "scot_rabbit_2018",
+              "punto": "p. 22 e 35"
             }
           ]
         },
         {
-          "testo": "Un'ostruzione, con intestino pieno di gas o liquidi riconosciuto dal veterinario con la radiografia, è un'urgenza chirurgica; anche il gonfiore da gas può mettere la vita in pericolo.",
+          "testo": "Il pelo ingerito mentre il coniglio si pulisce può ostruire l'intestino: per questo lo si spazzola con regolarità, almeno ogni giorno se ha il pelo lungo.",
           "fonti": [
             {
-              "id": "vcna_gi_2013",
-              "punto": "sezione «Gastrointestinal hypomotility and stasis»"
+              "id": "scot_rabbit_2018",
+              "punto": "p. 35"
             }
           ]
         }
@@ -98,29 +100,38 @@
       "tipo": "cosa_osservare",
       "frasi": [
         {
-          "testo": "Il segnale più precoce è un appetito che cala insieme a una riduzione delle feci.",
+          "testo": "Le feci cambiano: più piccole e scure, in numero minore, liquide o del tutto assenti; anche appetito e sete diversi dal solito sono un segnale.",
           "fonti": [
             {
-              "id": "varga_digestive_2014",
-              "punto": "cap. 8, sezione sulla diagnosi dell'ipomotilità"
+              "id": "scot_rabbit_2018",
+              "punto": "p. 28-29 e 33"
             }
           ]
         },
         {
-          "testo": "Un coniglio che mangia bene fieno fa molte palline dure, fino a circa 180 al giorno: la mancanza di feci dure è un dato importante, da confrontare con il solito.",
+          "testo": "Le feci si controllano ogni giorno.",
           "fonti": [
             {
-              "id": "varga_digestive_2014",
-              "punto": "cap. 8, Box 8.3"
+              "id": "scot_rabbit_2018",
+              "punto": "p. 33"
             }
           ]
         },
         {
-          "testo": "All'inizio il coniglio può sembrare ancora abbastanza vispo, quindi non farti rassicurare. Con il tempo può stare curvo e fermo, smettere di pulirsi e disidratarsi.",
+          "testo": "Può restare immobile, con la schiena incurvata e il pelo non curato o ritto.",
           "fonti": [
             {
-              "id": "varga_digestive_2014",
-              "punto": "cap. 8, sezione sulla diagnosi dell'ipomotilità"
+              "id": "scot_rabbit_2018",
+              "punto": "p. 28-29"
+            }
+          ]
+        },
+        {
+          "testo": "Dopo un viaggio si verifica che il coniglio mangi.",
+          "fonti": [
+            {
+              "id": "scot_rabbit_2018",
+              "punto": "p. 13"
             }
           ]
         }
@@ -130,29 +141,20 @@
       "tipo": "cosa_non_fare",
       "frasi": [
         {
-          "testo": "Un coniglio con la diarrea non va tenuto a digiuno come si fa con cane e gatto.",
+          "testo": "Il coniglio ha bisogno di mangiare di continuo: il fieno non deve mai mancare.",
           "fonti": [
             {
-              "id": "varga_digestive_2014",
-              "punto": "cap. 8, Box 8.3"
+              "id": "scot_rabbit_2018",
+              "punto": "p. 13 e 15"
             }
           ]
         },
         {
-          "testo": "Il manuale cita una prova di laboratorio del 1983 in cui gli enzimi di ananas e papaya non scioglievano il pelo, e osserva che l'eventuale effetto del succo di ananas potrebbe dipendere dal liquido.",
+          "testo": "Non dare medicine per l'uomo o per altri animali (possono essere molto pericolose): solo quelle prescritte o consigliate dal veterinario proprio per i conigli.",
           "fonti": [
             {
-              "id": "varga_digestive_2014",
-              "punto": "cap. 8, sezione sul trattamento"
-            }
-          ]
-        },
-        {
-          "testo": "La rassegna raccomanda un uso ponderato degli antibiotici: usarli senza criterio favorisce lo sviluppo di batteri pericolosi.",
-          "fonti": [
-            {
-              "id": "vcna_gi_2013",
-              "punto": "sezione «Dysbiosis and Antibiotic-associated Enterotoxemia»"
+              "id": "scot_rabbit_2018",
+              "punto": "p. 37"
             }
           ]
         }
@@ -162,17 +164,22 @@
       "tipo": "quando_andare_dal_veterinario",
       "frasi": [
         {
-          "testo": "Per il manuale, un coniglio che non mangia va curato senza ritardo.",
+          "testo": "Un coniglio che non mangia o non fa feci va portato subito dal veterinario.",
           "fonti": [
             {
-              "id": "varga_digestive_2014",
-              "punto": "cap. 8, sezione sulla diagnosi dell'ipomotilità"
+              "id": "scot_rabbit_2018",
+              "punto": "p. 28"
             }
           ]
         },
         {
-          "testo": "Se il coniglio mangia poco e le palline diminuiscono o mancano, contatta subito il veterinario.",
-          "nostro": true
+          "testo": "Diarrea, oppure larve di mosca sul pelo: veterinario subito.",
+          "fonti": [
+            {
+              "id": "scot_rabbit_2018",
+              "punto": "p. 33-34"
+            }
+          ]
         }
       ]
     },
@@ -180,13 +187,7 @@
       "tipo": "limiti",
       "frasi": [
         {
-          "testo": "Non abbiamo trovato una linea guida di una società veterinaria su questo tema né un tempo preciso pensato per il proprietario. Il manuale, rivolto ai veterinari, indica come riferimento per l'alimentazione assistita con la siringa più di 12 ore senza mangiare in un riquadro sui principi generali di trattamento dei disturbi digestivi, e più di 24 ore nel testo. Le fonti sono due rassegne (2005 e 2013), il manuale (2014) e uno studio inglese del 2025; i testi Elsevier sono riassunti, non riprodotti. Le dosi e le cure che compaiono in queste fonti non sono usate: sono scelte del veterinario. L'invito a contattare subito il veterinario e gli inviti a non farsi rassicurare e a confrontare con il solito sono nostri.",
-          "fonti": [
-            {
-              "id": "varga_digestive_2014",
-              "punto": "cap. 8, Box 8.3 e sezione sul trattamento"
-            }
-          ]
+          "testo": "La fonte è la guida ufficiale del governo scozzese del 2018 sul benessere dei conigli da compagnia: sono indicazioni ufficiali del Regno Unito, non norme italiane né linee guida di una società veterinaria. Non spiega in dettaglio il meccanismo del rallentamento dell'intestino (accenna a pelo ingerito, semi, noci e mais come rischi di ostruzione) e non indica terapie né dosi: per queste serve il veterinario. «Subito» è la parola della guida."
         }
       ]
     }

@@ -5,9 +5,9 @@
   "argomento": "denti",
   "titolo": "I denti del coniglio: perché il fieno e quando fare controllare",
   "stato": "bozza",
-  "livello_schede": 2,
-  "ultimo_controllo": "2026-11-10",
-  "scadenza": "2027-11-10",
+  "livello_schede": 1,
+  "ultimo_controllo": "2026-11-15",
+  "scadenza": "2027-11-15",
   "revisione": {
     "proprietario": null,
     "specialista": null
@@ -21,24 +21,25 @@
     "bava",
     "sbava",
     "abbassa il cibo",
-    "ascesso",
-    "occhio che lacrima"
+    "otoscopio"
   ],
-  "riassunto_per_chat": "I denti del coniglio non hanno la radice chiusa e spuntano per tutta la vita; si consumano masticando alimenti ruvidi, per questo la base della dieta è il fieno e si evitano i mangimi tipo muesli. Con poca fibra le corone dei molari si allungano e formano punte taglienti. Contano anche traumi, infezioni e fattori genetici. I denti dietro non si valutano facilmente senza otoscopio o strumento simile. Segni: bava, difficoltà a inghiottire o cibo lasciato cadere, riluttanza a mangiare il fieno, perdita di peso, occhio che lacrima da tempo, secrezione dal naso, ascessi al viso, incisivi molto lunghi. In uno studio britannico su 2.219 conigli con malattia dentale diagnosticata, 547 sono morti e nel 51,2% di questi la malattia dentale è stata causa o ha contribuito alla morte. Gli ascessi dentali di solito non danno febbre. Tagliare gli incisivi non va mai fatto; per accorciare i denti, soprattutto quelli dietro, si usano altri metodi, idealmente con sedazione o anestesia. Una rassegna consiglia un controllo completo con ispezione della bocca ogni 6-12 mesi, e nei casi a rischio un esame in anestesia a intervalli più lunghi (12-18 mesi) o prima se compaiono segni; non è una linea guida di società.",
+  "modifiche_ultimo_giro": {
+    "tenute": 0,
+    "sostituite": 12,
+    "tolte": 2,
+    "nota": "Tutte le frasi ora poggiano sulla guida ufficiale scozzese. Tolte: lo studio su 2.219 conigli e gli ascessi senza febbre; cadono anche i controlli in anestesia e il divieto assoluto di tagliare gli incisivi (la guida dice solo che li corregge il veterinario)."
+  },
+  "riassunto_per_chat": "I denti del coniglio crescono per tutta la vita e si consumano masticando fieno ed erba, per questo il fieno è la base della dieta (almeno l'80%); le crocchette non più del 5-10% (massimo raccomandato oggi circa 25 g per kg al giorno), e la guida dice di non usare i cibi tipo muesli, legati a problemi digestivi e dei denti. I denti davanti tagliano e quelli dietro macinano; i denti dietro possono non combaciare e formare punte che possono causare molto dolore mentre mangia, e alcune razze sono più predisposte. Non si vedono facilmente: vanno fatti controllare dal veterinario con un otoscopio, idealmente ogni 6 mesi. Segni: bava o mento bagnato, pelo bagnato su petto e zampe, mangia poco o smette di mangiare, perde peso, incisivi troppo lunghi o storti; digrignare i denti è tra i segni di sofferenza elencati dalla guida. Secondo la guida i denti storti o troppo lunghi li deve correggere solo il veterinario. Con poco appetito, mento bagnato o bava, o se smette di mangiare: veterinario subito.",
   "blocchi": [
     {
       "tipo": "in_breve",
       "frasi": [
         {
-          "testo": "I denti del coniglio spuntano per tutta la vita e si consumano masticando: per questo la base della dieta è il fieno.",
+          "testo": "I denti del coniglio crescono per tutta la vita e si consumano masticando fieno ed erba: per questo il fieno è la base della dieta.",
           "fonti": [
             {
-              "id": "animals_odontogenic_2025",
-              "punto": "§3 Anatomy; §11 Prophylaxis"
-            },
-            {
-              "id": "vcna_gi_2013",
-              "punto": "sezione «Dental disease, gastrointestinal stasis, and dysbiosis»"
+              "id": "scot_rabbit_2018",
+              "punto": "p. 3, 15 e 35"
             }
           ]
         }
@@ -48,60 +49,47 @@
       "tipo": "cosa_sapere",
       "frasi": [
         {
-          "testo": "I denti del coniglio hanno la radice aperta e ricrescono di continuo per tutta la vita. A tenerli della giusta lunghezza contribuiscono, tra l'altro, il consumo dovuto ai cibi abrasivi e lo sfregamento fra le arcate quando mastica.",
+          "testo": "I denti davanti tagliano il cibo e quelli dietro lo macinano.",
           "fonti": [
             {
-              "id": "animals_odontogenic_2025",
-              "punto": "§3 Anatomy"
+              "id": "scot_rabbit_2018",
+              "punto": "p. 3"
             }
           ]
         },
         {
-          "testo": "Con una dieta povera di fibra e poco abrasiva le corone dei molari si allungano e cambiano l'inclinazione della superficie di masticazione, fino a formare punte taglienti.",
+          "testo": "Fieno ed erba sono almeno l'80% della dieta; le crocchette non più del 5-10%; il massimo raccomandato oggi è circa 25 g per kg di peso al giorno.",
           "fonti": [
             {
-              "id": "vcna_gi_2013",
-              "punto": "sezione «Dental disease, gastrointestinal stasis, and dysbiosis»"
+              "id": "scot_rabbit_2018",
+              "punto": "p. 15"
             }
           ]
         },
         {
-          "testo": "Il fieno di graminacee (fleolo, erba di prato, erba mazzolina) è la base della dieta: la fibra aiuta a prevenire i problemi ai denti o a farli progredire più piano. Secondo una rassegna le crocchette vanno date in poca quantità, e i mix tipo muesli sono da evitare: portano il coniglio a scegliere solo i bocconi che preferisce, e questo è collegato a denti che non combaciano bene.",
+          "testo": "La guida dice di non usare i cibi tipo muesli, legati a problemi digestivi e dei denti; se il coniglio li mangia già, il passaggio alle crocchette va fatto lentamente, in circa 2-4 settimane.",
           "fonti": [
             {
-              "id": "vetrec_dental_2025",
-              "punto": "Introduction"
-            },
-            {
-              "id": "animals_odontogenic_2025",
-              "punto": "§11 Prophylaxis"
+              "id": "scot_rabbit_2018",
+              "punto": "p. 15"
             }
           ]
         },
         {
-          "testo": "Non conta solo la dieta: anche traumi, infezioni e fattori genetici possono avere un ruolo.",
+          "testo": "I denti dietro possono non combaciare e formare punte che possono causare molto dolore mentre il coniglio mangia; alcune razze sono più predisposte per la forma del cranio.",
           "fonti": [
             {
-              "id": "vcna_gi_2013",
-              "punto": "sezione «Dental disease, gastrointestinal stasis, and dysbiosis»"
+              "id": "scot_rabbit_2018",
+              "punto": "p. 35"
             }
           ]
         },
         {
-          "testo": "La bocca del coniglio è lunga e stretta: per esaminare bene i denti posteriori di solito serve un otoscopio o un visore simile.",
+          "testo": "I denti dietro non si vedono facilmente: vanno fatti controllare dal veterinario con un otoscopio.",
           "fonti": [
             {
-              "id": "vetrec_dental_2025",
-              "punto": "Discussion"
-            }
-          ]
-        },
-        {
-          "testo": "In uno studio su 2.219 conigli con malattia dentale diagnosticata in ambulatori del Regno Unito, 547 sono morti e, tra questi, nel 51,2% la malattia dentale è stata la causa o ha contribuito alla morte; per il 19,9% dei decessi la causa non era registrata.",
-          "fonti": [
-            {
-              "id": "vetrec_dental_2025",
-              "punto": "Abstract; Results, Mortality"
+              "id": "scot_rabbit_2018",
+              "punto": "p. 35"
             }
           ]
         }
@@ -111,29 +99,29 @@
       "tipo": "cosa_osservare",
       "frasi": [
         {
-          "testo": "Segni che il proprietario può notare: bava, difficoltà a inghiottire o soffocamento con il cibo non masticato, cibo lasciato cadere, riluttanza a mangiare fieno e cibi duri, perdita di peso, occhio che lacrima da tempo, secrezione dal naso, minore digrignamento dei denti, zampette alla bocca, ascessi al viso, incisivi molto lunghi.",
+          "testo": "Possono indicare un problema ai denti: bava o mento bagnato, pelo bagnato su petto e zampe, mangiare poco o smettere di mangiare, perdere peso, avere incisivi troppo lunghi o storti.",
           "fonti": [
             {
-              "id": "vetrec_dental_2025",
-              "punto": "Table 1"
+              "id": "scot_rabbit_2018",
+              "punto": "p. 30, 33-35"
             }
           ]
         },
         {
-          "testo": "Il coniglio nasconde spesso dolore e malattia: le prime avvisaglie, come l'occhio che lacrima o il fieno lasciato, meritano attenzione.",
+          "testo": "Digrignare i denti è tra i segni di sofferenza elencati dalla guida.",
           "fonti": [
             {
-              "id": "vetrec_dental_2025",
-              "punto": "Discussion"
+              "id": "scot_rabbit_2018",
+              "punto": "p. 28"
             }
           ]
         },
         {
-          "testo": "Gli ascessi dentali nel coniglio di solito non danno febbre: sentirlo non caldo non esclude il problema.",
+          "testo": "Una volta alla settimana si controllano gli incisivi e le unghie.",
           "fonti": [
             {
-              "id": "vcna_gastro_2005",
-              "punto": "«Dental disease, gastrointestinal stasis, and dysbiosis», Clinical features"
+              "id": "scot_rabbit_2018",
+              "punto": "p. 34"
             }
           ]
         }
@@ -143,15 +131,11 @@
       "tipo": "cosa_non_fare",
       "frasi": [
         {
-          "testo": "Tagliare gli incisivi non va mai fatto; per accorciare i denti, soprattutto quelli dietro, si usano altri metodi, idealmente con sedazione o anestesia. Il taglio dei denti può causare fratture longitudinali.",
+          "testo": "Denti storti o troppo lunghi: secondo la guida li deve correggere solo il veterinario.",
           "fonti": [
             {
-              "id": "vetrec_dental_2025",
-              "punto": "Introduction; Conclusion"
-            },
-            {
-              "id": "vcna_gastro_2005",
-              "punto": "«Dental disease, gastrointestinal stasis, and dysbiosis», Etiology"
+              "id": "scot_rabbit_2018",
+              "punto": "p. 35"
             }
           ]
         }
@@ -161,26 +145,22 @@
       "tipo": "quando_andare_dal_veterinario",
       "frasi": [
         {
-          "testo": "Quando le alterazioni dei denti sono ormai avanzate, spesso non è più possibile farle regredire; inoltre la malattia dentale può favorire la stasi intestinale (vedi la scheda su «mangia meno»).",
+          "testo": "Con poco appetito, mento bagnato o bava, o se smette di mangiare, la guida dice di andare subito dal veterinario.",
           "fonti": [
             {
-              "id": "vetrec_dental_2025",
-              "punto": "Discussion"
+              "id": "scot_rabbit_2018",
+              "punto": "p. 35"
             }
           ]
         },
         {
-          "testo": "Una rassegna consiglia un controllo fisico completo con ispezione della bocca a coniglio sveglio ogni 6-12 mesi; nei casi a rischio indica un esame con endoscopio in anestesia a intervalli più lunghi (12-18 mesi) o prima se compaiono segni. Non è una linea guida di società veterinarie.",
+          "testo": "Il controllo dei denti posteriori con l'otoscopio è consigliato idealmente ogni sei mesi.",
           "fonti": [
             {
-              "id": "animals_odontogenic_2025",
-              "punto": "§11 Prophylaxis"
+              "id": "scot_rabbit_2018",
+              "punto": "p. 35"
             }
           ]
-        },
-        {
-          "testo": "Se il coniglio mangia meno, perde peso, sbava, lascia cadere il cibo, ha l'occhio che lacrima da tempo o il viso gonfio, contatta il veterinario.",
-          "nostro": true
         }
       ]
     },
@@ -188,21 +168,7 @@
       "tipo": "limiti",
       "frasi": [
         {
-          "testo": "Non abbiamo trovato una linea guida di società veterinarie sui denti del coniglio. Le fonti sono uno studio britannico del 2025 (dati del 2019), una rassegna del 2025 sugli ascessi dentali e due rassegne più vecchie (2005 e 2013), riassunte e non riprodotte. Il consiglio di contattare il veterinario è nostro.",
-          "fonti": [
-            {
-              "id": "vetrec_dental_2025",
-              "punto": "intero articolo"
-            },
-            {
-              "id": "vcna_gi_2013",
-              "punto": "sezione «Dental disease, gastrointestinal stasis, and dysbiosis»"
-            },
-            {
-              "id": "vcna_gastro_2005",
-              "punto": "«Dental disease»"
-            }
-          ]
+          "testo": "La fonte è la guida ufficiale del governo scozzese del 2018 sul benessere dei conigli da compagnia: sono indicazioni ufficiali del Regno Unito, non norme italiane né linee guida di una società veterinaria. Non descrive le cause delle malattie dentali in dettaglio e non indica cure."
         }
       ]
     }
