@@ -53,13 +53,14 @@ def _budget(
     budgets: dict[str, int] | None = None,
     repository: InMemoryLlmUsageRepository | None = None,
     reserve_share: float = 0.8,
+    now: datetime = NOON,
 ) -> LlmBudget:
     return LlmBudget(
         repository or InMemoryLlmUsageRepository(),
         budgets=budgets if budgets is not None else {GROQ: 1000},
         default_budget=1000,
         reserve_share=reserve_share,
-        clock=lambda: NOON,
+        clock=lambda: now,
         refresh_seconds=3600.0,
         daily_budget_eur=cap,
         usd_per_eur=usd_per_eur,
@@ -303,18 +304,20 @@ class _Claude(LLMClient):
 
 
 def test_a_real_call_reaches_the_cap_with_its_cache_parts_and_survives_a_new_instance() -> None:
+    # The recorder stamps events with the real clock: the budgets read the same day.
+    today = datetime.now(UTC)
     repository = InMemoryLlmUsageRepository()
-    budget = _budget(repository=repository, usd_per_eur=DEFAULT_USD_PER_EUR)
+    budget = _budget(repository=repository, usd_per_eur=DEFAULT_USD_PER_EUR, now=today)
     client = InstrumentedLLMClient(_Claude(), repository=repository, budget=budget)
 
     client.generate(LLMGenerationRequest(system_prompt="s", user_prompt="u"))
 
-    expected = 0.000605 / DEFAULT_USD_PER_EUR
+    expected = 0.000605 * geo_multiplier(DEFAULT_INFERENCE_GEO) / DEFAULT_USD_PER_EUR
     assert budget.spent_today_eur() == pytest.approx(expected)
     # Another serverless instance reads the same day from the ledger.
-    other = _budget(repository=repository, usd_per_eur=DEFAULT_USD_PER_EUR)
+    other = _budget(repository=repository, usd_per_eur=DEFAULT_USD_PER_EUR, now=today)
     assert other.spent_today_eur() == pytest.approx(expected)
-    stored = repository.usage_for_day(NOON.date())[0]
+    stored = repository.usage_for_day(today.date())[0]
     assert (stored.cached_prompt_tokens, stored.cache_write_tokens) == (8_000, 1_000)
 
 

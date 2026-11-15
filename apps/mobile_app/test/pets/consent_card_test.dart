@@ -15,16 +15,16 @@ void main() {
     );
 
     expect(find.text('Leggi come viene usata'), findsOneWidget);
-    expect(find.textContaining('fornitore esterno'), findsNothing);
+    expect(find.textContaining('Anthropic'), findsNothing);
     expect(find.byType(Switch), findsOneWidget);
 
     await tester.tap(find.text('Leggi come viene usata'));
     await tester.pump();
-    expect(find.textContaining('fornitore esterno'), findsOneWidget);
+    expect(find.textContaining('Anthropic'), findsOneWidget);
     expect(find.text('Chiudi'), findsOneWidget);
 
     await tester.tap(find.text('Chiudi'));
     await tester.pump();
-    expect(find.textContaining('fornitore esterno'), findsNothing);
+    expect(find.textContaining('Anthropic'), findsNothing);
   });
 }
