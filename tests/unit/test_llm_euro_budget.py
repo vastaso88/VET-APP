@@ -416,7 +416,9 @@ def test_the_cap_and_the_rate_come_from_the_environment(monkeypatch: pytest.Monk
 
     assert budget.daily_cap_eur() == 2.5
     budget.note_usage(HAIKU, 1_000_000, prompt_tokens=0, completion_tokens=1_000_000)
-    assert budget.spent_today_eur() == pytest.approx(0.5 / 1.2)
+    assert budget.spent_today_eur() == pytest.approx(
+        0.5 * 1.1 / 1.2
+    )  # default region "us" on this branch
 
 
 def test_the_container_default_is_one_euro(monkeypatch: pytest.MonkeyPatch) -> None:
@@ -527,10 +529,10 @@ def test_the_region_of_the_budget_is_the_one_in_the_settings(
     assert budget.spent_today_eur() == pytest.approx(0.5 * 1.1)
 
 
-def test_the_region_setting_defaults_to_global_and_refuses_what_pricing_does_not_know(
+def test_the_region_setting_defaults_to_us_and_refuses_what_pricing_does_not_know(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    assert Settings(_env_file=None).anthropic_inference_geo == "global"  # type: ignore[call-arg]
+    assert Settings(_env_file=None).anthropic_inference_geo == "us"  # type: ignore[call-arg]
     monkeypatch.setenv("ANTHROPIC_INFERENCE_GEO", "eu")
 
     with pytest.raises(ValueError):

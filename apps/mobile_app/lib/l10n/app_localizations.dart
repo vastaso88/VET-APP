@@ -66,7 +66,7 @@ import 'app_localizations_it.dart';
 /// property.
 abstract class AppLocalizations {
   AppLocalizations(String locale)
-      : localeName = intl.Intl.canonicalizedLocale(locale.toString());
+    : localeName = intl.Intl.canonicalizedLocale(locale.toString());
 
   final String localeName;
 
@@ -89,11 +89,11 @@ abstract class AppLocalizations {
   /// of delegates is preferred or required.
   static const List<LocalizationsDelegate<dynamic>> localizationsDelegates =
       <LocalizationsDelegate<dynamic>>[
-    delegate,
-    GlobalMaterialLocalizations.delegate,
-    GlobalCupertinoLocalizations.delegate,
-    GlobalWidgetsLocalizations.delegate,
-  ];
+        delegate,
+        GlobalMaterialLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+      ];
 
   /// A list of this localizations delegate's supported locales.
   static const List<Locale> supportedLocales = <Locale>[
@@ -101,13 +101,13 @@ abstract class AppLocalizations {
     Locale('en'),
     Locale('es'),
     Locale('fr'),
-    Locale('it')
+    Locale('it'),
   ];
 
   /// No description provided for @petsConsentFullText.
   ///
   /// In it, this message translates to:
-  /// **'Per darti un consiglio più preciso, l\'assistente può leggere la cartella clinica del tuo animale. Quando fai una domanda può leggere le tre voci più recenti, con titolo, categoria (visita, esame, vaccino, terapia o documento), data dell\'evento, descrizione e testo dei documenti allegati, anche se non c\'entrano con la domanda. Può leggere anche le malattie pregresse ancora in corso, con il nome e la data di inizio, al massimo cinque. Legge anche le note che hai scritto nella scheda dell\'animale e i promemoria attivi, terapie comprese. Se chiedi di spiegare un esame, può leggere i documenti che lo riguardano, al massimo due. Di un documento molto lungo legge solo l\'inizio. Ciò che legge viene inviato al fornitore esterno di intelligenza artificiale che scrive la risposta. Quokka lo usa solo per risponderti. Puoi revocare il consenso in qualsiasi momento dalla scheda dell\'animale o dalle Impostazioni: vale per le richieste successive.'**
+  /// **'Per darti un consiglio più preciso, l\'assistente può leggere la cartella clinica del tuo animale. Quando fai una domanda può leggere le tre voci più recenti, con titolo, categoria (visita, esame, vaccino, terapia o documento), data dell\'evento, descrizione e testo dei documenti allegati, anche se non c\'entrano con la domanda. Può leggere anche le malattie pregresse ancora in corso, con il nome e la data di inizio, al massimo cinque. Legge anche le note che hai scritto nella scheda dell\'animale e i promemoria attivi, terapie comprese. Se chiedi di spiegare un esame, può leggere i documenti che lo riguardano, al massimo due. Di un documento molto lungo legge solo l\'inizio. Ciò che legge viene inviato ai fornitori esterni di intelligenza artificiale che scrivono la risposta: Anthropic e, quando Anthropic non può rispondere, Groq. Sono società statunitensi e trattano i dati negli Stati Uniti, fuori dall\'Unione europea: l\'invio è vincolato da un contratto e protetto dalle garanzie che la legge europea prevede per questi trasferimenti. Prima dell\'invio togliamo nomi, recapiti e altri dati che ti identificano, ma non possiamo riconoscerli tutti. Quokka lo usa solo per risponderti e per preparare il riepilogo per il veterinario che puoi chiedere. Puoi revocare il consenso in qualsiasi momento dalla scheda dell\'animale o dalle Impostazioni: vale per le richieste successive.'**
   String get petsConsentFullText;
 
   /// No description provided for @appTitle.
@@ -12252,8 +12252,9 @@ AppLocalizations lookupAppLocalizations(Locale locale) {
   }
 
   throw FlutterError(
-      'AppLocalizations.delegate failed to load unsupported locale "$locale". This is likely '
-      'an issue with the localizations generation tool. Please file an issue '
-      'on GitHub with a reproducible sample app and the gen-l10n configuration '
-      'that was used.');
+    'AppLocalizations.delegate failed to load unsupported locale "$locale". This is likely '
+    'an issue with the localizations generation tool. Please file an issue '
+    'on GitHub with a reproducible sample app and the gen-l10n configuration '
+    'that was used.',
+  );
 }

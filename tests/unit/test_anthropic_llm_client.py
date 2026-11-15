@@ -153,6 +153,25 @@ def test_an_answer_call_sends_no_sampling_parameter_and_caches_the_stable_prefix
     assert fake.options == []
 
 
+def test_every_request_is_processed_in_the_united_states() -> None:
+    # Consent v5 says the data are processed in the United States: the
+    # answers, the light calls and the retry in words all ask for it.
+    fake = FakeAnthropic(
+        _message(),
+        _message('{"level": "normal"}'),
+        _status_error(400, anthropic.BadRequestError),
+        _message("{}"),
+    )
+    client = _client(fake)
+
+    client.generate(ANSWER)
+    client.generate(LIGHT)
+    client.generate(LIGHT)
+
+    assert len(fake.calls) == 4
+    assert all(body["inference_geo"] == "us" for body in fake.calls)
+
+
 def test_the_effort_levels_come_from_the_settings() -> None:
     fake = FakeAnthropic(_message(), _message('{"level": "normal"}'))
     client = _client(fake, anthropic_effort="medium", anthropic_effort_light="low")
