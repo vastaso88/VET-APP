@@ -4,12 +4,12 @@
   "area": "SAL",
   "argomento": "vaccini",
   "titolo": "I vaccini del gatto: cosa sapere",
-  "stato": "bozza",
+  "stato": "rivista",
   "livello_schede": 1,
   "ultimo_controllo": "2026-11-10",
   "scadenza": "2027-11-10",
   "revisione": {
-    "proprietario": null,
+    "proprietario": "2026-11-15",
     "specialista": null
   },
   "parole_chiave": [

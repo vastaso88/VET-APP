@@ -1,11 +1,11 @@
 {
   "area": "SAL",
-  "stato": "bozza",
+  "stato": "rivista",
   "livello_schede": 1,
   "ultimo_controllo": "2026-11-15",
   "scadenza": "2027-11-15",
   "revisione": {
-    "proprietario": null,
+    "proprietario": "2026-11-15",
     "specialista": null
   },
   "codice": "GAT-SAL-02",
