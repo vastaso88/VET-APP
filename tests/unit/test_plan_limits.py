@@ -9,6 +9,7 @@ from datetime import UTC, datetime, timedelta
 from types import SimpleNamespace
 
 import pytest
+from starlette.requests import Request
 
 from apps.api import main as api_main
 from apps.api.dependencies import subscription as gate
@@ -406,7 +407,7 @@ def test_subscription_required_answers_402_with_a_stable_code() -> None:
 def test_plan_limit_answers_403_with_kind_and_limit() -> None:
     response = asyncio.run(
         api_main.handle_plan_limit(
-            None,  # type: ignore[arg-type]
+            Request({"type": "http", "headers": []}),
             PlanLimitError("pets", limit=3, message="il tuo piano consente fino a 3 animali."),
         )
     )

@@ -255,6 +255,21 @@
   "billingPaywallEmergencyTitle": "Wenn Ihr Tier in Gefahr ist",
   "billingPaywallEmergencyBody": "Rufen Sie sofort Ihre Tierarztpraxis oder eine tierärztliche Notfallklinik an. Quokka ersetzt keinen Tierarztbesuch.",
   "billingPlanLimitReached": "Ihr Tarif hat diese Grenze erreicht. Wechseln Sie in den Einstellungen zu einem höheren Tarif.",
+  "billingPlanOverPetsWarning": "Sie haben {count} Tiere und der Tarif {plan} erlaubt {limit}. Wir löschen und verschieben nichts: Alle Ihre Tiere bleiben, wo sie sind, aber Sie können erst wieder weitere hinzufügen, wenn Sie weniger als {limit} haben.",
+  "@billingPlanOverPetsWarning": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "limit": {
+        "type": "int"
+      },
+      "plan": {
+        "type": "String"
+      }
+    }
+  },
+  "billingPlanOverPetsConfirm": "Tarif wechseln",
   "billingTestPeriodTitle": "Testphase",
   "billingTestPeriodBody": "Sie nutzen Quokka mit dem Tarif {plan}, ohne zu zahlen: Während des Tests haben alle denselben Tarif, es gibt nichts zu wählen oder zu bezahlen.",
   "@billingTestPeriodBody": {

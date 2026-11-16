@@ -24,6 +24,21 @@ class RequirementMissingError(ValidationError):
         self.fix = fix
 
 
+class ConversationLimitError(ValidationError):
+    """The owner already has as many chats open for this pet as the plan allows:
+    the API answers 400 with `detail` "conversation_limit_reached: <text>" (the
+    app reads the prefix as its signal), and also the bare `code` and the `text`
+    written for the owner in their language, so a client that is not the app
+    never has to show the technical prefix."""
+
+    code = "conversation_limit_reached"
+
+    def __init__(self, message: str, *, limit: int) -> None:
+        super().__init__(f"{self.code}: {message}")
+        self.message = message
+        self.limit = limit
+
+
 class ProviderError(VetAppError):
     """Raised when an external provider fails."""
 
@@ -50,11 +65,15 @@ class PlanLimitError(VetAppError):
     "chats_per_pet"): the API answers 403 `plan_limit_reached` with the
     limit, so the app can offer a higher plan."""
 
-    def __init__(self, kind: str, *, limit: int, message: str) -> None:
+    def __init__(
+        self, kind: str, *, limit: int, message: str, upgrade_to: str | None = None
+    ) -> None:
         super().__init__(message)
         self.kind = kind
         self.limit = limit
         self.message = message
+        # The plan one step above ("pro", "ultra"), when there is one to suggest.
+        self.upgrade_to = upgrade_to
 
 
 class QuotaExceededError(VetAppError):

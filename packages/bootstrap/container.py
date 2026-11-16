@@ -692,7 +692,9 @@ class ApplicationContainer:
 
     def select_plan_service(self) -> SelectPlanService:
         return SelectPlanService(
-            self.subscription_repository, test_plan=self.subscription_test_plan
+            self.subscription_repository,
+            test_plan=self.subscription_test_plan,
+            pets=self.pet_profile_repository,
         )
 
     def list_events_service(self) -> ListEventsService:

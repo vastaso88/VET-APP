@@ -1,11 +1,13 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, Request
 
 from apps.api.dependencies.container import get_container
+from apps.api.request_language import request_language
 from apps.api.schemas.subscription import SelectPlanRequest
 from packages.core.application.services.get_or_create_subscription import (
     GetOrCreateSubscriptionInput,
 )
 from packages.core.application.services.select_plan import SelectPlanInput
+from packages.core.domain.localization import translate
 
 router = APIRouter(prefix="/subscription", tags=["subscription"])
 
@@ -21,7 +23,7 @@ def get_subscription_status() -> dict[str, object]:
 
 
 @router.post("/select-plan")
-def select_plan(request: SelectPlanRequest) -> dict[str, object]:
+def select_plan(request: SelectPlanRequest, http_request: Request) -> dict[str, object]:
     container = get_container()
     user = container.auth_provider.get_current_user()
     if container.subscription_test_plan is None:
@@ -32,6 +34,16 @@ def select_plan(request: SelectPlanRequest) -> dict[str, object]:
         SelectPlanInput(owner_id=user.id, plan=request.plan)
     )
     body: dict[str, object] = result.model_dump()
+    over = result.pets_over_limit
+    if over is not None:
+        body["code"] = "pets_over_plan_limit"
+        body["message"] = translate(
+            "plan_over_pet_limit",
+            request_language(http_request),
+            count=over.count,
+            limit=over.limit,
+            plan=over.plan.capitalize(),
+        )
     if result.test_period:
         body["code"] = "subscription_test_period"
         body["message"] = (

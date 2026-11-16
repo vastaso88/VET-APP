@@ -1070,6 +1070,18 @@ abstract class AppLocalizations {
   /// **'Il tuo piano ha raggiunto questo limite. Passa a un piano superiore da Impostazioni.'**
   String get billingPlanLimitReached;
 
+  /// No description provided for @billingPlanOverPetsWarning.
+  ///
+  /// In it, this message translates to:
+  /// **'Hai {count} animali e il piano {plan} ne consente {limit}. Non cancelliamo e non spostiamo niente: i tuoi animali restano tutti dove sono, ma non potrai aggiungerne altri finché non ne avrai meno di {limit}.'**
+  String billingPlanOverPetsWarning(int count, int limit, String plan);
+
+  /// No description provided for @billingPlanOverPetsConfirm.
+  ///
+  /// In it, this message translates to:
+  /// **'Cambia piano'**
+  String get billingPlanOverPetsConfirm;
+
   /// No description provided for @billingTestPeriodTitle.
   ///
   /// In it, this message translates to:

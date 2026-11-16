@@ -588,6 +588,14 @@ class AppLocalizationsFr extends AppLocalizations {
       'Votre offre a atteint cette limite. Passez à une offre supérieure dans les Paramètres.';
 
   @override
+  String billingPlanOverPetsWarning(int count, int limit, String plan) {
+    return 'Vous avez $count animaux et l\'offre $plan en permet $limit. Nous ne supprimons et ne déplaçons rien : tous vos animaux restent où ils sont, mais vous ne pourrez pas en ajouter d\'autres tant que vous n\'en aurez pas moins de $limit.';
+  }
+
+  @override
+  String get billingPlanOverPetsConfirm => 'Changer d\'offre';
+
+  @override
   String get billingTestPeriodTitle => 'Période de test';
 
   @override

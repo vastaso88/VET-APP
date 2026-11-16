@@ -534,6 +534,30 @@ _MESSAGES: dict[str, dict[SupportedLocale, str]] = {
         "de": "Sie haben schon {limit} offene Chats für {pet_name}: Um einen neuen zu beginnen, löschen Sie einen Chat aus der Liste. Wenn es {pet_name} gerade schlecht geht, warten Sie nicht: Schreiben Sie in einem bestehenden Chat oder rufen Sie sofort Ihre Tierarztpraxis an.",
         "fr": "Vous avez déjà {limit} conversations ouvertes pour {pet_name} : pour en commencer une nouvelle, supprimez une conversation de la liste. Si {pet_name} va mal en ce moment, n'attendez pas : écrivez dans une conversation existante ou appelez tout de suite votre vétérinaire.",
     },
+    # The plan's number of pets (POST /pets refused, 403 plan_limit_reached): the
+    # first when there is a plan above to suggest, the second when there is not.
+    "plan_limit_pets_upgrade": {
+        "it": "Il tuo piano consente fino a {limit} animali. Per aggiungerne altri passa al piano {plan}.",
+        "en": "Your plan allows up to {limit} pets. To add more, switch to the {plan} plan.",
+        "es": "Tu plan permite hasta {limit} animales. Para añadir más, pasa al plan {plan}.",
+        "de": "Ihr Tarif erlaubt bis zu {limit} Tiere. Für weitere wechseln Sie zum Tarif {plan}.",
+        "fr": "Votre offre permet jusqu'à {limit} animaux. Pour en ajouter d'autres, passez à l'offre {plan}.",
+    },
+    "plan_limit_pets": {
+        "it": "Il tuo piano consente fino a {limit} animali: non se ne possono aggiungere altri.",
+        "en": "Your plan allows up to {limit} pets: no more can be added.",
+        "es": "Tu plan permite hasta {limit} animales: no se pueden añadir más.",
+        "de": "Ihr Tarif erlaubt bis zu {limit} Tiere: Es können keine weiteren hinzugefügt werden.",
+        "fr": "Votre offre permet jusqu'à {limit} animaux : il n'est pas possible d'en ajouter d'autres.",
+    },
+    # Choosing a plan with fewer places than the owner has pets (POST /subscription/select-plan).
+    "plan_over_pet_limit": {
+        "it": "Hai {count} animali e il piano {plan} ne consente {limit}. Non cancelliamo e non spostiamo niente: i tuoi animali restano tutti dove sono, ma non potrai aggiungerne altri finché non ne avrai meno di {limit}.",
+        "en": "You have {count} pets and the {plan} plan allows {limit}. We won't delete or move anything: all your pets stay where they are, but you won't be able to add more until you have fewer than {limit}.",
+        "es": "Tienes {count} animales y el plan {plan} permite {limit}. No borramos ni movemos nada: todos tus animales se quedan donde están, pero no podrás añadir más hasta que tengas menos de {limit}.",
+        "de": "Sie haben {count} Tiere und der Tarif {plan} erlaubt {limit}. Wir löschen und verschieben nichts: Alle Ihre Tiere bleiben, wo sie sind, aber Sie können erst wieder weitere hinzufügen, wenn Sie weniger als {limit} haben.",
+        "fr": "Vous avez {count} animaux et l'offre {plan} en permet {limit}. Nous ne supprimons et ne déplaçons rien : tous vos animaux restent où ils sont, mais vous ne pourrez pas en ajouter d'autres tant que vous n'en aurez pas moins de {limit}.",
+    },
     "dosage_limitation": {
         "it": "Questa app supporta il lavoro del veterinario, non lo sostituisce: non fornisce mai dosaggi farmacologici precisi.",
         "en": "This app supports veterinary care but does not replace it: it never provides exact medication doses.",

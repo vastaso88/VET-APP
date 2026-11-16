@@ -7,6 +7,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
 from apps.api.rate_limit import SlidingWindowLimiter, build_middleware
+from apps.api.request_language import request_language
 from apps.api.routes.account import router as account_router
 from apps.api.routes.account_age import router as account_age_router
 from apps.api.routes.account_consents import router as account_consents_router
@@ -44,6 +45,7 @@ from packages.shared.config.settings import get_settings
 from packages.shared.errors.base import (
     AgeRestrictedError,
     AuthenticationError,
+    ConversationLimitError,
     MarketplaceRestrictedError,
     PlanLimitError,
     ProviderError,
@@ -175,6 +177,21 @@ async def handle_validation_error(_: Request, exc: ValidationError) -> JSONRespo
     return JSONResponse(status_code=400, content={"detail": str(exc)})
 
 
+@app.exception_handler(ConversationLimitError)
+async def handle_conversation_limit(_: Request, exc: ConversationLimitError) -> JSONResponse:
+    # `detail` keeps the prefix the app reads as its signal; `message` is the same text
+    # without it, so a client that is not the app never shows the technical code.
+    return JSONResponse(
+        status_code=400,
+        content={
+            "detail": str(exc),
+            "code": exc.code,
+            "message": exc.message,
+            "limit": exc.limit,
+        },
+    )
+
+
 @app.exception_handler(AuthenticationError)
 async def handle_authentication_error(_: Request, exc: AuthenticationError) -> JSONResponse:
     return JSONResponse(status_code=401, content={"detail": str(exc)})
@@ -222,15 +239,29 @@ def _caller_locale() -> str | None:
         return None
 
 
+def _plan_limit_message(exc: PlanLimitError, language: str) -> str:
+    """The refusal text in the owner's language; a kind without a translation keeps
+    the message it was raised with."""
+    if exc.kind != "pets":
+        return exc.message
+    if exc.upgrade_to is not None:
+        return translate(
+            "plan_limit_pets_upgrade", language, limit=exc.limit, plan=exc.upgrade_to.capitalize()
+        )
+    return translate("plan_limit_pets", language, limit=exc.limit)
+
+
 @app.exception_handler(PlanLimitError)
-async def handle_plan_limit(_: Request, exc: PlanLimitError) -> JSONResponse:
+async def handle_plan_limit(request: Request, exc: PlanLimitError) -> JSONResponse:
+    message = _plan_limit_message(exc, request_language(request))
     return JSONResponse(
         status_code=403,
         content={
-            "detail": f"plan_limit_reached: {exc.message}",
+            "detail": f"plan_limit_reached: {message}",
             "code": "plan_limit_reached",
             "kind": exc.kind,
             "limit": exc.limit,
+            "message": message,
         },
     )
 

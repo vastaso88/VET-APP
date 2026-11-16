@@ -19393,5 +19393,50 @@
       "de": "6b7d6813cc83efcb6013c2083c87723b136b532115f819125850f89e51d89be8",
       "fr": "1ad4dc21de9314cd20364013e9d23213f26479a239ed75d9e104ab79214fa3b1"
     }
+  },
+  "ui:billingPlanOverPetsWarning": {
+    "source": "d1cedac4a11adfa0e94238597db449ca98ded6daec2da49a019ff0e322f0e0cc",
+    "targets": {
+      "en": "1a69b8eb6ac3ebca75359aee6d66780195f828cef40346edb7cddc8796797f6d",
+      "es": "c1d4e368f7c64815de38bfd6a9db896992abdb14fc2e743c7eb148beb4b90fe5",
+      "de": "232eb2ff736076025bcf424e6cdbc856b09d8a4ec9bf8cd03ed7a155a5e175c6",
+      "fr": "50e459ef242a38672daffb0f5c63be34cff1735d8cf7e008ba36a43768166d8c"
+    }
+  },
+  "ui:billingPlanOverPetsConfirm": {
+    "source": "1349ade5f161397ee0d8a90b26118a27ca3ce8c782f38b4febd465f17836f162",
+    "targets": {
+      "en": "fd37cc8c055eda4e38579d8135866c357a9605747faba3d7f45f1e73276d2996",
+      "es": "e56f696ef1f190e688016195ee49d81f93f4e52569eede5d0d7339146e65a021",
+      "de": "9c739b59e0e946ff6b8b26014cb33da45c20c397be13c5c6d539544934d293bd",
+      "fr": "7f1bd0687c108ef27f35c4cf0953979531afa788b270f55f36aa6fd37c983a05"
+    }
+  },
+  "backend:plan_limit_pets_upgrade": {
+    "source": "894765912e579ee70915c9b0f41ce0564c6eaa16744c144ddbdb3afd972923e2",
+    "targets": {
+      "en": "b48569bb5a917899a646ea17ca398e7101a4d04be9f907d567bdae4d978dea97",
+      "es": "ed13db83eb91557902b59251d2d14b02345648c3c82b0a1eaad55e7388c9fc23",
+      "de": "a5347cc1848d43bafe3a4cd4b04c9c77cf620d8e791ee60daa472019be69dd9f",
+      "fr": "9de8bfe812fdd8e3563f7d589759193db3ed092150a61d3ab189d5ead8f61d67"
+    }
+  },
+  "backend:plan_limit_pets": {
+    "source": "1b3c3933b0cecbb8d7ad4607bf961cf0be5b707ca6c43b2e7dbde8abf49bcc59",
+    "targets": {
+      "en": "7267e3eff45b4a6fb2bd8bf632e3cd620d595a6530b66c00eaaed31a087086de",
+      "es": "a9d0f7e3eef8496c8cdf1e0bd4ed694950fd99e17fc413146a70c083e0292836",
+      "de": "4795638290d5a5bd69e5a532c30a2d77f0789e71adb6bb27a536e77c9c41eab7",
+      "fr": "33a557e40fe1ade7711e49b52443ec75390f791a4b254621659304751f07e114"
+    }
+  },
+  "backend:plan_over_pet_limit": {
+    "source": "c2a613bbcfa05c1e843b091ddbcf5376650fd6c6acf56c3d115429e7c8183731",
+    "targets": {
+      "en": "1a69b8eb6ac3ebca75359aee6d66780195f828cef40346edb7cddc8796797f6d",
+      "es": "c1d4e368f7c64815de38bfd6a9db896992abdb14fc2e743c7eb148beb4b90fe5",
+      "de": "232eb2ff736076025bcf424e6cdbc856b09d8a4ec9bf8cd03ed7a155a5e175c6",
+      "fr": "50e459ef242a38672daffb0f5c63be34cff1735d8cf7e008ba36a43768166d8c"
+    }
   }
 }

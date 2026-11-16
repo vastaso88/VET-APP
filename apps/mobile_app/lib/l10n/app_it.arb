@@ -255,6 +255,21 @@
   "billingPaywallEmergencyTitle": "Se il tuo animale è in pericolo",
   "billingPaywallEmergencyBody": "Chiama subito il tuo veterinario o una clinica veterinaria d'urgenza. Quokka non sostituisce una visita.",
   "billingPlanLimitReached": "Il tuo piano ha raggiunto questo limite. Passa a un piano superiore da Impostazioni.",
+  "billingPlanOverPetsWarning": "Hai {count} animali e il piano {plan} ne consente {limit}. Non cancelliamo e non spostiamo niente: i tuoi animali restano tutti dove sono, ma non potrai aggiungerne altri finché non ne avrai meno di {limit}.",
+  "@billingPlanOverPetsWarning": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "limit": {
+        "type": "int"
+      },
+      "plan": {
+        "type": "String"
+      }
+    }
+  },
+  "billingPlanOverPetsConfirm": "Cambia piano",
   "billingTestPeriodTitle": "Periodo di test",
   "billingTestPeriodBody": "Stai usando Quokka con il piano {plan}, senza pagare: durante il test tutti hanno lo stesso piano e non c'è nulla da scegliere né da pagare.",
   "@billingTestPeriodBody": {

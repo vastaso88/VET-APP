@@ -14,6 +14,7 @@ import '../../../age/presentation/age_flow.dart';
 import '../../data/billing_demo_store.dart';
 import '../../data/subscription_remote_data_source.dart';
 import '../../domain/billing_models.dart';
+import '../plan_over_pet_limit.dart';
 import '../widgets/plan_feature_list.dart';
 import '../../../../l10n/regional_defaults.dart';
 
@@ -42,6 +43,9 @@ class _BillingPageState extends State<BillingPage> {
     if (_switchingPlan) return;
     // A paid plan needs a declared age (and a parent's OK for a minor).
     if (!_store.isTestPeriod && !await ensureCanChoosePaidPlan(context)) return;
+    if (!mounted) return;
+    // More pets than this plan has places for: say it before, not after.
+    if (!afterAgeQuestion && !await confirmPlanFitsPets(context, tier)) return;
     if (!mounted) return;
     setState(() => _switchingPlan = true);
     final result = await _subscriptionDataSource.selectPlan(tier);

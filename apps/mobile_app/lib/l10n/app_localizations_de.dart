@@ -588,6 +588,14 @@ class AppLocalizationsDe extends AppLocalizations {
       'Ihr Tarif hat diese Grenze erreicht. Wechseln Sie in den Einstellungen zu einem höheren Tarif.';
 
   @override
+  String billingPlanOverPetsWarning(int count, int limit, String plan) {
+    return 'Sie haben $count Tiere und der Tarif $plan erlaubt $limit. Wir löschen und verschieben nichts: Alle Ihre Tiere bleiben, wo sie sind, aber Sie können erst wieder weitere hinzufügen, wenn Sie weniger als $limit haben.';
+  }
+
+  @override
+  String get billingPlanOverPetsConfirm => 'Tarif wechseln';
+
+  @override
   String get billingTestPeriodTitle => 'Testphase';
 
   @override

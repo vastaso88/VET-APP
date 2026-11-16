@@ -65,4 +65,5 @@ class CreatePetProfileService:
                 "pets",
                 limit=limits.max_pets,
                 message=f"il tuo piano consente fino a {limits.max_pets} animali.",
+                upgrade_to=limits.upgrade_to,
             )

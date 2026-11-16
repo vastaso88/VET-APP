@@ -586,6 +586,14 @@ class AppLocalizationsIt extends AppLocalizations {
       'Il tuo piano ha raggiunto questo limite. Passa a un piano superiore da Impostazioni.';
 
   @override
+  String billingPlanOverPetsWarning(int count, int limit, String plan) {
+    return 'Hai $count animali e il piano $plan ne consente $limit. Non cancelliamo e non spostiamo niente: i tuoi animali restano tutti dove sono, ma non potrai aggiungerne altri finché non ne avrai meno di $limit.';
+  }
+
+  @override
+  String get billingPlanOverPetsConfirm => 'Cambia piano';
+
+  @override
   String get billingTestPeriodTitle => 'Periodo di test';
 
   @override

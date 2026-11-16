@@ -195,7 +195,7 @@ def _service(limit_per_pet: int = 1, budget: LlmBudget | None = None) -> SendCha
     )
 
 
-def test_an_emergency_goes_on_in_the_most_recent_chat_when_the_pet_limit_is_reached() -> None:
+def test_an_emergency_gets_a_chat_of_its_own_when_the_pet_limit_is_reached() -> None:
     service = _service(limit_per_pet=1)
     first = service.execute(
         SendChatMessageInput(
@@ -216,7 +216,9 @@ def test_an_emergency_goes_on_in_the_most_recent_chat_when_the_pet_limit_is_reac
     )
 
     assert urgent.mode == "triage"
-    assert urgent.conversation.id == first.conversation.id
+    # Not refused, and not buried in the old chat about something else (giro 2):
+    assert urgent.conversation.id != first.conversation.id
+    assert len(service._repository.list_by_pet("pet-a")) == 2  # noqa: SLF001
 
 
 def test_a_message_the_daily_limit_stops_does_not_create_a_chat() -> None:

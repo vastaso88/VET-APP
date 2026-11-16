@@ -582,6 +582,14 @@ class AppLocalizationsEn extends AppLocalizations {
       'Your plan has reached this limit. Switch to a higher plan in Settings.';
 
   @override
+  String billingPlanOverPetsWarning(int count, int limit, String plan) {
+    return 'You have $count pets and the $plan plan allows $limit. We won\'t delete or move anything: all your pets stay where they are, but you won\'t be able to add more until you have fewer than $limit.';
+  }
+
+  @override
+  String get billingPlanOverPetsConfirm => 'Change plan';
+
+  @override
   String get billingTestPeriodTitle => 'Test period';
 
   @override

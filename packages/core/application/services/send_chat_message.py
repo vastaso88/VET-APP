@@ -43,8 +43,8 @@ from packages.core.domain.pet_profile.weight_measurement import (
     weight_label_with_date,
 )
 from packages.core.domain.safety.triage_clarification import requires_immediate_escalation
-from packages.core.domain.subscription.limits import PlanLimits
-from packages.shared.errors.base import ValidationError
+from packages.core.domain.subscription.limits import EMERGENCY_CHATS_ABOVE_PET_LIMIT, PlanLimits
+from packages.shared.errors.base import ConversationLimitError, ValidationError
 
 # How many recent messages cross into the orchestrator (spec v3 §38: never
 # resend the entire history). SituationModelBuilder itself only looks at
@@ -116,6 +116,13 @@ class SendChatMessageOutput(BaseModel):
     awaiting_medical_record_consent: bool = False
     awaiting_safety_clarification: bool = False
     safety_clarification_category: str | None = None
+
+
+def _last_activity(conversation: Conversation) -> datetime:
+    """When the chat was last written in (its last message), for "the chat used last"."""
+    if conversation.messages:
+        return conversation.messages[-1].created_at
+    return datetime.min.replace(tzinfo=UTC)
 
 
 class SendChatMessageService:
@@ -473,14 +480,23 @@ class SendChatMessageService:
         if len(existing_for_pet) >= max_per_pet:
             if existing_for_pet and self._is_an_emergency(data.user_message, pet_profile):
                 # An emergency never waits for a free slot (synthetic users
-                # 2026-11-07, P5): it goes on in the most recent chat.
-                return migrate_legacy_title(existing_for_pet[-1])
+                # 2026-11-07 P5, 2026-11-16 giro 2): it gets a chat of its own, a few
+                # above the limit, so it is neither refused nor buried in an old
+                # chat about something else. Past that allowance it goes on in the
+                # chat used last.
+                if len(existing_for_pet) < max_per_pet + EMERGENCY_CHATS_ABOVE_PET_LIMIT:
+                    return Conversation(
+                        owner_id=data.owner_id,
+                        pet_id=data.pet_id,
+                        title=title_from_message(data.user_message),
+                    )
+                return migrate_legacy_title(max(existing_for_pet, key=_last_activity))
             pet_name = pet_profile.name if pet_profile is not None else ""
-            raise ValidationError(
-                "conversation_limit_reached: "
-                + translate(
+            raise ConversationLimitError(
+                translate(
                     "conversation_limit", data.language, limit=max_per_pet, pet_name=pet_name
-                )
+                ),
+                limit=max_per_pet,
             )
         return Conversation(
             owner_id=data.owner_id,
