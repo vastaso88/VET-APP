@@ -45,7 +45,9 @@ _GRAVE = re.compile(
     # straining with nothing or a few drops (a blocked urinary tract):
     r"non riesce a fare (?:la )?pipi|non riesce a urinare|"
     r"(?:lettiera|pipi)[^.?!]{0,60}non esce (?:niente|nulla)|"
-    r"poche gocce di pipi|fa (?:solo )?poche gocce|"
+    r"poche gocce di pipi|fa (?:solo )?poche gocce|poche gocce di urin\w*|"
+    # round 3 eval: "fa forza nella lettiera, poche gocce di urina" got questions
+    r"fa forza (?:in|nella) lettiera|si sforza (?:in|nella) lettiera|"
     r"(?:\d+|piu di \w+) ore che non (?:fa|ha fatto) (?:la )?pipi|non fa pipi da|"
     r"can't pee|cannot pee|straining to (?:pee|urinate)|(?:pees|peeing) only a few drops|"
     r"a few drops of (?:urine|pee)|no puede orinar|solo unas gotas de orina|"
@@ -79,6 +81,12 @@ _BREATHING = re.compile(
     r"maul offen|respire|haletement|halete|bouche ouverte)\b"
 )
 _COUGH = re.compile(r"\b(?:toss\w*|cough\w*|tos\b|tose|huste\w*|husten|tousse\w*|toux)\b")
+_BLOOD_OR_WOUND = re.compile(
+    r"\b(?:sangu\w*|sanguin\w*|emorrag\w*|ferit\w*|tagli\w*|squarci\w*|morso|morsicat\w*|"
+    r"blood\w*|bleed\w*|wound\w*|cut|cuts|gash\w*|bitten|sangr\w*|herid\w*|cort[ea]\w*|"
+    r"blut\w*|wunde\w*|verletz\w*|schnitt\w*|gebissen|sang|saign\w*|plaie\w*|blessure\w*|"
+    r"coupure\w*|mordu\w*)\b"
+)
 _NO_BLEEDING = re.compile(
     r"\b(?:nessun sangue|niente sangue|non sanguina|non c'e sangue|senza sangue|non esce sangue|"
     r"no blood|not bleeding|isn't bleeding|no sangra|sin sangre|kein blut|blutet nicht|"
@@ -96,9 +104,15 @@ def clarifying_question_fits(category: str | None, message: str) -> bool:
     # orina fuera del arenero", Haiku round 2026-11-07): the animal urinates.
     if category == "urinary" and (_POLYURIA.search(text) or HOUSE_SOILING.search(text)):
         return False
-    if category == "respiratory" and _COUGH.search(text) and not _BREATHING.search(text):
+    # Synthetic users round 3 (2026-11-16): the question on the breathing went to
+    # "un telo sulla gabbia: la soffoco?" and to a canary with a sneeze that eats and
+    # sings, and the one on the bleeding to a gecko dropping its tail with no blood
+    # written. Each question needs its own sign in the owner's words.
+    if category == "respiratory" and not _BREATHING.search(text):
         return False
-    if category == "bleeding_trauma" and _NO_BLEEDING.search(text):
+    if category == "bleeding_trauma" and (
+        _NO_BLEEDING.search(text) or not _BLOOD_OR_WOUND.search(text)
+    ):
         return False
     return True
 

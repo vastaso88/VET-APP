@@ -320,7 +320,10 @@ def test_the_owner_saying_stop_ends_the_questions() -> None:
         )
     )
 
-    assert "Do not ask for information before answering" in client.requests[0].system_prompt
+    # A symptom the owner cannot describe further: no more questions. (It used to
+    # read as a direct question only because "alt" matched "altro", synthetic
+    # users round 3.)
+    assert "must NOT ask anything more" in client.requests[0].system_prompt
 
 
 def test_an_emergency_named_in_a_report_request_is_still_escalated_first() -> None:

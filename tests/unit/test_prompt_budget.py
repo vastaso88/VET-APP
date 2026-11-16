@@ -42,7 +42,10 @@ from packages.shared.errors.base import ProviderError
 # rules for products minors may use, docs/compliance/08 point 57).
 # 2026-11-16: +250 for the LAST CHECK line (at most 180 words, never ask what the
 # profile already says), last in the prompt so the model weighs it most.
-SYSTEM_PROMPT_MAX_CHARS = 10150
+# 2026-11-16, synthetic users round 3: +250 for "24-48 ore only if it fits the
+# species", "never ask about a sign the owner did not write" and "stay consistent
+# with your earlier replies, say when advice changes" (about 60 tokens, cached).
+SYSTEM_PROMPT_MAX_CHARS = 10400
 QUESTION = "da due giorni zoppica dopo le passeggiate"
 
 

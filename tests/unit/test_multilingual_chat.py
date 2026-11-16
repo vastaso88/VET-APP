@@ -14,7 +14,7 @@ from packages.core.application.services.natural_answer_prompt import build_syste
 from packages.core.application.services.response_generator import ResponseGenerator
 from packages.core.domain.conversation.request_kind import RequestKind
 from packages.core.domain.knowledge.evidence_synthesis import EvidenceSynthesis
-from packages.core.domain.localization import _MESSAGES, normalize_locale
+from packages.core.domain.localization import _MESSAGES, normalize_locale, translate
 from packages.infrastructure.llm.providers.echo_llm_client import EchoLLMClient
 from packages.infrastructure.llm.retrieval.in_memory_evidence_retriever import (
     InMemoryEvidenceRetriever,
@@ -45,15 +45,15 @@ def test_chat_request_rejects_unknown_response_locale() -> None:
 
 
 @pytest.mark.parametrize(
-    ("selected_locale", "message", "expected"),
+    ("selected_locale", "message"),
     [
-        ("it", "non riesce a respirare", "valutazione veterinaria immediata"),
-        ("en", "non riesce a respirare", "immediate veterinary assessment"),
-        ("es", "cannot breathe", "valoración veterinaria inmediata"),
+        ("it", "non riesce a respirare"),
+        ("en", "non riesce a respirare"),
+        ("es", "cannot breathe"),
     ],
 )
 def test_triage_uses_selected_language_even_when_input_uses_another_language(
-    selected_locale: str, message: str, expected: str
+    selected_locale: str, message: str
 ) -> None:
     orchestrator = ChatOrchestrator(
         EchoLLMClient(Settings()),
@@ -71,7 +71,13 @@ def test_triage_uses_selected_language_even_when_input_uses_another_language(
     )
 
     assert result.mode == "triage"
-    assert expected in result.answer.lower()
+    # One of the three openings in turn (synthetic users round 3), in the
+    # selected language.
+    language = normalize_locale(selected_locale)
+    assert any(
+        result.answer.startswith(translate(key, language, pet_name="Milo"))
+        for key in ("triage_opening", "triage_opening_2", "triage_opening_3")
+    ), result.answer
     assert result.recommended_action is not None
 
 

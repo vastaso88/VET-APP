@@ -338,6 +338,9 @@ RED_FLAG_CATEGORIES: dict[str, tuple[str, ...]] = {
     "bleeding_trauma": (
         "emorrag",
         "sanguina",
+        # round 3: "perde sangue" was an emergency with no category, so the
+        # generic steps went instead of the pressure on the wound
+        "perde sangue",
         "trauma",
         "incidente",
         "bleeding",
@@ -516,12 +519,15 @@ IMMEDIATE_ESCALATION_MARKERS: tuple[str, ...] = (
     *IMMEDIATE_FR,
 )
 
+# Synthetic users round 3 (2026-11-16): "il fiato affannoso" was said to owners who
+# never wrote it, "dopo una corsa" to birds, and no reply said what to do meanwhile.
+# A safe gesture first, the owner's own sign in neutral words, then the questions.
 CLARIFYING_QUESTIONS: dict[str, str] = {
     "respiratory": (
-        "Prima di darti indicazioni, un paio di cose veloci: il fiato affannoso è "
-        "iniziato dopo una corsa, un gioco intenso o con il caldo, oppure a riposo "
-        "senza motivo? E adesso, mentre mi scrivi, si sta calmando o resta uguale "
-        "o peggiora?"
+        "Intanto lascialo tranquillo in un posto fresco e ben aerato, lontano da fumi, "
+        "spray o fornelli, senza agitarlo. Poi dimmi: quello che noti nel respiro è "
+        "iniziato dopo uno sforzo, uno spavento o con il caldo, oppure a riposo senza "
+        "motivo? E adesso si sta calmando, resta uguale o peggiora?"
     ),
     "collapse": (
         "Prima di darti indicazioni, un paio di cose veloci: adesso è sveglio, ti "
@@ -545,11 +551,10 @@ CLARIFYING_QUESTIONS: dict[str, str] = {
         "vedi urinare? E lo vedi provarci senza risultato o lamentarsi, oppure "
         "sembra solo che non ne abbia avuto occasione?"
     ),
+    # Not "non fa la cacca" to an owner who wrote only "oggi non vuole il fieno".
     "gi_stasis": (
-        "Prima di darti indicazioni, un paio di cose veloci: da quante ore esattamente "
-        "non mangia e non fa la cacca? E in queste ore ha comunque provato ad "
-        "avvicinarsi al cibo o prodotto anche solo poche piccole feci, oppure "
-        "niente del tutto?"
+        "Prima di darti indicazioni, un paio di cose veloci: da quante ore non mangia? "
+        "E le feci (le palline) le fa ancora come al solito, meno del solito o per niente?"
     ),
     # No entry for "toxin_medication" — see its comment in
     # RED_FLAG_CATEGORIES: unlike seizure/gi_stasis, product decision here
@@ -563,8 +568,9 @@ CLARIFYING_QUESTIONS: dict[str, str] = {
 
 _CLARIFYING_QUESTIONS_EN: dict[str, str] = {
     "respiratory": (
-        "Two quick questions before I guide you: did the heavy breathing start after "
-        "running, intense play or heat, or while resting without an obvious reason? "
+        "Meanwhile let your pet rest quietly in a cool, airy place, away from fumes, sprays "
+        "or the stove, without getting them agitated. Then tell me: did what you notice "
+        "in the breathing start after effort, a fright or heat, or at rest for no reason? "
         "Right now, is it settling, staying the same or getting worse?"
     ),
     "collapse": (
@@ -585,16 +591,18 @@ _CLARIFYING_QUESTIONS_EN: dict[str, str] = {
         "Are they trying without success or showing pain?"
     ),
     "gi_stasis": (
-        "Two quick questions: exactly how many hours has your pet gone without eating or "
-        "passing stool? Have they approached food or passed even a few small stools?"
+        "Two quick questions before I guide you: how many hours has it been since your pet "
+        "last ate? And is it still passing droppings (the little pellets) as usual, fewer "
+        "than usual or none at all?"
     ),
 }
 
 _CLARIFYING_QUESTIONS_ES: dict[str, str] = {
     "respiratory": (
-        "Dos preguntas rápidas antes de orientarte: ¿la respiración agitada empezó después "
-        "de correr, jugar o pasar calor, o estando en reposo? ¿Ahora se está calmando, "
-        "sigue igual o empeora?"
+        "Mientras tanto, déjalo tranquilo en un lugar fresco y ventilado, lejos de humos, "
+        "sprays o fogones, sin agitarlo. Luego dime: lo que notas en la respiración, "
+        "¿empezó tras un esfuerzo, un susto o con calor, o en reposo sin motivo? ¿Ahora se "
+        "está calmando, sigue igual o empeora?"
     ),
     "collapse": (
         "Dos preguntas rápidas: ¿ahora está despierto, responde y se mueve con normalidad, "
@@ -614,17 +622,19 @@ _CLARIFYING_QUESTIONS_ES: dict[str, str] = {
         "¿Intenta hacerlo sin conseguirlo o muestra dolor?"
     ),
     "gi_stasis": (
-        "Dos preguntas rápidas: ¿cuántas horas exactas lleva sin comer ni defecar? "
-        "¿Se ha acercado a la comida o ha producido aunque sea unas pocas heces?"
+        "Dos preguntas rápidas antes de orientarte: ¿cuántas horas lleva sin comer? ¿Y las "
+        "heces (las bolitas) las hace como siempre, menos que de costumbre o nada?"
     ),
 }
 
 
 _CLARIFYING_QUESTIONS_DE: dict[str, str] = {
     "respiratory": (
-        "Zwei kurze Fragen, bevor ich Ihnen Hinweise gebe: Hat die schwere Atmung nach "
-        "Rennen, wildem Spiel oder bei Hitze begonnen oder in Ruhe ohne erkennbaren Grund? "
-        "Beruhigt sie sich gerade, bleibt sie gleich oder wird sie schlimmer?"
+        "Lassen Sie Ihr Tier inzwischen ruhig an einem kühlen, gut belüfteten Ort, fern von "
+        "Dämpfen, Sprays oder dem Herd, ohne es aufzuregen. Dann sagen Sie mir: Hat das, was "
+        "Ihnen an der Atmung auffällt, nach Anstrengung, einem Schreck oder bei Hitze "
+        "begonnen oder in Ruhe ohne erkennbaren Grund? Beruhigt es sich gerade, bleibt es "
+        "gleich oder wird es schlimmer?"
     ),
     "collapse": (
         "Zwei kurze Fragen: Ist Ihr Tier jetzt wach, reagiert es und bewegt es sich normal, "
@@ -645,9 +655,9 @@ _CLARIFYING_QUESTIONS_DE: dict[str, str] = {
         "Versucht es vergeblich zu urinieren oder zeigt es Schmerzen?"
     ),
     "gi_stasis": (
-        "Zwei kurze Fragen: Seit genau wie vielen Stunden frisst Ihr Tier nicht und setzt "
-        "keinen Kot ab? Hat es sich dem Futter genähert oder wenigstens ein paar "
-        "kleine Kotstücke abgesetzt?"
+        "Zwei kurze Fragen, bevor ich Ihnen Hinweise gebe: Seit wie vielen Stunden frisst "
+        "Ihr Tier nicht? Und setzt es Kot (die Köttel) ab wie sonst, weniger als sonst oder "
+        "gar nicht?"
     ),
 }
 
@@ -657,6 +667,12 @@ _CLARIFYING_QUESTIONS_DE: dict[str, str] = {
 # Nina). English, Spanish and German above are already neutral.
 CLARIFYING_QUESTIONS_FEMALE: dict[str, dict[str, str]] = {
     "it": {
+        "respiratory": (
+            "Intanto lasciala tranquilla in un posto fresco e ben aerato, lontano da fumi, "
+            "spray o fornelli, senza agitarla. Poi dimmi: quello che noti nel respiro è "
+            "iniziato dopo uno sforzo, uno spavento o con il caldo, oppure a riposo senza "
+            "motivo? E adesso si sta calmando, resta uguale o peggiora?"
+        ),
         "collapse": (
             "Prima di darti indicazioni, un paio di cose veloci: adesso è sveglia, ti "
             "risponde e si muove normalmente, oppure è ancora a terra o poco reattiva? "
@@ -674,6 +690,12 @@ CLARIFYING_QUESTIONS_FEMALE: dict[str, dict[str, str]] = {
         ),
     },
     "es": {
+        "respiratory": (
+            "Mientras tanto, déjala tranquila en un lugar fresco y ventilado, lejos de "
+            "humos, sprays o fogones, sin agitarla. Luego dime: lo que notas en la "
+            "respiración, ¿empezó tras un esfuerzo, un susto o con calor, o en reposo sin "
+            "motivo? ¿Ahora se está calmando, sigue igual o empeora?"
+        ),
         "collapse": (
             "Dos preguntas rápidas: ¿ahora está despierta, responde y se mueve con "
             "normalidad, o sigue en el suelo y poco reactiva? ¿El episodio duró segundos o "
@@ -681,6 +703,14 @@ CLARIFYING_QUESTIONS_FEMALE: dict[str, dict[str, str]] = {
         ),
     },
     "fr": {
+        "respiratory": (
+            "En attendant, laissez-la au calme dans un endroit frais et aéré, loin des "
+            "fumées, des sprays ou des plaques de cuisson, sans l'agiter. Puis "
+            "dites-moi : ce que vous remarquez dans sa respiration a-t-il commencé "
+            "après un effort, une frayeur ou sous l'effet de la chaleur, ou au repos "
+            "sans raison\u00a0? "
+            "Est-ce que ça se calme maintenant, reste pareil ou s'aggrave ?"
+        ),
         "collapse": (
             "Deux questions rapides : est-elle maintenant éveillée, réactive et se "
             "déplace-t-elle normalement, ou reste-t-elle au sol et peu réactive ? "
@@ -702,9 +732,9 @@ CLARIFYING_QUESTIONS_FEMALE: dict[str, dict[str, str]] = {
             "Essaie-t-elle sans y parvenir ou montre-t-elle de la douleur ?"
         ),
         "gi_stasis": (
-            "Deux questions rapides : depuis combien d'heures exactement n'a-t-elle ni "
-            "mangé ni fait ses besoins ? S'est-elle approchée de la nourriture ou "
-            "a-t-elle produit ne serait-ce que quelques petites selles ?"
+            "Avant de vous donner des indications, deux questions rapides : depuis combien "
+            "d'heures n'a-t-elle pas mangé ? Et ses crottes, elle en fait comme "
+            "d'habitude, moins que d'habitude ou plus du tout ?"
         ),
     },
 }
@@ -757,6 +787,12 @@ def clarifying_question(
 # that category always escalates regardless of the reply.
 REASSURING_MARKERS: dict[str, tuple[str, ...]] = {
     "respiratory": (
+        # the words of the round 3 question (2026-11-16)
+        "dopo uno sforzo",
+        "after effort",
+        "tras un esfuerzo",
+        "nach anstrengung",
+        "après un effort",
         "after running",
         "after playing",
         "hot weather",

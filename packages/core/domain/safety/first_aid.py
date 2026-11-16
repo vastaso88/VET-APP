@@ -15,7 +15,10 @@ from packages.core.domain.safety.emergency_patterns import normalize_for_matchin
 
 # Heat in the owner's words: the generic steps must not say "al caldo".
 _HEAT = re.compile(
-    r"\b(?:caldo|calda|afa|afoso|sole|canicola|estate|gradi|in macchina|auto al sole|"
+    # "28 grados", "28 Grad", "28 degres" (synthetic users round 3: a chinchilla at 28
+    # degrees was told "mantén a Luna abrigada").
+    r"\b(?:caldo|calda|afa|afoso|sole|canicola|estate|gradi|grados|grad|degres|"
+    r"in macchina|auto al sole|"
     r"corsa|corso|dopo la corsa|esercizio|jogging|"
     r"run|running|after a run|exercise|carrera|correr|lauf|gelaufen|course|couru|"
     r"heat|hot|sun|heatwave|summer|degrees|in the car|calor|sol|verano|hitze|heiss|sonne|"
@@ -33,7 +36,9 @@ def mentions_heat(message: str) -> bool:
 _STRONG_HEAT = re.compile(
     r"\b(?:caldo|afa|afoso|sole|canicola|in macchina|in auto|auto al sole|colpo di calore|"
     r"heat|hot car|in the car|sun|heatstroke|calor|golpe de calor|en el coche|hitze|"
-    r"hitzschlag|im auto|sonne|chaleur|coup de chaleur|dans la voiture|soleil)\b"
+    r"hitzschlag|im auto|sonne|chaleur|coup de chaleur|dans la voiture|soleil|"
+    # "sdraiato a 35 gradi" (round 3 eval): a hot day said as a number
+    r"(?:3[0-9]|4[0-9]) ?(?:gradi|grados|degrees|grad|degres))\b"
 )
 _HEAT_DISTRESS = re.compile(
     r"\b(?:ansima (?:molto|tanto|forte|tantissimo)|affann\w*|non riesce a respirare|"
@@ -49,6 +54,32 @@ def describes_heat_distress(message: str) -> bool:
     heatstroke, an emergency. Panting after a run alone is not."""
     text = normalize_for_matching(message)
     return bool(_STRONG_HEAT.search(text) and _HEAT_DISTRESS.search(text))
+
+
+# Fumes from a non-stick pan, or smoke, and a bird in distress (synthetic users
+# round 3: three Italian owners wrote "respira male" after the pan and were asked
+# "after a run or at rest?" instead of being told to take the bird to fresh air).
+_FUMES = re.compile(
+    r"\b(?:antiaderent\w*|teflon|ptfe|non-?stick|antiadherente\w*|antihaft\w*|"
+    r"anti-?adhesi\w*|fum[oi]|fumes?|smoke|humo\w*|vapores?|rauch|dampf\w*|dampfe|"
+    r"fumees?)\b"
+)
+_BIRD_DISTRESS = re.compile(
+    r"\b(?:respir\w*|fiato|affann\w*|becco aperto|boccheggi\w*|sul fondo|fermo|ferma|"
+    r"immobil\w*|gonfi[oa]|barcoll\w*|cadut[oa]|apatic\w*|breath\w*|gasp\w*|beak open|"
+    r"open beak|on the (?:cage )?floor|sitting still|fluffed|puffed|wobbl\w*|lethargic|"
+    r"respira\w*|pico abierto|en el fondo|quiet[oa]|inmovil|hinchad[oa]|atm\w*|schnabel|"
+    r"am boden|regungslos|aufgeplustert|respire\w*|bec ouvert|au fond|immobile|"
+    r"ebouriffe\w*)\b"
+)
+
+
+def describes_fume_distress(message: str) -> bool:
+    """Fumes (a non-stick pan, smoke) and a sign of distress, said of a bird:
+    out of the room first, then the vet. A question about using the pan, with
+    no sign, is not."""
+    text = normalize_for_matching(message)
+    return bool(_FUMES.search(text) and _BIRD_DISTRESS.search(text))
 
 
 # "Prima mi hai detto che posso dargli il paracetamolo": the chat never did.

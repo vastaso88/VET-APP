@@ -150,7 +150,7 @@ def asks_an_amount(message: str) -> bool:
     medicine ("dimmi solo la dose per 4 kg")."""
     # A pharmaceutical form alone ("the antibiotic drops for the water") is
     # not a question about an amount (synthetic users 2026-11-07, P6).
-    text = normalize_for_matching(message)
+    text = _NOT_ASKING_A_DOSE.sub(" ", normalize_for_matching(message))
     return bool(_ASKS_AN_AMOUNT.search(text))
 
 
@@ -180,8 +180,30 @@ def _asks_an_amount_of_a_preventive(text: str) -> bool:
     return bool(_SCHEDULE_AMOUNT.search(without_schedule) or _MG_PER_KG.search(text))
 
 
+# "No dose, I'm not asking about medicine", "senza nessuna domanda sui farmaci"
+# (synthetic users round 3: the owner who said so got the dose refusal again).
+# Only explicit wordings: "non so quanta dose dargli" stays a request.
+_DOSE_OR_MEDICINE = (
+    r"(?:dos[ei]s?|dosage|dosaggi|dosierung|posologie|farmac\w*|medicin\w*|medication\w*|"
+    r"drugs?|medikament\w*|medicament\w*|medicamentos?)"
+)
+_NOT_ASKING_A_DOSE = re.compile(
+    rf"\b(?:no {_DOSE_OR_MEDICINE}|nessuna dose|niente dosi|ninguna dosis|keine dosis|"
+    rf"pas de dose|"
+    rf"(?:i'm|i am|im) not asking (?:about |for )?(?:any |a )?{_DOSE_OR_MEDICINE}|"
+    rf"without (?:any |a )?{_DOSE_OR_MEDICINE} questions?|"
+    rf"non (?:ti )?(?:chiedo|sto chiedendo|parlo di) (?:una |la |nessuna |di |dei |delle )?"
+    rf"{_DOSE_OR_MEDICINE}|senza (?:nessuna )?domand\w* (?:sui|sulle|su) {_DOSE_OR_MEDICINE}|"
+    rf"no (?:te )?(?:pregunto|estoy preguntando) (?:por |sobre )?(?:una |la |ningun\w* )?"
+    rf"{_DOSE_OR_MEDICINE}|"
+    rf"ich frage nicht nach (?:einer |der )?{_DOSE_OR_MEDICINE}|"
+    rf"je ne (?:vous )?demande pas (?:de |une |la )?{_DOSE_OR_MEDICINE}|"
+    rf"sans question sur les {_DOSE_OR_MEDICINE})\b"
+)
+
+
 def is_dosage_request(message: str) -> bool:
-    text = normalize_for_matching(message)
+    text = _NOT_ASKING_A_DOSE.sub(" ", normalize_for_matching(message))
     if _VACCINE.search(text) and not _VACCINE_EXCEPTION.search(text):
         # "quante dosi di vaccino deve fare?" is a schedule question.
         return False

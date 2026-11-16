@@ -117,7 +117,8 @@ _EXPLAIN_MARKERS = (
     "vuol dire",
     "vuole dire",
     "cosa dice",
-    "che dice",
+    # Not "che dice": "un veterinario che dice di non curare rettili" (synthetic
+    # users round 3) was taken for a report to explain.
     "cosa c'è scritto",
     "cosa indica",
     "cosa risulta",
@@ -128,8 +129,7 @@ _EXPLAIN_MARKERS = (
     "vanno bene",
     "normale",
     "normali",
-    "alt",
-    "bass",
+    # "alto"/"basso" as whole words (_HIGH_LOW): as stems they matched "altri pesci".
     "interpret",
     "legg",
     "letto",
@@ -608,6 +608,9 @@ _NAMED_EXAM = re.compile(
 )
 
 
+_HIGH_LOW = re.compile(r"\b(?:alt|bass)(?:[oaie]|in[oaie]|ett[oaie]|issim[oaie])\b")
+
+
 def _has_any(text: str, markers: tuple[str, ...]) -> bool:
     return any(marker in text for marker in markers)
 
@@ -626,7 +629,7 @@ def classify_request(message: str, *, has_attachment: bool = False) -> RequestKi
     attached file); `has_attachment` says a file came with it."""
     lowered = message.strip().lower()
     about_document = _has_word(lowered, _DOCUMENT_WORDS) or _has_word(lowered, ANALYTES)
-    asks_to_explain = _has_any(lowered, _EXPLAIN_MARKERS)
+    asks_to_explain = _has_any(lowered, _EXPLAIN_MARKERS) or bool(_HIGH_LOW.search(lowered))
     # "esami del sangue", "esame delle feci" name a document, not a symptom.
     describes_symptom = _has_any(_NAMED_EXAM.sub(" ", lowered), _SYMPTOM_MARKERS)
 
