@@ -7,6 +7,16 @@
     python client.py u03 api POST /reminders '<json>'
     python client.py u03 report <conversation_id> <message_id> <reason> "dettagli"
     python client.py u03 feedback <tipo> <gravita> <area> "testo" ["citazione"]
+    python client.py u03 mercatino-ready
+    python client.py u03 annuncio '<json>'
+
+The Mercatino needs two things a person gives in the app: the date of birth
+(adults only; asked when the Mercatino opens) and, at every publication or
+edit, the box "I sell as a private person". `setup` now declares the date from
+the persona's age; `mercatino-ready` does it for a user set up before, and
+`annuncio` publishes with the box ticked. Without them the server answers 403
+`age_required` or 400 `private_seller_declaration_required`, with a sentence
+and the field to send.
 
 Only ever reaches 127.0.0.1. Results and feedback stay in .local/synthetic_users.
 """
@@ -75,6 +85,7 @@ def setup(user_id: str) -> None:
     session = call(user_id, "POST", "/auth/signup", {"email": me["email"], "password": "synthetic"})
     state = {"token": session["access_token"], "user_id": session["user"]["id"], "pets": {}}
     save_state(user_id, state)
+    declare_age(user_id)
     for pet in me["pets"]:
         created = call(user_id, "POST", "/pets", pet)
         created = created.get("pet_profile", created)
@@ -98,6 +109,27 @@ def setup(user_id: str) -> None:
             )
             + "\n"
         )
+
+
+def declare_age(user_id: str) -> None:
+    """The date of birth from the persona's age (1 January of that year, so the
+    age is right all year). Declared once: a second time answers 409, which is
+    fine here."""
+    age = int(persona(user_id)["age"])
+    today = datetime.now(UTC).date()
+    birth = today.replace(year=today.year - age, month=1, day=1)
+    result = call(user_id, "POST", "/account/age", {"birth_date": birth.isoformat()})
+    if result.get("http_error") == 409:
+        result = call(user_id, "GET", "/account/age")
+    print("età", result)
+
+
+def publish_ad(user_id: str, raw: str) -> None:
+    """An ad with the private-seller box ticked, as the app sends it."""
+    body = json.loads(raw)
+    body.setdefault("private_seller_declared", True)
+    result = call(user_id, "POST", "/marketplace/listings", body, persona(user_id)["language"])
+    print(json.dumps(result, ensure_ascii=False, indent=1)[:6000])
 
 
 def chat(user_id: str, pet_name: str, message: str, new: bool) -> None:
@@ -198,6 +230,10 @@ def main() -> None:
         print(call(user_id, "POST", "/chat-response-reports", body))
     elif command == "feedback":
         feedback(user_id, args)
+    elif command == "mercatino-ready":
+        declare_age(user_id)
+    elif command == "annuncio":
+        publish_ad(user_id, args[0])
     else:
         sys.exit(__doc__)
 

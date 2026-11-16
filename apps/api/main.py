@@ -33,6 +33,9 @@ from apps.api.routes.pets import router as pets_router
 from apps.api.routes.reminders import router as reminders_router
 from apps.api.routes.speech_to_text import router as speech_to_text_router
 from apps.api.routes.subscription import router as subscription_router
+from packages.bootstrap.container import get_container
+from packages.core.domain.common.language import language_from_accept_header
+from packages.core.domain.localization import translate
 from packages.infrastructure.logging.logger import configure_logging
 from packages.infrastructure.telemetry.noop import setup_telemetry
 from packages.shared.auth_context import reset_access_token, set_access_token
@@ -44,6 +47,7 @@ from packages.shared.errors.base import (
     PlanLimitError,
     ProviderError,
     QuotaExceededError,
+    RequirementMissingError,
     SubscriptionRequiredError,
     ValidationError,
 )
@@ -146,6 +150,14 @@ async def inject_access_token(
     return response
 
 
+@app.exception_handler(RequirementMissingError)
+async def handle_requirement_missing(_: Request, exc: RequirementMissingError) -> JSONResponse:
+    return JSONResponse(
+        status_code=400,
+        content={"detail": exc.code, "code": exc.code, "message": exc.message, "fix": exc.fix},
+    )
+
+
 @app.exception_handler(ValidationError)
 async def handle_validation_error(_: Request, exc: ValidationError) -> JSONResponse:
     return JSONResponse(status_code=400, content={"detail": str(exc)})
@@ -168,9 +180,34 @@ async def handle_subscription_required(_: Request, exc: SubscriptionRequiredErro
 
 
 @app.exception_handler(AgeRestrictedError)
-async def handle_age_restricted(_: Request, exc: AgeRestrictedError) -> JSONResponse:
+async def handle_age_restricted(request: Request, exc: AgeRestrictedError) -> JSONResponse:
     status = 409 if exc.code == "age_already_declared" else 403
-    return JSONResponse(status_code=status, content={"detail": exc.code, "code": exc.code})
+    content: dict[str, object] = {"detail": exc.code, "code": exc.code}
+    # Say what is missing and where it goes, in the owner's language (round 2 of
+    # the synthetic users: `age_required` alone told nobody what to do).
+    locale = language_from_accept_header(request.headers.get("accept-language"))
+    if exc.code == "age_required":
+        on_marketplace = request.url.path.startswith("/marketplace")
+        content["message"] = translate(
+            "age_required_marketplace" if on_marketplace else "age_required_plan",
+            locale or _caller_locale(),
+        )
+        content["fix"] = {
+            "route": "POST /account/age",
+            "field": "birth_date",
+            "format": "YYYY-MM-DD",
+        }
+    elif exc.code == "marketplace_adults_only":
+        content["message"] = translate("marketplace_adults_only", locale or _caller_locale())
+    return JSONResponse(status_code=status, content=content)
+
+
+def _caller_locale() -> str | None:
+    """The signed-in owner's language, or None (Italian) when it cannot be read."""
+    try:
+        return get_container().auth_provider.get_current_user().preferred_locale
+    except Exception:  # noqa: BLE001 - a missing language must not hide the refusal
+        return None
 
 
 @app.exception_handler(PlanLimitError)

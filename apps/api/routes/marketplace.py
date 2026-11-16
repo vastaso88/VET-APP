@@ -1,7 +1,7 @@
 from datetime import datetime
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, Header, HTTPException, Query
 from pydantic import BaseModel, Field
 
 from apps.api.dependencies.container import get_container
@@ -15,7 +15,9 @@ from packages.core.application.services.list_nearby_listings import ListNearbyLi
 from packages.core.application.services.report_listing import ReportListingInput
 from packages.core.application.services.update_listing import UpdateListingInput
 from packages.core.domain.common.entity import utc_now
+from packages.core.domain.common.language import language_from_accept_header
 from packages.core.domain.geo.models import Coordinates
+from packages.core.domain.localization import translate
 from packages.core.domain.marketplace.models import (
     PRIVATE_SELLER_DECLARATION_REQUIRED,
     PRIVATE_SELLER_DECLARATION_VERSION,
@@ -30,7 +32,7 @@ from packages.core.domain.territory.rules import (
     MARKETPLACE_MAX_RADIUS_KM,
     MARKETPLACE_MIN_RADIUS_KM,
 )
-from packages.shared.errors.base import ValidationError
+from packages.shared.errors.base import RequirementMissingError
 
 router = APIRouter(
     prefix="/marketplace", tags=["marketplace"], dependencies=[Depends(require_marketplace_age)]
@@ -49,6 +51,7 @@ def _public_row(listing: MarketplaceListing, requester_id: str) -> dict[str, obj
         else {
             "location",
             "owner_id",
+            "report_count",
             "private_seller_declared_at",
             "private_seller_declaration_version",
         }
@@ -121,10 +124,16 @@ class ListingPayload(BaseModel):
     private_seller_declared: bool = False
 
 
-def _private_seller_declaration(payload: ListingPayload) -> datetime:
-    """The moment of the declaration, or a 400 with a code the app translates."""
+def _private_seller_declaration(payload: ListingPayload, locale: str | None) -> datetime:
+    """The moment of the declaration, or a 400 that says what is missing: the
+    code the app translates, the sentence in the owner's language and the field
+    to send."""
     if not payload.private_seller_declared:
-        raise ValidationError(PRIVATE_SELLER_DECLARATION_REQUIRED)
+        raise RequirementMissingError(
+            PRIVATE_SELLER_DECLARATION_REQUIRED,
+            message=translate("marketplace_private_seller_required", locale),
+            fix={"field": "private_seller_declared", "value": True},
+        )
     return utc_now()
 
 
@@ -137,10 +146,14 @@ def _private_seller_declaration(payload: ListingPayload) -> datetime:
         Depends(require_marketplace_not_restricted),
     ],
 )
-def create_listing(payload: ListingPayload) -> dict[str, object]:
+def create_listing(
+    payload: ListingPayload, accept_language: str | None = Header(default=None)
+) -> dict[str, object]:
     container = get_container()
     user = container.auth_provider.get_current_user()
-    declared_at = _private_seller_declaration(payload)
+    declared_at = _private_seller_declaration(
+        payload, language_from_accept_header(accept_language) or user.preferred_locale
+    )
     result = container.create_listing_service().execute(
         CreateListingInput(
             owner_id=user.id,
@@ -168,10 +181,16 @@ def create_listing(payload: ListingPayload) -> dict[str, object]:
         Depends(require_marketplace_not_restricted),
     ],
 )
-def update_listing(listing_id: str, payload: ListingPayload) -> dict[str, object]:
+def update_listing(
+    listing_id: str,
+    payload: ListingPayload,
+    accept_language: str | None = Header(default=None),
+) -> dict[str, object]:
     container = get_container()
     user = container.auth_provider.get_current_user()
-    declared_at = _private_seller_declaration(payload)
+    declared_at = _private_seller_declaration(
+        payload, language_from_accept_header(accept_language) or user.preferred_locale
+    )
     result = container.update_listing_service().execute(
         UpdateListingInput(
             owner_id=user.id,

@@ -29,6 +29,36 @@ def language_name(value: str | None) -> str:
 
 
 _MESSAGES: dict[str, dict[SupportedLocale, str]] = {
+    # Refusals that say what is missing (round 2 of the synthetic users,
+    # 2026-11-16): the same reviewed sentences the app shows (app_*.arb).
+    "marketplace_private_seller_required": {
+        "it": "Per pubblicare devi confermare di vendere come privato: il Mercatino non è per attività commerciali o professionali.",
+        "en": "To publish, you must confirm that you are selling as a private individual: the marketplace is not for commercial or professional activities.",
+        "es": "Para publicar debes confirmar que vendes como particular: el mercadillo no es para actividades comerciales, empresariales o profesionales.",
+        "de": "Um zu veröffentlichen, müssen Sie bestätigen, dass Sie als Privatperson verkaufen: Der Gebrauchtmarkt ist nicht für gewerbliche oder berufliche Tätigkeiten.",
+        "fr": "Pour publier, vous devez confirmer que vous vendez en tant que particulier : le marché de l'occasion n'est pas destiné aux activités commerciales ou professionnelles.",
+    },
+    "age_required_marketplace": {
+        "it": "Per entrare nel Mercatino ci serve la tua data di nascita.",
+        "en": "To enter the second-hand marketplace we need your date of birth.",
+        "es": "Para entrar en el mercadillo de segunda mano necesitamos tu fecha de nacimiento.",
+        "de": "Für den Zugang zum Gebrauchtmarkt benötigen wir Ihr Geburtsdatum.",
+        "fr": "Pour accéder au marché de l'occasion, nous avons besoin de votre date de naissance.",
+    },
+    "age_required_plan": {
+        "it": "Prima di scegliere un piano ci serve la tua data di nascita.",
+        "en": "Before choosing a plan we need your date of birth.",
+        "es": "Antes de elegir un plan necesitamos tu fecha de nacimiento.",
+        "de": "Bevor Sie einen Tarif wählen, benötigen wir Ihr Geburtsdatum.",
+        "fr": "Avant de choisir une offre, nous avons besoin de votre date de naissance.",
+    },
+    "marketplace_adults_only": {
+        "it": "Il Mercatino è per chi ha almeno 18 anni. Tutto il resto di Quokka è a tua disposizione. Il Mercatino si aprirà da solo quando compirai 18 anni.",
+        "en": "The second-hand marketplace is for people aged 18 and over. Everything else in Quokka is available to you. The marketplace will open by itself when you turn 18.",
+        "es": "El mercadillo de segunda mano es para personas de 18 años o más. Todo lo demás de Quokka está a tu disposición. El mercadillo se abrirá solo cuando cumplas 18 años.",
+        "de": "Der Gebrauchtmarkt ist für Personen ab 18 Jahren. Alles andere in Quokka steht Ihnen zur Verfügung. Der Gebrauchtmarkt öffnet sich von selbst, sobald Sie 18 Jahre alt sind.",
+        "fr": "Le marché de l'occasion est réservé aux personnes de 18 ans et plus. Tout le reste de Quokka est à votre disposition. Le marché de l'occasion s'ouvrira tout seul à vos 18 ans.",
+    },
     "marketplace_new_conversations_limit": {
         "it": "Hai raggiunto il limite di {limit} nuove conversazioni al giorno sul Mercatino. Riprova domani.",
         "en": "You have reached the limit of {limit} new conversations a day on the marketplace. Try again tomorrow.",

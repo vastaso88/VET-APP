@@ -10,6 +10,20 @@ class ValidationError(VetAppError):
     """Raised when a domain invariant is violated."""
 
 
+class RequirementMissingError(ValidationError):
+    """Refused because the owner has not given something yet (round 2 of the
+    synthetic users, 2026-11-16: nobody could publish and the answer did not
+    say why). The API answers 400 with `detail` and `code` = [code] (what the
+    app already compares), [message] in the owner's language, and [fix]: the
+    field to send, for anyone calling the API directly."""
+
+    def __init__(self, code: str, *, message: str, fix: dict[str, object]) -> None:
+        super().__init__(code)
+        self.code = code
+        self.message = message
+        self.fix = fix
+
+
 class ProviderError(VetAppError):
     """Raised when an external provider fails."""
 

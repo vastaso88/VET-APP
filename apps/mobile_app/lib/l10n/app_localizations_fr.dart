@@ -7398,7 +7398,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get marketplacePrivateSellerRequired =>
-      'Pour publier, vous devez confirmer que vous vendez en tant que particulier : le marché de l\'occasion n\'est pas destiné aux activités commerciales ou professionnelles.';
+      'Pour publier, vous devez confirmer que vous vendez en tant que particulier : le marché de l\'occasion n\'est pas destiné aux activités commerciales ou professionnelles.';
 
   @override
   String get marketplaceInfoPrivateOnly =>
