@@ -47,6 +47,21 @@ EVAL_LLM_PROVIDER=anthropic
 EVAL_ANTHROPIC_API_KEY=<chiave del conto di prova>
 ```
 
+## Valutare Claude senza chiave API (programma `claude` locale)
+
+Con `EVAL_CLAUDE_EXE` (il percorso di `claude.exe`) impostata **solo nell'ambiente del
+processo**, mai in un file, ogni chiamata al modello, giudice compreso, passa dal programma
+Claude Code installato. Usa l'accesso di prova tenuto a parte in `~/.claude-eval-cli`,
+nessuna chiave API e nessuna quota di produzione. `EVAL_CLI_MODEL` cambia il modello
+(predefinito `claude-haiku-5-5`, quello di produzione). Il programma non ha `max_tokens`:
+le lunghezze misurate sono quelle naturali del modello. Gli scenari con documenti
+richiedono le letture già in cache, oppure `EVAL_LLM_API_KEY` per il modello di visione.
+
+```
+$env:EVAL_CLAUDE_EXE = "C:\...\claude.exe"     # PowerShell, solo per questa finestra
+uv run python scripts/eval/chat_quality/run.py run --label prova --only <id> --evidence in_memory
+```
+
 ## Confrontare un altro fornitore (es. OpenAI)
 
 Lo strumento parla il protocollo "chat completions" compatibile OpenAI. Per misurare un

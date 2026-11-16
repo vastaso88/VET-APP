@@ -24,6 +24,12 @@ calls), `--evidence in_memory` (skip the external literature search). With
 an antivirus that intercepts HTTPS add `--with truststore` to `uv run`.
 `rejudge <label>` asks the judge again for the scenarios it left unscored.
 
+Without any API key: set EVAL_CLAUDE_EXE (path of the local `claude` program)
+in the environment of the process only, and every model call, judge included,
+goes through it with the test login of ~/.claude-eval-cli (EVAL_CLI_MODEL,
+default claude-haiku-5-5). See claude_cli.py. Scenarios with documents still
+need the cached readings, or EVAL_LLM_API_KEY for the vision model.
+
 Output, under .local/chat_eval/<label>/ (never committed): results.json
 and transcripts.md.
 
@@ -79,6 +85,7 @@ for path in (str(ROOT_DIR), str(HERE)):
     if path not in sys.path:
         sys.path.insert(0, path)
 
+from claude_cli import ClaudeCliClient, cli_exe, cli_model  # noqa: E402
 from scenarios import PETS as BASE_PETS  # noqa: E402
 from scenarios import SCENARIOS as BASE_SCENARIOS  # noqa: E402
 from scenarios import Pet, Scenario  # noqa: E402
@@ -376,6 +383,19 @@ def _allow_production_key(max_tokens: int | None) -> None:
     )
 
 
+def _use_claude_cli() -> None:
+    """Every ApplicationContainer of this process answers through the local
+    claude program."""
+    exe = cli_exe()
+    if not Path(exe).is_file():
+        sys.exit("EVAL_CLAUDE_EXE non punta a un programma claude esistente.")
+
+    def build(_container: Any) -> Any:
+        return ClaudeCliClient(exe, OUTPUT_DIR / "cli", model=cli_model())
+
+    ApplicationContainer._build_llm_client = build  # type: ignore[method-assign]
+
+
 def build_settings(
     evidence: str | None,
     *,
@@ -398,6 +418,21 @@ def build_settings(
     settings = Settings().model_copy(update=overrides)
     if not real_calls:
         return settings
+    # The local claude program under test (EVAL_CLAUDE_EXE, in the process
+    # environment only; see claude_cli.py): every model call goes to it, no
+    # API key of the answering model is kept, so none can be spent. The vision
+    # readings of the fixtures keep the dedicated Groq key, when there is one.
+    if cli_exe():
+        _use_claude_cli()
+        return settings.model_copy(
+            update={
+                "llm_provider": "echo",
+                # The plain model name: the in-memory spending ledger prices it.
+                "llm_model": cli_model(),
+                "llm_api_key": _env_value("EVAL_LLM_API_KEY"),
+                "anthropic_api_key": "",
+            }
+        )
     # Another OpenAI-compatible provider under test (EVAL_LLM_BASE_URL and
     # EVAL_LLM_MODEL): the Groq client speaks that protocol.
     base_url, model = _env_value("EVAL_LLM_BASE_URL"), _env_value("EVAL_LLM_MODEL")
