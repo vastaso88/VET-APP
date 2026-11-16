@@ -19,15 +19,17 @@ export async function AdminShell({
   title,
   eyebrow,
   children,
+  className = "",
 }: {
   title: string;
   eyebrow: string;
   children: ReactNode;
+  className?: string;
 }) {
   const admin = await requireAdminSession();
 
   return (
-    <div className="admin-shell">
+    <div className={`admin-shell ${className}`}>
       <aside className="sidebar">
         <div className="brand">
           <div className="brand-mark">V</div>

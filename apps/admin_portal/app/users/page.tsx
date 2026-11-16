@@ -33,13 +33,13 @@ export default async function UsersPage({ searchParams }: {
   const pageUrl = (target: number) => `/users?${new URLSearchParams({ q, page: String(target) })}`;
 
   return (
-    <AdminShell title="Users" eyebrow="Account e abbonamenti">
+    <AdminShell title="Users" eyebrow="Account e abbonamenti" className="users-shell">
       <section className="panel users-panel">
         <div className="panel-heading">
           <div><p className="eyebrow">Controllo utenti</p><h2>Iscrizione, accesso e piano</h2></div>
           <Link className="ghost-button" href={pageUrl(page)}>Aggiorna</Link>
         </div>
-        <form className="job-filters" action="/users">
+        <form className="job-filters users-search" action="/users">
           <label>Cerca per email o ID
             <input name="q" type="search" maxLength={200} defaultValue={q} placeholder="Email o ID utente" />
           </label>
