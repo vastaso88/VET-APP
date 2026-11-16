@@ -390,8 +390,7 @@ class AppLocalizationsFr extends AppLocalizations {
       'Assistant pour comprendre votre animal : comportement, gestion, santé, obligations';
 
   @override
-  String get billingIncludedChatMedia =>
-      'Photos, PDF et dictée vocale dans le chat';
+  String get billingIncludedChatMedia => 'PDF et dictée vocale dans le chat';
 
   @override
   String get billingIncludedReminders => 'Rappels';
@@ -846,7 +845,7 @@ class AppLocalizationsFr extends AppLocalizations {
       'Je n\'ai pas pu lire l\'enregistrement. Réessayez.';
 
   @override
-  String get chatPhotoAnalyzing => 'J\'examine la photo...';
+  String get chatPhotoAnalyzing => 'Envoi de la photo...';
 
   @override
   String get chatPhotoReady => 'Photo prête à être envoyée';
@@ -1661,6 +1660,10 @@ class AppLocalizationsFr extends AppLocalizations {
   @override
   String get medicalRecordMetaAnalysisFailed =>
       'Fichier enregistré, lecture automatique impossible';
+
+  @override
+  String get medicalRecordMetaPhotosOff =>
+      'Fichier enregistré. Pour l\'instant, l\'assistant ne lit pas les photos';
 
   @override
   String get medicalRecordMetaUploadedNow => 'Chargé à l\'instant par vous';
@@ -6548,7 +6551,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get noticeChatMedia =>
-      'Les photos et la voix partent vers un service externe (aujourd\'hui Groq, aux États-Unis) qui les lit ou les transcrit. Le filtre qui retire les données personnelles travaille sur le texte, pas sur les images ni la voix : masquez votre nom, votre adresse et le numéro de puce électronique.';
+      'Votre voix part vers un service externe (aujourd\'hui Groq, aux États-Unis) qui la transcrit. Le filtre qui retire les données personnelles travaille sur le texte, pas sur la voix : évitez de dire votre nom, votre adresse et le numéro de puce électronique.';
 
   @override
   String get noticeRecordDocument =>

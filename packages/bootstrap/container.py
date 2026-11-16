@@ -274,8 +274,10 @@ from packages.infrastructure.speech.groq_speech_to_text_provider import (
     GroqSpeechToTextProvider,
 )
 from packages.infrastructure.storage.local_file_storage import LocalFileStorage
+from packages.infrastructure.vision.disabled_image_analyzer import DisabledImageAnalyzer
 from packages.infrastructure.vision.echo_image_analyzer import EchoImageAnalyzer
 from packages.infrastructure.vision.groq_image_analyzer import GroqImageAnalyzer
+from packages.shared.config.groq_models import is_groq_production_model
 from packages.shared.config.settings import Settings, get_settings
 
 logger = logging.getLogger(__name__)
@@ -872,6 +874,7 @@ class ApplicationContainer:
             quota_exempt_emails=self.developer_emails,
             owner_limits=self.owner_limits_lookup(),
             account_age_repository=self.account_age_repository,
+            photo_reading_enabled=self.photo_reading_enabled,
         )
 
     def chat_usage_maintenance_service(self) -> ChatUsageMaintenanceService:
@@ -1093,10 +1096,25 @@ class ApplicationContainer:
             return GroqSpeechToTextProvider(self.settings)
         return EchoSpeechToTextProvider()
 
+    @property
+    def photo_reading_enabled(self) -> bool:
+        """False when photos are saved but never read (the chat says so)."""
+        return not isinstance(self.image_analyzer, DisabledImageAnalyzer)
+
     def _build_image_analyzer(self) -> ImageAnalyzer:
-        if self.settings.vision_provider == "groq":
-            return GroqImageAnalyzer(self.settings)
-        return EchoImageAnalyzer()
+        provider = self.settings.vision_provider
+        if provider == "groq":
+            if is_groq_production_model(self.settings.vision_model):
+                return GroqImageAnalyzer(self.settings)
+            # Empty, or a preview model outside Groq's data agreement
+            # (docs/compliance/19): photos are saved, never read.
+            logger.warning("VISION_MODEL is not a Groq production model: photo reading is off")
+            return DisabledImageAnalyzer()
+        if provider == "echo" and self.settings.environment != "production":
+            # The local test double; never in production, where it would
+            # hand the chat an invented description.
+            return EchoImageAnalyzer()
+        return DisabledImageAnalyzer()
 
     def _build_pii_anonymizer(self) -> PiiAnonymizer:
         if self.settings.pii_anonymizer_backend == "presidio":

@@ -388,8 +388,7 @@ class AppLocalizationsEs extends AppLocalizations {
       'Asistente para entender a tu animal: comportamiento, manejo, salud, deberes';
 
   @override
-  String get billingIncludedChatMedia =>
-      'Fotos, PDF y dictado por voz en el chat';
+  String get billingIncludedChatMedia => 'PDF y dictado por voz en el chat';
 
   @override
   String get billingIncludedReminders => 'Recordatorios';
@@ -843,7 +842,7 @@ class AppLocalizationsEs extends AppLocalizations {
       'No se pudo leer la grabación. Inténtalo de nuevo.';
 
   @override
-  String get chatPhotoAnalyzing => 'Analizando la foto…';
+  String get chatPhotoAnalyzing => 'Subiendo la foto…';
 
   @override
   String get chatPhotoReady => 'Foto lista para enviar';
@@ -1648,6 +1647,10 @@ class AppLocalizationsEs extends AppLocalizations {
   @override
   String get medicalRecordMetaAnalysisFailed =>
       'Archivo guardado, lectura automática fallida';
+
+  @override
+  String get medicalRecordMetaPhotosOff =>
+      'Archivo guardado. Por ahora el asistente no lee las fotos';
 
   @override
   String get medicalRecordMetaUploadedNow => 'Subido por ti ahora';
@@ -6517,7 +6520,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get noticeChatMedia =>
-      'Las fotos y la voz van a un servicio externo (hoy Groq, en Estados Unidos) que las lee o las transcribe. El filtro que quita los datos personales trabaja sobre el texto, no sobre las imágenes ni la voz: tapa tu nombre, tu dirección y el número de microchip.';
+      'Tu voz va a un servicio externo (hoy Groq, en Estados Unidos) que la transcribe. El filtro que quita los datos personales trabaja sobre el texto, no sobre la voz: evita decir tu nombre, tu dirección y el número de microchip.';
 
   @override
   String get noticeRecordDocument =>

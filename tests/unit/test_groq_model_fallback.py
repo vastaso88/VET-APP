@@ -21,7 +21,7 @@ from packages.shared.errors.base import ProviderError
 
 MAIN = "openai/gpt-oss-120b"
 RESERVE = "openai/gpt-oss-20b"
-LAST = "qwen/qwen3.8-27b"
+LAST = "llama-3.3-70b-versatile"  # Groq production models only (docs/compliance/19)
 
 DAILY_LIMIT_BODY = (
     '{"error":{"message":"Rate limit reached for model in organization on tokens per '

@@ -145,6 +145,7 @@ class SendChatMessageService:
         quota_exempt_emails: frozenset[str] = frozenset(),
         owner_limits: OwnerLimitsLookup | None = None,
         account_age_repository: AccountAgeRepository | None = None,
+        photo_reading_enabled: bool = True,
     ) -> None:
         self._repository = repository
         self._orchestrator = orchestrator
@@ -165,6 +166,9 @@ class SendChatMessageService:
         self._owner_limits = owner_limits
         # None: no age is ever declared here, every owner is treated as an adult.
         self._account_age_repository = account_age_repository
+        # False: photos are saved but never read (VISION_PROVIDER=off, or no
+        # Groq production vision model: docs/compliance/19).
+        self._photo_reading_enabled = photo_reading_enabled
 
     _MAX_OTHER_PETS = 12
 
@@ -357,7 +361,12 @@ class SendChatMessageService:
                 habitat=pet_profile.habitat,
                 aquarium_stock=pet_profile.aquarium_stock,
                 photo_context=photo_context,
-                attachment_unreadable=bool(data.attachment_id) and not photo_context,
+                attachment_unreadable=bool(data.attachment_id)
+                and not photo_context
+                and self._photo_reading_enabled,
+                photo_reading_off=bool(data.attachment_id)
+                and not photo_context
+                and not self._photo_reading_enabled,
                 # Data minimization (spec v3 §38): only recent turns cross
                 # the service boundary — the full history never needs to,
                 # since SituationModel already carries the compact,

@@ -108,6 +108,16 @@ _MESSAGES: dict[str, dict[SupportedLocale, str]] = {
         "de": "Ich konnte die angehängte Datei nicht lesen und kann Ihnen daher nicht sagen, was darin steht. Versuchen Sie, sie erneut zu senden: Ein PDF oder ein scharfes, gut beleuchtetes Foto funktioniert meist. Oder schreiben Sie mir hier die Werte, die Sie interessieren, dann erkläre ich sie Ihnen.",
         "fr": "Je n'ai pas réussi à lire le fichier que vous avez joint, je ne peux donc pas vous dire ce qu'il contient. Essayez de l'envoyer à nouveau : un PDF ou une photo nette et bien éclairée fonctionnent en général. Vous pouvez aussi m'écrire ici les valeurs qui vous intéressent et je vous les explique.",
     },
+    # Photo reading switched off (docs/compliance/19, 2026-11-16): the photo is
+    # saved, never read; the chat says so instead of guessing. Italian to be
+    # re-read by the Normativa, then the Revisione traduzioni.
+    "photo_reading_off": {
+        "it": "Per ora non posso vedere il contenuto delle foto: restano salvate qui e nessun servizio esterno le legge. Descrivimi a parole cosa vedi; se è un libretto o un referto, scrivimi i valori o le voci che ti interessano e te li spiego.",
+        "en": "For now I cannot see what is in photos: they stay saved here and no outside service reads them. Describe in words what you see; if it is a vaccination booklet or a test report, type the values or entries you are interested in and I will explain them.",
+        "es": "Por ahora no puedo ver el contenido de las fotos: se quedan guardadas aquí y ningún servicio externo las lee. Descríbeme con palabras lo que ves; si es una cartilla o un informe, escríbeme los valores o apartados que te interesan y te los explico.",
+        "de": "Den Inhalt von Fotos kann ich im Moment nicht sehen: Die Fotos bleiben hier gespeichert, und kein externer Dienst liest sie. Beschreiben Sie mir in Worten, was Sie sehen; wenn es ein Impfpass oder ein Befund ist, schreiben Sie mir die Werte oder Einträge, die Sie interessieren, dann erkläre ich sie Ihnen.",
+        "fr": "Pour l'instant, je ne peux pas voir le contenu des photos : elles restent enregistrées ici et aucun service externe ne les lit. Décrivez-moi avec des mots ce que vous voyez ; si c'est un carnet de santé ou un compte rendu, écrivez-moi les valeurs ou les rubriques qui vous intéressent et je vous les explique.",
+    },
     "record_empty": {
         "it": "Non trovo documenti nella cartella clinica di {pet_name}, quindi non ho un referto da spiegarti. Puoi caricarlo nella cartella clinica oppure allegarlo qui in chat; in alternativa scrivimi i valori che ti interessano e te li spiego.",
         "en": "I cannot find documents in {pet_name}'s medical records, so I do not have a report to explain. Upload it to the medical records or attach it here in chat; alternatively, type the values you are interested in and I can explain them.",

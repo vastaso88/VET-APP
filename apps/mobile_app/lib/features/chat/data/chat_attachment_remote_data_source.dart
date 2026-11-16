@@ -22,11 +22,16 @@ class ChatAttachmentUploadResult {
     required this.id,
     required this.analysis,
     required this.analysisFailed,
+    this.photoReadingOff = false,
   });
 
   final String id;
   final String? analysis;
   final bool analysisFailed;
+
+  /// The server saves photos but does not read them for now (its
+  /// `photo_reading: false`): not a failure, a different message.
+  final bool photoReadingOff;
 }
 
 abstract class ChatAttachmentRemoteDataSource {
@@ -105,6 +110,7 @@ class HttpChatAttachmentRemoteDataSource implements ChatAttachmentRemoteDataSour
           id: attachment['id'] as String,
           analysis: attachment['analysis'] as String?,
           analysisFailed: attachment['analysis_failed'] as bool? ?? false,
+          photoReadingOff: json['photo_reading'] == false,
         ),
       );
     } on TimeoutException {

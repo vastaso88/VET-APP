@@ -886,6 +886,9 @@ class ChatOrchestratorInput(BaseModel):
     # A file came with this message but its reading failed: the chat must
     # say so rather than answer as if nothing had been attached.
     attachment_unreadable: bool = False
+    # A photo came with this message, but photo reading is switched off
+    # (docs/compliance/19): the reply says so honestly and never guesses.
+    photo_reading_off: bool = False
     conversation_history: list[ChatMessage] = Field(default_factory=list)
     situation_model: SituationModel | None = None
     interview_turns_used: int = 0
@@ -1070,7 +1073,27 @@ class ChatOrchestrator:
         self._history_last_reply_chars = max(self._history_message_chars, history_last_reply_chars)
 
     def answer(self, data: ChatOrchestratorInput) -> ChatOrchestratorResult:
+        if data.photo_reading_off and not data.user_message.strip():
+            # Only a photo, and photos cannot be read: the honest sentence.
+            return ChatOrchestratorResult(
+                answer=translate("photo_reading_off", data.language),
+                mode="general",
+                confidence="high",
+                ai_generated=False,
+                provider="rule-based",
+                model="photo-reading-off",
+                state=ConversationState.NEED_MORE_INFORMATION,
+            )
         result = self._answer(data)
+        if data.photo_reading_off:
+            notice = translate("photo_reading_off", data.language)
+            # An emergency keeps its first lines: the notice goes last there.
+            text = (
+                f"{result.answer}\n\n{notice}"
+                if result.mode in ("triage", "safety_clarification")
+                else f"{notice}\n\n{result.answer}"
+            )
+            result = result.model_copy(update={"answer": text})
         if result.mode in ("natural", "evidence"):
             # The API and the app show no source list (wide eval 2026-11-06):
             # no "[1]" and no "ti lascio le fonti" in the text.
@@ -3390,6 +3413,13 @@ class ChatOrchestrator:
             attachment_note = (
                 "\n\nThe owner attached a file to this message, but its reading failed: "
                 "you know nothing of what it shows. Say so and suggest sending it again."
+            )
+        elif data.photo_reading_off:
+            attachment_note = (
+                "\n\nThe owner attached a photo, but photo reading is switched off: you "
+                "know nothing of what it shows. Never describe it or guess its content; a "
+                "sentence saying you cannot see photos is already written before your "
+                "text, do not repeat it. Answer only from what the owner wrote."
             )
         today = data.today or datetime.now(UTC).date()
 

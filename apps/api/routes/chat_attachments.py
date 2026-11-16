@@ -32,7 +32,11 @@ async def upload_attachment(
             language=resolve_language(None, accept_language),
         )
     )
-    return result.model_dump()
+    body: dict[str, object] = result.model_dump()
+    # False while photos are saved but never read (docs/compliance/19): the
+    # app then says so instead of "automatic reading failed".
+    body["photo_reading"] = container.photo_reading_enabled
+    return body
 
 
 @router.get("/{attachment_id}/file")
