@@ -31,7 +31,7 @@ class AppPreloader {
 
   /// Overall cap for the preload: past this the app proceeds anyway and
   /// whatever is still in flight keeps running in the background.
-  static const defaultTimeout = Duration(seconds: 8);
+  static const defaultTimeout = Duration(seconds: 10);
 
   final List<Future<void> Function()> _tasks;
   final Duration timeout;
