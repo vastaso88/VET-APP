@@ -1,6 +1,6 @@
 # 18 - "Around the world": viaggiare e spostarsi con un animale
 
-Data: 2026-11-16 (versione 2, dopo il parere della Normativa `docs/compliance/17_nuove_sezioni_around_the_world_e_ricordi.md`, parte A). Fase 1 (progetto, nessun codice). **Bozza da approvare**: la fase 2 (costruzione) parte solo dopo il sì del proprietario. Il nome resta «Around the world», come l'ha scritto lui.
+Data: 2026-11-16 (versione 3, dopo il parere della Normativa `docs/compliance/17_nuove_sezioni_around_the_world_e_ricordi.md`, parte A, anche §A.11-A.14: risposte, testi A-I, bozze di richiesta, note sulla privacy). Fase 1 (progetto, nessun codice). **Bozza da approvare**: la fase 2 (costruzione) parte solo dopo il sì del proprietario. Il nome resta «Around the world», come l'ha scritto lui.
 
 Riusa lo schema delle schede salute (`data/manuale/`, `scripts/manuale/check_manuale.py`), il catalogo delle fonti (`docs/product/15_catalogo_fonti_approvate.md`) e il semaforo della Normativa.
 
@@ -11,7 +11,7 @@ Riusa lo schema delle schede salute (`data/manuale/`, `scripts/manuale/check_man
 - **Prima versione (decisione della Normativa)**: solo spostamenti **non commerciali** di **cani, gatti e furetti** con il proprietario. Altre specie, vendita, adozione, trasferimento da rifugio: scheda generica con il collegamento all'autorità competente, senza dettagli.
 - **Fonti, la notizia importante**: le regole UE sono **cambiate**. L'atto di riferimento è oggi il Regolamento delegato (UE) 2026/131; il 576/2013 vale solo in via transitoria (microchip prima del 22/4/2026, passaporti fino al 1/1/2028). Quindi si parte dalla pagina della Commissione (fonte verde, lettura automatica) e dai testi su EUR-Lex (fonte rossa: **lettura a mano**). WOAH è rosso (solo collegamento), salute.gov.it e Australia sono rossi, USDA APHIS giallo. Dunque la copertura avanza al ritmo della lettura a mano, tranne dove c'è una fonte verde (Commissione UE, GOV.UK).
 - **Schede in «bozza»** finché non le approvi tu. Fino ad allora in produzione non si vedono.
-- **Nessun dato nuovo**: nessuna tabella, nessun viaggio salvato, nessun permesso Android. La ricerca chiede una scheda pubblica, senza id dell'animale.
+- **Nessun dato di viaggio sul server**: l'app scarica **tutte** le schede approvate (contenuto nostro, uguale per tutti) e sceglie **sul telefono**. Il server non vede mai la coppia di paesi né l'animale. Nessuna tabella, nessun viaggio salvato, nessun permesso Android.
 - **Decisioni che servono da te**: §9.
 
 ## 1. La schermata (dentro «Attività»)
@@ -34,7 +34,7 @@ Chi porti con te   [ Luna (cane) ] [ Micio (gatto) ] [ + una specie: cane / gatt
 - **Quando parti**: non c'è in v1 (niente date né viaggi salvati, regola della Normativa). Il calendario dei tempi è un'idea per dopo (§9).
 - **Risultato**, in ordine cronologico, con i blocchi della §2. Ogni scheda mostra in fondo la riga della fonte («Fonte: ente, titolo, collegamento. Verificato il …») e «Segnala un errore».
 - **Nessuna scheda per quella coppia**: lo diciamo e mostriamo la **via ufficiale**: l'autorità veterinaria del paese di destinazione (solo collegamento), il Servizio veterinario della ASL, e «le regole ufficiali prevalgono».
-- **Avvertenze, Info, Termini** (§3): testi già scritti dalla Normativa (A.7), da usare come sono.
+- **Avvertenze, Info, Termini** (§3): testi A-I della Normativa (A.12), da usare come sono. Alla prima apertura il riquadro è anche un avviso breve con «Ho capito» (non è un consenso: schema di `compliance/15`).
 
 ## 2. La scheda: paese × specie
 
@@ -64,7 +64,7 @@ Resta lo schema: `codice`, `specie`, `titolo`, `stato`, `ultimo_controllo`, `sca
 |---|---|
 | `documenti` | passaporto o certificato, chi lo rilascia, dichiarazione, permessi di ingresso, limite di animali per veicolo; **«quando non è un viaggio»**: la frase fissa «per questo caso valgono regole diverse, rivolgiti all'autorità» (nessun dettaglio su adozione, vendita o rifugi) |
 | `microchip` | tipo richiesto; va impiantato prima del vaccino antirabbico |
-| `vaccini_obbligatori` | quali, età minima, **tempi** (giorni di attesa, validità, richiami), come requisiti di legge e con la fonte; nessun consiglio sanitario |
+| `vaccini_obbligatori` | quali, età minima, **tempi** (giorni di attesa, validità, richiami), come requisiti di legge e con la fonte; nessun consiglio sanitario. **Nessun numero (giorni, settimane, ore) si scrive finché non è letto a mano nell'atto in vigore**; le voci con tempi portano il testo I (§3) |
 | `test_sierologici` | titolo anticorpale: quando, quanto si aspetta |
 | `vaccini_consigliati` | facoltativi o consigliati secondo dove si va; fonti ufficiali; WSAVA 2024 (giallo, già controllata) solo per il principio «dipende da dove vivi e viaggi» |
 | `malattie_presenti` | «Secondo {fonte}…»; niente mappe copiate; fonti di società scientifiche (per esempio le mappe dei parassiti) sono a diritti riservati e non si usano come fonte di questo blocco |
@@ -81,13 +81,13 @@ La **cultura locale** (richiesta del proprietario) segue la Normativa A.6: si sc
 
 Tono (Normativa A.1 e A.7), valido per tutta la funzione:
 
-1. **Avvertenza fissa in cima**, con il testo scritto dalla Normativa (A.7): informazioni generali, le regole cambiano, controllare con le autorità veterinarie dei due paesi e con la compagnia di trasporto, nessuna garanzia di completezza, **non incoraggiamo a spostare gli animali**, valuta con il tuo veterinario pensando al benessere dell'animale.
+1. **Tre livelli di avviso** (Normativa A.11-A.12): **1** riquadro fisso in cima (testo A: «non incoraggia a spostare né a importare animali»); **2** su ogni scheda: fonte, «verificato il…», «se la fonte ufficiale dice altro, vale la fonte» (testo B), «Segnala un errore», avviso di scheda vecchia (oltre 90 giorni) o nascosta (oltre 180) o non coperta (testo C); **3** sulle voci con tempi o conseguenze gravi (vaccini, titolo anticorpale, trattamenti, microchip, attese): testo I («fissali con il tuo veterinario con largo anticipo»). Più dell'avviso conta il **metodo** (§7): lettura umana della fonte, approvazione, registro di chi ha verificato e quando, scadenze.
 2. **Niente promozione**: nessuna classifica delle destinazioni, niente «porta il tuo cane a…», niente collegamenti commerciali (agenzie di trasporto, servizi di trasferimento animali, prodotti veterinari).
-3. **Altre specie, vendita, adozione, rifugio**: scheda generica con il collegamento all'autorità, senza dettagli (testo A.7).
+3. **Altre specie, vendita, adozione, rifugio, più animali insieme**: scheda generica con il collegamento all'autorità, senza dettagli (testo D «non è un viaggio»).
 4. **«Si può essere vettori»**: il blocco `non_diffondere`, con fonti ufficiali.
-5. **Su ogni scheda**: la riga di fonte (A.7) «Fonte: …, verificato il …; riassunto di Quokka: se la fonte ufficiale dice altro, vale la fonte; segnala un errore».
-6. **Termini §10**: la clausola proposta dalla Normativa (A.7) entra in it/03 solo quando la sezione esiste nel codice.
-7. **Chat**: in v1 la chat non usa le schede di viaggio. Risposta fissa a una domanda di viaggio (A.7): «Le regole per viaggiare cambiano da paese a paese e non posso garantirtele: guarda la sezione Around the world oppure la fonte ufficiale del paese di arrivo». È una modifica piccola alla chat: la segnalo alla sessione Chat LLM, non la faccio io.
+5. **Compagnie di trasporto e alloggi**: testo E (non le riportiamo, non siamo un'agenzia). **Usanze locali**: testo H. **Info**: testo F.
+6. **Termini §10**: testo G; entra in it/03 solo quando la sezione esiste nel codice (lo inserisce la Normativa).
+7. **Chat**: in v1 la chat non usa le schede di viaggio. Risposta fissa a una domanda di viaggio (A.7): «Le regole per viaggiare cambiano da paese a paese e non posso garantirtele: guarda la sezione Around the world oppure la fonte ufficiale del paese di arrivo» (approvata dalla Normativa, A.14). Si usa solo quando la domanda è di viaggio. È una modifica piccola alla chat: la segnalo alla sessione Chat LLM, non la faccio io.
 
 ## 4. Cosa NON facciamo
 
@@ -95,7 +95,7 @@ Tono (Normativa A.1 e A.7), valido per tutta la funzione:
 - Copia di testi, tabelle o elenchi delle fonti; **nessun testo di terzi nel repository né nell'archivio della chat** (solo i nostri riassunti con la fonte).
 - Regole delle compagnie aeree, navi, treni (non sono fonti ufficiali: avviso e rimando).
 - Specie diverse da cane, gatto, furetto e spostamenti per vendita o adozione (solo scheda generica).
-- Viaggi o date salvati, tabelle nuove, invio dei paesi scelti a fornitori. Nei log non compaiono i paesi legati a un utente.
+- Viaggi o date salvati, tabelle nuove, invio dei paesi scelti a fornitori, **calcolatori di date** («ultima data utile»: serve un parere a parte, Normativa A.11). Il server non riceve mai la coppia di paesi; nei log non compaiono paesi legati a un utente; nessuna statistica senza il consenso alle statistiche.
 
 ## 5. Le fonti e il semaforo (controlli della Normativa, 16/11/2026)
 
@@ -106,13 +106,14 @@ Tono (Normativa A.1 e A.7), valido per tutta la funzione:
 | **Commissione europea** (commission.europa.eu, food.ec.europa.eu): pagina sugli spostamenti di cani, gatti, furetti | regole UE di oggi (atto di riferimento: Reg. delegato (UE) 2026/131) | **verde** (CC BY 4.0, Decisione 2011/833/UE) | lettura automatica, attribuzione, controllo di parti di terzi; la pagina non ha data di aggiornamento: si annota la data di lettura |
 | **EUR-Lex**: Reg. delegato (UE) 2026/131; Reg. 576/2013 e 577/2013 (transitori); Reg. delegato 2020/688 all. VII e Reg. di esecuzione 2021/620 all. XIX (tenia); Reg. di esecuzione 2026/705 (modelli di passaporto) | testi degli atti | **rosso** (risposta vuota ai lettori automatici) | **lettura a mano**; i testi degli atti ufficiali sono liberi, riassunti nostri ⚖️ |
 | **GOV.UK** (Regno Unito) | entrata in GB e Irlanda del Nord | **verde** a livello di sito (OGL v3.0) | controllare la licenza di ogni pagina; la pagina di guida sui viaggi non è ancora stata letta |
-| **USDA APHIS** (USA) | regole USA | **giallo** | controllo in 4 punti, poi solo fatti ⚖️ (opera federale, 17 U.S.C. §105) |
+| **USDA APHIS** (USA) | regole USA | **giallo** | controllo in 4 punti; opera federale, pubblico dominio (17 U.S.C. §105) salvo terzi e loghi ⚖️: nessun permesso da chiedere, si registra la dichiarazione con la data |
 | **WOAH** | malattie presenti | **rosso** (data mining e robot vietati) | **solo collegamento**; per riprodurre serve il permesso |
 | **Ministero della Salute** (salute.gov.it) | regole italiane | **rosso** (verifica anti-robot) | lettura a mano |
 | **Australia, Dipartimento dell'agricoltura** | regole australiane | **rosso** (non verificata) | lettura a mano |
 | **ECDC** | malattie con vettori | **verde** (controllo del 15/11/2026, catalogo 15) | da riverificare per ogni pagina |
 | **WSAVA** 2024 | vaccini non essenziali secondo la zona | **giallo** (già controllata) | come nel catalogo; la Normativa non la considera «ufficiale» per le malattie presenti |
-| CDC, CFIA (Canada), MPI (Nuova Zelanda), MAFF (Giappone), EFSA, autorità dei singoli paesi | | **non verificate**: rosso finché la Normativa non le controlla | ogni nuova fonte: **dico l'ente alla Normativa e lei controlla la licenza prima di qualunque lettura automatica** |
+| **CDC** (USA) | rabbia, importazione di cani negli USA | **rosso per blocco tecnico** (catalogo 15): non è un divieto; dopo il controllo a mano di termini e robots.txt in un browser passa a verde o giallo (pubblico dominio, come APHIS) | lettura a mano finché il controllo non è fatto |
+| CFIA (Canada), MPI (Nuova Zelanda), MAFF (Giappone), EFSA, autorità dei singoli paesi | | **non verificate**: rosso finché la Normativa non le controlla | ogni nuova fonte: **dico l'ente alla Normativa e lei controlla la licenza prima di qualunque lettura automatica** |
 
 Cosa significa in pratica:
 
@@ -121,7 +122,9 @@ Cosa significa in pratica:
 - **Permessi scritti**: WOAH (bozza nel parere 13, A.5); altri se serve.
 - **Dove non c'è una fonte consentita**, il blocco resta vuoto e lo diciamo.
 
-Ogni fonte va registrata in `fonti.json` (licenza, esito del controllo, data, come è stata letta), con i campi già ammessi dallo script (tipo `norma` per gli atti).
+Ogni fonte va registrata in `fonti.json` (licenza, esito del controllo, data, come è stata letta), con i campi già ammessi dallo script (tipo `norma` per gli atti) e **due campi nuovi** chiesti dalla Normativa (A.11): `motivo_semaforo` (`licenza_aperta`, `nessuna_riserva_trovata`, `riserva_presente`, `blocco_tecnico`, `non_verificata`) e `controllo_a_mano_il` (data; vuoto se non fatto). Un rosso per blocco tecnico o non verificata vuol dire «lettura a mano finché una persona non controlla termini e robots.txt in un browser»; fatto il controllo la fonte passa a verde o giallo, con la data. Lo script di controllo li verifica.
+
+**Regole sui testi dei regolamenti UE** (Normativa A.11): si può citare un passo con numero di articolo e fonte, senza alterarne il senso, ma solo la Gazzetta ufficiale è autentica (la riga di fonte lo dice); i regolamenti 576/2013 e 577/2013 sono transitori e non si riproducono come regola di oggi; **gli elenchi** negli allegati (paesi, gruppi di origine) hanno effetto di legge e non si copiano: si cita l'allegato e si scrive la regola.
 
 ## 6. Ordine di copertura (proposta)
 
@@ -140,16 +143,17 @@ Cane, gatto, furetto per tutte le ondate. Quanto va veloce dipende dalla lettura
 ## 7. Come si aggiornano le schede (invecchiano)
 
 1. **Scadenza** (la Normativa suggerisce, decido io: la adotto): **dopo 90 giorni** dal controllo la scheda mostra «Potrebbe essere cambiata: controlla la fonte»; **dopo 180 giorni** il contenuto si nasconde finché non è ricontrollato e resta il collegamento alla fonte. `scadenza` = controllo + 90 giorni (le schede salute sono a 12 mesi).
-2. **Responsabile della manutenzione**: da nominare (il proprietario, §9). Promemoria con l'elenco delle schede in scadenza (lo script `check_manuale.py` esteso, elenco «scadono entro 30 giorni»).
+2. **Registro di chi ha verificato e quando** (campo `revisione` della scheda: chi, data, cosa ha riletto): dimostra la diligenza. Nessuna scheda pubblicata senza lettura umana della fonte e approvazione; le segnalazioni su quarantene, respingimenti e vaccini si correggono per prime. **Responsabile della manutenzione**: da nominare (§9). Promemoria con l'elenco delle schede in scadenza (lo script `check_manuale.py` esteso, elenco «scadono entro 30 giorni»).
 3. **Controllo dei cambi**: solo su fonti verdi, solo metadati (data di ultima modifica, `Last-Modified`/`ETag`), richieste rare e con il nostro nome; se cambia, la scheda diventa «da ricontrollare». **Non si riscrive da sola.** Per EUR-Lex e le altre fonti rosse c'è solo il promemoria per la rilettura a mano.
 4. **Segnala un errore** su ogni scheda; se una regola cambia si corregge e si annota la data. Eventi (nuovo regolamento, focolaio): scheda subito «da ricontrollare».
 5. **Misura dei vuoti**: solo in v2 e solo con consenso agli analytics (conteggio anonimo delle coppie cercate senza scheda).
 
 ## 8. Cosa costruirò nella fase 2 (dopo il tuo sì)
 
-- **Prima di tutto**: i controlli della Normativa sono già fatti (A.3); l'unica attesa è la lettura a mano degli atti su EUR-Lex da parte di una persona. Io posso partire con la pagina della Commissione (verde) e GOV.UK (verde).
+- **Prima di tutto**: i controlli della Normativa sono già fatti (A.3). Io posso scrivere la **struttura** delle schede UE e Regno Unito leggendo in automatico la pagina della Commissione (verde) e GOV.UK (verde). Ma **nessun numero** (giorni, settimane, ore) né nessuna eccezione si approva finché una persona non l'ha letto a mano nell'atto in vigore su EUR-Lex: quelle voci restano «da verificare a mano» nella bozza.
+- **Fonti**: `fonti.json` con `motivo_semaforo` e `controllo_a_mano_il` (e lo script che li controlla).
 - **Dati e controllo**: `data/manuale/viaggi/`; `scripts/manuale/check_manuale.py` esteso (blocchi di viaggio, `origine`, scadenza a 90 giorni, nessun nome di prodotto né dose, `--approvazione` per «schede viaggio da approvare» come il doc 16); registro fonti in `fonti.json`. Le schede di viaggio **non** finiscono in `health_cards.json`: export separato `travel_cards.json`.
-- **Backend**: `TravelGuideService` e rotta `GET /travel/guides?from=IT&to=DE&species=dog` (login richiesto, nessun dato dell'utente; solo schede approvate e non scadute da oltre 180 giorni; le bozze solo con un'impostazione di sviluppo). Test: scelta delle schede, origine UE/fuori UE, scheda mancante, scadenza 90/180, scheda generica per altre specie, nessuna dose o parola vietata, rotta senza login rifiutata. **Nessuna tabella, nessun permesso Android, nessun nuovo fornitore.**
+- **Backend**: `TravelGuideService` e **una sola rotta senza parametri** `GET /travel/cards` (login richiesto): restituisce **tutte** le schede approvate (per scelta del 16/11: così la coppia di paesi non compare mai negli indirizzi né nei registri del server; la scelta e il filtro per origine e specie si fanno sul telefono, con copia locale; la scadenza 90/180 giorni si applica sul telefono e sul server). Le bozze solo con un'impostazione di sviluppo. Test: solo approvate, scadenza, nessuna dose o parola vietata o prodotto, rotta senza login rifiutata, nessun parametro di viaggio accettato. Test Flutter: scelta per paese, origine UE/fuori UE, scheda mancante, scheda generica per altre specie, scheda vecchia (90) e nascosta (180). **Nessuna tabella, nessun permesso Android, nessun nuovo fornitore.**
 - **App**: `features/travel_guide/` (pagina con tre campi, ricerca paese, scelta animali, risultato, scheda generica e «nessuna scheda»), una riga nel menu `activities_page.dart`. Testi in italiano nell'ARB (le avvertenze della Normativa tali e quali); chiavi nuove segnalate a «Revisione traduzioni EN ES DE FR».
 - **Schede**: ondata 0 e 1 in stato `bozza`, con la data di verifica; quando sono pronte ti do il percorso per il Gestore Social.
 - **Controlli prima di unire a main**: pytest, ruff, mypy, `flutter analyze`, test Flutter, `check_manuale.py`, `check_i18n`.
@@ -158,16 +162,14 @@ Cane, gatto, furetto per tutte le ondate. Quanto va veloce dipende dalla lettura
 
 1. **Chi legge a mano** gli atti su EUR-Lex (e salute.gov.it, Australia, altri paesi): tu, o chi indichi? Una persona apre la pagina e scrive i fatti con parole sue nel file della scheda (io controllo solo la struttura e non vedo il testo della fonte).
 2. **Ordine** delle ondate (§6): lo confermi o lo cambi? Hai idea dei paesi più richiesti?
-3. **Menu prima delle approvazioni**: finché nessuna scheda è approvata, la riga «Around the world» resta **nascosta** (consiglio) o appare con solo la via ufficiale per ogni paese?
-4. **Responsabile della manutenzione** delle schede (scadenza a 90 giorni): chi?
-5. **Calendario dei tempi** («ultima data utile per il vaccino») e promemoria: dopo la prima versione?
-6. **Nome**: «Around the world» resta in inglese in tutte le lingue?
+3. **Responsabile della manutenzione** delle schede (scadenza a 90 giorni): chi?
+4. **Richieste di permesso** (WOAH, autorità e ministeri): le bozze sono pronte (Normativa A.13); partono solo se servono e dopo l'approvazione della fase 2; il nome e la firma li metti tu fuori dal repository. Le vuoi inviare?
 
-Già decisi dalla Normativa e quindi non più da chiedere: perimetro (cane, gatto, furetto, non commerciale), cultura locale solo con fonte ufficiale, farmaci senza prodotti né dosi, nessun viaggio salvato.
+Già deciso (da te o dalla Normativa, non più da chiedere): perimetro (cane, gatto, furetto, non commerciale); cultura locale solo con fonte ufficiale; farmaci senza prodotti né dosi; nessun viaggio salvato; **riga del menu nascosta finché non c'è almeno una scheda approvata** (consiglio condiviso con la Normativa; se vuoi diversamente dimmelo); nome «Around the world» in inglese in tutte le lingue (nome proprio, nessun problema legale); **nessun calcolatore di date nella v1** (serve un parere a parte).
 
 ## 10. Per la Normativa
 
-Ho preso i suoi testi (A.7) così come sono. Restano a lei: l'elenco di paesi terzi «elencati» da un atto (oggi non lo uso), la richiesta di permesso al WOAH, il controllo di ogni nuova fonte prima della lettura automatica, la clausola in it/03 §10 quando la sezione esiste nel codice, e il parere sulla modifica alla risposta fissa della chat (§3, punto 7).
+Ho preso i suoi testi A-I (A.12) così come sono e ho seguito le sue risposte (A.11) e le sue note sulla privacy (A.14: schede scaricate e filtrate sul telefono). Restano a lei: il controllo di ogni nuova fonte prima della lettura automatica (le dico l'ente), il controllo a mano di CDC e APHIS e la registrazione con la data, e la clausola in it/03 §10 quando la sezione esiste nel codice.
 
 ## 11. Cosa non so ancora
 
