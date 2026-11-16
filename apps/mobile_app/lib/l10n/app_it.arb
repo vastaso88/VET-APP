@@ -4058,5 +4058,86 @@
   "marketplaceListingGone": "Questo annuncio non è più disponibile.",
   "marketplacePrivateSellerDeclaration": "Dichiaro di vendere come privato, non nell'ambito di un'attività commerciale o professionale.",
   "marketplacePrivateSellerRequired": "Per pubblicare devi confermare di vendere come privato: il Mercatino non è per attività commerciali o professionali.",
-  "marketplaceInfoPrivateOnly": "Se vendi come attività commerciale o professionale non puoi usare il Mercatino: Quokka può rimuovere gli annunci e sospendere l'accesso."
+  "marketplaceInfoPrivateOnly": "Se vendi come attività commerciale o professionale non puoi usare il Mercatino: Quokka può rimuovere gli annunci e sospendere l'accesso.",
+  "aroundWorldTitle": "Around the world",
+  "aroundWorldActivitySubtitle": "Regole, vaccini e protezioni per spostarti con il tuo animale.",
+  "aroundWorldNotice": "Informazioni generali sulle regole per viaggiare con il tuo animale. Le regole cambiano e ogni paese decide per sé: prima di partire controlla sempre con le autorità veterinarie del paese di partenza e di arrivo e con la compagnia di trasporto. Quokka non garantisce che siano complete o aggiornate e non incoraggia a spostare né a importare animali: valuta il viaggio con il tuo veterinario, pensando prima di tutto al benessere del tuo animale.",
+  "aroundWorldFromLabel": "Da dove parti",
+  "aroundWorldToLabel": "Dove vai",
+  "aroundWorldWhoLabel": "Chi porti con te",
+  "aroundWorldCountryHint": "Cerca un paese",
+  "aroundWorldCountryNone": "Nessun paese trovato.",
+  "aroundWorldMyPets": "I tuoi animali",
+  "aroundWorldBySpecies": "Oppure scegli una specie",
+  "aroundWorldSpeciesDog": "Cane",
+  "aroundWorldSpeciesCat": "Gatto",
+  "aroundWorldSpeciesFerret": "Furetto",
+  "aroundWorldShow": "Mostra le informazioni",
+  "aroundWorldPickAll": "Scegli da dove parti, dove vai e chi porti con te.",
+  "aroundWorldSameCountry": "Hai scelto lo stesso paese di partenza e di arrivo: scegli un'altra destinazione.",
+  "aroundWorldLoadError": "Non riesco a caricare le schede. Controlla la connessione e riprova.",
+  "aroundWorldRetry": "Riprova",
+  "aroundWorldResultHeader": "{species}: da {from} a {to}",
+  "@aroundWorldResultHeader": {
+    "placeholders": {
+      "species": {
+        "type": "String"
+      },
+      "from": {
+        "type": "String"
+      },
+      "to": {
+        "type": "String"
+      }
+    }
+  },
+  "aroundWorldNoCard": "Per questa combinazione non abbiamo ancora una scheda verificata. Non vuol dire che non ci siano regole: controlla con l'autorità veterinaria del paese di destinazione e con il Servizio veterinario della tua ASL.",
+  "aroundWorldOldCard": "Questa scheda è stata verificata il {date} e potrebbe essere cambiata. Controlla la fonte ufficiale prima di decidere qualunque cosa.",
+  "@aroundWorldOldCard": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "aroundWorldHiddenCard": "Questa scheda non è aggiornata e per ora non la mostriamo. Le regole ufficiali sono qui:",
+  "aroundWorldOpenOfficial": "Apri la fonte ufficiale",
+  "aroundWorldNotATrip": "Questa sezione riguarda gli animali da compagnia che viaggiano con il loro proprietario, senza scopo commerciale. Se l'animale non viaggia con te, se viene spostato per essere venduto, adottato o affidato, o se sono molti animali insieme, valgono regole diverse e più severe: rivolgiti al Servizio veterinario della tua ASL o all'autorità veterinaria del paese di destinazione. Qui non possiamo darti indicazioni.",
+  "aroundWorldOtherSpecies": "Per questo caso valgono regole diverse. Rivolgiti all'autorità veterinaria competente: qui non possiamo darti indicazioni.",
+  "aroundWorldTransport": "Le regole delle compagnie di trasporto (aerei, navi, treni, autobus) e degli alloggi sono diverse da quelle ufficiali e cambiano spesso: non le riportiamo. Chiedi sempre alla compagnia prima di prenotare. Quokka non è un'agenzia di viaggi e non vende né organizza viaggi.",
+  "aroundWorldLocalCustoms": "Usanze e consuetudini locali: qui non le copriamo. Per la conduzione degli animali (guinzaglio, museruola, razze vietate, locali pubblici) riportiamo solo le regole con una fonte ufficiale; per il resto informati presso le autorità o le strutture del luogo.",
+  "aroundWorldTimes": "Questi passaggi hanno tempi precisi e alcuni richiedono settimane o mesi: fissali con il tuo veterinario con largo anticipo e controlla le date con l'autorità del paese di arrivo.",
+  "aroundWorldFinal": "Le regole ufficiali prevalgono su questo riassunto. Prima di partire controlla con il Servizio veterinario della tua ASL, con l'autorità veterinaria del paese di destinazione e con la compagnia di trasporto.",
+  "aroundWorldInfoTitle": "Cosa fa e cosa non fa Around the world",
+  "aroundWorldInfoBody": "Riassume le regole ufficiali per viaggiare con cani, gatti e furetti, con la fonte e la data di verifica. Non è una consulenza veterinaria o legale, non sostituisce la ASL né le autorità del paese di destinazione e non garantisce di essere completo o aggiornato. Non indica farmaci né dosi e non copre usanze locali senza fonte ufficiale, compagnie di trasporto, vendita, adozione o più animali insieme. Non incoraggiamo a spostare né a importare animali.",
+  "aroundWorldReportError": "Segnala un errore",
+  "aroundWorldMailSubject": "Errore in una scheda di viaggio ({code})",
+  "@aroundWorldMailSubject": {
+    "placeholders": {
+      "code": {
+        "type": "String"
+      }
+    }
+  },
+  "aroundWorldCheckedOn": "Verificato il {date}",
+  "@aroundWorldCheckedOn": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "aroundWorldOwnAdvice": "Consiglio di Quokka (non della fonte)",
+  "aroundWorldBlockDocuments": "Documenti",
+  "aroundWorldBlockMicrochip": "Microchip",
+  "aroundWorldBlockCompulsoryVaccines": "Vaccini obbligatori",
+  "aroundWorldBlockAntibodyTest": "Test degli anticorpi",
+  "aroundWorldBlockRecommendedVaccines": "Vaccini consigliati",
+  "aroundWorldBlockDiseases": "Malattie presenti",
+  "aroundWorldBlockMedicinesProtection": "Farmaci e protezioni",
+  "aroundWorldBlockLocalRules": "Comportamenti e norme del posto",
+  "aroundWorldBlockReturn": "Rientro",
+  "aroundWorldBlockSpreading": "Per non diffondere malattie",
+  "aroundWorldBlockVet": "Dal veterinario",
+  "aroundWorldBlockLimits": "Cosa questa scheda non copre"
 }

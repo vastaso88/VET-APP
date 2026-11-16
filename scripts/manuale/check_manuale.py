@@ -28,6 +28,14 @@ from typing import Any
 
 ROOT = Path(__file__).resolve().parents[2]
 DATA = ROOT / "data" / "manuale"
+# The travel cards ("Around the world", docs/product/18) live in data/manuale/viaggi/ and are
+# checked by check_viaggi.py: the health-card checks and the chat export never read them.
+TRAVEL_DIR = "viaggi"
+
+
+def health_card_paths() -> list[Path]:
+    return sorted(p for p in DATA.glob("*/*.json") if p.parent.name not in ("_schema", TRAVEL_DIR))
+
 
 STATES = ("bozza", "fonti_controllate", "rivista", "pubblicata")
 OPEN_HOW = ("testo_completo", "solo_riassunto", "solo_scheda_bibliografica")
@@ -250,7 +258,7 @@ def export_source(sources: dict[str, dict[str, Any]], ids: list[str]) -> str:
 def print_source_lines() -> int:
     """``--righe``: the "Fonte" lines of every card, from the source registry."""
     sources = {str(s["id"]): s for s in _load(DATA / "fonti.json")}
-    for path in sorted(p for p in DATA.glob("*/*.json") if p.parent.name != "_schema"):
+    for path in health_card_paths():
         card = _load(path)
         ids: list[str] = []
         for block in card.get("blocchi", []):
@@ -286,7 +294,7 @@ def export_records() -> list[dict[str, Any]]:
     """
     sources = {str(s["id"]): s for s in _load(DATA / "fonti.json")}
     records: list[dict[str, Any]] = []
-    for path in sorted(p for p in DATA.glob("*/*.json") if p.parent.name != "_schema"):
+    for path in health_card_paths():
         card = _load(path)
         ids: list[str] = []
         parts: list[str] = []
@@ -355,7 +363,7 @@ def write_hand_review_list() -> int:
         "",
     ]
     total = 0
-    for path in sorted(p for p in DATA.glob("*/*.json") if p.parent.name != "_schema"):
+    for path in health_card_paths():
         card = _load(path)
         rows: list[str] = []
         for block in card["blocchi"]:
@@ -390,7 +398,7 @@ SPECIES_TITLE = {"cane": "Cane", "gatto": "Gatto", "coniglio": "Coniglio"}
 def write_review_doc() -> int:
     """The owner's approval document: every card in full, with the changes of the last round."""
     sources = {str(s["id"]): s for s in _load(DATA / "fonti.json")}
-    cards = [_load(p) for p in sorted(DATA.glob("*/*.json")) if p.parent.name != "_schema"]
+    cards = [_load(p) for p in health_card_paths()]
     out = [
         "# Schede di salute da approvare",
         "",
@@ -460,14 +468,14 @@ def main() -> int:
         return 1
     sources, errors = check_sources(_load(sources_path))
     warnings: list[str] = []
-    cards = sorted(p for p in DATA.glob("*/*.json") if p.parent.name != "_schema")
+    cards = health_card_paths()
     today = date.today()
     for path in cards:
         card_errors, card_warnings = check_card(path, _load(path), sources, today)
         errors += card_errors
         warnings += card_warnings
     unused = set(sources)
-    for path in cards:
+    for path in cards + sorted((DATA / TRAVEL_DIR).glob("VIA-*.json")):
         for block in _load(path).get("blocchi", []):
             for sentence in block.get("frasi", []):
                 for ref in sentence.get("fonti", []):

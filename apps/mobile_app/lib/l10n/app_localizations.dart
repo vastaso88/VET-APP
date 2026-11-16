@@ -66,7 +66,7 @@ import 'app_localizations_it.dart';
 /// property.
 abstract class AppLocalizations {
   AppLocalizations(String locale)
-    : localeName = intl.Intl.canonicalizedLocale(locale.toString());
+      : localeName = intl.Intl.canonicalizedLocale(locale.toString());
 
   final String localeName;
 
@@ -89,11 +89,11 @@ abstract class AppLocalizations {
   /// of delegates is preferred or required.
   static const List<LocalizationsDelegate<dynamic>> localizationsDelegates =
       <LocalizationsDelegate<dynamic>>[
-        delegate,
-        GlobalMaterialLocalizations.delegate,
-        GlobalCupertinoLocalizations.delegate,
-        GlobalWidgetsLocalizations.delegate,
-      ];
+    delegate,
+    GlobalMaterialLocalizations.delegate,
+    GlobalCupertinoLocalizations.delegate,
+    GlobalWidgetsLocalizations.delegate,
+  ];
 
   /// A list of this localizations delegate's supported locales.
   static const List<Locale> supportedLocales = <Locale>[
@@ -101,7 +101,7 @@ abstract class AppLocalizations {
     Locale('en'),
     Locale('es'),
     Locale('fr'),
-    Locale('it'),
+    Locale('it')
   ];
 
   /// No description provided for @petsConsentFullText.
@@ -12217,6 +12217,288 @@ abstract class AppLocalizations {
   /// In it, this message translates to:
   /// **'Se vendi come attività commerciale o professionale non puoi usare il Mercatino: Quokka può rimuovere gli annunci e sospendere l\'accesso.'**
   String get marketplaceInfoPrivateOnly;
+
+  /// No description provided for @aroundWorldTitle.
+  ///
+  /// In it, this message translates to:
+  /// **'Around the world'**
+  String get aroundWorldTitle;
+
+  /// No description provided for @aroundWorldActivitySubtitle.
+  ///
+  /// In it, this message translates to:
+  /// **'Regole, vaccini e protezioni per spostarti con il tuo animale.'**
+  String get aroundWorldActivitySubtitle;
+
+  /// No description provided for @aroundWorldNotice.
+  ///
+  /// In it, this message translates to:
+  /// **'Informazioni generali sulle regole per viaggiare con il tuo animale. Le regole cambiano e ogni paese decide per sé: prima di partire controlla sempre con le autorità veterinarie del paese di partenza e di arrivo e con la compagnia di trasporto. Quokka non garantisce che siano complete o aggiornate e non incoraggia a spostare né a importare animali: valuta il viaggio con il tuo veterinario, pensando prima di tutto al benessere del tuo animale.'**
+  String get aroundWorldNotice;
+
+  /// No description provided for @aroundWorldFromLabel.
+  ///
+  /// In it, this message translates to:
+  /// **'Da dove parti'**
+  String get aroundWorldFromLabel;
+
+  /// No description provided for @aroundWorldToLabel.
+  ///
+  /// In it, this message translates to:
+  /// **'Dove vai'**
+  String get aroundWorldToLabel;
+
+  /// No description provided for @aroundWorldWhoLabel.
+  ///
+  /// In it, this message translates to:
+  /// **'Chi porti con te'**
+  String get aroundWorldWhoLabel;
+
+  /// No description provided for @aroundWorldCountryHint.
+  ///
+  /// In it, this message translates to:
+  /// **'Cerca un paese'**
+  String get aroundWorldCountryHint;
+
+  /// No description provided for @aroundWorldCountryNone.
+  ///
+  /// In it, this message translates to:
+  /// **'Nessun paese trovato.'**
+  String get aroundWorldCountryNone;
+
+  /// No description provided for @aroundWorldMyPets.
+  ///
+  /// In it, this message translates to:
+  /// **'I tuoi animali'**
+  String get aroundWorldMyPets;
+
+  /// No description provided for @aroundWorldBySpecies.
+  ///
+  /// In it, this message translates to:
+  /// **'Oppure scegli una specie'**
+  String get aroundWorldBySpecies;
+
+  /// No description provided for @aroundWorldSpeciesDog.
+  ///
+  /// In it, this message translates to:
+  /// **'Cane'**
+  String get aroundWorldSpeciesDog;
+
+  /// No description provided for @aroundWorldSpeciesCat.
+  ///
+  /// In it, this message translates to:
+  /// **'Gatto'**
+  String get aroundWorldSpeciesCat;
+
+  /// No description provided for @aroundWorldSpeciesFerret.
+  ///
+  /// In it, this message translates to:
+  /// **'Furetto'**
+  String get aroundWorldSpeciesFerret;
+
+  /// No description provided for @aroundWorldShow.
+  ///
+  /// In it, this message translates to:
+  /// **'Mostra le informazioni'**
+  String get aroundWorldShow;
+
+  /// No description provided for @aroundWorldPickAll.
+  ///
+  /// In it, this message translates to:
+  /// **'Scegli da dove parti, dove vai e chi porti con te.'**
+  String get aroundWorldPickAll;
+
+  /// No description provided for @aroundWorldSameCountry.
+  ///
+  /// In it, this message translates to:
+  /// **'Hai scelto lo stesso paese di partenza e di arrivo: scegli un\'altra destinazione.'**
+  String get aroundWorldSameCountry;
+
+  /// No description provided for @aroundWorldLoadError.
+  ///
+  /// In it, this message translates to:
+  /// **'Non riesco a caricare le schede. Controlla la connessione e riprova.'**
+  String get aroundWorldLoadError;
+
+  /// No description provided for @aroundWorldRetry.
+  ///
+  /// In it, this message translates to:
+  /// **'Riprova'**
+  String get aroundWorldRetry;
+
+  /// No description provided for @aroundWorldResultHeader.
+  ///
+  /// In it, this message translates to:
+  /// **'{species}: da {from} a {to}'**
+  String aroundWorldResultHeader(String species, String from, String to);
+
+  /// No description provided for @aroundWorldNoCard.
+  ///
+  /// In it, this message translates to:
+  /// **'Per questa combinazione non abbiamo ancora una scheda verificata. Non vuol dire che non ci siano regole: controlla con l\'autorità veterinaria del paese di destinazione e con il Servizio veterinario della tua ASL.'**
+  String get aroundWorldNoCard;
+
+  /// No description provided for @aroundWorldOldCard.
+  ///
+  /// In it, this message translates to:
+  /// **'Questa scheda è stata verificata il {date} e potrebbe essere cambiata. Controlla la fonte ufficiale prima di decidere qualunque cosa.'**
+  String aroundWorldOldCard(String date);
+
+  /// No description provided for @aroundWorldHiddenCard.
+  ///
+  /// In it, this message translates to:
+  /// **'Questa scheda non è aggiornata e per ora non la mostriamo. Le regole ufficiali sono qui:'**
+  String get aroundWorldHiddenCard;
+
+  /// No description provided for @aroundWorldOpenOfficial.
+  ///
+  /// In it, this message translates to:
+  /// **'Apri la fonte ufficiale'**
+  String get aroundWorldOpenOfficial;
+
+  /// No description provided for @aroundWorldNotATrip.
+  ///
+  /// In it, this message translates to:
+  /// **'Questa sezione riguarda gli animali da compagnia che viaggiano con il loro proprietario, senza scopo commerciale. Se l\'animale non viaggia con te, se viene spostato per essere venduto, adottato o affidato, o se sono molti animali insieme, valgono regole diverse e più severe: rivolgiti al Servizio veterinario della tua ASL o all\'autorità veterinaria del paese di destinazione. Qui non possiamo darti indicazioni.'**
+  String get aroundWorldNotATrip;
+
+  /// No description provided for @aroundWorldOtherSpecies.
+  ///
+  /// In it, this message translates to:
+  /// **'Per questo caso valgono regole diverse. Rivolgiti all\'autorità veterinaria competente: qui non possiamo darti indicazioni.'**
+  String get aroundWorldOtherSpecies;
+
+  /// No description provided for @aroundWorldTransport.
+  ///
+  /// In it, this message translates to:
+  /// **'Le regole delle compagnie di trasporto (aerei, navi, treni, autobus) e degli alloggi sono diverse da quelle ufficiali e cambiano spesso: non le riportiamo. Chiedi sempre alla compagnia prima di prenotare. Quokka non è un\'agenzia di viaggi e non vende né organizza viaggi.'**
+  String get aroundWorldTransport;
+
+  /// No description provided for @aroundWorldLocalCustoms.
+  ///
+  /// In it, this message translates to:
+  /// **'Usanze e consuetudini locali: qui non le copriamo. Per la conduzione degli animali (guinzaglio, museruola, razze vietate, locali pubblici) riportiamo solo le regole con una fonte ufficiale; per il resto informati presso le autorità o le strutture del luogo.'**
+  String get aroundWorldLocalCustoms;
+
+  /// No description provided for @aroundWorldTimes.
+  ///
+  /// In it, this message translates to:
+  /// **'Questi passaggi hanno tempi precisi e alcuni richiedono settimane o mesi: fissali con il tuo veterinario con largo anticipo e controlla le date con l\'autorità del paese di arrivo.'**
+  String get aroundWorldTimes;
+
+  /// No description provided for @aroundWorldFinal.
+  ///
+  /// In it, this message translates to:
+  /// **'Le regole ufficiali prevalgono su questo riassunto. Prima di partire controlla con il Servizio veterinario della tua ASL, con l\'autorità veterinaria del paese di destinazione e con la compagnia di trasporto.'**
+  String get aroundWorldFinal;
+
+  /// No description provided for @aroundWorldInfoTitle.
+  ///
+  /// In it, this message translates to:
+  /// **'Cosa fa e cosa non fa Around the world'**
+  String get aroundWorldInfoTitle;
+
+  /// No description provided for @aroundWorldInfoBody.
+  ///
+  /// In it, this message translates to:
+  /// **'Riassume le regole ufficiali per viaggiare con cani, gatti e furetti, con la fonte e la data di verifica. Non è una consulenza veterinaria o legale, non sostituisce la ASL né le autorità del paese di destinazione e non garantisce di essere completo o aggiornato. Non indica farmaci né dosi e non copre usanze locali senza fonte ufficiale, compagnie di trasporto, vendita, adozione o più animali insieme. Non incoraggiamo a spostare né a importare animali.'**
+  String get aroundWorldInfoBody;
+
+  /// No description provided for @aroundWorldReportError.
+  ///
+  /// In it, this message translates to:
+  /// **'Segnala un errore'**
+  String get aroundWorldReportError;
+
+  /// No description provided for @aroundWorldMailSubject.
+  ///
+  /// In it, this message translates to:
+  /// **'Errore in una scheda di viaggio ({code})'**
+  String aroundWorldMailSubject(String code);
+
+  /// No description provided for @aroundWorldCheckedOn.
+  ///
+  /// In it, this message translates to:
+  /// **'Verificato il {date}'**
+  String aroundWorldCheckedOn(String date);
+
+  /// No description provided for @aroundWorldOwnAdvice.
+  ///
+  /// In it, this message translates to:
+  /// **'Consiglio di Quokka (non della fonte)'**
+  String get aroundWorldOwnAdvice;
+
+  /// No description provided for @aroundWorldBlockDocuments.
+  ///
+  /// In it, this message translates to:
+  /// **'Documenti'**
+  String get aroundWorldBlockDocuments;
+
+  /// No description provided for @aroundWorldBlockMicrochip.
+  ///
+  /// In it, this message translates to:
+  /// **'Microchip'**
+  String get aroundWorldBlockMicrochip;
+
+  /// No description provided for @aroundWorldBlockCompulsoryVaccines.
+  ///
+  /// In it, this message translates to:
+  /// **'Vaccini obbligatori'**
+  String get aroundWorldBlockCompulsoryVaccines;
+
+  /// No description provided for @aroundWorldBlockAntibodyTest.
+  ///
+  /// In it, this message translates to:
+  /// **'Test degli anticorpi'**
+  String get aroundWorldBlockAntibodyTest;
+
+  /// No description provided for @aroundWorldBlockRecommendedVaccines.
+  ///
+  /// In it, this message translates to:
+  /// **'Vaccini consigliati'**
+  String get aroundWorldBlockRecommendedVaccines;
+
+  /// No description provided for @aroundWorldBlockDiseases.
+  ///
+  /// In it, this message translates to:
+  /// **'Malattie presenti'**
+  String get aroundWorldBlockDiseases;
+
+  /// No description provided for @aroundWorldBlockMedicinesProtection.
+  ///
+  /// In it, this message translates to:
+  /// **'Farmaci e protezioni'**
+  String get aroundWorldBlockMedicinesProtection;
+
+  /// No description provided for @aroundWorldBlockLocalRules.
+  ///
+  /// In it, this message translates to:
+  /// **'Comportamenti e norme del posto'**
+  String get aroundWorldBlockLocalRules;
+
+  /// No description provided for @aroundWorldBlockReturn.
+  ///
+  /// In it, this message translates to:
+  /// **'Rientro'**
+  String get aroundWorldBlockReturn;
+
+  /// No description provided for @aroundWorldBlockSpreading.
+  ///
+  /// In it, this message translates to:
+  /// **'Per non diffondere malattie'**
+  String get aroundWorldBlockSpreading;
+
+  /// No description provided for @aroundWorldBlockVet.
+  ///
+  /// In it, this message translates to:
+  /// **'Dal veterinario'**
+  String get aroundWorldBlockVet;
+
+  /// No description provided for @aroundWorldBlockLimits.
+  ///
+  /// In it, this message translates to:
+  /// **'Cosa questa scheda non copre'**
+  String get aroundWorldBlockLimits;
 }
 
 class _AppLocalizationsDelegate
@@ -12252,9 +12534,8 @@ AppLocalizations lookupAppLocalizations(Locale locale) {
   }
 
   throw FlutterError(
-    'AppLocalizations.delegate failed to load unsupported locale "$locale". This is likely '
-    'an issue with the localizations generation tool. Please file an issue '
-    'on GitHub with a reproducible sample app and the gen-l10n configuration '
-    'that was used.',
-  );
+      'AppLocalizations.delegate failed to load unsupported locale "$locale". This is likely '
+      'an issue with the localizations generation tool. Please file an issue '
+      'on GitHub with a reproducible sample app and the gen-l10n configuration '
+      'that was used.');
 }

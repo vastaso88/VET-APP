@@ -1,0 +1,1483 @@
+[
+  {
+    "id": "via-eu-can",
+    "country": "EU",
+    "species": "dog",
+    "title": "UE: viaggiare con il cane (spostamenti non commerciali)",
+    "checked_on": "2026-11-16",
+    "official_url": "https://food.ec.europa.eu/animals/live-animal-movements/dogs-cats-and-ferrets_en",
+    "status": "draft",
+    "blocks": [
+      {
+        "kind": "documenti",
+        "title": "Documenti",
+        "sentences": [
+          {
+            "text": "Queste regole valgono per un cane che viaggia con il suo proprietario, sotto la sua diretta responsabilità, senza vendita né cambio di proprietario: al massimo 5 animali in un veicolo.",
+            "origins": [],
+            "own": false,
+            "source_ids": [
+              "ec_pet_within_eu",
+              "ec_pet_non_eu"
+            ]
+          },
+          {
+            "text": "Per gare, esposizioni ed eventi sportivi (e il relativo addestramento) il limite si può superare con la prova scritta dell'iscrizione e solo con animali di oltre 6 mesi.",
+            "origins": [],
+            "own": false,
+            "source_ids": [
+              "ec_pet_within_eu",
+              "ec_pet_non_eu"
+            ]
+          },
+          {
+            "text": "Il cane deve avere un passaporto europeo per animali da compagnia, compilato e rilasciato da un veterinario autorizzato: vi sono scritti il microchip, la vaccinazione antirabbica e, se serve, il trattamento contro la tenia.",
+            "origins": [
+              "EU"
+            ],
+            "own": false,
+            "source_ids": [
+              "ec_pet_within_eu"
+            ]
+          },
+          {
+            "text": "Per entrare nell'UE da un paese non UE serve un certificato sanitario compilato da un veterinario ufficiale o autorizzato e vidimato dall'autorità competente, con la dichiarazione scritta del proprietario che il viaggio non è commerciale. Per alcuni paesi e territori elencati dalla Commissione basta il passaporto.",
+            "origins": [
+              "non_EU"
+            ],
+            "own": false,
+            "source_ids": [
+              "ec_pet_non_eu"
+            ]
+          },
+          {
+            "text": "Il certificato vale 10 giorni dal rilascio fino al controllo al punto di ingresso (di più se si viaggia per mare); per spostarsi poi in altri paesi UE vale 6 mesi dal controllo oppure fino alla scadenza del vaccino antirabbico, se questa viene prima.",
+            "origins": [
+              "non_EU"
+            ],
+            "own": false,
+            "source_ids": [
+              "ec_pet_non_eu"
+            ]
+          },
+          {
+            "text": "Il cane deve essere in condizioni di salute idonee al viaggio, e il certificato lo attesta.",
+            "origins": [
+              "non_EU"
+            ],
+            "own": false,
+            "source_ids": [
+              "ec_pet_non_eu"
+            ]
+          },
+          {
+            "text": "Si entra dal punto di ingresso dei viaggiatori designato dal paese, dove le autorità controllano documenti e identità. Per i paesi e territori elencati dalla Commissione, con il passaporto, non è necessario.",
+            "origins": [
+              "non_EU"
+            ],
+            "own": false,
+            "source_ids": [
+              "ec_pet_non_eu"
+            ]
+          },
+          {
+            "text": "Se il proprietario non viaggia insieme all'animale, lo può accompagnare una persona autorizzata a condizione che il proprietario viaggi entro 5 giorni prima o dopo e che una dichiarazione scritta sia allegata al passaporto.",
+            "origins": [],
+            "own": false,
+            "source_ids": [
+              "ec_pet_within_eu",
+              "ec_pet_non_eu"
+            ]
+          }
+        ]
+      },
+      {
+        "kind": "microchip",
+        "title": "Microchip",
+        "sentences": [
+          {
+            "text": "Serve un microchip, e deve essere impiantato prima del vaccino antirabbico: la data del vaccino non può essere anteriore a quella del microchip.",
+            "origins": [],
+            "own": false,
+            "source_ids": [
+              "ec_pet_within_eu",
+              "ec_pet_non_eu"
+            ]
+          },
+          {
+            "text": "Sono ammessi anche un microchip impiantato prima del 22 aprile 2026 con il vecchio regolamento e un tatuaggio leggibile applicato prima del 3 luglio 2011.",
+            "origins": [
+              "EU"
+            ],
+            "own": false,
+            "source_ids": [
+              "ec_pet_within_eu"
+            ]
+          }
+        ]
+      },
+      {
+        "kind": "vaccini_obbligatori",
+        "title": "Vaccini obbligatori",
+        "sentences": [
+          {
+            "text": "Il vaccino antirabbico lo fa un veterinario ufficiale o autorizzato, quando il cane ha almeno 12 settimane.",
+            "origins": [],
+            "own": false,
+            "source_ids": [
+              "ec_pet_within_eu",
+              "ec_pet_non_eu"
+            ]
+          },
+          {
+            "text": "La validità del vaccino parte non meno di 21 giorni dopo la fine del primo ciclo; ogni vaccinazione successiva deve essere fatta entro la validità della precedente.",
+            "origins": [],
+            "own": false,
+            "source_ids": [
+              "ec_pet_within_eu",
+              "ec_pet_non_eu"
+            ]
+          },
+          {
+            "text": "Alcuni Stati membri ammettono cuccioli di meno di 12 settimane senza vaccino, o di 12-16 settimane con meno di 21 giorni dalla fine del primo ciclo, con una dichiarazione del proprietario (nessun contatto con animali selvatici sensibili alla rabbia, oppure madre con vaccino valido prima della nascita). Chiedi all'autorità del paese di arrivo.",
+            "origins": [
+              "EU"
+            ],
+            "own": false,
+            "source_ids": [
+              "ec_pet_within_eu"
+            ]
+          }
+        ]
+      },
+      {
+        "kind": "test_sierologici",
+        "title": "Test degli anticorpi",
+        "sentences": [
+          {
+            "text": "Per entrare nell'UE da un paese non UE può servire il test degli anticorpi antirabbici (titolo): il prelievo lo fa un veterinario autorizzato almeno 30 giorni dopo la prima vaccinazione (o durante un ciclo valido) e almeno 90 giorni prima del rilascio del certificato. I paesi e territori elencati dalla Commissione ne sono esentati.",
+            "origins": [
+              "non_EU"
+            ],
+            "own": false,
+            "source_ids": [
+              "ec_pet_non_eu"
+            ]
+          },
+          {
+            "text": "Il risultato deve essere di almeno 0,5 UI/ml (anticorpi neutralizzanti nel siero), l'analisi si fa in un laboratorio designato e il referto ufficiale va allegato al certificato.",
+            "origins": [
+              "non_EU"
+            ],
+            "own": false,
+            "source_ids": [
+              "ec_pet_non_eu"
+            ]
+          },
+          {
+            "text": "Il test non si ripete se, dopo un esito favorevole, l'animale viene rivaccinato entro la validità dei vaccini precedenti.",
+            "origins": [
+              "non_EU"
+            ],
+            "own": false,
+            "source_ids": [
+              "ec_pet_non_eu"
+            ]
+          }
+        ]
+      },
+      {
+        "kind": "farmaci_e_protezioni",
+        "title": "Farmaci e protezioni",
+        "sentences": [
+          {
+            "text": "Per i cani diretti in Finlandia, Irlanda, Malta, Irlanda del Nord e Norvegia è obbligatorio un trattamento contro la tenia Echinococcus multilocularis: lo fa il veterinario con un medicinale veterinario approvato, da 24 a 120 ore prima dell'ingresso previsto, e lo annota nel passaporto o nel certificato. Il prodotto lo sceglie il veterinario.",
+            "origins": [],
+            "own": false,
+            "source_ids": [
+              "ec_pet_within_eu",
+              "ec_pet_non_eu"
+            ]
+          },
+          {
+            "text": "I cani che si spostano direttamente fra Finlandia, Irlanda, Malta e Irlanda del Nord, o fra questi e la Norvegia, sono esentati dal trattamento.",
+            "origins": [
+              "EU"
+            ],
+            "own": false,
+            "source_ids": [
+              "ec_pet_within_eu"
+            ]
+          }
+        ]
+      },
+      {
+        "kind": "rientro",
+        "title": "Rientro",
+        "sentences": [
+          {
+            "text": "Chi torna nell'UE da un paese non UE segue le regole di ingresso da paese terzo descritte qui: certificato o passaporto, test degli anticorpi quando previsto, punto di ingresso.",
+            "origins": [
+              "non_EU"
+            ],
+            "own": false,
+            "source_ids": [
+              "ec_pet_non_eu"
+            ]
+          },
+          {
+            "text": "Il passaporto per animali rilasciato a residenti in Gran Bretagna non è più valido per viaggiare dalla Gran Bretagna all'UE.",
+            "origins": [
+              "non_EU"
+            ],
+            "own": false,
+            "source_ids": [
+              "ec_pet_non_eu"
+            ]
+          }
+        ]
+      },
+      {
+        "kind": "non_diffondere",
+        "title": "Per non diffondere malattie",
+        "sentences": [
+          {
+            "text": "Un animale può portare con sé parassiti e agenti di malattia in luoghi dove non ci sono: per questo la legge impone alcune vaccinazioni e alcuni trattamenti. Rispettarli protegge anche gli altri animali e le persone.",
+            "origins": [],
+            "own": true,
+            "source_ids": []
+          }
+        ]
+      },
+      {
+        "kind": "quando_andare_dal_veterinario",
+        "title": "Dal veterinario",
+        "sentences": [
+          {
+            "text": "Parlane con il tuo veterinario prima di decidere e con largo anticipo: età, salute, razza, durata e temperature del viaggio contano, e alcuni passaggi richiedono settimane o mesi.",
+            "origins": [],
+            "own": true,
+            "source_ids": []
+          }
+        ]
+      },
+      {
+        "kind": "limiti",
+        "title": "Cosa questa scheda non copre",
+        "sentences": [
+          {
+            "text": "Non sono coperti da questa scheda: la durata del vaccino antirabbico e l'intervallo dei richiami (la fonte non li indica: chiedi al veterinario), i vaccini facoltativi o consigliati, le malattie presenti nel paese di arrivo, gli antiparassitari non imposti dalla legge, le regole e le usanze locali, le compagnie di trasporto.",
+            "origins": [],
+            "own": false,
+            "source_ids": []
+          },
+          {
+            "text": "La scheda riassume le pagine della Commissione europea, che rimandano ai regolamenti pubblicati su EUR-Lex: se la fonte ufficiale dice altro, vale la fonte.",
+            "origins": [],
+            "own": false,
+            "source_ids": []
+          }
+        ]
+      }
+    ],
+    "sources": [
+      {
+        "id": "ec_pet_within_eu",
+        "citation": "Fonte: Commissione europea, Food Safety, Travelling with a pet within the EU, 2026, https://food.ec.europa.eu/animals/live-animal-movements/dogs-cats-and-ferrets/travelling-pet-within-eu_en. Riassunto di Quokka, verificato il 2026-11-16. Licenza CC BY; modificato da Quokka.",
+        "url": "https://food.ec.europa.eu/animals/live-animal-movements/dogs-cats-and-ferrets/travelling-pet-within-eu_en",
+        "checked_on": "2026-11-16"
+      },
+      {
+        "id": "ec_pet_non_eu",
+        "citation": "Fonte: Commissione europea, Food Safety, Bringing a pet into the EU from a non-EU country, 2026, https://food.ec.europa.eu/animals/live-animal-movements/dogs-cats-and-ferrets/bringing-pet-eu-non-eu-country_en. Riassunto di Quokka, verificato il 2026-11-16. Licenza CC BY; modificato da Quokka.",
+        "url": "https://food.ec.europa.eu/animals/live-animal-movements/dogs-cats-and-ferrets/bringing-pet-eu-non-eu-country_en",
+        "checked_on": "2026-11-16"
+      }
+    ]
+  },
+  {
+    "id": "via-eu-fur",
+    "country": "EU",
+    "species": "ferret",
+    "title": "UE: viaggiare con il furetto (spostamenti non commerciali)",
+    "checked_on": "2026-11-16",
+    "official_url": "https://food.ec.europa.eu/animals/live-animal-movements/dogs-cats-and-ferrets_en",
+    "status": "draft",
+    "blocks": [
+      {
+        "kind": "documenti",
+        "title": "Documenti",
+        "sentences": [
+          {
+            "text": "Queste regole valgono per un furetto che viaggia con il suo proprietario, sotto la sua diretta responsabilità, senza vendita né cambio di proprietario: al massimo 5 animali in un veicolo.",
+            "origins": [],
+            "own": false,
+            "source_ids": [
+              "ec_pet_within_eu",
+              "ec_pet_non_eu"
+            ]
+          },
+          {
+            "text": "Per gare, esposizioni ed eventi sportivi (e il relativo addestramento) il limite si può superare con la prova scritta dell'iscrizione e solo con animali di oltre 6 mesi.",
+            "origins": [],
+            "own": false,
+            "source_ids": [
+              "ec_pet_within_eu",
+              "ec_pet_non_eu"
+            ]
+          },
+          {
+            "text": "Il furetto deve avere un passaporto europeo per animali da compagnia, compilato e rilasciato da un veterinario autorizzato: vi sono scritti il microchip, la vaccinazione antirabbica e, se serve, il trattamento contro la tenia.",
+            "origins": [
+              "EU"
+            ],
+            "own": false,
+            "source_ids": [
+              "ec_pet_within_eu"
+            ]
+          },
+          {
+            "text": "Per entrare nell'UE da un paese non UE serve un certificato sanitario compilato da un veterinario ufficiale o autorizzato e vidimato dall'autorità competente, con la dichiarazione scritta del proprietario che il viaggio non è commerciale. Per alcuni paesi e territori elencati dalla Commissione basta il passaporto.",
+            "origins": [
+              "non_EU"
+            ],
+            "own": false,
+            "source_ids": [
+              "ec_pet_non_eu"
+            ]
+          },
+          {
+            "text": "Il certificato vale 10 giorni dal rilascio fino al controllo al punto di ingresso (di più se si viaggia per mare); per spostarsi poi in altri paesi UE vale 6 mesi dal controllo oppure fino alla scadenza del vaccino antirabbico, se questa viene prima.",
+            "origins": [
+              "non_EU"
+            ],
+            "own": false,
+            "source_ids": [
+              "ec_pet_non_eu"
+            ]
+          },
+          {
+            "text": "Il furetto deve essere in condizioni di salute idonee al viaggio, e il certificato lo attesta.",
+            "origins": [
+              "non_EU"
+            ],
+            "own": false,
+            "source_ids": [
+              "ec_pet_non_eu"
+            ]
+          },
+          {
+            "text": "Si entra dal punto di ingresso dei viaggiatori designato dal paese, dove le autorità controllano documenti e identità. Per i paesi e territori elencati dalla Commissione, con il passaporto, non è necessario.",
+            "origins": [
+              "non_EU"
+            ],
+            "own": false,
+            "source_ids": [
+              "ec_pet_non_eu"
+            ]
+          },
+          {
+            "text": "Se il proprietario non viaggia insieme all'animale, lo può accompagnare una persona autorizzata a condizione che il proprietario viaggi entro 5 giorni prima o dopo e che una dichiarazione scritta sia allegata al passaporto.",
+            "origins": [],
+            "own": false,
+            "source_ids": [
+              "ec_pet_within_eu",
+              "ec_pet_non_eu"
+            ]
+          }
+        ]
+      },
+      {
+        "kind": "microchip",
+        "title": "Microchip",
+        "sentences": [
+          {
+            "text": "Serve un microchip, e deve essere impiantato prima del vaccino antirabbico: la data del vaccino non può essere anteriore a quella del microchip.",
+            "origins": [],
+            "own": false,
+            "source_ids": [
+              "ec_pet_within_eu",
+              "ec_pet_non_eu"
+            ]
+          },
+          {
+            "text": "Sono ammessi anche un microchip impiantato prima del 22 aprile 2026 con il vecchio regolamento e un tatuaggio leggibile applicato prima del 3 luglio 2011.",
+            "origins": [
+              "EU"
+            ],
+            "own": false,
+            "source_ids": [
+              "ec_pet_within_eu"
+            ]
+          }
+        ]
+      },
+      {
+        "kind": "vaccini_obbligatori",
+        "title": "Vaccini obbligatori",
+        "sentences": [
+          {
+            "text": "Il vaccino antirabbico lo fa un veterinario ufficiale o autorizzato, quando il furetto ha almeno 12 settimane.",
+            "origins": [],
+            "own": false,
+            "source_ids": [
+              "ec_pet_within_eu",
+              "ec_pet_non_eu"
+            ]
+          },
+          {
+            "text": "La validità del vaccino parte non meno di 21 giorni dopo la fine del primo ciclo; ogni vaccinazione successiva deve essere fatta entro la validità della precedente.",
+            "origins": [],
+            "own": false,
+            "source_ids": [
+              "ec_pet_within_eu",
+              "ec_pet_non_eu"
+            ]
+          },
+          {
+            "text": "Alcuni Stati membri ammettono cuccioli di meno di 12 settimane senza vaccino, o di 12-16 settimane con meno di 21 giorni dalla fine del primo ciclo, con una dichiarazione del proprietario (nessun contatto con animali selvatici sensibili alla rabbia, oppure madre con vaccino valido prima della nascita). Chiedi all'autorità del paese di arrivo.",
+            "origins": [
+              "EU"
+            ],
+            "own": false,
+            "source_ids": [
+              "ec_pet_within_eu"
+            ]
+          }
+        ]
+      },
+      {
+        "kind": "test_sierologici",
+        "title": "Test degli anticorpi",
+        "sentences": [
+          {
+            "text": "Per entrare nell'UE da un paese non UE può servire il test degli anticorpi antirabbici (titolo): il prelievo lo fa un veterinario autorizzato almeno 30 giorni dopo la prima vaccinazione (o durante un ciclo valido) e almeno 90 giorni prima del rilascio del certificato. I paesi e territori elencati dalla Commissione ne sono esentati.",
+            "origins": [
+              "non_EU"
+            ],
+            "own": false,
+            "source_ids": [
+              "ec_pet_non_eu"
+            ]
+          },
+          {
+            "text": "Il risultato deve essere di almeno 0,5 UI/ml (anticorpi neutralizzanti nel siero), l'analisi si fa in un laboratorio designato e il referto ufficiale va allegato al certificato.",
+            "origins": [
+              "non_EU"
+            ],
+            "own": false,
+            "source_ids": [
+              "ec_pet_non_eu"
+            ]
+          },
+          {
+            "text": "Il test non si ripete se, dopo un esito favorevole, l'animale viene rivaccinato entro la validità dei vaccini precedenti.",
+            "origins": [
+              "non_EU"
+            ],
+            "own": false,
+            "source_ids": [
+              "ec_pet_non_eu"
+            ]
+          }
+        ]
+      },
+      {
+        "kind": "farmaci_e_protezioni",
+        "title": "Farmaci e protezioni",
+        "sentences": [
+          {
+            "text": "Il trattamento obbligatorio contro la tenia Echinococcus multilocularis, richiesto per l'ingresso in alcuni paesi, riguarda solo i cani, non i gatti né i furetti.",
+            "origins": [],
+            "own": false,
+            "source_ids": [
+              "ec_pet_within_eu",
+              "ec_pet_non_eu"
+            ]
+          }
+        ]
+      },
+      {
+        "kind": "rientro",
+        "title": "Rientro",
+        "sentences": [
+          {
+            "text": "Chi torna nell'UE da un paese non UE segue le regole di ingresso da paese terzo descritte qui: certificato o passaporto, test degli anticorpi quando previsto, punto di ingresso.",
+            "origins": [
+              "non_EU"
+            ],
+            "own": false,
+            "source_ids": [
+              "ec_pet_non_eu"
+            ]
+          },
+          {
+            "text": "Il passaporto per animali rilasciato a residenti in Gran Bretagna non è più valido per viaggiare dalla Gran Bretagna all'UE.",
+            "origins": [
+              "non_EU"
+            ],
+            "own": false,
+            "source_ids": [
+              "ec_pet_non_eu"
+            ]
+          }
+        ]
+      },
+      {
+        "kind": "non_diffondere",
+        "title": "Per non diffondere malattie",
+        "sentences": [
+          {
+            "text": "Un animale può portare con sé parassiti e agenti di malattia in luoghi dove non ci sono: per questo la legge impone alcune vaccinazioni e alcuni trattamenti. Rispettarli protegge anche gli altri animali e le persone.",
+            "origins": [],
+            "own": true,
+            "source_ids": []
+          }
+        ]
+      },
+      {
+        "kind": "quando_andare_dal_veterinario",
+        "title": "Dal veterinario",
+        "sentences": [
+          {
+            "text": "Parlane con il tuo veterinario prima di decidere e con largo anticipo: età, salute, razza, durata e temperature del viaggio contano, e alcuni passaggi richiedono settimane o mesi.",
+            "origins": [],
+            "own": true,
+            "source_ids": []
+          }
+        ]
+      },
+      {
+        "kind": "limiti",
+        "title": "Cosa questa scheda non copre",
+        "sentences": [
+          {
+            "text": "Non sono coperti da questa scheda: la durata del vaccino antirabbico e l'intervallo dei richiami (la fonte non li indica: chiedi al veterinario), i vaccini facoltativi o consigliati, le malattie presenti nel paese di arrivo, gli antiparassitari non imposti dalla legge, le regole e le usanze locali, le compagnie di trasporto.",
+            "origins": [],
+            "own": false,
+            "source_ids": []
+          },
+          {
+            "text": "La scheda riassume le pagine della Commissione europea, che rimandano ai regolamenti pubblicati su EUR-Lex: se la fonte ufficiale dice altro, vale la fonte.",
+            "origins": [],
+            "own": false,
+            "source_ids": []
+          }
+        ]
+      }
+    ],
+    "sources": [
+      {
+        "id": "ec_pet_within_eu",
+        "citation": "Fonte: Commissione europea, Food Safety, Travelling with a pet within the EU, 2026, https://food.ec.europa.eu/animals/live-animal-movements/dogs-cats-and-ferrets/travelling-pet-within-eu_en. Riassunto di Quokka, verificato il 2026-11-16. Licenza CC BY; modificato da Quokka.",
+        "url": "https://food.ec.europa.eu/animals/live-animal-movements/dogs-cats-and-ferrets/travelling-pet-within-eu_en",
+        "checked_on": "2026-11-16"
+      },
+      {
+        "id": "ec_pet_non_eu",
+        "citation": "Fonte: Commissione europea, Food Safety, Bringing a pet into the EU from a non-EU country, 2026, https://food.ec.europa.eu/animals/live-animal-movements/dogs-cats-and-ferrets/bringing-pet-eu-non-eu-country_en. Riassunto di Quokka, verificato il 2026-11-16. Licenza CC BY; modificato da Quokka.",
+        "url": "https://food.ec.europa.eu/animals/live-animal-movements/dogs-cats-and-ferrets/bringing-pet-eu-non-eu-country_en",
+        "checked_on": "2026-11-16"
+      }
+    ]
+  },
+  {
+    "id": "via-eu-gat",
+    "country": "EU",
+    "species": "cat",
+    "title": "UE: viaggiare con il gatto (spostamenti non commerciali)",
+    "checked_on": "2026-11-16",
+    "official_url": "https://food.ec.europa.eu/animals/live-animal-movements/dogs-cats-and-ferrets_en",
+    "status": "draft",
+    "blocks": [
+      {
+        "kind": "documenti",
+        "title": "Documenti",
+        "sentences": [
+          {
+            "text": "Queste regole valgono per un gatto che viaggia con il suo proprietario, sotto la sua diretta responsabilità, senza vendita né cambio di proprietario: al massimo 5 animali in un veicolo.",
+            "origins": [],
+            "own": false,
+            "source_ids": [
+              "ec_pet_within_eu",
+              "ec_pet_non_eu"
+            ]
+          },
+          {
+            "text": "Per gare, esposizioni ed eventi sportivi (e il relativo addestramento) il limite si può superare con la prova scritta dell'iscrizione e solo con animali di oltre 6 mesi.",
+            "origins": [],
+            "own": false,
+            "source_ids": [
+              "ec_pet_within_eu",
+              "ec_pet_non_eu"
+            ]
+          },
+          {
+            "text": "Il gatto deve avere un passaporto europeo per animali da compagnia, compilato e rilasciato da un veterinario autorizzato: vi sono scritti il microchip, la vaccinazione antirabbica e, se serve, il trattamento contro la tenia.",
+            "origins": [
+              "EU"
+            ],
+            "own": false,
+            "source_ids": [
+              "ec_pet_within_eu"
+            ]
+          },
+          {
+            "text": "Per entrare nell'UE da un paese non UE serve un certificato sanitario compilato da un veterinario ufficiale o autorizzato e vidimato dall'autorità competente, con la dichiarazione scritta del proprietario che il viaggio non è commerciale. Per alcuni paesi e territori elencati dalla Commissione basta il passaporto.",
+            "origins": [
+              "non_EU"
+            ],
+            "own": false,
+            "source_ids": [
+              "ec_pet_non_eu"
+            ]
+          },
+          {
+            "text": "Il certificato vale 10 giorni dal rilascio fino al controllo al punto di ingresso (di più se si viaggia per mare); per spostarsi poi in altri paesi UE vale 6 mesi dal controllo oppure fino alla scadenza del vaccino antirabbico, se questa viene prima.",
+            "origins": [
+              "non_EU"
+            ],
+            "own": false,
+            "source_ids": [
+              "ec_pet_non_eu"
+            ]
+          },
+          {
+            "text": "Il gatto deve essere in condizioni di salute idonee al viaggio, e il certificato lo attesta.",
+            "origins": [
+              "non_EU"
+            ],
+            "own": false,
+            "source_ids": [
+              "ec_pet_non_eu"
+            ]
+          },
+          {
+            "text": "Si entra dal punto di ingresso dei viaggiatori designato dal paese, dove le autorità controllano documenti e identità. Per i paesi e territori elencati dalla Commissione, con il passaporto, non è necessario.",
+            "origins": [
+              "non_EU"
+            ],
+            "own": false,
+            "source_ids": [
+              "ec_pet_non_eu"
+            ]
+          },
+          {
+            "text": "Se il proprietario non viaggia insieme all'animale, lo può accompagnare una persona autorizzata a condizione che il proprietario viaggi entro 5 giorni prima o dopo e che una dichiarazione scritta sia allegata al passaporto.",
+            "origins": [],
+            "own": false,
+            "source_ids": [
+              "ec_pet_within_eu",
+              "ec_pet_non_eu"
+            ]
+          }
+        ]
+      },
+      {
+        "kind": "microchip",
+        "title": "Microchip",
+        "sentences": [
+          {
+            "text": "Serve un microchip, e deve essere impiantato prima del vaccino antirabbico: la data del vaccino non può essere anteriore a quella del microchip.",
+            "origins": [],
+            "own": false,
+            "source_ids": [
+              "ec_pet_within_eu",
+              "ec_pet_non_eu"
+            ]
+          },
+          {
+            "text": "Sono ammessi anche un microchip impiantato prima del 22 aprile 2026 con il vecchio regolamento e un tatuaggio leggibile applicato prima del 3 luglio 2011.",
+            "origins": [
+              "EU"
+            ],
+            "own": false,
+            "source_ids": [
+              "ec_pet_within_eu"
+            ]
+          }
+        ]
+      },
+      {
+        "kind": "vaccini_obbligatori",
+        "title": "Vaccini obbligatori",
+        "sentences": [
+          {
+            "text": "Il vaccino antirabbico lo fa un veterinario ufficiale o autorizzato, quando il gatto ha almeno 12 settimane.",
+            "origins": [],
+            "own": false,
+            "source_ids": [
+              "ec_pet_within_eu",
+              "ec_pet_non_eu"
+            ]
+          },
+          {
+            "text": "La validità del vaccino parte non meno di 21 giorni dopo la fine del primo ciclo; ogni vaccinazione successiva deve essere fatta entro la validità della precedente.",
+            "origins": [],
+            "own": false,
+            "source_ids": [
+              "ec_pet_within_eu",
+              "ec_pet_non_eu"
+            ]
+          },
+          {
+            "text": "Alcuni Stati membri ammettono cuccioli di meno di 12 settimane senza vaccino, o di 12-16 settimane con meno di 21 giorni dalla fine del primo ciclo, con una dichiarazione del proprietario (nessun contatto con animali selvatici sensibili alla rabbia, oppure madre con vaccino valido prima della nascita). Chiedi all'autorità del paese di arrivo.",
+            "origins": [
+              "EU"
+            ],
+            "own": false,
+            "source_ids": [
+              "ec_pet_within_eu"
+            ]
+          }
+        ]
+      },
+      {
+        "kind": "test_sierologici",
+        "title": "Test degli anticorpi",
+        "sentences": [
+          {
+            "text": "Per entrare nell'UE da un paese non UE può servire il test degli anticorpi antirabbici (titolo): il prelievo lo fa un veterinario autorizzato almeno 30 giorni dopo la prima vaccinazione (o durante un ciclo valido) e almeno 90 giorni prima del rilascio del certificato. I paesi e territori elencati dalla Commissione ne sono esentati.",
+            "origins": [
+              "non_EU"
+            ],
+            "own": false,
+            "source_ids": [
+              "ec_pet_non_eu"
+            ]
+          },
+          {
+            "text": "Il risultato deve essere di almeno 0,5 UI/ml (anticorpi neutralizzanti nel siero), l'analisi si fa in un laboratorio designato e il referto ufficiale va allegato al certificato.",
+            "origins": [
+              "non_EU"
+            ],
+            "own": false,
+            "source_ids": [
+              "ec_pet_non_eu"
+            ]
+          },
+          {
+            "text": "Il test non si ripete se, dopo un esito favorevole, l'animale viene rivaccinato entro la validità dei vaccini precedenti.",
+            "origins": [
+              "non_EU"
+            ],
+            "own": false,
+            "source_ids": [
+              "ec_pet_non_eu"
+            ]
+          }
+        ]
+      },
+      {
+        "kind": "farmaci_e_protezioni",
+        "title": "Farmaci e protezioni",
+        "sentences": [
+          {
+            "text": "Il trattamento obbligatorio contro la tenia Echinococcus multilocularis, richiesto per l'ingresso in alcuni paesi, riguarda solo i cani, non i gatti né i furetti.",
+            "origins": [],
+            "own": false,
+            "source_ids": [
+              "ec_pet_within_eu",
+              "ec_pet_non_eu"
+            ]
+          }
+        ]
+      },
+      {
+        "kind": "rientro",
+        "title": "Rientro",
+        "sentences": [
+          {
+            "text": "Chi torna nell'UE da un paese non UE segue le regole di ingresso da paese terzo descritte qui: certificato o passaporto, test degli anticorpi quando previsto, punto di ingresso.",
+            "origins": [
+              "non_EU"
+            ],
+            "own": false,
+            "source_ids": [
+              "ec_pet_non_eu"
+            ]
+          },
+          {
+            "text": "Il passaporto per animali rilasciato a residenti in Gran Bretagna non è più valido per viaggiare dalla Gran Bretagna all'UE.",
+            "origins": [
+              "non_EU"
+            ],
+            "own": false,
+            "source_ids": [
+              "ec_pet_non_eu"
+            ]
+          }
+        ]
+      },
+      {
+        "kind": "non_diffondere",
+        "title": "Per non diffondere malattie",
+        "sentences": [
+          {
+            "text": "Un animale può portare con sé parassiti e agenti di malattia in luoghi dove non ci sono: per questo la legge impone alcune vaccinazioni e alcuni trattamenti. Rispettarli protegge anche gli altri animali e le persone.",
+            "origins": [],
+            "own": true,
+            "source_ids": []
+          }
+        ]
+      },
+      {
+        "kind": "quando_andare_dal_veterinario",
+        "title": "Dal veterinario",
+        "sentences": [
+          {
+            "text": "Parlane con il tuo veterinario prima di decidere e con largo anticipo: età, salute, razza, durata e temperature del viaggio contano, e alcuni passaggi richiedono settimane o mesi.",
+            "origins": [],
+            "own": true,
+            "source_ids": []
+          }
+        ]
+      },
+      {
+        "kind": "limiti",
+        "title": "Cosa questa scheda non copre",
+        "sentences": [
+          {
+            "text": "Non sono coperti da questa scheda: la durata del vaccino antirabbico e l'intervallo dei richiami (la fonte non li indica: chiedi al veterinario), i vaccini facoltativi o consigliati, le malattie presenti nel paese di arrivo, gli antiparassitari non imposti dalla legge, le regole e le usanze locali, le compagnie di trasporto.",
+            "origins": [],
+            "own": false,
+            "source_ids": []
+          },
+          {
+            "text": "La scheda riassume le pagine della Commissione europea, che rimandano ai regolamenti pubblicati su EUR-Lex: se la fonte ufficiale dice altro, vale la fonte.",
+            "origins": [],
+            "own": false,
+            "source_ids": []
+          }
+        ]
+      }
+    ],
+    "sources": [
+      {
+        "id": "ec_pet_within_eu",
+        "citation": "Fonte: Commissione europea, Food Safety, Travelling with a pet within the EU, 2026, https://food.ec.europa.eu/animals/live-animal-movements/dogs-cats-and-ferrets/travelling-pet-within-eu_en. Riassunto di Quokka, verificato il 2026-11-16. Licenza CC BY; modificato da Quokka.",
+        "url": "https://food.ec.europa.eu/animals/live-animal-movements/dogs-cats-and-ferrets/travelling-pet-within-eu_en",
+        "checked_on": "2026-11-16"
+      },
+      {
+        "id": "ec_pet_non_eu",
+        "citation": "Fonte: Commissione europea, Food Safety, Bringing a pet into the EU from a non-EU country, 2026, https://food.ec.europa.eu/animals/live-animal-movements/dogs-cats-and-ferrets/bringing-pet-eu-non-eu-country_en. Riassunto di Quokka, verificato il 2026-11-16. Licenza CC BY; modificato da Quokka.",
+        "url": "https://food.ec.europa.eu/animals/live-animal-movements/dogs-cats-and-ferrets/bringing-pet-eu-non-eu-country_en",
+        "checked_on": "2026-11-16"
+      }
+    ]
+  },
+  {
+    "id": "via-gb-can",
+    "country": "GB",
+    "species": "dog",
+    "title": "Gran Bretagna: portare il cane (spostamenti non commerciali)",
+    "checked_on": "2026-11-16",
+    "official_url": "https://www.gov.uk/bring-pet-to-great-britain",
+    "status": "draft",
+    "blocks": [
+      {
+        "kind": "documenti",
+        "title": "Documenti",
+        "sentences": [
+          {
+            "text": "Serve una rotta di viaggio approvata (la guida britannica rimanda a una pagina dedicata); non serve se si viaggia dentro il Regno Unito o dall'Irlanda.",
+            "origins": [],
+            "own": false,
+            "source_ids": [
+              "gov_uk_bring_pet_gb"
+            ]
+          },
+          {
+            "text": "Serve un documento veterinario, il cui tipo dipende dal paese di partenza (passaporto o certificato sanitario dell'animale) e, se non vendi né cedi l'animale, una dichiarazione di viaggio.",
+            "origins": [],
+            "own": false,
+            "source_ids": [
+              "gov_uk_bring_pet_gb"
+            ]
+          },
+          {
+            "text": "Se le regole non sono rispettate l'animale può essere messo in quarantena fino a 4 mesi, oppure respinto se si arriva via mare; le spese sono a carico del proprietario.",
+            "origins": [],
+            "own": false,
+            "source_ids": [
+              "gov_uk_bring_pet_gb"
+            ]
+          }
+        ]
+      },
+      {
+        "kind": "microchip",
+        "title": "Microchip",
+        "sentences": [
+          {
+            "text": "Il microchip va impiantato prima del vaccino antirabbico o nello stesso momento; altrimenti l'animale va rivaccinato.",
+            "origins": [],
+            "own": false,
+            "source_ids": [
+              "gov_uk_rabies_gb",
+              "gov_uk_bring_pet_gb"
+            ]
+          },
+          {
+            "text": "Il registro delle vaccinazioni deve riportare anche il numero e la data del microchip.",
+            "origins": [],
+            "own": false,
+            "source_ids": [
+              "gov_uk_rabies_gb"
+            ]
+          }
+        ]
+      },
+      {
+        "kind": "vaccini_obbligatori",
+        "title": "Vaccini obbligatori",
+        "sentences": [
+          {
+            "text": "Il veterinario deve avere la prova che il cane ha almeno 12 settimane. Dopo il primo vaccino (o l'ultima dose del primo ciclo) si aspettano almeno 21 giorni pieni prima di partire, contando come giorno 1 quello dopo la vaccinazione; il vaccino scelto può richiedere più tempo: chiedi al veterinario.",
+            "origins": [],
+            "own": false,
+            "source_ids": [
+              "gov_uk_rabies_gb",
+              "gov_uk_bring_pet_gb"
+            ]
+          },
+          {
+            "text": "Il vaccino deve essere inattivato o ricombinante e approvato nel paese in cui si fa.",
+            "origins": [],
+            "own": false,
+            "source_ids": [
+              "gov_uk_rabies_gb"
+            ]
+          },
+          {
+            "text": "Per i richiami si seguono le date del libretto o del certificato; se un richiamo salta, si ricomincia come per una prima vaccinazione.",
+            "origins": [],
+            "own": false,
+            "source_ids": [
+              "gov_uk_rabies_gb"
+            ]
+          }
+        ]
+      },
+      {
+        "kind": "test_sierologici",
+        "title": "Test degli anticorpi",
+        "sentences": [
+          {
+            "text": "Chi parte da un paese non UE e non elencato dalle autorità britanniche deve fare anche un esame del sangue per la rabbia: se è stato saltato un richiamo, l'attesa prima della partenza è più lunga.",
+            "origins": [
+              "non_EU"
+            ],
+            "own": false,
+            "source_ids": [
+              "gov_uk_rabies_gb"
+            ]
+          }
+        ]
+      },
+      {
+        "kind": "farmaci_e_protezioni",
+        "title": "Farmaci e protezioni",
+        "sentences": [
+          {
+            "text": "Il cane va trattato contro la tenia da un veterinario non meno di 24 ore e non più di 5 giorni prima dell'arrivo in Gran Bretagna.",
+            "origins": [],
+            "own": false,
+            "source_ids": [
+              "gov_uk_bring_pet_gb"
+            ]
+          }
+        ]
+      },
+      {
+        "kind": "comportamenti_e_norme",
+        "title": "Comportamenti e norme del posto",
+        "sentences": [
+          {
+            "text": "Un cane di razza vietata non può essere portato in Gran Bretagna senza un certificato di esenzione valido: la guida rimanda alla pagina dei cani vietati.",
+            "origins": [],
+            "own": false,
+            "source_ids": [
+              "gov_uk_bring_pet_gb"
+            ]
+          }
+        ]
+      },
+      {
+        "kind": "rientro",
+        "title": "Rientro",
+        "sentences": [
+          {
+            "text": "Per tornare dalla Gran Bretagna verso l'UE valgono le regole di ingresso da paese terzo; il passaporto per animali rilasciato a residenti in Gran Bretagna non è più valido per questo viaggio.",
+            "origins": [],
+            "own": false,
+            "source_ids": [
+              "ec_pet_non_eu"
+            ]
+          },
+          {
+            "text": "Per uscire dalla Gran Bretagna la guida britannica rimanda a una pagina dedicata sui viaggi all'estero con l'animale.",
+            "origins": [],
+            "own": false,
+            "source_ids": [
+              "gov_uk_bring_pet_gb"
+            ]
+          }
+        ]
+      },
+      {
+        "kind": "non_diffondere",
+        "title": "Per non diffondere malattie",
+        "sentences": [
+          {
+            "text": "Un animale può portare con sé parassiti e agenti di malattia in luoghi dove non ci sono: per questo la legge impone alcune vaccinazioni e alcuni trattamenti. Rispettarli protegge anche gli altri animali e le persone.",
+            "origins": [],
+            "own": true,
+            "source_ids": []
+          }
+        ]
+      },
+      {
+        "kind": "quando_andare_dal_veterinario",
+        "title": "Dal veterinario",
+        "sentences": [
+          {
+            "text": "Parlane con il tuo veterinario prima di decidere e con largo anticipo: età, salute, razza, durata e temperature del viaggio contano, e alcuni passaggi richiedono settimane o mesi.",
+            "origins": [],
+            "own": true,
+            "source_ids": []
+          }
+        ]
+      },
+      {
+        "kind": "limiti",
+        "title": "Cosa questa scheda non copre",
+        "sentences": [
+          {
+            "text": "Non sono coperti da questa scheda: le sottopagine della guida britannica (rotte approvate e punti di ingresso, tipi e validità dei documenti, esame del sangue, cani guida), l'Irlanda del Nord (sito separato), i vaccini facoltativi o consigliati, le malattie presenti, gli antiparassitari non imposti dalla legge, le usanze locali, le compagnie di trasporto.",
+            "origins": [],
+            "own": false,
+            "source_ids": []
+          },
+          {
+            "text": "Se la fonte ufficiale dice altro, vale la fonte.",
+            "origins": [],
+            "own": false,
+            "source_ids": []
+          }
+        ]
+      }
+    ],
+    "sources": [
+      {
+        "id": "gov_uk_bring_pet_gb",
+        "citation": "Fonte: GOV.UK (governo del Regno Unito), Bringing your pet dog, cat or ferret to Great Britain: What you need to do, 2026, https://www.gov.uk/bring-pet-to-great-britain. Riassunto di Quokka, verificato il 2026-11-16.",
+        "url": "https://www.gov.uk/bring-pet-to-great-britain",
+        "checked_on": "2026-11-16"
+      },
+      {
+        "id": "gov_uk_rabies_gb",
+        "citation": "Fonte: GOV.UK (governo del Regno Unito), Bringing your pet dog, cat or ferret to Great Britain: Rabies vaccination and boosters, 2026, https://www.gov.uk/bring-pet-to-great-britain/rabies-vaccination-and-boosters. Riassunto di Quokka, verificato il 2026-11-16.",
+        "url": "https://www.gov.uk/bring-pet-to-great-britain/rabies-vaccination-and-boosters",
+        "checked_on": "2026-11-16"
+      },
+      {
+        "id": "ec_pet_non_eu",
+        "citation": "Fonte: Commissione europea, Food Safety, Bringing a pet into the EU from a non-EU country, 2026, https://food.ec.europa.eu/animals/live-animal-movements/dogs-cats-and-ferrets/bringing-pet-eu-non-eu-country_en. Riassunto di Quokka, verificato il 2026-11-16. Licenza CC BY; modificato da Quokka.",
+        "url": "https://food.ec.europa.eu/animals/live-animal-movements/dogs-cats-and-ferrets/bringing-pet-eu-non-eu-country_en",
+        "checked_on": "2026-11-16"
+      }
+    ]
+  },
+  {
+    "id": "via-gb-fur",
+    "country": "GB",
+    "species": "ferret",
+    "title": "Gran Bretagna: portare il furetto (spostamenti non commerciali)",
+    "checked_on": "2026-11-16",
+    "official_url": "https://www.gov.uk/bring-pet-to-great-britain",
+    "status": "draft",
+    "blocks": [
+      {
+        "kind": "documenti",
+        "title": "Documenti",
+        "sentences": [
+          {
+            "text": "Serve una rotta di viaggio approvata (la guida britannica rimanda a una pagina dedicata); non serve se si viaggia dentro il Regno Unito o dall'Irlanda.",
+            "origins": [],
+            "own": false,
+            "source_ids": [
+              "gov_uk_bring_pet_gb"
+            ]
+          },
+          {
+            "text": "Serve un documento veterinario, il cui tipo dipende dal paese di partenza (passaporto o certificato sanitario dell'animale) e, se non vendi né cedi l'animale, una dichiarazione di viaggio.",
+            "origins": [],
+            "own": false,
+            "source_ids": [
+              "gov_uk_bring_pet_gb"
+            ]
+          },
+          {
+            "text": "Se le regole non sono rispettate l'animale può essere messo in quarantena fino a 4 mesi, oppure respinto se si arriva via mare; le spese sono a carico del proprietario.",
+            "origins": [],
+            "own": false,
+            "source_ids": [
+              "gov_uk_bring_pet_gb"
+            ]
+          }
+        ]
+      },
+      {
+        "kind": "microchip",
+        "title": "Microchip",
+        "sentences": [
+          {
+            "text": "Il microchip va impiantato prima del vaccino antirabbico o nello stesso momento; altrimenti l'animale va rivaccinato.",
+            "origins": [],
+            "own": false,
+            "source_ids": [
+              "gov_uk_rabies_gb",
+              "gov_uk_bring_pet_gb"
+            ]
+          },
+          {
+            "text": "Il registro delle vaccinazioni deve riportare anche il numero e la data del microchip.",
+            "origins": [],
+            "own": false,
+            "source_ids": [
+              "gov_uk_rabies_gb"
+            ]
+          }
+        ]
+      },
+      {
+        "kind": "vaccini_obbligatori",
+        "title": "Vaccini obbligatori",
+        "sentences": [
+          {
+            "text": "Il veterinario deve avere la prova che il furetto ha almeno 12 settimane. Dopo il primo vaccino (o l'ultima dose del primo ciclo) si aspettano almeno 21 giorni pieni prima di partire, contando come giorno 1 quello dopo la vaccinazione; il vaccino scelto può richiedere più tempo: chiedi al veterinario.",
+            "origins": [],
+            "own": false,
+            "source_ids": [
+              "gov_uk_rabies_gb",
+              "gov_uk_bring_pet_gb"
+            ]
+          },
+          {
+            "text": "Il vaccino deve essere inattivato o ricombinante e approvato nel paese in cui si fa.",
+            "origins": [],
+            "own": false,
+            "source_ids": [
+              "gov_uk_rabies_gb"
+            ]
+          },
+          {
+            "text": "Per i richiami si seguono le date del libretto o del certificato; se un richiamo salta, si ricomincia come per una prima vaccinazione.",
+            "origins": [],
+            "own": false,
+            "source_ids": [
+              "gov_uk_rabies_gb"
+            ]
+          }
+        ]
+      },
+      {
+        "kind": "test_sierologici",
+        "title": "Test degli anticorpi",
+        "sentences": [
+          {
+            "text": "Chi parte da un paese non UE e non elencato dalle autorità britanniche deve fare anche un esame del sangue per la rabbia: se è stato saltato un richiamo, l'attesa prima della partenza è più lunga.",
+            "origins": [
+              "non_EU"
+            ],
+            "own": false,
+            "source_ids": [
+              "gov_uk_rabies_gb"
+            ]
+          }
+        ]
+      },
+      {
+        "kind": "rientro",
+        "title": "Rientro",
+        "sentences": [
+          {
+            "text": "Per tornare dalla Gran Bretagna verso l'UE valgono le regole di ingresso da paese terzo; il passaporto per animali rilasciato a residenti in Gran Bretagna non è più valido per questo viaggio.",
+            "origins": [],
+            "own": false,
+            "source_ids": [
+              "ec_pet_non_eu"
+            ]
+          },
+          {
+            "text": "Per uscire dalla Gran Bretagna la guida britannica rimanda a una pagina dedicata sui viaggi all'estero con l'animale.",
+            "origins": [],
+            "own": false,
+            "source_ids": [
+              "gov_uk_bring_pet_gb"
+            ]
+          }
+        ]
+      },
+      {
+        "kind": "non_diffondere",
+        "title": "Per non diffondere malattie",
+        "sentences": [
+          {
+            "text": "Un animale può portare con sé parassiti e agenti di malattia in luoghi dove non ci sono: per questo la legge impone alcune vaccinazioni e alcuni trattamenti. Rispettarli protegge anche gli altri animali e le persone.",
+            "origins": [],
+            "own": true,
+            "source_ids": []
+          }
+        ]
+      },
+      {
+        "kind": "quando_andare_dal_veterinario",
+        "title": "Dal veterinario",
+        "sentences": [
+          {
+            "text": "Parlane con il tuo veterinario prima di decidere e con largo anticipo: età, salute, razza, durata e temperature del viaggio contano, e alcuni passaggi richiedono settimane o mesi.",
+            "origins": [],
+            "own": true,
+            "source_ids": []
+          }
+        ]
+      },
+      {
+        "kind": "limiti",
+        "title": "Cosa questa scheda non copre",
+        "sentences": [
+          {
+            "text": "Non sono coperti da questa scheda: le sottopagine della guida britannica (rotte approvate e punti di ingresso, tipi e validità dei documenti, esame del sangue, cani guida), l'Irlanda del Nord (sito separato), i vaccini facoltativi o consigliati, le malattie presenti, gli antiparassitari non imposti dalla legge, le usanze locali, le compagnie di trasporto. Per gatti e furetti non abbiamo letto una regola sul trattamento contro la tenia: chiedi alla fonte.",
+            "origins": [],
+            "own": false,
+            "source_ids": []
+          },
+          {
+            "text": "Se la fonte ufficiale dice altro, vale la fonte.",
+            "origins": [],
+            "own": false,
+            "source_ids": []
+          }
+        ]
+      }
+    ],
+    "sources": [
+      {
+        "id": "gov_uk_bring_pet_gb",
+        "citation": "Fonte: GOV.UK (governo del Regno Unito), Bringing your pet dog, cat or ferret to Great Britain: What you need to do, 2026, https://www.gov.uk/bring-pet-to-great-britain. Riassunto di Quokka, verificato il 2026-11-16.",
+        "url": "https://www.gov.uk/bring-pet-to-great-britain",
+        "checked_on": "2026-11-16"
+      },
+      {
+        "id": "gov_uk_rabies_gb",
+        "citation": "Fonte: GOV.UK (governo del Regno Unito), Bringing your pet dog, cat or ferret to Great Britain: Rabies vaccination and boosters, 2026, https://www.gov.uk/bring-pet-to-great-britain/rabies-vaccination-and-boosters. Riassunto di Quokka, verificato il 2026-11-16.",
+        "url": "https://www.gov.uk/bring-pet-to-great-britain/rabies-vaccination-and-boosters",
+        "checked_on": "2026-11-16"
+      },
+      {
+        "id": "ec_pet_non_eu",
+        "citation": "Fonte: Commissione europea, Food Safety, Bringing a pet into the EU from a non-EU country, 2026, https://food.ec.europa.eu/animals/live-animal-movements/dogs-cats-and-ferrets/bringing-pet-eu-non-eu-country_en. Riassunto di Quokka, verificato il 2026-11-16. Licenza CC BY; modificato da Quokka.",
+        "url": "https://food.ec.europa.eu/animals/live-animal-movements/dogs-cats-and-ferrets/bringing-pet-eu-non-eu-country_en",
+        "checked_on": "2026-11-16"
+      }
+    ]
+  },
+  {
+    "id": "via-gb-gat",
+    "country": "GB",
+    "species": "cat",
+    "title": "Gran Bretagna: portare il gatto (spostamenti non commerciali)",
+    "checked_on": "2026-11-16",
+    "official_url": "https://www.gov.uk/bring-pet-to-great-britain",
+    "status": "draft",
+    "blocks": [
+      {
+        "kind": "documenti",
+        "title": "Documenti",
+        "sentences": [
+          {
+            "text": "Serve una rotta di viaggio approvata (la guida britannica rimanda a una pagina dedicata); non serve se si viaggia dentro il Regno Unito o dall'Irlanda.",
+            "origins": [],
+            "own": false,
+            "source_ids": [
+              "gov_uk_bring_pet_gb"
+            ]
+          },
+          {
+            "text": "Serve un documento veterinario, il cui tipo dipende dal paese di partenza (passaporto o certificato sanitario dell'animale) e, se non vendi né cedi l'animale, una dichiarazione di viaggio.",
+            "origins": [],
+            "own": false,
+            "source_ids": [
+              "gov_uk_bring_pet_gb"
+            ]
+          },
+          {
+            "text": "Se le regole non sono rispettate l'animale può essere messo in quarantena fino a 4 mesi, oppure respinto se si arriva via mare; le spese sono a carico del proprietario.",
+            "origins": [],
+            "own": false,
+            "source_ids": [
+              "gov_uk_bring_pet_gb"
+            ]
+          }
+        ]
+      },
+      {
+        "kind": "microchip",
+        "title": "Microchip",
+        "sentences": [
+          {
+            "text": "Il microchip va impiantato prima del vaccino antirabbico o nello stesso momento; altrimenti l'animale va rivaccinato.",
+            "origins": [],
+            "own": false,
+            "source_ids": [
+              "gov_uk_rabies_gb",
+              "gov_uk_bring_pet_gb"
+            ]
+          },
+          {
+            "text": "Il registro delle vaccinazioni deve riportare anche il numero e la data del microchip.",
+            "origins": [],
+            "own": false,
+            "source_ids": [
+              "gov_uk_rabies_gb"
+            ]
+          }
+        ]
+      },
+      {
+        "kind": "vaccini_obbligatori",
+        "title": "Vaccini obbligatori",
+        "sentences": [
+          {
+            "text": "Il veterinario deve avere la prova che il gatto ha almeno 12 settimane. Dopo il primo vaccino (o l'ultima dose del primo ciclo) si aspettano almeno 21 giorni pieni prima di partire, contando come giorno 1 quello dopo la vaccinazione; il vaccino scelto può richiedere più tempo: chiedi al veterinario.",
+            "origins": [],
+            "own": false,
+            "source_ids": [
+              "gov_uk_rabies_gb",
+              "gov_uk_bring_pet_gb"
+            ]
+          },
+          {
+            "text": "Il vaccino deve essere inattivato o ricombinante e approvato nel paese in cui si fa.",
+            "origins": [],
+            "own": false,
+            "source_ids": [
+              "gov_uk_rabies_gb"
+            ]
+          },
+          {
+            "text": "Per i richiami si seguono le date del libretto o del certificato; se un richiamo salta, si ricomincia come per una prima vaccinazione.",
+            "origins": [],
+            "own": false,
+            "source_ids": [
+              "gov_uk_rabies_gb"
+            ]
+          }
+        ]
+      },
+      {
+        "kind": "test_sierologici",
+        "title": "Test degli anticorpi",
+        "sentences": [
+          {
+            "text": "Chi parte da un paese non UE e non elencato dalle autorità britanniche deve fare anche un esame del sangue per la rabbia: se è stato saltato un richiamo, l'attesa prima della partenza è più lunga.",
+            "origins": [
+              "non_EU"
+            ],
+            "own": false,
+            "source_ids": [
+              "gov_uk_rabies_gb"
+            ]
+          }
+        ]
+      },
+      {
+        "kind": "rientro",
+        "title": "Rientro",
+        "sentences": [
+          {
+            "text": "Per tornare dalla Gran Bretagna verso l'UE valgono le regole di ingresso da paese terzo; il passaporto per animali rilasciato a residenti in Gran Bretagna non è più valido per questo viaggio.",
+            "origins": [],
+            "own": false,
+            "source_ids": [
+              "ec_pet_non_eu"
+            ]
+          },
+          {
+            "text": "Per uscire dalla Gran Bretagna la guida britannica rimanda a una pagina dedicata sui viaggi all'estero con l'animale.",
+            "origins": [],
+            "own": false,
+            "source_ids": [
+              "gov_uk_bring_pet_gb"
+            ]
+          }
+        ]
+      },
+      {
+        "kind": "non_diffondere",
+        "title": "Per non diffondere malattie",
+        "sentences": [
+          {
+            "text": "Un animale può portare con sé parassiti e agenti di malattia in luoghi dove non ci sono: per questo la legge impone alcune vaccinazioni e alcuni trattamenti. Rispettarli protegge anche gli altri animali e le persone.",
+            "origins": [],
+            "own": true,
+            "source_ids": []
+          }
+        ]
+      },
+      {
+        "kind": "quando_andare_dal_veterinario",
+        "title": "Dal veterinario",
+        "sentences": [
+          {
+            "text": "Parlane con il tuo veterinario prima di decidere e con largo anticipo: età, salute, razza, durata e temperature del viaggio contano, e alcuni passaggi richiedono settimane o mesi.",
+            "origins": [],
+            "own": true,
+            "source_ids": []
+          }
+        ]
+      },
+      {
+        "kind": "limiti",
+        "title": "Cosa questa scheda non copre",
+        "sentences": [
+          {
+            "text": "Non sono coperti da questa scheda: le sottopagine della guida britannica (rotte approvate e punti di ingresso, tipi e validità dei documenti, esame del sangue, cani guida), l'Irlanda del Nord (sito separato), i vaccini facoltativi o consigliati, le malattie presenti, gli antiparassitari non imposti dalla legge, le usanze locali, le compagnie di trasporto. Per gatti e furetti non abbiamo letto una regola sul trattamento contro la tenia: chiedi alla fonte.",
+            "origins": [],
+            "own": false,
+            "source_ids": []
+          },
+          {
+            "text": "Se la fonte ufficiale dice altro, vale la fonte.",
+            "origins": [],
+            "own": false,
+            "source_ids": []
+          }
+        ]
+      }
+    ],
+    "sources": [
+      {
+        "id": "gov_uk_bring_pet_gb",
+        "citation": "Fonte: GOV.UK (governo del Regno Unito), Bringing your pet dog, cat or ferret to Great Britain: What you need to do, 2026, https://www.gov.uk/bring-pet-to-great-britain. Riassunto di Quokka, verificato il 2026-11-16.",
+        "url": "https://www.gov.uk/bring-pet-to-great-britain",
+        "checked_on": "2026-11-16"
+      },
+      {
+        "id": "gov_uk_rabies_gb",
+        "citation": "Fonte: GOV.UK (governo del Regno Unito), Bringing your pet dog, cat or ferret to Great Britain: Rabies vaccination and boosters, 2026, https://www.gov.uk/bring-pet-to-great-britain/rabies-vaccination-and-boosters. Riassunto di Quokka, verificato il 2026-11-16.",
+        "url": "https://www.gov.uk/bring-pet-to-great-britain/rabies-vaccination-and-boosters",
+        "checked_on": "2026-11-16"
+      },
+      {
+        "id": "ec_pet_non_eu",
+        "citation": "Fonte: Commissione europea, Food Safety, Bringing a pet into the EU from a non-EU country, 2026, https://food.ec.europa.eu/animals/live-animal-movements/dogs-cats-and-ferrets/bringing-pet-eu-non-eu-country_en. Riassunto di Quokka, verificato il 2026-11-16. Licenza CC BY; modificato da Quokka.",
+        "url": "https://food.ec.europa.eu/animals/live-animal-movements/dogs-cats-and-ferrets/bringing-pet-eu-non-eu-country_en",
+        "checked_on": "2026-11-16"
+      }
+    ]
+  }
+]

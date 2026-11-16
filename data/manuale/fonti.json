@@ -406,5 +406,153 @@
     "riserva_controllata_il": "2026-11-15",
     "lettura_eseguita": "automatica, un documento alla volta, il 2026-11-15 dopo il controllo in 4 punti; copie cancellate",
     "note": "Scheda per la sanità pubblica umana: si usa solo la sezione sulla stagionalità della zecca Ixodes ricinus, che riguarda la zecca e non l'ospite."
+  },
+  {
+    "id": "ec_pet_within_eu",
+    "tipo": "guida_ufficiale",
+    "livello": 1,
+    "ente_autori": "Commissione europea, Food Safety",
+    "titolo": "Travelling with a pet within the EU",
+    "anno": 2026,
+    "url": "https://food.ec.europa.eu/animals/live-animal-movements/dogs-cats-and-ferrets/travelling-pet-within-eu_en",
+    "url_letto": "https://food.ec.europa.eu/animals/live-animal-movements/dogs-cats-and-ferrets/travelling-pet-within-eu_en",
+    "edizione": "pagina senza data di aggiornamento; anno = anno di lettura",
+    "specie": [
+      "cane",
+      "gatto",
+      "furetto"
+    ],
+    "argomenti": [
+      "viaggi"
+    ],
+    "lingua": "en",
+    "diritti": {
+      "stato": "cc_by_4",
+      "licenza_letta": "Commissione europea: contenuti con licenza CC BY 4.0 (Decisione 2011/833/UE) salvo parti di terzi, secondo l'avviso legale letto dalla Normativa il 2026-11-16",
+      "uso_previsto": "riassunto con parole nostre, attribuzione e rimando alla pagina; nessuna tabella o elenco copiato; i regolamenti citati restano la fonte autentica",
+      "riserva_estrazione_automatica": "nessuna riserva trovata (controllo della Normativa del 2026-11-16, docs/compliance/17 A.3)"
+    },
+    "sponsor": "n.a. (ente pubblico)",
+    "controllata_il": "2026-11-16",
+    "controllata_da": "sessione Around the world (lettura automatica di una pagina verde; i numeri vanno riletti a mano sull'atto in vigore)",
+    "come_aperta": "testo_completo",
+    "semaforo": "verde",
+    "riserva_estrazione_automatica": "nessuna riserva trovata (controllo della Normativa del 2026-11-16, docs/compliance/17 A.3)",
+    "riserva_controllata_il": "2026-11-16",
+    "motivo_semaforo": "licenza_aperta",
+    "controllo_a_mano_il": null,
+    "lettura_eseguita": "automatica, una pagina alla volta, il 2026-11-16, sito verde per la Normativa",
+    "uso_futuro": "verde: lettura automatica, un documento alla volta, con attribuzione"
+  },
+  {
+    "id": "ec_pet_non_eu",
+    "tipo": "guida_ufficiale",
+    "livello": 1,
+    "ente_autori": "Commissione europea, Food Safety",
+    "titolo": "Bringing a pet into the EU from a non-EU country",
+    "anno": 2026,
+    "url": "https://food.ec.europa.eu/animals/live-animal-movements/dogs-cats-and-ferrets/bringing-pet-eu-non-eu-country_en",
+    "url_letto": "https://food.ec.europa.eu/animals/live-animal-movements/dogs-cats-and-ferrets/bringing-pet-eu-non-eu-country_en",
+    "edizione": "pagina senza data di aggiornamento; anno = anno di lettura",
+    "specie": [
+      "cane",
+      "gatto",
+      "furetto"
+    ],
+    "argomenti": [
+      "viaggi"
+    ],
+    "lingua": "en",
+    "diritti": {
+      "stato": "cc_by_4",
+      "licenza_letta": "Commissione europea: contenuti con licenza CC BY 4.0 (Decisione 2011/833/UE) salvo parti di terzi, secondo l'avviso legale letto dalla Normativa il 2026-11-16",
+      "uso_previsto": "riassunto con parole nostre, attribuzione e rimando alla pagina; nessuna tabella o elenco copiato; i regolamenti citati restano la fonte autentica",
+      "riserva_estrazione_automatica": "nessuna riserva trovata (controllo della Normativa del 2026-11-16, docs/compliance/17 A.3)"
+    },
+    "sponsor": "n.a. (ente pubblico)",
+    "controllata_il": "2026-11-16",
+    "controllata_da": "sessione Around the world (lettura automatica di una pagina verde; i numeri vanno riletti a mano sull'atto in vigore)",
+    "come_aperta": "testo_completo",
+    "semaforo": "verde",
+    "riserva_estrazione_automatica": "nessuna riserva trovata (controllo della Normativa del 2026-11-16, docs/compliance/17 A.3)",
+    "riserva_controllata_il": "2026-11-16",
+    "motivo_semaforo": "licenza_aperta",
+    "controllo_a_mano_il": null,
+    "lettura_eseguita": "automatica, una pagina alla volta, il 2026-11-16, sito verde per la Normativa",
+    "uso_futuro": "verde: lettura automatica, un documento alla volta, con attribuzione"
+  },
+  {
+    "id": "gov_uk_bring_pet_gb",
+    "tipo": "guida_ufficiale",
+    "livello": 1,
+    "ente_autori": "GOV.UK (governo del Regno Unito)",
+    "titolo": "Bringing your pet dog, cat or ferret to Great Britain: What you need to do",
+    "anno": 2026,
+    "url": "https://www.gov.uk/bring-pet-to-great-britain",
+    "url_letto": "https://www.gov.uk/bring-pet-to-great-britain",
+    "edizione": "pagina senza data di aggiornamento; anno = anno di lettura",
+    "specie": [
+      "cane",
+      "gatto",
+      "furetto"
+    ],
+    "argomenti": [
+      "viaggi"
+    ],
+    "lingua": "en",
+    "diritti": {
+      "stato": "ogl_v3",
+      "licenza_letta": "«All content is available under the Open Government Licence v3.0, except where otherwise stated» (piè di pagina della pagina)",
+      "uso_previsto": "riassunto con parole nostre, attribuzione e rimando alla pagina; nessuna tabella o elenco copiato; ente autore non indicato nel testo letto",
+      "riserva_estrazione_automatica": "nessuna riserva trovata (controllo della Normativa del 2026-11-16, docs/compliance/17 A.3)"
+    },
+    "sponsor": "n.a. (ente pubblico)",
+    "controllata_il": "2026-11-16",
+    "controllata_da": "sessione Around the world (lettura automatica di una pagina verde; i numeri vanno riletti a mano sull'atto in vigore)",
+    "come_aperta": "testo_completo",
+    "semaforo": "verde",
+    "riserva_estrazione_automatica": "nessuna riserva trovata (controllo della Normativa del 2026-11-16, docs/compliance/17 A.3)",
+    "riserva_controllata_il": "2026-11-16",
+    "motivo_semaforo": "licenza_aperta",
+    "controllo_a_mano_il": null,
+    "lettura_eseguita": "automatica, una pagina alla volta, il 2026-11-16, sito verde per la Normativa",
+    "uso_futuro": "verde: lettura automatica, un documento alla volta, con attribuzione"
+  },
+  {
+    "id": "gov_uk_rabies_gb",
+    "tipo": "guida_ufficiale",
+    "livello": 1,
+    "ente_autori": "GOV.UK (governo del Regno Unito)",
+    "titolo": "Bringing your pet dog, cat or ferret to Great Britain: Rabies vaccination and boosters",
+    "anno": 2026,
+    "url": "https://www.gov.uk/bring-pet-to-great-britain/rabies-vaccination-and-boosters",
+    "url_letto": "https://www.gov.uk/bring-pet-to-great-britain/rabies-vaccination-and-boosters",
+    "edizione": "pagina senza data di aggiornamento; anno = anno di lettura",
+    "specie": [
+      "cane",
+      "gatto",
+      "furetto"
+    ],
+    "argomenti": [
+      "viaggi"
+    ],
+    "lingua": "en",
+    "diritti": {
+      "stato": "ogl_v3",
+      "licenza_letta": "«All content is available under the Open Government Licence v3.0, except where otherwise stated» (piè di pagina della pagina)",
+      "uso_previsto": "riassunto con parole nostre, attribuzione e rimando alla pagina; nessuna tabella o elenco copiato; ente autore non indicato nel testo letto",
+      "riserva_estrazione_automatica": "nessuna riserva trovata (controllo della Normativa del 2026-11-16, docs/compliance/17 A.3)"
+    },
+    "sponsor": "n.a. (ente pubblico)",
+    "controllata_il": "2026-11-16",
+    "controllata_da": "sessione Around the world (lettura automatica di una pagina verde; i numeri vanno riletti a mano sull'atto in vigore)",
+    "come_aperta": "testo_completo",
+    "semaforo": "verde",
+    "riserva_estrazione_automatica": "nessuna riserva trovata (controllo della Normativa del 2026-11-16, docs/compliance/17 A.3)",
+    "riserva_controllata_il": "2026-11-16",
+    "motivo_semaforo": "licenza_aperta",
+    "controllo_a_mano_il": null,
+    "lettura_eseguita": "automatica, una pagina alla volta, il 2026-11-16, sito verde per la Normativa",
+    "uso_futuro": "verde: lettura automatica, un documento alla volta, con attribuzione"
   }
 ]

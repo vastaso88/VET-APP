@@ -33,6 +33,7 @@ from apps.api.routes.pets import router as pets_router
 from apps.api.routes.reminders import router as reminders_router
 from apps.api.routes.speech_to_text import router as speech_to_text_router
 from apps.api.routes.subscription import router as subscription_router
+from apps.api.routes.travel import router as travel_router
 from packages.infrastructure.logging.logger import configure_logging
 from packages.infrastructure.telemetry.noop import setup_telemetry
 from packages.shared.auth_context import reset_access_token, set_access_token
@@ -266,6 +267,7 @@ app.include_router(subscription_router)
 app.include_router(devices_router)
 app.include_router(local_services_router)
 app.include_router(news_router)
+app.include_router(travel_router)
 app.include_router(events_router)
 app.include_router(geocoding_router)
 app.include_router(marketplace_router)

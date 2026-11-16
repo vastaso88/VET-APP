@@ -98,6 +98,7 @@ from packages.core.application.services.list_nearby_radar_places import (
 )
 from packages.core.application.services.list_pet_profiles import ListPetProfilesService
 from packages.core.application.services.list_reminders import ListRemindersService
+from packages.core.application.services.list_travel_cards import ListTravelCardsService
 from packages.core.application.services.list_walks import ListWalksService
 from packages.core.application.services.llm_budget import LlmBudget, parse_budgets
 from packages.core.application.services.llm_usage_recorder import InstrumentedLLMClient
@@ -167,6 +168,7 @@ from packages.core.application.services.vet_summary import VetSummaryService
 from packages.core.domain.knowledge.health_cards import load_cards_file
 from packages.core.domain.subscription.limits import PlanLimits
 from packages.core.domain.subscription.models import SubscriptionPlan
+from packages.core.domain.travel.cards import load_travel_cards
 from packages.infrastructure.auth.age_guarded_auth_provider import AgeGuardedAuthProvider
 from packages.infrastructure.auth.bootstrap_auth_provider import BootstrapAuthProvider
 from packages.infrastructure.documents.pypdf_reader import PypdfReader
@@ -677,6 +679,13 @@ class ApplicationContainer:
                     return InMemoryEventSubmissionRepository()
                 raise
         return InMemoryEventSubmissionRepository()
+
+    def travel_cards_service(self) -> ListTravelCardsService:
+        """Around the world: the approved travel cards (files in the repository,
+        no table: they are general content without personal data)."""
+        return ListTravelCardsService(
+            load_travel_cards(include_drafts=self.settings.travel_cards_include_drafts)
+        )
 
     def pet_news_service(self) -> GetPetNewsService:
         """One per process: it remembers when the feeds last failed."""

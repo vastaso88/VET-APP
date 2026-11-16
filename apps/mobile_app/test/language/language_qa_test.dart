@@ -26,6 +26,9 @@ import 'package:vet_app_mobile/features/marketplace/presentation/pages/marketpla
 import 'package:vet_app_mobile/features/marketplace/presentation/pages/marketplace_conversations_page.dart';
 import 'package:vet_app_mobile/features/marketplace/presentation/pages/marketplace_info_page.dart';
 import 'package:vet_app_mobile/features/pets/presentation/pages/pet_create_page.dart';
+import 'package:vet_app_mobile/features/travel_guide/data/travel_cards_repository.dart';
+import 'package:vet_app_mobile/features/travel_guide/domain/travel_card.dart';
+import 'package:vet_app_mobile/features/travel_guide/presentation/pages/travel_guide_page.dart';
 import 'package:vet_app_mobile/l10n/l10n.dart';
 
 /// Final per-language QA: the same pages in every translation, at the
@@ -64,12 +67,18 @@ final _pages = <String, Widget Function()>{
   'marketplace info': () => const MarketplaceInfoPage(),
   'marketplace conversation': () =>
       const MarketplaceConversationPage(listingId: 'ad', listingTitle: 'Ad'),
+  'around the world': () => TravelGuidePage(repository: _NoTravelCards()),
   'language section': () => Scaffold(
         body: SingleChildScrollView(
           child: LanguageSettingsSection(expanded: true, onToggle: (_) {}),
         ),
       ),
 };
+
+class _NoTravelCards implements TravelCardsRepository {
+  @override
+  Future<List<TravelCard>> fetchAll() async => const [];
+}
 
 /// Overflows found by this very test and not fixed here (layout belongs to
 /// the UI sessions). Each entry is tolerated *only* for its page and, when

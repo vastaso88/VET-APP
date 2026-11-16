@@ -176,3 +176,14 @@ Ho preso i suoi testi A-I (A.12) così come sono e ho seguito le sue risposte (A
 - Il testo esatto del Reg. delegato (UE) 2026/131 e le sue eccezioni: nessun dettaglio è stato letto da me; i numeri (12 settimane, 21 giorni, 24-120 ore) nell'esempio A.9 della Normativa **non sono verificati** e non si usano finché non sono letti a mano.
 - Quali paesi hanno regole proprie in più oltre a quelli citati dalla Commissione.
 - Se la pagina di GOV.UK sui viaggi con animali è sotto licenza OGL (va controllata pagina per pagina).
+
+## 12. Stato della costruzione (fase 2, 2026-11-16)
+
+Costruito e provato; **nessuna scheda è approvata**, quindi in produzione la riga del menu resta nascosta.
+
+- **Dati**: 6 schede in bozza in `data/manuale/viaggi/` (UE e Gran Bretagna × cane, gatto, furetto), fonti in `fonti.json` (4 nuove: 2 pagine della Commissione europea, 2 di GOV.UK; tutte verdi, `motivo_semaforo` e `controllo_a_mano_il` inclusi). Esportate in `data/manuale/viaggi/travel_cards.json`. Il documento da approvare è `docs/product/19_schede_viaggio_da_approvare.md` (si rigenera con `python scripts/manuale/check_viaggi.py --approvazione`).
+- **Numeri da leggere a mano**: le 35 frasi con giorni, settimane, ore, mesi o numero di animali sono segnate **[DA VERIFICARE A MANO]**; lo script rifiuta lo stato «rivista» finché ognuna non ha `letto_a_mano` (chi e quando l'ha letta nell'atto in vigore su EUR-Lex).
+- **Backend**: `GET /travel/cards` (login richiesto, nessun parametro), `ListTravelCardsService`, `packages/core/domain/travel/cards.py`; nessuna tabella; solo schede approvate; scadenza 90 giorni (avviso) e 180 (contenuto nascosto). Impostazione di sviluppo `TRAVEL_CARDS_INCLUDE_DRAFTS` (rifiutata in produzione).
+- **App**: `features/travel_guide/` (pagina con i tre campi, ricerca paese con 195 paesi, animali propri o specie, risultato filtrato per origine UE/fuori UE, scheda mancante, scheda vecchia o nascosta, «Segnala un errore» per e-mail al supporto), una riga in Attività che compare solo se esiste almeno una scheda approvata. Le scelte non si salvano e non partono dal telefono.
+- **Non fatto in questa versione**: l'avviso breve con «Ho capito» alla prima apertura (`compliance/15`, lo decide la Normativa insieme ai consensi); nomi dei paesi in altre lingue; schede in altre lingue (si traducono dopo l'approvazione dell'italiano); la risposta fissa della chat sui viaggi (§3 punto 7, spetta alla sessione Chat).
+- **Testi**: 47 chiavi `aroundWorld*` in `app_it.arb` (testi A-I della Normativa tali e quali) e bozze EN/ES/DE/FR da rivedere (sessione «Revisione traduzioni»).

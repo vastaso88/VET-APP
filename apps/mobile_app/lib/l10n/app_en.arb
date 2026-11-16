@@ -4049,5 +4049,86 @@
   "marketplaceListingGone": "This listing is no longer available.",
   "marketplacePrivateSellerDeclaration": "I declare that I am selling as a private individual, not as part of a commercial or professional activity.",
   "marketplacePrivateSellerRequired": "To publish, you must confirm that you are selling as a private individual: the marketplace is not for commercial or professional activities.",
-  "marketplaceInfoPrivateOnly": "If you sell as a commercial or professional activity, you cannot use the marketplace: Quokka may remove your listings and suspend your access."
+  "marketplaceInfoPrivateOnly": "If you sell as a commercial or professional activity, you cannot use the marketplace: Quokka may remove your listings and suspend your access.",
+  "aroundWorldTitle": "Around the world",
+  "aroundWorldActivitySubtitle": "Rules, vaccines and protection for travelling with your pet.",
+  "aroundWorldNotice": "General information on the rules for travelling with your pet. Rules change and every country decides for itself: before you leave, always check with the veterinary authorities of the country you leave from and the one you go to, and with the transport company. Quokka does not guarantee that the information is complete or up to date and does not encourage moving or importing animals: assess the trip with your vet, thinking first of all of your pet's wellbeing.",
+  "aroundWorldFromLabel": "Where you are leaving from",
+  "aroundWorldToLabel": "Where you are going",
+  "aroundWorldWhoLabel": "Who you are taking with you",
+  "aroundWorldCountryHint": "Search for a country",
+  "aroundWorldCountryNone": "No country found.",
+  "aroundWorldMyPets": "Your pets",
+  "aroundWorldBySpecies": "Or choose a species",
+  "aroundWorldSpeciesDog": "Dog",
+  "aroundWorldSpeciesCat": "Cat",
+  "aroundWorldSpeciesFerret": "Ferret",
+  "aroundWorldShow": "Show the information",
+  "aroundWorldPickAll": "Choose where you leave from, where you are going and who you are taking with you.",
+  "aroundWorldSameCountry": "You chose the same country to leave from and to go to: choose another destination.",
+  "aroundWorldLoadError": "I can't load the cards. Check your connection and try again.",
+  "aroundWorldRetry": "Try again",
+  "aroundWorldResultHeader": "{species}: from {from} to {to}",
+  "@aroundWorldResultHeader": {
+    "placeholders": {
+      "species": {
+        "type": "String"
+      },
+      "from": {
+        "type": "String"
+      },
+      "to": {
+        "type": "String"
+      }
+    }
+  },
+  "aroundWorldNoCard": "We do not have a verified card for this combination yet. That does not mean there are no rules: check with the veterinary authority of the destination country and with the official veterinary service of your country (in Italy, your ASL).",
+  "aroundWorldOldCard": "This card was verified on {date} and may have changed. Check the official source before deciding anything.",
+  "@aroundWorldOldCard": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "aroundWorldHiddenCard": "This card is out of date and we are not showing it for now. The official rules are here:",
+  "aroundWorldOpenOfficial": "Open the official source",
+  "aroundWorldNotATrip": "This section is about pets travelling with their owner, with no commercial purpose. If the animal is not travelling with you, is being moved to be sold, adopted or entrusted to someone, or if many animals travel together, different and stricter rules apply: contact the official veterinary service of your country (in Italy, your ASL) or the veterinary authority of the destination country. We cannot give you any guidance here.",
+  "aroundWorldOtherSpecies": "Different rules apply in this case. Contact the competent veterinary authority: we cannot give you any guidance here.",
+  "aroundWorldTransport": "The rules of transport companies (planes, ships, trains, buses) and of accommodation are different from the official ones and change often: we do not report them. Always ask the company before booking. Quokka is not a travel agency and does not sell or organise trips.",
+  "aroundWorldLocalCustoms": "Local customs and habits: we do not cover them here. For how animals must be handled (lead, muzzle, banned breeds, public places) we report only rules with an official source; for anything else, ask the authorities or businesses on the spot.",
+  "aroundWorldTimes": "These steps have precise timings and some take weeks or months: arrange them with your vet well in advance and check the dates with the authority of the country you are going to.",
+  "aroundWorldFinal": "Official rules prevail over this summary. Before you leave, check with the official veterinary service of your country (in Italy, your ASL), with the veterinary authority of the destination country and with the transport company.",
+  "aroundWorldInfoTitle": "What Around the world does and does not do",
+  "aroundWorldInfoBody": "It summarises the official rules for travelling with dogs, cats and ferrets, with the source and the date of verification. It is not veterinary or legal advice, it does not replace your official veterinary service or the authorities of the destination country, and it does not guarantee to be complete or up to date. It does not name medicines or doses and does not cover local customs without an official source, transport companies, sale, adoption or several animals travelling together. We do not encourage moving or importing animals.",
+  "aroundWorldReportError": "Report an error",
+  "aroundWorldMailSubject": "Error in a travel card ({code})",
+  "@aroundWorldMailSubject": {
+    "placeholders": {
+      "code": {
+        "type": "String"
+      }
+    }
+  },
+  "aroundWorldCheckedOn": "Verified on {date}",
+  "@aroundWorldCheckedOn": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "aroundWorldOwnAdvice": "Quokka's advice (not from the source)",
+  "aroundWorldBlockDocuments": "Documents",
+  "aroundWorldBlockMicrochip": "Microchip",
+  "aroundWorldBlockCompulsoryVaccines": "Compulsory vaccines",
+  "aroundWorldBlockAntibodyTest": "Antibody test",
+  "aroundWorldBlockRecommendedVaccines": "Recommended vaccines",
+  "aroundWorldBlockDiseases": "Diseases present",
+  "aroundWorldBlockMedicinesProtection": "Medicines and protection",
+  "aroundWorldBlockLocalRules": "Local rules and conduct",
+  "aroundWorldBlockReturn": "Coming back",
+  "aroundWorldBlockSpreading": "Not spreading diseases",
+  "aroundWorldBlockVet": "At the vet",
+  "aroundWorldBlockLimits": "What this card does not cover"
 }

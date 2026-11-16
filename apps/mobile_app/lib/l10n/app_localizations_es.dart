@@ -7299,4 +7299,168 @@ class AppLocalizationsEs extends AppLocalizations {
   @override
   String get marketplaceInfoPrivateOnly =>
       'Si vendes como actividad comercial, empresarial o profesional, no puedes usar el mercadillo: Quokka puede retirar los anuncios y suspender el acceso.';
+
+  @override
+  String get aroundWorldTitle => 'Around the world';
+
+  @override
+  String get aroundWorldActivitySubtitle =>
+      'Normas, vacunas y protecciones para viajar con tu mascota.';
+
+  @override
+  String get aroundWorldNotice =>
+      'Información general sobre las normas para viajar con tu mascota. Las normas cambian y cada país decide por sí mismo: antes de salir, consulta siempre con las autoridades veterinarias del país de partida y del de llegada y con la empresa de transporte. Quokka no garantiza que la información esté completa o actualizada y no anima a trasladar ni a importar animales: valora el viaje con tu veterinario, pensando ante todo en el bienestar de tu mascota.';
+
+  @override
+  String get aroundWorldFromLabel => 'Desde dónde sales';
+
+  @override
+  String get aroundWorldToLabel => 'A dónde vas';
+
+  @override
+  String get aroundWorldWhoLabel => 'A quién llevas contigo';
+
+  @override
+  String get aroundWorldCountryHint => 'Busca un país';
+
+  @override
+  String get aroundWorldCountryNone => 'No se ha encontrado ningún país.';
+
+  @override
+  String get aroundWorldMyPets => 'Tus mascotas';
+
+  @override
+  String get aroundWorldBySpecies => 'O elige una especie';
+
+  @override
+  String get aroundWorldSpeciesDog => 'Perro';
+
+  @override
+  String get aroundWorldSpeciesCat => 'Gato';
+
+  @override
+  String get aroundWorldSpeciesFerret => 'Hurón';
+
+  @override
+  String get aroundWorldShow => 'Mostrar la información';
+
+  @override
+  String get aroundWorldPickAll =>
+      'Elige desde dónde sales, a dónde vas y a quién llevas contigo.';
+
+  @override
+  String get aroundWorldSameCountry =>
+      'Has elegido el mismo país de salida y de llegada: elige otro destino.';
+
+  @override
+  String get aroundWorldLoadError =>
+      'No consigo cargar las fichas. Comprueba la conexión e inténtalo de nuevo.';
+
+  @override
+  String get aroundWorldRetry => 'Reintentar';
+
+  @override
+  String aroundWorldResultHeader(String species, String from, String to) {
+    return '$species: de $from a $to';
+  }
+
+  @override
+  String get aroundWorldNoCard =>
+      'Todavía no tenemos una ficha verificada para esta combinación. Eso no significa que no haya normas: consulta con la autoridad veterinaria del país de destino y con el servicio veterinario oficial de tu país (en Italia, el de la ASL).';
+
+  @override
+  String aroundWorldOldCard(String date) {
+    return 'Esta ficha se verificó el $date y puede haber cambiado. Consulta la fuente oficial antes de decidir nada.';
+  }
+
+  @override
+  String get aroundWorldHiddenCard =>
+      'Esta ficha no está actualizada y por ahora no la mostramos. Las normas oficiales están aquí:';
+
+  @override
+  String get aroundWorldOpenOfficial => 'Abrir la fuente oficial';
+
+  @override
+  String get aroundWorldNotATrip =>
+      'Esta sección trata de los animales de compañía que viajan con su propietario, sin fines comerciales. Si el animal no viaja contigo, si se traslada para ser vendido, adoptado o entregado a otra persona, o si viajan muchos animales juntos, se aplican normas distintas y más estrictas: dirígete al servicio veterinario oficial de tu país (en Italia, el de la ASL) o a la autoridad veterinaria del país de destino. Aquí no podemos darte indicaciones.';
+
+  @override
+  String get aroundWorldOtherSpecies =>
+      'En este caso se aplican normas distintas. Dirígete a la autoridad veterinaria competente: aquí no podemos darte indicaciones.';
+
+  @override
+  String get aroundWorldTransport =>
+      'Las normas de las empresas de transporte (aviones, barcos, trenes, autobuses) y de los alojamientos son distintas de las oficiales y cambian a menudo: no las incluimos. Pregunta siempre a la empresa antes de reservar. Quokka no es una agencia de viajes y no vende ni organiza viajes.';
+
+  @override
+  String get aroundWorldLocalCustoms =>
+      'Costumbres y usos locales: aquí no los cubrimos. Sobre cómo se debe llevar a los animales (correa, bozal, razas prohibidas, locales públicos) solo indicamos las normas con fuente oficial; para lo demás, infórmate con las autoridades o los establecimientos del lugar.';
+
+  @override
+  String get aroundWorldTimes =>
+      'Estos pasos tienen plazos precisos y algunos requieren semanas o meses: acuérdalos con tu veterinario con mucha antelación y comprueba las fechas con la autoridad del país de llegada.';
+
+  @override
+  String get aroundWorldFinal =>
+      'Las normas oficiales prevalecen sobre este resumen. Antes de salir, consulta con el servicio veterinario oficial de tu país (en Italia, el de la ASL), con la autoridad veterinaria del país de destino y con la empresa de transporte.';
+
+  @override
+  String get aroundWorldInfoTitle => 'Qué hace y qué no hace Around the world';
+
+  @override
+  String get aroundWorldInfoBody =>
+      'Resume las normas oficiales para viajar con perros, gatos y hurones, con la fuente y la fecha de verificación. No es asesoramiento veterinario ni jurídico, no sustituye al servicio veterinario oficial ni a las autoridades del país de destino y no garantiza estar completo ni actualizado. No indica medicamentos ni dosis y no cubre costumbres locales sin fuente oficial, empresas de transporte, venta, adopción ni varios animales juntos. No animamos a trasladar ni a importar animales.';
+
+  @override
+  String get aroundWorldReportError => 'Informar de un error';
+
+  @override
+  String aroundWorldMailSubject(String code) {
+    return 'Error en una ficha de viaje ($code)';
+  }
+
+  @override
+  String aroundWorldCheckedOn(String date) {
+    return 'Verificado el $date';
+  }
+
+  @override
+  String get aroundWorldOwnAdvice => 'Consejo de Quokka (no de la fuente)';
+
+  @override
+  String get aroundWorldBlockDocuments => 'Documentos';
+
+  @override
+  String get aroundWorldBlockMicrochip => 'Microchip';
+
+  @override
+  String get aroundWorldBlockCompulsoryVaccines => 'Vacunas obligatorias';
+
+  @override
+  String get aroundWorldBlockAntibodyTest => 'Prueba de anticuerpos';
+
+  @override
+  String get aroundWorldBlockRecommendedVaccines => 'Vacunas recomendadas';
+
+  @override
+  String get aroundWorldBlockDiseases => 'Enfermedades presentes';
+
+  @override
+  String get aroundWorldBlockMedicinesProtection =>
+      'Medicamentos y protecciones';
+
+  @override
+  String get aroundWorldBlockLocalRules => 'Normas y conducta en el lugar';
+
+  @override
+  String get aroundWorldBlockReturn => 'Regreso';
+
+  @override
+  String get aroundWorldBlockSpreading => 'Para no propagar enfermedades';
+
+  @override
+  String get aroundWorldBlockVet => 'En el veterinario';
+
+  @override
+  String get aroundWorldBlockLimits => 'Qué no cubre esta ficha';
 }
