@@ -20581,5 +20581,14 @@
       "de": "48f859e3097f41dade557f5b73e24f5d95c5203b69a5e2def538215b161f2b26",
       "fr": "4b456ed505c76ff5b3c5df5cd4d932f41db6046467878f0fa9f7ec696d643af6"
     }
+  },
+  "ui:chatConversationNotFound": {
+    "source": "b159497055a8b05499a6d694a6d70639de521d4e095fe5f43fb87027152c748f",
+    "targets": {
+      "en": "b035dc48e3be1a51bad9dd85c174a3ed22866c51ae6763d31cd50ea45b564c39",
+      "es": "8a3107f7b3ae34d6fbe719bcfb7ae7fdd12f374962cbb06789daf06a683d450d",
+      "de": "b1ff98fe11a4b2603a499a265fe2266ff3ce61572974d4f10fc270e39e5b411c",
+      "fr": "844f378a1fa64aa88eec5588f6722a3d08b6c6f6d2e21057b8a68003038c3079"
+    }
   }
 }

@@ -1352,6 +1352,12 @@ abstract class AppLocalizations {
   /// **'Ciao, ho una domanda per {pet}.'**
   String chatEmptyGreeting(String pet);
 
+  /// No description provided for @chatConversationNotFound.
+  ///
+  /// In it, this message translates to:
+  /// **'Conversazione non trovata'**
+  String get chatConversationNotFound;
+
   /// No description provided for @chatErrorTitle.
   ///
   /// In it, this message translates to:

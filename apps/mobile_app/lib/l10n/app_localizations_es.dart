@@ -762,6 +762,9 @@ class AppLocalizationsEs extends AppLocalizations {
   }
 
   @override
+  String get chatConversationNotFound => 'Conversación no encontrada';
+
+  @override
   String get chatErrorTitle => 'Conversación no disponible';
 
   @override

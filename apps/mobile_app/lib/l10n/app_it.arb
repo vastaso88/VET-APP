@@ -350,6 +350,7 @@
       }
     }
   },
+  "chatConversationNotFound": "Conversazione non trovata",
   "chatErrorTitle": "Conversazione non disponibile",
   "chatErrorSubtitle": "Qualcosa e andato storto nel recupero del thread.",
   "chatErrorAction": "Torna alle chat",

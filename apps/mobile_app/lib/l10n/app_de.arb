@@ -350,6 +350,7 @@
       }
     }
   },
+  "chatConversationNotFound": "Unterhaltung nicht gefunden",
   "chatErrorTitle": "Unterhaltung nicht verfügbar",
   "chatErrorSubtitle": "Beim Abrufen des Verlaufs ist etwas schiefgelaufen.",
   "chatErrorAction": "Zurück zu den Chats",

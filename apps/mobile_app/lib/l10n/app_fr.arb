@@ -350,6 +350,7 @@
       }
     }
   },
+  "chatConversationNotFound": "Conversation introuvable",
   "chatErrorTitle": "Conversation indisponible",
   "chatErrorSubtitle": "Un problème est survenu lors de la récupération de la conversation.",
   "chatErrorAction": "Retour aux chats",

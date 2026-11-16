@@ -1,3 +1,4 @@
+import '../../../../shared/config/app_runtime_config_loader.dart';
 import '../../../../shared/widgets/short_notice.dart';
 import 'dart:async';
 import 'dart:typed_data';
@@ -32,12 +33,18 @@ class ChatConversationDetailPage extends StatefulWidget {
     this.initialConversation,
     this.state = ChatScreenState.success,
     this.onRetry,
+    this.serverConfigured,
   });
 
   final String conversationId;
   final ChatConversationDetail? initialConversation;
   final ChatScreenState state;
   final VoidCallback? onRetry;
+
+  /// Whether a server is configured; by default read from the app's config. With one,
+  /// a conversation that does not exist is "not found"; without one (the demo) the
+  /// sample conversation stands in. Overridable for tests.
+  final bool? serverConfigured;
 
   @override
   State<ChatConversationDetailPage> createState() =>
@@ -50,6 +57,13 @@ class _ChatConversationDetailPageState extends State<ChatConversationDetailPage>
 
   bool _isSending = false;
   int _lastRenderedMessageCount = 0;
+
+  bool get _serverConfigured =>
+      widget.serverConfigured ?? const AppRuntimeConfigLoader().load().hasApiBaseUrl;
+
+  /// The conversation this page is about, or null when there is none to show.
+  ChatConversationDetail? get _known =>
+      _store.conversationById(widget.conversationId) ?? widget.initialConversation;
 
   /// The reply that just arrived: the list keeps its start in view (at a
   /// third from the top) instead of jumping to its end, until the owner
@@ -67,7 +81,9 @@ class _ChatConversationDetailPageState extends State<ChatConversationDetailPage>
     // notifies ChatDemoStore listeners, which must not happen while this
     // page itself is still being built during a route transition.
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted) {
+      // With a server, an id nobody knows is "not found": nothing is invented in the
+      // store and the first-use notice has no chat to belong to.
+      if (mounted && (_known != null || !_serverConfigured)) {
         _store.openConversation(widget.conversationId, fallback: widget.initialConversation);
         // First opening of the chat: an AI answers, and where the questions go.
         unawaited(showShortNoticeOnce(context, ShortNotice.chatAi));
@@ -103,9 +119,9 @@ class _ChatConversationDetailPageState extends State<ChatConversationDetailPage>
         child: AnimatedBuilder(
           animation: _store,
           builder: (context, _) {
-            final conversation = _store.conversationById(widget.conversationId) ??
-                widget.initialConversation ??
-                ChatSeedData.detail;
+            final known = _known;
+            if (known == null && _serverConfigured) return const _ConversationNotFound();
+            final conversation = known ?? ChatSeedData.detail;
 
             return Column(
               children: [
@@ -677,4 +693,39 @@ String _headerTitle(BuildContext context, ChatConversationDetail conversation) {
     return context.l10n.chatDefaultTitle(conversation.petName);
   }
   return conversation.title;
+}
+
+/// A conversation that does not exist (a link to a deleted chat): said plainly,
+/// with the way back to the list. Never a sample conversation in its place.
+class _ConversationNotFound extends StatelessWidget {
+  const _ConversationNotFound();
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(AppSpacing.xxl),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Icon(Icons.chat_bubble_outline_rounded, size: 48, color: AppColors.mutedText),
+            const SizedBox(height: AppSpacing.lg),
+            Text(
+              context.l10n.chatConversationNotFound,
+              key: const ValueKey('chat-conversation-not-found'),
+              style: AppTextStyles.title,
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: AppSpacing.xl),
+            OutlinedButton.icon(
+              key: const ValueKey('chat-conversation-not-found-back'),
+              onPressed: () => Navigator.of(context).maybePop(),
+              icon: const Icon(Icons.arrow_back_rounded, size: 18),
+              label: Text(context.l10n.commonBack),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
 }

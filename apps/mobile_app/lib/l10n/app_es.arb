@@ -350,6 +350,7 @@
       }
     }
   },
+  "chatConversationNotFound": "Conversación no encontrada",
   "chatErrorTitle": "Conversación no disponible",
   "chatErrorSubtitle": "Algo salió mal al recuperar el hilo.",
   "chatErrorAction": "Volver a los chats",
