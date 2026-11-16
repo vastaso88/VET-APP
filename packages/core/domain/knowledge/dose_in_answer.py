@@ -94,6 +94,44 @@ _NAMED_DRUG = re.compile(
 )
 
 
+# Food and water (synthetic users round 2, 2026-11-16): "una bustina da 85 g due
+# volte al giorno", "40-50 grammi per kg", "pellets twice a day and a few drops
+# of water" were refused as doses and replaced by the fixed text on medicines.
+_FOOD = re.compile(
+    r"\b(?:mangi\w*|cibo|umido|crocchett\w*|pappa|pasto|pasti|razion\w*|alimento|alimentazione|"
+    r"eats?|eating|feed\w*|come|comer|fressen|frisst|manger|mange|"
+    r"mangime|acqua|fieno|verdur\w*|frutta|semi|pellet\w*|carne|pesce|"
+    r"food|kibble|meals?|portions?|water|hay|seeds?|vegetables?|treats?|"
+    r"comida|pienso|raciones|racion|agua|heno|verduras?|"
+    r"futter|nassfutter|trockenfutter|mahlzeit\w*|wasser|heu|gemuse|"
+    r"nourriture|croquettes?|patee|repas|ration\w*|eau|foin|legumes)\b"
+)
+# Units and forms a food portion shares with a medicine.
+_SHARED_WITH_FOOD = re.compile(
+    r"^(?:bustin\w*|gocc\w*|drops?|gotas?|tropfen|gouttes?|mg|ml|cc|milligramm\w*|"
+    r"millilitr\w*|milliliter\w*|millilitre\w*|milligramme\w*|mililitros?)$"
+)
+_WATER = re.compile(r"\b(?:acqua|water|agua|wasser|eau)\b")
+# Drops are food only when they are drops of water ("a few drops of water on the
+# leaves"); "2 gocce nel cibo" is a medicine or a supplement.
+_DROPS = re.compile(r"^(?:gocc\w*|drops?|gotas?|tropfen|gouttes?)$")
+_VOLUME = re.compile(r"\b(?:ml|cc|millilitr\w*|milliliter\w*|millilitre\w*|mililitros?)\b")
+# Units only a medicine has.
+_DRUG_UNIT = re.compile(r"\b\d+(?:[.,]\d+)?\s*(?:mg|mcg|µg|ug|ui|iu|ie)\b")
+
+
+def _is_a_food_amount(sentence: str) -> bool:
+    """A portion of food or water: food words, no named drug, no unit only a
+    medicine has, and every medicine-like word one a food portion shares."""
+    if not _FOOD.search(sentence) or _NAMED_DRUG.search(sentence) or _DRUG_UNIT.search(sentence):
+        return False
+    water = bool(_WATER.search(sentence))
+    return all(
+        _SHARED_WITH_FOOD.match(word) and (water or not _DROPS.match(word))
+        for word in (found.group(0) for found in _MEDICINE.finditer(sentence))
+    )
+
+
 def _names_a_medicine(sentence: str) -> bool:
     return any(not _BARE_UNIT.match(found.group(0)) for found in _MEDICINE.finditer(sentence))
 
@@ -119,11 +157,18 @@ def find_dosage(answer: str, *, allowed_text: str = "") -> str | None:
     def is_models_own(expression: str) -> bool:
         return not allowed or expression not in allowed
 
-    for match in _PER_KG.finditer(text):
-        if is_models_own(match.group(0)):
-            return match.group(0)
-    for sentence in _SENTENCE_SPLIT.split(text):
-        if not _names_a_medicine(sentence):
+    sentences = _SENTENCE_SPLIT.split(text)
+    for sentence in sentences:
+        for match in _PER_KG.finditer(sentence):
+            # Grams of food per kilo of body weight, or water per kilo, are
+            # rations; a volume per kilo of anything else may be a liquid drug.
+            ration = _is_a_food_amount(sentence) and (
+                not _VOLUME.search(match.group(0)) or bool(_WATER.search(sentence))
+            )
+            if is_models_own(match.group(0)) and not ration:
+                return match.group(0)
+    for sentence in sentences:
+        if not _names_a_medicine(sentence) or _is_a_food_amount(sentence):
             continue
         amount = _AMOUNT.search(sentence)
         if amount is not None and is_models_own(amount.group(0)):

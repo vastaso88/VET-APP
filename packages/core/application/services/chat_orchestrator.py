@@ -164,6 +164,7 @@ from packages.core.domain.safety.harmful_requests import (
     answer_is_bare_yes_no,
     asks_care_costs,
     asks_for_a_bare_yes_or_no,
+    behaviour_needs_questions,
     detect_harmful_request,
     expresses_hopelessness,
     expresses_self_harm,
@@ -185,7 +186,6 @@ from packages.core.domain.safety.harmful_requests import (
     strip_invented_prices,
     strip_proceed_anyway,
     vomiting_and_not_eating_for_a_day,
-    warning_toward_others,
 )
 from packages.core.domain.safety.human_drug_toxicity import human_drug_toxicity_note
 from packages.core.domain.safety.triage_clarification import (
@@ -214,6 +214,12 @@ logger = logging.getLogger("vetgpt.chat")
 _FEMALE_LABELS = frozenset({"femmina", "female", "hembra", "weiblich", "femelle", "f"})
 # Species whose emergencies need a vet who knows them.
 _EXOTIC_FAMILIES = frozenset({"bird", "small_mammal", "reptile_amphibian", "fish", "ferret"})
+# The categories whose first aid starts with their own gesture (dogs and cats).
+_DOG_CAT_STEPS = {
+    "bleeding_trauma": "triage_steps_bleeding",
+    "urinary": "triage_steps_urinary",
+    "respiratory": "triage_steps_respiratory",
+}
 # Intents that are health questions (approved-cards rule, "Non mi ha
 # aiutato"), together with the classifier's "health" topic.
 _HEALTH_INTENTS = frozenset({"clinical_question", "preventive_care"})
@@ -892,6 +898,9 @@ class ChatOrchestratorInput(BaseModel):
     # Who is asking, for the per-owner daily allowance (llm_budget.py);
     # developer accounts are exempt.
     owner_id: str = ""
+    # The owner's other animals as "Name (species, breed)": name and species
+    # only, so the chat does not ask what an animal on the account is.
+    other_pets: list[str] = Field(default_factory=list)
     # The account declared an age of 14 to 17 (account_age): the prompt gets
     # the teenager note and the self-harm reply the under-18 helpline.
     owner_is_minor: bool = False
@@ -1805,9 +1814,22 @@ class ChatOrchestrator:
             message.role == "user"
             and (
                 mentions_a_warning_signal(message.content)
+                or behaviour_needs_questions(message.content)
                 or asks_to_stop_questions(message.content)
             )
             for message in data.conversation_history
+        )
+
+    @staticmethod
+    def _continues_a_behaviour_case(data: ChatOrchestratorInput) -> bool:
+        """The owner's previous message opened a behaviour case (a warning
+        signal or a vague picture): this one answers or adds to it."""
+        last = next(
+            (m.content for m in reversed(data.conversation_history) if m.role == "user"), ""
+        )
+        return bool(last) and (
+            behaviour_needs_questions(last)
+            or (mentions_a_warning_signal(last) and not mentions_play(last))
         )
 
     @staticmethod
@@ -2375,6 +2397,10 @@ class ChatOrchestrator:
             steps_key = "triage_steps_heatstroke"
         elif category in own_steps:
             steps_key = own_steps[category]
+        elif category in _DOG_CAT_STEPS and species_family not in _EXOTIC_FAMILIES:
+            # A wound, a blocked bladder, breathing trouble: their own first
+            # gesture, never the generic "al caldo" (synthetic users round 2).
+            steps_key = _DOG_CAT_STEPS[category]
         elif category == "gi_stasis" and species_family == "small_mammal":
             # Hay stays available: fasting is the problem itself (C).
             steps_key = "triage_steps_small_mammal_stasis"
@@ -3211,16 +3237,22 @@ class ChatOrchestrator:
         # 2026-11-16): the first time in the conversation the reply asks the
         # facts that decide the advice before explaining anything; later
         # turns build on the answers, without invented motives.
+        # Round 2 of the synthetic users: also a vague picture toward the animal
+        # or the owner ("ringhia ogni tanto", "fa i dispetti"), even when the
+        # message reads as a symptom rather than a behaviour question.
         behavioural = kind is RequestKind.DIRECT and is_behavioural_or_duty(message)
         earlier_warning = self._earlier_behaviour_warning(data)
-        warning_signal = behavioural and (
-            (mentions_a_warning_signal(message) and not mentions_play(message)) or earlier_warning
-        )
         behaviour_anamnesis = (
-            behavioural
-            and warning_toward_others(message)
+            kind in (RequestKind.DIRECT, RequestKind.SYMPTOM)
+            and behaviour_needs_questions(message)
             and not earlier_warning
             and not asks_to_stop_questions(data.user_message)
+        )
+        # The turn right after a behaviour case, or a warning in a behaviour
+        # question: no invented motive, consistency, the behaviour vet.
+        warning_signal = not behaviour_anamnesis and (
+            self._continues_a_behaviour_case(data)
+            or (behavioural and mentions_a_warning_signal(message) and not mentions_play(message))
         )
         # ... or the button pressed on the last health answer.
         second_try = health_question and (data.escalate_health or not_helped)
@@ -3901,6 +3933,15 @@ class ChatOrchestrator:
         )
         if data.notes:
             lines.append(f"Owner notes: {self._anonymize_for_provider(data.notes, data)}")
+        if data.other_pets:
+            # "Orlando è anche lui un gatto?" with Orlando on the account
+            # (synthetic users round 2): name and species only, never their
+            # health data (this chat's consent is for this pet).
+            lines.append(
+                "Other animals of this owner (not the subject of this chat; do not ask "
+                "what they are): "
+                + "; ".join(self._anonymize_for_provider(pet, data) for pet in data.other_pets)
+            )
         if data.habitat is not None and not data.habitat.is_empty():
             habitat_facts = [
                 fact

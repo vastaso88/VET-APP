@@ -27,6 +27,30 @@ def mentions_heat(message: str) -> bool:
     return bool(_HEAT.search(normalize_for_matching(message)))
 
 
+# A heatstroke in the owner's words (Pricing, synthetic users round 2: "cane in
+# macchina col sole, ansima molto" was not an emergency, and with the chat
+# limit reached it was refused). Real heat, not a run, with a sign of distress.
+_STRONG_HEAT = re.compile(
+    r"\b(?:caldo|afa|afoso|sole|canicola|in macchina|in auto|auto al sole|colpo di calore|"
+    r"heat|hot car|in the car|sun|heatstroke|calor|golpe de calor|en el coche|hitze|"
+    r"hitzschlag|im auto|sonne|chaleur|coup de chaleur|dans la voiture|soleil)\b"
+)
+_HEAT_DISTRESS = re.compile(
+    r"\b(?:ansima (?:molto|tanto|forte|tantissimo)|affann\w*|non riesce a respirare|"
+    r"barcoll\w*|collass\w*|vomit\w*|non (?:si regge|risponde)|lingua (?:viola|scura|blu)|"
+    r"sbava|bava|panting (?:heavily|hard|a lot)|can't breathe|staggering|collaps\w*|"
+    r"vomiting|jadea mucho|no puede respirar|tambalea|hechelt stark|taumelt|"
+    r"halete fort|titube)\b"
+)
+
+
+def describes_heat_distress(message: str) -> bool:
+    """Real heat (sun, a car, a heatwave) and a sign of distress: a possible
+    heatstroke, an emergency. Panting after a run alone is not."""
+    text = normalize_for_matching(message)
+    return bool(_STRONG_HEAT.search(text) and _HEAT_DISTRESS.search(text))
+
+
 # "Prima mi hai detto che posso dargli il paracetamolo": the chat never did.
 _CLAIMS_I_SAID = re.compile(
     r"\b(?:prima )?(?:mi hai|mi avevi|hai|avevi) (?:detto|scritto|consigliato|suggerito)|"

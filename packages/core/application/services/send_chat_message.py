@@ -20,7 +20,11 @@ from packages.core.application.services.reminder_context_retriever import (
 from packages.core.application.services.safety_gate import SafetyGate
 from packages.core.domain.age.models import AgeBand, band_for
 from packages.core.domain.common.language import normalize_language
-from packages.core.domain.conversation.models import ChatMessage, Conversation
+from packages.core.domain.conversation.models import (
+    ChatMessage,
+    Conversation,
+    history_without_record,
+)
 from packages.core.domain.conversation.states import ConversationState
 from packages.core.domain.conversation.title import (
     is_legacy_title,
@@ -42,6 +46,8 @@ from packages.core.domain.pet_profile.weight_measurement import (
     format_date_it,
     weight_label_with_date,
 )
+from packages.core.domain.safety.clarification_fit import describes_a_grave_picture
+from packages.core.domain.safety.first_aid import describes_heat_distress
 from packages.core.domain.safety.triage_clarification import requires_immediate_escalation
 from packages.core.domain.subscription.limits import EMERGENCY_CHATS_ABOVE_PET_LIMIT, PlanLimits
 from packages.shared.errors.base import ConversationLimitError, ValidationError
@@ -159,6 +165,38 @@ class SendChatMessageService:
         self._owner_limits = owner_limits
         # None: no age is ever declared here, every owner is treated as an adult.
         self._account_age_repository = account_age_repository
+
+    _MAX_OTHER_PETS = 12
+
+    def _other_pets(self, owner_id: str, pet_id: str) -> list[str]:
+        """The owner's other animals, name and species only ("Orlando (Gatto,
+        Europeo)"): the chat knows they exist without asking. Never their
+        notes, records or health, which follow each pet's own consent."""
+        try:
+            pets = self._pet_profile_repository.list_by_owner(owner_id)
+        except Exception:  # noqa: BLE001 - a nicety: the chat answers without it
+            return []
+        return [
+            f"{pet.name} ({', '.join(part for part in (pet.species, pet.breed) if part)})"
+            for pet in pets
+            if pet.id != pet_id and pet.owner_id == owner_id and pet.name.strip()
+        ][: self._MAX_OTHER_PETS]
+
+    @staticmethod
+    def _history_for_provider(
+        conversation: Conversation, record_allowed: bool
+    ) -> list[ChatMessage]:
+        """The earlier turns sent with this message. Data minimization (spec v3
+        §38): only recent turns. With the record consent not granted (never, or
+        revoked), the turns written while it was are left out (Orchestrator
+        decision 2026-11-16): a revocation also stops what the chat already
+        said about the record from leaving again."""
+        history = conversation.messages[:-1]
+        if not record_allowed:
+            history = history_without_record(
+                history, conversation_had_consent=conversation.medical_record_consent is True
+            )
+        return history[-MAX_HISTORY_MESSAGES:]
 
     def _owner_is_minor(self, owner_id: str, today: date) -> bool:
         """A declared age of 14 to 17 (the age guard has already closed
@@ -304,6 +342,7 @@ class SendChatMessageService:
                 language=normalize_language(data.language),
                 owner_id=data.owner_id,
                 owner_is_minor=self._owner_is_minor(data.owner_id, today),
+                other_pets=self._other_pets(data.owner_id, pet_profile.id),
                 quota_exempt=(getattr(data, "owner_email", None) or "").strip().lower()
                 in self._quota_exempt_emails,
                 user_daily_limit=plan_limits.daily_questions if plan_limits else None,
@@ -323,7 +362,7 @@ class SendChatMessageService:
                 # the service boundary — the full history never needs to,
                 # since SituationModel already carries the compact,
                 # structured summary of everything older forward.
-                conversation_history=conversation.messages[:-1][-MAX_HISTORY_MESSAGES:],
+                conversation_history=self._history_for_provider(conversation, record_allowed),
                 situation_model=conversation.situation_model,
                 interview_turns_used=conversation.interview_turns_used,
                 medical_record_consent=medical_record_consent,
@@ -337,6 +376,9 @@ class SendChatMessageService:
             content=orchestrator_result.answer,
             ai_generated=orchestrator_result.ai_generated,
             health_answer=orchestrator_result.health_answer or None,
+            # Written with the record readable (granted before, or in this very
+            # turn): never resent after a revocation.
+            record_shared=record_allowed or orchestrator_result.medical_record_consent is True,
         )
         conversation.messages.append(reply)
         conversation.awaiting_anamnesis = orchestrator_result.awaiting_anamnesis
@@ -508,8 +550,13 @@ class SendChatMessageService:
     def _is_an_emergency(message: str, pet_profile: PetProfile | None) -> bool:
         species = pet_profile.species if pet_profile is not None else "other"
         lowered = message.lower()
-        return bool(SafetyGate().evaluate(lowered, species=species)) or (
-            requires_immediate_escalation(lowered)
+        # The grave pictures and a heatstroke too (Pricing, synthetic users round 2):
+        # the wider this is, the less the per-pet chat limit can ever weigh.
+        return (
+            bool(SafetyGate().evaluate(lowered, species=species))
+            or requires_immediate_escalation(lowered)
+            or describes_a_grave_picture(message)
+            or describes_heat_distress(message)
         )
 
     def _persist_pet_level_consent(self, pet_profile: PetProfile, granted: bool | None) -> None:

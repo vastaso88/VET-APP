@@ -533,10 +533,12 @@ CLARIFYING_QUESTIONS: dict[str, str] = {
         "finite ed è tornato vigile, oppure stanno ancora succedendo adesso? Ed è la "
         "prima volta che capita?"
     ),
+    # The first gesture before the question (synthetic users round 2: no reply
+    # ever said to press on the wound).
     "bleeding_trauma": (
-        "Prima di darti indicazioni, un paio di cose veloci: il sangue sta ancora "
-        "uscendo adesso o si è già fermato o rallentato? E quanto ne hai visto — "
-        "poche gocce o una quantità che ti preoccupa?"
+        "Intanto premi sulla ferita con una garza o un panno pulito, fermo e senza "
+        "sollevarlo, per qualche minuto. Poi dimmi: il sangue sta ancora uscendo o si è "
+        "fermato? E quanto ne hai visto, poche gocce o una quantità che ti preoccupa?"
     ),
     "urinary": (
         "Prima di darti indicazioni, un paio di cose veloci: da quante ore non lo "
@@ -574,8 +576,9 @@ _CLARIFYING_QUESTIONS_EN: dict[str, str] = {
         "or are they still happening now? Is this the first episode?"
     ),
     "bleeding_trauma": (
-        "Two quick questions: is the bleeding continuing now, or has it stopped or slowed? "
-        "Was it a few drops or an amount that worries you?"
+        "Meanwhile press on the wound with gauze or a clean cloth, firmly and without "
+        "lifting it, for a few minutes. Then tell me: is it still bleeding, or has it "
+        "stopped? Was it a few drops or an amount that worries you?"
     ),
     "urinary": (
         "Two quick questions: how many hours has it been since your pet urinated? "
@@ -602,7 +605,8 @@ _CLARIFYING_QUESTIONS_ES: dict[str, str] = {
         "o siguen ocurriendo ahora? ¿Es la primera vez?"
     ),
     "bleeding_trauma": (
-        "Dos preguntas rápidas: ¿sigue sangrando ahora o se ha detenido o reducido? "
+        "Mientras tanto aprieta sobre la herida con una gasa o un paño limpio, firme y sin "
+        "levantarlo, durante unos minutos. Luego dime: ¿sigue sangrando o se ha detenido? "
         "¿Fueron unas gotas o una cantidad que te preocupa?"
     ),
     "urinary": (
@@ -632,9 +636,9 @@ _CLARIFYING_QUESTIONS_DE: dict[str, str] = {
         "oder passieren sie gerade noch? Ist es das erste Mal?"
     ),
     "bleeding_trauma": (
-        "Zwei kurze Fragen: Blutet es gerade noch oder hat die Blutung aufgehört "
-        "bzw. nachgelassen? "
-        "Waren es ein paar Tropfen oder eine Menge, die Sie beunruhigt?"
+        "Drücken Sie inzwischen einige Minuten lang fest mit einer Mullkompresse oder einem "
+        "sauberen Tuch auf die Wunde, ohne es anzuheben. Dann sagen Sie mir: Blutet es noch "
+        "oder hat es aufgehört? Waren es ein paar Tropfen oder eine Menge, die Sie beunruhigt?"
     ),
     "urinary": (
         "Zwei kurze Fragen: Seit wie vielen Stunden hat Ihr Tier nicht mehr uriniert? "
@@ -688,9 +692,10 @@ CLARIFYING_QUESTIONS_FEMALE: dict[str, dict[str, str]] = {
             "fois ?"
         ),
         "bleeding_trauma": (
-            "Deux questions rapides : saigne-t-elle encore ou le saignement s'est-il "
-            "arrêté ou réduit ? Était-ce quelques gouttes ou une quantité qui vous "
-            "inquiète ?"
+            "En attendant, appuyez sur la plaie avec une compresse ou un linge propre, "
+            "fermement et sans le soulever, pendant quelques minutes. Puis dites-moi : "
+            "saigne-t-elle encore ou le saignement s'est-il arrêté ? Était-ce quelques "
+            "gouttes ou une quantité qui vous inquiète ?"
         ),
         "urinary": (
             "Deux questions rapides : depuis combien d'heures n'a-t-elle pas uriné ? "
@@ -727,6 +732,10 @@ def clarifying_question(
         return None
     allowed = _CATEGORY_FAMILIES.get(category)
     if allowed is not None and family is not None and family not in allowed:
+        return None
+    if category == "respiratory" and family == "fish":
+        # "Did the heavy breathing start after a run?" to a goldfish (synthetic
+        # users round 2): a fish gasping is water in trouble, its own steps.
         return None
     if female:
         variant = CLARIFYING_QUESTIONS_FEMALE.get(normalize_locale(locale), {}).get(category)

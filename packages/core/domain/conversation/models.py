@@ -48,6 +48,11 @@ class ChatMessage(BaseModel):
     # it), and whether the owner pressed it.
     health_answer: bool | None = None
     not_helpful: bool | None = None
+    # On assistant messages: written while the record, the profile's notes and
+    # the reminders could be read (consent granted). After a revocation such a
+    # reply, and the owner's message before it, are never sent to a provider
+    # again (Orchestrator decision 2026-11-16; history_without_record).
+    record_shared: bool | None = None
     # On assistant messages: the conversation's state after this reply.
     state_after: ConversationSnapshot | None = None
 
@@ -70,7 +75,27 @@ INTERNAL_CONVERSATION_FIELDS: frozenset[str] = frozenset(
 
 
 def public_message(message: ChatMessage) -> dict[str, Any]:
-    return message.model_dump(exclude={"state_after"})
+    return message.model_dump(exclude={"state_after", "record_shared"})
+
+
+def history_without_record(
+    messages: list[ChatMessage], *, conversation_had_consent: bool
+) -> list[ChatMessage]:
+    """The turns that may still go to a provider once the record consent is
+    no longer granted: every assistant reply written while the record could
+    be read (record_shared), and the owner's message right before it, are
+    left out. A reply from before the mark existed counts as written with
+    the record when the conversation had the consent."""
+    dropped: set[int] = set()
+    for index, message in enumerate(messages):
+        if message.role != "assistant":
+            continue
+        shared = message.record_shared
+        if shared is True or (shared is None and conversation_had_consent):
+            dropped.add(index)
+            if index > 0 and messages[index - 1].role == "user":
+                dropped.add(index - 1)
+    return [message for index, message in enumerate(messages) if index not in dropped]
 
 
 class Conversation(BaseModel):
@@ -104,7 +129,7 @@ class Conversation(BaseModel):
         return self.model_dump(
             exclude={
                 **{name: True for name in INTERNAL_CONVERSATION_FIELDS},
-                "messages": {"__all__": {"state_after"}},
+                "messages": {"__all__": {"state_after", "record_shared"}},
             }
         )
 

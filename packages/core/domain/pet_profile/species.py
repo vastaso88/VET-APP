@@ -28,6 +28,7 @@ _LABEL_TO_CANONICAL: dict[str, str] = {
     "uccello": "bird",
     "rettili e anfibi": "reptile_amphibian",
     "pesce": "fish",
+    "pesci": "fish",
     "altro": "other",
     # Legacy/direct English values, still used by existing callers and
     # tests that pass a species code straight through (e.g. "dog", "cat").

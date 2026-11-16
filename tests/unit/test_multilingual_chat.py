@@ -127,11 +127,12 @@ def test_urgent_signal_matrix(selected_locale: str, message: str) -> None:
         )
     )
     assert result.mode == "triage"
+    # A dog that cannot breathe gets the breathing steps (synthetic users round 2).
     expected = {
-        "it": "contatta subito",
-        "en": "contact your",
-        "es": "contacta de inmediato",
-        "de": "Wenden Sie sich sofort",
+        "it": "chiama subito",
+        "en": "call your vet",
+        "es": "llama ahora mismo",
+        "de": "Rufen Sie sofort",
     }
     assert expected[selected_locale] in result.answer
 

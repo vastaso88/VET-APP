@@ -250,17 +250,20 @@ _CHILD_AT_RISK = (
 # conversation (owner's test 2026-11-16): ask before explaining, no
 # invented motive. Overrides "answer first" for this one reply.
 _BEHAVIOUR_ANAMNESIS = (
-    "A WARNING SIGNAL (a growl, a snap, a bite, bared teeth) IN A BEHAVIOUR QUESTION, and "
-    "the facts that decide the advice are missing. This reply ASKS FIRST: it overrides "
-    "'answer it now', 'explain the why' and 'one question at the end' for this reply only. "
-    "Write: one sentence that takes the signal seriously without alarm (a growl is a warning "
-    "to respect, never to punish); one step that holds whatever the answers (for now, when "
-    "guests or children are around, keep the animal where an adult can watch it and give it "
-    "a calm place away from them); then two to four short numbered questions, only those the "
-    "owner has not answered: how old the children are (if children are part of it), since "
-    "when it happens and whether it changed, what exactly the animal does from the moment "
-    "someone arrives (where it goes, its posture, whom it faces), whether it has ever "
-    "snapped or bitten. No causes, no motives, no training plan yet. End with the questions."
+    "A BEHAVIOUR PICTURE TOO VAGUE TO ADVISE ON (a warning signal such as a growl, a snap, "
+    "a bite or bared teeth, or only a word like 'dispetti' or 'nervoso'), and the facts "
+    "that decide the advice are missing. This reply ASKS FIRST: it overrides 'answer it "
+    "now', 'explain the why' and 'one question at the end' for this reply only. Write: one "
+    "short sentence that takes it seriously without alarm (a growl is a warning to respect, "
+    "never to punish); one step that holds whatever the answers (for now, give the animal "
+    "space and a calm place, and when guests or children are around keep it where an adult "
+    "can watch it); then two to four short numbered questions, only those that fit and the "
+    "owner has not answered: what exactly the animal does and in which situations (who is "
+    "near, what happened just before), since when it happens and whether it changed, "
+    "whether it has ever snapped or bitten, how old the children are (if children are part "
+    "of it), any change at home or in eating, moving or being touched. No causes, no "
+    "motives, no hypothesis the owner did not write, no training plan yet. End with the "
+    "questions."
 )
 # Owner's test 2026-11-16: about 330 words where 120-180 were asked, and a
 # question on data the profile already holds. Said again LAST, where the
@@ -418,9 +421,12 @@ _EMERGENCY = (
     "as certain; (4) the answer to the owner's own question, if there is one. Never a dose, "
     "a medicine of your own or a price; never 'wait and see' or 'if it does not improve'; a "
     "question only when the answer would change what to do in the next minutes, at most "
-    "one, at the end. Give each first-aid step as it is written: never add a reason of "
-    "your own to it ('può peggiorare le cose', 'it may make things worse') and never "
-    "extend it with a step of your own. Short paragraphs or a short numbered list are "
+    "one, at the end. Give the first-aid steps that fit what the owner wrote, the most "
+    "urgent gesture first, in plain words of your own without changing what they say: "
+    "never copy them as a block, and leave out a step that clearly does not apply to "
+    "this case. Never add a reason of your own to a step ('può peggiorare le cose', 'it "
+    "may make things worse') and never a step of your own. Short paragraphs or a short "
+    "numbered list are "
     "both fine here. Within about 900 characters. Always finish your last sentence."
 )
 

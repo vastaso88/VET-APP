@@ -32,8 +32,17 @@ class MarkNotHelpfulService:
         if conversation is None or conversation.owner_id != data.owner_id:
             raise ValidationError("conversation not found")
         message = next((m for m in conversation.messages if m.id == data.message_id), None)
-        if message is None or message.role != "assistant" or not message.health_answer:
+        if message is None:
             raise ValidationError("message not found")
+        if message.role != "assistant" or not message.health_answer:
+            # The owner's own conversation, so saying why is safe (synthetic users
+            # round 2: six testers pressed it under replies that were not health
+            # answers and read "message not found" as a bug). "not found" stays,
+            # as agreed with the app.
+            raise ValidationError(
+                "message not found among the health answers: only a health answer can be "
+                "marked as not helpful"
+            )
         if message.not_helpful:
             return
         message.not_helpful = True

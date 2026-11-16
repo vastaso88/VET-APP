@@ -32,7 +32,7 @@ CLARIFYING_QUESTIONS_FR: dict[str, str] = {
     "respiratory": "Deux questions rapides avant de vous orienter : la respiration rapide a-t-elle commencé après avoir couru, joué ou eu chaud, ou au repos ? Est-ce qu'elle se calme maintenant, reste identique ou s'aggrave ?",
     "collapse": "Deux questions rapides : est-il maintenant éveillé, réactif et se déplace-t-il normalement, ou reste-t-il au sol et peu réactif ? L'épisode a-t-il duré quelques secondes ou plus longtemps ?",
     "seizure": "Deux questions rapides : les convulsions sont-elles terminées et est-il redevenu attentif, ou continuent-elles en ce moment ? Est-ce la première fois ?",
-    "bleeding_trauma": "Deux questions rapides : saigne-t-il encore ou le saignement s'est-il arrêté ou réduit ? Était-ce quelques gouttes ou une quantité qui vous inquiète ?",
+    "bleeding_trauma": "En attendant, appuyez sur la plaie avec une compresse ou un linge propre, fermement et sans le soulever, pendant quelques minutes. Puis dites-moi : saigne-t-il encore ou le saignement s'est-il arrêté ? Était-ce quelques gouttes ou une quantité qui vous inquiète ?",
     "urinary": "Deux questions rapides : depuis combien d'heures n'a-t-il pas uriné ? Essaie-t-il sans y parvenir ou montre-t-il de la douleur ?",
     "gi_stasis": "Deux questions rapides : depuis combien d'heures exactement n'a-t-il ni mangé ni fait ses besoins ? S'est-il approché de la nourriture ou a-t-il produit ne serait-ce que quelques petites selles ?",
 }

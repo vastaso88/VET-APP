@@ -19438,5 +19438,32 @@
       "de": "232eb2ff736076025bcf424e6cdbc856b09d8a4ec9bf8cd03ed7a155a5e175c6",
       "fr": "50e459ef242a38672daffb0f5c63be34cff1735d8cf7e008ba36a43768166d8c"
     }
+  },
+  "backend:triage_steps_bleeding": {
+    "source": "85021c7af0eb16912bc6612def4d2a7e0ba652c83213a352918ddc5bfc24c02d",
+    "targets": {
+      "en": "e594158609a3d183b46d3ac9b99707b93ffc245f78aada38b3be7714de407fa2",
+      "es": "0e0914cd343432fe66c35be24a104d204c20aa56d92d342400deb8c905510579",
+      "de": "4c724953899285d362ed5da6eadc062c8aebeb834d6aad6af71b16d5cdf8c46c",
+      "fr": "e96141cb20913157af97cecec721636726c4678aeff55ad01123143f5be562a2"
+    }
+  },
+  "backend:triage_steps_urinary": {
+    "source": "c8a01c73f48e7df5a5bf56e78f27947e42ee9ede7f9c1bc0dbf8662c9e1116b6",
+    "targets": {
+      "en": "2eeb9d619c33e3377005b0d0a465ed720c79b3e6216ebf57dd15d685e4e131d4",
+      "es": "eae5b71f1724412d1940bd153210ddc42afb22755eb3285e31797890ac0b690f",
+      "de": "b62e343e936170a653b011cc19405935376a8bedb64e1a9fab2ada11749efcd3",
+      "fr": "d84d24141783f0bbfb37a6cbc208937f6c4432c9adcc280b4fa8d220d74d6a00"
+    }
+  },
+  "backend:triage_steps_respiratory": {
+    "source": "a75cbb675c45ed9eb0f5c08186a8d70e16d9915228fe3500043a83dba1afd19b",
+    "targets": {
+      "en": "3e449d14e0066e7ca0b064144aa4f434cb8aebc2c8a8f30f18246dc847675e79",
+      "es": "52b7f3be468c973b40776ff5180fa1b238ce9fc6c5d467d1998ee8885c8d4d42",
+      "de": "03e19b5090e9e94db9d6a0f3a7de562ac37c6a1c4c4da4ac35b6848ecd6a5775",
+      "fr": "13ac77c319b6f74c0ff27d7ecf897fb3c369a611c281541afb0815f1f5e2d079"
+    }
   }
 }

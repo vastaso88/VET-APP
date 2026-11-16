@@ -619,6 +619,38 @@ def warning_toward_others(message: str) -> bool:
     )
 
 
+# A behaviour named only by a judgement ("fa i dispetti", "è nervoso"): what
+# the animal actually does is not said.
+_VAGUE_BEHAVIOUR = _words(
+    r"dispett\w*|cattiv[oaie]|nervos[oaie]|aggressiv\w*|scontros[oaie]|irritabil\w*|"
+    r"insofferent\w*|ha cambiato carattere|fa (?:lo|la) stran[oa]|"
+    r"naughty|spiteful|aggressive|grumpy|moody|cranky|"
+    r"travies[oa]s?|agresiv[oa]s?|de mal humor|"
+    r"frech|launisch|gereizt|"
+    r"mechante?|agressi(?:f|ve)|grincheu(?:x|se)"
+)
+# The situation that sets it off, said by the owner: the classic is answered
+# directly ("perché ringhia quando mi avvicino mentre mangia?").
+_SITUATION = _words(
+    r"quando|mentre|appena|ogni volta che|se (?:lo|la|gli|le) (?:tocco|prendo|avvicino)|"
+    r"when|while|whenever|every time|cuando|mientras|cada vez que|wenn|wahrend|jedes mal|"
+    r"quand|pendant|chaque fois"
+)
+
+
+def behaviour_needs_questions(message: str) -> bool:
+    """The behaviour picture is too vague to advise on (synthetic users round 2,
+    2026-11-16: "ringhia ogni tanto", "fa i dispetti" got causes and advice,
+    with invented hypotheses, before any question). A warning toward other
+    people always; a growl or a judgement word without the situation that
+    sets it off, outside play."""
+    if warning_toward_others(message):
+        return True
+    text = normalize_for_matching(message)
+    signal = mentions_a_warning_signal(message) or bool(_VAGUE_BEHAVIOUR.search(text))
+    return signal and not _SITUATION.search(text) and not _PLAY.search(text)
+
+
 def mentions_a_child_at_risk(message: str) -> bool:
     """A child in the picture with one of those gestures or with a warning
     signal: the prompt puts the child's safety first, in the words of the
