@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- francesco: the shared artwork plus a corner badge, so the three apps
+     installed side by side stay distinguishable. -->
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:drawable="@drawable/ic_launcher_art" />
+    <item>
+        <vector
+            android:width="108dp"
+            android:height="108dp"
+            android:viewportWidth="108"
+            android:viewportHeight="108">
+            <path
+                android:fillColor="#FFFFFF"
+                android:pathData="M70,70m-11,0a11,11 0,1 1,22 0a11,11 0,1 1,-22 0" />
+            <path
+                android:fillColor="#2F7DD1"
+                android:pathData="M70,70m-8.5,0a8.5,8.5 0,1 1,17 0a8.5,8.5 0,1 1,-17 0" />
+        </vector>
+    </item>
+</layer-list>

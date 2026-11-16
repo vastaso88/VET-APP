@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- Release builds shrink unused resources. The notification icon is looked up
-     by NAME at run time (flutter_local_notifications resolves "@mipmap/ic_launcher"
+     by NAME at run time (flutter_local_notifications resolves "@drawable/ic_stat_quokka"
      and our walk notification's drawable through getIdentifier), which the
      shrinker cannot see: without this file a notification can silently never show.
      Same advice as the plugin's README / example app. -->

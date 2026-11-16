@@ -4,9 +4,9 @@ L'app Android ha un product flavor nella dimensione `track`, così più build co
 
 | Flavor      | Application id                  | Nome sul telefono  | Icona                |
 |-------------|---------------------------------|--------------------|----------------------|
-| `prod`      | `com.vetapp.vetapp`             | VetApp             | originale            |
-| `francesco` | `com.vetapp.vetapp.francesco`   | VetApp Francesco   | badge blu in basso a destra |
-| `roberto`   | `com.vetapp.vetapp.roberto`     | VetApp Roberto     | badge arancio        |
+| `prod`      | `com.vetapp.vetapp`             | VetApp             | testa Quokka su Petrolio |
+| `francesco` | `com.vetapp.vetapp.francesco`   | VetApp Francesco   | testa Quokka + punto blu in basso a destra |
+| `roberto`   | `com.vetapp.vetapp.roberto`     | VetApp Roberto     | testa Quokka + punto arancio |
 
 `prod` mantiene l'id storico ed è quello del futuro Play Store. Il flavor non si chiama `main` perché collide con il source set `main`.
 
@@ -33,7 +33,7 @@ L'APK esce in `build/app/outputs/flutter-apk/app-<flavor>-debug.apk`. Il web non
 
 - `applicationId` (suffisso) e `resValue` `app_name` in `android/app/build.gradle.kts`; il manifest usa `android:label="@string/app_name"`.
 - Il titolo del widget Passeggiate (`dog_walks_widget_title`) punta ad `@string/app_name`. La notifica della passeggiata mostra il nome dell'app nell'intestazione di sistema.
-- Le icone con badge stanno in `android/app/src/francesco/res/mipmap-*` e `android/app/src/roberto/res/mipmap-*` (sovrascrivono quelle di `main`).
+- Icona adattiva (sfondo Petrolio `#0E3B47` + testa Carta, generata dal logo vettoriale approvato) in `android/app/src/main/res/` (`mipmap-anydpi-v26`, `drawable/ic_launcher_art.xml`). Il punto colorato dei flavor sta in `android/app/src/{francesco,roberto}/res/drawable/ic_launcher_foreground.xml` (sovrascrive quello di `main`). Splash nativo: `drawable/launch_background.xml` (Android < 12) e `values-v31/styles.xml` + `drawable/splash_icon.xml` (Android 12+), colore in `values/brand_colors.xml`. Icona di stato delle notifiche: `drawable/ic_stat_quokka.xml`.
 - I `ContentProvider` (image_picker, open_filex, share, androidx-startup) e il permesso `DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION` usano `${applicationId}`: sono già separati per flavor. Il package Kotlin (`namespace`) resta `com.vetapp.vetapp` per tutti.
 - Dati, sessione e notifiche sono separati per app (id diverso). Lo stesso account Supabase si può usare in tutte e tre.
 
