@@ -7405,7 +7405,7 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get aroundWorldNotATrip =>
-      'Dieser Bereich betrifft Heimtiere, die ohne gewerblichen Zweck mit ihrem Besitzer reisen. Reist das Tier nicht mit Ihnen, wird es zum Verkauf, zur Adoption oder zur Übergabe verbracht oder reisen viele Tiere zusammen, gelten andere, strengere Regeln: Wenden Sie sich an den amtlichen Veterinärdienst Ihres Landes (in Italien die ASL) oder an die Veterinärbehörde des Ziellandes. Hier können wir Ihnen keine Hinweise geben.';
+      'Dieser Bereich betrifft Heimtiere, die ohne gewerblichen Zweck mit ihrem Besitzer reisen. Reist das Tier nicht mit Ihnen, wird es zum Verkauf, zur Adoption oder zur Weitergabe an eine andere Person verbracht oder reisen viele Tiere zusammen, gelten andere, strengere Regeln: Wenden Sie sich an den amtlichen Veterinärdienst Ihres Landes (in Italien die ASL) oder an die Veterinärbehörde des Ziellandes. Hier können wir Ihnen keine Hinweise geben.';
 
   @override
   String get aroundWorldOtherSpecies =>
@@ -7433,7 +7433,7 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get aroundWorldInfoBody =>
-      'Fasst die offiziellen Regeln für Reisen mit Hunden, Katzen und Frettchen zusammen, mit Quelle und Prüfdatum. Es ist keine tierärztliche oder rechtliche Beratung, ersetzt weder den amtlichen Veterinärdienst noch die Behörden des Ziellandes und garantiert nicht, vollständig oder aktuell zu sein. Es nennt keine Arzneimittel oder Dosierungen und deckt weder örtliche Bräuche ohne offizielle Quelle noch Transportunternehmen, Verkauf, Adoption oder mehrere gemeinsam reisende Tiere ab. Wir ermutigen weder dazu, Tiere zu verbringen noch sie einzuführen.';
+      'Es fasst die offiziellen Regeln für Reisen mit Hunden, Katzen und Frettchen zusammen, mit Quelle und Prüfdatum. Es ist keine tierärztliche oder rechtliche Beratung, ersetzt weder den amtlichen Veterinärdienst noch die Behörden des Ziellandes und garantiert nicht, vollständig oder aktuell zu sein. Es nennt keine Arzneimittel oder Dosierungen und deckt weder örtliche Bräuche ohne offizielle Quelle noch Transportunternehmen, Verkauf, Adoption oder mehrere gemeinsam reisende Tiere ab. Wir ermutigen weder dazu, Tiere zu verbringen noch sie einzuführen.';
 
   @override
   String get aroundWorldReportError => 'Fehler melden';

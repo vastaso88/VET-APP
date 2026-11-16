@@ -7255,11 +7255,11 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get aroundWorldActivitySubtitle =>
-      'Rules, vaccines and protection for travelling with your pet.';
+      'Rules, vaccines and protection for traveling with your pet.';
 
   @override
   String get aroundWorldNotice =>
-      'General information on the rules for travelling with your pet. Rules change and every country decides for itself: before you leave, always check with the veterinary authorities of the country you leave from and the one you go to, and with the transport company. Quokka does not guarantee that the information is complete or up to date and does not encourage moving or importing animals: assess the trip with your vet, thinking first of all of your pet\'s wellbeing.';
+      'General information on the rules for traveling with your pet. Rules change and every country decides for itself: before you leave, always check with the veterinary authorities of the country you leave from and the one you go to, and with the transport company. Quokka does not guarantee that the information is complete or up to date and does not encourage moving or importing animals: assess the trip with your vet, thinking first of all of your pet\'s well-being.';
 
   @override
   String get aroundWorldFromLabel => 'Where you are leaving from';
@@ -7332,7 +7332,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get aroundWorldNotATrip =>
-      'This section is about pets travelling with their owner, with no commercial purpose. If the animal is not travelling with you, is being moved to be sold, adopted or entrusted to someone, or if many animals travel together, different and stricter rules apply: contact the official veterinary service of your country (in Italy, your ASL) or the veterinary authority of the destination country. We cannot give you any guidance here.';
+      'This section is about pets traveling with their owner, with no commercial purpose. If the animal is not traveling with you, is being moved to be sold, adopted or entrusted to someone, or if many animals travel together, different and stricter rules apply: contact the official veterinary service of your country (in Italy, your ASL) or the veterinary authority of the destination country. We cannot give you any guidance here.';
 
   @override
   String get aroundWorldOtherSpecies =>
@@ -7340,11 +7340,11 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get aroundWorldTransport =>
-      'The rules of transport companies (planes, ships, trains, buses) and of accommodation are different from the official ones and change often: we do not report them. Always ask the company before booking. Quokka is not a travel agency and does not sell or organise trips.';
+      'The rules of transport companies (planes, ships, trains, buses) and of accommodation are different from the official ones and change often: we do not report them. Always ask the company before booking. Quokka is not a travel agency and does not sell or organize trips.';
 
   @override
   String get aroundWorldLocalCustoms =>
-      'Local customs and habits: we do not cover them here. For how animals must be handled (lead, muzzle, banned breeds, public places) we report only rules with an official source; for anything else, ask the authorities or businesses on the spot.';
+      'Local customs and habits: we do not cover them here. For how animals must be handled (leash, muzzle, banned breeds, public places) we report only rules with an official source; for anything else, ask the authorities or businesses on the spot.';
 
   @override
   String get aroundWorldTimes =>
@@ -7360,7 +7360,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get aroundWorldInfoBody =>
-      'It summarises the official rules for travelling with dogs, cats and ferrets, with the source and the date of verification. It is not veterinary or legal advice, it does not replace your official veterinary service or the authorities of the destination country, and it does not guarantee to be complete or up to date. It does not name medicines or doses and does not cover local customs without an official source, transport companies, sale, adoption or several animals travelling together. We do not encourage moving or importing animals.';
+      'It summarizes the official rules for traveling with dogs, cats and ferrets, with the source and the date of verification. It is not veterinary or legal advice, it does not replace your official veterinary service or the authorities of the destination country, and it does not guarantee to be complete or up to date. It does not name medicines or doses and does not cover local customs without an official source, transport companies, sale, adoption or several animals traveling together. We do not encourage moving or importing animals.';
 
   @override
   String get aroundWorldReportError => 'Report an error';

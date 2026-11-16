@@ -7342,7 +7342,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get aroundWorldNotice =>
-      'Informations générales sur les règles pour voyager avec votre animal. Les règles changent et chaque pays décide pour lui-même : avant de partir, vérifiez toujours auprès des autorités vétérinaires du pays de départ et du pays d\'arrivée et auprès de la compagnie de transport. Quokka ne garantit pas que ces informations soient complètes ou à jour et n\'encourage ni à déplacer ni à importer des animaux : évaluez le voyage avec votre vétérinaire, en pensant avant tout au bien-être de votre animal.';
+      'Informations générales sur les règles pour voyager avec votre animal. Les règles changent et chaque pays décide pour lui-même : avant de partir, vérifiez toujours auprès des autorités vétérinaires du pays de départ et du pays d\'arrivée et auprès de la compagnie de transport. Quokka ne garantit pas que ces informations soient complètes ou à jour et n\'encourage ni à déplacer ni à importer des animaux : évaluez le voyage avec votre vétérinaire, en pensant avant tout au bien-être de votre animal.';
 
   @override
   String get aroundWorldFromLabel => 'D\'où vous partez';
@@ -7383,7 +7383,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get aroundWorldSameCountry =>
-      'Vous avez choisi le même pays de départ et d\'arrivée : choisissez une autre destination.';
+      'Vous avez choisi le même pays de départ et d\'arrivée : choisissez une autre destination.';
 
   @override
   String get aroundWorldLoadError =>
@@ -7394,12 +7394,12 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String aroundWorldResultHeader(String species, String from, String to) {
-    return '$species : de $from à $to';
+    return '$species : de $from à $to';
   }
 
   @override
   String get aroundWorldNoCard =>
-      'Nous n\'avons pas encore de fiche vérifiée pour cette combinaison. Cela ne veut pas dire qu\'il n\'y a pas de règles : renseignez-vous auprès de l\'autorité vétérinaire du pays de destination et du service vétérinaire officiel de votre pays (en Italie, celui de l\'ASL).';
+      'Nous n\'avons pas encore de fiche vérifiée pour cette combinaison. Cela ne veut pas dire qu\'il n\'y a pas de règles : renseignez-vous auprès de l\'autorité vétérinaire du pays de destination et du service vétérinaire officiel de votre pays (en Italie, celui de l\'ASL).';
 
   @override
   String aroundWorldOldCard(String date) {
@@ -7408,30 +7408,30 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get aroundWorldHiddenCard =>
-      'Cette fiche n\'est pas à jour et nous ne l\'affichons pas pour le moment. Les règles officielles sont ici :';
+      'Cette fiche n\'est pas à jour et nous ne l\'affichons pas pour le moment. Les règles officielles sont ici :';
 
   @override
   String get aroundWorldOpenOfficial => 'Ouvrir la source officielle';
 
   @override
   String get aroundWorldNotATrip =>
-      'Cette section concerne les animaux de compagnie qui voyagent avec leur propriétaire, sans but commercial. Si l\'animal ne voyage pas avec vous, s\'il est déplacé pour être vendu, adopté ou confié, ou si de nombreux animaux voyagent ensemble, d\'autres règles, plus strictes, s\'appliquent : adressez-vous au service vétérinaire officiel de votre pays (en Italie, celui de l\'ASL) ou à l\'autorité vétérinaire du pays de destination. Nous ne pouvons pas vous donner d\'indications ici.';
+      'Cette section concerne les animaux de compagnie qui voyagent avec leur propriétaire, sans but commercial. Si l\'animal ne voyage pas avec vous, s\'il est déplacé pour être vendu, adopté ou confié, ou si de nombreux animaux voyagent ensemble, d\'autres règles, plus strictes, s\'appliquent : adressez-vous au service vétérinaire officiel de votre pays (en Italie, celui de l\'ASL) ou à l\'autorité vétérinaire du pays de destination. Nous ne pouvons pas vous donner d\'indications ici.';
 
   @override
   String get aroundWorldOtherSpecies =>
-      'Dans ce cas, d\'autres règles s\'appliquent. Adressez-vous à l\'autorité vétérinaire compétente : nous ne pouvons pas vous donner d\'indications ici.';
+      'Dans ce cas, d\'autres règles s\'appliquent. Adressez-vous à l\'autorité vétérinaire compétente : nous ne pouvons pas vous donner d\'indications ici.';
 
   @override
   String get aroundWorldTransport =>
-      'Les règles des compagnies de transport (avions, bateaux, trains, autocars) et des hébergements sont différentes des règles officielles et changent souvent : nous ne les reprenons pas. Demandez toujours à la compagnie avant de réserver. Quokka n\'est pas une agence de voyages et ne vend ni n\'organise de voyages.';
+      'Les règles des compagnies de transport (avions, bateaux, trains, autocars) et des hébergements sont différentes des règles officielles et changent souvent : nous ne les reprenons pas. Demandez toujours à la compagnie avant de réserver. Quokka n\'est pas une agence de voyages et ne vend ni n\'organise de voyages.';
 
   @override
   String get aroundWorldLocalCustoms =>
-      'Usages et coutumes locaux : nous ne les couvrons pas ici. Pour la façon de tenir les animaux (laisse, muselière, races interdites, lieux publics), nous ne reprenons que les règles ayant une source officielle ; pour le reste, renseignez-vous auprès des autorités ou des établissements sur place.';
+      'Usages et coutumes locaux : nous ne les couvrons pas ici. Pour la façon de tenir les animaux (laisse, muselière, races interdites, lieux publics), nous ne reprenons que les règles ayant une source officielle ; pour le reste, renseignez-vous auprès des autorités ou des établissements sur place.';
 
   @override
   String get aroundWorldTimes =>
-      'Ces étapes ont des délais précis et certaines prennent des semaines ou des mois : fixez-les avec votre vétérinaire bien à l\'avance et vérifiez les dates auprès de l\'autorité du pays d\'arrivée.';
+      'Ces étapes ont des délais précis et certaines prennent des semaines ou des mois : fixez-les avec votre vétérinaire bien à l\'avance et vérifiez les dates auprès de l\'autorité du pays d\'arrivée.';
 
   @override
   String get aroundWorldFinal =>
@@ -7439,7 +7439,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get aroundWorldInfoTitle =>
-      'Ce que fait et ne fait pas Around the world';
+      'Ce que Around the world fait et ne fait pas';
 
   @override
   String get aroundWorldInfoBody =>

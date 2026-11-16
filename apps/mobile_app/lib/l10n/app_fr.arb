@@ -4052,7 +4052,7 @@
   "marketplaceInfoPrivateOnly": "Si vous vendez dans le cadre d'une activité commerciale ou professionnelle, vous ne pouvez pas utiliser le marché de l'occasion : Quokka peut retirer les annonces et suspendre l'accès.",
   "aroundWorldTitle": "Around the world",
   "aroundWorldActivitySubtitle": "Règles, vaccins et protections pour voyager avec votre animal.",
-  "aroundWorldNotice": "Informations générales sur les règles pour voyager avec votre animal. Les règles changent et chaque pays décide pour lui-même : avant de partir, vérifiez toujours auprès des autorités vétérinaires du pays de départ et du pays d'arrivée et auprès de la compagnie de transport. Quokka ne garantit pas que ces informations soient complètes ou à jour et n'encourage ni à déplacer ni à importer des animaux : évaluez le voyage avec votre vétérinaire, en pensant avant tout au bien-être de votre animal.",
+  "aroundWorldNotice": "Informations générales sur les règles pour voyager avec votre animal. Les règles changent et chaque pays décide pour lui-même : avant de partir, vérifiez toujours auprès des autorités vétérinaires du pays de départ et du pays d'arrivée et auprès de la compagnie de transport. Quokka ne garantit pas que ces informations soient complètes ou à jour et n'encourage ni à déplacer ni à importer des animaux : évaluez le voyage avec votre vétérinaire, en pensant avant tout au bien-être de votre animal.",
   "aroundWorldFromLabel": "D'où vous partez",
   "aroundWorldToLabel": "Où vous allez",
   "aroundWorldWhoLabel": "Qui vous emmenez",
@@ -4065,10 +4065,10 @@
   "aroundWorldSpeciesFerret": "Furet",
   "aroundWorldShow": "Afficher les informations",
   "aroundWorldPickAll": "Choisissez d'où vous partez, où vous allez et qui vous emmenez.",
-  "aroundWorldSameCountry": "Vous avez choisi le même pays de départ et d'arrivée : choisissez une autre destination.",
+  "aroundWorldSameCountry": "Vous avez choisi le même pays de départ et d'arrivée : choisissez une autre destination.",
   "aroundWorldLoadError": "Impossible de charger les fiches. Vérifiez votre connexion et réessayez.",
   "aroundWorldRetry": "Réessayer",
-  "aroundWorldResultHeader": "{species} : de {from} à {to}",
+  "aroundWorldResultHeader": "{species} : de {from} à {to}",
   "@aroundWorldResultHeader": {
     "placeholders": {
       "species": {
@@ -4082,7 +4082,7 @@
       }
     }
   },
-  "aroundWorldNoCard": "Nous n'avons pas encore de fiche vérifiée pour cette combinaison. Cela ne veut pas dire qu'il n'y a pas de règles : renseignez-vous auprès de l'autorité vétérinaire du pays de destination et du service vétérinaire officiel de votre pays (en Italie, celui de l'ASL).",
+  "aroundWorldNoCard": "Nous n'avons pas encore de fiche vérifiée pour cette combinaison. Cela ne veut pas dire qu'il n'y a pas de règles : renseignez-vous auprès de l'autorité vétérinaire du pays de destination et du service vétérinaire officiel de votre pays (en Italie, celui de l'ASL).",
   "aroundWorldOldCard": "Cette fiche a été vérifiée le {date} et a peut-être changé. Consultez la source officielle avant de décider quoi que ce soit.",
   "@aroundWorldOldCard": {
     "placeholders": {
@@ -4091,15 +4091,15 @@
       }
     }
   },
-  "aroundWorldHiddenCard": "Cette fiche n'est pas à jour et nous ne l'affichons pas pour le moment. Les règles officielles sont ici :",
+  "aroundWorldHiddenCard": "Cette fiche n'est pas à jour et nous ne l'affichons pas pour le moment. Les règles officielles sont ici :",
   "aroundWorldOpenOfficial": "Ouvrir la source officielle",
-  "aroundWorldNotATrip": "Cette section concerne les animaux de compagnie qui voyagent avec leur propriétaire, sans but commercial. Si l'animal ne voyage pas avec vous, s'il est déplacé pour être vendu, adopté ou confié, ou si de nombreux animaux voyagent ensemble, d'autres règles, plus strictes, s'appliquent : adressez-vous au service vétérinaire officiel de votre pays (en Italie, celui de l'ASL) ou à l'autorité vétérinaire du pays de destination. Nous ne pouvons pas vous donner d'indications ici.",
-  "aroundWorldOtherSpecies": "Dans ce cas, d'autres règles s'appliquent. Adressez-vous à l'autorité vétérinaire compétente : nous ne pouvons pas vous donner d'indications ici.",
-  "aroundWorldTransport": "Les règles des compagnies de transport (avions, bateaux, trains, autocars) et des hébergements sont différentes des règles officielles et changent souvent : nous ne les reprenons pas. Demandez toujours à la compagnie avant de réserver. Quokka n'est pas une agence de voyages et ne vend ni n'organise de voyages.",
-  "aroundWorldLocalCustoms": "Usages et coutumes locaux : nous ne les couvrons pas ici. Pour la façon de tenir les animaux (laisse, muselière, races interdites, lieux publics), nous ne reprenons que les règles ayant une source officielle ; pour le reste, renseignez-vous auprès des autorités ou des établissements sur place.",
-  "aroundWorldTimes": "Ces étapes ont des délais précis et certaines prennent des semaines ou des mois : fixez-les avec votre vétérinaire bien à l'avance et vérifiez les dates auprès de l'autorité du pays d'arrivée.",
+  "aroundWorldNotATrip": "Cette section concerne les animaux de compagnie qui voyagent avec leur propriétaire, sans but commercial. Si l'animal ne voyage pas avec vous, s'il est déplacé pour être vendu, adopté ou confié, ou si de nombreux animaux voyagent ensemble, d'autres règles, plus strictes, s'appliquent : adressez-vous au service vétérinaire officiel de votre pays (en Italie, celui de l'ASL) ou à l'autorité vétérinaire du pays de destination. Nous ne pouvons pas vous donner d'indications ici.",
+  "aroundWorldOtherSpecies": "Dans ce cas, d'autres règles s'appliquent. Adressez-vous à l'autorité vétérinaire compétente : nous ne pouvons pas vous donner d'indications ici.",
+  "aroundWorldTransport": "Les règles des compagnies de transport (avions, bateaux, trains, autocars) et des hébergements sont différentes des règles officielles et changent souvent : nous ne les reprenons pas. Demandez toujours à la compagnie avant de réserver. Quokka n'est pas une agence de voyages et ne vend ni n'organise de voyages.",
+  "aroundWorldLocalCustoms": "Usages et coutumes locaux : nous ne les couvrons pas ici. Pour la façon de tenir les animaux (laisse, muselière, races interdites, lieux publics), nous ne reprenons que les règles ayant une source officielle ; pour le reste, renseignez-vous auprès des autorités ou des établissements sur place.",
+  "aroundWorldTimes": "Ces étapes ont des délais précis et certaines prennent des semaines ou des mois : fixez-les avec votre vétérinaire bien à l'avance et vérifiez les dates auprès de l'autorité du pays d'arrivée.",
   "aroundWorldFinal": "Les règles officielles priment sur ce résumé. Avant de partir, vérifiez auprès du service vétérinaire officiel de votre pays (en Italie, celui de l'ASL), de l'autorité vétérinaire du pays de destination et de la compagnie de transport.",
-  "aroundWorldInfoTitle": "Ce que fait et ne fait pas Around the world",
+  "aroundWorldInfoTitle": "Ce que Around the world fait et ne fait pas",
   "aroundWorldInfoBody": "Il résume les règles officielles pour voyager avec des chiens, des chats et des furets, avec la source et la date de vérification. Ce n'est pas un conseil vétérinaire ou juridique, il ne remplace ni le service vétérinaire officiel ni les autorités du pays de destination et ne garantit pas d'être complet ou à jour. Il n'indique ni médicaments ni doses et ne couvre ni les coutumes locales sans source officielle, ni les compagnies de transport, la vente, l'adoption ou plusieurs animaux voyageant ensemble. Nous n'encourageons ni à déplacer ni à importer des animaux.",
   "aroundWorldReportError": "Signaler une erreur",
   "aroundWorldMailSubject": "Erreur dans une fiche de voyage ({code})",

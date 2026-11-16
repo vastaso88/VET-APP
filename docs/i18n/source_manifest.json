@@ -19024,5 +19024,428 @@
       "de": "6e3e3a630dc2b216c554e7b5a81c0be9e7db15172d331431c5fb9a6fbada28af",
       "fr": "7c5eac6e2f0dabc002da02d5aca721b5da061c9e60ca5dfe3eb02081f279522d"
     }
+  },
+  "ui:aroundWorldTitle": {
+    "source": "195d1953302959b0f3c48277db247f2e8780d009100b0746bb575521792fb762",
+    "targets": {
+      "en": "4d1f376c50ae5ede41d6f748576dfb06f72f8eddf4a85b168caaa626d3fc6e49",
+      "es": "4d1f376c50ae5ede41d6f748576dfb06f72f8eddf4a85b168caaa626d3fc6e49",
+      "de": "4d1f376c50ae5ede41d6f748576dfb06f72f8eddf4a85b168caaa626d3fc6e49",
+      "fr": "4d1f376c50ae5ede41d6f748576dfb06f72f8eddf4a85b168caaa626d3fc6e49"
+    }
+  },
+  "ui:aroundWorldActivitySubtitle": {
+    "source": "4ae882da40b4a8ea210baca132646871ef6ca65494727b5f117c6d583f9bf13e",
+    "targets": {
+      "en": "8905225d2eab14bc39fddff60932a40a9acd367fddec282ce479401bf1ac0567",
+      "es": "59068eac6f3b722ffdfe08edb7558bc4d87e080c04fadde1e9c212fdb1221573",
+      "de": "38c440bbf1bf0e31aaa4b24f950c2771f65d52ff596ed049a0ac806fef3e8274",
+      "fr": "360bdc758203001ea948443da89be747106404770f7aa203885983e9dc5dc914"
+    }
+  },
+  "ui:aroundWorldNotice": {
+    "source": "c9b96ee20ac24a9e9214cc35a5c5f1e61f6fb077458fc6657cbb365ceb37a093",
+    "targets": {
+      "en": "5954569cad45662bf4ac34c8ff69931c42c44f00082d3341191c58bfa97b68d2",
+      "es": "98e4a4cb4225ae62accd0578c358274a703a2eb6d6f5b6fab456cc9d0b82de08",
+      "de": "73d7560e79e9932c525cc2f4fdcbcd815a003cba28e42aef6df0742691a32968",
+      "fr": "68582b94cebfe18120cc7132f576171d6dff3e17991380ce0f3a93940f7660b6"
+    }
+  },
+  "ui:aroundWorldFromLabel": {
+    "source": "bfbbd554ea3413af7d25a8629aad7cda865e56db6b053334edcc3ca6e1e67e01",
+    "targets": {
+      "en": "6452780538fcc81e83ab45ebe5cf862b2e83c125589e4ebefaaa1d7b23a44601",
+      "es": "738f6fce498ad94e3bd9b93f6d8855f1808fb15b1a1a16f1cbab7abe05dbba63",
+      "de": "dd664b63af11714f5fb6646ecd54046fc9f60a8c52cb93f23b82c8df8e6a2362",
+      "fr": "f3ad35b5f526f0c9279137f9f26c36c544342e6bd573b00efc9908687f2873e1"
+    }
+  },
+  "ui:aroundWorldToLabel": {
+    "source": "37aa1906f3b1ebafb24397a69679ddc7c3fe4e486e4ee57dad58533dcd265f89",
+    "targets": {
+      "en": "d3cd1756cb5a65d1e4888e0789bf51e0a05c5f0a530779b9a394867747b1aa41",
+      "es": "ad7544fcd3784dbf55e08791ab0c2f03e21089f25f3569ba0efd3979a7d17616",
+      "de": "3f547bc09f84654b4598b035e5d6f024248f6390cf448dc5166134dfa61ccc09",
+      "fr": "20c989d66383a37213ba6fc060fc060cb924e11a729feb82adc815af9d15500d"
+    }
+  },
+  "ui:aroundWorldWhoLabel": {
+    "source": "71a069597d2d30f5c261fa770798cf42ab6236cce5bc1973ccf5ca3f80dd14aa",
+    "targets": {
+      "en": "bf80816ad0d27eb5dd3f1a24f1f35524dd659b61c791107413945a3799a36ab4",
+      "es": "c874e0b2d97b9fa685174aedfc92d6ee331712bd1e4ac960148cd9fee2415bd6",
+      "de": "f85045f06f1b8cb595b1eea37f6cbe4768a33c83c123bffd5a24285b25fb6bf4",
+      "fr": "b1f75dd99b12d9898cbdaea3ac2099679bd65c7a67fb6b1275c45b3c8f891f1c"
+    }
+  },
+  "ui:aroundWorldCountryHint": {
+    "source": "bb842843dd18650ac863ac286f57f47619557bbd55bdfa656b4456d40202dc73",
+    "targets": {
+      "en": "72283ed077252e0610bafdb7e9ed4d5bb40bf5ae06d63624d342d90cca6d6ed1",
+      "es": "5873973cb5e24d981348277629338d47c43772701b260581e3fa7552861d1779",
+      "de": "fc23808b60d860cabde48dc3904af760a2afa22d77423d3263db3d1bb8fdb07f",
+      "fr": "dce0a54663126595eed9e8c2e071d31f91c8dd57ae8fa6d2d9a999232ec9f4d5"
+    }
+  },
+  "ui:aroundWorldCountryNone": {
+    "source": "de462af372ed6c498f44d46b3b88bda73946ae6c6c3729028bfa814352f4dc87",
+    "targets": {
+      "en": "e741e82603999ac1b3d85b856fe82e71ee48fcfa3db38374c1801e6cfde5eafd",
+      "es": "54cab57101229a4102626a6ac57f1c44a5e9c1883128ba610894e23e592ee47a",
+      "de": "e43fce6e627f2a88cd895dd20e3b2338753d9d1061b2c3cf1e806d1fb92ca50f",
+      "fr": "91b340ae5609126be02aae4d614844612ba17ce9d8ffea9476422655e04ff6db"
+    }
+  },
+  "ui:aroundWorldMyPets": {
+    "source": "45ddc4cf7cb86b9d622afeca9c57f6c32000fd18b8f820576742940b8450daa2",
+    "targets": {
+      "en": "4bf079ec3c058e1e8f7b25dc6fea852e951de0e9f79650eaea0ce9163e5691bf",
+      "es": "2caa1da51b4ef3435af86cc939dfc4545a81f91d81cb1ad918bbc8472466e42a",
+      "de": "4816dfac02045e7559d6fdf8320f0a43f41a2c99e36f88e5fdb17236c43b334b",
+      "fr": "305697ad8b81b67cc3ac4280d64fc747e9b5b0543f489983a6bb8d4b8cd16313"
+    }
+  },
+  "ui:aroundWorldBySpecies": {
+    "source": "337f72f5a86a9c9f2e156dd289b2386c0f923b82f14e18638bf66596ffe4c7a0",
+    "targets": {
+      "en": "f9fbd4f0cb81272ca00e02683fd5119df58c54b279a86235e2aba1b95b99666f",
+      "es": "755056a91ce92ac2204efabdea7d0dd76e7dd32b60c1264b06ceec071af760b4",
+      "de": "5c13c8ed164cf86408b00cf64d8cd3a6a84e98115d7bb994e4ef1c98ca6cae72",
+      "fr": "8ab79608d036b517d2c36e359cc702d772f29c8d15196510bfc3b87f49d6405d"
+    }
+  },
+  "ui:aroundWorldSpeciesDog": {
+    "source": "0486df64271916af76c19601d67c5eb4913e4606ceeb6c868e9bc57901fc6ab0",
+    "targets": {
+      "en": "837aed316976e3ff8c9b843d7ac4eafc6999c11607660339c7983c06eebeedb7",
+      "es": "bad61a887b39bf91d549ce947816890d1d3f01013d7d2ed9c9d0b3db524d996d",
+      "de": "addc6fc625a98894f9e664cb5659f211f1682b82557ac64af26ae99c0bbf3372",
+      "fr": "4495dc5bab66988cc6fd9b034569104ed233eb851a49229817fbde06678ef50f"
+    }
+  },
+  "ui:aroundWorldSpeciesCat": {
+    "source": "8b4103cc0580637ea790f97ddc285ba27ffb7e125ea4163e0386e221f4822459",
+    "targets": {
+      "en": "596d843063e58feac42d04351e46b786ddf4535c96005a3799c3ed4930e9e7e7",
+      "es": "5446b9df2240e58965c86db6b686edd7fae31b7a76495f4af7002af0f284abbb",
+      "de": "7cc74bbbcc2766e98c12cf6ded25b730cbd6e56db8802716ba9405c6659e101f",
+      "fr": "0adf70d5dd00616bc4a78d9209f566ec31667ade9fe377893925b0835ee8fbb0"
+    }
+  },
+  "ui:aroundWorldSpeciesFerret": {
+    "source": "7db5ac23838c30ce1192a59f249c8b6865a3342245a2728f8c182c276ebd4ce0",
+    "targets": {
+      "en": "4264cad2d0bb8f1073bcf0a023d5aec31baa03af83de8e10403da50c08939eb7",
+      "es": "51a9e87c97d678a6e75004db575f1ce435c67533cb5614f88981bea3cacb7494",
+      "de": "dadcbae2681ced0844fc0adbe35b668908ee3ce9b813fe5f759798e6eee94c27",
+      "fr": "d0a9f658b017d0afa0b4416393faf7a6519f23d5b2f2e2e9784fe76eb927ac64"
+    }
+  },
+  "ui:aroundWorldShow": {
+    "source": "7ef421a9bed24c55683eab331ec0a5d9a31435ce65cee04808eb3967e450ab16",
+    "targets": {
+      "en": "6815ea529f5e7c40757321745cca4ddc52d19807e7f4bed584da6f2bf1b41d5e",
+      "es": "2ac7c539473c578e20c93bc6312cfbc9b9b37feca2c7a78e61f21340e544c172",
+      "de": "9f6cdd8c770e2f3e3338114d8471268e19a58892ce76565585f1b08d3369fdfa",
+      "fr": "834e5a2911203b1035fc6373696c6321256c4729b9ebc59cb39d673d4b609f94"
+    }
+  },
+  "ui:aroundWorldPickAll": {
+    "source": "049767f0bc8b988a9d1b237495a2fe6a5c3fea97b7af00ee0072228ce9187f60",
+    "targets": {
+      "en": "cc3c12afb562899b3514abdf3097c2e436eae2d9a6e9a5d966a5a0b3c0b29397",
+      "es": "982ac6b063356e016caca808effc03a7e4c630b280d314d99f8e626cfaa61f35",
+      "de": "a646c844d106151b6b798a66d0c331a4086363da7a8f86ba4356406d04a795f0",
+      "fr": "aeb6b59b766ce446670e4a56665e57374bf11f7c149094613d066ffc32ea203f"
+    }
+  },
+  "ui:aroundWorldSameCountry": {
+    "source": "6d34fa98209547a45d44f7a105df7de38a059e89a9b5b67759a78b5026cda0d2",
+    "targets": {
+      "en": "fd6514e4de4d3019a2ec1d5d679dbd7808bc9c85edbd51e54e519e02be9012c8",
+      "es": "1ed8ec14083482068b56bfa8bc4995ce54f5be068f85a17e940f926985e11670",
+      "de": "f85a8895e20ecffe088901750433876b28bef3ef5ce8b95b0a3a9e3d781aa1cd",
+      "fr": "ebaa844d0d660cd4a53005070e2d428e944f846bb5dc7687cee2a4a793d9ad05"
+    }
+  },
+  "ui:aroundWorldLoadError": {
+    "source": "5e8b33e96fb102a66a60efb4a35cbc894a8650b32057caa9d6830e184219990e",
+    "targets": {
+      "en": "085db787fc9b0f9362c66c15cdc367c662539eb8c17a466e0f52d7377e73d394",
+      "es": "a77041429b42955082b54fc22314b91fe0243b9699d45cc590e0e814865bc8f5",
+      "de": "f02a59453d139c978974c91e0932d6641172b8c166224a8fc3cdd3b672b3ce69",
+      "fr": "3789d860d42e137fd126f4b5ce115b48fe2049f76507313dd9c46aaa00b51054"
+    }
+  },
+  "ui:aroundWorldRetry": {
+    "source": "7643966529b5a63bb6136a7b32c575e35d1d7b48ba9df4ef98c2d2ce33900b18",
+    "targets": {
+      "en": "514c63428de25cfbe81584f392d8e6340bdca15573a41a1078bbb6b9131cfc78",
+      "es": "b28b24bd08875d5447702cbe0f2122825167aadee10946e7dd07e81e772be1c4",
+      "de": "6f817b78d98170251d9b4cb200de10b3fd3c3c2f806d74fc72b825e43c6aaf8c",
+      "fr": "e17b2b111ef4442d975c9dfdb1e7cb07f294234ab790eadbac7ee088d697d082"
+    }
+  },
+  "ui:aroundWorldResultHeader": {
+    "source": "0f3359174657304fa80fa5b95392016fb9a2eb908bd7c88d33dc639730eabd67",
+    "targets": {
+      "en": "22b989e053edb327157432ab30a60516a2a1e352188834b7748babcf32988971",
+      "es": "9f2aa996f7e94289303c116a8b4d469c771a1a68078ccc5f6901e2e783b9fa61",
+      "de": "e8f4f60952203d36b5d255f8ae7d071903ded8054d66d760cb01ae21993bd9cc",
+      "fr": "e115afb2fddca1dcd33c1cd6409ecab57108d3ea0ab23d164653e34ab2b75439"
+    }
+  },
+  "ui:aroundWorldNoCard": {
+    "source": "b3e0b35b46aebd490ad773d3547d13727ed6f6f7b2df46b480245f485c7d9088",
+    "targets": {
+      "en": "63bf75511faf2d4f094e5e6a7bf6903cdd332c030ce1fc1820ac5eaa329117a2",
+      "es": "74fbfcece163625ed6727a828d85e7edbc7304f53c66e9c49777b9b87c6eaa15",
+      "de": "1a02377c09b62ce77abdcacc6f931d2c7c2b4d0540dc841a91173bb6e9d44e94",
+      "fr": "6cff0fa1c5557da5e20ff1c01bd35c70a27f1dae22e376bcbce31c4f255b8a30"
+    }
+  },
+  "ui:aroundWorldOldCard": {
+    "source": "2916da7f967d22104e363586dca19a5499caa7b3e631e210a8232ccdeabc0ca1",
+    "targets": {
+      "en": "a955f3572faf86cc91c6f038de528c98c764bb390c8c3326d2e7a6e5607bb94c",
+      "es": "3b54a18ead882977a5f4f485577d011f97389b55d7fe51cc77a6a183cbb52c60",
+      "de": "a5dd6a086741efcfda6de6eaf168c255f2a710f9a1114337783feafd0e212a0c",
+      "fr": "36fa7c7cc9b5e8bd4a059d189dab7b54c6761328bff421163f42c2ec76a9f57d"
+    }
+  },
+  "ui:aroundWorldHiddenCard": {
+    "source": "933282ad57f1d30f9b8bca33679a2e15c9d844437efa5d8d1038ff5ac41cbe94",
+    "targets": {
+      "en": "8b48bdc73b111f7b3925f3191a87afa800a7604f4e235ac6b4ac612ddb9edc53",
+      "es": "2a883e95953f0ce3dcb4fa59e17362caf43a6c771fe2612d000ec31f1a08c44e",
+      "de": "d6f2bfb4aa76f5d634d85b1305d4536cf849716f6e8fda8d57a1d0838e0a3ef5",
+      "fr": "b6ede0d24861f65af7ed68ccfadd845f3569af73e7eb2313562ae6056231f3f1"
+    }
+  },
+  "ui:aroundWorldOpenOfficial": {
+    "source": "a5f2d1dbcbee4fd596043989b97758a14ead4b0082a078733482a85391868dff",
+    "targets": {
+      "en": "46299e7c005551edc2bb5f1bf581503a10963534356891158c225a4c6de4b9f9",
+      "es": "f018948c7a8006b31a8d9d41f6620e5b3dac51c726531c1417644fd7dada6169",
+      "de": "8339414b7768b1bf973fecc1e157ede96e360cd93e2fa854ac3b866ea5dd3102",
+      "fr": "e98036252746c313179e8ed45cddc7d7518c33cd5675651b7987b5bd51b7a103"
+    }
+  },
+  "ui:aroundWorldNotATrip": {
+    "source": "95ded9aa8d4ec213a942fa3769c62865bd8ea35d35bd6687de29ddde279a6662",
+    "targets": {
+      "en": "dcc8b05e50aaa138d0ddd7072ee861e4a852fdd66a88dd91e0edbdb5e1e831e6",
+      "es": "805a3d12dea78c25373e7b606aff5af579dd4a98b2ae746a9a3c63d6786ed7bd",
+      "de": "67ce5ea854857d6d773c6678456c294bfdedda47f19793b139ed9bf028979937",
+      "fr": "5a23339aa049c88f59e1247f38679cba20ca6efee0e36573ac79b18ef31b1b16"
+    }
+  },
+  "ui:aroundWorldOtherSpecies": {
+    "source": "3ab8190ff3a8edd198b87048bb51dde44c43f284c81d643611d9a37928e54401",
+    "targets": {
+      "en": "2c4f2fb1c35fa6a429976c8fa2203f71ddcfbd239e9ecf13c4673997f61b584d",
+      "es": "d0ff9793157c1f9d9363499157ec3f9bf3bf689c2d02cee327376ee372efc9ff",
+      "de": "48f8c7c5e3e770ba155d9d4726f03d998731762952fb481e6025d6a6732e78aa",
+      "fr": "0d2c48885c31ce066f4112c2ef9ccc1fb1693bd4e353d44bc207e44196d2f737"
+    }
+  },
+  "ui:aroundWorldTransport": {
+    "source": "c192378a240017e190792b23e30caeef053f478b73ed3fda2ddac4755248663a",
+    "targets": {
+      "en": "221e33767bbc6917aeeb3a8562cc93770fcc28e2ff6e05115f660249b2df135a",
+      "es": "30b8a5575b743cfb2f41fa56e83f8cbdc03aa753d06f7a8b795c3fa08a241304",
+      "de": "59014224a4c6207a25ceb6ea21f5780e0ba48e3d33c5d0baf49da5791dc3ad37",
+      "fr": "fe0800f2f3362a607a8271b797d186f5043544e227d75784410b70680c7ea105"
+    }
+  },
+  "ui:aroundWorldLocalCustoms": {
+    "source": "de97960280188dd2aca5e91bbe764d7b71733b86ad86d2742d302e6ff056b11a",
+    "targets": {
+      "en": "377dcdbbd0e71c28df201388068c4037c544b0a8aba1663d89b305c8cbd777aa",
+      "es": "b51a1ee2355ff291c3eebebfd0ff8c9518b3b669506232008f15101d5231ef00",
+      "de": "2ca60d578f8676e1033514ef78bc52d591e1d026c2f853a53ff89148c2a0f2d2",
+      "fr": "2ea326496676ea1f266d480e9675ed09983bcd5f00095258f4999cab02fefceb"
+    }
+  },
+  "ui:aroundWorldTimes": {
+    "source": "d2eefcc743b455bd484ac0fb5e01c91fe5cf201fa6002da214ccccebd043703a",
+    "targets": {
+      "en": "2b3d2bbe31a769ac55f10c58dead53ca699e07ac40fbe86cd1314c559b63f0d3",
+      "es": "d30eefcfedbbe36d3b4e74543934079c40db05f71087aca0e821a7ced0e29619",
+      "de": "9a8b615baa50e2cfc2385bff234565e350095f113944709f96d0fa899850d21d",
+      "fr": "da5573e15ea841013b9245dbd810932dfc7cca211948a61b7845e486942bbae1"
+    }
+  },
+  "ui:aroundWorldFinal": {
+    "source": "aa9791abf191ca4f897dfecbe842ba80428473abc64e014d27a7f0c94e649457",
+    "targets": {
+      "en": "3f619d1fb04545d025f0a3b572b00fe75a9c5d73244e11e74a4a6eabbb7d6ec9",
+      "es": "d72321833038fe78e60cea4fa0e2ca5de60abba2b83dd1f9f4fbd2a8f00da1d8",
+      "de": "1da60611d66124b54ed052cfe886e6f220dae964e162bcfd37594e97dfa85b94",
+      "fr": "db5c00ae8d34938a1f28fb7f1354e898b299105e865041d40e997c0f4d5b8e21"
+    }
+  },
+  "ui:aroundWorldInfoTitle": {
+    "source": "603a081487eff5ae48b2bdc0664aa277fdc30a7390d1d706cea82e03591ad3c7",
+    "targets": {
+      "en": "3aa33cfff196c2438a7b86342c66f647e870f5ddf3e87b4090d9844a7c0659c8",
+      "es": "0d3e1855494abd170602c258be6cce23aa68f2963e699f6d6c50415ee7d1556b",
+      "de": "0d7e3d7ee6b6480a61763d0178145b1cc64a8d42a22d91de92acf80b3c41d3b8",
+      "fr": "b0389debd3ef910413e731774dfa7cea4e32e153c19cd572bf6e8d357eade267"
+    }
+  },
+  "ui:aroundWorldInfoBody": {
+    "source": "d0f42b2c47389f3a7b4f38d5f581d85c78193e216724ed28ace27ea6c7e5fc50",
+    "targets": {
+      "en": "5163fd70f1d51d2fc9f71db78e636c94b7a5ba425fb44668586b243b7711a7be",
+      "es": "bc553cbec2ac46a82e5cd16a65fccee30e8806492af4b3bea70fa0eb3db8b47d",
+      "de": "ce06531233dfe19639da66145b45237ed9897385330219c6b9123a921fc7d560",
+      "fr": "5b91f50505fe53a89ef4e852f5e42c3900ccf8b2bfb67faa3b69a5d233714312"
+    }
+  },
+  "ui:aroundWorldReportError": {
+    "source": "07921d407663e8ca72ab3b4b1811b965186987da40575415a71dbc224f4890ab",
+    "targets": {
+      "en": "19a0dae2344d0985c31c149b4691d01ddfd7a0d96a4160dcda82904da17dcc70",
+      "es": "bdcce46438f6162a3fca2ad2750b47c1f231fe79e00947dba8ffb5e20a035209",
+      "de": "657d2a19108d9e4dfd880463123b79f868ffdca46c44a7eb38736a3d4c483ead",
+      "fr": "05750d1ecaf4a4cd19140811fb046b096dab6f851be8624cccca33f155cd6fe0"
+    }
+  },
+  "ui:aroundWorldMailSubject": {
+    "source": "574a888bd6d630fa9cc0b1befdd67ba190c8cd84abb30a9bba43047e68e6c8c9",
+    "targets": {
+      "en": "f63c700b9745f2cbc6cb1360227ef6607516069b9b1c9b124cf374449ff7332a",
+      "es": "3153faca629db659ae3a381af76e79900f3c3af234f65b7a0bead4f34f675901",
+      "de": "6829ac7566e01066dffe34fb301b8801f99f5ed30e897134afedfadfa878c680",
+      "fr": "23dbc6366983cf9d1ff2fd4473c3403c2138da7307e69af4d51b99c5888a6024"
+    }
+  },
+  "ui:aroundWorldCheckedOn": {
+    "source": "f2d98cd991ce385f2d5a5e6f03ba15185b654cb8cf132dbe4f4577c75cb23637",
+    "targets": {
+      "en": "64908b0711ca2db1d0398e162e20b3abf4275fc78210a269b884862460ebe2ec",
+      "es": "bbe4847bb0bec8df91b48c628660a0920c50f0dacc3726516e2de6147ffecc4a",
+      "de": "326377801ab7d9190f021c714b09863623f7f05fbbf550cf3a59d1f0a0fab0b7",
+      "fr": "c34bb5163a48dba7a45446c78a87ef251ca689da201dcd23b195e9c357de7ebc"
+    }
+  },
+  "ui:aroundWorldOwnAdvice": {
+    "source": "a643744b67587d87599a5988dde0cdcd3b5455a0f4e3634b98db24672a02a599",
+    "targets": {
+      "en": "b01781496fbf5b773b79a2c837410551684a47cdf7a776d443ad4a831c1ed119",
+      "es": "8dd203705df2ee6dc22305b11b6a6b46e1bb56e77b1a4f041542d8b4a6689fea",
+      "de": "4a300ee658b5cb8c2c1d3ee05cdf7fdd4ee6751720a67acbdbf1aa90e4bfa2ad",
+      "fr": "74442abec7da70aaa4814630b42b52718308dec73f6edb4d6c335da9600f59a6"
+    }
+  },
+  "ui:aroundWorldBlockDocuments": {
+    "source": "c6e32134374d03a847914f26e760c8368a5a5064113fdbd52cff2ced6e079ab2",
+    "targets": {
+      "en": "796e958604092b5bc1df25ebde59c77e0c38518bf4fe4b0a344295a0ca7625af",
+      "es": "1c287853d585d40c891034ecf3786dd10c9cdaca30085d3accc9e300a32df3e1",
+      "de": "1a4757b1934cb637d057e3fae7db2f04881ea516383a41e957b5ce7b545a556d",
+      "fr": "796e958604092b5bc1df25ebde59c77e0c38518bf4fe4b0a344295a0ca7625af"
+    }
+  },
+  "ui:aroundWorldBlockMicrochip": {
+    "source": "28692731db7cf6c16d255451640ff3259da77df38194362874ccf70d39b49d28",
+    "targets": {
+      "en": "358fc5ccafbcc8ea4f61c3f88538b891eed5d232b975c5d5a570850521a1184b",
+      "es": "358fc5ccafbcc8ea4f61c3f88538b891eed5d232b975c5d5a570850521a1184b",
+      "de": "82f4a753c7a937f8094751a98044954537421ceb3cc39a971eb7dcbf2dcd11ad",
+      "fr": "83d23c14ffc1ee7b913e4a2208b3cb5c9f9e74b5e1311b89c436db7e77ad9568"
+    }
+  },
+  "ui:aroundWorldBlockCompulsoryVaccines": {
+    "source": "9f26091a5e1d5bce66c286c1d8077ca91ab1dd8905740f9d6f0a2b03f58304cc",
+    "targets": {
+      "en": "8408d88af69ad151d2f3f7851c9c14d9157da80aff4d699b5aa24e145dc6e934",
+      "es": "9fae5a1e1675408f71935f7e10c9cfa047fe9eee7af38ca3d3983a7c40e905a7",
+      "de": "d1c269a7c1db3bfe8e6a2537c65392e24824a238f456889d39f5d3933684a52c",
+      "fr": "44b447b8a6af2d14c4ff2a8070a405b84727c81020a58a8bf87799dec83a0ec8"
+    }
+  },
+  "ui:aroundWorldBlockAntibodyTest": {
+    "source": "1a19ad3c40d26f8f03b2c7488a9251980da0209323044e5e5a966ae351acaa21",
+    "targets": {
+      "en": "c3aa69d4edf5ebdd6c1847079bcafc95f1b58bf9fe2403e1131f03c3953393cf",
+      "es": "5806bb64d3b4a84a7ef7fd318fb813b173409f584122209ff3691d3c1bcdc6df",
+      "de": "427acfc13fd979c95981a8306b41c80a891a05db9a9378cad7c943a7e23edb90",
+      "fr": "614de2c7e47158964bcb750ca084e8cadcbb199f95075987741f71487b7c7315"
+    }
+  },
+  "ui:aroundWorldBlockRecommendedVaccines": {
+    "source": "00e13d69bbac9cf3856573ac3c7f19546dd474e2bfd935febae39f2c78ce407d",
+    "targets": {
+      "en": "278d3ecfd080709e013b0750c0f1796876d3c91ab8483f3025f082e25e06fa7f",
+      "es": "63d6a349db8e05b5a213a591416e5cd2eaace8c1940484d01b2a3a8549197aac",
+      "de": "d439851a8e9dfd94c8f3ccf83be387f96d3e1a3faa93c861c927ef14e3289d0a",
+      "fr": "1af14dad638d4facd304a673bec8697d2dc208871e3abbccf281e8698c910042"
+    }
+  },
+  "ui:aroundWorldBlockDiseases": {
+    "source": "c6f79353a1ab8050b779cf792167c76cb1831fabaeec850226ac4e119116a83e",
+    "targets": {
+      "en": "3e30f37bf40a141295d0641432617e3f4f7e77fa01e36e737b7a8082b0de1236",
+      "es": "26ffd9f5bcbd62e79814555fb1b9db9c8f39eb5399a107d34bd33c8a120053cc",
+      "de": "67c98357e5e6aeb69cbaa2abaf344657f36daa439554eb7f5926e5a4da75d861",
+      "fr": "dbd91ae5cc362a93a15fd381a3374995f489295fd8b7b079ec46867c13ad193c"
+    }
+  },
+  "ui:aroundWorldBlockMedicinesProtection": {
+    "source": "689ea4574868b38e76c2747ab3ff25c59b6739628c999a2cd1c7de1533378c14",
+    "targets": {
+      "en": "cd1eaafb6b237923e0c5dff144f36f2e43d2093908a51abd66ea704d14f02d84",
+      "es": "2074ce56f5e8a72b6f6df0f91dac441ed0e207497b7512292890ecda94ec3df6",
+      "de": "93c614ef0cfca0e8b8d6d4c96770d4609e0d915f006e3d561d82a3c20401a439",
+      "fr": "b262ebc8423aa262a3a3245bbd1459af0a7b2ac15a40aad744771ffbc6acdd41"
+    }
+  },
+  "ui:aroundWorldBlockLocalRules": {
+    "source": "8ad533df5798ebaa8ef2bf491fa1fb45a1d125d6932b9c82017bc3721381e618",
+    "targets": {
+      "en": "53059b36b82f94e1393bbe528857d9a3508d9acc8056c6c3bc314c6c2db3ea66",
+      "es": "b0f21e317ffa0287862e5f5edee644098268ea651d381ff4355018cd97a87ded",
+      "de": "70f0b8cca360d642868a045ef66dca1bb30e636619bc1963407fde5785f3357d",
+      "fr": "4b41e5f1324e72ea40df395b6ff021f6e2626250e9800143f90713a6f2cc1ccd"
+    }
+  },
+  "ui:aroundWorldBlockReturn": {
+    "source": "6eae410805d4eec008dcf3b7ae67dccf400017587831329f13928c751887b9ee",
+    "targets": {
+      "en": "74f59e148bbbb3b5422598ae6cb56fc176e646c62863651d79f26bfa6c2f7dff",
+      "es": "07593cf67905cb35d7066a8a8360f8e1081c6863b99809f8414af76d12ff2b17",
+      "de": "8a03068f973616cdc59603f7b5e0ade1148e951876ef11f1b0fc7e03a5fbd111",
+      "fr": "eee814bcfbada580159d9fcc031e7f6188a72aa06291bfa23f8143cc1c02fced"
+    }
+  },
+  "ui:aroundWorldBlockSpreading": {
+    "source": "ee2c51f5a8a0f839c24b025b9e714fa4d5e009b3f137305ae4b8ff6bf3877681",
+    "targets": {
+      "en": "d1e8d93f761e61c38025cce9d0fbc0a433fdaafd8abf270ba1ad3ab24df2b820",
+      "es": "152babb35be287143f65c6391dc6fc9c28d69747ebe9fcf259700d74aa569922",
+      "de": "99e6b94ef3a34fba2e755eeeb2bbe6068178307013aca56e860ceacb3b4c51c4",
+      "fr": "b76d725714185fd43884ddc7a2d39ef27af48c858efe78e3ea17b55c000aa767"
+    }
+  },
+  "ui:aroundWorldBlockVet": {
+    "source": "be2f02af1cb2abc6f11e809f16706511d5562b910e759d4f8bc99221acd87451",
+    "targets": {
+      "en": "804ea2a31807746910aed0114baabe2128ae6da1eeedc4e24d3fc4fbdd6481f0",
+      "es": "50a5dd20029501b2ad15ac1f2e23f974c944317d1bdb0b22dfeada49ac0a20e0",
+      "de": "9cb6143299b5dc2e34800c6997726a47207475c37f839f291ef7b412ae766e2b",
+      "fr": "4ad8ad5e34a5e211ed4113a97ce64fb7a8f7395caa24bd164a906c9351a4ada6"
+    }
+  },
+  "ui:aroundWorldBlockLimits": {
+    "source": "4de63812b7c0bba047d120d71d98173d68c5d34fc81ce43355b56df64b523a49",
+    "targets": {
+      "en": "7ba50d8fd16030b86c86473d0dda612e9ac41c8552761e5aa5a65866fa686b93",
+      "es": "00772079c048a14e95818aaf9d2113774bc7fda97f5a41970fb066eb9ee2bf85",
+      "de": "48f859e3097f41dade557f5b73e24f5d95c5203b69a5e2def538215b161f2b26",
+      "fr": "4b456ed505c76ff5b3c5df5cd4d932f41db6046467878f0fa9f7ec696d643af6"
+    }
   }
 }
