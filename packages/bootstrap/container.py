@@ -514,6 +514,7 @@ class ApplicationContainer:
                 self.dog_walk_repository,
             ),
             test_plan=self.subscription_test_plan,
+            pending_deletions=self.account_deletion_repository.pending_owner_ids,
         )
 
     def register_device_service(self) -> RegisterDeviceService:
