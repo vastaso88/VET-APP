@@ -2823,7 +2823,25 @@ class AppLocalizationsDe extends AppLocalizations {
   String get memorialPageOpenWalk => 'Route noch einmal ansehen';
 
   @override
-  String get memorialRestoreAction => 'Zurück zu den Tieren';
+  String memorialRestoreShortcut(String sex) {
+    String _temp0 = intl.Intl.selectLogic(
+      sex,
+      {
+        'other': 'Versehentlich verschoben? Zurück zu den Tieren',
+      },
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String memorialReadOnlyNote(String name) {
+    return 'Hier bleibt alles, wie es war: Sie können ansehen, herunterladen und senden, aber nichts ändern. Wenn etwas geändert werden muss, holen Sie $name zuerst zurück zu den Tieren.';
+  }
+
+  @override
+  String memorialChatReadOnly(String name) {
+    return '$name ist bei den Andenken: Sie können diesen Chat nachlesen, aber keine neuen Nachrichten schreiben.';
+  }
 
   @override
   String memorialRestoreTitle(String name) {

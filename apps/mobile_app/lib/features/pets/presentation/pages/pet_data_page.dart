@@ -160,14 +160,17 @@ class _PetDataPageState extends State<PetDataPage> {
         identityColor: pet.identityColor,
         size: 36,
       ),
+      // A pet in Ricordi: the profile is shown as it was, never edited
+      // (docs/product/17_ricordi_animali.md).
       actions: [
-        IconButton(
-          tooltip: t.commonEdit,
-          onPressed: _edit,
-          icon: const Icon(Icons.edit_outlined),
-          color: AppColors.onPrimary,
-          style: IconButton.styleFrom(backgroundColor: AppColors.primaryStrong),
-        ),
+        if (!pet.isMemorial)
+          IconButton(
+            tooltip: t.commonEdit,
+            onPressed: _edit,
+            icon: const Icon(Icons.edit_outlined),
+            color: AppColors.onPrimary,
+            style: IconButton.styleFrom(backgroundColor: AppColors.primaryStrong),
+          ),
       ],
       body: SingleChildScrollView(
         child: Column(
@@ -267,6 +270,9 @@ class _PetDataPageState extends State<PetDataPage> {
       if (speciesHasMicrochip(pet.species, breed: pet.breed))
         chip.isNotEmpty
             ? PetInfoRow(label: t.petsFormMicrochipLabel, value: formatMicrochip(chip))
+            // No "mandatory, add it" nudge for a pet that passed away.
+            : pet.isMemorial
+            ? PetInfoRow(label: t.petsFormMicrochipLabel, value: t.petsDataNotProvided)
             : _MissingMicrochipRow(
                 dog: pet.species == 'Cane',
                 onAdd: _edit,

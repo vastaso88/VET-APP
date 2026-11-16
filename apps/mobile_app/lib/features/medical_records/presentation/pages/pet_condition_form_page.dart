@@ -51,6 +51,10 @@ class _PetConditionFormPageState extends State<PetConditionFormPage> {
 
   bool get _editing => widget.existing != null;
 
+  /// A pet in Ricordi: the illness is shown as it was, nothing can be
+  /// changed, deleted or saved (docs/product/17_ricordi_animali.md).
+  bool get _readOnly => widget.pet.isMemorial;
+
   @override
   void initState() {
     super.initState();
@@ -254,7 +258,7 @@ class _PetConditionFormPageState extends State<PetConditionFormPage> {
         foregroundColor: AppColors.text,
         title: Text(_editing ? l10n.medCatCondition : l10n.medNewCondition),
         actions: [
-          if (_editing)
+          if (_editing && !_readOnly)
             IconButton(
               tooltip: l10n.commonDelete,
               onPressed: _delete,
@@ -286,6 +290,7 @@ class _PetConditionFormPageState extends State<PetConditionFormPage> {
                       _Label(l10n.medCondName),
                       TextFormField(
                         controller: _nameController,
+                        readOnly: _readOnly,
                         textCapitalization: TextCapitalization.sentences,
                         decoration: _decoration(),
                         validator: (value) => (value ?? '').trim().isEmpty
@@ -294,10 +299,13 @@ class _PetConditionFormPageState extends State<PetConditionFormPage> {
                       ),
                       const SizedBox(height: AppSpacing.lg),
                       _Label(l10n.medCondStarted),
-                      _DateField(
-                        controller: _startedController,
-                        validator: _validateOptionalDate,
-                        onPick: () => _pickDate(_startedController),
+                      IgnorePointer(
+                        ignoring: _readOnly,
+                        child: _DateField(
+                          controller: _startedController,
+                          validator: _validateOptionalDate,
+                          onPick: () => _pickDate(_startedController),
+                        ),
                       ),
                       const SizedBox(height: AppSpacing.lg),
                       _Label(l10n.medCondStatus),
@@ -307,28 +315,32 @@ class _PetConditionFormPageState extends State<PetConditionFormPage> {
                           _StatusChip(
                             label: l10n.medCondOngoing,
                             selected: _ongoing,
-                            onTap: () => setState(() => _ongoing = true),
+                            onTap: _readOnly ? () {} : () => setState(() => _ongoing = true),
                           ),
                           _StatusChip(
                             label: l10n.medCondResolved,
                             selected: !_ongoing,
-                            onTap: () => setState(() => _ongoing = false),
+                            onTap: _readOnly ? () {} : () => setState(() => _ongoing = false),
                           ),
                         ],
                       ),
                       if (!_ongoing) ...[
                         const SizedBox(height: AppSpacing.lg),
                         _Label(l10n.medCondEnded),
-                        _DateField(
-                          controller: _endedController,
-                          validator: _validateEndDate,
-                          onPick: () => _pickDate(_endedController),
+                        IgnorePointer(
+                          ignoring: _readOnly,
+                          child: _DateField(
+                            controller: _endedController,
+                            validator: _validateEndDate,
+                            onPick: () => _pickDate(_endedController),
+                          ),
                         ),
                       ],
                       const SizedBox(height: AppSpacing.lg),
                       _Label(l10n.medCondTherapy),
                       TextField(
                         controller: _therapyController,
+                        readOnly: _readOnly,
                         minLines: 2,
                         maxLines: 5,
                         textCapitalization: TextCapitalization.sentences,
@@ -366,12 +378,13 @@ class _PetConditionFormPageState extends State<PetConditionFormPage> {
                                 onPressed: _openAttachment,
                                 child: Text(l10n.medCondOpenFile),
                               ),
-                            TextButton(
-                              onPressed: _pickFile,
-                              child: Text(
-                                hasFile ? l10n.medAttachChange : l10n.medAttachAdd,
+                            if (!_readOnly)
+                              TextButton(
+                                onPressed: _pickFile,
+                                child: Text(
+                                  hasFile ? l10n.medAttachChange : l10n.medAttachAdd,
+                                ),
                               ),
-                            ),
                           ],
                         ),
                       ),
@@ -379,6 +392,7 @@ class _PetConditionFormPageState extends State<PetConditionFormPage> {
                       _Label(l10n.medFieldNotes),
                       TextField(
                         controller: _notesController,
+                        readOnly: _readOnly,
                         minLines: 3,
                         maxLines: 6,
                         textCapitalization: TextCapitalization.sentences,
@@ -389,29 +403,30 @@ class _PetConditionFormPageState extends State<PetConditionFormPage> {
                 ),
               ),
             ),
-            Padding(
-              padding: const EdgeInsets.fromLTRB(
-                AppSpacing.lg,
-                AppSpacing.sm,
-                AppSpacing.lg,
-                AppSpacing.lg,
-              ),
-              child: SizedBox(
-                width: double.infinity,
-                child: FilledButton(
-                  onPressed: _saving || _nameController.text.trim().isEmpty
-                      ? null
-                      : _save,
-                  child: _saving
-                      ? const SizedBox(
-                          width: 20,
-                          height: 20,
-                          child: PetLoader.small(color: AppColors.onPrimary),
-                        )
-                      : Text(l10n.commonSave),
+            if (!_readOnly)
+              Padding(
+                padding: const EdgeInsets.fromLTRB(
+                  AppSpacing.lg,
+                  AppSpacing.sm,
+                  AppSpacing.lg,
+                  AppSpacing.lg,
+                ),
+                child: SizedBox(
+                  width: double.infinity,
+                  child: FilledButton(
+                    onPressed: _saving || _nameController.text.trim().isEmpty
+                        ? null
+                        : _save,
+                    child: _saving
+                        ? const SizedBox(
+                            width: 20,
+                            height: 20,
+                            child: PetLoader.small(color: AppColors.onPrimary),
+                          )
+                        : Text(l10n.commonSave),
+                  ),
                 ),
               ),
-            ),
           ],
         ),
       ),

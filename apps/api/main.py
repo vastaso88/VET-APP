@@ -41,6 +41,7 @@ from packages.shared.errors.base import (
     AgeRestrictedError,
     AuthenticationError,
     MarketplaceRestrictedError,
+    PetInMemoriesError,
     PlanLimitError,
     ProviderError,
     QuotaExceededError,
@@ -171,6 +172,14 @@ async def handle_subscription_required(_: Request, exc: SubscriptionRequiredErro
 async def handle_age_restricted(_: Request, exc: AgeRestrictedError) -> JSONResponse:
     status = 409 if exc.code == "age_already_declared" else 403
     return JSONResponse(status_code=status, content={"detail": exc.code, "code": exc.code})
+
+
+@app.exception_handler(PetInMemoriesError)
+async def handle_pet_in_memories(_: Request, exc: PetInMemoriesError) -> JSONResponse:
+    """The pet is in Ricordi: read, export and delete only."""
+    return JSONResponse(
+        status_code=409, content={"detail": "pet_in_memories", "code": "pet_in_memories"}
+    )
 
 
 @app.exception_handler(PlanLimitError)

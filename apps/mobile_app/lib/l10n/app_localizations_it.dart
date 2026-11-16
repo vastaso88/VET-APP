@@ -2815,7 +2815,26 @@ class AppLocalizationsIt extends AppLocalizations {
   String get memorialPageOpenWalk => 'Rivedi il percorso';
 
   @override
-  String get memorialRestoreAction => 'Riporta tra gli animali';
+  String memorialRestoreShortcut(String sex) {
+    String _temp0 = intl.Intl.selectLogic(
+      sex,
+      {
+        'female': 'Spostata per errore? Riporta tra gli animali',
+        'other': 'Spostato per errore? Riporta tra gli animali',
+      },
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String memorialReadOnlyNote(String name) {
+    return 'Qui tutto resta com\'era: puoi guardare, scaricare e inviare, non modificare. Se serve cambiare qualcosa, prima riporta $name tra gli animali.';
+  }
+
+  @override
+  String memorialChatReadOnly(String name) {
+    return '$name è nei Ricordi: questa chat resta da rileggere, ma non si scrivono nuovi messaggi.';
+  }
 
   @override
   String memorialRestoreTitle(String name) {

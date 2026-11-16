@@ -67,6 +67,10 @@ class _RecordCategoryPageState extends State<RecordCategoryPage> {
     );
   }
 
+  /// A pet in Ricordi: entries can be opened, sent and exported, never
+  /// added, changed or deleted here (docs/product/17_ricordi_animali.md).
+  bool get _readOnly => widget.pet.isMemorial;
+
   void _onTap(MedicalRecordEntry record) {
     if (_selectedIds.isNotEmpty) {
       _toggleSelected(record);
@@ -76,6 +80,7 @@ class _RecordCategoryPageState extends State<RecordCategoryPage> {
       context,
       record: record,
       onChanged: () => unawaited(_controller.reload()),
+      readOnly: _readOnly,
     );
   }
 
@@ -106,11 +111,13 @@ class _RecordCategoryPageState extends State<RecordCategoryPage> {
         foregroundColor: AppColors.text,
         title: Text(category.tileLabel(l10n)),
       ),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: _add,
-        icon: const Icon(Icons.add_rounded),
-        label: Text(l10n.medAddAction),
-      ),
+      floatingActionButton: _readOnly
+          ? null
+          : FloatingActionButton.extended(
+              onPressed: _add,
+              icon: const Icon(Icons.add_rounded),
+              label: Text(l10n.medAddAction),
+            ),
       body: SafeArea(
         child: ListenableBuilder(
           listenable: _controller,
@@ -157,7 +164,7 @@ class _RecordCategoryPageState extends State<RecordCategoryPage> {
                 title: category.emptyTitle(l10n),
                 body: category.emptyBody(l10n, widget.pet.name),
                 actionLabel: category.emptyAction(l10n),
-                onAction: _add,
+                onAction: _readOnly ? null : _add,
               );
             }
 
@@ -388,7 +395,7 @@ class _EmptyCategory extends StatelessWidget {
   final String title;
   final String body;
   final String actionLabel;
-  final VoidCallback onAction;
+  final VoidCallback? onAction;
 
   @override
   Widget build(BuildContext context) {
@@ -418,12 +425,14 @@ class _EmptyCategory extends StatelessWidget {
               textAlign: TextAlign.center,
               style: AppTextStyles.bodySmall,
             ),
-            const SizedBox(height: AppSpacing.xl),
-            FilledButton.icon(
-              onPressed: onAction,
-              icon: const Icon(Icons.add_rounded, size: 18),
-              label: Text(actionLabel),
-            ),
+            if (onAction != null) ...[
+              const SizedBox(height: AppSpacing.xl),
+              FilledButton.icon(
+                onPressed: onAction,
+                icon: const Icon(Icons.add_rounded, size: 18),
+                label: Text(actionLabel),
+              ),
+            ],
           ],
         ),
       ),

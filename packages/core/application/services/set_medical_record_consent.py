@@ -3,6 +3,7 @@ from pydantic import BaseModel
 from packages.core.application.ports.pet_profile_repository import PetProfileRepository
 from packages.core.domain.medical_record.consent_text import CURRENT_VERSION
 from packages.core.domain.medical_record.models import MedicalRecordConsentRecord
+from packages.core.domain.pet_profile.memorial import ensure_not_in_memories
 from packages.core.domain.pet_profile.models import PetProfile
 from packages.shared.errors.base import ValidationError
 
@@ -31,6 +32,10 @@ class SetMedicalRecordConsentService:
         pet_profile = self._repository.get(data.pet_id)
         if pet_profile is None or pet_profile.owner_id != data.owner_id:
             raise ValidationError("pet_profile not found")
+        # Moving a pet to Ricordi turns the consent off; it can't be granted
+        # again there (the chat never reads a memory's records).
+        if data.granted:
+            ensure_not_in_memories(pet_profile)
 
         updated = pet_profile.model_copy(
             update={

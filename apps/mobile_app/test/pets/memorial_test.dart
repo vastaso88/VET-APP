@@ -344,8 +344,6 @@ void main() {
       final pet = await PetDemoStore.instance
           .upsert(_pet(memorial: true).copyWith(memorialDate: DateTime(2026, 11, 14)));
       await open(tester, pet, calls);
-      // At the very bottom of a lazy list: scroll down to it first.
-      await tester.scrollUntilVisible(find.byKey(const ValueKey('memorial-restore')), 300);
       await _tap(tester, find.byKey(const ValueKey('memorial-restore')));
       expect(find.text('Riportare Moka tra gli animali?'), findsOneWidget);
       await _tap(tester, find.widgetWithText(FilledButton, 'Riporta tra gli animali'));

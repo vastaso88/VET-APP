@@ -4778,11 +4778,23 @@ abstract class AppLocalizations {
   /// **'Rivedi il percorso'**
   String get memorialPageOpenWalk;
 
-  /// No description provided for @memorialRestoreAction.
+  /// No description provided for @memorialRestoreShortcut.
   ///
   /// In it, this message translates to:
-  /// **'Riporta tra gli animali'**
-  String get memorialRestoreAction;
+  /// **'{sex, select, female{Spostata per errore? Riporta tra gli animali} other{Spostato per errore? Riporta tra gli animali}}'**
+  String memorialRestoreShortcut(String sex);
+
+  /// No description provided for @memorialReadOnlyNote.
+  ///
+  /// In it, this message translates to:
+  /// **'Qui tutto resta com\'era: puoi guardare, scaricare e inviare, non modificare. Se serve cambiare qualcosa, prima riporta {name} tra gli animali.'**
+  String memorialReadOnlyNote(String name);
+
+  /// No description provided for @memorialChatReadOnly.
+  ///
+  /// In it, this message translates to:
+  /// **'{name} è nei Ricordi: questa chat resta da rileggere, ma non si scrivono nuovi messaggi.'**
+  String memorialChatReadOnly(String name);
 
   /// No description provided for @memorialRestoreTitle.
   ///

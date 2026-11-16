@@ -4,6 +4,7 @@ from pydantic import BaseModel
 
 from packages.core.application.ports.pet_profile_repository import PetProfileRepository
 from packages.core.application.ports.reminder_repository import ReminderRepository
+from packages.core.domain.pet_profile.memorial import ensure_not_in_memories
 from packages.core.domain.reminders.models import Reminder
 from packages.shared.errors.base import ValidationError
 
@@ -33,5 +34,6 @@ class CreateReminderService:
         pet_profile = self._pet_profile_repository.get(data.pet_id)
         if pet_profile is None or pet_profile.owner_id != data.owner_id:
             raise ValidationError("pet_profile not found")
+        ensure_not_in_memories(pet_profile)
         reminder = Reminder(**data.model_dump())
         return CreateReminderOutput(reminder=self._repository.save(reminder))

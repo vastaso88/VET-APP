@@ -1476,7 +1476,30 @@
   "memorialPageOnThisDay": "Fotos de este día",
   "memorialPageWalkPhotos": "Las fotos de ese paseo",
   "memorialPageOpenWalk": "Volver a ver el recorrido",
-  "memorialRestoreAction": "Devolver a Animales",
+  "memorialRestoreShortcut": "{sex, select, female{¿La has movido por error? Devolver a Animales} other{¿Lo has movido por error? Devolver a Animales}}",
+  "@memorialRestoreShortcut": {
+    "placeholders": {
+      "sex": {
+        "type": "String"
+      }
+    }
+  },
+  "memorialReadOnlyNote": "Aquí todo se queda como estaba: puedes mirar, descargar y enviar, no modificar. Si hace falta cambiar algo, primero devuelve a {name} a Animales.",
+  "@memorialReadOnlyNote": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "memorialChatReadOnly": "{name} está en Recuerdos: puedes releer este chat, pero ya no se pueden escribir mensajes nuevos.",
+  "@memorialChatReadOnly": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
   "memorialRestoreTitle": "¿Devolver a {name} a la lista Animales?",
   "@memorialRestoreTitle": {
     "placeholders": {

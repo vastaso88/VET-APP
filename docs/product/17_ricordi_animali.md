@@ -486,3 +486,65 @@ nessun consenso nuovo, nessun avviso legale speciale.
 - **Passaggio 2 del flusso**: ogni interruttore compare solo se può
   funzionare (compleanno con il giorno di nascita; passeggiate con almeno una
   preferita; foto con almeno una foto datata).
+
+---
+
+## 14. Sola lettura (richiesta del proprietario dopo la build 39, 16/11/2026)
+
+Le parole del proprietario: «se per curiosità uno tocca "sposta nei ricordi",
+non si può tornare indietro […] l'animale spostato nei ricordi può essere
+toccato per accedere alle sue info (non modificabili), alla sua galleria (non
+modificabile) o alle sue cartelle cliniche (esportabili, ma non modificabili)».
+
+### 14.1 Tornare indietro
+- Subito sotto le date, nella pagina del ricordo: **«Spostato/Spostata per
+  errore? Riporta tra gli animali»** (chiede conferma). In fondo, separato,
+  resta solo **«Elimina per sempre»** (chiede conferma, in rosso).
+- Resta anche «Annulla» per 8 secondi subito dopo lo spostamento.
+
+### 14.2 Cosa si apre e cosa si può fare
+
+| Parte | Si vede | Si scarica / invia | Si cambia |
+|---|---|---|---|
+| Scheda (info) | sì | — | no (niente matita; niente invito ad aggiungere il microchip) |
+| Galleria | sì, foto e video a schermo intero | — | no (niente «Aggiungi», niente pressione lunga: niente elimina né «foto profilo») |
+| Cartella clinica | sì, categorie, patologie, storico | sì: PDF dello storico, invio dei file | no (niente «Aggiungi», niente rinomina/modifica/elimina, patologie in sola lettura, niente scheda del consenso) |
+| Passeggiate preferite | sì, mappa e foto | — | no (la pagina della passeggiata era già solo da guardare) |
+| Data della perdita e promemoria-ricordo | sì | — | **sì**: sono le uniche scelte del ricordo stesso |
+
+Una riga nella pagina del ricordo lo dice: «Qui tutto resta com'era: puoi
+guardare, scaricare e inviare, non modificare. Se serve cambiare qualcosa,
+prima riporta {nome} tra gli animali.»
+
+### 14.3 Cosa conservo in sola lettura (proposta) e perché
+- **Passeggiate: sì, già mostrate** (le preferite + il totale fatto insieme).
+  Sono il ricordo più «vissuto»; le altre restano salvate e tornano con
+  «Riporta tra gli animali». La pulizia automatica dei percorsi vecchi
+  (dati di posizione) continua anche per i Ricordi: è privacy, non modifica.
+- **Pesi: conservati ma non mostrati.** La curva del peso è uno strumento di
+  gestione, non un ricordo, e rivederla (spesso un calo nell'ultimo periodo)
+  fa male. Restano nel profilo, in «Scarica i miei dati» e tornano con il
+  ripristino.
+- **Promemoria passati e farmaci: conservati ma nascosti** (come già oggi).
+  Servono solo per un ripristino; un elenco di terapie non è un ricordo.
+- **Chat passate: restano nella lista Chat, da rileggere.** Non si scrivono
+  nuovi messaggi (al posto della casella c'è una riga che lo spiega) e non si
+  modificano quelli vecchi; si possono rinominare o cancellare (è
+  l'organizzazione della propria lista, non un dato dell'animale).
+
+### 14.4 Anche lato server
+- **Database** (`scripts/setup/ricordi_animali.sql`, parte «Sola lettura»):
+  per le scritture dell'app, foto, passeggiate, pesi, documenti, patologie e
+  promemoria di un animale nei Ricordi non si aggiungono né si modificano
+  (codice `pet_in_memories`, 409); la scheda accetta solo data della perdita e
+  promemoria-ricordo, il resto torna com'era. Cancellare resta sempre
+  possibile (diritto alla cancellazione, «Elimina per sempre», cancellazione
+  dell'account).
+- **Backend**: modifica della scheda, nuovo promemoria, chat (nuovo messaggio
+  o messaggio modificato), allegato in chat e consenso alla cartella clinica
+  (si può solo spegnere) rispondono `pet_in_memories`. Chi non è il
+  proprietario riceve sempre «non trovato», mai un indizio che l'animale è nei
+  Ricordi.
+- Non bloccato nello storage dei file: un file caricato senza la sua riga in
+  `pet_photos` non compare da nessuna parte; le miniature create guardando la
+  galleria devono continuare a funzionare.

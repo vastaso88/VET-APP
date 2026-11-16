@@ -31,9 +31,11 @@ import 'pet_data_page.dart';
 import 'pet_gallery_page.dart';
 
 /// One pet in Ricordi (docs/product/17_ricordi_animali.md §6): its photo and
-/// dates, photos, favourite walks, the memory reminders, documents, and —
-/// small, at the bottom — bring back or delete forever. [focus] is the
-/// memory notification that opened the page, shown first.
+/// dates, "moved by mistake? bring back", photos, favourite walks, the memory
+/// reminders, documents and — alone at the bottom — delete forever. Everything
+/// is read only: the gallery, profile and records pages open without editing
+/// (owner's request after build 39). [focus] is the memory notification that
+/// opened the page, shown first.
 class PetMemorialPage extends StatefulWidget {
   const PetMemorialPage({
     super.key,
@@ -265,6 +267,19 @@ class _PetMemorialPageState extends State<PetMemorialPage> {
                 dateLine: _dateLine(context),
                 onChangeDate: _busy ? null : _changeLossDate,
               ),
+              // Easy to find, so a move made by mistake (or out of curiosity)
+              // is undone without hunting for it.
+              Center(
+                child: TextButton.icon(
+                  key: const ValueKey('memorial-restore'),
+                  onPressed: _busy ? null : _restore,
+                  icon: const Icon(Icons.undo_rounded, size: 18),
+                  label: Text(
+                    l10n.memorialRestoreShortcut(_sexKey(_pet)),
+                    textAlign: TextAlign.center,
+                  ),
+                ),
+              ),
               if (widget.focus != null && !loading) ...[
                 const SizedBox(height: AppSpacing.lg),
                 _FocusSection(
@@ -328,20 +343,17 @@ class _PetMemorialPageState extends State<PetMemorialPage> {
                 label: l10n.memorialPageProfile,
                 onTap: () => _open(PetDataPage(petId: _pet.id, initialPet: _pet)),
               ),
+              const SizedBox(height: AppSpacing.sm),
+              Text(
+                l10n.memorialReadOnlyNote(_pet.name),
+                style: AppTextStyles.caption.copyWith(color: AppColors.mutedText),
+              ),
               if ((_pet.microchipNumber ?? '').isNotEmpty) ...[
                 const SizedBox(height: AppSpacing.lg),
                 _ChipNote(pet: _pet),
               ],
               const SizedBox(height: AppSpacing.xxl),
               const Divider(color: AppColors.border),
-              Align(
-                alignment: Alignment.centerLeft,
-                child: TextButton(
-                  key: const ValueKey('memorial-restore'),
-                  onPressed: _busy ? null : _restore,
-                  child: Text(l10n.memorialRestoreAction),
-                ),
-              ),
               Align(
                 alignment: Alignment.centerLeft,
                 child: TextButton(
@@ -613,11 +625,7 @@ class _ChipNote extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final sex = switch (pet.sex) {
-      'Maschio' => 'male',
-      'Femmina' => 'female',
-      _ => 'other',
-    };
+    final sex = _sexKey(pet);
     return Container(
       padding: const EdgeInsets.all(AppSpacing.md),
       decoration: BoxDecoration(
@@ -647,8 +655,8 @@ class _ChipNote extends StatelessWidget {
   }
 }
 
-/// The clinical records of a pet in Ricordi: readable, and documents can
-/// still be added (a final report, a certificate).
+/// The clinical records of a pet in Ricordi: read, sent and exported as PDF,
+/// never changed (PetMedicalRecordsTab reads `pet.isMemorial`).
 class _MemorialRecordsPage extends StatelessWidget {
   const _MemorialRecordsPage({required this.pet});
 
@@ -667,3 +675,10 @@ class _MemorialRecordsPage extends StatelessWidget {
     );
   }
 }
+
+/// The pet's sex as the ICU `select` keys of the Ricordi texts.
+String _sexKey(PetProfile pet) => switch (pet.sex) {
+      'Maschio' => 'male',
+      'Femmina' => 'female',
+      _ => 'other',
+    };

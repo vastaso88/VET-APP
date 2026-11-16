@@ -1476,7 +1476,30 @@
   "memorialPageOnThisDay": "Photos from this day",
   "memorialPageWalkPhotos": "Photos from that walk",
   "memorialPageOpenWalk": "See the route again",
-  "memorialRestoreAction": "Bring back to Pets",
+  "memorialRestoreShortcut": "{sex, select, other{Moved by mistake? Bring back to Pets}}",
+  "@memorialRestoreShortcut": {
+    "placeholders": {
+      "sex": {
+        "type": "String"
+      }
+    }
+  },
+  "memorialReadOnlyNote": "Everything here stays as it was: you can look, download and send, not change. If something needs changing, first bring {name} back to Pets.",
+  "@memorialReadOnlyNote": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "memorialChatReadOnly": "{name} is in Memories: you can reread this chat, but no new messages can be written.",
+  "@memorialChatReadOnly": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
   "memorialRestoreTitle": "Bring {name} back to Pets?",
   "@memorialRestoreTitle": {
     "placeholders": {

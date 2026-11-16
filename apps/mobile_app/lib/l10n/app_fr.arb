@@ -1476,7 +1476,30 @@
   "memorialPageOnThisDay": "Photos de ce jour",
   "memorialPageWalkPhotos": "Les photos de cette promenade",
   "memorialPageOpenWalk": "Revoir le parcours",
-  "memorialRestoreAction": "Remettre dans Animaux",
+  "memorialRestoreShortcut": "{sex, select, female{Déplacée par erreur ? Remettre dans Animaux} other{Déplacé par erreur ? Remettre dans Animaux}}",
+  "@memorialRestoreShortcut": {
+    "placeholders": {
+      "sex": {
+        "type": "String"
+      }
+    }
+  },
+  "memorialReadOnlyNote": "Ici, tout reste comme c'était : vous pouvez regarder, télécharger et envoyer, mais pas modifier. S'il faut changer quelque chose, remettez d'abord {name} dans Animaux.",
+  "@memorialReadOnlyNote": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "memorialChatReadOnly": "{name} est dans Souvenirs : vous pouvez relire cette discussion, mais plus écrire de nouveaux messages.",
+  "@memorialChatReadOnly": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
   "memorialRestoreTitle": "Remettre {name} dans Animaux ?",
   "@memorialRestoreTitle": {
     "placeholders": {

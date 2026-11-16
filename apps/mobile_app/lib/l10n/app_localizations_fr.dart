@@ -2822,7 +2822,26 @@ class AppLocalizationsFr extends AppLocalizations {
   String get memorialPageOpenWalk => 'Revoir le parcours';
 
   @override
-  String get memorialRestoreAction => 'Remettre dans Animaux';
+  String memorialRestoreShortcut(String sex) {
+    String _temp0 = intl.Intl.selectLogic(
+      sex,
+      {
+        'female': 'Déplacée par erreur ? Remettre dans Animaux',
+        'other': 'Déplacé par erreur ? Remettre dans Animaux',
+      },
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String memorialReadOnlyNote(String name) {
+    return 'Ici, tout reste comme c\'était : vous pouvez regarder, télécharger et envoyer, mais pas modifier. S\'il faut changer quelque chose, remettez d\'abord $name dans Animaux.';
+  }
+
+  @override
+  String memorialChatReadOnly(String name) {
+    return '$name est dans Souvenirs : vous pouvez relire cette discussion, mais plus écrire de nouveaux messages.';
+  }
 
   @override
   String memorialRestoreTitle(String name) {

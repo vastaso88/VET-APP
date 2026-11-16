@@ -2804,7 +2804,26 @@ class AppLocalizationsEs extends AppLocalizations {
   String get memorialPageOpenWalk => 'Volver a ver el recorrido';
 
   @override
-  String get memorialRestoreAction => 'Devolver a Animales';
+  String memorialRestoreShortcut(String sex) {
+    String _temp0 = intl.Intl.selectLogic(
+      sex,
+      {
+        'female': '¿La has movido por error? Devolver a Animales',
+        'other': '¿Lo has movido por error? Devolver a Animales',
+      },
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String memorialReadOnlyNote(String name) {
+    return 'Aquí todo se queda como estaba: puedes mirar, descargar y enviar, no modificar. Si hace falta cambiar algo, primero devuelve a $name a Animales.';
+  }
+
+  @override
+  String memorialChatReadOnly(String name) {
+    return '$name está en Recuerdos: puedes releer este chat, pero ya no se pueden escribir mensajes nuevos.';
+  }
 
   @override
   String memorialRestoreTitle(String name) {

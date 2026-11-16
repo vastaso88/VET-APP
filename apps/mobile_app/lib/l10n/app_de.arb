@@ -1476,7 +1476,30 @@
   "memorialPageOnThisDay": "Fotos von diesem Tag",
   "memorialPageWalkPhotos": "Fotos von diesem Spaziergang",
   "memorialPageOpenWalk": "Route noch einmal ansehen",
-  "memorialRestoreAction": "Zurück zu den Tieren",
+  "memorialRestoreShortcut": "{sex, select, other{Versehentlich verschoben? Zurück zu den Tieren}}",
+  "@memorialRestoreShortcut": {
+    "placeholders": {
+      "sex": {
+        "type": "String"
+      }
+    }
+  },
+  "memorialReadOnlyNote": "Hier bleibt alles, wie es war: Sie können ansehen, herunterladen und senden, aber nichts ändern. Wenn etwas geändert werden muss, holen Sie {name} zuerst zurück zu den Tieren.",
+  "@memorialReadOnlyNote": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "memorialChatReadOnly": "{name} ist bei den Andenken: Sie können diesen Chat nachlesen, aber keine neuen Nachrichten schreiben.",
+  "@memorialChatReadOnly": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
   "memorialRestoreTitle": "{name} zurück zu den Tieren bringen?",
   "@memorialRestoreTitle": {
     "placeholders": {

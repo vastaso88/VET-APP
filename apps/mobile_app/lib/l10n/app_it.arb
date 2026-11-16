@@ -1476,7 +1476,30 @@
   "memorialPageOnThisDay": "Foto di questo giorno",
   "memorialPageWalkPhotos": "Le foto di quella passeggiata",
   "memorialPageOpenWalk": "Rivedi il percorso",
-  "memorialRestoreAction": "Riporta tra gli animali",
+  "memorialRestoreShortcut": "{sex, select, female{Spostata per errore? Riporta tra gli animali} other{Spostato per errore? Riporta tra gli animali}}",
+  "@memorialRestoreShortcut": {
+    "placeholders": {
+      "sex": {
+        "type": "String"
+      }
+    }
+  },
+  "memorialReadOnlyNote": "Qui tutto resta com'era: puoi guardare, scaricare e inviare, non modificare. Se serve cambiare qualcosa, prima riporta {name} tra gli animali.",
+  "@memorialReadOnlyNote": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "memorialChatReadOnly": "{name} è nei Ricordi: questa chat resta da rileggere, ma non si scrivono nuovi messaggi.",
+  "@memorialChatReadOnly": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
   "memorialRestoreTitle": "Riportare {name} tra gli animali?",
   "@memorialRestoreTitle": {
     "placeholders": {

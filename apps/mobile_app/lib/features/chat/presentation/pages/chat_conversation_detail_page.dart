@@ -11,6 +11,8 @@ import '../../../../shared/widgets/pet_loader.dart';
 
 import '../../../../design_system/tokens/app_colors.dart';
 import '../../../../design_system/tokens/app_spacing.dart';
+import '../../../../design_system/tokens/app_text_styles.dart';
+import '../../../pets/data/pet_demo_store.dart';
 import '../../data/chat_demo_store.dart';
 import '../../data/chat_seed_data.dart';
 import '../../domain/chat_models.dart';
@@ -438,6 +440,10 @@ class _SuccessConversationView extends StatelessWidget {
     return Builder(
       builder: (context) {
         final totalItems = conversation.messages.length + (isSending ? 1 : 0);
+        // A pet in Ricordi: its past chats stay to reread, nothing new is
+        // written (the backend refuses it too: pet_in_memories).
+        final inMemories =
+            PetDemoStore.instance.byName(conversation.petName)?.isMemorial ?? false;
         final state = context
             .findAncestorStateOfType<_ChatConversationDetailPageState>();
         state?._scheduleScrollIfNeeded(totalItems);
@@ -476,8 +482,9 @@ class _SuccessConversationView extends StatelessWidget {
                               ),
                             );
                           }
-                          final editable =
-                              message.author == ChatMessageAuthor.user && !isSending;
+                          final editable = message.author == ChatMessageAuthor.user &&
+                              !isSending &&
+                              !inMemories;
                           return ChatMessageBubble(
                             message: message,
                             onLongPress: editable ? () => onRequestEdit(message) : null,
@@ -499,16 +506,23 @@ class _SuccessConversationView extends StatelessWidget {
                 AppSpacing.lg,
                 AppSpacing.lg,
               ),
-              child: ChatComposer(
-                hintText: context.l10n.chatComposerHint(conversation.petName),
-                petName: conversation.petName,
-                onSend: onSendMessage,
-                draftKey: conversation.backendConversationId ?? conversation.id,
-                editingText: editingMessage?.text,
-                onCancelEditing: onCancelEditing,
-                // An edited message keeps its photo; the text may go.
-                allowEmptySend: editingMessage?.attachmentImageBytes != null,
-              ),
+              child: inMemories
+                  ? Text(
+                      context.l10n.memorialChatReadOnly(conversation.petName),
+                      key: const ValueKey('chat-memorial-read-only'),
+                      textAlign: TextAlign.center,
+                      style: AppTextStyles.caption.copyWith(color: AppColors.mutedText),
+                    )
+                  : ChatComposer(
+                      hintText: context.l10n.chatComposerHint(conversation.petName),
+                      petName: conversation.petName,
+                      onSend: onSendMessage,
+                      draftKey: conversation.backendConversationId ?? conversation.id,
+                      editingText: editingMessage?.text,
+                      onCancelEditing: onCancelEditing,
+                      // An edited message keeps its photo; the text may go.
+                      allowEmptySend: editingMessage?.attachmentImageBytes != null,
+                    ),
             ),
           ],
         );

@@ -56,6 +56,11 @@ class _PetMedicalRecordsTabState extends State<PetMedicalRecordsTab> {
     super.dispose();
   }
 
+  /// A pet in Ricordi: everything can be read, sent and exported as PDF,
+  /// nothing added or changed (docs/product/17_ricordi_animali.md). No
+  /// consent card either: the chat never reads a memory's records.
+  bool get _readOnly => widget.pet.isMemorial;
+
   void _open(Widget page) {
     unawaited(
       Navigator.of(context).push(MaterialPageRoute<void>(builder: (_) => page)),
@@ -93,6 +98,7 @@ class _PetMedicalRecordsTabState extends State<PetMedicalRecordsTab> {
           context,
           record: record,
           onChanged: () => unawaited(_controller.reload()),
+          readOnly: _readOnly,
         ),
       );
       return;
@@ -305,18 +311,22 @@ class _PetMedicalRecordsTabState extends State<PetMedicalRecordsTab> {
     return ListView(
       padding: const EdgeInsets.only(bottom: AppSpacing.xl),
       children: [
-        MedicalRecordConsentCard(pet: widget.pet),
-        const SizedBox(height: AppSpacing.md),
+        if (!_readOnly) ...[
+          MedicalRecordConsentCard(pet: widget.pet),
+          const SizedBox(height: AppSpacing.md),
+        ],
         Row(
           children: [
-            Expanded(
-              child: FilledButton.icon(
-                onPressed: _showAddSheet,
-                icon: const Icon(Icons.add_rounded, size: 18),
-                label: Text(l10n.medAddAction),
+            if (!_readOnly) ...[
+              Expanded(
+                child: FilledButton.icon(
+                  onPressed: _showAddSheet,
+                  icon: const Icon(Icons.add_rounded, size: 18),
+                  label: Text(l10n.medAddAction),
+                ),
               ),
-            ),
-            const SizedBox(width: AppSpacing.sm),
+              const SizedBox(width: AppSpacing.sm),
+            ],
             Expanded(
               child: OutlinedButton.icon(
                 onPressed: () => _showSendSheet(records),
