@@ -893,6 +893,10 @@ class AppLocalizationsEs extends AppLocalizations {
       'Respondo con una inteligencia artificial: no sustituyo al veterinario. En una emergencia, llama enseguida a una clínica.';
 
   @override
+  String get chatOwnHealthNotice =>
+      'No escribas aquí datos sobre tu salud: aquí hablamos solo de tu animal.';
+
+  @override
   String get chatSummaryEmpty => 'No hay resumen disponible.';
 
   @override
@@ -1826,7 +1830,7 @@ class AppLocalizationsEs extends AppLocalizations {
   String get homeGreeting => 'Buenos días';
 
   @override
-  String get homeAgendaTitle => 'Próximas actividades';
+  String get homeAgendaTitle => 'Tu calendario';
 
   @override
   String get homeAgendaLoadingSubtitle =>
@@ -6481,6 +6485,73 @@ class AppLocalizationsEs extends AppLocalizations {
       'Un PDF con todos los eventos por orden de fecha';
 
   @override
+  String get petsConsentProposalActivate => 'Activar';
+
+  @override
+  String get petsConsentProposalLater => 'Más tarde';
+
+  @override
+  String get noticeMarketplace =>
+      'El mercadillo de segunda mano es solo para mayores de edad y pone en contacto a dos particulares: Quokka no es parte de la compraventa, no verifica anuncios ni personas y no responde de ellos. Las conversaciones son privadas: nuestro equipo solo las lee si una de las dos personas las denuncia.';
+
+  @override
+  String get noticeRules => 'Reglas';
+
+  @override
+  String get noticeUnderstood => 'Entendido';
+
+  @override
+  String get noticePolicy => 'Política de privacidad';
+
+  @override
+  String get noticeChatAi =>
+      'Responde una inteligencia artificial y puede equivocarse. Tus preguntas, limpiadas de los datos personales que reconocemos, van a nuestros proveedores de IA (Anthropic y, cuando Anthropic no puede responder, Groq), con servidores en Estados Unidos.';
+
+  @override
+  String get noticeChatMedia =>
+      'Las fotos y la voz van a un servicio externo (hoy Groq, en Estados Unidos) que las lee o las transcribe. El filtro que quita los datos personales trabaja sobre el texto, no sobre las imágenes ni la voz: tapa tu nombre, tu dirección y el número de microchip.';
+
+  @override
+  String get noticeRecordDocument =>
+      'El documento se queda en tu cuenta. El asistente solo lo lee si has activado la lectura del historial clínico de este animal.';
+
+  @override
+  String get noticeFirstWalk =>
+      'El recorrido se queda en tu cuenta. Guardamos el trazado GPS solo de los últimos 3 paseos de cada animal, de los que marques como favoritos (como máximo 5) y del más largo; de los demás quedan la distancia, la duración y los pasos.';
+
+  @override
+  String get consentChoicesTitle => '¿Qué quieres activar?';
+
+  @override
+  String get consentChoicesSubtitle =>
+      'Son decisiones tuyas: puedes cambiarlas cuando quieras en Ajustes → Permisos y consentimientos. Quokka funciona también sin ellas.';
+
+  @override
+  String get consentChoicesSave => 'Guardar mis elecciones';
+
+  @override
+  String get consentChoicesNotNow => 'Ahora no';
+
+  @override
+  String get medHistorySendAllDocs =>
+      'Historial y todos los documentos (un solo PDF)';
+
+  @override
+  String get medHistorySendAllDocsSubtitle =>
+      'Un solo PDF con eventos, fotos y documentos, apto para correo y WhatsApp';
+
+  @override
+  String medHistoryDocsSeparate(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count documentos no cabían en el PDF y se adjuntan',
+      one: '1 documento no cabía en el PDF y se adjunta',
+    );
+    return '$_temp0 aparte.';
+  }
+
+  @override
   String get medHistorySendFiles => 'Archivos individuales';
 
   @override
@@ -7299,4 +7370,82 @@ class AppLocalizationsEs extends AppLocalizations {
   @override
   String get marketplaceInfoPrivateOnly =>
       'Si vendes como actividad comercial, empresarial o profesional, no puedes usar el mercadillo: Quokka puede retirar los anuncios y suspender el acceso.';
+
+  @override
+  String get authHubRecoverAccount => 'Recuperar cuenta';
+
+  @override
+  String get authRecoverTitle => 'Recupera tu cuenta';
+
+  @override
+  String get authRecoverSubtitle =>
+      '¿Eliminaste la cuenta hace poco? Puedes reabrirla.';
+
+  @override
+  String get authRecoverSteps =>
+      'Si el periodo de espera no ha terminado, inicia sesión con el mismo correo de la cuenta eliminada: si no recuerdas la contraseña, restablécela con el enlace que te enviamos por correo. Tras iniciar sesión podrás cancelar la eliminación.';
+
+  @override
+  String get authRecoverLogin => 'Iniciar sesión con el mismo correo';
+
+  @override
+  String get authRecoverReset => 'Restablecer la contraseña';
+
+  @override
+  String get authRecoverExpired =>
+      'Si el periodo ha terminado, la cuenta y sus datos se han borrado: puedes crear una cuenta nueva con el mismo correo.';
+
+  @override
+  String accountDeletePeriodNote(int days, String date) {
+    String _temp0 = intl.Intl.pluralLogic(
+      days,
+      locale: localeName,
+      other: '# días',
+      one: '# día',
+    );
+    return 'La cuenta se desactivará de inmediato. Durante $_temp0 puedes cambiar de opinión: inicia sesión con el mismo correo (restablece la contraseña si hace falta) y cancela la eliminación. Después del $date borraremos la cuenta y tus datos, sin posibilidad de recuperarlos. Solo quedan los datos que la ley nos obliga a conservar, por ejemplo las facturas.';
+  }
+
+  @override
+  String accountDeleteScheduledDone(String date) {
+    return 'Cuenta desactivada. Puedes cancelar la eliminación hasta el $date.';
+  }
+
+  @override
+  String get accountRestoreTitle => 'Tu cuenta está en proceso de eliminación';
+
+  @override
+  String accountRestoreBody(String date) {
+    return 'Pediste eliminarla: el $date la borraremos junto con todos sus datos, sin posibilidad de recuperarlos. Si has cambiado de opinión, puedes cancelarlo ahora.';
+  }
+
+  @override
+  String get accountRestoreCancel => 'Cancelar la eliminación';
+
+  @override
+  String get accountRestoreDone =>
+      'Cuenta reabierta. ¡Te damos de nuevo la bienvenida!';
+
+  @override
+  String get accountRestoreReauth =>
+      'Por seguridad hace falta un inicio de sesión reciente: cierra sesión e inicia sesión de nuevo, y luego cancela la eliminación. Si no recuerdas la contraseña, usa «Recuperar cuenta».';
+
+  @override
+  String get accountRestoreFailed =>
+      'No he podido cancelar la eliminación. Inténtalo de nuevo.';
+
+  @override
+  String get accountDeleteNowLink =>
+      'Eliminar ahora, sin posibilidad de recuperación';
+
+  @override
+  String get accountRestoreDeleteNow => 'Eliminar ahora';
+
+  @override
+  String get accountRestoreDeleteNowBody =>
+      'Borramos la cuenta y tus datos ahora mismo, sin posibilidad de recuperarlos. Solo quedan los datos que la ley nos obliga a conservar, por ejemplo las facturas. Después podrás registrarte de nuevo con el mismo correo.';
+
+  @override
+  String get authRegisterEmailInUseRecoverHint =>
+      'Si la eliminaste hace poco y el periodo de espera no ha terminado, usa «Recuperar cuenta»: puedes cancelar la eliminación o eliminarla ahora para empezar de nuevo.';
 }

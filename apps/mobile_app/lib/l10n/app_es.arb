@@ -410,6 +410,7 @@
   "chatSummaryTitle": "Resumen para el veterinario",
   "chatSummaryDisclaimer": "Este resumen se genera automáticamente y no es un diagnóstico. Consulta al veterinario para decisiones clínicas.",
   "chatAiNotice": "Respondo con una inteligencia artificial: no sustituyo al veterinario. En una emergencia, llama enseguida a una clínica.",
+  "chatOwnHealthNotice": "No escribas aquí datos sobre tu salud: aquí hablamos solo de tu animal.",
   "chatSummaryEmpty": "No hay resumen disponible.",
   "chatDeleteTitle": "¿Eliminar este chat?",
   "chatDeleteBody": "La conversación y sus mensajes se eliminarán.",
@@ -928,7 +929,7 @@
   "medicalChecklistMetadata": "Metadatos extraídos",
   "medicalChecklistLinkedPet": "Vinculado a la mascota activa",
   "homeGreeting": "Buenos días",
-  "homeAgendaTitle": "Próximas actividades",
+  "homeAgendaTitle": "Tu calendario",
   "homeAgendaLoadingSubtitle": "Actividades puntuales y recurrentes para todos los animales.",
   "homeAgendaSummary": "{count} actividades en los próximos 10 días",
   "@homeAgendaSummary": {
@@ -3678,6 +3679,30 @@
   "medHistorySend": "Enviar historial",
   "medHistorySendAll": "Todo el historial (PDF)",
   "medHistorySendAllSubtitle": "Un PDF con todos los eventos por orden de fecha",
+  "petsConsentProposalActivate": "Activar",
+  "petsConsentProposalLater": "Más tarde",
+  "noticeMarketplace": "El mercadillo de segunda mano es solo para mayores de edad y pone en contacto a dos particulares: Quokka no es parte de la compraventa, no verifica anuncios ni personas y no responde de ellos. Las conversaciones son privadas: nuestro equipo solo las lee si una de las dos personas las denuncia.",
+  "noticeRules": "Reglas",
+  "noticeUnderstood": "Entendido",
+  "noticePolicy": "Política de privacidad",
+  "noticeChatAi": "Responde una inteligencia artificial y puede equivocarse. Tus preguntas, limpiadas de los datos personales que reconocemos, van a nuestros proveedores de IA (Anthropic y, cuando Anthropic no puede responder, Groq), con servidores en Estados Unidos.",
+  "noticeChatMedia": "Las fotos y la voz van a un servicio externo (hoy Groq, en Estados Unidos) que las lee o las transcribe. El filtro que quita los datos personales trabaja sobre el texto, no sobre las imágenes ni la voz: tapa tu nombre, tu dirección y el número de microchip.",
+  "noticeRecordDocument": "El documento se queda en tu cuenta. El asistente solo lo lee si has activado la lectura del historial clínico de este animal.",
+  "noticeFirstWalk": "El recorrido se queda en tu cuenta. Guardamos el trazado GPS solo de los últimos 3 paseos de cada animal, de los que marques como favoritos (como máximo 5) y del más largo; de los demás quedan la distancia, la duración y los pasos.",
+  "consentChoicesTitle": "¿Qué quieres activar?",
+  "consentChoicesSubtitle": "Son decisiones tuyas: puedes cambiarlas cuando quieras en Ajustes → Permisos y consentimientos. Quokka funciona también sin ellas.",
+  "consentChoicesSave": "Guardar mis elecciones",
+  "consentChoicesNotNow": "Ahora no",
+  "medHistorySendAllDocs": "Historial y todos los documentos (un solo PDF)",
+  "medHistorySendAllDocsSubtitle": "Un solo PDF con eventos, fotos y documentos, apto para correo y WhatsApp",
+  "medHistoryDocsSeparate": "{count, plural, =1{1 documento no cabía en el PDF y se adjunta} other{{count} documentos no cabían en el PDF y se adjuntan}} aparte.",
+  "@medHistoryDocsSeparate": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "medHistorySendFiles": "Archivos individuales",
   "medHistoryPreparing": "Preparando el PDF…",
   "medHistoryExportFailed": "No pude preparar el PDF. Inténtalo de nuevo.",
@@ -4049,5 +4074,48 @@
   "marketplaceListingGone": "Este anuncio ya no está disponible.",
   "marketplacePrivateSellerDeclaration": "Declaro que vendo como particular, no en el ámbito de una actividad comercial, empresarial o profesional.",
   "marketplacePrivateSellerRequired": "Para publicar debes confirmar que vendes como particular: el mercadillo no es para actividades comerciales, empresariales o profesionales.",
-  "marketplaceInfoPrivateOnly": "Si vendes como actividad comercial, empresarial o profesional, no puedes usar el mercadillo: Quokka puede retirar los anuncios y suspender el acceso."
+  "marketplaceInfoPrivateOnly": "Si vendes como actividad comercial, empresarial o profesional, no puedes usar el mercadillo: Quokka puede retirar los anuncios y suspender el acceso.",
+  "authHubRecoverAccount": "Recuperar cuenta",
+  "authRecoverTitle": "Recupera tu cuenta",
+  "authRecoverSubtitle": "¿Eliminaste la cuenta hace poco? Puedes reabrirla.",
+  "authRecoverSteps": "Si el periodo de espera no ha terminado, inicia sesión con el mismo correo de la cuenta eliminada: si no recuerdas la contraseña, restablécela con el enlace que te enviamos por correo. Tras iniciar sesión podrás cancelar la eliminación.",
+  "authRecoverLogin": "Iniciar sesión con el mismo correo",
+  "authRecoverReset": "Restablecer la contraseña",
+  "authRecoverExpired": "Si el periodo ha terminado, la cuenta y sus datos se han borrado: puedes crear una cuenta nueva con el mismo correo.",
+  "accountDeletePeriodNote": "La cuenta se desactivará de inmediato. Durante {days, plural, one{# día} other{# días}} puedes cambiar de opinión: inicia sesión con el mismo correo (restablece la contraseña si hace falta) y cancela la eliminación. Después del {date} borraremos la cuenta y tus datos, sin posibilidad de recuperarlos. Solo quedan los datos que la ley nos obliga a conservar, por ejemplo las facturas.",
+  "@accountDeletePeriodNote": {
+    "placeholders": {
+      "days": {
+        "type": "int"
+      },
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "accountDeleteScheduledDone": "Cuenta desactivada. Puedes cancelar la eliminación hasta el {date}.",
+  "@accountDeleteScheduledDone": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "accountRestoreTitle": "Tu cuenta está en proceso de eliminación",
+  "accountRestoreBody": "Pediste eliminarla: el {date} la borraremos junto con todos sus datos, sin posibilidad de recuperarlos. Si has cambiado de opinión, puedes cancelarlo ahora.",
+  "@accountRestoreBody": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "accountRestoreCancel": "Cancelar la eliminación",
+  "accountRestoreDone": "Cuenta reabierta. ¡Te damos de nuevo la bienvenida!",
+  "accountRestoreReauth": "Por seguridad hace falta un inicio de sesión reciente: cierra sesión e inicia sesión de nuevo, y luego cancela la eliminación. Si no recuerdas la contraseña, usa «Recuperar cuenta».",
+  "accountRestoreFailed": "No he podido cancelar la eliminación. Inténtalo de nuevo.",
+  "accountDeleteNowLink": "Eliminar ahora, sin posibilidad de recuperación",
+  "accountRestoreDeleteNow": "Eliminar ahora",
+  "accountRestoreDeleteNowBody": "Borramos la cuenta y tus datos ahora mismo, sin posibilidad de recuperarlos. Solo quedan los datos que la ley nos obliga a conservar, por ejemplo las facturas. Después podrás registrarte de nuevo con el mismo correo.",
+  "authRegisterEmailInUseRecoverHint": "Si la eliminaste hace poco y el periodo de espera no ha terminado, usa «Recuperar cuenta»: puedes cancelar la eliminación o eliminarla ahora para empezar de nuevo."
 }

@@ -887,6 +887,10 @@ class AppLocalizationsEn extends AppLocalizations {
       'I answer with artificial intelligence: I do not replace your vet. In an emergency, call a clinic right away.';
 
   @override
+  String get chatOwnHealthNotice =>
+      'Do not write details about your own health here: we only talk about your animal.';
+
+  @override
   String get chatSummaryEmpty => 'No summary available.';
 
   @override
@@ -1815,7 +1819,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get homeGreeting => 'Good morning';
 
   @override
-  String get homeAgendaTitle => 'Upcoming activities';
+  String get homeAgendaTitle => 'Your calendar';
 
   @override
   String get homeAgendaLoadingSubtitle =>
@@ -6434,6 +6438,72 @@ class AppLocalizationsEn extends AppLocalizations {
   String get medHistorySendAllSubtitle => 'A PDF with all events in date order';
 
   @override
+  String get petsConsentProposalActivate => 'Turn on';
+
+  @override
+  String get petsConsentProposalLater => 'Later';
+
+  @override
+  String get noticeMarketplace =>
+      'The second-hand marketplace is for adults only and puts two private individuals in touch: Quokka is not a party to the sale, does not verify listings or people and is not responsible for them. Conversations are private: our team reads them only if one of the two people reports them.';
+
+  @override
+  String get noticeRules => 'Rules';
+
+  @override
+  String get noticeUnderstood => 'Got it';
+
+  @override
+  String get noticePolicy => 'Privacy policy';
+
+  @override
+  String get noticeChatAi =>
+      'An artificial intelligence answers and can be wrong. Your questions, cleaned of the personal data we recognize, go to our AI providers (Anthropic and, when Anthropic cannot answer, Groq), with servers in the United States.';
+
+  @override
+  String get noticeChatMedia =>
+      'Photos and voice go to an external service (today Groq, in the United States) that reads or transcribes them. The filter that removes personal data works on text, not on images or voice: cover your name, address and microchip number.';
+
+  @override
+  String get noticeRecordDocument =>
+      'The document stays in your account. The assistant reads it only if you have turned on reading of this pet\'s medical record.';
+
+  @override
+  String get noticeFirstWalk =>
+      'The route stays in your account. We keep the GPS track only of the last 3 walks of each pet, of those you mark as favorites (at most 5) and of the longest; for the others, distance, duration and steps remain.';
+
+  @override
+  String get consentChoicesTitle => 'What would you like to turn on?';
+
+  @override
+  String get consentChoicesSubtitle =>
+      'These are your choices: you can change them any time in Settings → Permissions and consents. Quokka works without them too.';
+
+  @override
+  String get consentChoicesSave => 'Save my choices';
+
+  @override
+  String get consentChoicesNotNow => 'Not now';
+
+  @override
+  String get medHistorySendAllDocs => 'History and all documents (one PDF)';
+
+  @override
+  String get medHistorySendAllDocsSubtitle =>
+      'One PDF with events, photos and documents, suitable for email and WhatsApp';
+
+  @override
+  String medHistoryDocsSeparate(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count documents could not be put in the PDF and are',
+      one: '1 document could not be put in the PDF and is',
+    );
+    return '$_temp0 attached separately.';
+  }
+
+  @override
   String get medHistorySendFiles => 'Individual files';
 
   @override
@@ -7249,4 +7319,80 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get marketplaceInfoPrivateOnly =>
       'If you sell as a commercial or professional activity, you cannot use the marketplace: Quokka may remove your listings and suspend your access.';
+
+  @override
+  String get authHubRecoverAccount => 'Recover account';
+
+  @override
+  String get authRecoverTitle => 'Recover your account';
+
+  @override
+  String get authRecoverSubtitle =>
+      'Deleted your account recently? You can reopen it.';
+
+  @override
+  String get authRecoverSteps =>
+      'If the waiting period isn\'t over yet, sign in with the same email as the deleted account: if you don\'t remember the password, reset it with the link we send you by email. Once signed in, you can cancel the deletion.';
+
+  @override
+  String get authRecoverLogin => 'Sign in with the same email';
+
+  @override
+  String get authRecoverReset => 'Reset the password';
+
+  @override
+  String get authRecoverExpired =>
+      'If the period is over, the account and its data have been deleted: you can create a new account with the same email.';
+
+  @override
+  String accountDeletePeriodNote(int days, String date) {
+    String _temp0 = intl.Intl.pluralLogic(
+      days,
+      locale: localeName,
+      other: '# days',
+      one: '# day',
+    );
+    return 'The account will be deactivated right away. For $_temp0 you can change your mind: sign in with the same email (reset the password if needed) and cancel the deletion. After $date we delete the account and your data, with no way to recover them. Only the data the law requires us to keep remain, for example invoices.';
+  }
+
+  @override
+  String accountDeleteScheduledDone(String date) {
+    return 'Account deactivated. You can cancel the deletion until $date.';
+  }
+
+  @override
+  String get accountRestoreTitle => 'Your account is being deleted';
+
+  @override
+  String accountRestoreBody(String date) {
+    return 'You asked to delete it: on $date we will delete it together with all its data, with no way to recover them. If you changed your mind, you can cancel now.';
+  }
+
+  @override
+  String get accountRestoreCancel => 'Cancel the deletion';
+
+  @override
+  String get accountRestoreDone => 'Account reopened. Welcome back!';
+
+  @override
+  String get accountRestoreReauth =>
+      'For safety, a recent sign-in is needed: sign out and sign in again, then cancel the deletion. If you don\'t remember the password, use \"Recover account\".';
+
+  @override
+  String get accountRestoreFailed =>
+      'I couldn\'t cancel the deletion. Try again.';
+
+  @override
+  String get accountDeleteNowLink => 'Delete now, with no way to recover';
+
+  @override
+  String get accountRestoreDeleteNow => 'Delete now';
+
+  @override
+  String get accountRestoreDeleteNowBody =>
+      'We delete the account and your data right now, with no way to recover them. Only the data the law requires us to keep remain, for example invoices. Afterwards you can sign up again with the same email.';
+
+  @override
+  String get authRegisterEmailInUseRecoverHint =>
+      'If you deleted it recently and the waiting period isn\'t over, use \"Recover account\": you can cancel the deletion or delete it right away to start over.';
 }

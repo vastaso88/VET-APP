@@ -18,18 +18,26 @@ jobs:
     timeout-minutes: 10
     env:
       SCHEDULER_SERVICE_ROLE_KEY: ${{ secrets.RADAR_SUPABASE_SERVICE_ROLE_KEY }}
+      # Optional dedicated secret: must be the same value as ADMIN_SCHEDULER_SECRET on Vercel.
+      ADMIN_SCHEDULER_SECRET: ${{ secrets.ADMIN_SCHEDULER_SECRET }}
       VET_API_BASE_URL: https://vet-app-psi-nine.vercel.app
     steps:
       - name: Check scheduler secret
         run: |
-          if [ -z "$SCHEDULER_SERVICE_ROLE_KEY" ]; then
-            echo "::error::RADAR_SUPABASE_URL and RADAR_SUPABASE_SERVICE_ROLE_KEY are not set"
+          if [ -z "$SCHEDULER_SERVICE_ROLE_KEY" ] && [ -z "$ADMIN_SCHEDULER_SECRET" ]; then
+            echo "::error::Neither ADMIN_SCHEDULER_SECRET nor RADAR_SUPABASE_SERVICE_ROLE_KEY is set"
             exit 1
           fi
       - name: Run due admin schedules
         shell: bash
         run: |
-          TOKEN="$(printf 'vetapp-admin-scheduler:%s' "$SCHEDULER_SERVICE_ROLE_KEY" | sha256sum | awk '{print $1}')"
+          # The backend expects the dedicated secret as it is when ADMIN_SCHEDULER_SECRET
+          # is set there, and otherwise the sha256 of the service-role key (legacy).
+          if [ -n "$ADMIN_SCHEDULER_SECRET" ]; then
+            TOKEN="$ADMIN_SCHEDULER_SECRET"
+          else
+            TOKEN="$(printf 'vetapp-admin-scheduler:%s' "$SCHEDULER_SERVICE_ROLE_KEY" | sha256sum | awk '{print $1}')"
+          fi
           for attempt in {1..10}; do
             RESPONSE_FILE="$(mktemp)"
             HTTP_CODE="$(curl --silent --show-error               --max-time 300               --output "$RESPONSE_FILE"               --write-out "%{http_code}"               --request POST               --header "X-VetApp-Scheduler: $TOKEN"               "$VET_API_BASE_URL/admin/scheduler/tick" || true)"
@@ -54,3 +62,29 @@ jobs:
               break
             fi
           done
+      - name: Erase accounts whose deletion period has ended
+        # Runs even if the ingestion tick above failed: the two jobs are independent.
+        if: ${{ !cancelled() }}
+        # Idempotent and cheap: the backend only counts until
+        # ACCOUNT_DELETION_PURGE_ENABLED is true. The answer is counts only.
+        shell: bash
+        run: |
+          # The backend expects the dedicated secret as it is when ADMIN_SCHEDULER_SECRET
+          # is set there, and otherwise the sha256 of the service-role key (legacy).
+          if [ -n "$ADMIN_SCHEDULER_SECRET" ]; then
+            TOKEN="$ADMIN_SCHEDULER_SECRET"
+          else
+            TOKEN="$(printf 'vetapp-admin-scheduler:%s' "$SCHEDULER_SERVICE_ROLE_KEY" | sha256sum | awk '{print $1}')"
+          fi
+          RESPONSE_FILE="$(mktemp)"
+          HTTP_CODE="$(curl --silent --show-error --max-time 300 --output "$RESPONSE_FILE" --write-out "%{http_code}" --request POST --header "X-VetApp-Scheduler: $TOKEN" "$VET_API_BASE_URL/admin/lifecycle/purge-deleted-accounts" || true)"
+          cat "$RESPONSE_FILE"
+          rm -f "$RESPONSE_FILE"
+          if [ "$HTTP_CODE" = "404" ]; then
+            echo "::warning::Purge endpoint is not deployed yet; skipping."
+            exit 0
+          fi
+          if [ "$HTTP_CODE" -lt 200 ] || [ "$HTTP_CODE" -ge 300 ]; then
+            echo "::error::Purge endpoint returned HTTP $HTTP_CODE"
+            exit 1
+          fi

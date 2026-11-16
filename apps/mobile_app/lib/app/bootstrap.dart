@@ -1,3 +1,4 @@
+import '../shared/widgets/short_notice.dart';
 import 'dart:async';
 
 import 'package:flutter/material.dart';
@@ -107,6 +108,7 @@ Future<void> bootstrap() async {
           unawaited(PetPhotoRepository.clearLocalCaches());
           unawaited(OwnerJsonCache.clearAll());
           unawaited(RouteRestoration.instance.forget());
+          unawaited(ShortNoticeStore.instance.clear());
           unawaited(CrashReporting.instance.onSignedOut());
           // Everything else the previous account left on this device
           // (security audit 2026-10-26): home address and last position,

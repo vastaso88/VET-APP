@@ -1,3 +1,4 @@
+import '../../../../shared/widgets/short_notice.dart';
 import 'dart:async';
 import 'dart:math' as math;
 
@@ -272,7 +273,10 @@ class _ActiveWalkPageState extends State<ActiveWalkPage> {
       return;
     }
 
-    // First walk only: explain the walk notification and ask to show it.
+    // First walk only: what is kept of the route (short notice), then the walk
+    // notification explanation.
+    if (!mounted) return;
+    await showShortNoticeOnce(context, ShortNotice.firstWalk);
     if (!mounted) return;
     await maybeAskWalkNotificationPermission(context);
     if (!mounted) return;

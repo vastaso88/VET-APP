@@ -199,7 +199,7 @@ class FakeAuthRemoteDataSource implements AuthRemoteDataSource {
   }
 
   @override
-  Future<Result<void>> deleteAccount({String? email}) async {
+  Future<Result<void>> deleteAccount({String? email, bool immediate = false}) async {
     await _restorePersistedUsers();
     final key = email?.trim().toLowerCase();
     if (key == null || _users.remove(key) == null) return Result.failure(_noAccount());

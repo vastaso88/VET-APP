@@ -359,6 +359,21 @@ void main() {
     expect(saved.id, id);
   });
 
+  testWidgets('tapping a row of the history opens its correction',
+      (tester) async {
+    final pet = _pet();
+    final repository =
+        await _seed(pet, [(DateTime(2026, 10, 1), 5.2, null)]);
+    await _open(tester, pet, repository: repository);
+    final id = (await repository.load(pet.id)).single.id;
+
+    await tester.tap(find.byKey(ValueKey('history-row-$id')));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Modifica misurazione'), findsOneWidget);
+    expect(find.text('5,2'), findsOneWidget);
+  });
+
   testWidgets('deleting a weighing asks first and then removes it',
       (tester) async {
     final pet = _pet();

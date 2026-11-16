@@ -8,6 +8,9 @@ import '../../../../l10n/l10n.dart';
 import '../../../../shared/widgets/coming_soon_page.dart';
 import '../../../../app/launch/restorable_pages.dart';
 
+/// The "Pet friend" entry is frozen: set to true to bring it back.
+const _petFriendEnabled = false;
+
 class ActivitiesPage extends StatelessWidget {
   const ActivitiesPage({super.key});
 
@@ -71,21 +74,23 @@ class ActivitiesPage extends StatelessWidget {
               onTap: () => Navigator.of(context)
                   .push(restorableRoute<void>('marketplace')),
             ),
-            _ActivityRow(
-              icon: Icons.favorite_outline,
-              iconTone: AppColors.secondaryStrong,
-              title: context.l10n.activitiesPetFriendTitle,
-              subtitle: context.l10n.activitiesPetFriendSubtitle,
-              badge: context.l10n.activitiesComingSoonBadge,
-              onTap: () => Navigator.of(context).push(
-                MaterialPageRoute<void>(
-                  builder: (_) => ComingSoonPage(
-                    title: context.l10n.activitiesPetFriendTitle,
-                    icon: Icons.favorite_outline,
-                    description: context.l10n.activitiesPetFriendDescription,
+            // Frozen (owner, 2026-11-16): the code stays, nothing reaches it.
+            if (_petFriendEnabled)
+              _ActivityRow(
+                icon: Icons.favorite_outline,
+                iconTone: AppColors.secondaryStrong,
+                title: context.l10n.activitiesPetFriendTitle,
+                subtitle: context.l10n.activitiesPetFriendSubtitle,
+                badge: context.l10n.activitiesComingSoonBadge,
+                onTap: () => Navigator.of(context).push(
+                  MaterialPageRoute<void>(
+                    builder: (_) => ComingSoonPage(
+                      title: context.l10n.activitiesPetFriendTitle,
+                      icon: Icons.favorite_outline,
+                      description: context.l10n.activitiesPetFriendDescription,
+                    ),
                   ),
                 ),
-              ),
             ),
           ],
         ),

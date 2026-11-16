@@ -106,7 +106,8 @@ void main() {
   GoogleFonts.config.allowRuntimeFetching = false;
 
   setUp(() async {
-    SharedPreferences.setMockInitialValues({});
+    // The first-opening notice is not what these tests are about.
+    SharedPreferences.setMockInitialValues({'vet_app.short_notice.marketplace': true});
     ListingRadiusStore.instance.resetForTest();
     await useLanguageVariant('it');
   });

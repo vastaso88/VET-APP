@@ -23,6 +23,7 @@ import '../../../reminders/domain/reminder_calendar.dart';
 import '../../../reminders/presentation/pages/reminders_pages.dart';
 import '../../../../shared/date/calendar_days.dart';
 import '../../../settings/data/layout_settings_store.dart';
+import '../../../../shared/widgets/pet_loader.dart';
 import '../widgets/home_dashboard_primitives.dart';
 
 class HomeDashboardPage extends StatefulWidget {
@@ -61,6 +62,23 @@ class _HomeDashboardPageState extends State<HomeDashboardPage> {
   /// card count silently shrinking (the previous title-based dedup alone
   /// did that: fewer cards instead of different ones).
   Future<List<PetNewsItem>> _loadPetNews() async {
+    try {
+      return await _loadPetNewsUnguarded();
+    } catch (_) {
+      return const <PetNewsItem>[];
+    }
+  }
+
+  /// "Riprova" under an unavailable section: asks again (the shared answer is
+  /// only kept when the server gave one, so this really asks the server).
+  void _retryPetNews() {
+    final next = _loadPetNews();
+    setState(() {
+      _petNewsFuture = next;
+    });
+  }
+
+  Future<List<PetNewsItem>> _loadPetNewsUnguarded() async {
     await PetDemoStore.instance.ensureHydrated();
     final owned = PetDemoStore.instance.list().map((pet) => pet.species).toSet().toList();
 
@@ -118,11 +136,9 @@ class _HomeDashboardPageState extends State<HomeDashboardPage> {
                     const SizedBox(height: AppSpacing.xxl),
                     _AgendaSection(repository: _remindersRepository),
                     const SizedBox(height: AppSpacing.xxl),
-                    _PetNewsSection(petNewsFuture: _petNewsFuture),
+                    _PetNewsSection(petNewsFuture: _petNewsFuture, onRetry: _retryPetNews),
                     const SizedBox(height: AppSpacing.xxl),
                     const _LocalEventsNotice(),
-                    const SizedBox(height: AppSpacing.xxl),
-                    const _SponsorBanner(),
                   ],
                 ),
               ),
@@ -225,10 +241,29 @@ DateTime _startOfWeek(DateTime day, WeekStartDay weekStartDay) {
   return addCalendarDays(startOfDay, -offset);
 }
 
-class _AgendaSection extends StatelessWidget {
+class _AgendaSection extends StatefulWidget {
   const _AgendaSection({required this.repository});
 
   final RemindersRepository repository;
+
+  @override
+  State<_AgendaSection> createState() => _AgendaSectionState();
+}
+
+class _AgendaSectionState extends State<_AgendaSection> {
+  int? _tick;
+  Future<List<ReminderEntry>>? _future;
+
+  /// One read per change of the reminders: a rebuild for any other reason
+  /// (layout, pets) keeps the same Future, so the calendar never goes back to
+  /// the loader on its own.
+  Future<List<ReminderEntry>> _futureFor(int tick) {
+    if (_future == null || _tick != tick) {
+      _tick = tick;
+      _future = widget.repository.loadReminders();
+    }
+    return _future!;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -244,11 +279,13 @@ class _AgendaSection extends StatelessWidget {
         // the calendar in sync no matter where the reminder was added.
         return ValueListenableBuilder<int>(
           valueListenable: RemindersRepository.changes,
-          builder: (context, _, __) {
+          builder: (context, tick, __) {
             return FutureBuilder<List<ReminderEntry>>(
-              future: repository.loadReminders(),
+              future: _futureFor(tick),
               builder: (context, snapshot) {
-                if (snapshot.connectionState == ConnectionState.waiting) {
+                // The loader only while there is nothing to show yet: a reload
+                // keeps the previous calendar on screen.
+                if (snapshot.connectionState == ConnectionState.waiting && !snapshot.hasData) {
                   return Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -257,7 +294,7 @@ class _AgendaSection extends StatelessWidget {
                         subtitle: context.l10n.homeAgendaLoadingSubtitle,
                       ),
                       const SizedBox(height: AppSpacing.lg),
-                      const _SectionSkeleton(),
+                      const _SectionLoader(),
                     ],
                   );
                 }
@@ -558,9 +595,10 @@ class _PetLegend extends StatelessWidget {
 }
 
 class _PetNewsSection extends StatelessWidget {
-  const _PetNewsSection({required this.petNewsFuture});
+  const _PetNewsSection({required this.petNewsFuture, required this.onRetry});
 
   final Future<List<PetNewsItem>> petNewsFuture;
+  final VoidCallback onRetry;
 
   @override
   Widget build(BuildContext context) {
@@ -576,18 +614,31 @@ class _PetNewsSection extends StatelessWidget {
           future: petNewsFuture,
           builder: (context, snapshot) {
             if (snapshot.connectionState == ConnectionState.waiting) {
-              return const _SectionSkeleton();
+              return const _SectionLoader();
             }
 
             final items = snapshot.data ?? const <PetNewsItem>[];
             if (items.isEmpty) {
+              final served = petNewsEditionServed();
               return DashboardSurfaceCard(
-                child: Text(
-                  // Edition without feeds yet: say so instead of "try later".
-                  petNewsEditionServed()
-                      ? context.l10n.homeNewsUnavailable
-                      : context.l10n.petNewsEmptyLocal,
-                  style: AppTextStyles.bodySmall,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      // Edition without feeds yet: say so instead of "try later".
+                      served ? context.l10n.homeNewsUnavailable : context.l10n.petNewsEmptyLocal,
+                      style: AppTextStyles.bodySmall,
+                    ),
+                    if (served) ...[
+                      const SizedBox(height: AppSpacing.sm),
+                      TextButton.icon(
+                        key: const ValueKey('home-news-retry'),
+                        onPressed: onRetry,
+                        icon: const Icon(Icons.refresh_rounded, size: 18),
+                        label: Text(context.l10n.commonRetry),
+                      ),
+                    ],
+                  ],
                 ),
               );
             }
@@ -677,63 +728,16 @@ class _LocalEventsNoticeState extends State<_LocalEventsNotice> {
   }
 }
 
-class _SponsorBanner extends StatelessWidget {
-  const _SponsorBanner();
+/// While a section of Home loads: the spinning animal, never an empty grey box.
+class _SectionLoader extends StatelessWidget {
+  const _SectionLoader();
 
   @override
   Widget build(BuildContext context) {
-    return DashboardSurfaceCard(
-      tone: DashboardTone.neutral,
-      child: Row(
-        children: [
-          Container(
-            width: 40,
-            height: 40,
-            decoration: BoxDecoration(
-              color: AppColors.secondarySoft,
-              borderRadius: BorderRadius.circular(AppRadii.medium),
-            ),
-            child: const Icon(Icons.storefront_outlined,
-                size: 20, color: AppColors.primary),
-          ),
-          const SizedBox(width: AppSpacing.md),
-          Expanded(
-            child: Text(
-              context.l10n.homeSponsorBanner,
-              style: AppTextStyles.bodySmall
-                  .copyWith(color: AppColors.secondaryText),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _SectionSkeleton extends StatelessWidget {
-  const _SectionSkeleton();
-
-  @override
-  Widget build(BuildContext context) {
-    return DashboardSurfaceCard(
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          const SizedBox(
-            width: 18,
-            height: 18,
-            child: CircularProgressIndicator(strokeWidth: 2),
-          ),
-          const SizedBox(width: AppSpacing.md),
-          Flexible(
-            child: Text(
-              context.l10n.homeSectionLoading,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: AppTextStyles.bodySmall,
-            ),
-          ),
-        ],
+    return const DashboardSurfaceCard(
+      child: SizedBox(
+        height: 96,
+        child: Center(child: PetLoader()),
       ),
     );
   }

@@ -74,7 +74,7 @@ class _HomeShellPageState extends State<HomeShellPage> {
         if (!mounted) return;
         HomeWidgetActionStore.instance.shellReady();
         unawaited(_maybeShowTrialCountdown());
-        unawaited(checkAgeAfterSignIn(context));
+        unawaited(_checkAccountAfterSignIn());
         _ready = true;
         // A notification tap that launched the app, then the reminders that
         // fell due while it was closed.
@@ -112,9 +112,12 @@ class _HomeShellPageState extends State<HomeShellPage> {
     super.dispose();
   }
 
-  /// After the app was killed in the background: opens again the pages that
-  /// were open inside the tabs (pet, chat, records...), then starts saving the
-  /// stack again. Once per run.
+  /// After the app was killed (even in the background) it opens on Home: the
+  /// pages that were open inside the tabs are NOT opened again (owner,
+  /// 2026-11-16). Coming back to the app without it having been killed needs
+  /// nothing here, the process still holds where the owner was. The one thing
+  /// kept is the walk that was interrupted: its page waits for the owner's
+  /// answer to the "resume the walk?" dialog. Once per run.
   Future<void> _restoreOpenPages() async {
     final restoration = RouteRestoration.instance;
     if (restoration.planConsumed) {
@@ -129,7 +132,6 @@ class _HomeShellPageState extends State<HomeShellPage> {
       // The walk page waits until the interrupted walk has been resumed (the
       // owner answers a dialog first); see _checkForInterruptedWalk.
       _deferredWalkPages = [for (final entry in plan) if (entry.kind == 'active_walk') entry];
-      await _replay([for (final entry in plan) if (entry.kind != 'active_walk') entry]);
     } finally {
       _restoreDone.complete();
       restoration.enablePersistence();
@@ -146,6 +148,14 @@ class _HomeShellPageState extends State<HomeShellPage> {
           tab >= 0 && tab < _navigatorKeys.length ? _navigatorKeys[tab].currentState : null,
       isAlive: () => mounted,
     );
+  }
+
+  /// A deactivated account (waiting to be erased) is offered the cancellation
+  /// and nothing else; otherwise the declared age is checked.
+  Future<void> _checkAccountAfterSignIn() async {
+    if (await checkPendingDeletionAfterSignIn(context)) return;
+    if (!mounted) return;
+    await checkAgeAfterSignIn(context);
   }
 
   Future<void> _maybeShowTrialCountdown() async {

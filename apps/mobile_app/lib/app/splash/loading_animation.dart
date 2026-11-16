@@ -17,7 +17,10 @@ const splashMessageInterval = Duration(milliseconds: 2500);
 /// something" moment instead of a bare spinner — first reused by the News
 /// page's loading state (2026-09-30).
 class LoadingAnimation extends StatelessWidget {
-  const LoadingAnimation({super.key, this.label});
+  const LoadingAnimation({super.key, this.label, this.messageColor});
+
+  /// Colour of the rotating phrases when the ground is not the usual light one.
+  final Color? messageColor;
 
   /// Shown above the animation, e.g. "Carico le News...". Omit to match
   /// the splash's own bare animation (no caption).
@@ -34,7 +37,7 @@ class LoadingAnimation extends StatelessWidget {
         ],
         const SplashAnimalTicker(),
         const SizedBox(height: AppSpacing.lg),
-        const SplashRotatingMessages(),
+        SplashRotatingMessages(color: messageColor),
       ],
     );
   }
@@ -122,7 +125,9 @@ class _SplashAnimalTickerState extends State<SplashAnimalTicker>
 
 /// Small feature teasers that swap every [splashMessageInterval].
 class SplashRotatingMessages extends StatefulWidget {
-  const SplashRotatingMessages({super.key});
+  const SplashRotatingMessages({super.key, this.color});
+
+  final Color? color;
 
   @override
   State<SplashRotatingMessages> createState() => _SplashRotatingMessagesState();
@@ -169,7 +174,7 @@ class _SplashRotatingMessagesState extends State<SplashRotatingMessages> {
           splashMessagesFor(context.l10n)[_index],
           key: ValueKey<int>(_index),
           textAlign: TextAlign.center,
-          style: AppTextStyles.bodySmall,
+          style: AppTextStyles.bodySmall.copyWith(color: widget.color),
         ),
       ),
     );

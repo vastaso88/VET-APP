@@ -93,7 +93,7 @@ def test_every_backend_catalog_covers_every_supported_language() -> None:
     from packages.core.domain.localization import _MESSAGES, SUPPORTED_LOCALES
     from packages.core.domain.safety import triage_clarification
 
-    known_gaps = {("account consent texts", "de"), ("account consent texts", "fr")}
+    known_gaps: set[tuple[str, str]] = set()
     languages = set(SUPPORTED_LANGUAGES)
     assert languages == set(SUPPORTED_LOCALES)
     catalogs: dict[str, set[str]] = {

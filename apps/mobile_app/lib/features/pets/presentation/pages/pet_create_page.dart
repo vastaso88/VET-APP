@@ -1,3 +1,4 @@
+import '../widgets/medical_record_consent_proposal.dart';
 import 'package:flutter/material.dart';
 
 import '../../../../design_system/tokens/app_colors.dart';
@@ -72,7 +73,13 @@ class _CreateFormState extends State<_CreateForm> {
       stepped: true,
       title: context.l10n.petsCreateFormTitle,
       submitLabel: context.l10n.petsCreateSubmit,
-      onFinish: () => Navigator.of(context).pop(_lastSaved),
+      onFinish: () async {
+        final saved = _lastSaved;
+        // Once the animal exists: may the assistant read its medical record?
+        if (saved != null) await proposeMedicalRecordConsent(context, saved);
+        if (!context.mounted) return;
+        Navigator.of(context).pop(saved);
+      },
       onSubmit: (draft) async {
         final pet = await PetDemoStore.instance.create(
           name: draft.name,

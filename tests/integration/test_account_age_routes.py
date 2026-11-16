@@ -102,3 +102,33 @@ def test_a_closed_account_can_only_read_its_status_and_delete_itself(as_user: ob
     # Someone else is not affected.
     as_user(USER_B)  # type: ignore[operator]
     assert client.get("/pets").status_code == 200
+
+
+def test_the_server_refuses_marketing_and_statistics_for_a_minor(as_user: object) -> None:
+    client = TestClient(app)
+    client.post("/account/age", json={"birth_date": _years_ago(16)})
+
+    for key in ("marketing_email", "analytics"):
+        refused = client.post("/account/consents", json={"consent_key": key, "granted": True})
+        assert refused.status_code == 403 and refused.json()["code"] == "consent_not_for_minors"
+    # Declining is fine, and so are the consents open from 14.
+    assert (
+        client.post(
+            "/account/consents", json={"consent_key": "marketing_email", "granted": False}
+        ).status_code
+        == 200
+    )
+    assert (
+        client.post(
+            "/account/consents", json={"consent_key": "diagnostics", "granted": True}
+        ).status_code
+        == 200
+    )
+
+    # Another owner (an adult) is not affected.
+    as_user(USER_B)  # type: ignore[operator]
+    client.post("/account/age", json={"birth_date": _years_ago(30)})
+    granted = client.post(
+        "/account/consents", json={"consent_key": "marketing_email", "granted": True}
+    )
+    assert granted.status_code == 200

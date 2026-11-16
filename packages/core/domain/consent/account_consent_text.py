@@ -8,7 +8,13 @@ materially, so a stored ConsentRecord.version keeps meaning "the text the
 owner actually saw", not just "the latest text".
 """
 
+from packages.core.domain.common.language import DEFAULT_LANGUAGE
 from packages.core.domain.consent.models import AccountConsentType, ConsentCatalogEntry
+
+# A language that has no reviewed text yet is served in English, never in
+# Italian: a person who does not read Italian cannot give an informed consent
+# on an Italian text (GDPR arts. 7(2) and 12; docs/compliance/15, open point 7).
+FALLBACK_LANGUAGE = "en"
 
 CURRENT_VERSIONS: dict[str, str] = {
     AccountConsentType.TERMS_OF_SERVICE: "v1",
@@ -125,18 +131,52 @@ CONSENT_TEXT_ES: dict[str, str] = {
     "contribution_rules": "Reglas para avisos y valoraciones\n1. Comunica solo lo que hayas comprobado personalmente o sepas con certeza.\n2. Para los establecimientos, escribe solo el nombre comercial tal como aparece en el letrero. No incluyas teléfonos, direcciones privadas, correos electrónicos ni datos de otras personas.\n3. Los avisos quedan “pendientes de confirmación” hasta que otros usuarios los confirmen. No son una garantía: comprueba siempre antes de acudir a un lugar.\n4. Las valoraciones de parques caninos son opiniones personales: una valoración por parque.\n5. Comunica un parque canino que falta solo si es público y está abierto al público. No comuniques propiedades privadas ni invites a otras personas a entrar en lugares privados.\n6. No uses los avisos para perjudicar a un establecimiento. Los avisos falsos o repetidos pueden provocar la suspensión de la cuenta.\n7. Los establecimientos pueden solicitar que se corrija o elimine un dato: lo comprobamos y respondemos lo antes posible.\n8. Tus avisos y valoraciones se publican sin tu nombre ni tus datos personales, que siguen tratándose según el aviso de privacidad.",
 }
 
+# German and French follow docs/compliance/de|fr/04_*: formal register ("Sie",
+# "vous"), the app's own labels (Einstellungen → Konto löschen; Paramètres →
+# Supprimer le compte) and the glossary terms (Krankenakte, dossier médical,
+# Gebrauchtmarkt, marché de l'occasion; docs/i18n/GLOSSARIO_E_STILE.md). They are
+# faithful to the Italian text, so they share its versions: the additions of
+# those drafts (transfers outside the EU, the complaint authority) wait for the
+# next version of the privacy summary, for every language together. The regional
+# variants (de-AT, de-CH, fr-BE, fr-CH) differ only in wording and in the name
+# of the authority and are not served separately (docs/compliance/15, point 7).
+# French uses a no-break space (U+00A0) before ": ; ? !".
+CONSENT_TEXT_DE: dict[str, str] = {
+    "terms_of_service": "Mit der Nutzung von Quokka stimmen Sie den Nutzungsbedingungen zu: den Regeln für die Nutzung der App, Ihren Pflichten als Nutzerin oder Nutzer und den Grenzen unserer Haftung, einschließlich der Tatsache, dass die Vorschläge des Assistenten den Rat einer Tierärztin oder eines Tierarztes nicht ersetzen. Ohne diese Zustimmung können wir kein Konto anlegen.",
+    "privacy_policy": "Kurz gesagt: Damit Sie Quokka nutzen können, verarbeiten wir die Daten Ihres Kontos (Vor- und Nachname und E-Mail-Adresse; freiwillig: Telefonnummer und Profilfoto), die Profile Ihrer Tiere, die Dokumente, Fotos und Anzeigen im Gebrauchtmarkt, die Sie veröffentlichen, Ihre Gespräche mit dem Assistenten und, wenn Sie sie einschalten, Ihren Standort und die Strecken Ihrer Spaziergänge. Was Sie dem Assistenten senden (Fragen, Anhänge, Sprachnachrichten), wird an einen externen Anbieter künstlicher Intelligenz gesendet, damit er die Antworten schreibt; die Krankenakte Ihres Tieres nur, wenn Sie es erlauben. Ihre Daten werden bei Diensten Dritter (Hosting und Datenbank) gespeichert. Sie können Auskunft, Berichtigung oder Löschung Ihrer Daten verlangen, indem Sie uns über Einstellungen → Kontakt schreiben, oder Ihr Konto selbst löschen (Einstellungen → Konto löschen), und freiwillige Einwilligungen jederzeit in den Einstellungen widerrufen. Die vollständige Datenschutzerklärung ist in Vorbereitung.",
+    "marketing_email": "Mit Ihrer Einwilligung dürfen wir Ihnen per E-Mail Neuigkeiten zu Quokka und Tipps für Ihre Tiere senden. Sie können Ihre Einwilligung jederzeit in den Einstellungen widerrufen; für die Nutzung der App hat das keine Folgen.",
+    "analytics": "Mit Ihrer Einwilligung erfassen wir anonyme statistische Daten zur Nutzung der App (zum Beispiel aufgerufene Bildschirme und genutzte Funktionen), um zu verstehen, wie wir sie verbessern können. Sie können Ihre Einwilligung jederzeit in den Einstellungen widerrufen; für die Nutzung der App hat das keine Folgen.",
+    "diagnostics": "Wenn die App wegen eines Fehlers beendet wird, senden wir mit Ihrer Einwilligung einen technischen Bericht an Sentry, einen Diagnosedienst mit Servern in Deutschland, um den Fehler zu beheben. Der Bericht enthält die Art des Fehlers, was die App gerade getan hat, das Telefonmodell, die Android- und die App-Version sowie Sprache und Zeitzone. Er enthält nie Nachrichten, Fotos, Standort, Daten Ihrer Tiere, Ihren Namen oder Ihre E-Mail-Adresse. Sie können Ihre Einwilligung jederzeit in den Einstellungen widerrufen; für die Nutzung der App hat das keine Folgen.",
+    "contribution_rules": "Regeln für Meldungen und Stimmen\n1. Melden Sie nur, was Sie selbst geprüft haben oder sicher wissen.\n2. Schreiben Sie bei Betrieben nur den Namen, wie er am Schild steht. Tragen Sie keine Telefonnummern, privaten Anschriften, E-Mail-Adressen oder Daten anderer Personen ein.\n3. Meldungen bleiben „in Bestätigung“, bis andere Nutzende sie bestätigen. Sie sind keine Garantie: Prüfen Sie immer, bevor Sie zu einem Ort fahren.\n4. Stimmen zu Hundeauslaufflächen sind persönliche Meinungen: eine Stimme pro Fläche.\n5. Melden Sie eine fehlende Hundeauslauffläche nur, wenn sie öffentlich und für die Allgemeinheit zugänglich ist. Melden Sie keine Privatgrundstücke und fordern Sie niemanden auf, private Flächen zu betreten.\n6. Nutzen Sie Meldungen nicht, um einem Betrieb zu schaden. Falsche oder wiederholte Meldungen können zur Sperrung Ihres Kontos führen.\n7. Betriebe können die Berichtigung oder Entfernung einer Angabe verlangen: Wir prüfen das und antworten so bald wie möglich.\n8. Ihre Meldungen und Stimmen werden ohne Ihren Namen und ohne Ihre persönlichen Daten veröffentlicht; diese werden wie in der Datenschutzerklärung beschrieben behandelt.",
+}
+
+CONSENT_TEXT_FR: dict[str, str] = {
+    "terms_of_service": "En utilisant Quokka, vous acceptez les conditions d'utilisation : les règles d'usage de l'application, vos obligations d'utilisateur et les limites de notre responsabilité, y compris le fait que les suggestions de l'assistant ne remplacent pas l'avis d'un vétérinaire. Sans cette acceptation, nous ne pouvons pas créer de compte.",
+    "privacy_policy": "En bref : pour que vous puissiez utiliser Quokka, nous traitons les données de votre compte (prénom, nom et adresse e-mail ; facultatifs : numéro de téléphone et photo de profil), les fiches de vos animaux, les documents, les photos et les annonces du marché de l'occasion que vous publiez, vos conversations avec l'assistant et, si vous les activez, votre localisation et les parcours de vos promenades. Ce que vous envoyez à l'assistant (questions, pièces jointes, messages vocaux) est transmis à un prestataire externe d'intelligence artificielle pour rédiger les réponses ; le dossier médical de votre animal n'est transmis que si vous l'autorisez. Vos données sont conservées chez des prestataires tiers (hébergement et base de données). Vous pouvez demander l'accès, la rectification ou l'effacement de vos données en nous écrivant depuis Paramètres → Nous contacter, ou supprimer vous-même votre compte depuis Paramètres → Supprimer le compte, et retirer à tout moment vos consentements facultatifs dans les Paramètres. La politique de confidentialité complète est en cours de préparation.",
+    "marketing_email": "Avec votre accord, nous pouvons vous envoyer par e-mail des nouveautés sur Quokka et des conseils pour vos animaux. Vous pouvez retirer votre accord à tout moment dans les Paramètres ; cela n'a aucune incidence sur votre utilisation de l'application.",
+    "analytics": "Avec votre accord, nous recueillons des statistiques anonymes sur l'usage de l'application (par exemple, les écrans consultés et les fonctions utilisées) pour comprendre comment l'améliorer. Vous pouvez retirer votre accord à tout moment dans les Paramètres ; cela n'a aucune incidence sur votre utilisation de l'application.",
+    "diagnostics": "Si l'application se ferme à cause d'une erreur, avec votre accord, nous envoyons un rapport technique à Sentry, un service de diagnostic dont les serveurs sont en Allemagne, pour corriger l'erreur. Le rapport contient le type d'erreur, ce que faisait l'application, le modèle du téléphone, les versions d'Android et de l'application, la langue et le fuseau horaire. Il n'inclut jamais de messages, de photos, de position, de données sur vos animaux, ni votre nom ou votre adresse e-mail. Vous pouvez retirer votre accord à tout moment dans les Paramètres ; cela n'a aucune incidence sur votre utilisation de l'application.",
+    "contribution_rules": "Règles pour les signalements et les votes\n1. Ne signalez que ce que vous avez vérifié vous-même ou que vous savez avec certitude.\n2. Pour un établissement, indiquez uniquement son nom tel qu'il figure sur l'enseigne. N'indiquez ni numéros de téléphone, ni adresses privées, ni adresses e-mail, ni données d'autres personnes.\n3. Les signalements restent « en cours de confirmation » tant que d'autres utilisateurs ne les ont pas confirmés. Ils ne sont pas une garantie : vérifiez toujours avant de vous déplacer.\n4. Les votes sur les parcs canins sont des avis personnels : un vote par parc.\n5. Ne signalez l'absence d'un parc canin que s'il est public et accessible à tous. Ne signalez pas de propriétés privées et n'incitez personne à entrer dans des espaces privés.\n6. N'utilisez pas les signalements pour nuire à un établissement. Des signalements faux ou répétés peuvent entraîner la suspension de votre compte.\n7. Les établissements peuvent demander la rectification ou le retrait d'une information : nous l'examinons et répondons dès que possible.\n8. Vos signalements et vos votes sont publiés sans votre nom et sans vos données personnelles ; celles-ci sont traitées comme indiqué dans la politique de confidentialité.",
+}
+
 CONSENT_TEXTS_BY_LANGUAGE: dict[str, dict[str, str]] = {
     "it": CONSENT_TEXT_IT,
     "en": CONSENT_TEXT_EN,
     "es": CONSENT_TEXT_ES,
+    "de": CONSENT_TEXT_DE,
+    "fr": CONSENT_TEXT_FR,
 }
 
 
 def served_consent_language(language: str | None) -> str:
     """The language the catalog is actually served in for [language]: the
-    requested one when a reviewed translation exists, else Italian."""
+    requested one when a reviewed translation exists; Italian (the product's
+    language) when no language was asked for at all; English for any other
+    language that has no text yet, so a new language never falls back to Italian."""
     code = (language or "").strip().lower().replace("_", "-").split("-")[0]
-    return code if code in CONSENT_TEXTS_BY_LANGUAGE else "it"
+    if not code:
+        return DEFAULT_LANGUAGE
+    return code if code in CONSENT_TEXTS_BY_LANGUAGE else FALLBACK_LANGUAGE
 
 
 def build_consent_catalog(language: str | None = None) -> dict[str, ConsentCatalogEntry]:

@@ -410,6 +410,7 @@
   "chatSummaryTitle": "Résumé pour le vétérinaire",
   "chatSummaryDisclaimer": "Ce résumé est généré automatiquement et ne constitue pas un diagnostic. Pour toute décision clinique, consultez le vétérinaire.",
   "chatAiNotice": "Je réponds grâce à une intelligence artificielle : je ne remplace pas le vétérinaire. En cas d'urgence, appelez tout de suite une clinique.",
+  "chatOwnHealthNotice": "N'écrivez pas ici d'informations sur votre propre santé : nous parlons seulement de votre animal.",
   "chatSummaryEmpty": "Aucun résumé disponible.",
   "chatDeleteTitle": "Supprimer ce chat ?",
   "chatDeleteBody": "La conversation et ses messages seront supprimés.",
@@ -928,7 +929,7 @@
   "medicalChecklistMetadata": "Métadonnées extraites",
   "medicalChecklistLinkedPet": "Lié à l'animal actif",
   "homeGreeting": "Bonjour",
-  "homeAgendaTitle": "Prochaines activités",
+  "homeAgendaTitle": "Votre calendrier",
   "homeAgendaLoadingSubtitle": "Pipettes et cures, pour tous les animaux.",
   "homeAgendaSummary": "{count} activités dans les 10 prochains jours",
   "@homeAgendaSummary": {
@@ -3678,6 +3679,30 @@
   "medHistorySend": "Envoyer l'historique",
   "medHistorySendAll": "Tout l'historique (PDF)",
   "medHistorySendAllSubtitle": "Un PDF avec tous les événements par ordre chronologique",
+  "petsConsentProposalActivate": "Activer",
+  "petsConsentProposalLater": "Plus tard",
+  "noticeMarketplace": "Le marché de l'occasion est réservé aux personnes majeures et met en relation deux particuliers : Quokka n'est pas partie à la vente, ne vérifie ni les annonces ni les personnes et n'en répond pas. Les conversations sont privées : notre équipe ne les lit que si l'une des deux personnes les signale.",
+  "noticeRules": "Règles",
+  "noticeUnderstood": "Compris",
+  "noticePolicy": "Politique de confidentialité",
+  "noticeChatAi": "C'est une intelligence artificielle qui répond, et elle peut se tromper. Vos questions, débarrassées des données personnelles que nous reconnaissons, sont envoyées à nos fournisseurs d'IA (Anthropic et, lorsque Anthropic ne peut pas répondre, Groq), avec des serveurs aux États-Unis.",
+  "noticeChatMedia": "Les photos et la voix partent vers un service externe (aujourd'hui Groq, aux États-Unis) qui les lit ou les transcrit. Le filtre qui retire les données personnelles travaille sur le texte, pas sur les images ni la voix : masquez votre nom, votre adresse et le numéro de puce électronique.",
+  "noticeRecordDocument": "Le document reste dans votre compte. L'assistant ne le lit que si vous avez activé la lecture du dossier médical de cet animal.",
+  "noticeFirstWalk": "Le parcours reste dans votre compte. Nous gardons le tracé GPS seulement des 3 dernières promenades de chaque animal, de celles que vous marquez comme favorites (5 au maximum) et de la plus longue ; des autres, il reste la distance, la durée et les pas.",
+  "consentChoicesTitle": "Que voulez-vous activer ?",
+  "consentChoicesSubtitle": "Ce sont vos choix : vous pouvez les changer quand vous voulez dans Paramètres → Autorisations et consentements. Quokka fonctionne aussi sans.",
+  "consentChoicesSave": "Enregistrer mes choix",
+  "consentChoicesNotNow": "Pas maintenant",
+  "medHistorySendAllDocs": "Historique et tous les documents (un seul PDF)",
+  "medHistorySendAllDocsSubtitle": "Un seul PDF avec les événements, les photos et les documents, adapté à l'e-mail et à WhatsApp",
+  "medHistoryDocsSeparate": "{count, plural, =1{1 document n'a pas pu entrer dans le PDF et est joint} other{{count} documents n'ont pas pu entrer dans le PDF et sont joints}} à part.",
+  "@medHistoryDocsSeparate": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "medHistorySendFiles": "Fichiers individuels",
   "medHistoryPreparing": "Je prépare le PDF…",
   "medHistoryExportFailed": "Je n'ai pas pu préparer le PDF. Réessayez.",
@@ -4049,5 +4074,48 @@
   "marketplaceListingGone": "Cette annonce n'est plus disponible.",
   "marketplacePrivateSellerDeclaration": "Je déclare vendre en tant que particulier, et non dans le cadre d'une activité commerciale ou professionnelle.",
   "marketplacePrivateSellerRequired": "Pour publier, vous devez confirmer que vous vendez en tant que particulier : le marché de l'occasion n'est pas destiné aux activités commerciales ou professionnelles.",
-  "marketplaceInfoPrivateOnly": "Si vous vendez dans le cadre d'une activité commerciale ou professionnelle, vous ne pouvez pas utiliser le marché de l'occasion : Quokka peut retirer les annonces et suspendre l'accès."
+  "marketplaceInfoPrivateOnly": "Si vous vendez dans le cadre d'une activité commerciale ou professionnelle, vous ne pouvez pas utiliser le marché de l'occasion : Quokka peut retirer les annonces et suspendre l'accès.",
+  "authHubRecoverAccount": "Récupérer le compte",
+  "authRecoverTitle": "Récupérez votre compte",
+  "authRecoverSubtitle": "Vous avez supprimé votre compte récemment ? Vous pouvez le rouvrir.",
+  "authRecoverSteps": "Si le délai d'attente n'est pas encore écoulé, connectez-vous avec la même adresse e-mail que le compte supprimé : si vous ne vous souvenez plus du mot de passe, réinitialisez-le avec le lien que nous vous envoyons par e-mail. Après la connexion, vous pourrez annuler la suppression.",
+  "authRecoverLogin": "Se connecter avec la même adresse e-mail",
+  "authRecoverReset": "Réinitialiser le mot de passe",
+  "authRecoverExpired": "Si le délai est écoulé, le compte et ses données ont été supprimés : vous pouvez créer un nouveau compte avec la même adresse e-mail.",
+  "accountDeletePeriodNote": "Le compte sera désactivé immédiatement. Pendant {days, plural, one{# jour} other{# jours}}, vous pouvez changer d'avis : connectez-vous avec la même adresse e-mail (réinitialisez le mot de passe si besoin) et annulez la suppression. Après le {date}, nous supprimerons le compte et vos données, sans possibilité de récupération. Ne restent que les données que la loi nous oblige à conserver, par exemple les factures.",
+  "@accountDeletePeriodNote": {
+    "placeholders": {
+      "days": {
+        "type": "int"
+      },
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "accountDeleteScheduledDone": "Compte désactivé. Vous pouvez annuler la suppression jusqu'au {date}.",
+  "@accountDeleteScheduledDone": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "accountRestoreTitle": "Votre compte est en cours de suppression",
+  "accountRestoreBody": "Vous avez demandé sa suppression : le {date}, nous le supprimerons avec toutes ses données, sans possibilité de récupération. Si vous avez changé d'avis, vous pouvez annuler maintenant.",
+  "@accountRestoreBody": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "accountRestoreCancel": "Annuler la suppression",
+  "accountRestoreDone": "Compte rouvert. Bon retour !",
+  "accountRestoreReauth": "Par sécurité, une connexion récente est nécessaire : déconnectez-vous puis reconnectez-vous, puis annulez la suppression. Si vous ne vous souvenez plus du mot de passe, utilisez « Récupérer le compte ».",
+  "accountRestoreFailed": "Je n'ai pas pu annuler la suppression. Réessayez.",
+  "accountDeleteNowLink": "Supprimer tout de suite, sans possibilité de récupération",
+  "accountRestoreDeleteNow": "Supprimer tout de suite",
+  "accountRestoreDeleteNowBody": "Nous supprimons le compte et vos données tout de suite, sans possibilité de récupération. Ne restent que les données que la loi nous oblige à conserver, par exemple les factures. Ensuite, vous pourrez vous réinscrire avec la même adresse e-mail.",
+  "authRegisterEmailInUseRecoverHint": "Si vous l'avez supprimé récemment et que le délai d'attente n'est pas écoulé, utilisez « Récupérer le compte » : vous pouvez annuler la suppression ou le supprimer tout de suite pour recommencer."
 }

@@ -35,7 +35,7 @@ abstract interface class AuthRepository {
 
   /// Deletes the account after checking [password]; on success the stored
   /// session is gone too.
-  Future<Result<AuthContext>> deleteAccount({required String password});
+  Future<Result<AuthContext>> deleteAccount({required String password, bool immediate = false});
 
   Future<Result<AuthContext>> signOut();
 }

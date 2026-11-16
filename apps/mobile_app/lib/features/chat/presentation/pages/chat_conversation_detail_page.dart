@@ -1,3 +1,4 @@
+import '../../../../shared/widgets/short_notice.dart';
 import 'dart:async';
 import 'dart:typed_data';
 
@@ -66,6 +67,8 @@ class _ChatConversationDetailPageState extends State<ChatConversationDetailPage>
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) {
         _store.openConversation(widget.conversationId, fallback: widget.initialConversation);
+        // First opening of the chat: an AI answers, and where the questions go.
+        unawaited(showShortNoticeOnce(context, ShortNotice.chatAi));
       }
     });
   }

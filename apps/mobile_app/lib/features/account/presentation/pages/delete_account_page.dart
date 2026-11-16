@@ -9,10 +9,15 @@ import '../../../../design_system/tokens/app_spacing.dart';
 import '../../../../design_system/tokens/app_text_styles.dart';
 import '../../../../l10n/l10n.dart';
 import '../../../../shared/widgets/pet_loader.dart';
+import '../../../../l10n/date_formats.dart';
+import '../../../../l10n/regional_defaults.dart';
+import '../../../age/data/age_store.dart';
+import '../../../age/domain/age_status.dart';
 import '../../../auth/data/auth_repository_factory.dart';
 import '../../../auth/presentation/widgets/auth_widgets.dart';
 import '../../../notifications/application/notification_scheduler.dart';
 import '../../../pets/data/pet_photo_repository.dart';
+import '../../data/account_deletion_remote_data_source.dart';
 import '../../data/profile_photo_repository.dart';
 import '../widgets/account_page_scaffold.dart';
 import 'change_password_page.dart';
@@ -36,13 +41,40 @@ class _DeleteAccountPageState extends State<DeleteAccountPage> {
   String? _passwordError;
   String? _failure;
 
+  /// The backend's period to change one's mind (a setting, read from there).
+  /// Null until known, and for an account closed for age, which is erased at
+  /// once with no period.
+  DeletionStatus? _period;
+
+  @override
+  void initState() {
+    super.initState();
+    unawaited(_loadPeriod());
+  }
+
+  Future<void> _loadPeriod() async {
+    if (AgeStore.instance.status.band == AgeBand.underMinimum) return;
+    final result = await HttpAccountDeletionRemoteDataSource().fetch();
+    if (!mounted) return;
+    result.fold(
+      onSuccess: (status) => setState(() => _period = status),
+      onFailure: (_) {},
+    );
+  }
+
+  /// The day the account would be erased if the owner confirmed now.
+  DateTime? _erasureDay() {
+    final period = _period;
+    return period == null ? null : DateTime.now().add(Duration(days: period.graceDays));
+  }
+
   @override
   void dispose() {
     _password.dispose();
     super.dispose();
   }
 
-  Future<void> _delete() async {
+  Future<void> _delete({bool immediate = false}) async {
     if (!_formKey.currentState!.validate() || !_understood || _deleting) return;
     final l10n = context.l10n;
     setState(() {
@@ -53,6 +85,7 @@ class _DeleteAccountPageState extends State<DeleteAccountPage> {
 
     final result = await const AuthRepositoryFactory().create().deleteAccount(
           password: _password.text,
+          immediate: immediate,
         );
     if (!mounted) return;
     result.fold(
@@ -62,8 +95,15 @@ class _DeleteAccountPageState extends State<DeleteAccountPage> {
         unawaited(PetPhotoRepository.clearLocalCaches());
         ProfilePhotoRepository.clearLocalCache();
         final navigator = Navigator.of(context, rootNavigator: true);
+        final day = immediate ? null : _erasureDay();
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(l10n.accountDeleteDone)),
+          SnackBar(
+            content: Text(
+              day == null
+                  ? l10n.accountDeleteDone
+                  : l10n.accountDeleteScheduledDone(formatAppDate(day, appNumericDatePattern())),
+            ),
+          ),
         );
         navigator.pushNamedAndRemoveUntil(AppRouter.auth, (route) => false);
       },
@@ -123,6 +163,16 @@ class _DeleteAccountPageState extends State<DeleteAccountPage> {
                 ],
               ),
             ),
+            if (_period != null) ...[
+              const SizedBox(height: AppSpacing.md),
+              Text(
+                l10n.accountDeletePeriodNote(
+                  _period!.graceDays,
+                  formatAppDate(_erasureDay()!, appNumericDatePattern()),
+                ),
+                style: AppTextStyles.body.copyWith(color: AppColors.text),
+              ),
+            ],
             const SizedBox(height: AppSpacing.lg),
             AuthInputField(
               controller: _password,
@@ -155,6 +205,12 @@ class _DeleteAccountPageState extends State<DeleteAccountPage> {
               onPressed: _understood && !_deleting ? () => unawaited(_delete()) : null,
               child: _deleting ? const PetLoader.small() : Text(l10n.accountDeleteSubmit),
             ),
+            if (_period != null)
+              TextButton(
+                onPressed: _understood && !_deleting ? () => unawaited(_delete(immediate: true)) : null,
+                style: TextButton.styleFrom(foregroundColor: AppColors.danger),
+                child: Text(l10n.accountDeleteNowLink),
+              ),
           ],
         ),
       ),

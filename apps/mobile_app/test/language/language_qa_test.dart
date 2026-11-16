@@ -11,6 +11,11 @@ import 'package:vet_app_mobile/design_system/app_text_scaler.dart';
 import 'package:vet_app_mobile/design_system/responsive.dart';
 import 'package:vet_app_mobile/features/auth/presentation/pages/login_page.dart';
 import 'package:vet_app_mobile/features/account/presentation/pages/profile_edit_page.dart';
+import 'package:vet_app_mobile/features/account/data/account_deletion_remote_data_source.dart';
+import 'package:vet_app_mobile/features/account/presentation/pages/delete_account_page.dart';
+import 'package:vet_app_mobile/features/account/presentation/pages/restore_account_page.dart';
+import 'package:vet_app_mobile/features/auth/presentation/pages/auth_placeholder_page.dart';
+import 'package:vet_app_mobile/features/auth/presentation/pages/recover_account_page.dart';
 import 'package:vet_app_mobile/features/age/presentation/pages/birth_date_prompt_page.dart';
 import 'package:vet_app_mobile/features/age/presentation/pages/closed_account_page.dart';
 import 'package:vet_app_mobile/features/age/presentation/pages/underage_notice_page.dart';
@@ -49,6 +54,12 @@ const _languages = {
 
 final _pages = <String, Widget Function()>{
   'login': () => const LoginPage(),
+  'auth hub': () => const AuthPlaceholderPage(),
+  'recover account': () => const RecoverAccountPage(),
+  'restore account': () => RestoreAccountPage(
+        status: DeletionStatus(pending: true, graceDays: 30, purgeAfter: DateTime(2026, 12, 16)),
+      ),
+  'delete account': () => const DeleteAccountPage(),
   'register': () => const RegisterPage(),
   'register form': () => RegisterPage(initialBirthDate: DateTime(1990, 1, 1)),
   'age prompt': () => const BirthDatePromptPage(reason: 'Per continuare ci serve la tua data.'),

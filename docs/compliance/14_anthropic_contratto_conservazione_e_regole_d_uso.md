@@ -2,6 +2,8 @@
 
 Data: 2026-11-15. Risposta alla richiesta dell'Orchestratore dopo la creazione dell'organizzazione nella Console di Anthropic, collegata ai crediti API inclusi in un abbonamento Max. Non è consulenza legale: i punti ⚖️ vanno confermati da un legale. «Verificato» = letto sulla pagina ufficiale il 15 novembre 2026 (indirizzi e date in §6); «inferenza» = ricavato dai testi, non scritto così. Le pagine di Anthropic cambiano (l'AUP è del 12 novembre): si ricontrolla prima del lancio e poi ogni sei mesi.
 
+**Stato (16 novembre 2026): Anthropic è attivo in produzione dal 15 novembre** (LLM_PROVIDER=anthropic, Haiku e Sonnet, inferenza negli Stati Uniti, consenso v5). Le voci «prima dell'attivazione» di questo documento sono superate: restano da fare le azioni del proprietario del §2 (tra cui l'archivio delle copie del contratto) e la decisione sui minorenni (registro, punti 54 e 57).
+
 ## 1. Risposte in breve
 
 **Il contratto sui dati (DPA) vale da solo: non va firmato a parte.** I Termini commerciali dicono che il DPA «is incorporated into these Terms by reference» (§C) e la guida di Anthropic spiega che accettando i Termini commerciali si accetta anche il DPA. Non c'è un passaggio di firma e, nelle pagine lette, nemmeno un modo di chiedere una copia controfirmata. Il DPA contiene le clausole contrattuali standard della Commissione europea (moduli 2 e 3: titolare–responsabile e responsabile–responsabile), l'addendum del Regno Unito e quello svizzero.
@@ -37,7 +39,7 @@ Data: 2026-11-15. Risposta alla richiesta dell'Orchestratore dopo la creazione d
 
 ## 3. Cosa ho cambiato nei testi
 
-- [it/02](it/02_informativa_privacy_it.md): riga di Anthropic (destinatario Anthropic Ireland, Limited; garanzie senza DPF; elenco dei sub-responsabili), §5 (trasferimenti) e §7 (conservazione: 30 giorni, eccezioni, nessun addestramento). Restano i marcatori «in attesa dell'attivazione» finché Anthropic non è acceso.
+- [it/02](it/02_informativa_privacy_it.md): riga di Anthropic (destinatario Anthropic Ireland, Limited; garanzie senza DPF; elenco dei sub-responsabili), §5 (trasferimenti) e §7 (conservazione: 30 giorni, eccezioni, nessun addestramento). I marcatori «in attesa dell'attivazione» sono stati tolti il 16 novembre 2026, dopo l'attivazione del 15 novembre.
 - [03](03_consenso_cartella_clinica.md): una frase del testo v5 («Fanno capo a società statunitensi» al posto di «Sono società statunitensi», perché la controparte di Anthropic è irlandese e la capogruppo statunitense) e le note sul contratto e sul DPF. **Se la sessione Chat ha già scritto la v5, la frase va allineata nelle cinque lingue.**
 - [10](10_pareri_dal_2026_11_06.md) §2.2, [it/08](it/08_domande_per_proprietario.md) domande 5 e 19, [08](08_punti_aperti_prima_del_lancio.md) punti 54, 57 e 58.
 

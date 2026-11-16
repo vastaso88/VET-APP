@@ -13,8 +13,9 @@ def get_consent_texts(lang: str | None = None) -> dict[str, object]:
     """Public catalog of consent texts. Carries no owner data, so it works
     before an account exists (signup screen).
 
-    `?lang=xx` selects the IT/EN/ES draft translation. Unknown languages fall
-    back to Italian. `language` says which was served; this is not legal approval.
+    `?lang=xx` selects the IT/EN/ES/DE/FR draft translation. Unknown languages fall
+    back to English; no `lang` means Italian. `language` says which was served;
+    this is not legal approval.
     """
     return {
         "language": served_consent_language(lang),

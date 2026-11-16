@@ -280,7 +280,7 @@ class SupabaseAuthRemoteDataSource implements AuthRemoteDataSource {
   }
 
   @override
-  Future<Result<void>> deleteAccount({String? email}) async {
+  Future<Result<void>> deleteAccount({String? email, bool immediate = false}) async {
     if (!isConfigured) {
       return Result.failure(_missingConfigError());
     }
@@ -293,7 +293,7 @@ class SupabaseAuthRemoteDataSource implements AuthRemoteDataSource {
         );
       }
       final response = await http.delete(
-        Uri.parse('${config.apiBaseUrl}/account'),
+        Uri.parse('${config.apiBaseUrl}/account${immediate ? '?immediate=true' : ''}'),
         headers: {'Authorization': 'Bearer $token'},
       ).timeout(const Duration(seconds: 60));
       if (response.statusCode == 401) {

@@ -1,3 +1,4 @@
+import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:async';
 import 'dart:typed_data';
 
@@ -66,6 +67,9 @@ Future<void> _pump(
 }
 
 void main() {
+  // The first-photo/voice notice is not what these tests are about.
+  setUp(() => SharedPreferences.setMockInitialValues({'vet_app.short_notice.chat_media': true}));
+
   testWidgets('while recording it says it is listening and counts the time', (tester) async {
     await _pump(tester);
 

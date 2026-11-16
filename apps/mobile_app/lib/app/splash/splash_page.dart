@@ -5,10 +5,10 @@ import 'package:flutter/material.dart';
 import '../../design_system/tokens/app_colors.dart';
 import '../../l10n/l10n.dart';
 import '../../design_system/tokens/app_spacing.dart';
-import '../../design_system/tokens/app_text_styles.dart';
 import '../../features/auth/data/auth_repository_factory.dart';
 import '../../features/billing/data/subscription_gate.dart';
 import '../../shared/auth/current_user.dart';
+import '../../shared/widgets/quokka_logo.dart';
 import '../launch/warm_start_store.dart';
 import '../router/app_router.dart';
 import 'app_preloader.dart';
@@ -130,7 +130,10 @@ class _SplashPageState extends State<SplashPage> {
   Future<int?> _defaultWarmTab() async {
     final ownerId = CurrentUser.get()?.id;
     if (ownerId == null) return null;
-    return const WarmStartStore().warmTab(ownerId);
+    // A launch is a new process (the old one was killed): always Home. The
+    // saved tab is not used any more; only "access confirmed recently" counts.
+    final saved = await const WarmStartStore().warmTab(ownerId);
+    return saved == null ? null : 0;
   }
 
   Future<void> _rememberAccess(String destination) async {
@@ -171,51 +174,27 @@ class _SplashPageState extends State<SplashPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: AppColors.brandDeep,
       body: SafeArea(
-        child: Center(
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xl),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const _SplashLogo(),
-                const SizedBox(height: AppSpacing.xl),
-                Text(context.l10n.appTitle, style: AppTextStyles.heading),
-                const SizedBox(height: AppSpacing.xl),
-                const LoadingAnimation(),
-              ],
-            ),
+        // The logo (head and name) sits in the middle; the animals and the
+        // rotating phrases wait at the bottom.
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xl),
+          child: Column(
+            children: [
+              Expanded(
+                child: Center(
+                  child: Semantics(
+                    label: context.l10n.appTitle,
+                    child: const QuokkaLogo.headOnDark(size: 112),
+                  ),
+                ),
+              ),
+              const LoadingAnimation(messageColor: AppColors.brandPaper),
+              const SizedBox(height: AppSpacing.xl),
+            ],
           ),
         ),
-      ),
-    );
-  }
-}
-
-class _SplashLogo extends StatelessWidget {
-  const _SplashLogo();
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: 84,
-      height: 84,
-      decoration: BoxDecoration(
-        color: AppColors.primary,
-        borderRadius: BorderRadius.circular(28),
-        boxShadow: const [
-          BoxShadow(
-            color: AppColors.shadowStrong,
-            blurRadius: 28,
-            offset: Offset(0, 16),
-          ),
-        ],
-      ),
-      child: const Icon(
-        Icons.pets_rounded,
-        color: AppColors.onPrimary,
-        size: 40,
       ),
     );
   }

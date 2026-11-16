@@ -6,6 +6,9 @@ from functools import lru_cache
 
 from packages.core.application.ports.account_age_repository import AccountAgeRepository
 from packages.core.application.ports.account_consents_repository import AccountConsentsRepository
+from packages.core.application.ports.account_deletion_repository import (
+    AccountDeletionRepository,
+)
 from packages.core.application.ports.account_eraser import AccountEraser
 from packages.core.application.ports.account_exporter import AccountExporter
 from packages.core.application.ports.answer_cache_repository import AnswerCacheRepository
@@ -54,6 +57,7 @@ from packages.core.application.ports.weight_measurement_repository import (
     WeightMeasurementRepository,
 )
 from packages.core.application.services.account_data_counts import AccountDataCounter
+from packages.core.application.services.account_deletion import AccountDeletionService
 from packages.core.application.services.age_gate import AgeGateService
 from packages.core.application.services.age_review_admin import AgeReviewAdminService
 from packages.core.application.services.chat_orchestrator import ChatOrchestrator
@@ -207,6 +211,9 @@ from packages.infrastructure.news.feed_reader import HttpPetNewsFeedReader
 from packages.infrastructure.persistence.in_memory_account_age_repository import (
     InMemoryAccountAgeRepository,
 )
+from packages.infrastructure.persistence.in_memory_account_deletion_repository import (
+    InMemoryAccountDeletionRepository,
+)
 from packages.infrastructure.persistence.in_memory_account_eraser import InMemoryAccountEraser
 from packages.infrastructure.persistence.in_memory_account_exporter import (
     InMemoryAccountExporter,
@@ -341,6 +348,7 @@ class ApplicationContainer:
         self.subscription_repository = self._build_subscription_repository()
         self.user_device_repository = self._build_user_device_repository()
         self.account_age_repository = self._build_account_age_repository()
+        self.account_deletion_repository = self._build_account_deletion_repository()
         self.owner_contact_lookup = self._build_owner_contact_lookup()
         self.developer_emails = frozenset(
             email.strip().lower() for email in settings.developer_emails
@@ -445,7 +453,7 @@ class ApplicationContainer:
         return GetAccountConsentsService(self.account_consents_repository)
 
     def set_account_consent_service(self) -> SetAccountConsentService:
-        return SetAccountConsentService(self.account_consents_repository)
+        return SetAccountConsentService(self.account_consents_repository, self.age_gate_service())
 
     def get_or_create_subscription_service(self) -> GetOrCreateSubscriptionService:
         return GetOrCreateSubscriptionService(
@@ -521,6 +529,32 @@ class ApplicationContainer:
                 return None
 
         return lookup
+
+    def account_deletion_service(self) -> AccountDeletionService:
+        return AccountDeletionService(
+            self.account_deletion_repository,
+            self._build_account_eraser(),
+            self.settings.account_deletion_grace_days,
+            self.account_consents_repository,
+            self.pet_profile_repository,
+        )
+
+    def _build_account_deletion_repository(self) -> AccountDeletionRepository:
+        if self.settings.persistence_backend == "supabase":
+            try:
+                from packages.infrastructure.persistence.supabase.client import (
+                    build_supabase_client,
+                )
+                from packages.infrastructure.persistence.supabase.supabase_account_deletion_repository import (  # noqa: E501
+                    SupabaseAccountDeletionRepository,
+                )
+
+                return SupabaseAccountDeletionRepository(build_supabase_client(self.settings))
+            except ModuleNotFoundError:
+                if self.settings.environment != "production":
+                    return InMemoryAccountDeletionRepository()
+                raise
+        return InMemoryAccountDeletionRepository()
 
     def account_eraser(self) -> AccountEraser:
         return self._build_account_eraser()
@@ -750,7 +784,10 @@ class ApplicationContainer:
         return UpdateListingService(self.marketplace_listing_repository)
 
     def list_nearby_listings_service(self) -> ListNearbyListingsService:
-        return ListNearbyListingsService(self.marketplace_listing_repository)
+        return ListNearbyListingsService(
+            self.marketplace_listing_repository,
+            hidden_owner_ids=self.account_deletion_repository.pending_owner_ids,
+        )
 
     def marketplace_messaging_service(self) -> MarketplaceMessagingService:
         return MarketplaceMessagingService(
@@ -887,7 +924,9 @@ class ApplicationContainer:
         # guard refuses it on every route (the age table is resolved lazily,
         # it is built after the provider).
         return AgeGuardedAuthProvider(
-            self._build_inner_auth_provider(), lambda: self.account_age_repository
+            self._build_inner_auth_provider(),
+            lambda: self.account_age_repository,
+            lambda: self.account_deletion_repository,
         )
 
     def _build_inner_auth_provider(self) -> AuthProvider:

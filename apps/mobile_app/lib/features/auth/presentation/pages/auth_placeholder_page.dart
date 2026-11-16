@@ -8,6 +8,7 @@ import '../../../../l10n/l10n.dart';
 import '../../../account/data/device_registry.dart';
 import '../widgets/auth_widgets.dart';
 import 'login_page.dart';
+import 'recover_account_page.dart';
 import 'register_page.dart';
 
 class AuthPlaceholderPage extends StatefulWidget {
@@ -63,6 +64,21 @@ class _AuthPlaceholderPageState extends State<AuthPlaceholderPage> {
                 MaterialPageRoute<void>(builder: (_) => const RegisterPage()),
               ),
               child: Text(context.l10n.authHubCreateAccount),
+            ),
+          ),
+          const SizedBox(height: AppSpacing.xs),
+          Align(
+            alignment: Alignment.centerLeft,
+            child: TextButton(
+              onPressed: () => Navigator.of(context).push(
+                MaterialPageRoute<void>(builder: (_) => const RecoverAccountPage()),
+              ),
+              style: TextButton.styleFrom(
+                minimumSize: Size.zero,
+                padding: const EdgeInsets.symmetric(vertical: AppSpacing.xs),
+                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+              ),
+              child: Text(context.l10n.authHubRecoverAccount, style: AppTextStyles.caption),
             ),
           ),
           const SizedBox(height: AppSpacing.lg),

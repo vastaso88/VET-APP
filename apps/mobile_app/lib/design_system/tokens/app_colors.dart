@@ -17,6 +17,10 @@ import 'package:flutter/material.dart';
 /// and video the `onMedia`/`scrim` family is used instead of black and white.
 /// Contrast is checked by scripts/design/contrast_check.py (WCAG AA).
 class AppColors {
+  // --- Brand ground of the opening screen (same as the native splash) -----
+  static const brandDeep = Color(0xFF0E3B47);
+  static const brandPaper = Color(0xFFF7F5F0);
+
   // --- 60% neutral ---------------------------------------------------------
   static const background = Color(0xFFF6F1EA);
   static const backgroundDeep = Color(0xFFEDE6DC);

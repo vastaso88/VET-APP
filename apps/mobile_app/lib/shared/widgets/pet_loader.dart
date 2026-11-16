@@ -12,8 +12,9 @@ import '../../l10n/l10n.dart';
 ///
 /// The animal changes once per full turn, at the edge-on moment (a quarter
 /// turn away from facing the viewer), so the swap happens while the glyph is
-/// too thin to read and never mid-face. With reduced motion the static first
-/// animal is shown instead.
+/// too thin to read and never mid-face. The animals come in a random order, a
+/// new one for each loader. With reduced motion the static first animal is
+/// shown instead.
 class PetLoader extends StatefulWidget {
   const PetLoader({
     this.size = 48,
@@ -39,6 +40,13 @@ class PetLoader extends StatefulWidget {
 
   static const animals = <String>['🐶', '🐱', '🐰', '🐦', '🐠', '🐹', '🐢'];
 
+  /// The order the animals turn up in, chosen once for each loader: shuffled,
+  /// so it does not always start with the dog and the cat. Tests replace it
+  /// with one that keeps the order.
+  static List<String> Function(List<String> animals) orderOf = _shuffled;
+
+  static List<String> _shuffled(List<String> animals) => List<String>.of(animals)..shuffle(math.Random());
+
   /// Length of one full turn.
   static const turnDuration = Duration(milliseconds: 1800);
 
@@ -51,6 +59,8 @@ class _PetLoaderState extends State<PetLoader> with SingleTickerProviderStateMix
     vsync: this,
     duration: PetLoader.turnDuration,
   );
+
+  late final List<String> _order = PetLoader.orderOf(PetLoader.animals);
 
   bool? _reduceMotion;
   int _turns = 0;
@@ -99,7 +109,7 @@ class _PetLoaderState extends State<PetLoader> with SingleTickerProviderStateMix
       builder: (context, _) {
         final t = _controller.value;
         // Advances when the phase crosses 270° (edge-on), once per turn.
-        final index = (_turns + t + 0.25).floor() % PetLoader.animals.length;
+        final index = (_turns + t + 0.25).floor() % _order.length;
         final angle = t * 2 * math.pi;
         return Transform(
           alignment: Alignment.center,
@@ -115,7 +125,7 @@ class _PetLoaderState extends State<PetLoader> with SingleTickerProviderStateMix
             ),
             alignment: Alignment.center,
             child: Text(
-              PetLoader.animals[index],
+              _order[index],
               style: TextStyle(fontSize: size * 0.62, height: 1),
             ),
           ),

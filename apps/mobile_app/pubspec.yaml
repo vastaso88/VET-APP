@@ -45,6 +45,7 @@ dependencies:
   pdf: ^3.12.0
   archive: ^4.0.9
   sentry_flutter: 9.30.1
+  printing: ^5.14.3
 dev_dependencies:
   flutter_test:
     sdk: flutter
@@ -56,3 +57,5 @@ flutter:
   assets:
     # Growth reference bands for puppies and kittens (scripts/growth/).
     - assets/growth/
+    # The Quokka logo (approved 2026-11-04): full logo and head only.
+    - assets/brand/

@@ -1,3 +1,5 @@
+from collections.abc import Callable
+
 from pydantic import BaseModel
 
 from packages.core.application.ports.marketplace_listing_repository import (
@@ -35,8 +37,15 @@ class ListNearbyListingsService:
     ``MARKETPLACE_MAX_RADIUS_KM``, and it is the only filter on where an ad is
     (across a border too); only ``active`` ads are ever returned."""
 
-    def __init__(self, repository: MarketplaceListingRepository) -> None:
+    def __init__(
+        self,
+        repository: MarketplaceListingRepository,
+        hidden_owner_ids: Callable[[], set[str]] | None = None,
+    ) -> None:
         self._repository = repository
+        # Sellers who asked to delete their account: their ads are hidden until
+        # the deletion is cancelled or the account is gone.
+        self._hidden_owner_ids = hidden_owner_ids
 
     def execute(self, data: ListNearbyListingsInput) -> ListNearbyListingsOutput:
         radius = data.max_distance_km
@@ -49,6 +58,9 @@ class ListNearbyListingsService:
         # Distance is the filter: a buyer near a border also sees the ads just
         # across it (each one carries its seller's country, flag and currency).
         candidates = self._repository.list_active()
+        if self._hidden_owner_ids is not None:
+            hidden = self._hidden_owner_ids()
+            candidates = [item for item in candidates if item.owner_id not in hidden]
         if data.category is not None:
             candidates = [item for item in candidates if item.category == data.category]
 

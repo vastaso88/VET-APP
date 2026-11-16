@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:flutter/foundation.dart' show visibleForTesting;
 import 'package:http/http.dart' as http;
 
 import '../../../shared/config/app_runtime_config_loader.dart';
@@ -82,7 +83,14 @@ class BackendPetNewsRepository implements PetNewsRepository {
   static _CacheEntry? _cache;
   static Future<Map<String, List<PetNewsItem>>?>? _inFlight;
   static const _cacheTtl = Duration(minutes: 20);
-  static const _timeout = Duration(seconds: 15);
+  // The first request after a quiet spell makes the server read the feeds
+  // (a few seconds, more on a slow line): a patient wait and one more try
+  // beat a section that stays "unavailable" until the app restarts.
+  static const _timeout = Duration(seconds: 25);
+  static const _attempts = 2;
+  /// Wait before the second try. Tests set it to zero (no timer is left behind).
+  @visibleForTesting
+  static Duration retryPause = const Duration(seconds: 2);
   static const _itemsPerCategory = 12;
 
   /// Forgets the shared answer (tests).
@@ -115,6 +123,15 @@ class BackendPetNewsRepository implements PetNewsRepository {
   }
 
   Future<Map<String, List<PetNewsItem>>?> _fetchAll() async {
+    for (var attempt = 0; attempt < _attempts; attempt++) {
+      if (attempt > 0 && retryPause > Duration.zero) await Future<void>.delayed(retryPause);
+      final result = await _fetchOnce();
+      if (result != null) return result;
+    }
+    return null;
+  }
+
+  Future<Map<String, List<PetNewsItem>>?> _fetchOnce() async {
     final baseUrl = _configLoader.load().apiBaseUrl;
     try {
       final response = await _client

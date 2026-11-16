@@ -13,6 +13,7 @@ import '../../../../l10n/l10n.dart';
 import '../../../../shared/auth/auth.dart';
 import '../../../account_consents/data/account_consents_remote_data_source.dart';
 import '../../../account_consents/domain/account_consent_models.dart';
+import '../../../account_consents/presentation/pages/consent_choices_page.dart';
 import '../../../billing/data/subscription_remote_data_source.dart';
 import '../../../first_run/presentation/pages/add_first_pet_prompt_page.dart';
 import '../../../first_run/presentation/pages/notification_permission_page.dart';
@@ -186,7 +187,9 @@ class _RegisterPageState extends State<RegisterPage> {
           _isLoading = false;
           _status = AuthBannerStatus.error;
           _title = (l10n) => l10n.authRegisterFailureTitle;
-          _message = (_) => presentAuthError(error).message;
+          _message = (l10n) => presented.field == AuthErrorField.email
+              ? '${presentAuthError(error).message} ${l10n.authRegisterEmailInUseRecoverHint}'
+              : presentAuthError(error).message;
           if (presented.field == AuthErrorField.email) {
             _emailServerError = () => presentAuthError(error).message;
           }
@@ -253,6 +256,15 @@ class _RegisterPageState extends State<RegisterPage> {
   /// page pops itself when done, so this just runs them in sequence before
   /// landing on the real home.
   Future<void> _runFirstRunFlow() async {
+    // "Cosa vuoi attivare?": the optional consents, once, before the plan
+    // and the tutorial (never on the same screen as the terms or the plan).
+    // An unknown birth date counts as a minor: nothing commercial is offered.
+    final birthDate = _birthDate;
+    final isAdult = birthDate != null && ageOn(birthDate, DateTime.now()) >= 18;
+    await Navigator.of(context).push(
+      MaterialPageRoute<void>(builder: (_) => ConsentChoicesPage(isAdult: isAdult)),
+    );
+    if (!mounted) return;
     await Navigator.of(context).push(
       MaterialPageRoute<void>(builder: (_) => const PlanIntroPage()),
     );

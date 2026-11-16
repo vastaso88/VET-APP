@@ -5,6 +5,8 @@
 
 Data: 2026-10-14. Base: `packages/core/domain/consent/account_consent_text.py` (testi IT: ToS v1, Privacy v2, Marketing v1, Analytics v1, Contribution rules v2) e `packages/core/domain/medical_record/consent_text.py` (v2). I testi qui sotto sono **equivalenti nel contenuto** a quelli italiani e restano coerenti con ciò che l'app fa oggi. Stesso schema di `docs/compliance/uk|us|au/04_*`. Testo tedesco in Sie-Form.
 
+**Stato (16 novembre 2026).** I testi 1–5 di questo documento (più `diagnostics`) sono nel codice (`account_consent_text.py`, lingua `de`), fedeli all'italiano e con le **stesse versioni**: la regola «versione propria per lingua e regione» qui sotto è superata dalla decisione dell'Orchestratore del 16 novembre. Le aggiunte di questa bozza (trasferimenti fuori dall'UE, autorità di reclamo) e le varianti regionali aspettano la v4 del riassunto della privacy: vedi [15](../15_consensi_per_attivita.md), punto 7, e il registro, punto 64. Etichette e termini del glossario seguono l'app («Krankenakte», «Gebrauchtmarkt»).
+
 ## Regole di registrazione (da implementare lato backend: non l'ho toccato)
 
 Decisione dell'Orchestratore: **versione propria v1 per lingua/regione** e **lingua mostrata salvata** con il consenso (problema A6 in `docs/i18n/REVISIONE_MULTILANG.md`).

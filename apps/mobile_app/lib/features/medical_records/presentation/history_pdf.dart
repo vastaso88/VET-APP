@@ -117,6 +117,15 @@ String _clip(String text, int max) =>
 const _maxTitleLength = 300;
 const _maxNotesLength = 1200;
 
+/// A document of the record put in the PDF as a full page: [imageBytes] is a
+/// JPEG or PNG (a photo, or one page of a PDF drawn at reading size).
+class HistoryPdfAttachmentPage {
+  const HistoryPdfAttachmentPage({required this.title, required this.imageBytes});
+
+  final String title;
+  final Uint8List imageBytes;
+}
+
 /// The PDF with the whole history of [pet]: a header (name, species and
 /// breed, birth date, export date) and every event in ascending date order.
 ///
@@ -128,6 +137,7 @@ Future<Uint8List> buildHistoryPdf({
   required DateTime exportedAt,
   required AppLocalizations l10n,
   Map<String, Uint8List> symbols = const {},
+  List<HistoryPdfAttachmentPage> attachmentPages = const [],
   bool compress = true,
 }) async {
   final rows = buildHistoryPdfRows(events, l10n);
@@ -296,6 +306,29 @@ Future<Uint8List> buildHistoryPdf({
       ],
     ),
   );
+
+  for (final attachment in attachmentPages) {
+    final image = pw.MemoryImage(attachment.imageBytes);
+    doc.addPage(
+      pw.Page(
+        pageFormat: PdfPageFormat.a4,
+        margin: const pw.EdgeInsets.all(28),
+        build: (_) => pw.Column(
+          crossAxisAlignment: pw.CrossAxisAlignment.start,
+          children: [
+            pw.Text(
+              pdfSafeText(_clip(attachment.title, 90)),
+              style: pw.TextStyle(font: bold, fontSize: 10, color: muted),
+            ),
+            pw.SizedBox(height: 6),
+            pw.Expanded(
+              child: pw.Center(child: pw.Image(image, fit: pw.BoxFit.contain)),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
 
   return doc.save();
 }

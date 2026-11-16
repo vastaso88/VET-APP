@@ -8,6 +8,9 @@ from contextvars import ContextVar
 from datetime import datetime
 
 from packages.core.application.ports.account_age_repository import AccountAgeRepository
+from packages.core.application.ports.account_deletion_repository import (
+    AccountDeletionRepository,
+)
 from packages.core.application.ports.auth_provider import (
     AuthenticatedUser,
     AuthProvider,
@@ -36,9 +39,10 @@ def allow_closed_account() -> Iterator[None]:
 
 class AgeGuardedAuthProvider(AuthProvider):
     """Wraps the real provider so that an account which declared an age under
-    the minimum can use *nothing*: every route that identifies the caller
-    answers 403 `under_minimum_age`, except those inside
-    [allow_closed_account]. One place instead of a check per route.
+    the minimum (403 `under_minimum_age`) or which asked to be deleted and is
+    waiting for the end of its period (403 `account_deactivated`) can use
+    *nothing*: every route that identifies the caller refuses, except those
+    inside [allow_closed_account]. One place instead of a check per route.
 
     The age is looked up at most once a minute per account (the answer is
     cached per process). If the lookup fails the caller is let through: an
@@ -49,42 +53,51 @@ class AgeGuardedAuthProvider(AuthProvider):
         self,
         inner: AuthProvider,
         repository: Callable[[], AccountAgeRepository],
+        deletions: Callable[[], AccountDeletionRepository] | None = None,
         *,
         ttl_seconds: float = 60.0,
         clock: Callable[[], float] = time.monotonic,
     ) -> None:
         self._inner = inner
         self._repository = repository
+        self._deletions = deletions
         self._ttl = ttl_seconds
         self._clock = clock
-        self._closed: dict[str, tuple[bool, float]] = {}
+        self._blocked: dict[str, tuple[str | None, float]] = {}
 
     def get_current_user(self) -> AuthenticatedUser:
         user = self._inner.get_current_user()
-        if not _allow_closed_account.get() and self._is_closed(user.id):
-            raise AgeRestrictedError("under_minimum_age")
+        if not _allow_closed_account.get():
+            code = self._block_for(user.id)
+            if code is not None:
+                raise AgeRestrictedError(code)
         return user
 
     def forget(self, owner_id: str) -> None:
-        """Drop the cached answer (the owner has just declared an age)."""
-        self._closed.pop(owner_id, None)
+        """Drop the cached answer (the owner declared an age, asked to delete
+        the account, or cancelled the deletion)."""
+        self._blocked.pop(owner_id, None)
 
-    def _is_closed(self, owner_id: str) -> bool:
+    def _block_for(self, owner_id: str) -> str | None:
         now = self._clock()
-        cached = self._closed.get(owner_id)
+        cached = self._blocked.get(owner_id)
         if cached is not None and cached[1] > now:
             return cached[0]
+        code: str | None = None
         try:
             record = self._repository().get(owner_id)
+            if (
+                record is not None
+                and band_for(record.birth_date, utc_now().date()) == AgeBand.UNDER_MINIMUM
+            ):
+                code = "under_minimum_age"
+            elif self._deletions is not None and self._deletions().get(owner_id) is not None:
+                code = "account_deactivated"
         except Exception:  # noqa: BLE001 - fail open, see the class docstring
-            logger.warning("could not read the age gate", exc_info=False)
-            return False
-        closed = (
-            record is not None
-            and band_for(record.birth_date, utc_now().date()) == AgeBand.UNDER_MINIMUM
-        )
-        self._closed[owner_id] = (closed, now + self._ttl)
-        return closed
+            logger.warning("could not read the account gate", exc_info=False)
+            return None
+        self._blocked[owner_id] = (code, now + self._ttl)
+        return code
 
     def update_preferred_locale(self, locale: SupportedLocale) -> AuthenticatedUser:
         return self._inner.update_preferred_locale(locale)

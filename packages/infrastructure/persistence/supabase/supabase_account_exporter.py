@@ -101,6 +101,10 @@ class SupabaseAccountExporter:
         )
 
         export.data.update(self._marketplace_messages(owner_id))
+        # A pending deletion request is data about the owner too (when and until).
+        export.data["account_deletion_requests"] = self._select_where(
+            "account_deletion_requests", "owner_id", owner_id
+        )
 
         if self._radar_pseudonym_key:
             pseudonym = contributor_pseudonym(owner_id, key=self._radar_pseudonym_key)

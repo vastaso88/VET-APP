@@ -18,6 +18,8 @@ import '../../../../shared/auth/current_user.dart';
 import '../../../../shared/widgets/coming_soon_page.dart';
 import '../../../account_consents/data/account_consents_remote_data_source.dart';
 import '../../../account_consents/domain/account_consent_models.dart';
+import '../../../account_consents/domain/consent_availability.dart';
+import '../../../age/data/age_store.dart';
 import '../../../auth/data/auth_repository_factory.dart';
 import 'package:permission_handler/permission_handler.dart';
 
@@ -468,6 +470,8 @@ class _SettingsPageState extends State<SettingsPage> {
         title: context.l10n.settingsConsentPrivacy,
         icon: Icons.shield_outlined,
       ),
+      // Never shown to a declared minor (privacy notice §9).
+      if (marketingConsentOffered(AgeStore.instance.status.band))
       _ToggleRow(
         icon: Icons.mail_outline_rounded,
         iconColor: AppColors.secondaryStrong,
@@ -475,6 +479,9 @@ class _SettingsPageState extends State<SettingsPage> {
         value: consents.decisions[AccountConsentKeys.marketingEmail]?.granted ?? false,
         onChanged: (value) => _setConsent(AccountConsentKeys.marketingEmail, value),
       ),
+      // Hidden until the app has an analytics tool: a switch for something
+      // that does not exist would make this page false.
+      if (analyticsToolExists)
       _ToggleRow(
         icon: Icons.insights_outlined,
         iconColor: AppColors.info,
@@ -510,12 +517,14 @@ class _SettingsPageState extends State<SettingsPage> {
     final decision = consents.decisions[key];
     final entry = consents.catalog[key];
     final text = entry?.text ?? '';
+    // A text that changed since the owner accepted it must be confirmed again.
+    final accepted = decision != null && (entry == null || decision.version == entry.version);
 
     return _Row(
       icon: icon,
       iconColor: AppColors.mutedText,
       title: title,
-      subtitle: decision != null
+      subtitle: accepted
           ? context.l10n.settingsConsentAccepted(
               decision.version,
               _numericDate(decision.decidedAt),
@@ -524,7 +533,7 @@ class _SettingsPageState extends State<SettingsPage> {
       onTap: () => _showInfoDialog(
         title,
         text,
-        onConfirm: decision == null ? () => _setConsent(key, true) : null,
+        onConfirm: accepted ? null : () => _setConsent(key, true),
       ),
     );
   }

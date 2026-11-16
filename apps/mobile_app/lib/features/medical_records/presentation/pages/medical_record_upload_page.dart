@@ -1,3 +1,5 @@
+import 'dart:async';
+import '../../../../shared/widgets/short_notice.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 
@@ -96,6 +98,12 @@ class _MedicalRecordUploadPageState extends State<MedicalRecordUploadPage> {
   void initState() {
     super.initState();
     final existing = widget.existing;
+    if (existing == null) {
+      // A new document: it stays in the account, and when the assistant reads it.
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) unawaited(showShortNoticeOnce(context, ShortNotice.recordDocument));
+      });
+    }
     if (existing != null) {
       _titleController.text = existing.title;
       _notesController.text = existing.notes;

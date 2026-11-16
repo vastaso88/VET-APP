@@ -1,3 +1,4 @@
+import 'package:vet_app_mobile/shared/widgets/short_notice.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -72,7 +73,8 @@ void main() {
   setUpAll(() => SharedPreferences.setMockInitialValues({}));
 
   setUp(() {
-    SharedPreferences.setMockInitialValues({});
+    // The first-opening notice is not what these tests are about.
+    SharedPreferences.setMockInitialValues({'vet_app.short_notice.marketplace': true});
     ListingRadiusStore.instance.resetForTest();
   });
 
@@ -270,7 +272,10 @@ void main() {
   });
 
   group('in the UK', () {
-    setUp(() async => useLanguageVariant('en-GB'));
+    setUp(() async {
+      await useLanguageVariant('en-GB');
+      await ShortNoticeStore.instance.markSeen(ShortNotice.marketplace);
+    });
     tearDown(resetTerritoryForTest);
 
     testWidgets('radius is shown in miles but kept in km, 31 mi (50 km) preselected', (tester) async {

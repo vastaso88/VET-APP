@@ -32,7 +32,7 @@ void main() {
       await tester.pump(const Duration(milliseconds: 50));
     }
 
-    expect(find.text('Prossime attività'), findsOneWidget);
+    expect(find.text('Il tuo calendario'), findsOneWidget);
     expect(find.text('Curiosità per i tuoi animali'), findsOneWidget);
     expect(find.textContaining('Verifica sessione'), findsNothing);
     expect(find.textContaining('Bentornato.'), findsNothing);

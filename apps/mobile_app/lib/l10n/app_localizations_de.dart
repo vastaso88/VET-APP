@@ -898,6 +898,10 @@ class AppLocalizationsDe extends AppLocalizations {
       'Ich antworte mit einer künstlichen Intelligenz: Ich ersetze die Tierärztin bzw. den Tierarzt nicht. Rufen Sie im Notfall sofort eine Klinik an.';
 
   @override
+  String get chatOwnHealthNotice =>
+      'Schreiben Sie hier keine Angaben zu Ihrer eigenen Gesundheit: Hier geht es nur um Ihr Tier.';
+
+  @override
   String get chatSummaryEmpty => 'Keine Zusammenfassung verfügbar.';
 
   @override
@@ -1844,7 +1848,7 @@ class AppLocalizationsDe extends AppLocalizations {
   String get homeGreeting => 'Guten Morgen';
 
   @override
-  String get homeAgendaTitle => 'Anstehende Aktivitäten';
+  String get homeAgendaTitle => 'Ihr Kalender';
 
   @override
   String get homeAgendaLoadingSubtitle =>
@@ -6500,6 +6504,72 @@ class AppLocalizationsDe extends AppLocalizations {
       'Ein PDF mit allen Ereignissen in zeitlicher Reihenfolge';
 
   @override
+  String get petsConsentProposalActivate => 'Aktivieren';
+
+  @override
+  String get petsConsentProposalLater => 'Später';
+
+  @override
+  String get noticeMarketplace =>
+      'Der Gebrauchtmarkt ist nur für Volljährige und bringt zwei Privatpersonen in Kontakt: Quokka ist nicht Partei des Kaufs, prüft weder Anzeigen noch Personen und haftet nicht dafür. Gespräche sind privat: Unser Team liest sie nur, wenn eine der beiden Personen sie meldet.';
+
+  @override
+  String get noticeRules => 'Regeln';
+
+  @override
+  String get noticeUnderstood => 'Verstanden';
+
+  @override
+  String get noticePolicy => 'Datenschutzerklärung';
+
+  @override
+  String get noticeChatAi =>
+      'Eine künstliche Intelligenz antwortet und kann sich irren. Ihre Fragen, bereinigt um die persönlichen Daten, die wir erkennen, gehen an unsere KI-Anbieter (Anthropic und, wenn Anthropic nicht antworten kann, Groq), mit Servern in den USA.';
+
+  @override
+  String get noticeChatMedia =>
+      'Fotos und Sprache gehen an einen externen Dienst (heute Groq, in den USA), der sie liest oder transkribiert. Der Filter, der persönliche Daten entfernt, arbeitet mit Text, nicht mit Bildern oder Sprache: Verdecken Sie Name, Adresse und Mikrochipnummer.';
+
+  @override
+  String get noticeRecordDocument =>
+      'Das Dokument bleibt in Ihrem Konto. Der Assistent liest es nur, wenn Sie das Lesen der Krankenakte dieses Tieres eingeschaltet haben.';
+
+  @override
+  String get noticeFirstWalk =>
+      'Die Strecke bleibt in Ihrem Konto. Den GPS-Verlauf behalten wir nur von den letzten 3 Spaziergängen jedes Tieres, von denen, die Sie als Favoriten markieren (höchstens 5), und vom längsten; von den anderen bleiben Distanz, Dauer und Schritte.';
+
+  @override
+  String get consentChoicesTitle => 'Was möchten Sie aktivieren?';
+
+  @override
+  String get consentChoicesSubtitle =>
+      'Das sind Ihre Entscheidungen: Sie können sie jederzeit unter Einstellungen → Berechtigungen und Einwilligungen ändern. Quokka funktioniert auch ohne sie.';
+
+  @override
+  String get consentChoicesSave => 'Auswahl speichern';
+
+  @override
+  String get consentChoicesNotNow => 'Jetzt nicht';
+
+  @override
+  String get medHistorySendAllDocs => 'Verlauf und alle Dokumente (ein PDF)';
+
+  @override
+  String get medHistorySendAllDocsSubtitle =>
+      'Ein PDF mit Ereignissen, Fotos und Dokumenten, geeignet für E-Mail und WhatsApp';
+
+  @override
+  String medHistoryDocsSeparate(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count Dokumente passten nicht ins PDF und werden',
+      one: '1 Dokument passte nicht ins PDF und wird',
+    );
+    return '$_temp0 separat angehängt.';
+  }
+
+  @override
   String get medHistorySendFiles => 'Einzelne Dateien';
 
   @override
@@ -7322,4 +7392,81 @@ class AppLocalizationsDe extends AppLocalizations {
   @override
   String get marketplaceInfoPrivateOnly =>
       'Wenn Sie gewerblich oder beruflich verkaufen, können Sie den Gebrauchtmarkt nicht nutzen: Quokka kann die Anzeigen entfernen und den Zugang sperren.';
+
+  @override
+  String get authHubRecoverAccount => 'Konto wiederherstellen';
+
+  @override
+  String get authRecoverTitle => 'Ihr Konto wiederherstellen';
+
+  @override
+  String get authRecoverSubtitle =>
+      'Haben Sie Ihr Konto gerade erst gelöscht? Sie können es wieder öffnen.';
+
+  @override
+  String get authRecoverSteps =>
+      'Wenn die Wartezeit noch nicht abgelaufen ist, melden Sie sich mit derselben E-Mail-Adresse des gelöschten Kontos an: Falls Sie das Passwort vergessen haben, setzen Sie es mit dem Link zurück, den wir Ihnen per E-Mail schicken. Nach der Anmeldung können Sie die Löschung abbrechen.';
+
+  @override
+  String get authRecoverLogin => 'Mit derselben E-Mail anmelden';
+
+  @override
+  String get authRecoverReset => 'Passwort zurücksetzen';
+
+  @override
+  String get authRecoverExpired =>
+      'Ist die Frist abgelaufen, wurden das Konto und seine Daten gelöscht: Sie können mit derselben E-Mail-Adresse ein neues Konto anlegen.';
+
+  @override
+  String accountDeletePeriodNote(int days, String date) {
+    String _temp0 = intl.Intl.pluralLogic(
+      days,
+      locale: localeName,
+      other: '# Tage',
+      one: '# Tag',
+    );
+    return 'Das Konto wird sofort deaktiviert. $_temp0 lang können Sie es sich anders überlegen: Melden Sie sich mit derselben E-Mail-Adresse an (setzen Sie bei Bedarf das Passwort zurück) und brechen Sie die Löschung ab. Nach dem $date löschen wir das Konto und Ihre Daten endgültig, ohne Wiederherstellungsmöglichkeit. Es bleiben nur die Daten, die wir von Gesetzes wegen aufbewahren müssen, zum Beispiel Rechnungen.';
+  }
+
+  @override
+  String accountDeleteScheduledDone(String date) {
+    return 'Konto deaktiviert. Sie können die Löschung bis zum $date abbrechen.';
+  }
+
+  @override
+  String get accountRestoreTitle => 'Ihr Konto wird gelöscht';
+
+  @override
+  String accountRestoreBody(String date) {
+    return 'Sie haben die Löschung beantragt: Am $date löschen wir das Konto samt allen Daten endgültig, ohne Wiederherstellungsmöglichkeit. Falls Sie es sich anders überlegt haben, können Sie die Löschung jetzt abbrechen.';
+  }
+
+  @override
+  String get accountRestoreCancel => 'Löschung abbrechen';
+
+  @override
+  String get accountRestoreDone => 'Konto wieder geöffnet. Willkommen zurück!';
+
+  @override
+  String get accountRestoreReauth =>
+      'Aus Sicherheitsgründen ist eine aktuelle Anmeldung nötig: Melden Sie sich ab und wieder an und brechen Sie dann die Löschung ab. Falls Sie das Passwort vergessen haben, nutzen Sie „Konto wiederherstellen“.';
+
+  @override
+  String get accountRestoreFailed =>
+      'Die Löschung konnte nicht abgebrochen werden. Bitte versuchen Sie es erneut.';
+
+  @override
+  String get accountDeleteNowLink =>
+      'Jetzt sofort löschen, ohne Wiederherstellungsmöglichkeit';
+
+  @override
+  String get accountRestoreDeleteNow => 'Jetzt löschen';
+
+  @override
+  String get accountRestoreDeleteNowBody =>
+      'Wir löschen das Konto und Ihre Daten sofort und endgültig, ohne Wiederherstellungsmöglichkeit. Es bleiben nur die Daten, die wir von Gesetzes wegen aufbewahren müssen, zum Beispiel Rechnungen. Danach können Sie sich mit derselben E-Mail-Adresse neu registrieren.';
+
+  @override
+  String get authRegisterEmailInUseRecoverHint =>
+      'Falls Sie es gerade erst gelöscht haben und die Wartezeit noch nicht abgelaufen ist, nutzen Sie „Konto wiederherstellen“: Sie können die Löschung abbrechen oder das Konto sofort löschen, um neu zu beginnen.';
 }

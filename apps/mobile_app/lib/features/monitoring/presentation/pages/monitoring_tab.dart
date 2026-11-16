@@ -530,7 +530,13 @@ class _HistoryRow extends StatelessWidget {
       if (measurement.note.isNotEmpty) measurement.note,
     ].join('\n');
 
-    return Padding(
+    // The whole row opens the correction (a wrong weighing is fixed by tapping
+    // it); the menu keeps "Modifica" and "Elimina" in plain sight.
+    return InkWell(
+      key: ValueKey('history-row-${measurement.id}'),
+      onTap: onEdit,
+      borderRadius: BorderRadius.circular(AppRadii.small),
+      child: Padding(
       padding: const EdgeInsets.only(bottom: AppSpacing.sm),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -595,6 +601,7 @@ class _HistoryRow extends StatelessWidget {
           ),
         ],
       ),
+    ),
     );
   }
 }

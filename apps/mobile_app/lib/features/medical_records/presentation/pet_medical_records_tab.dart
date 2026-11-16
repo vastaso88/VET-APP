@@ -105,11 +105,12 @@ class _PetMedicalRecordsTabState extends State<PetMedicalRecordsTab> {
           .where((record) => record.petName == widget.pet.name)
           .toList(growable: false);
 
-  Future<void> _exportHistory() => exportPetHistory(
+  Future<void> _exportHistory({bool includeDocuments = false}) => exportPetHistory(
         context,
         pet: widget.pet,
         records: _petRecords,
         conditions: _controller.conditions,
+        includeDocuments: includeDocuments,
       );
 
   Future<void> _addCondition() async {
@@ -206,6 +207,21 @@ class _PetMedicalRecordsTabState extends State<PetMedicalRecordsTab> {
                   unawaited(_exportHistory());
                 },
               ),
+              if (withFiles.isNotEmpty)
+                ListTile(
+                  key: const ValueKey('send-history-with-documents'),
+                  contentPadding: EdgeInsets.zero,
+                  leading: const Icon(
+                    Icons.folder_copy_outlined,
+                    color: AppColors.secondaryStrong,
+                  ),
+                  title: Text(sheetContext.l10n.medHistorySendAllDocs),
+                  subtitle: Text(sheetContext.l10n.medHistorySendAllDocsSubtitle),
+                  onTap: () {
+                    Navigator.of(sheetContext).pop();
+                    unawaited(_exportHistory(includeDocuments: true));
+                  },
+                ),
               if (withFiles.isNotEmpty) ...[
                 const Divider(),
                 Padding(

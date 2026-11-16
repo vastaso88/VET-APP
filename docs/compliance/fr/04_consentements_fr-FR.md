@@ -5,6 +5,8 @@
 
 Data: 2026-10-14. Base: `packages/core/domain/consent/account_consent_text.py` (testi IT: ToS v1, Privacy v2, Marketing v1, Analytics v1, Contribution rules v2) e `packages/core/domain/medical_record/consent_text.py` (v2). I testi qui sotto sono **equivalenti nel contenuto** a quelli italiani e restano coerenti con ciò che l'app fa oggi. Stesso schema di `../de/04_*` e `uk|us|au/04_*`. Testo francese in vouvoiement.
 
+**Stato (16 novembre 2026).** I testi 1–5 di questo documento (più `diagnostics`) sono nel codice (`account_consent_text.py`, lingua `fr`), fedeli all'italiano e con le **stesse versioni**: la regola «versione propria per lingua e regione» qui sotto è superata dalla decisione dell'Orchestratore del 16 novembre. Le aggiunte di questa bozza (trasferimenti fuori dall'UE, CNIL) e le varianti regionali aspettano la v4 del riassunto della privacy: vedi [15](../15_consensi_per_attivita.md), punto 7, e il registro, punto 64. Le etichette seguono l'app («Paramètres → Nous contacter», non «Réglages») e i termini del glossario («dossier médical», «marché de l'occasion»).
+
 ## Regole di registrazione (da implementare lato backend: non l'ho toccato)
 
 Valgono le **stesse regole 1–6 di `../de/04_einwilligungen_de-DE.md`** (decisione dell'Orchestratore: versione propria per lingua/regione, lingua mostrata salvata, problema A6 in `docs/i18n/REVISIONE_MULTILANG.md`). In sintesi, per la Francia:

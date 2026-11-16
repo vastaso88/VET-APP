@@ -33,7 +33,10 @@ abstract interface class AuthRemoteDataSource {
   Future<Result<void>> verifyPassword({required String email, required String password});
 
   /// Deletes the signed-in account and all its data (right to erasure).
-  Future<Result<void>> deleteAccount({String? email});
+  /// With [immediate] the account is erased at once, with no period to change
+  /// one's mind ("Elimina subito"); otherwise it is deactivated and erased when
+  /// the period ends.
+  Future<Result<void>> deleteAccount({String? email, bool immediate = false});
 
   Future<Result<void>> signOut();
 }

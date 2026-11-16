@@ -5,6 +5,7 @@ import '../../../../design_system/tokens/app_radii.dart';
 import '../../../../design_system/tokens/app_spacing.dart';
 import '../../../../design_system/tokens/app_text_styles.dart';
 import '../../../../l10n/l10n.dart';
+import '../../../../shared/widgets/quokka_logo.dart';
 import '../../../language/presentation/widgets/language_selector.dart';
 
 const _kAuthContentMaxWidth = 520.0;
@@ -81,6 +82,8 @@ class AuthScreenScaffold extends StatelessWidget {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
+                            const QuokkaLogo.head(size: 56),
+                            const SizedBox(height: AppSpacing.md),
                             Text(title,
                                 style: AppTextStyles.display
                                     .copyWith(fontSize: 28)),

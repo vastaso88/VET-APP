@@ -1,3 +1,4 @@
+import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
@@ -66,6 +67,9 @@ Future<void> _pump(WidgetTester tester, _FakeRecorder recorder) async {
 }
 
 void main() {
+  // The first-photo/voice notice is not what these tests are about.
+  setUp(() => SharedPreferences.setMockInitialValues({'vet_app.short_notice.chat_media': true}));
+
   testWidgets('il microfono parte con un percorso assoluto e il registratore non va in crash',
       (tester) async {
     final recorder = _FakeRecorder();

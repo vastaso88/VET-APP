@@ -63,6 +63,21 @@ class Settings(BaseSettings):
     # then a plan. Only the environment can set it, never a request. See
     # packages/core/application/services/get_or_create_subscription.py.
     subscription_test_plan: str = Field(default="", alias="SUBSCRIPTION_TEST_PLAN")
+    # Deleting an account first deactivates it; it is erased for good after this
+    # many days, during which the owner can cancel (same e-mail, password reset
+    # through the e-mail link). Art. 12(3) and 17 GDPR: follow up within a month,
+    # extendable only for complex requests. Legal opinion (docs/compliance/16, 2026-11-16):
+    # 30 days is the most a deletion the owner asked for may wait, so the
+    # setting is capped at 30 and a higher value stops the app at start-up.
+    # Longer keeping (4 months) is the owner's explicit "pause", a different
+    # feature. The purge itself stays off until ACCOUNT_DELETION_PURGE_ENABLED
+    # is true (the scheduler route only counts).
+    account_deletion_grace_days: int = Field(
+        default=30, ge=1, le=30, alias="ACCOUNT_DELETION_GRACE_DAYS"
+    )
+    account_deletion_purge_enabled: bool = Field(
+        default=False, alias="ACCOUNT_DELETION_PURGE_ENABLED"
+    )
     # Backoffice allowlist. When empty, admin endpoints fall back to
     # DEVELOPER_EMAILS so existing founder/developer accounts can be reused
     # without hardcoding personal addresses in source control.

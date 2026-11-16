@@ -276,6 +276,28 @@ using (owner_id = auth.uid()::text);
 
 revoke insert, update, delete on public.account_age from anon, authenticated;
 
+-- Deletion with a period to change one's mind: the account is deactivated at
+-- once and erased for good at purge_after. Written only by the backend. Same
+-- SQL as scripts/setup/account_deletion_requests.sql.
+create table if not exists public.account_deletion_requests (
+    owner_id text primary key,
+    requested_at timestamptz not null default now(),
+    purge_after timestamptz not null
+);
+
+create index if not exists idx_account_deletion_requests_purge_after
+    on public.account_deletion_requests (purge_after);
+
+alter table public.account_deletion_requests enable row level security;
+
+drop policy if exists account_deletion_requests_select_own on public.account_deletion_requests;
+create policy account_deletion_requests_select_own
+on public.account_deletion_requests
+for select
+using (owner_id = auth.uid()::text);
+
+revoke insert, update, delete on public.account_deletion_requests from anon, authenticated;
+
 -- Subscriptions: single-row-per-owner, same shape as account_consents.
 -- Starts the 14-day free trial (no card) on first lookup; `plan` stays
 -- null while on trial, then holds the chosen plan key permanently.

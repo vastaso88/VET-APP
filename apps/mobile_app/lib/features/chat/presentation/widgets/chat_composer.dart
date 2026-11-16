@@ -1,3 +1,4 @@
+import '../../../../shared/widgets/short_notice.dart';
 import 'dart:async';
 import 'dart:io' show File;
 
@@ -278,6 +279,15 @@ class _ChatComposerState extends State<ChatComposer> with SingleTickerProviderSt
               style: const TextStyle(color: AppColors.danger, fontSize: 12),
             ),
           ],
+          // Next to where the owner types, always (Anthropic's rules for
+          // products minors may use, docs/compliance/08 point 57): the chat
+          // is about the animal, not the person's own health.
+          const SizedBox(height: AppSpacing.xs),
+          Text(
+            context.l10n.chatOwnHealthNotice,
+            key: const ValueKey('chat-own-health-notice'),
+            style: const TextStyle(color: AppColors.secondaryText, fontSize: 11, height: 1.3),
+          ),
           const SizedBox(height: AppSpacing.sm),
           Row(
             children: [
@@ -349,6 +359,9 @@ class _ChatComposerState extends State<ChatComposer> with SingleTickerProviderSt
   }
 
   Future<void> _pickAndUploadImage() async {
+    // First photo: the personal-data filter does not look at images.
+    if (!await showShortNoticeOnce(context, ShortNotice.chatMedia)) return;
+    if (!mounted) return;
     final picked = await FilePicker.platform.pickFiles(
       type: FileType.image,
       withData: true,
@@ -399,6 +412,9 @@ class _ChatComposerState extends State<ChatComposer> with SingleTickerProviderSt
       return;
     }
     if (_voiceState != _VoiceState.idle) return;
+    // First voice message: same notice as for the first photo.
+    if (!await showShortNoticeOnce(context, ShortNotice.chatMedia)) return;
+    if (!mounted) return;
     final l10n = context.l10n;
 
     var hasPermission = false;

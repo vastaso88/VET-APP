@@ -17,7 +17,7 @@ Dall'app: Impostazioni → Contattaci.
 
 ## Domande frequenti
 
-**Come elimino il mio account?** Impostazioni → Elimina account. Ti chiediamo la password per conferma. La cancellazione è definitiva: toglie i profili dei tuoi animali, le chat, i promemoria, le passeggiate, le foto e i video, i referti e i documenti caricati, le misurazioni, i consensi, la posizione salvata, gli annunci e i messaggi del Mercatino e le credenziali di accesso.
+**Come elimino il mio account?** Impostazioni → Elimina account. Ti chiediamo la password per conferma. Disattiviamo subito l'account e per 30 giorni puoi ripristinarlo accedendo con la stessa e-mail; poi la cancellazione è definitiva (o subito, se scegli «Elimina subito») [in attesa del codice]: toglie i profili dei tuoi animali, le chat, i promemoria, le passeggiate, le foto e i video, i referti e i documenti caricati, le misurazioni, i consensi, la posizione salvata, gli annunci e i messaggi del Mercatino e le credenziali di accesso.
 
 **Come cambio o tolgo il numero di telefono e la foto profilo?** Dal tuo profilo («Il tuo profilo», dal tuo nome in Impostazioni). Sono facoltativi: nessuna funzione usa il telefono.
 

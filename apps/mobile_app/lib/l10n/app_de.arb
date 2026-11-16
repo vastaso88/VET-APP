@@ -410,6 +410,7 @@
   "chatSummaryTitle": "Zusammenfassung für die Tierarztpraxis",
   "chatSummaryDisclaimer": "Diese Zusammenfassung wird automatisch erstellt und ist keine Diagnose. Für medizinische Entscheidungen wenden Sie sich bitte an einen Tierarzt.",
   "chatAiNotice": "Ich antworte mit einer künstlichen Intelligenz: Ich ersetze die Tierärztin bzw. den Tierarzt nicht. Rufen Sie im Notfall sofort eine Klinik an.",
+  "chatOwnHealthNotice": "Schreiben Sie hier keine Angaben zu Ihrer eigenen Gesundheit: Hier geht es nur um Ihr Tier.",
   "chatSummaryEmpty": "Keine Zusammenfassung verfügbar.",
   "chatDeleteTitle": "Diesen Chat löschen?",
   "chatDeleteBody": "Die Unterhaltung und ihre Nachrichten werden gelöscht.",
@@ -928,7 +929,7 @@
   "medicalChecklistMetadata": "Metadaten extrahiert",
   "medicalChecklistLinkedPet": "Mit dem aktiven Tier verknüpft",
   "homeGreeting": "Guten Morgen",
-  "homeAgendaTitle": "Anstehende Aktivitäten",
+  "homeAgendaTitle": "Ihr Kalender",
   "homeAgendaLoadingSubtitle": "Einmalige und wiederkehrende, für alle Tiere.",
   "homeAgendaSummary": "{count} Aktivitäten in den nächsten 10 Tagen",
   "@homeAgendaSummary": {
@@ -3678,6 +3679,30 @@
   "medHistorySend": "Verlauf senden",
   "medHistorySendAll": "Gesamter Verlauf (PDF)",
   "medHistorySendAllSubtitle": "Ein PDF mit allen Ereignissen in zeitlicher Reihenfolge",
+  "petsConsentProposalActivate": "Aktivieren",
+  "petsConsentProposalLater": "Später",
+  "noticeMarketplace": "Der Gebrauchtmarkt ist nur für Volljährige und bringt zwei Privatpersonen in Kontakt: Quokka ist nicht Partei des Kaufs, prüft weder Anzeigen noch Personen und haftet nicht dafür. Gespräche sind privat: Unser Team liest sie nur, wenn eine der beiden Personen sie meldet.",
+  "noticeRules": "Regeln",
+  "noticeUnderstood": "Verstanden",
+  "noticePolicy": "Datenschutzerklärung",
+  "noticeChatAi": "Eine künstliche Intelligenz antwortet und kann sich irren. Ihre Fragen, bereinigt um die persönlichen Daten, die wir erkennen, gehen an unsere KI-Anbieter (Anthropic und, wenn Anthropic nicht antworten kann, Groq), mit Servern in den USA.",
+  "noticeChatMedia": "Fotos und Sprache gehen an einen externen Dienst (heute Groq, in den USA), der sie liest oder transkribiert. Der Filter, der persönliche Daten entfernt, arbeitet mit Text, nicht mit Bildern oder Sprache: Verdecken Sie Name, Adresse und Mikrochipnummer.",
+  "noticeRecordDocument": "Das Dokument bleibt in Ihrem Konto. Der Assistent liest es nur, wenn Sie das Lesen der Krankenakte dieses Tieres eingeschaltet haben.",
+  "noticeFirstWalk": "Die Strecke bleibt in Ihrem Konto. Den GPS-Verlauf behalten wir nur von den letzten 3 Spaziergängen jedes Tieres, von denen, die Sie als Favoriten markieren (höchstens 5), und vom längsten; von den anderen bleiben Distanz, Dauer und Schritte.",
+  "consentChoicesTitle": "Was möchten Sie aktivieren?",
+  "consentChoicesSubtitle": "Das sind Ihre Entscheidungen: Sie können sie jederzeit unter Einstellungen → Berechtigungen und Einwilligungen ändern. Quokka funktioniert auch ohne sie.",
+  "consentChoicesSave": "Auswahl speichern",
+  "consentChoicesNotNow": "Jetzt nicht",
+  "medHistorySendAllDocs": "Verlauf und alle Dokumente (ein PDF)",
+  "medHistorySendAllDocsSubtitle": "Ein PDF mit Ereignissen, Fotos und Dokumenten, geeignet für E-Mail und WhatsApp",
+  "medHistoryDocsSeparate": "{count, plural, =1{1 Dokument passte nicht ins PDF und wird} other{{count} Dokumente passten nicht ins PDF und werden}} separat angehängt.",
+  "@medHistoryDocsSeparate": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "medHistorySendFiles": "Einzelne Dateien",
   "medHistoryPreparing": "PDF wird vorbereitet…",
   "medHistoryExportFailed": "Das PDF konnte nicht erstellt werden. Bitte versuchen Sie es erneut.",
@@ -4049,5 +4074,48 @@
   "marketplaceListingGone": "Diese Anzeige ist nicht mehr verfügbar.",
   "marketplacePrivateSellerDeclaration": "Ich erkläre, dass ich als Privatperson verkaufe, nicht im Rahmen einer gewerblichen oder beruflichen Tätigkeit.",
   "marketplacePrivateSellerRequired": "Um zu veröffentlichen, müssen Sie bestätigen, dass Sie als Privatperson verkaufen: Der Gebrauchtmarkt ist nicht für gewerbliche oder berufliche Tätigkeiten.",
-  "marketplaceInfoPrivateOnly": "Wenn Sie gewerblich oder beruflich verkaufen, können Sie den Gebrauchtmarkt nicht nutzen: Quokka kann die Anzeigen entfernen und den Zugang sperren."
+  "marketplaceInfoPrivateOnly": "Wenn Sie gewerblich oder beruflich verkaufen, können Sie den Gebrauchtmarkt nicht nutzen: Quokka kann die Anzeigen entfernen und den Zugang sperren.",
+  "authHubRecoverAccount": "Konto wiederherstellen",
+  "authRecoverTitle": "Ihr Konto wiederherstellen",
+  "authRecoverSubtitle": "Haben Sie Ihr Konto gerade erst gelöscht? Sie können es wieder öffnen.",
+  "authRecoverSteps": "Wenn die Wartezeit noch nicht abgelaufen ist, melden Sie sich mit derselben E-Mail-Adresse des gelöschten Kontos an: Falls Sie das Passwort vergessen haben, setzen Sie es mit dem Link zurück, den wir Ihnen per E-Mail schicken. Nach der Anmeldung können Sie die Löschung abbrechen.",
+  "authRecoverLogin": "Mit derselben E-Mail anmelden",
+  "authRecoverReset": "Passwort zurücksetzen",
+  "authRecoverExpired": "Ist die Frist abgelaufen, wurden das Konto und seine Daten gelöscht: Sie können mit derselben E-Mail-Adresse ein neues Konto anlegen.",
+  "accountDeletePeriodNote": "Das Konto wird sofort deaktiviert. {days, plural, one{# Tag} other{# Tage}} lang können Sie es sich anders überlegen: Melden Sie sich mit derselben E-Mail-Adresse an (setzen Sie bei Bedarf das Passwort zurück) und brechen Sie die Löschung ab. Nach dem {date} löschen wir das Konto und Ihre Daten endgültig, ohne Wiederherstellungsmöglichkeit. Es bleiben nur die Daten, die wir von Gesetzes wegen aufbewahren müssen, zum Beispiel Rechnungen.",
+  "@accountDeletePeriodNote": {
+    "placeholders": {
+      "days": {
+        "type": "int"
+      },
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "accountDeleteScheduledDone": "Konto deaktiviert. Sie können die Löschung bis zum {date} abbrechen.",
+  "@accountDeleteScheduledDone": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "accountRestoreTitle": "Ihr Konto wird gelöscht",
+  "accountRestoreBody": "Sie haben die Löschung beantragt: Am {date} löschen wir das Konto samt allen Daten endgültig, ohne Wiederherstellungsmöglichkeit. Falls Sie es sich anders überlegt haben, können Sie die Löschung jetzt abbrechen.",
+  "@accountRestoreBody": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "accountRestoreCancel": "Löschung abbrechen",
+  "accountRestoreDone": "Konto wieder geöffnet. Willkommen zurück!",
+  "accountRestoreReauth": "Aus Sicherheitsgründen ist eine aktuelle Anmeldung nötig: Melden Sie sich ab und wieder an und brechen Sie dann die Löschung ab. Falls Sie das Passwort vergessen haben, nutzen Sie „Konto wiederherstellen“.",
+  "accountRestoreFailed": "Die Löschung konnte nicht abgebrochen werden. Bitte versuchen Sie es erneut.",
+  "accountDeleteNowLink": "Jetzt sofort löschen, ohne Wiederherstellungsmöglichkeit",
+  "accountRestoreDeleteNow": "Jetzt löschen",
+  "accountRestoreDeleteNowBody": "Wir löschen das Konto und Ihre Daten sofort und endgültig, ohne Wiederherstellungsmöglichkeit. Es bleiben nur die Daten, die wir von Gesetzes wegen aufbewahren müssen, zum Beispiel Rechnungen. Danach können Sie sich mit derselben E-Mail-Adresse neu registrieren.",
+  "authRegisterEmailInUseRecoverHint": "Falls Sie es gerade erst gelöscht haben und die Wartezeit noch nicht abgelaufen ist, nutzen Sie „Konto wiederherstellen“: Sie können die Löschung abbrechen oder das Konto sofort löschen, um neu zu beginnen."
 }

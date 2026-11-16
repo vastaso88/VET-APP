@@ -145,7 +145,10 @@ class AuthRepositoryImpl implements AuthRepository {
   }
 
   @override
-  Future<Result<AuthContext>> deleteAccount({required String password}) async {
+  Future<Result<AuthContext>> deleteAccount({
+    required String password,
+    bool immediate = false,
+  }) async {
     final email = currentContext.user?.email;
     if (email == null) {
       return Result.failure(
@@ -155,7 +158,7 @@ class AuthRepositoryImpl implements AuthRepository {
     final verified = await _remoteDataSource.verifyPassword(email: email, password: password);
     return await verified.fold(
       onSuccess: (_) async {
-        final deleted = await _remoteDataSource.deleteAccount(email: email);
+        final deleted = await _remoteDataSource.deleteAccount(email: email, immediate: immediate);
         return await deleted.fold(
           onSuccess: (_) async {
             await _sessionStore.clear();

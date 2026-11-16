@@ -410,6 +410,7 @@
   "chatSummaryTitle": "Summary for the veterinarian",
   "chatSummaryDisclaimer": "This summary is automatically generated and is not a diagnosis. Consult your veterinarian for clinical decisions.",
   "chatAiNotice": "I answer with artificial intelligence: I do not replace your vet. In an emergency, call a clinic right away.",
+  "chatOwnHealthNotice": "Do not write details about your own health here: we only talk about your animal.",
   "chatSummaryEmpty": "No summary available.",
   "chatDeleteTitle": "Delete this chat?",
   "chatDeleteBody": "The conversation and its messages will be deleted.",
@@ -928,7 +929,7 @@
   "medicalChecklistMetadata": "Metadata extracted",
   "medicalChecklistLinkedPet": "Linked to the active pet",
   "homeGreeting": "Good morning",
-  "homeAgendaTitle": "Upcoming activities",
+  "homeAgendaTitle": "Your calendar",
   "homeAgendaLoadingSubtitle": "One-off and recurring activities for all pets.",
   "homeAgendaSummary": "{count} activities in the next 10 days",
   "@homeAgendaSummary": {
@@ -3678,6 +3679,30 @@
   "medHistorySend": "Send history",
   "medHistorySendAll": "Full history (PDF)",
   "medHistorySendAllSubtitle": "A PDF with all events in date order",
+  "petsConsentProposalActivate": "Turn on",
+  "petsConsentProposalLater": "Later",
+  "noticeMarketplace": "The second-hand marketplace is for adults only and puts two private individuals in touch: Quokka is not a party to the sale, does not verify listings or people and is not responsible for them. Conversations are private: our team reads them only if one of the two people reports them.",
+  "noticeRules": "Rules",
+  "noticeUnderstood": "Got it",
+  "noticePolicy": "Privacy policy",
+  "noticeChatAi": "An artificial intelligence answers and can be wrong. Your questions, cleaned of the personal data we recognize, go to our AI providers (Anthropic and, when Anthropic cannot answer, Groq), with servers in the United States.",
+  "noticeChatMedia": "Photos and voice go to an external service (today Groq, in the United States) that reads or transcribes them. The filter that removes personal data works on text, not on images or voice: cover your name, address and microchip number.",
+  "noticeRecordDocument": "The document stays in your account. The assistant reads it only if you have turned on reading of this pet's medical record.",
+  "noticeFirstWalk": "The route stays in your account. We keep the GPS track only of the last 3 walks of each pet, of those you mark as favorites (at most 5) and of the longest; for the others, distance, duration and steps remain.",
+  "consentChoicesTitle": "What would you like to turn on?",
+  "consentChoicesSubtitle": "These are your choices: you can change them any time in Settings → Permissions and consents. Quokka works without them too.",
+  "consentChoicesSave": "Save my choices",
+  "consentChoicesNotNow": "Not now",
+  "medHistorySendAllDocs": "History and all documents (one PDF)",
+  "medHistorySendAllDocsSubtitle": "One PDF with events, photos and documents, suitable for email and WhatsApp",
+  "medHistoryDocsSeparate": "{count, plural, =1{1 document could not be put in the PDF and is} other{{count} documents could not be put in the PDF and are}} attached separately.",
+  "@medHistoryDocsSeparate": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "medHistorySendFiles": "Individual files",
   "medHistoryPreparing": "Preparing the PDF…",
   "medHistoryExportFailed": "I couldn't prepare the PDF. Try again.",
@@ -4049,5 +4074,48 @@
   "marketplaceListingGone": "This listing is no longer available.",
   "marketplacePrivateSellerDeclaration": "I declare that I am selling as a private individual, not as part of a commercial or professional activity.",
   "marketplacePrivateSellerRequired": "To publish, you must confirm that you are selling as a private individual: the marketplace is not for commercial or professional activities.",
-  "marketplaceInfoPrivateOnly": "If you sell as a commercial or professional activity, you cannot use the marketplace: Quokka may remove your listings and suspend your access."
+  "marketplaceInfoPrivateOnly": "If you sell as a commercial or professional activity, you cannot use the marketplace: Quokka may remove your listings and suspend your access.",
+  "authHubRecoverAccount": "Recover account",
+  "authRecoverTitle": "Recover your account",
+  "authRecoverSubtitle": "Deleted your account recently? You can reopen it.",
+  "authRecoverSteps": "If the waiting period isn't over yet, sign in with the same email as the deleted account: if you don't remember the password, reset it with the link we send you by email. Once signed in, you can cancel the deletion.",
+  "authRecoverLogin": "Sign in with the same email",
+  "authRecoverReset": "Reset the password",
+  "authRecoverExpired": "If the period is over, the account and its data have been deleted: you can create a new account with the same email.",
+  "accountDeletePeriodNote": "The account will be deactivated right away. For {days, plural, one{# day} other{# days}} you can change your mind: sign in with the same email (reset the password if needed) and cancel the deletion. After {date} we delete the account and your data, with no way to recover them. Only the data the law requires us to keep remain, for example invoices.",
+  "@accountDeletePeriodNote": {
+    "placeholders": {
+      "days": {
+        "type": "int"
+      },
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "accountDeleteScheduledDone": "Account deactivated. You can cancel the deletion until {date}.",
+  "@accountDeleteScheduledDone": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "accountRestoreTitle": "Your account is being deleted",
+  "accountRestoreBody": "You asked to delete it: on {date} we will delete it together with all its data, with no way to recover them. If you changed your mind, you can cancel now.",
+  "@accountRestoreBody": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "accountRestoreCancel": "Cancel the deletion",
+  "accountRestoreDone": "Account reopened. Welcome back!",
+  "accountRestoreReauth": "For safety, a recent sign-in is needed: sign out and sign in again, then cancel the deletion. If you don't remember the password, use \"Recover account\".",
+  "accountRestoreFailed": "I couldn't cancel the deletion. Try again.",
+  "accountDeleteNowLink": "Delete now, with no way to recover",
+  "accountRestoreDeleteNow": "Delete now",
+  "accountRestoreDeleteNowBody": "We delete the account and your data right now, with no way to recover them. Only the data the law requires us to keep remain, for example invoices. Afterwards you can sign up again with the same email.",
+  "authRegisterEmailInUseRecoverHint": "If you deleted it recently and the waiting period isn't over, use \"Recover account\": you can cancel the deletion or delete it right away to start over."
 }

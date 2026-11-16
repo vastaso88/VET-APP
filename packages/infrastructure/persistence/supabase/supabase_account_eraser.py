@@ -67,8 +67,12 @@ RADAR_PSEUDONYM_TABLES: tuple[tuple[str, str], ...] = (
 MARKETPLACE_PARTICIPANT_COLUMNS: tuple[str, ...] = ("buyer_id", "seller_id")
 
 # Tables handled by a dedicated step rather than by [OWNER_TABLES].
+# account_deletion_requests: the end-of-period purge removes that row last, once
+# the identity is gone (if anything failed before, the row is what makes the
+# next run try again).
 HANDLED_ELSEWHERE = frozenset(
     {
+        "account_deletion_requests",
         "clinical_events",
         "marketplace_conversations",
         "marketplace_messages",

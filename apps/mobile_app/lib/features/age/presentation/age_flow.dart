@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 
 import '../../../l10n/l10n.dart';
 import '../../../shared/errors/app_error.dart';
+import '../../account/data/account_deletion_remote_data_source.dart';
+import '../../account/presentation/pages/restore_account_page.dart';
 import '../data/age_store.dart';
 import '../domain/age_status.dart';
 import 'pages/birth_date_prompt_page.dart';
@@ -91,6 +93,21 @@ Future<bool> ensureCanChoosePaidPlan(BuildContext context) async {
       return false;
     },
   );
+}
+
+/// First start after sign-in, before anything else: an account that asked to be
+/// deleted and is still within its period gets only the page that offers to
+/// cancel the deletion. True when that page was shown.
+Future<bool> checkPendingDeletionAfterSignIn(BuildContext context) async {
+  final result = await HttpAccountDeletionRemoteDataSource().fetch();
+  if (!context.mounted) return false;
+  final status = result.fold(onSuccess: (value) => value, onFailure: (_) => null);
+  if (status == null || !status.pending) return false;
+  Navigator.of(context, rootNavigator: true).pushAndRemoveUntil(
+    MaterialPageRoute<void>(builder: (_) => RestoreAccountPage(status: status)),
+    (route) => false,
+  );
+  return true;
 }
 
 /// First start after sign-in: a pending date from registration is sent, the

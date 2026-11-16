@@ -1,3 +1,4 @@
+import '../../../../shared/widgets/short_notice.dart';
 import 'dart:async';
 
 import 'package:flutter/material.dart';
@@ -86,6 +87,11 @@ class _MarketplacePageState extends State<MarketplacePage> {
     super.initState();
     _dataFuture = _loadData();
     unawaited(_loadRestriction());
+    // First opening on this phone: adults only, two private parties, privacy of
+    // the conversations.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) unawaited(showShortNoticeOnce(context, ShortNotice.marketplace));
+    });
     // The owner may set the position in Impostazioni and come back.
     LocationPreferenceStore.instance.addListener(_onLocationChanged);
   }

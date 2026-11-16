@@ -19,6 +19,21 @@ String _currentAnimal(WidgetTester tester) {
 }
 
 void main() {
+  final shuffledOrder = PetLoader.orderOf;
+  // The real order is random: the tests below keep the listed one.
+  setUp(() => PetLoader.orderOf = (animals) => animals);
+  tearDown(() => PetLoader.orderOf = shuffledOrder);
+
+  test('the real order is a shuffle of the same animals', () {
+    final orders = {
+      for (var i = 0; i < 30; i++) shuffledOrder(PetLoader.animals).join(),
+    };
+    for (final order in orders) {
+      expect(order.runes.length, PetLoader.animals.join().runes.length);
+    }
+    expect(orders.length, greaterThan(1));
+  });
+
   testWidgets('the animal changes after one full turn', (tester) async {
     await tester.pumpWidget(_harness(const PetLoader()));
     final first = _currentAnimal(tester);

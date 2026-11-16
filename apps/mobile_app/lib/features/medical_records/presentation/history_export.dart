@@ -15,6 +15,7 @@ import '../domain/history_event.dart';
 import '../domain/pet_condition.dart';
 import '../domain/record_category.dart';
 import 'history_labels.dart';
+import 'documents_bundle.dart';
 import 'history_pdf.dart';
 import 'record_category_labels.dart';
 
@@ -74,13 +75,15 @@ const _exportFolder = 'vetapp_export';
 Future<void> sharePdfThenDelete(
   Uint8List bytes,
   String fileName, {
+  List<XFile> extraFiles = const [],
   Future<void> Function(XFile file)? share,
   Future<Directory> Function()? tempDir,
   Duration grace = _tempFileGrace,
 }) async {
   Future<void> send(XFile file) => share != null
       ? share(file)
-      : SharePlus.instance.share(ShareParams(files: [file], subject: fileName));
+      : SharePlus.instance
+          .share(ShareParams(files: [file, ...extraFiles], subject: fileName));
 
   if (kIsWeb) {
     await send(
@@ -124,6 +127,7 @@ Future<void> exportPetHistory(
   required PetProfile pet,
   required List<MedicalRecordEntry> records,
   required List<PetConditionEntry>? conditions,
+  bool includeDocuments = false,
 }) async {
   final l10n = context.l10n;
   final messenger = ScaffoldMessenger.of(context);
@@ -143,14 +147,29 @@ Future<void> exportPetHistory(
     final events =
         buildHistoryEvents(records: records, conditions: illnesses ?? const []);
     final now = DateTime.now();
+    final documents =
+        includeDocuments ? await collectDocumentPages(records) : const CollectedDocuments();
     final pdf = await buildHistoryPdf(
       pet: pet,
       events: events,
       exportedAt: now,
       l10n: l10n,
       symbols: await renderHistorySymbols(),
+      attachmentPages: documents.pages,
     );
-    await sharePdfThenDelete(pdf, historyPdfFileName(pet.name, now));
+    if (documents.separate.isNotEmpty) {
+      messenger.showSnackBar(
+          SnackBar(content: Text(l10n.medHistoryDocsSeparate(documents.separate.length))));
+    }
+    if (documents.missing > 0) {
+      messenger.showSnackBar(
+          SnackBar(content: Text(l10n.medicalFilesMissing(documents.missing))));
+    }
+    await sharePdfThenDelete(
+      pdf,
+      historyPdfFileName(pet.name, now),
+      extraFiles: documents.separate,
+    );
   } catch (_) {
     messenger
       ..hideCurrentSnackBar()

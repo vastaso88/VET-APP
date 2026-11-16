@@ -66,7 +66,7 @@ import 'app_localizations_it.dart';
 /// property.
 abstract class AppLocalizations {
   AppLocalizations(String locale)
-    : localeName = intl.Intl.canonicalizedLocale(locale.toString());
+      : localeName = intl.Intl.canonicalizedLocale(locale.toString());
 
   final String localeName;
 
@@ -89,11 +89,11 @@ abstract class AppLocalizations {
   /// of delegates is preferred or required.
   static const List<LocalizationsDelegate<dynamic>> localizationsDelegates =
       <LocalizationsDelegate<dynamic>>[
-        delegate,
-        GlobalMaterialLocalizations.delegate,
-        GlobalCupertinoLocalizations.delegate,
-        GlobalWidgetsLocalizations.delegate,
-      ];
+    delegate,
+    GlobalMaterialLocalizations.delegate,
+    GlobalCupertinoLocalizations.delegate,
+    GlobalWidgetsLocalizations.delegate,
+  ];
 
   /// A list of this localizations delegate's supported locales.
   static const List<Locale> supportedLocales = <Locale>[
@@ -101,7 +101,7 @@ abstract class AppLocalizations {
     Locale('en'),
     Locale('es'),
     Locale('fr'),
-    Locale('it'),
+    Locale('it')
   ];
 
   /// No description provided for @petsConsentFullText.
@@ -1585,6 +1585,12 @@ abstract class AppLocalizations {
   /// In it, this message translates to:
   /// **'Rispondo con un\'intelligenza artificiale: non sostituisco il veterinario. In emergenza chiama subito una clinica.'**
   String get chatAiNotice;
+
+  /// No description provided for @chatOwnHealthNotice.
+  ///
+  /// In it, this message translates to:
+  /// **'Non scrivere qui dati sulla tua salute: parliamo solo del tuo animale.'**
+  String get chatOwnHealthNotice;
 
   /// No description provided for @chatSummaryEmpty.
   ///
@@ -3161,7 +3167,7 @@ abstract class AppLocalizations {
   /// No description provided for @homeAgendaTitle.
   ///
   /// In it, this message translates to:
-  /// **'Prossime attività'**
+  /// **'Il tuo calendario'**
   String get homeAgendaTitle;
 
   /// No description provided for @homeAgendaLoadingSubtitle.
@@ -10838,6 +10844,108 @@ abstract class AppLocalizations {
   /// **'Un PDF con tutti gli eventi in ordine di data'**
   String get medHistorySendAllSubtitle;
 
+  /// No description provided for @petsConsentProposalActivate.
+  ///
+  /// In it, this message translates to:
+  /// **'Attiva'**
+  String get petsConsentProposalActivate;
+
+  /// No description provided for @petsConsentProposalLater.
+  ///
+  /// In it, this message translates to:
+  /// **'Più tardi'**
+  String get petsConsentProposalLater;
+
+  /// No description provided for @noticeMarketplace.
+  ///
+  /// In it, this message translates to:
+  /// **'Il Mercatino è solo per maggiorenni e mette in contatto due privati: Quokka non è parte della compravendita, non verifica annunci né persone e non ne risponde. Le conversazioni sono private: il nostro team le legge solo se una delle due persone le segnala.'**
+  String get noticeMarketplace;
+
+  /// No description provided for @noticeRules.
+  ///
+  /// In it, this message translates to:
+  /// **'Regole'**
+  String get noticeRules;
+
+  /// No description provided for @noticeUnderstood.
+  ///
+  /// In it, this message translates to:
+  /// **'Ho capito'**
+  String get noticeUnderstood;
+
+  /// No description provided for @noticePolicy.
+  ///
+  /// In it, this message translates to:
+  /// **'Informativa'**
+  String get noticePolicy;
+
+  /// No description provided for @noticeChatAi.
+  ///
+  /// In it, this message translates to:
+  /// **'Risponde un\'intelligenza artificiale e può sbagliare. Le tue domande, ripulite dai dati personali che riconosciamo, vanno ai nostri fornitori di IA (Anthropic e, quando Anthropic non può rispondere, Groq), con server negli Stati Uniti.'**
+  String get noticeChatAi;
+
+  /// No description provided for @noticeChatMedia.
+  ///
+  /// In it, this message translates to:
+  /// **'Le foto e la voce vanno a un servizio esterno (oggi Groq, negli Stati Uniti) che le legge o le trascrive. Il filtro che toglie i dati personali lavora sul testo, non sulle immagini né sulla voce: copri nome, indirizzo e numero di microchip.'**
+  String get noticeChatMedia;
+
+  /// No description provided for @noticeRecordDocument.
+  ///
+  /// In it, this message translates to:
+  /// **'Il documento resta nel tuo account. L\'assistente lo legge solo se hai acceso la lettura della cartella clinica di questo animale.'**
+  String get noticeRecordDocument;
+
+  /// No description provided for @noticeFirstWalk.
+  ///
+  /// In it, this message translates to:
+  /// **'Il percorso resta nel tuo account. Teniamo il tracciato GPS solo delle ultime 3 passeggiate di ogni animale, di quelle che segni come preferite (al massimo 5) e della più lunga; delle altre restano distanza, durata e passi.'**
+  String get noticeFirstWalk;
+
+  /// No description provided for @consentChoicesTitle.
+  ///
+  /// In it, this message translates to:
+  /// **'Cosa vuoi attivare?'**
+  String get consentChoicesTitle;
+
+  /// No description provided for @consentChoicesSubtitle.
+  ///
+  /// In it, this message translates to:
+  /// **'Sono scelte tue: puoi cambiarle quando vuoi da Impostazioni → Permessi e consensi. Quokka funziona anche senza.'**
+  String get consentChoicesSubtitle;
+
+  /// No description provided for @consentChoicesSave.
+  ///
+  /// In it, this message translates to:
+  /// **'Salva le scelte'**
+  String get consentChoicesSave;
+
+  /// No description provided for @consentChoicesNotNow.
+  ///
+  /// In it, this message translates to:
+  /// **'Non ora'**
+  String get consentChoicesNotNow;
+
+  /// No description provided for @medHistorySendAllDocs.
+  ///
+  /// In it, this message translates to:
+  /// **'Storico e tutti i documenti (PDF unico)'**
+  String get medHistorySendAllDocs;
+
+  /// No description provided for @medHistorySendAllDocsSubtitle.
+  ///
+  /// In it, this message translates to:
+  /// **'Un solo PDF con eventi, foto e documenti, adatto a e-mail e WhatsApp'**
+  String get medHistorySendAllDocsSubtitle;
+
+  /// No description provided for @medHistoryDocsSeparate.
+  ///
+  /// In it, this message translates to:
+  /// **'{count, plural, =1{1 documento non è entrato nel PDF ed è allegato} other{{count} documenti non sono entrati nel PDF e sono allegati}} a parte.'**
+  String medHistoryDocsSeparate(int count);
+
   /// No description provided for @medHistorySendFiles.
   ///
   /// In it, this message translates to:
@@ -12217,6 +12325,120 @@ abstract class AppLocalizations {
   /// In it, this message translates to:
   /// **'Se vendi come attività commerciale o professionale non puoi usare il Mercatino: Quokka può rimuovere gli annunci e sospendere l\'accesso.'**
   String get marketplaceInfoPrivateOnly;
+
+  /// No description provided for @authHubRecoverAccount.
+  ///
+  /// In it, this message translates to:
+  /// **'Recupera account'**
+  String get authHubRecoverAccount;
+
+  /// No description provided for @authRecoverTitle.
+  ///
+  /// In it, this message translates to:
+  /// **'Recupera il tuo account'**
+  String get authRecoverTitle;
+
+  /// No description provided for @authRecoverSubtitle.
+  ///
+  /// In it, this message translates to:
+  /// **'Hai eliminato l\'account da poco? Puoi riaprirlo.'**
+  String get authRecoverSubtitle;
+
+  /// No description provided for @authRecoverSteps.
+  ///
+  /// In it, this message translates to:
+  /// **'Se il periodo di attesa non è ancora finito, accedi con la stessa e-mail dell\'account eliminato: se non ricordi la password, reimpostala con il link che ti mandiamo per e-mail. Dopo l\'accesso potrai annullare l\'eliminazione.'**
+  String get authRecoverSteps;
+
+  /// No description provided for @authRecoverLogin.
+  ///
+  /// In it, this message translates to:
+  /// **'Accedi con la stessa e-mail'**
+  String get authRecoverLogin;
+
+  /// No description provided for @authRecoverReset.
+  ///
+  /// In it, this message translates to:
+  /// **'Reimposta la password'**
+  String get authRecoverReset;
+
+  /// No description provided for @authRecoverExpired.
+  ///
+  /// In it, this message translates to:
+  /// **'Se il periodo è finito, l\'account e i dati sono stati cancellati: puoi creare un nuovo account con la stessa e-mail.'**
+  String get authRecoverExpired;
+
+  /// No description provided for @accountDeletePeriodNote.
+  ///
+  /// In it, this message translates to:
+  /// **'L\'account verrà disattivato subito. Per {days, plural, one{# giorno} other{# giorni}} puoi cambiare idea: accedi con la stessa e-mail (se serve, reimposta la password) e annulla l\'eliminazione. Dopo il {date} cancelliamo l\'account e i tuoi dati, senza possibilità di recupero. Restano solo i dati che la legge ci obbliga a conservare, per esempio le fatture.'**
+  String accountDeletePeriodNote(int days, String date);
+
+  /// No description provided for @accountDeleteScheduledDone.
+  ///
+  /// In it, this message translates to:
+  /// **'Account disattivato. Puoi annullare l\'eliminazione fino al {date}.'**
+  String accountDeleteScheduledDone(String date);
+
+  /// No description provided for @accountRestoreTitle.
+  ///
+  /// In it, this message translates to:
+  /// **'Il tuo account è in eliminazione'**
+  String get accountRestoreTitle;
+
+  /// No description provided for @accountRestoreBody.
+  ///
+  /// In it, this message translates to:
+  /// **'Hai chiesto di eliminarlo: il {date} lo cancelleremo insieme a tutti i dati, senza possibilità di recupero. Se hai cambiato idea, puoi annullare adesso.'**
+  String accountRestoreBody(String date);
+
+  /// No description provided for @accountRestoreCancel.
+  ///
+  /// In it, this message translates to:
+  /// **'Annulla l\'eliminazione'**
+  String get accountRestoreCancel;
+
+  /// No description provided for @accountRestoreDone.
+  ///
+  /// In it, this message translates to:
+  /// **'Account riaperto. Bentornato!'**
+  String get accountRestoreDone;
+
+  /// No description provided for @accountRestoreReauth.
+  ///
+  /// In it, this message translates to:
+  /// **'Per sicurezza serve un accesso recente: esci e accedi di nuovo, poi annulla l\'eliminazione. Se non ricordi la password, usa «Recupera account».'**
+  String get accountRestoreReauth;
+
+  /// No description provided for @accountRestoreFailed.
+  ///
+  /// In it, this message translates to:
+  /// **'Non sono riuscito ad annullare l\'eliminazione. Riprova.'**
+  String get accountRestoreFailed;
+
+  /// No description provided for @accountDeleteNowLink.
+  ///
+  /// In it, this message translates to:
+  /// **'Elimina subito, senza possibilità di recupero'**
+  String get accountDeleteNowLink;
+
+  /// No description provided for @accountRestoreDeleteNow.
+  ///
+  /// In it, this message translates to:
+  /// **'Elimina subito'**
+  String get accountRestoreDeleteNow;
+
+  /// No description provided for @accountRestoreDeleteNowBody.
+  ///
+  /// In it, this message translates to:
+  /// **'Cancelliamo subito l\'account e i tuoi dati, senza possibilità di recupero. Restano solo i dati che la legge ci obbliga a conservare, per esempio le fatture. Dopo potrai iscriverti di nuovo con la stessa e-mail.'**
+  String get accountRestoreDeleteNowBody;
+
+  /// No description provided for @authRegisterEmailInUseRecoverHint.
+  ///
+  /// In it, this message translates to:
+  /// **'Se l\'hai eliminato da poco e il periodo di attesa non è finito, usa «Recupera account»: puoi annullare l\'eliminazione oppure eliminarlo subito per ricominciare.'**
+  String get authRegisterEmailInUseRecoverHint;
 }
 
 class _AppLocalizationsDelegate
@@ -12252,9 +12474,8 @@ AppLocalizations lookupAppLocalizations(Locale locale) {
   }
 
   throw FlutterError(
-    'AppLocalizations.delegate failed to load unsupported locale "$locale". This is likely '
-    'an issue with the localizations generation tool. Please file an issue '
-    'on GitHub with a reproducible sample app and the gen-l10n configuration '
-    'that was used.',
-  );
+      'AppLocalizations.delegate failed to load unsupported locale "$locale". This is likely '
+      'an issue with the localizations generation tool. Please file an issue '
+      'on GitHub with a reproducible sample app and the gen-l10n configuration '
+      'that was used.');
 }
