@@ -93,8 +93,10 @@ def test_the_urinary_question_follows_the_animals_sex() -> None:
 
 
 def test_a_female_cat_is_asked_in_the_feminine() -> None:
+    # A doubtful case: "va nella lettiera e non esce niente" is the blocked
+    # bladder itself and gets the help at once (synthetic users round 2).
     result, _ = _ask(
-        "Nina non urina da stamattina, va nella lettiera e non esce niente",
+        "Nina non urina da stamattina, mi sembra strano",
         species="Gatto",
         name="Nina",
         sex="Femmina",
@@ -136,5 +138,8 @@ def test_the_spanish_cat_that_urinates_outside_the_box_gets_an_answer_not_the_qu
 def test_the_emergency_prompt_forbids_invented_reasons() -> None:
     prompt = build_emergency_prompt(first_aid="1) chiama il veterinario")
 
-    assert "never add a reason of your own" in prompt
+    assert "Never add a reason of your own" in prompt
     assert "può peggiorare le cose" in prompt
+    # Synthetic users round 2: the steps that fit, gesture first, never a copied block.
+    assert "the most urgent gesture first" in prompt
+    assert "never copy them as a block" in prompt

@@ -1,9 +1,14 @@
 import json
+import logging
 from functools import lru_cache
 from typing import Annotated, Any, Literal
 
 from pydantic import BeforeValidator, Field, model_validator
 from pydantic_settings import BaseSettings, NoDecode, SettingsConfigDict
+
+from packages.shared.config.groq_models import is_groq_production_model, production_models_only
+
+_logger = logging.getLogger(__name__)
 
 
 def _string_list(value: Any) -> Any:
@@ -139,9 +144,10 @@ class Settings(BaseSettings):
     # Reserve models, comma-separated, tried in order when LLM_MODEL is rate
     # limited (Groq counts its daily limit per model: 2026-10-05, the chat
     # was down for hours on a single exhausted model). Empty = no reserve.
-    # Default: the models active on the Groq account on 2026-10-05.
+    # Default: Groq production models only (docs/compliance/19, 2026-11-16:
+    # preview models are outside Groq's data agreement; groq_models.py).
     llm_fallback_models: str = Field(
-        default="openai/gpt-oss-20b,qwen/qwen3.8-27b", alias="LLM_FALLBACK_MODELS"
+        default="openai/gpt-oss-20b,llama-3.3-70b-versatile", alias="LLM_FALLBACK_MODELS"
     )
     llm_api_key: str = Field(default="", alias="LLM_API_KEY")
     llm_base_url: str = Field(default="https://api.groq.com/openai/v1", alias="LLM_BASE_URL")
@@ -191,7 +197,7 @@ class Settings(BaseSettings):
     # day and the reserve takes over).
     llm_model_light: str = Field(default="openai/gpt-oss-20b", alias="LLM_MODEL_LIGHT")
     llm_light_fallback_models: str = Field(
-        default="qwen/qwen3.8-27b", alias="LLM_LIGHT_FALLBACK_MODELS"
+        default="llama-3.1-8b-instant", alias="LLM_LIGHT_FALLBACK_MODELS"
     )
     # Visible-reply budget of an ordinary answer (about 1300 characters of
     # Italian); reports get a little more. Reasoning models (openai/gpt-oss)
@@ -214,10 +220,7 @@ class Settings(BaseSettings):
     # LLM_BUDGET_RESERVE_SHARE of a budget the reserve models go first; at
     # 100% the model is left alone until the day resets.
     llm_daily_token_budgets: str = Field(
-        default=(
-            "openai/gpt-oss-120b=200000,openai/gpt-oss-20b=200000,"
-            "qwen/qwen3.8-27b=200000,openai/gpt-oss-safeguard-20b=200000"
-        ),
+        default=("openai/gpt-oss-120b=200000,openai/gpt-oss-20b=200000"),
         alias="LLM_DAILY_TOKEN_BUDGETS",
     )
     # Claude is paid per token, not rationed: its guard is money, not raw
@@ -309,8 +312,14 @@ class Settings(BaseSettings):
     stt_model: str = Field(default="whisper-large-v3-turbo", alias="STT_MODEL")
     # Photo attachments: visual analysis reuses the same Groq account
     # (LLM_API_KEY/LLM_BASE_URL) as chat and voice dictation.
+    # "groq" reads photos with VISION_MODEL; "off" never reads them (the photo
+    # is saved, the chat says honestly it cannot see it, nothing leaves);
+    # "echo" is the local test double. VISION_MODEL must be a Groq production
+    # model (groq_models.py): empty, or a preview model, means off. Empty by
+    # default since 2026-11-16: the only image model on the account was a
+    # preview one, outside Groq's data agreement (docs/compliance/19).
     vision_provider: str = Field(default="echo", alias="VISION_PROVIDER")
-    vision_model: str = Field(default="qwen/qwen3.8-27b", alias="VISION_MODEL")
+    vision_model: str = Field(default="", alias="VISION_MODEL")
     # Same idea for reading photos and scans. Empty by default: on
     # 2026-10-05 the Groq account had no second model that accepts images.
     vision_fallback_models: str = Field(default="", alias="VISION_FALLBACK_MODELS")
@@ -514,14 +523,36 @@ class Settings(BaseSettings):
             )
 
         if self.vision_provider == "groq":
+            # VISION_MODEL is not required: empty, or a model outside Groq's
+            # production list, switches photo reading off (container), never
+            # stops the app from starting.
             self._require_fields(
                 "VISION_PROVIDER=groq",
                 {
-                    "VISION_MODEL": self.vision_model,
                     "LLM_API_KEY": self.llm_api_key,
                     "LLM_BASE_URL": self.llm_base_url,
                 },
             )
+
+        # Groq's preview models are outside its data agreement
+        # (docs/compliance/19): whatever the environment says, the chat chains
+        # and the light model keep Groq production models only.
+        for field_name in (
+            "llm_fallback_models",
+            "llm_light_fallback_models",
+            "vision_fallback_models",
+        ):
+            kept, dropped = production_models_only(getattr(self, field_name))
+            if dropped:
+                _logger.warning(
+                    "%s: dropped models outside Groq production: %s",
+                    field_name.upper(),
+                    ",".join(dropped),
+                )
+                object.__setattr__(self, field_name, kept)
+        if self.llm_model_light and not is_groq_production_model(self.llm_model_light):
+            _logger.warning("LLM_MODEL_LIGHT outside Groq production: using openai/gpt-oss-20b")
+            object.__setattr__(self, "llm_model_light", "openai/gpt-oss-20b")
 
         if self.environment == "production":
             # A production deploy with the demo auth provider would accept

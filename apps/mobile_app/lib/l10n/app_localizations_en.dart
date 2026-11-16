@@ -385,8 +385,7 @@ class AppLocalizationsEn extends AppLocalizations {
       'Assistant to understand your pet: behavior, daily care, health, duties';
 
   @override
-  String get billingIncludedChatMedia =>
-      'Photos, PDFs and voice dictation in chat';
+  String get billingIncludedChatMedia => 'PDFs and voice dictation in chat';
 
   @override
   String get billingIncludedReminders => 'Reminders';
@@ -840,7 +839,7 @@ class AppLocalizationsEn extends AppLocalizations {
       'The recording could not be read. Try again.';
 
   @override
-  String get chatPhotoAnalyzing => 'Looking at the photo…';
+  String get chatPhotoAnalyzing => 'Uploading the photo…';
 
   @override
   String get chatPhotoReady => 'Photo ready to send';
@@ -1640,6 +1639,10 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get medicalRecordMetaAnalysisFailed =>
       'File saved, automatic reading failed';
+
+  @override
+  String get medicalRecordMetaPhotosOff =>
+      'File saved. For now the assistant does not read photos';
 
   @override
   String get medicalRecordMetaUploadedNow => 'Uploaded by you just now';
@@ -6727,7 +6730,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get noticeChatMedia =>
-      'Photos and voice go to an external service (today Groq, in the United States) that reads or transcribes them. The filter that removes personal data works on text, not on images or voice: cover your name, address and microchip number.';
+      'Your voice goes to an external service (today Groq, in the United States) that transcribes it. The filter that removes personal data works on text, not on voice: avoid saying your name, address and microchip number.';
 
   @override
   String get noticeRecordDocument =>

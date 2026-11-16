@@ -791,7 +791,7 @@ abstract class AppLocalizations {
   /// No description provided for @billingIncludedChatMedia.
   ///
   /// In it, this message translates to:
-  /// **'Foto, PDF e dettatura vocale nella chat'**
+  /// **'PDF e dettatura vocale nella chat'**
   String get billingIncludedChatMedia;
 
   /// No description provided for @billingIncludedReminders.
@@ -1499,7 +1499,7 @@ abstract class AppLocalizations {
   /// No description provided for @chatPhotoAnalyzing.
   ///
   /// In it, this message translates to:
-  /// **'Sto guardando la foto...'**
+  /// **'Carico la foto...'**
   String get chatPhotoAnalyzing;
 
   /// No description provided for @chatPhotoReady.
@@ -2857,6 +2857,12 @@ abstract class AppLocalizations {
   /// In it, this message translates to:
   /// **'File salvato, lettura automatica non riuscita'**
   String get medicalRecordMetaAnalysisFailed;
+
+  /// No description provided for @medicalRecordMetaPhotosOff.
+  ///
+  /// In it, this message translates to:
+  /// **'File salvato. Per ora l\'assistente non legge le foto'**
+  String get medicalRecordMetaPhotosOff;
 
   /// No description provided for @medicalRecordMetaUploadedNow.
   ///
@@ -11249,7 +11255,7 @@ abstract class AppLocalizations {
   /// No description provided for @noticeChatMedia.
   ///
   /// In it, this message translates to:
-  /// **'Le foto e la voce vanno a un servizio esterno (oggi Groq, negli Stati Uniti) che le legge o le trascrive. Il filtro che toglie i dati personali lavora sul testo, non sulle immagini né sulla voce: copri nome, indirizzo e numero di microchip.'**
+  /// **'La voce va a un servizio esterno (oggi Groq, negli Stati Uniti) che la trascrive. Il filtro che toglie i dati personali lavora sul testo, non sulla voce: evita di dire nome, indirizzo e numero di microchip.'**
   String get noticeChatMedia;
 
   /// No description provided for @noticeRecordDocument.

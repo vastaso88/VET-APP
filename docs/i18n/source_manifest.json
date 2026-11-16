@@ -1026,12 +1026,12 @@
     }
   },
   "ui:billingIncludedChatMedia": {
-    "source": "90a57e5a63f4ac422141e19eda9f0e06a4e676ba6277a02a3c38e9b7c28a67e0",
+    "source": "4a9cbf40142acba5815efe2467d130df2455a1d765cefe3e8122ba948b8fbc66",
     "targets": {
-      "en": "4d956cea5df48a1c3b2f8d63598ce108a605217110988318900430580c213f78",
-      "es": "73bd9e4d04bee6c24b03a97e223e6f738e7464164225a9e2ba879c8dd4d8800b",
-      "de": "ff81fcfc9efa30331a7e64089bd447c39795a9baad420500b58caf8e4457fefa",
-      "fr": "5df1e107df716f6b8b8451144fca9cb7bc4ac69b93097e92b5087cd1e478098d"
+      "en": "1dc9de028f160ef02b026623c521cee7fdabbe5966f410aa75d42e77ca7d694b",
+      "es": "42a852f37841785d2633b718bee88f088eb44e1220d32962b792506bb2430a39",
+      "de": "4060f86091bb83ec5a035a6e8c8c6add31bf9f1fc6b68c3ad3b7554e11118ff0",
+      "fr": "57b293ecd671187b3abd368b2b9f63e7127d4311977c8bee5d4ebce99cc5f261"
     }
   },
   "ui:billingIncludedReminders": {
@@ -1953,12 +1953,12 @@
     }
   },
   "ui:chatPhotoAnalyzing": {
-    "source": "bd0c0aa02156ab773b81a2a82613c10b9d0aaedfe823a6e7907869abbff931e9",
+    "source": "9f3832b64f75963f02ca8e10b47b767ad127049f38d27de31e9c5d3d18443b5a",
     "targets": {
-      "en": "4ac52cacbb226d2613abbe6a886a9a7c665b786ce60cb0cc1842224d5b060399",
-      "es": "e9712ed792775abb8dd38b46a9803f4ed533ef21eeddff8ab4441fb844c85c6d",
-      "de": "a05705253d7d0cc1a1e01826719b0782bc2c095ae686d3d3c823a23b2be5be17",
-      "fr": "22db08a07a1ccaaff45ae19ea4c65f32ff0faba7553ca014510b17fc680008a1"
+      "en": "79e20c4c7c19ed078f6848a9dc749e6294db57524ed003e522c89bacfa56b357",
+      "es": "0d47f000f8d7fbab2a55e866d571847dcae56b335b8929cadd4c862cd0586b7b",
+      "de": "a9d205ff72f87c31db95303368ecb8739f3ecb72be3a282199a76508748931c3",
+      "fr": "14231cfe675970b18a378b682071f8a37443bcea806c6ea9b89950a99cb64095"
     }
   },
   "ui:chatPhotoReady": {
@@ -19278,12 +19278,12 @@
     }
   },
   "ui:noticeChatMedia": {
-    "source": "35cecd109a5250826d78dabc79308da38223236009788ab4ca9350c207f596c7",
+    "source": "594cb703650e8bba04ea369df84dd90556b4a714cf9cefae5fe44f62c0329f36",
     "targets": {
-      "en": "231f935215ae35d7ca877bb03787121ff081ed4fdf284341a457b74e08b3e380",
-      "es": "dff1bd8fb1d0ebe2e11f02cac8d8b5f39e045a34f09490d3d132ed5694b424bd",
-      "de": "df01198025dba31c9b97a12cc5b2e222b21c94a334ce5d4dd7c3f5c90d165943",
-      "fr": "790ecba4def7a7833fd6e6f57fec447603fdeb7d6d6ff30e52fa02721a7ac4c0"
+      "en": "02e7cd49747cc159a2aec149690469b0b449a117444578d0a9001a2e5dc77486",
+      "es": "d3055befdb1c8250cf68d44e2feabff10d7204d45a4ca1afdd4f9e067fe47ad1",
+      "de": "c0580f2516ace298fb86a9b4dc88dc6706f6064201864049539146930ceb1b60",
+      "fr": "0b245f337710bc83d6d70aa738addd00e032379c0cee1b35ff71af3687c4b120"
     }
   },
   "ui:noticeRecordDocument": {
@@ -20589,6 +20589,51 @@
       "es": "8a3107f7b3ae34d6fbe719bcfb7ae7fdd12f374962cbb06789daf06a683d450d",
       "de": "b1ff98fe11a4b2603a499a265fe2266ff3ce61572974d4f10fc270e39e5b411c",
       "fr": "844f378a1fa64aa88eec5588f6722a3d08b6c6f6d2e21057b8a68003038c3079"
+    }
+  },
+  "backend:triage_steps_bleeding": {
+    "source": "85021c7af0eb16912bc6612def4d2a7e0ba652c83213a352918ddc5bfc24c02d",
+    "targets": {
+      "en": "e594158609a3d183b46d3ac9b99707b93ffc245f78aada38b3be7714de407fa2",
+      "es": "0e0914cd343432fe66c35be24a104d204c20aa56d92d342400deb8c905510579",
+      "de": "4c724953899285d362ed5da6eadc062c8aebeb834d6aad6af71b16d5cdf8c46c",
+      "fr": "e96141cb20913157af97cecec721636726c4678aeff55ad01123143f5be562a2"
+    }
+  },
+  "backend:triage_steps_urinary": {
+    "source": "c8a01c73f48e7df5a5bf56e78f27947e42ee9ede7f9c1bc0dbf8662c9e1116b6",
+    "targets": {
+      "en": "2eeb9d619c33e3377005b0d0a465ed720c79b3e6216ebf57dd15d685e4e131d4",
+      "es": "eae5b71f1724412d1940bd153210ddc42afb22755eb3285e31797890ac0b690f",
+      "de": "b62e343e936170a653b011cc19405935376a8bedb64e1a9fab2ada11749efcd3",
+      "fr": "d84d24141783f0bbfb37a6cbc208937f6c4432c9adcc280b4fa8d220d74d6a00"
+    }
+  },
+  "backend:triage_steps_respiratory": {
+    "source": "a75cbb675c45ed9eb0f5c08186a8d70e16d9915228fe3500043a83dba1afd19b",
+    "targets": {
+      "en": "3e449d14e0066e7ca0b064144aa4f434cb8aebc2c8a8f30f18246dc847675e79",
+      "es": "52b7f3be468c973b40776ff5180fa1b238ce9fc6c5d467d1998ee8885c8d4d42",
+      "de": "03e19b5090e9e94db9d6a0f3a7de562ac37c6a1c4c4da4ac35b6848ecd6a5775",
+      "fr": "13ac77c319b6f74c0ff27d7ecf897fb3c369a611c281541afb0815f1f5e2d079"
+    }
+  },
+  "ui:medicalRecordMetaPhotosOff": {
+    "source": "7272f031c7bd48f49b728ba12c09cf26a49f74907735d092e9fc5b9e4b24b0ad",
+    "targets": {
+      "en": "d3bdc6d49b1ceb86c71915cb22853389ea2260745e5b52a384b22539549984cd",
+      "es": "3c210cf0b96184435ad30e4f4d7c185b3300890d8bf77aadb008d87f6ecf1df4",
+      "de": "9e76abc53cc2a00f011be817ac3e1d076ace14d050c266370c6e716fb944c182",
+      "fr": "5e151e75c744c83812e0c6cd393db9077f7d2bd036daf9dfc5a2540c2015d236"
+    }
+  },
+  "backend:photo_reading_off": {
+    "source": "77484bbdf134e82bcbdbe83a96b1c68465bcaa53755bcdd979995f2930b80a0a",
+    "targets": {
+      "en": "b65b009d663bcb22e01668ebfd4449bdcc6adac133f57854ebc3896becbcb347",
+      "es": "7f7db99bb18d723490a18a5690d47075b83c79c1ac5ed0f5b2ec6814a5416a31",
+      "de": "e93efb811c71749947af30c63d7af684c1b72529626c865a0602c345b550d8ec",
+      "fr": "836bb74197bd8d441f6e4437f27987e8ef20f333939ae5b099ff2392368bee17"
     }
   }
 }

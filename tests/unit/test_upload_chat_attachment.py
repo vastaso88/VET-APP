@@ -13,6 +13,7 @@ from packages.infrastructure.persistence.in_memory_repositories import (
     InMemoryChatAttachmentRepository,
     InMemoryPetProfileRepository,
 )
+from packages.infrastructure.vision.disabled_image_analyzer import DisabledImageAnalyzer
 from packages.shared.errors.base import ProviderError, ValidationError
 
 JPEG_BYTES = b"\xff\xd8\xff\xe0" + b"fake-jpeg-body"
@@ -90,6 +91,17 @@ def test_saves_the_photo_even_when_analysis_fails() -> None:
 
     assert result.attachment.analysis is None
     assert result.attachment.analysis_failed is True
+    assert storage.read(result.attachment.storage_key) == strip_image_metadata(JPEG_BYTES, JPEG)
+
+
+def test_photo_reading_off_still_saves_the_photo_and_reads_nothing() -> None:
+    # docs/compliance/19 (2026-11-16): with reading off the file is kept and
+    # no analysis is ever written, so the chat cannot pretend to have seen it.
+    service, storage = _service(DisabledImageAnalyzer())
+
+    result = service.execute(_upload())
+
+    assert result.attachment.analysis is None
     assert storage.read(result.attachment.storage_key) == strip_image_metadata(JPEG_BYTES, JPEG)
 
 

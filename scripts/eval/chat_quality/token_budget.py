@@ -56,7 +56,8 @@ OUTPUT_DIR = ROOT_DIR / ".local" / "chat_eval"
 DEFAULT_TPD = {
     "openai/gpt-oss-120b": 200_000,
     "openai/gpt-oss-20b": 200_000,
-    "qwen/qwen3.8-27b": 200_000,
+    # qwen/qwen3.8-27b removed 2026-11-16: a preview model, outside Groq's
+    # data agreement (docs/compliance/19).
 }
 # What a typical real reply costs on the output side: ~1000 characters of
 # Italian (the prompt's own ceiling for most kinds of request) plus the

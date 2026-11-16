@@ -163,7 +163,9 @@ def test_the_triage_after_a_clarification_agrees_with_a_female_animal() -> None:
     )
 
     assert result.mode == "triage"
-    assert "Luna calma" in result.answer and "calmo" not in result.answer
+    # The breathing steps of a cat (synthetic users round 2) have no gendered
+    # adjective at all: nothing to get wrong for a female animal.
+    assert "posto fresco" in result.answer and "calmo" not in result.answer
 
 
 # --- 3. intention versus exposure, every toxin ------------------------------------

@@ -34,7 +34,31 @@ _GRAVE = re.compile(
     r"blaues zahnfleisch|weisses zahnfleisch|blasses zahnfleisch|blaue zunge|kollabiert|"
     r"bewusstlos|bewegt sich nicht|blutet stark|ist gefallen|angefahren|"
     r"gencives (?:bleues|blanches|pales)|langue (?:bleue|violette)|effondr\w*|inconscient|"
-    r"ne bouge plus|saigne beaucoup|est tombe|renverse par)\b"
+    r"ne bouge plus|saigne beaucoup|est tombe|renverse par|"
+    # Synthetic users round 2 (2026-11-16): the answer to the clarifying
+    # question was already in the message, and the owner got questions
+    # before any help. Bleeding that pressure does not stop:
+    r"sanguina parecchio|(?:sangue|sanguina\w*)[^.?!]{0,40}non si ferma|continua a sanguinare|"
+    r"sangue che cola|"
+    r"won't stop|doesn't stop bleeding|keeps bleeding|no para de sangrar|hort nicht auf zu "
+    r"bluten|blutet weiter|ne s'arrete pas de saigner|saigne toujours|"
+    # straining with nothing or a few drops (a blocked urinary tract):
+    r"non riesce a fare (?:la )?pipi|non riesce a urinare|"
+    r"(?:lettiera|pipi)[^.?!]{0,60}non esce (?:niente|nulla)|"
+    r"poche gocce di pipi|fa (?:solo )?poche gocce|"
+    r"(?:\d+|piu di \w+) ore che non (?:fa|ha fatto) (?:la )?pipi|non fa pipi da|"
+    r"can't pee|cannot pee|straining to (?:pee|urinate)|(?:pees|peeing) only a few drops|"
+    r"a few drops of (?:urine|pee)|no puede orinar|solo unas gotas de orina|"
+    r"kann nicht (?:pinkeln|urinieren)|nur ein paar tropfen urin|n'arrive pas a uriner|"
+    r"quelques gouttes d'urine|"
+    # a seizure that is happening or has just happened:
+    r"convuls\w*|crisi epilettic\w*|attacco epilettic\w*|seizure\w*|having a fit|"
+    r"convulsion\w*|krampfanfall|krampft|anfall|crise d'epilepsie|"
+    # breathing with the mouth open, or a whistling breath, at rest:
+    r"(?:respira|tiene la bocca|con la bocca) (?:con la bocca )?aperta|respiro (?:che )?fischi\w*|"
+    r"rantol\w*|breathing with (?:its|his|her|the) mouth open|wheez\w*|"
+    r"respira con la boca abierta|silba al respirar|atmet mit offenem maul|pfeift beim atmen|"
+    r"respire la bouche ouverte|siffle en respirant)\b"
 )
 
 

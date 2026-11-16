@@ -182,6 +182,7 @@ class _MedicalRecordUploadPageState extends State<MedicalRecordUploadPage> {
 
     String? attachmentId;
     var analysisFailed = false;
+    var photosOff = false;
     var uploadFailed = false;
     String? uploadError;
     String? rejectionMessage;
@@ -200,6 +201,7 @@ class _MedicalRecordUploadPageState extends State<MedicalRecordUploadPage> {
           onSuccess: (uploaded) {
             attachmentId = uploaded.id;
             analysisFailed = uploaded.analysisFailed;
+            photosOff = uploaded.photoReadingOff;
           },
           onFailure: (error) {
             if (_validationCodes.contains(error.code)) {
@@ -242,6 +244,7 @@ class _MedicalRecordUploadPageState extends State<MedicalRecordUploadPage> {
       attachmentId: attachmentId,
       uploadFailed: false,
       analysisFailed: analysisFailed,
+      photosOff: photosOff,
     );
   }
 
@@ -272,6 +275,7 @@ class _MedicalRecordUploadPageState extends State<MedicalRecordUploadPage> {
     required String? attachmentId,
     required bool uploadFailed,
     required bool analysisFailed,
+    bool photosOff = false,
   }) async {
     final picked = _picked;
     setState(() => _saving = true);
@@ -294,6 +298,9 @@ class _MedicalRecordUploadPageState extends State<MedicalRecordUploadPage> {
           ? ''
           : uploadFailed
           ? l10n.medicalRecordMetaNotUploaded
+          : analysisFailed && photosOff
+          // Photos are saved but not read for now: not a failure.
+          ? l10n.medicalRecordMetaPhotosOff
           : analysisFailed
           ? l10n.medicalRecordMetaAnalysisFailed
           : l10n.medicalRecordMetaUploadedNow,
