@@ -38,7 +38,9 @@ from packages.shared.errors.base import ProviderError
 # Second round of the same day: AI identity, no prices, OFF TOPIC rule.
 # Wide eval 2026-11-06: OWNER DUTIES says the notes describe Italy.
 # 2026-11-07: the history and reference-material sentences (synthetic users P7, P11).
-SYSTEM_PROMPT_MAX_CHARS = 9700
+# 2026-11-16: +200 for the harmful-content sentence of WHAT YOU ARE NOT (Anthropic's
+# rules for products minors may use, docs/compliance/08 point 57).
+SYSTEM_PROMPT_MAX_CHARS = 9900
 QUESTION = "da due giorni zoppica dopo le passeggiate"
 
 

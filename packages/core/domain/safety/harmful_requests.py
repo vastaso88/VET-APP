@@ -1106,15 +1106,12 @@ _DEATH = _words(
 )
 _HOPELESSNESS = _words(
     r"niente ha (?:piu )?senso|nulla ha (?:piu )?senso|non ha (?:piu )?senso (?:niente|nulla)|"
-    r"nemmeno alzarmi|non riesco (?:piu )?ad alzarmi|non ce la faccio piu|non voglio (?:piu )?"
-    r"vivere|vorrei morire|farla finita|non vedo (?:piu )?(?:un )?motivo|"
-    r"nothing makes sense|nothing matters|can't (?:even )?get up|can't go on|don't want to live|"
-    r"want to die|end it all|no point|"
-    r"nada tiene sentido|no puedo (?:ni )?levantarme|no puedo mas|no quiero vivir|"
-    r"nichts (?:hat|macht) (?:mehr )?sinn|kann nicht (?:mehr )?aufstehen|kann nicht mehr|will "
-    r"nicht mehr leben|"
-    r"rien n'a (?:plus )?de sens|je n'arrive (?:plus )?a me lever|je n'en peux plus|je ne veux "
-    r"plus vivre"
+    r"nemmeno alzarmi|non riesco (?:piu )?ad alzarmi|non ce la faccio piu|"
+    r"non vedo (?:piu )?(?:un )?motivo|"
+    r"nothing makes sense|nothing matters|can't (?:even )?get up|can't go on|no point|"
+    r"nada tiene sentido|no puedo (?:ni )?levantarme|no puedo mas|"
+    r"nichts (?:hat|macht) (?:mehr )?sinn|kann nicht (?:mehr )?aufstehen|kann nicht mehr|"
+    r"rien n'a (?:plus )?de sens|je n'arrive (?:plus )?a me lever|je n'en peux plus"
 )
 
 
@@ -1125,7 +1122,9 @@ def mentions_a_death(message: str) -> bool:
 def expresses_hopelessness(message: str) -> bool:
     """ "Niente ha più senso, nemmeno alzarmi": taken seriously, without a
     diagnosis; a fixed opening line points to the doctor or a listening
-    service, never a phone number the app cannot verify."""
+    service (Telefono Amico Italia, number checked on its own site), then
+    the model goes on about the animal. Words about ending one's life go
+    to ``expresses_self_harm`` instead, which has no model at all."""
     return bool(_HOPELESSNESS.search(normalize_for_matching(message)))
 
 
@@ -1133,28 +1132,142 @@ HOPELESSNESS_OPENING: dict[str, str] = {
     "it": (
         "Quello che scrivi lo prendo sul serio. Un dolore così forte che non fa alzare dal "
         "letto merita di essere detto a qualcuno che può starti accanto: parlane presto con "
-        "il tuo medico o con un servizio di ascolto, e non restare solo con questo peso. "
+        "il tuo medico o con un servizio di ascolto, come Telefono Amico Italia (02 2327 2327, "
+        "gratis, 24 ore su 24), e non restare solo con questo peso. "
     ),
     "en": (
         "I take what you write seriously. A pain so heavy that it keeps you from getting up "
         "deserves to be told to someone who can stand by you: talk soon to your doctor or to "
-        "a listening service, and do not stay alone with this weight. "
+        "a listening service (in Italy, Telefono Amico Italia: 02 2327 2327, free, 24 hours a "
+        "day), and do not stay alone with this weight. "
     ),
     "es": (
         "Me tomo en serio lo que escribes. Un dolor tan fuerte que no te deja levantarte "
         "merece contarse a alguien que pueda acompañarte: habla pronto con tu médico o con "
-        "un servicio de escucha, y no te quedes solo con este peso. "
+        "un servicio de escucha (en Italia, Telefono Amico Italia: 02 2327 2327, gratis, 24 "
+        "horas al día), y no te quedes solo con este peso. "
     ),
     "de": (
         "Was Sie schreiben, nehme ich ernst. Ein Schmerz, der so schwer ist, dass er Sie nicht "
         "aufstehen lässt, gehört zu jemandem, der Ihnen beistehen kann: Sprechen Sie bald mit "
-        "Ihrer Ärztin oder Ihrem Arzt oder mit einer Beratungsstelle, und bleiben Sie mit dieser "
-        "Last nicht allein. "
+        "Ihrer Ärztin oder Ihrem Arzt oder mit einer Beratungsstelle (in Italien Telefono Amico "
+        "Italia: 02 2327 2327, "
+        "kostenlos, rund um die Uhr), und bleiben Sie mit dieser Last nicht allein. "
     ),
     "fr": (
         "Je prends ce que vous écrivez au sérieux. Une douleur si lourde qu'elle empêche de se "
         "lever mérite d'être dite à quelqu'un qui peut vous accompagner : parlez-en vite à "
-        "votre médecin ou à un service d'écoute, et ne restez pas seul avec ce poids. "
+        "votre médecin ou à un service d'écoute (en Italie, Telefono Amico Italia : "
+        "02 2327 2327, gratuit, 24 heures sur 24), et ne restez pas seul avec ce poids. "
+    ),
+}
+
+# --- self-harm and suicidal thoughts of the person (2026-11-16) --------------
+#
+# Anthropic's rules for products that minors may use (docs/compliance/14 §1,
+# point 57 of docs/compliance/08): the person who writes about ending their
+# life or hurting themselves gets a short, warm, FIXED reply with official
+# helplines, before any other check and without any model, so those words
+# never leave for a provider and no clinical advice about the person can be
+# written. Numbers checked on the services' own sites on 2026-11-16:
+# Telefono Amico Italia 02 2327 2327 (free, 24 hours a day, anyone in
+# emotional crisis), Telefono Azzurro 19696 (free, 24/7, children and
+# teenagers up to 18), 112 for immediate danger. Only phrases of intent:
+# "il cane potrebbe farmi del male" or "mi sono fatto male in passeggiata"
+# are not self-harm.
+
+_SELF_HARM = _words(
+    r"suicid\w*|uccidermi|ammazzarmi|togliermi la vita|"
+    r"farla finita(?! con (?!tutto|la vita))|vorrei morire|voglio morire|"
+    r"non voglio (?:piu )?vivere|(?:voglio|vorrei|ho voglia di|penso di) farmi del male|"
+    r"mi faccio del male (?:apposta|da sol[oa])|autolesion\w*|"
+    r"tagliarmi (?:i polsi|le braccia|le vene)|"
+    r"kill myself|killing myself|end my life|take my (?:own )?life|(?:want|wanna) to die|"
+    r"don't want to (?:live|be alive)|dont want to live|(?:want|going) to hurt myself|"
+    r"hurting myself on purpose|self[- ]?harm\w*|cut(?:ting)? myself|end it all|"
+    r"matarme|quitarme la vida|quiero morir(?:me)?|no quiero (?:seguir )?vivir|"
+    r"quiero hacerme dano|cortarme las venas|"
+    r"selbstmord\w*|suizid\w*|mich umbringen|mir das leben nehmen|(?:will|mochte) sterben|"
+    r"will nicht mehr leben|(?:will|mochte) mich (?:selbst )?verletzen|mich ritzen|"
+    r"(?:je veux|envie de|je vais) me tuer|mettre fin a mes jours|(?:envie d')?en finir avec "
+    r"la vie|je veux mourir|je ne veux plus vivre|(?:je veux|envie de) me faire du mal|"
+    r"automutil\w*|me scarifier"
+)
+
+
+def expresses_self_harm(message: str) -> bool:
+    """ "Vorrei farla finita", "I want to kill myself": the person, not the
+    animal, thinks of ending their life or hurting themselves."""
+    return bool(_SELF_HARM.search(normalize_for_matching(message)))
+
+
+SELF_HARM_TEXTS: dict[str, str] = {
+    "it": (
+        "Mi dispiace davvero che tu stia così male, e hai fatto bene a scriverlo. Questi "
+        "pensieri non vanno tenuti dentro: parlane adesso con una persona. Telefono Amico "
+        "Italia ascolta gratis, 24 ore su 24, allo 02 2327 2327. Se senti di essere in "
+        "pericolo adesso, chiama subito il 112. Io posso parlarti del tuo animale, ma quello "
+        "che senti merita persone vere, pronte ad ascoltarti. Quando vuoi, io resto qui."
+    ),
+    "en": (
+        "I am truly sorry you feel this bad, and you did the right thing writing it. Thoughts "
+        "like these should not be kept inside: talk to someone now. In Italy, Telefono Amico "
+        "Italia listens for free, 24 hours a day, on 02 2327 2327. If you feel in danger right "
+        "now, call 112 at once (the emergency number across the EU); elsewhere, your local "
+        "emergency number or helpline. I can talk with you about your animal, but what you "
+        "feel deserves real people, ready to listen. I am here whenever you want."
+    ),
+    "es": (
+        "Siento de verdad que te encuentres tan mal, e hiciste bien en escribirlo. Estos "
+        "pensamientos no hay que guardárselos: habla ahora con alguien. En Italia, Telefono "
+        "Amico Italia escucha gratis, 24 horas al día, en el 02 2327 2327. Si sientes que "
+        "estás en peligro ahora mismo, llama enseguida al 112 (el número de emergencias en "
+        "toda la UE); en otros países, el número de emergencias o la línea de ayuda local. "
+        "Puedo hablar contigo de tu animal, pero lo que sientes merece personas reales, "
+        "dispuestas a escucharte. Aquí sigo cuando quieras."
+    ),
+    "de": (
+        "Es tut mir wirklich leid, dass es Ihnen so schlecht geht, und es war richtig, das zu "
+        "schreiben. Solche Gedanken sollte man nicht für sich behalten: Sprechen Sie jetzt mit "
+        "jemandem. In Italien hört Telefono Amico Italia kostenlos und rund um die Uhr zu, "
+        "unter 02 2327 2327. Wenn Sie sich gerade in Gefahr fühlen, rufen Sie sofort die 112 "
+        "an (der Notruf in der ganzen EU); anderswo den örtlichen Notruf oder eine "
+        "Telefonseelsorge. Ich kann mit Ihnen über Ihr Tier sprechen, aber was Sie fühlen, "
+        "verdient echte Menschen, die zuhören. Ich bin da, wann immer Sie möchten."
+    ),
+    "fr": (
+        "Je suis vraiment désolé que vous alliez si mal, et vous avez bien fait de l'écrire. "
+        "Ces pensées ne doivent pas rester enfermées : parlez-en maintenant à quelqu'un. En "
+        "Italie, Telefono Amico Italia écoute gratuitement, 24 heures sur 24, au "
+        "02 2327 2327. Si vous vous sentez en danger maintenant, appelez tout de suite le 112 "
+        "(le numéro d'urgence dans toute l'UE) ; ailleurs, le numéro d'urgence ou la ligne "
+        "d'écoute locale. Je peux vous parler de votre animal, mais ce que vous ressentez "
+        "mérite de vraies personnes, prêtes à écouter. Je reste là quand vous voulez."
+    ),
+}
+
+# Added for a declared 14-17 account or a message that says the writer is a
+# child: the line for under-18s and a trusted adult.
+UNDER_18_HELP_LINE: dict[str, str] = {
+    "it": (
+        "Puoi chiamare anche Telefono Azzurro al 19696, gratis e a ogni ora (è per chi ha meno "
+        "di 18 anni), e parlarne con un adulto di cui ti fidi."
+    ),
+    "en": (
+        "You can also call Telefono Azzurro on 19696, free at any hour (it is for under-18s), "
+        "and talk to an adult you trust."
+    ),
+    "es": (
+        "También puedes llamar a Telefono Azzurro al 19696, gratis a cualquier hora (es para "
+        "menores de 18 años), y hablarlo con un adulto de confianza."
+    ),
+    "de": (
+        "Sie können auch Telefono Azzurro unter 19696 anrufen, kostenlos und zu jeder Stunde "
+        "(für Menschen unter 18), und mit einem Erwachsenen sprechen, dem Sie vertrauen."
+    ),
+    "fr": (
+        "Vous pouvez aussi appeler Telefono Azzurro au 19696, gratuitement à toute heure (pour "
+        "les moins de 18 ans), et en parler à un adulte de confiance."
     ),
 }
 

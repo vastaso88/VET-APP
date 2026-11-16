@@ -207,7 +207,11 @@ def test_a_plant_diet_for_a_cat_and_a_grief_message_get_their_notes() -> None:
     assert "THE ANIMAL HAS DIED" in prompt and "NOTHING MAKES SENSE" in prompt
     assert result.answer.startswith("Quello che scrivi lo prendo sul serio.")
     assert "medico" in result.answer and "servizio di ascolto" in result.answer
-    assert not any(char.isdigit() for char in result.answer.split("Mi dispiace")[0])
+    # 2026-11-16 (docs/compliance/08 point 57): the opening carries the helpline checked on
+    # its own site, and only that number.
+    opening = result.answer.split("Mi dispiace")[0]
+    assert "02 2327 2327" in opening
+    assert "".join(c for c in opening if c.isdigit()) == "0223272327" + "2424"  # "24 ore su 24"
 
 
 # --- 8. the online purchase: no "if you decide to proceed" ----------------------------------------

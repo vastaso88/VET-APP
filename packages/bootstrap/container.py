@@ -794,6 +794,7 @@ class ApplicationContainer:
             max_active_conversations_per_pet=self.settings.max_active_conversations_per_pet,
             quota_exempt_emails=self.developer_emails,
             owner_limits=self.owner_limits_lookup(),
+            account_age_repository=self.account_age_repository,
         )
 
     def chat_usage_maintenance_service(self) -> ChatUsageMaintenanceService:

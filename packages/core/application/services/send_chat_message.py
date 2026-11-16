@@ -2,6 +2,7 @@ from datetime import UTC, date, datetime
 
 from pydantic import BaseModel
 
+from packages.core.application.ports.account_age_repository import AccountAgeRepository
 from packages.core.application.ports.chat_attachment_repository import ChatAttachmentRepository
 from packages.core.application.ports.conversation_repository import ConversationRepository
 from packages.core.application.ports.owner_limits import OwnerLimitsLookup
@@ -17,6 +18,7 @@ from packages.core.application.services.reminder_context_retriever import (
     ReminderContextRetriever,
 )
 from packages.core.application.services.safety_gate import SafetyGate
+from packages.core.domain.age.models import AgeBand, band_for
 from packages.core.domain.common.language import normalize_language
 from packages.core.domain.conversation.models import ChatMessage, Conversation
 from packages.core.domain.conversation.states import ConversationState
@@ -129,6 +131,7 @@ class SendChatMessageService:
         max_active_conversations_per_pet: int = 4,
         quota_exempt_emails: frozenset[str] = frozenset(),
         owner_limits: OwnerLimitsLookup | None = None,
+        account_age_repository: AccountAgeRepository | None = None,
     ) -> None:
         self._repository = repository
         self._orchestrator = orchestrator
@@ -147,6 +150,16 @@ class SendChatMessageService:
         self._quota_exempt_emails = frozenset(e.strip().lower() for e in quota_exempt_emails)
         # None: this deployment has no plans, so no per-plan limits apply.
         self._owner_limits = owner_limits
+        # None: no age is ever declared here, every owner is treated as an adult.
+        self._account_age_repository = account_age_repository
+
+    def _owner_is_minor(self, owner_id: str, today: date) -> bool:
+        """A declared age of 14 to 17 (the age guard has already closed
+        accounts under 14). Read on every turn: a birthday changes it."""
+        if self._account_age_repository is None or not owner_id:
+            return False
+        age = self._account_age_repository.get(owner_id)
+        return age is not None and band_for(age.birth_date, today) == AgeBand.MINOR
 
     def _limits_for(self, data: SendChatMessageInput) -> PlanLimits | None:
         if self._owner_limits is None:
@@ -283,6 +296,7 @@ class SendChatMessageService:
                 reminders_context=reminders_context,
                 language=normalize_language(data.language),
                 owner_id=data.owner_id,
+                owner_is_minor=self._owner_is_minor(data.owner_id, today),
                 quota_exempt=(getattr(data, "owner_email", None) or "").strip().lower()
                 in self._quota_exempt_emails,
                 user_daily_limit=plan_limits.daily_questions if plan_limits else None,

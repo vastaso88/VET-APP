@@ -156,6 +156,8 @@ from packages.core.domain.safety.harmful_requests import (
     PRICE_REPLACEMENT,
     PROMPT_LEAK_TEXTS,
     QUOTA_TEXTS,
+    SELF_HARM_TEXTS,
+    UNDER_18_HELP_LINE,
     YES_NO_REPLACEMENT,
     answer_certifies,
     answer_is_bare_yes_no,
@@ -163,6 +165,7 @@ from packages.core.domain.safety.harmful_requests import (
     asks_for_a_bare_yes_or_no,
     detect_harmful_request,
     expresses_hopelessness,
+    expresses_self_harm,
     is_about_a_future_animal,
     is_dose_change_request,
     is_euthanasia_follow_up,
@@ -874,6 +877,9 @@ class ChatOrchestratorInput(BaseModel):
     # Who is asking, for the per-owner daily allowance (llm_budget.py);
     # developer accounts are exempt.
     owner_id: str = ""
+    # The account declared an age of 14 to 17 (account_age): the prompt gets
+    # the teenager note and the self-harm reply the under-18 helpline.
+    owner_is_minor: bool = False
     quota_exempt: bool = False
     # The owner's plan allowance of questions per day; None = the
     # deployment-wide default (llm_budget.py).
@@ -1078,7 +1084,7 @@ class ChatOrchestrator:
             return result
         if result.mode not in cls._WEIGHT_SUGGESTION_MODES:
             return result
-        if result.model in ("toxin-intent-guard", "dog-product-on-cat-guard"):
+        if result.model in ("toxin-intent-guard", "dog-product-on-cat-guard", "self-harm-guard"):
             # "No, never" needs no weight (wide eval 2026-11-06).
             return result
         if result.state in cls._WEIGHT_SUGGESTION_BLOCKING_STATES:
@@ -1144,6 +1150,13 @@ class ChatOrchestrator:
             # exactly like anything the owner typed.
             message = f"{message}\n\nContesto dall'allegato: {data.photo_context}".strip()
         lowered = message.lower()
+
+        # The person thinks of ending their life or hurting themselves
+        # (2026-11-16, docs/compliance/08 point 57): before anything else,
+        # a pending clarifying question included, a short fixed reply with
+        # the helplines; no model, so those words never reach a provider.
+        if expresses_self_harm(data.user_message):
+            return self._self_harm_reply(data)
 
         pending_category = data.safety_clarification_category
         if data.awaiting_safety_clarification and pending_category:
@@ -1733,6 +1746,24 @@ class ChatOrchestrator:
     def _fixed_text(texts: dict[str, str], data: ChatOrchestratorInput) -> str:
         language = normalize_language(data.language)
         return texts.get(language, texts["it"]).format(name=data.pet_name)
+
+    @staticmethod
+    def _under_18(data: ChatOrchestratorInput) -> bool:
+        return data.owner_is_minor or is_minor_writing(data.user_message)
+
+    @classmethod
+    def _self_harm_reply(cls, data: ChatOrchestratorInput) -> ChatOrchestratorResult:
+        text = cls._fixed_text(SELF_HARM_TEXTS, data)
+        if cls._under_18(data):
+            text = f"{text} {cls._fixed_text(UNDER_18_HELP_LINE, data)}"
+        return ChatOrchestratorResult(
+            answer=text,
+            mode="general",
+            confidence="high",
+            ai_generated=False,
+            provider="rule-based",
+            model="self-harm-guard",
+        )
 
     @classmethod
     def _toxin_intent_result(
@@ -3287,6 +3318,7 @@ class ChatOrchestrator:
             prevention_schedule=not health_rule and is_prevention_schedule_question(message),
             harmful_note=HARMFUL_NOTES.get(detect_harmful_request(message) or "", ""),
             minor=is_minor_writing(message),
+            minor_account=data.owner_is_minor,
             child_at_risk=mentions_a_child_at_risk(message),
             long_message=is_long_message(message),
             forced_yes_no=asks_for_a_bare_yes_or_no(message),
@@ -3442,7 +3474,10 @@ class ChatOrchestrator:
                 cache_id = None
         if expresses_hopelessness(message):
             # Third round, 7: taken seriously, deterministically.
-            answer_text = self._fixed_text(HOPELESSNESS_OPENING, data) + answer_text
+            opening = self._fixed_text(HOPELESSNESS_OPENING, data)
+            if self._under_18(data):
+                opening += self._fixed_text(UNDER_18_HELP_LINE, data) + " "
+            answer_text = opening + answer_text
             cache_id = None
         if mentions_a_child_at_risk(message) and not is_minor_writing(message):
             # Fourth round, 2: the note alone did not move the model.
