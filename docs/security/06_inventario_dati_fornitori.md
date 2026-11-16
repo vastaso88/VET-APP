@@ -16,6 +16,14 @@ certificate; **TIA** = valutazione dell'impatto del trasferimento.
 
 ## 1. Dati trattati
 
+Il portale admin espone in sola lettura (`GET /admin/users`, pagina Users) email,
+ID account, iscrizione, ultimo login, verifica email, sospensione e piano/prova:
+finalità di assistenza e verifica dell'accesso al servizio, sulla base del contratto
+(base da confermare col legale come nel registro). Solo amministratori con email
+verificata nell'allowlist, risposte senza cache; nessuna copia persistente aggiuntiva,
+nessun nuovo fornitore, nessun dato clinico, posizione o data di nascita.
+Gli importi restano sconosciuti finché non è disponibile un registro transazioni.
+
 | Categoria | Dati | Dove sono | Base giuridica (da confermare col legale) | Conservazione | Sensibilità |
 | --- | --- | --- | --- | --- | --- |
 | Account | e-mail, hash password (gestito da Supabase Auth), id utente, data creazione, telefono (facoltativo, in arrivo) | Supabase Auth (IE) | contratto (art. 6.1.b) | fino a cancellazione account | media: e-mail = identificatore diretto |
