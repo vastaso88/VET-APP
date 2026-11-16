@@ -1,17 +1,21 @@
-from pydantic import BaseModel, Field
+from pydantic import BaseModel
 from pydantic import ValidationError as PydanticValidationError
 
 from packages.core.application.ports.pet_profile_repository import PetProfileRepository
 from packages.core.domain.pet_profile.models import FishStock, HabitatDetails, PetProfile
+from packages.core.domain.pet_profile.validation import validate_pet_fields
 from packages.shared.errors.base import ValidationError
 
 
 class UpdatePetProfileInput(BaseModel):
+    """A partial update: only the fields that are SET change (an explicit `None`
+    clears an optional one); every field left out keeps its value."""
+
     pet_id: str
     # The caller's identity; see GetPetProfileInput.
     owner_id: str
-    name: str
-    species: str
+    name: str | None = None
+    species: str | None = None
     breed: str | None = None
     age_years: int | None = None
     notes: str | None = None
@@ -25,11 +29,14 @@ class UpdatePetProfileInput(BaseModel):
     body_condition: str | None = None
     activity_level: str | None = None
     habitat: HabitatDetails | None = None
-    aquarium_stock: list[FishStock] = Field(default_factory=list)
+    aquarium_stock: list[FishStock] | None = None
 
 
 class UpdatePetProfileOutput(BaseModel):
     pet_profile: PetProfile
+
+
+_IDENTITY = {"pet_id", "owner_id"}
 
 
 class UpdatePetProfileService:
@@ -47,12 +54,17 @@ class UpdatePetProfileService:
         # re-validating — PetProfile.habitat silently became a dict, not a
         # HabitatDetails, breaking attribute access on the result. Reading
         # the fields directly off `data` keeps nested model instances intact.
-        fields = {
-            name: getattr(data, name)
-            for name in type(data).model_fields
-            if name not in {"pet_id", "owner_id"}
-        }
+        touched = data.model_fields_set - _IDENTITY
+        fields = {name: getattr(data, name) for name in touched}
+        # A name or species can be changed but not blanked; a list is never null.
+        if fields.get("aquarium_stock", []) is None:
+            fields["aquarium_stock"] = []
+        if isinstance(fields.get("name"), str):
+            fields["name"] = fields["name"].strip()
         updated = pet_profile.model_copy(update=fields)
+        # Only what this request touches is judged: a row saved long ago with an
+        # odd value is not refused for something nobody changed.
+        validate_pet_fields(updated.model_dump(), touched)
         # model_copy skips validation: run it, so the legacy sex split and the
         # microchip/body-condition checks apply to updates as well.
         try:

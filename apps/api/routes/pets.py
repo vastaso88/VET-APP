@@ -2,7 +2,11 @@ from fastapi import APIRouter, Depends
 
 from apps.api.dependencies.container import get_container
 from apps.api.dependencies.subscription import require_active_subscription
-from apps.api.schemas.pets import CreatePetProfileRequest, SetMedicalRecordConsentRequest
+from apps.api.schemas.pets import (
+    CreatePetProfileRequest,
+    SetMedicalRecordConsentRequest,
+    UpdatePetProfileRequest,
+)
 from packages.core.application.services.create_pet_profile import CreatePetProfileInput
 from packages.core.application.services.get_pet_profile import GetPetProfileInput
 from packages.core.application.services.list_pet_profiles import ListPetProfilesInput
@@ -48,11 +52,14 @@ def create_pet(request: CreatePetProfileRequest) -> dict[str, object]:
 
 
 @router.put("/{pet_id}", dependencies=[Depends(require_active_subscription)])
-def update_pet(pet_id: str, request: CreatePetProfileRequest) -> dict[str, object]:
+def update_pet(pet_id: str, request: UpdatePetProfileRequest) -> dict[str, object]:
     container = get_container()
     user = container.auth_provider.get_current_user()
     result = container.update_pet_profile_service().execute(
-        UpdatePetProfileInput(pet_id=pet_id, owner_id=user.id, **request.model_dump())
+        # Only what the request sets: a field left out is not touched.
+        UpdatePetProfileInput(
+            pet_id=pet_id, owner_id=user.id, **request.model_dump(exclude_unset=True)
+        )
     )
     return result.model_dump()
 

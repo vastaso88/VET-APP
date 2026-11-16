@@ -3,6 +3,7 @@ from pydantic import BaseModel, Field
 from packages.core.application.ports.owner_limits import OwnerLimitsLookup
 from packages.core.application.ports.pet_profile_repository import PetProfileRepository
 from packages.core.domain.pet_profile.models import FishStock, HabitatDetails, PetProfile
+from packages.core.domain.pet_profile.validation import validate_pet_fields
 from packages.shared.errors.base import PlanLimitError
 
 
@@ -43,7 +44,14 @@ class CreatePetProfileService:
 
     def execute(self, data: CreatePetProfileInput) -> CreatePetProfileOutput:
         self._require_room_for_another_pet(data)
-        pet_profile = PetProfile(**data.model_dump(exclude={"owner_email"}))
+        values = data.model_dump(exclude={"owner_email", "owner_id"})
+        values["name"] = values["name"].strip()
+        # Judge every field that was given (name and species always).
+        validate_pet_fields(
+            values,
+            {key for key, value in values.items() if value is not None} | {"name", "species"},
+        )
+        pet_profile = PetProfile(owner_id=data.owner_id, **values)
         return CreatePetProfileOutput(pet_profile=self._repository.save(pet_profile))
 
     def _require_room_for_another_pet(self, data: CreatePetProfileInput) -> None:

@@ -357,6 +357,17 @@ class HttpChatRemoteDataSource implements ChatRemoteDataSource {
     }
   }
 
+  static const _unknownSpeciesFallback = 'Altro';
+
+  static bool _isSpeciesUnknown(http.Response response) {
+    try {
+      final json = jsonDecode(response.body);
+      return json is Map<String, dynamic> && json['code'] == 'species_unknown';
+    } catch (_) {
+      return false;
+    }
+  }
+
   @override
   Future<Result<String>> ensureDefaultPetId({
     required String fallbackName,
@@ -381,13 +392,23 @@ class HttpChatRemoteDataSource implements ChatRemoteDataSource {
         // rather than reusing an unrelated pet's id.
       }
 
-      final createResponse = await _client
+      Future<http.Response> createWith(String species) => _client
           .post(
             Uri.parse('$_baseUrl/pets'),
             headers: _headers,
-            body: jsonEncode({'name': fallbackName, 'species': fallbackSpecies}),
+            body: jsonEncode({'name': fallbackName, 'species': species}),
           )
           .timeout(_timeout);
+
+      var createResponse = await createWith(fallbackSpecies);
+      // The server refuses a species it does not know (422 `species_unknown`):
+      // an old or odd local value must not leave the chat without a pet, so it
+      // is tried once more as "Altro".
+      if (createResponse.statusCode == 422 &&
+          fallbackSpecies != _unknownSpeciesFallback &&
+          _isSpeciesUnknown(createResponse)) {
+        createResponse = await createWith(_unknownSpeciesFallback);
+      }
       if (createResponse.statusCode < 200 || createResponse.statusCode >= 300) {
         final planError = _planError(createResponse);
         if (planError != null) return Result.failure(planError);

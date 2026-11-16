@@ -56,3 +56,27 @@ def normalize_species(raw: str) -> str:
     anything unrecognized — never raises, matching the fail-safe posture
     of every other species-keyed lookup in this codebase."""
     return _LABEL_TO_CANONICAL.get(raw.strip().lower(), "other")
+
+
+# Labels older app builds stored (and singular/plural forms of today's): a pet
+# saved by one of them must still be accepted. They only count for validation;
+# reading still folds them as before (normalize_species is unchanged).
+_LEGACY_LABELS = frozenset(
+    {
+        "coniglio",
+        "rettile",
+        "rettili",
+        "anfibio",
+        "anfibi",
+        "piccolo mammifero",
+        "uccelli",
+        "pesci",
+    }
+)
+
+
+def is_known_species(raw: str) -> bool:
+    """Whether [raw] is one of the species the app offers (or a legacy/English
+    alias): an invented one ("Drago") is not."""
+    label = raw.strip().lower()
+    return label in _LABEL_TO_CANONICAL or label in _LEGACY_LABELS

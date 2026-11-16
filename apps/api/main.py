@@ -36,6 +36,7 @@ from apps.api.routes.subscription import router as subscription_router
 from packages.bootstrap.container import get_container
 from packages.core.domain.common.language import language_from_accept_header
 from packages.core.domain.localization import translate
+from packages.core.domain.pet_profile.validation import PetInputError
 from packages.infrastructure.logging.logger import configure_logging
 from packages.infrastructure.telemetry.noop import setup_telemetry
 from packages.shared.auth_context import reset_access_token, set_access_token
@@ -155,6 +156,17 @@ async def handle_requirement_missing(_: Request, exc: RequirementMissingError) -
     return JSONResponse(
         status_code=400,
         content={"detail": exc.code, "code": exc.code, "message": exc.message, "fix": exc.fix},
+    )
+
+
+@app.exception_handler(PetInputError)
+async def handle_pet_input_error(request: Request, exc: PetInputError) -> JSONResponse:
+    """A pet field the API refuses: 422 with a stable `code`, the `field`, and the
+    message in the owner's language (Accept-Language, Italian when unknown)."""
+    language = language_from_accept_header(request.headers.get("accept-language"))
+    return JSONResponse(
+        status_code=422,
+        content={"detail": exc.message(language), "code": exc.code, "field": exc.field},
     )
 
 
