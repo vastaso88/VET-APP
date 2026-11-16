@@ -13,16 +13,25 @@ import '../../../shared/types/result.dart';
 /// [pending] = deactivated and waiting to be erased on [purgeAfter].
 /// [graceDays] is the backend's setting (not a number kept in the app).
 class DeletionStatus {
-  const DeletionStatus({required this.pending, required this.graceDays, this.purgeAfter});
+  const DeletionStatus({
+    required this.pending,
+    required this.graceDays,
+    this.purgeAfter,
+    this.pauseMaxMonths,
+  });
 
   final bool pending;
   final int graceDays;
   final DateTime? purgeAfter;
 
+  /// The most months a paused account is kept without a sign-in (a server setting).
+  final int? pauseMaxMonths;
+
   factory DeletionStatus.fromJson(Map<String, dynamic> json) => DeletionStatus(
         pending: json['pending'] == true,
         graceDays: (json['grace_days'] as num?)?.toInt() ?? 30,
         purgeAfter: DateTime.tryParse(json['purge_after'] as String? ?? '')?.toLocal(),
+        pauseMaxMonths: (json['pause_max_months'] as num?)?.toInt(),
       );
 }
 
@@ -36,6 +45,11 @@ abstract class AccountDeletionRemoteDataSource {
   /// "Elimina subito": erases the account at once, for good. Needs a recent
   /// sign-in (`reauth_required` otherwise).
   Future<Result<void>> deleteNow();
+
+  /// "Metti in pausa": the account becomes inactive and the data is kept; signing in
+  /// again ends the pause. No deletion is asked and no recent sign-in is needed.
+  /// Returns the latest day the account is erased if nobody signs in.
+  Future<Result<DateTime?>> pause();
 }
 
 class HttpAccountDeletionRemoteDataSource implements AccountDeletionRemoteDataSource {
@@ -83,6 +97,39 @@ class HttpAccountDeletionRemoteDataSource implements AccountDeletionRemoteDataSo
       return Result.failure(
         AppNetworkError(
           code: 'account_delete_now_unexpected_error',
+          message: appL10n.authNetworkUnexpected,
+          details: error,
+        ),
+      );
+    }
+  }
+
+  @override
+  Future<Result<DateTime?>> pause() async {
+    try {
+      final response = await _client
+          .post(Uri.parse('$_baseUrl/account/pause'), headers: _headers)
+          .timeout(_timeout);
+      if (response.statusCode >= 200 && response.statusCode < 300) {
+        final json = _decode(response.body);
+        return Result.success(
+          DateTime.tryParse(json?['delete_after'] as String? ?? '')?.toLocal(),
+        );
+      }
+      return Result.failure(
+        AppNetworkError(
+          code: 'account_pause_http_${response.statusCode}',
+          message: appL10n.accountPauseFailed,
+        ),
+      );
+    } on TimeoutException {
+      return Result.failure(
+        AppNetworkError(code: 'account_pause_timeout', message: appL10n.authNetworkTimeout),
+      );
+    } catch (error) {
+      return Result.failure(
+        AppNetworkError(
+          code: 'account_pause_unexpected_error',
           message: appL10n.authNetworkUnexpected,
           details: error,
         ),

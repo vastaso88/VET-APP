@@ -45,6 +45,7 @@ from packages.shared.config.settings import get_settings
 from packages.shared.errors.base import (
     AgeRestrictedError,
     AuthenticationError,
+    ConsentRequiredError,
     ConversationLimitError,
     MarketplaceRestrictedError,
     PetInMemoriesError,
@@ -258,6 +259,11 @@ async def handle_pet_in_memories(_: Request, exc: PetInMemoriesError) -> JSONRes
     return JSONResponse(
         status_code=409, content={"detail": "pet_in_memories", "code": "pet_in_memories"}
     )
+
+
+@app.exception_handler(ConsentRequiredError)
+async def handle_consent_required(_: Request, exc: ConsentRequiredError) -> JSONResponse:
+    return JSONResponse(status_code=403, content={"detail": exc.code, "code": exc.code})
 
 
 @app.exception_handler(PlanLimitError)

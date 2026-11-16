@@ -19,7 +19,7 @@ create table if not exists public.account_deletion_log (
     deleted_at timestamptz not null default now(),
     reason text not null check (reason in (
         'user_now', 'user_period_end', 'closed_by_age_user',
-        'closed_by_age_team', 'support_request'
+        'closed_by_age_team', 'support_request', 'pause_expired', 'no_plan_expired'
     )),
     -- Vuoto finche' la cancellazione e' in corso: una riga incompleta viene
     -- rifatta come le altre.
@@ -40,3 +40,10 @@ revoke all on public.account_deletion_log from anon, authenticated;
 insert into storage.buckets (id, name, public)
 values ('deletion-log', 'deletion-log', false)
 on conflict (id) do update set public = false;
+
+-- Una tabella creata prima dei due motivi nuovi (pause_expired, no_plan_expired):
+-- si allarga il controllo. Idempotente.
+alter table public.account_deletion_log drop constraint if exists account_deletion_log_reason_check;
+alter table public.account_deletion_log add constraint account_deletion_log_reason_check
+    check (reason in ('user_now', 'user_period_end', 'closed_by_age_user',
+        'closed_by_age_team', 'support_request', 'pause_expired', 'no_plan_expired'));

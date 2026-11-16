@@ -3,11 +3,15 @@ from fastapi import APIRouter, Query
 from apps.api.dependencies.container import get_container
 from packages.core.application.services.delete_account import DeleteAccountInput
 from packages.core.application.services.export_account_data import ExportAccountDataInput
+from packages.core.application.services.get_or_create_subscription import (
+    GetOrCreateSubscriptionInput,
+)
 from packages.core.domain.account_deletion.log import DeletionReason
 from packages.core.domain.age.models import AgeBand
 from packages.infrastructure.auth.age_guarded_auth_provider import (
     AgeGuardedAuthProvider,
     allow_closed_account,
+    allow_missing_consent,
 )
 
 router = APIRouter(prefix="/account", tags=["account"])
@@ -65,13 +69,89 @@ def delete_account(immediate: bool = Query(default=False)) -> dict[str, object]:
             )
         )
         container.account_deletion_repository.delete(user.id)
-        return {"deleted": True, "scheduled": False, "report": report.model_dump()}
+        return {
+            "status": "deleted",
+            "deleted": True,
+            "scheduled": False,
+            "report": report.model_dump(),
+        }
 
     # Everyone else: deactivated now, erased when the period ends (the owner can
     # cancel until then).
     status = container.account_deletion_service().request(user.id, signed_in_at)
     _forget_cached_answer(user.id)
-    return {"deleted": True, "scheduled": True, **status.model_dump(mode="json")}
+    # Deactivated now, erased on [purge_after]: not "deleted" yet, so `deleted` is
+    # false (it was true, which read as a contradiction next to `pending`).
+    return {
+        "status": "scheduled",
+        "deleted": False,
+        "scheduled": True,
+        **status.model_dump(mode="json"),
+    }
+
+
+@router.post("/pause")
+def pause_account() -> dict[str, object]:
+    """The owner puts the account aside, with nothing deleted: it becomes
+    inactive (the session that asked is refused from now on, ads hidden) and the
+    data is kept. Signing in again ends the pause. Starting it also clears the
+    120-day clock, like choosing a plan. Acts only on the caller's own id."""
+    container = get_container()
+    user = container.auth_provider.get_current_user()
+    service = container.account_pause_service()
+    pause = service.start(user.id)
+    _forget_cached_answer(user.id)
+    return {
+        "paused": True,
+        "paused_at": pause.paused_at.isoformat(),
+        # The latest day the account is erased if the owner never signs in.
+        "delete_after": service.delete_after(pause).isoformat(),
+        "max_months": service.max_months,
+    }
+
+
+@router.get("/session")
+def check_session() -> dict[str, object]:
+    """A cheap check the app makes when it opens or comes back to the front. It
+    goes through the same guard as every other route, so an account that was
+    paused or deactivated from another device answers 403 `account_paused` /
+    `account_deactivated` here and the app can sign out and clear its notices."""
+    container = get_container()
+    with allow_missing_consent():
+        container.auth_provider.get_current_user()
+    return {"ok": True}
+
+
+@router.get("/pause/notice")
+def get_pause_notice() -> dict[str, object]:
+    """Whether the caller's pause ended at the last sign-in and the app has not
+    said so yet. If so, whether they have a plan and, if not, the day their data
+    would be erased now (the 120-day clock restarts when the pause ends). Only
+    ever about the caller's own account."""
+    container = get_container()
+    user = container.auth_provider.get_current_user()
+    pause = container.account_pause_service().ended_pause(user.id)
+    if pause is None:
+        return {"resumed": False}
+    subscription = container.get_or_create_subscription_service().execute(
+        GetOrCreateSubscriptionInput(owner_id=user.id, email=user.email or "")
+    )
+    kept_until = subscription.data_kept_until
+    return {
+        "resumed": True,
+        "resumed_at": pause.resumed_at.isoformat() if pause.resumed_at else None,
+        "has_access": subscription.has_access,
+        "data_kept_until": kept_until.isoformat() if kept_until else None,
+    }
+
+
+@router.post("/pause/notice/ack")
+def acknowledge_pause_notice() -> dict[str, object]:
+    """The app showed that the pause is over: the ended row is removed. Only the
+    caller's own."""
+    container = get_container()
+    user = container.auth_provider.get_current_user()
+    return {"acknowledged": container.account_pause_service().acknowledge_end(user.id)}
 
 
 @router.get("/deletion")
@@ -81,7 +161,9 @@ def get_deletion_status() -> dict[str, object]:
     container = get_container()
     with allow_closed_account():
         user = container.auth_provider.get_current_user()
-    return container.account_deletion_service().status(user.id).model_dump(mode="json")
+    status = container.account_deletion_service().status(user.id).model_dump(mode="json")
+    # The pause window's number (a setting) is said by the server, never kept in the app.
+    return {**status, "pause_max_months": container.settings.pause_max_months}
 
 
 @router.post("/deletion/cancel")

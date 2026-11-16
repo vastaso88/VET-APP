@@ -4,6 +4,8 @@ from __future__ import annotations
 
 from datetime import UTC, date, datetime, timedelta
 
+import pytest
+
 from packages.core.application.ports.owner_contact_lookup import OwnerContact
 from packages.core.application.services.account_data_counts import AccountDataCounter
 from packages.core.application.services.retention_dry_run import (
@@ -499,3 +501,114 @@ def test_the_report_quotes_no_name_no_number_and_no_birth_date() -> None:
     assert "adult@example.com" not in dumped
     for number in ('"animals":3', '"documents":7', '"reminders":5'):
         assert number not in dumped
+
+
+# --- who asked to leave, and who paused ------------------------------------------------
+
+
+def _with_lists(
+    setup: _Setup,
+    *,
+    pending: list[str] | None = None,
+    paused: list[str] | None = None,
+) -> RetentionDryRunService:
+    return RetentionDryRunService(
+        setup.subscriptions,
+        setup.contacts,
+        setup.developers,
+        setup.consents,
+        AccountDataCounter(setup.pets, setup.events, setup.reminders, setup.walks),
+        pending_deletions=(lambda: pending) if pending is not None else None,
+        paused=(lambda: paused) if paused is not None else None,
+    )
+
+
+def test_an_owner_who_asked_to_leave_is_left_out_of_the_sequence() -> None:
+    setup = _Setup()
+    setup.lapsed("leaving", 130, ADULT)  # even past the 120 days
+    setup.marketing("leaving")
+    setup.data("leaving", animals=2, documents=1, reminders=1)
+    setup.lapsed("staying", 10, ADULT)
+
+    report = _with_lists(setup, pending=["leaving"]).execute(now=NOW)
+
+    assert report.deletion_pending == 1
+    assert report.clock_started == 1  # only "staying" is in the sequence
+    assert report.past_retention == 0 and report.erasable_now == 0
+    assert report.commercial_notices == 0 and report.service_notices == 1
+    assert len(report.sample) == 1
+
+
+def test_a_paused_owner_is_left_out_of_the_sequence() -> None:
+    setup = _Setup()
+    setup.lapsed("paused", 30, ADULT)
+    setup.lapsed("other", 30, ADULT)
+
+    report = _with_lists(setup, paused=["paused"]).execute(now=NOW)
+
+    assert report.paused == 1
+    assert report.clock_started == 1
+    assert sum(report.notices_due.values()) == 1
+
+
+def test_the_request_to_leave_comes_before_the_pause() -> None:
+    setup = _Setup()
+    setup.lapsed("both", 30, ADULT)
+
+    report = _with_lists(setup, pending=["both"], paused=["both"]).execute(now=NOW)
+
+    assert (report.deletion_pending, report.paused) == (1, 0)
+    assert report.clock_started == 0
+
+
+def test_left_out_owners_cost_no_contact_lookup() -> None:
+    setup = _Setup()
+    for index in range(MAX_CONTACT_LOOKUPS + 5):
+        setup.lapsed(f"gone-{index}", 10, ADULT)
+    gone = [f"gone-{index}" for index in range(MAX_CONTACT_LOOKUPS + 5)]
+
+    report = _with_lists(setup, pending=gone).execute(now=NOW)
+
+    assert report.deletion_pending == MAX_CONTACT_LOOKUPS + 5
+    assert report.lookups_skipped == 0 and report.clock_started == 0
+
+
+def test_without_the_lists_nothing_is_left_out() -> None:
+    setup = _Setup()
+    setup.lapsed("a", 10, ADULT)
+
+    report = setup.service().execute(now=NOW)
+
+    assert (report.deletion_pending, report.paused) == (0, 0)
+    assert report.clock_started == 1
+
+
+def test_a_list_that_cannot_be_read_stops_the_run_instead_of_being_ignored() -> None:
+    """With the real job this is what keeps it from writing to someone who asked
+    to leave: no list, no run."""
+    setup = _Setup()
+    setup.lapsed("a", 10, ADULT)
+
+    def broken() -> list[str]:
+        raise RuntimeError("database down")
+
+    service = RetentionDryRunService(
+        setup.subscriptions,
+        setup.contacts,
+        setup.developers,
+        setup.consents,
+        AccountDataCounter(setup.pets, setup.events, setup.reminders, setup.walks),
+        pending_deletions=broken,
+    )
+
+    with pytest.raises(RuntimeError):
+        service.execute(now=NOW)
+
+
+def test_the_report_names_no_one_who_left_or_paused() -> None:
+    setup = _Setup()
+    setup.lapsed("owner-uuid-77", 10, ADULT)
+
+    dumped = _with_lists(setup, pending=["owner-uuid-77"]).execute(now=NOW).model_dump_json()
+
+    assert "owner-uuid-77" not in dumped and "adult@example.com" not in dumped

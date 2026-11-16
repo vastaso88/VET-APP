@@ -47,6 +47,7 @@ OWNER_TABLES: tuple[tuple[str, str], ...] = (
     ("pet_profiles", "owner_id"),
     ("account_age", "owner_id"),
     ("account_consents", "owner_id"),
+    ("account_pauses", "owner_id"),
     ("subscriptions", "owner_id"),
     ("user_devices", "owner_id"),
     ("user_locations", "owner_id"),

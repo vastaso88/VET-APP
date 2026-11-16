@@ -7614,7 +7614,7 @@ class AppLocalizationsEn extends AppLocalizations {
       other: '# days',
       one: '# day',
     );
-    return 'The account will be deactivated right away. For $_temp0 you can change your mind: sign in with the same email (reset the password if needed) and cancel the deletion. After $date we delete the account and your data, with no way to recover them. Only the data the law requires us to keep remain, for example invoices.';
+    return 'The account will be deactivated right away. For $_temp0 you can change your mind: sign in with the same email (reset the password if needed) and cancel the deletion. After $date we delete the account and your data, with no way to recover them. Some data remains, for example invoices, which the law requires us to keep, and a code, without your name or email, that proves the deletion.';
   }
 
   @override
@@ -7652,9 +7652,76 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get accountRestoreDeleteNowBody =>
-      'We delete the account and your data right now, with no way to recover them. Only the data the law requires us to keep remain, for example invoices. Afterwards you can sign up again with the same email.';
+      'We delete the account and your data right now, with no way to recover them. Some data remains, for example invoices, which the law requires us to keep, and a code, without your name or email, that proves the deletion. Afterwards you can sign up again with the same email.';
 
   @override
   String get authRegisterEmailInUseRecoverHint =>
       'If you deleted it recently and the waiting period isn\'t over, use \"Recover account\": you can cancel the deletion or delete it right away to start over.';
+
+  @override
+  String get accountLeaveQuestion =>
+      'What do you want to do with your account?';
+
+  @override
+  String get accountPauseOptionTitle => 'Pause it';
+
+  @override
+  String accountPauseOptionBody(int months) {
+    String _temp0 = intl.Intl.pluralLogic(
+      months,
+      locale: localeName,
+      other: '$months months',
+      one: '1 month',
+    );
+    return 'The account stays inactive, with no reminders or notifications, and we keep your data until you come back, for up to $_temp0 without signing in; then we delete your data. To come back, just sign in with the same email.';
+  }
+
+  @override
+  String get accountDeleteOptionTitle => 'Delete the account';
+
+  @override
+  String get accountDeleteOptionBody =>
+      'We deactivate it right away. For a while you can change your mind by signing in with the same email; then we delete your data. Some data remains, for example invoices, which the law requires us to keep, and a code, without your name or email, that proves the deletion.';
+
+  @override
+  String get accountPauseSubmit => 'Pause';
+
+  @override
+  String accountPauseDone(String date) {
+    return 'Your account is paused. If you don\'t sign in by $date, we delete it together with your data. To come back, just sign in with the same email.';
+  }
+
+  @override
+  String get accountPauseFailed =>
+      'We couldn\'t pause the account. Please try again in a moment.';
+
+  @override
+  String get accountPausedElsewhere =>
+      'Your account was paused from another device. To resume it, sign in again with the same email.';
+
+  @override
+  String get accountPauseEndedTitle => 'The pause is over';
+
+  @override
+  String get accountPauseEndedBody =>
+      'Welcome back: your account is active again and your data is as you left it.';
+
+  @override
+  String accountPauseEndedNoPlan(String date) {
+    return 'You don\'t have a plan: we keep your data until $date. Choose a plan to keep the account, or pause it again from Settings.';
+  }
+
+  @override
+  String get consentGateTitle => 'Before you continue';
+
+  @override
+  String get consentGateBody =>
+      'To use Quokka you need to accept the Terms of service and the Privacy policy in their current version. You can read them before accepting.';
+
+  @override
+  String get consentGateContinue => 'Accept and continue';
+
+  @override
+  String get consentGateFailed =>
+      'We couldn\'t record your acceptance. Please try again in a moment.';
 }

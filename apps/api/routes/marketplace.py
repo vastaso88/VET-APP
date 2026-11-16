@@ -223,9 +223,10 @@ def get_listing(listing_id: str) -> dict[str, object]:
         raise HTTPException(status_code=404, detail="Annuncio non trovato.")
     if (
         listing.owner_id != user.id
-        and listing.owner_id in container.account_deletion_repository.pending_owner_ids()
+        and listing.owner_id in container.hidden_owner_ids()
     ):
-        # The seller is deleting their account: the ad is hidden like a missing one.
+        # The seller is deleting or has paused their account: the ad is hidden like
+        # a missing one.
         raise HTTPException(status_code=404, detail="Annuncio non trovato.")
     row = _public_row(listing, user.id)
     if not owner_has_access():

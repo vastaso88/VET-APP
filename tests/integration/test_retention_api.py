@@ -3,13 +3,14 @@ route. The route is for the scheduler only (shared secret, no user session)."""
 
 from __future__ import annotations
 
-from datetime import timedelta
+from datetime import UTC, datetime, timedelta
 
 import pytest
 from fastapi.testclient import TestClient
 
 from apps.api.main import app
 from packages.bootstrap.container import get_container
+from packages.core.domain.account_deletion.models import AccountDeletionRequest
 from packages.core.domain.common.entity import utc_now
 from packages.core.domain.subscription.models import Subscription
 
@@ -122,3 +123,21 @@ def test_the_dry_run_response_holds_no_personal_data(client: TestClient) -> None
 
     assert OWNER not in text
     assert "@" not in text
+
+
+def test_an_owner_with_a_deletion_request_is_left_out_of_the_dry_run(client: TestClient) -> None:
+    _expire_the_trial()
+    client.get("/subscription/status")  # starts the clock
+    now = datetime.now(UTC)
+    get_container().account_deletion_repository.create(
+        AccountDeletionRequest(
+            owner_id=OWNER, requested_at=now, purge_after=now + timedelta(days=30)
+        )
+    )
+
+    body = client.post("/admin/lifecycle/dry-run", headers={HEADER: SECRET}).json()
+
+    assert body["deletion_pending"] == 1
+    assert body["clock_started"] == 0
+    assert body["service_notices"] == 0 and body["commercial_notices"] == 0
+    assert sum(body["notices_due"].values()) == 0

@@ -4311,7 +4311,7 @@
   "authRecoverLogin": "Sign in with the same email",
   "authRecoverReset": "Reset the password",
   "authRecoverExpired": "If the period is over, the account and its data have been deleted: you can create a new account with the same email.",
-  "accountDeletePeriodNote": "The account will be deactivated right away. For {days, plural, one{# day} other{# days}} you can change your mind: sign in with the same email (reset the password if needed) and cancel the deletion. After {date} we delete the account and your data, with no way to recover them. Only the data the law requires us to keep remain, for example invoices.",
+  "accountDeletePeriodNote": "The account will be deactivated right away. For {days, plural, one{# day} other{# days}} you can change your mind: sign in with the same email (reset the password if needed) and cancel the deletion. After {date} we delete the account and your data, with no way to recover them. Some data remains, for example invoices, which the law requires us to keep, and a code, without your name or email, that proves the deletion.",
   "@accountDeletePeriodNote": {
     "placeholders": {
       "days": {
@@ -4345,6 +4345,43 @@
   "accountRestoreFailed": "I couldn't cancel the deletion. Try again.",
   "accountDeleteNowLink": "Delete now, with no way to recover",
   "accountRestoreDeleteNow": "Delete now",
-  "accountRestoreDeleteNowBody": "We delete the account and your data right now, with no way to recover them. Only the data the law requires us to keep remain, for example invoices. Afterwards you can sign up again with the same email.",
-  "authRegisterEmailInUseRecoverHint": "If you deleted it recently and the waiting period isn't over, use \"Recover account\": you can cancel the deletion or delete it right away to start over."
+  "accountRestoreDeleteNowBody": "We delete the account and your data right now, with no way to recover them. Some data remains, for example invoices, which the law requires us to keep, and a code, without your name or email, that proves the deletion. Afterwards you can sign up again with the same email.",
+  "authRegisterEmailInUseRecoverHint": "If you deleted it recently and the waiting period isn't over, use \"Recover account\": you can cancel the deletion or delete it right away to start over.",
+  "accountLeaveQuestion": "What do you want to do with your account?",
+  "accountPauseOptionTitle": "Pause it",
+  "accountPauseOptionBody": "The account stays inactive, with no reminders or notifications, and we keep your data until you come back, for up to {months, plural, =1{1 month} other{{months} months}} without signing in; then we delete your data. To come back, just sign in with the same email.",
+  "@accountPauseOptionBody": {
+    "placeholders": {
+      "months": {
+        "type": "int"
+      }
+    }
+  },
+  "accountDeleteOptionTitle": "Delete the account",
+  "accountDeleteOptionBody": "We deactivate it right away. For a while you can change your mind by signing in with the same email; then we delete your data. Some data remains, for example invoices, which the law requires us to keep, and a code, without your name or email, that proves the deletion.",
+  "accountPauseSubmit": "Pause",
+  "accountPauseDone": "Your account is paused. If you don't sign in by {date}, we delete it together with your data. To come back, just sign in with the same email.",
+  "@accountPauseDone": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "accountPauseFailed": "We couldn't pause the account. Please try again in a moment.",
+  "accountPausedElsewhere": "Your account was paused from another device. To resume it, sign in again with the same email.",
+  "accountPauseEndedTitle": "The pause is over",
+  "accountPauseEndedBody": "Welcome back: your account is active again and your data is as you left it.",
+  "accountPauseEndedNoPlan": "You don't have a plan: we keep your data until {date}. Choose a plan to keep the account, or pause it again from Settings.",
+  "@accountPauseEndedNoPlan": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "consentGateTitle": "Before you continue",
+  "consentGateBody": "To use Quokka you need to accept the Terms of service and the Privacy policy in their current version. You can read them before accepting.",
+  "consentGateContinue": "Accept and continue",
+  "consentGateFailed": "We couldn't record your acceptance. Please try again in a moment."
 }

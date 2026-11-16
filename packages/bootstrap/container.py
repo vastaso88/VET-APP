@@ -11,6 +11,9 @@ from packages.core.application.ports.account_deletion_repository import (
 )
 from packages.core.application.ports.account_eraser import AccountEraser
 from packages.core.application.ports.account_exporter import AccountExporter
+from packages.core.application.ports.account_pause_repository import (
+    AccountPauseRepository,
+)
 from packages.core.application.ports.answer_cache_repository import AnswerCacheRepository
 from packages.core.application.ports.auth_provider import AuthProvider
 from packages.core.application.ports.chat_attachment_repository import ChatAttachmentRepository
@@ -20,6 +23,7 @@ from packages.core.application.ports.chat_response_report_repository import (
 from packages.core.application.ports.clinical_event_repository import ClinicalEventRepository
 from packages.core.application.ports.conversation_repository import ConversationRepository
 from packages.core.application.ports.dog_walk_repository import DogWalkRepository
+from packages.core.application.ports.email_sender import EmailSender
 from packages.core.application.ports.event_catalog_repository import EventCatalogRepository
 from packages.core.application.ports.event_submission_repository import (
     EventSubmissionRepository,
@@ -58,6 +62,7 @@ from packages.core.application.ports.weight_measurement_repository import (
 )
 from packages.core.application.services.account_data_counts import AccountDataCounter
 from packages.core.application.services.account_deletion import AccountDeletionService
+from packages.core.application.services.account_pause import AccountPauseService
 from packages.core.application.services.age_gate import AgeGateService
 from packages.core.application.services.age_review_admin import AgeReviewAdminService
 from packages.core.application.services.chat_orchestrator import ChatOrchestrator
@@ -175,6 +180,10 @@ from packages.core.domain.subscription.models import SubscriptionPlan
 from packages.infrastructure.auth.age_guarded_auth_provider import AgeGuardedAuthProvider
 from packages.infrastructure.auth.bootstrap_auth_provider import BootstrapAuthProvider
 from packages.infrastructure.documents.pypdf_reader import PypdfReader
+from packages.infrastructure.email.in_memory_email_sender import (
+    DisabledEmailSender,
+    InMemoryEmailSender,
+)
 from packages.infrastructure.geocoding.nominatim_geocoder import NominatimGeocoder
 from packages.infrastructure.llm.providers.anthropic_llm_client import AnthropicLLMClient
 from packages.infrastructure.llm.providers.echo_llm_client import EchoLLMClient
@@ -218,6 +227,9 @@ from packages.infrastructure.persistence.in_memory_account_deletion_repository i
 from packages.infrastructure.persistence.in_memory_account_eraser import InMemoryAccountEraser
 from packages.infrastructure.persistence.in_memory_account_exporter import (
     InMemoryAccountExporter,
+)
+from packages.infrastructure.persistence.in_memory_account_pause_repository import (
+    InMemoryAccountPauseRepository,
 )
 from packages.infrastructure.persistence.in_memory_deletion_log import (
     InMemoryDeletionLogCopy,
@@ -374,6 +386,8 @@ class ApplicationContainer:
         self.account_age_repository = self._build_account_age_repository()
         self.account_deletion_repository = self._build_account_deletion_repository()
         self.deletion_log_service = self._build_deletion_log_service()
+        self.account_pause_repository = self._build_account_pause_repository()
+        self.email_sender = self._build_email_sender()
         self.owner_contact_lookup = self._build_owner_contact_lookup()
         self.developer_emails = frozenset(
             email.strip().lower() for email in settings.developer_emails
@@ -535,6 +549,8 @@ class ApplicationContainer:
                 self.dog_walk_repository,
             ),
             test_plan=self.subscription_test_plan,
+            pending_deletions=self.account_deletion_repository.pending_owner_ids,
+            paused=self.account_pause_repository.paused_owner_ids,
         )
 
     def register_device_service(self) -> RegisterDeviceService:
@@ -565,6 +581,60 @@ class ApplicationContainer:
             self.account_consents_repository,
             self.pet_profile_repository,
             self.deletion_log_service,
+        )
+
+    def account_pause_service(self) -> AccountPauseService:
+        return AccountPauseService(
+            self.account_pause_repository,
+            self.subscription_repository,
+            self.settings.pause_max_months,
+            self._build_account_eraser(),
+            self.deletion_log_service,
+        )
+
+    def hidden_owner_ids(self) -> set[str]:
+        """Sellers whose ads are hidden: asked to delete, or paused."""
+        return self.account_deletion_repository.pending_owner_ids() | set(
+            self.account_pause_repository.paused_owner_ids()
+        )
+
+    def _build_account_pause_repository(self) -> AccountPauseRepository:
+        if self.settings.persistence_backend == "supabase":
+            try:
+                from packages.infrastructure.persistence.supabase.client import (
+                    build_supabase_client,
+                )
+                from packages.infrastructure.persistence.supabase.supabase_account_pause_repository import (  # noqa: E501
+                    SupabaseAccountPauseRepository,
+                )
+
+                return SupabaseAccountPauseRepository(build_supabase_client(self.settings))
+            except ModuleNotFoundError:
+                if self.settings.environment != "production":
+                    return InMemoryAccountPauseRepository()
+                raise
+        return InMemoryAccountPauseRepository()
+
+    def _build_email_sender(self) -> EmailSender:
+        """The one door for e-mail. Off (nothing leaves) unless
+        EMAIL_SENDING_ENABLED is true AND a provider is configured; local and
+        test runs never reach a real provider."""
+        settings = self.settings
+        if not settings.email_sending_enabled:
+            return DisabledEmailSender()
+        if settings.persistence_backend != "supabase":
+            return InMemoryEmailSender()
+        if not (settings.smtp_host and settings.email_from):
+            return DisabledEmailSender()
+        from packages.infrastructure.email.smtp_email_sender import SmtpEmailSender
+
+        return SmtpEmailSender(
+            settings.smtp_host,
+            settings.smtp_port,
+            settings.smtp_username,
+            settings.smtp_password,
+            settings.email_from,
+            use_ssl=settings.smtp_use_ssl,
         )
 
     def _build_deletion_log_service(self) -> DeletionLogService:
@@ -846,7 +916,7 @@ class ApplicationContainer:
     def list_nearby_listings_service(self) -> ListNearbyListingsService:
         return ListNearbyListingsService(
             self.marketplace_listing_repository,
-            hidden_owner_ids=self.account_deletion_repository.pending_owner_ids,
+            hidden_owner_ids=self.hidden_owner_ids,
         )
 
     def marketplace_messaging_service(self) -> MarketplaceMessagingService:
@@ -987,6 +1057,9 @@ class ApplicationContainer:
             self._build_inner_auth_provider(),
             lambda: self.account_age_repository,
             lambda: self.account_deletion_repository,
+            lambda: self.account_pause_service(),
+            lambda: self.account_consents_repository,
+            lambda: self.settings.consent_enforcement_enabled,
         )
 
     def _build_inner_auth_provider(self) -> AuthProvider:

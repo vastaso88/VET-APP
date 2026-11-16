@@ -207,19 +207,19 @@ class _RegisterPageState extends State<RegisterPage> {
       // Settings "Permessi e consensi" section shows a "Da confermare"
       // fallback for exactly this case (and for accounts that predate this
       // feature entirely).
+      // Awaited, so the acceptance is on record before the first calls that follow
+      // (the server can refuse them with `consent_required` until it is).
       final consentsDataSource = HttpAccountConsentsRemoteDataSource();
-      unawaited(
-        Future.wait([
-          consentsDataSource.setConsent(
-            consentKey: AccountConsentKeys.termsOfService,
-            granted: true,
-          ),
-          consentsDataSource.setConsent(
-            consentKey: AccountConsentKeys.privacyPolicy,
-            granted: true,
-          ),
-        ]),
-      );
+      await Future.wait([
+        consentsDataSource.setConsent(
+          consentKey: AccountConsentKeys.termsOfService,
+          granted: true,
+        ),
+        consentsDataSource.setConsent(
+          consentKey: AccountConsentKeys.privacyPolicy,
+          granted: true,
+        ),
+      ]);
 
       // The declared date goes to the backend now that a session exists; if
       // that fails it waits on the phone and is sent at the next start.

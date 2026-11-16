@@ -19098,12 +19098,12 @@
     }
   },
   "ui:accountDeletePeriodNote": {
-    "source": "78a163b6ded8ff740e2add7bc7c6acc6c866e971abc5511010d0aaeb4b76dacc",
+    "source": "102bce8bef64fdcf6db716448c5d787e00fa50756df652efc0f853dbbbe1737c",
     "targets": {
-      "en": "24c0abd3c20aca9c2bee30f29e04691f21c7bf396ec72c03459a6d623faa9e93",
-      "es": "5ff0e82cce307dccf371bbb8ed307aedd1a9797497be9c9d546dde6d5216fc7b",
-      "de": "2c9d8470c9418285db453d2f5093aa87f82dd6b2aa9581e1099101b01057f52c",
-      "fr": "bb1e320e323d48699c2a8b5154040c932e9940065409499a8a1b0e7c5a95f0d1"
+      "en": "eeb90fef7078b258d682310452aa27bb7a56db7b1521ebf32a7ac2e6e3808f03",
+      "es": "ab3aa72a5559097b464820dc1b52a3e0e890dc46b00ef5063c3f884c5e673a1b",
+      "de": "a7bcf599dbab5043fe77019cb140acb1f8fcbbeb8fd7d631480c8bf6f0888d39",
+      "fr": "3921dcc4960bdbdb1e9c66131b97728e2957c8ce173c60d292bbf9ebcc38939f"
     }
   },
   "ui:accountDeleteScheduledDone": {
@@ -19188,12 +19188,12 @@
     }
   },
   "ui:accountRestoreDeleteNowBody": {
-    "source": "ea8620546465ad9877be263940232edeb4a8525b78e93eb695dd4e94f1aac613",
+    "source": "1fa470cd144ae6153eddbcc1088a9e6847d3d8998933697219e2320f3291189e",
     "targets": {
-      "en": "23f9313d10bb7c316b92e98dbdf89cbf453c635ca4ae1327003937265ddf12e3",
-      "es": "1a81f1c2ae10688784ae4abe121d0a2d9eb9f425ad5815089f9ec27d0ddd06f1",
-      "de": "aadc1cae79a2164834c573c8724f132c7f5d64c8bf1be8d2ff1c42f48039ad34",
-      "fr": "1298d8e3ea8da62e08d0a7eb64da294228d6d77372f01fdcfc401f510af689ac"
+      "en": "3e36e279d4be7d01c58aff0244b7c080efd7c9d7cc0e3b114b509b6584ac726f",
+      "es": "f34e043bc18763e45a0fa535942126eec0dd7c3d691f97ec3245e2041e00e6f3",
+      "de": "ac19283769141f4d4522398a75d5f5460dabdd3144959a10115b940d33eb59a5",
+      "fr": "ab831b8e3cb46d3bdd895da640d080060db516adf0eaf7e47f44006b88761966"
     }
   },
   "ui:authRegisterEmailInUseRecoverHint": {
@@ -20013,6 +20013,150 @@
       "es": "c99cf42bed9e373204a53c1479a427c0d3d6077d258d8a20b047228f50e28610",
       "de": "39efa5708b698a0949ce1b90cd4cd7caf7ea011b156e4da28a9d7288a1b89233",
       "fr": "45425b91679b3a8387d4a04eecf883006dcb21540317ce4812500426bd5774a1"
+    }
+  },
+  "ui:accountLeaveQuestion": {
+    "source": "281eb86d5a2a9f1914497a0d3f2b7feda82d7f6c082ed891a29efe1206cd4d01",
+    "targets": {
+      "en": "988d8fe88faf0f41a4f1b02bc5a62a89fe0525dcf229cd487a8a67b1087fcb40",
+      "es": "e922cc6a3cf7c7f43074b8ad6065316f988e78a4577ed109ac02c031eee9848f",
+      "de": "80c2c3261db04f19a1aa8f2b1cc56c992f6333b95d9ca1e02968752933cd298e",
+      "fr": "161a98df52a390ca1b2a1a06b5172a6fd93af1313fc35900fe8f24cf4df584cb"
+    }
+  },
+  "ui:accountPauseOptionTitle": {
+    "source": "cfa4446850a7b38a547b75500f97d03458a82158e1e2d28b0f06d2e727aebcd1",
+    "targets": {
+      "en": "82f4e9fbe46da3e93b059c5c0f3b31f0d7386ca3bf393b894426078e7aff3418",
+      "es": "bc61da9f0b30057b5ed2ddc00782743ed2cbeade1dc8341097a49e9b0976f88d",
+      "de": "635859002b9a1f8763b3305dc764095a47b8b1f64ba51e69371e3cac83046aa0",
+      "fr": "900c45c325cedff447c9084e1e34105598264f2251666ec42ce91cd1262d17c6"
+    }
+  },
+  "ui:accountPauseOptionBody": {
+    "source": "16ee325b1197c17b3da8fd782a588432fbadc6c4a0d9167d7fea7c7784f503a9",
+    "targets": {
+      "en": "f7fa0ab072ecffd76e722385834356ad587ca1aa64df974240d93f1a57c985bc",
+      "es": "10cdae44855e7b0197989c939990c78be65cfb2c7bea16a265db34c4dae74c38",
+      "de": "7c177e4324f7371949084fdab457f4d58fef0cc8910633db5019c3f941fe2429",
+      "fr": "aa9d42a6b785c1d69c37fed80239f4923d35f9f7b52b6f3c1beeab8c75db661d"
+    }
+  },
+  "ui:accountDeleteOptionTitle": {
+    "source": "8b712d8a2257c0211fc2be16362b90bf659cbf17bfcb2a679dd77f370327ce46",
+    "targets": {
+      "en": "32368a00618386a54ba28bb2e3dcee01676315bff1615871c860da36f2deadf2",
+      "es": "90b781b53658181013f163a7be69703f86ded90fee22152739fedc44200ca095",
+      "de": "80789fe302665a35923ededec2673902ebb9436d82ebe6a858ed5b0565fee2fc",
+      "fr": "ed95f362266febe4f9267c6aab8b1a62c42b3130e1091b698099cb8702d6b6dd"
+    }
+  },
+  "ui:accountDeleteOptionBody": {
+    "source": "35a69c98efb2168befabcd1efc7ea0e4a161035922a78e3bc870ed3647b3c6ee",
+    "targets": {
+      "en": "34f48256f0206d1a9bf197f47d1c015ee96c22d28534a12250fa6843c8e54398",
+      "es": "dcaa054190efefe1663725a0885d95f5c6eab386abee179e5c831686ac83f917",
+      "de": "4ef6963a56148cf95a8081ed0f006c19ea346ff2d02498f446b7a9b7ca159e23",
+      "fr": "30dee7d6d766035b46bb9bc4278c222e447dbff20f38c9689f8c5971630df68e"
+    }
+  },
+  "ui:accountPauseSubmit": {
+    "source": "cfa4446850a7b38a547b75500f97d03458a82158e1e2d28b0f06d2e727aebcd1",
+    "targets": {
+      "en": "1550d72740e66f7707bd9f1e42cee078ac5261dcfa378eb7d37b4afa76b3acb4",
+      "es": "3e2148f7bf10ce36a473079797f10e6f4942ce576f3fa4eb8bc83b7c03066a42",
+      "de": "635859002b9a1f8763b3305dc764095a47b8b1f64ba51e69371e3cac83046aa0",
+      "fr": "900c45c325cedff447c9084e1e34105598264f2251666ec42ce91cd1262d17c6"
+    }
+  },
+  "ui:accountPauseDone": {
+    "source": "07aa2d0f1143dc92d3bf60edd8724831bfc97504a3f6570c062e5c7aac3be635",
+    "targets": {
+      "en": "de6751ac7227bb6c762a16df1a0ce7ec2c5d6f37b6367abae1daf1fe1d0419eb",
+      "es": "e7344a80ce10441476f14a2ad614a8ec37a177cfb535c88b6982654d8b3355de",
+      "de": "8b177b6ad0eb33ed8ee3eacfa7efe6a952e8d2890b4afef2d247561b8835dba1",
+      "fr": "ef53eac86d548c3fd10772599744e1e01c847064176f68b61260fe1f7559bdf5"
+    }
+  },
+  "ui:accountPauseFailed": {
+    "source": "bb7b00d2827eee64982c9451a1947ce2a8fa0e07a1f7e2a72b24327097659339",
+    "targets": {
+      "en": "8e360e5e884714b5951327bcf69c7d092200cc29efec674726313f1598189a24",
+      "es": "368a16c959b465fd9ebc861e1a6efb156eb6952c43141715664a906b94385822",
+      "de": "89c952a8013b20dba76bc6f3e707ce5713d8fbf71ded1919c06cab87401f5066",
+      "fr": "ecac7dec2ce720596b0674e11dcd1074c6b9ed55209cfde39835323d6174c4d8"
+    }
+  },
+  "ui:accountPausedElsewhere": {
+    "source": "5c03bb160f2de702a8fb7f58f977b734cb77e224a20db272d4fe2f54c98b1eae",
+    "targets": {
+      "en": "9a8a55972d5f351bfb69ba80488e5c38c645a64b344885c82bac1fcc426bac42",
+      "es": "1d86ed11b0dd4293f676807cee6dfdd2a5d0a2d405d951831b7fe496bee4297b",
+      "de": "4b3081b6a57a699b5baf6fde41971b05c5967603715604f8a0b660a89b02090d",
+      "fr": "546c4c6838ccde037bbc33ec7e0ce6c16178a01b131e5e0b8b8fba72e55cccb9"
+    }
+  },
+  "ui:accountPauseEndedTitle": {
+    "source": "8773ebf7b22b5c12c8b77e42e4efcfa3c30726abb5c68e45915bb165ef5d7984",
+    "targets": {
+      "en": "3c4afc8d984dd8282c4ee8c1e82975df4113824238bd57321f9da157c218096c",
+      "es": "b03c6e606d887e616dcecd46dda410d2042401e457176a2e9238bf3c98e23725",
+      "de": "403a10cfcb5b2f9aac78b3f34f9907727ee49b13e3b33f2b193e2edcad9d06f7",
+      "fr": "81707b1cabfac6ecb3d6097c57a6aef217f9119383a73d3859dfcf1fc3dba81d"
+    }
+  },
+  "ui:accountPauseEndedBody": {
+    "source": "6d630b7aaabf2b411ac2211ded2e60d8c591bf2921d16c0c873e0e145c7a6ceb",
+    "targets": {
+      "en": "12b9bed625aa0ddb08cb33c03d91ea8fd906287aaa7aa3f7cf18a918ba81a077",
+      "es": "52d06034896208e6325bcca396918bc7b248982c58753444e795cfa1bf502c6e",
+      "de": "568618ec0834c531bd55404e6eadb1b630c3c93118d913b7d125cb4ee717ef8d",
+      "fr": "545e385e279ab3d393101cf7ee0f5cab882f1e4add25fe990dabcc9fb5a3ac7c"
+    }
+  },
+  "ui:accountPauseEndedNoPlan": {
+    "source": "74253131fa57e18b1fd0b93d74d5802a09f87f0b9305aa0b0976337570ff7456",
+    "targets": {
+      "en": "79124a51d781ac68e74b6e3b6074eef8759ac1814c228ae86054195f25f78afe",
+      "es": "63a9b399a72d988efd9a7e50179461a03fb93956e7649e8f34f086a62557b0c4",
+      "de": "fcc9348f05e80a5cf7ddff5fa737d82b46188b93411f182309e6f102f32b8634",
+      "fr": "85effce1408ecd97936b0e7ce78dd59f36640b0cbafd69adf01094e1039f94a3"
+    }
+  },
+  "ui:consentGateTitle": {
+    "source": "abc0ba7f999cac23aaccb1d344f5fd724dbc2855deff387fc38d9be1276806b0",
+    "targets": {
+      "en": "14f08cee62b439124fcb5f25d0405fd03a85e890b8eb352dc6623cc12671241d",
+      "es": "1b687680c9310aa93ffe2b75002c15fc2eee01ab0026a57b5eeed31664983361",
+      "de": "948a40930b426ebb572bc2e7323c73d440a4534fa105e4aed5542b6bbfac5cf7",
+      "fr": "b8e69d139cb11e1c5418293715eb8d55e652d9900a5de38abffb982a72b1cdcb"
+    }
+  },
+  "ui:consentGateBody": {
+    "source": "bbcf484802e53980038f001b60441d7edaa1e307ac2dc5456e246085eae6dc44",
+    "targets": {
+      "en": "b1907b3be68908712e635c750db3f7cfe7cdd542a9696309909db339a3fc9a6f",
+      "es": "c79ddb100a92420147a32c6919c009b062d847385dc61aaa9155d55333563ca5",
+      "de": "9e2a8ababa8aab2b74e885d5551b5038511f922106376326458ec2b7a3439b9c",
+      "fr": "b3492b0de6ea5b5167a0a7ba586fa5d68e48bcba9833d4f5f892755a5869fc88"
+    }
+  },
+  "ui:consentGateContinue": {
+    "source": "33529ca46ed2ed2678a5eb528dc363981ef8b8c458b7e6c32d04ef355383c70f",
+    "targets": {
+      "en": "8998db145e805fa87693d4f82407d93afc1822e6f5095296b34153e7e54fa86b",
+      "es": "29aa23a7e569aa11486e7ae4b0c8ee5c06da43f2d9bd073621dc8febb8a73144",
+      "de": "7653dd0b4b4fca9ff97dc142fe789313eaa656f5770e9f68f26e33b7ff8bb7dd",
+      "fr": "6927f781decbaa5d1020285e5909d6ca8643e91d0d4c5a30699f37a5d4ffd977"
+    }
+  },
+  "ui:consentGateFailed": {
+    "source": "0a67b44ee866e7eb268c9bf2170516df6cd64bdd5123f5e1d7cb3bfa7219ddd7",
+    "targets": {
+      "en": "1157c7fe6a436f62581f95f18343cde6e16f70ba3e1dd9630d92549dde06a599",
+      "es": "a0d9a0ad6866f72ec58dddca0b0f5549174a01e37df555f8dbbc7cd283aac5fa",
+      "de": "be43d9a4b0b3b78cc1433110fca3bb4f526eda8a0b34ba254025bc44e904f257",
+      "fr": "16cc2f33ecd0ab74cde66b6264795b896f3e97d55e4754222cf753d09c8748c8"
     }
   }
 }

@@ -10,7 +10,9 @@ For every account it also works out which e-mail it would get (service S, or
 commercial P only with a consent in force and a declared adult) and which
 kinds of data P would quote, from real counts (animals, reminders, records of
 the medical record, walks); with nothing true to quote it gets S (rule 9). The sequence stops by
-construction when the account chooses a plan: it is no longer listed. Having
+construction when the account chooses a plan: it is no longer listed. An
+account that asked to leave (a deletion request is waiting) or paused is left
+out too, counted apart and never written to. Having
 downloaded the data does NOT stop it (owner decision of 2026-11-08; doc 12
 says otherwise, flagged to the Orchestrator).
 
@@ -19,6 +21,7 @@ e-mail, no owner id, no name, no per-account number, so it can be read in a
 log or by a scheduler.
 """
 
+from collections.abc import Callable, Iterable
 from datetime import datetime
 
 from pydantic import BaseModel, Field
@@ -82,6 +85,11 @@ class RetentionDryRunReport(BaseModel):
     clock_not_started: int = 0
     clock_started: int = 0
     developers_excluded: int = 0
+    # Left out of the sequence because the owner asked to leave (a deletion
+    # request is waiting) or paused the account: neither is written to, and
+    # both are checked again when the real job sends and erases.
+    deletion_pending: int = 0
+    paused: int = 0
     lookups_skipped: int = 0
     # Notices that would go out now, by day after D ("0", "30", ... "119").
     notices_due: dict[str, int] = Field(
@@ -125,6 +133,8 @@ class RetentionDryRunService:
         data_counter: AccountDataCounter,
         *,
         test_plan: str | None = None,
+        pending_deletions: Callable[[], Iterable[str]] | None = None,
+        paused: Callable[[], Iterable[str]] | None = None,
     ) -> None:
         self._subscriptions = subscriptions
         self._contacts = contacts
@@ -132,6 +142,12 @@ class RetentionDryRunService:
         self._consents = consents
         self._data_counter = data_counter
         self._test_plan = test_plan
+        # Owners who asked to leave, and owners who paused, read in one go
+        # per run. A failure to read either list is NOT swallowed: with the
+        # real job a list that cannot be read must stop the run, never let it
+        # write to someone who asked to leave.
+        self._pending_deletions = pending_deletions
+        self._paused = paused
 
     def execute(self, *, now: datetime | None = None) -> RetentionDryRunReport:
         now = now or utc_now()
@@ -139,11 +155,22 @@ class RetentionDryRunService:
         if self._test_plan is not None:
             return report
 
+        asked_to_leave = frozenset(self._pending_deletions() if self._pending_deletions else ())
+        paused = frozenset(self._paused() if self._paused else ())
         lookups = 0
         for subscription in self._subscriptions.list_without_plan():
             report.accounts_without_plan += 1
             if subscription.is_trial_active(now=now):
                 report.trial_running += 1
+                continue
+
+            # Their own request comes first, then the pause: neither goes on to
+            # the sequence, so no e-mail, no clock and no erasure from this job.
+            if subscription.owner_id in asked_to_leave:
+                report.deletion_pending += 1
+                continue
+            if subscription.owner_id in paused:
+                report.paused += 1
                 continue
 
             report.access_lost += 1
