@@ -1492,7 +1492,7 @@
       }
     }
   },
-  "memorialChatReadOnly": "{name} ist bei den Andenken: Sie können diesen Chat nachlesen, aber keine neuen Nachrichten schreiben.",
+  "memorialChatReadOnly": "{name} ist bei den Andenken: Sie können diese Unterhaltung nachlesen, aber keine neuen Nachrichten schreiben.",
   "@memorialChatReadOnly": {
     "placeholders": {
       "name": {

@@ -2798,7 +2798,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String memorialReadOnlyNote(String name) {
-    return 'Everything here stays as it was: you can look, download and send, not change. If something needs changing, first bring $name back to Pets.';
+    return 'Everything here stays as it was: you can view, download and send, but not change. If something needs changing, first bring $name back to Pets.';
   }
 
   @override

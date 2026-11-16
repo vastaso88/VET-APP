@@ -19465,5 +19465,32 @@
       "de": "787b6508104e7e740d12f59b015775534577ec6e32ad542af8cfba6a02daec8c",
       "fr": "232d60e05a2ffdd3b5013de1a4fccda969960be51e2aec1b499d5942d5b320e8"
     }
+  },
+  "ui:memorialRestoreShortcut": {
+    "source": "d567b4fa930ab47a39a45793d7da677859888ff9de865de10b69aeb234d6d130",
+    "targets": {
+      "en": "460f35765e6aae10a04f186ed7712e788b7a9ed6f1db068cc44b1db202038932",
+      "es": "650bd5bc3617871d2b6c35738f8f76845108b27397425bf5ece62169838be94e",
+      "de": "82698954953204d25750c87a70fb3bd6502ec8eac245dea9e1d0c8dbede65c05",
+      "fr": "fa4c514545783787a958cd9c668b2249111fed81dacbaa51b2dd246b5c7e4fa3"
+    }
+  },
+  "ui:memorialReadOnlyNote": {
+    "source": "a9a04ed55c3b235822fd5479f9427ca5dfa0491fcaad3a48cebf9deb13b4a9f5",
+    "targets": {
+      "en": "a32c0dd2ad99e2d289db6255ef964810a2abfd3947f53939579bda3432595c7c",
+      "es": "ce43fb8fee86b7d2e067c6c3f644f50a99edc0ffcafa5bd6a30787848d52e4db",
+      "de": "2f4d5a0128a098123830df4af99d2585721cd8318576a27c11d65812c97e0b42",
+      "fr": "227a701f09f43a0566df507ac42594171596f287cd43721e555277a7807f2a8c"
+    }
+  },
+  "ui:memorialChatReadOnly": {
+    "source": "d1ac477434ef85b2ae36db6a30e0b3e74f86871b25dd6cfb550b0ed74cdcbf17",
+    "targets": {
+      "en": "41ca6e8521034731cf2fe968b7952d9649176d7824e3149c378f4d4db65c60f6",
+      "es": "c316b1f28d46c5109eccd0c0a1a3d0da8945e41c9007f8192a3f43c544e00747",
+      "de": "6c6970abef58c44f9dc218ecbfabae2d3c9286b3bddd10012bd5518bd827b6ff",
+      "fr": "257dd38c2b0e0219c771b7b4a85d9d74f203a31bdd162fb523214eabb740ea2f"
+    }
   }
 }

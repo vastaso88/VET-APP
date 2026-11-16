@@ -2822,7 +2822,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String memorialChatReadOnly(String name) {
-    return '$name está en Recuerdos: puedes releer este chat, pero ya no se pueden escribir mensajes nuevos.';
+    return '$name está en Recuerdos: puedes releer esta conversación, pero ya no se pueden escribir mensajes nuevos.';
   }
 
   @override

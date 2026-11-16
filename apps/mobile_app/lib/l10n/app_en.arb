@@ -1484,7 +1484,7 @@
       }
     }
   },
-  "memorialReadOnlyNote": "Everything here stays as it was: you can look, download and send, not change. If something needs changing, first bring {name} back to Pets.",
+  "memorialReadOnlyNote": "Everything here stays as it was: you can view, download and send, but not change. If something needs changing, first bring {name} back to Pets.",
   "@memorialReadOnlyNote": {
     "placeholders": {
       "name": {

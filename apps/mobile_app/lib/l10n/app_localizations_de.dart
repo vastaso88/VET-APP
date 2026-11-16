@@ -2840,7 +2840,7 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String memorialChatReadOnly(String name) {
-    return '$name ist bei den Andenken: Sie können diesen Chat nachlesen, aber keine neuen Nachrichten schreiben.';
+    return '$name ist bei den Andenken: Sie können diese Unterhaltung nachlesen, aber keine neuen Nachrichten schreiben.';
   }
 
   @override

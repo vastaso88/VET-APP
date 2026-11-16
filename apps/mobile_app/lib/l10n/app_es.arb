@@ -1492,7 +1492,7 @@
       }
     }
   },
-  "memorialChatReadOnly": "{name} está en Recuerdos: puedes releer este chat, pero ya no se pueden escribir mensajes nuevos.",
+  "memorialChatReadOnly": "{name} está en Recuerdos: puedes releer esta conversación, pero ya no se pueden escribir mensajes nuevos.",
   "@memorialChatReadOnly": {
     "placeholders": {
       "name": {

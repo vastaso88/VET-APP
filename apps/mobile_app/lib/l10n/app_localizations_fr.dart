@@ -2840,7 +2840,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String memorialChatReadOnly(String name) {
-    return '$name est dans Souvenirs : vous pouvez relire cette discussion, mais plus écrire de nouveaux messages.';
+    return '$name est dans Souvenirs : vous pouvez relire cette conversation, mais plus écrire de nouveaux messages.';
   }
 
   @override
