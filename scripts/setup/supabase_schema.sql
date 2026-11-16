@@ -298,6 +298,38 @@ using (owner_id = auth.uid()::text);
 
 revoke insert, update, delete on public.account_deletion_requests from anon, authenticated;
 
+-- Register of account deletions: pseudonymised data kept AFTER the deletion
+-- (see RETAINED_AFTER_DELETION in the eraser). Same SQL as
+-- scripts/setup/account_deletion_log.sql.
+create table if not exists public.account_deletion_log (
+    id bigint generated always as identity primary key,
+    -- SHA-256 hex of "vetapp-deletion-log-v1:" + id dell'account. Nessuna chiave.
+    owner_hash text not null unique,
+    deleted_at timestamptz not null default now(),
+    reason text not null check (reason in (
+        'user_now', 'user_period_end', 'closed_by_age_user',
+        'closed_by_age_team', 'support_request'
+    )),
+    -- Vuoto finche' la cancellazione e' in corso: una riga incompleta viene
+    -- rifatta come le altre.
+    completed_at timestamptz
+);
+
+create index if not exists idx_account_deletion_log_deleted_at
+    on public.account_deletion_log (deleted_at);
+
+-- Servizio soltanto: RLS accesa e NESSUNA policy. La chiave service_role del
+-- backend la salta; anon e authenticated non vedono nulla.
+alter table public.account_deletion_log enable row level security;
+revoke all on public.account_deletion_log from anon, authenticated;
+
+-- Copia fuori dal database: un oggetto per cancellazione in un bucket PRIVATO
+-- senza policy di storage (solo service_role). Un ripristino del database non la
+-- tocca.
+insert into storage.buckets (id, name, public)
+values ('deletion-log', 'deletion-log', false)
+on conflict (id) do update set public = false;
+
 -- Subscriptions: single-row-per-owner, same shape as account_consents.
 -- Starts the 14-day free trial (no card) on first lookup; `plan` stays
 -- null while on trial, then holds the chosen plan key permanently.

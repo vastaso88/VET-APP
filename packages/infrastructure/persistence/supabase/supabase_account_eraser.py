@@ -2,7 +2,8 @@
 
 Coverage is explicit: every table that stores something created by or about
 the owner is listed in [OWNER_TABLES] (or handled in [erase_data]); every
-other table is listed in [NOT_PERSONAL_TABLES] with the reason. A test reads
+other table is listed in [NOT_PERSONAL_TABLES] or, when only a pseudonym is
+kept on purpose, in [RETAINED_AFTER_DELETION], each with the reason. A test reads
 scripts/setup/supabase_schema.sql and fails when a table is in neither list,
 so a new table cannot silently escape the deletion."""
 
@@ -80,6 +81,17 @@ HANDLED_ELSEWHERE = frozenset(
         "marketplace_conversation_reports",
     }
 )
+
+# Pseudonymised data deliberately KEPT after the owner is erased (not a table
+# "without personal data": a fingerprint of the id is still a pseudonym), and why.
+# Not exported to the owner, not erased: it is the proof of the erasure and what
+# lets a restore from backup apply it again.
+RETAINED_AFTER_DELETION: dict[str, str] = {
+    "account_deletion_log": (
+        "art. 17(3)(b)/(e) e 5(2), impronta senza dati identificativi; conservato "
+        "per la finestra di ripristino dei backup e, come prova, per 5 anni"
+    ),
+}
 
 # Tables that hold nothing about an individual owner, and why.
 NOT_PERSONAL_TABLES: dict[str, str] = {

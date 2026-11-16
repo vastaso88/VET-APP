@@ -101,6 +101,49 @@ del titolare): il repository è pubblico.
     `04_registro_rischi.md` e, se serve, le checklist in `05_checklist.md`.
 12. Chiudere la scheda nel registro con data di chiusura e lezioni apprese.
 
+## 2 bis. Ripristino del database da backup (registro delle cancellazioni)
+
+Un ripristino riporta il database indietro nel tempo: un account cancellato DOPO
+quel backup ricompare, con i suoi dati. Cancellarlo di nuovo non è facoltativo
+(art. 17 GDPR): il registro `account_deletion_log` serve a questo. Contiene solo
+l'impronta SHA-256 dell'id (etichetta `vetapp-deletion-log-v1:`), la data e il
+motivo; mai e-mail, nome, contenuti o id di chi del team l'ha fatta.
+
+Poiché il registro sta nello stesso database, un ripristino lo riporta indietro
+insieme al resto. Per questo ogni cancellazione scrive la stessa riga anche in un
+oggetto del bucket Storage PRIVATO `deletion-log` (nessuna policy: solo
+`service_role`), che il ripristino non tocca.
+
+Procedura:
+
+1. **Prima** del ripristino: esportare la tabella `account_deletion_log` (Table
+   editor → Export) e conservare il file fuori dal repository.
+2. Ripristinare.
+3. Con SUPABASE_URL e SUPABASE_SERVICE_ROLE_KEY nel `.env` locale, in prova:
+   `uv run --system-certs --with truststore python scripts/maintenance/reapply_deletions.py`
+   (conta soltanto: righe nel registro e nella copia, account da cancellare).
+4. Se i numeri tornano, aggiungere `--apply`: ricarica nella tabella le righe
+   presenti nella copia e mancanti, poi cancella con lo stesso eraser
+   dell'eliminazione dell'account ogni account esistente la cui impronta è nel
+   registro, anche se la riga era rimasta incompleta.
+5. Annotare nel registro delle violazioni (sezione 4) solo i numeri.
+
+Ordine di scrittura (garanzia): la riga si scrive PRIMA di cancellare, con
+`completed_at` vuoto, nella tabella e nella copia; si completa dopo. Se la riga
+non si può scrivere la cancellazione non parte (si riprova); se la cancellazione
+si interrompe a metà, la riga resta incompleta e la riapplicazione la rifà.
+`owner_hash` è unico: un nuovo tentativo non duplica.
+
+Durata: una riga serve alla riapplicazione finché esiste un backup che può
+contenere l'account (giorni di backup di Supabase + 30; oggi 37, da verificare
+sul piano) e, come prova che la cancellazione è stata fatta, 5 anni dalla
+cancellazione (da confermare con la Normativa). Valgono entrambe le impostazioni
+`DELETION_LOG_REAPPLY_DAYS` e `DELETION_LOG_PROOF_YEARS`; resta il maggiore dei
+due. Il lavoro `POST /admin/lifecycle/prune-deletion-log` (programmatore, ogni
+ciclo) toglie le righe e le copie più vecchie. Non cambiare algoritmo o etichetta
+dell'impronta finché il registro esiste: le righe vecchie non corrisponderebbero
+più.
+
 ## 3. Segnali che devono far partire la procedura
 
 - Qualcuno (utente, ricercatore, GitHub secret scanning, fornitore) segnala un

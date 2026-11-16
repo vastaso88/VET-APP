@@ -88,3 +88,28 @@ jobs:
             echo "::error::Purge endpoint returned HTTP $HTTP_CODE"
             exit 1
           fi
+      - name: Prune the register of deletions
+        # Independent of the steps above.
+        if: ${{ !cancelled() }}
+        # Idempotent: removes only rows older than the retention. Counts only.
+        shell: bash
+        run: |
+          # The backend expects the dedicated secret as it is when ADMIN_SCHEDULER_SECRET
+          # is set there, and otherwise the sha256 of the service-role key (legacy).
+          if [ -n "$ADMIN_SCHEDULER_SECRET" ]; then
+            TOKEN="$ADMIN_SCHEDULER_SECRET"
+          else
+            TOKEN="$(printf 'vetapp-admin-scheduler:%s' "$SCHEDULER_SERVICE_ROLE_KEY" | sha256sum | awk '{print $1}')"
+          fi
+          RESPONSE_FILE="$(mktemp)"
+          HTTP_CODE="$(curl --silent --show-error --max-time 300 --output "$RESPONSE_FILE" --write-out "%{http_code}" --request POST --header "X-VetApp-Scheduler: $TOKEN" "$VET_API_BASE_URL/admin/lifecycle/prune-deletion-log" || true)"
+          cat "$RESPONSE_FILE"
+          rm -f "$RESPONSE_FILE"
+          if [ "$HTTP_CODE" = "404" ]; then
+            echo "::warning::Prune endpoint is not deployed yet; skipping."
+            exit 0
+          fi
+          if [ "$HTTP_CODE" -lt 200 ] || [ "$HTTP_CODE" -ge 300 ]; then
+            echo "::error::Prune endpoint returned HTTP $HTTP_CODE"
+            exit 1
+          fi

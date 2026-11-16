@@ -22,6 +22,17 @@ def purge_deleted_accounts(
     return report.model_dump()
 
 
+@router.post("/prune-deletion-log")
+def prune_deletion_log(
+    x_vetapp_scheduler: str | None = Header(default=None, alias="X-VetApp-Scheduler"),
+) -> dict[str, object]:
+    """Removes the register-of-deletions rows (and their copies outside the
+    database) older than the retention: the longer of the re-application window
+    and the proof period. Counts only; scheduler token, no user session."""
+    _require_scheduler_token(x_vetapp_scheduler)
+    return get_container().deletion_log_service.prune().model_dump()
+
+
 @router.post("/underage-dry-run")
 def underage_review_dry_run(
     x_vetapp_scheduler: str | None = Header(default=None, alias="X-VetApp-Scheduler"),

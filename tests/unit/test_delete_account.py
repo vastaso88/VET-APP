@@ -24,6 +24,7 @@ from packages.infrastructure.persistence.supabase.supabase_account_eraser import
     NOT_PERSONAL_TABLES,
     OWNER_TABLES,
     RADAR_PSEUDONYM_TABLES,
+    RETAINED_AFTER_DELETION,
     SupabaseAccountEraser,
 )
 
@@ -390,6 +391,7 @@ def test_every_table_of_the_schema_is_either_erased_or_declared_not_personal() -
         | {table for table, _ in RADAR_PSEUDONYM_TABLES}
         | HANDLED_ELSEWHERE
         | set(NOT_PERSONAL_TABLES)
+        | set(RETAINED_AFTER_DELETION)
     )
     assert tables - covered == set(), (
         "New table(s) not covered by account deletion: add them to OWNER_TABLES "

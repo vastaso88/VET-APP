@@ -68,6 +68,7 @@ from packages.core.application.services.create_pet_profile import CreatePetProfi
 from packages.core.application.services.create_reminder import CreateReminderService
 from packages.core.application.services.delete_account import DeleteAccountService
 from packages.core.application.services.delete_conversation import DeleteConversationService
+from packages.core.application.services.deletion_log import DeletionLogService
 from packages.core.application.services.document_summarizer import DocumentSummarizer
 from packages.core.application.services.edit_chat_message import EditChatMessageService
 from packages.core.application.services.end_walk import EndWalkService
@@ -218,6 +219,10 @@ from packages.infrastructure.persistence.in_memory_account_eraser import InMemor
 from packages.infrastructure.persistence.in_memory_account_exporter import (
     InMemoryAccountExporter,
 )
+from packages.infrastructure.persistence.in_memory_deletion_log import (
+    InMemoryDeletionLogCopy,
+    InMemoryDeletionLogRepository,
+)
 from packages.infrastructure.persistence.in_memory_event_catalog import (
     InMemoryEventCatalogRepository,
 )
@@ -349,6 +354,7 @@ class ApplicationContainer:
         self.user_device_repository = self._build_user_device_repository()
         self.account_age_repository = self._build_account_age_repository()
         self.account_deletion_repository = self._build_account_deletion_repository()
+        self.deletion_log_service = self._build_deletion_log_service()
         self.owner_contact_lookup = self._build_owner_contact_lookup()
         self.developer_emails = frozenset(
             email.strip().lower() for email in settings.developer_emails
@@ -537,6 +543,36 @@ class ApplicationContainer:
             self.settings.account_deletion_grace_days,
             self.account_consents_repository,
             self.pet_profile_repository,
+            self.deletion_log_service,
+        )
+
+    def _build_deletion_log_service(self) -> DeletionLogService:
+        """The register of deletions: the table and a copy in a private bucket
+        outside it (docs/security/03)."""
+        reapply_days = self.settings.deletion_log_reapply_days
+        proof_years = self.settings.deletion_log_proof_years
+        if self.settings.persistence_backend == "supabase":
+            try:
+                from packages.infrastructure.persistence.supabase.client import (
+                    build_supabase_client,
+                )
+                from packages.infrastructure.persistence.supabase.supabase_deletion_log import (
+                    SupabaseDeletionLogRepository,
+                    SupabaseStorageDeletionLogCopy,
+                )
+
+                client = build_supabase_client(self.settings)
+                return DeletionLogService(
+                    SupabaseDeletionLogRepository(client),
+                    SupabaseStorageDeletionLogCopy(client, self.settings.deletion_log_bucket),
+                    reapply_days,
+                    proof_years,
+                )
+            except ModuleNotFoundError:
+                if self.settings.environment == "production":
+                    raise
+        return DeletionLogService(
+            InMemoryDeletionLogRepository(), InMemoryDeletionLogCopy(), reapply_days, proof_years
         )
 
     def _build_account_deletion_repository(self) -> AccountDeletionRepository:
@@ -565,6 +601,7 @@ class ApplicationContainer:
             self.owner_contact_lookup,
             self._build_account_eraser(),
             self.settings.reporter_pseudonym_secret(),
+            self.deletion_log_service,
         )
 
     def underage_review_dry_run_service(self) -> UnderageReviewDryRunService:
@@ -591,7 +628,7 @@ class ApplicationContainer:
         return InMemoryAccountAgeRepository()
 
     def delete_account_service(self) -> DeleteAccountService:
-        return DeleteAccountService(self._build_account_eraser())
+        return DeleteAccountService(self._build_account_eraser(), self.deletion_log_service)
 
     def export_account_data_service(self) -> ExportAccountDataService:
         return ExportAccountDataService(self._build_account_exporter())

@@ -21,6 +21,8 @@ from pydantic import BaseModel
 from packages.core.application.ports.account_age_repository import AccountAgeRepository
 from packages.core.application.ports.account_eraser import AccountEraser
 from packages.core.application.ports.owner_contact_lookup import OwnerContactLookup
+from packages.core.application.services.deletion_log import DeletionLogService
+from packages.core.domain.account_deletion.log import DeletionReason
 from packages.core.domain.age.models import (
     OLDEST_PLAUSIBLE_AGE,
     UNDER_MINIMUM_GRACE_DAYS,
@@ -78,11 +80,13 @@ class AgeReviewAdminService:
         contacts: OwnerContactLookup,
         eraser: AccountEraser,
         secret: str,
+        log: DeletionLogService | None = None,
     ) -> None:
         self._repository = repository
         self._contacts = contacts
         self._eraser = eraser
         self._secret = f"{secret}:{_REF_SALT}"
+        self._log = log
 
     def ref_of(self, owner_id: str) -> str:
         return reporter_ref(owner_id, self._secret)
@@ -136,8 +140,13 @@ class AgeReviewAdminService:
         if record.correction_requested_at is not None:
             raise ValidationError("a correction was requested: resolve it first")
 
-        report = self._eraser.erase_data(record.owner_id)
-        self._eraser.delete_identity(record.owner_id)
+        if self._log is not None:
+            report = self._log.erase_account(
+                self._eraser, record.owner_id, DeletionReason.CLOSED_BY_AGE_TEAM, now
+            )
+        else:
+            report = self._eraser.erase_data(record.owner_id)
+            self._eraser.delete_identity(record.owner_id)
         outcome = ErasureOutcome(
             rows_deleted=sum(report.rows_deleted.values()), files_removed=report.files_removed
         )

@@ -19,6 +19,8 @@ from packages.core.application.services.delete_account import (
     RECENT_SIGN_IN_WINDOW,
     RecentSignInRequired,
 )
+from packages.core.application.services.deletion_log import DeletionLogService
+from packages.core.domain.account_deletion.log import DeletionReason
 from packages.core.domain.account_deletion.models import AccountDeletionRequest
 from packages.core.domain.common.entity import utc_now
 from packages.core.domain.consent.models import AccountConsentType
@@ -63,12 +65,14 @@ class AccountDeletionService:
         grace_days: int,
         consents: AccountConsentsRepository | None = None,
         pets: PetProfileRepository | None = None,
+        log: DeletionLogService | None = None,
     ) -> None:
         self._repository = repository
         self._eraser = eraser
         self._grace_days = grace_days
         self._consents = consents
         self._pets = pets
+        self._log = log
 
     def status(self, owner_id: str) -> DeletionStatus:
         request = self._repository.get(owner_id)
@@ -136,8 +140,13 @@ class AccountDeletionService:
             return report
         for request in due:
             try:
-                self._eraser.erase_data(request.owner_id)
-                self._eraser.delete_identity(request.owner_id)
+                if self._log is not None:
+                    self._log.erase_account(
+                        self._eraser, request.owner_id, DeletionReason.USER_PERIOD_END, now
+                    )
+                else:
+                    self._eraser.erase_data(request.owner_id)
+                    self._eraser.delete_identity(request.owner_id)
                 self._repository.delete(request.owner_id)
                 report.erased += 1
             except Exception:  # noqa: BLE001 - one failure must not stop the others

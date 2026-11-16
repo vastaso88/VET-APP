@@ -78,6 +78,17 @@ class Settings(BaseSettings):
     account_deletion_purge_enabled: bool = Field(
         default=False, alias="ACCOUNT_DELETION_PURGE_ENABLED"
     )
+    # Register of deletions (docs/security/03, 06). A row serves to apply an
+    # erasure again while a backup that may hold the account exists: the
+    # provider's backup days + 30 (7 + 30; check the plan). As proof the erasure
+    # was done it is kept this many years from the deletion (to be confirmed
+    # with Normativa). A row stays for the longer of the two.
+    deletion_log_reapply_days: int = Field(
+        default=37, ge=1, le=3650, alias="DELETION_LOG_REAPPLY_DAYS"
+    )
+    deletion_log_proof_years: int = Field(default=5, ge=0, le=20, alias="DELETION_LOG_PROOF_YEARS")
+    # Private bucket, no storage policy: only the service role reaches it.
+    deletion_log_bucket: str = Field(default="deletion-log", alias="DELETION_LOG_BUCKET")
     # Backoffice allowlist. When empty, admin endpoints fall back to
     # DEVELOPER_EMAILS so existing founder/developer accounts can be reused
     # without hardcoding personal addresses in source control.

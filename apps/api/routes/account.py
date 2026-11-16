@@ -3,6 +3,7 @@ from fastapi import APIRouter, Query
 from apps.api.dependencies.container import get_container
 from packages.core.application.services.delete_account import DeleteAccountInput
 from packages.core.application.services.export_account_data import ExportAccountDataInput
+from packages.core.domain.account_deletion.log import DeletionReason
 from packages.core.domain.age.models import AgeBand
 from packages.infrastructure.auth.age_guarded_auth_provider import (
     AgeGuardedAuthProvider,
@@ -47,12 +48,21 @@ def delete_account(immediate: bool = Query(default=False)) -> dict[str, object]:
         user = container.auth_provider.get_current_user()
     signed_in_at = container.auth_provider.last_sign_in_at()
 
-    if immediate or container.age_gate_service().status(user.id).band == AgeBand.UNDER_MINIMUM:
+    under_minimum = container.age_gate_service().status(user.id).band == AgeBand.UNDER_MINIMUM
+    if immediate or under_minimum:
         # "Elimina subito" (the owner chose no way back, which also frees the
         # e-mail), or a child's data, which has no ground to be kept: erased at
         # once. A request that was waiting is removed last.
         report = container.delete_account_service().execute(
-            DeleteAccountInput(owner_id=user.id, signed_in_at=signed_in_at)
+            DeleteAccountInput(
+                owner_id=user.id,
+                signed_in_at=signed_in_at,
+                reason=(
+                    DeletionReason.CLOSED_BY_AGE_USER
+                    if under_minimum
+                    else DeletionReason.USER_NOW
+                ),
+            )
         )
         container.account_deletion_repository.delete(user.id)
         return {"deleted": True, "scheduled": False, "report": report.model_dump()}
