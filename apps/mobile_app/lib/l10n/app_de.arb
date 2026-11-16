@@ -100,7 +100,7 @@
   "authSetPasswordSaveButton": "Neues Passwort speichern",
   "authLegalShareTooltip": "Teilen oder herunterladen",
   "authLegalLoadError": "Der Text kann gerade nicht geladen werden. Bitte versuchen Sie es gleich noch einmal.",
-  "authLegalPreparingNotice": "Der vollständige Text der Datenschutzerklärung ist in Vorbereitung und wird hier bald verfügbar sein, mit der Möglichkeit zum Herunterladen.",
+  "authLegalPreparingNotice": "Der vollständige Text der Datenschutzerklärung wird gerade fertiggestellt und ist hier bald verfügbar, mit der Möglichkeit zum Herunterladen. Vorab in Kürze: Ein Teil Ihrer Daten (Fragen, Anhänge und Sprachnachrichten) wird an Anbieter künstlicher Intelligenz gesendet, die Daten in den Vereinigten Staaten verarbeiten. Über Einstellungen → Kontakt können Sie Auskunft, Berichtigung, Löschung oder eine Kopie Ihrer Daten verlangen. Sie können Ihre Daten außerdem selbst herunterladen (Einstellungen → Konto → Meine Daten herunterladen) oder Ihr Konto löschen. Außerdem können Sie sich bei der Datenschutzaufsichtsbehörde Ihres Landes beschweren (in Italien: der Garante).",
   "authHubTitle": "Quokka: Ihr Tier verstehen",
   "authHubSubtitle": "Melden Sie sich in Ihrem Konto an oder erstellen Sie in wenigen Sekunden ein neues.",
   "authHubCreateAccount": "Konto erstellen",

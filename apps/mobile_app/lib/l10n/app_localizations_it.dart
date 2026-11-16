@@ -299,7 +299,7 @@ class AppLocalizationsIt extends AppLocalizations {
 
   @override
   String get authLegalPreparingNotice =>
-      'Il testo completo dell\'informativa è in preparazione e sarà disponibile qui a breve, con la possibilità di scaricarlo.';
+      'Il testo completo dell\'informativa è in fase di completamento e sarà qui a breve, con la possibilità di scaricarlo. Intanto, in sintesi: una parte dei dati (domande, allegati e messaggi vocali) viene inviata a fornitori di intelligenza artificiale che trattano i dati negli Stati Uniti. Puoi chiedere accesso, correzione, cancellazione o una copia dei tuoi dati da Impostazioni → Contattaci, scaricarli da Impostazioni → Account → Scarica i miei dati o eliminare l\'account. Puoi anche proporre reclamo all\'autorità per la protezione dei dati personali del tuo paese (in Italia, il Garante).';
 
   @override
   String get authHubTitle => 'Quokka: capire il tuo animale';

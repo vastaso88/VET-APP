@@ -100,7 +100,7 @@
   "authSetPasswordSaveButton": "Salva nuova password",
   "authLegalShareTooltip": "Condividi o scarica",
   "authLegalLoadError": "Non riesco a caricare il testo adesso. Riprova tra poco.",
-  "authLegalPreparingNotice": "Il testo completo dell'informativa è in preparazione e sarà disponibile qui a breve, con la possibilità di scaricarlo.",
+  "authLegalPreparingNotice": "Il testo completo dell'informativa è in fase di completamento e sarà qui a breve, con la possibilità di scaricarlo. Intanto, in sintesi: una parte dei dati (domande, allegati e messaggi vocali) viene inviata a fornitori di intelligenza artificiale che trattano i dati negli Stati Uniti. Puoi chiedere accesso, correzione, cancellazione o una copia dei tuoi dati da Impostazioni → Contattaci, scaricarli da Impostazioni → Account → Scarica i miei dati o eliminare l'account. Puoi anche proporre reclamo all'autorità per la protezione dei dati personali del tuo paese (in Italia, il Garante).",
   "authHubTitle": "Quokka: capire il tuo animale",
   "authHubSubtitle": "Accedi al tuo account oppure creane uno nuovo in pochi secondi.",
   "authHubCreateAccount": "Crea un account",

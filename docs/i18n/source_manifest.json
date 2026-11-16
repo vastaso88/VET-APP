@@ -810,12 +810,12 @@
     }
   },
   "ui:authLegalPreparingNotice": {
-    "source": "7eb098b48dc9971ea3876945b2607a75238f812de9025fb9b163583867b96d97",
+    "source": "91b856aeb342587f01c6fba8d316b8b2a0417aade6938f568af8f81b332eba06",
     "targets": {
-      "en": "1b7486d83a61771afe43b6526441262b7c63f2d582bb2c0931f1c5206c9bb53e",
-      "es": "eebc39c5ab469c1fcd7ce7ee0aa0962537c424f8c0128c90db124a154a219ed6",
-      "de": "825c8d49813c5214561f55e58c8b1a5b3ba2bbc47aa49b2f5a75bbdeb88007a6",
-      "fr": "db638a1751be613b4ec383e877cb43d3fb2be63983405da5760264c0b7fc007d"
+      "en": "8f932240aa6a2aba44a22c76c3b20a88a5c2894a2ba9ee0a64962cb8ef705fbc",
+      "es": "28b0430e652186a9af58f72ee8445908b6368f4bbe04fd49c016e0ae278e1578",
+      "de": "6545c27a160840507486ddf387dd923a0365defcdaab8f8399d6c45acc98f102",
+      "fr": "0457a4d74221a943ea2ebd680434fddd661248569ac8c9f8fe5179ca89c10eab"
     }
   },
   "ui:authHubTitle": {

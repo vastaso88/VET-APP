@@ -298,7 +298,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get authLegalPreparingNotice =>
-      'The full privacy policy is being prepared and will be available here soon, with a download option.';
+      'The full privacy policy is being completed and will be available here soon, with a download option. In the meantime, in short: part of your data (questions, attachments and voice messages) is sent to artificial intelligence providers that process data in the United States. You can ask for access, correction, deletion or a copy of your data from Settings → Contact us, download it from Settings → Account → Download my data, or delete your account. You can also lodge a complaint with the data protection authority of your country (in Italy, the Garante).';
 
   @override
   String get authHubTitle => 'Quokka: understand your pet';
