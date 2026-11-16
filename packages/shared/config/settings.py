@@ -78,6 +78,30 @@ class Settings(BaseSettings):
     account_deletion_purge_enabled: bool = Field(
         default=False, alias="ACCOUNT_DELETION_PURGE_ENABLED"
     )
+    # Server-side check that the Terms and the Privacy notice are accepted at the
+    # current version: while they are not, the protected routes answer 403
+    # `consent_required`. OFF until the app that shows the acceptance screen is
+    # distributed (the Orchestrator turns it on).
+    consent_enforcement_enabled: bool = Field(
+        default=False, alias="CONSENT_ENFORCEMENT_ENABLED"
+    )
+    # Pause (docs/compliance/18 §2): the most months an account may stay paused
+    # without a sign-in; then it is erased, after the warnings. NEVER empty: a
+    # missing limit is what art. 5(1)(e) GDPR forbids, so the range is enforced at
+    # start-up. The purge stays off until PAUSE_PURGE_ENABLED is true (the
+    # scheduler route only counts), and it also needs the e-mails to exist.
+    pause_max_months: int = Field(default=24, ge=12, le=36, alias="PAUSE_MAX_MONTHS")
+    pause_purge_enabled: bool = Field(default=False, alias="PAUSE_PURGE_ENABLED")
+    # E-mail sending (docs/auth/02). OFF unless EMAIL_SENDING_ENABLED is true
+    # (owner rule). The SMTP provider is the owner's choice: host and
+    # credentials are only ever read from the environment.
+    email_sending_enabled: bool = Field(default=False, alias="EMAIL_SENDING_ENABLED")
+    smtp_host: str = Field(default="", alias="SMTP_HOST")
+    smtp_port: int = Field(default=587, ge=1, le=65535, alias="SMTP_PORT")
+    smtp_username: str = Field(default="", alias="SMTP_USERNAME")
+    smtp_password: str = Field(default="", alias="SMTP_PASSWORD")
+    smtp_use_ssl: bool = Field(default=False, alias="SMTP_USE_SSL")
+    email_from: str = Field(default="", alias="EMAIL_FROM")
     # Register of deletions (docs/security/03, 06). A row serves to apply an
     # erasure again while a backup that may hold the account exists: the
     # provider's backup days + 30 (7 + 30; check the plan). As proof the erasure

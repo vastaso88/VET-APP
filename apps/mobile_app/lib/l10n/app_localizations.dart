@@ -12371,7 +12371,7 @@ abstract class AppLocalizations {
   /// No description provided for @accountDeletePeriodNote.
   ///
   /// In it, this message translates to:
-  /// **'L\'account verrà disattivato subito. Per {days, plural, one{# giorno} other{# giorni}} puoi cambiare idea: accedi con la stessa e-mail (se serve, reimposta la password) e annulla l\'eliminazione. Dopo il {date} cancelliamo l\'account e i tuoi dati, senza possibilità di recupero. Restano solo i dati che la legge ci obbliga a conservare, per esempio le fatture.'**
+  /// **'L\'account verrà disattivato subito. Per {days, plural, one{# giorno} other{# giorni}} puoi cambiare idea: accedi con la stessa e-mail (se serve, reimposta la password) e annulla l\'eliminazione. Dopo il {date} cancelliamo l\'account e i tuoi dati, senza possibilità di recupero. Restano alcuni dati, per esempio le fatture, che la legge ci obbliga a conservare, e un codice, senza il tuo nome né la tua e-mail, che prova la cancellazione.'**
   String accountDeletePeriodNote(int days, String date);
 
   /// No description provided for @accountDeleteScheduledDone.
@@ -12431,7 +12431,7 @@ abstract class AppLocalizations {
   /// No description provided for @accountRestoreDeleteNowBody.
   ///
   /// In it, this message translates to:
-  /// **'Cancelliamo subito l\'account e i tuoi dati, senza possibilità di recupero. Restano solo i dati che la legge ci obbliga a conservare, per esempio le fatture. Dopo potrai iscriverti di nuovo con la stessa e-mail.'**
+  /// **'Cancelliamo subito l\'account e i tuoi dati, senza possibilità di recupero. Restano alcuni dati, per esempio le fatture, che la legge ci obbliga a conservare, e un codice, senza il tuo nome né la tua e-mail, che prova la cancellazione. Dopo potrai iscriverti di nuovo con la stessa e-mail.'**
   String get accountRestoreDeleteNowBody;
 
   /// No description provided for @authRegisterEmailInUseRecoverHint.
@@ -12439,6 +12439,102 @@ abstract class AppLocalizations {
   /// In it, this message translates to:
   /// **'Se l\'hai eliminato da poco e il periodo di attesa non è finito, usa «Recupera account»: puoi annullare l\'eliminazione oppure eliminarlo subito per ricominciare.'**
   String get authRegisterEmailInUseRecoverHint;
+
+  /// No description provided for @accountLeaveQuestion.
+  ///
+  /// In it, this message translates to:
+  /// **'Cosa vuoi fare con il tuo account?'**
+  String get accountLeaveQuestion;
+
+  /// No description provided for @accountPauseOptionTitle.
+  ///
+  /// In it, this message translates to:
+  /// **'Metti in pausa'**
+  String get accountPauseOptionTitle;
+
+  /// No description provided for @accountPauseOptionBody.
+  ///
+  /// In it, this message translates to:
+  /// **'L\'account resta inattivo, senza promemoria né notifiche, e conserviamo i tuoi dati finché non torni, fino a {months, plural, one{# mese} other{# mesi}} senza accessi: poi li cancelliamo. Per tornare basta accedere con la stessa e-mail.'**
+  String accountPauseOptionBody(int months);
+
+  /// No description provided for @accountDeleteOptionTitle.
+  ///
+  /// In it, this message translates to:
+  /// **'Elimina l\'account'**
+  String get accountDeleteOptionTitle;
+
+  /// No description provided for @accountDeleteOptionBody.
+  ///
+  /// In it, this message translates to:
+  /// **'Lo disattiviamo subito. Per un periodo puoi cambiare idea accedendo con la stessa e-mail; poi cancelliamo i tuoi dati. Restano alcuni dati, per esempio le fatture, che la legge ci obbliga a conservare, e un codice, senza il tuo nome né la tua e-mail, che prova la cancellazione.'**
+  String get accountDeleteOptionBody;
+
+  /// No description provided for @accountPauseSubmit.
+  ///
+  /// In it, this message translates to:
+  /// **'Metti in pausa'**
+  String get accountPauseSubmit;
+
+  /// No description provided for @accountPauseDone.
+  ///
+  /// In it, this message translates to:
+  /// **'Il tuo account è in pausa. Se non accedi entro il {date}, lo cancelliamo insieme ai tuoi dati. Per tornare basta accedere con la stessa e-mail.'**
+  String accountPauseDone(String date);
+
+  /// No description provided for @accountPauseFailed.
+  ///
+  /// In it, this message translates to:
+  /// **'Non siamo riusciti a mettere l\'account in pausa. Riprova tra poco.'**
+  String get accountPauseFailed;
+
+  /// No description provided for @accountPausedElsewhere.
+  ///
+  /// In it, this message translates to:
+  /// **'Il tuo account è stato messo in pausa da un altro dispositivo. Per riprenderlo, accedi di nuovo con la stessa e-mail.'**
+  String get accountPausedElsewhere;
+
+  /// No description provided for @accountPauseEndedTitle.
+  ///
+  /// In it, this message translates to:
+  /// **'La pausa è finita'**
+  String get accountPauseEndedTitle;
+
+  /// No description provided for @accountPauseEndedBody.
+  ///
+  /// In it, this message translates to:
+  /// **'Bentornato: il tuo account è di nuovo attivo e i tuoi dati sono come li hai lasciati.'**
+  String get accountPauseEndedBody;
+
+  /// No description provided for @accountPauseEndedNoPlan.
+  ///
+  /// In it, this message translates to:
+  /// **'Non hai un piano: conserviamo i tuoi dati fino al {date}. Scegli un piano per tenere l\'account, oppure rimettilo in pausa da Impostazioni.'**
+  String accountPauseEndedNoPlan(String date);
+
+  /// No description provided for @consentGateTitle.
+  ///
+  /// In it, this message translates to:
+  /// **'Prima di continuare'**
+  String get consentGateTitle;
+
+  /// No description provided for @consentGateBody.
+  ///
+  /// In it, this message translates to:
+  /// **'Per usare Quokka serve accettare i Termini di Servizio e l\'Informativa Privacy, nella versione attuale. Puoi leggerli prima di accettare.'**
+  String get consentGateBody;
+
+  /// No description provided for @consentGateContinue.
+  ///
+  /// In it, this message translates to:
+  /// **'Accetta e continua'**
+  String get consentGateContinue;
+
+  /// No description provided for @consentGateFailed.
+  ///
+  /// In it, this message translates to:
+  /// **'Non siamo riusciti a registrare la tua accettazione. Riprova tra poco.'**
+  String get consentGateFailed;
 }
 
 class _AppLocalizationsDelegate

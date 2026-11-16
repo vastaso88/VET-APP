@@ -4082,7 +4082,7 @@
   "authRecoverLogin": "Se connecter avec la même adresse e-mail",
   "authRecoverReset": "Réinitialiser le mot de passe",
   "authRecoverExpired": "Si le délai est écoulé, le compte et ses données ont été supprimés : vous pouvez créer un nouveau compte avec la même adresse e-mail.",
-  "accountDeletePeriodNote": "Le compte sera désactivé immédiatement. Pendant {days, plural, one{# jour} other{# jours}}, vous pouvez changer d'avis : connectez-vous avec la même adresse e-mail (réinitialisez le mot de passe si besoin) et annulez la suppression. Après le {date}, nous supprimerons le compte et vos données, sans possibilité de récupération. Ne restent que les données que la loi nous oblige à conserver, par exemple les factures.",
+  "accountDeletePeriodNote": "Le compte sera désactivé immédiatement. Pendant {days, plural, one{# jour} other{# jours}}, vous pouvez changer d'avis : connectez-vous avec la même adresse e-mail (réinitialisez le mot de passe si besoin) et annulez la suppression. Après le {date}, nous supprimerons le compte et vos données, sans possibilité de récupération. Quelques données restent, par exemple les factures, que la loi nous oblige à conserver, et un code, sans votre nom ni votre e-mail, qui prouve la suppression.",
   "@accountDeletePeriodNote": {
     "placeholders": {
       "days": {
@@ -4116,6 +4116,43 @@
   "accountRestoreFailed": "Je n'ai pas pu annuler la suppression. Réessayez.",
   "accountDeleteNowLink": "Supprimer tout de suite, sans possibilité de récupération",
   "accountRestoreDeleteNow": "Supprimer tout de suite",
-  "accountRestoreDeleteNowBody": "Nous supprimons le compte et vos données tout de suite, sans possibilité de récupération. Ne restent que les données que la loi nous oblige à conserver, par exemple les factures. Ensuite, vous pourrez vous réinscrire avec la même adresse e-mail.",
-  "authRegisterEmailInUseRecoverHint": "Si vous l'avez supprimé récemment et que le délai d'attente n'est pas écoulé, utilisez « Récupérer le compte » : vous pouvez annuler la suppression ou le supprimer tout de suite pour recommencer."
+  "accountRestoreDeleteNowBody": "Nous supprimons le compte et vos données tout de suite, sans possibilité de récupération. Quelques données restent, par exemple les factures, que la loi nous oblige à conserver, et un code, sans votre nom ni votre e-mail, qui prouve la suppression. Ensuite, vous pourrez vous réinscrire avec la même adresse e-mail.",
+  "authRegisterEmailInUseRecoverHint": "Si vous l'avez supprimé récemment et que le délai d'attente n'est pas écoulé, utilisez « Récupérer le compte » : vous pouvez annuler la suppression ou le supprimer tout de suite pour recommencer.",
+  "accountLeaveQuestion": "Que voulez-vous faire de votre compte ?",
+  "accountPauseOptionTitle": "Mettre en pause",
+  "accountPauseOptionBody": "Le compte reste inactif, sans rappels ni notifications, et nous conservons vos données jusqu'à votre retour, dans la limite de {months} mois sans connexion ; ensuite nous les supprimons. Pour revenir, il suffit de vous connecter avec le même e-mail.",
+  "@accountPauseOptionBody": {
+    "placeholders": {
+      "months": {
+        "type": "int"
+      }
+    }
+  },
+  "accountDeleteOptionTitle": "Supprimer le compte",
+  "accountDeleteOptionBody": "Nous le désactivons tout de suite. Pendant un certain temps, vous pouvez changer d'avis en vous connectant avec le même e-mail ; ensuite nous supprimons vos données. Quelques données restent, par exemple les factures, que la loi nous oblige à conserver, et un code, sans votre nom ni votre e-mail, qui prouve la suppression.",
+  "accountPauseSubmit": "Mettre en pause",
+  "accountPauseDone": "Votre compte est en pause. Si vous ne vous connectez pas d'ici le {date}, nous le supprimons avec vos données. Pour revenir, il suffit de vous connecter avec le même e-mail.",
+  "@accountPauseDone": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "accountPauseFailed": "Nous n'avons pas pu mettre le compte en pause. Réessayez dans un instant.",
+  "accountPausedElsewhere": "Votre compte a été mis en pause depuis un autre appareil. Pour le réactiver, connectez-vous à nouveau avec le même e-mail.",
+  "accountPauseEndedTitle": "La pause est terminée",
+  "accountPauseEndedBody": "Bon retour parmi nous : votre compte est de nouveau actif et vos données sont telles que vous les avez laissées.",
+  "accountPauseEndedNoPlan": "Vous n'avez pas d'offre : nous conservons vos données jusqu'au {date}. Choisissez une offre pour garder le compte, ou remettez-le en pause depuis les Paramètres.",
+  "@accountPauseEndedNoPlan": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "consentGateTitle": "Avant de continuer",
+  "consentGateBody": "Pour utiliser Quokka, vous devez accepter les Conditions d'utilisation et la Politique de confidentialité dans leur version actuelle. Vous pouvez les lire avant d'accepter.",
+  "consentGateContinue": "Accepter et continuer",
+  "consentGateFailed": "Nous n'avons pas pu enregistrer votre acceptation. Réessayez dans un instant."
 }

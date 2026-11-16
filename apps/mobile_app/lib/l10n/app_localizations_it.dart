@@ -7397,7 +7397,7 @@ class AppLocalizationsIt extends AppLocalizations {
       other: '# giorni',
       one: '# giorno',
     );
-    return 'L\'account verrà disattivato subito. Per $_temp0 puoi cambiare idea: accedi con la stessa e-mail (se serve, reimposta la password) e annulla l\'eliminazione. Dopo il $date cancelliamo l\'account e i tuoi dati, senza possibilità di recupero. Restano solo i dati che la legge ci obbliga a conservare, per esempio le fatture.';
+    return 'L\'account verrà disattivato subito. Per $_temp0 puoi cambiare idea: accedi con la stessa e-mail (se serve, reimposta la password) e annulla l\'eliminazione. Dopo il $date cancelliamo l\'account e i tuoi dati, senza possibilità di recupero. Restano alcuni dati, per esempio le fatture, che la legge ci obbliga a conservare, e un codice, senza il tuo nome né la tua e-mail, che prova la cancellazione.';
   }
 
   @override
@@ -7436,9 +7436,75 @@ class AppLocalizationsIt extends AppLocalizations {
 
   @override
   String get accountRestoreDeleteNowBody =>
-      'Cancelliamo subito l\'account e i tuoi dati, senza possibilità di recupero. Restano solo i dati che la legge ci obbliga a conservare, per esempio le fatture. Dopo potrai iscriverti di nuovo con la stessa e-mail.';
+      'Cancelliamo subito l\'account e i tuoi dati, senza possibilità di recupero. Restano alcuni dati, per esempio le fatture, che la legge ci obbliga a conservare, e un codice, senza il tuo nome né la tua e-mail, che prova la cancellazione. Dopo potrai iscriverti di nuovo con la stessa e-mail.';
 
   @override
   String get authRegisterEmailInUseRecoverHint =>
       'Se l\'hai eliminato da poco e il periodo di attesa non è finito, usa «Recupera account»: puoi annullare l\'eliminazione oppure eliminarlo subito per ricominciare.';
+
+  @override
+  String get accountLeaveQuestion => 'Cosa vuoi fare con il tuo account?';
+
+  @override
+  String get accountPauseOptionTitle => 'Metti in pausa';
+
+  @override
+  String accountPauseOptionBody(int months) {
+    String _temp0 = intl.Intl.pluralLogic(
+      months,
+      locale: localeName,
+      other: '# mesi',
+      one: '# mese',
+    );
+    return 'L\'account resta inattivo, senza promemoria né notifiche, e conserviamo i tuoi dati finché non torni, fino a $_temp0 senza accessi: poi li cancelliamo. Per tornare basta accedere con la stessa e-mail.';
+  }
+
+  @override
+  String get accountDeleteOptionTitle => 'Elimina l\'account';
+
+  @override
+  String get accountDeleteOptionBody =>
+      'Lo disattiviamo subito. Per un periodo puoi cambiare idea accedendo con la stessa e-mail; poi cancelliamo i tuoi dati. Restano alcuni dati, per esempio le fatture, che la legge ci obbliga a conservare, e un codice, senza il tuo nome né la tua e-mail, che prova la cancellazione.';
+
+  @override
+  String get accountPauseSubmit => 'Metti in pausa';
+
+  @override
+  String accountPauseDone(String date) {
+    return 'Il tuo account è in pausa. Se non accedi entro il $date, lo cancelliamo insieme ai tuoi dati. Per tornare basta accedere con la stessa e-mail.';
+  }
+
+  @override
+  String get accountPauseFailed =>
+      'Non siamo riusciti a mettere l\'account in pausa. Riprova tra poco.';
+
+  @override
+  String get accountPausedElsewhere =>
+      'Il tuo account è stato messo in pausa da un altro dispositivo. Per riprenderlo, accedi di nuovo con la stessa e-mail.';
+
+  @override
+  String get accountPauseEndedTitle => 'La pausa è finita';
+
+  @override
+  String get accountPauseEndedBody =>
+      'Bentornato: il tuo account è di nuovo attivo e i tuoi dati sono come li hai lasciati.';
+
+  @override
+  String accountPauseEndedNoPlan(String date) {
+    return 'Non hai un piano: conserviamo i tuoi dati fino al $date. Scegli un piano per tenere l\'account, oppure rimettilo in pausa da Impostazioni.';
+  }
+
+  @override
+  String get consentGateTitle => 'Prima di continuare';
+
+  @override
+  String get consentGateBody =>
+      'Per usare Quokka serve accettare i Termini di Servizio e l\'Informativa Privacy, nella versione attuale. Puoi leggerli prima di accettare.';
+
+  @override
+  String get consentGateContinue => 'Accetta e continua';
+
+  @override
+  String get consentGateFailed =>
+      'Non siamo riusciti a registrare la tua accettazione. Riprova tra poco.';
 }

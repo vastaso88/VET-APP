@@ -4082,7 +4082,7 @@
   "authRecoverLogin": "Mit derselben E-Mail anmelden",
   "authRecoverReset": "Passwort zurücksetzen",
   "authRecoverExpired": "Ist die Frist abgelaufen, wurden das Konto und seine Daten gelöscht: Sie können mit derselben E-Mail-Adresse ein neues Konto anlegen.",
-  "accountDeletePeriodNote": "Das Konto wird sofort deaktiviert. {days, plural, one{# Tag} other{# Tage}} lang können Sie es sich anders überlegen: Melden Sie sich mit derselben E-Mail-Adresse an (setzen Sie bei Bedarf das Passwort zurück) und brechen Sie die Löschung ab. Nach dem {date} löschen wir das Konto und Ihre Daten endgültig, ohne Wiederherstellungsmöglichkeit. Es bleiben nur die Daten, die wir von Gesetzes wegen aufbewahren müssen, zum Beispiel Rechnungen.",
+  "accountDeletePeriodNote": "Das Konto wird sofort deaktiviert. {days, plural, one{# Tag} other{# Tage}} lang können Sie es sich anders überlegen: Melden Sie sich mit derselben E-Mail-Adresse an (setzen Sie bei Bedarf das Passwort zurück) und brechen Sie die Löschung ab. Nach dem {date} löschen wir das Konto und Ihre Daten endgültig, ohne Wiederherstellungsmöglichkeit. Es bleiben einige Daten, zum Beispiel Rechnungen, die wir von Gesetzes wegen aufbewahren müssen, und ein Code ohne Ihren Namen und Ihre E-Mail-Adresse, der die Löschung belegt.",
   "@accountDeletePeriodNote": {
     "placeholders": {
       "days": {
@@ -4116,6 +4116,43 @@
   "accountRestoreFailed": "Die Löschung konnte nicht abgebrochen werden. Bitte versuchen Sie es erneut.",
   "accountDeleteNowLink": "Jetzt sofort löschen, ohne Wiederherstellungsmöglichkeit",
   "accountRestoreDeleteNow": "Jetzt löschen",
-  "accountRestoreDeleteNowBody": "Wir löschen das Konto und Ihre Daten sofort und endgültig, ohne Wiederherstellungsmöglichkeit. Es bleiben nur die Daten, die wir von Gesetzes wegen aufbewahren müssen, zum Beispiel Rechnungen. Danach können Sie sich mit derselben E-Mail-Adresse neu registrieren.",
-  "authRegisterEmailInUseRecoverHint": "Falls Sie es gerade erst gelöscht haben und die Wartezeit noch nicht abgelaufen ist, nutzen Sie „Konto wiederherstellen“: Sie können die Löschung abbrechen oder das Konto sofort löschen, um neu zu beginnen."
+  "accountRestoreDeleteNowBody": "Wir löschen das Konto und Ihre Daten sofort und endgültig, ohne Wiederherstellungsmöglichkeit. Es bleiben einige Daten, zum Beispiel Rechnungen, die wir von Gesetzes wegen aufbewahren müssen, und ein Code ohne Ihren Namen und Ihre E-Mail-Adresse, der die Löschung belegt. Danach können Sie sich mit derselben E-Mail-Adresse neu registrieren.",
+  "authRegisterEmailInUseRecoverHint": "Falls Sie es gerade erst gelöscht haben und die Wartezeit noch nicht abgelaufen ist, nutzen Sie „Konto wiederherstellen“: Sie können die Löschung abbrechen oder das Konto sofort löschen, um neu zu beginnen.",
+  "accountLeaveQuestion": "Was möchten Sie mit Ihrem Konto tun?",
+  "accountPauseOptionTitle": "Pausieren",
+  "accountPauseOptionBody": "Das Konto bleibt inaktiv, ohne Erinnerungen und Benachrichtigungen, und wir bewahren Ihre Daten auf, bis Sie zurückkehren, höchstens {months, plural, =1{1 Monat} other{{months} Monate}} ohne Anmeldung; danach löschen wir sie. Um zurückzukehren, melden Sie sich einfach mit derselben E-Mail-Adresse an.",
+  "@accountPauseOptionBody": {
+    "placeholders": {
+      "months": {
+        "type": "int"
+      }
+    }
+  },
+  "accountDeleteOptionTitle": "Konto löschen",
+  "accountDeleteOptionBody": "Wir deaktivieren es sofort. Eine Zeit lang können Sie es sich anders überlegen, indem Sie sich mit derselben E-Mail-Adresse anmelden; danach löschen wir Ihre Daten. Es bleiben einige Daten, zum Beispiel Rechnungen, die wir von Gesetzes wegen aufbewahren müssen, und ein Code ohne Ihren Namen und Ihre E-Mail-Adresse, der die Löschung belegt.",
+  "accountPauseSubmit": "Pausieren",
+  "accountPauseDone": "Ihr Konto ist pausiert. Wenn Sie sich nicht bis zum {date} anmelden, löschen wir es zusammen mit Ihren Daten. Um zurückzukehren, melden Sie sich einfach mit derselben E-Mail-Adresse an.",
+  "@accountPauseDone": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "accountPauseFailed": "Wir konnten das Konto nicht pausieren. Bitte versuchen Sie es gleich noch einmal.",
+  "accountPausedElsewhere": "Ihr Konto wurde auf einem anderen Gerät pausiert. Um es wieder zu aktivieren, melden Sie sich erneut mit derselben E-Mail-Adresse an.",
+  "accountPauseEndedTitle": "Die Pause ist beendet",
+  "accountPauseEndedBody": "Willkommen zurück: Ihr Konto ist wieder aktiv und Ihre Daten sind so, wie Sie sie verlassen haben.",
+  "accountPauseEndedNoPlan": "Sie haben keinen Tarif: Wir bewahren Ihre Daten bis zum {date} auf. Wählen Sie einen Tarif, um das Konto zu behalten, oder pausieren Sie es in den Einstellungen erneut.",
+  "@accountPauseEndedNoPlan": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "consentGateTitle": "Bevor Sie fortfahren",
+  "consentGateBody": "Um Quokka zu nutzen, müssen Sie die Nutzungsbedingungen und die Datenschutzerklärung in der aktuellen Fassung akzeptieren. Sie können sie vor der Zustimmung lesen.",
+  "consentGateContinue": "Akzeptieren und fortfahren",
+  "consentGateFailed": "Wir konnten Ihre Zustimmung nicht speichern. Bitte versuchen Sie es gleich noch einmal."
 }

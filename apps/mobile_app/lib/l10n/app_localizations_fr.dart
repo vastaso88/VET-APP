@@ -7436,7 +7436,7 @@ class AppLocalizationsFr extends AppLocalizations {
       other: '# jours',
       one: '# jour',
     );
-    return 'Le compte sera désactivé immédiatement. Pendant $_temp0, vous pouvez changer d\'avis : connectez-vous avec la même adresse e-mail (réinitialisez le mot de passe si besoin) et annulez la suppression. Après le $date, nous supprimerons le compte et vos données, sans possibilité de récupération. Ne restent que les données que la loi nous oblige à conserver, par exemple les factures.';
+    return 'Le compte sera désactivé immédiatement. Pendant $_temp0, vous pouvez changer d\'avis : connectez-vous avec la même adresse e-mail (réinitialisez le mot de passe si besoin) et annulez la suppression. Après le $date, nous supprimerons le compte et vos données, sans possibilité de récupération. Quelques données restent, par exemple les factures, que la loi nous oblige à conserver, et un code, sans votre nom ni votre e-mail, qui prouve la suppression.';
   }
 
   @override
@@ -7475,9 +7475,69 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get accountRestoreDeleteNowBody =>
-      'Nous supprimons le compte et vos données tout de suite, sans possibilité de récupération. Ne restent que les données que la loi nous oblige à conserver, par exemple les factures. Ensuite, vous pourrez vous réinscrire avec la même adresse e-mail.';
+      'Nous supprimons le compte et vos données tout de suite, sans possibilité de récupération. Quelques données restent, par exemple les factures, que la loi nous oblige à conserver, et un code, sans votre nom ni votre e-mail, qui prouve la suppression. Ensuite, vous pourrez vous réinscrire avec la même adresse e-mail.';
 
   @override
   String get authRegisterEmailInUseRecoverHint =>
       'Si vous l\'avez supprimé récemment et que le délai d\'attente n\'est pas écoulé, utilisez « Récupérer le compte » : vous pouvez annuler la suppression ou le supprimer tout de suite pour recommencer.';
+
+  @override
+  String get accountLeaveQuestion => 'Que voulez-vous faire de votre compte ?';
+
+  @override
+  String get accountPauseOptionTitle => 'Mettre en pause';
+
+  @override
+  String accountPauseOptionBody(int months) {
+    return 'Le compte reste inactif, sans rappels ni notifications, et nous conservons vos données jusqu\'à votre retour, dans la limite de $months mois sans connexion ; ensuite nous les supprimons. Pour revenir, il suffit de vous connecter avec le même e-mail.';
+  }
+
+  @override
+  String get accountDeleteOptionTitle => 'Supprimer le compte';
+
+  @override
+  String get accountDeleteOptionBody =>
+      'Nous le désactivons tout de suite. Pendant un certain temps, vous pouvez changer d\'avis en vous connectant avec le même e-mail ; ensuite nous supprimons vos données. Quelques données restent, par exemple les factures, que la loi nous oblige à conserver, et un code, sans votre nom ni votre e-mail, qui prouve la suppression.';
+
+  @override
+  String get accountPauseSubmit => 'Mettre en pause';
+
+  @override
+  String accountPauseDone(String date) {
+    return 'Votre compte est en pause. Si vous ne vous connectez pas d\'ici le $date, nous le supprimons avec vos données. Pour revenir, il suffit de vous connecter avec le même e-mail.';
+  }
+
+  @override
+  String get accountPauseFailed =>
+      'Nous n\'avons pas pu mettre le compte en pause. Réessayez dans un instant.';
+
+  @override
+  String get accountPausedElsewhere =>
+      'Votre compte a été mis en pause depuis un autre appareil. Pour le réactiver, connectez-vous à nouveau avec le même e-mail.';
+
+  @override
+  String get accountPauseEndedTitle => 'La pause est terminée';
+
+  @override
+  String get accountPauseEndedBody =>
+      'Bon retour parmi nous : votre compte est de nouveau actif et vos données sont telles que vous les avez laissées.';
+
+  @override
+  String accountPauseEndedNoPlan(String date) {
+    return 'Vous n\'avez pas d\'offre : nous conservons vos données jusqu\'au $date. Choisissez une offre pour garder le compte, ou remettez-le en pause depuis les Paramètres.';
+  }
+
+  @override
+  String get consentGateTitle => 'Avant de continuer';
+
+  @override
+  String get consentGateBody =>
+      'Pour utiliser Quokka, vous devez accepter les Conditions d\'utilisation et la Politique de confidentialité dans leur version actuelle. Vous pouvez les lire avant d\'accepter.';
+
+  @override
+  String get consentGateContinue => 'Accepter et continuer';
+
+  @override
+  String get consentGateFailed =>
+      'Nous n\'avons pas pu enregistrer votre acceptation. Réessayez dans un instant.';
 }

@@ -4,7 +4,7 @@
   "accountDeleteFailed": "Non sono riuscito a eliminare l'account. Riprova tra poco; se il problema continua, scrivi all'assistenza.",
   "accountDeletePasswordLabel": "Scrivi la tua password per confermare",
   "accountDeletePasswordRequired": "Inserisci la tua password.",
-  "accountDeletePeriodNote": "L'account verrà disattivato subito. Per {days, plural, one{# giorno} other{# giorni}} puoi cambiare idea: accedi con la stessa e-mail (se serve, reimposta la password) e annulla l'eliminazione. Dopo il {date} cancelliamo l'account e i tuoi dati, senza possibilità di recupero. Restano solo i dati che la legge ci obbliga a conservare, per esempio le fatture.",
+  "accountDeletePeriodNote": "L'account verrà disattivato subito. Per {days, plural, one{# giorno} other{# giorni}} puoi cambiare idea: accedi con la stessa e-mail (se serve, reimposta la password) e annulla l'eliminazione. Dopo il {date} cancelliamo l'account e i tuoi dati, senza possibilità di recupero. Restano alcuni dati, per esempio le fatture, che la legge ci obbliga a conservare, e un codice, senza il tuo nome né la tua e-mail, che prova la cancellazione.",
   "accountDeleteReauth": "Per sicurezza serve una conferma recente: riscrivi la password e riprova.",
   "accountDeleteScheduledDone": "Account disattivato. Puoi annullare l'eliminazione fino al {date}.",
   "accountDeleteSubmit": "Elimina definitivamente il mio account",

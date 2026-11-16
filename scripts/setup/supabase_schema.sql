@@ -298,6 +298,27 @@ using (owner_id = auth.uid()::text);
 
 revoke insert, update, delete on public.account_deletion_requests from anon, authenticated;
 
+-- Account pauses (docs/auth/02). Same SQL as scripts/setup/account_pauses.sql.
+create table if not exists public.account_pauses (
+    owner_id text primary key,
+    paused_at timestamptz not null default now(),
+    -- Ultimo e-mail di servizio della sequenza della pausa gia' inviata.
+    last_notice text,
+    last_notice_at timestamptz,
+    -- Set at the next sign-in; the app says so once, then removes the row.
+    resumed_at timestamptz
+);
+
+alter table public.account_pauses enable row level security;
+
+drop policy if exists account_pauses_select_own on public.account_pauses;
+create policy account_pauses_select_own
+on public.account_pauses
+for select
+using (owner_id = auth.uid()::text);
+
+revoke insert, update, delete on public.account_pauses from anon, authenticated;
+
 -- Register of account deletions: pseudonymised data kept AFTER the deletion
 -- (see RETAINED_AFTER_DELETION in the eraser). Same SQL as
 -- scripts/setup/account_deletion_log.sql.
@@ -308,7 +329,7 @@ create table if not exists public.account_deletion_log (
     deleted_at timestamptz not null default now(),
     reason text not null check (reason in (
         'user_now', 'user_period_end', 'closed_by_age_user',
-        'closed_by_age_team', 'support_request'
+        'closed_by_age_team', 'support_request', 'pause_expired', 'no_plan_expired'
     )),
     -- Vuoto finche' la cancellazione e' in corso: una riga incompleta viene
     -- rifatta come le altre.

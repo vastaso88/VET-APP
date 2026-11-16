@@ -40,6 +40,7 @@ from packages.shared.config.settings import get_settings
 from packages.shared.errors.base import (
     AgeRestrictedError,
     AuthenticationError,
+    ConsentRequiredError,
     MarketplaceRestrictedError,
     PlanLimitError,
     ProviderError,
@@ -171,6 +172,11 @@ async def handle_subscription_required(_: Request, exc: SubscriptionRequiredErro
 async def handle_age_restricted(_: Request, exc: AgeRestrictedError) -> JSONResponse:
     status = 409 if exc.code == "age_already_declared" else 403
     return JSONResponse(status_code=status, content={"detail": exc.code, "code": exc.code})
+
+
+@app.exception_handler(ConsentRequiredError)
+async def handle_consent_required(_: Request, exc: ConsentRequiredError) -> JSONResponse:
+    return JSONResponse(status_code=403, content={"detail": exc.code, "code": exc.code})
 
 
 @app.exception_handler(PlanLimitError)

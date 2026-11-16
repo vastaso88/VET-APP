@@ -4091,7 +4091,7 @@
   "authRecoverLogin": "Accedi con la stessa e-mail",
   "authRecoverReset": "Reimposta la password",
   "authRecoverExpired": "Se il periodo è finito, l'account e i dati sono stati cancellati: puoi creare un nuovo account con la stessa e-mail.",
-  "accountDeletePeriodNote": "L'account verrà disattivato subito. Per {days, plural, one{# giorno} other{# giorni}} puoi cambiare idea: accedi con la stessa e-mail (se serve, reimposta la password) e annulla l'eliminazione. Dopo il {date} cancelliamo l'account e i tuoi dati, senza possibilità di recupero. Restano solo i dati che la legge ci obbliga a conservare, per esempio le fatture.",
+  "accountDeletePeriodNote": "L'account verrà disattivato subito. Per {days, plural, one{# giorno} other{# giorni}} puoi cambiare idea: accedi con la stessa e-mail (se serve, reimposta la password) e annulla l'eliminazione. Dopo il {date} cancelliamo l'account e i tuoi dati, senza possibilità di recupero. Restano alcuni dati, per esempio le fatture, che la legge ci obbliga a conservare, e un codice, senza il tuo nome né la tua e-mail, che prova la cancellazione.",
   "@accountDeletePeriodNote": {
     "placeholders": {
       "days": {
@@ -4125,6 +4125,43 @@
   "accountRestoreFailed": "Non sono riuscito ad annullare l'eliminazione. Riprova.",
   "accountDeleteNowLink": "Elimina subito, senza possibilità di recupero",
   "accountRestoreDeleteNow": "Elimina subito",
-  "accountRestoreDeleteNowBody": "Cancelliamo subito l'account e i tuoi dati, senza possibilità di recupero. Restano solo i dati che la legge ci obbliga a conservare, per esempio le fatture. Dopo potrai iscriverti di nuovo con la stessa e-mail.",
-  "authRegisterEmailInUseRecoverHint": "Se l'hai eliminato da poco e il periodo di attesa non è finito, usa «Recupera account»: puoi annullare l'eliminazione oppure eliminarlo subito per ricominciare."
+  "accountRestoreDeleteNowBody": "Cancelliamo subito l'account e i tuoi dati, senza possibilità di recupero. Restano alcuni dati, per esempio le fatture, che la legge ci obbliga a conservare, e un codice, senza il tuo nome né la tua e-mail, che prova la cancellazione. Dopo potrai iscriverti di nuovo con la stessa e-mail.",
+  "authRegisterEmailInUseRecoverHint": "Se l'hai eliminato da poco e il periodo di attesa non è finito, usa «Recupera account»: puoi annullare l'eliminazione oppure eliminarlo subito per ricominciare.",
+  "accountLeaveQuestion": "Cosa vuoi fare con il tuo account?",
+  "accountPauseOptionTitle": "Metti in pausa",
+  "accountPauseOptionBody": "L'account resta inattivo, senza promemoria né notifiche, e conserviamo i tuoi dati finché non torni, fino a {months, plural, one{# mese} other{# mesi}} senza accessi: poi li cancelliamo. Per tornare basta accedere con la stessa e-mail.",
+  "@accountPauseOptionBody": {
+    "placeholders": {
+      "months": {
+        "type": "int"
+      }
+    }
+  },
+  "accountDeleteOptionTitle": "Elimina l'account",
+  "accountDeleteOptionBody": "Lo disattiviamo subito. Per un periodo puoi cambiare idea accedendo con la stessa e-mail; poi cancelliamo i tuoi dati. Restano alcuni dati, per esempio le fatture, che la legge ci obbliga a conservare, e un codice, senza il tuo nome né la tua e-mail, che prova la cancellazione.",
+  "accountPauseSubmit": "Metti in pausa",
+  "accountPauseDone": "Il tuo account è in pausa. Se non accedi entro il {date}, lo cancelliamo insieme ai tuoi dati. Per tornare basta accedere con la stessa e-mail.",
+  "@accountPauseDone": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "accountPauseFailed": "Non siamo riusciti a mettere l'account in pausa. Riprova tra poco.",
+  "accountPausedElsewhere": "Il tuo account è stato messo in pausa da un altro dispositivo. Per riprenderlo, accedi di nuovo con la stessa e-mail.",
+  "accountPauseEndedTitle": "La pausa è finita",
+  "accountPauseEndedBody": "Bentornato: il tuo account è di nuovo attivo e i tuoi dati sono come li hai lasciati.",
+  "accountPauseEndedNoPlan": "Non hai un piano: conserviamo i tuoi dati fino al {date}. Scegli un piano per tenere l'account, oppure rimettilo in pausa da Impostazioni.",
+  "@accountPauseEndedNoPlan": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "consentGateTitle": "Prima di continuare",
+  "consentGateBody": "Per usare Quokka serve accettare i Termini di Servizio e l'Informativa Privacy, nella versione attuale. Puoi leggerli prima di accettare.",
+  "consentGateContinue": "Accetta e continua",
+  "consentGateFailed": "Non siamo riusciti a registrare la tua accettazione. Riprova tra poco."
 }

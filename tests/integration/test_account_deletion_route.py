@@ -65,7 +65,9 @@ def test_delete_account_deactivates_the_owner_and_erases_nothing_yet(
 
     assert response.status_code == 200
     body = response.json()
-    assert body["deleted"] is True and body["scheduled"] is True
+    # Deactivated, not erased yet: it must not say "deleted" and "pending" together.
+    assert body["status"] == "scheduled"
+    assert body["deleted"] is False and body["scheduled"] is True
     assert body["pending"] is True and body["grace_days"] == 30
     assert datetime.fromisoformat(body["purge_after"]) - datetime.fromisoformat(
         body["requested_at"]

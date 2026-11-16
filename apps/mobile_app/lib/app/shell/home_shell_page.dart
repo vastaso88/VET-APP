@@ -25,6 +25,9 @@ import '../../features/notifications/application/notification_taps.dart';
 import '../../features/notifications/presentation/reminder_notification_permission.dart';
 import '../../features/reminders/data/reminders_repository.dart';
 import '../../features/reminders/presentation/reminder_completion_prompter.dart';
+import '../../features/account/application/account_session_guard.dart';
+import '../../features/account_consents/application/consent_gate.dart';
+import '../router/app_router.dart';
 import '../launch/route_restoration.dart';
 import '../launch/warm_start_store.dart';
 
@@ -64,6 +67,7 @@ class _HomeShellPageState extends State<HomeShellPage> {
     // Back from the background: a reminder may have fallen due meanwhile.
     _lifecycle = AppLifecycleListener(onResume: () {
       if (_ready) unawaited(ReminderCompletionPrompter.instance.checkDue());
+      if (_ready) unawaited(_checkSessionOnResume());
     });
     WidgetsBinding.instance.addPostFrameCallback((_) {
       unawaited(_restoreOpenPages());
@@ -153,9 +157,49 @@ class _HomeShellPageState extends State<HomeShellPage> {
   /// A deactivated account (waiting to be erased) is offered the cancellation
   /// and nothing else; otherwise the declared age is checked.
   Future<void> _checkAccountAfterSignIn() async {
+    // Paused or put in deletion from another device: nothing of it may run here.
+    if (await checkAccountSession(context) == SessionOutcome.paused) return;
+    if (!mounted) return;
     if (await checkPendingDeletionAfterSignIn(context)) return;
     if (!mounted) return;
+    // The Terms and the Privacy Policy at the current version: until accepted the
+    // backend refuses the protected routes (`consent_required`), so the shell is
+    // rebuilt after the owner accepts to load everything again.
+    if (await ensureMandatoryConsents(context)) {
+      if (!mounted) return;
+      Navigator.of(context, rootNavigator: true)
+          .pushNamedAndRemoveUntil(AppRouter.homeShell, (route) => false);
+      return;
+    }
+    if (!mounted) return;
     await checkAgeAfterSignIn(context);
+    if (!mounted) return;
+    // The pause is over: said once, with the new date for an account without a plan.
+    await showPauseEndedIfAny(context);
+  }
+
+  DateTime? _lastSessionCheck;
+
+  /// Back from the background: an account paused or put in deletion elsewhere
+  /// meanwhile is found out here (at most once a minute).
+  Future<void> _checkSessionOnResume() async {
+    final now = DateTime.now();
+    final last = _lastSessionCheck;
+    if (last != null && now.difference(last) < const Duration(minutes: 1)) return;
+    _lastSessionCheck = now;
+    if (!mounted) return;
+    final outcome = await checkAccountSession(context);
+    if (!mounted) return;
+    if (outcome == SessionOutcome.deactivated) {
+      await checkPendingDeletionAfterSignIn(context);
+      return;
+    }
+    // A new version of the Terms or the Privacy Policy while the app was away.
+    if (await ensureMandatoryConsents(context)) {
+      if (!mounted) return;
+      Navigator.of(context, rootNavigator: true)
+          .pushNamedAndRemoveUntil(AppRouter.homeShell, (route) => false);
+    }
   }
 
   Future<void> _maybeShowTrialCountdown() async {

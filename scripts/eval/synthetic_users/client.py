@@ -72,7 +72,7 @@ def call(user_id: str, method: str, path: str, body: Any = None, language: str =
 
 def setup(user_id: str) -> None:
     me = persona(user_id)
-    session = call(user_id, "POST", "/auth/signup", {"email": me["email"], "password": "synthetic"})
+    session = call(user_id, "POST", "/auth/signup", {"email": me["email"], "password": "synthetic", "accept_terms": True})
     state = {"token": session["access_token"], "user_id": session["user"]["id"], "pets": {}}
     save_state(user_id, state)
     for pet in me["pets"]:

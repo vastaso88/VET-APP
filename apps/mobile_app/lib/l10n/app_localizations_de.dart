@@ -7425,7 +7425,7 @@ class AppLocalizationsDe extends AppLocalizations {
       other: '# Tage',
       one: '# Tag',
     );
-    return 'Das Konto wird sofort deaktiviert. $_temp0 lang können Sie es sich anders überlegen: Melden Sie sich mit derselben E-Mail-Adresse an (setzen Sie bei Bedarf das Passwort zurück) und brechen Sie die Löschung ab. Nach dem $date löschen wir das Konto und Ihre Daten endgültig, ohne Wiederherstellungsmöglichkeit. Es bleiben nur die Daten, die wir von Gesetzes wegen aufbewahren müssen, zum Beispiel Rechnungen.';
+    return 'Das Konto wird sofort deaktiviert. $_temp0 lang können Sie es sich anders überlegen: Melden Sie sich mit derselben E-Mail-Adresse an (setzen Sie bei Bedarf das Passwort zurück) und brechen Sie die Löschung ab. Nach dem $date löschen wir das Konto und Ihre Daten endgültig, ohne Wiederherstellungsmöglichkeit. Es bleiben einige Daten, zum Beispiel Rechnungen, die wir von Gesetzes wegen aufbewahren müssen, und ein Code ohne Ihren Namen und Ihre E-Mail-Adresse, der die Löschung belegt.';
   }
 
   @override
@@ -7464,9 +7464,75 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get accountRestoreDeleteNowBody =>
-      'Wir löschen das Konto und Ihre Daten sofort und endgültig, ohne Wiederherstellungsmöglichkeit. Es bleiben nur die Daten, die wir von Gesetzes wegen aufbewahren müssen, zum Beispiel Rechnungen. Danach können Sie sich mit derselben E-Mail-Adresse neu registrieren.';
+      'Wir löschen das Konto und Ihre Daten sofort und endgültig, ohne Wiederherstellungsmöglichkeit. Es bleiben einige Daten, zum Beispiel Rechnungen, die wir von Gesetzes wegen aufbewahren müssen, und ein Code ohne Ihren Namen und Ihre E-Mail-Adresse, der die Löschung belegt. Danach können Sie sich mit derselben E-Mail-Adresse neu registrieren.';
 
   @override
   String get authRegisterEmailInUseRecoverHint =>
       'Falls Sie es gerade erst gelöscht haben und die Wartezeit noch nicht abgelaufen ist, nutzen Sie „Konto wiederherstellen“: Sie können die Löschung abbrechen oder das Konto sofort löschen, um neu zu beginnen.';
+
+  @override
+  String get accountLeaveQuestion => 'Was möchten Sie mit Ihrem Konto tun?';
+
+  @override
+  String get accountPauseOptionTitle => 'Pausieren';
+
+  @override
+  String accountPauseOptionBody(int months) {
+    String _temp0 = intl.Intl.pluralLogic(
+      months,
+      locale: localeName,
+      other: '$months Monate',
+      one: '1 Monat',
+    );
+    return 'Das Konto bleibt inaktiv, ohne Erinnerungen und Benachrichtigungen, und wir bewahren Ihre Daten auf, bis Sie zurückkehren, höchstens $_temp0 ohne Anmeldung; danach löschen wir sie. Um zurückzukehren, melden Sie sich einfach mit derselben E-Mail-Adresse an.';
+  }
+
+  @override
+  String get accountDeleteOptionTitle => 'Konto löschen';
+
+  @override
+  String get accountDeleteOptionBody =>
+      'Wir deaktivieren es sofort. Eine Zeit lang können Sie es sich anders überlegen, indem Sie sich mit derselben E-Mail-Adresse anmelden; danach löschen wir Ihre Daten. Es bleiben einige Daten, zum Beispiel Rechnungen, die wir von Gesetzes wegen aufbewahren müssen, und ein Code ohne Ihren Namen und Ihre E-Mail-Adresse, der die Löschung belegt.';
+
+  @override
+  String get accountPauseSubmit => 'Pausieren';
+
+  @override
+  String accountPauseDone(String date) {
+    return 'Ihr Konto ist pausiert. Wenn Sie sich nicht bis zum $date anmelden, löschen wir es zusammen mit Ihren Daten. Um zurückzukehren, melden Sie sich einfach mit derselben E-Mail-Adresse an.';
+  }
+
+  @override
+  String get accountPauseFailed =>
+      'Wir konnten das Konto nicht pausieren. Bitte versuchen Sie es gleich noch einmal.';
+
+  @override
+  String get accountPausedElsewhere =>
+      'Ihr Konto wurde auf einem anderen Gerät pausiert. Um es wieder zu aktivieren, melden Sie sich erneut mit derselben E-Mail-Adresse an.';
+
+  @override
+  String get accountPauseEndedTitle => 'Die Pause ist beendet';
+
+  @override
+  String get accountPauseEndedBody =>
+      'Willkommen zurück: Ihr Konto ist wieder aktiv und Ihre Daten sind so, wie Sie sie verlassen haben.';
+
+  @override
+  String accountPauseEndedNoPlan(String date) {
+    return 'Sie haben keinen Tarif: Wir bewahren Ihre Daten bis zum $date auf. Wählen Sie einen Tarif, um das Konto zu behalten, oder pausieren Sie es in den Einstellungen erneut.';
+  }
+
+  @override
+  String get consentGateTitle => 'Bevor Sie fortfahren';
+
+  @override
+  String get consentGateBody =>
+      'Um Quokka zu nutzen, müssen Sie die Nutzungsbedingungen und die Datenschutzerklärung in der aktuellen Fassung akzeptieren. Sie können sie vor der Zustimmung lesen.';
+
+  @override
+  String get consentGateContinue => 'Akzeptieren und fortfahren';
+
+  @override
+  String get consentGateFailed =>
+      'Wir konnten Ihre Zustimmung nicht speichern. Bitte versuchen Sie es gleich noch einmal.';
 }

@@ -31,6 +31,16 @@ class AgeRestrictedError(VetAppError):
         return str(self)
 
 
+class ConsentRequiredError(VetAppError):
+    """The Terms and the Privacy notice are not accepted at the current version:
+    the API answers 403 `consent_required` and the app shows the acceptance
+    screen, then retries."""
+
+    @property
+    def code(self) -> str:
+        return str(self)
+
+
 class PlanLimitError(VetAppError):
     """The owner's plan does not allow more of [kind] ("pets",
     "chats_per_pet"): the API answers 403 `plan_limit_reached` with the

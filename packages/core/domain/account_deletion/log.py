@@ -29,9 +29,19 @@ class DeletionReason:
     CLOSED_BY_AGE_USER = "closed_by_age_user"  # under the minimum age, owner's request
     CLOSED_BY_AGE_TEAM = "closed_by_age_team"  # under the minimum age, erased by the team
     SUPPORT_REQUEST = "support_request"  # asked by e-mail or through the Garante
+    PAUSE_EXPIRED = "pause_expired"  # the pause ran its maximum without a sign-in
+    NO_PLAN_EXPIRED = "no_plan_expired"  # the 120 days without a plan ended
 
     ALL = frozenset(
-        {USER_NOW, USER_PERIOD_END, CLOSED_BY_AGE_USER, CLOSED_BY_AGE_TEAM, SUPPORT_REQUEST}
+        {
+            USER_NOW,
+            USER_PERIOD_END,
+            CLOSED_BY_AGE_USER,
+            CLOSED_BY_AGE_TEAM,
+            SUPPORT_REQUEST,
+            PAUSE_EXPIRED,
+            NO_PLAN_EXPIRED,
+        }
     )
 
 
