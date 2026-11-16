@@ -32,6 +32,11 @@ alter table public.pet_profiles add column if not exists identity_color_value bi
 alter table public.pet_profiles add column if not exists dog_size_category text;
 alter table public.pet_profiles add column if not exists is_memorial boolean not null default false;
 alter table public.pet_profiles add column if not exists memorial_date_label text;
+-- Ricordi (2026-11-16, scripts/setup/ricordi_animali.sql): memory reminders
+-- the owner chose for a pet moved to Ricordi, all off by default.
+alter table public.pet_profiles add column if not exists memorial_birthday_reminder boolean not null default false;
+alter table public.pet_profiles add column if not exists memorial_walks_reminder boolean not null default false;
+alter table public.pet_profiles add column if not exists memorial_photos_reminder boolean not null default false;
 -- Medical-record access consent (spec v3 §18) — persisted per pet, not per
 -- conversation, so it's asked once and revocable later. Nullable:
 -- {granted: bool, version: text, decided_at: timestamptz}.

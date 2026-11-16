@@ -120,7 +120,7 @@ class _RemindersListPageState extends State<RemindersListPage> {
           child: ValueListenableBuilder<int>(
             valueListenable: RemindersRepository.changes,
             builder: (context, _, __) => FutureBuilder<List<ReminderEntry>>(
-              future: _repository.loadReminders(),
+              future: _repository.loadActiveReminders(),
               builder: (context, snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting) {
                   return _LoadingPanel(

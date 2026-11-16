@@ -1097,16 +1097,6 @@
   },
   "petsEditDeleteConfirm": "Entfernen",
   "petsEditDeleteAction": "Profil entfernen",
-  "petsEditMemorialTitle": "In die Erinnerungen verschieben?",
-  "petsEditMemorialMessage": "„{name}“ verschwindet aus der Tierliste und wird mit Profil und Fotos im Bereich Erinnerungen aufbewahrt.",
-  "@petsEditMemorialMessage": {
-    "placeholders": {
-      "name": {
-        "type": "String"
-      }
-    }
-  },
-  "petsEditMemorialConfirm": "Verschieben",
   "petsEditMemorialAction": "In die Erinnerungen verschieben",
   "petsFormAddSpecies": "Tierart hinzufügen",
   "petsFormIdentityColor": "Kennfarbe",
@@ -1365,7 +1355,6 @@
   "petsValueDogSizeLarge": "Groß",
   "petsValueDogSizeGiant": "Riesig",
   "petsListTitle": "Tiere",
-  "petsListMemoriesTooltip": "Andenken",
   "petsListLoading": "Tierliste wird geladen...",
   "petsListErrorTitle": "Tiere nicht verfügbar",
   "petsListErrorDefault": "Die Tierprofile können im Moment nicht geladen werden.",
@@ -1373,8 +1362,15 @@
   "petsListEmptySubtitle": "Legen Sie das erste Profil an: Je vollständiger es ist, desto besser meine Antworten.",
   "petsListEmptyAction": "Tier anlegen",
   "petsListFilterEmpty": "Keine Tiere für diesen Filter.",
-  "petsMemoriesRemoveTitle": "Endgültig entfernen?",
-  "petsMemoriesRemoveBody": "Das Andenken an \"{name}\" wird gelöscht und kann nicht wiederhergestellt werden.",
+  "petsMemoriesRemoveTitle": "Das Andenken an {name} für immer löschen?",
+  "@petsMemoriesRemoveTitle": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "petsMemoriesRemoveBody": "Profil, Fotos, Spaziergänge, Dokumente und Erinnerungen von {name} werden gelöscht und können nicht wiederhergestellt werden. Wenn Sie eine Kopie behalten möchten, laden Sie Fotos und Dokumente vorher herunter.",
   "@petsMemoriesRemoveBody": {
     "placeholders": {
       "name": {
@@ -1382,11 +1378,11 @@
       }
     }
   },
-  "petsMemoriesRemoveConfirm": "Entfernen",
+  "petsMemoriesRemoveConfirm": "Für immer löschen",
   "petsMemoriesTitle": "Andenken",
-  "petsMemoriesSubtitle": "Die Profile der Tiere, die Ihren Weg begleitet haben.",
-  "petsMemoriesEmpty": "Noch keine Andenken gespeichert.",
-  "petsMemoriesWithUsUntil": "Bei uns bis {date}",
+  "petsMemoriesSubtitle": "Die Tiere, die ihren Weg mit Ihnen geteilt haben.",
+  "petsMemoriesEmpty": "Hier gibt es noch keine Andenken.",
+  "petsMemoriesWithUsUntil": "Bis {date}",
   "@petsMemoriesWithUsUntil": {
     "placeholders": {
       "date": {
@@ -1394,7 +1390,7 @@
       }
     }
   },
-  "petsMemoriesWithUsRange": "Bei uns vom {from} bis {to}",
+  "petsMemoriesWithUsRange": "Vom {from} bis {to}",
   "@petsMemoriesWithUsRange": {
     "placeholders": {
       "from": {
@@ -1405,7 +1401,144 @@
       }
     }
   },
-  "petsMemoriesComingSoon": "Bald: Ihre schönsten gemeinsamen Momente, wie die längsten Spaziergänge oder erreichte Meilensteine, gesammelt an einem Ort.",
+  "petsListMemoriesRowSubtitle": "Die Tiere, die ihren Weg mit Ihnen geteilt haben",
+  "petsListEmptyOnlyMemoriesTitle": "Keine Tiere in der Liste",
+  "petsListEmptyOnlyMemoriesSubtitle": "Wann immer Sie möchten, können Sie ein neues Profil anlegen.",
+  "petsListEmptyOnlyMemoriesAction": "Ein Tier hinzufügen",
+  "memorialMoveSorry": "Es tut uns so leid um {name}.",
+  "@memorialMoveSorry": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "memorialMoveBody": "Hier können Sie die Erinnerung bewahren. {name} verlässt die Liste Tiere und wir senden Ihnen keine Erinnerungen, Medikamentenhinweise oder Glückwünsche mehr für {name}. Profil, Fotos, Spaziergänge und Dokumente bleiben in Ihrem Konto, bis Sie sie löschen: Sie können sie jederzeit ansehen und herunterladen.",
+  "@memorialMoveBody": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "memorialMoveDateLabel": "Datum des Verlusts",
+  "memorialMoveDateHelp": "Wenn Sie sich nicht an den genauen Tag erinnern, genügt ein ungefähres Datum.",
+  "memorialMoveContinue": "Weiter",
+  "memorialRemindTitle": "Möchten Sie, dass Quokka Ihnen beim Erinnern hilft?",
+  "memorialRemindBody": "Wenn Sie möchten, schicken wir Ihnen an einigen besonderen Tagen einen Gedanken, mit den Fotos. Sie können es sich jederzeit anders überlegen.",
+  "memorialRemindBirthday": "Am Geburtstag",
+  "memorialRemindBirthdayHelp": "Mit dem Profilfoto und Fotos vergangener Geburtstage.",
+  "memorialRemindWalks": "Die Lieblingsspaziergänge",
+  "memorialRemindWalksHelp": "Am Tag eines als Favorit gespeicherten Spaziergangs, mit der Route und den Fotos dieses Tages.",
+  "memorialRemindPhotos": "Fotos von diesem Tag",
+  "memorialRemindPhotosHelp": "Wenn es Fotos gibt, die in früheren Jahren an diesem Tag aufgenommen wurden. Höchstens einmal pro Woche.",
+  "memorialMoveConfirm": "Zu den Andenken verschieben",
+  "memorialMoveDone": "{name} ist jetzt unter Andenken.",
+  "@memorialMoveDone": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "memorialUndo": "Rückgängig",
+  "memorialPagePhotos": "Fotos",
+  "memorialPageNoPhotos": "Es gibt noch keine Fotos.",
+  "memorialPageOpenGallery": "Alle Fotos",
+  "memorialPageWalks": "Lieblingsspaziergänge",
+  "memorialPageWalksTogether": "{count, plural, =1{Zusammen waren Sie 1-mal spazieren, {distance}.} other{Zusammen waren Sie {count}-mal spazieren, {distance}.}}",
+  "@memorialPageWalksTogether": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "distance": {
+        "type": "String"
+      }
+    }
+  },
+  "memorialPageReminders": "Gedanken an besonderen Tagen",
+  "memorialPageRecords": "Dokumente und Krankengeschichte",
+  "memorialPageProfile": "Steckbrief",
+  "memorialPageChipNote": "{sex, select, other{Wenn der Mikrochip von {name} in einem Heimtierregister eingetragen war, muss der Tod in der Regel gemeldet werden: Ihre Tierärztin bzw. Ihr Tierarzt oder die Stelle, die in Ihrem Land das Register führt (in Italien die ASL oder die Gemeinde), sagt Ihnen, wie und bis wann.}}",
+  "@memorialPageChipNote": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "sex": {
+        "type": "String"
+      }
+    }
+  },
+  "memorialPageBirthdayPhotos": "Fotos von den Geburtstagen",
+  "memorialPageNoBirthdayPhotos": "Es gibt noch keine Fotos von vergangenen Geburtstagen.",
+  "memorialPageOnThisDay": "Fotos von diesem Tag",
+  "memorialPageWalkPhotos": "Fotos von diesem Spaziergang",
+  "memorialPageOpenWalk": "Route noch einmal ansehen",
+  "memorialRestoreAction": "Zurück zu den Tieren",
+  "memorialRestoreTitle": "{name} zurück zu den Tieren bringen?",
+  "@memorialRestoreTitle": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "memorialRestoreBody": "Wenn das Verschieben ein Versehen war, kommt {name} mit allen Daten zurück in die Liste Tiere. Auch laufende Erinnerungen und Medikamente werden wieder aktiv: Prüfen Sie sie, manche Termine könnten schon vorbei sein.",
+  "@memorialRestoreBody": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "memorialRestoreConfirm": "Zurückholen",
+  "memorialRestoreDone": "{name} ist wieder bei Ihren Tieren.",
+  "@memorialRestoreDone": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "memorialSaveFailed": "Speichern hat nicht geklappt. Prüfen Sie die Verbindung und versuchen Sie es erneut.",
+  "petsMemoriesRemoveAction": "Für immer löschen",
+  "notificationsMemoryBirthdayTitle": "Heute ist der Geburtstag von {petName}",
+  "@notificationsMemoryBirthdayTitle": {
+    "placeholders": {
+      "petName": {
+        "type": "String"
+      }
+    }
+  },
+  "notificationsMemoryBirthdayBody": "Wenn Sie möchten: Die Fotos sind hier.",
+  "notificationsMemoryWalkTitle": "{count, plural, =1{Vor einem Jahr, ein Spaziergang mit {petName}} other{Vor {count} Jahren, ein Spaziergang mit {petName}}}",
+  "@notificationsMemoryWalkTitle": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "petName": {
+        "type": "String"
+      }
+    }
+  },
+  "notificationsMemoryWalkBody": "Einer Ihrer Lieblingsspaziergänge. Wenn Sie möchten, können Sie ihn noch einmal ansehen.",
+  "notificationsMemoryPhotosTitle": "{count, plural, =1{Vor einem Jahr, mit {petName}} other{Vor {count} Jahren, mit {petName}}}",
+  "@notificationsMemoryPhotosTitle": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "petName": {
+        "type": "String"
+      }
+    }
+  },
+  "notificationsMemoryPhotosBody": "Es gibt Fotos von diesem Tag. Wenn Sie möchten: Sie sind hier.",
+  "notificationsChannelMemoriesName": "Andenken",
+  "notificationsChannelMemoriesDescription": "Ein Gedanke an besonderen Tagen der Tiere unter Andenken, nur wenn Sie es gewählt haben.",
   "petsMediaGalleryTitle": "Galerie",
   "petsMediaFoldersLoading": "Ordner werden geladen…",
   "petsMediaFoldersEmpty": "Fügen Sie ein Tier hinzu, um dafür einen Fotoordner anzulegen.",

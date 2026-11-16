@@ -120,6 +120,9 @@ class PetProfile {
     this.aquariumStock = const [],
     this.isMemorial = false,
     this.memorialDate,
+    this.memorialBirthdayReminder = false,
+    this.memorialWalksReminder = false,
+    this.memorialPhotosReminder = false,
     this.habitat,
     this.dogSizeCategory,
     this.isSterilized,
@@ -171,8 +174,16 @@ class PetProfile {
   /// drops out of the active Animali list but its profile is kept.
   final bool isMemorial;
 
-  /// When this pet was moved to Ricordi, if it was.
+  /// The date of the loss, picked by the owner when moving the pet to
+  /// Ricordi (docs/product/17_ricordi_animali.md).
   final DateTime? memorialDate;
+
+  /// Memory reminders the owner chose for a pet in Ricordi — all off unless
+  /// switched on (doc 17 §5): the birthday, the anniversaries of favourite
+  /// walks, and photos taken on this day in past years.
+  final bool memorialBirthdayReminder;
+  final bool memorialWalksReminder;
+  final bool memorialPhotosReminder;
 
   /// Aquarium/terrarium/aviary details — set only for species that live in
   /// an enclosure (Pesce, Rettili e anfibi, Uccello).
@@ -245,6 +256,10 @@ class PetProfile {
     List<FishStock>? aquariumStock,
     bool? isMemorial,
     DateTime? memorialDate,
+    bool clearMemorialDate = false,
+    bool? memorialBirthdayReminder,
+    bool? memorialWalksReminder,
+    bool? memorialPhotosReminder,
     HabitatDetails? habitat,
     String? dogSizeCategory,
     bool clearDogSizeCategory = false,
@@ -278,7 +293,10 @@ class PetProfile {
       medicalRecordConsentGranted: medicalRecordConsentGranted ?? this.medicalRecordConsentGranted,
       aquariumStock: aquariumStock ?? this.aquariumStock,
       isMemorial: isMemorial ?? this.isMemorial,
-      memorialDate: memorialDate ?? this.memorialDate,
+      memorialDate: clearMemorialDate ? null : (memorialDate ?? this.memorialDate),
+      memorialBirthdayReminder: memorialBirthdayReminder ?? this.memorialBirthdayReminder,
+      memorialWalksReminder: memorialWalksReminder ?? this.memorialWalksReminder,
+      memorialPhotosReminder: memorialPhotosReminder ?? this.memorialPhotosReminder,
       habitat: habitat ?? this.habitat,
       dogSizeCategory:
           clearDogSizeCategory ? null : (dogSizeCategory ?? this.dogSizeCategory),

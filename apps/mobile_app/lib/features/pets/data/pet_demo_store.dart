@@ -298,7 +298,9 @@ class PetDemoStore {
         // schema cache; 42703 = undefined column.
         if (error.code != 'PGRST204' && error.code != '42703') rethrow;
         await client.from('pet_profiles').upsert(
-              Map<String, dynamic>.of(row)..removeWhere((key, _) => profileV2Columns.contains(key)),
+              Map<String, dynamic>.of(row)
+                ..removeWhere((key, _) =>
+                    profileV2Columns.contains(key) || memorialReminderColumns.contains(key)),
             );
       }
       _unsynced.remove(pet.id);
@@ -348,6 +350,14 @@ class PetDemoStore {
   }
 
   /// Columns added by the profile v2 SQL (2026-10-14).
+  /// Ricordi choices (scripts/setup/ricordi_animali.sql). Dropped from the
+  /// write, like [profileV2Columns], while that SQL hasn't been run.
+  static const memorialReminderColumns = {
+    'memorial_birthday_reminder',
+    'memorial_walks_reminder',
+    'memorial_photos_reminder',
+  };
+
   static const profileV2Columns = {
     'is_sterilized',
     'microchip_number',
@@ -387,6 +397,9 @@ class PetDemoStore {
         'is_memorial': pet.isMemorial,
         'memorial_date_label':
             pet.memorialDate == null ? null : formatPetBirthDate(pet.memorialDate!),
+        'memorial_birthday_reminder': pet.memorialBirthdayReminder,
+        'memorial_walks_reminder': pet.memorialWalksReminder,
+        'memorial_photos_reminder': pet.memorialPhotosReminder,
         'habitat': pet.habitat == null ? null : _habitatToJson(pet.habitat!),
         'aquarium_stock': pet.aquariumStock.map(_fishStockToJson).toList(),
       };
@@ -425,6 +438,10 @@ class PetDemoStore {
       identityColor: _colorFromValue(row['identity_color_value']) ?? option.accentColor,
       dogSizeCategory: row['dog_size_category'] as String?,
       isMemorial: row['is_memorial'] as bool? ?? false,
+      memorialDate: parsePetBirthDateLabel(row['memorial_date_label'] as String?),
+      memorialBirthdayReminder: row['memorial_birthday_reminder'] as bool? ?? false,
+      memorialWalksReminder: row['memorial_walks_reminder'] as bool? ?? false,
+      memorialPhotosReminder: row['memorial_photos_reminder'] as bool? ?? false,
       habitat: _habitatFromJson(row['habitat'] as Map<String, dynamic>?),
       aquariumStock: ((row['aquarium_stock'] as List<dynamic>?) ?? const [])
           .map((item) => _fishStockFromJson(item as Map<String, dynamic>))
@@ -507,14 +524,18 @@ class PetDemoStore {
     return null;
   }
 
+  /// The pet called [name]. When a pet in Ricordi and an active pet share
+  /// the name, the active one wins: reminders, records and chats created by
+  /// name are always for a pet still in the Animali list.
   PetProfile? byName(String name) {
     final normalized = name.trim().toLowerCase();
+    PetProfile? memorialMatch;
     for (final pet in _pets) {
-      if (pet.name.trim().toLowerCase() == normalized) {
-        return pet;
-      }
+      if (pet.name.trim().toLowerCase() != normalized) continue;
+      if (!pet.isMemorial) return pet;
+      memorialMatch ??= pet;
     }
-    return null;
+    return memorialMatch;
   }
 
   /// Awaits the remote write before returning — a fire-and-forget write

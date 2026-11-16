@@ -246,7 +246,7 @@ class _AgendaSection extends StatelessWidget {
           valueListenable: RemindersRepository.changes,
           builder: (context, _, __) {
             return FutureBuilder<List<ReminderEntry>>(
-              future: repository.loadReminders(),
+              future: repository.loadActiveReminders(),
               builder: (context, snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting) {
                   return Column(

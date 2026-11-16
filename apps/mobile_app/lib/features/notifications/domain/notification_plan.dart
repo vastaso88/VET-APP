@@ -2,12 +2,15 @@ import '../../../l10n/l10n.dart';
 import '../../pets/domain/pet_format.dart';
 import '../../pets/domain/pet_models.dart';
 import '../../reminders/data/reminders_repository.dart';
+import '../../reminders/domain/memorial_reminders.dart';
 import '../../../shared/date/calendar_days.dart';
 import '../../reminders/domain/clock_time.dart';
+import 'memory_notifications.dart';
 
-/// The three kinds of phone notification, each with its own switch in
-/// Impostazioni.
-enum NotificationCategory { reminders, medicines, birthdays }
+/// The kinds of phone notification. The first three have their own switch in
+/// Impostazioni; [memories] (Ricordi, docs/product/17_ricordi_animali.md) is
+/// switched on and off per pet, on that pet's memorial page.
+enum NotificationCategory { reminders, medicines, birthdays, memories }
 
 class NotificationPreferences {
   const NotificationPreferences({
@@ -24,6 +27,8 @@ class NotificationPreferences {
         NotificationCategory.reminders => reminders,
         NotificationCategory.medicines => medicines,
         NotificationCategory.birthdays => birthdays,
+        // Chosen pet by pet in Ricordi, all off by default: no global switch.
+        NotificationCategory.memories => true,
       };
 
   NotificationPreferences copyWith({bool? reminders, bool? medicines, bool? birthdays}) {
@@ -45,12 +50,18 @@ class PlannedNotification {
     required this.body,
     required this.category,
     this.payload,
+    this.petId,
   });
 
   final DateTime at;
   final String title;
   final String body;
   final NotificationCategory category;
+
+  /// The pet it is about, when known: lets the app take that pet's
+  /// notifications out of the phone's notification shade the moment it is
+  /// moved to Ricordi.
+  final String? petId;
 
   /// What tapping the notification opens: `reminder:<id>` on the one that
   /// arrives when a reminder is due (it asks "Fatto?"), nothing otherwise.
@@ -62,6 +73,15 @@ class PlannedNotification {
 
 /// Start of the payload of a notification that belongs to a reminder.
 const kReminderPayloadPrefix = 'reminder:';
+
+/// Start of the payload of a memory notification (Ricordi):
+/// `memory:<petId>:birthday`, `memory:<petId>:walk:<walkId>`,
+/// `memory:<petId>:photos`.
+const kMemoryPayloadPrefix = 'memory:';
+
+/// Memory notifications arrive at 10:00: not on waking up, not in the
+/// evening (doc 17 §5.1).
+const kMemoryNotificationHour = 10;
 
 /// Time used for a reminder saved before a time could be picked (midnight),
 /// a course without dose times, and birthdays.
@@ -89,24 +109,37 @@ List<PlannedNotification> planNotifications({
   NotificationPreferences preferences = const NotificationPreferences(),
   Duration horizon = kPlanHorizon,
   int maxCount = kMaxPlannedNotifications,
+  Map<String, List<MemoryWalk>> favouriteWalksByPet = const {},
+  Map<String, List<DateTime>> photoDatesByPet = const {},
 }) {
   // A calendar horizon: `now.add(Duration)` would count 24-hour days and slip an
   // hour across the summer-time change.
   final until = addCalendarDays(now, horizon.inDays);
-  final memorialNames = {for (final pet in pets) if (pet.isMemorial) pet.name};
   final planned = <PlannedNotification>[];
 
-  for (final reminder in reminders) {
-    if (reminder.isDone || memorialNames.contains(reminder.petName)) continue;
+  // Everything about a pet in Ricordi stops: its reminders, courses and
+  // ordinary birthday (doc 17 §4). Only the memories chosen for it remain.
+  for (final reminder in remindersOfActivePets(reminders, pets)) {
+    if (reminder.isDone) continue;
+    final petId = reminder.petId ?? _petIdByName(pets, reminder.petName);
     if (reminder.kind == EventKind.course) {
-      planned.addAll(_courseNotifications(reminder, now, until));
+      planned.addAll(_courseNotifications(reminder, now, until, petId));
     } else {
-      planned.addAll(_eventNotifications(reminder, now, until));
+      planned.addAll(_eventNotifications(reminder, now, until, petId));
     }
   }
   for (final pet in pets) {
-    if (pet.isMemorial) continue;
-    planned.addAll(_birthdayNotifications(pet, now));
+    if (pet.isMemorial) {
+      planned.addAll(memoryNotifications(
+        pet,
+        now: now,
+        until: until,
+        favouriteWalks: favouriteWalksByPet[pet.id] ?? const [],
+        photoDates: photoDatesByPet[pet.id] ?? const [],
+      ));
+    } else {
+      planned.addAll(_birthdayNotifications(pet, now));
+    }
   }
 
   final allowed = planned
@@ -161,10 +194,21 @@ DateTime addMonthsClamped(DateTime date, int months) {
   return DateTime(firstOfTarget.year, firstOfTarget.month, day, date.hour, date.minute);
 }
 
+String? _petIdByName(List<PetProfile> pets, String name) {
+  final normalized = name.trim().toLowerCase();
+  for (final pet in pets) {
+    if (!pet.isMemorial && pet.name.trim().toLowerCase() == normalized) {
+      return pet.id;
+    }
+  }
+  return null;
+}
+
 Iterable<PlannedNotification> _eventNotifications(
   ReminderEntry reminder,
   DateTime now,
   DateTime until,
+  String? petId,
 ) sync* {
   final l10n = appL10n;
   for (final at in reminderOccurrences(reminder, until)) {
@@ -175,12 +219,14 @@ Iterable<PlannedNotification> _eventNotifications(
       body: l10n.notificationsReminderTodayBody(reminder.petName, time),
       category: NotificationCategory.reminders,
       payload: '$kReminderPayloadPrefix${reminder.id}',
+      petId: petId,
     );
     yield PlannedNotification(
       at: DateTime(at.year, at.month, at.day - 1, kDayBeforeHour),
       title: l10n.notificationsReminderTomorrowTitle(reminder.title),
       body: l10n.notificationsReminderTomorrowBody(reminder.petName, time),
       category: NotificationCategory.reminders,
+      petId: petId,
     );
   }
 }
@@ -191,6 +237,7 @@ Iterable<PlannedNotification> _courseNotifications(
   ReminderEntry course,
   DateTime now,
   DateTime until,
+  String? petId,
 ) sync* {
   final l10n = appL10n;
   final start = reminderTime(course.dueAt);
@@ -210,6 +257,7 @@ Iterable<PlannedNotification> _courseNotifications(
             : l10n.notificationsMedicineDoseBody(
                 course.title, formatClockTime(time.hour, time.minute)),
         category: NotificationCategory.medicines,
+        petId: petId,
       );
     }
   }
@@ -234,6 +282,7 @@ Iterable<PlannedNotification> _birthdayNotifications(PetProfile pet, DateTime no
       title: l10n.notificationsBirthdayTitle(pet.name),
       body: l10n.notificationsBirthdayBody(years),
       category: NotificationCategory.birthdays,
+      petId: pet.id,
     );
   }
 
@@ -245,6 +294,7 @@ Iterable<PlannedNotification> _birthdayNotifications(PetProfile pet, DateTime no
     title: l10n.notificationsBirthdayUpcomingTitle,
     body: l10n.notificationsBirthdayUpcomingBody(pet.name),
     category: NotificationCategory.birthdays,
+    petId: pet.id,
   );
 }
 

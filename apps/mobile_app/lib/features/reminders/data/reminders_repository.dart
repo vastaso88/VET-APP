@@ -10,6 +10,7 @@ import '../../../../shared/auth/current_user.dart';
 import '../../../../shared/cache/owner_json_cache.dart';
 import '../../../../shared/config/app_runtime_config_loader.dart';
 import '../../pets/data/pet_demo_store.dart';
+import '../domain/memorial_reminders.dart';
 import '../domain/reminder_category.dart';
 
 enum EventKind { spot, recurring, course }
@@ -24,6 +25,7 @@ class ReminderEntry {
   const ReminderEntry({
     required this.id,
     required this.petName,
+    this.petId,
     required this.title,
     required this.kind,
     required this.dueAt,
@@ -42,6 +44,11 @@ class ReminderEntry {
 
   final String id;
   final String petName;
+
+  /// The pet's id (`reminders.pet_id`), known for reminders read from the
+  /// server; null on one just created on this phone. Lets Ricordi tell two
+  /// pets with the same name apart (see memorial_reminders.dart).
+  final String? petId;
   final String title;
   final EventKind kind;
 
@@ -94,6 +101,7 @@ class ReminderEntry {
     return ReminderEntry(
       id: id,
       petName: petName,
+      petId: petId,
       title: title,
       kind: kind,
       dueAt: dueAt ?? this.dueAt,
@@ -224,6 +232,14 @@ class RemindersRepository {
     return List<ReminderEntry>.unmodifiable(_localReminders);
   }
 
+  /// [loadReminders] without those of pets in Ricordi: what Home, the
+  /// calendar and the reminders list show (docs/product/17_ricordi_animali.md
+  /// §4). Nothing is deleted: bringing the pet back shows them again.
+  Future<List<ReminderEntry>> loadActiveReminders() async {
+    final reminders = await loadReminders();
+    return remindersOfActivePets(reminders, PetDemoStore.instance.list(includeMemorial: true));
+  }
+
   void _addSeedsWithoutClient() {
     if (_seedsAdded || _resolveClient() != null) {
       return;
@@ -264,7 +280,7 @@ class RemindersRepository {
     // reminders.pet_id is a required FK to pet_profiles: a reminder whose pet
     // isn't on the server can't be written, so it is refused, not hidden.
     await PetDemoStore.instance.ensureHydrated();
-    final petId = PetDemoStore.instance.byName(reminder.petName)?.id;
+    final petId = reminder.petId ?? PetDemoStore.instance.byName(reminder.petName)?.id;
     try {
       if (petId == null) {
         throw ReminderSyncException(appL10n.remindersErrorPetNotSynced);
@@ -354,6 +370,7 @@ class RemindersRepository {
     return ReminderEntry(
       id: (row['id'] ?? '').toString(),
       petName: (row['pet_name'] ?? '').toString(),
+      petId: (row['pet_id'] as String?)?.isNotEmpty == true ? row['pet_id'] as String : null,
       title: (row['title'] ?? appL10n.remindersTitle).toString(),
       kind: kind,
       dueAt: dueAt,

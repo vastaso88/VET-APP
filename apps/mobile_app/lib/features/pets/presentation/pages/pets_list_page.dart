@@ -74,14 +74,8 @@ class _PetsListPageState extends State<PetsListPage> {
       title: context.l10n.petsListTitle,
       subtitle: petProfilesCountLabel(PetDemoStore.instance.list().length),
       actions: [
-        if (PetDemoStore.instance.memorialPets().isNotEmpty)
-          IconButton(
-            onPressed: () => _openMemories(context),
-            icon: const Icon(Icons.auto_awesome_outlined),
-            color: AppColors.onPrimary,
-            style: IconButton.styleFrom(backgroundColor: AppColors.secondary),
-            tooltip: context.l10n.petsListMemoriesTooltip,
-          ),
+        // Ricordi is NOT up here on purpose: it sits quietly at the bottom of
+        // the list (docs/product/17_ricordi_animali.md §2).
         IconButton(
           onPressed: () => _openCreate(context),
           icon: const Icon(Icons.add_rounded),
@@ -114,6 +108,9 @@ class _PetsListPageState extends State<PetsListPage> {
               });
             },
             onOpenPet: (pet) => _openDetail(context, pet),
+            memorialCount: PetDemoStore.instance.memorialPets().length,
+            onOpenMemories: () => _openMemories(context),
+            onCreate: () => _openCreate(context),
           ),
       },
     );
@@ -150,12 +147,20 @@ class _PetsListContent extends StatelessWidget {
     required this.selectedSpecies,
     required this.onSpeciesChanged,
     required this.onOpenPet,
+    required this.memorialCount,
+    required this.onOpenMemories,
+    required this.onCreate,
   });
 
   final List<PetProfile> pets;
   final String selectedSpecies;
   final ValueChanged<String> onSpeciesChanged;
   final ValueChanged<PetProfile> onOpenPet;
+
+  /// Pets in Ricordi: when there is at least one, a quiet row closes the list.
+  final int memorialCount;
+  final VoidCallback onOpenMemories;
+  final VoidCallback onCreate;
 
   @override
   Widget build(BuildContext context) {
@@ -188,22 +193,127 @@ class _PetsListContent extends StatelessWidget {
         const SizedBox(height: AppSpacing.lg),
         Expanded(
           child: pets.isEmpty
-              ? Center(
-                  child: Text(
-                    context.l10n.petsListFilterEmpty,
-                    style: AppTextStyles.body,
-                  ),
+              ? Column(
+                  children: [
+                    Expanded(
+                      child: Center(
+                        child: memorialCount > 0 && selectedSpecies == 'Tutti'
+                            ? _OnlyMemoriesEmpty(onCreate: onCreate)
+                            : Text(
+                                context.l10n.petsListFilterEmpty,
+                                style: AppTextStyles.body,
+                              ),
+                      ),
+                    ),
+                    if (memorialCount > 0)
+                      MemoriesListRow(count: memorialCount, onTap: onOpenMemories),
+                  ],
                 )
               : ListView.separated(
-                  itemCount: pets.length,
+                  itemCount: pets.length + (memorialCount > 0 ? 1 : 0),
                   separatorBuilder: (_, __) => const Divider(height: 1, color: AppColors.border),
                   itemBuilder: (context, index) {
+                    if (index == pets.length) {
+                      return Padding(
+                        padding: const EdgeInsets.only(top: AppSpacing.xl),
+                        child: MemoriesListRow(count: memorialCount, onTap: onOpenMemories),
+                      );
+                    }
                     final pet = pets[index];
                     return _PetRow(pet: pet, onTap: () => onOpenPet(pet));
                   },
                 ),
         ),
       ],
+    );
+  }
+}
+
+/// No active pet left, only memories: no "Crea pet" push — a new profile is
+/// offered softly, for whenever the owner wants it.
+class _OnlyMemoriesEmpty extends StatelessWidget {
+  const _OnlyMemoriesEmpty({required this.onCreate});
+
+  final VoidCallback onCreate;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(
+            context.l10n.petsListEmptyOnlyMemoriesTitle,
+            textAlign: TextAlign.center,
+            style: AppTextStyles.title.copyWith(fontSize: 17),
+          ),
+          const SizedBox(height: AppSpacing.sm),
+          Text(
+            context.l10n.petsListEmptyOnlyMemoriesSubtitle,
+            textAlign: TextAlign.center,
+            style: AppTextStyles.bodySmall,
+          ),
+          const SizedBox(height: AppSpacing.md),
+          TextButton(
+            onPressed: onCreate,
+            child: Text(context.l10n.petsListEmptyOnlyMemoriesAction),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// The entry to Ricordi at the very bottom of Animali: muted colours, no
+/// badge, the count in plain grey (doc 17 §2).
+class MemoriesListRow extends StatelessWidget {
+  const MemoriesListRow({super.key, required this.count, required this.onTap});
+
+  final int count;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        key: const ValueKey('memories-row'),
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(AppRadii.large),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: AppSpacing.md, horizontal: AppSpacing.xs),
+          child: Row(
+            children: [
+              const Icon(Icons.auto_awesome_outlined, size: 20, color: AppColors.mutedText),
+              const SizedBox(width: AppSpacing.md),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      context.l10n.petsMemoriesTitle,
+                      style: AppTextStyles.body.copyWith(color: AppColors.secondaryText),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      context.l10n.petsListMemoriesRowSubtitle,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: AppTextStyles.caption.copyWith(color: AppColors.mutedText),
+                    ),
+                  ],
+                ),
+              ),
+              Text(
+                '$count',
+                style: AppTextStyles.caption.copyWith(color: AppColors.mutedText),
+              ),
+              const Icon(Icons.chevron_right_rounded, color: AppColors.mutedText),
+            ],
+          ),
+        ),
+      ),
     );
   }
 }

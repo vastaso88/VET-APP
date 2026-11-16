@@ -6561,30 +6561,30 @@
     }
   },
   "ui:petsMemoriesRemoveTitle": {
-    "source": "910077be614b8b9dac89cd3daf62c94c0b9a3f32d95ad4a1b1da707b4ddd1614",
+    "source": "528891645b31fcf3c7778d6129186ae9a3b2550da0ce9f5fef6999a389b4622d",
     "targets": {
-      "en": "ecc3840ebc4fb1baf4f6b0e44857f7e27ba2f57b6884c3ce918cd7fc15a332e0",
-      "es": "d3d92649e4ff6f3d8d637e2abf0f0f17880e966bbba4d65ee9faac23c33f7c43",
-      "de": "6aead2110ffe78947a5f4ee50ce2c2852c6d25006e24f3c5aaa8f4aae3513dce",
-      "fr": "314a49bd92cc3bc3e853e63d2e39c5efbd177e3259918098eb1e3bdb4e3b954c"
+      "en": "782ee6062055aa15910bb632f02539fc791569333a898de8d538954e50c6c238",
+      "es": "ecb35549ff058cc4c16ee6d8be384d04408cf0ace481edced1521e98c17e6f05",
+      "de": "3a3592d9a0701e9658eb1d0ff09e7fc98d8ae6a34c3b0d2323a82aa8a512fc2a",
+      "fr": "83f8d78a431d5659f5d38aa1228d54a6e7f316f512d61f678d36296b00efacfe"
     }
   },
   "ui:petsMemoriesRemoveBody": {
-    "source": "4ac099ad136c83e9f1fba39e075392bd0eeda056606a49fedf3e45ff00d08b2e",
+    "source": "434b1d9ffa304bdf25bc1538bc3c07228dcddf3e5f0e192f9a34e147112ee285",
     "targets": {
-      "en": "03748c431d1ff48ca5eafb94ea0250158be410507bda61be1ec9ebb4db80564d",
-      "es": "815c9070a070d46aa0beb0d847a525c3a77d4c174e7ebbd909114eddeba47150",
-      "de": "e84d206ec839d416e02fc50da0e47c2f656256b6ab5edb4bc00ea033d623361d",
-      "fr": "bd0a07439e648d16cde41dc3fda9cef65bff85ea481208aadc37a2567b8a3abd"
+      "en": "d6668711dba494fbc2a7be0c67df07bdbe68d1cb86cba83558cfb4f9475dc20d",
+      "es": "09b0f0020b42d4c14864c44a8a359210c6fb24142e17cb7e333d22d384c7d410",
+      "de": "d75668a5802a87899fc7cc0ff3f31ba6627d5b93cf7e8e81c8c1d6ea78b0a45d",
+      "fr": "d1e2c45ceb05957abe0c38c6a11a8002b1fab8aa31ebf492c9ff01cd177462f2"
     }
   },
   "ui:petsMemoriesRemoveConfirm": {
-    "source": "0433c6531f7b1d9696620ed66322da0858fac734e9730f6f4930e684b03ba04b",
+    "source": "ce1a5a78b23ffaba310ec11637e448bbd591b4292d54122cc5a43c78f2bb066e",
     "targets": {
-      "en": "9469a102f04ea196365c93fa64ca212b2b242f572b394238063093cc809020f5",
-      "es": "c3720325f35374bc2413675df328070f86883c3637062313f1e00c751168f221",
-      "de": "1050589a96b5a37de3b587617fcb5dff31f2511e24c67c79539d3f22294f0ff5",
-      "fr": "d918a08819d45d32a138b1b857b6b202040d88175c38e2a7bcd2731d7aa34656"
+      "en": "ccfc104b838c9d9cf387703859b5bfe8c256bbaff421e1629e6189692a69c249",
+      "es": "4255abe6b3fbc36663afc436c3e1c129e80ed55140a1ad957eeea97b3293f53a",
+      "de": "743294ccb80f10160dac19867460e1d58e30a543ceb861c9b83bc834de5b5d11",
+      "fr": "f3866f2bdaaefeba98aa22d92575003eb445d6e3e4500168babbc3a3d8d4e039"
     }
   },
   "ui:petsMemoriesTitle": {
@@ -6597,39 +6597,39 @@
     }
   },
   "ui:petsMemoriesSubtitle": {
-    "source": "12509196a0e9c585d243812c6e388e5d474c8477a4c4129525e1b84e4af0d1a6",
+    "source": "f26ff6b6765d0ba4cf81f4825d2d5c667411d20a60f28eb7e8a2c0b1b9413c36",
     "targets": {
-      "en": "6a7472189b6bf07e0b2d88a291be973267e83de137db8f2e753e1307df547e30",
-      "es": "2cf4b085aacba98a115d12afb56ff6688ffd0ec911a3d9134351328a7f5f50ca",
-      "de": "eb15fb64fecd02d62b34a298e2a9cc8cf494f2b9733d8e96e81b407375961f27",
-      "fr": "6e1230cbaef44cca211baad65c94ac6011cd97372ee4d0738d094d0e9f7ed6a6"
+      "en": "72de8a40d21e52c850ce2cb83daa5574650d3844a3645285a6f08a5ea90f0174",
+      "es": "ca0112487b0edf2d70b321300d4a796e7ecbeddf2bbffecbc0613d7f4262a631",
+      "de": "170ad92121b0580cf3524782bcbb6bb3c13afa3b3575919e397db1537877c9ce",
+      "fr": "60127ae19bd036a0c8e1fe3c0c590c10c0a232ae0aa533965ea0f656e0b7aff0"
     }
   },
   "ui:petsMemoriesEmpty": {
-    "source": "76f4a8c2428acc5b412168b43a2a99072436df3e8113c0b3531f9c0f2a1cb950",
+    "source": "a57e13840f5b49b72dc3ed462b5cddbaa4a3b066b6abf99b28a3d20cc470f992",
     "targets": {
-      "en": "faf1107d5b4d19ced17825832a9046b6f9c0d8d6d34e43b7830557dc2b409b8e",
-      "es": "d2f37b39868d7c3e833a15833b49926d78806f3e8618967473d4692ac13d7815",
-      "de": "f3b39978a01c653d501855633099d2ea0c8ac5840c1dd8f4652969c40687c5b4",
-      "fr": "f9d6680ee87f31500c5b659f355608849608a3825e6a169517eb1efc991c92e8"
+      "en": "025919f5ba539a78679768636ce900fbb2929cb258d795e1eacf1439986454ba",
+      "es": "0b47985e7e1ac0649929c42c8d7d8fde7a1b73fcb6fdc40ce6d46e7d6c45b1d4",
+      "de": "b2f7d4c789330b2701ce2a5ad65819977bcd631e85cdbd301975956fcf30c8c5",
+      "fr": "8fa9e8c395dffbbcb76c39eb6642acd7629008c99c6ac5960b59ef715afa60b8"
     }
   },
   "ui:petsMemoriesWithUsUntil": {
-    "source": "efe5b20a53597c9406a73f3802814e6c947a832d3808b943855406aab66e77e4",
+    "source": "ad9adfb6a1461653e7df887dce72d9e0183ec07266824de18aa0090d9809b7cb",
     "targets": {
-      "en": "aa9542fd83ae34d8a77a414cb6f33db8bfe1729b476fa24105534a52069cb052",
-      "es": "cd3025801967f9e43b7e8eb2da32ddf859665ff0c3c371c8bfd9a5d90a061eb5",
-      "de": "790590c2e31db90bfc00f17cfafd15f99d55b8bdf90742042190efc0bdead485",
-      "fr": "e430d45255cd014d3b0b5b3d668e456793709dfef85e90efaa1ef890262ebae1"
+      "en": "30c59c3a98abb95822c7c1223f414ce54adf68d0f18b298c372a64b0c27bdc26",
+      "es": "0c0aff20ee0deb4cab864c5855250262dc58dca169b16565642350cce8fb7b8a",
+      "de": "a3046b42d0d3a943f8ee145c226669b9fdd8a61117ea848231231beb09fa06a5",
+      "fr": "732b422272001ea35235acd3881b462e25922b824b8fe257fd16e1075981f421"
     }
   },
   "ui:petsMemoriesWithUsRange": {
-    "source": "aa6842d93309c2fe765873d6027da0e0a5876c34d8ca6380c23cb894d7f3aca1",
+    "source": "1bdd418013c93e48e6e4d3e0acff839bdb7242da8b100dd37ef266ded825c6c9",
     "targets": {
-      "en": "1073454cb4ff9f82b5ae645f49df4c93ea8e2bebe25e7837087c5125a2e68d83",
-      "es": "bdcf9b78f8d7b215ad7a733c485c56687d41b4a3d3ec49ca00ef4a83c79f978a",
-      "de": "26122f9bc776486c343f012a5556277fdb89b247147ff6d3db4cd6a466e6ecd0",
-      "fr": "11c66e9381196eba3688f8a5e10ee62e86c66061b4628fb98ca7ab7768aa2de6"
+      "en": "f84508986266815feacf53f298197f25f580314f782038457b16efdea23f684f",
+      "es": "f676a5ad6888db1b39b3478cac4be71899e787463eae294732ccdc1fa9dbd554",
+      "de": "3daec9b2a392f1fc8d2573c5739d90ea12ae02eea868676d8a13f77fc911f701",
+      "fr": "f5a221e0349830c968098d4b243914284d7bce37f825951790b236ace6a9944b"
     }
   },
   "ui:petsMemoriesComingSoon": {
@@ -19023,6 +19023,447 @@
       "es": "d372420b22ed338e3d6e1e09069c3a7b7757104305834f78b98c7f2bb969e8c0",
       "de": "6e3e3a630dc2b216c554e7b5a81c0be9e7db15172d331431c5fb9a6fbada28af",
       "fr": "7c5eac6e2f0dabc002da02d5aca721b5da061c9e60ca5dfe3eb02081f279522d"
+    }
+  },
+  "ui:petsListMemoriesRowSubtitle": {
+    "source": "30479f26274ad458cb5bd0d371e5fb0e26472e3b359c53f365bfa0b7a21b01ce",
+    "targets": {
+      "en": "b5b3d59593062a324c5adf6e3b102f4f68bc3245b8ffbeefa052448e24cdd931",
+      "es": "6f1d25fcb934b2cf436a1bbebcd252449e45b55d94be317a4e6fe0195d3819a3",
+      "de": "4f17e251e974ad46f43e1dd846e5720cfe647700b11c72407aba46b0e459818f",
+      "fr": "9cb95662b8fe2b7d9abf4635542ce926954e2c2878624f46262d7a4160493d2f"
+    }
+  },
+  "ui:petsListEmptyOnlyMemoriesTitle": {
+    "source": "0004f28c34de57f1ee3064d79b7abf177b2011a54ab26d3c39477d832b3a2d1f",
+    "targets": {
+      "en": "6d539d80e91304d85ee659e50f39bd865ebc5b361738db3dd24337f4af4e676c",
+      "es": "9da188905801dbab191f238d505114df4663ef290efb1d55984522b6f6a995ee",
+      "de": "8a051f9495293ca80fdbf11ad5b8acbef113565f9c27c0e88ba4f51fdec3ff2b",
+      "fr": "ddf8987c26769cc81d4f5444e033292d0291b19d702e1f62c88068361c2955d1"
+    }
+  },
+  "ui:petsListEmptyOnlyMemoriesSubtitle": {
+    "source": "0db6708fdcc3ed4fb66fbad76f16ef176fb7c43bacbbb8b96fff665021ef4378",
+    "targets": {
+      "en": "00269ecf3bc79ab52653009b49c488385a7c1e4cf20bbf812d68b364e7ca8ee6",
+      "es": "7cd5559ae2233a58e6618b549ef1e07fb598b4fee6370984fbac12e146a44007",
+      "de": "5c23153996468b0a58c9ecc9640f047a0bbeeb08fd5d154d63e8ba4c576b71af",
+      "fr": "7af634e31bbfc3c276231ab77e939b8038ac98256c1745c2f81ba8cf2a2a71f0"
+    }
+  },
+  "ui:petsListEmptyOnlyMemoriesAction": {
+    "source": "3d8499b631d39b2a2be6fa225603dd52ae962ea538c17aa264792fbe0a775fb2",
+    "targets": {
+      "en": "b8508237651e423f3f3c2c6ca429ed2485ce19ccd575f97749e042dd94f43054",
+      "es": "5695140aeeae54a8cee26a70e6be71f3dcb7fa964a7ec6b69483fd7ca0e86970",
+      "de": "4be809099e66284e01c4c2866d807d12b0e9408ded922442fc37743707ff4ed4",
+      "fr": "e4f6806b8751120a28bdcbbbf34c763cb026514ee42cc832db99a2b63ba9facf"
+    }
+  },
+  "ui:memorialMoveSorry": {
+    "source": "164113b1587def5dee2dc18945ee3f147cf88a8294a480f1815b4d0e0a1b2822",
+    "targets": {
+      "en": "e738b1ed4ab8aa5c5ea28442f9386adf30a618415aeca8eddba39f7b24b93fb7",
+      "es": "ea8860783946142cd8fb1d56ee6fdb7ebf05910e41c32a46a9409ba0e8510805",
+      "de": "5054008dfd9451c94c6def77b370cce50eaea79eb765e0d304847fc3ef3d0b2e",
+      "fr": "8e23e67355226f2d701f798668236692ec005784bd28b5b4a8e0cfbb922f339e"
+    }
+  },
+  "ui:memorialMoveBody": {
+    "source": "05ac71bab7218d620118c3fdcd19f1ad9722ecdc51534a6021b92d9f3fc3e61b",
+    "targets": {
+      "en": "8ed0b019cb420deca0f3a17db594f74f0e0e4ea0bafb41d4c55823cc52fcebb6",
+      "es": "b98e2171d917428b7296894ee44a592716ee4ebc1da8548b22f199a43ad02048",
+      "de": "a8427cb5058eea469c08cc85acfd97fe05bbcdd6d75c39376458cce0d172222b",
+      "fr": "b536e7c135ea10f4755af98c42df1c389500cce9f2e2fa084060b35988598737"
+    }
+  },
+  "ui:memorialMoveDateLabel": {
+    "source": "9f1774e9c9740d8231470ea37762dc8590fdca11393e124ca747ca93e41976b3",
+    "targets": {
+      "en": "c89454a2afa783875954202d3f6819aee30551d3f93f3c7c275e134beaeff53b",
+      "es": "540b38e9c6200f35c518d57601c40cc257b440656ab819b04ba6d45eae019354",
+      "de": "c1995b5b8f77afe9bcf565c2f1da30509aa3ce2950914975674c1cb3bf07f9f2",
+      "fr": "dab6849f952f91c8a67fcd1b638e01391ec33b65583a038462d6eb6f17b57bb3"
+    }
+  },
+  "ui:memorialMoveDateHelp": {
+    "source": "3eebf8ea30170c9daf88b1017a60df3aa49c595cff561ab619cd5fb38cecf73a",
+    "targets": {
+      "en": "43d27b72a8710939ad165b1d83b643eb93aabc6171649c62c71fb49ec08c6955",
+      "es": "9bb73cea40a55f854e53249350f469bedd140e5e2249d21310a97c6a0639e548",
+      "de": "01161acf8597408423a99d3a85b27242b6c85f94a67f05df68a89ca6695bfa38",
+      "fr": "37b9c4cda412ec9bffdc745e63e91f23c52da5bbea3c5bc7929f0cefd3ac3484"
+    }
+  },
+  "ui:memorialMoveContinue": {
+    "source": "c6b356eacf7ad6141b64ec54eef652947025712eb8927a5832509d636bf8303d",
+    "targets": {
+      "en": "25ad263f60f3ed38266d9529e863a8c04ff68e0a9de016c01ceadb463531795d",
+      "es": "0f2aa8c0148e25b3089e0bf5bea11e0cb35a3251802bec32e297610afb90a1ae",
+      "de": "7ec2d672d35e12a547be7bb95187cebcb3011228ca5859314443c34eee974306",
+      "fr": "2bda559a22739b6d7e7182b9219cc15487e0b83199e7e09dbf1eb602400a9f5d"
+    }
+  },
+  "ui:memorialRemindTitle": {
+    "source": "3f7d79afcceb533e7e60badf2220d279075cbc53856a1733dcef4ca9e10738b8",
+    "targets": {
+      "en": "3ea5e52d748e8955e6d3f89f45f2a7661cccf937e2e1274ba5b9a36f42c122c0",
+      "es": "5626fa81bb3d3a907f365268525de6b796f2739432d495a8178779b44c333d5f",
+      "de": "467a2405752411c0b2db3354dd378400a13cb4407212ce3fd3d4b1c8d180abf3",
+      "fr": "f4e89edec6ab508679aef882c7f1be67e67e9f1dbb3185f2206476a97155171f"
+    }
+  },
+  "ui:memorialRemindBody": {
+    "source": "cdac826fd23a9c87da2792bafd003d6d36143c35784e672c7a794597bd3e77e7",
+    "targets": {
+      "en": "2b38138f32e28f3fb6d105aea4626c55907d77b4e1b2280f8fb0245f94eea807",
+      "es": "b926fc9814cd72fe15658ec79a0a5bbdc88002a371f2ffd3d5e38d3c957fabcc",
+      "de": "07d28dda21848b35614647e20cd9b1c579d244b9f5bdb9fcfb74f64deb0f4c6e",
+      "fr": "7bbef34d5d4620eac1105ca9c701b3f6ba50f696d146ebc4accd9b844b740547"
+    }
+  },
+  "ui:memorialRemindBirthday": {
+    "source": "6c32053434a65d0e583f8602cb6c77e7bd763b244c45bd87aad968d26f116fa1",
+    "targets": {
+      "en": "1f5e6ab84a3c036e7d09d1243bd8bc7e8ef533779460ddd8f91c68f58500e0ee",
+      "es": "f9252583ae257366de9ea87b9c8f7004e247e731251b1181cfa315ce28678714",
+      "de": "f8eec8aa7b19cdf86640d08d05f2f2d9f036f71377f32cb39c8f260c542ace26",
+      "fr": "1a0b6adf8dcadfa87f78b28be72c7ac6eaff5d9f083bdb4e279d4535da0060d7"
+    }
+  },
+  "ui:memorialRemindBirthdayHelp": {
+    "source": "2bdbe5f30d263af71958a2824d5cd9b43cf37c3f43e60ac62ba67a7369196800",
+    "targets": {
+      "en": "1a56a569d6fcb038601821f577a05c63af2cf75a324aa6b71203012192cfc737",
+      "es": "a85e7ed2fb4227b079e2f32c5bbd95ec53718a3faea1fa880037c9c81c9cb971",
+      "de": "20914f68d1b489833f4433ba3819714742efa5b7cdc2d81e9f0ac80728a29d78",
+      "fr": "e7b82906dfdd3ac2f3d95477eafc2ea986e01638d9104194630f37d0afee274c"
+    }
+  },
+  "ui:memorialRemindWalks": {
+    "source": "218f3cc4587c7cb7b9b7b710d9d6b326afe4ef4917ab704bdeeca15ad1a760a4",
+    "targets": {
+      "en": "5b67b708444f4ac3af5be4b52295ea73d813c05e5b94e9f6f737845eb0ce8cb6",
+      "es": "a0b5a9bc90007f07913b594b8c6bdc399b1b1f4259c803f6c4b8ddf1570213ce",
+      "de": "328dcb8281edd7b306519449161658023ec584dfe81d6774676bc369ee7c8d41",
+      "fr": "99db7285c5975e92126c7c1f07383e22bc5c18d5dafbe827726b615cc3c77506"
+    }
+  },
+  "ui:memorialRemindWalksHelp": {
+    "source": "291666b697ac1b24500bec69cdccd360e72801e226a8f80dc152034c8a71b1c3",
+    "targets": {
+      "en": "7f6d40750338875340651b1fb1227c0fa21b4632027212b95779c47b2dbd87f3",
+      "es": "db90f8fcb8bb998124ab241430c4f5bd989ee0ba0348e4788e7ff841695937d3",
+      "de": "dbd78d55cc391c753f3851f3f12586b013cf3e18499b359746adc6d772d24546",
+      "fr": "cba8fa1a09b73bf76ec1c05d8ba1381601b2b8d11b148fae2059edd989505478"
+    }
+  },
+  "ui:memorialRemindPhotos": {
+    "source": "0c297ff126841a654982e8c8b12080e114a01b582bbe0f73f8c683a9593758ee",
+    "targets": {
+      "en": "8d1b0f4ad2143927749a3e5669902d5dee47ea14e00bbfd34cef56f644d8a8ce",
+      "es": "905a7deaa3f64b93f62fc7621ad7e6fd18b1bbe6cd81cf87701edda59b3eec29",
+      "de": "e3f863f582daac6c05fff17d94b69eff9100447834f2d046fa31bdc7cc0aeec2",
+      "fr": "2811db0c82b81eb1b3ada93fccf3d10a0626e36822d9bc09affe8145e316dc31"
+    }
+  },
+  "ui:memorialRemindPhotosHelp": {
+    "source": "c9bc8a3eaf29570e9174fd1caaafff6bfff8c3d3c33a9ad4c10f06feaf0e2c39",
+    "targets": {
+      "en": "d7af70933dc97ce161a6d54e7446915c358ed45ff115cfa27a1caa04ad5c003b",
+      "es": "5a7c5e4cbb3f3f4c2c61251ec7f7073abd4a054f96534297c68fcded3e14f650",
+      "de": "3aa9eeff4fa85b3e50fe50116f854375b352a277e551d37734aa853a7174cf0f",
+      "fr": "02c91a3e4166f607ec794ae59e2c3d4678a71fb40e850554fe0b5a17caf55606"
+    }
+  },
+  "ui:memorialMoveConfirm": {
+    "source": "4eedc7d6de4b262f67b0ff0672f38a95624ec83ef7c5fdba122638bdc165928d",
+    "targets": {
+      "en": "2f1376580055cb5d2e9323df9f3c5832bc4394c9b646e3733317d3707dec4f48",
+      "es": "18096ecfde9709927aadab65c0bee162c24331c9ac6fb327820fb5bf78d84153",
+      "de": "42dd8b9900317b83bd85e3b0db401a847dc5ed5c2dd63f68c96ca9c8f5b1ecfb",
+      "fr": "a12dfe9b4502dd420806caaba8d617a23b022d06661a9bb4c2e4e375964573db"
+    }
+  },
+  "ui:memorialMoveDone": {
+    "source": "c07941f83656a5db8aadd91f0e41db4c2e4a15b7b248f178301b6ec529750d30",
+    "targets": {
+      "en": "b4fca0a8e0ab343dd3a505302f7050a39ac6e039f03d1ad955dbae1322faad1e",
+      "es": "d2dd60cb22c0956d317d10ce18cd1e202c97e93bbb23bfb976ccb1d7b8f02932",
+      "de": "bcded2b450f649aef2505398bc5e64350043b748c8e1892a3c0e5143e0ccf876",
+      "fr": "cb41edec7f3aab63a8f67db60a7423270021361e83ad47790c05eb5d5adbf451"
+    }
+  },
+  "ui:memorialUndo": {
+    "source": "760dcd5a40233a23d48d6f0eb5c964a567f86568a91ec2f92aa0c8b7f76415c7",
+    "targets": {
+      "en": "675036bd3758c1f74bb164b6e6249c8671ce1dad557db420eeef0c0c61e4e32a",
+      "es": "3a0a83fde8752443f7cb3723c27aeead20db21a045d3581491b5779eace3d77f",
+      "de": "a7f63942ad7e649ec2cee6bec1f87e5ae64ebcc1644f0008753391e6010fa4e1",
+      "fr": "af12de10a27c7e5cc7953356479ad098aad7c982e7a774309a5668a5a5442664"
+    }
+  },
+  "ui:memorialPagePhotos": {
+    "source": "5686ecf8013b671817402b66398fb993db1f9604143ce90cd8a4394e36ea4be2",
+    "targets": {
+      "en": "a9e5b4262fdbf3e9976ccf6fdb6266fefb140f7f2779b217ea073e3a8efe415b",
+      "es": "5c76f63cfc350fcf71a2e9bf41ce668a277338959b388768739dfbbfe465a044",
+      "de": "5c76f63cfc350fcf71a2e9bf41ce668a277338959b388768739dfbbfe465a044",
+      "fr": "a9e5b4262fdbf3e9976ccf6fdb6266fefb140f7f2779b217ea073e3a8efe415b"
+    }
+  },
+  "ui:memorialPageNoPhotos": {
+    "source": "807b29da54218b9e84827ddbbdd58340421e3baebe1b85553fd6132c1ce558b0",
+    "targets": {
+      "en": "87749cae69a954439a9c90108dcaa6b0c709f424425db8f5a966b964ff8c1fcd",
+      "es": "800db19840ce6f318f4e63e83712d73955700df0186a3caf777e588b83ece368",
+      "de": "1b7f5c2ab6306e1ab755bbb93de357ae01b37f74d860a3547735e79b80510e66",
+      "fr": "f38c6bfc646d7b6a7387969ffafb0143e335fcc9ed03075e9dc4038a9060fd43"
+    }
+  },
+  "ui:memorialPageOpenGallery": {
+    "source": "f5a62f03fb293ba1be3c2d53db30f9b858b570fffb8ade031958a4c388f1b17f",
+    "targets": {
+      "en": "fa903e6fc1d4f00f838c74ca4ba2c58012598f34b2fde3c499c43c32fcce2645",
+      "es": "c027151f75e1072928bb1bd5ee7e4b3710d4f990fefb7dad4793b008f2ddeef5",
+      "de": "3cbb1e7038a76a2004b0df37ca6eea0349fa7aba8a868e3ed5039205d3600a2b",
+      "fr": "74d04182fa017a28360b6d5e0f11e9f40c9cba0c2373d7330fd8b894d4f9db8c"
+    }
+  },
+  "ui:memorialPageWalks": {
+    "source": "80fb160cfc8e9a4ab01fe3ea5275b47afa4b7427f4e47b7bf9adc769c5619e9c",
+    "targets": {
+      "en": "5b67b708444f4ac3af5be4b52295ea73d813c05e5b94e9f6f737845eb0ce8cb6",
+      "es": "4a9f659190b2fefafebf9960d3a686cc2da1adf03b0b87701273a812341a069a",
+      "de": "45d3e46923b45388fb04a5e56c242a086a99ba53c5583d63896c835ea0d94b82",
+      "fr": "37492706b292241edee7ba0232563de83deba7c0746fe7c54115a45adfb4a8fa"
+    }
+  },
+  "ui:memorialPageWalksTogether": {
+    "source": "745dec313243bd9ddfe75b2b4ecef3ae07e2e937d1a4b6574d06f4c25a8d0fb0",
+    "targets": {
+      "en": "1c13ac1306fe478fc3c836ce48c72c40119c7deddbc439f0ca3e108115441a6e",
+      "es": "b9c0bdb8b30567763bd64777e2998115b25e5f081976ba96d4a586863ab59d69",
+      "de": "40ff49959fab31bfc72d9160f497f1dd58ced7fa6420cb45eba8ba1608dd9930",
+      "fr": "0adba70ead95fb80aca46c1f1525991cfbc9531ed7edd6eee8ff09d274399deb"
+    }
+  },
+  "ui:memorialPageReminders": {
+    "source": "e68807d9e23618ccac384c5a17cdd860c3a33faeaa3230f6518a8f36e0e6be43",
+    "targets": {
+      "en": "a93d17efe8024baf9e9a0e3b635a800cf53032887ea7c7f88b80805712859a06",
+      "es": "e0bbfd47b5ead0f6b5e58f04923a84512f5afb3f830438ee00fdf2ebc7857b68",
+      "de": "49f8f3769ed43aff1212f97d2e0c155dfefe2d0d18438dafa703cd3eb4c7ee7f",
+      "fr": "34d6788ec9c31435266934b948a05055b1e52afb7b80bf019bf14dfe8475c705"
+    }
+  },
+  "ui:memorialPageRecords": {
+    "source": "c8111a8cacfb8c9703e2dc13f65d6bba4a89021b997a092b9806bbb43c510375",
+    "targets": {
+      "en": "05dc7e4b87dd71d36f229bf9c7e69cd2c59df0bf060df0ecd09c2bf8d6b75a4c",
+      "es": "cc8b30f9a26b4423bae119c899ab7d918179060b251ea3efe206b9c3ea249cd0",
+      "de": "7abee25177fbe4a758b0678122ead540ab17a85b6285238f85b259e88b88da90",
+      "fr": "01e10044399c79d7a2d15a366734d0a7cb773d7886d4713ff5f5787f5d3bcf3b"
+    }
+  },
+  "ui:memorialPageProfile": {
+    "source": "24b6a82f90c24b2563cebb96f51c3674e182c9e579c81f3b524aa5dc57046c18",
+    "targets": {
+      "en": "96ad4bd0f7baa40ec66761916d27b27c4a580c612e562d2e80648e68afe2fff7",
+      "es": "3b9baa7329de85e354d46104f8ce91429874dae5f0aef47bb64aef5d26ffeafa",
+      "de": "c1ba4f35263f8249f0ea1cc1b483d8d926733b0aee629e509b0d4f6c5eb2ad0b",
+      "fr": "0dffd787183618965ea045fd675b333082a859afc39c3169427c37fa8d27885b"
+    }
+  },
+  "ui:memorialPageChipNote": {
+    "source": "221627c78a3e75b0c0dde67d7492e89b26cc7ac98a9c671f2695797cc19d143e",
+    "targets": {
+      "en": "36f0143557c3450f2b8f24ce91818d94459ec70363fce0e043369f477a4ad1dc",
+      "es": "57768ae18c1767706c21e5f1535e4cf1cff999f2e62a584e14ae0560b2c25e1c",
+      "de": "0ab5f16cb7a31d4634e8df87658a552f6c5d9b9a74a0b883c963f94d571bd2ca",
+      "fr": "b23efee8bcafed80f4adaadab436dc5e1eea7cfc482bc6c37d23a4d20b63f78d"
+    }
+  },
+  "ui:memorialPageBirthdayPhotos": {
+    "source": "4691605909a9eabbed4fb36b9c9fbb86c5986f8f838f04f950075a49ac571f59",
+    "targets": {
+      "en": "43a578837273bb4f6cce2d0f482a05c26cfddc28d01e1962cb552f2e8e5b8af1",
+      "es": "e9f1f83a48ae33a445a17f9df9314e7be9fff0b6518dd4c70cfeb04db5e2520d",
+      "de": "4861df98596c6783ba1023e3915fad4f4413ca2850b898b6b9e210e7f51b7205",
+      "fr": "b185de96ce1225d1a52728a8d5b8023acd62f4155890c703a3cf6f9a140b349c"
+    }
+  },
+  "ui:memorialPageNoBirthdayPhotos": {
+    "source": "20d4ea5adbb27f2816745330118488c4fd3754b1468687456d71a957910b0510",
+    "targets": {
+      "en": "0fdfc7044fb8e10c8226981e22cad75a49b0f8699d436f6ec3cc564b5e4f6d99",
+      "es": "eb22980b639016462e556aa948129737b69ec7e5f57dc7054dc86897f110e973",
+      "de": "c4901598efc317b0933b9c184e6ce3ce1ea4b868062172971b4bf39eddd65346",
+      "fr": "37dd5e74284cebe1a8581da88a791507904419fa5eb1a9cd2f202b21537000f5"
+    }
+  },
+  "ui:memorialPageOnThisDay": {
+    "source": "ba1e84ba9de1c76d49b4529eb1a4610201bd7793eb3057c43f561849fef6c823",
+    "targets": {
+      "en": "8d1b0f4ad2143927749a3e5669902d5dee47ea14e00bbfd34cef56f644d8a8ce",
+      "es": "af205e324484ab6547f15305573ad0d8ed9e69d1bfae62f50aac78c44e304c9c",
+      "de": "e3f863f582daac6c05fff17d94b69eff9100447834f2d046fa31bdc7cc0aeec2",
+      "fr": "047d091c45dfe0c3b9f0e2b3811199e6de6d3c5b8dbcbb187d017eb51eb57b5e"
+    }
+  },
+  "ui:memorialPageWalkPhotos": {
+    "source": "608ddc3f1665845bba9d95bb142c9742087e63366f656064454fbbc8c5dbe4aa",
+    "targets": {
+      "en": "be6d001dd92c3b9d2d0136d78d9034b9be902b30a74e9b61b0babaa4d32c61b7",
+      "es": "a9a9449dac1ae2d39cf4274c3dd68a5f40415cc55ffb7b52fe6b1fd4e743c0f7",
+      "de": "210d997a07f582888b6d7e8b7667357de1665b46723c38190be0aace13a9898d",
+      "fr": "26dcf4f4f1428950d7595ed43901cef769a333be6364267f1f516ddd31723fbc"
+    }
+  },
+  "ui:memorialPageOpenWalk": {
+    "source": "9ff57e710e9dc3b32b7fd448f06ba76c3d65afd68ac4ca30df5b6eb13a6db616",
+    "targets": {
+      "en": "6671a5de406a8f32210995ec45a2fccd03c693d9114986311276be1362b33109",
+      "es": "9e1254bf63dc31bcde5427c0a6b5ba3071f6d5b3272008f935aa5dbbca363a07",
+      "de": "9db914ad5fe6dd11bbb863b232f8221d3b1d041039ea14163c83e6721319f057",
+      "fr": "79b9b6e366535708fcc1dc120982a116b569d688d2bcf191dec4cc55eabfe5a4"
+    }
+  },
+  "ui:memorialRestoreAction": {
+    "source": "0c47590b0b0cd65429ad47dc39bf6c8356968275312d582f3c1dc524c83184f7",
+    "targets": {
+      "en": "9fa62130472c121c07e0aa594a80af26d8c40d59ffc6acc18550cd4d4923687a",
+      "es": "7ac6ba5d21d3d56673ff682f619abe1bc37abefce5959e632d93da8d712f8837",
+      "de": "7bb9c51abae20d4411f2efa34ad473675f2ebfae98d9f72551b17a95ee606311",
+      "fr": "52cde95c71071657e2f10ab119e7c8c1b645b9f97a12b29f5743e5fe236c64d2"
+    }
+  },
+  "ui:memorialRestoreTitle": {
+    "source": "4ec20a34e371d9679807d3ac99060718978da2c1690f806c0e4f4e0453d9aee4",
+    "targets": {
+      "en": "ab95de640539143ed1b60c73224e0ca05ef53c824e834c685867cff9bf7827d9",
+      "es": "3c10de9f918c82a4db96b259e246d8a741f625b3ea6c92d16963b656c3c0eed3",
+      "de": "fa04f3df9c2d28fc33cb41473ef55bdbd266acb60b23c4ddf16bae6ce6544325",
+      "fr": "8a3f4e1c4d2c818817afdd2d8f9906898d21a9a652e76f220639c917a2fd1ce1"
+    }
+  },
+  "ui:memorialRestoreBody": {
+    "source": "129359fb457f2a5e1be8b345f18d0cbba68dc77ec295940f81beddd1d218db72",
+    "targets": {
+      "en": "d9832ea2d8de33154fb9f85be843c7a11819532f019bfa0ed708953266a6052c",
+      "es": "3cf321bcb64eea61729c8b01ea4ab5745760dbf698a3151ddd94bfe3b3fcb6d5",
+      "de": "e60d019a57b2b3b230a578d43738b81da8a2ba251b2754ac48966789be8ec9f3",
+      "fr": "73eeaa9e037e837bf40942e4a56f74e5cdd4a45f3ed3b80138c8ab49ce632fae"
+    }
+  },
+  "ui:memorialRestoreConfirm": {
+    "source": "0c47590b0b0cd65429ad47dc39bf6c8356968275312d582f3c1dc524c83184f7",
+    "targets": {
+      "en": "e4227ebd0e01d492a2c047b3bd2d7bc0f80f6b91f2963ac059f24e2878d2f82b",
+      "es": "399a73ea111c3386446962e1bf5ba4652cd60a964609e2e2f19d8587463fa671",
+      "de": "62f99e13f0eeb4b5f6308a984506205f002e06237b086f8957c425dfd017c5e2",
+      "fr": "823e0f79720061b8a211b1fb1354dc270192b105e44f4bcd4e830ddecbfcef6f"
+    }
+  },
+  "ui:memorialRestoreDone": {
+    "source": "0e3924456d1e91c3c3e1d9084640465357beb9db755c766e0973dcdc684f2d58",
+    "targets": {
+      "en": "6f719d3a405f90509f68a647f4623524f7c3c3d2363daa41181570abdda25bde",
+      "es": "7168ef1afd2f5ddde82c815a50bad1f7172d88a913f6179f0d6405c8556fcd43",
+      "de": "decea217ba8b9fd1a897442318813d6f26999d4f2671926ab4ec5ff5e0ef75f4",
+      "fr": "da817e98fd693a026e8ef3d0d7de351e53bb787f5958b47e851fedff349df877"
+    }
+  },
+  "ui:memorialSaveFailed": {
+    "source": "800ab4d601770501f4ca6d2ca679357043f700809ea4e782f17123dacf97b6b1",
+    "targets": {
+      "en": "e6801726ef81caf2b3851bda4e069ebbd20fe4162b216dd740c2ab443196fa26",
+      "es": "d4ccdf9de7025464bfba7366adf99e384815e2d87088451d5421d4d3cf9fc69d",
+      "de": "d5d56e66e6c0aebb22f7320cdb330942e1e2ade5cbe92c574ecf66c07ae7b33b",
+      "fr": "45065ae346d0f196dd3601fb14e41c94b381265f7af41358955426fcbaaa4d2a"
+    }
+  },
+  "ui:petsMemoriesRemoveAction": {
+    "source": "ce1a5a78b23ffaba310ec11637e448bbd591b4292d54122cc5a43c78f2bb066e",
+    "targets": {
+      "en": "ccfc104b838c9d9cf387703859b5bfe8c256bbaff421e1629e6189692a69c249",
+      "es": "4255abe6b3fbc36663afc436c3e1c129e80ed55140a1ad957eeea97b3293f53a",
+      "de": "743294ccb80f10160dac19867460e1d58e30a543ceb861c9b83bc834de5b5d11",
+      "fr": "f3866f2bdaaefeba98aa22d92575003eb445d6e3e4500168babbc3a3d8d4e039"
+    }
+  },
+  "ui:notificationsMemoryBirthdayTitle": {
+    "source": "d4d018184a1281d14f1b4fe9ad5ac68d67cd011680459d207542e4e0203adc72",
+    "targets": {
+      "en": "c71bbc57fb5245eae76a286135d80fe8d26ec6a9c99c8068000a01f12414700f",
+      "es": "a5b7b1a84024187be0218e6365281ae52361f77cb950806150ffdba268ba3426",
+      "de": "b8ca5f9e3526bab06f773d40205f0e2f443f845768fec9178a87bc44b7c8e150",
+      "fr": "0bd655f545a8c025bbec9722aaeedf10a26adaa5859c7a82affbe0f608d7cda3"
+    }
+  },
+  "ui:notificationsMemoryBirthdayBody": {
+    "source": "bb877cc5c5a5eaac733c90b22baaf63c6e478930349a907eca5afc73bbc9855e",
+    "targets": {
+      "en": "e5ec06f274a43fe2947151c5d1ac9c2fd65a23025726028a3d2fa4256b3914ae",
+      "es": "6d48a5ea2c04b78f0610494ec70614c8a513e54c3b660894c579de7560d334ad",
+      "de": "21c6f308e0bedfd1fdcfc80e2ce63995ce70cfed0c0d22e7578bc422a895587f",
+      "fr": "651335a715569332ea0e80316f7b89ab22299e2dbeff81a782920379a264cb4a"
+    }
+  },
+  "ui:notificationsMemoryWalkTitle": {
+    "source": "4468b10b871b4a2b4f34dfea2506b3192660ca95cf824528e8293713a478704c",
+    "targets": {
+      "en": "abbb581038931797d897d10018e30a1b84bde2c10d31a08ba72126908760fdb6",
+      "es": "db8d7d777ec4c558244e3501269562cb28390176c2d9c131d6fbb5e57b6670fd",
+      "de": "affb1bc6957776246dc5579472f93c49118c82aee308f904bbe8db8e43c025c1",
+      "fr": "be1932882f7500d7b052a29d4e7c117aa9aebe7b70ea9ae3964063dd5dc37258"
+    }
+  },
+  "ui:notificationsMemoryWalkBody": {
+    "source": "9cb47ceaffa122ec4f957d63498abf8294d12d0fcf6ba1907e4fcf1942853ae3",
+    "targets": {
+      "en": "048232e3caf51f2c4e4d3dd1ae1a3a2c0cadc3c97251a2a050bbde1c6ae84f5e",
+      "es": "c3aded3af10cf084e4bac094a48b5197ed7845c33296a9d2ad911e2d0df4e38a",
+      "de": "5adcbef1fc922e4cbabe89781a31136b26d8b160ba3ba5c2f0b6239e5dfcb375",
+      "fr": "b93da3d0f0db6b44f4bef7b64d10dda3c3ee4bd90d0d4a373f2b5f499ac78590"
+    }
+  },
+  "ui:notificationsMemoryPhotosTitle": {
+    "source": "c2e36414e6ae7df3f24c478f6d4fc307071c3effcc5fef0873ca159e684cf0b2",
+    "targets": {
+      "en": "910b9229480bcffc87cf1f9693c76329fd58e799cfec5e06faedd4ad402fd20b",
+      "es": "12921877e21f9a5eee2ab945f04e97af59b0fb907bbc70bb6a1ff68784852d07",
+      "de": "9c5ca9b0f6f37be3246497505ed5cf2f9587d5b026d62483f38b087334070778",
+      "fr": "143dfc73b037e96e06ca10a4c638971d0ae73c232cd2569d9e2b81602351a232"
+    }
+  },
+  "ui:notificationsMemoryPhotosBody": {
+    "source": "bf13f51f211a7efb5a7ebf8b55ccad0d18657046b3af913c7b0ee34638d7f045",
+    "targets": {
+      "en": "e27c21e968c32527221e13d86086fa9ac764088bb715bec5a23d8522a38f83b7",
+      "es": "7e547fee64d27bb2ba85dba374d05997a9cf6ec61a35d213e3c6ab2a689410f7",
+      "de": "30f5e1644024db49ab6e56441c8e3f02301cc6f6c3b55142f887dd3fd3a4da3d",
+      "fr": "e523513a9edc40cf41ecadede7fc6d311393a411304024733188a45f1f2bba5a"
+    }
+  },
+  "ui:notificationsChannelMemoriesName": {
+    "source": "70299b7b025312244cfac20b4288b0575888c6d8031e0646d87d6b078bfca30b",
+    "targets": {
+      "en": "ce2332884dba219dd9d991a1a49637181ef820c56d1021e976665bf93043f905",
+      "es": "0c8542003117cc255524107089cbde99b7ffa45fe987ca6264ca121391c3a819",
+      "de": "ceeaaf2d2fa0c4be43b039685261cdefba6f36442ed9f09ea1d94a4a6dc90da7",
+      "fr": "fba69e9484ad93ebfe8e62e4e6cf02850004d28b08cf073b349705ac38044162"
+    }
+  },
+  "ui:notificationsChannelMemoriesDescription": {
+    "source": "ba2a8dd522dba792941563967e93b587912984911e29579dcbb3593e919aa4eb",
+    "targets": {
+      "en": "fa1b7a3f1a0266c0088b110cc93ec3273befb40b2a254dbe5412a36b6a6b4ad7",
+      "es": "203bb5a1e6a902782a67f09ac79ccfc85ec904eb12c39c0b76632e19fec6d72a",
+      "de": "787b6508104e7e740d12f59b015775534577ec6e32ad542af8cfba6a02daec8c",
+      "fr": "232d60e05a2ffdd3b5013de1a4fccda969960be51e2aec1b499d5942d5b320e8"
     }
   }
 }

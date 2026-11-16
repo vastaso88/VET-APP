@@ -79,6 +79,11 @@ class _FakeGateway implements LocalNotificationsGateway {
   @override
   Future<void> cancelAll() async => scheduled.clear();
 
+  final List<String> shownCancelledForPets = [];
+
+  @override
+  Future<void> cancelShownForPet(String petId) async => shownCancelledForPets.add(petId);
+
   @override
   Future<void> schedule(int id, PlannedNotification notification) async {
     if (refused.contains(id)) throw PlatformException(code: 'refused');

@@ -20,8 +20,16 @@ abstract class LocalNotificationsGateway {
   /// (logout: no pet names left on the screen).
   Future<void> cancelAll();
 
+  /// Removes from the notification shade those already shown about [petId]
+  /// (moved to Ricordi: no vaccine or dose left on the screen).
+  Future<void> cancelShownForPet(String petId);
+
   Future<void> schedule(int id, PlannedNotification notification);
 }
+
+/// Android tag of a notification about a pet, see
+/// [LocalNotificationsGateway.cancelShownForPet].
+String notificationPetTag(String petId) => 'pet:$petId';
 
 /// Web (and any platform without local notifications): nothing to schedule.
 class NoopNotificationsGateway implements LocalNotificationsGateway {
@@ -35,6 +43,9 @@ class NoopNotificationsGateway implements LocalNotificationsGateway {
 
   @override
   Future<void> cancelAll() async {}
+
+  @override
+  Future<void> cancelShownForPet(String petId) async {}
 
   @override
   Future<void> schedule(int id, PlannedNotification notification) async {}
@@ -113,9 +124,24 @@ class FlutterLocalNotificationsGateway implements LocalNotificationsGateway {
   }
 
   @override
+  Future<void> cancelShownForPet(String petId) async {
+    await _ensureInitialized();
+    final tag = notificationPetTag(petId);
+    for (final shown in await _plugin.getActiveNotifications()) {
+      final id = shown.id;
+      if (id != null && shown.tag == tag) {
+        await _plugin.cancel(id: id, tag: tag);
+      }
+    }
+  }
+
+  @override
   Future<void> schedule(int id, PlannedNotification notification) async {
     await _ensureInitialized();
     final channel = _channels[notification.category]!;
+    // A memory is a quiet thought, not an alert: no pop-up over the screen.
+    final gentle = notification.category == NotificationCategory.memories;
+    final petId = notification.petId;
     await _plugin.zonedSchedule(
       id: id,
       scheduledDate: notificationInstant(notification.at),
@@ -128,8 +154,9 @@ class FlutterLocalNotificationsGateway implements LocalNotificationsGateway {
           channel.id,
           channel.name,
           channelDescription: channel.description,
-          importance: Importance.high,
-          priority: Priority.high,
+          importance: gentle ? Importance.defaultImportance : Importance.high,
+          priority: gentle ? Priority.defaultPriority : Priority.high,
+          tag: petId == null ? null : notificationPetTag(petId),
         ),
       ),
     );
@@ -155,6 +182,11 @@ class FlutterLocalNotificationsGateway implements LocalNotificationsGateway {
         id: 'birthdays',
         name: l10n.notificationsCategoryBirthdays,
         description: l10n.notificationsChannelBirthdaysDescription,
+      ),
+      NotificationCategory.memories: (
+        id: 'memories',
+        name: l10n.notificationsChannelMemoriesName,
+        description: l10n.notificationsChannelMemoriesDescription,
       ),
     };
   }

@@ -66,7 +66,7 @@ import 'app_localizations_it.dart';
 /// property.
 abstract class AppLocalizations {
   AppLocalizations(String locale)
-    : localeName = intl.Intl.canonicalizedLocale(locale.toString());
+      : localeName = intl.Intl.canonicalizedLocale(locale.toString());
 
   final String localeName;
 
@@ -89,11 +89,11 @@ abstract class AppLocalizations {
   /// of delegates is preferred or required.
   static const List<LocalizationsDelegate<dynamic>> localizationsDelegates =
       <LocalizationsDelegate<dynamic>>[
-        delegate,
-        GlobalMaterialLocalizations.delegate,
-        GlobalCupertinoLocalizations.delegate,
-        GlobalWidgetsLocalizations.delegate,
-      ];
+    delegate,
+    GlobalMaterialLocalizations.delegate,
+    GlobalCupertinoLocalizations.delegate,
+    GlobalWidgetsLocalizations.delegate,
+  ];
 
   /// A list of this localizations delegate's supported locales.
   static const List<Locale> supportedLocales = <Locale>[
@@ -101,7 +101,7 @@ abstract class AppLocalizations {
     Locale('en'),
     Locale('es'),
     Locale('fr'),
-    Locale('it'),
+    Locale('it')
   ];
 
   /// No description provided for @petsConsentFullText.
@@ -3590,24 +3590,6 @@ abstract class AppLocalizations {
   /// **'Rimuovi profilo'**
   String get petsEditDeleteAction;
 
-  /// No description provided for @petsEditMemorialTitle.
-  ///
-  /// In it, this message translates to:
-  /// **'Spostare nei ricordi?'**
-  String get petsEditMemorialTitle;
-
-  /// No description provided for @petsEditMemorialMessage.
-  ///
-  /// In it, this message translates to:
-  /// **'\"{name}\" uscirà dalla lista Animali e sarà conservato nella sezione Ricordi, con il suo profilo e le sue foto.'**
-  String petsEditMemorialMessage(String name);
-
-  /// No description provided for @petsEditMemorialConfirm.
-  ///
-  /// In it, this message translates to:
-  /// **'Sposta'**
-  String get petsEditMemorialConfirm;
-
   /// No description provided for @petsEditMemorialAction.
   ///
   /// In it, this message translates to:
@@ -4502,12 +4484,6 @@ abstract class AppLocalizations {
   /// **'Animali'**
   String get petsListTitle;
 
-  /// No description provided for @petsListMemoriesTooltip.
-  ///
-  /// In it, this message translates to:
-  /// **'Ricordi'**
-  String get petsListMemoriesTooltip;
-
   /// No description provided for @petsListLoading.
   ///
   /// In it, this message translates to:
@@ -4553,19 +4529,19 @@ abstract class AppLocalizations {
   /// No description provided for @petsMemoriesRemoveTitle.
   ///
   /// In it, this message translates to:
-  /// **'Rimuovere definitivamente?'**
-  String get petsMemoriesRemoveTitle;
+  /// **'Eliminare per sempre il ricordo di {name}?'**
+  String petsMemoriesRemoveTitle(String name);
 
   /// No description provided for @petsMemoriesRemoveBody.
   ///
   /// In it, this message translates to:
-  /// **'Il ricordo di \"{name}\" verrà eliminato, senza possibilità di recupero.'**
+  /// **'Profilo, foto, passeggiate, documenti e promemoria di {name} verranno cancellati e non si potranno recuperare. Se vuoi tenerne una copia, scarica prima foto e documenti.'**
   String petsMemoriesRemoveBody(String name);
 
   /// No description provided for @petsMemoriesRemoveConfirm.
   ///
   /// In it, this message translates to:
-  /// **'Rimuovi'**
+  /// **'Elimina per sempre'**
   String get petsMemoriesRemoveConfirm;
 
   /// No description provided for @petsMemoriesTitle.
@@ -4577,32 +4553,320 @@ abstract class AppLocalizations {
   /// No description provided for @petsMemoriesSubtitle.
   ///
   /// In it, this message translates to:
-  /// **'I profili dei pet che hanno condiviso la vostra strada.'**
+  /// **'Gli animali che hanno condiviso la tua strada.'**
   String get petsMemoriesSubtitle;
 
   /// No description provided for @petsMemoriesEmpty.
   ///
   /// In it, this message translates to:
-  /// **'Nessun ricordo conservato ancora.'**
+  /// **'Qui non c\'è ancora nessun ricordo.'**
   String get petsMemoriesEmpty;
 
   /// No description provided for @petsMemoriesWithUsUntil.
   ///
   /// In it, this message translates to:
-  /// **'Con noi fino al {date}'**
+  /// **'Fino al {date}'**
   String petsMemoriesWithUsUntil(String date);
 
   /// No description provided for @petsMemoriesWithUsRange.
   ///
   /// In it, this message translates to:
-  /// **'Con noi dal {from} al {to}'**
+  /// **'Dal {from} al {to}'**
   String petsMemoriesWithUsRange(String from, String to);
 
-  /// No description provided for @petsMemoriesComingSoon.
+  /// No description provided for @petsListMemoriesRowSubtitle.
   ///
   /// In it, this message translates to:
-  /// **'Presto: i vostri momenti più belli insieme, come le passeggiate più lunghe o i traguardi raggiunti, raccolti qui.'**
-  String get petsMemoriesComingSoon;
+  /// **'Gli animali che hanno condiviso la tua strada'**
+  String get petsListMemoriesRowSubtitle;
+
+  /// No description provided for @petsListEmptyOnlyMemoriesTitle.
+  ///
+  /// In it, this message translates to:
+  /// **'Nessun animale nella lista'**
+  String get petsListEmptyOnlyMemoriesTitle;
+
+  /// No description provided for @petsListEmptyOnlyMemoriesSubtitle.
+  ///
+  /// In it, this message translates to:
+  /// **'Quando vorrai, potrai aggiungere un nuovo profilo.'**
+  String get petsListEmptyOnlyMemoriesSubtitle;
+
+  /// No description provided for @petsListEmptyOnlyMemoriesAction.
+  ///
+  /// In it, this message translates to:
+  /// **'Aggiungi un animale'**
+  String get petsListEmptyOnlyMemoriesAction;
+
+  /// No description provided for @memorialMoveSorry.
+  ///
+  /// In it, this message translates to:
+  /// **'Ci dispiace tanto per {name}.'**
+  String memorialMoveSorry(String name);
+
+  /// No description provided for @memorialMoveBody.
+  ///
+  /// In it, this message translates to:
+  /// **'Qui puoi custodire il suo ricordo. {name} lascerà la lista Animali e non ti manderemo più promemoria, farmaci o auguri per {name}. Profilo, foto, passeggiate e documenti restano nel tuo account finché non li elimini: puoi rivederli e scaricarli quando vuoi.'**
+  String memorialMoveBody(String name);
+
+  /// No description provided for @memorialMoveDateLabel.
+  ///
+  /// In it, this message translates to:
+  /// **'Data della perdita'**
+  String get memorialMoveDateLabel;
+
+  /// No description provided for @memorialMoveDateHelp.
+  ///
+  /// In it, this message translates to:
+  /// **'Se non ricordi il giorno esatto, va bene una data indicativa.'**
+  String get memorialMoveDateHelp;
+
+  /// No description provided for @memorialMoveContinue.
+  ///
+  /// In it, this message translates to:
+  /// **'Continua'**
+  String get memorialMoveContinue;
+
+  /// No description provided for @memorialRemindTitle.
+  ///
+  /// In it, this message translates to:
+  /// **'Vuoi che Quokka ti aiuti a ricordare?'**
+  String get memorialRemindTitle;
+
+  /// No description provided for @memorialRemindBody.
+  ///
+  /// In it, this message translates to:
+  /// **'Se ti fa piacere, possiamo mandarti un pensiero in alcuni giorni speciali, con le sue foto. Puoi cambiare idea quando vuoi.'**
+  String get memorialRemindBody;
+
+  /// No description provided for @memorialRemindBirthday.
+  ///
+  /// In it, this message translates to:
+  /// **'Il giorno del compleanno'**
+  String get memorialRemindBirthday;
+
+  /// No description provided for @memorialRemindBirthdayHelp.
+  ///
+  /// In it, this message translates to:
+  /// **'Con la foto profilo e le foto dei compleanni passati.'**
+  String get memorialRemindBirthdayHelp;
+
+  /// No description provided for @memorialRemindWalks.
+  ///
+  /// In it, this message translates to:
+  /// **'Le passeggiate preferite'**
+  String get memorialRemindWalks;
+
+  /// No description provided for @memorialRemindWalksHelp.
+  ///
+  /// In it, this message translates to:
+  /// **'Nel giorno di una passeggiata salvata tra le preferite, con il percorso e le foto di quel giorno.'**
+  String get memorialRemindWalksHelp;
+
+  /// No description provided for @memorialRemindPhotos.
+  ///
+  /// In it, this message translates to:
+  /// **'Le foto di questo giorno'**
+  String get memorialRemindPhotos;
+
+  /// No description provided for @memorialRemindPhotosHelp.
+  ///
+  /// In it, this message translates to:
+  /// **'Quando ci sono foto scattate in quel giorno negli anni passati. Al massimo una volta a settimana.'**
+  String get memorialRemindPhotosHelp;
+
+  /// No description provided for @memorialMoveConfirm.
+  ///
+  /// In it, this message translates to:
+  /// **'Sposta nei ricordi'**
+  String get memorialMoveConfirm;
+
+  /// No description provided for @memorialMoveDone.
+  ///
+  /// In it, this message translates to:
+  /// **'{name} è ora nei Ricordi.'**
+  String memorialMoveDone(String name);
+
+  /// No description provided for @memorialUndo.
+  ///
+  /// In it, this message translates to:
+  /// **'Annulla'**
+  String get memorialUndo;
+
+  /// No description provided for @memorialPagePhotos.
+  ///
+  /// In it, this message translates to:
+  /// **'Foto'**
+  String get memorialPagePhotos;
+
+  /// No description provided for @memorialPageNoPhotos.
+  ///
+  /// In it, this message translates to:
+  /// **'Non ci sono ancora foto.'**
+  String get memorialPageNoPhotos;
+
+  /// No description provided for @memorialPageOpenGallery.
+  ///
+  /// In it, this message translates to:
+  /// **'Tutte le foto'**
+  String get memorialPageOpenGallery;
+
+  /// No description provided for @memorialPageWalks.
+  ///
+  /// In it, this message translates to:
+  /// **'Passeggiate preferite'**
+  String get memorialPageWalks;
+
+  /// No description provided for @memorialPageWalksTogether.
+  ///
+  /// In it, this message translates to:
+  /// **'{count, plural, =1{Insieme avete fatto 1 passeggiata, {distance}.} other{Insieme avete fatto {count} passeggiate, {distance}.}}'**
+  String memorialPageWalksTogether(int count, String distance);
+
+  /// No description provided for @memorialPageReminders.
+  ///
+  /// In it, this message translates to:
+  /// **'Promemoria del ricordo'**
+  String get memorialPageReminders;
+
+  /// No description provided for @memorialPageRecords.
+  ///
+  /// In it, this message translates to:
+  /// **'Documenti e storia clinica'**
+  String get memorialPageRecords;
+
+  /// No description provided for @memorialPageProfile.
+  ///
+  /// In it, this message translates to:
+  /// **'Scheda'**
+  String get memorialPageProfile;
+
+  /// No description provided for @memorialPageChipNote.
+  ///
+  /// In it, this message translates to:
+  /// **'{sex, select, male{Se {name} era iscritto all\'anagrafe degli animali d\'affezione, di solito il decesso va comunicato: il tuo veterinario o l\'ufficio della tua ASL o del Comune ti dicono come e entro quando.} female{Se {name} era iscritta all\'anagrafe degli animali d\'affezione, di solito il decesso va comunicato: il tuo veterinario o l\'ufficio della tua ASL o del Comune ti dicono come e entro quando.} other{Se il microchip di {name} era iscritto all\'anagrafe degli animali d\'affezione, di solito il decesso va comunicato: il tuo veterinario o l\'ufficio della tua ASL o del Comune ti dicono come e entro quando.}}'**
+  String memorialPageChipNote(String name, String sex);
+
+  /// No description provided for @memorialPageBirthdayPhotos.
+  ///
+  /// In it, this message translates to:
+  /// **'Le foto dei suoi compleanni'**
+  String get memorialPageBirthdayPhotos;
+
+  /// No description provided for @memorialPageNoBirthdayPhotos.
+  ///
+  /// In it, this message translates to:
+  /// **'Non ci sono ancora foto dei compleanni passati.'**
+  String get memorialPageNoBirthdayPhotos;
+
+  /// No description provided for @memorialPageOnThisDay.
+  ///
+  /// In it, this message translates to:
+  /// **'Foto di questo giorno'**
+  String get memorialPageOnThisDay;
+
+  /// No description provided for @memorialPageWalkPhotos.
+  ///
+  /// In it, this message translates to:
+  /// **'Le foto di quella passeggiata'**
+  String get memorialPageWalkPhotos;
+
+  /// No description provided for @memorialPageOpenWalk.
+  ///
+  /// In it, this message translates to:
+  /// **'Rivedi il percorso'**
+  String get memorialPageOpenWalk;
+
+  /// No description provided for @memorialRestoreAction.
+  ///
+  /// In it, this message translates to:
+  /// **'Riporta tra gli animali'**
+  String get memorialRestoreAction;
+
+  /// No description provided for @memorialRestoreTitle.
+  ///
+  /// In it, this message translates to:
+  /// **'Riportare {name} tra gli animali?'**
+  String memorialRestoreTitle(String name);
+
+  /// No description provided for @memorialRestoreBody.
+  ///
+  /// In it, this message translates to:
+  /// **'Se lo spostamento è stato un errore, {name} torna nella lista Animali con tutti i suoi dati. Tornano attivi anche i promemoria e i farmaci che erano in corso: controllali, alcune date potrebbero essere già passate.'**
+  String memorialRestoreBody(String name);
+
+  /// No description provided for @memorialRestoreConfirm.
+  ///
+  /// In it, this message translates to:
+  /// **'Riporta tra gli animali'**
+  String get memorialRestoreConfirm;
+
+  /// No description provided for @memorialRestoreDone.
+  ///
+  /// In it, this message translates to:
+  /// **'{name} è di nuovo tra i tuoi animali.'**
+  String memorialRestoreDone(String name);
+
+  /// No description provided for @memorialSaveFailed.
+  ///
+  /// In it, this message translates to:
+  /// **'Non sono riuscito a salvare. Controlla la connessione e riprova.'**
+  String get memorialSaveFailed;
+
+  /// No description provided for @petsMemoriesRemoveAction.
+  ///
+  /// In it, this message translates to:
+  /// **'Elimina per sempre'**
+  String get petsMemoriesRemoveAction;
+
+  /// No description provided for @notificationsMemoryBirthdayTitle.
+  ///
+  /// In it, this message translates to:
+  /// **'Oggi è il compleanno di {petName}'**
+  String notificationsMemoryBirthdayTitle(String petName);
+
+  /// No description provided for @notificationsMemoryBirthdayBody.
+  ///
+  /// In it, this message translates to:
+  /// **'Se ti va, le sue foto sono qui.'**
+  String get notificationsMemoryBirthdayBody;
+
+  /// No description provided for @notificationsMemoryWalkTitle.
+  ///
+  /// In it, this message translates to:
+  /// **'{count, plural, =1{Un anno fa, una passeggiata con {petName}} other{{count} anni fa, una passeggiata con {petName}}}'**
+  String notificationsMemoryWalkTitle(int count, String petName);
+
+  /// No description provided for @notificationsMemoryWalkBody.
+  ///
+  /// In it, this message translates to:
+  /// **'Una delle vostre preferite. Se ti va, puoi rivederla.'**
+  String get notificationsMemoryWalkBody;
+
+  /// No description provided for @notificationsMemoryPhotosTitle.
+  ///
+  /// In it, this message translates to:
+  /// **'{count, plural, =1{Un anno fa, con {petName}} other{{count} anni fa, con {petName}}}'**
+  String notificationsMemoryPhotosTitle(int count, String petName);
+
+  /// No description provided for @notificationsMemoryPhotosBody.
+  ///
+  /// In it, this message translates to:
+  /// **'Ci sono foto di questo giorno. Se ti va, sono qui.'**
+  String get notificationsMemoryPhotosBody;
+
+  /// No description provided for @notificationsChannelMemoriesName.
+  ///
+  /// In it, this message translates to:
+  /// **'Ricordi'**
+  String get notificationsChannelMemoriesName;
+
+  /// No description provided for @notificationsChannelMemoriesDescription.
+  ///
+  /// In it, this message translates to:
+  /// **'Un pensiero nei giorni speciali degli animali nei Ricordi, solo se lo hai scelto.'**
+  String get notificationsChannelMemoriesDescription;
 
   /// No description provided for @petsMediaGalleryTitle.
   ///
@@ -12252,9 +12516,8 @@ AppLocalizations lookupAppLocalizations(Locale locale) {
   }
 
   throw FlutterError(
-    'AppLocalizations.delegate failed to load unsupported locale "$locale". This is likely '
-    'an issue with the localizations generation tool. Please file an issue '
-    'on GitHub with a reproducible sample app and the gen-l10n configuration '
-    'that was used.',
-  );
+      'AppLocalizations.delegate failed to load unsupported locale "$locale". This is likely '
+      'an issue with the localizations generation tool. Please file an issue '
+      'on GitHub with a reproducible sample app and the gen-l10n configuration '
+      'that was used.');
 }

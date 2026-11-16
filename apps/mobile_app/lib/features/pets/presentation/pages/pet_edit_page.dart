@@ -5,6 +5,7 @@ import '../../../../design_system/tokens/app_radii.dart';
 import '../../../../design_system/tokens/app_spacing.dart';
 import '../../../../l10n/l10n.dart';
 import '../../../monitoring/data/weight_measurements_repository.dart';
+import '../../application/memorial_service.dart';
 import '../../data/pet_demo_store.dart';
 import '../../data/pet_photo_repository.dart';
 import '../../domain/pet_format.dart';
@@ -13,6 +14,7 @@ import '../widgets/pet_avatar.dart';
 import '../widgets/pet_profile_form.dart';
 import '../widgets/pets_scaffold.dart';
 import '../widgets/pets_state_views.dart';
+import 'memorial_move_page.dart';
 
 class PetEditPage extends StatelessWidget {
   const PetEditPage({
@@ -76,7 +78,8 @@ class _EditForm extends StatelessWidget {
       title: context.l10n.petsEditFormTitle,
       initialPet: pet,
       submitLabel: context.l10n.petsEditSubmit,
-      footerActions: _PetLifecycleActions(pet: pet),
+      // A pet in Ricordi is restored or deleted from its memorial page.
+      footerActions: pet.isMemorial ? null : _PetLifecycleActions(pet: pet),
       onSubmit: (draft) async {
         final raw = draft.photoBytes;
         final String? newPhotoPath;
@@ -176,31 +179,29 @@ class _PetLifecycleActions extends StatelessWidget {
       ..pop();
   }
 
+  /// The two-step flow (memorial_move_page.dart); then back to the Animali
+  /// list with "Annulla" for 8 seconds, for the mistaken tap.
   Future<void> _moveToMemories(BuildContext context) async {
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (dialogContext) => AlertDialog(
-        backgroundColor: AppColors.surface,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadii.large)),
-        title: Text(context.l10n.petsEditMemorialTitle),
-        content: Text(context.l10n.petsEditMemorialMessage(pet.name)),
-        actions: [
-          TextButton(onPressed: () => Navigator.of(dialogContext).pop(false), child: Text(context.l10n.commonCancel)),
-          FilledButton(
-            onPressed: () => Navigator.of(dialogContext).pop(true),
-            child: Text(context.l10n.petsEditMemorialConfirm),
-          ),
-        ],
-      ),
+    final navigator = Navigator.of(context);
+    final messenger = ScaffoldMessenger.of(context);
+    final moved = await navigator.push<PetProfile>(
+      MaterialPageRoute(builder: (_) => MemorialMovePage(pet: pet)),
     );
-    if (confirmed != true) return;
-
-    final updated = pet.copyWith(isMemorial: true, memorialDate: DateTime.now());
-    await PetDemoStore.instance.upsert(updated);
-    if (!context.mounted) return;
-    Navigator.of(context)
+    if (moved == null || !context.mounted) return;
+    final l10n = context.l10n;
+    navigator
       ..pop()
       ..pop();
+    messenger.showSnackBar(
+      SnackBar(
+        duration: const Duration(seconds: 8),
+        content: Text(l10n.memorialMoveDone(moved.name)),
+        action: SnackBarAction(
+          label: l10n.memorialUndo,
+          onPressed: () => MemorialService().restore(moved),
+        ),
+      ),
+    );
   }
 
   @override

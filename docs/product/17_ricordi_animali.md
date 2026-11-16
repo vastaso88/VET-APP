@@ -1,7 +1,9 @@
 # 17 — Ricordi: quando un animale non c'è più
 
-Stato: **proposta, in attesa di approvazione del proprietario** (16/11/2026).
-Nessuna riga di codice è stata scritta: si costruisce solo dopo il via.
+Stato: **approvato dal proprietario il 16/11/2026** («per il resto approvo
+tutto»; sulle 4 domande del §12 valgono le proposte) e **costruito** nel ramo
+della sessione «Ricordi» (build 40). Differenze rispetto alla proposta, decise
+in costruzione e spiegate al §13.
 
 Richiesta del proprietario: «Sposta nei ricordi: l'animale deceduto viene
 spostato in una parte dedicata dentro Animali, non di immediato accesso (in
@@ -462,3 +464,25 @@ nessun consenso nuovo, nessun avviso legale speciale.
    sposto dentro la pagina del ricordo? *Consiglio: restano dove sono — la
    chat è di un'altra sessione e spostarle è un lavoro a parte.*
 4. **Testi del §9**: vanno bene così? Ogni parola si può cambiare.
+
+---
+
+## 13. Note di costruzione (16/11/2026)
+
+- **Correggere la data della perdita**: si tocca la riga delle date nella
+  pagina del ricordo (non da «Modifica», che per un animale nei Ricordi non
+  mostra più «Sposta nei ricordi» né «Elimina»).
+- **«Annulla» degli 8 secondi**: riporta l'animale come prima, ma il consenso
+  alla cartella clinica resta spento (come per «Riporta tra gli animali»).
+- **Settimana delle foto**: «al massimo una volta a settimana» vale per la
+  settimana da lunedì a domenica; se quel giorno c'è già il compleanno o una
+  passeggiata, la settimana è comunque «usata».
+- **Foto dei compleanni**: quelle scattate fino a 3 giorni prima o dopo il
+  compleanno, negli anni passati; contano solo le foto con data di scatto.
+- **Notifiche-ricordo**: canale Android «Ricordi», senza comparsa sopra lo
+  schermo; nessuna foto né luogo nel testo.
+- **Notifiche già comparse**: quelle di quell'animale vengono tolte dalla
+  tendina subito dopo lo spostamento.
+- **Passaggio 2 del flusso**: ogni interruttore compare solo se può
+  funzionare (compleanno con il giorno di nascita; passeggiate con almeno una
+  preferita; foto con almeno una foto datata).
