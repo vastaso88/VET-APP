@@ -1113,16 +1113,6 @@
   },
   "petsEditDeleteConfirm": "Remove",
   "petsEditDeleteAction": "Remove profile",
-  "petsEditMemorialTitle": "Move to memories?",
-  "petsEditMemorialMessage": "\"{name}\" will leave the Pets list and be kept in Memories with their profile and photos.",
-  "@petsEditMemorialMessage": {
-    "placeholders": {
-      "name": {
-        "type": "String"
-      }
-    }
-  },
-  "petsEditMemorialConfirm": "Move",
   "petsEditMemorialAction": "Move to memories",
   "petsFormAddSpecies": "Add species",
   "petsFormIdentityColor": "Identification color",
@@ -1381,7 +1371,6 @@
   "petsValueDogSizeLarge": "Large",
   "petsValueDogSizeGiant": "Giant",
   "petsListTitle": "Pets",
-  "petsListMemoriesTooltip": "Memories",
   "petsListLoading": "Loading pet list…",
   "petsListErrorTitle": "Pets unavailable",
   "petsListErrorDefault": "Pet profiles cannot be loaded right now.",
@@ -1389,8 +1378,15 @@
   "petsListEmptySubtitle": "Create the first profile: the more complete it is, the better my answers.",
   "petsListEmptyAction": "Create pet",
   "petsListFilterEmpty": "No pets match this filter.",
-  "petsMemoriesRemoveTitle": "Remove permanently?",
-  "petsMemoriesRemoveBody": "The memory of \"{name}\" will be deleted and cannot be recovered.",
+  "petsMemoriesRemoveTitle": "Delete {name}'s memory forever?",
+  "@petsMemoriesRemoveTitle": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "petsMemoriesRemoveBody": "{name}'s profile, photos, walks, documents and reminders will be deleted and cannot be recovered. If you want to keep a copy, download the photos and documents first.",
   "@petsMemoriesRemoveBody": {
     "placeholders": {
       "name": {
@@ -1398,11 +1394,11 @@
       }
     }
   },
-  "petsMemoriesRemoveConfirm": "Remove",
+  "petsMemoriesRemoveConfirm": "Delete forever",
   "petsMemoriesTitle": "Memories",
-  "petsMemoriesSubtitle": "Profiles of the pets that shared your journey.",
-  "petsMemoriesEmpty": "No memories have been saved yet.",
-  "petsMemoriesWithUsUntil": "With us until {date}",
+  "petsMemoriesSubtitle": "The animals who shared your path.",
+  "petsMemoriesEmpty": "There are no memories here yet.",
+  "petsMemoriesWithUsUntil": "Until {date}",
   "@petsMemoriesWithUsUntil": {
     "placeholders": {
       "date": {
@@ -1410,7 +1406,7 @@
       }
     }
   },
-  "petsMemoriesWithUsRange": "With us from {from} to {to}",
+  "petsMemoriesWithUsRange": "From {from} to {to}",
   "@petsMemoriesWithUsRange": {
     "placeholders": {
       "from": {
@@ -1421,7 +1417,225 @@
       }
     }
   },
-  "petsMemoriesComingSoon": "Coming soon: your best moments together, such as longest walks and milestones, collected here.",
+  "petsListMemoriesRowSubtitle": "The animals who shared your path",
+  "petsListEmptyOnlyMemoriesTitle": "No pets in the list",
+  "petsListEmptyOnlyMemoriesSubtitle": "Whenever you wish, you can add a new profile.",
+  "petsListEmptyOnlyMemoriesAction": "Add a pet",
+  "memorialMoveSorry": "We are so sorry about {name}.",
+  "@memorialMoveSorry": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "memorialMoveBody": "Here you can keep their memory. {name} will leave the Pets list and we will no longer send you reminders, medicine alerts or greetings for {name}. Profile, photos, walks and documents stay in your account until you delete them: you can look at them and download them whenever you want.",
+  "@memorialMoveBody": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "memorialMoveDateLabel": "Date of the loss",
+  "memorialMoveDateHelp": "If you don't remember the exact day, an approximate date is fine.",
+  "memorialMoveContinue": "Continue",
+  "memorialRemindTitle": "Would you like Quokka to help you remember?",
+  "memorialRemindBody": "If you'd like, we can send you a thought on a few special days, with their photos. You can change your mind at any time.",
+  "memorialRemindBirthday": "On the birthday",
+  "memorialRemindBirthdayHelp": "With the profile photo and photos from past birthdays.",
+  "memorialRemindWalks": "Favorite walks",
+  "memorialRemindWalksHelp": "On the day of a walk saved as a favorite, with the route and that day's photos.",
+  "memorialRemindPhotos": "Photos from this day",
+  "memorialRemindPhotosHelp": "When there are photos taken on that day in past years. At most once a week.",
+  "memorialMoveConfirm": "Move to Memories",
+  "memorialMoveDone": "{name} is now in Memories.",
+  "@memorialMoveDone": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "memorialUndo": "Undo",
+  "memorialPagePhotos": "Photos",
+  "memorialPageNoPhotos": "There are no photos yet.",
+  "memorialPageOpenGallery": "All photos",
+  "memorialPageWalks": "Favorite walks",
+  "memorialPageWalksTogether": "{count, plural, =1{Together you went on 1 walk, {distance}.} other{Together you went on {count} walks, {distance}.}}",
+  "@memorialPageWalksTogether": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "distance": {
+        "type": "String"
+      }
+    }
+  },
+  "memorialPageReminders": "Memory reminders",
+  "memorialPageRecords": "Documents and medical history",
+  "memorialPageProfile": "Profile",
+  "memorialPageChipNote": "{sex, select, other{If {name}'s microchip was registered with a pet registry, the death usually has to be reported: your vet or the body that keeps the registry in your country (in Italy, the ASL or the municipality) can tell you how and by when.}}",
+  "@memorialPageChipNote": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "sex": {
+        "type": "String"
+      }
+    }
+  },
+  "memorialPageBirthdayPhotos": "Photos from their birthdays",
+  "memorialPageNoBirthdayPhotos": "There are no photos from past birthdays yet.",
+  "memorialPageOnThisDay": "Photos from this day",
+  "memorialPageWalkPhotos": "Photos from that walk",
+  "memorialPageOpenWalk": "See the route again",
+  "memorialRestoreShortcut": "{sex, select, other{Moved by mistake? Bring back to Pets}}",
+  "@memorialRestoreShortcut": {
+    "placeholders": {
+      "sex": {
+        "type": "String"
+      }
+    }
+  },
+  "memorialReadOnlyNote": "Everything here stays as it was: you can view, download and send, but not change. If something needs changing, first bring {name} back to Pets.",
+  "@memorialReadOnlyNote": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "memorialChatReadOnly": "{name} is in Memories: you can reread this chat, but no new messages can be written.",
+  "@memorialChatReadOnly": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "memorialRestoreTitle": "Bring {name} back to Pets?",
+  "@memorialRestoreTitle": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "memorialRestoreBody": "If the move was a mistake, {name} goes back to the Pets list with all their data. The reminders and medicines that were in progress become active again too: check them, some dates may already have passed.",
+  "@memorialRestoreBody": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "memorialRestoreConfirm": "Bring back",
+  "memorialRestoreDone": "{name} is back among your pets.",
+  "@memorialRestoreDone": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "billingPetsMemorialNote": "Pets in Memories don't count.",
+  "memorialRestoreBlockedUpgrade": "{name} stays in Memories: nothing is lost. To bring {name} back to your pets, you need a free spot: your plan allows {limit} and all of them are taken. You can free up a spot or switch to the {plan} plan in Settings → Subscription and payments.",
+  "@memorialRestoreBlockedUpgrade": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "limit": {
+        "type": "int"
+      },
+      "plan": {
+        "type": "String"
+      }
+    }
+  },
+  "memorialRestoreBlockedFull": "{name} stays in Memories: nothing is lost. To bring {name} back to your pets, you need a free spot: your plan allows {limit} and all of them are taken. To free up a spot, move a pet who is no longer with you to Memories, or delete one.",
+  "@memorialRestoreBlockedFull": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "limit": {
+        "type": "int"
+      }
+    }
+  },
+  "memorialMoveReturnNeedsPlace": "If you ever want to bring {name} back to your pets, you will need a free spot in your plan.",
+  "@memorialMoveReturnNeedsPlace": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "memorialMoveReturnNeedsPlan": "If you ever want to bring {name} back to your pets, you will need to choose a plan with a free spot.",
+  "@memorialMoveReturnNeedsPlan": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "billingPlanLimitPets": "Your plan has reached its maximum number of pets. Pets in Memories, the ones who are no longer with you, don't count. Switch to a higher plan in Settings.",
+  "memorialMoveBlockedFull": "For now {name} stays among your pets, with all their data: nothing is lost. Memories has room for {limit} pets and every spot is taken. You can free up a spot with “Delete forever” on a memory's page, only if and when you feel ready. In the meantime, if {name}'s reminders weigh on you, you can delete them in Reminders.",
+  "@memorialMoveBlockedFull": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "limit": {
+        "type": "int"
+      }
+    }
+  },
+  "billingPlanLimitMemorials": "There is no more room in Memories. You can free up a spot with “Delete forever” on a memory's page.",
+  "billingPaywallMoveToMemories": "Is a pet no longer with you? Move them to Memories",
+  "memorialChoosePrompt": "Which pet is no longer with you?",
+  "memorialChooseEmpty": "There are no pets to move to Memories.",
+  "memorialSaveFailed": "I couldn't save. Check your connection and try again.",
+  "petsMemoriesRemoveAction": "Delete forever",
+  "notificationsMemoryBirthdayTitle": "Today is {petName}'s birthday",
+  "@notificationsMemoryBirthdayTitle": {
+    "placeholders": {
+      "petName": {
+        "type": "String"
+      }
+    }
+  },
+  "notificationsMemoryBirthdayBody": "If you like, their photos are here.",
+  "notificationsMemoryWalkTitle": "{count, plural, =1{A year ago, a walk with {petName}} other{{count} years ago, a walk with {petName}}}",
+  "@notificationsMemoryWalkTitle": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "petName": {
+        "type": "String"
+      }
+    }
+  },
+  "notificationsMemoryWalkBody": "One of your favorites. If you like, you can see it again.",
+  "notificationsMemoryPhotosTitle": "{count, plural, =1{A year ago, with {petName}} other{{count} years ago, with {petName}}}",
+  "@notificationsMemoryPhotosTitle": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "petName": {
+        "type": "String"
+      }
+    }
+  },
+  "notificationsMemoryPhotosBody": "There are photos from this day. If you like, they are here.",
+  "notificationsChannelMemoriesName": "Memories",
+  "notificationsChannelMemoriesDescription": "A thought on the special days of the animals in Memories, only if you chose it.",
   "petsMediaGalleryTitle": "Gallery",
   "petsMediaFoldersLoading": "Loading folders…",
   "petsMediaFoldersEmpty": "Add a pet to create their photo folder.",

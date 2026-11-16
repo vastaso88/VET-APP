@@ -46,10 +46,12 @@ Future<void> showRecordActions(
   BuildContext context, {
   required MedicalRecordEntry record,
   required VoidCallback onChanged,
+  bool readOnly = false,
 }) {
   // What the title suggests, offered only for an entry still filed as a
   // plain document and only as a tap: never applied on its own.
-  final suggestion = record.category == RecordCategory.document
+  // A pet in Ricordi: open and send only (docs/product/17_ricordi_animali.md).
+  final suggestion = record.category == RecordCategory.document && !readOnly
       ? suggestCategoryFromTitle(record.title)
       : null;
   final hasFile = recordHasFile(record);
@@ -101,33 +103,35 @@ Future<void> showRecordActions(
                   _classifyAs(context, record, suggestion, onChanged);
                 },
               ),
-            ListTile(
-              leading: const Icon(Icons.tune_rounded),
-              title: Text(sheetContext.l10n.medActionEditDetails),
-              onTap: () {
-                Navigator.of(sheetContext).pop();
-                _editDetails(context, record, onChanged);
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.drive_file_rename_outline_rounded),
-              title: Text(sheetContext.l10n.medicalActionRename),
-              onTap: () {
-                Navigator.of(sheetContext).pop();
-                renameRecordWithDialog(context,
-                    record: record, onRenamed: onChanged);
-              },
-            ),
-            ListTile(
-              leading:
-                  const Icon(Icons.delete_outline, color: AppColors.danger),
-              title: Text(sheetContext.l10n.commonDelete),
-              onTap: () {
-                Navigator.of(sheetContext).pop();
-                deleteRecordWithConfirm(context,
-                    record: record, onDeleted: onChanged);
-              },
-            ),
+            if (!readOnly) ...[
+              ListTile(
+                leading: const Icon(Icons.tune_rounded),
+                title: Text(sheetContext.l10n.medActionEditDetails),
+                onTap: () {
+                  Navigator.of(sheetContext).pop();
+                  _editDetails(context, record, onChanged);
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.drive_file_rename_outline_rounded),
+                title: Text(sheetContext.l10n.medicalActionRename),
+                onTap: () {
+                  Navigator.of(sheetContext).pop();
+                  renameRecordWithDialog(context,
+                      record: record, onRenamed: onChanged);
+                },
+              ),
+              ListTile(
+                leading:
+                    const Icon(Icons.delete_outline, color: AppColors.danger),
+                title: Text(sheetContext.l10n.commonDelete),
+                onTap: () {
+                  Navigator.of(sheetContext).pop();
+                  deleteRecordWithConfirm(context,
+                      record: record, onDeleted: onChanged);
+                },
+              ),
+            ],
           ],
         ),
       ),

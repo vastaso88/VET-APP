@@ -97,6 +97,10 @@ class PetProfile(BaseModel):
     medical_record_consent: MedicalRecordConsentRecord | None = None
     habitat: HabitatDetails | None = None
     aquarium_stock: list[FishStock] = Field(default_factory=list)
+    # Ricordi (2026-11-16): written only by the app (pet_demo_store.dart),
+    # read here so nothing new is added about a pet that passed away. Never
+    # written by the backend (`exclude`), so a save can't bring a pet back.
+    is_memorial: bool = Field(default=False, exclude=True)
 
     @model_validator(mode="before")
     @classmethod

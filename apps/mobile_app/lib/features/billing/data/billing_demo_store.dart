@@ -123,6 +123,14 @@ class BillingDemoStore extends ChangeNotifier {
 
   bool get isDeveloperAccount => _subscriptionStatus?.isDeveloper ?? false;
 
+  /// What the account may do right now, as the backend reports it: null for a
+  /// developer account (no limits) and until the first status is loaded.
+  PlanLimits? get currentLimits => _subscriptionStatus?.limits;
+
+  /// How many pets may be kept in Ricordi, as the backend reports it (null until
+  /// the first status is loaded: the server then decides).
+  int? get memorialPetsMax => _subscriptionStatus?.maxMemorialPets;
+
   /// False once the trial has expired and no plan has been chosen (and the
   /// account isn't on the developer allowlist) — the paywall gate reads this.
   bool get hasAccess => _subscriptionStatus?.hasAccess ?? true;

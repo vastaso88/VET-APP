@@ -2,6 +2,7 @@ from pydantic import BaseModel
 from pydantic import ValidationError as PydanticValidationError
 
 from packages.core.application.ports.pet_profile_repository import PetProfileRepository
+from packages.core.domain.pet_profile.memorial import ensure_not_in_memories
 from packages.core.domain.pet_profile.models import FishStock, HabitatDetails, PetProfile
 from packages.core.domain.pet_profile.validation import validate_pet_fields
 from packages.shared.errors.base import ValidationError
@@ -47,6 +48,7 @@ class UpdatePetProfileService:
         pet_profile = self._repository.get(data.pet_id)
         if pet_profile is None or pet_profile.owner_id != data.owner_id:
             raise ValidationError("pet_profile not found")
+        ensure_not_in_memories(pet_profile)
 
         # Real-world finding: `data.model_dump()` recursively serializes
         # nested models (habitat, aquarium_stock) into plain dicts/lists of

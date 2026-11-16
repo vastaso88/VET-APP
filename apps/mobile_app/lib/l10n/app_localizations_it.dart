@@ -2135,17 +2135,6 @@ class AppLocalizationsIt extends AppLocalizations {
   String get petsEditDeleteAction => 'Rimuovi profilo';
 
   @override
-  String get petsEditMemorialTitle => 'Spostare nei ricordi?';
-
-  @override
-  String petsEditMemorialMessage(String name) {
-    return '\"$name\" uscirà dalla lista Animali e sarà conservato nella sezione Ricordi, con il suo profilo e le sue foto.';
-  }
-
-  @override
-  String get petsEditMemorialConfirm => 'Sposta';
-
-  @override
   String get petsEditMemorialAction => 'Sposta nei ricordi';
 
   @override
@@ -2645,9 +2634,6 @@ class AppLocalizationsIt extends AppLocalizations {
   String get petsListTitle => 'Animali';
 
   @override
-  String get petsListMemoriesTooltip => 'Ricordi';
-
-  @override
   String get petsListLoading => 'Carico la lista pet...';
 
   @override
@@ -2671,39 +2657,314 @@ class AppLocalizationsIt extends AppLocalizations {
   String get petsListFilterEmpty => 'Nessun pet per questo filtro.';
 
   @override
-  String get petsMemoriesRemoveTitle => 'Rimuovere definitivamente?';
-
-  @override
-  String petsMemoriesRemoveBody(String name) {
-    return 'Il ricordo di \"$name\" verrà eliminato, senza possibilità di recupero.';
+  String petsMemoriesRemoveTitle(String name) {
+    return 'Eliminare per sempre il ricordo di $name?';
   }
 
   @override
-  String get petsMemoriesRemoveConfirm => 'Rimuovi';
+  String petsMemoriesRemoveBody(String name) {
+    return 'Profilo, foto, passeggiate, documenti e promemoria di $name verranno cancellati e non si potranno recuperare. Se vuoi tenerne una copia, scarica prima foto e documenti.';
+  }
+
+  @override
+  String get petsMemoriesRemoveConfirm => 'Elimina per sempre';
 
   @override
   String get petsMemoriesTitle => 'Ricordi';
 
   @override
   String get petsMemoriesSubtitle =>
-      'I profili dei pet che hanno condiviso la vostra strada.';
+      'Gli animali che hanno condiviso la tua strada.';
 
   @override
-  String get petsMemoriesEmpty => 'Nessun ricordo conservato ancora.';
+  String get petsMemoriesEmpty => 'Qui non c\'è ancora nessun ricordo.';
 
   @override
   String petsMemoriesWithUsUntil(String date) {
-    return 'Con noi fino al $date';
+    return 'Fino al $date';
   }
 
   @override
   String petsMemoriesWithUsRange(String from, String to) {
-    return 'Con noi dal $from al $to';
+    return 'Dal $from al $to';
   }
 
   @override
-  String get petsMemoriesComingSoon =>
-      'Presto: i vostri momenti più belli insieme, come le passeggiate più lunghe o i traguardi raggiunti, raccolti qui.';
+  String get petsListMemoriesRowSubtitle =>
+      'Gli animali che hanno condiviso la tua strada';
+
+  @override
+  String get petsListEmptyOnlyMemoriesTitle => 'Nessun animale nella lista';
+
+  @override
+  String get petsListEmptyOnlyMemoriesSubtitle =>
+      'Quando vorrai, potrai aggiungere un nuovo profilo.';
+
+  @override
+  String get petsListEmptyOnlyMemoriesAction => 'Aggiungi un animale';
+
+  @override
+  String memorialMoveSorry(String name) {
+    return 'Ci dispiace tanto per $name.';
+  }
+
+  @override
+  String memorialMoveBody(String name) {
+    return 'Qui puoi custodire il suo ricordo. $name lascerà la lista Animali e non ti manderemo più promemoria, farmaci o auguri per $name. Profilo, foto, passeggiate e documenti restano nel tuo account finché non li elimini: puoi rivederli e scaricarli quando vuoi.';
+  }
+
+  @override
+  String get memorialMoveDateLabel => 'Data della perdita';
+
+  @override
+  String get memorialMoveDateHelp =>
+      'Se non ricordi il giorno esatto, va bene una data indicativa.';
+
+  @override
+  String get memorialMoveContinue => 'Continua';
+
+  @override
+  String get memorialRemindTitle => 'Vuoi che Quokka ti aiuti a ricordare?';
+
+  @override
+  String get memorialRemindBody =>
+      'Se ti fa piacere, possiamo mandarti un pensiero in alcuni giorni speciali, con le sue foto. Puoi cambiare idea quando vuoi.';
+
+  @override
+  String get memorialRemindBirthday => 'Il giorno del compleanno';
+
+  @override
+  String get memorialRemindBirthdayHelp =>
+      'Con la foto profilo e le foto dei compleanni passati.';
+
+  @override
+  String get memorialRemindWalks => 'Le passeggiate preferite';
+
+  @override
+  String get memorialRemindWalksHelp =>
+      'Nel giorno di una passeggiata salvata tra le preferite, con il percorso e le foto di quel giorno.';
+
+  @override
+  String get memorialRemindPhotos => 'Le foto di questo giorno';
+
+  @override
+  String get memorialRemindPhotosHelp =>
+      'Quando ci sono foto scattate in quel giorno negli anni passati. Al massimo una volta a settimana.';
+
+  @override
+  String get memorialMoveConfirm => 'Sposta nei ricordi';
+
+  @override
+  String memorialMoveDone(String name) {
+    return '$name è ora nei Ricordi.';
+  }
+
+  @override
+  String get memorialUndo => 'Annulla';
+
+  @override
+  String get memorialPagePhotos => 'Foto';
+
+  @override
+  String get memorialPageNoPhotos => 'Non ci sono ancora foto.';
+
+  @override
+  String get memorialPageOpenGallery => 'Tutte le foto';
+
+  @override
+  String get memorialPageWalks => 'Passeggiate preferite';
+
+  @override
+  String memorialPageWalksTogether(int count, String distance) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Insieme avete fatto $count passeggiate, $distance.',
+      one: 'Insieme avete fatto 1 passeggiata, $distance.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get memorialPageReminders => 'Promemoria del ricordo';
+
+  @override
+  String get memorialPageRecords => 'Documenti e storia clinica';
+
+  @override
+  String get memorialPageProfile => 'Scheda';
+
+  @override
+  String memorialPageChipNote(String name, String sex) {
+    String _temp0 = intl.Intl.selectLogic(
+      sex,
+      {
+        'male':
+            'Se $name era iscritto all\'anagrafe degli animali d\'affezione, di solito il decesso va comunicato: il tuo veterinario o l\'ufficio della tua ASL o del Comune ti dicono come e entro quando.',
+        'female':
+            'Se $name era iscritta all\'anagrafe degli animali d\'affezione, di solito il decesso va comunicato: il tuo veterinario o l\'ufficio della tua ASL o del Comune ti dicono come e entro quando.',
+        'other':
+            'Se il microchip di $name era iscritto all\'anagrafe degli animali d\'affezione, di solito il decesso va comunicato: il tuo veterinario o l\'ufficio della tua ASL o del Comune ti dicono come e entro quando.',
+      },
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get memorialPageBirthdayPhotos => 'Le foto dei suoi compleanni';
+
+  @override
+  String get memorialPageNoBirthdayPhotos =>
+      'Non ci sono ancora foto dei compleanni passati.';
+
+  @override
+  String get memorialPageOnThisDay => 'Foto di questo giorno';
+
+  @override
+  String get memorialPageWalkPhotos => 'Le foto di quella passeggiata';
+
+  @override
+  String get memorialPageOpenWalk => 'Rivedi il percorso';
+
+  @override
+  String memorialRestoreShortcut(String sex) {
+    String _temp0 = intl.Intl.selectLogic(
+      sex,
+      {
+        'female': 'Spostata per errore? Riporta tra gli animali',
+        'other': 'Spostato per errore? Riporta tra gli animali',
+      },
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String memorialReadOnlyNote(String name) {
+    return 'Qui tutto resta com\'era: puoi guardare, scaricare e inviare, non modificare. Se serve cambiare qualcosa, prima riporta $name tra gli animali.';
+  }
+
+  @override
+  String memorialChatReadOnly(String name) {
+    return '$name è nei Ricordi: questa chat resta da rileggere, ma non si scrivono nuovi messaggi.';
+  }
+
+  @override
+  String memorialRestoreTitle(String name) {
+    return 'Riportare $name tra gli animali?';
+  }
+
+  @override
+  String memorialRestoreBody(String name) {
+    return 'Se lo spostamento è stato un errore, $name torna nella lista Animali con tutti i suoi dati. Tornano attivi anche i promemoria e i farmaci che erano in corso: controllali, alcune date potrebbero essere già passate.';
+  }
+
+  @override
+  String get memorialRestoreConfirm => 'Riporta tra gli animali';
+
+  @override
+  String memorialRestoreDone(String name) {
+    return '$name è di nuovo tra i tuoi animali.';
+  }
+
+  @override
+  String get billingPetsMemorialNote => 'Gli animali nei Ricordi non contano.';
+
+  @override
+  String memorialRestoreBlockedUpgrade(String name, int limit, String plan) {
+    return '$name resta nei Ricordi: non si perde niente. Per riportare $name tra gli animali serve un posto libero: il tuo piano ne consente $limit e sono tutti occupati. Puoi liberare un posto oppure passare al piano $plan da Impostazioni → Abbonamento e pagamenti.';
+  }
+
+  @override
+  String memorialRestoreBlockedFull(String name, int limit) {
+    return '$name resta nei Ricordi: non si perde niente. Per riportare $name tra gli animali serve un posto libero: il tuo piano ne consente $limit e sono tutti occupati. Per liberarne uno, sposta nei Ricordi un animale che non c\'è più oppure eliminane uno.';
+  }
+
+  @override
+  String memorialMoveReturnNeedsPlace(String name) {
+    return 'Se un giorno vorrai riportare $name tra gli animali, servirà un posto libero nel tuo piano.';
+  }
+
+  @override
+  String memorialMoveReturnNeedsPlan(String name) {
+    return 'Se un giorno vorrai riportare $name tra gli animali, dovrai scegliere un piano con un posto libero.';
+  }
+
+  @override
+  String get billingPlanLimitPets =>
+      'Il tuo piano ha raggiunto il numero massimo di animali. Gli animali nei Ricordi, cioè quelli che non ci sono più, non contano. Passa a un piano superiore da Impostazioni.';
+
+  @override
+  String memorialMoveBlockedFull(String name, int limit) {
+    return 'Per ora $name resta tra i tuoi animali, con tutti i suoi dati: non si perde niente. Nei Ricordi c\'è posto per $limit animali e adesso è tutto occupato. Un posto si libera con «Elimina per sempre» nella pagina di un ricordo, solo se e quando te la senti. Intanto, se i promemoria di $name ti pesano, puoi eliminarli da Promemoria.';
+  }
+
+  @override
+  String get billingPlanLimitMemorials =>
+      'Nei Ricordi non c\'è più posto. Un posto si libera con «Elimina per sempre» nella pagina di un ricordo.';
+
+  @override
+  String get billingPaywallMoveToMemories =>
+      'Un animale non c\'è più? Spostalo nei Ricordi';
+
+  @override
+  String get memorialChoosePrompt => 'Quale animale non c\'è più?';
+
+  @override
+  String get memorialChooseEmpty =>
+      'Non ci sono animali da spostare nei Ricordi.';
+
+  @override
+  String get memorialSaveFailed =>
+      'Non sono riuscito a salvare. Controlla la connessione e riprova.';
+
+  @override
+  String get petsMemoriesRemoveAction => 'Elimina per sempre';
+
+  @override
+  String notificationsMemoryBirthdayTitle(String petName) {
+    return 'Oggi è il compleanno di $petName';
+  }
+
+  @override
+  String get notificationsMemoryBirthdayBody =>
+      'Se ti va, le sue foto sono qui.';
+
+  @override
+  String notificationsMemoryWalkTitle(int count, String petName) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count anni fa, una passeggiata con $petName',
+      one: 'Un anno fa, una passeggiata con $petName',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get notificationsMemoryWalkBody =>
+      'Una delle vostre preferite. Se ti va, puoi rivederla.';
+
+  @override
+  String notificationsMemoryPhotosTitle(int count, String petName) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count anni fa, con $petName',
+      one: 'Un anno fa, con $petName',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get notificationsMemoryPhotosBody =>
+      'Ci sono foto di questo giorno. Se ti va, sono qui.';
+
+  @override
+  String get notificationsChannelMemoriesName => 'Ricordi';
+
+  @override
+  String get notificationsChannelMemoriesDescription =>
+      'Un pensiero nei giorni speciali degli animali nei Ricordi, solo se lo hai scelto.';
 
   @override
   String get petsMediaGalleryTitle => 'Galleria';

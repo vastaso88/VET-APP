@@ -60,7 +60,12 @@ class CreatePetProfileService:
         limits = self._owner_limits(data.owner_id, data.owner_email)
         if limits is None:
             return
-        if len(self._repository.list_by_owner(data.owner_id)) >= limits.max_pets:
+        # Only the active pets take a place of the plan: a pet in Ricordi does not
+        # (owner decision 2026-11-16; the same rule is in plan_access_rules.sql).
+        active = [
+            pet for pet in self._repository.list_by_owner(data.owner_id) if not pet.is_memorial
+        ]
+        if len(active) >= limits.max_pets:
             raise PlanLimitError(
                 "pets",
                 limit=limits.max_pets,

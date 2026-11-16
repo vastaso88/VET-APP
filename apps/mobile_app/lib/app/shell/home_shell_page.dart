@@ -19,6 +19,7 @@ import '../../features/dog_walks/presentation/widgets/walk_control_sheet.dart';
 import '../../features/home/presentation/pages/home_dashboard_page.dart';
 import '../../features/pets/data/pet_demo_store.dart';
 import '../../features/pets/pets.dart';
+import '../../features/pets/presentation/pages/pet_memorial_page.dart';
 import '../../features/settings/presentation/pages/settings_page.dart';
 import '../../l10n/l10n.dart';
 import '../../features/notifications/application/notification_taps.dart';
@@ -61,6 +62,7 @@ class _HomeShellPageState extends State<HomeShellPage> {
     super.initState();
     HomeShellNavigation._requests.addListener(_onTabRequested);
     NotificationTaps.instance.pendingReminderId.addListener(_askAboutTappedReminder);
+    NotificationTaps.instance.pendingMemory.addListener(_openTappedMemory);
     // Back from the background: a reminder may have fallen due meanwhile.
     _lifecycle = AppLifecycleListener(onResume: () {
       if (_ready) unawaited(ReminderCompletionPrompter.instance.checkDue());
@@ -79,6 +81,7 @@ class _HomeShellPageState extends State<HomeShellPage> {
         // A notification tap that launched the app, then the reminders that
         // fell due while it was closed.
         _askAboutTappedReminder();
+        _openTappedMemory();
         unawaited(ReminderCompletionPrompter.instance.checkDue().whenComplete(_askNotificationPermission));
       });
     });
@@ -91,7 +94,7 @@ class _HomeShellPageState extends State<HomeShellPage> {
   /// a sign-in on another phone): ask, once or twice, so they can ring.
   Future<void> _askNotificationPermission() async {
     if (!mounted) return;
-    final reminders = await RemindersRepository().loadReminders();
+    final reminders = await RemindersRepository().loadActiveReminders();
     if (!mounted || reminders.every((reminder) => reminder.isDone)) return;
     await maybeAskReminderNotificationPermission(context);
   }
@@ -103,10 +106,27 @@ class _HomeShellPageState extends State<HomeShellPage> {
     if (id != null) unawaited(ReminderCompletionPrompter.instance.promptFor(id));
   }
 
+  /// The owner tapped a memory notification (Ricordi): that pet's memorial
+  /// page, opened on what the memory was about.
+  void _openTappedMemory() {
+    if (!_ready || !mounted) return;
+    final memory = NotificationTaps.instance.takeMemory();
+    if (memory == null) return;
+    unawaited(() async {
+      await PetDemoStore.instance.ensureHydrated();
+      final pet = PetDemoStore.instance.byId(memory.petId);
+      if (pet == null || !pet.isMemorial || !mounted) return;
+      await Navigator.of(context).push(
+        MaterialPageRoute<void>(builder: (_) => PetMemorialPage(pet: pet, focus: memory)),
+      );
+    }());
+  }
+
   @override
   void dispose() {
     HomeShellNavigation._requests.removeListener(_onTabRequested);
     NotificationTaps.instance.pendingReminderId.removeListener(_askAboutTappedReminder);
+    NotificationTaps.instance.pendingMemory.removeListener(_openTappedMemory);
     _lifecycle?.dispose();
     HomeWidgetActionStore.instance.shellGone();
     super.dispose();

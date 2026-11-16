@@ -1113,16 +1113,6 @@
   },
   "petsEditDeleteConfirm": "Rimuovi",
   "petsEditDeleteAction": "Rimuovi profilo",
-  "petsEditMemorialTitle": "Spostare nei ricordi?",
-  "petsEditMemorialMessage": "\"{name}\" uscirà dalla lista Animali e sarà conservato nella sezione Ricordi, con il suo profilo e le sue foto.",
-  "@petsEditMemorialMessage": {
-    "placeholders": {
-      "name": {
-        "type": "String"
-      }
-    }
-  },
-  "petsEditMemorialConfirm": "Sposta",
   "petsEditMemorialAction": "Sposta nei ricordi",
   "petsFormAddSpecies": "Aggiungi specie",
   "petsFormIdentityColor": "Colore identificativo",
@@ -1381,7 +1371,6 @@
   "petsValueDogSizeLarge": "Grande",
   "petsValueDogSizeGiant": "Gigante",
   "petsListTitle": "Animali",
-  "petsListMemoriesTooltip": "Ricordi",
   "petsListLoading": "Carico la lista pet...",
   "petsListErrorTitle": "Pet non disponibili",
   "petsListErrorDefault": "Al momento non riesco a caricare i profili pet.",
@@ -1389,8 +1378,15 @@
   "petsListEmptySubtitle": "Crea il primo profilo: più è completo, meglio rispondo.",
   "petsListEmptyAction": "Crea pet",
   "petsListFilterEmpty": "Nessun pet per questo filtro.",
-  "petsMemoriesRemoveTitle": "Rimuovere definitivamente?",
-  "petsMemoriesRemoveBody": "Il ricordo di \"{name}\" verrà eliminato, senza possibilità di recupero.",
+  "petsMemoriesRemoveTitle": "Eliminare per sempre il ricordo di {name}?",
+  "@petsMemoriesRemoveTitle": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "petsMemoriesRemoveBody": "Profilo, foto, passeggiate, documenti e promemoria di {name} verranno cancellati e non si potranno recuperare. Se vuoi tenerne una copia, scarica prima foto e documenti.",
   "@petsMemoriesRemoveBody": {
     "placeholders": {
       "name": {
@@ -1398,11 +1394,11 @@
       }
     }
   },
-  "petsMemoriesRemoveConfirm": "Rimuovi",
+  "petsMemoriesRemoveConfirm": "Elimina per sempre",
   "petsMemoriesTitle": "Ricordi",
-  "petsMemoriesSubtitle": "I profili dei pet che hanno condiviso la vostra strada.",
-  "petsMemoriesEmpty": "Nessun ricordo conservato ancora.",
-  "petsMemoriesWithUsUntil": "Con noi fino al {date}",
+  "petsMemoriesSubtitle": "Gli animali che hanno condiviso la tua strada.",
+  "petsMemoriesEmpty": "Qui non c'è ancora nessun ricordo.",
+  "petsMemoriesWithUsUntil": "Fino al {date}",
   "@petsMemoriesWithUsUntil": {
     "placeholders": {
       "date": {
@@ -1410,7 +1406,7 @@
       }
     }
   },
-  "petsMemoriesWithUsRange": "Con noi dal {from} al {to}",
+  "petsMemoriesWithUsRange": "Dal {from} al {to}",
   "@petsMemoriesWithUsRange": {
     "placeholders": {
       "from": {
@@ -1421,7 +1417,225 @@
       }
     }
   },
-  "petsMemoriesComingSoon": "Presto: i vostri momenti più belli insieme, come le passeggiate più lunghe o i traguardi raggiunti, raccolti qui.",
+  "petsListMemoriesRowSubtitle": "Gli animali che hanno condiviso la tua strada",
+  "petsListEmptyOnlyMemoriesTitle": "Nessun animale nella lista",
+  "petsListEmptyOnlyMemoriesSubtitle": "Quando vorrai, potrai aggiungere un nuovo profilo.",
+  "petsListEmptyOnlyMemoriesAction": "Aggiungi un animale",
+  "memorialMoveSorry": "Ci dispiace tanto per {name}.",
+  "@memorialMoveSorry": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "memorialMoveBody": "Qui puoi custodire il suo ricordo. {name} lascerà la lista Animali e non ti manderemo più promemoria, farmaci o auguri per {name}. Profilo, foto, passeggiate e documenti restano nel tuo account finché non li elimini: puoi rivederli e scaricarli quando vuoi.",
+  "@memorialMoveBody": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "memorialMoveDateLabel": "Data della perdita",
+  "memorialMoveDateHelp": "Se non ricordi il giorno esatto, va bene una data indicativa.",
+  "memorialMoveContinue": "Continua",
+  "memorialRemindTitle": "Vuoi che Quokka ti aiuti a ricordare?",
+  "memorialRemindBody": "Se ti fa piacere, possiamo mandarti un pensiero in alcuni giorni speciali, con le sue foto. Puoi cambiare idea quando vuoi.",
+  "memorialRemindBirthday": "Il giorno del compleanno",
+  "memorialRemindBirthdayHelp": "Con la foto profilo e le foto dei compleanni passati.",
+  "memorialRemindWalks": "Le passeggiate preferite",
+  "memorialRemindWalksHelp": "Nel giorno di una passeggiata salvata tra le preferite, con il percorso e le foto di quel giorno.",
+  "memorialRemindPhotos": "Le foto di questo giorno",
+  "memorialRemindPhotosHelp": "Quando ci sono foto scattate in quel giorno negli anni passati. Al massimo una volta a settimana.",
+  "memorialMoveConfirm": "Sposta nei ricordi",
+  "memorialMoveDone": "{name} è ora nei Ricordi.",
+  "@memorialMoveDone": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "memorialUndo": "Annulla",
+  "memorialPagePhotos": "Foto",
+  "memorialPageNoPhotos": "Non ci sono ancora foto.",
+  "memorialPageOpenGallery": "Tutte le foto",
+  "memorialPageWalks": "Passeggiate preferite",
+  "memorialPageWalksTogether": "{count, plural, =1{Insieme avete fatto 1 passeggiata, {distance}.} other{Insieme avete fatto {count} passeggiate, {distance}.}}",
+  "@memorialPageWalksTogether": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "distance": {
+        "type": "String"
+      }
+    }
+  },
+  "memorialPageReminders": "Promemoria del ricordo",
+  "memorialPageRecords": "Documenti e storia clinica",
+  "memorialPageProfile": "Scheda",
+  "memorialPageChipNote": "{sex, select, male{Se {name} era iscritto all'anagrafe degli animali d'affezione, di solito il decesso va comunicato: il tuo veterinario o l'ufficio della tua ASL o del Comune ti dicono come e entro quando.} female{Se {name} era iscritta all'anagrafe degli animali d'affezione, di solito il decesso va comunicato: il tuo veterinario o l'ufficio della tua ASL o del Comune ti dicono come e entro quando.} other{Se il microchip di {name} era iscritto all'anagrafe degli animali d'affezione, di solito il decesso va comunicato: il tuo veterinario o l'ufficio della tua ASL o del Comune ti dicono come e entro quando.}}",
+  "@memorialPageChipNote": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "sex": {
+        "type": "String"
+      }
+    }
+  },
+  "memorialPageBirthdayPhotos": "Le foto dei suoi compleanni",
+  "memorialPageNoBirthdayPhotos": "Non ci sono ancora foto dei compleanni passati.",
+  "memorialPageOnThisDay": "Foto di questo giorno",
+  "memorialPageWalkPhotos": "Le foto di quella passeggiata",
+  "memorialPageOpenWalk": "Rivedi il percorso",
+  "memorialRestoreShortcut": "{sex, select, female{Spostata per errore? Riporta tra gli animali} other{Spostato per errore? Riporta tra gli animali}}",
+  "@memorialRestoreShortcut": {
+    "placeholders": {
+      "sex": {
+        "type": "String"
+      }
+    }
+  },
+  "memorialReadOnlyNote": "Qui tutto resta com'era: puoi guardare, scaricare e inviare, non modificare. Se serve cambiare qualcosa, prima riporta {name} tra gli animali.",
+  "@memorialReadOnlyNote": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "memorialChatReadOnly": "{name} è nei Ricordi: questa chat resta da rileggere, ma non si scrivono nuovi messaggi.",
+  "@memorialChatReadOnly": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "memorialRestoreTitle": "Riportare {name} tra gli animali?",
+  "@memorialRestoreTitle": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "memorialRestoreBody": "Se lo spostamento è stato un errore, {name} torna nella lista Animali con tutti i suoi dati. Tornano attivi anche i promemoria e i farmaci che erano in corso: controllali, alcune date potrebbero essere già passate.",
+  "@memorialRestoreBody": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "memorialRestoreConfirm": "Riporta tra gli animali",
+  "memorialRestoreDone": "{name} è di nuovo tra i tuoi animali.",
+  "@memorialRestoreDone": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "billingPetsMemorialNote": "Gli animali nei Ricordi non contano.",
+  "memorialRestoreBlockedUpgrade": "{name} resta nei Ricordi: non si perde niente. Per riportare {name} tra gli animali serve un posto libero: il tuo piano ne consente {limit} e sono tutti occupati. Puoi liberare un posto oppure passare al piano {plan} da Impostazioni → Abbonamento e pagamenti.",
+  "@memorialRestoreBlockedUpgrade": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "limit": {
+        "type": "int"
+      },
+      "plan": {
+        "type": "String"
+      }
+    }
+  },
+  "memorialRestoreBlockedFull": "{name} resta nei Ricordi: non si perde niente. Per riportare {name} tra gli animali serve un posto libero: il tuo piano ne consente {limit} e sono tutti occupati. Per liberarne uno, sposta nei Ricordi un animale che non c'è più oppure eliminane uno.",
+  "@memorialRestoreBlockedFull": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "limit": {
+        "type": "int"
+      }
+    }
+  },
+  "memorialMoveReturnNeedsPlace": "Se un giorno vorrai riportare {name} tra gli animali, servirà un posto libero nel tuo piano.",
+  "@memorialMoveReturnNeedsPlace": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "memorialMoveReturnNeedsPlan": "Se un giorno vorrai riportare {name} tra gli animali, dovrai scegliere un piano con un posto libero.",
+  "@memorialMoveReturnNeedsPlan": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "billingPlanLimitPets": "Il tuo piano ha raggiunto il numero massimo di animali. Gli animali nei Ricordi, cioè quelli che non ci sono più, non contano. Passa a un piano superiore da Impostazioni.",
+  "memorialMoveBlockedFull": "Per ora {name} resta tra i tuoi animali, con tutti i suoi dati: non si perde niente. Nei Ricordi c'è posto per {limit} animali e adesso è tutto occupato. Un posto si libera con «Elimina per sempre» nella pagina di un ricordo, solo se e quando te la senti. Intanto, se i promemoria di {name} ti pesano, puoi eliminarli da Promemoria.",
+  "@memorialMoveBlockedFull": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "limit": {
+        "type": "int"
+      }
+    }
+  },
+  "billingPlanLimitMemorials": "Nei Ricordi non c'è più posto. Un posto si libera con «Elimina per sempre» nella pagina di un ricordo.",
+  "billingPaywallMoveToMemories": "Un animale non c'è più? Spostalo nei Ricordi",
+  "memorialChoosePrompt": "Quale animale non c'è più?",
+  "memorialChooseEmpty": "Non ci sono animali da spostare nei Ricordi.",
+  "memorialSaveFailed": "Non sono riuscito a salvare. Controlla la connessione e riprova.",
+  "petsMemoriesRemoveAction": "Elimina per sempre",
+  "notificationsMemoryBirthdayTitle": "Oggi è il compleanno di {petName}",
+  "@notificationsMemoryBirthdayTitle": {
+    "placeholders": {
+      "petName": {
+        "type": "String"
+      }
+    }
+  },
+  "notificationsMemoryBirthdayBody": "Se ti va, le sue foto sono qui.",
+  "notificationsMemoryWalkTitle": "{count, plural, =1{Un anno fa, una passeggiata con {petName}} other{{count} anni fa, una passeggiata con {petName}}}",
+  "@notificationsMemoryWalkTitle": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "petName": {
+        "type": "String"
+      }
+    }
+  },
+  "notificationsMemoryWalkBody": "Una delle vostre preferite. Se ti va, puoi rivederla.",
+  "notificationsMemoryPhotosTitle": "{count, plural, =1{Un anno fa, con {petName}} other{{count} anni fa, con {petName}}}",
+  "@notificationsMemoryPhotosTitle": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "petName": {
+        "type": "String"
+      }
+    }
+  },
+  "notificationsMemoryPhotosBody": "Ci sono foto di questo giorno. Se ti va, sono qui.",
+  "notificationsChannelMemoriesName": "Ricordi",
+  "notificationsChannelMemoriesDescription": "Un pensiero nei giorni speciali degli animali nei Ricordi, solo se lo hai scelto.",
   "petsMediaGalleryTitle": "Galleria",
   "petsMediaFoldersLoading": "Carico le cartelle…",
   "petsMediaFoldersEmpty": "Aggiungi un animale per creare la sua cartella di foto.",
@@ -3992,7 +4206,13 @@
   "settingsConsentDiagnostics": "Invia rapporti sugli errori",
   "marketplaceMessagesTitle": "Messaggi del Mercatino",
   "marketplaceMessagesOpen": "{count, plural, =0{Messaggi} =1{Messaggi: 1 da leggere} other{Messaggi: {count} da leggere}}",
-  "@marketplaceMessagesOpen": {"placeholders": {"count": {"type": "int"}}},
+  "@marketplaceMessagesOpen": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "marketplaceMessagesWriteToSeller": "Scrivi al venditore",
   "marketplaceMessagesEmpty": "Nessuna conversazione. Quando scrivi a un venditore, o qualcuno ti scrive per un tuo annuncio, la trovi qui.",
   "marketplaceMessagesLoadFailed": "Non riesco a caricare i messaggi. Riprova tra poco.",
@@ -4004,7 +4224,13 @@
   "marketplaceMessagesSend": "Invia",
   "marketplaceMessagesSendFailed": "Messaggio non inviato. Riprova.",
   "marketplaceMessagesDailyLimit": "Hai raggiunto il limite di {limit} nuove conversazioni al giorno. Riprova domani.",
-  "@marketplaceMessagesDailyLimit": {"placeholders": {"limit": {"type": "int"}}},
+  "@marketplaceMessagesDailyLimit": {
+    "placeholders": {
+      "limit": {
+        "type": "int"
+      }
+    }
+  },
   "marketplaceMessagesClosed": "Questa conversazione è chiusa: puoi rileggerla, ma non si possono più inviare messaggi.",
   "marketplaceMessagesBlockedByMe": "Hai bloccato questa persona. Sbloccala per scrivere di nuovo.",
   "marketplaceMessagesUnavailable": "Per questo annuncio non è possibile scrivere.",
@@ -4022,7 +4248,16 @@
   "marketplaceMessagesReasonHarassment": "Molestie",
   "marketplaceMessagesActionFailed": "Operazione non riuscita. Riprova.",
   "marketplaceRestrictedNotice": "Il team di moderazione ha sospeso il tuo accesso al Mercatino dal {date}. Motivo: {reason}. Puoi consultare gli annunci e leggere i tuoi messaggi, ma non puoi pubblicare o modificare annunci né scrivere messaggi.",
-  "@marketplaceRestrictedNotice": {"placeholders": {"date": {"type": "String"}, "reason": {"type": "String"}}},
+  "@marketplaceRestrictedNotice": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      },
+      "reason": {
+        "type": "String"
+      }
+    }
+  },
   "marketplaceRestrictedConversation": "Il team di moderazione ha sospeso il tuo accesso al Mercatino: puoi leggere questa conversazione, ma non scrivere.",
   "marketplaceRestrictionReasonSpam": "spam",
   "marketplaceRestrictionReasonScam": "tentata truffa",
@@ -4033,7 +4268,13 @@
   "localEventsExoticAllGroups": "Tutti i gruppi",
   "localEventsExoticDisclaimer": "Competenza dichiarata dalla struttura o dalla fonte indicata, non verificata da Quokka.",
   "localEventsExoticNone": "Nessuna struttura entro {radius} dichiara questa competenza. I dati sono ancora pochi: allarga il raggio o segnala una struttura dalla sua scheda.",
-  "@localEventsExoticNone": {"placeholders": {"radius": {"type": "String"}}},
+  "@localEventsExoticNone": {
+    "placeholders": {
+      "radius": {
+        "type": "String"
+      }
+    }
+  },
   "exoticGroupReptileAmphibian": "Rettili e anfibi",
   "exoticGroupBird": "Uccelli",
   "exoticGroupSmallMammal": "Piccoli mammiferi",
@@ -4042,13 +4283,37 @@
   "exoticGroupGeneral": "animali esotici (gruppi non indicati)",
   "exoticGroupSmallMammalHint": "Coniglio, roditori, furetto",
   "placesCompetenceTreats": "Cura: {groups}",
-  "@placesCompetenceTreats": {"placeholders": {"groups": {"type": "String"}}},
+  "@placesCompetenceTreats": {
+    "placeholders": {
+      "groups": {
+        "type": "String"
+      }
+    }
+  },
   "placesCompetenceSourceOsm": "Dichiarato su OpenStreetMap, letto il {date}",
-  "@placesCompetenceSourceOsm": {"placeholders": {"date": {"type": "String"}}},
+  "@placesCompetenceSourceOsm": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
   "placesCompetenceSourceName": "Dichiarato nel nome della struttura, letto il {date}",
-  "@placesCompetenceSourceName": {"placeholders": {"date": {"type": "String"}}},
+  "@placesCompetenceSourceName": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
   "placesCompetenceSourceClaim": "Dichiarato sulla pagina della struttura, controllato il {date}",
-  "@placesCompetenceSourceClaim": {"placeholders": {"date": {"type": "String"}}},
+  "@placesCompetenceSourceClaim": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
   "placesCompetenceSourcePage": "Pagina della struttura",
   "placesCompetenceClaimAction": "Cura animali esotici? Segnalalo",
   "placesCompetenceClaimTitle": "Quali animali esotici cura?",
@@ -4076,7 +4341,13 @@
   "marketplaceInfoPrivacy": "Le conversazioni sono private. Il team di Quokka legge una conversazione solo se una delle due persone la segnala, per valutare la segnalazione.",
   "marketplaceInfoTerms": "Dettagli nei Termini di servizio, sezione Mercatino.",
   "marketplaceRestrictedAppeal": "Se pensi sia un errore, scrivici da {place}.",
-  "@marketplaceRestrictedAppeal": {"placeholders": {"place": {"type": "String"}}},
+  "@marketplaceRestrictedAppeal": {
+    "placeholders": {
+      "place": {
+        "type": "String"
+      }
+    }
+  },
   "ageStepTitle": "Data di nascita",
   "ageStepBody": "Ci serve per applicare le regole d'età. La data non viene mostrata a nessuno.",
   "ageStepCorrectionNote": "Una volta salvata non si modifica da qui: per correggerla scrivi da Impostazioni → Contattaci.",

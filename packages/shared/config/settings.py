@@ -89,6 +89,12 @@ class Settings(BaseSettings):
     deletion_log_proof_years: int = Field(default=5, ge=0, le=20, alias="DELETION_LOG_PROOF_YEARS")
     # Private bucket, no storage policy: only the service role reaches it.
     deletion_log_bucket: str = Field(default="deletion-log", alias="DELETION_LOG_BUCKET")
+    # How many pets one owner may keep in Ricordi (owner decision 2026-11-16).
+    # Empty = the default of packages/core/domain/subscription/limits.py (30);
+    # anything that is not a whole number above zero is ignored with a warning
+    # (a string, not an int: a bad value must not stop the API at start-up). The
+    # backend writes it into the database rule and reports it to the app.
+    memorial_pets_max: str = Field(default="", alias="MEMORIAL_PETS_MAX")
     # Backoffice allowlist. When empty, admin endpoints fall back to
     # DEVELOPER_EMAILS so existing founder/developer accounts can be reused
     # without hardcoding personal addresses in source control.

@@ -71,11 +71,14 @@ class _PetConditionsPageState extends State<PetConditionsPage> {
         foregroundColor: AppColors.text,
         title: Text(l10n.medCatCondition),
       ),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: _openForm,
-        icon: const Icon(Icons.add_rounded),
-        label: Text(l10n.medAddAction),
-      ),
+      // A pet in Ricordi: read only (the form opens without saving).
+      floatingActionButton: widget.pet.isMemorial
+          ? null
+          : FloatingActionButton.extended(
+              onPressed: _openForm,
+              icon: const Icon(Icons.add_rounded),
+              label: Text(l10n.medAddAction),
+            ),
       body: SafeArea(
         child: FutureBuilder<List<PetConditionEntry>>(
           future: _future,
@@ -138,12 +141,14 @@ class _PetConditionsPageState extends State<PetConditionsPage> {
                         textAlign: TextAlign.center,
                         style: AppTextStyles.bodySmall,
                       ),
-                      const SizedBox(height: AppSpacing.xl),
-                      FilledButton.icon(
-                        onPressed: _openForm,
-                        icon: const Icon(Icons.add_rounded, size: 18),
-                        label: Text(l10n.medEmptyConditionAction),
-                      ),
+                      if (!widget.pet.isMemorial) ...[
+                        const SizedBox(height: AppSpacing.xl),
+                        FilledButton.icon(
+                          onPressed: _openForm,
+                          icon: const Icon(Icons.add_rounded, size: 18),
+                          label: Text(l10n.medEmptyConditionAction),
+                        ),
+                      ],
                     ],
                   ),
                 ),

@@ -97,6 +97,12 @@ class _PetGalleryPageState extends State<PetGalleryPage> {
   PetProfile get _pet =>
       PetDemoStore.instance.list().where((p) => p.id == widget.pet.id).firstOrNull ?? widget.pet;
 
+  /// A pet in Ricordi: photos and videos are looked at, never added,
+  /// deleted or made the profile photo (docs/product/17_ricordi_animali.md).
+  /// Read from the store too, so a page reopened after a restart agrees.
+  bool get _readOnly =>
+      widget.pet.isMemorial || (PetDemoStore.instance.byId(widget.pet.id)?.isMemorial ?? false);
+
   Future<List<PetPhotoEntry>> _load() async {
     final photos = await _repository.list(widget.pet.id);
     final profilePath = _pet.photoPath;
@@ -326,23 +332,24 @@ class _PetGalleryPageState extends State<PetGalleryPage> {
               return PhotoTimelineView(
                 photos: photos,
                 onOpen: _openViewer,
-                onLongPress: _showActions,
+                onLongPress: _readOnly ? null : _showActions,
                 captionFor: _walkCaption,
               );
             },
           ),
-          Positioned(
-            right: AppSpacing.md,
-            bottom: AppSpacing.md,
-            child: FloatingActionButton.extended(
-              heroTag: 'pet-gallery-add',
-              onPressed: _busy || _capture.busy ? null : _showAddSheet,
-              backgroundColor: AppColors.primary,
-              foregroundColor: AppColors.onPrimary,
-              icon: const Icon(Icons.add_a_photo_outlined),
-              label: Text(context.l10n.commonAdd),
+          if (!_readOnly)
+            Positioned(
+              right: AppSpacing.md,
+              bottom: AppSpacing.md,
+              child: FloatingActionButton.extended(
+                heroTag: 'pet-gallery-add',
+                onPressed: _busy || _capture.busy ? null : _showAddSheet,
+                backgroundColor: AppColors.primary,
+                foregroundColor: AppColors.onPrimary,
+                icon: const Icon(Icons.add_a_photo_outlined),
+                label: Text(context.l10n.commonAdd),
+              ),
             ),
-          ),
           if (_busy || _capture.busy)
             Positioned.fill(
               child: ColoredBox(

@@ -260,7 +260,7 @@ class _AgendaSectionState extends State<_AgendaSection> {
   Future<List<ReminderEntry>> _futureFor(int tick) {
     if (_future == null || _tick != tick) {
       _tick = tick;
-      _future = widget.repository.loadReminders();
+      _future = widget.repository.loadActiveReminders();
     }
     return _future!;
   }

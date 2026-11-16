@@ -12,6 +12,8 @@ import '../../../../design_system/tokens/app_text_styles.dart';
 import '../../../../l10n/l10n.dart';
 import '../../../account/presentation/pages/delete_account_page.dart';
 import '../../../account/presentation/pages/export_data_page.dart';
+import '../../../pets/data/pet_demo_store.dart';
+import '../../../pets/presentation/pages/memorial_choose_page.dart';
 import '../../../age/presentation/age_flow.dart';
 import '../../../age/presentation/widgets/marketplace_age_gate.dart';
 import '../../../marketplace/presentation/pages/marketplace_page.dart';
@@ -44,6 +46,8 @@ class _PaywallPageState extends State<PaywallPage> {
   void initState() {
     super.initState();
     unawaited(_store.syncFromBackend(dataSource: _dataSource));
+    // The pets, for the "a pet is no longer with you" entry (reading is always allowed).
+    unawaited(PetDemoStore.instance.ensureHydrated());
   }
 
   Future<void> _selectPlan(PlanTier tier, {bool afterAgeQuestion = false}) async {
@@ -132,6 +136,20 @@ class _PaywallPageState extends State<PaywallPage> {
                 const SizedBox(height: AppSpacing.xs),
                 Text(context.l10n.billingPaywallDataBody, style: AppTextStyles.bodySmall),
                 const SizedBox(height: AppSpacing.sm),
+                // Whoever loses an animal must not meet a paywall to stop its
+                // reminders (owner decision 2026-11-16): shown only when there is a
+                // pet to move, calm, no plan or payment in it.
+                ValueListenableBuilder<int>(
+                  valueListenable: PetDemoStore.changes,
+                  builder: (context, _, __) => PetDemoStore.instance.list().isEmpty
+                      ? const SizedBox.shrink()
+                      : _DataActionRow(
+                          key: const ValueKey('paywall-move-to-memories'),
+                          icon: Icons.auto_awesome_outlined,
+                          label: context.l10n.billingPaywallMoveToMemories,
+                          onTap: () => _open(const MemorialChoosePage()),
+                        ),
+                ),
                 _DataActionRow(
                   icon: Icons.download_outlined,
                   label: context.l10n.settingsAccountExport,
@@ -156,6 +174,7 @@ class _PaywallPageState extends State<PaywallPage> {
 
 class _DataActionRow extends StatelessWidget {
   const _DataActionRow({
+    super.key,
     required this.icon,
     required this.label,
     required this.onTap,

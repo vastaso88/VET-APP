@@ -1113,16 +1113,6 @@
   },
   "petsEditDeleteConfirm": "Eliminar",
   "petsEditDeleteAction": "Eliminar perfil",
-  "petsEditMemorialTitle": "¿Mover a recuerdos?",
-  "petsEditMemorialMessage": "\"{name}\" saldrá de la lista Mascotas y se conservará en Recuerdos con su perfil y fotos.",
-  "@petsEditMemorialMessage": {
-    "placeholders": {
-      "name": {
-        "type": "String"
-      }
-    }
-  },
-  "petsEditMemorialConfirm": "Mover",
   "petsEditMemorialAction": "Mover a recuerdos",
   "petsFormAddSpecies": "Añadir especie",
   "petsFormIdentityColor": "Color identificativo",
@@ -1381,7 +1371,6 @@
   "petsValueDogSizeLarge": "Grande",
   "petsValueDogSizeGiant": "Gigante",
   "petsListTitle": "Animales",
-  "petsListMemoriesTooltip": "Recuerdos",
   "petsListLoading": "Cargando la lista de mascotas…",
   "petsListErrorTitle": "Mascotas no disponibles",
   "petsListErrorDefault": "Ahora mismo no se pueden cargar los perfiles de mascotas.",
@@ -1389,8 +1378,15 @@
   "petsListEmptySubtitle": "Crea el primer perfil: cuanto más completo, mejores serán mis respuestas.",
   "petsListEmptyAction": "Crear mascota",
   "petsListFilterEmpty": "Ninguna mascota coincide con este filtro.",
-  "petsMemoriesRemoveTitle": "¿Eliminar definitivamente?",
-  "petsMemoriesRemoveBody": "El recuerdo de \"{name}\" se eliminará sin posibilidad de recuperación.",
+  "petsMemoriesRemoveTitle": "¿Eliminar para siempre el recuerdo de {name}?",
+  "@petsMemoriesRemoveTitle": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "petsMemoriesRemoveBody": "El perfil, las fotos, los paseos, los documentos y los recordatorios de {name} se borrarán y no se podrán recuperar. Si quieres conservar una copia, descarga antes fotos y documentos.",
   "@petsMemoriesRemoveBody": {
     "placeholders": {
       "name": {
@@ -1398,11 +1394,11 @@
       }
     }
   },
-  "petsMemoriesRemoveConfirm": "Eliminar",
+  "petsMemoriesRemoveConfirm": "Eliminar para siempre",
   "petsMemoriesTitle": "Recuerdos",
-  "petsMemoriesSubtitle": "Los perfiles de las mascotas que compartieron vuestro camino.",
-  "petsMemoriesEmpty": "Aún no hay recuerdos guardados.",
-  "petsMemoriesWithUsUntil": "Con nosotros hasta el {date}",
+  "petsMemoriesSubtitle": "Los animales que compartieron tu camino.",
+  "petsMemoriesEmpty": "Aquí todavía no hay ningún recuerdo.",
+  "petsMemoriesWithUsUntil": "Hasta el {date}",
   "@petsMemoriesWithUsUntil": {
     "placeholders": {
       "date": {
@@ -1410,7 +1406,7 @@
       }
     }
   },
-  "petsMemoriesWithUsRange": "Con nosotros desde {from} hasta {to}",
+  "petsMemoriesWithUsRange": "Del {from} al {to}",
   "@petsMemoriesWithUsRange": {
     "placeholders": {
       "from": {
@@ -1421,7 +1417,225 @@
       }
     }
   },
-  "petsMemoriesComingSoon": "Próximamente: vuestros mejores momentos juntos, como los paseos más largos o los logros alcanzados, reunidos aquí.",
+  "petsListMemoriesRowSubtitle": "Los animales que compartieron tu camino",
+  "petsListEmptyOnlyMemoriesTitle": "Ningún animal en la lista",
+  "petsListEmptyOnlyMemoriesSubtitle": "Cuando quieras, podrás añadir un nuevo perfil.",
+  "petsListEmptyOnlyMemoriesAction": "Añadir un animal",
+  "memorialMoveSorry": "Lo sentimos mucho por {name}.",
+  "@memorialMoveSorry": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "memorialMoveBody": "Aquí puedes guardar su recuerdo. {name} saldrá de la lista Animales y ya no te enviaremos recordatorios, avisos de medicamentos ni felicitaciones para {name}. Perfil, fotos, paseos y documentos se quedan en tu cuenta hasta que los elimines: puedes volver a verlos y descargarlos cuando quieras.",
+  "@memorialMoveBody": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "memorialMoveDateLabel": "Fecha de la pérdida",
+  "memorialMoveDateHelp": "Si no recuerdas el día exacto, vale una fecha aproximada.",
+  "memorialMoveContinue": "Continuar",
+  "memorialRemindTitle": "¿Quieres que Quokka te ayude a recordar?",
+  "memorialRemindBody": "Si te apetece, podemos enviarte un recuerdo en algunos días especiales, con sus fotos. Puedes cambiar de idea cuando quieras.",
+  "memorialRemindBirthday": "El día del cumpleaños",
+  "memorialRemindBirthdayHelp": "Con la foto de perfil y las fotos de los cumpleaños pasados.",
+  "memorialRemindWalks": "Los paseos favoritos",
+  "memorialRemindWalksHelp": "El día de un paseo guardado entre los favoritos, con el recorrido y las fotos de ese día.",
+  "memorialRemindPhotos": "Las fotos de este día",
+  "memorialRemindPhotosHelp": "Cuando hay fotos hechas ese día en años pasados. Como mucho una vez por semana.",
+  "memorialMoveConfirm": "Mover a Recuerdos",
+  "memorialMoveDone": "{name} está ahora en Recuerdos.",
+  "@memorialMoveDone": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "memorialUndo": "Deshacer",
+  "memorialPagePhotos": "Fotos",
+  "memorialPageNoPhotos": "Todavía no hay fotos.",
+  "memorialPageOpenGallery": "Todas las fotos",
+  "memorialPageWalks": "Paseos favoritos",
+  "memorialPageWalksTogether": "{count, plural, =1{Hicieron juntos 1 paseo, {distance}.} other{Hicieron juntos {count} paseos, {distance}.}}",
+  "@memorialPageWalksTogether": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "distance": {
+        "type": "String"
+      }
+    }
+  },
+  "memorialPageReminders": "Recordatorios del recuerdo",
+  "memorialPageRecords": "Documentos e historia clínica",
+  "memorialPageProfile": "Ficha",
+  "memorialPageChipNote": "{sex, select, other{Si el microchip de {name} estaba inscrito en un registro de animales de compañía, normalmente hay que comunicar el fallecimiento: tu veterinario o el organismo que lleva el registro en tu país (en Italia, la ASL o el ayuntamiento) te dirán cómo y en qué plazo.}}",
+  "@memorialPageChipNote": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "sex": {
+        "type": "String"
+      }
+    }
+  },
+  "memorialPageBirthdayPhotos": "Las fotos de sus cumpleaños",
+  "memorialPageNoBirthdayPhotos": "Todavía no hay fotos de los cumpleaños pasados.",
+  "memorialPageOnThisDay": "Fotos de este día",
+  "memorialPageWalkPhotos": "Las fotos de ese paseo",
+  "memorialPageOpenWalk": "Volver a ver el recorrido",
+  "memorialRestoreShortcut": "{sex, select, female{¿La has movido por error? Devolver a Animales} other{¿Lo has movido por error? Devolver a Animales}}",
+  "@memorialRestoreShortcut": {
+    "placeholders": {
+      "sex": {
+        "type": "String"
+      }
+    }
+  },
+  "memorialReadOnlyNote": "Aquí todo se queda como estaba: puedes mirar, descargar y enviar, no modificar. Si hace falta cambiar algo, primero devuelve a {name} a Animales.",
+  "@memorialReadOnlyNote": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "memorialChatReadOnly": "{name} está en Recuerdos: puedes releer esta conversación, pero ya no se pueden escribir mensajes nuevos.",
+  "@memorialChatReadOnly": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "memorialRestoreTitle": "¿Devolver a {name} a la lista Animales?",
+  "@memorialRestoreTitle": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "memorialRestoreBody": "Si el cambio fue un error, {name} vuelve a la lista Animales con todos sus datos. También se reactivan los recordatorios y medicamentos que estaban en curso: revísalos, algunas fechas pueden haber pasado ya.",
+  "@memorialRestoreBody": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "memorialRestoreConfirm": "Devolver",
+  "memorialRestoreDone": "{name} vuelve a estar entre tus animales.",
+  "@memorialRestoreDone": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "billingPetsMemorialNote": "Los animales en Recuerdos no cuentan.",
+  "memorialRestoreBlockedUpgrade": "{name} se queda en Recuerdos: no se pierde nada. Para devolver a {name} a tus animales hace falta una plaza libre: tu plan permite {limit} y todas están ocupadas. Puedes liberar una plaza o pasar al plan {plan} en Ajustes → Suscripción y pagos.",
+  "@memorialRestoreBlockedUpgrade": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "limit": {
+        "type": "int"
+      },
+      "plan": {
+        "type": "String"
+      }
+    }
+  },
+  "memorialRestoreBlockedFull": "{name} se queda en Recuerdos: no se pierde nada. Para devolver a {name} a tus animales hace falta una plaza libre: tu plan permite {limit} y todas están ocupadas. Para liberar una, pasa a Recuerdos un animal que ya no está contigo o elimina uno.",
+  "@memorialRestoreBlockedFull": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "limit": {
+        "type": "int"
+      }
+    }
+  },
+  "memorialMoveReturnNeedsPlace": "Si algún día quieres devolver a {name} a tus animales, hará falta una plaza libre en tu plan.",
+  "@memorialMoveReturnNeedsPlace": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "memorialMoveReturnNeedsPlan": "Si algún día quieres devolver a {name} a tus animales, tendrás que elegir un plan con una plaza libre.",
+  "@memorialMoveReturnNeedsPlan": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "billingPlanLimitPets": "Tu plan ha alcanzado el número máximo de animales. Los animales en Recuerdos, los que ya no están contigo, no cuentan. Cambia a un plan superior en Ajustes.",
+  "memorialMoveBlockedFull": "Por ahora {name} se queda entre tus animales, con todos sus datos: no se pierde nada. Recuerdos tiene plazas para {limit} animales y todas están ocupadas. Se libera una plaza con «Eliminar para siempre» en la página de un recuerdo, solo si lo deseas y cuando te parezca el momento. Mientras tanto, si los recordatorios de {name} te pesan, puedes eliminarlos en Recordatorios.",
+  "@memorialMoveBlockedFull": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "limit": {
+        "type": "int"
+      }
+    }
+  },
+  "billingPlanLimitMemorials": "En Recuerdos ya no quedan plazas libres. Se libera una plaza con «Eliminar para siempre» en la página de un recuerdo.",
+  "billingPaywallMoveToMemories": "¿Hay un animal que ya no está contigo? Pásalo a Recuerdos",
+  "memorialChoosePrompt": "¿Qué animal ya no está contigo?",
+  "memorialChooseEmpty": "No hay animales para pasar a Recuerdos.",
+  "memorialSaveFailed": "No he podido guardar. Revisa la conexión y vuelve a intentarlo.",
+  "petsMemoriesRemoveAction": "Eliminar para siempre",
+  "notificationsMemoryBirthdayTitle": "Hoy es el cumpleaños de {petName}",
+  "@notificationsMemoryBirthdayTitle": {
+    "placeholders": {
+      "petName": {
+        "type": "String"
+      }
+    }
+  },
+  "notificationsMemoryBirthdayBody": "Si te apetece, sus fotos están aquí.",
+  "notificationsMemoryWalkTitle": "{count, plural, =1{Hace un año, un paseo con {petName}} other{Hace {count} años, un paseo con {petName}}}",
+  "@notificationsMemoryWalkTitle": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "petName": {
+        "type": "String"
+      }
+    }
+  },
+  "notificationsMemoryWalkBody": "Uno de sus paseos favoritos. Si te apetece, puedes volver a verlo.",
+  "notificationsMemoryPhotosTitle": "{count, plural, =1{Hace un año, con {petName}} other{Hace {count} años, con {petName}}}",
+  "@notificationsMemoryPhotosTitle": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "petName": {
+        "type": "String"
+      }
+    }
+  },
+  "notificationsMemoryPhotosBody": "Hay fotos de este día. Si te apetece, están aquí.",
+  "notificationsChannelMemoriesName": "Recuerdos",
+  "notificationsChannelMemoriesDescription": "Un recuerdo en los días especiales de los animales en Recuerdos, solo si lo has elegido.",
   "petsMediaGalleryTitle": "Galería",
   "petsMediaFoldersLoading": "Cargando carpetas…",
   "petsMediaFoldersEmpty": "Añade un animal para crear su carpeta de fotos.",

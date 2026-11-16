@@ -7,6 +7,7 @@ from packages.core.application.ports.subscription_repository import Subscription
 from packages.core.application.services.plan_access_sync import PlanAccessSync
 from packages.core.domain.common.entity import utc_now
 from packages.core.domain.subscription.limits import (
+    DEFAULT_MAX_MEMORIAL_PETS,
     LIMITS_BY_PLAN,
     PlanLimits,
     effective_limits,
@@ -31,6 +32,10 @@ class GetOrCreateSubscriptionOutput(BaseModel):
     # The limits of every plan, so the app shows the same numbers the
     # backend enforces without keeping a copy of them.
     plan_limits: dict[str, PlanLimits] = LIMITS_BY_PLAN
+    # How many pets one owner may keep in Ricordi, the same for every plan
+    # (MEMORIAL_PETS_MAX): they do not count towards the plan's pets, this is
+    # what bounds them. The database enforces it; the app only reads it here.
+    max_memorial_pets: int = DEFAULT_MAX_MEMORIAL_PETS
     # True while the deployment runs a public test (SUBSCRIPTION_TEST_PLAN):
     # the plan above is the test plan, not something the owner chose or paid.
     test_period: bool = False
@@ -61,6 +66,7 @@ class GetOrCreateSubscriptionService:
         developer_emails: frozenset[str],
         test_plan: str | None = None,
         access_sync: PlanAccessSync | None = None,
+        max_memorial_pets: int = DEFAULT_MAX_MEMORIAL_PETS,
     ) -> None:
         self._repository = repository
         self._developer_emails = developer_emails
@@ -68,6 +74,7 @@ class GetOrCreateSubscriptionService:
         # Tells the database rules on the app's direct writes the two facts
         # only the backend knows (scripts/setup/plan_access_rules.sql).
         self._access_sync = access_sync
+        self._max_memorial_pets = max_memorial_pets
 
     def execute(self, data: GetOrCreateSubscriptionInput) -> GetOrCreateSubscriptionOutput:
         subscription = self._repository.get(data.owner_id)
@@ -77,7 +84,10 @@ class GetOrCreateSubscriptionService:
         is_developer = data.email.strip().lower() in self._developer_emails
         if self._access_sync is not None:
             self._access_sync.sync(
-                owner_id=data.owner_id, is_developer=is_developer, test_plan=self._test_plan
+                owner_id=data.owner_id,
+                is_developer=is_developer,
+                test_plan=self._test_plan,
+                max_memorial_pets=self._max_memorial_pets,
             )
         has_access = subscription.has_access(is_developer=is_developer)
         subscription = self._keep_retention_clock(
@@ -91,6 +101,7 @@ class GetOrCreateSubscriptionService:
                 is_developer=is_developer,
                 has_access=True,
                 limits=effective_limits(reported, is_developer=is_developer),
+                max_memorial_pets=self._max_memorial_pets,
                 test_period=True,
             )
 
@@ -99,6 +110,7 @@ class GetOrCreateSubscriptionService:
             is_developer=is_developer,
             has_access=has_access,
             limits=effective_limits(subscription, is_developer=is_developer),
+            max_memorial_pets=self._max_memorial_pets,
             data_kept_until=(
                 data_kept_until(subscription.access_lost_at)
                 if not has_access and subscription.access_lost_at is not None

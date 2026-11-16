@@ -2114,17 +2114,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get petsEditDeleteAction => 'Remove profile';
 
   @override
-  String get petsEditMemorialTitle => 'Move to memories?';
-
-  @override
-  String petsEditMemorialMessage(String name) {
-    return '\"$name\" will leave the Pets list and be kept in Memories with their profile and photos.';
-  }
-
-  @override
-  String get petsEditMemorialConfirm => 'Move';
-
-  @override
   String get petsEditMemorialAction => 'Move to memories';
 
   @override
@@ -2622,9 +2611,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get petsListTitle => 'Pets';
 
   @override
-  String get petsListMemoriesTooltip => 'Memories';
-
-  @override
   String get petsListLoading => 'Loading pet list…';
 
   @override
@@ -2647,39 +2633,307 @@ class AppLocalizationsEn extends AppLocalizations {
   String get petsListFilterEmpty => 'No pets match this filter.';
 
   @override
-  String get petsMemoriesRemoveTitle => 'Remove permanently?';
-
-  @override
-  String petsMemoriesRemoveBody(String name) {
-    return 'The memory of \"$name\" will be deleted and cannot be recovered.';
+  String petsMemoriesRemoveTitle(String name) {
+    return 'Delete $name\'s memory forever?';
   }
 
   @override
-  String get petsMemoriesRemoveConfirm => 'Remove';
+  String petsMemoriesRemoveBody(String name) {
+    return '$name\'s profile, photos, walks, documents and reminders will be deleted and cannot be recovered. If you want to keep a copy, download the photos and documents first.';
+  }
+
+  @override
+  String get petsMemoriesRemoveConfirm => 'Delete forever';
 
   @override
   String get petsMemoriesTitle => 'Memories';
 
   @override
-  String get petsMemoriesSubtitle =>
-      'Profiles of the pets that shared your journey.';
+  String get petsMemoriesSubtitle => 'The animals who shared your path.';
 
   @override
-  String get petsMemoriesEmpty => 'No memories have been saved yet.';
+  String get petsMemoriesEmpty => 'There are no memories here yet.';
 
   @override
   String petsMemoriesWithUsUntil(String date) {
-    return 'With us until $date';
+    return 'Until $date';
   }
 
   @override
   String petsMemoriesWithUsRange(String from, String to) {
-    return 'With us from $from to $to';
+    return 'From $from to $to';
   }
 
   @override
-  String get petsMemoriesComingSoon =>
-      'Coming soon: your best moments together, such as longest walks and milestones, collected here.';
+  String get petsListMemoriesRowSubtitle => 'The animals who shared your path';
+
+  @override
+  String get petsListEmptyOnlyMemoriesTitle => 'No pets in the list';
+
+  @override
+  String get petsListEmptyOnlyMemoriesSubtitle =>
+      'Whenever you wish, you can add a new profile.';
+
+  @override
+  String get petsListEmptyOnlyMemoriesAction => 'Add a pet';
+
+  @override
+  String memorialMoveSorry(String name) {
+    return 'We are so sorry about $name.';
+  }
+
+  @override
+  String memorialMoveBody(String name) {
+    return 'Here you can keep their memory. $name will leave the Pets list and we will no longer send you reminders, medicine alerts or greetings for $name. Profile, photos, walks and documents stay in your account until you delete them: you can look at them and download them whenever you want.';
+  }
+
+  @override
+  String get memorialMoveDateLabel => 'Date of the loss';
+
+  @override
+  String get memorialMoveDateHelp =>
+      'If you don\'t remember the exact day, an approximate date is fine.';
+
+  @override
+  String get memorialMoveContinue => 'Continue';
+
+  @override
+  String get memorialRemindTitle =>
+      'Would you like Quokka to help you remember?';
+
+  @override
+  String get memorialRemindBody =>
+      'If you\'d like, we can send you a thought on a few special days, with their photos. You can change your mind at any time.';
+
+  @override
+  String get memorialRemindBirthday => 'On the birthday';
+
+  @override
+  String get memorialRemindBirthdayHelp =>
+      'With the profile photo and photos from past birthdays.';
+
+  @override
+  String get memorialRemindWalks => 'Favorite walks';
+
+  @override
+  String get memorialRemindWalksHelp =>
+      'On the day of a walk saved as a favorite, with the route and that day\'s photos.';
+
+  @override
+  String get memorialRemindPhotos => 'Photos from this day';
+
+  @override
+  String get memorialRemindPhotosHelp =>
+      'When there are photos taken on that day in past years. At most once a week.';
+
+  @override
+  String get memorialMoveConfirm => 'Move to Memories';
+
+  @override
+  String memorialMoveDone(String name) {
+    return '$name is now in Memories.';
+  }
+
+  @override
+  String get memorialUndo => 'Undo';
+
+  @override
+  String get memorialPagePhotos => 'Photos';
+
+  @override
+  String get memorialPageNoPhotos => 'There are no photos yet.';
+
+  @override
+  String get memorialPageOpenGallery => 'All photos';
+
+  @override
+  String get memorialPageWalks => 'Favorite walks';
+
+  @override
+  String memorialPageWalksTogether(int count, String distance) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Together you went on $count walks, $distance.',
+      one: 'Together you went on 1 walk, $distance.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get memorialPageReminders => 'Memory reminders';
+
+  @override
+  String get memorialPageRecords => 'Documents and medical history';
+
+  @override
+  String get memorialPageProfile => 'Profile';
+
+  @override
+  String memorialPageChipNote(String name, String sex) {
+    String _temp0 = intl.Intl.selectLogic(
+      sex,
+      {
+        'other':
+            'If $name\'s microchip was registered with a pet registry, the death usually has to be reported: your vet or the body that keeps the registry in your country (in Italy, the ASL or the municipality) can tell you how and by when.',
+      },
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get memorialPageBirthdayPhotos => 'Photos from their birthdays';
+
+  @override
+  String get memorialPageNoBirthdayPhotos =>
+      'There are no photos from past birthdays yet.';
+
+  @override
+  String get memorialPageOnThisDay => 'Photos from this day';
+
+  @override
+  String get memorialPageWalkPhotos => 'Photos from that walk';
+
+  @override
+  String get memorialPageOpenWalk => 'See the route again';
+
+  @override
+  String memorialRestoreShortcut(String sex) {
+    String _temp0 = intl.Intl.selectLogic(
+      sex,
+      {
+        'other': 'Moved by mistake? Bring back to Pets',
+      },
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String memorialReadOnlyNote(String name) {
+    return 'Everything here stays as it was: you can view, download and send, but not change. If something needs changing, first bring $name back to Pets.';
+  }
+
+  @override
+  String memorialChatReadOnly(String name) {
+    return '$name is in Memories: you can reread this chat, but no new messages can be written.';
+  }
+
+  @override
+  String memorialRestoreTitle(String name) {
+    return 'Bring $name back to Pets?';
+  }
+
+  @override
+  String memorialRestoreBody(String name) {
+    return 'If the move was a mistake, $name goes back to the Pets list with all their data. The reminders and medicines that were in progress become active again too: check them, some dates may already have passed.';
+  }
+
+  @override
+  String get memorialRestoreConfirm => 'Bring back';
+
+  @override
+  String memorialRestoreDone(String name) {
+    return '$name is back among your pets.';
+  }
+
+  @override
+  String get billingPetsMemorialNote => 'Pets in Memories don\'t count.';
+
+  @override
+  String memorialRestoreBlockedUpgrade(String name, int limit, String plan) {
+    return '$name stays in Memories: nothing is lost. To bring $name back to your pets, you need a free spot: your plan allows $limit and all of them are taken. You can free up a spot or switch to the $plan plan in Settings → Subscription and payments.';
+  }
+
+  @override
+  String memorialRestoreBlockedFull(String name, int limit) {
+    return '$name stays in Memories: nothing is lost. To bring $name back to your pets, you need a free spot: your plan allows $limit and all of them are taken. To free up a spot, move a pet who is no longer with you to Memories, or delete one.';
+  }
+
+  @override
+  String memorialMoveReturnNeedsPlace(String name) {
+    return 'If you ever want to bring $name back to your pets, you will need a free spot in your plan.';
+  }
+
+  @override
+  String memorialMoveReturnNeedsPlan(String name) {
+    return 'If you ever want to bring $name back to your pets, you will need to choose a plan with a free spot.';
+  }
+
+  @override
+  String get billingPlanLimitPets =>
+      'Your plan has reached its maximum number of pets. Pets in Memories, the ones who are no longer with you, don\'t count. Switch to a higher plan in Settings.';
+
+  @override
+  String memorialMoveBlockedFull(String name, int limit) {
+    return 'For now $name stays among your pets, with all their data: nothing is lost. Memories has room for $limit pets and every spot is taken. You can free up a spot with “Delete forever” on a memory\'s page, only if and when you feel ready. In the meantime, if $name\'s reminders weigh on you, you can delete them in Reminders.';
+  }
+
+  @override
+  String get billingPlanLimitMemorials =>
+      'There is no more room in Memories. You can free up a spot with “Delete forever” on a memory\'s page.';
+
+  @override
+  String get billingPaywallMoveToMemories =>
+      'Is a pet no longer with you? Move them to Memories';
+
+  @override
+  String get memorialChoosePrompt => 'Which pet is no longer with you?';
+
+  @override
+  String get memorialChooseEmpty => 'There are no pets to move to Memories.';
+
+  @override
+  String get memorialSaveFailed =>
+      'I couldn\'t save. Check your connection and try again.';
+
+  @override
+  String get petsMemoriesRemoveAction => 'Delete forever';
+
+  @override
+  String notificationsMemoryBirthdayTitle(String petName) {
+    return 'Today is $petName\'s birthday';
+  }
+
+  @override
+  String get notificationsMemoryBirthdayBody =>
+      'If you like, their photos are here.';
+
+  @override
+  String notificationsMemoryWalkTitle(int count, String petName) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count years ago, a walk with $petName',
+      one: 'A year ago, a walk with $petName',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get notificationsMemoryWalkBody =>
+      'One of your favorites. If you like, you can see it again.';
+
+  @override
+  String notificationsMemoryPhotosTitle(int count, String petName) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count years ago, with $petName',
+      one: 'A year ago, with $petName',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get notificationsMemoryPhotosBody =>
+      'There are photos from this day. If you like, they are here.';
+
+  @override
+  String get notificationsChannelMemoriesName => 'Memories';
+
+  @override
+  String get notificationsChannelMemoriesDescription =>
+      'A thought on the special days of the animals in Memories, only if you chose it.';
 
   @override
   String get petsMediaGalleryTitle => 'Gallery';

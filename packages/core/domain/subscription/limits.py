@@ -82,6 +82,15 @@ NO_ACCESS_LIMITS = PlanLimits(
 # the chat used last. The same for every plan, so not in PlanLimits.
 EMERGENCY_CHATS_ABOVE_PET_LIMIT = 2
 
+# How many pets one owner may keep in Ricordi (owner decision 2026-11-16: pets in
+# Ricordi do not count towards the plan's pets, so this is what bounds what an
+# account can pile up there). The same for every plan, so not in PlanLimits. This
+# is only the DEFAULT: the deployment sets the real number with MEMORIAL_PETS_MAX
+# (packages/shared/config/settings.py); the backend writes it into the database
+# for the rule on the app's direct writes (plan_access_config.max_memorial_pets)
+# and reports it on /subscription/status, so the app keeps no copy of its own.
+DEFAULT_MAX_MEMORIAL_PETS = 30
+
 # Anti-spam on the Mercatino, the same for every plan (so not in PlanLimits): the
 # conversations one buyer may open in 24 hours. Replies never count.
 MAX_NEW_MARKETPLACE_CONVERSATIONS_PER_DAY = 10

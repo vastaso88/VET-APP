@@ -170,7 +170,7 @@ from packages.core.application.services.upload_chat_attachment import UploadChat
 from packages.core.application.services.urgency_classifier import UrgencyClassifier
 from packages.core.application.services.vet_summary import VetSummaryService
 from packages.core.domain.knowledge.health_cards import load_cards_file
-from packages.core.domain.subscription.limits import PlanLimits
+from packages.core.domain.subscription.limits import DEFAULT_MAX_MEMORIAL_PETS, PlanLimits
 from packages.core.domain.subscription.models import SubscriptionPlan
 from packages.infrastructure.auth.age_guarded_auth_provider import AgeGuardedAuthProvider
 from packages.infrastructure.auth.bootstrap_auth_provider import BootstrapAuthProvider
@@ -299,6 +299,25 @@ def _resolve_subscription_test_plan(raw: str) -> str | None:
     return value
 
 
+def resolve_memorial_pets_max(raw: str) -> int:
+    """MEMORIAL_PETS_MAX as a whole number above zero, or the default (30). A
+    value that is not one is ignored with a warning rather than refused, for the
+    same reason as SUBSCRIPTION_TEST_PLAN: a typo must not take the API down at
+    start-up, and "no cap" by accident (0, a negative number) is the worse
+    answer for a limit that bounds how much data an account can pile up."""
+    value = raw.strip()
+    if not value:
+        return DEFAULT_MAX_MEMORIAL_PETS
+    try:
+        number = int(value)
+    except ValueError:
+        number = 0
+    if number < 1:
+        logger.warning("MEMORIAL_PETS_MAX is not a whole number above zero: default used")
+        return DEFAULT_MAX_MEMORIAL_PETS
+    return number
+
+
 def groq_reserve_configured(settings: Settings) -> bool:
     return bool(settings.llm_api_key.strip() and settings.llm_model.strip())
 
@@ -362,6 +381,7 @@ class ApplicationContainer:
         self.subscription_test_plan = _resolve_subscription_test_plan(
             settings.subscription_test_plan
         )
+        self.memorial_pets_max = resolve_memorial_pets_max(settings.memorial_pets_max)
         self.plan_access_sync = self._build_plan_access_sync()
         self.user_location_repository = self._build_user_location_repository()
         self.dog_walk_repository = self._build_dog_walk_repository()
@@ -467,6 +487,7 @@ class ApplicationContainer:
             self.developer_emails,
             test_plan=self.subscription_test_plan,
             access_sync=self.plan_access_sync,
+            max_memorial_pets=self.memorial_pets_max,
         )
 
     def _build_plan_access_sync(self) -> PlanAccessSync | None:

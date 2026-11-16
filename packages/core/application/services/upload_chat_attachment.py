@@ -19,6 +19,7 @@ from packages.core.domain.conversation.media_type import (
     PDF,
     detect_media_type,
 )
+from packages.core.domain.pet_profile.memorial import ensure_not_in_memories
 from packages.shared.errors.base import ProviderError, ValidationError
 
 # Vercel rejects a request body over 4.5 MB before it reaches this code, so
@@ -106,6 +107,7 @@ class UploadChatAttachmentService:
             raise ValidationError("pet_profile not found")
         if pet_profile.owner_id != data.owner_id:
             raise ValidationError("pet_profile does not belong to this owner")
+        ensure_not_in_memories(pet_profile)
         if len(data.file_bytes) > self._max_bytes:
             raise ValidationError(
                 "attachment_too_large: il file supera il limite di "

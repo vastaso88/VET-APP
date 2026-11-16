@@ -11,12 +11,11 @@ import '../../domain/pet_models.dart';
 import '../../domain/pet_value_labels.dart';
 import '../widgets/pet_avatar.dart';
 import '../widgets/pets_scaffold.dart';
+import 'pet_memorial_page.dart';
 
-/// Pets moved out of the active Animali list — kept here with their
-/// profile and photo rather than deleted. No stats (walks, badges) yet:
-/// that needs real tracking data this demo doesn't have behind it, so this
-/// stays honest about being a placeholder rather than showing invented
-/// numbers.
+/// Pets moved to Ricordi (docs/product/17_ricordi_animali.md §6). A row
+/// opens the pet's memorial page; deleting forever happens only there, with
+/// a confirmation — never from a quick tap on this list.
 class PetMemoriesPage extends StatefulWidget {
   const PetMemoriesPage({super.key});
 
@@ -27,37 +26,32 @@ class PetMemoriesPage extends StatefulWidget {
 class _PetMemoriesPageState extends State<PetMemoriesPage> {
   List<PetProfile> _pets = PetDemoStore.instance.memorialPets();
 
-  void _reload() => setState(() => _pets = PetDemoStore.instance.memorialPets());
+  @override
+  void initState() {
+    super.initState();
+    PetDemoStore.changes.addListener(_reload);
+  }
 
-  Future<void> _removePermanently(PetProfile pet) async {
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (dialogContext) => AlertDialog(
-        backgroundColor: AppColors.surface,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadii.large)),
-        title: Text(context.l10n.petsMemoriesRemoveTitle),
-        content: Text(context.l10n.petsMemoriesRemoveBody(pet.name)),
-        actions: [
-          TextButton(onPressed: () => Navigator.of(dialogContext).pop(false), child: Text(context.l10n.commonCancel)),
-          FilledButton(
-            style: FilledButton.styleFrom(backgroundColor: AppColors.danger),
-            onPressed: () => Navigator.of(dialogContext).pop(true),
-            child: Text(context.l10n.petsMemoriesRemoveConfirm),
-          ),
-        ],
-      ),
-    );
-    if (confirmed != true) return;
+  @override
+  void dispose() {
+    PetDemoStore.changes.removeListener(_reload);
+    super.dispose();
+  }
 
-    try {
-      await PetDemoStore.instance.delete(pet.id);
-    } on PetSyncException catch (error) {
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(error.message)));
-      return;
-    }
+  void _reload() {
     if (!mounted) return;
-    _reload();
+    setState(() => _pets = PetDemoStore.instance.memorialPets());
+  }
+
+  Future<void> _open(PetProfile pet) async {
+    await Navigator.of(context).push(
+      MaterialPageRoute<void>(builder: (_) => PetMemorialPage(pet: pet)),
+    );
+    if (!mounted) return;
+    // The last memory brought back or deleted: nothing left to show here.
+    if (PetDemoStore.instance.memorialPets().isEmpty) {
+      Navigator.of(context).maybePop();
+    }
   }
 
   @override
@@ -71,14 +65,11 @@ class _PetMemoriesPageState extends State<PetMemoriesPage> {
               child: Text(context.l10n.petsMemoriesEmpty, style: AppTextStyles.bodySmall),
             )
           : ListView.separated(
-              itemCount: _pets.length + 1,
+              itemCount: _pets.length,
               separatorBuilder: (_, __) => const SizedBox(height: AppSpacing.sm),
               itemBuilder: (context, index) {
-                if (index == _pets.length) {
-                  return const _MemoriesComingSoonNote();
-                }
                 final pet = _pets[index];
-                return _MemoryRow(pet: pet, onRemove: () => _removePermanently(pet));
+                return _MemoryRow(pet: pet, onTap: () => _open(pet));
               },
             ),
     );
@@ -86,10 +77,10 @@ class _PetMemoriesPageState extends State<PetMemoriesPage> {
 }
 
 class _MemoryRow extends StatelessWidget {
-  const _MemoryRow({required this.pet, required this.onRemove});
+  const _MemoryRow({required this.pet, required this.onTap});
 
   final PetProfile pet;
-  final VoidCallback onRemove;
+  final VoidCallback onTap;
 
   String _dateRange(BuildContext context) {
     final birth = localizedBirthDateLabel(pet.birthDateLabel);
@@ -103,101 +94,60 @@ class _MemoryRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(AppSpacing.md),
-      decoration: BoxDecoration(
-        color: AppColors.surface,
+    return Material(
+      color: AppColors.surface,
+      shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(AppRadii.large),
-        border: Border.all(color: AppColors.border),
+        side: const BorderSide(color: AppColors.border),
       ),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          PetAvatar(
-            label: pet.avatarEmoji,
-            backgroundColor: pet.accentColor,
-            photoBytes: pet.photoBytes,
-            photoPath: pet.photoPath,
-            identityColor: pet.identityColor,
-            size: 48,
-          ),
-          const SizedBox(width: AppSpacing.md),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  pet.name,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: AppTextStyles.title.copyWith(fontSize: 16),
+      clipBehavior: Clip.antiAlias,
+      child: InkWell(
+        onTap: onTap,
+        child: Padding(
+          padding: const EdgeInsets.all(AppSpacing.md),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              PetAvatar(
+                label: pet.avatarEmoji,
+                backgroundColor: pet.accentColor,
+                photoBytes: pet.photoBytes,
+                photoPath: pet.photoPath,
+                identityColor: pet.identityColor,
+                size: 48,
+              ),
+              const SizedBox(width: AppSpacing.md),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      pet.name,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: AppTextStyles.title.copyWith(fontSize: 16),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      '${pet.speciesDisplayLabel} · ${pet.breedLabel}',
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: AppTextStyles.caption,
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      _dateRange(context),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: AppTextStyles.caption.copyWith(color: AppColors.mutedText),
+                    ),
+                  ],
                 ),
-                const SizedBox(height: 2),
-                Text(
-                  '${pet.speciesDisplayLabel} · ${pet.breedLabel}',
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: AppTextStyles.caption,
-                ),
-                const SizedBox(height: 2),
-                Text(
-                  _dateRange(context),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: AppTextStyles.caption.copyWith(color: AppColors.mutedText),
-                ),
-              ],
-            ),
+              ),
+              const Icon(Icons.chevron_right_rounded, color: AppColors.mutedText),
+            ],
           ),
-          _CompactRemoveButton(onPressed: onRemove),
-        ],
-      ),
-    );
-  }
-}
-
-class _CompactRemoveButton extends StatelessWidget {
-  const _CompactRemoveButton({required this.onPressed});
-
-  final VoidCallback onPressed;
-
-  @override
-  Widget build(BuildContext context) {
-    return IconButton(
-      onPressed: onPressed,
-      icon: const Icon(Icons.delete_outline_rounded, size: 20, color: AppColors.mutedText),
-      visualDensity: VisualDensity.compact,
-      padding: EdgeInsets.zero,
-      constraints: const BoxConstraints(minWidth: 36, minHeight: 36),
-    );
-  }
-}
-
-class _MemoriesComingSoonNote extends StatelessWidget {
-  const _MemoriesComingSoonNote();
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(AppSpacing.lg),
-      decoration: BoxDecoration(
-        color: AppColors.secondarySoft,
-        borderRadius: BorderRadius.circular(AppRadii.large),
-      ),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Icon(Icons.auto_awesome_outlined, size: 18, color: AppColors.primaryStrong),
-          const SizedBox(width: AppSpacing.sm),
-          Expanded(
-            child: Text(
-              context.l10n.petsMemoriesComingSoon,
-              style: AppTextStyles.caption.copyWith(color: AppColors.primaryStrong),
-            ),
-          ),
-        ],
+        ),
       ),
     );
   }

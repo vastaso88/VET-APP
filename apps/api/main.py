@@ -47,6 +47,7 @@ from packages.shared.errors.base import (
     AuthenticationError,
     ConversationLimitError,
     MarketplaceRestrictedError,
+    PetInMemoriesError,
     PlanLimitError,
     ProviderError,
     QuotaExceededError,
@@ -249,6 +250,14 @@ def _plan_limit_message(exc: PlanLimitError, language: str) -> str:
             "plan_limit_pets_upgrade", language, limit=exc.limit, plan=exc.upgrade_to.capitalize()
         )
     return translate("plan_limit_pets", language, limit=exc.limit)
+
+
+@app.exception_handler(PetInMemoriesError)
+async def handle_pet_in_memories(_: Request, exc: PetInMemoriesError) -> JSONResponse:
+    """The pet is in Ricordi: read, export and delete only."""
+    return JSONResponse(
+        status_code=409, content={"detail": "pet_in_memories", "code": "pet_in_memories"}
+    )
 
 
 @app.exception_handler(PlanLimitError)

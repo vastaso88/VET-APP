@@ -37,6 +37,7 @@ from packages.core.domain.pet_profile.body_condition import (
     body_condition_code,
     species_has_body_condition,
 )
+from packages.core.domain.pet_profile.memorial import ensure_not_in_memories
 from packages.core.domain.pet_profile.models import PetProfile
 from packages.core.domain.pet_profile.weight_measurement import (
     format_date_it,
@@ -219,6 +220,8 @@ class SendChatMessageService:
         # owner's pet id must look exactly like a missing one.
         if pet_profile is None or pet_profile.owner_id != data.owner_id:
             raise ValidationError("pet_profile not found")
+        # Past chats of a pet in Ricordi stay readable; no new messages.
+        ensure_not_in_memories(pet_profile)
 
         # A retry of a message this server already answered (the app gave up
         # waiting, the answer was stored anyway — 2026-10-07): hand back that
@@ -244,6 +247,8 @@ class SendChatMessageService:
             pet_profile = self._pet_profile_repository.get(conversation.pet_id)
             if pet_profile is None:
                 raise ValidationError("pet_profile not found")
+        # Also covers an edited message (EditChatMessageService).
+        ensure_not_in_memories(pet_profile)
         photo_context = self._resolve_attachment(data, conversation, pet_profile)
         user_message = ChatMessage(
             role="user",

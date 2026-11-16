@@ -22,6 +22,7 @@ import '../../features/pets/domain/pet_models.dart';
 import '../../features/pets/presentation/pages/gallery_folders_page.dart';
 import '../../features/pets/presentation/pages/pet_detail_page.dart';
 import '../../features/pets/presentation/pages/pet_gallery_page.dart';
+import '../../features/pets/presentation/pages/pet_memorial_page.dart';
 import 'route_restoration.dart';
 
 bool _defaultsRegistered = false;
@@ -68,6 +69,8 @@ void registerRestorablePages([RestorablePages? pages]) {
     ..register('pet_detail', (args) async {
       final pet = await _petById(args['petId']);
       if (pet == null) return null;
+      // Moved to Ricordi since: its own read-only page, never the editable one.
+      if (pet.isMemorial) return PetMemorialPage(pet: pet);
       return PetDetailPage(pet: pet, initialTab: (args['tab'] as num?)?.toInt() ?? 0);
     })
     ..register('pet_gallery', (args) async {

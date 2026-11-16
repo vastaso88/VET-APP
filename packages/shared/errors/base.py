@@ -60,6 +60,16 @@ class AgeRestrictedError(VetAppError):
         return str(self)
 
 
+class PetInMemoriesError(VetAppError):
+    """The pet is in Ricordi (docs/product/17_ricordi_animali.md): its data
+    can be read, exported and deleted, never added to or changed. The API
+    answers 409 `pet_in_memories`; the owner brings the pet back to Animali
+    first."""
+
+    def __init__(self) -> None:
+        super().__init__("pet_in_memories")
+
+
 class PlanLimitError(VetAppError):
     """The owner's plan does not allow more of [kind] ("pets",
     "chats_per_pet"): the API answers 403 `plan_limit_reached` with the
