@@ -1,0 +1,184 @@
+{
+  "codice": "VIA-GB-GAT",
+  "paese": "GB",
+  "specie": "gatto",
+  "area": "VIA",
+  "argomento": "viaggio",
+  "tipo_viaggio": "non_commerciale",
+  "titolo": "Gran Bretagna: portare il gatto (spostamenti non commerciali)",
+  "stato": "bozza",
+  "ultimo_controllo": "2026-11-16",
+  "scadenza": "2027-02-14",
+  "pagina_ufficiale": "https://www.gov.uk/bring-pet-to-great-britain",
+  "revisione": {
+    "proprietario": null,
+    "chi_ha_letto": [],
+    "specialista": null
+  },
+  "blocchi": [
+    {
+      "tipo": "documenti",
+      "frasi": [
+        {
+          "testo": "Serve una rotta di viaggio approvata (la guida britannica rimanda a una pagina dedicata); non serve se si viaggia dentro il Regno Unito o dall'Irlanda.",
+          "fonti": [
+            {
+              "id": "gov_uk_bring_pet_gb",
+              "punto": "What you need to do: step 1"
+            }
+          ]
+        },
+        {
+          "testo": "Serve un documento veterinario, il cui tipo dipende dal paese di partenza (passaporto o certificato sanitario dell'animale) e, se non vendi né cedi l'animale, una dichiarazione di viaggio.",
+          "fonti": [
+            {
+              "id": "gov_uk_bring_pet_gb",
+              "punto": "What you need to do: steps 4 e 6"
+            }
+          ]
+        },
+        {
+          "testo": "Se le regole non sono rispettate l'animale può essere messo in quarantena fino a 4 mesi, oppure respinto se si arriva via mare; le spese sono a carico del proprietario.",
+          "fonti": [
+            {
+              "id": "gov_uk_bring_pet_gb",
+              "punto": "What you need to do: avvertenza sulla quarantena"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "tipo": "microchip",
+      "frasi": [
+        {
+          "testo": "Il microchip va impiantato prima del vaccino antirabbico o nello stesso momento; altrimenti l'animale va rivaccinato.",
+          "fonti": [
+            {
+              "id": "gov_uk_rabies_gb",
+              "punto": "When to get the rabies vaccinations"
+            },
+            {
+              "id": "gov_uk_bring_pet_gb",
+              "punto": "What you need to do: step 2"
+            }
+          ]
+        },
+        {
+          "testo": "Il registro delle vaccinazioni deve riportare anche il numero e la data del microchip.",
+          "fonti": [
+            {
+              "id": "gov_uk_rabies_gb",
+              "punto": "Vaccination record"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "tipo": "vaccini_obbligatori",
+      "frasi": [
+        {
+          "testo": "Il veterinario deve avere la prova che il gatto ha almeno 12 settimane. Dopo il primo vaccino (o l'ultima dose del primo ciclo) si aspettano almeno 21 giorni pieni prima di partire, contando come giorno 1 quello dopo la vaccinazione; il vaccino scelto può richiedere più tempo: chiedi al veterinario.",
+          "fonti": [
+            {
+              "id": "gov_uk_rabies_gb",
+              "punto": "When to get the rabies vaccinations"
+            },
+            {
+              "id": "gov_uk_bring_pet_gb",
+              "punto": "What you need to do: step 3"
+            }
+          ]
+        },
+        {
+          "testo": "Il vaccino deve essere inattivato o ricombinante e approvato nel paese in cui si fa.",
+          "fonti": [
+            {
+              "id": "gov_uk_rabies_gb",
+              "punto": "What vaccinations your pet needs"
+            }
+          ]
+        },
+        {
+          "testo": "Per i richiami si seguono le date del libretto o del certificato; se un richiamo salta, si ricomincia come per una prima vaccinazione.",
+          "fonti": [
+            {
+              "id": "gov_uk_rabies_gb",
+              "punto": "Booster vaccinations"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "tipo": "test_sierologici",
+      "frasi": [
+        {
+          "testo": "Chi parte da un paese non UE e non elencato dalle autorità britanniche deve fare anche un esame del sangue per la rabbia: se è stato saltato un richiamo, l'attesa prima della partenza è più lunga.",
+          "origine": [
+            "fuori_UE"
+          ],
+          "fonti": [
+            {
+              "id": "gov_uk_rabies_gb",
+              "punto": "introduzione; Booster vaccinations"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "tipo": "rientro",
+      "frasi": [
+        {
+          "testo": "Per tornare dalla Gran Bretagna verso l'UE valgono le regole di ingresso da paese terzo; il passaporto per animali rilasciato a residenti in Gran Bretagna non è più valido per questo viaggio.",
+          "fonti": [
+            {
+              "id": "ec_pet_non_eu",
+              "punto": "Specific arrangements for United Kingdom"
+            }
+          ]
+        },
+        {
+          "testo": "Per uscire dalla Gran Bretagna la guida britannica rimanda a una pagina dedicata sui viaggi all'estero con l'animale.",
+          "fonti": [
+            {
+              "id": "gov_uk_bring_pet_gb",
+              "punto": "What you need to do: step 7"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "tipo": "non_diffondere",
+      "frasi": [
+        {
+          "testo": "Un animale può portare con sé parassiti e agenti di malattia in luoghi dove non ci sono: per questo la legge impone alcune vaccinazioni e alcuni trattamenti. Rispettarli protegge anche gli altri animali e le persone.",
+          "nostro": true
+        }
+      ]
+    },
+    {
+      "tipo": "quando_andare_dal_veterinario",
+      "frasi": [
+        {
+          "testo": "Parlane con il tuo veterinario prima di decidere e con largo anticipo: età, salute, razza, durata e temperature del viaggio contano, e alcuni passaggi richiedono settimane o mesi.",
+          "nostro": true
+        }
+      ]
+    },
+    {
+      "tipo": "limiti",
+      "frasi": [
+        {
+          "testo": "Non sono coperti da questa scheda: le sottopagine della guida britannica (rotte approvate e punti di ingresso, tipi e validità dei documenti, esame del sangue, cani guida), l'Irlanda del Nord (sito separato), i vaccini facoltativi o consigliati, le malattie presenti, gli antiparassitari non imposti dalla legge, le usanze locali, le compagnie di trasporto. Per gatti e furetti non abbiamo letto una regola sul trattamento contro la tenia: chiedi alla fonte."
+        },
+        {
+          "testo": "Se la fonte ufficiale dice altro, vale la fonte."
+        }
+      ]
+    }
+  ]
+}

@@ -7,12 +7,17 @@ import '../../../../design_system/tokens/app_text_styles.dart';
 import '../../../../l10n/l10n.dart';
 import '../../../../shared/widgets/coming_soon_page.dart';
 import '../../../../app/launch/restorable_pages.dart';
+import '../../../travel_guide/data/travel_cards_repository.dart';
+import '../../../travel_guide/presentation/pages/travel_guide_page.dart';
 
 /// The "Pet friend" entry is frozen: set to true to bring it back.
 const _petFriendEnabled = false;
 
 class ActivitiesPage extends StatelessWidget {
-  const ActivitiesPage({super.key});
+  const ActivitiesPage({super.key, this.travelCardsRepository});
+
+  /// Tests pass a fake; the app reads the real backend.
+  final TravelCardsRepository? travelCardsRepository;
 
   @override
   Widget build(BuildContext context) {
@@ -74,6 +79,7 @@ class ActivitiesPage extends StatelessWidget {
               onTap: () => Navigator.of(context)
                   .push(restorableRoute<void>('marketplace')),
             ),
+            _AroundWorldRow(repository: travelCardsRepository),
             // Frozen (owner, 2026-11-16): the code stays, nothing reaches it.
             if (_petFriendEnabled)
               _ActivityRow(
@@ -95,6 +101,53 @@ class ActivitiesPage extends StatelessWidget {
           ],
         ),
       ),
+    );
+  }
+}
+
+/// "Around the world": shown only once at least one approved travel card exists
+/// (docs/product/18 §9): a section without verified cards would be an offer of
+/// information nobody has checked. While the cards load, or if they cannot be
+/// reached, the row is simply not there.
+class _AroundWorldRow extends StatefulWidget {
+  const _AroundWorldRow({this.repository});
+
+  final TravelCardsRepository? repository;
+
+  @override
+  State<_AroundWorldRow> createState() => _AroundWorldRowState();
+}
+
+class _AroundWorldRowState extends State<_AroundWorldRow> {
+  late final Future<bool> _available = _check();
+
+  Future<bool> _check() async {
+    try {
+      final cards = await (widget.repository ?? BackendTravelCardsRepository()).fetchAll();
+      return cards.isNotEmpty;
+    } on TravelCardsUnavailable {
+      return false;
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return FutureBuilder<bool>(
+      future: _available,
+      builder: (context, snapshot) {
+        if (snapshot.data != true) return const SizedBox.shrink();
+        return _ActivityRow(
+          icon: Icons.public,
+          iconTone: AppColors.primary,
+          title: context.l10n.aroundWorldTitle,
+          subtitle: context.l10n.aroundWorldActivitySubtitle,
+          onTap: () => Navigator.of(context).push(
+            MaterialPageRoute<void>(
+              builder: (_) => TravelGuidePage(repository: widget.repository),
+            ),
+          ),
+        );
+      },
     );
   }
 }

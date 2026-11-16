@@ -282,6 +282,9 @@ class Settings(BaseSettings):
     # Evaluation only: the in-memory store also reads the cards still in draft
     # (refused in production, see the validator).
     health_cards_include_drafts: bool = Field(default=False, alias="HEALTH_CARDS_INCLUDE_DRAFTS")
+    # Around the world (docs/product/18): the same, for the travel cards still in
+    # draft. Never in production: only approved cards are shown to people.
+    travel_cards_include_drafts: bool = Field(default=False, alias="TRAVEL_CARDS_INCLUDE_DRAFTS")
     # English keywords (light model) as the literature search query.
     evidence_query_normalizer_enabled: bool = Field(
         default=True, alias="EVIDENCE_QUERY_NORMALIZER_ENABLED"
@@ -444,6 +447,8 @@ class Settings(BaseSettings):
     def validate_backend_configuration(self) -> "Settings":
         if self.environment == "production" and self.health_cards_include_drafts:
             raise ValueError("HEALTH_CARDS_INCLUDE_DRAFTS is for evaluations, never production")
+        if self.environment == "production" and self.travel_cards_include_drafts:
+            raise ValueError("TRAVEL_CARDS_INCLUDE_DRAFTS is for development, never production")
 
         if self.persistence_backend == "supabase":
             self._require_fields(

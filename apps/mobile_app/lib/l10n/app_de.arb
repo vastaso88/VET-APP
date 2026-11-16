@@ -4383,5 +4383,86 @@
   "consentGateTitle": "Bevor Sie fortfahren",
   "consentGateBody": "Um Quokka zu nutzen, müssen Sie die Nutzungsbedingungen und die Datenschutzerklärung in der aktuellen Fassung akzeptieren. Sie können sie vor der Zustimmung lesen.",
   "consentGateContinue": "Akzeptieren und fortfahren",
-  "consentGateFailed": "Wir konnten Ihre Zustimmung nicht speichern. Bitte versuchen Sie es gleich noch einmal."
+  "consentGateFailed": "Wir konnten Ihre Zustimmung nicht speichern. Bitte versuchen Sie es gleich noch einmal.",
+  "aroundWorldTitle": "Around the world",
+  "aroundWorldActivitySubtitle": "Regeln, Impfungen und Schutz für Reisen mit Ihrem Tier.",
+  "aroundWorldNotice": "Allgemeine Informationen zu den Regeln für Reisen mit Ihrem Tier. Die Regeln ändern sich und jedes Land entscheidet selbst: Prüfen Sie vor der Abreise immer bei den Veterinärbehörden des Herkunfts- und des Ziellandes und beim Transportunternehmen. Quokka übernimmt keine Gewähr für Vollständigkeit oder Aktualität und ermutigt weder dazu, Tiere zu verbringen noch sie einzuführen: Besprechen Sie die Reise mit Ihrer Tierärztin oder Ihrem Tierarzt und denken Sie zuallererst an das Wohl Ihres Tieres.",
+  "aroundWorldFromLabel": "Wo Sie abreisen",
+  "aroundWorldToLabel": "Wohin Sie reisen",
+  "aroundWorldWhoLabel": "Wen Sie mitnehmen",
+  "aroundWorldCountryHint": "Land suchen",
+  "aroundWorldCountryNone": "Kein Land gefunden.",
+  "aroundWorldMyPets": "Ihre Tiere",
+  "aroundWorldBySpecies": "Oder wählen Sie eine Tierart",
+  "aroundWorldSpeciesDog": "Hund",
+  "aroundWorldSpeciesCat": "Katze",
+  "aroundWorldSpeciesFerret": "Frettchen",
+  "aroundWorldShow": "Informationen anzeigen",
+  "aroundWorldPickAll": "Wählen Sie, wo Sie abreisen, wohin Sie reisen und wen Sie mitnehmen.",
+  "aroundWorldSameCountry": "Sie haben dasselbe Land für Abreise und Ankunft gewählt: Wählen Sie ein anderes Ziel.",
+  "aroundWorldLoadError": "Die Merkblätter konnten nicht geladen werden. Prüfen Sie Ihre Verbindung und versuchen Sie es erneut.",
+  "aroundWorldRetry": "Erneut versuchen",
+  "aroundWorldResultHeader": "{species}: von {from} nach {to}",
+  "@aroundWorldResultHeader": {
+    "placeholders": {
+      "species": {
+        "type": "String"
+      },
+      "from": {
+        "type": "String"
+      },
+      "to": {
+        "type": "String"
+      }
+    }
+  },
+  "aroundWorldNoCard": "Für diese Kombination haben wir noch kein geprüftes Merkblatt. Das heißt nicht, dass es keine Regeln gibt: Fragen Sie bei der Veterinärbehörde des Ziellandes und beim amtlichen Veterinärdienst Ihres Landes nach (in Italien bei der ASL).",
+  "aroundWorldOldCard": "Dieses Merkblatt wurde am {date} geprüft und könnte sich geändert haben. Prüfen Sie die offizielle Quelle, bevor Sie etwas entscheiden.",
+  "@aroundWorldOldCard": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "aroundWorldHiddenCard": "Dieses Merkblatt ist nicht mehr aktuell und wird vorerst nicht angezeigt. Die offiziellen Regeln finden Sie hier:",
+  "aroundWorldOpenOfficial": "Offizielle Quelle öffnen",
+  "aroundWorldNotATrip": "Dieser Bereich betrifft Heimtiere, die ohne gewerblichen Zweck mit ihrem Besitzer reisen. Reist das Tier nicht mit Ihnen, wird es zum Verkauf, zur Adoption oder zur Weitergabe an eine andere Person verbracht oder reisen viele Tiere zusammen, gelten andere, strengere Regeln: Wenden Sie sich an den amtlichen Veterinärdienst Ihres Landes (in Italien die ASL) oder an die Veterinärbehörde des Ziellandes. Hier können wir Ihnen keine Hinweise geben.",
+  "aroundWorldOtherSpecies": "In diesem Fall gelten andere Regeln. Wenden Sie sich an die zuständige Veterinärbehörde: Hier können wir Ihnen keine Hinweise geben.",
+  "aroundWorldTransport": "Die Regeln von Transportunternehmen (Flugzeuge, Schiffe, Züge, Busse) und Unterkünften unterscheiden sich von den offiziellen und ändern sich oft: Wir geben sie nicht wieder. Fragen Sie vor dem Buchen immer beim Unternehmen nach. Quokka ist kein Reisebüro und verkauft oder organisiert keine Reisen.",
+  "aroundWorldLocalCustoms": "Örtliche Bräuche und Gewohnheiten: Diese behandeln wir hier nicht. Zum Führen von Tieren (Leine, Maulkorb, verbotene Rassen, öffentliche Orte) geben wir nur Regeln mit offizieller Quelle wieder; für alles andere informieren Sie sich bei den Behörden oder Einrichtungen vor Ort.",
+  "aroundWorldTimes": "Diese Schritte haben genaue Fristen und manche dauern Wochen oder Monate: Planen Sie sie frühzeitig mit Ihrem Tierarzt und prüfen Sie die Daten bei der Behörde des Ziellandes.",
+  "aroundWorldFinal": "Die offiziellen Regeln haben Vorrang vor dieser Zusammenfassung. Prüfen Sie vor der Abreise beim amtlichen Veterinärdienst Ihres Landes (in Italien die ASL), bei der Veterinärbehörde des Ziellandes und beim Transportunternehmen.",
+  "aroundWorldInfoTitle": "Was Around the world leistet und was nicht",
+  "aroundWorldInfoBody": "Es fasst die offiziellen Regeln für Reisen mit Hunden, Katzen und Frettchen zusammen, mit Quelle und Prüfdatum. Es ist keine tierärztliche oder rechtliche Beratung, ersetzt weder den amtlichen Veterinärdienst noch die Behörden des Ziellandes und garantiert nicht, vollständig oder aktuell zu sein. Es nennt keine Arzneimittel oder Dosierungen und deckt weder örtliche Bräuche ohne offizielle Quelle noch Transportunternehmen, Verkauf, Adoption oder mehrere gemeinsam reisende Tiere ab. Wir ermutigen weder dazu, Tiere zu verbringen noch sie einzuführen.",
+  "aroundWorldReportError": "Fehler melden",
+  "aroundWorldMailSubject": "Fehler in einem Reisemerkblatt ({code})",
+  "@aroundWorldMailSubject": {
+    "placeholders": {
+      "code": {
+        "type": "String"
+      }
+    }
+  },
+  "aroundWorldCheckedOn": "Geprüft am {date}",
+  "@aroundWorldCheckedOn": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "aroundWorldOwnAdvice": "Rat von Quokka (nicht aus der Quelle)",
+  "aroundWorldBlockDocuments": "Dokumente",
+  "aroundWorldBlockMicrochip": "Mikrochip",
+  "aroundWorldBlockCompulsoryVaccines": "Pflichtimpfungen",
+  "aroundWorldBlockAntibodyTest": "Antikörpertest",
+  "aroundWorldBlockRecommendedVaccines": "Empfohlene Impfungen",
+  "aroundWorldBlockDiseases": "Vorkommende Krankheiten",
+  "aroundWorldBlockMedicinesProtection": "Arzneimittel und Schutz",
+  "aroundWorldBlockLocalRules": "Örtliche Regeln und Verhalten",
+  "aroundWorldBlockReturn": "Rückreise",
+  "aroundWorldBlockSpreading": "Krankheiten nicht verbreiten",
+  "aroundWorldBlockVet": "Beim Tierarzt",
+  "aroundWorldBlockLimits": "Was dieses Merkblatt nicht abdeckt"
 }

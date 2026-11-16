@@ -34,6 +34,7 @@ from apps.api.routes.pets import router as pets_router
 from apps.api.routes.reminders import router as reminders_router
 from apps.api.routes.speech_to_text import router as speech_to_text_router
 from apps.api.routes.subscription import router as subscription_router
+from apps.api.routes.travel import router as travel_router
 from packages.bootstrap.container import get_container
 from packages.core.domain.common.language import language_from_accept_header
 from packages.core.domain.localization import translate
@@ -361,6 +362,7 @@ app.include_router(subscription_router)
 app.include_router(devices_router)
 app.include_router(local_services_router)
 app.include_router(news_router)
+app.include_router(travel_router)
 app.include_router(events_router)
 app.include_router(geocoding_router)
 app.include_router(marketplace_router)
