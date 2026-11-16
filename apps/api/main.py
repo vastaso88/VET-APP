@@ -14,6 +14,7 @@ from apps.api.routes.account_preferences import router as account_preferences_ro
 from apps.api.routes.admin import router as admin_router
 from apps.api.routes.admin_age import router as admin_age_router
 from apps.api.routes.admin_llm_usage import router as admin_llm_usage_router
+from apps.api.routes.admin_users import router as admin_users_router
 from apps.api.routes.auth import router as auth_router
 from apps.api.routes.chat import router as chat_router
 from apps.api.routes.chat_attachments import router as chat_attachments_router
@@ -248,6 +249,7 @@ app.include_router(health_router)
 app.include_router(admin_router)
 app.include_router(admin_age_router)
 app.include_router(admin_llm_usage_router)
+app.include_router(admin_users_router)
 app.include_router(lifecycle_router)
 app.include_router(auth_router)
 app.include_router(pets_router)

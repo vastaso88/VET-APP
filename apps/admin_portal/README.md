@@ -18,6 +18,14 @@ This is intentionally a separate product surface from `apps/mobile_app`.
 - server-side admin allowlist enforced by FastAPI
 - Overview with live Auth / pet / conversations / Radar / moderation / scrape metrics
 - latest data sources and scrape runs, read-only
+- Users (`/users`, `GET /admin/users`): paginated account checks, email/ID search,
+  signup and last login, email verification/suspension, stored and effective plan,
+  trial deadline. Read-only: opening the page never starts a trial or changes a plan.
+  Public-test and developer access follow the backend subscription rules.
+  Payments are explicitly unavailable: a selected plan is not proof of payment;
+  the current model has no transaction ledger. No new environment variables or SQL.
+  Deploy the backend endpoint before the portal; unavailable data shows an error,
+  not a zero-user or zero-revenue report.
 - "Consumi IA" (`/ai-usage`): what the AI costs, from the backend's `GET /admin/llm-usage`
   (usage ledger, aggregates only, no owner and no text): today against the daily euro cap,
   the month against the Anthropic credits (`LLM_MONTHLY_CREDITS_USD`, default 100), per model,
