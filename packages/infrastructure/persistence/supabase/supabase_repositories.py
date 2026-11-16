@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import logging
+import re
 import time
 from datetime import date, datetime
 from typing import TYPE_CHECKING, Any, cast
@@ -40,7 +41,7 @@ from packages.core.application.ports.weight_measurement_repository import (
 )
 from packages.core.domain.consent.models import AccountConsents
 from packages.core.domain.conversation.attachment import ChatAttachment
-from packages.core.domain.conversation.models import Conversation
+from packages.core.domain.conversation.models import INTERNAL_CONVERSATION_FIELDS, Conversation
 from packages.core.domain.coverage.models import RadarCoverage
 from packages.core.domain.device.models import UserDevice
 from packages.core.domain.dog_walk.models import WalkSession
@@ -106,6 +107,25 @@ class SupabasePetProfileRepository(PetProfileRepository):
         return [PetProfile.model_validate(item) for item in response.data or []]
 
 
+# PostgREST: "Could not find the 'x' column of 'conversations' in the schema
+# cache" (PGRST204); Postgres: 'column "x" of relation ... does not exist' or
+# "column conversations.x does not exist" (42703).
+_MISSING_COLUMN = re.compile(
+    r"could not find the '(\w+)' column|column \"(\w+)\" of relation|column \w+\.(\w+) does not",
+    re.IGNORECASE,
+)
+# What a conversation can be saved without: its internal state (never shown
+# to the app) and the retention timestamp.
+_DEGRADABLE_CONVERSATION_COLUMNS = INTERNAL_CONVERSATION_FIELDS | {"last_message_at"}
+
+
+def _missing_column(exc: Exception) -> str | None:
+    match = _MISSING_COLUMN.search(str(exc))
+    if match is None:
+        return None
+    return next(group for group in match.groups() if group)
+
+
 class SupabaseConversationRepository(ConversationRepository):
     def __init__(self, client: Client) -> None:
         self._client = client
@@ -114,19 +134,24 @@ class SupabaseConversationRepository(ConversationRepository):
     def save(self, conversation: Conversation) -> Conversation:
         payload = _serialize_payload(conversation.model_dump(mode="json"))
         # Retention (2026-10-26) reads this column; kept here on every save.
-        # Until the schema script has added the column, a save must not
-        # fail because of it: retried without.
         if conversation.messages:
             payload["last_message_at"] = conversation.messages[-1].created_at.isoformat()
-        try:
-            self._client.table(self._table).upsert(payload).execute()
-        except Exception as exc:
-            if "last_message_at" not in str(exc):
-                raise
-            _logger.warning("conversations.last_message_at missing: run supabase_schema.sql")
-            payload.pop("last_message_at", None)
-            self._client.table(self._table).upsert(payload).execute()
-        return conversation
+        # A state column the live schema does not have yet (the script not
+        # run: production 2026-11-16, awaiting_anamnesis) must not cost the
+        # owner the answer just generated: saved without it, loudly. Only the
+        # chat's own state can go; the messages, the owner and the pet never.
+        while True:
+            try:
+                self._client.table(self._table).upsert(payload).execute()
+                return conversation
+            except Exception as exc:
+                column = _missing_column(exc)
+                if column not in _DEGRADABLE_CONVERSATION_COLUMNS or column not in payload:
+                    raise
+                _logger.warning(
+                    "conversations.%s missing: saved without it, run supabase_schema.sql", column
+                )
+                payload.pop(column)
 
     def list_inactive_before(self, cutoff: datetime, *, limit: int = 200) -> list[Conversation]:
         response = (
