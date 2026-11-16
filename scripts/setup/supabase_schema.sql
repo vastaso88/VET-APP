@@ -113,6 +113,12 @@ alter table public.conversations
 alter table public.conversations
     add column if not exists awaiting_safety_clarification boolean not null default false;
 alter table public.conversations add column if not exists safety_clarification_category text;
+-- Chat plan "fratello maggiore" and free anamnesis replies (2026-11-10): both
+-- are saved on every conversation; without them every chat reply fails.
+alter table public.conversations
+    add column if not exists escalate_next_health boolean not null default false;
+alter table public.conversations
+    add column if not exists awaiting_anamnesis boolean not null default false;
 
 -- VetGPT Milestone 2: summaries of a pet's clinical documents, consulted by
 -- the chat only after explicit owner consent (see ChatOrchestrator). This
