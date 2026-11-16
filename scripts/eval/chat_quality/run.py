@@ -48,6 +48,8 @@ THE GRID (one row per scenario)
                      mancante / nessuno (or ammesso when either is fine) (mechanical)
   esperto       0-2  answers as an expert instead of delegating      (judge)
   caratteri     n    average length of a reply                      (mechanical)
+  parole_max    n    words of the longest reply (the prompt asks ~180) (mechanical)
+  oltre_200_parole n replies over 200 words                         (mechanical)
   chiamate      n    LLM calls per reply (a regeneration counts)    (measured)
   secondi       n    time to produce a reply, evidence search and
                      LLM included, rate-limit retries excluded      (measured)
@@ -621,6 +623,10 @@ def mechanical_scores(scenario: Scenario, turns: list[dict[str, Any]]) -> dict[s
     known_text = owner_text + " " + _documents_text(scenario)
     scores: dict[str, Any] = {
         "caratteri": round(statistics.mean(len(reply) for reply in replies)),
+        # The prompt asks for about 180 words (owner's test 2026-11-16: 330
+        # and 300): the longest reply, and how many replies pass 200.
+        "parole_max": max(len(reply.split()) for reply in replies),
+        "oltre_200_parole": sum(1 for reply in replies if len(reply.split()) > 200),
         "allarmi": sum(
             len(re.findall(rf"\b{re.escape(word)}", everything.lower()))
             for word in ALARM_WORDS
@@ -834,6 +840,8 @@ NUMERIC = (
     "farmaci",
     "parole_vietate",
     "caratteri",
+    "parole_max",
+    "oltre_200_parole",
     "chiamate",
     "secondi",
 )

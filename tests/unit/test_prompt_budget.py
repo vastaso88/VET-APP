@@ -40,7 +40,9 @@ from packages.shared.errors.base import ProviderError
 # 2026-11-07: the history and reference-material sentences (synthetic users P7, P11).
 # 2026-11-16: +200 for the harmful-content sentence of WHAT YOU ARE NOT (Anthropic's
 # rules for products minors may use, docs/compliance/08 point 57).
-SYSTEM_PROMPT_MAX_CHARS = 9900
+# 2026-11-16: +250 for the LAST CHECK line (at most 180 words, never ask what the
+# profile already says), last in the prompt so the model weighs it most.
+SYSTEM_PROMPT_MAX_CHARS = 10150
 QUESTION = "da due giorni zoppica dopo le passeggiate"
 
 

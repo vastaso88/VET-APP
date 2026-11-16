@@ -44,6 +44,7 @@ from packages.core.application.services.medical_record_context_retriever import 
 from packages.core.application.services.natural_answer_prompt import (
     ANSWER_NOW_REMINDER,
     PROMPT_VERSION,
+    SHORTEN_PROMPT,
     build_emergency_prompt,
     build_system_prompt,
     stable_prefix,
@@ -178,9 +179,13 @@ from packages.core.domain.safety.harmful_requests import (
     is_prompt_leak_request,
     mentions_a_child_at_risk,
     mentions_a_death,
+    mentions_a_warning_signal,
+    mentions_child_handling,
+    mentions_play,
     strip_invented_prices,
     strip_proceed_anyway,
     vomiting_and_not_eating_for_a_day,
+    warning_toward_others,
 )
 from packages.core.domain.safety.human_drug_toxicity import human_drug_toxicity_note
 from packages.core.domain.safety.triage_clarification import (
@@ -248,6 +253,16 @@ _DISSATISFIED = re.compile(
     r"nicht (?:das|was) ich gefragt|vous n'avez pas compris|tu n'as pas compris|"
     r"(?:ca|cela) ne m'aide pas|ce n'est pas ce que j'ai demande)\b"
 )
+
+
+# An answer past this many words gets the shortening pass (the prompt asks for
+# about 180: a little over is tolerated, 330 is not).
+ANSWER_WORDS_LIMIT = 200
+SHORTEN_MAX_TOKENS = 400
+
+
+def _word_count(text: str) -> int:
+    return len(text.split())
 
 
 def _only_questions(text: str) -> bool:
@@ -1747,6 +1762,54 @@ class ChatOrchestrator:
         language = normalize_language(data.language)
         return texts.get(language, texts["it"]).format(name=data.pet_name)
 
+    def _shortened(self, response: LLMResponse) -> LLMResponse:
+        """The same answer in fewer words (SHORTEN_PROMPT), by the light
+        model: about 0.0002 EUR, only when an answer runs long. Whatever
+        goes wrong, or a result that is not shorter, keeps the original."""
+        try:
+            short = self._llm_client.generate(
+                LLMGenerationRequest(
+                    system_prompt=SHORTEN_PROMPT,
+                    user_prompt=response.content,
+                    max_tokens=SHORTEN_MAX_TOKENS,
+                    purpose="shorten",
+                    model_class="light",
+                )
+            )
+        except Exception:  # noqa: BLE001 - the long answer is still a good answer
+            logger.warning("shortening pass failed: the long answer is kept")
+            return response
+        text = short.content.strip()
+        if not text or short.finish_reason == "length":
+            return response
+        if _word_count(text) >= _word_count(response.content):
+            return response
+        return response.model_copy(update={"content": text})
+
+    @staticmethod
+    def _already_said(texts: dict[str, str], data: ChatOrchestratorInput) -> bool:
+        """A fixed sentence already given in this conversation (in any
+        language): said once, never repeated word for word."""
+        openings = {text.strip()[:60] for text in texts.values()}
+        return any(
+            message.role == "assistant" and any(o in message.content for o in openings)
+            for message in data.conversation_history
+        )
+
+    @staticmethod
+    def _earlier_behaviour_warning(data: ChatOrchestratorInput) -> bool:
+        """An earlier message of this conversation raised a warning signal
+        (or the owner asked to stop the questions): the case is already
+        open and the questions were asked once."""
+        return any(
+            message.role == "user"
+            and (
+                mentions_a_warning_signal(message.content)
+                or asks_to_stop_questions(message.content)
+            )
+            for message in data.conversation_history
+        )
+
     @staticmethod
     def _under_18(data: ChatOrchestratorInput) -> bool:
         return data.owner_is_minor or is_minor_writing(data.user_message)
@@ -3144,12 +3207,28 @@ class ChatOrchestrator:
         not_helped = self._owner_not_helped(data)
         health_question = self._is_health_question(kind, intent, prefetch, message) or not_helped
         health_rule = self._health_card_selector is not None and health_question
+        # A growl, a snap or a bite in a behaviour question (owner's test
+        # 2026-11-16): the first time in the conversation the reply asks the
+        # facts that decide the advice before explaining anything; later
+        # turns build on the answers, without invented motives.
+        behavioural = kind is RequestKind.DIRECT and is_behavioural_or_duty(message)
+        earlier_warning = self._earlier_behaviour_warning(data)
+        warning_signal = behavioural and (
+            (mentions_a_warning_signal(message) and not mentions_play(message)) or earlier_warning
+        )
+        behaviour_anamnesis = (
+            behavioural
+            and warning_toward_others(message)
+            and not earlier_warning
+            and not asks_to_stop_questions(data.user_message)
+        )
         # ... or the button pressed on the last health answer.
         second_try = health_question and (data.escalate_health or not_helped)
         escalated = second_try and self._strong_allowed(data)
         cache_id: str | None = None
         if (
             self._answer_cache is not None
+            and not behaviour_anamnesis
             and is_cacheable_question(
                 message,
                 kind=kind,
@@ -3307,7 +3386,9 @@ class ChatOrchestrator:
                 )
             ),
             language=data.language,
-            behavioural=kind is RequestKind.DIRECT and is_behavioural_or_duty(message),
+            behavioural=behavioural,
+            behaviour_anamnesis=behaviour_anamnesis,
+            warning_signal=warning_signal,
             # Under the cards rule the notes that ask the model to explain
             # clinical content from its own knowledge stay out: the approved
             # cards are the only clinical source (measured 2026-11-10: the
@@ -3406,6 +3487,16 @@ class ChatOrchestrator:
                 state=ConversationState.RETRIEVAL_FAILURE,
             )
 
+        # The prompt asks for about 180 words and the model does not always
+        # listen (owner's test 2026-11-16: 330 and 300). Past the tolerance a
+        # second, light pass shortens it, before every check below runs on it.
+        if (
+            kind is not RequestKind.REPORT
+            and not is_long_message(message)
+            and _word_count(response.content) > ANSWER_WORDS_LIMIT
+        ):
+            response = self._shortened(response)
+
         validation = validate_answer(response.content, sources_count=len(sources))
         if health_rule:
             # A card label that was not given ([S4] with three cards, any [S]
@@ -3479,7 +3570,11 @@ class ChatOrchestrator:
                 opening += self._fixed_text(UNDER_18_HELP_LINE, data) + " "
             answer_text = opening + answer_text
             cache_id = None
-        if mentions_a_child_at_risk(message) and not is_minor_writing(message):
+        if (
+            mentions_child_handling(message)
+            and not is_minor_writing(message)
+            and not self._already_said(CHILD_NEVER_ALONE, data)
+        ):
             # Fourth round, 2: the note alone did not move the model.
             answer_text = self._fixed_text(CHILD_NEVER_ALONE, data) + answer_text
             cache_id = None
@@ -3527,7 +3622,10 @@ class ChatOrchestrator:
             escalated=escalated,
             awaiting_anamnesis=(
                 kind is RequestKind.SYMPTOM and may_ask and _only_questions(response.content)
-            ),
+            )
+            # The behaviour reply that asks first ends with its questions: the
+            # owner's answer continues the case (not a new question).
+            or (behaviour_anamnesis and response.content.rstrip().endswith("?")),
         )
 
     def _cached_answer_result(self, cache_id: str) -> ChatOrchestratorResult | None:

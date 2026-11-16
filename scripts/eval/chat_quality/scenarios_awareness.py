@@ -55,6 +55,16 @@ AWARENESS_PETS: dict[str, Pet] = {
             weight_label="0,8 kg",
             notes="Vive in casa, libera per qualche ora al giorno, gabbia a più piani.",
         ),
+        # A dog with no documents: the owner's own test of 2026-11-16.
+        Pet(
+            key="rex",
+            name="Rex",
+            species="Cane",
+            breed="Meticcio",
+            age_years=6,
+            sex="Maschio castrato",
+            weight_label="22 kg",
+        ),
     )
 }
 
@@ -469,5 +479,61 @@ AWARENESS_SCENARIOS: tuple[Scenario, ...] = (
         "sito ufficiale per tempi e regole aggiornate, senza citare articoli di legge.",
         vet=True,
         must_say=(r"passaporto", r"antirabbic\w*"),
+    ),
+    # --- The owner's own test (2026-11-16), anonymised ---------------------
+    # Two turns: a dog that stands between guests and children and growls.
+    # Faults seen: the small-children block repeated word for word in both
+    # replies, motives invented, "since when" asked only after the advice,
+    # illogical sentences, the second reply contradicting the first, no
+    # veterinarian expert in behaviour.
+    Scenario(
+        "cons-cane-ospiti-figli-ringhio",
+        "consapevolezza",
+        "rex",
+        (
+            Turn(
+                "Rex si mette sempre in mezzo tra gli ospiti e i miei figli. A volte, "
+                "accucciato, ringhia un pochino, perché sa che non voglio. Dopo un po' di "
+                "distrazione smette, ma con gli ospiti ha sempre questo atteggiamento, anche "
+                "con una persona che viene ogni settimana. Cosa posso fare?"
+            ),
+            Turn(
+                "Con i bambini non ringhia, secondo me li vuole proteggere. Con gli ospiti è "
+                "lui ad avvicinarsi per abbaiare; se lo riprendo smette e si accuccia, ma non "
+                "molla l'atteggiamento."
+            ),
+        ),
+        # Criteria from the reference reply the owner approved (2026-11-16): about
+        # 100 words in turn 1 and 150 in turn 2, never more than about 180.
+        "Turno 1 (circa 100 parole): il ringhio è un avviso, non va sgridato (si "
+        "insegnerebbe a saltare l'avviso); PRIMA dei consigli chiede età dei figli, da "
+        "quanto succede (sempre o da un periodo preciso), cosa fa esattamente all'arrivo di "
+        "un ospite, se ha mai morso o pizzicato; un consiglio di sicurezza immediato e "
+        "pratico (bambini un po' in disparte all'arrivo degli ospiti, spazio al cane per "
+        "allontanarsi). Turno 2 (circa 150 parole): accoglie l'idea del proprietario ('li "
+        "vuole proteggere') come possibile senza confermarla né smontarla bruscamente; "
+        "2-4 passi concreti (posto suo lontano dalla porta prima delle visite, ospiti che "
+        "non lo guardano né si chinano all'inizio, premio quando è tranquillo); veterinario "
+        "esperto in comportamento con un criterio chiaro (nessun miglioramento in 2-3 "
+        "settimane, ringhio in aumento o verso i bambini); ripete alla fine le domande "
+        "ancora senza risposta. MAI: blocco fisso sui bambini o ripetuto, ipotesi non dette "
+        "dal proprietario, frasi contraddittorie, domande su dati già nel profilo (età, "
+        "sesso, castrazione, peso, razza), oltre circa 180 parole per risposta.",
+        value_by_turn=2,
+        vet_referral=True,
+        must_say_any=(r"comportament\w*",),
+        must_not_say_any=FORBIDDEN_WORDS
+        + (
+            r"tirare la coda",
+            r"prendere per il collo",
+            r"abbracciare stretto",
+            r"bambino piccolo non resta mai",
+            # data the profile already holds (Rex: 6 years, male, neutered, 22 kg)
+            r"quanti anni ha (?:rex|il cane|lui)\b",
+            r"\b(?:è|e') (?:castrato|sterilizzat\w*)\s*\?",
+            r"quanto pesa",
+            r"di che razza",
+        ),
+        tags=("consapevolezza", "etologia", "anamnesi", "test-proprietario"),
     ),
 )

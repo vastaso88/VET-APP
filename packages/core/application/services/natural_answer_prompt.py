@@ -238,12 +238,63 @@ _MINOR = (
     "now in two or three simple steps, then why the animal did it, without blaming anyone."
 )
 _CHILD_AT_RISK = (
-    "A CHILD IS INVOLVED. The safety sentence is already written before your text (a small "
-    "child is never left alone with the animal; pulling the tail or ears, grabbing the neck, "
-    "tight hugs and face against the face are never done, with or without an adult "
-    "watching): do not repeat it, do not open with 'prima di tutto' or a list of rules. Go "
-    "straight to the animal's signals and to what to teach the child, gently, and never "
-    "write 'without supervision' as if supervision made those gestures acceptable."
+    "A CHILD IS INVOLVED. The child's safety comes first, in the words of THIS case, never "
+    "as a block of rules about gestures the owner did not mention. When a sentence on it is "
+    "already written before your text (a small child is never left alone with the animal; "
+    "pulling the tail or ears, grabbing the neck, tight hugs are never done), or it was "
+    "already said earlier in this conversation, do not repeat it, do not open with 'prima "
+    "di tutto'. If the children's age is not known and it changes the advice, ask it. Never "
+    "write 'without supervision' as if supervision made a risky gesture acceptable."
+)
+# A growl, a snap or a bite in a behaviour question, the first time in the
+# conversation (owner's test 2026-11-16): ask before explaining, no
+# invented motive. Overrides "answer first" for this one reply.
+_BEHAVIOUR_ANAMNESIS = (
+    "A WARNING SIGNAL (a growl, a snap, a bite, bared teeth) IN A BEHAVIOUR QUESTION, and "
+    "the facts that decide the advice are missing. This reply ASKS FIRST: it overrides "
+    "'answer it now', 'explain the why' and 'one question at the end' for this reply only. "
+    "Write: one sentence that takes the signal seriously without alarm (a growl is a warning "
+    "to respect, never to punish); one step that holds whatever the answers (for now, when "
+    "guests or children are around, keep the animal where an adult can watch it and give it "
+    "a calm place away from them); then two to four short numbered questions, only those the "
+    "owner has not answered: how old the children are (if children are part of it), since "
+    "when it happens and whether it changed, what exactly the animal does from the moment "
+    "someone arrives (where it goes, its posture, whom it faces), whether it has ever "
+    "snapped or bitten. No causes, no motives, no training plan yet. End with the questions."
+)
+# Owner's test 2026-11-16: about 330 words where 120-180 were asked, and a
+# question on data the profile already holds. Said again LAST, where the
+# model weighs it most (the length one not for a report or a long message).
+_LAST_CHECK_LENGTH = (
+    "LAST CHECK. At most 180 words in all, questions included: if there is more to say, "
+    "keep what helps most now and stop."
+)
+_LAST_CHECK_PROFILE = (
+    "Never ask what the pet's profile already says (species, breed, age, sex, neutered or "
+    "spayed, weight): read it there and use it."
+)
+# The second pass when an answer still runs long (ChatOrchestrator._shortened).
+SHORTEN_PROMPT = (
+    "You shorten a chat answer written for a pet owner. Rewrite it in at most 170 words, "
+    "in the same language and the same warm tone. Keep every safety warning, every "
+    "question to the owner, every mention of the vet with its reason, every label like "
+    "[S1], and the numbered steps (in fewer words). Cut repetitions and explanations the "
+    "owner does not need now. Add nothing: no new fact, advice or question. Reply with the "
+    "shortened answer only."
+)
+_WARNING_SIGNAL = (
+    "WARNING SIGNAL IN A BEHAVIOUR CASE. Build only on what the owner wrote: never state a "
+    "motive (protecting, jealousy, territory, a place it considers its own) as a fact, at "
+    "most one possibility said as such. Stay consistent with your earlier replies in this "
+    "conversation; if the new facts change a piece of advice, say so and why. Every sentence "
+    "must make sense on its own and no step may contradict another. An explanation the "
+    "owner offers ('he wants to protect them') is welcomed as possible, never confirmed "
+    "nor bluntly dismissed. Give two to four concrete steps. Then, with a clear criterion "
+    "(no improvement in two or three weeks, the growl getting worse, or a growl toward the "
+    "children), recommend a veterinarian expert in behaviour (veterinario esperto in "
+    "comportamento), who can see the animal in person. Read your earlier questions: those "
+    "the owner has not answered yet (the children's age, whether it has ever bitten) close "
+    "the reply, asked again in one short line, saying they would change the advice."
 )
 _VISIT_TODAY = (
     "VOMITING AND NOT EATING FOR A DAY OR MORE: the visit is today, say it clearly and "
@@ -498,6 +549,8 @@ def build_system_prompt(
     health_cards: int | None = None,
     second_try: bool = False,
     minor_account: bool = False,
+    behaviour_anamnesis: bool = False,
+    warning_signal: bool = False,
 ) -> str:
     """The system prompt for one reply. Stable parts first (the prefix the
     provider can cache), then the parts that depend on the request: the
@@ -508,8 +561,12 @@ def build_system_prompt(
     parts = [stable_prefix(kind, may_ask=may_ask)]
     if kind is RequestKind.DIRECT:
         parts.append(_AWARENESS)
-    if behavioural:
+    if behaviour_anamnesis:
+        parts.append(_BEHAVIOUR_ANAMNESIS)
+    elif behavioural:
         parts.append(_BEHAVIOUR_CONTEXT)
+    if warning_signal and not behaviour_anamnesis:
+        parts.append(_WARNING_SIGNAL)
     if safety_question:
         parts.append(_SAFETY_QUESTION)
     if prevention_schedule:
@@ -562,6 +619,10 @@ def build_system_prompt(
             "FACTS ABOUT THIS KIND OF ANIMAL (verified; where your own assumptions differ, "
             "these win):\n" + species_facts
         )
+    if kind is RequestKind.REPORT or long_message:
+        parts.append(_LAST_CHECK_PROFILE)
+    else:
+        parts.append(f"{_LAST_CHECK_LENGTH} {_LAST_CHECK_PROFILE}")
     # Nothing is added for Italian: that prompt stays as it has always been.
     language_line = response_language_instruction(language)
     if language_line:

@@ -539,22 +539,93 @@ _CHILD = _words(
     r"kind|kinder|kleinkind|sohn|tochter|"
     r"enfant\w*|bebe|fils|fille|petit[es]?"
 )
-_CHILD_RISK = _words(
-    r"ringhi\w*|mors\w*|mordic\w*|graffi\w*|abbracci\w*|tira (?:la coda|le orecchie)|"
-    r"prende per il collo|salta addosso|da sol[oaie]|"
-    r"growl\w*|bit\w*|bite\w*|scratch\w*|hug\w*|pull\w* (?:the |his |her )?tail|alone|"
-    r"grun\w*|mordi\w*|muerd\w*|arana\w*|abraz\w*|tira de la cola|sol[oa]s?|"
-    r"knurr\w*|beiss\w*|gebissen|kratz\w*|umarm\w*|am schwanz|allein|"
-    r"grogn\w*|mord\w*|griff\w*|calin\w*|tire la queue|seul[es]?"
+# The gestures the fixed sentence CHILD_NEVER_ALONE speaks of: only these
+# put it before the answer (owner's test 2026-11-16: "figli" and a growl at
+# guests got a sentence about tails and hugs nobody had mentioned).
+_CHILD_HANDLING = _words(
+    r"abbracci\w*|tira (?:la coda|le orecchie|il pelo)|(?:lo |la )?prende per il collo|"
+    r"(?:gli |le )?(?:sale|monta) sopra|lo cavalca|la cavalca|da sol[oaie] con|"
+    r"hug\w*|pull\w* (?:the |his |her |its )?(?:tail|ears)|grab\w* (?:the |his |her |its )?neck|"
+    r"rid(?:e|es|ing) (?:on )?(?:him|her|it)|alone with|"
+    r"abraz\w*|tira de la cola|tira de las orejas|agarra del cuello|sol[oa]s? con|"
+    r"umarm\w*|am schwanz|an den ohren|am hals|allein mit|"
+    r"calin\w*|tire la queue|tire les oreilles|par le cou|seul[es]? avec"
+)
+# A warning from the animal: a growl, a snap, a bite, bared teeth.
+_WARNING_SIGNAL = _words(
+    r"ringhi\w*|mors[oaie]|morde\w*|morsicat\w*|azzann\w*|graffi\w*|digrign\w*|"
+    r"mostra i denti|scatt\w* (?:contro|verso)|"
+    r"growl\w*|snap\w*|bit|bite[sn]?|biting|scratch\w*|bar(?:es|ed|ing) (?:his |her |its )?teeth|"
+    r"grun\w*|grune|muerd\w*|mordi\w*|arana\w*|ensena los dientes|"
+    r"knurr\w*|beiss\w*|biss|gebissen|kratz\w*|schnapp\w*|zeigt die zahne|"
+    r"grogn\w*|mord\w*|griff\w*|montre les dents"
+)
+# "Non ringhia", "has never growled", "ne grogne pas": a signal the owner
+# rules out is not there.
+_NEGATED_WORD = re.compile(
+    r"\b(?:non|mai|not|never|doesn't|does not|don't|didn't|did not|no|nunca|nicht|nie|ne|n')\s+"
+    r"(?:(?:ha|ho|hanno|has|have|gli|le|li|lo|la|mi|ti|ci|vi|him|her|them|lui|leur|me|te|nos|"
+    r"les|ihn|sie|ihnen|uns|a)\s+){0,2}(?:(?:mai|never|nunca|nie|jamais)\s+)?(\w+)"
 )
 
 
-def mentions_a_child_at_risk(message: str) -> bool:
-    """A child and the animal together in a situation that can end in a
-    bite or a scratch (a growl, a hug, a pulled tail): the answer says
-    first that they are never left alone without an adult."""
+def _without_negated_signals(text: str) -> str:
+    return _NEGATED_WORD.sub(
+        lambda match: " " if _WARNING_SIGNAL.fullmatch(match.group(1)) else match.group(0), text
+    )
+
+
+def mentions_child_handling(message: str) -> bool:
+    """A child and a gesture that can end in a bite (a pulled tail, a tight
+    hug, the neck grabbed, left alone with the animal): the fixed sentence
+    CHILD_NEVER_ALONE goes before the answer."""
     text = normalize_for_matching(message)
-    return bool(_CHILD.search(text) and _CHILD_RISK.search(text))
+    return bool(_CHILD.search(text) and _CHILD_HANDLING.search(text))
+
+
+def mentions_a_warning_signal(message: str) -> bool:
+    """A growl, a snap, a bite or bared teeth, not ruled out by the owner."""
+    return bool(_WARNING_SIGNAL.search(_without_negated_signals(normalize_for_matching(message))))
+
+
+_OTHER_PEOPLE = _words(
+    r"ospit\w*|visit\w*|estrane\w*|persone|gente|amic[ioeh]e?|vicin[oaie]|parent[ie]|nonn[oaie]|"
+    r"postino|corriere|donna delle pulizie|colf|babysitter|"
+    r"guests?|visitors?|strangers?|people|friends?|neighbou?rs?|relatives?|cleaner|postman|"
+    r"invitados|visitas|desconocidos|gente|amigos|vecinos|"
+    r"gaste|besuch|fremde\w*|leute|freunde|nachbarn|"
+    r"invites|visiteurs|inconnus|gens|amis|voisins"
+)
+_PLAY = _words(r"gioc\w*|play\w*|jueg\w*|spiel\w*|jou\w*")
+
+
+def mentions_play(message: str) -> bool:
+    """ "Mi morde le mani quando giochiamo": nipping in play is learning,
+    not a warning."""
+    return bool(_PLAY.search(normalize_for_matching(message)))
+
+
+def warning_toward_others(message: str) -> bool:
+    """A growl, a snap or a bite toward children or other people, outside
+    play: the case where the age of the children, how long it has been
+    going on and any past bite decide the advice (owner's test 2026-11-16).
+    A growl at the owner over the bowl, or a puppy nipping in play, is a
+    classic answered directly."""
+    text = normalize_for_matching(message)
+    return (
+        mentions_a_warning_signal(message)
+        and bool(_CHILD.search(text) or _OTHER_PEOPLE.search(text))
+        and not _PLAY.search(text)
+    )
+
+
+def mentions_a_child_at_risk(message: str) -> bool:
+    """A child in the picture with one of those gestures or with a warning
+    signal: the prompt puts the child's safety first, in the words of the
+    case (``_CHILD_AT_RISK``); the fixed sentence only for the gestures."""
+    return mentions_child_handling(message) or (
+        bool(_CHILD.search(normalize_for_matching(message))) and mentions_a_warning_signal(message)
+    )
 
 
 LONG_MESSAGE_CHARS = 600
