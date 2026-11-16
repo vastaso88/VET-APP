@@ -62,7 +62,8 @@ class _PetGalleryPageState extends State<PetGalleryPage> {
 
   Future<void> _loadWalks() async {
     try {
-      final walks = await DogWalksRepository().loadWalks(resolveCurrentOwnerId());
+      // Captions only need the dates: no GPS routes.
+      final walks = await DogWalksRepository().loadWalkSummaries(resolveCurrentOwnerId());
       if (!mounted) return;
       setState(() {
         _walks = [

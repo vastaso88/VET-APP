@@ -254,7 +254,7 @@ class _PhotoThumbState extends State<PhotoThumb> {
   // A video is never downloaded for the grid: it gets a play tile instead
   // (no poster frame without a native thumbnail plugin).
   late final Future<Uint8List?>? _bytes =
-      widget.photo.isVideo ? null : PetPhotoRepository().loadBytes(widget.photo.storagePath);
+      widget.photo.isVideo ? null : PetPhotoRepository().loadThumbnail(widget.photo.storagePath);
 
   @override
   Widget build(BuildContext context) {

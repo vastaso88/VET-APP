@@ -118,13 +118,13 @@ class _StoredPetPhoto extends StatefulWidget {
 }
 
 class _StoredPetPhotoState extends State<_StoredPetPhoto> {
-  late Future<Uint8List?> _bytes = PetPhotoRepository().loadBytes(widget.path);
+  late Future<Uint8List?> _bytes = PetPhotoRepository().loadThumbnail(widget.path);
 
   @override
   void didUpdateWidget(covariant _StoredPetPhoto oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.path != widget.path) {
-      _bytes = PetPhotoRepository().loadBytes(widget.path);
+      _bytes = PetPhotoRepository().loadThumbnail(widget.path);
     }
   }
 

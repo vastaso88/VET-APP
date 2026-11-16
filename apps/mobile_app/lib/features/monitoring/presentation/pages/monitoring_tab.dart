@@ -11,6 +11,7 @@ import '../../../../l10n/l10n.dart';
 import '../../../../shared/auth/current_owner.dart';
 import '../../../dog_walks/data/dog_walks_repository.dart';
 import '../../../dog_walks/domain/walk_eligibility.dart';
+import '../../../dog_walks/domain/walk_session.dart';
 import '../../../dog_walks/presentation/walk_labels.dart';
 import '../../../pets/data/pet_demo_store.dart';
 import '../../../pets/domain/pet_format.dart';
@@ -105,7 +106,20 @@ class _MonitoringTabState extends State<MonitoringTab> {
 
   Future<void> _load() async {
     final token = ++_loadToken;
-    var measurements = await _repository.load(widget.pet.id);
+    // The four reads do not depend on each other: started together they cost
+    // the slowest one, not their sum (they used to run one after another).
+    final (loaded, walks, bands, sizeClass) = await (
+      _repository.load(widget.pet.id),
+      _showsActivity
+          ? _walksRepository
+              .loadWalkSummaries(resolveCurrentOwnerId())
+              .then<List<WalkSession>?>((walks) => walks)
+          : Future<List<WalkSession>?>.value(),
+      _growthRepository.loadBands(),
+      _growthRepository.loadSizeClass(widget.pet.id),
+    ).wait;
+
+    var measurements = loaded;
     if (!supportsBodyCondition(_pet)) {
       // No published guide for this species: no body condition, whatever an
       // older version of the app stored.
@@ -114,16 +128,12 @@ class _MonitoringTabState extends State<MonitoringTab> {
           m.bodyCondition == null ? m : m.copyWith(clearBodyCondition: true),
       ];
     }
-    List<WeeklyActivity>? activity;
-    if (_showsActivity) {
-      final walks = await _walksRepository.loadWalks(resolveCurrentOwnerId());
-      activity = aggregateWeeklyActivity(
-        walks.where((walk) => walk.petId == widget.pet.id),
-        now: _now,
-      );
-    }
-    final bands = await _growthRepository.loadBands();
-    final sizeClass = await _growthRepository.loadSizeClass(widget.pet.id);
+    final activity = walks == null
+        ? null
+        : aggregateWeeklyActivity(
+            walks.where((walk) => walk.petId == widget.pet.id),
+            now: _now,
+          );
     if (!mounted || token != _loadToken) return;
     setState(() {
       _measurements = measurements;

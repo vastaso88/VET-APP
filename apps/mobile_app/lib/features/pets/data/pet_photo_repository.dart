@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:math';
 
 import 'package:flutter/foundation.dart';
@@ -9,11 +10,18 @@ import '../../../shared/config/app_runtime_config_loader.dart';
 import '../../billing/data/plan_access_refusal.dart';
 import '../domain/pet_video_rules.dart';
 import 'pet_photo_disk_cache.dart';
+import 'pet_photo_fetch_queue.dart';
 
 /// Longest side and JPEG quality every pet photo is normalised to before
 /// upload — keeps the private bucket small without visible loss on a phone.
 const petPhotoMaxSide = 1600;
 const petPhotoJpegQuality = 80;
+
+/// The small copy every grid tile, avatar and folder cover shows instead of the
+/// full photo (about 30 KB against 300-500 KB). 512 px keeps a three-column grid
+/// and the half-screen folder covers sharp on a phone screen.
+const petPhotoThumbSide = 512;
+const petPhotoThumbQuality = 75;
 
 class PetPhotoEntry {
   const PetPhotoEntry({
@@ -113,6 +121,78 @@ Uint8List compressPetPhoto(Uint8List input) {
   return Uint8List.fromList(img.encodeJpg(resized, quality: petPhotoJpegQuality));
 }
 
+/// Shrinks an already normalised pet photo to the thumbnail size. Pure, so it
+/// runs in an isolate via [compute] and is unit-testable without a device.
+/// A picture that is already small is only re-encoded, never enlarged.
+Uint8List compressPetPhotoThumbnail(Uint8List input) {
+  final img.Image? decoded;
+  try {
+    decoded = img.decodeImage(input);
+  } catch (_) {
+    throw const FormatException('Immagine non valida');
+  }
+  if (decoded == null) {
+    throw const FormatException('Immagine non valida');
+  }
+  final longest = max(decoded.width, decoded.height);
+  final resized = longest <= petPhotoThumbSide
+      ? decoded
+      : img.copyResize(
+          decoded,
+          width: decoded.width >= decoded.height ? petPhotoThumbSide : null,
+          height: decoded.height > decoded.width ? petPhotoThumbSide : null,
+          interpolation: img.Interpolation.average,
+        );
+  resized.exif = img.ExifData();
+  return Uint8List.fromList(img.encodeJpg(resized, quality: petPhotoThumbQuality));
+}
+
+/// Where the thumbnail of the photo at [storagePath] lives: beside it, with a
+/// `_t.jpg` ending (`<owner>/<pet>/<id>.jpg` -> `<owner>/<pet>/<id>_t.jpg`).
+/// It is a Storage object only: there is no `pet_photos` row for it, so counts,
+/// limits and the account export never see it, and deleting the pet's folder
+/// or the account removes it with everything else.
+String petPhotoThumbPath(String storagePath) {
+  final dot = storagePath.lastIndexOf('.');
+  final slash = storagePath.lastIndexOf('/');
+  final stem = dot > slash ? storagePath.substring(0, dot) : storagePath;
+  return '${stem}_t.jpg';
+}
+
+/// The three Storage operations the photo cache needs, so the loading logic can
+/// be tested without a Supabase client.
+abstract class PetPhotoObjectStore {
+  Future<Uint8List> download(String path);
+
+  Future<void> upload(String path, Uint8List bytes, {required String contentType});
+
+  Future<void> remove(List<String> paths);
+}
+
+class _SupabasePhotoObjects implements PetPhotoObjectStore {
+  const _SupabasePhotoObjects(this._client);
+
+  final SupabaseClient _client;
+
+  @override
+  Future<Uint8List> download(String path) =>
+      _client.storage.from(PetPhotoRepository.bucket).download(path);
+
+  @override
+  Future<void> upload(String path, Uint8List bytes, {required String contentType}) async {
+    await _client.storage.from(PetPhotoRepository.bucket).uploadBinary(
+          path,
+          bytes,
+          fileOptions: FileOptions(contentType: contentType, upsert: false),
+        );
+  }
+
+  @override
+  Future<void> remove(List<String> paths) async {
+    await _client.storage.from(PetPhotoRepository.bucket).remove(paths);
+  }
+}
+
 /// `<owner>/<pet>/<photo>.jpg` — the first segment is the owner id, which the
 /// bucket's storage policy checks against `auth.uid()`. Videos use their own
 /// extension (mp4/mov) in the same folder.
@@ -129,12 +209,43 @@ String petPhotoStoragePath({
 /// and, on the phone, on disk across launches ([PetPhotoDiskCache]) - both
 /// wiped by [clearLocalCaches] on sign-out.
 class PetPhotoRepository {
-  PetPhotoRepository({SupabaseClient? client, PetPhotoDiskCache? diskCache})
-      : _client = client,
-        _disk = diskCache ?? PetPhotoDiskCache.instance;
+  PetPhotoRepository({
+    SupabaseClient? client,
+    PetPhotoDiskCache? diskCache,
+    PetPhotoObjectStore? objects,
+    String? Function()? ownerIdResolver,
+  })  : _client = client,
+        _disk = diskCache ?? PetPhotoDiskCache.instance,
+        _objects = objects,
+        _ownerIdResolver = ownerIdResolver;
 
   static const bucket = 'pet-photos';
-  static final Map<String, Uint8List> _memoryCache = {};
+
+  /// Full-size photos, only the few opened in the viewer (it was unbounded
+  /// before the 2026-11-16 performance pass: every photo ever shown stayed).
+  static final LruCache<Uint8List> _fullMemory = LruCache<Uint8List>(12);
+
+  /// Thumbnails, what grids and avatars show: ~20 KB each.
+  static final LruCache<Uint8List> _thumbMemory = LruCache<Uint8List>(800);
+
+  /// At most 6 downloads at once, newest request first, one per photo.
+  static final KeyedFetchQueue<Uint8List> _fullQueue = KeyedFetchQueue<Uint8List>(maxConcurrent: 4);
+  static final KeyedFetchQueue<Uint8List> _thumbQueue = KeyedFetchQueue<Uint8List>(maxConcurrent: 6);
+
+  /// Photos known to have no thumbnail object yet (photos uploaded before
+  /// thumbnails existed): not asked for again this session.
+  static final Set<String> _noRemoteThumb = {};
+
+  /// Thumbnails already offered to Storage this session.
+  static final Set<String> _thumbUploadTried = {};
+
+  @visibleForTesting
+  static void resetMemoryForTests() {
+    _fullMemory.clear();
+    _thumbMemory.clear();
+    _noRemoteThumb.clear();
+    _thumbUploadTried.clear();
+  }
 
   /// Ticks when a photo is added or removed, so screens that show a pet's
   /// photos beside something else (the walk history's photo dots) can reload.
@@ -143,12 +254,30 @@ class PetPhotoRepository {
   /// Forgets every photo held on this device (memory and disk) - the next
   /// account to sign in must not see the previous one's pets.
   static Future<void> clearLocalCaches() async {
-    _memoryCache.clear();
+    resetMemoryForTests();
     await PetPhotoDiskCache.instance.clear();
   }
 
   final SupabaseClient? _client;
   final PetPhotoDiskCache _disk;
+  final PetPhotoObjectStore? _objects;
+  final String? Function()? _ownerIdResolver;
+
+  PetPhotoObjectStore? _objectStore() {
+    final injected = _objects;
+    if (injected != null) return injected;
+    final client = _resolveClient();
+    return client == null ? null : _SupabasePhotoObjects(client);
+  }
+
+  String? _currentOwnerId() => (_ownerIdResolver ?? () => CurrentUser.get()?.id)();
+
+  /// Paths start with the owner id: only the signed-in account's own photos
+  /// are ever served from disk, even if a sign-out was missed.
+  bool _isOwnPath(String storagePath) {
+    final ownerId = _currentOwnerId();
+    return ownerId != null && storagePath.startsWith('$ownerId/');
+  }
 
   SupabaseClient? _resolveClient() {
     if (_client != null) return _client;
@@ -191,8 +320,12 @@ class PetPhotoRepository {
         if (takenAt != null) 'taken_at': takenAt.toUtc().toIso8601String(),
       },
     );
-    _memoryCache[path] = compressedJpeg;
+    _fullMemory.put(path, compressedJpeg);
     await _disk.write(path, compressedJpeg);
+    // The small copy is made and stored behind the owner's back: the photo is
+    // already saved, and a failure here only means the grid builds the
+    // thumbnail itself later (see [loadThumbnail]).
+    unawaited(_storeThumbnailFor(client, path, compressedJpeg));
     changes.value++;
     return PetPhotoEntry(
       id: photoId,
@@ -256,6 +389,19 @@ class PetPhotoRepository {
       durationSeconds: durationSeconds,
       takenAt: takenAt,
     );
+  }
+
+  Future<void> _storeThumbnailFor(SupabaseClient client, String path, Uint8List jpeg) async {
+    try {
+      final thumb = await compute(compressPetPhotoThumbnail, jpeg);
+      _thumbMemory.put(path, thumb);
+      final thumbPath = petPhotoThumbPath(path);
+      await _disk.write(thumbPath, thumb);
+      _thumbUploadTried.add(path);
+      await _SupabasePhotoObjects(client).upload(thumbPath, thumb, contentType: 'image/jpeg');
+    } catch (_) {
+      // Best effort: see [loadThumbnail].
+    }
   }
 
   static String _newMediaId() =>
@@ -362,10 +508,13 @@ class PetPhotoRepository {
   Future<void> delete(PetPhotoEntry photo) async {
     final client = _resolveClient();
     if (client == null) return;
-    await client.storage.from(bucket).remove([photo.storagePath]);
+    final thumbPath = petPhotoThumbPath(photo.storagePath);
+    await client.storage.from(bucket).remove([photo.storagePath, thumbPath]);
     await client.from('pet_photos').delete().eq('id', photo.id);
-    _memoryCache.remove(photo.storagePath);
+    _fullMemory.remove(photo.storagePath);
+    _thumbMemory.remove(photo.storagePath);
     await _disk.remove(photo.storagePath);
+    await _disk.remove(thumbPath);
     changes.value++;
   }
 
@@ -379,10 +528,21 @@ class PetPhotoRepository {
       if (client == null || ownerId == null) return;
 
       final prefix = '$ownerId/$petId';
-      final files = await client.storage.from(bucket).list(path: prefix);
-      if (files.isEmpty) return;
-      await client.storage.from(bucket).remove([for (final file in files) '$prefix/${file.name}']);
-      _memoryCache.removeWhere((key, _) => key.startsWith('$prefix/'));
+      // A listing answers at most `limit` entries: page through it, or a pet
+      // with a big gallery (photos plus their thumbnails) would keep files.
+      const page = 100;
+      final names = <String>[];
+      for (var offset = 0;; offset += page) {
+        final files = await client.storage
+            .from(bucket)
+            .list(path: prefix, searchOptions: SearchOptions(limit: page, offset: offset));
+        names.addAll([for (final file in files) '$prefix/${file.name}']);
+        if (files.length < page) break;
+      }
+      if (names.isEmpty) return;
+      await client.storage.from(bucket).remove(names);
+      _fullMemory.removeWhere((key) => key.startsWith('$prefix/'));
+      _thumbMemory.removeWhere((key) => key.startsWith('$prefix/'));
       await _disk.removeFolder(prefix);
     } catch (_) {
       // Orphaned objects are recoverable later; the pet deletion must still succeed.
@@ -393,28 +553,112 @@ class PetPhotoRepository {
   /// else downloaded once. Null when there's no backend or the download fails.
   /// Photos never change once uploaded (a new one gets a new path), so a
   /// cached copy is never stale.
+  ///
+  /// For the photo viewer only: a grid tile, an avatar or a cover wants
+  /// [loadThumbnail], a twentieth of the size.
   Future<Uint8List?> loadBytes(String storagePath) async {
-    final cached = _memoryCache[storagePath];
+    final cached = _fullMemory.get(storagePath);
     if (cached != null) return cached;
 
-    final client = _resolveClient();
-    if (client == null) return null;
-    // Paths start with the owner id: only the signed-in account's own photos
-    // are ever served from disk, even if a sign-out was missed.
-    final ownerId = CurrentUser.get()?.id;
-    final ownPhoto = ownerId != null && storagePath.startsWith('$ownerId/');
-    final onDisk = ownPhoto ? await _disk.read(storagePath) : null;
+    final store = _objectStore();
+    if (store == null) return null;
+    return _fullQueue.run(storagePath, () => _fetchFull(store, storagePath));
+  }
+
+  Future<Uint8List?> _fetchFull(PetPhotoObjectStore store, String storagePath) async {
+    final own = _isOwnPath(storagePath);
+    final onDisk = own ? await _disk.read(storagePath) : null;
     if (onDisk != null) {
-      _memoryCache[storagePath] = onDisk;
+      _fullMemory.put(storagePath, onDisk);
       return onDisk;
     }
+    final Uint8List bytes;
     try {
-      final bytes = await client.storage.from(bucket).download(storagePath);
-      _memoryCache[storagePath] = bytes;
-      if (ownPhoto) await _disk.write(storagePath, bytes);
-      return bytes;
+      bytes = await store.download(storagePath);
     } catch (_) {
       return null;
+    }
+    _fullMemory.put(storagePath, bytes);
+    if (own) await _disk.write(storagePath, bytes);
+    return bytes;
+  }
+
+  /// The small picture of [storagePath] for grids, avatars and covers (about
+  /// 20 KB against 300-500 KB for the photo itself).
+  ///
+  /// In order: this session's memory, the phone's disk, the thumbnail object
+  /// Storage keeps beside the photo, and for photos that have none yet (every
+  /// one uploaded before 2026-11-16) the photo itself, shrunk here, kept on the
+  /// phone and offered back to Storage so the next device (or reinstall) gets
+  /// the small file. Null when nothing can be loaded.
+  Future<Uint8List?> loadThumbnail(String storagePath) async {
+    final cached = _thumbMemory.get(storagePath);
+    if (cached != null) return cached;
+
+    final store = _objectStore();
+    if (store == null) return null;
+    final own = _isOwnPath(storagePath);
+    final thumbPath = petPhotoThumbPath(storagePath);
+    final onDisk = own ? await _disk.read(thumbPath) : null;
+    if (onDisk != null) {
+      _thumbMemory.put(storagePath, onDisk);
+      return onDisk;
+    }
+    return _thumbQueue.run(storagePath, () => _buildThumbnail(store, storagePath, thumbPath, own));
+  }
+
+  Future<Uint8List?> _buildThumbnail(
+    PetPhotoObjectStore store,
+    String storagePath,
+    String thumbPath,
+    bool own,
+  ) async {
+    // The full photo may already be on the phone (viewed before, or cached by an
+    // older build): shrinking it costs no network at all.
+    var full = _fullMemory.get(storagePath);
+    if (full == null && own) full = await _disk.read(storagePath);
+
+    if (full == null) {
+      if (!_noRemoteThumb.contains(storagePath)) {
+        try {
+          final bytes = await store.download(thumbPath);
+          _thumbMemory.put(storagePath, bytes);
+          if (own) await _disk.write(thumbPath, bytes);
+          return bytes;
+        } catch (_) {
+          _noRemoteThumb.add(storagePath);
+        }
+      }
+      try {
+        full = await store.download(storagePath);
+      } catch (_) {
+        return null;
+      }
+    }
+
+    final Uint8List thumb;
+    try {
+      thumb = await compute(compressPetPhotoThumbnail, full);
+    } catch (_) {
+      return null;
+    }
+    _thumbMemory.put(storagePath, thumb);
+    if (own) {
+      await _disk.write(thumbPath, thumb);
+      if (_thumbUploadTried.add(storagePath)) {
+        unawaited(_offerThumbnail(store, thumbPath, thumb));
+      }
+    }
+    return thumb;
+  }
+
+  /// Best effort and silent: no paywall, no message. A refusal (trial over,
+  /// offline, already there) just leaves the thumbnail on this phone only.
+  Future<void> _offerThumbnail(PetPhotoObjectStore store, String thumbPath, Uint8List thumb) async {
+    try {
+      await store.upload(thumbPath, thumb, contentType: 'image/jpeg');
+    } catch (_) {
+      // See above.
     }
   }
 }

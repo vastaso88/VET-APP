@@ -45,6 +45,10 @@ class _FakeWalks extends DogWalksRepository {
 
   @override
   Future<List<WalkSession>> loadWalks(String ownerId) async => walks;
+
+  // The activity chart reads the route-less summaries.
+  @override
+  Future<List<WalkSession>> loadWalkSummaries(String ownerId) async => walks;
 }
 
 WalkSession _walk(String id, DateTime start,

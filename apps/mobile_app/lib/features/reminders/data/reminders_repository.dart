@@ -129,6 +129,9 @@ class RemindersRepository {
   /// PetDemoStore.ensureHydrated for the same no-op-on-repeat rationale.
   static String? _hydratedOwnerId;
 
+  /// Owner whose saved copy [restoreFromCache] put in [_localReminders].
+  static String? _restoredOwnerId;
+
   /// Ticks on every mutation (save/delete) and every completed hydration,
   /// so any screen showing reminders — the list, a pet's tab, Home's
   /// calendar — can rebuild itself the moment the shared data changes,
@@ -160,6 +163,7 @@ class RemindersRepository {
     }
     if (cached.isEmpty) return;
     _localReminders = cached;
+    _restoredOwnerId = ownerId;
     changes.value++;
   }
 
@@ -206,7 +210,16 @@ class RemindersRepository {
   }
 
   Future<List<ReminderEntry>> loadReminders() async {
-    await ensureHydrated();
+    final ownerId = CurrentUser.get()?.id;
+    if (ownerId != null && ownerId == _restoredOwnerId && ownerId != _hydratedOwnerId) {
+      // The copy saved by the last run is already on screen-ready: answer with
+      // it now and refresh behind it (hydration ticks [changes] when it lands).
+      // Waiting for the server here kept Home's calendar on its skeleton for as
+      // long as the connection took (performance pass, 2026-11-16).
+      unawaited(ensureHydrated());
+    } else {
+      await ensureHydrated();
+    }
     _addSeedsWithoutClient();
     return List<ReminderEntry>.unmodifiable(_localReminders);
   }

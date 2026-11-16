@@ -122,8 +122,17 @@ class DogWalksRepository {
   /// meantime. A walk local has never heard of stays exactly as remote
   /// reports it; a local-only walk remote hasn't seen yet (offline, or
   /// remote not configured) is added back in (owner report, 2026-09-29).
-  Future<List<WalkSession>> loadWalks(String ownerId) async {
-    final remote = await _tryLoadRemoteWalks(ownerId);
+  Future<List<WalkSession>> loadWalks(String ownerId) => _loadMerged(ownerId, includeRoute: true);
+
+  /// [loadWalks] without the GPS route of each walk (the heavy column): for the
+  /// screens that only read distances, times and dates - gallery captions, the
+  /// activity chart. Never save a walk obtained from here as it is: its route is
+  /// empty, and an upsert would write that empty route over the real one.
+  Future<List<WalkSession>> loadWalkSummaries(String ownerId) =>
+      _loadMerged(ownerId, includeRoute: false);
+
+  Future<List<WalkSession>> _loadMerged(String ownerId, {required bool includeRoute}) async {
+    final remote = await _tryLoadRemoteWalks(ownerId, includeRoute: includeRoute);
     final local = _localWalks.where((walk) => walk.ownerId == ownerId).toList();
     final localById = {for (final walk in local) walk.id: walk};
 
@@ -175,6 +184,7 @@ class DogWalksRepository {
     // that read can reach Supabase before this upsert has landed - without
     // this it would see (and display) the previous value.
     _unsyncedIds.add(walk.id);
+    _inFlightRemote.clear();
     _announceChange(walk);
 
     try {
@@ -186,6 +196,8 @@ class DogWalksRepository {
       // won't let a stale remote row overwrite it until this succeeds.
       _notifySyncFailure('saving walk ${walk.id}', error, showMessage: notifyFailure);
       return false;
+    } finally {
+      _inFlightRemote.clear();
     }
   }
 
@@ -239,6 +251,7 @@ class DogWalksRepository {
     // Hidden from remote reads from the moment the delete starts (the
     // reload the change above triggers can beat the DELETE to Supabase).
     _pendingDeleteIds.add(walkId);
+    _inFlightRemote.clear();
     try {
       await client.from('dog_walks').delete().eq('id', walkId).eq('owner_id', ownerId);
       _pendingDeleteIds.remove(walkId);
@@ -248,6 +261,8 @@ class DogWalksRepository {
       // until the delete actually goes through.
       _notifySyncFailure('deleting walk $walkId', error, showMessage: notifyFailure);
       return false;
+    } finally {
+      _inFlightRemote.clear();
     }
   }
 
@@ -301,6 +316,7 @@ class DogWalksRepository {
     if (index != -1) {
       _unsyncedIds.add(walkId);
     }
+    _inFlightRemote.clear();
     try {
       await client.from('dog_walks').update({'route': []}).eq('id', walkId).eq('owner_id', ownerId);
       _unsyncedIds.remove(walkId);
@@ -309,18 +325,53 @@ class DogWalksRepository {
       // walk's route should be gone - doesn't need saveWalk's
       // must-win-over-stale-remote bookkeeping.
       _notifySyncFailure('clearing route for walk $walkId', error);
+    } finally {
+      _inFlightRemote.clear();
     }
   }
 
-  Future<List<WalkSession>> _tryLoadRemoteWalks(String ownerId) async {
+  /// Every column but the route (see [loadWalkSummaries]).
+  static const _summaryColumns = 'id,owner_id,pet_id,status,started_at,ended_at,'
+      'distance_meters,duration_seconds,step_count_estimate,is_favorite,is_paused,'
+      'paused_at,paused_seconds';
+
+  /// Remote reads in flight, shared by everyone who asks for the same thing
+  /// while it runs: the pet page, its gallery captions and the activity chart
+  /// all ask on opening, and each used to send its own query (performance pass,
+  /// 2026-11-16). Emptied whenever a write starts or ends, so a read that began
+  /// before a write is never handed to someone who asked after it.
+  static final Map<String, Future<List<WalkSession>>> _inFlightRemote = {};
+
+  Future<List<WalkSession>> _tryLoadRemoteWalks(String ownerId, {required bool includeRoute}) {
     final client = _resolveClient();
     if (client == null) {
-      return const [];
+      return Future.value(const []);
     }
 
+    final key = '$ownerId|${includeRoute ? 'full' : 'summary'}';
+    // A full read holds everything a summary needs.
+    final shared = _inFlightRemote[key] ?? (includeRoute ? null : _inFlightRemote['$ownerId|full']);
+    if (shared != null) return shared;
+
+    final read = _fetchRemoteWalks(client, ownerId, includeRoute: includeRoute);
+    _inFlightRemote[key] = read;
+    // Identity check: a write may have emptied the map and a newer read taken
+    // the slot, which this older one must not remove.
+    return read.whenComplete(() {
+      if (identical(_inFlightRemote[key], read)) _inFlightRemote.remove(key);
+    });
+  }
+
+  Future<List<WalkSession>> _fetchRemoteWalks(
+    SupabaseClient client,
+    String ownerId, {
+    required bool includeRoute,
+  }) async {
     try {
-      final response =
-          await client.from('dog_walks').select('*').eq('owner_id', ownerId);
+      final response = await client
+          .from('dog_walks')
+          .select(includeRoute ? '*' : _summaryColumns)
+          .eq('owner_id', ownerId);
       final rows = response as List<dynamic>;
       final walks = <WalkSession>[];
       for (final row in rows) {

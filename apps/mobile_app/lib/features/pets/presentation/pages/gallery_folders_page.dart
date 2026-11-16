@@ -139,7 +139,7 @@ class _FolderCardState extends State<_FolderCard> {
       PetPhotoRepository().list(widget.pet.id);
   late final Future<Uint8List?>? _cover = widget.pet.photoPath == null
       ? null
-      : PetPhotoRepository().loadBytes(widget.pet.photoPath!);
+      : PetPhotoRepository().loadThumbnail(widget.pet.photoPath!);
 
   @override
   Widget build(BuildContext context) {

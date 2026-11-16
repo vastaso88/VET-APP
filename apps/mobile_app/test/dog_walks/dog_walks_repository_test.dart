@@ -297,4 +297,25 @@ void main() {
       contains(walk.id),
     );
   });
+
+  test('loadWalkSummaries answers the same walks as loadWalks (it only skips the remote route)',
+      () async {
+    final repository = DogWalksRepository();
+    final walk = WalkSession(
+      id: 'walk-summary-${DateTime.now().microsecondsSinceEpoch}',
+      ownerId: 'owner-summary',
+      petId: 'pet-1',
+      status: WalkStatus.completed,
+      startedAt: DateTime.now(),
+      distanceMeters: 500,
+      isFavorite: true,
+    );
+    await repository.saveWalk(walk);
+
+    final full = await repository.loadWalks('owner-summary');
+    final summaries = await repository.loadWalkSummaries('owner-summary');
+
+    expect(summaries.map((w) => w.id), full.map((w) => w.id));
+    expect(summaries.single.isFavorite, isTrue);
+  });
 }
