@@ -7,6 +7,9 @@ import 'package:vet_app_mobile/app/router/app_router.dart';
 import 'package:vet_app_mobile/app/splash/app_preloader.dart';
 import 'package:vet_app_mobile/app/splash/splash_messages.dart';
 import 'package:vet_app_mobile/app/splash/splash_page.dart';
+import 'package:vet_app_mobile/design_system/tokens/app_colors.dart';
+import 'package:vet_app_mobile/shared/widgets/pet_loader.dart';
+import 'package:vet_app_mobile/shared/widgets/quokka_logo.dart';
 
 Widget _harness(SplashPage splash) {
   return MaterialApp(
@@ -94,7 +97,7 @@ void main() {
     expect(find.text('ROUTE:${AppRouter.paywall}'), findsOneWidget);
   });
 
-  testWidgets('warm start: opens the saved tab after a short splash, refreshing in background',
+  testWidgets('warm start: opens the saved tab after the minimum time, once the preload is in',
       (tester) async {
     var preloadCalls = 0;
     var gateCalls = 0;
@@ -115,13 +118,93 @@ void main() {
     );
     await tester.pumpWidget(harness);
 
-    // Far less than the 4 s splash.
-    await tester.pump(splashWarmMinDisplay + const Duration(milliseconds: 100));
+    // Never before the minimum time, whatever the preload does.
+    await tester.pump(splashMinDisplay - const Duration(milliseconds: 500));
+    expect(find.text('ROUTE:${AppRouter.homeShell}:2'), findsNothing);
+    await tester.pump(const Duration(milliseconds: 600));
     await tester.pumpAndSettle(const Duration(milliseconds: 100));
 
     expect(find.text('ROUTE:${AppRouter.homeShell}:2'), findsOneWidget);
     expect(preloadCalls, 1);
     expect(gateCalls, 1);
+  });
+
+  testWidgets('warm start: the opening screen waits for the calendar and the news', (tester) async {
+    final preload = Completer<void>();
+    await tester.pumpWidget(
+      _harness(
+        SplashPage(
+          restoreSignedIn: () async => true,
+          warmTab: () async => 0,
+          preload: () => preload.future,
+          resolveDestination: () async => AppRouter.homeShell,
+        ),
+      ),
+    );
+
+    await tester.pump(splashMinDisplay + const Duration(seconds: 2));
+    expect(find.text('ROUTE:${AppRouter.homeShell}'), findsNothing);
+
+    preload.complete();
+    await tester.pump();
+    await tester.pumpAndSettle(const Duration(milliseconds: 100));
+    expect(find.text('ROUTE:${AppRouter.homeShell}'), findsOneWidget);
+  });
+
+  testWidgets('no network: after the cap the Home opens anyway', (tester) async {
+    final never = Completer<void>();
+    await tester.pumpWidget(
+      _harness(
+        SplashPage(
+          restoreSignedIn: () async => true,
+          warmTab: () async => 0,
+          preload: () => never.future,
+          resolveDestination: () async => AppRouter.homeShell,
+          maxWait: const Duration(seconds: 6),
+        ),
+      ),
+    );
+
+    await tester.pump(const Duration(seconds: 5));
+    expect(find.text('ROUTE:${AppRouter.homeShell}'), findsNothing);
+    await tester.pump(const Duration(seconds: 2));
+    await tester.pumpAndSettle(const Duration(milliseconds: 100));
+    expect(find.text('ROUTE:${AppRouter.homeShell}'), findsOneWidget);
+    never.complete();
+  });
+
+  testWidgets('the opening screen shows the logo, the animal token and the phrases', (tester) async {
+    final gate = Completer<void>();
+    await tester.pumpWidget(
+      _harness(
+        SplashPage(
+          restoreSignedIn: () async => true,
+          preload: () => gate.future,
+          resolveDestination: () async => AppRouter.homeShell,
+        ),
+      ),
+    );
+
+    // The head sits where the native splash draws it: centred, 112 dp.
+    expect(find.byType(QuokkaLogo), findsOneWidget);
+    final head = tester.getRect(find.byType(QuokkaLogo));
+    final screen = tester.getRect(find.byType(Scaffold).first);
+    expect(head.size, const Size(splashHeadSize, splashHeadSize));
+    expect(head.center.dx, closeTo(screen.center.dx, 0.5));
+    expect(head.center.dy, closeTo(screen.center.dy, 0.5));
+    // The name and the loader come under it.
+    expect(find.byType(QuokkaWordmark), findsOneWidget);
+    expect(tester.getRect(find.byType(QuokkaWordmark)).top, greaterThan(head.bottom));
+    expect(tester.getRect(find.byType(PetLoader)).top,
+        greaterThan(tester.getRect(find.byType(QuokkaWordmark)).bottom));
+    expect(find.byType(PetLoader), findsOneWidget);
+    expect(find.text(splashMessages[0]), findsOneWidget);
+    final scaffold = tester.widget<Scaffold>(find.byType(Scaffold).first);
+    expect(scaffold.backgroundColor, AppColors.brandDeep);
+
+    gate.complete();
+    await tester.pump(const Duration(seconds: 4));
+    await tester.pumpAndSettle(const Duration(milliseconds: 100));
   });
 
   testWidgets('warm start: a device revoked meanwhile lands on sign-in, not on the home',
@@ -142,7 +225,7 @@ void main() {
         ),
       ),
     );
-    await tester.pump(splashWarmMinDisplay + const Duration(milliseconds: 100));
+    await tester.pump(splashMinDisplay + const Duration(milliseconds: 100));
     await tester.pumpAndSettle(const Duration(milliseconds: 100));
     expect(find.text('ROUTE:${AppRouter.homeShell}'), findsOneWidget);
 
