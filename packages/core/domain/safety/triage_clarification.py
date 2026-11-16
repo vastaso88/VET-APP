@@ -706,35 +706,35 @@ CLARIFYING_QUESTIONS_FEMALE: dict[str, dict[str, str]] = {
         "respiratory": (
             "En attendant, laissez-la au calme dans un endroit frais et aéré, loin des "
             "fumées, des sprays ou des plaques de cuisson, sans l'agiter. Puis "
-            "dites-moi : ce que vous remarquez dans sa respiration a-t-il commencé "
+            "dites-moi\u00a0: ce que vous remarquez dans sa respiration a-t-il commencé "
             "après un effort, une frayeur ou sous l'effet de la chaleur, ou au repos "
             "sans raison\u00a0? "
-            "Est-ce que ça se calme maintenant, reste pareil ou s'aggrave ?"
+            "Est-ce que ça se calme maintenant, reste pareil ou s'aggrave\u00a0?"
         ),
         "collapse": (
-            "Deux questions rapides : est-elle maintenant éveillée, réactive et se "
-            "déplace-t-elle normalement, ou reste-t-elle au sol et peu réactive ? "
-            "L'épisode a-t-il duré quelques secondes ou plus longtemps ?"
+            "Deux questions rapides\u00a0: est-elle maintenant éveillée, réactive et se "
+            "déplace-t-elle normalement, ou reste-t-elle au sol et peu réactive\u00a0? "
+            "L'épisode a-t-il duré quelques secondes ou plus longtemps\u00a0?"
         ),
         "seizure": (
-            "Deux questions rapides : les convulsions sont-elles terminées et est-elle "
-            "redevenue attentive, ou continuent-elles en ce moment ? Est-ce la première "
-            "fois ?"
+            "Deux questions rapides\u00a0: les convulsions sont-elles terminées et est-elle "
+            "redevenue attentive, ou continuent-elles en ce moment\u00a0? Est-ce la première "
+            "fois\u00a0?"
         ),
         "bleeding_trauma": (
             "En attendant, appuyez sur la plaie avec une compresse ou un linge propre, "
-            "fermement et sans le soulever, pendant quelques minutes. Puis dites-moi : "
-            "saigne-t-elle encore ou le saignement s'est-il arrêté ? Était-ce quelques "
-            "gouttes ou une quantité qui vous inquiète ?"
+            "fermement et sans le soulever, pendant quelques minutes. Puis dites-moi\u00a0: "
+            "saigne-t-elle encore ou le saignement s'est-il arrêté\u00a0? Était-ce quelques "
+            "gouttes ou une quantité qui vous inquiète\u00a0?"
         ),
         "urinary": (
-            "Deux questions rapides : depuis combien d'heures n'a-t-elle pas uriné ? "
-            "Essaie-t-elle sans y parvenir ou montre-t-elle de la douleur ?"
+            "Deux questions rapides\u00a0: depuis combien d'heures n'a-t-elle pas uriné\u00a0? "
+            "Essaie-t-elle sans y parvenir ou montre-t-elle de la douleur\u00a0?"
         ),
         "gi_stasis": (
-            "Avant de vous donner des indications, deux questions rapides : depuis combien "
-            "d'heures n'a-t-elle pas mangé ? Et ses crottes, elle en fait comme "
-            "d'habitude, moins que d'habitude ou plus du tout ?"
+            "Avant de vous donner des indications, deux questions rapides\u00a0: depuis combien "
+            "d'heures n'a-t-elle pas mangé\u00a0? Et ses crottes, elle en fait comme "
+            "d'habitude, moins que d'habitude ou plus du tout\u00a0?"
         ),
     },
 }
