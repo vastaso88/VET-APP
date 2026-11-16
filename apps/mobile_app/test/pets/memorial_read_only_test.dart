@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:vet_app_mobile/app/launch/restorable_pages.dart';
+import 'package:vet_app_mobile/app/launch/route_restoration.dart';
 import 'package:vet_app_mobile/app/theme/app_theme.dart';
 import 'package:vet_app_mobile/features/chat/data/chat_demo_store.dart';
 import 'package:vet_app_mobile/features/chat/data/chat_seed_data.dart';
@@ -17,6 +19,7 @@ import 'package:vet_app_mobile/features/pets/data/memorial_moments.dart';
 import 'package:vet_app_mobile/features/pets/data/pet_demo_store.dart';
 import 'package:vet_app_mobile/features/pets/domain/pet_models.dart';
 import 'package:vet_app_mobile/features/pets/presentation/pages/pet_data_page.dart';
+import 'package:vet_app_mobile/features/pets/presentation/pages/pet_detail_page.dart';
 import 'package:vet_app_mobile/features/pets/presentation/pages/pet_gallery_page.dart';
 import 'package:vet_app_mobile/features/pets/presentation/pages/pet_memorial_page.dart';
 import 'package:vet_app_mobile/l10n/app_localizations.dart';
@@ -51,6 +54,54 @@ Future<void> _pumpRecords(WidgetTester tester, PetProfile pet) async {
 void main() {
   GoogleFonts.config.allowRuntimeFetching = false;
   setUp(PetDemoStore.instance.reset);
+
+  group('profile kept as it was (same rule as the database)', () {
+    test('a memory keeps everything but the loss date and its reminders', () async {
+      final stored = await PetDemoStore.instance.upsert(
+        _moka(memorial: true).copyWith(memorialDate: DateTime(2026, 11, 14)),
+      );
+      final saved = await PetDemoStore.instance.upsert(stored.copyWith(
+        name: 'Altro nome',
+        weightLabel: '30 kg',
+        memorialDate: DateTime(2026, 11, 13),
+        memorialBirthdayReminder: true,
+      ));
+
+      expect(saved.name, 'Moka');
+      expect(saved.weightLabel, stored.weightLabel);
+      expect(saved.memorialDate, DateTime(2026, 11, 13));
+      expect(saved.memorialBirthdayReminder, isTrue);
+      expect(PetDemoStore.instance.byId(stored.id)?.name, 'Moka');
+    });
+
+    test('moving in, bringing back and active pets are untouched', () async {
+      final active = await PetDemoStore.instance.upsert(_moka(memorial: false));
+      expect((await PetDemoStore.instance.upsert(active.copyWith(name: 'Moka II'))).name, 'Moka II');
+
+      final moved = await PetDemoStore.instance.upsert(
+        active.copyWith(isMemorial: true, name: 'Moka III'),
+      );
+      expect(moved.isMemorial, isTrue);
+      expect(moved.name, 'Moka III');
+
+      final back = await PetDemoStore.instance.upsert(moved.copyWith(isMemorial: false));
+      expect(back.isMemorial, isFalse);
+    });
+  });
+
+  group('after a restart', () {
+    testWidgets('a pet moved to Ricordi reopens on its memorial page', (tester) async {
+      final pet = await PetDemoStore.instance.upsert(_moka(memorial: true));
+      final registry = RestorablePages();
+      registerRestorablePages(registry);
+
+      final page = await registry.build('pet_detail', {'petId': pet.id, 'tab': 1});
+      expect(page, isA<PetMemorialPage>());
+
+      await PetDemoStore.instance.upsert(_moka(memorial: false));
+      expect(await registry.build('pet_detail', {'petId': pet.id}), isA<PetDetailPage>());
+    });
+  });
 
   group('records', () {
     testWidgets('readable and exportable, nothing to add, no consent card', (tester) async {

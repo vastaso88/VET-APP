@@ -16,6 +16,7 @@ import '../domain/pet_format.dart';
 import '../domain/pet_species_breeds.dart';
 import 'pet_photo_repository.dart';
 import '../domain/pet_identity_colors.dart';
+import '../domain/memorial_profile.dart';
 import '../domain/pet_models.dart';
 import '../../../design_system/tokens/app_colors.dart';
 
@@ -542,7 +543,10 @@ class PetDemoStore {
   /// here previously let the caller navigate away (or the tab close/reload)
   /// before the Supabase upsert actually landed, so a just-created pet
   /// could silently vanish on the next load even though it looked saved.
-  Future<PetProfile> upsert(PetProfile pet) async {
+  Future<PetProfile> upsert(PetProfile next) async {
+    // A pet in Ricordi: only its memorial fields change (as in the database).
+    final stored = byId(next.id);
+    final pet = stored == null ? next : keepMemorialReadOnly(stored, next);
     final index = _pets.indexWhere((item) => item.id == pet.id);
     if (index == -1) {
       _pets = [pet, ..._pets];

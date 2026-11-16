@@ -189,9 +189,9 @@ class _PetLifecycleActions extends StatelessWidget {
     );
     if (moved == null || !context.mounted) return;
     final l10n = context.l10n;
-    navigator
-      ..pop()
-      ..pop();
+    // Back to the list, whatever the way in (detail → edit, or detail → profile
+    // → edit): no page of the living pet stays open, editable, behind.
+    navigator.popUntil((route) => route.isFirst);
     messenger.showSnackBar(
       SnackBar(
         duration: const Duration(seconds: 8),

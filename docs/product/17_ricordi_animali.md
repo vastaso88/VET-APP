@@ -545,6 +545,28 @@ prima riporta {nome} tra gli animali.»
   (si può solo spegnere) rispondono `pet_in_memories`. Chi non è il
   proprietario riceve sempre «non trovato», mai un indizio che l'animale è nei
   Ricordi.
-- Non bloccato nello storage dei file: un file caricato senza la sua riga in
-  `pet_photos` non compare da nessuna parte; le miniature create guardando la
-  galleria devono continuare a funzionare.
+- **Scelta: la scheda scarta in silenzio, le tabelle collegate rifiutano**
+  (rilettura Sicurezza, 16/11/2026). Mentre l'animale resta nei Ricordi,
+  `ricordi_profile_read_only` non dà errore: tiene la data della perdita e i
+  tre promemoria-ricordo e rimette com'era tutto il resto. Motivo: l'app salva
+  sempre la scheda intera (anche per un solo interruttore) e alcuni salvataggi
+  partono da soli (il peso più recente, la foto profilo); un errore li
+  farebbe fallire senza che la persona abbia chiesto niente. Foto,
+  passeggiate, pesi, documenti, patologie e promemoria invece rifiutano con
+  `pet_in_memories`, perché lì un inserimento è sempre un'azione voluta.
+  - L'app applica la stessa regola sulla propria copia
+    (`keepMemorialReadOnly` in `PetDemoStore.upsert`): nessuna schermata può
+    mostrare come «salvata» una modifica che il database non tiene.
+  - Verificato che nessuna schermata offre di modificare la scheda di un
+    animale nei Ricordi: la lista Animali non lo mostra, la Scheda non ha la
+    matita, e una pagina dell'animale riaperta dopo un riavvio diventa la
+    pagina del ricordo. Dopo lo spostamento si torna sempre alla lista (anche
+    entrando da Scheda → Modifica), così dietro non resta aperta una pagina
+    modificabile.
+- **Rischio basso annotato: lo storage dei file (`pet-photos`) non segue la
+  regola.** Un client modificato potrebbe caricare file nella cartella di un
+  animale nei Ricordi; la riga in `pet_photos` viene rifiutata, quindi restano
+  solo file orfani, che non compaiono da nessuna parte e non sono dati di
+  altre persone. Non lo blocco perché le miniature create guardando la
+  galleria devono continuare a funzionare; i file orfani si possono togliere
+  con una pulizia periodica dello storage, se un giorno servirà.
