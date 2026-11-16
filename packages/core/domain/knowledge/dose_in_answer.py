@@ -101,6 +101,7 @@ _FOOD = re.compile(
     r"\b(?:mangi\w*|cibo|umido|crocchett\w*|pappa|pasto|pasti|razion\w*|alimento|alimentazione|"
     r"eats?|eating|feed\w*|come|comer|fressen|frisst|manger|mange|"
     r"mangime|acqua|fieno|verdur\w*|frutta|semi|pellet\w*|carne|pesce|"
+    r"beve|bere|beva|drinks?|drinking|bebe|beber|trinkt|trinken|boit|boire|"
     r"food|kibble|meals?|portions?|water|hay|seeds?|vegetables?|treats?|"
     r"comida|pienso|raciones|racion|agua|heno|verduras?|"
     r"futter|nassfutter|trockenfutter|mahlzeit\w*|wasser|heu|gemuse|"
@@ -111,7 +112,18 @@ _SHARED_WITH_FOOD = re.compile(
     r"^(?:bustin\w*|gocc\w*|drops?|gotas?|tropfen|gouttes?|mg|ml|cc|milligramm\w*|"
     r"millilitr\w*|milliliter\w*|millilitre\w*|milligramme\w*|mililitros?)$"
 )
-_WATER = re.compile(r"\b(?:acqua|water|agua|wasser|eau)\b")
+# Drinking and misting are water too (synthetic users round 3: "60 millilitri per
+# chilo" a dog drinks, a chameleon's enclosure misted "three times a day").
+_WATER = re.compile(
+    r"\b(?:acqua|water|agua|wasser|eau|beve|bere|beva|drinks?|drinking|bebe|beber|trinkt|"
+    r"trinken|boit|boire|nebulizz\w*|vaporizz\w*|spruzz\w*|mist\w*|spray\w*|pulveriz\w*|"
+    r"spruh\w*|bespruh\w*|pulveris\w*)\b"
+)
+# A body weight ("pesa 85 g", "her weight is 85 g"): the animal, not a dose.
+_BODY_WEIGHT = re.compile(
+    r"\b(?:pesa|peso|pesava|weighs?|weight|weighed|wiegt|gewicht|pese|poids|pesaba)\b"
+    r"[^.;:!?]{0,30}$"
+)
 # Drops are food only when they are drops of water ("a few drops of water on the
 # leaves"); "2 gocce nel cibo" is a medicine or a supplement.
 _DROPS = re.compile(r"^(?:gocc\w*|drops?|gotas?|tropfen|gouttes?)$")
@@ -170,7 +182,14 @@ def find_dosage(answer: str, *, allowed_text: str = "") -> str | None:
     for sentence in sentences:
         if not _names_a_medicine(sentence) or _is_a_food_amount(sentence):
             continue
-        amount = _AMOUNT.search(sentence)
+        amount = next(
+            (
+                found
+                for found in _AMOUNT.finditer(sentence)
+                if not _BODY_WEIGHT.search(sentence[: found.start()])
+            ),
+            None,
+        )
         if amount is not None and is_models_own(amount.group(0)):
             if _NEGATED_GENERIC.search(sentence) and not _NAMED_DRUG.search(sentence):
                 # "nemmeno una goccia di grappa", "non una compressa": a refusal
@@ -186,3 +205,22 @@ def find_dosage(answer: str, *, allowed_text: str = "") -> str | None:
         if posology is not None and is_models_own(posology.group(0)):
             return posology.group(0)
     return None
+
+
+_LINE_SENTENCES = re.compile(r"(?<=[.!?;])\s+")
+
+
+def without_dose_sentences(answer: str, *, allowed_text: str = "") -> str:
+    """The answer without the sentences that hand over a dose, layout kept.
+    For a reply to a question that asked no dose (synthetic users round 3: the
+    weight of a cockatiel taken for a dose replaced four different answers with
+    the same refusal): the rest of the answer stays, the dose never does."""
+    kept_lines: list[str] = []
+    for line in answer.split("\n"):
+        sentences = _LINE_SENTENCES.split(line)
+        kept = [s for s in sentences if find_dosage(s, allowed_text=allowed_text) is None]
+        if len(kept) == len(sentences):
+            kept_lines.append(line)
+        elif kept:
+            kept_lines.append(" ".join(kept))
+    return re.sub(r"\n{3,}", "\n\n", "\n".join(kept_lines)).strip()

@@ -42,12 +42,13 @@ from packages.core.domain.pet_profile.body_condition import (
     species_has_body_condition,
 )
 from packages.core.domain.pet_profile.models import PetProfile
+from packages.core.domain.pet_profile.species import normalize_species
 from packages.core.domain.pet_profile.weight_measurement import (
     format_date_it,
     weight_label_with_date,
 )
 from packages.core.domain.safety.clarification_fit import describes_a_grave_picture
-from packages.core.domain.safety.first_aid import describes_heat_distress
+from packages.core.domain.safety.first_aid import describes_fume_distress, describes_heat_distress
 from packages.core.domain.safety.triage_clarification import requires_immediate_escalation
 from packages.core.domain.subscription.limits import EMERGENCY_CHATS_ABOVE_PET_LIMIT, PlanLimits
 from packages.shared.errors.base import ConversationLimitError, ValidationError
@@ -524,10 +525,14 @@ class SendChatMessageService:
             for conversation in self._repository.list_by_pet(data.pet_id)
             if conversation.owner_id == data.owner_id
         ]
-        max_per_pet = self._max_active_conversations_per_pet
+        # With a plan the plan decides (Plus 2, Pro 4, Ultra 6): the setting is only the
+        # fallback where no plan is wired. Taking the smaller of the two kept Ultra at 4
+        # (synthetic users round 3, 2026-11-16).
         plan_limits = self._limits_for(data)
         if plan_limits is not None:
-            max_per_pet = min(max_per_pet, plan_limits.max_chats_per_pet)
+            max_per_pet = plan_limits.max_chats_per_pet
+        else:
+            max_per_pet = self._max_active_conversations_per_pet
         if len(existing_for_pet) >= max_per_pet:
             if existing_for_pet and self._is_an_emergency(data.user_message, pet_profile):
                 # An emergency never waits for a free slot (synthetic users
@@ -566,6 +571,7 @@ class SendChatMessageService:
             or requires_immediate_escalation(lowered)
             or describes_a_grave_picture(message)
             or describes_heat_distress(message)
+            or (normalize_species(species) == "bird" and describes_fume_distress(message))
         )
 
     def _persist_pet_level_consent(self, pet_profile: PetProfile, granted: bool | None) -> None:

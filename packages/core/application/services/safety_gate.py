@@ -1,3 +1,5 @@
+import re
+
 from packages.core.domain.knowledge.fuzzy_match import (
     contains_keyword,
     find_fuzzy_keyword_matches,
@@ -344,12 +346,23 @@ for _family in SPECIES_SPECIFIC_RED_FLAGS:
     )
 
 
+# A betta's bubble nest "en la superficie" is courtship, not fish gasping at the
+# surface (synthetic users round 3: the fish emergency answered "is it normal?").
+# The sentence that speaks of the nest is left out of the check.
+_BUBBLE_NEST = re.compile(
+    r"(?:nid[oi] (?:di|de) (?:bolle|burbujas|schiuma|espuma)|bubble ?nests?|schaumnest\w*|"
+    r"nids? de bulles)[^.?!\n]*",
+    re.IGNORECASE,
+)
+
+
 class SafetyGate:
     """Pre-interview safety check (spec v3 §8-9): must run before any interview
     turn, and be re-run whenever the situation changes, not only once at the end.
     """
 
     def evaluate(self, message: str, species: str = "other") -> list[str]:
+        message = _BUBBLE_NEST.sub(" ", message)
         lowered = message.lower()
         family = normalize_species(species)
         # contains_keyword (prefix-of-a-word, not substring-anywhere)

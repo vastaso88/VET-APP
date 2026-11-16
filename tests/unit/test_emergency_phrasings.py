@@ -54,7 +54,14 @@ def test_poisons_get_the_substance_opening_and_body_signs_the_symptom_one() -> N
     bloat, _ = _answer("Cane", "credo abbia una torsione gastrica")
 
     assert poison.answer.startswith("Meglio non rischiare: quello di cui mi parli")
-    assert bloat.answer.startswith("Hai fatto bene a scrivermi subito.")
+    # One of the three symptom openings in turn (synthetic users round 3).
+    assert bloat.answer.startswith(
+        (
+            "Hai fatto bene a scrivermi subito.",
+            "Per Birba non conviene aspettare",
+            "Quello che descrivi",
+        )
+    )
 
 
 @pytest.mark.parametrize(("species", "message"), DOSAGE)

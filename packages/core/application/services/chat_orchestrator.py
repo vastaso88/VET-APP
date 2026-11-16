@@ -1,5 +1,6 @@
 import logging
 import re
+import zlib
 from collections.abc import Callable, Iterable
 from concurrent.futures import Future, ThreadPoolExecutor
 from datetime import UTC, date, datetime, timedelta
@@ -78,7 +79,7 @@ from packages.core.domain.conversation.request_kind import (
 )
 from packages.core.domain.conversation.states import ConversationState
 from packages.core.domain.knowledge.answer_validation import validate_answer
-from packages.core.domain.knowledge.dose_in_answer import find_dosage
+from packages.core.domain.knowledge.dose_in_answer import find_dosage, without_dose_sentences
 from packages.core.domain.knowledge.duty_notes import DUTY_CATALOG, pinned_duty_notes
 from packages.core.domain.knowledge.evidence_synthesis import EvidenceSynthesis
 from packages.core.domain.knowledge.health_cards import (
@@ -133,6 +134,8 @@ from packages.core.domain.safety.first_aid import (
     GENERIC_TOXIN_WHY,
     TOXIN_INTENT_TEXTS,
     claims_the_chat_said_so,
+    describes_fume_distress,
+    describes_heat_distress,
     has_a_question_besides_the_dose,
     medical_cause_first,
     mentions_heat,
@@ -165,6 +168,7 @@ from packages.core.domain.safety.harmful_requests import (
     asks_care_costs,
     asks_for_a_bare_yes_or_no,
     behaviour_needs_questions,
+    describes_a_vague_picture,
     detect_harmful_request,
     expresses_hopelessness,
     expresses_self_harm,
@@ -262,8 +266,9 @@ _DISSATISFIED = re.compile(
 
 
 # An answer past this many words gets the shortening pass (the prompt asks for
-# about 180: a little over is tolerated, 330 is not).
-ANSWER_WORDS_LIMIT = 200
+# about 180; synthetic users round 3: with 200 here a third of the answers were
+# still above 180, up to 280).
+ANSWER_WORDS_LIMIT = 180
 SHORTEN_MAX_TOKENS = 400
 
 
@@ -284,6 +289,68 @@ def _only_questions(text: str) -> bool:
 # not describe it (manual project, 2026-11-08). Named in the breed, the
 # notes or the message.
 _FERRET = re.compile(r"\b(?:furett\w*|ferrets?|huron(?:es)?|frettchen|furets?)\b")
+# An axolotl lives in cool water: "al caldo" is the wrong first gesture (synthetic
+# users round 3: "tienilo al caldo", then "non scaldare" in the next reply).
+_AXOLOTL = re.compile(r"\b(?:axolotl\w*|ajolotes?|axolote\w*|ambystoma)\b")
+# The shortening model's own preface ("Ecco la versione più breve:", "Here is a
+# shorter version.") is not part of the answer.
+_SHORTEN_PREFACE = re.compile(
+    r"^\W*(?:ecco (?:la |una )?(?:versione|risposta)[^\n.:!]{0,40}|versione (?:breve|"
+    r"accorciata|ridotta)|here(?:'s| is) (?:the |a )?(?:shorter|shortened|short|condensed)"
+    r"[^\n.:!]{0,40}|shorter version|shortened (?:version|answer)|aqui (?:tienes|esta) "
+    r"(?:la |una )?(?:version|respuesta)[^\n.:!]{0,40}|aquí (?:tienes|está) (?:la |una )?"
+    r"(?:versión|respuesta)[^\n.:!]{0,40}|hier (?:ist|die) (?:die |eine )?(?:kurzere|kürzere|"
+    r"gekurzte|gekürzte)[^\n.:!]{0,40}|voici (?:la |une )?(?:version|reponse|réponse)"
+    r"[^\n.:!]{0,40})[.:!]?\s*\n*",
+    re.IGNORECASE,
+)
+# "Ti allego la foto", "here is a photo": the owner believes a photo was sent.
+_PHOTO_MENTION = re.compile(
+    r"\b(?:foto|fotografia|immagine|photo|picture|pic|image|imagen|fotograf\w*|bild|bilder)\b"
+)
+# Laws and rules on keeping an animal: an owner's duty, never off topic.
+_OWNER_DUTY_WORDS = re.compile(
+    r"\b(?:legg[ei]|norm[ae]|normativ\w*|decret\w*|regolament\w*|obblig\w*|asl|cites|"
+    r"laws?|legal\w*|regulations?|decree|rules?|statute|ley|leyes|normas?|reglamento|"
+    r"gesetz\w*|verordnung\w*|vorschrift\w*|pflicht\w*|loi|lois|reglement\w*|decret|"
+    r"obligation\w*)\b"
+)
+# "That", "questo", "lo dici tu": the message is about the chat's previous answer.
+_BACK_REFERENCE = re.compile(
+    r"\b(?:that|this|it|those|these|questo|questa|quello|quella|cio|lo dici|me lo|esto|eso|"
+    r"esa|ese|das|dies|dieses|ca|cela|ceci)\b"
+)
+# The openings of an emergency reply, in turn (round 3: one opening in 74 of 86).
+_TRIAGE_OPENINGS = ("triage_opening", "triage_opening_2", "triage_opening_3")
+# The fish opening before round 3: still in stored conversations, still the mark
+# of an emergency reply for the turn after it.
+_LEGACY_FISH_OPENINGS = (
+    "Quello che descrivi dei pesci è un segnale di acqua in sofferenza",
+    "What you describe about the fish is a sign of water in trouble",
+    "Lo que describes de los peces es señal de agua en mal estado",
+    "Was Sie bei den Fischen beschreiben, ist ein Zeichen dafür",
+    "Ce que vous décrivez chez les poissons est le signe",
+)
+# A species named as food or as an object's owner is not the patient (round 3:
+# "insects, fish or supplements" for a turtle, "arena de gato" for a chinchilla
+# turned the answer to another animal).
+_SPECIES_AS_FOOD_OR_OBJECT = re.compile(
+    r"\b(?:insett\w*|insects?|pellets?|verdur\w*|vegetables?|supplement\w*|integrator\w*|"
+    r"mangim\w*|cibo|food|crocchett\w*|kibble|carne|meat|insectos?|pienso|comida|futter|"
+    r"insekten|nourriture|insectes?|croquettes?)(?:,| e| and| or| o| y| und| ou| et)"
+    r"[^.?!]{0,30}?\b(?:pesce|pesci|fish|pescado|peces|fisch|fische|poissons?|pollo|chicken)\b"
+    r"|\b(?:pesce|pesci|fish|pescado|fisch|poisson)\b(?= (?:o|or|e|and|y|und|ou|et) "
+    r"(?:insett\w*|insects?|verdur\w*|vegetables?|supplement\w*|integrator\w*|pellets?))"
+    r"|\b(?:arena|lettiera|sabbia|litter|cama|streu|litiere|sable|cibo|food|pienso|comida|"
+    r"futter|nourriture|croquettes?|crocchette|transportin|trasportino|cuccia|jaula|gabbia|"
+    r"cage|kafig|juguetes?|giochi|toys?) (?:de|del|per|for|da|di|pour|fur|für|des) "
+    r"(?:gatt\w*|gatos?|cats?|can[ei]|dogs?|perros?|hund\w*|katze\w*|chiens?|chats?|"
+    r"conigli\w*|rabbits?|conejos?|lapins?|kaninchen|uccell\w*|birds?|pajaros?|vogel\w*|"
+    r"oiseaux?|pesci|fish|peces|fische|poissons?)\b"
+    r"|\b(?:cat|dog|bird|fish|rabbit) (?:litter|food|bed|toys?|carrier|flap|tree|cage|"
+    r"flakes?|pellets?)\b",
+    re.IGNORECASE,
+)
 # Profile species that are groups: the breed field holds the animal itself.
 _GROUP_FAMILIES = frozenset({"small_mammal", "bird", "reptile_amphibian", "fish", "other"})
 _HAS_A_LETTER = re.compile(r"[^\W\d_]")
@@ -1264,6 +1331,23 @@ class ChatOrchestrator:
             # Third round, 3: a child with a bite or a scratch gets simple
             # steps, never the clarifying question about the bleeding.
             return self._fixed_reply(MINOR_HURT_TEXTS, data, model="minor-hurt-guard")
+        if family == "bird" and describes_fume_distress(message):
+            # Synthetic users round 3: a bird in distress after a non-stick pan
+            # got "after a run or at rest?" in Italian. The gesture is known: out
+            # of the fumes, fresh air, then the avian vet.
+            return self._adult_first(
+                self._urgent_answer(
+                    data,
+                    message,
+                    safety_flags=["bird_fumes"],
+                    category="bird_fumes",
+                    species=effective_species,
+                    species_family=family,
+                    female=female,
+                ),
+                data,
+                minor,
+            )
 
         # "Non dell'aglio, parlavo del Rimadyl": a substance the owner rules
         # out is not the one asked about (synthetic users 2026-11-07, P6).
@@ -1316,6 +1400,9 @@ class ChatOrchestrator:
                 requires_immediate_escalation(message)
                 or describes_a_grave_picture(message)
                 or small_mammal_stasis_is_immediate(category, family, message)
+                # A bird that bleeds: even a little blood matters, the gesture
+                # goes at once (round 3 eval: the generic question went instead).
+                or (category == "bleeding_trauma" and family == "bird")
             ):
                 # Already unambiguous and severe — asking a clarifying
                 # question here would only delay real emergency care. A
@@ -1402,6 +1489,7 @@ class ChatOrchestrator:
             return self._dosage_guard_result(
                 data.language,
                 toxicity_note=self._toxicity_note_for(message, user_history, family, data.language),
+                again=self._last_reply_was_the_dose_refusal(data),
             )
 
         if self._describes_independent_multi_pet_complaint(lowered):
@@ -1811,7 +1899,9 @@ class ChatOrchestrator:
         except Exception:  # noqa: BLE001 - the long answer is still a good answer
             logger.warning("shortening pass failed: the long answer is kept")
             return response
-        text = short.content.strip()
+        # Synthetic users round 3 (f#199): "Ecco la versione più breve." reached the
+        # owner, who had never seen a longer one.
+        text = _SHORTEN_PREFACE.sub("", short.content.strip(), count=1).strip()
         if not text or short.finish_reason == "length":
             return response
         if _word_count(text) >= _word_count(response.content):
@@ -2105,6 +2195,15 @@ class ChatOrchestrator:
             return None
         if self._mentions_an_animal(data, message, lowered):
             return None
+        text = normalize_for_matching(message)
+        if _OWNER_DUTY_WORDS.search(text) or (
+            any(m.role == "assistant" for m in data.conversation_history)
+            and _BACK_REFERENCE.search(text)
+        ):
+            # Synthetic users round 3: "Which law says that? Name the EU regulation"
+            # after an answer on a turtle got "I can't help with that". The law on
+            # keeping an animal is an owner's duty, and "that" is the chat's answer.
+            return None
         return self._fixed_reply(OFF_TOPIC_TEXTS, data, model="off-topic-guard")
 
     @staticmethod
@@ -2358,6 +2457,7 @@ class ChatOrchestrator:
         female: bool = False,
         toxicity_note: str = "",
         heat: bool = False,
+        opening_variant: int = 0,
     ) -> ChatOrchestratorResult:
         """The fixed emergency reply: the opening, then the first-aid steps
         of this category and species."""
@@ -2369,6 +2469,7 @@ class ChatOrchestrator:
             female=female,
             toxicity_note=toxicity_note,
             heat=heat,
+            opening_variant=opening_variant,
         )
         return ChatOrchestratorResult(
             answer=opening + steps,
@@ -2393,13 +2494,18 @@ class ChatOrchestrator:
         female: bool = False,
         toxicity_note: str = "",
         heat: bool = False,
+        opening_variant: int = 0,
     ) -> tuple[str, str]:
         # Real-world finding (2026-09-25): "quello che mi racconti di
         # {pet_name} è un segnale..." presumes the trigger was a narrated
         # symptom — nonsense when it was actually a question about a
         # medication/toxin's safety or dosage (nothing was "raccontato",
         # nothing was observed). Same escalation, different opening line.
-        opening_key = "triage_toxin_opening" if category == "toxin_medication" else "triage_opening"
+        opening_key = (
+            "triage_toxin_opening"
+            if category == "toxin_medication"
+            else _TRIAGE_OPENINGS[opening_variant % len(_TRIAGE_OPENINGS)]
+        )
         opening = translate(opening_key, response_locale, pet_name=pet_name)
         if toxicity_note:
             opening = toxicity_note + " " + opening
@@ -2414,10 +2520,31 @@ class ChatOrchestrator:
             "seizure": "triage_steps_seizure",
             "fish_distress": "triage_steps_fish",
         }
-        if category == "circulatory" and heat:
+        exotic = species_family in _EXOTIC_FAMILIES or species_family == "axolotl"
+        # Synthetic users round 3: the first gesture by species and picture. A case
+        # these lines do not cover gets the neutral steps, never warmth or a fast
+        # of their own (to be reviewed by a vet, docs/product/12 group P).
+        if category == "bird_fumes":
+            steps_key = "triage_steps_bird_fumes"
+        elif species_family == "axolotl":
+            steps_key = "triage_steps_axolotl"
+        elif (
+            exotic
+            and species_family != "fish"
+            and (category == "heatstroke" or (heat and category not in own_steps))
+        ):
+            # A chinchilla at 28 degrees: cool, never the dog's wet towels either.
+            steps_key = "triage_steps_exotic_cool"
+        elif category == "circulatory" and heat:
             # "Lingua viola" after a run or in the heat: a heatstroke before
             # a circulatory sign (wide eval 2026-11-06).
             steps_key = "triage_steps_heatstroke"
+        elif category == "bleeding_trauma" and species_family == "bird":
+            steps_key = "triage_steps_bird_bleeding"
+        elif category == "bleeding_trauma" and exotic and species_family != "fish":
+            steps_key = "triage_steps_exotic_bleeding"
+        elif category == "respiratory" and species_family == "bird":
+            steps_key = "triage_steps_bird_respiratory"
         elif category in own_steps:
             steps_key = own_steps[category]
         elif category in _DOG_CAT_STEPS and species_family not in _EXOTIC_FAMILIES:
@@ -2467,6 +2594,24 @@ class ChatOrchestrator:
             normalize_for_matching(" ".join((data.breed or "", data.notes or "", message)))
         ):
             species_family = "ferret"
+        if describes_heat_distress(message) and category not in (
+            "bleeding_trauma",
+            "seizure",
+            "snakebite",
+            "processionary",
+            "toxin_medication",
+            "bird_fumes",
+        ):
+            # "Sdraiato a 35 gradi, ansima forte. Lo bagno?" (round 3 eval): a
+            # heatstroke gets its own steps, not the generic cool place.
+            category = "heatstroke"
+        if species_family in ("reptile_amphibian", "other") and _AXOLOTL.search(
+            normalize_for_matching(
+                " ".join((data.species or "", data.breed or "", data.notes or ""))
+            )
+        ):
+            species_family = "axolotl"
+        opening_variant = self._opening_variant(data, message)
         fixed = self._urgent_triage_result(
             data.pet_name,
             safety_flags,
@@ -2476,6 +2621,7 @@ class ChatOrchestrator:
             female=female,
             toxicity_note=toxicity_note,
             heat=heat,
+            opening_variant=opening_variant,
         )
         if self._urgent_answer_timeout_seconds <= 0:
             return fixed
@@ -2502,6 +2648,7 @@ class ChatOrchestrator:
             female=female,
             toxicity_note=toxicity_note,
             heat=heat,
+            opening_variant=opening_variant,
         )
         owner_text = data.user_message.strip() or message
         today = data.today or datetime.now(UTC).date()
@@ -2565,6 +2712,25 @@ class ChatOrchestrator:
         )
 
     @staticmethod
+    def _opening_variant(data: ChatOrchestratorInput, message: str) -> int:
+        """Which of the emergency openings this reply uses: chosen from the
+        message (the same message, the same opening), never the one an earlier
+        reply of this conversation used (synthetic users round 3)."""
+        used = {
+            index
+            for index, key in enumerate(_TRIAGE_OPENINGS)
+            for m in data.conversation_history
+            if m.role == "assistant"
+            and translate(key, data.language, pet_name=data.pet_name).strip() in m.content
+        }
+        start = zlib.crc32(normalize_for_matching(message).encode("utf-8")) % len(_TRIAGE_OPENINGS)
+        for step in range(len(_TRIAGE_OPENINGS)):
+            candidate = (start + step) % len(_TRIAGE_OPENINGS)
+            if candidate not in used:
+                return candidate
+        return start
+
+    @staticmethod
     def _follows_a_triage_reply(data: ChatOrchestratorInput) -> bool:
         """The last reply told the owner to act now for an emergency: this
         message is a detail or a question about it (the fixed openings, in
@@ -2577,8 +2743,8 @@ class ChatOrchestrator:
             return False
         return any(
             translate(key, data.language, pet_name=data.pet_name).strip() in last
-            for key in ("triage_opening", "triage_toxin_opening", "triage_opening_fish")
-        )
+            for key in (*_TRIAGE_OPENINGS, "triage_toxin_opening", "triage_opening_fish")
+        ) or any(opening in last for opening in _LEGACY_FISH_OPENINGS)
 
     @staticmethod
     def _is_educational_toxin_question(safety_flags: list[str], message: str) -> bool:
@@ -2586,6 +2752,16 @@ class ChatOrchestrator:
             categorize_safety_flags(safety_flags) == "toxin_medication"
             and not requires_immediate_escalation(message)
             and is_educational_toxin_question(message)
+        )
+
+    def _owner_asked_an_amount(self, data: ChatOrchestratorInput, message: str) -> bool:
+        """This message, or the owner's previous one, asks an amount of a medicine."""
+        user_history = [m.content for m in data.conversation_history if m.role == "user"]
+        lowered = message.lower()
+        return (
+            self._is_dosage_request(lowered)
+            or self._asks_an_amount_of_a_recent_medicine(lowered, user_history)
+            or asks_an_amount(data.user_message)
         )
 
     @staticmethod
@@ -2622,10 +2798,17 @@ class ChatOrchestrator:
         # "la pipetta antipulci del cane, la metto a Nina?" names the dog
         # as the product's, not as the patient (stress test, second round,
         # D): a species that appears only as a qualifier does not override.
-        mentioned_families = _families_named_in(_SPECIES_AS_QUALIFIER.sub(" ", message))
+        mentioned_families = _families_named_in(
+            _SPECIES_AS_FOOD_OR_OBJECT.sub(" ", _SPECIES_AS_QUALIFIER.sub(" ", message))
+        )
         if len(mentioned_families) == 1:
             (mentioned_family,) = mentioned_families
-            if mentioned_family != profile_family:
+            # A profile filed as "Furetto" is "other" for the app but names a
+            # small mammal: the owner speaking of "il furetto" means this pet
+            # (synthetic users round 3: "il profilo aperto è di un altro animale").
+            if mentioned_family != profile_family and mentioned_family not in (
+                _families_named_in(profile_species.lower())
+            ):
                 return mentioned_family
         return profile_species
 
@@ -2665,10 +2848,17 @@ class ChatOrchestrator:
         )
 
     @staticmethod
+    def _last_reply_was_the_dose_refusal(data: ChatOrchestratorInput) -> bool:
+        last = next(
+            (m.content for m in reversed(data.conversation_history) if m.role == "assistant"), ""
+        )
+        return bool(last) and translate("dosage_answer", data.language).strip() in last
+
+    @staticmethod
     def _dosage_guard_result(
-        response_locale: str = "it", *, toxicity_note: str = ""
+        response_locale: str = "it", *, toxicity_note: str = "", again: bool = False
     ) -> ChatOrchestratorResult:
-        answer = translate("dosage_answer", response_locale)
+        answer = translate("dosage_answer_again" if again else "dosage_answer", response_locale)
         if toxicity_note:
             # A poison for this species: there is no dose to confirm with
             # anyone (stress test, second round, A).
@@ -3280,10 +3470,24 @@ class ChatOrchestrator:
         # ... or the button pressed on the last health answer.
         second_try = health_question and (data.escalate_health or not_helped)
         escalated = second_try and self._strong_allowed(data)
+        # "È strano, non so spiegarlo" (synthetic users round 3): questions first,
+        # once, as long as questions are allowed in this turn.
+        vague_picture = (
+            not behaviour_anamnesis
+            and not second_try
+            and kind in (RequestKind.DIRECT, RequestKind.SYMPTOM)
+            and describes_a_vague_picture(message)
+            and self._may_ask(data, kind)
+            and not any(
+                m.role == "user" and describes_a_vague_picture(m.content)
+                for m in data.conversation_history
+            )
+        )
         cache_id: str | None = None
         if (
             self._answer_cache is not None
             and not behaviour_anamnesis
+            and not vague_picture
             and is_cacheable_question(
                 message,
                 kind=kind,
@@ -3421,6 +3625,18 @@ class ChatOrchestrator:
                 "sentence saying you cannot see photos is already written before your "
                 "text, do not repeat it. Answer only from what the owner wrote."
             )
+        elif _PHOTO_MENTION.search(normalize_for_matching(data.user_message)) and not (
+            data.photo_context
+        ):
+            # Synthetic users round 3 (f#199): "ti allego la foto" with nothing
+            # attached was answered as if the photo had been seen.
+            attachment_note = (
+                "\n\nThe owner mentions a photo, but no photo reached you and you cannot "
+                "see images: if they say they are sending or showing one, start with one "
+                "short sentence saying you cannot see it and asking them to describe what "
+                "they see; never describe or guess what a photo shows. Then answer from "
+                "what they wrote."
+            )
         today = data.today or datetime.now(UTC).date()
 
         # Tone, structure and how many questions are allowed live in
@@ -3451,6 +3667,7 @@ class ChatOrchestrator:
             behavioural=behavioural,
             behaviour_anamnesis=behaviour_anamnesis,
             warning_signal=warning_signal,
+            vague_picture=vague_picture,
             # Under the cards rule the notes that ask the model to explain
             # clinical content from its own knowledge stay out: the approved
             # cards are the only clinical source (measured 2026-11-10: the
@@ -3593,7 +3810,15 @@ class ChatOrchestrator:
             )
         dosage = find_dosage(response.content, allowed_text=medical_context)
         if dosage is not None:
-            return self._dosage_rewritten_result(data.language, dosage)
+            # Synthetic users round 3: four different questions about a cockatiel
+            # that asked no dose got the same refusal four times. When the owner
+            # asked no amount, only the sentences with the dose go; the refusal
+            # stays for a real request, or when nothing useful would remain.
+            trimmed = without_dose_sentences(response.content, allowed_text=medical_context)
+            if self._owner_asked_an_amount(data, message) or len(trimmed) < 120:
+                return self._dosage_rewritten_result(data.language, dosage)
+            logger.warning("answer validator: a dose (%s) was cut from the reply", dosage)
+            response = response.model_copy(update={"content": trimmed})
         # The habit the instructions do not fully remove: a closing
         # "consulta il veterinario" with no reason in it (build 29).
         answer_text = strip_ritual_referral(response.content)
@@ -3687,7 +3912,7 @@ class ChatOrchestrator:
             )
             # The behaviour reply that asks first ends with its questions: the
             # owner's answer continues the case (not a new question).
-            or (behaviour_anamnesis and response.content.rstrip().endswith("?")),
+            or ((behaviour_anamnesis or vague_picture) and response.content.rstrip().endswith("?")),
         )
 
     def _cached_answer_result(self, cache_id: str) -> ChatOrchestratorResult | None:

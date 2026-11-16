@@ -29,10 +29,10 @@ QUESTION_TEMPLATES_FR: dict[str, str] = {
 # Translation only: REASSURING_MARKERS / red-flag keyword lists have no French
 # entries yet, so a French reply is never read as reassuring (safe default).
 CLARIFYING_QUESTIONS_FR: dict[str, str] = {
-    "respiratory": "Deux questions rapides avant de vous orienter : la respiration rapide a-t-elle commencé après avoir couru, joué ou eu chaud, ou au repos ? Est-ce qu'elle se calme maintenant, reste identique ou s'aggrave ?",
+    "respiratory": "En attendant, laissez votre animal au calme dans un endroit frais et aéré, loin des fumées, des sprays ou des plaques de cuisson, sans l'agiter. Puis dites-moi : ce que vous remarquez dans sa respiration a-t-il commencé après un effort, une frayeur ou sous l'effet de la chaleur, ou au repos sans raison ? Est-ce que ça se calme maintenant, reste pareil ou s'aggrave ?",
     "collapse": "Deux questions rapides : est-il maintenant éveillé, réactif et se déplace-t-il normalement, ou reste-t-il au sol et peu réactif ? L'épisode a-t-il duré quelques secondes ou plus longtemps ?",
     "seizure": "Deux questions rapides : les convulsions sont-elles terminées et est-il redevenu attentif, ou continuent-elles en ce moment ? Est-ce la première fois ?",
     "bleeding_trauma": "En attendant, appuyez sur la plaie avec une compresse ou un linge propre, fermement et sans le soulever, pendant quelques minutes. Puis dites-moi : saigne-t-il encore ou le saignement s'est-il arrêté ? Était-ce quelques gouttes ou une quantité qui vous inquiète ?",
     "urinary": "Deux questions rapides : depuis combien d'heures n'a-t-il pas uriné ? Essaie-t-il sans y parvenir ou montre-t-il de la douleur ?",
-    "gi_stasis": "Deux questions rapides : depuis combien d'heures exactement n'a-t-il ni mangé ni fait ses besoins ? S'est-il approché de la nourriture ou a-t-il produit ne serait-ce que quelques petites selles ?",
+    "gi_stasis": "Avant de vous donner des indications, deux questions rapides : depuis combien d'heures n'a-t-il pas mangé ? Et ses crottes, il en fait comme d'habitude, moins que d'habitude ou plus du tout ?",
 }

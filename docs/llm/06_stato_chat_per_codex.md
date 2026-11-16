@@ -151,11 +151,12 @@ L'ordine conta: i controlli deterministici vengono **prima** di qualsiasi modell
 ## 6. Urgenze
 
 - **Riconoscimento:** solo regole fisse e classificatore, mai la risposta del modello.
-- **`_urgent_answer`:** la **prima frase è fissa** (localizzata, dice di agire subito). Poi il modello scrive la parte libera sul caso e sulla domanda. I **passi fissi di primo soccorso** della categoria e della specie (`triage_steps_*` in `localization.py`) gli arrivano come note **vincolanti** (`build_emergency_prompt`), e non può aggiungere motivazioni proprie.
+- **`_urgent_answer`:** la **prima frase è fissa** (localizzata, dice di agire subito): dal giro 3 sono **tre aperture** a turno (`triage_opening`, `_2`, `_3`, scelta da `_opening_variant`: mai quella già usata nella stessa conversazione). Poi il modello scrive la parte libera sul caso e sulla domanda.
+- **Primo gesto per specie e quadro (giro 3):** `_triage_texts` sceglie `bird_fumes` (padella antiaderente, `describes_fume_distress`), `axolotl`, `exotic_cool` (esotico + caldo), `bird_bleeding` / `exotic_bleeding`, `bird_respiratory` per un uccello che respira male. I passi generici non dicono più «al caldo». Le domande di chiarimento sul respiro e sul sangue scattano solo se il proprietario ne parla (`clarifying_question_fits`) e quella sul respiro comincia con un gesto sicuro. I **passi fissi di primo soccorso** della categoria e della specie (`triage_steps_*` in `localization.py`) gli arrivano come note **vincolanti** (`build_emergency_prompt`), e non può aggiungere motivazioni proprie.
 - **Ritorno ai testi fissi:** errore, tempo scaduto (`URGENT_ANSWER_TIMEOUT_SECONDS`, 12 s), rifiuto del modello, quota finita, o testo che non passa i controlli (dose, altra specie, solo domande, sì/no) → si torna al testo fisso completo di prima.
 - **Fissi e fuori dal modello:** rifiuti di dose, eutanasia in casa, minore ferito, identità.
 - **Conteggio:** un'urgenza non consuma mai una domanda del piano.
-- **Revisione veterinaria:** i passi generici («al caldo», «niente cibo», «acqua non in eccesso») aspettano la revisione veterinaria (`docs/product/12_revisione_veterinaria_urgenze.md`). Non cambiarli senza.
+- **Revisione veterinaria:** i passi generici («niente cibo», «acqua non in eccesso»; «al caldo» tolto nel giro 3) e i gruppi nuovi P-T aspettano la revisione veterinaria (`docs/product/12_revisione_veterinaria_urgenze.md`). Non cambiarli senza.
 
 ---
 
@@ -360,7 +361,7 @@ Non misurati: la latenza reale dell'API Anthropic e il costo con la cache del pr
 
 Prima di cambiare il comportamento, leggi il test che lo fissa:
 - **Urgenze e sicurezza:** `test_urgent_answer.py`, `test_triage_clarification.py`, `test_emergency_phrasings*.py`, `test_safety_gate*.py`, `test_harmful_requests.py`, `test_exposure.py`, `test_dose_in_answer.py`.
-- **Prove di stress e utenti sintetici:** `test_stress_fixes.py`, `test_stress_round3.py`, `test_wide_fixes.py`, `test_synthetic_users_fixes.py`.
+- **Prove di stress e utenti sintetici:** `test_stress_fixes.py`, `test_stress_round3.py`, `test_wide_fixes.py`, `test_synthetic_users_fixes.py`, `test_synthetic_round2_fixes.py`, `test_synthetic_round3_fixes.py` (giro 3: esotici, aperture, dosi, instradamento, quadri vaghi, limite chat per piano). Gli scenari del giro 3 sono anche nell'eval: `scripts/eval/chat_quality/scenarios_giro3.py` (`run --category giro3`).
 - **Fornitori:** `test_anthropic_llm_client.py`, `test_groq_model_fallback.py`.
 - **Schede, Sonnet, conteggio:** `test_health_cards_rule.py`, `test_fratello_maggiore.py`, `test_question_counting.py`, `test_sonnet_cap_and_followups.py` (Pricing), `test_teeth_and_species_questions.py`.
 - **Consenso e dati:** `test_consent_texts_match_behaviour.py`, `test_notes_follow_record_consent.py`, `test_medical_record_consent_privacy.py`, `test_security_ownership.py`.
@@ -376,4 +377,6 @@ Prima di cambiare il comportamento, leggi il test che lo fissa:
 - **Testi italiani approvati:** fissati da un'istantanea. Aggiornala solo se il cambio è voluto.
 - **Espressioni regolari multilingue:** lavorano sul testo passato da `normalize_for_matching`, cioè minuscolo e senza accenti. Usa i confini di parola: «denti» non deve trovare «accidenti».
 - **File grande:** `chat_orchestrator.py` è lungo; molti metodi sono `@staticmethod` usati anche dai test e dagli strumenti di misura. Cerca i chiamanti prima di cambiare una firma.
+- **Dose nel testo del modello:** se il proprietario **non** ha chiesto una quantità, `without_dose_sentences` toglie solo le frasi con la dose e il resto resta; il rifiuto fisso va solo a una richiesta vera (giro 3: il peso «85 g» di una calopsite sostituiva quattro risposte diverse). Il secondo rifiuto di fila usa `dosage_answer_again`.
+- **Limite di chat per animale:** con un piano vale `plan.max_chats_per_pet` (Plus 2, Pro 4, Ultra 6); `MAX_ACTIVE_CONVERSATIONS_PER_PET` solo senza piano (sviluppatori).
 - **Prove con il modello:** usa `--evidence in_memory`. Il `.env` locale può avere `EVIDENCE_BACKEND=scientific_multi`, che interroga banche dati esterne e non rappresenta la produzione.

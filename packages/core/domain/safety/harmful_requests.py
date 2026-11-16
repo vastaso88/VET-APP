@@ -651,6 +651,33 @@ def behaviour_needs_questions(message: str) -> bool:
     return signal and not _SITUATION.search(text) and not _PLAY.search(text)
 
 
+# "È strano, non so spiegarlo", "isn't herself lately", "está raro": the owner says
+# outright that the picture is vague (synthetic users round 3: 15 of 17 such
+# messages got causes and advice before any question).
+_VAGUE_PICTURE = _words(
+    r"(?:e|sembra|lo vedo|la vedo) stran[oa]|fa (?:lo|la) stran[oa]|stran[oa] (?:ultimamente|"
+    r"da qualche giorno|da un po')|non (?:so|saprei) (?:spiegar\w*|dire bene|bene cosa)|"
+    r"non e (?:piu )?(?:lui|lei|il solito|la solita|lo stesso|la stessa)|diverso dal solito|"
+    r"diversa dal solito|"
+    r"(?:not|isn't|isnt) (?:really )?(?:himself|herself|itself|right)|acting (?:kinda |a bit |"
+    r"really )?(?:weird|strange|odd|off)|(?:seems|is) (?:kinda |a bit )?(?:weird|strange|odd|"
+    r"off|different)|(?:can't|cannot|can not) explain|not sure how to explain|"
+    r"(?:esta|lo veo|la veo) rar[oa]|no se (?:explicar\w*|como explicarlo)|no es (?:el|la) "
+    r"mism[oa]|"
+    r"(?:ist|wirkt) (?:komisch|seltsam|merkwurdig|anders)|(?:nicht er|nicht sie) selbst|"
+    r"kann (?:es )?nicht (?:gut )?erklaren|"
+    r"(?:est|semble) bizarre|pas (?:lui|elle)-meme|je ne sais pas (?:l'expliquer|comment "
+    r"l'expliquer)"
+)
+
+
+def describes_a_vague_picture(message: str) -> bool:
+    """The owner says the change is hard to put into words: the reply asks
+    first (what is different, since when, eating and drinking), even when one
+    or two details come with it."""
+    return bool(_VAGUE_PICTURE.search(normalize_for_matching(message)))
+
+
 def mentions_a_child_at_risk(message: str) -> bool:
     """A child in the picture with one of those gestures or with a warning
     signal: the prompt puts the child's safety first, in the words of the
