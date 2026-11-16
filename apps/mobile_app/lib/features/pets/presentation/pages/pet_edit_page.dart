@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../../../app/router/app_router.dart';
 import '../../../../design_system/tokens/app_colors.dart';
 import '../../../../design_system/tokens/app_radii.dart';
 import '../../../../design_system/tokens/app_spacing.dart';
@@ -10,6 +11,7 @@ import '../../data/pet_demo_store.dart';
 import '../../data/pet_photo_repository.dart';
 import '../../domain/pet_format.dart';
 import '../../domain/pet_models.dart';
+import '../memorial_restore_message.dart';
 import '../widgets/pet_avatar.dart';
 import '../widgets/pet_profile_form.dart';
 import '../widgets/pets_scaffold.dart';
@@ -184,6 +186,15 @@ class _PetLifecycleActions extends StatelessWidget {
   Future<void> _moveToMemories(BuildContext context) async {
     final navigator = Navigator.of(context);
     final messenger = ScaffoldMessenger.of(context);
+    try {
+      // Before the farewell flow opens: nobody fills in a date for a move that
+      // cannot happen because Ricordi is full.
+      MemorialService().ensureRoomInMemories();
+    } on MemoriesFullBlocksMove catch (blocked) {
+      await showMemorialMoveBlocked(context, pet.name, blocked);
+      return;
+    }
+    if (!context.mounted) return;
     final moved = await navigator.push<PetProfile>(
       MaterialPageRoute(builder: (_) => MemorialMovePage(pet: pet)),
     );
@@ -198,7 +209,18 @@ class _PetLifecycleActions extends StatelessWidget {
         content: Text(l10n.memorialMoveDone(moved.name)),
         action: SnackBarAction(
           label: l10n.memorialUndo,
-          onPressed: () => MemorialService().restore(moved),
+          onPressed: () async {
+            try {
+              await MemorialService().restore(moved);
+            } on PetLimitBlocksRestore catch (blocked) {
+              // A place was taken since the move: the pet stays in Ricordi. The page
+              // is gone by now, so the dialog opens on the app's navigator.
+              final host = AppRouter.navigatorKey.currentContext;
+              if (host != null && host.mounted) {
+                await showMemorialRestoreBlocked(host, moved.name, blocked);
+              }
+            } catch (_) {}
+          },
         ),
       ),
     );

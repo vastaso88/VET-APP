@@ -204,9 +204,16 @@ void main() {
   group('shared texts', () {
     test('the messages are the ones the chat already used', () {
       const sub = PlanAccessRefusal(PlanRefusalKind.subscriptionRequired);
-      const limit = PlanAccessRefusal(PlanRefusalKind.planLimitReached, limitKind: 'pets');
+      const limit =
+          PlanAccessRefusal(PlanRefusalKind.planLimitReached, limitKind: 'chats_per_pet');
       expect(sub.message, appL10n.billingPaywallTitle);
       expect(limit.message, appL10n.billingPlanLimitReached);
+    });
+
+    test('the pets limit also says that pets in Ricordi do not count', () {
+      const pets = PlanAccessRefusal(PlanRefusalKind.planLimitReached, limitKind: 'pets');
+      expect(pets.message, appL10n.billingPlanLimitPets);
+      expect(pets.message, isNot(appL10n.billingPlanLimitReached));
     });
   });
 
@@ -241,7 +248,7 @@ void main() {
         showMessage: true,
       );
       await tester.pumpAndSettle();
-      expect(find.text(appL10n.billingPlanLimitReached), findsOneWidget);
+      expect(find.text(appL10n.billingPlanLimitPets), findsOneWidget);
       expect(find.text('page ${AppRouter.paywall}'), findsNothing);
     });
 

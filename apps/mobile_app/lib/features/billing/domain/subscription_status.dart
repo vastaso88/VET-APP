@@ -10,6 +10,7 @@ class SubscriptionStatus {
     required this.hasAccess,
     this.limits,
     this.planLimits = const {},
+    this.maxMemorialPets,
     this.testPeriod = false,
     this.dataKeptUntil,
   });
@@ -24,6 +25,11 @@ class SubscriptionStatus {
       isDeveloper: json['is_developer'] as bool,
       hasAccess: json['has_access'] as bool,
       testPeriod: json['test_period'] as bool? ?? false,
+      // Positive numbers only: anything else means "not known", and the server decides.
+      maxMemorialPets: switch (json['max_memorial_pets']) {
+        final int cap when cap > 0 => cap,
+        _ => null,
+      },
       // tryParse: a malformed date must never break the access gate.
       dataKeptUntil: DateTime.tryParse(json['data_kept_until'] as String? ?? ''),
       limits: rawLimits == null ? null : PlanLimits.fromJson(rawLimits),
@@ -47,6 +53,10 @@ class SubscriptionStatus {
 
   /// The limits of every plan, as the backend enforces them.
   final Map<PlanTier, PlanLimits> planLimits;
+
+  /// How many pets the account may keep in Ricordi (the same for every plan;
+  /// a setting of the backend, never a number of this app); null = not known.
+  final int? maxMemorialPets;
 
   /// True during a public test of the app: every account is on [plan]
   /// (reported by the backend, set by its environment) and nobody pays, so

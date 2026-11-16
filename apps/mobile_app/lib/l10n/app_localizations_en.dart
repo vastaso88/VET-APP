@@ -2825,6 +2825,52 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String get billingPetsMemorialNote => 'Pets in Memories don\'t count.';
+
+  @override
+  String memorialRestoreBlockedUpgrade(String name, int limit, String plan) {
+    return '$name stays in Memories: nothing is lost. To bring $name back to your pets, you need a free spot: your plan allows $limit and all of them are taken. You can free up a spot or switch to the $plan plan in Settings → Subscription and payments.';
+  }
+
+  @override
+  String memorialRestoreBlockedFull(String name, int limit) {
+    return '$name stays in Memories: nothing is lost. To bring $name back to your pets, you need a free spot: your plan allows $limit and all of them are taken. To free up a spot, move a pet who is no longer with you to Memories, or delete one.';
+  }
+
+  @override
+  String memorialMoveReturnNeedsPlace(String name) {
+    return 'If you ever want to bring $name back to your pets, you will need a free spot in your plan.';
+  }
+
+  @override
+  String memorialMoveReturnNeedsPlan(String name) {
+    return 'If you ever want to bring $name back to your pets, you will need to choose a plan with a free spot.';
+  }
+
+  @override
+  String get billingPlanLimitPets =>
+      'Your plan has reached its maximum number of pets. Pets in Memories, the ones who are no longer with you, don\'t count. Switch to a higher plan in Settings.';
+
+  @override
+  String memorialMoveBlockedFull(String name, int limit) {
+    return 'For now $name stays among your pets, with all their data: nothing is lost. Memories has room for $limit pets and every spot is taken. You can free up a spot with “Delete forever” on a memory\'s page, only if and when you feel ready. In the meantime, if $name\'s reminders weigh on you, you can delete them in Reminders.';
+  }
+
+  @override
+  String get billingPlanLimitMemorials =>
+      'There is no more room in Memories. You can free up a spot with “Delete forever” on a memory\'s page.';
+
+  @override
+  String get billingPaywallMoveToMemories =>
+      'Is a pet no longer with you? Move them to Memories';
+
+  @override
+  String get memorialChoosePrompt => 'Which pet is no longer with you?';
+
+  @override
+  String get memorialChooseEmpty => 'There are no pets to move to Memories.';
+
+  @override
   String get memorialSaveFailed =>
       'I couldn\'t save. Check your connection and try again.';
 

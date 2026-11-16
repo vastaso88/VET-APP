@@ -2844,6 +2844,52 @@ class AppLocalizationsEs extends AppLocalizations {
   }
 
   @override
+  String get billingPetsMemorialNote => 'Los animales en Recuerdos no cuentan.';
+
+  @override
+  String memorialRestoreBlockedUpgrade(String name, int limit, String plan) {
+    return '$name se queda en Recuerdos: no se pierde nada. Para devolver a $name a tus animales hace falta una plaza libre: tu plan permite $limit y todas están ocupadas. Puedes liberar una plaza o pasar al plan $plan en Ajustes → Suscripción y pagos.';
+  }
+
+  @override
+  String memorialRestoreBlockedFull(String name, int limit) {
+    return '$name se queda en Recuerdos: no se pierde nada. Para devolver a $name a tus animales hace falta una plaza libre: tu plan permite $limit y todas están ocupadas. Para liberar una, pasa a Recuerdos un animal que ya no está contigo o elimina uno.';
+  }
+
+  @override
+  String memorialMoveReturnNeedsPlace(String name) {
+    return 'Si algún día quieres devolver a $name a tus animales, hará falta una plaza libre en tu plan.';
+  }
+
+  @override
+  String memorialMoveReturnNeedsPlan(String name) {
+    return 'Si algún día quieres devolver a $name a tus animales, tendrás que elegir un plan con una plaza libre.';
+  }
+
+  @override
+  String get billingPlanLimitPets =>
+      'Tu plan ha alcanzado el número máximo de animales. Los animales en Recuerdos, los que ya no están contigo, no cuentan. Cambia a un plan superior en Ajustes.';
+
+  @override
+  String memorialMoveBlockedFull(String name, int limit) {
+    return 'Por ahora $name se queda entre tus animales, con todos sus datos: no se pierde nada. Recuerdos tiene plazas para $limit animales y todas están ocupadas. Se libera una plaza con «Eliminar para siempre» en la página de un recuerdo, solo si lo deseas y cuando te parezca el momento. Mientras tanto, si los recordatorios de $name te pesan, puedes eliminarlos en Recordatorios.';
+  }
+
+  @override
+  String get billingPlanLimitMemorials =>
+      'En Recuerdos ya no quedan plazas libres. Se libera una plaza con «Eliminar para siempre» en la página de un recuerdo.';
+
+  @override
+  String get billingPaywallMoveToMemories =>
+      '¿Hay un animal que ya no está contigo? Pásalo a Recuerdos';
+
+  @override
+  String get memorialChoosePrompt => '¿Qué animal ya no está contigo?';
+
+  @override
+  String get memorialChooseEmpty => 'No hay animales para pasar a Recuerdos.';
+
+  @override
   String get memorialSaveFailed =>
       'No he podido guardar. Revisa la conexión y vuelve a intentarlo.';
 

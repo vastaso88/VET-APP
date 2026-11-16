@@ -1525,6 +1525,64 @@
       }
     }
   },
+  "billingPetsMemorialNote": "Pets in Memories don't count.",
+  "memorialRestoreBlockedUpgrade": "{name} stays in Memories: nothing is lost. To bring {name} back to your pets, you need a free spot: your plan allows {limit} and all of them are taken. You can free up a spot or switch to the {plan} plan in Settings → Subscription and payments.",
+  "@memorialRestoreBlockedUpgrade": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "limit": {
+        "type": "int"
+      },
+      "plan": {
+        "type": "String"
+      }
+    }
+  },
+  "memorialRestoreBlockedFull": "{name} stays in Memories: nothing is lost. To bring {name} back to your pets, you need a free spot: your plan allows {limit} and all of them are taken. To free up a spot, move a pet who is no longer with you to Memories, or delete one.",
+  "@memorialRestoreBlockedFull": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "limit": {
+        "type": "int"
+      }
+    }
+  },
+  "memorialMoveReturnNeedsPlace": "If you ever want to bring {name} back to your pets, you will need a free spot in your plan.",
+  "@memorialMoveReturnNeedsPlace": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "memorialMoveReturnNeedsPlan": "If you ever want to bring {name} back to your pets, you will need to choose a plan with a free spot.",
+  "@memorialMoveReturnNeedsPlan": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "billingPlanLimitPets": "Your plan has reached its maximum number of pets. Pets in Memories, the ones who are no longer with you, don't count. Switch to a higher plan in Settings.",
+  "memorialMoveBlockedFull": "For now {name} stays among your pets, with all their data: nothing is lost. Memories has room for {limit} pets and every spot is taken. You can free up a spot with “Delete forever” on a memory's page, only if and when you feel ready. In the meantime, if {name}'s reminders weigh on you, you can delete them in Reminders.",
+  "@memorialMoveBlockedFull": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "limit": {
+        "type": "int"
+      }
+    }
+  },
+  "billingPlanLimitMemorials": "There is no more room in Memories. You can free up a spot with “Delete forever” on a memory's page.",
+  "billingPaywallMoveToMemories": "Is a pet no longer with you? Move them to Memories",
+  "memorialChoosePrompt": "Which pet is no longer with you?",
+  "memorialChooseEmpty": "There are no pets to move to Memories.",
   "memorialSaveFailed": "I couldn't save. Check your connection and try again.",
   "petsMemoriesRemoveAction": "Delete forever",
   "notificationsMemoryBirthdayTitle": "Today is {petName}'s birthday",

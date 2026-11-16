@@ -97,7 +97,8 @@ def test_the_codes_are_the_backends_and_carry_an_http_status() -> None:
 
 def test_the_backend_and_the_sql_editor_are_not_gated() -> None:
     sql = _sql()
-    assert sql.count("if coalesce(auth.role(), '') not in ('authenticated', 'anon') then") == 2
+    # The plan gate, the pet-profile gate, the pets limit and the Ricordi cap.
+    assert sql.count("if coalesce(auth.role(), '') not in ('authenticated', 'anon') then") == 4
 
 
 def test_the_pet_limit_counts_only_new_pets_and_is_race_free() -> None:
@@ -108,7 +109,9 @@ def test_the_pet_limit_counts_only_new_pets_and_is_race_free() -> None:
     assert "p.id = new.id and p.owner_id = new.owner_id" in text, "an upsert of an existing pet"
     assert "pg_advisory_xact_lock" in text
     assert re.search(
-        r"create trigger plan_access_20_pet_limit\s+before insert on public\.pet_profiles", sql
+        r"create trigger plan_access_20_pet_limit\s+before insert or update "
+        r"on public\.pet_profiles",
+        sql,
     )
 
 

@@ -20,6 +20,9 @@ import '../domain/memorial_profile.dart';
 import '../domain/pet_models.dart';
 import '../../../design_system/tokens/app_colors.dart';
 
+/// How a write of a pet to the server ended.
+enum _SaveOutcome { saved, failed, refusedByPlan }
+
 class PetSpeciesOption {
   const PetSpeciesOption({
     required this.label,
@@ -280,25 +283,44 @@ class PetDemoStore {
 
   bool isUnsynced(String id) => _unsynced.contains(id);
 
-  /// Writes [pet] to the server. Returns false (and flags the pet) when the
+  /// The limit the server named the last time it refused a write that asked to be
+  /// reverted ([upsert]'s `revertOnPlanLimit`), or null when it did not name one.
+  /// Lets the caller tell the owner the server's number, not an out-of-date one.
+  int? get lastPlanRefusalLimit => _lastPlanRefusalLimit;
+  int? _lastPlanRefusalLimit;
+
+  /// Writes [pet] to the server. Returns `failed` (and flags the pet) when the
   /// write failed; local-only mode (no backend or signed out) counts as saved.
-  Future<bool> _persistRemote(PetProfile pet) async {
-    final ownerId = CurrentUser.get()?.id;
+  ///
+  /// [revertOnPlanLimit] is the pet as it was before a bring-back from Ricordi:
+  /// when the server refuses because the plan has no free place, the pet is put
+  /// back as it was (nothing flagged, nothing lost, no message here: the caller
+  /// explains) and the result is `refusedByPlan`.
+  Future<_SaveOutcome> _persistRemote(
+    PetProfile pet, {
+    PetProfile? revertOnPlanLimit,
+  }) async {
+    final testWrite = debugUpsertRow;
+    final ownerId = CurrentUser.get()?.id ?? (testWrite != null ? 'test-owner' : null);
     final client = _resolveClient();
-    if (ownerId == null || client == null) {
-      return true;
+    if (testWrite == null && (ownerId == null || client == null)) {
+      return _SaveOutcome.saved;
     }
 
     try {
-      final row = _petToRow(pet, ownerId);
+      final row = _petToRow(pet, ownerId!);
       try {
-        await client.from('pet_profiles').upsert(row);
+        if (testWrite != null) {
+          await testWrite(row);
+        } else {
+          await client!.from('pet_profiles').upsert(row);
+        }
       } on PostgrestException catch (error) {
         // Profile v2 columns not on the server yet (SQL not run): save the
         // rest rather than losing the whole pet. PGRST204 = column not in the
         // schema cache; 42703 = undefined column.
-        if (error.code != 'PGRST204' && error.code != '42703') rethrow;
-        await client.from('pet_profiles').upsert(
+        if (testWrite != null || (error.code != 'PGRST204' && error.code != '42703')) rethrow;
+        await client!.from('pet_profiles').upsert(
               Map<String, dynamic>.of(row)
                 ..removeWhere((key, _) =>
                     profileV2Columns.contains(key) || memorialReminderColumns.contains(key)),
@@ -306,14 +328,24 @@ class PetDemoStore {
       }
       _unsynced.remove(pet.id);
       changes.value++;
-      return true;
+      return _SaveOutcome.saved;
     } catch (error) {
+      final refusal = planRefusalFromError(error);
+      if (revertOnPlanLimit != null &&
+          refusal?.kind == PlanRefusalKind.planLimitReached) {
+        _lastPlanRefusalLimit = refusal?.limit;
+        _putLocal(revertOnPlanLimit);
+        _unsynced.remove(pet.id);
+        changes.value++;
+        _saveToCache();
+        return _SaveOutcome.refusedByPlan;
+      }
       // Trial over / pet limit reached: the paywall or the limit message
       // instead of a silent "not synced" flag (the pet stays flagged too).
       handlePlanRefusal(error, showMessage: true);
       _unsynced.add(pet.id);
       changes.value++;
-      return false;
+      return _SaveOutcome.failed;
     }
   }
 
@@ -321,7 +353,7 @@ class PetDemoStore {
   Future<bool> retrySync(String id) async {
     final pet = _pets.where((item) => item.id == id).firstOrNull;
     if (pet == null) return true;
-    return _persistRemote(pet);
+    return (await _persistRemote(pet)) == _SaveOutcome.saved;
   }
 
   Future<void> _deleteRemote(String id) async {
@@ -366,6 +398,11 @@ class PetDemoStore {
     'body_condition',
     'activity_level',
   };
+
+  /// Test seam: replaces the write of a profile row to Supabase, so a test can
+  /// make the server refuse (for example with the plan-limit error).
+  @visibleForTesting
+  Future<void> Function(Map<String, dynamic> row)? debugUpsertRow;
 
   @visibleForTesting
   Map<String, dynamic> petToRow(PetProfile pet, String ownerId) => _petToRow(pet, ownerId);
@@ -543,10 +580,26 @@ class PetDemoStore {
   /// here previously let the caller navigate away (or the tab close/reload)
   /// before the Supabase upsert actually landed, so a just-created pet
   /// could silently vanish on the next load even though it looked saved.
-  Future<PetProfile> upsert(PetProfile next) async {
+  ///
+  /// [revertOnPlanLimit] is for a change the server may refuse because of a limit:
+  /// bringing a pet back from Ricordi when the plan has no free place, or moving one
+  /// to Ricordi when it is full. Then the pet stays as it was (this returns that
+  /// copy) instead of being left "changed but not synced".
+  Future<PetProfile> upsert(PetProfile next, {PetProfile? revertOnPlanLimit}) async {
+    _lastPlanRefusalLimit = null;
     // A pet in Ricordi: only its memorial fields change (as in the database).
     final stored = byId(next.id);
     final pet = stored == null ? next : keepMemorialReadOnly(stored, next);
+    _putLocal(pet);
+    changes.value++;
+    _saveToCache();
+    final outcome = await _persistRemote(pet, revertOnPlanLimit: revertOnPlanLimit);
+    if (outcome == _SaveOutcome.refusedByPlan) return revertOnPlanLimit!;
+    return pet;
+  }
+
+  /// Puts [pet] in the in-memory list, replacing the one with the same id.
+  void _putLocal(PetProfile pet) {
     final index = _pets.indexWhere((item) => item.id == pet.id);
     if (index == -1) {
       _pets = [pet, ..._pets];
@@ -557,11 +610,6 @@ class PetDemoStore {
         ..._pets.skip(index + 1),
       ];
     }
-
-    changes.value++;
-    _saveToCache();
-    await _persistRemote(pet);
-    return pet;
   }
 
   /// Applies a consent decision to the in-memory pet and notifies listeners,

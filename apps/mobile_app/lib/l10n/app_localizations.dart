@@ -4820,6 +4820,72 @@ abstract class AppLocalizations {
   /// **'{name} è di nuovo tra i tuoi animali.'**
   String memorialRestoreDone(String name);
 
+  /// No description provided for @billingPetsMemorialNote.
+  ///
+  /// In it, this message translates to:
+  /// **'Gli animali nei Ricordi non contano.'**
+  String get billingPetsMemorialNote;
+
+  /// No description provided for @memorialRestoreBlockedUpgrade.
+  ///
+  /// In it, this message translates to:
+  /// **'{name} resta nei Ricordi: non si perde niente. Per riportare {name} tra gli animali serve un posto libero: il tuo piano ne consente {limit} e sono tutti occupati. Puoi liberare un posto oppure passare al piano {plan} da Impostazioni → Abbonamento e pagamenti.'**
+  String memorialRestoreBlockedUpgrade(String name, int limit, String plan);
+
+  /// No description provided for @memorialRestoreBlockedFull.
+  ///
+  /// In it, this message translates to:
+  /// **'{name} resta nei Ricordi: non si perde niente. Per riportare {name} tra gli animali serve un posto libero: il tuo piano ne consente {limit} e sono tutti occupati. Per liberarne uno, sposta nei Ricordi un animale che non c\'è più oppure eliminane uno.'**
+  String memorialRestoreBlockedFull(String name, int limit);
+
+  /// No description provided for @memorialMoveReturnNeedsPlace.
+  ///
+  /// In it, this message translates to:
+  /// **'Se un giorno vorrai riportare {name} tra gli animali, servirà un posto libero nel tuo piano.'**
+  String memorialMoveReturnNeedsPlace(String name);
+
+  /// No description provided for @memorialMoveReturnNeedsPlan.
+  ///
+  /// In it, this message translates to:
+  /// **'Se un giorno vorrai riportare {name} tra gli animali, dovrai scegliere un piano con un posto libero.'**
+  String memorialMoveReturnNeedsPlan(String name);
+
+  /// No description provided for @billingPlanLimitPets.
+  ///
+  /// In it, this message translates to:
+  /// **'Il tuo piano ha raggiunto il numero massimo di animali. Gli animali nei Ricordi, cioè quelli che non ci sono più, non contano. Passa a un piano superiore da Impostazioni.'**
+  String get billingPlanLimitPets;
+
+  /// No description provided for @memorialMoveBlockedFull.
+  ///
+  /// In it, this message translates to:
+  /// **'Per ora {name} resta tra i tuoi animali, con tutti i suoi dati: non si perde niente. Nei Ricordi c\'è posto per {limit} animali e adesso è tutto occupato. Un posto si libera con «Elimina per sempre» nella pagina di un ricordo, solo se e quando te la senti. Intanto, se i promemoria di {name} ti pesano, puoi eliminarli da Promemoria.'**
+  String memorialMoveBlockedFull(String name, int limit);
+
+  /// No description provided for @billingPlanLimitMemorials.
+  ///
+  /// In it, this message translates to:
+  /// **'Nei Ricordi non c\'è più posto. Un posto si libera con «Elimina per sempre» nella pagina di un ricordo.'**
+  String get billingPlanLimitMemorials;
+
+  /// No description provided for @billingPaywallMoveToMemories.
+  ///
+  /// In it, this message translates to:
+  /// **'Un animale non c\'è più? Spostalo nei Ricordi'**
+  String get billingPaywallMoveToMemories;
+
+  /// No description provided for @memorialChoosePrompt.
+  ///
+  /// In it, this message translates to:
+  /// **'Quale animale non c\'è più?'**
+  String get memorialChoosePrompt;
+
+  /// No description provided for @memorialChooseEmpty.
+  ///
+  /// In it, this message translates to:
+  /// **'Non ci sono animali da spostare nei Ricordi.'**
+  String get memorialChooseEmpty;
+
   /// No description provided for @memorialSaveFailed.
   ///
   /// In it, this message translates to:

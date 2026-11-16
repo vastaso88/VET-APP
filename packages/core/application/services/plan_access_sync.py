@@ -1,5 +1,6 @@
-"""Keeps the database's copy of two backend-only facts in line with the backend:
-the public-test plan and the developer allowlist (see PlanAccessStore). Called
+"""Keeps the database's copy of three backend-only facts in line with the backend:
+the public-test plan, the developer allowlist and the cap on pets in Ricordi
+(see PlanAccessStore). Called
 at each subscription status check, the moment the app asks "what may I do".
 
 Built once per process (application container), so it remembers what it last
@@ -23,10 +24,20 @@ class PlanAccessSync:
         self._store = store
         self._lock = threading.Lock()
         self._test_plan: object = _UNSET
+        self._max_memorial_pets: int | None = None
         self._unlimited: dict[str, bool] = {}
 
-    def sync(self, *, owner_id: str, is_developer: bool, test_plan: str | None) -> None:
+    def sync(
+        self,
+        *,
+        owner_id: str,
+        is_developer: bool,
+        test_plan: str | None,
+        max_memorial_pets: int | None = None,
+    ) -> None:
         self._sync_test_plan(test_plan)
+        if max_memorial_pets is not None:
+            self._sync_max_memorial_pets(max_memorial_pets)
         self._sync_unlimited(owner_id, is_developer)
 
     def _sync_test_plan(self, test_plan: str | None) -> None:
@@ -40,6 +51,20 @@ class PlanAccessSync:
             return
         with self._lock:
             self._test_plan = test_plan
+
+    def _sync_max_memorial_pets(self, cap: int) -> None:
+        with self._lock:
+            if self._max_memorial_pets == cap:
+                return
+        try:
+            self._store.set_max_memorial_pets(cap)
+        except Exception:  # noqa: BLE001 - bookkeeping, never the owner's answer
+            # The column does not exist until plan_access_rules.sql is run again;
+            # the database then keeps the default the script seeded.
+            logger.warning("could not write the cap on pets in Ricordi for the database rules")
+            return
+        with self._lock:
+            self._max_memorial_pets = cap
 
     def _sync_unlimited(self, owner_id: str, is_developer: bool) -> None:
         with self._lock:

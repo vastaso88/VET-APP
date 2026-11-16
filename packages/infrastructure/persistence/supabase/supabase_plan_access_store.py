@@ -16,6 +16,13 @@ class SupabasePlanAccessStore:
     def set_test_plan(self, plan: str | None) -> None:
         self._client.table("plan_access_config").upsert({"id": 1, "test_plan": plan}).execute()
 
+    def set_max_memorial_pets(self, cap: int) -> None:
+        # A write of its own: on a database where plan_access_rules.sql was not
+        # run again the column is missing, and the test plan must still be saved.
+        self._client.table("plan_access_config").upsert(
+            {"id": 1, "max_memorial_pets": cap}
+        ).execute()
+
     def set_unlimited(self, owner_id: str, unlimited: bool) -> None:
         table = self._client.table("plan_access_unlimited")
         if unlimited:

@@ -27,7 +27,8 @@ class PlanAccessRefusal {
 
   final PlanRefusalKind kind;
 
-  /// What ran out for [PlanRefusalKind.planLimitReached]: `pets`, ...
+  /// What ran out for [PlanRefusalKind.planLimitReached]: `pets`, `memorials` (the
+  /// cap on pets kept in Ricordi), ...
   final String? limitKind;
 
   /// The plan's limit when the answer carries it.
@@ -36,9 +37,16 @@ class PlanAccessRefusal {
   /// The text shown for this refusal: the paywall's own title (the paywall is
   /// opened at the same time) or the generic "plan limit" text, the same ones
   /// the chat already uses for the backend's answers.
-  String get message => kind == PlanRefusalKind.subscriptionRequired
-      ? appL10n.billingPaywallTitle
-      : appL10n.billingPlanLimitReached;
+  String get message {
+    if (kind == PlanRefusalKind.subscriptionRequired) return appL10n.billingPaywallTitle;
+    return switch (limitKind) {
+      // The pets limit also says that pets in Ricordi do not count.
+      'pets' => appL10n.billingPlanLimitPets,
+      // Ricordi is full: not a matter of plan, so no plan is mentioned.
+      'memorials' => appL10n.billingPlanLimitMemorials,
+      _ => appL10n.billingPlanLimitReached,
+    };
+  }
 }
 
 const _subscriptionRequired = 'subscription_required';

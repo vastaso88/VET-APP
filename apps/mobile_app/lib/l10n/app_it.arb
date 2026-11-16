@@ -1525,6 +1525,64 @@
       }
     }
   },
+  "billingPetsMemorialNote": "Gli animali nei Ricordi non contano.",
+  "memorialRestoreBlockedUpgrade": "{name} resta nei Ricordi: non si perde niente. Per riportare {name} tra gli animali serve un posto libero: il tuo piano ne consente {limit} e sono tutti occupati. Puoi liberare un posto oppure passare al piano {plan} da Impostazioni → Abbonamento e pagamenti.",
+  "@memorialRestoreBlockedUpgrade": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "limit": {
+        "type": "int"
+      },
+      "plan": {
+        "type": "String"
+      }
+    }
+  },
+  "memorialRestoreBlockedFull": "{name} resta nei Ricordi: non si perde niente. Per riportare {name} tra gli animali serve un posto libero: il tuo piano ne consente {limit} e sono tutti occupati. Per liberarne uno, sposta nei Ricordi un animale che non c'è più oppure eliminane uno.",
+  "@memorialRestoreBlockedFull": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "limit": {
+        "type": "int"
+      }
+    }
+  },
+  "memorialMoveReturnNeedsPlace": "Se un giorno vorrai riportare {name} tra gli animali, servirà un posto libero nel tuo piano.",
+  "@memorialMoveReturnNeedsPlace": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "memorialMoveReturnNeedsPlan": "Se un giorno vorrai riportare {name} tra gli animali, dovrai scegliere un piano con un posto libero.",
+  "@memorialMoveReturnNeedsPlan": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "billingPlanLimitPets": "Il tuo piano ha raggiunto il numero massimo di animali. Gli animali nei Ricordi, cioè quelli che non ci sono più, non contano. Passa a un piano superiore da Impostazioni.",
+  "memorialMoveBlockedFull": "Per ora {name} resta tra i tuoi animali, con tutti i suoi dati: non si perde niente. Nei Ricordi c'è posto per {limit} animali e adesso è tutto occupato. Un posto si libera con «Elimina per sempre» nella pagina di un ricordo, solo se e quando te la senti. Intanto, se i promemoria di {name} ti pesano, puoi eliminarli da Promemoria.",
+  "@memorialMoveBlockedFull": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "limit": {
+        "type": "int"
+      }
+    }
+  },
+  "billingPlanLimitMemorials": "Nei Ricordi non c'è più posto. Un posto si libera con «Elimina per sempre» nella pagina di un ricordo.",
+  "billingPaywallMoveToMemories": "Un animale non c'è più? Spostalo nei Ricordi",
+  "memorialChoosePrompt": "Quale animale non c'è più?",
+  "memorialChooseEmpty": "Non ci sono animali da spostare nei Ricordi.",
   "memorialSaveFailed": "Non sono riuscito a salvare. Controlla la connessione e riprova.",
   "petsMemoriesRemoveAction": "Elimina per sempre",
   "notificationsMemoryBirthdayTitle": "Oggi è il compleanno di {petName}",

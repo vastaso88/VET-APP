@@ -6,10 +6,12 @@ import '../../../../design_system/tokens/app_spacing.dart';
 import '../../../../design_system/tokens/app_text_styles.dart';
 import '../../../../l10n/date_formats.dart';
 import '../../../../l10n/l10n.dart';
+import '../../../billing/data/billing_demo_store.dart';
 import '../../application/memorial_service.dart';
 import '../../data/memorial_moments.dart';
 import '../../domain/pet_format.dart';
 import '../../domain/pet_models.dart';
+import '../memorial_restore_message.dart';
 import '../widgets/pet_avatar.dart';
 import '../widgets/pets_scaffold.dart';
 
@@ -100,6 +102,12 @@ class _MemorialMovePageState extends State<MemorialMovePage> {
       );
       if (!mounted) return;
       Navigator.of(context).pop(moved);
+    } on MemoriesFullBlocksMove catch (blocked) {
+      // The count was out of date: the pet stays among the active ones.
+      if (!mounted) return;
+      setState(() => _saving = false);
+      await showMemorialMoveBlocked(context, widget.pet.name, blocked);
+      if (mounted) Navigator.of(context).pop();
     } catch (_) {
       if (!mounted) return;
       setState(() => _saving = false);
@@ -187,6 +195,18 @@ class _MemorialMovePageState extends State<MemorialMovePage> {
         const SizedBox(height: AppSpacing.xs),
         Text(
           context.l10n.memorialMoveDateHelp,
+          style: AppTextStyles.caption.copyWith(color: AppColors.mutedText),
+        ),
+        const SizedBox(height: AppSpacing.md),
+        // One calm sentence about the way back, where the choice is made: it is the
+        // consequence nobody expects. Nothing about plans or what counts.
+        Text(
+          // For an account with no plan and no trial the way back is to choose a plan
+          // (Normativa, 2026-11-16): "a free place in your plan" would be wrong there.
+          BillingDemoStore.instance.hasAccess
+              ? context.l10n.memorialMoveReturnNeedsPlace(pet.name)
+              : context.l10n.memorialMoveReturnNeedsPlan(pet.name),
+          key: const ValueKey('memorial-return-needs-place'),
           style: AppTextStyles.caption.copyWith(color: AppColors.mutedText),
         ),
         const SizedBox(height: AppSpacing.xl),

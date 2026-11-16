@@ -2862,6 +2862,54 @@ class AppLocalizationsDe extends AppLocalizations {
   }
 
   @override
+  String get billingPetsMemorialNote =>
+      'Tiere unter Andenken zählen nicht mit.';
+
+  @override
+  String memorialRestoreBlockedUpgrade(String name, int limit, String plan) {
+    return '$name bleibt unter Andenken: Es geht nichts verloren. Um $name wieder zu Ihren Tieren zurückzuholen, brauchen Sie einen freien Platz: Ihr Tarif erlaubt $limit Tiere, und alle Plätze sind belegt. Sie können einen Platz freigeben oder unter Einstellungen → Abo und Zahlungen zum Tarif $plan wechseln.';
+  }
+
+  @override
+  String memorialRestoreBlockedFull(String name, int limit) {
+    return '$name bleibt unter Andenken: Es geht nichts verloren. Um $name wieder zu Ihren Tieren zurückzuholen, brauchen Sie einen freien Platz: Ihr Tarif erlaubt $limit Tiere, und alle Plätze sind belegt. Um einen Platz freizugeben, verschieben Sie ein Tier, das nicht mehr bei Ihnen ist, zu den Andenken oder löschen Sie eines.';
+  }
+
+  @override
+  String memorialMoveReturnNeedsPlace(String name) {
+    return 'Wenn Sie $name einmal wieder zu Ihren Tieren zurückholen möchten, brauchen Sie dafür einen freien Platz in Ihrem Tarif.';
+  }
+
+  @override
+  String memorialMoveReturnNeedsPlan(String name) {
+    return 'Wenn Sie $name einmal wieder zu Ihren Tieren zurückholen möchten, müssen Sie dafür einen Tarif mit einem freien Platz wählen.';
+  }
+
+  @override
+  String get billingPlanLimitPets =>
+      'Ihr Tarif hat die Höchstzahl an Tieren erreicht. Tiere in Andenken, die nicht mehr bei Ihnen sind, zählen nicht mit. Wechseln Sie in den Einstellungen zu einem höheren Tarif.';
+
+  @override
+  String memorialMoveBlockedFull(String name, int limit) {
+    return 'Vorerst bleibt $name bei Ihren Tieren, mit allen Daten: Es geht nichts verloren. Die Andenken bieten Platz für $limit Tiere, und alle Plätze sind belegt. Einen Platz geben Sie mit „Für immer löschen“ auf der Seite eines Andenkens frei, aber nur wenn und wann Sie dazu bereit sind. Falls die Erinnerungen von $name Sie in der Zwischenzeit belasten, können Sie sie unter Erinnerungen löschen.';
+  }
+
+  @override
+  String get billingPlanLimitMemorials =>
+      'In den Andenken ist kein Platz mehr frei. Einen Platz geben Sie mit „Für immer löschen“ auf der Seite eines Andenkens frei.';
+
+  @override
+  String get billingPaywallMoveToMemories =>
+      'Ist ein Tier nicht mehr bei Ihnen? Verschieben Sie es zu den Andenken';
+
+  @override
+  String get memorialChoosePrompt => 'Welches Tier ist nicht mehr bei Ihnen?';
+
+  @override
+  String get memorialChooseEmpty =>
+      'Es gibt keine Tiere, die zu den Andenken verschoben werden können.';
+
+  @override
   String get memorialSaveFailed =>
       'Speichern hat nicht geklappt. Prüfen Sie die Verbindung und versuchen Sie es erneut.';
 

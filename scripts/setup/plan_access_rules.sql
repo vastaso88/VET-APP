@@ -7,8 +7,16 @@
 -- Fino a oggi il database controllava solo che la riga fosse dell'utente.
 -- Da qui in poi controlla anche il piano: dopo la prova, senza un piano,
 -- si possono leggere, esportare e cancellare i propri dati, ma non aggiungerne
--- ne' modificarli (Termini it/03 par. 4); e gli animali non superano il numero
--- che il piano consente. Le scritture del backend (chiave service_role) non
+-- ne' modificarli (Termini it/03 par. 4), con una sola eccezione: spostare un
+-- animale nei Ricordi (decisione del proprietario, 16/11/2026: chi perde un
+-- animale non deve trovare un paywall); e gli animali non superano il numero
+-- che il piano consente. Contano solo gli animali ATTIVI: quelli nei Ricordi
+-- non occupano un posto, e riportarne uno tra gli animali richiede un posto
+-- libero (decisione del proprietario, 16/11/2026). Nei Ricordi si possono
+-- tenere al massimo plan_access_config.max_memorial_pets animali
+-- (30 se non altrimenti impostato): il backend scrive il numero
+-- scelto con la variabile MEMORIAL_PETS_MAX (il valore dello script e' solo
+-- quello di partenza). Le scritture del backend (chiave service_role) non
 -- sono toccate: il backend applica le stesse regole per conto suo.
 --
 -- QUANDO: dopo scripts/setup/subscriptions_lock_writes.sql (senza quello un
@@ -27,8 +35,15 @@
 --   subscription_required (HTTP 402, SQLSTATE PT402)
 --   plan_limit_reached (HTTP 403, SQLSTATE PT403), details = 'pets',
 --     hint = il numero massimo di animali del piano
+--   plan_limit_reached (HTTP 403, SQLSTATE PT403),
+--     details = 'memorials',
+--     hint = il numero massimo di animali nei Ricordi
 
 begin;
+
+-- La colonna che dice se un animale e' nei Ricordi (c'e' gia' su ogni database
+-- aggiornato: qui solo per non fallire su uno vecchio).
+alter table public.pet_profiles add column if not exists is_memorial boolean not null default false;
 
 -- ---------------------------------------------------------------------------
 -- 1. Tabelle di supporto (solo backend: nessun privilegio per l'app)
@@ -38,6 +53,12 @@ create table if not exists public.plan_access_config (
     test_plan text check (test_plan is null or test_plan in ('plus', 'pro', 'ultra')),
     updated_at timestamptz not null default now()
 );
+-- Quanti animali si possono tenere nei Ricordi (uguale per ogni piano). Il
+-- backend lo allinea alla variabile MEMORIAL_PETS_MAX a ogni controllo dello
+-- stato dell'abbonamento; il valore qui sotto e' solo quello di partenza.
+alter table public.plan_access_config
+    add column if not exists max_memorial_pets integer not null default 30
+    check (max_memorial_pets > 0);
 insert into public.plan_access_config (id, test_plan)
 values (1, 'pro')
 on conflict (id) do nothing;
@@ -149,6 +170,50 @@ begin
 end;
 $$;
 
+-- Il controllo di pet_profiles: come plan_access_gate, con UNA eccezione per chi
+-- non ha un piano (decisione del proprietario, 16/11/2026): spostare un animale
+-- nei Ricordi, cioe' is_memorial da falso a vero su un profilo che esiste, con la
+-- data della perdita. Chi perde un animale a prova finita non deve trovare un
+-- paywall per smettere di ricevere promemoria, farmaci e auguri; lo spostamento
+-- non occupa un posto del piano. Ogni altra scrittura resta rifiutata, anche il
+-- ritorno tra gli animali (da vero a falso). L'app scrive con un upsert: il
+-- trigger "before insert" scatta anche quando la riga esiste gia' (insert ...
+-- on conflict), e allora decide la modifica che segue; un animale NUOVO che
+-- nasce nei Ricordi resta rifiutato. Il tetto ai Ricordi (plan_access_30_*)
+-- vale anche qui.
+create or replace function public.plan_access_move_gate()
+returns trigger
+language plpgsql
+security definer
+set search_path = public
+as $$
+begin
+    if coalesce(auth.role(), '') not in ('authenticated', 'anon') then
+        return new;
+    end if;
+    if public.caller_can_write() then
+        return new;
+    end if;
+    if coalesce(new.is_memorial, false) and coalesce(new.memorial_date_label, '') <> '' then
+        if tg_op = 'UPDATE' then
+            if not coalesce(old.is_memorial, false) then
+                return new;
+            end if;
+        elsif exists (
+            select 1
+            from public.pet_profiles p
+            where p.id = new.id and p.owner_id = new.owner_id and not p.is_memorial
+        ) then
+            return new;
+        end if;
+    end if;
+    raise exception using
+        errcode = 'PT402',
+        message = 'subscription_required',
+        detail = 'trial over and no plan: read, export and delete only';
+end;
+$$;
+
 create or replace function public.plan_access_pet_limit()
 returns trigger
 language plpgsql
@@ -162,22 +227,37 @@ begin
     if coalesce(auth.role(), '') not in ('authenticated', 'anon') then
         return new;
     end if;
-    -- Un upsert di un animale che esiste gia' e' una modifica, non un animale
-    -- in piu' (il trigger "before insert" scatta anche per insert ... on conflict).
-    if exists (
-        select 1 from public.pet_profiles p where p.id = new.id and p.owner_id = new.owner_id
-    ) then
+    -- Un animale nei Ricordi non occupa un posto del piano (decisione del
+    -- proprietario, 16/11/2026): ne' quando ci va (e' una modifica) ne' quando
+    -- nasce gia' li'.
+    if coalesce(new.is_memorial, false) then
         return new;
     end if;
-    -- Due creazioni nello stesso istante non superano il limite insieme.
+    if tg_op = 'UPDATE' then
+        -- Aggiunge un animale solo il RITORNO dai Ricordi (true -> false): ogni
+        -- altra modifica no. (OLD si legge solo qui: in un inserimento non c'e'.)
+        if not coalesce(old.is_memorial, false) then
+            return new;
+        end if;
+    elsif exists (
+        select 1 from public.pet_profiles p where p.id = new.id and p.owner_id = new.owner_id
+    ) then
+        -- Un upsert di un animale che esiste gia' e' una modifica, non un animale
+        -- in piu' (il trigger "before insert" scatta anche per insert ... on conflict;
+        -- se era nei Ricordi, il controllo lo fa la modifica che segue).
+        return new;
+    end if;
+    -- Due creazioni (o ritorni) nello stesso istante non superano il limite insieme.
     perform pg_advisory_xact_lock(hashtextextended('vetapp_pet_limit:' || new.owner_id, 0));
     limit_count := public.caller_max_pets();
     if limit_count is null then
         return new;
     end if;
+    -- Contano solo gli animali attivi, escluso questo (nel ritorno dai Ricordi
+    -- la riga c'e' gia').
     select count(*) into current_count
     from public.pet_profiles p
-    where p.owner_id = new.owner_id;
+    where p.owner_id = new.owner_id and not p.is_memorial and p.id <> new.id;
     if current_count >= limit_count then
         raise exception using
             errcode = 'PT403',
@@ -189,13 +269,66 @@ begin
 end;
 $$;
 
+-- Il tetto agli animali nei Ricordi: conta solo chi ci ENTRA (una modifica che
+-- porta is_memorial da falso a vero, o una riga che nasce gia' li'); le altre
+-- modifiche a un animale gia' nei Ricordi non cambiano il numero. Il tetto non
+-- dipende dal piano.
+create or replace function public.plan_access_memorial_limit()
+returns trigger
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+    cap integer;
+    current_count integer;
+begin
+    if coalesce(auth.role(), '') not in ('authenticated', 'anon') then
+        return new;
+    end if;
+    if not coalesce(new.is_memorial, false) then
+        return new;
+    end if;
+    if tg_op = 'UPDATE' then
+        -- Gia' nei Ricordi: una modifica qualunque non ne aggiunge uno.
+        if coalesce(old.is_memorial, false) then
+            return new;
+        end if;
+    elsif exists (
+        select 1 from public.pet_profiles p where p.id = new.id and p.owner_id = new.owner_id
+    ) then
+        -- Un upsert di un animale che esiste gia': il controllo lo fa la modifica
+        -- che segue (come per il limite degli animali).
+        return new;
+    end if;
+    -- Due spostamenti nello stesso istante non superano il tetto insieme.
+    perform pg_advisory_xact_lock(hashtextextended('vetapp_memorial_limit:' || new.owner_id, 0));
+    select c.max_memorial_pets into cap from public.plan_access_config c where c.id = 1;
+    cap := coalesce(cap, 30);
+    -- Solo gli animali di chi scrive, escluso questo.
+    select count(*) into current_count
+    from public.pet_profiles p
+    where p.owner_id = new.owner_id and p.is_memorial and p.id <> new.id;
+    if current_count >= cap then
+        raise exception using
+            errcode = 'PT403',
+            message = 'plan_limit_reached',
+            detail = 'memorials',
+            hint = cap::text;
+    end if;
+    return new;
+end;
+$$;
+
 revoke all on function public.plan_access_gate() from public, anon, authenticated;
+revoke all on function public.plan_access_move_gate() from public, anon, authenticated;
 revoke all on function public.plan_access_pet_limit() from public, anon, authenticated;
+revoke all on function public.plan_access_memorial_limit() from public, anon, authenticated;
 
 drop trigger if exists plan_access_10_gate on public.pet_profiles;
 create trigger plan_access_10_gate
 before insert or update on public.pet_profiles
-for each row execute function public.plan_access_gate();
+for each row execute function public.plan_access_move_gate();
 
 drop policy if exists plan_access_insert on public.pet_profiles;
 create policy plan_access_insert
@@ -212,7 +345,7 @@ as restrictive
 for update
 to authenticated
 using (true)
-with check (public.caller_can_write());
+with check (public.caller_can_write() or is_memorial);
 
 drop trigger if exists plan_access_10_gate on public.clinical_events;
 create trigger plan_access_10_gate
@@ -369,11 +502,19 @@ using (true)
 with check (public.caller_can_write());
 
 -- Il limite di animali, dopo il controllo del piano (i trigger scattano in
--- ordine alfabetico: 10 prima di 20).
+-- ordine alfabetico: 10 prima di 20). Alla creazione e al ritorno dai Ricordi.
 drop trigger if exists plan_access_20_pet_limit on public.pet_profiles;
 create trigger plan_access_20_pet_limit
-before insert on public.pet_profiles
+before insert or update on public.pet_profiles
 for each row execute function public.plan_access_pet_limit();
+
+-- Il tetto ai Ricordi, per ultimo dei controlli del piano: i trigger partono in
+-- ordine alfabetico (plan_access_10, poi _20, poi _30); i controlli dei Ricordi,
+-- ricordi_10_*, partono dopo perche' 'p' viene prima di 'r'.
+drop trigger if exists plan_access_30_memorial_limit on public.pet_profiles;
+create trigger plan_access_30_memorial_limit
+before insert or update on public.pet_profiles
+for each row execute function public.plan_access_memorial_limit();
 
 -- Foto, video e foto profilo: caricare o sostituire un file richiede il piano,
 -- toglierlo no. Gli altri bucket non sono toccati.
@@ -401,7 +542,8 @@ commit;
 -- ---------------------------------------------------------------------------
 -- a) il periodo di test e' attivo (atteso durante il test: 'pro')
 --   select test_plan from public.plan_access_config where id = 1;
--- b) ogni tabella ha il suo controllo (attese 8 righe piu' quella del limite)
+-- b) ogni tabella ha il suo controllo (attese 8 righe piu' quelle
+--    dei due limiti, animali e Ricordi)
 --   select event_object_table, trigger_name from information_schema.triggers
 --   where trigger_name like 'plan_access_%' order by 1, 2;
 -- c) le policy restrittive ci sono

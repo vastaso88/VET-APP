@@ -24,6 +24,7 @@ import '../../data/pet_photo_repository.dart';
 import '../../domain/pet_format.dart';
 import '../../domain/pet_models.dart';
 import '../../domain/pet_value_labels.dart';
+import '../memorial_restore_message.dart';
 import '../widgets/pet_avatar.dart';
 import '../widgets/pets_scaffold.dart';
 import 'memorial_move_page.dart';
@@ -150,6 +151,9 @@ class _PetMemorialPageState extends State<PetMemorialPage> {
         SnackBar(content: Text(l10n.memorialRestoreDone(restored.name))),
       );
       navigator.pop();
+    } on PetLimitBlocksRestore catch (blocked) {
+      // The plan has no free place: the pet stays in Ricordi, nothing is lost.
+      if (mounted) await showMemorialRestoreBlocked(context, _pet.name, blocked);
     } catch (_) {
       messenger.showSnackBar(SnackBar(content: Text(l10n.memorialSaveFailed)));
     }

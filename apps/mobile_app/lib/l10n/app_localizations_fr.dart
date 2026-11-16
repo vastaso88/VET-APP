@@ -2862,6 +2862,54 @@ class AppLocalizationsFr extends AppLocalizations {
   }
 
   @override
+  String get billingPetsMemorialNote =>
+      'Les animaux dans Souvenirs ne comptent pas.';
+
+  @override
+  String memorialRestoreBlockedUpgrade(String name, int limit, String plan) {
+    return '$name reste dans Souvenirs : rien n\'est perdu. Pour remettre $name parmi vos animaux, il faut une place libre : votre offre en permet $limit et toutes sont prises. Vous pouvez libérer une place ou passer à l\'offre $plan dans Paramètres → Abonnement et paiements.';
+  }
+
+  @override
+  String memorialRestoreBlockedFull(String name, int limit) {
+    return '$name reste dans Souvenirs : rien n\'est perdu. Pour remettre $name parmi vos animaux, il faut une place libre : votre offre en permet $limit et toutes sont prises. Pour en libérer une, déplacez dans Souvenirs un animal qui n\'est plus avec vous, ou supprimez-en un.';
+  }
+
+  @override
+  String memorialMoveReturnNeedsPlace(String name) {
+    return 'Si vous souhaitez un jour remettre $name parmi vos animaux, il faudra une place libre dans votre offre.';
+  }
+
+  @override
+  String memorialMoveReturnNeedsPlan(String name) {
+    return 'Si vous souhaitez un jour remettre $name parmi vos animaux, il faudra choisir une offre avec une place libre.';
+  }
+
+  @override
+  String get billingPlanLimitPets =>
+      'Votre offre a atteint le nombre maximal d\'animaux. Les animaux dans Souvenirs, ceux qui ne sont plus avec vous, ne comptent pas. Passez à une offre supérieure dans les Paramètres.';
+
+  @override
+  String memorialMoveBlockedFull(String name, int limit) {
+    return 'Pour l\'instant, $name reste parmi vos animaux, avec toutes ses données : rien n\'est perdu. Souvenirs peut accueillir $limit animaux et toutes les places sont prises. Une place se libère avec « Supprimer définitivement » sur la page d\'un souvenir, seulement si et quand vous le souhaitez. En attendant, si les rappels de $name vous pèsent, vous pouvez les supprimer dans Rappels.';
+  }
+
+  @override
+  String get billingPlanLimitMemorials =>
+      'Il n\'y a plus de place dans Souvenirs. Une place se libère avec « Supprimer définitivement » sur la page d\'un souvenir.';
+
+  @override
+  String get billingPaywallMoveToMemories =>
+      'Un animal n\'est plus avec vous ? Déplacez-le dans Souvenirs';
+
+  @override
+  String get memorialChoosePrompt => 'Quel animal n\'est plus avec vous ?';
+
+  @override
+  String get memorialChooseEmpty =>
+      'Il n\'y a aucun animal à déplacer dans Souvenirs.';
+
+  @override
   String get memorialSaveFailed =>
       'Je n\'ai pas pu enregistrer. Vérifiez la connexion et réessayez.';
 

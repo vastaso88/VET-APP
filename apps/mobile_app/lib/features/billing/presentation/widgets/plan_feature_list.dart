@@ -27,7 +27,21 @@ class PlanFeatureList extends StatelessWidget {
               children: [
                 const Icon(Icons.check_rounded, size: 18, color: AppColors.success),
                 const SizedBox(width: AppSpacing.sm),
-                Expanded(child: Text(feature.label, style: AppTextStyles.bodySmall)),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(feature.label, style: AppTextStyles.bodySmall),
+                      // Owner decision 2026-11-16: pets in Ricordi do not count.
+                      if (feature.id == PlanFeatureId.limitPets)
+                        Text(
+                          context.l10n.billingPetsMemorialNote,
+                          key: const ValueKey('pets-memorial-note'),
+                          style: AppTextStyles.caption,
+                        ),
+                    ],
+                  ),
+                ),
               ],
             ),
           ),
