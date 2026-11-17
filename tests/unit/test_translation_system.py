@@ -60,6 +60,8 @@ def test_draft_is_marked_for_review_and_lists_glossary_misses() -> None:
         assert main() == 0
         folder = Path(temporary)
         rows = json.loads((folder / "TRANSLATION_REVIEW.json").read_text(encoding="utf-8"))
+        # other keys may be waiting for review in the real catalogs: look at ours only
+        rows = [row for row in rows if row["key"] == name]
         markdown = (folder / "TRANSLATION_REVIEW.md").read_text(encoding="utf-8")
     assert {row["status"] for row in rows} == {"machine-draft"}
     assert {row["language"] for row in rows} == {"en", "es", "de", "fr"}

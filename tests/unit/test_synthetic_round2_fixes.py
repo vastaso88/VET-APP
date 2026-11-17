@@ -119,7 +119,9 @@ def test_a_blocked_male_cat_gets_the_urinary_steps_at_once() -> None:
         sex="Maschio",
     )
     assert result.mode == "triage"
-    assert "non premere sulla pancia" in result.answer
+    assert "non aspettare per vedere se ci riesce" in result.answer
+    # Doc 20: "non premere sulla pancia" and "in poche ore" have no source.
+    assert "premere" not in result.answer and "poche ore" not in result.answer
     assert "al caldo" not in result.answer
 
 
