@@ -156,7 +156,7 @@ L'ordine conta: i controlli deterministici vengono **prima** di qualsiasi modell
 - **Ritorno ai testi fissi:** errore, tempo scaduto (`URGENT_ANSWER_TIMEOUT_SECONDS`, 12 s), rifiuto del modello, quota finita, o testo che non passa i controlli (dose, altra specie, solo domande, sì/no) → si torna al testo fisso completo di prima.
 - **Fissi e fuori dal modello:** rifiuti di dose, eutanasia in casa, minore ferito, identità.
 - **Conteggio:** un'urgenza non consuma mai una domanda del piano.
-- **Revisione veterinaria:** i passi generici («niente cibo», «acqua non in eccesso»; «al caldo» tolto nel giro 3) e i gruppi nuovi P-T aspettano la revisione veterinaria (`docs/product/12_revisione_veterinaria_urgenze.md`). Non cambiarli senza.
+- **Fonti dei passi d'urgenza:** il proprietario ha deciso (17/11/2026) che non ci sarà una revisione veterinaria; ogni gesto per specie deve avere una fonte pubblicata, altrimenti si riduce ai passi universali sicuri (calma, niente cibo, farmaci o acqua forzati, veterinario subito). I gruppi P-T e i passi generici («niente cibo», «acqua non in eccesso») sono «da fonte bibliografica», in attesa dello studio delle fonti (`docs/product/12_revisione_veterinaria_urgenze.md`). Non aggiungere gesti per specie senza fonte.
 
 ---
 
@@ -331,7 +331,7 @@ Fonte di verità: `packages/shared/config/settings.py`. Le principali per la cha
 2. **Sonnet nelle urgenze** (`SONNET_ESCALATION`): stessa sicurezza di Haiku, testo più concreto, circa 12 volte il costo.
 3. **Approvazione delle 11 schede**, oggi in bozza (cane 4, gatto 4, coniglio 3). Poi in Supabase vanno eseguiti `health_cards.sql`, i dati esportati e lo script della Pricing `chat_usage_sonnet_followups.sql`.
 4. **Attivazione di Anthropic:** chiave su Vercel, contratti, unione del ramo `haiku-activation` (consenso v5, regione). Fino ad allora la produzione risponde con Groq.
-5. **Revisione veterinaria dei passi fissi d'urgenza** (doc 12).
+5. **Fonti bibliografiche dei passi fissi d'urgenza** (doc 12; niente revisione veterinaria, decisione del 17/11/2026).
 
 **Problemi noti:**
 - il classificatore a volte dà «forse» sul vomito del cane;

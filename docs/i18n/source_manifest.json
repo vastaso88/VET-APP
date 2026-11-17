@@ -16830,39 +16830,39 @@
     }
   },
   "backend:triage_steps": {
-    "source": "370f8367e86b2eb6fe455d2f9a033281bf83c8b5ca15ec0121102c5b5acd57bf",
+    "source": "a0c35ac79acbb9a9e00e869c33711fac31f5c2487bd356d2f22ab4cff7939100",
     "targets": {
-      "en": "3fa0bb904c974f10153e330f11025bbf5abcee5abe9e8a3ea6c46274228b7a6a",
-      "es": "88efbe596cf64e5f6af7f4150385751ab32cc3b52674795fa8ed1fbe4214e28a",
-      "de": "12ecce0a4ae39a4a399c39bc38578c8ec0faf92c9fb01d4f6085a4e795ebf23a",
-      "fr": "6979110cbc9a4a5cbd61de74f17f9f199fd73b8382a7050f1218904632709dad"
+      "en": "d5e2103c38fc208b7c9c4de98769d094cf18c675b6a841a4ee5425473f1e2b14",
+      "es": "d308330ffe20466f41ac0e87a8f8dd7d69c50a42a69190b70bdb93baa5184f56",
+      "de": "b49dcd6e4b6c33f7e9d3cd11ca1657bb7b3a49f35cd164e40b04be90656eea47",
+      "fr": "45893f365c2e97eda92e281cfc0208ae7849c3cf327e7e86fe4e1ffac1c51692"
     }
   },
   "backend:triage_steps_exotic": {
-    "source": "673ecf93bfc16c2b6d204fe49c3b51aa03a7e267dd413fb0ef7614b477f7c9e7",
+    "source": "af9bd75b4918625bd71add1de2bd57c5ad63944c6bd518f9cb09aac556bb1930",
     "targets": {
-      "en": "a53a8895b4c60b8cf353088796e3515f5313d77c22252a56871ab6a010c41c5f",
-      "es": "8fc27fd2f49475cede771fb1f6500ea7d89d6a6f2507b1c6c7fc411b24626374",
-      "de": "6e5dfa180453b88850de41f5c7fa229cf4985c83b3c09c26f53eb2bb1c9a8ae0",
-      "fr": "96ddd2e779824d4a4216bbf374d33c7295d1ded46209464edbb2531fe5b02330"
+      "en": "f636176f91d572f6fc1a8ee2c12f8e299766b743889d753fbcea048994ebaed1",
+      "es": "a227b24ea41db83befe9eee3fe5ed5eaf9abf522ce932ecbdbbc5d2bcb02e68f",
+      "de": "cc1d0deae1616a3839674e39be8795dc685c3c902b5e902bc776e0fa6be42e54",
+      "fr": "8ce02698438ad4e7cd46f00eb5493f10c34e0679dc587a3227e02ff490bea159"
     }
   },
   "backend:triage_steps_female": {
-    "source": "a7f8f1d18df27aa2c70ad6810cb82f3da8c1b0e6d6f4b7abd5ea87753c9f1cdd",
+    "source": "b12793c6c2b56e14bbb9667e132b3ecf6397e611ddf009e93145e26987b10c21",
     "targets": {
-      "en": "3fa0bb904c974f10153e330f11025bbf5abcee5abe9e8a3ea6c46274228b7a6a",
-      "es": "75ee0f97986bcaf7dc7ee1bd3cf7cd8f17496c724c7d041878a76fc9dee576e8",
-      "de": "12ecce0a4ae39a4a399c39bc38578c8ec0faf92c9fb01d4f6085a4e795ebf23a",
-      "fr": "6979110cbc9a4a5cbd61de74f17f9f199fd73b8382a7050f1218904632709dad"
+      "en": "d5e2103c38fc208b7c9c4de98769d094cf18c675b6a841a4ee5425473f1e2b14",
+      "es": "b47db781453d382349b54a66ea81b7b70f8e379e2399f79c4864296ca8d99642",
+      "de": "b49dcd6e4b6c33f7e9d3cd11ca1657bb7b3a49f35cd164e40b04be90656eea47",
+      "fr": "45893f365c2e97eda92e281cfc0208ae7849c3cf327e7e86fe4e1ffac1c51692"
     }
   },
   "backend:triage_steps_exotic_female": {
-    "source": "f2c17d4201f974234c2a9ccd8ed6db6527e6426c879c09ecea20e07c20251791",
+    "source": "6ce9d1ed79873e2cd41646f09c5bd8e1f2399deafbfb003eb8e126040182e9df",
     "targets": {
-      "en": "a53a8895b4c60b8cf353088796e3515f5313d77c22252a56871ab6a010c41c5f",
-      "es": "3e1cdfeb169598419b00d13f99a2889b80cd90fa1cc6147bdcbe3485ab031093",
-      "de": "6e5dfa180453b88850de41f5c7fa229cf4985c83b3c09c26f53eb2bb1c9a8ae0",
-      "fr": "96ddd2e779824d4a4216bbf374d33c7295d1ded46209464edbb2531fe5b02330"
+      "en": "f636176f91d572f6fc1a8ee2c12f8e299766b743889d753fbcea048994ebaed1",
+      "es": "951b64aaebac825cdaf9ee2c1b412b225bd7b5695ffbcaf3ea2b54c0a2279704",
+      "de": "cc1d0deae1616a3839674e39be8795dc685c3c902b5e902bc776e0fa6be42e54",
+      "fr": "8ce02698438ad4e7cd46f00eb5493f10c34e0679dc587a3227e02ff490bea159"
     }
   },
   "backend:triage_limitation": {
@@ -16902,57 +16902,57 @@
     }
   },
   "backend:triage_steps_bird_respiratory": {
-    "source": "4427b226ed2489b0d40f1ad071f75955229c2919c74a26319c9bd841c3bea2be",
+    "source": "dc2173a777c89daaaa6b4793390e7d0d76655a8f48edd66aa397e5ef34abfe0e",
     "targets": {
-      "en": "67cab5d98b6f8bc5cfa2def8af4a92bc31db913b1879275ffba04b16f808d872",
-      "es": "697c35dbfadc20e21a0cde9a2a5922e79dc9a4c178b980a2ba8645879093deeb",
-      "de": "30b00f5ce31975a75cc3d4f8fd486c69aae7233029db3b6174abbaef206919b8",
-      "fr": "e69b77ef9afdf0a1bfb9516daa2835fe15f2dad1606d3622bd8f23bf444d8f63"
+      "en": "af48b0e7199934f69cf0c14fab08af710f2092d9ed9caa62f210b93f4608fda4",
+      "es": "de862487dfa388086f66a4c8d23e77128f5b995fd4a1bf53bcacc8711b839159",
+      "de": "4a7081ef7640924832a8b4aa36af3f43fb1a4d377b67eed22896e99ea527f217",
+      "fr": "39d2c1172112f4c9eb3ac3e62c4674deda20645523d34beee6ed83887bc69be7"
     }
   },
   "backend:triage_steps_small_mammal_stasis": {
-    "source": "e3367b5d9b4d401d7476f2f071030e2b7b94353c43396fc7406aee589c86c6ff",
+    "source": "43fa19eb93b6d8c6b5fedc774e267b07279b356dfbe8e275a01d44addf77d8da",
     "targets": {
-      "en": "d64f2889b06d10348d0e4bc7e69492d2750172a7bd676f7cbeed016e97d36c6b",
-      "es": "6cfe66b22c983e538b561a19b187225f2ff15dd249b62f449e133b717c7ebfc7",
-      "de": "6597c88729592e5e6a8fd152a347ba1ff9f4eac38c5c44c7b495de2dfdbe1e4b",
-      "fr": "17dbb8a686868eeeec8b8bcee91d4a551507c0575a3dbc8b6786c7659af8be43"
+      "en": "c42c2a4ee6f90d9459e91d44a510753be3cf6a679d3c24cf405a37c87ba03b36",
+      "es": "c4011f5f92772bcfeeb1efa0f81b6f25f1b4a4cebfa874a5e5b520e0c0d40502",
+      "de": "477e9da6b0c652cc42b08fe2cb3fd2c1ac8bd6cbdff2a6768656cf272173443a",
+      "fr": "3a96a5ebe012e28a6f6f0591ff4424eb702272b5aabc065624a5738857be9171"
     }
   },
   "backend:triage_steps_heatstroke": {
-    "source": "fea8952d547f96d686bb1f027938a87d7b573f3b2c691d25cf5452cf17a6fcca",
+    "source": "357b709337c70172cd07dd4d5f2bae0abd3ab1fe07a0854760d528e72f83dc0c",
     "targets": {
-      "en": "7148913b1c56b2c0bdab8d695169b2fcd281b8d4b6c19f47a0cca7f776abe567",
-      "es": "5e0a6500350d3598b7078f74a7c5f1e0aef4ff5dea09676fb3027fcafb3541eb",
-      "de": "e4650a629cf51461c96b6f50ce54ca2419584eae569edab1091d6dddfdb04a5d",
-      "fr": "f857f4d5501377c447de16d7fae818f9c5be54a3f97f7348c5f0f5da1dc43212"
+      "en": "c24b7173f150546ebf7ce17752153c1cc2c0a2595c2ce4064e3503862903dfa8",
+      "es": "8c4255201d744a8f800f408a231c46f9884d7513765245789bcfc732385565e6",
+      "de": "d21fe510f9b4c4dddf4de566c86218d7c8d8250c95764fef95950b73f61c1ebc",
+      "fr": "3d98108c5cd939c82d78aaa1afa972efcf529b57af7a1684c2920eac13865120"
     }
   },
   "backend:triage_steps_snakebite": {
-    "source": "9ea0ec560f1ae9e2540b10cfca591e17519c93031fafa2faa8a48c244da3e2a1",
+    "source": "0aa2483e8a37948c19e5c4c7372f63d9acf6ef6eaa5e2e0d36008c3cd3298de6",
     "targets": {
-      "en": "45c771115627110103b6ea9cd9bd8ac7e92d642291fcced84e8879a323754748",
-      "es": "fe5f31b1a3519665502619ab4b49ea0d1b7e72d0e0214c81e5d1455659bff04a",
-      "de": "c944ee2e20b471f6ab3ddc9668aec81e09284e148c1dbde01c8b5941a7d303cc",
-      "fr": "a99010de093f6f396d47987daf1477dfa868c1594d505b312fee8632598e2ecd"
+      "en": "1dc3a027f5808cfb7feb2424d8a22c3ad72bf52175f06c0cd9587487fbaef9a7",
+      "es": "5c7d80434f73fc36dbf4d12e17a0496aa5c48178231e4194c4c2b8025efb7cd5",
+      "de": "840f3287b0e3553a28ac99f3849fe8fc2794a041ea34a5a6e4f0eb884ef9a77c",
+      "fr": "d42a9ee6b468b3a77924bc9b4c9b92818deef595e6ef866cef1501c859a7cd5a"
     }
   },
   "backend:triage_steps_processionary": {
-    "source": "91db000611c3e14d2c85e8bbd090135a6c1428a1923b7e55c7095cbfe63988e9",
+    "source": "ec0d8d39c09ec10c03617dbd7bb66f63a78d24c43221a1e9c53ea11871dea79e",
     "targets": {
-      "en": "7ec12cd94d30b5a161de41a1adbcdf4b4adb6cf8a47d0d7b26a4810fa29a6644",
-      "es": "cd23c3f63a70d1d01ab501352c14cd689c6dd6adc30b56457be6d9fe29942990",
-      "de": "d6eb2a046f26199320eb7aa46c3e7e4f201cb60706c9e98bed48af717f4ea06f",
-      "fr": "85c5896dd34cfe3caa873068583e1f01e2c85a2bfa8bedd455ba58e8ad69d6ca"
+      "en": "62cb91ee99e468ce72e489ef14e3283e5173b95162f6f61e1fb286be7aefe9ca",
+      "es": "d3d39ca1ae449f2f1f5d5ebb4a7f06a6c1aae62b4b6e45f543493a8335fea120",
+      "de": "8f0ecd3bc15d3f8ee4e7b267f2b05abac028a00872c1605f8873f7061ca56c4e",
+      "fr": "57c0124ab7edfb1b580451c79b1d911a4bf807bc37a278d56f5df1c6c201e27d"
     }
   },
   "backend:triage_steps_seizure": {
-    "source": "8f4eacb184c6b156965a48b2a7110ec7453bd0bddb50df65cb8f9635f926d94c",
+    "source": "d0c15818c7b12ab777dfdd5e7d222e78d111c4720cc445aa2bd65a555a516f0f",
     "targets": {
-      "en": "1140141980f9f6aa46bd61ff8e36bbe7c9467cde92592124107f4b23187cb41e",
-      "es": "2c90c061a0480a963ed8faab2a8fa62401999ac9f018153fa0c1944620757224",
-      "de": "f8b5fde2aff94b35abe0589db4ab4a2ad30d06dd6d729289fba566dbd3bdfe8a",
-      "fr": "a2421cb02cb2d7cd0f03170daec661b253602492e9f5840119db15631738b0ce"
+      "en": "d7b586a62fbd154e653e3ab43c66b692196abf6496a77299dca23690132d776a",
+      "es": "8247cff23c5629a794cad8ad27b782c8a1fbedc43b7ac7f5d60cdae862570c94",
+      "de": "b1c498659687d2fc016be44b98a5c642cf6566d2b9dec2362b9680716c903fc5",
+      "fr": "9b89d65c8b0470fd67e96a89665f8454a2195a9460aaf4d21fb216af899f7377"
     }
   },
   "backend:triage_opening_fish": {
@@ -16965,21 +16965,21 @@
     }
   },
   "backend:triage_steps_fish": {
-    "source": "7876146a374c44fd632d75b6d0c2133296462a7b0532f802df1bfa212ed49253",
+    "source": "367e1319ebe2cb89e2d61d2c0bb3f26a0779f84cdfd3345b77d65697a1522d24",
     "targets": {
-      "en": "fc9a2de066e66e13acf03a850b6ed83fa5a5c0b69973bc3b64f857e524a02ac8",
-      "es": "1c494c57ddbf9c1cd361c537229518098e12d295b760274515908fc1bac931a4",
-      "de": "3bc5826c25ce5416ff52188aa0579d45e4a288a4e8472ed55db996475e0e87cb",
-      "fr": "033ef5fe7bc4d069ecc4be19844d2bbb8c439d1d53d39543f7bdfd1d43401f64"
+      "en": "2fd69f2f7cc10eacc5581418c36718c339c2c92d3d414a6baaa57504e7316283",
+      "es": "e4c0ccf8e7ed88892f50d652169f9350427d2152bd8bcc5ff77e67a1de77d465",
+      "de": "0b0faa071faa6eb3f369230f671581ce2a336d5f632fd2481662319bfad7c929",
+      "fr": "1e96d080655ee49273f638166e55bc80f6290afa739524542516a8d57bc45d17"
     }
   },
   "backend:triage_steps_cool": {
-    "source": "9cf5b51c589080783d334f696ba62711316c89e6680b94b7ed868c0467aab892",
+    "source": "659d560bd231f46c5d209cc1bc35b4d92313630a1e37a1a367fa7b9a1331b786",
     "targets": {
-      "en": "95103efda76584ae2e0e6d450a2670625b4abdc99a38141e1066a8e46d06f091",
-      "es": "5b47ad614cd536d2ef21b38e9cc205e0fcbee99ea87a8946b4cf2a7fa6f3b515",
-      "de": "421594ce7a7aa094301b11357071a5e40536e9e908ffa5b10d10ba57a16d55e8",
-      "fr": "743cbf029ccd19fb3a3650f1e40a2c047c0624ad159fd4b9d2ccb4910801d80c"
+      "en": "e1a82d5ea595102fe1b48ec3565eb81c269dd0d0c03a184084c5c242abb70b1c",
+      "es": "64701fd293e2c2d5d7fece469bcf20f373ec7791f5133e4db7f7a51115516346",
+      "de": "cdb112322b08244a7b538fb19f07a9200a6444e47bf2f921a4a7f0a21d3d3d30",
+      "fr": "0f59e9fb034dbb5139aa3dd7304cee4f707495624d2e25857b9be8d57cbf8bf1"
     }
   },
   "backend:conversation_limit": {
@@ -20601,21 +20601,21 @@
     }
   },
   "backend:triage_steps_urinary": {
-    "source": "c8a01c73f48e7df5a5bf56e78f27947e42ee9ede7f9c1bc0dbf8662c9e1116b6",
+    "source": "432b8fc9a133a661b0cc4fde4a26711b8d6ce2b302e4ebd4fc02ee7a715a088c",
     "targets": {
-      "en": "2eeb9d619c33e3377005b0d0a465ed720c79b3e6216ebf57dd15d685e4e131d4",
-      "es": "eae5b71f1724412d1940bd153210ddc42afb22755eb3285e31797890ac0b690f",
-      "de": "b62e343e936170a653b011cc19405935376a8bedb64e1a9fab2ada11749efcd3",
-      "fr": "d84d24141783f0bbfb37a6cbc208937f6c4432c9adcc280b4fa8d220d74d6a00"
+      "en": "09b45a1cc2f0722edc8b42d29591f6cb607217a927fdf791381e9c167bf3ac8d",
+      "es": "62669e7d2c2994216eede3115b9f599ae414c613894321fc53fab0ee49aac9cc",
+      "de": "38ae929819f57350b7fad8cda29218061366622943678e8c1eaa0a2bbb0eab69",
+      "fr": "59dfe30e6da7ab5740929422795f5fc403ab6e7523e553a58fc0a5e4ef09e67e"
     }
   },
   "backend:triage_steps_respiratory": {
-    "source": "a75cbb675c45ed9eb0f5c08186a8d70e16d9915228fe3500043a83dba1afd19b",
+    "source": "23ec8d30942557c43d485c989f17d33c9a79bcea69b37f9dbe3ad55ec2b142b0",
     "targets": {
-      "en": "3e449d14e0066e7ca0b064144aa4f434cb8aebc2c8a8f30f18246dc847675e79",
-      "es": "52b7f3be468c973b40776ff5180fa1b238ce9fc6c5d467d1998ee8885c8d4d42",
-      "de": "03e19b5090e9e94db9d6a0f3a7de562ac37c6a1c4c4da4ac35b6848ecd6a5775",
-      "fr": "13ac77c319b6f74c0ff27d7ecf897fb3c369a611c281541afb0815f1f5e2d079"
+      "en": "22e602c251959ddab8a4af9930728ddd5688d37486533d366245d60c95831317",
+      "es": "787e43e265ac8c2acdcfb6d751db932291f31d2e7394d58596d3a780cb5262e0",
+      "de": "bef675b28a4f74f9c21b3bf4ecbc8c78d408631ae02c3eed2dbd7e38fdac6a75",
+      "fr": "bc7b1ecd6076d3cb8281fad5ec1d242814bb4e2bf3a11fb1b27e577d371e9f41"
     }
   },
   "ui:medicalRecordMetaPhotosOff": {
@@ -20664,39 +20664,39 @@
     }
   },
   "backend:triage_steps_exotic_cool": {
-    "source": "e36f0309dbf891cb0a1c1d0a989292c937ac5265d5ab18246773510a5c6f8079",
+    "source": "81614b6ad1a52c47bb423615ab4088c27980932bdb05fc0a00b757ab46781b9f",
     "targets": {
-      "en": "420176d2c5a3c7fe9db7eda2f7c07648f1820c298a07c5c87251f3523f22c35c",
-      "es": "0993c069043b4bf0307a68709f0ab321b67a6a2d4a40a4fd43ff98f142b7319c",
-      "de": "9588bd69e405cec33d77042b949581899b0d7929bb6527e87a433be22fac379b",
-      "fr": "0de28707aba17f38de272945b332ba12c8e13d758ffedfa82c162fb61fe4f3de"
+      "en": "2aeda6a7b3f56a798b02f4adf747d2e10cac83bfce88dcea218e468723b8cbd6",
+      "es": "bcec283abf46ca3bd2d9fddca147b917c108e4fcb27d6d1304f93257fd620687",
+      "de": "8d76180fdb715e5f7e86a1aec6ca70ccd2b93fe3678275dd799d07f1d390d1d5",
+      "fr": "749f3be3567c504d05d84d772b2fd1b0dacd1d7ec0bfdbd2f4c911f960c52233"
     }
   },
   "backend:triage_steps_axolotl": {
-    "source": "c9105a7c4bbf3747d281425e69ce00c043a221e7c636043d5554bc40df6e25f7",
+    "source": "91a771a98b2db32bc88747481b654079e05f89027007678960c97505378cb252",
     "targets": {
-      "en": "631d8251a0d7683f85bbdbe95f34a8cde24af4ff511a8d4193737dd4c8c3c3cc",
-      "es": "e49ae04548cff0d54f596ce2f1ffa318e98ed656e3fec57275e3f6c4dad10959",
-      "de": "148e73a011e4e11ac265f239a34eaf15f683fd2a439f00b4109f77b5d4faa8be",
-      "fr": "27e7a82bf4e27e4ae8c904041994361adba848c2d0f93ad4bba67d8a1f71cda7"
+      "en": "71d1e8ffca77b2cf94e9e07fc2069cdce9cf04fa63b8d4b40f88fb0fba59e55b",
+      "es": "785ace94f1fcfbd9d1451119f1bb66aafc51ee9a61630b038046fe72cdf07a37",
+      "de": "c876f758f7763f44f1088b846bd285143bcfe1d24a7859d7576bf31a160cb977",
+      "fr": "46e0d7124e7e236f08d48502afd892158001d22d6da5b5a9da245c49dddbc28e"
     }
   },
   "backend:triage_steps_bird_bleeding": {
-    "source": "4a42e73a1423b9189723823a7638001cf7a9e65644a45f74ed90dc4391653e13",
+    "source": "08b24f816cc7195c933cb6e6a5f2db5fa7c513760a721f894cddeffe5fc9d1fd",
     "targets": {
-      "en": "1a6109c3c2d2f5aed1022114581bad6a96a1fc7854a229f51eb6b698326bd407",
-      "es": "e0891ab1994833de731f9434e98b7e0596ffcdcdb8893993d7f9817b9012d566",
-      "de": "7ac0848bfb22376a3e6885e01069b8aff760fb189fbda07946d13b8f20b263f7",
-      "fr": "7e0f741905a38327e95d828b06291a3b89da214b61339cafb97778a29f3b3dd4"
+      "en": "b05ff3f238481c5dd1aeb733016a09f6477700bc76732448bd9253a474068e92",
+      "es": "79b1f0794eba9789146db4fa726e9eeebb3fc3c8c762ed53eefee7c557ac8779",
+      "de": "9cae4818ebed7ff3cb969c9a002b4cb5fccfc9c3c7539db07a7e5f29fd8c9010",
+      "fr": "09a3157a89c28aaeb0c3b84feb57d59c90ef564ddd9be8e8fc5349da1f33887e"
     }
   },
   "backend:triage_steps_exotic_bleeding": {
-    "source": "7c46b915ab8c8db128b800a791eb90d2950adf6a23553478a21e03e09657690f",
+    "source": "c23743fd4bb48cb5362b8c449e262ff9d212ed13af0baef649095d350c467fee",
     "targets": {
-      "en": "e4bb13d689db01aa2ed0b40282f30b486c0edc2eb3d5052808a5141684ac2552",
-      "es": "465dd09606ed3abeed652dd5c153467494506c18ccfe1d064d4709af54e4e00f",
-      "de": "26796e92f92cf66470347febc283976417af3f455ad83b0cce7ea149c567d1e7",
-      "fr": "b6e51e0a9a658410e364d6b954cea264a432ae18effcfb144c442464a7c61e9e"
+      "en": "709450f108e26a8045f30875870426b5083c63d93c56e64c9c97f5d90377fe3c",
+      "es": "58244a445d86f90d128eab737347e5025bbc20e99b678f215bd90724740eee65",
+      "de": "c4fc27a15dca80bb7974a21b467f57c1f1befbe389cd5f4ca34ce204d5f07a3a",
+      "fr": "78e390a806de2c113ad9d2b0b165ee4da0c955299792a53ede0d6a6e8c5dc884"
     }
   },
   "backend:triage_steps_bird_fumes": {

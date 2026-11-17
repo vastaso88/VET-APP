@@ -200,7 +200,7 @@ def test_an_axolotl_is_never_told_to_be_kept_warm() -> None:
     assert "non scaldare la vasca" in result.answer
 
 
-def test_a_bleeding_growing_feather_gets_pressure_first() -> None:
+def test_a_bleeding_growing_feather_gets_the_bird_steps_without_unsourced_gestures() -> None:
     result, _ = _ask(
         "A Cip si è rotta una penna in crescita e sanguina tanto, non smette. Cosa faccio?",
         species="Uccello",
@@ -209,19 +209,23 @@ def test_a_bleeding_growing_feather_gets_pressure_first() -> None:
     )
     assert result.mode == "triage"
     steps = result.answer.split("\n", 1)[1]
-    assert steps.startswith("1) ferma il sangue adesso: premi")
-    assert "senza stringere il petto" in result.answer
+    assert steps.startswith("1) chiama subito un veterinario esperto in uccelli")
+    # Doc 20: gauze pressure, styptic powder and the chest wrap have no source.
+    for unsourced in ("premi", "polvere", "garza", "stringere il petto"):
+        assert unsourced not in result.answer, unsourced
     assert "al caldo" not in result.answer
 
 
-def test_a_bleeding_rabbit_gets_pressure_not_warmth() -> None:
+def test_a_bleeding_rabbit_gets_the_exotic_bleeding_steps_not_warmth() -> None:
     result, _ = _ask(
         "Il coniglio si è tagliato una zampa e perde sangue, non si ferma.",
         species="Piccoli mammiferi",
         breed="Coniglio nano",
     )
     assert result.mode == "triage"
-    assert "premi con delicatezza" in result.answer
+    assert "veterinario esperto in animali esotici" in result.answer
+    assert "anche poco sangue conta" in result.answer
+    assert "garza" not in result.answer and "premi" not in result.answer
     assert "al caldo" not in result.answer
 
 
@@ -234,7 +238,7 @@ def test_a_bleeding_feather_without_a_quantity_still_gets_the_bird_steps_at_once
         name="Caruso",
     )
     assert result.mode == "triage"
-    assert "senza stringere il petto" in result.answer
+    assert "penna in crescita rotta va fatta vedere" in result.answer
 
 
 def test_a_cat_straining_with_a_few_drops_of_urine_is_an_emergency_at_once() -> None:

@@ -95,7 +95,9 @@ def test_fish_in_distress_get_aeration_and_a_water_change_not_a_vet_call_first()
     assert result.mode == "triage"
     assert "Acquario del salotto" not in result.answer
     assert "i pesci" in result.answer.lower()
-    assert "aeratore" in result.answer and "30-40%" in result.answer and "nitriti" in result.answer
+    assert "aeratore" in result.answer and "nitriti" in result.answer
+    # Doc 20: no source gives a percentage of water to change.
+    assert "una parte dell'acqua, non tutta" in result.answer and "30-40" not in result.answer
 
 
 @pytest.mark.parametrize(
@@ -108,8 +110,8 @@ def test_fish_in_distress_get_aeration_and_a_water_change_not_a_vet_call_first()
         ),
         (
             "ha annusato dei bruchi in fila sul pino, la lingua si è gonfiata e sbava",
-            ("SENZA strofinare", "guanti"),
-            ("al caldo",),
+            ("NON strofinare", "a mani nude"),
+            ("al caldo", "sciacqua"),
         ),
     ],
 )
