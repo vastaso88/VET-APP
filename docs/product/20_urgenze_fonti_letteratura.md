@@ -73,7 +73,7 @@ Fonti usate (elenco in §7): guida del governo britannico sulla permetrina (VMD,
 | Segno | Gesto | Fonte (livello) | Frase consigliata |
 |---|---|---|---|
 | Gatto toccato da uno spot-on per cani con permetrina, o da un cane appena trattato: più quieto del solito, bava, tremori, convulsioni, vomito, barcollamento | **Lavare subito con acqua e detersivo delicato; veterinario subito; portare la confezione** | Guida VMD 2014 (linea guida di un ente pubblico, verde); pagina AAFP concorda sul pericolo e sull'urgenza ma non dà primo soccorso (società, giallo) | «Lavalo subito con acqua e un detersivo delicato, poi vai subito dal veterinario con la confezione.» |
-| Cane trattato in casa con gatto | Tenere il gatto lontano dal cane appena trattato; non farlo leccare | VMD 2014 | già in `data/manuale/gatto/GAT-SAL-02` |
+| Cane trattato in casa con gatto | Tenere il gatto lontano dal cane appena trattato; non farlo leccare | VMD 2014 | già nella biblioteca (guida VMD 2014) |
 
 ### Altre sostanze ingerite
 
@@ -284,7 +284,7 @@ Per ogni gruppo: verdetto (CONFERMATO, CONTRADDETTO, SILENZIO = la fonte non lo 
 2. **Coniglio che respira a bocca aperta** (guida scozzese): «veterinario subito, tienilo calmo».
 3. **Rettile con tessuto che esce dalla cloaca, difficoltà a respirare, sangue, zampe deboli**: «veterinario per rettili subito», solo passi universali, senza gesti a casa.
 4. **Neonati freddi (cuccioli e gattini)**: scaldare piano, non dare cibo né zucchero (livello allevatore).
-5. **Permetrina e gatto**: già coperto da `data/manuale/gatto/GAT-SAL-02`; nei passi d'urgenza serve il gesto «lava con acqua e detersivo delicato», con la fonte VMD.
+5. **Permetrina e gatto**: già coperto dalla biblioteca (guida VMD 2014); nei passi d'urgenza serve il gesto «lava con acqua e detersivo delicato», con la fonte VMD.
 
 ### Cosa resta da leggere a mano (priorità)
 

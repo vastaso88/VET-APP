@@ -213,8 +213,9 @@ def test_the_export_loads_only_approved_cards_unless_an_evaluation_asks() -> Non
         pytest.skip("no export yet")
     everything = load_cards_file(include_drafts=True)
     approved = load_cards_file()
-
-    assert everything
+    if not everything:
+        # owner decision 2026-11-20: cards no longer used by the new plan, export emptied
+        pytest.skip("empty export")
     assert all(card.status == "approved" for card in approved)
     assert len(approved) <= len(everything)
     for card in everything:

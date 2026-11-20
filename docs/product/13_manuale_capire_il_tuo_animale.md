@@ -1,5 +1,7 @@
 # Manuale "Capire il tuo animale": progetto (fase 1, solo progetto)
 
+> **Progetto delle schede chiuso il 20/11/2026: le schede sono state tolte (schede non più usate dal piano nuovo).** Il documento resta come storia del progetto.
+
 Data: 2026-11-08. Sessione di progetto per l'Orchestratore. **Niente codice e nessun contenuto definitivo**: questo documento propone, il proprietario decide (§9). Nasce da `11_riposizionamento_consapevolezza_proprietario.md` (fase 3.1) e dalla frase del proprietario del 2026-11-08: *"un manuale per diventare un buon pet owner, ben gestito, con fonti assolutamente affidabili"*.
 
 ## 0. In due righe
