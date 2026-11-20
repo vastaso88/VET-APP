@@ -837,12 +837,12 @@
     }
   },
   "ui:authHubCreateAccount": {
-    "source": "0d734dea8d154685c238ae4f7b89e7e0dbaaab6c0232152ae0733eb92af0b0f8",
+    "source": "bcfcb997a25f7d7cd629c9cf9a1b55617fab8da9a544851db1c9839b5bf2ec03",
     "targets": {
-      "en": "37b37da08ca830f66f60a9da689e5eb7b283ef4f2a5d7f5a7becf1308b95ea96",
-      "es": "22706c30160a4727e4d731f34738005ac7705f83726fd92c30bfed378c33fd52",
-      "de": "f0f5d387654138a945471b44bb977c7079499885e68ffe1cf5b4b241088e053c",
-      "fr": "8f9ece5c1736f0a7b2ff9c7d28f9cbb5c6ad170edf5fecabd67affa8da3f3064"
+      "en": "32d02200d83bba075e5221a68869257c13c6e13d62821d620a129e0b431dc677",
+      "es": "64307f729f6386daaed293780112c1dd175249e14a6834e49eaae956688079f9",
+      "de": "d24c58c701971c19d1438f84fa5f833654c08f98cc998c107e4c35ed4e6a1efe",
+      "fr": "0264d48f68d21a0ccd53ac62562379c0215bd55b0d860cbdfcdb7292e894c98e"
     }
   },
   "ui:authHubPrivacyNote": {

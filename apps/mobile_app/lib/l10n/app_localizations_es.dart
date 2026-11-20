@@ -309,7 +309,7 @@ class AppLocalizationsEs extends AppLocalizations {
       'Inicia sesión o crea una cuenta nueva en pocos segundos.';
 
   @override
-  String get authHubCreateAccount => 'Crear una cuenta';
+  String get authHubCreateAccount => 'Nueva cuenta';
 
   @override
   String get authHubPrivacyNote =>
@@ -2791,10 +2791,13 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String memorialPageChipNote(String name, String sex) {
-    String _temp0 = intl.Intl.selectLogic(sex, {
-      'other':
-          'Si el microchip de $name estaba inscrito en un registro de animales de compañía, normalmente hay que comunicar el fallecimiento: tu veterinario o el organismo que lleva el registro en tu país (en Italia, la ASL o el ayuntamiento) te dirán cómo y en qué plazo.',
-    });
+    String _temp0 = intl.Intl.selectLogic(
+      sex,
+      {
+        'other':
+            'Si el microchip de $name estaba inscrito en un registro de animales de compañía, normalmente hay que comunicar el fallecimiento: tu veterinario o el organismo que lleva el registro en tu país (en Italia, la ASL o el ayuntamiento) te dirán cómo y en qué plazo.',
+      },
+    );
     return '$_temp0';
   }
 
@@ -2816,10 +2819,13 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String memorialRestoreShortcut(String sex) {
-    String _temp0 = intl.Intl.selectLogic(sex, {
-      'female': '¿La has movido por error? Devolver a Animales',
-      'other': '¿Lo has movido por error? Devolver a Animales',
-    });
+    String _temp0 = intl.Intl.selectLogic(
+      sex,
+      {
+        'female': '¿La has movido por error? Devolver a Animales',
+        'other': '¿Lo has movido por error? Devolver a Animales',
+      },
+    );
     return '$_temp0';
   }
 

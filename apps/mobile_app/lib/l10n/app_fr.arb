@@ -103,7 +103,7 @@
   "authLegalPreparingNotice": "La politique de confidentialité complète est en cours de finalisation et sera bientôt disponible ici, avec la possibilité de la télécharger. En attendant, en bref : une partie de vos données (questions, pièces jointes et messages vocaux) est envoyée à des fournisseurs d'intelligence artificielle qui traitent les données aux États-Unis. Vous pouvez demander l'accès, la rectification, la suppression ou une copie de vos données depuis Paramètres → Nous contacter, les télécharger depuis Paramètres → Compte → Télécharger mes données ou supprimer votre compte. Vous pouvez aussi déposer une réclamation auprès de l'autorité de protection des données de votre pays (en Italie, le Garante).",
   "authHubTitle": "Quokka : comprendre votre animal",
   "authHubSubtitle": "Connectez-vous à votre compte ou créez-en un nouveau en quelques secondes.",
-  "authHubCreateAccount": "Créer un compte",
+  "authHubCreateAccount": "Nouveau compte",
   "authHubPrivacyNote": "Vos données restent privées et nous les utilisons uniquement pour gérer le profil de votre animal.",
   "authDeviceLimitNotice": "Votre session a été fermée sur cet appareil : votre compte a été ouvert sur un autre appareil et votre offre autorise un nombre limité d'appareils. Vous pouvez vous reconnecter quand vous voulez.",
   "authErrorEmailExists": "Un compte existe déjà avec cette adresse e-mail. Essayez de vous connecter.",
