@@ -1861,9 +1861,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get homeNearbyTitle => 'Near me';
 
   @override
-  String get homeSponsorBanner => 'Space reserved for our partners.';
-
-  @override
   String get homeSectionLoading => 'Loading…';
 
   @override
@@ -2777,13 +2774,10 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String memorialPageChipNote(String name, String sex) {
-    String _temp0 = intl.Intl.selectLogic(
-      sex,
-      {
-        'other':
-            'If $name\'s microchip was registered with a pet registry, the death usually has to be reported: your vet or the body that keeps the registry in your country (in Italy, the ASL or the municipality) can tell you how and by when.',
-      },
-    );
+    String _temp0 = intl.Intl.selectLogic(sex, {
+      'other':
+          'If $name\'s microchip was registered with a pet registry, the death usually has to be reported: your vet or the body that keeps the registry in your country (in Italy, the ASL or the municipality) can tell you how and by when.',
+    });
     return '$_temp0';
   }
 
@@ -2805,12 +2799,9 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String memorialRestoreShortcut(String sex) {
-    String _temp0 = intl.Intl.selectLogic(
-      sex,
-      {
-        'other': 'Moved by mistake? Bring back to Pets',
-      },
-    );
+    String _temp0 = intl.Intl.selectLogic(sex, {
+      'other': 'Moved by mistake? Bring back to Pets',
+    });
     return '$_temp0';
   }
 

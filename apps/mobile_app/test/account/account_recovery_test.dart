@@ -68,7 +68,7 @@ void main() {
     tall(tester);
     await tester.pumpWidget(_app(const AuthPlaceholderPage()));
 
-    expect(find.text('Crea un account'), findsOneWidget);
+    expect(find.text('Nuovo account'), findsOneWidget);
     expect(find.text('Recupera account'), findsOneWidget);
 
     await tester.tap(find.text('Recupera account'));

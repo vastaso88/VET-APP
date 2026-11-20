@@ -309,7 +309,7 @@ class AppLocalizationsIt extends AppLocalizations {
       'Accedi al tuo account oppure creane uno nuovo in pochi secondi.';
 
   @override
-  String get authHubCreateAccount => 'Crea un account';
+  String get authHubCreateAccount => 'Nuovo account';
 
   @override
   String get authHubPrivacyNote =>
@@ -1881,9 +1881,6 @@ class AppLocalizationsIt extends AppLocalizations {
   String get homeNearbyTitle => 'Vicino a me';
 
   @override
-  String get homeSponsorBanner => 'Spazio riservato ai nostri partner.';
-
-  @override
   String get homeSectionLoading => 'Caricamento...';
 
   @override
@@ -2802,17 +2799,14 @@ class AppLocalizationsIt extends AppLocalizations {
 
   @override
   String memorialPageChipNote(String name, String sex) {
-    String _temp0 = intl.Intl.selectLogic(
-      sex,
-      {
-        'male':
-            'Se $name era iscritto all\'anagrafe degli animali d\'affezione, di solito il decesso va comunicato: il tuo veterinario o l\'ufficio della tua ASL o del Comune ti dicono come e entro quando.',
-        'female':
-            'Se $name era iscritta all\'anagrafe degli animali d\'affezione, di solito il decesso va comunicato: il tuo veterinario o l\'ufficio della tua ASL o del Comune ti dicono come e entro quando.',
-        'other':
-            'Se il microchip di $name era iscritto all\'anagrafe degli animali d\'affezione, di solito il decesso va comunicato: il tuo veterinario o l\'ufficio della tua ASL o del Comune ti dicono come e entro quando.',
-      },
-    );
+    String _temp0 = intl.Intl.selectLogic(sex, {
+      'male':
+          'Se $name era iscritto all\'anagrafe degli animali d\'affezione, di solito il decesso va comunicato: il tuo veterinario o l\'ufficio della tua ASL o del Comune ti dicono come e entro quando.',
+      'female':
+          'Se $name era iscritta all\'anagrafe degli animali d\'affezione, di solito il decesso va comunicato: il tuo veterinario o l\'ufficio della tua ASL o del Comune ti dicono come e entro quando.',
+      'other':
+          'Se il microchip di $name era iscritto all\'anagrafe degli animali d\'affezione, di solito il decesso va comunicato: il tuo veterinario o l\'ufficio della tua ASL o del Comune ti dicono come e entro quando.',
+    });
     return '$_temp0';
   }
 
@@ -2834,13 +2828,10 @@ class AppLocalizationsIt extends AppLocalizations {
 
   @override
   String memorialRestoreShortcut(String sex) {
-    String _temp0 = intl.Intl.selectLogic(
-      sex,
-      {
-        'female': 'Spostata per errore? Riporta tra gli animali',
-        'other': 'Spostato per errore? Riporta tra gli animali',
-      },
-    );
+    String _temp0 = intl.Intl.selectLogic(sex, {
+      'female': 'Spostata per errore? Riporta tra gli animali',
+      'other': 'Spostato per errore? Riporta tra gli animali',
+    });
     return '$_temp0';
   }
 

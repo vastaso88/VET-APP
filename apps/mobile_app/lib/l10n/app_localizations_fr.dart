@@ -1887,9 +1887,6 @@ class AppLocalizationsFr extends AppLocalizations {
   String get homeNearbyTitle => 'Près de chez moi';
 
   @override
-  String get homeSponsorBanner => 'Espace réservé à nos partenaires.';
-
-  @override
   String get homeSectionLoading => 'Chargement...';
 
   @override
@@ -2813,13 +2810,10 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String memorialPageChipNote(String name, String sex) {
-    String _temp0 = intl.Intl.selectLogic(
-      sex,
-      {
-        'other':
-            'Si la puce de $name était enregistrée dans un fichier des animaux de compagnie, le décès doit en général être déclaré : votre vétérinaire ou l\'organisme qui tient le fichier dans votre pays (en Italie, l\'ASL ou la commune) vous dira comment et dans quel délai.',
-      },
-    );
+    String _temp0 = intl.Intl.selectLogic(sex, {
+      'other':
+          'Si la puce de $name était enregistrée dans un fichier des animaux de compagnie, le décès doit en général être déclaré : votre vétérinaire ou l\'organisme qui tient le fichier dans votre pays (en Italie, l\'ASL ou la commune) vous dira comment et dans quel délai.',
+    });
     return '$_temp0';
   }
 
@@ -2841,13 +2835,10 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String memorialRestoreShortcut(String sex) {
-    String _temp0 = intl.Intl.selectLogic(
-      sex,
-      {
-        'female': 'Déplacée par erreur ? Remettre dans Animaux',
-        'other': 'Déplacé par erreur ? Remettre dans Animaux',
-      },
-    );
+    String _temp0 = intl.Intl.selectLogic(sex, {
+      'female': 'Déplacée par erreur ? Remettre dans Animaux',
+      'other': 'Déplacé par erreur ? Remettre dans Animaux',
+    });
     return '$_temp0';
   }
 
