@@ -62,3 +62,30 @@ Riferimento: `docs/security/` (audit, checklist, registro rischi, procedura viol
   funzione che tratta dati personali: sezione B.
 - Vulnerabilità scoperta o sospetta violazione di dati: seguire subito
   `docs/security/03_procedura_violazioni.md` (72 ore) e avvisare l'Orchestratore.
+
+## Richieste a siti esterni (vale per tutte le sessioni e per i sotto-agenti)
+Riferimento: `docs/compliance/20` §22.
+
+- **Nome**: ogni programma o comando (`curl`, script) che contatta un sito esterno si
+  presenta con un nome proprio che inizia con «Quokka» (`-A "QuokkaLibrarian/0.1"`). Mai
+  un nome di browser o di un'altra azienda, mai dati personali nel nome. Un test fallisce
+  se il nome non inizia con «Quokka» (`tests/unit/test_user_agents.py`).
+- **Ordine**: prima `robots.txt` (per nome e per `*`; contano anche `ai-train=no` e
+  `Content-Signal`), poi i termini d'uso, poi il contenuto. Se c'è un divieto, non si
+  legge da programma.
+- **Stop** a sfida, CAPTCHA, pagina di verifica, 403, 429 o blocco: nessun altro
+  strumento o nome «per passare», nessuna riprova. L'host resta fuori.
+- **Comandi a mano e sotto-agenti**: stesse regole; 10 secondi tra richieste allo stesso
+  host; ogni richiesta registrata (data, nome, URL, esito) in un file che non si cancella
+  prima di averlo riportato nel registro. Il brief di ogni sotto-agente include questa
+  regola.
+- **`WebFetch` e browser del programma**: solo pagine singole di termini e note legali,
+  `robots.txt` e fonti ufficiali o con licenza aperta; mai il contenuto di siti che
+  chiedono un permesso o hanno barriere. Il browser non completa CAPTCHA né controlli
+  anti-bot.
+- **Nessun contatto con i siti** o i loro titolari: lettere e richieste di permesso le
+  invia il proprietario.
+- **Se succede**: avvisare subito l'Orchestratore, scrivere nel registro interno
+  (`.local/`, mai nel repository pubblico), nessuna nuova richiesta a quell'host, nessuna
+  prova «per capire».
+- **Eccezioni**: solo con permesso scritto del titolare del sito, valido per ciò che dice.
