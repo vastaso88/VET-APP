@@ -36,10 +36,13 @@ Decisioni del proprietario (17-20/11) che questo piano raccoglie:
    più affidabile per questo caso…» (parole esatte alla Normativa, senza promesse), e intanto legge
    le fonti che renderebbero verde la risposta. Le prime risposte su un tema sono più lente; le
    successive trovano le note e sono veloci e meno care.
-   - Tempo massimo di attesa (proposta: 25-30 secondi): se scade, la chat risponde con ciò che ha,
-     segnato in giallo, e la casella va nella coda notturna.
-   - **Urgenze**: l'avviso d'urgenza parte subito come primo messaggio; la ricerca e i dettagli con
-     fonte arrivano dopo, come secondo messaggio. Nessuno aspetta per sapere che deve muoversi.
+   - Tempo massimo di attesa: **20 secondi** (decisione del proprietario, 20/11): se scade, la
+     chat risponde con ciò che ha, segnato in giallo, e la casella va nella coda notturna.
+   - **Nessuna corsia per le urgenze** (decisione del proprietario, 17/11 e ribadita il 20/11):
+     Quokka non gestisce le urgenze. Una domanda su un caso grave segue lo stesso percorso di tutte
+     le altre, con la stessa attesa; che la situazione è urgente lo dice la risposta, perché lo
+     dicono le fonti. Nessun avviso anticipato, nessun primo messaggio separato, nessun passo
+     d'urgenza scritto da noi.
    - Tecnica: la risposta in due tempi (prima «sto cercando», poi il testo) richiede una piccola
      modifica a server e app (oggi la chat risponde in un colpo solo): entra con la build che porta
      asterischi e indice.
@@ -79,7 +82,8 @@ Prima di salvare una nota si cercano le note simili nella stessa casella:
   (5) indice di citazione della rivista come ultimo spareggio. A parità di livello e in disaccordo:
   restano entrambe, segnate «fonti discordi», e la chat lo dice.
 - La nota superata non si cancella: resta archiviata con la data (si può sempre tornare indietro).
-- Scadenza a 12 mesi (leggi: controllo della vigenza); una nota scaduta va riletta alla fonte.
+- Scadenza a **6 mesi** (decisione del proprietario, 20/11; leggi: controllo della vigenza); una
+  nota scaduta va riletta alla fonte.
 - Controllo a campione ogni settimana con il giudice indipendente; il «non mi è stata utile»
   dell'utente abbassa la priorità di una nota e la manda a ricontrollo.
 
@@ -120,7 +124,8 @@ qualche ora di macchina e circa 20 USD.
 Calcolato dal codice dalle note usate, non dichiarato dal modello. Tre livelli con colore, icona e
 parola (mai solo colore, niente testo colorato, niente rosso): verde «Verificata su fonti
 ufficiali», giallo «In parte verificata», grigio «Conoscenze generali dell'IA». Si chiama
-«verifica delle fonti», non «affidabilità». Nelle urgenze si mostra solo l'avviso d'urgenza.
+«verifica delle fonti», non «affidabilità». L'indice vale per tutte le risposte, anche
+quando il caso è grave: non c'è un trattamento a parte.
 **Cancello**: le risposte verdi devono risultare più corrette delle grigie per il giudice alla
 cieca; altrimenti l'indice non entra nell'app.
 
