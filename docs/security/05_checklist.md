@@ -108,6 +108,11 @@ nuovo permesso del telefono, nuovo uso della chat.
 - [ ] Aggiornato `04_registro_rischi.md` se cambia un rischio.
 - [ ] Checklist A completata.
 
+## C0. Ogni mese
+
+- [ ] Elenco delle copie manuali dei dati (fuori dal repository): ogni copia
+      scaduta è cancellata, anche dai cestini, e annotata (`12_copie_dati_e_backup.md`).
+
 ## C. Ogni 3 mesi (manutenzione)
 
 - [ ] Rotazione delle chiavi di servizio (Supabase secret, Groq, Firebase

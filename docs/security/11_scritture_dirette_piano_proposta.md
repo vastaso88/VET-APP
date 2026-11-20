@@ -133,7 +133,11 @@ conservazione dei 4 mesi con il resto dell'account).
   `caller_max_pets()` e `caller_can_write()` (security definer, `search_path`
   fisso); trigger `plan_access_10_gate` (insert/update) su ogni tabella e
   `plan_access_20_pet_limit` su `pet_profiles` (lock per utente, un upsert di
-  un animale già esistente non conta); policy restrittive `with check` su insert
+  un animale già esistente non conta); dalla build 40 anche il trigger
+  `plan_access_30_memorial_limit` (tetto ai Ricordi, 30 animali, uguale per
+  tutti, sviluppatori compresi; `plan_access_config.max_memorial_pets` scritto
+  dal backend da `MEMORIAL_PETS_MAX`; ramo `claude/pricing-ricordi-limit`);
+  policy restrittive `with check` su insert
   e update (`using (true)`: un rifiuto dà errore, non un aggiornamento muto di
   0 righe) e sullo storage `pet-photos`; tabelle `plan_access_config` (piano di
   test, creata su `'pro'`) e `plan_access_unlimited` (sviluppatori, sparisce con
