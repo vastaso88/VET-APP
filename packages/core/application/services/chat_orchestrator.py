@@ -30,7 +30,6 @@ from packages.core.application.services.evidence_query_normalizer import (
     EvidenceQueryNormalizer,
 )
 from packages.core.application.services.evidence_synthesizer import EvidenceSynthesizer
-from packages.core.application.services.health_card_selector import HealthCardSelector
 from packages.core.application.services.interview_planner import InterviewPlanner
 from packages.core.application.services.llm_budget import (
     LlmBudget,
@@ -78,16 +77,15 @@ from packages.core.domain.conversation.request_kind import (
     may_ask_before_answering,
 )
 from packages.core.domain.conversation.states import ConversationState
-from packages.core.domain.knowledge.answer_validation import validate_answer
+from packages.core.domain.knowledge.answer_validation import (
+    has_phone_number,
+    validate_answer,
+    without_absolute_claims,
+    without_phone_numbers,
+)
 from packages.core.domain.knowledge.dose_in_answer import find_dosage, without_dose_sentences
 from packages.core.domain.knowledge.duty_notes import DUTY_CATALOG, pinned_duty_notes
 from packages.core.domain.knowledge.evidence_synthesis import EvidenceSynthesis
-from packages.core.domain.knowledge.health_cards import (
-    HealthCard,
-    card_species_key,
-    format_cards_for_prompt,
-    source_line,
-)
 from packages.core.domain.knowledge.models import EvidenceSource
 from packages.core.domain.knowledge.relevance import relevant_sources, topic_terms
 from packages.core.domain.localization import has_translation, translate
@@ -163,6 +161,8 @@ from packages.core.domain.safety.harmful_requests import (
     SELF_HARM_TEXTS,
     UNDER_18_HELP_LINE,
     YES_NO_REPLACEMENT,
+    aggression_toward_animals,
+    aggression_toward_people,
     answer_certifies,
     answer_is_bare_yes_no,
     asks_care_costs,
@@ -187,6 +187,7 @@ from packages.core.domain.safety.harmful_requests import (
     mentions_a_warning_signal,
     mentions_child_handling,
     mentions_play,
+    person_is_hurt,
     strip_invented_prices,
     strip_proceed_anyway,
     vomiting_and_not_eating_for_a_day,
@@ -224,8 +225,8 @@ _DOG_CAT_STEPS = {
     "urinary": "triage_steps_urinary",
     "respiratory": "triage_steps_respiratory",
 }
-# Intents that are health questions (approved-cards rule, "Non mi ha
-# aiutato"), together with the classifier's "health" topic.
+# Intents that are health questions ("Non mi ha aiutato", the second try),
+# together with the classifier's "health" topic.
 _HEALTH_INTENTS = frozenset({"clinical_question", "preventive_care"})
 # Teeth are health too (2026-11-10: the rabbit's teeth card was never found,
 # because "denti" is not a clinical word of the intent lists). Only for the
@@ -244,8 +245,6 @@ _SHOWS_TEETH = re.compile(
     r"bar\w* (?:his |her |its )?teeth|ensen\w* los dientes|zeigt (?:die )?zahne|"
     r"montr\w* (?:les )?dents)\b"
 )
-# [S1], [S2]: the labels of the approved cards in a health answer.
-_CARD_LABEL = re.compile(r"\[S(\d+)\]")
 # Words that put an animal in the message: such a message is never off topic.
 _ANIMAL_WORDS = re.compile(
     r"\b(?:animal\w*|cucciol\w*|bestiol\w*|pet|pets|veterinar\w*|vet|zamp\w*|micio|mici|gattin\w*|cagnolin\w*|tierarzt\w*|tier|tiere|haustier\w*|mascota\w*|veterinaire|chiot\w*|chaton\w*|puppy|puppies|kitten\w*)\b"
@@ -995,6 +994,13 @@ class ChatOrchestratorInput(BaseModel):
     # The last reply was an anamnesis question the pipeline produced
     # (conversation state, set by the server; never by the app).
     awaiting_anamnesis: bool = False
+    # Plan docs/llm/08 (CHAT_ANSWER_V2 only; never sent by the app):
+    # a possible emergency the rules or the classifier could not settle, as the topic
+    # of the prompt rule that replaces the fixed clarifying question (set internally);
+    urgency_doubt: str | None = None
+    # passages of laws and public-body guides found in the library for this question,
+    # read by the model before writing (variant 2 of the verification; set by the caller).
+    official_sources: str | None = None
 
 
 class ChatOrchestratorResult(BaseModel):
@@ -1046,6 +1052,10 @@ class ChatOrchestrator:
         response_generator: ResponseGenerator | None = None,
         response_language: str = "it",
         enable_interview_loop: bool = False,
+        # Plan docs/llm/08, work A (CHAT_ANSWER_V2): no keyword-triggered fixed texts.
+        answer_v2: bool = False,
+        urgent_lane: bool = False,
+        person_hurt_line: bool = False,
         coverage_weights: CoverageWeights = DEFAULT_COVERAGE_WEIGHTS,
         coverage_target: float = 0.85,
         max_interview_questions: int = 3,
@@ -1061,8 +1071,6 @@ class ChatOrchestrator:
         # the fixed first-aid steps only (the default here keeps the tests
         # and the demo provider deterministic; the container sets it).
         urgent_answer_timeout_seconds: int = 0,
-        # Health answers only from approved cards (plan stage 2); None = off.
-        health_card_selector: HealthCardSelector | None = None,
         # The more capable model's name (plan "fratello maggiore"); None = off.
         strong_model: str | None = None,
         prompt_max_sources: int = 2,
@@ -1088,6 +1096,16 @@ class ChatOrchestrator:
         )
         self._response_generator = response_generator or ResponseGenerator()
         self._enable_interview_loop = enable_interview_loop
+        self._answer_v2 = answer_v2
+        # Owner decision 2026-11-20 (plan 08): with v2 there is no urgency lane. A grave
+        # case takes the same path as any question (library, sources, Quokka writes,
+        # verification); the answer says "vet now" because the sources say so. The
+        # guards that are not about the animal's urgency stay (no doses, drugs or
+        # diagnoses, self-harm, harmful requests, minors). `urgent_lane` keeps the
+        # earlier v2 (fixed legal opening, urgent steps) only as a test-2 comparison arm.
+        self._no_urgent_lane = answer_v2 and not urgent_lane
+        # The 112 line for a hurt PERSON: off by default (owner 2026-11-20).
+        self._person_hurt_line = person_hurt_line
         self._coverage_weights = coverage_weights
         self._coverage_target = coverage_target
         self._max_interview_questions = max_interview_questions
@@ -1122,7 +1140,6 @@ class ChatOrchestrator:
         self._answer_cache_ttl = timedelta(hours=max(1, answer_cache_ttl_hours))
         self._answer_max_tokens = max(100, answer_max_tokens)
         self._urgent_answer_timeout_seconds = max(0, urgent_answer_timeout_seconds)
-        self._health_card_selector = health_card_selector
         self._strong_model = strong_model
         self._prompt_max_sources = max(0, prompt_max_sources)
         self._prompt_source_chars = max(50, prompt_source_chars)
@@ -1165,6 +1182,15 @@ class ChatOrchestrator:
             # The API and the app show no source list (wide eval 2026-11-06):
             # no "[1]" and no "ti lascio le fonti" in the text.
             result = result.model_copy(update={"answer": clean_answer_text(result.answer)})
+        if self._answer_v2 and self._person_hurt_line and person_is_hurt(data.user_message):
+            # Normativa §16: a person bitten or wounded comes first, before the animal's
+            # urgent opening; only where no fixed reply already sends to a doctor.
+            line = translate("person_hurt_line", data.language)
+            if line not in result.answer and result.model not in (
+                "person-injury",
+                "minor-hurt-guard",
+            ):
+                result = result.model_copy(update={"answer": f"{line}\n\n{result.answer}"})
         result = self._with_weight_suggestion(data, result)
         self._log_outcome(data, result)
         return result
@@ -1331,7 +1357,7 @@ class ChatOrchestrator:
             # Third round, 3: a child with a bite or a scratch gets simple
             # steps, never the clarifying question about the bleeding.
             return self._fixed_reply(MINOR_HURT_TEXTS, data, model="minor-hurt-guard")
-        if family == "bird" and describes_fume_distress(message):
+        if family == "bird" and describes_fume_distress(message) and not self._no_urgent_lane:
             # Synthetic users round 3: a bird in distress after a non-stick pan
             # got "after a run or at rest?" in Italian. The gesture is known: out
             # of the fumes, fresh air, then the avian vet.
@@ -1376,26 +1402,30 @@ class ChatOrchestrator:
                 # ore non urina?" to a cat that urinates everywhere): the
                 # ordinary answer, with its own rule on the vet, serves better.
                 safety_flags = []
+        if (
+            safety_flags
+            and self._answer_v2
+            and categorize_safety_flags(safety_flags) == "bleeding_trauma"
+            and (
+                aggression_toward_people(data.user_message)
+                or injury_is_on_a_person(data.user_message)
+            )
+        ):
+            # Plan 08: "Rex ha morso mio figlio, sanguina" is about the child's wound,
+            # not the animal's: the dangerous-behaviour rule, never the bleeding steps.
+            safety_flags = []
+        if safety_flags and self._no_urgent_lane:
+            # No urgency lane: only the "never give it" guard (a medicine or a toxin
+            # about to be given) survives; everything else follows the ordinary path.
+            intent_refusal = self._toxin_intent_guard(data, message, family, safety_flags)
+            if intent_refusal is not None:
+                return intent_refusal
+            safety_flags = []
         if safety_flags:
             category = categorize_safety_flags(safety_flags)
-            if (
-                category == "toxin_medication"
-                and not is_exposure(data.user_message)
-                and (
-                    intends_to_give(data.user_message)
-                    or asks_an_amount(data.user_message.lower())
-                    or claims_the_chat_said_so(data.user_message)
-                )
-            ):
-                # Not happened yet and about to ("la metto a Nina?", "quanto
-                # ne do?", "mi hai detto che posso dargli il paracetamolo"):
-                # "no, never" with the why, not an emergency (wide eval
-                # 2026-11-06). Anything else about a toxin stays a triage.
-                if any(flag in DOG_PRODUCT_ON_CAT_KEYWORDS for flag in safety_flags):
-                    return self._fixed_reply(
-                        PERMETHRIN_INTENT_TEXTS, data, model="dog-product-on-cat-guard"
-                    )
-                return self._toxin_intent_result(data, message, family)
+            intent_refusal = self._toxin_intent_guard(data, message, family, safety_flags)
+            if intent_refusal is not None:
+                return intent_refusal
             if (
                 requires_immediate_escalation(message)
                 or describes_a_grave_picture(message)
@@ -1425,7 +1455,12 @@ class ChatOrchestrator:
                 )
 
             question = clarifying_question(category, data.language, female=female, family=family)
-            if question is not None:
+            if question is not None and self._answer_v2:
+                # Plan 08: no fixed clarifying question; the model answers with the
+                # rule "a safe step, the signs that mean now, one question" (the
+                # remaining guards below still run first).
+                data = data.model_copy(update={"urgency_doubt": category})
+            elif question is not None:
                 return self._adult_first(
                     ChatOrchestratorResult(
                         answer=question,
@@ -1447,21 +1482,22 @@ class ChatOrchestrator:
             # safe by escalating directly), or a mapped category with no
             # clarifying question by design (toxin_medication: no benign
             # explanation a question could surface, see triage_clarification.py).
-            return self._adult_first(
-                self._urgent_answer(
+            if question is None:
+                return self._adult_first(
+                    self._urgent_answer(
+                        data,
+                        message,
+                        safety_flags=safety_flags,
+                        category=category,
+                        species=effective_species,
+                        species_family=family,
+                        female=female,
+                        toxicity_note=human_drug_toxicity_note(message, family, data.language),
+                        heat=mentions_heat(message),
+                    ),
                     data,
-                    message,
-                    safety_flags=safety_flags,
-                    category=category,
-                    species=effective_species,
-                    species_family=family,
-                    female=female,
-                    toxicity_note=human_drug_toxicity_note(message, family, data.language),
-                    heat=mentions_heat(message),
-                ),
-                data,
-                minor,
-            )
+                    minor,
+                )
 
         if is_dose_change_request(data.user_message):
             # Third round, 1: "ne do una, giusto?" was once confirmed by the
@@ -1627,14 +1663,32 @@ class ChatOrchestrator:
     ) -> ChatOrchestratorResult:
         # The second guardian: a small model reads the message for an
         # emergency the fixed lists did not catch (build 32).
-        second_opinion = self._second_opinion_on_urgency(
-            data, message, lowered, effective_species, prefetch
-        )
-        if second_opinion is not None:
-            return second_opinion
-        off_topic = self._off_topic_result(data, message, lowered, prefetch)
-        if off_topic is not None:
-            return off_topic
+        if self._no_urgent_lane:
+            # Owner decision 2026-11-20: no urgency classification that changes the path
+            # (and one model call fewer); off-topic stays a prompt rule.
+            pass
+        elif self._answer_v2:
+            # Plan 08: the classifier decides only what the rules do not know; a past
+            # event is no emergency; "maybe" becomes the prompt rule, never the fixed
+            # question; the off-topic refusal is a prompt rule too (no early return).
+            emergency, doubt = self._classifier_verdict_v2(data, message, lowered, prefetch)
+            if emergency is not None:
+                urgent = self._result_from_urgency_verdict(
+                    emergency, data, message, effective_species
+                )
+                if urgent is not None:
+                    return urgent
+            if doubt:
+                data = data.model_copy(update={"urgency_doubt": doubt})
+        else:
+            second_opinion = self._second_opinion_on_urgency(
+                data, message, lowered, effective_species, prefetch
+            )
+            if second_opinion is not None:
+                return second_opinion
+            off_topic = self._off_topic_result(data, message, lowered, prefetch)
+            if off_topic is not None:
+                return off_topic
 
         # What the owner asked for comes before any anamnesis (build 22
         # feedback: "spiegami il referto" was answered by asking for
@@ -2179,6 +2233,29 @@ class ChatOrchestrator:
             return None
         return self._result_from_urgency_verdict(verdict, data, message, effective_species)
 
+    def _classifier_verdict_v2(
+        self,
+        data: ChatOrchestratorInput,
+        message: str,
+        lowered: str,
+        prefetch: _Prefetch,
+    ) -> tuple[UrgencyVerdict | None, str | None]:
+        """Plan 08 (CHAT_ANSWER_V2): the light model's verdict, after the rules said
+        nothing. (verdict, None) for an emergency, (None, topic) for a possible one,
+        which becomes a prompt rule instead of the fixed question; (None, None)
+        otherwise. A past event ("anni fa ha avuto un incidente") is no emergency
+        here either (the rules already ignored it; the classifier did not)."""
+        if self._urgency_classifier is None or self._classify_intent(lowered) == "general_info":
+            return None, None
+        verdict = prefetch.urgency()
+        if verdict is None or verdict.level == "normal":
+            return None, None
+        if is_a_past_event(message) and not requires_immediate_escalation(message):
+            return None, None
+        if verdict.level == "emergency" or describes_a_grave_picture(message):
+            return verdict, None
+        return None, verdict.category or "other"
+
     def _off_topic_result(
         self,
         data: ChatOrchestratorInput,
@@ -2222,7 +2299,7 @@ class ChatOrchestrator:
         prefetch: _Prefetch | None,
         message: str = "",
     ) -> bool:
-        """A health question (approved-cards rule, "Non mi ha aiutato"): the
+        """A health question ("Non mi ha aiutato", the second try): the
         clinical or prevention words, or the classifier's "health" topic. A
         document to explain keeps its own source (the document itself)."""
         if kind is RequestKind.REPORT:
@@ -2304,24 +2381,6 @@ class ChatOrchestrator:
         shared = now & before
         # The same question in other words: most of its terms again.
         return len(shared) >= 2 and len(shared) >= 0.6 * min(len(now), len(before))
-
-    def _health_cards_for(
-        self, data: ChatOrchestratorInput, message: str, effective_species: str
-    ) -> list[HealthCard]:
-        assert self._health_card_selector is not None
-        try:
-            return self._health_card_selector.select(
-                species=card_species_key(
-                    normalize_species(effective_species),
-                    data.breed or "",
-                    data.notes or "",
-                    message,
-                ),
-                question=message,
-            )
-        except Exception:  # noqa: BLE001 - no card means the safe path, never an error
-            logger.exception("health cards: selection failed; safe path")
-            return []
 
     def _result_from_urgency_verdict(
         self,
@@ -2652,19 +2711,30 @@ class ChatOrchestrator:
         )
         owner_text = data.user_message.strip() or message
         today = data.today or datetime.now(UTC).date()
+        official = self._official_sources_block(data)
         user_prompt = (
             f"{self._pet_context_block(data)}\n"
             f"{self._format_conversation_history(data)}"
             f"User message: {self._anonymize_for_provider(owner_text, data)}"
             f"\n\nToday's date: {today.isoformat()}"
+            f"{official}"
         )
+        first_aid = steps
+        if self._answer_v2:
+            # Test-only comparison lane (owner 2026-11-20: no fixed texts in the answer):
+            # the model's text alone; the toxicity note (a fact) travels as a note.
+            opening = ""
+            if toxicity_note:
+                first_aid = f"{toxicity_note}\n{steps}"
         try:
             response = self._llm_client.generate(
                 LLMGenerationRequest(
                     system_prompt=build_emergency_prompt(
-                        first_aid=self._anonymize_for_provider(steps, data),
+                        first_aid=self._anonymize_for_provider(first_aid, data),
                         language=data.language,
                         species_facts=species_facts(data.species, data.breed, data.notes),
+                        v2=self._answer_v2,
+                        official_sources=bool(official),
                     ),
                     user_prompt=user_prompt,
                     max_tokens=_URGENT_ANSWER_MAX_TOKENS,
@@ -2673,7 +2743,7 @@ class ChatOrchestrator:
                     # free part when the plan allows it; the fixed steps never change.
                     model_class="strong" if self._strong_allowed(data) else "main",
                     timeout_seconds=self._urgent_answer_timeout_seconds,
-                    cacheable_system_chars=len(stable_prefix(None)),
+                    cacheable_system_chars=len(stable_prefix(None, v2=self._answer_v2)),
                 )
             )
         except ProviderError as exc:
@@ -2696,6 +2766,15 @@ class ChatOrchestrator:
                 "model": response.model,
             }
         )
+
+    def _official_sources_block(self, data: ChatOrchestratorInput) -> str:
+        """Variant 2 of the verification (plan 08): the passages of laws and public-body
+        guides the caller found for this question, after the user message. Only with
+        CHAT_ANSWER_V2; anonymized like everything that goes to the provider."""
+        if not (self._answer_v2 and data.official_sources):
+            return ""
+        passages = self._anonymize_for_provider(data.official_sources, data)
+        return f"\n\n<fonti_ufficiali>\n{passages}\n</fonti_ufficiali>"
 
     @classmethod
     def _urgent_text_passes(cls, text: str, species: str) -> bool:
@@ -2745,6 +2824,32 @@ class ChatOrchestrator:
             translate(key, data.language, pet_name=data.pet_name).strip() in last
             for key in (*_TRIAGE_OPENINGS, "triage_toxin_opening", "triage_opening_fish")
         ) or any(opening in last for opening in _LEGACY_FISH_OPENINGS)
+
+    def _toxin_intent_guard(
+        self,
+        data: ChatOrchestratorInput,
+        message: str,
+        family: str,
+        safety_flags: list[str],
+    ) -> ChatOrchestratorResult | None:
+        """Not happened yet and about to ("la metto a Nina?", "quanto ne do?", "mi hai
+        detto che posso dargli il paracetamolo"): "no, never" with the why, not an
+        emergency (wide eval 2026-11-06). A guard on medicines, not on urgency."""
+        if not (
+            categorize_safety_flags(safety_flags) == "toxin_medication"
+            and not is_exposure(data.user_message)
+            and (
+                intends_to_give(data.user_message)
+                or asks_an_amount(data.user_message.lower())
+                or claims_the_chat_said_so(data.user_message)
+            )
+        ):
+            return None
+        if any(flag in DOG_PRODUCT_ON_CAT_KEYWORDS for flag in safety_flags):
+            return self._fixed_reply(
+                PERMETHRIN_INTENT_TEXTS, data, model="dog-product-on-cat-guard"
+            )
+        return self._toxin_intent_result(data, message, family)
 
     @staticmethod
     def _is_educational_toxin_question(safety_flags: list[str], message: str) -> bool:
@@ -3445,7 +3550,6 @@ class ChatOrchestrator:
         # continues the health topic even without a health word in it.
         not_helped = self._owner_not_helped(data)
         health_question = self._is_health_question(kind, intent, prefetch, message) or not_helped
-        health_rule = self._health_card_selector is not None and health_question
         # A growl, a snap or a bite in a behaviour question (owner's test
         # 2026-11-16): the first time in the conversation the reply asks the
         # facts that decide the advice before explaining anything; later
@@ -3455,17 +3559,32 @@ class ChatOrchestrator:
         # message reads as a symptom rather than a behaviour question.
         behavioural = kind is RequestKind.DIRECT and is_behavioural_or_duty(message)
         earlier_warning = self._earlier_behaviour_warning(data)
+        # Plan 08 (CHAT_ANSWER_V2): an animal that has bitten or attacked people or other
+        # animals gets safety first and the specialist with a criterion; that rule wins
+        # over "ask first" (an attack is not a picture to explore before acting).
+        dangerous_behaviour = self._answer_v2 and (
+            aggression_toward_people(message) or aggression_toward_animals(message)
+        )
         behaviour_anamnesis = (
             kind in (RequestKind.DIRECT, RequestKind.SYMPTOM)
             and behaviour_needs_questions(message)
             and not earlier_warning
             and not asks_to_stop_questions(data.user_message)
+            and not dangerous_behaviour
         )
         # The turn right after a behaviour case, or a warning in a behaviour
         # question: no invented motive, consistency, the behaviour vet.
-        warning_signal = not behaviour_anamnesis and (
-            self._continues_a_behaviour_case(data)
-            or (behavioural and mentions_a_warning_signal(message) and not mentions_play(message))
+        warning_signal = (
+            not behaviour_anamnesis
+            and not dangerous_behaviour
+            and (
+                self._continues_a_behaviour_case(data)
+                or (
+                    behavioural
+                    and mentions_a_warning_signal(message)
+                    and not mentions_play(message)
+                )
+            )
         )
         # ... or the button pressed on the last health answer.
         second_try = health_question and (data.escalate_health or not_helped)
@@ -3488,6 +3607,8 @@ class ChatOrchestrator:
             self._answer_cache is not None
             and not behaviour_anamnesis
             and not vague_picture
+            # an answer written with this question's official passages is not general
+            and not self._official_sources_block(data)
             and is_cacheable_question(
                 message,
                 kind=kind,
@@ -3505,9 +3626,7 @@ class ChatOrchestrator:
                 message,
                 species=self._specific_species(data, effective_species),
                 language=data.language,
-                # An answer written under the cards rule is never served
-                # for one written without it, and the other way round.
-                prompt_version=PROMPT_VERSION + ("+schede" if health_rule else ""),
+                prompt_version=PROMPT_VERSION + ("+v2" if self._answer_v2 else ""),
             )
             cached = self._cached_answer_result(cache_id)
             if cached is not None:
@@ -3555,16 +3674,6 @@ class ChatOrchestrator:
                 sources = pinned + [source for source in sources if source not in pinned]
         sources = list(sources)[: self._prompt_max_sources]
         evidence_block = self._format_sources_for_prompt(sources) if sources else ""
-        # Plan stage 2: on a health question the approved cards are the only
-        # sources; the optional material (notes not yet approved, literature)
-        # stays out.
-        cards: list[HealthCard] = []
-        cards_block = ""
-        if health_rule:
-            cards = self._health_cards_for(data, message, effective_species)
-            sources = [card.as_evidence() for card in cards]
-            evidence_block = ""
-            cards_block = "\n\n" + format_cards_for_prompt(cards) if cards else ""
         # The owner's words and the text read from their file go to the
         # model apart: the file as delimited data (security audit LLM-6).
         # `message` (with the file's text folded in) keeps serving the
@@ -3638,6 +3747,8 @@ class ChatOrchestrator:
                 "what they wrote."
             )
         today = data.today or datetime.now(UTC).date()
+        # Variant 2 of the verification (plan 08): official passages read before writing.
+        official = self._official_sources_block(data)
 
         # Tone, structure and how many questions are allowed live in
         # natural_answer_prompt.py, per kind of request. validate_answer
@@ -3668,14 +3779,9 @@ class ChatOrchestrator:
             behaviour_anamnesis=behaviour_anamnesis,
             warning_signal=warning_signal,
             vague_picture=vague_picture,
-            # Under the cards rule the notes that ask the model to explain
-            # clinical content from its own knowledge stay out: the approved
-            # cards are the only clinical source (measured 2026-11-10: the
-            # prevention note made the model explain rabbit vaccines without a card).
-            safety_question=not health_rule
-            and bool(toxin_flags)
+            safety_question=bool(toxin_flags)
             and self._is_educational_toxin_question(toxin_flags, message),
-            prevention_schedule=not health_rule and is_prevention_schedule_question(message),
+            prevention_schedule=is_prevention_schedule_question(message),
             harmful_note=HARMFUL_NOTES.get(detect_harmful_request(message) or "", ""),
             minor=is_minor_writing(message),
             minor_account=data.owner_is_minor,
@@ -3689,19 +3795,27 @@ class ChatOrchestrator:
             hopelessness=expresses_hopelessness(message),
             dose_part=dose_part,
             foreign_country=foreign,
-            medical_first=not health_rule and medical_cause_first(message, data.age_years),
-            travel_south=not health_rule
-            and travel_to_sand_fly_area(message, normalize_species(effective_species)),
+            medical_first=medical_cause_first(message, data.age_years),
+            travel_south=travel_to_sand_fly_area(message, normalize_species(effective_species)),
             emergency_follow_up=self._follows_a_triage_reply(data),
             other_animal=other_animal,
-            health_cards=len(cards) if health_rule else None,
             second_try=second_try,
+            v2=self._answer_v2,
+            urgency_doubt=data.urgency_doubt if self._answer_v2 else None,
+            dangerous_behaviour=dangerous_behaviour,
+            official_sources=bool(official),
         )
-        pet_block = (
-            self._other_animal_block(data, effective_species)
-            if other_animal
-            else self._pet_context_block(data, generic=generic_context)
-        )
+        if other_animal and self._answer_v2:
+            # Plan 08: the profile stays; the rule says when the question is about the
+            # other animal alone (the FIV case: a dog living with two cats is the dog's).
+            pet_block = (
+                self._pet_context_block(data, generic=generic_context)
+                + f"\nThe message also names another species: {effective_species}."
+            )
+        elif other_animal:
+            pet_block = self._other_animal_block(data, effective_species)
+        else:
+            pet_block = self._pet_context_block(data, generic=generic_context)
         user_prompt = (
             f"{pet_block}\n"
             f"{history_block}"
@@ -3711,7 +3825,7 @@ class ChatOrchestrator:
             f"{reminders_context}"
             f"{attachment_note}"
             f"\n\nToday's date: {today.isoformat()}"
-            + cards_block
+            + official
             + (
                 f"\n\nReference material (optional, use only if genuinely "
                 f"relevant):\n{evidence_block}"
@@ -3777,24 +3891,23 @@ class ChatOrchestrator:
             response = self._shortened(response)
 
         validation = validate_answer(response.content, sources_count=len(sources))
-        if health_rule:
-            # A card label that was not given ([S4] with three cards, any [S]
-            # with none) is an invented source.
-            invented = [
-                label
-                for label in _CARD_LABEL.findall(response.content)
-                if not 1 <= int(label) <= len(cards)
-            ]
-            if invented:
-                return self._validation_failure_result(
-                    sources=sources,
-                    violations=["card_label_out_of_range: " + ", ".join(invented)],
-                    mode="natural",
-                    response_locale=data.language,
+        if (
+            not validation.is_valid
+            and self._answer_v2
+            and all(v.startswith("unsupported_absolute_claim") for v in validation.violations)
+        ):
+            # Plan 08 (test 2, 20/11): an overclaiming word costs its sentence, not the
+            # whole answer, when enough of the answer remains (as for a dose).
+            trimmed = without_absolute_claims(response.content)
+            if len(trimmed) >= 120:
+                logger.warning(
+                    "answer validator: sentence cut (%s)", "; ".join(validation.violations)
                 )
-            if cards and not _CARD_LABEL.search(response.content):
-                logger.warning("health answer with %d cards cites none of them", len(cards))
+                response = response.model_copy(update={"content": trimmed})
+                validation = validate_answer(trimmed, sources_count=len(sources))
         if not validation.is_valid:
+            # The rule's name and the marker word only, never the answer's text.
+            logger.warning("answer validator: reply blocked (%s)", "; ".join(validation.violations))
             return self._validation_failure_result(
                 sources=sources,
                 violations=validation.violations,
@@ -3807,6 +3920,13 @@ class ChatOrchestrator:
                 violations=["wrong_species_reference"],
                 mode="natural",
                 response_locale=data.language,
+            )
+        if self._answer_v2 and has_phone_number(response.content):
+            # Normativa doc 20 §20.13: the model never writes a phone number, not even
+            # 112; the sentence goes (the fixed texts of the code are added later).
+            logger.warning("answer validator: a phone number was cut from the reply")
+            response = response.model_copy(
+                update={"content": without_phone_numbers(response.content)}
             )
         dosage = find_dosage(response.content, allowed_text=medical_context)
         if dosage is not None:
@@ -3871,14 +3991,6 @@ class ChatOrchestrator:
         if is_minor_writing(message):
             answer_text = self._fixed_text(ADULT_FIRST, data) + answer_text
             cache_id = None
-        if cards:
-            # The cards the answer cites (all of them when it cites none):
-            # their attribution goes under the answer, cached copies too.
-            cited = sorted({int(label) for label in _CARD_LABEL.findall(answer_text)})
-            used = [cards[index - 1] for index in cited if 1 <= index <= len(cards)] or cards
-            answer_text = (
-                answer_text.rstrip() + "\n\n" + source_line(used, normalize_language(data.language))
-            )
         if second_try:
             # A second try is about this owner's own case: never shared.
             cache_id = None

@@ -246,15 +246,6 @@ class Settings(BaseSettings):
     urgency_classifier_timeout_seconds: int = Field(
         default=6, ge=1, le=30, alias="URGENCY_CLASSIFIER_TIMEOUT_SECONDS"
     )
-    # Health answers only from approved cards (plan stage 2, 2026-11-10): off
-    # until the first approved cards are loaded, because with an empty store
-    # every health answer takes the safe path (questions, signs, when to see
-    # the vet). Cards: Supabase table health_cards with PERSISTENCE_BACKEND=
-    # supabase (scripts/setup/health_cards.sql), in memory otherwise.
-    health_sources_rule_enabled: bool = Field(default=False, alias="HEALTH_SOURCES_RULE")
-    # Evaluation only: the in-memory store also reads the cards still in draft
-    # (refused in production, see the validator).
-    health_cards_include_drafts: bool = Field(default=False, alias="HEALTH_CARDS_INCLUDE_DRAFTS")
     # English keywords (light model) as the literature search query.
     evidence_query_normalizer_enabled: bool = Field(
         default=True, alias="EVIDENCE_QUERY_NORMALIZER_ENABLED"
@@ -391,6 +382,15 @@ class Settings(BaseSettings):
     # ChatOrchestrator._strict_evidence_intents for why the mandatory
     # interview loop is no longer the default for ordinary questions.
     enable_interview_loop: bool = Field(default=False, alias="ENABLE_INTERVIEW_LOOP")
+    # Plan docs/llm/08 (20/11/2026), work A: the chat answers without the fixed texts
+    # triggered by keywords (clarifying questions, emergency openings, off-topic refusal);
+    # they become prompt rules, the safety guards stay. Off = the chat of today.
+    chat_answer_v2: bool = Field(default=False, alias="CHAT_ANSWER_V2")
+    # Test-2 comparison arm only: v2 with the earlier urgency lane (fixed legal opening).
+    chat_answer_v2_urgent_lane: bool = Field(default=False, alias="CHAT_ANSWER_V2_URGENT_LANE")
+    # The 112 line for a hurt person under v2: removed by the owner (2026-11-20), kept as an
+    # option only.
+    chat_person_hurt_line: bool = Field(default=False, alias="CHAT_PERSON_HURT_LINE")
     situation_coverage_target: float = Field(default=0.85, alias="SITUATION_COVERAGE_TARGET")
     interview_max_questions: int = Field(default=3, alias="INTERVIEW_MAX_QUESTIONS")
     # "rules" (default): the dependency-free rule-based anonymizer.
@@ -421,9 +421,6 @@ class Settings(BaseSettings):
 
     @model_validator(mode="after")
     def validate_backend_configuration(self) -> "Settings":
-        if self.environment == "production" and self.health_cards_include_drafts:
-            raise ValueError("HEALTH_CARDS_INCLUDE_DRAFTS is for evaluations, never production")
-
         if self.persistence_backend == "supabase":
             self._require_fields(
                 "PERSISTENCE_BACKEND=supabase",

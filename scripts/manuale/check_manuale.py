@@ -12,9 +12,6 @@ Rules enforced (docs/product/13 §2, §3):
 
 Standard library only. Run: ``python scripts/manuale/check_manuale.py``.
 Exit code 1 if any error; warnings do not fail. ``--righe`` prints the "Fonte" lines.
-``--esporta`` writes data/manuale/health_cards.json (the archive format).
-``--rilettura`` writes the list of sentences on red-light sources for a hand review.
-``--approvazione`` writes docs/product/16_schede_da_approvare.md (the owner's review).
 """
 
 from __future__ import annotations
@@ -222,31 +219,6 @@ def source_line(source: dict[str, Any]) -> str:
     return line
 
 
-def citation(source: dict[str, Any]) -> str:
-    """One readable citation, without the "Fonte:" label (the chat adds the label)."""
-    line = source_line(source)
-    line = line.removeprefix("Fonte: ")
-    line = line.split(". Riassunto di Quokka")[0]
-    state = str(source.get("diritti", {}).get("stato", ""))
-    if state.startswith("cc_by"):
-        line += " (licenza CC BY, modificato da Quokka)"
-    elif state == "ogl_v3":
-        line += (
-            " (contiene informazioni del settore pubblico con Open Government Licence v3.0;"
-            " modificato da Quokka)"
-        )
-    return line
-
-
-def export_source(sources: dict[str, dict[str, Any]], ids: list[str]) -> str:
-    """A single list of citations separated by "; ", with no labels."""
-    checked = max(str(sources[sid].get("controllata_il", "")) for sid in ids)
-    return (
-        "; ".join(citation(sources[sid]) for sid in ids)
-        + f". Riassunto di Quokka, verificato il {checked}."
-    )
-
-
 def print_source_lines() -> int:
     """``--righe``: the "Fonte" lines of every card, from the source registry."""
     sources = {str(s["id"]): s for s in _load(DATA / "fonti.json")}
@@ -264,196 +236,9 @@ def print_source_lines() -> int:
     return 0
 
 
-SPECIES_CODE = {"cane": "dog", "gatto": "cat", "coniglio": "rabbit"}
-BLOCK_TITLES = {
-    "in_breve": "In breve",
-    "cosa_sapere": "Cosa sapere",
-    "cosa_osservare": "Cosa osservare",
-    "cosa_non_fare": "Cosa non fare",
-    "quando_andare_dal_veterinario": "Quando andare dal veterinario",
-    "limiti": "Limiti di questa scheda",
-}
-BODY_MAX = 4000
-EXPORT_PATH = DATA / "health_cards.json"
-
-
-def export_records() -> list[dict[str, Any]]:
-    """Cards in the shape of the ``health_cards`` archive (scripts/setup/health_cards.sql):
-    id, species, topic, title, body (max 4000), source, source_level, state.
-
-    ``state`` is ``draft`` until the owner's review date is set. The chat adds the
-    "[S1]" marks and the "Fonte" line itself; ``source`` carries the readable citations.
-    """
-    sources = {str(s["id"]): s for s in _load(DATA / "fonti.json")}
-    records: list[dict[str, Any]] = []
-    for path in sorted(p for p in DATA.glob("*/*.json") if p.parent.name != "_schema"):
-        card = _load(path)
-        ids: list[str] = []
-        parts: list[str] = []
-        for block in sorted(card["blocchi"], key=lambda b: list(BLOCK_TITLES).index(b["tipo"])):
-            lines = [
-                ("- Consiglio di Quokka (non della fonte): " if sentence.get("nostro") else "- ")
-                + sentence["testo"]
-                for sentence in block["frasi"]
-            ]
-            parts.append(BLOCK_TITLES[block["tipo"]] + chr(10) + chr(10).join(lines))
-            for sentence in block["frasi"]:
-                for ref in sentence.get("fonti", []):
-                    if ref["id"] not in ids:
-                        ids.append(ref["id"])
-        approved = card["stato"] in ("rivista", "pubblicata")
-        records.append(
-            {
-                "id": card["codice"].lower(),
-                "species": SPECIES_CODE[card["specie"]],
-                "topic": card["argomento"],
-                "title": card["titolo"],
-                "body": (chr(10) * 2).join(parts),
-                "source": export_source(sources, ids),
-                "source_level": max(int(sources[sid]["livello"]) for sid in ids),
-                "state": "approved" if approved else "draft",
-            }
-        )
-    return records
-
-
-def write_export() -> int:
-    records = export_records()
-    too_long = [r["id"] for r in records if len(r["body"]) > BODY_MAX]
-    EXPORT_PATH.write_text(
-        json.dumps(records, ensure_ascii=False, indent=2) + chr(10), encoding="utf-8"
-    )
-    for record in records:
-        size, level = len(record["body"]), record["source_level"]
-        print(f"{record['id']}: body {size} caratteri, livello {level}")
-    if too_long:
-        print("ERRORE: body oltre", BODY_MAX, "caratteri:", ", ".join(too_long))
-        return 1
-    return 0
-
-
-RILETTURA_PATH = ROOT / "docs" / "product" / "15a_lista_rilettura_a_mano.md"
-
-
-def write_hand_review_list() -> int:
-    """Sentences resting on a "rosso" source: a person opens the source and checks them.
-
-    Fonti rosse (docs/compliance/13, Appendice A.3): solo lettura a mano o permesso scritto;
-    il testo della fonte non si dà mai a un modello. The list carries our sentences and the
-    place to look at, never the source's text.
-    """
-    sources = {str(s["id"]): s for s in _load(DATA / "fonti.json")}
-    out = [
-        "# Lista per la rilettura a mano delle frasi su fonti «rosse»",
-        "",
-        "Generata da `python scripts/manuale/check_manuale.py --rilettura`; non si modifica.",
-        "Per ogni frase: la persona apre **la fonte** (campo `url` di `data/manuale/fonti.json`),",
-        "va al punto indicato e controlla tre cose:",
-        "(1) la fonte dice davvero questo; (2) la frase è scritta con parole e ordine nostri,",
-        "non è una traduzione di quella della fonte; (3) non perde una cautela («sembra»...).",
-        "Il testo della fonte non va incollato in un modello.",
-        "",
-    ]
-    total = 0
-    for path in sorted(p for p in DATA.glob("*/*.json") if p.parent.name != "_schema"):
-        card = _load(path)
-        rows: list[str] = []
-        for block in card["blocchi"]:
-            for sentence in block["frasi"]:
-                red = [
-                    r for r in sentence.get("fonti", []) if sources[r["id"]]["semaforo"] == "rosso"
-                ]
-                if not red:
-                    continue
-                total += 1
-                places = "; ".join(f"{r['id']}: {r['punto']}" for r in red)
-                text = sentence["testo"].replace("|", "/")
-                rows.append(f"| {BLOCK_TITLES[block['tipo']]} | {text} | {places} | [ ] [ ] [ ] |")
-        if rows:
-            out += [f"## {card['codice']} {card['titolo']}", ""]
-            out += [
-                "| Blocco | Frase | Fonte e punto | 1 / 2 / 3 |",
-                "|---|---|---|---|",
-                *rows,
-                "",
-            ]
-    out.insert(2, f"Frasi da rileggere: **{total}**.")
-    RILETTURA_PATH.write_text(chr(10).join(out) + chr(10), encoding="utf-8")
-    print(f"{total} frasi su fonti rosse, scritte in {RILETTURA_PATH}")
-    return 0
-
-
-REVIEW_DOC = ROOT / "docs" / "product" / "16_schede_da_approvare.md"
-SPECIES_TITLE = {"cane": "Cane", "gatto": "Gatto", "coniglio": "Coniglio"}
-
-
-def write_review_doc() -> int:
-    """The owner's approval document: every card in full, with the changes of the last round."""
-    sources = {str(s["id"]): s for s in _load(DATA / "fonti.json")}
-    cards = [_load(p) for p in sorted(DATA.glob("*/*.json")) if p.parent.name != "_schema"]
-    out = [
-        "# Schede di salute da approvare",
-        "",
-        "Generato da `python scripts/manuale/check_manuale.py --approvazione`. "
-        f"{len(cards)} schede, "
-        "tutte in bozza: la chat le userà solo dopo la tua approvazione.",
-        "Per ogni scheda rispondimi in chat con il codice e una di queste parole: **ok**, oppure "
-        "**correggi** con cosa cambiare, oppure **togli**.",
-        "Esempio: `CAN-SAL-01 ok`, `GAT-SAL-02 correggi: …`.",
-        "",
-        "Fonti: `docs/product/15_catalogo_fonti_approvate.md`. "
-        "Frasi da rileggere a mano sulle fonti "
-        "con diritti riservati: `docs/product/15a_lista_rilettura_a_mano.md`.",
-        "",
-        "---",
-        "",
-    ]
-    for card in cards:
-        ids: list[str] = []
-        for block in card["blocchi"]:
-            for sentence in block["frasi"]:
-                for ref in sentence.get("fonti", []):
-                    if ref["id"] not in ids:
-                        ids.append(ref["id"])
-        out.append(f"## {card['codice']} · {SPECIES_TITLE[card['specie']]} · {card['titolo']}")
-        out.append("")
-        worst = max(int(sources[i]["livello"]) for i in ids)
-        out.append(f"*Argomento: {card['argomento']} · livello delle fonti: {worst}*")
-        change = card.get("modifiche_ultimo_giro")
-        if change:
-            out.append("")
-            out.append(
-                f"**Rispetto alla versione precedente:** {change['tenute']} frasi tenute, "
-                f"{change['sostituite']} sostituite, {change['tolte']} tolte. "
-                f"{change.get('nota', '')}".rstrip()
-            )
-        out.append("")
-        for block in sorted(card["blocchi"], key=lambda b: list(BLOCK_TITLES).index(b["tipo"])):
-            out.append(BLOCK_TITLES[block["tipo"]])
-            for sentence in block["frasi"]:
-                prefix = "Consiglio di Quokka (non della fonte): " if sentence.get("nostro") else ""
-                out.append(f"- {prefix}{sentence['testo']}")
-            out.append("")
-        out.append("> Fonti: " + export_source(sources, ids))
-        out.append("")
-        out.append("Esito: ☐ ok  ☐ correggi  ☐ togli")
-        out.append("")
-        out.append("---")
-        out.append("")
-    REVIEW_DOC.write_text(chr(10).join(out), encoding="utf-8")
-    print(f"{len(cards)} schede scritte in {REVIEW_DOC}")
-    return 0
-
-
 def main() -> int:
-    if "--approvazione" in sys.argv:
-        return write_review_doc()
-    if "--rilettura" in sys.argv:
-        return write_hand_review_list()
     if "--righe" in sys.argv:
         return print_source_lines()
-    if "--esporta" in sys.argv:
-        return write_export()
     sources_path = DATA / "fonti.json"
     if not sources_path.exists():
         print("data/manuale/fonti.json non trovato")

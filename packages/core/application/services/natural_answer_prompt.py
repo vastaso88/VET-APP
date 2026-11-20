@@ -451,35 +451,6 @@ _EMERGENCY = (
     "both fine here. Within about 900 characters. Always finish your last sentence."
 )
 
-# The message after an emergency reply: the detail or the question gets a
-# fresh, specific answer, not the whole first aid again.
-# A health question (plan stage 2, 2026-11-10): the approved cards are the only
-# source of clinical statements; without cards, the safe path.
-_HEALTH_FROM_CARDS = (
-    "HEALTH QUESTION, APPROVED CARDS. After the user message come <fonti_approvate> with "
-    "numbered cards (S1, S2...). On health (causes, what a sign means, illnesses, "
-    "prevention, medicines, what to do at home) say ONLY what these cards say, in plain "
-    "words, and put the card's label after the sentence, like [S1]. Where the question "
-    "goes beyond the cards, do not fill the gap from your own knowledge: say that on that "
-    "point you have no verified source, then ask the one or two questions that matter, "
-    "name the signs to watch and say when to see the vet (WHEN TO SEND THE OWNER TO THE "
-    "VET still applies). A card's section 'Limiti di questa scheda' says what it does "
-    "not cover: never fill those points from your own knowledge. Advice marked "
-    "'Consiglio di Quokka' is ours, not the source's: keep that distinction. Everything "
-    "else in these instructions still applies, except that this rule wins over any "
-    "instruction that would have you explain health from your own knowledge."
-)
-_HEALTH_NO_CARDS = (
-    "HEALTH QUESTION, NO APPROVED CARD. There is no verified source for this question: "
-    "do not explain causes, illnesses or what a sign means from your own knowledge, do "
-    "not name possible diagnoses, never suggest a medicine, a dose or a home remedy. "
-    "Instead: say in one short sentence that you have no verified source on this yet; ask "
-    "the one or two questions that would help (since when, appetite, energy, anything "
-    "else different); name the signs to watch at home; say when to see the vet, "
-    "following WHEN TO SEND THE OWNER TO THE VET. This rule wins over any other "
-    "instruction here that would have you explain causes, illnesses or treatments."
-)
-
 # "Il mio gatto vomita" with a dog's profile open (Haiku round 2026-11-07):
 # the answer is for the animal in the message, nothing of the profile.
 _OTHER_ANIMAL = (
@@ -512,6 +483,100 @@ _EMERGENCY_FOLLOW_UP = (
 )
 
 
+# --- Plan docs/llm/08, work A (CHAT_ANSWER_V2): the keyword-triggered fixed texts become
+# rules the model follows; nothing here is used when the switch is off. ---------------
+
+# An emergency with the one legal opening (Normativa §16: "Questa situazione può essere
+# urgente. Non aspettare: contatta subito un veterinario. Quokka non può valutare il tuo
+# animale."), put by the code before the model's text: the model never writes a second
+# opening (the rotating openings are gone).
+_EMERGENCY_V2 = (
+    "THIS REQUEST: AN EMERGENCY. Do not greet, do not reassure, no introductory sentence. "
+    "Say in one plain sentence that a vet is needed now, then the most urgent gesture for "
+    "THIS case. Name the right "
+    "vet when it matters (an avian vet for a bird, a vet who knows exotic animals for a "
+    "reptile or a small mammal). Then, in this order, in plain words: "
+) + _EMERGENCY.split("Write, in this order, in plain words: ", 1)[1]
+
+# A possible emergency the rules or the classifier could not settle (the fixed
+# clarifying question is gone): a safe gesture, the signs that mean "now", one question.
+_URGENCY_DOUBT = (
+    "A POSSIBLE EMERGENCY, NOT CERTAIN (topic: {category}). Do not open with questions. "
+    "Write: (1) one safe step that holds whatever the answer (calm, a quiet place, no food, "
+    "medicine or water forced, no home remedy); (2) clearly, the two or three signs that "
+    "would mean the vet or an emergency clinic NOW, fitting this species and what the owner "
+    "wrote; (3) at most ONE short question, only about a sign or a fact the owner already "
+    "mentioned, whose answer would change what to do. Never 'wait and see' for hours, never "
+    "a sign or a fact the owner did not write presented as present."
+)
+
+# An animal that has bitten, attacked or threatened people or other animals.
+_DANGEROUS_BEHAVIOUR = (
+    "AN ANIMAL THAT HAS BITTEN, ATTACKED OR THREATENED PEOPLE OR OTHER ANIMALS. Safety comes "
+    "first, in the words of this case: if a person was hurt, a doctor today (bites get "
+    "infected easily); keep them apart now (another room, a gate, a lead), the animal "
+    "never alone with children or with the animal it attacked; no punishment and no "
+    "collars that hurt (they hide the warning signs and make the next bite likelier). Then "
+    "the specialist, with a clear criterion: a vet visit first to rule out pain or illness, "
+    "then a veterinarian expert in behaviour (or a qualified trainer for a mild case); "
+    "soon if someone was hurt, if there are children at home or if it is getting worse. "
+    "Build only on what the owner wrote: no motive as a fact. Two to four concrete steps; "
+    "a question only if the answer changes the advice."
+)
+
+# The off-topic refusal as a rule (round 3: the fixed refusal hit a question on the law
+# on turtles).
+_OFF_TOPIC_RULE = (
+    "OFF TOPIC. Only if the message clearly has nothing to do with animals: say kindly in "
+    "one sentence that you help with animals and their care, and ask what you can do for "
+    "the pet. Laws, duties, travel, costs and housing of an animal are on topic."
+)
+
+# Another species named in the message, with the profile kept (the FIV case: a dog living
+# with two cats is a question about the dog).
+_OTHER_ANIMAL_V2 = (
+    "ANOTHER ANIMAL NAMED. The message also names an animal of a different species from "
+    "the profile. If the question is about the profile's animal and the other one is only "
+    "part of it (living together, meeting, a fight), answer for the profile's animal with "
+    "its data. Only if the question is clearly about the other animal alone, answer for "
+    "it, do not use the profile's data, and say once, at the end, that a profile for it "
+    "would give more precise answers."
+)
+
+# Owner decision 2026-11-20 (plan 08): a rule for every answer, not a lane. Release
+# condition: zero wrong reassurances on serious cases.
+_SEVERITY_RULE = (
+    'SEVERITY. Never judge how serious the case is ("it is not serious", "you can wait", '
+    '"nothing to worry about", "it is normal") unless the official sources given for this '
+    "situation say so. If a source or what you know describes a serious risk, do not soften "
+    "it. When the situation can be serious, say clearly to see a vet now and why, as one "
+    "fact among the others: no alarm when nothing points to danger. In a serious case "
+    '"now" means calling the vet or leaving now: never "today", "as soon as possible" or '
+    '"if it gets worse" in its place. Never make going depend on a sign the owner has '
+    'already described (they say it is vomiting: never "if it vomits, go").'
+)
+# Normativa doc 20 §20.13 (20/11/2026), for every v2 answer (not a lane).
+_MINOR_AND_NUMBERS_RULE = (
+    "MINORS AND PHONE NUMBERS. Never write a phone number, not even an emergency number "
+    "such as 112. When the writer is a minor (the profile says so, or they say their age or "
+    "that they are a child), the first thing to do is to find an adult they trust (a family "
+    "member, a neighbour). If no adult can be reached and the animal is very unwell, the "
+    "next step is a veterinary clinic."
+)
+
+
+# Variant 2 of the verification (plan 08): passages of laws and public-body guides,
+# found in the library for this question, read before writing.
+_OFFICIAL_SOURCES = (
+    "OFFICIAL SOURCES. After the user message come <fonti_ufficiali>: passages of laws and "
+    "public-body guides found for this question. Where they cover a point, follow them: "
+    "they win over your own knowledge and you never contradict them. A law applies only to "
+    "its own country: do not apply a foreign rule to an owner in Italy, and say so if the "
+    "only source is foreign. Never name them, quote them or number them in your text (the "
+    "app adds the references). Where they do not cover a point, answer as usual."
+)
+
+
 def _request_block(kind: RequestKind, *, may_ask: bool) -> str:
     if kind is RequestKind.REPORT:
         return _REPORT
@@ -520,22 +585,39 @@ def _request_block(kind: RequestKind, *, may_ask: bool) -> str:
     return _SYMPTOM_MAY_ASK if may_ask else _SYMPTOM_NO_MORE_QUESTIONS
 
 
-def stable_prefix(kind: RequestKind | None, *, may_ask: bool = True) -> str:
+def stable_prefix(kind: RequestKind | None, *, may_ask: bool = True, v2: bool = False) -> str:
     """The part of the system prompt that is the same for every owner and
     every call of this kind: the provider's prompt cache reuses it between
     calls (LLMGenerationRequest.cacheable_system_chars). None = the emergency prompt."""
-    request = _EMERGENCY if kind is None else _request_block(kind, may_ask=may_ask)
+    if kind is None:
+        request = _EMERGENCY_V2 if v2 else _EMERGENCY
+    else:
+        request = _request_block(kind, may_ask=may_ask)
     return "\n\n".join([_VOICE, request])
 
 
-def build_emergency_prompt(*, first_aid: str, language: str = "it", species_facts: str = "") -> str:
+def build_emergency_prompt(
+    *,
+    first_aid: str,
+    language: str = "it",
+    species_facts: str = "",
+    v2: bool = False,
+    official_sources: bool = False,
+) -> str:
     """The system prompt of the model's part of an emergency reply: the
     voice, the emergency rules, then the fixed first aid of this case as
-    binding notes (the variable part, after the cacheable prefix)."""
+    binding notes (the variable part, after the cacheable prefix). v2: the
+    model writes the whole reply, its first sentence sends to the vet now."""
     parts = [
-        stable_prefix(None),
+        stable_prefix(None, v2=v2),
         "FIRST AID FOR THIS CASE (binding: these steps win over your own):\n" + first_aid,
     ]
+    if v2:
+        parts.append(_SEVERITY_RULE)
+        parts.append(_MINOR_AND_NUMBERS_RULE)
+        parts.append(_LAST_CHECK_PROFILE)
+    if official_sources:
+        parts.append(_OFFICIAL_SOURCES)
     if species_facts:
         parts.append(
             "FACTS ABOUT THIS KIND OF ANIMAL (verified; where your own assumptions differ, "
@@ -573,12 +655,15 @@ def build_system_prompt(
     travel_south: bool = False,
     emergency_follow_up: bool = False,
     other_animal: bool = False,
-    health_cards: int | None = None,
     second_try: bool = False,
     minor_account: bool = False,
     behaviour_anamnesis: bool = False,
     warning_signal: bool = False,
     vague_picture: bool = False,
+    v2: bool = False,
+    urgency_doubt: str | None = None,
+    dangerous_behaviour: bool = False,
+    official_sources: bool = False,
 ) -> str:
     """The system prompt for one reply. Stable parts first (the prefix the
     provider can cache), then the parts that depend on the request: the
@@ -636,12 +721,20 @@ def build_system_prompt(
     if emergency_follow_up:
         parts.append(_EMERGENCY_FOLLOW_UP)
     if other_animal:
-        parts.append(_OTHER_ANIMAL)
-    # None = not a health question under the cards rule; 0 = no card found.
+        parts.append(_OTHER_ANIMAL_V2 if v2 else _OTHER_ANIMAL)
+    if v2:
+        # Plan docs/llm/08, work A: the fixed texts as rules.
+        parts.append(_SEVERITY_RULE)
+        parts.append(_MINOR_AND_NUMBERS_RULE)
+        parts.append(_OFF_TOPIC_RULE)
+        if urgency_doubt:
+            parts.append(_URGENCY_DOUBT.replace("{category}", urgency_doubt))
+        if dangerous_behaviour:
+            parts.append(_DANGEROUS_BEHAVIOUR)
+    if official_sources:
+        parts.append(_OFFICIAL_SOURCES)
     if second_try:
         parts.append(_SECOND_TRY)
-    if health_cards is not None:
-        parts.append(_HEALTH_FROM_CARDS if health_cards > 0 else _HEALTH_NO_CARDS)
     if has_reference_material:
         parts.append(_REFERENCE_MATERIAL)
     if species_facts:

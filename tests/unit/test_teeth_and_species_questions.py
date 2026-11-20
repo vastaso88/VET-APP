@@ -1,5 +1,5 @@
 """Two fixes after the measurements of 2026-11-10: dental questions are health
-questions (the rabbit's teeth card was never found), and the gut-stasis
+questions, and the gut-stasis
 clarifying question goes only to rabbits and rodents (it was asked about a dog
 that vomited)."""
 
@@ -13,7 +13,6 @@ from packages.core.application.services.chat_orchestrator import (
     ChatOrchestratorInput,
     ChatOrchestratorResult,
 )
-from packages.core.application.services.health_card_selector import HealthCardSelector
 from packages.core.application.services.urgency_classifier import (
     UrgencyClassifier,
     UrgencyVerdict,
@@ -22,9 +21,6 @@ from packages.core.domain.conversation.request_kind import RequestKind
 from packages.core.domain.safety.triage_clarification import clarifying_question
 from packages.infrastructure.llm.retrieval.in_memory_evidence_retriever import (
     InMemoryEvidenceRetriever,
-)
-from packages.infrastructure.persistence.in_memory_health_cards import (
-    InMemoryHealthCardRepository,
 )
 from packages.infrastructure.privacy.noop_pii_anonymizer import NoopPiiAnonymizer
 
@@ -61,28 +57,6 @@ def test_showing_the_teeth_or_other_care_is_not_health(message: str) -> None:
     assert not ChatOrchestrator._is_health_question(
         RequestKind.DIRECT, "everyday_question", None, message
     )
-
-
-def test_the_rabbit_teeth_question_now_reaches_the_cards_rule() -> None:
-    llm = RecordingLLMClient()
-    orchestrator = ChatOrchestrator(
-        llm,
-        InMemoryEvidenceRetriever(),
-        NoopPiiAnonymizer(),
-        health_card_selector=HealthCardSelector(InMemoryHealthCardRepository(), llm),
-    )
-
-    orchestrator.answer(
-        ChatOrchestratorInput(
-            user_message="ogni quanto devo fargli limare i denti?",
-            species="Piccoli mammiferi",
-            breed="Coniglio nano",
-            pet_name="Fiocco",
-        )
-    )
-
-    (request,) = llm.requests_for("answer")
-    assert "HEALTH QUESTION" in request.system_prompt
 
 
 # --- the clarifying question follows the species ---------------------------------------------

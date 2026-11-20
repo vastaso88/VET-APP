@@ -206,6 +206,13 @@ def _install() -> None:
 
 _install()
 
+# The library-chat prototype (plan docs/llm/07) instead of the app's chat, this process
+# only: SYNTHETIC_CHAT=biblioteca. Unset, the server is exactly the round-3 one.
+if os.environ.get("SYNTHETIC_CHAT") == "biblioteca":
+    from library_switch import install as _install_library_chat  # noqa: E402
+
+    _install_library_chat()
+
 from apps.api.dependencies.container import get_container  # noqa: E402
 from apps.api.main import app  # noqa: E402
 

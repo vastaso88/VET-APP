@@ -24,7 +24,9 @@ Only ever reaches 127.0.0.1. Results and feedback stay in .local/synthetic_users
 from __future__ import annotations
 
 import json
+import os
 import sys
+import time
 import urllib.error
 import urllib.request
 from datetime import UTC, datetime
@@ -32,9 +34,15 @@ from pathlib import Path
 from typing import Any
 
 ROOT = Path(__file__).resolve().parents[3]
-OUTPUT = ROOT / ".local" / "synthetic_users"
-BASE = "http://127.0.0.1:8799"
-PERSONAS = json.loads(Path(__file__).with_name("personas.json").read_text(encoding="utf-8"))
+# Same variables as server.py, so a round can keep its own folder and port (round 4,
+# library chat: .local/synthetic_users/giro4, port 8798); defaults are the old ones.
+OUTPUT = Path(os.environ.get("SYNTHETIC_USERS_OUTPUT") or ROOT / ".local" / "synthetic_users")
+BASE = f"http://127.0.0.1:{int(os.environ.get('SYNTHETIC_USERS_PORT', '8799'))}"
+PERSONAS = json.loads(
+    Path(
+        os.environ.get("SYNTHETIC_USERS_PERSONAS") or Path(__file__).with_name("personas.json")
+    ).read_text(encoding="utf-8")
+)
 TYPES = {"bug", "risposta_sbagliata", "tono", "chiarezza", "mancanza", "lodo", "idea", "privacy"}
 SEVERITIES = {"bloccante", "alta", "media", "bassa"}
 
@@ -82,7 +90,17 @@ def call(user_id: str, method: str, path: str, body: Any = None, language: str =
 
 def setup(user_id: str) -> None:
     me = persona(user_id)
-    session = call(user_id, "POST", "/auth/signup", {"email": me["email"], "password": "synthetic"})
+    body = {"email": me["email"], "password": "synthetic"}
+    session = call(user_id, "POST", "/auth/signup", body)
+    for _ in range(3):
+        # the API allows 5 sign-ups a minute (apps/api/rate_limit.py): wait and retry
+        if session.get("http_error") != 429:
+            break
+        print("troppe registrazioni di seguito: aspetto un minuto")
+        time.sleep(65)
+        session = call(user_id, "POST", "/auth/signup", body)
+    if "access_token" not in session:
+        sys.exit(f"registrazione non riuscita: {session}")
     state = {"token": session["access_token"], "user_id": session["user"]["id"], "pets": {}}
     save_state(user_id, state)
     declare_age(user_id)
@@ -158,6 +176,7 @@ def chat(user_id: str, pet_name: str, message: str, new: bool) -> None:
                 {
                     "user": user_id,
                     "pet": pet_name,
+                    "conversation": conversation.get("id"),
                     "message": message,
                     "reply": reply.get("content"),
                     "mode": result.get("mode"),

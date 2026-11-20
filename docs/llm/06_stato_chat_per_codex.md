@@ -74,7 +74,6 @@ Contratti per l'app: `docs/features/chat_conversations_contract.md`, `docs/featu
 | `chat_orchestrator.py` | **il cuore** (~3900 righe): ordine dei controlli, testi fissi, urgenze, risposta naturale, controlli sulla risposta |
 | `natural_answer_prompt.py` | prompt di sistema: voce, blocchi per tipo di richiesta, note opzionali, prompt d'urgenza |
 | `urgency_classifier.py` | classificatore leggero (Haiku): urgenza + categoria + argomento (`health`/`care`/`off_topic`) in JSON |
-| `health_card_selector.py` | sceglie fino a 3 schede approvate (riordino con Haiku se sono più di 3) |
 | `mark_not_helpful.py` | «Non mi ha aiutato» |
 | `llm_budget.py` | contatori giornalieri, tetto in euro, tetto Sonnet per piano (**della sessione Pricing: non modificare senza accordo**) |
 | `llm_usage_recorder.py` | `InstrumentedLLMClient`: registra token, durata ed esito di ogni chiamata |
@@ -90,7 +89,7 @@ Contratti per l'app: `docs/features/chat_conversations_contract.md`, `docs/featu
   - `triage_clarification.py`: categorie e domande di chiarimento.
   - `first_aid.py`, `clarification_fit.py`, `exposure.py` (esposizione contro intenzione), `human_drug_toxicity.py`, `dosage_request.py`, `emergency_patterns.py`.
 - `packages/core/domain/conversation/`: `models.py` (Conversation, ChatMessage, istantanea), `request_kind.py` (REPORT/DIRECT/SYMPTOM), `answer_cache.py`, `answer_cleanup.py`.
-- `packages/core/domain/knowledge/`: `health_cards.py` (schede approvate), `duty_notes.py` (doveri in Italia), `relevance.py`, `answer_validation.py`, `dose_in_answer.py`.
+- `packages/core/domain/knowledge/`: `duty_notes.py` (doveri in Italia), `relevance.py`, `answer_validation.py`, `dose_in_answer.py`.
 - `packages/core/domain/localization.py`: testi fissi d'urgenza e messaggi di sistema nelle 5 lingue.
 - `packages/core/domain/medical_record/consent_text.py`: testo del consenso alla cartella clinica e versione.
 
@@ -101,7 +100,6 @@ Contratti per l'app: `docs/features/chat_conversations_contract.md`, `docs/featu
   - `groq_llm_client.py` e `groq_chat_api.py`;
   - `echo_llm_client.py`: finto, per demo e test.
 - `packages/infrastructure/llm/retrieval/`: note curate in memoria (in produzione è attivo solo questo) e collegamenti a Europe PMC, PubMed, Crossref e OpenAlex (spenti in produzione).
-- `packages/infrastructure/persistence/in_memory_health_cards.py`, `supabase/supabase_health_cards.py`: archivio delle schede.
 - `packages/bootstrap/container.py`: collega tutto in base alle impostazioni.
 
 ---
@@ -136,14 +134,13 @@ L'ordine conta: i controlli deterministici vengono **prima** di qualsiasi modell
 12. **Risposta naturale** (`_generate_natural_answer`):
     - cache delle curiosità generali;
     - prompt di sistema con le note opportune;
-    - regola delle schede per la salute (§8);
     - classe di modello (`main` o `strong`, §9).
     Controlli sulla risposta:
-    - citazioni ed etichette [S#] esistenti, specie giusta, nessuna dose;
+    - citazioni esistenti, specie giusta, nessuna dose;
     - tolti prezzi inventati e rimandi rituali al veterinario;
     - nessun sì/no secco, nessuna certificazione;
     - prefissi fissi per bambini a rischio, sconforto, minori, dosi.
-    Infine la riga «Fonte» delle schede usate e l'avviso sulla cartella clinica.
+    Infine l'avviso sulla cartella clinica.
 13. `answer()` pulisce il testo (`clean_answer_text`).
 
 ---
@@ -165,7 +162,7 @@ L'ordine conta: i controlli deterministici vengono **prima** di qualsiasi modell
 | Ruolo | Modello | Dove |
 |---|---|---|
 | Risposte e parte libera delle urgenze | Claude Haiku 5.5 (`claude-haiku-5-5`) | `AnthropicLLMClient`, classe `main` |
-| Chiamate leggere (classificatore, parole chiave, riordino schede) | Haiku 5.5, `thinking` disattivato | classe `light` |
+| Chiamate leggere (classificatore, parole chiave) | Haiku 5.5, `thinking` disattivato | classe `light` |
 | «Fratello maggiore» (§9) | Claude Sonnet 5.5 (`ANTHROPIC_MODEL_STRONG`) | classe `strong`, **spento** |
 | Riserva automatica | Groq (catena `LLM_MODEL` + `LLM_FALLBACK_MODELS`) | `ReserveLLMClient` |
 | Visione allegati, dettatura | Groq | restano su Groq; immagini e audio non vanno ad Anthropic |
@@ -187,43 +184,19 @@ Riserva Groq: scatta su errore, tempo o quota finita di Claude, mai su un rifiut
 
 ---
 
-## 8. Regola delle schede per la salute (`HEALTH_SOURCES_RULE`, spenta)
+## 8. Domanda di salute
 
-**Obiettivo:** le risposte di **salute non urgente** usano solo schede approvate, citate.
-
-**Cos'è una domanda di salute:**
+**Cos'è una domanda di salute** (serve alla seconda prova, §9):
 - parole cliniche o di prevenzione (intenti `clinical_question`, `preventive_care`);
 - **oppure** parole sui denti nelle 5 lingue (`_DENTAL`; «mostra i denti» resta comportamento);
 - **oppure** l'argomento `health` dato dal classificatore.
 Non basta il tipo «sintomo» di `request_kind`, che marca come sintomo ogni frase che non è una domanda.
 
-**Con schede:**
-- solo le schede trovate per specie, nel prompt tra `<fonti_approvate>`, citate `[S1]`..`[S3]`;
-- le note curate non approvate e la letteratura restano fuori;
-- un'etichetta inventata → testo fisso d'errore;
-- sotto la risposta il codice scrive «Fonte/Fonti: …» con l'attribuzione: è un obbligo delle licenze CC BY, e non è lasciato al modello.
-
-**Senza schede, percorso sicuro:**
-- «nessuna fonte verificata», domande utili, segni da osservare, quando andare dal veterinario;
-- niente cause, diagnosi o rimedi;
-- le note del prompt che chiedono spiegazioni cliniche (calendario di prevenzione, causa medica prima, viaggio al sud, tossici chiesti per sapere) sono **tolte** e la regola vince sulle altre istruzioni.
-
-**Archivio:**
-- tabella `public.health_cards` (`scripts/setup/health_cards.sql`):
-  - RLS attiva, nessuna policy: legge solo il service role;
-  - ricerca testuale in italiano con OR tra le parole (`search_health_cards`);
-  - nessun embedding e nessun fornitore nuovo.
-- `data/manuale/health_cards.json`: dal 20/11/2026 è un file con una lista vuota (schede non più usate dal piano nuovo). Il codice che lo legge sarà tolto dalla sessione Chat.
-
-**Specie delle schede:** `dog`, `cat`, `rabbit` (chiave propria: una scheda del coniglio non va al criceto), altrimenti la famiglia.
-
-**Testo delle schede:**
-- la parte «Consiglio di Quokka (non della fonte)» va tenuta distinta;
-- la sezione «Limiti di questa scheda» non va completata con le conoscenze del modello.
-
-Le regole sulle fonti sono in `docs/product/15_catalogo_fonti_approvate.md`.
-
-**Limite misurato:** senza schede il modello rispetta il percorso sicuro solo in parte. Sonnet lo rispetta meno di Haiku. La decisione è aperta (§14).
+La vecchia regola delle schede per la salute (`HEALTH_SOURCES_RULE`) è stata tolta dal
+codice il 20/11/2026: schede non più usate dal piano nuovo (piano 08, `docs/llm/08`).
+Con lei sono usciti il selettore delle schede, l'archivio, lo script SQL della tabella e i
+relativi test. Se la tabella era stata creata in Supabase, resta lì finché il proprietario
+non decide di toglierla.
 
 ---
 
@@ -281,7 +254,7 @@ Le urgenze non contano mai. Le continuazioni hanno un tetto separato: 3 volte le
   - minore, bambino a rischio, messaggio lungo, sì/no forzato, animale futuro;
   - visita oggi, dieta vegetale, lutto, sconforto, parte sulla dose;
   - altro paese, causa medica prima, viaggio al sud;
-  - seguito di un'urgenza, altro animale, schede salute, seconda prova.
+  - seguito di un'urgenza, altro animale, seconda prova.
 - Le istruzioni sono in inglese; la risposta nella lingua dell'utente (`response_language_instruction`).
 
 **Lunghezza:** risposte di circa **120-180 parole**, un elenco di passi quando serve, mai tagliare le avvertenze di sicurezza.
@@ -313,8 +286,6 @@ Fonte di verità: `packages/shared/config/settings.py`. Le principali per la cha
 | `LLM_DAILY_BUDGET_EUR`, `LLM_USD_PER_EUR` | 1.0, 1.1165 | tetto di spesa giornaliero dei modelli a pagamento (Pricing) |
 | `CHAT_DAILY_MESSAGE_LIMIT_PER_USER` | | limite predefinito; i limiti per piano sono in `limits.py` |
 | `URGENCY_CLASSIFIER_ENABLED`, `URGENCY_CLASSIFIER_TIMEOUT_SECONDS` | `true`, 6 | |
-| `HEALTH_SOURCES_RULE` | `false` | §8 |
-| `HEALTH_CARDS_INCLUDE_DRAFTS` | `false` | solo prove; rifiutato in produzione |
 | `EVIDENCE_BACKEND` | `in_memory` | in produzione `in_memory`, senza chiamate di rete |
 | `CHAT_ANSWER_CACHE_ENABLED`, `CHAT_ANSWER_CACHE_TTL_HOURS` | `true`, 24 | |
 
@@ -322,19 +293,13 @@ Fonte di verità: `packages/shared/config/settings.py`. Le principali per la cha
 
 ## 14. Stato e decisioni aperte (del proprietario)
 
-1. **Salute senza scheda:**
-   - (A) accettare il limite e scrivere più schede (consigliata);
-   - (B) testo fisso senza modello;
-   - (C) regola solo sui temi coperti da schede.
-2. **Sonnet nelle urgenze** (`SONNET_ESCALATION`): stessa sicurezza di Haiku, testo più concreto, circa 12 volte il costo.
-3. **Schede non più usate dal piano nuovo (20/11/2026)**: nessuna approvazione. In Supabase va eseguito lo script della Pricing `chat_usage_sonnet_followups.sql`.
-4. **Attivazione di Anthropic:** chiave su Vercel, contratti, unione del ramo `haiku-activation` (consenso v5, regione). Fino ad allora la produzione risponde con Groq.
-5. **Fonti bibliografiche dei passi fissi d'urgenza** (doc 12; niente revisione veterinaria, decisione del 17/11/2026).
+1. **Sonnet nelle urgenze** (`SONNET_ESCALATION`): stessa sicurezza di Haiku, testo più concreto, circa 12 volte il costo.
+2. In Supabase va eseguito lo script della Pricing `chat_usage_sonnet_followups.sql`.
+3. **Attivazione di Anthropic:** chiave su Vercel, contratti, unione del ramo `haiku-activation` (consenso v5, regione). Fino ad allora la produzione risponde con Groq.
+4. **Fonti bibliografiche dei passi fissi d'urgenza** (doc 12; niente revisione veterinaria, decisione del 17/11/2026).
 
 **Problemi noti:**
-- il classificatore a volte dà «forse» sul vomito del cane;
-- nel campo `source` di alcune schede ci sono «Fonte:» ripetuti: lo sistema la sessione del manuale;
-- manca una scheda sui vaccini del coniglio.
+- il classificatore a volte dà «forse» sul vomito del cane.
 
 ---
 
@@ -361,7 +326,7 @@ Prima di cambiare il comportamento, leggi il test che lo fissa:
 - **Urgenze e sicurezza:** `test_urgent_answer.py`, `test_triage_clarification.py`, `test_emergency_phrasings*.py`, `test_safety_gate*.py`, `test_harmful_requests.py`, `test_exposure.py`, `test_dose_in_answer.py`.
 - **Prove di stress e utenti sintetici:** `test_stress_fixes.py`, `test_stress_round3.py`, `test_wide_fixes.py`, `test_synthetic_users_fixes.py`, `test_synthetic_round2_fixes.py`, `test_synthetic_round3_fixes.py` (giro 3: esotici, aperture, dosi, instradamento, quadri vaghi, limite chat per piano). Gli scenari del giro 3 sono anche nell'eval: `scripts/eval/chat_quality/scenarios_giro3.py` (`run --category giro3`).
 - **Fornitori:** `test_anthropic_llm_client.py`, `test_groq_model_fallback.py`.
-- **Schede, Sonnet, conteggio:** `test_health_cards_rule.py`, `test_fratello_maggiore.py`, `test_question_counting.py`, `test_sonnet_cap_and_followups.py` (Pricing), `test_teeth_and_species_questions.py`.
+- **Fuori tema, Sonnet, conteggio:** `test_off_topic_reply.py`, `test_fratello_maggiore.py`, `test_question_counting.py`, `test_sonnet_cap_and_followups.py` (Pricing), `test_teeth_and_species_questions.py`.
 - **Consenso e dati:** `test_consent_texts_match_behaviour.py`, `test_notes_follow_record_consent.py`, `test_medical_record_consent_privacy.py`, `test_security_ownership.py`.
 - **Prompt:** `test_prompt_budget.py`, `test_prompt_repositioning.py`, `test_italian_texts_unchanged.py`.
 - **Comuni:** il finto client dei test è `tests/unit/llm_fakes.py` (`RecordingLLMClient`, risposte per scopo con `by_purpose`); l'API completa si prova in `tests/integration/test_api_flows.py`.

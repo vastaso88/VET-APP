@@ -113,3 +113,32 @@ def test_a_clean_reply_goes_through_unchanged() -> None:
 
     assert result.model != "answer-validator"
     assert "riposo" in result.answer
+
+
+@pytest.mark.parametrize(
+    "sentence",
+    [
+        # test 2 (20/11/2026): the animal's size, drops of blood, misting
+        "I canarini nascondono il dolore e, con 22 grammi, anche poche gocce di sangue sono tante.",
+        "Un canarino di 22 grammi perde molto con poche gocce di sangue.",
+        "For a cockatiel of 85 g, even a few drops of blood matter.",
+        "At 85 g, losing a few drops of blood matters.",
+        "Spray the leaves three times a day so drops form for him to lick.",
+        "Nebulizza le foglie tre volte al giorno, così beve le gocce.",
+    ],
+)
+def test_a_size_drops_of_blood_or_misting_are_not_doses(sentence: str) -> None:
+    assert find_dosage(sentence) is None
+
+
+@pytest.mark.parametrize(
+    "sentence",
+    [
+        "Con 20 mg di prednisolone al giorno migliora.",
+        "With 10 mg of meloxicam he will feel better.",
+        "Spruzza 2 gocce di antiparassitario tre volte al giorno.",
+        "Give her 2 drops of the antibiotic twice a day.",
+    ],
+)
+def test_the_new_exceptions_never_let_a_real_dose_through(sentence: str) -> None:
+    assert find_dosage(sentence) is not None
