@@ -59,7 +59,7 @@ Controllato il 2026-11-10 aprendo le pagine ufficiali. «Bloccato» = l'apertura
 | **ARAV** (rettili e anfibi) | 1 | arav.org | Solo dichiarazioni di posizione politiche; le guide alla cura «in arrivo» | «All Rights Reserved» | Non indicato |
 | **AEMV** (mammiferi esotici) | 1 | aemv.org | Schede di cura (coniglio, furetto, criceto, cavia e altri) | «All rights reserved», nessun permesso per ripubblicare | Non indicato |
 | **AAV** (uccelli) | 1 | **bloccato** (403) | non verificato | non verificato | non verificato |
-| **Ministero della Salute** | 1 | **bloccato** (verifica anti-robot); aperto il portale dei dati aperti dati.salute.gov.it | non verificato dal sito principale | Il portale dati: licenza IODL 2.0 (riuso libero). Per i testi di atti ufficiali: art. 5 legge 633/1941 (la legge sul diritto d'autore non si applica ai testi degli atti ufficiali) e D.Lgs. 36/2006 (riuso dell'informazione pubblica, a fini commerciali e no), da leggere con la Normativa | n.a. |
+| **Ministero della Salute** | 1 | **verde dopo lettura a mano del documento** (parere della Normativa, 17/11/2026: CC BY 4.0 «ove non diversamente specificato», nota di ogni sezione; COVID-19 è NC = rosso). Il sito principale blocca i programmi e il blocco non si aggira: scarico a mano (elenco in doc 21 §7). Portale dati dati.salute.gov.it: IODL 2.0, verde | letta a mano il 17/11/2026 (Normativa, doc compliance/20 §2.2) | Il portale dati: licenza IODL 2.0 (riuso libero). Per i testi di atti ufficiali: art. 5 legge 633/1941 (la legge sul diritto d'autore non si applica ai testi degli atti ufficiali) e D.Lgs. 36/2006 (riuso dell'informazione pubblica, a fini commerciali e no), da leggere con la Normativa | n.a. |
 | **IZS** (Istituti Zooprofilattici) | 1 | izsler.it, izsvenezie.it (aperte singole pagine e PDF) | Schede sulla mixomatosi e la malattia emorragica virale del coniglio (2021); pagina IZSVe sulla variante Toledo (2026) | Nessuna riga di licenza | n.a. |
 | **EFSA** | 1 | una pagina aperta; **avvertenza legale bloccata** (429) | Poco sugli animali da compagnia | non verificato | n.a. |
 | **EMA** (medicinali veterinari) | 1 | **bloccato** oltre la pagina iniziale (503) | non verificato | non verificato | n.a. |
@@ -84,7 +84,8 @@ Eseguiti con uno script che si identifica con un nome onesto, una richiesta alla
 | catfriendly.com | rosso | Content-Signal ai-train=no e blocco di ClaudeBot |
 | capcvet.org, avma.org, bva.co.uk, anses.fr | rosso | uso non commerciale, solo per soci, oppure CC BY-NC-ND |
 | izsler.it, izsvenezie.it | rosso | copia a fini di lucro solo con permesso scritto; contenuti CC BY-NC |
-| iss.it, epicentro.iss.it, canada.ca, woah.org, medicines.health.europa.eu, cdc.gov, fda.gov, aphis.usda.gov | rosso | controllo impossibile (blocco, certificato scaduto) o divieto di estrazione e di uso commerciale |
+| canada.ca, woah.org, medicines.health.europa.eu, cdc.gov, fda.gov, aphis.usda.gov | rosso | controllo impossibile (blocco, certificato scaduto) o divieto di estrazione e di uso commerciale |
+| iss.it, epicentro.iss.it | **verde dopo lettura a mano del documento** (17/11/2026) | CC BY 4.0 «salvo ove diversamente indicato», ma alcune opere non sono riusabili a fini commerciali (il BEN di EpiCentro è CC BY-NC-ND): ammesso solo il singolo documento che porta scritto CC BY su di sé; scarico a mano. Il «rosso» del 15/11 dipendeva dal blocco dei programmi |
 
 ## 3. Catalogo B: le 11 fonti oggi usate
 
