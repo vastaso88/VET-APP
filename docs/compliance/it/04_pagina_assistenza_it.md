@@ -19,6 +19,8 @@ Dall'app: Impostazioni → Contattaci.
 
 **Come elimino il mio account?** Impostazioni → Elimina account. Ti chiediamo la password per conferma. Disattiviamo subito l'account e per 30 giorni puoi ripristinarlo accedendo con la stessa e-mail; poi la cancellazione è definitiva (o subito, se scegli «Elimina subito») [in attesa del codice]: toglie i profili dei tuoi animali, le chat, i promemoria, le passeggiate, le foto e i video, i referti e i documenti caricati, le misurazioni, i consensi, la posizione salvata, gli annunci e i messaggi del Mercatino e le credenziali di accesso.
 
+**Posso mettere l'account in pausa invece di eliminarlo?** Sì: in Impostazioni → Elimina account scegli «Metti in pausa». L'account resta inattivo e conserviamo i tuoi dati finché non torni, fino a 24 mesi senza accessi; per riprenderlo basta accedere con la stessa e-mail. Se non accedi, dopo 24 mesi lo cancelliamo e prima ti avvisiamo [in attesa del codice] [da verificare con il legale: i 24 mesi].
+
 **Come cambio o tolgo il numero di telefono e la foto profilo?** Dal tuo profilo («Il tuo profilo», dal tuo nome in Impostazioni). Sono facoltativi: nessuna funzione usa il telefono.
 
 **Come revoco un consenso?** Impostazioni → Permessi e consensi. La lettura della cartella clinica da parte della chat si controlla animale per animale, dalla scheda dell'animale. La revoca vale per le richieste successive.

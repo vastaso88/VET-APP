@@ -54,8 +54,7 @@ una persona, richieste dannose, anonimizzazione, consensi, limiti dei piani, avv
 
 Frasi fisse attivate da parole chiave (aperture d'urgenza, domande di chiarimento fisse, «non trovo
 documenti», «profilo di un altro animale»), passi d'urgenza per specie scritti da noi,
-citazioni-segnaposto e note non verificate, il progetto delle schede scritte a mano (le 11 esistenti
-restano come testi della biblioteca).
+citazioni-segnaposto e note non verificate, il progetto delle schede scritte a mano (schede tolte il 20/11/2026: non più usate dal piano nuovo).
 
 ## Primo passo: prova, senza toccare l'app
 

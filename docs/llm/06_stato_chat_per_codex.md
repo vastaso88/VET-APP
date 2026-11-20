@@ -213,9 +213,7 @@ Non basta il tipo «sintomo» di `request_kind`, che marca come sintomo ogni fra
   - RLS attiva, nessuna policy: legge solo il service role;
   - ricerca testuale in italiano con OR tra le parole (`search_health_cards`);
   - nessun embedding e nessun fornitore nuovo.
-- In locale e nelle prove: `data/manuale/health_cards.json`, prodotto dalla sessione del manuale. Non modificarlo a mano: si rigenera con `scripts/manuale/check_manuale.py --esporta`.
-- In produzione entrano **solo** le schede con stato `approved`. `HEALTH_CARDS_INCLUDE_DRAFTS` è solo per le prove ed è rifiutato in produzione.
-- Caricamento in Supabase: `python scripts/setup/export_health_cards_sql.py > .local/health_cards_load.sql`, poi il proprietario lo esegue.
+- `data/manuale/health_cards.json`: dal 20/11/2026 è un file con una lista vuota (schede non più usate dal piano nuovo). Il codice che lo legge sarà tolto dalla sessione Chat.
 
 **Specie delle schede:** `dog`, `cat`, `rabbit` (chiave propria: una scheda del coniglio non va al criceto), altrimenti la famiglia.
 
@@ -329,7 +327,7 @@ Fonte di verità: `packages/shared/config/settings.py`. Le principali per la cha
    - (B) testo fisso senza modello;
    - (C) regola solo sui temi coperti da schede.
 2. **Sonnet nelle urgenze** (`SONNET_ESCALATION`): stessa sicurezza di Haiku, testo più concreto, circa 12 volte il costo.
-3. **Approvazione delle 11 schede**, oggi in bozza (cane 4, gatto 4, coniglio 3). Poi in Supabase vanno eseguiti `health_cards.sql`, i dati esportati e lo script della Pricing `chat_usage_sonnet_followups.sql`.
+3. **Schede non più usate dal piano nuovo (20/11/2026)**: nessuna approvazione. In Supabase va eseguito lo script della Pricing `chat_usage_sonnet_followups.sql`.
 4. **Attivazione di Anthropic:** chiave su Vercel, contratti, unione del ramo `haiku-activation` (consenso v5, regione). Fino ad allora la produzione risponde con Groq.
 5. **Fonti bibliografiche dei passi fissi d'urgenza** (doc 12; niente revisione veterinaria, decisione del 17/11/2026).
 
@@ -351,7 +349,7 @@ Strumento: `scripts/eval/chat_quality/run.py`, con gli scenari in `scenarios*.py
 | Urgenze, sola parte libera (20 scenari) | Haiku ≈ 1,0 $, Sonnet ≈ 12,5 $ ogni 1000; tutti e due 20/20 sui controlli |
 | Groq gratuito | 0 $ ma 200.000 token al giorno per conto (circa 70 risposte) |
 | Salute con fonte citata, prima delle schede | 0 su 5 |
-| Con regola e 11 schede in bozza | 6 su 7 risposte che hanno ricevuto una scheda la citano; riga «Fonte» 7 su 7 |
+| Con regola e 11 schede in bozza (storico: schede tolte il 20/11/2026) | 6 su 7 risposte che hanno ricevuto una scheda la citano; riga «Fonte» 7 su 7 |
 
 Non misurati: la latenza reale dell'API Anthropic e il costo con la cache del prompt attiva.
 
