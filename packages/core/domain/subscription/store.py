@@ -65,7 +65,7 @@ def _default_catalog() -> list[CatalogProduct]:
                 CatalogProduct(
                     plan=plan,
                     period=period,
-                    apple_product_id=f"net.quokkapp.{plan}.{period}",
+                    apple_product_id=f"net.quokkapet.{plan}.{period}",
                     google_product_id=f"quokka_{plan}",
                     google_base_plan_id=period.value,
                 )

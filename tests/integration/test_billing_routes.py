@@ -55,7 +55,7 @@ def _answer(env: dict[str, object], owner: str, store_id: str = "1000") -> None:
     env["apple"].answers[store_id] = VerifiedStorePurchase(  # type: ignore[attr-defined]
         store=Store.APPLE,
         store_subscription_id=store_id,
-        product_id="net.quokkapp.pro.monthly",
+        product_id="net.quokkapet.pro.monthly",
         state=StoreState.ACTIVE,
         expires_at=utc_now() + timedelta(days=30),
         auto_renew=True,
