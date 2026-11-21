@@ -13,7 +13,7 @@ dependencies:
   flutter_web_plugins:
     sdk: flutter
   shared_preferences: ^2.5.4
-  supabase_flutter: ^2.10.3
+  supabase_flutter: ^2.18.3
   google_fonts: ^6.2.1
   http: ^1.2.0
   # Google Play Billing (Android) and StoreKit 2 (iOS) for subscriptions;
