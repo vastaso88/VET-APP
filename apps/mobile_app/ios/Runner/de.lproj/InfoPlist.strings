@@ -1,0 +1,5 @@
+"NSCameraUsageDescription" = "Nimm Fotos oder Videos deiner Tiere für ihre Akten, Chats oder Anzeigen auf.";
+"NSMicrophoneUsageDescription" = "Nimm Sprachnachrichten zur Transkription im Chat oder Ton für selbst aufgenommene Tiervideos auf.";
+"NSPhotoLibraryUsageDescription" = "Wähle Fotos und Videos für deine Tiere, Akten, Chats und Anzeigen aus.";
+"NSPhotoLibraryAddUsageDescription" = "Speichere Fotos und Videos deiner Tiere in deiner Fotomediathek, wenn du sie herunterladen möchtest.";
+"NSLocationWhenInUseUsageDescription" = "Zeige Tierdienste in der Nähe an und zeichne deinen Spaziergang auf, während du QUOKKA verwendest.";

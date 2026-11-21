@@ -1,0 +1,45 @@
+name: iOS build (unsigned)
+
+on:
+  pull_request:
+    paths:
+      - 'apps/mobile_app/**'
+      - 'scripts/ci/validate_ios_release.py'
+      - 'scripts/release/ios_archive.sh'
+      - '.github/workflows/ios-build.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  ios:
+    runs-on: macos-26
+    timeout-minutes: 45
+    defaults:
+      run:
+        working-directory: apps/mobile_app
+    steps:
+      - uses: actions/checkout@v7
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.47.6'
+          channel: stable
+          cache: true
+      - name: Inspect Apple toolchain
+        run: |
+          xcodebuild -version
+          xcrun --sdk iphoneos --show-sdk-version
+          flutter --version
+      - run: flutter pub get --enforce-lockfile
+      - run: flutter gen-l10n
+      - run: flutter analyze
+      - run: flutter test
+      - name: Compile native iOS release without Apple credentials
+        run: flutter build ios --release --no-codesign
+      - uses: actions/upload-artifact@v4
+        with:
+          name: quokka-ios-unsigned-${{ github.sha }}
+          path: apps/mobile_app/build/ios/iphoneos/Runner.app
+          if-no-files-found: error
+          retention-days: 7

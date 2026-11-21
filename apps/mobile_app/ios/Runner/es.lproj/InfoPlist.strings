@@ -1,0 +1,5 @@
+"NSCameraUsageDescription" = "Haz fotos o graba vídeos de tus animales para sus historiales, chats o anuncios.";
+"NSMicrophoneUsageDescription" = "Graba mensajes de voz para transcribirlos en el chat o el sonido de los vídeos de tus animales que decidas grabar.";
+"NSPhotoLibraryUsageDescription" = "Elige fotos y vídeos para tus animales, historiales, chats y anuncios.";
+"NSPhotoLibraryAddUsageDescription" = "Guarda fotos y vídeos de tus animales en tu galería cuando decidas descargarlos.";
+"NSLocationWhenInUseUsageDescription" = "Muestra servicios para animales cercanos y registra tu paseo mientras usas QUOKKA.";
