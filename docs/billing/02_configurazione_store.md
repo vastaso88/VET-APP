@@ -5,12 +5,12 @@ Nessuna di queste operazioni è stata fatta: richiedono il proprietario degli ac
 ## Identificativi prodotto (default, sovrascrivibili con `BILLING_CATALOG_JSON`)
 | Piano | Periodo | Apple product id | Google subscription / base plan | Prezzo IT indicativo |
 | --- | --- | --- | --- | ---: |
-| Plus | mensile | `net.quokkapp.plus.monthly` | `quokka_plus` / `monthly` | €4,59 |
-| Plus | annuale | `net.quokkapp.plus.yearly` | `quokka_plus` / `yearly` | €45,99 |
-| Pro | mensile | `net.quokkapp.pro.monthly` | `quokka_pro` / `monthly` | €8,59 |
-| Pro | annuale | `net.quokkapp.pro.yearly` | `quokka_pro` / `yearly` | €85,99 |
-| Ultra | mensile | `net.quokkapp.ultra.monthly` | `quokka_ultra` / `monthly` | €15,59 |
-| Ultra | annuale | `net.quokkapp.ultra.yearly` | `quokka_ultra` / `yearly` | €155,99 |
+| Plus | mensile | `net.quokkapet.plus.monthly` | `quokka_plus` / `monthly` | €4,59 |
+| Plus | annuale | `net.quokkapet.plus.yearly` | `quokka_plus` / `yearly` | €45,99 |
+| Pro | mensile | `net.quokkapet.pro.monthly` | `quokka_pro` / `monthly` | €8,59 |
+| Pro | annuale | `net.quokkapet.pro.yearly` | `quokka_pro` / `yearly` | €85,99 |
+| Ultra | mensile | `net.quokkapet.ultra.monthly` | `quokka_ultra` / `monthly` | €15,59 |
+| Ultra | annuale | `net.quokkapet.ultra.yearly` | `quokka_ultra` / `yearly` | €155,99 |
 
 L'app mostra sempre il prezzo restituito dallo store. Formato di `BILLING_CATALOG_JSON`: lista di oggetti `{plan, period, apple_product_id, google_product_id, google_base_plan_id}`.
 

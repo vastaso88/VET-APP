@@ -14,7 +14,7 @@ void main() {
   test('account links contain no token or platform bypass', () {
     final url = BillingAccountPanel.accountUrl;
     expect(url.scheme, 'https');
-    expect(url.host, 'quokkapp.net');
+    expect(url.host, 'quokkapet.net');
     expect(url.path, '/account');
     expect(url.hasQuery, isFalse);
     expect(url.hasFragment, isFalse);

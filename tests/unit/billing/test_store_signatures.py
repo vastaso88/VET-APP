@@ -106,8 +106,8 @@ def _tx(**extra: object) -> dict[str, object]:
     return {
         "originalTransactionId": "1000",
         "transactionId": "1001",
-        "productId": "net.quokkapp.pro.monthly",
-        "bundleId": "net.quokkapp.app",
+        "productId": "net.quokkapet.pro.monthly",
+        "bundleId": "net.quokkapet.app",
         "expiresDate": int((time.time() + 86400) * 1000),
         "environment": "Sandbox",
         "appAccountToken": "6F9619FF-8B86-4011-B42D-00C04FC964FF",
@@ -140,7 +140,7 @@ def test_unsigned_alg_none_is_rejected(apple: FakeApple) -> None:
 
 
 def test_apple_transaction_decodes_to_purchase(apple: FakeApple) -> None:
-    decoder = AppleSignedDataDecoder(bundle_id="net.quokkapp.app", roots=[apple.root])
+    decoder = AppleSignedDataDecoder(bundle_id="net.quokkapet.app", roots=[apple.root])
     renewal = apple.sign({"autoRenewStatus": 1})
     purchase = decoder.purchase(apple.sign(_tx()), renewal, status=1)
     assert purchase.state == StoreState.ACTIVE and purchase.environment == "sandbox"
@@ -148,7 +148,7 @@ def test_apple_transaction_decodes_to_purchase(apple: FakeApple) -> None:
 
 
 def test_apple_refund_and_wrong_bundle(apple: FakeApple) -> None:
-    decoder = AppleSignedDataDecoder(bundle_id="net.quokkapp.app", roots=[apple.root])
+    decoder = AppleSignedDataDecoder(bundle_id="net.quokkapet.app", roots=[apple.root])
     refunded = decoder.purchase(
         apple.sign(_tx(revocationDate=int(time.time() * 1000), revocationReason=0)), None
     )
@@ -158,14 +158,14 @@ def test_apple_refund_and_wrong_bundle(apple: FakeApple) -> None:
 
 
 def test_apple_notification_v2(apple: FakeApple) -> None:
-    decoder = AppleSignedDataDecoder(bundle_id="net.quokkapp.app", roots=[apple.root])
+    decoder = AppleSignedDataDecoder(bundle_id="net.quokkapet.app", roots=[apple.root])
     payload = apple.sign(
         {
             "notificationType": "REFUND",
             "notificationUUID": "uuid-1",
             "signedDate": int(time.time() * 1000),
             "data": {
-                "bundleId": "net.quokkapp.app",
+                "bundleId": "net.quokkapet.app",
                 "environment": "Sandbox",
                 "signedTransactionInfo": apple.sign(_tx()),
             },
@@ -221,23 +221,23 @@ def test_rtdn_parsing_and_wrong_package() -> None:
     note = parse_rtdn(
         envelope(
             {
-                "packageName": "net.quokkapp.app",
+                "packageName": "net.quokkapet.app",
                 "eventTimeMillis": "1",
                 "voidedPurchaseNotification": {"purchaseToken": "t"},
             }
         ),
-        "net.quokkapp.app",
+        "net.quokkapet.app",
     )
     assert note is not None and note.refund is True
     assert (
         parse_rtdn(
-            envelope({"packageName": "net.quokkapp.app", "testNotification": {}}),
-            "net.quokkapp.app",
+            envelope({"packageName": "net.quokkapet.app", "testNotification": {}}),
+            "net.quokkapet.app",
         )
         is None
     )
     with pytest.raises(StoreRejectedError):
-        parse_rtdn(envelope({"packageName": "com.evil"}), "net.quokkapp.app")
+        parse_rtdn(envelope({"packageName": "com.evil"}), "net.quokkapet.app")
 
 
 class _Certs:

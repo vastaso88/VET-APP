@@ -76,7 +76,7 @@ class World:
             store_subscription_id=store_id,
             latest_transaction_id=f"tx-{store_id}",
             product_id=product
-            or ("net.quokkapp.plus.monthly" if store == Store.APPLE else "quokka_plus"),
+            or ("net.quokkapet.plus.monthly" if store == Store.APPLE else "quokka_plus"),
             base_plan_id=base_plan or ("monthly" if store == Store.GOOGLE else None),
             state=state,
             expires_at=utc_now() + timedelta(days=days),
@@ -354,13 +354,13 @@ def test_google_upgrade_replaces_the_old_token_and_raises_the_plan() -> None:
 def test_apple_downgrade_takes_effect_with_the_store_answer() -> None:
     world = World()
     world.owner("a")
-    world.answer(Store.APPLE, "S1", "a", product="net.quokkapp.pro.yearly")
+    world.answer(Store.APPLE, "S1", "a", product="net.quokkapet.pro.yearly")
     world.service.verify_purchase(
         owner_id="a", store=Store.APPLE, store_subscription_id="S1", product_id=None
     )
     assert world.subscriptions.get("a").plan == "pro"  # type: ignore[union-attr]
     # At renewal Apple reports the lower product on the same original id.
-    lower = world.answer(Store.APPLE, "S1", "a", product="net.quokkapp.plus.yearly")
+    lower = world.answer(Store.APPLE, "S1", "a", product="net.quokkapet.plus.yearly")
     _notify(world, "n1", "S1", purchase=lower)
     assert world.subscriptions.get("a").plan == "plus"  # type: ignore[union-attr]
 

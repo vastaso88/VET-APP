@@ -13,7 +13,7 @@ void main() {
   test('parses the verified store subscription', () {
     final status = SubscriptionStatus.fromJson(body(store: {
       'store': 'apple',
-      'product_id': 'net.quokkapp.pro.monthly',
+      'product_id': 'net.quokkapet.pro.monthly',
       'plan': 'pro',
       'period': 'monthly',
       'state': 'canceled',

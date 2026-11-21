@@ -69,7 +69,7 @@ class Settings(BaseSettings):
     # packages/core/application/services/get_or_create_subscription.py.
     billing_enabled: bool = Field(default=False, alias="BILLING_ENABLED")
     billing_trial_days: int = Field(default=14, ge=10, le=15, alias="BILLING_TRIAL_DAYS")
-    billing_site_url: str = Field(default="https://quokkapp.net", alias="BILLING_SITE_URL")
+    billing_site_url: str = Field(default="https://quokkapet.net", alias="BILLING_SITE_URL")
     subscription_test_plan: str = Field(default="", alias="SUBSCRIPTION_TEST_PLAN")
     # Deleting an account first deactivates it; it is erased for good after this
     # many days, during which the owner can cancel (same e-mail, password reset
