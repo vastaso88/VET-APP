@@ -78,10 +78,10 @@ Decide l'Orchestratore dopo questo parere; i requisiti legali:
 
 ## 6. Che cosa ho cambiato
 
-- **Termini**: [it/03](it/03_termini_di_servizio_it.md) §2 (clausola; tolta la frase sui numeri di terzi), §9 (rinvio al §2) e nota 18 per il revisore e, nelle loro lingue, le bozze per Paese `at`, `au`, `be`, `ch`, `ch-fr`, `de`, `es`, `fr`, `uk`, `us` (`03_*`): traduzioni da far rivedere.
+- **Termini**: [it/03](it/03_termini_di_servizio_it.md) §2 (clausola; tolta la frase sui numeri di terzi), §9 (rinvio al §2) e nota 18 per il revisore; nelle loro lingue, le bozze per Paese `at`, `au`, `be`, `ch`, `ch-fr`, `de`, `es`, `fr`, `uk`, `us` (`03_*`): traduzioni da far rivedere.
 - **Disclaimer**: [11](11_esclusioni_responsabilita.md) §3.2 (Info, riga fissa proposta, voce nuova per la clausola) e le bozze per Paese `05_*` (blocco «Emergenze» con la versione breve della clausola).
 - **Numeri**: cancellati il doc 21 e i dieci `06_numeri_utili_*`; nelle dieci bozze `05_*` tolti il «banner di emergenza» e ogni numero (centri antiveleni compresi), con la versione breve della clausola nel blocco «Emergenze» dell'avviso; tolti i numeri anche in `us/03` (911 e Poison Help) e nei file per Paese `01`, `07`, `08` e `09`; segnaposto tolto da it/04 e it/08 (domanda 15 decaduta).
-- Registro 08 (riga 72 superata, riga 73 nuova), punto ⚖️ 24 in [20](20_biblioteca_testi_originali_diritti_licenze_e_lettere.md) §11, README.
+- Registro 08 (riga 72 chiusa in una riga, riga 73 nuova), punto ⚖️ 24 in [20](20_biblioteca_testi_originali_diritti_licenze_e_lettere.md) §11, README.
 - **Fuori da `docs/compliance`**: tolto il rinvio al file cancellato in `docs/store/03_dichiarazioni_store.md`. **Non toccati**: la pagina del sito `apps/site/it/supporto/index.html` (riga 41: il segnaposto `[NUMERI_UTILI_ITALIA]`; lo fa togliere l'Orchestratore alla sessione del sito), le stringhe dell'app `billingPaywallEmergencyTitle` e `billingPaywallEmergencyBody` (senza numeri; si può aggiungere «Quokka non gestisce le urgenze»), il commento in `harmful_requests.py` e `docs/llm/06_stato_chat_per_codex.md` (Chat).
 
 ## 7. Aperti

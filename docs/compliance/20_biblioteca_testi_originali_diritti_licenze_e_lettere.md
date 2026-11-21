@@ -957,7 +957,7 @@ Nelle giornate dell'8 e 10 novembre, nella fase delle schede di salute e del cat
 2. Ordine: `robots.txt` (per nome e per `*`, segnali `Content-Signal` e `ai-train`) → termini → decisione → eventuale lettura.
 3. **Stop a sfida, CAPTCHA, 403/429 e blocchi**: nessun cambio di strumento (nemmeno il browser del programma), nessuna riprova con un altro nome. Si passa a mano o a un canale documentato dal gestore (§21).
 4. Un host con blocco entra nell'elenco «a mano»; nessuna richiesta «di prova».
-5. Pausa di 10 secondi tra richieste allo stesso host; campioni, non scansioni.
+5. Pausa di 10 secondi tra richieste allo stesso host, **anche tra comandi e sotto-agenti in parallelo** (il turno si prenota in modo atomico prima di aspettare: §22.10); campioni, non scansioni.
 6. **Registro per richiesta**: data, nome, URL, codice di esito, conservato per tutto il lavoro. **Non si cancella il file dei risultati prima di averlo registrato** (nel primo incidente i codici di esito erano stati cancellati: oggi non si sa che cosa è successo).
 7. Dopo un incidente: registro interno, avviso al proprietario, nessuna nuova richiesta all'host, nessuna nuova prova per «capire».
 8. Nessuna comunicazione ai siti salvo loro richiesta; se arriva, si risponde con il registro.
@@ -973,7 +973,7 @@ Decisioni del proprietario riferite dall'Orchestratore: schede cancellate (§22.
 > - **Nome**: ogni programma o comando (`curl`, script) che contatta un sito esterno si presenta con un nome proprio che inizia con «Quokka» (`-A "QuokkaLibrarian/0.1"`). Mai un nome di browser o di un'altra azienda, mai dati personali nel nome. Un test fallisce se il nome non inizia con «Quokka».
 > - **Ordine**: prima `robots.txt` (per nome e per `*`; contano anche `ai-train=no` e `Content-Signal`), poi i termini d'uso, poi il contenuto. Se c'è un divieto, non si legge da programma.
 > - **Stop** a sfida, CAPTCHA, pagina di verifica, 403, 429 o blocco: nessun altro strumento o nome «per passare», nessuna riprova. L'host passa a «a mano».
-> - **Comandi a mano e sotto-agenti**: stesse regole; 10 secondi tra richieste allo stesso host; ogni richiesta registrata (data, nome, URL, esito) in un file che non si cancella prima di averlo riportato nel registro. Il brief di ogni sotto-agente include questa regola.
+> - **Comandi a mano e sotto-agenti**: stesse regole; 10 secondi tra richieste allo stesso host, **anche tra più comandi o sotto-agenti insieme: il turno si prenota in modo atomico (blocco condiviso) prima di aspettare, e il primo 403, 429 o sfida ferma tutti per quell'host**; ogni richiesta registrata (data, nome, URL, esito) in un file che non si cancella prima di averlo riportato nel registro. Il brief di ogni sotto-agente include questa regola.
 > - **`WebFetch` e browser del programma**: solo pagine singole di termini e note legali, `robots.txt` e fonti ufficiali o con licenza aperta; mai il contenuto di siti che chiedono permesso o hanno barriere. Il browser non completa CAPTCHA né controlli anti-bot.
 > - **Nessun contatto con i siti** o i loro titolari: lettere e richieste di permesso le invia il proprietario.
 > - **Se succede**: avvisare subito l'Orchestratore, scrivere nel registro interno (`.local/`, mai nel repository pubblico), nessuna nuova richiesta a quell'host, nessuna prova «per capire».
@@ -989,6 +989,28 @@ Decisioni del proprietario riferite dall'Orchestratore: schede cancellate (§22.
 4. Se la richiesta riguarda la cronologia: il proprietario decide la riscrittura per i soli file interessati, da fare con il gestore git in un momento concordato con tutte le sessioni (copie di lavoro, rami, pubblicazione).
 5. Registro interno: data, titolare, che cosa è stato tolto, risposta.
 6. Se è il gestore del repository ad avvisare per primo: stessa procedura, con precedenza assoluta (un repository disattivato ferma anche la pubblicazione).
+
+### 22.10 Terzo incidente: pausa di 10 secondi non rispettata tra comandi in parallelo (21 novembre sera)
+
+**Richiesta dell'Orchestratore progetto.** Il dettaglio (siti, orari) sta solo nel registro interno (`.local/cercafonti/incidenti.md`); qui regole e giudizio, **senza nomi di siti** (§22.3 n. 7). Non è consulenza legale.
+
+**Che cosa è successo.** Durante la ricerca grande del Cercafonti più sotto-agenti e il comando di importazione hanno lavorato insieme. Il programma teneva l'«ultimo turno» di ogni host in un file, ma lo leggeva e lo scriveva senza prenotarlo (una gara tra comandi): due comandi partiti insieme leggevano lo stesso valore e colpivano l'host nello stesso secondo. Sul registro (273 richieste) si contano **53 coppie di richieste allo stesso host a meno di 9,5 secondi**, su 9 host. Un host pubblico statunitense ha risposto 403 dopo tre richieste nello stesso secondo: è stato **fermato, senza riprove**. Nessun altro host ha dato 403, 429 o sfide (solo reindirizzamenti, qualche 404, tre errori di rete). `robots.txt` rispettati; nessun dato personale; nessun contenuto usato in modo diverso dal previsto. Corretto in giornata: il turno si prenota in modo atomico con un blocco prima di aspettare, più un test (due comandi partiti insieme non colpiscono l'host nello stesso momento). Avvisati l'Orchestratore e il proprietario.
+
+**Giudizio.**
+
+1. **Natura.** Violazione della **nostra** regola dei 10 secondi (§22.6 n. 5) per un difetto tecnico, **non un aggiramento**: nessuna sfida superata, nessun cambio di strumento o di nome; al primo 403 ci si è fermati, come da regola.
+2. **Rischio giuridico: basso.** Il 403 dopo una raffica è un limite di frequenza del sito, non un divieto di accesso; fermarsi è la condotta giusta (insistere sarebbe stato il caso del §22.3 n. 3). Conseguenze pratiche possibili: blocco dell'indirizzo, una segnalazione di abuso. Niente da notificare a un'autorità (nessun dato personale, nessun incidente di sicurezza nostro) ⚖️.
+3. **I contenuti già letti** restano valutabili con la griglia del §23: i diritti non dipendono dalla velocità delle richieste. Dall'host fermato non è arrivato contenuto dopo il 403.
+4. **L'host fermato resta fuori**, senza riprove e senza «prove per capire» (§22.6 n. 3–4). La riammissione non la decido io: la regola prevede solo il permesso scritto del titolare o lo scarico a mano del proprietario (per i documenti del governo federale USA vale l'art. 105 del Titolo 17 dello U.S. Code, con la riserva del §23.3 ⚖️). Nessun altro canale per lo stesso contenuto senza un mio parere scritto sul canale (come per il §21).
+5. **Nessuna comunicazione al sito** (§22.6 n. 8): né lettere di scuse né richieste di sblocco; se scrive lui, si risponde con il registro.
+
+**Altre misure (raccomandazioni della Normativa).**
+
+1. **Un solo comando per tutte le richieste**, con il turno prenotato: funziona solo se *tutte* le richieste lo usano. Nel brief dei sotto-agenti: niente `curl` diretti e niente lettura con gli strumenti della piattaforma (`WebFetch`, browser) di più pagine dello stesso host, perché quegli strumenti non passano dal blocco.
+2. **Interruttore condiviso.** Il primo 403, 429, sfida o rifiuto di un lavoratore ferma **tutti** per quell'host e per lo stesso dominio registrabile (i servizi di un governo stanno spesso dietro la stessa protezione). L'elenco degli host fermati si legge **prima di ogni richiesta**, non a inizio giro.
+3. **Tetto di parallelismo.** Al massimo 3 lavoratori insieme e mai due sullo stesso Paese, finché un giro intero non mostra zero coppie sotto i 10 secondi; poi il vincolo per Paese si può togliere, il tetto di 3 resta.
+4. **Controllo automatico a fine giro.** Dal registro, la distanza minima per host: sotto i 10 secondi il giro è «non conforme» e l'Orchestratore riceve l'avviso (è il controllo con cui sono state contate le 53 coppie).
+5. **Una frase in più in `CLAUDE.md`** nel punto sui sotto-agenti (testo nel §22.8).
 
 ## 23. Griglia delle licenze per il «Cercafonti» e regola per le leggi straniere (21 novembre)
 
