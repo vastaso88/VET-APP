@@ -45,7 +45,7 @@ export function PricingPanel({
   totpEnabled: initiallyEnabled,
 }: {
   initial: PricingSnapshot;
-  totpEnabled: boolean;
+  totpEnabled: boolean | null;
 }) {
   const router = useRouter();
   const [features, setFeatures] = useState(initial.features);
@@ -73,7 +73,7 @@ export function PricingPanel({
     setSavedPrices(initial.prices.map(toEditable));
   }, [initial]);
 
-  const ready = totpEnabled && /^\d{6}$/.test(code) && !busy;
+  const ready = totpEnabled === true && /^\d{6}$/.test(code) && !busy;
   const canSubmit = (id: string) => ready && busy !== id;
 
   async function saveFeature(row: PricingFeature) {
@@ -217,9 +217,13 @@ export function PricingPanel({
             <p className="eyebrow">Protezione delle modifiche</p>
             <h2>Conferma TOTP ad ogni salvataggio</h2>
           </div>
-          <span className="tag">{totpEnabled ? "Authenticator attivo" : "TOTP da configurare"}</span>
+          <span className="tag">
+            {totpEnabled === null
+              ? "Stato TOTP da verificare"
+              : totpEnabled ? "Authenticator attivo" : "TOTP da configurare"}
+          </span>
         </div>
-        {totpEnabled ? (
+        {totpEnabled === true ? (
           <label className="pricing-code">
             Codice di autenticazione (6 cifre)
             <input
@@ -228,6 +232,14 @@ export function PricingPanel({
               placeholder="000000" aria-label="Codice TOTP per il prossimo salvataggio"
             />
           </label>
+        ) : totpEnabled === null ? (
+          <div className="pricing-enrollment">
+            <p className="muted">Non è stato possibile verificare lo stato TOTP.
+              Nessuna modifica può essere salvata finché la verifica non riesce.</p>
+            <button type="button" className="ghost-button" onClick={() => router.refresh()}>
+              Riprova verifica
+            </button>
+          </div>
         ) : !setup ? (
           <button className="primary-button" type="button" disabled={!!busy} onClick={() => void beginSetup()}>
             Configura Authenticator

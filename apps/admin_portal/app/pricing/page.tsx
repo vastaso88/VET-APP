@@ -6,7 +6,7 @@ import { getAdminPricing } from "../../lib/admin-api";
 export default async function PricingPage() {
   const [pricing, totpEnabled] = await Promise.all([
     getAdminPricing().catch(() => null),
-    getAdminTotpEnabled().catch(() => false),
+    getAdminTotpEnabled().catch(() => null),
   ]);
   return (
     <AdminShell title="Pricing" eyebrow="Billing / Catalogo commerciale">
