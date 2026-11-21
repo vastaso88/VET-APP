@@ -174,11 +174,8 @@ def decode_body(body: bytes, ctype: str) -> str:
     match = re.search(r"charset=([\w-]+)", ctype, re.I) or re.search(
         rb"<meta[^>]+charset=[\"']?([\w-]+)", body[:4000], re.I
     )
-    name = (
-        (match.group(1).decode() if isinstance(match.group(1), bytes) else match.group(1))
-        if match
-        else "utf-8"
-    )
+    candidate = match.group(1) if match else "utf-8"
+    name = candidate.decode("ascii", "ignore") if isinstance(candidate, bytes) else candidate
     try:
         return body.decode(name, "replace")
     except LookupError:

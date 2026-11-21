@@ -8,6 +8,7 @@ from __future__ import annotations
 import logging
 import threading
 import time
+from typing import cast
 
 from packages.core.domain.subscription.limits import LIMITS_BY_PLAN, PlanLimits
 from packages.core.domain.subscription.pricing import configured_plan_limits
@@ -55,9 +56,9 @@ class PricingLimitsCache:
                     .execute()
                 )
                 rows = response.data or []
-                if len(rows) != 15:
+                if len(rows) != 15 or not all(isinstance(row, dict) for row in rows):
                     raise ValueError("Incomplete pricing feature catalogue")
-                loaded = configured_plan_limits(rows)
+                loaded = configured_plan_limits(cast(list[dict[str, object]], rows))
             except Exception as exc:  # noqa: BLE001 - defensive entitlement fallback
                 message = str(exc)
                 # Deploy the migration before turning this feature on. On
