@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import logging
 from datetime import datetime, timedelta
+from collections.abc import Callable
 from typing import TYPE_CHECKING
 
 from pydantic import BaseModel
@@ -102,7 +103,9 @@ class GetOrCreateSubscriptionService:
         trial_days: int = 14,
         store_billing: StoreBillingService | None = None,
         plan_overrides: dict[str, str] | None = None,
+        plan_limits_provider: Callable[[], dict[str, PlanLimits]] | None = None,
     ) -> None:
+        self._plan_limits_provider = plan_limits_provider
         self._plan_overrides = {
             k.strip().lower(): v for k, v in (plan_overrides or {}).items() if v in PLAN_KEYS
         }
@@ -119,6 +122,7 @@ class GetOrCreateSubscriptionService:
         self._max_memorial_pets = max_memorial_pets
 
     def execute(self, data: GetOrCreateSubscriptionInput) -> GetOrCreateSubscriptionOutput:
+        plan_limits = self._plan_limits_provider() if self._plan_limits_provider else LIMITS_BY_PLAN
         subscription = self._repository.get(data.owner_id)
         if subscription is None:
             subscription = self._repository.create_trial(
@@ -182,7 +186,8 @@ class GetOrCreateSubscriptionService:
                 subscription=reported,
                 is_developer=is_developer,
                 has_access=True,
-                limits=effective_limits(reported, is_developer=is_developer),
+                limits=effective_limits(reported, is_developer=is_developer, plan_limits=plan_limits),
+                plan_limits=plan_limits,
                 max_memorial_pets=self._max_memorial_pets,
                 test_period=True,
                 plan_source=plan_source,
@@ -192,7 +197,8 @@ class GetOrCreateSubscriptionService:
             subscription=subscription,
             is_developer=is_developer,
             has_access=has_access,
-            limits=effective_limits(subscription, is_developer=is_developer),
+            limits=effective_limits(subscription, is_developer=is_developer, plan_limits=plan_limits),
+            plan_limits=plan_limits,
             max_memorial_pets=self._max_memorial_pets,
             data_kept_until=(
                 data_kept_until(subscription.access_lost_at)

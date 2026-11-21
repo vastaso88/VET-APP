@@ -128,6 +128,7 @@ from packages.core.application.services.medical_record_context_retriever import 
     MedicalRecordContextRetriever,
 )
 from packages.core.application.services.plan_access_sync import PlanAccessSync
+from packages.infrastructure.persistence.supabase.pricing_limits_cache import PricingLimitsCache
 from packages.core.application.services.radar_reports import (
     RadarCommunityView,
     RadarReportSettings,
@@ -410,6 +411,7 @@ class ApplicationContainer:
         self.pet_condition_repository = self._build_pet_condition_repository()
         self.account_consents_repository = self._build_account_consents_repository()
         self.subscription_repository = self._build_subscription_repository()
+        self._pricing_limits_cache = PricingLimitsCache(settings)
         self.user_device_repository = self._build_user_device_repository()
         self.account_age_repository = self._build_account_age_repository()
         self.account_deletion_repository = self._build_account_deletion_repository()
@@ -538,6 +540,7 @@ class ApplicationContainer:
             trial_days=self.settings.billing_trial_days,
             store_billing=self.store_billing_service() if self.settings.billing_enabled else None,
             plan_overrides=_parse_plan_overrides(self.settings.billing_plan_overrides),
+            plan_limits_provider=self._pricing_limits_cache.load,
         )
 
     def _build_store_entitlement_repository(self) -> StoreEntitlementRepository:

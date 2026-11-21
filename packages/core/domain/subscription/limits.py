@@ -97,14 +97,16 @@ MAX_NEW_MARKETPLACE_CONVERSATIONS_PER_DAY = 10
 
 
 def effective_limits(
-    subscription: Subscription, *, is_developer: bool, now: datetime | None = None
+    subscription: Subscription, *, is_developer: bool, now: datetime | None = None,
+    plan_limits: dict[str, PlanLimits] | None = None,
 ) -> PlanLimits | None:
     """The limits that apply to [subscription] right now; `None` means no
     limits (developer allowlist)."""
     if is_developer:
         return None
+    resolved = plan_limits if plan_limits is not None else LIMITS_BY_PLAN
     if subscription.plan is not None:
-        return LIMITS_BY_PLAN[subscription.plan]
+        return resolved[subscription.plan]
     if subscription.is_trial_active(now=now):
-        return TRIAL_LIMITS
+        return resolved[SubscriptionPlan.PRO].model_copy(update={"source": "trial"})
     return NO_ACCESS_LIMITS
