@@ -20878,5 +20878,32 @@
       "de": "4261e6019e9df48e0cbfc5564fdcdaa0f2895856ecfacda145914add7480596f",
       "fr": "5bdc8bc65d954e875b64ec86fb386a464e2e30e37736b3a55e30d74504774e1c"
     }
+  },
+  "ui:billingAccountStatusNotice": {
+    "source": "60891ef32e01f533b005d70026007ba6b0c25d1f0f70379bf0ff81f29ad3d449",
+    "targets": {
+      "en": "72eaef83b8c7cd5770d09d4e61d21978c651796b55885dc5e3702e8689089c95",
+      "es": "be8fd5181d876f4c2eae0a7d2b1867987c3c33aa25e1f63068f22d37b9ddec1c",
+      "de": "08a3516413349f84135a66a77fa9af4c98a75f71b9aa13dcc7d93181d7d8dda1",
+      "fr": "3b1cf30b8cafd47d2b3edf68fd1416277643674cebe1d60b568aae87604c464c"
+    }
+  },
+  "ui:billingOpenAccount": {
+    "source": "200ac9be6d4c59f561b2c2aad84dd19e08fd475687aaf641c736303a3c329dc5",
+    "targets": {
+      "en": "7098b5d26ec226e17617b0c300c37d5ba00c515d9c515d9d3926410d91f67cbe",
+      "es": "16d6b5b365668ec8dad833b0e06c7c1137f69bdc765786b1b4b0b435438c6a88",
+      "de": "dda8cf43f3500cc5390ecaeab4fabe3eb4035d626e485038148d906531d273b6",
+      "fr": "a9433a1bbdca938a591a55e7ccbd0ac2fffbed8c12dfc61af913b7a3bc180cd7"
+    }
+  },
+  "ui:billingOpenAccountError": {
+    "source": "5f3265d9c7047cb9e0e32eb35a5d2ffe214ef82df334bf4a87513c81f6ad9b8f",
+    "targets": {
+      "en": "f104b12ee2033540f07bba3aa1050bc5420b0abde938f10d26c8b509977e19ce",
+      "es": "2e9b3ab8e7524eced51d168e4087a57a63e68215c0def7288b6ace5071e39443",
+      "de": "2c5415915991982f349dbbac0def2c63825f4cf7a30e74b566979e9d76526ebb",
+      "fr": "8a87662704f11ea2ef731eb4f487abbc625cb4a3779c2103e291d5ecd2c481e5"
+    }
   }
 }

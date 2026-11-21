@@ -2,11 +2,10 @@
 
 from collections import Counter
 from datetime import UTC, datetime, timedelta
-from typing import Any
+from typing import Any, Literal
 
 from fastapi import APIRouter, HTTPException, Path, Query
 from pydantic import BaseModel
-from typing import Literal
 
 from apps.api.dependencies.container import get_container
 from apps.api.routes.admin import _admin_client, _list_auth_users, _parse_datetime, _require_admin
@@ -255,5 +254,7 @@ def change_user_plan(
             "p_plan": request.plan,
         }).execute()
     except Exception:
-        raise HTTPException(status_code=503, detail="Plan update unavailable; check database migration") from None
+        raise HTTPException(
+            status_code=503, detail="Plan update unavailable; check database migration"
+        ) from None
     return {"owner_id": owner_id, "plan": request.plan}
