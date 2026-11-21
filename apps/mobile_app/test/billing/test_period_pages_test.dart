@@ -7,6 +7,7 @@ import 'package:vet_app_mobile/features/billing/data/subscription_remote_data_so
 import 'package:vet_app_mobile/features/billing/domain/billing_models.dart';
 import 'package:vet_app_mobile/features/billing/domain/subscription_status.dart';
 import 'package:vet_app_mobile/features/billing/presentation/pages/billing_page.dart';
+import 'package:vet_app_mobile/features/billing/presentation/widgets/billing_account_panel.dart';
 import 'package:vet_app_mobile/features/first_run/presentation/pages/plan_intro_page.dart';
 import 'package:vet_app_mobile/l10n/app_localizations.dart';
 import 'package:vet_app_mobile/shared/errors/app_network_error.dart';
@@ -90,7 +91,10 @@ void main() {
   });
 
   group('without the public test nothing changes', () {
-    testWidgets('the subscription page still compares the plans and lists the payment methods',
+    // Outside the test period (and without BILLING_DEMO_ENABLED) the page is the
+    // store one: current plan, store subscriptions and the account panel, no
+    // in-app plan comparison (native billing, 76dafec).
+    testWidgets('the subscription page shows the store section, not the plan comparison',
         (tester) async {
       await _seed(_status());
       await tester.binding.setSurfaceSize(const Size(420, 2600));
@@ -99,8 +103,8 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.byKey(const ValueKey('billing-test-period-banner')), findsNothing);
-      expect(find.textContaining('CONFRONTA I PIANI'), findsOneWidget);
-      expect(find.byType(FilledButton), findsWidgets);
+      expect(find.byType(BillingAccountPanel), findsOneWidget);
+      expect(find.textContaining('CONFRONTA I PIANI'), findsNothing);
     });
 
     testWidgets('the page shown after sign-up still offers the trial and the plans',

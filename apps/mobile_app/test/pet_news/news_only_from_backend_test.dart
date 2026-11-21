@@ -32,6 +32,9 @@ void main() {
       'opendata.comune.bologna.it',
       'dati.comune.milano.it',
       'aperto.comune.torino.it',
+      'quokkapet.net', // our website: account page opened from billing
+      'apps.apple.com', // subscription management in the App Store (link only)
+      'play.google.com', // subscription management in Google Play (link only)
     };
     final hosts = <String>{};
     for (final file in sources) {
