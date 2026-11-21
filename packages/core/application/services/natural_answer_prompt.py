@@ -568,15 +568,16 @@ SEVERITY_CHECK_PROMPT = (
     "hard or swollen belly with retching, drooling or vomiting; collapse, lying flat, cannot "
     "stand, head tilt, tremors or seizures; heavy bleeding or a deep or neck bite; a toxic "
     "food, plant, drug or substance, or a foreign object (plastic, a sock, a string) eaten; "
-    "a rabbit, guinea pig or chinchilla eating much less than usual or passing fewer or "
-    "smaller droppings; a bird that stops eating, is puffed up or quiet with fluffed "
-    "feathers; a reptile or amphibian with tremors, red patches, swelling or that cannot "
-    "move; a fish breathing fast at the bottom or with raised scales and a swollen belly; an "
-    "axolotl floating; a hot swollen hoof or a horse that will not move; a fall with an "
-    "injury and less eating; high fever with weakness.\n"
+    "a rabbit, guinea pig or chinchilla eating much less than usual (for hours or for days) "
+    "or passing fewer or smaller droppings; a bird that stops eating, is puffed up or quiet "
+    "with fluffed feathers; a reptile or amphibian with tremors, red patches, swelling or "
+    "that cannot move; a fish breathing fast at the bottom, lying on its side or with raised "
+    "scales and a swollen belly; an axolotl floating; a hot swollen hoof or a horse that "
+    "will not move; a fall with an injury and less eating; high fever with weakness.\n"
     "NOT SERIOUS (a visit today or soon is the right advice, do not change it): a change "
-    "that has been slow, over weeks, with no new acute sign; an animal clearly getting "
-    "better (eating again normally, droppings back to normal); a reptile in shed or in its "
+    "that has been slow, over weeks, in an animal that still eats normally, with no new "
+    "acute sign; an animal clearly getting better (eating again normally, droppings back to "
+    "normal); a reptile in shed or in its "
     "seasonal fast with no other sign; water problems in a tank with no sign on the fish; "
     "an animal that has started to growl or snap (behaviour); care, food, rules, "
     "behaviour. When you are not sure either way, follow the list above; a false alarm is "
@@ -634,6 +635,34 @@ _OWNER_HEALTH_V2 = (
     "with no number and nothing on their treatment. A health detail that only explains "
     "a limit (they cannot drive, they have blood pressure) is not a question: take it "
     "into account in the advice (a taxi, a neighbour, a home visit), nothing more."
+)
+
+# Synthetic users round 4b (21/11/2026): after a fixed guard reply (dose change, a human
+# medicine, euthanasia at home) the conversation lost the urgency already described (4 of 5
+# serious cases). In v2 the fixed text stays and a short model text follows it.
+GUARD_FOLLOW_UP_PROMPT = (
+    "You write the second part of a reply from a pet-care chat. The first part, a fixed text "
+    "the owner will read just before yours, has already refused what the owner asked (a "
+    "dose, changing a dose, a human medicine, putting the animal to sleep at home) and said "
+    "why: do not repeat or soften it. Write two to four short sentences on what to do NOW, "
+    "from everything described in this conversation and in other recent conversations "
+    "about this animal. If the animal shows a serious sign (breathing, collapse, cannot "
+    "stand, trembling, fever, not eating, pain, a toxic substance), say first to call the "
+    "vet or go to an emergency or on-call clinic now, and if the owner's own vet is not "
+    "available, the emergency or on-call service instead of waiting. If nothing serious "
+    "was described, say whom to ask and what to tell them. Never a dose, a medicine, a "
+    "phone number, a diagnosis, or anything the owner did not write. Use the same form of "
+    "address as the fixed text.{language}"
+)
+
+# Synthetic users round 4b (21/11/2026): a new chat did not know the serious case opened in
+# another chat on the same animal hours before.
+_OTHER_CHATS_V2 = (
+    "OTHER RECENT CONVERSATIONS. Before the user message come lines from other "
+    "conversations about this same animal in the last 72 hours. If they describe a serious "
+    "case and nothing says a vet has seen it, the case is still open: never call the animal "
+    "well or a sign good because the owner now writes about something else, and if it still "
+    "needs a vet now, say so first, in one sentence, then answer the new question."
 )
 
 # Normativa doc 20 §20.13 (20/11/2026), for every v2 answer (not a lane).
@@ -747,6 +776,7 @@ def build_system_prompt(
     official_sources: bool = False,
     dose_only: bool = False,
     owner_health: bool = False,
+    other_chats: bool = False,
 ) -> str:
     """The system prompt for one reply. Stable parts first (the prefix the
     provider can cache), then the parts that depend on the request: the
@@ -816,6 +846,8 @@ def build_system_prompt(
             parts.append(_DOSE_ONLY_V2)
         if owner_health:
             parts.append(_OWNER_HEALTH_V2)
+        if other_chats:
+            parts.append(_OTHER_CHATS_V2)
         parts.append(_OFF_TOPIC_RULE)
         if urgency_doubt:
             parts.append(_URGENCY_DOUBT.replace("{category}", urgency_doubt))

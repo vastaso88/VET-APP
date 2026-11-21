@@ -44,7 +44,13 @@ def user_agents(text: str) -> list[str]:
 
 # The evaluation and research tools must name themselves "Quokka..." (Normativa 20/11): this
 # covers every borrowed name (Googlebot, Chrome, Safari, other companies), not only two.
-QUOKKA_FOLDERS = ("scripts/eval", ".local/chat_eval", ".local/synthetic_users")
+QUOKKA_FOLDERS = (
+    "scripts/eval",
+    "scripts/sources",
+    ".local/chat_eval",
+    ".local/synthetic_users",
+    ".local/cercafonti",
+)
 
 
 def test_eval_and_research_tools_name_themselves_quokka() -> None:

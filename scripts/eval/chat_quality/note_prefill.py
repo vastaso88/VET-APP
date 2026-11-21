@@ -105,7 +105,13 @@ def prefill_one(
     pet = str(question.get("specie") or "")
     need = S.understand(call, text, pet)
     enough = N.sufficiency(
-        library, need["specie"], need["tema"], need["fatti"], S.match_facts(call), today
+        library,
+        need["specie"],
+        need["tema"],
+        need["fatti"],
+        None,
+        today,
+        match_many=S.match_all(call),
     )
     if enough.enough:
         counter["gia_coperta"] += 1
@@ -126,9 +132,21 @@ def prefill_one(
         domain = N.site_of(passage.doc.link) if passage.doc.link else passage.doc.id.lower()
         site = library.sites.get(domain)
         source = S.source_of(passage.doc, audience, site.gruppo if site else "a")
-        note = S.write_note(call, units[where[verdict["n"]]], passage, source, today)
+        note = S.write_note(
+            call,
+            units[where[verdict["n"]]],
+            passage,
+            source,
+            today,
+            cell=(need["specie"], need["tema"]),
+        )
         if note is None:
             counter["non_scritta"] += 1
+            continue
+        # test 2 (21/11): every note checked against its passage before it is kept
+        admitted, _ = S.admit(call, note, passage.text)
+        if not admitted:
+            counter["respinta_ammissione"] += 1
             continue
         result = library.add(note, S.relate(call), passage=passage.text, forbidden=[text])
         counter[result.outcome] += 1
@@ -146,6 +164,12 @@ def main() -> None:
     parser.add_argument("--budget-usd", type=float, default=20.0)
     parser.add_argument("--model", default="claude-haiku-5-5")
     parser.add_argument("--run", action="store_true", help="without it: dry run only")
+    parser.add_argument(
+        "--sites",
+        type=Path,
+        default=None,
+        help="a notes file whose site list (groups and caps) the new library starts from",
+    )
     args = parser.parse_args()
     questions = [json.loads(x) for x in args.questions.read_text("utf-8").splitlines() if x]
     if not args.run:
@@ -156,7 +180,12 @@ def main() -> None:
         return
     if not claude_cli.cli_exe():
         sys.exit("EVAL_CLAUDE_EXE manca")
-    library = N.NoteLibrary.load(args.notes) if args.notes.exists() else N.NoteLibrary()
+    if args.notes.exists():
+        library = N.NoteLibrary.load(args.notes)
+    elif args.sites is not None:
+        library = N.NoteLibrary(N.NoteLibrary.load(args.sites).sites.values())
+    else:
+        library = N.NoteLibrary()
     listed = json.loads((args.library / "indice.json").read_text("utf-8"))
     names = {Path(str(row["file"])).name for row in listed}
     index = L.LibraryIndex(L.load_library(args.library / "testi", names))

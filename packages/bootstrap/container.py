@@ -966,6 +966,7 @@ class ApplicationContainer:
             owner_limits=self.owner_limits_lookup(),
             account_age_repository=self.account_age_repository,
             photo_reading_enabled=self.photo_reading_enabled,
+            recent_other_chats=self.settings.chat_answer_v2,
         )
 
     def chat_usage_maintenance_service(self) -> ChatUsageMaintenanceService:

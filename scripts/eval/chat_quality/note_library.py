@@ -444,6 +444,8 @@ class Sufficiency:
 
 
 MatchFn = Callable[[str, Sequence[Note]], Note | None]
+# all the facts against the cell in one call (test 2 report §4, proposal 4)
+MatchManyFn = Callable[[Sequence[str], Sequence[Note]], dict[str, Note]]
 
 
 def sufficiency(
@@ -451,22 +453,26 @@ def sufficiency(
     specie: str,
     tema: str,
     needed: Sequence[str],
-    match: MatchFn,
+    match: MatchFn | None,
     today: date,
+    *,
+    match_many: MatchManyFn | None = None,
 ) -> Sufficiency:
-    """Plan 08 step 2: for each of the 2-4 facts the question needs there must be a good
-    note in the cell. "The library has something" is not enough."""
+    """Plan 08 step 2: for each fact the question needs there must be a good note in the
+    cell. "The library has something" is not enough. The facts found are served from the
+    library even when others are missing; only the missing ones are read on demand."""
     cell = [n for n in library.active(specie, tema) if n.good(today)]
     if specie != ALL_SPECIES:
         cell += [n for n in library.active(ALL_SPECIES, tema) if n.good(today)]
     found: dict[str, Note] = {}
-    missing: list[str] = []
-    for fact in needed:
-        note = match(fact, cell) if cell else None
-        if note is None:
-            missing.append(fact)
-        else:
-            found[fact] = note
+    if cell and match_many is not None:
+        found = {f: n for f, n in match_many(needed, cell).items() if f in needed}
+    elif cell and match is not None:
+        for fact in needed:
+            note = match(fact, cell)
+            if note is not None:
+                found[fact] = note
+    missing = [fact for fact in needed if fact not in found]
     return Sufficiency(enough=bool(needed) and not missing, found=found, missing=missing)
 
 

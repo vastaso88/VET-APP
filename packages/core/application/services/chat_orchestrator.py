@@ -44,6 +44,7 @@ from packages.core.application.services.medical_record_context_retriever import 
 )
 from packages.core.application.services.natural_answer_prompt import (
     ANSWER_NOW_REMINDER,
+    GUARD_FOLLOW_UP_PROMPT,
     PROMPT_VERSION,
     SEVERITY_CHECK_PROMPT,
     SHORTEN_PROMPT,
@@ -58,7 +59,7 @@ from packages.core.application.services.urgency_classifier import (
     UrgencyClassifier,
     UrgencyVerdict,
 )
-from packages.core.domain.common.language import normalize_language
+from packages.core.domain.common.language import normalize_language, response_language_instruction
 from packages.core.domain.conversation.answer_cache import (
     cache_key,
     is_cacheable_question,
@@ -279,6 +280,9 @@ def _word_count(text: str) -> int:
 
 
 _JSON_OBJECT = re.compile(r"\{.*\}", re.S)
+# Fixed guard replies a v2 answer continues with what to do now (round 4b, 21/11): a dose
+# change, a human medicine, euthanasia at home. Not self-harm, a hurt person, a child.
+_GUARDS_WITH_FOLLOW_UP = frozenset({"dosage-guard", "toxin-intent-guard", "harmful-request-guard"})
 
 
 def _parse_severity_check(content: str) -> tuple[bool, bool, str] | None:
@@ -980,6 +984,10 @@ class ChatOrchestratorInput(BaseModel):
     # (docs/compliance/19): the reply says so honestly and never guesses.
     photo_reading_off: bool = False
     conversation_history: list[ChatMessage] = Field(default_factory=list)
+    # Plan 08, v2 (synthetic users round 4b): the last lines of OTHER conversations about
+    # this animal in the last 72 hours, oldest first, so a new chat knows a serious case
+    # opened in another one. Same consent rule as the history; used only in v2.
+    recent_other_chats: list[ChatMessage] = Field(default_factory=list)
     situation_model: SituationModel | None = None
     interview_turns_used: int = 0
     medical_record_consent: bool | None = None
@@ -1193,6 +1201,8 @@ class ChatOrchestrator:
                 state=ConversationState.NEED_MORE_INFORMATION,
             )
         result = self._answer(data)
+        if self._answer_v2 and result.model in _GUARDS_WITH_FOLLOW_UP:
+            result = self._with_guard_follow_up(result, data)
         if data.photo_reading_off:
             notice = translate("photo_reading_off", data.language)
             # An emergency keeps its first lines: the notice goes last there.
@@ -1969,6 +1979,52 @@ class ChatOrchestrator:
     def _fixed_text(texts: dict[str, str], data: ChatOrchestratorInput) -> str:
         language = normalize_language(data.language)
         return texts.get(language, texts["it"]).format(name=data.pet_name)
+
+    def _with_guard_follow_up(
+        self, result: ChatOrchestratorResult, data: ChatOrchestratorInput
+    ) -> ChatOrchestratorResult:
+        """Plan 08, v2 (synthetic users round 4b): after a fixed guard reply the owner also
+        reads what to do now, from the whole conversation (4 of 5 serious cases had lost the
+        urgency). The fixed text stays first and unchanged; the model's part passes the same
+        checks as an answer (dose, phone number, severity). Anything wrong: the fixed text."""
+        history_block = self._format_conversation_history(data)
+        owner_message = self._anonymize_for_provider(data.user_message, data)
+        language = response_language_instruction(data.language)
+        try:
+            response = self._llm_client.generate(
+                LLMGenerationRequest(
+                    system_prompt=GUARD_FOLLOW_UP_PROMPT.format(language=f" {language}"),
+                    user_prompt=(
+                        f"{self._pet_context_block(data, generic=False)}\n{history_block}"
+                        f"Owner's last message: {owner_message}\n\n"
+                        f"FIXED TEXT ALREADY GIVEN:\n{result.answer}"
+                    ),
+                    max_tokens=220,
+                    purpose="guard_follow_up",
+                    model_class="main",
+                )
+            )
+        except Exception:  # noqa: BLE001 - the fixed text alone is still a safe reply
+            logger.warning("guard follow-up unavailable: the fixed text alone")
+            return result
+        if response.finish_reason == "length" or not response.content.strip():
+            return result
+        if has_phone_number(response.content):
+            response = response.model_copy(
+                update={"content": without_phone_numbers(response.content)}
+            )
+        if (
+            find_dosage(response.content) is not None
+            or not validate_answer(response.content, sources_count=0).is_valid
+        ):
+            return result
+        response = self._severity_checked(
+            response, history_block=history_block, owner_message=owner_message
+        )
+        follow_up = clean_answer_text(response.content).strip()
+        if len(follow_up) < 40:
+            return result
+        return result.model_copy(update={"answer": f"{result.answer.rstrip()}\n\n{follow_up}"})
 
     def _severity_checked(
         self, response: LLMResponse, *, history_block: str, owner_message: str
@@ -3870,7 +3926,7 @@ class ChatOrchestrator:
             harmful_note=HARMFUL_NOTES.get(detect_harmful_request(message) or "", ""),
             minor=is_minor_writing(message),
             minor_account=data.owner_is_minor,
-            child_at_risk=mentions_a_child_at_risk(message),
+            child_at_risk=mentions_a_child_at_risk(message, data.pet_name),
             long_message=is_long_message(message),
             forced_yes_no=asks_for_a_bare_yes_or_no(message),
             future_animal=is_about_a_future_animal(message),
@@ -3881,6 +3937,7 @@ class ChatOrchestrator:
             dose_part=dose_part,
             dose_only=dose_only,
             owner_health=owner_health,
+            other_chats=bool(self._answer_v2 and data.recent_other_chats),
             foreign_country=foreign,
             medical_first=medical_cause_first(message, data.age_years),
             travel_south=travel_to_sand_fly_area(message, normalize_species(effective_species)),
@@ -4074,7 +4131,7 @@ class ChatOrchestrator:
             answer_text = opening + answer_text
             cache_id = None
         if (
-            mentions_child_handling(message)
+            mentions_child_handling(message, data.pet_name)
             and not is_minor_writing(message)
             and not self._already_said(CHILD_NEVER_ALONE, data)
         ):
@@ -4479,8 +4536,9 @@ class ChatOrchestrator:
         grande?") has nothing to attach to and the model can only improvise a
         plausible-sounding but ungrounded continuation. Empty for a first
         message, which is the common case and needs no such block."""
+        other = self._other_chats_block(data)
         if not data.conversation_history:
-            return ""
+            return other
         # Earlier turns leave for the provider too, so they get the same
         # anonymization as the current message (2026-10-04: they used to
         # be sent as typed).
@@ -4512,7 +4570,21 @@ class ChatOrchestrator:
                 for m in recent
             ]
             parts.append("Earlier in this conversation:\n" + "\n".join(lines))
-        return "\n\n".join(parts) + "\n\n" if parts else ""
+        return other + ("\n\n".join(parts) + "\n\n" if parts else "")
+
+    def _other_chats_block(self, data: ChatOrchestratorInput) -> str:
+        """v2: other recent conversations about this animal, anonymized and cut short."""
+        if not (self._answer_v2 and data.recent_other_chats):
+            return ""
+        lines = [
+            f"{m.role}: " + self._shorten(self._anonymize_for_provider(m.content, data), 300)
+            for m in data.recent_other_chats
+        ]
+        return (
+            "Other conversations about this animal in the last 72 hours:\n"
+            + "\n".join(lines)
+            + "\n\n"
+        )
 
     @staticmethod
     def _shorten(text: str, limit: int) -> str:

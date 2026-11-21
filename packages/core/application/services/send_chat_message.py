@@ -1,4 +1,4 @@
-from datetime import UTC, date, datetime
+from datetime import UTC, date, datetime, timedelta
 
 from pydantic import BaseModel
 
@@ -148,8 +148,12 @@ class SendChatMessageService:
         owner_limits: OwnerLimitsLookup | None = None,
         account_age_repository: AccountAgeRepository | None = None,
         photo_reading_enabled: bool = True,
+        recent_other_chats: bool = False,
     ) -> None:
         self._repository = repository
+        # Plan 08, v2 only (CHAT_ANSWER_V2): the last lines of the pet's other recent
+        # conversations travel with the message (synthetic users round 4b, 21/11).
+        self._recent_other_chats = recent_other_chats
         self._orchestrator = orchestrator
         self._pet_profile_repository = pet_profile_repository
         # None simply means this deployment never offers photo attachments,
@@ -173,6 +177,43 @@ class SendChatMessageService:
         self._photo_reading_enabled = photo_reading_enabled
 
     _MAX_OTHER_PETS = 12
+    _OTHER_CHATS_WINDOW = timedelta(hours=72)
+    _OTHER_CHATS_MAX = 2  # conversations
+    _OTHER_CHATS_LINES = 2  # last messages of each
+
+    def _recent_other_chat_lines(
+        self, conversation: Conversation, record_allowed: bool, now: datetime
+    ) -> list[ChatMessage]:
+        """The last lines of the pet's OTHER conversations of the last 72 hours, oldest
+        first: a serious case opened there stays known in a new chat. Same owner, same pet,
+        the same consent rule as the history; nothing beyond what the app already stores."""
+        if not self._recent_other_chats:
+            return []
+        try:
+            others = [
+                c
+                for c in self._repository.list_by_pet(conversation.pet_id)
+                if c.id != conversation.id
+                and c.owner_id == conversation.owner_id
+                and c.messages
+                and now - _last_activity(c) <= self._OTHER_CHATS_WINDOW
+            ]
+        except Exception:  # noqa: BLE001 - the answer never fails on this context
+            return []
+        others.sort(key=_last_activity)
+        lines: list[ChatMessage] = []
+        for other in others[-self._OTHER_CHATS_MAX :]:
+            messages = other.messages
+            if not record_allowed:
+                messages = history_without_record(
+                    messages, conversation_had_consent=other.medical_record_consent is True
+                )
+            lines += [
+                m
+                for m in messages[-self._OTHER_CHATS_LINES :]
+                if now - m.created_at <= self._OTHER_CHATS_WINDOW
+            ]
+        return lines
 
     def _other_pets(self, owner_id: str, pet_id: str) -> list[str]:
         """The owner's other animals, name and species only ("Orlando (Gatto,
@@ -378,6 +419,9 @@ class SendChatMessageService:
                 # since SituationModel already carries the compact,
                 # structured summary of everything older forward.
                 conversation_history=self._history_for_provider(conversation, record_allowed),
+                recent_other_chats=self._recent_other_chat_lines(
+                    conversation, record_allowed, datetime.now(UTC)
+                ),
                 situation_model=conversation.situation_model,
                 interview_turns_used=conversation.interview_turns_used,
                 medical_record_consent=medical_record_consent,

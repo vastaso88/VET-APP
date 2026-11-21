@@ -538,7 +538,9 @@ _CHILD = _words(
     r"child|children|kid|kids|toddler|baby|my son|my daughter|"
     r"nin[oa]s?|hij[oa]s?|bebe|"
     r"kind|kinder|kleinkind|sohn|tochter|"
-    r"enfant\w*|bebe|fils|fille|petit[es]?"
+    # "petit" alone is "small" ("un petit bout", "une petite question": synthetic users
+    # round 4b, 21/11): only the forms that name a child
+    r"enfant\w*|bebe|fils|fille|petits? enfants?|petite fille|petit garcon|les petits"
 )
 # The gestures the fixed sentence CHILD_NEVER_ALONE speaks of: only these
 # put it before the answer (owner's test 2026-11-16: "figli" and a growl at
@@ -576,11 +578,20 @@ def _without_negated_signals(text: str) -> str:
     )
 
 
-def mentions_child_handling(message: str) -> bool:
+def _without_pet_name(text: str, pet_name: str | None) -> str:
+    """The animal's own name never counts as a word of the message: a cat called Câlin
+    ("hug" in French) is not a hug (synthetic users round 4b, 21/11)."""
+    name = normalize_for_matching(pet_name or "").strip()
+    if not name:
+        return text
+    return re.sub(rf"\b{re.escape(name)}\b", " ", text)
+
+
+def mentions_child_handling(message: str, pet_name: str | None = None) -> bool:
     """A child and a gesture that can end in a bite (a pulled tail, a tight
     hug, the neck grabbed, left alone with the animal): the fixed sentence
     CHILD_NEVER_ALONE goes before the answer."""
-    text = normalize_for_matching(message)
+    text = _without_pet_name(normalize_for_matching(message), pet_name)
     return bool(_CHILD.search(text) and _CHILD_HANDLING.search(text))
 
 
@@ -769,12 +780,13 @@ def describes_a_vague_picture(message: str) -> bool:
     return bool(_VAGUE_PICTURE.search(normalize_for_matching(message)))
 
 
-def mentions_a_child_at_risk(message: str) -> bool:
+def mentions_a_child_at_risk(message: str, pet_name: str | None = None) -> bool:
     """A child in the picture with one of those gestures or with a warning
     signal: the prompt puts the child's safety first, in the words of the
     case (``_CHILD_AT_RISK``); the fixed sentence only for the gestures."""
-    return mentions_child_handling(message) or (
-        bool(_CHILD.search(normalize_for_matching(message))) and mentions_a_warning_signal(message)
+    text = _without_pet_name(normalize_for_matching(message), pet_name)
+    return mentions_child_handling(message, pet_name) or (
+        bool(_CHILD.search(text)) and mentions_a_warning_signal(message)
     )
 
 

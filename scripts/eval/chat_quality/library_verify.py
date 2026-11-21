@@ -75,7 +75,9 @@ testi ufficiali e scientifici. Per ogni frase numerata ti do alcuni passi candid
 tipo e il livello della fonte (livello 1 = legge o guida di un ente pubblico; livello 3 = \
 studio scientifico). Per ogni frase decidi:
 - "sostenuta": un passo dice davvero la stessa cosa (anche con altre parole o in un'altra \
-lingua). Lo stesso argomento non basta: deve dire quel fatto. Indica il passo.
+lingua) e OGNI parte della frase è nel passo: ogni numero, ogni condizione, ogni specie o \
+razza, ogni causa, ogni segno. Se anche una sola parte non è nel passo: "nessuna". Lo stesso \
+argomento non basta. Indica il passo.
 - "contraddetta": un passo dice chiaramente il contrario o un valore diverso. Indica il \
 passo e, SOLO se il passo è di livello 1, scrivi "riscrittura": la frase corretta, nella \
 stessa lingua e nello stesso tono, che dice solo ciò che il passo dice (la minima modifica).
@@ -87,6 +89,11 @@ studio su animali diversi o in condizioni diverse non contraddice una frase gene
 dubbio: "nessuna".
 Rispondi SOLO con un oggetto JSON: {"verdetti": [{"n": 3, "esito": "sostenuta"|"contraddetta"\
 |"nessuna", "passo": "3.2", "riscrittura": "solo se contraddetta da livello 1"}]}"""
+
+
+# Test 2 (20/11): more than half of the corrections were wrong; they stay off until a new
+# measure (Orchestrator, 20/11). A contradiction then only removes the asterisk.
+CORRECTIONS = False
 
 
 @dataclass
@@ -214,6 +221,9 @@ def verify(
             # EU law; a foreign guide or a study says nothing on it (enforced here).
             result.ignored_foreign_or_study += 1
             continue
+        if outcome == "contraddetta" and not CORRECTIONS:
+            result.ignored_study_contradictions += 1
+            continue
         if outcome == "contraddetta":
             rewrite = str(v.get("riscrittura") or "").strip()
             if passage.doc.level != 1 or not rewrite:
@@ -265,20 +275,31 @@ def _finish(
 
 
 def official_passages(
-    call: L.Call, index_level1: L.LibraryIndex, *, message: str, pet: str
+    call: L.Call,
+    index_level1: L.LibraryIndex,
+    *,
+    message: str,
+    pet: str,
+    words: Sequence[str] | None = None,
+    group: str | None = None,
 ) -> tuple[str, list[str]]:
     """Variant 2: the level 1 passages relevant to the question (laws, public-body guides),
-    for the writer to read before answering. Studies never. Empty when none is relevant."""
-    reader = L.read(call, message, pet, [])
-    words = [*map(str, reader.get("parole_en") or []), *map(str, reader.get("parole_it") or [])]
-    hits = [p for p, _ in index_level1.search(words, str(reader.get("gruppo") or ""), k=10)]
+    for the writer to read before answering. Studies never. Empty when none is relevant.
+    `words` and `group` already known (the keywords of understand()) skip the reader call."""
+    if words is None or group is None:
+        reader = L.read(call, message, pet, [])
+        words = [*map(str, reader.get("parole_en") or []), *map(str, reader.get("parole_it") or [])]
+        group = str(reader.get("gruppo") or "")
+    hits = [p for p, _ in index_level1.search(list(words), group, k=10)]
     chosen = L.rerank(call, message, pet, hits)[:4] if hits else []
     if not chosen:
         return "", []
+    # no "[1]" labels: the app's validator reads "[n]" in an answer as a citation of its own
+    # sources, and a model echoing a label blocked a whole answer (test 2, 20/11)
     block = "\n\n".join(
-        f"[{i}] ({p.doc.kind}; {p.doc.title[:100]})"
+        f"PASSO ({p.doc.kind}; {p.doc.title[:100]})"
         + (f"\nNOTA SULLA VIGENZA: {p.doc.warning}" if p.doc.warning else "")
         + f"\n{p.text}"
-        for i, p in enumerate(chosen, 1)
+        for p in chosen
     )
     return block, [p.pid for p in chosen]
