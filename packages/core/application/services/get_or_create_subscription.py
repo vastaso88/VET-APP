@@ -30,6 +30,10 @@ logger = logging.getLogger(__name__)
 class GetOrCreateSubscriptionInput(BaseModel):
     owner_id: str
     email: str
+    # Whether the provider confirmed [email]. True: the request's token says so.
+    # False: not confirmed. None: the caller cannot tell (the plan-limits lookup
+    # inside the services). Only True can grant a BILLING_PLAN_OVERRIDES plan.
+    email_verified: bool | None = None
 
 
 class StoreSubscriptionView(BaseModel):
@@ -126,6 +130,12 @@ class GetOrCreateSubscriptionService:
 
         email = data.email.strip().lower()
         override = self._plan_overrides.get(email) if self._test_plan is None else None
+        if override is not None and data.email_verified is not True:
+            # Anyone can sign up with a team address: an unconfirmed one never
+            # earns the override. A caller that cannot tell may only keep the
+            # plan a confirmed request already saved for this same account.
+            if not (data.email_verified is None and subscription.plan == override):
+                override = None
         store_view: StoreSubscriptionView | None = None
         if override is not None:
             # Team/demo account (BILLING_PLAN_OVERRIDES, environment only): a

@@ -21,7 +21,9 @@ def get_subscription_status() -> dict[str, object]:
     container = get_container()
     user = container.auth_provider.get_current_user()
     result = container.get_or_create_subscription_service().execute(
-        GetOrCreateSubscriptionInput(owner_id=user.id, email=user.email)
+        GetOrCreateSubscriptionInput(
+            owner_id=user.id, email=user.email, email_verified=getattr(user, "email_verified", None)
+        )
     )
     return result.model_dump()
 

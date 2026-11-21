@@ -132,7 +132,11 @@ def get_pause_notice() -> dict[str, object]:
     if pause is None:
         return {"resumed": False}
     subscription = container.get_or_create_subscription_service().execute(
-        GetOrCreateSubscriptionInput(owner_id=user.id, email=user.email or "")
+        GetOrCreateSubscriptionInput(
+            owner_id=user.id,
+            email=user.email or "",
+            email_verified=getattr(user, "email_verified", None),
+        )
     )
     kept_until = subscription.data_kept_until
     return {

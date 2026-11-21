@@ -14,17 +14,17 @@ class BillingAccountPanel extends StatelessWidget {
     final configured = Uri.tryParse(
       const String.fromEnvironment(
         'QUOKKA_ACCOUNT_URL',
-        defaultValue: 'https://quokkapp.net/account',
+        defaultValue: 'https://quokkapet.net/account',
       ),
     );
     if (configured == null ||
         configured.scheme != 'https' ||
-        configured.host != 'quokkapp.net' ||
+        configured.host != 'quokkapet.net' ||
         configured.path != '/account' ||
         configured.hasQuery ||
         configured.hasFragment ||
         configured.userInfo.isNotEmpty) {
-      return Uri.parse('https://quokkapp.net/account');
+      return Uri.parse('https://quokkapet.net/account');
     }
     return configured;
   }

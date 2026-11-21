@@ -18,7 +18,11 @@ def owner_has_access() -> bool:
     user = container.auth_provider.get_current_user()
     try:
         status = container.get_or_create_subscription_service().execute(
-            GetOrCreateSubscriptionInput(owner_id=user.id, email=user.email)
+            GetOrCreateSubscriptionInput(
+                owner_id=user.id,
+                email=user.email,
+                email_verified=getattr(user, "email_verified", None),
+            )
         )
     except Exception as exc:  # noqa: BLE001 - preserve legacy development fallback
         logger.exception("could not check the owner's subscription")

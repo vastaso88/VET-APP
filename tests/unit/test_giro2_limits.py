@@ -428,7 +428,7 @@ def store_client(monkeypatch: pytest.MonkeyPatch, request: pytest.FixtureRequest
     apple.answers["1000"] = VerifiedStorePurchase(
         store=Store.APPLE,
         store_subscription_id="1000",
-        product_id="net.quokkapp.plus.monthly",
+        product_id="net.quokkapet.plus.monthly",
         state=StoreState.ACTIVE,
         expires_at=utc_now() + timedelta(days=30),
         auto_renew=True,
