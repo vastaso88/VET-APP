@@ -62,7 +62,12 @@ begin
     raise exception 'TOTP code already used' using errcode='22023';
   end if;
   -- Existing transaction handles plan update + immutable audit entry.
-  perform public.admin_change_user_plan(p_owner_id,p_admin_id,p_plan);
+  -- Old deployments use text owner_id; newer baselines may use UUID.
+  if to_regprocedure('public.admin_change_user_plan(text,uuid,text)') is not null then
+    perform public.admin_change_user_plan(p_owner_id,p_admin_id,p_plan);
+  else
+    perform public.admin_change_user_plan(p_owner_id::uuid,p_admin_id,p_plan);
+  end if;
 end $$;
 revoke all on function public.admin_change_user_plan_totp(text,uuid,text,text) from public, anon, authenticated;
 grant execute on function public.admin_change_user_plan_totp(text,uuid,text,text) to service_role;
