@@ -1,3 +1,4 @@
+import '../marketplace_rules_acceptance.dart';
 import 'dart:async';
 
 import 'package:flutter/material.dart';
@@ -109,6 +110,8 @@ class _MarketplaceConversationPageState extends State<MarketplaceConversationPag
   Future<void> _send() async {
     final text = _controller.text.trim();
     if (text.isEmpty || _busy) return;
+    // Writing needs the accepted rules (reading a conversation does not).
+    if (!await ensureMarketplaceRulesAccepted(context) || !mounted) return;
     setState(() => _busy = true);
     try {
       final id = _conversation?.id;

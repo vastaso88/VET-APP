@@ -461,6 +461,17 @@ class AppLocalizationsDe extends AppLocalizations {
   }
 
   @override
+  String get billingAccountStatusNotice =>
+      'Ihr Abo verwalten Sie in Ihrem Quokka-Konto auf der Website.';
+
+  @override
+  String get billingOpenAccount => 'Konto öffnen';
+
+  @override
+  String get billingOpenAccountError =>
+      'Die Seite konnte nicht geöffnet werden. Versuchen Sie es später erneut.';
+
+  @override
   String get billingTitle => 'Abo und Zahlungen';
 
   @override
@@ -4966,7 +4977,8 @@ class AppLocalizationsDe extends AppLocalizations {
   String get settingsConsentPrivacy => 'Datenschutzerklärung';
 
   @override
-  String get settingsConsentMarketingEmail => 'Marketing-E-Mails';
+  String get settingsConsentMarketingEmail =>
+      'Marketing-E-Mails: Neuigkeiten und Tipps von Quokka';
 
   @override
   String get settingsConsentAnalytics => 'Nutzungsanalyse';
@@ -6778,10 +6790,22 @@ class AppLocalizationsDe extends AppLocalizations {
       'Ein PDF mit allen Ereignissen in zeitlicher Reihenfolge';
 
   @override
+  String petsConsentShort(String name) {
+    return 'Mit „Aktivieren“ kann der Assistent die Krankenakte von $name lesen: Einträge mit Titel, Datum, Beschreibung und Text der Dokumente, laufende Erkrankungen, Notizen und Erinnerungen (einschließlich Therapien). Was er liest, geht an unsere KI-Anbieter, US-amerikanische Unternehmen, die die Daten in den USA, außerhalb der Europäischen Union, verarbeiten. Das geschieht, nachdem wir die personenbezogenen Daten entfernt haben, die wir erkennen (nicht alle). Wir verwenden diese Daten nur, um Ihnen zu antworten und für die Zusammenfassung für den Tierarzt. Sie können es jederzeit mit einem Fingertipp ausschalten, hier oder in den Einstellungen: Es gilt für spätere Anfragen.';
+  }
+
+  @override
   String get petsConsentProposalActivate => 'Aktivieren';
 
   @override
   String get petsConsentProposalLater => 'Später';
+
+  @override
+  String get marketplaceRulesTitle => 'Regeln des Gebrauchtmarkts';
+
+  @override
+  String get marketplaceRulesAccept =>
+      'Ich habe die Regeln des Gebrauchtmarkts gelesen und akzeptiere sie';
 
   @override
   String get noticeMarketplace =>
@@ -8002,7 +8026,8 @@ class AppLocalizationsDe extends AppLocalizations {
   String get storeBillingManage => 'Abo im Store verwalten';
 
   @override
-  String get storeBillingPending => 'Zahlung wartet auf Bestätigung durch den Store.';
+  String get storeBillingPending =>
+      'Zahlung wartet auf Bestätigung durch den Store.';
 
   @override
   String get storeBillingVerifying => 'Kauf wird überprüft…';
@@ -8011,13 +8036,16 @@ class AppLocalizationsDe extends AppLocalizations {
   String get storeBillingVerified => 'Abo aktiv.';
 
   @override
-  String get storeBillingFailed => 'Der Kauf konnte nicht überprüft werden. Versuche es später erneut: Es wird nicht doppelt abgebucht.';
+  String get storeBillingFailed =>
+      'Der Kauf konnte nicht überprüft werden. Versuche es später erneut: Es wird nicht doppelt abgebucht.';
 
   @override
-  String get storeBillingOwnedByOther => 'Dieser Kauf ist mit einem anderen Quokka-Konto verknüpft.';
+  String get storeBillingOwnedByOther =>
+      'Dieser Kauf ist mit einem anderen Quokka-Konto verknüpft.';
 
   @override
-  String get storeBillingUnavailable => 'Store-Käufe sind auf diesem Gerät nicht verfügbar.';
+  String get storeBillingUnavailable =>
+      'Store-Käufe sind auf diesem Gerät nicht verfügbar.';
 
   @override
   String storeBillingCanceledUntil(String date) {
@@ -8031,7 +8059,8 @@ class AppLocalizationsDe extends AppLocalizations {
   String get storeBillingRefunded => 'Abo erstattet oder widerrufen';
 
   @override
-  String get storeBillingPaymentIssue => 'Zahlungsproblem: Aktualisiere die Zahlungsmethode im Store';
+  String get storeBillingPaymentIssue =>
+      'Zahlungsproblem: Aktualisiere die Zahlungsmethode im Store';
 
   @override
   String storeBillingTrialDaysLeft(String days) {
@@ -8042,5 +8071,6 @@ class AppLocalizationsDe extends AppLocalizations {
   String get storeBillingRestoreDone => 'Wiederherstellung abgeschlossen.';
 
   @override
-  String get storeBillingPricesFromStore => 'Preise, Währung und Steuern sind die vom Store für dein Land angezeigten. Das Abo verlängert sich automatisch, bis du es im Store kündigst.';
+  String get storeBillingPricesFromStore =>
+      'Preise, Währung und Steuern sind die vom Store für dein Land angezeigten. Das Abo verlängert sich automatisch, bis du es im Store kündigst.';
 }

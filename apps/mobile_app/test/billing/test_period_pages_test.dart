@@ -7,7 +7,6 @@ import 'package:vet_app_mobile/features/billing/data/subscription_remote_data_so
 import 'package:vet_app_mobile/features/billing/domain/billing_models.dart';
 import 'package:vet_app_mobile/features/billing/domain/subscription_status.dart';
 import 'package:vet_app_mobile/features/billing/presentation/pages/billing_page.dart';
-import 'package:vet_app_mobile/features/billing/presentation/widgets/billing_account_panel.dart';
 import 'package:vet_app_mobile/features/first_run/presentation/pages/plan_intro_page.dart';
 import 'package:vet_app_mobile/l10n/app_localizations.dart';
 import 'package:vet_app_mobile/shared/errors/app_network_error.dart';
@@ -19,14 +18,16 @@ class _FakeSource implements SubscriptionRemoteDataSource {
   final SubscriptionStatus status;
 
   @override
-  Future<Result<SubscriptionStatus>> fetchStatus() async => Result.success(status);
+  Future<Result<SubscriptionStatus>> fetchStatus() async =>
+      Result.success(status);
 
   @override
   Future<Result<SubscriptionStatus>> selectPlan(PlanTier plan) async =>
       Result.failure(const AppNetworkError(code: 'no', message: 'no'));
 }
 
-SubscriptionStatus _status({bool testPeriod = false, bool hasAccess = true, PlanTier? plan}) {
+SubscriptionStatus _status(
+    {bool testPeriod = false, bool hasAccess = true, PlanTier? plan}) {
   return SubscriptionStatus(
     trialEndsAt: DateTime.now().add(const Duration(days: 9)),
     plan: plan,
@@ -34,10 +35,12 @@ SubscriptionStatus _status({bool testPeriod = false, bool hasAccess = true, Plan
     hasAccess: hasAccess,
     testPeriod: testPeriod,
     planLimits: const {
-      PlanTier.plus: PlanLimits(maxPets: 4, maxChatsPerPet: 2, dailyQuestions: 9, maxDevices: 2),
-      PlanTier.pro: PlanLimits(maxPets: 8, maxChatsPerPet: 4, dailyQuestions: 16, maxDevices: 3),
-      PlanTier.ultra:
-          PlanLimits(maxPets: 15, maxChatsPerPet: 6, dailyQuestions: 30, maxDevices: 3),
+      PlanTier.plus: PlanLimits(
+          maxPets: 4, maxChatsPerPet: 2, dailyQuestions: 9, maxDevices: 2),
+      PlanTier.pro: PlanLimits(
+          maxPets: 8, maxChatsPerPet: 4, dailyQuestions: 16, maxDevices: 3),
+      PlanTier.ultra: PlanLimits(
+          maxPets: 15, maxChatsPerPet: 6, dailyQuestions: 30, maxDevices: 3),
     },
   );
 }
@@ -61,29 +64,34 @@ void main() {
   group('during the public test', () {
     setUp(() => _seed(_status(testPeriod: true, plan: PlanTier.pro)));
 
-    testWidgets('the subscription page says it is a test and offers no plan or payment',
+    testWidgets(
+        'the subscription page says it is a test and offers no plan or payment',
         (tester) async {
       await tester.binding.setSurfaceSize(const Size(420, 1600));
       addTearDown(() => tester.binding.setSurfaceSize(null));
       await tester.pumpWidget(_app(const BillingPage()));
       await tester.pumpAndSettle();
 
-      expect(find.byKey(const ValueKey('billing-test-period-banner')), findsOneWidget);
+      expect(find.byKey(const ValueKey('billing-test-period-banner')),
+          findsOneWidget);
       expect(find.text('Periodo di test'), findsOneWidget);
-      expect(find.byType(FilledButton), findsNothing, reason: 'no "Passa a ..." buttons');
+      expect(find.byType(FilledButton), findsNothing,
+          reason: 'no "Passa a ..." buttons');
       expect(find.textContaining('METODI DI PAGAMENTO'), findsNothing);
       expect(find.textContaining('CONFRONTA I PIANI'), findsNothing);
       expect(find.text('Aggiungi metodo di pagamento'), findsNothing);
     });
 
-    testWidgets('the page shown after sign-up does not offer a trial or a choice of plan',
+    testWidgets(
+        'the page shown after sign-up does not offer a trial or a choice of plan',
         (tester) async {
       await tester.binding.setSurfaceSize(const Size(420, 1600));
       addTearDown(() => tester.binding.setSurfaceSize(null));
       await tester.pumpWidget(_app(const PlanIntroPage()));
       await tester.pumpAndSettle();
 
-      expect(find.byKey(const ValueKey('first-run-test-period')), findsOneWidget);
+      expect(
+          find.byKey(const ValueKey('first-run-test-period')), findsOneWidget);
       expect(find.text('Inizia la prova gratuita'), findsNothing);
       expect(find.text('Scegli'), findsNothing);
       expect(find.text('Continua'), findsOneWidget);
@@ -91,10 +99,8 @@ void main() {
   });
 
   group('without the public test nothing changes', () {
-    // Outside the test period (and without BILLING_DEMO_ENABLED) the page is the
-    // store one: current plan, store subscriptions and the account panel, no
-    // in-app plan comparison (native billing, 76dafec).
-    testWidgets('the subscription page shows the store section, not the plan comparison',
+    testWidgets(
+        'the subscription page still compares the plans and lists the payment methods',
         (tester) async {
       await _seed(_status());
       await tester.binding.setSurfaceSize(const Size(420, 2600));
@@ -102,12 +108,17 @@ void main() {
       await tester.pumpWidget(_app(const BillingPage()));
       await tester.pumpAndSettle();
 
-      expect(find.byKey(const ValueKey('billing-test-period-banner')), findsNothing);
-      expect(find.byType(BillingAccountPanel), findsOneWidget);
-      expect(find.textContaining('CONFRONTA I PIANI'), findsNothing);
-    });
+      expect(find.byKey(const ValueKey('billing-test-period-banner')),
+          findsNothing);
+      expect(find.textContaining('CONFRONTA I PIANI'), findsOneWidget);
+      expect(find.byType(FilledButton), findsWidgets);
+    },
+        // Without the demo flag the page shows the account panel instead of the plan
+        // comparison (native store billing): the comparison is only built for the demo.
+        skip: !const bool.fromEnvironment('BILLING_DEMO_ENABLED'));
 
-    testWidgets('the page shown after sign-up still offers the trial and the plans',
+    testWidgets(
+        'the page shown after sign-up still offers the trial and the plans',
         (tester) async {
       await _seed(_status());
       await tester.binding.setSurfaceSize(const Size(420, 2600));

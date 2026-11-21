@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, Header
 
 from apps.api.dependencies.container import get_container
-from apps.api.dependencies.subscription import require_active_subscription
+from apps.api.dependencies.subscription import allowlist_email, require_active_subscription
 from apps.api.schemas.chat import SendChatMessageRequest
 from packages.core.application.services.send_chat_message import SendChatMessageInput
 from packages.core.domain.common.language import resolve_language
@@ -22,7 +22,7 @@ def send_chat_message(
     result = container.send_chat_message_service().execute(
         SendChatMessageInput(
             owner_id=user.id,
-            owner_email=user.email,
+            owner_email=allowlist_email(user),
             owner_display_name=user.display_name,
             language=resolve_language(request.response_locale or request.language, accept_language),
             **fields,

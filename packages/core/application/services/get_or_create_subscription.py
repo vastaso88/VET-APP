@@ -155,7 +155,9 @@ class GetOrCreateSubscriptionService:
         else:
             plan_source = "legacy" if subscription.plan is not None else None
 
-        is_developer = email in self._developer_emails
+        # An explicitly unconfirmed address is never a developer. Callers that
+        # cannot tell (None) receive only confirmed addresses (allowlist_email).
+        is_developer = email in self._developer_emails and data.email_verified is not False
         if is_developer:
             plan_source = "developer"
         elif self._test_plan is not None:

@@ -80,6 +80,14 @@ class ConsentRequiredError(VetAppError):
         return str(self)
 
 
+class MarketplaceRulesRequiredError(VetAppError):
+    """The owner has not accepted the current Mercatino rules: the API answers
+    403 `marketplace_rules_required` and the app shows the rules with their checkbox."""
+
+    def __init__(self) -> None:
+        super().__init__("marketplace_rules_required")
+
+
 class PlanLimitError(VetAppError):
     """The owner's plan does not allow more of [kind] ("pets",
     "chats_per_pet"): the API answers 403 `plan_limit_reached` with the

@@ -1,16 +1,33 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useMemo, useState } from "react";
 
 import {
   runGeographicOperation,
   type GeographicActionState,
 } from "../app/data/geographic/actions";
+import { GeographicCenterPicker } from "./geographic-center-picker";
 
 const initialState: GeographicActionState = { status: "idle" };
 
+const DEFAULT_LATITUDE = "45.4642";
+const DEFAULT_LONGITUDE = "9.1900";
+const DEFAULT_RADIUS_KM = "10";
+
 export function GeographicIngestionPanel() {
   const [state, action, pending] = useActionState(runGeographicOperation, initialState);
+  const [latitude, setLatitude] = useState(DEFAULT_LATITUDE);
+  const [longitude, setLongitude] = useState(DEFAULT_LONGITUDE);
+  const [radiusKm, setRadiusKm] = useState(DEFAULT_RADIUS_KM);
+
+  const center = useMemo(() => {
+    const lat = Number(latitude);
+    const lng = Number(longitude);
+    if (latitude === "" || longitude === "" || !Number.isFinite(lat) || !Number.isFinite(lng)) {
+      return null;
+    }
+    return { latitude: lat, longitude: lng };
+  }, [latitude, longitude]);
 
   return (
     <section className="panel">
@@ -21,18 +38,53 @@ export function GeographicIngestionPanel() {
         </div>
       </div>
 
+      <GeographicCenterPicker
+        center={center}
+        radiusKm={Number(radiusKm) > 0 ? Number(radiusKm) : 0}
+        onPick={(picked) => {
+          setLatitude(String(picked.latitude));
+          setLongitude(String(picked.longitude));
+        }}
+      />
+      <p className="muted">
+        Clicca sulla mappa per impostare il centro. Puoi anche modificare le coordinate a mano.
+      </p>
+
       <form action={action} className="operation-form">
         <label>
           Latitude
-          <input name="latitude" type="number" step="0.000001" defaultValue="45.4642" required />
+          <input
+            name="latitude"
+            type="number"
+            step="0.000001"
+            value={latitude}
+            onChange={(event) => setLatitude(event.target.value)}
+            required
+          />
         </label>
         <label>
           Longitude
-          <input name="longitude" type="number" step="0.000001" defaultValue="9.1900" required />
+          <input
+            name="longitude"
+            type="number"
+            step="0.000001"
+            value={longitude}
+            onChange={(event) => setLongitude(event.target.value)}
+            required
+          />
         </label>
         <label>
           Search radius (km)
-          <input name="radius_km" type="number" step="1" min="1" max="50" defaultValue="10" required />
+          <input
+            name="radius_km"
+            type="number"
+            step="1"
+            min="1"
+            max="50"
+            value={radiusKm}
+            onChange={(event) => setRadiusKm(event.target.value)}
+            required
+          />
         </label>
         <div className="form-actions">
           <button

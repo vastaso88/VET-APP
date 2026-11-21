@@ -4,7 +4,7 @@ from fastapi import APIRouter, Depends, File, Form, Header, HTTPException, Uploa
 from fastapi.responses import Response
 
 from apps.api.dependencies.container import get_container
-from apps.api.dependencies.subscription import require_active_subscription
+from apps.api.dependencies.subscription import allowlist_email, require_active_subscription
 from packages.core.application.services.upload_chat_attachment import UploadChatAttachmentInput
 from packages.core.domain.common.language import resolve_language
 
@@ -28,7 +28,7 @@ async def upload_attachment(
             filename=file.filename or "photo",
             content_type=file.content_type or "application/octet-stream",
             owner_display_name=user.display_name,
-            quota_exempt=user.email.strip().lower() in container.developer_emails,
+            quota_exempt=allowlist_email(user) in container.developer_emails,
             language=resolve_language(None, accept_language),
         )
     )

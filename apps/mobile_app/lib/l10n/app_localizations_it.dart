@@ -458,6 +458,17 @@ class AppLocalizationsIt extends AppLocalizations {
   }
 
   @override
+  String get billingAccountStatusNotice =>
+      'Il tuo abbonamento si gestisce dal tuo account Quokka sul sito.';
+
+  @override
+  String get billingOpenAccount => 'Apri il tuo account';
+
+  @override
+  String get billingOpenAccountError =>
+      'Non sono riuscito ad aprire la pagina. Riprova più tardi.';
+
+  @override
   String get billingTitle => 'Abbonamento e pagamenti';
 
   @override
@@ -4953,7 +4964,8 @@ class AppLocalizationsIt extends AppLocalizations {
   String get settingsConsentPrivacy => 'Informativa privacy';
 
   @override
-  String get settingsConsentMarketingEmail => 'Email di marketing';
+  String get settingsConsentMarketingEmail =>
+      'Email di marketing: novità e consigli di Quokka';
 
   @override
   String get settingsConsentAnalytics => 'Analisi d\'uso';
@@ -6759,10 +6771,22 @@ class AppLocalizationsIt extends AppLocalizations {
       'Un PDF con tutti gli eventi in ordine di data';
 
   @override
+  String petsConsentShort(String name) {
+    return 'Con «Attiva» l\'assistente potrà leggere la cartella clinica di $name: voci con titolo, data, descrizione e testo dei documenti, malattie in corso, note e promemoria (terapie comprese). Quello che legge va ai nostri fornitori di intelligenza artificiale, società statunitensi che trattano i dati negli Stati Uniti, fuori dall\'Unione europea, dopo che abbiamo tolto i dati personali che riconosciamo (non tutti). Lo usiamo solo per risponderti e per il riepilogo per il veterinario. Puoi spegnerlo quando vuoi con un tocco, qui o in Impostazioni: vale per le richieste successive.';
+  }
+
+  @override
   String get petsConsentProposalActivate => 'Attiva';
 
   @override
   String get petsConsentProposalLater => 'Più tardi';
+
+  @override
+  String get marketplaceRulesTitle => 'Regole del Mercatino';
+
+  @override
+  String get marketplaceRulesAccept =>
+      'Ho letto e accetto le regole del Mercatino';
 
   @override
   String get noticeMarketplace =>
@@ -7974,7 +7998,8 @@ class AppLocalizationsIt extends AppLocalizations {
   String get storeBillingManage => 'Gestisci abbonamento nello store';
 
   @override
-  String get storeBillingPending => 'Pagamento in attesa di conferma dallo store.';
+  String get storeBillingPending =>
+      'Pagamento in attesa di conferma dallo store.';
 
   @override
   String get storeBillingVerifying => 'Verifica dell’acquisto in corso…';
@@ -7983,13 +8008,16 @@ class AppLocalizationsIt extends AppLocalizations {
   String get storeBillingVerified => 'Abbonamento attivo.';
 
   @override
-  String get storeBillingFailed => 'Non è stato possibile verificare l’acquisto. Riprova più tardi: non ti verrà addebitato due volte.';
+  String get storeBillingFailed =>
+      'Non è stato possibile verificare l’acquisto. Riprova più tardi: non ti verrà addebitato due volte.';
 
   @override
-  String get storeBillingOwnedByOther => 'Questo acquisto è collegato a un altro account Quokka.';
+  String get storeBillingOwnedByOther =>
+      'Questo acquisto è collegato a un altro account Quokka.';
 
   @override
-  String get storeBillingUnavailable => 'Gli acquisti dallo store non sono disponibili su questo dispositivo.';
+  String get storeBillingUnavailable =>
+      'Gli acquisti dallo store non sono disponibili su questo dispositivo.';
 
   @override
   String storeBillingCanceledUntil(String date) {
@@ -8003,7 +8031,8 @@ class AppLocalizationsIt extends AppLocalizations {
   String get storeBillingRefunded => 'Abbonamento rimborsato o revocato';
 
   @override
-  String get storeBillingPaymentIssue => 'Problema di pagamento: aggiorna il metodo di pagamento nello store';
+  String get storeBillingPaymentIssue =>
+      'Problema di pagamento: aggiorna il metodo di pagamento nello store';
 
   @override
   String storeBillingTrialDaysLeft(String days) {
@@ -8014,5 +8043,6 @@ class AppLocalizationsIt extends AppLocalizations {
   String get storeBillingRestoreDone => 'Ripristino completato.';
 
   @override
-  String get storeBillingPricesFromStore => 'Prezzi, valuta e imposte sono quelli indicati dallo store per il tuo paese. L’abbonamento si rinnova automaticamente finché non lo disdici nello store.';
+  String get storeBillingPricesFromStore =>
+      'Prezzi, valuta e imposte sono quelli indicati dallo store per il tuo paese. L’abbonamento si rinnova automaticamente finché non lo disdici nello store.';
 }

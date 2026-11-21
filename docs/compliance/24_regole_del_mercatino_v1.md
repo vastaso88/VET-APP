@@ -23,5 +23,22 @@ Le regole complete sono nei Termini di Servizio (§8).
 
 ## Stato
 
-- Traduzioni EN, ES, DE e FR: **non ancora scritte** (bozze da preparare; senza testo rivisto la lingua è servita in inglese, mai in italiano). Le preparo io o la UI/UX come bozza per la Revisione traduzioni, dopo il sì del proprietario al testo italiano.
+- **Controllo del 21 novembre sera sul codice** (`account_consent_text.py`, main 9ae05bc): il testo italiano coincide **parola per parola** con questo documento (chiave `marketplace_rules`, versione `v1`). La bozza inglese nel codice è fedele, con due correzioni: (1) nel testo inglese dell'app la funzione si chiama «marketplace» (titolo «Second-hand marketplace»), non «Mercatino»: vale anche per il titolo e la casella («Marketplace rules», «I have read and accept the marketplace rules»); (2) «at your own risk» diventa «on your own responsibility», perché «at your own risk» si legge come un esonero di responsabilità, che il testo italiano («sotto la tua responsabilità») evita. ES, DE e FR: servite in inglese finché non ci sono le traduzioni riviste, mai in italiano.
+- Il blocco lato server (`MARKETPLACE_RULES_REQUIRED`) resta spento fino al sì del proprietario ai testi. Se in futuro il testo cambia in modo sostanziale: `v2` e nuova accettazione. Nelle Impostazioni **non** come interruttore: al massimo una riga informativa («Regole del Mercatino accettate, v1, il …»).
+- Il rinvio «(§8)» è la sezione del Mercatino nei Termini italiani: controllare che nei Termini mostrati in app nelle altre lingue resti lo stesso numero.
 - ⚖️ Se la casella, con il punto 7, basta come accettazione specifica della lettura delle conversazioni segnalate ([23](23_consensi_in_contesto_e_regole_mercatino.md) §4).
+
+### Testo inglese rivisto (v1)
+
+**Marketplace rules**
+
+1. **Only items for animals.** Animals cannot be sold, given away or exchanged, in any country.
+2. **No medicines.** Medicines, including veterinary ones, cannot be sold or given away, even without a prescription. Food, supplements and accessories are allowed. The app blocks many listings that name a medicine, not all: if you see one, report it.
+3. **Private sellers only.** You sell or give away used items as a private person, not as part of a commercial or professional activity. Quokka does not verify the declaration.
+4. **Honest listings.** Describe the item as it is. No illegal, counterfeit or dangerous goods, no personal data of other people, no phone numbers, emails, websites or social profiles in the text.
+5. **Quokka connects two private individuals and is not a party to the sale.** Price, payment, delivery and warranties concern only you and the other person. We do not verify listings, items or people. Do not pay in advance to someone you do not know; if you exchange contacts in messages, you do so on your own responsibility.
+6. **Adults only.** The marketplace, messages included, is for people aged 18 or over.
+7. **Messages.** Text only. You can block a person or report a conversation at any time. **If a conversation is reported, by you or by the other person, the Quokka team may read it, only to assess the report.**
+8. **After a report** we may close the conversation, hide or remove a listing, or keep you out of the marketplace. We tell you the reason and the date, in your language, and how to ask for a review from Settings → Contact us.
+
+The full rules are in the Terms of Service (§8).

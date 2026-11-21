@@ -143,7 +143,7 @@ void main() {
     await tester.pumpAndSettle();
     // Before closing, the assistant's reading of the medical record is proposed.
     expect(find.text('Cartella clinica di Thor'), findsOneWidget);
-    await tester.tap(find.byKey(const ValueKey('consent-proposal-later')));
+    await tester.tap(find.byKey(const ValueKey('consent-activate-not-now')));
     await tester.pumpAndSettle();
     expect(find.text('apri'), findsOneWidget, reason: 'Fine closes the creation page');
   });

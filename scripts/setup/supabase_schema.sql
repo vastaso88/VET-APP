@@ -2796,3 +2796,27 @@ begin
     end if;
 end;
 $$;
+
+-- Audit of plan changes made by the team (POST /admin/users/{id}/plan). Full
+-- script with the function and the policy:
+-- supabase/migrations/20261121210000_admin_plan_changes.sql.
+create table if not exists public.admin_plan_changes (
+  id bigint generated always as identity primary key,
+  owner_id uuid not null,
+  admin_id uuid not null,
+  old_plan text,
+  new_plan text,
+  changed_at timestamptz not null default now()
+);
+create index if not exists admin_plan_changes_owner_time
+  on public.admin_plan_changes(owner_id, changed_at desc);
+alter table public.admin_plan_changes enable row level security;
+revoke all on public.admin_plan_changes from public, anon, authenticated;
+grant select, insert, delete on public.admin_plan_changes to service_role;
+
+-- No grant to authenticated: the policy below reads nothing today. It is the
+-- "own rows only" rule every table carries, should a read ever be granted.
+drop policy if exists admin_plan_changes_select_own on public.admin_plan_changes;
+create policy admin_plan_changes_select_own on public.admin_plan_changes
+  for select to authenticated
+  using (owner_id = (select auth.uid()));

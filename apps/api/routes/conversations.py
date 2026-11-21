@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, Header, Response
 
 from apps.api.dependencies.container import get_container
-from apps.api.dependencies.subscription import require_active_subscription
+from apps.api.dependencies.subscription import allowlist_email, require_active_subscription
 from apps.api.schemas.conversations import EditChatMessageRequest, RenameConversationRequest
 from packages.core.application.services.delete_conversation import DeleteConversationInput
 from packages.core.application.services.edit_chat_message import EditChatMessageInput
@@ -105,7 +105,7 @@ def conversation_summary(
             owner_id=user.id,
             conversation_id=conversation_id,
             language=resolve_language(None, accept_language),
-            quota_exempt=user.email.strip().lower() in container.developer_emails,
+            quota_exempt=allowlist_email(user) in container.developer_emails,
             owner_names=owner_names_for_anonymization(
                 user.display_name, pet_name=pet.name if pet else ""
             ),

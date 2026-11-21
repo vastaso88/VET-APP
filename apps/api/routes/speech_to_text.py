@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, File, Header, UploadFile
 
 from apps.api.dependencies.container import get_container
-from apps.api.dependencies.subscription import require_active_subscription
+from apps.api.dependencies.subscription import allowlist_email, require_active_subscription
 from packages.core.application.services.transcribe_audio import TranscribeAudioInput
 from packages.core.domain.common.language import resolve_language
 from packages.shared.errors.base import ValidationError
@@ -33,7 +33,7 @@ async def transcribe(
             filename=file.filename or "audio",
             content_type=file.content_type or "application/octet-stream",
             owner_id=user.id,
-            quota_exempt=user.email.strip().lower() in container.developer_emails,
+            quota_exempt=allowlist_email(user) in container.developer_emails,
             language=resolve_language(None, accept_language),
         )
     )

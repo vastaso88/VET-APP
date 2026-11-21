@@ -9,6 +9,7 @@ so a new table cannot silently escape the deletion."""
 
 from __future__ import annotations
 
+import logging
 from datetime import UTC, datetime
 from typing import TYPE_CHECKING, Any, cast
 from uuid import UUID
@@ -20,10 +21,15 @@ from packages.core.domain.marketplace.messaging import (
     KEEPING_REPORT_STATUSES,
 )
 from packages.core.domain.radar_reports.models import contributor_pseudonym
+from packages.infrastructure.persistence.supabase.missing_table import (
+    is_missing_table,
+    missing_table_note,
+)
 
 if TYPE_CHECKING:
     from supabase import Client
 
+logger = logging.getLogger(__name__)
 _LIST_PAGE = 100
 PET_PHOTOS_BUCKET = "pet-photos"
 MARKETPLACE_PHOTOS_BUCKET = "marketplace-photos"
@@ -35,6 +41,7 @@ MARKETPLACE_PHOTOS_BUCKET = "marketplace-photos"
 OWNER_TABLES: tuple[tuple[str, str], ...] = (
     ("user_login_events", "owner_id"),
     ("admin_user_actions", "owner_id"),
+    ("admin_plan_changes", "owner_id"),
     ("marketplace_listing_reports", "reporter_owner_id"),
     ("marketplace_user_restrictions", "owner_id"),
     ("marketplace_listings", "owner_id"),
@@ -301,7 +308,18 @@ class SupabaseAccountEraser:
         return cast(list[dict[str, Any]], response.data or [])
 
     def _delete_where(self, report: ErasureReport, table: str, column: str, value: str) -> None:
-        response = self._client.table(table).delete().eq(column, value).execute()
+        try:
+            response = self._client.table(table).delete().eq(column, value).execute()
+        except Exception as exc:
+            # A table that does not exist yet holds no data: skip it, say so.
+            # Any other failure stops the deletion (the identity is kept).
+            if not is_missing_table(exc):
+                raise
+            note = missing_table_note(table)
+            if note not in report.notes:
+                report.notes.append(note)
+            logger.warning("account erasure: %s", note)
+            return
         self._count(report, table, response)
 
     @staticmethod

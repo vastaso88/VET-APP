@@ -1,3 +1,5 @@
+import '../../../pets/data/pet_demo_store.dart';
+import '../../../pets/presentation/widgets/medical_record_consent_card.dart';
 import 'package:flutter/material.dart';
 import 'package:share_plus/share_plus.dart';
 
@@ -37,6 +39,11 @@ class ChatConversationMenuButton extends StatelessWidget {
             value: _Action.export, child: Text(context.l10n.chatMenuExport)),
         PopupMenuItem(
             value: _Action.summary, child: Text(context.l10n.chatMenuSummary)),
+        // The same decision as on the pet's page and in Settings.
+        if (PetDemoStore.instance.byName(petName) != null)
+          PopupMenuItem(
+              value: _Action.clinicalConsent,
+              child: Text(context.l10n.petsConsentCardTitle(petName))),
         PopupMenuItem(
           value: _Action.delete,
           child: Text(
@@ -61,6 +68,8 @@ class ChatConversationMenuButton extends StatelessWidget {
         await _export(context);
       case _Action.summary:
         await _showSummary(context);
+      case _Action.clinicalConsent:
+        await _showClinicalConsent(context);
       case _Action.delete:
         await _delete(context);
     }
@@ -196,6 +205,21 @@ class ChatConversationMenuButton extends StatelessWidget {
     );
   }
 
+  Future<void> _showClinicalConsent(BuildContext context) async {
+    final pet = PetDemoStore.instance.byName(petName);
+    if (pet == null) return;
+    await showModalBottomSheet<void>(
+      context: context,
+      backgroundColor: AppColors.surface,
+      builder: (_) => SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.all(AppSpacing.lg),
+          child: MedicalRecordConsentCard(pet: pet),
+        ),
+      ),
+    );
+  }
+
   Future<void> _delete(BuildContext context) async {
     final confirmed = await showDialog<bool>(
       context: context,
@@ -220,4 +244,4 @@ class ChatConversationMenuButton extends StatelessWidget {
   }
 }
 
-enum _Action { rename, export, summary, delete }
+enum _Action { rename, export, summary, delete, clinicalConsent }

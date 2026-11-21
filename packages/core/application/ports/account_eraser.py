@@ -9,6 +9,8 @@ class ErasureReport(BaseModel):
 
     rows_deleted: dict[str, int] = Field(default_factory=dict)
     files_removed: int = 0
+    # E.g. a table whose migration was not run yet, so it holds nothing.
+    notes: list[str] = Field(default_factory=list)
 
 
 class AccountEraser(Protocol):

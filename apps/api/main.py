@@ -53,6 +53,7 @@ from packages.shared.errors.base import (
     ConsentRequiredError,
     ConversationLimitError,
     MarketplaceRestrictedError,
+    MarketplaceRulesRequiredError,
     PetInMemoriesError,
     PlanLimitError,
     ProviderError,
@@ -256,6 +257,16 @@ def _plan_limit_message(exc: PlanLimitError, language: str) -> str:
             "plan_limit_pets_upgrade", language, limit=exc.limit, plan=exc.upgrade_to.capitalize()
         )
     return translate("plan_limit_pets", language, limit=exc.limit)
+
+
+@app.exception_handler(MarketplaceRulesRequiredError)
+async def handle_marketplace_rules_required(
+    _: Request, exc: MarketplaceRulesRequiredError
+) -> JSONResponse:
+    return JSONResponse(
+        status_code=403,
+        content={"detail": "marketplace_rules_required", "code": "marketplace_rules_required"},
+    )
 
 
 @app.exception_handler(PetInMemoriesError)

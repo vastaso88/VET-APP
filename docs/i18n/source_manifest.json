@@ -11511,12 +11511,12 @@
     }
   },
   "ui:settingsConsentMarketingEmail": {
-    "source": "d993b9f380692e6573c62354f59d7da2c8a436d74876fb312b8f6357d4083686",
+    "source": "d8daa398ba80e09279449b9cb73b376bb878befee581aeb9d98f1b280d5757a2",
     "targets": {
-      "en": "8ec893dfd40537d78ca2f11001de761af95fbc5e45c883e1e3f0861b484cd312",
-      "es": "ba00941e3aed2715429f73770cb4eaff2e5b0aced88a5d6ccbfea0b0b9eb77da",
-      "de": "6bc27a10e36c0d7fd20d600a332b0d35833fe27188aaa77da2aeb653976b07b6",
-      "fr": "197f1f59a24341e6aa09340af5ca155540f0920a322aa56a9a7a809f3ae86cdd"
+      "en": "560a4fc827bb9f2ba33cbdf2fb8f9e333c6ed7e055af3a454b9a8651317f5af5",
+      "es": "fe8032d81464700edab2fdeb272d6d9401ac1cbe15f60bb8a3a38592ec7fa83a",
+      "de": "40d2b3dbc84a091a865bfd6889f041ab001712c3b2a78ff831178d02b05a39c4",
+      "fr": "dc57272984d932701791400a6a90664abf31a9b92c9c7272e506a8fe775c3e9c"
     }
   },
   "ui:settingsConsentAnalytics": {
@@ -20880,30 +20880,57 @@
     }
   },
   "ui:billingAccountStatusNotice": {
-    "source": "60891ef32e01f533b005d70026007ba6b0c25d1f0f70379bf0ff81f29ad3d449",
+    "source": "6cbc6f9a36ea46042ff2e89aa4d22d7ddb56e5cbe9c01e7e871b4f48a62c78a9",
     "targets": {
-      "en": "72eaef83b8c7cd5770d09d4e61d21978c651796b55885dc5e3702e8689089c95",
-      "es": "be8fd5181d876f4c2eae0a7d2b1867987c3c33aa25e1f63068f22d37b9ddec1c",
-      "de": "08a3516413349f84135a66a77fa9af4c98a75f71b9aa13dcc7d93181d7d8dda1",
-      "fr": "3b1cf30b8cafd47d2b3edf68fd1416277643674cebe1d60b568aae87604c464c"
+      "en": "b6a2a4d7db5e9b23607f019e481a13709ea1e5212cb5ea31a2b8bf7b3ca9feba",
+      "es": "0bb134695bf40dd88f2c87e2117da0320decdbb5621f5e840381a8ff1754f608",
+      "de": "026e53996108db54185e7be739c1884f2fa95b761ddb4013c20df079bd58e81f",
+      "fr": "023ab8b5eaccda95e8e1c1ddeda55c19b46f3397ec1d54a77e52275d240424a9"
     }
   },
   "ui:billingOpenAccount": {
-    "source": "200ac9be6d4c59f561b2c2aad84dd19e08fd475687aaf641c736303a3c329dc5",
+    "source": "452123164ec35b246de3163719aa9a119e8905f1529a4db5036d276273e7d6f6",
     "targets": {
       "en": "7098b5d26ec226e17617b0c300c37d5ba00c515d9c515d9d3926410d91f67cbe",
-      "es": "16d6b5b365668ec8dad833b0e06c7c1137f69bdc765786b1b4b0b435438c6a88",
-      "de": "dda8cf43f3500cc5390ecaeab4fabe3eb4035d626e485038148d906531d273b6",
-      "fr": "a9433a1bbdca938a591a55e7ccbd0ac2fffbed8c12dfc61af913b7a3bc180cd7"
+      "es": "6aee6e54ead1e8d32b47fcc56d5ec3cd705adae8312726c93da2cf474265c33e",
+      "de": "22d61d419acc6516ba40143a8548b6e354934ebd7d431feff50d76a1e942d18c",
+      "fr": "36b534d69132d7cc7eae327c02f93bacc78ad1461c01f848c62bc04c26f78ccc"
     }
   },
   "ui:billingOpenAccountError": {
-    "source": "5f3265d9c7047cb9e0e32eb35a5d2ffe214ef82df334bf4a87513c81f6ad9b8f",
+    "source": "d2c2d657f79f44c869bae906b117bd452d12d2435eeed5f855945fe40b25b118",
     "targets": {
-      "en": "f104b12ee2033540f07bba3aa1050bc5420b0abde938f10d26c8b509977e19ce",
-      "es": "2e9b3ab8e7524eced51d168e4087a57a63e68215c0def7288b6ace5071e39443",
-      "de": "2c5415915991982f349dbbac0def2c63825f4cf7a30e74b566979e9d76526ebb",
-      "fr": "8a87662704f11ea2ef731eb4f487abbc625cb4a3779c2103e291d5ecd2c481e5"
+      "en": "41f438cca09f52c1b36540ecb71c499e212ad76bb80120a19b9fed06f3fc98f0",
+      "es": "010f097122fe96421d2eae93b91dae5bb946fdf5a684291235b9cae89334278e",
+      "de": "70fda24bea48effb291435d119f152fd932a5e9b0eb323c2901f424997e2d84c",
+      "fr": "e08cd58672e6b6e08c13cab45206ddaa0d71bbfd10f3bad2b36fe088970d1e7e"
+    }
+  },
+  "ui:petsConsentShort": {
+    "source": "ea96b9dd56e9aaa6c308a98147468ca536220199af9a46cbf49c0fec97ebde0c",
+    "targets": {
+      "en": "b2c49b52569596cb0286e9eb78df55438de77615aa4d054a6f660701755988f9",
+      "es": "479b41aacd2b2631973c97fbe8fd74cd257684fb86cfeddcbb21713894b05271",
+      "de": "9a089a824130b34b3b772d27c2afc10bcfd73e83f1e822a097c099aa05214f7f",
+      "fr": "ec8c603021976b5985c23e82983420848eb40a81844128c16fb7eb9e25c25e8b"
+    }
+  },
+  "ui:marketplaceRulesTitle": {
+    "source": "6a28c4eb55a10a3b87b22996bf788f24591c5d0cc650748deaa44e66625b756c",
+    "targets": {
+      "en": "d4c464b9cc62b883fd89be598363224488053a2ddbe954ca6a9828c967be0d4c",
+      "es": "5c84a458b53c179d44b5698ae3955f448f71a1e87fb49e3b0cf1cfb62dc3f6b1",
+      "de": "9e4947e82f1f006626cefbb833c61442e791245cc2399f88c6576ac43a6eba32",
+      "fr": "f40247587d027193e904089b8e9d9ad161a07b66635046885e6e04b8bce9f070"
+    }
+  },
+  "ui:marketplaceRulesAccept": {
+    "source": "7eb787c88bc421d7d5e94543c1eeaaa4eb3a061efef39998f99f09cfc3bed85c",
+    "targets": {
+      "en": "644f4b2ebd19cd999590ad202c2d6b072229317b437e0e672f388de376484f1c",
+      "es": "15b0c996aeaab2beff1f8cf5e035a0d8551f14d6d66257ac3c10e57d734fe652",
+      "de": "b408488fd0a6894a7034b4c2c694d03fa027e704b7b98ba9204fcb2e0d112aaf",
+      "fr": "1fd37af60f3320298818141cc3eeecbc3ab109605ef3069d76a7311b85732d28"
     }
   }
 }

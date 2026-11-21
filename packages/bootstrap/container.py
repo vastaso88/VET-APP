@@ -417,8 +417,10 @@ class ApplicationContainer:
         self.account_pause_repository = self._build_account_pause_repository()
         self.email_sender = self._build_email_sender()
         self.owner_contact_lookup = self._build_owner_contact_lookup()
+        # A blank entry (a trailing comma) must not make "" a developer: an
+        # unconfirmed address is compared as "" (allowlist_email).
         self.developer_emails = frozenset(
-            email.strip().lower() for email in settings.developer_emails
+            email.strip().lower() for email in settings.developer_emails if email.strip()
         )
         self.subscription_test_plan = _resolve_subscription_test_plan(
             settings.subscription_test_plan

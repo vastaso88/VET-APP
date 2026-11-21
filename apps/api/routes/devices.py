@@ -2,6 +2,7 @@ from fastapi import APIRouter
 from pydantic import BaseModel, Field
 
 from apps.api.dependencies.container import get_container
+from apps.api.dependencies.subscription import allowlist_email
 from packages.core.application.services.register_device import RegisterDeviceInput
 
 router = APIRouter(prefix="/devices", tags=["devices"])
@@ -21,7 +22,7 @@ def register_device(request: RegisterDeviceRequest) -> dict[str, object]:
     result = container.register_device_service().execute(
         RegisterDeviceInput(
             owner_id=user.id,
-            owner_email=user.email,
+            owner_email=allowlist_email(user),
             device_id=request.device_id,
             claim=request.claim,
         )

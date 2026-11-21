@@ -1,3 +1,4 @@
+import '../../../account_consents/presentation/widgets/consent_activation.dart';
 import 'package:flutter/material.dart';
 
 import '../../../../design_system/tokens/app_colors.dart';
@@ -14,16 +15,19 @@ import '../../domain/pet_models.dart';
 /// Off means the chat sees neither titles nor contents. Read from the pet row
 /// on open, written with PUT, and applied locally at once on success.
 class MedicalRecordConsentCard extends StatefulWidget {
-  const MedicalRecordConsentCard({required this.pet, super.key});
+  const MedicalRecordConsentCard({required this.pet, this.remote, super.key});
 
   final PetProfile pet;
+
+  /// Overridable for tests.
+  final MedicalRecordConsentRemoteDataSource? remote;
 
   @override
   State<MedicalRecordConsentCard> createState() => _MedicalRecordConsentCardState();
 }
 
 class _MedicalRecordConsentCardState extends State<MedicalRecordConsentCard> {
-  final _remote = MedicalRecordConsentRemoteDataSource();
+  late final _remote = widget.remote ?? MedicalRecordConsentRemoteDataSource();
 
   late bool? _granted = widget.pet.medicalRecordConsentGranted;
   bool _saving = false;
@@ -61,6 +65,10 @@ class _MedicalRecordConsentCardState extends State<MedicalRecordConsentCard> {
   }
 
   Future<void> _toggle(bool value) async {
+    // Turning it on: what it is, where the data goes, how to take it back, and
+    // only then the decision. Turning it off is one tap, no question.
+    if (value && !await askToActivateClinicalConsent(context, widget.pet.name)) return;
+    if (!mounted) return;
     final previous = _granted;
     setState(() {
       _granted = value;
@@ -198,3 +206,17 @@ class _MedicalRecordConsentCardState extends State<MedicalRecordConsentCard> {
 }
 
 enum _CardStatus { none, saveError, readError }
+
+/// The question before «Attiva» for the clinical-record consent of one pet: the
+/// short text (what, to whom, how to turn it off), the line that nothing is
+/// lost without it, and the way to read the whole text. Same words wherever the
+/// switch appears (card, chat, new document, a new pet). True only for «Attiva».
+Future<bool> askToActivateClinicalConsent(BuildContext context, String petName) {
+  final l10n = context.l10n;
+  return askToActivateConsent(
+    context,
+    title: l10n.petsConsentCardTitle(petName),
+    summary: '${l10n.petsConsentShort(petName)}\n\n${l10n.petsConsentWithoutConsent}',
+    fullText: l10n.petsConsentFullText,
+  );
+}

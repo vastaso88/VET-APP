@@ -1,3 +1,4 @@
+import '../../../account_consents/presentation/widgets/account_consents_group.dart';
 import 'dart:async';
 
 import 'package:flutter/foundation.dart';
@@ -295,6 +296,17 @@ class _SettingsPageState extends State<SettingsPage> {
     unawaited(CrashReporting.instance.applyConsent(granted));
   }
 
+  /// A decision counts only under the current version of its text; after a change
+  /// the switch is off and says «Da confermare» until it is confirmed again.
+  bool _isOn(AccountConsentsSnapshot consents, String key) =>
+      consentDecisionIsCurrent(consents.decisions[key], consents.catalog[key]) &&
+      (consents.decisions[key]?.granted ?? false);
+
+  String? _confirmNote(AccountConsentsSnapshot consents, String key) =>
+      consentNeedsReconfirm(consents.decisions[key], consents.catalog[key])
+          ? context.l10n.settingsConsentToConfirm
+          : null;
+
   Future<void> _setConsent(String key, bool granted) async {
     final previous = _consents;
     // Optimistic flip so the toggle feels immediate; reverted below on failure.
@@ -482,7 +494,8 @@ class _SettingsPageState extends State<SettingsPage> {
         icon: Icons.mail_outline_rounded,
         iconColor: AppColors.secondaryStrong,
         title: context.l10n.settingsConsentMarketingEmail,
-        value: consents.decisions[AccountConsentKeys.marketingEmail]?.granted ?? false,
+        value: _isOn(consents, AccountConsentKeys.marketingEmail),
+        subtitle: _confirmNote(consents, AccountConsentKeys.marketingEmail),
         onChanged: (value) => _setConsent(AccountConsentKeys.marketingEmail, value),
       ),
       // Hidden until the app has an analytics tool: a switch for something
@@ -492,7 +505,8 @@ class _SettingsPageState extends State<SettingsPage> {
         icon: Icons.insights_outlined,
         iconColor: AppColors.info,
         title: context.l10n.settingsConsentAnalytics,
-        value: consents.decisions[AccountConsentKeys.analytics]?.granted ?? false,
+        value: _isOn(consents, AccountConsentKeys.analytics),
+        subtitle: _confirmNote(consents, AccountConsentKeys.analytics),
         onChanged: (value) => _setConsent(AccountConsentKeys.analytics, value),
       ),
       // Only in a build that can send error reports at all (CRASH_REPORTING
@@ -502,7 +516,8 @@ class _SettingsPageState extends State<SettingsPage> {
           icon: Icons.bug_report_outlined,
           iconColor: AppColors.warning,
           title: context.l10n.settingsConsentDiagnostics,
-          value: consents.decisions[AccountConsentKeys.diagnostics]?.granted ?? false,
+          value: _isOn(consents, AccountConsentKeys.diagnostics),
+        subtitle: _confirmNote(consents, AccountConsentKeys.diagnostics),
           onChanged: (value) => _setConsent(AccountConsentKeys.diagnostics, value),
         ),
       ValueListenableBuilder<int>(

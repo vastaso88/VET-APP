@@ -12,6 +12,7 @@ from pydantic import BaseModel, Field
 
 from apps.api.dependencies.container import get_container
 from apps.api.dependencies.marketplace import require_marketplace_age
+from apps.api.dependencies.marketplace_rules import require_marketplace_rules_accepted
 from apps.api.dependencies.subscription import require_active_subscription
 from packages.core.application.services.marketplace_messaging import (
     ConversationClosedError,
@@ -54,7 +55,10 @@ def _closed() -> HTTPException:
 
 @router.post(
     "/listings/{listing_id}/conversations",
-    dependencies=[Depends(require_active_subscription)],
+    dependencies=[
+        Depends(require_active_subscription),
+        Depends(require_marketplace_rules_accepted),
+    ],
 )
 def write_to_seller(listing_id: str, request: MessageRequest) -> dict[str, object]:
     container = get_container()
@@ -119,7 +123,10 @@ def read_conversation(conversation_id: str) -> dict[str, object]:
 
 @router.post(
     "/conversations/{conversation_id}/messages",
-    dependencies=[Depends(require_active_subscription)],
+    dependencies=[
+        Depends(require_active_subscription),
+        Depends(require_marketplace_rules_accepted),
+    ],
 )
 def send_message(conversation_id: str, request: MessageRequest) -> dict[str, object]:
     user = get_container().auth_provider.get_current_user()

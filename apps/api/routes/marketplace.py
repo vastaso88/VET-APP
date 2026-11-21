@@ -9,6 +9,7 @@ from apps.api.dependencies.marketplace import (
     require_marketplace_age,
     require_marketplace_not_restricted,
 )
+from apps.api.dependencies.marketplace_rules import require_marketplace_rules_accepted
 from apps.api.dependencies.subscription import owner_has_access, require_active_subscription
 from packages.core.application.services.create_listing import CreateListingInput
 from packages.core.application.services.list_nearby_listings import ListNearbyListingsInput
@@ -144,6 +145,7 @@ def _private_seller_declaration(payload: ListingPayload, locale: str | None) -> 
     dependencies=[
         Depends(require_active_subscription),
         Depends(require_marketplace_not_restricted),
+        Depends(require_marketplace_rules_accepted),
     ],
 )
 def create_listing(
@@ -179,6 +181,7 @@ def create_listing(
     dependencies=[
         Depends(require_active_subscription),
         Depends(require_marketplace_not_restricted),
+        Depends(require_marketplace_rules_accepted),
     ],
 )
 def update_listing(

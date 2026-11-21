@@ -458,6 +458,17 @@ class AppLocalizationsEs extends AppLocalizations {
   }
 
   @override
+  String get billingAccountStatusNotice =>
+      'Tu suscripción se gestiona desde tu cuenta de Quokka en el sitio web.';
+
+  @override
+  String get billingOpenAccount => 'Abrir tu cuenta';
+
+  @override
+  String get billingOpenAccountError =>
+      'No pude abrir la página. Inténtalo más tarde.';
+
+  @override
   String get billingTitle => 'Suscripción y pagos';
 
   @override
@@ -4946,7 +4957,8 @@ class AppLocalizationsEs extends AppLocalizations {
   String get settingsConsentPrivacy => 'Política de privacidad';
 
   @override
-  String get settingsConsentMarketingEmail => 'Correos de marketing';
+  String get settingsConsentMarketingEmail =>
+      'Correos de marketing: novedades y consejos de Quokka';
 
   @override
   String get settingsConsentAnalytics => 'Análisis de uso';
@@ -6754,10 +6766,22 @@ class AppLocalizationsEs extends AppLocalizations {
       'Un PDF con todos los eventos por orden de fecha';
 
   @override
+  String petsConsentShort(String name) {
+    return 'Con «Activar» el asistente podrá leer el historial clínico de $name: entradas con título, fecha, descripción y texto de los documentos, enfermedades en curso, notas y recordatorios (terapias incluidas). Lo que lee va a nuestros proveedores de inteligencia artificial, empresas estadounidenses que tratan los datos en Estados Unidos, fuera de la Unión Europea, después de que hayamos quitado los datos personales que reconocemos (no todos). Lo usamos solo para responderte y para el resumen destinado al veterinario. Puedes desactivarlo cuando quieras con un toque, aquí o en Ajustes: se aplica a las solicitudes posteriores.';
+  }
+
+  @override
   String get petsConsentProposalActivate => 'Activar';
 
   @override
   String get petsConsentProposalLater => 'Más tarde';
+
+  @override
+  String get marketplaceRulesTitle => 'Reglas del mercadillo';
+
+  @override
+  String get marketplaceRulesAccept =>
+      'He leído y acepto las reglas del mercadillo';
 
   @override
   String get noticeMarketplace =>
@@ -7975,7 +7999,8 @@ class AppLocalizationsEs extends AppLocalizations {
   String get storeBillingManage => 'Gestionar la suscripción en la tienda';
 
   @override
-  String get storeBillingPending => 'Pago pendiente de confirmación de la tienda.';
+  String get storeBillingPending =>
+      'Pago pendiente de confirmación de la tienda.';
 
   @override
   String get storeBillingVerifying => 'Verificando la compra…';
@@ -7984,13 +8009,16 @@ class AppLocalizationsEs extends AppLocalizations {
   String get storeBillingVerified => 'Suscripción activa.';
 
   @override
-  String get storeBillingFailed => 'No se pudo verificar la compra. Inténtalo más tarde: no se te cobrará dos veces.';
+  String get storeBillingFailed =>
+      'No se pudo verificar la compra. Inténtalo más tarde: no se te cobrará dos veces.';
 
   @override
-  String get storeBillingOwnedByOther => 'Esta compra está vinculada a otra cuenta de Quokka.';
+  String get storeBillingOwnedByOther =>
+      'Esta compra está vinculada a otra cuenta de Quokka.';
 
   @override
-  String get storeBillingUnavailable => 'Las compras en la tienda no están disponibles en este dispositivo.';
+  String get storeBillingUnavailable =>
+      'Las compras en la tienda no están disponibles en este dispositivo.';
 
   @override
   String storeBillingCanceledUntil(String date) {
@@ -8004,7 +8032,8 @@ class AppLocalizationsEs extends AppLocalizations {
   String get storeBillingRefunded => 'Suscripción reembolsada o revocada';
 
   @override
-  String get storeBillingPaymentIssue => 'Problema de pago: actualiza el método de pago en la tienda';
+  String get storeBillingPaymentIssue =>
+      'Problema de pago: actualiza el método de pago en la tienda';
 
   @override
   String storeBillingTrialDaysLeft(String days) {
@@ -8015,5 +8044,6 @@ class AppLocalizationsEs extends AppLocalizations {
   String get storeBillingRestoreDone => 'Restauración completada.';
 
   @override
-  String get storeBillingPricesFromStore => 'Los precios, la moneda y los impuestos son los que indica la tienda para tu país. La suscripción se renueva automáticamente hasta que la canceles en la tienda.';
+  String get storeBillingPricesFromStore =>
+      'Los precios, la moneda y los impuestos son los que indica la tienda para tu país. La suscripción se renueva automáticamente hasta que la canceles en la tienda.';
 }
