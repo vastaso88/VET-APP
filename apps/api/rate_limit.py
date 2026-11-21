@@ -50,7 +50,7 @@ DEFAULT_RULES: tuple[RateLimitRule, ...] = (
     # Additional best-effort throttle; the plan endpoint also uses a durable
     # per-admin Postgres attempt counter so cold starts do not reset the limit.
     RateLimitRule(
-        prefix="/admin/users/", suffix="/plan", limit=5, window_seconds=300.0
+        prefix="/admin/users/", suffix="/plan", limit=30, window_seconds=300.0
     ),
     # Model calls outside the per-user daily chat quota.
     RateLimitRule(prefix="/speech-to-text", limit=20, window_seconds=600.0),
