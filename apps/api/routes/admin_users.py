@@ -1,15 +1,21 @@
 """Read-only account checks for support; never infer receipts from plan selection."""
 
+import base64
+import hashlib
+import hmac
+import json
 from collections import Counter
 from datetime import UTC, datetime, timedelta
 from typing import Any, Literal
 
+import httpx
 from fastapi import APIRouter, HTTPException, Path, Query
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 from apps.api.dependencies.container import get_container
 from apps.api.routes.admin import _admin_client, _list_auth_users, _parse_datetime, _require_admin
 from packages.core.domain.subscription.models import Subscription
+from packages.shared.auth_context import get_access_token
 from packages.infrastructure.admin.user_reports import countries, moderation
 
 router = APIRouter(prefix="/admin/users", tags=["admin"])
@@ -236,6 +242,94 @@ def user_detail(
 
 class PlanChangeRequest(BaseModel):
     plan: Literal["plus", "pro", "ultra"] | None
+    totp_code: str = Field(min_length=6, max_length=6, pattern=r"^[0-9]{6}$")
+
+
+def _verify_plan_totp(admin_id: str, code: str) -> str:
+    """Step-up via Supabase Auth: require a VERIFIED TOTP factor for this admin.
+
+    Each invocation creates and verifies a fresh challenge. The upgraded JWT is
+    inspected only after it comes from Supabase over TLS. It is never persisted.
+    Return a keyed HMAC, not the TOTP code, for replay protection in Postgres.
+    """
+    token = get_access_token()
+    settings = get_container().settings
+    if not token:
+        raise HTTPException(status_code=401, detail="Admin session required")
+    if not settings.supabase_url or not settings.supabase_anon_key:
+        raise HTTPException(status_code=503, detail="MFA provider unavailable")
+
+    base = settings.supabase_url.rstrip("/") + "/auth/v1"
+    headers = {
+        "apikey": settings.supabase_anon_key,
+        "Authorization": f"Bearer {token}",
+        "Accept": "application/json",
+        "Content-Type": "application/json",
+    }
+    try:
+        with httpx.Client(timeout=8.0) as session:
+            factors_response = session.get(base + "/factors", headers=headers)
+            if factors_response.status_code != 200:
+                raise HTTPException(status_code=503, detail="MFA provider unavailable")
+            factors = factors_response.json().get("factors", [])
+            verified = next(
+                (
+                    item for item in factors
+                    if (item.get("factor_type") or item.get("type")) == "totp"
+                    and item.get("status") == "verified"
+                ),
+                None,
+            )
+            if verified is None:
+                raise HTTPException(
+                    status_code=428,
+                    detail="Configure and activate an authenticator before changing plans",
+                )
+            factor_id = verified.get("id")
+            if not isinstance(factor_id, str):
+                raise HTTPException(status_code=503, detail="MFA provider unavailable")
+
+            challenge = session.post(
+                f"{base}/factors/{factor_id}/challenge", headers=headers, json={}
+            )
+            if challenge.status_code != 200:
+                raise HTTPException(status_code=503, detail="MFA challenge unavailable")
+            challenge_id = challenge.json().get("id")
+            if not isinstance(challenge_id, str):
+                raise HTTPException(status_code=503, detail="MFA challenge unavailable")
+
+            verification = session.post(
+                f"{base}/factors/{factor_id}/verify",
+                headers=headers,
+                json={"challenge_id": challenge_id, "code": code},
+            )
+            if verification.status_code == 429:
+                raise HTTPException(status_code=429, detail="Too many TOTP attempts")
+            if verification.status_code in (400, 401, 403, 422):
+                raise HTTPException(status_code=400, detail="Invalid TOTP code")
+            if verification.status_code != 200:
+                raise HTTPException(status_code=503, detail="MFA verification unavailable")
+
+            upgraded_token = verification.json().get("access_token")
+            if not isinstance(upgraded_token, str):
+                raise HTTPException(status_code=503, detail="MFA verification unavailable")
+            # Check that Supabase issued an AAL2 token for the *same* admin.
+            segment = upgraded_token.split(".")[1]
+            claims = json.loads(
+                base64.urlsafe_b64decode(segment + "=" * (-len(segment) % 4))
+            )
+            if claims.get("sub") != admin_id or claims.get("aal") != "aal2":
+                raise HTTPException(status_code=403, detail="MFA identity mismatch")
+    except httpx.RequestError:
+        raise HTTPException(status_code=503, detail="MFA provider unavailable") from None
+    except (ValueError, TypeError, KeyError, IndexError):
+        raise HTTPException(status_code=503, detail="Invalid MFA provider response") from None
+
+    return hmac.new(
+        settings.reporter_pseudonym_secret().encode(),
+        f"admin-plan-totp:{admin_id}:{code}".encode(),
+        hashlib.sha256,
+    ).hexdigest()
 
 
 @router.post("/{owner_id}/plan")
@@ -250,17 +344,29 @@ def change_user_plan(
 
     if _protected(user, admin.id):
         raise HTTPException(status_code=403, detail="Protected team account")
+    # Shared per-admin throttle: effective across multiple serverless instances.
+    try:
+        allowed = client.rpc(
+            "admin_plan_totp_register_attempt", {"p_admin_id": admin.id}
+        ).execute().data
+    except Exception:
+        raise HTTPException(status_code=503, detail="MFA rate limit unavailable") from None
+    if allowed is not True:
+        raise HTTPException(status_code=429, detail="Too many attempts; try again later")
+
+    proof = _verify_plan_totp(admin.id, request.totp_code)
     try:
         client.rpc(
-            "admin_change_user_plan",
+            "admin_change_user_plan_totp",
             {
                 "p_owner_id": owner_id,
                 "p_admin_id": admin.id,
                 "p_plan": request.plan,
+                "p_code_digest": proof,
             },
         ).execute()
     except Exception:
         raise HTTPException(
-            status_code=503, detail="Plan update unavailable; check database migration"
+            status_code=409, detail="Plan change failed or TOTP code already used"
         ) from None
     return {"owner_id": owner_id, "plan": request.plan}
